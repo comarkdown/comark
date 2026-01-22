@@ -2,8 +2,7 @@
   "name": "docs",
   "scripts": {
     "dev": "nuxt dev --extends docus",
-    "build": "nuxt build --extends docus",
-    "postinstall": "npm link mdc-syntax || true"
+    "build": "nuxt build --extends docus"
   },
   "dependencies": {
     "better-sqlite3": "^12.5.0",

@@ -21,6 +21,7 @@
   ],
   "scripts": {
     "dev": "nuxt dev playground",
+    "dev:prepare": "nuxt prepare playground",
     "docs": "nuxt dev --extends docus docs",
     "test": "vitest run",
     "prepack": "unbuild",
@@ -44,6 +45,7 @@
     "@types/node": "^25.0.9",
     "eslint": "^9.39.2",
     "hast-util-to-string": "^3.0.1",
+    "nuxt": "^4.2.2",
     "remark-gfm": "^4.0.1",
     "remark-parse": "^11.0.0",
     "remark-rehype": "^11.1.2",
