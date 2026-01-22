@@ -1,0 +1,52 @@
+{
+  "name": "mdc-syntax",
+  "type": "module",
+  "version": "0.0.1",
+  "packageManager": "pnpm@10.26.2",
+  "description": "",
+  "author": "",
+  "license": "MIT",
+  "repository": "nuxt-content/mdc-syntax",
+  "keywords": [],
+  "exports": {
+    ".": "./dist/index.mjs",
+    "./vue": "./dist/vue/index.mjs",
+    "./stream": "./dist/stream.mjs"
+  },
+  "main": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "nuxt dev playground",
+    "docs": "nuxt dev --extends docus docs",
+    "test": "vitest run",
+    "prepack": "unbuild",
+    "lint": "eslint .",
+    "verify": "pnpm run lint && pnpm run test"
+  },
+  "peerDependencies": {
+    "vue": "^3.5.27"
+  },
+  "dependencies": {
+    "github-slugger": "^2.0.0",
+    "markdown-it": "^14.1.0",
+    "markdown-it-mdc": "^0.2.6",
+    "remark-mdc": "^3.10.0",
+    "scule": "^1.3.0",
+    "unified": "^11.0.5",
+    "vitest": "^4.0.17"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "^7.2.0",
+    "@types/node": "^25.0.9",
+    "eslint": "^9.39.2",
+    "hast-util-to-string": "^3.0.1",
+    "remark-gfm": "^4.0.1",
+    "remark-parse": "^11.0.0",
+    "remark-rehype": "^11.1.2",
+    "unbuild": "^3.6.1"
+  }
+}

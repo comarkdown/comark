@@ -1,0 +1,28 @@
+{
+  "name": "playground",
+  "type": "module",
+  "private": true,
+  "packageManager": "pnpm@10.26.1",
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "lint": "eslint .",
+    "typecheck": "nuxt typecheck"
+  },
+  "dependencies": {
+    "@iconify-json/lucide": "^1.2.82",
+    "@iconify-json/simple-icons": "^1.2.63",
+    "@nuxt/ui": "^4.3.0",
+    "nuxt": "^4.2.2",
+    "shiki": "^3.21.0",
+    "shiki-stream": "^0.1.4"
+  },
+  "devDependencies": {
+    "@nuxt/eslint": "^1.12.1",
+    "eslint": "^9.39.2",
+    "typescript": "^5.9.3",
+    "vue-tsc": "^3.2.1"
+  }
+}

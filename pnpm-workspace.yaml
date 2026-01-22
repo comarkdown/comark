@@ -1,0 +1,14 @@
+shellEmulator: true
+
+trustPolicy: no-downgrade
+
+packages:
+  - ./
+  - playground
+  - docs
+
+ignoredBuiltDependencies:
+  - sharp
+
+onlyBuiltDependencies:
+  - better-sqlite3
