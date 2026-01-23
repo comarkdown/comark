@@ -469,7 +469,8 @@ describe('compare parseWithRemark and parse', () => {
   testCases.forEach((testCase) => {
     it(`should produce similar results for: ${testCase.name}`, () => {
       const result1 = parseWithRemark(testCase.content) as ParseResult
-      const result2 = parse(testCase.content) as ParseResult
+      // Disable autoUnwrap to match remark-mdc output structure
+      const result2 = parse(testCase.content, { autoUnwrap: false }) as ParseResult
 
       // Both should return valid structures
       expect(result1, `${testCase.name}: parseWithRemark should return result`).toBeDefined()

@@ -160,7 +160,7 @@ describe('benchmark parse vs parse', () => {
         const parseResult = parse(testCase.content)
         const afterParse = getMemoryUsage()
         const memory = afterParse - beforeParse
-        if (memory > 0 && isFinite(memory)) {
+        if (memory > 0 && Number.isFinite(memory)) {
           parseMemorySum += memory
           parseMemoryCount++
         }
@@ -179,7 +179,7 @@ describe('benchmark parse vs parse', () => {
         const markdownItResult = parse(testCase.content)
         const afterMarkdownIt = getMemoryUsage()
         const memory = afterMarkdownIt - beforeMarkdownIt
-        if (memory > 0 && isFinite(memory)) {
+        if (memory > 0 && Number.isFinite(memory)) {
           markdownItMemorySum += memory
           markdownItMemoryCount++
         }
@@ -204,7 +204,7 @@ describe('benchmark parse vs parse', () => {
     console.log('-'.repeat(90))
     for (const result of results) {
       let diffStr = 'N/A'
-      if (isFinite(result.memoryDiff) && !isNaN(result.memoryDiff)) {
+      if (Number.isFinite(result.memoryDiff) && !Number.isNaN(result.memoryDiff)) {
         if (result.memoryDiff > 0) {
           diffStr = `+${formatBytes(result.memoryDiff)} (markdown-it uses less)`
         }
@@ -215,10 +215,10 @@ describe('benchmark parse vs parse', () => {
           diffStr = 'Equal'
         }
       }
-      const parseMemStr = result.parseMemory > 0 && isFinite(result.parseMemory)
+      const parseMemStr = result.parseMemory > 0 && Number.isFinite(result.parseMemory)
         ? formatBytes(result.parseMemory)
         : 'N/A'
-      const markdownItMemStr = result.markdownItMemory > 0 && isFinite(result.markdownItMemory)
+      const markdownItMemStr = result.markdownItMemory > 0 && Number.isFinite(result.markdownItMemory)
         ? formatBytes(result.markdownItMemory)
         : 'N/A'
       console.log(
@@ -266,7 +266,7 @@ describe('benchmark parse vs parse', () => {
         const parseResult = parse(testCase.content)
         const afterParse = getMemoryUsage()
         const memory = afterParse - beforeParse
-        if (memory > 0 && isFinite(memory)) {
+        if (memory > 0 && Number.isFinite(memory)) {
           parseMemorySum += memory
           parseMemoryCount++
         }
@@ -291,7 +291,7 @@ describe('benchmark parse vs parse', () => {
         const markdownItResult = parse(testCase.content)
         const afterMarkdownIt = getMemoryUsage()
         const memory = afterMarkdownIt - beforeMarkdownIt
-        if (memory > 0 && isFinite(memory)) {
+        if (memory > 0 && Number.isFinite(memory)) {
           markdownItMemorySum += memory
           markdownItMemoryCount++
         }

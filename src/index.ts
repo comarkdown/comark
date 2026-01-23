@@ -1,8 +1,10 @@
-import type { MDCRoot } from './types/tree'
+import type { MDCRoot, MDCElement } from './types/tree'
+import type { ParseOptions } from './types'
 import MarkdownIt from 'markdown-it'
 import pluginMdc from 'markdown-it-mdc'
 import { parseFrontMatter } from 'remark-mdc'
 import { convertMarkdownItTokensToMDC } from './utils/parse'
+import { applyAutoUnwrap } from './utils/auto-unwrap'
 import { generateToc } from './utils/table-of-contents'
 
 export interface ParseResult {
@@ -15,13 +17,18 @@ export interface ParseResult {
 // Re-export auto-close utilities
 export { autoCloseMarkdown, detectUnclosedSyntax } from './auto-close'
 
+// Re-export parse utilities
+export { applyAutoUnwrap } from './utils/auto-unwrap'
+
 // Re-export types
-export type { MDCNode, MDCRoot } from './types/tree'
+export type { MDCNode, MDCRoot, MDCElement, MDCText, MDCComment } from './types/tree'
+export type { ParseOptions } from './types'
 
 /**
  * Parse MDC content from a string
  *
  * @param source - The markdown/MDC content as a string
+ * @param options - Parser options
  * @returns ParseResult - Object containing body, excerpt, data, and toc
  *
  * @example
@@ -45,9 +52,13 @@ export type { MDCNode, MDCRoot } from './types/tree'
  * console.log(result.body)    // MDC AST
  * console.log(result.data)    // { title: 'Hello World' }
  * console.log(result.toc)     // Table of contents
+ *
+ * // Disable auto-unwrap
+ * const result2 = parse(content, { autoUnwrap: false })
  * ```
  */
-export function parse(source: string): ParseResult {
+export function parse(source: string, options: ParseOptions = {}): ParseResult {
+  const { autoUnwrap = true } = options
   const { content, data } = parseFrontMatter(source)
 
   // Enable tables, GFM features
@@ -64,7 +75,17 @@ export function parse(source: string): ParseResult {
   const children = convertMarkdownItTokensToMDC(tokens)
 
   // Filter out top-level text nodes
-  const filteredChildren = children.filter(child => child.type !== 'text')
+  let filteredChildren = children.filter(child => child.type !== 'text')
+
+  // Apply auto-unwrap to container components if enabled
+  if (autoUnwrap) {
+    filteredChildren = filteredChildren.map((child) => {
+      if (child.type === 'element') {
+        return applyAutoUnwrap(child as MDCElement)
+      }
+      return child
+    })
+  }
 
   const body: MDCRoot = {
     type: 'root',
@@ -79,7 +100,18 @@ export function parse(source: string): ParseResult {
 
   if (excerptIndex !== -1) {
     const excerptTokens = tokens.slice(0, excerptIndex)
-    const excerptChildren = convertMarkdownItTokensToMDC(excerptTokens, new Set())
+    let excerptChildren = convertMarkdownItTokensToMDC(excerptTokens as any, new Set())
+
+    // Apply auto-unwrap to excerpt as well
+    if (autoUnwrap) {
+      excerptChildren = excerptChildren.map((child) => {
+        if (child.type === 'element') {
+          return applyAutoUnwrap(child as MDCElement)
+        }
+        return child
+      })
+    }
+
     excerpt = {
       type: 'root',
       children: excerptChildren.filter(child => child.type !== 'text'),
