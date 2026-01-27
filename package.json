@@ -24,7 +24,7 @@
     "dev:prepare": "nuxt prepare playground",
     "docs": "nuxt dev --extends docus docs",
     "test": "vitest run",
-    "prepack": "onbuild",
+    "prepack": "obuild",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "verify": "pnpm run lint && pnpm run test && pnpm run typecheck"
