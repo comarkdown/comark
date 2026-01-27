@@ -1,22 +1,22 @@
-import type { MDCRoot } from '../types/tree'
+import type { MinimarkTree } from 'minimark'
 
 export interface MDCStreamState {
-  body: MDCRoot
+  body: MinimarkTree
   data: any
   isComplete: boolean
-  excerpt?: MDCRoot
+  excerpt?: MinimarkTree
   toc?: any
   error?: Error
 }
 
 export interface MDCRendererProps {
-  body: MDCRoot
+  body: MinimarkTree
   components?: Record<string, any>
   componentsManifest?: (name: string) => Promise<any>
 }
 
 export interface MDCStreamOptions {
   onChunk?: (chunk: string) => void
-  onComplete?: (result: { body: MDCRoot, data: any, toc?: any }) => void
+  onComplete?: (result: { body: MinimarkTree, data: any, toc?: any }) => void
   onError?: (error: Error) => void
 }

@@ -1,47 +1,7 @@
-import type { MDCNode, MDCRoot } from '../src/types/tree'
 import { describe, expect, it } from 'vitest'
+import type { ParseResult } from '../src/index'
 import { parse } from '../src/index'
-import { parseWithRemark } from './utils'
-
-interface ParseResult {
-  body: MDCRoot
-  excerpt?: MDCRoot
-  data: any
-  toc?: any
-}
-
-// Helper function to normalize structure for comparison
-function normalizeStructure(node: MDCNode | MDCRoot): any {
-  if (node.type === 'root') {
-    return {
-      type: 'root',
-      children: node.children.map(normalizeStructure),
-    }
-  }
-  if (node.type === 'text') {
-    return {
-      type: 'text',
-      value: node.value.trim(),
-    }
-  }
-  if (node.type === 'element') {
-    // Sort props keys for consistent comparison
-    const normalizedProps = node.props
-      ? Object.keys(node.props).sort().reduce((acc, key) => {
-          acc[key] = node.props![key]
-          return acc
-        }, {} as Record<string, any>)
-      : undefined
-
-    return {
-      type: 'element',
-      tag: node.tag,
-      props: normalizedProps,
-      children: node.children.map(normalizeStructure),
-    }
-  }
-  return node
-}
+import { parseWithRemark } from './utils/index'
 
 // Deep comparison function for MDC nodes
 function deepCompareNodes(
@@ -157,8 +117,8 @@ function compareResults(result1: ParseResult, result2: ParseResult, testCase: st
   expect(result1.data, `${testCase}: data should match`).toEqual(result2.data)
 
   // Normalize structures for comparison
-  const body1 = normalizeStructure(result1.body)
-  const body2 = normalizeStructure(result2.body)
+  const body1 = (result1.body)
+  const body2 = (result2.body)
 
   // Deep compare body structures
   deepCompareNodes(body1, body2, 'body', testCase)
@@ -166,8 +126,8 @@ function compareResults(result1: ParseResult, result2: ParseResult, testCase: st
   // Deep compare excerpt if present
   if (result1.excerpt || result2.excerpt) {
     if (result1.excerpt && result2.excerpt) {
-      const excerpt1 = normalizeStructure(result1.excerpt)
-      const excerpt2 = normalizeStructure(result2.excerpt)
+      const excerpt1 = (result1.excerpt)
+      const excerpt2 = (result2.excerpt)
       deepCompareNodes(excerpt1, excerpt2, 'excerpt', testCase)
     }
     else {
@@ -468,20 +428,20 @@ testCases.sort((a, b) => ((a as any).weight || 0) - ((b as any).weight || 0))
 describe('compare parseWithRemark and parse', () => {
   testCases.forEach((testCase) => {
     it(`should produce similar results for: ${testCase.name}`, () => {
-      const result1 = parseWithRemark(testCase.content) as ParseResult
+      const result1 = parseWithRemark(testCase.content)
       // Disable autoUnwrap to match remark-mdc output structure
-      const result2 = parse(testCase.content, { autoUnwrap: false }) as ParseResult
+      const result2 = parse(testCase.content, { autoUnwrap: false })
 
       // Both should return valid structures
       expect(result1, `${testCase.name}: parseWithRemark should return result`).toBeDefined()
       expect(result2, `${testCase.name}: parse should return result`).toBeDefined()
       expect(result1.body, `${testCase.name}: parseWithRemark body should be defined`).toBeDefined()
       expect(result2.body, `${testCase.name}: parse body should be defined`).toBeDefined()
-      expect(result1.body.type, `${testCase.name}: parseWithRemark body type should be root`).toBe('root')
-      expect(result2.body.type, `${testCase.name}: parse body type should be root`).toBe('root')
+      expect(result1.body.type, `${testCase.name}: parseWithRemark body type should be minimark`).toBe('minimark')
+      expect(result2.body.type, `${testCase.name}: parse body type should be minimark`).toBe('minimark')
 
       // Compare results
-      compareResults(result1, result2, testCase.name)
+      compareResults(result1 as any, result2 as any, testCase.name)
     })
   })
 })

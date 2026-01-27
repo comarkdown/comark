@@ -1,27 +1,27 @@
-import type { MDCRoot, MDCElement } from './types/tree'
 import type { ParseOptions } from './types'
 import MarkdownIt from 'markdown-it'
 import pluginMdc from 'markdown-it-mdc'
 import { parseFrontMatter } from 'remark-mdc'
-import { convertMarkdownItTokensToMDC } from './utils/parse'
 import { applyAutoUnwrap } from './utils/auto-unwrap'
 import { generateToc } from './utils/table-of-contents'
+import { stringify } from 'minimark/stringify'
+import type { MinimarkTree, MinimarkNode } from 'minimark'
+import { parseTokens } from './utils/token-processor'
 
 export interface ParseResult {
-  body: MDCRoot
-  excerpt?: MDCRoot
+  body: MinimarkTree
+  excerpt?: MinimarkTree
   data: any
   toc?: any
 }
 
 // Re-export auto-close utilities
-export { autoCloseMarkdown, detectUnclosedSyntax } from './auto-close'
+export { autoCloseMarkdown, detectUnclosedSyntax } from './utils/auto-close'
 
 // Re-export parse utilities
 export { applyAutoUnwrap } from './utils/auto-unwrap'
 
 // Re-export types
-export type { MDCNode, MDCRoot, MDCElement, MDCText, MDCComment } from './types/tree'
 export type { ParseOptions } from './types'
 
 /**
@@ -72,59 +72,48 @@ export function parse(source: string, options: ParseOptions = {}): ParseResult {
   const tokens = markdownIt.parse(content, {})
 
   // Convert tokens to MDC structure
-  const children = convertMarkdownItTokensToMDC(tokens)
+  const body: MinimarkTree = {
+    type: 'minimark',
+    value: parseTokens(tokens),
+  }
 
-  // Filter out top-level text nodes
-  let filteredChildren = children.filter(child => child.type !== 'text')
-
-  // Apply auto-unwrap to container components if enabled
   if (autoUnwrap) {
-    filteredChildren = filteredChildren.map((child) => {
-      if (child.type === 'element') {
-        return applyAutoUnwrap(child as MDCElement)
-      }
-      return child
-    })
+    body.value = body.value.map((node: MinimarkNode) => applyAutoUnwrap(node))
   }
 
-  const body: MDCRoot = {
-    type: 'root',
-    children: filteredChildren,
-  }
+  // // Handle excerpt (look for HTML comment with 'more')
+  // let excerpt: MinimarkTree | undefined
+  // const excerptIndex = tokens.findIndex(
+  //   token => token.type === 'html_block' && token.content?.includes('<!-- more -->'),
+  // )
 
-  // Handle excerpt (look for HTML comment with 'more')
-  let excerpt: MDCRoot | undefined
-  const excerptIndex = tokens.findIndex(
-    token => token.type === 'html_block' && token.content?.includes('<!-- more -->'),
-  )
+  // if (excerptIndex !== -1) {
+  //   const excerptTokens = tokens.slice(0, excerptIndex)
+  //   let excerptChildren = convertMarkdownItTokensToMDC(excerptTokens as any, new Set())
 
-  if (excerptIndex !== -1) {
-    const excerptTokens = tokens.slice(0, excerptIndex)
-    let excerptChildren = convertMarkdownItTokensToMDC(excerptTokens as any, new Set())
+  //   // Apply auto-unwrap to excerpt as well
+  //   if (autoUnwrap) {
+  //     excerptChildren = excerptChildren.map((child) => {
+  //       if (child.type === 'element') {
+  //         return applyAutoUnwrap(child as MDCElement)
+  //       }
+  //       return child
+  //     })
+  //   }
 
-    // Apply auto-unwrap to excerpt as well
-    if (autoUnwrap) {
-      excerptChildren = excerptChildren.map((child) => {
-        if (child.type === 'element') {
-          return applyAutoUnwrap(child as MDCElement)
-        }
-        return child
-      })
-    }
+  //   excerpt = {
+  //     type: 'root',
+  //     children: excerptChildren.filter(child => child.type !== 'text'),
+  //   }
 
-    excerpt = {
-      type: 'root',
-      children: excerptChildren.filter(child => child.type !== 'text'),
-    }
-
-    // Include styles if excerpt contains code block
-    if (excerpt.children.find(node => node.type === 'element' && node.tag === 'pre')) {
-      const lastChild = body.children[body.children.length - 1]
-      if (lastChild && lastChild.type === 'element' && lastChild.tag === 'style') {
-        excerpt.children.push(lastChild)
-      }
-    }
-  }
+  //   // Include styles if excerpt contains code block
+  //   if (excerpt.children.find(node => node.type === 'element' && node.tag === 'pre')) {
+  //     const lastChild = body.children[body.children.length - 1]
+  //     if (lastChild && lastChild.type === 'element' && lastChild.tag === 'style') {
+  //       excerpt.children.push(lastChild)
+  //     }
+  //   }
+  // }
 
   const toc = generateToc(body, {
     title: data.title || '',
@@ -135,14 +124,16 @@ export function parse(source: string, options: ParseOptions = {}): ParseResult {
 
   return {
     body,
-    excerpt,
+    // excerpt,
     data,
     toc,
   }
 }
 
-/**
- * Alias for parse() - kept for backward compatibility
- * @internal
- */
-export const parseWithMarkdownIt = parse
+export function renderHTML(tree: MinimarkTree): string {
+  return stringify(tree, { format: 'text/html' }).trim()
+}
+
+export function renderMarkdown(tree: MinimarkTree): string {
+  return stringify(tree, { format: 'markdown/mdc' }).trim()
+}

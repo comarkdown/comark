@@ -91,7 +91,7 @@ for await (const result of parseStreamIncremental(response.body!)) {
   if (!result.isComplete) {
     // Update UI as chunks arrive - auto-close ensures valid parsing!
     console.log(`Received chunk: ${result.chunk.length} bytes`)
-    console.log(`Current elements: ${result.body.children.length}`)
+    console.log(`Current elements: ${result.body.value.length}`)
     renderPartialContent(result.body)
   }
   else {
@@ -146,27 +146,27 @@ Parses MDC content incrementally, yielding results after each chunk.
 
 ```typescript
 interface ParseResult {
-  body: MDCRoot // The parsed MDC AST
-  excerpt?: MDCRoot // Optional excerpt (content before <!-- more -->)
+  body: MinimarkTree // The parsed MDC AST
+  excerpt?: MinimarkTree // Optional excerpt (content before <!-- more -->)
   data: any // Frontmatter data
   toc?: any // Table of contents
 }
 
 interface IncrementalParseResult {
   chunk: string // The chunk just received
-  body: MDCRoot // Current parsed state
+  body: MinimarkTree // Current parsed state
   data: any // Frontmatter data (once available)
   isComplete: boolean // Whether stream is finished
-  excerpt?: MDCRoot // Optional excerpt
+  excerpt?: MinimarkTree // Optional excerpt
   toc?: any // TOC (only in final result)
 }
 
-interface MDCRoot {
-  type: 'root'
-  children: MDCNode[]
+interface MinimarkTree {
+  type: 'minimark'
+  value: MinimarkNode[]
 }
 
-interface MDCNode {
+interface MinimarkNode {
   type: 'element' | 'text' | 'comment'
   // ... additional properties based on type
 }

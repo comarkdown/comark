@@ -89,7 +89,7 @@ function fibonacci(n) {
 `
 
 const bytesReceived = ref(0)
-const elementsCount = computed(() => state.value.body.children.length)
+const elementsCount = computed(() => state.value.body?.value?.length ?? 0)
 const outputColumn = ref<HTMLElement | null>(null)
 const astColumn = ref<HTMLElement | null>(null)
 const selectedParser = ref<'remark' | 'markdown-it'>('markdown-it')

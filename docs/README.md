@@ -108,8 +108,8 @@ docs/
 |------|---------|---------------|
 | `ParseResult` | Parse output | [Parse API - Types](./content/1.parse-api.md#types) |
 | `IncrementalParseResult` | Stream output | [Parse API - Types](./content/1.parse-api.md#types) |
-| `MDCRoot` | AST root | [Parse API - Types](./content/1.parse-api.md#mdcroot) |
-| `MDCNode` | AST node | [Parse API - Types](./content/1.parse-api.md#mdcnode) |
+| `MinimarkTree` | AST root | [Parse API - Types](./content/1.parse-api.md#minimarktree) |
+| `MinimarkNode` | AST node | [Parse API - Types](./content/1.parse-api.md#minimarknode) |
 | `MDCStreamState` | Stream state | [useMDCStream - State](./content/4.use-mdc-stream.md#state) |
 
 ## Contributing to Documentation

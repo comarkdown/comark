@@ -1,6 +1,15 @@
 import { Readable } from 'node:stream'
 import { describe, expect, it } from 'vitest'
 import { parseStream } from '../src/stream'
+import type { MinimarkNode } from 'minimark'
+
+// Helper to get tag from a MinimarkNode
+function getTag(node: MinimarkNode): string | null {
+  if (Array.isArray(node) && node.length >= 1) {
+    return node[0] as string
+  }
+  return null
+}
 
 describe('stream Examples', () => {
   it('example 1: Simple streaming with Node.js Readable', async () => {
@@ -27,9 +36,9 @@ This is a **sample** document with *emphasis*.
       title: 'My Document',
       author: 'John Doe',
     })
-    expect(result.body.children.length).toBeGreaterThan(0)
-    expect(result.body.children[0].type).toBe('element')
-    expect(result.body.children[0].tag).toBe('h1')
+    expect(result.body.value.length).toBeGreaterThan(0)
+    expect(Array.isArray(result.body.value[0])).toBe(true)
+    expect(getTag(result.body.value[0])).toBe('h1')
   })
 
   it('example 2: Chunked streaming', async () => {
@@ -44,8 +53,8 @@ This is a **sample** document with *emphasis*.
     const stream = Readable.from(chunks)
     const result = await parseStream(stream)
 
-    expect(result.body.type).toBe('root')
-    expect(result.body.children.length).toBeGreaterThan(0)
+    expect(result.body.type).toBe('minimark')
+    expect(result.body.value.length).toBeGreaterThan(0)
   })
 
   it('example 3: Web ReadableStream', async () => {
@@ -61,8 +70,8 @@ This is a **sample** document with *emphasis*.
 
     const result = await parseStream(webStream)
 
-    expect(result.body.children[0].tag).toBe('h1')
-    expect(result.body.children[1]?.tag).toBe('alert')
+    expect(getTag(result.body.value[0])).toBe('h1')
+    expect(getTag(result.body.value[1])).toBe('alert')
   })
 
   it('example 4: Comparing both parsers', async () => {
@@ -82,7 +91,7 @@ const x = 1;
     const result2 = await parseStream(stream2)
 
     expect(result1.body.type).toBe(result2.body.type)
-    expect(result1.body.children.length).toBe(result2.body.children.length)
+    expect(result1.body.value.length).toBe(result2.body.value.length)
   })
 
   it('example 5: Error handling - successful parse', async () => {
@@ -90,25 +99,25 @@ const x = 1;
     const stream = Readable.from([content])
 
     const result = await parseStream(stream)
-    expect(result.body.children.length).toBeGreaterThan(0)
+    expect(result.body.value.length).toBeGreaterThan(0)
   })
 
   it('example 6: Empty content', async () => {
     const emptyStream = Readable.from([''])
     const emptyResult = await parseStream(emptyStream)
-    expect(emptyResult.body.children.length).toBe(0)
+    expect(emptyResult.body.value.length).toBe(0)
   })
 
   it('example 6: Whitespace only content', async () => {
     const whitespaceStream = Readable.from(['   \n\n\t  '])
     const whitespaceResult = await parseStream(whitespaceStream)
-    expect(whitespaceResult.body.children.length).toBe(0)
+    expect(whitespaceResult.body.value.length).toBe(0)
   })
 
   it('example 6: Just frontmatter', async () => {
     const frontmatterStream = Readable.from(['---\ntitle: Test\n---\n'])
     const frontmatterResult = await parseStream(frontmatterStream)
     expect(frontmatterResult.data).toEqual({ title: 'Test' })
-    expect(frontmatterResult.body.children.length).toBe(0)
+    expect(frontmatterResult.body.value.length).toBe(0)
   })
 })

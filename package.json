@@ -26,7 +26,8 @@
     "test": "vitest run",
     "prepack": "unbuild",
     "lint": "eslint .",
-    "verify": "pnpm run lint && pnpm run test"
+    "typecheck": "tsc --noEmit",
+    "verify": "pnpm run lint && pnpm run test && pnpm run typecheck"
   },
   "peerDependencies": {
     "vue": "^3.5.27"
@@ -35,6 +36,8 @@
     "github-slugger": "^2.0.0",
     "markdown-it": "^14.1.0",
     "markdown-it-mdc": "^0.2.6",
+    "markdown-it-sub": "^2.0.0",
+    "minimark": "https://pkg.pr.new/minimark@1484201",
     "remark-mdc": "^3.10.0",
     "scule": "^1.3.0",
     "unified": "^11.0.5"

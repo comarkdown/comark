@@ -1,14 +1,14 @@
 {
   "compilerOptions": {
-    "target": "es2018",
+    "target": "es2024",
     "lib": ["esnext"],
     "module": "esnext",
-    "moduleResolution": "node",
-    "resolveJsonModule": true,
+    "moduleResolution": "bundler",
     "strict": true,
     "strictNullChecks": true,
     "esModuleInterop": true,
     "skipDefaultLibCheck": true,
     "skipLibCheck": true
-  }
+  },
+  "exclude": ["playground"]
 }

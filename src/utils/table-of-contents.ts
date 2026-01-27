@@ -1,5 +1,4 @@
-import type { MDCElement, MDCNode, MDCRoot } from '../types/tree'
-import { flattenNode, flattenNodeText } from './tree'
+import type { MinimarkNode, MinimarkTree } from 'minimark'
 
 export interface TocLink {
   id: string
@@ -17,12 +16,36 @@ export interface Toc {
 
 const TOC_TAGS = ['h2', 'h3', 'h4', 'h5', 'h6']
 
-const TOC_TAGS_DEPTH = TOC_TAGS.reduce((tags: any, tag: string) => {
+const TOC_TAGS_DEPTH = TOC_TAGS.reduce((tags: Record<string, number>, tag: string) => {
   tags[tag] = Number(tag.charAt(tag.length - 1))
   return tags
 }, {})
 
-const getHeaderDepth = (node: MDCElement): number => TOC_TAGS_DEPTH[node.tag as string]
+function getTag(node: MinimarkNode): string | null {
+  if (Array.isArray(node) && node.length >= 1) {
+    return node[0] as string
+  }
+  return null
+}
+
+function getProps(node: MinimarkNode): Record<string, any> {
+  if (Array.isArray(node) && node.length >= 2 && typeof node[1] === 'object' && !Array.isArray(node[1])) {
+    return node[1] as Record<string, any>
+  }
+  return {}
+}
+
+function getChildren(node: MinimarkNode): MinimarkNode[] {
+  if (Array.isArray(node) && node.length > 2) {
+    return node.slice(2) as MinimarkNode[]
+  }
+  return []
+}
+
+function getHeaderDepth(node: MinimarkNode): number {
+  const tag = getTag(node)
+  return tag ? TOC_TAGS_DEPTH[tag] || 0 : 0
+}
 
 function getTocTags(depth: number): string[] {
   if (depth < 1 || depth > 5) {
@@ -31,6 +54,36 @@ function getTocTags(depth: number): string[] {
   }
 
   return TOC_TAGS.slice(0, depth)
+}
+
+function flattenNodeText(node: MinimarkNode): string {
+  if (typeof node === 'string') {
+    return node
+  }
+  if (Array.isArray(node)) {
+    return getChildren(node).reduce((text: string, child: MinimarkNode) => {
+      return text + flattenNodeText(child)
+    }, '')
+  }
+  return ''
+}
+
+function flattenNodes(nodes: MinimarkNode[], maxDepth: number, currentDepth: number = 0): MinimarkNode[] {
+  if (currentDepth >= maxDepth) {
+    return nodes
+  }
+
+  const result: MinimarkNode[] = []
+  for (const node of nodes) {
+    result.push(node)
+    if (Array.isArray(node)) {
+      const children = getChildren(node)
+      if (children.length > 0) {
+        result.push(...flattenNodes(children, maxDepth, currentDepth + 1))
+      }
+    }
+  }
+  return result
 }
 
 function nestHeaders(headers: TocLink[]): TocLink[] {
@@ -60,17 +113,22 @@ function nestHeaders(headers: TocLink[]): TocLink[] {
   return toc
 }
 
-export function generateFlatToc(body: MDCNode, options: Toc): Toc {
+export function generateFlatToc(body: MinimarkTree, options: Toc): Toc {
   const { searchDepth, depth, title = '' } = options
   const tags = getTocTags(depth)
 
-  const headers = flattenNode(body, searchDepth).filter((node: MDCNode) => tags.includes((node as MDCElement).tag || ''))
+  const allNodes = flattenNodes(body.value, searchDepth)
+  const headers = allNodes.filter((node: MinimarkNode) => {
+    const tag = getTag(node)
+    return tag !== null && tags.includes(tag)
+  })
 
   const links: TocLink[] = headers.map(node => ({
-    id: (node as MDCElement).props?.id,
-    depth: getHeaderDepth(node as MDCElement),
+    id: getProps(node).id || '',
+    depth: getHeaderDepth(node),
     text: flattenNodeText(node),
   }))
+
   return {
     title,
     searchDepth,
@@ -79,8 +137,8 @@ export function generateFlatToc(body: MDCNode, options: Toc): Toc {
   }
 }
 
-export function generateToc(body: MDCElement | MDCRoot, options: Toc): Toc {
-  const toc = generateFlatToc(body as MDCElement, options)
+export function generateToc(body: MinimarkTree, options: Toc): Toc {
+  const toc = generateFlatToc(body, options)
   toc.links = nestHeaders(toc.links)
   return toc
 }

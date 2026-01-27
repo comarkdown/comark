@@ -1,5 +1,5 @@
 import type { PropType, VNode } from 'vue'
-import type { MDCElement, MDCNode, MDCRoot } from '../../types/tree'
+import type { MinimarkNode, MinimarkTree } from 'minimark'
 import { defineAsyncComponent, defineComponent, h, onErrorCaptured, ref } from 'vue'
 
 // Cache for dynamically resolved components
@@ -40,48 +40,77 @@ const defaultTagMap: Record<string, string> = {
 }
 
 /**
+ * Helper to get tag from a MinimarkNode
+ */
+function getTag(node: MinimarkNode): string | null {
+  if (Array.isArray(node) && node.length >= 1) {
+    return node[0] as string
+  }
+  return null
+}
+
+/**
+ * Helper to get props from a MinimarkNode
+ */
+function getProps(node: MinimarkNode): Record<string, any> {
+  if (Array.isArray(node) && node.length >= 2) {
+    return (node[1] as Record<string, any>) || {}
+  }
+  return {}
+}
+
+/**
+ * Helper to get children from a MinimarkNode
+ */
+function getChildren(node: MinimarkNode): MinimarkNode[] {
+  if (Array.isArray(node) && node.length > 2) {
+    return node.slice(2) as MinimarkNode[]
+  }
+  return []
+}
+
+/**
  * Render a single MDC node to Vue VNode
  */
 function renderNode(
-  node: MDCNode,
+  node: MinimarkNode,
   components: Record<string, any> = {},
   key?: string | number,
   componentsManifest?: (name: string) => Promise<any>,
 ): VNode | string | null {
-  // Handle text nodes
-  if (node.type === 'text') {
-    return node.value
+  // Handle text nodes (strings)
+  if (typeof node === 'string') {
+    return node
   }
 
-  // Handle comment nodes (render as HTML comments)
-  if (node.type === 'comment') {
-    return h('template', null, `<!-- ${node.value} -->`)
-  }
+  // Handle element nodes (arrays)
+  if (Array.isArray(node)) {
+    const tag = getTag(node)
+    if (!tag) return null
 
-  // Handle element nodes
-  if (node.type === 'element') {
-    const element = node as MDCElement
+    const nodeProps = getProps(node)
+    const children = getChildren(node)
 
     // Check if there's a custom component for this tag
-    let customComponent = components[element.tag]
+    let customComponent = components[tag]
 
     // If not in components map and manifest is provided, try dynamic resolution
-    if (!customComponent && componentsManifest && !defaultTagMap[element.tag]) {
+    if (!customComponent && componentsManifest && !defaultTagMap[tag]) {
       // Check cache first to avoid creating duplicate async components
-      const cacheKey = element.tag
+      const cacheKey = tag
       if (!asyncComponentCache.has(cacheKey)) {
         asyncComponentCache.set(
           cacheKey,
-          defineAsyncComponent(() => componentsManifest(element.tag)),
+          defineAsyncComponent(() => componentsManifest(tag)),
         )
       }
       customComponent = asyncComponentCache.get(cacheKey)
     }
 
-    const component = customComponent || defaultTagMap[element.tag] || element.tag
+    const component = customComponent || defaultTagMap[tag] || tag
 
     // Prepare props
-    const props: Record<string, any> = { ...(element.props || {}) }
+    const props: Record<string, any> = { ...nodeProps }
     props.__node = node
 
     // Add key if provided
@@ -90,7 +119,7 @@ function renderNode(
     }
 
     // Handle self-closing tags
-    if (['hr', 'br', 'img'].includes(element.tag)) {
+    if (['hr', 'br', 'img'].includes(tag)) {
       return h(component, props)
     }
 
@@ -98,28 +127,42 @@ function renderNode(
     const slots: Record<string, () => (VNode | string)[]> = {}
     const regularChildren: (VNode | string)[] = []
 
-    for (let i = 0; i < element.children.length; i++) {
-      const child = element.children[i]
-      if (!child)
+    for (let i = 0; i < children.length; i++) {
+      const child = children[i]
+      if (child === undefined || child === null)
         continue
 
-      // Check if this is a slot template
-      if (child.type === 'element' && child.tag === 'template' && child.props) {
-        // Find the slot name from props (e.g., #header, #footer)
-        const slotNameProp = Object.keys(child.props).find(key => key.startsWith('#'))
-        if (slotNameProp) {
-          const slotName = slotNameProp.substring(1) // Remove # prefix
-          const slotElement = child as MDCElement
-          slots[slotName] = () => slotElement.children
-            .map((slotChild: MDCNode, idx: number) => renderNode(slotChild, components, idx, componentsManifest))
+      // Check if this is a slot template (array with tag 'template')
+      const childTag = getTag(child)
+      const childProps = getProps(child)
+
+      if (childTag === 'template' && childProps) {
+        // Find the slot name from props
+        // Support both { name: 'title' } and { '#title': '' } formats
+        let slotName: string | undefined
+
+        if (childProps.name) {
+          slotName = childProps.name
+        }
+        else {
+          const slotNameProp = Object.keys(childProps).find(k => k.startsWith('#'))
+          if (slotNameProp) {
+            slotName = slotNameProp.substring(1) // Remove # prefix
+          }
+        }
+
+        if (slotName) {
+          const slotChildren = getChildren(child)
+          slots[slotName] = () => slotChildren
+            .map((slotChild: MinimarkNode, idx: number) => renderNode(slotChild, components, idx, componentsManifest))
             .filter((slotChild): slotChild is VNode | string => slotChild !== null)
+          continue
         }
       }
-      else {
-        const rendered = renderNode(child, components, i, componentsManifest)
-        if (rendered !== null) {
-          regularChildren.push(rendered)
-        }
+
+      const rendered = renderNode(child, components, i, componentsManifest)
+      if (rendered !== null) {
+        regularChildren.push(rendered)
       }
     }
 
@@ -143,7 +186,7 @@ function renderNode(
 /**
  * MDCRenderer component
  *
- * Renders an MDC AST tree to Vue components/HTML.
+ * Renders a Minimark tree to Vue components/HTML.
  * Supports custom component mapping for element tags.
  *
  * @example
@@ -168,10 +211,10 @@ export const MDCRenderer = defineComponent({
 
   props: {
     /**
-     * The MDC AST root to render
+     * The Minimark tree to render
      */
     body: {
-      type: Object as PropType<MDCRoot>,
+      type: Object as PropType<MinimarkTree>,
       required: true,
     },
 
@@ -204,7 +247,7 @@ export const MDCRenderer = defineComponent({
       const componentName = (instance?.$?.type as any)?.name || (instance as any)?.type?.name || 'unknown'
 
       // Log error in development
-      if (import.meta.env?.DEV) {
+      if (import.meta.dev) {
         console.warn(`[MDCRenderer] Error in component "${componentName}":`, err)
         console.warn('Error info:', info)
       }
@@ -217,8 +260,9 @@ export const MDCRenderer = defineComponent({
     })
 
     return () => {
-      // Render all children of the root node
-      const children = props.body.children
+      // Render all nodes from the tree value
+      const nodes = props.body.value || []
+      const children = nodes
         .map((node, index) => renderNode(node, props.components, index, props.componentsManifest))
         .filter((child): child is VNode | string => child !== null)
 

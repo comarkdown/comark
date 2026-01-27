@@ -1,7 +1,7 @@
-import type { MDCNode, MDCRoot, NodePosition } from '../../src/types/tree'
+import type { Root, RootContent, MDCNode, MDCRoot, NodePosition } from '@nuxtjs/mdc'
 import Slugger from 'github-slugger'
 import { toString } from 'hast-util-to-string'
-import { validateProps } from '../../src/security/props'
+import { validateProps } from '../../src/utils/props-validation'
 
 export interface CompilerOptions {
   keepPosition?: boolean
@@ -86,7 +86,7 @@ export function mdcCompiler(this: any, options: CompilerOptions = {}) {
 
       // To match with markdown-it-mdc plugin
       if (node.tagName === 'pre') {
-        if (children[0]?.tag === 'code' && children[0]?.props?.class) {
+        if (children[0]?.type === 'element' && children[0]?.tag === 'code' && children[0]?.props?.class) {
           props.class = children[0].props.class
         }
       }

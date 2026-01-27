@@ -430,7 +430,7 @@ async function copyMarkdown() {
                 class="text-sm"
               >
                 <ContentRenderer
-                  v-if="streamState.body && streamState.body.children && streamState.body.children.length > 0"
+                  v-if="streamState.body && streamState.body.value && streamState.body.value.length > 0"
                   :value="{ body: streamState.body }"
                   class="prose prose-sm dark:prose-invert max-w-none"
                 />

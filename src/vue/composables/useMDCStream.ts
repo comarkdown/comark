@@ -29,7 +29,7 @@ import { parseStreamIncremental, parseStreamIncrementalWithMarkdownIt } from '..
  */
 export function useMDCStream(options?: MDCStreamOptions) {
   const state = shallowRef<MDCStreamState>({
-    body: { type: 'root', children: [] },
+    body: { type: 'minimark', value: [] },
     data: {},
     isComplete: false,
   })
@@ -98,7 +98,7 @@ export function useMDCStream(options?: MDCStreamOptions) {
    */
   function reset() {
     state.value = {
-      body: { type: 'root', children: [] },
+      body: { type: 'minimark', value: [] },
       data: {},
       isComplete: false,
     }

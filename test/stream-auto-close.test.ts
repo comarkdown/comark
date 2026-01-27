@@ -1,6 +1,12 @@
 import { Readable } from 'node:stream'
 import { describe, expect, it } from 'vitest'
 import { parseStreamIncremental } from '../src/stream'
+import type { MinimarkNode } from 'minimark'
+
+// Helper to check if a node is an element with a specific tag
+function isElement(node: MinimarkNode, tag: string): boolean {
+  return Array.isArray(node) && node[0] === tag
+}
 
 describe('stream with Auto-Close - Remark Parser', () => {
   it('should auto-close unclosed bold during streaming', async () => {
@@ -18,11 +24,11 @@ describe('stream with Auto-Close - Remark Parser', () => {
 
     // First chunk should parse with auto-closed bold
     expect(results[0].isComplete).toBe(false)
-    expect(results[0].body.children.length).toBeGreaterThan(0)
+    expect(results[0].body.value.length).toBeGreaterThan(0)
 
     // Final result should have complete bold text
     expect(results[results.length - 1].isComplete).toBe(true)
-    expect(results[results.length - 1].body.children.length).toBeGreaterThan(0)
+    expect(results[results.length - 1].body.value.length).toBeGreaterThan(0)
   })
 
   it('should auto-close unclosed component during streaming', async () => {
@@ -41,11 +47,11 @@ describe('stream with Auto-Close - Remark Parser', () => {
 
     // First chunk (component opening) should be auto-closed and parseable
     expect(results[0].isComplete).toBe(false)
-    expect(results[0].body.children.length).toBeGreaterThan(0)
+    expect(results[0].body.value.length).toBeGreaterThan(0)
 
     // Second chunk (component content) should still be auto-closed
     expect(results[1].isComplete).toBe(false)
-    expect(results[1].body.children.length).toBeGreaterThan(0)
+    expect(results[1].body.value.length).toBeGreaterThan(0)
 
     // Final result with explicit closing should work
     expect(results[results.length - 1].isComplete).toBe(true)
@@ -70,7 +76,7 @@ describe('stream with Auto-Close - Remark Parser', () => {
     // Each intermediate result should be parseable
     for (let i = 0; i < results.length - 1; i++) {
       expect(results[i].isComplete).toBe(false)
-      expect(results[i].body.type).toBe('root')
+      expect(results[i].body.type).toBe('minimark')
     }
 
     // Final result
@@ -94,7 +100,7 @@ describe('stream with Auto-Close - Remark Parser', () => {
 
     // Second chunk has both unclosed component and unclosed bold
     expect(results[1].isComplete).toBe(false)
-    expect(results[1].body.type).toBe('root')
+    expect(results[1].body.type).toBe('minimark')
 
     // Should not throw errors at any stage
     expect(results.length).toBeGreaterThan(0)
@@ -117,11 +123,11 @@ describe('stream with Auto-Close - Markdown-it Parser', () => {
 
     // First chunk should parse with auto-closed bold
     expect(results[0].isComplete).toBe(false)
-    expect(results[0].body.children.length).toBeGreaterThan(0)
+    expect(results[0].body.value.length).toBeGreaterThan(0)
 
     // Final result should have complete bold text
     expect(results[results.length - 1].isComplete).toBe(true)
-    expect(results[results.length - 1].body.children.length).toBeGreaterThan(0)
+    expect(results[results.length - 1].body.value.length).toBeGreaterThan(0)
   })
 
   it('should auto-close unclosed component during streaming', async () => {
@@ -140,12 +146,12 @@ describe('stream with Auto-Close - Markdown-it Parser', () => {
 
     // First chunk (component opening) should be auto-closed and parseable
     expect(results[0].isComplete).toBe(false)
-    expect(results[0].body.children.length).toBeGreaterThan(0)
+    expect(results[0].body.value.length).toBeGreaterThan(0)
 
     // Each result should have a valid alert component
     for (const result of results) {
-      expect(result.body.type).toBe('root')
-      const hasAlert = result.body.children.some((child: any) => child.tag === 'alert')
+      expect(result.body.type).toBe('minimark')
+      const hasAlert = result.body.value.some((child: MinimarkNode) => isElement(child, 'alert'))
       expect(hasAlert).toBe(true)
     }
 
@@ -172,8 +178,8 @@ describe('stream with Auto-Close - Markdown-it Parser', () => {
       results.push(result)
 
       // Every intermediate result should be parseable
-      expect(result.body.type).toBe('root')
-      expect(result.body.children.length).toBeGreaterThan(0)
+      expect(result.body.type).toBe('minimark')
+      expect(result.body.value.length).toBeGreaterThan(0)
     }
 
     // Final result should be complete
@@ -181,15 +187,15 @@ describe('stream with Auto-Close - Markdown-it Parser', () => {
     expect(final.isComplete).toBe(true)
 
     // Should have heading
-    expect(final.body.children.some((child: any) => child.tag === 'h1')).toBe(true)
+    expect(final.body.value.some((child: MinimarkNode) => isElement(child, 'h1'))).toBe(true)
 
     // Should have alert component
-    expect(final.body.children.some((child: any) => child.tag === 'alert')).toBe(true)
+    expect(final.body.value.some((child: MinimarkNode) => isElement(child, 'alert'))).toBe(true)
   })
 
   it('should handle small chunks with auto-close', async () => {
     const content = '::card\n**Bold text**\n::'
-    const chunks = []
+    const chunks: string[] = []
 
     // Split into very small chunks (5 chars each)
     for (let i = 0; i < content.length; i += 5) {
@@ -202,7 +208,7 @@ describe('stream with Auto-Close - Markdown-it Parser', () => {
     for await (const result of parseStreamIncremental(stream)) {
       results.push(result)
       // Should not throw errors
-      expect(result.body.type).toBe('root')
+      expect(result.body.type).toBe('minimark')
     }
 
     // Should have processed all chunks
@@ -227,7 +233,7 @@ describe('stream with Auto-Close - Markdown-it Parser', () => {
       results.push(result)
 
       // Each result should be parseable
-      expect(result.body.type).toBe('root')
+      expect(result.body.type).toBe('minimark')
     }
 
     // Final result should be complete with all nesting resolved
@@ -256,7 +262,7 @@ describe('stream Auto-Close Edge Cases', () => {
 
     for await (const result of parseStreamIncremental(stream)) {
       results.push(result)
-      expect(result.body.type).toBe('root')
+      expect(result.body.type).toBe('minimark')
     }
 
     expect(results[results.length - 1].isComplete).toBe(true)

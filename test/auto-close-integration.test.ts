@@ -7,13 +7,13 @@ describe('autoCloseMarkdown - Integration with parser', () => {
     const closed = autoCloseMarkdown(input)
     const result = parse(closed)
 
-    expect(result.body.type).toBe('root')
-    expect(result.body.children.length).toBeGreaterThan(0)
+    expect(result.body.type).toBe('minimark')
+    expect(result.body.value.length).toBeGreaterThan(0)
 
     // Should have a paragraph with strong element
-    const paragraph = result.body.children[0]
-    expect(paragraph.type).toBe('element')
-    expect(paragraph.tag).toBe('p')
+    const paragraph = result.body.value[0]
+    expect(paragraph[0]).toBe('p')
+    expect(paragraph[2][0]).toBe('strong')
   })
 
   it('should parse auto-closed component correctly', () => {
@@ -21,13 +21,12 @@ describe('autoCloseMarkdown - Integration with parser', () => {
     const closed = autoCloseMarkdown(input)
     const result = parse(closed)
 
-    expect(result.body.type).toBe('root')
-    expect(result.body.children.length).toBeGreaterThan(0)
+    expect(result.body.type).toBe('minimark')
+    expect(result.body.value.length).toBeGreaterThan(0)
 
     // Should have an alert component
-    const alert = result.body.children[0]
-    expect(alert.type).toBe('element')
-    expect(alert.tag).toBe('alert')
+    const alert = result.body.value[0]
+    expect(alert[0]).toBe('alert')
   })
 
   it('should handle streaming scenario - accumulating chunks', () => {
@@ -51,12 +50,12 @@ describe('autoCloseMarkdown - Integration with parser', () => {
     }
 
     // Check first chunk - just heading
-    expect(results[0].parsed.body.children.length).toBeGreaterThan(0)
-    expect(results[0].parsed.body.children[0].tag).toBe('h1')
+    expect(results[0].parsed.body.value.length).toBeGreaterThan(0)
+    expect(results[0].parsed.body.value[0][0]).toBe('h1')
 
     // Check last chunk - fully formed
     const final = results[results.length - 1]
-    expect(final.parsed.body.children.some((child: any) => child.tag === 'card')).toBe(true)
+    expect(final.parsed.body.value.some((child: any) => child[0] === 'card')).toBe(true)
   })
 
   it('should handle nested components in streaming', () => {
@@ -76,7 +75,7 @@ describe('autoCloseMarkdown - Integration with parser', () => {
       const parsed = parse(closed)
 
       // Should always parse successfully
-      expect(parsed.body.type).toBe('root')
+      expect(parsed.body.type).toBe('minimark')
     }
   })
 
@@ -111,14 +110,14 @@ Some text with \`code`
     const result = parse(closed)
 
     // Should parse without errors
-    expect(result.body.type).toBe('root')
-    expect(result.body.children.length).toBeGreaterThan(0)
+    expect(result.body.type).toBe('minimark')
+    expect(result.body.value.length).toBeGreaterThan(0)
 
     // Should have heading
-    expect(result.body.children.some((child: any) => child.tag === 'h1')).toBe(true)
+    expect(result.body.value.some((child: any) => child[0] === 'h1')).toBe(true)
 
     // Should have alert component
-    expect(result.body.children.some((child: any) => child.tag === 'alert')).toBe(true)
+    expect(result.body.value.some((child: any) => child[0] === 'alert')).toBe(true)
   })
 
   it('should not modify already valid markdown', () => {

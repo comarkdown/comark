@@ -1,6 +1,19 @@
 import { describe, expect, it } from 'vitest'
 import { parse } from '../src/index'
-import type { MDCElement } from '../src/types/tree'
+import type { MinimarkNode } from 'minimark'
+
+// Helper to check if a node is an element with a specific tag
+function isElement(node: MinimarkNode, tag: string): boolean {
+  return Array.isArray(node) && node[0] === tag
+}
+
+// Helper to get children of an element (elements after tag and props)
+function getChildren(node: MinimarkNode): MinimarkNode[] {
+  if (Array.isArray(node) && node.length > 2) {
+    return node.slice(2) as MinimarkNode[]
+  }
+  return []
+}
 
 describe('auto-unwrap integration', () => {
   it('should automatically unwrap single paragraph by default', () => {
@@ -9,20 +22,16 @@ This is **bold** text
 ::`
 
     const result = parse(content)
-    const alert = result.body.children[0] as MDCElement
+    const alert = result.body.value[0] as MinimarkNode
 
-    expect(alert).toMatchObject({
-      type: 'element',
-      tag: 'alert',
-    })
+    expect(alert[0]).toBe('alert')
 
     // Paragraph should be unwrapped - content should be direct children
-    expect(alert.children.length).toBeGreaterThan(0)
+    const children = getChildren(alert)
+    expect(children.length).toBeGreaterThan(0)
     // Should have text and strong elements as direct children (no wrapping p)
-    const hasDirectText = alert.children.some(child => child.type === 'text')
-    const hasDirectStrong = alert.children.some(
-      child => child.type === 'element' && child.tag === 'strong',
-    )
+    const hasDirectText = children.some(child => typeof child === 'string')
+    const hasDirectStrong = children.some(child => isElement(child, 'strong'))
     expect(hasDirectText).toBe(true)
     expect(hasDirectStrong).toBe(true)
   })
@@ -33,19 +42,14 @@ This is **bold** text
 ::`
 
     const result = parse(content, { autoUnwrap: false })
-    const alert = result.body.children[0] as MDCElement
+    const alert = result.body.value[0] as MinimarkNode
 
-    expect(alert).toMatchObject({
-      type: 'element',
-      tag: 'alert',
-    })
+    expect(alert[0]).toBe('alert')
 
     // Paragraph should remain
-    expect(alert.children).toHaveLength(1)
-    expect(alert.children[0]).toMatchObject({
-      type: 'element',
-      tag: 'p',
-    })
+    const children = getChildren(alert)
+    expect(children).toHaveLength(1)
+    expect(isElement(children[0], 'p')).toBe(true)
   })
 
   it('should not unwrap when there are multiple paragraphs', () => {
@@ -56,17 +60,13 @@ Second paragraph
 ::`
 
     const result = parse(content)
-    const card = result.body.children[0] as MDCElement
+    const card = result.body.value[0] as MinimarkNode
 
-    expect(card).toMatchObject({
-      type: 'element',
-      tag: 'card',
-    })
+    expect(card[0]).toBe('card')
 
     // Should have two paragraphs (not unwrapped)
-    const paragraphs = card.children.filter(
-      child => child.type === 'element' && child.tag === 'p',
-    )
+    const children = getChildren(card)
+    const paragraphs = children.filter(child => isElement(child, 'p'))
     expect(paragraphs).toHaveLength(2)
   })
 
@@ -79,20 +79,14 @@ Second paragraph
 ::`
 
     const result = parse(content)
-    const warning = result.body.children[0] as MDCElement
+    const warning = result.body.value[0] as MinimarkNode
 
-    expect(warning).toMatchObject({
-      type: 'element',
-      tag: 'warning',
-    })
+    expect(warning[0]).toBe('warning')
 
     // Should have both paragraph and list (not unwrapped)
-    const hasParagraph = warning.children.some(
-      child => child.type === 'element' && child.tag === 'p',
-    )
-    const hasList = warning.children.some(
-      child => child.type === 'element' && child.tag === 'ul',
-    )
+    const children = getChildren(warning)
+    const hasParagraph = children.some(child => isElement(child, 'p'))
+    const hasList = children.some(child => isElement(child, 'ul'))
 
     expect(hasParagraph).toBe(true)
     expect(hasList).toBe(true)
@@ -106,17 +100,13 @@ console.log('hello')
 ::`
 
     const result = parse(content)
-    const tip = result.body.children[0] as MDCElement
+    const tip = result.body.value[0] as MinimarkNode
 
-    expect(tip).toMatchObject({
-      type: 'element',
-      tag: 'tip',
-    })
+    expect(tip[0]).toBe('tip')
 
     // Code block (pre) should be preserved, not unwrapped
-    const hasPreElement = tip.children.some(
-      child => child.type === 'element' && child.tag === 'pre',
-    )
+    const children = getChildren(tip)
+    const hasPreElement = children.some(child => isElement(child, 'pre'))
     expect(hasPreElement).toBe(true)
   })
 
@@ -128,17 +118,13 @@ console.log('hello')
 ::`
 
     const result = parse(content)
-    const info = result.body.children[0] as MDCElement
+    const info = result.body.value[0] as MinimarkNode
 
-    expect(info).toMatchObject({
-      type: 'element',
-      tag: 'info',
-    })
+    expect(info[0]).toBe('info')
 
     // Table should be preserved, not unwrapped
-    const hasTable = info.children.some(
-      child => child.type === 'element' && child.tag === 'table',
-    )
+    const children = getChildren(info)
+    const hasTable = children.some(child => isElement(child, 'table'))
     expect(hasTable).toBe(true)
   })
 
@@ -151,24 +137,22 @@ console.log('hello')
 ::`
 
       const resultWith = parse(content)
-      const containerWith = resultWith.body.children[0] as MDCElement
+      const containerWith = resultWith.body.value[0] as MinimarkNode
 
-      expect(containerWith.tag).toBe(type)
+      expect(containerWith[0]).toBe(type)
 
       // Should have unwrapped (no paragraph wrapper)
-      const hasDirectStrong = containerWith.children.some(
-        child => child.type === 'element' && child.tag === 'strong',
-      )
+      const childrenWith = getChildren(containerWith)
+      const hasDirectStrong = childrenWith.some(child => isElement(child, 'strong'))
       expect(hasDirectStrong).toBe(true)
 
       // Compare with disabled
       const resultWithout = parse(content, { autoUnwrap: false })
-      const containerWithout = resultWithout.body.children[0] as MDCElement
+      const containerWithout = resultWithout.body.value[0] as MinimarkNode
 
       // Should have paragraph wrapper when disabled
-      const hasParagraph = containerWithout.children.some(
-        child => child.type === 'element' && child.tag === 'p',
-      )
+      const childrenWithout = getChildren(containerWithout)
+      const hasParagraph = childrenWithout.some(child => isElement(child, 'p'))
       expect(hasParagraph).toBe(true)
     }
   })

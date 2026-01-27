@@ -31,15 +31,15 @@ name: John Doe
         results.push(result)
 
         // Check if we have a component
-        const hasComponent = result.body.children.some((c: any) => c.tag === 'required-prop-test')
+        const hasComponent = result.body.value.some((c: any) => c[0] === 'required-prop-test')
 
         if (hasComponent) {
-          const component = result.body.children.find((c: any) => c.tag === 'required-prop-test')
+          const component = result.body.value.find((c: any) => c[0] === 'required-prop-test')
           // console.log(`Chunk ${results.length}: component found with props:`, component.props)
 
           // Early chunks might not have the props yet, causing errors
           // Our error handler should catch these gracefully
-          const hasNameProp = component.props && 'name' in component.props
+          const hasNameProp = component?.[1] && 'name' in (component?.[1] as Record<string, any>)
 
           if (!hasNameProp) {
             // console.log('  → Component missing required prop (expected during early streaming)')
@@ -53,9 +53,9 @@ name: John Doe
       const final = results[results.length - 1]
       expect(final.isComplete).toBe(true)
 
-      const finalComponent = final.body.children.find((c: any) => c.tag === 'required-prop-test')
+      const finalComponent = final.body.value.find((c: any) => c[0] === 'required-prop-test')
       expect(finalComponent).toBeDefined()
-      expect(finalComponent.props).toHaveProperty('name', 'John Doe')
+      expect(finalComponent?.[1]).toHaveProperty('name', 'John Doe')
 
       // console.log('Final component props:', finalComponent.props)
       // console.log('Warnings logged:', warnSpy.mock.calls.length)
@@ -94,16 +94,16 @@ name: Alice
     expect(final.isComplete).toBe(true)
 
     // Check we have all content
-    const hasH1 = final.body.children.some((c: any) => c.tag === 'h1')
-    const hasComponent = final.body.children.some((c: any) => c.tag === 'required-prop-test')
-    const hasH2 = final.body.children.some((c: any) => c.tag === 'h2')
+    const hasH1 = final.body.value.some((c: any) => c[0] === 'h1')
+    const hasComponent = final.body.value.some((c: any) => c[0] === 'required-prop-test')
+    const hasH2 = final.body.value.some((c: any) => c[0] === 'h2')
 
     expect(hasH1).toBe(true)
     expect(hasComponent).toBe(true)
     expect(hasH2).toBe(true)
 
     // Component should have correct props
-    const component = final.body.children.find((c: any) => c.tag === 'required-prop-test')
-    expect(component.props).toHaveProperty('name', 'Alice')
+    const component = final.body.value.find((c: any) => c[0] === 'required-prop-test')
+    expect(component?.[1]).toHaveProperty('name', 'Alice')
   })
 })

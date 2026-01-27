@@ -1,6 +1,15 @@
 import { Readable } from 'node:stream'
 import { describe, expect, it } from 'vitest'
 import { parseStream } from '../src/stream'
+import type { MinimarkNode } from 'minimark'
+
+// Helper to get tag from a MinimarkNode
+function getTag(node: MinimarkNode): string | null {
+  if (Array.isArray(node) && node.length >= 1) {
+    return node[0] as string
+  }
+  return null
+}
 
 describe('stream parsing', () => {
   describe('parseStream with Node.js Readable', () => {
@@ -11,10 +20,10 @@ describe('stream parsing', () => {
       const result = await parseStream(stream)
 
       expect(result.body).toBeDefined()
-      expect(result.body.type).toBe('root')
-      expect(result.body.children).toHaveLength(2)
-      expect(result.body.children[0].type).toBe('element')
-      expect(result.body.children[0].tag).toBe('h1')
+      expect(result.body.type).toBe('minimark')
+      expect(result.body.value).toHaveLength(2)
+      expect(Array.isArray(result.body.value[0])).toBe(true)
+      expect(getTag(result.body.value[0])).toBe('h1')
     })
 
     it('should parse content with frontmatter from stream', async () => {
@@ -33,7 +42,7 @@ This is the body.`
         title: 'Test Title',
         author: 'John Doe',
       })
-      expect(result.body.children[0].tag).toBe('h1')
+      expect(getTag(result.body.value[0])).toBe('h1')
     })
 
     it('should handle chunked streams', async () => {
@@ -42,8 +51,8 @@ This is the body.`
 
       const result = await parseStream(stream)
 
-      expect(result.body.type).toBe('root')
-      expect(result.body.children).toHaveLength(2)
+      expect(result.body.type).toBe('minimark')
+      expect(result.body.value).toHaveLength(2)
     })
 
     it('should handle empty streams', async () => {
@@ -51,8 +60,8 @@ This is the body.`
 
       const result = await parseStream(stream)
 
-      expect(result.body.type).toBe('root')
-      expect(result.body.children).toHaveLength(0)
+      expect(result.body.type).toBe('minimark')
+      expect(result.body.value).toHaveLength(0)
     })
 
     it('should parse MDC components from stream', async () => {
@@ -61,13 +70,13 @@ This is the body.`
 
       const result = await parseStream(stream)
 
-      expect(result.body.children).toHaveLength(1)
-      expect(result.body.children[0].type).toBe('element')
-      expect(result.body.children[0].tag).toBe('alert')
+      expect(result.body.value).toHaveLength(1)
+      expect(Array.isArray(result.body.value[0])).toBe(true)
+      expect(getTag(result.body.value[0])).toBe('alert')
     })
   })
 
-  describe('parseStream with Node.js Readable', () => {
+  describe('parseStream with Node.js Readable (duplicate)', () => {
     it('should parse simple markdown from stream', async () => {
       const content = '# Hello World\n\nThis is a paragraph.'
       const stream = Readable.from([content])
@@ -75,10 +84,10 @@ This is the body.`
       const result = await parseStream(stream)
 
       expect(result.body).toBeDefined()
-      expect(result.body.type).toBe('root')
-      expect(result.body.children).toHaveLength(2)
-      expect(result.body.children[0].type).toBe('element')
-      expect(result.body.children[0].tag).toBe('h1')
+      expect(result.body.type).toBe('minimark')
+      expect(result.body.value).toHaveLength(2)
+      expect(Array.isArray(result.body.value[0])).toBe(true)
+      expect(getTag(result.body.value[0])).toBe('h1')
     })
 
     it('should parse content with frontmatter from stream', async () => {
@@ -97,7 +106,7 @@ This is the body.`
         title: 'Test Title',
         author: 'John Doe',
       })
-      expect(result.body.children[0].tag).toBe('h1')
+      expect(getTag(result.body.value[0])).toBe('h1')
     })
 
     it('should handle chunked streams', async () => {
@@ -106,8 +115,8 @@ This is the body.`
 
       const result = await parseStream(stream)
 
-      expect(result.body.type).toBe('root')
-      expect(result.body.children).toHaveLength(2)
+      expect(result.body.type).toBe('minimark')
+      expect(result.body.value).toHaveLength(2)
     })
   })
 
@@ -146,10 +155,10 @@ This is the body.`
       const result = await parseStream(stream)
 
       expect(result.body).toBeDefined()
-      expect(result.body.type).toBe('root')
-      expect(result.body.children).toHaveLength(2)
-      expect(result.body.children[0].type).toBe('element')
-      expect(result.body.children[0].tag).toBe('h1')
+      expect(result.body.type).toBe('minimark')
+      expect(result.body.value).toHaveLength(2)
+      expect(Array.isArray(result.body.value[0])).toBe(true)
+      expect(getTag(result.body.value[0])).toBe('h1')
     })
 
     it('should parse content with frontmatter from web stream', async () => {
@@ -164,7 +173,7 @@ title: Test Title
       expect(result.data).toEqual({
         title: 'Test Title',
       })
-      expect(result.body.children[0].tag).toBe('h1')
+      expect(getTag(result.body.value[0])).toBe('h1')
     })
 
     it('should handle chunked web streams', async () => {
@@ -173,12 +182,12 @@ title: Test Title
 
       const result = await parseStream(stream)
 
-      expect(result.body.type).toBe('root')
-      expect(result.body.children).toHaveLength(2)
+      expect(result.body.type).toBe('minimark')
+      expect(result.body.value).toHaveLength(2)
     })
   })
 
-  describe('parseStream with Web ReadableStream', () => {
+  describe('parseStream with Web ReadableStream (duplicate)', () => {
     function createWebStream(content: string): ReadableStream<Uint8Array> {
       const encoder = new TextEncoder()
       return new ReadableStream({
@@ -196,10 +205,10 @@ title: Test Title
       const result = await parseStream(stream)
 
       expect(result.body).toBeDefined()
-      expect(result.body.type).toBe('root')
-      expect(result.body.children).toHaveLength(2)
-      expect(result.body.children[0].type).toBe('element')
-      expect(result.body.children[0].tag).toBe('h1')
+      expect(result.body.type).toBe('minimark')
+      expect(result.body.value).toHaveLength(2)
+      expect(Array.isArray(result.body.value[0])).toBe(true)
+      expect(getTag(result.body.value[0])).toBe('h1')
     })
 
     it('should parse content with frontmatter from web stream', async () => {
@@ -214,7 +223,7 @@ title: Test Title
       expect(result.data).toEqual({
         title: 'Test Title',
       })
-      expect(result.body.children[0].tag).toBe('h1')
+      expect(getTag(result.body.value[0])).toBe('h1')
     })
   })
 
@@ -238,7 +247,7 @@ const x = 1;
       const result2 = await parseStream(stream2)
 
       expect(result1.body.type).toBe(result2.body.type)
-      expect(result1.body.children.length).toBe(result2.body.children.length)
+      expect(result1.body.value.length).toBe(result2.body.value.length)
     })
   })
 })

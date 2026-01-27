@@ -20,7 +20,7 @@ describe('incremental Stream Parsing', () => {
       for (let i = 0; i < chunks.length; i++) {
         expect(results[i].chunk).toBe(chunks[i])
         expect(results[i].isComplete).toBe(false)
-        expect(results[i].body.type).toBe('root')
+        expect(results[i].body.type).toBe('minimark')
       }
 
       // Check final result
@@ -67,14 +67,14 @@ describe('incremental Stream Parsing', () => {
       }
 
       // First chunk should have heading
-      expect(results[0].body.children.length).toBeGreaterThan(0)
-      expect(results[0].body.children[0].tag).toBe('h1')
+      expect(results[0].body.value.length).toBeGreaterThan(0)
+      expect(results[0].body.value[0][0]).toBe('h1')
 
       // Second chunk should have heading + first paragraph
-      expect(results[1].body.children.length).toBeGreaterThan(1)
+      expect(results[1].body.value.length).toBeGreaterThan(1)
 
       // Third chunk should have heading + both paragraphs
-      expect(results[2].body.children.length).toBeGreaterThan(2)
+      expect(results[2].body.value.length).toBeGreaterThan(2)
 
       // Final result should be complete
       const finalResult = results[results.length - 1]
@@ -126,8 +126,8 @@ describe('incremental Stream Parsing', () => {
 
       const finalResult = results[results.length - 1]
       expect(finalResult.isComplete).toBe(true)
-      expect(finalResult.body.children.length).toBeGreaterThan(0)
-      expect(finalResult.body.children[0].tag).toBe('alert')
+      expect(finalResult.body.value.length).toBeGreaterThan(0)
+      expect(finalResult.body.value[0][0]).toBe('alert')
     })
   })
 
@@ -148,7 +148,7 @@ describe('incremental Stream Parsing', () => {
       for (let i = 0; i < chunks.length; i++) {
         expect(results[i].chunk).toBe(chunks[i])
         expect(results[i].isComplete).toBe(false)
-        expect(results[i].body.type).toBe('root')
+        expect(results[i].body.type).toBe('minimark')
       }
 
       // Check final result
@@ -183,9 +183,9 @@ describe('incremental Stream Parsing', () => {
       }
 
       // Content should grow with each chunk
-      expect(results[0].body.children.length).toBeGreaterThan(0)
-      expect(results[1].body.children.length).toBeGreaterThan(0)
-      expect(results[2].body.children.length).toBeGreaterThan(0)
+      expect(results[0].body.value.length).toBeGreaterThan(0)
+      expect(results[1].body.value.length).toBeGreaterThan(0)
+      expect(results[2].body.value.length).toBeGreaterThan(0)
 
       // Final result should be complete
       const finalResult = results[results.length - 1]
@@ -276,7 +276,7 @@ describe('incremental Stream Parsing', () => {
 
       const finalResult = results[results.length - 1]
       expect(finalResult.isComplete).toBe(true)
-      expect(finalResult.body.children.length).toBeGreaterThan(0)
+      expect(finalResult.body.value.length).toBeGreaterThan(0)
     })
   })
 
@@ -300,15 +300,15 @@ describe('incremental Stream Parsing', () => {
         chunkCount++
 
         // Body should exist and have type root
-        expect(result.body.type).toBe('root')
+        expect(result.body.type).toBe('minimark')
 
         // Children count should only grow or stay the same
-        expect(result.body.children.length).toBeGreaterThanOrEqual(lastChildrenCount)
-        lastChildrenCount = result.body.children.length
+        expect(result.body.value.length).toBeGreaterThanOrEqual(lastChildrenCount)
+        lastChildrenCount = result.body.value.length
 
         if (result.isComplete) {
           // Final result should have all sections
-          expect(result.body.children.length).toBeGreaterThan(3)
+          expect(result.body.value.length).toBeGreaterThan(3)
           expect(result.data.title).toBe('Large Doc')
           expect(result.toc).toBeDefined()
         }
@@ -334,7 +334,7 @@ describe('incremental Stream Parsing', () => {
 
       const finalResult = results[results.length - 1]
       expect(finalResult.isComplete).toBe(true)
-      expect(finalResult.body.children.length).toBeGreaterThan(0)
+      expect(finalResult.body.value.length).toBeGreaterThan(0)
     })
 
     it('should provide intermediate updates for UI rendering', async () => {
@@ -351,7 +351,7 @@ describe('incremental Stream Parsing', () => {
       for await (const result of parseStreamIncremental(stream)) {
         if (!result.isComplete) {
           intermediateStates.push({
-            childrenCount: result.body.children.length,
+            childrenCount: result.body.value.length,
             chunk: result.chunk,
           })
         }

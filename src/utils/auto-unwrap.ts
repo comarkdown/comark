@@ -1,31 +1,4 @@
-import type { MDCElement } from '../types/tree'
-
-// Node types that can be containers (for auto unwrap feature)
-const CONTAINER_NODE_TYPES = new Set([
-  'alert',
-  'card',
-  'callout',
-  'note',
-  'warning',
-  'tip',
-  'info',
-])
-
-// Node types that should not be unwrapped
-const NON_UNWRAPPABLE_TYPES = new Set([
-  'pre',
-  'code',
-  'table',
-  'thead',
-  'tbody',
-  'tr',
-  'th',
-  'td',
-  'ul',
-  'ol',
-  'li',
-  'blockquote',
-])
+import type { MinimarkNode } from 'minimark'
 
 /**
  * Applies automatic unwrapping to container components.
@@ -45,46 +18,34 @@ const NON_UNWRAPPABLE_TYPES = new Set([
  * // After:
  * { tag: 'alert', children: [{ type: 'text', value: 'Text' }] }
  */
-export function applyAutoUnwrap(node: MDCElement): MDCElement {
-  // Only apply to container components
-  if (!CONTAINER_NODE_TYPES.has(node.tag)) {
+export function applyAutoUnwrap(node: MinimarkNode): MinimarkNode {
+  if (typeof node === 'string' || node.length < 2) {
     return node
   }
 
-  // Don't unwrap if there are no children
-  if (node.children.length === 0) {
-    return node
-  }
+  const [tag, props, ...children] = node
 
   // Filter out empty text nodes for checking
-  const nonEmptyChildren = node.children.filter(child =>
-    child.type !== 'text' || (child.value && child.value.trim()),
+  const nonEmptyChildren = children.filter((child: MinimarkNode) =>
+    typeof child !== 'string' || (child && child.trim()),
   )
 
-  // Check if we have exactly one paragraph child (and possibly empty text nodes)
-  const paragraphs = nonEmptyChildren.filter(
-    child => child.type === 'element' && child.tag === 'p',
-  )
-
-  // Also check for other non-unwrappable elements (lists, code blocks, etc.)
-  const hasNonUnwrappableElements = nonEmptyChildren.some(
-    child => child.type === 'element'
-      && child.tag !== 'p'
-      && (NON_UNWRAPPABLE_TYPES.has(child.tag) || child.tag === 'template'),
-  )
-
-  // Only unwrap if:
-  // 1. There's exactly one paragraph
-  // 2. No other non-unwrappable elements (lists, code blocks, etc.)
-  if (paragraphs.length === 1 && !hasNonUnwrappableElements) {
-    const paragraph = paragraphs[0] as MDCElement
-    // Unwrap: return the paragraph's children as the container's direct children
-    return {
-      ...node,
-      children: paragraph.children,
-    }
+  if (nonEmptyChildren.length === 0) {
+    return node
   }
 
-  // Otherwise, keep the structure as-is
-  return node
+  // Check if we have exactly one paragraph child (and possibly empty text nodes)
+  if (nonEmptyChildren.length > 1 || nonEmptyChildren[0][0] !== 'p') {
+    return [
+      tag,
+      props,
+      ...children.map((child: MinimarkNode) => applyAutoUnwrap(child as MinimarkNode)),
+    ] as MinimarkNode
+  }
+
+  return [
+    tag,
+    props,
+    ...nonEmptyChildren[0].slice(2) as MinimarkNode[],
+  ] as MinimarkNode
 }

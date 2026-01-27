@@ -1,28 +1,13 @@
 import type { Readable } from 'node:stream'
-import type { MDCRoot, MDCElement } from './types/tree'
 import type { ParseOptions } from './types'
-import MarkdownIt from 'markdown-it'
-import pluginMdc from 'markdown-it-mdc'
 import { parseFrontMatter } from 'remark-mdc'
-import { autoCloseMarkdown } from './auto-close'
-import { convertMarkdownItTokensToMDC } from './utils/parse'
-import { applyAutoUnwrap } from './utils/auto-unwrap'
-import { generateToc } from './utils/table-of-contents'
+import { autoCloseMarkdown } from './utils/auto-close'
+import type { ParseResult } from './index'
+import { parse } from './index'
 
-export interface ParseResult {
-  body: MDCRoot
-  excerpt?: MDCRoot
-  data: any
-  toc?: any
-}
-
-export interface IncrementalParseResult {
+export interface IncrementalParseResult extends ParseResult {
   chunk: string // The chunk that was just processed
-  body: MDCRoot // Current state of the parsed body
-  data: any // Frontmatter data (available once parsed)
   isComplete: boolean // Whether the stream is complete
-  excerpt?: MDCRoot // Optional excerpt
-  toc?: any // Table of contents (available when complete)
 }
 
 /**
@@ -92,91 +77,6 @@ async function streamToString(stream: Readable | ReadableStream<Uint8Array>): Pr
 }
 
 /**
- * Internal parse function
- */
-function parseContent(source: string, options: ParseOptions = {}): ParseResult {
-  const { autoUnwrap = true } = options
-  const { content, data } = parseFrontMatter(source)
-  // Enable tables, GFM features
-  const markdownIt = new MarkdownIt({
-    html: true,
-    linkify: true,
-  })
-    .enable(['table'])
-    .use(pluginMdc)
-  const tokens = markdownIt.parse(content, {})
-
-  // Convert tokens to MDC structure
-  const children = convertMarkdownItTokensToMDC(tokens)
-
-  // Filter out top-level text nodes
-  let filteredChildren = children.filter(child => child.type !== 'text')
-
-  // Apply auto-unwrap to container components if enabled
-  if (autoUnwrap) {
-    filteredChildren = filteredChildren.map((child) => {
-      if (child.type === 'element') {
-        return applyAutoUnwrap(child as MDCElement)
-      }
-      return child
-    })
-  }
-
-  const body: MDCRoot = {
-    type: 'root',
-    children: filteredChildren,
-  }
-
-  // Handle excerpt (look for HTML comment with 'more')
-  let excerpt: MDCRoot | undefined
-  const excerptIndex = tokens.findIndex(
-    (token: any) => token.type === 'html_block' && token.content?.includes('<!-- more -->'),
-  )
-
-  if (excerptIndex !== -1) {
-    const excerptTokens = tokens.slice(0, excerptIndex)
-    let excerptChildren = convertMarkdownItTokensToMDC(excerptTokens as any, new Set())
-
-    // Apply auto-unwrap to excerpt as well
-    if (autoUnwrap) {
-      excerptChildren = excerptChildren.map((child) => {
-        if (child.type === 'element') {
-          return applyAutoUnwrap(child as MDCElement)
-        }
-        return child
-      })
-    }
-
-    excerpt = {
-      type: 'root',
-      children: excerptChildren.filter(child => child.type !== 'text'),
-    }
-
-    // Include styles if excerpt contains code block
-    if (excerpt.children.find(node => node.type === 'element' && node.tag === 'pre')) {
-      const lastChild = body.children[body.children.length - 1]
-      if (lastChild && lastChild.type === 'element' && lastChild.tag === 'style') {
-        excerpt.children.push(lastChild)
-      }
-    }
-  }
-
-  const toc = generateToc(body, {
-    title: data.title || '',
-    depth: data.depth || 2,
-    searchDepth: data.searchDepth || 2,
-    links: [],
-  })
-
-  return {
-    body,
-    excerpt,
-    data,
-    toc,
-  }
-}
-
-/**
  * Parse MDC content from a Node.js Readable stream or Web ReadableStream
  *
  * @param stream - A Node.js Readable stream or Web ReadableStream containing MDC content
@@ -198,7 +98,7 @@ function parseContent(source: string, options: ParseOptions = {}): ParseResult {
  */
 export async function parseStream(stream: Readable | ReadableStream<Uint8Array>, options?: ParseOptions): Promise<ParseResult> {
   const content = await streamToString(stream)
-  return parseContent(content, options)
+  return parse(content, options)
 }
 
 /**
@@ -263,10 +163,11 @@ export async function* parseStreamIncremental(
 
       // Auto-close unclosed syntax before parsing intermediate results
       const closedContent = autoCloseMarkdown(accumulatedContent)
+      // console.log({closedContent})
 
       // Parse the auto-closed content
-      const result = parseContent(closedContent, options)
-
+      const result = parse(closedContent, options)
+      // console.log({result})
       yield {
         chunk: chunkStr,
         body: result.body,
@@ -277,7 +178,7 @@ export async function* parseStreamIncremental(
     }
 
     // Final parse with complete content (no auto-close needed, content is complete)
-    const finalResult = parseContent(accumulatedContent, options)
+    const finalResult = parse(accumulatedContent, options)
     yield {
       chunk: '',
       body: finalResult.body,
@@ -298,7 +199,7 @@ export async function* parseStreamIncremental(
 
         if (done) {
           // Final parse with complete content
-          const finalResult = parseContent(accumulatedContent, options)
+          const finalResult = parse(accumulatedContent, options)
           yield {
             chunk: '',
             body: finalResult.body,
@@ -324,7 +225,7 @@ export async function* parseStreamIncremental(
         const closedContent = autoCloseMarkdown(accumulatedContent)
 
         // Parse the auto-closed content
-        const result = parseContent(closedContent, options)
+        const result = parse(closedContent, options)
 
         yield {
           chunk: chunkStr,
