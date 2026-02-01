@@ -11,6 +11,7 @@
   "exports": {
     ".": "./dist/index.mjs",
     "./vue": "./dist/vue/index.mjs",
+    "./react": "./dist/react/index.mjs",
     "./stream": "./dist/stream.mjs"
   },
   "main": "./dist/index.mjs",
@@ -22,6 +23,7 @@
   "scripts": {
     "dev": "nuxt dev playground",
     "dev:prepare": "nuxt prepare playground",
+    "dev:react": "vite dev examples/react-vite",
     "docs": "nuxt dev --extends docus docs",
     "test": "vitest run",
     "prepack": "obuild",
@@ -30,7 +32,8 @@
     "verify": "pnpm run lint && pnpm run test && pnpm run typecheck"
   },
   "peerDependencies": {
-    "vue": "^3.5.27"
+    "vue": "^3.5.27",
+    "react": "^19.2.4"
   },
   "devDependencies": {
     "@nuxt/eslint-config": "^1.13.0",
@@ -38,8 +41,9 @@
     "eslint": "^9.39.2",
     "github-slugger": "^2.0.0",
     "hast-util-to-string": "^3.0.1",
+    "markdown-it-cjk-friendly": "^2.0.1",
     "markdown-it-sub": "^2.0.0",
-    "minimark": "https://pkg.pr.new/minimark@bf0f08a",
+    "markdown-it-task-lists": "^2.1.1",
     "nuxt": "^4.3.0",
     "obuild": "^0.4.22",
     "remark-gfm": "^4.0.1",
@@ -51,9 +55,10 @@
     "vitest": "^4.0.18"
   },
   "dependencies": {
-    "shiki": "^3.21.0",
+    "minimark": "https://pkg.pr.new/minimark@76668bf",
     "markdown-it": "^14.1.0",
+    "markdown-it-mdc": "^0.2.8",
     "remark-mdc": "^3.10.0",
-    "markdown-it-mdc": "^0.2.8"
+    "shiki": "^3.21.0"
   }
 }

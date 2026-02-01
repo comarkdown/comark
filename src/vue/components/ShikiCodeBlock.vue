@@ -1,0 +1,221 @@
+<script setup lang="ts">
+import { ShikiCachedRenderer } from 'shiki-stream/vue'
+import { createHighlighter } from 'shiki'
+import { computed, onMounted, ref, watch } from 'vue'
+import { textContent } from 'minimark'
+
+// Singleton highlighter instance shared across all code blocks
+let highlighterInstance: any = null
+let highlighterPromise: Promise<any> | null = null
+
+async function getHighlighter() {
+  if (highlighterInstance) {
+    return highlighterInstance
+  }
+
+  if (!highlighterPromise) {
+    highlighterPromise = createHighlighter({
+      themes: ['github-dark', 'github-light'],
+      langs: ['javascript', 'typescript', 'vue', 'html', 'css', 'json', 'markdown', 'bash', 'shell', 'text'],
+    }).then((hl) => {
+      highlighterInstance = hl
+      return hl
+    })
+  }
+
+  return highlighterPromise
+}
+
+const props = withDefaults(defineProps<{
+  // @eslint-disable-next-line vue/prop-name-casing
+  __node: any
+  language?: string
+  theme?: string
+  containerClass?: string
+  fallbackClass?: string
+  fallbackWithHeaderClass?: string
+  shikiStyle?: Record<string, string>
+}>(), {
+  theme: 'github-dark',
+  containerClass: 'my-4',
+  fallbackClass: 'bg-gray-800 text-gray-200 p-4 rounded-lg overflow-x-auto border border-gray-700',
+  fallbackWithHeaderClass: 'bg-gray-800 text-gray-200 p-4 pt-12 rounded-lg overflow-x-auto m-0 border border-gray-700',
+  shikiStyle: () => ({
+    '--shiki-margin': '0',
+    '--shiki-padding': '1rem',
+    '--shiki-padding-top': '3rem',
+    '--shiki-border-radius': '0.5rem',
+    '--shiki-border': '1px solid rgb(55, 65, 81)',
+  }),
+})
+
+const highlighter = ref<any>(null)
+const isLoading = ref(true)
+const componentKey = ref(0)
+const copied = ref(false)
+const codeContent = ref('')
+
+// Extract code content and language from node
+const extractCodeFromNode = () => {
+  const node = props.__node
+  if (!node) {
+    codeContent.value = ''
+    return
+  }
+
+  codeContent.value = textContent(node)
+}
+
+// Initialize code extraction
+extractCodeFromNode()
+
+// Create a stable key for ShikiCachedRenderer remounting
+const rendererKey = computed(() => {
+  return `${componentKey.value}-${codeContent.value.slice(0, 20)}-${props.language}-${props.theme}`
+})
+
+// Watch for code changes and force remount
+watch(() => props.__node, () => {
+  extractCodeFromNode()
+  componentKey.value++
+})
+
+// Copy to clipboard functionality
+async function copyCode() {
+  try {
+    const nav = navigator as Navigator & { clipboard?: { writeText: (text: string) => Promise<void> } }
+    if (nav.clipboard?.writeText) {
+      await nav.clipboard.writeText(codeContent.value)
+      copied.value = true
+      setTimeout(() => {
+        copied.value = false
+      }, 2000)
+    }
+  }
+  catch (error) {
+    console.error('Failed to copy code:', error)
+  }
+}
+
+// Load highlighter on mount
+onMounted(() => {
+  getHighlighter()
+    .then((hl) => {
+      highlighter.value = hl
+      isLoading.value = false
+    })
+    .catch((error) => {
+      console.error('Failed to create highlighter:', error)
+      isLoading.value = false
+    })
+})
+</script>
+
+<template>
+  <!-- Fallback for nodes without proper structure -->
+  <pre
+    v-if="!__node"
+    :class="fallbackClass"
+  >
+    <slot />
+  </pre>
+
+  <!-- Main code block container -->
+  <div
+    v-else
+    :class="`relative ${containerClass} group`"
+  >
+    <!-- Header with language label and copy button -->
+    <div class="absolute top-0 right-0 left-0 flex items-center justify-between px-4 py-2 z-10">
+      <!-- Language label -->
+      <span
+        v-if="language"
+        class="text-xs font-semibold uppercase tracking-wider text-gray-400 bg-gray-800/80 px-2.5 py-1 rounded backdrop-blur-sm"
+      >
+        {{ language }}
+      </span>
+      <span
+        v-else
+        class="flex-1"
+      />
+
+      <!-- Copy button -->
+      <button
+        type="button"
+        class="ml-auto px-3 py-1.5 text-xs font-medium rounded transition-all duration-200 bg-gray-700/80 hover:bg-gray-600 text-gray-300 hover:text-white backdrop-blur-sm opacity-0 group-hover:opacity-100 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        @click="copyCode"
+      >
+        <span
+          v-if="copied"
+          class="flex items-center gap-1.5"
+        >
+          <svg
+            class="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M5 13l4 4L19 7"
+            />
+          </svg>
+          Copied!
+        </span>
+        <span
+          v-else
+          class="flex items-center gap-1.5"
+        >
+          <svg
+            class="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+            />
+          </svg>
+          Copy
+        </span>
+      </button>
+    </div>
+
+    <!-- Loading state -->
+    <div
+      v-if="isLoading"
+      class="bg-gray-800 rounded-lg p-4 border border-gray-700"
+    >
+      <div
+        v-for="i in 3"
+        :key="i"
+        class="h-4 bg-gray-700 rounded mb-2 last:mb-0 last:w-3/5 animate-pulse"
+      />
+    </div>
+
+    <!-- Shiki renderer -->
+    <ShikiCachedRenderer
+      v-else-if="highlighter"
+      :key="rendererKey"
+      :highlighter="highlighter"
+      :code="codeContent"
+      :lang="language || 'text'"
+      :theme="theme || 'github-dark'"
+      class="shiki-container"
+      :style="shikiStyle"
+    />
+
+    <!-- Fallback with header padding -->
+    <pre
+      v-else
+      :class="fallbackWithHeaderClass"
+    >
+      <code class="font-mono text-sm leading-relaxed block whitespace-pre">{{ codeContent }}</code>
+    </pre>
+  </div>
+</template>

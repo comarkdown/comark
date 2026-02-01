@@ -91,6 +91,48 @@ function processAttributes(
 }
 
 /**
+ * Parse HTML inline content to extract tag and attributes
+ * Example: '<input class="foo" checked="" disabled="" type="checkbox">'
+ * Returns: { tag: 'input', attrs: { class: 'foo', checked: true, disabled: true, type: 'checkbox' } }
+ */
+function parseHtmlInline(html: string): { tag: string, attrs: Record<string, unknown>, selfClosing: boolean } | null {
+  // Match opening or self-closing tags
+  // Use \s[^>]* to ensure attributes start with whitespace, preventing overlap with tag name
+  const tagMatch = html.match(/^<(\w+)(\s[^>]*)?(\/?)>/)
+  if (!tagMatch) {
+    return null
+  }
+
+  const tag = tagMatch[1]
+  const attrsString = tagMatch[2]
+  const selfClosing = tagMatch[3] === '/' || tag === 'input' || tag === 'br' || tag === 'img' || tag === 'hr'
+
+  const attrs: Record<string, unknown> = {}
+
+  // Parse attributes from the string
+  // Match: attr="value" or attr='' or attr (boolean)
+  const attrRegex = /(\w+)(?:="([^"]*)"|='([^']*)'|=(\S+)|(?=\s|$))/g
+  let match
+
+  while ((match = attrRegex.exec(attrsString)) !== null) {
+    const attrName = match[1]
+    // Get value from whichever capture group matched (quotes or unquoted)
+    const attrValue = match[2] !== undefined ? match[2] : (match[3] !== undefined ? match[3] : (match[4] || ''))
+
+    // Handle boolean attributes - if value is empty string, it's a boolean true
+    if (attrValue === '') {
+      attrs[`:${attrName}`] = 'true'
+    }
+    else {
+      // Regular attribute
+      attrs[attrName] = attrValue
+    }
+  }
+
+  return { tag, attrs, selfClosing }
+}
+
+/**
  * Parse codeblock info string to extract language, highlights, filename, and meta
  * Example: "javascript {1-3} [filename.ts] meta=value"
  */
@@ -325,6 +367,7 @@ function processBlockToken(tokens: any[], startIndex: number, insideNestedContex
 
   // Handle list items - paragraphs should be unwrapped
   if (token.type === 'list_item_open') {
+    const attrs = processAttributes(token.attrs, { handleBoolean: false, handleJSON: false })
     const children = processBlockChildren(tokens, startIndex + 1, 'list_item_close', false, false, true)
     // Unwrap paragraphs in list items
     const unwrapped: MinimarkNode[] = []
@@ -338,7 +381,7 @@ function processBlockToken(tokens: any[], startIndex: number, insideNestedContex
       }
     }
     if (unwrapped.length > 0) {
-      return { node: ['li', {}, ...unwrapped] as MinimarkNode, nextIndex: children.nextIndex + 1 }
+      return { node: ['li', attrs, ...unwrapped] as MinimarkNode, nextIndex: children.nextIndex + 1 }
     }
     return { node: null, nextIndex: children.nextIndex + 1 }
   }
@@ -612,6 +655,17 @@ function processInlineToken(tokens: any[], startIndex: number, inHeading: boolea
   const token = tokens[startIndex]
 
   if (token.type === 'text') {
+    return { node: token.content || null, nextIndex: startIndex + 1 }
+  }
+
+  // Handle html_inline tokens (e.g., task list checkboxes)
+  if (token.type === 'html_inline') {
+    const parsed = parseHtmlInline(token.content || '')
+    if (parsed && parsed.selfClosing) {
+      // Self-closing tags like <input>, <br>, <img>
+      return { node: [parsed.tag, parsed.attrs] as MinimarkNode, nextIndex: startIndex + 1 }
+    }
+    // For non-self-closing HTML or unparseable HTML, return as text
     return { node: token.content || null, nextIndex: startIndex + 1 }
   }
 

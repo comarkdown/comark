@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { autoCloseMarkdown, detectUnclosedSyntax } from '../src/utils/auto-close'
+import { autoCloseMarkdown } from '../src/utils/auto-close'
 
 describe('autoCloseMarkdown - Inline Syntax', () => {
   it('should auto-close unclosed bold syntax', () => {
@@ -188,48 +188,6 @@ describe('autoCloseMarkdown - Combined Scenarios', () => {
     const input = '::card\n```js\nconst x = 1\n```\nText with `code'
     const expected = '::card\n```js\nconst x = 1\n```\nText with `code`\n::'
     expect(autoCloseMarkdown(input)).toBe(expected)
-  })
-})
-
-describe('detectUnclosedSyntax', () => {
-  it('should detect unclosed bold', () => {
-    const input = 'Text with **bold'
-    const result = detectUnclosedSyntax(input)
-    expect(result.hasUnclosed).toBe(true)
-    expect(result.unclosedInline).toContain('**bold**')
-  })
-
-  it('should detect unclosed component', () => {
-    const input = '::alert\nContent'
-    const result = detectUnclosedSyntax(input)
-    expect(result.hasUnclosed).toBe(true)
-    expect(result.unclosedComponents).toHaveLength(1)
-    expect(result.unclosedComponents[0]).toEqual({ markerCount: 2, name: 'alert' })
-  })
-
-  it('should detect multiple unclosed components', () => {
-    const input = ':::parent\n::child\nContent'
-    const result = detectUnclosedSyntax(input)
-    expect(result.hasUnclosed).toBe(true)
-    expect(result.unclosedComponents).toHaveLength(2)
-    expect(result.unclosedComponents[0]).toEqual({ markerCount: 3, name: 'parent' })
-    expect(result.unclosedComponents[1]).toEqual({ markerCount: 2, name: 'child' })
-  })
-
-  it('should return false for properly closed content', () => {
-    const input = '::alert\nContent\n::'
-    const result = detectUnclosedSyntax(input)
-    expect(result.hasUnclosed).toBe(false)
-    expect(result.unclosedInline).toHaveLength(0)
-    expect(result.unclosedComponents).toHaveLength(0)
-  })
-
-  it('should detect both unclosed inline and components', () => {
-    const input = '::alert\nText with **bold'
-    const result = detectUnclosedSyntax(input)
-    expect(result.hasUnclosed).toBe(true)
-    expect(result.unclosedInline).toContain('**bold**')
-    expect(result.unclosedComponents).toHaveLength(1)
   })
 })
 

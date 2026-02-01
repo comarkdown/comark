@@ -11,5 +11,11 @@ export default defineBuildConfig({
       input: './src/vue',
       outDir: './dist/vue',
     },
+    {
+      type: 'bundle',
+      input: './src/react/index.ts',
+      outDir: './dist',
+      name: 'react/index',
+    },
   ],
 })

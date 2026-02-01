@@ -1,6 +1,7 @@
 import type { PropType, VNode } from 'vue'
 import type { MinimarkNode, MinimarkTree } from 'minimark'
-import { defineAsyncComponent, defineComponent, h, onErrorCaptured, ref } from 'vue'
+import { computed, defineAsyncComponent, defineComponent, h, onErrorCaptured, ref } from 'vue'
+import { standardProseComponents } from './prose/standard'
 
 // Cache for dynamically resolved components
 const asyncComponentCache = new Map<string, any>()
@@ -59,6 +60,20 @@ function getProps(node: MinimarkNode): Record<string, any> {
   return {}
 }
 
+function parsePropValue(value: string): any {
+  if (value === 'true') return true
+  if (value === 'false') return false
+  if (value === 'null') return null
+  try {
+    return JSON.parse(value)
+  }
+  catch {
+    // noop
+  }
+  // TODO: ensure the behavior
+  return value
+}
+
 /**
  * Helper to get children from a MinimarkNode
  */
@@ -112,6 +127,12 @@ function renderNode(
     // Prepare props
     const props: Record<string, any> = { ...nodeProps }
     props.__node = node
+
+    for (const [key, value] of Object.entries(nodeProps)) {
+      if (key.startsWith(':')) {
+        props[key.substring(1)] = parsePropValue(value)
+      }
+    }
 
     // Add key if provided
     if (key !== undefined) {
@@ -236,10 +257,25 @@ export const MDCRenderer = defineComponent({
       type: Function as PropType<(name: string) => Promise<any>>,
       default: undefined,
     },
+
+    stream: {
+      type: Boolean as PropType<boolean>,
+      default: false,
+    },
   },
 
-  setup(props) {
+  async setup(props) {
     const componentErrors = ref(new Set<string>())
+
+    const streamComponents = props.stream
+      ? await import('./prose/stream').then(m => m.proseStreamComponents)
+      : {}
+
+    const components = computed(() => ({
+      ...standardProseComponents,
+      ...streamComponents,
+      ...props.components,
+    }))
 
     // Capture errors from child components (e.g., during streaming when props are incomplete)
     onErrorCaptured((err, instance, info) => {
@@ -263,7 +299,7 @@ export const MDCRenderer = defineComponent({
       // Render all nodes from the tree value
       const nodes = props.body.value || []
       const children = nodes
-        .map((node, index) => renderNode(node, props.components, index, props.componentsManifest))
+        .map((node, index) => renderNode(node, components.value, index, props.componentsManifest))
         .filter((child): child is VNode | string => child !== null)
 
       // Wrap in a fragment

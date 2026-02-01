@@ -3,337 +3,354 @@
  * Useful for streaming/incremental parsing where content may be partial
  */
 
-// Pre-compiled regex patterns for better performance
-const PATTERNS = {
-  trailingWhitespace: /\s+$/,
-  trailingAsterisks: /\*+$/,
-  asteriskGlobal: /\*/g,
-  doubleQuoteGlobal: /"/g,
-  singleQuoteGlobal: /'/g,
-  tildeGlobal: /~~/g,
-} as const
-
-// Pre-generated colon closers for common nesting depths (avoids repeat() calls)
-const COLON_CLOSERS = ['', ':', '::', ':::', '::::', ':::::', '::::::', ':::::::'] as const
-
 /**
- * Detects and auto-closes unclosed markdown inline syntax and MDC components
+ * Linear-time auto-close implementation without regex
+ * Processes markdown in O(n) time by scanning character-by-character
  *
- * @param markdown - The markdown content (potentially partial)
- * @returns The markdown with auto-closed syntax
- *
- * @example
- * ```typescript
- * autoCloseMarkdown('**bold text') // Returns: '**bold text**'
- * autoCloseMarkdown('::component\ncontent') // Returns: '::component\ncontent\n::'
- * autoCloseMarkdown(':::parent\n::child') // Returns: ':::parent\n::child\n::\n:::'
- * ```
+ * @param markdown - The markdown content to auto-close
+ * @returns The markdown with unclosed syntax closed
  */
 export function autoCloseMarkdown(markdown: string): string {
   if (!markdown || markdown.trim() === '') {
     return markdown
   }
 
-  // Split once and share between functions to avoid redundant splitting
-  const lines = markdown.split('\n')
-  const lastLine = lines[lines.length - 1]
+  // Find the last line (where inline markers need closing)
+  const lastLineStart = markdown.lastIndexOf('\n') + 1
+  const lastLine = markdown.slice(lastLineStart)
 
-  // Step 1: Auto-close inline markdown syntax
-  let result = autoCloseInlineSyntax(markdown, lastLine)
+  // Step 1: Close inline markers on last line
+  const inlineResult = closeInlineMarkersLinear(lastLine)
+  let result = lastLineStart === 0
+    ? inlineResult
+    : markdown.slice(0, lastLineStart) + inlineResult
 
-  // Step 2: Auto-close MDC block components (only if content changed or has components)
-  if (result.includes('::')) {
-    // Re-split only if markdown was modified by inline closing
-    const updatedLines = result === markdown ? lines : result.split('\n')
-    result = autoCloseMDCComponents(result, updatedLines)
+  // Step 2: Close MDC components if any
+  if (markdown.includes('::')) {
+    result = closeMDCComponentsLinear(result)
   }
 
   return result
 }
 
 /**
- * Auto-closes unclosed inline markdown syntax (bold, italic, code, strikethrough)
- * Only closes markers that appear to be incomplete at the end of content
+ * Closes inline markers (*, **, ***, ~~, `, [, () on the last line
+ * without using regex - pure character scanning in O(n) time
  */
-function autoCloseInlineSyntax(markdown: string, lastLine: string): string {
-  // Track what needs closing by scanning from the end
-  // This prevents closing markers that are intentionally left open in the middle
+function closeInlineMarkersLinear(line: string): string {
+  const len = line.length
+  if (len === 0) return line
 
-  // Define markers in order (bold+italic, then bold, then italic to avoid conflicts)
-  const markers = [
-    { marker: '***', pattern: /\*\*\*(?:[^*]|\*(?!\*\*)|\*\*(?!\*))*$/ }, // bold+italic (strong emphasis)
-    { marker: '**', pattern: /\*\*(?:[^*]|\*(?!\*))*$/ }, // bold - matches ** followed by content not ending with **
-    { marker: '~~', pattern: /~~(?:[^~]|~(?!~))*$/ }, // strikethrough
-    { marker: '`', pattern: /`[^`]*$/ }, // inline code
-    { marker: '*', pattern: /\*(?!\s)[^*]*$/ }, // italic - must be after bold, not followed by space
-  ]
+  // Count markers by scanning
+  let asteriskCount = 0
+  let tildePairCount = 0 // Count ~~ pairs, not individual tildes
+  let backtickCount = 0
+  let bracketBalance = 0 // [ minus ]
+  let parenBalance = 0 // ( minus ) after last ]
+  let lastBracketPos = -1
 
-  let closingSuffix = ''
-  let trimTrailing = false
+  // Track trailing whitespace
+  let contentEnd = len
+  while (contentEnd > 0 && (line[contentEnd - 1] === ' ' || line[contentEnd - 1] === '\t')) {
+    contentEnd--
+  }
+  const hasTrailingSpace = contentEnd < len
 
-  // Pre-compute values used multiple times
-  const hasTrailingWhitespace = PATTERNS.trailingWhitespace.test(lastLine)
-  const trimmedLastLine = hasTrailingWhitespace ? lastLine.trimEnd() : lastLine
+  // Track ** positions for O(n) complete pair detection (avoids O(n^3) nested loops)
+  const doubleAsteriskPositions: number[] = []
 
-  // Check each marker
-  for (const { marker, pattern } of markers) {
-    if (pattern.test(lastLine)) {
-      const markerLen = marker.length
-      const markerChar = marker[0]
+  // Single-pass scan through the line - O(n)
+  for (let i = 0; i < len; i++) {
+    const ch = line[i]
 
-      // For asterisk-based markers (*, **, ***), handle partial closings
-      if (markerChar === '*') {
-        // Check if line ends with asterisks (indicates partial closing)
-        const endsWithAsterisks = PATTERNS.trailingAsterisks.test(trimmedLastLine)
-
-        // Count total asterisks in the line (use pre-compiled regex)
-        const asteriskCount = (lastLine.match(PATTERNS.asteriskGlobal) || []).length
-
-        // Calculate remainder when dividing by (markerLen * 2)
-        // markerLen * 2 represents one complete open + close pair
-        const remainder = asteriskCount % (markerLen * 2)
-
-        // If remainder is 0, this marker is properly closed, skip it
-        if (remainder === 0) {
-          continue
-        }
-
-        // If remainder equals markerLen, we have exactly one opening marker
-        if (remainder === markerLen) {
-          // Check if line starts with more asterisks than this marker (e.g., *** when checking **)
-          // This prevents "***text***" from being seen as unclosed **
-          const startsWithMoreAsterisks = new RegExp('^\\*{' + (markerLen + 1) + ',}').test(lastLine)
-          if (startsWithMoreAsterisks) {
-            continue // This line uses a different (longer) marker
-          }
-
-          // Additional check: ensure line doesn't already have complete pairs and end with non-asterisk
-          // This prevents false positives like "**bold** and *italic*" being seen as unclosed **
-          const completePairPattern = new RegExp(escapeRegex(marker) + '[^*]+' + escapeRegex(marker))
-          const hasCompletePair = completePairPattern.test(lastLine)
-
-          if (hasCompletePair && !endsWithAsterisks) {
-            continue // Skip, this is a false match
-          }
-
-          if (hasTrailingWhitespace) {
-            trimTrailing = true
-          }
-          closingSuffix = marker
-          break
-        }
-        // If line ends with asterisks AND remainder shows partial closing
-        else if (endsWithAsterisks && remainder > markerLen && remainder < markerLen * 2) {
-          const needed = (markerLen * 2) - remainder
-          if (hasTrailingWhitespace) {
-            trimTrailing = true
-          }
-          closingSuffix = '*'.repeat(needed)
-          break
+    if (ch === '*') {
+      asteriskCount++
+      // Track ** positions (not part of ***)
+      if (i + 1 < len && line[i + 1] === '*') {
+        const isPartOfTriple = (i > 0 && line[i - 1] === '*') || (i + 2 < len && line[i + 2] === '*')
+        if (!isPartOfTriple) {
+          doubleAsteriskPositions.push(i)
         }
       }
-      // For non-asterisk markers, use the original logic
-      else {
-        // Use pre-compiled regex for strikethrough
-        const count = marker === '~~'
-          ? (lastLine.match(PATTERNS.tildeGlobal) || []).length
-          : (lastLine.match(new RegExp(escapeRegex(marker), 'g')) || []).length
+    }
+    else if (ch === '~' && i + 1 < len && line[i + 1] === '~') {
+      // Count ~~ pairs (strikethrough uses pairs, not individual tildes)
+      tildePairCount++
+      i++ // Skip next tilde since we counted the pair
+    }
+    else if (ch === '`') {
+      backtickCount++
+    }
+    else if (ch === '[') {
+      bracketBalance++
+      lastBracketPos = i
+    }
+    else if (ch === ']') {
+      bracketBalance--
+      lastBracketPos = i
+    }
+    else if (ch === '(') {
+      if (lastBracketPos >= 0 && i > lastBracketPos) {
+        parenBalance++
+      }
+    }
+    else if (ch === ')') {
+      if (lastBracketPos >= 0 && i > lastBracketPos) {
+        parenBalance--
+      }
+    }
+  }
 
-        if (count % 2 === 1) {
-          // Preserve whitespace for inline code (spaces are significant in code)
-          if (marker !== '`' && hasTrailingWhitespace) {
-            trimTrailing = true
+  // Check for complete ** pairs in O(1) - pairs are matched left to right
+  const hasCompleteBoldPair = doubleAsteriskPositions.length >= 2
+
+  let closingSuffix = ''
+  let shouldTrim = false
+
+  // Check for unclosed markers in priority order
+
+  // Check *** (bold+italic)
+  // Only treat as *** if line actually starts with *** (not just has 3 asterisks total)
+  if (asteriskCount >= 3 && line[0] === '*' && line[1] === '*' && line[2] === '*') {
+    const remainder = asteriskCount % 6
+    if (remainder === 3) {
+      // Check if line starts with more than 3 asterisks (e.g., ****)
+      if (!(line[3] === '*')) {
+        // Check if marker at end with no content
+        if (!(contentEnd >= 3 && line[contentEnd - 1] === '*' && line[contentEnd - 2] === '*'
+          && line[contentEnd - 3] === '*' && (contentEnd === 3 || line[contentEnd - 4] === ' '))) {
+          closingSuffix = '***'
+        }
+      }
+    }
+    else if (remainder > 3 && remainder < 6) {
+      const needed = 6 - remainder
+      closingSuffix = '*'.repeat(needed)
+    }
+  }
+
+  // Check ** (bold) if not already closing
+  if (!closingSuffix && asteriskCount >= 2) {
+    const remainder = asteriskCount % 4
+    if (remainder === 2) {
+      // Only check for ** if there are actually ** markers in the line
+      // This prevents "*italic*" (2 asterisks) from being treated as unclosed **
+      if (doubleAsteriskPositions.length > 0) {
+        // Check if line starts with more asterisks than ** (e.g., *** or more)
+        // This prevents "***text***" or "***text** *more" from being seen as unclosed **
+        const startsWithMoreAsterisks = line[0] === '*' && line[1] === '*' && line[2] === '*'
+
+        if (!startsWithMoreAsterisks) {
+          // Check if marker at end with no content
+          const endsWithMarker = contentEnd >= 2 && line[contentEnd - 1] === '*' && line[contentEnd - 2] === '*'
+          const markerAtEnd = endsWithMarker && (contentEnd === 2 || line[contentEnd - 3] === ' ')
+
+          if (!markerAtEnd) {
+            // Check if line ends with word or marker
+            const lastChar = line[contentEnd - 1]
+            const endsWithContent = (lastChar >= 'a' && lastChar <= 'z')
+              || (lastChar >= 'A' && lastChar <= 'Z')
+              || (lastChar >= '0' && lastChar <= '9')
+              || lastChar === '*'
+
+            // Use pre-computed complete pair check (O(1) instead of O(n^3))
+            if (!hasCompleteBoldPair || endsWithContent) {
+              closingSuffix = '**'
+              if (hasTrailingSpace && !endsWithMarker) {
+                shouldTrim = true
+              }
+            }
           }
-          closingSuffix = marker
-          break
+        }
+      }
+    }
+    else if (remainder > 2 && remainder < 4) {
+      const needed = 4 - remainder
+      closingSuffix = '*'.repeat(needed)
+    }
+  }
+
+  // Check * (italic) if not already closing
+  if (!closingSuffix && asteriskCount % 2 === 1) {
+    // Check if line starts with more asterisks (e.g., ** or ***)
+    const startsWithMoreAsterisks = line[0] === '*' && line[1] === '*'
+
+    if (!startsWithMoreAsterisks) {
+      // Check if * followed by space (invalid italic)
+      let validItalic = false
+      for (let i = 0; i < len; i++) {
+        if (line[i] === '*') {
+          const nextCh = i + 1 < len ? line[i + 1] : ''
+          const prevCh = i > 0 ? line[i - 1] : ''
+          // Valid if not followed by space, or if it's preceded by space (closing)
+          if (nextCh !== ' ' || prevCh === ' ') {
+            validItalic = true
+            break
+          }
+        }
+      }
+
+      if (validItalic) {
+        // Check marker at end with no content
+        // Only skip if it's truly isolated (e.g., "input *")
+        // Don't skip if there are complete pairs before it (e.g., "input **bold** *")
+        const markerAtEnd = contentEnd >= 1 && line[contentEnd - 1] === '*'
+          && (contentEnd === 1 || line[contentEnd - 2] === ' ')
+
+        if (!markerAtEnd || asteriskCount > 1) {
+          closingSuffix = '*'
+          const endsWithMarker = line[contentEnd - 1] === '*'
+          if (hasTrailingSpace && !endsWithMarker) {
+            shouldTrim = true
+          }
         }
       }
     }
   }
 
-  // If we need to close and there's trailing whitespace, trim it first
-  if (closingSuffix && trimTrailing) {
-    return markdown.trimEnd() + closingSuffix
+  // Check ~~ (strikethrough)
+  if (!closingSuffix && tildePairCount % 2 === 1) {
+    closingSuffix = '~~'
+    if (hasTrailingSpace) shouldTrim = true
   }
 
-  return markdown + closingSuffix
+  // Check ` (code)
+  if (!closingSuffix && backtickCount % 2 === 1) {
+    closingSuffix = '`'
+  }
+
+  // Check [ ] (brackets)
+  if (!closingSuffix && bracketBalance > 0) {
+    closingSuffix = ']'
+  }
+
+  // Check ( ) (parens)
+  if (!closingSuffix && parenBalance > 0) {
+    closingSuffix = ')'
+  }
+
+  // Apply closing
+  if (shouldTrim && closingSuffix) {
+    let trimmedLen = len
+    while (trimmedLen > 0 && (line[trimmedLen - 1] === ' ' || line[trimmedLen - 1] === '\t')) {
+      trimmedLen--
+    }
+    return line.slice(0, trimmedLen) + closingSuffix
+  }
+
+  return line + closingSuffix
 }
 
 /**
- * Auto-closes unclosed MDC block components
- * Handles nested components by tracking the marker depth (::, :::, ::::, etc.)
- * Also closes incomplete props {...}
+ * Closes unclosed MDC components by scanning all lines in O(n) time
  */
-function autoCloseMDCComponents(markdown: string, lines: string[]): string {
+function closeMDCComponentsLinear(markdown: string): string {
+  const lines: string[] = []
+  let lineStart = 0
+
+  // Split into lines manually
+  for (let i = 0; i <= markdown.length; i++) {
+    if (i === markdown.length || markdown[i] === '\n') {
+      lines.push(markdown.slice(lineStart, i))
+      lineStart = i + 1
+    }
+  }
+
+  const lastLine = lines[lines.length - 1]
   let result = markdown
 
-  // Check for incomplete props on the last line
-  const lastLine = lines[lines.length - 1]
+  // Check for unclosed braces in props
   if (lastLine) {
-    // Check if there's an unclosed brace
-    const openBraceMatch = lastLine.match(/\{[^}]*$/)
-    if (openBraceMatch) {
-      const propsContent = openBraceMatch[0].substring(1) // Remove the opening {
+    let lastOpenBrace = -1
+    for (let i = lastLine.length - 1; i >= 0; i--) {
+      if (lastLine[i] === '}') break
+      if (lastLine[i] === '{') {
+        lastOpenBrace = i
+        break
+      }
+    }
 
-      // Single-pass quote counting using pre-compiled patterns
-      const doubleQuotes = (propsContent.match(PATTERNS.doubleQuoteGlobal) || []).length
-      const singleQuotes = (propsContent.match(PATTERNS.singleQuoteGlobal) || []).length
+    if (lastOpenBrace >= 0) {
+      const propsContent = lastLine.slice(lastOpenBrace + 1)
+      let doubleQuotes = 0
+      let singleQuotes = 0
+
+      for (let i = 0; i < propsContent.length; i++) {
+        if (propsContent[i] === '"') doubleQuotes++
+        if (propsContent[i] === '\'') singleQuotes++
+      }
 
       let closing = ''
-
-      // Close unclosed quotes
-      if (doubleQuotes % 2 === 1) {
-        closing += '"'
-      }
-      if (singleQuotes % 2 === 1) {
-        closing += '\''
-      }
-
-      // Always close the brace
+      if (doubleQuotes % 2 === 1) closing += '"'
+      if (singleQuotes % 2 === 1) closing += '\''
       closing += '}'
 
       result += closing
-      lines[lines.length - 1] = lastLine + closing
     }
   }
 
-  // Stack to track unclosed components with their marker count
-  const unclosedStack: Array<{ markerCount: number, name: string }> = []
+  // Track unclosed components
+  const componentStack: Array<{ depth: number, name: string }> = []
 
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i]
+  for (const line of lines) {
     const trimmed = line.trim()
 
-    // Match opening component: ::component, :::component, etc.
-    const openMatch = trimmed.match(/^(:+)([a-z$][$\w.-]*)/i)
-    if (openMatch) {
-      const markerCount = openMatch[1].length
-      const componentName = openMatch[2]
+    // Check for component opening/closing
+    let i = 0
+    if (trimmed[0] === ':') {
+      // Count colons
+      let colonCount = 0
+      while (i < trimmed.length && trimmed[i] === ':') {
+        colonCount++
+        i++
+      }
 
-      // Check if this line is ONLY the closing marker
-      const isClosing = trimmed === openMatch[1] && markerCount >= 2
+      if (colonCount >= 2) {
+        // Check if it's a component name or just closing
+        const ch = i < trimmed.length ? trimmed[i] : ''
+        const isComponent = (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || ch === '$'
 
-      if (isClosing) {
-        // This is a closing marker - pop from stack if it matches
-        if (unclosedStack.length > 0) {
-          const last = unclosedStack[unclosedStack.length - 1]
-          if (last.markerCount === markerCount) {
-            unclosedStack.pop()
+        if (isComponent) {
+          // Extract component name
+          let nameEnd = i
+          while (nameEnd < trimmed.length) {
+            const c = trimmed[nameEnd]
+            if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')
+              || (c >= '0' && c <= '9') || c === '$' || c === '.' || c === '-' || c === '_')) {
+              break
+            }
+            nameEnd++
+          }
+          const name = trimmed.slice(i, nameEnd)
+          componentStack.push({ depth: colonCount, name })
+        }
+        else if (colonCount === trimmed.length) {
+          // Pure closing marker
+          if (componentStack.length > 0) {
+            const last = componentStack[componentStack.length - 1]
+            if (last.depth === colonCount) {
+              componentStack.pop()
+            }
           }
         }
       }
-      else if (componentName && markerCount >= 2) {
-        // This is an opening component
-        unclosedStack.push({ markerCount, name: componentName })
-      }
-    }
-
-    // Match closing marker: ::, :::, etc. (standalone)
-    const closeMatch = trimmed.match(/^(:+)$/)
-    if (closeMatch && closeMatch[1].length >= 2) {
-      const markerCount = closeMatch[1].length
-
-      // Pop matching component from stack
-      if (unclosedStack.length > 0) {
-        const last = unclosedStack[unclosedStack.length - 1]
-        if (last.markerCount === markerCount) {
-          unclosedStack.pop()
-        }
-      }
     }
   }
 
-  // Add closing markers for any unclosed components (in reverse order)
-  // Use array join pattern for better performance with multiple closers
+  // Add closing markers
   const closers: string[] = []
-  while (unclosedStack.length > 0) {
-    const component = unclosedStack.pop()!
-    // Use pre-generated closers for common depths, fallback to repeat() for deep nesting
-    const closer = component.markerCount < COLON_CLOSERS.length
-      ? COLON_CLOSERS[component.markerCount]
-      : ':'.repeat(component.markerCount)
+  while (componentStack.length > 0) {
+    const comp = componentStack.pop()!
+    let closer = ''
+    for (let i = 0; i < comp.depth; i++) {
+      closer += ':'
+    }
     closers.push(closer)
   }
 
-  return closers.length > 0 ? result + '\n' + closers.join('\n') : result
-}
-
-/**
- * Escapes special regex characters in a string
- */
-function escapeRegex(str: string): string {
-  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-}
-
-/**
- * Checks if markdown content has unclosed syntax without modifying it
- * Useful for validation or showing warnings
- *
- * @param markdown - The markdown content to check
- * @returns Object with information about unclosed syntax
- */
-export function detectUnclosedSyntax(markdown: string): {
-  hasUnclosed: boolean
-  unclosedInline: string[]
-  unclosedComponents: Array<{ markerCount: number, name: string }>
-} {
-  const original = markdown
-  const closed = autoCloseMarkdown(markdown)
-
-  const hasUnclosed = original !== closed
-  const unclosedInline: string[] = []
-  const unclosedComponents: Array<{ markerCount: number, name: string }> = []
-
-  if (!hasUnclosed) {
-    return { hasUnclosed: false, unclosedInline, unclosedComponents }
+  if (closers.length > 0) {
+    result += '\n' + closers.join('\n')
   }
 
-  // Analyze what was closed
-  const lines = markdown.split('\n')
-  const lastLine = lines[lines.length - 1]
-
-  // Check inline syntax
-  if (/\*\*[^*\n]+$/.test(lastLine))
-    unclosedInline.push('**bold**')
-  if (/\*[^*\n]+$/.test(lastLine) && !unclosedInline.includes('**bold**'))
-    unclosedInline.push('*italic*')
-  if (/`[^`\n]+$/.test(lastLine))
-    unclosedInline.push('`code`')
-  if (/~~[^~\n]+$/.test(lastLine))
-    unclosedInline.push('~~strikethrough~~')
-
-  // Check components
-  const unclosedStack: Array<{ markerCount: number, name: string }> = []
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i]
-    const trimmed = line.trim()
-
-    const openMatch = trimmed.match(/^(:+)([a-z$][$\w.-]*)/i)
-    if (openMatch) {
-      const markerCount = openMatch[1].length
-      const componentName = openMatch[2]
-      const isClosing = trimmed === openMatch[1] && markerCount >= 2
-
-      if (!isClosing && componentName && markerCount >= 2) {
-        unclosedStack.push({ markerCount, name: componentName })
-      }
-    }
-
-    const closeMatch = trimmed.match(/^(:+)$/)
-    if (closeMatch && closeMatch[1].length >= 2) {
-      const markerCount = closeMatch[1].length
-      if (unclosedStack.length > 0) {
-        const last = unclosedStack[unclosedStack.length - 1]
-        if (last.markerCount === markerCount) {
-          unclosedStack.pop()
-        }
-      }
-    }
-  }
-
-  return {
-    hasUnclosed: true,
-    unclosedInline,
-    unclosedComponents: unclosedStack,
-  }
+  return result
 }

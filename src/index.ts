@@ -1,6 +1,8 @@
 import type { ParseOptions } from './types'
 import MarkdownIt from 'markdown-it'
 import pluginMdc from 'markdown-it-mdc'
+import markdownItCjkFriendly from 'markdown-it-cjk-friendly'
+import markdownItTaskListsMdc from './utils/markdown-it-task-lists-mdc'
 import { parseFrontMatter } from 'remark-mdc'
 import { applyAutoUnwrap } from './utils/auto-unwrap'
 import { generateToc } from './utils/table-of-contents'
@@ -20,7 +22,7 @@ export interface ParseResult {
 export type { MinimarkTree, MinimarkNode } from 'minimark'
 
 // Re-export auto-close utilities
-export { autoCloseMarkdown, detectUnclosedSyntax } from './utils/auto-close'
+export { autoCloseMarkdown } from './utils/auto-close'
 
 // Re-export parse utilities
 export { applyAutoUnwrap } from './utils/auto-unwrap'
@@ -85,7 +87,10 @@ export function parse(source: string, options: ParseOptions = {}): ParseResult {
     html: true,
     linkify: true,
   })
-    .enable(['table'])
+    .enable(['table', 'strikethrough'])
+    // Custom task list plugin must run before MDC to prevent [X] being parsed as MDC syntax
+    .use(markdownItTaskListsMdc)
+    .use(markdownItCjkFriendly)
     .use(pluginMdc)
 
   const tokens = markdownIt.parse(content, {})
