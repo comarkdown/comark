@@ -146,18 +146,24 @@ function closeInlineMarkersLinear(line: string): string {
           const markerAtEnd = endsWithMarker && (contentEnd === 2 || line[contentEnd - 3] === ' ')
 
           if (!markerAtEnd) {
-            // Check if line ends with word or marker
-            const lastChar = line[contentEnd - 1]
-            const endsWithContent = (lastChar >= 'a' && lastChar <= 'z')
-              || (lastChar >= 'A' && lastChar <= 'Z')
-              || (lastChar >= '0' && lastChar <= '9')
-              || lastChar === '*'
+            // Check if all asterisks are paired (bold + italic complete)
+            // If we have complete ** pairs, check remaining asterisks for italic
+            const boldAsterisksUsed = Math.floor(doubleAsteriskPositions.length / 2) * 4
+            const remainingSingle = asteriskCount - boldAsterisksUsed
+            const allPaired = hasCompleteBoldPair && remainingSingle % 2 === 0
 
-            // Use pre-computed complete pair check (O(1) instead of O(n^3))
-            if (!hasCompleteBoldPair || endsWithContent) {
-              closingSuffix = '**'
-              if (hasTrailingSpace && !endsWithMarker) {
-                shouldTrim = true
+            if (!allPaired) {
+              // Check if line ends with word (not just a closing marker)
+              const lastChar = line[contentEnd - 1]
+              const endsWithWord = (lastChar >= 'a' && lastChar <= 'z')
+                || (lastChar >= 'A' && lastChar <= 'Z')
+                || (lastChar >= '0' && lastChar <= '9')
+
+              if (!hasCompleteBoldPair || endsWithWord) {
+                closingSuffix = '**'
+                if (hasTrailingSpace && !endsWithMarker) {
+                  shouldTrim = true
+                }
               }
             }
           }
@@ -173,9 +179,10 @@ function closeInlineMarkersLinear(line: string): string {
   // Check * (italic) if not already closing
   if (!closingSuffix && asteriskCount % 2 === 1) {
     // Check if line starts with more asterisks (e.g., ** or ***)
+    // But allow italic closing if bold pairs are complete
     const startsWithMoreAsterisks = line[0] === '*' && line[1] === '*'
 
-    if (!startsWithMoreAsterisks) {
+    if (!startsWithMoreAsterisks || hasCompleteBoldPair) {
       // Check if * followed by space (invalid italic)
       let validItalic = false
       for (let i = 0; i < len; i++) {

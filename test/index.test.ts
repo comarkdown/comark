@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { readdir, readFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import { parseFrontMatter } from 'remark-mdc'
+import { parseFrontmatter } from '../src/utils/front-matter'
 import type { ParseOptions } from '../src/index'
 import { parseAsync, renderHTML, renderMarkdown } from '../src/index'
 
@@ -31,7 +31,7 @@ function parseTimeout(timeoutStr: string): number {
 }
 
 function extractFrontmatter(content: string): { timeouts?: TestCase['timeouts'], body: string, options?: TestCase['options'] } {
-  const { content: body, data } = parseFrontMatter(content)
+  const { content: body, data } = parseFrontmatter(content)
 
   if (!data || Object.keys(data).length === 0) {
     return { body }

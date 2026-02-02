@@ -62,6 +62,7 @@
     "minimark": "https://pkg.pr.new/minimark@76668bf",
     "remark-mdc": "^3.10.0",
     "shiki": "^3.21.0",
-    "shiki-stream": "^0.1.4"
+    "shiki-stream": "^0.1.4",
+    "yaml": "^2.8.2"
   }
 }

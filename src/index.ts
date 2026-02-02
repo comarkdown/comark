@@ -3,13 +3,13 @@ import MarkdownIt from 'markdown-it'
 import pluginMdc from 'markdown-it-mdc'
 import markdownItCjkFriendly from 'markdown-it-cjk-friendly'
 import markdownItTaskListsMdc from './utils/markdown-it-task-lists-mdc'
-import { parseFrontMatter } from 'remark-mdc'
 import { applyAutoUnwrap } from './utils/auto-unwrap'
 import { generateToc } from './utils/table-of-contents'
 import { stringify } from 'minimark/stringify'
 import type { MinimarkTree, MinimarkNode } from 'minimark'
 import { parseTokens } from './utils/token-processor'
 import { autoCloseMarkdown } from './utils/auto-close'
+import { parseFrontmatter, renderFrontmatter } from './utils/front-matter'
 
 export interface ParseResult {
   body: MinimarkTree
@@ -80,7 +80,7 @@ export function parse(source: string, options: ParseOptions = {}): ParseResult {
     source = autoCloseMarkdown(source)
   }
 
-  const { content, data } = parseFrontMatter(source)
+  const { content, data } = parseFrontmatter(source)
 
   // Enable tables, GFM features
   const markdownIt = new MarkdownIt({
@@ -105,39 +105,26 @@ export function parse(source: string, options: ParseOptions = {}): ParseResult {
     body.value = body.value.map((node: MinimarkNode) => applyAutoUnwrap(node))
   }
 
-  // // Handle excerpt (look for HTML comment with 'more')
-  // let excerpt: MinimarkTree | undefined
-  // const excerptIndex = tokens.findIndex(
-  //   token => token.type === 'html_block' && token.content?.includes('<!-- more -->'),
-  // )
+  // Handle excerpt (look for HTML comment with 'more')
+  let excerpt: MinimarkTree | undefined
+  const excerptIndex = tokens.findIndex(
+    token => token.type === 'html_block' && token.content?.includes('<!-- more -->'),
+  )
 
-  // if (excerptIndex !== -1) {
-  //   const excerptTokens = tokens.slice(0, excerptIndex)
-  //   let excerptChildren = convertMarkdownItTokensToMDC(excerptTokens as any, new Set())
+  if (excerptIndex !== -1) {
+    const excerptTokens = tokens.slice(0, excerptIndex)
+    let excerptChildren = parseTokens(excerptTokens)
 
-  //   // Apply auto-unwrap to excerpt as well
-  //   if (autoUnwrap) {
-  //     excerptChildren = excerptChildren.map((child) => {
-  //       if (child.type === 'element') {
-  //         return applyAutoUnwrap(child as MDCElement)
-  //       }
-  //       return child
-  //     })
-  //   }
+    // Apply auto-unwrap to excerpt as well
+    if (autoUnwrap) {
+      excerptChildren = excerptChildren.map((child: MinimarkNode) => applyAutoUnwrap(child))
+    }
 
-  //   excerpt = {
-  //     type: 'root',
-  //     children: excerptChildren.filter(child => child.type !== 'text'),
-  //   }
-
-  //   // Include styles if excerpt contains code block
-  //   if (excerpt.children.find(node => node.type === 'element' && node.tag === 'pre')) {
-  //     const lastChild = body.children[body.children.length - 1]
-  //     if (lastChild && lastChild.type === 'element' && lastChild.tag === 'style') {
-  //       excerpt.children.push(lastChild)
-  //     }
-  //   }
-  // }
+    excerpt = {
+      type: 'minimark',
+      value: excerptChildren,
+    }
+  }
 
   const toc = generateToc(body, {
     title: data.title || '',
@@ -148,7 +135,7 @@ export function parse(source: string, options: ParseOptions = {}): ParseResult {
 
   return {
     body,
-    // excerpt,
+    excerpt,
     data,
     toc,
   }
@@ -202,6 +189,6 @@ export function renderHTML(tree: MinimarkTree): string {
   return stringify(tree, { format: 'text/html' }).trim()
 }
 
-export function renderMarkdown(tree: MinimarkTree): string {
-  return stringify(tree, { format: 'markdown/mdc' }).trim()
+export function renderMarkdown(tree: MinimarkTree, data?: Record<string, any> | undefined | null): string {
+  return renderFrontmatter(data, stringify(tree, { format: 'markdown/mdc' }))
 }

@@ -35,6 +35,9 @@ importers:
       vue:
         specifier: ^3.5.27
         version: 3.5.27(typescript@5.9.3)
+      yaml:
+        specifier: ^2.8.2
+        version: 2.8.2
     devDependencies:
       '@nuxt/eslint-config':
         specifier: ^1.13.0

@@ -50,6 +50,17 @@ describe('autoCloseMarkdown - Inline Syntax', () => {
     const expected = 'First line\nSecond line **bold**'
     expect(autoCloseMarkdown(input)).toBe(expected)
   })
+
+  it('should handle bold at the end of last line', () => {
+    const input = '**djddsds** *dsd'
+    const expected = '**djddsds** *dsd*'
+    expect(autoCloseMarkdown(input)).toBe(expected)
+  })
+  it('should handle bold at the end of last line', () => {
+    const input = '**djddsds** *dsd*'
+    const expected = '**djddsds** *dsd*'
+    expect(autoCloseMarkdown(input)).toBe(expected)
+  })
 })
 
 describe('autoCloseMarkdown - MDC Components', () => {

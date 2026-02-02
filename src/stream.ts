@@ -1,6 +1,6 @@
 import type { Readable } from 'node:stream'
 import type { ParseOptions } from './types'
-import { parseFrontMatter } from 'remark-mdc'
+import { parseFrontmatter } from './utils/front-matter'
 import { autoCloseMarkdown } from './utils/auto-close'
 import type { ParseResult } from './index'
 import { parse } from './index'
@@ -156,7 +156,7 @@ export async function* parseStreamIncremental(
 
       // Parse frontmatter if not already done
       if (!frontmatterParsed) {
-        const { data } = parseFrontMatter(accumulatedContent)
+        const { data } = parseFrontmatter(accumulatedContent)
         frontmatterData = data
         frontmatterParsed = true
       }
@@ -215,7 +215,7 @@ export async function* parseStreamIncremental(
 
         // Parse frontmatter if not already done
         if (!frontmatterParsed) {
-          const { data } = parseFrontMatter(accumulatedContent)
+          const { data } = parseFrontmatter(accumulatedContent)
           frontmatterData = data
           frontmatterParsed = true
         }
