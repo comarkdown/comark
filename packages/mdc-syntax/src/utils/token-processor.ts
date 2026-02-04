@@ -157,7 +157,7 @@ function parseCodeblockInfo(info: string): {
   let remaining = info.trim()
 
   // Extract language (stops at [ or { or whitespace)
-  const languageMatch = remaining.match(/^([^\s\[\{]+)/)
+  const languageMatch = remaining.match(/^([^\s[{]+)/)
   if (languageMatch) {
     result.language = languageMatch[1]
     remaining = remaining.slice(languageMatch[1].length).trim()
