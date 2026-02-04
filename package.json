@@ -29,8 +29,8 @@
   "devDependencies": {
     "@nuxt/eslint-config": "^1.13.0",
     "@release-it/conventional-changelog": "^10.0.4",
-    "@types/node": "^25.0.10",
-    "@vitejs/plugin-vue": "^6.0.3",
+    "@types/node": "^25.2.0",
+    "@vitejs/plugin-vue": "^6.0.4",
     "eslint": "^9.39.2",
     "markdown-it-cjk-friendly": "^2.0.1",
     "markdown-it-sub": "^2.0.0",
