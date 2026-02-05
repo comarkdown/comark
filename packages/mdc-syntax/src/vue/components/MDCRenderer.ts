@@ -261,7 +261,7 @@ export const MDCRenderer = defineComponent({
     })
 
     const streamComponents = props.stream
-      ? await import('./prose/stream').then(m => m.proseStreamComponents)
+      ? await import('mdc-syntax/vue/components/prose/stream').then(m => m.proseStreamComponents)
       : {}
 
     const components = computed(() => ({

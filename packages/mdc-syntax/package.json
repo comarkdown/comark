@@ -17,6 +17,7 @@
   "exports": {
     ".": "./dist/index.mjs",
     "./vue": "./dist/vue/index.mjs",
+    "./vue/*": "./dist/vue/*.mjs",
     "./react": "./dist/react/index.mjs",
     "./stream": "./dist/stream.mjs"
   },
