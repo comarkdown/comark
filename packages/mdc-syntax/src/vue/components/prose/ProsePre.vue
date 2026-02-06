@@ -119,6 +119,16 @@ async function copyCode() {
     </div>
 
     <!-- Shiki renderer -->
-    <pre class="shiki-container bg-neutral-100 dark:bg-neutral-800 rounded-b-lg pt-16 p-4 border border-neutral-300 dark:border-neutral-700"><slot /></pre>
+    <pre class="shiki-container bg-neutral-100 dark:bg-neutral-800 rounded-b-lg p-4 border border-neutral-300 dark:border-neutral-700"><slot /></pre>
   </div>
 </template>
+
+<style scoped>
+html.dark .shiki-container:not(.shiki-stream) :deep(span) {
+  color: var(--shiki-dark) !important;
+  background-color: var(--shiki-dark-bg) !important;
+  font-style: var(--shiki-dark-font-style) !important;
+  font-weight: var(--shiki-dark-font-weight) !important;
+  text-decoration: var(--shiki-dark-text-decoration) !important;
+}
+</style>

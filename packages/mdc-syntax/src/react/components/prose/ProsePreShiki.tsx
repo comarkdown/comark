@@ -4,6 +4,25 @@ import { ShikiStreamRenderer } from 'shiki-stream/react'
 import { CodeToTokenTransformStream } from 'shiki-stream'
 import { textContent } from 'minimark'
 
+// Inject dark mode styles for Shiki (once)
+const SHIKI_DARK_STYLE_ID = 'mdc-shiki-dark-styles'
+function ensureShikiDarkStyles() {
+  if (typeof document === 'undefined') return
+  if (document.getElementById(SHIKI_DARK_STYLE_ID)) return
+  const style = document.createElement('style')
+  style.id = SHIKI_DARK_STYLE_ID
+  style.textContent = `
+html.dark .shiki-container:not(.shiki-stream) span {
+  color: var(--shiki-dark) !important;
+  background-color: var(--shiki-dark-bg) !important;
+  font-style: var(--shiki-dark-font-style) !important;
+  font-weight: var(--shiki-dark-font-weight) !important;
+  text-decoration: var(--shiki-dark-text-decoration) !important;
+}
+`
+  document.head.appendChild(style)
+}
+
 // Singleton highlighter instance shared across all code blocks
 let highlighterInstance: HighlighterCore | null = null
 let highlighterPromise: Promise<HighlighterCore> | null = null
@@ -49,6 +68,11 @@ export const ShikiCodeBlock: React.FC<ShikiCodeBlockProps> = ({
   const [stream, setStream] = useState<ReadableStream | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [copied, setCopied] = useState(false)
+
+  // Inject dark mode styles once
+  useEffect(() => {
+    ensureShikiDarkStyles()
+  }, [])
 
   // Extract code content and language from node
   const { codeContent, language } = useMemo(() => {

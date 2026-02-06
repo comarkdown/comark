@@ -176,7 +176,7 @@ export async function highlightCodeBlocks(
               tabindex: '0',
             }
 
-            if (bgColor || fgColor) {
+            if (options.preStyles  && (bgColor || fgColor)) {
               const styles: string[] = []
               if (bgColor) styles.push(`background-color:${bgColor}`)
               if (fgColor) styles.push(`color:${fgColor}`)

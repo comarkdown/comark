@@ -1,5 +1,24 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import { textContent } from 'minimark'
+
+// Inject dark mode styles for Shiki (once)
+const SHIKI_DARK_STYLE_ID = 'mdc-shiki-dark-styles'
+function ensureShikiDarkStyles() {
+  if (typeof document === 'undefined') return
+  if (document.getElementById(SHIKI_DARK_STYLE_ID)) return
+  const style = document.createElement('style')
+  style.id = SHIKI_DARK_STYLE_ID
+  style.textContent = `
+html.dark .shiki-container:not(.shiki-stream) span {
+  color: var(--shiki-dark) !important;
+  background-color: var(--shiki-dark-bg) !important;
+  font-style: var(--shiki-dark-font-style) !important;
+  font-weight: var(--shiki-dark-font-weight) !important;
+  text-decoration: var(--shiki-dark-text-decoration) !important;
+}
+`
+  document.head.appendChild(style)
+}
 
 export interface ProsePreProps {
   __node?: any
@@ -17,6 +36,11 @@ export const ProsePre: React.FC<ProsePreProps> = ({
   children,
 }) => {
   const [copied, setCopied] = useState(false)
+
+  // Inject dark mode styles once
+  useEffect(() => {
+    ensureShikiDarkStyles()
+  }, [])
 
   // Extract code content and language from node
   const { codeContent, language } = useMemo(() => {
@@ -102,7 +126,7 @@ export const ProsePre: React.FC<ProsePreProps> = ({
       </div>
 
       {/* Code content */}
-      <pre className="shiki-container bg-neutral-100 dark:bg-neutral-800 rounded-b-lg pt-16 p-4 border border-neutral-300 dark:border-neutral-700">
+      <pre className="shiki-container bg-neutral-100 dark:bg-neutral-800 rounded-b-lg p-4 border border-neutral-300 dark:border-neutral-700">
         {children}
       </pre>
     </div>

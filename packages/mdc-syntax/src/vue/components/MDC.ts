@@ -112,18 +112,6 @@ export const MDC = defineComponent({
           highlight: !props.stream,
           ...props.options,
         })
-        parsed.value?.body?.value?.push([
-          'style',
-          {},
-          `html.dark .shiki:not(.shiki-stream), html.dark .shiki:not(.shiki-stream) span {
-      color: var(--shiki-dark) !important;
-      background-color: var(--shiki-dark-bg) !important;
-      /* Optional, if you also want font styles */
-      font-style: var(--shiki-dark-font-style) !important;
-      font-weight: var(--shiki-dark-font-weight) !important;
-      text-decoration: var(--shiki-dark-text-decoration) !important;
-    }`,
-        ])
       }
       else {
         parsed.value = parse(markdown.value, {
@@ -137,9 +125,10 @@ export const MDC = defineComponent({
 
     await parseMarkdown()
 
+    const streamComponents = props.stream ? await import('mdc-syntax/vue/components/prose/stream').then(m => m.proseStreamComponents) : {}
     const components = computed(() => ({
       ...standardProseComponents,
-      ...proseStreamComponents,
+      ...streamComponents,
       ...props.components,
     }))
 

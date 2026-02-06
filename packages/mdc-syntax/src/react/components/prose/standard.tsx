@@ -1,4 +1,5 @@
 import React from 'react'
+import { ProsePre } from './ProsePre'
 
 /**
  * Standard Typography Prose Components for React
@@ -61,10 +62,6 @@ const ProseAStandard: React.FC<React.AnchorHTMLAttributes<HTMLAnchorElement> & {
 // Code
 const ProseCodeStandard: React.FC<React.HTMLAttributes<HTMLElement> & { __node?: any }> = ({ __node, ...props }) => (
   <code className="prose-code-standard bg-neutral-100 dark:bg-neutral-800 text-pink-600 dark:text-pink-400 px-2 py-1 rounded text-base font-mono" {...props} />
-)
-
-const ProsePreStandard: React.FC<React.HTMLAttributes<HTMLPreElement> & { __node?: any }> = ({ __node, ...props }) => (
-  <pre className="prose-pre-standard bg-neutral-50 dark:bg-neutral-900 text-neutral-800 dark:text-neutral-200 p-6 rounded-xl overflow-x-auto my-8 border border-neutral-200 dark:border-neutral-800 text-base leading-relaxed" {...props} />
 )
 
 // Lists
@@ -132,7 +129,7 @@ export const standardProseComponents = {
   del: ProseDelStandard,
   a: ProseAStandard,
   code: ProseCodeStandard,
-  pre: ProsePreStandard,
+  pre: ProsePre,
   ul: ProseUlStandard,
   ol: ProseOlStandard,
   li: ProseLiStandard,

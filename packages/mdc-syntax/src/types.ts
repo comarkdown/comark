@@ -19,6 +19,12 @@ export interface ShikiOptions {
    * @default { light: 'material-theme-lighter', dark: 'material-theme-palenight' }
    */
   themes?: Record<string, BundledTheme | string>
+
+  /**
+   * Whether to add pre styles to the code blocks
+   * @default false
+   */
+  preStyles?: boolean
 }
 
 export interface ParseOptions {

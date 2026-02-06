@@ -1,4 +1,4 @@
-import { ShikiCodeBlock } from '../ShikiCodeBlock'
+import { ShikiCodeBlock } from './ProsePreShiki'
 
 export const proseStreamComponents = {
   pre: ShikiCodeBlock,
