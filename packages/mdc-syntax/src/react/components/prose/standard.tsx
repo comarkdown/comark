@@ -119,35 +119,6 @@ const ProseImgStandard: React.FC<React.ImgHTMLAttributes<HTMLImageElement> & { _
   <img className="prose-img-standard my-8 rounded-xl shadow-lg max-w-full h-auto" {...props} />
 )
 
-// MDC Components
-interface AlertProps extends React.HTMLAttributes<HTMLDivElement> {
-  type?: 'info' | 'warning' | 'error' | 'success'
-}
-
-const ProseAlertStandard: React.FC<AlertProps> = ({ type = 'info', ...props }) => {
-  const typeColors = {
-    info: 'border-blue-500 bg-blue-50 dark:bg-blue-950/30 text-blue-800 dark:text-blue-200',
-    warning: 'border-yellow-500 bg-yellow-50 dark:bg-yellow-950/30 text-yellow-800 dark:text-yellow-200',
-    error: 'border-red-500 bg-red-50 dark:bg-red-950/30 text-red-800 dark:text-red-200',
-    success: 'border-green-500 bg-green-50 dark:bg-green-950/30 text-green-800 dark:text-green-200',
-  }
-  const colorClass = typeColors[type]
-  return (
-    <div className={`prose-alert-standard border-l-4 px-6 py-4 my-6 rounded-r-lg ${colorClass}`} {...props} />
-  )
-}
-
-interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
-  title?: string
-}
-
-const ProseCardStandard: React.FC<CardProps> = ({ title, children, ...props }) => (
-  <div className="prose-card-standard border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 rounded-xl p-6 my-8 shadow-md hover:shadow-lg transition-shadow" {...props}>
-    {title && <h3 className="text-2xl font-bold mb-4 text-neutral-900 dark:text-white">{title}</h3>}
-    <div>{children}</div>
-  </div>
-)
-
 export const standardProseComponents = {
   h1: ProseH1Standard,
   h2: ProseH2Standard,
@@ -174,6 +145,4 @@ export const standardProseComponents = {
   td: ProseTdStandard,
   hr: ProseHrStandard,
   img: ProseImgStandard,
-  alert: ProseAlertStandard,
-  card: ProseCardStandard,
 }

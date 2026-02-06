@@ -154,6 +154,7 @@ interface ParseResult {
 
 interface IncrementalParseResult {
   chunk: string // The chunk just received
+  content: string // The accumulated content
   body: MinimarkTree // Current parsed state
   data: any // Frontmatter data (once available)
   isComplete: boolean // Whether stream is finished
@@ -204,7 +205,7 @@ Content goes here
 For streaming scenarios or incomplete content, use `autoCloseMarkdown` to automatically close unclosed syntax:
 
 ```typescript
-import { autoCloseMarkdown, detectUnclosedSyntax, parse } from 'mdc-syntax'
+import { autoCloseMarkdown, parse } from 'mdc-syntax'
 
 // Auto-close unclosed inline markdown
 const partial = '**bold text'
@@ -215,15 +216,6 @@ const closed = autoCloseMarkdown(partial)
 const component = '::alert{type="info"}\nImportant message'
 const closedComponent = autoCloseMarkdown(component)
 // Result: '::alert{type="info"}\nImportant message\n::'
-
-// Detect what's unclosed without modifying
-const detection = detectUnclosedSyntax('::card\nText with **bold')
-console.log(detection)
-// {
-//   hasUnclosed: true,
-//   unclosedInline: ['**bold**'],
-//   unclosedComponents: [{ markerCount: 2, name: 'card' }]
-// }
 
 // Use with streaming
 async function* parseStreamWithAutoClose(stream) {
@@ -309,7 +301,7 @@ npm test -- tests/compare-parsers.test.ts
 
 ## License
 
-ISC
+MIT
 
 ## Contributing
 

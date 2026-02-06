@@ -1,5 +1,5 @@
 import { defineComponent, h } from 'vue'
-import ShikiCodeBlock from '../ShikiCodeBlock.vue'
+import ProsePre from '../ProsePre.vue'
 
 /**
  * Standard Typography Prose Components
@@ -127,7 +127,7 @@ export const standardProseComponents = {
       }, slots.default?.())
     },
   }),
-  pre: ShikiCodeBlock,
+  pre: ProsePre,
 
   // Lists
   ul: defineComponent({
@@ -242,36 +242,6 @@ export const standardProseComponents = {
         class: 'prose-img-standard my-8 rounded-xl shadow-lg max-w-full h-auto',
         ...props,
       })
-    },
-  }),
-
-  // MDC Components
-  alert: defineComponent({
-    name: 'ProseAlertStandard',
-    setup(props: any, { slots }) {
-      const typeColors = {
-        info: 'border-blue-500 bg-blue-50 dark:bg-blue-950/30 text-blue-800 dark:text-blue-200',
-        warning: 'border-yellow-500 bg-yellow-50 dark:bg-yellow-950/30 text-yellow-800 dark:text-yellow-200',
-        error: 'border-red-500 bg-red-50 dark:bg-red-950/30 text-red-800 dark:text-red-200',
-        success: 'border-green-500 bg-green-50 dark:bg-green-950/30 text-green-800 dark:text-green-200',
-      }
-      const colorClass = typeColors[props.type as keyof typeof typeColors] || typeColors.info
-      return () => h('div', {
-        class: `prose-alert-standard border-l-4 px-6 py-4 my-6 rounded-r-lg ${colorClass}`,
-        ...props,
-      }, slots.default?.())
-    },
-  }),
-  card: defineComponent({
-    name: 'ProseCardStandard',
-    setup(props: any, { slots }) {
-      return () => h('div', {
-        class: 'prose-card-standard border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 rounded-xl p-6 my-8 shadow-md hover:shadow-lg transition-shadow',
-        ...props,
-      }, [
-        props.title && h('h3', { class: 'text-2xl font-bold mb-4 text-neutral-900 dark:text-white' }, props.title),
-        h('div', {}, slots.default?.()),
-      ])
     },
   }),
 }
