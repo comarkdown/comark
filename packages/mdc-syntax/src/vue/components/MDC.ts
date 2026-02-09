@@ -124,18 +124,11 @@ export const MDC = defineComponent({
 
     await parseMarkdown()
 
-    const streamComponents = props.stream ? await import('mdc-syntax/vue/components/prose/stream').then(m => m.proseStreamComponents) : {}
-    const components = computed(() => ({
-      ...standardProseComponents,
-      ...streamComponents,
-      ...props.components,
-    }))
-
     return () => {
       // Render using MDCRenderer
       return h(MDCRenderer, {
         body: parsed.value?.body || { type: 'minimark', value: [] },
-        components: components.value,
+        components: props.components,
         stream: props.stream,
         componentsManifest: props.componentsManifest,
         class: `mdc-content ${props.stream ? 'mdc-stream' : ''}`,
