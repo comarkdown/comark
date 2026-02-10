@@ -1,6 +1,10 @@
-import { defineAppConfig } from 'nuxt/app'
-
 export default defineAppConfig({
+  site: {
+    url: 'https://mdc-syntax.vercel.app',
+  },
+  docs: {
+    github: 'nuxt-content/mdc-syntax',
+  },
   docus: {
     title: 'MDC Syntax',
     description: 'Modern Markdown Component Parser',

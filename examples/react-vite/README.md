@@ -1,111 +1,102 @@
-# MDC Syntax - React Example
+---
+title: React
+description: A minimal example showing how to use MDC Syntax with React and Vite.
+---
 
-This is a React + Vite + TypeScript example demonstrating how to use MDC Syntax in a React application.
+::code-tree{defaultValue="src/main.tsx" expandAll}
 
-## Features
-
-- ✨ Live markdown editor with real-time preview
-- 🎨 Custom component support (Alert, Headings)
-- 🌗 Dark mode support
-- ⚡ Fast HMR with Vite
-- 📝 TypeScript support
-- 💨 Tailwind CSS for styling
-
-## Getting Started
-
-### Installation
-
-```bash
-# Install dependencies
-pnpm install
-```
-
-### Development
-
-```bash
-# Start dev server
-pnpm dev
-```
-
-Then open [http://localhost:5173](http://localhost:5173) in your browser.
-
-### Build
-
-```bash
-# Build for production
-pnpm build
-
-# Preview production build
-pnpm preview
-```
-
-## Usage
-
-### Basic Usage
-
-```tsx
+```tsx [src/main.tsx]
+import { createRoot } from 'react-dom/client'
 import { MDC } from 'mdc-syntax/react'
 
-export default function App() {
-  const markdown = `# Hello **World**`
-  return <MDC value={markdown} />
+const el = document.getElementById('root')!
+
+createRoot(el)
+  .render(<MDC markdown={`# Hello *World*`} />)
+```
+
+```ts [vite.config.ts]
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
+
+export default defineConfig({
+  plugins: [
+    react(),
+    tailwindcss(),
+  ],
+})
+```
+
+```json [package.json]
+{
+  "name": "mdc-syntax-react-example",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "^4.1.18",
+    "mdc-syntax": "workspace:*",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.10",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.3",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.1"
+  }
 }
 ```
 
-### With Custom Components
+```html [index.html]
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MDC Syntax - React Example</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+```
 
-```tsx
-import { MDC } from 'mdc-syntax/react'
+```json [tsconfig.json]
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
 
-const CustomAlert = ({ type, children }) => (
-  <div className={`alert alert-${type}`}>
-    {children}
-  </div>
-)
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+    "jsx": "react-jsx",
 
-export default function App() {
-  const markdown = `
-    # My Document
-
-    ::alert{type="info"}
-    This is a custom alert component!
-    ::
-  `
-
-  return (
-    <MDC
-      value={markdown}
-      components={{ alert: CustomAlert }}
-    />
-  )
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true
+  },
+  "include": ["src"]
 }
 ```
 
-### With MDCRenderer (Lower-level API)
+::
 
-```tsx
-import { MDCRenderer } from 'mdc-syntax/react'
-import { parse } from 'mdc-syntax'
 
-export default function App() {
-  const markdown = `# Hello **World**`
-  const ast = parse(markdown)
-
-  return <MDCRenderer body={ast.body} />
-}
-```
-
-## Custom Components
-
-The example includes two custom components:
-
-1. **CustomAlert** - Renders MDC alert blocks with different types (info, warning, error, success)
-2. **CustomHeading** - Adds an emoji prefix to all H1 headings
-
-Toggle the "Use custom components" checkbox to see the difference!
-
-## Learn More
-
-- [MDC Syntax Documentation](https://github.com/nuxt-content/mdc-syntax)
-- [React Documentation](https://react.dev)
-- [Vite Documentation](https://vitejs.dev)
+This example demonstrates the simplest way to use MDC Syntax with React - just import the `MDC` component and pass it markdown content. The component handles parsing and rendering automatically.

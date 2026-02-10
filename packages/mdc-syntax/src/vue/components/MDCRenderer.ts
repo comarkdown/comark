@@ -111,7 +111,10 @@ function renderNode(
   // Prepare props — use for...in instead of Object.entries() to avoid intermediate array allocation
   const props: Record<string, any> = {}
   for (const k in nodeProps) {
-    if (k.charCodeAt(0) === 58 /* ':' */) {
+    if (k === 'className') {
+      props.class = nodeProps[k]
+    }
+    else if (k.charCodeAt(0) === 58 /* ':' */) {
       props[k.substring(1)] = parsePropValue(nodeProps[k])
     }
     else {
@@ -119,7 +122,7 @@ function renderNode(
     }
   }
 
-  if (typeof component !== 'string') {
+  if (component?.__asyncResolved?.props?.__node) {
     props.__node = node
   }
 
@@ -135,7 +138,7 @@ function renderNode(
 
   // Process children — iterate by index directly, avoid .slice(2) array allocation
   let slots: Record<string, () => (VNode | string)[]> | null = null
-  let regularChildren: (VNode | string)[] = []
+  const regularChildren: (VNode | string)[] = []
 
   for (let i = 2; i < node.length; i++) {
     const child = node[i] as MinimarkNode

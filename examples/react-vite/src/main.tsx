@@ -1,9 +1,6 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import App from './App'
+import { createRoot } from 'react-dom/client'
+import { MDC } from 'mdc-syntax/react'
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-)
+const el = document.getElementById('root')!
+
+createRoot(el).render(<MDC markdown="# Hello *World*" />)

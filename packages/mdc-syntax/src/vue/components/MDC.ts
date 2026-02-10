@@ -4,7 +4,6 @@ import type { ParseResult } from '../../index'
 import { parse, parseAsync } from '../../index'
 import type { ParseOptions } from '../../types'
 import { MDCRenderer } from './MDCRenderer'
-import { standardProseComponents } from './prose/standard'
 
 /**
  * MDC component

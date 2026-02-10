@@ -8,5 +8,12 @@ export default defineNuxtConfig({
     experimental: {
       sqliteConnector: 'native',
     },
+    build: {
+      markdown: {
+        highlight: {
+          langs: ['tsx', 'tsx', 'vue', 'html', 'css', 'json', 'markdown', 'bash', 'shell'],
+        },
+      },
+    },
   },
 })
