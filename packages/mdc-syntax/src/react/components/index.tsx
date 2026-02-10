@@ -1,5 +1,5 @@
 import React from 'react'
-import { ProsePre } from './ProsePre'
+import { ProsePre } from './prose/ProsePre'
 
 /**
  * Standard Typography Prose Components for React

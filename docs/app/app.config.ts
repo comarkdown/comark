@@ -1,3 +1,4 @@
+// @ts-expect-error - Nuxt types are not loaded
 export default defineAppConfig({
   site: {
     url: 'https://mdc-syntax.vercel.app',

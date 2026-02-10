@@ -312,6 +312,8 @@ function reset() {
             v-if="elementsCount > 0"
             :body="state.body as any"
             :components-manifest="resolveComponent"
+            :streaming="Boolean(streamController)"
+            caret
           />
           <div
             v-else

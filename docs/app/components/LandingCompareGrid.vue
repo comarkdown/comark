@@ -71,6 +71,7 @@
           <MDCStream
             ref="mdcRef"
             :markdown="markdown"
+            :mdc-props="mdcProps"
           />
         </UCard>
         <!-- Decorative element -->
@@ -104,6 +105,7 @@ defineProps<{
   title: string
   description: string
   markdown: string
+  mdcProps?: object
 }>()
 
 const markdownItRef = ref<InstanceType<typeof MarkdownItStream> | null>(null)

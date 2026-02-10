@@ -16,7 +16,7 @@ const components = {
   MarkdownItStream: () => import('@/components/MarkdownItStream.vue'),
 }
 
-export default async function resolveComponent(name: string) {
+export default function resolveComponent(name: string) {
   // Try the name as-is first
   let componentKey = name as keyof typeof components
 
@@ -25,12 +25,16 @@ export default async function resolveComponent(name: string) {
     componentKey = pascalCase(name) as keyof typeof components
   }
 
+  if (name === 'span') {
+    return null
+  }
+
   const loader = components[componentKey]
   if (!loader) {
     // Return a fallback component instead of throwing
     console.warn(`Component "${name}" not found in manifest, using fallback`)
     // @ts-expect-error - TODO: fix this
-    return await import('#content/components').then(m => m[pascalCase(name)]())
+    return import('#content/components').then(m => m[pascalCase(name)]())
   }
 
   return loader()

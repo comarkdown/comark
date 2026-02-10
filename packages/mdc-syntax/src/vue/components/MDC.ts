@@ -80,7 +80,7 @@ export const MDC = defineComponent({
     /**
      * Enable streaming mode with stream-specific components
      */
-    stream: {
+    streaming: {
       type: Boolean as PropType<boolean>,
       default: false,
     },
@@ -103,11 +103,20 @@ export const MDC = defineComponent({
     })
 
     const parsed = shallowRef<ParseResult | null>(null)
+    const streamComponents = shallowRef<Record<string, any>>()
+    const components = computed(() => ({
+      ...streamComponents.value,
+      ...props.components,
+    }))
 
     async function parseMarkdown() {
-      if (!props.stream) {
+      if (!props.streaming) {
+        if (!streamComponents.value) {
+          streamComponents.value = await import('mdc-syntax/vue/components/stream')
+            .then(m => m.proseStreamComponents)
+        }
         parsed.value = await parseAsync(markdown.value, {
-          highlight: !props.stream,
+          highlight: !props.streaming,
           ...props.options,
         })
       }
@@ -127,10 +136,10 @@ export const MDC = defineComponent({
       // Render using MDCRenderer
       return h(MDCRenderer, {
         body: parsed.value?.body || { type: 'minimark', value: [] },
-        components: props.components,
-        stream: props.stream,
+        components: components.value,
+        streaming: props.streaming,
         componentsManifest: props.componentsManifest,
-        class: `mdc-content ${props.stream ? 'mdc-stream' : ''}`,
+        class: `mdc-content ${props.streaming ? 'mdc-stream' : ''}`,
       })
     }
   },

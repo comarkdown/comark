@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { parse, parseAsync, type ParseResult } from '../../index'
 import type { ParseOptions } from '../../types'
 import { MDCRenderer } from './MDCRenderer'
@@ -30,7 +30,7 @@ export interface MDCProps {
   /**
    * Enable streaming mode with enhanced components (e.g., ShikiCodeBlock)
    */
-  stream?: boolean
+  streaming?: boolean
 
   /**
    * Additional className for the wrapper div
@@ -74,16 +74,36 @@ export const MDC: React.FC<MDCProps> = ({
   options = {},
   components: customComponents = {},
   componentsManifest,
-  stream = false,
+  streaming = false,
   className,
 }) => {
   const [parsed, setParsed] = useState<ParseResult | null>(null)
+  const [streamComponents, setStreamComponents] = useState<Record<string, React.ComponentType<any>>>({})
+
+  // Load stream components when streaming prop is true
+  useEffect(() => {
+    if (streaming) {
+      import('./stream').then((m) => {
+        setStreamComponents(m.proseStreamComponents)
+      }).catch((error) => {
+        console.error('Failed to load stream components:', error)
+      })
+    }
+    else {
+      setStreamComponents({})
+    }
+  }, [streaming])
+
+  const components = useMemo(() => ({
+    ...streamComponents,
+    ...customComponents,
+  }), [streamComponents, customComponents])
 
   // Parse the markdown content
   useEffect(() => {
     let isMounted = true
 
-    if (stream) {
+    if (streaming) {
       // Use synchronous parse for streaming mode
       const result = parse(markdown, options)
       if (isMounted) {
@@ -104,7 +124,7 @@ export const MDC: React.FC<MDCProps> = ({
     return () => {
       isMounted = false
     }
-  }, [markdown, stream])
+  }, [markdown, streaming])
 
   if (!parsed) {
     return null
@@ -113,9 +133,9 @@ export const MDC: React.FC<MDCProps> = ({
   return (
     <MDCRenderer
       body={parsed.body}
-      components={customComponents}
+      components={components}
       componentsManifest={componentsManifest}
-      stream={stream}
+      streaming={streaming}
       className={className}
     />
   )

@@ -1,7 +1,8 @@
-import type { MinimarkNode, MinimarkTree } from 'minimark'
+import type { MinimarkElement, MinimarkNode, MinimarkTree } from 'minimark'
 import React, { lazy, Suspense, useMemo } from 'react'
-import { standardProseComponents } from './prose/standard'
+import { standardProseComponents } from '.'
 import { camelCase } from 'scule'
+import { findLastTextNodeAndAppendNode, getCaret } from '../../utils/caret'
 
 /**
  * Default HTML tag mappings for MDC elements
@@ -219,7 +220,13 @@ export interface MDCRendererProps {
   /**
    * Enable streaming mode with stream-specific components
    */
-  stream?: boolean
+  streaming?: boolean
+
+  /**
+   * If caret is true, a caret will be appended to the last text node in the tree
+   * If caret is an object, it will be appended to the last text node in the tree with the given class
+   */
+  caret?: boolean | { class: string }
 
   /**
    * Additional className for the wrapper div
@@ -252,37 +259,31 @@ export const MDCRenderer: React.FC<MDCRendererProps> = ({
   body,
   components: customComponents = {},
   componentsManifest,
-  stream = false,
+  streaming = false,
+  caret: caretProp = false,
   className,
 }) => {
-  const [streamComponents, setStreamComponents] = React.useState<Record<string, React.ComponentType<any>>>({})
-
-  // Load stream components when stream prop is true
-  React.useEffect(() => {
-    if (stream) {
-      import('./prose/stream').then((m) => {
-        setStreamComponents(m.proseStreamComponents)
-      }).catch((error) => {
-        console.error('Failed to load stream components:', error)
-      })
-    }
-    else {
-      setStreamComponents({})
-    }
-  }, [stream])
-
   const components = useMemo(() => ({
     ...standardProseComponents,
-    ...streamComponents,
     ...customComponents,
-  }), [streamComponents, customComponents])
+  }), [customComponents])
+
+  const caret = useMemo(() => getCaret(caretProp), [caretProp])
 
   const renderedNodes = useMemo(() => {
-    const nodes = body.value || []
+    const nodes = [...(body.value || [])]
+
+    if (streaming && caret && nodes.length > 0) {
+      const hasStreamCaret = findLastTextNodeAndAppendNode(nodes[nodes.length - 1] as MinimarkElement, caret)
+      if (!hasStreamCaret) {
+        nodes.push(caret)
+      }
+    }
+
     return nodes
       .map((node, index) => renderNode(node, components, index, componentsManifest))
       .filter(child => child !== null)
-  }, [body, components, componentsManifest])
+  }, [body, components, componentsManifest, streaming, caret])
 
   return (
     <div className={`mdc-content ${className || ''}`}>

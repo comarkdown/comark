@@ -1,5 +1,5 @@
 import { defineComponent, h } from 'vue'
-import ProsePre from './ProsePre.vue'
+import ProsePre from './prose/ProsePre.vue'
 
 /**
  * Standard Typography Prose Components

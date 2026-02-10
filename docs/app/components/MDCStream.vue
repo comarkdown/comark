@@ -9,6 +9,7 @@ const props = defineProps<{
   markdown: string
   chunkSize?: number
   delayMs?: number
+  mdcProps?: object
 }>()
 
 const accumulated = ref('')
@@ -23,7 +24,7 @@ async function startStream() {
   controller.value = new AbortController()
 
   const chunkSize = props.chunkSize ?? 10
-  const delayMs = props.delayMs ?? 50
+  const delayMs = props.delayMs ?? 100
 
   for (let i = 0; i < props.markdown.length; i += chunkSize) {
     if (controller.value.signal.aborted) break
@@ -70,8 +71,9 @@ defineExpose({
           },
         },
       }"
-      stream
+      :streaming="isStreaming"
       :components="{ math: Math }"
+      v-bind="mdcProps"
     />
   </div>
 </template>

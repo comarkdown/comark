@@ -118,6 +118,8 @@ Everything you need for modern content parsing
 
 :landing-typography
 
+:landing-caret
+
 :landing-gfm
 
 :landing-code-block
