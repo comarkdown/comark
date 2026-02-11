@@ -1,7 +1,7 @@
 import type { PropType } from 'vue'
 import { computed, defineComponent, h, shallowRef, watch } from 'vue'
 import type { ParseResult } from '../../index'
-import { parse, parseAsync } from '../../index'
+import { parseAsync } from '../../index'
 import type { ParseOptions } from '../../types'
 import { MDCRenderer } from './MDCRenderer'
 
@@ -110,22 +110,9 @@ export const MDC = defineComponent({
     }))
 
     async function parseMarkdown() {
-      if (!props.streaming) {
-        if (!streamComponents.value) {
-          streamComponents.value = await import('mdc-syntax/vue/components/stream')
-            .then(m => m.proseStreamComponents)
-        }
-        parsed.value = await parseAsync(markdown.value, {
-          highlight: !props.streaming,
-          ...props.options,
-        })
-      }
-      else {
-        parsed.value = parse(markdown.value, {
-          ...props.options,
-          highlight: false,
-        })
-      }
+      parsed.value = await parseAsync(markdown.value, {
+        ...props.options,
+      })
     }
 
     watch(markdown, parseMarkdown)

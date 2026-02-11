@@ -1,30 +1,8 @@
 <script setup lang="ts">
 import { ShikiCachedRenderer } from 'shiki-stream/vue'
-import { createHighlighter } from 'shiki'
 import { computed, onMounted, ref, watch } from 'vue'
 import { textContent } from 'minimark'
-
-// Singleton highlighter instance shared across all code blocks
-let highlighterInstance: any = null
-let highlighterPromise: Promise<any> | null = null
-
-async function getHighlighter() {
-  if (highlighterInstance) {
-    return highlighterInstance
-  }
-
-  if (!highlighterPromise) {
-    highlighterPromise = createHighlighter({
-      themes: ['material-theme-lighter', 'material-theme-palenight', 'github-dark', 'github-light'],
-      langs: ['javascript', 'typescript', 'vue', 'html', 'css', 'json', 'markdown', 'bash', 'tsx', 'shell', 'text'],
-    }).then((hl) => {
-      highlighterInstance = hl
-      return hl
-    })
-  }
-
-  return highlighterPromise
-}
+import { getHighlighter } from '../../../utils/shiki-highlighter'
 
 const props = withDefaults(defineProps<{
   // @eslint-disable-next-line vue/prop-name-casing
@@ -37,7 +15,7 @@ const props = withDefaults(defineProps<{
   fallbackWithHeaderClass?: string
   shikiStyle?: Record<string, string>
 }>(), {
-  theme: 'github-dark',
+  theme: 'material-theme-palenight',
   containerClass: 'my-4',
   fallbackClass: 'bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 p-4 rounded-lg overflow-x-auto border border-neutral-300 dark:border-neutral-700',
   fallbackWithHeaderClass: 'bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 p-4 pt-12 rounded-lg overflow-x-auto m-0 border border-neutral-300 dark:border-neutral-700',
@@ -100,7 +78,10 @@ async function copyCode() {
 
 // Load highlighter on mount
 onMounted(() => {
-  getHighlighter()
+  getHighlighter({
+    themes: { light: 'material-theme-palenight', dark: 'material-theme-lighter' },
+    languages: ['javascript', 'typescript', 'vue', 'html', 'css', 'json', 'markdown', 'bash', 'jsx', 'tsx', 'shell'],
+  })
     .then((hl) => {
       highlighter.value = hl
       isLoading.value = false
@@ -175,7 +156,7 @@ onMounted(() => {
     <!-- Loading state -->
     <pre
       v-if="isLoading"
-      class="bg-neutral-100 dark:bg-neutral-800 rounded-lg pt-16 p-4 border border-neutral-300 dark:border-neutral-700"
+      class="bg-neutral-100 dark:bg-neutral-800 rounded-lg pt-12 p-4 border border-neutral-300 dark:border-neutral-700"
     ><code>{{ codeContent }}</code></pre>
 
     <!-- Shiki renderer -->
@@ -185,8 +166,8 @@ onMounted(() => {
       :highlighter="highlighter"
       :code="codeContent"
       :lang="language || 'text'"
-      :theme="theme || 'github-dark'"
-      class="shiki-container bg-neutral-100 dark:bg-neutral-800 rounded-lg pt-16 p-4 border border-neutral-300 dark:border-neutral-700"
+      :theme="theme || 'material-theme-palenight'"
+      class="shiki-container bg-neutral-100 dark:bg-neutral-800 rounded-l overflow-x-auto pt-12 p-4 border border-neutral-300 dark:border-neutral-700"
       :style="shikiStyle"
     />
 
