@@ -38,7 +38,7 @@ function parsePropValue(value: string): any {
   catch {
     // noop
   }
-  // TODO: ensure the behavior
+
   return value
 }
 

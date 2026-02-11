@@ -33,7 +33,7 @@ export default function resolveComponent(name: string) {
   if (!loader) {
     // Return a fallback component instead of throwing
     console.warn(`Component "${name}" not found in manifest, using fallback`)
-    // @ts-expect-error - TODO: fix this
+    // @ts-expect-error - this is a fallback
     return import('#content/components').then(m => m[pascalCase(name)]())
   }
 
