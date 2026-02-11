@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react'
-import { parse, parseAsync, type ParseResult } from '../../index'
+import React, { useState, useEffect } from 'react'
+import { parseAsync, type ParseResult } from '../../index'
 import type { ParseOptions } from '../../types'
 import { MDCRenderer } from './MDCRenderer'
 
@@ -78,48 +78,19 @@ export const MDC: React.FC<MDCProps> = ({
   className,
 }) => {
   const [parsed, setParsed] = useState<ParseResult | null>(null)
-  const [streamComponents, setStreamComponents] = useState<Record<string, React.ComponentType<any>>>({})
-
-  // Load stream components when streaming prop is true
-  useEffect(() => {
-    if (streaming) {
-      import('./stream').then((m) => {
-        setStreamComponents(m.proseStreamComponents)
-      }).catch((error) => {
-        console.error('Failed to load stream components:', error)
-      })
-    }
-    else {
-      setStreamComponents({})
-    }
-  }, [streaming])
-
-  const components = useMemo(() => ({
-    ...streamComponents,
-    ...customComponents,
-  }), [streamComponents, customComponents])
 
   // Parse the markdown content
   useEffect(() => {
     let isMounted = true
 
-    if (streaming) {
-      // Use synchronous parse for streaming mode
-      const result = parse(markdown, options)
+    // Use async parse for non-streaming mode (supports code highlighting, etc.)
+    parseAsync(markdown, options).then((result) => {
       if (isMounted) {
         setParsed(result)
       }
-    }
-    else {
-      // Use async parse for non-streaming mode (supports code highlighting, etc.)
-      parseAsync(markdown, options).then((result) => {
-        if (isMounted) {
-          setParsed(result)
-        }
-      }).catch((error) => {
-        console.error('Failed to parse markdown:', error)
-      })
-    }
+    }).catch((error) => {
+      console.error('Failed to parse markdown:', error)
+    })
 
     return () => {
       isMounted = false
@@ -133,7 +104,7 @@ export const MDC: React.FC<MDCProps> = ({
   return (
     <MDCRenderer
       body={parsed.body}
-      components={components}
+      components={customComponents}
       componentsManifest={componentsManifest}
       streaming={streaming}
       className={className}
