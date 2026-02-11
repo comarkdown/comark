@@ -5,7 +5,7 @@ export default defineAppConfig({
   },
   seo: {
     title: 'MDC Syntax',
-    description: 'Markdown but with dynamic Components',
+    description: 'Markdown with Components',
     url: 'https://mdc-syntax.vercel.app',
     socials: {
       github: 'nuxt-content/mdc-syntax',
@@ -16,7 +16,7 @@ export default defineAppConfig({
   },
 
   title: 'MDC Syntax',
-  description: 'Markdown but with dynamic Components',
+  description: 'Markdown with Components',
   url: 'https://mdc-syntax.vercel.app',
 
   docus: {

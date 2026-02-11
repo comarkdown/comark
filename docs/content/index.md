@@ -1,12 +1,13 @@
 ---
 seo:
-  title: Markdown but with dynamic Components
+  title: Markdown with Components
   description: Fast, streaming-ready markdown parser with Vue and React component support. Parse MDC content from strings or streams with TypeScript support.
+  ogImage: '/social-card.png'
 ---
 
 ::landing-hero
 #title
-Markdown but with dynamic Components
+Markdown with Components
 
 #description
 Fast, streaming-ready markdown parser with full MDC (Markdown Component) syntax support.
