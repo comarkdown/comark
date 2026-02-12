@@ -17,24 +17,18 @@ const components = {
 }
 
 export default function resolveComponent(name: string) {
-  // Try the name as-is first
-  let componentKey = name as keyof typeof components
-
-  // If not found, try converting kebab-case to PascalCase
-  if (!components[componentKey]) {
-    componentKey = pascalCase(name) as keyof typeof components
-  }
-
   if (name === 'span') {
     return null
   }
 
-  const loader = components[componentKey]
+  // Try the name as-is first
+  const componentKey = name as keyof typeof components
+  const pascalName = pascalCase(name) as keyof typeof components
+
+  const loader = components[componentKey] || components[pascalName]
   if (!loader) {
-    // Return a fallback component instead of throwing
-    console.warn(`Component "${name}" not found in manifest, using fallback`)
     // @ts-expect-error - this is a fallback
-    return import('#content/components').then(m => m[pascalCase(name)]())
+    return import('#content/components').then(m => m[pascalName]?.())
   }
 
   return loader()

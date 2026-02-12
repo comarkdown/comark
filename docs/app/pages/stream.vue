@@ -174,7 +174,7 @@ async function simulateStream() {
   // Start the stream
   streamController.start()
 
-  await startStream(streamController.stream, selectedParser.value === 'markdown-it')
+  await startStream(streamController.stream)
   scrollToBottom()
 }
 
@@ -205,43 +205,32 @@ function reset() {
 <template>
   <div class="h-[calc(100vh-64px)] flex flex-col  overflow-hidden">
     <!-- Compact Header -->
-    <div class="flex-shrink-0 bg-gradient-to-r from-primary to-purple-600 p-4">
-      <div class="flex justify-between items-center">
+    <div class="flex-shrink-0 relative px-3 py-3 sm:p-4">
+      <div class="absolute inset-0 bg-grid-slate-100 [mask-image:linear-gradient(0deg,rgba(255,255,255,0.2),rgba(255,255,255,0.5))] dark:bg-grid-slate-700/25 dark:[mask-image:linear-gradient(0deg,rgba(255,255,255,0.2),rgba(255,255,255,0.5))]" />
+      <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-0">
         <div>
-          <h1 class="text-white text-2xl font-bold mb-1">
+          <h1 class="text-neutral-900 dark:text-white text-lg sm:text-2xl font-bold mb-0.5 sm:mb-1">
             MDC Syntax Streaming Demo
           </h1>
-          <p class="text-white/90 text-sm">
+          <p class="text-neutral-600 dark:text-neutral-400 text-xs sm:text-sm">
             Real-time markdown rendering with Vue 3
           </p>
         </div>
-        <div class="flex gap-2 items-center">
+        <div class="flex gap-2 items-center flex-wrap">
           <div
             v-if="isStreaming || elementsCount > 0"
-            class="text-right mr-4"
+            class="text-right mr-2 sm:mr-4"
           >
             <div class="text-white text-xs opacity-90">
               {{ bytesLength }} bytes · {{ elementsCount }} nodes
             </div>
-            <div class="w-48 h-1 bg-white/20 rounded-full overflow-hidden mt-2">
+            <div class="w-32 sm:w-48 h-1 bg-white/20 rounded-full overflow-hidden mt-1 sm:mt-2">
               <div
                 class="h-full bg-white transition-all duration-300"
                 :style="{ width: state.isComplete ? '100%' : '75%' }"
               />
             </div>
           </div>
-          <!-- <USelectMenu
-            v-model="selectedParser"
-            :items="[
-              { value: 'remark', label: 'Remark' },
-              { value: 'markdown-it', label: 'Markdown-it' },
-            ]"
-            value-key="value"
-            option-key="label"
-            :disabled="isStreaming"
-            size="sm"
-            class="w-32"
-          /> -->
           <UButton
             :disabled="isStreaming"
             size="sm"
@@ -273,9 +262,9 @@ function reset() {
     </div>
 
     <!-- Two Column Layout -->
-    <div class="flex-1 grid grid-cols-3 overflow-hidden">
+    <div class="flex-1 grid grid-cols-1 lg:grid-cols-3 overflow-hidden">
       <!-- Rendered Output Column -->
-      <div class="flex flex-col overflow-hidden bg-white dark:bg-neutral-950 col-span-2">
+      <div class="flex flex-col overflow-hidden bg-white dark:bg-neutral-950 lg:col-span-2">
         <div class="flex justify-between items-center px-4 py-3 bg-neutral-100 dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 flex-shrink-0">
           <div class="flex items-center gap-2">
             <h3 class="text-neutral-800 dark:text-neutral-200 font-semibold">
@@ -324,8 +313,8 @@ function reset() {
         </div>
       </div>
 
-      <!-- Markdown Column -->
-      <div class="flex flex-col overflow-hidden bg-white dark:bg-neutral-950 border-l border-neutral-200 dark:border-neutral-800">
+      <!-- Markdown Column (hidden on mobile) -->
+      <div class="hidden lg:flex flex-col overflow-hidden bg-white dark:bg-neutral-950 border-l border-neutral-200 dark:border-neutral-800">
         <div class="flex justify-between items-center px-4 py-3 bg-neutral-100 dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 flex-shrink-0">
           <h3 class="text-neutral-800 dark:text-neutral-200 font-semibold">
             Markdown
@@ -386,5 +375,19 @@ function reset() {
 
 .dark :deep(.overflow-y-auto::-webkit-scrollbar-thumb:hover) {
   background: rgb(100 116 139);
+}
+</style>
+
+<style scoped>
+.bg-grid-slate-100 {
+  background-image: linear-gradient(to right, rgb(148 163 184 / 0.25) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(148 163 184 / 0.25) 1px, transparent 1px);
+  background-size: 4rem 4rem;
+}
+
+.dark .bg-grid-slate-700\/25 {
+  background-image: linear-gradient(to right, rgb(51 65 85 / 0.25) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(51 65 85 / 0.25) 1px, transparent 1px);
+  background-size: 4rem 4rem;
 }
 </style>

@@ -1,7 +1,7 @@
 import type { Readable } from 'node:stream'
 import type { MinimarkTree } from 'minimark'
 import { readonly, ref, shallowRef } from 'vue'
-import { parseStreamIncremental, parseStreamIncrementalWithMarkdownIt } from 'mdc-syntax/stream'
+import { parseStreamIncremental } from 'mdc-syntax/stream'
 
 export interface MDCStreamState {
   body: MinimarkTree
@@ -58,16 +58,11 @@ export function useMDCStream(options?: MDCStreamOptions) {
    * @param stream - Node.js Readable or Web ReadableStream
    * @param useMarkdownIt - Use markdown-it parser instead of unified/remark
    */
-  async function startStream(
-    stream: Readable | ReadableStream<Uint8Array>,
-    useMarkdownIt = false,
-  ) {
+  async function startStream(stream: Readable | ReadableStream<Uint8Array>) {
     isStreaming.value = true
 
     try {
-      const parser = useMarkdownIt
-        ? parseStreamIncrementalWithMarkdownIt
-        : parseStreamIncremental
+      const parser = parseStreamIncremental
 
       for await (const result of parser(stream)) {
         // Update state with each chunk
@@ -96,6 +91,7 @@ export function useMDCStream(options?: MDCStreamOptions) {
       }
     }
     catch (error) {
+      console.error(error)
       state.value = {
         ...state.value,
         error: error as Error,
