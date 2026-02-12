@@ -5,8 +5,8 @@ import { ref } from 'vue'
 const activeTab = ref('vue')
 
 const tabs = [
-  { id: 'vue', label: 'Vue' },
-  { id: 'react', label: 'React' },
+  { id: 'vue', label: 'Vue', icon: 'i-logos-vue' },
+  { id: 'react', label: 'React', icon: 'i-logos-react' },
 ]
 
 const codeSnippets = {
@@ -70,7 +70,8 @@ export default function App() {
             v-for="tab in tabs"
             :key="tab.id"
             :variant="activeTab === tab.id ? 'solid' : 'soft'"
-            :color="activeTab === tab.id ? 'primary' : 'neutral'"
+            color="neutral"
+            :icon="tab.icon"
             @click="activeTab = tab.id"
           >
             {{ tab.label }}
