@@ -177,7 +177,7 @@ onMounted(() => {
       :class="fallbackWithHeaderClass"
     >
     sas
-      <code class="font-mono text-sm leading-relaxed block whitespace-pre">{{ codeContent }}</code>
+      <code class="font-mono text-sm leading-tight block whitespace-pre">{{ codeContent }}</code>
     </pre>
   </div>
 </template>

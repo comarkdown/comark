@@ -10,14 +10,12 @@ const tabs = [
 ]
 
 const codeSnippets = {
-  vue: `\`\`\`vue [pages/index.vue]\n<script setup>
-import { MDC } from 'mdc-syntax/vue'
-
-const markdown = \`# Hello **World**\`\n<`
-    + `/script>
+  vue: `\`\`\`vue [src/App.vue]\n<script setup lang="ts">\nimport { MDC } from 'mdc-syntax/vue'\nimport Alert from './components/Alert.vue'\n\nconst md = \`\n# [Hello *World*]{.text-5xl}\n\n::alert{type="info"}\nThis is an alert!\n::\n<` + `/script>
 
 <template>
-  <MDC :markdown="markdown" />
+  <Suspense>
+    <MDC :markdown="md" :components="{ Alert }" />
+  </Suspense>
 </template>\n\`\`\``,
   react: `\`\`\`tsx [src/App.tsx]\nimport { MDC } from 'mdc-syntax/react'
 
