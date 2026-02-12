@@ -4,6 +4,7 @@ import Alert from './components/Alert.vue'
 
 const markdown = `
 # [Hello *World*]{.text-5xl}
+
 ::alert{type="info"}
 This is an alert!
 ::
