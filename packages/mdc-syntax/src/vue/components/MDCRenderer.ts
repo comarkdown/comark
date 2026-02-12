@@ -1,13 +1,15 @@
 import type { PropType, VNode } from 'vue'
 import type { MinimarkElement, MinimarkNode, MinimarkTree } from 'minimark'
-import { computed, defineAsyncComponent, defineComponent, h, inject, onErrorCaptured, ref, toRaw } from 'vue'
+import { computed, defineAsyncComponent, defineComponent, getCurrentInstance, h, inject, onErrorCaptured, ref, toRaw } from 'vue'
 import { standardProseComponents } from '.'
-import { pascalCase } from 'scule'
+import { camelize, capitalize } from '@vue/shared'
 import { findLastTextNodeAndAppendNode, getCaret } from '../../utils/caret'
 import type { ComponentManifest, MDCProvider } from '../../types'
 
 // Cache for dynamically resolved components
 const asyncComponentCache = new Map<string, any>()
+
+const pascalCase = (str: string) => capitalize(camelize(str))
 
 /**
  * Helper to get tag from a MinimarkNode
@@ -79,8 +81,16 @@ function renderNode(
     // Check if there's a custom component for this tag
     let customComponent = tag
 
+    const appComponents = getCurrentInstance()?.appContext?.components
     if ((parent as MinimarkElement | undefined)?.[0] !== 'pre') {
-      customComponent = components[tag] || components[pascalCase(tag)]
+      const pascalTag = pascalCase(tag)
+      const proseTag = `Prose${pascalTag}`
+      customComponent = appComponents?.[proseTag]
+        || components[proseTag]
+        || appComponents?.[pascalTag]
+        || components[tag]
+        || components[pascalTag]
+
       // If not in components map and manifest is provided, try dynamic resolution
       if (!customComponent && componentsManifest) {
         // Check cache first to avoid creating duplicate async components
@@ -122,8 +132,7 @@ function renderNode(
       props.key = key
     }
 
-    // Handle self-closing tags
-    if (['hr', 'br', 'img'].includes(tag)) {
+    if (node.length === 2) {
       return h(component, props)
     }
 
