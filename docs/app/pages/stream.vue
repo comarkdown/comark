@@ -206,7 +206,7 @@ function reset() {
   <div class="h-[calc(100vh-64px)] flex flex-col  overflow-hidden">
     <!-- Compact Header -->
     <div class="flex-shrink-0 relative px-3 py-3 sm:p-4">
-      <div class="absolute inset-0 bg-grid-slate-100 [mask-image:linear-gradient(0deg,rgba(255,255,255,0.2),rgba(255,255,255,0.5))] dark:bg-grid-slate-700/25 dark:[mask-image:linear-gradient(0deg,rgba(255,255,255,0.2),rgba(255,255,255,0.5))]" />
+      <div class="absolute z-[-1] inset-0 bg-grid-slate-100 [mask-image:linear-gradient(0deg,rgba(255,255,255,0.2),rgba(255,255,255,0.5))] dark:bg-grid-slate-700/25 dark:[mask-image:linear-gradient(0deg,rgba(255,255,255,0.2),rgba(255,255,255,0.5))]" />
       <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-0">
         <div>
           <h1 class="text-neutral-900 dark:text-white text-lg sm:text-2xl font-bold mb-0.5 sm:mb-1">
