@@ -3,7 +3,7 @@
 
 @source '../../../../packages/mdc-syntax/src/**';
 
-@theme static {
+@theme {
   --font-sans: 'Geist Mono', 'Public Sans', sans-serif;
 
   --breakpoint-3xl: 1920px;
@@ -23,4 +23,5 @@
 
 :root {
   font-size: 14px;
+  --ui-container: 90rem;
 }

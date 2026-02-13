@@ -2,6 +2,7 @@
 title: React
 description: A minimal example showing how to use MDC Syntax with React and Vite.
 icon: i-logos-react
+category: Vite
 ---
 
 ::code-tree{defaultValue="src/App.tsx" expandAll}
