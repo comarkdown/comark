@@ -3,7 +3,7 @@ import { MDC } from 'mdc-syntax/vue'
 import Alert from './components/Alert.vue'
 
 const markdown = `
-# [Hello *World*]{.text-5xl}
+# Hello *World*
 
 ::alert{type="info"}
 This is an alert!
