@@ -1,6 +1,6 @@
 <script setup lang="ts">
 const markdown = `
-\`\`\`typescript
+\`\`\`tsx
 import React from "react";
 
 type ButtonProps = {
