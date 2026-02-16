@@ -1,10 +1,10 @@
 import { Readable } from 'node:stream'
 import { describe, expect, it } from 'vitest'
 import { parseStream } from '../src/stream'
-import type { MinimarkNode } from 'minimark'
+import type { ComarkNode } from 'comark/ast'
 
-// Helper to get tag from a MinimarkNode
-function getTag(node: MinimarkNode): string | null {
+// Helper to get tag from a ComarkNode
+function getTag(node: ComarkNode): string | null {
   if (Array.isArray(node) && node.length >= 1) {
     return node[0] as string
   }
@@ -53,7 +53,7 @@ This is a **sample** document with *emphasis*.
     const stream = Readable.from(chunks)
     const result = await parseStream(stream)
 
-    expect(result.body.type).toBe('minimark')
+    expect(result.body.type).toBe('comark')
     expect(result.body.value.length).toBeGreaterThan(0)
   })
 

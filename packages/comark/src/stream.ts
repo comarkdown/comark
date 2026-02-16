@@ -1,7 +1,7 @@
 import type { Readable } from 'node:stream'
 import type { ParseOptions } from './types'
-import { parseFrontmatter } from './utils/front-matter'
-import { autoCloseMarkdown } from './utils/auto-close'
+import { parseFrontmatter } from './internal/front-matter'
+import { autoCloseMarkdown } from './internal/parse/auto-close'
 import type { ParseResult } from './index'
 import { parse } from './index'
 

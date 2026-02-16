@@ -1,4 +1,4 @@
-import type { MinimarkNode } from 'minimark'
+import type { ComarkNode, ComarkTree } from 'comark/ast'
 import MarkdownIt from 'markdown-it'
 // @ts-expect-error - No declaration file
 import markdownItSub from 'markdown-it-sub'
@@ -28,6 +28,26 @@ const INLINE_TAG_MAP: Record<string, string> = {
   em_open: 'em',
   s_open: 'del',
   sub_open: 'del',
+}
+
+/**
+ * Convert Markdown-It tokens to a Comark tree
+ * @param tokens - The tokens to convert
+ * @returns The Comark tree
+ */
+export function marmdownItTokensToComarkTree(tokens: any[]): ComarkTree {
+  const nodes: ComarkNode[] = []
+
+  let i = 0
+  while (i < tokens.length) {
+    const result = processBlockToken(tokens, i, false)
+    i = result.nextIndex
+    if (result.node) {
+      nodes.push(result.node)
+    }
+  }
+
+  return { type: 'comark', value: nodes }
 }
 
 /**
@@ -269,30 +289,15 @@ function extractMDCAttributes(
   return { attrs: {}, nextIndex: startIndex }
 }
 
-export function parseTokens(tokens: any[]): MinimarkNode[] {
-  const nodes: MinimarkNode[] = []
-
-  let i = 0
-  while (i < tokens.length) {
-    const result = processBlockToken(tokens, i, false)
-    i = result.nextIndex
-    if (result.node) {
-      nodes.push(result.node)
-    }
-  }
-
-  return nodes
-}
-
 export function getMarkdownIt() {
   return md
 }
 
-function processBlockToken(tokens: any[], startIndex: number, insideNestedContext: boolean = false): { node: MinimarkNode | null, nextIndex: number } {
+function processBlockToken(tokens: any[], startIndex: number, insideNestedContext: boolean = false): { node: ComarkNode | null, nextIndex: number } {
   const token = tokens[startIndex]
 
   if (token.type === 'hr') {
-    return { node: ['hr', {}] as MinimarkNode, nextIndex: startIndex + 1 }
+    return { node: ['hr', {}] as ComarkNode, nextIndex: startIndex + 1 }
   }
 
   // Handle Comark block components (e.g., ::component ... ::)
@@ -302,7 +307,7 @@ function processBlockToken(tokens: any[], startIndex: number, insideNestedContex
     // Process children until mdc_block_close, handling slots (#slotname)
     const children = processBlockChildrenWithSlots(tokens, startIndex + 1, 'mdc_block_close')
     // Return the component even if it has no children (empty component like ::component\n::)
-    return { node: [componentName, attrs, ...children.nodes] as MinimarkNode, nextIndex: children.nextIndex + 1 }
+    return { node: [componentName, attrs, ...children.nodes] as ComarkNode, nextIndex: children.nextIndex + 1 }
   }
 
   // Handle Comark block shorthand components (e.g., standalone :inline-component)
@@ -310,13 +315,13 @@ function processBlockToken(tokens: any[], startIndex: number, insideNestedContex
   if (token.type === 'mdc_block_shorthand') {
     const componentName = token.tag || 'component'
     const attrs = processAttributes(token.attrs, { handleBoolean: false, handleJSON: false })
-    const component: MinimarkNode = [componentName, attrs] as MinimarkNode
-    const paragraph: MinimarkNode = ['p', {}, component] as MinimarkNode
+    const component: ComarkNode = [componentName, attrs] as ComarkNode
+    const paragraph: ComarkNode = ['p', {}, component] as ComarkNode
     return { node: paragraph, nextIndex: startIndex + 1 }
   }
 
   if (token.type === 'math_block') {
-    return { node: ['math', { class: 'math block', content: token.content }, token.content] as MinimarkNode, nextIndex: startIndex + 1 }
+    return { node: ['math', { class: 'math block', content: token.content }, token.content] as ComarkNode, nextIndex: startIndex + 1 }
   }
 
   if (token.type === 'fence' || token.type === 'fenced_code_block' || token.type === 'code_block') {
@@ -348,8 +353,8 @@ function processBlockToken(tokens: any[], startIndex: number, insideNestedContex
     }
 
     const codeContentWithoutLastNewline = content.endsWith('\n') ? content.slice(0, -1) : content
-    const code: MinimarkNode = ['code', codeAttrs, codeContentWithoutLastNewline] as MinimarkNode
-    const pre: MinimarkNode = ['pre', preAttrs, code] as MinimarkNode
+    const code: ComarkNode = ['code', codeAttrs, codeContentWithoutLastNewline] as ComarkNode
+    const pre: ComarkNode = ['pre', preAttrs, code] as ComarkNode
     return { node: pre, nextIndex: startIndex + 1 }
   }
 
@@ -365,7 +370,7 @@ function processBlockToken(tokens: any[], startIndex: number, insideNestedContex
       const headingId = slugify(textContent)
 
       // Always attach ID to the heading element itself
-      return { node: [headingTag, { id: headingId }, ...children.nodes] as MinimarkNode, nextIndex: children.nextIndex + 1 }
+      return { node: [headingTag, { id: headingId }, ...children.nodes] as ComarkNode, nextIndex: children.nextIndex + 1 }
     }
     return { node: null, nextIndex: children.nextIndex + 1 }
   }
@@ -375,18 +380,18 @@ function processBlockToken(tokens: any[], startIndex: number, insideNestedContex
     const attrs = processAttributes(token.attrs, { handleBoolean: false, handleJSON: false })
     const children = processBlockChildren(tokens, startIndex + 1, 'list_item_close', false, false, true)
     // Unwrap paragraphs in list items
-    const unwrapped: MinimarkNode[] = []
+    const unwrapped: ComarkNode[] = []
     for (const child of children.nodes) {
       if (Array.isArray(child) && child[0] === 'p') {
         // Unwrap paragraph, add its children directly
-        unwrapped.push(...(child.slice(2) as MinimarkNode[]))
+        unwrapped.push(...(child.slice(2) as ComarkNode[]))
       }
       else {
         unwrapped.push(child)
       }
     }
     if (unwrapped.length > 0) {
-      return { node: ['li', attrs, ...unwrapped] as MinimarkNode, nextIndex: children.nextIndex + 1 }
+      return { node: ['li', attrs, ...unwrapped] as ComarkNode, nextIndex: children.nextIndex + 1 }
     }
     return { node: null, nextIndex: children.nextIndex + 1 }
   }
@@ -415,7 +420,7 @@ function processBlockToken(tokens: any[], startIndex: number, insideNestedContex
           // Heading is first child with more siblings - reprocess without IDs
           const childrenNoIds = processBlockChildren(tokens, startIndex + 1, closeType, false, false, true)
           if (childrenNoIds.nodes.length > 0) {
-            return { node: [tagName, attrs, ...childrenNoIds.nodes] as MinimarkNode, nextIndex: childrenNoIds.nextIndex + 1 }
+            return { node: [tagName, attrs, ...childrenNoIds.nodes] as ComarkNode, nextIndex: childrenNoIds.nextIndex + 1 }
           }
           return { node: null, nextIndex: childrenNoIds.nextIndex + 1 }
         }
@@ -423,7 +428,7 @@ function processBlockToken(tokens: any[], startIndex: number, insideNestedContex
 
       // All other cases: use original processing (allows IDs)
       if (children.nodes.length > 0) {
-        return { node: [tagName, attrs, ...children.nodes] as MinimarkNode, nextIndex: children.nextIndex + 1 }
+        return { node: [tagName, attrs, ...children.nodes] as ComarkNode, nextIndex: children.nextIndex + 1 }
       }
       return { node: null, nextIndex: children.nextIndex + 1 }
     }
@@ -432,7 +437,7 @@ function processBlockToken(tokens: any[], startIndex: number, insideNestedContex
     const isNestedContext = ['td', 'th'].includes(tagName)
     const children = processBlockChildren(tokens, startIndex + 1, closeType, false, false, isNestedContext)
     if (children.nodes.length > 0) {
-      return { node: [tagName, attrs, ...children.nodes] as MinimarkNode, nextIndex: children.nextIndex + 1 }
+      return { node: [tagName, attrs, ...children.nodes] as ComarkNode, nextIndex: children.nextIndex + 1 }
     }
     return { node: null, nextIndex: children.nextIndex + 1 }
   }
@@ -444,11 +449,11 @@ function processBlockChildrenWithSlots(
   tokens: any[],
   startIndex: number,
   closeType: string,
-): { nodes: MinimarkNode[], nextIndex: number } {
-  const nodes: MinimarkNode[] = []
+): { nodes: ComarkNode[], nextIndex: number } {
+  const nodes: ComarkNode[] = []
   let i = startIndex
   let currentSlotName: string | null = null
-  let currentSlotChildren: MinimarkNode[] = []
+  let currentSlotChildren: ComarkNode[] = []
 
   while (i < tokens.length && tokens[i].type !== closeType) {
     const token = tokens[i]
@@ -467,7 +472,7 @@ function processBlockChildrenWithSlots(
 
             // Save previous slot if any
             if (currentSlotName !== null && currentSlotChildren.length > 0) {
-              nodes.push(['template', { name: currentSlotName }, ...currentSlotChildren] as MinimarkNode)
+              nodes.push(['template', { name: currentSlotName }, ...currentSlotChildren] as ComarkNode)
               currentSlotChildren = []
             }
 
@@ -501,7 +506,7 @@ function processBlockChildrenWithSlots(
 
   // Save last slot if any
   if (currentSlotName !== null && currentSlotChildren.length > 0) {
-    nodes.push(['template', { name: currentSlotName }, ...currentSlotChildren] as MinimarkNode)
+    nodes.push(['template', { name: currentSlotName }, ...currentSlotChildren] as ComarkNode)
   }
 
   return { nodes, nextIndex: i }
@@ -514,8 +519,8 @@ function processBlockChildren(
   inlineOnly: boolean,
   inHeading: boolean = false,
   insideNestedContext: boolean = false,
-): { nodes: MinimarkNode[], nextIndex: number } {
-  const nodes: MinimarkNode[] = []
+): { nodes: ComarkNode[], nextIndex: number } {
+  const nodes: ComarkNode[] = []
   let i = startIndex
 
   while (i < tokens.length && tokens[i].type !== closeType) {
@@ -527,7 +532,7 @@ function processBlockChildren(
       i++
     }
     else if (token.type === 'hardbreak' || token.type === 'hard_break') {
-      nodes.push(['br', {}] as MinimarkNode)
+      nodes.push(['br', {}] as ComarkNode)
       i++
     }
     else if (token.type === 'softbreak') {
@@ -557,8 +562,8 @@ function processBlockChildren(
 /**
  * Merge adjacent string nodes in an array of nodes
  */
-function mergeAdjacentTextNodes(nodes: MinimarkNode[]): MinimarkNode[] {
-  const merged: MinimarkNode[] = []
+function mergeAdjacentTextNodes(nodes: ComarkNode[]): ComarkNode[] {
+  const merged: ComarkNode[] = []
 
   for (const node of nodes) {
     const lastNode = merged[merged.length - 1]
@@ -578,7 +583,7 @@ function mergeAdjacentTextNodes(nodes: MinimarkNode[]): MinimarkNode[] {
 /**
  * Extract text content from nodes for heading ID generation
  */
-function extractTextContent(nodes: MinimarkNode[]): string {
+function extractTextContent(nodes: ComarkNode[]): string {
   let text = ''
 
   for (const node of nodes) {
@@ -588,7 +593,7 @@ function extractTextContent(nodes: MinimarkNode[]): string {
     else if (Array.isArray(node)) {
       // For array nodes (elements), include the tag name (for inline components)
       const tag = node[0]
-      const children = node.slice(2) as MinimarkNode[]
+      const children = node.slice(2) as ComarkNode[]
 
       // Skip 'br' and 'html_inline' tags
       if (tag === 'br' || tag === 'html_inline') {
@@ -629,8 +634,8 @@ function slugify(text: string): string {
   return slug
 }
 
-function processInlineTokens(tokens: any[], inHeading: boolean = false): MinimarkNode[] {
-  const nodes: MinimarkNode[] = []
+function processInlineTokens(tokens: any[], inHeading: boolean = false): ComarkNode[] {
+  const nodes: ComarkNode[] = []
   let i = 0
 
   while (i < tokens.length) {
@@ -656,7 +661,7 @@ function processInlineTokens(tokens: any[], inHeading: boolean = false): Minimar
   return mergeAdjacentTextNodes(nodes)
 }
 
-function processInlineToken(tokens: any[], startIndex: number, inHeading: boolean = false): { node: MinimarkNode | string | null, nextIndex: number } {
+function processInlineToken(tokens: any[], startIndex: number, inHeading: boolean = false): { node: ComarkNode | string | null, nextIndex: number } {
   const token = tokens[startIndex]
 
   if (token.type === 'text') {
@@ -668,7 +673,7 @@ function processInlineToken(tokens: any[], startIndex: number, inHeading: boolea
     const parsed = parseHtmlInline(token.content || '')
     if (parsed && parsed.selfClosing) {
       // Self-closing tags like <input>, <br>, <img>
-      return { node: [parsed.tag, parsed.attrs] as MinimarkNode, nextIndex: startIndex + 1 }
+      return { node: [parsed.tag, parsed.attrs] as ComarkNode, nextIndex: startIndex + 1 }
     }
     // For non-self-closing HTML or unparseable HTML, return as text
     return { node: token.content || null, nextIndex: startIndex + 1 }
@@ -679,7 +684,7 @@ function processInlineToken(tokens: any[], startIndex: number, inHeading: boolea
   if (token.type === 'mdc_inline_span' && token.nesting === 1) {
     const attrs: Record<string, unknown> = {}
     let i = startIndex + 1
-    const nodes: MinimarkNode[] = []
+    const nodes: ComarkNode[] = []
 
     // Process children until span close
     while (i < tokens.length) {
@@ -700,7 +705,7 @@ function processInlineToken(tokens: any[], startIndex: number, inHeading: boolea
       const result = processInlineToken(tokens, i, inHeading)
       i = result.nextIndex
       if (result.node) {
-        nodes.push(result.node as MinimarkNode)
+        nodes.push(result.node as ComarkNode)
       }
     }
 
@@ -709,7 +714,7 @@ function processInlineToken(tokens: any[], startIndex: number, inHeading: boolea
     Object.assign(attrs, spanAttrs)
 
     if (nodes.length > 0 || Object.keys(attrs).length > 0) {
-      return { node: ['span', attrs, ...nodes] as MinimarkNode, nextIndex }
+      return { node: ['span', attrs, ...nodes] as ComarkNode, nextIndex }
     }
     return { node: null, nextIndex }
   }
@@ -723,13 +728,13 @@ function processInlineToken(tokens: any[], startIndex: number, inHeading: boolea
     const { attrs, nextIndex } = extractMDCAttributes(tokens, startIndex + 1)
 
     if (token.content) {
-      return { node: ['code', attrs, token.content] as MinimarkNode, nextIndex }
+      return { node: ['code', attrs, token.content] as ComarkNode, nextIndex }
     }
     return { node: null, nextIndex }
   }
 
   if (token.type === 'hardbreak' || token.type === 'hard_break') {
-    return { node: ['br', {}] as MinimarkNode, nextIndex: startIndex + 1 }
+    return { node: ['br', {}] as ComarkNode, nextIndex: startIndex + 1 }
   }
 
   if (token.type === 'softbreak') {
@@ -744,7 +749,7 @@ function processInlineToken(tokens: any[], startIndex: number, inHeading: boolea
     // Check if this is an opening tag (has children) or a self-closing tag
     if (token.nesting === 1) {
       // Opening tag - process children until closing tag
-      const children: MinimarkNode[] = []
+      const children: ComarkNode[] = []
       let i = startIndex + 1
 
       while (i < tokens.length) {
@@ -754,19 +759,19 @@ function processInlineToken(tokens: any[], startIndex: number, inHeading: boolea
         if (childToken.type === 'mdc_inline_component' && childToken.nesting === -1) {
           // Found closing tag, now check for props after it
           const { attrs, nextIndex } = extractMDCAttributes(tokens, i + 1, false)
-          return { node: [componentName, attrs, ...children] as MinimarkNode, nextIndex }
+          return { node: [componentName, attrs, ...children] as ComarkNode, nextIndex }
         }
 
         // Process child token
         const result = processInlineToken(tokens, i, inHeading)
         i = result.nextIndex
         if (result.node) {
-          children.push(result.node as MinimarkNode)
+          children.push(result.node as ComarkNode)
         }
       }
 
       // No closing tag found, return what we have
-      return { node: [componentName, {}, ...children] as MinimarkNode, nextIndex: i }
+      return { node: [componentName, {}, ...children] as ComarkNode, nextIndex: i }
     }
     else if (token.nesting === -1) {
       // Closing tag - should be handled by the opening tag processing
@@ -788,7 +793,7 @@ function processInlineToken(tokens: any[], startIndex: number, inHeading: boolea
       // Return the component without any text children
       // Text after the component will be processed as siblings by processInlineChildren
       const nextIndex = Object.keys(componentAttrs).length > 0 ? propsNextIndex : startIndex + 1
-      return { node: [componentName, attrs] as MinimarkNode, nextIndex }
+      return { node: [componentName, attrs] as ComarkNode, nextIndex }
     }
   }
 
@@ -803,7 +808,7 @@ function processInlineToken(tokens: any[], startIndex: number, inHeading: boolea
     const { attrs: imageAttrs, nextIndex } = extractMDCAttributes(tokens, startIndex + 1)
     Object.assign(attrs, imageAttrs)
 
-    return { node: ['img', attrs] as MinimarkNode, nextIndex }
+    return { node: ['img', attrs] as ComarkNode, nextIndex }
   }
 
   if (token.type === 'link_open') {
@@ -815,13 +820,13 @@ function processInlineToken(tokens: any[], startIndex: number, inHeading: boolea
     Object.assign(attrs, linkAttrs)
 
     if (children.nodes.length > 0) {
-      return { node: ['a', attrs, ...children.nodes] as MinimarkNode, nextIndex }
+      return { node: ['a', attrs, ...children.nodes] as ComarkNode, nextIndex }
     }
     return { node: null, nextIndex }
   }
 
   if (token.type === 'math_inline') {
-    return { node: ['math', { class: 'math inline', content: token.content }, token.content] as MinimarkNode, nextIndex: startIndex + 1 }
+    return { node: ['math', { class: 'math inline', content: token.content }, token.content] as ComarkNode, nextIndex: startIndex + 1 }
   }
 
   // Handle generic inline open/close pairs
@@ -834,7 +839,7 @@ function processInlineToken(tokens: any[], startIndex: number, inHeading: boolea
     const { attrs, nextIndex } = extractMDCAttributes(tokens, children.nextIndex + 1)
 
     if (children.nodes.length > 0) {
-      return { node: [tagName, attrs, ...children.nodes] as MinimarkNode, nextIndex }
+      return { node: [tagName, attrs, ...children.nodes] as ComarkNode, nextIndex }
     }
     return { node: null, nextIndex }
   }
@@ -852,8 +857,8 @@ function processInlineChildren(
   startIndex: number,
   closeType: string,
   inHeading: boolean = false,
-): { nodes: MinimarkNode[], nextIndex: number } {
-  const nodes: MinimarkNode[] = []
+): { nodes: ComarkNode[], nextIndex: number } {
+  const nodes: ComarkNode[] = []
   let i = startIndex
 
   while (i < tokens.length) {
@@ -892,7 +897,7 @@ function processInlineChildren(
         i++
       }
 
-      nodes.push([componentName, attrs] as MinimarkNode)
+      nodes.push([componentName, attrs] as ComarkNode)
       // Continue processing subsequent tokens as siblings
       continue
     }
@@ -900,7 +905,7 @@ function processInlineChildren(
     const result = processInlineToken(tokens, i, inHeading)
     i = result.nextIndex
     if (result.node) {
-      nodes.push(result.node as MinimarkNode)
+      nodes.push(result.node as ComarkNode)
     }
   }
 

@@ -15,7 +15,7 @@ Here **strong**{bool} **strong**{#id1} **strong**{.class1} **strong**{attr="valu
 
 ```json
 {
-  "type": "minimark",
+  "type": "comark",
   "value": [
     [
       "p",

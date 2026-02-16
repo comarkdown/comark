@@ -15,7 +15,7 @@ Here [link](https://example.com){bool} [link](https://example.com){#id1} [link](
 
 ```json
 {
-  "type": "minimark",
+  "type": "comark",
   "value": [
     [
       "p",

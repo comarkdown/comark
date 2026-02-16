@@ -16,7 +16,7 @@ And continues in next line
 
 ```json
 {
-  "type": "minimark",
+  "type": "comark",
   "value": [
     [
       "p",

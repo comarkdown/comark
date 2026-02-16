@@ -11,9 +11,8 @@ export default defineBuildConfig({
         './src/react/components/Comark.tsx',
         './src/react/components/ComarkAst.tsx',
         './src/react/components/index.tsx',
-        './src/react/components/stream.tsx',
         './src/react/components/prose/ProsePre.tsx',
-        './src/react/components/prose/ProsePreShiki.tsx',
+        './src/ast/index.ts',
       ],
     },
     {

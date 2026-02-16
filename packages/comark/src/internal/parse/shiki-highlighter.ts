@@ -1,7 +1,7 @@
 import type { Highlighter, BundledLanguage, BundledTheme } from 'shiki'
 import { createHighlighter } from 'shiki'
-import type { MinimarkNode, MinimarkTree } from 'minimark'
-import type { ParseOptions } from '../types'
+import type { ComarkNode, ComarkTree } from 'comark/ast'
+import type { ParseOptions } from '../../types'
 
 let highlighter: Highlighter | null = null
 let highlighterPromise: Promise<Highlighter> | null = null
@@ -60,13 +60,13 @@ function colorToStyle(color: Record<string, string> | undefined): string | undef
 
 /**
  * Highlight code using Shiki with codeToTokens
- * Returns minimark nodes built from tokens
+ * Returns comark nodes built from tokens
  */
 export async function highlightCode(
   code: string,
   attrs: { language?: string, class?: string, highlights?: number[] },
   options: Exclude<ParseOptions['highlight'], boolean> = {},
-): Promise<{ nodes: MinimarkNode[], language: string, bgColor?: string, fgColor?: string }> {
+): Promise<{ nodes: ComarkNode[], language: string, bgColor?: string, fgColor?: string }> {
   // Extract language from attributes
   const language = (attrs as any)?.language
   try {
@@ -94,13 +94,13 @@ export async function highlightCode(
       themes: themes as Record<string, BundledTheme | string>,
     })
 
-    // Build minimark nodes from tokens (flatten all lines)
-    const allTokens: MinimarkNode[] = []
+    // Build comark nodes from tokens (flatten all lines)
+    const allTokens: ComarkNode[] = []
 
     for (let i = 0; i < result.tokens.length; i++) {
       const lineTokens = result.tokens[i]
 
-      const lineTokensNodes: MinimarkNode[] = []
+      const lineTokensNodes: ComarkNode[] = []
       for (const token of lineTokens) {
         const style = colorToStyle(token.htmlStyle)
 
@@ -108,7 +108,7 @@ export async function highlightCode(
         // Note: we always wrap in spans if there's a style, even for whitespace
         // because the whitespace may be part of the styled token
         if (style) {
-          lineTokensNodes.push(['span', { style }, token.content] as MinimarkNode)
+          lineTokensNodes.push(['span', { style }, token.content] as ComarkNode)
         }
         else {
           // Plain text token (no style)
@@ -143,14 +143,14 @@ export async function highlightCode(
 }
 
 /**
- * Apply syntax highlighting to all code blocks in a Minimark tree
+ * Apply syntax highlighting to all code blocks in a Comark tree
  * Uses codeToTokens API
  */
 export async function highlightCodeBlocks(
-  tree: MinimarkTree,
+  tree: ComarkTree,
   options: Exclude<ParseOptions['highlight'], boolean> = {},
-): Promise<MinimarkTree> {
-  const processNode = async (node: MinimarkNode): Promise<MinimarkNode> => {
+): Promise<ComarkTree> {
+  const processNode = async (node: ComarkNode): Promise<ComarkNode> => {
     // Skip text nodes
     if (typeof node === 'string') {
       return node
@@ -184,7 +184,7 @@ export async function highlightCodeBlocks(
             }
 
             // Return the updated pre > code structure with token-based children
-            return ['pre', newPreAttrs, ['code', codeAttrs || {}, ...nodes]] as MinimarkNode
+            return ['pre', newPreAttrs, ['code', codeAttrs || {}, ...nodes]] as ComarkNode
           }
           catch (error) {
             console.error('Failed to highlight code block:', error)
@@ -200,7 +200,7 @@ export async function highlightCodeBlocks(
       const processedChildren = await Promise.all(
         children.map(child => processNode(child)),
       )
-      return [tag, attrs, ...processedChildren] as MinimarkNode
+      return [tag, attrs, ...processedChildren] as ComarkNode
     }
 
     return node

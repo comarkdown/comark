@@ -1,33 +1,33 @@
 import type { ParseOptions } from './types'
 import MarkdownIt from 'markdown-it'
 import pluginMdc from 'markdown-it-mdc'
-import markdownItTaskListsMdc from './utils/markdown-it-task-lists-mdc'
-import { applyAutoUnwrap } from './utils/auto-unwrap'
-import { generateToc } from './utils/table-of-contents'
-import { stringify } from 'minimark/stringify'
-import type { MinimarkTree, MinimarkNode } from 'minimark'
-import { parseTokens } from './utils/token-processor'
-import { autoCloseMarkdown } from './utils/auto-close'
-import { parseFrontmatter, renderFrontmatter } from './utils/front-matter'
+import markdownItTaskListsMdc from './internal/parse/markdown-it-task-lists-mdc'
+import { applyAutoUnwrap } from './internal/parse/auto-unwrap'
+import { generateToc } from './internal/parse/table-of-contents'
+import { stringify } from './internal/stringify'
+import type { ComarkTree, ComarkNode } from 'comark/ast'
+import { marmdownItTokensToComarkTree } from './internal/parse/token-processor'
+import { autoCloseMarkdown } from './internal/parse/auto-close'
+import { parseFrontmatter, renderFrontmatter } from './internal/front-matter'
 
 export interface ParseResult {
-  body: MinimarkTree
-  excerpt?: MinimarkTree
+  body: ComarkTree
+  excerpt?: ComarkTree
   data: any
   toc?: any
 }
 
-// Re-export MinimarkTree and MinimarkNode for convenience
-export type { MinimarkTree, MinimarkNode } from 'minimark'
+// Re-export ComarkTree and ComarkNode for convenience
+export type { ComarkTree, ComarkNode } from 'comark/ast'
 
 // Re-export auto-close utilities
-export { autoCloseMarkdown } from './utils/auto-close'
+export { autoCloseMarkdown } from './internal/parse/auto-close'
 
 // Re-export parse utilities
-export { applyAutoUnwrap } from './utils/auto-unwrap'
+export { applyAutoUnwrap } from './internal/parse/auto-unwrap'
 
 // Re-export syntax highlighting utilities
-export { highlightCode } from './utils/shiki-highlighter'
+export { highlightCode } from './internal/parse/shiki-highlighter'
 
 // Re-export types
 export type * from './types'
@@ -100,33 +100,25 @@ export function parse(source: string, options: ParseOptions = {}): ParseResult {
   const tokens = markdownIt.parse(content, {})
 
   // Convert tokens to Comark structure
-  const body: MinimarkTree = {
-    type: 'minimark',
-    value: parseTokens(tokens),
-  }
+  const body: ComarkTree = marmdownItTokensToComarkTree(tokens)
 
   if (autoUnwrap) {
-    body.value = body.value.map((node: MinimarkNode) => applyAutoUnwrap(node))
+    body.value = body.value.map((node: ComarkNode) => applyAutoUnwrap(node))
   }
 
   // Handle excerpt (look for HTML comment with 'more')
-  let excerpt: MinimarkTree | undefined
+  let excerpt: ComarkTree | undefined
   const excerptIndex = tokens.findIndex(
     token => token.type === 'html_block' && token.content?.includes('<!-- more -->'),
   )
 
   if (excerptIndex !== -1) {
     const excerptTokens = tokens.slice(0, excerptIndex)
-    let excerptChildren = parseTokens(excerptTokens)
+    excerpt = marmdownItTokensToComarkTree(excerptTokens)
 
     // Apply auto-unwrap to excerpt as well
     if (autoUnwrap) {
-      excerptChildren = excerptChildren.map((child: MinimarkNode) => applyAutoUnwrap(child))
-    }
-
-    excerpt = {
-      type: 'minimark',
-      value: excerptChildren,
+      excerpt.value = excerpt.value.map((child: ComarkNode) => applyAutoUnwrap(child))
     }
   }
 
@@ -182,17 +174,17 @@ export async function parseAsync(source: string, options: ParseOptions = {}): Pr
 
   // If highlighting is enabled, apply it to code blocks
   if (highlight) {
-    const { highlightCodeBlocks } = await import('./utils/shiki-highlighter')
+    const { highlightCodeBlocks } = await import('./internal/parse/shiki-highlighter')
     result.body = await highlightCodeBlocks(result.body, highlight === true ? {} : highlight)
   }
 
   return result
 }
 
-export function renderHTML(tree: MinimarkTree): string {
+export function renderHTML(tree: ComarkTree): string {
   return stringify(tree, { format: 'text/html' }).trim()
 }
 
-export function renderMarkdown(tree: MinimarkTree, data?: Record<string, any> | undefined | null): string {
+export function renderMarkdown(tree: ComarkTree, data?: Record<string, any> | undefined | null): string {
   return renderFrontmatter(data, stringify(tree, { format: 'markdown/mdc' }))
 }

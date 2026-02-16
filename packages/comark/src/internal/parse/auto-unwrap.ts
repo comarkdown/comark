@@ -1,4 +1,4 @@
-import type { MinimarkNode } from 'minimark'
+import type { ComarkNode } from 'comark/ast'
 
 /**
  * Applies automatic unwrapping to container components.
@@ -18,7 +18,7 @@ import type { MinimarkNode } from 'minimark'
  * // After:
  * { tag: 'alert', children: [{ type: 'text', value: 'Text' }] }
  */
-export function applyAutoUnwrap(node: MinimarkNode): MinimarkNode {
+export function applyAutoUnwrap(node: ComarkNode): ComarkNode {
   if (typeof node === 'string' || node.length < 2) {
     return node
   }
@@ -26,7 +26,7 @@ export function applyAutoUnwrap(node: MinimarkNode): MinimarkNode {
   const [tag, props, ...children] = node
 
   // Filter out empty text nodes for checking
-  const nonEmptyChildren = children.filter((child: MinimarkNode) =>
+  const nonEmptyChildren = children.filter((child: ComarkNode) =>
     typeof child !== 'string' || (child && child.trim()),
   )
 
@@ -39,13 +39,13 @@ export function applyAutoUnwrap(node: MinimarkNode): MinimarkNode {
     return [
       tag,
       props,
-      ...children.map((child: MinimarkNode) => applyAutoUnwrap(child as MinimarkNode)),
-    ] as MinimarkNode
+      ...children.map((child: ComarkNode) => applyAutoUnwrap(child as ComarkNode)),
+    ] as ComarkNode
   }
 
   return [
     tag,
     props,
-    ...nonEmptyChildren[0].slice(2) as MinimarkNode[],
-  ] as MinimarkNode
+    ...nonEmptyChildren[0].slice(2) as ComarkNode[],
+  ] as ComarkNode
 }

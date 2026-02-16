@@ -19,15 +19,21 @@ This is a **monorepo** containing multiple packages related to Comark (Component
 ```
 /                         # Root workspace
 ├── packages/             # All publishable packages
-│   ├── comark/       # Main Comark parser package
-│   ├── comark-cjk/   # CJK support plugin (@comark/cjk)
-│   └── comark-math/  # Math formula support (@comark/math)
+│   ├── comark/           # Main Comark parser package
+│   ├── comark-cjk/       # CJK support plugin (@comark/cjk)
+│   └── comark-math/      # Math formula support (@comark/math)
 ├── examples/             # Example applications
 │   ├── vue-vite/         # Vue 3 + Vite + Tailwind CSS v4
-│   └── react-vite/       # React 19 + Vite + Tailwind CSS v4
+│   ├── react-vite/       # React 19 + Vite + Tailwind CSS v4
+│   ├── nuxt/             # Nuxt example
+│   ├── nuxt-ui/          # Nuxt UI example
+│   └── react-vite-stream/ # React streaming example
 ├── docs/                 # Documentation site (Docus-based)
+├── playground/           # Development playground
 ├── skills/               # AI agent skills definitions
 ├── pnpm-workspace.yaml   # Workspace configuration
+├── tsconfig.json         # Root TypeScript config
+├── eslint.config.mjs     # ESLint configuration
 └── package.json          # Root package (private, scripts only)
 ```
 
@@ -40,18 +46,49 @@ packages/comark/
 ├── src/
 │   ├── index.ts              # Core parser: parse(), parseAsync(), renderHTML(), renderMarkdown()
 │   ├── stream.ts             # Streaming: parseStream(), parseStreamIncremental()
-│   ├── types.ts              # TypeScript interfaces
-│   ├── vue/                  # Vue components: Comark
-│   ├── react/                # React components: Comark
+│   ├── types.ts              # TypeScript interfaces (ParseOptions, etc.)
+│   ├── ast/                  # Comark AST types and utilities
+│   │   ├── index.ts          # Re-exports (comark/ast entry point)
+│   │   ├── types.ts          # ComarkTree, ComarkNode, ComarkElement, ComarkText
+│   │   └── utils.ts          # textContent(), visit() tree utilities
+│   ├── internal/             # Internal implementation (not exported)
+│   │   ├── front-matter.ts   # YAML frontmatter parsing/rendering
+│   │   ├── yaml.ts           # YAML serialization utilities
+│   │   ├── props-validation.ts # Component props validation
+│   │   ├── parse/            # Parsing pipeline
+│   │   │   ├── token-processor.ts     # markdown-it token → Comark AST conversion
+│   │   │   ├── auto-close.ts          # Auto-close incomplete markdown/Comark
+│   │   │   ├── auto-unwrap.ts         # Remove unnecessary <p> wrappers
+│   │   │   ├── table-of-contents.ts   # TOC generation
+│   │   │   ├── shiki-highlighter.ts   # Syntax highlighting via Shiki
+│   │   │   └── markdown-it-task-lists-mdc.ts # Task list plugin
+│   │   └── stringify/        # AST → string rendering
+│   │       ├── index.ts      # Main stringify entry
+│   │       ├── state.ts      # Rendering state management
+│   │       ├── types.ts      # Stringify type definitions
+│   │       ├── attributes.ts # Attribute serialization
+│   │       ├── indent.ts     # Indentation handling
+│   │       └── handlers/     # Per-element render handlers (a, p, pre, heading, etc.)
+│   ├── vue/                  # Vue components
+│   │   ├── index.ts          # Vue entry point (comark/vue)
+│   │   └── components/
+│   │       ├── Comark.ts     # High-level markdown → render component
+│   │       ├── ComarkAst.ts  # Low-level AST → render component
+│   │       ├── index.ts      # Component re-exports
+│   │       └── prose/
+│   │           └── ProsePre.vue # Code block prose component
+│   ├── react/                # React components
+│   │   ├── index.ts          # React entry point (comark/react)
+│   │   └── components/
+│   │       ├── Comark.tsx    # High-level markdown → render component
+│   │       ├── ComarkAst.tsx # Low-level AST → render component
+│   │       ├── index.tsx     # Component re-exports
+│   │       └── prose/
+│   │           └── ProsePre.tsx # Code block prose component
 │   └── utils/
-│       ├── auto-close.ts     # Auto-close incomplete markdown/Comark
-│       ├── auto-unwrap.ts    # Remove unnecessary <p> wrappers
-│       ├── front-matter.ts   # YAML frontmatter parsing/rendering
-│       ├── token-processor.ts # markdown-it token to Minimark AST conversion
-│       ├── table-of-contents.ts # TOC generation
-│       └── shiki-highlighter.ts # Syntax highlighting
+│       └── caret.ts          # Caret/cursor utilities
 ├── test/                 # Vitest test files
-├── SPEC/                 # Markdown spec test files
+├── SPEC/                 # Markdown spec test files (CommonMark, GFM, MDC)
 ├── package.json          # Package manifest
 ├── tsconfig.json         # TypeScript config
 ├── build.config.mjs      # Build configuration (obuild)
@@ -174,6 +211,10 @@ x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}
 // Core parsing
 import { parse, parseAsync, renderHTML, renderMarkdown, autoCloseMarkdown } from 'comark'
 
+// AST types and utilities
+import type { ComarkTree, ComarkNode, ComarkElement, ComarkText } from 'comark/ast'
+import { textContent, visit } from 'comark/ast'
+
 // Stream parsing
 import { parseStream, parseStreamIncremental } from 'comark/stream'
 
@@ -214,10 +255,11 @@ const matches = line.match(/\*+/g)  // Don't do this
 
 ### Code Organization
 
-1. Keep utility functions in `packages/comark/src/utils/`
-2. Framework-specific code in `packages/comark/src/vue/` and `packages/comark/src/react/`
-3. Export public APIs from entry points (`index.ts`, `stream.ts`)
-4. Document exported functions with JSDoc including `@example`
+1. Keep internal implementation in `packages/comark/src/internal/` (parsing in `internal/parse/`, stringification in `internal/stringify/`)
+2. AST types and utilities in `packages/comark/src/ast/`
+3. Framework-specific code in `packages/comark/src/vue/` and `packages/comark/src/react/`
+4. Export public APIs from entry points (`index.ts`, `stream.ts`, `ast/index.ts`)
+5. Document exported functions with JSDoc including `@example`
 
 ## Testing Guidelines
 
@@ -267,7 +309,7 @@ const result = parse(markdownContent, {
   autoClose: true,    // Auto-close incomplete syntax
 })
 
-result.body   // MinimarkTree - Parsed AST
+result.body   // ComarkTree - Parsed AST
 result.data   // Frontmatter data object
 result.toc    // Table of contents
 ```
@@ -293,18 +335,24 @@ autoCloseMarkdown('**bold text')     // '**bold text**'
 autoCloseMarkdown('::alert\nContent') // '::alert\nContent\n::'
 ```
 
-## Minimark AST Format
+## Comark AST Format
 
-The parser outputs Minimark AST - a compact array-based format:
+The parser outputs Comark AST - a compact array-based format. Types are defined in `packages/comark/src/ast/types.ts`:
 
 ```typescript
-type MinimarkNode =
-  | string  // Text node
-  | [tag: string, props?: Record<string, any>, ...children: MinimarkNode[]]
+type ComarkText = string
 
-interface MinimarkTree {
-  type: 'minimark'
-  value: MinimarkNode[]
+type ComarkElementAttributes = {
+  [key: string]: unknown
+}
+
+type ComarkElement = [string, ComarkElementAttributes, ...ComarkNode[]]
+
+type ComarkNode = ComarkElement | ComarkText
+
+type ComarkTree = {
+  type: 'comark'
+  value: ComarkNode[]
 }
 ```
 
@@ -313,7 +361,7 @@ Example:
 // Input: "# Hello **World**"
 // Output:
 {
-  type: 'minimark',
+  type: 'comark',
   value: [
     ['h1', { id: 'hello' }, 'Hello ', ['strong', {}, 'World']]
   ]
@@ -344,14 +392,14 @@ Accepts markdown string, handles parsing internally.
 
 ### Adding a new utility function
 
-1. Create file in `packages/comark/src/utils/`
+1. Create file in `packages/comark/src/internal/` (or `src/ast/` for AST utilities)
 2. Export from `packages/comark/src/index.ts` if public API
 3. Add tests in `packages/comark/test/`
 4. Document with JSDoc
 
 ### Modifying the parser
 
-1. Token processing is in `packages/comark/src/utils/token-processor.ts`
+1. Token processing is in `packages/comark/src/internal/parse/token-processor.ts`
 2. Test with `packages/comark/test/index.test.ts`
 3. Check streaming still works with `packages/comark/test/stream.test.ts`
 
@@ -445,16 +493,13 @@ pnpm dev:vue
 
 Features:
 - Editor mode with live preview
-- Streaming demo showing auto-close in action
-- Custom component registration (alert, h1)
+- Custom component registration (alert)
 - Light/dark mode support via Tailwind CSS v4
 - Uses `<Suspense>` wrapper for async Comark component
 
 Key files:
-- `examples/vue-vite/src/App.vue` - Main app with editor/streaming modes
-- `examples/vue-vite/src/components/StreamingPreview.vue` - Streaming demo component
-- `examples/vue-vite/src/components/CustomAlert.vue` - Custom alert component
-- `examples/vue-vite/src/components/CustomHeading.vue` - Custom heading component
+- `examples/vue-vite/src/App.vue` - Main app with editor
+- `examples/vue-vite/src/components/Alert.vue` - Custom alert component
 
 ### React/Vite Example (`examples/react-vite/`)
 
@@ -469,9 +514,7 @@ Features:
 
 Key files:
 - `examples/react-vite/src/App.tsx` - Main app
-- `examples/react-vite/src/components/StreamingPreview.tsx` - Streaming demo
-- `examples/react-vite/src/components/CustomAlert.tsx` - Custom alert
-- `examples/react-vite/src/components/CustomHeading.tsx` - Custom heading
+- `examples/react-vite/src/components/Alert.tsx` - Custom alert component
 
 ## Documentation Maintenance
 

@@ -18,7 +18,7 @@ This is another paragraph
 
 ```json
 {
-  "type": "minimark",
+  "type": "comark",
   "value": [
     [
       "p",

@@ -103,8 +103,8 @@ docs/
 |------|---------|---------------|
 | `ParseResult` | Parse output | [API Reference](./content/4.api/3.reference.md) |
 | `IncrementalParseResult` | Stream output | [API Reference](./content/4.api/3.reference.md) |
-| `MinimarkTree` | AST root | [API Reference](./content/4.api/3.reference.md) |
-| `MinimarkNode` | AST node | [API Reference](./content/4.api/3.reference.md) |
+| `ComarkTree` | AST root | [API Reference](./content/4.api/3.reference.md) |
+| `ComarkNode` | AST node | [API Reference](./content/4.api/3.reference.md) |
 
 ## Contributing to Documentation
 

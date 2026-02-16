@@ -15,7 +15,7 @@ Here *em*{bool} *em*{#id1} *em*{.class1} *em*{attr="value"}
 
 ```json
 {
-  "type": "minimark",
+  "type": "comark",
   "value": [
     [
       "p",

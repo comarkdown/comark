@@ -19,7 +19,7 @@ function hello() {
 
 ```json
 {
-  "type": "minimark",
+  "type": "comark",
   "value": [
     [
       "pre",

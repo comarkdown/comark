@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { autoCloseMarkdown } from '../src/utils/auto-close'
+import { autoCloseMarkdown } from '../src/internal/parse/auto-close'
 
 describe('autoCloseMarkdown - Inline Syntax', () => {
   it('should auto-close unclosed bold syntax', () => {

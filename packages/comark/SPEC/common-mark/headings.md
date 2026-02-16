@@ -25,7 +25,7 @@ timeout:
 
 ```json
 {
-  "type": "minimark",
+  "type": "comark",
   "value": [
     [
       "h1",

@@ -15,7 +15,7 @@ Here `code`{bool} `code`{#id1} `code`{.class1} `code`{attr="value"}
 
 ```json
 {
-  "type": "minimark",
+  "type": "comark",
   "value": [
     [
       "p",

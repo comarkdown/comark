@@ -122,7 +122,7 @@ export const Comark = defineComponent({
     return () => {
       // Render using ComarkAst
       return h(ComarkAst, {
-        body: parsed.value?.body || { type: 'minimark', value: [] },
+        body: parsed.value?.body || { type: 'comark', value: [] },
         components: components.value,
         streaming: props.streaming,
         componentsManifest: props.componentsManifest,

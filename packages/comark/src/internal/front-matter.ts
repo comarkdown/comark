@@ -1,4 +1,4 @@
-import { parse, stringify } from 'yaml'
+import { parseYaml, stringifyYaml } from './yaml'
 
 const FRONTMATTER_DELIMITER_DEFAULT = '---'
 const LF = '\n'
@@ -17,7 +17,7 @@ export function parseFrontmatter(content: string): { content: string, data: Reco
       const hasCarriageReturn = content[idx - 1] === CR
       const frontmatter = content.slice(4, idx - (hasCarriageReturn ? 1 : 0))
       if (frontmatter) {
-        data = parse(frontmatter)
+        data = parseYaml(frontmatter)
         content = content.slice(idx + 4 + (hasCarriageReturn ? 1 : 0))
       }
     }
@@ -40,7 +40,7 @@ export function renderFrontmatter(data: Record<string, any> | undefined | null, 
     return (content?.trim() || '')
   }
 
-  const fm = stringify(data, { indent: 2 }).trim()
+  const fm = stringifyYaml(data).trim()
   if (content) {
     return FRONTMATTER_DELIMITER_DEFAULT + LF + fm + LF + FRONTMATTER_DELIMITER_DEFAULT + LF + LF + content.trim()
   }

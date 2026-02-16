@@ -46,7 +46,7 @@ options:
 
 ```json
 {
-  "type": "minimark",
+  "type": "comark",
   "value": [
     [
       "page-section",

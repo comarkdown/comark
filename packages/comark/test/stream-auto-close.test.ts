@@ -1,10 +1,10 @@
 import { Readable } from 'node:stream'
 import { describe, expect, it } from 'vitest'
 import { parseStreamIncremental } from '../src/stream'
-import type { MinimarkNode } from 'minimark'
+import type { ComarkNode } from 'comark/ast'
 
 // Helper to check if a node is an element with a specific tag
-function isElement(node: MinimarkNode, tag: string): boolean {
+function isElement(node: ComarkNode, tag: string): boolean {
   return Array.isArray(node) && node[0] === tag
 }
 
@@ -76,7 +76,7 @@ describe('stream with Auto-Close - Remark Parser', () => {
     // Each intermediate result should be parseable
     for (let i = 0; i < results.length - 1; i++) {
       expect(results[i].isComplete).toBe(false)
-      expect(results[i].body.type).toBe('minimark')
+      expect(results[i].body.type).toBe('comark')
     }
 
     // Final result
@@ -100,7 +100,7 @@ describe('stream with Auto-Close - Remark Parser', () => {
 
     // Second chunk has both unclosed component and unclosed bold
     expect(results[1].isComplete).toBe(false)
-    expect(results[1].body.type).toBe('minimark')
+    expect(results[1].body.type).toBe('comark')
 
     // Should not throw errors at any stage
     expect(results.length).toBeGreaterThan(0)
@@ -150,8 +150,8 @@ describe('stream with Auto-Close - Markdown-it Parser', () => {
 
     // Each result should have a valid alert component
     for (const result of results) {
-      expect(result.body.type).toBe('minimark')
-      const hasAlert = result.body.value.some((child: MinimarkNode) => isElement(child, 'alert'))
+      expect(result.body.type).toBe('comark')
+      const hasAlert = result.body.value.some((child: ComarkNode) => isElement(child, 'alert'))
       expect(hasAlert).toBe(true)
     }
 
@@ -178,7 +178,7 @@ describe('stream with Auto-Close - Markdown-it Parser', () => {
       results.push(result)
 
       // Every intermediate result should be parseable
-      expect(result.body.type).toBe('minimark')
+      expect(result.body.type).toBe('comark')
       expect(result.body.value.length).toBeGreaterThan(0)
     }
 
@@ -187,10 +187,10 @@ describe('stream with Auto-Close - Markdown-it Parser', () => {
     expect(final.isComplete).toBe(true)
 
     // Should have heading
-    expect(final.body.value.some((child: MinimarkNode) => isElement(child, 'h1'))).toBe(true)
+    expect(final.body.value.some((child: ComarkNode) => isElement(child, 'h1'))).toBe(true)
 
     // Should have alert component
-    expect(final.body.value.some((child: MinimarkNode) => isElement(child, 'alert'))).toBe(true)
+    expect(final.body.value.some((child: ComarkNode) => isElement(child, 'alert'))).toBe(true)
   })
 
   it('should handle small chunks with auto-close', async () => {
@@ -208,7 +208,7 @@ describe('stream with Auto-Close - Markdown-it Parser', () => {
     for await (const result of parseStreamIncremental(stream)) {
       results.push(result)
       // Should not throw errors
-      expect(result.body.type).toBe('minimark')
+      expect(result.body.type).toBe('comark')
     }
 
     // Should have processed all chunks
@@ -233,7 +233,7 @@ describe('stream with Auto-Close - Markdown-it Parser', () => {
       results.push(result)
 
       // Each result should be parseable
-      expect(result.body.type).toBe('minimark')
+      expect(result.body.type).toBe('comark')
     }
 
     // Final result should be complete with all nesting resolved
@@ -262,7 +262,7 @@ describe('stream Auto-Close Edge Cases', () => {
 
     for await (const result of parseStreamIncremental(stream)) {
       results.push(result)
-      expect(result.body.type).toBe('minimark')
+      expect(result.body.type).toBe('comark')
     }
 
     expect(results[results.length - 1].isComplete).toBe(true)

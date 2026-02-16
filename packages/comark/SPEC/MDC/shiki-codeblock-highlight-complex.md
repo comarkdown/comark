@@ -32,7 +32,7 @@ func main() {
 
 ```json
 {
-  "type": "minimark",
+  "type": "comark",
   "value": [
     [
       "pre",

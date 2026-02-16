@@ -1,6 +1,6 @@
 # Parsing & AST Generation
 
-Complete guide for parsing Comark documents and working with the Minimark AST format.
+Complete guide for parsing Comark documents and working with the Comark AST format.
 
 ## Table of Contents
 
@@ -39,8 +39,8 @@ const result = parse(content)
 
 ```typescript
 interface ParseResult {
-  body: MinimarkTree        // The parsed AST
-  excerpt?: MinimarkTree    // Optional excerpt (before <!-- more -->)
+  body: ComarkTree        // The parsed AST
+  excerpt?: ComarkTree    // Optional excerpt (before <!-- more -->)
   data: any                 // Frontmatter data
   toc?: any                 // Table of contents
 }
@@ -264,10 +264,10 @@ for await (const result of parseStreamIncremental(response.body!)) {
 ```typescript
 interface IncrementalParseResult {
   chunk: string             // The chunk just received
-  body: MinimarkTree        // Current parsed state
+  body: ComarkTree        // Current parsed state
   data: any                 // Frontmatter (once available)
   isComplete: boolean       // Whether stream is finished
-  excerpt?: MinimarkTree    // Optional excerpt
+  excerpt?: ComarkTree    // Optional excerpt
   toc?: any                 // TOC (only in final result)
 }
 ```
@@ -301,19 +301,19 @@ const result = await parseStream(stream)
 
 ## AST Structure
 
-Comark uses the **Minimark** format, a lightweight array-based AST structure.
+Comark uses a lightweight array-based AST structure.
 
-### Minimark Format
+### Comark AST Format
 
 ```typescript
-interface MinimarkTree {
-  type: 'minimark'
-  value: MinimarkNode[]
+interface ComarkTree {
+  type: 'comark'
+  value: ComarkNode[]
 }
 
-type MinimarkNode =
+type ComarkNode =
   | string                    // Text nodes
-  | [tag: string, props?: Record<string, any>, ...children: MinimarkNode[]]
+  | [tag: string, props?: Record<string, any>, ...children: ComarkNode[]]
 ```
 
 ### Node Structure
@@ -375,7 +375,7 @@ Warning message
 **AST:**
 ```json
 {
-  "type": "minimark",
+  "type": "comark",
   "value": [
     [
       "h1",

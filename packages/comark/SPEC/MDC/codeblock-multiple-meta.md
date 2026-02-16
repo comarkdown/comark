@@ -18,7 +18,7 @@ def greet(name):
 
 ```json
 {
-  "type": "minimark",
+  "type": "comark",
   "value": [
     [
       "pre",

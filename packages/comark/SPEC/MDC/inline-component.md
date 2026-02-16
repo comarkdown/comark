@@ -21,7 +21,7 @@ Paragraph with :inline-component in middle
 
 ```json
 {
-  "type": "minimark",
+  "type": "comark",
   "value": [
     [
       "p",

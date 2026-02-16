@@ -1,10 +1,10 @@
 import { Readable } from 'node:stream'
 import { describe, expect, it } from 'vitest'
 import { parseStreamIncremental } from '../src/stream'
-import type { MinimarkNode } from 'minimark'
+import type { ComarkNode } from 'comark/ast'
 
 // Helper to check if a node is an element with a specific tag
-function isElement(node: MinimarkNode, tag: string): boolean {
+function isElement(node: ComarkNode, tag: string): boolean {
   return Array.isArray(node) && node[0] === tag
 }
 
@@ -53,7 +53,7 @@ Watch how **bold text** and components render correctly even when syntax arrives
 
     for await (const result of parseStreamIncremental(stream)) {
       try {
-        expect(result.body.type).toBe('minimark')
+        expect(result.body.type).toBe('comark')
         results.push(result)
 
         // Log intermediate states
@@ -76,17 +76,17 @@ Watch how **bold text** and components render correctly even when syntax arrives
     expect(final.body.value.length).toBeGreaterThan(0)
 
     // Check for alert
-    const _hasAlert = final.body.value.some((c: MinimarkNode) => isElement(c, 'alert'))
+    const _hasAlert = final.body.value.some((c: ComarkNode) => isElement(c, 'alert'))
     // console.log('Has alert component:', _hasAlert)
     expect(_hasAlert).toBe(true)
 
     // Check for card
-    const hasCard = final.body.value.some((c: MinimarkNode) => isElement(c, 'card'))
+    const hasCard = final.body.value.some((c: ComarkNode) => isElement(c, 'card'))
     // console.log('Has card component:', hasCard)
     expect(hasCard).toBe(true)
 
     // Check for nested card
-    const cards = final.body.value.filter((c: MinimarkNode) => isElement(c, 'card'))
+    const cards = final.body.value.filter((c: ComarkNode) => isElement(c, 'card'))
     // console.log('Number of card components:', cards.length)
 
     // Inspect the first card for nested content
@@ -111,7 +111,7 @@ Watch how **bold text** and components render correctly even when syntax arrives
     const results = []
 
     for await (const result of parseStreamIncremental(stream)) {
-      expect(result.body.type).toBe('minimark')
+      expect(result.body.type).toBe('comark')
       results.push(result)
     }
 
@@ -121,7 +121,7 @@ Watch how **bold text** and components render correctly even when syntax arrives
     expect(final.body.value.length).toBeGreaterThan(0)
 
     // Check for alert
-    const _hasAlert = final.body.value.some((c: MinimarkNode) => isElement(c, 'alert'))
+    const _hasAlert = final.body.value.some((c: ComarkNode) => isElement(c, 'alert'))
     // console.log('Remark - Has alert component:', hasAlert)
   })
 
@@ -150,7 +150,7 @@ Watch how **bold text** and components render correctly even when syntax arrives
     // Check each intermediate result
     let alertAppeared = -1
     results.forEach((result, i) => {
-      const _hasAlert = result.body.value.some((c: MinimarkNode) => isElement(c, 'alert'))
+      const _hasAlert = result.body.value.some((c: ComarkNode) => isElement(c, 'alert'))
       if (_hasAlert && alertAppeared === -1) {
         alertAppeared = i
       }
@@ -160,11 +160,11 @@ Watch how **bold text** and components render correctly even when syntax arrives
 
     // Final should definitely have alert
     const final = results[results.length - 1]
-    const _hasAlert = final.body.value.some((c: MinimarkNode) => isElement(c, 'alert'))
+    const _hasAlert = final.body.value.some((c: ComarkNode) => isElement(c, 'alert'))
     expect(_hasAlert).toBe(true)
 
     // Get the alert element
-    const _alert = final.body.value.find((c: MinimarkNode) => isElement(c, 'alert'))
+    const _alert = final.body.value.find((c: ComarkNode) => isElement(c, 'alert'))
     // console.log('Alert element:', JSON.stringify(alert, null, 2))
   })
 })

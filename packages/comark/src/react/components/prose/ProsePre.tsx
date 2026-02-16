@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react'
-import { textContent } from 'minimark'
+import { textContent } from 'comark/ast'
 
 // Inject dark mode styles for Shiki (once)
 const SHIKI_DARK_STYLE_ID = 'mdc-shiki-dark-styles'

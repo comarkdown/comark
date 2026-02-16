@@ -47,7 +47,7 @@ Important message
 `
 
 const result = parse(content)
-console.log(result.body)  // Minimark AST
+console.log(result.body)  // Comark AST
 console.log(result.data)  // { title: 'Hello World' }
 console.log(result.toc)   // Table of contents
 ```
@@ -103,7 +103,7 @@ Complete guide for parsing documents and working with AST:
 - **String Parsing:** `parse()` function with options (autoUnwrap, autoClose)
 - **Async Parsing:** `parseAsync()` with Shiki syntax highlighting
 - **Stream Parsing:** buffered (`parseStream`) and incremental (`parseStreamIncremental`) modes
-- **AST Structure:** Minimark format - lightweight array-based AST
+- **AST Structure:** Comark AST format - lightweight array-based AST
 - **Rendering AST:** convert to HTML (`renderHTML`) or markdown (`renderMarkdown`)
 - **Auto-close:** automatic closing of unclosed syntax for streaming scenarios
 - **Auto-unwrap:** remove unnecessary paragraph wrappers from container components
@@ -191,13 +191,13 @@ for await (const result of parseStreamIncremental(stream)) {
 }
 ```
 
-### Minimark AST Format
+### Comark AST Format
 
 Lightweight array-based structure for efficient processing:
 
 ```json
 {
-  "type": "minimark",
+  "type": "comark",
   "value": [
     ["h1", { "id": "hello" }, "Hello"],
     ["p", {}, "Text with ", ["strong", {}, "bold"], " word"],
@@ -303,10 +303,10 @@ parse(source: string, options?: ParseOptions): ParseResult
 parseAsync(source: string, options?: ParseOptions): Promise<ParseResult>
 
 // Render to HTML
-renderHTML(tree: MinimarkTree): string
+renderHTML(tree: ComarkTree): string
 
 // Render to markdown
-renderMarkdown(tree: MinimarkTree): string
+renderMarkdown(tree: ComarkTree): string
 
 // Auto-close unclosed syntax
 autoCloseMarkdown(source: string): string
@@ -337,7 +337,7 @@ parseStreamIncremental(stream: Readable | ReadableStream): AsyncGenerator<Increm
 ## Performance Characteristics
 
 - **O(n) auto-close algorithm** - linear time without regex
-- **Minimark format** - lightweight array-based AST
+- **Comark AST format** - lightweight array-based AST
 - **Lazy component loading** - only load what's needed
 - **Shiki highlighter caching** - avoid re-initialization
 - **Incremental parsing** - stream processing with minimal overhead
@@ -350,8 +350,8 @@ Full TypeScript definitions included:
 import type {
   ParseResult,
   ParseOptions,
-  MinimarkTree,
-  MinimarkNode,
+  ComarkTree,
+  ComarkNode,
   ShikiOptions,
   IncrementalParseResult
 } from 'comark'
@@ -386,7 +386,7 @@ import type {
         └────────┬────────┘
                  │
         ┌────────▼────────┐
-        │  Minimark       │
+        │  Comark         │
         │  AST            │
         └────────┬────────┘
                  │
@@ -440,7 +440,7 @@ pnpm test -- tests/parse.test.ts
 
 1. **Extending Markdown** - Component syntax without breaking compatibility
 2. **Streaming Support** - Real-time rendering with auto-close
-3. **Lightweight AST** - Efficient Minimark format
+3. **Lightweight AST** - Efficient Comark AST format
 4. **Framework Support** - First-class Vue and React integration
 5. **Developer Experience** - Full TypeScript support and comprehensive documentation
 

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { readdir, readFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import { parseFrontmatter } from '../src/utils/front-matter'
+import { parseFrontmatter } from '../src/internal/front-matter'
 import type { ParseOptions } from '../src/index'
 import { parseAsync, renderHTML, renderMarkdown } from '../src/index'
 import cjkFriendlyPlugin from '@comark/cjk'

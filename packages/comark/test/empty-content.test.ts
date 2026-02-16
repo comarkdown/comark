@@ -8,7 +8,7 @@ describe('parse - empty content', () => {
 
     expect(result).toBeDefined()
     expect(result.body).toBeDefined()
-    expect(result.body.type).toBe('minimark')
+    expect(result.body.type).toBe('comark')
   })
 
   it('should handle whitespace only content', () => {
@@ -17,7 +17,7 @@ describe('parse - empty content', () => {
 
     expect(result).toBeDefined()
     expect(result.body).toBeDefined()
-    expect(result.body.type).toBe('minimark')
+    expect(result.body.type).toBe('comark')
   })
 
   it('should handle newlines only', () => {
@@ -26,6 +26,6 @@ describe('parse - empty content', () => {
 
     expect(result).toBeDefined()
     expect(result.body).toBeDefined()
-    expect(result.body.type).toBe('minimark')
+    expect(result.body.type).toBe('comark')
   })
 })

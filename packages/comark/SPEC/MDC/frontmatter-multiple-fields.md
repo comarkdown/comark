@@ -23,7 +23,7 @@ Content here
 
 ```json
 {
-  "type": "minimark",
+  "type": "comark",
   "value": [
     [
       "p",

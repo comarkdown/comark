@@ -1,16 +1,16 @@
 import { describe, expect, it } from 'vitest'
 import { parse } from '../src/index'
-import type { MinimarkNode } from 'minimark'
+import type { ComarkNode } from 'comark/ast'
 
 // Helper to check if a node is an element with a specific tag
-function isElement(node: MinimarkNode, tag: string): boolean {
+function isElement(node: ComarkNode, tag: string): boolean {
   return Array.isArray(node) && node[0] === tag
 }
 
 // Helper to get children of an element (elements after tag and props)
-function getChildren(node: MinimarkNode): MinimarkNode[] {
+function getChildren(node: ComarkNode): ComarkNode[] {
   if (Array.isArray(node) && node.length > 2) {
-    return node.slice(2) as MinimarkNode[]
+    return node.slice(2) as ComarkNode[]
   }
   return []
 }
@@ -22,7 +22,7 @@ This is **bold** text
 ::`
 
     const result = parse(content)
-    const alert = result.body.value[0] as MinimarkNode
+    const alert = result.body.value[0] as ComarkNode
 
     expect(alert[0]).toBe('alert')
 
@@ -42,7 +42,7 @@ This is **bold** text
 ::`
 
     const result = parse(content, { autoUnwrap: false })
-    const alert = result.body.value[0] as MinimarkNode
+    const alert = result.body.value[0] as ComarkNode
 
     expect(alert[0]).toBe('alert')
 
@@ -60,7 +60,7 @@ Second paragraph
 ::`
 
     const result = parse(content)
-    const card = result.body.value[0] as MinimarkNode
+    const card = result.body.value[0] as ComarkNode
 
     expect(card[0]).toBe('card')
 
@@ -79,7 +79,7 @@ Second paragraph
 ::`
 
     const result = parse(content)
-    const warning = result.body.value[0] as MinimarkNode
+    const warning = result.body.value[0] as ComarkNode
 
     expect(warning[0]).toBe('warning')
 
@@ -100,7 +100,7 @@ console.log('hello')
 ::`
 
     const result = parse(content)
-    const tip = result.body.value[0] as MinimarkNode
+    const tip = result.body.value[0] as ComarkNode
 
     expect(tip[0]).toBe('tip')
 
@@ -118,7 +118,7 @@ console.log('hello')
 ::`
 
     const result = parse(content)
-    const info = result.body.value[0] as MinimarkNode
+    const info = result.body.value[0] as ComarkNode
 
     expect(info[0]).toBe('info')
 
@@ -137,7 +137,7 @@ console.log('hello')
 ::`
 
       const resultWith = parse(content)
-      const containerWith = resultWith.body.value[0] as MinimarkNode
+      const containerWith = resultWith.body.value[0] as ComarkNode
 
       expect(containerWith[0]).toBe(type)
 
@@ -148,7 +148,7 @@ console.log('hello')
 
       // Compare with disabled
       const resultWithout = parse(content, { autoUnwrap: false })
-      const containerWithout = resultWithout.body.value[0] as MinimarkNode
+      const containerWithout = resultWithout.body.value[0] as ComarkNode
 
       // Should have paragraph wrapper when disabled
       const childrenWithout = getChildren(containerWithout)

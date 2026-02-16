@@ -16,6 +16,7 @@
   ],
   "exports": {
     ".": "./dist/index.mjs",
+    "./ast": "./dist/ast/index.mjs",
     "./vue": "./dist/vue/index.mjs",
     "./vue/*": "./dist/vue/*.mjs",
     "./react": "./dist/react/index.mjs",
@@ -51,17 +52,17 @@
     }
   },
   "dependencies": {
-    "markdown-it": "^14.1.0",
-    "markdown-it-mdc": "^0.2.10",
-    "minimark": "^1.0.0",
-    "shiki": "^3.22.0",
-    "shiki-stream": "^0.1.4",
-    "yaml": "^2.8.2"
+    "shiki": "^3.22.0"
   },
   "devDependencies": {
     "@comark/cjk": "workspace:*",
+    "@types/js-yaml": "^4.0.9",
     "github-slugger": "^2.0.0",
     "hast-util-to-string": "^3.0.1",
+    "js-yaml": "^4.1.1",
+    "markdown-it": "^14.1.0",
+    "markdown-it-mdc": "^0.2.10",
+    "minimark": "^1.0.0",
     "obuild": "^0.4.27",
     "vitest": "^4.0.18"
   }

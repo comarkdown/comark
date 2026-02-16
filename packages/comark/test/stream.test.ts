@@ -1,10 +1,10 @@
 import { Readable } from 'node:stream'
 import { describe, expect, it } from 'vitest'
 import { parseStream } from '../src/stream'
-import type { MinimarkNode } from 'minimark'
+import type { ComarkNode } from 'comark/ast'
 
-// Helper to get tag from a MinimarkNode
-function getTag(node: MinimarkNode): string | null {
+// Helper to get tag from a ComarkNode
+function getTag(node: ComarkNode): string | null {
   if (Array.isArray(node) && node.length >= 1) {
     return node[0] as string
   }
@@ -20,7 +20,7 @@ describe('stream parsing', () => {
       const result = await parseStream(stream)
 
       expect(result.body).toBeDefined()
-      expect(result.body.type).toBe('minimark')
+      expect(result.body.type).toBe('comark')
       expect(result.body.value).toHaveLength(2)
       expect(Array.isArray(result.body.value[0])).toBe(true)
       expect(getTag(result.body.value[0])).toBe('h1')
@@ -51,7 +51,7 @@ This is the body.`
 
       const result = await parseStream(stream)
 
-      expect(result.body.type).toBe('minimark')
+      expect(result.body.type).toBe('comark')
       expect(result.body.value).toHaveLength(2)
     })
 
@@ -60,7 +60,7 @@ This is the body.`
 
       const result = await parseStream(stream)
 
-      expect(result.body.type).toBe('minimark')
+      expect(result.body.type).toBe('comark')
       expect(result.body.value).toHaveLength(0)
     })
 
@@ -84,7 +84,7 @@ This is the body.`
       const result = await parseStream(stream)
 
       expect(result.body).toBeDefined()
-      expect(result.body.type).toBe('minimark')
+      expect(result.body.type).toBe('comark')
       expect(result.body.value).toHaveLength(2)
       expect(Array.isArray(result.body.value[0])).toBe(true)
       expect(getTag(result.body.value[0])).toBe('h1')
@@ -115,7 +115,7 @@ This is the body.`
 
       const result = await parseStream(stream)
 
-      expect(result.body.type).toBe('minimark')
+      expect(result.body.type).toBe('comark')
       expect(result.body.value).toHaveLength(2)
     })
   })
@@ -155,7 +155,7 @@ This is the body.`
       const result = await parseStream(stream)
 
       expect(result.body).toBeDefined()
-      expect(result.body.type).toBe('minimark')
+      expect(result.body.type).toBe('comark')
       expect(result.body.value).toHaveLength(2)
       expect(Array.isArray(result.body.value[0])).toBe(true)
       expect(getTag(result.body.value[0])).toBe('h1')
@@ -182,7 +182,7 @@ title: Test Title
 
       const result = await parseStream(stream)
 
-      expect(result.body.type).toBe('minimark')
+      expect(result.body.type).toBe('comark')
       expect(result.body.value).toHaveLength(2)
     })
   })
@@ -205,7 +205,7 @@ title: Test Title
       const result = await parseStream(stream)
 
       expect(result.body).toBeDefined()
-      expect(result.body.type).toBe('minimark')
+      expect(result.body.type).toBe('comark')
       expect(result.body.value).toHaveLength(2)
       expect(Array.isArray(result.body.value[0])).toBe(true)
       expect(getTag(result.body.value[0])).toBe('h1')

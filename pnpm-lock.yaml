@@ -163,6 +163,31 @@ importers:
 
   packages/comark:
     dependencies:
+      react:
+        specifier: ^19.2.4
+        version: 19.2.4
+      shiki:
+        specifier: ^3.22.0
+        version: 3.22.0
+      vue:
+        specifier: ^3.5.27
+        version: 3.5.28(typescript@5.9.3)
+    devDependencies:
+      '@comark/cjk':
+        specifier: workspace:*
+        version: link:../comark-cjk
+      '@types/js-yaml':
+        specifier: ^4.0.9
+        version: 4.0.9
+      github-slugger:
+        specifier: ^2.0.0
+        version: 2.0.0
+      hast-util-to-string:
+        specifier: ^3.0.1
+        version: 3.0.1
+      js-yaml:
+        specifier: ^4.1.1
+        version: 4.1.1
       markdown-it:
         specifier: ^14.1.0
         version: 14.1.0
@@ -172,31 +197,6 @@ importers:
       minimark:
         specifier: ^1.0.0
         version: 1.0.0
-      react:
-        specifier: ^19.2.4
-        version: 19.2.4
-      shiki:
-        specifier: ^3.22.0
-        version: 3.22.0
-      shiki-stream:
-        specifier: ^0.1.4
-        version: 0.1.4(react@19.2.4)(vue@3.5.28(typescript@5.9.3))
-      vue:
-        specifier: ^3.5.27
-        version: 3.5.28(typescript@5.9.3)
-      yaml:
-        specifier: ^2.8.2
-        version: 2.8.2
-    devDependencies:
-      '@comark/cjk':
-        specifier: workspace:*
-        version: link:../comark-cjk
-      github-slugger:
-        specifier: ^2.0.0
-        version: 2.0.0
-      hast-util-to-string:
-        specifier: ^3.0.1
-        version: 3.0.1
       obuild:
         specifier: ^0.4.27
         version: 0.4.27(magicast@0.5.1)(picomatch@4.0.3)(rollup@4.57.1)(typescript@5.9.3)(vue-tsc@3.2.4(typescript@5.9.3))
@@ -3313,6 +3313,9 @@ packages:
 
   '@types/hast@3.0.4':
     resolution: {integrity: sha512-WPs+bbQw5aCj+x6laNGWLH3wviHtoCv/P3+otBhbOhJgG8qtpdAMlTCxLtsTWA7LH1Oh/bFCHsBn0TPS5m30EQ==}
+
+  '@types/js-yaml@4.0.9':
+    resolution: {integrity: sha512-k4MGaQl5TGo/iipqb2UDG2UwjXziSWkh0uysQelTlJpX1qGlpUZYm8PnO4DxG1qBomtJUdYJ6qR6xdIah10JLg==}
 
   '@types/jsesc@2.5.1':
     resolution: {integrity: sha512-9VN+6yxLOPLOav+7PwjZbxiID2bVaeq0ED4qSQmdQTdjnXJSaCVKTR58t15oqH1H5t8Ng2ZX1SabJVoN9Q34bw==}
@@ -7383,20 +7386,6 @@ packages:
   shell-quote@1.8.3:
     resolution: {integrity: sha512-ObmnIF4hXNg1BqhnHmgbDETF8dLPCggZWBjkQfhZpbszZnYur5DUljTcCHii5LC3J5E0yeO/1LIMyH+UvHQgyw==}
     engines: {node: '>= 0.4'}
-
-  shiki-stream@0.1.4:
-    resolution: {integrity: sha512-4pz6JGSDmVTTkPJ/ueixHkFAXY4ySCc+unvCaDZV7hqq/sdJZirRxgIXSuNSKgiFlGTgRR97sdu2R8K55sPsrw==}
-    peerDependencies:
-      react: ^19.0.0
-      solid-js: ^1.9.0
-      vue: ^3.2.0
-    peerDependenciesMeta:
-      react:
-        optional: true
-      solid-js:
-        optional: true
-      vue:
-        optional: true
 
   shiki@3.22.0:
     resolution: {integrity: sha512-LBnhsoYEe0Eou4e1VgJACes+O6S6QC0w71fCSp5Oya79inkwkm15gQ1UF6VtQ8j/taMDh79hAB49WUk8ALQW3g==}
@@ -11551,6 +11540,8 @@ snapshots:
   '@types/hast@3.0.4':
     dependencies:
       '@types/unist': 3.0.3
+
+  '@types/js-yaml@4.0.9': {}
 
   '@types/jsesc@2.5.1': {}
 
@@ -16749,13 +16740,6 @@ snapshots:
   shebang-regex@3.0.0: {}
 
   shell-quote@1.8.3: {}
-
-  shiki-stream@0.1.4(react@19.2.4)(vue@3.5.28(typescript@5.9.3)):
-    dependencies:
-      '@shikijs/core': 3.22.0
-    optionalDependencies:
-      react: 19.2.4
-      vue: 3.5.28(typescript@5.9.3)
 
   shiki@3.22.0:
     dependencies:

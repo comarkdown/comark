@@ -1,17 +1,17 @@
 import { describe, expect, it } from 'vitest'
-import { applyAutoUnwrap } from '../src/utils/auto-unwrap'
-import type { MinimarkNode } from 'minimark'
+import { applyAutoUnwrap } from '../src/internal/parse/auto-unwrap'
+import type { ComarkNode } from 'comark/ast'
 
 describe('applyAutoUnwrap', () => {
   it('should not modify elements without paragraph children', () => {
-    const node: MinimarkNode = ['div', {}, ['span', {}, 'Text']]
+    const node: ComarkNode = ['div', {}, ['span', {}, 'Text']]
 
     const result = applyAutoUnwrap(node)
     expect(result).toEqual(['div', {}, ['span', {}, 'Text']])
   })
 
   it('should unwrap single paragraph in container components', () => {
-    const node: MinimarkNode = [
+    const node: ComarkNode = [
       'alert',
       {},
       ['p', {}, 'This is ', ['strong', {}, 'bold'], ' text'],
@@ -25,7 +25,7 @@ describe('applyAutoUnwrap', () => {
   })
 
   it('should not unwrap when there are multiple paragraphs', () => {
-    const node: MinimarkNode = [
+    const node: ComarkNode = [
       'card',
       {},
       ['p', {}, 'First paragraph'],
@@ -43,7 +43,7 @@ describe('applyAutoUnwrap', () => {
   })
 
   it('should not unwrap when paragraph is mixed with other block elements', () => {
-    const node: MinimarkNode = [
+    const node: ComarkNode = [
       'note',
       {},
       ['p', {}, 'Text'],
@@ -61,7 +61,7 @@ describe('applyAutoUnwrap', () => {
   })
 
   it('should not unwrap when there are code blocks', () => {
-    const node: MinimarkNode = [
+    const node: ComarkNode = [
       'tip',
       {},
       ['pre', {}, ['code', {}, 'code']],
@@ -77,7 +77,7 @@ describe('applyAutoUnwrap', () => {
   })
 
   it('should not unwrap when there are tables', () => {
-    const node: MinimarkNode = [
+    const node: ComarkNode = [
       'card',
       {},
       ['table', {}, ['tbody', {}, ['tr', {}, ['td', {}, 'Cell']]]],
@@ -92,7 +92,7 @@ describe('applyAutoUnwrap', () => {
   })
 
   it('should not unwrap when there are template elements (named slots)', () => {
-    const node: MinimarkNode = [
+    const node: ComarkNode = [
       'callout',
       {},
       ['template', { '#title': '' }, 'Title'],
@@ -108,14 +108,14 @@ describe('applyAutoUnwrap', () => {
   })
 
   it('should handle empty children array', () => {
-    const node: MinimarkNode = ['alert', {}]
+    const node: ComarkNode = ['alert', {}]
 
     const result = applyAutoUnwrap(node)
     expect(result).toEqual(['alert', {}])
   })
 
   it('should preserve node props and other properties', () => {
-    const node: MinimarkNode = [
+    const node: ComarkNode = [
       'alert',
       { variant: 'danger', id: 'alert-1' },
       ['p', {}, 'Error'],
@@ -130,7 +130,7 @@ describe('applyAutoUnwrap', () => {
   })
 
   it('should unwrap paragraph even with empty text nodes', () => {
-    const node: MinimarkNode = [
+    const node: ComarkNode = [
       'warning',
       {},
       '\n',

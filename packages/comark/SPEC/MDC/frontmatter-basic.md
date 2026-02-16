@@ -19,7 +19,7 @@ description: My Description
 
 ```json
 {
-  "type": "minimark",
+  "type": "comark",
   "value": [
     [
       "h1",

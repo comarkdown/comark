@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import { textContent } from 'minimark'
+import { textContent } from 'comark/ast'
 
 const props = withDefaults(defineProps<{
   // @eslint-disable-next-line vue/prop-name-casing

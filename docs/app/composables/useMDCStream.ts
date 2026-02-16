@@ -1,13 +1,13 @@
 import type { Readable } from 'node:stream'
-import type { MinimarkTree } from 'minimark'
+import type { ComarkTree } from 'comark/ast'
 import { readonly, ref, shallowRef } from 'vue'
 import { parseStreamIncremental } from 'comark/stream'
 
 export interface MDCStreamState {
-  body: MinimarkTree
+  body: ComarkTree
   data: any
   isComplete: boolean
-  excerpt?: MinimarkTree
+  excerpt?: ComarkTree
   toc?: any
   content: string
   error?: Error
@@ -15,7 +15,7 @@ export interface MDCStreamState {
 
 export interface MDCStreamOptions {
   onChunk?: (chunk: string) => void
-  onComplete?: (result: { body: MinimarkTree, data: any, toc?: any }) => void
+  onComplete?: (result: { body: ComarkTree, data: any, toc?: any }) => void
   onError?: (error: Error) => void
 }
 
@@ -45,7 +45,7 @@ export interface MDCStreamOptions {
  */
 export function useMDCStream(options?: MDCStreamOptions) {
   const state = shallowRef<MDCStreamState>({
-    body: { type: 'minimark', value: [] },
+    body: { type: 'comark', value: [] },
     data: {},
     isComplete: false,
     content: '',
@@ -112,7 +112,7 @@ export function useMDCStream(options?: MDCStreamOptions) {
    */
   function reset() {
     state.value = {
-      body: { type: 'minimark', value: [] },
+      body: { type: 'comark', value: [] },
       data: {},
       isComplete: false,
       content: '',

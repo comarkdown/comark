@@ -15,7 +15,7 @@ Here [link]{bool} [link]{#id1} [link]{.class1} [link]{attr="value"}
 
 ```json
 {
-  "type": "minimark",
+  "type": "comark",
   "value": [
     [
       "p",

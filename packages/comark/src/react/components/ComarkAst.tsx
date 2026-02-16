@@ -1,4 +1,4 @@
-import type { MinimarkElement, MinimarkNode, MinimarkTree } from 'minimark'
+import type { ComarkElement, ComarkNode, ComarkTree } from 'comark/ast'
 import React, { lazy, Suspense, useMemo } from 'react'
 import { standardProseComponents } from '.'
 import { camelCase, pascalCase } from 'scule'
@@ -39,9 +39,9 @@ const defaultTagMap: Record<string, string> = {
 }
 
 /**
- * Helper to get tag from a MinimarkNode
+ * Helper to get tag from a ComarkNode
  */
-function getTag(node: MinimarkNode): string | null {
+function getTag(node: ComarkNode): string | null {
   if (Array.isArray(node) && node.length >= 1) {
     return node[0] as string
   }
@@ -68,9 +68,9 @@ function cssStringToObject(cssString: string): Record<string, string> {
 }
 
 /**
- * Helper to get props from a MinimarkNode
+ * Helper to get props from a ComarkNode
  */
-function getProps(node: MinimarkNode): Record<string, any> {
+function getProps(node: ComarkNode): Record<string, any> {
   if (Array.isArray(node) && node.length >= 2) {
     return (node[1] as Record<string, any>) || {}
   }
@@ -91,11 +91,11 @@ function parsePropValue(value: string): any {
 }
 
 /**
- * Helper to get children from a MinimarkNode
+ * Helper to get children from a ComarkNode
  */
-function getChildren(node: MinimarkNode): MinimarkNode[] {
+function getChildren(node: ComarkNode): ComarkNode[] {
   if (Array.isArray(node) && node.length > 2) {
-    return node.slice(2) as MinimarkNode[]
+    return node.slice(2) as ComarkNode[]
   }
   return []
 }
@@ -107,7 +107,7 @@ const asyncComponentCache = new Map<string, React.LazyExoticComponent<any>>()
  * Render a single Comark node to React element
  */
 function renderNode(
-  node: MinimarkNode,
+  node: ComarkNode,
   components: Record<string, any> = {},
   key?: string | number,
   componentsManifest?: (name: string) => Promise<{ default: React.ComponentType<any> }>,
@@ -200,9 +200,9 @@ function renderNode(
 
 export interface MDCRendererProps {
   /**
-   * The Minimark tree to render
+   * The Comark tree to render
    */
-  body: MinimarkTree
+  body: ComarkTree
 
   /**
    * Custom component mappings for element tags
@@ -237,7 +237,7 @@ export interface MDCRendererProps {
 /**
  * ComarkAst component
  *
- * Renders a Minimark tree to React components/HTML.
+ * Renders a Comark tree to React components/HTML.
  * Supports custom component mapping for element tags.
  *
  * @example
@@ -274,7 +274,7 @@ export const ComarkAst: React.FC<MDCRendererProps> = ({
     const nodes = [...(body.value || [])]
 
     if (streaming && caret && nodes.length > 0) {
-      const hasStreamCaret = findLastTextNodeAndAppendNode(nodes[nodes.length - 1] as MinimarkElement, caret)
+      const hasStreamCaret = findLastTextNodeAndAppendNode(nodes[nodes.length - 1] as ComarkElement, caret)
       if (!hasStreamCaret) {
         nodes.push(caret)
       }

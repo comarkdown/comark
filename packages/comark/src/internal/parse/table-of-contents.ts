@@ -1,4 +1,4 @@
-import type { MinimarkNode, MinimarkTree } from 'minimark'
+import type { ComarkNode, ComarkTree } from 'comark/ast'
 
 export interface TocLink {
   id: string
@@ -21,28 +21,28 @@ const TOC_TAGS_DEPTH = TOC_TAGS.reduce((tags: Record<string, number>, tag: strin
   return tags
 }, {})
 
-function getTag(node: MinimarkNode): string | null {
+function getTag(node: ComarkNode): string | null {
   if (Array.isArray(node) && node.length >= 1) {
     return node[0] as string
   }
   return null
 }
 
-function getProps(node: MinimarkNode): Record<string, any> {
+function getProps(node: ComarkNode): Record<string, any> {
   if (Array.isArray(node) && node.length >= 2 && typeof node[1] === 'object' && !Array.isArray(node[1])) {
     return node[1] as Record<string, any>
   }
   return {}
 }
 
-function getChildren(node: MinimarkNode): MinimarkNode[] {
+function getChildren(node: ComarkNode): ComarkNode[] {
   if (Array.isArray(node) && node.length > 2) {
-    return node.slice(2) as MinimarkNode[]
+    return node.slice(2) as ComarkNode[]
   }
   return []
 }
 
-function getHeaderDepth(node: MinimarkNode): number {
+function getHeaderDepth(node: ComarkNode): number {
   const tag = getTag(node)
   return tag ? TOC_TAGS_DEPTH[tag] || 0 : 0
 }
@@ -56,24 +56,24 @@ function getTocTags(depth: number): string[] {
   return TOC_TAGS.slice(0, depth)
 }
 
-function flattenNodeText(node: MinimarkNode): string {
+function flattenNodeText(node: ComarkNode): string {
   if (typeof node === 'string') {
     return node
   }
   if (Array.isArray(node)) {
-    return getChildren(node).reduce((text: string, child: MinimarkNode) => {
+    return getChildren(node).reduce((text: string, child: ComarkNode) => {
       return text + flattenNodeText(child)
     }, '')
   }
   return ''
 }
 
-function flattenNodes(nodes: MinimarkNode[], maxDepth: number, currentDepth: number = 0): MinimarkNode[] {
+function flattenNodes(nodes: ComarkNode[], maxDepth: number, currentDepth: number = 0): ComarkNode[] {
   if (currentDepth >= maxDepth) {
     return nodes
   }
 
-  const result: MinimarkNode[] = []
+  const result: ComarkNode[] = []
   for (const node of nodes) {
     result.push(node)
     if (Array.isArray(node)) {
@@ -113,12 +113,12 @@ function nestHeaders(headers: TocLink[]): TocLink[] {
   return toc
 }
 
-export function generateFlatToc(body: MinimarkTree, options: Toc): Toc {
+export function generateFlatToc(body: ComarkTree, options: Toc): Toc {
   const { searchDepth, depth, title = '' } = options
   const tags = getTocTags(depth)
 
   const allNodes = flattenNodes(body.value, searchDepth)
-  const headers = allNodes.filter((node: MinimarkNode) => {
+  const headers = allNodes.filter((node: ComarkNode) => {
     const tag = getTag(node)
     return tag !== null && tags.includes(tag)
   })
@@ -137,7 +137,7 @@ export function generateFlatToc(body: MinimarkTree, options: Toc): Toc {
   }
 }
 
-export function generateToc(body: MinimarkTree, options: Toc): Toc {
+export function generateToc(body: ComarkTree, options: Toc): Toc {
   const toc = generateFlatToc(body, options)
   toc.links = nestHeaders(toc.links)
   return toc

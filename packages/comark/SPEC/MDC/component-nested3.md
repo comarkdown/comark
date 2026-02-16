@@ -25,7 +25,7 @@ First Paragraph
 
 ```json
 {
-  "type": "minimark",
+  "type": "comark",
   "value": [
     [
       "component",

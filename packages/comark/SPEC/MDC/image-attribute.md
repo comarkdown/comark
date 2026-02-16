@@ -15,7 +15,7 @@ Here ![alt](https://example.com/image.jpg){bool} ![alt](https://example.com/imag
 
 ```json
 {
-  "type": "minimark",
+  "type": "comark",
   "value": [
     [
       "p",

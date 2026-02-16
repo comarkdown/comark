@@ -53,7 +53,7 @@ And here's a code block:
 
 ```json
 {
-  "type": "minimark",
+  "type": "comark",
   "value": [
     [
       "h1",

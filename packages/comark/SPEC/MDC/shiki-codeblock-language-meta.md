@@ -23,7 +23,7 @@ console.log(greeting)
 
 ```json
 {
-  "type": "minimark",
+  "type": "comark",
   "value": [
     [
       "pre",

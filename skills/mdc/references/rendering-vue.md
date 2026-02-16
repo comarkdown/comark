@@ -1,6 +1,6 @@
 # Vue Rendering Guide
 
-Complete guide for rendering Comark/Minimark AST in Vue 3 applications.
+Complete guide for rendering Comark AST in Vue 3 applications.
 
 ## Table of Contents
 
@@ -80,7 +80,7 @@ const customComponents = {
 import { computed } from 'vue'
 
 const props = defineProps<{
-  __node: any  // Minimark node
+  __node: any  // Comark node
 }>()
 
 const tag = computed(() => props.__node[0])
@@ -381,7 +381,7 @@ function handleError(error: Error) {
 
 ## Props Access
 
-Custom components receive the original Minimark node and parsed props:
+Custom components receive the original Comark node and parsed props:
 
 ```vue
 <!-- CustomAlert.vue -->
@@ -399,7 +399,7 @@ const props = defineProps<{
   bool?: boolean       // From {bool} → :bool="true"
   count?: number       // From {:count="5"}
   data?: object        // From {:data='{"key":"val"}'}
-  __node?: any         // Original Minimark node
+  __node?: any         // Original Comark node
 }>()
 
 const alertClasses = computed(() => [

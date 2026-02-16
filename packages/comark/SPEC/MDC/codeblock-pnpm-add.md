@@ -17,7 +17,7 @@ pnpm add comark
 
 ```json
 {
-  "type": "minimark",
+  "type": "comark",
   "value": [
     [
       "pre",

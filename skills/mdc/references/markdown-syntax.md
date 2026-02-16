@@ -261,7 +261,7 @@ Footer text here
 
 ```json
 {
-  "type": "minimark",
+  "type": "comark",
   "value": [
     [
       "card",
@@ -454,7 +454,7 @@ No syntax highlighting
 
 ```json
 {
-  "type": "minimark",
+  "type": "comark",
   "value": [
     [
       "pre",

@@ -20,7 +20,7 @@ describe('incremental Stream Parsing', () => {
       for (let i = 0; i < chunks.length; i++) {
         expect(results[i].chunk).toBe(chunks[i])
         expect(results[i].isComplete).toBe(false)
-        expect(results[i].body.type).toBe('minimark')
+        expect(results[i].body.type).toBe('comark')
       }
 
       // Check final result
@@ -148,7 +148,7 @@ describe('incremental Stream Parsing', () => {
       for (let i = 0; i < chunks.length; i++) {
         expect(results[i].chunk).toBe(chunks[i])
         expect(results[i].isComplete).toBe(false)
-        expect(results[i].body.type).toBe('minimark')
+        expect(results[i].body.type).toBe('comark')
       }
 
       // Check final result
@@ -300,7 +300,7 @@ describe('incremental Stream Parsing', () => {
         chunkCount++
 
         // Body should exist and have type root
-        expect(result.body.type).toBe('minimark')
+        expect(result.body.type).toBe('comark')
 
         // Children count should only grow or stay the same
         expect(result.body.value.length).toBeGreaterThanOrEqual(lastChildrenCount)

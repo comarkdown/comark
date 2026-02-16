@@ -20,7 +20,7 @@ timeout:
 
 ```json
 {
-  "type": "minimark",
+  "type": "comark",
   "value": [
     [
       "ul",

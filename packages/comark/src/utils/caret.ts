@@ -1,11 +1,11 @@
-import type { MinimarkElement } from 'minimark'
+import type { ComarkElement } from 'comark/ast'
 
 interface CaretOptions {
   class?: string
 }
 
 const CARET_TEXT = ' ' // thin space is used to avoid wide spaces between text and caret
-export function getCaret(options: boolean | CaretOptions): MinimarkElement | null {
+export function getCaret(options: boolean | CaretOptions): ComarkElement | null {
   if (options === true) {
     return ['span', { key: 'stream-caret', class: 'bg-current inline-block mx-1 animate-[pulse_0.75s_cubic-bezier(0.4,0,0.6,1)_infinite]' }, CARET_TEXT]
   }
@@ -19,7 +19,7 @@ export function getCaret(options: boolean | CaretOptions): MinimarkElement | nul
   return null
 }
 
-export function findLastTextNodeAndAppendNode(parent: MinimarkElement, nodeToAppend: MinimarkElement): boolean {
+export function findLastTextNodeAndAppendNode(parent: ComarkElement, nodeToAppend: ComarkElement): boolean {
   // Traverse nodes backwards to find the last text node
   for (let i = parent.length - 1; i >= 2; i--) {
     const node = parent[i]

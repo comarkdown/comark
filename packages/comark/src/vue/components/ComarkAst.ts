@@ -1,5 +1,5 @@
 import type { PropType, VNode } from 'vue'
-import type { MinimarkElement, MinimarkNode, MinimarkTree } from 'minimark'
+import type { ComarkElement, ComarkNode, ComarkTree } from 'comark/ast'
 import { computed, defineAsyncComponent, defineComponent, h, onErrorCaptured, ref, toRaw } from 'vue'
 import { standardProseComponents } from '.'
 import { pascalCase } from 'scule'
@@ -9,9 +9,9 @@ import { findLastTextNodeAndAppendNode, getCaret } from '../../utils/caret'
 const asyncComponentCache = new Map<string, any>()
 
 /**
- * Helper to get tag from a MinimarkNode
+ * Helper to get tag from a ComarkNode
  */
-function getTag(node: MinimarkNode): string | null {
+function getTag(node: ComarkNode): string | null {
   if (Array.isArray(node) && node.length >= 1) {
     return node[0] as string
   }
@@ -19,9 +19,9 @@ function getTag(node: MinimarkNode): string | null {
 }
 
 /**
- * Helper to get props from a MinimarkNode
+ * Helper to get props from a ComarkNode
  */
-function getProps(node: MinimarkNode): Record<string, any> {
+function getProps(node: ComarkNode): Record<string, any> {
   if (Array.isArray(node) && node.length >= 2) {
     return (node[1] as Record<string, any>) || {}
   }
@@ -43,11 +43,11 @@ function parsePropValue(value: string): any {
 }
 
 /**
- * Helper to get children from a MinimarkNode
+ * Helper to get children from a ComarkNode
  */
-function getChildren(node: MinimarkNode): MinimarkNode[] {
+function getChildren(node: ComarkNode): ComarkNode[] {
   if (Array.isArray(node) && node.length > 2) {
-    return node.slice(2) as MinimarkNode[]
+    return node.slice(2) as ComarkNode[]
   }
   return []
 }
@@ -56,11 +56,11 @@ function getChildren(node: MinimarkNode): MinimarkNode[] {
  * Render a single Comark node to Vue VNode
  */
 function renderNode(
-  node: MinimarkNode,
+  node: ComarkNode,
   components: Record<string, any> = {},
   key?: string | number,
   componentsManifest?: (name: string) => Promise<any>,
-  parent?: MinimarkNode,
+  parent?: ComarkNode,
 ): VNode | string | null {
   // Handle text nodes (strings)
   if (typeof node === 'string') {
@@ -78,7 +78,7 @@ function renderNode(
     // Check if there's a custom component for this tag
     let customComponent = tag
 
-    if ((parent as MinimarkElement | undefined)?.[0] !== 'pre') {
+    if ((parent as ComarkElement | undefined)?.[0] !== 'pre') {
       customComponent = components[tag] || components[pascalCase(tag)]
       // If not in components map and manifest is provided, try dynamic resolution
       if (!customComponent && componentsManifest) {
@@ -160,7 +160,7 @@ function renderNode(
         if (slotName) {
           const slotChildren = getChildren(child)
           slots[slotName] = () => slotChildren
-            .map((slotChild: MinimarkNode, idx: number) => renderNode(slotChild, components, idx, componentsManifest, node))
+            .map((slotChild: ComarkNode, idx: number) => renderNode(slotChild, components, idx, componentsManifest, node))
             .filter((slotChild): slotChild is VNode | string => slotChild !== null)
           continue
         }
@@ -193,7 +193,7 @@ function renderNode(
 /**
  * ComarkAst component
  *
- * Renders a Minimark tree to Vue components/HTML.
+ * Renders a Comark tree to Vue components/HTML.
  * Supports custom component mapping for element tags.
  *
  * @example
@@ -218,10 +218,10 @@ export const ComarkAst = defineComponent({
 
   props: {
     /**
-     * The Minimark tree to render
+     * The Comark tree to render
      */
     body: {
-      type: Object as PropType<MinimarkTree>,
+      type: Object as PropType<ComarkTree>,
       required: true,
     },
 
@@ -288,14 +288,14 @@ export const ComarkAst = defineComponent({
       ...props.components,
     }))
 
-    const caret = computed<MinimarkElement | null>(() => getCaret(props.caret))
+    const caret = computed<ComarkElement | null>(() => getCaret(props.caret))
 
     return () => {
       // Render all nodes from the tree value
       const nodes = toRaw(props.body.value || []) || []
 
       if (props.streaming && caret.value && nodes.length > 0) {
-        const hasstramCaret = findLastTextNodeAndAppendNode(nodes[nodes.length - 1] as MinimarkElement, caret.value)
+        const hasstramCaret = findLastTextNodeAndAppendNode(nodes[nodes.length - 1] as ComarkElement, caret.value)
         if (!hasstramCaret) {
           nodes.push(caret.value)
         }

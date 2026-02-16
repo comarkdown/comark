@@ -1,6 +1,6 @@
 # React Rendering Guide
 
-Complete guide for rendering Comark/Minimark AST in React applications.
+Complete guide for rendering Comark AST in React applications.
 
 ## Table of Contents
 
@@ -75,7 +75,7 @@ export default function App({ content }) {
 import React from 'react'
 
 interface Props {
-  __node: any  // Minimark node
+  __node: any  // Comark node
   id?: string
   children: React.ReactNode
 }
@@ -324,7 +324,7 @@ interface AlertProps {
   bool?: boolean       // From {bool} → :bool="true"
   count?: number       // From {:count="5"}
   data?: object        // From {:data='{"key":"val"}'}
-  __node?: any         // Original Minimark node
+  __node?: any         // Original Comark node
   children: React.ReactNode
 }
 

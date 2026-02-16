@@ -1,16 +1,16 @@
 import type { MDCRoot } from '@nuxtjs/mdc'
-import type { MinimarkTree } from 'minimark'
+import type { ComarkTree } from 'comark/ast'
 import remarkGFM from 'remark-gfm'
 import remarkMdc, { parseFrontMatter } from 'remark-mdc'
 import remarkParse from 'remark-parse'
 import remark2rehype from 'remark-rehype'
 import { unified } from 'unified'
-import { generateToc } from '../../src/utils/table-of-contents'
+import { generateToc } from '../../src/internal/parse/table-of-contents'
 import { mdcCompiler } from './mdc-compiler'
 import { fromHast } from 'minimark/hast'
 
 export interface ParseResult {
-  body: MinimarkTree
+  body: ComarkTree
   excerpt?: MDCRoot
   data: any
   toc?: any
@@ -35,8 +35,8 @@ export function parseWithRemark(source: string): ParseResult {
 
   const { body, excerpt } = result as { body: MDCRoot, excerpt?: MDCRoot }
 
-  // Convert to MinimarkTree before generating TOC
-  const minimarkBody = fromHast(body) as MinimarkTree
+  // Convert to ComarkTree before generating TOC
+  const minimarkBody = fromHast(body) as unknown as ComarkTree
 
   const toc = generateToc(minimarkBody, {
     title: data.title || '',
