@@ -1,12 +1,4 @@
 import type { ComarkNode, ComarkTree } from 'comark/ast'
-import MarkdownIt from 'markdown-it'
-// @ts-expect-error - No declaration file
-import markdownItSub from 'markdown-it-sub'
-import markdownItMDC from 'markdown-it-mdc'
-
-const md = new MarkdownIt()
-  .use(markdownItSub)
-  .use(markdownItMDC)
 
 // Mapping from token types to tag names
 const BLOCK_TAG_MAP: Record<string, string> = {
@@ -287,10 +279,6 @@ function extractMDCAttributes(
   }
 
   return { attrs: {}, nextIndex: startIndex }
-}
-
-export function getMarkdownIt() {
-  return md
 }
 
 function processBlockToken(tokens: any[], startIndex: number, insideNestedContext: boolean = false): { node: ComarkNode | null, nextIndex: number } {
