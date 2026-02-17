@@ -87,8 +87,6 @@ useHead({
           :to="`https://github.com/${appConfig.docs?.github}/tree/${appConfig.docs?.branch || 'main'}/examples/${exampleName}`"
           target="_blank"
         />
-
-        <PageHeaderLinks />
       </template>
     </UPageHeader>
 

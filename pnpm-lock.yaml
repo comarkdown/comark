@@ -155,6 +155,59 @@ importers:
         specifier: ^3.2.4
         version: 3.2.4(typescript@5.9.3)
 
+  examples/vue-vite-cjk:
+    dependencies:
+      '@comark/cjk':
+        specifier: workspace:*
+        version: link:../../packages/comark-cjk
+      comark:
+        specifier: workspace:*
+        version: link:../../packages/comark
+      vue:
+        specifier: ^3.5.27
+        version: 3.5.28(typescript@5.9.3)
+    devDependencies:
+      '@vitejs/plugin-vue':
+        specifier: ^6.0.4
+        version: 6.0.4(vite@7.3.1(@types/node@25.2.3)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(yaml@2.8.2))(vue@3.5.28(typescript@5.9.3))
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+      vite:
+        specifier: ^7.3.1
+        version: 7.3.1(@types/node@25.2.3)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(yaml@2.8.2)
+      vue-tsc:
+        specifier: ^3.2.4
+        version: 3.2.4(typescript@5.9.3)
+
+  examples/vue-vite-math:
+    dependencies:
+      '@comark/math':
+        specifier: workspace:*
+        version: link:../../packages/comark-math
+      comark:
+        specifier: workspace:*
+        version: link:../../packages/comark
+      katex:
+        specifier: ^0.16.28
+        version: 0.16.28
+      vue:
+        specifier: ^3.5.27
+        version: 3.5.28(typescript@5.9.3)
+    devDependencies:
+      '@vitejs/plugin-vue':
+        specifier: ^6.0.4
+        version: 6.0.4(vite@7.3.1(@types/node@25.2.3)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(yaml@2.8.2))(vue@3.5.28(typescript@5.9.3))
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+      vite:
+        specifier: ^7.3.1
+        version: 7.3.1(@types/node@25.2.3)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(yaml@2.8.2)
+      vue-tsc:
+        specifier: ^3.2.4
+        version: 3.2.4(typescript@5.9.3)
+
   examples/vue-vite-mermaid:
     dependencies:
       '@comark/mermaid':
