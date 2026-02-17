@@ -1,0 +1,59 @@
+{
+  "name": "@comark/math",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "Math formula support for Comark using KaTeX",
+  "author": "",
+  "license": "MIT",
+  "repository": "comarkdown/comark",
+  "keywords": [
+    "markdown",
+    "mdc",
+    "math",
+    "latex",
+    "katex",
+    "vue",
+    "react"
+  ],
+  "exports": {
+    ".": "./dist/index.mjs",
+    "./vue": "./dist/vue.mjs",
+    "./react": "./dist/react.mjs"
+  },
+  "main": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "obuild",
+    "test": "vitest run",
+    "prepack": "obuild",
+    "release": "release-it",
+    "release:dry": "release-it --dry-run"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "vue": "^3.5.0"
+  },
+  "peerDependenciesMeta": {
+    "vue": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "katex": "^0.16.28"
+  },
+  "devDependencies": {
+    "comark": "workspace:*",
+    "obuild": "^0.4.27",
+    "vitest": "^4.0.18"
+  }
+}

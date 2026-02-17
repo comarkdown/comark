@@ -1,4 +1,4 @@
-import { MDC } from 'mdc-syntax/react'
+import { Comark } from 'comark/react'
 import Alert from './components/Alert'
 
 const markdown = `
@@ -11,7 +11,7 @@ This is an alert!
 
 export default function App() {
   return (
-    <MDC
+    <Comark
       markdown={markdown}
       components={{ Alert }}
     />

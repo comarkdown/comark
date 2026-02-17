@@ -1,6 +1,6 @@
 # Parsing & AST Generation
 
-Complete guide for parsing MDC documents and working with the Minimark AST format.
+Complete guide for parsing Comark documents and working with the Comark AST format.
 
 ## Table of Contents
 
@@ -14,10 +14,10 @@ Complete guide for parsing MDC documents and working with the Minimark AST forma
 
 ## String Parsing
 
-The primary way to parse MDC content is using the `parse()` function:
+The primary way to parse Comark content is using the `parse()` function:
 
 ```typescript
-import { parse } from 'mdc-syntax'
+import { parse } from 'comark'
 
 const content = `---
 title: My Document
@@ -39,8 +39,8 @@ const result = parse(content)
 
 ```typescript
 interface ParseResult {
-  body: MinimarkTree        // The parsed AST
-  excerpt?: MinimarkTree    // Optional excerpt (before <!-- more -->)
+  body: ComarkTree        // The parsed AST
+  excerpt?: ComarkTree    // Optional excerpt (before <!-- more -->)
   data: any                 // Frontmatter data
   toc?: any                 // Table of contents
 }
@@ -96,7 +96,7 @@ Container components: `alert`, `card`, `callout`, `note`, `warning`, `tip`, `inf
 Auto-close automatically closes unclosed markdown syntax, essential for streaming:
 
 ```typescript
-import { autoCloseMarkdown } from 'mdc-syntax'
+import { autoCloseMarkdown } from 'comark'
 
 // Unclosed bold
 const partial = '**bold text'
@@ -117,7 +117,7 @@ const closedProps = autoCloseMarkdown(props)
 **Auto-close handles:**
 - Inline markers: `*`, `**`, `***`, `~~`, backticks
 - Brackets: `[`, `]`, `(`, `)`
-- MDC components: `::component`
+- Comark components: `::component`
 - Property braces: `{...}`
 
 ---
@@ -127,7 +127,7 @@ const closedProps = autoCloseMarkdown(props)
 For syntax highlighting support, use `parseAsync()`:
 
 ```typescript
-import { parseAsync } from 'mdc-syntax'
+import { parseAsync } from 'comark'
 
 const content = `
 # Code Example
@@ -179,7 +179,7 @@ const result = await parseAsync(content, {
 ### Manual Highlighting
 
 ```typescript
-import { parse, highlightCode } from 'mdc-syntax'
+import { parse, highlightCode } from 'comark'
 
 // Parse without highlighting
 const result = parse(content)
@@ -194,7 +194,7 @@ const highlighted = await highlightCode(result.body, {
 
 ## Stream Parsing
 
-MDC Syntax provides powerful streaming APIs for parsing content as it arrives.
+Comark provides powerful streaming APIs for parsing content as it arrives.
 
 ### Buffered Streaming
 
@@ -202,7 +202,7 @@ Wait for the complete result:
 
 ```typescript
 import { createReadStream } from 'node:fs'
-import { parseStream } from 'mdc-syntax/stream'
+import { parseStream } from 'comark/stream'
 
 // From file stream
 const stream = createReadStream('content.md')
@@ -216,7 +216,7 @@ console.log(result.toc)
 ### Web Streams (Browser/Fetch)
 
 ```typescript
-import { parseStream } from 'mdc-syntax/stream'
+import { parseStream } from 'comark/stream'
 
 // HTTP fetch
 const response = await fetch('https://example.com/article.md')
@@ -238,7 +238,7 @@ const result = await parseStream(stream)
 Real-time updates as chunks arrive:
 
 ```typescript
-import { parseStreamIncremental } from 'mdc-syntax/stream'
+import { parseStreamIncremental } from 'comark/stream'
 
 const response = await fetch('https://example.com/large-article.md')
 
@@ -264,10 +264,10 @@ for await (const result of parseStreamIncremental(response.body!)) {
 ```typescript
 interface IncrementalParseResult {
   chunk: string             // The chunk just received
-  body: MinimarkTree        // Current parsed state
+  body: ComarkTree        // Current parsed state
   data: any                 // Frontmatter (once available)
   isComplete: boolean       // Whether stream is finished
-  excerpt?: MinimarkTree    // Optional excerpt
+  excerpt?: ComarkTree    // Optional excerpt
   toc?: any                 // TOC (only in final result)
 }
 ```
@@ -283,7 +283,7 @@ interface IncrementalParseResult {
 
 ```typescript
 import { Readable } from 'node:stream'
-import { parseStream } from 'mdc-syntax/stream'
+import { parseStream } from 'comark/stream'
 
 const chunks = [
   '# Hello World\n\n',
@@ -301,19 +301,19 @@ const result = await parseStream(stream)
 
 ## AST Structure
 
-MDC Syntax uses the **Minimark** format, a lightweight array-based AST structure.
+Comark uses a lightweight array-based AST structure.
 
-### Minimark Format
+### Comark AST Format
 
 ```typescript
-interface MinimarkTree {
-  type: 'minimark'
-  value: MinimarkNode[]
+interface ComarkTree {
+  type: 'comark'
+  value: ComarkNode[]
 }
 
-type MinimarkNode =
+type ComarkNode =
   | string                    // Text nodes
-  | [tag: string, props?: Record<string, any>, ...children: MinimarkNode[]]
+  | [tag: string, props?: Record<string, any>, ...children: ComarkNode[]]
 ```
 
 ### Node Structure
@@ -343,7 +343,7 @@ type MinimarkNode =
 // Link with attributes
 ["a", { "href": "https://example.com", "target": "_blank" }, "Link"]
 
-// MDC Component
+// Comark Component
 ["alert", { "type": "info" }, ["p", {}, "Message"]]
 
 // Component with slots
@@ -375,7 +375,7 @@ Warning message
 **AST:**
 ```json
 {
-  "type": "minimark",
+  "type": "comark",
   "value": [
     [
       "h1",
@@ -422,7 +422,7 @@ Warning message
 ### Render to HTML
 
 ```typescript
-import { parse, renderHTML } from 'mdc-syntax'
+import { parse, renderHTML } from 'comark'
 
 const content = '# Hello World\n\nThis is **markdown**.'
 const result = parse(content)
@@ -439,10 +439,10 @@ console.log(html)
 
 ### Render to Markdown
 
-Convert AST back to MDC markdown:
+Convert AST back to Comark markdown:
 
 ```typescript
-import { parse, renderMarkdown } from 'mdc-syntax'
+import { parse, renderMarkdown } from 'comark'
 
 const content = '# Hello\n\n::alert{type="info"}\nMessage\n::'
 const result = parse(content)

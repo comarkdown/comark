@@ -1,6 +1,6 @@
 # Vue Rendering Guide
 
-Complete guide for rendering MDC/Minimark AST in Vue 3 applications.
+Complete guide for rendering Comark AST in Vue 3 applications.
 
 ## Table of Contents
 
@@ -9,7 +9,7 @@ Complete guide for rendering MDC/Minimark AST in Vue 3 applications.
 - [Dynamic Component Resolution](#dynamic-component-resolution)
 - [Slots Support](#slots-support)
 - [Streaming Mode](#streaming-mode)
-- [High-Level MDC Component](#high-level-mdc-component)
+- [High-Level Comark Component](#high-level-mdc-component)
 - [Prose Components](#prose-components)
 - [Error Handling](#error-handling)
 - [Props Access](#props-access)
@@ -18,16 +18,15 @@ Complete guide for rendering MDC/Minimark AST in Vue 3 applications.
 
 ## Basic Usage
 
-Use the `MDCRenderer` component to render Minimark AST:
+Use the `Comark` component to render markdown:
 
 ```vue
 <template>
-  <MDCRenderer :body="mdcAst" />
+  <Comark :markdown="content" />
 </template>
 
 <script setup lang="ts">
-import { parse } from 'mdc-syntax'
-import { MDCRenderer } from 'mdc-syntax/vue'
+import { Comark } from 'comark/vue'
 
 const content = `
 # Hello World
@@ -38,9 +37,6 @@ This is **markdown** content.
 Important message
 ::
 `
-
-const result = parse(content)
-const mdcAst = result.body
 </script>
 ```
 
@@ -48,15 +44,15 @@ const mdcAst = result.body
 
 ## Custom Components
 
-Map custom Vue components to MDC elements:
+Map custom Vue components to Comark elements:
 
 ```vue
 <template>
-  <MDCRenderer :body="mdcAst" :components="customComponents" />
+  <Comark :markdown="content" :components="customComponents" />
 </template>
 
 <script setup lang="ts">
-import { MDCRenderer } from 'mdc-syntax/vue'
+import { Comark } from 'comark/vue'
 import CustomHeading from './CustomHeading.vue'
 import CustomAlert from './CustomAlert.vue'
 import CustomCard from './CustomCard.vue'
@@ -84,7 +80,7 @@ const customComponents = {
 import { computed } from 'vue'
 
 const props = defineProps<{
-  __node: any  // Minimark node
+  __node: any  // Comark node
 }>()
 
 const tag = computed(() => props.__node[0])
@@ -162,21 +158,15 @@ Load components dynamically using `componentsManifest`:
 
 ```vue
 <template>
-  <MDCRenderer
-    :body="mdcAst"
+  <Comark
+    :markdown="content"
     :components-manifest="loadComponent"
   />
 </template>
 
 <script setup lang="ts">
-import { MDCRenderer } from 'mdc-syntax/vue'
+import { Comark } from 'comark/vue'
 
-async function loadComponent(name: string) {
-  // Dynamic import based on component name
-  return import(`./components/${name}.vue`)
-}
-
-// Or with a custom resolver
 const componentMap = {
   'alert': () => import('./Alert.vue'),
   'card': () => import('./Card.vue'),
@@ -192,33 +182,11 @@ async function loadComponent(name: string) {
 </script>
 ```
 
-### With TypeScript
-
-```vue
-<script setup lang="ts">
-import type { Component } from 'vue'
-
-interface ComponentModule {
-  default: Component
-}
-
-async function loadComponent(name: string): Promise<ComponentModule> {
-  try {
-    // Try loading from components directory
-    return await import(`./components/${name}.vue`)
-  } catch {
-    // Fallback to default component
-    return { default: defineComponent({ template: `<div>${name}</div>` }) }
-  }
-}
-</script>
-```
-
 ---
 
 ## Slots Support
 
-MDC components with slots work seamlessly in Vue:
+Comark components with slots work seamlessly in Vue:
 
 ### Markdown with Slots
 
@@ -325,76 +293,35 @@ const activeTab = ref('tab1')
 
 ## Streaming Mode
 
-Enable streaming-specific components for real-time content:
-
-```vue
-<template>
-  <MDCRenderer :body="mdcAst" :stream="true" />
-</template>
-
-<script setup lang="ts">
-import { ref } from 'vue'
-import { parseStreamIncremental } from 'mdc-syntax/stream'
-import { MDCRenderer } from 'mdc-syntax/vue'
-
-const mdcAst = ref({ type: 'minimark', value: [] })
-const isLoading = ref(true)
-
-async function loadContent() {
-  const response = await fetch('/api/content.md')
-
-  for await (const result of parseStreamIncremental(response.body!)) {
-    mdcAst.value = result.body
-
-    if (result.isComplete) {
-      isLoading.value = false
-    }
-  }
-}
-
-loadContent()
-</script>
-```
-
-### With Progress Indicator
+The `Comark` component can be used with reactive content for streaming scenarios:
 
 ```vue
 <template>
   <div>
-    <div v-if="isLoading" class="progress-bar">
-      Loading... {{ progress }}%
-    </div>
-    <MDCRenderer :body="mdcAst" :stream="true" />
+    <Comark :markdown="content" />
+    <div v-if="isLoading">Loading...</div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { parseStreamIncremental } from 'mdc-syntax/stream'
-import { MDCRenderer } from 'mdc-syntax/vue'
+import { ref } from 'vue'
+import { Comark } from 'comark/vue'
 
-const mdcAst = ref({ type: 'minimark', value: [] })
+const content = ref('')
 const isLoading = ref(true)
-const bytesReceived = ref(0)
-const totalBytes = ref(0)
-
-const progress = computed(() => {
-  if (totalBytes.value === 0) return 0
-  return Math.round((bytesReceived.value / totalBytes.value) * 100)
-})
 
 async function loadContent() {
   const response = await fetch('/api/content.md')
-  totalBytes.value = parseInt(response.headers.get('content-length') || '0')
+  const reader = response.body!.getReader()
+  const decoder = new TextDecoder()
 
-  for await (const result of parseStreamIncremental(response.body!)) {
-    bytesReceived.value += result.chunk.length
-    mdcAst.value = result.body
-
-    if (result.isComplete) {
-      isLoading.value = false
-    }
+  while (true) {
+    const { done, value } = await reader.read()
+    if (done) break
+    content.value += decoder.decode(value)
   }
+
+  isLoading.value = false
 }
 
 loadContent()
@@ -402,113 +329,23 @@ loadContent()
 ```
 
 ---
-
-## High-Level MDC Component
-
-Parse markdown directly in template:
-
-```vue
-<template>
-  <MDC :content="markdownContent" />
-</template>
-
-<script setup lang="ts">
-import { MDC } from 'mdc-syntax/vue'
-
-const markdownContent = `
-# Hello World
-
-This is **markdown** with components.
-
-::alert{type="info"}
-Message here
-::
-`
-</script>
-```
-
-### With Custom Components
-
-```vue
-<template>
-  <MDC :content="markdownContent" :components="customComponents" />
-</template>
-
-<script setup lang="ts">
-import { MDC } from 'mdc-syntax/vue'
-import CustomAlert from './CustomAlert.vue'
-
-const customComponents = {
-  alert: CustomAlert,
-}
-
-const markdownContent = `
-::alert{type="warning"}
-Custom alert component
-::
-`
-</script>
-```
-
-### Reactive Content
-
-```vue
-<template>
-  <div>
-    <textarea v-model="markdownContent" />
-    <MDC :content="markdownContent" />
-  </div>
-</template>
-
-<script setup lang="ts">
-import { ref } from 'vue'
-import { MDC } from 'mdc-syntax/vue'
-
-const markdownContent = ref('# Edit me!\n\nType **markdown** here.')
-</script>
-```
 
 ---
 
 ## Prose Components
 
-Use pre-built styled components:
+The `Comark` component uses built-in prose styling automatically. You can override with custom components:
 
 ```vue
 <template>
-  <MDCRenderer :body="mdcAst" :components="proseComponents" />
+  <Comark :markdown="content" :components="components" />
 </template>
 
 <script setup lang="ts">
-import { MDCRenderer } from 'mdc-syntax/vue'
-import { standardProseComponents } from 'mdc-syntax/vue/prose/standard'
-
-// Includes styled: h1-h6, p, a, strong, em, code, pre, ul, ol, li, etc.
-</script>
-```
-
-### Stream Prose Components
-
-```vue
-<template>
-  <MDCRenderer :body="mdcAst" :stream="true" />
-</template>
-
-<script setup lang="ts">
-import { MDCRenderer } from 'mdc-syntax/vue'
-// Stream components are automatically loaded when stream={true}
-</script>
-```
-
-### Combining with Custom Components
-
-```vue
-<script setup lang="ts">
-import { standardProseComponents } from 'mdc-syntax/vue/prose/standard'
+import { Comark } from 'comark/vue'
 import CustomAlert from './CustomAlert.vue'
 
 const components = {
-  ...standardProseComponents,
   alert: CustomAlert,  // Override or add custom components
 }
 </script>
@@ -518,39 +355,24 @@ const components = {
 
 ## Error Handling
 
-MDC Renderer captures component errors (useful during streaming):
-
-```vue
-<template>
-  <MDCRenderer :body="mdcAst" :stream="true" />
-</template>
-
-<script setup lang="ts">
-// Error handling is built-in
-// - Failed components are tracked and prevented from crashing the app
-// - Errors logged in development mode
-// - Component errors don't propagate to parent
-</script>
-```
-
-### Custom Error Handling
+The `Comark` component captures component errors automatically:
 
 ```vue
 <template>
   <ErrorBoundary @error="handleError">
-    <MDCRenderer :body="mdcAst" />
+    <Comark :markdown="content" />
   </ErrorBoundary>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { Comark } from 'comark/vue'
 
 const errors = ref<Error[]>([])
 
 function handleError(error: Error) {
   console.error('Component error:', error)
   errors.value.push(error)
-  // Send to error tracking service
 }
 </script>
 ```
@@ -559,7 +381,7 @@ function handleError(error: Error) {
 
 ## Props Access
 
-Custom components receive the original Minimark node and parsed props:
+Custom components receive the original Comark node and parsed props:
 
 ```vue
 <!-- CustomAlert.vue -->
@@ -577,7 +399,7 @@ const props = defineProps<{
   bool?: boolean       // From {bool} → :bool="true"
   count?: number       // From {:count="5"}
   data?: object        // From {:data='{"key":"val"}'}
-  __node?: any         // Original Minimark node
+  __node?: any         // Original Comark node
 }>()
 
 const alertClasses = computed(() => [

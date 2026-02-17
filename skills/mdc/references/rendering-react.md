@@ -1,6 +1,6 @@
 # React Rendering Guide
 
-Complete guide for rendering MDC/Minimark AST in React applications.
+Complete guide for rendering Comark AST in React applications.
 
 ## Table of Contents
 
@@ -9,7 +9,7 @@ Complete guide for rendering MDC/Minimark AST in React applications.
 - [Dynamic Component Resolution](#dynamic-component-resolution)
 - [Props Conversion](#props-conversion)
 - [Streaming Mode](#streaming-mode)
-- [High-Level MDC Component](#high-level-mdc-component)
+- [High-Level Comark Component](#high-level-mdc-component)
 - [Syntax Highlighting](#syntax-highlighting)
 - [Prose Components](#prose-components)
 - [Custom Props Handling](#custom-props-handling)
@@ -19,11 +19,10 @@ Complete guide for rendering MDC/Minimark AST in React applications.
 
 ## Basic Usage
 
-Use the `MDCRenderer` component to render Minimark AST:
+Use the `Comark` component to render markdown:
 
 ```tsx
-import { parse } from 'mdc-syntax'
-import { MDCRenderer } from 'mdc-syntax/react'
+import { Comark } from 'comark/react'
 
 const content = `
 # Hello World
@@ -35,10 +34,8 @@ Important message
 ::
 `
 
-const result = parse(content)
-
 export default function App() {
-  return <MDCRenderer body={result.body} />
+  return <Comark markdown={content} />
 }
 ```
 
@@ -46,10 +43,10 @@ export default function App() {
 
 ## Custom Components
 
-Map custom React components to MDC elements:
+Map custom React components to Comark elements:
 
 ```tsx
-import { MDCRenderer } from 'mdc-syntax/react'
+import { Comark } from 'comark/react'
 import CustomHeading from './CustomHeading'
 import CustomAlert from './CustomAlert'
 import CustomCard from './CustomCard'
@@ -61,10 +58,10 @@ const customComponents = {
   card: CustomCard,
 }
 
-export default function App({ mdcAst }) {
+export default function App({ content }) {
   return (
-    <MDCRenderer
-      body={mdcAst}
+    <Comark
+      markdown={content}
       components={customComponents}
     />
   )
@@ -78,7 +75,7 @@ export default function App({ mdcAst }) {
 import React from 'react'
 
 interface Props {
-  __node: any  // Minimark node
+  __node: any  // Comark node
   id?: string
   children: React.ReactNode
 }
@@ -156,17 +153,8 @@ export default function CustomAlert({ type = 'info', children }: AlertProps) {
 Load components dynamically using `componentsManifest`:
 
 ```tsx
-import { MDCRenderer } from 'mdc-syntax/react'
-import { lazy } from 'react'
+import { Comark } from 'comark/react'
 
-// Component manifest function
-async function loadComponent(name: string) {
-  // Dynamic import based on component name
-  const module = await import(`./components/${name}`)
-  return module
-}
-
-// Or with a custom map
 const componentMap = {
   'alert': () => import('./Alert'),
   'card': () => import('./Card'),
@@ -180,42 +168,12 @@ async function loadComponent(name: string) {
   throw new Error(`Component ${name} not found`)
 }
 
-export default function App({ mdcAst }) {
+export default function App({ content }) {
   return (
-    <MDCRenderer
-      body={mdcAst}
+    <Comark
+      markdown={content}
       componentsManifest={loadComponent}
     />
-  )
-}
-```
-
-**Note:** Components loaded via manifest are automatically wrapped in `React.Suspense`.
-
-### With Fallback
-
-```tsx
-import { Suspense } from 'react'
-
-async function loadComponent(name: string) {
-  try {
-    return await import(`./components/${name}`)
-  } catch (error) {
-    // Return fallback component
-    return {
-      default: ({ children }: any) => <div data-component={name}>{children}</div>
-    }
-  }
-}
-
-export default function App({ mdcAst }) {
-  return (
-    <Suspense fallback={<div>Loading components...</div>}>
-      <MDCRenderer
-        body={mdcAst}
-        componentsManifest={loadComponent}
-      />
-    </Suspense>
   )
 }
 ```
@@ -283,28 +241,29 @@ React renderer handles HTML attribute conversion automatically:
 
 ## Streaming Mode
 
-Enable streaming-specific components for real-time content:
+Use the `Comark` component with reactive state for streaming content:
 
 ```tsx
 import { useState, useEffect } from 'react'
-import { parseStreamIncremental } from 'mdc-syntax/stream'
-import { MDCRenderer } from 'mdc-syntax/react'
+import { Comark } from 'comark/react'
 
 export default function StreamingContent() {
-  const [mdcAst, setMdcAst] = useState({ type: 'minimark', value: [] })
+  const [content, setContent] = useState('')
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     async function loadContent() {
       const response = await fetch('/api/content.md')
+      const reader = response.body!.getReader()
+      const decoder = new TextDecoder()
 
-      for await (const result of parseStreamIncremental(response.body!)) {
-        setMdcAst(result.body)
-
-        if (result.isComplete) {
-          setIsLoading(false)
-        }
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        setContent(prev => prev + decoder.decode(value))
       }
+
+      setIsLoading(false)
     }
 
     loadContent()
@@ -313,257 +272,8 @@ export default function StreamingContent() {
   return (
     <>
       {isLoading && <div>Loading...</div>}
-      <MDCRenderer body={mdcAst} stream={true} />
+      <Comark markdown={content} />
     </>
-  )
-}
-```
-
-### With Progress Indicator
-
-```tsx
-export default function StreamingContent() {
-  const [mdcAst, setMdcAst] = useState({ type: 'minimark', value: [] })
-  const [progress, setProgress] = useState(0)
-  const [isComplete, setIsComplete] = useState(false)
-
-  useEffect(() => {
-    async function loadContent() {
-      const response = await fetch('/api/content.md')
-      const contentLength = parseInt(response.headers.get('content-length') || '0')
-      let bytesReceived = 0
-
-      for await (const result of parseStreamIncremental(response.body!)) {
-        bytesReceived += result.chunk.length
-        setProgress(Math.round((bytesReceived / contentLength) * 100))
-        setMdcAst(result.body)
-
-        if (result.isComplete) {
-          setIsComplete(true)
-        }
-      }
-    }
-
-    loadContent()
-  }, [])
-
-  return (
-    <div>
-      {!isComplete && (
-        <div className="progress-bar">
-          <div className="progress-fill" style={{ width: `${progress}%` }} />
-          <span>{progress}%</span>
-        </div>
-      )}
-      <MDCRenderer body={mdcAst} stream={true} />
-    </div>
-  )
-}
-```
-
-### Server-Sent Events (SSE)
-
-```tsx
-export default function SSEStreamingContent() {
-  const [mdcAst, setMdcAst] = useState({ type: 'minimark', value: [] })
-
-  useEffect(() => {
-    const eventSource = new EventSource('/api/markdown-stream')
-
-    let accumulated = ''
-
-    eventSource.onmessage = (event) => {
-      accumulated += event.data
-
-      // Parse accumulated content with auto-close
-      const result = parse(accumulated, { autoClose: true })
-      setMdcAst(result.body)
-    }
-
-    eventSource.addEventListener('done', () => {
-      eventSource.close()
-    })
-
-    return () => eventSource.close()
-  }, [])
-
-  return <MDCRenderer body={mdcAst} stream={true} />
-}
-```
-
----
-
-## High-Level MDC Component
-
-Parse markdown directly:
-
-```tsx
-import { MDC } from 'mdc-syntax/react'
-
-const markdownContent = `
-# Hello World
-
-This is **markdown** with components.
-
-::alert{type="info"}
-Message here
-::
-`
-
-export default function App() {
-  return <MDC content={markdownContent} />
-}
-```
-
-### With Custom Components
-
-```tsx
-import { MDC } from 'mdc-syntax/react'
-import CustomAlert from './CustomAlert'
-
-const customComponents = {
-  alert: CustomAlert,
-}
-
-const markdownContent = `
-::alert{type="warning"}
-Custom alert component
-::
-`
-
-export default function App() {
-  return <MDC content={markdownContent} components={customComponents} />
-}
-```
-
-### Reactive Content
-
-```tsx
-import { useState } from 'react'
-import { MDC } from 'mdc-syntax/react'
-
-export default function MarkdownEditor() {
-  const [content, setContent] = useState('# Edit me!\n\nType **markdown** here.')
-
-  return (
-    <div className="editor">
-      <textarea
-        value={content}
-        onChange={(e) => setContent(e.target.value)}
-        className="editor-input"
-      />
-      <div className="editor-preview">
-        <MDC content={content} />
-      </div>
-    </div>
-  )
-}
-```
-
----
-
-## Syntax Highlighting
-
-Use the built-in Shiki code block component:
-
-```tsx
-import { MDCRenderer, ShikiCodeBlock } from 'mdc-syntax/react'
-
-const customComponents = {
-  pre: ShikiCodeBlock,
-}
-
-export default function App({ mdcAst }) {
-  return (
-    <MDCRenderer
-      body={mdcAst}
-      components={customComponents}
-    />
-  )
-}
-```
-
-### With Async Parsing
-
-```tsx
-import { useState, useEffect } from 'react'
-import { parseAsync } from 'mdc-syntax'
-import { MDCRenderer } from 'mdc-syntax/react'
-
-export default function App() {
-  const [mdcAst, setMdcAst] = useState(null)
-
-  useEffect(() => {
-    async function loadContent() {
-      const content = `
-# Code Example
-
-\`\`\`javascript
-function hello() {
-  console.log("Hello!")
-}
-\`\`\`
-      `
-
-      const result = await parseAsync(content, {
-        highlight: {
-          theme: { light: 'github-light', dark: 'github-dark' }
-        }
-      })
-
-      setMdcAst(result.body)
-    }
-
-    loadContent()
-  }, [])
-
-  if (!mdcAst) return <div>Loading...</div>
-
-  return <MDCRenderer body={mdcAst} />
-}
-```
-
-### Custom Code Block Component
-
-```tsx
-import { Highlight, themes } from 'prism-react-renderer'
-
-interface CodeBlockProps {
-  language?: string
-  filename?: string
-  highlights?: number[]
-  children: React.ReactNode
-}
-
-export function CustomCodeBlock({
-  language = 'text',
-  filename,
-  highlights = [],
-  children
-}: CodeBlockProps) {
-  const code = typeof children === 'string' ? children : ''
-
-  return (
-    <div className="code-block">
-      {filename && <div className="code-filename">{filename}</div>}
-      <Highlight theme={themes.nightOwl} code={code} language={language}>
-        {({ className, style, tokens, getLineProps, getTokenProps }) => (
-          <pre className={className} style={style}>
-            {tokens.map((line, i) => (
-              <div
-                key={i}
-                {...getLineProps({ line })}
-                className={highlights.includes(i + 1) ? 'highlighted' : ''}
-              >
-                {line.map((token, key) => (
-                  <span key={key} {...getTokenProps({ token })} />
-                ))}
-              </div>
-            ))}
-          </pre>
-        )}
-      </Highlight>
-    </div>
   )
 }
 ```
@@ -572,47 +282,30 @@ export function CustomCodeBlock({
 
 ## Prose Components
 
-Use pre-built styled components:
+The `Comark` component uses built-in prose styling automatically. You can override with custom components:
 
 ```tsx
-import { MDCRenderer } from 'mdc-syntax/react'
-import { standardProseComponents } from 'mdc-syntax/react/prose/standard'
-
-export default function App({ mdcAst }) {
-  return (
-    <MDCRenderer
-      body={mdcAst}
-      components={standardProseComponents}
-    />
-  )
-}
-```
-
-**Prose components include:** h1-h6, p, a, strong, em, del, code, pre, ul, ol, li, blockquote, table, thead, tbody, tr, th, td, hr
-
-### Combining with Custom Components
-
-```tsx
-import { standardProseComponents } from 'mdc-syntax/react/prose/standard'
+import { Comark } from 'comark/react'
 import CustomAlert from './CustomAlert'
 
 const components = {
-  ...standardProseComponents,
   alert: CustomAlert,  // Override or add custom components
 }
 
-export default function App({ mdcAst }) {
-  return <MDCRenderer body={mdcAst} components={components} />
+export default function App({ content }) {
+  return <Comark markdown={content} components={components} />
 }
 ```
 
 ### Tailwind CSS Prose
 
 ```tsx
-export default function App({ mdcAst }) {
+import { Comark } from 'comark/react'
+
+export default function App({ content }) {
   return (
     <article className="prose prose-lg dark:prose-dark max-w-none">
-      <MDCRenderer body={mdcAst} />
+      <Comark markdown={content} />
     </article>
   )
 }
@@ -631,7 +324,7 @@ interface AlertProps {
   bool?: boolean       // From {bool} → :bool="true"
   count?: number       // From {:count="5"}
   data?: object        // From {:data='{"key":"val"}'}
-  __node?: any         // Original Minimark node
+  __node?: any         // Original Comark node
   children: React.ReactNode
 }
 
@@ -738,36 +431,18 @@ Table content here
 Add custom wrapper class:
 
 ```tsx
-<MDCRenderer
-  body={mdcAst}
+<Comark
+  markdown={content}
   className="prose dark:prose-dark"
 />
-```
-
-**Output:**
-```html
-<div class="mdc-content prose dark:prose-dark">
-  <!-- Rendered content -->
-</div>
 ```
 
 ### With Tailwind CSS
 
 ```tsx
-<MDCRenderer
-  body={mdcAst}
+<Comark
+  markdown={content}
   className="prose prose-slate lg:prose-xl dark:prose-invert max-w-none"
-/>
-```
-
-### With CSS Modules
-
-```tsx
-import styles from './Content.module.css'
-
-<MDCRenderer
-  body={mdcAst}
-  className={styles.content}
 />
 ```
 

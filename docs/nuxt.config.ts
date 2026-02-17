@@ -19,7 +19,7 @@ export default defineNuxtConfig({
 
   // @ts-expect-error - Nuxt SEO types are not loaded
   site: {
-    url: 'https://mdc-syntax.vercel.app',
+    url: 'https://comark.vercel.app',
   },
 
   content: {

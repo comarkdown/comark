@@ -12,7 +12,7 @@ const components = {
   LandingCompareGrid: () => import('@/components/LandingCompareGrid.vue'),
 
   // Streaming components
-  MDCStream: () => import('@/components/MDCStream.vue'),
+  ComarkStream: () => import('@/components/ComarkStream.vue'),
   MarkdownItStream: () => import('@/components/MarkdownItStream.vue'),
 }
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, ref } from 'vue'
-import { MDCRenderer } from 'mdc-syntax/vue'
+import { ComarkAst } from 'comark/vue'
 import { useMDCStream } from '../composables/useMDCStream'
 import { stringToStream } from '../composables/stringToStream'
 import resolveComponent from '../utils/components-manifest'
@@ -23,7 +23,7 @@ const sampleMarkdown = `::landing-hero
 Markdown but with Components
 
 #description
-Fast, streaming-ready markdown parser with full MDC (Markdown Component) syntax support.
+Fast, streaming-ready markdown parser with full Comark (Components in Markdown) syntax support.
 
 Built for modern applications with TypeScript, Vue 3, React, and real-time streaming capabilities.
 
@@ -43,7 +43,7 @@ Built for modern applications with TypeScript, Vue 3, React, and real-time strea
   color: neutral
   icon: simple-icons-github
   size: xl
-  to: https://github.com/nuxt-content/mdc-syntax
+  to: https://github.com/comarkdown/comark
   variant: outline
   ---
   Star on GitHub
@@ -66,7 +66,7 @@ Everything you need for modern content parsing
   [Fast]{.text-primary} markdown-it parser
 
   #description
-  Built on markdown-it for blazing fast parsing with full GFM support, tables, and MDC component syntax. Optimized bundle size at just 47 kB.
+  Built on markdown-it for blazing fast parsing with full GFM support, tables, and Comark component syntax. Optimized bundle size at just 47 kB.
   :::
 
   :::u-page-feature
@@ -90,7 +90,7 @@ Everything you need for modern content parsing
   [Vue component]{.text-primary} integration
 
   #description
-  Embed Vue components directly in markdown with MDC syntax. Use slots, props, and custom components seamlessly. Full TypeScript support included.
+  Embed Vue components directly in markdown with Comark. Use slots, props, and custom components seamlessly. Full TypeScript support included.
   :::
 
   :::u-page-feature
@@ -102,7 +102,7 @@ Everything you need for modern content parsing
   [React support]{.text-primary} built-in
 
   #description
-  First-class React integration with MDCRenderer component. Dynamic component loading, streaming mode, and full TypeScript support.
+  First-class React integration with Comark component. Dynamic component loading, streaming mode, and full TypeScript support.
   :::
 
   :::u-page-feature
@@ -210,7 +210,7 @@ function reset() {
       <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-0">
         <div>
           <h1 class="text-neutral-900 dark:text-white text-lg sm:text-2xl font-bold mb-0.5 sm:mb-1">
-            MDC Syntax Streaming Demo
+            Comark Streaming Demo
           </h1>
           <p class="text-neutral-600 dark:text-neutral-400 text-xs sm:text-sm">
             Real-time markdown rendering with Vue 3
@@ -297,7 +297,7 @@ function reset() {
           ref="outputColumn"
           class="flex-1 overflow-y-auto relative scroll-smooth"
         >
-          <MDCRenderer
+          <ComarkAst
             v-if="elementsCount > 0"
             :body="state.body as any"
             :components-manifest="resolveComponent"

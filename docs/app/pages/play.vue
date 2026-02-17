@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { parseAsync } from 'mdc-syntax'
-import { MDCRenderer } from 'mdc-syntax/vue'
-import mathPlugin from '@mdc-syntax/math'
-import { Math } from '@mdc-syntax/math/vue'
+import { parseAsync } from 'comark'
+import { ComarkAst } from 'comark/vue'
+import mathPlugin from '@comark/math'
+import { Math } from '@comark/math/vue'
 
 import { ref } from 'vue'
 
@@ -41,7 +41,7 @@ $$
 
 \`\`\`mermaid
 graph TD
-  A[MDC Markdown] -->|parses| B[Components]
+  A[Comark Markdown] -->|parses| B[Components]
   A -->|parses| C[Markdown]
   B --> D[Vue]
   B --> E[React]
@@ -70,7 +70,7 @@ const { data } = useAsyncData('ast', () => parseAsync(markdown.value, { plugins:
     </div>
 
     <div class="w-full h-full row-span-2 overflow-y-auto p-4 bg-white dark:bg-neutral-900">
-      <MDCRenderer
+      <ComarkAst
         :body="data?.body"
         :components="{ math: Math }"
       />

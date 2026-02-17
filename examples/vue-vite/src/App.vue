@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { MDC } from 'mdc-syntax/vue'
+import { Comark } from 'comark/vue'
 import Alert from './components/Alert.vue'
 
 const markdown = `
@@ -13,7 +13,7 @@ This is an alert!
 
 <template>
   <Suspense>
-    <MDC
+    <Comark
       :markdown="markdown"
       :components="{ Alert }"
     />

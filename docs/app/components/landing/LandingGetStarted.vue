@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { MDC } from 'mdc-syntax/vue'
+import { Comark } from 'comark/vue'
 import { ref } from 'vue'
 
 const activeTab = ref('vue')
@@ -10,19 +10,19 @@ const tabs = [
 ]
 
 const codeSnippets = {
-  vue: `\`\`\`vue [src/App.vue]\n<script setup lang="ts">\nimport { MDC } from 'mdc-syntax/vue'\nimport Alert from './components/Alert.vue'\n\nconst md = \`\n# [Hello *World*]{.text-5xl}\n\n::alert{type="info"}\nThis is an alert!\n::\n<` + `/script>
+  vue: `\`\`\`vue [src/App.vue]\n<script setup lang="ts">\nimport { Comark } from 'comark/vue'\nimport Alert from './components/Alert.vue'\n\nconst md = \`\n# [Hello *World*]{.text-5xl}\n\n::alert{type="info"}\nThis is an alert!\n::\n<` + `/script>
 
 <template>
   <Suspense>
-    <MDC :markdown="md" :components="{ Alert }" />
+    <Comark :markdown="md" :components="{ Alert }" />
   </Suspense>
 </template>\n\`\`\``,
-  react: `\`\`\`tsx [src/App.tsx]\nimport { MDC } from 'mdc-syntax/react'
+  react: `\`\`\`tsx [src/App.tsx]\nimport { Comark } from 'comark/react'
 
 export default function App() {
   const markdown = \`# Hello **World**\`
 
-  return <MDC markdown={markdown} />
+  return <Comark markdown={markdown} />
 }\n\`\`\``,
 }
 </script>
@@ -79,12 +79,12 @@ export default function App() {
         </div>
 
         <!-- Code Content -->
-        <MDC
+        <Comark
           v-show="activeTab === 'vue'"
           :markdown="codeSnippets.vue"
           :options="{ highlight: true }"
         />
-        <MDC
+        <Comark
           v-show="activeTab === 'react'"
           :markdown="codeSnippets.react"
           :options="{ highlight: true }"

@@ -36,8 +36,8 @@ $$
 
 <template>
   <LandingCompareGrid
-    title="Math Support for MDC"
-    description="MDC supports math support out of the box, so you get things like inline and block math, even with complex math expressions."
+    title="Math Support for Comark"
+    description="Comark supports math support out of the box, so you get things like inline and block math, even with complex math expressions."
     :markdown="markdown"
   />
 </template>

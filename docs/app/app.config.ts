@@ -1,23 +1,23 @@
 // @ts-expect-error - Nuxt types are not loaded
 export default defineAppConfig({
   site: {
-    url: 'https://mdc-syntax.vercel.app',
+    url: 'https://comark.vercel.app',
   },
   seo: {
-    title: 'MDC Syntax',
+    title: 'Comark',
     description: 'Markdown with Components',
-    url: 'https://mdc-syntax.vercel.app',
+    url: 'https://comark.vercel.app',
     socials: {
-      github: 'nuxt-content/mdc-syntax',
+      github: 'comarkdown/comark',
     },
   },
   docs: {
-    github: 'nuxt-content/mdc-syntax',
+    github: 'comarkdown/comark',
   },
 
-  title: 'MDC Syntax',
+  title: 'Comark',
   description: 'Markdown with Components',
-  url: 'https://mdc-syntax.vercel.app',
+  url: 'https://comark.vercel.app',
 
   ui: {
     colors: {
@@ -30,7 +30,7 @@ export default defineAppConfig({
     footer: {
       credits: {
         text: 'Made with 💚',
-        href: 'https://github.com/nuxt-content/mdc-syntax',
+        href: 'https://github.com/comarkdown/comark',
       },
     },
   },
@@ -40,10 +40,10 @@ export default defineAppConfig({
     exclude: [],
   },
   header: {
-    title: 'MDC Syntax',
+    title: 'Comark',
 
     logo: {
-      alt: 'MDC Syntax Logo',
+      alt: 'Comark Logo',
       light: '/logo-light.svg',
       dark: '/logo-dark.svg',
     },

@@ -15,6 +15,6 @@ To flutter—and the Bird is on the Wing.`
     title="Caret Indicator"
     description="Show a caret indicator while streaming content."
     :markdown="markdown"
-    :mdc-props="{ caret: true }"
+    :comark-props="{ caret: true }"
   />
 </template>
