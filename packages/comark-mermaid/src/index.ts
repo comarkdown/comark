@@ -20,7 +20,7 @@ export interface MermaidConfig {
  * This handles ```mermaid code blocks
  */
 function markdownItMermaid(md: MarkdownIt) {
-  md.core.ruler.after("block", "replace-pre", (state) => {
+  md.core.ruler.after('block', 'replace-pre', (state) => {
     for (const token of state.tokens) {
       if (token.type === 'fence' && token.info?.startsWith('mermaid')) {
         let info = token.info.substring(7).trim()
@@ -199,10 +199,10 @@ export function searchProps(content: string, index = 0) {
  * })
  * ```
  */
-export function createMermaidPlugin(config?: MermaidConfig): ParsePlugin {
+export function createMermaidPlugin(_config?: MermaidConfig): ParsePlugin {
   return {
     markdownItPlugins: [
-      (md: MarkdownIt) => markdownItMermaid(md, config ?? {}),
+      (md: MarkdownIt) => markdownItMermaid(md),
     ],
   }
 }

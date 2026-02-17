@@ -20,7 +20,7 @@ export function Mermaid({
   class: className = '',
   height = '400px',
   width = '100%',
-  theme = 'default'
+  theme = 'default',
 }: MermaidProps) {
   const [svgContent, setSvgContent] = useState<string>('')
   const [error, setError] = useState<string | null>(null)

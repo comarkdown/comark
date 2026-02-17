@@ -1,4 +1,5 @@
-import { defineComponent, h, ref, onMounted, watch, PropType } from 'vue'
+import type { PropType } from 'vue'
+import { defineComponent, h, ref, onMounted, watch } from 'vue'
 import mermaid from 'mermaid'
 
 // Initialize mermaid once
@@ -63,15 +64,15 @@ export const Mermaid = defineComponent({
 
     return () => {
       return h('div', {
-        class: `mermaid ${props.class}`,
-        style: {
+        'class': `mermaid ${props.class}`,
+        'style': {
           display: 'flex',
           justifyContent: 'center',
           width: props.width,
           height: props.height,
         },
         'data-error': error.value,
-        innerHTML: svgContent.value,
+        'innerHTML': svgContent.value,
       })
     }
   },
