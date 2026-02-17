@@ -46,7 +46,7 @@ Built for modern applications with TypeScript, Vue 3, React, and real-time strea
   to: https://github.com/comarkdown/comark
   variant: outline
   ---
-  Star on GitHub
+  Open on GitHub
   :::
 ::
 

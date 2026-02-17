@@ -31,7 +31,7 @@ A high-performance markdown parser and renderer with Vue & React components supp
   to: https://github.com/comarkdown/comark
   variant: outline
   ---
-  Star on GitHub
+  Open on GitHub
   :::
 ::
 
