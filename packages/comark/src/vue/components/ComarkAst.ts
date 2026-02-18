@@ -199,7 +199,7 @@ function renderNode(
  * @example
  * ```vue
  * <template>
- *   <ComarkAst :body="comarkAst" :components="customComponents" />
+ *   <ComarkTree :tree="comarktree" :components="customComponents" />
  * </template>
  *
  * <script setup lang="ts">
@@ -210,6 +210,8 @@ function renderNode(
  *   h1: CustomHeading,
  *   h2: CustomHeading,
  * }
+ *
+ * const comarktree = parse(`This is **markdown** with components.`)
  * </script>
  * ```
  */

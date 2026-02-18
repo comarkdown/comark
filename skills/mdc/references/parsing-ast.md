@@ -422,7 +422,8 @@ Warning message
 ### Render to HTML
 
 ```typescript
-import { parse, renderHTML } from 'comark'
+import { parse } from 'comark'
+import { renderHTML } from 'comark/string'
 
 const content = '# Hello World\n\nThis is **markdown**.'
 const result = parse(content)
@@ -442,7 +443,8 @@ console.log(html)
 Convert AST back to Comark markdown:
 
 ```typescript
-import { parse, renderMarkdown } from 'comark'
+import { parse } from 'comark'
+import { renderMarkdown } from 'comark/string'
 
 const content = '# Hello\n\n::alert{type="info"}\nMessage\n::'
 const result = parse(content)

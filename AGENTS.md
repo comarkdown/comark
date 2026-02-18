@@ -44,7 +44,8 @@ Located at `packages/comark/`:
 ```
 packages/comark/
 ├── src/
-│   ├── index.ts              # Core parser: parse(), parseAsync(), renderHTML(), renderMarkdown()
+│   ├── index.ts              # Core parser: parse(), parseAsync(), autoCloseMarkdown()
+│   ├── string.ts             # String rendering: renderHTML(tree, options?), renderMarkdown()
 │   ├── stream.ts             # Streaming: parseStream(), parseStreamIncremental()
 │   ├── types.ts              # TypeScript interfaces (ParseOptions, etc.)
 │   ├── ast/                  # Comark AST types and utilities
@@ -209,7 +210,11 @@ x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}
 
 ```typescript
 // Core parsing
-import { parse, parseAsync, renderHTML, renderMarkdown, autoCloseMarkdown } from 'comark'
+import { parse, parseAsync, autoCloseMarkdown } from 'comark'
+
+// String rendering (HTML & Markdown)
+import { renderHTML, renderMarkdown } from 'comark/string'
+import type { RenderHTMLOptions, ComponentRenderFn, RenderHTMLContext } from 'comark/string'
 
 // AST types and utilities
 import type { ComarkTree, ComarkNode, ComarkElement, ComarkText } from 'comark/ast'

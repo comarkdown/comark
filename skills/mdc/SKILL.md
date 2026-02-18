@@ -104,7 +104,7 @@ Complete guide for parsing documents and working with AST:
 - **Async Parsing:** `parseAsync()` with Shiki syntax highlighting
 - **Stream Parsing:** buffered (`parseStream`) and incremental (`parseStreamIncremental`) modes
 - **AST Structure:** Comark AST format - lightweight array-based AST
-- **Rendering AST:** convert to HTML (`renderHTML`) or markdown (`renderMarkdown`)
+- **Rendering AST:** convert to HTML (`renderHTML`) or markdown (`renderMarkdown`) via `comark/string`
 - **Auto-close:** automatic closing of unclosed syntax for streaming scenarios
 - **Auto-unwrap:** remove unnecessary paragraph wrappers from container components
 
@@ -223,7 +223,7 @@ const closed = autoCloseMarkdown('**bold text') // → '**bold text**'
 
 ```typescript
 import { parseAsync } from 'comark'
-import { renderHTML } from 'comark'
+import { renderHTML } from 'comark/string'
 
 async function processMarkdownFile(filePath: string) {
   const content = await readFile(filePath, 'utf-8')
@@ -293,7 +293,7 @@ import { docComponents } from './components'
 
 ## API Reference Summary
 
-### Core Functions
+### Core Functions (`comark`)
 
 ```typescript
 // Synchronous parsing
@@ -302,14 +302,18 @@ parse(source: string, options?: ParseOptions): ParseResult
 // Asynchronous parsing with highlighting
 parseAsync(source: string, options?: ParseOptions): Promise<ParseResult>
 
-// Render to HTML
-renderHTML(tree: ComarkTree): string
+// Auto-close unclosed syntax
+autoCloseMarkdown(source: string): string
+```
+
+### String Rendering Functions (`comark/string`)
+
+```typescript
+// Render to HTML (with optional custom components and data)
+renderHTML(tree: ComarkTree, options?: RenderHTMLOptions): string
 
 // Render to markdown
 renderMarkdown(tree: ComarkTree): string
-
-// Auto-close unclosed syntax
-autoCloseMarkdown(source: string): string
 ```
 
 ### Stream Functions
