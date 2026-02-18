@@ -2,7 +2,7 @@ import type { ParseOptions } from './types'
 import MarkdownIt from 'markdown-it'
 import pluginMdc from 'markdown-it-mdc'
 import markdownItEmoji from './internal/parse/markdown-it-emoji'
-import markdownItTaskListsMdc from './internal/parse/markdown-it-task-lists-mdc'
+import markdownItTaskLists from './internal/parse/markdown-it-task-lists'
 import { applyAutoUnwrap } from './internal/parse/auto-unwrap'
 import { generateToc } from './internal/parse/table-of-contents'
 import type { ComarkTree, ComarkNode } from 'comark/ast'
@@ -88,7 +88,7 @@ export function parse(source: string, options: ParseOptions = {}): ParseResult {
   })
     .enable(['table', 'strikethrough'])
     // Custom task list plugin must run before Comark to prevent [X] being parsed as Comark
-    .use(markdownItTaskListsMdc)
+    .use(markdownItTaskLists)
     .use(markdownItEmoji)
     .use(pluginMdc)
 

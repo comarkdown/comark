@@ -257,7 +257,7 @@ function parseCodeblockInfo(info: string): {
  * @param skipEmptyText - Whether to skip empty text tokens before props token
  * @returns Object with attrs and nextIndex
  */
-function extractMDCAttributes(
+function extractAttributes(
   tokens: any[],
   startIndex: number,
   skipEmptyText: boolean = true,
@@ -705,7 +705,7 @@ function processInlineToken(tokens: any[], startIndex: number, inHeading: boolea
     }
 
     // Skip the close token and check for props token after it
-    const { attrs: spanAttrs, nextIndex } = extractMDCAttributes(tokens, i + 1)
+    const { attrs: spanAttrs, nextIndex } = extractAttributes(tokens, i + 1)
     Object.assign(attrs, spanAttrs)
 
     if (nodes.length > 0 || Object.keys(attrs).length > 0) {
@@ -720,7 +720,7 @@ function processInlineToken(tokens: any[], startIndex: number, inHeading: boolea
   }
 
   if (token.type === 'code_inline') {
-    const { attrs, nextIndex } = extractMDCAttributes(tokens, startIndex + 1)
+    const { attrs, nextIndex } = extractAttributes(tokens, startIndex + 1)
 
     if (token.content) {
       return { node: ['code', attrs, token.content] as ComarkNode, nextIndex }
@@ -753,7 +753,7 @@ function processInlineToken(tokens: any[], startIndex: number, inHeading: boolea
         // Check for closing tag
         if (childToken.type === 'mdc_inline_component' && childToken.nesting === -1) {
           // Found closing tag, now check for props after it
-          const { attrs, nextIndex } = extractMDCAttributes(tokens, i + 1, false)
+          const { attrs, nextIndex } = extractAttributes(tokens, i + 1, false)
           return { node: [componentName, attrs, ...children] as ComarkNode, nextIndex }
         }
 
@@ -778,7 +778,7 @@ function processInlineToken(tokens: any[], startIndex: number, inHeading: boolea
 
       // markdown-it-mdc stores attributes in a separate mdc_inline_props token
       // that appears right after the component token
-      const { attrs: componentAttrs, nextIndex: propsNextIndex } = extractMDCAttributes(tokens, startIndex + 1, false)
+      const { attrs: componentAttrs, nextIndex: propsNextIndex } = extractAttributes(tokens, startIndex + 1, false)
       Object.assign(attrs, componentAttrs)
 
       // Extract attributes from token.attrs (fallback, though markdown-it-mdc uses mdc_inline_props)
@@ -800,7 +800,7 @@ function processInlineToken(tokens: any[], startIndex: number, inHeading: boolea
     }
 
     // Check if there's a props token right after the image token
-    const { attrs: imageAttrs, nextIndex } = extractMDCAttributes(tokens, startIndex + 1)
+    const { attrs: imageAttrs, nextIndex } = extractAttributes(tokens, startIndex + 1)
     Object.assign(attrs, imageAttrs)
 
     return { node: ['img', attrs] as ComarkNode, nextIndex }
@@ -811,7 +811,7 @@ function processInlineToken(tokens: any[], startIndex: number, inHeading: boolea
     const children = processInlineChildren(tokens, startIndex + 1, 'link_close', inHeading)
 
     // Check if there's a props token right after the link_close token
-    const { attrs: linkAttrs, nextIndex } = extractMDCAttributes(tokens, children.nextIndex + 1)
+    const { attrs: linkAttrs, nextIndex } = extractAttributes(tokens, children.nextIndex + 1)
     Object.assign(attrs, linkAttrs)
 
     if (children.nodes.length > 0) {
@@ -831,7 +831,7 @@ function processInlineToken(tokens: any[], startIndex: number, inHeading: boolea
     const children = processInlineChildren(tokens, startIndex + 1, closeType, inHeading)
 
     // Check if there's a props token right after the close token
-    const { attrs, nextIndex } = extractMDCAttributes(tokens, children.nextIndex + 1)
+    const { attrs, nextIndex } = extractAttributes(tokens, children.nextIndex + 1)
 
     if (children.nodes.length > 0) {
       return { node: [tagName, attrs, ...children.nodes] as ComarkNode, nextIndex }
@@ -883,7 +883,7 @@ function processInlineChildren(
       const attrs: Record<string, unknown> = {}
 
       // Check for mdc_inline_props token after the component
-      const { attrs: componentAttrs, nextIndex: componentNextIndex } = extractMDCAttributes(tokens, i + 1, false)
+      const { attrs: componentAttrs, nextIndex: componentNextIndex } = extractAttributes(tokens, i + 1, false)
       Object.assign(attrs, componentAttrs)
       if (Object.keys(componentAttrs).length > 0) {
         i = componentNextIndex // Skip both component and props tokens

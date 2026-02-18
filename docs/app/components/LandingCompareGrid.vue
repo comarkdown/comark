@@ -67,7 +67,7 @@
         </div>
         <UCard class="bg-white dark:bg-neutral-950 border border-primary-500/30 dark:border-primary-500/30 h-[400px] overflow-auto transition-all duration-300 hover:border-primary-500/50 dark:hover:border-primary-500/50 hover:shadow-xl hover:shadow-primary-500/10">
           <ComarkStream
-            ref="mdcRef"
+            ref="comarkRef"
             :markdown="markdown"
             :comark-props="comarkProps"
           />
@@ -107,7 +107,7 @@ defineProps<{
 }>()
 
 const markdownItRef = ref<InstanceType<typeof MarkdownItStream> | null>(null)
-const mdcRef = ref<InstanceType<typeof MarkdownItStream> | null>(null)
+const comarkRef = ref<InstanceType<typeof MarkdownItStream> | null>(null)
 const sectionRef = ref<HTMLDivElement | null>(null)
 const hasPlayed = ref(false)
 
@@ -115,12 +115,12 @@ let observer: IntersectionObserver | null = null
 
 function startStreams() {
   markdownItRef.value?.startStream()
-  mdcRef.value?.startStream()
+  comarkRef.value?.startStream()
 }
 
 function handleReset() {
   markdownItRef.value?.reset()
-  mdcRef.value?.reset()
+  comarkRef.value?.reset()
   // Restart the streams after a short delay
   setTimeout(startStreams, 100)
 }

@@ -8,7 +8,7 @@ export type ParsePlugin = {
 }
 
 export type ComponentManifest = (name: string) => Promise<unknown> | null
-export interface MDCProvider {
+export interface ComarkContextProvider {
   components: Record<string, any>
   componentManifest: ComponentManifest
 }

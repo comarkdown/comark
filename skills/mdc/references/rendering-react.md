@@ -9,8 +9,6 @@ Complete guide for rendering Comark AST in React applications.
 - [Dynamic Component Resolution](#dynamic-component-resolution)
 - [Props Conversion](#props-conversion)
 - [Streaming Mode](#streaming-mode)
-- [High-Level Comark Component](#high-level-mdc-component)
-- [Syntax Highlighting](#syntax-highlighting)
 - [Prose Components](#prose-components)
 - [Custom Props Handling](#custom-props-handling)
 - [CSS Class Name](#css-class-name)

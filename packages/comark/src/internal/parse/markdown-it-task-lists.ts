@@ -49,7 +49,7 @@ interface TaskListOptions {
   labelAfter?: boolean
 }
 
-export default function markdownItTaskListsMdc(md: MarkdownIt, options?: TaskListOptions) {
+export default function markdownItTaskLists(md: MarkdownIt, options?: TaskListOptions) {
   const disableCheckboxes = !(options?.enabled ?? false)
 
   // Run BEFORE inline parsing to prevent Comark from processing task list markers

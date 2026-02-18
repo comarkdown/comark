@@ -166,7 +166,7 @@ function renderNode(
   return null
 }
 
-export interface MDCRendererProps {
+export interface ComarkAstProps {
   /**
    * The Comark tree to render
    */
@@ -219,11 +219,11 @@ export interface MDCRendererProps {
  * }
  *
  * export default function App() {
- *   return <ComarkAst body={mdcAst} components={customComponents} />
+ *   return <ComarkAst body={comarkBody} components={customComponents} />
  * }
  * ```
  */
-export const ComarkAst: React.FC<MDCRendererProps> = ({
+export const ComarkAst: React.FC<ComarkAstProps> = ({
   body,
   components: customComponents = {},
   componentsManifest,

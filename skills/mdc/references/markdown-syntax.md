@@ -6,7 +6,7 @@ Complete guide for writing Comark (Components in Markdown) documents.
 
 - [Standard Markdown](#standard-markdown)
 - [Frontmatter](#frontmatter)
-- [Comark Components](#mdc-components)
+- [Comark Components](#comark-components)
 - [Attributes](#attributes)
 - [Code Blocks](#code-blocks)
 - [Task Lists](#task-lists)

@@ -56,7 +56,6 @@ export function useMDCStream(options?: MDCStreamOptions) {
   /**
    * Start streaming and parsing Comark content
    * @param stream - Node.js Readable or Web ReadableStream
-   * @param useMarkdownIt - Use markdown-it parser instead of unified/remark
    */
   async function startStream(stream: Readable | ReadableStream<Uint8Array>) {
     isStreaming.value = true

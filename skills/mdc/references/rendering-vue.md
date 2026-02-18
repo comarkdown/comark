@@ -9,7 +9,6 @@ Complete guide for rendering Comark AST in Vue 3 applications.
 - [Dynamic Component Resolution](#dynamic-component-resolution)
 - [Slots Support](#slots-support)
 - [Streaming Mode](#streaming-mode)
-- [High-Level Comark Component](#high-level-mdc-component)
 - [Prose Components](#prose-components)
 - [Error Handling](#error-handling)
 - [Props Access](#props-access)

@@ -3,12 +3,12 @@ import type { Nuxt } from 'nuxt/schema'
 import fs from 'node:fs/promises'
 
 // Module options TypeScript interface definition
-export interface MDCModuleOptions {}
+export interface ComarkModuleOptions {}
 
-export default defineNuxtModule<MDCModuleOptions>({
+export default defineNuxtModule<ComarkModuleOptions>({
   meta: {
-    name: 'mdc-syntax',
-    configKey: 'mdc',
+    name: 'comark',
+    configKey: 'comark',
   },
   // Default configuration options of the Nuxt module
   defaults: {},
@@ -16,15 +16,15 @@ export default defineNuxtModule<MDCModuleOptions>({
     const resolver = createResolver(import.meta.url)
 
     addComponent({
-      name: 'MDC',
-      export: 'MDC',
-      filePath: resolver.resolve('../vue/components/MDC'),
+      name: 'Comark',
+      export: 'Comark',
+      filePath: resolver.resolve('../vue/components/Comark'),
       priority: 1,
     })
     addComponent({
-      name: 'MDCRenderer',
-      export: 'MDCRenderer',
-      filePath: resolver.resolve('../vue/components/MDCRenderer'),
+      name: 'ComarkAst',
+      export: 'ComarkAst',
+      filePath: resolver.resolve('../vue/components/ComarkAst'),
       priority: 1,
     })
 
@@ -36,7 +36,7 @@ export default defineNuxtModule<MDCModuleOptions>({
     const _layers = [...nuxt.options._layers].reverse()
     for (const layer of _layers) {
       const srcDir = layer.config.srcDir
-      const globalComponents = resolver.resolve(srcDir, 'components/mdc')
+      const globalComponents = resolver.resolve(srcDir, 'components/prose')
       const dirStat = await fs.stat(globalComponents).catch(() => null)
       if (dirStat && dirStat.isDirectory()) {
         nuxt.hook('components:dirs', (dirs: any[]) => {

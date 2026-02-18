@@ -33,7 +33,7 @@ export function autoCloseMarkdown(markdown: string): string {
 
   // Step 3: Close Comark components if any
   if (result.includes('::')) {
-    result = closeMDCComponentsLinear(result)
+    result = closeComponentsLinear(result)
   }
 
   return result
@@ -371,7 +371,7 @@ function closeInlineMarkersLinear(line: string): string {
 /**
  * Closes unclosed Comark components by scanning all lines in O(n) time
  */
-function closeMDCComponentsLinear(markdown: string): string {
+function closeComponentsLinear(markdown: string): string {
   const lines: string[] = []
   let lineStart = 0
 

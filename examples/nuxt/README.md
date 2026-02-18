@@ -1,22 +1,52 @@
 ---
 title: Nuxt
-description: A minimal example showing how to use MDC Syntax with Nuxt 4.
+description: A minimal example showing how to use Comark Syntax with Nuxt 4.
+category: Nuxt
+icon: i-logos-nuxt-icon
 ---
 
 ::code-tree{defaultValue="app/app.vue" expandAll}
 
 ```vue [app/app.vue]
+<script setup lang="ts">
+const markdown = `
+# Comark + Nuxt
+
+Comark automatically detects Components in \`~/components/prose/\` directory and uses them for rendering.
+`
+</script>
+
 <template>
-  <div>
-    <MDC markdown="# Hello *World*" />
-  </div>
+  <Comark :markdown="markdown" />
 </template>
+```
+
+```vue [app/components/ProseP.vue]
+<template>
+  <p>
+    <slot />
+  </p>
+</template>
+
+<style scoped>
+p {
+  color: #333;
+  line-height: 1.5;
+}
+p::first-letter {
+  text-transform: capitalize;
+  font-size: 20px;
+  color: red;
+  font-family: 'Monoton', sans-serif;
+  vertical-align: middle;
+}
+</style>
 ```
 
 ```ts [nuxt.config.ts]
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  modules: ['mdc-syntax/nuxt'],
+  modules: ['comark/nuxt'],
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true }
 })
@@ -24,7 +54,7 @@ export default defineNuxtConfig({
 
 ```json [package.json]
 {
-  "name": "mdc-syntax-nuxt",
+  "name": "comark-nuxt",
   "type": "module",
   "private": true,
   "scripts": {
@@ -37,7 +67,7 @@ export default defineNuxtConfig({
   "dependencies": {
     "nuxt": "^4.3.1",
     "vue": "^3.5.28",
-    "mdc-syntax": "^1.0.0"
+    "comark": "^1.0.0"
   }
 }
 ```
@@ -66,10 +96,10 @@ export default defineNuxtConfig({
 ::
 
 
-This example demonstrates the simplest way to use MDC Syntax with Nuxt - just add the `mdc-syntax/nuxt` module to your Nuxt config, and the `MDC` component will be automatically available in your templates. The module handles parsing and rendering automatically.
+This example demonstrates the simplest way to use Comark Syntax with Nuxt - just add the `comark/nuxt` module to your Nuxt config, and the `Comark` component will be automatically available in your templates. The module handles parsing and rendering automatically.
 
-## What does `mdc-syntax/nuxt` module do
+## What does `comark/nuxt` module do
 
-- Registers the `<MDC>` and `<MDCRenderer>` components in Nuxt for automatic import.
-- Registers the `~/components/mdc` directory in the app and all layers as a global components directory.
+- Registers the `<Comark>` components in Nuxt for automatic import.
+- Registers the `~/components/prose` directory in the app and all layers as a global components directory.
   - This allows users to override prose components by creating components in this directory.

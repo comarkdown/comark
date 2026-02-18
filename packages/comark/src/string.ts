@@ -17,7 +17,7 @@ export function renderHTML(tree: ComarkTree): string {
  *
  * @param tree - The Comark tree to render
  * @param data - The data to render
- * @returns
+ * @returns The markdown string
  */
 export function renderMarkdown(tree: ComarkTree, data?: Record<string, any> | undefined | null): string {
   return renderFrontmatter(data, stringify(tree, { format: 'markdown/mdc' }))

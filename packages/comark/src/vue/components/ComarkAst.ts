@@ -4,7 +4,7 @@ import { computed, defineAsyncComponent, defineComponent, getCurrentInstance, h,
 import { standardProseComponents } from '.'
 import { camelize, capitalize } from '@vue/shared'
 import { findLastTextNodeAndAppendNode, getCaret } from '../../utils/caret'
-import type { ComponentManifest, MDCProvider } from '../../types'
+import type { ComponentManifest, ComarkContextProvider } from '../../types'
 
 // Cache for dynamically resolved components
 const asyncComponentCache = new Map<string, any>()
@@ -293,18 +293,18 @@ export const ComarkAst = defineComponent({
       return false
     })
 
-    const mdc = inject<MDCProvider>('mdc', { components: {}, componentManifest: () => null })
+    const comark = inject<ComarkContextProvider>('comark', { components: {}, componentManifest: () => null })
 
     const components = computed(() => ({
       ...standardProseComponents,
-      ...mdc?.components,
+      ...comark?.components,
       ...props.components,
     }))
 
     const componentManifest: ComponentManifest = (name: string) => {
       let resolved = props.componentsManifest?.(name)
       if (!resolved) {
-        resolved = mdc?.componentManifest(name)
+        resolved = comark?.componentManifest(name)
       }
       return resolved || null
     }

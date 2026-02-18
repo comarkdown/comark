@@ -55,8 +55,20 @@ const groupedExamples = computed(() => {
             :to="example.path.replace(/\/readme$/i, '')"
             :title="example.title"
             :description="example.description"
-            :icon="example.icon"
-          />
+          >
+            <template #header>
+              <UIcon
+                v-if="example.icon?.startsWith('i-')"
+                :name="example.icon"
+                class="size-6"
+              />
+              <span
+                v-else-if="example.icon"
+                class="--ui-primary: green"
+                v-html="example.icon"
+              />
+            </template>
+          </UPageCard>
         </div>
       </div>
 
