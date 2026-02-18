@@ -26,7 +26,7 @@ GFM extends standard Markdown with powerful features. Here's a comprehensive dem
 <template>
   <LandingCompareGrid
     title="GitHub Flavored Markdown"
-    description="MDC supports GitHub Flavored Markdown (GFM) out of the box, so you get things like task lists, tables, and more."
+    description="Comark supports GitHub Flavored Markdown (GFM) out of the box, so you get things like task lists, tables, and more."
     :markdown="markdown"
   />
 </template>

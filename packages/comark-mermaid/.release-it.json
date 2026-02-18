@@ -1,0 +1,33 @@
+{
+  "git": {
+    "commitMessage": "chore(mermaid): release v${version}",
+    "tagName": "@comark/mermaid@${version}",
+    "tagAnnotation": "@comark/mermaid v${version}",
+    "requireCleanWorkingDir": true
+  },
+  "github": {
+    "release": true,
+    "releaseName": "@comark/mermaid v${version}"
+  },
+  "npm": {
+    "publish": true,
+    "publishPath": "."
+  },
+  "plugins": {
+    "@release-it/conventional-changelog": {
+      "ignoreRecommendedBump": true,
+      "preset": {
+        "name": "conventionalcommits",
+        "types": [
+          { "type": "feat", "section": "Features" },
+          { "type": "fix", "section": "Bug Fixes" },
+          { "type": "perf", "section": "Performance" }
+        ]
+      },
+      "infile": "CHANGELOG.md"
+    }
+  },
+  "hooks": {
+    "before:release": ["pnpm run build"]
+  }
+}

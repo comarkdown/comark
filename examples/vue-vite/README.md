@@ -1,7 +1,8 @@
 ---
 title: Vue
-description: A minimal example showing how to use MDC Syntax with Vue 3 and Vite.
+description: A minimal example showing how to use Comark with Vue 3 and Vite.
 icon: i-logos-vue
+category: Vite
 ---
 
 ::code-tree{defaultValue="src/App.vue" expandAll}
@@ -15,7 +16,7 @@ createApp(App).mount('#app')
 
 ```vue [src/App.vue]
 <script setup lang="ts">
-import { MDC } from 'mdc-syntax/vue'
+import { Comark } from 'comark/vue'
 import Alert from './components/Alert.vue'
 
 const markdown = `
@@ -29,7 +30,7 @@ This is an alert!
 
 <template>
   <Suspense>
-    <MDC
+    <Comark 
       :markdown="markdown"
       :components="{ Alert }"
     />
@@ -79,7 +80,7 @@ export default defineConfig({
 
 ```json [package.json]
 {
-  "name": "mdc-syntax-vue-example",
+  "name": "comark-vue-example",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -88,7 +89,7 @@ export default defineConfig({
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.18",
-    "mdc-syntax": "^1.0.0",
+    "comark": "workspace:*",
     "vue": "^3.5.27"
   },
   "devDependencies": {
@@ -106,7 +107,7 @@ export default defineConfig({
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>MDC Syntax - Vue Example</title>
+    <title>Comark - Vue Example</title>
   </head>
   <body>
     <div id="app"></div>
@@ -134,12 +135,11 @@ export default defineConfig({
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src/**/*.ts", "src/**/*.vue"],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  "include": ["src/**/*.ts", "src/**/*.vue"]
 }
 ```
 
 ::
 
 
-This example demonstrates the simplest way to use MDC Syntax with Vue 3 - use the `h()` render function with the `MDC` component and pass it markdown content. The component handles parsing and rendering automatically.
+This example demonstrates the simplest way to use Comark with Vue 3 - use the `h()` render function with the `Comark` component and pass it markdown content. The component handles parsing and rendering automatically.

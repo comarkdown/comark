@@ -32,7 +32,7 @@ const groupedExamples = computed(() => {
   <UPage>
     <UPageHeader
       title="Examples"
-      description="Explore MDC Syntax examples to learn how to use MDC Syntax in your projects"
+      description="Explore Comark examples to learn how to use Comark in your projects"
     >
       <template #headline>
         <UBreadcrumb :items="[{ label: 'Examples', icon: 'i-lucide-code' }]" />

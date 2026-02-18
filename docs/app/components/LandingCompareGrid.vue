@@ -47,11 +47,11 @@
         <div class="absolute -inset-0.5 bg-red-500/10 rounded-lg blur opacity-0 group-hover:opacity-100 transition duration-300 -z-10" />
       </div>
 
-      <!-- MDC Syntax (Right) -->
+      <!-- Comark (Right) -->
       <div class="relative group">
         <div class="mb-4 flex items-center justify-between">
           <div class="flex items-center gap-2">
-            <span class="text-sm font-semibold text-neutral-700 dark:text-neutral-300">MDC Syntax</span>
+            <span class="text-sm font-semibold text-neutral-700 dark:text-neutral-300">Comark</span>
             <svg
               class="h-4 w-4 text-primary-500"
               fill="currentColor"
@@ -66,10 +66,10 @@
           </div>
         </div>
         <UCard class="bg-white dark:bg-neutral-950 border border-primary-500/30 dark:border-primary-500/30 h-[400px] overflow-auto transition-all duration-300 hover:border-primary-500/50 dark:hover:border-primary-500/50 hover:shadow-xl hover:shadow-primary-500/10">
-          <MDCStream
+          <ComarkStream
             ref="mdcRef"
             :markdown="markdown"
-            :mdc-props="mdcProps"
+            :comark-props="comarkProps"
           />
         </UCard>
         <!-- Decorative element -->
@@ -97,13 +97,13 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue'
 import MarkdownItStream from './MarkdownItStream.vue'
-import MDCStream from './MDCStream.vue'
+import ComarkStream from './ComarkStream.vue'
 
 defineProps<{
   title: string
   description: string
   markdown: string
-  mdcProps?: object
+  comarkProps?: object
 }>()
 
 const markdownItRef = ref<InstanceType<typeof MarkdownItStream> | null>(null)

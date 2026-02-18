@@ -1,0 +1,72 @@
+{
+  "name": "comark",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "Components in Markdown (Comark) parser with streaming support for Vue and React",
+  "author": "",
+  "license": "MIT",
+  "repository": "comarkdown/comark",
+  "keywords": [
+    "markdown",
+    "mdc",
+    "parser",
+    "streaming",
+    "vue",
+    "react"
+  ],
+  "exports": {
+    ".": "./dist/index.mjs",
+    "./ast": "./dist/ast/index.mjs",
+    "./vue": "./dist/vue/index.mjs",
+    "./vue/*": "./dist/vue/*.mjs",
+    "./react": "./dist/react/index.mjs",
+    "./react/*": "./dist/react/*.mjs",
+    "./string": "./dist/string.mjs",
+    "./stream": "./dist/stream.mjs",
+    "./nuxt": "./dist/nuxt/module.mjs"
+  },
+  "main": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "obuild",
+    "test": "vitest run",
+    "prepack": "obuild",
+    "release": "release-it",
+    "release:dry": "release-it --dry-run"
+  },
+  "peerDependencies": {
+    "react": "^19.2.4",
+    "vue": "^3.5.27"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "vue": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "shiki": "^3.22.0"
+  },
+  "devDependencies": {
+    "@nuxt/kit": "^4.3.1",
+    "@comark/cjk": "workspace:*",
+    "@types/js-yaml": "^4.0.9",
+    "github-slugger": "^2.0.0",
+    "hast-util-to-string": "^3.0.1",
+    "js-yaml": "^4.1.1",
+    "markdown-it": "^14.1.1",
+    "markdown-it-mdc": "^0.2.10",
+    "minimark": "^1.0.0",
+    "obuild": "^0.4.27",
+    "vitest": "^4.0.18"
+  }
+}

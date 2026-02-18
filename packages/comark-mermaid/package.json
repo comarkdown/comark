@@ -1,0 +1,59 @@
+{
+  "name": "@comark/mermaid",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "Mermaid diagram support for Comark",
+  "author": "",
+  "license": "MIT",
+  "repository": "comarkdown/comark",
+  "keywords": [
+    "markdown",
+    "mdc",
+    "mermaid",
+    "diagram",
+    "flowchart",
+    "vue",
+    "react"
+  ],
+  "exports": {
+    ".": "./dist/index.mjs",
+    "./vue": "./dist/vue.mjs",
+    "./react": "./dist/react.mjs"
+  },
+  "main": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "obuild",
+    "test": "vitest run",
+    "prepack": "obuild",
+    "release": "release-it",
+    "release:dry": "release-it --dry-run"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "vue": "^3.5.0"
+  },
+  "peerDependenciesMeta": {
+    "vue": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "mermaid": "^11.4.1"
+  },
+  "devDependencies": {
+    "comark": "workspace:*",
+    "obuild": "^0.4.27",
+    "vitest": "^4.0.18"
+  }
+}

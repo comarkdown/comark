@@ -1,15 +1,15 @@
-# MDC Syntax - Skills Guide
+# Comark - Skills Guide
 
-A high-performance markdown parser with MDC (Markdown Components) support, built on markdown-it, offering both string-based and streaming APIs.
+A high-performance markdown parser with Comark (Components in Markdown) support, built on markdown-it, offering both string-based and streaming APIs.
 
 ## Overview
 
-**MDC Syntax** extends standard markdown with a powerful component system while maintaining full compatibility with CommonMark and GitHub Flavored Markdown. It provides:
+**Comark** extends standard markdown with a powerful component system while maintaining full compatibility with CommonMark and GitHub Flavored Markdown. It provides:
 
 - 🚀 **High-performance parsing** with markdown-it engine
 - 📦 **Streaming support** with buffered and incremental modes
 - ⚡ **Real-time rendering** with auto-close for incomplete syntax
-- 🔧 **MDC component syntax** for custom components
+- 🔧 **Comark component syntax** for custom components
 - 🎨 **Vue 3 & React renderers** with custom component mapping
 - 📝 **YAML frontmatter** support
 - 📑 **Automatic TOC generation**
@@ -18,20 +18,20 @@ A high-performance markdown parser with MDC (Markdown Components) support, built
 
 ## Package Information
 
-- **Package Name:** `mdc-syntax`
-- **Installation:** `npm install mdc-syntax` or `pnpm add mdc-syntax`
+- **Package Name:** `comark`
+- **Installation:** `npm install comark` or `pnpm add comark`
 - **Exports:**
-  - Main parser: `mdc-syntax`
-  - Vue components: `mdc-syntax/vue`
-  - React components: `mdc-syntax/react`
-  - Stream API: `mdc-syntax/stream`
+  - Main parser: `comark`
+  - Vue components: `comark/vue`
+  - React components: `comark/react`
+  - Stream API: `comark/stream`
 
 ## Quick Start
 
 ### Basic Usage
 
 ```typescript
-import { parse } from 'mdc-syntax'
+import { parse } from 'comark'
 
 const content = `---
 title: Hello World
@@ -47,7 +47,7 @@ Important message
 `
 
 const result = parse(content)
-console.log(result.body)  // Minimark AST
+console.log(result.body)  // Comark AST
 console.log(result.data)  // { title: 'Hello World' }
 console.log(result.toc)   // Table of contents
 ```
@@ -56,28 +56,23 @@ console.log(result.toc)   // Table of contents
 
 ```vue
 <template>
-  <MDCRenderer :body="mdcAst" />
+  <Comark :markdown="content" />
 </template>
 
 <script setup lang="ts">
-import { parse } from 'mdc-syntax'
-import { MDCRenderer } from 'mdc-syntax/vue'
+import { Comark } from 'comark/vue'
 
-const result = parse(content)
-const mdcAst = result.body
+const content = `# Hello World`
 </script>
 ```
 
 ### React Rendering
 
 ```tsx
-import { parse } from 'mdc-syntax'
-import { MDCRenderer } from 'mdc-syntax/react'
-
-const result = parse(content)
+import { Comark } from 'comark/react'
 
 export default function App() {
-  return <MDCRenderer body={result.body} />
+  return <Comark markdown={content} />
 }
 ```
 
@@ -87,11 +82,11 @@ This guide is organized into focused sections covering different aspects of the 
 
 ### 📝 [1. Markdown Syntax](./docs/skills/markdown-syntax.md)
 
-Learn how to write MDC documents with complete syntax reference:
+Learn how to write Comark documents with complete syntax reference:
 
 - **Standard Markdown:** headings, text formatting, lists, links, images, blockquotes
 - **Frontmatter:** YAML metadata with special fields (title, depth, searchDepth)
-- **MDC Components:** block components (`::component`), inline components (`:component`), properties, slots, nesting
+- **Comark Components:** block components (`::component`), inline components (`:component`), properties, slots, nesting
 - **Attributes:** custom attributes on native markdown elements using `{...}` syntax
 - **Code Blocks:** language specification, filename metadata, line highlighting, special characters
 - **Task Lists:** GFM-style checkboxes with `[x]` and `[ ]` syntax
@@ -108,7 +103,7 @@ Complete guide for parsing documents and working with AST:
 - **String Parsing:** `parse()` function with options (autoUnwrap, autoClose)
 - **Async Parsing:** `parseAsync()` with Shiki syntax highlighting
 - **Stream Parsing:** buffered (`parseStream`) and incremental (`parseStreamIncremental`) modes
-- **AST Structure:** Minimark format - lightweight array-based AST
+- **AST Structure:** Comark AST format - lightweight array-based AST
 - **Rendering AST:** convert to HTML (`renderHTML`) or markdown (`renderMarkdown`)
 - **Auto-close:** automatic closing of unclosed syntax for streaming scenarios
 - **Auto-unwrap:** remove unnecessary paragraph wrappers from container components
@@ -121,12 +116,11 @@ Complete guide for parsing documents and working with AST:
 
 Comprehensive guide for rendering in Vue 3 applications:
 
-- **Basic Usage:** `MDCRenderer` component setup
-- **Custom Components:** mapping custom Vue components to MDC elements
+- **Basic Usage:** `Comark` component setup
+- **Custom Components:** mapping custom Vue components to Comark elements
 - **Dynamic Loading:** `componentsManifest` for lazy-loaded components
 - **Slots Support:** named slots with `#slot-name` syntax
-- **Streaming Mode:** real-time rendering with `stream` prop
-- **High-Level Component:** `MDC` component for parsing markdown directly
+- **Streaming Mode:** real-time rendering with reactive content
 - **Prose Components:** pre-built styled components for standard elements
 - **Error Handling:** built-in error capture for streaming scenarios
 - **Props Access:** accessing `__node` and parsed properties
@@ -139,13 +133,11 @@ Comprehensive guide for rendering in Vue 3 applications:
 
 Comprehensive guide for rendering in React applications:
 
-- **Basic Usage:** `MDCRenderer` component setup
-- **Custom Components:** mapping custom React components to MDC elements
-- **Dynamic Loading:** `componentsManifest` with React.lazy and Suspense
+- **Basic Usage:** `Comark` component setup
+- **Custom Components:** mapping custom React components to Comark elements
+- **Dynamic Loading:** `componentsManifest` for lazy-loaded components
 - **Props Conversion:** automatic HTML attribute conversion (`class` → `className`, etc.)
-- **Streaming Mode:** real-time rendering with progress tracking
-- **High-Level Component:** `MDC` component for parsing markdown directly
-- **Syntax Highlighting:** `ShikiCodeBlock` component integration
+- **Streaming Mode:** real-time rendering with reactive content
 - **Prose Components:** pre-built styled components for standard elements
 - **Custom Props:** accessing parsed properties and `__node`
 - **CSS Class Name:** custom wrapper classes and Tailwind CSS integration
@@ -156,9 +148,9 @@ Comprehensive guide for rendering in React applications:
 
 ## Key Features Deep Dive
 
-### MDC Component Syntax
+### Comark Component Syntax
 
-MDC extends markdown with custom components while preserving readability:
+Comark extends markdown with custom components while preserving readability:
 
 ```markdown
 <!-- Block Component -->
@@ -187,7 +179,7 @@ Footer
 Perfect for AI-generated content or large documents:
 
 ```typescript
-import { parseStreamIncremental } from 'mdc-syntax/stream'
+import { parseStreamIncremental } from 'comark/stream'
 
 for await (const result of parseStreamIncremental(stream)) {
   // Auto-close applied automatically
@@ -199,13 +191,13 @@ for await (const result of parseStreamIncremental(stream)) {
 }
 ```
 
-### Minimark AST Format
+### Comark AST Format
 
 Lightweight array-based structure for efficient processing:
 
 ```json
 {
-  "type": "minimark",
+  "type": "comark",
   "value": [
     ["h1", { "id": "hello" }, "Hello"],
     ["p", {}, "Text with ", ["strong", {}, "bold"], " word"],
@@ -219,7 +211,7 @@ Lightweight array-based structure for efficient processing:
 O(n) algorithm that handles unclosed syntax:
 
 ```typescript
-import { autoCloseMarkdown } from 'mdc-syntax'
+import { autoCloseMarkdown } from 'comark'
 
 // Handles: *, **, ***, ~~, `, [, ], (, ), ::component, {...}
 const closed = autoCloseMarkdown('**bold text') // → '**bold text**'
@@ -230,8 +222,8 @@ const closed = autoCloseMarkdown('**bold text') // → '**bold text**'
 ### 1. Static Site Generator
 
 ```typescript
-import { parseAsync } from 'mdc-syntax'
-import { renderHTML } from 'mdc-syntax'
+import { parseAsync } from 'comark'
+import { renderHTML } from 'comark'
 
 async function processMarkdownFile(filePath: string) {
   const content = await readFile(filePath, 'utf-8')
@@ -252,17 +244,15 @@ async function processMarkdownFile(filePath: string) {
 
 ```tsx
 import { useState } from 'react'
-import { parse } from 'mdc-syntax'
-import { MDCRenderer } from 'mdc-syntax/react'
+import { Comark } from 'comark/react'
 
 export default function Editor() {
   const [content, setContent] = useState('# Hello')
-  const result = parse(content, { autoClose: true })
 
   return (
     <div className="split-editor">
       <textarea value={content} onChange={e => setContent(e.target.value)} />
-      <MDCRenderer body={result.body} />
+      <Comark markdown={content} />
     </div>
   )
 }
@@ -291,21 +281,13 @@ async function streamAIResponse() {
 ```vue
 <template>
   <article class="prose">
-    <nav v-if="toc">
-      <TableOfContents :toc="toc" />
-    </nav>
-    <MDCRenderer :body="body" :components="docComponents" />
+    <Comark :markdown="markdownContent" :components="docComponents" />
   </article>
 </template>
 
 <script setup lang="ts">
-import { parseAsync } from 'mdc-syntax'
-import { MDCRenderer } from 'mdc-syntax/vue'
+import { Comark } from 'comark/vue'
 import { docComponents } from './components'
-
-const { body, toc } = await parseAsync(markdownContent, {
-  highlight: true
-})
 </script>
 ```
 
@@ -321,10 +303,10 @@ parse(source: string, options?: ParseOptions): ParseResult
 parseAsync(source: string, options?: ParseOptions): Promise<ParseResult>
 
 // Render to HTML
-renderHTML(tree: MinimarkTree): string
+renderHTML(tree: ComarkTree): string
 
 // Render to markdown
-renderMarkdown(tree: MinimarkTree): string
+renderMarkdown(tree: ComarkTree): string
 
 // Auto-close unclosed syntax
 autoCloseMarkdown(source: string): string
@@ -343,32 +325,19 @@ parseStreamIncremental(stream: Readable | ReadableStream): AsyncGenerator<Increm
 ### Vue Components
 
 ```vue
-<!-- Renderer -->
-<MDCRenderer :body="mdcAst" :components="customComponents" :stream="false" />
-
-<!-- High-level parser + renderer -->
-<MDC :content="markdownString" :components="customComponents" />
+<Comark :markdown="markdownString" :components="customComponents" />
 ```
 
 ### React Components
 
 ```tsx
-{/* Renderer */}
-<MDCRenderer body={mdcAst} components={customComponents} stream={false} />
-
-{/* High-level parser + renderer */}
-<MDC content={markdownString} components={customComponents} />
-
-{/* Syntax highlighting */}
-<ShikiCodeBlock language="js" filename="app.js" highlights={[1,2,3]}>
-  code here
-</ShikiCodeBlock>
+<Comark markdown={markdownString} components={customComponents} />
 ```
 
 ## Performance Characteristics
 
 - **O(n) auto-close algorithm** - linear time without regex
-- **Minimark format** - lightweight array-based AST
+- **Comark AST format** - lightweight array-based AST
 - **Lazy component loading** - only load what's needed
 - **Shiki highlighter caching** - avoid re-initialization
 - **Incremental parsing** - stream processing with minimal overhead
@@ -381,11 +350,11 @@ Full TypeScript definitions included:
 import type {
   ParseResult,
   ParseOptions,
-  MinimarkTree,
-  MinimarkNode,
+  ComarkTree,
+  ComarkNode,
   ShikiOptions,
   IncrementalParseResult
-} from 'mdc-syntax'
+} from 'comark'
 ```
 
 ## Architecture Overview
@@ -408,7 +377,7 @@ import type {
                  │
         ┌────────▼────────┐
         │  MarkdownIt     │
-        │  + Plugins      │ (MDC, Tasks, CJK)
+        │  + Plugins      │ (Comark, Tasks, CJK)
         └────────┬────────┘
                  │
         ┌────────▼────────┐
@@ -417,7 +386,7 @@ import type {
         └────────┬────────┘
                  │
         ┌────────▼────────┐
-        │  Minimark       │
+        │  Comark         │
         │  AST            │
         └────────┬────────┘
                  │
@@ -467,15 +436,15 @@ pnpm test -- tests/parse.test.ts
 
 ## Summary
 
-**MDC Syntax** is a comprehensive solution for parsing and rendering markdown with component support. It excels at:
+**Comark** is a comprehensive solution for parsing and rendering markdown with component support. It excels at:
 
 1. **Extending Markdown** - Component syntax without breaking compatibility
 2. **Streaming Support** - Real-time rendering with auto-close
-3. **Lightweight AST** - Efficient Minimark format
+3. **Lightweight AST** - Efficient Comark AST format
 4. **Framework Support** - First-class Vue and React integration
 5. **Developer Experience** - Full TypeScript support and comprehensive documentation
 
-**Choose MDC Syntax when you need:**
+**Choose Comark when you need:**
 - Markdown with custom components
 - Streaming/incremental parsing
 - Real-time markdown editors

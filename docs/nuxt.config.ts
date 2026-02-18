@@ -2,6 +2,9 @@ import { defineNuxtConfig } from 'nuxt/config'
 
 export default defineNuxtConfig({
   extends: ['docus'],
+
+  modules: ['nuxt-studio'],
+
   app: {
     head: {
       link: [
@@ -11,11 +14,14 @@ export default defineNuxtConfig({
       ],
     },
   },
+
   css: ['~/assets/styles/main.css'],
+
   // @ts-expect-error - Nuxt SEO types are not loaded
   site: {
-    url: 'https://mdc-syntax.vercel.app',
+    url: 'https://comark.vercel.app',
   },
+
   content: {
     experimental: {
       sqliteConnector: 'native',

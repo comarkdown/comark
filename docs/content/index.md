@@ -1,18 +1,16 @@
 ---
 seo:
   title: Markdown with Components
-  description: Fast, streaming-ready markdown parser with Vue and React component support. Parse MDC content from strings or streams with TypeScript support.
+  description: Fast, streaming-ready markdown parser with Vue and React component support. Parse Comark content from strings or streams with TypeScript support.
   ogImage: '/social-card.png'
 ---
 
 ::landing-hero
 #title
-Markdown with Components
+Comark  
 
 #description
-Fast, streaming-ready markdown parser with full MDC (Markdown Component) syntax support.
-
-Built for modern applications with TypeScript, Vue 3, React, and real-time streaming capabilities.
+A high-performance markdown parser and renderer with Vue & React components support.
 
 #links
   :::u-button
@@ -30,10 +28,10 @@ Built for modern applications with TypeScript, Vue 3, React, and real-time strea
   color: neutral
   icon: simple-icons-github
   size: xl
-  to: https://github.com/nuxt-content/mdc-syntax
+  to: https://github.com/comarkdown/comark
   variant: outline
   ---
-  Star on GitHub
+  Open on GitHub
   :::
 ::
 
@@ -53,7 +51,7 @@ Everything you need for modern content parsing
   [Fast]{.text-primary} markdown-it parser
 
   #description
-  Built on markdown-it for blazing fast parsing with full GFM support, tables, and MDC component syntax. Optimized bundle size at just 47 kB.
+  Built on markdown-it for blazing fast parsing with full GFM support, tables, and Comark component syntax. Optimized bundle size at just 47 kB.
   :::
 
   :::u-page-feature
@@ -71,13 +69,13 @@ Everything you need for modern content parsing
   :::u-page-feature
   ---
   icon: i-lucide-puzzle
-  to: /rendering/vue-renderer
+  to: /rendering/vue
   ---
   #title
   [Vue component]{.text-primary} integration
 
   #description
-  Embed Vue components directly in markdown with MDC syntax. Use slots, props, and custom components seamlessly. Full TypeScript support included.
+  Embed Vue components directly in markdown with Comark. Use slots, props, and custom components seamlessly. Full TypeScript support included.
   :::
 
   :::u-page-feature
@@ -89,7 +87,7 @@ Everything you need for modern content parsing
   [React support]{.text-primary} built-in
 
   #description
-  First-class React integration with MDCRenderer component. Dynamic component loading, streaming mode, and full TypeScript support.
+  First-class React integration with Comark component. Dynamic component loading, streaming mode, and full TypeScript support.
   :::
 
   :::u-page-feature

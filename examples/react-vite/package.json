@@ -1,5 +1,5 @@
 {
-  "name": "mdc-syntax-react-vite",
+  "name": "comark-react-vite",
   "version": "0.0.1",
   "private": true,
   "type": "module",
@@ -10,12 +10,12 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.18",
-    "mdc-syntax": "^1.0.0",
+    "comark": "workspace:*",
     "react": "^19.2.4",
     "react-dom": "^19.2.4"
   },
   "devDependencies": {
-    "@types/react": "^19.2.13",
+    "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.4",
     "autoprefixer": "^10.4.24",

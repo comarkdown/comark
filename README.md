@@ -1,1 +1,1 @@
-packages/mdc-syntax/README.md
+packages/comark/README.md

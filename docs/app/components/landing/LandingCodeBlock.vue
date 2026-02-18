@@ -25,7 +25,7 @@ export const Button: React.FC<ButtonProps> = ({ label, onClick }) => (
 <template>
   <LandingCompareGrid
     title="Code Block"
-    description="MDC supports code blocks out of the box, so you get things like syntax highlighting, line numbers, and more."
+    description="Comark supports code blocks out of the box, so you get things like syntax highlighting, line numbers, and more."
     :markdown="markdown"
   />
 </template>

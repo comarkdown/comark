@@ -1,5 +1,5 @@
 {
-  "name": "mdc-syntax-vue-vite",
+  "name": "comark-vue-vite",
   "version": "0.0.1",
   "private": true,
   "type": "module",
@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.18",
-    "mdc-syntax": "^1.0.0",
+    "comark": "workspace:*",
     "vue": "^3.5.28"
   },
   "devDependencies": {

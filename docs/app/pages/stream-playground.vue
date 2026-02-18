@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { parseStreamIncremental } from 'mdc-syntax/stream'
+import { parseStreamIncremental } from 'comark/stream'
 import { computed, ref } from 'vue'
 
 // Define page meta
 definePageMeta({
   title: 'Stream Playground',
-  description: 'Interactive demo of MDC streaming parser',
+  description: 'Interactive demo of Comark streaming parser',
 })
 
 // Preset content
@@ -24,9 +24,9 @@ This is a **simple** example with *italic* text.
 - Nested lists`,
   },
   {
-    label: 'MDC Components',
+    label: 'Comark Components',
     value: 'components',
-    content: `# MDC Components Demo
+    content: `# Comark Components Demo
 
 ::alert{type="info"}
 This is an **info** alert with markdown inside!
@@ -39,7 +39,7 @@ This is an **info** alert with markdown inside!
 ## Code Block
 
 \`\`\`typescript
-import { parse } from 'mdc-syntax'
+import { parse } from 'comark'
 const result = parse('# Hello')
 \`\`\`
 
@@ -50,7 +50,7 @@ Regular paragraph text here.`,
     value: 'complex',
     content: `---
 title: Complex Content Example
-author: MDC Syntax
+author: Comark
 ---
 
 # Complex Content Example
@@ -81,11 +81,11 @@ And some more content to make it interesting!`,
     value: 'chat',
     content: `# AI Assistant Response
 
-Let me help you understand **MDC Syntax**:
+Let me help you understand **Comark**:
 
-## What is MDC?
+## What is Comark?
 
-MDC (Markdown Components) combines:
+Comark (Components in Markdown) combines:
 - Standard markdown syntax
 - Vue-like component syntax
 - Real-time streaming support
@@ -99,7 +99,7 @@ MDC (Markdown Components) combines:
 Here's a code example:
 
 \`\`\`typescript
-import { parseStreamIncremental } from 'mdc-syntax/stream'
+import { parseStreamIncremental } from 'comark/stream'
 
 for await (const result of parseStreamIncremental(stream)) {
   console.log('Chunk received:', result.body)

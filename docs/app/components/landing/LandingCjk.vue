@@ -1,7 +1,7 @@
 <script setup lang="ts">
 const markdown = `# CJK Language Support
 
-MDC properly handles emphasis in Chinese, Japanese, and Korean text, even with ideographic punctuation.
+Comark properly handles emphasis in Chinese, Japanese, and Korean text, even with ideographic punctuation.
 
 ## Japanese
 
@@ -38,7 +38,7 @@ Korean text with mixed punctuation:
 <template>
   <LandingCompareGrid
     title="CJK Language Support"
-    description="MDC supports CJK language support out of the box, so you get things like emphasis in Chinese, Japanese, and Korean text, even with ideographic punctuation."
+    description="Comark supports CJK language support out of the box, so you get things like emphasis in Chinese, Japanese, and Korean text, even with ideographic punctuation."
     :markdown="markdown"
   />
 </template>

@@ -33,7 +33,7 @@ Learn more about [AI safety](https://example.com) and \`transformer\` architectu
 <template>
   <LandingCompareGrid
     title="Typography"
-    description="MDC supports typography out of the box, so you get things like headings, paragraphs, and more."
+    description="Comark supports typography out of the box, so you get things like headings, paragraphs, and more."
     :markdown="markdown"
   />
 </template>

@@ -1,38 +1,35 @@
-# MDC Syntax Documentation
+# Comark Documentation
 
-This directory contains comprehensive documentation for the MDC Syntax library, built with Docus.
+This directory contains comprehensive documentation for the Comark library, built with Docus.
 
 ## Documentation Structure
 
 ### Getting Started
 - **[Documentation Home](./content/index.md)** - Start here for an overview
-- **[Installation](./content/0.installation.md)** - Set up MDC Syntax in your project
+- **[Installation](./content/1.getting-started/1.installation.md)** - Set up Comark in your project
 
 ### Core API Documentation
-1. **[Parse API](./content/1.parse-api.md)** - String and stream parsing
+1. **[Parse API](./content/4.api/1.parse.md)** - String and stream parsing
    - `parse()` - Parse markdown strings
    - `parseStream()` - Buffered stream parsing
    - `parseStreamIncremental()` - Incremental stream parsing
    - Types and interfaces
 
-2. **[Auto-Close API](./content/2.auto-close-api.md)** - Handle incomplete syntax
+2. **[Auto-Close API](./content/4.api/2.auto-close.md)** - Handle incomplete syntax
    - `autoCloseMarkdown()` - Auto-close unclosed syntax
-   - `detectUnclosedSyntax()` - Detect unclosed elements
    - Streaming integration
    - Use cases
 
-### Vue Integration
-3. **[MDCRenderer Component](./content/3.mdc-renderer.md)** - Render MDC content
+### Rendering
+3. **[Vue Rendering](./content/3.rendering/1.vue.md)** - Render Comark content in Vue
    - Component props
    - Custom components
-   - Dynamic resolution
    - Slots and error handling
 
-4. **[useMDCStream Composable](./content/4.use-mdc-stream.md)** - Reactive streaming
-   - State management
-   - Progress tracking
-   - Multiple streams
-   - TypeScript support
+4. **[React Rendering](./content/3.rendering/2.react.md)** - Render Comark content in React
+   - Component props
+   - Custom components
+   - Props conversion
 
 ## Quick Navigation
 
@@ -40,20 +37,18 @@ This directory contains comprehensive documentation for the MDC Syntax library, 
 
 **I want to...**
 
-- **Install MDC Syntax** → [Installation Guide](./content/0.installation.md)
-- **Parse markdown from a string** → [Parse API - String Parsing](./content/1.parse-api.md#string-parsing)
-- **Parse from a file stream** → [Parse API - Stream Parsing](./content/1.parse-api.md#stream-parsing)
-- **Show real-time streaming content** → [useMDCStream Composable](./content/4.use-mdc-stream.md)
-- **Render MDC in Vue** → [MDCRenderer Component](./content/3.mdc-renderer.md)
-- **Handle incomplete markdown** → [Auto-Close API](./content/2.auto-close-api.md)
-- **Create custom components** → [MDCRenderer - Custom Components](./content/3.mdc-renderer.md#custom-components)
+- **Install Comark** → [Installation Guide](./content/1.getting-started/1.installation.md)
+- **Parse markdown from a string** → [Parse API](./content/4.api/1.parse.md)
+- **Handle incomplete markdown** → [Auto-Close API](./content/4.api/2.auto-close.md)
+- **Render Comark in Vue** → [Vue Rendering](./content/3.rendering/1.vue.md)
+- **Render Comark in React** → [React Rendering](./content/3.rendering/2.react.md)
+- **Create custom components** → [Vue - Custom Components](./content/3.rendering/1.vue.md#custom-components)
 
 ### By Technology
 
 - **TypeScript** → All documentation includes TypeScript examples
-- **Vue 3** → [MDCRenderer](./content/3.mdc-renderer.md) and [useMDCStream](./content/4.use-mdc-stream.md)
-- **Node.js Streams** → [Parse API - Stream Parsing](./content/1.parse-api.md#stream-parsing)
-- **Web Streams (Fetch)** → [Parse API - Stream Parsing](./content/1.parse-api.md#stream-parsing)
+- **Vue 3** → [Vue Rendering](./content/3.rendering/1.vue.md)
+- **React** → [React Rendering](./content/3.rendering/2.react.md)
 
 ## Development
 
@@ -74,11 +69,12 @@ Your documentation site will be running at `http://localhost:3000`
 ```
 docs/
 ├── content/              # Documentation markdown files
-│   ├── 0.index.md       # Documentation home
-│   ├── 1.parse-api.md   # Parse API documentation
-│   ├── 2.auto-close-api.md  # Auto-close API documentation
-│   ├── 3.mdc-renderer.md    # MDCRenderer component docs
-│   └── 4.use-mdc-stream.md  # useMDCStream composable docs
+│   ├── index.md              # Documentation home
+│   ├── 1.getting-started/    # Getting started guides
+│   ├── 2.syntax/             # Syntax documentation
+│   ├── 3.rendering/          # Vue and React rendering
+│   ├── 4.api/                # API reference docs
+│   └── 5.examples.md         # Examples
 ├── public/              # Static assets
 └── package.json         # Dependencies and scripts
 ```
@@ -89,28 +85,26 @@ docs/
 
 | Function | Purpose | Documentation |
 |----------|---------|---------------|
-| `parse()` | Parse string | [Parse API](./content/1.parse-api.md#parse) |
-| `parseStream()` | Parse stream (buffered) | [Parse API](./content/1.parse-api.md#parsestream) |
-| `parseStreamIncremental()` | Parse stream (incremental) | [Parse API](./content/1.parse-api.md#parsestreamincremental) |
-| `autoCloseMarkdown()` | Auto-close syntax | [Auto-Close API](./content/2.auto-close-api.md#autoclosedmarkdown) |
-| `detectUnclosedSyntax()` | Detect unclosed | [Auto-Close API](./content/2.auto-close-api.md#detectunclosedsyntax) |
+| `parse()` | Parse string | [Parse API](./content/4.api/1.parse.md) |
+| `parseStream()` | Parse stream (buffered) | [Parse API](./content/4.api/1.parse.md) |
+| `parseStreamIncremental()` | Parse stream (incremental) | [Parse API](./content/4.api/1.parse.md) |
+| `autoCloseMarkdown()` | Auto-close syntax | [Auto-Close API](./content/4.api/2.auto-close.md) |
 
-### Vue Components & Composables
+### Vue & React Components
 
 | Export | Type | Documentation |
 |--------|------|---------------|
-| `MDCRenderer` | Component | [MDCRenderer](./content/3.mdc-renderer.md) |
-| `useMDCStream` | Composable | [useMDCStream](./content/4.use-mdc-stream.md) |
+| `Comark` (Vue) | Component | [Vue Rendering](./content/3.rendering/1.vue.md) |
+| `Comark` (React) | Component | [React Rendering](./content/3.rendering/2.react.md) |
 
 ### Types
 
 | Type | Purpose | Documentation |
 |------|---------|---------------|
-| `ParseResult` | Parse output | [Parse API - Types](./content/1.parse-api.md#types) |
-| `IncrementalParseResult` | Stream output | [Parse API - Types](./content/1.parse-api.md#types) |
-| `MinimarkTree` | AST root | [Parse API - Types](./content/1.parse-api.md#minimarktree) |
-| `MinimarkNode` | AST node | [Parse API - Types](./content/1.parse-api.md#minimarknode) |
-| `MDCStreamState` | Stream state | [useMDCStream - State](./content/4.use-mdc-stream.md#state) |
+| `ParseResult` | Parse output | [API Reference](./content/4.api/3.reference.md) |
+| `IncrementalParseResult` | Stream output | [API Reference](./content/4.api/3.reference.md) |
+| `ComarkTree` | AST root | [API Reference](./content/4.api/3.reference.md) |
+| `ComarkNode` | AST node | [API Reference](./content/4.api/3.reference.md) |
 
 ## Contributing to Documentation
 
@@ -120,7 +114,7 @@ When contributing documentation:
 2. **Include code examples** - Show both TypeScript and Vue examples
 3. **Add cross-references** - Link to related documentation
 4. **Test all examples** - Ensure code examples actually work
-5. **Use proper markdown** - Follow MDC syntax for components
+5. **Use proper markdown** - Follow Comark for components
 
 ### Documentation Standards
 
@@ -159,9 +153,9 @@ Deploy to:
 
 ## Questions or Issues?
 
-- **Documentation unclear?** [Open an issue](https://github.com/nuxt-content/mdc-syntax/issues)
-- **Example doesn't work?** [Report it](https://github.com/nuxt-content/mdc-syntax/issues)
-- **Want to contribute?** [Submit a PR](https://github.com/nuxt-content/mdc-syntax/pulls)
+- **Documentation unclear?** [Open an issue](https://github.com/comarkdown/comark/issues)
+- **Example doesn't work?** [Report it](https://github.com/comarkdown/comark/issues)
+- **Want to contribute?** [Submit a PR](https://github.com/comarkdown/comark/pulls)
 
 ## License
 

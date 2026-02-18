@@ -6,7 +6,7 @@ import LandingCjk from '~/components/landing/LandingCjk.vue'
 import LandingCodeBlock from '~/components/landing/LandingCodeBlock.vue'
 
 useHead({
-  title: 'MDC Syntax - Streaming Markdown Parser',
+  title: 'Comark - Streaming Markdown Parser',
   meta: [
     {
       name: 'description',
@@ -51,7 +51,7 @@ async function copyToClipboard(text: string) {
               </div>
               <div>
                 <h1 class="text-xl font-bold text-neutral-900 dark:text-white">
-                  MDC Syntax
+                  Comark
                 </h1>
               </div>
             </div>
@@ -65,7 +65,7 @@ async function copyToClipboard(text: string) {
               class="hidden lg:flex"
             />
             <UButton
-              to="https://github.com/nuxt-content/mdc-syntax"
+              to="https://github.com/comarkdown/comark"
               target="_blank"
               icon="i-simple-icons-github"
               variant="soft"
@@ -101,7 +101,7 @@ async function copyToClipboard(text: string) {
 
             <h1 class="mb-6 text-5xl font-bold tracking-tight text-neutral-900 dark:text-white sm:text-7xl">
               <span class="bg-gradient-to-r from-primary-600 to-purple-600 bg-clip-text text-transparent">
-                MDC Syntax
+                Comark
               </span>
             </h1>
 
@@ -118,7 +118,7 @@ async function copyToClipboard(text: string) {
                 Try Live Demo
               </UButton>
               <UButton
-                to="https://github.com/nuxt-content/mdc-syntax"
+                to="https://github.com/comarkdown/comark"
                 target="_blank"
                 variant="soft"
                 color="neutral"
@@ -180,10 +180,10 @@ async function copyToClipboard(text: string) {
         <!-- Section Header -->
         <div class="py-16 text-center">
           <h2 class="mb-4 text-3xl font-bold text-neutral-900 dark:text-white sm:text-4xl">
-            Why MDC Syntax?
+            Why Comark?
           </h2>
           <p class="mx-auto max-w-2xl text-lg text-neutral-600 dark:text-neutral-400">
-            See the difference in action. Watch how MDC handles streaming markdown correctly
+            See the difference in action. Watch how Comark handles streaming markdown correctly
             while traditional parsers struggle.
           </p>
         </div>
@@ -288,7 +288,7 @@ async function copyToClipboard(text: string) {
               Ready to get started?
             </h2>
             <p class="mx-auto mb-8 max-w-2xl text-lg text-primary-100">
-              Try the live playground or install via npm to start using MDC Syntax in your project
+              Try the live playground or install via npm to start using Comark in your project
             </p>
             <div class="flex flex-wrap items-center justify-center gap-4">
               <UButton
@@ -302,14 +302,14 @@ async function copyToClipboard(text: string) {
                 Try Playground
               </UButton>
               <UCard class="flex items-center gap-2 bg-white/10 backdrop-blur">
-                <code class="text-sm text-white">npm install mdc-syntax</code>
+                <code class="text-sm text-white">npm install comark</code>
                 <UButton
                   variant="ghost"
                   color="neutral"
                   icon="i-heroicons-clipboard-document"
                   size="xs"
                   class="text-white hover:text-primary-200"
-                  @click="() => copyToClipboard('npm install mdc-syntax')"
+                  @click="() => copyToClipboard('npm install comark')"
                 />
               </UCard>
             </div>
@@ -338,7 +338,7 @@ async function copyToClipboard(text: string) {
           </div>
           <div class="flex gap-4">
             <UButton
-              to="https://github.com/nuxt-content/mdc-syntax"
+              to="https://github.com/comarkdown/comark"
               target="_blank"
               variant="ghost"
               color="neutral"

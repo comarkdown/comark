@@ -1,12 +1,12 @@
 # Markdown Syntax Guide
 
-Complete guide for writing MDC (Markdown Components) documents.
+Complete guide for writing Comark (Components in Markdown) documents.
 
 ## Table of Contents
 
 - [Standard Markdown](#standard-markdown)
 - [Frontmatter](#frontmatter)
-- [MDC Components](#mdc-components)
+- [Comark Components](#mdc-components)
 - [Attributes](#attributes)
 - [Code Blocks](#code-blocks)
 - [Task Lists](#task-lists)
@@ -16,7 +16,7 @@ Complete guide for writing MDC (Markdown Components) documents.
 
 ## Standard Markdown
 
-MDC Syntax supports all standard CommonMark and GitHub Flavored Markdown (GFM) features:
+Comark supports all standard CommonMark and GitHub Flavored Markdown (GFM) features:
 
 ### Headings
 
@@ -93,7 +93,7 @@ Creates a hard line break
 
 ## Frontmatter
 
-MDC Syntax supports YAML frontmatter at the beginning of documents:
+Comark supports YAML frontmatter at the beginning of documents:
 
 ```markdown
 ---
@@ -129,7 +129,7 @@ Your markdown content here...
 ### Example
 
 ```typescript
-import { parse } from 'mdc-syntax'
+import { parse } from 'comark'
 
 const content = `---
 title: My Article
@@ -147,9 +147,9 @@ console.log(result.data)
 
 ---
 
-## MDC Components
+## Comark Components
 
-MDC (Markdown Components) extends standard markdown with custom component syntax.
+Comark (Components in Markdown) extends standard markdown with custom component syntax.
 
 ### Block Components
 
@@ -261,7 +261,7 @@ Footer text here
 
 ```json
 {
-  "type": "minimark",
+  "type": "comark",
   "value": [
     [
       "card",
@@ -306,7 +306,7 @@ More content in outer
 
 ## Attributes
 
-MDC Syntax allows adding custom attributes to native markdown elements using `{...}` syntax after the element.
+Comark allows adding custom attributes to native markdown elements using `{...}` syntax after the element.
 
 ### Strong/Bold Attributes
 
@@ -363,7 +363,7 @@ This is [highlighted text]{.highlight .yellow} in a paragraph.
 
 ## Code Blocks
 
-MDC Syntax provides advanced code block features with metadata support.
+Comark provides advanced code block features with metadata support.
 
 ### Basic Code Block
 
@@ -454,7 +454,7 @@ No syntax highlighting
 
 ```json
 {
-  "type": "minimark",
+  "type": "comark",
   "value": [
     [
       "pre",
@@ -478,7 +478,7 @@ No syntax highlighting
 
 ## Task Lists
 
-MDC Syntax supports GitHub Flavored Markdown task lists:
+Comark supports GitHub Flavored Markdown task lists:
 
 ```markdown
 - [x] Completed task
@@ -514,7 +514,7 @@ MDC Syntax supports GitHub Flavored Markdown task lists:
 
 ## Tables
 
-MDC Syntax supports GitHub Flavored Markdown tables:
+Comark supports GitHub Flavored Markdown tables:
 
 ```markdown
 | Header 1 | Header 2 | Header 3 |

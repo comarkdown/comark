@@ -1,7 +1,8 @@
 ---
 title: React
-description: A minimal example showing how to use MDC Syntax with React and Vite.
+description: A minimal example showing how to use Comark with React and Vite.
 icon: i-logos-react
+category: Vite
 ---
 
 ::code-tree{defaultValue="src/App.tsx" expandAll}
@@ -14,7 +15,7 @@ createRoot(document.getElementById('root')!).render(<App />)
 ```
 
 ```tsx [src/App.tsx]
-import { MDC } from 'mdc-syntax/react'
+import { Comark } from 'comark/react'
 import Alert from './components/Alert'
 
 const markdown = `
@@ -27,7 +28,7 @@ This is an alert!
 
 export default function App() {
   return (
-    <MDC
+    <Comark 
       markdown={markdown}
       components={{ Alert }}
     />
@@ -75,4 +76,4 @@ export default function Alert({ type = 'info', children }: { type?: 'info' | 'wa
 
 ::
 
-This example demonstrates the simplest way to use MDC Syntax with React - use the `MDC` component and pass it markdown content. The component handles parsing and rendering automatically.
+This example demonstrates the simplest way to use Comark with React - use the `Comark` component and pass it markdown content. The component handles parsing and rendering automatically.
