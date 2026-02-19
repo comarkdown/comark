@@ -17,7 +17,6 @@ export default defineNuxtConfig({
 
   css: ['~/assets/styles/main.css'],
 
-  // @ts-expect-error - Nuxt SEO types are not loaded
   site: {
     url: 'https://comark.vercel.app',
   },
@@ -32,6 +31,12 @@ export default defineNuxtConfig({
           langs: ['tsx', 'tsx', 'vue', 'html', 'css', 'json', 'markdown', 'bash', 'shell'],
         },
       },
+    },
+  },
+
+  nitro: {
+    externals: {
+      traceInclude: ['node_modules/minimark/**'],
     },
   },
 })

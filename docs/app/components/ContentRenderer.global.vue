@@ -83,7 +83,6 @@ const body = computed(() => {
     body = props.value.excerpt
   }
 
-  console.log(props.value)
   // this is a workaround to convert mermaid code block to Mermaid component
   return {
     frontmatter: props.data,

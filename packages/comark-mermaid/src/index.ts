@@ -24,7 +24,6 @@ function markdownItMermaid(md: MarkdownIt, config?: MermaidConfig) {
         if (curlyBraceIndex !== -1) {
           const result = searchProps(info.substring(curlyBraceIndex))
           if (result) {
-            console.log('result', result)
             props = result.props
             info = info.substring(result.index)
           }
