@@ -15,8 +15,9 @@ Here :in{bool} :in{#id1} :in{.class1} :in{attr="value"}
 
 ```json
 {
-  "type": "comark",
-  "value": [
+  "frontmatter": {},
+  "meta": {},
+  "nodes": [
     [
       "p",
       {},

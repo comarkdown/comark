@@ -3,6 +3,7 @@ import { Comark } from 'comark/vue'
 import cjkFriendlyPlugin from '@comark/cjk'
 import mathPlugin from '@comark/math'
 import { Math } from '@comark/math/vue'
+import comarkHighlight from 'comark/plugins/highlight'
 import { ref } from 'vue'
 
 const props = defineProps<{
@@ -63,13 +64,12 @@ defineExpose({
       class="prose dark:prose-invert max-w-none"
       :markdown="accumulated"
       :options="{
-        plugins: [cjkFriendlyPlugin, mathPlugin],
-        highlight: {
+        plugins: [cjkFriendlyPlugin, mathPlugin, comarkHighlight({
           themes: {
             light: 'github-light',
             dark: 'github-dark',
           },
-        },
+        })],
       }"
       :streaming="isStreaming"
       :components="{ math: Math }"

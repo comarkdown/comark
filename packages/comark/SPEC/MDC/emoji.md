@@ -15,8 +15,9 @@ Emoji :rocket: :satellite: :smile: :fire: :sparkles: :tada: :thinking: :apple: :
 
 ```json
 {
-  "type": "comark",
-  "value": [
+  "frontmatter": {},
+  "meta": {},
+  "nodes": [
     [
       "p",
       {},

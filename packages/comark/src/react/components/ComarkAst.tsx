@@ -271,7 +271,7 @@ export const ComarkAst: React.FC<MDCRendererProps> = ({
   const caret = useMemo(() => getCaret(caretProp), [caretProp])
 
   const renderedNodes = useMemo(() => {
-    const nodes = [...(body.value || [])]
+    const nodes = [...(body.nodes || [])]
 
     if (streaming && caret && nodes.length > 0) {
       const hasStreamCaret = findLastTextNodeAndAppendNode(nodes[nodes.length - 1] as ComarkElement, caret)

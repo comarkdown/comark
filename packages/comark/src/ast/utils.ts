@@ -45,7 +45,7 @@ export function visit(tree: ComarkTree, checker: (node: ComarkNode) => boolean, 
     }
   }
 
-  tree.value.forEach((node, i) => {
-    walk(node, tree.value, i)
+  tree.nodes.forEach((node, i) => {
+    walk(node, tree.nodes, i)
   })
 }

@@ -46,7 +46,7 @@ Important message
 ::
 `
 
-const result = parse(content)
+const result = await parse(content)
 console.log(result.body)  // Comark AST
 console.log(result.data)  // { title: 'Hello World' }
 console.log(result.toc)   // Table of contents
@@ -101,7 +101,7 @@ Learn how to write Comark documents with complete syntax reference:
 Complete guide for parsing documents and working with AST:
 
 - **String Parsing:** `parse()` function with options (autoUnwrap, autoClose)
-- **Async Parsing:** `parseAsync()` with Shiki syntax highlighting
+- **Async Parsing:** `parse()` with Shiki syntax highlighting
 - **Stream Parsing:** buffered (`parseStream`) and incremental (`parseStreamIncremental`) modes
 - **AST Structure:** Comark AST format - lightweight array-based AST
 - **Rendering AST:** convert to HTML (`renderHTML`) or markdown (`renderMarkdown`) via `comark/string`
@@ -222,13 +222,13 @@ const closed = autoCloseMarkdown('**bold text') // → '**bold text**'
 ### 1. Static Site Generator
 
 ```typescript
-import { parseAsync } from 'comark'
+import { parse } from 'comark'
 import { renderHTML } from 'comark/string'
 
 async function processMarkdownFile(filePath: string) {
   const content = await readFile(filePath, 'utf-8')
 
-  const result = await parseAsync(content, {
+  const result = await parse(content, {
     highlight: { theme: 'github-dark' }
   })
 
@@ -300,7 +300,7 @@ import { docComponents } from './components'
 parse(source: string, options?: ParseOptions): ParseResult
 
 // Asynchronous parsing with highlighting
-parseAsync(source: string, options?: ParseOptions): Promise<ParseResult>
+parse(source: string, options?: ParseOptions): Promise<ParseResult>
 
 // Auto-close unclosed syntax
 autoCloseMarkdown(source: string): string

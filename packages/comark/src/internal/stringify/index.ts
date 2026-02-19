@@ -16,7 +16,7 @@ export function stringify(node: ComarkTree, options: Partial<StringifyOptions> =
 
   const _state = createState(options)
 
-  const children = node.value
+  const children = node.nodes
 
   const lastIndex = children.length - 1
 

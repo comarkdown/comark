@@ -18,8 +18,9 @@ def greet(name):
 
 ```json
 {
-  "type": "comark",
-  "value": [
+  "frontmatter": {},
+  "meta": {},
+  "nodes": [
     [
       "pre",
       {

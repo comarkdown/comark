@@ -15,8 +15,9 @@ This is a simple paragraph
 
 ```json
 {
-  "type": "comark",
-  "value": [
+  "frontmatter": {},
+  "meta": {},
+  "nodes": [
     [
       "p",
       {},

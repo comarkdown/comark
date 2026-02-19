@@ -141,7 +141,7 @@ describe('benchmark parse vs parse', () => {
     expect(results.length).toBeGreaterThan(0)
   })
 
-  it('should benchmark memory usage', () => {
+  it('should benchmark memory usage', async () => {
     const results: Array<{
       testCase: string
       parseMemory: number
@@ -157,7 +157,7 @@ describe('benchmark parse vs parse', () => {
         if (global.gc)
           global.gc()
         const beforeParse = getMemoryUsage()
-        const parseResult = parse(testCase.content)
+        const parseResult = await parse(testCase.content)
         const afterParse = getMemoryUsage()
         const memory = afterParse - beforeParse
         if (memory > 0 && Number.isFinite(memory)) {
@@ -176,7 +176,7 @@ describe('benchmark parse vs parse', () => {
         if (global.gc)
           global.gc()
         const beforeMarkdownIt = getMemoryUsage()
-        const markdownItResult = parse(testCase.content)
+        const markdownItResult = await parse(testCase.content)
         const afterMarkdownIt = getMemoryUsage()
         const memory = afterMarkdownIt - beforeMarkdownIt
         if (memory > 0 && Number.isFinite(memory)) {
@@ -233,7 +233,7 @@ describe('benchmark parse vs parse', () => {
     expect(results.length).toBeGreaterThan(0)
   })
 
-  it('should benchmark combined time and memory', () => {
+  it('should benchmark combined time and memory', async () => {
     const results: Array<{
       testCase: string
       parseTime: number
@@ -263,7 +263,7 @@ describe('benchmark parse vs parse', () => {
         if (global.gc)
           global.gc()
         const beforeParse = getMemoryUsage()
-        const parseResult = parse(testCase.content)
+        const parseResult = await parse(testCase.content)
         const afterParse = getMemoryUsage()
         const memory = afterParse - beforeParse
         if (memory > 0 && Number.isFinite(memory)) {
@@ -288,7 +288,7 @@ describe('benchmark parse vs parse', () => {
         if (global.gc)
           global.gc()
         const beforeMarkdownIt = getMemoryUsage()
-        const markdownItResult = parse(testCase.content)
+        const markdownItResult = await parse(testCase.content)
         const afterMarkdownIt = getMemoryUsage()
         const memory = afterMarkdownIt - beforeMarkdownIt
         if (memory > 0 && Number.isFinite(memory)) {

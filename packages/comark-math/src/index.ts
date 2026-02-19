@@ -2,7 +2,7 @@ import type MarkdownIt from 'markdown-it'
 import type StateInline from 'markdown-it/lib/rules_inline/state_inline.mjs'
 import type StateBlock from 'markdown-it/lib/rules_block/state_block.mjs'
 import katex from 'katex'
-import type { ParsePlugin } from 'comark'
+import type { ComarkPlugin } from 'comark'
 
 export interface MathConfig {
   /**
@@ -312,26 +312,17 @@ function markdownItMath(md: MarkdownIt, config: MathConfig = {}) {
  * @example
  * ```ts
  * import { parse } from 'comark'
- * import { createMathPlugin } from '@comark/math'
+ * import comarkMath from '@comark/math'
  *
- * const mathPlugin = createMathPlugin({ throwOnError: false })
- * const result = parse('Inline $x^2$ and display $$E = mc^2$$', {
- *   plugins: [mathPlugin]
+ * const result = await parse('Inline $x^2$ and display $$E = mc^2$$', {
+ *   plugins: [comarkMath({ throwOnError: false })]
  * })
  * ```
  */
-export function createMathPlugin(config?: MathConfig): ParsePlugin {
+export default function comarkMath(config?: MathConfig): ComarkPlugin {
   return {
     markdownItPlugins: [
       (md: MarkdownIt) => markdownItMath(md, config ?? {}),
     ],
   }
 }
-
-/**
- * Default math plugin instance
- */
-const mathPlugin = createMathPlugin()
-
-export default mathPlugin
-export { katex }

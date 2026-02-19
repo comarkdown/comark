@@ -1,7 +1,7 @@
 import type { PropType } from 'vue'
 import { computed, defineComponent, h, shallowRef, watch } from 'vue'
-import type { ParseResult } from '../../index'
-import { parseAsync } from '../../index'
+import type { ComarkTree } from '../../ast/types'
+import { parse } from '../../index'
 import type { ParseOptions } from '../../types'
 import { ComarkAst } from './ComarkAst'
 
@@ -102,7 +102,7 @@ export const Comark = defineComponent({
       return props.markdown
     })
 
-    const parsed = shallowRef<ParseResult | null>(null)
+    const parsed = shallowRef<ComarkTree | null>(null)
     const streamComponents = shallowRef<Record<string, any>>()
     const components = computed(() => ({
       ...streamComponents.value,
@@ -110,7 +110,7 @@ export const Comark = defineComponent({
     }))
 
     async function parseMarkdown() {
-      parsed.value = await parseAsync(markdown.value, {
+      parsed.value = await parse(markdown.value, {
         ...props.options,
       })
     }
@@ -122,7 +122,7 @@ export const Comark = defineComponent({
     return () => {
       // Render using ComarkAst
       return h(ComarkAst, {
-        body: parsed.value?.body || { type: 'comark', value: [] },
+        body: parsed.value || { nodes: [], frontmatter: {}, meta: {} },
         components: components.value,
         streaming: props.streaming,
         componentsManifest: props.componentsManifest,

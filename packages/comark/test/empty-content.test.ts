@@ -2,30 +2,30 @@ import { describe, expect, it } from 'vitest'
 import { parse } from '../src/index'
 
 describe('parse - empty content', () => {
-  it('should handle empty string', () => {
+  it('should handle empty string', async () => {
     const content = ''
-    const result = parse(content)
+    const result = await parse(content)
 
     expect(result).toBeDefined()
-    expect(result.body).toBeDefined()
-    expect(result.body.type).toBe('comark')
+    expect(result.nodes).toBeDefined()
+    expect(Array.isArray(result.nodes)).toBe(true)
   })
 
-  it('should handle whitespace only content', () => {
+  it('should handle whitespace only content', async () => {
     const content = '   \n\n\t  '
-    const result = parse(content)
+    const result = await parse(content)
 
     expect(result).toBeDefined()
-    expect(result.body).toBeDefined()
-    expect(result.body.type).toBe('comark')
+    expect(result.nodes).toBeDefined()
+    expect(Array.isArray(result.nodes)).toBe(true)
   })
 
-  it('should handle newlines only', () => {
+  it('should handle newlines only', async () => {
     const content = '\n\n\n'
-    const result = parse(content)
+    const result = await parse(content)
 
     expect(result).toBeDefined()
-    expect(result.body).toBeDefined()
-    expect(result.body.type).toBe('comark')
+    expect(result.nodes).toBeDefined()
+    expect(Array.isArray(result.nodes)).toBe(true)
   })
 })

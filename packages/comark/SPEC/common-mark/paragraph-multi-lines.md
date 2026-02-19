@@ -16,8 +16,9 @@ And continues in next line
 
 ```json
 {
-  "type": "comark",
-  "value": [
+  "frontmatter": {},
+  "meta": {},
+  "nodes": [
     [
       "p",
       {},

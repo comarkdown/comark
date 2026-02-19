@@ -3,6 +3,8 @@ timeout:
   parse: 5ms
   html: 5ms
   markdown: 5ms
+options:
+  highlight: false
 ---
 
 ## Input
@@ -19,8 +21,9 @@ function hello() {
 
 ```json
 {
-  "type": "comark",
-  "value": [
+  "frontmatter": {},
+  "meta": {},
+  "nodes": [
     [
       "pre",
       {},

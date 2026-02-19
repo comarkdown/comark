@@ -1,7 +1,27 @@
 import type { Highlighter, BundledLanguage, BundledTheme } from 'shiki'
 import { createHighlighter } from 'shiki'
 import type { ComarkNode, ComarkTree } from 'comark/ast'
-import type { ParseOptions } from '../../types'
+import type { ComarkPlugin } from '../types'
+
+export interface HighlightOptions {
+  /**
+   * Languages to preload. If not specified, languages will be loaded on demand.
+   * @default undefined (load on demand)
+   */
+  languages?: BundledLanguage[]
+
+  /**
+   * Additional themes to preload
+   * @default { light: 'material-theme-lighter', dark: 'material-theme-palenight' }
+   */
+  themes?: Record<string, BundledTheme | string>
+
+  /**
+   * Whether to add pre styles to the code blocks
+   * @default false
+   */
+  preStyles?: boolean
+}
 
 let highlighter: Highlighter | null = null
 let highlighterPromise: Promise<Highlighter> | null = null
@@ -11,7 +31,7 @@ const loadedThemes: Set<string> = new Set()
  * Get or create the Shiki highlighter instance
  * Uses a singleton pattern to avoid creating multiple highlighters
  */
-export async function getHighlighter(options: Exclude<ParseOptions['highlight'], boolean> = {}): Promise<Highlighter> {
+export async function getHighlighter(options: HighlightOptions = {}): Promise<Highlighter> {
   const { themes = {}, languages } = options
   const allThemes = ['material-theme-lighter', 'material-theme-palenight', ...Object.values(themes)].filter(Boolean) as (BundledTheme | string)[]
 
@@ -21,8 +41,7 @@ export async function getHighlighter(options: Exclude<ParseOptions['highlight'],
     if (themesToLoad.length > 0) {
       await Promise.all(themesToLoad.map(async (t) => {
         try {
-          await highlighter!.loadTheme(t as BundledTheme)
-          loadedThemes.add(t)
+          await loadTheme(highlighter!, t)
         }
         catch (error) {
           console.warn(`Failed to load theme ${t}:`, error)
@@ -58,6 +77,14 @@ function colorToStyle(color: Record<string, string> | undefined): string | undef
   return Object.entries(color).map(([key, value]) => `${key}:${value}`).join(';')
 }
 
+async function loadTheme(hl: Highlighter, theme: string) {
+  if (loadedThemes.has(theme)) {
+    return
+  }
+  await hl.loadTheme(theme as BundledTheme)
+  loadedThemes.add(theme)
+}
+
 /**
  * Highlight code using Shiki with codeToTokens
  * Returns comark nodes built from tokens
@@ -65,7 +92,7 @@ function colorToStyle(color: Record<string, string> | undefined): string | undef
 export async function highlightCode(
   code: string,
   attrs: { language?: string, class?: string, highlights?: number[] },
-  options: Exclude<ParseOptions['highlight'], boolean> = {},
+  options: HighlightOptions = {},
 ): Promise<{ nodes: ComarkNode[], language: string, bgColor?: string, fgColor?: string }> {
   // Extract language from attributes
   const language = (attrs as any)?.language
@@ -73,6 +100,10 @@ export async function highlightCode(
     const hl = await getHighlighter(options)
     const { themes = { light: 'material-theme-lighter', dark: 'material-theme-palenight' } } = options
 
+    if (themes.light)
+      await loadTheme(hl, themes.light)
+    if (themes.dark)
+      await loadTheme(hl, themes.dark)
     // Load the language if not already loaded
     const loadedLanguages = hl.getLoadedLanguages()
     if (!loadedLanguages.includes(language as BundledLanguage)) {
@@ -148,7 +179,7 @@ export async function highlightCode(
  */
 export async function highlightCodeBlocks(
   tree: ComarkTree,
-  options: Exclude<ParseOptions['highlight'], boolean> = {},
+  options: HighlightOptions = {},
 ): Promise<ComarkTree> {
   const processNode = async (node: ComarkNode): Promise<ComarkNode> => {
     // Skip text nodes
@@ -159,7 +190,6 @@ export async function highlightCodeBlocks(
     // Check if this is a pre > code structure
     if (Array.isArray(node) && node[0] === 'pre') {
       const [_tag, attrs, ...children] = node
-
       // Look for code element as child
       if (children.length > 0 && Array.isArray(children[0]) && children[0][0] === 'code') {
         const codeNode = children[0]
@@ -172,7 +202,7 @@ export async function highlightCodeBlocks(
             // Build pre attributes with Shiki styling
             const newPreAttrs: any = {
               ...attrs,
-              class: `shiki ${options.themes?.light || 'github-dark'}`,
+              class: `shiki ${options.themes?.light}`,
               tabindex: '0',
             }
 
@@ -207,12 +237,12 @@ export async function highlightCodeBlocks(
   }
 
   const processedValue = await Promise.all(
-    tree.value.map(node => processNode(node)),
+    tree.nodes.map(node => processNode(node)),
   )
 
   return {
     ...tree,
-    value: processedValue,
+    nodes: processedValue,
   }
 }
 
@@ -224,4 +254,12 @@ export function resetHighlighter(): void {
   highlighter = null
   highlighterPromise = null
   loadedThemes.clear()
+}
+
+export default function comarkHighlight(options: HighlightOptions = {}): ComarkPlugin {
+  return {
+    async post(state) {
+      state.tree = await highlightCodeBlocks(state.tree, options)
+    },
+  }
 }

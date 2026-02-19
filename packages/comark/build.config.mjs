@@ -6,7 +6,6 @@ export default defineBuildConfig({
       type: 'bundle',
       input: [
         './src/index.ts',
-        './src/stream.ts',
         './src/react/index.ts',
         './src/react/components/Comark.tsx',
         './src/react/components/ComarkAst.tsx',
@@ -25,6 +24,11 @@ export default defineBuildConfig({
       type: 'transform',
       input: './src/utils',
       outDir: './dist/utils',
+    },
+    {
+      type: 'transform',
+      input: './src/plugins',
+      outDir: './dist/plugins',
     },
   ],
 })

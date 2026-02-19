@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
-import { parseAsync, type ParseResult } from '../../index'
+import { parse } from '../../index'
+import type { ComarkTree } from '../../ast/types'
 import type { ParseOptions } from '../../types'
 import { ComarkAst } from './ComarkAst'
 
@@ -77,14 +78,14 @@ export const Comark: React.FC<ComarkProps> = ({
   streaming = false,
   className,
 }) => {
-  const [parsed, setParsed] = useState<ParseResult | null>(null)
+  const [parsed, setParsed] = useState<ComarkTree | null>(null)
 
   // Parse the markdown content
   useEffect(() => {
     let isMounted = true
 
     // Use async parse for non-streaming mode (supports code highlighting, etc.)
-    parseAsync(markdown, options).then((result) => {
+    parse(markdown, options).then((result) => {
       if (isMounted) {
         setParsed(result)
       }
@@ -103,7 +104,7 @@ export const Comark: React.FC<ComarkProps> = ({
 
   return (
     <ComarkAst
-      body={parsed.body}
+      body={parsed}
       components={customComponents}
       componentsManifest={componentsManifest}
       streaming={streaming}

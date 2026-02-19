@@ -28,8 +28,9 @@ Second Paragraph
 
 ```json
 {
-  "type": "comark",
-  "value": [
+  "frontmatter": {},
+  "meta": {},
+  "nodes": [
     [
       "component",
       {

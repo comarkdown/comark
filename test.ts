@@ -14,7 +14,7 @@ Hello world
 :alert[Coucou]{type="info"}
 
 `
-const { body, data } = parse(content, {
+const tree = await parse(content, {
   toc: true,
   frontmatter: true,
   summary: '<!-- more -->',
@@ -28,9 +28,9 @@ const { body, data } = parse(content, {
     // }),
   ],
 })
-console.log(JSON.stringify(body, null, 2))
+console.log(JSON.stringify(tree, null, 2))
 
-const result = parse(content) // ComarkTree
+// const result = await parse(content) // ComarkTree
 /**
  * {
  *   nodes: ComarkNode[],
@@ -46,9 +46,9 @@ const result = parse(content) // ComarkTree
  * }
  */
 
-const html = renderHTML(body, {
+const html = renderHTML(tree, {
   components: {
-    alert: ([tag, attrs, ...children], { render }) => {
+    alert: ([_tag, attrs, ...children], { render }) => {
       return `<div class="alert alert-${attrs.type}">${render(children)}</div>`
     },
     teub: ([_tag, _attrs, ...children], { render }) => {
@@ -58,5 +58,5 @@ const html = renderHTML(body, {
 })
 console.log(html)
 
-const markdown = renderMarkdown(body, data)
+const markdown = renderMarkdown(tree)
 console.log(markdown)

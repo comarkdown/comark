@@ -10,7 +10,7 @@ describe('ComarkAst Error Handling', () => {
 Some content
 ::`
 
-    const result = parse(markdown)
+    const result = await parse(markdown)
 
     // Define a component that throws an error
     const ErrorComponent = defineComponent({
@@ -28,7 +28,7 @@ Some content
       const app = createSSRApp({
         setup() {
           return () => h(ComarkAst, {
-            body: result.body,
+            body: result,
             components: {
               'error-component': ErrorComponent,
             },
@@ -56,7 +56,7 @@ Some content
     const markdown = `::required-prop-test
 ::`
 
-    const result = parse(markdown)
+    const result = await parse(markdown)
 
     // Component with required prop that will error if prop is missing
     const RequiredPropTest = defineComponent({
@@ -80,7 +80,7 @@ Some content
       const app = createSSRApp({
         setup() {
           return () => h(ComarkAst, {
-            body: result.body,
+            body: result,
             components: {
               'required-prop-test': RequiredPropTest,
             },
@@ -110,7 +110,7 @@ Error content
 Good content
 ::`
 
-    const result = parse(markdown)
+    const result = await parse(markdown)
 
     const ErrorComponent = defineComponent({
       name: 'ErrorComponent',
@@ -132,7 +132,7 @@ Good content
       const app = createSSRApp({
         setup() {
           return () => h(ComarkAst, {
-            body: result.body,
+            body: result,
             components: {
               'error-component': ErrorComponent,
               'good-component': GoodComponent,

@@ -107,7 +107,7 @@ const StyledHeading = styled.h1<{ level: number }>`
 
 export default function CustomHeading({ __node, children }: Props) {
   const tag = __node[0]
-  const level = parseInt(tag[1])  // Extract level from 'h1', 'h2', etc.
+  const level = await parseInt(tag[1])  // Extract level from 'h1', 'h2', etc.
 
   return (
     <StyledHeading as={tag} level={level}>

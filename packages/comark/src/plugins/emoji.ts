@@ -1,5 +1,6 @@
 import type MarkdownIt from 'markdown-it'
 import type StateInline from 'markdown-it/lib/rules_inline/state_inline.mjs'
+import type { ComarkPlugin } from '../types'
 
 // Common emoji definitions (200+ emojis)
 // Organized by category for easier maintenance
@@ -441,6 +442,12 @@ function emojiRule(state: StateInline, silent: boolean): boolean {
   return false
 }
 
-export default function markdownItEmoji(md: MarkdownIt): void {
+export function markdownItEmoji(md: MarkdownIt): void {
   md.inline.ruler.before('emphasis', 'emoji', emojiRule)
+}
+
+export default function comarkEmoji(): ComarkPlugin {
+  return {
+    markdownItPlugins: [markdownItEmoji],
+  }
 }

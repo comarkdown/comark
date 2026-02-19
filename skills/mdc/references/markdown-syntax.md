@@ -140,7 +140,7 @@ depth: 3
 Content here...
 `
 
-const result = parse(content)
+const result = await parse(content)
 console.log(result.data)
 // { title: 'My Article', depth: 3 }
 ```

@@ -22,7 +22,7 @@
     "./react": "./dist/react/index.mjs",
     "./react/*": "./dist/react/*.mjs",
     "./string": "./dist/string.mjs",
-    "./stream": "./dist/stream.mjs"
+    "./plugins/*": "./dist/plugins/*.mjs"
   },
   "main": "./dist/index.mjs",
   "module": "./dist/index.mjs",

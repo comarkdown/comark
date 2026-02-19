@@ -31,7 +31,7 @@ export interface RenderHTMLOptions {
  * import { parse } from 'comark'
  * import { renderHTML } from 'comark/string'
  *
- * const { body } = parse('::alert{type="info"}\nHello!\n::')
+ * const tree = await parse('::alert{type="info"}\nHello!\n::')
  *
  * const html = renderHTML(body, {
  *   components: {
@@ -49,7 +49,7 @@ export function renderHTML(tree: ComarkTree, options?: RenderHTMLOptions): strin
     for (const [name, renderFn] of Object.entries(options.components)) {
       handlers[name] = (node) => {
         const render = (children: ComarkNode[]) => {
-          return renderHTML({ type: 'comark', value: children }, options)
+          return renderHTML({ nodes: children, frontmatter: {}, meta: {} }, options)
         }
         return renderFn(node, { render, data: options.data })
       }
@@ -66,6 +66,6 @@ export function renderHTML(tree: ComarkTree, options?: RenderHTMLOptions): strin
  * @param data - The data to render
  * @returns The markdown string with optional frontmatter
  */
-export function renderMarkdown(tree: ComarkTree, data?: Record<string, any> | undefined | null): string {
-  return renderFrontmatter(data, stringify(tree, { format: 'markdown/mdc' }))
+export function renderMarkdown(tree: ComarkTree): string {
+  return renderFrontmatter(tree.frontmatter, stringify(tree, { format: 'markdown/mdc' }))
 }

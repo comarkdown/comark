@@ -40,8 +40,9 @@ Korean text with mixed punctuation:
 
 ```json
 {
-  "type": "comark",
-  "value": [
+  "frontmatter": {},
+  "meta": {},
+  "nodes": [
     [
       "h1",
       {

@@ -37,7 +37,7 @@ sequenceDiagram
     <Comark
       :markdown="markdown"
       :components="{ Alert, Mermaid }"
-      :options="{ plugins: [mermaidPlugin] }"
+      :options="{ plugins: [mermaidPlugin()] }"
     />
   </Suspense>
 </template>

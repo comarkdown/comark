@@ -31,8 +31,9 @@ timeout:
 
 ```json
 {
-  "type": "comark",
-  "value": [
+  "frontmatter": {},
+  "meta": {},
+  "nodes": [
     [
       "h1",
       {

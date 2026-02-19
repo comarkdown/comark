@@ -8,6 +8,7 @@ import { useRuntimeConfig } from '#imports'
 import { ComarkAst } from 'comark/vue'
 import { Mermaid } from '@comark/mermaid/vue'
 import type { ComarkNode, ComarkTree, ComarkElement } from 'comark/ast'
+import type { MinimarkTree } from 'minimark'
 
 interface Renderable {
   render?: (props: Record<string, unknown>) => unknown
@@ -21,7 +22,7 @@ const props = defineProps({
    * Content to render
    */
   value: {
-    type: Object as PropType<{ id?: string, body: ComarkTree, excerpt: ComarkTree }>,
+    type: Object as PropType<{ id?: string, body: MinimarkTree, excerpt: MinimarkTree }>,
     required: true,
   },
   /**
@@ -82,19 +83,21 @@ const body = computed(() => {
     body = props.value.excerpt
   }
 
+  console.log(props.value)
   // this is a workaround to convert mermaid code block to Mermaid component
   return {
-    type: 'comark',
-    value: body.value.map((node: ComarkNode) => {
+    frontmatter: props.data,
+    nodes: body.value.map((node: ComarkNode) => {
       if (node[0] === 'pre' && typeof node[1] === 'object' && 'language' in node[1] && node[1].language === 'mermaid') {
         return ['Mermaid', { content: node[1].code }]
       }
       return node
     }),
+    meta: {},
   } as ComarkTree
 })
 
-const isEmpty = computed(() => !body.value?.value?.length)
+const isEmpty = computed(() => !body.value?.nodes?.length)
 
 const data = computed(() => {
   const { body, excerpt, ...data } = props.value
@@ -186,8 +189,8 @@ function resolveContentComponents(body: ComarkTree, meta: Record<string, unknown
 
 function loadComponents(node: ComarkTree | ComarkElement, documentMeta: { tags: Record<string, string> }) {
   const components2 = [] as Array<[string, unknown]>
-  if ((node as ComarkTree).type && Array.isArray((node as ComarkTree).value)) {
-    for (const child of (node as ComarkTree).value || []) {
+  if (Array.isArray((node as ComarkTree).nodes)) {
+    for (const child of (node as ComarkTree).nodes || []) {
       if (typeof child === 'string' || child[0] === 'binding' || child[0] === 'comment') {
         continue
       }

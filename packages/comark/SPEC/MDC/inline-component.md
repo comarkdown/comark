@@ -21,8 +21,9 @@ Paragraph with :inline-component in middle
 
 ```json
 {
-  "type": "comark",
-  "value": [
+  "frontmatter": {},
+  "meta": {},
+  "nodes": [
     [
       "p",
       {},

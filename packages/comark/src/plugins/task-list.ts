@@ -5,6 +5,8 @@
  * task list markers [X] and [ ] as Comark inline span syntax.
  */
 
+import type { ComarkPlugin } from '../types'
+
 interface MarkdownItToken {
   type: string
   tag: string
@@ -49,7 +51,49 @@ interface TaskListOptions {
   labelAfter?: boolean
 }
 
-export default function markdownItTaskListsMdc(md: MarkdownIt, options?: TaskListOptions) {
+function attrSet(token: MarkdownItToken, name: string, value: string) {
+  const index = token.attrIndex(name)
+  const attr: [string, string] = [name, value]
+
+  if (index < 0) {
+    if (!token.attrs) {
+      token.attrs = []
+    }
+    token.attrs.push(attr)
+  }
+  else {
+    token.attrs![index] = attr
+  }
+}
+
+function findParentListItem(tokens: MarkdownItToken[], index: number): number {
+  // Look backwards for list_item_open
+  for (let i = index - 1; i >= 0; i--) {
+    if (tokens[i].type === 'list_item_open') {
+      return i
+    }
+    if (tokens[i].type === 'list_item_close') {
+      // We've gone past the current list item
+      return -1
+    }
+  }
+  return -1
+}
+
+function findParentList(tokens: MarkdownItToken[], listItemIndex: number): number {
+  const targetLevel = tokens[listItemIndex].level - 1
+
+  // Look backwards for the list (ul/ol) that contains this list item
+  for (let i = listItemIndex - 1; i >= 0; i--) {
+    if (tokens[i].level === targetLevel
+      && (tokens[i].type === 'bullet_list_open' || tokens[i].type === 'ordered_list_open')) {
+      return i
+    }
+  }
+  return -1
+}
+
+export function markdownItTaskList(md: MarkdownIt, options?: TaskListOptions) {
   const disableCheckboxes = !(options?.enabled ?? false)
 
   // Run BEFORE inline parsing to prevent Comark from processing task list markers
@@ -134,44 +178,8 @@ export default function markdownItTaskListsMdc(md: MarkdownIt, options?: TaskLis
   })
 }
 
-function attrSet(token: MarkdownItToken, name: string, value: string) {
-  const index = token.attrIndex(name)
-  const attr: [string, string] = [name, value]
-
-  if (index < 0) {
-    if (!token.attrs) {
-      token.attrs = []
-    }
-    token.attrs.push(attr)
+export default function comarkTaskList(): ComarkPlugin {
+  return {
+    markdownItPlugins: [markdownItTaskList],
   }
-  else {
-    token.attrs![index] = attr
-  }
-}
-
-function findParentListItem(tokens: MarkdownItToken[], index: number): number {
-  // Look backwards for list_item_open
-  for (let i = index - 1; i >= 0; i--) {
-    if (tokens[i].type === 'list_item_open') {
-      return i
-    }
-    if (tokens[i].type === 'list_item_close') {
-      // We've gone past the current list item
-      return -1
-    }
-  }
-  return -1
-}
-
-function findParentList(tokens: MarkdownItToken[], listItemIndex: number): number {
-  const targetLevel = tokens[listItemIndex].level - 1
-
-  // Look backwards for the list (ul/ol) that contains this list item
-  for (let i = listItemIndex - 1; i >= 0; i--) {
-    if (tokens[i].level === targetLevel
-      && (tokens[i].type === 'bullet_list_open' || tokens[i].type === 'ordered_list_open')) {
-      return i
-    }
-  }
-  return -1
 }

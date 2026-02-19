@@ -5,7 +5,6 @@ import remarkMdc, { parseFrontMatter } from 'remark-mdc'
 import remarkParse from 'remark-parse'
 import remark2rehype from 'remark-rehype'
 import { unified } from 'unified'
-import { generateToc } from '../../src/internal/parse/table-of-contents'
 import { mdcCompiler } from './mdc-compiler'
 import { fromHast } from 'minimark/hast'
 
@@ -38,17 +37,9 @@ export function parseWithRemark(source: string): ParseResult {
   // Convert to ComarkTree before generating TOC
   const minimarkBody = fromHast(body) as unknown as ComarkTree
 
-  const toc = generateToc(minimarkBody, {
-    title: data.title || '',
-    depth: data.depth || 2,
-    searchDepth: data.searchDepth || 2,
-    links: [],
-  })
-
   return {
     body: minimarkBody,
     excerpt,
-    toc,
     data,
   }
 }

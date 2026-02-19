@@ -15,8 +15,9 @@ Here `code`{bool} `code`{#id1} `code`{.class1} `code`{attr="value"}
 
 ```json
 {
-  "type": "comark",
-  "value": [
+  "frontmatter": {},
+  "meta": {},
+  "nodes": [
     [
       "p",
       {},

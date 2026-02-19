@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { parseAsync } from 'comark'
+import { parse } from 'comark'
 import { ComarkAst } from 'comark/vue'
 import mathPlugin from '@comark/math'
 import { Math } from '@comark/math/vue'
@@ -52,7 +52,7 @@ graph TD
 \`\`\`
 `)
 
-const { data } = useAsyncData('ast', () => parseAsync(markdown.value, { plugins: [mathPlugin, mermaidPlugin] }), {
+const { data } = useAsyncData('ast', () => parse(markdown.value, { plugins: [mathPlugin(), mermaidPlugin()] }), {
   watch: [markdown],
 })
 </script>

@@ -53,8 +53,9 @@ And here's a code block:
 
 ```json
 {
-  "type": "comark",
-  "value": [
+  "frontmatter": {},
+  "meta": {},
+  "nodes": [
     [
       "h1",
       {

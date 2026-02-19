@@ -19,8 +19,9 @@ function hello() {
 
 ```json
 {
-  "type": "comark",
-  "value": [
+  "frontmatter": {},
+  "meta": {},
+  "nodes": [
     [
       "pre",
       {

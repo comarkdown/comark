@@ -19,8 +19,12 @@ description: My Description
 
 ```json
 {
-  "type": "comark",
-  "value": [
+  "frontmatter": {
+    "description": "My Description",
+    "title": "My Title"
+  },
+  "meta": {},
+  "nodes": [
     [
       "h1",
       {
@@ -41,5 +45,10 @@ description: My Description
 ## Markdown
 
 ```md
+---
+description: My Description
+title: My Title
+---
+
 # Content
 ```

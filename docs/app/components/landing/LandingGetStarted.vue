@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Comark } from 'comark/vue'
+import comarkHighlight from 'comark/plugins/highlight'
 import { ref } from 'vue'
 
 const activeTab = ref('vue')
@@ -82,12 +83,12 @@ export default function App() {
         <Comark
           v-show="activeTab === 'vue'"
           :markdown="codeSnippets.vue"
-          :options="{ highlight: true }"
+          :options="{ plugins: [comarkHighlight()] }"
         />
         <Comark
           v-show="activeTab === 'react'"
           :markdown="codeSnippets.react"
-          :options="{ highlight: true }"
+          :options="{ plugins: [comarkHighlight()] }"
         />
 
         <!-- Feature Highlights -->
