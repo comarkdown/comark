@@ -32,7 +32,7 @@ Important message here
 ::
 `
 
-const result = parse(content)
+const result = await parse(content)
 ```
 
 ### Result Structure
@@ -60,16 +60,16 @@ interface ParseOptions {
 
 ```typescript
 // Default parsing
-const result = parse(content)
+const result = await parse(content)
 
 // Disable auto-unwrap
-const result = parse(content, { autoUnwrap: false })
+const result = await parse(content, { autoUnwrap: false })
 
 // Disable auto-close
-const result = parse(content, { autoClose: false })
+const result = await parse(content, { autoClose: false })
 
 // Both disabled
-const result = parse(content, {
+const result = await parse(content, {
   autoUnwrap: false,
   autoClose: false
 })
@@ -124,10 +124,10 @@ const closedProps = autoCloseMarkdown(props)
 
 ## Async Parsing with Syntax Highlighting
 
-For syntax highlighting support, use `parseAsync()`:
+For syntax highlighting support, use `parse()`:
 
 ```typescript
-import { parseAsync } from 'comark'
+import { parse } from 'comark'
 
 const content = `
 # Code Example
@@ -140,12 +140,12 @@ function hello() {
 `
 
 // Enable syntax highlighting
-const result = await parseAsync(content, {
+const result = await parse(content, {
   highlight: true
 })
 
 // With custom Shiki options
-const result = await parseAsync(content, {
+const result = await parse(content, {
   highlight: {
     theme: 'github-dark',
     langs: ['javascript', 'typescript', 'python']
@@ -166,7 +166,7 @@ interface ShikiOptions {
 ### Dual Theme Support
 
 ```typescript
-const result = await parseAsync(content, {
+const result = await parse(content, {
   highlight: {
     theme: {
       light: 'github-light',
@@ -182,7 +182,7 @@ const result = await parseAsync(content, {
 import { parse, highlightCode } from 'comark'
 
 // Parse without highlighting
-const result = parse(content)
+const result = await parse(content)
 
 // Manually apply highlighting
 const highlighted = await highlightCode(result.body, {
@@ -422,10 +422,11 @@ Warning message
 ### Render to HTML
 
 ```typescript
-import { parse, renderHTML } from 'comark'
+import { parse } from 'comark'
+import { renderHTML } from 'comark/string'
 
 const content = '# Hello World\n\nThis is **markdown**.'
-const result = parse(content)
+const result = await parse(content)
 
 const html = renderHTML(result.body)
 console.log(html)
@@ -442,10 +443,11 @@ console.log(html)
 Convert AST back to Comark markdown:
 
 ```typescript
-import { parse, renderMarkdown } from 'comark'
+import { parse } from 'comark'
+import { renderMarkdown } from 'comark/string'
 
 const content = '# Hello\n\n::alert{type="info"}\nMessage\n::'
-const result = parse(content)
+const result = await parse(content)
 
 const markdown = renderMarkdown(result.body)
 console.log(markdown)

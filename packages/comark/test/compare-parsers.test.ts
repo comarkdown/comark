@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { ParseResult } from '../src/index'
+import type { ComarkTree } from '../src/index'
 import { parse } from '../src/index'
 import { parseWithRemark } from './utils/index'
 
@@ -112,36 +112,16 @@ function deepCompareNodes(
   }
 }
 
-function compareResults(result1: ParseResult, result2: ParseResult, testCase: string) {
+function compareResults(result1: { body: ComarkTree, data: any, excerpt?: ComarkTree }, result2: ComarkTree, testCase: string) {
   // Compare data (frontmatter)
-  expect(result1.data, `${testCase}: data should match`).toEqual(result2.data)
+  expect(result1.data, `${testCase}: data should match`).toEqual(result2.frontmatter)
 
   // Normalize structures for comparison
   const body1 = (result1.body)
-  const body2 = (result2.body)
+  const body2 = (result2.nodes)
 
   // Deep compare body structures
   deepCompareNodes(body1, body2, 'body', testCase)
-
-  // Deep compare excerpt if present
-  if (result1.excerpt || result2.excerpt) {
-    if (result1.excerpt && result2.excerpt) {
-      const excerpt1 = (result1.excerpt)
-      const excerpt2 = (result2.excerpt)
-      deepCompareNodes(excerpt1, excerpt2, 'excerpt', testCase)
-    }
-    else {
-      // One has excerpt, the other doesn't
-      expect(
-        result1.excerpt,
-        `${testCase}: excerpt presence should match`,
-      ).toBeDefined()
-      expect(
-        result2.excerpt,
-        `${testCase}: excerpt presence should match`,
-      ).toBeDefined()
-    }
-  }
 }
 
 const testCases = [
@@ -427,16 +407,16 @@ Watch how **bold text** and components render correctly even when syntax arrives
 testCases.sort((a, b) => ((a as any).weight || 0) - ((b as any).weight || 0))
 describe('compare parseWithRemark and parse', () => {
   testCases.forEach((testCase) => {
-    it(`should produce similar results for: ${testCase.name}`, () => {
-      const result1 = parseWithRemark(testCase.content)
+    it(`should produce similar results for: ${testCase.name}`, async () => {
+      const result1 = await parseWithRemark(testCase.content)
       // Disable autoUnwrap to match remark-mdc output structure
-      const result2 = parse(testCase.content, { autoUnwrap: false })
+      const result2 = await parse(testCase.content, { autoUnwrap: false })
 
       // Both should return valid structures
       expect(result1, `${testCase.name}: parseWithRemark should return result`).toBeDefined()
       expect(result2, `${testCase.name}: parse should return result`).toBeDefined()
       expect(result1.body, `${testCase.name}: parseWithRemark body should be defined`).toBeDefined()
-      expect(result2.body, `${testCase.name}: parse body should be defined`).toBeDefined()
+      expect(result2, `${testCase.name}: parse result should be defined`).toBeDefined()
 
       // Compare results
       compareResults(result1 as any, result2 as any, testCase.name)

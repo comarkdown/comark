@@ -22,7 +22,7 @@
     "./react": "./dist/react/index.mjs",
     "./react/*": "./dist/react/*.mjs",
     "./string": "./dist/string.mjs",
-    "./stream": "./dist/stream.mjs",
+    "./plugins/*": "./dist/plugins/*.mjs",
     "./nuxt": "./dist/nuxt/module.mjs"
   },
   "main": "./dist/index.mjs",
@@ -65,7 +65,7 @@
     "js-yaml": "^4.1.1",
     "markdown-it": "^14.1.1",
     "markdown-it-mdc": "^0.2.10",
-    "minimark": "^1.0.0",
+    "minimark": "0.2.0",
     "obuild": "^0.4.27",
     "vitest": "^4.0.18"
   }

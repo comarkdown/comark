@@ -52,7 +52,7 @@ const chatMessage = ...
 </script>
 
 <template>
-  <Comark :markdown="chatMessage" :components="{ Math }" :options="{ plugins: [cjkPlugin, mathPlugin] }" />
+  <Comark :markdown="chatMessage" :components="{ Math }" :options="{ plugins: [cjkPlugin(), mathPlugin()] }" />
 </template>
 ```
 
@@ -66,7 +66,7 @@ import { Math } from '@comark/math/react'
 
 function App() {
   const chatMessage = ...
-  return <Comark markdown={chatMessage} components={{ Math }} options={{ plugins: [cjkPlugin, mathPlugin] }} />
+  return <Comark markdown={chatMessage} components={{ Math }} options={{ plugins: [cjkPlugin(), mathPlugin()] }} />
 }
 ```
 

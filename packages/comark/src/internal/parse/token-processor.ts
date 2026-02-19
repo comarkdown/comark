@@ -1,4 +1,4 @@
-import type { ComarkNode, ComarkTree } from 'comark/ast'
+import type { ComarkNode } from 'comark/ast'
 
 // Mapping from token types to tag names
 const BLOCK_TAG_MAP: Record<string, string> = {
@@ -27,7 +27,7 @@ const INLINE_TAG_MAP: Record<string, string> = {
  * @param tokens - The tokens to convert
  * @returns The Comark tree
  */
-export function marmdownItTokensToComarkTree(tokens: any[]): ComarkTree {
+export function marmdownItTokensToComarkTree(tokens: any[]): ComarkNode[] {
   const nodes: ComarkNode[] = []
 
   let i = 0
@@ -39,7 +39,7 @@ export function marmdownItTokensToComarkTree(tokens: any[]): ComarkTree {
     }
   }
 
-  return { type: 'comark', value: nodes }
+  return nodes
 }
 
 /**

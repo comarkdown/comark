@@ -1,7 +1,6 @@
 import type { PropType, VNode } from 'vue'
 import type { ComarkElement, ComarkNode, ComarkTree } from '../../ast'
 import { computed, defineAsyncComponent, defineComponent, getCurrentInstance, h, inject, onErrorCaptured, ref, toRaw } from 'vue'
-import { standardProseComponents } from '.'
 import { camelize, capitalize } from '@vue/shared'
 import { findLastTextNodeAndAppendNode, getCaret } from '../../utils/caret'
 import type { ComponentManifest, ComarkContextProvider } from '../../types'
@@ -196,7 +195,6 @@ function renderNode(
     return h(component, props, regularChildren)
   }
 
-  console.log('!!!component', node)
   return null
 }
 
@@ -209,7 +207,7 @@ function renderNode(
  * @example
  * ```vue
  * <template>
- *   <ComarkAst :body="comarkAst" :components="customComponents" />
+ *   <ComarkTree :tree="comarktree" :components="customComponents" />
  * </template>
  *
  * <script setup lang="ts">
@@ -220,6 +218,8 @@ function renderNode(
  *   h1: CustomHeading,
  *   h2: CustomHeading,
  * }
+ *
+ * const comarktree = await parse(`This is **markdown** with components.`)
  * </script>
  * ```
  */
@@ -296,7 +296,6 @@ export const ComarkAst = defineComponent({
     const comark = inject<ComarkContextProvider>('comark', { components: {}, componentManifest: () => null })
 
     const components = computed(() => ({
-      ...standardProseComponents,
       ...comark?.components,
       ...props.components,
     }))
@@ -313,7 +312,7 @@ export const ComarkAst = defineComponent({
 
     return () => {
       // Render all nodes from the tree value
-      const nodes = toRaw(props.body.value || []) || []
+      const nodes = toRaw(props.body.nodes || []) || []
 
       if (props.streaming && caret.value && nodes.length > 0) {
         const hasstramCaret = findLastTextNodeAndAppendNode(nodes[nodes.length - 1] as ComarkElement, caret.value)
@@ -323,7 +322,7 @@ export const ComarkAst = defineComponent({
       }
 
       const children = nodes
-        .map((node, index) => renderNode(node, components.value, index, componentManifest))
+        .map((node, index) => renderNode(node, components, index, componentManifest))
         .filter((child): child is VNode | string => child !== null)
 
       // Wrap in a fragment

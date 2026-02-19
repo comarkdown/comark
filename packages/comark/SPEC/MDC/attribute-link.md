@@ -15,8 +15,9 @@ Here [link](https://example.com){bool} [link](https://example.com){#id1} [link](
 
 ```json
 {
-  "type": "comark",
-  "value": [
+  "frontmatter": {},
+  "meta": {},
+  "nodes": [
     [
       "p",
       {},

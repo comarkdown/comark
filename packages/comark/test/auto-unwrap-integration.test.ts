@@ -16,13 +16,13 @@ function getChildren(node: ComarkNode): ComarkNode[] {
 }
 
 describe('auto-unwrap integration', () => {
-  it('should automatically unwrap single paragraph by default', () => {
+  it('should automatically unwrap single paragraph by default', async () => {
     const content = `::alert
 This is **bold** text
 ::`
 
-    const result = parse(content)
-    const alert = result.body.value[0] as ComarkNode
+    const result = await parse(content)
+    const alert = result.nodes[0] as ComarkNode
 
     expect(alert[0]).toBe('alert')
 
@@ -36,13 +36,13 @@ This is **bold** text
     expect(hasDirectStrong).toBe(true)
   })
 
-  it('should not unwrap when autoUnwrap is false', () => {
+  it('should not unwrap when autoUnwrap is false', async () => {
     const content = `::alert
 This is **bold** text
 ::`
 
-    const result = parse(content, { autoUnwrap: false })
-    const alert = result.body.value[0] as ComarkNode
+    const result = await parse(content, { autoUnwrap: false })
+    const alert = result.nodes[0] as ComarkNode
 
     expect(alert[0]).toBe('alert')
 
@@ -52,15 +52,15 @@ This is **bold** text
     expect(isElement(children[0], 'p')).toBe(true)
   })
 
-  it('should not unwrap when there are multiple paragraphs', () => {
+  it('should not unwrap when there are multiple paragraphs', async () => {
     const content = `::card
 First paragraph
 
 Second paragraph
 ::`
 
-    const result = parse(content)
-    const card = result.body.value[0] as ComarkNode
+    const result = await parse(content)
+    const card = result.nodes[0] as ComarkNode
 
     expect(card[0]).toBe('card')
 
@@ -70,7 +70,7 @@ Second paragraph
     expect(paragraphs).toHaveLength(2)
   })
 
-  it('should not unwrap when paragraph is mixed with lists', () => {
+  it('should not unwrap when paragraph is mixed with lists', async () => {
     const content = `::warning
 **Alert!**
 
@@ -78,8 +78,8 @@ Second paragraph
 - Item 2
 ::`
 
-    const result = parse(content)
-    const warning = result.body.value[0] as ComarkNode
+    const result = await parse(content)
+    const warning = result.nodes[0] as ComarkNode
 
     expect(warning[0]).toBe('warning')
 
@@ -92,15 +92,15 @@ Second paragraph
     expect(hasList).toBe(true)
   })
 
-  it('should not unwrap when there are code blocks', () => {
+  it('should not unwrap when there are code blocks', async () => {
     const content = `::tip
 \`\`\`js
 console.log('hello')
 \`\`\`
 ::`
 
-    const result = parse(content)
-    const tip = result.body.value[0] as ComarkNode
+    const result = await parse(content)
+    const tip = result.nodes[0] as ComarkNode
 
     expect(tip[0]).toBe('tip')
 
@@ -110,15 +110,15 @@ console.log('hello')
     expect(hasPreElement).toBe(true)
   })
 
-  it('should not unwrap when there are tables', () => {
+  it('should not unwrap when there are tables', async () => {
     const content = `::info
 | Name | Age |
 |------|-----|
 | John | 30  |
 ::`
 
-    const result = parse(content)
-    const info = result.body.value[0] as ComarkNode
+    const result = await parse(content)
+    const info = result.nodes[0] as ComarkNode
 
     expect(info[0]).toBe('info')
 
@@ -128,7 +128,7 @@ console.log('hello')
     expect(hasTable).toBe(true)
   })
 
-  it('should apply to all recognized container types', () => {
+  it('should apply to all recognized container types', async () => {
     const containerTypes = ['alert', 'card', 'callout', 'note', 'warning', 'tip', 'info']
 
     for (const type of containerTypes) {
@@ -136,8 +136,8 @@ console.log('hello')
 **Content**
 ::`
 
-      const resultWith = parse(content)
-      const containerWith = resultWith.body.value[0] as ComarkNode
+      const resultWith = await parse(content)
+      const containerWith = resultWith.nodes[0] as ComarkNode
 
       expect(containerWith[0]).toBe(type)
 
@@ -147,8 +147,8 @@ console.log('hello')
       expect(hasDirectStrong).toBe(true)
 
       // Compare with disabled
-      const resultWithout = parse(content, { autoUnwrap: false })
-      const containerWithout = resultWithout.body.value[0] as ComarkNode
+      const resultWithout = await parse(content, { autoUnwrap: false })
+      const containerWithout = resultWithout.nodes[0] as ComarkNode
 
       // Should have paragraph wrapper when disabled
       const childrenWithout = getChildren(containerWithout)

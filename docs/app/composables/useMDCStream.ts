@@ -1,52 +1,57 @@
-import type { Readable } from 'node:stream'
 import type { ComarkTree } from 'comark/ast'
 import { readonly, ref, shallowRef } from 'vue'
-import { parseStreamIncremental } from 'comark/stream'
+import { parse, autoCloseMarkdown } from 'comark'
+import comarkHighlight from 'comark/plugins/highlight'
+import type { ParseOptions } from 'comark'
 
 export interface MDCStreamState {
-  body: ComarkTree
-  data: any
+  tree: ComarkTree
   isComplete: boolean
-  excerpt?: ComarkTree
-  toc?: any
   content: string
   error?: Error
 }
 
-export interface MDCStreamOptions {
+export interface MDCStreamOptions extends ParseOptions {
   onChunk?: (chunk: string) => void
-  onComplete?: (result: { body: ComarkTree, data: any, toc?: any }) => void
+  onComplete?: (result: ComarkTree) => void
   onError?: (error: Error) => void
 }
 
+const plugins = [comarkHighlight()]
+
 /**
- * Vue composable for handling incremental Comark stream parsing
+ * Vue composable for streaming Comark content parsing
  *
  * @example
  * ```vue
  * <script setup lang="ts">
  * import { useMDCStream } from '@/composables/useMDCStream'
  *
- * const { state, startStream, reset } = useMDCStream()
+ * const { state, startStream, isStreaming } = useMDCStream({
+ *   onChunk: (chunk) => console.log('Received chunk:', chunk)
+ * })
  *
- * async function loadContent() {
- *   const response = await fetch('/content.md')
- *   await startStream(response.body!)
+ * async function loadStream() {
+ *   const response = await fetch('/api/markdown')
+ *   await startStream(response.body)
  * }
  * </script>
  *
  * <template>
  *   <div>
- *     <Comark v-if="state.body" :markdown="state.content" />
- *     <div v-if="!state.isComplete">Loading...</div>
+ *     <ComarkAst v-if="state.tree" :body="state.tree" :streaming="!state.isComplete" />
+ *     <div v-if="isStreaming">Streaming...</div>
  *   </div>
  * </template>
  * ```
  */
 export function useMDCStream(options?: MDCStreamOptions) {
+  options = {
+    ...options,
+    plugins,
+  }
   const state = shallowRef<MDCStreamState>({
-    body: { type: 'comark', value: [] },
-    data: {},
+    tree: { nodes: [], frontmatter: {}, meta: {} },
     isComplete: false,
     content: '',
   })
@@ -54,52 +59,78 @@ export function useMDCStream(options?: MDCStreamOptions) {
   const isStreaming = ref(false)
 
   /**
-   * Start streaming and parsing Comark content
-   * @param stream - Node.js Readable or Web ReadableStream
+   * Start streaming Comark content from a ReadableStream
+   * @param stream - The ReadableStream to read from
    */
-  async function startStream(stream: Readable | ReadableStream<Uint8Array>) {
+  async function startStream(stream: ReadableStream<Uint8Array>) {
+    state.value = {
+      tree: { nodes: [], frontmatter: {}, meta: {} },
+      isComplete: false,
+      content: '',
+      error: undefined,
+    }
     isStreaming.value = true
 
+    let accumulatedContent = ''
+
     try {
-      const parser = parseStreamIncremental
+      const reader = stream.getReader()
+      const decoder = new TextDecoder()
 
-      for await (const result of parser(stream)) {
-        // Update state with each chunk
-        state.value = {
-          body: result.body,
-          data: result.data,
-          isComplete: result.isComplete,
-          excerpt: result.excerpt,
-          toc: result.toc,
-          content: result.content,
+      while (true) {
+        const { done, value } = await reader.read()
+
+        if (done) {
+          break
         }
 
-        // Call chunk callback if provided
-        if (!result.isComplete && options?.onChunk) {
-          options.onChunk(result.chunk)
-        }
+        const chunk = decoder.decode(value, { stream: true })
+        accumulatedContent += chunk
 
-        // Call complete callback if finished
-        if (result.isComplete && options?.onComplete) {
-          options.onComplete({
-            body: result.body,
-            data: result.data,
-            toc: result.toc,
-          })
+        // Parse the accumulated content with auto-close for incomplete syntax
+        const closedContent = autoCloseMarkdown(accumulatedContent)
+        try {
+          const result = await parse(closedContent, { ...options, autoClose: false })
+
+          state.value = {
+            tree: result,
+            isComplete: false,
+            content: accumulatedContent,
+          }
+
+          if (options?.onChunk) {
+            options.onChunk(chunk)
+          }
         }
+        catch {
+          // Ignore errors
+        }
+      }
+
+      // Final parse without auto-close
+      const finalResult = await parse(accumulatedContent, options)
+
+      state.value = {
+        tree: finalResult,
+        isComplete: true,
+        content: accumulatedContent,
+      }
+
+      if (options?.onComplete) {
+        options.onComplete(finalResult)
       }
     }
     catch (error) {
-      console.error(error)
       state.value = {
         ...state.value,
         error: error as Error,
-        isComplete: true,
       }
 
       if (options?.onError) {
         options.onError(error as Error)
       }
+
+      throw error
     }
     finally {
       isStreaming.value = false
@@ -107,12 +138,11 @@ export function useMDCStream(options?: MDCStreamOptions) {
   }
 
   /**
-   * Reset the stream state
+   * Reset the state
    */
   function reset() {
     state.value = {
-      body: { type: 'comark', value: [] },
-      data: {},
+      tree: { nodes: [], frontmatter: {}, meta: {} },
       isComplete: false,
       content: '',
     }

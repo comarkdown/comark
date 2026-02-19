@@ -1,6 +1,5 @@
 import type { ComarkElement, ComarkNode, ComarkTree } from '../../ast'
 import React, { lazy, Suspense, useMemo } from 'react'
-import { standardProseComponents } from '.'
 import { camelCase, pascalCase } from 'scule'
 import { findLastTextNodeAndAppendNode, getCaret } from '../../utils/caret'
 
@@ -231,15 +230,10 @@ export const ComarkAst: React.FC<ComarkAstProps> = ({
   caret: caretProp = false,
   className,
 }) => {
-  const components = useMemo(() => ({
-    ...standardProseComponents,
-    ...customComponents,
-  }), [customComponents])
-
   const caret = useMemo(() => getCaret(caretProp), [caretProp])
 
   const renderedNodes = useMemo(() => {
-    const nodes = [...(body.value || [])]
+    const nodes = [...(body.nodes || [])]
 
     if (streaming && caret && nodes.length > 0) {
       const hasStreamCaret = findLastTextNodeAndAppendNode(nodes[nodes.length - 1] as ComarkElement, caret)
@@ -249,9 +243,9 @@ export const ComarkAst: React.FC<ComarkAstProps> = ({
     }
 
     return nodes
-      .map((node, index) => renderNode(node, components, index, componentsManifest))
+      .map((node, index) => renderNode(node, customComponents, index, componentsManifest))
       .filter(child => child !== null)
-  }, [body, components, componentsManifest, streaming, caret])
+  }, [body, customComponents, componentsManifest, streaming, caret])
 
   return (
     <div className={`comark-content ${className || ''}`}>

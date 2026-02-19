@@ -39,9 +39,7 @@ export function html(node: ComarkElement, state: State, parent?: ComarkElement) 
     const childContent = childrenContent[i]
     const child = children[i]
     const isBlock = blockTags.has(String(child?.[0])) || (!inlineTags.has(String(child?.[0])) && !hasTextSibling)
-    if (child?.[0] === 'in') {
-      console.log('parent', parent, isBlock, child?.[0])
-    }
+
     if (i > 0 && !isPrevBlock && isBlock) {
       content += state.context.blockSeparator
     }

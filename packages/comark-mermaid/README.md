@@ -53,7 +53,7 @@ const components = {
 
 <template>
   <Suspense>
-    <Comark :markdown="markdown" :components="components" :options="{ plugins: [mermaidPlugin] }" />
+    <Comark :markdown="markdown" :components="components" :options="{ plugins: [mermaidPlugin()] }" />
   </Suspense>
 </template>
 ```
@@ -86,7 +86,7 @@ graph TD
 \`\`\`
   `
 
-  return <Comark markdown={markdown} components={components} options={{ plugins: [mermaidPlugin] }} />
+  return <Comark markdown={markdown} components={components} options={{ plugins: [mermaidPlugin()] }} />
 }
 ```
 
@@ -99,13 +99,13 @@ graph TD
 import { parse } from 'comark'
 import mermaidPlugin from '@comark/mermaid'
 
-const result = parse(`
+const result = await parse(`
 \`\`\`mermaid
 graph LR
     A --> B
 \`\`\`
 `, {
-  plugins: [mermaidPlugin]
+  plugins: [mermaidPlugin()]
 })
 
 // The AST will contain mermaid nodes with diagram code
@@ -286,7 +286,7 @@ Both Vue and React `Mermaid` components accept:
 
 ### Diagrams not rendering
 
-1. **Plugin not included**: Make sure to pass `plugins: [mermaidPlugin]` to the parse/Comark component
+1. **Plugin not included**: Make sure to pass `plugins: [mermaidPlugin()]` to the parse/Comark component
 2. **Component not registered**: Register the `Mermaid` component in the components map
 3. **Syntax errors**: Check the Mermaid syntax - the component will display error messages
 

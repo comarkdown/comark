@@ -53,7 +53,7 @@ const components = {
 
 <template>
   <Suspense>
-    <Comark :markdown="markdown" :components="components" :options="{ plugins: [mathPlugin] }" />
+    <Comark :markdown="markdown" :components="components" :options="{ plugins: [mathPlugin()] }" />
   </Suspense>
 </template>
 ```
@@ -86,7 +86,7 @@ $$
 $$
   `
 
-  return <Comark markdown={markdown} components={components} options={{ plugins: [mathPlugin] }} />
+  return <Comark markdown={markdown} components={components} options={{ plugins: [mathPlugin()] }} />
 }
 ```
 
@@ -100,8 +100,8 @@ $$
 import { parse } from 'comark'
 import mathPlugin from '@comark/math'
 
-const result = parse('Inline $x^2$ and display $$E = mc^2$$', {
-  plugins: [mathPlugin]
+const result = await parse('Inline $x^2$ and display $$E = mc^2$$', {
+  plugins: [mathPlugin()]
 })
 
 // The AST will contain math nodes with LaTeX content
@@ -261,7 +261,7 @@ The component automatically renders in display mode when the class contains "blo
 
 ### Math not rendering
 
-1. **Plugin not included**: Make sure to pass `plugins: [mathPlugin]` to the parse/Comark component
+1. **Plugin not included**: Make sure to pass `plugins: [mathPlugin()]` to the parse/Comark component
 2. **KaTeX CSS not loaded**: Import `'katex/dist/katex.min.css'` in your app
 3. **Component not registered**: Register the `Math` component in the components map
 

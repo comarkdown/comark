@@ -2,10 +2,12 @@ import { describe, it, expect } from 'vitest'
 import { readdir, readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { parseFrontmatter } from '../src/internal/front-matter'
-import type { ParseOptions } from '../src/index'
-import { parseAsync } from '../src/index'
+import { parse } from '../src/index'
 import { renderHTML, renderMarkdown } from '../src/string'
-import cjkFriendlyPlugin from '@comark/cjk'
+import comarkCjk from '@comark/cjk'
+import type { HighlightOptions } from '../src/plugins/highlight'
+import comarkHighlight from '../src/plugins/highlight'
+import comarkEmoji from '../src/plugins/emoji'
 
 interface TestCase {
   input: string
@@ -18,7 +20,7 @@ interface TestCase {
     markdown?: number
   }
   options?: {
-    highlight?: ParseOptions['highlight']
+    highlight?: HighlightOptions
   }
 }
 
@@ -160,10 +162,18 @@ describe('Comark Tests', () => {
   testCases.forEach(({ file, testCase }) => {
     describe(file, () => {
       it('should parse input to AST', { timeout: testCase.timeouts?.parse ?? 5000 }, async () => {
-        const result = await parseAsync(testCase.input, { autoUnwrap: false, ...testCase.options, plugins: [cjkFriendlyPlugin] })
+        const plugins = [comarkCjk(), comarkEmoji()]
+        if (testCase.options?.highlight) {
+          plugins.push(comarkHighlight(testCase.options?.highlight || undefined))
+        }
+        const result = await parse(testCase.input, {
+          autoUnwrap: false,
+          ...testCase.options,
+          plugins,
+        })
         const expectedAST = JSON.parse(testCase.ast)
 
-        expect(result.body).toEqual(expectedAST)
+        expect(result).toEqual(expectedAST)
       })
 
       it('should render AST to HTML', { timeout: testCase.timeouts?.html ?? 5000 }, () => {

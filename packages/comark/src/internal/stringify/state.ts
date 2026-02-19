@@ -2,6 +2,13 @@ import { handlers } from './handlers'
 import type { State, Context } from './types'
 import type { ComarkElement, ComarkNode } from '../../ast/types'
 
+/**
+ * Render a single node
+ * @param node - The node to render
+ * @param state - The state of the renderer
+ * @param parent - The parent node
+ * @returns The rendered node
+ */
 export function one(node: ComarkNode, state: State, parent?: ComarkElement) {
   if (typeof node === 'string') {
     if (state.context.html) {
@@ -10,11 +17,16 @@ export function one(node: ComarkNode, state: State, parent?: ComarkElement) {
     return node
   }
 
+  const userHandler = state.context.handlers[node[0] as string]
+  if (userHandler) {
+    return userHandler(node, state, parent)
+  }
+
   if (state.context.html) {
     return state.handlers.html(node, state, parent)
   }
 
-  const nodeHandler = state.context.handlers[node[0] as string] || state.handlers[node[0] as string]
+  const nodeHandler = state.handlers[node[0] as string]
   if (nodeHandler) {
     return nodeHandler(node, state, parent)
   }

@@ -15,8 +15,9 @@ Here ![alt](https://example.com/image.jpg){bool} ![alt](https://example.com/imag
 
 ```json
 {
-  "type": "comark",
-  "value": [
+  "frontmatter": {},
+  "meta": {},
+  "nodes": [
     [
       "p",
       {},

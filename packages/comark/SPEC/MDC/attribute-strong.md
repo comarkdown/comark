@@ -15,8 +15,9 @@ Here **strong**{bool} **strong**{#id1} **strong**{.class1} **strong**{attr="valu
 
 ```json
 {
-  "type": "comark",
-  "value": [
+  "frontmatter": {},
+  "meta": {},
+  "nodes": [
     [
       "p",
       {},

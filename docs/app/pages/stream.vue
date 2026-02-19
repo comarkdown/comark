@@ -142,8 +142,8 @@ Everything you need for modern content parsing
 
 const bytesLength = computed(() => state.value.content.length)
 const elementsCount = computed(() => {
-  const body = state.value.body as any
-  return body?.value?.length ?? 0
+  const tree = state.value.tree
+  return tree?.nodes?.length ?? 0
 })
 const outputColumn = ref<HTMLElement | null>(null)
 const astColumn = ref<HTMLElement | null>(null)
@@ -299,7 +299,7 @@ function reset() {
         >
           <ComarkAst
             v-if="elementsCount > 0"
-            :body="state.body as any"
+            :body="state.tree"
             :components-manifest="resolveComponent"
             :streaming="Boolean(streamController)"
             caret

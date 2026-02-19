@@ -16,7 +16,7 @@ Header content
 Footer content
 ::`
 
-    const result = parse(markdown)
+    const result = await parse(markdown)
 
     // Define a test component that uses slots
     const TestComponent = defineComponent({
@@ -35,7 +35,7 @@ Footer content
       components: { ComarkAst },
       setup() {
         return () => h(ComarkAst, {
-          body: result.body,
+          body: result,
           components: {
             'test-component': TestComponent,
           },
@@ -68,7 +68,7 @@ Warning Title
 This is a description
 ::`
 
-    const result = parse(markdown)
+    const result = await parse(markdown)
 
     const Callout = defineComponent({
       name: 'Callout',
@@ -83,7 +83,7 @@ This is a description
     const app = createSSRApp({
       setup() {
         return () => h(ComarkAst, {
-          body: result.body,
+          body: result,
           components: {
             callout: Callout,
           },
@@ -108,7 +108,7 @@ This is header part
 Copyright by Nuxt
 ::`
 
-    const result = parse(markdown)
+    const result = await parse(markdown)
 
     const MultiSlotTest = defineComponent({
       name: 'MultiSlotTest',
@@ -124,7 +124,7 @@ Copyright by Nuxt
     const app = createSSRApp({
       setup() {
         return () => h(ComarkAst, {
-          body: result.body,
+          body: result,
           components: {
             'multi-slot-test': MultiSlotTest,
           },

@@ -1,3 +1,4 @@
+import type { ComarkPlugin } from '../types'
 import type { ComarkNode, ComarkTree } from 'comark/ast'
 
 export interface TocLink {
@@ -117,7 +118,7 @@ export function generateFlatToc(body: ComarkTree, options: Toc): Toc {
   const { searchDepth, depth, title = '' } = options
   const tags = getTocTags(depth)
 
-  const allNodes = flattenNodes(body.value, searchDepth)
+  const allNodes = flattenNodes(body.nodes, searchDepth)
   const headers = allNodes.filter((node: ComarkNode) => {
     const tag = getTag(node)
     return tag !== null && tags.includes(tag)
@@ -137,8 +138,14 @@ export function generateFlatToc(body: ComarkTree, options: Toc): Toc {
   }
 }
 
-export function generateToc(body: ComarkTree, options: Toc): Toc {
-  const toc = generateFlatToc(body, options)
-  toc.links = nestHeaders(toc.links)
-  return toc
+export default function comarkToc(options: Partial<Toc> = {}): ComarkPlugin {
+  const { title = '', depth = 2, searchDepth = 2, links = [] } = options
+  return {
+    post(state) {
+      const toc = generateFlatToc(state.tree, { title, depth, searchDepth, links })
+      toc.links = nestHeaders(toc.links)
+
+      state.tree.meta.toc = toc
+    },
+  }
 }

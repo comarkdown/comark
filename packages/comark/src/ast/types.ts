@@ -9,6 +9,7 @@ export type ComarkElement = [string, ComarkElementAttributes, ...ComarkNode[]]
 export type ComarkNode = ComarkElement | ComarkText
 
 export type ComarkTree = {
-  type: 'comark'
-  value: ComarkNode[]
+  nodes: ComarkNode[]
+  frontmatter: Record<string, any>
+  meta: Record<string, any>
 }

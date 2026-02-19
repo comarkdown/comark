@@ -23,8 +23,17 @@ Content here
 
 ```json
 {
-  "type": "comark",
-  "value": [
+  "frontmatter": {
+    "author": "John Doe",
+    "date": "2024-01-01",
+    "tags": [
+      "test",
+      "markdown"
+    ],
+    "title": "Test Post"
+  },
+  "meta": {},
+  "nodes": [
     [
       "p",
       {},
@@ -43,5 +52,14 @@ Content here
 ## Markdown
 
 ```md
+---
+author: John Doe
+date: '2024-01-01'
+tags:
+  - test
+  - markdown
+title: Test Post
+---
+
 Content here
 ```

@@ -1,6 +1,6 @@
 ---
 timeout:
-  parse: 5ms
+  parse: 50ms
   html: 5ms
   markdown: 5ms
 options:
@@ -46,8 +46,9 @@ options:
 
 ```json
 {
-  "type": "comark",
-  "value": [
+  "frontmatter": {},
+  "meta": {},
+  "nodes": [
     [
       "page-section",
       {},

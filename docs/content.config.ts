@@ -1,7 +1,6 @@
 import { defineContentConfig, defineCollection, z } from '@nuxt/content'
 import { resolve } from 'pathe'
 
-console.log(resolve(__dirname, '../examples'))
 export default defineContentConfig({
   collections: {
     examples: defineCollection({

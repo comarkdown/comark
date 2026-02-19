@@ -1,6 +1,8 @@
 import markdownItCjkFriendly from 'markdown-it-cjk-friendly'
-import type { ParsePlugin } from 'comark'
+import type { ComarkPlugin } from 'comark'
 
-export default {
-  markdownItPlugins: [markdownItCjkFriendly],
-} as ParsePlugin
+export default function comarkCjk(): ComarkPlugin {
+  return {
+    markdownItPlugins: [markdownItCjkFriendly],
+  }
+}

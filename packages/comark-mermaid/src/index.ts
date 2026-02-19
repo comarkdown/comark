@@ -1,13 +1,7 @@
 import type MarkdownIt from 'markdown-it'
-import type { ParsePlugin } from 'comark'
-import mermaid from 'mermaid'
+import type { ComarkPlugin } from 'comark'
 
 export interface MermaidConfig {
-  /**
-   * Mermaid initialization options
-   */
-  options?: Record<string, unknown>
-
   /**
    * Theme for mermaid diagrams
    * @default 'default'
@@ -19,7 +13,7 @@ export interface MermaidConfig {
  * markdown-it plugin for mermaid diagrams
  * This handles ```mermaid code blocks
  */
-function markdownItMermaid(md: MarkdownIt) {
+function markdownItMermaid(md: MarkdownIt, config?: MermaidConfig) {
   md.core.ruler.after('block', 'replace-pre', (state) => {
     for (const token of state.tokens) {
       if (token.type === 'fence' && token.info?.startsWith('mermaid')) {
@@ -30,7 +24,6 @@ function markdownItMermaid(md: MarkdownIt) {
         if (curlyBraceIndex !== -1) {
           const result = searchProps(info.substring(curlyBraceIndex))
           if (result) {
-            console.log('result', result)
             props = result.props
             info = info.substring(result.index)
           }
@@ -40,6 +33,9 @@ function markdownItMermaid(md: MarkdownIt) {
         token.tag = 'mermaid'
         for (const prop of props) {
           token.attrJoin(prop[0], prop[1])
+        }
+        if (config?.theme) {
+          token.attrSet('theme', config.theme)
         }
         token.info = info
         token.attrSet('content', token.content)
@@ -194,23 +190,15 @@ export function searchProps(content: string, index = 0) {
  * import { createMermaidPlugin } from '@comark/mermaid'
  *
  * const mermaidPlugin = createMermaidPlugin({ theme: 'dark' })
- * const result = parse('```mermaid\ngraph TD; A-->B;\n```', {
- *   plugins: [mermaidPlugin]
+ * const result = await parse('```mermaid\ngraph TD; A-->B;\n```', {
+ *   plugins: [mermaidPlugin()]
  * })
  * ```
  */
-export function createMermaidPlugin(_config?: MermaidConfig): ParsePlugin {
+export default function comarkMermaid(config?: MermaidConfig): ComarkPlugin {
   return {
     markdownItPlugins: [
-      (md: MarkdownIt) => markdownItMermaid(md),
+      (md: MarkdownIt) => markdownItMermaid(md, config),
     ],
   }
 }
-
-/**
- * Default mermaid plugin instance
- */
-const mermaidPlugin = createMermaidPlugin()
-
-export default mermaidPlugin
-export { mermaid }

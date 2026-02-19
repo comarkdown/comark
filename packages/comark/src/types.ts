@@ -1,10 +1,29 @@
 import type { BundledLanguage, BundledTheme } from 'shiki'
 import type MarkdownIt from 'markdown-it'
+import type { ComarkTree } from './ast/types'
 
 export type MarkdownItPlugin = (md: MarkdownIt) => void
 
-export type ParsePlugin = {
-  markdownItPlugins: MarkdownItPlugin[]
+export type ComarkParsePreState = {
+  markdown: string
+  options: ParseOptions
+
+  [key: string]: any
+}
+
+export type ComarkParsePostState = {
+  markdown: string
+  tree: ComarkTree
+  options: ParseOptions
+  tokens: unknown[]
+
+  [key: string]: any
+}
+
+export type ComarkPlugin = {
+  markdownItPlugins?: MarkdownItPlugin[]
+  pre?: (state: ComarkParsePreState) => Promise<void> | void
+  post?: (state: ComarkParsePostState) => Promise<void> | void
 }
 
 export type ComponentManifest = (name: string) => Promise<unknown> | null
@@ -66,5 +85,5 @@ export interface ParseOptions {
    * Additional plugins to use
    * @default []
    */
-  plugins?: ParsePlugin[]
+  plugins?: ComarkPlugin[]
 }

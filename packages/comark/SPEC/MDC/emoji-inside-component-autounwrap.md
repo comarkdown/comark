@@ -23,8 +23,9 @@ options:
 
 ```json
 {
-  "type": "comark",
-  "value": [
+  "frontmatter": {},
+  "meta": {},
+  "nodes": [
     [
       "alert",
       { "type": "success" },

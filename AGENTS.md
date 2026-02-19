@@ -44,7 +44,8 @@ Located at `packages/comark/`:
 ```
 packages/comark/
 ├── src/
-│   ├── index.ts              # Core parser: parse(), parseAsync(), renderHTML(), renderMarkdown()
+│   ├── index.ts              # Core parser: parse(), parse(), autoCloseMarkdown()
+│   ├── string.ts             # String rendering: renderHTML(tree, options?), renderMarkdown()
 │   ├── stream.ts             # Streaming: parseStream(), parseStreamIncremental()
 │   ├── types.ts              # TypeScript interfaces (ParseOptions, etc.)
 │   ├── ast/                  # Comark AST types and utilities
@@ -116,7 +117,7 @@ packages/comark-cjk/
 import { parse } from 'comark'
 import cjkPlugin from '@comark/cjk'
 
-const result = parse('中文内容 **加粗**', { plugins: [cjkPlugin] })
+const result = await parse('中文内容 **加粗**', { plugins: [cjkPlugin()] })
 ```
 
 ### Features
@@ -165,7 +166,7 @@ $$
 </script>
 
 <template>
-  <Comark :markdown="markdown" :components="components" :options="{ plugins: [mathPlugin] }" />
+  <Comark :markdown="markdown" :components="components" :options="{ plugins: [mathPlugin()] }" />
 </template>
 ```
 
@@ -185,7 +186,7 @@ $$
 $$
 `
 
-<Comark markdown={markdown} components={components} options={{ plugins: [mathPlugin] }} />
+<Comark markdown={markdown} components={components} options={{ plugins: [mathPlugin()] }} />
 ```
 
 **Code blocks:**
@@ -209,7 +210,11 @@ x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}
 
 ```typescript
 // Core parsing
-import { parse, parseAsync, renderHTML, renderMarkdown, autoCloseMarkdown } from 'comark'
+import { parse, parse, autoCloseMarkdown } from 'comark'
+
+// String rendering (HTML & Markdown)
+import { renderHTML, renderMarkdown } from 'comark/string'
+import type { RenderHTMLOptions, ComponentRenderFn, RenderHTMLContext } from 'comark/string'
 
 // AST types and utilities
 import type { ComarkTree, ComarkNode, ComarkElement, ComarkText } from 'comark/ast'
@@ -304,7 +309,7 @@ describe('functionUnderTest', () => {
 Synchronous parsing of Comark content:
 
 ```typescript
-const result = parse(markdownContent, {
+const result = await parse(markdownContent, {
   autoUnwrap: true,   // Remove <p> wrappers from single-paragraph containers
   autoClose: true,    // Auto-close incomplete syntax
 })

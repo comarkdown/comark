@@ -6,12 +6,9 @@ export default defineBuildConfig({
       type: 'bundle',
       input: [
         './src/index.ts',
-        './src/stream.ts',
         './src/react/index.ts',
         './src/react/components/Comark.tsx',
         './src/react/components/ComarkAst.tsx',
-        './src/react/components/index.tsx',
-        './src/react/components/prose/ProsePre.tsx',
         './src/ast/index.ts',
         './src/string.ts',
       ],
@@ -30,6 +27,11 @@ export default defineBuildConfig({
       type: 'transform',
       input: './src/nuxt',
       outDir: './dist/nuxt',
+    }
+    {
+      type: 'transform',
+      input: './src/plugins',
+      outDir: './dist/plugins',
     },
   ],
 })
