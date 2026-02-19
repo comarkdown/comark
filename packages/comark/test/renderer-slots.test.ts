@@ -85,7 +85,7 @@ This is a description
         return () => h(ComarkAst, {
           body: result,
           components: {
-            callout: Callout,
+            Callout,
           },
         })
       },

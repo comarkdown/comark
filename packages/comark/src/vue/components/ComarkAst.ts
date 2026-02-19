@@ -322,7 +322,7 @@ export const ComarkAst = defineComponent({
       }
 
       const children = nodes
-        .map((node, index) => renderNode(node, components, index, componentManifest))
+        .map((node, index) => renderNode(node, components.value, index, componentManifest))
         .filter((child): child is VNode | string => child !== null)
 
       // Wrap in a fragment
