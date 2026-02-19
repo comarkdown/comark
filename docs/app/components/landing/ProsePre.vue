@@ -119,7 +119,7 @@ async function copyCode() {
     </div>
 
     <!-- Shiki renderer -->
-    <pre class="shiki-container bg-neutral-100 dark:bg-neutral-800 overflow-x-auto rounded-b-lg p-4 border border-neutral-300 dark:border-neutral-700"><slot /></pre>
+    <pre class="shiki-container bg-neutral-100 dark:bg-neutral-800 overflow-x-auto rounded-b-lg rounded-t-none mt-0 p-4 border border-neutral-300 dark:border-neutral-700"><slot /></pre>
   </div>
 </template>
 

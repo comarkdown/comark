@@ -1,7 +1,6 @@
 import type { PropType, VNode } from 'vue'
 import type { ComarkElement, ComarkNode, ComarkTree } from 'comark/ast'
 import { computed, defineAsyncComponent, defineComponent, h, onErrorCaptured, ref, toRaw } from 'vue'
-import { standardProseComponents } from '.'
 import { pascalCase } from 'scule'
 import { findLastTextNodeAndAppendNode, getCaret } from '../../utils/caret'
 
@@ -284,11 +283,6 @@ export const ComarkAst = defineComponent({
       return false
     })
 
-    const components = computed(() => ({
-      ...standardProseComponents,
-      ...props.components,
-    }))
-
     const caret = computed<ComarkElement | null>(() => getCaret(props.caret))
 
     return () => {
@@ -303,7 +297,7 @@ export const ComarkAst = defineComponent({
       }
 
       const children = nodes
-        .map((node, index) => renderNode(node, components.value, index, props.componentsManifest))
+        .map((node, index) => renderNode(node, props.components, index, props.componentsManifest))
         .filter((child): child is VNode | string => child !== null)
 
       // Wrap in a fragment

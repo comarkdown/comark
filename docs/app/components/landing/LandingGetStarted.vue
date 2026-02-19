@@ -2,6 +2,7 @@
 import { Comark } from 'comark/vue'
 import comarkHighlight from 'comark/plugins/highlight'
 import { ref } from 'vue'
+import ProsePre from './ProsePre.vue'
 
 const activeTab = ref('vue')
 
@@ -84,11 +85,13 @@ export default function App() {
           v-show="activeTab === 'vue'"
           :markdown="codeSnippets.vue"
           :options="{ plugins: [comarkHighlight()] }"
+          :components="{ pre: ProsePre }"
         />
         <Comark
           v-show="activeTab === 'react'"
           :markdown="codeSnippets.react"
           :options="{ plugins: [comarkHighlight()] }"
+          :components="{ pre: ProsePre }"
         />
 
         <!-- Feature Highlights -->

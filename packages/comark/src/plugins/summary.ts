@@ -13,10 +13,10 @@ export default function comarkSummary(delimiter: string = '<!-- more -->'): Coma
       )
 
       if (delimiterIndex !== -1) {
-        const excerptTokens = state.tokens.slice(0, delimiterIndex)
-        summary = marmdownItTokensToComarkTree(excerptTokens)
+        const summaryTokens = state.tokens.slice(0, delimiterIndex)
+        summary = marmdownItTokensToComarkTree(summaryTokens)
 
-        // Apply auto-unwrap to excerpt as well
+        // Apply auto-unwrap to summary as well
         if (state.options.autoUnwrap) {
           summary = summary?.map((child: ComarkNode) => applyAutoUnwrap(child))
         }

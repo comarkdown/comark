@@ -1,7 +1,6 @@
 @import 'tailwindcss';
 @import '@nuxt/ui';
-
-@source '../../../../packages/comark/src/**';
+@plugin "@tailwindcss/typography";
 
 @theme {
   --font-sans: 'Geist Mono', 'Public Sans', sans-serif;
