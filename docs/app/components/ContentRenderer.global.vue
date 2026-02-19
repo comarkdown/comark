@@ -22,13 +22,13 @@ const props = defineProps({
    * Content to render
    */
   value: {
-    type: Object as PropType<{ id?: string, body: MinimarkTree, excerpt: MinimarkTree }>,
+    type: Object as PropType<{ id?: string, body: MinimarkTree, summary: MinimarkTree }>,
     required: true,
   },
   /**
-   * Render only the excerpt
+   * Render only the summary
    */
-  excerpt: {
+  summary: {
     type: Boolean,
     default: false,
   },
@@ -79,8 +79,8 @@ const debug = import.meta.dev || import.meta.preview
 
 const body = computed(() => {
   let body = props.value.body || props.value
-  if (props.excerpt && props.value.excerpt) {
-    body = props.value.excerpt
+  if (props.summary && props.value.summary) {
+    body = props.value.summary
   }
 
   // this is a workaround to convert mermaid code block to Mermaid component
@@ -99,7 +99,7 @@ const body = computed(() => {
 const isEmpty = computed(() => !body.value?.nodes?.length)
 
 const data = computed(() => {
-  const { body, excerpt, ...data } = props.value
+  const { body, summary, ...data } = props.value
   return {
     ...data,
     ...props.data,
