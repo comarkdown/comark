@@ -109,7 +109,7 @@ export async function parse(markdown: string, options: ParseOptions = {}): Promi
     meta: {},
   }
 
-  for (const plugin of options.plugins || []) {
+  for (const plugin of plugins || []) {
     await plugin.post?.(state as ComarkParsePostState)
   }
 
