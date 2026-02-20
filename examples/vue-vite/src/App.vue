@@ -15,6 +15,8 @@ This is an alert!
   <Suspense>
     <Comark
       :components="{ Alert }"
-    >{{ markdown }}</Comark>
+    >
+      {{ markdown }}
+    </Comark>
   </Suspense>
 </template>

@@ -62,6 +62,8 @@ CJK文字とLatin文字를 함께 사용할 수 있습니다。
   <Suspense>
     <Comark
       :options="{ plugins: [cjkPlugin()] }"
-    >{{ markdown }}</Comark>
+    >
+      {{ markdown }}
+    </Comark>
   </Suspense>
 </template>

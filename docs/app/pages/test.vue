@@ -94,7 +94,7 @@ MDC fenced code block:
 Code block with math:
 
 ~~~math
-x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}
+x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}
 ~~~
 
 ---
@@ -132,7 +132,7 @@ Inline math: $E = mc^2$.
 Display math:
 
 $$
-\int_0^\infty e^{-x^2} dx = \frac{\sqrt{\pi}}{2}
+\\int_0^\\infty e^{-x^2} dx = \\frac{\\sqrt{\\pi}}{2}
 $$
 
 ---
@@ -186,7 +186,8 @@ Thanks for trying the **Comark test page**! 🚀
 <template>
   <UContainer>
     <Comark
-      :components-manifest="resolveComponent" :options="{ highlight: true }"
+      :components-manifest="resolveComponent"
+      :options="{ highlight: true }"
     >
       {{ markdown }}
     </Comark>

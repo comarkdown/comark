@@ -50,6 +50,8 @@ $$
     <Comark
       :components="{ math: Math }"
       :options="{ plugins: [mathPlugin()] }"
-    >{{ markdown }}</Comark>
+    >
+      {{ markdown }}
+    </Comark>
   </Suspense>
 </template>
