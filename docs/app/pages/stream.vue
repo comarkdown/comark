@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { computed, nextTick, ref } from 'vue'
-import { ComarkRenderer } from 'comark/vue'
+import { Comark } from 'comark/vue'
 import { useMDCStream } from '../composables/useMDCStream'
 import { stringToStream } from '../composables/stringToStream'
 import resolveComponent from '../utils/components-manifest'
-import type { ComarkTree } from 'comark/ast'
 
 definePageMeta({
   footer: false,
@@ -298,9 +297,9 @@ function reset() {
           ref="outputColumn"
           class="flex-1 overflow-y-auto relative scroll-smooth"
         >
-          <ComarkRenderer
-            v-if="state.tree && elementsCount > 0"
-            :tree="state.tree as ComarkTree"
+          <Comark
+            v-if="state.content"
+            :markdown="state.content"
             :components-manifest="resolveComponent"
             :streaming="Boolean(streamController)"
             caret

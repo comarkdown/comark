@@ -47,7 +47,7 @@ export const Comark = defineComponent({
      */
     markdown: {
       type: String as PropType<string>,
-      required: true,
+      default: undefined,
     },
 
     /**
@@ -102,12 +102,17 @@ export const Comark = defineComponent({
     },
   },
 
-  async setup(props) {
+  async setup(props, ctx) {
     const markdown = computed(() => {
-      if (props.summary) {
-        return props.markdown.split('<!-- more -->')[0]
+      let result = props.markdown
+      const childrent = ctx.slots.default?.()
+      if (childrent && childrent.length > 0 && typeof childrent[0].children === 'string') {
+        result = childrent[0].children!
       }
-      return props.markdown
+      if (props.summary) {
+        result = result?.split('<!-- more -->')[0]
+      }
+      return (result || '').trim()
     })
 
     const parsed = shallowRef<ComarkTree | null>(null)

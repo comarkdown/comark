@@ -311,6 +311,7 @@ function processBlockToken(tokens: any[], startIndex: number, insideNestedContex
       while (nextIndex < tokens.length) {
         const childToken = tokens[nextIndex]
 
+        nextIndex++
         // Check for closing tag
         if (childToken.type === 'mdc_block_shorthand' && childToken.nesting === -1) {
           break
@@ -321,12 +322,10 @@ function processBlockToken(tokens: any[], startIndex: number, insideNestedContex
           const inlineNodes = processInlineTokens(childToken.children || [], false)
           children.push(...inlineNodes)
         }
-
-        nextIndex++
       }
     }
 
-    return { node: [componentName, attrs, ...children], nextIndex: nextIndex + 1 }
+    return { node: [componentName, attrs, ...children], nextIndex: nextIndex }
   }
 
   if (token.type === 'math_block') {

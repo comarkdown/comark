@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { parse } from 'comark'
-import { ComarkRenderer } from 'comark/vue'
+import { Comark } from 'comark/vue'
 import mathPlugin from '@comark/math'
 import { Math } from '@comark/math/vue'
 import mermaidPlugin from '@comark/mermaid'
@@ -71,11 +71,9 @@ const { data } = useAsyncData('ast', () => parse(markdown.value, { plugins: [mat
     </div>
 
     <div class="w-full h-full row-span-2 overflow-y-auto p-4 bg-white dark:bg-neutral-900">
-      <ComarkRenderer
-        v-if="data"
-        :tree="data"
-        :components="{ math: Math, mermaid: Mermaid }"
-      />
+      <Comark :components="{ math: Math, mermaid: Mermaid }">
+        {{ markdown }}
+      </Comark>
     </div>
 
     <pre class="w-full h-full overflow-y-auto p-4 rounded font-mono text-sm max-w-none bg-white dark:bg-neutral-900">{{ JSON.stringify(data, null, 2) }}</pre>
