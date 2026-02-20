@@ -7,7 +7,7 @@ seo:
 
 ::landing-hero
 #title
-Comark  
+Comark
 
 #description
 A high-performance markdown parser and renderer with Vue & React components support.
