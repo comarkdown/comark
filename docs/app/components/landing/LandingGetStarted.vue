@@ -85,13 +85,13 @@ export default function App() {
           v-show="activeTab === 'vue'"
           :markdown="codeSnippets.vue"
           :options="{ plugins: [comarkHighlight()] }"
-          :components="{ pre: ProsePre }"
+          :components="{ ProsePre }"
         />
         <Comark
           v-show="activeTab === 'react'"
           :markdown="codeSnippets.react"
           :options="{ plugins: [comarkHighlight()] }"
-          :components="{ pre: ProsePre }"
+          :components="{ ProsePre }"
         />
 
         <!-- Feature Highlights -->

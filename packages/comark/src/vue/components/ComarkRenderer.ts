@@ -84,11 +84,13 @@ function renderNode(
     if ((parent as ComarkElement | undefined)?.[0] !== 'pre') {
       const pascalTag = pascalCase(tag)
       const proseTag = `Prose${pascalTag}`
-      customComponent = appComponents?.[proseTag]
-        || components[proseTag]
-        || appComponents?.[pascalTag]
+
+      customComponent = components[proseTag] 
         || components[tag]
         || components[pascalTag]
+        // If the component is not found in the components map, try to find it in the app context
+        || appComponents?.[proseTag]
+        || appComponents?.[pascalTag]
 
       // If not in components map and manifest is provided, try dynamic resolution
       if (!customComponent && componentsManifest) {
