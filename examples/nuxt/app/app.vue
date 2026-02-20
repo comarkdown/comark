@@ -7,5 +7,5 @@ Comark Syntax automatically detects Components in \`~/components/prose/\` direct
 </script>
 
 <template>
-  <Comark :markdown="markdown" />
+  <Comark>{{ markdown }}</Comark>
 </template>

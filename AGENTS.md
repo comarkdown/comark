@@ -166,7 +166,7 @@ $$
 </script>
 
 <template>
-  <Comark :markdown="markdown" :components="components" :options="{ plugins: [mathPlugin()] }" />
+  <Comark :components="components" :options="{ plugins: [mathPlugin()] }">{{ markdown }}</Comark>
 </template>
 ```
 
@@ -186,7 +186,7 @@ $$
 $$
 `
 
-<Comark markdown={markdown} components={components} options={{ plugins: [mathPlugin()] }} />
+<Comark components={components} options={{ plugins: [mathPlugin()] }}>{markdown}</Comark>
 ```
 
 **Code blocks:**
@@ -373,14 +373,14 @@ Accepts markdown string, handles parsing internally.
 
 ```vue
 <Suspense>
-  <Comark :markdown="content" :components="customComponents" />
+  <Comark :components="customComponents">{{ content }}</Comark>
 </Suspense>
 ```
 
 **React**:
 
 ```tsx
-<Comark markdown={content} components={customComponents} />
+<Comark components={customComponents}>{content}</Comark>
 ```
 
 ## Common Tasks

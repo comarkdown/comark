@@ -20,7 +20,7 @@ This is a `callout` with full **markdown** support.
 `
 </script>
 <template>
-  <Comark :markdown="markdown" />
+  <Comark>{{ markdown }}</Comark>
 </template>
 ```
 

@@ -28,10 +28,9 @@ This is an alert!
 
 export default function App() {
   return (
-    <Comark 
-      markdown={markdown}
+    <Comark
       components={{ Alert }}
-    />
+    >{markdown}</Comark>
   )
 }
 ```

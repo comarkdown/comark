@@ -35,9 +35,8 @@ sequenceDiagram
 <template>
   <Suspense>
     <Comark
-      :markdown="markdown"
       :components="{ Alert, Mermaid }"
       :options="{ plugins: [mermaidPlugin()] }"
-    />
+    >{{ markdown }}</Comark>
   </Suspense>
 </template>

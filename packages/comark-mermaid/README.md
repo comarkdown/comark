@@ -53,7 +53,7 @@ const components = {
 
 <template>
   <Suspense>
-    <Comark :markdown="markdown" :components="components" :options="{ plugins: [mermaidPlugin()] }" />
+    <Comark :components="components" :options="{ plugins: [mermaidPlugin()] }">{{ markdown }}</Comark>
   </Suspense>
 </template>
 ```
@@ -86,7 +86,7 @@ graph TD
 \`\`\`
   `
 
-  return <Comark markdown={markdown} components={components} options={{ plugins: [mermaidPlugin()] }} />
+  return <Comark components={components} options={{ plugins: [mermaidPlugin()] }}>{markdown}</Comark>
 }
 ```
 

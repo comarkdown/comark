@@ -51,10 +51,9 @@ sequenceDiagram
 <template>
   <Suspense>
     <Comark
-      :markdown="markdown"
       :components="{ mermaid: Mermaid }"
       :options="{ plugins: [mermaidPlugin()] }"
-    />
+    >{{ markdown }}</Comark>
   </Suspense>
 </template>
 ```

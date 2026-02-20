@@ -21,7 +21,7 @@ Use the `Comark` component to render markdown:
 
 ```vue
 <template>
-  <Comark :markdown="content" />
+  <Comark>{{ content }}</Comark>
 </template>
 
 <script setup lang="ts">
@@ -47,7 +47,7 @@ Map custom Vue components to Comark elements:
 
 ```vue
 <template>
-  <Comark :markdown="content" :components="customComponents" />
+  <Comark :components="customComponents">{{ content }}</Comark>
 </template>
 
 <script setup lang="ts">
@@ -158,9 +158,8 @@ Load components dynamically using `componentsManifest`:
 ```vue
 <template>
   <Comark
-    :markdown="content"
     :components-manifest="loadComponent"
-  />
+  >{{ content }}</Comark>
 </template>
 
 <script setup lang="ts">
@@ -297,7 +296,7 @@ The `Comark` component can be used with reactive content for streaming scenarios
 ```vue
 <template>
   <div>
-    <Comark :markdown="content" />
+    <Comark>{{ content }}</Comark>
     <div v-if="isLoading">Loading...</div>
   </div>
 </template>
@@ -337,7 +336,7 @@ The `Comark` component uses built-in prose styling automatically. You can overri
 
 ```vue
 <template>
-  <Comark :markdown="content" :components="components" />
+  <Comark :components="components">{{ content }}</Comark>
 </template>
 
 <script setup lang="ts">

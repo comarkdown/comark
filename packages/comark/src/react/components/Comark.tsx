@@ -6,9 +6,14 @@ import { ComarkRenderer } from './ComarkRenderer'
 
 export interface ComarkProps {
   /**
+   * The children content to parse and render
+   */
+  children?: React.ReactNode
+
+  /**
    * The markdown content to parse and render
    */
-  markdown: string
+  markdown?: string
 
   /**
    * Parser options
@@ -71,7 +76,8 @@ export interface ComarkProps {
  * ```
  */
 export const Comark: React.FC<ComarkProps> = ({
-  markdown,
+  children,
+  markdown = '',
   options = {},
   components: customComponents = {},
   componentsManifest,
@@ -85,7 +91,7 @@ export const Comark: React.FC<ComarkProps> = ({
     let isMounted = true
 
     // Use async parse for non-streaming mode (supports code highlighting, etc.)
-    parse(markdown, options).then((result) => {
+    parse(children ? String(children) : markdown, options).then((result) => {
       if (isMounted) {
         setParsed(result)
       }
@@ -96,7 +102,7 @@ export const Comark: React.FC<ComarkProps> = ({
     return () => {
       isMounted = false
     }
-  }, [markdown, streaming])
+  }, [markdown, children, streaming])
 
   if (!parsed) {
     return null

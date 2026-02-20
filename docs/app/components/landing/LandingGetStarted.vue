@@ -13,7 +13,7 @@ const codeSnippets = {
 
 <template>
   <Suspense>
-    <Comark :markdown="md" :components="{ Alert }" />
+    <Comark :components="{ Alert }">{{ md }}</Comark>
   </Suspense>
 </template>\n\`\`\``,
   react: `\`\`\`tsx [src/App.tsx]\nimport { Comark } from 'comark/react'
@@ -21,7 +21,7 @@ const codeSnippets = {
 export default function App() {
   const markdown = \`# Hello **World**\`
 
-  return <Comark markdown={markdown} />
+  return <Comark>{markdown}</Comark>
 }\n\`\`\``,
 }
 </script>

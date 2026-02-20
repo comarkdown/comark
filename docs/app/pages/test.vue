@@ -19,7 +19,6 @@ Everything you need for modern content parsing
 
 <template>
   <Comark
-    :markdown="markdown"
     :components-manifest="resolveComponent"
-  />
+  >{{ markdown }}</Comark>
 </template>

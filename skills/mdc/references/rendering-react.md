@@ -33,7 +33,7 @@ Important message
 `
 
 export default function App() {
-  return <Comark markdown={content} />
+  return <Comark>{content}</Comark>
 }
 ```
 
@@ -59,9 +59,8 @@ const customComponents = {
 export default function App({ content }) {
   return (
     <Comark
-      markdown={content}
       components={customComponents}
-    />
+    >{content}</Comark>
   )
 }
 ```
@@ -169,9 +168,8 @@ async function loadComponent(name: string) {
 export default function App({ content }) {
   return (
     <Comark
-      markdown={content}
       componentsManifest={loadComponent}
-    />
+    >{content}</Comark>
   )
 }
 ```
@@ -270,7 +268,7 @@ export default function StreamingContent() {
   return (
     <>
       {isLoading && <div>Loading...</div>}
-      <Comark markdown={content} />
+      <Comark>{content}</Comark>
     </>
   )
 }
@@ -291,7 +289,7 @@ const components = {
 }
 
 export default function App({ content }) {
-  return <Comark markdown={content} components={components} />
+  return <Comark components={components}>{content}</Comark>
 }
 ```
 
@@ -303,7 +301,7 @@ import { Comark } from 'comark/react'
 export default function App({ content }) {
   return (
     <article className="prose prose-lg dark:prose-dark max-w-none">
-      <Comark markdown={content} />
+      <Comark>{content}</Comark>
     </article>
   )
 }
@@ -430,18 +428,16 @@ Add custom wrapper class:
 
 ```tsx
 <Comark
-  markdown={content}
   className="prose dark:prose-dark"
-/>
+>{content}</Comark>
 ```
 
 ### With Tailwind CSS
 
 ```tsx
 <Comark
-  markdown={content}
   className="prose prose-slate lg:prose-xl dark:prose-invert max-w-none"
-/>
+>{content}</Comark>
 ```
 
 ---

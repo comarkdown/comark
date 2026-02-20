@@ -30,10 +30,9 @@ This is an alert!
 
 <template>
   <Suspense>
-    <Comark 
-      :markdown="markdown"
+    <Comark
       :components="{ Alert }"
-    />
+    >{{ markdown }}</Comark>
   </Suspense>
 </template>
 ```

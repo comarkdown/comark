@@ -39,8 +39,4 @@ export default defineNuxtConfig({
       traceInclude: ['node_modules/minimark/**'],
     },
   },
-
-  studio: {
-    dev: false,
-  },
 })

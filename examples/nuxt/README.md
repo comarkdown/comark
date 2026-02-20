@@ -17,7 +17,7 @@ Comark automatically detects Components in \`~/components/prose/\` directory and
 </script>
 
 <template>
-  <Comark :markdown="markdown" />
+  <Comark>{{ markdown }}</Comark>
 </template>
 ```
 
