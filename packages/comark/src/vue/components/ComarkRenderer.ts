@@ -85,7 +85,7 @@ function renderNode(
       const pascalTag = pascalCase(tag)
       const proseTag = `Prose${pascalTag}`
 
-      customComponent = components[proseTag] 
+      customComponent = components[proseTag]
         || components[tag]
         || components[pascalTag]
         // If the component is not found in the components map, try to find it in the app context
