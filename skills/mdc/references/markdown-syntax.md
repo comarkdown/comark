@@ -118,7 +118,7 @@ Your markdown content here...
 - Must be at the very beginning of the document
 - Enclosed by `---` delimiters
 - Parsed as YAML
-- Available in the `data` property of ParseResult
+- Available in the `frontmatter` property of ComarkTree
 
 ### Special Fields
 
@@ -141,7 +141,7 @@ Content here...
 `
 
 const result = await parse(content)
-console.log(result.data)
+console.log(result.frontmatter)
 // { title: 'My Article', depth: 3 }
 ```
 
@@ -261,8 +261,7 @@ Footer text here
 
 ```json
 {
-  "type": "comark",
-  "value": [
+  "nodes": [
     [
       "card",
       {},
@@ -282,7 +281,9 @@ Footer text here
         ["p", {}, "Footer text here"]
       ]
     ]
-  ]
+  ],
+  "frontmatter": {},
+  "meta": {}
 }
 ```
 
@@ -454,8 +455,7 @@ No syntax highlighting
 
 ```json
 {
-  "type": "comark",
-  "value": [
+  "nodes": [
     [
       "pre",
       {
@@ -470,7 +470,9 @@ No syntax highlighting
         "code content here"
       ]
     ]
-  ]
+  ],
+  "frontmatter": {},
+  "meta": {}
 }
 ```
 

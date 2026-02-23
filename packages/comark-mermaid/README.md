@@ -109,7 +109,7 @@ graph LR
 })
 
 // The AST will contain mermaid nodes with diagram code
-console.log(result.body)
+console.log(result.nodes)
 ```
 
 ## How It Works

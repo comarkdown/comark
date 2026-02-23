@@ -44,9 +44,8 @@ Located at `packages/comark/`:
 ```
 packages/comark/
 ├── src/
-│   ├── index.ts              # Core parser: parse(), parse(), autoCloseMarkdown()
+│   ├── index.ts              # Core parser: parse(), autoCloseMarkdown()
 │   ├── string.ts             # String rendering: renderHTML(tree, options?), renderMarkdown()
-│   ├── stream.ts             # Streaming: parseStream(), parseStreamIncremental()
 │   ├── types.ts              # TypeScript interfaces (ParseOptions, etc.)
 │   ├── ast/                  # Comark AST types and utilities
 │   │   ├── index.ts          # Re-exports (comark/ast entry point)
@@ -220,9 +219,6 @@ import type { RenderHTMLOptions, ComponentRenderFn, RenderHTMLContext } from 'co
 import type { ComarkTree, ComarkNode, ComarkElement, ComarkText } from 'comark/ast'
 import { textContent, visit } from 'comark/ast'
 
-// Stream parsing
-import { parseStream, parseStreamIncremental } from 'comark/stream'
-
 // Vue components
 import { Comark } from 'comark/vue'
 
@@ -263,7 +259,7 @@ const matches = line.match(/\*+/g)  // Don't do this
 1. Keep internal implementation in `packages/comark/src/internal/` (parsing in `internal/parse/`, stringification in `internal/stringify/`)
 2. AST types and utilities in `packages/comark/src/ast/`
 3. Framework-specific code in `packages/comark/src/vue/` and `packages/comark/src/react/`
-4. Export public APIs from entry points (`index.ts`, `stream.ts`, `ast/index.ts`)
+4. Export public APIs from entry points (`index.ts`, `ast/index.ts`)
 5. Document exported functions with JSDoc including `@example`
 
 ## Testing Guidelines

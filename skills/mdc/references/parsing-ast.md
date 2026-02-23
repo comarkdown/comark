@@ -38,11 +38,14 @@ const result = await parse(content)
 ### Result Structure
 
 ```typescript
-interface ParseResult {
-  body: ComarkTree        // The parsed AST
-  excerpt?: ComarkTree    // Optional excerpt (before <!-- more -->)
-  data: any                 // Frontmatter data
-  toc?: any                 // Table of contents
+interface ComarkTree {
+  nodes: ComarkNode[]                   // Parsed AST nodes
+  frontmatter: Record<string, any>      // YAML frontmatter data
+  meta: {
+    toc?: any                           // Table of contents (from toc plugin)
+    summary?: ComarkNode[]              // Summary content (from summary plugin)
+    [key: string]: any                  // Other plugin metadata
+  }
 }
 ```
 
@@ -185,116 +188,9 @@ import { parse, highlightCode } from 'comark'
 const result = await parse(content)
 
 // Manually apply highlighting
-const highlighted = await highlightCode(result.body, {
+const highlighted = await highlightCode(result.nodes, {
   theme: 'nord'
 })
-```
-
----
-
-## Stream Parsing
-
-Comark provides powerful streaming APIs for parsing content as it arrives.
-
-### Buffered Streaming
-
-Wait for the complete result:
-
-```typescript
-import { createReadStream } from 'node:fs'
-import { parseStream } from 'comark/stream'
-
-// From file stream
-const stream = createReadStream('content.md')
-const result = await parseStream(stream)
-
-console.log(result.body)
-console.log(result.data)
-console.log(result.toc)
-```
-
-### Web Streams (Browser/Fetch)
-
-```typescript
-import { parseStream } from 'comark/stream'
-
-// HTTP fetch
-const response = await fetch('https://example.com/article.md')
-const result = await parseStream(response.body!)
-
-// Custom Web ReadableStream
-const stream = new ReadableStream({
-  start(controller) {
-    controller.enqueue(new TextEncoder().encode('# Hello\n'))
-    controller.enqueue(new TextEncoder().encode('Content here'))
-    controller.close()
-  }
-})
-const result = await parseStream(stream)
-```
-
-### Incremental Streaming
-
-Real-time updates as chunks arrive:
-
-```typescript
-import { parseStreamIncremental } from 'comark/stream'
-
-const response = await fetch('https://example.com/large-article.md')
-
-for await (const result of parseStreamIncremental(response.body!)) {
-  if (!result.isComplete) {
-    // Partial result - update UI progressively
-    console.log(`Received ${result.chunk.length} bytes`)
-    console.log(`Current elements: ${result.body.value.length}`)
-
-    // Auto-close is automatically applied!
-    updateUI(result.body)
-  } else {
-    // Final result with complete TOC
-    console.log('Stream complete!')
-    console.log(result.toc)
-    finalizeUI(result.body)
-  }
-}
-```
-
-### IncrementalParseResult
-
-```typescript
-interface IncrementalParseResult {
-  chunk: string             // The chunk just received
-  body: ComarkTree        // Current parsed state
-  data: any                 // Frontmatter (once available)
-  isComplete: boolean       // Whether stream is finished
-  excerpt?: ComarkTree    // Optional excerpt
-  toc?: any                 // TOC (only in final result)
-}
-```
-
-### Features
-
-- Automatic auto-close on each chunk
-- Progressive rendering without syntax errors
-- Progress tracking built-in
-- Works with both Node.js and Web streams
-
-### Stream from Chunks
-
-```typescript
-import { Readable } from 'node:stream'
-import { parseStream } from 'comark/stream'
-
-const chunks = [
-  '# Hello World\n\n',
-  'This is **markdown**\n\n',
-  '::alert{type="info"}\n',
-  'Message here\n',
-  '::\n'
-]
-
-const stream = Readable.from(chunks)
-const result = await parseStream(stream)
 ```
 
 ---
@@ -307,8 +203,13 @@ Comark uses a lightweight array-based AST structure.
 
 ```typescript
 interface ComarkTree {
-  type: 'comark'
-  value: ComarkNode[]
+  nodes: ComarkNode[]                   // Parsed AST nodes
+  frontmatter: Record<string, any>      // YAML frontmatter data
+  meta: {
+    toc?: any                           // Table of contents (from toc plugin)
+    summary?: ComarkNode[]              // Summary content (from summary plugin)
+    [key: string]: any                  // Other plugin metadata
+  }
 }
 
 type ComarkNode =
@@ -375,8 +276,7 @@ Warning message
 **AST:**
 ```json
 {
-  "type": "comark",
-  "value": [
+  "nodes": [
     [
       "h1",
       { "id": "hello-world" },
@@ -396,14 +296,11 @@ Warning message
       { "type": "warning" },
       ["p", {}, "Warning message"]
     ]
-  ]
-}
-```
-
-**Data (Frontmatter):**
-```json
-{
-  "title": "Example"
+  ],
+  "frontmatter": {
+    "title": "Example"
+  },
+  "meta": {}
 }
 ```
 
@@ -426,9 +323,9 @@ import { parse } from 'comark'
 import { renderHTML } from 'comark/string'
 
 const content = '# Hello World\n\nThis is **markdown**.'
-const result = await parse(content)
+const tree = await parse(content)
 
-const html = renderHTML(result.body)
+const html = renderHTML(tree)
 console.log(html)
 ```
 
@@ -449,7 +346,7 @@ import { renderMarkdown } from 'comark/string'
 const content = '# Hello\n\n::alert{type="info"}\nMessage\n::'
 const result = await parse(content)
 
-const markdown = renderMarkdown(result.body)
+const markdown = renderMarkdown(result.nodes)
 console.log(markdown)
 ```
 

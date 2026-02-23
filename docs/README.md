@@ -9,10 +9,8 @@ This directory contains comprehensive documentation for the Comark library, buil
 - **[Installation](./content/1.getting-started/1.installation.md)** - Set up Comark in your project
 
 ### Core API Documentation
-1. **[Parse API](./content/4.api/1.parse.md)** - String and stream parsing
+1. **[Parse API](./content/4.api/1.parse.md)** - String parsing
    - `parse()` - Parse markdown strings
-   - `parseStream()` - Buffered stream parsing
-   - `parseStreamIncremental()` - Incremental stream parsing
    - Types and interfaces
 
 2. **[Auto-Close API](./content/4.api/2.auto-close.md)** - Handle incomplete syntax
@@ -86,8 +84,6 @@ docs/
 | Function | Purpose | Documentation |
 |----------|---------|---------------|
 | `parse()` | Parse string | [Parse API](./content/4.api/1.parse.md) |
-| `parseStream()` | Parse stream (buffered) | [Parse API](./content/4.api/1.parse.md) |
-| `parseStreamIncremental()` | Parse stream (incremental) | [Parse API](./content/4.api/1.parse.md) |
 | `autoCloseMarkdown()` | Auto-close syntax | [Auto-Close API](./content/4.api/2.auto-close.md) |
 
 ### Vue & React Components
@@ -101,9 +97,7 @@ docs/
 
 | Type | Purpose | Documentation |
 |------|---------|---------------|
-| `ParseResult` | Parse output | [API Reference](./content/4.api/3.reference.md) |
-| `IncrementalParseResult` | Stream output | [API Reference](./content/4.api/3.reference.md) |
-| `ComarkTree` | AST root | [API Reference](./content/4.api/3.reference.md) |
+| `ComarkTree` | Parse output & AST root | [API Reference](./content/4.api/3.reference.md) |
 | `ComarkNode` | AST node | [API Reference](./content/4.api/3.reference.md) |
 
 ## Contributing to Documentation

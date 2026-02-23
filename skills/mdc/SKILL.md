@@ -24,7 +24,6 @@ A high-performance markdown parser with Comark (Components in Markdown) support,
   - Main parser: `comark`
   - Vue components: `comark/vue`
   - React components: `comark/react`
-  - Stream API: `comark/stream`
 
 ## Quick Start
 
@@ -47,9 +46,9 @@ Important message
 `
 
 const result = await parse(content)
-console.log(result.body)  // Comark AST
-console.log(result.data)  // { title: 'Hello World' }
-console.log(result.toc)   // Table of contents
+console.log(result.nodes)       // Comark AST
+console.log(result.frontmatter) // { title: 'Hello World' }
+console.log(result.meta.toc)    // Table of contents
 ```
 
 ### Vue Rendering
@@ -102,10 +101,9 @@ Complete guide for parsing documents and working with AST:
 
 - **String Parsing:** `parse()` function with options (autoUnwrap, autoClose)
 - **Async Parsing:** `parse()` with Shiki syntax highlighting
-- **Stream Parsing:** buffered (`parseStream`) and incremental (`parseStreamIncremental`) modes
 - **AST Structure:** Comark AST format - lightweight array-based AST
 - **Rendering AST:** convert to HTML (`renderHTML`) or markdown (`renderMarkdown`) via `comark/string`
-- **Auto-close:** automatic closing of unclosed syntax for streaming scenarios
+- **Auto-close:** automatic closing of unclosed syntax
 - **Auto-unwrap:** remove unnecessary paragraph wrappers from container components
 
 **[→ Read Full Parsing & AST Guide](./docs/skills/parsing-ast.md)**
@@ -174,39 +172,23 @@ Footer
 ::
 ```
 
-### Streaming Support
-
-Perfect for AI-generated content or large documents:
-
-```typescript
-import { parseStreamIncremental } from 'comark/stream'
-
-for await (const result of parseStreamIncremental(stream)) {
-  // Auto-close applied automatically
-  updateUI(result.body)
-
-  if (result.isComplete) {
-    console.log('Complete!', result.toc)
-  }
-}
-```
-
 ### Comark AST Format
 
 Lightweight array-based structure for efficient processing:
 
-```json
-{
-  "type": "comark",
-  "value": [
+```typescript
+interface ComarkTree {
+  nodes: [
     ["h1", { "id": "hello" }, "Hello"],
     ["p", {}, "Text with ", ["strong", {}, "bold"], " word"],
     ["alert", { "type": "info" }, "Message"]
-  ]
+  ],
+  frontmatter: {},
+  meta: {}
 }
 ```
 
-### Auto-Close for Streaming
+### Auto-Close
 
 O(n) algorithm that handles unclosed syntax:
 
@@ -228,14 +210,14 @@ import { renderHTML } from 'comark/string'
 async function processMarkdownFile(filePath: string) {
   const content = await readFile(filePath, 'utf-8')
 
-  const result = await parse(content, {
+  const tree = await parse(content, {
     highlight: { theme: 'github-dark' }
   })
 
   return {
-    html: renderHTML(result.body),
-    frontmatter: result.data,
-    toc: result.toc
+    html: renderHTML(tree),
+    frontmatter: result.frontmatter,
+    toc: result.meta.toc
   }
 }
 ```
@@ -258,21 +240,24 @@ export default function Editor() {
 }
 ```
 
-### 3. AI Content Streaming
+### 3. Batch File Processing
 
 ```typescript
-async function streamAIResponse() {
-  const response = await fetch('/api/ai-generate')
+import { readFile } from 'node:fs/promises'
+import { parse } from 'comark'
 
-  for await (const result of parseStreamIncremental(response.body!)) {
-    // Render partial content with auto-close
-    renderToUI(result.body)
+async function processMultipleFiles(files: string[]) {
+  const results = await Promise.all(
+    files.map(async (file) => {
+      const content = await readFile(file, 'utf-8')
+      return await parse(content)
+    })
+  )
 
-    if (result.isComplete) {
-      // Show final TOC and complete content
-      showTableOfContents(result.toc)
-    }
-  }
+  results.forEach((result, i) => {
+    console.log(`File ${files[i]}:`)
+    console.log(`  - ${result.nodes.length} nodes`)
+  })
 }
 ```
 
@@ -296,11 +281,8 @@ import { docComponents } from './components'
 ### Core Functions (`comark`)
 
 ```typescript
-// Synchronous parsing
-parse(source: string, options?: ParseOptions): ParseResult
-
-// Asynchronous parsing with highlighting
-parse(source: string, options?: ParseOptions): Promise<ParseResult>
+// Asynchronous parsing
+parse(source: string, options?: ParseOptions): Promise<ComarkTree>
 
 // Auto-close unclosed syntax
 autoCloseMarkdown(source: string): string
@@ -317,14 +299,6 @@ renderMarkdown(tree: ComarkTree): string
 ```
 
 ### Stream Functions
-
-```typescript
-// Buffered streaming (wait for complete)
-parseStream(stream: Readable | ReadableStream): Promise<ParseResult>
-
-// Incremental streaming (real-time)
-parseStreamIncremental(stream: Readable | ReadableStream): AsyncGenerator<IncrementalParseResult>
-```
 
 ### Vue Components
 
@@ -344,7 +318,7 @@ parseStreamIncremental(stream: Readable | ReadableStream): AsyncGenerator<Increm
 - **Comark AST format** - lightweight array-based AST
 - **Lazy component loading** - only load what's needed
 - **Shiki highlighter caching** - avoid re-initialization
-- **Incremental parsing** - stream processing with minimal overhead
+- **Parallel processing** - batch parse multiple files efficiently
 
 ## TypeScript Support
 
@@ -352,12 +326,10 @@ Full TypeScript definitions included:
 
 ```typescript
 import type {
-  ParseResult,
-  ParseOptions,
   ComarkTree,
   ComarkNode,
-  ShikiOptions,
-  IncrementalParseResult
+  ParseOptions,
+  ShikiOptions
 } from 'comark'
 ```
 
@@ -403,9 +375,9 @@ import type {
         └────────┬────────┘
                  │
         ┌────────▼────────┐
-        │  ParseResult    │
-        │  (body + data   │
-        │   + toc)        │
+        │  ComarkTree     │
+        │  (nodes + data  │
+        │   + meta)       │
         └────────┬────────┘
                  │
      ┌───────────┴───────────┐

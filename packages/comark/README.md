@@ -11,14 +11,12 @@ A high-performance markdown parser and renderer with Vue & React components supp
 ## Features
 
 - 🚀 Fast markdown-it based parser
-- 📦 Stream API with both buffered and incremental modes
-- ⚡ Incremental parsing for real-time UI updates
+- 📦 Stream API for buffered parsing
 - 🔧 Comark component syntax support
 - 🔒 Auto-close unclosed markdown syntax (perfect for streaming)
 - 📝 Frontmatter parsing (YAML)
 - 📑 Automatic table of contents generation
 - 🎯 Full TypeScript support
-- 📊 Progress tracking built-in for streams
 
 ## Installation
 

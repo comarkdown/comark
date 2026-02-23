@@ -105,7 +105,7 @@ const result = await parse('Inline $x^2$ and display $$E = mc^2$$', {
 })
 
 // The AST will contain math nodes with LaTeX content
-console.log(result.body)
+console.log(result.nodes)
 ```
 
 ## How It Works

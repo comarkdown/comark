@@ -33,7 +33,7 @@ export interface RenderHTMLOptions {
  *
  * const tree = await parse('::alert{type="info"}\nHello!\n::')
  *
- * const html = renderHTML(body, {
+ * const html = renderHTML(tree, {
  *   components: {
  *     alert: ([tag, attrs, ...children], { render }) => {
  *       return `<div class="alert alert-${attrs.type}">${render(children)}</div>`
