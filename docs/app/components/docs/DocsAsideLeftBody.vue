@@ -8,21 +8,28 @@ const { data: examplesNavigation } = await useAsyncData('nav-examples', () =>
   queryCollectionNavigation('examples'),
 )
 
-function flattenExamplesNav(items: ContentNavigationItem[]): ContentNavigationItem[] {
-  const result: ContentNavigationItem[] = []
-  for (const item of items) {
-    const readme = item.children?.find(c => c.path?.endsWith('/readme'))
+const { data: examplesIcons } = await useAsyncData('examples-icons', () =>
+  queryCollection('examples')
+    .select('path', 'icon')
+    .all(),
+)
+
+function collapseReadmeNav(items: ContentNavigationItem[]): ContentNavigationItem[] {
+  const iconMap = new Map(
+    (examplesIcons.value || []).map(e => [e.path.replace(/\/readme$/, ''), e.icon]),
+  )
+  return items.map((item) => {
+    if (!item.children?.length) {
+      const path = item.path?.replace(/\/readme$/, '')
+      return { ...item, path, icon: item.icon || iconMap.get(path!) }
+    }
+    const readme = item.children.find(c => c.path?.endsWith('/readme'))
     if (readme) {
-      result.push({ ...readme, path: readme.path!.replace(/\/readme$/, ''), children: undefined })
+      const path = readme.path!.replace(/\/readme$/, '')
+      return { ...readme, path, icon: readme.icon || iconMap.get(path), children: undefined }
     }
-    else if (item.children?.length) {
-      result.push(...flattenExamplesNav(item.children))
-    }
-    else if (item.path) {
-      result.push({ ...item, path: item.path.replace(/\/readme$/, '') })
-    }
-  }
-  return result
+    return { ...item, children: collapseReadmeNav(item.children) }
+  })
 }
 
 const filteredNavigation = computed(() => {
@@ -32,7 +39,13 @@ const filteredNavigation = computed(() => {
   }
 
   if (route.path.startsWith('/examples')) {
-    return flattenExamplesNav(examplesNavigation.value || [])
+    const raw = examplesNavigation.value || []
+    const root = raw.find(item => item.path === '/examples')
+    const categories = root?.children || raw
+    return categories.map(category => ({
+      ...category,
+      children: category.children ? collapseReadmeNav(category.children) : [],
+    }))
   }
 
   return (navigation?.value || []).filter(item =>
