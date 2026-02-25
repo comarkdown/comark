@@ -2,7 +2,7 @@ import { bench, run } from 'mitata'
 import MarkdownIt from 'markdown-it'
 import MarkdownExit from 'markdown-exit'
 import pluginMdc from 'markdown-it-mdc'
-import { createParser } from './src/index'
+import { createParse } from './src/index'
 import { renderHTML } from './src/string'
 
 // Sample markdown content to test with
@@ -72,7 +72,7 @@ const markdownExit = new MarkdownExit({
   .enable(['table', 'strikethrough'])
   .use(pluginMdc)
 
-const comark = createParser()
+const comark = createParse()
 
 // Benchmark: markdown-it parsing
 bench('markdown-it parse', () => {

@@ -32,15 +32,15 @@ export type * from './types'
  *
  * @example
  * ```typescript
- * import { createParser } from 'comark'
+ * import { createParse } from 'comark'
  *
- * const parse = createParser({ autoUnwrap: false })
+ * const parse = createParse({ autoUnwrap: false })
  * const tree = await parse('# Hello **World**\n::alert\nhi\n::')
  * console.log(tree.nodes)
  * // → [ ['h1', { id: 'hello-world' }, 'Hello ', ['strong', {}, 'World'] ], ['alert', {}, 'hi'] ]
  * ```
  */
-export function createParser(options: ParseOptions = {}): (markdown: string) => Promise<ComarkTree> {
+export function createParse(options: ParseOptions = {}): (markdown: string) => Promise<ComarkTree> {
   const { autoUnwrap = true, autoClose = true, plugins = [] } = options
 
   plugins.unshift(taskList())
@@ -133,7 +133,7 @@ export function createParser(options: ParseOptions = {}): (markdown: string) => 
  * ```
  */
 export async function parse(markdown: string, options: ParseOptions = {}): Promise<ComarkTree> {
-  const parser = createParser(options)
+  const parse = createParse(options)
 
-  return await parser(markdown)
+  return await parse(markdown)
 }
