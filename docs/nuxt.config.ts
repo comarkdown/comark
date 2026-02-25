@@ -1,4 +1,7 @@
 import { defineNuxtConfig } from 'nuxt/config'
+import { createResolver } from '@nuxt/kit'
+
+const { resolve } = createResolver(import.meta.url)
 
 export default defineNuxtConfig({
   extends: ['docus'],
@@ -23,7 +26,7 @@ export default defineNuxtConfig({
     build: {
       markdown: {
         highlight: {
-          langs: ['tsx', 'tsx', 'vue', 'html', 'css', 'json', 'markdown', 'bash', 'shell'],
+          langs: ['tsx', 'tsx', 'vue', 'html', 'css', 'json', 'markdown', 'bash', 'shell', 'astro'],
         },
       },
     },
@@ -33,5 +36,12 @@ export default defineNuxtConfig({
     externals: {
       traceInclude: ['node_modules/minimark/**'],
     },
+  },
+
+  icon: {
+    customCollections: [{
+      prefix: 'custom',
+      dir: resolve('./app/assets/icons'),
+    }],
   },
 })

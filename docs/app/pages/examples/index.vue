@@ -26,18 +26,21 @@ const groupedExamples = computed(() => {
 
   return groups
 })
+
+const title = 'Examples'
+const description = 'Explore Comark examples to learn how to add Comark in your projects'
+useSeoMeta({
+  title,
+  description,
+})
 </script>
 
 <template>
   <UPage>
     <UPageHeader
-      title="Examples"
-      description="Explore Comark examples to learn how to use Comark in your projects"
-    >
-      <template #headline>
-        <UBreadcrumb :items="[{ label: 'Examples', icon: 'i-lucide-code' }]" />
-      </template>
-    </UPageHeader>
+      :title="title"
+      :description="description"
+    />
     <UPageBody>
       <div
         v-for="(categoryExamples, category) in groupedExamples"
