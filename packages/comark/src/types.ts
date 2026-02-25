@@ -1,4 +1,3 @@
-import type { BundledLanguage, BundledTheme } from 'shiki'
 import type MarkdownIt from 'markdown-it'
 import type { ComarkTree } from './ast/types'
 
@@ -31,27 +30,6 @@ export interface ComarkContextProvider {
   components: Record<string, any>
   componentManifest: ComponentManifest
 }
-
-export interface ShikiOptions {
-  /**
-   * Languages to preload. If not specified, languages will be loaded on demand.
-   * @default undefined (load on demand)
-   */
-  languages?: BundledLanguage[]
-
-  /**
-   * Additional themes to preload
-   * @default { light: 'material-theme-lighter', dark: 'material-theme-palenight' }
-   */
-  themes?: Record<string, BundledTheme | string>
-
-  /**
-   * Whether to add pre styles to the code blocks
-   * @default false
-   */
-  preStyles?: boolean
-}
-
 export interface ParseOptions {
   /**
    * Whether to automatically unwrap single paragraphs in container components.
@@ -74,12 +52,6 @@ export interface ParseOptions {
    * @default true
    */
   autoClose?: boolean
-
-  /**
-   * Enable syntax highlighting for code blocks using Shiki or provide custom options
-   * @default false
-   */
-  highlight?: boolean | ShikiOptions
 
   /**
    * Additional plugins to use

@@ -7,7 +7,6 @@ import type { ComarkTree, ComarkNode } from 'comark/ast'
 import { marmdownItTokensToComarkTree } from './internal/parse/token-processor'
 import { autoCloseMarkdown } from './internal/parse/auto-close/index'
 import { parseFrontmatter } from './internal/front-matter'
-import highlight from './plugins/highlight'
 
 // Re-export ComarkTree and ComarkNode for convenience
 export type { ComarkTree, ComarkNode } from 'comark/ast'
@@ -58,10 +57,6 @@ export async function parse(markdown: string, options: ParseOptions = {}): Promi
   const { autoUnwrap = true, autoClose = true, plugins = [] } = options
 
   plugins.unshift(comarkTaskList())
-
-  if (options.highlight) {
-    plugins.unshift(highlight(typeof options.highlight === 'object' ? options.highlight : {}))
-  }
 
   const state = {
     options,

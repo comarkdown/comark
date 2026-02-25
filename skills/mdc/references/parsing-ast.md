@@ -55,7 +55,7 @@ interface ComarkTree {
 interface ParseOptions {
   autoUnwrap?: boolean      // Remove unnecessary <p> wrappers (default: true)
   autoClose?: boolean       // Auto-close unclosed syntax (default: true)
-  highlight?: boolean | ShikiOptions  // Enable syntax highlighting (async only)
+  plugins?: ComarkPlugin[]  // Enable plugins (e.g., highlight, emoji, toc)
 }
 ```
 
@@ -127,10 +127,11 @@ const closedProps = autoCloseMarkdown(props)
 
 ## Async Parsing with Syntax Highlighting
 
-For syntax highlighting support, use `parse()`:
+For syntax highlighting support, use the `highlight` plugin:
 
 ```typescript
 import { parse } from 'comark'
+import highlight from 'comark/plugins/highlight'
 
 const content = `
 # Code Example
@@ -144,52 +145,47 @@ function hello() {
 
 // Enable syntax highlighting
 const result = await parse(content, {
-  highlight: true
+  plugins: [highlight()]
 })
 
 // With custom Shiki options
 const result = await parse(content, {
-  highlight: {
-    theme: 'github-dark',
-    langs: ['javascript', 'typescript', 'python']
-  }
+  plugins: [
+    highlight({
+      themes: {
+        light: 'github-light',
+        dark: 'github-dark'
+      },
+      languages: ['javascript', 'typescript', 'python']
+    })
+  ]
 })
 ```
 
-### Shiki Options
+### Highlight Plugin Options
 
 ```typescript
-interface ShikiOptions {
-  theme?: string | { light: string, dark: string }
-  langs?: string[]
-  // ... other Shiki configuration
+interface HighlightOptions {
+  themes?: Record<string, string>  // { light: 'github-light', dark: 'github-dark' }
+  languages?: string[]             // Languages to preload
+  preStyles?: boolean              // Add pre background/foreground styles
 }
 ```
 
 ### Dual Theme Support
 
 ```typescript
+import highlight from 'comark/plugins/highlight'
+
 const result = await parse(content, {
-  highlight: {
-    theme: {
-      light: 'github-light',
-      dark: 'github-dark'
-    }
-  }
-})
-```
-
-### Manual Highlighting
-
-```typescript
-import { parse, highlightCode } from 'comark'
-
-// Parse without highlighting
-const result = await parse(content)
-
-// Manually apply highlighting
-const highlighted = await highlightCode(result.nodes, {
-  theme: 'nord'
+  plugins: [
+    highlight({
+      themes: {
+        light: 'github-light',
+        dark: 'github-dark'
+      }
+    })
+  ]
 })
 ```
 
