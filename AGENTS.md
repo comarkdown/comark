@@ -113,9 +113,9 @@ packages/comark-cjk/
 
 ```typescript
 import { parse } from 'comark'
-import cjkPlugin from '@comark/cjk'
+import cjk from '@comark/cjk'
 
-const result = await parse('中文内容 **加粗**', { plugins: [cjkPlugin()] })
+const result = await parse('中文内容 **加粗**', { plugins: [cjk()] })
 ```
 
 ### Features
@@ -147,7 +147,7 @@ packages/comark-math/
 ```vue
 <script setup>
 import { Comark } from 'comark/vue'
-import mathPlugin from '@comark/math'
+import math from '@comark/math'
 import { Math } from '@comark/math/vue'
 
 const components = { math: Math }
@@ -164,14 +164,14 @@ $$
 </script>
 
 <template>
-  <Comark :components="components" :options="{ plugins: [mathPlugin()] }">{{ markdown }}</Comark>
+  <Comark :components="components" :options="{ plugins: [math()] }">{{ markdown }}</Comark>
 </template>
 ```
 
 **React:**
 ```tsx
 import { Comark } from 'comark/react'
-import mathPlugin from '@comark/math'
+import math from '@comark/math'
 import { Math } from '@comark/math/react'
 
 const components = { math: Math }
@@ -184,7 +184,7 @@ $$
 $$
 `
 
-<Comark components={components} options={{ plugins: [mathPlugin()] }}>{markdown}</Comark>
+<Comark components={components} options={{ plugins: [math()] }}>{markdown}</Comark>
 ```
 
 **Code blocks:**

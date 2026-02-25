@@ -17,12 +17,12 @@ interface DefineComarkComponentOptions extends ParseOptions {
  * @example
  * ```tsx
  * import { defineComarkComponent } from 'comark/react'
- * import comarkMath from '@comark/math'
+ * import math from '@comark/math'
  * import { Math } from '@comark/math/react'
  *
  * export const AppComark = defineComarkComponent({
  *   name: 'AppComark',
- *   plugins: [comarkMath()],
+ *   plugins: [math()],
  *   components: { Math },
  *   highlight: {
  *     themes: {

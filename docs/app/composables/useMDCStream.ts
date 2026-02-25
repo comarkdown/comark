@@ -1,7 +1,7 @@
 import type { ComarkTree } from 'comark/ast'
 import { readonly, ref, shallowRef } from 'vue'
 import { parse, autoCloseMarkdown } from 'comark'
-import comarkHighlight from 'comark/plugins/highlight'
+import highlight from 'comark/plugins/highlight'
 import type { ParseOptions } from 'comark'
 
 export interface MDCStreamState {
@@ -17,7 +17,7 @@ export interface MDCStreamOptions extends ParseOptions {
   onError?: (error: Error) => void
 }
 
-const plugins = [comarkHighlight()]
+const plugins = [highlight()]
 
 /**
  * Vue composable for streaming Comark content parsing

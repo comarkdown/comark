@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { parse } from 'comark'
-import mathPlugin from '@comark/math'
+import math from '@comark/math'
 import { Math } from '@comark/math/vue'
-import mermaidPlugin from '@comark/mermaid'
+import mermaid from '@comark/mermaid'
 import { Mermaid } from '@comark/mermaid/vue'
 import { ref } from 'vue'
 
@@ -51,7 +51,7 @@ graph TD
 \`\`\`
 `)
 
-const { data } = useAsyncData('ast', () => parse(markdown.value, { plugins: [mathPlugin(), mermaidPlugin()] }), {
+const { data } = useAsyncData('ast', () => parse(markdown.value, { plugins: [math(), mermaid()] }), {
   watch: [markdown],
 })
 </script>
