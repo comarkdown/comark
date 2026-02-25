@@ -10,7 +10,7 @@ A high-performance markdown parser and renderer with Vue & React components supp
 
 ## Features
 
-- 🚀 Fast markdown-it based parser
+- 🚀 Fast markdown-exit based parser
 - 📦 Stream API for buffered parsing
 - 🔧 Comark component syntax support
 - 🔒 Auto-close unclosed markdown syntax (perfect for streaming)
