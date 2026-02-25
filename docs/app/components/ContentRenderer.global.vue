@@ -8,7 +8,7 @@ import { useRuntimeConfig } from '#imports'
 import { ComarkRenderer } from 'comark/vue'
 import { Mermaid } from '@comark/mermaid/vue'
 import type { ComarkNode, ComarkTree, ComarkElement } from 'comark/ast'
-import type { MinimarkTree } from 'minimark'
+import type { MinimarkNode, MinimarkTree } from 'minimark'
 
 interface Renderable {
   render?: (props: Record<string, unknown>) => unknown
@@ -77,6 +77,18 @@ const props = defineProps({
 
 const debug = import.meta.dev || import.meta.preview
 
+function replaceMermaid(body: MinimarkNode[]): MinimarkNode[] {
+  return body.map((node: MinimarkNode): MinimarkNode => {
+    if (node[0] === 'pre' && typeof node[1] === 'object' && 'language' in node[1] && node[1].language === 'mermaid') {
+      return ['Mermaid', { content: node[1].code }]
+    }
+    if (Array.isArray(node) && node.length > 2) {
+      return [node[0], node[1], ...replaceMermaid(node.slice(2) as MinimarkNode[])]
+    }
+    return node
+  })
+}
+
 const body = computed(() => {
   let body = props.value.body || props.value
   if (props.summary && props.value.summary) {
@@ -86,12 +98,7 @@ const body = computed(() => {
   // this is a workaround to convert mermaid code block to Mermaid component
   return {
     frontmatter: props.data,
-    nodes: body.value.map((node: ComarkNode) => {
-      if (node[0] === 'pre' && typeof node[1] === 'object' && 'language' in node[1] && node[1].language === 'mermaid') {
-        return ['Mermaid', { content: node[1].code }]
-      }
-      return node
-    }),
+    nodes: replaceMermaid(body.value),
     meta: {},
   } as ComarkTree
 })
