@@ -1,0 +1,44 @@
+@import "tailwindcss";
+
+body {
+  @apply bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-50 min-h-screen flex flex-col;
+}
+
+header {
+  @apply border-b border-neutral-200 dark:border-neutral-800;
+}
+
+header nav {
+  @apply max-w-2xl mx-auto px-6 py-4;
+}
+
+header nav a {
+  @apply text-lg font-semibold text-neutral-900 dark:text-neutral-50 no-underline;
+}
+
+main {
+  @apply max-w-2xl mx-auto px-6 py-8 flex-1 w-full;
+}
+
+footer {
+  @apply border-t border-neutral-200 dark:border-neutral-800 text-center text-sm text-neutral-500 dark:text-neutral-400 py-6;
+}
+
+footer a {
+  @apply text-neutral-700 dark:text-neutral-300 underline;
+}
+
+/* Prose styles for rendered Comark content */
+.prose h1 { @apply text-3xl font-bold mb-4 mt-0; }
+.prose h2 { @apply text-2xl font-semibold mt-8 mb-3; }
+.prose h3 { @apply text-xl font-semibold mt-6 mb-2; }
+.prose p { @apply mb-4 leading-relaxed; }
+.prose a { @apply text-blue-600 dark:text-blue-400 underline; }
+.prose strong { @apply font-semibold; }
+.prose ul { @apply list-disc pl-6 mb-4 space-y-1; }
+.prose ol { @apply list-decimal pl-6 mb-4 space-y-1; }
+.prose li { @apply leading-relaxed; }
+.prose blockquote { @apply border-l-4 border-neutral-300 dark:border-neutral-700 pl-4 italic text-neutral-600 dark:text-neutral-400 my-4; }
+.prose code { @apply bg-neutral-200 dark:bg-neutral-800 px-1.5 py-0.5 rounded text-sm font-mono; }
+.prose pre { @apply bg-neutral-100 dark:bg-neutral-800 dark:text-neutral-100 text-neutral-800 rounded-lg p-4 overflow-x-auto mb-4; }
+.prose pre code { @apply bg-transparent p-0 text-inherit; }
