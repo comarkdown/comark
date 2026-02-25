@@ -1,7 +1,7 @@
 ---
 title: React
 description: A minimal example showing how to use Comark with React and Vite.
-icon: i-logos-react
+icon: i-simple-icons-react
 category: Vite
 ---
 

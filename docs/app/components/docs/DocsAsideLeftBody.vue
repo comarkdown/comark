@@ -4,6 +4,8 @@ import type { ContentNavigationItem } from '@nuxt/content'
 const route = useRoute()
 const navigation = inject<Ref<ContentNavigationItem[]>>('navigation')
 
+console.log(navigation.value)
+
 const { data: examplesNavigation } = await useAsyncData('nav-examples', () =>
   queryCollectionNavigation('examples'),
 )

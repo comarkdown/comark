@@ -1,7 +1,7 @@
 ---
 title: Vue
-description: A minimal example showing how to use Comark with Vue 3 and Vite.
-icon: i-logos-vue
+description: A minimal example showing how to use Comark with Vue and Vite.
+icon: i-simple-icons-vuedotjs
 category: Vite
 ---
 
@@ -141,4 +141,4 @@ export default defineConfig({
 ::
 
 
-This example demonstrates the simplest way to use Comark with Vue 3 - use the `h()` render function with the `Comark` component and pass it markdown content. The component handles parsing and rendering automatically.
+This example demonstrates the simplest way to use Comark with Vue - use the `h()` render function with the `Comark` component and pass it markdown content. The component handles parsing and rendering automatically.

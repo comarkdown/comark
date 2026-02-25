@@ -1,6 +1,7 @@
 ---
-title: CJK text support
-description: Example showing how to use Comark with Chinese, Japanese, and Korean text in Vue 3 and Vite.
+title: CJK Language Support
+navigation.title: CJK languages
+description: Example showing how to use Comark with Chinese, Japanese, and Korean text in Vue and Vite.
 icon: i-lucide-languages
 category: Plugins
 ---
@@ -158,7 +159,7 @@ export default defineConfig({
 
 ## Features
 
-This example demonstrates how to use Comark with CJK (Chinese, Japanese, Korean) text in Vue 3:
+This example demonstrates how to use Comark with CJK (Chinese, Japanese, Korean) text in Vue:
 
 - **CJK Plugin**: Optimized text handling for Chinese, Japanese, and Korean languages
 - **Proper Line Breaking**: Handles line breaks in CJK text without adding unwanted spaces

@@ -1,8 +1,8 @@
 ---
 title: Nuxt
 description: A minimal example showing how to use Comark Syntax with Nuxt 4.
-category: Nuxt
-icon: i-logos-nuxt-icon
+category: Frameworks
+icon: i-simple-icons-nuxt
 ---
 
 ::code-tree{defaultValue="app/app.vue" expandAll}
