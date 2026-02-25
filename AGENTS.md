@@ -26,8 +26,7 @@ This is a **monorepo** containing multiple packages related to Comark (Component
 │   ├── vue-vite/         # Vue 3 + Vite + Tailwind CSS v4
 │   ├── react-vite/       # React 19 + Vite + Tailwind CSS v4
 │   ├── nuxt/             # Nuxt example
-│   ├── nuxt-ui/          # Nuxt UI example
-│   └── react-vite-stream/ # React streaming example
+│   └── nuxt-ui/          # Nuxt UI example
 ├── docs/                 # Documentation site (Docus-based)
 ├── playground/           # Development playground
 ├── skills/               # AI agent skills definitions
