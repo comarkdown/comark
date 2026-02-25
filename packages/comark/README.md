@@ -33,15 +33,15 @@ pnpm add comark
 ```vue
 <script setup lang="ts">
 import { Comark } from 'comark/vue'
-import cjkPlugin from '@comark/cjk'
-import mathPlugin from '@comark/math'
+import cjk from '@comark/cjk'
+import math from '@comark/math'
 import { Math } from '@comark/math/vue'
 
 const chatMessage = ...
 </script>
 
 <template>
-  <Comark :components="{ Math }" :options="{ plugins: [cjkPlugin(), mathPlugin()] }">{{ chatMessage }}</Comark>
+  <Comark :components="{ Math }" :options="{ plugins: [cjk(), math()] }">{{ chatMessage }}</Comark>
 </template>
 ```
 
@@ -49,13 +49,13 @@ const chatMessage = ...
 
 ```tsx
 import { Comark } from 'comark/react'
-import cjkPlugin from '@comark/cjk'
-import mathPlugin from '@comark/math'
+import cjk from '@comark/cjk'
+import math from '@comark/math'
 import { Math } from '@comark/math/react'
 
 function App() {
   const chatMessage = ...
-  return <Comark components={{ Math }} options={{ plugins: [cjkPlugin(), mathPlugin()] }}>{chatMessage}</Comark>
+  return <Comark components={{ Math }} options={{ plugins: [cjk(), math()] }}>{chatMessage}</Comark>
 }
 ```
 

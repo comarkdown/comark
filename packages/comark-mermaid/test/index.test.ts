@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { parse } from 'comark'
 import comarkMermaid from '../src/index'
 
-const mermaidPlugin = comarkMermaid()
+const mermaid = comarkMermaid()
 
 describe('comarkMermaid', () => {
   it('should create a plugin with default config', async () => {
@@ -30,7 +30,7 @@ describe('markdown-it integration', () => {
 graph TD
     A --> B
 \`\`\``
-    const result = await parse(markdown, { plugins: [mermaidPlugin] })
+    const result = await parse(markdown, { plugins: [mermaid] })
     const ast = JSON.stringify(result)
     expect(ast).toContain('mermaid')
     expect(ast).toContain('graph TD')
@@ -43,7 +43,7 @@ graph TD
     B -->|Yes| C[Great!]
     B -->|No| D[Debug]
 \`\`\``
-    const result = await parse(markdown, { plugins: [mermaidPlugin] })
+    const result = await parse(markdown, { plugins: [mermaid] })
     const ast = JSON.stringify(result)
     expect(ast).toContain('mermaid')
     expect(ast).toContain('graph TD')
@@ -56,7 +56,7 @@ sequenceDiagram
     Alice->>Bob: Hello Bob!
     Bob-->>Alice: Hello Alice!
 \`\`\``
-    const result = await parse(markdown, { plugins: [mermaidPlugin] })
+    const result = await parse(markdown, { plugins: [mermaid] })
     const ast = JSON.stringify(result)
     expect(ast).toContain('mermaid')
     expect(ast).toContain('sequenceDiagram')
@@ -69,7 +69,7 @@ classDiagram
     Animal <|-- Duck
     Animal : +int age
 \`\`\``
-    const result = await parse(markdown, { plugins: [mermaidPlugin] })
+    const result = await parse(markdown, { plugins: [mermaid] })
     const ast = JSON.stringify(result)
     expect(ast).toContain('mermaid')
     expect(ast).toContain('classDiagram')
@@ -81,7 +81,7 @@ stateDiagram-v2
     [*] --> Still
     Still --> Moving
 \`\`\``
-    const result = await parse(markdown, { plugins: [mermaidPlugin] })
+    const result = await parse(markdown, { plugins: [mermaid] })
     const ast = JSON.stringify(result)
     expect(ast).toContain('mermaid')
     expect(ast).toContain('stateDiagram')
@@ -94,7 +94,7 @@ gantt
     section Planning
     Task 1 :a1, 2024-01-01, 30d
 \`\`\``
-    const result = await parse(markdown, { plugins: [mermaidPlugin] })
+    const result = await parse(markdown, { plugins: [mermaid] })
     const ast = JSON.stringify(result)
     expect(ast).toContain('mermaid')
     expect(ast).toContain('gantt')
@@ -106,7 +106,7 @@ pie title Pets
     "Dogs" : 386
     "Cats" : 85
 \`\`\``
-    const result = await parse(markdown, { plugins: [mermaidPlugin] })
+    const result = await parse(markdown, { plugins: [mermaid] })
     const ast = JSON.stringify(result)
     expect(ast).toContain('mermaid')
     expect(ast).toContain('pie')
@@ -117,7 +117,7 @@ pie title Pets
 erDiagram
     CUSTOMER ||--o{ ORDER : places
 \`\`\``
-    const result = await parse(markdown, { plugins: [mermaidPlugin] })
+    const result = await parse(markdown, { plugins: [mermaid] })
     const ast = JSON.stringify(result)
     expect(ast).toContain('mermaid')
     expect(ast).toContain('erDiagram')
@@ -130,7 +130,7 @@ gitGraph
     branch develop
     checkout develop
 \`\`\``
-    const result = await parse(markdown, { plugins: [mermaidPlugin] })
+    const result = await parse(markdown, { plugins: [mermaid] })
     const ast = JSON.stringify(result)
     expect(ast).toContain('mermaid')
     expect(ast).toContain('gitGraph')
@@ -140,7 +140,7 @@ gitGraph
     const markdown = `\`\`\`javascript
 const x = 1
 \`\`\``
-    const result = await parse(markdown, { plugins: [mermaidPlugin] })
+    const result = await parse(markdown, { plugins: [mermaid] })
     const ast = JSON.stringify(result)
     expect(ast).not.toContain('"mermaid"')
     expect(ast).toContain('javascript')
@@ -158,7 +158,7 @@ Some text
 sequenceDiagram
     Alice->>Bob: Hi
 \`\`\``
-    const result = await parse(markdown, { plugins: [mermaidPlugin] })
+    const result = await parse(markdown, { plugins: [mermaid] })
     const ast = JSON.stringify(result)
     expect(ast).toContain('graph TD')
     expect(ast).toContain('sequenceDiagram')
@@ -166,7 +166,7 @@ sequenceDiagram
 
   it('should handle text without mermaid', async () => {
     const text = 'No diagrams here'
-    const result = await parse(text, { plugins: [mermaidPlugin] })
+    const result = await parse(text, { plugins: [mermaid] })
     const ast = JSON.stringify(result)
     expect(ast).not.toContain('"mermaid"')
   })
@@ -182,7 +182,7 @@ graph TB
     C -->|Two| E[iPhone]
     C -->|Three| F[Car]
 \`\`\``
-    const result = await parse(markdown, { plugins: [mermaidPlugin] })
+    const result = await parse(markdown, { plugins: [mermaid] })
     const ast = JSON.stringify(result)
     expect(ast).toContain('mermaid')
     expect(ast).toContain('Christmas')
@@ -199,7 +199,7 @@ sequenceDiagram
     API-->>App: Return data
     App-->>User: Display data
 \`\`\``
-    const result = await parse(markdown, { plugins: [mermaidPlugin] })
+    const result = await parse(markdown, { plugins: [mermaid] })
     const ast = JSON.stringify(result)
     expect(ast).toContain('mermaid')
     expect(ast).toContain('participant')
@@ -212,7 +212,7 @@ sequenceDiagram
     Note right of John: John thinks
     John-->>Alice: Hi Alice
 \`\`\``
-    const result = await parse(markdown, { plugins: [mermaidPlugin] })
+    const result = await parse(markdown, { plugins: [mermaid] })
     const ast = JSON.stringify(result)
     expect(ast).toContain('mermaid')
     expect(ast).toContain('Note')
@@ -223,7 +223,7 @@ describe('edge cases', () => {
   it('should handle empty mermaid block', async () => {
     const markdown = `\`\`\`mermaid
 \`\`\``
-    const result = await parse(markdown, { plugins: [mermaidPlugin] })
+    const result = await parse(markdown, { plugins: [mermaid] })
     expect(result.nodes).toBeDefined()
   })
 
@@ -234,7 +234,7 @@ graph TD
     A --> B
 
 \`\`\``
-    const result = await parse(markdown, { plugins: [mermaidPlugin] })
+    const result = await parse(markdown, { plugins: [mermaid] })
     const ast = JSON.stringify(result)
     expect(ast).toContain('mermaid')
   })
@@ -248,7 +248,7 @@ graph TD
 \`\`\`
 
 Some text after`
-    const result = await parse(markdown, { plugins: [mermaidPlugin] })
+    const result = await parse(markdown, { plugins: [mermaid] })
     const ast = JSON.stringify(result)
     expect(ast).toContain('mermaid')
     expect(ast).toContain('Heading')
@@ -261,13 +261,13 @@ Some text after`
       A --> B
   \`\`\`
 - Item 2`
-    const result = await parse(markdown, { plugins: [mermaidPlugin] })
+    const result = await parse(markdown, { plugins: [mermaid] })
     const ast = JSON.stringify(result)
     expect(ast).toContain('mermaid')
   })
 
   it('should not parse inline code as mermaid', async () => {
-    const result = await parse('Inline `mermaid` code', { plugins: [mermaidPlugin] })
+    const result = await parse('Inline `mermaid` code', { plugins: [mermaid] })
     const p = result.nodes[0] as any[]
     // Should have code element, not mermaid element
     expect(p[0]).toBe('p')
@@ -281,7 +281,7 @@ graph TD
     A --> B
         B --> C
 \`\`\``
-    const result = await parse(markdown, { plugins: [mermaidPlugin] })
+    const result = await parse(markdown, { plugins: [mermaid] })
     const ast = JSON.stringify(result)
     expect(ast).toContain('mermaid')
     expect(ast).toContain('A --> B')
@@ -298,7 +298,7 @@ graph TD
 \`\`\`
 
 ## Another Section`
-    const result = await parse(markdown, { plugins: [mermaidPlugin] })
+    const result = await parse(markdown, { plugins: [mermaid] })
     const ast = JSON.stringify(result)
     expect(ast).toContain('h1')
     expect(ast).toContain('mermaid')
@@ -312,7 +312,7 @@ graph TD
 > graph TD
 >     A --> B
 > \`\`\``
-    const result = await parse(markdown, { plugins: [mermaidPlugin] })
+    const result = await parse(markdown, { plugins: [mermaid] })
     const ast = JSON.stringify(result)
     expect(ast).toContain('blockquote')
   })
@@ -330,7 +330,7 @@ graph TD
 \`\`\`python
 x = 1
 \`\`\``
-    const result = await parse(markdown, { plugins: [mermaidPlugin] })
+    const result = await parse(markdown, { plugins: [mermaid] })
     const ast = JSON.stringify(result)
     expect(ast).toContain('mermaid')
     expect(ast).toContain('javascript')

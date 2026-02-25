@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Comark } from 'comark/vue'
-import mathPlugin from '@comark/math'
+import math from '@comark/math'
 import { Math } from '@comark/math/vue'
 
 const markdown = `
@@ -49,7 +49,7 @@ $$
   <Suspense>
     <Comark
       :components="{ math: Math }"
-      :options="{ plugins: [mathPlugin()] }"
+      :options="{ plugins: [math()] }"
     >
       {{ markdown }}
     </Comark>

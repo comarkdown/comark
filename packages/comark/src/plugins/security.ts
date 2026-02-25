@@ -7,7 +7,7 @@ interface SecurityOptions {
   drop?: string[]
 }
 
-export default function comarkSecurity(options: SecurityOptions): ComarkPlugin {
+export default function security(options: SecurityOptions): ComarkPlugin {
   const { drop = [] } = options
 
   const dropTags = new Set(drop)

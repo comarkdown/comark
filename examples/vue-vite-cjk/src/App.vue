@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Comark } from 'comark/vue'
-import cjkPlugin from '@comark/cjk'
+import cjk from '@comark/cjk'
 
 const markdown = `
 # CJK Text Support
@@ -61,7 +61,7 @@ CJK文字とLatin文字를 함께 사용할 수 있습니다。
 <template>
   <Suspense>
     <Comark
-      :options="{ plugins: [cjkPlugin()] }"
+      :options="{ plugins: [cjk()] }"
     >
       {{ markdown }}
     </Comark>

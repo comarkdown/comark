@@ -31,7 +31,7 @@ yarn add @comark/mermaid comark mermaid
 ```vue
 <script setup>
 import { Comark } from 'comark/vue'
-import mermaidPlugin from '@comark/mermaid'
+import mermaid from '@comark/mermaid'
 import { Mermaid } from '@comark/mermaid/vue'
 
 const markdown = `
@@ -53,20 +53,20 @@ const components = {
 
 <template>
   <Suspense>
-    <Comark :components="components" :options="{ plugins: [mermaidPlugin()] }">{{ markdown }}</Comark>
+    <Comark :components="components" :options="{ plugins: [mermaid()] }">{{ markdown }}</Comark>
   </Suspense>
 </template>
 ```
 
 **Important:**
-- The `mermaidPlugin` must be passed to identify and parse mermaid code blocks
+- The `mermaid` must be passed to identify and parse mermaid code blocks
 - Comark component requires `<Suspense>` wrapper (it's async)
 
 ### React
 
 ```tsx
 import { Comark } from 'comark/react'
-import mermaidPlugin from '@comark/mermaid'
+import mermaid from '@comark/mermaid'
 import { Mermaid } from '@comark/mermaid/react'
 
 const components = {
@@ -86,18 +86,18 @@ graph TD
 \`\`\`
   `
 
-  return <Comark components={components} options={{ plugins: [mermaidPlugin()] }}>{markdown}</Comark>
+  return <Comark components={components} options={{ plugins: [mermaid()] }}>{markdown}</Comark>
 }
 ```
 
 **Important:**
-- The `mermaidPlugin` must be passed to identify and parse mermaid code blocks
+- The `mermaid` must be passed to identify and parse mermaid code blocks
 
 ### Core Parsing API
 
 ```typescript
 import { parse } from 'comark'
-import mermaidPlugin from '@comark/mermaid'
+import mermaid from '@comark/mermaid'
 
 const result = await parse(`
 \`\`\`mermaid
@@ -105,7 +105,7 @@ graph LR
     A --> B
 \`\`\`
 `, {
-  plugins: [mermaidPlugin()]
+  plugins: [mermaid()]
 })
 
 // The AST will contain mermaid nodes with diagram code
@@ -254,7 +254,7 @@ You can configure the mermaid theme:
 ```typescript
 import { createMermaidPlugin } from '@comark/mermaid'
 
-const mermaidPlugin = createMermaidPlugin({
+const mermaid = createMermaidPlugin({
   theme: 'dark' // 'default' | 'dark' | 'forest' | 'neutral'
 })
 ```
@@ -264,7 +264,7 @@ const mermaidPlugin = createMermaidPlugin({
 Pass custom mermaid options:
 
 ```typescript
-const mermaidPlugin = createMermaidPlugin({
+const mermaid = createMermaidPlugin({
   theme: 'dark',
   options: {
     fontFamily: 'Arial',
@@ -286,7 +286,7 @@ Both Vue and React `Mermaid` components accept:
 
 ### Diagrams not rendering
 
-1. **Plugin not included**: Make sure to pass `plugins: [mermaidPlugin()]` to the parse/Comark component
+1. **Plugin not included**: Make sure to pass `plugins: [mermaid()]` to the parse/Comark component
 2. **Component not registered**: Register the `Mermaid` component in the components map
 3. **Syntax errors**: Check the Mermaid syntax - the component will display error messages
 

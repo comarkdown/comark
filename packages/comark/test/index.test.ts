@@ -4,9 +4,9 @@ import { join } from 'node:path'
 import { parseFrontmatter } from '../src/internal/front-matter'
 import { parse } from '../src/index'
 import { renderHTML, renderMarkdown } from '../src/string'
-import comarkCjk from '@comark/cjk'
+import cjk from '@comark/cjk'
 import type { HighlightOptions } from '../src/plugins/highlight'
-import comarkEmoji from '../src/plugins/emoji'
+import emoji from '../src/plugins/emoji'
 
 interface TestCase {
   input: string
@@ -167,7 +167,7 @@ describe('Comark Tests', () => {
   testCases.forEach(({ file, testCase }) => {
     describe(file, () => {
       it('should parse input to AST', { timeout: testCase.timeouts?.parse ?? 5000 }, async () => {
-        const plugins = [comarkCjk(), comarkEmoji()]
+        const plugins = [cjk(), emoji()]
         const result = await parse(testCase.input, {
           autoUnwrap: false,
           ...testCase.options,

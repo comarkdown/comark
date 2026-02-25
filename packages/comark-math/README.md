@@ -32,7 +32,7 @@ yarn add @comark/math comark katex
 ```vue
 <script setup>
 import { Comark } from 'comark/vue'
-import mathPlugin from '@comark/math'
+import math from '@comark/math'
 import { Math } from '@comark/math/vue'
 
 const markdown = `
@@ -53,13 +53,13 @@ const components = {
 
 <template>
   <Suspense>
-    <Comark :components="components" :options="{ plugins: [mathPlugin()] }">{{ markdown }}</Comark>
+    <Comark :components="components" :options="{ plugins: [math()] }">{{ markdown }}</Comark>
   </Suspense>
 </template>
 ```
 
 **Important:** 
-- The `mathPlugin` must be passed to parse and tokenize `$...$` and `$$...$$` expressions
+- The `math` must be passed to parse and tokenize `$...$` and `$$...$$` expressions
 - Include KaTeX CSS: `import 'katex/dist/katex.min.css'` in your app
 - Comark component requires `<Suspense>` wrapper (it's async)
 
@@ -67,7 +67,7 @@ const components = {
 
 ```tsx
 import { Comark } from 'comark/react'
-import mathPlugin from '@comark/math'
+import math from '@comark/math'
 import { Math } from '@comark/math/react'
 
 const components = {
@@ -86,22 +86,22 @@ $$
 $$
   `
 
-  return <Comark components={components} options={{ plugins: [mathPlugin()] }}>{markdown}</Comark>
+  return <Comark components={components} options={{ plugins: [math()] }}>{markdown}</Comark>
 }
 ```
 
 **Important:** 
-- The `mathPlugin` must be passed to parse and tokenize `$...$` and `$$...$$` expressions
+- The `math` must be passed to parse and tokenize `$...$` and `$$...$$` expressions
 - Include KaTeX CSS import
 
 ### Core Parsing API
 
 ```typescript
 import { parse } from 'comark'
-import mathPlugin from '@comark/math'
+import math from '@comark/math'
 
 const result = await parse('Inline $x^2$ and display $$E = mc^2$$', {
-  plugins: [mathPlugin()]
+  plugins: [math()]
 })
 
 // The AST will contain math nodes with LaTeX content
@@ -261,7 +261,7 @@ The component automatically renders in display mode when the class contains "blo
 
 ### Math not rendering
 
-1. **Plugin not included**: Make sure to pass `plugins: [mathPlugin()]` to the parse/Comark component
+1. **Plugin not included**: Make sure to pass `plugins: [math()]` to the parse/Comark component
 2. **KaTeX CSS not loaded**: Import `'katex/dist/katex.min.css'` in your app
 3. **Component not registered**: Register the `Math` component in the components map
 

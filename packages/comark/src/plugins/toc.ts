@@ -138,7 +138,7 @@ export function generateFlatToc(body: ComarkTree, options: Toc): Toc {
   }
 }
 
-export default function comarkToc(options: Partial<Toc> = {}): ComarkPlugin {
+export default function toc(options: Partial<Toc> = {}): ComarkPlugin {
   const { title = '', depth = 2, searchDepth = 2, links = [] } = options
   return {
     post(state) {
