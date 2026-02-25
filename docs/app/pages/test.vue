@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Comark } from 'comark/vue'
+import highlight from 'comark/plugins/highlight'
 import resolveComponent from '../utils/components-manifest'
 
 const markdown = ref(`
@@ -187,7 +188,7 @@ Thanks for trying the **Comark test page**! 🚀
   <UContainer>
     <Comark
       :components-manifest="resolveComponent"
-      :options="{ highlight: true }"
+      :options="{ plugins: [highlight()] }"
     >
       {{ markdown }}
     </Comark>
