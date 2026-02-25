@@ -8,4 +8,5 @@
     variant="solid"
     trailing-icon="i-lucide-arrow-right"
   />
+  <UContentSearchButton />
 </template>
