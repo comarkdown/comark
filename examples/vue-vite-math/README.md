@@ -17,7 +17,7 @@ createApp(App).mount('#app')
 ```vue [src/App.vue]
 <script setup lang="ts">
 import { Comark } from 'comark/vue'
-import mathPlugin from '@comark/math'
+import math from '@comark/math'
 import { Math } from '@comark/math/vue'
 
 const markdown = `
@@ -66,7 +66,7 @@ $$
   <Suspense>
     <Comark
       :components="{ math: Math }"
-      :options="{ plugins: [mathPlugin()] }"
+      :options="{ plugins: [math()] }"
     >{{ markdown }}</Comark>
   </Suspense>
 </template>
@@ -158,14 +158,14 @@ This example demonstrates how to use Comark with LaTeX math formulas in Vue 3:
 
 1. Import the math plugin, component, and KaTeX CSS:
    ```ts
-   import mathPlugin from '@comark/math'
+   import math from '@comark/math'
    import { Math } from '@comark/math/vue'
    import 'katex/dist/katex.min.css'
    ```
 
 2. Pass the plugin to Comark options:
    ```vue
-   <Comark :options="{ plugins: [mathPlugin()] }" />
+   <Comark :options="{ plugins: [math()] }" />
    ```
 
 3. Register the Math component:

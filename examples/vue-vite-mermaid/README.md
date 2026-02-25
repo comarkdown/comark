@@ -17,7 +17,7 @@ createApp(App).mount('#app')
 ```vue [src/App.vue]
 <script setup lang="ts">
 import { Comark } from 'comark/vue'
-import mermaidPlugin from '@comark/mermaid'
+import mermaid from '@comark/mermaid'
 import { Mermaid } from '@comark/mermaid/vue'
 
 const markdown = `
@@ -52,7 +52,7 @@ sequenceDiagram
   <Suspense>
     <Comark
       :components="{ mermaid: Mermaid }"
-      :options="{ plugins: [mermaidPlugin()] }"
+      :options="{ plugins: [mermaid()] }"
     >{{ markdown }}</Comark>
   </Suspense>
 </template>
@@ -143,13 +143,13 @@ This example demonstrates how to use Comark with Mermaid diagrams in Vue 3:
 
 1. Import the mermaid plugin and component:
    ```ts
-   import mermaidPlugin from '@comark/mermaid'
+   import mermaid from '@comark/mermaid'
    import { Mermaid } from '@comark/mermaid/vue'
    ```
 
 2. Pass the plugin to Comark options:
    ```vue
-   <Comark :options="{ plugins: [mermaidPlugin()] }" />
+   <Comark :options="{ plugins: [mermaid()] }" />
    ```
 
 3. Register the Mermaid component:

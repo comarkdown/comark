@@ -267,7 +267,7 @@ export function resetHighlighter(): void {
   loadedThemes.clear()
 }
 
-export default function comarkHighlight(options: HighlightOptions = {}): ComarkPlugin {
+export default function highlight(options: HighlightOptions = {}): ComarkPlugin {
   return {
     async post(state) {
       state.tree = await highlightCodeBlocks(state.tree, options)

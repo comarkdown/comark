@@ -312,14 +312,14 @@ function markdownItMath(md: MarkdownIt, config: MathConfig = {}) {
  * @example
  * ```ts
  * import { parse } from 'comark'
- * import comarkMath from '@comark/math'
+ * import math from '@comark/math'
  *
  * const result = await parse('Inline $x^2$ and display $$E = mc^2$$', {
- *   plugins: [comarkMath({ throwOnError: false })]
+ *   plugins: [math({ throwOnError: false })]
  * })
  * ```
  */
-export default function comarkMath(config?: MathConfig): ComarkPlugin {
+export default function math(config?: MathConfig): ComarkPlugin {
   return {
     markdownItPlugins: [
       ((md: MarkdownIt) => markdownItMath(md, config ?? {})) as unknown as MarkdownItPlugin,

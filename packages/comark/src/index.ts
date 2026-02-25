@@ -1,13 +1,13 @@
 import type { ComarkParsePostState, ParseOptions } from './types'
 import MarkdownIt from 'markdown-exit'
 import pluginMdc from 'markdown-it-mdc'
-import comarkTaskList from './plugins/task-list'
+import taskList from './plugins/task-list'
 import { applyAutoUnwrap } from './internal/parse/auto-unwrap'
 import type { ComarkTree, ComarkNode } from 'comark/ast'
 import { marmdownItTokensToComarkTree } from './internal/parse/token-processor'
 import { autoCloseMarkdown } from './internal/parse/auto-close/index'
 import { parseFrontmatter } from './internal/front-matter'
-import comarkHighlight from './plugins/highlight'
+import highlight from './plugins/highlight'
 
 // Re-export ComarkTree and ComarkNode for convenience
 export type { ComarkTree, ComarkNode } from 'comark/ast'
@@ -44,10 +44,10 @@ export type * from './types'
 export function createParser(options: ParseOptions = {}): (markdown: string) => Promise<ComarkTree> {
   const { autoUnwrap = true, autoClose = true, plugins = [] } = options
 
-  plugins.unshift(comarkTaskList())
+  plugins.unshift(taskList())
 
   if (options.highlight) {
-    plugins.unshift(comarkHighlight(typeof options.highlight === 'object' ? options.highlight : {}))
+    plugins.unshift(highlight(typeof options.highlight === 'object' ? options.highlight : {}))
   }
 
   const parser = new MarkdownIt({

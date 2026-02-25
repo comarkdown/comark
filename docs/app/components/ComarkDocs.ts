@@ -1,17 +1,17 @@
 import { defineComarkComponent } from 'comark/vue'
-import comarkMath from '@comark/math'
-import comarkMermaid from '@comark/mermaid'
+import math from '@comark/math'
+import mermaid from '@comark/mermaid'
+import cjk from '@comark/cjk'
 import { Math } from '@comark/math/vue'
 import { Mermaid } from '@comark/mermaid/vue'
-import comarkCjk from '@comark/cjk'
 import ProsePre from './landing/ProsePre.vue'
 
 export default defineComarkComponent({
   name: 'ComarkDocs',
   plugins: [
-    comarkMath(),
-    comarkMermaid(),
-    comarkCjk(),
+    math(),
+    mermaid(),
+    cjk(),
   ],
   components: {
     Math,

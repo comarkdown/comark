@@ -5,16 +5,16 @@ import comarkCjk from '../src/index'
 describe('@comark/cjk', () => {
   describe('plugin export', () => {
     it('should export a valid ComarkPlugin', async () => {
-      const cjkPlugin = comarkCjk()
-      expect(cjkPlugin).toBeDefined()
-      expect(cjkPlugin.markdownItPlugins).toBeDefined()
-      expect(Array.isArray(cjkPlugin.markdownItPlugins)).toBe(true)
-      expect(cjkPlugin.markdownItPlugins?.length).toBe(1)
+      const cjk = comarkCjk()
+      expect(cjk).toBeDefined()
+      expect(cjk.markdownItPlugins).toBeDefined()
+      expect(Array.isArray(cjk.markdownItPlugins)).toBe(true)
+      expect(cjk.markdownItPlugins?.length).toBe(1)
     })
 
     it('should have markdownItPlugins as functions', async () => {
-      const cjkPlugin = comarkCjk()
-      for (const plugin of (cjkPlugin.markdownItPlugins || [])) {
+      const cjk = comarkCjk()
+      for (const plugin of (cjk.markdownItPlugins || [])) {
         expect(typeof plugin).toBe('function')
       }
     })
@@ -22,36 +22,36 @@ describe('@comark/cjk', () => {
 
   describe('CJK text parsing', () => {
     it('should parse Chinese text correctly', async () => {
-      const cjkPlugin = comarkCjk()
-      const result = await parse('这是一段中文文本。', { plugins: [cjkPlugin] })
+      const cjk = comarkCjk()
+      const result = await parse('这是一段中文文本。', { plugins: [cjk] })
       expect(result.nodes).toHaveLength(1)
       expect(result.nodes[0]).toEqual(['p', {}, '这是一段中文文本。'])
     })
 
     it('should parse Japanese text correctly', async () => {
-      const cjkPlugin = comarkCjk()
-      const result = await parse('これは日本語のテキストです。', { plugins: [cjkPlugin] })
+      const cjk = comarkCjk()
+      const result = await parse('これは日本語のテキストです。', { plugins: [cjk] })
       expect(result.nodes).toHaveLength(1)
       expect(result.nodes[0]).toEqual(['p', {}, 'これは日本語のテキストです。'])
     })
 
     it('should parse Korean text correctly', async () => {
-      const cjkPlugin = comarkCjk()
-      const result = await parse('이것은 한국어 텍스트입니다.', { plugins: [cjkPlugin] })
+      const cjk = comarkCjk()
+      const result = await parse('이것은 한국어 텍스트입니다.', { plugins: [cjk] })
       expect(result.nodes).toHaveLength(1)
       expect(result.nodes[0]).toEqual(['p', {}, '이것은 한국어 텍스트입니다.'])
     })
 
     it('should handle mixed CJK and Latin text', async () => {
-      const cjkPlugin = comarkCjk()
-      const result = await parse('Hello 世界！', { plugins: [cjkPlugin] })
+      const cjk = comarkCjk()
+      const result = await parse('Hello 世界！', { plugins: [cjk] })
       expect(result.nodes).toHaveLength(1)
       expect(result.nodes[0]).toEqual(['p', {}, 'Hello 世界！'])
     })
 
     it('should handle CJK with markdown formatting', async () => {
-      const cjkPlugin = comarkCjk()
-      const result = await parse('**加粗文本** 和 *斜体文本*', { plugins: [cjkPlugin] })
+      const cjk = comarkCjk()
+      const result = await parse('**加粗文本** 和 *斜体文本*', { plugins: [cjk] })
       expect(result.nodes).toHaveLength(1)
       const p = result.nodes[0] as any[]
       expect(p[0]).toBe('p')
@@ -64,8 +64,8 @@ describe('@comark/cjk', () => {
     it('should handle line breaks in CJK text without adding extra spaces', async () => {
       const input = `这是第一行
 这是第二行`
-      const cjkPlugin = comarkCjk()
-      const result = await parse(input, { plugins: [cjkPlugin] })
+      const cjk = comarkCjk()
+      const result = await parse(input, { plugins: [cjk] })
       expect(result.nodes).toHaveLength(1)
       const p = result.nodes[0] as any[]
       expect(p[0]).toBe('p')
@@ -77,8 +77,8 @@ describe('@comark/cjk', () => {
     it('should handle line breaks between CJK and Latin text appropriately', async () => {
       const input = `Hello
 世界`
-      const cjkPlugin = comarkCjk()
-      const result = await parse(input, { plugins: [cjkPlugin] })
+      const cjk = comarkCjk()
+      const result = await parse(input, { plugins: [cjk] })
       expect(result.nodes).toHaveLength(1)
     })
 
@@ -86,8 +86,8 @@ describe('@comark/cjk', () => {
       // CJK-friendly plugin handles soft line breaks appropriately
       const input = `第一行
 第二行`
-      const cjkPlugin = comarkCjk()
-      const result = await parse(input, { plugins: [cjkPlugin] })
+      const cjk = comarkCjk()
+      const result = await parse(input, { plugins: [cjk] })
       expect(result.nodes).toHaveLength(1)
       const p = result.nodes[0] as any[]
       expect(p[0]).toBe('p')
@@ -103,8 +103,8 @@ describe('@comark/cjk', () => {
       const input = `::alert
 这是一个警告消息。
 ::`
-      const cjkPlugin = comarkCjk()
-      const result = await parse(input, { plugins: [cjkPlugin] })
+      const cjk = comarkCjk()
+      const result = await parse(input, { plugins: [cjk] })
       expect(result.nodes).toHaveLength(1)
       const alert = result.nodes[0] as any[]
       expect(alert[0]).toBe('alert')
@@ -114,8 +114,8 @@ describe('@comark/cjk', () => {
       const input = `::card{title="卡片标题"}
 卡片内容
 ::`
-      const cjkPlugin = comarkCjk()
-      const result = await parse(input, { plugins: [cjkPlugin] })
+      const cjk = comarkCjk()
+      const result = await parse(input, { plugins: [cjk] })
       expect(result.nodes).toHaveLength(1)
       const card = result.nodes[0] as any[]
       expect(card[0]).toBe('card')
@@ -124,8 +124,8 @@ describe('@comark/cjk', () => {
 
     it('should handle inline component with CJK', async () => {
       const input = '这是一个 :badge[徽章] 组件。'
-      const cjkPlugin = comarkCjk()
-      const result = await parse(input, { plugins: [cjkPlugin] })
+      const cjk = comarkCjk()
+      const result = await parse(input, { plugins: [cjk] })
       expect(result.nodes).toHaveLength(1)
       const p = result.nodes[0] as any[]
       expect(p[0]).toBe('p')
@@ -135,8 +135,8 @@ describe('@comark/cjk', () => {
 
   describe('CJK headings', () => {
     it('should parse CJK headings', async () => {
-      const cjkPlugin = comarkCjk()
-      const result = await parse('# 中文标题', { plugins: [cjkPlugin] })
+      const cjk = comarkCjk()
+      const result = await parse('# 中文标题', { plugins: [cjk] })
       expect(result.nodes).toHaveLength(1)
       const h1 = result.nodes[0] as any[]
       expect(h1[0]).toBe('h1')
@@ -144,8 +144,8 @@ describe('@comark/cjk', () => {
     })
 
     it('should generate correct ID for CJK headings', async () => {
-      const cjkPlugin = comarkCjk()
-      const result = await parse('## 日本語の見出し', { plugins: [cjkPlugin] })
+      const cjk = comarkCjk()
+      const result = await parse('## 日本語の見出し', { plugins: [cjk] })
       expect(result.nodes).toHaveLength(1)
       const h2 = result.nodes[0] as any[]
       expect(h2[0]).toBe('h2')
@@ -153,8 +153,8 @@ describe('@comark/cjk', () => {
     })
 
     it('should handle mixed language headings', async () => {
-      const cjkPlugin = comarkCjk()
-      const result = await parse('### Hello 你好 こんにちは', { plugins: [cjkPlugin] })
+      const cjk = comarkCjk()
+      const result = await parse('### Hello 你好 こんにちは', { plugins: [cjk] })
       expect(result.nodes).toHaveLength(1)
       const h3 = result.nodes[0] as any[]
       expect(h3[0]).toBe('h3')
@@ -166,8 +166,8 @@ describe('@comark/cjk', () => {
       const input = `- 第一项
 - 第二项
 - 第三项`
-      const cjkPlugin = comarkCjk()
-      const result = await parse(input, { plugins: [cjkPlugin] })
+      const cjk = comarkCjk()
+      const result = await parse(input, { plugins: [cjk] })
       expect(result.nodes).toHaveLength(1)
       const ul = result.nodes[0] as any[]
       expect(ul[0]).toBe('ul')
@@ -177,8 +177,8 @@ describe('@comark/cjk', () => {
       const input = `1. 第一步
 2. 第二步
 3. 第三步`
-      const cjkPlugin = comarkCjk()
-      const result = await parse(input, { plugins: [cjkPlugin] })
+      const cjk = comarkCjk()
+      const result = await parse(input, { plugins: [cjk] })
       expect(result.nodes).toHaveLength(1)
       const ol = result.nodes[0] as any[]
       expect(ol[0]).toBe('ol')
@@ -187,8 +187,8 @@ describe('@comark/cjk', () => {
 
   describe('CJK code blocks', () => {
     it('should preserve CJK in inline code', async () => {
-      const cjkPlugin = comarkCjk()
-      const result = await parse('使用 `代码` 标签', { plugins: [cjkPlugin] })
+      const cjk = comarkCjk()
+      const result = await parse('使用 `代码` 标签', { plugins: [cjk] })
       expect(result.nodes).toHaveLength(1)
       const p = result.nodes[0] as any[]
       expect(p[0]).toBe('p')
@@ -200,8 +200,8 @@ describe('@comark/cjk', () => {
 // 中文注释
 const msg = "你好世界"
 \`\`\``
-      const cjkPlugin = comarkCjk()
-      const result = await parse(input, { plugins: [cjkPlugin] })
+      const cjk = comarkCjk()
+      const result = await parse(input, { plugins: [cjk] })
       expect(result.nodes).toHaveLength(1)
       const pre = result.nodes[0] as any[]
       expect(pre[0]).toBe('pre')
@@ -212,8 +212,8 @@ const msg = "你好世界"
     it('should parse CJK blockquote', async () => {
       const input = `> 这是一段引用文本。
 > 来自某位名人。`
-      const cjkPlugin = comarkCjk()
-      const result = await parse(input, { plugins: [cjkPlugin] })
+      const cjk = comarkCjk()
+      const result = await parse(input, { plugins: [cjk] })
       expect(result.nodes).toHaveLength(1)
       const blockquote = result.nodes[0] as any[]
       expect(blockquote[0]).toBe('blockquote')
@@ -226,8 +226,8 @@ const msg = "你好世界"
 |------|------|
 | 项目A | 这是项目A |
 | 项目B | 这是项目B |`
-      const cjkPlugin = comarkCjk()
-      const result = await parse(input, { plugins: [cjkPlugin] })
+      const cjk = comarkCjk()
+      const result = await parse(input, { plugins: [cjk] })
       expect(result.nodes).toHaveLength(1)
       const table = result.nodes[0] as any[]
       expect(table[0]).toBe('table')
@@ -237,8 +237,8 @@ const msg = "你好世界"
   describe('comparison with and without plugin', () => {
     it('should handle CJK text consistently', async () => {
       const input = '中文文本 English text 日本語'
-      const cjkPlugin = comarkCjk()
-      const withPlugin = await parse(input, { plugins: [cjkPlugin] })
+      const cjk = comarkCjk()
+      const withPlugin = await parse(input, { plugins: [cjk] })
       const withoutPlugin = await parse(input)
       // Both should produce valid output
       expect(withPlugin.nodes).toHaveLength(1)

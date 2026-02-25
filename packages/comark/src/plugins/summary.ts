@@ -3,7 +3,7 @@ import { applyAutoUnwrap } from '../internal/parse/auto-unwrap'
 import { marmdownItTokensToComarkTree } from '../internal/parse/token-processor'
 import type { ComarkPlugin } from '../types'
 
-export default function comarkSummary(delimiter: string = '<!-- more -->'): ComarkPlugin {
+export default function summary(delimiter: string = '<!-- more -->'): ComarkPlugin {
   return {
     post(state) {
       let summary: ComarkNode[] | undefined

@@ -189,9 +189,9 @@ export function searchProps(content: string, index = 0) {
  * import { parse } from 'comark'
  * import { createMermaidPlugin } from '@comark/mermaid'
  *
- * const mermaidPlugin = createMermaidPlugin({ theme: 'dark' })
+ * const mermaid = createMermaidPlugin({ theme: 'dark' })
  * const result = await parse('```mermaid\ngraph TD; A-->B;\n```', {
- *   plugins: [mermaidPlugin()]
+ *   plugins: [mermaid()]
  * })
  * ```
  */

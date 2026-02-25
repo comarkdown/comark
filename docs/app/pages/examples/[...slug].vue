@@ -42,13 +42,14 @@ const breadcrumb = computed(() => [
   { label: page.value?.title || exampleName.value },
 ])
 
+const site = useSiteConfig()
 const path = computed(() => route.path.replace(/\/$/, ''))
 prerenderRoutes([joinURL('/raw', `${path.value}.md`)])
 useHead({
   link: [
     {
       rel: 'alternate',
-      href: joinURL(appConfig.site.url, 'raw', `${path.value}.md`),
+      href: joinURL(site.url, 'raw', `${path.value}.md`),
       type: 'text/markdown',
     },
   ],
