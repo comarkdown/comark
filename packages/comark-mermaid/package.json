@@ -50,7 +50,7 @@
     }
   },
   "dependencies": {
-    "mermaid": "^11.12.3"
+    "beautiful-mermaid": "^1.0.2"
   },
   "devDependencies": {
     "comark": "workspace:*",

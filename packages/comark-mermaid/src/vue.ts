@@ -1,12 +1,7 @@
 import type { PropType } from 'vue'
-import { defineComponent, h, ref, onMounted, watch } from 'vue'
-import mermaid from 'mermaid'
-
-// Initialize mermaid once
-mermaid.initialize({
-  startOnLoad: false,
-  theme: 'default',
-})
+import { defineComponent, h, ref, onMounted, watch, computed } from 'vue'
+import { renderMermaidSVG, THEMES, type DiagramColors } from 'beautiful-mermaid'
+import type { ThemeNames } from '.'
 
 export const Mermaid = defineComponent({
   name: 'Mermaid',
@@ -28,7 +23,7 @@ export const Mermaid = defineComponent({
       default: '100%',
     },
     theme: {
-      type: String as PropType<'default' | 'base' | 'dark' | 'forest' | 'neutral' | 'null'>,
+      type: [String, Object] as PropType<ThemeNames | DiagramColors>,
       default: 'default',
     },
   },
@@ -36,17 +31,22 @@ export const Mermaid = defineComponent({
     const svgContent = ref<string>('')
     const error = ref<string | null>(null)
 
-    watch(() => props.theme, () => {
-      mermaid.initialize({
-        theme: props.theme,
-      })
+    const beautifulTheme = computed(() => {
+      let theme
+      if (typeof props.theme === 'string') {
+        theme = THEMES[props.theme]
+      }
+      else if (typeof props.theme === 'object') {
+        theme = props.theme
+      }
+
+      return theme
     })
 
-    const renderDiagram = async () => {
+    const renderDiagram = () => {
       try {
         error.value = null
-        const id = `mermaid-${Math.random().toString(36).substring(2, 9)}`
-        const { svg } = await mermaid.render(id, props.content)
+        const svg = renderMermaidSVG(props.content, beautifulTheme.value)
         svgContent.value = svg
       }
       catch (err) {

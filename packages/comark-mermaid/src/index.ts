@@ -1,12 +1,14 @@
 import type MarkdownIt from 'markdown-it'
 import type { ComarkPlugin, MarkdownItPlugin } from 'comark'
 
+export type ThemeNames = 'zinc-light' | 'zinc-dark' | 'tokyo-night' | 'tokyo-night-storm' | 'tokyo-night-light' | 'catppuccin-mocha' | 'catppuccin-latte' | 'nord' | 'nord-light' | 'dracula' | 'github-light' | 'github-dark' | 'solarized-light' | 'solarized-dark' | 'one-dark'
+
 export interface MermaidConfig {
   /**
    * Theme for mermaid diagrams
    * @default 'default'
    */
-  theme?: 'default' | 'dark' | 'forest' | 'neutral'
+  theme?: ThemeNames
 }
 
 /**
@@ -39,6 +41,7 @@ function markdownItMermaid(md: MarkdownIt, config?: MermaidConfig) {
         }
         token.info = info
         token.attrSet('content', token.content)
+        console.log('token', token)
       }
     }
   })

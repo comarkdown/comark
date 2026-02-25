@@ -13,13 +13,13 @@ describe('comarkMermaid', () => {
   })
 
   it('should create a plugin with custom config', async () => {
-    const plugin = comarkMermaid({ theme: 'dark' })
+    const plugin = comarkMermaid({ theme: 'zinc-dark' })
     expect(plugin).toBeDefined()
     expect(plugin.markdownItPlugins).toBeDefined()
   })
 
   it('should create a plugin with custom options', async () => {
-    const plugin = comarkMermaid({ theme: 'forest' })
+    const plugin = comarkMermaid({ theme: 'zinc-dark' })
     expect(plugin).toBeDefined()
   })
 })

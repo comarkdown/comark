@@ -1,18 +1,13 @@
 import { useState, useEffect } from 'react'
-import mermaid from 'mermaid'
-
-// Initialize mermaid once
-mermaid.initialize({
-  startOnLoad: false,
-  theme: 'default',
-})
+import { renderMermaidSVG, THEMES, type DiagramColors } from 'beautiful-mermaid'
+import type { ThemeNames } from '.'
 
 export interface MermaidProps {
   content: string
   class?: string
   height?: string
   width?: string
-  theme?: 'default' | 'base' | 'dark' | 'forest' | 'neutral' | 'null'
+  theme?: ThemeNames | DiagramColors
 }
 
 export function Mermaid({
@@ -20,24 +15,17 @@ export function Mermaid({
   class: className = '',
   height = '400px',
   width = '100%',
-  theme = 'default',
+  theme,
 }: MermaidProps) {
   const [svgContent, setSvgContent] = useState<string>('')
   const [error, setError] = useState<string | null>(null)
 
   // Update mermaid theme when it changes
   useEffect(() => {
-    mermaid.initialize({
-      theme,
-    })
-  }, [theme])
-
-  useEffect(() => {
     const renderDiagram = async () => {
       try {
         setError(null)
-        const id = `mermaid-${Math.random().toString(36).substring(2, 9)}`
-        const { svg } = await mermaid.render(id, content)
+        const svg = renderMermaidSVG(content, typeof theme === 'string' ? THEMES[theme] : theme)
         setSvgContent(svg)
       }
       catch (err) {
