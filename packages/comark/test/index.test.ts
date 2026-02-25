@@ -3,6 +3,7 @@ import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { parseFrontmatter } from '../src/internal/front-matter'
 import { parse } from '../src/index'
+import highlight from '../src/plugins/highlight'
 import { renderHTML, renderMarkdown } from '../src/string'
 import cjk from '@comark/cjk'
 import type { HighlightOptions } from '../src/plugins/highlight'
@@ -168,6 +169,9 @@ describe('Comark Tests', () => {
     describe(file, () => {
       it('should parse input to AST', { timeout: testCase.timeouts?.parse ?? 5000 }, async () => {
         const plugins = [cjk(), emoji()]
+        if (testCase.options?.highlight) {
+          plugins.push(highlight(testCase.options.highlight))
+        }
         const result = await parse(testCase.input, {
           autoUnwrap: false,
           ...testCase.options,

@@ -7,7 +7,6 @@ import type { ComarkTree, ComarkNode } from 'comark/ast'
 import { marmdownItTokensToComarkTree } from './internal/parse/token-processor'
 import { autoCloseMarkdown } from './internal/parse/auto-close/index'
 import { parseFrontmatter } from './internal/front-matter'
-import highlight from './plugins/highlight'
 
 // Re-export ComarkTree and ComarkNode for convenience
 export type { ComarkTree, ComarkNode } from 'comark/ast'
@@ -33,22 +32,18 @@ export type * from './types'
  *
  * @example
  * ```typescript
- * import { createParser } from 'comark'
+ * import { createParse } from 'comark'
  *
- * const parse = createParser({ autoUnwrap: false })
+ * const parse = createParse({ autoUnwrap: false })
  * const tree = await parse('# Hello **World**\n::alert\nhi\n::')
  * console.log(tree.nodes)
  * // → [ ['h1', { id: 'hello-world' }, 'Hello ', ['strong', {}, 'World'] ], ['alert', {}, 'hi'] ]
  * ```
  */
-export function createParser(options: ParseOptions = {}): (markdown: string) => Promise<ComarkTree> {
+export function createParse(options: ParseOptions = {}): (markdown: string) => Promise<ComarkTree> {
   const { autoUnwrap = true, autoClose = true, plugins = [] } = options
 
   plugins.unshift(taskList())
-
-  if (options.highlight) {
-    plugins.unshift(highlight(typeof options.highlight === 'object' ? options.highlight : {}))
-  }
 
   const parser = new MarkdownIt({
     html: true,
@@ -138,7 +133,7 @@ export function createParser(options: ParseOptions = {}): (markdown: string) => 
  * ```
  */
 export async function parse(markdown: string, options: ParseOptions = {}): Promise<ComarkTree> {
-  const parser = createParser(options)
+  const parse = createParse(options)
 
-  return await parser(markdown)
+  return await parse(markdown)
 }
