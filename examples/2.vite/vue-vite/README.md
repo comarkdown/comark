@@ -1,7 +1,7 @@
 ---
 title: Vue
 description: A minimal example showing how to use Comark with Vue and Vite.
-icon: i-simple-icons-vuedotjs
+navigation.icon: i-simple-icons-vuedotjs
 category: Vite
 ---
 

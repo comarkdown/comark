@@ -1,7 +1,7 @@
 ---
 title: Mermaid diagrams
 description: Example showing how to use Comark with Mermaid diagrams in Vue and Vite.
-icon: i-simple-icons-mermaid
+navigation.icon: i-simple-icons-mermaid
 category: Plugins
 ---
 

@@ -8,25 +8,16 @@ const { data: examplesNavigation } = await useAsyncData('nav-examples', () =>
   queryCollectionNavigation('examples'),
 )
 
-const { data: examplesIcons } = await useAsyncData('examples-icons', () =>
-  queryCollection('examples')
-    .select('path', 'icon')
-    .all(),
-)
-
 function collapseReadmeNav(items: ContentNavigationItem[]): ContentNavigationItem[] {
-  const iconMap = new Map(
-    (examplesIcons.value || []).map(e => [e.path.replace(/\/readme$/, ''), e.icon]),
-  )
   return items.map((item) => {
     if (!item.children?.length) {
       const path = item.path?.replace(/\/readme$/, '')
-      return { ...item, path, icon: item.icon || iconMap.get(path!) }
+      return { ...item, path, icon: item.icon }
     }
     const readme = item.children.find(c => c.path?.endsWith('/readme'))
     if (readme) {
       const path = readme.path!.replace(/\/readme$/, '')
-      return { ...readme, path, icon: readme.icon || iconMap.get(path), children: undefined }
+      return { ...readme, path, icon: readme.icon, children: undefined }
     }
     return { ...item, children: collapseReadmeNav(item.children) }
   })

@@ -1,7 +1,7 @@
 ---
 title: Math formulas
 description: Example showing how to use Comark with LaTeX math formulas in Vue and Vite.
-icon: i-lucide-calculator
+navigation.icon: i-lucide-calculator
 category: Plugins
 ---
 

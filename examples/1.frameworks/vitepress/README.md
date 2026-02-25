@@ -1,8 +1,8 @@
 ---
 title: VitePress
 description: Using Comark component syntax natively in VitePress via markdown-it-mdc.
-icon: i-simple-icons-vitepress
-category: Vite
+navigation.icon: i-simple-icons-vitepress
+category: Frameworks
 ---
 
 ::code-tree{defaultValue="demo.md" expandAll}
