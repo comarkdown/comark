@@ -56,6 +56,10 @@ useHead({
     },
   ],
 })
+useSeoMeta({
+  title: `${page.value?.title || exampleName.value} Example`,
+  description: page.value?.description,
+})
 </script>
 
 <template>

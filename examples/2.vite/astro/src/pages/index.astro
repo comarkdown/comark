@@ -1,0 +1,39 @@
+---
+import { getCollection } from 'astro:content'
+import Layout from '../layouts/Layout.astro'
+
+const posts = (await getCollection('posts')).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+)
+---
+
+<Layout title="Comark Blog" description="A blog built with Astro content collections and Comark.">
+  <h1 class="text-3xl font-bold mb-2">Comark Blog</h1>
+  <p class="text-neutral-500 dark:text-neutral-400 mb-8">
+    A blog built with <a href="https://astro.build" class="underline">Astro</a> content collections and <a href="https://comark.dev" class="underline">Comark</a> rendering.
+  </p>
+  <ul class="space-y-6">
+    {posts.map((post) => (
+      <li>
+        <a href={`/posts/${post.id}/`} class="group block rounded-lg border border-neutral-200 dark:border-neutral-800 p-5 transition hover:border-neutral-400 dark:hover:border-neutral-600">
+          <h2 class="text-xl font-semibold group-hover:text-blue-600 dark:group-hover:text-blue-400 mb-1">
+            {post.data.title}
+          </h2>
+          <p class="text-neutral-500 dark:text-neutral-400 text-sm mb-2">
+            {post.data.description}
+          </p>
+          <div class="flex items-center gap-3 text-xs text-neutral-400 dark:text-neutral-500">
+            <time datetime={post.data.pubDate.toISOString()}>
+              {post.data.pubDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+            </time>
+            <div class="flex gap-1.5">
+              {post.data.tags.map((tag: string) => (
+                <span class="bg-neutral-200 dark:bg-neutral-800 px-2 py-0.5 rounded-full">{tag}</span>
+              ))}
+            </div>
+          </div>
+        </a>
+      </li>
+    ))}
+  </ul>
+</Layout>

@@ -1,0 +1,48 @@
+---
+import { getCollection } from 'astro:content'
+import { parse } from 'comark'
+import Layout from '../../layouts/Layout.astro'
+import { ComarkRenderer } from 'comark/react'
+import highlight from 'comark/plugins/highlight'
+import Alert from '../../components/Alert'
+
+export async function getStaticPaths() {
+  const posts = await getCollection('posts')
+  return posts.map((post) => ({
+    params: { id: post.id },
+    props: { post },
+  }))
+}
+
+const { post } = Astro.props
+const tree = await parse(post.body!, {
+  plugins: [
+    highlight({
+      themes: {
+        light: 'github-light',
+        dark: 'github-dark',
+      }
+    }),
+  ],
+})
+---
+
+<Layout title={post.data.title} description={post.data.description}>
+  <article>
+    <header class="pb-4 mb-8">
+      <a href="/" class="text-sm text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 mb-4 inline-block">&larr; Back to all posts</a>
+      <h1 class="text-3xl font-bold mb-2">{post.data.title}</h1>
+      <div class="flex items-center gap-3 text-sm text-neutral-500 dark:text-neutral-400">
+        <time datetime={post.data.pubDate.toISOString()}>
+          {post.data.pubDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+        </time>
+        <div class="flex gap-1.5">
+          {post.data.tags.map((tag: string) => (
+            <span class="bg-neutral-200 dark:bg-neutral-800 px-2 py-0.5 rounded-full text-xs">{tag}</span>
+          ))}
+        </div>
+      </div>
+    </header>
+    <ComarkRenderer tree={tree} className="prose" components={{ Alert }} />
+  </article>
+</Layout>

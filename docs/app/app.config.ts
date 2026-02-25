@@ -21,6 +21,13 @@ export default defineAppConfig({
       primary: 'yellow',
       neutral: 'neutral',
     },
+    prose: {
+      codeIcon: {
+        'astro.config.mjs': 'i-simple-icons:astro',
+        'astro': 'i-simple-icons:astro',
+        'md': 'i-custom-comark',
+      },
+    },
   },
 
   docus: {
