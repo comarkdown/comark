@@ -6,7 +6,7 @@ definePageMeta({
 // Fetch all examples
 const { data: examples } = await useAsyncData('examples-list', () =>
   queryCollection('examples')
-    .select('title', 'description', 'category', 'path', 'icon')
+    .select('title', 'description', 'category', 'path', 'navigation')
     .all(),
 )
 
@@ -61,8 +61,8 @@ useSeoMeta({
           >
             <template #header>
               <UIcon
-                v-if="example.icon?.startsWith('i-')"
-                :name="example.icon"
+                v-if="example.navigation?.icon?.startsWith('i-')"
+                :name="example.navigation?.icon"
                 class="size-6"
               />
               <span

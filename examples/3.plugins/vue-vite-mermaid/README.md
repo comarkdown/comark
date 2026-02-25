@@ -1,7 +1,7 @@
 ---
 title: Mermaid diagrams
-description: Example showing how to use Comark with Mermaid diagrams in Vue 3 and Vite.
-icon: i-simple-icons-mermaid
+description: Example showing how to use Comark with Mermaid diagrams in Vue and Vite.
+navigation.icon: i-simple-icons-mermaid
 category: Plugins
 ---
 
@@ -132,7 +132,7 @@ export default defineConfig({
 
 ## Features
 
-This example demonstrates how to use Comark with Mermaid diagrams in Vue 3:
+This example demonstrates how to use Comark with Mermaid diagrams in Vue:
 
 - **Mermaid Plugin**: Import and configure `@comark/mermaid` plugin to parse mermaid code blocks
 - **Mermaid Component**: Register the `Mermaid` component to render diagrams as SVG

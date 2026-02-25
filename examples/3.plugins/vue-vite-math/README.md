@@ -1,7 +1,7 @@
 ---
 title: Math formulas
-description: Example showing how to use Comark with LaTeX math formulas in Vue 3 and Vite.
-icon: i-lucide-calculator
+description: Example showing how to use Comark with LaTeX math formulas in Vue and Vite.
+navigation.icon: i-lucide-calculator
 category: Plugins
 ---
 
@@ -147,7 +147,7 @@ export default defineConfig({
 
 ## Features
 
-This example demonstrates how to use Comark with LaTeX math formulas in Vue 3:
+This example demonstrates how to use Comark with LaTeX math formulas in Vue:
 
 - **Math Plugin**: Import and configure `@comark/math` plugin to parse `$...$` and `$$...$$` expressions
 - **Math Component**: Register the `Math` component to render formulas using KaTeX

@@ -23,7 +23,7 @@ This is a **monorepo** containing multiple packages related to Comark (Component
 │   ├── comark-cjk/       # CJK support plugin (@comark/cjk)
 │   └── comark-math/      # Math formula support (@comark/math)
 ├── examples/             # Example applications
-│   ├── vue-vite/         # Vue 3 + Vite + Tailwind CSS v4
+│   ├── vue-vite/         # Vue + Vite + Tailwind CSS v4
 │   ├── react-vite/       # React 19 + Vite + Tailwind CSS v4
 │   ├── nuxt/             # Nuxt example
 │   └── nuxt-ui/          # Nuxt UI example

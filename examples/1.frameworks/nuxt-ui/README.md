@@ -1,8 +1,8 @@
 ---
 title: Nuxt UI
 description: A minimal example showing how to use Comark Syntax with Nuxt UI.
-category: Nuxt
-icon: i-logos-nuxt-icon
+category: Frameworks
+navigation.icon: i-simple-icons-nuxt
 ---
 
 ::code-tree{defaultValue="app/app.vue" expandAll}

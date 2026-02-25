@@ -1,6 +1,6 @@
 # Vue Rendering Guide
 
-Complete guide for rendering Comark AST in Vue 3 applications.
+Complete guide for rendering Comark AST in Vue applications.
 
 ## Table of Contents
 

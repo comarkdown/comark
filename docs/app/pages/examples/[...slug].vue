@@ -32,8 +32,10 @@ const { data: surround } = await useAsyncData(`${kebabCase(route.path)}-surround
   })
 })
 
-// Extract example name from route (e.g., "/examples/vite-ssr-html" -> "vite-ssr-html")
 const exampleName = computed(() => {
+  if (page.value?.stem) {
+    return page.value.stem.replace(/^\/?examples\//, '').replace(/\/readme$/i, '')
+  }
   return route.path.replace(/^\/examples\//, '')
 })
 
