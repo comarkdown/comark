@@ -18,6 +18,7 @@
     "dev:vue:math": "pnpm --filter comark-vue-vite-math run dev",
     "dev:vue:cjk": "pnpm --filter comark-vue-vite-cjk run dev",
     "dev:astro": "pnpm --filter comark-astro run dev",
+    "dev:vitepress": "pnpm --filter comark-vitepress run dev",
     "dev:nuxt": "pnpm --filter comark-nuxt run dev",
     "dev:nuxt-ui": "pnpm --filter comark-nuxt-ui run dev",
     "benchmark": "pnpm --filter comark run benchmark",
