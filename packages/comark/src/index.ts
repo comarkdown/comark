@@ -1,7 +1,7 @@
 import type { ComarkParsePostState, ParseOptions } from './types'
-import MarkdownIt from 'markdown-it'
+import MarkdownIt from 'markdown-exit'
 import pluginMdc from 'markdown-it-mdc'
-import comarkTaskList from './plugins/task-list'
+import taskList from './plugins/task-list'
 import { applyAutoUnwrap } from './internal/parse/auto-unwrap'
 import type { ComarkTree, ComarkNode } from 'comark/ast'
 import { marmdownItTokensToComarkTree } from './internal/parse/token-processor'
@@ -19,6 +19,85 @@ export { applyAutoUnwrap } from './internal/parse/auto-unwrap'
 
 // Re-export types
 export type * from './types'
+
+/**
+ * Creates a parser function for Comark content.
+ *
+ * Returns an async function that takes a markdown string and returns a Promise resolving to a ComarkTree AST.
+ * The returned parser applies frontmatter extraction, Comark syntax parsing, token-to-AST conversion,
+ * auto-closing of incomplete markdown, optional AST transformations and plugin hooks.
+ *
+ * @param options - Parser options controlling parsing behavior.
+ * @returns An async parser function: (markdown) => Promise<ComarkTree>
+ *
+ * @example
+ * ```typescript
+ * import { createParser } from 'comark'
+ *
+ * const parse = createParser({ autoUnwrap: false })
+ * const tree = await parse('# Hello **World**\n::alert\nhi\n::')
+ * console.log(tree.nodes)
+ * // → [ ['h1', { id: 'hello-world' }, 'Hello ', ['strong', {}, 'World'] ], ['alert', {}, 'hi'] ]
+ * ```
+ */
+export function createParser(options: ParseOptions = {}): (markdown: string) => Promise<ComarkTree> {
+  const { autoUnwrap = true, autoClose = true, plugins = [] } = options
+
+  plugins.unshift(taskList())
+
+  const parser = new MarkdownIt({
+    html: true,
+    linkify: true,
+  })
+    .enable(['table', 'strikethrough'])
+    .use(pluginMdc)
+
+  for (const plugin of options.plugins || []) {
+    for (const markdownItPlugin of (plugin.markdownItPlugins || [])) {
+      parser.use(markdownItPlugin)
+    }
+  }
+
+  return async (markdown: string) => {
+    const state = {
+      options,
+      tokens: [] as unknown[],
+      markdown,
+      tree: null as ComarkTree | null,
+    }
+
+    if (autoClose) {
+      state.markdown = autoCloseMarkdown(state.markdown)
+    }
+
+    for (const plugin of options.plugins || []) {
+      await plugin.pre?.(state)
+    }
+
+    const { content, data } = await parseFrontmatter(state.markdown)
+
+    state.tokens = parser.parse(content, {})
+
+    // Convert tokens to Comark structure
+    let nodes = marmdownItTokensToComarkTree(state.tokens)
+
+    if (autoUnwrap) {
+      nodes = nodes.map((node: ComarkNode) => applyAutoUnwrap(node))
+    }
+
+    state.tree = {
+      nodes,
+      frontmatter: data,
+      meta: {},
+    }
+
+    for (const plugin of plugins || []) {
+      await plugin.post?.(state as ComarkParsePostState)
+    }
+
+    return state.tree
+  }
+}
 
 /**
  * Parse Comark content from a string
@@ -54,59 +133,7 @@ export type * from './types'
  * ```
  */
 export async function parse(markdown: string, options: ParseOptions = {}): Promise<ComarkTree> {
-  const { autoUnwrap = true, autoClose = true, plugins = [] } = options
+  const parser = createParser(options)
 
-  plugins.unshift(comarkTaskList())
-
-  const state = {
-    options,
-    tokens: [] as unknown[],
-    markdown,
-    tree: null as ComarkTree | null,
-  }
-
-  if (autoClose) {
-    state.markdown = autoCloseMarkdown(state.markdown)
-  }
-
-  for (const plugin of options.plugins || []) {
-    await plugin.pre?.(state)
-  }
-
-  const { content, data } = await parseFrontmatter(state.markdown)
-
-  // Enable tables, GFM features
-  const markdownIt = new MarkdownIt({
-    html: true,
-    linkify: true,
-  })
-    .enable(['table', 'strikethrough'])
-    .use(pluginMdc)
-
-  for (const plugin of options.plugins || []) {
-    for (const markdownItPlugin of (plugin.markdownItPlugins || [])) {
-      markdownIt.use(markdownItPlugin)
-    }
-  }
-
-  state.tokens = markdownIt.parse(content, {})
-
-  // Convert tokens to Comark structure
-  let nodes: ComarkNode[] = marmdownItTokensToComarkTree(state.tokens)
-
-  if (autoUnwrap) {
-    nodes = nodes.map((node: ComarkNode) => applyAutoUnwrap(node))
-  }
-
-  state.tree = {
-    nodes,
-    frontmatter: data,
-    meta: {},
-  }
-
-  for (const plugin of plugins || []) {
-    await plugin.post?.(state as ComarkParsePostState)
-  }
-
-  return state.tree
+  return await parser(markdown)
 }

@@ -1,7 +1,7 @@
-import type MarkdownIt from 'markdown-it'
+import type MarkdownExit from 'markdown-exit'
 import type { ComarkTree } from './ast/types'
 
-export type MarkdownItPlugin = (md: MarkdownIt) => void
+export type MarkdownItPlugin = (md: MarkdownExit) => void
 
 export type ComarkParsePreState = {
   markdown: string

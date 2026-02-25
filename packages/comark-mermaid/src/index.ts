@@ -1,5 +1,5 @@
 import type MarkdownIt from 'markdown-it'
-import type { ComarkPlugin } from 'comark'
+import type { ComarkPlugin, MarkdownItPlugin } from 'comark'
 
 export interface MermaidConfig {
   /**
@@ -198,7 +198,7 @@ export function searchProps(content: string, index = 0) {
 export default function comarkMermaid(config?: MermaidConfig): ComarkPlugin {
   return {
     markdownItPlugins: [
-      (md: MarkdownIt) => markdownItMermaid(md, config),
+      ((md: MarkdownIt) => markdownItMermaid(md, config)) as unknown as MarkdownItPlugin,
     ],
   }
 }

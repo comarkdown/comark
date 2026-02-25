@@ -17,7 +17,7 @@ export default defineComarkComponent({
       themes: {
         light: 'github-light',
         dark: 'github-dark',
-      }
+      },
     }),
   ],
   components: {

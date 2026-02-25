@@ -1,6 +1,5 @@
-import type MarkdownIt from 'markdown-it'
-import type StateInline from 'markdown-it/lib/rules_inline/state_inline.mjs'
-import type { ComarkPlugin } from '../types'
+import type { ComarkPlugin, MarkdownItPlugin } from '../types'
+import type { RuleInline } from 'markdown-exit'
 
 // Common emoji definitions (200+ emojis)
 // Organized by category for easier maintenance
@@ -386,7 +385,7 @@ const EMOJI_MAP = new Map<string, string>([
  * Only supports :emoji_name: syntax (no shortcuts/emoticons)
  * Uses Map for O(1) lookups and simple string scanning
  */
-function emojiRule(state: StateInline, silent: boolean): boolean {
+const emojiRule: RuleInline = (state, silent) => {
   const max = state.posMax
   const start = state.pos
 
@@ -442,7 +441,7 @@ function emojiRule(state: StateInline, silent: boolean): boolean {
   return false
 }
 
-export function markdownItEmoji(md: MarkdownIt): void {
+export const markdownItEmoji: MarkdownItPlugin = (md) => {
   md.inline.ruler.before('emphasis', 'emoji', emojiRule)
 }
 
