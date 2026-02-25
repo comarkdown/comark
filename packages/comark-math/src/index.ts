@@ -2,7 +2,7 @@ import type MarkdownIt from 'markdown-it'
 import type StateInline from 'markdown-it/lib/rules_inline/state_inline.mjs'
 import type StateBlock from 'markdown-it/lib/rules_block/state_block.mjs'
 import katex from 'katex'
-import type { ComarkPlugin } from 'comark'
+import type { ComarkPlugin, MarkdownItPlugin } from 'comark'
 
 export interface MathConfig {
   /**
@@ -322,7 +322,7 @@ function markdownItMath(md: MarkdownIt, config: MathConfig = {}) {
 export default function math(config?: MathConfig): ComarkPlugin {
   return {
     markdownItPlugins: [
-      (md: MarkdownIt) => markdownItMath(md, config ?? {}),
+      ((md: MarkdownIt) => markdownItMath(md, config ?? {})) as unknown as MarkdownItPlugin,
     ],
   }
 }

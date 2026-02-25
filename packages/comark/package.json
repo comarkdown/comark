@@ -37,14 +37,15 @@
   "scripts": {
     "build": "obuild",
     "test": "vitest run",
+    "benchmark": "node --import tsx benchmark.ts",
     "prepack": "obuild",
     "release": "release-it",
     "release:dry": "release-it --dry-run"
   },
   "peerDependencies": {
     "react": "^19.2.4",
-    "vue": "^3.5.27",
-    "shiki": "^3.22.0"
+    "shiki": "^3.22.0",
+    "vue": "^3.5.27"
   },
   "peerDependenciesMeta": {
     "react": {
@@ -58,16 +59,19 @@
     }
   },
   "devDependencies": {
-    "@nuxt/kit": "^4.3.1",
     "@comark/cjk": "workspace:*",
+    "@nuxt/kit": "^4.3.1",
     "@types/js-yaml": "^4.0.9",
     "github-slugger": "^2.0.0",
     "hast-util-to-string": "^3.0.1",
     "js-yaml": "^4.1.1",
+    "markdown-exit": "1.0.0-beta.8",
     "markdown-it": "^14.1.1",
     "markdown-it-mdc": "^0.2.12",
     "minimark": "0.2.0",
+    "mitata": "^1.0.34",
     "obuild": "^0.4.31",
+    "tsx": "^4.21.0",
     "vitest": "^4.0.18"
   }
 }
