@@ -206,18 +206,23 @@ const closed = autoCloseMarkdown('**bold text') // → '**bold text**'
 ```typescript
 import { parse } from 'comark'
 import { renderHTML } from 'comark/string'
+import highlight from 'comark/plugins/highlight'
 
 async function processMarkdownFile(filePath: string) {
   const content = await readFile(filePath, 'utf-8')
 
   const tree = await parse(content, {
-    highlight: { theme: 'github-dark' }
+    plugins: [
+      highlight({
+        themes: { light: 'github-dark', dark: 'github-dark' },
+      }),
+    ],
   })
 
   return {
     html: renderHTML(tree),
-    frontmatter: result.frontmatter,
-    toc: result.meta.toc
+    frontmatter: tree.frontmatter,
+    toc: tree.meta.toc
   }
 }
 ```

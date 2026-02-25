@@ -102,7 +102,6 @@ describe('auto close multilines', () => {
   multilines.trim().split('###').forEach((multiline) => {
     it(`should auto-close ${multiline}`, () => {
       const [input, expected] = multiline.trim().split('\n→\n')
-      console.log({ input, expected })
       expect(autoCloseMarkdown(input)).toBe(expected)
     })
   })
