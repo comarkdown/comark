@@ -45,7 +45,7 @@ This directory contains comprehensive documentation for the Comark library, buil
 ### By Technology
 
 - **TypeScript** → All documentation includes TypeScript examples
-- **Vue 3** → [Vue Rendering](./content/3.rendering/1.vue.md)
+- **Vue** → [Vue Rendering](./content/3.rendering/1.vue.md)
 - **React** → [React Rendering](./content/3.rendering/2.react.md)
 
 ## Development

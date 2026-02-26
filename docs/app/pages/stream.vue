@@ -25,7 +25,7 @@ Markdown but with Components
 #description
 Fast, streaming-ready markdown parser with full Comark (Components in Markdown) syntax support.
 
-Built for modern applications with TypeScript, Vue 3, React, and real-time streaming capabilities.
+Built for modern applications with TypeScript, Vue, React, and real-time streaming capabilities.
 
 #links
   :::u-button
@@ -213,7 +213,7 @@ function reset() {
             Comark Streaming Demo
           </h1>
           <p class="text-neutral-600 dark:text-neutral-400 text-xs sm:text-sm">
-            Real-time markdown rendering with Vue 3
+            Real-time markdown rendering with Vue
           </p>
         </div>
         <div class="flex gap-2 items-center flex-wrap">

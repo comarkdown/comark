@@ -10,7 +10,7 @@ A high-performance markdown parser with Comark (Components in Markdown) support,
 - 📦 **Streaming support** with buffered and incremental modes
 - ⚡ **Real-time rendering** with auto-close for incomplete syntax
 - 🔧 **Comark component syntax** for custom components
-- 🎨 **Vue 3 & React renderers** with custom component mapping
+- 🎨 **Vue & React renderers** with custom component mapping
 - 📝 **YAML frontmatter** support
 - 📑 **Automatic TOC generation**
 - 🎯 **Full TypeScript support**
@@ -112,7 +112,7 @@ Complete guide for parsing documents and working with AST:
 
 ### ⚛️ [3. Vue Rendering](./docs/skills/rendering-vue.md)
 
-Comprehensive guide for rendering in Vue 3 applications:
+Comprehensive guide for rendering in Vue applications:
 
 - **Basic Usage:** `Comark` component setup
 - **Custom Components:** mapping custom Vue components to Comark elements

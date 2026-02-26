@@ -1,11 +1,15 @@
-# Nuxt dev/build outputs
+# examples output
 .output
 .data
 .nuxt
 .nitro
+.astro
 .cache
 .docs
 dist
+.temp
+cache
+
 
 # Node dependencies
 node_modules

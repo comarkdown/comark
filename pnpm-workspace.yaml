@@ -1,7 +1,7 @@
 packages:
   - packages/*
   - docs
-  - examples/*
+  - examples/*/*
 
 ignoredBuiltDependencies:
   - sharp
