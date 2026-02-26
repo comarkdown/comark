@@ -35,7 +35,7 @@ sequenceDiagram
   <Suspense>
     <Comark
       :components="{ Mermaid }"
-      :options="{ plugins: [mermaid({ theme: 'tokyo-night' })] }"
+      :options="{ plugins: [mermaid()] }"
     >
       {{ markdown }}
     </Comark>

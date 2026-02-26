@@ -24,20 +24,39 @@ export const Mermaid = defineComponent({
     },
     theme: {
       type: [String, Object] as PropType<ThemeNames | DiagramColors>,
-      default: 'default',
+      default: undefined,
+    },
+    themeDark: {
+      type: [String, Object] as PropType<ThemeNames | DiagramColors>,
+      default: undefined,
     },
   },
   setup(props) {
     const svgContent = ref<string>('')
     const error = ref<string | null>(null)
+    const isDark = ref(false)
 
     const beautifulTheme = computed(() => {
+      // Determine which theme to use based on dark mode and props
+      const isDarkMode = isDark.value
+
+      // Get theme-dark prop (using bracket notation for kebab-case prop)
+      const themeDarkProp = props.themeDark
+
+      // If dark mode, prefer theme-dark, otherwise prefer theme
+      const themeProp = isDarkMode ? themeDarkProp : props.theme
+
       let theme
-      if (typeof props.theme === 'string') {
-        theme = THEMES[props.theme]
+      if (typeof themeProp === 'string') {
+        theme = THEMES[themeProp]
       }
-      else if (typeof props.theme === 'object') {
-        theme = props.theme
+      else if (typeof themeProp === 'object') {
+        theme = themeProp
+      }
+
+      // Fallback to default themes if no prop is set
+      if (!theme) {
+        theme = THEMES[isDarkMode ? 'tokyo-night' : 'tokyo-light']
       }
 
       return theme
@@ -55,10 +74,30 @@ export const Mermaid = defineComponent({
     }
 
     onMounted(() => {
+      const htmlEl = document.querySelector('html')
+
+      if (htmlEl) {
+        isDark.value = htmlEl.classList.contains('dark') || false
+
+        // Watch for class changes on HTML element
+        const observer = new MutationObserver(() => {
+          const newIsDark = htmlEl.classList.contains('dark')
+          if (newIsDark !== isDark.value) {
+            isDark.value = newIsDark
+          }
+        })
+
+        observer.observe(htmlEl, {
+          attributes: true,
+          attributeFilter: ['class'],
+        })
+      }
+
       renderDiagram()
     })
 
-    watch(() => [props.content, props.theme], () => {
+    // Watch for theme changes (including isDark changes that affect beautifulTheme)
+    watch([beautifulTheme, () => props.content, isDark, () => props.theme, () => props.themeDark], () => {
       renderDiagram()
     })
 

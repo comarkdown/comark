@@ -80,7 +80,7 @@ const debug = import.meta.dev || import.meta.preview
 function replaceMermaid(body: MinimarkNode[]): MinimarkNode[] {
   return body.map((node: MinimarkNode): MinimarkNode => {
     if (node[0] === 'pre' && typeof node[1] === 'object' && 'language' in node[1] && node[1].language === 'mermaid') {
-      return ['Mermaid', { content: node[1].code }]
+      return ['Mermaid', { content: node[1].code, height: '250px' }]
     }
     if (Array.isArray(node) && node.length > 2) {
       return [node[0], node[1], ...replaceMermaid(node.slice(2) as MinimarkNode[])]

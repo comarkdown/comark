@@ -9,7 +9,10 @@
     "strictNullChecks": true,
     "esModuleInterop": true,
     "skipDefaultLibCheck": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "allowImportingTsExtensions": true,
+    "noEmit": true
   },
-  "exclude": ["playground", "examples"]
+  "include": ["packages/**/*"],
+  "exclude": ["playground", "examples", "node_modules", "dist", "**/dist", "**/node_modules"]
 }

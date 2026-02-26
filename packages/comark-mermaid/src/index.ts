@@ -6,9 +6,15 @@ export type ThemeNames = 'zinc-light' | 'zinc-dark' | 'tokyo-night' | 'tokyo-nig
 export interface MermaidConfig {
   /**
    * Theme for mermaid diagrams
-   * @default 'default'
+   * @default undefined
    */
   theme?: ThemeNames
+
+  /**
+   * Theme for mermaid diagrams in dark mode
+   * @default undefined
+   */
+  themeDark?: ThemeNames
 }
 
 /**
@@ -39,9 +45,11 @@ function markdownItMermaid(md: MarkdownIt, config?: MermaidConfig) {
         if (config?.theme) {
           token.attrSet('theme', config.theme)
         }
+        if (config?.themeDark) {
+          token.attrSet('theme-dark', config.themeDark)
+        }
         token.info = info
         token.attrSet('content', token.content)
-        console.log('token', token)
       }
     }
   })

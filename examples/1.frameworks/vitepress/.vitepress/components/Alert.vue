@@ -7,7 +7,10 @@ const props = withDefaults(defineProps<{
 </script>
 
 <template>
-  <div :class="['alert', `alert-${props.type}`]" role="alert">
+  <div
+    :class="['alert', `alert-${props.type}`]"
+    role="alert"
+  >
     <slot />
   </div>
 </template>
