@@ -1,5 +1,4 @@
-import type { ComarkPlugin, MarkdownItPlugin } from '../types'
-import type { RuleInline } from 'markdown-exit'
+import type { ComarkPlugin, MarkdownItPlugin } from 'comark'
 
 // Common emoji definitions (200+ emojis)
 // Organized by category for easier maintenance
@@ -385,7 +384,7 @@ const EMOJI_MAP = new Map<string, string>([
  * Only supports :emoji_name: syntax (no shortcuts/emoticons)
  * Uses Map for O(1) lookups and simple string scanning
  */
-const emojiRule: RuleInline = (state, silent) => {
+const emojiRule = (state: any, silent: boolean) => {
   const max = state.posMax
   const start = state.pos
 

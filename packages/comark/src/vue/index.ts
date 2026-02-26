@@ -2,6 +2,7 @@ import type { PropType } from 'vue'
 import { computed, defineComponent, h } from 'vue'
 import { Comark } from './components/Comark'
 import type { ComponentManifest, ParseOptions } from '../types'
+
 export { ComarkRenderer } from './components/ComarkRenderer'
 export { Comark } from './components/Comark'
 

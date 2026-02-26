@@ -2,12 +2,13 @@ import { describe, it, expect } from 'vitest'
 import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { parseFrontmatter } from '../src/internal/front-matter'
-import { parse } from '../src/index'
-import highlight from '../src/plugins/highlight'
+import { parse } from 'comark'
+import highlight from 'comark/plugins/highlight'
 import { renderHTML, renderMarkdown } from '../src/string'
 import cjk from '@comark/cjk'
 import type { HighlightOptions } from '../src/plugins/highlight'
 import emoji from '../src/plugins/emoji'
+import type { ComarkPlugin } from 'comark'
 
 interface TestCase {
   input: string
@@ -168,7 +169,7 @@ describe('Comark Tests', () => {
   testCases.forEach(({ file, testCase }) => {
     describe(file, () => {
       it('should parse input to AST', { timeout: testCase.timeouts?.parse ?? 5000 }, async () => {
-        const plugins = [cjk(), emoji()]
+        const plugins: ComarkPlugin[] = [cjk(), emoji()]
         if (testCase.options?.highlight) {
           plugins.push(highlight(testCase.options.highlight))
         }
