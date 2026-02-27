@@ -9,6 +9,11 @@ import cjk from '@comark/cjk'
 import type { HighlightOptions } from '../src/plugins/highlight'
 import emoji from '../src/plugins/emoji'
 import type { ComarkPlugin } from 'comark'
+import githubDark from '@shikijs/themes/github-dark'
+import minLight from '@shikijs/themes/min-light'
+import nord from '@shikijs/themes/nord'
+import rustLanguage from '@shikijs/langs/rust'
+import goLanguage from '@shikijs/langs/go'
 
 interface TestCase {
   input: string
@@ -171,7 +176,20 @@ describe('Comark Tests', () => {
       it('should parse input to AST', { timeout: testCase.timeouts?.parse ?? 5000 }, async () => {
         const plugins: ComarkPlugin[] = [cjk(), emoji()]
         if (testCase.options?.highlight) {
-          plugins.push(highlight(testCase.options.highlight))
+          const themes = {
+            'min-light': minLight,
+            'github-dark': githubDark,
+            'nord': nord,
+          } as Record<string, any>
+
+          plugins.push(highlight({
+            ...testCase.options.highlight,
+            languages: [rustLanguage, goLanguage],
+            themes: {
+              light: themes[testCase.options.highlight.themes?.light as string || 'github-dark'],
+              dark: themes[testCase.options.highlight.themes?.dark as string || testCase.options.highlight.themes?.light as string],
+            },
+          }))
         }
         const result = await parse(testCase.input, {
           autoUnwrap: false,
