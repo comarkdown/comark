@@ -7,18 +7,11 @@ import highlight from 'comark/plugins/highlight'
 // Import themes and languages directly
 import githubLight from '@shikijs/themes/github-light'
 import githubDark from '@shikijs/themes/github-dark'
-import javascript from '@shikijs/langs/javascript'
-import typescript from '@shikijs/langs/typescript'
-import vue from '@shikijs/langs/vue'
-import tsx from '@shikijs/langs/tsx'
 import python from '@shikijs/langs/python'
 import rust from '@shikijs/langs/rust'
 import go from '@shikijs/langs/go'
 import sql from '@shikijs/langs/sql'
 import css from '@shikijs/langs/css'
-import json from '@shikijs/langs/json'
-import bash from '@shikijs/langs/bash'
-import markdown from '@shikijs/langs/markdown'
 
 // Theme toggle
 const isDark = ref(false)
@@ -51,18 +44,11 @@ function toggleTheme() {
               dark: githubDark,
             },
             languages: [
-              javascript,
-              typescript,
-              vue,
-              tsx,
               python,
               rust,
               go,
               sql,
               css,
-              json,
-              bash,
-              markdown,
             ],
           }),
         ]"
