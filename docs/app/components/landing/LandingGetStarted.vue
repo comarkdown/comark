@@ -21,7 +21,8 @@ const md = \`
 This is an alert!
 ::
 \`
-\<` + `/script>
+`
+    + '<' + `/script>
 
 <template>
   <Suspense>

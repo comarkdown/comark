@@ -72,7 +72,7 @@ export async function getHighlighter(options: HighlightOptions = {}): Promise<Sh
         langAlias: {
           md: 'mdc',
           markdown: 'mdc',
-          comark: 'mdc'
+          comark: 'mdc',
         },
         engine: createJavaScriptRegexEngine({ forgiving: true }),
       })
