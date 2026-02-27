@@ -69,6 +69,11 @@ export async function getHighlighter(options: HighlightOptions = {}): Promise<Sh
       const hl = createShikiPrimitive({
         themes: themes,
         langs: languages,
+        langAlias: {
+          md: 'mdc',
+          markdown: 'mdc',
+          comark: 'mdc'
+        },
         engine: createJavaScriptRegexEngine({ forgiving: true }),
       })
 
