@@ -31,13 +31,14 @@ function toggleTheme() {
   isDark.value = !isDark.value
   document.body.classList.toggle('dark', isDark.value)
 }
-
-
 </script>
 
 <template>
   <div>
-    <button class="theme-toggle" @click="toggleTheme">
+    <button
+      class="theme-toggle"
+      @click="toggleTheme"
+    >
       {{ isDark ? '☀️ Light' : '🌙 Dark' }}
     </button>
 
@@ -47,7 +48,7 @@ function toggleTheme() {
           highlight({
             themes: {
               light: githubLight,
-              dark: githubDark
+              dark: githubDark,
             },
             languages: [
               javascript,
@@ -61,13 +62,13 @@ function toggleTheme() {
               css,
               json,
               bash,
-              markdown
-            ]
-          })
+              markdown,
+            ],
+          }),
         ]"
       >
         {{ content }}
-      </Comark> 
+      </Comark>
     </Suspense>
   </div>
 </template>

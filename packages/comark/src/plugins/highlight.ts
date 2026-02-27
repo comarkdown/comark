@@ -1,21 +1,20 @@
-import type { BundledLanguage, BundledTheme, LanguageRegistration } from 'shiki'
+import type { LanguageRegistration } from 'shiki'
 import type { ComarkNode, ComarkTree } from 'comark/ast'
 import type { ComarkPlugin } from '../types'
-import type { ShikiPrimitive, ThemedTokenWithVariants, ThemeRegistration } from '@shikijs/primitive'
+import type { ShikiPrimitive, ThemedToken, ThemedTokenWithVariants, ThemeRegistration } from '@shikijs/primitive'
 import { createShikiPrimitive, codeToTokensWithThemes } from '@shikijs/primitive'
-import {createJavaScriptRegexEngine} from 'shiki/engine/javascript'
-
+import { createJavaScriptRegexEngine } from 'shiki/engine/javascript'
 
 export interface HighlightOptions {
   /**
    * Whether to use the default language definitions
-   * @default false
+   * @default true
    */
   registerDefaultLanguages?: boolean
 
   /**
    * Whether to use the default theme definitions
-   * @default false
+   * @default true
    */
   registerDefaultThemes?: boolean
 
@@ -65,7 +64,7 @@ export async function getHighlighter(options: HighlightOptions = {}): Promise<Sh
   }
 
   try {
-    highlighterPromise = (async() => {
+    highlighterPromise = (async () => {
       const { themes, languages } = await registerDefaults(options)
       const hl = createShikiPrimitive({
         themes: themes,
@@ -76,8 +75,8 @@ export async function getHighlighter(options: HighlightOptions = {}): Promise<Sh
       await Promise.all(themes.map(theme => loadTheme(hl, theme)))
       await Promise.all(languages.map(language => loadLanguage(hl, language)))
 
-      return hl;
-    })() as Promise<ShikiPrimitive>;
+      return hl
+    })() as Promise<ShikiPrimitive>
 
     highlighter = await highlighterPromise
     highlighterPromise = null
@@ -93,10 +92,23 @@ export async function getHighlighter(options: HighlightOptions = {}): Promise<Sh
 /**
  * Convert color to inline style
  */
-function colorToStyle(token: ThemedTokenWithVariants | undefined): string | undefined {
+function colorToStyle(token: ThemedTokenWithVariants | ThemedToken | undefined): string | undefined {
   if (!token) return undefined
 
-  return `color:${token.variants.light.color};--shiki-dark:${token.variants.dark.color}`
+  if ((token as ThemedTokenWithVariants).variants) {
+    const lightColor = (token as ThemedTokenWithVariants).variants.light.color
+    const darkColor = (token as ThemedTokenWithVariants).variants.dark.color
+    if (!lightColor || !darkColor) {
+      return undefined
+    }
+    if (lightColor == darkColor) {
+      return `color:${lightColor}`
+    }
+    return `color:${lightColor};--shiki-dark:${darkColor}`
+  }
+  else {
+    return `color:${(token as ThemedToken).color}`
+  }
 }
 
 async function registerDefaults(options: HighlightOptions) {
@@ -151,20 +163,13 @@ export async function highlightCode(
     const hl = await getHighlighter(options)
     const { themes = { light: 'material-theme-lighter', dark: 'material-theme-palenight' } } = options
 
-    // Load the language if not already loaded
-    const loadedLanguages = hl.getLoadedLanguages()
-    if (!loadedLanguages.includes(language as BundledLanguage)) {
-      // Language not supported, return plain code
-      return {
-        nodes: [code],
-        language,
-      }
-    }
-
     // Use codeToTokens to get raw tokens
     const result = codeToTokensWithThemes(hl, code, {
       lang: language,
-      themes,
+      themes: {
+        light: themes.light || themes.dark || 'material-theme-lighter',
+        dark: themes.dark || themes.light || 'material-theme-palenight',
+      },
     })
 
     // Build comark nodes from tokens (flatten all lines)
@@ -200,7 +205,7 @@ export async function highlightCode(
 
     return {
       nodes: allTokens,
-      language
+      language,
     }
   }
   catch (error) {
@@ -237,19 +242,26 @@ export async function highlightCodeBlocks(
 
         if (typeof content === 'string') {
           try {
-            const { nodes, bgColor, fgColor } = await highlightCode(content, attrs, options)
+            const { nodes } = await highlightCode(content, attrs, options)
 
             // Build pre attributes with Shiki styling
             const newPreAttrs: any = {
               ...attrs,
-              class: `shiki ${options.themes?.light}`,
+              class: `shiki ${options.themes?.light?.name || ''}`,
               tabindex: '0',
             }
 
-            if (options.preStyles && (bgColor || fgColor)) {
+            if (options.preStyles) {
+              const lightTheme = options.themes?.light
+              const darkTheme = options.themes?.dark
+
               const styles: string[] = []
-              if (bgColor) styles.push(`background-color:${bgColor}`)
-              if (fgColor) styles.push(`color:${fgColor}`)
+              if (lightTheme?.colors?.['editor.background']) styles.push(`background-color:${lightTheme?.colors?.['editor.background']}`)
+              if (lightTheme?.colors?.['editor.foreground']) styles.push(`color:${lightTheme?.colors?.['editor.foreground']}`)
+              if (lightTheme?.name !== darkTheme?.name) {
+                if (darkTheme?.colors?.['editor.background']) styles.push(`--shiki-dark-bg:${darkTheme?.colors?.['editor.background']}`)
+                if (darkTheme?.colors?.['editor.foreground']) styles.push(`--shiki-dark:${darkTheme?.colors?.['editor.foreground']}`)
+              }
               newPreAttrs.style = styles.join(';')
             }
 
