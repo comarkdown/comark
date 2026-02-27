@@ -9,7 +9,19 @@ const tabs = [
 ]
 
 const codeSnippets = {
-  vue: `\`\`\`vue [src/App.vue]\n<script setup lang="ts">\nimport { Comark } from 'comark/vue'\nimport Alert from './components/Alert.vue'\n\nconst md = \`\n# [Hello *World*]{.text-5xl}\n\n::alert{type="info"}\nThis is an alert!\n::\`\n\<` + `/script>
+  vue: `\`\`\`vue [src/App.vue]
+<script setup lang="ts">
+import { Comark } from 'comark/vue'
+import Alert from './components/Alert.vue'
+
+const md = \`
+# [Hello *World*]{.text-5xl}
+
+::alert{type="info"}
+This is an alert!
+::
+\`
+\<` + `/script>
 
 <template>
   <Suspense>
