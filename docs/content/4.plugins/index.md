@@ -70,7 +70,7 @@ const result = await parse(content, {
 ```
 
 ```vue [Vue]
-<script setup>
+<script setup lang="ts">
 import { Comark } from 'comark/vue'
 import emoji from 'comark/plugins/emoji'
 </script>
