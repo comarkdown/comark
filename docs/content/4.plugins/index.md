@@ -1,19 +1,15 @@
 ---
 title: Plugins
-description: Extend Comark with powerful plugins for emojis, table of contents, security, math equations, diagrams, and more.
-navigation: false
+description: Extend Comark with powerful plugins for syntax highlighting, emojis, table of contents, math equations, diagrams, and more.
 ---
 
-Comark's plugin system allows you to extend markdown functionality with specialized features. Plugins can add new syntax, transform content, or enhance rendering capabilities. [How plugins work?](#how-plugins-work)
-
----
+Comark's plugin system extends markdown functionality with specialized features. Plugins can add new syntax, transform content, or enhance rendering.
 
 ## Core Plugins
 
-Core plugins are built-in and part of the Comark main package, and designed to be light and usefull.
+Core plugins are built-in and part of the main `comark` package:
 
 ::card-group{cols="2"}
-#default
   ::card{icon="i-lucide-code" title="Syntax Highlighting" to="/plugins/core/highlight"}
   Beautiful code syntax highlighting using Shiki with multi-theme support
   ::
@@ -23,7 +19,7 @@ Core plugins are built-in and part of the Comark main package, and designed to b
   ::
 
   ::card{icon="i-lucide-list" title="Table of Contents" to="/plugins/core/toc"}
-  Automatically generate hierarchical TOC from headings
+  Generate hierarchical TOC from headings automatically
   ::
 
   ::card{icon="i-lucide-file-text" title="Summary" to="/plugins/core/summary"}
@@ -35,15 +31,13 @@ Core plugins are built-in and part of the Comark main package, and designed to b
   ::
 ::
 
-
 ## External Plugins
 
-External plugins are separate packages that extend Comark with specialized features.
+External plugins are separate packages that extend Comark with specialized features:
 
 ::card-group{cols="2"}
-#default
   ::card{icon="i-lucide-calculator" title="Math" to="/plugins/external/math"}
-  Render LaTeX math formulas using KaTeX - supports inline and display equations
+  Render LaTeX math formulas using KaTeX with inline and display equations
   ::
 
   ::card{icon="i-simple-icons-mermaid" title="Mermaid" to="/plugins/external/mermaid"}
@@ -55,18 +49,13 @@ External plugins are separate packages that extend Comark with specialized featu
   ::
 ::
 
-## How Plugins Work
+## Use Plugins
 
-Plugins are functions that hook into the Comark parsing and rendering pipeline. They can:
+Pass plugins to `parse()` or the `<Comark>` component:
 
-- Add custom rules for custom syntax
-- Transform the AST during or after parsing
-- Add metadata to the parse result
-- Validate and sanitize content
+::code-group
 
-### Using Plugins
-
-```typescript
+```typescript [Parse API]
 import { parse } from 'comark'
 import emoji from 'comark/plugins/emoji'
 import toc from 'comark/plugins/toc'
@@ -79,19 +68,22 @@ const result = await parse(content, {
 })
 ```
 
-With Vue or React:
-
-```vue
+```vue [Vue]
 <script setup>
 import { Comark } from 'comark/vue'
 import emoji from 'comark/plugins/emoji'
-
-const options = {
-  plugins: [emoji()]
-}
 </script>
 
 <template>
-  <Comark :options="options">{{ content }}</Comark>
+  <Comark :plugins="[emoji()]">{{ content }}</Comark>
 </template>
 ```
+
+```tsx [React]
+import { Comark } from 'comark/react'
+import emoji from 'comark/plugins/emoji'
+
+<Comark plugins={[emoji()]}>{content}</Comark>
+```
+
+::
