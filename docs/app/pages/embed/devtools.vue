@@ -6,6 +6,15 @@ import { defaultMarkdown } from '~/constants'
 import { watchDebounced, useClipboard } from '@vueuse/core'
 import type { TabsItem } from '@nuxt/ui'
 import type { ComarkTree } from 'comark/ast'
+import { ProseCallout, ProseNote, ProseTip, ProseWarning, ProseCaution } from '#components'
+
+const components = {
+  callout: ProseCallout,
+  note: ProseNote,
+  tip: ProseTip,
+  warning: ProseWarning,
+  caution: ProseCaution,
+}
 
 definePageMeta({
   footer: false,
@@ -83,29 +92,6 @@ parseMarkdown()
 function resetComark(): void {
   markdown.value = defaultMarkdown.trim()
 }
-
-/** Copy the current tab's output JSON to clipboard */
-function copyOutput(): void {
-  if (!tree.value) return
-  let text = ''
-  if (currentTab.value === 'ast') {
-    text = JSON.stringify(tree.value.nodes, null, 2)
-  }
-  else if (currentTab.value === 'frontmatter') {
-    text = JSON.stringify({ frontmatter: tree.value.frontmatter, meta: tree.value.meta }, null, 2)
-  }
-  else {
-    text = JSON.stringify(tree.value, null, 2)
-  }
-  copy(text)
-}
-
-const outputData = computed(() => {
-  if (!tree.value) return null
-  if (currentTab.value === 'ast') return tree.value.nodes
-  if (currentTab.value === 'frontmatter') return { frontmatter: tree.value.frontmatter, meta: tree.value.meta }
-  return tree.value
-})
 </script>
 
 <template>
@@ -113,7 +99,7 @@ const outputData = computed(() => {
     <Splitpanes class="flex-1 min-h-0">
       <!-- Pane 1: Markdown Input -->
       <Pane
-        :size="33"
+        :size="50"
         :min-size="20"
       >
         <UCard
@@ -148,7 +134,7 @@ const outputData = computed(() => {
             </div>
           </template>
 
-          <UTextarea
+          <!-- <UTextarea
             v-model="markdown"
             variant="none"
             :rows="1"
@@ -158,102 +144,14 @@ const outputData = computed(() => {
               root: 'h-full w-full',
               base: 'h-full font-mono text-[13px] leading-relaxed resize-none',
             }"
-          />
-        </UCard>
-      </Pane>
-
-      <!-- Pane 2: Comark AST Output -->
-      <Pane
-        :size="34"
-        :min-size="20"
-      >
-        <UCard
-          variant="soft"
-          class="h-full min-w-0"
-          :ui="{
-            root: 'rounded-none border-0 ring-0 flex flex-col h-full shadow-none',
-            header: 'py-0 px-4 sm:px-4',
-            body: 'flex-1 flex flex-col min-h-0 p-0 sm:p-0',
-          }"
-        >
-          <template #header>
-            <div class="flex items-center justify-between h-10">
-              <UTabs
-                v-model="currentTab"
-                :content="false"
-                :items="tabItems"
-                size="xs"
-                color="primary"
-                variant="pill"
-              />
-              <UTooltip :text="copied ? 'Copied!' : 'Copy to clipboard'">
-                <UButton
-                  :disabled="!tree"
-                  size="xs"
-                  color="neutral"
-                  variant="ghost"
-                  :icon="copied ? 'i-lucide-check' : 'i-lucide-copy'"
-                  label="Copy"
-                  @click="copyOutput"
-                />
-              </UTooltip>
-            </div>
-          </template>
-
-          <!-- Loading state -->
-          <div
-            v-if="parsing && !outputData"
-            class="flex flex-1 flex-col items-center justify-center gap-3 text-muted"
-          >
-            <UIcon
-              name="i-lucide-loader-circle"
-              class="size-6 animate-spin text-primary"
-            />
-            <span class="text-sm">Parsing markdown...</span>
-          </div>
-          <!-- Empty input state -->
-          <div
-            v-else-if="!outputData && !error"
-            class="flex flex-1 flex-col items-center justify-center gap-3 text-muted"
-          >
-            <UIcon
-              name="i-lucide-code"
-              class="size-8 opacity-40"
-            />
-            <div class="text-center">
-              <p class="text-sm font-medium">
-                No output yet
-              </p>
-              <p class="text-xs opacity-70">
-                Type some markdown to see the AST
-              </p>
-            </div>
-          </div>
-          <UScrollArea
-            v-else
-            class="h-full"
-            :ui="{ viewport: 'p-4 sm:p-6' }"
-          >
-            <UAlert
-              v-if="error"
-              color="error"
-              variant="soft"
-              icon="i-lucide-circle-alert"
-              :title="error"
-            />
-            <pre
-              v-else-if="outputData"
-              class="font-mono text-xs leading-7 whitespace-pre-wrap wrap-break-word m-0 text-highlighted"
-            >
-              {{ JSON.stringify(outputData, null, 2) }}
-            </pre>
-          </UScrollArea>
+          /> -->
+          <Editor v-model="markdown" />
         </UCard>
       </Pane>
 
       <!-- Pane 3: Rendered Preview -->
       <Pane
-        :size="33"
+        :size="50"
         :min-size="20"
       >
         <UCard
@@ -351,7 +249,10 @@ const outputData = computed(() => {
               class="prose prose-sm dark:prose-invert max-w-none"
             >
               <Suspense>
-                <ComarkRenderer :tree="tree" />
+                <ComarkRenderer
+                  :tree="tree"
+                  :components="components"
+                />
               </Suspense>
             </div>
           </UScrollArea>

@@ -62,6 +62,12 @@ importers:
       '@comark/mermaid':
         specifier: workspace:*
         version: link:../packages/comark-mermaid
+      '@monaco-editor/loader':
+        specifier: ^1.7.0
+        version: 1.7.0
+      '@nuxtlabs/monarch-mdc':
+        specifier: ^0.9.0
+        version: 0.9.0
       '@vercel/analytics':
         specifier: ^1.6.1
         version: 1.6.1(react@19.2.4)(vue-router@4.6.4(vue@3.5.28(typescript@5.9.3)))(vue@3.5.28(typescript@5.9.3))
@@ -1873,6 +1879,9 @@ packages:
       '@cfworker/json-schema':
         optional: true
 
+  '@monaco-editor/loader@1.7.0':
+    resolution: {integrity: sha512-gIwR1HrJrrx+vfyOhYmCZ0/JcWqG5kbfG7+d3f/C1LXk2EvzAbHSg3MQ5lO2sMlo9izoAZ04shohfKLVT6crVA==}
+
   '@napi-rs/wasm-runtime@0.2.12':
     resolution: {integrity: sha512-ZVWUcfwY4E/yPitQJl481FjFo3K22D6qF0DuFH6Y/nbnE11GY5uguDxZMGXPQ8WQ0128MXQD7TnfHyK4oWoIJQ==}
 
@@ -2084,6 +2093,9 @@ packages:
     peerDependenciesMeta:
       zod:
         optional: true
+
+  '@nuxtlabs/monarch-mdc@0.9.0':
+    resolution: {integrity: sha512-/8f4PJF1SL3Noss+taKHadrD32DU6FSfBSe7dMfvwK38qz/8EuJerB1hLuCsHumepEV9nQzoDJEL1pxO+G9gPw==}
 
   '@octokit/auth-token@6.0.0':
     resolution: {integrity: sha512-P4YJBPdPSpWTQ1NU4XYdvHvXJJDxM6YwpS0FZHRgP7YFkdVxsWcpWGy/NVqlAA7PcPCnMacXlRm1y2PFZRWL/w==}
@@ -8384,6 +8396,9 @@ packages:
   standard-as-callback@2.1.0:
     resolution: {integrity: sha512-qoRRSyROncaz1z0mvYqIE4lCd9p2R90i6GxW3uZv5ucSu8tU7B5HXUP1gG8pVZsYNVaXjk8ClXHPttLyxAL48A==}
 
+  state-local@1.0.7:
+    resolution: {integrity: sha512-HTEHMNieakEnoe33shBYcZ7NX83ACUjCu8c40iOGEZsngj9zRnkqS9j1pqQPXwobB0ZcVTk27REb7COQ0UR59w==}
+
   statuses@2.0.2:
     resolution: {integrity: sha512-DvEy55V3DB7uknRo+4iOGT5fP1slR8wQohVdknigZPMpMstaKJQWhwiYBACJE3Ul2pTnATihhBYnRhZQHGBiRw==}
     engines: {node: '>= 0.8'}
@@ -10757,6 +10772,10 @@ snapshots:
       - hono
       - supports-color
 
+  '@monaco-editor/loader@1.7.0':
+    dependencies:
+      state-local: 1.0.7
+
   '@napi-rs/wasm-runtime@0.2.12':
     dependencies:
       '@emnapi/core': 1.8.1
@@ -11789,6 +11808,8 @@ snapshots:
       - magicast
       - vite
       - vue
+
+  '@nuxtlabs/monarch-mdc@0.9.0': {}
 
   '@octokit/auth-token@6.0.0': {}
 
@@ -18991,6 +19012,8 @@ snapshots:
   stackback@0.0.2: {}
 
   standard-as-callback@2.1.0: {}
+
+  state-local@1.0.7: {}
 
   statuses@2.0.2: {}
 
