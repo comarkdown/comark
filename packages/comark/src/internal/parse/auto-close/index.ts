@@ -13,121 +13,160 @@ import { closeTables } from './table'
  * @returns The markdown with unclosed syntax closed
  */
 export function autoCloseMarkdown(markdown: string): string {
-  if (!markdown || markdown.trim() === '') {
-    return markdown
+  if (!markdown || markdown === '') return markdown
+
+  const lines = markdown.split('\n')
+  const n = lines.length
+
+  // Single linear pass to collect document state
+  let inFrontmatter = false
+  let inBlockMath = false
+  let tableStart = -1
+
+  const componentStack: Array<{
+    depth: number
+    name: string
+    indent: string
+    hasYamlProps: boolean
+  }> = []
+
+  for (let idx = 0; idx < n; idx++) {
+    const line = lines[idx]
+    const trimmed = line.trim()
+
+    // Frontmatter: only starts at document line 0
+    if (idx === 0 && trimmed === '---') {
+      inFrontmatter = true
+      continue
+    }
+    if (inFrontmatter) {
+      if (trimmed === '---') inFrontmatter = false
+      continue
+    }
+
+    // Block math delimiter on its own line
+    if (trimmed === '$$') {
+      inBlockMath = !inBlockMath
+      continue
+    }
+
+    // YAML props fence inside a component
+    if (trimmed === '---' && componentStack.length > 0) {
+      componentStack[componentStack.length - 1].hasYamlProps = !componentStack[componentStack.length - 1].hasYamlProps
+      continue
+    }
+
+    // Table block tracking (consecutive pipe-starting lines)
+    if (trimmed.startsWith('|')) {
+      tableStart = tableStart === -1 ? idx : tableStart
+    }
+    else if (tableStart !== -1) {
+      tableStart = -1
+    }
+
+    // Component open/close (lines starting with :: or more colons)
+    if (trimmed[0] === ':') {
+      let colonCount = 0
+      while (colonCount < trimmed.length && trimmed[colonCount] === ':') colonCount++
+      if (colonCount >= 2) {
+        let indentEnd = 0
+        while (indentEnd < line.length && (line[indentEnd] === ' ' || line[indentEnd] === '\t')) indentEnd++
+        const indent = line.slice(0, indentEnd)
+        const ch = trimmed[colonCount] ?? ''
+        const isName = (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || ch === '$'
+
+        if (isName) {
+          let nameEnd = colonCount
+          while (nameEnd < trimmed.length) {
+            const c = trimmed[nameEnd]
+            if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c === '$' || c === '.' || c === '-' || c === '_')) break
+            nameEnd++
+          }
+          componentStack.push({ depth: colonCount, name: trimmed.slice(colonCount, nameEnd), indent, hasYamlProps: false })
+        }
+        else if (colonCount === trimmed.length && componentStack.length > 0) {
+          const top = componentStack[componentStack.length - 1]
+          if (top.depth === colonCount) componentStack.pop()
+        }
+      }
+    }
   }
 
-  // Step 0: Close unclosed front matter
-  let result = closeFrontmatter(markdown)
+  // Fix inline markers on last line (skip inside block-level structures)
+  const lastIdx = n - 1
+  if (!inFrontmatter && !inBlockMath && lines[lastIdx].trim() !== '$$') {
+    lines[lastIdx] = closeInlineMarkersLinear(lines[lastIdx])
+  }
 
-  // Step 1: Close unclosed block math ($$...$$)
-  result = closeBlockMath(result)
+  let result = lines.join('\n')
 
-  // Step 2: Close unclosed tables
-  result = closeTables(result)
+  // Fix tables
+  if (tableStart !== -1) {
+    result = closeTables(result)
+  }
 
-  // Find the last line (where inline markers need closing)
-  const lastLineStart = result.lastIndexOf('\n') + 1
-  const lastLine = result.slice(lastLineStart)
+  // Close unclosed frontmatter
+  if (inFrontmatter) {
+    const lastTrimmed = lines[lastIdx].trim()
+    if (lastTrimmed === '-' || lastTrimmed === '--') {
+      result += '-'.repeat(3 - lastTrimmed.length)
+    }
+    else {
+      result += result.endsWith('\n') ? '---' : '\n---'
+    }
+  }
 
-  // Step 3: Close inline markers on last line
-  const inlineResult = closeInlineMarkersLinear(lastLine)
-  result = lastLineStart === 0
-    ? inlineResult
-    : result.slice(0, lastLineStart) + inlineResult
+  // Close unclosed block math
+  if (inBlockMath) {
+    result += result.endsWith('\n') ? '$$' : '\n$$'
+  }
 
-  // Step 4: Close Comark components if any
-  if (result.includes('::')) {
-    result = closeComponentsLinear(result)
+  // Close Comark components
+  if (markdown.includes('::')) {
+    // Close unclosed brace in last line props
+    const lastLineStart = result.lastIndexOf('\n') + 1
+    const finalLine = result.slice(lastLineStart)
+    let lastOpenBrace = -1
+    for (let i = finalLine.length - 1; i >= 0; i--) {
+      if (finalLine[i] === '}') break
+      if (finalLine[i] === '{') { lastOpenBrace = i; break }
+    }
+    if (lastOpenBrace >= 0) {
+      const propsContent = finalLine.slice(lastOpenBrace + 1)
+      let dq = 0
+      let sq = 0
+      for (let i = 0; i < propsContent.length; i++) {
+        if (propsContent[i] === '"') dq++
+        if (propsContent[i] === '\'') sq++
+      }
+      let braceClose = ''
+      if (dq % 2 === 1) braceClose += '"'
+      if (sq % 2 === 1) braceClose += '\''
+      result += braceClose + '}'
+    }
+
+    if (componentStack.length > 0) {
+      // Complete partial YAML fence (- or --) in top component's props
+      const topComp = componentStack[componentStack.length - 1]
+      const newLastStart = result.lastIndexOf('\n') + 1
+      const newFinalTrimmed = result.slice(newLastStart).trim()
+      if (topComp.hasYamlProps && (newFinalTrimmed === '-' || newFinalTrimmed === '--')) {
+        result += '-'.repeat(3 - newFinalTrimmed.length)
+        topComp.hasYamlProps = false
+      }
+
+      // Append component closers
+      const compClosers: string[] = []
+      while (componentStack.length > 0) {
+        const comp = componentStack.pop()!
+        if (comp.hasYamlProps) compClosers.push(comp.indent + '---')
+        compClosers.push(comp.indent + ':'.repeat(comp.depth))
+      }
+      result += '\n' + compClosers.join('\n')
+    }
   }
 
   return result
-}
-
-/**
- * Closes unclosed front matter (YAML between --- delimiters)
- */
-function closeFrontmatter(markdown: string): string {
-  // Check if content starts with ---
-  if (!markdown.startsWith('---')) {
-    return markdown
-  }
-
-  // Find the first newline after opening ---
-  const firstNewline = markdown.indexOf('\n')
-  if (firstNewline === -1) {
-    // Just "---" with no newline, add closing
-    return markdown + '\n---'
-  }
-
-  // Look for closing --- on its own line
-  const content = markdown.slice(firstNewline + 1)
-  const lines = content.split('\n')
-
-  for (let i = 0; i < lines.length; i++) {
-    const trimmed = lines[i].trim()
-    // Found closing delimiter
-    if (trimmed === '---') {
-      return markdown
-    }
-  }
-
-  // Check if last line is a partial fence (- or --)
-  const lastLine = lines[lines.length - 1]
-  const lastLineTrimmed = lastLine.trim()
-
-  if (lastLineTrimmed === '-' || lastLineTrimmed === '--') {
-    // Complete the partial fence
-    const needed = 3 - lastLineTrimmed.length
-    return markdown + '-'.repeat(needed)
-  }
-
-  // No closing --- found, add it
-  // Make sure there's a newline before the closing ---
-  if (markdown.endsWith('\n')) {
-    return markdown + '---'
-  }
-  return markdown + '\n---'
-}
-
-/**
- * Closes unclosed block math ($$...$$)
- * Block math is delimited by $$ on its own line
- */
-function closeBlockMath(markdown: string): string {
-  const lines: string[] = []
-  let lineStart = 0
-
-  // Split into lines manually
-  for (let i = 0; i <= markdown.length; i++) {
-    if (i === markdown.length || markdown[i] === '\n') {
-      lines.push(markdown.slice(lineStart, i))
-      lineStart = i + 1
-    }
-  }
-
-  let inBlockMath = false
-
-  // Scan lines to find unclosed block math
-  for (const line of lines) {
-    const trimmed = line.trim()
-
-    // Check if line is a $$ delimiter
-    if (trimmed === '$$') {
-      inBlockMath = !inBlockMath
-    }
-  }
-
-  // If we're still in block math, close it
-  if (inBlockMath) {
-    // Add closing $$ on a new line
-    if (markdown.endsWith('\n')) {
-      return markdown + '$$'
-    }
-    return markdown + '\n$$'
-  }
-
-  return markdown
 }
 
 /**
@@ -445,161 +484,4 @@ function closeInlineMarkersLinear(line: string): string {
   }
 
   return line + closingSuffix
-}
-
-/**
- * Closes unclosed Comark components by scanning all lines in O(n) time
- */
-function closeComponentsLinear(markdown: string): string {
-  const lines: string[] = []
-  let lineStart = 0
-
-  // Split into lines manually
-  for (let i = 0; i <= markdown.length; i++) {
-    if (i === markdown.length || markdown[i] === '\n') {
-      lines.push(markdown.slice(lineStart, i))
-      lineStart = i + 1
-    }
-  }
-
-  const lastLine = lines[lines.length - 1]
-  let result = markdown
-
-  // Check for unclosed braces in props
-  if (lastLine) {
-    let lastOpenBrace = -1
-    for (let i = lastLine.length - 1; i >= 0; i--) {
-      if (lastLine[i] === '}') break
-      if (lastLine[i] === '{') {
-        lastOpenBrace = i
-        break
-      }
-    }
-
-    if (lastOpenBrace >= 0) {
-      const propsContent = lastLine.slice(lastOpenBrace + 1)
-      let doubleQuotes = 0
-      let singleQuotes = 0
-
-      for (let i = 0; i < propsContent.length; i++) {
-        if (propsContent[i] === '"') doubleQuotes++
-        if (propsContent[i] === '\'') singleQuotes++
-      }
-
-      let closing = ''
-      if (doubleQuotes % 2 === 1) closing += '"'
-      if (singleQuotes % 2 === 1) closing += '\''
-      closing += '}'
-
-      result += closing
-    }
-  }
-
-  // Track unclosed components with their indentation and YAML props state
-  const componentStack: Array<{ depth: number, name: string, indent: string, hasYamlProps: boolean }> = []
-
-  for (const line of lines) {
-    const trimmed = line.trim()
-
-    // Extract leading indentation (spaces and tabs before content)
-    let indentEnd = 0
-    while (indentEnd < line.length && (line[indentEnd] === ' ' || line[indentEnd] === '\t')) {
-      indentEnd++
-    }
-    const indent = line.slice(0, indentEnd)
-
-    // Check for YAML props delimiter (---) inside a component
-    if (trimmed === '---' && componentStack.length > 0) {
-      const last = componentStack[componentStack.length - 1]
-      // Toggle YAML props state
-      last.hasYamlProps = !last.hasYamlProps
-      continue
-    }
-
-    // Check for component opening/closing
-    let i = 0
-    if (trimmed[0] === ':') {
-      // Count colons
-      let colonCount = 0
-      while (i < trimmed.length && trimmed[i] === ':') {
-        colonCount++
-        i++
-      }
-
-      if (colonCount >= 2) {
-        // Check if it's a component name or just closing
-        const ch = i < trimmed.length ? trimmed[i] : ''
-        const isComponent = (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || ch === '$'
-
-        if (isComponent) {
-          // Extract component name
-          let nameEnd = i
-          while (nameEnd < trimmed.length) {
-            const c = trimmed[nameEnd]
-            if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')
-              || (c >= '0' && c <= '9') || c === '$' || c === '.' || c === '-' || c === '_')) {
-              break
-            }
-            nameEnd++
-          }
-          const name = trimmed.slice(i, nameEnd)
-          componentStack.push({ depth: colonCount, name, indent, hasYamlProps: false })
-        }
-        else if (colonCount === trimmed.length) {
-          // Pure closing marker
-          if (componentStack.length > 0) {
-            const last = componentStack[componentStack.length - 1]
-            if (last.depth === colonCount) {
-              componentStack.pop()
-            }
-          }
-        }
-      }
-    }
-  }
-
-  // Check if last line is a partial fence (- or --) inside a component's YAML props
-  const finalLine = lines[lines.length - 1]
-  const finalLineTrimmed = finalLine ? finalLine.trim() : ''
-  let partialFenceCompletion = ''
-
-  if (componentStack.length > 0) {
-    const lastComp = componentStack[componentStack.length - 1]
-    if (lastComp.hasYamlProps && (finalLineTrimmed === '-' || finalLineTrimmed === '--')) {
-      // Complete the partial fence
-      const needed = 3 - finalLineTrimmed.length
-      partialFenceCompletion = '-'.repeat(needed)
-      // Mark YAML props as closed since we're completing the fence
-      lastComp.hasYamlProps = false
-    }
-  }
-
-  // Add closing markers with matching indentation
-  const closers: string[] = []
-  while (componentStack.length > 0) {
-    const comp = componentStack.pop()!
-
-    // If component has unclosed YAML props, close them first (with same indentation)
-    if (comp.hasYamlProps) {
-      closers.push(comp.indent + '---')
-    }
-
-    // Close the component
-    let closer = comp.indent
-    for (let i = 0; i < comp.depth; i++) {
-      closer += ':'
-    }
-    closers.push(closer)
-  }
-
-  // Apply partial fence completion first, then closers
-  if (partialFenceCompletion) {
-    result += partialFenceCompletion
-  }
-
-  if (closers.length > 0) {
-    result += '\n' + closers.join('\n')
-  }
-
-  return result
 }
