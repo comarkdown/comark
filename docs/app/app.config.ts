@@ -1,4 +1,3 @@
-// @ts-expect-error - Nuxt types are not loaded
 export default defineAppConfig({
   seo: {
     title: 'Comark',
@@ -22,6 +21,11 @@ export default defineAppConfig({
       neutral: 'neutral',
     },
     prose: {
+      codePreview: {
+        slots: {
+          preview: '*:w-full',
+        },
+      },
       codeIcon: {
         'astro.config.mjs': 'i-simple-icons:astro',
         'astro': 'i-simple-icons:astro',

@@ -1,10 +1,8 @@
 import { defineNuxtConfig } from 'nuxt/config'
-import { createResolver } from '@nuxt/kit'
-
-const { resolve } = createResolver(import.meta.url)
 
 export default defineNuxtConfig({
   extends: ['docus'],
+
   modules: ['nuxt-studio'],
 
   app: {
@@ -36,12 +34,5 @@ export default defineNuxtConfig({
     externals: {
       traceInclude: ['node_modules/minimark/**'],
     },
-  },
-
-  icon: {
-    customCollections: [{
-      prefix: 'custom',
-      dir: resolve('./app/assets/icons'),
-    }],
   },
 })
