@@ -129,7 +129,10 @@ export function autoCloseMarkdown(markdown: string): string {
     let lastOpenBrace = -1
     for (let i = finalLine.length - 1; i >= 0; i--) {
       if (finalLine[i] === '}') break
-      if (finalLine[i] === '{') { lastOpenBrace = i; break }
+      if (finalLine[i] === '{') {
+        lastOpenBrace = i
+        break
+      }
     }
     if (lastOpenBrace >= 0) {
       const propsContent = finalLine.slice(lastOpenBrace + 1)
