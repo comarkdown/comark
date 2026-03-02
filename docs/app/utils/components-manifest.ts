@@ -5,7 +5,9 @@ import { localComponents } from '#content/components'
 const components = {
   // Landing components
   LandingHero: () => import('@/components/landing/LandingHero.vue'),
-  LandingGetStarted: () => import('@/components/landing/LandingGetStarted.vue'),
+  LandingSubHero: () => import('@/components/landing/LandingSubHero.vue'),
+  LandingCards: () => import('@/components/landing/LandingCards.vue'),
+  LandingCard: () => import('@/components/landing/LandingCard.vue'),
   LandingTypography: () => import('@/components/landing/LandingTypography.vue'),
   LandingCodeBlock: () => import('@/components/landing/LandingCodeBlock.vue'),
   LandingCjk: () => import('@/components/landing/LandingCjk.vue'),

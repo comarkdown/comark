@@ -2,7 +2,7 @@
 seo:
   title: Markdown with Components
   description: Fast, streaming-ready markdown parser with Vue and React component support. Parse Comark content from strings or streams with TypeScript support.
-  ogImage: '/social-card.png'
+  ogImage: /social-card.png
 ---
 
 ::landing-hero
@@ -35,7 +35,91 @@ A high-performance markdown parser and renderer with Vue & React components supp
   :::
 ::
 
-:landing-get-started
+::landing-sub-hero
+#headline
+Get Started in Seconds
+
+#title
+Simple to use, powerful features
+
+#description
+Install with npm and start parsing markdown in seconds
+
+#body
+  :::landing-code-example
+  #vue
+  ```vue [src/App.vue]
+  <script setup lang="ts">
+  import { Comark } from 'comark/vue'
+  import Alert from './components/Alert.vue'
+
+  const md = `
+  # [Hello *World*]{.text-5xl}
+
+  ::alert{type="info"}
+  This is an alert!
+  ::
+  `
+  </script>
+
+  <template>
+    <Suspense>
+      <Comark :components="{ Alert }">{{ md }}</Comark>
+    </Suspense>
+  </template>
+  ```
+
+  #react
+  ```tsx [src/App.tsx]
+  import { Comark } from 'comark/react'
+
+  export default function App() {
+    const markdown = `# Hello **World**`
+
+    return <Comark>{markdown}</Comark>
+  }
+  ```
+  :::
+
+#footer
+  :::landing-cards
+    ::::landing-card
+    ---
+    color: primary
+    icon: i-lucide-zap
+    ---
+    #title
+    Zero Config
+
+    #description
+    Works out of the box with sensible defaults
+    ::::
+
+    ::::landing-card
+    ---
+    color: purple
+    icon: i-simple-icons-typescript
+    ---
+    #title
+    Type Safe
+
+    #description
+    Full TypeScript support with type definitions
+    ::::
+
+    ::::landing-card
+    ---
+    color: green
+    icon: i-lucide-shield-check
+    ---
+    #title
+    Framework Agnostic
+
+    #description
+    Use with React, Vue, or vanilla JavaScript
+    ::::
+  :::
+::
 
 ::u-page-section
 #title
