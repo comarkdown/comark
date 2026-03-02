@@ -3,6 +3,7 @@ title: Nuxt
 description: A minimal example showing how to use Comark Syntax with Nuxt 4.
 category: Frameworks
 navigation.icon: i-simple-icons-nuxt
+path: /examples/frameworks/nuxt
 ---
 
 ::code-tree{defaultValue="app/app.vue" expandAll}

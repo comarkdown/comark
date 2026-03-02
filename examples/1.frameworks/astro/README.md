@@ -3,6 +3,7 @@ title: Astro
 description: A blog example using Comark with Astro content collections and React components.
 navigation.icon: i-simple-icons:astro
 category: Frameworks
+path: /examples/frameworks/astro
 ---
 
 ::code-tree{defaultValue="src/pages/posts/[...id].astro" expandAll}

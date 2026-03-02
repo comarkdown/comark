@@ -3,6 +3,7 @@ title: Mermaid diagrams
 description: Example showing how to use Comark with Mermaid diagrams in Vue and Vite.
 navigation.icon: i-simple-icons-mermaid
 category: Plugins
+path: /examples/plugins/vue-vite-mermaid
 ---
 
 ::code-tree{defaultValue="src/App.vue" expandAll}

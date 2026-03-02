@@ -3,6 +3,7 @@ title: Syntax Highlighting
 description: Example showing how to use Comark with syntax highlighting using Shiki in Vue and Vite.
 navigation.icon: i-lucide-code
 category: Plugins
+path: /examples/plugins/vue-vite-highlight
 ---
 
 ::code-tree{defaultValue="src/App.vue" expandAll}
@@ -386,6 +387,6 @@ import bash from '@shikijs/langs/bash'
 
 ## Learn More
 
-- [Highlight Plugin Documentation](/plugins/highlight)
+- [Highlight Plugin Documentation](/plugins/core/highlight)
 - [Shiki Documentation](https://shiki.style/)
 - [Comark Documentation](https://comark.dev)

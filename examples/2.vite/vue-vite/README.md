@@ -3,6 +3,7 @@ title: Vue
 description: A minimal example showing how to use Comark with Vue and Vite.
 navigation.icon: i-simple-icons-vuedotjs
 category: Vite
+path: /examples/vite/vue-vite
 ---
 
 ::code-tree{defaultValue="src/App.vue" expandAll}

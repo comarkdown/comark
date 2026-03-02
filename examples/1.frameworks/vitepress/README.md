@@ -3,6 +3,7 @@ title: VitePress
 description: Using Comark component syntax natively in VitePress via @comark/markdown-it.
 navigation.icon: i-simple-icons-vitepress
 category: Frameworks
+path: /examples/frameworks/vitepress
 ---
 
 ::code-tree{defaultValue="demo.md" expandAll}

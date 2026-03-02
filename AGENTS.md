@@ -187,13 +187,6 @@ $$
 <Comark components={components} plugins={[math()]}>{markdown}</Comark>
 ```
 
-**Code blocks:**
-````markdown
-```math
-x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}
-```
-````
-
 ### Features
 
 - Inline math with `$...$` syntax (tokenized during parsing via markdown-it plugin)

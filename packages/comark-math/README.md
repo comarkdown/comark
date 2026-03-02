@@ -6,7 +6,6 @@ Math formula support for [comark](https://github.com/comarkdown/comark) using [K
 
 - ✅ Inline math with `$...$` syntax (tokenized at parse time)
 - ✅ Display math with `$$...$$` syntax (tokenized at parse time)
-- ✅ Math code blocks with ` ```math ` language
 - ✅ HTML output via KaTeX
 - ✅ Full LaTeX math syntax support
 - ✅ Vue and React components
@@ -194,17 +193,6 @@ $$
 \lim_{x \to \infty} f(x)
 $$
 ```
-
-### Code Blocks
-
-You can also use code blocks for larger expressions:
-
-````markdown
-```math
-x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}
-```
-````
-
 
 ## Edge Cases
 
