@@ -10,7 +10,7 @@ const appConfig = useAppConfig()
 const route = useRoute()
 
 const { data: page } = await useAsyncData(kebabCase(route.path), () =>
-  queryCollection('examples').path(`${route.path}/readme`).first(),
+  queryCollection('examples').path(`${route.path}`).first(),
 )
 if (!page.value) {
   throw createError({
@@ -22,19 +22,19 @@ if (!page.value) {
 }
 
 const { data: surround } = await useAsyncData(`${kebabCase(route.path)}-surround`, async () => {
-  const data = await queryCollectionItemSurroundings('examples', `${route.path}/readme`, {
+  const data = await queryCollectionItemSurroundings('examples', `${route.path}`, {
     fields: ['description'],
   }).where('category', '=', page.value?.category)
 
   return data?.map((item) => {
     if (!item) return null
-    return { ...item, path: item.path?.replace('/readme', '') }
+    return { ...item, path: item.path }
   })
 })
 
 const exampleName = computed(() => {
   if (page.value?.stem) {
-    return page.value.stem.replace(/^\/?examples\//, '').replace(/\/readme$/i, '')
+    return page.value.stem.replace(/^\/?examples\//, '')
   }
   return route.path.replace(/^\/examples\//, '')
 })
