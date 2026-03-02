@@ -1,5 +1,6 @@
 import { defineNuxtModule, createResolver, addComponent, hasNuxtModule } from '@nuxt/kit'
 import type { Nuxt, NuxtModule } from 'nuxt/schema'
+import { setupDevTools } from './devtools'
 import fs from 'node:fs/promises'
 
 // Module options TypeScript interface definition
@@ -31,6 +32,9 @@ const module: NuxtModule<ComarkModuleOptions> = defineNuxtModule<ComarkModuleOpt
     if (hasNuxtModule('@nuxt/ui')) {
       setupNuxtUI(nuxt)
     }
+
+    // Set up Nuxt DevTools integration
+    setupDevTools(nuxt)
 
     // Register user global components
     const _layers = [...nuxt.options._layers].reverse()
