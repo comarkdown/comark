@@ -1,16 +1,36 @@
 import type { ComarkElement } from '../ast/types'
 import { visit } from '../ast/utils'
 import { validateProps } from '../internal/props-validation'
+import type { PropsValidationOptions } from '../internal/props-validation'
 import type { ComarkPlugin } from 'comark'
 
-interface SecurityOptions {
-  drop?: string[]
+interface SecurityOptions extends PropsValidationOptions {
+  /**
+   * Tags to remove entirely from the output tree.
+   * @default []
+   */
+  blockedTags?: string[]
 }
 
 export default function security(options: SecurityOptions): ComarkPlugin {
-  const { drop = [] } = options
+  const {
+    blockedTags = [],
+    allowedLinkPrefixes,
+    allowedImagePrefixes,
+    allowedProtocols,
+    defaultOrigin,
+    allowDataImages,
+  } = options
 
-  const dropTags = new Set(drop)
+  const dropSet = new Set(blockedTags.map(t => t.toLowerCase()))
+
+  const propsOptions: PropsValidationOptions = {
+    allowedLinkPrefixes,
+    allowedImagePrefixes,
+    allowedProtocols,
+    defaultOrigin,
+    allowDataImages,
+  }
 
   return {
     post(state) {
@@ -21,7 +41,7 @@ export default function security(options: SecurityOptions): ComarkPlugin {
           const element = node as ComarkElement
 
           // return false to remove the node from the tree
-          if (dropTags.has(element[0])) {
+          if (dropSet.has(element[0].toLowerCase())) {
             return false
           }
 
@@ -31,10 +51,8 @@ export default function security(options: SecurityOptions): ComarkPlugin {
            * If the element has any props, validate them
            */
           if (keys.length) {
-            return [element[0], validateProps(element[0], element[1]), ...element.slice(2)] as ComarkElement
+            element[1] = validateProps(element[0], element[1], propsOptions)
           }
-
-          return element
         })
     },
   }

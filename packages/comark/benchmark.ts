@@ -73,6 +73,7 @@ const markdownExit = new MarkdownExit({
   .use(pluginMdc)
 
 const comark = createParse()
+const comarkNoClose = createParse({ autoClose: false })
 
 // Benchmark: markdown-it parsing
 bench('markdown-it parse', () => {
@@ -86,6 +87,10 @@ bench('markdown-exit parse', () => {
 
 bench('comark parse', async () => {
   await comark(sampleMarkdown)
+})
+
+bench('comark parse no close', async () => {
+  await comarkNoClose(sampleMarkdown)
 })
 
 // Benchmark: markdown-it render
