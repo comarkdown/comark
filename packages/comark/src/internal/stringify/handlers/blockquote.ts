@@ -13,7 +13,7 @@ export function blockquote(node: ComarkElement, state: State) {
 
   if (node[1].as) {
     return `> [!${String(node[1].as).toUpperCase()}]\n`
-      + content 
+      + content
       + state.context.blockSeparator
   }
 

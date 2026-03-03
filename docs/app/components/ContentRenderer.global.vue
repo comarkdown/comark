@@ -91,7 +91,7 @@ function replaceMermaid(body: MinimarkNode[]): MinimarkNode[] {
 }
 
 function replaceAlert(body: MinimarkNode[]): MinimarkNode[] {
-  alert().post!({ markdown: '', tree: { frontmatter: {}, nodes: body, meta: {} }, options: {}, tokens: []})
+  alert().post!({ markdown: '', tree: { frontmatter: {}, nodes: body, meta: {} }, options: {}, tokens: [] })
 
   return body
 }
