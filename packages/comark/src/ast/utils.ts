@@ -30,7 +30,7 @@ export function textContent(node: ComarkNode, options: { decodeUnicodeEntities?:
  * @param checker - A function that checks if a node should be visited
  * @param visitor - A function that visits a node
  */
-export function visit(tree: ComarkTree, checker: (node: ComarkNode) => boolean, visitor: (node: ComarkNode) => ComarkNode | false | undefined) {
+export function visit(tree: ComarkTree, checker: (node: ComarkNode) => boolean, visitor: (node: ComarkNode) => ComarkNode | false | undefined | void) {
   function walk(node: ComarkNode, parent: ComarkNode | ComarkNode[], index: number): boolean {
     let currentNode = node
 

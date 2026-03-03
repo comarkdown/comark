@@ -20,6 +20,7 @@ export type ComarkParsePostState = {
 }
 
 export type ComarkPlugin = {
+  name: string
   markdownItPlugins?: MarkdownItPlugin[]
   pre?: (state: ComarkParsePreState) => Promise<void> | void
   post?: (state: ComarkParsePostState) => Promise<void> | void
