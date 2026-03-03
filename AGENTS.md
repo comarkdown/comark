@@ -10,7 +10,7 @@ This is a **monorepo** containing multiple packages related to Comark (Component
 
 - Fast synchronous and async parsing via markdown-it
 - Streaming support for real-time/incremental parsing
-- Vue and React renderers
+- Vue, React and Svelte renderers
 - Syntax highlighting via Shiki
 - Auto-close utilities for incomplete markdown (useful for AI streaming)
 
@@ -21,7 +21,8 @@ This is a **monorepo** containing multiple packages related to Comark (Component
 ├── packages/             # All publishable packages
 │   ├── comark/           # Main Comark parser package
 │   ├── comark-cjk/       # CJK support plugin (@comark/cjk)
-│   └── comark-math/      # Math formula support (@comark/math)
+│   ├── comark-math/      # Math formula support (@comark/math)
+│   └── comark-svelte/    # Svelte renderer (@comark/svelte)
 ├── examples/             # Example applications
 │   ├── vue-vite/         # Vue + Vite + Tailwind CSS v4
 │   ├── react-vite/       # React 19 + Vite + Tailwind CSS v4
@@ -197,6 +198,58 @@ $$
 - Vue and React components for easy integration
 - Automatic tokenization at parse time (not render time) for performance
 
+## Package: @comark/svelte
+
+Svelte 5 renderer for Comark. Located at `packages/comark-svelte/`:
+
+```
+packages/comark-svelte/
+├── src/
+│   ├── index.ts              # Entry point (@comark/svelte)
+│   ├── types.ts              # Shared prop interfaces
+│   ├── Comark.svelte         # High-level markdown → render ($state + $effect)
+│   ├── ComarkAsync.svelte    # High-level markdown → render (experimental await)
+│   ├── ComarkRenderer.svelte # Low-level AST → render component
+│   └── ComarkNode.svelte     # Recursive AST node renderer
+├── svelte.config.js          # Svelte config (experimental.async enabled)
+├── vitest.config.ts          # Dual test config (server + client browser)
+├── tsconfig.json
+└── package.json
+```
+
+### Build
+
+Uses `@sveltejs/package` (`svelte-package`) — the standard Svelte library packaging tool. Ships `.svelte` source files (compiled by consumer's bundler) with `.d.ts` type definitions generated via `svelte2tsx`.
+
+### Testing
+
+Uses Vitest with two test projects:
+- **`server`**: Node environment, `*.test.ts` files — SSR tests using `svelte/server` `render()`
+- **`client`**: Browser environment (Playwright/Chromium), `*.svelte.test.ts` files — real DOM tests using `vitest-browser-svelte`
+
+### Usage
+
+**Manual state (stable API)**:
+```svelte
+<script>
+  import { Comark } from '@comark/svelte'
+</script>
+<Comark markdown={content} components={customComponents} />
+```
+
+**Experimental async** (requires `experimental.async` in Svelte config):
+```svelte
+<script>
+  import { ComarkAsync } from '@comark/svelte'
+</script>
+<svelte:boundary>
+  <ComarkAsync markdown={content} components={customComponents} />
+  {#snippet pending()}
+    <p>Loading...</p>
+  {/snippet}
+</svelte:boundary>
+```
+
 ## Package Exports
 
 ```typescript
@@ -216,6 +269,9 @@ import { Comark } from 'comark/vue'
 
 // React components
 import { Comark } from 'comark/react'
+
+// Svelte components
+import { Comark, ComarkAsync, ComarkRenderer } from '@comark/svelte'
 ```
 
 ## Coding Principles
@@ -250,7 +306,7 @@ const matches = line.match(/\*+/g)  // Don't do this
 
 1. Keep internal implementation in `packages/comark/src/internal/` (parsing in `internal/parse/`, stringification in `internal/stringify/`)
 2. AST types and utilities in `packages/comark/src/ast/`
-3. Framework-specific code in `packages/comark/src/vue/` and `packages/comark/src/react/`
+3. Framework-specific code in `packages/comark/src/vue/`, `packages/comark/src/react/`, and `packages/comark-svelte/src/`
 4. Export public APIs from entry points (`index.ts`, `ast/index.ts`)
 5. Document exported functions with JSDoc including `@example`
 
@@ -351,7 +407,7 @@ Example:
 }
 ```
 
-## Vue/React Components
+## Vue/React/Svelte Components
 
 ### Comark Component (High-level)
 
@@ -369,6 +425,31 @@ Accepts markdown string, handles parsing internally.
 
 ```tsx
 <Comark components={customComponents}>{content}</Comark>
+```
+
+**Svelte** (manual state — stable API, uses `$state` + `$effect`):
+
+```svelte
+<script>
+  import { Comark } from '@comark/svelte'
+</script>
+
+<Comark markdown={content} components={customComponents} />
+```
+
+**Svelte** (experimental async — requires `experimental.async` in Svelte config):
+
+```svelte
+<script>
+  import { ComarkAsync } from '@comark/svelte'
+</script>
+
+<svelte:boundary>
+  <ComarkAsync markdown={content} components={customComponents} />
+  {#snippet pending()}
+    <p>Loading...</p>
+  {/snippet}
+</svelte:boundary>
 ```
 
 ## Common Tasks
@@ -390,7 +471,8 @@ Accepts markdown string, handles parsing internally.
 
 1. Vue components in `packages/comark/src/vue/components/`
 2. React components in `packages/comark/src/react/components/`
-3. Both should have similar APIs for consistency
+3. Svelte components in `packages/comark-svelte/src/`
+4. All three should have similar APIs for consistency
 
 ### Adding a new package
 

@@ -30,3 +30,6 @@ logs
 
 .vscode
 .history
+
+# Svelte
+.svelte-kit

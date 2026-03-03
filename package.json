@@ -33,7 +33,7 @@
     "verify": "pnpm run lint && pnpm run test && pnpm run typecheck",
     "release": "pnpm --filter 'comark' run release && pnpm --filter '@comark/cjk' run release && pnpm --filter '@comark/math' run release",
     "release:dry": "pnpm --filter 'comark' run release:dry && pnpm --filter '@comark/cjk' run release:dry && pnpm --filter '@comark/math' run release:dry",
-    "postinstall": "pnpm --filter 'comark' run build --stub && pnpm --filter '@comark/*' run build --stub"
+    "postinstall": "pnpm --filter 'comark' run build --stub && pnpm --filter '@comark/*' --filter '!@comark/svelte' run build --stub"
   },
   "devDependencies": {
     "@nuxt/eslint-config": "^1.15.1",
