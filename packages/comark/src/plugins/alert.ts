@@ -46,7 +46,7 @@ export default function alert(): ComarkPlugin {
         (node) => {
           const element = node as ComarkElement
           if (node[2]?.[0] === 'span') {
-            const content = node[2][2] as keyof typeof markers
+            const content = String(node[2][2] as keyof typeof markers).toUpperCase()
             const marker = markers[content]
             if (marker) {
               if (typeof node[3] === 'string') {
@@ -60,7 +60,7 @@ export default function alert(): ComarkPlugin {
           else if (node[2]?.[0] === 'p') {
             const paragraph = node[2] as ComarkElement
             if (paragraph[2]?.[0] === 'span') {
-              const content = paragraph[2][2] as keyof typeof markers
+              const content = String(paragraph[2][2] as keyof typeof markers).toUpperCase()
               const marker = markers[content]
 
               if (marker) {
