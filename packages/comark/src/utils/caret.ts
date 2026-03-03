@@ -12,13 +12,11 @@ export function getCaret(options: boolean | CaretOptions): ComarkElement | null 
     return ['span', { key: 'stream-caret', style: CARET_STYLE }, CARET_TEXT]
   }
   if (typeof options === 'object') {
-    const userClass = options?.class || ''
     return [
       'span',
       {
         key: 'stream-caret',
-        style: CARET_STYLE,
-        ...(userClass ? { class: userClass } : {}),
+        ...(options.class ? { class: options.class } : { style: CARET_STYLE }),
       },
       CARET_TEXT,
     ]
@@ -28,19 +26,15 @@ export function getCaret(options: boolean | CaretOptions): ComarkElement | null 
 }
 
 export function findLastTextNodeAndAppendNode(parent: ComarkElement, nodeToAppend: ComarkElement): boolean {
-  // Traverse nodes backwards to find the last text node
   for (let i = parent.length - 1; i >= 2; i--) {
     const node = parent[i]
 
     if (typeof node === 'string' && parent[1]?.key !== 'stream-caret') {
-      // Found a text node - insert stream indicator after it
       parent.push(nodeToAppend)
-
       return true
     }
 
     if (Array.isArray(node)) {
-      // This is an element node - recursively check its children
       if (findLastTextNodeAndAppendNode(node as ComarkElement, nodeToAppend)) {
         return true
       }

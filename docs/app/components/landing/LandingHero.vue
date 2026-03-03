@@ -1,33 +1,93 @@
 <template>
-  <!-- Hero Section -->
-  <div class="relative ">
-    <!-- Background Pattern -->
-    <div class="absolute inset-0 bg-grid-slate-100 [mask-image:linear-gradient(0deg,rgba(255,255,255,0.2),rgba(255,255,255,0.5))] dark:bg-grid-slate-700/25 dark:[mask-image:linear-gradient(0deg,rgba(255,255,255,0.1),rgba(255,255,255,0.5))]" />
+  <section class="relative overflow-hidden border-b border-default">
+    <div class="absolute inset-0 hero-dots" />
+    <div class="absolute top-1/3 left-1/3 size-[400px] rounded-full bg-primary/20 blur-[120px]" />
 
-    <UPageHero>
-      <template #title>
-        <slot name="title" />
-      </template>
-      <template #description>
-        <slot name="description" />
-      </template>
-      <template #links>
-        <slot name="links" />
-      </template>
-    </UPageHero>
-  </div>
+    <div class="relative">
+      <div class="grid items-center gap-8 p-8 md:p-12 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:gap-12">
+        <div>
+          <div class="hero-fade-in" style="--delay: 0s">
+            <TypingText
+              text="# Comark"
+              tag="div"
+              :speed="100"
+              :resolve-delay="500"
+              :trigger-on-view="false"
+              class="mb-4"
+            >
+              <template #resolved>
+                <h1 class="text-5xl font-bold tracking-tight text-highlighted md:text-6xl">
+                  Comark
+                </h1>
+              </template>
+            </TypingText>
+          </div>
+
+          <div class="hero-fade-in" style="--delay: 0.15s">
+            <p class="max-w-md text-lg/7 text-muted">
+              A fast, streaming-ready markdown parser with component support for Vue and React.
+            </p>
+          </div>
+
+          <div class="hero-fade-in mt-6" style="--delay: 0.25s">
+            <UInputCopy value="npm install comark" />
+          </div>
+
+          <div class="hero-fade-in mt-6 flex items-center gap-3" style="--delay: 0.35s">
+            <UButton
+              to="/getting-started/introduction"
+              size="xl"
+              color="primary"
+              trailing-icon="i-lucide-arrow-right"
+            >
+              Get Started
+            </UButton>
+            <UButton
+              to="https://github.com/comarkdown/comark"
+              external
+              size="xl"
+              color="neutral"
+              variant="outline"
+              icon="i-simple-icons-github"
+            >
+              GitHub
+            </UButton>
+          </div>
+        </div>
+
+        <div class="hero-fade-in" style="--delay: 0.3s">
+          <LandingHeroDemo />
+        </div>
+      </div>
+    </div>
+  </section>
 </template>
 
 <style scoped>
-.bg-grid-slate-100 {
-  background-image: linear-gradient(to right, rgb(148 163 184 / 0.25) 1px, transparent 1px),
-    linear-gradient(to bottom, rgb(148 163 184 / 0.25) 1px, transparent 1px);
-  background-size: 4rem 4rem;
+.hero-dots {
+  background-image: radial-gradient(circle, rgb(161 161 170 / 0.15) 1px, transparent 1px);
+  background-size: 20px 20px;
+  mask-image: radial-gradient(ellipse 70% 70% at 50% 40%, black 20%, transparent 70%);
+  -webkit-mask-image: radial-gradient(ellipse 70% 70% at 50% 40%, black 20%, transparent 70%);
 }
 
-.dark .bg-grid-slate-700\/25 {
-  background-image: linear-gradient(to right, rgb(51 65 85 / 0.25) 1px, transparent 1px),
-    linear-gradient(to bottom, rgb(51 65 85 / 0.25) 1px, transparent 1px);
-  background-size: 4rem 4rem;
+:global(.dark) .hero-dots {
+  background-image: radial-gradient(circle, rgb(161 161 170 / 0.08) 1px, transparent 1px);
+}
+
+@keyframes hero-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hero-fade-in {
+  animation: hero-fade-in 0.5s ease-out both;
+  animation-delay: var(--delay, 0s);
 }
 </style>

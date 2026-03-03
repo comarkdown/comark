@@ -15,6 +15,13 @@ export default defineNuxtConfig({
     },
   },
 
+  fonts: {
+    families: [
+      { name: 'Geist', weights: [400, 500, 600, 700], global: true },
+      { name: 'Geist Mono', weights: [400, 500, 600], global: true },
+    ],
+  },
+
   css: ['~/assets/styles/main.css'],
 
   content: {
@@ -24,7 +31,7 @@ export default defineNuxtConfig({
     build: {
       markdown: {
         highlight: {
-          langs: ['tsx', 'tsx', 'vue', 'html', 'css', 'json', 'markdown', 'bash', 'shell', 'astro'],
+          langs: ['tsx', 'vue', 'html', 'css', 'json', 'markdown', 'bash', 'shell', 'astro'],
         },
       },
     },

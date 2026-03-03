@@ -1,20 +1,7 @@
 import { pascalCase } from 'scule'
 import { localComponents } from '#content/components'
 
-// Define component imports for the docs app
 const components = {
-  // Landing components
-  LandingHero: () => import('@/components/landing/LandingHero.vue'),
-  LandingSubHero: () => import('@/components/landing/LandingSubHero.vue'),
-  LandingCards: () => import('@/components/landing/LandingCards.vue'),
-  LandingCard: () => import('@/components/landing/LandingCard.vue'),
-  LandingTypography: () => import('@/components/landing/LandingTypography.vue'),
-  LandingCodeBlock: () => import('@/components/landing/LandingCodeBlock.vue'),
-  LandingCjk: () => import('@/components/landing/LandingCjk.vue'),
-  LandingGfm: () => import('@/components/landing/LandingGfm.vue'),
-  LandingCompareGrid: () => import('@/components/LandingCompareGrid.vue'),
-
-  // Streaming components
   ComarkStream: () => import('@/components/ComarkStream.vue'),
   MarkdownItStream: () => import('@/components/MarkdownItStream.vue'),
 }
@@ -24,7 +11,6 @@ export default function resolveComponent(name: string) {
     return null
   }
 
-  // Try the name as-is first
   const componentKey = name as keyof typeof components
   const pascalName = pascalCase(name) as keyof typeof components
 
