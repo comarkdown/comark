@@ -133,7 +133,7 @@ const props = withDefaults(defineProps<{
 }
 ```
 
-```md [index.md]
+```mdc [index.md]
 ---
 layout: home
 hero:
