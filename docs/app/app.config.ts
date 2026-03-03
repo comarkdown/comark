@@ -23,7 +23,7 @@ export default defineAppConfig({
     prose: {
       codePreview: {
         slots: {
-          preview: '*:w-full',
+          preview: 'flex-col [&>*]:w-full [&_a]:w-fit',
         },
       },
       codeIcon: {
