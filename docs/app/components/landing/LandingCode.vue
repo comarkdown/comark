@@ -13,7 +13,7 @@ import Alert from './components/Alert.vue'
 
 const components = { Alert }
 const content = ref('# Hello **World**\\n\\n::alert{type="info"}\\nWelcome!\\n::')
-<\/script>
+${'<'}/script>
 
 <template>
   <Suspense>
@@ -42,7 +42,10 @@ export default function App() {
 <template>
   <div class="border-b border-default">
     <div class="border-b border-default p-6 text-center lg:p-8">
-      <span v-if="headline" class="section-label">
+      <span
+        v-if="headline"
+        class="section-label"
+      >
         {{ headline }}
       </span>
       <h2 class="mt-4 text-2xl font-bold text-highlighted">
@@ -60,7 +63,10 @@ export default function App() {
           :class="activeTab === 'vue' ? 'border-primary text-primary' : 'border-transparent text-muted hover:text-highlighted'"
           @click="activeTab = 'vue'"
         >
-          <UIcon name="i-logos-vue" class="size-4" />
+          <UIcon
+            name="i-logos-vue"
+            class="size-4"
+          />
           Vue
         </button>
         <button
@@ -68,14 +74,23 @@ export default function App() {
           :class="activeTab === 'react' ? 'border-primary text-primary' : 'border-transparent text-muted hover:text-highlighted'"
           @click="activeTab = 'react'"
         >
-          <UIcon name="i-logos-react" class="size-4" />
+          <UIcon
+            name="i-logos-react"
+            class="size-4"
+          />
           React
         </button>
       </div>
 
       <div class="max-h-[360px] overflow-auto p-6 lg:p-8">
-        <pre v-show="activeTab === 'vue'" class="font-mono text-sm/7 whitespace-pre-wrap text-default">{{ vueCode }}</pre>
-        <pre v-show="activeTab === 'react'" class="font-mono text-sm/7 whitespace-pre-wrap text-default">{{ reactCode }}</pre>
+        <pre
+          v-show="activeTab === 'vue'"
+          class="font-mono text-sm/7 whitespace-pre-wrap text-default"
+        >{{ vueCode }}</pre>
+        <pre
+          v-show="activeTab === 'react'"
+          class="font-mono text-sm/7 whitespace-pre-wrap text-default"
+        >{{ reactCode }}</pre>
       </div>
     </div>
   </div>

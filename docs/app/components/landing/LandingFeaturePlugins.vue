@@ -26,7 +26,10 @@ const current = computed(() => props.plugins.find(p => p.id === activePlugin.val
   <div class="border-b border-default">
     <div class="grid lg:grid-cols-2">
       <div class="border-b border-default p-6 lg:border-r lg:border-b-0 lg:p-8">
-        <span v-if="headline" class="section-label">
+        <span
+          v-if="headline"
+          class="section-label"
+        >
           {{ headline }}
         </span>
         <h2 class="mt-4 text-2xl font-bold text-highlighted">
@@ -65,7 +68,13 @@ const current = computed(() => props.plugins.find(p => p.id === activePlugin.val
       <div class="bg-muted/50">
         <div class="flex items-center justify-between border-b border-default px-6 py-2.5 lg:px-8">
           <span class="font-mono text-xs text-dimmed">input.md</span>
-          <UBadge :label="current.package" variant="subtle" color="neutral" size="sm" :ui="{ base: 'font-mono' }" />
+          <UBadge
+            :label="current.package"
+            variant="subtle"
+            color="neutral"
+            size="sm"
+            :ui="{ base: 'font-mono' }"
+          />
         </div>
 
         <div class="grid grid-cols-2">

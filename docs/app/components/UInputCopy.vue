@@ -11,9 +11,11 @@ async function copy() {
     await navigator.clipboard.writeText(props.value)
     copied.value = true
     if (timer) clearTimeout(timer)
-    timer = setTimeout(() => { copied.value = false }, 2000)
+    timer = setTimeout(() => {
+      copied.value = false
+    }, 2000)
   }
-  catch {}
+  catch { /* clipboard API may fail silently */ }
 }
 </script>
 

@@ -67,8 +67,14 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div ref="sectionRef" class="p-6 lg:p-8">
-    <span v-if="headline" class="section-label">
+  <div
+    ref="sectionRef"
+    class="p-6 lg:p-8"
+  >
+    <span
+      v-if="headline"
+      class="section-label"
+    >
       {{ headline }}
     </span>
     <h2 class="mt-4 text-2xl font-bold text-highlighted">

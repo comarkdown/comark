@@ -35,9 +35,11 @@ async function copyCode() {
   try {
     await navigator.clipboard.writeText(codeContent.value)
     copied.value = true
-    setTimeout(() => { copied.value = false }, 2000)
+    setTimeout(() => {
+      copied.value = false
+    }, 2000)
   }
-  catch {}
+  catch { /* clipboard API may fail silently */ }
 }
 </script>
 
@@ -54,7 +56,10 @@ async function copyCode() {
         @click="copyCode"
       >
         <span class="flex items-center gap-1.5">
-          <UIcon :name="copied ? 'i-lucide-check' : 'i-lucide-copy'" class="size-4" />
+          <UIcon
+            :name="copied ? 'i-lucide-check' : 'i-lucide-copy'"
+            class="size-4"
+          />
           {{ copied ? 'Copied!' : 'Copy' }}
         </span>
       </button>

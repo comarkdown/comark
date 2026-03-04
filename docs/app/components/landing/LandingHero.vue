@@ -18,7 +18,10 @@ const props = defineProps<{
     <div class="relative">
       <div class="grid items-center gap-8 p-8 md:p-12 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:gap-12">
         <div>
-          <div class="hero-fade-in" style="--delay: 0s">
+          <div
+            class="hero-fade-in"
+            style="--delay: 0s"
+          >
             <TypingText
               :text="`# ${props.title}`"
               tag="div"
@@ -35,17 +38,26 @@ const props = defineProps<{
             </TypingText>
           </div>
 
-          <div class="hero-fade-in" style="--delay: 0.15s">
+          <div
+            class="hero-fade-in"
+            style="--delay: 0.15s"
+          >
             <p class="max-w-md text-lg/7 text-muted">
               {{ props.description }}
             </p>
           </div>
 
-          <div class="hero-fade-in mt-6" style="--delay: 0.25s">
+          <div
+            class="hero-fade-in mt-6"
+            style="--delay: 0.25s"
+          >
             <UInputCopy :value="install" />
           </div>
 
-          <div class="hero-fade-in mt-6 flex items-center gap-3" style="--delay: 0.35s">
+          <div
+            class="hero-fade-in mt-6 flex items-center gap-3"
+            style="--delay: 0.35s"
+          >
             <UButton
               :label="primaryLabel"
               :to="primaryTo"
@@ -65,7 +77,10 @@ const props = defineProps<{
           </div>
         </div>
 
-        <div class="hero-fade-in" style="--delay: 0.3s">
+        <div
+          class="hero-fade-in"
+          style="--delay: 0.3s"
+        >
           <LandingHeroDemo />
         </div>
       </div>
