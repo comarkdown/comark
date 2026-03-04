@@ -1,14 +1,38 @@
+<script setup lang="ts">
+defineProps<{
+  streamingHeadline: string
+  streamingTitle: string
+  streamingDescription: string
+  streamingLinkLabel: string
+  streamingLinkTo: string
+  frameworksHeadline: string
+  frameworksTitle: string
+  frameworksDescription: string
+  frameworksVueLinkLabel: string
+  frameworksVueLinkTo: string
+  frameworksReactLinkLabel: string
+  frameworksReactLinkTo: string
+}>()
+</script>
+
 <template>
-  <div>
-    <div class="grid border-b border-default lg:grid-cols-2">
-      <LandingFeatureStreaming class="lg:border-r lg:border-default" />
-      <LandingFeatureFrameworks />
-    </div>
-    <div class="border-b border-default">
-      <LandingFeatureAutoClose />
-    </div>
-    <div class="border-b border-default">
-      <LandingFeaturePlugins />
-    </div>
+  <div class="grid border-b border-default lg:grid-cols-2">
+    <LandingFeatureStreaming
+      :headline="streamingHeadline"
+      :title="streamingTitle"
+      :description="streamingDescription"
+      :link-label="streamingLinkLabel"
+      :link-to="streamingLinkTo"
+      class="lg:border-r lg:border-default"
+    />
+    <LandingFeatureFrameworks
+      :headline="frameworksHeadline"
+      :title="frameworksTitle"
+      :description="frameworksDescription"
+      :vue-link-label="frameworksVueLinkLabel"
+      :vue-link-to="frameworksVueLinkTo"
+      :react-link-label="frameworksReactLinkLabel"
+      :react-link-to="frameworksReactLinkTo"
+    />
   </div>
 </template>

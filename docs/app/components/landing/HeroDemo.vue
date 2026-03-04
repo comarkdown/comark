@@ -113,7 +113,10 @@ onBeforeUnmount(() => {
           ref="sourceEl"
           class="h-[400px] overflow-auto scroll-smooth p-4"
         >
-          <pre class="font-mono text-sm/6 whitespace-pre-wrap text-default">{{ rawText }}<span v-if="isStreaming" class="caret" /></pre>
+          <pre class="font-mono text-sm/6 whitespace-pre-wrap text-default">{{ rawText }}<span
+v-if="isStreaming"
+                                                                                               class="caret"
+          /></pre>
         </div>
       </div>
 

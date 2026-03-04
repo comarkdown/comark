@@ -1,4 +1,10 @@
 <script setup lang="ts">
+defineProps<{
+  headline: string
+  title: string
+  description: string
+}>()
+
 const activeTab = ref<'vue' | 'react'>('vue')
 
 const vueCode = `<script setup lang="ts">
@@ -36,12 +42,14 @@ export default function App() {
 <template>
   <div class="border-b border-default">
     <div class="border-b border-default p-6 text-center lg:p-8">
-      <span class="section-label">Quick start</span>
+      <span v-if="headline" class="section-label">
+        {{ headline }}
+      </span>
       <h2 class="mt-4 text-2xl font-bold text-highlighted">
-        Get started in seconds
+        {{ title }}
       </h2>
       <p class="mx-auto mt-3 max-w-lg text-base/7 text-muted">
-        Install Comark and render your first markdown with components in just a few lines.
+        {{ description }}
       </p>
     </div>
 
@@ -66,7 +74,8 @@ export default function App() {
       </div>
 
       <div class="max-h-[360px] overflow-auto p-6 lg:p-8">
-        <pre class="font-mono text-sm/7 whitespace-pre-wrap text-default">{{ activeTab === 'vue' ? vueCode : reactCode }}</pre>
+        <pre v-show="activeTab === 'vue'" class="font-mono text-sm/7 whitespace-pre-wrap text-default">{{ vueCode }}</pre>
+        <pre v-show="activeTab === 'react'" class="font-mono text-sm/7 whitespace-pre-wrap text-default">{{ reactCode }}</pre>
       </div>
     </div>
   </div>

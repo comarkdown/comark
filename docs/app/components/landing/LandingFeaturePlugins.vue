@@ -1,54 +1,39 @@
 <script setup lang="ts">
-const plugins = [
-  {
-    id: 'math',
-    name: 'Math',
-    icon: 'i-lucide-sigma',
-    description: 'LaTeX math formulas with KaTeX. Inline $...$ and display $$...$$ syntax.',
-    input: 'The area of a circle is $A = \\pi r^2$.\n\nEuler\'s identity:\n\n$$e^{i\\pi} + 1 = 0$$',
-    package: '@comark/math',
-  },
-  {
-    id: 'cjk',
-    name: 'CJK',
-    icon: 'i-lucide-languages',
-    description: 'Improved line breaking and spacing between CJK and Latin characters.',
-    input: '# 你好世界\n\nComark支持**中文**、_日本語_、한국어等CJK文字。\n\n混合English和中文的排版效果更好。',
-    package: '@comark/cjk',
-  },
-  {
-    id: 'highlight',
-    name: 'Highlight',
-    icon: 'i-lucide-code',
-    description: 'Syntax highlighting for code blocks powered by Shiki.',
-    input: '```typescript\ninterface User {\n  name: string\n  email: string\n}\n\nasync function getUser(id: number): Promise<User> {\n  const res = await fetch(`/api/users/${id}`)\n  return res.json()\n}\n```',
-    package: 'comark',
-  },
-  {
-    id: 'toc',
-    name: 'TOC',
-    icon: 'i-lucide-list',
-    description: 'Auto-generate a table of contents from document headings.',
-    input: '# Introduction\n\nWelcome to the docs.\n\n## Getting Started\n\nInstall the package.\n\n### Configuration\n\nSet up your config.\n\n## API Reference\n\nFull API docs.',
-    package: 'comark',
-  },
-]
+interface Plugin {
+  id: string
+  name: string
+  icon: string
+  description: string
+  input: string
+  package: string
+}
 
-const activePlugin = ref('math')
+const props = defineProps<{
+  headline: string
+  title: string
+  description: string
+  linkLabel: string
+  linkTo: string
+  plugins: Plugin[]
+}>()
 
-const current = computed(() => plugins.find(p => p.id === activePlugin.value)!)
+const activePlugin = ref(props.plugins[0]?.id ?? '')
+
+const current = computed(() => props.plugins.find(p => p.id === activePlugin.value) ?? props.plugins[0]!)
 </script>
 
 <template>
-  <div>
+  <div class="border-b border-default">
     <div class="grid lg:grid-cols-2">
       <div class="border-b border-default p-6 lg:border-r lg:border-b-0 lg:p-8">
-        <span class="section-label">Plugins</span>
+        <span v-if="headline" class="section-label">
+          {{ headline }}
+        </span>
         <h2 class="mt-4 text-2xl font-bold text-highlighted">
-          Extensible plugins
+          {{ title }}
         </h2>
         <p class="mt-3 text-base/7 text-muted">
-          Extend Comark with plugins for math formulas, CJK text, syntax highlighting, and more.
+          {{ description }}
         </p>
 
         <div class="mt-6 flex flex-wrap gap-2">
@@ -64,11 +49,13 @@ const current = computed(() => plugins.find(p => p.id === activePlugin.value)!)
           />
         </div>
 
-        <p class="mt-6 text-sm/6 text-muted">{{ current.description }}</p>
+        <p class="mt-6 text-sm/6 text-muted">
+          {{ current.description }}
+        </p>
 
         <UButton
-          label="Browse all plugins"
-          to="/plugins"
+          :label="linkLabel"
+          :to="linkTo"
           variant="link"
           trailing-icon="i-lucide-arrow-right"
           class="mt-4 px-0"

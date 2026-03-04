@@ -1,4 +1,14 @@
 <script setup lang="ts">
+defineProps<{
+  headline: string
+  title: string
+  description: string
+  vueLinkLabel: string
+  vueLinkTo: string
+  reactLinkLabel: string
+  reactLinkTo: string
+}>()
+
 const activeTab = ref<'vue' | 'react'>('vue')
 
 const vueCode = `<script setup lang="ts">
@@ -44,12 +54,14 @@ export default function App() {
 
 <template>
   <div class="p-6 lg:p-8">
-    <span class="section-label">Frameworks</span>
+    <span v-if="headline" class="section-label">
+      {{ headline }}
+    </span>
     <h2 class="mt-4 text-2xl font-bold text-highlighted">
-      Vue & React
+      {{ title }}
     </h2>
     <p class="mt-3 text-base/7 text-muted">
-      First-class support for both frameworks. Embed custom components in your markdown.
+      {{ description }}
     </p>
 
     <div class="mt-6 overflow-hidden border border-muted bg-muted/50">
@@ -72,21 +84,22 @@ export default function App() {
         </button>
       </div>
       <div class="h-[280px] overflow-auto p-4">
-        <pre class="font-mono text-sm/6 whitespace-pre-wrap text-default">{{ activeTab === 'vue' ? vueCode : reactCode }}</pre>
+        <pre v-show="activeTab === 'vue'" class="font-mono text-sm/6 whitespace-pre-wrap text-default">{{ vueCode }}</pre>
+        <pre v-show="activeTab === 'react'" class="font-mono text-sm/6 whitespace-pre-wrap text-default">{{ reactCode }}</pre>
       </div>
     </div>
 
     <div class="mt-4 flex items-center gap-4">
       <UButton
-        label="Vue docs"
-        to="/rendering/vue"
+        :label="vueLinkLabel"
+        :to="vueLinkTo"
         variant="link"
         trailing-icon="i-lucide-arrow-right"
         class="px-0"
       />
       <UButton
-        label="React docs"
-        to="/rendering/react"
+        :label="reactLinkLabel"
+        :to="reactLinkTo"
         variant="link"
         trailing-icon="i-lucide-arrow-right"
         class="px-0"

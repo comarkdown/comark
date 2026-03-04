@@ -1,3 +1,172 @@
 ---
 navigation: false
 ---
+
+::landing-hero
+---
+description: A fast, streaming-ready markdown parser with component support for
+  Vue and React.
+install: npm install comark
+primaryLabel: Get Started
+primaryTo: /getting-started/introduction
+secondaryLabel: GitHub
+secondaryTo: https://github.com/comarkdown/comark
+title: Comark
+---
+::
+
+::landing-features
+---
+frameworksDescription: First-class support for both frameworks. Embed custom
+  components in your markdown.
+frameworksHeadline: Frameworks
+frameworksReactLinkLabel: React docs
+frameworksReactLinkTo: /rendering/react
+frameworksTitle: Vue & React
+frameworksVueLinkLabel: Vue docs
+frameworksVueLinkTo: /rendering/vue
+streamingDescription: Parse content as it arrives. Perfect for AI-generated
+  content and progressive loading.
+streamingHeadline: Streaming
+streamingLinkLabel: Learn more
+streamingLinkTo: /api/parse#stream-parsing
+streamingTitle: Real-time streaming
+---
+::
+
+::landing-feature-auto-close
+---
+description: Incomplete markdown syntax is automatically closed during
+  streaming, so content renders correctly at every frame.
+headline: Auto-close
+linkLabel: Learn more
+linkTo: /api/auto-close
+title: Auto-close
+---
+::
+
+::landing-feature-plugins
+---
+plugins:
+  - id: math
+    name: Math
+    icon: i-lucide-sigma
+    description: LaTeX math formulas with KaTeX. Inline $...$ and display $$...$$ syntax.
+    input: |-
+      The area of a circle is $A = \pi r^2$.
+
+      Euler's identity:
+
+      $$e^{i\pi} + 1 = 0$$
+    package: "@comark/math"
+  - id: cjk
+    name: CJK
+    icon: i-lucide-languages
+    description: Improved line breaking and spacing between CJK and Latin characters.
+    input: |-
+      # 你好世界
+
+      Comark支持**中文**、_日本語_、한국어等CJK文字。
+
+      混合English和中文的排版效果更好。
+    package: "@comark/cjk"
+  - id: highlight
+    name: Highlight
+    icon: i-lucide-code
+    description: Syntax highlighting for code blocks powered by Shiki.
+    input: |-
+      ```typescript
+      interface User {
+        name: string
+        email: string
+      }
+
+      async function getUser(id: number): Promise<User> {
+        const res = await fetch(`/api/users/${id}`)
+        return res.json()
+      }
+      ```
+    package: comark
+  - id: toc
+    name: TOC
+    icon: i-lucide-list
+    description: Auto-generate a table of contents from document headings.
+    input: |-
+      # Introduction
+
+      Welcome to the docs.
+
+      ## Getting Started
+
+      Install the package.
+
+      ### Configuration
+
+      Set up your config.
+
+      ## API Reference
+
+      Full API docs.
+    package: comark
+description: Extend Comark with plugins for math formulas, CJK text, syntax
+  highlighting, and more.
+headline: Plugins
+linkLabel: Browse all plugins
+linkTo: /plugins
+title: Extensible plugins
+---
+::
+
+:landing-code{description="Install Comark and render your first markdown with components in just a few lines." headline="Quick start" title="Get started in seconds"}
+
+::landing-cta
+---
+footerSections:
+  - title: Documentation
+    links:
+      - label: Getting Started
+        to: /getting-started/introduction
+      - label: Syntax
+        to: /syntax/components
+      - label: Rendering
+        to: /rendering/vue
+      - label: API Reference
+        to: /api/parse
+  - title: Plugins
+    links:
+      - label: Syntax Highlighting
+        to: /plugins/core/highlight
+      - label: Math
+        to: /plugins/community/math
+      - label: CJK
+        to: /plugins/community/cjk
+      - label: Mermaid
+        to: /plugins/community/mermaid
+  - title: Community
+    links:
+      - label: GitHub
+        to: https://github.com/comarkdown/comark
+        external: true
+      - label: Issues
+        to: https://github.com/comarkdown/comark/issues
+        external: true
+      - label: Changelog
+        to: https://github.com/comarkdown/comark/blob/main/CHANGELOG.md
+        external: true
+      - label: License
+        to: https://github.com/comarkdown/comark/blob/main/LICENSE
+        external: true
+description: Add rich, interactive components to your markdown today.
+footerCopyright: © 2025 Comark. Released under the MIT License.
+footerDescription: A fast, streaming-ready markdown parser with component
+  support for Vue and React.
+githubUrl: https://github.com/comarkdown/comark
+install: npm install comark
+npmUrl: https://www.npmjs.com/package/comark
+primaryLabel: Get Started
+primaryTo: /getting-started/introduction
+secondaryLabel: GitHub
+secondaryTo: https://github.com/comarkdown/comark
+title: Start writing
+---
+::

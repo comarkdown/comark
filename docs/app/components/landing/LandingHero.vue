@@ -1,3 +1,15 @@
+<script setup lang="ts">
+const props = defineProps<{
+  title: string
+  description: string
+  install: string
+  primaryLabel: string
+  primaryTo: string
+  secondaryLabel: string
+  secondaryTo: string
+}>()
+</script>
+
 <template>
   <section class="relative overflow-hidden border-b border-default">
     <div class="absolute inset-0 hero-dots" />
@@ -8,7 +20,7 @@
         <div>
           <div class="hero-fade-in" style="--delay: 0s">
             <TypingText
-              text="# Comark"
+              :text="`# ${props.title}`"
               tag="div"
               :speed="100"
               :resolve-delay="500"
@@ -17,7 +29,7 @@
             >
               <template #resolved>
                 <h1 class="text-5xl font-bold tracking-tight text-highlighted md:text-6xl">
-                  Comark
+                  {{ props.title }}
                 </h1>
               </template>
             </TypingText>
@@ -25,33 +37,31 @@
 
           <div class="hero-fade-in" style="--delay: 0.15s">
             <p class="max-w-md text-lg/7 text-muted">
-              A fast, streaming-ready markdown parser with component support for Vue and React.
+              {{ props.description }}
             </p>
           </div>
 
           <div class="hero-fade-in mt-6" style="--delay: 0.25s">
-            <UInputCopy value="npm install comark" />
+            <UInputCopy :value="install" />
           </div>
 
           <div class="hero-fade-in mt-6 flex items-center gap-3" style="--delay: 0.35s">
             <UButton
-              to="/getting-started/introduction"
+              :label="primaryLabel"
+              :to="primaryTo"
               size="xl"
               color="primary"
               trailing-icon="i-lucide-arrow-right"
-            >
-              Get Started
-            </UButton>
+            />
             <UButton
-              to="https://github.com/comarkdown/comark"
+              :label="secondaryLabel"
+              :to="secondaryTo"
               external
               size="xl"
               color="neutral"
               variant="outline"
               icon="i-simple-icons-github"
-            >
-              GitHub
-            </UButton>
+            />
           </div>
         </div>
 

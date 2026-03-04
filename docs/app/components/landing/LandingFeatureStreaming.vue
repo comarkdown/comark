@@ -1,4 +1,12 @@
 <script setup lang="ts">
+defineProps<{
+  headline: string
+  title: string
+  description: string
+  linkLabel: string
+  linkTo: string
+}>()
+
 const STREAMING_MD = `Awake! for Morning in the Bowl of Night
 Has flung the Stone that puts the Stars to Flight:
 And Lo! the Hunter of the East has caught
@@ -60,12 +68,14 @@ onBeforeUnmount(() => {
 
 <template>
   <div ref="sectionRef" class="p-6 lg:p-8">
-    <span class="section-label">Streaming</span>
+    <span v-if="headline" class="section-label">
+      {{ headline }}
+    </span>
     <h2 class="mt-4 text-2xl font-bold text-highlighted">
-      Real-time streaming
+      {{ title }}
     </h2>
     <p class="mt-3 text-base/7 text-muted">
-      Parse content as it arrives. Perfect for AI-generated content and progressive loading.
+      {{ description }}
     </p>
 
     <div class="mt-6 h-[280px] overflow-auto border border-muted bg-muted/50 p-4">
@@ -79,8 +89,8 @@ onBeforeUnmount(() => {
     </div>
 
     <UButton
-      label="Learn more"
-      to="/api/parse#stream-parsing"
+      :label="linkLabel"
+      :to="linkTo"
       variant="link"
       trailing-icon="i-lucide-arrow-right"
       class="mt-4 px-0"

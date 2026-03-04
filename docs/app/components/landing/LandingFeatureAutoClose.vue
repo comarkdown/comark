@@ -1,6 +1,14 @@
 <script setup lang="ts">
 import { autoCloseMarkdown } from 'comark'
 
+defineProps<{
+  headline: string
+  title: string
+  description: string
+  linkLabel: string
+  linkTo: string
+}>()
+
 interface DemoStep {
   raw: string
   autoClosed: string
@@ -105,15 +113,25 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div ref="sectionRef">
+  <div
+    ref="sectionRef"
+    class="border-b border-default"
+  >
     <div class="grid lg:grid-cols-2">
-      <div class="border-b border-default p-6 lg:border-r lg:border-b-0 lg:p-8">
-        <span class="section-label">Auto-close</span>
+      <div
+        class="border-b border-default p-6 lg:border-r lg:border-b-0 lg:p-8"
+      >
+        <span
+          v-if="headline"
+          class="section-label"
+        >
+          {{ headline }}
+        </span>
         <h2 class="mt-4 text-2xl font-bold text-highlighted">
-          Auto-close
+          {{ title }}
         </h2>
         <p class="mt-3 text-base/7 text-muted">
-          Incomplete markdown syntax is automatically closed during streaming, so content renders correctly at every frame.
+          {{ description }}
         </p>
 
         <div class="mt-6 flex flex-wrap gap-2">
@@ -130,8 +148,8 @@ onBeforeUnmount(() => {
         </div>
 
         <UButton
-          label="Learn more"
-          to="/api/auto-close"
+          :label="linkLabel"
+          :to="linkTo"
           variant="link"
           trailing-icon="i-lucide-arrow-right"
           class="mt-6 px-0"
