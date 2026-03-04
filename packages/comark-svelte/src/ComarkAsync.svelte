@@ -56,4 +56,11 @@ and wrap this component in a `<svelte:boundary>` for pending/error states.
   let parsed = $derived(await parse(content, { ...options, plugins }))
 </script>
 
-<ComarkRenderer tree={parsed} {components} {componentsManifest} {streaming} {caret} class={className} />
+<ComarkRenderer
+  tree={parsed}
+  {components}
+  {componentsManifest}
+  {streaming}
+  {caret}
+  class={className}
+/>

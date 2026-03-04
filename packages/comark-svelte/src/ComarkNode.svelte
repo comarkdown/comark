@@ -33,7 +33,8 @@ naturally appears inline after the deepest trailing text node.
   } = $props()
 
   const CARET_TEXT = '\u2009'
-  const CARET_STYLE = 'background-color: currentColor; display: inline-block; margin-left: 0.25rem; margin-right: 0.25rem; animation: pulse 0.75s cubic-bezier(0.4,0,0.6,1) infinite;'
+  const CARET_STYLE =
+    'background-color: currentColor; display: inline-block; margin-left: 0.25rem; margin-right: 0.25rem; animation: pulse 0.75s cubic-bezier(0.4,0,0.6,1) infinite;'
 
   function parsePropValue(value: string): any {
     if (value === 'true') return true
@@ -41,8 +42,7 @@ naturally appears inline after the deepest trailing text node.
     if (value === 'null') return null
     try {
       return JSON.parse(value)
-    }
-    catch {
+    } catch {
       return value
     }
   }
@@ -69,22 +69,25 @@ naturally appears inline after the deepest trailing text node.
     }
 
     tag = node[0] as string
-    const nodeProps: Record<string, any> = (node.length >= 2 ? node[1] : {}) ?? {}
-    children = node.length > 2 ? node.slice(2) as ComarkNodeType[] : []
+    const nodeProps: Record<string, any> =
+      (node.length >= 2 ? node[1] : {}) ?? {}
+    children = node.length > 2 ? (node.slice(2) as ComarkNodeType[]) : []
 
     // Resolve custom component: check Prose{PascalTag}, PascalTag, then raw tag
     const pascal = pascalCase(tag)
-    Component = components[`Prose${pascal}`] || components[pascal] || components[tag] || null
+    Component =
+      components[`Prose${pascal}`] ||
+      components[pascal] ||
+      components[tag] ||
+      null
 
     // Map props: className → class, :prefix → parsed value, rest pass through
     for (const k in nodeProps) {
       if (k === 'className') {
         mappedProps.class = nodeProps[k]
-      }
-      else if (k.charCodeAt(0) === 58 /* ':' */) {
+      } else if (k.charCodeAt(0) === 58 /* ':' */) {
         mappedProps[k.substring(1)] = parsePropValue(nodeProps[k])
-      }
-      else {
+      } else {
         mappedProps[k] = nodeProps[k]
       }
     }
@@ -94,17 +97,30 @@ naturally appears inline after the deepest trailing text node.
 </script>
 
 {#if isText}
-  {node}{#if caretClass !== null}<span class={caretClass || undefined} style={CARET_STYLE}>{CARET_TEXT}</span>{/if}
+  {node}{#if caretClass !== null}<span
+      class={caretClass || undefined}
+      style={CARET_STYLE}>{CARET_TEXT}</span
+    >{/if}
 {:else if Component}
   <Component {...mappedProps}>
-    {#each children as child, i}
-      <ComarkNode node={child} {components} {componentsManifest} caretClass={i === children.length - 1 ? caretClass : null} />
+    {#each children as child, i (i)}
+      <ComarkNode
+        node={child}
+        {components}
+        {componentsManifest}
+        caretClass={i === children.length - 1 ? caretClass : null}
+      />
     {/each}
   </Component>
 {:else if tag}
   <svelte:element this={tag} {...mappedProps}>
-    {#each children as child, i}
-      <ComarkNode node={child} {components} {componentsManifest} caretClass={i === children.length - 1 ? caretClass : null} />
+    {#each children as child, i (i)}
+      <ComarkNode
+        node={child}
+        {components}
+        {componentsManifest}
+        caretClass={i === children.length - 1 ? caretClass : null}
+      />
     {/each}
   </svelte:element>
 {/if}

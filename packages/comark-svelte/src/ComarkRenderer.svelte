@@ -22,8 +22,6 @@ Supports custom component mappings and a streaming caret indicator.
   import type { ComponentManifest } from 'comark'
   import ComarkNode from './ComarkNode.svelte'
 
-  const CARET_STYLE = 'background-color: currentColor; display: inline-block; margin-left: 0.25rem; margin-right: 0.25rem; animation: pulse 0.75s cubic-bezier(0.4,0,0.6,1) infinite;'
-
   let {
     tree,
     components = {},
@@ -49,6 +47,11 @@ Supports custom component mappings and a streaming caret indicator.
 
 <div class="comark-content {className}">
   {#each tree.nodes as node, i (i)}
-    <ComarkNode {node} {components} {componentsManifest} caretClass={i === tree.nodes.length - 1 ? caretClass : null} />
+    <ComarkNode
+      {node}
+      {components}
+      {componentsManifest}
+      caretClass={i === tree.nodes.length - 1 ? caretClass : null}
+    />
   {/each}
 </div>

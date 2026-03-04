@@ -53,13 +53,26 @@ This is an alert component
 
   let content = $derived((markdown || '').trim())
 
+  let requestVersion = 0
+  let appliedVersion = 0
   $effect(() => {
+    const currentVersion = ++requestVersion
     parse(content, { ...options, plugins }).then((result) => {
-      parsed = result
+      if (currentVersion > appliedVersion) {
+        appliedVersion = currentVersion
+        parsed = result
+      }
     })
   })
 </script>
 
 {#if parsed}
-  <ComarkRenderer tree={parsed} {components} {componentsManifest} {streaming} {caret} class={className} />
+  <ComarkRenderer
+    tree={parsed}
+    {components}
+    {componentsManifest}
+    {streaming}
+    {caret}
+    class={className}
+  />
 {/if}

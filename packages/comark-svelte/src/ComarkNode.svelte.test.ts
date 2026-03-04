@@ -23,7 +23,9 @@ describe('ComarkNode', () => {
   it('renders a link with href', async () => {
     const tree = await parse('[link](/about)')
     const screen = render(ComarkNode, { node: tree.nodes[0] })
-    await expect.element(screen.getByRole('link', { name: 'link' })).toHaveAttribute('href', '/about')
+    await expect
+      .element(screen.getByRole('link', { name: 'link' }))
+      .toHaveAttribute('href', '/about')
   })
 
   it('maps className to class', async () => {
@@ -69,7 +71,10 @@ describe('ComarkRenderer', () => {
   it('renders a heading with inline markup', async () => {
     const tree = await parse('# Hello **World**')
     const screen = render(ComarkRenderer, { tree })
-    const heading = screen.getByRole('heading', { name: 'Hello World', level: 1 })
+    const heading = screen.getByRole('heading', {
+      name: 'Hello World',
+      level: 1,
+    })
     await expect.element(heading).toBeInTheDocument()
     await expect.element(heading).toHaveAttribute('id', 'hello-strong-world')
   })
@@ -78,7 +83,9 @@ describe('ComarkRenderer', () => {
     const tree = await parse('# Heading\n\nA paragraph\n\n- item 1\n- item 2')
     const screen = render(ComarkRenderer, { tree })
 
-    await expect.element(screen.getByRole('heading', { name: 'Heading', level: 1 })).toBeInTheDocument()
+    await expect
+      .element(screen.getByRole('heading', { name: 'Heading', level: 1 }))
+      .toBeInTheDocument()
     await expect.element(screen.getByText('A paragraph')).toBeInTheDocument()
 
     const items = screen.getByRole('listitem')
@@ -90,7 +97,8 @@ describe('ComarkRenderer', () => {
   it('renders empty tree as empty wrapper', async () => {
     const tree = { nodes: [], frontmatter: {}, meta: {} }
     const screen = render(ComarkRenderer, { tree })
-    const wrapper = screen.container.querySelector<HTMLElement>('.comark-content')!
+    const wrapper
+      = screen.container.querySelector<HTMLElement>('.comark-content')!
     expect(wrapper).not.toBeNull()
     expect(wrapper.children.length).toBe(0)
   })
@@ -98,7 +106,8 @@ describe('ComarkRenderer', () => {
   it('applies custom class to wrapper', async () => {
     const tree = await parse('hello')
     const screen = render(ComarkRenderer, { tree, class: 'prose' })
-    const wrapper = screen.container.querySelector<HTMLElement>('.comark-content')!
+    const wrapper
+      = screen.container.querySelector<HTMLElement>('.comark-content')!
     await expect.element(wrapper).toHaveClass('prose')
   })
 
@@ -111,13 +120,17 @@ describe('ComarkRenderer', () => {
   it('renders links with href', async () => {
     const tree = await parse('[click](https://example.com)')
     const screen = render(ComarkRenderer, { tree })
-    await expect.element(screen.getByRole('link', { name: 'click' })).toHaveAttribute('href', 'https://example.com')
+    await expect
+      .element(screen.getByRole('link', { name: 'click' }))
+      .toHaveAttribute('href', 'https://example.com')
   })
 
   it('renders images with src and alt', async () => {
     const tree = await parse('![alt text](image.png)')
     const screen = render(ComarkRenderer, { tree })
-    await expect.element(screen.getByAltText('alt text')).toHaveAttribute('src', 'image.png')
+    await expect
+      .element(screen.getByAltText('alt text'))
+      .toHaveAttribute('src', 'image.png')
   })
 
   it('renders blockquotes', async () => {
@@ -138,28 +151,44 @@ describe('ComarkRenderer', () => {
 describe('custom components', () => {
   it('resolves custom component for MDC syntax', async () => {
     const tree = await parse('::alert{type="warning"}\nWatch out!\n::')
-    const screen = render(ComarkRenderer, { tree, components: { alert: Alert } })
-    await expect.element(screen.getByRole('alert')).toHaveTextContent('Watch out!')
+    const screen = render(ComarkRenderer, {
+      tree,
+      components: { alert: Alert },
+    })
+    await expect
+      .element(screen.getByRole('alert'))
+      .toHaveTextContent('Watch out!')
     await expect.element(screen.getByRole('alert')).toHaveClass('alert-warning')
   })
 
   it('resolves component by PascalCase key', async () => {
     const tree = await parse('::alert{type="info"}\nInfo message\n::')
     const screen = render(ComarkRenderer, { tree, components: { Alert } })
-    await expect.element(screen.getByRole('alert')).toHaveTextContent('Info message')
+    await expect
+      .element(screen.getByRole('alert'))
+      .toHaveTextContent('Info message')
     await expect.element(screen.getByRole('alert')).toHaveClass('alert-info')
   })
 
   it('resolves Prose-prefixed component for native tags', async () => {
     const tree = await parse('# Custom Heading')
     const screen = render(ComarkRenderer, { tree, components: { ProseH1 } })
-    await expect.element(screen.getByRole('heading', { name: 'Custom Heading', level: 1 })).toHaveClass('prose-heading')
+    await expect
+      .element(
+        screen.getByRole('heading', { name: 'Custom Heading', level: 1 }),
+      )
+      .toHaveClass('prose-heading')
   })
 
   it('renders children inside custom components', async () => {
     const tree = await parse('::alert{type="info"}\n**Bold** text\n::')
-    const screen = render(ComarkRenderer, { tree, components: { alert: Alert } })
-    await expect.element(screen.getByRole('alert')).toHaveTextContent('Bold text')
+    const screen = render(ComarkRenderer, {
+      tree,
+      components: { alert: Alert },
+    })
+    await expect
+      .element(screen.getByRole('alert'))
+      .toHaveTextContent('Bold text')
     await expect.element(screen.getByRole('alert')).toHaveClass('alert-info')
   })
 

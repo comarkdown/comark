@@ -33,7 +33,9 @@
     "build": "svelte-package --input src",
     "build:watch": "svelte-package --input src --watch",
     "test": "vitest run",
-    "check": "svelte-check --tsconfig ./tsconfig.json"
+    "check": "svelte-check --tsconfig ./tsconfig.json",
+    "lint": "eslint src/",
+    "lint:fix": "eslint src/ --fix"
   },
   "peerDependencies": {
     "svelte": "^5.0.0"
