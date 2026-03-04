@@ -77,20 +77,20 @@ export default function App() {
     </div>
 
     <div class="mt-4 flex items-center gap-4">
-      <NuxtLink
+      <UButton
+        label="Vue docs"
         to="/rendering/vue"
-        class="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary/80"
-      >
-        Vue docs
-        <UIcon name="i-lucide-arrow-right" class="size-4" />
-      </NuxtLink>
-      <NuxtLink
+        variant="link"
+        trailing-icon="i-lucide-arrow-right"
+        class="px-0"
+      />
+      <UButton
+        label="React docs"
         to="/rendering/react"
-        class="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary/80"
-      >
-        React docs
-        <UIcon name="i-lucide-arrow-right" class="size-4" />
-      </NuxtLink>
+        variant="link"
+        trailing-icon="i-lucide-arrow-right"
+        class="px-0"
+      />
     </div>
   </div>
 </template>

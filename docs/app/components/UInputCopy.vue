@@ -35,7 +35,7 @@ async function copy() {
         <UIcon
           v-if="copied"
           name="i-lucide-check"
-          class="absolute inset-0 text-green-500"
+          class="absolute inset-0 text-success"
         />
         <UIcon
           v-else

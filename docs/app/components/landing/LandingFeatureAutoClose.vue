@@ -117,29 +117,25 @@ onBeforeUnmount(() => {
         </p>
 
         <div class="mt-6 flex flex-wrap gap-2">
-          <button
+          <UButton
             v-for="(step, i) in steps"
             :key="step.label"
-            class="border px-3 py-1.5 font-mono text-xs transition-colors"
-            :class="currentStep === i
-              ? 'border-primary bg-primary/10 text-primary'
-              : 'border-default text-muted hover:border-accented hover:text-highlighted'"
+            :label="step.label"
+            :variant="currentStep === i ? 'soft' : 'outline'"
+            :color="currentStep === i ? 'primary' : 'neutral'"
+            size="xs"
+            :ui="{ base: 'font-mono' }"
             @click="selectStep(i)"
-          >
-            {{ step.label }}
-          </button>
+          />
         </div>
 
-        <NuxtLink
+        <UButton
+          label="Learn more"
           to="/api/auto-close"
-          class="mt-6 inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary/80"
-        >
-          Learn more
-          <UIcon
-            name="i-lucide-arrow-right"
-            class="size-4"
-          />
-        </NuxtLink>
+          variant="link"
+          trailing-icon="i-lucide-arrow-right"
+          class="mt-6 px-0"
+        />
       </div>
 
       <div class="bg-muted/50">

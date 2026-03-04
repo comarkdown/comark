@@ -15,13 +15,6 @@ export default defineNuxtConfig({
     },
   },
 
-  fonts: {
-    families: [
-      { name: 'Geist', weights: [400, 500, 600, 700], global: true },
-      { name: 'Geist Mono', weights: [400, 500, 600], global: true },
-    ],
-  },
-
   css: ['~/assets/styles/main.css'],
 
   content: {
@@ -41,5 +34,12 @@ export default defineNuxtConfig({
     externals: {
       traceInclude: ['node_modules/minimark/**'],
     },
+  },
+
+  fonts: {
+    families: [
+      { name: 'Geist', weights: [400, 500, 600, 700], global: true },
+      { name: 'Geist Mono', weights: [400, 500, 600], global: true },
+    ],
   },
 })

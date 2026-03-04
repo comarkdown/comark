@@ -52,35 +52,33 @@ const current = computed(() => plugins.find(p => p.id === activePlugin.value)!)
         </p>
 
         <div class="mt-6 flex flex-wrap gap-2">
-          <button
+          <UButton
             v-for="plugin in plugins"
             :key="plugin.id"
-            class="flex items-center gap-1.5 border px-3 py-1.5 text-xs font-medium transition-colors"
-            :class="activePlugin === plugin.id
-              ? 'border-primary bg-primary/10 text-primary'
-              : 'border-default text-muted hover:border-accented hover:text-highlighted'"
+            :label="plugin.name"
+            :icon="plugin.icon"
+            :variant="activePlugin === plugin.id ? 'soft' : 'outline'"
+            :color="activePlugin === plugin.id ? 'primary' : 'neutral'"
+            size="xs"
             @click="activePlugin = plugin.id"
-          >
-            <UIcon :name="plugin.icon" class="size-3.5" />
-            {{ plugin.name }}
-          </button>
+          />
         </div>
 
         <p class="mt-6 text-sm/6 text-muted">{{ current.description }}</p>
 
-        <NuxtLink
+        <UButton
+          label="Browse all plugins"
           to="/plugins"
-          class="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary/80"
-        >
-          Browse all plugins
-          <UIcon name="i-lucide-arrow-right" class="size-4" />
-        </NuxtLink>
+          variant="link"
+          trailing-icon="i-lucide-arrow-right"
+          class="mt-4 px-0"
+        />
       </div>
 
       <div class="bg-muted/50">
         <div class="flex items-center justify-between border-b border-default px-6 py-2.5 lg:px-8">
           <span class="font-mono text-xs text-dimmed">input.md</span>
-          <span class="bg-accented/80 px-2 py-0.5 font-mono text-xs text-muted">{{ current.package }}</span>
+          <UBadge :label="current.package" variant="subtle" color="neutral" size="sm" :ui="{ base: 'font-mono' }" />
         </div>
 
         <div class="grid grid-cols-2">

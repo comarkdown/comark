@@ -78,12 +78,12 @@ onBeforeUnmount(() => {
       />
     </div>
 
-    <NuxtLink
+    <UButton
+      label="Learn more"
       to="/api/parse#stream-parsing"
-      class="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary/80"
-    >
-      Learn more
-      <UIcon name="i-lucide-arrow-right" class="size-4" />
-    </NuxtLink>
+      variant="link"
+      trailing-icon="i-lucide-arrow-right"
+      class="mt-4 px-0"
+    />
   </div>
 </template>

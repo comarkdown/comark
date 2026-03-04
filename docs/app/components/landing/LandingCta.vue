@@ -51,26 +51,46 @@
           <h3 class="text-xs font-semibold uppercase tracking-wider text-highlighted">
             Documentation
           </h3>
-          <ul class="mt-3 space-y-2">
+          <ul class="mt-3 space-y-1">
             <li>
-              <NuxtLink to="/getting-started/introduction" class="text-xs text-muted hover:text-highlighted">
-                Getting Started
-              </NuxtLink>
+              <UButton
+                label="Getting Started"
+                to="/getting-started/introduction"
+                variant="link"
+                color="neutral"
+                size="xs"
+                class="px-0"
+              />
             </li>
             <li>
-              <NuxtLink to="/syntax/components" class="text-xs text-muted hover:text-highlighted">
-                Syntax
-              </NuxtLink>
+              <UButton
+                label="Syntax"
+                to="/syntax/components"
+                variant="link"
+                color="neutral"
+                size="xs"
+                class="px-0"
+              />
             </li>
             <li>
-              <NuxtLink to="/rendering/vue" class="text-xs text-muted hover:text-highlighted">
-                Rendering
-              </NuxtLink>
+              <UButton
+                label="Rendering"
+                to="/rendering/vue"
+                variant="link"
+                color="neutral"
+                size="xs"
+                class="px-0"
+              />
             </li>
             <li>
-              <NuxtLink to="/api/parse" class="text-xs text-muted hover:text-highlighted">
-                API Reference
-              </NuxtLink>
+              <UButton
+                label="API Reference"
+                to="/api/parse"
+                variant="link"
+                color="neutral"
+                size="xs"
+                class="px-0"
+              />
             </li>
           </ul>
         </div>
@@ -79,26 +99,46 @@
           <h3 class="text-xs font-semibold uppercase tracking-wider text-highlighted">
             Plugins
           </h3>
-          <ul class="mt-3 space-y-2">
+          <ul class="mt-3 space-y-1">
             <li>
-              <NuxtLink to="/plugins/core/highlight" class="text-xs text-muted hover:text-highlighted">
-                Syntax Highlighting
-              </NuxtLink>
+              <UButton
+                label="Syntax Highlighting"
+                to="/plugins/core/highlight"
+                variant="link"
+                color="neutral"
+                size="xs"
+                class="px-0"
+              />
             </li>
             <li>
-              <NuxtLink to="/plugins/community/math" class="text-xs text-muted hover:text-highlighted">
-                Math
-              </NuxtLink>
+              <UButton
+                label="Math"
+                to="/plugins/community/math"
+                variant="link"
+                color="neutral"
+                size="xs"
+                class="px-0"
+              />
             </li>
             <li>
-              <NuxtLink to="/plugins/community/cjk" class="text-xs text-muted hover:text-highlighted">
-                CJK
-              </NuxtLink>
+              <UButton
+                label="CJK"
+                to="/plugins/community/cjk"
+                variant="link"
+                color="neutral"
+                size="xs"
+                class="px-0"
+              />
             </li>
             <li>
-              <NuxtLink to="/plugins/community/mermaid" class="text-xs text-muted hover:text-highlighted">
-                Mermaid
-              </NuxtLink>
+              <UButton
+                label="Mermaid"
+                to="/plugins/community/mermaid"
+                variant="link"
+                color="neutral"
+                size="xs"
+                class="px-0"
+              />
             </li>
           </ul>
         </div>
@@ -107,26 +147,50 @@
           <h3 class="text-xs font-semibold uppercase tracking-wider text-highlighted">
             Community
           </h3>
-          <ul class="mt-3 space-y-2">
+          <ul class="mt-3 space-y-1">
             <li>
-              <NuxtLink to="https://github.com/comarkdown/comark" external class="text-xs text-muted hover:text-highlighted">
-                GitHub
-              </NuxtLink>
+              <UButton
+                label="GitHub"
+                to="https://github.com/comarkdown/comark"
+                external
+                variant="link"
+                color="neutral"
+                size="xs"
+                class="px-0"
+              />
             </li>
             <li>
-              <NuxtLink to="https://github.com/comarkdown/comark/issues" external class="text-xs text-muted hover:text-highlighted">
-                Issues
-              </NuxtLink>
+              <UButton
+                label="Issues"
+                to="https://github.com/comarkdown/comark/issues"
+                external
+                variant="link"
+                color="neutral"
+                size="xs"
+                class="px-0"
+              />
             </li>
             <li>
-              <NuxtLink to="https://github.com/comarkdown/comark/blob/main/CHANGELOG.md" external class="text-xs text-muted hover:text-highlighted">
-                Changelog
-              </NuxtLink>
+              <UButton
+                label="Changelog"
+                to="https://github.com/comarkdown/comark/blob/main/CHANGELOG.md"
+                external
+                variant="link"
+                color="neutral"
+                size="xs"
+                class="px-0"
+              />
             </li>
             <li>
-              <NuxtLink to="https://github.com/comarkdown/comark/blob/main/LICENSE" external class="text-xs text-muted hover:text-highlighted">
-                License
-              </NuxtLink>
+              <UButton
+                label="License"
+                to="https://github.com/comarkdown/comark/blob/main/LICENSE"
+                external
+                variant="link"
+                color="neutral"
+                size="xs"
+                class="px-0"
+              />
             </li>
           </ul>
         </div>
@@ -136,23 +200,25 @@
         <p class="text-xs text-dimmed">
           &copy; {{ new Date().getFullYear() }} Comark. Released under the MIT License.
         </p>
-        <div class="flex items-center gap-3">
-          <NuxtLink
+        <div class="flex items-center gap-1">
+          <UButton
             to="https://github.com/comarkdown/comark"
             external
-            class="text-dimmed hover:text-muted"
+            icon="i-simple-icons-github"
+            variant="ghost"
+            color="neutral"
+            size="xs"
             aria-label="GitHub"
-          >
-            <UIcon name="i-simple-icons-github" class="size-4" />
-          </NuxtLink>
-          <NuxtLink
+          />
+          <UButton
             to="https://www.npmjs.com/package/comark"
             external
-            class="text-dimmed hover:text-muted"
+            icon="i-simple-icons-npm"
+            variant="ghost"
+            color="neutral"
+            size="xs"
             aria-label="npm"
-          >
-            <UIcon name="i-simple-icons-npm" class="size-4" />
-          </NuxtLink>
+          />
         </div>
       </div>
     </footer>

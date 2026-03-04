@@ -93,14 +93,15 @@ onBeforeUnmount(() => {
         </div>
         <span class="ml-3 font-mono text-xs text-muted">comark — streaming</span>
       </div>
-      <button
-        class="flex items-center gap-1.5 px-2 py-1 text-xs text-muted transition-colors hover:bg-elevated hover:text-highlighted disabled:opacity-40"
+      <UButton
+        label="Replay"
+        icon="i-lucide-rotate-ccw"
+        variant="ghost"
+        color="neutral"
+        size="xs"
         :disabled="!hasPlayed || isStreaming"
         @click="replay"
-      >
-        <UIcon name="i-lucide-rotate-ccw" class="size-3.5" />
-        Replay
-      </button>
+      />
     </div>
 
     <div class="grid md:grid-cols-2">
