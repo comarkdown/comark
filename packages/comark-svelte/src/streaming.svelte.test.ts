@@ -62,7 +62,7 @@ describe('streaming mode', () => {
 
     await screen.rerender({ markdown: '# Title\n\nFirst paragraph\n\n- item 1\n- item 2' })
     const items = screen.getByRole('listitem')
-    expect(items.elements().length).toBe(2)
+    expect(items.length).toBe(2)
   })
 
   it('handles incomplete bold during streaming with autoClose', async () => {
