@@ -3,7 +3,7 @@
   "type": "module",
   "version": "0.0.1",
   "private": true,
-  "packageManager": "pnpm@10.30.1",
+  "packageManager": "pnpm@10.30.3",
   "description": "Comark monorepo",
   "author": "",
   "license": "MIT",
@@ -36,11 +36,11 @@
     "postinstall": "pnpm --filter 'comark' run build --stub && pnpm --filter '@comark/*' run build --stub"
   },
   "devDependencies": {
-    "@nuxt/eslint-config": "^1.15.1",
+    "@nuxt/eslint-config": "^1.15.2",
     "@release-it/conventional-changelog": "^10.0.5",
-    "@types/node": "^25.3.0",
+    "@types/node": "^25.3.3",
     "@vitejs/plugin-vue": "^6.0.4",
-    "eslint": "^10.0.0",
+    "eslint": "^10.0.2",
     "nuxt": "^4.3.1",
     "release-it": "^19.2.4",
     "remark-gfm": "^4.0.1",

@@ -27,16 +27,29 @@ const INLINE_TAG_MAP: Record<string, string> = {
  * @param tokens - The tokens to convert
  * @returns The Comark tree
  */
-export function marmdownItTokensToComarkTree(tokens: any[]): ComarkNode[] {
+export function marmdownItTokensToComarkTree(tokens: any[], options: { startLine: number, preservePositions: boolean } = { startLine: 0, preservePositions: false }): ComarkNode[] {
   const nodes: ComarkNode[] = []
 
   let i = 0
+  let endLine = options.startLine
   while (i < tokens.length) {
     const result = processBlockToken(tokens, i, false)
-    i = result.nextIndex
     if (result.node) {
+      if (options.preservePositions) {
+        // find end line of node from token.map
+        for (let j = i; j < result.nextIndex; j++) {
+          if (tokens[j].map && tokens[j].map[1]) {
+            endLine = (tokens[j].map[1] as number) + options.startLine
+          }
+        }
+        ;(result.node[1] as Record<string, unknown>).$comark = {
+          ...((result.node[1] as Record<string, unknown>).$comark || {}),
+          line: endLine,
+        }
+      }
       nodes.push(result.node)
     }
+    i = result.nextIndex
   }
 
   return nodes
