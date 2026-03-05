@@ -34,9 +34,9 @@ timeout:
           "input",
           {
             "class": "task-list-item-checkbox",
-            ":checked": "true",
+            "type": "checkbox",
             ":disabled": "true",
-            "type": "checkbox"
+            ":checked": "true"
           }
         ],
         " Done"
@@ -50,9 +50,9 @@ timeout:
           "input",
           {
             "class": "task-list-item-checkbox",
-            ":checked": "true",
+            "type": "checkbox",
             ":disabled": "true",
-            "type": "checkbox"
+            ":checked": "true"
           }
         ],
         " Done"
@@ -82,13 +82,13 @@ timeout:
 ```html
 <ul class="contains-task-list">
   <li class="task-list-item">
-    <input class="task-list-item-checkbox" checked disabled type="checkbox" /> Done
+    <input class="task-list-item-checkbox" type="checkbox" disabled checked /> Done
   </li>
   <li class="task-list-item">
-    <input class="task-list-item-checkbox" checked disabled type="checkbox" /> Done
+    <input class="task-list-item-checkbox" type="checkbox" disabled checked /> Done
   </li>
   <li class="task-list-item">
-    <input class="task-list-item-checkbox" disabled type="checkbox" /> todo
+    <input class="task-list-item-checkbox" type="checkbox" disabled /> todo
   </li>
 </ul>
 ```
