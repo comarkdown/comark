@@ -8,7 +8,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@comark/cjk": "workspace:*",
+    "@comark/plugin-cjk": "workspace:*",
     "comark": "workspace:*",
     "vue": "^3.5.29"
   },

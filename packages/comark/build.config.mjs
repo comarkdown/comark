@@ -11,9 +11,6 @@ export default defineBuildConfig({
       type: 'bundle',
       input: [
         './src/index.ts',
-        './src/react/index.ts',
-        './src/react/components/Comark.tsx',
-        './src/react/components/ComarkRenderer.tsx',
         './src/plugins/summary.ts',
         './src/plugins/security.ts',
         './src/ast/index.ts',
@@ -22,18 +19,8 @@ export default defineBuildConfig({
     },
     {
       type: 'transform',
-      input: './src/vue',
-      outDir: './dist/vue',
-    },
-    {
-      type: 'transform',
       input: './src/utils',
       outDir: './dist/utils',
-    },
-    {
-      type: 'transform',
-      input: './src/nuxt',
-      outDir: './dist/nuxt',
     },
   ],
 })

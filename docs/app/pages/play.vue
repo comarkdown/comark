@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { parse } from 'comark'
-import math from '@comark/math'
-import { Math } from '@comark/math/vue'
-import mermaid from '@comark/mermaid'
-import { Mermaid } from '@comark/mermaid/vue'
+import math from '@comark/plugin-math'
+import { Math } from '@comark/plugin-math/vue'
+import mermaid from '@comark/plugin-mermaid'
+import { Mermaid } from '@comark/plugin-mermaid/vue'
 import { ref } from 'vue'
 
 const markdown = ref(`

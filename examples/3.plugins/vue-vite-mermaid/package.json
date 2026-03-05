@@ -11,7 +11,7 @@
   "dependencies": {
     "@tailwindcss/vite": "^4.2.1",
     "comark": "workspace:*",
-    "@comark/mermaid": "workspace:*",
+    "@comark/plugin-mermaid": "workspace:*",
     "vue": "^3.5.29"
   },
   "devDependencies": {

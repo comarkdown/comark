@@ -31,8 +31,8 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "verify": "pnpm run lint && pnpm run test && pnpm run typecheck",
-    "release": "pnpm --filter 'comark' run release && pnpm --filter '@comark/cjk' run release && pnpm --filter '@comark/math' run release",
-    "release:dry": "pnpm --filter 'comark' run release:dry && pnpm --filter '@comark/cjk' run release:dry && pnpm --filter '@comark/math' run release:dry",
+    "release": "pnpm --filter 'comark' run release && pnpm --filter '@comark/plugin-cjk' run release && pnpm --filter '@comark/plugin-math' run release",
+    "release:dry": "pnpm --filter 'comark' run release:dry && pnpm --filter '@comark/plugin-cjk' run release:dry && pnpm --filter '@comark/plugin-math' run release:dry",
     "postinstall": "pnpm --filter 'comark' run build --stub && pnpm --filter '@comark/*' run build --stub"
   },
   "devDependencies": {
@@ -50,5 +50,11 @@
     "scule": "^1.3.0",
     "typescript": "^5.9.3",
     "unified": "^11.0.5"
+  },
+  "resolutions": {
+    "comark": "workspace:*",
+    "@comark/vue": "workspace:*",
+    "@comark/react": "workspace:*",
+    "@comark/nuxt": "workspace:*"
   }
 }

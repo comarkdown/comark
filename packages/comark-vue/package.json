@@ -1,0 +1,31 @@
+{
+  "name": "@comark/vue",
+  "type": "module",
+  "version": "0.0.1",
+  "description": "Vue components for Comark",
+  "exports": {
+    ".": "./dist/index.mjs"
+  },
+  "main": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "obuild",
+    "test": "vitest run",
+    "prepack": "obuild",
+    "release": "release-it"
+  },
+  "peerDependencies": {
+    "vue": "^3.5.0"
+  },
+  "dependencies": {
+    "comark": "^0.0.1"
+  },
+  "devDependencies": {
+    "obuild": "^0.4.31",
+    "vitest": "^4.0.18"
+  }
+}

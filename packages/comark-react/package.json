@@ -1,0 +1,30 @@
+{
+  "name": "@comark/react",
+  "type": "module",
+  "version": "0.0.1",
+  "description": "React components for Comark",
+  "exports": {
+    ".": "./dist/index.mjs"
+  },
+  "main": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "obuild",
+    "prepack": "obuild",
+    "release": "release-it"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0"
+  },
+  "dependencies": {
+    "comark": "^0.0.1",
+    "scule": "^1.3.0"
+  },
+  "devDependencies": {
+    "obuild": "^0.4.31"
+  }
+}
