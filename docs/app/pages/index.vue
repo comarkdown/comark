@@ -20,7 +20,7 @@ useHead({
 
 <template>
   <div class="min-h-dvh bg-default text-default">
-    <UContainer class="p-0! border-x border-default">
+    <UContainer class="overflow-x-hidden p-0! border-x border-default">
       <ContentRenderer
         v-if="page"
         :value="page as any"

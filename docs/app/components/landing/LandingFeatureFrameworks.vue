@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { codeToHtml } from 'shiki'
+
 defineProps<{
   headline: string
   title: string
@@ -50,6 +52,15 @@ export default function App() {
     </Comark>
   )
 }`
+
+const { data: highlighted } = await useAsyncData('fw-highlight', async () => {
+  const themes = { light: 'github-light', dark: 'github-dark' } as const
+  const [vue, react] = await Promise.all([
+    codeToHtml(vueCode, { lang: 'vue', themes }),
+    codeToHtml(reactCode, { lang: 'tsx', themes }),
+  ])
+  return { vue, react }
+})
 </script>
 
 <template>
@@ -92,15 +103,17 @@ export default function App() {
           App.tsx
         </button>
       </div>
-      <div class="h-[280px] overflow-auto p-4">
-        <pre
+      <div class="shiki-block h-[280px] overflow-auto p-4">
+        <div
           v-show="activeTab === 'vue'"
-          class="font-mono text-sm/6 whitespace-pre-wrap text-default"
-        >{{ vueCode }}</pre>
-        <pre
+          class="text-sm/6"
+          v-html="highlighted?.vue"
+        />
+        <div
           v-show="activeTab === 'react'"
-          class="font-mono text-sm/6 whitespace-pre-wrap text-default"
-        >{{ reactCode }}</pre>
+          class="text-sm/6"
+          v-html="highlighted?.react"
+        />
       </div>
     </div>
 
@@ -122,3 +135,24 @@ export default function App() {
     </div>
   </div>
 </template>
+
+<style scoped>
+.shiki-block :deep(pre) {
+  margin: 0;
+  background: transparent !important;
+}
+
+.shiki-block :deep(code) {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.shiki-block :deep(span) {
+  background-color: transparent !important;
+}
+
+html.dark .shiki-block :deep(span) {
+  color: var(--shiki-dark) !important;
+  font-style: var(--shiki-dark-font-style) !important;
+  font-weight: var(--shiki-dark-font-weight) !important;
+}
+</style>
