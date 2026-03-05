@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from 'vitest'
 import { computed, createSSRApp, defineComponent, h } from 'vue'
-import { renderToString } from 'vue/server-renderer'
-import { parse } from '../src/index'
-import { ComarkRenderer } from '../src/vue/components/ComarkRenderer'
+import { renderToString } from '@vue/server-renderer'
+import { parse } from 'comark'
+import { ComarkRenderer } from '../src/components/ComarkRenderer'
 
 describe('ComarkRenderer Error Handling', () => {
   it('should handle component errors gracefully without crashing', async () => {
@@ -37,7 +37,7 @@ Some content
       })
 
       // Should not throw, but handle the error gracefully
-      const html = await renderToString(app)
+      const html = await renderToString(app as any)
 
       // The renderer should still produce output (even if component failed)
       expect(html).toBeTruthy()
@@ -89,7 +89,7 @@ Some content
       })
 
       // Should handle missing required prop gracefully
-      const html = await renderToString(app)
+      const html = await renderToString(app as any)
 
       expect(html).toBeTruthy()
       expect(html).toContain('comark-content')
@@ -141,7 +141,7 @@ Good content
         },
       })
 
-      const html = await renderToString(app)
+      const html = await renderToString(app as any)
 
       // Should still render the good component and heading
       expect(html).toContain('Working Heading')

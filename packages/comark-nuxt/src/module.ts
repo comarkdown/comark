@@ -1,12 +1,10 @@
-import { defineNuxtModule, createResolver,
-  addImports, addComponent, hasNuxtModule } from '@nuxt/kit'
-import type { Nuxt, NuxtModule } from 'nuxt/schema'
+import { defineNuxtModule, createResolver, addImports, addComponent, hasNuxtModule } from '@nuxt/kit'
 import fs from 'node:fs/promises'
 
 // Module options TypeScript interface definition
 export interface ComarkModuleOptions {}
 
-const module: NuxtModule<ComarkModuleOptions> = defineNuxtModule<ComarkModuleOptions>({
+export default defineNuxtModule<ComarkModuleOptions>({
   meta: {
     name: 'comark',
     configKey: 'comark',
@@ -58,9 +56,7 @@ const module: NuxtModule<ComarkModuleOptions> = defineNuxtModule<ComarkModuleOpt
   },
 })
 
-export default module
-
-function setupNuxtUI(nuxt: Nuxt) {
+function setupNuxtUI(nuxt: unknown) {
   // @ts-expect-error - Nuxt UI options are not typed
   nuxt.options.ui = nuxt.options.ui || {}
   // @ts-expect-error - Nuxt UI options are not typed

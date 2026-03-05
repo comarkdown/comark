@@ -7,4 +7,5 @@ export default defineBuildConfig({
       input: ['./src/index.ts'],
     },
   ],
+  externals: ['comark'],
 })

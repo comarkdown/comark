@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { createSSRApp, defineComponent, h } from 'vue'
-import { renderToString } from 'vue/server-renderer'
-import { parse } from '../src/index'
-import { ComarkRenderer } from '../src/vue/components/ComarkRenderer'
+import { renderToString } from '@vue/server-renderer'
+import { parse } from 'comark'
+import { ComarkRenderer } from '../src/components/ComarkRenderer'
 
 describe('ComarkRenderer with Slots', () => {
   it('should pass named slots to components', async () => {
@@ -43,7 +43,7 @@ Footer content
       },
     })
 
-    const html = await renderToString(app)
+    const html = await renderToString(app as any)
 
     // Check that the HTML contains all slot content in the right places
     expect(html).toContain('test-component')
@@ -91,7 +91,7 @@ This is a description
       },
     })
 
-    const html = await renderToString(app)
+    const html = await renderToString(app as any)
 
     expect(html).toContain('Warning Title')
     expect(html).toContain('This is a description')
@@ -132,7 +132,7 @@ Copyright by Nuxt
       },
     })
 
-    const html = await renderToString(app)
+    const html = await renderToString(app as any)
 
     expect(html).toContain('This is default content')
     expect(html).toContain('This is header part')
