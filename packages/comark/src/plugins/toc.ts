@@ -141,6 +141,7 @@ export function generateFlatToc(body: ComarkTree, options: Toc): Toc {
 export default function toc(options: Partial<Toc> = {}): ComarkPlugin {
   const { title = '', depth = 2, searchDepth = 2, links = [] } = options
   return {
+    name: 'toc',
     post(state) {
       const toc = generateFlatToc(state.tree, { title, depth, searchDepth, links })
       toc.links = nestHeaders(toc.links)

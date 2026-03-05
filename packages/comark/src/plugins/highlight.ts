@@ -315,6 +315,7 @@ export function resetHighlighter(): void {
 
 export default function highlight(options: HighlightOptions = {}): ComarkPlugin {
   return {
+    name: 'highlight',
     async post(state) {
       state.tree = await highlightCodeBlocks(state.tree, options)
     },

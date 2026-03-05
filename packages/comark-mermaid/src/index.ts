@@ -208,6 +208,7 @@ export function searchProps(content: string, index = 0) {
  */
 export default function comarkMermaid(config?: MermaidConfig): ComarkPlugin {
   return {
+    name: 'mermaid',
     markdownItPlugins: [
       ((md: MarkdownIt) => markdownItMermaid(md, config)) as unknown as MarkdownItPlugin,
     ],
