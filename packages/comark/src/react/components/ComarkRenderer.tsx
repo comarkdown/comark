@@ -153,7 +153,6 @@ function renderNode(
       }
     }
 
-    // @ts-expect-error - component might be a React component
     if (typeof Component !== 'string' && (Component as any)?.propTypes?.__node !== undefined) {
       props.__node = node
     }
