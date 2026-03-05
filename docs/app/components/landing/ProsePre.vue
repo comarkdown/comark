@@ -4,12 +4,9 @@ import { textContent } from 'comark/ast'
 const props = withDefaults(defineProps<{
   __node: any
   language?: string
-  theme?: string
   filename?: string
   containerClass?: string
-  shikiStyle?: Record<string, string>
 }>(), {
-  theme: 'github-dark',
   containerClass: 'my-5',
 })
 
@@ -44,7 +41,6 @@ const icon = computed(() => {
   return undefined
 })
 
-const componentKey = ref(0)
 const copied = ref(false)
 const codeContent = ref('')
 
@@ -54,10 +50,7 @@ function extractCodeFromNode() {
 
 extractCodeFromNode()
 
-watch(() => props.__node, () => {
-  extractCodeFromNode()
-  componentKey.value++
-})
+watch(() => props.__node, extractCodeFromNode)
 
 async function copyCode() {
   try {

@@ -9,6 +9,8 @@
 dist
 .temp
 cache
+.next
+out
 
 
 # Node dependencies
