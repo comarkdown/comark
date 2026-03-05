@@ -156,47 +156,50 @@ onBeforeUnmount(() => {
         />
       </div>
 
-      <div class="bg-muted/50">
-        <div class="flex items-center border-b border-default px-6 lg:px-8">
+      <div class="flex flex-col">
+        <div class="flex items-center border-b border-default bg-muted/30 px-6 lg:px-8">
           <span class="border-b-2 border-primary px-1 py-2.5 font-mono text-xs text-primary">
             {{ current.label }}
           </span>
         </div>
 
-        <div class="grid grid-cols-2 border-b border-default">
-          <div class="border-r border-default px-6 py-2 lg:px-8">
-            <span class="font-mono text-xs text-dimmed">source</span>
-          </div>
-          <div class="px-6 py-2 lg:px-8">
-            <span class="font-mono text-xs text-dimmed">rendered</span>
-          </div>
-        </div>
-
-        <div class="grid h-[160px] grid-cols-2">
-          <div class="border-r border-default px-6 py-5 lg:px-8">
-            <div class="font-mono text-sm/7 whitespace-pre-wrap">
-              <span class="text-highlighted">{{ rawText }}</span>
-              <span
-                v-if="!showAutoClosed"
-                class="caret"
-              />
-              <span
-                v-if="showAutoClosed"
-                class="autoclose-suffix"
-                :class="suffixVisible ? 'opacity-100' : 'opacity-0'"
-              >{{ autoClosedSuffix }}</span>
+        <div class="grid min-h-0 flex-1 grid-cols-[1fr_1px_1fr]">
+          <div>
+            <div class="border-b border-default px-6 py-2 lg:px-8">
+              <span class="font-mono text-xs text-dimmed">source</span>
+            </div>
+            <div class="h-[160px] px-6 py-5 lg:px-8">
+              <div class="font-mono text-sm/7 whitespace-pre-wrap">
+                <span class="text-highlighted">{{ rawText }}</span>
+                <span
+                  v-if="!showAutoClosed"
+                  class="caret"
+                />
+                <span
+                  v-if="showAutoClosed"
+                  class="autoclose-suffix"
+                  :class="suffixVisible ? 'opacity-100' : 'opacity-0'"
+                >{{ autoClosedSuffix }}</span>
+              </div>
             </div>
           </div>
 
-          <div class="px-6 py-5 lg:px-8">
-            <div class="autoclose-rendered overflow-hidden">
-              <ComarkDocs
-                v-if="liveMarkdown"
-                :key="currentStep"
-                class="prose prose-sm max-w-none dark:prose-invert"
-                :markdown="liveMarkdown"
-                :streaming="!showAutoClosed"
-              />
+          <div class="bg-border" />
+
+          <div>
+            <div class="border-b border-default px-6 py-2 lg:px-8">
+              <span class="font-mono text-xs text-dimmed">rendered</span>
+            </div>
+            <div class="h-[160px] px-6 py-5 lg:px-8">
+              <div class="autoclose-rendered overflow-hidden">
+                <ComarkDocs
+                  v-if="liveMarkdown"
+                  :key="currentStep"
+                  class="prose prose-sm max-w-none dark:prose-invert"
+                  :markdown="liveMarkdown"
+                  :streaming="!showAutoClosed"
+                />
+              </div>
             </div>
           </div>
         </div>

@@ -65,8 +65,8 @@ const current = computed(() => props.plugins.find(p => p.id === activePlugin.val
         />
       </div>
 
-      <div class="bg-muted/50">
-        <div class="flex items-center justify-between border-b border-default px-6 py-2.5 lg:px-8">
+      <div class="flex flex-col">
+        <div class="flex items-center justify-between border-b border-default bg-muted/30 px-6 py-2.5 lg:px-8">
           <span class="font-mono text-xs text-dimmed">input.md</span>
           <UBadge
             :label="current.package"
@@ -77,18 +77,23 @@ const current = computed(() => props.plugins.find(p => p.id === activePlugin.val
           />
         </div>
 
-        <div class="grid grid-cols-2">
-          <div class="border-r border-default p-6 lg:p-8">
-            <div class="h-[260px] overflow-auto">
+        <div class="grid min-h-0 flex-1 grid-cols-[1fr_1px_1fr]">
+          <div>
+            <div class="border-b border-default px-6 py-2 lg:px-8">
+              <span class="font-mono text-xs text-dimmed">source</span>
+            </div>
+            <div class="h-[260px] overflow-auto p-6 lg:p-8">
               <pre class="font-mono text-sm/7 whitespace-pre-wrap text-default">{{ current.input }}</pre>
             </div>
           </div>
 
-          <div class="p-6 lg:p-8">
-            <div class="mb-3">
+          <div class="bg-border" />
+
+          <div>
+            <div class="border-b border-default px-6 py-2 lg:px-8">
               <span class="font-mono text-xs text-dimmed">rendered output</span>
             </div>
-            <div class="h-[230px] overflow-auto">
+            <div class="h-[260px] overflow-auto p-6 lg:p-8">
               <ComarkDocs
                 :key="current.id"
                 class="prose prose-sm max-w-none dark:prose-invert"
