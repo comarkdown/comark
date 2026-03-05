@@ -32,7 +32,7 @@ pnpm add comark
 
 ```vue
 <script setup lang="ts">
-import { Comark } from 'comark/vue'
+import { Comark } from '@comark/vue'
 import cjk from '@comark/cjk'
 import math from '@comark/math'
 import { Math } from '@comark/math/vue'
@@ -48,7 +48,7 @@ const chatMessage = ...
 ### React
 
 ```tsx
-import { Comark } from 'comark/react'
+import { Comark } from '@comark/react'
 import cjk from '@comark/cjk'
 import math from '@comark/math'
 import { Math } from '@comark/math/react'

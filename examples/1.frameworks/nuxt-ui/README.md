@@ -28,7 +28,7 @@ This is a `callout` with full **markdown** support.
 ```ts [nuxt.config.ts]
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  modules: ['comark/nuxt', '@nuxt/ui'],
+  modules: ['@comark/nuxt', '@nuxt/ui'],
   compatibilityDate: '2025-07-15',
   css: ['~/assets/css/main.css'],
   devtools: { enabled: true }

@@ -47,7 +47,7 @@ p::first-letter {
 ```ts [nuxt.config.ts]
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  modules: ['comark/nuxt'],
+  modules: ['@comark/nuxt'],
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true }
 })

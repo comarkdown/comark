@@ -17,7 +17,7 @@ createApp(App).mount('#app')
 
 ```vue [src/App.vue]
 <script setup lang="ts">
-import { Comark } from 'comark/vue'
+import { Comark } from '@comark/vue'
 import mermaid from '@comark/mermaid'
 import { Mermaid } from '@comark/mermaid/vue'
 

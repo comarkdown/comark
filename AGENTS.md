@@ -146,7 +146,7 @@ packages/comark-math/
 **Vue:**
 ```vue
 <script setup>
-import { Comark } from 'comark/vue'
+import { Comark } from '@comark/vue'
 import math from '@comark/math'
 import { Math } from '@comark/math/vue'
 
@@ -170,7 +170,7 @@ $$
 
 **React:**
 ```tsx
-import { Comark } from 'comark/react'
+import { Comark } from '@comark/react'
 import math from '@comark/math'
 import { Math } from '@comark/math/react'
 
@@ -212,10 +212,10 @@ import type { ComarkTree, ComarkNode, ComarkElement, ComarkText } from 'comark/a
 import { textContent, visit } from 'comark/ast'
 
 // Vue components
-import { Comark } from 'comark/vue'
+import { Comark } from '@comark/vue'
 
 // React components
-import { Comark } from 'comark/react'
+import { Comark } from '@comark/react'
 ```
 
 ## Coding Principles

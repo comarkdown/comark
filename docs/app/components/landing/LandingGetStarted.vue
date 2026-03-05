@@ -29,7 +29,7 @@ This is an alert!
     <Comark :components="{ Alert }">{{ md }}</Comark>
   </Suspense>
 </template>\n\`\`\``,
-  react: `\`\`\`tsx [src/App.tsx]\nimport { Comark } from 'comark/react'
+  react: `\`\`\`tsx [src/App.tsx]\nimport { Comark } from '@comark/react'
 
 export default function App() {
   const markdown = \`# Hello **World**\`

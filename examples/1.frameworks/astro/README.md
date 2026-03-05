@@ -13,7 +13,7 @@ path: /examples/frameworks/astro
 import { getCollection } from 'astro:content'
 import { parse } from 'comark'
 import Layout from '../../layouts/Layout.astro'
-import { ComarkRenderer } from 'comark/react'
+import { ComarkRenderer } from '@comark/react'
 import highlight from 'comark/plugins/highlight'
 import Alert from '../../components/Alert'
 

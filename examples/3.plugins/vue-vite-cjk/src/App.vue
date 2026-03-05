@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Comark } from 'comark/vue'
+import { Comark } from '@comark/vue'
 import cjk from '@comark/plugin-cjk'
 
 const markdown = `

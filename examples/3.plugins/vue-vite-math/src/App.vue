@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Comark } from 'comark/vue'
+import { Comark } from '@comark/vue'
 import math from '@comark/plugin-math'
 import { Math } from '@comark/plugin-math/vue'
 

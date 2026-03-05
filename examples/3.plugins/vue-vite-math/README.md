@@ -17,7 +17,7 @@ createApp(App).mount('#app')
 
 ```vue [src/App.vue]
 <script setup lang="ts">
-import { Comark } from 'comark/vue'
+import { Comark } from '@comark/vue'
 import math from '@comark/math'
 import { Math } from '@comark/math/vue'
 

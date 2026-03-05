@@ -30,7 +30,7 @@ yarn add @comark/mermaid comark mermaid
 
 ```vue
 <script setup>
-import { Comark } from 'comark/vue'
+import { Comark } from '@comark/vue'
 import mermaid from '@comark/mermaid'
 import { Mermaid } from '@comark/mermaid/vue'
 
@@ -65,7 +65,7 @@ const components = {
 ### React
 
 ```tsx
-import { Comark } from 'comark/react'
+import { Comark } from '@comark/react'
 import mermaid from '@comark/mermaid'
 import { Mermaid } from '@comark/mermaid/react'
 

@@ -30,7 +30,7 @@ yarn add @comark/math comark katex
 
 ```vue
 <script setup>
-import { Comark } from 'comark/vue'
+import { Comark } from '@comark/vue'
 import math from '@comark/math'
 import { Math } from '@comark/math/vue'
 
@@ -65,7 +65,7 @@ const components = {
 ### React
 
 ```tsx
-import { Comark } from 'comark/react'
+import { Comark } from '@comark/react'
 import math from '@comark/math'
 import { Math } from '@comark/math/react'
 

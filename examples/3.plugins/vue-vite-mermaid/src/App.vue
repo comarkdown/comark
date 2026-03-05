@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Comark } from 'comark/vue'
+import { Comark } from '@comark/vue'
 import { Mermaid } from '@comark/plugin-mermaid/vue'
 import mermaid from '@comark/plugin-mermaid'
 

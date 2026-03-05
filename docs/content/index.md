@@ -50,7 +50,7 @@ Install with npm and start parsing markdown in seconds
   #vue
   ```vue [src/App.vue]
   <script setup lang="ts">
-  import { Comark } from 'comark/vue'
+  import { Comark } from '@comark/vue'
   import Alert from './components/Alert.vue'
 
   const md = `
@@ -71,7 +71,7 @@ Install with npm and start parsing markdown in seconds
 
   #react
   ```tsx [src/App.tsx]
-  import { Comark } from 'comark/react'
+  import { Comark } from '@comark/react'
 
   export default function App() {
     const markdown = `# Hello **World**`
