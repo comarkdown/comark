@@ -18,22 +18,19 @@ A high-performance markdown parser and renderer with Vue & React components supp
 - 📑 Automatic table of contents generation
 - 🎯 Full TypeScript support
 
-## Installation
-
-```bash
-npm install comark
-# or
-pnpm add comark
-```
-
 ## Usage
 
 ### Vue
 
+```bash
+npm install @comark/vue @comark/math
+# or
+pnpm add @comark/vue @comark/math 
+```
+
 ```vue
 <script setup lang="ts">
 import { Comark } from '@comark/vue'
-import cjk from '@comark/cjk'
 import math from '@comark/math'
 import { Math } from '@comark/math/vue'
 
@@ -41,23 +38,46 @@ const chatMessage = ...
 </script>
 
 <template>
-  <Comark :components="{ Math }" :plugins="[cjk(), math()]">{{ chatMessage }}</Comark>
+  <Comark :components="{ Math }" :plugins="[math()]">{{ chatMessage }}</Comark>
 </template>
 ```
 
 ### React
 
+```bash
+npm install @comark/react @comark/math
+# or
+pnpm add @comark/react @comark/math 
+```
+
 ```tsx
 import { Comark } from '@comark/react'
-import cjk from '@comark/cjk'
 import math from '@comark/math'
 import { Math } from '@comark/math/react'
 
 function App() {
   const chatMessage = ...
-  return <Comark components={{ Math }} plugins={[cjk(), math()]}>{chatMessage}</Comark>
+  return <Comark components={{ Math }} plugins={[math()]}>{chatMessage}</Comark>
 }
 ```
+
+### HTML (No Framework)
+```bash
+npm install comark
+# or
+pnpm add comark 
+```
+
+```js
+import { parse } from 'comark'
+import { renderHTML } from 'comark/string'
+
+const chatMessage = ...
+
+const tree = await parse(chatMessage)
+const html = renderHTML(tree)
+```
+
 
 ## License
 
