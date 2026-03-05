@@ -4,6 +4,28 @@ navigation: false
 
 ::landing-hero
 ---
+demoMarkdown: |-
+  # Hello World
+
+  A **high-performance** markdown parser with _streaming_ support.
+
+  ## Features
+
+  - Parse markdown in real-time
+  - Vue & React components
+  - Auto-close incomplete syntax
+
+  ::alert{type="info"}
+  Comark handles **components in markdown** natively.
+  ::
+
+  > Built for modern web applications.
+
+  ```ts [example.ts]
+  import { parse } from 'comark'
+
+  const tree = await parse('# Hello **World**')
+  ```
 description: A fast, streaming-ready markdown parser with component support for
   Vue and React.
 install: npm install comark
@@ -15,8 +37,7 @@ title: Comark
 ---
 ::
 
-::landing-spacer
-::
+:landing-spacer
 
 ::landing-features
 ---
@@ -37,8 +58,7 @@ streamingTitle: Real-time streaming
 ---
 ::
 
-::landing-spacer
-::
+:landing-spacer
 
 ::landing-feature-auto-close
 ---
@@ -51,8 +71,7 @@ title: Auto-close
 ---
 ::
 
-::landing-spacer
-::
+:landing-spacer
 
 ::landing-feature-plugins
 ---
@@ -84,7 +103,7 @@ plugins:
     icon: i-lucide-code
     description: Syntax highlighting for code blocks powered by Shiki.
     input: |-
-      ```typescript
+      ```typescript [user.ts]
       interface User {
         name: string
         email: string
@@ -126,13 +145,11 @@ title: Extensible plugins
 ---
 ::
 
-::landing-spacer
-::
+:landing-spacer
 
 :landing-code{description="Install Comark and render your first markdown with components in just a few lines." headline="Quick start" title="Get started in seconds"}
 
-::landing-spacer
-::
+:landing-spacer
 
 ::landing-cta
 ---

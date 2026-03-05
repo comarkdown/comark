@@ -7,13 +7,41 @@ const props = withDefaults(defineProps<{
   theme?: string
   filename?: string
   containerClass?: string
-  fallbackClass?: string
-  fallbackWithHeaderClass?: string
   shikiStyle?: Record<string, string>
 }>(), {
   theme: 'github-dark',
-  containerClass: 'my-4',
-  fallbackClass: 'bg-elevated text-default p-4 rounded-lg overflow-x-auto border border-accented',
+  containerClass: 'my-5',
+})
+
+const langToIcon: Record<string, string> = {
+  ts: 'i-logos-typescript-icon',
+  typescript: 'i-logos-typescript-icon',
+  js: 'i-logos-javascript',
+  javascript: 'i-logos-javascript',
+  vue: 'i-logos-vue',
+  react: 'i-logos-react',
+  jsx: 'i-logos-react',
+  tsx: 'i-logos-react',
+  html: 'i-vscode-icons-file-type-html',
+  css: 'i-logos-css-3',
+  json: 'i-logos-json',
+  bash: 'i-lucide-terminal',
+  sh: 'i-lucide-terminal',
+  shell: 'i-lucide-terminal',
+}
+
+const hasHeader = computed(() => !!props.filename || !!props.language)
+
+const displayName = computed(() => props.filename || props.language || '')
+
+const icon = computed(() => {
+  const lang = props.language ?? ''
+  if (langToIcon[lang]) return langToIcon[lang]
+  if (props.filename) {
+    const ext = props.filename.split('.').pop() ?? ''
+    if (langToIcon[ext]) return langToIcon[ext]
+  }
+  return undefined
 })
 
 const componentKey = ref(0)
@@ -44,28 +72,30 @@ async function copyCode() {
 </script>
 
 <template>
-  <div :class="`relative ${containerClass} group rounded-lg`">
-    <div class="flex items-center justify-between rounded-t-lg border border-b-0 border-accented px-4 py-2">
-      <span class="rounded bg-accented/80 px-2.5 py-1 font-mono text-sm font-semibold tracking-wider text-toned backdrop-blur-sm">
-        {{ filename || language }}
-      </span>
-
-      <button
-        type="button"
-        class="ml-auto rounded px-3 py-1.5 text-xs font-medium text-default backdrop-blur-sm transition-all duration-200 bg-accented/80 hover:bg-accented hover:text-highlighted focus:outline-none focus:ring-2 focus:ring-primary"
-        @click="copyCode"
-      >
-        <span class="flex items-center gap-1.5">
-          <UIcon
-            :name="copied ? 'i-lucide-check' : 'i-lucide-copy'"
-            class="size-4"
-          />
-          {{ copied ? 'Copied!' : 'Copy' }}
-        </span>
-      </button>
+  <div :class="['relative group overflow-hidden', containerClass]">
+    <div
+      v-if="hasHeader"
+      class="flex items-center gap-1.5 border border-b-0 border-muted bg-default rounded-t-md px-4 py-3"
+    >
+      <UIcon
+        v-if="icon"
+        :name="icon"
+        class="size-4 shrink-0"
+      />
+      <span class="text-default text-sm/6 font-mono">{{ displayName }}</span>
     </div>
 
-    <pre class="shiki-container mt-0 overflow-x-auto rounded-b-lg rounded-t-none border border-accented bg-elevated p-4"><slot /></pre>
+    <UButton
+      :icon="copied ? 'i-lucide-check' : 'i-lucide-copy'"
+      color="neutral"
+      variant="outline"
+      size="xs"
+      :aria-label="copied ? 'Copied' : 'Copy code'"
+      :class="['absolute z-10 lg:opacity-0 lg:group-hover:opacity-100 transition', hasHeader ? 'top-[11px] right-[11px]' : 'top-2.5 right-2.5']"
+      @click="copyCode"
+    />
+
+    <pre :class="['shiki-container !m-0 font-mono text-sm/6 border border-muted bg-muted overflow-x-auto px-4 py-3', hasHeader ? 'rounded-b-md rounded-t-none' : 'rounded-md']"><slot /></pre>
   </div>
 </template>
 

@@ -188,7 +188,7 @@ onBeforeUnmount(() => {
 
           <div>
             <div class="border-b border-default px-6 py-2 lg:px-8">
-              <span class="font-mono text-xs text-dimmed">rendered</span>
+              <span class="font-mono text-xs text-dimmed">rendered output</span>
             </div>
             <div class="h-[160px] px-6 py-5 lg:px-8">
               <div class="autoclose-rendered overflow-hidden">

@@ -7,6 +7,7 @@ const props = defineProps<{
   primaryTo: string
   secondaryLabel: string
   secondaryTo: string
+  demoMarkdown: string
 }>()
 </script>
 
@@ -66,7 +67,7 @@ const props = defineProps<{
           class="hero-fade-in"
           style="--delay: 0.3s"
         >
-          <LandingHeroDemo />
+          <LandingHeroDemo :demo-markdown="demoMarkdown" />
         </div>
       </div>
     </div>

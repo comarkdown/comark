@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { codeToHtml } from 'shiki'
+
 interface Plugin {
   id: string
   name: string
@@ -20,6 +22,15 @@ const props = defineProps<{
 const activePlugin = ref(props.plugins[0]?.id ?? '')
 
 const current = computed(() => props.plugins.find(p => p.id === activePlugin.value) ?? props.plugins[0]!)
+
+const highlightedSource = ref('')
+
+watch(current, async (plugin) => {
+  highlightedSource.value = await codeToHtml(plugin.input, {
+    lang: 'md',
+    themes: { light: 'github-light', dark: 'github-dark' },
+  })
+}, { immediate: true })
 </script>
 
 <template>
@@ -65,35 +76,27 @@ const current = computed(() => props.plugins.find(p => p.id === activePlugin.val
         />
       </div>
 
-      <div class="flex flex-col">
-        <div class="flex items-center justify-between border-b border-default bg-muted/30 px-6 py-2.5 lg:px-8">
-          <span class="font-mono text-xs text-dimmed">input.md</span>
-          <UBadge
-            :label="current.package"
-            variant="subtle"
-            color="neutral"
-            size="sm"
-            :ui="{ base: 'font-mono' }"
-          />
-        </div>
-
+      <div class="flex flex-col min-w-0">
         <div class="grid min-h-0 flex-1 grid-cols-[1fr_1px_1fr]">
-          <div>
+          <div class="min-w-0">
             <div class="border-b border-default px-6 py-2 lg:px-8">
               <span class="font-mono text-xs text-dimmed">source</span>
             </div>
-            <div class="h-[260px] overflow-auto p-6 lg:p-8">
-              <pre class="font-mono text-sm/7 whitespace-pre-wrap text-default">{{ current.input }}</pre>
+            <div class="shiki-source h-[360px] overflow-auto p-6 lg:p-8">
+              <div
+                class="font-mono text-sm/6"
+                v-html="highlightedSource"
+              />
             </div>
           </div>
 
           <div class="bg-border" />
 
-          <div>
+          <div class="min-w-0">
             <div class="border-b border-default px-6 py-2 lg:px-8">
               <span class="font-mono text-xs text-dimmed">rendered output</span>
             </div>
-            <div class="h-[260px] overflow-auto p-6 lg:p-8">
+            <div class="h-[360px] overflow-auto p-6 lg:p-8">
               <ComarkDocs
                 :key="current.id"
                 class="prose prose-sm max-w-none dark:prose-invert"
@@ -106,3 +109,27 @@ const current = computed(() => props.plugins.find(p => p.id === activePlugin.val
     </div>
   </div>
 </template>
+
+<style scoped>
+.shiki-source :deep(pre) {
+  margin: 0;
+  background: transparent !important;
+}
+
+.shiki-source :deep(code) {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.shiki-source :deep(.line) {
+  display: inline;
+}
+
+.shiki-source :deep(span) {
+  background-color: transparent !important;
+}
+
+html.dark .shiki-source :deep(span) {
+  color: var(--shiki-dark) !important;
+  font-style: var(--shiki-dark-font-style) !important;
+}
+</style>

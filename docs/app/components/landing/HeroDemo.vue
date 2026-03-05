@@ -1,34 +1,33 @@
 <script setup lang="ts">
-const DEMO_MARKDOWN = `# Hello World
+import { codeToHtml } from 'shiki'
 
-A **high-performance** markdown parser with _streaming_ support.
-
-## Features
-
-- Parse markdown in real-time
-- Vue & React components
-- Auto-close incomplete syntax
-
-::alert{type="info"}
-Comark handles **components in markdown** natively.
-::
-
-> Built for modern web applications.
-
-\`\`\`ts
-import { parse } from 'comark'
-
-const tree = await parse('# Hello **World**')
-\`\`\`
-`
+const props = defineProps<{
+  demoMarkdown: string
+}>()
 
 const rawText = ref('')
 const isStreaming = ref(false)
 const hasPlayed = ref(false)
 const sourceEl = ref<HTMLElement | null>(null)
 const renderedEl = ref<HTMLElement | null>(null)
+const highlightedSource = ref('')
 
 let timer: ReturnType<typeof setTimeout> | null = null
+let highlightTimer: ReturnType<typeof setTimeout> | null = null
+
+watch(rawText, (text) => {
+  if (highlightTimer) clearTimeout(highlightTimer)
+  highlightTimer = setTimeout(async () => {
+    if (!text) {
+      highlightedSource.value = ''
+      return
+    }
+    highlightedSource.value = await codeToHtml(text, {
+      lang: 'md',
+      themes: { light: 'github-light', dark: 'github-dark' },
+    })
+  }, 16)
+})
 
 function scrollToBottom() {
   nextTick(() => {
@@ -51,11 +50,11 @@ function startStream() {
   const chunkSize = 3
 
   function next() {
-    if (i >= DEMO_MARKDOWN.length) {
+    if (i >= props.demoMarkdown.length) {
       isStreaming.value = false
       return
     }
-    const chunk = DEMO_MARKDOWN.slice(i, i + chunkSize)
+    const chunk = props.demoMarkdown.slice(i, i + chunkSize)
     rawText.value += chunk
     i += chunkSize
     scrollToBottom()
@@ -111,12 +110,16 @@ onBeforeUnmount(() => {
         </div>
         <div
           ref="sourceEl"
-          class="h-[400px] overflow-auto scroll-smooth p-4"
+          class="shiki-source h-[400px] overflow-auto scroll-smooth p-4"
         >
-          <pre class="font-mono text-sm/6 whitespace-pre-wrap text-default">{{ rawText }}<span
-v-if="isStreaming"
-                                                                                               class="caret"
-          /></pre>
+          <div
+            class="font-mono text-sm/6"
+            v-html="highlightedSource"
+          />
+          <span
+            v-if="isStreaming"
+            class="caret"
+          />
         </div>
       </div>
 
@@ -139,3 +142,31 @@ v-if="isStreaming"
     </div>
   </div>
 </template>
+
+<style scoped>
+.shiki-source :deep(pre) {
+  margin: 0;
+  background: transparent !important;
+}
+
+.shiki-source :deep(code) {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.shiki-source :deep(.line) {
+  display: inline;
+}
+
+.shiki-source :deep(span) {
+  background-color: transparent !important;
+}
+
+html.dark .shiki-source :deep(span) {
+  color: var(--shiki-dark) !important;
+  font-style: var(--shiki-dark-font-style) !important;
+}
+
+.hero-demo-prose :deep(.relative.group) {
+  margin: 0.75rem 0;
+}
+</style>
