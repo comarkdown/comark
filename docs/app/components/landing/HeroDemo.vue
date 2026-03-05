@@ -105,13 +105,13 @@ onBeforeUnmount(() => {
     </div>
 
     <div class="grid md:grid-cols-2">
-      <div class="border-b border-muted md:border-r md:border-b-0">
+      <div class="min-w-0 border-b border-muted md:border-r md:border-b-0">
         <div class="border-b border-muted bg-muted px-4 py-2">
           <span class="font-mono text-xs text-muted">source.md</span>
         </div>
         <div
           ref="sourceEl"
-          class="shiki-source h-[400px] overflow-auto scroll-smooth p-4"
+          class="shiki-source h-[280px] overflow-auto scroll-smooth p-4 md:h-[400px]"
         >
           <div
             class="font-mono text-sm/6"
@@ -124,13 +124,13 @@ onBeforeUnmount(() => {
         </div>
       </div>
 
-      <div>
+      <div class="min-w-0">
         <div class="border-b border-muted bg-muted px-4 py-2">
           <span class="font-mono text-xs text-muted">rendered output</span>
         </div>
         <div
           ref="renderedEl"
-          class="h-[400px] overflow-auto scroll-smooth p-4"
+          class="h-[280px] overflow-auto scroll-smooth p-4 md:h-[400px]"
         >
           <ComarkDocs
             v-if="rawText"

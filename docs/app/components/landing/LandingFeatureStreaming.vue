@@ -69,7 +69,7 @@ onBeforeUnmount(() => {
 <template>
   <div
     ref="sectionRef"
-    class="p-6 lg:p-8"
+    class="overflow-hidden p-6 lg:p-8"
   >
     <span
       v-if="headline"

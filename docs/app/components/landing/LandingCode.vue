@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import ProsePreRaw from './ProsePreRaw.vue'
+
 defineProps<{
   headline: string
   title: string
@@ -83,15 +84,23 @@ export default function App() {
         </button>
       </div>
 
-      <div class="max-h-[360px] overflow-auto p-6 lg:p-8">
+      <div class="max-h-[360px] overflow-auto p-4 sm:p-6 lg:p-8">
         <div
           v-show="activeTab === 'vue'"
           class="font-mono text-sm/7 whitespace-pre-wrap text-default"
-        ><ComarkDocs :components="{ ProsePre: ProsePreRaw }">{{ '```vue\n' + vueCode + '\n```' }}</ComarkDocs></div>
+        >
+          <ComarkDocs :components="{ ProsePre: ProsePreRaw }">
+            {{ '```vue\n' + vueCode + '\n```' }}
+          </ComarkDocs>
+        </div>
         <div
           v-show="activeTab === 'react'"
           class="font-mono text-sm/7 whitespace-pre-wrap text-default"
-        ><ComarkDocs :components="{ ProsePre: ProsePreRaw }">{{ '```tsx\n' + reactCode + '\n```' }}</ComarkDocs></div>
+        >
+          <ComarkDocs :components="{ ProsePre: ProsePreRaw }">
+            {{ '```tsx\n' + reactCode + '\n```' }}
+          </ComarkDocs>
+        </div>
       </div>
     </div>
   </div>

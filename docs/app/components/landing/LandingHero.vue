@@ -16,10 +16,10 @@ const props = defineProps<{
     <div class="absolute inset-0 hero-dots" />
 
     <div class="relative">
-      <div class="grid items-center gap-8 p-8 md:p-12 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:gap-12">
-        <div>
+      <div class="grid items-center gap-8 p-5 sm:p-8 md:p-12 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:gap-12">
+        <div class="min-w-0">
           <h1
-            class="hero-fade-in mb-4 text-5xl font-bold tracking-tight text-highlighted md:text-6xl"
+            class="hero-fade-in mb-4 text-4xl font-bold tracking-tight text-highlighted sm:text-5xl md:text-6xl"
             style="--delay: 0s"
           >
             {{ props.title }}
@@ -63,7 +63,7 @@ const props = defineProps<{
         </div>
 
         <div
-          class="hero-fade-in"
+          class="hero-fade-in min-w-0"
           style="--delay: 0.3s"
         >
           <LandingHeroDemo :demo-markdown="demoMarkdown" />

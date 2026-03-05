@@ -23,7 +23,7 @@ defineProps<{
       :description="streamingDescription"
       :link-label="streamingLinkLabel"
       :link-to="streamingLinkTo"
-      class="lg:border-r lg:border-default"
+      class="min-w-0 lg:border-r lg:border-default"
     />
     <LandingFeatureFrameworks
       :headline="frameworksHeadline"
@@ -33,6 +33,7 @@ defineProps<{
       :vue-link-to="frameworksVueLinkTo"
       :react-link-label="frameworksReactLinkLabel"
       :react-link-to="frameworksReactLinkTo"
+      class="min-w-0"
     />
   </div>
 </template>

@@ -1,5 +1,5 @@
 <template>
-    <pre :class="['shiki-container']"><slot /></pre>
+  <pre :class="['shiki-container']"><slot /></pre>
 </template>
 
 <style scoped>

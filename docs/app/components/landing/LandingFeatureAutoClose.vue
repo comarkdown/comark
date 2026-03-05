@@ -156,7 +156,7 @@ onBeforeUnmount(() => {
         />
       </div>
 
-      <div class="flex flex-col">
+      <div class="flex min-w-0 flex-col">
         <div class="flex items-center border-b border-default bg-muted/30 px-6 lg:px-8">
           <span class="border-b-2 border-primary px-1 py-2.5 font-mono text-xs text-primary">
             {{ current.label }}
@@ -164,12 +164,12 @@ onBeforeUnmount(() => {
         </div>
 
         <div class="grid min-h-0 flex-1 grid-cols-[1fr_1px_1fr]">
-          <div>
-            <div class="border-b border-default px-6 py-2 lg:px-8">
+          <div class="min-w-0">
+            <div class="border-b border-default px-4 py-2 sm:px-6 lg:px-8">
               <span class="font-mono text-xs text-dimmed">source</span>
             </div>
-            <div class="h-[160px] px-6 py-5 lg:px-8">
-              <div class="font-mono text-sm/7 whitespace-pre-wrap">
+            <div class="h-[160px] px-4 py-5 sm:px-6 lg:px-8">
+              <div class="font-mono text-xs/7 whitespace-pre-wrap sm:text-sm/7">
                 <span class="text-highlighted">{{ rawText }}</span>
                 <span
                   v-if="!showAutoClosed"
@@ -186,11 +186,11 @@ onBeforeUnmount(() => {
 
           <div class="bg-border" />
 
-          <div>
-            <div class="border-b border-default px-6 py-2 lg:px-8">
+          <div class="min-w-0">
+            <div class="border-b border-default px-4 py-2 sm:px-6 lg:px-8">
               <span class="font-mono text-xs text-dimmed">rendered output</span>
             </div>
-            <div class="h-[160px] px-6 py-5 lg:px-8">
+            <div class="h-[160px] px-4 py-5 sm:px-6 lg:px-8">
               <div class="autoclose-rendered overflow-hidden">
                 <ComarkDocs
                   v-if="liveMarkdown"
