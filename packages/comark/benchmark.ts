@@ -74,6 +74,7 @@ const markdownExit = new MarkdownExit({
 
 const comark = createParse()
 const comarkNoClose = createParse({ autoClose: false })
+const comarkStreaming = createParse()
 
 // Benchmark: markdown-it parsing
 bench('markdown-it parse', () => {
@@ -107,6 +108,10 @@ bench('markdown-exit render', () => {
 bench('comark parse + renderHTML', async () => {
   const tree = await comark(sampleMarkdown)
   renderHTML(tree)
+})
+
+bench('comark parse streaming', async () => {
+  await comarkStreaming(sampleMarkdown, { streaming: true })
 })
 
 // Run all benchmarks

@@ -53,6 +53,6 @@ timeout:
 
 ```md
 > #### The quarterly results look great!
-> 
+>
 > Paragraph
 ```

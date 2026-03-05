@@ -1,12 +1,14 @@
-import type { ComarkParsePostState, ParseOptions } from './types'
+import type { ComarkParseFn, ComarkParsePostState, ParseOptions } from './types'
 import MarkdownIt from 'markdown-exit'
 import pluginMdc from '@comark/markdown-it'
 import taskList from './plugins/task-list'
+import alert from './plugins/alert'
 import { applyAutoUnwrap } from './internal/parse/auto-unwrap'
 import type { ComarkTree, ComarkNode } from 'comark/ast'
 import { marmdownItTokensToComarkTree } from './internal/parse/token-processor'
 import { autoCloseMarkdown } from './internal/parse/auto-close/index'
 import { parseFrontmatter } from './internal/front-matter'
+import { extractResuableNodes } from './internal/parse/incremental'
 
 // Re-export ComarkTree and ComarkNode for convenience
 export type { ComarkTree, ComarkNode } from 'comark/ast'
@@ -40,10 +42,11 @@ export type * from './types'
  * // → [ ['h1', { id: 'hello-world' }, 'Hello ', ['strong', {}, 'World'] ], ['alert', {}, 'hi'] ]
  * ```
  */
-export function createParse(options: ParseOptions = {}): (markdown: string) => Promise<ComarkTree> {
+export function createParse(options: ParseOptions = {}): ComarkParseFn {
   const { autoUnwrap = true, autoClose = true, plugins = [] } = options
 
   plugins.unshift(taskList())
+  plugins.unshift(alert())
 
   const parser = new MarkdownIt({
     html: true,
@@ -58,12 +61,29 @@ export function createParse(options: ParseOptions = {}): (markdown: string) => P
     }
   }
 
-  return async (markdown: string) => {
+  let lastOutput: ComarkTree | null = null
+  let lastInput: string | null = null
+
+  return async (markdown, opts = {}) => {
     const state = {
       options,
       tokens: [] as unknown[],
       markdown,
       tree: null as ComarkTree | null,
+      parsedLines: 0,
+      resusableNodes: [] as ComarkNode[],
+    }
+
+    const prevOutput = lastOutput
+    if (opts.streaming && prevOutput && markdown.startsWith(lastInput ?? '')) {
+      const { remainingMarkdownStartLine, reusedNodes, remainingMarkdown } = extractResuableNodes(markdown, prevOutput)
+
+      // If there is no remaining markdown, return the previous output
+      if (!remainingMarkdown) return prevOutput
+
+      state.parsedLines = remainingMarkdownStartLine
+      state.markdown = remainingMarkdown
+      state.resusableNodes = reusedNodes
     }
 
     if (autoClose) {
@@ -79,16 +99,34 @@ export function createParse(options: ParseOptions = {}): (markdown: string) => P
     state.tokens = parser.parse(content, {})
 
     // Convert tokens to Comark structure
-    let nodes = marmdownItTokensToComarkTree(state.tokens)
+    let nodes = marmdownItTokensToComarkTree(state.tokens, {
+      startLine: state.parsedLines,
+      preservePositions: opts.streaming ?? false,
+    })
 
     if (autoUnwrap) {
       nodes = nodes.map((node: ComarkNode) => applyAutoUnwrap(node))
     }
 
-    state.tree = {
-      nodes,
-      frontmatter: data,
-      meta: {},
+    if (opts.streaming) {
+      state.tree = {
+        nodes: [...state.resusableNodes, ...nodes],
+        frontmatter: state.parsedLines > 0 ? (prevOutput?.frontmatter ?? data) : data,
+        meta: {},
+      }
+      // Set last output and input for streaming mode
+      lastOutput = state.tree
+      lastInput = markdown
+    }
+    else {
+      state.tree = {
+        nodes,
+        frontmatter: data,
+        meta: {},
+      }
+      // Reset last output and input for non-streaming mode
+      lastOutput = null
+      lastInput = null
     }
 
     for (const plugin of plugins || []) {

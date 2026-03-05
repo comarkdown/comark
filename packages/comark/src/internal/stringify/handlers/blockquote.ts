@@ -8,8 +8,14 @@ export function blockquote(node: ComarkElement, state: State) {
     .join('')
     .trim()
     .split('\n')
-    .map(line => `> ${line}`)
+    .map(line => line ? `> ${line}` : '>')
     .join('\n')
+
+  if (node[1].as) {
+    return `> [!${String(node[1].as).toUpperCase()}]\n`
+      + content
+      + state.context.blockSeparator
+  }
 
   return content + state.context.blockSeparator
 }

@@ -180,6 +180,7 @@ function markdownItTaskList(md: MarkdownIt, options?: TaskListOptions) {
 
 export default function comarkTaskList(): ComarkPlugin {
   return {
+    name: 'task-list',
     markdownItPlugins: [markdownItTaskList],
   }
 }

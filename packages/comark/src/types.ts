@@ -20,6 +20,7 @@ export type ComarkParsePostState = {
 }
 
 export type ComarkPlugin = {
+  name: string
   markdownItPlugins?: MarkdownItPlugin[]
   pre?: (state: ComarkParsePreState) => Promise<void> | void
   post?: (state: ComarkParsePostState) => Promise<void> | void
@@ -59,3 +60,14 @@ export interface ParseOptions {
    */
   plugins?: ComarkPlugin[]
 }
+
+/**
+ * Type signature for the options object passed to the Comark parser function returned by createParse().
+ */
+export type ComarkParseFnOptions = { streaming?: boolean }
+
+/**
+ * Type signature for the async Comark parser function returned by createParse().
+ * Accepts a markdown string and optional parsing options, and returns a Promise of ComarkTree.
+ */
+export type ComarkParseFn = (markdown: string, opts?: ComarkParseFnOptions) => Promise<ComarkTree>

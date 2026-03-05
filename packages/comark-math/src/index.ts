@@ -321,6 +321,7 @@ function markdownItMath(md: MarkdownIt, config: MathConfig = {}) {
  */
 export default function math(config?: MathConfig): ComarkPlugin {
   return {
+    name: 'math',
     markdownItPlugins: [
       ((md: MarkdownIt) => markdownItMath(md, config ?? {})) as unknown as MarkdownItPlugin,
     ],

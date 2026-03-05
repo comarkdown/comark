@@ -2,9 +2,10 @@ import type { ComarkElement, ComarkNode, ComarkTree } from '../../ast'
 import React, { lazy, Suspense, useMemo } from 'react'
 import { camelCase, pascalCase } from 'scule'
 import { findLastTextNodeAndAppendNode, getCaret } from '../../utils/caret'
+import type { ComponentManifest } from '../../types'
 
 /**
- * Helper to get tag from a MinimarkNode
+ * Helper to get tag from a ComarkNode
  */
 function getTag(node: ComarkNode): string | null {
   if (Array.isArray(node) && node.length >= 1) {
@@ -68,6 +69,30 @@ function getChildren(node: ComarkNode): ComarkNode[] {
 // Cache for dynamically resolved components
 const asyncComponentCache = new Map<string, React.LazyExoticComponent<any>>()
 
+function resolveComponent(tag: string, components: Record<string, any>, componentsManifest?: ComponentManifest): any {
+  const pascalTag = pascalCase(tag)
+  const proseTag = `Prose${pascalTag}`
+
+  let resolvedComponent = components[proseTag]
+    || components[tag]
+    || components[pascalTag]
+
+  // If not in components map and manifest is provided, try dynamic resolution
+  if (!resolvedComponent && componentsManifest) {
+    // Check cache first to avoid creating duplicate async components
+    const cacheKey = tag
+    if (!asyncComponentCache.has(cacheKey)) {
+      const promise = componentsManifest(tag)
+      if (promise) {
+        asyncComponentCache.set(cacheKey, lazy(() => promise as Promise<{ default: React.ComponentType<any> }>))
+      }
+    }
+    resolvedComponent = asyncComponentCache.get(cacheKey)
+  }
+
+  return resolvedComponent
+}
+
 /**
  * Render a single Comark node to React element
  */
@@ -75,7 +100,8 @@ function renderNode(
   node: ComarkNode,
   components: Record<string, any> = {},
   key?: string | number,
-  componentsManifest?: (name: string) => Promise<{ default: React.ComponentType<any> }>,
+  componentsManifest?: ComponentManifest,
+  parent?: ComarkNode,
 ): React.ReactNode {
   // Handle text nodes (strings)
   if (typeof node === 'string') {
@@ -90,33 +116,52 @@ function renderNode(
     const nodeProps = getProps(node)
     const children = getChildren(node)
 
-    const pascalTag = pascalCase(tag)
-    const proseTag = `Prose${pascalTag}`
     // Check if there's a custom component for this tag
-    let customComponent = components[proseTag] || components[pascalTag] || components[tag]
+    let customComponent
 
-    // If not in components map and manifest is provided, try dynamic resolution
-    if (!customComponent && componentsManifest) {
-      const cacheKey = tag
-      if (!asyncComponentCache.has(cacheKey)) {
-        const resolved = componentsManifest(tag)
-        if (resolved) {
-          asyncComponentCache.set(cacheKey, lazy(() => resolved))
-        }
+    if ((parent as ComarkElement | undefined)?.[0] !== 'pre') {
+      if (nodeProps.as) {
+        customComponent = resolveComponent(nodeProps.as, components, componentsManifest)
       }
-      customComponent = asyncComponentCache.get(cacheKey)
+      if (!customComponent) {
+        customComponent = resolveComponent(tag, components, componentsManifest)
+      }
     }
 
     const Component = customComponent || tag
 
-    // Prepare props
-    const props: Record<string, any> = { ...nodeProps }
-    if (typeof Component !== 'string') {
+    // Prepare props — use for...in instead of Object.entries() to avoid intermediate array allocation
+    const props: Record<string, any> = {}
+    for (const k in nodeProps) {
+      if (k === 'className') {
+        props.className = nodeProps[k]
+      }
+      else if (k === 'class') {
+        props.className = nodeProps[k]
+      }
+      else if (k === 'style' && typeof nodeProps[k] === 'string') {
+        props.style = cssStringToObject(nodeProps[k])
+      }
+      else if (k === 'tabindex') {
+        props.tabIndex = nodeProps[k]
+      }
+      else if (k.charCodeAt(0) === 58 /* ':' */) {
+        props[k.substring(1)] = parsePropValue(nodeProps[k])
+      }
+      else {
+        props[k] = nodeProps[k]
+      }
+    }
+
+    if (typeof Component !== 'string' && (Component as any)?.propTypes?.__node !== undefined) {
       props.__node = node
     }
 
     // Parse special prop values (props starting with :)
     for (const [propKey, value] of Object.entries(nodeProps)) {
+      if (propKey === '$comark') {
+        Reflect.deleteProperty(props, propKey)
+      }
       if (propKey === 'style') {
         props.style = cssStringToObject(value)
       }
@@ -145,21 +190,88 @@ function renderNode(
       return React.createElement(Component, props)
     }
 
-    // Render children
-    const renderedChildren = children
-      .map((child, index) => renderNode(child, components, index, componentsManifest))
-      .filter(child => child !== null)
+    // Separate template elements (slots) from regular children
+    const slots: Record<string, React.ReactNode[]> = {}
+    const regularChildren: React.ReactNode[] = []
 
-    // Wrap lazy components in Suspense
-    if (customComponent && asyncComponentCache.has(tag)) {
-      return (
-        <Suspense key={key} fallback={null}>
-          {React.createElement(Component, props, ...renderedChildren)}
-        </Suspense>
-      )
+    for (let i = 0; i < children.length; i++) {
+      const child = children[i]
+      if (child === undefined || child === null)
+        continue
+
+      // Check if this is a slot template (array with tag 'template')
+      const childTag = getTag(child)
+      const childProps = getProps(child)
+
+      if (childTag === 'template' && childProps) {
+        // Find the slot name from props
+        // Support both { name: 'title' } and { '#title': '' } formats
+        let slotName: string | undefined
+
+        if (childProps.name) {
+          slotName = childProps.name
+        }
+        else {
+          // Use for...in instead of Object.keys().find() — avoids intermediate array
+          for (const pk in childProps) {
+            if (pk.startsWith('#')) {
+              slotName = pk.substring(1)
+              break
+            }
+          }
+        }
+
+        if (slotName) {
+          const slotChildren = getChildren(child)
+          slots[slotName] = slotChildren
+            .map((slotChild: ComarkNode, idx: number) => renderNode(slotChild, components, idx, componentsManifest, node))
+            .filter((slotChild): slotChild is React.ReactNode => slotChild !== null)
+          continue
+        }
+      }
+
+      const rendered = renderNode(child, components, i, componentsManifest, node)
+      if (rendered !== null) {
+        regularChildren.push(rendered)
+      }
     }
 
-    return React.createElement(Component, props, ...renderedChildren)
+    // If using a custom component, pass slots as children props
+    if (customComponent) {
+      // Always include default slot if there are regular children
+      if (regularChildren.length > 0) {
+        slots.default = regularChildren
+      }
+
+      // For React, we pass slots as props (React doesn't have named slots like Vue)
+      const finalProps = { ...props }
+      for (const slotName in slots) {
+        if (slotName === 'default') {
+          // Default slot becomes children
+          finalProps.children = slots[slotName]
+        }
+        else {
+          // Named slots become props with slot prefix
+          finalProps[`slot${slotName.charAt(0).toUpperCase() + slotName.slice(1)}`] = slots[slotName]
+        }
+      }
+
+      // Wrap lazy components in Suspense
+      const componentTag = nodeProps.as || tag
+      const isLazyComponent = asyncComponentCache.has(componentTag)
+      if (isLazyComponent) {
+        return (
+          <Suspense key={key} fallback={null}>
+            {React.createElement(Component, finalProps)}
+          </Suspense>
+        )
+      }
+
+      return React.createElement(Component, finalProps)
+    }
+
+    // For native HTML tags, pass children directly (ignore slot templates)
+    return React.createElement(Component, props, ...regularChildren)
   }
 
   return null
@@ -182,7 +294,7 @@ export interface ComarkRendererProps {
    * Dynamic component resolver function
    * Used to resolve components that aren't in the components map
    */
-  componentsManifest?: (name: string) => Promise<{ default: React.ComponentType<any> }>
+  componentsManifest?: ComponentManifest
 
   /**
    * Enable streaming mode with stream-specific components
@@ -233,6 +345,7 @@ export const ComarkRenderer: React.FC<ComarkRendererProps> = ({
   const caret = useMemo(() => getCaret(caretProp), [caretProp])
 
   const renderedNodes = useMemo(() => {
+    // Render all nodes from the tree value
     const nodes = [...(tree.nodes || [])]
 
     if (streaming && caret && nodes.length > 0) {
@@ -244,9 +357,10 @@ export const ComarkRenderer: React.FC<ComarkRendererProps> = ({
 
     return nodes
       .map((node, index) => renderNode(node, customComponents, index, componentsManifest))
-      .filter(child => child !== null)
+      .filter((child): child is React.ReactNode => child !== null)
   }, [tree, customComponents, componentsManifest, streaming, caret])
 
+  // Wrap in a fragment
   return (
     <div className={`comark-content ${className || ''}`}>
       {renderedNodes}
