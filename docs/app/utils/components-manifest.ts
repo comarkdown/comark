@@ -3,6 +3,8 @@ import { localComponents } from '#content/components'
 
 // Define component imports for the docs app
 const components = {
+  Playground: () => import('@/components/Playground.vue'),
+
   // Streaming components
   ComarkStream: () => import('@/components/ComarkStream.vue'),
   MarkdownItStream: () => import('@/components/MarkdownItStream.vue'),

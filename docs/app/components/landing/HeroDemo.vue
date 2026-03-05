@@ -111,7 +111,7 @@ onBeforeUnmount(() => {
         </div>
         <div
           ref="sourceEl"
-          class="shiki-source h-[280px] overflow-auto scroll-smooth p-4 md:h-[400px]"
+          class="shiki-source h-[280px] overflow-y-auto overflow-x-hidden scroll-smooth p-4 md:h-[400px]"
         >
           <div
             class="font-mono text-sm/6"
@@ -148,6 +148,8 @@ onBeforeUnmount(() => {
 .shiki-source :deep(pre) {
   margin: 0;
   background: transparent !important;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .shiki-source :deep(code) {

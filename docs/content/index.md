@@ -37,6 +37,9 @@ title: Comark
 ---
 ::
 
+::playground{compact}
+::
+
 :landing-spacer
 
 ::landing-features
