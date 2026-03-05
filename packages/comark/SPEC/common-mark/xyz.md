@@ -330,7 +330,7 @@ Here's a paragraph with a [link to Nuxt](https://nuxt.com) and some `inline code
 ### Subsection
 
 > This is a blockquote with important information.
-> 
+>
 > It can span multiple lines and contain **formatted text**.
 
 #### Nested Heading

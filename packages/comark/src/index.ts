@@ -2,6 +2,7 @@ import type { ComarkParsePostState, ParseOptions } from './types'
 import MarkdownIt from 'markdown-exit'
 import pluginMdc from '@comark/markdown-it'
 import taskList from './plugins/task-list'
+import alert from './plugins/alert'
 import { applyAutoUnwrap } from './internal/parse/auto-unwrap'
 import type { ComarkTree, ComarkNode } from 'comark/ast'
 import { marmdownItTokensToComarkTree } from './internal/parse/token-processor'
@@ -44,6 +45,7 @@ export function createParse(options: ParseOptions = {}): (markdown: string) => P
   const { autoUnwrap = true, autoClose = true, plugins = [] } = options
 
   plugins.unshift(taskList())
+  plugins.unshift(alert())
 
   const parser = new MarkdownIt({
     html: true,

@@ -54,6 +54,33 @@ function getChildren(node: ComarkNode): ComarkNode[] {
   return []
 }
 
+function resolveComponent(tag: string, components: Record<string, any>, componentsManifest?: ComponentManifest): string {
+  const appComponents = getCurrentInstance()?.appContext?.components
+  const pascalTag = pascalCase(tag)
+  const proseTag = `Prose${pascalTag}`
+
+  let resolvedComponent = components[proseTag]
+    || components[tag]
+    || components[pascalTag]
+    // If the component is not found in the components map, try to find it in the app context
+    || appComponents?.[proseTag]
+    || appComponents?.[pascalTag]
+
+  // If not in components map and manifest is provided, try dynamic resolution
+  if (!resolvedComponent && componentsManifest) {
+    // Check cache first to avoid creating duplicate async components
+    const cacheKey = tag
+    if (!asyncComponentCache.has(cacheKey)) {
+      const promise = componentsManifest(tag)
+      if (promise) {
+        asyncComponentCache.set(cacheKey, defineAsyncComponent(() => promise as Promise<any>))
+      }
+    }
+    resolvedComponent = asyncComponentCache.get(cacheKey)
+  }
+
+  return resolvedComponent
+}
 /**
  * Render a single Comark node to Vue VNode
  */
@@ -78,31 +105,14 @@ function renderNode(
     const children = getChildren(node)
 
     // Check if there's a custom component for this tag
-    let customComponent = tag
+    let customComponent
 
-    const appComponents = getCurrentInstance()?.appContext?.components
     if ((parent as ComarkElement | undefined)?.[0] !== 'pre') {
-      const pascalTag = pascalCase(tag)
-      const proseTag = `Prose${pascalTag}`
-
-      customComponent = components[proseTag]
-        || components[tag]
-        || components[pascalTag]
-        // If the component is not found in the components map, try to find it in the app context
-        || appComponents?.[proseTag]
-        || appComponents?.[pascalTag]
-
-      // If not in components map and manifest is provided, try dynamic resolution
-      if (!customComponent && componentsManifest) {
-        // Check cache first to avoid creating duplicate async components
-        const cacheKey = tag
-        if (!asyncComponentCache.has(cacheKey)) {
-          const promise = componentsManifest(tag)
-          if (promise) {
-            asyncComponentCache.set(cacheKey, defineAsyncComponent(() => promise as Promise<any>))
-          }
-        }
-        customComponent = asyncComponentCache.get(cacheKey)
+      if (nodeProps.as) {
+        customComponent = resolveComponent(nodeProps.as, components, componentsManifest)
+      }
+      if (!customComponent) {
+        customComponent = resolveComponent(tag, components, componentsManifest)
       }
     }
 

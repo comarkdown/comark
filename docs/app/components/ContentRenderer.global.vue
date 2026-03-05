@@ -6,6 +6,7 @@ import htmlTags from '@nuxtjs/mdc/runtime/parser/utils/html-tags-list'
 import { globalComponents, localComponents } from '#content/components'
 import { useRuntimeConfig } from '#imports'
 import { ComarkRenderer } from 'comark/vue'
+import alert from 'comark/plugins/alert'
 import { Mermaid } from '@comark/mermaid/vue'
 import type { ComarkTree, ComarkElement } from 'comark/ast'
 import type { MinimarkNode, MinimarkTree } from 'minimark'
@@ -89,6 +90,12 @@ function replaceMermaid(body: MinimarkNode[]): MinimarkNode[] {
   })
 }
 
+function replaceAlert(body: MinimarkNode[]): MinimarkNode[] {
+  alert().post!({ markdown: '', tree: { frontmatter: {}, nodes: body, meta: {} }, options: {}, tokens: [] })
+
+  return body
+}
+
 const body = computed(() => {
   let body = props.value.body || props.value
   if (props.summary && props.value.summary) {
@@ -98,7 +105,7 @@ const body = computed(() => {
   // this is a workaround to convert mermaid code block to Mermaid component
   return {
     frontmatter: props.data,
-    nodes: replaceMermaid(body.value),
+    nodes: replaceAlert(replaceMermaid(body.value)),
     meta: {},
   } as ComarkTree
 })

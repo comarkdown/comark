@@ -13,7 +13,7 @@ const props = defineProps<{
 <template>
   <section class="relative overflow-hidden border-b border-default">
     <div class="absolute inset-0 hero-dots" />
-    <div class="absolute top-1/3 left-1/3 size-[400px] rounded-full bg-primary/20 blur-[120px]" />
+    <div class="absolute top-1/3 left-0 size-[400px] rounded-full bg-primary/10 blur-[180px]" />
 
     <div class="relative">
       <div class="grid items-center gap-8 p-8 md:p-12 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:gap-12">
@@ -61,7 +61,6 @@ const props = defineProps<{
             <UButton
               :label="primaryLabel"
               :to="primaryTo"
-              size="xl"
               color="primary"
               trailing-icon="i-lucide-arrow-right"
             />
@@ -69,7 +68,6 @@ const props = defineProps<{
               :label="secondaryLabel"
               :to="secondaryTo"
               external
-              size="xl"
               color="neutral"
               variant="outline"
               icon="i-simple-icons-github"

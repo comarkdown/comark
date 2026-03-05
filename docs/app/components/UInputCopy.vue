@@ -21,7 +21,7 @@ async function copy() {
 
 <template>
   <button
-    class="group inline-flex items-center gap-2 rounded-lg border border-accented bg-default px-4 py-2.5 font-mono text-sm text-default shadow-xs transition-all hover:border-inverted/20 hover:shadow-md"
+    class="group inline-flex items-center gap-2 rounded-lg border border-accented bg-default px-2.5 py-2 font-mono text-sm text-default shadow-xs transition-all hover:border-inverted/20 hover:shadow-md"
     @click="copy"
   >
     <span class="select-all">{{ value }}</span>

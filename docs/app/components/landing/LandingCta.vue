@@ -44,7 +44,6 @@ defineProps<{
           <UButton
             :label="primaryLabel"
             :to="primaryTo"
-            size="xl"
             color="primary"
             trailing-icon="i-lucide-arrow-right"
           />
@@ -52,7 +51,6 @@ defineProps<{
             :label="secondaryLabel"
             :to="secondaryTo"
             external
-            size="xl"
             color="neutral"
             variant="outline"
             icon="i-simple-icons-github"
