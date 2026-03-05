@@ -153,11 +153,33 @@ function renderNode(
       }
     }
 
-    // @ts-expect-error - component might be a React component
     if (typeof Component !== 'string' && (Component as any)?.propTypes?.__node !== undefined) {
       props.__node = node
     }
 
+    // Parse special prop values (props starting with :)
+    for (const [propKey, value] of Object.entries(nodeProps)) {
+      if (propKey === '$comark') {
+        Reflect.deleteProperty(props, propKey)
+      }
+      if (propKey === 'style') {
+        props.style = cssStringToObject(value)
+      }
+      else if (propKey === 'tabindex') {
+        props.tabIndex = value
+        Reflect.deleteProperty(props, propKey)
+      }
+      if (propKey === 'class') {
+        props.className = value
+        Reflect.deleteProperty(props, propKey)
+      }
+      else {
+        if (propKey.startsWith(':')) {
+          props[propKey.substring(1)] = parsePropValue(value)
+          Reflect.deleteProperty(props, propKey)
+        }
+      }
+    }
     // Add key if provided
     if (key !== undefined) {
       props.key = key

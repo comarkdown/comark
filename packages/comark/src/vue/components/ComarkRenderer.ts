@@ -122,6 +122,9 @@ function renderNode(
     // Prepare props — use for...in instead of Object.entries() to avoid intermediate array allocation
     const props: Record<string, any> = {}
     for (const k in nodeProps) {
+      if (k === '$comark') {
+        continue
+      }
       if (k === 'className') {
         props.class = nodeProps[k]
       }

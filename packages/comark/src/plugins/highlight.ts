@@ -247,7 +247,7 @@ export async function highlightCodeBlocks(
 
         if (typeof content === 'string') {
           try {
-            const { nodes } = await highlightCode(content, attrs, options)
+            const { nodes } = await highlightCode(content, attrs as { language?: string, class?: string, highlights?: number[] }, options)
 
             // Build pre attributes with Shiki styling
             const newPreAttrs: any = {

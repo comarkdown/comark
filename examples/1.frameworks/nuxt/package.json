@@ -12,7 +12,7 @@
     "@nuxt/fonts": "^0.14.0",
     "comark": "workspace:*",
     "nuxt": "^4.3.1",
-    "vue": "^3.5.28",
+    "vue": "^3.5.29",
     "vue-router": "^5.0.3"
   }
 }

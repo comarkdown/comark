@@ -4,6 +4,8 @@ export type ComarkComment = [null, {}, string]
 
 export type ComarkElementAttributes = {
   [key: string]: unknown
+
+  $comark?: { line?: number }
 }
 
 export type ComarkElement = [string, ComarkElementAttributes, ...ComarkNode[]]
