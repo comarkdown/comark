@@ -11,7 +11,7 @@ path: /examples/frameworks/nextjs
 ```tsx [app/blog/[slug]/page.tsx]
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { ComarkRenderer } from 'comark/react/components/ComarkRenderer'
+import { ComarkRenderer } from '@comark/react'
 import { getAllPosts, getPost } from '@/lib/posts'
 import Alert from '@/components/Alert'
 

@@ -21,7 +21,7 @@ This alert is rendered using a custom Comark component — no client-side JavaSc
 
 ```ts
 import { parse } from 'comark'
-import { ComarkRenderer } from 'comark/react/components/ComarkRenderer'
+import { ComarkRenderer } from '@comark/react'
 
 const tree = await parse(markdown)
 // <ComarkRenderer tree={tree} components={{ Alert }} />
