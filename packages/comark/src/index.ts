@@ -8,7 +8,7 @@ import type { ComarkTree, ComarkNode } from 'comark/ast'
 import { marmdownItTokensToComarkTree } from './internal/parse/token-processor'
 import { autoCloseMarkdown } from './internal/parse/auto-close/index'
 import { parseFrontmatter } from './internal/front-matter'
-import { extractResuableNodes } from './internal/parse/incremental'
+import { extractReusableNodes } from './internal/parse/incremental'
 
 // Re-export ComarkTree and ComarkNode for convenience
 export type { ComarkTree, ComarkNode } from 'comark/ast'
@@ -71,19 +71,19 @@ export function createParse(options: ParseOptions = {}): ComarkParseFn {
       markdown,
       tree: null as ComarkTree | null,
       parsedLines: 0,
-      resusableNodes: [] as ComarkNode[],
+      reusableNodes: [] as ComarkNode[],
     }
 
     const prevOutput = lastOutput
     if (opts.streaming && prevOutput && markdown.startsWith(lastInput ?? '')) {
-      const { remainingMarkdownStartLine, reusedNodes, remainingMarkdown } = extractResuableNodes(markdown, prevOutput)
+      const { remainingMarkdownStartLine, reusedNodes, remainingMarkdown } = extractReusableNodes(markdown, prevOutput)
 
       // If there is no remaining markdown, return the previous output
       if (!remainingMarkdown) return prevOutput
 
       state.parsedLines = remainingMarkdownStartLine
       state.markdown = remainingMarkdown
-      state.resusableNodes = reusedNodes
+      state.reusableNodes = reusedNodes
     }
 
     if (autoClose) {
@@ -110,7 +110,7 @@ export function createParse(options: ParseOptions = {}): ComarkParseFn {
 
     if (opts.streaming) {
       state.tree = {
-        nodes: [...state.resusableNodes, ...nodes],
+        nodes: [...state.reusableNodes, ...nodes],
         frontmatter: state.parsedLines > 0 ? (prevOutput?.frontmatter ?? data) : data,
         meta: {},
       }
