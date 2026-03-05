@@ -27,7 +27,7 @@ const highlightedSource = ref('')
 
 watch(current, async (plugin) => {
   highlightedSource.value = await codeToHtml(plugin.input, {
-    lang: 'md',
+    lang: 'mdc',
     themes: { light: 'github-light', dark: 'github-dark' },
   })
 }, { immediate: true })

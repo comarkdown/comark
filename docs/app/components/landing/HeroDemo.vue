@@ -23,7 +23,7 @@ watch(rawText, (text) => {
       return
     }
     highlightedSource.value = await codeToHtml(text, {
-      lang: 'md',
+      lang: 'mdc',
       themes: { light: 'github-light', dark: 'github-dark' },
     })
   }, 16)
