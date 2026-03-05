@@ -20,6 +20,7 @@
     "dev:astro": "pnpm --filter comark-astro run dev",
     "dev:vitepress": "pnpm --filter comark-vitepress run dev",
     "dev:nuxt": "pnpm --filter comark-nuxt run dev",
+    "dev:nextjs": "pnpm --filter comark-nextjs run dev",
     "dev:nuxt-ui": "pnpm --filter comark-nuxt-ui run dev",
     "dev:highlight": "pnpm --filter comark-vue-vite-highlight run dev",
     "benchmark": "pnpm --filter comark run benchmark",
