@@ -18,6 +18,8 @@ import { br } from './br'
 import { template } from './template'
 import { table, thead, tbody, tr, th, td } from './table'
 import { comment } from './comment'
+import { math } from './math'
+import { mermaid } from './mermaid'
 import type { NodeHandler } from '../types'
 
 export const handlers: Record<string, NodeHandler> = {
@@ -51,4 +53,6 @@ export const handlers: Record<string, NodeHandler> = {
   th,
   td,
   comment,
+  math,
+  mermaid,
 }

@@ -18,7 +18,7 @@ export function li(node: ComarkElement, state: State) {
     prefix += input[1].checked || input[1][':checked'] ? '[x] ' : '[ ] '
   }
 
-  let result = children.map(child => state.one(child, state)).join('').trim()
+  let result = children.map(child => state.one(child, state, node)).join('').trim()
 
   if (!order) {
     result = escapeLeadingNumberDot(result)

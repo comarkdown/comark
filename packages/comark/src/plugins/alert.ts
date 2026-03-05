@@ -50,7 +50,7 @@ export default function alert(): ComarkPlugin {
             const marker = markers[content]
             if (marker) {
               if (typeof node[3] === 'string') {
-                element[3] = String(element[3]).trim()
+                element[3] = String(element[3]).trimStart()
               }
               // remove span node
               element.splice(2, 1)
@@ -65,7 +65,7 @@ export default function alert(): ComarkPlugin {
 
               if (marker) {
                 if (typeof paragraph[3] === 'string') {
-                  paragraph[3] = String(paragraph[3]).trim()
+                  paragraph[3] = String(paragraph[3]).trimStart()
                 }
                 // remove span node
                 paragraph.splice(2, 1)

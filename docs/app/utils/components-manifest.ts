@@ -13,6 +13,7 @@ const components = {
   LandingCjk: () => import('@/components/landing/LandingCjk.vue'),
   LandingGfm: () => import('@/components/landing/LandingGfm.vue'),
   LandingCompareGrid: () => import('@/components/LandingCompareGrid.vue'),
+  Playground: () => import('@/components/Playground.vue'),
 
   // Streaming components
   ComarkStream: () => import('@/components/ComarkStream.vue'),

@@ -45,42 +45,6 @@ Simple to use, powerful features
 #description
 Install with npm and start parsing markdown in seconds
 
-#body
-  :::landing-code-example
-  #vue
-  ```vue [src/App.vue]
-  <script setup lang="ts">
-  import { Comark } from '@comark/vue'
-  import Alert from './components/Alert.vue'
-
-  const md = `
-  # [Hello *World*]{.text-5xl}
-
-  ::alert{type="info"}
-  This is an alert!
-  ::
-  `
-  </script>
-
-  <template>
-    <Suspense>
-      <Comark :components="{ Alert }">{{ md }}</Comark>
-    </Suspense>
-  </template>
-  ```
-
-  #react
-  ```tsx [src/App.tsx]
-  import { Comark } from '@comark/react'
-
-  export default function App() {
-    const markdown = `# Hello **World**`
-
-    return <Comark>{markdown}</Comark>
-  }
-  ```
-  :::
-
 #footer
   :::landing-cards
     ::::landing-card
@@ -118,6 +82,10 @@ Install with npm and start parsing markdown in seconds
     #description
     Use with React, Vue, or vanilla JavaScript
     ::::
+  :::
+
+#body
+  :::playground{compact}
   :::
 ::
 
