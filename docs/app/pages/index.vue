@@ -20,7 +20,7 @@ useHead({
 
 <template>
   <div class="min-h-dvh bg-default text-default">
-    <UContainer class="overflow-x-hidden p-0! border-x border-default">
+    <UContainer class="overflow-x-hidden p-0! lg:border-x lg:border-default">
       <ContentRenderer
         v-if="page"
         :value="page as any"
@@ -32,5 +32,13 @@ useHead({
 <style>
 .landing-page footer[data-slot="root"] {
   display: none;
+}
+
+@media (min-width: 1024px) {
+  .landing-page header[data-slot="root"] > div {
+    max-width: var(--ui-container);
+    margin-inline: auto;
+    border-inline: 1px solid var(--ui-border);
+  }
 }
 </style>
