@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import ProsePreRaw from './ProsePreRaw.vue'
 defineProps<{
   headline: string
   title: string
@@ -83,14 +84,14 @@ export default function App() {
       </div>
 
       <div class="max-h-[360px] overflow-auto p-6 lg:p-8">
-        <pre
+        <div
           v-show="activeTab === 'vue'"
           class="font-mono text-sm/7 whitespace-pre-wrap text-default"
-        >{{ vueCode }}</pre>
-        <pre
+        ><ComarkDocs :components="{ ProsePre: ProsePreRaw }">{{ '```vue\n' + vueCode + '\n```' }}</ComarkDocs></div>
+        <div
           v-show="activeTab === 'react'"
           class="font-mono text-sm/7 whitespace-pre-wrap text-default"
-        >{{ reactCode }}</pre>
+        ><ComarkDocs :components="{ ProsePre: ProsePreRaw }">{{ '```tsx\n' + reactCode + '\n```' }}</ComarkDocs></div>
       </div>
     </div>
   </div>
