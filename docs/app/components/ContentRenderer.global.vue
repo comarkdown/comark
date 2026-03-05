@@ -150,8 +150,9 @@ function resolveVueComponent(component: string | Renderable) {
     else if (localComponents.includes(pascalCase(component))) {
       const loader: AsyncComponentLoader = () => {
         return import('#content/components')
-          .then((m) => {
-            const comp = m[pascalCase(component) as keyof typeof m] as unknown as () => unknown
+          .then((m: any) => {
+            const loaders = m.localComponentLoaders || m
+            const comp = loaders[pascalCase(component)] as () => unknown
             return comp ? comp() : undefined
           })
       }

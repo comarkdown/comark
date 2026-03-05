@@ -18,25 +18,12 @@ const props = defineProps<{
     <div class="relative">
       <div class="grid items-center gap-8 p-8 md:p-12 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:gap-12">
         <div>
-          <div
-            class="hero-fade-in"
+          <h1
+            class="hero-fade-in mb-4 text-5xl font-bold tracking-tight text-highlighted md:text-6xl"
             style="--delay: 0s"
           >
-            <TypingText
-              :text="`# ${props.title}`"
-              tag="div"
-              :speed="100"
-              :resolve-delay="500"
-              :trigger-on-view="false"
-              class="mb-4"
-            >
-              <template #resolved>
-                <h1 class="text-5xl font-bold tracking-tight text-highlighted md:text-6xl">
-                  {{ props.title }}
-                </h1>
-              </template>
-            </TypingText>
-          </div>
+            {{ props.title }}
+          </h1>
 
           <div
             class="hero-fade-in"

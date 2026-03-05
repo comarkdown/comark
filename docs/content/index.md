@@ -15,6 +15,9 @@ title: Comark
 ---
 ::
 
+::landing-spacer
+::
+
 ::landing-features
 ---
 frameworksDescription: First-class support for both frameworks. Embed custom
@@ -34,6 +37,9 @@ streamingTitle: Real-time streaming
 ---
 ::
 
+::landing-spacer
+::
+
 ::landing-feature-auto-close
 ---
 description: Incomplete markdown syntax is automatically closed during
@@ -43,6 +49,9 @@ linkLabel: Learn more
 linkTo: /api/auto-close
 title: Auto-close
 ---
+::
+
+::landing-spacer
 ::
 
 ::landing-feature-plugins
@@ -117,7 +126,13 @@ title: Extensible plugins
 ---
 ::
 
+::landing-spacer
+::
+
 :landing-code{description="Install Comark and render your first markdown with components in just a few lines." headline="Quick start" title="Get started in seconds"}
+
+::landing-spacer
+::
 
 ::landing-cta
 ---
