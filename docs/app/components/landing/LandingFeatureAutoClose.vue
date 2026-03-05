@@ -31,7 +31,7 @@ let timer: ReturnType<typeof setTimeout> | null = null
 let observer: IntersectionObserver | null = null
 let hasStarted = false
 
-const current = computed(() => steps[currentStep.value]!)
+const current = computed(() => steps[currentStep.value] ?? steps[0]!)
 
 const autoClosedSuffix = computed(() => {
   const step = current.value

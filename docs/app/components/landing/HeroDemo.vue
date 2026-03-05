@@ -78,6 +78,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   if (timer) clearTimeout(timer)
+  if (highlightTimer) clearTimeout(highlightTimer)
 })
 </script>
 
@@ -164,9 +165,5 @@ onBeforeUnmount(() => {
 html.dark .shiki-source :deep(span) {
   color: var(--shiki-dark) !important;
   font-style: var(--shiki-dark-font-style) !important;
-}
-
-.hero-demo-prose :deep(.relative.group) {
-  margin: 0.75rem 0;
 }
 </style>

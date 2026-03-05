@@ -17,6 +17,10 @@ async function copy() {
   }
   catch { /* clipboard API may fail silently */ }
 }
+
+onBeforeUnmount(() => {
+  if (timer) clearTimeout(timer)
+})
 </script>
 
 <template>
