@@ -362,8 +362,8 @@ export const ComarkRenderer: ComarkRendererComponent = defineComponent({
       const nodes = toRaw(props.tree.nodes || []) || []
 
       if (props.streaming && caret.value && nodes.length > 0) {
-        const hasstramCaret = findLastTextNodeAndAppendNode(nodes[nodes.length - 1] as ComarkElement, caret.value)
-        if (!hasstramCaret) {
+        const hasStreamCaret = findLastTextNodeAndAppendNode(nodes[nodes.length - 1] as ComarkElement, caret.value)
+        if (!hasStreamCaret) {
           nodes.push(caret.value)
         }
       }
