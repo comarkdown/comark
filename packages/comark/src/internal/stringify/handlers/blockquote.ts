@@ -4,7 +4,7 @@ import type { ComarkElement, ComarkNode } from '../../../ast/types'
 export function blockquote(node: ComarkElement, state: State) {
   const children = node.slice(2) as ComarkNode[]
 
-  const content = children.map(child => state.one(child, state))
+  const content = children.map(child => state.one(child, state, node))
     .join('')
     .trim()
     .split('\n')
