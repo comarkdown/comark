@@ -20,8 +20,8 @@ description: My Description
 ```json
 {
   "frontmatter": {
-    "description": "My Description",
-    "title": "My Title"
+    "title": "My Title",
+    "description": "My Description"
   },
   "meta": {},
   "nodes": [
@@ -46,8 +46,8 @@ description: My Description
 
 ```md
 ---
-description: My Description
 title: My Title
+description: My Description
 ---
 
 # Content

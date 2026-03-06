@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeAll } from 'vitest'
 import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { parseFrontmatter } from '../src/internal/front-matter'
@@ -173,7 +173,9 @@ describe('Comark Tests', () => {
 
   testCases.forEach(({ file, testCase }) => {
     describe(file, () => {
-      it('should parse input to AST', { timeout: testCase.timeouts?.parse ?? 5000 }, async () => {
+      let parsedAST: Awaited<ReturnType<typeof parse>>
+
+      beforeAll(async () => {
         const plugins: ComarkPlugin[] = [cjk(), emoji()]
         if (testCase.options?.highlight) {
           const themes = {
@@ -191,31 +193,27 @@ describe('Comark Tests', () => {
             },
           }))
         }
-        const result = await parse(testCase.input, {
+        parsedAST = await parse(testCase.input, {
           autoUnwrap: false,
           ...testCase.options,
           plugins,
         })
-        const expectedAST = JSON.parse(testCase.ast)
+      }, testCase.timeouts?.parse ?? 5000)
 
-        expect(result).toEqual(expectedAST)
+      it('should parse input to AST', () => {
+        const expectedAST = JSON.parse(testCase.ast)
+        expect(parsedAST).toEqual(expectedAST)
       })
 
       it('should render AST to HTML', { timeout: testCase.timeouts?.html ?? 5000 }, () => {
-        const ast = JSON.parse(testCase.ast)
-        const result = renderHTML(ast)
+        const result = renderHTML(parsedAST)
         const expectedHTML = testCase.html.trim()
-
-        // Tests will fail until implementation is complete
         expect(result).toBe(expectedHTML)
       })
 
       it('should render AST to Markdown', { timeout: testCase.timeouts?.markdown ?? 5000 }, () => {
-        const ast = JSON.parse(testCase.ast)
-        const result = renderMarkdown(ast)
+        const result = renderMarkdown(parsedAST)
         const expectedMarkdown = testCase.markdown.trim()
-
-        // Tests will fail until implementation is complete
         expect(result).toBe(expectedMarkdown)
       })
     })
