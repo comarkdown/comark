@@ -8,8 +8,9 @@ timeout:
 ## Input
 
 ```md
-:::component
-:::
+::component
+Default slot content
+::
 ```
 
 ## AST
@@ -21,7 +22,12 @@ timeout:
   "nodes": [
     [
       "component",
-      {}
+      {},
+      [
+        "p",
+        {},
+        "Default slot content"
+      ]
     ]
   ]
 }
@@ -30,12 +36,15 @@ timeout:
 ## HTML
 
 ```html
-<component></component>
+<component>
+  <p>Default slot content</p>
+</component>
 ```
 
 ## Markdown
 
 ```md
 ::component
+Default slot content
 ::
 ```

@@ -8,13 +8,11 @@ timeout:
 ## Input
 
 ```md
-:no-sugar-syntax
-
 ::component
 #first
 First Paragraph
 
-#second
+#default
 Second Paragraph
 ::
 ```
@@ -26,10 +24,6 @@ Second Paragraph
   "frontmatter": {},
   "meta": {},
   "nodes": [
-    [
-      "no-sugar-syntax",
-      {}
-    ],
     [
       "component",
       {},
@@ -47,7 +41,7 @@ Second Paragraph
       [
         "template",
         {
-          "name": "second"
+          "name": "default"
         },
         [
           "p",
@@ -63,12 +57,11 @@ Second Paragraph
 ## HTML
 
 ```html
-<no-sugar-syntax></no-sugar-syntax>
 <component>
   <template name="first">
     <p>First Paragraph</p>
   </template>
-  <template name="second">
+  <template name="default">
     <p>Second Paragraph</p>
   </template>
 </component>
@@ -77,14 +70,11 @@ Second Paragraph
 ## Markdown
 
 ```md
-::no-sugar-syntax
-::
-
 ::component
 #first
 First Paragraph
 
-#second
+#default
 Second Paragraph
 ::
 ```

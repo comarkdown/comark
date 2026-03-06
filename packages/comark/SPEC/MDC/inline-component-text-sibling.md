@@ -8,8 +8,7 @@ timeout:
 ## Input
 
 ```md
-:::component
-:::
+inline :component syntax
 ```
 
 ## AST
@@ -20,8 +19,14 @@ timeout:
   "meta": {},
   "nodes": [
     [
-      "component",
-      {}
+      "p",
+      {},
+      "inline ",
+      [
+        "component",
+        {}
+      ],
+      " syntax"
     ]
   ]
 }
@@ -30,12 +35,13 @@ timeout:
 ## HTML
 
 ```html
-<component></component>
+<p>
+  inline <component></component> syntax
+</p>
 ```
 
 ## Markdown
 
 ```md
-::component
-::
+inline :component syntax
 ```

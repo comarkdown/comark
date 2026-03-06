@@ -56,7 +56,11 @@ options:
 ## Markdown
 
 ```md
-:alert[✅ Successfully deployed! 🚀]{type="success"}
+::alert{type="success"}
+✅ Successfully deployed! 🚀
+::
 
-:alert[⚠️ Please backup your data before proceeding]{type="warning"}
+::alert{type="warning"}
+⚠️ Please backup your data before proceeding
+::
 ```

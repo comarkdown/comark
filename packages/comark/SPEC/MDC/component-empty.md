@@ -36,5 +36,6 @@ timeout:
 ## Markdown
 
 ```md
-:component
+::component
+::
 ```
