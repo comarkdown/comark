@@ -30,7 +30,7 @@ This is a Comark component using MDC syntax.
 
 ### Code Block
 
-\`\`\`typescript
+\`\`\`ts [example.ts]
 import { parse } from 'comark'
 
 const tree = await parse('# Hello World')
@@ -45,4 +45,5 @@ console.log(tree.nodes)
 | Streaming | ✅      |
 | Vue       | ✅      |
 | React     | ✅      |
+
 `

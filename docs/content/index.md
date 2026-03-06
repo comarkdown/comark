@@ -15,7 +15,7 @@ demoMarkdown: |-
   - Vue & React components
   - Auto-close incomplete syntax
 
-  ::alert{type="info"}
+  ::callout{color="info" icon="i-lucide-info"}
   Comark handles **components in markdown** natively.
   ::
 
@@ -35,9 +35,6 @@ secondaryLabel: GitHub
 secondaryTo: https://github.com/comarkdown/comark
 title: Comark
 ---
-::
-
-::playground{compact}
 ::
 
 :landing-spacer

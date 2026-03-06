@@ -110,9 +110,9 @@ export function createParse(options: ParseOptions = {}): ComarkParseFn {
 
     if (opts.streaming) {
       state.tree = {
-        nodes: [...state.reusableNodes, ...nodes],
         frontmatter: state.parsedLines > 0 ? (prevOutput?.frontmatter ?? data) : data,
         meta: {},
+        nodes: [...state.reusableNodes, ...nodes],
       }
       // Set last output and input for streaming mode
       lastOutput = state.tree
@@ -120,9 +120,9 @@ export function createParse(options: ParseOptions = {}): ComarkParseFn {
     }
     else {
       state.tree = {
-        nodes,
         frontmatter: data,
         meta: {},
+        nodes,
       }
       // Reset last output and input for non-streaming mode
       lastOutput = null

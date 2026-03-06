@@ -75,7 +75,7 @@ async function copyCode() {
         :name="icon"
         class="size-4 shrink-0"
       />
-      <span class="text-default text-sm/6 font-mono">{{ displayName }}</span>
+      <span class="text-default text-sm font-mono">{{ displayName }}</span>
     </div>
 
     <UButton
@@ -88,7 +88,7 @@ async function copyCode() {
       @click="copyCode"
     />
 
-    <pre :class="['shiki-container !m-0 font-mono text-sm/6 border border-muted bg-muted overflow-x-auto px-4 py-3', hasHeader ? 'rounded-b-md rounded-t-none' : 'rounded-md']"><slot /></pre>
+    <pre :class="['shiki-container !m-0 font-mono text-sm border border-muted bg-muted overflow-x-auto px-4 py-3', hasHeader ? 'rounded-b-md rounded-t-none' : 'rounded-md']"><slot /></pre>
   </div>
 </template>
 

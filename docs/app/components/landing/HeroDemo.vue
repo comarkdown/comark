@@ -94,13 +94,12 @@ onBeforeUnmount(() => {
         <span class="ml-3 font-mono text-xs text-muted">comark — streaming</span>
       </div>
       <UButton
-        label="Replay"
-        icon="i-lucide-rotate-ccw"
-        variant="ghost"
+        label="Open in playground"
+        trailing-icon="i-lucide-arrow-right"
+        variant="subtle"
         color="neutral"
         size="xs"
-        :disabled="!hasPlayed || isStreaming"
-        @click="replay"
+        to="/play"
       />
     </div>
 
@@ -125,8 +124,18 @@ onBeforeUnmount(() => {
       </div>
 
       <div class="min-w-0">
-        <div class="border-b border-muted bg-muted px-4 py-2">
+        <div class="border-b border-muted bg-muted px-4 py-2 flex items-center justify-between">
           <span class="font-mono text-xs text-muted">rendered output</span>
+          <UButton
+            label="Replay"
+            icon="i-lucide-rotate-ccw"
+            variant="ghost"
+            color="neutral"
+            size="xs"
+            class="transition-opacity"
+            :class="{ 'opacity-0': !hasPlayed || isStreaming }"
+            @click="replay"
+          />
         </div>
         <div
           ref="renderedEl"
