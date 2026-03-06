@@ -5,6 +5,8 @@ timeout:
   markdown: 5ms
 options:
   autoUnwrap: true
+  plugins:
+    - emoji
 ---
 
 ## Input

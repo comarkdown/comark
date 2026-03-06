@@ -24,13 +24,13 @@ Write Markdown with component syntax and see the parsed AST in real-time.
 
 ### Component Syntax
 
-::note
+::callout{color="info" icon="i-lucide-info"}
 This is a Comark component using MDC syntax.
 ::
 
 ### Code Block
 
-\`\`\`typescript
+\`\`\`ts [example.ts]
 import { parse } from 'comark'
 
 const tree = await parse('# Hello World')
@@ -45,4 +45,5 @@ console.log(tree.nodes)
 | Streaming | ✅      |
 | Vue       | ✅      |
 | React     | ✅      |
+
 `

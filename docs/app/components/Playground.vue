@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { parse } from 'comark'
+import highlight from 'comark/plugins/highlight'
 import { renderMarkdown } from 'comark/string'
 import { ComarkRenderer } from 'comark/vue'
 import { Splitpanes, Pane } from 'splitpanes'
@@ -7,6 +8,7 @@ import { defaultMarkdown } from '~/constants'
 import { watchDebounced } from '@vueuse/core'
 import type { ComarkTree } from 'comark/ast'
 import { ProseCallout, ProseNote, ProseTip, ProseWarning, ProseCaution } from '#components'
+import ProsePre from './landing/ProsePre.vue'
 import VueJsonPretty from 'vue-json-pretty'
 
 const props = defineProps<{
@@ -19,6 +21,7 @@ const components = {
   tip: ProseTip,
   warning: ProseWarning,
   caution: ProseCaution,
+  pre: ProsePre,
 }
 
 const markdown = ref<string>(defaultMarkdown.trim())
@@ -68,11 +71,13 @@ async function parseMarkdown(): Promise<void> {
     return
   }
   parsing.value = true
+  const plugins = [highlight()]
   const start = performance.now()
   try {
     const result = await parse(markdown.value, {
       autoClose: true,
       autoUnwrap: true,
+      plugins,
     })
     tree.value = result
     parseTime.value = Math.round((performance.now() - start) * 10) / 10
@@ -88,7 +93,9 @@ async function parseMarkdown(): Promise<void> {
 }
 
 watchDebounced(markdown, parseMarkdown, { debounce: 300 })
-parseMarkdown()
+onMounted(() => {
+  nextTick(() => parseMarkdown())
+})
 
 function resetComark(): void {
   markdown.value = defaultMarkdown.trim()
@@ -111,7 +118,7 @@ const isMatch = computed(() =>
 <template>
   <div
     class="overflow-hidden"
-    :class="compact ? 'h-[420px] rounded-xl border border-default bg-elevated shadow-lg' : 'h-[calc(100vh-64px)]'"
+    :class="compact ? 'h-[420px] border-b border-default bg-elevated' : 'h-[calc(100vh-64px)]'"
   >
     <Splitpanes class="h-full">
       <!-- ── Left pane: Markdown editor ── -->
@@ -231,15 +238,12 @@ const isMatch = computed(() =>
               />
               <div
                 v-else-if="tree"
-                class="prose prose-sm dark:prose-invert max-w-none"
-                :style="compact ? { zoom: '0.85' } : {}"
+                class="prose prose-sm dark:prose-invert max-w-none prose-headings:no-underline"
               >
-                <Suspense>
-                  <ComarkRenderer
-                    :tree="tree"
-                    :components="components"
-                  />
-                </Suspense>
+                <ComarkRenderer
+                  :tree="tree"
+                  :components="components"
+                />
               </div>
             </UScrollArea>
           </div>
@@ -254,7 +258,7 @@ const isMatch = computed(() =>
               v-if="tree"
               :data="(tree as any)"
               :theme="isDark ? 'dark' : 'light'"
-              :deep="2"
+              :deep="6"
               show-line
             />
           </UScrollArea>
@@ -319,11 +323,19 @@ const isMatch = computed(() =>
 
 .vjs-tree-node.dark.is-highlight,
 .vjs-tree-node.dark:hover {
-  background-color: var(--color-primary-200) !important;
+  background-color: var(--color-primary-800) !important;
 }
 
 .vjs-tree-node .vjs-tree-node-actions,
 .vjs-tree-node.dark .vjs-tree-node-actions {
   background-color: var(--color-primary-200) !important;
+}
+
+.vjs-tree-node .vjs-indent-unit.has-line {
+  border-left-color: var(--ui-border);
+}
+
+.vjs-tree-node .vjs-tree-brackets:hover {
+  color: var(--ui-primary);
 }
 </style>

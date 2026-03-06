@@ -119,7 +119,7 @@ const data = computed(() => {
   }
 })
 
-const proseComponentMap = Object.fromEntries(['p', 'a', 'blockquote', 'code', 'pre', 'code', 'em', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'hr', 'img', 'ul', 'ol', 'li', 'strong', 'table', 'thead', 'tbody', 'td', 'th', 'tr', 'script'].map(t => [t, `prose-${t}`]))
+const proseComponentMap = Object.fromEntries(['p', 'a', 'blockquote', 'code', 'pre', 'em', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'hr', 'img', 'ul', 'ol', 'li', 'strong', 'table', 'thead', 'tbody', 'td', 'th', 'tr', 'script'].map(t => [t, `prose-${t}`]))
 
 const { mdc } = useRuntimeConfig().public || {}
 const propsDataMDC = computed(() => props.data.mdc)
@@ -149,8 +149,9 @@ function resolveVueComponent(component: string | Renderable) {
     else if (localComponents.includes(pascalCase(component))) {
       const loader: AsyncComponentLoader = () => {
         return import('#content/components')
-          .then((m) => {
-            const comp = m[pascalCase(component) as keyof typeof m] as unknown as () => unknown
+          .then((m: any) => {
+            const loaders = m.localComponentLoaders || m
+            const comp = loaders[pascalCase(component)] as () => unknown
             return comp ? comp() : undefined
           })
       }

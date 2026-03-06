@@ -12,13 +12,11 @@ export function getCaret(options: boolean | CaretOptions): ComarkElement | null 
     return ['span', { key: 'stream-caret', style: CARET_STYLE }, CARET_TEXT]
   }
   if (typeof options === 'object') {
-    const userClass = options?.class || ''
     return [
       'span',
       {
         key: 'stream-caret',
-        style: CARET_STYLE,
-        ...(userClass ? { class: userClass } : {}),
+        ...(options.class ? { class: options.class } : { style: CARET_STYLE }),
       },
       CARET_TEXT,
     ]
