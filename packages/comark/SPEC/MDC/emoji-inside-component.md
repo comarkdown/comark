@@ -3,6 +3,9 @@ timeout:
   parse: 5ms
   html: 5ms
   markdown: 5ms
+options:
+  plugins:
+    - emoji
 ---
 
 ## Input

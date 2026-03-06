@@ -14,6 +14,14 @@ import minLight from '@shikijs/themes/min-light'
 import nord from '@shikijs/themes/nord'
 import rustLanguage from '@shikijs/langs/rust'
 import goLanguage from '@shikijs/langs/go'
+import type { ParseOptions } from '../src/types'
+
+type PluginName = 'cjk' | 'emoji'
+
+const pluginRegistry: Record<PluginName, () => ComarkPlugin> = {
+  cjk,
+  emoji,
+}
 
 interface TestCase {
   input: string
@@ -27,6 +35,8 @@ interface TestCase {
   }
   options?: {
     highlight?: HighlightOptions
+    plugins?: PluginName[]
+    autoUnwrap?: boolean
   }
 }
 
@@ -176,7 +186,9 @@ describe('Comark Tests', () => {
       let parsedAST: Awaited<ReturnType<typeof parse>>
 
       beforeAll(async () => {
-        const plugins: ComarkPlugin[] = [cjk(), emoji()]
+        const declaredPlugins = testCase.options?.plugins ?? []
+        const plugins: ComarkPlugin[] = declaredPlugins.map(name => pluginRegistry[name]())
+
         if (testCase.options?.highlight) {
           const themes = {
             'min-light': minLight,
@@ -193,11 +205,17 @@ describe('Comark Tests', () => {
             },
           }))
         }
-        parsedAST = await parse(testCase.input, {
-          autoUnwrap: false,
-          ...testCase.options,
-          plugins,
-        })
+
+        const parseOptions: ParseOptions = {
+          autoUnwrap: testCase.options?.autoUnwrap ?? false,
+          ...testCase.options?.highlight ? { highlight: testCase.options.highlight } : {},
+        }
+
+        if (plugins.length > 0) {
+          parseOptions.plugins = plugins
+        }
+
+        parsedAST = await parse(testCase.input, parseOptions)
       }, testCase.timeouts?.parse ?? 5000)
 
       it('should parse input to AST', () => {
