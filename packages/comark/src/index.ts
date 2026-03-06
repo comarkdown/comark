@@ -55,7 +55,7 @@ export function createParse(options: ParseOptions = {}): ComarkParseFn {
     .enable(['table', 'strikethrough'])
     .use(pluginMdc)
 
-  for (const plugin of options.plugins || []) {
+  for (const plugin of plugins) {
     for (const markdownItPlugin of (plugin.markdownItPlugins || [])) {
       parser.use(markdownItPlugin)
     }
