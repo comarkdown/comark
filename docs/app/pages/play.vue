@@ -2,6 +2,9 @@
 definePageMeta({
   footer: false,
 })
+defineOgImageComponent('Docs', {
+  headline: 'Playground',
+})
 </script>
 
 <template>

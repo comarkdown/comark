@@ -60,6 +60,9 @@ useSeoMeta({
   title: `${page.value?.title || exampleName.value} Example`,
   description: page.value?.description,
 })
+defineOgImageComponent('Docs', {
+  headline: 'Examples',
+})
 </script>
 
 <template>

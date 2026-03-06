@@ -10,7 +10,7 @@ const { data: page } = await useAsyncData('index', () =>
 useSeoMeta({
   title: 'Comark - Components in Markdown',
   description: 'Fast, streaming-ready markdown parser with Vue and React component support. Parse Comark content from strings or streams with TypeScript support.',
-  ogImage: '/social-card.png',
+  ogImage: '/social-card.jpg',
 })
 
 useHead({

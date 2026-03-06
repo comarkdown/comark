@@ -8,7 +8,7 @@ const markdown = ref(`
 seo:
   title: Big Markdown Example — Components, Code, Lists, Tables!
   description: Showcase of Markdown, MDC components, code blocks, lists, tables, and more using Comark.
-  ogImage: '/social-card.png'
+  ogImage: '/social-card.jpg'
 ---
 
 # Comark Playground
@@ -17,7 +17,7 @@ Try out a large markdown sample mixing **all the features**!
 
 ::u-alert{type="info"}
 #title
-This is an info alert!  
+This is an info alert!
 You can put markdown **inside** MDC components.
 ::
 
@@ -39,12 +39,12 @@ You can put markdown **inside** MDC components.
 
 ## Headings
 
-# h1  
-## h2  
-### h3  
-#### h4  
-##### h5  
-###### h6  
+# h1
+## h2
+### h3
+#### h4
+##### h5
+###### h6
 
 ---
 
@@ -104,7 +104,7 @@ x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}
 
 - Bullet item 1
 - Bullet item 2
-  - Nested _item_  
+  - Nested _item_
 - Bullet: **Markdown works!**
 1. Numbered one
 2. Numbered two

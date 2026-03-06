@@ -8,6 +8,9 @@ import resolveComponent from '../utils/components-manifest'
 definePageMeta({
   footer: false,
 })
+defineOgImageComponent('Docs', {
+  headline: 'Streaming',
+})
 
 const { state, startStream, isStreaming, reset: resetStream } = useMDCStream({
   onChunk: (_chunk: string) => {
