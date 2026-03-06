@@ -3,18 +3,20 @@ timeout:
   parse: 5ms
   html: 5ms
   markdown: 5ms
+options:
+  autoUnwrap: false
 ---
 
 ## Input
 
 ```md
-::component
-#first
+:::component
 First Paragraph
 
-#default
-Second Paragraph
-::
+  ::child
+  Second Paragraph
+  ::
+:::
 ```
 
 ## AST
@@ -28,18 +30,18 @@ Second Paragraph
       "component",
       {},
       [
-        "template",
-        {
-          "name": "first"
-        },
+        "p",
+        {},
         "First Paragraph"
       ],
       [
-        "template",
-        {
-          "name": "default"
-        },
-        "Second Paragraph"
+        "child",
+        {},
+        [
+          "p",
+          {},
+          "Second Paragraph"
+        ]
       ]
     ]
   ]
@@ -50,12 +52,10 @@ Second Paragraph
 
 ```html
 <component>
-  <template name="first">
-    First Paragraph
-  </template>
-  <template name="default">
-    Second Paragraph
-  </template>
+  <p>First Paragraph</p>
+  <child>
+    <p>Second Paragraph</p>
+  </child>
 </component>
 ```
 
@@ -63,10 +63,10 @@ Second Paragraph
 
 ```md
 ::component
-#first
 First Paragraph
 
-#default
-Second Paragraph
+  :::child
+  Second Paragraph
+  :::
 ::
 ```

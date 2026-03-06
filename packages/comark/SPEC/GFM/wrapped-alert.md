@@ -3,6 +3,8 @@ timeout:
   parse: 15ms
   html: 5ms
   markdown: 5ms
+options:
+  autoUnwrap: false
 ---
 
 ## Input
@@ -23,7 +25,7 @@ timeout:
 > [!WARNING]
 > Urgent info that needs immediate user attention to avoid problems.
 >
-> Stay sheltered. Don’t leave your home. It’s very dangerous outside. Bombs will be dropping everywhere.
+> Stay sheltered. Don't leave your home. It's very dangerous outside. Bombs will be dropping everywhere.
 ```
 
 ## AST
@@ -38,28 +40,44 @@ timeout:
       {
         "as": "caution"
       },
-      "Advises about risks or negative outcomes of certain actions."
+      [
+        "p",
+        {},
+        "Advises about risks or negative outcomes of certain actions."
+      ]
     ],
     [
       "blockquote",
       {
         "as": "important"
       },
-      "Key information users need to know to achieve their goal."
+      [
+        "p",
+        {},
+        "Key information users need to know to achieve their goal."
+      ]
     ],
     [
       "blockquote",
       {
         "as": "note"
       },
-      "Useful information that users should know, even when skimming content."
+      [
+        "p",
+        {},
+        "Useful information that users should know, even when skimming content."
+      ]
     ],
     [
       "blockquote",
       {
         "as": "tip"
       },
-      "Helpful advice for doing things better or more easily."
+      [
+        "p",
+        {},
+        "Helpful advice for doing things better or more easily."
+      ]
     ],
     [
       "blockquote",
@@ -74,7 +92,7 @@ timeout:
       [
         "p",
         {},
-        "Stay sheltered. Don’t leave your home. It’s very dangerous outside. Bombs will be dropping everywhere."
+        "Stay sheltered. Don't leave your home. It's very dangerous outside. Bombs will be dropping everywhere."
       ]
     ]
   ]
@@ -85,20 +103,20 @@ timeout:
 
 ```html
 <blockquote as="caution">
-  Advises about risks or negative outcomes of certain actions.
+  <p>Advises about risks or negative outcomes of certain actions.</p>
 </blockquote>
 <blockquote as="important">
-  Key information users need to know to achieve their goal.
+  <p>Key information users need to know to achieve their goal.</p>
 </blockquote>
 <blockquote as="note">
-  Useful information that users should know, even when skimming content.
+  <p>Useful information that users should know, even when skimming content.</p>
 </blockquote>
 <blockquote as="tip">
-  Helpful advice for doing things better or more easily.
+  <p>Helpful advice for doing things better or more easily.</p>
 </blockquote>
 <blockquote as="warning">
   <p>Urgent info that needs immediate user attention to avoid problems.</p>
-  <p>Stay sheltered. Don’t leave your home. It’s very dangerous outside. Bombs will be dropping everywhere.</p>
+  <p>Stay sheltered. Don't leave your home. It's very dangerous outside. Bombs will be dropping everywhere.</p>
 </blockquote>
 ```
 
@@ -120,5 +138,5 @@ timeout:
 > [!WARNING]
 > Urgent info that needs immediate user attention to avoid problems.
 >
-> Stay sheltered. Don’t leave your home. It’s very dangerous outside. Bombs will be dropping everywhere.
+> Stay sheltered. Don't leave your home. It's very dangerous outside. Bombs will be dropping everywhere.
 ```

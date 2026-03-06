@@ -3,6 +3,8 @@ timeout:
   parse: 5ms
   html: 5ms
   markdown: 5ms
+options:
+  autoUnwrap: false
 ---
 
 ## Input
@@ -21,7 +23,11 @@ timeout:
     [
       "blockquote",
       {},
-      "This is a simple blockquote"
+      [
+        "p",
+        {},
+        "This is a simple blockquote"
+      ]
     ]
   ]
 }
@@ -31,7 +37,7 @@ timeout:
 
 ```html
 <blockquote>
-  This is a simple blockquote
+  <p>This is a simple blockquote</p>
 </blockquote>
 ```
 
@@ -40,4 +46,3 @@ timeout:
 ```md
 > This is a simple blockquote
 ```
-

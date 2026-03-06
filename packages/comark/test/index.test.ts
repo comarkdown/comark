@@ -207,8 +207,7 @@ describe('Comark Tests', () => {
         }
 
         const parseOptions: ParseOptions = {
-          autoUnwrap: testCase.options?.autoUnwrap ?? false,
-          ...testCase.options?.highlight ? { highlight: testCase.options.highlight } : {},
+          autoUnwrap: testCase.options?.autoUnwrap === false ? false : true,
         }
 
         if (plugins.length > 0) {

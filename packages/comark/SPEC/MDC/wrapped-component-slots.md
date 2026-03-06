@@ -3,6 +3,8 @@ timeout:
   parse: 5ms
   html: 5ms
   markdown: 5ms
+options:
+  autoUnwrap: false
 ---
 
 ## Input
@@ -12,7 +14,7 @@ timeout:
 #first
 First Paragraph
 
-#default
+#second
 Second Paragraph
 ::
 ```
@@ -32,14 +34,22 @@ Second Paragraph
         {
           "name": "first"
         },
-        "First Paragraph"
+        [
+          "p",
+          {},
+          "First Paragraph"
+        ]
       ],
       [
         "template",
         {
-          "name": "default"
+          "name": "second"
         },
-        "Second Paragraph"
+        [
+          "p",
+          {},
+          "Second Paragraph"
+        ]
       ]
     ]
   ]
@@ -51,10 +61,10 @@ Second Paragraph
 ```html
 <component>
   <template name="first">
-    First Paragraph
+    <p>First Paragraph</p>
   </template>
-  <template name="default">
-    Second Paragraph
+  <template name="second">
+    <p>Second Paragraph</p>
   </template>
 </component>
 ```
@@ -66,7 +76,7 @@ Second Paragraph
 #first
 First Paragraph
 
-#default
+#second
 Second Paragraph
 ::
 ```

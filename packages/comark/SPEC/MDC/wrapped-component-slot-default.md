@@ -3,13 +3,14 @@ timeout:
   parse: 5ms
   html: 5ms
   markdown: 5ms
+options:
+  autoUnwrap: false
 ---
 
 ## Input
 
 ```md
 ::component
-#default
 Default slot content
 ::
 ```
@@ -25,10 +26,8 @@ Default slot content
       "component",
       {},
       [
-        "template",
-        {
-          "name": "default"
-        },
+        "p",
+        {},
         "Default slot content"
       ]
     ]
@@ -40,9 +39,7 @@ Default slot content
 
 ```html
 <component>
-  <template name="default">
-    Default slot content
-  </template>
+  <p>Default slot content</p>
 </component>
 ```
 

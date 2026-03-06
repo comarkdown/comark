@@ -3,17 +3,16 @@ timeout:
   parse: 5ms
   html: 5ms
   markdown: 5ms
+options:
+  autoUnwrap: false
 ---
 
 ## Input
 
 ```md
 ::component
-#first
-First Paragraph
-
 #default
-Second Paragraph
+Default slot content
 ::
 ```
 
@@ -30,16 +29,13 @@ Second Paragraph
       [
         "template",
         {
-          "name": "first"
-        },
-        "First Paragraph"
-      ],
-      [
-        "template",
-        {
           "name": "default"
         },
-        "Second Paragraph"
+        [
+          "p",
+          {},
+          "Default slot content"
+        ]
       ]
     ]
   ]
@@ -50,11 +46,8 @@ Second Paragraph
 
 ```html
 <component>
-  <template name="first">
-    First Paragraph
-  </template>
   <template name="default">
-    Second Paragraph
+    <p>Default slot content</p>
   </template>
 </component>
 ```
@@ -63,10 +56,6 @@ Second Paragraph
 
 ```md
 ::component
-#first
-First Paragraph
-
-#default
-Second Paragraph
+Default slot content
 ::
 ```

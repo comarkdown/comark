@@ -4,6 +4,7 @@ timeout:
   html: 5ms
   markdown: 5ms
 options:
+  autoUnwrap: false
   plugins:
     - emoji
 ---
@@ -30,12 +31,20 @@ options:
     [
       "alert",
       { "type": "success" },
-      "✅ Successfully deployed! 🚀"
+      [
+        "p",
+        {},
+        "✅ Successfully deployed! 🚀"
+      ]
     ],
     [
       "alert",
       { "type": "warning" },
-      "⚠️ Please backup your data before proceeding"
+      [
+        "p",
+        {},
+        "⚠️ Please backup your data before proceeding"
+      ]
     ]
   ]
 }
@@ -45,10 +54,10 @@ options:
 
 ```html
 <alert type="success">
-  ✅ Successfully deployed! 🚀
+  <p>✅ Successfully deployed! 🚀</p>
 </alert>
 <alert type="warning">
-  ⚠️ Please backup your data before proceeding
+  <p>⚠️ Please backup your data before proceeding</p>
 </alert>
 ```
 

@@ -3,18 +3,24 @@ timeout:
   parse: 5ms
   html: 5ms
   markdown: 5ms
+options:
+  autoUnwrap: false
 ---
 
 ## Input
 
 ```md
-:::component
+::component
 First Paragraph
 
-  ::child
+  :::child
   Second Paragraph
-  ::
-:::
+
+    ::::grand-child
+    Third Paragraph
+    ::::
+  :::
+::
 ```
 
 ## AST
@@ -35,7 +41,20 @@ First Paragraph
       [
         "child",
         {},
-        "Second Paragraph"
+        [
+          "p",
+          {},
+          "Second Paragraph"
+        ],
+        [
+          "grand-child",
+          {},
+          [
+            "p",
+            {},
+            "Third Paragraph"
+          ]
+        ]
       ]
     ]
   ]
@@ -48,7 +67,10 @@ First Paragraph
 <component>
   <p>First Paragraph</p>
   <child>
-    Second Paragraph
+    <p>Second Paragraph</p>
+    <grand-child>
+      <p>Third Paragraph</p>
+    </grand-child>
   </child>
 </component>
 ```
@@ -61,6 +83,10 @@ First Paragraph
 
   :::child
   Second Paragraph
+
+    ::::grand-child
+    Third Paragraph
+    ::::
   :::
 ::
 ```
