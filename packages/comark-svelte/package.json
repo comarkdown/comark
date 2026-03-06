@@ -53,9 +53,11 @@
     "svelte": "^5.0.0"
   },
   "dependencies": {
-    "@comark/math": "workspace:^1.0.0",
-    "@comark/mermaid": "workspace:^1.0.0",
-    "comark": "workspace:^1.0.0",
+    "@comark/math": "workspace:*",
+    "@comark/mermaid": "workspace:*",
+    "beautiful-mermaid": "^1.1.3",
+    "comark": "workspace:*",
+    "katex": "^0.16.33",
     "scule": "^1.3.0"
   },
   "devDependencies": {
