@@ -25,7 +25,6 @@ export function comarkAttributes(attributes: Record<string, unknown>) {
 
       return `${key}="${value}"`
     })
-
     .join(' ')
 
   return attrs.length > 0 ? `{${attrs}}` : ''

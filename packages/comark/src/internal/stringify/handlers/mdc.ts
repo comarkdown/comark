@@ -5,7 +5,8 @@ import { comarkAttributes, comarkYamlAttributes } from '../attributes'
 import { html } from './html'
 
 export function mdc(node: ComarkElement, state: State, parent?: ComarkElement) {
-  const [tag, attributes, ...children] = node
+  const [tag, attr, ...children] = node
+  const { $comark, ...attributes } = attr
 
   if (tag === 'table') {
     return html(node, state)
@@ -14,7 +15,7 @@ export function mdc(node: ComarkElement, state: State, parent?: ComarkElement) {
   const attributeEntries = Object.entries(attributes)
   const hasObjectAttributes = attributeEntries.some(([, value]) => typeof value === 'object')
   // if component has only text children, it is inline
-  let inline = children.every((child: ComarkNode) => typeof child === 'string')
+  let inline = false // children.every((child: ComarkNode) => typeof child === 'string')
 
   // if component has object attributes, it is not inline
   if (hasObjectAttributes) {

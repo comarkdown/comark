@@ -9,7 +9,8 @@ const inlineTags = new Set(['strong', 'em', 'code', 'a', 'br', 'span', 'img'])
 const blockTags = new Set(['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'li', 'ul', 'ol', 'blockquote', 'hr', 'table', 'td', 'th'])
 
 export function html(node: ComarkElement, state: State, parent?: ComarkElement) {
-  const [tag, attributes, ...children] = node
+  const [tag, attr, ...children] = node
+  const { $comark, ...attributes } = attr
 
   const hasOnlyTextChildren = children.every(child => typeof child === 'string' || inlineTags.has(String(child?.[0])))
   const hasTextSibling = children.some(child => typeof child === 'string')
@@ -33,7 +34,7 @@ export function html(node: ComarkElement, state: State, parent?: ComarkElement) 
   const isSelfClose = selfCloseTags.has(String(tag))
 
   // Do not modify context if we are already in html mode
-  const revert = state.applyContext({ html: true, inline: oneLiner })
+  const revert = state.applyContext({ inline: oneLiner })
 
   const childrenContent = children.map(child => state.one(child, state, node))
 

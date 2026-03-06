@@ -58,6 +58,9 @@
       "optional": true
     }
   },
+  "dependencies": {
+    "htmlparser2": "^9.0.0"
+  },
   "devDependencies": {
     "@comark/cjk": "workspace:*",
     "@comark/markdown-it": "^0.3.1",

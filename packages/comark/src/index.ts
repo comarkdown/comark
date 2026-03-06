@@ -102,6 +102,18 @@ export function createParse(options: ParseOptions = {}): ComarkParseFn {
     let nodes = marmdownItTokensToComarkTree(state.tokens, {
       startLine: state.parsedLines,
       preservePositions: opts.streaming ?? false,
+      parseInlineMarkdown: (text: string) => {
+        const blockTokens = parser.parse(text, {})
+        // Always unwrap single-paragraph wrappers from inner content — they are
+        // an artifact of block-parsing text that lives inside an HTML element
+        let blockNodes = marmdownItTokensToComarkTree(blockTokens, { startLine: 0, preservePositions: false })
+          .map(node => applyAutoUnwrap(node))
+        // Single paragraph → unwrap to bare inline children (e.g. "Hello **World**")
+        if (blockNodes.length === 1 && Array.isArray(blockNodes[0]) && blockNodes[0][0] === 'p') {
+          return blockNodes[0].slice(2) as ComarkNode[]
+        }
+        return blockNodes
+      },
     })
 
     if (autoUnwrap) {
