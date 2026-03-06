@@ -147,10 +147,6 @@ title: Extensible plugins
 
 :landing-spacer
 
-:landing-code{description="Install Comark and render your first markdown with components in just a few lines." headline="Quick start" title="Get started in seconds"}
-
-:landing-spacer
-
 ::landing-cta
 ---
 footerSections:
@@ -189,7 +185,7 @@ footerSections:
         to: https://github.com/comarkdown/comark/blob/main/LICENSE
         external: true
 description: Add rich, interactive components to your markdown today.
-footerCopyright: © 2025 Comark. Released under the MIT License.
+footerCopyright: © 2026 Comark. Released under the MIT License.
 footerDescription: A fast, streaming-ready markdown parser with component
   support for Vue and React.
 githubUrl: https://github.com/comarkdown/comark
