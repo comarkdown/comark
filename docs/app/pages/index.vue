@@ -38,7 +38,7 @@ useHead({
   .landing-page header[data-slot="root"] > div {
     max-width: var(--ui-container);
     margin-inline: auto;
-    border-inline: 1px solid var(--ui-border);
+    box-shadow: inset 1px 0 0 var(--ui-border), inset -1px 0 0 var(--ui-border);
   }
 }
 </style>
