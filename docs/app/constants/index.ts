@@ -24,7 +24,7 @@ Write Markdown with component syntax and see the parsed AST in real-time.
 
 ### Component Syntax
 
-::note
+::callout{color="info" icon="i-lucide-info"}
 This is a Comark component using MDC syntax.
 ::
 
