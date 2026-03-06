@@ -5,7 +5,7 @@ import { comarkAttributes } from '../attributes'
 export function emphesis(node: ComarkElement, state: State) {
   const [_, attrs, ...children] = node
 
-  const content = children.map(child => state.one(child, state))
+  const content = children.map(child => state.one(child, state, node))
     .join('')
     .trim()
 
