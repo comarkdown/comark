@@ -8,6 +8,10 @@ import resolveComponent from '../utils/components-manifest'
 definePageMeta({
   footer: false,
 })
+useSeoMeta({
+  title: 'Streaming Demo - Comark',
+  description: 'See Comark streaming in action. Watch markdown content parse and render in real-time as it arrives.',
+})
 defineOgImageComponent('Docs', {
   headline: 'Streaming',
 })

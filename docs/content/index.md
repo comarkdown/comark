@@ -165,11 +165,11 @@ footerSections:
       - label: Syntax Highlighting
         to: /plugins/core/highlight
       - label: Math
-        to: /plugins/community/math
+        to: /plugins/external/math
       - label: CJK
-        to: /plugins/community/cjk
+        to: /plugins/external/cjk
       - label: Mermaid
-        to: /plugins/community/mermaid
+        to: /plugins/external/mermaid
   - title: Community
     links:
       - label: GitHub
