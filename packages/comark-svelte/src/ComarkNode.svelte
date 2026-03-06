@@ -33,8 +33,8 @@ naturally appears inline after the deepest trailing text node.
   } = $props()
 
   const CARET_TEXT = '\u2009'
-  const CARET_STYLE =
-    'background-color: currentColor; display: inline-block; margin-left: 0.25rem; margin-right: 0.25rem; animation: pulse 0.75s cubic-bezier(0.4,0,0.6,1) infinite;'
+  const CARET_STYLE
+    = 'background-color: currentColor; display: inline-block; margin-left: 0.25rem; margin-right: 0.25rem; animation: pulse 0.75s cubic-bezier(0.4,0,0.6,1) infinite;'
 
   function parsePropValue(value: string): any {
     if (value === 'true') return true
@@ -42,57 +42,67 @@ naturally appears inline after the deepest trailing text node.
     if (value === 'null') return null
     try {
       return JSON.parse(value)
-    } catch {
+    }
+    catch {
       return value
     }
   }
 
-  let { isText, tag, children, Component, mappedProps } = $derived.by(() => {
+  const VOID_ELEMENTS = new Set([
+    'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input',
+    'link', 'meta', 'param', 'source', 'track', 'wbr',
+  ])
+
+  let { isText, tag, isVoid, children, Component, mappedProps } = $derived.by(() => {
     let isText = false
     let tag: string | null = null
+    let isVoid = false
     let children: ComarkNodeType[] = []
     let Component: any = null
     let mappedProps: Record<string, any> = {}
 
     if (typeof node === 'string') {
       isText = true
-      return { isText, tag, children, Component, mappedProps }
+      return { isText, tag, isVoid, children, Component, mappedProps }
     }
 
     if (!Array.isArray(node) || node.length < 1) {
-      return { isText, tag, children, Component, mappedProps }
+      return { isText, tag, isVoid, children, Component, mappedProps }
     }
 
     // Comment nodes have null as the tag
     if (node[0] === null) {
-      return { isText, tag, children, Component, mappedProps }
+      return { isText, tag, isVoid, children, Component, mappedProps }
     }
 
     tag = node[0] as string
-    const nodeProps: Record<string, any> =
-      (node.length >= 2 ? node[1] : {}) ?? {}
+    isVoid = VOID_ELEMENTS.has(tag)
+    const nodeProps: Record<string, any>
+      = (node.length >= 2 ? node[1] : {}) ?? {}
     children = node.length > 2 ? (node.slice(2) as ComarkNodeType[]) : []
 
     // Resolve custom component: check Prose{PascalTag}, PascalTag, then raw tag
     const pascal = pascalCase(tag)
-    Component =
-      components[`Prose${pascal}`] ||
-      components[pascal] ||
-      components[tag] ||
-      null
+    Component
+      = components[`Prose${pascal}`]
+        || components[pascal]
+        || components[tag]
+        || null
 
     // Map props: className → class, :prefix → parsed value, rest pass through
     for (const k in nodeProps) {
       if (k === 'className') {
         mappedProps.class = nodeProps[k]
-      } else if (k.charCodeAt(0) === 58 /* ':' */) {
+      }
+      else if (k.charCodeAt(0) === 58 /* ':' */) {
         mappedProps[k.substring(1)] = parsePropValue(nodeProps[k])
-      } else {
+      }
+      else {
         mappedProps[k] = nodeProps[k]
       }
     }
 
-    return { isText, tag, children, Component, mappedProps }
+    return { isText, tag, isVoid, children, Component, mappedProps }
   })
 </script>
 
@@ -112,6 +122,8 @@ naturally appears inline after the deepest trailing text node.
       />
     {/each}
   </Component>
+{:else if isVoid}
+  <svelte:element this={tag} {...mappedProps} />
 {:else if tag}
   <svelte:element this={tag} {...mappedProps}>
     {#each children as child, i (i)}

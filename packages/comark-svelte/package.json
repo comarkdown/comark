@@ -19,6 +19,18 @@
     ".": {
       "types": "./dist/index.d.ts",
       "svelte": "./dist/index.js"
+    },
+    "./async": {
+      "types": "./dist/async/index.d.ts",
+      "svelte": "./dist/async/index.js"
+    },
+    "./plugin-math": {
+      "types": "./dist/plugin-math/index.d.ts",
+      "svelte": "./dist/plugin-math/index.js"
+    },
+    "./plugin-mermaid": {
+      "types": "./dist/plugin-mermaid/index.d.ts",
+      "svelte": "./dist/plugin-mermaid/index.js"
     }
   },
   "files": [
@@ -41,7 +53,9 @@
     "svelte": "^5.0.0"
   },
   "dependencies": {
-    "comark": "workspace:*",
+    "@comark/math": "workspace:^1.0.0",
+    "@comark/mermaid": "workspace:^1.0.0",
+    "comark": "workspace:^1.0.0",
     "scule": "^1.3.0"
   },
   "devDependencies": {

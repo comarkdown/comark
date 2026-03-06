@@ -57,7 +57,10 @@ This is an alert component
   let appliedVersion = 0
   $effect(() => {
     const currentVersion = ++requestVersion
-    parse(content, { ...options, plugins }).then((result) => {
+    // `parse` directly mutates `plugins` which creates an infinite effect loop
+    // so we copy it before passing it in so it gets a regular JS array and we get to still
+    // track dependencies from an external perspective
+    parse(content, { ...options, plugins: [...plugins] }).then((result) => {
       if (currentVersion > appliedVersion) {
         appliedVersion = currentVersion
         parsed = result

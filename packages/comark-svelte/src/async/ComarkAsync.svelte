@@ -9,7 +9,7 @@ and wrap this component in a `<svelte:boundary>` for pending/error states.
 @example
 ```svelte
 <script>
-  import { ComarkAsync } from '@comark/svelte'
+  import { ComarkAsync } from '@comark/svelte/async'
   import Alert from './Alert.svelte'
 
   let content = $state('# Hello World')
@@ -30,7 +30,7 @@ and wrap this component in a `<svelte:boundary>` for pending/error states.
 <script lang="ts">
   import type { ComarkPlugin, ComponentManifest } from 'comark'
   import { parse } from 'comark'
-  import ComarkRenderer from './ComarkRenderer.svelte'
+  import ComarkRenderer from '../ComarkRenderer.svelte'
 
   let {
     markdown = '',
@@ -53,7 +53,12 @@ and wrap this component in a `<svelte:boundary>` for pending/error states.
   } = $props()
 
   let content = $derived((markdown || '').trim())
-  let parsed = $derived(await parse(content, { ...options, plugins }))
+  let parsed = $derived(
+    // `parse` directly mutates `plugins` which creates an infinite effect loop
+    // so we copy it before passing it in so it gets a regular JS array and we get to still
+    // track dependencies from an external perspective
+    await parse(content, { ...options, plugins: [...plugins] }),
+  )
 </script>
 
 <ComarkRenderer

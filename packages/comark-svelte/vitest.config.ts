@@ -4,6 +4,9 @@ import { playwright } from '@vitest/browser-playwright'
 
 export default defineConfig({
   plugins: [svelte()],
+  optimizeDeps: {
+    include: ['katex', 'beautiful-mermaid'],
+  },
   test: {
     projects: [
       {

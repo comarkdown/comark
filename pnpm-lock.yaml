@@ -554,8 +554,14 @@ importers:
 
   packages/comark-svelte:
     dependencies:
+      '@comark/math':
+        specifier: workspace:^1.0.0
+        version: link:../comark-math
+      '@comark/mermaid':
+        specifier: workspace:^1.0.0
+        version: link:../comark-mermaid
       comark:
-        specifier: workspace:*
+        specifier: workspace:^1.0.0
         version: link:../comark
       scule:
         specifier: ^1.3.0

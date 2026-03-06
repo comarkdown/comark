@@ -281,7 +281,7 @@ Usage with `<svelte:boundary>`:
 
 ```svelte
 <script lang="ts">
-  import { ComarkAsync } from '@comark/svelte'
+  import { ComarkAsync } from '@comark/svelte/async'
 </script>
 
 <svelte:boundary>

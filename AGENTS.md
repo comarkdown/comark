@@ -271,7 +271,10 @@ import { Comark } from 'comark/vue'
 import { Comark } from 'comark/react'
 
 // Svelte components
-import { Comark, ComarkAsync, ComarkRenderer } from '@comark/svelte'
+import { Comark, ComarkRenderer } from '@comark/svelte'
+import { ComarkAsync } from '@comark/svelte/async' // requires experimental.async
+import { math, Math } from '@comark/svelte/plugin-math'
+import { mermaid, Mermaid } from '@comark/svelte/plugin-mermaid'
 ```
 
 ## Coding Principles
@@ -441,7 +444,7 @@ Accepts markdown string, handles parsing internally.
 
 ```svelte
 <script>
-  import { ComarkAsync } from '@comark/svelte'
+  import { ComarkAsync } from '@comark/svelte/async'
 </script>
 
 <svelte:boundary>
