@@ -30,6 +30,10 @@ Core plugins are built-in and part of the main `comark` package:
   ::card{icon="i-lucide-list" title="Table of Contents" to="/plugins/core/toc"}
   Generate hierarchical TOC from headings automatically
   ::
+
+  ::card{icon="i-lucide-bell" title="Alerts" to="/plugins/core/alert"}
+  Render GitHub-style alert blockquotes with icons and colors (built-in)
+  ::
 ::
 
 ## External Plugins

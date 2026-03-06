@@ -18,7 +18,7 @@ export default defineAppConfig({
   ui: {
     colors: {
       primary: 'yellow',
-      neutral: 'neutral',
+      neutral: 'zinc',
     },
     prose: {
       codePreview: {

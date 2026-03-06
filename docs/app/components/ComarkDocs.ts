@@ -11,6 +11,7 @@ import githubDark from '@shikijs/themes/github-dark'
 
 export default defineComarkComponent({
   name: 'ComarkDocs',
+  autoClose: true,
   plugins: [
     math(),
     mermaid(),

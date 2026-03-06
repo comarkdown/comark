@@ -4,6 +4,7 @@
 
 @theme {
   --font-sans: 'Geist', 'Public Sans', sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, monospace;
 
   --breakpoint-3xl: 1920px;
 
@@ -21,6 +22,68 @@
 }
 
 :root {
-  /* font-size: 14px; */
-  --ui-container: 90rem;
+  overscroll-behavior-y: none;
+
+  --ui-container: 85rem;
+  --ui-primary: var(--ui-color-primary-600);
 }
+
+.dark {
+  --ui-primary: var(--ui-color-primary-400);
+}
+
+@keyframes caret-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.caret {
+  display: inline-block;
+  width: 0.55em;
+  height: 1.15em;
+  vertical-align: text-bottom;
+  background-color: var(--ui-primary);
+  animation: caret-blink 1s step-end infinite;
+}
+
+.section-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ui-color-primary-700);
+  background: var(--ui-color-primary-50);
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  border: 1px solid var(--ui-color-primary-200);
+}
+
+.dark .section-label {
+  color: var(--ui-color-primary-400);
+  background: color-mix(in oklch, var(--ui-color-primary-900) 15%, transparent);
+  border-color: color-mix(in oklch, var(--ui-color-primary-600) 30%, transparent);
+}
+
+.section-label::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--ui-primary);
+}
+
+.syntax-hash { color: var(--ui-color-primary-600); }
+.syntax-asterisk { color: var(--color-amber-600); }
+.syntax-colon { color: var(--ui-color-primary-600); }
+.syntax-bracket { color: var(--ui-color-neutral-400); }
+.syntax-text { color: var(--ui-color-neutral-700); }
+.dark .syntax-hash { color: var(--ui-color-primary-400); }
+.dark .syntax-asterisk { color: var(--color-amber-400); }
+.dark .syntax-colon { color: var(--ui-color-primary-500); }
+.dark .syntax-bracket { color: var(--ui-color-neutral-500); }
+.dark .syntax-text { color: var(--ui-color-neutral-200); }

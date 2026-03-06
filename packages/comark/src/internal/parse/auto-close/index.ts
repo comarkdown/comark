@@ -64,6 +64,17 @@ export function autoCloseMarkdown(markdown: string): string {
       tableStart = -1
     }
 
+    // Clear the line if there is no open component and the last line is a component fence without name
+    if (idx === n - 1) {
+      if (trimmed[0] === ':' && componentStack.length === 0) {
+        let colonCount = 0
+        while (colonCount < trimmed.length && trimmed[colonCount] === ':') colonCount++
+        if (trimmed.slice(colonCount).trim() === '') {
+          lines[idx] = ''
+        }
+      }
+    }
+
     // Component open/close (lines starting with :: or more colons)
     if (trimmed[0] === ':') {
       let colonCount = 0

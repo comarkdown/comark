@@ -5,6 +5,7 @@ import type { ComarkPlugin } from '../types'
 
 export default function summary(delimiter: string = '<!-- more -->'): ComarkPlugin {
   return {
+    name: 'summary',
     post(state) {
       let summary: ComarkNode[] | undefined
 

@@ -1,212 +1,200 @@
 ---
-seo:
-  title: Markdown with Components
-  description: Fast, streaming-ready markdown parser with Vue and React component support. Parse Comark content from strings or streams with TypeScript support.
-  ogImage: /social-card.png
+navigation: false
 ---
 
 ::landing-hero
-#title
-Comark
+---
+demoMarkdown: |-
+  # Hello World
 
-#description
-A high-performance markdown parser and renderer with Vue & React components support.
+  A **high-performance** markdown parser with _streaming_ support.
 
-#links
-  :::u-button
-  ---
-  color: neutral
-  size: xl
-  to: /getting-started/introduction
-  trailing-icon: i-lucide-arrow-right
-  ---
-  Get started
-  :::
+  ## Features
 
-  :::u-button
-  ---
-  color: neutral
-  icon: simple-icons-github
-  size: xl
-  to: https://github.com/comarkdown/comark
-  variant: outline
-  ---
-  Open on GitHub
-  :::
-::
+  - Parse markdown in real-time
+  - Vue & React components
+  - Auto-close incomplete syntax
 
-::landing-sub-hero
-#headline
-Get Started in Seconds
-
-#title
-Simple to use, powerful features
-
-#description
-Install with npm and start parsing markdown in seconds
-
-#body
-  :::landing-code-example
-  #vue
-  ```vue [src/App.vue]
-  <script setup lang="ts">
-  import { Comark } from 'comark/vue'
-  import Alert from './components/Alert.vue'
-
-  const md = `
-  # [Hello *World*]{.text-5xl}
-
-  ::alert{type="info"}
-  This is an alert!
+  ::callout{color="info" icon="i-lucide-info"}
+  Comark handles **components in markdown** natively.
   ::
-  `
-  </script>
 
-  <template>
-    <Suspense>
-      <Comark :components="{ Alert }">{{ md }}</Comark>
-    </Suspense>
-  </template>
+  > Built for modern web applications.
+
+  ```ts [example.ts]
+  import { parse } from 'comark'
+
+  const tree = await parse('# Hello **World**')
   ```
-
-  #react
-  ```tsx [src/App.tsx]
-  import { Comark } from 'comark/react'
-
-  export default function App() {
-    const markdown = `# Hello **World**`
-
-    return <Comark>{markdown}</Comark>
-  }
-  ```
-  :::
-
-#footer
-  :::landing-cards
-    ::::landing-card
-    ---
-    color: primary
-    icon: i-lucide-zap
-    ---
-    #title
-    Zero Config
-
-    #description
-    Works out of the box with sensible defaults
-    ::::
-
-    ::::landing-card
-    ---
-    color: purple
-    icon: i-simple-icons-typescript
-    ---
-    #title
-    Type Safe
-
-    #description
-    Full TypeScript support with type definitions
-    ::::
-
-    ::::landing-card
-    ---
-    color: green
-    icon: i-lucide-shield-check
-    ---
-    #title
-    Framework Agnostic
-
-    #description
-    Use with React, Vue, or vanilla JavaScript
-    ::::
-  :::
+description: A fast, streaming-ready markdown parser with component support for
+  Vue and React.
+install: npm install comark
+primaryLabel: Get Started
+primaryTo: /getting-started/introduction
+secondaryLabel: GitHub
+secondaryTo: https://github.com/comarkdown/comark
+title: Comark
+---
 ::
 
-::u-page-section
-#title
-Everything you need for modern content parsing
+:landing-spacer
 
-#features
-  :::u-page-feature
-  ---
-  icon: i-lucide-zap
-  to: /api/parse
-  ---
-  #title
-  [Fast]{.text-primary} markdown-it parser
-
-  #description
-  Built on markdown-it for blazing fast parsing with full GFM support, tables, and Comark component syntax. Optimized bundle size at just 47 kB.
-  :::
-
-  :::u-page-feature
-  ---
-  icon: i-lucide-activity
-  to: /api/parse#stream-parsing
-  ---
-  #title
-  [Real-time streaming]{.text-primary} support
-
-  #description
-  Parse content as it arrives with incremental streaming. Perfect for AI-generated content, large files, or progressive loading. Updates your UI in real-time.
-  :::
-
-  :::u-page-feature
-  ---
-  icon: i-lucide-puzzle
-  to: /rendering/vue
-  ---
-  #title
-  [Vue component]{.text-primary} integration
-
-  #description
-  Embed Vue components directly in markdown with Comark. Use slots, props, and custom components seamlessly. Full TypeScript support included.
-  :::
-
-  :::u-page-feature
-  ---
-  icon: i-simple-icons-react
-  to: /rendering/react
-  ---
-  #title
-  [React support]{.text-primary} built-in
-
-  #description
-  First-class React integration with Comark component. Dynamic component loading, streaming mode, and full TypeScript support.
-  :::
-
-  :::u-page-feature
-  ---
-  icon: i-lucide-shield-check
-  to: /api/auto-close
-  ---
-  #title
-  [Auto-close]{.text-primary} incomplete syntax
-
-  #description
-  Automatically handles unclosed markdown and component syntax during streaming. No more broken renders while content is still loading.
-  :::
-
-  :::u-page-feature
-  ---
-  icon: i-simple-icons-typescript
-  to: /api/reference
-  ---
-  #title
-  [Full TypeScript]{.text-primary} support
-
-  #description
-  Complete type definitions for all APIs, AST nodes, and components. Get autocomplete and type safety throughout your project.
-  :::
+::landing-features
+---
+frameworksDescription: First-class support for both frameworks. Embed custom
+  components in your markdown.
+frameworksHeadline: Frameworks
+frameworksReactLinkLabel: React docs
+frameworksReactLinkTo: /rendering/react
+frameworksTitle: Vue & React
+frameworksVueLinkLabel: Vue docs
+frameworksVueLinkTo: /rendering/vue
+streamingDescription: Parse content as it arrives. Perfect for AI-generated
+  content and progressive loading.
+streamingHeadline: Streaming
+streamingLinkLabel: Learn more
+streamingLinkTo: /api/parse#stream-parsing
+streamingTitle: Real-time streaming
+---
 ::
 
-:landing-typography
+:landing-spacer
 
-:landing-caret
+::landing-feature-auto-close
+---
+description: Incomplete markdown syntax is automatically closed during
+  streaming, so content renders correctly at every frame.
+headline: Auto-close
+linkLabel: Learn more
+linkTo: /api/auto-close
+title: Auto-close
+---
+::
 
-:landing-gfm
+:landing-spacer
 
-:landing-code-block
+::landing-feature-plugins
+---
+plugins:
+  - id: math
+    name: Math
+    icon: i-lucide-sigma
+    description: LaTeX math formulas with KaTeX. Inline $...$ and display $$...$$ syntax.
+    input: |-
+      The area of a circle is $A = \pi r^2$.
 
-:landing-math
+      Euler's identity:
 
-:landing-cjk
+      $$e^{i\pi} + 1 = 0$$
+    package: "@comark/math"
+  - id: cjk
+    name: CJK
+    icon: i-lucide-languages
+    description: Improved line breaking and spacing between CJK and Latin characters.
+    input: |-
+      # 你好世界
+
+      Comark支持**中文**、_日本語_、한국어等CJK文字。
+
+      混合English和中文的排版效果更好。
+    package: "@comark/cjk"
+  - id: highlight
+    name: Highlight
+    icon: i-lucide-code
+    description: Syntax highlighting for code blocks powered by Shiki.
+    input: |-
+      ```typescript [user.ts]
+      interface User {
+        name: string
+        email: string
+      }
+
+      async function getUser(id: number): Promise<User> {
+        const res = await fetch(`/api/users/${id}`)
+        return res.json()
+      }
+      ```
+    package: comark
+  - id: toc
+    name: TOC
+    icon: i-lucide-list
+    description: Auto-generate a table of contents from document headings.
+    input: |-
+      # Introduction
+
+      Welcome to the docs.
+
+      ## Getting Started
+
+      Install the package.
+
+      ### Configuration
+
+      Set up your config.
+
+      ## API Reference
+
+      Full API docs.
+    package: comark
+description: Extend Comark with plugins for math formulas, CJK text, syntax
+  highlighting, and more.
+headline: Plugins
+linkLabel: Browse all plugins
+linkTo: /plugins
+title: Extensible plugins
+---
+::
+
+:landing-spacer
+
+::landing-cta
+---
+footerSections:
+  - title: Documentation
+    links:
+      - label: Getting Started
+        to: /getting-started/introduction
+      - label: Syntax
+        to: /syntax/components
+      - label: Rendering
+        to: /rendering/vue
+      - label: API Reference
+        to: /api/parse
+  - title: Plugins
+    links:
+      - label: Syntax Highlighting
+        to: /plugins/core/highlight
+      - label: Math
+        to: /plugins/community/math
+      - label: CJK
+        to: /plugins/community/cjk
+      - label: Mermaid
+        to: /plugins/community/mermaid
+  - title: Community
+    links:
+      - label: GitHub
+        to: https://github.com/comarkdown/comark
+        external: true
+      - label: Issues
+        to: https://github.com/comarkdown/comark/issues
+        external: true
+      - label: Changelog
+        to: https://github.com/comarkdown/comark/blob/main/CHANGELOG.md
+        external: true
+      - label: License
+        to: https://github.com/comarkdown/comark/blob/main/LICENSE
+        external: true
+description: Add rich, interactive components to your markdown today.
+footerCopyright: © 2026 Comark. Released under the MIT License.
+footerDescription: A fast, streaming-ready markdown parser with component
+  support for Vue and React.
+githubUrl: https://github.com/comarkdown/comark
+install: npm install comark
+npmUrl: https://www.npmjs.com/package/comark
+primaryLabel: Get Started
+primaryTo: /getting-started/introduction
+secondaryLabel: GitHub
+secondaryTo: https://github.com/comarkdown/comark
+title: Start writing
+---
+::

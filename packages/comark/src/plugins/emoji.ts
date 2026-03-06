@@ -446,6 +446,7 @@ export const markdownItEmoji: MarkdownItPlugin = (md) => {
 
 export default function comarkEmoji(): ComarkPlugin {
   return {
+    name: 'emoji',
     markdownItPlugins: [markdownItEmoji],
   }
 }

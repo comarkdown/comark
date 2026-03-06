@@ -18,6 +18,11 @@ const links = computed<NavigationMenuItem[]>(() => [
     to: '/examples',
     active: route.path.startsWith('/examples'),
   },
+  {
+    label: 'Playground',
+    to: '/play',
+    active: route.path.startsWith('/play'),
+  },
 ])
 </script>
 

@@ -6,6 +6,7 @@ import htmlTags from '@nuxtjs/mdc/runtime/parser/utils/html-tags-list'
 import { globalComponents, localComponents } from '#content/components'
 import { useRuntimeConfig } from '#imports'
 import { ComarkRenderer } from 'comark/vue'
+import alert from 'comark/plugins/alert'
 import { Mermaid } from '@comark/mermaid/vue'
 import type { ComarkTree, ComarkElement } from 'comark/ast'
 import type { MinimarkNode, MinimarkTree } from 'minimark'
@@ -89,6 +90,12 @@ function replaceMermaid(body: MinimarkNode[]): MinimarkNode[] {
   })
 }
 
+function replaceAlert(body: MinimarkNode[]): MinimarkNode[] {
+  alert().post!({ markdown: '', tree: { frontmatter: {}, nodes: body, meta: {} }, options: {}, tokens: [] })
+
+  return body
+}
+
 const body = computed(() => {
   let body = props.value.body || props.value
   if (props.summary && props.value.summary) {
@@ -98,7 +105,7 @@ const body = computed(() => {
   // this is a workaround to convert mermaid code block to Mermaid component
   return {
     frontmatter: props.data,
-    nodes: replaceMermaid(body.value),
+    nodes: replaceAlert(replaceMermaid(body.value)),
     meta: {},
   } as ComarkTree
 })
@@ -113,7 +120,7 @@ const data = computed(() => {
   }
 })
 
-const proseComponentMap = Object.fromEntries(['p', 'a', 'blockquote', 'code', 'pre', 'code', 'em', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'hr', 'img', 'ul', 'ol', 'li', 'strong', 'table', 'thead', 'tbody', 'td', 'th', 'tr', 'script'].map(t => [t, `prose-${t}`]))
+const proseComponentMap = Object.fromEntries(['p', 'a', 'blockquote', 'code', 'pre', 'em', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'hr', 'img', 'ul', 'ol', 'li', 'strong', 'table', 'thead', 'tbody', 'td', 'th', 'tr', 'script'].map(t => [t, `prose-${t}`]))
 
 const { mdc } = useRuntimeConfig().public || {}
 const propsDataMDC = computed(() => props.data.mdc)
@@ -143,8 +150,9 @@ function resolveVueComponent(component: string | Renderable) {
     else if (localComponents.includes(pascalCase(component))) {
       const loader: AsyncComponentLoader = () => {
         return import('#content/components')
-          .then((m) => {
-            const comp = m[pascalCase(component) as keyof typeof m] as unknown as () => unknown
+          .then((m: any) => {
+            const loaders = m.localComponentLoaders || m
+            const comp = loaders[pascalCase(component)] as () => unknown
             return comp ? comp() : undefined
           })
       }

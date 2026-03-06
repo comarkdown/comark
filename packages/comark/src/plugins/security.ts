@@ -33,6 +33,7 @@ export default function security(options: SecurityOptions): ComarkPlugin {
   }
 
   return {
+    name: 'security',
     post(state) {
       visit(
         state.tree,

@@ -1,3 +1,9 @@
+---
+options:
+  plugins:
+    - cjk
+---
+
 ## Input
 
 ```md

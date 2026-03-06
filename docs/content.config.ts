@@ -3,6 +3,12 @@ import { resolve } from 'pathe'
 
 export default defineContentConfig({
   collections: {
+    landing: defineCollection({
+      type: 'page',
+      source: {
+        include: 'index.md',
+      },
+    }),
     examples: defineCollection({
       type: 'page',
       source: {

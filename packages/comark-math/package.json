@@ -50,7 +50,7 @@
     }
   },
   "dependencies": {
-    "katex": "^0.16.28"
+    "katex": "^0.16.33"
   },
   "devDependencies": {
     "comark": "workspace:*",

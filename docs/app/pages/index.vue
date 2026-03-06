@@ -1,0 +1,44 @@
+<script setup lang="ts">
+definePageMeta({
+  layout: false,
+})
+
+const { data: page } = await useAsyncData('index', () =>
+  queryCollection('landing').path('/').first(),
+)
+
+useSeoMeta({
+  title: 'Comark - Components in Markdown',
+  description: 'Fast, streaming-ready markdown parser with Vue and React component support. Parse Comark content from strings or streams with TypeScript support.',
+  ogImage: '/social-card.jpg',
+})
+
+useHead({
+  bodyAttrs: { class: 'landing-page' },
+})
+</script>
+
+<template>
+  <div class="min-h-dvh bg-default text-default">
+    <UContainer class="overflow-x-hidden p-0! lg:border-x lg:border-default">
+      <ContentRenderer
+        v-if="page"
+        :value="page as any"
+      />
+    </UContainer>
+  </div>
+</template>
+
+<style>
+.landing-page footer[data-slot="root"] {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .landing-page header[data-slot="root"] > div {
+    max-width: var(--ui-container);
+    margin-inline: auto;
+    box-shadow: inset 1px 0 0 var(--ui-border), inset -1px 0 0 var(--ui-border);
+  }
+}
+</style>

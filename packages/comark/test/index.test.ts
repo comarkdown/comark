@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeAll } from 'vitest'
 import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { parseFrontmatter } from '../src/internal/front-matter'
@@ -14,6 +14,14 @@ import minLight from '@shikijs/themes/min-light'
 import nord from '@shikijs/themes/nord'
 import rustLanguage from '@shikijs/langs/rust'
 import goLanguage from '@shikijs/langs/go'
+import type { ParseOptions } from '../src/types'
+
+type PluginName = 'cjk' | 'emoji'
+
+const pluginRegistry: Record<PluginName, () => ComarkPlugin> = {
+  cjk,
+  emoji,
+}
 
 interface TestCase {
   input: string
@@ -27,6 +35,8 @@ interface TestCase {
   }
   options?: {
     highlight?: HighlightOptions
+    plugins?: PluginName[]
+    autoUnwrap?: boolean
   }
 }
 
@@ -173,8 +183,12 @@ describe('Comark Tests', () => {
 
   testCases.forEach(({ file, testCase }) => {
     describe(file, () => {
-      it('should parse input to AST', { timeout: testCase.timeouts?.parse ?? 5000 }, async () => {
-        const plugins: ComarkPlugin[] = [cjk(), emoji()]
+      let parsedAST: Awaited<ReturnType<typeof parse>>
+
+      beforeAll(async () => {
+        const declaredPlugins = testCase.options?.plugins ?? []
+        const plugins: ComarkPlugin[] = declaredPlugins.map(name => pluginRegistry[name]())
+
         if (testCase.options?.highlight) {
           const themes = {
             'min-light': minLight,
@@ -191,31 +205,33 @@ describe('Comark Tests', () => {
             },
           }))
         }
-        const result = await parse(testCase.input, {
-          autoUnwrap: false,
-          ...testCase.options,
-          plugins,
-        })
-        const expectedAST = JSON.parse(testCase.ast)
 
-        expect(result).toEqual(expectedAST)
+        const parseOptions: ParseOptions = {
+          autoUnwrap: testCase.options?.autoUnwrap ?? false,
+          ...testCase.options?.highlight ? { highlight: testCase.options.highlight } : {},
+        }
+
+        if (plugins.length > 0) {
+          parseOptions.plugins = plugins
+        }
+
+        parsedAST = await parse(testCase.input, parseOptions)
+      }, testCase.timeouts?.parse ?? 5000)
+
+      it('should parse input to AST', () => {
+        const expectedAST = JSON.parse(testCase.ast)
+        expect(parsedAST).toEqual(expectedAST)
       })
 
       it('should render AST to HTML', { timeout: testCase.timeouts?.html ?? 5000 }, () => {
-        const ast = JSON.parse(testCase.ast)
-        const result = renderHTML(ast)
+        const result = renderHTML(parsedAST)
         const expectedHTML = testCase.html.trim()
-
-        // Tests will fail until implementation is complete
         expect(result).toBe(expectedHTML)
       })
 
       it('should render AST to Markdown', { timeout: testCase.timeouts?.markdown ?? 5000 }, () => {
-        const ast = JSON.parse(testCase.ast)
-        const result = renderMarkdown(ast)
+        const result = renderMarkdown(parsedAST)
         const expectedMarkdown = testCase.markdown.trim()
-
-        // Tests will fail until implementation is complete
         expect(result).toBe(expectedMarkdown)
       })
     })

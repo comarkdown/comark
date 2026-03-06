@@ -32,6 +32,7 @@ export default createConfigForNuxt({
         'vue/multi-word-component-names': 'off',
         '@typescript-eslint/no-empty-object-type': 'off',
         '@typescript-eslint/unified-signatures': 'off',
+        '@typescript-eslint/triple-slash-reference': 'off',
       },
     },
   )

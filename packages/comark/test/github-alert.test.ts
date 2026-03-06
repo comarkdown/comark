@@ -1,0 +1,18 @@
+import { describe, it, expect } from 'vitest'
+import { parse } from '../src/index'
+import githubAlert from '../src/plugins/alert'
+import { renderHTML } from '../src/string'
+
+describe('githubAlert', () => {
+  it('should convert !TIP to <svg> icon', async () => {
+    const tree = await parse(`
+> [!NOTE]
+> Useful information that users should know, even when skimming content.
+
+      `, {
+      plugins: [githubAlert()],
+    })
+    const html = renderHTML(tree)
+    expect(html).toContain('<blockquote as="note">')
+  })
+})

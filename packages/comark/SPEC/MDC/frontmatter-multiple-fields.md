@@ -24,13 +24,13 @@ Content here
 ```json
 {
   "frontmatter": {
+    "title": "Test Post",
     "author": "John Doe",
     "date": "2024-01-01",
     "tags": [
       "test",
       "markdown"
-    ],
-    "title": "Test Post"
+    ]
   },
   "meta": {},
   "nodes": [
@@ -53,12 +53,12 @@ Content here
 
 ```md
 ---
+title: Test Post
 author: John Doe
 date: '2024-01-01'
 tags:
   - test
   - markdown
-title: Test Post
 ---
 
 Content here

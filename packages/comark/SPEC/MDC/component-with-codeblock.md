@@ -42,8 +42,8 @@ options:
       [
         "pre",
         {
-          "filename": "content/index.md",
-          "language": "mdc"
+          "language": "mdc",
+          "filename": "content/index.md"
         },
         [
           "code",
@@ -62,7 +62,7 @@ options:
 
 ```html
 <code-group>
-  <pre filename="content/index.md" language="mdc"><code class="language-mdc">---
+  <pre language="mdc" filename="content/index.md"><code class="language-mdc">---
   title: The Mountains Website
   description: A website about the most iconic mountains in the world.
   ---

@@ -34,7 +34,7 @@ const { data: surround } = await useAsyncData(`${kebabCase(route.path)}-surround
 
 const exampleName = computed(() => {
   if (page.value?.stem) {
-    return page.value.stem.replace(/^\/?examples\//, '')
+    return page.value.stem.replace(/^\/?examples\//, '').replace(/readme$/i, '')
   }
   return route.path.replace(/^\/examples\//, '')
 })
@@ -59,6 +59,9 @@ useHead({
 useSeoMeta({
   title: `${page.value?.title || exampleName.value} Example`,
   description: page.value?.description,
+})
+defineOgImageComponent('Docs', {
+  headline: 'Examples',
 })
 </script>
 
@@ -97,20 +100,9 @@ useSeoMeta({
       </template>
     </UPageHeader>
 
-    <template
-      v-if="page.body?.toc?.links?.length"
-      #right
-    >
-      <UContentToc
-        title="On this page"
-        :links="page.body?.toc?.links || []"
-        highlight
-      />
-    </template>
-
     <UPageBody
       prose
-      class="break-words"
+      class="wrap-break-word"
     >
       <ContentRenderer
         v-if="page.body"
