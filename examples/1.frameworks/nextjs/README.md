@@ -4,6 +4,7 @@ description: A blog example using Comark with Next.js App Router and React Serve
 navigation.icon: i-simple-icons:nextdotjs
 category: Frameworks
 path: /examples/frameworks/nextjs
+demo: https://comark-nextjs.vercel.app
 ---
 
 ::code-tree{defaultValue="app/blog/[slug]/page.tsx" expandAll}
@@ -201,6 +202,9 @@ export default config
 }
 ```
 
+::
+
+::browser{src="https://comark-nextjs.vercel.app"}
 ::
 
 This example demonstrates how to use Comark with Next.js App Router and React Server Components. Blog posts are stored as `.md` files with frontmatter, parsed using `parse()` from comark, and rendered using `ComarkRenderer` from `comark/react` with custom components like `Alert`.
