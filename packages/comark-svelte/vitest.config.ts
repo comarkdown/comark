@@ -14,9 +14,9 @@ export default defineConfig({
         test: {
           name: 'client',
           browser: {
-            enabled: true,
+            enabled: process.env.CI !== 'true',
             provider: playwright(),
-            instances: [{ browser: 'chromium' }],
+            instances: [{ browser: 'chromium', headless: true }],
           },
           include: ['src/**/*.svelte.{test,spec}.{js,ts}'],
         },
