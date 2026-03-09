@@ -16,7 +16,7 @@ export function comarkAttributes(attributes: Record<string, unknown>) {
         return `#${value}`
       }
       if (key === 'class') {
-        return `.${value}`
+        return (value as string).split(' ').map(c => `.${c}`).join('')
       }
 
       if (typeof value === 'object') {
