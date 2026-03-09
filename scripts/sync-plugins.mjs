@@ -23,6 +23,7 @@ const comarkPlugins = readdirSync(comarkPluginsDir)
 
 for (const pkg of frameworkPackages) {
   const distPluginsDir = join(packagesDir, pkg, 'dist', 'plugins')
+  const srcPluginsDir = join(packagesDir, pkg, 'src', 'plugins')
   mkdirSync(distPluginsDir, { recursive: true })
 
   let created = 0
@@ -36,13 +37,13 @@ for (const pkg of frameworkPackages) {
     const reexport = `export * from 'comark/plugins/${name}';\n`
       + (hasDefault ? `export { default } from 'comark/plugins/${name}';\n` : '')
 
+    if (existsSync(join(srcPluginsDir, `${name}.ts`))) {
+      continue
+    }
+
     for (const ext of ['.js', '.d.ts']) {
-      const dest = join(distPluginsDir, `${name}${ext}`)
-      if (!existsSync(dest)) {
-        writeFileSync(dest, reexport)
-        console.log(`[sync-plugins] ${pkg}/dist/plugins/${name}${ext}: created`)
-        created++
-      }
+      writeFileSync(join(distPluginsDir, `${name}${ext}`), reexport)
+      created++
     }
   }
 

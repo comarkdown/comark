@@ -29,7 +29,7 @@
     "stub": "pnpm --parallel --filter './packages/**' run stub && pnpm sync-plugins",
     "sync-plugins": "node scripts/sync-plugins.mjs",
     "dev:packages": "pnpm --parallel --filter './packages/**' run dev",
-    "build": "pnpm --filter './packages/**' run build",
+    "build": "pnpm --filter './packages/**' run build && pnpm sync-plugins",
     "test": "pnpm --filter 'comark' run test && pnpm --filter '@comark/*' run test",
     "test:spec": "cd packages/comark && pnpm vitest run test/index.test.ts -- -spec",
     "lint": "eslint .",
