@@ -23,7 +23,7 @@ Automatically detects dark mode from the `<html>` element's `dark` class.
     THEMES,
     type DiagramColors,
   } from 'beautiful-mermaid'
-  import type { ThemeNames } from '@comark/mermaid'
+  import type { ThemeNames } from 'comark/plugins/mermaid'
 
   let {
     content,

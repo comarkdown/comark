@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import { render } from 'vitest-browser-svelte'
 import { parse } from 'comark'
-import { math, Math } from './index'
-import ComarkRenderer from '../ComarkRenderer.svelte'
-import Comark from '../Comark.svelte'
+import math, { Math } from '../math'
+import ComarkRenderer from '../../ComarkRenderer.svelte'
+import Comark from '../../Comark.svelte'
 
 describe('Math component', () => {
   it('renders inline math with KaTeX', async () => {

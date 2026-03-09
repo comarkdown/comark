@@ -24,13 +24,9 @@
       "types": "./dist/async/index.d.ts",
       "svelte": "./dist/async/index.js"
     },
-    "./plugin-math": {
-      "types": "./dist/plugin-math/index.d.ts",
-      "svelte": "./dist/plugin-math/index.js"
-    },
-    "./plugin-mermaid": {
-      "types": "./dist/plugin-mermaid/index.d.ts",
-      "svelte": "./dist/plugin-mermaid/index.js"
+    "./plugins/*": {
+      "types": "./dist/plugins/*.d.ts",
+      "svelte": "./dist/plugins/*.js"
     }
   },
   "files": [

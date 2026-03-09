@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { render } from 'svelte/server'
 import { parse } from 'comark'
-import { mermaid, Mermaid } from './index'
-import ComarkRenderer from '../ComarkRenderer.svelte'
+import mermaid, { Mermaid } from '../mermaid'
+import ComarkRenderer from '../../ComarkRenderer.svelte'
 
 /** Strip Svelte SSR hydration comments from rendered HTML */
 function html(body: string): string {

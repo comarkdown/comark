@@ -12,7 +12,7 @@ export default defineConfig({
   test: {
     projects: [
       isCI
-        ? false
+        ? null as any
         : {
             extends: './vitest.config.ts',
             test: {
