@@ -39,7 +39,9 @@ for (const srcFile of srcFiles) {
   let srcRel = relative(dirname(distJs), srcFile).replace(/\\/g, '/')
   if (!srcRel.startsWith('.')) srcRel = './' + srcRel
 
-  const hasDefault = /\bexport\s+default\b/.test(readFileSync(srcFile, 'utf-8'))
+  const content = readFileSync(srcFile, 'utf-8')
+  const hasDefault = /\bexport\s+default\b/.test(content)
+    || /export\s*\{\s*default/.test(content)
 
   // JS stub: re-export from source (bundlers handle .ts imports)
   writeFileSync(distJs,
