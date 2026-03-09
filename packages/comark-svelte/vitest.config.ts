@@ -2,6 +2,8 @@ import { defineConfig } from 'vitest/config'
 import { svelte } from '@sveltejs/vite-plugin-svelte'
 import { playwright } from '@vitest/browser-playwright'
 
+const isCI = process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true'
+
 export default defineConfig({
   plugins: [svelte()],
   optimizeDeps: {
@@ -14,7 +16,7 @@ export default defineConfig({
         test: {
           name: 'client',
           browser: {
-            enabled: process.env.CI !== 'true',
+            enabled: !isCI,
             provider: playwright(),
             instances: [{ browser: 'chromium', headless: true }],
           },
