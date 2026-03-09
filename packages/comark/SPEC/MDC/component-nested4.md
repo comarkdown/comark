@@ -97,7 +97,7 @@ timeout:
             "button",
             {
               ":data-testid": "$doc.snippet.description",
-              "external": "true",
+              ":external": "true",
               ":to": "$doc.snippet.link",
               "appearance": "primary"
             },

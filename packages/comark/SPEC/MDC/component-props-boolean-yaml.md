@@ -10,7 +10,7 @@ options:
 ## Input
 
 ```md
-::my-component{:block :square="false" :disabled="true"}
+::my-component{:block reverse :square="false" :disabled="true"}
 My button
 ::
 ```
@@ -26,6 +26,7 @@ My button
       "my-component",
       {
         ":block": "true",
+        ":reverse": "true",
         ":square": "false",
         ":disabled": "true"
       },
@@ -38,7 +39,7 @@ My button
 ## HTML
 
 ```html
-<my-component block square="false" disabled>
+<my-component block reverse square="false" disabled>
   My button
 </my-component>
 ```
@@ -49,6 +50,7 @@ My button
 ::my-component
 ---
 block: true
+reverse: true
 square: false
 disabled: true
 ---

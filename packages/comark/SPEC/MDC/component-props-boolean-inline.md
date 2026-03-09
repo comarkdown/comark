@@ -3,12 +3,14 @@ timeout:
   parse: 5ms
   html: 5ms
   markdown: 5ms
+options:
+  maxInlineAttributes: 4
 ---
 
 ## Input
 
 ```md
-::my-component{:block :square="false" :disabled="true"}
+::my-component{:block reverse :square="false" :disabled="true"}
 My button
 ::
 ```
@@ -24,6 +26,7 @@ My button
       "my-component",
       {
         ":block": "true",
+        ":reverse": "true",
         ":disabled": "true",
         ":square": "false"
       },
@@ -36,7 +39,7 @@ My button
 ## HTML
 
 ```html
-<my-component block square="false" disabled>
+<my-component block reverse square="false" disabled>
   My button
 </my-component>
 ```
@@ -44,7 +47,7 @@ My button
 ## Markdown
 
 ```md
-::my-component{block :square="false" disabled}
+::my-component{block reverse :square="false" disabled}
 My button
 ::
 ```

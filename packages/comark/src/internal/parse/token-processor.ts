@@ -311,7 +311,7 @@ function processBlockToken(tokens: any[], startIndex: number, insideNestedContex
   // Handle Comark block components (e.g., ::component ... ::)
   if (token.type === 'mdc_block_open') {
     const componentName = token.tag || 'component'
-    const attrs = processAttributes(token.attrs, { handleBoolean: false })
+    const attrs = processAttributes(token.attrs)
     // Process children until mdc_block_close, handling slots (#slotname)
     const children = processBlockChildrenWithSlots(tokens, startIndex + 1, 'mdc_block_close')
     // Return the component even if it has no children (empty component like ::component\n::)
