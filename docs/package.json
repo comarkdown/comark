@@ -2,7 +2,7 @@
   "name": "Comark",
   "scripts": {
     "dev": "nuxt dev --extends docus",
-    "build": "nuxt build --extends docus"
+    "build": " pnpm --filter '../' run build && nuxt build --extends docus"
   },
   "dependencies": {
     "@comark/nuxt": "workspace:*",
