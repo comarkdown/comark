@@ -75,7 +75,8 @@ function processAttributes(
 
   for (const attr of attrsArray) {
     if (Array.isArray(attr) && attr.length >= 2) {
-      let [key, value] = attr
+      const [key] = attr
+      let value = attr[1]
 
       // Filter empty values if requested
       if (filterEmpty && (value === '' || value === null || value === undefined)) {
@@ -84,8 +85,8 @@ function processAttributes(
 
       // Handle boolean attributes: {bool} -> {":bool": "true"}
       if (handleBoolean && !key.startsWith(':') && !key.startsWith('#') && !key.startsWith('.') && (!value || value === 'true' || value === '')) {
-        key = `:${key}`
-        value = 'true'
+        attrs[`:${key}`] = 'true'
+        continue
       }
 
       // Handle JSON values
