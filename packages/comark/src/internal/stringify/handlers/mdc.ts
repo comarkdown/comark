@@ -42,7 +42,9 @@ export function mdc(node: ComarkElement, state: State, parent?: ComarkElement) {
   let result = `:${tag}${content && `[${content}]`}${attrs}` + (!parent ? state.context.blockSeparator : '')
 
   if (!inline) {
-    if (attrs.length > 64 || hasObjectAttributes) {
+    const maxInlineAttributes = state.context.maxInlineAttributes ?? 3
+    const useYaml = hasObjectAttributes || maxInlineAttributes === 0 || attributeEntries.length > maxInlineAttributes
+    if (useYaml) {
       const yamlAttrs = comarkYamlAttributes(attributes)
       result = `${fence}${tag}\n${yamlAttrs}${content ? `\n${content}` : ''}\n${fence}` + state.context.blockSeparator
     }
