@@ -11,6 +11,43 @@ export default defineAppConfig({
     github: 'comarkdown/comark',
   },
 
+  assistant: {
+    faqQuestions: [
+      {
+        category: 'Getting Started',
+        items: [
+          'What is Comark and how does it differ from MDX?',
+          'How do I install Comark in my project?',
+          'Can I use Comark with both Vue and React?',
+        ],
+      },
+      {
+        category: 'Syntax',
+        items: [
+          'How do I write block and inline components in Comark?',
+          'How do I pass props to a component using YAML frontmatter?',
+          'How do I use named slots in Comark components?',
+        ],
+      },
+      {
+        category: 'Rendering & Streaming',
+        items: [
+          'How do I render Comark content in a Vue or React app?',
+          'How do I stream AI-generated Markdown with Comark?',
+          'What does autoCloseMarkdown do?',
+        ],
+      },
+      {
+        category: 'Plugins & Advanced',
+        items: [
+          'How do I add syntax highlighting to code blocks?',
+          'How do I render math formulas with Comark?',
+          'What does the Comark AST look like?',
+        ],
+      },
+    ],
+  },
+
   title: 'Comark',
   description: 'Components in Markdown (Comark) parser with streaming support for Vue and React.',
   url: 'https://comark.dev',
