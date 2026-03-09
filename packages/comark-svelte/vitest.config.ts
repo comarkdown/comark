@@ -12,7 +12,8 @@ export default defineConfig({
   test: {
     projects: [
       isCI
-        ? {
+        ? false
+        : {
             extends: './vitest.config.ts',
             test: {
               name: 'client',
@@ -23,8 +24,7 @@ export default defineConfig({
               },
               include: ['src/**/*.svelte.{test,spec}.{js,ts}'],
             },
-          }
-        : false,
+          },
       {
         extends: './vitest.config.ts',
         test: {
