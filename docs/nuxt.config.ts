@@ -41,4 +41,6 @@ export default defineNuxtConfig({
       { name: 'Geist Mono', weights: [400, 500, 600], global: true },
     ],
   },
+
+  studio: false,
 })
