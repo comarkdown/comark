@@ -1,11 +1,20 @@
 import type { State } from '../types'
-import type { ComarkElement } from '../../../ast/types'
+import type { ComarkElement, ComarkNode } from '../../../ast/types'
 
 // slot template
-export function template(node: ComarkElement, state: State) {
+export function template(node: ComarkElement, state: State, parent?: ComarkElement) {
   const [_, attrs] = node
 
   const content = state.flow(node, state).trim()
+
+  // Omit #default marker if this is the only slot
+  if (attrs.name === 'default') {
+    const siblings = parent ? (parent.slice(2) as ComarkNode[]) : []
+    const templateCount = siblings.filter(child => Array.isArray(child) && (child as ComarkElement)[0] === 'template').length
+    if (templateCount === 1) {
+      return content + state.context.blockSeparator
+    }
+  }
 
   return `#${attrs.name}\n${content}` + state.context.blockSeparator
 }

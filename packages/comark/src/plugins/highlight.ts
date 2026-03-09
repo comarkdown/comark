@@ -125,10 +125,11 @@ async function registerDefaults(options: HighlightOptions) {
   }
   if (options.registerDefaultLanguages !== false) {
     languages.push(await import('@shikijs/langs/vue').then(m => m.default))
+    languages.push(await import('@shikijs/langs/tsx').then(m => m.default))
+    languages.push(await import('@shikijs/langs/svelte').then(m => m.default))
     languages.push(await import('@shikijs/langs/typescript').then(m => m.default))
     languages.push(await import('@shikijs/langs/javascript').then(m => m.default))
     languages.push(await import('@shikijs/langs/mdc').then(m => m.default))
-    languages.push(await import('@shikijs/langs/tsx').then(m => m.default))
     languages.push(await import('@shikijs/langs/bash').then(m => m.default))
     languages.push(await import('@shikijs/langs/json').then(m => m.default))
     languages.push(await import('@shikijs/langs/yaml').then(m => m.default))

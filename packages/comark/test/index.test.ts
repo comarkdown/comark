@@ -37,6 +37,7 @@ interface TestCase {
     highlight?: HighlightOptions
     plugins?: PluginName[]
     autoUnwrap?: boolean
+    maxInlineAttributes?: number
   }
 }
 
@@ -207,8 +208,7 @@ describe('Comark Tests', () => {
         }
 
         const parseOptions: ParseOptions = {
-          autoUnwrap: testCase.options?.autoUnwrap ?? false,
-          ...testCase.options?.highlight ? { highlight: testCase.options.highlight } : {},
+          autoUnwrap: testCase.options?.autoUnwrap === false ? false : true,
         }
 
         if (plugins.length > 0) {
@@ -230,7 +230,7 @@ describe('Comark Tests', () => {
       })
 
       it('should render AST to Markdown', { timeout: testCase.timeouts?.markdown ?? 5000 }, () => {
-        const result = renderMarkdown(parsedAST)
+        const result = renderMarkdown(parsedAST, { maxInlineAttributes: testCase.options?.maxInlineAttributes })
         const expectedMarkdown = testCase.markdown.trim()
         expect(result).toBe(expectedMarkdown)
       })

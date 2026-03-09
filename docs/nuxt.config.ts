@@ -23,7 +23,7 @@ export default defineNuxtConfig({
     build: {
       markdown: {
         highlight: {
-          langs: ['tsx', 'vue', 'html', 'css', 'json', 'markdown', 'bash', 'shell', 'astro'],
+          langs: ['tsx', 'svelte', 'vue', 'html', 'css', 'json', 'markdown', 'bash', 'shell', 'astro'],
         },
       },
     },

@@ -30,20 +30,12 @@ options:
     [
       "alert",
       { "type": "success" },
-      [
-        "p",
-        {},
-        "✅ Successfully deployed! 🚀"
-      ]
+      "✅ Successfully deployed! 🚀"
     ],
     [
       "alert",
       { "type": "warning" },
-      [
-        "p",
-        {},
-        "⚠️ Please backup your data before proceeding"
-      ]
+      "⚠️ Please backup your data before proceeding"
     ]
   ]
 }
@@ -53,10 +45,10 @@ options:
 
 ```html
 <alert type="success">
-  <p>✅ Successfully deployed! 🚀</p>
+  ✅ Successfully deployed! 🚀
 </alert>
 <alert type="warning">
-  <p>⚠️ Please backup your data before proceeding</p>
+  ⚠️ Please backup your data before proceeding
 </alert>
 ```
 

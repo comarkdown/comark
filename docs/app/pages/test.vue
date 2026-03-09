@@ -2,6 +2,10 @@
 import highlight from 'comark/plugins/highlight'
 import resolveComponent from '../utils/components-manifest'
 
+useHead({
+  meta: [{ name: 'robots', content: 'noindex, nofollow' }],
+})
+
 const markdown = ref(`
 ---
 seo:

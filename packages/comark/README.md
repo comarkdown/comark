@@ -1,3 +1,5 @@
+<img src="https://github.com/comarkdown/comark/blob/main/assets/banner.jpg" width="100%" alt="Comark banner" />
+
 # comark
 
 [![npm version](https://img.shields.io/npm/v/comark?color=black)](https://npmx.dev/comark)

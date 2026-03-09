@@ -21,11 +21,7 @@ timeout:
     [
       "blockquote",
       {},
-      [
-        "p",
-        {},
-        "This is a simple blockquote"
-      ]
+      "This is a simple blockquote"
     ]
   ]
 }
@@ -35,7 +31,7 @@ timeout:
 
 ```html
 <blockquote>
-  <p>This is a simple blockquote</p>
+  This is a simple blockquote
 </blockquote>
 ```
 
