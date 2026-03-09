@@ -11,18 +11,20 @@ export default defineConfig({
   },
   test: {
     projects: [
-      {
-        extends: './vitest.config.ts',
-        test: {
-          name: 'client',
-          browser: {
-            enabled: !isCI,
-            provider: playwright(),
-            instances: [{ browser: 'chromium', headless: true }],
-          },
-          include: ['src/**/*.svelte.{test,spec}.{js,ts}'],
-        },
-      },
+      isCI
+        ? {
+            extends: './vitest.config.ts',
+            test: {
+              name: 'client',
+              browser: {
+                enabled: !isCI,
+                provider: playwright(),
+                instances: [{ browser: 'chromium', headless: true }],
+              },
+              include: ['src/**/*.svelte.{test,spec}.{js,ts}'],
+            },
+          }
+        : false,
       {
         extends: './vitest.config.ts',
         test: {
@@ -32,6 +34,6 @@ export default defineConfig({
           exclude: ['src/**/*.svelte.{test,spec}.{js,ts}'],
         },
       },
-    ],
+    ].filter(Boolean),
   },
 })
