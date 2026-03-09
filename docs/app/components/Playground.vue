@@ -75,8 +75,6 @@ async function parseMarkdown(): Promise<void> {
   const start = performance.now()
   try {
     const result = await parse(markdown.value, {
-      autoClose: true,
-      autoUnwrap: true,
       plugins,
     })
     tree.value = result
