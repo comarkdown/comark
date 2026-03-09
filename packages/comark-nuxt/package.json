@@ -4,17 +4,19 @@
   "version": "0.0.1",
   "description": "Nuxt module for Comark",
   "exports": {
-    ".": "./dist/module.mjs"
+    ".": "./dist/module.js"
   },
-  "main": "./dist/module.mjs",
-  "module": "./dist/module.mjs",
-  "types": "./dist/module.d.mts",
+  "main": "./dist/module.js",
+  "module": "./dist/module.js",
+  "types": "./dist/module.d.ts",
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "obuild",
-    "prepack": "obuild",
+    "stub": "node ../../scripts/stub.mjs",
+    "build": "tsc -p tsconfig.build.json",
+    "dev": "tsc -p tsconfig.build.json --watch",
+    "prepack": "tsc -p tsconfig.build.json",
     "release": "release-it"
   },
   "peerDependencies": {
@@ -27,7 +29,6 @@
   },
   "devDependencies": {
     "comark": "workspace:*",
-    "@comark/vue": "workspace:*",
-    "obuild": "^0.4.31"
+    "@comark/vue": "workspace:*"
   }
 }

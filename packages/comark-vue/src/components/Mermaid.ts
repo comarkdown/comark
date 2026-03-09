@@ -1,7 +1,7 @@
 import type { PropType } from 'vue'
 import { defineComponent, h, ref, onMounted, watch, computed } from 'vue'
 import { renderMermaidSVG, THEMES, type DiagramColors } from 'beautiful-mermaid'
-import type { ThemeNames } from '.'
+import type { ThemeNames } from 'comark/plugins/mermaid'
 
 export const Mermaid = defineComponent({
   name: 'Mermaid',

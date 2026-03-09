@@ -312,7 +312,7 @@ function markdownItMath(md: MarkdownIt, config: MathConfig = {}) {
  * @example
  * ```ts
  * import { parse } from 'comark'
- * import math from '@comark/plugin-math'
+ * import math from 'comark/plugins/math'
  *
  * const result = await parse('Inline $x^2$ and display $$E = mc^2$$', {
  *   plugins: [math({ throwOnError: false })]

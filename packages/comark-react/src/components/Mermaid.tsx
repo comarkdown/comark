@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { renderMermaidSVG, THEMES, type DiagramColors } from 'beautiful-mermaid'
-import type { ThemeNames } from '.'
+import type { ThemeNames } from 'comark/plugins/mermaid'
 
 export interface MermaidProps {
   content: string

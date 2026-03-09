@@ -1,0 +1,3 @@
+interface ImportMeta {
+  dev: boolean
+}

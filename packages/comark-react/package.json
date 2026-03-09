@@ -4,18 +4,21 @@
   "version": "0.0.1",
   "description": "React components for Comark",
   "exports": {
-    ".": "./dist/index.mjs"
+    ".": "./dist/index.js",
+    "./plugins/*": "./dist/plugins/*.js"
   },
-  "main": "./dist/index.mjs",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.mts",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "obuild",
+    "stub": "node ../../scripts/stub.mjs",
+    "build": "tsc -p tsconfig.build.json",
+    "dev": "tsc -p tsconfig.build.json --watch",
     "test": "vitest run",
-    "prepack": "obuild",
+    "prepack": "tsc -p tsconfig.build.json",
     "release": "release-it"
   },
   "peerDependencies": {
@@ -29,7 +32,6 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "comark": "workspace:*",
-    "obuild": "^0.4.31",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "vitest": "^4.0.18"

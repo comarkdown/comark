@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "outDir": "./dist",
+    "declaration": true,
+    "paths": {
+      "comark": ["./src/index.ts"],
+      "comark/ast": ["./src/ast/index.ts"],
+      "comark/string": ["./src/string.ts"],
+      "comark/plugins/*": ["./src/plugins/*.ts"]
+    }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
+}

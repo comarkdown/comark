@@ -6,7 +6,7 @@ import htmlTags from '@nuxtjs/mdc/runtime/parser/utils/html-tags-list'
 import { globalComponents, localComponents } from '#content/components'
 import { useRuntimeConfig } from '#imports'
 import alert from 'comark/plugins/alert'
-import { Mermaid } from '@comark/plugin-mermaid/vue'
+import { Mermaid } from '@comark/vue/plugins/mermaid'
 import type { ComarkTree, ComarkElement } from 'comark/ast'
 import type { MinimarkNode, MinimarkTree } from 'minimark'
 

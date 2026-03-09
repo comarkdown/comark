@@ -25,7 +25,10 @@
     "dev:highlight": "pnpm --filter comark-vue-vite-highlight run dev",
     "benchmark": "pnpm --filter comark run benchmark",
     "docs": "nuxt dev --extends docus docs",
-    "prepack": "pnpm build",
+    "prepack": "pnpm build && pnpm sync-plugins",
+    "stub": "pnpm --parallel --filter './packages/**' run stub && pnpm sync-plugins",
+    "sync-plugins": "node scripts/sync-plugins.mjs",
+    "dev:packages": "pnpm --parallel --filter './packages/**' run dev",
     "build": "pnpm --filter './packages/**' run build",
     "test": "pnpm --filter 'comark' run test && pnpm --filter '@comark/*' run test",
     "test:spec": "cd packages/comark && pnpm vitest run test/index.test.ts -- -spec",
@@ -34,7 +37,7 @@
     "verify": "pnpm run lint && pnpm run test && pnpm run typecheck",
     "release": "pnpm --filter 'comark' run release && pnpm --filter '@comark/plugin-cjk' run release && pnpm --filter '@comark/plugin-math' run release",
     "release:dry": "pnpm --filter 'comark' run release:dry && pnpm --filter '@comark/plugin-cjk' run release:dry && pnpm --filter '@comark/plugin-math' run release:dry",
-    "postinstall": "pnpm --filter 'comark' run build --stub && pnpm --filter '@comark/*' run build --stub"
+    "postinstall": "pnpm stub"
   },
   "devDependencies": {
     "@nuxt/eslint-config": "^1.15.2",

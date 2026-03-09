@@ -23,16 +23,15 @@ A high-performance markdown parser and renderer with Vue & React components supp
 ### Vue
 
 ```bash
-npm install @comark/vue @comark/math
+npm install @comark/vue katex
 # or
-pnpm add @comark/vue @comark/math 
+pnpm add @comark/vue katex
 ```
 
 ```vue
 <script setup lang="ts">
 import { Comark } from '@comark/vue'
-import math from '@comark/math'
-import { Math } from '@comark/math/vue'
+import math, { Math } from '@comark/vue/plugins/math'
 
 const chatMessage = ...
 </script>
@@ -45,15 +44,14 @@ const chatMessage = ...
 ### React
 
 ```bash
-npm install @comark/react @comark/math
+npm install @comark/react katex
 # or
-pnpm add @comark/react @comark/math 
+pnpm add @comark/react katex 
 ```
 
 ```tsx
 import { Comark } from '@comark/react'
-import math from '@comark/math'
-import { Math } from '@comark/math/react'
+import math, { Math } from '@comark/react/plugins/math'
 
 function App() {
   const chatMessage = ...

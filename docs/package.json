@@ -6,9 +6,7 @@
   },
   "dependencies": {
     "@comark/nuxt": "workspace:*",
-    "@comark/plugin-cjk": "workspace:*",
-    "@comark/plugin-math": "workspace:*",
-    "@comark/plugin-mermaid": "workspace:*",
+    "@comark/vue": "workspace:*",
     "@monaco-editor/loader": "^1.7.0",
     "@nuxtlabs/monarch-mdc": "^0.9.0",
     "@vercel/analytics": "^1.6.1",
