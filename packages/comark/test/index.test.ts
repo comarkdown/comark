@@ -5,7 +5,7 @@ import { parseFrontmatter } from '../src/internal/front-matter'
 import { parse } from 'comark'
 import highlight from 'comark/plugins/highlight'
 import { renderHTML, renderMarkdown } from '../src/string'
-import cjk from '@comark/plugin-cjk'
+import cjk from 'markdown-it-cjk-friendly'
 import type { HighlightOptions } from '../src/plugins/highlight'
 import emoji from '../src/plugins/emoji'
 import type { ComarkPlugin } from 'comark'
@@ -19,7 +19,7 @@ import type { ParseOptions } from '../src/types'
 type PluginName = 'cjk' | 'emoji'
 
 const pluginRegistry: Record<PluginName, () => ComarkPlugin> = {
-  cjk,
+  cjk: () => ({ name: 'cjk', markdownItPlugins: [cjk as any] }),
   emoji,
 }
 

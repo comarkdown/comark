@@ -25,32 +25,28 @@ for (const pkg of frameworkPackages) {
   const distPluginsDir = join(packagesDir, pkg, 'dist', 'plugins')
   mkdirSync(distPluginsDir, { recursive: true })
 
-  // Determine which plugins already have a dist file
-  const existing = existsSync(distPluginsDir)
-    ? new Set(
-        readdirSync(distPluginsDir)
-          .filter(f => f.endsWith('.js') && !f.endsWith('.mjs'))
-          .map(f => basename(f, '.js')),
-      )
-    : new Set()
+  let created = 0
 
-  const missing = comarkPlugins.filter(name => !existing.has(name))
-
-  for (const name of missing) {
+  for (const name of comarkPlugins) {
     // Check if the comark plugin has a default export in its .d.ts
-    const dtsPath = join(comarkPluginsDir, `${name}.d.ts`)
-    const hasDefault = existsSync(dtsPath) &&
-      /^export default /m.test(readFileSync(dtsPath, 'utf-8'))
+    const comarkDtsPath = join(comarkPluginsDir, `${name}.d.ts`)
+    const hasDefault = existsSync(comarkDtsPath)
+      && /^export default /m.test(readFileSync(comarkDtsPath, 'utf-8'))
 
-    const reexport = `export * from 'comark/plugins/${name}';\n` +
-      (hasDefault ? `export { default } from 'comark/plugins/${name}';\n` : '')
+    const reexport = `export * from 'comark/plugins/${name}';\n`
+      + (hasDefault ? `export { default } from 'comark/plugins/${name}';\n` : '')
 
-    writeFileSync(join(distPluginsDir, `${name}.js`), reexport)
-    writeFileSync(join(distPluginsDir, `${name}.d.ts`), reexport)
-    console.log(`[sync-plugins] ${pkg}/dist/plugins/${name}: created`)
+    for (const ext of ['.js', '.d.ts']) {
+      const dest = join(distPluginsDir, `${name}${ext}`)
+      if (!existsSync(dest)) {
+        writeFileSync(dest, reexport)
+        console.log(`[sync-plugins] ${pkg}/dist/plugins/${name}${ext}: created`)
+        created++
+      }
+    }
   }
 
-  if (missing.length === 0) {
+  if (created === 0) {
     console.log(`[sync-plugins] ${pkg}: all plugins already present`)
   }
 }

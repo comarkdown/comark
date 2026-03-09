@@ -17,7 +17,8 @@ function walkDir(dir) {
     const full = join(dir, entry)
     if (statSync(full).isDirectory()) {
       files.push(...walkDir(full))
-    } else if (/\.tsx?$/.test(entry) && !entry.endsWith('.d.ts')) {
+    }
+    else if (/\.tsx?$/.test(entry) && !entry.endsWith('.d.ts')) {
       files.push(full)
     }
   }
@@ -27,8 +28,8 @@ function walkDir(dir) {
 const srcFiles = walkDir(srcDir)
 
 for (const srcFile of srcFiles) {
-  const rel = relative(srcDir, srcFile)      // e.g. 'index.ts', 'ast/index.ts'
-  const base = rel.replace(/\.tsx?$/, '')    // e.g. 'index', 'ast/index'
+  const rel = relative(srcDir, srcFile) // e.g. 'index.ts', 'ast/index.ts'
+  const base = rel.replace(/\.tsx?$/, '') // e.g. 'index', 'ast/index'
   const distJs = join(distDir, base + '.js')
   const distDts = join(distDir, base + '.d.ts')
 
@@ -42,15 +43,15 @@ for (const srcFile of srcFiles) {
 
   // JS stub: re-export from source (bundlers handle .ts imports)
   writeFileSync(distJs,
-    `export * from '${srcRel}'\n` +
-    (hasDefault ? `export { default } from '${srcRel}'\n` : ''),
+    `export * from '${srcRel}'\n`
+    + (hasDefault ? `export { default } from '${srcRel}'\n` : ''),
   )
 
   // .d.ts stub: TypeScript follows this to find types from source
   const srcRelNoExt = srcRel.replace(/\.tsx?$/, '')
   writeFileSync(distDts,
-    `export * from '${srcRelNoExt}'\n` +
-    (hasDefault ? `export { default } from '${srcRelNoExt}'\n` : ''),
+    `export * from '${srcRelNoExt}'\n`
+    + (hasDefault ? `export { default } from '${srcRelNoExt}'\n` : ''),
   )
 }
 
