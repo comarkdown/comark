@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import { parse } from 'comark'
-import type { ComarkTree } from 'comark/ast'
 import type { ParseOptions } from 'comark'
 import { ComarkRenderer } from './ComarkRenderer'
+import { ComarkClient } from './ComarkClient'
 
 export interface ComarkProps {
   /**
@@ -39,7 +39,8 @@ export interface ComarkProps {
   componentsManifest?: (name: string) => Promise<{ default: React.ComponentType<any> }>
 
   /**
-   * Enable streaming mode with enhanced components (e.g., ShikiCodeBlock)
+   * Enable streaming mode — delegates to ComarkClient for client-side re-rendering
+   * when the markdown prop changes. Use this for LLM streaming output.
    */
   streaming?: boolean
 
@@ -58,8 +59,8 @@ export interface ComarkProps {
 /**
  * Comark component
  *
- * High-level component that accepts markdown as a string prop,
- * parses it, and renders it using ComarkRenderer.
+ * Async server component that parses markdown on the server and renders it.
+ * When `streaming` is true, delegates to ComarkClient for client-side re-rendering.
  *
  * @example
  * ```tsx
@@ -86,7 +87,7 @@ export interface ComarkProps {
  * }
  * ```
  */
-export const Comark: React.FC<ComarkProps> = ({
+export async function Comark({
   children,
   markdown = '',
   options = {},
@@ -96,33 +97,25 @@ export const Comark: React.FC<ComarkProps> = ({
   streaming = false,
   caret = false,
   className,
-}) => {
-  const [parsed, setParsed] = useState<ComarkTree | null>(null)
+}: ComarkProps) {
+  const source = children ? String(children) : markdown
 
-  // Parse the markdown content
-  useEffect(() => {
-    let isMounted = true
-
-    // Use async parse for non-streaming mode (supports code highlighting, etc.)
-    parse(children ? String(children) : markdown, {
-      ...options,
-      plugins,
-    }).then((result) => {
-      if (isMounted) {
-        setParsed(result)
-      }
-    }).catch((error) => {
-      console.error('Failed to parse markdown:', error)
-    })
-
-    return () => {
-      isMounted = false
-    }
-  }, [markdown, children, plugins, streaming])
-
-  if (!parsed) {
-    return null
+  if (streaming) {
+    return (
+      <ComarkClient
+        markdown={source}
+        options={options}
+        plugins={plugins}
+        components={customComponents}
+        componentsManifest={componentsManifest}
+        streaming={streaming}
+        caret={caret}
+        className={className}
+      />
+    )
   }
+
+  const parsed = await parse(source, { ...options, plugins })
 
   return (
     <ComarkRenderer

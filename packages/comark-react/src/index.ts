@@ -4,6 +4,7 @@ import type { ComarkProps } from './components/Comark'
 import type { ParseOptions } from 'comark'
 
 export { ComarkRenderer } from './components/ComarkRenderer'
+export { ComarkClient } from './components/ComarkClient'
 export { Comark }
 export type * from 'comark'
 
