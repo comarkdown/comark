@@ -1,5 +1,5 @@
-import type { ComarkParseFn, ComarkParsePostState, ParseOptions } from './types'
-import MarkdownIt from 'markdown-exit'
+import type { ComarkParseFn, ComarkParsePostState, MarkdownExitPlugin, ParseOptions } from './types'
+import MarkdownExit from 'markdown-exit'
 import pluginMdc from '@comark/markdown-it'
 import taskList from './plugins/task-list'
 import alert from './plugins/alert'
@@ -48,7 +48,7 @@ export function createParse(options: ParseOptions = {}): ComarkParseFn {
   plugins.unshift(taskList())
   plugins.unshift(alert())
 
-  const parser = new MarkdownIt({
+  const parser = new MarkdownExit({
     html: true,
     linkify: true,
   })
@@ -57,7 +57,7 @@ export function createParse(options: ParseOptions = {}): ComarkParseFn {
 
   for (const plugin of plugins) {
     for (const markdownItPlugin of (plugin.markdownItPlugins || [])) {
-      parser.use(markdownItPlugin)
+      parser.use(markdownItPlugin as unknown as MarkdownExitPlugin)
     }
   }
 

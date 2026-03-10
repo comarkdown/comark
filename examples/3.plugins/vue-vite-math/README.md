@@ -17,9 +17,8 @@ createApp(App).mount('#app')
 
 ```vue [src/App.vue]
 <script setup lang="ts">
-import { Comark } from 'comark/vue'
-import math from '@comark/math'
-import { Math } from '@comark/math/vue'
+import { Comark } from '@comark/vue'
+import math, { Math } from '@comark/vue/plugins/math'
 
 const markdown = `
 # Math Formula Examples

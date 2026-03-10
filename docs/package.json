@@ -2,12 +2,11 @@
   "name": "Comark",
   "scripts": {
     "dev": "nuxt dev --extends docus",
-    "build": "nuxt build --extends docus"
+    "build": " pnpm --filter '../' run build && nuxt build --extends docus"
   },
   "dependencies": {
-    "@comark/cjk": "workspace:*",
-    "@comark/math": "workspace:*",
-    "@comark/mermaid": "workspace:*",
+    "@comark/nuxt": "workspace:*",
+    "@comark/vue": "workspace:*",
     "@monaco-editor/loader": "^1.7.0",
     "@nuxtlabs/monarch-mdc": "^0.9.0",
     "@vercel/analytics": "^1.6.1",

@@ -2,7 +2,7 @@
 import { parse } from 'comark'
 import highlight from 'comark/plugins/highlight'
 import { renderMarkdown } from 'comark/string'
-import { ComarkRenderer } from 'comark/vue'
+import { ComarkRenderer } from '@comark/vue'
 import { Splitpanes, Pane } from 'splitpanes'
 import { defaultMarkdown } from '~/constants'
 import { watchDebounced } from '@vueuse/core'
@@ -75,8 +75,6 @@ async function parseMarkdown(): Promise<void> {
   const start = performance.now()
   try {
     const result = await parse(markdown.value, {
-      autoClose: true,
-      autoUnwrap: true,
       plugins,
     })
     tree.value = result

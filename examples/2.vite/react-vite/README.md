@@ -16,7 +16,7 @@ createRoot(document.getElementById('root')!).render(<App />)
 ```
 
 ```tsx [src/App.tsx]
-import { Comark } from 'comark/react'
+import { Comark } from '@comark/react'
 import Alert from './components/Alert'
 
 const markdown = `

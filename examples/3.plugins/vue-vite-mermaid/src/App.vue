@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { Comark } from 'comark/vue'
-import { Mermaid } from '@comark/mermaid/vue'
-import mermaid from '@comark/mermaid'
+import { Comark } from '@comark/vue'
+import mermaid, { Mermaid } from '@comark/vue/plugins/mermaid'
 
 const markdown = `
 # Mermaid Diagram Example

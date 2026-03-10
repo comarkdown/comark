@@ -1,12 +1,18 @@
 <script setup lang="ts">
 import { computed, nextTick, ref } from 'vue'
-import { Comark } from 'comark/vue'
 import { useMDCStream } from '../composables/useMDCStream'
 import { stringToStream } from '../composables/stringToStream'
 import resolveComponent from '../utils/components-manifest'
 
 definePageMeta({
   footer: false,
+})
+useSeoMeta({
+  title: 'Streaming Demo - Comark',
+  description: 'See Comark streaming in action. Watch markdown content parse and render in real-time as it arrives.',
+})
+defineOgImageComponent('Docs', {
+  headline: 'Streaming',
 })
 
 const { state, startStream, isStreaming, reset: resetStream } = useMDCStream({
@@ -135,8 +141,6 @@ Everything you need for modern content parsing
 :landing-gfm
 
 :landing-code-block
-
-:landing-cjk
 
 `
 

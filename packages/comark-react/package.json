@@ -1,0 +1,53 @@
+{
+  "name": "@comark/react",
+  "type": "module",
+  "version": "0.0.1",
+  "description": "React components for Comark",
+  "exports": {
+    ".": "./dist/index.js",
+    "./plugins/*": "./dist/plugins/*.js"
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "stub": "node ../../scripts/stub.mjs",
+    "build": "tsc -p tsconfig.build.json",
+    "dev": "tsc -p tsconfig.build.json --watch",
+    "test": "vitest run",
+    "prepack": "tsc -p tsconfig.build.json",
+    "release": "release-it"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "beautiful-mermaid": "^1.1.3",
+    "katex": "^0.16.33",
+    "shiki": "^3.22.0"
+  },
+  "peerDependenciesMeta": {
+    "shiki": {
+      "optional": true
+    },
+    "beautiful-mermaid": {
+      "optional": true
+    },
+    "katex": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "comark": "^0.0.1",
+    "scule": "^1.3.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "comark": "workspace:*",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "vitest": "^4.0.18"
+  }
+}

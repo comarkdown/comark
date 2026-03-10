@@ -1,0 +1,48 @@
+---
+timeout:
+  parse: 5ms
+  html: 5ms
+  markdown: 5ms
+options:
+  autoUnwrap: false
+---
+
+## Input
+
+```md
+> This is a simple blockquote
+```
+
+## AST
+
+```json
+{
+  "frontmatter": {},
+  "meta": {},
+  "nodes": [
+    [
+      "blockquote",
+      {},
+      [
+        "p",
+        {},
+        "This is a simple blockquote"
+      ]
+    ]
+  ]
+}
+```
+
+## HTML
+
+```html
+<blockquote>
+  <p>This is a simple blockquote</p>
+</blockquote>
+```
+
+## Markdown
+
+```md
+> This is a simple blockquote
+```

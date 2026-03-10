@@ -4,6 +4,9 @@ import { indent } from '../indent'
 import { comarkAttributes, comarkYamlAttributes } from '../attributes'
 import { html } from './html'
 
+// HTML elements that always create an inline context for their children
+const INLINE_HTML_ELEMENTS = new Set(['a', 'strong', 'em', 'span'])
+
 export function mdc(node: ComarkElement, state: State, parent?: ComarkElement) {
   const [tag, attr, ...children] = node
   const { $comark, ...attributes } = attr
@@ -14,26 +17,16 @@ export function mdc(node: ComarkElement, state: State, parent?: ComarkElement) {
 
   const attributeEntries = Object.entries(attributes)
   const hasObjectAttributes = attributeEntries.some(([, value]) => typeof value === 'object')
-  // if component has only text children, it is inline
-  let inline = false // children.every((child: ComarkNode) => typeof child === 'string')
 
-  // if component has object attributes, it is not inline
+  // Component is inline if it has text siblings in parent
+  // or is inside an inline HTML element
+  const hasTextSiblings = parent?.some((child, index) => index > 1 && typeof child === 'string') ?? false
+  const insideInlineElement = parent !== undefined && INLINE_HTML_ELEMENTS.has(String(parent[0]))
+  let inline = hasTextSiblings || insideInlineElement
+
+  // if component has object attributes, it cannot be inline
   if (hasObjectAttributes) {
     inline = false
-  }
-
-  if (parent && parent?.length > 3 && parent?.every((child, index) => index < 2 || typeof child !== 'string')) {
-    inline = false
-  }
-
-  // components inside paragraphs are inline
-  if (parent?.[0] === 'p') {
-    inline = true
-  }
-
-  // if component has a text sibling, it is inline
-  if (!inline && parent?.some((child, index) => index > 1 && typeof child === 'string')) {
-    inline = true
   }
 
   const content = children.map((child: ComarkNode) => state.one(child, { ...state, nodeDepthInTree: (state.nodeDepthInTree || 0) + 1 }, node))
@@ -50,12 +43,14 @@ export function mdc(node: ComarkElement, state: State, parent?: ComarkElement) {
   let result = `:${tag}${content && `[${content}]`}${attrs}` + (!parent ? state.context.blockSeparator : '')
 
   if (!inline) {
-    if (attrs.length > 64 || hasObjectAttributes) {
+    const maxInlineAttributes = state.context.maxInlineAttributes ?? 3
+    const useYaml = hasObjectAttributes || maxInlineAttributes === 0 || attributeEntries.length > maxInlineAttributes
+    if (useYaml) {
       const yamlAttrs = comarkYamlAttributes(attributes)
       result = `${fence}${tag}\n${yamlAttrs}${content ? `\n${content}` : ''}\n${fence}` + state.context.blockSeparator
     }
     else {
-      result = `${fence}${tag}${attrs}\n${content}\n${fence}` + state.context.blockSeparator
+      result = `${fence}${tag}${attrs}${content ? `\n${content}` : ''}\n${fence}` + state.context.blockSeparator
     }
   }
 

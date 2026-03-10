@@ -1,0 +1,24 @@
+{
+  "name": "comark-svelte-vite",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@comark/svelte": "workspace:*",
+    "@tailwindcss/vite": "^4.2.0",
+    "comark": "workspace:*"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^6.2.4",
+    "autoprefixer": "^10.4.24",
+    "postcss": "^8.5.6",
+    "svelte": "^5.53.7",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.1"
+  }
+}

@@ -87,17 +87,6 @@ plugins:
 
       $$e^{i\pi} + 1 = 0$$
     package: "@comark/math"
-  - id: cjk
-    name: CJK
-    icon: i-lucide-languages
-    description: Improved line breaking and spacing between CJK and Latin characters.
-    input: |-
-      # 你好世界
-
-      Comark支持**中文**、_日本語_、한국어等CJK文字。
-
-      混合English和中文的排版效果更好。
-    package: "@comark/cjk"
   - id: highlight
     name: Highlight
     icon: i-lucide-code
@@ -136,7 +125,7 @@ plugins:
 
       Full API docs.
     package: comark
-description: Extend Comark with plugins for math formulas, CJK text, syntax
+description: Extend Comark with plugins for math formulas, syntax
   highlighting, and more.
 headline: Plugins
 linkLabel: Browse all plugins
@@ -165,11 +154,9 @@ footerSections:
       - label: Syntax Highlighting
         to: /plugins/core/highlight
       - label: Math
-        to: /plugins/community/math
-      - label: CJK
-        to: /plugins/community/cjk
+        to: /plugins/external/math
       - label: Mermaid
-        to: /plugins/community/mermaid
+        to: /plugins/external/mermaid
   - title: Community
     links:
       - label: GitHub

@@ -38,5 +38,7 @@ timeout:
 ## Markdown
 
 ```md
-:inline[Syntax]
+::inline
+Syntax
+::
 ```

@@ -8,7 +8,7 @@ timeout:
 ## Input
 
 ```md
-:shorthand-block
+:no-sugar-syntax
 
 ::component
 #first
@@ -27,7 +27,7 @@ Second Paragraph
   "meta": {},
   "nodes": [
     [
-      "shorthand-block",
+      "no-sugar-syntax",
       {}
     ],
     [
@@ -38,22 +38,14 @@ Second Paragraph
         {
           "name": "first"
         },
-        [
-          "p",
-          {},
-          "First Paragraph"
-        ]
+        "First Paragraph"
       ],
       [
         "template",
         {
           "name": "second"
         },
-        [
-          "p",
-          {},
-          "Second Paragraph"
-        ]
+        "Second Paragraph"
       ]
     ]
   ]
@@ -63,13 +55,13 @@ Second Paragraph
 ## HTML
 
 ```html
-<shorthand-block></shorthand-block>
+<no-sugar-syntax></no-sugar-syntax>
 <component>
   <template name="first">
-    <p>First Paragraph</p>
+    First Paragraph
   </template>
   <template name="second">
-    <p>Second Paragraph</p>
+    Second Paragraph
   </template>
 </component>
 ```
@@ -77,7 +69,8 @@ Second Paragraph
 ## Markdown
 
 ```md
-:shorthand-block
+::no-sugar-syntax
+::
 
 ::component
 #first

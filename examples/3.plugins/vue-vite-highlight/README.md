@@ -49,7 +49,7 @@ createApp(App).mount('#app')
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { content } from './content'
-import { Comark } from 'comark/vue'
+import { Comark } from '@comark/vue'
 import highlight from 'comark/plugins/highlight'
 
 // Import themes and languages directly

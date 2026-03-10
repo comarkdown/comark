@@ -32,22 +32,14 @@ Second Paragraph
         {
           "name": "first"
         },
-        [
-          "p",
-          {},
-          "First Paragraph"
-        ]
+        "First Paragraph"
       ],
       [
         "template",
         {
           "name": "second"
         },
-        [
-          "p",
-          {},
-          "Second Paragraph"
-        ]
+        "Second Paragraph"
       ]
     ]
   ]
@@ -59,10 +51,10 @@ Second Paragraph
 ```html
 <component>
   <template name="first">
-    <p>First Paragraph</p>
+    First Paragraph
   </template>
   <template name="second">
-    <p>Second Paragraph</p>
+    Second Paragraph
   </template>
 </component>
 ```

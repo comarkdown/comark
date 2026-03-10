@@ -15,19 +15,14 @@
     "react"
   ],
   "exports": {
-    ".": "./dist/index.mjs",
-    "./ast": "./dist/ast/index.mjs",
-    "./vue": "./dist/vue/index.mjs",
-    "./vue/*": "./dist/vue/*.mjs",
-    "./react": "./dist/react/index.mjs",
-    "./react/*": "./dist/react/*.mjs",
-    "./string": "./dist/string.mjs",
-    "./plugins/*": "./dist/plugins/*.mjs",
-    "./nuxt": "./dist/nuxt/module.mjs"
+    ".": "./dist/index.js",
+    "./ast": "./dist/ast/index.js",
+    "./string": "./dist/string.js",
+    "./plugins/*": "./dist/plugins/*.js"
   },
-  "main": "./dist/index.mjs",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.mts",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "files": [
     "dist"
   ],
@@ -35,26 +30,28 @@
     "access": "public"
   },
   "scripts": {
-    "build": "obuild",
+    "stub": "node ../../scripts/stub.mjs",
+    "build": "tsc -p tsconfig.build.json",
+    "dev": "tsc -p tsconfig.build.json --watch",
     "test": "vitest run",
     "benchmark": "node --import tsx benchmark.ts",
-    "prepack": "obuild",
+    "prepack": "tsc -p tsconfig.build.json",
     "release": "release-it",
     "release:dry": "release-it --dry-run"
   },
   "peerDependencies": {
-    "react": "^19.2.4",
-    "shiki": "^3.22.0",
-    "vue": "^3.5.27"
+    "beautiful-mermaid": "^1.1.3",
+    "katex": "^0.16.33",
+    "shiki": "^3.22.0"
   },
   "peerDependenciesMeta": {
-    "react": {
-      "optional": true
-    },
-    "vue": {
-      "optional": true
-    },
     "shiki": {
+      "optional": true
+    },
+    "beautiful-mermaid": {
+      "optional": true
+    },
+    "katex": {
       "optional": true
     }
   },
@@ -62,20 +59,21 @@
     "htmlparser2": "^9.0.0"
   },
   "devDependencies": {
-    "@comark/cjk": "workspace:*",
-    "@comark/markdown-it": "^0.3.1",
     "@nuxt/kit": "^4.3.1",
     "@shikijs/primitive": "^4.0.1",
     "@types/js-yaml": "^4.0.9",
     "github-slugger": "^2.0.0",
     "hast-util-to-string": "^3.0.1",
-    "js-yaml": "^4.1.1",
-    "markdown-exit": "1.0.0-beta.9",
     "markdown-it": "^14.1.1",
     "minimark": "0.2.0",
     "mitata": "^1.0.34",
-    "obuild": "^0.4.31",
     "tsx": "^4.21.0",
     "vitest": "^4.0.18"
+  },
+  "dependencies": {
+    "@comark/markdown-it": "^0.3.2",
+    "entities": "^4.5.0",
+    "js-yaml": "^4.1.1",
+    "markdown-exit": "1.0.0-beta.9"
   }
 }

@@ -40,5 +40,7 @@ timeout:
 ## Markdown
 
 ```md
-:inline[Syntax]{with="prop"}
+::inline{with="prop"}
+Syntax
+::
 ```

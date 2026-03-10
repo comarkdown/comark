@@ -4,7 +4,6 @@ timeout:
   html: 5ms
   markdown: 5ms
 options:
-  autoUnwrap: true
   plugins:
     - emoji
 ---
@@ -56,7 +55,11 @@ options:
 ## Markdown
 
 ```md
-:alert[✅ Successfully deployed! 🚀]{type="success"}
+::alert{type="success"}
+✅ Successfully deployed! 🚀
+::
 
-:alert[⚠️ Please backup your data before proceeding]{type="warning"}
+::alert{type="warning"}
+⚠️ Please backup your data before proceeding
+::
 ```

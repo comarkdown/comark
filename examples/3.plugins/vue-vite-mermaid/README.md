@@ -17,9 +17,8 @@ createApp(App).mount('#app')
 
 ```vue [src/App.vue]
 <script setup lang="ts">
-import { Comark } from 'comark/vue'
-import mermaid from '@comark/mermaid'
-import { Mermaid } from '@comark/mermaid/vue'
+import { Comark } from '@comark/vue'
+import mermaid, { Mermaid } from '@comark/vue/plugins/mermaid'
 
 const markdown = `
 # Mermaid Diagram Example
@@ -145,7 +144,7 @@ This example demonstrates how to use Comark with Mermaid diagrams in Vue:
 1. Import the mermaid plugin and component:
    ```ts
    import mermaid from '@comark/mermaid'
-   import { Mermaid } from '@comark/mermaid/vue'
+   import { Mermaid } from '@comark/vue/plugins/mermaid/vue'
    ```
 
 2. Pass the plugin to Comark:

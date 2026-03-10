@@ -8,8 +8,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@comark/math": "workspace:*",
-    "comark": "workspace:*",
+    "@comark/vue": "workspace:*",
     "katex": "^0.16.33",
     "vue": "^3.5.29"
   },

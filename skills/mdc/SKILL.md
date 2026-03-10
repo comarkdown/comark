@@ -59,7 +59,7 @@ console.log(result.meta.toc)    // Table of contents
 </template>
 
 <script setup lang="ts">
-import { Comark } from 'comark/vue'
+import { Comark } from '@comark/vue'
 
 const content = `# Hello World`
 </script>
@@ -68,7 +68,7 @@ const content = `# Hello World`
 ### React Rendering
 
 ```tsx
-import { Comark } from 'comark/react'
+import { Comark } from '@comark/react'
 
 export default function App() {
   return <Comark markdown={content} />
@@ -231,7 +231,7 @@ async function processMarkdownFile(filePath: string) {
 
 ```tsx
 import { useState } from 'react'
-import { Comark } from 'comark/react'
+import { Comark } from '@comark/react'
 
 export default function Editor() {
   const [content, setContent] = useState('# Hello')
@@ -276,7 +276,7 @@ async function processMultipleFiles(files: string[]) {
 </template>
 
 <script setup lang="ts">
-import { Comark } from 'comark/vue'
+import { Comark } from '@comark/vue'
 import { docComponents } from './components'
 </script>
 ```
@@ -358,7 +358,7 @@ import type {
                  │
         ┌────────▼────────┐
         │  MarkdownIt     │
-        │  + Plugins      │ (Comark, Tasks, CJK)
+        │  + Plugins      │ (Comark, Tasks)
         └────────┬────────┘
                  │
         ┌────────▼────────┐

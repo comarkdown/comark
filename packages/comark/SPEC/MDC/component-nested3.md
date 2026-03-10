@@ -47,11 +47,7 @@ First Paragraph
         [
           "grand-child",
           {},
-          [
-            "p",
-            {},
-            "Third Paragraph"
-          ]
+          "Third Paragraph"
         ]
       ]
     ]
@@ -67,7 +63,7 @@ First Paragraph
   <child>
     <p>Second Paragraph</p>
     <grand-child>
-      <p>Third Paragraph</p>
+      Third Paragraph
     </grand-child>
   </child>
 </component>
