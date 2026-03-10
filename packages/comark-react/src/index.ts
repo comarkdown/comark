@@ -19,9 +19,8 @@ interface DefineComarkComponentOptions extends ParseOptions {
  * @example
  * ```tsx
  * import { defineComarkComponent } from '@comark/react'
- * import math from '@comark/plugin-math'
- * import highlight from 'comark/plugins/highlight'
- * import { Math } from '@comark/plugin-math/react'
+ * import math, { Math } from '@comark/react/plugins/math'
+ * import highlight from '@comark/react/plugins/highlight'
  *
  * export const AppComark = defineComarkComponent({
  *   name: 'AppComark',

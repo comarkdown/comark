@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { content } from './content'
 import { Comark } from '@comark/vue'
-import highlight from 'comark/plugins/highlight'
+import highlight from '@comark/vue/plugins/highlight'
 
 // Import themes and languages directly
 import githubLight from '@shikijs/themes/github-light'
