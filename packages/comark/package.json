@@ -60,7 +60,7 @@
   },
   "devDependencies": {
     "@comark/cjk": "workspace:*",
-    "@comark/markdown-it": "^0.3.1",
+    "@comark/markdown-it": "^0.3.2",
     "@nuxt/kit": "^4.3.1",
     "@shikijs/primitive": "^4.0.1",
     "@types/js-yaml": "^4.0.9",
