@@ -324,15 +324,9 @@ export const ComarkRenderer: ComarkRendererComponent = defineComponent({
     const componentErrors = ref(new Set<string>())
 
     // Capture errors from child components (e.g., during streaming when props are incomplete)
-    onErrorCaptured((err, instance, info) => {
+    onErrorCaptured((_err, instance, _info) => {
       // Get component name from instance
       const componentName = (instance?.$?.type as any)?.name || (instance as any)?.type?.name || 'unknown'
-
-      // Log error in development
-      if (import.meta.dev) {
-        console.warn(`[ComarkRenderer] Error in component "${componentName}":`, err)
-        console.warn('Error info:', info)
-      }
 
       // Track failed component to prevent re-rendering during streaming
       componentErrors.value.add(componentName)

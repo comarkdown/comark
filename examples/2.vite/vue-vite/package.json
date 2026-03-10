@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.2.1",
-    "comark": "workspace:*",
+    "@comark/vue": "latest",
     "vue": "^3.5.29"
   },
   "devDependencies": {

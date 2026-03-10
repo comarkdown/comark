@@ -290,12 +290,12 @@ importers:
 
   examples/2.vite/vue-vite:
     dependencies:
+      '@comark/vue':
+        specifier: workspace:*
+        version: link:../../../packages/comark-vue
       '@tailwindcss/vite':
         specifier: ^4.2.1
         version: 4.2.1(vite@7.3.1(@types/node@25.3.3)(jiti@2.6.1)(lightningcss@1.31.1)(sass@1.97.3)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
-      comark:
-        specifier: workspace:*
-        version: link:../../../packages/comark
       vue:
         specifier: ^3.5.29
         version: 3.5.29(typescript@5.9.3)
