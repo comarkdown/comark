@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { Comark } from 'comark/vue'
 import highlight from 'comark/plugins/highlight'
 import resolveComponent from '../utils/components-manifest'
 

@@ -35,11 +35,7 @@ First Paragraph
       [
         "child",
         {},
-        [
-          "p",
-          {},
-          "Second Paragraph"
-        ]
+        "Second Paragraph"
       ]
     ]
   ]
@@ -52,7 +48,7 @@ First Paragraph
 <component>
   <p>First Paragraph</p>
   <child>
-    <p>Second Paragraph</p>
+    Second Paragraph
   </child>
 </component>
 ```

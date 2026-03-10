@@ -16,7 +16,7 @@ export function comarkAttributes(attributes: Record<string, unknown>) {
         return `#${value}`
       }
       if (key === 'class') {
-        return `.${value}`
+        return (value as string).split(' ').map(c => `.${c}`).join('')
       }
 
       if (typeof value === 'object') {
@@ -44,9 +44,10 @@ export function htmlAttributes(attributes: Record<string, unknown>) {
         if (value === 'true') {
           return key.slice(1)
         }
-
         return `${key.slice(1)}="${value}"`
       }
+
+      if (value === 'true') return key
 
       if (typeof value === 'object') {
         return `${key}="${JSON.stringify(value).replace(/"/g, '\\"')}"`
@@ -64,5 +65,14 @@ export function htmlAttributes(attributes: Record<string, unknown>) {
  * @returns The stringified attributes
  */
 export function comarkYamlAttributes(attributes: Record<string, unknown>) {
-  return `---\n${stringifyYaml(attributes).trim()}\n---`
+  // Normalize boolean attributes to remove the colon prefix
+  const normalized = Object.fromEntries(
+    Object.entries(attributes).map(([key, value]) => {
+      if (key.startsWith(':') && (value === 'true' || value === 'false')) {
+        return [key.slice(1), value]
+      }
+      return [key, value]
+    }),
+  )
+  return `---\n${stringifyYaml(normalized).trim()}\n---`
 }

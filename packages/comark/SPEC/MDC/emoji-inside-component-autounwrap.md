@@ -4,7 +4,6 @@ timeout:
   html: 5ms
   markdown: 5ms
 options:
-  autoUnwrap: true
   plugins:
     - emoji
 ---

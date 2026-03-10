@@ -75,7 +75,8 @@ function processAttributes(
 
   for (const attr of attrsArray) {
     if (Array.isArray(attr) && attr.length >= 2) {
-      let [key, value] = attr
+      const [key] = attr
+      let value = attr[1]
 
       // Filter empty values if requested
       if (filterEmpty && (value === '' || value === null || value === undefined)) {
@@ -84,8 +85,8 @@ function processAttributes(
 
       // Handle boolean attributes: {bool} -> {":bool": "true"}
       if (handleBoolean && !key.startsWith(':') && !key.startsWith('#') && !key.startsWith('.') && (!value || value === 'true' || value === '')) {
-        key = `:${key}`
-        value = 'true'
+        attrs[`:${key}`] = 'true'
+        continue
       }
 
       // Handle JSON values
@@ -108,7 +109,13 @@ function processAttributes(
         }
       }
 
-      attrs[key] = value
+      // Handle class attribute (multiple classes)
+      if (key === 'class' && typeof attrs[key] === 'string') {
+        attrs[key] = `${attrs[key]} ${value}`
+      }
+      else {
+        attrs[key] = value
+      }
     }
   }
 
@@ -310,7 +317,7 @@ function processBlockToken(tokens: any[], startIndex: number, insideNestedContex
   // Handle Comark block components (e.g., ::component ... ::)
   if (token.type === 'mdc_block_open') {
     const componentName = token.tag || 'component'
-    const attrs = processAttributes(token.attrs, { handleBoolean: false })
+    const attrs = processAttributes(token.attrs)
     // Process children until mdc_block_close, handling slots (#slotname)
     const children = processBlockChildrenWithSlots(tokens, startIndex + 1, 'mdc_block_close')
     // Return the component even if it has no children (empty component like ::component\n::)

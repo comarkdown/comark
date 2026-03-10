@@ -4,11 +4,9 @@ description: Extend Comark with powerful plugins for syntax highlighting, emojis
 navigation: false
 ---
 
-Comark's plugin system extends markdown functionality with specialized features. Plugins can add new syntax, transform content, or enhance rendering.
+Comark's plugin system extends markdown functionality with specialized features. All plugins are part of the core `comark` package.
 
-## Core Plugins
-
-Core plugins are built-in and part of the main `comark` package:
+## Plugins
 
 ::card-group{cols="2"}
   ::card{icon="i-lucide-shield-check" title="Security" to="/plugins/core/security"}
@@ -32,25 +30,19 @@ Core plugins are built-in and part of the main `comark` package:
   ::
 
   ::card{icon="i-lucide-bell" title="Alerts" to="/plugins/core/alert"}
-  Render GitHub-style alert blockquotes with icons and colors (built-in)
+  Render GitHub-style alert blockquotes with icons and colors
   ::
-::
 
-## External Plugins
+  ::card{icon="i-lucide-check-square" title="Task List" to="/plugins/core/task-list"}
+  Render interactive checkboxes from `[ ]` and `[x]` list syntax
+  ::
 
-External plugins are separate packages that extend Comark with specialized features:
-
-::card-group{cols="2"}
-  ::card{icon="i-simple-icons-mermaid" title="Mermaid" to="/plugins/external/mermaid"}
+  ::card{icon="i-simple-icons-mermaid" title="Mermaid" to="/plugins/core/mermaid"}
   Create diagrams and visualizations using Mermaid syntax in code blocks
   ::
 
-  ::card{icon="i-lucide-calculator" title="Math" to="/plugins/external/math"}
+  ::card{icon="i-lucide-calculator" title="Math" to="/plugins/core/math"}
   Render LaTeX math formulas using KaTeX with inline and display equations
-  ::
-
-  ::card{icon="i-lucide-languages" title="CJK Language" to="/plugins/external/cjk"}
-  Optimized text handling for Chinese, Japanese, and Korean languages
   ::
 ::
 
@@ -75,7 +67,7 @@ const result = await parse(content, {
 
 ```vue [Vue]
 <script setup lang="ts">
-import { Comark } from 'comark/vue'
+import { Comark } from '@comark/vue'
 import emoji from 'comark/plugins/emoji'
 </script>
 
@@ -85,7 +77,7 @@ import emoji from 'comark/plugins/emoji'
 ```
 
 ```tsx [React]
-import { Comark } from 'comark/react'
+import { Comark } from '@comark/react'
 import emoji from 'comark/plugins/emoji'
 
 <Comark plugins={[emoji()]}>{content}</Comark>

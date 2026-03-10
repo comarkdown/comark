@@ -3,8 +3,6 @@ timeout:
   parse: 50ms
   html: 5ms
   markdown: 5ms
-options:
-  autoUnwrap: true
 ---
 
 ## Input
@@ -99,7 +97,7 @@ options:
             "button",
             {
               ":data-testid": "$doc.snippet.description",
-              "external": "true",
+              ":external": "true",
               ":to": "$doc.snippet.link",
               "appearance": "primary"
             },
@@ -131,7 +129,7 @@ options:
       <button to="$doc.snippet.link" appearance="primary">
         Button Text
       </button>
-      <button data-testid="$doc.snippet.description" external="true" to="$doc.snippet.link" appearance="primary">
+      <button data-testid="$doc.snippet.description" external to="$doc.snippet.link" appearance="primary">
         Button Text
       </button>
     </template>

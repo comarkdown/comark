@@ -59,13 +59,22 @@ export function renderHTML(tree: ComarkTree, options?: RenderHTMLOptions): strin
   return stringify(tree, { format: 'text/html', handlers }).trim()
 }
 
+export interface RenderMarkdownOptions {
+  /**
+   * Maximum number of inline attributes before switching to YAML block syntax.
+   * Set to 0 to always use YAML block syntax.
+   * @default 3
+   */
+  maxInlineAttributes?: number
+}
+
 /**
  * Render Comark tree to markdown
  *
  * @param tree - The Comark tree to render
- * @param data - The data to render
+ * @param options - Optional rendering options
  * @returns The markdown string with optional frontmatter
  */
-export function renderMarkdown(tree: ComarkTree): string {
-  return renderFrontmatter(tree.frontmatter, stringify(tree, { format: 'markdown/mdc' }))
+export function renderMarkdown(tree: ComarkTree, options?: RenderMarkdownOptions): string {
+  return renderFrontmatter(tree.frontmatter, stringify(tree, { format: 'markdown/mdc', ...options }))
 }

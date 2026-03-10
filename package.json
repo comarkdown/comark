@@ -13,10 +13,10 @@
     "dev:playground": "nuxt dev playground",
     "dev:prepare": "nuxt prepare playground",
     "dev:react": "pnpm --filter comark-react-vite run dev",
+    "dev:svelte": "pnpm --filter comark-svelte-vite run dev",
     "dev:vue": "pnpm --filter comark-vue-vite run dev",
     "dev:vue:mermaid": "pnpm --filter comark-vue-vite-mermaid run dev",
     "dev:vue:math": "pnpm --filter comark-vue-vite-math run dev",
-    "dev:vue:cjk": "pnpm --filter comark-vue-vite-cjk run dev",
     "dev:astro": "pnpm --filter comark-astro run dev",
     "dev:vitepress": "pnpm --filter comark-vitepress run dev",
     "dev:nuxt": "pnpm --filter comark-nuxt run dev",
@@ -25,16 +25,19 @@
     "dev:highlight": "pnpm --filter comark-vue-vite-highlight run dev",
     "benchmark": "pnpm --filter comark run benchmark",
     "docs": "nuxt dev --extends docus docs",
-    "prepack": "pnpm build",
-    "build": "pnpm --filter './packages/**' run build",
+    "prepack": "pnpm build && pnpm sync-plugins",
+    "stub": "pnpm --parallel --filter './packages/**' run stub && pnpm sync-plugins",
+    "sync-plugins": "node scripts/sync-plugins.mjs",
+    "dev:packages": "pnpm --parallel --filter './packages/**' run dev",
+    "build": "pnpm --filter './packages/**' run build && pnpm sync-plugins",
     "test": "pnpm --filter 'comark' run test && pnpm --filter '@comark/*' run test",
     "test:spec": "cd packages/comark && pnpm vitest run test/index.test.ts -- -spec",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "verify": "pnpm run lint && pnpm run test && pnpm run typecheck",
-    "release": "pnpm --filter 'comark' run release && pnpm --filter '@comark/cjk' run release && pnpm --filter '@comark/math' run release",
-    "release:dry": "pnpm --filter 'comark' run release:dry && pnpm --filter '@comark/cjk' run release:dry && pnpm --filter '@comark/math' run release:dry",
-    "postinstall": "pnpm --filter 'comark' run build --stub && pnpm --filter '@comark/*' run build --stub"
+    "release": "pnpm --filter 'comark' run release && pnpm --filter '@comark/*' run release",
+    "release:dry": "pnpm --filter 'comark' run release:dry && pnpm --filter '@comark/*' run release:dry",
+    "postinstall": "pnpm stub"
   },
   "devDependencies": {
     "@nuxt/eslint-config": "^1.15.2",
@@ -42,6 +45,7 @@
     "@types/node": "^25.3.3",
     "@vitejs/plugin-vue": "^6.0.4",
     "eslint": "^10.0.2",
+    "eslint-plugin-svelte": "^3.15.0",
     "nuxt": "^4.3.1",
     "release-it": "^19.2.4",
     "remark-gfm": "^4.0.1",
@@ -51,5 +55,11 @@
     "scule": "^1.3.0",
     "typescript": "^5.9.3",
     "unified": "^11.0.5"
+  },
+  "resolutions": {
+    "comark": "workspace:*",
+    "@comark/vue": "workspace:*",
+    "@comark/react": "workspace:*",
+    "@comark/nuxt": "workspace:*"
   }
 }

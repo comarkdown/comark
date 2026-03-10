@@ -1,4 +1,4 @@
-import { Comark } from 'comark/react'
+import { Comark } from '@comark/react'
 import Alert from './components/Alert'
 
 const markdown = `

@@ -25,7 +25,7 @@ Use the `Comark` component to render markdown:
 </template>
 
 <script setup lang="ts">
-import { Comark } from 'comark/vue'
+import { Comark } from '@comark/vue'
 
 const content = `
 # Hello World
@@ -51,7 +51,7 @@ Map custom Vue components to Comark elements:
 </template>
 
 <script setup lang="ts">
-import { Comark } from 'comark/vue'
+import { Comark } from '@comark/vue'
 import CustomHeading from './CustomHeading.vue'
 import CustomAlert from './CustomAlert.vue'
 import CustomCard from './CustomCard.vue'
@@ -163,7 +163,7 @@ Load components dynamically using `componentsManifest`:
 </template>
 
 <script setup lang="ts">
-import { Comark } from 'comark/vue'
+import { Comark } from '@comark/vue'
 
 const componentMap = {
   'alert': () => import('./Alert.vue'),
@@ -303,7 +303,7 @@ The `Comark` component can be used with reactive content for streaming scenarios
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { Comark } from 'comark/vue'
+import { Comark } from '@comark/vue'
 
 const content = ref('')
 const isLoading = ref(true)
@@ -340,7 +340,7 @@ The `Comark` component uses built-in prose styling automatically. You can overri
 </template>
 
 <script setup lang="ts">
-import { Comark } from 'comark/vue'
+import { Comark } from '@comark/vue'
 import CustomAlert from './CustomAlert.vue'
 
 const components = {
@@ -364,7 +364,7 @@ The `Comark` component captures component errors automatically:
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { Comark } from 'comark/vue'
+import { Comark } from '@comark/vue'
 
 const errors = ref<Error[]>([])
 

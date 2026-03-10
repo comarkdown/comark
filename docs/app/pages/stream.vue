@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, nextTick, ref } from 'vue'
-import { Comark } from 'comark/vue'
 import { useMDCStream } from '../composables/useMDCStream'
 import { stringToStream } from '../composables/stringToStream'
 import resolveComponent from '../utils/components-manifest'
@@ -142,8 +141,6 @@ Everything you need for modern content parsing
 :landing-gfm
 
 :landing-code-block
-
-:landing-cjk
 
 `
 

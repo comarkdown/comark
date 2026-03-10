@@ -1,9 +1,6 @@
-import { defineComarkComponent } from 'comark/vue'
-import math from '@comark/math'
-import mermaid from '@comark/mermaid'
-import cjk from '@comark/cjk'
-import { Math } from '@comark/math/vue'
-import { Mermaid } from '@comark/mermaid/vue'
+import { defineComarkComponent } from '@comark/vue'
+import math, { Math } from '@comark/vue/plugins/math'
+import mermaid, { Mermaid } from '@comark/vue/plugins/mermaid'
 import ProsePre from './landing/ProsePre.vue'
 import highlight from 'comark/plugins/highlight'
 import githubLight from '@shikijs/themes/github-light'
@@ -15,7 +12,6 @@ export default defineComarkComponent({
   plugins: [
     math(),
     mermaid(),
-    cjk(),
     highlight({
       themes: {
         light: githubLight,

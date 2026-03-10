@@ -10,7 +10,7 @@ This is a **monorepo** containing multiple packages related to Comark (Component
 
 - Fast synchronous and async parsing via markdown-it
 - Streaming support for real-time/incremental parsing
-- Vue and React renderers
+- Vue, React and Svelte renderers
 - Syntax highlighting via Shiki
 - Auto-close utilities for incomplete markdown (useful for AI streaming)
 
@@ -19,17 +19,17 @@ This is a **monorepo** containing multiple packages related to Comark (Component
 ```
 /                         # Root workspace
 ├── packages/             # All publishable packages
-│   ├── comark/           # Main Comark parser package
-│   ├── comark-cjk/       # CJK support plugin (@comark/cjk)
-│   └── comark-math/      # Math formula support (@comark/math)
+│   ├── comark/           # Main Comark parser + core plugins
+│   ├── comark-vue/       # Vue renderer + plugins (@comark/vue)
+│   ├── comark-react/     # React renderer + plugins (@comark/react)
+│   ├── comark-svelte/    # Svelte renderer + plugins (@comark/svelte)
+│   └── comark-nuxt/      # Nuxt module (@comark/nuxt)
 ├── examples/             # Example applications
-│   ├── vue-vite/         # Vue + Vite + Tailwind CSS v4
-│   ├── react-vite/       # React 19 + Vite + Tailwind CSS v4
-│   ├── nuxt/             # Nuxt example
-│   └── nuxt-ui/          # Nuxt UI example
+│   ├── 1.vue-vite/       # Vue + Vite + Tailwind CSS v4
+│   ├── 2.react-vite/     # React 19 + Vite + Tailwind CSS v4
+│   └── 3.plugins/        # Plugin examples (vue-vite-math, vue-vite-mermaid)
 ├── docs/                 # Documentation site (Docus-based)
-├── playground/           # Development playground
-├── skills/               # AI agent skills definitions
+├── scripts/              # Build/sync scripts
 ├── pnpm-workspace.yaml   # Workspace configuration
 ├── tsconfig.json         # Root TypeScript config
 ├── eslint.config.mjs     # ESLint configuration
@@ -44,178 +44,220 @@ Located at `packages/comark/`:
 packages/comark/
 ├── src/
 │   ├── index.ts              # Core parser: parse(), autoCloseMarkdown()
-│   ├── string.ts             # String rendering: renderHTML(tree, options?), renderMarkdown()
+│   ├── string.ts             # String rendering: renderHTML(), renderMarkdown()
 │   ├── types.ts              # TypeScript interfaces (ParseOptions, etc.)
 │   ├── ast/                  # Comark AST types and utilities
 │   │   ├── index.ts          # Re-exports (comark/ast entry point)
 │   │   ├── types.ts          # ComarkTree, ComarkNode, ComarkElement, ComarkText
 │   │   └── utils.ts          # textContent(), visit() tree utilities
-│   ├── internal/             # Internal implementation (not exported)
-│   │   ├── front-matter.ts   # YAML frontmatter parsing/rendering
-│   │   ├── yaml.ts           # YAML serialization utilities
-│   │   ├── props-validation.ts # Component props validation
-│   │   ├── parse/            # Parsing pipeline
-│   │   │   ├── token-processor.ts     # markdown-it token → Comark AST conversion
-│   │   │   ├── auto-close.ts          # Auto-close incomplete markdown/Comark
-│   │   │   ├── auto-unwrap.ts         # Remove unnecessary <p> wrappers
-│   │   │   ├── table-of-contents.ts   # TOC generation
-│   │   │   ├── shiki-highlighter.ts   # Syntax highlighting via Shiki
-│   │   │   └── markdown-it-task-lists-mdc.ts # Task list plugin
-│   │   └── stringify/        # AST → string rendering
-│   │       ├── index.ts      # Main stringify entry
-│   │       ├── state.ts      # Rendering state management
-│   │       ├── types.ts      # Stringify type definitions
-│   │       ├── attributes.ts # Attribute serialization
-│   │       ├── indent.ts     # Indentation handling
-│   │       └── handlers/     # Per-element render handlers (a, p, pre, heading, etc.)
-│   ├── vue/                  # Vue components
-│   │   ├── index.ts          # Vue entry point (comark/vue)
-│   │   └── components/
-│   │       ├── Comark.ts     # High-level markdown → render component
-│   │       ├── ComarkRenderer.ts  # Low-level AST → render component
-│   │       ├── index.ts      # Component re-exports
-│   │       └── prose/
-│   │           └── ProsePre.vue # Code block prose component
-│   ├── react/                # React components
-│   │   ├── index.ts          # React entry point (comark/react)
-│   │   └── components/
-│   │       ├── Comark.tsx    # High-level markdown → render component
-│   │       ├── ComarkRenderer.tsx # Low-level AST → render component
-│   │       ├── index.tsx     # Component re-exports
-│   │       └── prose/
-│   │           └── ProsePre.tsx # Code block prose component
-│   └── utils/
-│       └── caret.ts          # Caret/cursor utilities
+│   ├── plugins/              # Built-in and optional plugins
+│   │   ├── alert.ts          # Alert/callout blocks
+│   │   ├── emoji.ts          # Emoji shortcodes
+│   │   ├── highlight.ts      # Syntax highlighting via Shiki (peer: shiki)
+│   │   ├── math.ts           # LaTeX math via KaTeX (peer: katex)
+│   │   ├── mermaid.ts        # Mermaid diagrams (peer: beautiful-mermaid)
+│   │   ├── security.ts       # XSS/security sanitization
+│   │   ├── summary.ts        # Summary extraction
+│   │   ├── task-list.ts      # GFM task lists
+│   │   └── toc.ts            # Table of contents
+│   └── internal/             # Internal implementation (not exported)
+│       ├── front-matter.ts
+│       ├── parse/            # Parsing pipeline
+│       └── stringify/        # AST → string rendering
 ├── test/                 # Vitest test files
-├── SPEC/                 # Markdown spec test files (CommonMark, GFM, MDC)
-├── package.json          # Package manifest
-├── tsconfig.json         # TypeScript config
-├── build.config.mjs      # Build configuration (obuild)
-└── vitest.config.ts      # Test configuration
+├── package.json
+└── tsconfig.build.json
 ```
 
-## Package: @comark/cjk
+### Peer dependencies
 
-CJK (Chinese, Japanese, Korean) support plugin. Located at `packages/comark-cjk/`:
+| Peer | Required by |
+|------|-------------|
+| `shiki` | `comark/plugins/highlight` |
+| `katex` | `comark/plugins/math` |
+| `beautiful-mermaid` | `comark/plugins/mermaid` |
+
+All are optional — only install what you use.
+
+## Package: @comark/vue
+
+Located at `packages/comark-vue/`. Vue 3 renderer with framework-specific plugin wrappers.
 
 ```
-packages/comark-cjk/
+packages/comark-vue/
 ├── src/
-│   └── index.ts          # Plugin export
-├── test/                 # Vitest test files (23 tests)
-├── package.json          # Package manifest
-├── tsconfig.json         # TypeScript config
-├── build.config.mjs      # Build configuration
-└── vitest.config.ts      # Test configuration
+│   ├── index.ts              # Entry point
+│   ├── components/
+│   │   ├── Comark.ts         # High-level markdown → render component
+│   │   ├── ComarkRenderer.ts # Low-level AST → render component
+│   │   ├── Math.ts           # Math rendering component
+│   │   └── Mermaid.ts        # Mermaid rendering component
+│   └── plugins/
+│       ├── math.ts           # Re-exports comark/plugins/math + Math component
+│       └── mermaid.ts        # Re-exports comark/plugins/mermaid + Mermaid component
+├── package.json
+└── tsconfig.build.json
+```
+
+### Exports
+
+```json
+{
+  ".": "./dist/index.js",
+  "./plugins/*": "./dist/plugins/*.js"
+}
 ```
 
 ### Usage
 
 ```typescript
-import { parse } from 'comark'
-import cjk from '@comark/cjk'
-
-const result = await parse('中文内容 **加粗**', { plugins: [cjk()] })
+import { Comark, ComarkRenderer, defineComarkComponent } from '@comark/vue'
+import math, { Math } from '@comark/vue/plugins/math'
+import mermaid, { Mermaid } from '@comark/vue/plugins/mermaid'
 ```
 
-### Features
+## Package: @comark/react
 
-- Improved line breaking between CJK and non-CJK characters
-- Better handling of soft line breaks in CJK text
-- Full support for CJK in all Comark features (headings, lists, components, etc.)
-
-## Package: @comark/math
-
-Math formula support for Comark using KaTeX. Located at `packages/comark-math/`:
+Located at `packages/comark-react/`. React renderer with framework-specific plugin wrappers.
 
 ```
-packages/comark-math/
+packages/comark-react/
 ├── src/
-│   ├── index.ts          # Core math utilities
-│   ├── vue.ts            # Vue component
-│   └── react.tsx         # React component
-├── test/                 # Vitest test files
-├── package.json          # Package manifest
-├── tsconfig.json         # TypeScript config
-├── build.config.mjs      # Build configuration
-└── vitest.config.ts      # Test configuration
+│   ├── index.ts              # Entry point
+│   ├── components/
+│   │   ├── Comark.tsx        # High-level markdown → render component
+│   │   ├── ComarkRenderer.tsx # Low-level AST → render component
+│   │   ├── Math.tsx          # Math rendering component
+│   │   └── Mermaid.tsx       # Mermaid rendering component
+│   └── plugins/
+│       ├── math.ts           # Re-exports comark/plugins/math + Math component
+│       └── mermaid.ts        # Re-exports comark/plugins/mermaid + Mermaid component
+├── package.json
+└── tsconfig.build.json
+```
+
+### Exports
+
+```json
+{
+  ".": "./dist/index.js",
+  "./plugins/*": "./dist/plugins/*.js"
+}
 ```
 
 ### Usage
 
-**Vue:**
-```vue
-<script setup>
-import { Comark } from 'comark/vue'
-import math from '@comark/math'
-import { Math } from '@comark/math/vue'
+```typescript
+import { Comark, ComarkRenderer, defineComarkComponent } from '@comark/react'
+import math, { Math } from '@comark/react/plugins/math'
+import mermaid, { Mermaid } from '@comark/react/plugins/mermaid'
+```
 
-const components = { math: Math }
-const markdown = `
-# Math Examples
+## Package: @comark/svelte
 
-Inline math: $E = mc^2$
+Svelte 5 renderer for Comark. Located at `packages/comark-svelte/`:
 
-Display math:
-$$
-\\int_0^\\infty e^{-x^2} dx = \\frac{\\sqrt{\\pi}}{2}
-$$
-`
+```
+packages/comark-svelte/
+├── src/
+│   ├── index.ts              # Entry point (@comark/svelte)
+│   ├── types.ts              # Shared prop interfaces
+│   ├── Comark.svelte         # High-level markdown → render ($state + $effect)
+│   ├── ComarkAsync.svelte    # High-level markdown → render (experimental await)
+│   ├── ComarkRenderer.svelte # Low-level AST → render component
+│   ├── ComarkNode.svelte     # Recursive AST node renderer
+│   ├── async/index.ts        # Async export (@comark/svelte/async)
+│   └── plugins/
+│       ├── math.ts           # Re-exports comark/plugins/math
+│       ├── Math.svelte       # Math rendering component
+│       ├── mermaid.ts        # Re-exports comark/plugins/mermaid
+│       └── Mermaid.svelte    # Mermaid rendering component
+├── svelte.config.js          # Svelte config (experimental.async enabled)
+├── vitest.config.ts          # Dual test config (server + browser)
+└── package.json
+```
+
+### Exports
+
+```json
+{
+  ".": { "svelte": "./dist/index.js" },
+  "./async": { "svelte": "./dist/async/index.js" },
+  "./plugins/*": { "svelte": "./dist/plugins/*.js" }
+}
+```
+
+### Build
+
+Uses `@sveltejs/package` (`svelte-package`) — the standard Svelte library packaging tool.
+
+### Testing
+
+Uses Vitest with two test projects:
+- **`server`**: Node environment, `*.test.ts` files — SSR tests using `svelte/server` `render()`
+- **`client`**: Browser environment (Playwright/Chromium), `*.svelte.test.ts` files — real DOM tests using `vitest-browser-svelte`
+
+### Usage
+
+```svelte
+<script>
+  import { Comark } from '@comark/svelte'
+  import math, { Math } from '@comark/svelte/plugins/math'
+  import mermaid, { Mermaid } from '@comark/svelte/plugins/mermaid'
 </script>
 
-<template>
-  <Comark :components="components" :plugins="[math()]">{{ markdown }}</Comark>
-</template>
+<Comark markdown={content} components={{ math: Math }} plugins={[math()]} />
 ```
 
-**React:**
-```tsx
-import { Comark } from 'comark/react'
-import math from '@comark/math'
-import { Math } from '@comark/math/react'
-
-const components = { math: Math }
-const markdown = `
-Inline math: $E = mc^2$
-
-Display math:
-$$
-\\int_0^\\infty e^{-x^2} dx = \\frac{\\sqrt{\\pi}}{2}
-$$
-`
-
-<Comark components={components} plugins={[math()]}>{markdown}</Comark>
+**Experimental async** (requires `experimental.async` in Svelte config):
+```svelte
+<script>
+  import { ComarkAsync } from '@comark/svelte/async'
+</script>
+<svelte:boundary>
+  <ComarkAsync markdown={content} components={customComponents} />
+  {#snippet pending()}
+    <p>Loading...</p>
+  {/snippet}
+</svelte:boundary>
 ```
 
-### Features
-
-- Inline math with `$...$` syntax (tokenized during parsing via markdown-it plugin)
-- Display math with `$$...$$` syntax (tokenized during parsing via markdown-it plugin)
-- Code blocks with `math` language
-- HTML output via KaTeX with built-in styling
-- Supports full LaTeX math syntax via KaTeX
-- Vue and React components for easy integration
-- Automatic tokenization at parse time (not render time) for performance
-
-## Package Exports
+## Package Exports Reference
 
 ```typescript
 // Core parsing
-import { parse, parse, autoCloseMarkdown } from 'comark'
+import { parse, autoCloseMarkdown } from 'comark'
 
 // String rendering (HTML & Markdown)
 import { renderHTML, renderMarkdown } from 'comark/string'
-import type { RenderHTMLOptions, ComponentRenderFn, RenderHTMLContext } from 'comark/string'
 
 // AST types and utilities
 import type { ComarkTree, ComarkNode, ComarkElement, ComarkText } from 'comark/ast'
 import { textContent, visit } from 'comark/ast'
 
-// Vue components
-import { Comark } from 'comark/vue'
+// Core plugins (framework-agnostic)
+import highlight from 'comark/plugins/highlight'
+import math from 'comark/plugins/math'
+import mermaid from 'comark/plugins/mermaid'
+import emoji from 'comark/plugins/emoji'
+import toc from 'comark/plugins/toc'
+import alert from 'comark/plugins/alert'
 
-// React components
-import { Comark } from 'comark/react'
+// Vue — renderer + plugin wrappers (plugin fn + Vue component)
+import { Comark, ComarkRenderer, defineComarkComponent } from '@comark/vue'
+import math, { Math } from '@comark/vue/plugins/math'
+import mermaid, { Mermaid } from '@comark/vue/plugins/mermaid'
+
+// React — renderer + plugin wrappers (plugin fn + React component)
+import { Comark, ComarkRenderer, defineComarkComponent } from '@comark/react'
+import math, { Math } from '@comark/react/plugins/math'
+import mermaid, { Mermaid } from '@comark/react/plugins/mermaid'
+
+// Svelte — renderer + plugin wrappers (plugin fn + Svelte component)
+import { Comark, ComarkRenderer } from '@comark/svelte'
+import { ComarkAsync } from '@comark/svelte/async' // requires experimental.async
+import math, { Math } from '@comark/svelte/plugins/math'
+import mermaid, { Mermaid } from '@comark/svelte/plugins/mermaid'
 ```
 
 ## Coding Principles
@@ -226,19 +268,6 @@ import { Comark } from 'comark/react'
 2. **Linear time complexity** - Strive for O(n) operations, avoid nested loops that could be O(n²) or worse
 3. **Minimize allocations** - Reuse arrays/objects, avoid creating unnecessary intermediate structures
 
-Example from auto-close.ts:
-```typescript
-// Good: Single-pass character scan in O(n)
-for (let i = 0; i < len; i++) {
-  const ch = line[i]
-  if (ch === '*') asteriskCount++
-  // ...
-}
-
-// Avoid: Regex that may have backtracking
-const matches = line.match(/\*+/g)  // Don't do this
-```
-
 ### TypeScript Conventions
 
 1. Use explicit types for function parameters and return values
@@ -248,19 +277,17 @@ const matches = line.match(/\*+/g)  // Don't do this
 
 ### Code Organization
 
-1. Keep internal implementation in `packages/comark/src/internal/` (parsing in `internal/parse/`, stringification in `internal/stringify/`)
+1. Keep internal implementation in `packages/comark/src/internal/`
 2. AST types and utilities in `packages/comark/src/ast/`
-3. Framework-specific code in `packages/comark/src/vue/` and `packages/comark/src/react/`
-4. Export public APIs from entry points (`index.ts`, `ast/index.ts`)
-5. Document exported functions with JSDoc including `@example`
+3. Core plugins (parser-only) in `packages/comark/src/plugins/`
+4. Framework renderers in separate packages (`comark-vue`, `comark-react`, `comark-svelte`)
+5. Framework plugin wrappers (plugin fn + component) in `packages/comark-{framework}/src/plugins/`
 
 ## Testing Guidelines
 
-Tests are in `packages/comark/test/` using Vitest:
-
 ```bash
-pnpm test                                          # Run all package tests
-cd packages/comark && pnpm test                # Run comark tests
+pnpm test                                              # Run all package tests
+cd packages/comark && pnpm test                        # Run comark tests
 cd packages/comark && pnpm vitest run test/auto-close.test.ts  # Run specific test
 ```
 
@@ -276,10 +303,6 @@ describe('functionUnderTest', () => {
     const expected = 'expected output'
     expect(functionUnderTest(input)).toBe(expected)
   })
-
-  it('should handle edge case', () => {
-    // Test edge cases explicitly
-  })
 })
 ```
 
@@ -294,22 +317,18 @@ describe('functionUnderTest', () => {
 
 ### parse(source, options)
 
-Synchronous parsing of Comark content:
-
 ```typescript
 const result = await parse(markdownContent, {
   autoUnwrap: true,   // Remove <p> wrappers from single-paragraph containers
   autoClose: true,    // Auto-close incomplete syntax
 })
 
-result.nodes   // ComarkNodes list
-result.frontmatter   // Frontmatter data object
-result.meta    // Additional metadata
+result.nodes       // ComarkNode[]
+result.frontmatter // Record<string, any>
+result.meta        // Record<string, any>
 ```
 
 ### autoCloseMarkdown(markdown)
-
-Closes unclosed inline syntax and Comark components:
 
 ```typescript
 autoCloseMarkdown('**bold text')     // '**bold text**'
@@ -318,20 +337,11 @@ autoCloseMarkdown('::alert\nContent') // '::alert\nContent\n::'
 
 ## Comark AST Format
 
-The parser outputs Comark AST - a compact array-based format. Types are defined in `packages/comark/src/ast/types.ts`:
-
 ```typescript
 type ComarkText = string
-
-type ComarkElementAttributes = {
-  [key: string]: unknown
-}
-
 type ComarkElement = [string, ComarkElementAttributes, ...ComarkNode[]]
-
 type ComarkNode = ComarkElement | ComarkText
-
-export type ComarkTree = {
+type ComarkTree = {
   nodes: ComarkNode[]
   frontmatter: Record<string, any>
   meta: Record<string, any>
@@ -351,11 +361,9 @@ Example:
 }
 ```
 
-## Vue/React Components
+## Vue/React/Svelte Components
 
 ### Comark Component (High-level)
-
-Accepts markdown string, handles parsing internally.
 
 **Vue** (requires `<Suspense>` wrapper since Comark is async):
 
@@ -371,11 +379,53 @@ Accepts markdown string, handles parsing internally.
 <Comark components={customComponents}>{content}</Comark>
 ```
 
+**Svelte** (stable, uses `$state` + `$effect`):
+
+```svelte
+<Comark markdown={content} components={customComponents} />
+```
+
+**Svelte** (experimental async — requires `experimental.async` in Svelte config):
+
+```svelte
+<svelte:boundary>
+  <ComarkAsync markdown={content} components={customComponents} />
+  {#snippet pending()}<p>Loading...</p>{/snippet}
+</svelte:boundary>
+```
+
+### defineComarkComponent (Vue & React)
+
+Creates a pre-configured Comark component with default plugins and components:
+
+```typescript
+// Vue
+import { defineComarkComponent } from '@comark/vue'
+import math, { Math } from '@comark/vue/plugins/math'
+import mermaid, { Mermaid } from '@comark/vue/plugins/mermaid'
+
+export const DocsComark = defineComarkComponent({
+  name: 'DocsComark',
+  plugins: [math(), mermaid()],
+  components: { Math, Mermaid },
+})
+
+// React
+import { defineComarkComponent } from '@comark/react'
+import math, { Math } from '@comark/react/plugins/math'
+
+export const DocsComark = defineComarkComponent({
+  name: 'DocsComark',
+  plugins: [math()],
+  components: { Math },
+})
+```
+
 ## Common Tasks
 
 ### Adding a new utility function
 
-1. Create file in `packages/comark/src/internal/` (or `src/ast/` for AST utilities)
+1. Create file in `packages/comark/src/internal/`
 2. Export from `packages/comark/src/index.ts` if public API
 3. Add tests in `packages/comark/test/`
 4. Document with JSDoc
@@ -388,9 +438,20 @@ Accepts markdown string, handles parsing internally.
 
 ### Adding component features
 
-1. Vue components in `packages/comark/src/vue/components/`
-2. React components in `packages/comark/src/react/components/`
-3. Both should have similar APIs for consistency
+1. Vue components in `packages/comark-vue/src/components/`
+2. React components in `packages/comark-react/src/components/`
+3. Svelte components in `packages/comark-svelte/src/`
+4. All three should have similar APIs for consistency
+
+### Adding a new core plugin
+
+1. Create `packages/comark/src/plugins/{name}.ts`
+2. Available as `comark/plugins/{name}` via the `"./plugins/*"` wildcard export
+3. Add framework wrappers if it needs a render component:
+   - `packages/comark-vue/src/plugins/{name}.ts` (re-export plugin + Vue component)
+   - `packages/comark-react/src/plugins/{name}.ts` (re-export plugin + React component)
+   - `packages/comark-svelte/src/plugins/{name}.ts` (re-export plugin + Svelte component)
+4. Run `node scripts/sync-plugins.mjs` to sync plain re-exports for plugins without components
 
 ### Adding a new package
 
@@ -404,9 +465,6 @@ Accepts markdown string, handles parsing internally.
 Root workspace scripts:
 
 ```bash
-pnpm dev          # Alias for dev:vue
-pnpm dev:vue      # Run Vue example (Vite)
-pnpm dev:react    # Run React example (Vite)
 pnpm docs         # Run documentation site
 pnpm build        # Build all packages
 pnpm test         # Run all package tests
@@ -415,41 +473,16 @@ pnpm typecheck    # Run TypeScript check
 pnpm verify       # Run lint + test + typecheck
 ```
 
-Package-specific scripts (from `packages/comark/`):
+Utility scripts:
 
 ```bash
-pnpm build        # Build the package (obuild)
-pnpm test         # Run package tests (vitest)
-pnpm release      # Release the package
-pnpm release:dry  # Dry run release
+node scripts/stub.mjs          # Generate stub dist files for local dev
+node scripts/sync-plugins.mjs  # Sync plugin re-exports to framework packages
 ```
 
 ## Releasing
 
 Uses [release-it](https://github.com/release-it/release-it) with conventional changelog.
-
-### Release all packages (synced versions)
-
-```bash
-pnpm release          # Interactive release
-pnpm release:dry      # Dry run to preview
-```
-
-This will:
-1. Run `pnpm verify` (lint, test, typecheck)
-2. Bump version in root and all packages
-3. Generate/update CHANGELOG.md
-4. Create git tag and GitHub release
-
-### Release individual package
-
-```bash
-cd packages/comark
-pnpm release          # Release comark only
-
-cd packages/comark-cjk
-pnpm release          # Release @comark/cjk only
-```
 
 ### Commit message format
 
@@ -464,41 +497,6 @@ docs: update README                  # No version bump
 chore: update dependencies           # No version bump
 ```
 
-## Examples
-
-Interactive examples are in `examples/`:
-
-### Vue/Vite Example (`examples/vue-vite/`)
-
-```bash
-pnpm dev:vue
-```
-
-Features:
-- Editor mode with live preview
-- Custom component registration (alert)
-- Light/dark mode support via Tailwind CSS v4
-- Uses `<Suspense>` wrapper for async Comark component
-
-Key files:
-- `examples/vue-vite/src/App.vue` - Main app with editor
-- `examples/vue-vite/src/components/Alert.vue` - Custom alert component
-
-### React/Vite Example (`examples/react-vite/`)
-
-```bash
-pnpm dev:react
-```
-
-Features:
-- Same feature set as Vue example
-- Uses React hooks (useState, useMemo)
-- Custom component registration
-
-Key files:
-- `examples/react-vite/src/App.tsx` - Main app
-- `examples/react-vite/src/components/Alert.tsx` - Custom alert component
-
 ## Documentation Maintenance
 
 **Important:** After completing any feature, bug fix, or significant change, update the relevant documentation:
@@ -507,38 +505,17 @@ Key files:
 
 1. **AGENTS.md** (this file)
    - Update architecture section if new files/modules added
-   - Update package exports if new public APIs
-   - Add new APIs to the Key APIs section
-   - Update common tasks if workflows change
+   - Update Package Exports Reference if new public APIs
+   - Update Common Tasks if workflows change
 
-2. **Skills** (`skills/mdc/`)
-   - Update `SKILL.md` if syntax or usage changes
-   - Update reference files in `skills/mdc/references/` for:
-     - `markdown-syntax.md` - Comark changes
-     - `parsing-ast.md` - Parser API or AST format changes
-     - `rendering-vue.md` - Vue component changes
-     - `rendering-react.md` - React component changes
-
-3. **Documentation** (`docs/content/`)
-   - Update relevant docs pages:
-     - `1.getting-started/` - Installation or quick start changes
-     - `2.syntax/` - Comark changes
-     - `3.rendering/` - Vue/React renderer changes
-     - `4.api/` - API changes (parse, auto-close, reference)
-
-### When to Update
-
-- **New feature**: Update all three (AGENTS.md, skills, docs)
-- **Bug fix**: Update docs if it changes expected behavior
-- **API change**: Update AGENTS.md and docs API reference
-- **Internal refactor**: Update AGENTS.md architecture if structure changes
+2. **Documentation** (`docs/content/`)
+   - `1.getting-started/` — Installation or quick start changes
+   - `3.rendering/` — Vue/React/Svelte renderer changes
+   - `4.plugins/` — Plugin changes
 
 ### Documentation Checklist
 
 After each change, ask:
 - [ ] Does AGENTS.md reflect the current architecture?
-- [ ] Are all public APIs documented in Key APIs?
-- [ ] Do the skills references match current behavior?
+- [ ] Are all public APIs documented in Package Exports Reference?
 - [ ] Are the docs pages accurate and up-to-date?
-
-

@@ -1,3 +1,5 @@
+<img src="https://github.com/comarkdown/comark/blob/main/assets/banner.jpg" width="100%" alt="Comark banner" />
+
 # comark
 
 [![npm version](https://img.shields.io/npm/v/comark?color=black)](https://npmx.dev/comark)
@@ -18,46 +20,64 @@ A high-performance markdown parser and renderer with Vue & React components supp
 - 📑 Automatic table of contents generation
 - 🎯 Full TypeScript support
 
-## Installation
-
-```bash
-npm install comark
-# or
-pnpm add comark
-```
-
 ## Usage
 
 ### Vue
 
+```bash
+npm install @comark/vue katex
+# or
+pnpm add @comark/vue katex
+```
+
 ```vue
 <script setup lang="ts">
-import { Comark } from 'comark/vue'
-import cjk from '@comark/cjk'
-import math from '@comark/math'
-import { Math } from '@comark/math/vue'
+import { Comark } from '@comark/vue'
+import math, { Math } from '@comark/vue/plugins/math'
 
 const chatMessage = ...
 </script>
 
 <template>
-  <Comark :components="{ Math }" :plugins="[cjk(), math()]">{{ chatMessage }}</Comark>
+  <Comark :components="{ Math }" :plugins="[math()]">{{ chatMessage }}</Comark>
 </template>
 ```
 
 ### React
 
+```bash
+npm install @comark/react katex
+# or
+pnpm add @comark/react katex 
+```
+
 ```tsx
-import { Comark } from 'comark/react'
-import cjk from '@comark/cjk'
-import math from '@comark/math'
-import { Math } from '@comark/math/react'
+import { Comark } from '@comark/react'
+import math, { Math } from '@comark/react/plugins/math'
 
 function App() {
   const chatMessage = ...
-  return <Comark components={{ Math }} plugins={[cjk(), math()]}>{chatMessage}</Comark>
+  return <Comark components={{ Math }} plugins={[math()]}>{chatMessage}</Comark>
 }
 ```
+
+### HTML (No Framework)
+```bash
+npm install comark
+# or
+pnpm add comark 
+```
+
+```js
+import { parse } from 'comark'
+import { renderHTML } from 'comark/string'
+
+const chatMessage = ...
+
+const tree = await parse(chatMessage)
+const html = renderHTML(tree)
+```
+
 
 ## License
 

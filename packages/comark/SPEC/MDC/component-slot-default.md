@@ -23,11 +23,7 @@ Default slot content
     [
       "component",
       {},
-      [
-        "p",
-        {},
-        "Default slot content"
-      ]
+      "Default slot content"
     ]
   ]
 }
@@ -37,7 +33,7 @@ Default slot content
 
 ```html
 <component>
-  <p>Default slot content</p>
+  Default slot content
 </component>
 ```
 

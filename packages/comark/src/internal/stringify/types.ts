@@ -21,6 +21,13 @@ export interface StringifyOptions {
    * @default true
    */
   removeLastStyle?: boolean
+
+  /**
+   * Maximum number of inline attributes before switching to YAML block syntax.
+   * Set to 0 to always use YAML block syntax.
+   * @default 3
+   */
+  maxInlineAttributes?: number
 }
 
 export interface Context extends StringifyOptions {

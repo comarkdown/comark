@@ -29,11 +29,7 @@ Default slot content
         {
           "name": "default"
         },
-        [
-          "p",
-          {},
-          "Default slot content"
-        ]
+        "Default slot content"
       ]
     ]
   ]
@@ -45,7 +41,7 @@ Default slot content
 ```html
 <component>
   <template name="default">
-    <p>Default slot content</p>
+    Default slot content
   </template>
 </component>
 ```

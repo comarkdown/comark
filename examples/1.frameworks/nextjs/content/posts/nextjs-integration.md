@@ -18,7 +18,7 @@ Instead of using the typical `gray-matter` + `remark` + `rehype` pipeline, we us
 
 ```ts
 import { parse } from 'comark'
-import { ComarkRenderer } from 'comark/react/components/ComarkRenderer'
+import { ComarkRenderer } from '@comark/react'
 import highlight from 'comark/plugins/highlight'
 import Alert from '@/components/Alert'
 

@@ -38,44 +38,28 @@ timeout:
       {
         "as": "caution"
       },
-      [
-        "p",
-        {},
-        "Advises about risks or negative outcomes of certain actions."
-      ]
+      "Advises about risks or negative outcomes of certain actions."
     ],
     [
       "blockquote",
       {
         "as": "important"
       },
-      [
-        "p",
-        {},
-        "Key information users need to know to achieve their goal."
-      ]
+      "Key information users need to know to achieve their goal."
     ],
     [
       "blockquote",
       {
         "as": "note"
       },
-      [
-        "p",
-        {},
-        "Useful information that users should know, even when skimming content."
-      ]
+      "Useful information that users should know, even when skimming content."
     ],
     [
       "blockquote",
       {
         "as": "tip"
       },
-      [
-        "p",
-        {},
-        "Helpful advice for doing things better or more easily."
-      ]
+      "Helpful advice for doing things better or more easily."
     ],
     [
       "blockquote",
@@ -101,16 +85,16 @@ timeout:
 
 ```html
 <blockquote as="caution">
-  <p>Advises about risks or negative outcomes of certain actions.</p>
+  Advises about risks or negative outcomes of certain actions.
 </blockquote>
 <blockquote as="important">
-  <p>Key information users need to know to achieve their goal.</p>
+  Key information users need to know to achieve their goal.
 </blockquote>
 <blockquote as="note">
-  <p>Useful information that users should know, even when skimming content.</p>
+  Useful information that users should know, even when skimming content.
 </blockquote>
 <blockquote as="tip">
-  <p>Helpful advice for doing things better or more easily.</p>
+  Helpful advice for doing things better or more easily.
 </blockquote>
 <blockquote as="warning">
   <p>Urgent info that needs immediate user attention to avoid problems.</p>

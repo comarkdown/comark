@@ -2,7 +2,7 @@ import { defineNuxtConfig } from 'nuxt/config'
 
 export default defineNuxtConfig({
   extends: ['docus'],
-  modules: ['nuxt-studio', 'comark/nuxt'],
+  modules: ['nuxt-studio', '@comark/nuxt'],
 
   app: {
     head: {
@@ -23,7 +23,7 @@ export default defineNuxtConfig({
     build: {
       markdown: {
         highlight: {
-          langs: ['tsx', 'vue', 'html', 'css', 'json', 'markdown', 'bash', 'shell', 'astro'],
+          langs: ['tsx', 'svelte', 'vue', 'html', 'css', 'json', 'markdown', 'bash', 'shell', 'astro'],
         },
       },
     },

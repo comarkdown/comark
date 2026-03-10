@@ -20,7 +20,7 @@ Complete guide for rendering Comark AST in React applications.
 Use the `Comark` component to render markdown:
 
 ```tsx
-import { Comark } from 'comark/react'
+import { Comark } from '@comark/react'
 
 const content = `
 # Hello World
@@ -44,7 +44,7 @@ export default function App() {
 Map custom React components to Comark elements:
 
 ```tsx
-import { Comark } from 'comark/react'
+import { Comark } from '@comark/react'
 import CustomHeading from './CustomHeading'
 import CustomAlert from './CustomAlert'
 import CustomCard from './CustomCard'
@@ -150,7 +150,7 @@ export default function CustomAlert({ type = 'info', children }: AlertProps) {
 Load components dynamically using `componentsManifest`:
 
 ```tsx
-import { Comark } from 'comark/react'
+import { Comark } from '@comark/react'
 
 const componentMap = {
   'alert': () => import('./Alert'),
@@ -241,7 +241,7 @@ Use the `Comark` component with reactive state for streaming content:
 
 ```tsx
 import { useState, useEffect } from 'react'
-import { Comark } from 'comark/react'
+import { Comark } from '@comark/react'
 
 export default function StreamingContent() {
   const [content, setContent] = useState('')
@@ -281,7 +281,7 @@ export default function StreamingContent() {
 The `Comark` component uses built-in prose styling automatically. You can override with custom components:
 
 ```tsx
-import { Comark } from 'comark/react'
+import { Comark } from '@comark/react'
 import CustomAlert from './CustomAlert'
 
 const components = {
@@ -296,7 +296,7 @@ export default function App({ content }) {
 ### Tailwind CSS Prose
 
 ```tsx
-import { Comark } from 'comark/react'
+import { Comark } from '@comark/react'
 
 export default function App({ content }) {
   return (

@@ -18,9 +18,8 @@ export function stringifyYaml(data: Record<string, unknown>): string {
   const yamlOutput = dump(data, {
     indent: 2,
     replacer: (_key, value) => {
-      if (value === 'true' || value === 'false') {
-        return Boolean(value)
-      }
+      if (value === 'true') return true
+      if (value === 'false') return false
       return value
     },
   })
