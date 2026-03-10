@@ -6,3 +6,5 @@ export type {
   ComarkRendererProps,
   ComarkNodeProps,
 } from './types.js'
+
+export type * from 'comark'

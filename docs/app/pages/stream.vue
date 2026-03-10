@@ -142,8 +142,6 @@ Everything you need for modern content parsing
 
 :landing-code-block
 
-:landing-cjk
-
 `
 
 const bytesLength = computed(() => state.value.content.length)

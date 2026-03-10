@@ -5,6 +5,7 @@ import type { ComponentManifest, ParseOptions } from 'comark'
 
 export { ComarkRenderer } from './components/ComarkRenderer'
 export { Comark } from './components/Comark'
+export type * from 'comark'
 
 interface DefineComarkComponentOptions extends ParseOptions {
   name?: string

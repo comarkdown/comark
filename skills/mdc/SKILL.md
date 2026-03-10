@@ -358,7 +358,7 @@ import type {
                  │
         ┌────────▼────────┐
         │  MarkdownIt     │
-        │  + Plugins      │ (Comark, Tasks, CJK)
+        │  + Plugins      │ (Comark, Tasks)
         └────────┬────────┘
                  │
         ┌────────▼────────┐

@@ -17,7 +17,6 @@
     "dev:vue": "pnpm --filter comark-vue-vite run dev",
     "dev:vue:mermaid": "pnpm --filter comark-vue-vite-mermaid run dev",
     "dev:vue:math": "pnpm --filter comark-vue-vite-math run dev",
-    "dev:vue:cjk": "pnpm --filter comark-vue-vite-cjk run dev",
     "dev:astro": "pnpm --filter comark-astro run dev",
     "dev:vitepress": "pnpm --filter comark-vitepress run dev",
     "dev:nuxt": "pnpm --filter comark-nuxt run dev",
@@ -36,8 +35,8 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "verify": "pnpm run lint && pnpm run test && pnpm run typecheck",
-    "release": "pnpm --filter 'comark' run release && pnpm --filter '@comark/cjk' run release && pnpm --filter '@comark/math' run release",
-    "release:dry": "pnpm --filter 'comark' run release:dry && pnpm --filter '@comark/cjk' run release:dry && pnpm --filter '@comark/math' run release:dry",
+    "release": "pnpm --filter 'comark' run release && pnpm --filter '@comark/*' run release",
+    "release:dry": "pnpm --filter 'comark' run release:dry && pnpm --filter '@comark/*' run release:dry",
     "postinstall": "pnpm stub"
   },
   "devDependencies": {

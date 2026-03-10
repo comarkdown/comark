@@ -31,8 +31,12 @@ for (const pkg of frameworkPackages) {
   for (const name of comarkPlugins) {
     // Check if the comark plugin has a default export in its .d.ts
     const comarkDtsPath = join(comarkPluginsDir, `${name}.d.ts`)
-    const hasDefault = existsSync(comarkDtsPath)
-      && /^export default /m.test(readFileSync(comarkDtsPath, 'utf-8'))
+    let hasDefault = existsSync(comarkDtsPath)
+    if (hasDefault) {
+      const content = readFileSync(comarkDtsPath, 'utf-8')
+      hasDefault = /^export default /m.test(content)
+        || /export\s*\{\s*default/.test(content)
+    }
 
     const reexport = `export * from 'comark/plugins/${name}';\n`
       + (hasDefault ? `export { default } from 'comark/plugins/${name}';\n` : '')

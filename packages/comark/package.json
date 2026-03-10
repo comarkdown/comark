@@ -61,7 +61,6 @@
     "github-slugger": "^2.0.0",
     "hast-util-to-string": "^3.0.1",
     "markdown-it": "^14.1.1",
-    "markdown-it-cjk-friendly": "^2.0.2",
     "minimark": "0.2.0",
     "mitata": "^1.0.34",
     "tsx": "^4.21.0",
