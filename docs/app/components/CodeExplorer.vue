@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { ComarkTree } from 'comark'
-import { ComarkRenderer } from 'comark/vue'
+import { ComarkRenderer } from '@comark/vue'
 import CodeIcon from '@nuxt/ui/components/prose/CodeIcon.vue'
 
 interface CodeExplorerTreeItem {
