@@ -5,7 +5,11 @@ export type ComarkComment = [null, {}, string]
 export type ComarkElementAttributes = {
   [key: string]: unknown
 
-  $comark?: { line?: number }
+  $?: {
+    line?: number
+    html?: 0 | 1
+    block?: 0 | 1
+  }
 }
 
 export type ComarkElement = [string, ComarkElementAttributes, ...ComarkNode[]]

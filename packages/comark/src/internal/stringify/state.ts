@@ -26,7 +26,7 @@ export function one(node: ComarkNode, state: State, parent?: ComarkElement) {
     return userHandler(node, state, parent)
   }
 
-  if (state.context.html) {
+  if (state.context.html || node[1].$?.html === 1) {
     return state.handlers.html(node, state, parent)
   }
 

@@ -11,6 +11,7 @@ timeout:
 <Hello>
 Hello **World**
 </Hello>
+Another Pragraph
 ```
 
 ## AST
@@ -31,6 +32,11 @@ Hello **World**
         {},
         "World"
       ]
+    ],
+    [
+      "p",
+      {},
+      "Another Pragraph"
     ]
   ]
 }
@@ -42,6 +48,7 @@ Hello **World**
 <hello>
   Hello <strong>World</strong>
 </hello>
+<p>Another Pragraph</p>
 ```
 
 ## Markdown
@@ -50,4 +57,6 @@ Hello **World**
 <hello>
 Hello **World**
 </hello>
+
+Another Pragraph
 ```

@@ -24,7 +24,7 @@ timeout:
       [
         "hello",
         {
-          "$comark": { "html": 1}
+          "$": { "html": 1, "block": 0 }
         },
         "Hello ",
         [

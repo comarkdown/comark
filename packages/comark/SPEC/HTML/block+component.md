@@ -25,7 +25,7 @@ Default Slot
     [
       "hello",
       {
-        "$comark": { "html": 1 }
+        "$": { "html": 1, "block": 1 }
       },
       [
         "component",
@@ -50,9 +50,9 @@ Default Slot
 ## Markdown
 
 ```md
-::hello
-  :::component
+<hello>
+  ::component
   Default Slot
-  :::
-::
+  ::
+</hello>
 ```

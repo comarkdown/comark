@@ -10,12 +10,12 @@ const blockTags = new Set(['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'li', 'ul', 
 
 export function html(node: ComarkElement, state: State, parent?: ComarkElement) {
   const [tag, attr, ...children] = node
-  const { $comark, ...attributes } = attr
+  const { $ = {}, ...attributes } = attr
 
   const hasOnlyTextChildren = children.every(child => typeof child === 'string' || inlineTags.has(String(child?.[0])))
   const hasTextSibling = children.some(child => typeof child === 'string')
   const isBlock = textBlocks.has(String(tag))
-  const isInline = inlineTags.has(String(tag))
+  const isInline = inlineTags.has(String(tag)) && $.block === 0
 
   let oneLiner = isBlock && hasOnlyTextChildren
 
@@ -28,6 +28,10 @@ export function html(node: ComarkElement, state: State, parent?: ComarkElement) 
 
   // If parent is a paragraph, it is inline
   if (parent?.[0] === 'p' || state.context.inline) {
+    oneLiner = true
+  }
+
+  if ($.block === 0) {
     oneLiner = true
   }
 
@@ -70,7 +74,7 @@ export function html(node: ComarkElement, state: State, parent?: ComarkElement) 
   }
 
   if (!oneLiner && content) {
-    content = '\n' + paddNoneHtmlContent(content, state) + '\n'
+    content = '\n' + paddNoneHtmlContent(content, state).trimEnd() + '\n'
   }
 
   return `<${tag}${attrs}>${content}</${tag}>`
@@ -83,8 +87,8 @@ function paddNoneHtmlContent(content: string, state: State) {
   }
 
   return (
-    (content.trim().startsWith('<') ? '' : '\n')
+    (content.trim().startsWith('<') ? '' : '')
     + content
-    + (content.trim().endsWith('>') ? '' : '\n')
+    + (content.trim().endsWith('>') ? '' : '')
   )
 }

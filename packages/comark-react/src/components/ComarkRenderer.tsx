@@ -159,7 +159,7 @@ function renderNode(
 
     // Parse special prop values (props starting with :)
     for (const [propKey, value] of Object.entries(nodeProps)) {
-      if (propKey === '$comark') {
+      if (propKey === '$') {
         Reflect.deleteProperty(props, propKey)
       }
       if (propKey === 'style') {

@@ -12,7 +12,7 @@ export function extractReusableNodes(markdown: string, lastOutput: ComarkTree) {
   let lastNodeIgnored = false
   while (i >= 0) {
     const node = lastOutput.nodes[i] as ComarkElement
-    if (node[1] && node[1].$comark?.line) {
+    if (node[1] && node[1].$?.line) {
       if (lastNodeIgnored) {
         lastValidNodeIndex = i
         break
@@ -25,7 +25,7 @@ export function extractReusableNodes(markdown: string, lastOutput: ComarkTree) {
   }
   const lastNode = lastValidNodeIndex !== -1 ? lastOutput.nodes[lastValidNodeIndex] : null
   if (lastNode) {
-    const remainingMarkdownStartLine = (lastNode[1] as ComarkElementAttributes).$comark?.line ?? 0
+    const remainingMarkdownStartLine = (lastNode[1] as ComarkElementAttributes).$?.line ?? 0
     return {
       remainingMarkdownStartLine,
       reusedNodes: lastOutput.nodes.slice(0, lastValidNodeIndex + 1),
