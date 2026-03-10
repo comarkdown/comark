@@ -97,7 +97,7 @@ timeout:
             "button",
             {
               ":data-testid": "$doc.snippet.description",
-              "external": "true",
+              ":external": "true",
               ":to": "$doc.snippet.link",
               "appearance": "primary"
             },
@@ -129,7 +129,7 @@ timeout:
       <button to="$doc.snippet.link" appearance="primary">
         Button Text
       </button>
-      <button data-testid="$doc.snippet.description" external="true" to="$doc.snippet.link" appearance="primary">
+      <button data-testid="$doc.snippet.description" external to="$doc.snippet.link" appearance="primary">
         Button Text
       </button>
     </template>

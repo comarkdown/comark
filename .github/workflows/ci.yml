@@ -20,6 +20,7 @@ jobs:
           node-version: '24'
       - run: npm i -g --force corepack && corepack enable
       - run: pnpm install
+      - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm dev:prepare
       - run: pnpm lint
       - run: pnpm prepack
