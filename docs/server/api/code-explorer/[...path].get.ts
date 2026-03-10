@@ -32,31 +32,6 @@ const EXT_TO_LANG: Record<string, string> = {
   txt: 'text',
 }
 
-const EXT_TO_ICON: Record<string, string> = {
-  ts: 'i-vscode-icons-file-type-typescript',
-  tsx: 'i-vscode-icons-file-type-reactts',
-  js: 'i-vscode-icons-file-type-js',
-  jsx: 'i-vscode-icons-file-type-reactjs',
-  mjs: 'i-vscode-icons-file-type-js',
-  cjs: 'i-vscode-icons-file-type-js',
-  vue: 'i-vscode-icons-file-type-vue',
-  json: 'i-vscode-icons-file-type-json',
-  md: 'i-custom-comark',
-  mdx: 'i-vscode-icons-file-type-mdx',
-  css: 'i-vscode-icons-file-type-css',
-  scss: 'i-vscode-icons-file-type-scss',
-  html: 'i-vscode-icons-file-type-html',
-  yaml: 'i-vscode-icons-file-type-yaml',
-  yml: 'i-vscode-icons-file-type-yaml',
-  toml: 'i-vscode-icons-file-type-toml',
-  astro: 'i-vscode-icons-file-type-astro',
-  svelte: 'i-vscode-icons-file-type-svelte',
-  svg: 'i-vscode-icons-file-type-svg',
-  xml: 'i-vscode-icons-file-type-xml',
-  sh: 'i-vscode-icons-file-type-shell',
-  bash: 'i-vscode-icons-file-type-shell',
-}
-
 const EXCLUDED_EXTENSIONS = new Set([
   'png', 'jpg', 'jpeg', 'gif', 'svg', 'ico', 'webp', 'avif',
   'woff', 'woff2', 'ttf', 'eot',
@@ -85,11 +60,9 @@ function shouldExclude(relativePath: string): boolean {
 }
 
 interface CodeExplorerTreeItem {
-  label: string
-  icon?: string
+  filename: string
   path: string
   children?: CodeExplorerTreeItem[]
-  defaultExpanded?: boolean
 }
 
 function buildTree(filePaths: string[]): CodeExplorerTreeItem[] {
@@ -106,8 +79,7 @@ function buildTree(filePaths: string[]): CodeExplorerTreeItem[] {
 
       if (isFile) {
         current.push({
-          label: part,
-          icon: EXT_TO_ICON[getExtension(part)] || 'i-lucide-file',
+          filename: part,
           path: currentPath,
         })
       }
@@ -115,7 +87,7 @@ function buildTree(filePaths: string[]): CodeExplorerTreeItem[] {
         let dir = current.find(item => item.children && item.path === currentPath)
         if (!dir) {
           dir = {
-            label: part,
+            filename: part,
             path: currentPath,
             children: [],
           }
@@ -135,20 +107,10 @@ function sortTree(items: CodeExplorerTreeItem[]) {
     const aIsDir = !!a.children
     const bIsDir = !!b.children
     if (aIsDir !== bIsDir) return aIsDir ? -1 : 1
-    return a.label.localeCompare(b.label)
+    return a.filename.localeCompare(b.filename)
   })
   for (const item of items) {
     if (item.children) sortTree(item.children)
-  }
-}
-
-function expandPathInTree(tree: CodeExplorerTreeItem[], targetPath: string) {
-  for (const item of tree) {
-    if (!item.children) continue
-    if (targetPath.startsWith(item.path + '/') || targetPath === item.path) {
-      item.defaultExpanded = true
-      expandPathInTree(item.children, targetPath)
-    }
   }
 }
 
@@ -197,14 +159,12 @@ export default defineEventHandler(async (event) => {
   }
 
   const dirPath = segments.slice(2).join('/')
-  const defaultValue = getQuery(event).defaultValue as string | undefined
-
   const encodedBranch = branch.replaceAll('/', '%2F')
   const listing = await $fetch<JsDelivrResponse>(
     `https://data.jsdelivr.com/v1/package/gh/${org}/${repo}@${encodedBranch}/flat`,
   )
 
-  const prefix = `/${dirPath}/`
+  const prefix = `/${dirPath}/`.replaceAll('//', '/')
   const files = listing.files
     .filter(f => f.name.startsWith(prefix))
     .map(f => f.name.slice(prefix.length))
@@ -233,9 +193,6 @@ export default defineEventHandler(async (event) => {
   })
 
   const tree = buildTree(files)
-  if (defaultValue) {
-    expandPathInTree(tree, defaultValue)
-  }
 
   return { tree, files: fileResults }
 })

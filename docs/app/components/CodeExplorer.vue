@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import type { ComarkTree } from 'comark'
 import { ComarkRenderer } from 'comark/vue'
+import CodeIcon from '@nuxt/ui/components/prose/CodeIcon.vue'
 
 interface CodeExplorerTreeItem {
-  label: string
-  icon?: string
+  filename: string
   path: string
   children?: CodeExplorerTreeItem[]
   defaultExpanded?: boolean
@@ -89,8 +89,18 @@ function onSelect(e: Event, item: CodeExplorerTreeItem) {
           :items="data.tree"
           color="neutral"
           :get-key="(item) => item.path"
+          label-key="filename"
+          :ui="{ linkLeadingIcon: 'size-4' }"
           @select="onSelect"
-        />
+        >
+          <template #item-leading="{ item, ui }">
+            <CodeIcon
+              v-if="!item.children?.length"
+              :filename="item.filename"
+              :class="ui.linkLeadingIcon({ class: 'size-4' })"
+            />
+          </template>
+        </UTree>
       </div>
 
       <div class="lg:col-span-2 overflow-auto flex flex-col">
@@ -98,8 +108,8 @@ function onSelect(e: Event, item: CodeExplorerTreeItem) {
           v-if="selected"
           class="flex items-center gap-1.5 border-b border-muted bg-muted/50 px-4 py-2"
         >
-          <UIcon :name="selected.icon" />
-          <span class="font-mono text-xs text-muted truncate">{{ selected.label }}</span>
+          <CodeIcon :filename="selected.filename" />
+          <span class="font-mono text-xs text-muted truncate">{{ selected.filename }}</span>
         </div>
 
         <div
@@ -113,6 +123,7 @@ function onSelect(e: Event, item: CodeExplorerTreeItem) {
             />
           </UTheme>
         </div>
+
         <div
           v-else
           class="flex items-center justify-center h-full p-8 text-sm text-muted"
