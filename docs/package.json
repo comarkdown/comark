@@ -13,7 +13,7 @@
     "@vercel/speed-insights": "^1.3.1",
     "vue-json-pretty": "^2.4.0",
     "comark": "workspace:*",
-    "docus": "latest",
+    "docus": "https://pkg.pr.new/docus@4ed385f",
     "markdown-it": "^14.1.1",
     "markdown-it-math": "^5.2.1",
     "nuxt": "^4.3.1",

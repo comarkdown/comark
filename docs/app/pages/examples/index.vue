@@ -4,11 +4,14 @@ definePageMeta({
 })
 
 // Fetch all examples
-const { data: examples } = await useAsyncData('examples-list', () =>
-  queryCollection('examples')
+const nuxtApp = useNuxtApp()
+const { data: examples } = await useAsyncData('examples-list', () => {
+  return queryCollection('examples')
     .select('title', 'description', 'category', 'path', 'navigation')
-    .all(),
-)
+    .all()
+}, {
+  getCachedData: key => nuxtApp.payload.data[key],
+})
 
 // Group examples by category
 const groupedExamples = computed(() => {

@@ -57,6 +57,11 @@ export default defineAppConfig({
       primary: 'yellow',
       neutral: 'zinc',
     },
+    header: {
+      slots: {
+        body: 'sm:p-4',
+      },
+    },
     prose: {
       codePreview: {
         slots: {
