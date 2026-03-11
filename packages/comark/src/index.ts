@@ -42,6 +42,15 @@ export type * from './types'
  * const tree = await parse('# Hello **World**\n::alert\nhi\n::')
  * console.log(tree.nodes)
  * // → [ ['h1', { id: 'hello-world' }, 'Hello ', ['strong', {}, 'World'] ], ['alert', {}, 'hi'] ]
+ *
+ * // Enable HTML parsing (on by default) — HTML tags are included in the AST
+ * const parseWithHtml = createParse({ html: true })
+ * const tree2 = await parseWithHtml('<strong class="bold">Hello</strong> _world_')
+ * console.log(tree2.nodes)
+ * // → [ ['strong', { class: 'bold' }, 'Hello'], ' ', ['em', {}, 'world'] ]
+ *
+ * // Disable HTML parsing — HTML tags are treated as plain text
+ * const parseNoHtml = createParse({ html: false })
  * ```
  */
 export function createParse(options: ParseOptions = {}): ComarkParseFn {
@@ -56,10 +65,13 @@ export function createParse(options: ParseOptions = {}): ComarkParseFn {
   })
     .enable(['table', 'strikethrough'])
     .use(pluginMdc)
-  parser.inline.ruler.before('text', 'comark_html_inline', html_inline)
-  parser.block.ruler.before('html_block', 'comark_html_block', html_block, {
-    alt: ['paragraph', 'reference', 'blockquote'],
-  })
+
+  if (options.html !== false) {
+    parser.inline.ruler.before('text', 'comark_html_inline', html_inline)
+    parser.block.ruler.before('html_block', 'comark_html_block', html_block, {
+      alt: ['paragraph', 'reference', 'blockquote'],
+    })
+  }
 
   for (const plugin of plugins) {
     for (const markdownItPlugin of (plugin.markdownItPlugins || [])) {
