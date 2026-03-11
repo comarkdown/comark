@@ -1,0 +1,20 @@
+{
+  "name": "comark-html-vite",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "comark": "workspace:*",
+    "@comark/html": "workspace:*",
+    "shiki": "^3.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "vite": "^7.3.1"
+  }
+}

@@ -12,6 +12,7 @@
     "dev": "pnpm dev:vue",
     "dev:playground": "nuxt dev playground",
     "dev:prepare": "nuxt prepare playground",
+    "dev:html": "pnpm --filter comark-html-vite run dev",
     "dev:react": "pnpm --filter comark-react-vite run dev",
     "dev:svelte": "pnpm --filter comark-svelte-vite run dev",
     "dev:vue": "pnpm --filter comark-vue-vite run dev",
