@@ -9,8 +9,8 @@ import { marmdownItTokensToComarkTree } from './internal/parse/token-processor'
 import { autoCloseMarkdown } from './internal/parse/auto-close/index'
 import { parseFrontmatter } from './internal/front-matter'
 import { extractReusableNodes } from './internal/parse/incremental'
-import html_block from './internal/parse/html_block_rule'
-import html_inline from './internal/parse/html_inline_rule'
+import html_block from './internal/parse/html/html_block_rule'
+import html_inline from './internal/parse/html/html_inline_rule'
 
 // Re-export ComarkTree and ComarkNode for convenience
 export type { ComarkTree, ComarkNode } from 'comark/ast'
