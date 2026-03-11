@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { parse } from '../src/index'
-import { renderHTML } from '../src/string'
+import { renderHTML } from '@comark/html'
 
 describe('renderHTML', () => {
   it('renders without options (backward compatible)', async () => {

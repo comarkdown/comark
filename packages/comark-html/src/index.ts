@@ -3,7 +3,6 @@ import { createParse } from 'comark'
 import { stringify, type NodeHandler } from 'comark/string'
 import type { ComarkTree, ComarkNode, ComarkElement } from 'comark/ast'
 
-
 export interface RenderHTMLContext {
   /** Renders the element's children to HTML */
   render: (children: ComarkNode[]) => string
@@ -12,7 +11,6 @@ export interface RenderHTMLContext {
 }
 
 export type ComponentRenderFn = (element: ComarkElement, ctx: RenderHTMLContext) => string
-
 
 export interface RenderHTMLOptions {
   /** Custom component renderers keyed by tag name */
@@ -60,7 +58,6 @@ export function renderHTML(tree: ComarkTree, options?: RenderHTMLOptions): strin
 
   return stringify(tree, { format: 'text/html', handlers }).trim()
 }
-
 
 /**
  * Options for parse+render pipelines.
