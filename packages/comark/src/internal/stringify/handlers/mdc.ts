@@ -8,7 +8,8 @@ import { html } from './html'
 const INLINE_HTML_ELEMENTS = new Set(['a', 'strong', 'em', 'span'])
 
 export function mdc(node: ComarkElement, state: State, parent?: ComarkElement) {
-  const [tag, attributes, ...children] = node
+  const [tag, attr, ...children] = node
+  const { $, ...attributes } = attr
 
   if (tag === 'table') {
     return html(node, state)

@@ -9,6 +9,8 @@ import { marmdownItTokensToComarkTree } from './internal/parse/token-processor'
 import { autoCloseMarkdown } from './internal/parse/auto-close/index'
 import { parseFrontmatter } from './internal/front-matter'
 import { extractReusableNodes } from './internal/parse/incremental'
+import html_block from './internal/parse/html/html_block_rule'
+import html_inline from './internal/parse/html/html_inline_rule'
 
 // Re-export ComarkTree and ComarkNode for convenience
 export type { ComarkTree, ComarkNode } from 'comark/ast'
@@ -40,6 +42,15 @@ export type * from './types'
  * const tree = await parse('# Hello **World**\n::alert\nhi\n::')
  * console.log(tree.nodes)
  * // → [ ['h1', { id: 'hello-world' }, 'Hello ', ['strong', {}, 'World'] ], ['alert', {}, 'hi'] ]
+ *
+ * // Enable HTML parsing (on by default) — HTML tags are included in the AST
+ * const parseWithHtml = createParse({ html: true })
+ * const tree2 = await parseWithHtml('<strong class="bold">Hello</strong> _world_')
+ * console.log(tree2.nodes)
+ * // → [ ['strong', { class: 'bold' }, 'Hello'], ' ', ['em', {}, 'world'] ]
+ *
+ * // Disable HTML parsing — HTML tags are treated as plain text
+ * const parseNoHtml = createParse({ html: false })
  * ```
  */
 export function createParse(options: ParseOptions = {}): ComarkParseFn {
@@ -49,11 +60,18 @@ export function createParse(options: ParseOptions = {}): ComarkParseFn {
   plugins.unshift(alert())
 
   const parser = new MarkdownExit({
-    html: true,
+    html: false,
     linkify: true,
   })
     .enable(['table', 'strikethrough'])
     .use(pluginMdc)
+
+  if (options.html !== false) {
+    parser.inline.ruler.before('text', 'comark_html_inline', html_inline)
+    parser.block.ruler.before('html_block', 'comark_html_block', html_block, {
+      alt: ['paragraph', 'reference', 'blockquote'],
+    })
+  }
 
   for (const plugin of plugins) {
     for (const markdownItPlugin of (plugin.markdownItPlugins || [])) {

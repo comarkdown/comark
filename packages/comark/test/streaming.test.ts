@@ -3,23 +3,23 @@ import { createParse } from 'comark'
 import type { ComarkElement } from 'comark/ast'
 
 describe('streaming mode', () => {
-  describe('$comark.line metadata', () => {
+  describe('$.line metadata', () => {
     it('preserves position metadata on nodes in streaming mode', async () => {
       const parse = createParse()
       const result = await parse('# Hello\n\nParagraph one.\n\nParagraph two.\n', { streaming: true })
 
       const nodes = result.nodes as ComarkElement[]
-      expect(nodes[0][1].$comark?.line).toBeDefined()
-      expect(nodes[1][1].$comark?.line).toBeDefined()
-      expect(nodes[2][1].$comark?.line).toBeDefined()
+      expect(nodes[0][1].$?.line).toBeDefined()
+      expect(nodes[1][1].$?.line).toBeDefined()
+      expect(nodes[2][1].$?.line).toBeDefined()
     })
 
-    it('does NOT add $comark.line metadata without streaming', async () => {
+    it('does NOT add $.line metadata without streaming', async () => {
       const parse = createParse()
       const result = await parse('# Hello\n\nParagraph one.\n')
 
       const nodes = result.nodes as ComarkElement[]
-      expect(nodes[0][1].$comark).toBeUndefined()
+      expect(nodes[0][1].$).toBeUndefined()
     })
 
     it('line numbers are monotonically increasing', async () => {
@@ -27,7 +27,7 @@ describe('streaming mode', () => {
       const result = await parse('# Heading\n\nPara 1\n\nPara 2\n\nPara 3\n', { streaming: true })
 
       const nodes = result.nodes as ComarkElement[]
-      const lines = nodes.map(n => n[1].$comark?.line ?? 0)
+      const lines = nodes.map(n => n[1].$?.line ?? 0)
       for (let i = 1; i < lines.length; i++) {
         expect(lines[i]).toBeGreaterThan(lines[i - 1])
       }

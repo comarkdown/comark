@@ -57,6 +57,29 @@ export interface ParseOptions {
   autoClose?: boolean
 
   /**
+   * Whether to parse HTML tags embedded in Comark/markdown content.
+   * When enabled, HTML block and inline elements are parsed into AST nodes and can be
+   * mixed freely with Comark components and markdown syntax.
+   *
+   * @default true
+   * @example
+   * // With html: true (default) — HTML is parsed into AST nodes
+   * // Input: `<strong class="bold">text</strong>`
+   * // AST:   ['strong', { class: 'bold' }, 'text']
+   *
+   * // HTML can be mixed with Comark components:
+   * // Input:
+   * // <div>
+   * //   ::alert
+   * //   Hello <em>world</em>
+   * //   ::
+   * // </div>
+   *
+   * // With html: false — HTML tags are left as raw text / ignored
+   */
+  html?: boolean
+
+  /**
    * Additional plugins to use
    * @default []
    */

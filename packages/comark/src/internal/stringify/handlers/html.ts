@@ -9,12 +9,13 @@ const inlineTags = new Set(['strong', 'em', 'code', 'a', 'br', 'span', 'img'])
 const blockTags = new Set(['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'li', 'ul', 'ol', 'blockquote', 'hr', 'table', 'td', 'th'])
 
 export function html(node: ComarkElement, state: State, parent?: ComarkElement) {
-  const [tag, attributes, ...children] = node
+  const [tag, attr, ...children] = node
+  const { $ = {}, ...attributes } = attr
 
   const hasOnlyTextChildren = children.every(child => typeof child === 'string' || inlineTags.has(String(child?.[0])))
   const hasTextSibling = children.some(child => typeof child === 'string')
   const isBlock = textBlocks.has(String(tag))
-  const isInline = inlineTags.has(String(tag))
+  const isInline = inlineTags.has(String(tag)) && $.block === 0
 
   let oneLiner = isBlock && hasOnlyTextChildren
 
@@ -30,10 +31,14 @@ export function html(node: ComarkElement, state: State, parent?: ComarkElement) 
     oneLiner = true
   }
 
+  if ($.block === 0) {
+    oneLiner = true
+  }
+
   const isSelfClose = selfCloseTags.has(String(tag))
 
   // Do not modify context if we are already in html mode
-  const revert = state.applyContext({ html: true, inline: oneLiner })
+  const revert = state.applyContext({ inline: oneLiner })
 
   const childrenContent = children.map(child => state.one(child, state, node))
 
@@ -69,7 +74,7 @@ export function html(node: ComarkElement, state: State, parent?: ComarkElement) 
   }
 
   if (!oneLiner && content) {
-    content = '\n' + paddNoneHtmlContent(content, state) + '\n'
+    content = '\n' + paddNoneHtmlContent(content, state).trimEnd() + '\n'
   }
 
   return `<${tag}${attrs}>${content}</${tag}>`
@@ -82,8 +87,8 @@ function paddNoneHtmlContent(content: string, state: State) {
   }
 
   return (
-    (content.trim().startsWith('<') ? '' : '\n')
+    (content.trim().startsWith('<') ? '' : '')
     + content
-    + (content.trim().endsWith('>') ? '' : '\n')
+    + (content.trim().endsWith('>') ? '' : '')
   )
 }
