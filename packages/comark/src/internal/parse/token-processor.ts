@@ -297,7 +297,7 @@ function processBlockToken(tokens: any[], startIndex: number, insideNestedContex
   if (token.type === 'mdc_block_shorthand') {
     let nextIndex = startIndex + 1
     const componentName = token.tag || 'component'
-    const attrs = processAttributes(token.attrs, { handleBoolean: false, handleJSON: false })
+    const attrs = processAttributes(token.attrs, { handleJSON: false })
     const children: ComarkNode[] = []
 
     // Opening tag with content - process children until closing tag
