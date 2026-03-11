@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import type { PageCollectionItemBase } from '@nuxt/content'
+import type { ContentTocLink } from '@nuxt/ui'
+
+defineProps<{
+  links?: ContentTocLink[]
+}>()
 
 const menuDrawerOpen = ref(false)
 const onThisPageDrawerOpen = ref(false)
-const page = inject<Ref<PageCollectionItemBase>>('page')
 const filteredNavigation = useFilteredNavigation()
 const mainNavigation = useMainNavigation()
 const nuxtApp = useNuxtApp()
@@ -19,7 +22,7 @@ function refreshHeading(opened: boolean) {
 
 <template>
   <UContentToc
-    :links="page?.body?.toc?.links"
+    :links="links"
     highlight
     class="hidden lg:block lg:backdrop-blur-none lg:col-span-2"
   />
@@ -79,7 +82,7 @@ function refreshHeading(opened: boolean) {
       />
       <template #body>
         <UContentToc
-          :links="page?.body?.toc?.links"
+          :links="links"
           :open="true"
           default-open
           :ui="{
