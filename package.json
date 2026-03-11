@@ -14,6 +14,7 @@
     "dev:prepare": "nuxt prepare playground",
     "dev:react": "pnpm --filter comark-react-vite run dev",
     "dev:svelte": "pnpm --filter comark-svelte-vite run dev",
+    "dev:ansi": "pnpm --filter comark-ansi-vite run dev",
     "dev:vue": "pnpm --filter comark-vue-vite run dev",
     "dev:vue:mermaid": "pnpm --filter comark-vue-vite-mermaid run dev",
     "dev:vue:math": "pnpm --filter comark-vue-vite-math run dev",

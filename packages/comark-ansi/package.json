@@ -1,0 +1,32 @@
+{
+  "name": "@comark/ansi",
+  "type": "module",
+  "version": "0.0.1",
+  "description": "ANSI terminal renderer for Comark",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "stub": "node ../../scripts/stub.mjs",
+    "build": "tsc -p tsconfig.build.json",
+    "dev": "tsc -p tsconfig.build.json --watch",
+    "test": "vitest run",
+    "prepack": "tsc -p tsconfig.build.json"
+  },
+  "dependencies": {
+    "comark": "^1.0.0"
+  },
+  "devDependencies": {
+    "comark": "workspace:*",
+    "vitest": "^4.0.18"
+  }
+}

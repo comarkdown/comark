@@ -1,0 +1,23 @@
+{
+  "name": "comark-ansi-vite",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@xterm/addon-fit": "^0.10.0",
+    "@xterm/xterm": "^5.5.0",
+    "comark": "workspace:*",
+    "@comark/ansi": "workspace:*",
+    "katex": "^0.16.0",
+    "shiki": "^3.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "vite": "^7.3.1"
+  }
+}
