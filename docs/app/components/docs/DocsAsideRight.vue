@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type { ContentTocLink } from '@nuxt/ui'
+import type { DocsCollectionItem } from '@nuxt/content'
 
 defineProps<{
-  links?: ContentTocLink[]
+  page?: DocsCollectionItem | null
 }>()
 
 const menuDrawerOpen = ref(false)
@@ -22,7 +22,7 @@ function refreshHeading(opened: boolean) {
 
 <template>
   <UContentToc
-    :links="links"
+    :links="page?.body?.toc?.links"
     highlight
     class="hidden lg:block lg:backdrop-blur-none lg:col-span-2"
   />
@@ -82,7 +82,7 @@ function refreshHeading(opened: boolean) {
       />
       <template #body>
         <UContentToc
-          :links="links"
+          :links="page?.body?.toc?.links"
           :open="true"
           default-open
           :ui="{

@@ -84,8 +84,8 @@ importers:
         specifier: workspace:*
         version: link:../packages/comark
       docus:
-        specifier: https://pkg.pr.new/docus@f49c291
-        version: https://pkg.pr.new/docus@f49c291(5d348580c4bb2783c986edec3b25cc30)
+        specifier: ^5.8.0
+        version: 5.8.0(5d348580c4bb2783c986edec3b25cc30)
       markdown-it:
         specifier: ^14.1.1
         version: 14.1.1
@@ -5330,9 +5330,8 @@ packages:
   dlv@1.1.3:
     resolution: {integrity: sha512-+HlytyjlPKnIG8XuRG8WvmBP8xs8P71y+SKKS6ZXWoEgLuePxtDoUEiH7WkdePWrQ5JBpE6aoVqfZfJUQkjXwA==}
 
-  docus@https://pkg.pr.new/docus@f49c291:
-    resolution: {tarball: https://pkg.pr.new/docus@f49c291}
-    version: 5.7.0
+  docus@5.8.0:
+    resolution: {integrity: sha512-JeRl5QFgZR1n9mKT3cTPEEyynoCbxPylCyVUj59g2F/bjriuS7IVR4kXKy1CaoRU9tuM35+s2ArfWnrpFTEFrg==}
     peerDependencies:
       better-sqlite3: 12.x
       nuxt: 4.x
@@ -14492,7 +14491,7 @@ snapshots:
 
   dlv@1.1.3: {}
 
-  docus@https://pkg.pr.new/docus@f49c291(5d348580c4bb2783c986edec3b25cc30):
+  docus@5.8.0(5d348580c4bb2783c986edec3b25cc30):
     dependencies:
       '@ai-sdk/gateway': 3.0.66(zod@4.3.6)
       '@ai-sdk/mcp': 1.0.25(zod@4.3.6)
