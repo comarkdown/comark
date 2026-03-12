@@ -19,10 +19,6 @@ export default defineNuxtConfig({
     },
   },
 
-  build: {
-    transpile: ['comark', '@comark/vue'],
-  },
-
   css: ['~/assets/styles/main.css'],
 
   content: {
