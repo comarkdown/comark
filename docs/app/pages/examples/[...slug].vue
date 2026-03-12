@@ -79,22 +79,32 @@ defineOgImageComponent('Docs', {
       </template>
       <template #links>
         <UButton
-          icon="i-simple-icons-stackblitz"
-          label="Open in Playground"
-          color="neutral"
-          variant="soft"
-          size="sm"
-          :to="`https://stackblitz.com/fork/github/${appConfig.docs?.github}/tree/${appConfig.docs?.branch || 'main'}/examples/${exampleName}`"
-          target="_blank"
-        />
-
-        <UButton
           icon="i-simple-icons-github"
           label="Source"
           color="neutral"
           variant="soft"
           size="sm"
           :to="`https://github.com/${appConfig.docs?.github}/tree/${appConfig.docs?.branch || 'main'}/examples/${exampleName}`"
+          target="_blank"
+        />
+        <UButton
+          v-if="page.demo"
+          trailing-icon="i-lucide-arrow-up-right"
+          label="Open demo"
+          color="neutral"
+          variant="soft"
+          size="sm"
+          :to="page.demo"
+          target="_blank"
+        />
+        <UButton
+          v-else
+          icon="i-simple-icons-stackblitz"
+          label="Open in StackBlitz"
+          color="neutral"
+          variant="soft"
+          size="sm"
+          :to="`https://stackblitz.com/fork/github/${appConfig.docs?.github}/tree/${appConfig.docs?.branch || 'main'}/examples/${exampleName}`"
           target="_blank"
         />
       </template>

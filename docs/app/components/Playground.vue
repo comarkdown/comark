@@ -126,7 +126,10 @@ const isMatch = computed(() =>
       >
         <div class="h-full flex flex-col">
           <div class="shrink-0 flex items-center gap-2 px-3 h-9 border-b border-default bg-default">
-            <UTooltip text="Reset to default content">
+            <UTooltip
+              v-if="markdown !== defaultMarkdown.trim()"
+              text="Reset to default content"
+            >
               <UButton
                 :disabled="markdown === defaultMarkdown.trim()"
                 size="xs"

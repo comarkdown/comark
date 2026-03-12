@@ -14,7 +14,7 @@ defineProps<{
 const activeTab = ref<'vue' | 'react'>('vue')
 
 const vueCode = `<script setup lang="ts">
-import { Comark } from 'comark/vue'
+import { Comark } from '@comark/vue'
 import Alert from './components/Alert.vue'
 
 const md = \`

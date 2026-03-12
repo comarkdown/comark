@@ -40,7 +40,7 @@ fn main() {
           3,
           4
         ],
-        "class": "shiki github-dark",
+        "class": "shiki github-dark dark:github-dark",
         "tabindex": "0",
         "style": "background-color:#24292e;color:#e1e4e8"
       },
@@ -274,7 +274,7 @@ fn main() {
 ## HTML
 
 ```html
-<pre language="rust" filename="main.rs" highlights="[1,2,3,4]" class="shiki github-dark" tabindex="0" style="background-color:#24292e;color:#e1e4e8"><code class="language-rust"><span class="line highlight"><span style="color:#F97583">fn</span><span style="color:#E1E4E8"> </span><span style="color:#B392F0">main</span><span style="color:#E1E4E8">() {</span></span>
+<pre language="rust" filename="main.rs" highlights="[1,2,3,4]" class="shiki github-dark dark:github-dark" tabindex="0" style="background-color:#24292e;color:#e1e4e8"><code class="language-rust"><span class="line highlight"><span style="color:#F97583">fn</span><span style="color:#E1E4E8"> </span><span style="color:#B392F0">main</span><span style="color:#E1E4E8">() {</span></span>
 <span class="line highlight"><span style="color:#E1E4E8">    </span><span style="color:#F97583">let</span><span style="color:#E1E4E8"> x </span><span style="color:#F97583">=</span><span style="color:#E1E4E8"> </span><span style="color:#79B8FF">5</span><span style="color:#E1E4E8">;</span></span>
 <span class="line highlight"><span style="color:#E1E4E8">    </span><span style="color:#F97583">let</span><span style="color:#E1E4E8"> y </span><span style="color:#F97583">=</span><span style="color:#E1E4E8"> </span><span style="color:#79B8FF">10</span><span style="color:#E1E4E8">;</span></span>
 <span class="line highlight"><span style="color:#E1E4E8">    </span><span style="color:#B392F0">println!</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"Sum: {}"</span><span style="color:#E1E4E8">, x </span><span style="color:#F97583">+</span><span style="color:#E1E4E8"> y);</span></span>

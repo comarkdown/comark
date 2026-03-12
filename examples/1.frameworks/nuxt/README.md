@@ -6,94 +6,13 @@ navigation.icon: i-simple-icons-nuxt
 path: /examples/frameworks/nuxt
 ---
 
-::code-tree{defaultValue="app/app.vue" expandAll}
-
-```vue [app/app.vue]
-<script setup lang="ts">
-const markdown = `
-# Comark + Nuxt
-
-Comark automatically detects Components in \`~/components/prose/\` directory and uses them for rendering.
-`
-</script>
-
-<template>
-  <Comark>{{ markdown }}</Comark>
-</template>
-```
-
-```vue [app/components/ProseP.vue]
-<template>
-  <p>
-    <slot />
-  </p>
-</template>
-
-<style scoped>
-p {
-  color: #333;
-  line-height: 1.5;
-}
-p::first-letter {
-  text-transform: capitalize;
-  font-size: 20px;
-  color: red;
-  font-family: 'Monoton', sans-serif;
-  vertical-align: middle;
-}
-</style>
-```
-
-```ts [nuxt.config.ts]
-// https://nuxt.com/docs/api/configuration/nuxt-config
-export default defineNuxtConfig({
-  modules: ['@comark/nuxt'],
-  compatibilityDate: '2025-07-15',
-  devtools: { enabled: true }
-})
-```
-
-```json [package.json]
-{
-  "name": "comark-nuxt",
-  "type": "module",
-  "private": true,
-  "scripts": {
-    "build": "nuxt build",
-    "dev": "nuxt dev",
-    "generate": "nuxt generate",
-    "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
-  },
-  "dependencies": {
-    "nuxt": "^4.3.1",
-    "vue": "^3.5.28",
-    "comark": "^1.0.0"
-  }
-}
-```
-
-```json [tsconfig.json]
-{
-  // https://nuxt.com/docs/guide/concepts/typescript
-  "files": [],
-  "references": [
-    {
-      "path": "./.nuxt/tsconfig.app.json"
-    },
-    {
-      "path": "./.nuxt/tsconfig.server.json"
-    },
-    {
-      "path": "./.nuxt/tsconfig.shared.json"
-    },
-    {
-      "path": "./.nuxt/tsconfig.node.json"
-    }
-  ]
-}
-```
-
+::code-explorer
+---
+org: comarkdown
+repo: comark
+path: examples/1.frameworks/nuxt
+defaultValue: app/app.vue
+---
 ::
 
 
