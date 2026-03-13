@@ -1,0 +1,20 @@
+{
+  "name": "md-prompts",
+  "version": "0.0.1",
+  "private": true,
+  "description": "CLI prompts with Comark",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "node cli.ts"
+  },
+  "author": "Comark team",
+  "license": "MIT",
+  "dependencies": {
+    "@clack/prompts": "^1.1.0",
+    "@comark/ansi": "workspace:*",
+    "citty": "^0.2.1",
+    "comark": "workspace:*",
+    "shiki": "^3.0.0"
+  }
+}

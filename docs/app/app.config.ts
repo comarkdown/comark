@@ -18,7 +18,7 @@ export default defineAppConfig({
         items: [
           'What is Comark and how does it differ from MDX?',
           'How do I install Comark in my project?',
-          'Can I use Comark with both Vue and React?',
+          'Can I use Comark with both Vue, React and Svelte?',
         ],
       },
       {

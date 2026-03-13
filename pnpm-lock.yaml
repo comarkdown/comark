@@ -236,7 +236,7 @@ importers:
         version: link:../../../packages/comark
       katex:
         specifier: ^0.16.0
-        version: 0.16.38
+        version: 0.16.35
       shiki:
         specifier: ^3.0.0
         version: 3.23.0
@@ -246,7 +246,7 @@ importers:
         version: 5.9.3
       vite:
         specifier: ^7.3.1
-        version: 7.3.1(@types/node@25.4.0)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+        version: 7.3.1(@types/node@25.3.5)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
   examples/2.vite/react-vite:
     dependencies:
@@ -346,6 +346,24 @@ importers:
       vue-tsc:
         specifier: ^3.2.5
         version: 3.2.5(typescript@5.9.3)
+
+  examples/3.cli/md-prompts:
+    dependencies:
+      '@clack/prompts':
+        specifier: ^1.1.0
+        version: 1.1.0
+      '@comark/ansi':
+        specifier: workspace:*
+        version: link:../../../packages/comark-ansi
+      citty:
+        specifier: ^0.2.1
+        version: 0.2.1
+      comark:
+        specifier: workspace:*
+        version: link:../../../packages/comark
+      shiki:
+        specifier: ^3.0.0
+        version: 3.23.0
 
   examples/3.plugins/vue-vite-highlight:
     dependencies:
@@ -500,7 +518,7 @@ importers:
     devDependencies:
       vitest:
         specifier: ^4.0.18
-        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.4.0)(@vitest/browser-playwright@4.0.18)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitest/browser-playwright@4.0.18)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
   packages/comark-nuxt:
     dependencies:
