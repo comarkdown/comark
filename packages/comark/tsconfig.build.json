@@ -9,7 +9,9 @@
       "comark/ast": ["./src/ast/index.ts"],
       "comark/string": ["./src/string.ts"],
       "comark/plugins/*": ["./src/plugins/*.ts"]
-    }
+    },
+    "allowImportingTsExtensions": true,
+    "rewriteRelativeImportExtensions": true,
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]

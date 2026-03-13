@@ -1,4 +1,4 @@
-import { createState, one } from './state'
+import { createState, one } from './state.ts'
 import type { StringifyOptions } from './types'
 import type { ComarkTree } from '../../ast/types'
 

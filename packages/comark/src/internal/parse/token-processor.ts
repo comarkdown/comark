@@ -1,5 +1,5 @@
 import type { ComarkElementAttributes, ComarkNode } from 'comark/ast'
-import { htmlToComarkNodes, parseInlineHtmlTag } from './html'
+import { htmlToComarkNodes, parseInlineHtmlTag } from './html/index.ts'
 
 // Mapping from token types to tag names
 const BLOCK_TAG_MAP: Record<string, string> = {

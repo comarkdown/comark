@@ -1,25 +1,25 @@
-import type { ComarkParseFn, ComarkParsePostState, MarkdownExitPlugin, ParseOptions } from './types'
+import type { ComarkParseFn, ComarkParsePostState, MarkdownExitPlugin, ParseOptions } from './types.ts'
 import MarkdownExit from 'markdown-exit'
 import pluginMdc from '@comark/markdown-it'
-import taskList from './plugins/task-list'
-import alert from './plugins/alert'
-import { applyAutoUnwrap } from './internal/parse/auto-unwrap'
+import taskList from './plugins/task-list.ts'
+import alert from './plugins/alert.ts'
+import { applyAutoUnwrap } from './internal/parse/auto-unwrap.ts'
 import type { ComarkTree, ComarkNode } from 'comark/ast'
-import { marmdownItTokensToComarkTree } from './internal/parse/token-processor'
-import { autoCloseMarkdown } from './internal/parse/auto-close/index'
-import { parseFrontmatter } from './internal/front-matter'
-import { extractReusableNodes } from './internal/parse/incremental'
-import html_block from './internal/parse/html/html_block_rule'
-import html_inline from './internal/parse/html/html_inline_rule'
+import { marmdownItTokensToComarkTree } from './internal/parse/token-processor.ts'
+import { autoCloseMarkdown } from './internal/parse/auto-close/index.ts'
+import { parseFrontmatter } from './internal/front-matter.ts'
+import { extractReusableNodes } from './internal/parse/incremental.ts'
+import html_block from './internal/parse/html/html_block_rule.ts'
+import html_inline from './internal/parse/html/html_inline_rule.ts'
 
 // Re-export ComarkTree and ComarkNode for convenience
 export type { ComarkTree, ComarkNode } from 'comark/ast'
 
 // Re-export auto-close utilities
-export { autoCloseMarkdown } from './internal/parse/auto-close'
+export { autoCloseMarkdown } from './internal/parse/auto-close/index.ts'
 
 // Re-export parse utilities
-export { applyAutoUnwrap } from './internal/parse/auto-unwrap'
+export { applyAutoUnwrap } from './internal/parse/auto-unwrap.ts'
 
 // Re-export types
 export type * from './types'

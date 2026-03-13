@@ -1,8 +1,8 @@
 // BASED ON https://github.com/serkodev/markdown-exit/blob/fe1351070a5841426223ab4a0a5c7874ba2b1257/packages/markdown-exit/src/parser/block/rules/html_block.ts
 
 import type { StateBlock } from 'markdown-exit'
-import block_names from './html_blocks'
-import { HTML_OPEN_CLOSE_TAG_RE } from './html_re'
+import block_names from './html_blocks.ts'
+import { HTML_OPEN_CLOSE_TAG_RE } from './html_re.ts'
 
 // An array of opening and corresponding closing sequences for html tags,
 // last argument defines whether it can terminate a paragraph or not

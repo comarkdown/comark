@@ -1,7 +1,7 @@
 import type { ComarkTree, ComarkElement, ComarkNode } from './ast'
 import type { NodeHandler } from './internal/stringify/types'
-import { renderFrontmatter } from './internal/front-matter'
-import { stringify } from './internal/stringify'
+import { renderFrontmatter } from './internal/front-matter.ts'
+import { stringify } from './internal/stringify/index.ts'
 
 export interface RenderHTMLContext {
   /** Renders the element's children to HTML */
