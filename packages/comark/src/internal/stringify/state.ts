@@ -1,4 +1,4 @@
-import { handlers } from './handlers'
+import { handlers } from './handlers/index.ts'
 import type { State, Context } from './types'
 import type { ComarkElement, ComarkNode } from '../../ast/types'
 

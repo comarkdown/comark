@@ -1,8 +1,8 @@
 import type { State } from '../types'
 import type { ComarkElement, ComarkNode } from '../../../ast/types'
-import { indent } from '../indent'
-import { comarkAttributes, comarkYamlAttributes } from '../attributes'
-import { html } from './html'
+import { indent } from '../indent.ts'
+import { comarkAttributes, comarkYamlAttributes } from '../attributes.ts'
+import { html } from './html.ts'
 
 // HTML elements that always create an inline context for their children
 const INLINE_HTML_ELEMENTS = new Set(['a', 'strong', 'em', 'span'])
