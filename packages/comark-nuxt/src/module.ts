@@ -1,5 +1,6 @@
 import { defineNuxtModule, createResolver, addImports, addComponent, hasNuxtModule } from '@nuxt/kit'
 import fs from 'node:fs/promises'
+import { registerComarkSlotTransformer } from './vue-slot-override'
 
 // Module options TypeScript interface definition
 export interface ComarkModuleOptions {}
@@ -12,6 +13,11 @@ export default defineNuxtModule<ComarkModuleOptions>({
   // Default configuration options of the Nuxt module
   defaults: {},
   async setup(_options, nuxt) {
+    const resolver = createResolver(import.meta.url)
+
+    // Register Vue slot transformer
+    registerComarkSlotTransformer(resolver)
+
     addComponent({
       name: 'Comark',
       export: 'Comark',
@@ -36,7 +42,6 @@ export default defineNuxtModule<ComarkModuleOptions>({
     }
 
     // Register user global components
-    const resolver = createResolver(import.meta.url)
     const _layers = [...nuxt.options._layers].reverse()
     for (const layer of _layers) {
       const srcDir = layer.config.srcDir

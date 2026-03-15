@@ -3,8 +3,8 @@
 import { use, useDeferredValue, useMemo, Suspense } from 'react'
 import { parse } from 'comark'
 import type { ComarkTree } from 'comark/ast'
-import { ComarkRenderer } from './ComarkRenderer'
-import type { ComarkProps } from './Comark'
+import { ComarkRenderer } from './ComarkRenderer.ts'
+import type { ComarkProps } from './Comark.ts'
 
 interface ComarkContentProps extends Omit<ComarkProps, 'markdown' | 'children' | 'options' | 'plugins'> {
   parsePromise: Promise<ComarkTree>
