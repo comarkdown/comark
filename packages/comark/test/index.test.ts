@@ -4,7 +4,7 @@ import { join } from 'node:path'
 import { parseFrontmatter } from '../src/internal/front-matter'
 import { parse, render as renderMarkdown } from 'comark'
 import highlight from 'comark/plugins/highlight'
-import { renderHTML } from '@comark/html'
+import { renderTree } from '@comark/html'
 import type { HighlightOptions } from '../src/plugins/highlight'
 import emoji from '../src/plugins/emoji'
 import type { ComarkPlugin } from 'comark'
@@ -222,7 +222,7 @@ describe('Comark Tests', () => {
       })
 
       it('should render AST to HTML', { timeout: testCase.timeouts?.html ?? 5000 }, () => {
-        const result = renderHTML(parsedAST)
+        const result = renderTree(parsedAST)
         const expectedHTML = testCase.html.trim()
         expect(result).toBe(expectedHTML)
       })

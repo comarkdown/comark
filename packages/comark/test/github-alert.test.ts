@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { parse } from '../src/index'
 import githubAlert from '../src/plugins/alert'
-import { renderHTML } from '@comark/html'
+import { renderTree } from '@comark/html'
 
 describe('githubAlert', () => {
   it('should convert !TIP to <svg> icon', async () => {
@@ -12,7 +12,7 @@ describe('githubAlert', () => {
       `, {
       plugins: [githubAlert()],
     })
-    const html = renderHTML(tree)
+    const html = renderTree(tree)
     expect(html).toContain('<blockquote as="note">')
   })
 })

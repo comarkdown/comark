@@ -1,6 +1,7 @@
 import { handlers } from './handlers/index.ts'
 import type { State, Context } from './types'
 import type { ComarkElement, ComarkNode } from '../../ast/types'
+import { pascalCase } from 'scule'
 
 /**
  * Render a single node
@@ -22,6 +23,7 @@ export function one(node: ComarkNode, state: State, parent?: ComarkElement) {
   }
 
   const userHandler = state.context.handlers[node[0] as string]
+    || state.context.handlers[pascalCase(node[0] as string)]
   if (userHandler) {
     return userHandler(node, state, parent)
   }

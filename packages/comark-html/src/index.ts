@@ -42,14 +42,14 @@ export interface RenderHTMLOptions {
  * })
  * ```
  */
-export function renderHTML(tree: ComarkTree, options?: RenderHTMLOptions): string {
+export function renderTree(tree: ComarkTree, options?: RenderHTMLOptions): string {
   const handlers: Record<string, NodeHandler> = {}
 
   if (options?.components) {
     for (const [name, renderFn] of Object.entries(options.components)) {
       handlers[name] = (node) => {
         const render = (children: ComarkNode[]) => {
-          return renderHTML({ nodes: children, frontmatter: {}, meta: {} }, options)
+          return renderTree({ nodes: children, frontmatter: {}, meta: {} }, options)
         }
         return renderFn(node, { render, data: options.data })
       }
@@ -99,7 +99,7 @@ export function createRender(options?: RenderOptions): (markdown: string) => Pro
 
   return async (markdown: string) => {
     const tree = await parse(markdown)
-    return renderHTML(tree, options?.render)
+    return renderTree(tree, options?.render)
   }
 }
 

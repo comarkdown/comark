@@ -63,19 +63,28 @@ function App() {
 
 ### HTML (No Framework)
 ```bash
-npm install comark
+npm install @comark/html
 # or
-pnpm add comark 
+pnpm add @comark/html
 ```
 
 ```js
 import { parse } from 'comark'
-import { renderHTML } from 'comark/string'
+import { render } from '@comark/html'
+import math, { Math } from '@comark/html/plugins/math'
 
 const chatMessage = ...
 
-const tree = await parse(chatMessage)
-const html = renderHTML(tree)
+const html = await render(chatMessage, {
+  parse: {
+    plugins: [math()],
+  },
+  render: {
+    components: {
+      Math,
+    },
+  },
+})
 ```
 
 

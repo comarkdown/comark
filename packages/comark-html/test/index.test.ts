@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { parse } from 'comark'
-import { render, createRender, renderHTML } from '../src/index'
+import { render, createRender, renderTree } from '../src/index'
+import math, { Math } from '@comark/html/plugins/math'
 
 describe('render', () => {
   it('converts markdown to html', async () => {
@@ -123,10 +124,10 @@ describe('createRender', () => {
   })
 })
 
-describe('renderHTML', () => {
+describe('renderTree', () => {
   it('renders a pre-parsed tree', async () => {
     const tree = await parse('# Title\n\n**Bold** text.')
-    const html = renderHTML(tree)
+    const html = renderTree(tree)
     expect(html).toContain('<h1')
     expect(html).toContain('Title')
     expect(html).toContain('<strong>Bold</strong>')
@@ -134,13 +135,13 @@ describe('renderHTML', () => {
 
   it('renders without options', async () => {
     const tree = await parse('Hello _world_')
-    const html = renderHTML(tree)
+    const html = renderTree(tree)
     expect(html).toContain('<em>world</em>')
   })
 
   it('renders custom components', async () => {
     const tree = await parse('::alert{type="warning"}\nWatch out!\n::')
-    const html = renderHTML(tree, {
+    const html = renderTree(tree, {
       components: {
         alert: ([, attrs, ...children], { render }) =>
           `<div role="alert" class="alert-${attrs.type}">${render(children)}</div>`,
@@ -154,7 +155,7 @@ describe('renderHTML', () => {
 
   it('passes data to component renderers', async () => {
     const tree = await parse('::header\nWelcome\n::')
-    const html = renderHTML(tree, {
+    const html = renderTree(tree, {
       data: { siteName: 'My Blog' },
       components: {
         header: ([,, ...children], { render, data }) =>
@@ -167,7 +168,7 @@ describe('renderHTML', () => {
 
   it('renders nested components', async () => {
     const tree = await parse('::outer\n:::inner\nDeep\n:::\n::')
-    const html = renderHTML(tree, {
+    const html = renderTree(tree, {
       components: {
         outer: ([,, ...children], { render }) => `<div class="outer">${render(children)}</div>`,
         inner: ([,, ...children], { render }) => `<div class="inner">${render(children)}</div>`,
@@ -180,13 +181,30 @@ describe('renderHTML', () => {
 
   it('leaves unknown components as-is when no renderer provided', async () => {
     const tree = await parse('::custom\nContent\n::')
-    const html = renderHTML(tree)
+    const html = renderTree(tree)
     expect(html).toContain('Content')
   })
 
   it('handles inline HTML elements', async () => {
     const tree = await parse('Text with <strong class="highlight">HTML</strong>')
-    const html = renderHTML(tree)
+    const html = renderTree(tree)
     expect(html).toContain('<strong class="highlight">HTML</strong>')
+  })
+})
+
+describe('renderHTML', () => {
+  it ('renders math', async () => {
+    const chatMessage = 'Inline $E = mc^2$ and block:\n\n$$\n\\frac{a}{b}\n$$'
+    const html = await render(chatMessage, {
+      parse: {
+        plugins: [math()],
+      },
+      render: {
+        components: {
+          Math,
+        },
+      },
+    })
+    expect(html).toContain('<span class="math inline">')
   })
 })
