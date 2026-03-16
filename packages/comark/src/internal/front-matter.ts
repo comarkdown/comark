@@ -1,4 +1,4 @@
-import { parseYaml, stringifyYaml } from './yaml'
+import { parseYaml, stringifyYaml } from './yaml.ts'
 
 const FRONTMATTER_DELIMITER_DEFAULT = '---'
 const LF = '\n'

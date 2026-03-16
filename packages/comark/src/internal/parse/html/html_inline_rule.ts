@@ -1,7 +1,7 @@
 // BASED ON https://github.com/serkodev/markdown-exit/blob/fe1351070a5841426223ab4a0a5c7874ba2b1257/packages/markdown-exit/src/parser/inline/rules/html_inline.ts
 
 import type { StateInline } from 'markdown-exit'
-import { HTML_TAG_RE } from './html_re'
+import { HTML_TAG_RE } from './html_re.ts'
 
 function isLinkOpen(str: string) {
   return /^<a[>\s]/i.test(str)

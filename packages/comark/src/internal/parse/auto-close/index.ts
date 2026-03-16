@@ -3,7 +3,7 @@
  * Useful for streaming/incremental parsing where content may be partial
  */
 
-import { closeTables } from './table'
+import { closeTables } from './table.ts'
 
 /**
  * Linear-time auto-close implementation without regex

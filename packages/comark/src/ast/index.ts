@@ -1,5 +1,4 @@
-export { textContent } from './utils'
-export { visit } from './utils'
+export { textContent, visit } from './utils.ts'
 
 // Re-export types
 export type * from './types'

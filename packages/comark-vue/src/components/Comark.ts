@@ -3,7 +3,7 @@ import { computed, defineComponent, h, shallowRef, watch } from 'vue'
 import type { ComarkTree } from 'comark/ast'
 import { createParse } from 'comark'
 import type { ParseOptions, ComponentManifest } from 'comark'
-import { ComarkRenderer } from './ComarkRenderer'
+import { ComarkRenderer } from './ComarkRenderer.ts'
 
 /**
  * Props for the Comark component

@@ -1,8 +1,8 @@
-import type { ComarkTree } from './ast'
-import { renderFrontmatter } from './internal/front-matter'
-import { stringify } from './internal/stringify'
+import type { ComarkTree } from './ast/types.ts'
+import { renderFrontmatter } from './internal/front-matter.ts'
+import { stringify } from './internal/stringify/index.ts'
 
-export { stringify } from './internal/stringify'
+export { stringify } from './internal/stringify/index.ts'
 export type { NodeHandler } from './internal/stringify/types'
 
 export interface RenderMarkdownOptions {
