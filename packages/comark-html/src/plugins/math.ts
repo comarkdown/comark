@@ -20,7 +20,7 @@ export { default } from 'comark/plugins/math'
  * })
  * ```
  */
-export const math = ([, attrs]: ComarkElement): string => {
+export const Math = ([, attrs]: ComarkElement): string => {
   const content = String(attrs.content ?? '')
   const isInline = String(attrs.class ?? '').includes('inline')
 

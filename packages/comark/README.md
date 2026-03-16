@@ -8,7 +8,7 @@
 [![Documentation](https://img.shields.io/badge/Documentation-black?logo=readme&logoColor=white)](https://comark.dev)
 [![license](https://img.shields.io/github/license/comarkdown/comark?color=black)](https://github.com/comarkdown/comark/blob/main/LICENSE)
 
-A high-performance markdown parser and renderer with Vue & React components support.
+A high-performance markdown parser and renderer with Vue, React & Svelte components support.
 
 ## Features
 
@@ -61,11 +61,31 @@ function App() {
 }
 ```
 
+### Svelte
+
+```bash
+npm install @comark/svelte katex
+# or
+pnpm add @comark/svelte katex
+```
+
+```svelte
+<script lang="ts">
+  import { Comark } from '@comark/svelte'
+  import math, { Math } from '@comark/svelte/plugins/math'
+
+  const chatMessage = ...
+</script>
+
+<Comark markdown={chatMessage} components={{ math: Math }} plugins={[math()]} />
+```
+
 ### HTML (No Framework)
+
 ```bash
 npm install @comark/html
 # or
-pnpm add @comark/html 
+pnpm add @comark/html
 ```
 
 ```js

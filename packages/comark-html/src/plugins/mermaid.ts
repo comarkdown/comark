@@ -20,7 +20,7 @@ export { default } from 'comark/plugins/mermaid'
  * })
  * ```
  */
-export const mermaid = ([, attrs]: ComarkElement): string => {
+export const Mermaid = ([, attrs]: ComarkElement): string => {
   const content = String(attrs.content ?? '')
   const themeName = attrs.theme as ThemeNames | undefined
   const theme = (themeName && THEMES[themeName]) ?? THEMES['zinc-light']

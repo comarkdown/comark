@@ -68,7 +68,7 @@ const result = await parse(content, {
 ```vue [Vue]
 <script setup lang="ts">
 import { Comark } from '@comark/vue'
-import emoji from 'comark/plugins/emoji'
+import emoji from '@comark/vue/plugins/emoji'
 </script>
 
 <template>
@@ -78,9 +78,20 @@ import emoji from 'comark/plugins/emoji'
 
 ```tsx [React]
 import { Comark } from '@comark/react'
-import emoji from 'comark/plugins/emoji'
+import emoji from '@comark/react/plugins/emoji'
 
 <Comark plugins={[emoji()]}>{content}</Comark>
 ```
+
+```svelte [Svelte]
+<script>
+  import { Comark } from '@comark/svelte'
+  import emoji from '@comark/svelte/plugins/emoji'
+  let content = '# Awesome'
+</script>
+
+<Comark markdown={content} plugins={[emoji()]} />
+```
+
 
 ::

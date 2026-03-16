@@ -20,6 +20,8 @@ This is a **monorepo** containing multiple packages related to Comark (Component
 /                         # Root workspace
 ├── packages/             # All publishable packages
 │   ├── comark/           # Main Comark parser + core plugins
+│   ├── comark-html/      # HTML renderer (@comark/html)
+│   ├── comark-ansi/      # ANSI terminal renderer (@comark/ansi)
 │   ├── comark-vue/       # Vue renderer + plugins (@comark/vue)
 │   ├── comark-react/     # React renderer + plugins (@comark/react)
 │   ├── comark-svelte/    # Svelte renderer + plugins (@comark/svelte)
@@ -78,6 +80,77 @@ packages/comark/
 | `beautiful-mermaid` | `comark/plugins/mermaid` |
 
 All are optional — only install what you use.
+
+## Package: @comark/html
+
+Located at `packages/comark-html/`. Framework-free HTML string rendering.
+
+### Exports
+
+```json
+{
+  ".": "./dist/index.js",
+  "./plugins/*": "./dist/plugins/*.js",
+  "./render": "./dist/render.js"
+}
+```
+
+### Usage
+
+```typescript
+import { render, renderHTML, createRender } from '@comark/html'
+import highlight from '@comark/html/plugins/highlight'
+import math, { Math } from '@comark/html/plugins/math'
+
+// Flat options — ParseOptions & RenderOptions merged at top level
+const renderFn = createRender({
+  plugins: [highlight({ themes: { light: 'github-light', dark: 'github-dark' } })],
+  components: {
+    Math,
+    alert: ([, attrs, ...children], { render }) =>
+      `<div class="alert alert-${attrs.type}">${render(children)}</div>`
+  },
+})
+
+const html = await renderFn(markdownString)
+```
+
+---
+
+## Package: @comark/ansi
+
+Located at `packages/comark-ansi/`. ANSI terminal renderer.
+
+### Exports
+
+```json
+{
+  ".": "./dist/index.js",
+  "./plugins/*": "./dist/plugins/*.js",
+  "./render": "./dist/render.js"
+}
+```
+
+### Usage
+
+```typescript
+import { log, render, renderANSI, createLog, createRender } from '@comark/ansi'
+import highlight from '@comark/ansi/plugins/highlight'
+import math, { Math } from '@comark/ansi/plugins/math'
+
+// Flat options — ParseOptions & RenderANSIOptions merged at top level
+const logFn = createLog({
+  plugins: [highlight(), math()],
+  components: { Math },
+  width: 120,                      // terminal width
+  colors: true,                    // emit ANSI escape codes
+  write: (s) => process.stderr.write(s),
+})
+
+await logFn(markdownString)
+```
+
+---
 
 ## Package: @comark/vue
 
@@ -228,20 +301,42 @@ Uses Vitest with two test projects:
 // Core parsing
 import { parse, autoCloseMarkdown } from 'comark'
 
-// String rendering (HTML & Markdown)
-import { renderHTML, renderMarkdown } from 'comark/render'
+// HTML rendering (parse + render in one step)
+import { render, renderHTML, createRender } from '@comark/html'
+
+// ANSI terminal rendering
+import { log, render, renderANSI, createLog, createRender } from '@comark/ansi'
+
+// Markdown string rendering (AST → markdown)
+import { renderMarkdown } from 'comark/render'
 
 // AST types and utilities
 import type { ComarkTree, ComarkNode, ComarkElement, ComarkText } from 'comark'
 import { textContent, visit } from 'comark/utils'
 
-// Core plugins (framework-agnostic)
+// Core plugins — use when calling parse() directly (framework-agnostic)
 import highlight from 'comark/plugins/highlight'
 import math from 'comark/plugins/math'
 import mermaid from 'comark/plugins/mermaid'
 import emoji from 'comark/plugins/emoji'
 import toc from 'comark/plugins/toc'
 import alert from 'comark/plugins/alert'
+
+// NOTE: All framework packages re-export every core plugin via their own subpath.
+// Prefer the framework-specific path when using a framework renderer:
+//   @comark/vue/plugins/highlight, @comark/react/plugins/highlight, etc.
+// Use comark/plugins/* only when calling parse() without a framework renderer.
+
+// HTML rendering — parse + render to HTML string
+import { render, renderHTML, createRender } from '@comark/html'
+import highlight from '@comark/html/plugins/highlight'
+import math, { Math } from '@comark/html/plugins/math'
+import mermaid, { Mermaid } from '@comark/html/plugins/mermaid'
+
+// ANSI terminal rendering — parse + render to styled terminal string
+import { log, render, renderANSI, createLog, createRender } from '@comark/ansi'
+import highlight from '@comark/ansi/plugins/highlight'
+import math from '@comark/ansi/plugins/math'
 
 // Vue — renderer + plugin wrappers (plugin fn + Vue component)
 import { Comark, ComarkRenderer, defineComarkComponent } from '@comark/vue'
@@ -510,7 +605,7 @@ chore: update dependencies           # No version bump
 
 2. **Documentation** (`docs/content/`)
    - `1.getting-started/` — Installation or quick start changes
-   - `3.rendering/` — Vue/React/Svelte renderer changes
+   - `3.rendering/` — Vue/React/Svelte/HTML/ANSI renderer changes
    - `4.plugins/` — Plugin changes
 
 ### Documentation Checklist

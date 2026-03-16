@@ -10,7 +10,7 @@ A high-performance markdown parser with Comark (Components in Markdown) support,
 - 📦 **Streaming support** with buffered and incremental modes
 - ⚡ **Real-time rendering** with auto-close for incomplete syntax
 - 🔧 **Comark component syntax** for custom components
-- 🎨 **Vue & React renderers** with custom component mapping
+- 🎨 **Vue, React & Svelte renderers** with custom component mapping
 - 📝 **YAML frontmatter** support
 - 📑 **Automatic TOC generation**
 - 🎯 **Full TypeScript support**
@@ -22,8 +22,11 @@ A high-performance markdown parser with Comark (Components in Markdown) support,
 - **Installation:** `npm install comark` or `pnpm add comark`
 - **Exports:**
   - Main parser: `comark`
-  - Vue components: `comark/vue`
-  - React components: `comark/react`
+  - Vue components: `@comark/vue`
+  - React components: `@comark/react`
+  - Svelte components: `@comark/svelte`
+  - HTML rendering: `@comark/html`
+  - ANSI terminal rendering: `@comark/ansi`
 
 ## Quick Start
 
@@ -75,6 +78,18 @@ export default function App() {
 }
 ```
 
+### Svelte Rendering
+
+```svelte
+<script lang="ts">
+  import { Comark } from '@comark/svelte'
+
+  const content = `# Hello World`
+</script>
+
+<Comark markdown={content} />
+```
+
 ## Documentation Sections
 
 This guide is organized into focused sections covering different aspects of the package:
@@ -91,7 +106,7 @@ Learn how to write Comark documents with complete syntax reference:
 - **Task Lists:** GFM-style checkboxes with `[x]` and `[ ]` syntax
 - **Tables:** GFM tables with alignment and inline markdown support
 
-**[→ Read Full Markdown Syntax Guide](./docs/skills/markdown-syntax.md)**
+**[→ Read Full Markdown Syntax Guide](./references/markdown-syntax.md)**
 
 ---
 
@@ -106,7 +121,7 @@ Complete guide for parsing documents and working with AST:
 - **Auto-close:** automatic closing of unclosed syntax
 - **Auto-unwrap:** remove unnecessary paragraph wrappers from container components
 
-**[→ Read Full Parsing & AST Guide](./docs/skills/parsing-ast.md)**
+**[→ Read Full Parsing & AST Guide](./references/parsing-ast.md)**
 
 ---
 
@@ -123,7 +138,7 @@ Comprehensive guide for rendering in Vue applications:
 - **Error Handling:** built-in error capture for streaming scenarios
 - **Props Access:** accessing `__node` and parsed properties
 
-**[→ Read Full Vue Rendering Guide](./docs/skills/rendering-vue.md)**
+**[→ Read Full Vue Rendering Guide](./references/rendering-vue.md)**
 
 ---
 
@@ -140,7 +155,37 @@ Comprehensive guide for rendering in React applications:
 - **Custom Props:** accessing parsed properties and `__node`
 - **CSS Class Name:** custom wrapper classes and Tailwind CSS integration
 
-**[→ Read Full React Rendering Guide](./docs/skills/rendering-react.md)**
+**[→ Read Full React Rendering Guide](./references/rendering-react.md)**
+
+---
+
+### 🎡 [5. Svelte Rendering](./references/rendering-svelte.md)
+
+Comprehensive guide for rendering in Svelte 5 applications:
+
+- **Basic Usage:** `Comark` component setup with `$state`
+- **Custom Components:** mapping custom Svelte components to Comark elements
+- **Dynamic Loading:** `componentsManifest` for lazy-loaded components
+- **Props Mapping:** attribute-to-prop conversion (close to HTML semantics)
+- **Streaming Mode:** real-time rendering with reactive `$state`
+- **Experimental Async:** `ComarkAsync` with `<svelte:boundary>`
+- **Prose Components:** `Prose` prefix for overriding native HTML elements
+
+**[→ Read Full Svelte Rendering Guide](./references/rendering-svelte.md)**
+
+---
+
+### 🤖 [6. Using with AI Agents](./AGENTS.md)
+
+Guide for integrating Comark in AI agent and LLM streaming workflows:
+
+- **Streaming from LLMs:** rendering incremental AI output in real time
+- **Auto-Close:** handling incomplete syntax from partial LLM tokens
+- **Caret Indicator:** showing a live cursor during generation
+- **Framework Examples:** Vue, React, Svelte streaming patterns
+- **ANSI for CLIs:** rendering AI output in terminal agents
+
+**[→ Read Full Agents Guide](./AGENTS.md)**
 
 ---
 
@@ -205,8 +250,8 @@ const closed = autoCloseMarkdown('**bold text') // → '**bold text**'
 
 ```typescript
 import { parse } from 'comark'
-import { renderHTML } from 'comark/string'
-import highlight from 'comark/plugins/highlight'
+import { renderHTML } from '@comark/html'
+import highlight from '@comark/html/plugins/highlight'
 
 async function processMarkdownFile(filePath: string) {
   const content = await readFile(filePath, 'utf-8')
@@ -293,27 +338,34 @@ parse(source: string, options?: ParseOptions): Promise<ComarkTree>
 autoCloseMarkdown(source: string): string
 ```
 
-### String Rendering Functions (`comark/string`)
+### HTML Rendering Functions (`@comark/html`)
 
 ```typescript
-// Render to HTML (with optional custom components and data)
-renderHTML(tree: ComarkTree, options?: RenderHTMLOptions): string
+// Render markdown to HTML string (parse + render in one step)
+render(markdown: string, options?: RenderOptions): Promise<string>
 
-// Render to markdown
-renderMarkdown(tree: ComarkTree): string
+// Render a pre-parsed tree to HTML
+renderHTML(tree: ComarkTree, options?: RenderOptions): string
+
+// Create a reusable render function with shared parser instance
+createRender(options?: ParseOptions & RenderOptions): (markdown: string) => Promise<string>
 ```
 
-### Stream Functions
-
-### Vue Components
+### Vue Components (`@comark/vue`)
 
 ```vue
 <Comark :markdown="markdownString" :components="customComponents" />
 ```
 
-### React Components
+### React Components (`@comark/react`)
 
 ```tsx
+<Comark markdown={markdownString} components={customComponents} />
+```
+
+### Svelte Components (`@comark/svelte`)
+
+```svelte
 <Comark markdown={markdownString} components={customComponents} />
 ```
 
@@ -385,12 +437,12 @@ import type {
         │   + meta)       │
         └────────┬────────┘
                  │
-     ┌───────────┴───────────┐
-     ▼                       ▼
-┌─────────┐           ┌─────────┐
-│   Vue   │           │  React  │
-│ Renderer│           │ Renderer│
-└─────────┘           └─────────┘
+     ┌───────────┬───────────┴───────────┐
+     ▼           ▼                       ▼
+┌─────────┐ ┌─────────┐           ┌─────────┐
+│   Vue   │ │  React  │           │ Svelte  │
+│ Renderer│ │ Renderer│           │ Renderer│
+└─────────┘ └─────────┘           └─────────┘
 ```
 
 ## Contributing & Testing
@@ -422,7 +474,7 @@ pnpm test -- tests/parse.test.ts
 1. **Extending Markdown** - Component syntax without breaking compatibility
 2. **Streaming Support** - Real-time rendering with auto-close
 3. **Lightweight AST** - Efficient Comark AST format
-4. **Framework Support** - First-class Vue and React integration
+4. **Framework Support** - First-class Vue, React, and Svelte integration
 5. **Developer Experience** - Full TypeScript support and comprehensive documentation
 
 **Choose Comark when you need:**
@@ -440,3 +492,5 @@ pnpm test -- tests/parse.test.ts
 - 🔧 [Master Parsing & AST](./references/parsing-ast.md)
 - ⚛️ [Explore Vue Rendering](./references/rendering-vue.md)
 - ⚛️ [Explore React Rendering](./references/rendering-react.md)
+- 🎡 [Explore Svelte Rendering](./references/rendering-svelte.md)
+- 🤖 [Use with AI Agents](./AGENTS.md)
