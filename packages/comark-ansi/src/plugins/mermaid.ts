@@ -1,4 +1,4 @@
-import type { ComarkElement } from 'comark/ast'
+import type { ComarkElement } from 'comark'
 import type { ThemeNames } from 'comark/plugins/mermaid'
 import { renderMermaidASCII, THEMES } from 'beautiful-mermaid'
 

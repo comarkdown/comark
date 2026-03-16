@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { textContent } from 'comark/ast'
+import { textContent } from 'comark/utils'
 
 const props = withDefaults(defineProps<{
   __node: any

@@ -1,6 +1,5 @@
-import type { ComarkElement } from 'comark/ast'
-import { visit } from 'comark/ast'
-import type { ComarkPlugin } from 'comark'
+import type { ComarkElement, ComarkPlugin } from 'comark'
+import { visit } from 'comark/utils'
 
 interface Marker {
   type: 'tip' | 'note' | 'important' | 'warning' | 'caution'

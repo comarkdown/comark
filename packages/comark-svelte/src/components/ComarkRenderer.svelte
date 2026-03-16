@@ -18,8 +18,7 @@ Supports custom component mappings and a streaming caret indicator.
 ```
 -->
 <script lang="ts">
-  import type { ComarkTree } from 'comark/ast'
-  import type { ComponentManifest } from 'comark'
+  import type { ComarkTree, ComponentManifest } from 'comark'
   import ComarkNode from './ComarkNode.svelte'
 
   let {

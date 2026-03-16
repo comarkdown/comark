@@ -1,7 +1,7 @@
-import type { NodeHandler } from 'comark/string'
-import type { ComarkElement, ComarkNode } from 'comark/ast'
-import { textContent } from 'comark/ast'
-import { DIM, CYAN, RESET, BOLD } from '../escape.ts'
+import type { NodeHandler } from 'comark/render'
+import type { ComarkElement, ComarkNode } from 'comark'
+import { textContent } from 'comark/utils'
+import { DIM, CYAN, RESET, BOLD } from '../utils/escape.ts'
 
 // --- True-color helpers ---
 

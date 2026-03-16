@@ -5,13 +5,16 @@
     "module": "esnext",
     "moduleResolution": "bundler",
     "jsx": "react-jsx",
+    "outDir": "./dist",
     "strict": true,
+    "declaration": true,
     "strictNullChecks": true,
     "esModuleInterop": true,
     "skipDefaultLibCheck": true,
     "skipLibCheck": true,
-    "noEmit": true,
-    "allowImportingTsExtensions": true
+    "allowImportingTsExtensions": true,
+    "noEmit": false,
+    "rewriteRelativeImportExtensions": true,
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]

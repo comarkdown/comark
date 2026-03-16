@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { applyAutoUnwrap } from '../src/internal/parse/auto-unwrap'
-import type { ComarkNode } from 'comark/ast'
+import type { ComarkNode } from 'comark'
 
 describe('applyAutoUnwrap', () => {
   it('should not modify elements without paragraph children', () => {

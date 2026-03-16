@@ -1,7 +1,7 @@
 import { handlers } from './handlers/index.ts'
-import type { State, Context } from './types'
-import type { ComarkElement, ComarkNode } from '../../ast/types'
-import { pascalCase } from 'scule'
+import type { State, Context } from 'comark/render'
+import type { ComarkElement, ComarkNode } from 'comark'
+import { pascalCase } from '../../utils/index.ts'
 
 /**
  * Render a single node

@@ -1,5 +1,5 @@
-import type { State } from '../types'
-import type { ComarkElement, ComarkNode } from '../../../ast/types'
+import type { State } from 'comark/render'
+import type { ComarkElement, ComarkNode } from 'comark'
 
 type Alignment = 'left' | 'center' | 'right' | null
 

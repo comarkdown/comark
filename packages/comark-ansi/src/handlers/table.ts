@@ -1,6 +1,6 @@
-import type { NodeHandler, State } from 'comark/string'
-import type { ComarkElement, ComarkNode } from 'comark/ast'
-import { DIM, BOLD, RESET } from '../escape.ts'
+import type { NodeHandler, State } from 'comark/render'
+import type { ComarkElement, ComarkNode } from 'comark'
+import { DIM, BOLD, RESET } from '../utils/escape.ts'
 
 function getCellText(cell: ComarkNode, state: State): string {
   if (typeof cell === 'string') return cell

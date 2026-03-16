@@ -1,5 +1,7 @@
-import type { ComarkNode, ComarkTree } from './types'
+// #region Tree Utils
+
 import { decodeHTML } from 'entities'
+import type { ComarkNode, ComarkTree } from 'comark'
 
 /**
  * Get the text content of a Comark node
@@ -82,3 +84,85 @@ export function visit(
     i += 1
   }
 }
+
+// #region String Utils
+
+/**
+ * Convert a string to pascal case
+ * @param str - The string to convert
+ * @returns The pascal case string
+ */
+export function pascalCase(str: string) {
+  return str ? splitByCase(str).map(p => p[0].toUpperCase() + p.slice(1)).join('') : ''
+}
+
+/**
+ * Convert a string to kebab case
+ * @param str - The string to convert
+ * @returns The kebab case string
+ */
+export function kebabCase(str: string) {
+  return str ? splitByCase(str).map(p => p.toLowerCase()).join('-') : ''
+}
+
+/**
+ * Convert a string to camel case
+ * @param str - The string to convert
+ * @returns The camel case string
+ */
+export function camelCase(str: string) {
+  if (!str) {
+    return ''
+  }
+  str = pascalCase(str)
+  return str.charAt(0).toLowerCase() + str.slice(1)
+}
+
+// split a string by case
+function splitByCase(str: string) {
+  const parts: string[] = []
+  if (!str) {
+    return parts
+  }
+  let buff = ''
+  let previousUpper: boolean | undefined
+  let previousSplitter: boolean | undefined
+  for (let i = 0; i < str.length; i++) {
+    const char = str[i]
+    // Fast splitter check using direct character comparisons
+    const isSplitter = char === '-' || char === '_' || char === '/' || char === '.'
+    if (isSplitter === true) {
+      parts.push(buff)
+      buff = ''
+      previousUpper = void 0
+      continue
+    }
+    // Fast number check using character codes
+    const charCode = char.charCodeAt(0)
+    const isNumber = charCode >= 48 && charCode <= 57 // '0' to '9'
+    // Fast uppercase check using character codes
+    const isUpper = isNumber ? void 0 : (charCode >= 65 && charCode <= 90) // 'A' to 'Z'
+    if (previousSplitter === false) {
+      if (previousUpper === false && isUpper === true) {
+        parts.push(buff)
+        buff = char
+        previousUpper = isUpper
+        continue
+      }
+      if (previousUpper === true && isUpper === false && buff.length > 1) {
+        const lastChar = buff[buff.length - 1]
+        parts.push(buff.slice(0, buff.length - 1))
+        buff = lastChar + char
+        previousUpper = isUpper
+        continue
+      }
+    }
+    buff += char
+    previousUpper = isUpper
+    previousSplitter = isSplitter
+  }
+  parts.push(buff)
+  return parts
+}
+
+// #endregion

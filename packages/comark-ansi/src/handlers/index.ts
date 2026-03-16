@@ -16,7 +16,7 @@ import { img } from './img'
 import { table, thead, tbody, tr, th, td } from './table'
 import { comment } from './comment'
 import { template } from './template'
-import type { NodeHandler } from 'comark/string'
+import type { NodeHandler } from 'comark/render'
 
 export const handlers: Record<string, NodeHandler> = {
   h1: heading,

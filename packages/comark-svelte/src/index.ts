@@ -1,6 +1,6 @@
-export { default as Comark } from './Comark.svelte'
-export { default as ComarkRenderer } from './ComarkRenderer.svelte'
-export { default as ComarkNode } from './ComarkNode.svelte'
+export { default as Comark } from './components/Comark.svelte'
+export { default as ComarkRenderer } from './components/ComarkRenderer.svelte'
+export { default as ComarkNode } from './components/ComarkNode.svelte'
 export type {
   ComarkProps,
   ComarkRendererProps,

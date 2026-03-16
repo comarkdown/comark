@@ -1,5 +1,5 @@
-import type { State } from '../types'
-import type { ComarkElement, ComarkNode } from '../../../ast/types'
+import type { State } from 'comark/render'
+import type { ComarkElement, ComarkNode } from 'comark'
 import { indent } from '../indent.ts'
 import { comarkAttributes, comarkYamlAttributes } from '../attributes.ts'
 import { html } from './html.ts'

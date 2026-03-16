@@ -15,10 +15,9 @@ naturally appears inline after the deepest trailing text node.
 ```
 -->
 <script lang="ts">
-  import type { ComarkNode as ComarkNodeType } from 'comark/ast'
-  import type { ComponentManifest } from 'comark'
-  import ComarkNode from './ComarkNode.svelte'
-  import { pascalCase } from 'scule'
+  import type { ComarkNode as ComarkNodeType, ComponentManifest } from 'comark'
+    import ComarkNode from './ComarkNode.svelte'
+  import { pascalCase } from 'comark/utils'
 
   let {
     node,

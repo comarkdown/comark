@@ -24,9 +24,8 @@ This is an alert component
 ```
 -->
 <script lang="ts">
-  import type { ComarkTree } from 'comark/ast'
-  import type { ComarkPlugin, ComponentManifest } from 'comark'
-  import { parse } from 'comark'
+  import type { ComarkTree, ComarkPlugin, ComponentManifest } from 'comark'
+    import { parse } from 'comark'
   import ComarkRenderer from './ComarkRenderer.svelte'
 
   let {

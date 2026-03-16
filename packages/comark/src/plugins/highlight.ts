@@ -1,6 +1,5 @@
 import type { LanguageRegistration } from 'shiki'
-import type { ComarkNode, ComarkTree } from 'comark/ast'
-import type { ComarkPlugin } from 'comark'
+import type { ComarkNode, ComarkTree, ComarkPlugin } from 'comark'
 import type { ShikiPrimitive, ThemedToken, ThemedTokenWithVariants, ThemeRegistration } from '@shikijs/primitive'
 import { createShikiPrimitive, codeToTokensWithThemes } from '@shikijs/primitive'
 import { createJavaScriptRegexEngine } from 'shiki/engine/javascript'

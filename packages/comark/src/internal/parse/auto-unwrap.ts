@@ -1,4 +1,4 @@
-import type { ComarkNode } from 'comark/ast'
+import type { ComarkNode } from 'comark'
 
 /**
  * Applies automatic unwrapping to container components.

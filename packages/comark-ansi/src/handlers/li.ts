@@ -1,5 +1,5 @@
-import type { NodeHandler } from 'comark/string'
-import type { ComarkElement, ComarkNode } from 'comark/ast'
+import type { NodeHandler } from 'comark/render'
+import type { ComarkElement, ComarkNode } from 'comark'
 
 export const li: NodeHandler = (node, state) => {
   const children = node.slice(2) as ComarkNode[]

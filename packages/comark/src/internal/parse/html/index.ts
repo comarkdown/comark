@@ -1,5 +1,5 @@
 import { Parser } from 'htmlparser2'
-import type { ComarkNode } from '../../../ast'
+import type { ComarkNode } from 'comark'
 
 const VOID_ELEMENTS = new Set([
   'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input',

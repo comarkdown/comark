@@ -1,7 +1,7 @@
-import type { State } from '../types'
-import type { ComarkElement } from '../../../ast/types'
-import { comarkAttributes } from '../attributes.ts'
-import { textContent } from '../../../ast/index.ts'
+import type { State } from 'comark/render'
+import type { ComarkElement } from 'comark'
+import { comarkAttributes } from '../attributes'
+import { textContent } from 'comark/utils'
 
 export function code(node: ComarkElement, _state: State) {
   const [_, attrs] = node

@@ -1,7 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { parse } from 'comark'
-import type { ComarkTree } from 'comark/ast'
+import type { ComarkTree } from 'comark'
 import highlight from 'comark/plugins/highlight'
 
 export interface PostMeta {

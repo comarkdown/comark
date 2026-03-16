@@ -16,9 +16,10 @@
   ],
   "exports": {
     ".": "./dist/index.js",
-    "./ast": "./dist/ast/index.js",
-    "./string": "./dist/string.js",
-    "./plugins/*": "./dist/plugins/*.js"
+    "./plugins/*": "./dist/plugins/*.js",
+    "./utils": "./dist/utils/index.js",
+    "./parse": "./dist/parse.js",
+    "./render": "./dist/render.js"
   },
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -31,11 +32,11 @@
   },
   "scripts": {
     "stub": "node ../../scripts/stub.mjs",
-    "build": "tsc -p tsconfig.build.json",
-    "dev": "tsc -p tsconfig.build.json --watch",
+    "build": "tsc",
+    "dev": "tsc --watch",
     "test": "vitest run",
     "benchmark": "node --import tsx benchmark.ts",
-    "prepack": "tsc -p tsconfig.build.json",
+    "prepack": "tsc",
     "release": "release-it",
     "release:dry": "release-it --dry-run"
   },

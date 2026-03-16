@@ -1,7 +1,6 @@
-import type { ComarkTree } from 'comark/ast'
+import type { ComarkTree, ParseOptions } from 'comark'
 import { readonly, ref, shallowRef } from 'vue'
 import { parse } from 'comark'
-import type { ParseOptions } from 'comark'
 
 export interface MDCState {
   tree: ComarkTree | null

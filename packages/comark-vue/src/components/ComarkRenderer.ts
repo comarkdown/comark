@@ -1,8 +1,7 @@
 import type { PropType, VNode } from 'vue'
-import type { ComarkElement, ComarkNode, ComarkTree } from 'comark/ast'
+import type { ComponentManifest, ComarkContextProvider, ComarkElement, ComarkNode, ComarkTree } from 'comark'
 import { computed, defineAsyncComponent, defineComponent, getCurrentInstance, h, inject, onErrorCaptured, ref, toRaw } from 'vue'
 import { findLastTextNodeAndAppendNode, getCaret } from '../utils/caret.ts'
-import type { ComponentManifest, ComarkContextProvider } from 'comark'
 
 // Cache for dynamically resolved components
 const asyncComponentCache = new Map<string, any>()

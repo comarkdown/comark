@@ -337,7 +337,7 @@ Convert AST back to Comark markdown:
 
 ```typescript
 import { parse } from 'comark'
-import { renderMarkdown } from 'comark/string'
+import { renderMarkdown } from 'comark/render'
 
 const content = '# Hello\n\n::alert{type="info"}\nMessage\n::'
 const result = await parse(content)

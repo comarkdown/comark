@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { createParse } from 'comark'
-import type { ComarkElement } from 'comark/ast'
+import type { ComarkElement } from 'comark'
 
 describe('streaming mode', () => {
   describe('$.line metadata', () => {

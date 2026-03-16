@@ -1,4 +1,4 @@
-import type { ComarkElement, ComarkElementAttributes, ComarkTree } from '../../ast'
+import type { ComarkElement, ComarkElementAttributes, ComarkTree } from '../../types'
 
 /**
  * Extracts reusable nodes from the last output tree

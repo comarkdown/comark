@@ -1,8 +1,7 @@
-import type { ComarkElement, ComarkNode, ComarkTree } from 'comark/ast'
+import type { ComarkElement, ComarkNode, ComarkTree, ComponentManifest } from 'comark'
 import React, { lazy, Suspense, useMemo } from 'react'
-import { camelCase, pascalCase } from 'scule'
+import { pascalCase, camelCase } from 'comark/utils'
 import { findLastTextNodeAndAppendNode, getCaret } from '../utils/caret'
-import type { ComponentManifest } from 'comark'
 
 /**
  * Helper to get tag from a ComarkNode

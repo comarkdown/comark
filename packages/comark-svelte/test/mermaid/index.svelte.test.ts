@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import { render } from 'vitest-browser-svelte'
 import { parse } from 'comark'
-import mermaid, { Mermaid } from '../mermaid'
-import ComarkRenderer from '../../ComarkRenderer.svelte'
-import Comark from '../../Comark.svelte'
+import mermaid, { Mermaid } from '../../src/plugins/mermaid'
+import ComarkRenderer from '../../src/components/ComarkRenderer.svelte'
+import Comark from '../../src/components/Comark.svelte'
 
 describe('Mermaid component', () => {
   it('renders a mermaid diagram as SVG', async () => {

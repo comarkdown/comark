@@ -5,7 +5,10 @@
   "description": "HTML renderer for Comark",
   "exports": {
     ".": "./dist/index.js",
-    "./plugins/*": "./dist/plugins/*.js"
+    "./plugins/*": "./dist/plugins/*.js",
+    "./utils": "./dist/utils/index.js",
+    "./parse": "./dist/parse.js",
+    "./render": "./dist/render.js"
   },
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -18,10 +21,10 @@
   },
   "scripts": {
     "stub": "node ../../scripts/stub.mjs",
-    "build": "tsc -p tsconfig.build.json",
-    "dev": "tsc -p tsconfig.build.json --watch",
+    "build": "tsc",
+    "dev": "tsc --watch",
     "test": "vitest run",
-    "prepack": "tsc -p tsconfig.build.json"
+    "prepack": "tsc"
   },
   "dependencies": {
     "comark": "^1.0.0"

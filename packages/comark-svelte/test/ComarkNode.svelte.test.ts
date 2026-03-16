@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { render } from 'vitest-browser-svelte'
 import { parse } from 'comark'
-import ComarkRenderer from './ComarkRenderer.svelte'
-import ComarkNode from './ComarkNode.svelte'
+import ComarkRenderer from '../src/components/ComarkRenderer.svelte'
+import ComarkNode from '../src/components/ComarkNode.svelte'
 import Alert from './test-components/Alert.svelte'
 import ProseH1 from './test-components/ProseH1.svelte'
 

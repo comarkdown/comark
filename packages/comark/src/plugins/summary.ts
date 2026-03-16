@@ -1,4 +1,4 @@
-import type { ComarkNode } from '../ast/types'
+import type { ComarkNode } from 'comark'
 import { applyAutoUnwrap } from '../internal/parse/auto-unwrap'
 import { marmdownItTokensToComarkTree } from '../internal/parse/token-processor'
 import type { ComarkPlugin } from '../types'

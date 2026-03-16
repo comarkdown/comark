@@ -1,5 +1,4 @@
-import type { ComarkNode, ComarkTree } from 'comark/ast'
-import type { ComarkPlugin, ComponentManifest, ParseOptions } from 'comark'
+import type { ComarkNode, ComarkTree, ComarkPlugin, ComponentManifest, ParseOptions } from 'comark'
 
 export interface ComarkNodeProps {
   node: ComarkNode

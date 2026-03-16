@@ -20,7 +20,7 @@ import { table, thead, tbody, tr, th, td } from './table.ts'
 import { comment } from './comment.ts'
 import { math } from './math.ts'
 import { mermaid } from './mermaid.ts'
-import type { NodeHandler } from '../types'
+import type { NodeHandler } from 'comark/render'
 
 export const handlers: Record<string, NodeHandler> = {
   code,

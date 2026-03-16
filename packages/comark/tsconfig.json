@@ -4,15 +4,17 @@
     "lib": ["esnext", "DOM", "DOM.Iterable"],
     "module": "esnext",
     "moduleResolution": "bundler",
-    "jsx": "react-jsx",
     "strict": true,
     "strictNullChecks": true,
     "esModuleInterop": true,
     "skipDefaultLibCheck": true,
     "skipLibCheck": true,
+    "outDir": "./dist",
     "allowImportingTsExtensions": true,
-    "noEmit": true
+    "rewriteRelativeImportExtensions": true,
+    "declaration": true,
+    "rootDir": "./src"
   },
-  "include": ["src/**/*", "test/**/*", "../comark/src/nuxt"],
+  "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
 }

@@ -1,6 +1,6 @@
-import type { State } from '../types'
-import type { ComarkElement } from '../../../ast/types'
-import { comarkAttributes } from '../attributes.ts'
+import type { State } from 'comark/render'
+import type { ComarkElement } from 'comark'
+import { comarkAttributes } from '../attributes'
 
 // TODO: support title & attributes
 export function a(node: ComarkElement, state: State) {

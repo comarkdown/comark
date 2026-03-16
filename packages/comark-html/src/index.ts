@@ -1,7 +1,6 @@
-import type { ParseOptions } from 'comark'
+import type { ParseOptions, ComarkTree, ComarkNode, ComarkElement } from 'comark'
 import { createParse } from 'comark'
-import { stringify, type NodeHandler } from 'comark/string'
-import type { ComarkTree, ComarkNode, ComarkElement } from 'comark/ast'
+import { render as renderString, type NodeHandler } from 'comark/render'
 
 export interface RenderHTMLContext {
   /** Renders the element's children to HTML */
@@ -29,7 +28,7 @@ export interface RenderHTMLOptions {
  * @example
  * ```typescript
  * import { parse } from 'comark'
- * import { renderHTML } from 'comark/string'
+ * import { renderHTML } from '@comark/html'
  *
  * const tree = await parse('::alert{type="info"}\nHello!\n::')
  *
@@ -56,7 +55,7 @@ export function renderHTML(tree: ComarkTree, options?: RenderHTMLOptions): strin
     }
   }
 
-  return stringify(tree, { format: 'text/html', handlers }).trim()
+  return renderString(tree, { blockSeparator: '\n', format: 'text/html', handlers }).trim()
 }
 
 /**

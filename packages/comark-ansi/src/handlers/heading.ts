@@ -1,5 +1,5 @@
-import { BOLD, UNDERLINE, RESET, YELLOW, MAGENTA, CYAN, GREEN, DIM } from '../escape.ts'
-import type { NodeHandler } from 'comark/string'
+import { BOLD, UNDERLINE, RESET, YELLOW, MAGENTA, CYAN, GREEN, DIM } from '../utils/escape.ts'
+import type { NodeHandler } from 'comark/render'
 
 const LEVEL_STYLES = [BOLD + UNDERLINE, BOLD + YELLOW, BOLD + CYAN, BOLD + GREEN, BOLD + MAGENTA, BOLD + DIM]
 

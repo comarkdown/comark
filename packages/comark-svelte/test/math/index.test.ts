@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { render } from 'svelte/server'
 import { parse } from 'comark'
-import math, { Math } from '../math'
-import ComarkRenderer from '../../ComarkRenderer.svelte'
+import math, { Math } from '../../src/plugins/math'
+import ComarkRenderer from '../../src/components/ComarkRenderer.svelte'
 
 /** Strip Svelte SSR hydration comments from rendered HTML */
 function html(body: string): string {

@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { render } from 'vitest-browser-svelte'
 import { parse } from 'comark'
-import Comark from './Comark.svelte'
-import ComarkRenderer from './ComarkRenderer.svelte'
+import Comark from '../src/components/Comark.svelte'
+import ComarkRenderer from '../src/components/ComarkRenderer.svelte'
 import Alert from './test-components/Alert.svelte'
 
 describe('streaming mode', () => {

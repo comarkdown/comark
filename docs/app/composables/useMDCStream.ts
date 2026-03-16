@@ -1,8 +1,7 @@
-import type { ComarkTree } from 'comark/ast'
+import type { ComarkTree, ParseOptions } from 'comark'
 import { readonly, ref, shallowRef } from 'vue'
 import { parse, autoCloseMarkdown } from 'comark'
 import highlight from 'comark/plugins/highlight'
-import type { ParseOptions } from 'comark'
 
 export interface MDCStreamState {
   tree: ComarkTree

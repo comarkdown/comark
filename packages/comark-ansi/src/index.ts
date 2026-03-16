@@ -1,7 +1,6 @@
-import type { ComarkTree, ComarkElement, ComarkNode } from 'comark/ast'
-import type { ParseOptions } from 'comark'
-import type { NodeHandler, State } from 'comark/string'
-import { stringify } from 'comark/string'
+import type { ComarkTree, ComarkElement, ComarkNode, ParseOptions } from 'comark'
+import type { NodeHandler, State } from 'comark/render'
+import { render } from 'comark/render'
 import { handlers as defaultHandlers } from './handlers/index.ts'
 import { createParse } from 'comark'
 
@@ -72,7 +71,7 @@ export function renderANSI(tree: ComarkTree, options?: RenderANSIOptions): strin
     }
   }
 
-  return stringify(tree, {
+  return render(tree, {
     colors,
     width,
     handlers: {

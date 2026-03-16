@@ -229,11 +229,11 @@ Uses Vitest with two test projects:
 import { parse, autoCloseMarkdown } from 'comark'
 
 // String rendering (HTML & Markdown)
-import { renderHTML, renderMarkdown } from 'comark/string'
+import { renderHTML, renderMarkdown } from 'comark/render'
 
 // AST types and utilities
-import type { ComarkTree, ComarkNode, ComarkElement, ComarkText } from 'comark/ast'
-import { textContent, visit } from 'comark/ast'
+import type { ComarkTree, ComarkNode, ComarkElement, ComarkText } from 'comark'
+import { textContent, visit } from 'comark/utils'
 
 // Core plugins (framework-agnostic)
 import highlight from 'comark/plugins/highlight'

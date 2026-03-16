@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import security from '../src/plugins/security'
 import { validateProp, validateProps } from '../src/internal/props-validation'
-import type { ComarkTree } from '../src/ast/types'
+import type { ComarkTree } from 'comark'
 
 // ─── validateProp ────────────────────────────────────────────────────────────
 

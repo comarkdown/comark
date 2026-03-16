@@ -1,5 +1,5 @@
-import type { State } from '../types'
-import type { ComarkElement, ComarkNode } from '../../../ast/types'
+import type { State } from 'comark/render'
+import type { ComarkElement, ComarkNode } from 'comark'
 
 export function li(node: ComarkElement, state: State) {
   const children = node.slice(2) as ComarkNode[]

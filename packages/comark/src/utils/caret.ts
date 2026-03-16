@@ -1,4 +1,4 @@
-import type { ComarkElement } from 'comark/ast'
+import type { ComarkElement } from '../'
 
 interface CaretOptions {
   class?: string

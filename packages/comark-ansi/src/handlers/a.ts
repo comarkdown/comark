@@ -1,5 +1,5 @@
-import type { NodeHandler } from 'comark/string'
-import { DIM, RESET } from '../escape.ts'
+import type { NodeHandler } from 'comark/render'
+import { DIM, RESET } from '../utils/escape.ts'
 
 export const a: NodeHandler = (node, state) => {
   const href = String(node[1].href || '')

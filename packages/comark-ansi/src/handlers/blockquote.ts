@@ -1,6 +1,6 @@
-import type { NodeHandler } from 'comark/string'
-import type { ComarkNode } from 'comark/ast'
-import { BOLD, DIM, RESET, BLUE, GREEN, MAGENTA, YELLOW, RED } from '../escape.ts'
+import type { NodeHandler } from 'comark/render'
+import type { ComarkNode } from 'comark'
+import { BOLD, DIM, RESET, BLUE, GREEN, MAGENTA, YELLOW, RED } from '../utils/escape.ts'
 
 type AlertType = 'NOTE' | 'TIP' | 'IMPORTANT' | 'WARNING' | 'CAUTION'
 

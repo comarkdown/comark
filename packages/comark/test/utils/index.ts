@@ -1,5 +1,5 @@
 import type { MDCRoot } from '@nuxtjs/mdc'
-import type { ComarkTree } from 'comark/ast'
+import type { ComarkTree } from 'comark'
 import remarkGFM from 'remark-gfm'
 import remarkMdc, { parseFrontMatter } from 'remark-mdc'
 import remarkParse from 'remark-parse'

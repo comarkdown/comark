@@ -1,5 +1,5 @@
-import type { State } from '../types'
-import type { ComarkElement } from '../../../ast/types'
+import type { State } from 'comark/render'
+import type { ComarkElement } from 'comark'
 
 export function comment(node: ComarkElement, _state: State) {
   if (node[0] === null) {

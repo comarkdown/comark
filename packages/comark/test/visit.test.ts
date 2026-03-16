@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { visit } from '../src/ast/utils'
-import type { ComarkTree, ComarkNode } from '../src/ast/types'
+import { visit } from 'comark/utils'
+import type { ComarkTree, ComarkNode } from 'comark'
 
 describe('visit', () => {
   it('should visit all nodes in a simple tree', () => {

@@ -1,6 +1,6 @@
-import type { NodeHandler } from 'comark/string'
-import { textContent } from 'comark/ast'
-import { MAGENTA, YELLOW, RESET } from '../escape.ts'
+import type { NodeHandler } from 'comark/render'
+import { textContent } from 'comark/utils'
+import { MAGENTA, YELLOW, RESET } from '../utils/escape.ts'
 
 export * from 'comark/plugins/math'
 export { default } from 'comark/plugins/math'

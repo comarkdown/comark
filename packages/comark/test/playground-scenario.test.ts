@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { parse } from '../src/index'
-import type { ComarkNode } from 'comark/ast'
+import type { ComarkNode } from 'comark'
 
 // Helper to check if a node is an element with a specific tag
 function isElement(node: ComarkNode, tag: string): boolean {

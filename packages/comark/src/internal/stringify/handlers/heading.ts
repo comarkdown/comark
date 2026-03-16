@@ -1,5 +1,5 @@
-import type { State } from '../types'
-import type { ComarkElement } from '../../../ast/types'
+import type { State } from 'comark/render'
+import type { ComarkElement } from 'comark'
 
 // h1, h2, h3, h4, h5, h6
 export function heading(node: ComarkElement, state: State) {

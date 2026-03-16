@@ -1,6 +1,171 @@
 import type MarkdownExit from 'markdown-exit'
 import type MarkdownIt from 'markdown-it'
-import type { ComarkTree } from './ast/types'
+
+// #region ComarkTree
+
+/**
+ * The Comark text
+ * @param string - The text content
+ */
+export type ComarkText = string
+
+/**
+ * The Comark comment
+ * @param null - The null node
+ * @param {} - The attributes of the comment
+ * @param string - The content of the comment
+ */
+export type ComarkComment = [null, {}, string]
+
+/**
+ * The Comark element attributes
+ * @param [key: string]: unknown - The attributes of the element
+ */
+export type ComarkElementAttributes = {
+  [key: string]: unknown
+
+  $?: {
+    line?: number
+    html?: 0 | 1
+    block?: 0 | 1
+  }
+}
+
+/**
+ * The Comark element
+ * @param string - The tag of the element
+ * @param ComarkElementAttributes - The attributes of the element
+ * @param ...ComarkNode[] - The children of the element
+ */
+export type ComarkElement = [string, ComarkElementAttributes, ...ComarkNode[]]
+
+/**
+ * The Comark node
+ *
+ * `ComarkElement` | `ComarkText` | `ComarkComment` - The node can be an element, text or comment
+ */
+export type ComarkNode = ComarkElement | ComarkText | ComarkComment
+
+/**
+ * The Comark tree
+ * @param nodes - The nodes of the tree
+ * @param frontmatter - The frontmatter data which is the data at the top of the file
+ * @param meta - The meta data of tree, it can be used to store additional data for the tree
+ */
+export interface ComarkTree {
+  nodes: ComarkNode[]
+  frontmatter: Record<string, any>
+  meta: Record<string, any>
+}
+
+// #endregion
+
+// #region Renderer types and interfaces
+interface StringifyOptions {
+  /**
+   * @default '\n\n'
+   */
+  blockSeparator: string
+
+  /**
+   * @default 'markdown/mdc'
+   */
+  format: 'markdown/mdc' | 'markdown/html' | 'text/html' | 'text'
+  /**
+   * user defined node handlers
+   */
+  handlers: Record<string, NodeHandler>
+
+  /**
+   * @default true
+   */
+  removeLastStyle?: boolean
+
+  /**
+   * Maximum number of inline attributes before switching to YAML block syntax.
+   * Set to 0 to always use YAML block syntax.
+   * @default 3
+   */
+  maxInlineAttributes?: number
+
+  /**
+   * Additional options
+   */
+  [key: string]: unknown
+}
+
+export interface Context extends StringifyOptions {
+  /**
+   * true if node is inside html scope
+   */
+  html?: boolean
+
+  /**
+   * true if node is inside a list
+   */
+  list?: boolean
+
+  /**
+   * number if node is inside an ordered list
+   */
+  order?: number
+
+  [key: string]: unknown
+}
+
+/**
+ * The NodeHandler function
+ * @param node - The node to render
+ * @param state - The state of the renderer
+ * @param parent - The parent node
+ * @returns The rendered node
+ */
+export type NodeHandler = (node: ComarkElement, state: State, parent?: ComarkElement) => string
+
+/**
+ * The State of the renderer
+ * @param handlers - The handlers of the renderer
+ * @param context - The context of the renderer
+ * @param flow - Render children of the node
+ * @param one - Render a single node
+ * @param applyContext - The applyContext of the renderer
+ * @returns The state of the renderer
+ */
+export type State = {
+  handlers: Record<string, NodeHandler>
+  context: Context
+  flow: NodeHandler
+  one: (node: ComarkNode, state: State, parent?: ComarkElement) => string
+  applyContext: (edit: Record<string, unknown>) => Record<string, unknown>
+
+  /**
+   * The depth of the node in the tree
+   */
+  nodeDepthInTree?: number
+
+  [key: string]: unknown
+}
+
+/**
+ * The context of the renderer
+ */
+export interface RenderOptions {
+
+  [key: string]: unknown
+}
+
+/**
+ * The options for rendering markdown
+ */
+export interface RenderMarkdownOptions extends RenderOptions {
+  /**
+   * Maximum number of inline attributes before switching to YAML block syntax.
+   * Set to 0 to always use YAML block syntax.
+   * @default 3
+   */
+  maxInlineAttributes?: number
+}
+// #endregion
 
 export type MarkdownExitPlugin = (md: MarkdownExit) => void
 export type MarkdownItPlugin = (md: MarkdownIt) => void
