@@ -15,7 +15,7 @@ export { renderFrontmatter } from './internal/frontmatter.ts'
  * @returns The string representation of the Comark tree
  */
 export function render(tree: ComarkTree, context: RenderOptions = {}) {
-  const state = createState(context)
+  const state = createState({ ...context, tree, handlers: context.components })
 
   return tree.nodes.map(child => one(child, state)).join('').trim() + '\n'
 }

@@ -1,84 +1,23 @@
-import type { ComarkTree, ComarkElement, ComarkNode, ParseOptions } from 'comark'
-import type { NodeHandler, State } from 'comark/render'
-import { render } from 'comark/render'
-import { handlers as defaultHandlers } from './handlers/index.ts'
+import type { ParseOptions, RenderOptions } from 'comark'
 import { createParse } from 'comark'
+import { renderANSI } from './render.ts'
 
-export interface RenderANSIContext extends State {
-  /** Renders the element's children to an ANSI string */
-  render: (children: ComarkNode[]) => string
-  /** Frontmatter/metadata passed via options.data */
-  data?: Record<string, any>
-}
+export { renderANSI, RenderANSIOptions } from './render'
 
-export type ANSIComponentRenderFn = (element: ComarkElement, ctx: RenderANSIContext) => string
-
-export interface RenderANSIOptions {
-  /** Custom component renderers keyed by tag name */
-  components?: Record<string, ANSIComponentRenderFn>
-  /** Frontmatter data, made available to component renderers */
-  data?: Record<string, any>
-  /**
-   * Whether to emit ANSI escape codes.
-   * Defaults to `true` unless the `NO_COLOR` environment variable is set.
-   */
-  colors?: boolean
-  /**
-   * Terminal width used for horizontal rules and code block borders.
-   * @default 80
-   */
-  width?: number
+function defaultWrite(string: string) {
+  if (typeof process !== 'undefined') {
+    process.stdout.write(string)
+  }
+  else {
+    console.log(string.trim())
+  }
 }
 
 /**
  * Options for creating a log function.
  */
-export interface LogOptions {
-  parse?: ParseOptions
-  render?: RenderANSIOptions
+export interface LogOptions extends RenderOptions, ParseOptions {
   write?: (string: string) => void
-}
-
-/**
- * Render a Comark tree to an ANSI-styled terminal string.
- *
- * @param tree - The Comark tree to render
- * @param options - Optional rendering options
- * @returns The ANSI-styled string
- *
- * @example
- * ```typescript
- * import { parse } from 'comark'
- * import { renderANSI } from '@comark/ansi'
- *
- * const tree = await parse('# Hello\n\nThis is **bold** and _italic_.')
- * console.log(renderANSI(tree))
- * ```
- */
-export function renderANSI(tree: ComarkTree, options?: RenderANSIOptions): string {
-  const colors = options?.colors ?? (typeof process !== 'undefined' ? !process.env.NO_COLOR : true)
-  const width = options?.width ?? 80
-
-  const handlers: Record<string, NodeHandler> = {}
-
-  if (options?.components) {
-    for (const [name, renderFn] of Object.entries(options.components)) {
-      handlers[name] = (node, state) => {
-        const render = (children: ComarkNode[]) =>
-          renderANSI({ nodes: children, frontmatter: {}, meta: {} }, options)
-        return renderFn(node, { ...state, render, data: options.data })
-      }
-    }
-  }
-
-  return render(tree, {
-    colors,
-    width,
-    handlers: {
-      ...defaultHandlers,
-      ...handlers,
-    },
-  })
 }
 
 /**
@@ -102,14 +41,13 @@ export function renderANSI(tree: ComarkTree, options?: RenderANSIOptions): strin
  * ```
  */
 export function createLog(options?: LogOptions): (markdown: string) => Promise<void> {
-  const opts: ParseOptions = options?.parse ?? {}
-  const parse = createParse(opts)
+  const parse = createParse(options as ParseOptions)
 
   return async (markdown: string) => {
     const tree = await parse(markdown)
     const write = options?.write ?? defaultWrite
 
-    write(renderANSI(tree, options?.render) + '\n')
+    write(renderANSI(tree, options as RenderOptions) + '\n')
   }
 }
 
@@ -130,11 +68,47 @@ export async function log(markdown: string, options?: LogOptions): Promise<void>
   return createLog(options)(markdown)
 }
 
-function defaultWrite(string: string) {
-  if (typeof process !== 'undefined') {
-    process.stdout.write(string)
+/**
+ * Creates a reusable render function with pre-configured parse and render options.
+ *
+ * @param options - Comark parse and render options (plugins, autoClose, etc.)
+ * @returns An async function `(markdown) => Promise<string>` that returns ANSI-styled output
+ *
+ * @example
+ * ```typescript
+ * import { createRender } from '@comark/ansi'
+ *
+ * const render = createRender({
+ *   plugins: [math()]
+ * })
+ *
+ * const output = await render('# Hello\n\nThis is **bold** and _italic_.')
+ * console.log(output)
+ * ```
+ */
+export function createRender(options?: ParseOptions & RenderOptions): (markdown: string) => Promise<string> {
+  const parse = createParse(options as ParseOptions)
+
+  return async (markdown: string) => {
+    const tree = await parse(markdown)
+    return renderANSI(tree, options as RenderOptions)
   }
-  else {
-    console.log(string.trim())
-  }
+}
+
+/**
+ * Parse markdown and render it as ANSI-styled output to stdout.
+ *
+ * @param markdown - The markdown/Comark content to parse and print
+ * @param options - Optional rendering options
+ *
+ * @example
+ * ```typescript
+ * import { render } from '@comark/ansi'
+ *
+ * const output = await render('# Hello\n\nThis is **bold** and _italic_.')
+ * console.log(output)
+ * ```
+ */
+export async function render(markdown: string, options?: LogOptions): Promise<string> {
+  return createRender(options)(markdown)
 }

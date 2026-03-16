@@ -51,11 +51,9 @@ describe('render', () => {
 
   it('accepts render options with custom components', async () => {
     const html = await render('::note\nHello!\n::', {
-      render: {
-        components: {
-          note: ([, , ...children], { render }) =>
-            `<aside>${render(children)}</aside>`,
-        },
+      components: {
+        note: ([, , ...children], { render }) =>
+          `<aside>${render(children)}</aside>`,
       },
     })
     expect(html).toContain('<aside>')
@@ -82,11 +80,9 @@ describe('createRender', () => {
 
   it('reuses parser options across calls', async () => {
     const renderFn = createRender({
-      render: {
-        components: {
-          badge: ([, attrs]) =>
-            `<span class="badge badge-${attrs.type}">${attrs.label}</span>`,
-        },
+      components: {
+        badge: ([, attrs]) =>
+          `<span class="badge badge-${attrs.type}">${attrs.label}</span>`,
       },
     })
 
@@ -99,13 +95,11 @@ describe('createRender', () => {
 
   it('passes data to component renderers', async () => {
     const renderFn = createRender({
-      render: {
-        data: { version: '2.0' },
-        components: {
-          version: ([,, ...children], { render, data }) =>
-            `<span data-v="${data?.version}">${render(children)}</span>`,
-        },
+      components: {
+        version: ([,, ...children], { render, data }) =>
+          `<span data-v="${data?.version}">${render(children)}</span>`,
       },
+      data: { version: '2.0' },
     })
 
     const html = await renderFn('::version\ncurrent\n::')
@@ -115,7 +109,7 @@ describe('createRender', () => {
 
   it('accepts parse options', async () => {
     const renderFn = createRender({
-      parse: { autoUnwrap: true },
+      autoUnwrap: true,
     })
     const html = await renderFn('Just text')
     // autoUnwrap removes <p> wrapper from single-inline content in components

@@ -1,72 +1,8 @@
-import type { ParseOptions, ComarkTree, ComarkNode, ComarkElement } from 'comark'
+import type { ParseOptions, RenderOptions } from 'comark'
 import { createParse } from 'comark'
-import { render as renderString, type NodeHandler } from 'comark/render'
+import { renderHTML } from './render'
 
-export interface RenderHTMLContext {
-  /** Renders the element's children to HTML */
-  render: (children: ComarkNode[]) => string
-  /** Frontmatter/metadata passed via options.data */
-  data?: Record<string, any>
-}
-
-export type ComponentRenderFn = (element: ComarkElement, ctx: RenderHTMLContext) => string
-
-export interface RenderHTMLOptions {
-  /** Custom component renderers keyed by tag name */
-  components?: Record<string, ComponentRenderFn>
-  /** Frontmatter data, made available to component renderers */
-  data?: Record<string, any>
-}
-
-/**
- * Render Comark tree to HTML
- *
- * @param tree - The Comark tree to render
- * @param options - Optional rendering options with custom components and data
- * @returns The HTML string
- *
- * @example
- * ```typescript
- * import { parse } from 'comark'
- * import { renderHTML } from '@comark/html'
- *
- * const tree = await parse('::alert{type="info"}\nHello!\n::')
- *
- * const html = renderHTML(tree, {
- *   components: {
- *     alert: ([tag, attrs, ...children], { render }) => {
- *       return `<div class="alert alert-${attrs.type}">${render(children)}</div>`
- *     }
- *   }
- * })
- * ```
- */
-export function renderHTML(tree: ComarkTree, options?: RenderHTMLOptions): string {
-  const handlers: Record<string, NodeHandler> = {}
-
-  if (options?.components) {
-    for (const [name, renderFn] of Object.entries(options.components)) {
-      handlers[name] = (node) => {
-        const render = (children: ComarkNode[]) => {
-          return renderHTML({ nodes: children, frontmatter: {}, meta: {} }, options)
-        }
-        return renderFn(node, { render, data: options.data })
-      }
-    }
-  }
-
-  return renderString(tree, { blockSeparator: '\n', format: 'text/html', handlers }).trim()
-}
-
-/**
- * Options for parse+render pipelines.
- */
-export interface RenderOptions {
-  /** Comark parse options (plugins, autoClose, etc.) */
-  parse?: ParseOptions
-  /** HTML rendering options (components, data) */
-  render?: RenderHTMLOptions
-}
+export { renderHTML } from './render'
 
 /**
  * Creates a reusable parse+render function with pre-configured options.
@@ -81,24 +17,22 @@ export interface RenderOptions {
  * import highlight from 'comark/plugins/highlight'
  *
  * const render = createRender({
- *   parse: { plugins: [highlight()] },
- *   render: {
- *     components: {
- *       alert: ([, attrs, ...children], { render }) =>
- *         `<div class="alert alert-${attrs.type}">${render(children)}</div>`
- *     }
+ *   plugins: [highlight()],
+ *   components: {
+ *     alert: ([, attrs, ...children], { render }) =>
+ *       `<div class="alert alert-${attrs.type}">${render(children)}</div>`
  *   }
  * })
  *
  * const html = await render('# Hello\n\n**Bold** text.')
  * ```
  */
-export function createRender(options?: RenderOptions): (markdown: string) => Promise<string> {
-  const parse = createParse(options?.parse ?? {})
+export function createRender(options?: ParseOptions & RenderOptions): (markdown: string) => Promise<string> {
+  const parse = createParse(options)
 
   return async (markdown: string) => {
     const tree = await parse(markdown)
-    return renderHTML(tree, options?.render)
+    return renderHTML(tree, options as RenderOptions)
   }
 }
 

@@ -52,21 +52,29 @@ export function flow(node: ComarkElement, state: State, parent?: ComarkElement) 
   return result
 }
 
-export function createState(ctx: Record<string, unknown> = {}): State {
+export function createState(ctx: Partial<Context> = {}): State {
   const context = {
-    blockSeparator: '\n\n',
-    format: 'markdown/mdc',
-    handlers: {}, // user defined node handlers
     ...ctx,
+    blockSeparator: ctx.blockSeparator || '\n\n',
+    format: ctx.format || 'markdown/mdc',
+    handlers: ctx.handlers || {}, // user defined node handlers
     // Enable html mode for text/html format
     html: ctx.format === 'text/html',
   } as Context
 
-  return {
+  const state = {
     handlers,
     context,
-    flow,
     one,
+    flow,
+    data: ctx.data || {},
+    render: (input: ComarkNode[] | ComarkElement) => {
+      if (Array.isArray(input) && typeof input[0] === 'string' && input.length > 1) {
+        return state.one(input as ComarkElement, state)
+      }
+
+      return input.map(child => state.one(child as ComarkNode, state)).join('')
+    },
     applyContext: (edit: Record<string, unknown>) => {
       const revert = {} as Record<string, unknown>
 
@@ -78,10 +86,13 @@ export function createState(ctx: Record<string, unknown> = {}): State {
       return revert
     },
   }
+
+  return state
 }
 
 export const state: State = {
   handlers,
+  data: {},
   context: {
     blockSeparator: '\n\n',
     format: 'markdown/mdc',
@@ -89,6 +100,17 @@ export const state: State = {
   },
   flow,
   one,
+  render: (input: ComarkNode[] | ComarkElement) => {
+    if (typeof input === 'string') {
+      return input
+    }
+
+    if (Array.isArray(input) && typeof input[0] === 'string') {
+      return one(input as ComarkElement, state)
+    }
+
+    return input.map(child => one(child as ComarkNode, state)).join('')
+  },
   applyContext: (edit: Record<string, unknown>) => {
     const revert = {} as Record<string, unknown>
 

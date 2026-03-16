@@ -132,10 +132,41 @@ export type NodeHandler = (node: ComarkElement, state: State, parent?: ComarkEle
  * @returns The state of the renderer
  */
 export type State = {
-  handlers: Record<string, NodeHandler>
+  /**
+   * Additional data to pass to the renderer nodes, can be used to pass pre-fetched data to the renderer nodes
+   */
+  data: Record<string, any>
+
+  /**
+   * The context of the renderer
+   */
   context: Context
+
+  /**
+   * The handlers of the renderer
+   */
+  handlers: Record<string, NodeHandler>
+
+  /**
+   * Render children of the node
+   */
   flow: NodeHandler
+
+  /**
+   * Render a single node
+   */
   one: (node: ComarkNode, state: State, parent?: ComarkElement) => string
+
+  /**
+   * Render the input
+   */
+  render: (input: ComarkNode[] | ComarkElement) => string
+
+  /**
+   * Apply the context
+   * @param edit - The edit to apply to the context
+   * @returns The revert of the edit
+   */
   applyContext: (edit: Record<string, unknown>) => Record<string, unknown>
 
   /**
@@ -150,6 +181,14 @@ export type State = {
  * The context of the renderer
  */
 export interface RenderOptions {
+  /**
+   * Additional node handlers to pass to the renderer
+   */
+  components?: Record<string, NodeHandler>
+  /**
+   * Additional data to pass to the renderer nodes, can be used to pass pre-fetched data to the renderer nodes
+   */
+  data?: Record<string, any>
 
   [key: string]: unknown
 }

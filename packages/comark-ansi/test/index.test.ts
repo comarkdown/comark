@@ -237,7 +237,7 @@ describe('createLog', () => {
   it('passes render options through', async () => {
     const written: string[] = []
     const logFn = createLog({
-      render: { colors: false },
+      colors: false,
       write: s => written.push(s),
     })
     await logFn('**bold**')
