@@ -1,7 +1,7 @@
-import type { ANSINodeHandler } from '../types'
-import { DIM, RESET } from '../escape'
+import type { NodeHandler } from 'comark/string'
+import { DIM, RESET } from '../escape.ts'
 
-export const a: ANSINodeHandler = (node, state) => {
+export const a: NodeHandler = (node, state) => {
   const href = String(node[1].href || '')
   const content = state.flow(node, state)
 

@@ -1,9 +1,9 @@
-import type { ANSINodeHandler } from '../types'
+import type { NodeHandler } from 'comark/string'
 import type { ComarkNode } from 'comark/ast'
 
-export const ul: ANSINodeHandler = (node, state) => {
+export const ol: NodeHandler = (node, state) => {
   const children = node.slice(2) as ComarkNode[]
-  const revert = state.applyContext({ list: true, order: false })
+  const revert = state.applyContext({ list: true, order: 1 })
 
   let result = children.map(child => state.one(child, state, node)).join('').trimEnd()
 

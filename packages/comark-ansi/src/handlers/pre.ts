@@ -1,7 +1,7 @@
-import type { ANSINodeHandler } from '../types'
+import type { NodeHandler } from 'comark/string'
 import type { ComarkElement, ComarkNode } from 'comark/ast'
 import { textContent } from 'comark/ast'
-import { DIM, CYAN, RESET, BOLD } from '../escape'
+import { DIM, CYAN, RESET, BOLD } from '../escape.ts'
 
 // --- True-color helpers ---
 
@@ -49,7 +49,7 @@ function renderHighlighted(codeNode: ComarkElement, colors: boolean): string {
 
 // --- Handler ---
 
-export const pre: ANSINodeHandler = (node, state) => {
+export const pre: NodeHandler = (node, state) => {
   const attrs = node[1]
   const codeClasses = (node[2]?.[1] as Record<string, string> | undefined)?.class
   const language = String(
@@ -71,7 +71,7 @@ export const pre: ANSINodeHandler = (node, state) => {
     && (codeNode.slice(2) as ComarkNode[]).some(c => !isString(c) && (c as ComarkElement)[0] === 'span')
 
   const code = isHighlighted
-    ? renderHighlighted(codeNode!, colors)
+    ? renderHighlighted(codeNode!, Boolean(colors))
     : textContent(node).trim()
 
   return '```' + (header || '\n') + code + '\n```\n\n'

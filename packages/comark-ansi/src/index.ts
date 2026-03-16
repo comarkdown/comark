@@ -1,10 +1,11 @@
 import type { ComarkTree, ComarkElement, ComarkNode } from 'comark/ast'
-import type { ANSINodeHandler } from './internal/stringify/types'
 import type { ParseOptions } from 'comark'
-import { ansiStringify } from './internal/stringify'
+import type { NodeHandler, State } from 'comark/string'
+import { stringify } from 'comark/string'
+import { handlers as defaultHandlers } from './handlers/index.ts'
 import { createParse } from 'comark'
 
-export interface RenderANSIContext {
+export interface RenderANSIContext extends State {
   /** Renders the element's children to an ANSI string */
   render: (children: ComarkNode[]) => string
   /** Frontmatter/metadata passed via options.data */
@@ -59,19 +60,26 @@ export function renderANSI(tree: ComarkTree, options?: RenderANSIOptions): strin
   const colors = options?.colors ?? (typeof process !== 'undefined' ? !process.env.NO_COLOR : true)
   const width = options?.width ?? 80
 
-  const handlers: Record<string, ANSINodeHandler> = {}
+  const handlers: Record<string, NodeHandler> = {}
 
   if (options?.components) {
     for (const [name, renderFn] of Object.entries(options.components)) {
-      handlers[name] = (node) => {
+      handlers[name] = (node, state) => {
         const render = (children: ComarkNode[]) =>
           renderANSI({ nodes: children, frontmatter: {}, meta: {} }, options)
-        return renderFn(node, { render, data: options.data })
+        return renderFn(node, { ...state, render, data: options.data })
       }
     }
   }
 
-  return ansiStringify(tree, { colors, width, handlers }).trim()
+  return stringify(tree, {
+    colors,
+    width,
+    handlers: {
+      ...defaultHandlers,
+      ...handlers,
+    },
+  })
 }
 
 /**

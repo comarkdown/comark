@@ -16,10 +16,9 @@ import { img } from './img'
 import { table, thead, tbody, tr, th, td } from './table'
 import { comment } from './comment'
 import { template } from './template'
-import { math } from './math'
-import type { ANSINodeHandler } from '../types'
+import type { NodeHandler } from 'comark/string'
 
-export const handlers: Record<string, ANSINodeHandler> = {
+export const handlers: Record<string, NodeHandler> = {
   h1: heading,
   h2: heading,
   h3: heading,
@@ -48,5 +47,4 @@ export const handlers: Record<string, ANSINodeHandler> = {
   td,
   comment,
   template,
-  math,
 }

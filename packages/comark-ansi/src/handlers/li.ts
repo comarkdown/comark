@@ -1,7 +1,7 @@
-import type { ANSINodeHandler } from '../types'
+import type { NodeHandler } from 'comark/string'
 import type { ComarkElement, ComarkNode } from 'comark/ast'
 
-export const li: ANSINodeHandler = (node, state) => {
+export const li: NodeHandler = (node, state) => {
   const children = node.slice(2) as ComarkNode[]
   const order = state.context.order
 

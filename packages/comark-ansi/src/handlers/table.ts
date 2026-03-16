@@ -1,8 +1,8 @@
-import type { ANSINodeHandler, ANSIState } from '../types'
+import type { NodeHandler, State } from 'comark/string'
 import type { ComarkElement, ComarkNode } from 'comark/ast'
-import { DIM, BOLD, RESET } from '../escape'
+import { DIM, BOLD, RESET } from '../escape.ts'
 
-function getCellText(cell: ComarkNode, state: ANSIState): string {
+function getCellText(cell: ComarkNode, state: State): string {
   if (typeof cell === 'string') return cell
   const [, , ...children] = cell
   return children.map(child => (typeof child === 'string' ? child : state.one(child, state, cell as ComarkElement))).join('').trim()
@@ -24,7 +24,7 @@ function getCells(row: ComarkElement): ComarkElement[] {
   ) as ComarkElement[]
 }
 
-export const table: ANSINodeHandler = (node, state) => {
+export const table: NodeHandler = (node, state) => {
   const [, , ...children] = node
 
   let headerRows: ComarkElement[] = []
@@ -85,8 +85,8 @@ export const table: ANSINodeHandler = (node, state) => {
 }
 
 // These are handled by table
-export const thead: ANSINodeHandler = () => ''
-export const tbody: ANSINodeHandler = () => ''
-export const tr: ANSINodeHandler = () => ''
-export const th: ANSINodeHandler = () => ''
-export const td: ANSINodeHandler = () => ''
+export const thead: NodeHandler = () => ''
+export const tbody: NodeHandler = () => ''
+export const tr: NodeHandler = () => ''
+export const th: NodeHandler = () => ''
+export const td: NodeHandler = () => ''

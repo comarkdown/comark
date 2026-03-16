@@ -4,7 +4,8 @@
   "version": "0.0.1",
   "description": "ANSI terminal renderer for Comark",
   "exports": {
-    ".": "./dist/index.js"
+    ".": "./dist/index.js",
+    "./plugins/*": "./dist/plugins/*.js"
   },
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -21,6 +22,16 @@
     "dev": "tsc -p tsconfig.build.json --watch",
     "test": "vitest run",
     "prepack": "tsc -p tsconfig.build.json"
+  },
+  "peerDependencies": {
+    "katex": ">=0.16",
+    "beautiful-mermaid": ">=1.0",
+    "shiki": "^3.22.0"
+  },
+  "peerDependenciesMeta": {
+    "katex": { "optional": true },
+    "beautiful-mermaid": { "optional": true },
+    "shiki": { "optional": true }
   },
   "dependencies": {
     "comark": "^1.0.0"

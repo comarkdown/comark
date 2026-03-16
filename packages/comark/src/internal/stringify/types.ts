@@ -28,6 +28,11 @@ export interface StringifyOptions {
    * @default 3
    */
   maxInlineAttributes?: number
+
+  /**
+   * Additional options
+   */
+  [key: string]: unknown
 }
 
 export interface Context extends StringifyOptions {
@@ -60,4 +65,6 @@ export type State = {
    * The depth of the node in the tree
    */
   nodeDepthInTree?: number
+
+  [key: string]: unknown
 }

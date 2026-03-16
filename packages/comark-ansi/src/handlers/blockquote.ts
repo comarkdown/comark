@@ -1,6 +1,6 @@
-import type { ANSINodeHandler } from '../types'
+import type { NodeHandler } from 'comark/string'
 import type { ComarkNode } from 'comark/ast'
-import { BOLD, DIM, RESET, BLUE, GREEN, MAGENTA, YELLOW, RED } from '../escape'
+import { BOLD, DIM, RESET, BLUE, GREEN, MAGENTA, YELLOW, RED } from '../escape.ts'
 
 type AlertType = 'NOTE' | 'TIP' | 'IMPORTANT' | 'WARNING' | 'CAUTION'
 
@@ -12,14 +12,14 @@ const ALERTS: Record<AlertType, { color: string, icon: string }> = {
   CAUTION: { color: RED, icon: '✖' },
 }
 
-export const blockquote: ANSINodeHandler = (node, state) => {
+export const blockquote: NodeHandler = (node, state) => {
   const children = node.slice(2) as ComarkNode[]
   const { colors } = state.context
 
   const as = node[1].as ? String(node[1].as).toUpperCase() as AlertType : null
   const alert = as ? ALERTS[as] : null
 
-  const revert = state.applyContext({ blockquoteDepth: (state.context.blockquoteDepth ?? 0) + 1 })
+  const revert = state.applyContext({ blockquoteDepth: Number(state.context.blockquoteDepth ?? 0) + 1 })
 
   const content = children.map(child => state.one(child, state, node))
     .join('')

@@ -3,7 +3,7 @@ import { renderFrontmatter } from './internal/front-matter.ts'
 import { stringify } from './internal/stringify/index.ts'
 
 export { stringify } from './internal/stringify/index.ts'
-export type { NodeHandler } from './internal/stringify/types'
+export type { NodeHandler, State } from './internal/stringify/types'
 
 export interface RenderMarkdownOptions {
   /**
