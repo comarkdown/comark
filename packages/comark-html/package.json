@@ -1,0 +1,44 @@
+{
+  "name": "@comark/html",
+  "type": "module",
+  "version": "0.0.1",
+  "description": "HTML renderer for Comark",
+  "exports": {
+    ".": "./dist/index.js",
+    "./plugins/math": "./dist/plugins/math.js",
+    "./plugins/mermaid": "./dist/plugins/mermaid.js"
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "stub": "node ../../scripts/stub.mjs",
+    "build": "tsc -p tsconfig.build.json",
+    "dev": "tsc -p tsconfig.build.json --watch",
+    "test": "vitest run",
+    "prepack": "tsc -p tsconfig.build.json"
+  },
+  "dependencies": {
+    "comark": "^1.0.0"
+  },
+  "peerDependencies": {
+    "katex": ">=0.16",
+    "beautiful-mermaid": ">=1.0"
+  },
+  "peerDependenciesMeta": {
+    "katex": { "optional": true },
+    "beautiful-mermaid": { "optional": true }
+  },
+  "devDependencies": {
+    "comark": "workspace:*",
+    "katex": "^0.16.0",
+    "beautiful-mermaid": "^1.1.3",
+    "vitest": "^4.0.18"
+  }
+}

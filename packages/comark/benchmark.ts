@@ -3,7 +3,7 @@ import MarkdownIt from 'markdown-it'
 import MarkdownExit from 'markdown-exit'
 import pluginMdc from '@comark/markdown-it'
 import { createParse } from './src/index'
-import { renderHTML } from './src/string'
+import { renderHTML } from '@comark/html'
 
 // Sample markdown content to test with
 const sampleMarkdown = `---

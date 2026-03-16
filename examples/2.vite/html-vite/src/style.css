@@ -1,0 +1,66 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  background: #1a1a2e;
+  color: #e0e0f0;
+  font-family: system-ui, sans-serif;
+}
+
+#app {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  height: 100vh;
+  gap: 1px;
+  background: #2a2a3e;
+}
+
+.pane-header {
+  padding: 8px 14px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #888;
+  background: #1e1e32;
+  border-bottom: 1px solid #2a2a3e;
+  user-select: none;
+}
+
+#editor-pane {
+  display: flex;
+  flex-direction: column;
+  background: #1e1e32;
+  overflow: hidden;
+}
+
+#input {
+  flex: 1;
+  resize: none;
+  border: none;
+  outline: none;
+  background: #1e1e32;
+  color: #cdd6f4;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', ui-monospace, monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  padding: 16px;
+  tab-size: 2;
+}
+
+#preview-pane {
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  overflow: hidden;
+}
+
+#preview {
+  flex: 1;
+  border: none;
+  background: #fff;
+}

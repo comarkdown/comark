@@ -14,7 +14,7 @@ const packagesDir = join(root, 'packages')
 const comarkPluginsDir = join(packagesDir, 'comark', 'dist', 'plugins')
 
 // Framework packages to sync plugins into
-const frameworkPackages = ['comark-vue', 'comark-react', 'comark-svelte']
+const frameworkPackages = ['comark-vue', 'comark-react', 'comark-svelte', 'comark-html', 'comark-ansi']
 
 // Collect plugin names from comark/dist/plugins/ (by .js files)
 const comarkPlugins = readdirSync(comarkPluginsDir)

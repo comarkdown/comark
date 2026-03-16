@@ -1,10 +1,10 @@
 import type { PropType } from 'vue'
 import { computed, defineComponent, h } from 'vue'
-import { Comark } from './components/Comark'
+import { Comark } from './components/Comark.ts'
 import type { ComponentManifest, ParseOptions } from 'comark'
 
-export { ComarkRenderer } from './components/ComarkRenderer'
-export { Comark } from './components/Comark'
+export { ComarkRenderer } from './components/ComarkRenderer.ts'
+export { Comark } from './components/Comark.ts'
 export type * from 'comark'
 
 interface DefineComarkComponentOptions extends ParseOptions {

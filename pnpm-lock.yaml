@@ -248,6 +248,25 @@ importers:
         specifier: ^7.3.1
         version: 7.3.1(@types/node@25.3.5)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
+  examples/2.vite/html-vite:
+    dependencies:
+      '@comark/html':
+        specifier: workspace:*
+        version: link:../../../packages/comark-html
+      comark:
+        specifier: workspace:*
+        version: link:../../../packages/comark
+      shiki:
+        specifier: ^3.0.0
+        version: 3.23.0
+    devDependencies:
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+      vite:
+        specifier: ^7.3.1
+        version: 7.3.1(@types/node@25.3.5)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+
   examples/2.vite/react-vite:
     dependencies:
       '@tailwindcss/vite':
@@ -516,6 +535,22 @@ importers:
         specifier: workspace:*
         version: link:../comark
     devDependencies:
+      vitest:
+        specifier: ^4.0.18
+        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitest/browser-playwright@4.0.18)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+
+  packages/comark-html:
+    dependencies:
+      comark:
+        specifier: workspace:*
+        version: link:../comark
+    devDependencies:
+      beautiful-mermaid:
+        specifier: ^1.1.3
+        version: 1.1.3
+      katex:
+        specifier: ^0.16.0
+        version: 0.16.35
       vitest:
         specifier: ^4.0.18
         version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitest/browser-playwright@4.0.18)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)

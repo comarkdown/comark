@@ -21,6 +21,9 @@ export { autoCloseMarkdown } from './internal/parse/auto-close/index.ts'
 // Re-export parse utilities
 export { applyAutoUnwrap } from './internal/parse/auto-unwrap.ts'
 
+// Re-export render utilities
+export { renderMarkdown as render } from './string'
+
 // Re-export types
 export type * from './types'
 
