@@ -1,10 +1,18 @@
-import { defineNuxtModule, createResolver, addImports, addComponent, hasNuxtModule } from '@nuxt/kit'
+import { defineNuxtModule, createResolver, addImports, addComponent } from '@nuxt/kit'
 import fs from 'node:fs/promises'
 
 // Module options TypeScript interface definition
 export interface ComarkModuleOptions {}
 
 export default defineNuxtModule<ComarkModuleOptions>({
+  moduleDependencies: {
+    '@nuxt/ui': {
+      defaults: {
+        prose: true,
+      },
+      optional: true,
+    },
+  },
   meta: {
     name: 'comark',
     configKey: 'comark',
@@ -30,11 +38,7 @@ export default defineNuxtModule<ComarkModuleOptions>({
       as: 'defineComarkComponent',
       from: '@comark/vue',
     })
-
-    if (hasNuxtModule('@nuxt/ui')) {
-      setupNuxtUI(nuxt)
-    }
-
+console.log('setup')
     // Register user global components
     const resolver = createResolver(import.meta.url)
     const _layers = [...nuxt.options._layers].reverse()
@@ -55,10 +59,3 @@ export default defineNuxtModule<ComarkModuleOptions>({
     }
   },
 })
-
-function setupNuxtUI(nuxt: unknown) {
-  // @ts-expect-error - Nuxt UI options are not typed
-  nuxt.options.ui = nuxt.options.ui || {}
-  // @ts-expect-error - Nuxt UI options are not typed
-  nuxt.options.ui.content = true
-}

@@ -1,12 +1,12 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import nuxtUi from '@nuxt/ui/vite'
+import ui from '@nuxt/ui/vite'
 import { fileURLToPath } from 'node:url'
 
 export default defineConfig({
   plugins: [
     vue(),
-    nuxtUi({
+    ui({
       prose: true,
     }),
   ],

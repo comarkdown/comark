@@ -3,14 +3,14 @@ title: React
 description: A minimal example showing how to use Comark with React and Vite.
 navigation.icon: i-simple-icons-react
 category: Vite
-path: /examples/vite/react-vite
+path: /examples/vite/react
 ---
 
 ::code-explorer
 ---
 org: comarkdown
 repo: comark
-path: examples/2.vite/react-vite
+path: examples/2.vite/react
 defaultValue: src/App.tsx
 ---
 ::

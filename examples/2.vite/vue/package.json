@@ -1,5 +1,5 @@
 {
-  "name": "comark-vue-vite",
+  "name": "comark-vue",
   "version": "0.0.1",
   "private": true,
   "type": "module",
@@ -11,7 +11,6 @@
   "dependencies": {
     "@comark/vue": "latest",
     "@nuxt/ui": "https://pkg.pr.new/@nuxt/ui@0b06c38",
-    "@tailwindcss/vite": "^4.2.1",
     "vue": "^3.5.29",
     "vue-router": "^4.5.1"
   },

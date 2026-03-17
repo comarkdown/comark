@@ -3,7 +3,7 @@ title: HTML Preview
 description: A live markdown editor that renders Comark content to HTML and displays it in a sandboxed iframe preview, with syntax highlighting support.
 navigation.icon: i-lucide-file-code
 category: Vite
-path: /examples/vite/html-vite
+path: /examples/vite/html
 ---
 
 ::code-tree{defaultValue="src/main.ts" expandAll}
@@ -141,7 +141,7 @@ html, body {
 
 ```json [package.json]
 {
-  "name": "comark-html-vite",
+  "name": "comark-html",
   "version": "0.0.1",
   "private": true,
   "type": "module",

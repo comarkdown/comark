@@ -3,7 +3,7 @@ title: Svelte
 description: A minimal example showing how to use Comark with Svelte and Vite.
 navigation.icon: i-simple-icons-svelte
 category: Vite
-path: /examples/vite/svelte-vite
+path: /examples/vite/svelte
 ---
 
 ::code-tree{defaultValue="src/App.svelte" expandAll}
@@ -77,7 +77,7 @@ export default defineConfig({
 
 ```json [package.json]
 {
-  "name": "comark-svelte-vite",
+  "name": "comark-svelte",
   "type": "module",
   "scripts": {
     "dev": "vite",

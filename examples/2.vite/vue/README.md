@@ -3,7 +3,7 @@ title: Vue
 description: A minimal example showing how to use Comark with Vue and Vite.
 navigation.icon: i-simple-icons-vuedotjs
 category: Vite
-path: /examples/vite/vue-vite
+path: /examples/vite/vue
 ---
 
 ::code-explorer
@@ -11,7 +11,7 @@ path: /examples/vite/vue-vite
 org: comarkdown
 repo: comark
 branch: docs/demo
-path: examples/2.vite/vue-vite
+path: examples/2.vite/vue
 defaultValue: src/App.vue
 ---
 ::

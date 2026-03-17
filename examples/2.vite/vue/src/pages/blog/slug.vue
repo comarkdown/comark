@@ -25,10 +25,20 @@ const post = await getPost(route.params.slug as string)
           {{ new Date(post.pubDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) }}
         </time>
         <div class="flex gap-1.5">
-          <UBadge v-for="tag in post.tags" :key="tag" :label="tag" color="neutral" variant="subtle" size="xs" />
+          <UBadge
+            v-for="tag in post.tags"
+            :key="tag"
+            :label="tag"
+            color="neutral"
+            variant="subtle"
+            size="xs"
+          />
         </div>
       </div>
     </header>
-    <ComarkRenderer :tree="post.tree" :components="{ Alert }" />
+    <ComarkRenderer
+      :tree="post.tree"
+      :components="{ Alert }"
+    />
   </article>
 </template>

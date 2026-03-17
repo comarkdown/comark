@@ -16,7 +16,11 @@ const color = computed(() => colorMap[props.type ?? 'info'])
 </script>
 
 <template>
-  <UAlert :color="color" variant="soft" class="my-4">
+  <UAlert
+    :color="color"
+    variant="soft"
+    class="my-4"
+  >
     <template #description>
       <slot />
     </template>

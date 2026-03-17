@@ -1,5 +1,5 @@
 {
-  "name": "comark-ansi-vite",
+  "name": "comark-react",
   "version": "0.0.1",
   "private": true,
   "type": "module",
@@ -9,14 +9,17 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@xterm/addon-fit": "^0.10.0",
-    "@xterm/xterm": "^5.5.0",
+    "@tailwindcss/vite": "^4.2.1",
     "comark": "workspace:*",
-    "@comark/ansi": "workspace:*",
-    "katex": "^0.16.0",
-    "shiki": "^3.0.0"
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4"
   },
   "devDependencies": {
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.4",
+    "autoprefixer": "^10.4.27",
+    "postcss": "^8.5.8",
     "typescript": "^5.9.3",
     "vite": "^7.3.1"
   }

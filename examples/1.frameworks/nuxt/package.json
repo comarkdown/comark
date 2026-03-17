@@ -9,9 +9,8 @@
     "preview": "nuxt preview"
   },
   "dependencies": {
-    "@comark/nuxt": "workspace:*",
-    "@nuxt/ui": "^4.5.1",
-    "comark": "workspace:*",
+    "@comark/nuxt": "latest",
+    "@nuxt/ui": "https://pkg.pr.new/@nuxt/ui@0b06c38",
     "nuxt": "^4.3.1",
     "tailwindcss": "^4.2.1"
   }
