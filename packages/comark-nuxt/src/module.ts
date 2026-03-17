@@ -38,7 +38,7 @@ export default defineNuxtModule<ComarkModuleOptions>({
       as: 'defineComarkComponent',
       from: '@comark/vue',
     })
-console.log('setup')
+
     // Register user global components
     const resolver = createResolver(import.meta.url)
     const _layers = [...nuxt.options._layers].reverse()
