@@ -9,9 +9,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@tailwindcss/vite": "^4.2.1",
     "@comark/vue": "latest",
-    "vue": "^3.5.29"
+    "@nuxt/ui": "https://pkg.pr.new/@nuxt/ui@0b06c38",
+    "@tailwindcss/vite": "^4.2.1",
+    "vue": "^3.5.29",
+    "vue-router": "^4.5.1"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^6.0.4",
