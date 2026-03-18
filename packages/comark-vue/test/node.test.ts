@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { createTextVNode, h } from 'vue'
-import { TEXT_TAGS, flatUnwrap, isTag, isText, nodeChildren, nodeTextContent, unwrap } from '../src/runtime/utils/node.ts'
+import { TEXT_TAGS, flatUnwrap, isTag, isText, nodeChildren, nodeTextContent, unwrap } from '../src/utils/node.ts'
 
 describe('TEXT_TAGS', () => {
   it('includes expected text container tags', () => {

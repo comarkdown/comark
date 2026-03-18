@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import { createSSRApp, defineComponent, h } from 'vue'
 import { renderToString } from '@vue/server-renderer'
-import { renderSlot } from '../src/runtime/utils/slot.ts'
+import { renderSlot } from '../src/utils/slot.ts'
 
 /**
  * Tests for the `renderSlot` runtime utility, which powers the
- * `<slot unwrap="div" />` Comark Nuxt feature.
+ * `<slot unwrap="div" />` Comark feature.
  *
- * The Vite transformer in module.ts replaces the standard `renderSlot`
+ * The Vite transformer replaces the standard `renderSlot`
  * call with this custom version at compile time. These tests validate
  * the runtime behavior directly without needing the Vite transform.
  */

@@ -20,7 +20,7 @@
     "stub": "node ../../scripts/stub.mjs",
     "build": "tsc",
     "dev": "tsc --watch",
-    "test": "vitest run",
+    "test": "vitest run --passWithNoTests",
     "prepack": "tsc",
     "release": "release-it"
   },
