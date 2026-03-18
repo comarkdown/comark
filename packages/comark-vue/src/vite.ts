@@ -98,7 +98,7 @@ function generateComponentsModule(files: string[]): string {
  *
  * - Adds `<slot unwrap="...">` support inside custom markdown components.
  * - Auto-registers every `.vue` file in `src/components/prose` as a global
- *   component — no changes to `main.ts` required.
+ *   component
  *
  * @example
  * ```ts
@@ -165,7 +165,6 @@ export default function comark(): Plugin {
     async load(id) {
       if (id !== RESOLVED_COMPONENTS_ID) return
       const files = await resolveProseFiles()
-      console.log('load', generateComponentsModule(files))
       return generateComponentsModule(files)
     },
 
@@ -184,6 +183,8 @@ export default function comark(): Plugin {
     },
 
     configureServer(server) {
+      if (!proseDir) return
+
       server.watcher.add(proseDir)
 
       const invalidate = (file: string) => {
