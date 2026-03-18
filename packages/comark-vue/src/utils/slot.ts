@@ -5,6 +5,5 @@ export const renderSlot = (slots: Record<string, any>, name: string, props: any,
   if (slots[name]) {
     return _renderSlot({ ...slots, [name]: () => flatUnwrap(slots[name](), props?.unwrap || props?.comarkUnwrap) }, name, props, ...rest)
   }
-
   return _renderSlot(slots, name, props, ...rest)
 }

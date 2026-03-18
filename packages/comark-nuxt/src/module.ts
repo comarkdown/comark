@@ -1,8 +1,8 @@
 import { defineNuxtModule, createResolver, addImports, addComponent, extendViteConfig } from '@nuxt/kit'
 import fs from 'node:fs/promises'
-import type { NodeTransform, ElementNode, DirectiveNode } from '@vue/compiler-core'
 import type { Resolver } from '@nuxt/kit'
 import type { Nuxt } from 'nuxt/schema'
+import comark from '@comark/vue/vite'
 
 // Module options TypeScript interface definition
 export interface ComarkModuleOptions {}
@@ -44,7 +44,11 @@ export default defineNuxtModule<ComarkModuleOptions>({
 
     const resolver = createResolver(import.meta.url)
 
-    registerComarkSlotTransformer(resolver)
+    extendViteConfig((config) => {
+      config.plugins ??= []
+      config.plugins.push(comark())
+    })
+
     // Register user global components
     await registerComarkGlobalComponents(resolver, nuxt as unknown as Nuxt)
   },
@@ -67,50 +71,4 @@ async function registerComarkGlobalComponents(resolver: Resolver, nuxt: Nuxt) {
       })
     }
   }
-}
-/**
- * Vite transformer to transform `<slot unwrap="...">` to Comark's special slot renderer
- */
-function registerComarkSlotTransformer(resolver: Resolver) {
-  extendViteConfig((config) => {
-    const compilerOptions = (config as any).vue.template.compilerOptions
-    compilerOptions.nodeTransforms = [
-      <NodeTransform> function viteComarkSlot(node: ElementNode, context) {
-        const isVueSlotWithUnwrap = node.tag === 'slot' && node.props.find(p => p.name === 'unwrap' || (p.name === 'bind' && (p as DirectiveNode).rawName === ':comark-unwrap'))
-
-        if (isVueSlotWithUnwrap) {
-          const transform = context.ssr
-            ? context.nodeTransforms.find(nt => nt.name === 'ssrTransformSlotOutlet')
-            : context.nodeTransforms.find(nt => nt.name === 'transformSlotOutlet')
-
-          return () => {
-            node.tag = 'slot'
-            node.type = 1
-            node.tagType = 2
-
-            transform?.(node, context)
-
-            const codegen = context.ssr ? (node as any).ssrCodegenNode : node.codegenNode
-            codegen.callee = context.ssr ? '_ssrRenderComarkSlot' : '_renderComarkSlot'
-
-            const importExp = context.ssr ? '{ ssrRenderSlot as _ssrRenderComarkSlot }' : '{ renderSlot as _renderComarkSlot }'
-            if (!context.imports.some(i => String(i.exp) === importExp)) {
-              context.imports.push({
-                exp: importExp,
-                path: resolver.resolve(`./runtime/utils/${context.ssr ? 'ssrSlot' : 'slot'}`),
-              })
-            }
-          }
-        }
-
-        if (context.nodeTransforms[0]?.name !== 'viteComarkSlot') {
-          const index = context.nodeTransforms.findIndex(f => f.name === 'viteComarkSlot')
-          if (index !== -1) {
-            const nt = context.nodeTransforms.splice(index, 1)
-            context.nodeTransforms.unshift(nt[0]!)
-          }
-        }
-      },
-    ]
-  })
 }

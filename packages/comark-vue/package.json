@@ -5,6 +5,7 @@
   "description": "Vue components for Comark",
   "exports": {
     ".": "./dist/index.js",
+    "./vite": "./dist/vite.js",
     "./plugins/*": "./dist/plugins/*.js",
     "./utils": "./dist/utils/index.js",
     "./parse": "./dist/parse.js",
