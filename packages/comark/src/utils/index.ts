@@ -8,6 +8,7 @@ import type { ComarkNode, ComarkTree } from 'comark'
  *
  * @param node - The Comark node
  * @param options - The options
+ * @param options.decodeUnicodeEntities - Whether to decode Unicode entities
  * @returns The text content
  */
 export function textContent(node: ComarkNode, options: { decodeUnicodeEntities?: boolean } = {}): string {

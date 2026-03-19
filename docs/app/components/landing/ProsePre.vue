@@ -2,6 +2,7 @@
 import { textContent } from 'comark/utils'
 
 const props = withDefaults(defineProps<{
+  // eslint-disable-next-line vue/prop-name-casing
   __node: any
   language?: string
   filename?: string

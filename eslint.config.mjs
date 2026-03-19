@@ -46,6 +46,7 @@ export default createConfigForNuxt({
   .append(
     {
       rules: {
+        'vue/no-v-html': 'off',
         '@typescript-eslint/no-explicit-any': 'off',
         'vue/multi-word-component-names': 'off',
         '@typescript-eslint/no-empty-object-type': 'off',
