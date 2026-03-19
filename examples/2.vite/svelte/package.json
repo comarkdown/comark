@@ -9,9 +9,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@comark/svelte": "workspace:*",
-    "@tailwindcss/vite": "^4.2.2",
-    "comark": "workspace:*"
+    "@comark/svelte": "latest",
+    "@tailwindcss/vite": "^4.2.2"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^7.0.0",

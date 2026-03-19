@@ -8,6 +8,7 @@ overrides:
   comark: workspace:*
   '@comark/vue': workspace:*
   '@comark/react': workspace:*
+  '@comark/svelte': workspace:*
   '@comark/nuxt': workspace:*
 
 importers:
@@ -294,9 +295,6 @@ importers:
       '@tailwindcss/vite':
         specifier: ^4.2.2
         version: 4.2.2(vite@8.0.1(@types/node@25.5.0)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
-      comark:
-        specifier: workspace:*
-        version: link:../../../packages/comark
     devDependencies:
       '@sveltejs/vite-plugin-svelte':
         specifier: ^7.0.0
