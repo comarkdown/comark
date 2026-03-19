@@ -11,7 +11,7 @@
   "dependencies": {
     "@comark/nuxt": "latest",
     "@nuxt/ui": "https://pkg.pr.new/@nuxt/ui@0b06c38",
-    "nuxt": "^4.3.1",
-    "tailwindcss": "^4.2.1"
+    "nuxt": "^4.4.2",
+    "tailwindcss": "^4.2.2"
   }
 }

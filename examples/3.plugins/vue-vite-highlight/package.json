@@ -8,16 +8,16 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@shikijs/langs": "^4.0.1",
-    "@shikijs/themes": "^4.0.1",
+    "@shikijs/langs": "^4.0.2",
+    "@shikijs/themes": "^4.0.2",
     "comark": "workspace:*",
-    "shiki": "^4.0.1",
-    "vue": "^3.5.29"
+    "shiki": "^4.0.2",
+    "vue": "^3.5.30"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^6.0.4",
+    "@vitejs/plugin-vue": "^6.0.5",
     "typescript": "^5.9.3",
-    "vite": "^7.3.1",
-    "vue-tsc": "^3.2.5"
+    "vite": "^8.0.1",
+    "vue-tsc": "^3.2.6"
   }
 }

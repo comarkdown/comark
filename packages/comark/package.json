@@ -1,7 +1,7 @@
 {
   "name": "comark",
   "type": "module",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "Components in Markdown (Comark) parser with streaming support for Vue, React, Svelte and HTML",
   "author": "",
   "license": "MIT",
@@ -57,8 +57,8 @@
     }
   },
   "devDependencies": {
-    "@nuxt/kit": "^4.3.1",
-    "@shikijs/primitive": "^4.0.1",
+    "@nuxt/kit": "^4.4.2",
+    "@shikijs/primitive": "^4.0.2",
     "@types/js-yaml": "^4.0.9",
     "github-slugger": "^2.0.0",
     "hast-util-to-string": "^3.0.1",
@@ -66,13 +66,13 @@
     "minimark": "0.2.0",
     "mitata": "^1.0.34",
     "tsx": "^4.21.0",
-    "vitest": "^4.0.18"
+    "vitest": "^4.1.0"
   },
   "dependencies": {
     "@comark/markdown-it": "^0.3.2",
-    "entities": "^4.5.0",
+    "entities": "^8.0.0",
     "js-yaml": "^4.1.1",
-    "htmlparser2": "^9.0.0",
+    "htmlparser2": "^11.0.0",
     "markdown-exit": "1.0.0-beta.9"
   }
 }

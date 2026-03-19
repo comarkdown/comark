@@ -10,15 +10,15 @@
   },
   "dependencies": {
     "@comark/svelte": "workspace:*",
-    "@tailwindcss/vite": "^4.2.0",
+    "@tailwindcss/vite": "^4.2.2",
     "comark": "workspace:*"
   },
   "devDependencies": {
-    "@sveltejs/vite-plugin-svelte": "^6.2.4",
-    "autoprefixer": "^10.4.24",
-    "postcss": "^8.5.6",
-    "svelte": "^5.53.7",
+    "@sveltejs/vite-plugin-svelte": "^7.0.0",
+    "autoprefixer": "^10.4.27",
+    "postcss": "^8.5.8",
+    "svelte": "^5.54.0",
     "typescript": "^5.9.3",
-    "vite": "^7.3.1"
+    "vite": "^8.0.1"
   }
 }

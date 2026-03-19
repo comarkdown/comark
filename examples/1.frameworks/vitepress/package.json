@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@comark/markdown-it": "^0.3.2",
-    "vue": "^3.5.29"
+    "vue": "^3.5.30"
   },
   "devDependencies": {
     "vitepress": "^1.6.4"

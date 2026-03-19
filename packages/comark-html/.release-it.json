@@ -1,0 +1,33 @@
+{
+  "git": {
+    "commitMessage": "chore(html): release v${version}",
+    "tagName": "@comark/html@${version}",
+    "tagAnnotation": "@comark/html v${version}",
+    "requireCleanWorkingDir": true
+  },
+  "github": {
+    "release": true,
+    "releaseName": "@comark/html v${version}"
+  },
+  "npm": {
+    "publish": true,
+    "publishPath": "."
+  },
+  "plugins": {
+    "@release-it/conventional-changelog": {
+      "ignoreRecommendedBump": true,
+      "preset": {
+        "name": "conventionalcommits",
+        "types": [
+          { "type": "feat", "section": "Features" },
+          { "type": "fix", "section": "Bug Fixes" },
+          { "type": "perf", "section": "Performance" }
+        ]
+      },
+      "infile": "CHANGELOG.md"
+    }
+  },
+  "hooks": {
+    "before:release": ["pnpm run build"]
+  }
+}

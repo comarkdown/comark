@@ -47,9 +47,9 @@
     "comark": "^0.0.1"
   },
   "devDependencies": {
-    "@vue/server-renderer": "^3.5.0",
+    "@vue/server-renderer": "^3.5.30",
     "comark": "workspace:*",
-    "vitest": "^4.0.18",
-    "vue": "^3.5.0"
+    "vitest": "^4.1.0",
+    "vue": "^3.5.30"
   }
 }

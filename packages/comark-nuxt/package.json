@@ -29,11 +29,11 @@
   },
   "dependencies": {
     "@comark/vue": "^0.0.1",
-    "@nuxt/kit": "^4.3.1"
+    "@nuxt/kit": "^4.4.2"
   },
   "devDependencies": {
-    "@vue/server-renderer": "^3.5.0",
-    "vitest": "^4.0.18",
-    "vue": "^3.5.0"
+    "@vue/server-renderer": "^3.5.30",
+    "vitest": "^4.1.0",
+    "vue": "^3.5.30"
   }
 }
