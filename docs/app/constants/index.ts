@@ -41,7 +41,7 @@ $$
 
 ### Mermaid
 
-\`\`\`mermaid
+\`\`\`mermaid {height="200px"}
 graph TD
 A[Start] --> B[Stop]
 \`\`\`

@@ -34,7 +34,7 @@ export function useMainNavigation() {
 export function useFilteredNavigation(): ComputedRef<ContentNavigationItem[]> {
   const route = useRoute()
   const navigation = inject<Ref<ContentNavigationItem[]>>('navigation')
-  const examplesNavigation = inject<Ref<ContentNavigationItem[]>>('examplesNavigation')
+  const examplesNavigation = inject<Ref<ContentNavigationItem[]>>('examplesNavigation', ref<ContentNavigationItem[]>([]))
   return computed(() => {
     if (route.path.startsWith('/plugins')) {
       const pluginsSection = navigation?.value?.find(item => item.path === '/plugins')

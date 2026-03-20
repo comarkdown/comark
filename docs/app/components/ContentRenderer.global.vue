@@ -77,18 +77,6 @@ const props = defineProps({
 
 const debug = import.meta.dev || import.meta.preview
 
-function replaceMermaid(body: MinimarkNode[]): MinimarkNode[] {
-  return body.map((node: MinimarkNode): MinimarkNode => {
-    if (node[0] === 'pre' && typeof node[1] === 'object' && 'language' in node[1] && node[1].language === 'mermaid') {
-      return ['Mermaid', { content: node[1].code, height: '250px' }]
-    }
-    if (Array.isArray(node) && node.length > 2) {
-      return [node[0], node[1], ...replaceMermaid(node.slice(2) as MinimarkNode[])]
-    }
-    return node
-  })
-}
-
 function replaceAlert(body: MinimarkNode[]): MinimarkNode[] {
   alert().post!({ markdown: '', tree: { frontmatter: {}, nodes: body, meta: {} }, options: {}, tokens: [] })
 
@@ -104,7 +92,7 @@ const body = computed(() => {
   // this is a workaround to convert mermaid code block to Mermaid component
   return {
     frontmatter: props.data,
-    nodes: replaceAlert(replaceMermaid(body.value)),
+    nodes: replaceAlert(body.value),
     meta: {},
   } as ComarkTree
 })
@@ -136,6 +124,7 @@ const componentsMap = computed(() => {
     Mermaid,
   }
 })
+console.log('componentsMap', componentsMap.value)
 
 function resolveVueComponent(component: string | Renderable) {
   let _component: unknown = component
@@ -194,7 +183,10 @@ function resolveContentComponents(body: ComarkTree, meta: Record<string, unknown
       continue
     }
 
-    result[tag] = resolveVueComponent(component as string)
+    const resolved = resolveVueComponent(component as string)
+    if (resolved !== tag) {
+      result[tag] = resolved
+    }
   }
 
   return result as Record<string, unknown>

@@ -31,6 +31,9 @@ export default defineNuxtConfig({
           langs: ['tsx', 'svelte', 'vue', 'html', 'css', 'json', 'markdown', 'bash', 'shell', 'astro'],
         },
       },
+      transformers: [
+        '~~/utils/comark-transformers.ts',
+      ],
     },
   },
 
