@@ -99,39 +99,38 @@ export async function getHighlighter(options: HighlightOptions = {}): Promise<Sh
 function colorToStyle(token: ThemedTokenWithVariants | ThemedToken | undefined): string | undefined {
   if (!token) return undefined
 
-  if ((token as ThemedTokenWithVariants).variants) {
-    const lightColor = (token as ThemedTokenWithVariants).variants.light.color
-    const darkColor = (token as ThemedTokenWithVariants).variants.dark.color
-    if (!lightColor || !darkColor) {
-      return undefined
-    }
-    if (lightColor == darkColor) {
-      return `color:${lightColor}`
-    }
-    return `color:${lightColor};--shiki-dark:${darkColor}`
-  }
-  else {
-    return `color:${(token as ThemedToken).color}`
-  }
+  const variants = (token as ThemedTokenWithVariants).variants
+  if (!variants) return `color:${(token as ThemedToken).color}`
+
+  const { light: lc, dark: dc } = variants
+  if (!lc?.color || !dc?.color) return undefined
+  return lc.color === dc.color ? `color:${lc.color}` : `color:${lc.color};--shiki-dark:${dc.color}`
 }
 
 async function registerDefaults(options: HighlightOptions) {
   const themes = Object.values(options.themes || {}) as ThemeRegistration[]
   const languages = options.languages || [] as Array<LanguageRegistration | LanguageRegistration[]>
+  const promises: Array<Promise<{ type: 'theme' | 'lang', value: any }>> = []
+
   if (options.registerDefaultThemes !== false) {
-    themes.push(await import('@shikijs/themes/material-theme-lighter').then(m => m.default))
-    themes.push(await import('@shikijs/themes/material-theme-palenight').then(m => m.default))
+    promises.push(
+      import('@shikijs/themes/material-theme-lighter').then(m => ({ type: 'theme' as const, value: m.default })),
+      import('@shikijs/themes/material-theme-palenight').then(m => ({ type: 'theme' as const, value: m.default })),
+    )
   }
   if (options.registerDefaultLanguages !== false) {
-    languages.push(await import('@shikijs/langs/vue').then(m => m.default))
-    languages.push(await import('@shikijs/langs/tsx').then(m => m.default))
-    languages.push(await import('@shikijs/langs/svelte').then(m => m.default))
-    languages.push(await import('@shikijs/langs/typescript').then(m => m.default))
-    languages.push(await import('@shikijs/langs/javascript').then(m => m.default))
-    languages.push(await import('@shikijs/langs/mdc').then(m => m.default))
-    languages.push(await import('@shikijs/langs/bash').then(m => m.default))
-    languages.push(await import('@shikijs/langs/json').then(m => m.default))
-    languages.push(await import('@shikijs/langs/yaml').then(m => m.default))
+    const langs = ['vue', 'tsx', 'svelte', 'typescript', 'javascript', 'mdc', 'bash', 'json', 'yaml']
+    for (const lang of langs) {
+      promises.push(
+        import(`@shikijs/langs/${lang}`).then(m => ({ type: 'lang' as const, value: m.default })),
+      )
+    }
+  }
+
+  const results = await Promise.all(promises)
+  for (const result of results) {
+    if (result.type === 'theme') themes.push(result.value)
+    else languages.push(result.value)
   }
 
   return { themes, languages }
@@ -178,29 +177,19 @@ export async function highlightCode(
     })
 
     // Build comark nodes from tokens (flatten all lines)
-    const allTokens: ComarkNode[] = []
+    const allTokens: ComarkNode[] = Array.from({ length: result.length })
+    const highlights = attrs.highlights
 
     for (let i = 0; i < result.length; i++) {
       const lineTokens = result[i]
-
-      const lineTokensNodes: ComarkNode[] = []
-      for (const token of lineTokens) {
+      const children: ComarkNode[] = Array.from({ length: lineTokens.length })
+      for (let j = 0; j < lineTokens.length; j++) {
+        const token = lineTokens[j]
         const style = colorToStyle(token)
-
-        // Create a span with style for colored tokens
-        // Note: we always wrap in spans if there's a style, even for whitespace
-        // because the whitespace may be part of the styled token
-        if (style) {
-          lineTokensNodes.push(['span', { style }, token.content] as ComarkNode)
-        }
-        else {
-          // Plain text token (no style)
-          lineTokensNodes.push(token.content)
-        }
+        children[j] = style ? ['span', { style }, token.content] : token.content
       }
-
-      const lineClass = 'line' + (attrs.highlights?.includes(i + 1) ? ' highlight' : '')
-      allTokens.push(['span', { class: lineClass }, ...lineTokensNodes])
+      const lineClass = 'line' + (highlights?.includes(i + 1) ? ' highlight' : '')
+      allTokens[i] = ['span', { class: lineClass }, ...children]
     }
 
     return {
@@ -220,82 +209,95 @@ export async function highlightCode(
 
 /**
  * Apply syntax highlighting to all code blocks in a Comark tree
- * Uses codeToTokens API
+ * Uses codeToTokens API with batched async operations
  */
 export async function highlightCodeBlocks(
   tree: ComarkTree,
   options: HighlightOptions = {},
 ): Promise<ComarkTree> {
-  const processNode = async (node: ComarkNode): Promise<ComarkNode> => {
-    // Skip text nodes
-    if (typeof node === 'string') {
-      return node
-    }
+  interface CodeBlockRef { node: ComarkNode, path: number[] }
 
-    // Check if this is a pre > code structure
-    if (Array.isArray(node) && node[0] === 'pre') {
-      const [_tag, attrs, ...children] = node
-      // Look for code element as child
-      if (children.length > 0 && Array.isArray(children[0]) && children[0][0] === 'code') {
-        const codeNode = children[0]
-        const [, codeAttrs, content] = codeNode
+  const codeBlocks: CodeBlockRef[] = []
 
-        if (typeof content === 'string') {
-          try {
-            const { nodes } = await highlightCode(content, attrs as { language?: string, class?: string, highlights?: number[] }, options)
+  const findCodeBlocks = (nodes: ComarkNode[], path: number[]): void => {
+    for (let i = 0; i < nodes.length; i++) {
+      const node = nodes[i]
+      if (typeof node === 'string') continue
+      if (!Array.isArray(node) || node.length < 3) continue
 
-            // Build pre attributes with Shiki styling
-            const newPreAttrs: any = {
-              ...attrs,
-              class: ['shiki', options.themes?.light?.name, options.themes?.dark?.name ? `dark:${options.themes?.dark?.name}` : ''].filter(Boolean).join(' '),
-              tabindex: '0',
-            }
-
-            if (options.preStyles) {
-              const lightTheme = options.themes?.light
-              const darkTheme = options.themes?.dark
-
-              const styles: string[] = []
-              if (lightTheme?.colors?.['editor.background']) styles.push(`background-color:${lightTheme?.colors?.['editor.background']}`)
-              if (lightTheme?.colors?.['editor.foreground']) styles.push(`color:${lightTheme?.colors?.['editor.foreground']}`)
-              if (lightTheme?.name !== darkTheme?.name) {
-                if (darkTheme?.colors?.['editor.background']) styles.push(`--shiki-dark-bg:${darkTheme?.colors?.['editor.background']}`)
-                if (darkTheme?.colors?.['editor.foreground']) styles.push(`--shiki-dark:${darkTheme?.colors?.['editor.foreground']}`)
-              }
-              newPreAttrs.style = styles.join(';')
-            }
-
-            // Return the updated pre > code structure with token-based children
-            return ['pre', newPreAttrs, ['code', codeAttrs || {}, ...nodes]] as ComarkNode
-          }
-          catch (error) {
-            console.error('Failed to highlight code block:', error)
-            // Keep original node if highlighting fails
-          }
+      if (node[0] === 'pre' && Array.isArray(node[2]) && node[2][0] === 'code') {
+        const codeContent = node[2][2]
+        if (typeof codeContent === 'string') {
+          codeBlocks.push({ node, path: [...path, i] })
         }
       }
-    }
 
-    // Recursively process children
-    if (Array.isArray(node)) {
-      const [tag, attrs, ...children] = node
-      const processedChildren = await Promise.all(
-        children.map(child => processNode(child)),
-      )
-      return [tag, attrs, ...processedChildren] as ComarkNode
+      findCodeBlocks(node.slice(2) as ComarkNode[], [...path, i])
     }
-
-    return node
   }
+  findCodeBlocks(tree.nodes, [])
 
-  const processedValue = await Promise.all(
-    tree.nodes.map(node => processNode(node)),
+  if (codeBlocks.length === 0) return tree
+
+  const highlightedResults = await Promise.all(
+    codeBlocks.map(({ node }) => {
+      const attrs = node[1] as { language?: string, class?: string, highlights?: number[] }
+      const codeContent = (node[2] as any)[2] as string
+      return highlightCode(codeContent, attrs, options)
+    }),
   )
 
-  return {
-    ...tree,
-    nodes: processedValue,
+  const newNodes = JSON.parse(JSON.stringify(tree.nodes)) as ComarkNode[]
+  for (let i = 0; i < codeBlocks.length; i++) {
+    const { path } = codeBlocks[i]
+    const result = highlightedResults[i]
+    const { nodes } = result
+
+    const preAttrs = tree.nodes[path[0]][1] as Record<string, any>
+    const newPreAttrs: Record<string, any> = {
+      ...preAttrs,
+      class: ['shiki', options.themes?.light?.name, options.themes?.dark?.name ? `dark:${options.themes?.dark?.name}` : ''].filter(Boolean).join(' '),
+      tabindex: '0',
+    }
+
+    if (options.preStyles) {
+      const lightTheme = options.themes?.light
+      const darkTheme = options.themes?.dark
+      const styles: string[] = []
+
+      if (lightTheme?.colors?.['editor.background']) {
+        styles.push(`background-color:${lightTheme.colors['editor.background']}`)
+      }
+      if (lightTheme?.colors?.['editor.foreground']) {
+        styles.push(`color:${lightTheme.colors['editor.foreground']}`)
+      }
+      if (lightTheme?.name !== darkTheme?.name) {
+        if (darkTheme?.colors?.['editor.background']) {
+          styles.push(`--shiki-dark-bg:${darkTheme.colors['editor.background']}`)
+        }
+        if (darkTheme?.colors?.['editor.foreground']) {
+          styles.push(`--shiki-dark:${darkTheme.colors['editor.foreground']}`)
+        }
+      }
+      newPreAttrs.style = styles.join(';')
+    }
+
+    const codeAttrs = (tree.nodes[path[0]][2] as any[])[1] as Record<string, any> || {}
+    const newPreNode: ComarkNode = ['pre', newPreAttrs, ['code', codeAttrs, ...nodes]]
+
+    if (path.length === 1) {
+      newNodes[path[0]] = newPreNode
+    }
+    else {
+      let current = newNodes[path[0]]
+      for (let j = 1; j < path.length - 1; j++) {
+        current = (current as any[])[path[j]]
+      }
+      ;(current as any[])[path[path.length - 1]] = newPreNode
+    }
   }
+
+  return { ...tree, nodes: newNodes }
 }
 
 /**
