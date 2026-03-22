@@ -87,3 +87,7 @@
 .dark .syntax-colon { color: var(--ui-color-primary-500); }
 .dark .syntax-bracket { color: var(--ui-color-neutral-500); }
 .dark .syntax-text { color: var(--ui-color-neutral-200); }
+
+.shiki span.line:empty {
+  height: 1lh;
+}

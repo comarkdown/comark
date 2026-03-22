@@ -67,7 +67,6 @@ async function copyCode() {
 
 <template>
   <div :class="['relative group overflow-hidden', containerClass]">
-    ss
     <div
       v-if="hasHeader"
       class="flex items-center gap-1.5 border border-b-0 border-muted bg-default rounded-t-md px-4 py-3"

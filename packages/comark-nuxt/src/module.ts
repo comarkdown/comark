@@ -62,6 +62,8 @@ export default defineNuxtModule<ComarkModuleOptions>({
 
 async function registerComarkGlobalComponents(resolver: Resolver, nuxt: Nuxt) {
   const _layers = [...nuxt.options._layers].reverse()
+    // main layer will be handled by vite plugin
+    .slice(0, -1)
   for (const layer of _layers) {
     const srcDir = layer.config.srcDir
     const globalComponents = resolver.resolve(srcDir, 'components/prose')
