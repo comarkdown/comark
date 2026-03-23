@@ -1,5 +1,5 @@
 import type { LanguageRegistration } from 'shiki'
-import type { ComarkNode, ComarkTree, ComarkPlugin } from 'comark'
+import type { ComarkElement, ComarkNode, ComarkTree, ComarkPlugin } from 'comark'
 import type { ShikiPrimitive, ThemedToken, ThemedTokenWithVariants, ThemeRegistration } from '@shikijs/primitive'
 import { createShikiPrimitive, codeToTokensWithThemes } from '@shikijs/primitive'
 import { createJavaScriptRegexEngine } from 'shiki/engine/javascript'
@@ -249,11 +249,11 @@ export async function highlightCodeBlocks(
 
   const newNodes = JSON.parse(JSON.stringify(tree.nodes)) as ComarkNode[]
   for (let i = 0; i < codeBlocks.length; i++) {
-    const { path } = codeBlocks[i]
+    const { node, path } = codeBlocks[i]
     const result = highlightedResults[i]
     const { nodes } = result
 
-    const preAttrs = tree.nodes[path[0]][1] as Record<string, any>
+    const preAttrs = node[1] as Record<string, any>
     const newPreAttrs: Record<string, any> = {
       ...preAttrs,
       class: ['shiki', options.themes?.light?.name, options.themes?.dark?.name ? `dark:${options.themes?.dark?.name}` : ''].filter(Boolean).join(' '),
@@ -282,18 +282,20 @@ export async function highlightCodeBlocks(
       newPreAttrs.style = styles.join(';')
     }
 
-    const codeAttrs = (tree.nodes[path[0]][2] as any[])[1] as Record<string, any> || {}
+    const codeEl = node[2] as ComarkElement
+    const codeAttrs = (codeEl[1] as Record<string, any>) || {}
     const newPreNode: ComarkNode = ['pre', newPreAttrs, ['code', codeAttrs, ...nodes]]
 
     if (path.length === 1) {
       newNodes[path[0]] = newPreNode
     }
     else {
-      let current = newNodes[path[0]]
+      let current = newNodes[path[0]] as ComarkElement
       for (let j = 1; j < path.length - 1; j++) {
-        current = (current as any[])[path[j]]
+        current = current[path[j] + 2] as ComarkElement
       }
-      ;(current as any[])[path[path.length - 1]] = newPreNode
+      const childSlot = path[path.length - 1] + 2
+      current[childSlot] = newPreNode
     }
   }
 
