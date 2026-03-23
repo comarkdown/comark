@@ -202,6 +202,61 @@ describe('renderANSI', () => {
       expect(out).toContain('bold')
     })
   })
+
+  describe('async node handlers', () => {
+    it('handler returning a Promise is awaited', async () => {
+      const tree = await parse('::status{code="ok"}\nAll good\n::')
+      const out = await renderANSI(tree, {
+        colors: false,
+        components: {
+          status: async ([, attrs, ...children], { render }) => {
+            const label = await Promise.resolve(String(attrs.code).toUpperCase())
+            return `[${label}] ${await render(children)}`
+          },
+        },
+      })
+      expect(out).toContain('[OK]')
+      expect(out).toContain('All good')
+    })
+
+    it('multiple async handlers run in the correct order', async () => {
+      const tree = await parse('::a\n::b\nB\n::\n::c\nC\n::\n::')
+      const log: string[] = []
+      const out = await renderANSI(tree, {
+        colors: false,
+        components: {
+          a: async ([,, ...children], { render }) => await render(children),
+          b: async ([,, ...children], { render }) => {
+            await Promise.resolve()
+            log.push('b')
+            return `B:${await render(children)}`
+          },
+          c: async ([,, ...children], { render }) => {
+            await Promise.resolve()
+            log.push('c')
+            return `C:${await render(children)}`
+          },
+        },
+      })
+      expect(log).toEqual(['b', 'c'])
+      expect(out.indexOf('B:')).toBeLessThan(out.indexOf('C:'))
+    })
+
+    it('async handler can resolve external data', async () => {
+      const db: Record<string, string> = { metric: '99.9%' }
+      const tree = await parse('::stat{key="metric"}\n::')
+      const out = await renderANSI(tree, {
+        colors: false,
+        components: {
+          stat: async ([, attrs]) => {
+            const value = await Promise.resolve(db[String(attrs.key)] ?? 'N/A')
+            return `Uptime: ${value}\n`
+          },
+        },
+      })
+      expect(out).toContain('Uptime: 99.9%')
+    })
+  })
 })
 
 describe('createLog', () => {

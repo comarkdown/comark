@@ -184,3 +184,76 @@ describe('renderHTML', () => {
     expect(html).toContain('<strong class="highlight">HTML</strong>')
   })
 })
+
+describe('async node handlers', () => {
+  it('handler returning a Promise is awaited', async () => {
+    const tree = await parse('::card{title="Hello"}\nBody\n::')
+    const html = await renderHTML(tree, {
+      components: {
+        card: async ([, attrs, ...children], { render }) => {
+          const title = await Promise.resolve(String(attrs.title).toUpperCase())
+          return `<div class="card"><h2>${title}</h2>${await render(children)}</div>`
+        },
+      },
+    })
+    expect(html).toContain('<h2>HELLO</h2>')
+    expect(html).toContain('Body')
+  })
+
+  it('multiple async handlers run in the correct order', async () => {
+    const tree = await parse('::a\n::b\nB content\n::\n::c\nC content\n::\n::')
+    const log: string[] = []
+    const html = await renderHTML(tree, {
+      components: {
+        a: async ([,, ...children], { render }) => {
+          const content = await render(children)
+          return `<div class="a">${content}</div>`
+        },
+        b: async ([,, ...children], { render }) => {
+          await Promise.resolve()
+          log.push('b')
+          return `<b>${await render(children)}</b>`
+        },
+        c: async ([,, ...children], { render }) => {
+          await Promise.resolve()
+          log.push('c')
+          return `<c>${await render(children)}</c>`
+        },
+      },
+    })
+    expect(log).toEqual(['b', 'c'])
+    expect(html.indexOf('<b>')).toBeLessThan(html.indexOf('<c>'))
+  })
+
+  it('async handler can fetch external data', async () => {
+    const db: Record<string, string> = { 42: 'Fetched Content' }
+    const tree = await parse('::widget{id="42"}\n::')
+    const html = await renderHTML(tree, {
+      components: {
+        widget: async ([, attrs]) => {
+          const content = await Promise.resolve(db[String(attrs.id)] ?? 'Not found')
+          return `<div class="widget">${content}</div>`
+        },
+      },
+    })
+    expect(html).toContain('<div class="widget">Fetched Content</div>')
+  })
+
+  it('nested async handlers resolve correctly', async () => {
+    const tree = await parse('::outer\n:::inner\nDeep\n:::\n::')
+    const html = await renderHTML(tree, {
+      components: {
+        outer: async ([,, ...children], { render }) => {
+          const content = await Promise.resolve(await render(children))
+          return `<outer>${content}</outer>`
+        },
+        inner: async ([,, ...children], { render }) => {
+          const content = await Promise.resolve(await render(children))
+          return `<inner>${content}</inner>`
+        },
+      },
+    })
+    expect(html).toContain('<outer><inner>')
+    expect(html).toContain('Deep')
+  })
+})
