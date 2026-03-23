@@ -1,8 +1,12 @@
 ---
 navigation: false
 title: Comark
-description: A fast, streaming-ready markdown parser with component support for
-  Vue and React.
+description: A fast, streaming-ready markdown parser with component support for Vue and React.
+seo:
+  title: Components in Markdown
+  description: Fast, streaming-ready markdown parser with Vue and React component support. Parse Comark content from strings or streams with TypeScript support.
+  ogImage: /social-card.jpg
+
 ---
 
 ::landing-hero

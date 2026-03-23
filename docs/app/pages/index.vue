@@ -7,11 +7,22 @@ const { data: page } = await useAsyncData('index', () =>
   queryCollection('landing').path('/').first(),
 )
 
-useSeoMeta({
-  title: 'Comark - Components in Markdown',
-  description: 'Fast, streaming-ready markdown parser with Vue and React component support. Parse Comark content from strings or streams with TypeScript support.',
-  ogImage: '/social-card.jpg',
+const title = page.value?.seo?.title || page.value?.title
+const description = page.value?.seo?.description || page.value?.description
+
+useSeo({
+  title,
+  description,
+  type: 'website',
+  ogImage: page.value?.seo?.ogImage as string,
 })
+
+if (!page.value?.seo?.ogImage) {
+  defineOgImage('Landing', {
+    title,
+    description: description?.replace(/,/g, ''),
+  })
+}
 
 useHead({
   bodyAttrs: { class: 'landing-page' },
