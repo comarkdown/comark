@@ -120,7 +120,7 @@ export interface Context extends StringifyOptions {
  * @param parent - The parent node
  * @returns The rendered node
  */
-export type NodeHandler = (node: ComarkElement, state: State, parent?: ComarkElement) => string
+export type NodeHandler = (node: ComarkElement, state: State, parent?: ComarkElement) => string | Promise<string>
 
 /**
  * The State of the renderer
@@ -150,17 +150,17 @@ export type State = {
   /**
    * Render children of the node
    */
-  flow: NodeHandler
+  flow: (node: ComarkElement, state: State, parent?: ComarkElement) => Promise<string>
 
   /**
    * Render a single node
    */
-  one: (node: ComarkNode, state: State, parent?: ComarkElement) => string
+  one: (node: ComarkNode, state: State, parent?: ComarkElement) => Promise<string>
 
   /**
    * Render the input
    */
-  render: (input: ComarkNode[] | ComarkElement) => string
+  render: (input: ComarkNode[] | ComarkElement) => Promise<string>
 
   /**
    * Apply the context

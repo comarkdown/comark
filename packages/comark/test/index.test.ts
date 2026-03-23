@@ -222,14 +222,14 @@ describe('Comark Tests', () => {
         expect(parsedAST).toEqual(expectedAST)
       })
 
-      it('should render AST to HTML', { timeout: testCase.timeouts?.html ?? 5000 }, () => {
-        const result = renderHTML(parsedAST)
+      it('should render AST to HTML', { timeout: testCase.timeouts?.html ?? 5000 }, async () => {
+        const result = await renderHTML(parsedAST)
         const expectedHTML = testCase.html.trim()
         expect(result).toBe(expectedHTML)
       })
 
-      it('should render AST to Markdown', { timeout: testCase.timeouts?.markdown ?? 5000 }, () => {
-        const result = renderMarkdown(parsedAST, { maxInlineAttributes: testCase.options?.maxInlineAttributes })
+      it('should render AST to Markdown', { timeout: testCase.timeouts?.markdown ?? 5000 }, async () => {
+        const result = await renderMarkdown(parsedAST, { maxInlineAttributes: testCase.options?.maxInlineAttributes })
         const expectedMarkdown = testCase.markdown.trim()
         expect(result).toBe(expectedMarkdown)
       })

@@ -7,7 +7,7 @@ import { html } from './html.ts'
 // HTML elements that always create an inline context for their children
 const INLINE_HTML_ELEMENTS = new Set(['a', 'strong', 'em', 'span'])
 
-export function mdc(node: ComarkElement, state: State, parent?: ComarkElement) {
+export async function mdc(node: ComarkElement, state: State, parent?: ComarkElement) {
   const [tag, attr, ...children] = node
   const { $, ...attributes } = attr
 
@@ -29,8 +29,12 @@ export function mdc(node: ComarkElement, state: State, parent?: ComarkElement) {
     inline = false
   }
 
-  const content = children.map((child: ComarkNode) => state.one(child, { ...state, nodeDepthInTree: (state.nodeDepthInTree || 0) + 1 }, node))
-    .join('').trimEnd()
+  let content = ''
+  const childState = { ...state, nodeDepthInTree: (state.nodeDepthInTree || 0) + 1 }
+  for (const child of children as ComarkNode[]) {
+    content += await state.one(child, childState, node)
+  }
+  content = content.trimEnd()
 
   const attrs = attributeEntries.length > 0 ? comarkAttributes(attributes) : ''
 

@@ -2,10 +2,14 @@ import type { NodeHandler, State } from 'comark/render'
 import type { ComarkElement, ComarkNode } from 'comark'
 import { DIM, BOLD, RESET } from '../utils/escape.ts'
 
-function getCellText(cell: ComarkNode, state: State): string {
+async function getCellText(cell: ComarkNode, state: State): Promise<string> {
   if (typeof cell === 'string') return cell
   const [, , ...children] = cell
-  return children.map(child => (typeof child === 'string' ? child : state.one(child, state, cell as ComarkElement))).join('').trim()
+  let result = ''
+  for (const child of children) {
+    result += typeof child === 'string' ? child : await state.one(child, state, cell as ComarkElement)
+  }
+  return result.trim()
 }
 
 function getRows(node: ComarkNode): ComarkElement[] {
@@ -24,7 +28,7 @@ function getCells(row: ComarkElement): ComarkElement[] {
   ) as ComarkElement[]
 }
 
-export const table: NodeHandler = (node, state) => {
+export const table: NodeHandler = async (node, state) => {
   const [, , ...children] = node
 
   let headerRows: ComarkElement[] = []
@@ -44,14 +48,20 @@ export const table: NodeHandler = (node, state) => {
   if (headerRows.length === 0) return ''
 
   const headerCells = getCells(headerRows[0])
-  const headers = headerCells.map(c => getCellText(c, state))
+  const headers: string[] = []
+  for (const c of headerCells) {
+    headers.push(await getCellText(c, state))
+  }
   const colWidths = headers.map(h => Math.max(3, h.length))
 
   for (const row of bodyRows) {
-    getCells(row).forEach((cell, i) => {
-      if (i < colWidths.length)
-        colWidths[i] = Math.max(colWidths[i], getCellText(cell, state).length)
-    })
+    const cells = getCells(row)
+    for (let i = 0; i < cells.length; i++) {
+      if (i < colWidths.length) {
+        const text = await getCellText(cells[i], state)
+        colWidths[i] = Math.max(colWidths[i], text.length)
+      }
+    }
   }
 
   const { colors } = state.context
@@ -75,7 +85,10 @@ export const table: NodeHandler = (node, state) => {
 
   for (const row of bodyRows) {
     const cells = getCells(row)
-    const contents = colWidths.map((_, i) => getCellText(cells[i] ?? (['td', {}] as ComarkElement), state))
+    const contents: string[] = []
+    for (let i = 0; i < colWidths.length; i++) {
+      contents.push(await getCellText(cells[i] ?? (['td', {}] as ComarkElement), state))
+    }
     lines.push(colors ? DIM + midBorder + RESET : midBorder)
     lines.push(fmtRow(contents))
   }

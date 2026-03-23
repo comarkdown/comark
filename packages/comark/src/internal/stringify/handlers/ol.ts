@@ -2,12 +2,16 @@ import type { State } from 'comark/render'
 import type { ComarkElement, ComarkNode } from 'comark'
 import { indent } from '../indent'
 
-export function ol(node: ComarkElement, state: State) {
+export async function ol(node: ComarkElement, state: State) {
   const children = node.slice(2) as ComarkNode[]
 
   const revert = state.applyContext({ list: true, order: 1 })
 
-  let result = children.map(child => state.one(child, state)).join('').trim()
+  let result = ''
+  for (const child of children) {
+    result += await state.one(child, state)
+  }
+  result = result.trim()
 
   if (revert.list) {
     result = '\n' + indent(result)

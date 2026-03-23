@@ -1,7 +1,7 @@
 import type { State } from 'comark/render'
 import type { ComarkElement, ComarkNode } from 'comark'
 
-export function li(node: ComarkElement, state: State) {
+export async function li(node: ComarkElement, state: State) {
   const children = node.slice(2) as ComarkNode[]
 
   const order = state.context.order
@@ -18,7 +18,11 @@ export function li(node: ComarkElement, state: State) {
     prefix += input[1].checked || input[1][':checked'] ? '[x] ' : '[ ] '
   }
 
-  let result = children.map(child => state.one(child, state, node)).join('').trim()
+  let result = ''
+  for (const child of children) {
+    result += await state.one(child, state, node)
+  }
+  result = result.trim()
 
   if (!order) {
     result = escapeLeadingNumberDot(result)

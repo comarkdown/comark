@@ -21,7 +21,7 @@ import { parse } from 'comark'
 import { renderHTML } from 'comark/string'
 
 const tree = await parse(entry.body)
-const html = renderHTML(tree, {
+const html = await renderHTML(tree, {
   components: {
     alert: ([tag, attrs, ...children], { render }) => {
       return `<div class="alert">${render(children)}</div>`

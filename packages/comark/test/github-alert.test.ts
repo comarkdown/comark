@@ -12,7 +12,7 @@ describe('githubAlert', () => {
       `, {
       plugins: [githubAlert()],
     })
-    const html = renderHTML(tree)
+    const html = await renderHTML(tree)
     expect(html).toContain('<blockquote as="note">')
   })
 })

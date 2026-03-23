@@ -8,7 +8,7 @@ const selfCloseTags = new Set(['br', 'hr', 'img', 'input', 'link', 'meta', 'sour
 const inlineTags = new Set(['strong', 'em', 'code', 'a', 'br', 'span', 'img'])
 const blockTags = new Set(['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'li', 'ul', 'ol', 'blockquote', 'hr', 'table', 'td', 'th'])
 
-export function html(node: ComarkElement, state: State, parent?: ComarkElement) {
+export async function html(node: ComarkElement, state: State, parent?: ComarkElement) {
   const [tag, attr, ...children] = node
   const { $ = {}, ...attributes } = attr
 
@@ -40,7 +40,10 @@ export function html(node: ComarkElement, state: State, parent?: ComarkElement) 
   // Do not modify context if we are already in html mode
   const revert = state.applyContext({ inline: oneLiner })
 
-  const childrenContent = children.map(child => state.one(child, state, node))
+  const childrenContent: string[] = []
+  for (const child of children) {
+    childrenContent.push(await state.one(child, state, node))
+  }
 
   let content = ''
   let isPrevBlock = true

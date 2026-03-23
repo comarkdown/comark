@@ -47,7 +47,7 @@ export function createLog(options?: LogOptions): (markdown: string) => Promise<v
     const tree = await parse(markdown)
     const write = options?.write ?? defaultWrite
 
-    write(renderANSI(tree, options as RenderOptions) + '\n')
+    write(await renderANSI(tree, options as RenderOptions) + '\n')
   }
 }
 
@@ -91,7 +91,7 @@ export function createRender(options?: ParseOptions & RenderOptions): (markdown:
 
   return async (markdown: string) => {
     const tree = await parse(markdown)
-    return renderANSI(tree, options as RenderOptions)
+    return await renderANSI(tree, options as RenderOptions)
   }
 }
 

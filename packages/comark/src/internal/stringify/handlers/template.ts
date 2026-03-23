@@ -2,10 +2,10 @@ import type { State } from 'comark/render'
 import type { ComarkElement, ComarkNode } from 'comark'
 
 // slot template
-export function template(node: ComarkElement, state: State, parent?: ComarkElement) {
+export async function template(node: ComarkElement, state: State, parent?: ComarkElement) {
   const [_, attrs] = node
 
-  const content = state.flow(node, state).trim()
+  const content = (await state.flow(node, state)).trim()
 
   // Omit #default marker if this is the only slot
   if (attrs.name === 'default') {

@@ -14,10 +14,14 @@ export { renderFrontmatter } from './internal/frontmatter.ts'
  * @param context - The context of the renderer
  * @returns The string representation of the Comark tree
  */
-export function render(tree: ComarkTree, context: RenderOptions = {}) {
+export async function render(tree: ComarkTree, context: RenderOptions = {}): Promise<string> {
   const state = createState({ ...context, tree, handlers: context.components })
 
-  return tree.nodes.map(child => one(child, state)).join('').trim() + '\n'
+  let result = ''
+  for (const child of tree.nodes) {
+    result += await one(child, state)
+  }
+  return result.trim() + '\n'
 }
 
 /**
@@ -27,7 +31,7 @@ export function render(tree: ComarkTree, context: RenderOptions = {}) {
  * @param options - Optional rendering options
  * @returns The markdown string with optional frontmatter
  */
-export function renderMarkdown(tree: ComarkTree, options?: RenderMarkdownOptions): string {
-  const content = render(tree, { format: 'markdown/comark', ...options })
+export async function renderMarkdown(tree: ComarkTree, options?: RenderMarkdownOptions): Promise<string> {
+  const content = await render(tree, { format: 'markdown/comark', ...options })
   return renderFrontmatter(tree.frontmatter, content)
 }
