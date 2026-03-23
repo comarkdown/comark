@@ -26,7 +26,7 @@ export default defineTransformer({
     }
     const parsed = await parse(file.body)
 
-    return {
+    const result = {
       id: file.id,
       title: parsed.frontmatter.title,
       description: parsed.frontmatter.description,
@@ -37,6 +37,12 @@ export default defineTransformer({
       },
       data: parsed.frontmatter,
       meta: parsed.meta,
+    } as any
+
+    if (parsed.frontmatter.path) {
+      result.path = parsed.frontmatter.path
     }
+
+    return result
   },
 })

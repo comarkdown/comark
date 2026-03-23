@@ -154,9 +154,9 @@ footerSections:
       - label: Syntax Highlighting
         to: /plugins/core/highlight
       - label: Math
-        to: /plugins/external/math
+        to: /plugins/core/math
       - label: Mermaid
-        to: /plugins/external/mermaid
+        to: /plugins/core/mermaid
   - title: Community
     links:
       - label: GitHub
