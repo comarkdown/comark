@@ -37,11 +37,8 @@ export default defineTransformer({
       },
       data: parsed.frontmatter,
       meta: parsed.meta,
+      ...parsed.frontmatter,
     } as any
-
-    if (parsed.frontmatter.path) {
-      result.path = parsed.frontmatter.path
-    }
 
     return result
   },
