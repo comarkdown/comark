@@ -155,7 +155,7 @@ window.addEventListener('resize', () => fitAddon.fit())
 
 async function render(markdown: string) {
   const tree = await parse(markdown)
-  const ansi = renderANSI(tree, { width: term.cols })
+  const ansi = await renderANSI(tree, { width: term.cols })
 
   term.reset()
   term.write(ansi)

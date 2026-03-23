@@ -1,7 +1,7 @@
 import type { NodeHandler } from 'comark/render'
 import type { ComarkElement, ComarkNode } from 'comark'
 
-export const li: NodeHandler = (node, state) => {
+export const li: NodeHandler = async (node, state) => {
   const children = node.slice(2) as ComarkNode[]
   const order = state.context.order
 
@@ -14,7 +14,11 @@ export const li: NodeHandler = (node, state) => {
     prefix += (input[1].checked || input[1][':checked']) ? '[x] ' : '[ ] '
   }
 
-  const content = children.map(child => state.one(child, state, node)).join('').trim()
+  let content = ''
+  for (const child of children) {
+    content += await state.one(child, state, node)
+  }
+  content = content.trim()
 
   if (typeof order === 'number') {
     state.applyContext({ order: order + 1 })

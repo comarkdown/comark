@@ -5,17 +5,17 @@ import { renderHTML } from '@comark/html'
 describe('renderHTML', () => {
   it('renders without options (backward compatible)', async () => {
     const tree = await parse('# Hello **World**')
-    const html = renderHTML(tree)
+    const html = await renderHTML(tree)
     expect(html).toContain('<h1')
     expect(html).toContain('<strong>World</strong>')
   })
 
   it('renders custom component with render', async () => {
     const tree = await parse('::alert{type="info"}\nHello!\n::')
-    const html = renderHTML(tree, {
+    const html = await renderHTML(tree, {
       components: {
-        alert: ([_tag, attrs, ...children], { render }) => {
-          return `<div class="alert alert-${attrs.type}">${render(children)}</div>`
+        alert: async ([_tag, attrs, ...children], { render }) => {
+          return `<div class="alert alert-${attrs.type}">${await render(children)}</div>`
         },
       },
     })
@@ -27,11 +27,11 @@ describe('renderHTML', () => {
 
   it('passes data to component renderers', async () => {
     const tree = await parse('::banner\nContent\n::')
-    const html = renderHTML(tree, {
+    const html = await renderHTML(tree, {
       data: { siteName: 'My Site' },
       components: {
-        banner: ([_tag, _attrs, ...children], { render, data }) => {
-          return `<header><span>${data?.siteName}</span>${render(children)}</header>`
+        banner: async ([_tag, _attrs, ...children], { render, data }) => {
+          return `<header><span>${data?.siteName}</span>${await render(children)}</header>`
         },
       },
     })
@@ -41,10 +41,10 @@ describe('renderHTML', () => {
 
   it('renders component attributes/props', async () => {
     const tree = await parse('::card{title="Welcome" theme="dark"}\nBody\n::')
-    const html = renderHTML(tree, {
+    const html = await renderHTML(tree, {
       components: {
-        card: ([_tag, attrs, ...children], { render }) => {
-          return `<section data-title="${attrs.title}" data-theme="${attrs.theme}">${render(children)}</section>`
+        card: async ([_tag, attrs, ...children], { render }) => {
+          return `<section data-title="${attrs.title}" data-theme="${attrs.theme}">${await render(children)}</section>`
         },
       },
     })
@@ -55,13 +55,13 @@ describe('renderHTML', () => {
 
   it('renders nested custom components', async () => {
     const tree = await parse('::outer\n:::inner\nDeep content\n:::\n::')
-    const html = renderHTML(tree, {
+    const html = await renderHTML(tree, {
       components: {
-        outer: ([_tag, _attrs, ...children], { render }) => {
-          return `<div class="outer">${render(children)}</div>`
+        outer: async ([_tag, _attrs, ...children], { render }) => {
+          return `<div class="outer">${await render(children)}</div>`
         },
-        inner: ([_tag, _attrs, ...children], { render }) => {
-          return `<div class="inner">${render(children)}</div>`
+        inner: async ([_tag, _attrs, ...children], { render }) => {
+          return `<div class="inner">${await render(children)}</div>`
         },
       },
     })
@@ -88,16 +88,16 @@ More content
 :::
 ::
 `)
-    const html = renderHTML(tree, {
+    const html = await renderHTML(tree, {
       components: {
-        layout: ([_tag, attrs, ...children], { render }) => {
-          return `<div class="layout" data-theme="${attrs.theme}">${render(children)}</div>`
+        layout: async ([_tag, attrs, ...children], { render }) => {
+          return `<div class="layout" data-theme="${attrs.theme}">${await render(children)}</div>`
         },
-        card: ([_tag, attrs, ...children], { render }) => {
-          return `<article class="card"><h2>${attrs.title}</h2>${render(children)}</article>`
+        card: async ([_tag, attrs, ...children], { render }) => {
+          return `<article class="card"><h2>${attrs.title}</h2>${await render(children)}</article>`
         },
-        alert: ([_tag, attrs, ...children], { render }) => {
-          return `<div class="alert alert-${attrs.type}" role="alert">${render(children)}</div>`
+        alert: async ([_tag, attrs, ...children], { render }) => {
+          return `<div class="alert alert-${attrs.type}" role="alert">${await render(children)}</div>`
         },
       },
     })
@@ -116,10 +116,10 @@ More content
 
   it('leaves standard HTML elements unchanged when components are provided', async () => {
     const tree = await parse('# Title\n\n::alert{type="warning"}\nMessage\n::')
-    const html = renderHTML(tree, {
+    const html = await renderHTML(tree, {
       components: {
-        alert: ([_tag, attrs, ...children], { render }) => {
-          return `<div class="alert-${attrs.type}">${render(children)}</div>`
+        alert: async ([_tag, attrs, ...children], { render }) => {
+          return `<div class="alert-${attrs.type}">${await render(children)}</div>`
         },
       },
     })

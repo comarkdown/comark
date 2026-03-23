@@ -12,7 +12,7 @@ const ALERTS: Record<AlertType, { color: string, icon: string }> = {
   CAUTION: { color: RED, icon: '✖' },
 }
 
-export const blockquote: NodeHandler = (node, state) => {
+export const blockquote: NodeHandler = async (node, state) => {
   const children = node.slice(2) as ComarkNode[]
   const { colors } = state.context
 
@@ -21,9 +21,11 @@ export const blockquote: NodeHandler = (node, state) => {
 
   const revert = state.applyContext({ blockquoteDepth: Number(state.context.blockquoteDepth ?? 0) + 1 })
 
-  const content = children.map(child => state.one(child, state, node))
-    .join('')
-    .trimEnd()
+  let content = ''
+  for (const child of children) {
+    content += await state.one(child, state, node)
+  }
+  content = content.trimEnd()
 
   state.applyContext(revert)
 

@@ -1,11 +1,14 @@
 import type { State } from 'comark/render'
 import type { ComarkElement, ComarkNode } from 'comark'
 
-export function blockquote(node: ComarkElement, state: State) {
+export async function blockquote(node: ComarkElement, state: State) {
   const children = node.slice(2) as ComarkNode[]
 
-  const content = children.map(child => state.one(child, state, node))
-    .join('')
+  let childResult = ''
+  for (const child of children) {
+    childResult += await state.one(child, state, node)
+  }
+  const content = childResult
     .trim()
     .split('\n')
     .map(line => line ? `> ${line}` : '>')

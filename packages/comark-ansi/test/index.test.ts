@@ -165,11 +165,11 @@ describe('renderANSI', () => {
   describe('custom components', () => {
     it('renders custom component via components option', async () => {
       const tree = await parse('::badge{type="success"}\nDone\n::')
-      const out = renderANSI(tree, {
+      const out = await renderANSI(tree, {
         colors: false,
         components: {
-          badge: ([, attrs, ...children], { render }) =>
-            `[${String(attrs.type).toUpperCase()}] ${render(children)}`,
+          badge: async ([, attrs, ...children], { render }) =>
+            `[${String(attrs.type).toUpperCase()}] ${await render(children)}`,
         },
       })
       expect(out).toContain('[SUCCESS]')
@@ -178,12 +178,12 @@ describe('renderANSI', () => {
 
     it('passes data to component renderer', async () => {
       const tree = await parse('::info\nContent\n::')
-      const out = renderANSI(tree, {
+      const out = await renderANSI(tree, {
         colors: false,
         data: { version: '3.0' },
         components: {
-          info: ([,, ...children], { render, data }) =>
-            `v${data?.version}: ${render(children)}`,
+          info: async ([,, ...children], { render, data }) =>
+            `v${data?.version}: ${await render(children)}`,
         },
       })
       expect(out).toContain('v3.0:')
@@ -192,10 +192,10 @@ describe('renderANSI', () => {
 
     it('renders children of custom components', async () => {
       const tree = await parse('::wrapper\n**bold** inside\n::')
-      const out = renderANSI(tree, {
+      const out = await renderANSI(tree, {
         colors: false,
         components: {
-          wrapper: ([,, ...children], { render }) => `>> ${render(children)}`,
+          wrapper: async ([,, ...children], { render }) => `>> ${await render(children)}`,
         },
       })
       expect(out).toContain('>>')

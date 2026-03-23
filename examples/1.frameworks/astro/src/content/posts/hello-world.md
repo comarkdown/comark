@@ -24,7 +24,7 @@ import { parse } from 'comark'
 import { renderHTML } from 'comark/string'
 
 const tree = await parse(markdown)
-const html = renderHTML(tree, { components: { alert } })
+const html = await renderHTML(tree, { components: { alert } })
 ```
 
 ::alert{type="success"}

@@ -27,20 +27,23 @@ function getAlignment(attributes: Record<string, unknown>): Alignment {
 }
 
 // Helper function to extract text content from a cell
-function getCellContent(cell: ComarkNode, state: State): string {
+async function getCellContent(cell: ComarkNode, state: State): Promise<string> {
   if (typeof cell === 'string') {
     return escapePipes(cell)
   }
 
   const [, , ...children] = cell
-  const content = children.map((child) => {
+  let content = ''
+  for (const child of children) {
     if (typeof child === 'string') {
-      return child
+      content += child
     }
-    return state.one(child, state, cell as unknown as ComarkElement)
-  }).join('').trim()
+    else {
+      content += await state.one(child, state, cell as unknown as ComarkElement)
+    }
+  }
 
-  return escapePipes(content)
+  return escapePipes(content.trim())
 }
 
 // Helper function to escape pipe characters and handle newlines
@@ -81,7 +84,7 @@ function getCells(row: ComarkElement): ComarkElement[] {
   ) as ComarkElement[]
 }
 
-export function table(node: ComarkElement, state: State) {
+export async function table(node: ComarkElement, state: State) {
   const [, , ...children] = node
 
   // Extract thead and tbody
@@ -127,7 +130,10 @@ export function table(node: ComarkElement, state: State) {
   // Process header row (use the first header row)
   const headerRow = headerRows[0]
   const headerCells = getCells(headerRow)
-  const headerContent = headerCells.map(cell => getCellContent(cell, state))
+  const headerContent: string[] = []
+  for (const cell of headerCells) {
+    headerContent.push(await getCellContent(cell, state))
+  }
 
   // Extract alignment from header cells
   const alignments = headerCells.map((cell) => {
@@ -141,12 +147,12 @@ export function table(node: ComarkElement, state: State) {
   // Update column widths based on body content
   for (const row of bodyRows) {
     const cells = getCells(row)
-    cells.forEach((cell, i) => {
+    for (let i = 0; i < cells.length; i++) {
       if (i < columnWidths.length) {
-        const content = getCellContent(cell, state)
+        const content = await getCellContent(cells[i], state)
         columnWidths[i] = Math.max(columnWidths[i], content.length)
       }
-    })
+    }
   }
 
   // Build the markdown table
@@ -176,10 +182,11 @@ export function table(node: ComarkElement, state: State) {
   // Add body rows
   for (const row of bodyRows) {
     const cells = getCells(row)
-    const cellContents = cells.map((cell, i) => {
-      const content = getCellContent(cell, state)
-      return content.padEnd(columnWidths[i] || 0)
-    })
+    const cellContents: string[] = []
+    for (let i = 0; i < cells.length; i++) {
+      const content = await getCellContent(cells[i], state)
+      cellContents.push(content.padEnd(columnWidths[i] || 0))
+    }
 
     // Fill missing columns with empty cells
     while (cellContents.length < columnWidths.length) {

@@ -32,7 +32,7 @@ export function createRender(options?: ParseOptions & RenderOptions): (markdown:
 
   return async (markdown: string) => {
     const tree = await parse(markdown)
-    return renderHTML(tree, options as RenderOptions)
+    return await renderHTML(tree, options as RenderOptions)
   }
 }
 

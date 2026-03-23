@@ -52,8 +52,8 @@ describe('render', () => {
   it('accepts render options with custom components', async () => {
     const html = await render('::note\nHello!\n::', {
       components: {
-        note: ([, , ...children], { render }) =>
-          `<aside>${render(children)}</aside>`,
+        note: async ([, , ...children], { render }) =>
+          `<aside>${await render(children)}</aside>`,
       },
     })
     expect(html).toContain('<aside>')
@@ -96,8 +96,8 @@ describe('createRender', () => {
   it('passes data to component renderers', async () => {
     const renderFn = createRender({
       components: {
-        version: ([,, ...children], { render, data }) =>
-          `<span data-v="${data?.version}">${render(children)}</span>`,
+        version: async ([,, ...children], { render, data }) =>
+          `<span data-v="${data?.version}">${await render(children)}</span>`,
       },
       data: { version: '2.0' },
     })
@@ -120,7 +120,7 @@ describe('createRender', () => {
 describe('renderHTML', () => {
   it('renders a pre-parsed tree', async () => {
     const tree = await parse('# Title\n\n**Bold** text.')
-    const html = renderHTML(tree)
+    const html = await renderHTML(tree)
     expect(html).toContain('<h1')
     expect(html).toContain('Title')
     expect(html).toContain('<strong>Bold</strong>')
@@ -128,16 +128,16 @@ describe('renderHTML', () => {
 
   it('renders without options', async () => {
     const tree = await parse('Hello _world_')
-    const html = renderHTML(tree)
+    const html = await renderHTML(tree)
     expect(html).toContain('<em>world</em>')
   })
 
   it('renders custom components', async () => {
     const tree = await parse('::alert{type="warning"}\nWatch out!\n::')
-    const html = renderHTML(tree, {
+    const html = await renderHTML(tree, {
       components: {
-        alert: ([, attrs, ...children], { render }) =>
-          `<div role="alert" class="alert-${attrs.type}">${render(children)}</div>`,
+        alert: async ([, attrs, ...children], { render }) =>
+          `<div role="alert" class="alert-${attrs.type}">${await render(children)}</div>`,
       },
     })
     expect(html).toContain('role="alert"')
@@ -148,11 +148,11 @@ describe('renderHTML', () => {
 
   it('passes data to component renderers', async () => {
     const tree = await parse('::header\nWelcome\n::')
-    const html = renderHTML(tree, {
+    const html = await renderHTML(tree, {
       data: { siteName: 'My Blog' },
       components: {
-        header: ([,, ...children], { render, data }) =>
-          `<header><h1>${data?.siteName}</h1>${render(children)}</header>`,
+        header: async ([,, ...children], { render, data }) =>
+          `<header><h1>${data?.siteName}</h1>${await render(children)}</header>`,
       },
     })
     expect(html).toContain('<h1>My Blog</h1>')
@@ -161,10 +161,10 @@ describe('renderHTML', () => {
 
   it('renders nested components', async () => {
     const tree = await parse('::outer\n:::inner\nDeep\n:::\n::')
-    const html = renderHTML(tree, {
+    const html = await renderHTML(tree, {
       components: {
-        outer: ([,, ...children], { render }) => `<div class="outer">${render(children)}</div>`,
-        inner: ([,, ...children], { render }) => `<div class="inner">${render(children)}</div>`,
+        outer: async ([,, ...children], { render }) => `<div class="outer">${await render(children)}</div>`,
+        inner: async ([,, ...children], { render }) => `<div class="inner">${await render(children)}</div>`,
       },
     })
     expect(html).toContain('<div class="outer">')
@@ -174,13 +174,13 @@ describe('renderHTML', () => {
 
   it('leaves unknown components as-is when no renderer provided', async () => {
     const tree = await parse('::custom\nContent\n::')
-    const html = renderHTML(tree)
+    const html = await renderHTML(tree)
     expect(html).toContain('Content')
   })
 
   it('handles inline HTML elements', async () => {
     const tree = await parse('Text with <strong class="highlight">HTML</strong>')
-    const html = renderHTML(tree)
+    const html = await renderHTML(tree)
     expect(html).toContain('<strong class="highlight">HTML</strong>')
   })
 })
