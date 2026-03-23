@@ -319,7 +319,7 @@ export const ComarkRenderer: ComarkRendererComponent = defineComponent({
     },
   },
 
-  async setup(props) {
+  setup(props) {
     const componentErrors = ref(new Set<string>())
 
     // Capture errors from child components (e.g., during streaming when props are incomplete)
