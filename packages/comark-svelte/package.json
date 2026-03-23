@@ -1,6 +1,6 @@
 {
   "name": "@comark/svelte",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Svelte renderer for Comark (Components in Markdown)",
   "svelte": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -72,7 +72,7 @@
     }
   },
   "dependencies": {
-    "comark": "^0.0.1"
+    "comark": "^0.1.0"
   },
   "devDependencies": {
     "@sveltejs/package": "^2.5.7",

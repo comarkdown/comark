@@ -2,6 +2,7 @@
 import { parse } from 'comark'
 import highlight from '@comark/vue/plugins/highlight'
 import math from '@comark/vue/plugins/math'
+import emoji from '@comark/vue/plugins/emoji'
 import mermaid from '@comark/vue/plugins/mermaid'
 
 import { renderMarkdown } from 'comark/render'
@@ -62,7 +63,7 @@ async function parseMarkdown(): Promise<void> {
     return
   }
   parsing.value = true
-  const plugins = [highlight(), math(), mermaid()]
+  const plugins = [highlight(), math(), mermaid(), emoji()]
   const start = performance.now()
   try {
     const result = await parse(markdown.value, {

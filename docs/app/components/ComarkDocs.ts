@@ -1,6 +1,7 @@
 import { defineComarkComponent } from '@comark/vue'
 import math, { Math } from '@comark/vue/plugins/math'
 import mermaid, { Mermaid } from '@comark/vue/plugins/mermaid'
+import emoji from '@comark/vue/plugins/emoji'
 import ProsePre from './landing/ProsePre.vue'
 import highlight from 'comark/plugins/highlight'
 import githubLight from '@shikijs/themes/github-light'
@@ -13,6 +14,7 @@ const BaseComarkDocs = defineComarkComponent({
   plugins: [
     math(),
     mermaid(),
+    emoji(),
   ],
   components: {
     Math,

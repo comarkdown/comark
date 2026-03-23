@@ -2,6 +2,7 @@ import { createParse } from '@comark/vue/parse'
 import highlight from '@comark/vue/plugins/highlight'
 import mermaid from '@comark/vue/plugins/mermaid'
 import latexLanguage from '@shikijs/langs/latex'
+import emoji from '@comark/vue/plugins/emoji'
 import toc from '@comark/vue/plugins/toc'
 import headings from '@comark/vue/plugins/headings'
 
@@ -19,6 +20,7 @@ export default defineTransformer({
             languages: [latexLanguage],
           }),
           mermaid(),
+          emoji(),
           toc(),
           headings(),
         ],
