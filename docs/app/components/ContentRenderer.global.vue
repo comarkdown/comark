@@ -124,7 +124,6 @@ const componentsMap = computed(() => {
     Mermaid,
   }
 })
-console.log('componentsMap', componentsMap.value)
 
 function resolveVueComponent(component: string | Renderable) {
   let _component: unknown = component
