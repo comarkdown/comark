@@ -7,12 +7,16 @@ import resolveComponent from '../utils/components-manifest'
 definePageMeta({
   footer: false,
 })
+const title = 'Streaming Demo - Comark'
+const description = 'See Comark streaming in action. Watch markdown content parse and render in real-time as it arrives.'
 useSeoMeta({
-  title: 'Streaming Demo - Comark',
-  description: 'See Comark streaming in action. Watch markdown content parse and render in real-time as it arrives.',
+  title,
+  description,
 })
-defineOgImageComponent('Docs', {
+defineOgImage('Docs', {
   headline: 'Streaming',
+  title,
+  description,
 })
 
 const { state, startStream, isStreaming, reset: resetStream } = useMDCStream({

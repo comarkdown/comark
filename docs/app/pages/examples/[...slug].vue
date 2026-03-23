@@ -56,12 +56,16 @@ useHead({
     },
   ],
 })
+const title = `${page.value?.title || exampleName.value} Example`
+const description = page.value?.description
 useSeoMeta({
-  title: `${page.value?.title || exampleName.value} Example`,
-  description: page.value?.description,
+  title,
+  description,
 })
-defineOgImageComponent('Docs', {
+defineOgImage('Docs', {
   headline: 'Examples',
+  title,
+  description,
 })
 </script>
 

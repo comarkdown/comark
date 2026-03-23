@@ -36,8 +36,10 @@ useSeoMeta({
   title,
   description,
 })
-defineOgImageComponent('Docs', {
+defineOgImage('Docs', {
   headline: 'Examples',
+  title,
+  description,
 })
 </script>
 
