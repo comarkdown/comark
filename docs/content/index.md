@@ -1,5 +1,8 @@
 ---
 navigation: false
+title: Comark
+description: A fast, streaming-ready markdown parser with component support for
+  Vue and React.
 ---
 
 ::landing-hero
