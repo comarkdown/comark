@@ -9,8 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "comark": "workspace:*",
-    "@comark/html": "workspace:*",
+    "@comark/html": "^0.1.0",
     "shiki": "^4.0.2"
   },
   "devDependencies": {

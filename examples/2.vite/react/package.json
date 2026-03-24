@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.2.2",
-    "comark": "workspace:*",
+    "comark": "^0.1.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4"
   },

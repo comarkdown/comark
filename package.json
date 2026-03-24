@@ -63,6 +63,8 @@
     "@comark/react": "workspace:*",
     "@comark/svelte": "workspace:*",
     "@comark/nuxt": "workspace:*",
+    "@comark/html": "workspace:*",
+    "@comark/ansi": "workspace:*",
     "@unhead/vue": "^2.1.12"
   }
 }

@@ -11,7 +11,7 @@
   "dependencies": {
     "@xterm/addon-fit": "^0.11.0",
     "@xterm/xterm": "^6.0.0",
-    "comark": "workspace:*",
+    "comark": "^0.1.0",
     "@comark/ansi": "workspace:*",
     "katex": "^0.16.40",
     "shiki": "^4.0.2"

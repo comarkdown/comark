@@ -28,7 +28,7 @@
     "release": "release-it"
   },
   "dependencies": {
-    "comark": "^1.0.0"
+    "comark": "^0.1.0"
   },
   "peerDependencies": {
     "katex": ">=0.16",
@@ -47,7 +47,6 @@
     }
   },
   "devDependencies": {
-    "comark": "workspace:*",
     "katex": "^0.16.40",
     "beautiful-mermaid": "^1.1.3",
     "vitest": "^4.1.1"

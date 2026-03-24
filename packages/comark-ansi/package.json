@@ -44,10 +44,9 @@
     }
   },
   "dependencies": {
-    "comark": "^1.0.0"
+    "comark": "^0.1.0"
   },
   "devDependencies": {
-    "comark": "workspace:*",
     "vitest": "^4.1.1"
   }
 }
