@@ -270,7 +270,6 @@ export async function highlightCodeBlocks(
       tabindex: '0',
     }
 
-    console.log({ children })
     if (options.preStyles) {
       const lightTheme = options.themes?.light
       const darkTheme = options.themes?.dark
@@ -331,32 +330,3 @@ export default function highlight(options: HighlightOptions = {}): ComarkPlugin 
     },
   }
 }
-
-// import { transformerNotationDiff, transformerNotationHighlight } from '@shikijs/transformers'
-// import rust from '@shikijs/langs/rust'
-// (async () => {
-//   const hl = await getHighlighter()
-//   const tree = {
-//     nodes: [
-//       ['pre', {class: 'language-typescript', language: 'rust'},
-//         ['code', {  },
-//           `let x = 1;`
-//       ]]
-//     ],
-//     frontmatter: {},
-//     meta: {},
-//   } as ComarkTree
-//   const result = await highlightCodeBlocks(tree, {
-//     languages: [rust],
-//     transformers: [
-//       transformerNotationDiff({
-//         matchAlgorithm: 'v3'
-//       }),
-//       transformerNotationHighlight({
-//         matchAlgorithm: 'v3'
-//       }),
-//     ]
-//   })
-//   console.log(JSON.stringify(result, null, 2))
-
-// })();
