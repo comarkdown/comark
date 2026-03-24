@@ -34,11 +34,11 @@ More content here.
     [
       "pre",
       {
-        "class": "shiki github-dark dark:github-dark",
-        "filename": "content.md",
         "language": "markdown",
-        "style": "background-color:#24292e;color:#e1e4e8",
-        "tabindex": "0"
+        "filename": "content.md",
+        "class": "shiki shiki-themes github-dark dark:github-dark",
+        "tabindex": "0",
+        "style": "background-color:#24292e;color:#e1e4e8"
       },
       [
         "code",
@@ -53,7 +53,7 @@ More content here.
           [
             "span",
             {
-              "style": "color:#79B8FF"
+              "style": "color:#79B8FF;--shiki-light-font-weight:bold"
             },
             "# My Page Title"
           ]
@@ -91,7 +91,7 @@ More content here.
           [
             "span",
             {
-              "style": "color:#79B8FF"
+              "style": "color:#79B8FF;--shiki-light-font-weight:bold"
             },
             "## Section One"
           ]
@@ -124,7 +124,7 @@ More content here.
 ## HTML
 
 ```html
-<pre language="markdown" filename="content.md" class="shiki github-dark dark:github-dark" tabindex="0" style="background-color:#24292e;color:#e1e4e8"><code class="language-markdown"><span class="line"><span style="color:#79B8FF"># My Page Title</span></span><span class="line"></span><span class="line"><span style="color:#E1E4E8">This is the opening paragraph used as the description.</span></span><span class="line"></span><span class="line"><span style="color:#79B8FF">## Section One</span></span><span class="line"></span><span class="line"><span style="color:#E1E4E8">More content here.</span></span></code></pre>
+<pre language="markdown" filename="content.md" class="shiki shiki-themes github-dark dark:github-dark" tabindex="0" style="background-color:#24292e;color:#e1e4e8"><code class="language-markdown"><span class="line"><span style="color:#79B8FF;--shiki-light-font-weight:bold"># My Page Title</span></span><span class="line"></span><span class="line"><span style="color:#E1E4E8">This is the opening paragraph used as the description.</span></span><span class="line"></span><span class="line"><span style="color:#79B8FF;--shiki-light-font-weight:bold">## Section One</span></span><span class="line"></span><span class="line"><span style="color:#E1E4E8">More content here.</span></span></code></pre>
 ```
 
 ## Markdown

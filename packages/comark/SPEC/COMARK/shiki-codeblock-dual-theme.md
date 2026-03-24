@@ -31,7 +31,7 @@ console.log(greeting)
       "pre",
       {
         "language": "typescript",
-        "class": "shiki min-light dark:nord",
+        "class": "shiki shiki-themes min-light nord dark:nord",
         "tabindex": "0",
         "style": "background-color:#ffffff;color:#212121;--shiki-dark-bg:#2e3440;--shiki-dark:#d8dee9"
       },
@@ -55,16 +55,9 @@ console.log(greeting)
           [
             "span",
             {
-              "style": "color:#24292EFF;--shiki-dark:#D8DEE9FF"
-            },
-            " "
-          ],
-          [
-            "span",
-            {
               "style": "color:#1976D2;--shiki-dark:#D8DEE9"
             },
-            "greeting"
+            " greeting"
           ],
           [
             "span",
@@ -76,44 +69,23 @@ console.log(greeting)
           [
             "span",
             {
-              "style": "color:#24292EFF;--shiki-dark:#D8DEE9FF"
-            },
-            " "
-          ],
-          [
-            "span",
-            {
               "style": "color:#1976D2;--shiki-dark:#8FBCBB"
             },
-            "string"
-          ],
-          [
-            "span",
-            {
-              "style": "color:#24292EFF;--shiki-dark:#D8DEE9FF"
-            },
-            " "
+            " string"
           ],
           [
             "span",
             {
               "style": "color:#D32F2F;--shiki-dark:#81A1C1"
             },
-            "="
-          ],
-          [
-            "span",
-            {
-              "style": "color:#24292EFF;--shiki-dark:#D8DEE9FF"
-            },
-            " "
+            " ="
           ],
           [
             "span",
             {
               "style": "color:#22863A;--shiki-dark:#ECEFF4"
             },
-            "\""
+            " \""
           ],
           [
             "span",
@@ -187,7 +159,7 @@ console.log(greeting)
 ## HTML
 
 ```html
-<pre language="typescript" class="shiki min-light dark:nord" tabindex="0" style="background-color:#ffffff;color:#212121;--shiki-dark-bg:#2e3440;--shiki-dark:#d8dee9"><code class="language-typescript"><span class="line"><span style="color:#D32F2F;--shiki-dark:#81A1C1">const</span><span style="color:#24292EFF;--shiki-dark:#D8DEE9FF"> </span><span style="color:#1976D2;--shiki-dark:#D8DEE9">greeting</span><span style="color:#D32F2F;--shiki-dark:#81A1C1">:</span><span style="color:#24292EFF;--shiki-dark:#D8DEE9FF"> </span><span style="color:#1976D2;--shiki-dark:#8FBCBB">string</span><span style="color:#24292EFF;--shiki-dark:#D8DEE9FF"> </span><span style="color:#D32F2F;--shiki-dark:#81A1C1">=</span><span style="color:#24292EFF;--shiki-dark:#D8DEE9FF"> </span><span style="color:#22863A;--shiki-dark:#ECEFF4">"</span><span style="color:#22863A;--shiki-dark:#A3BE8C">Hello, World!</span><span style="color:#22863A;--shiki-dark:#ECEFF4">"</span></span><span class="line"><span style="color:#1976D2;--shiki-dark:#D8DEE9">console</span><span style="color:#6F42C1;--shiki-dark:#ECEFF4">.</span><span style="color:#6F42C1;--shiki-dark:#88C0D0">log</span><span style="color:#24292EFF;--shiki-dark:#D8DEE9FF">(</span><span style="color:#24292EFF;--shiki-dark:#D8DEE9">greeting</span><span style="color:#24292EFF;--shiki-dark:#D8DEE9FF">)</span></span></code></pre>
+<pre language="typescript" class="shiki shiki-themes min-light nord dark:nord" tabindex="0" style="background-color:#ffffff;color:#212121;--shiki-dark-bg:#2e3440;--shiki-dark:#d8dee9"><code class="language-typescript"><span class="line"><span style="color:#D32F2F;--shiki-dark:#81A1C1">const</span><span style="color:#1976D2;--shiki-dark:#D8DEE9"> greeting</span><span style="color:#D32F2F;--shiki-dark:#81A1C1">:</span><span style="color:#1976D2;--shiki-dark:#8FBCBB"> string</span><span style="color:#D32F2F;--shiki-dark:#81A1C1"> =</span><span style="color:#22863A;--shiki-dark:#ECEFF4"> "</span><span style="color:#22863A;--shiki-dark:#A3BE8C">Hello, World!</span><span style="color:#22863A;--shiki-dark:#ECEFF4">"</span></span><span class="line"><span style="color:#1976D2;--shiki-dark:#D8DEE9">console</span><span style="color:#6F42C1;--shiki-dark:#ECEFF4">.</span><span style="color:#6F42C1;--shiki-dark:#88C0D0">log</span><span style="color:#24292EFF;--shiki-dark:#D8DEE9FF">(</span><span style="color:#24292EFF;--shiki-dark:#D8DEE9">greeting</span><span style="color:#24292EFF;--shiki-dark:#D8DEE9FF">)</span></span></code></pre>
 ```
 
 ## Markdown

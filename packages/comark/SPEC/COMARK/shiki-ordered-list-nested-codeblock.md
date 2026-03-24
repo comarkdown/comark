@@ -36,8 +36,8 @@ options:
         [
           "pre",
           {
-            "class": "shiki github-dark dark:github-dark",
             "language": "rust",
+            "class": "shiki shiki-themes github-dark dark:github-dark",
             "tabindex": "0"
           },
           [
@@ -74,16 +74,9 @@ options:
               [
                 "span",
                 {
-                  "style": "color:#E1E4E8"
-                },
-                " "
-              ],
-              [
-                "span",
-                {
                   "style": "color:#79B8FF"
                 },
-                "1"
+                " 1"
               ],
               [
                 "span",
@@ -106,7 +99,7 @@ options:
 ```html
 <ol>
   <li>
-    Setup:<pre language="rust" class="shiki github-dark dark:github-dark" tabindex="0"><code class="language-rust"><span class="line"><span style="color:#F97583">let</span><span style="color:#E1E4E8"> x </span><span style="color:#F97583">=</span><span style="color:#E1E4E8"> </span><span style="color:#79B8FF">1</span><span style="color:#E1E4E8">;</span></span></code></pre>
+    Setup:<pre language="rust" class="shiki shiki-themes github-dark dark:github-dark" tabindex="0"><code class="language-rust"><span class="line"><span style="color:#F97583">let</span><span style="color:#E1E4E8"> x </span><span style="color:#F97583">=</span><span style="color:#79B8FF"> 1</span><span style="color:#E1E4E8">;</span></span></code></pre>
   </li>
 </ol>
 ```

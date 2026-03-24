@@ -1,0 +1,25 @@
+{
+  "name": "comark-vue-vite-twoslash",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@shikijs/langs": "^4.0.2",
+    "@shikijs/themes": "^4.0.2",
+    "@shikijs/twoslash": "^4.0.2",
+    "comark": "^0.1.0",
+    "shiki": "^4.0.2",
+    "twoslash-cdn": "^0.3.6",
+    "vue": "^3.5.30"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.5",
+    "typescript": "^5.9.3",
+    "vite": "^8.0.2",
+    "vue-tsc": "^3.2.6"
+  }
+}

@@ -29,7 +29,7 @@ No language specified
     [
       "pre",
       {
-        "class": "shiki github-dark dark:github-dark",
+        "class": "shiki shiki-themes github-dark dark:github-dark",
         "tabindex": "0",
         "style": "background-color:#24292e;color:#e1e4e8"
       },
@@ -41,14 +41,22 @@ No language specified
           {
             "class": "line"
           },
-          "Plain text code block"
+          [
+            "span",
+            {},
+            "Plain text code block"
+          ]
         ],
         [
           "span",
           {
             "class": "line"
           },
-          "No language specified"
+          [
+            "span",
+            {},
+            "No language specified"
+          ]
         ]
       ]
     ]
@@ -59,7 +67,7 @@ No language specified
 ## HTML
 
 ```html
-<pre class="shiki github-dark dark:github-dark" tabindex="0" style="background-color:#24292e;color:#e1e4e8"><code><span class="line">Plain text code block</span><span class="line">No language specified</span></code></pre>
+<pre class="shiki shiki-themes github-dark dark:github-dark" tabindex="0" style="background-color:#24292e;color:#e1e4e8"><code><span class="line"><span>Plain text code block</span></span><span class="line"><span>No language specified</span></span></code></pre>
 ```
 
 ## Markdown

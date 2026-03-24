@@ -47,7 +47,7 @@ func main() {
           7,
           10
         ],
-        "class": "shiki github-dark dark:github-dark",
+        "class": "shiki shiki-themes github-dark dark:github-dark",
         "tabindex": "0",
         "style": "background-color:#24292e;color:#e1e4e8"
       },
@@ -59,7 +59,7 @@ func main() {
         [
           "span",
           {
-            "class": "line highlight"
+            "class": "line"
           },
           [
             "span",
@@ -71,16 +71,9 @@ func main() {
           [
             "span",
             {
-              "style": "color:#E1E4E8"
-            },
-            " "
-          ],
-          [
-            "span",
-            {
               "style": "color:#B392F0"
             },
-            "main"
+            " main"
           ]
         ],
         [
@@ -92,7 +85,7 @@ func main() {
         [
           "span",
           {
-            "class": "line highlight"
+            "class": "line"
           },
           [
             "span",
@@ -104,16 +97,9 @@ func main() {
           [
             "span",
             {
-              "style": "color:#E1E4E8"
-            },
-            " "
-          ],
-          [
-            "span",
-            {
               "style": "color:#9ECBFF"
             },
-            "\""
+            " \""
           ],
           [
             "span",
@@ -139,7 +125,7 @@ func main() {
         [
           "span",
           {
-            "class": "line highlight"
+            "class": "line"
           },
           [
             "span",
@@ -151,16 +137,9 @@ func main() {
           [
             "span",
             {
-              "style": "color:#E1E4E8"
-            },
-            " "
-          ],
-          [
-            "span",
-            {
               "style": "color:#B392F0"
             },
-            "main"
+            " main"
           ],
           [
             "span",
@@ -173,7 +152,7 @@ func main() {
         [
           "span",
           {
-            "class": "line highlight"
+            "class": "line"
           },
           [
             "span",
@@ -214,7 +193,7 @@ func main() {
         [
           "span",
           {
-            "class": "line highlight"
+            "class": "line"
           },
           [
             "span",
@@ -337,7 +316,7 @@ func main() {
         [
           "span",
           {
-            "class": "line highlight"
+            "class": "line"
           },
           [
             "span",
@@ -397,7 +376,7 @@ func main() {
 ## HTML
 
 ```html
-<pre language="go" highlights="[1,3,5,6,7,10]" class="shiki github-dark dark:github-dark" tabindex="0" style="background-color:#24292e;color:#e1e4e8"><code class="language-go"><span class="line highlight"><span style="color:#F97583">package</span><span style="color:#E1E4E8"> </span><span style="color:#B392F0">main</span></span><span class="line"></span><span class="line highlight"><span style="color:#F97583">import</span><span style="color:#E1E4E8"> </span><span style="color:#9ECBFF">"</span><span style="color:#B392F0">fmt</span><span style="color:#9ECBFF">"</span></span><span class="line"></span><span class="line highlight"><span style="color:#F97583">func</span><span style="color:#E1E4E8"> </span><span style="color:#B392F0">main</span><span style="color:#E1E4E8">() {</span></span><span class="line highlight"><span style="color:#E1E4E8">    fmt.</span><span style="color:#B392F0">Println</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"Line 6"</span><span style="color:#E1E4E8">)</span></span><span class="line highlight"><span style="color:#E1E4E8">    fmt.</span><span style="color:#B392F0">Println</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"Line 7"</span><span style="color:#E1E4E8">)</span></span><span class="line"><span style="color:#E1E4E8">    fmt.</span><span style="color:#B392F0">Println</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"Line 8"</span><span style="color:#E1E4E8">)</span></span><span class="line"><span style="color:#E1E4E8">    fmt.</span><span style="color:#B392F0">Println</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"Line 9"</span><span style="color:#E1E4E8">)</span></span><span class="line highlight"><span style="color:#E1E4E8">    fmt.</span><span style="color:#B392F0">Println</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"Line 10"</span><span style="color:#E1E4E8">)</span></span><span class="line"><span style="color:#E1E4E8">}</span></span></code></pre>
+<pre language="go" highlights="[1,3,5,6,7,10]" class="shiki shiki-themes github-dark dark:github-dark" tabindex="0" style="background-color:#24292e;color:#e1e4e8"><code class="language-go"><span class="line"><span style="color:#F97583">package</span><span style="color:#B392F0"> main</span></span><span class="line"></span><span class="line"><span style="color:#F97583">import</span><span style="color:#9ECBFF"> "</span><span style="color:#B392F0">fmt</span><span style="color:#9ECBFF">"</span></span><span class="line"></span><span class="line"><span style="color:#F97583">func</span><span style="color:#B392F0"> main</span><span style="color:#E1E4E8">() {</span></span><span class="line"><span style="color:#E1E4E8">    fmt.</span><span style="color:#B392F0">Println</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"Line 6"</span><span style="color:#E1E4E8">)</span></span><span class="line"><span style="color:#E1E4E8">    fmt.</span><span style="color:#B392F0">Println</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"Line 7"</span><span style="color:#E1E4E8">)</span></span><span class="line"><span style="color:#E1E4E8">    fmt.</span><span style="color:#B392F0">Println</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"Line 8"</span><span style="color:#E1E4E8">)</span></span><span class="line"><span style="color:#E1E4E8">    fmt.</span><span style="color:#B392F0">Println</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"Line 9"</span><span style="color:#E1E4E8">)</span></span><span class="line"><span style="color:#E1E4E8">    fmt.</span><span style="color:#B392F0">Println</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"Line 10"</span><span style="color:#E1E4E8">)</span></span><span class="line"><span style="color:#E1E4E8">}</span></span></code></pre>
 ```
 
 ## Markdown

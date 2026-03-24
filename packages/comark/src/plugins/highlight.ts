@@ -1,8 +1,10 @@
 import type { LanguageRegistration } from 'shiki'
-import type { ComarkElement, ComarkNode, ComarkTree, ComarkPlugin } from 'comark'
-import type { ShikiPrimitive, ThemedToken, ThemedTokenWithVariants, ThemeRegistration } from '@shikijs/primitive'
-import { createShikiPrimitive, codeToTokensWithThemes } from '@shikijs/primitive'
+import type { ComarkElement, ComarkNode, ComarkTree, ComarkPlugin, ComarkElementAttributes } from 'comark'
+import type { ShikiPrimitive, ThemeRegistration } from '@shikijs/primitive'
+import { createShikiPrimitive } from '@shikijs/primitive'
 import { createJavaScriptRegexEngine } from 'shiki/engine/javascript'
+import type { ShikiTransformer } from '@shikijs/types'
+import { codeToHast } from 'shiki/core'
 
 export interface HighlightOptions {
   /**
@@ -33,10 +35,21 @@ export interface HighlightOptions {
   }
 
   /**
+   * Transformers to apply to the code blocks
+   * @default undefined
+   */
+  transformers?: ShikiTransformer[]
+  /**
    * Whether to add pre styles to the code blocks
    * @default false
    */
   preStyles?: boolean
+}
+
+export interface CodeBlockAttributes {
+  language?: string
+  class?: string
+  highlights?: number[]
 }
 
 let highlighter: ShikiPrimitive | null = null
@@ -93,20 +106,6 @@ export async function getHighlighter(options: HighlightOptions = {}): Promise<Sh
   }
 }
 
-/**
- * Convert color to inline style
- */
-function colorToStyle(token: ThemedTokenWithVariants | ThemedToken | undefined): string | undefined {
-  if (!token) return undefined
-
-  const variants = (token as ThemedTokenWithVariants).variants
-  if (!variants) return `color:${(token as ThemedToken).color}`
-
-  const { light: lc, dark: dc } = variants
-  if (!lc?.color || !dc?.color) return undefined
-  return lc.color === dc.color ? `color:${lc.color}` : `color:${lc.color};--shiki-dark:${dc.color}`
-}
-
 async function registerDefaults(options: HighlightOptions) {
   const themes = Object.values(options.themes || {}) as ThemeRegistration[]
   const languages = options.languages || [] as Array<LanguageRegistration | LanguageRegistration[]>
@@ -160,43 +159,27 @@ async function loadLanguage(hl: ShikiPrimitive, language: LanguageRegistration |
 
 /**
  * Highlight code using Shiki with codeToTokens
- * Returns comark nodes built from tokens
+ * Returns comark nodes built from hast
  */
-export async function highlightCode(
-  code: string,
-  attrs: { language?: string, class?: string, highlights?: number[] },
-  options: HighlightOptions = {},
-): Promise<{ nodes: ComarkNode[], language: string, bgColor?: string, fgColor?: string }> {
+export async function highlightCode(code: string, attrs: CodeBlockAttributes, options: HighlightOptions = {}): Promise<{ nodes: ComarkNode[], language: string, bgColor?: string, fgColor?: string }> {
   // Extract language from attributes
   const language: string = (attrs as any)?.language
   try {
     const hl = await getHighlighter(options)
     const { themes = { light: 'material-theme-lighter', dark: 'material-theme-palenight' } } = options
 
+    const lightTheme = themes.light || themes.dark || 'material-theme-lighter'
+    const darkTheme = themes.dark || themes.light || 'material-theme-palenight'
     // Use codeToTokens to get raw tokens
-    const result = codeToTokensWithThemes(hl, code, {
+    const result = await codeToHast(hl, code, {
       lang: language,
+      transformers: options.transformers,
       themes: {
-        light: themes.light || themes.dark || 'material-theme-lighter',
-        dark: themes.dark || themes.light || 'material-theme-palenight',
+        light: lightTheme,
+        dark: lightTheme !== darkTheme ? darkTheme : undefined,
       },
     })
-
-    // Build comark nodes from tokens (flatten all lines)
-    const allTokens: ComarkNode[] = Array.from({ length: result.length })
-    const highlights = attrs.highlights
-
-    for (let i = 0; i < result.length; i++) {
-      const lineTokens = result[i]
-      const children: ComarkNode[] = Array.from({ length: lineTokens.length })
-      for (let j = 0; j < lineTokens.length; j++) {
-        const token = lineTokens[j]
-        const style = colorToStyle(token)
-        children[j] = style ? ['span', { style }, token.content] : token.content
-      }
-      const lineClass = 'line' + (highlights?.includes(i + 1) ? ' highlight' : '')
-      allTokens[i] = ['span', { class: lineClass }, ...children]
-    }
+    const allTokens = result.children.map(hastToMinimarkNode) as ComarkNode[]
 
     return {
       nodes: allTokens,
@@ -210,6 +193,18 @@ export async function highlightCode(
       nodes: [code],
       language,
     }
+  }
+
+  function hastToMinimarkNode(input: any) {
+    const props = input.properties || {}
+    if (input.type === 'comment') return [null, {}, input.value]
+    if (input.type === 'text') return input.value
+    if (input.tag === 'code' && props?.className && props.className.length === 0) delete props.className
+    return [
+      input.tagName,
+      props,
+      ...(input.children || []).map(hastToMinimarkNode),
+    ]
   }
 }
 
@@ -247,9 +242,7 @@ export async function highlightCodeBlocks(
 
   const highlightedResults = await Promise.all(
     codeBlocks.map(({ node }) => {
-      const attrs = node[1] as { language?: string, class?: string, highlights?: number[] }
-      const codeContent = (node[2] as any)[2] as string
-      return highlightCode(codeContent, attrs, options)
+      return highlightCode((node[2] as any)[2] as string, node[1] as CodeBlockAttributes, options)
     }),
   )
 
@@ -257,15 +250,27 @@ export async function highlightCodeBlocks(
   for (let i = 0; i < codeBlocks.length; i++) {
     const { node, path } = codeBlocks[i]
     const result = highlightedResults[i]
-    const { nodes } = result
+
+    const preNode = result.nodes[0]
+    const preNodeClasses = typeof preNode === 'string'
+      ? ['shiki', options.themes?.light?.name]
+      : (
+          Array.isArray((preNode[1] as ComarkElementAttributes).class)
+            ? (preNode[1] as ComarkElementAttributes).class as string[]
+            : String((preNode[1] as ComarkElementAttributes).class).split(' ')
+        )
+
+    const codeChildren = preNode[2].slice(2) as ComarkNode[]
+    const children = typeof preNode === 'string' ? preNode : codeChildren.filter(element => element !== '\n')
 
     const preAttrs = node[1] as Record<string, any>
     const newPreAttrs: Record<string, any> = {
       ...preAttrs,
-      class: ['shiki', options.themes?.light?.name, options.themes?.dark?.name ? `dark:${options.themes?.dark?.name}` : ''].filter(Boolean).join(' '),
+      class: [...preNodeClasses, options.themes?.dark?.name ? `dark:${options.themes?.dark?.name}` : ''].filter(Boolean).join(' '),
       tabindex: '0',
     }
 
+    console.log({ children })
     if (options.preStyles) {
       const lightTheme = options.themes?.light
       const darkTheme = options.themes?.dark
@@ -290,7 +295,7 @@ export async function highlightCodeBlocks(
 
     const codeEl = node[2] as ComarkElement
     const codeAttrs = (codeEl[1] as Record<string, any>) || {}
-    const newPreNode: ComarkNode = ['pre', newPreAttrs, ['code', codeAttrs, ...nodes]]
+    const newPreNode: ComarkNode = ['pre', newPreAttrs, ['code', codeAttrs, ...children]]
 
     if (path.length === 1) {
       newNodes[path[0]] = newPreNode
@@ -326,3 +331,32 @@ export default function highlight(options: HighlightOptions = {}): ComarkPlugin 
     },
   }
 }
+
+// import { transformerNotationDiff, transformerNotationHighlight } from '@shikijs/transformers'
+// import rust from '@shikijs/langs/rust'
+// (async () => {
+//   const hl = await getHighlighter()
+//   const tree = {
+//     nodes: [
+//       ['pre', {class: 'language-typescript', language: 'rust'},
+//         ['code', {  },
+//           `let x = 1;`
+//       ]]
+//     ],
+//     frontmatter: {},
+//     meta: {},
+//   } as ComarkTree
+//   const result = await highlightCodeBlocks(tree, {
+//     languages: [rust],
+//     transformers: [
+//       transformerNotationDiff({
+//         matchAlgorithm: 'v3'
+//       }),
+//       transformerNotationHighlight({
+//         matchAlgorithm: 'v3'
+//       }),
+//     ]
+//   })
+//   console.log(JSON.stringify(result, null, 2))
+
+// })();

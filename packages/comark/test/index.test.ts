@@ -15,11 +15,21 @@ import nord from '@shikijs/themes/nord'
 import rustLanguage from '@shikijs/langs/rust'
 import goLanguage from '@shikijs/langs/go'
 import type { ParseOptions } from '../src/types'
+import type { ShikiTransformer } from '@shikijs/types'
 
 type PluginName = 'emoji'
 
 const pluginRegistry: Record<PluginName, () => ComarkPlugin> = {
   emoji,
+}
+
+type TransformerName = 'twoslash'
+
+const transformerRegistry: Record<TransformerName, () => Promise<ShikiTransformer>> = {
+  twoslash: async () => {
+    const { transformerTwoslash } = await import('@shikijs/twoslash')
+    return transformerTwoslash()
+  },
 }
 
 interface TestCase {
@@ -196,6 +206,7 @@ describe('Comark Tests', () => {
             'nord': nord,
           } as Record<string, any>
 
+          const transformerNames = testCase.options.highlight.transformers as unknown as TransformerName[] | undefined
           plugins.push(highlight({
             ...testCase.options.highlight,
             languages: [rustLanguage, goLanguage],
@@ -203,6 +214,7 @@ describe('Comark Tests', () => {
               light: themes[testCase.options.highlight.themes?.light as string || 'github-dark'],
               dark: themes[testCase.options.highlight.themes?.dark as string || testCase.options.highlight.themes?.light as string],
             },
+            transformers: transformerNames ? await Promise.all(transformerNames.map(name => transformerRegistry[name]())) : undefined,
           }))
         }
 

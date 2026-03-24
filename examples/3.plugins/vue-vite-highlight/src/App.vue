@@ -60,6 +60,18 @@ function toggleTheme() {
 </template>
 
 <style>
+.shiki .line {
+  display: block;
+}
+.shiki .line:empty {
+  height: 1lh;
+}
+.shiki .line.highlight {
+  background-color: rgba(255, 255, 0, 0.1);
+  display: block;
+  margin: 0 -1rem;
+  padding: 0 1rem;
+}
 .dark .shiki span {
   color: var(--shiki-dark) !important;
 }
