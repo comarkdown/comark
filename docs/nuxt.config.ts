@@ -37,12 +37,6 @@ export default defineNuxtConfig({
     },
   },
 
-  nitro: {
-    externals: {
-      traceInclude: ['node_modules/minimark/**'],
-    },
-  },
-
   fonts: {
     families: [
       { name: 'Geist', weights: [400, 500, 600, 700], global: true },
