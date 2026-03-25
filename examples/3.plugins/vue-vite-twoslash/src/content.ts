@@ -69,7 +69,6 @@ async function fetchUser(id: number) {
 }
 
 const userPromise = fetchUser(42)
-//    ^?
 \`\`\`
 
 ## Utility Types
@@ -83,12 +82,9 @@ interface Config {
 }
 
 type ReadonlyConfig = Readonly<Config>
-//   ^?
 
 type PartialConfig = Partial<Config>
-//   ^?
 
 type ConfigKeys = keyof Config
-//   ^?
 \`\`\`
 `

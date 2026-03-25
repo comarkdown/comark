@@ -74,6 +74,17 @@ function toggleTheme() {
 .dark .shiki span {
   color: var(--shiki-dark) !important;
 }
+pre.shiki {
+  overflow: visible !important;
+}
+pre .twoslash-hover pre {
+  margin: 0;
+  padding: 0;
+  background-color: transparent !important;
+}
+pre .twoslash-hover pre .line {
+  display: inline;
+}
 /* Twoslash popup theming */
 .dark .twoslash-popup-container {
   background: #2a2a2a;
