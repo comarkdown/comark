@@ -180,8 +180,8 @@ export async function highlightCode(code: string, attrs: CodeBlockAttributes, op
         dark: lightTheme !== darkTheme ? darkTheme : undefined,
       },
       meta: {
-        __raw: attrs.meta
-      }
+        __raw: attrs.meta,
+      },
     })
     const allTokens = result.children.map(hastToMinimarkNode) as ComarkNode[]
 

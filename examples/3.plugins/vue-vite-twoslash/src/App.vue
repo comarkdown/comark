@@ -42,7 +42,13 @@ onMounted(async () => {
         <div class="flex items-center gap-2">
           <span class="text-base font-bold tracking-tight text-highlighted">Comark</span>
           <span class="text-muted font-light">·</span>
-          <UBadge color="primary" variant="subtle" size="sm">Twoslash</UBadge>
+          <UBadge
+            color="primary"
+            variant="subtle"
+            size="sm"
+          >
+            Twoslash
+          </UBadge>
         </div>
 
         <UTooltip :text="colorMode === 'dark' ? 'Light mode' : 'Dark mode'">
@@ -60,7 +66,6 @@ onMounted(async () => {
     <!-- Page -->
     <main class="py-12 px-4">
       <UContainer class="max-w-3xl">
-
         <!-- Loading -->
         <template v-if="loading">
           <div class="mb-12 space-y-3">
@@ -77,18 +82,23 @@ onMounted(async () => {
             <USkeleton class="h-36 w-full rounded-xl" />
           </div>
           <div class="mt-8 flex items-center gap-2 text-sm text-muted">
-            <UIcon name="i-lucide-loader-circle" class="animate-spin" />
+            <UIcon
+              name="i-lucide-loader-circle"
+              class="animate-spin"
+            />
             Loading TypeScript types from CDN…
           </div>
         </template>
 
         <!-- Content -->
         <Suspense v-else>
-          <Comark class="prose" :plugins="plugins!">
+          <Comark
+            class="prose"
+            :plugins="plugins!"
+          >
             {{ content }}
           </Comark>
         </Suspense>
-
       </UContainer>
     </main>
   </UApp>
