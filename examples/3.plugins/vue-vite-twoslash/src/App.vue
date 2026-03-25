@@ -74,7 +74,6 @@ function toggleTheme() {
 .dark .shiki span {
   color: var(--shiki-dark) !important;
 }
-
 /* Twoslash popup theming */
 .dark .twoslash-popup-container {
   background: #2a2a2a;

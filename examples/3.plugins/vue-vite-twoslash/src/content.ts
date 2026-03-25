@@ -62,9 +62,9 @@ double("oops")
 ## Promise and Async
 
 \`\`\`ts twoslash
-
+// @lib: es5,dom
 async function fetchUser(id: number) {
-  const response = await window.fetch(\`/api/users/\${id}\`)
+  const response = await fetch(\`/api/users/\${id}\`)
   return response.json() as Promise<{ name: string; email: string }>
 }
 
@@ -75,6 +75,7 @@ const userPromise = fetchUser(42)
 ## Utility Types
 
 \`\`\`ts twoslash
+// @lib: es5
 interface Config {
   host: string
   port: number
