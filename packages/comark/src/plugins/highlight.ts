@@ -50,6 +50,7 @@ export interface CodeBlockAttributes {
   language?: string
   class?: string
   highlights?: number[]
+  meta?: string
 }
 
 let highlighter: ShikiPrimitive | null = null
@@ -178,6 +179,9 @@ export async function highlightCode(code: string, attrs: CodeBlockAttributes, op
         light: lightTheme,
         dark: lightTheme !== darkTheme ? darkTheme : undefined,
       },
+      meta: {
+        __raw: attrs.meta
+      }
     })
     const allTokens = result.children.map(hastToMinimarkNode) as ComarkNode[]
 

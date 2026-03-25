@@ -8,6 +8,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@comark/vue": "workspace:*",
+    "@nuxt/ui": "^4.6.0",
     "@shikijs/langs": "^4.0.2",
     "@shikijs/themes": "^4.0.2",
     "@shikijs/twoslash": "^4.0.2",
