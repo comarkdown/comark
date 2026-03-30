@@ -46,6 +46,14 @@ Comark's plugin system extends markdown functionality with specialized features.
   ::
 ::
 
+## Guides
+
+::card-group{cols="2"}
+  ::card{icon="i-lucide-wrench" title="Creating Plugins" to="/plugins/creating-plugins"}
+  Build custom plugins, use existing markdown-it plugins, and transform the AST
+  ::
+::
+
 ## Use Plugins
 
 Pass plugins to `parse()` or the `<Comark>` component:
