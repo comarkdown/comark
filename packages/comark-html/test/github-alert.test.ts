@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { parse } from '../src/index'
-import githubAlert from '../src/plugins/alert'
+import { parse } from '@comark/html/parse'
+import githubAlert from '@comark/html/plugins/alert'
 import { renderHTML } from '@comark/html'
 
 describe('githubAlert', () => {

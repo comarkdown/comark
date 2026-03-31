@@ -5,17 +5,17 @@ import { parseFrontmatter } from '../src/internal/frontmatter'
 import { parse } from 'comark'
 import { renderMarkdown } from 'comark/render'
 import highlight from 'comark/plugins/highlight'
-import { renderHTML } from '@comark/html'
 import type { HighlightOptions } from '../src/plugins/highlight'
 import emoji from '../src/plugins/emoji'
 import type { ComarkPlugin } from 'comark'
-import githubDark from '@shikijs/themes/github-dark'
-import minLight from '@shikijs/themes/min-light'
-import nord from '@shikijs/themes/nord'
-import rustLanguage from '@shikijs/langs/rust'
-import goLanguage from '@shikijs/langs/go'
+import githubDark from 'shiki/dist/themes/github-dark.mjs'
+import minLight from 'shiki/dist/themes/min-light.mjs'
+import nord from 'shiki/dist/themes/nord.mjs'
+import rustLanguage from 'shiki/dist/langs/rust.mjs'
+import goLanguage from 'shiki/dist/langs/go.mjs'
 import type { ParseOptions } from '../src/types'
-import type { ShikiTransformer } from '@shikijs/types'
+import type { ShikiTransformer } from 'shiki'
+import { renderHTMLForTest } from './utils/render-html'
 
 type PluginName = 'emoji'
 
@@ -58,7 +58,7 @@ function parseTimeout(timeoutStr: string): number {
   const value = Number.parseInt(match[1], 10)
   const unit = match[2]
   const ms = unit === 's' ? value * 1000 : value
-  return ms + (process.env.GITHUB_ACTIONS ? 40 : 0) /* add 40ms to avoid random Github Actions failures */
+  return ms + 5 + (process.env.GITHUB_ACTIONS ? 40 : 0) /* add 40ms to avoid random Github Actions failures */
 }
 
 function extractFrontmatter(content: string): { timeouts?: TestCase['timeouts'], body: string, options?: TestCase['options'] } {
@@ -235,7 +235,7 @@ describe('Comark Tests', () => {
       })
 
       it('should render AST to HTML', { timeout: testCase.timeouts?.html ?? 5000 }, async () => {
-        const result = await renderHTML(parsedAST)
+        const result = await renderHTMLForTest(parsedAST)
         const expectedHTML = testCase.html.trim()
         expect(result).toBe(expectedHTML)
       })

@@ -231,6 +231,7 @@ export type ComarkPlugin = {
   pre?: (state: ComarkParsePreState) => Promise<void> | void
   post?: (state: ComarkParsePostState) => Promise<void> | void
 }
+export type ComarkPluginFactory<Options> = (opts?: Options) => ComarkPlugin
 
 export type ComponentManifest = (name: string) => Promise<unknown> | undefined | null
 export interface ComarkContextProvider {

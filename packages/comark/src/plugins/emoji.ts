@@ -1,4 +1,5 @@
-import type { ComarkPlugin, MarkdownItPlugin } from 'comark'
+import type { MarkdownItPlugin } from 'comark'
+import { defineComarkPlugin } from '../utils/helpers.ts'
 
 // Common emoji definitions (200+ emojis)
 // Organized by category for easier maintenance
@@ -444,9 +445,7 @@ export const markdownItEmoji: MarkdownItPlugin = (md) => {
   md.inline.ruler.before('emphasis', 'emoji', emojiRule)
 }
 
-export default function comarkEmoji(): ComarkPlugin {
-  return {
-    name: 'emoji',
-    markdownItPlugins: [markdownItEmoji],
-  }
-}
+export default defineComarkPlugin(() => ({
+  name: 'emoji',
+  markdownItPlugins: [markdownItEmoji],
+}))

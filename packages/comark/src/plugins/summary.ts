@@ -1,9 +1,10 @@
 import type { ComarkNode } from 'comark'
 import { applyAutoUnwrap } from '../internal/parse/auto-unwrap.ts'
 import { marmdownItTokensToComarkTree } from '../internal/parse/token-processor.ts'
-import type { ComarkPlugin } from '../types'
+import { defineComarkPlugin } from '../utils/helpers.ts'
 
-export default function summary(delimiter: string = '<!-- more -->'): ComarkPlugin {
+export default defineComarkPlugin((options: { delimiter?: string } = {}) => {
+  const { delimiter = '<!-- more -->' } = options
   return {
     name: 'summary',
     post(state) {
@@ -28,4 +29,4 @@ export default function summary(delimiter: string = '<!-- more -->'): ComarkPlug
       }
     },
   }
-}
+})

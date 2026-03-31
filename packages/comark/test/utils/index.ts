@@ -1,3 +1,4 @@
+// @ts-expect-error - @nuxtjs/mdc is not a peer dependency
 import type { MDCRoot } from '@nuxtjs/mdc'
 import type { ComarkTree } from 'comark'
 import remarkGFM from 'remark-gfm'

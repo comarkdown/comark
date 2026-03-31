@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { parse } from '../src/index'
+import { parse } from '@comark/html/parse'
 import { renderHTML } from '@comark/html'
 
 describe('renderHTML', () => {

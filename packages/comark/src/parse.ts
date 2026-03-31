@@ -10,10 +10,13 @@ import { parseFrontmatter } from './internal/frontmatter.ts'
 import { extractReusableNodes } from './internal/parse/incremental.ts'
 import html_block from './internal/parse/html/html_block_rule.ts'
 import html_inline from './internal/parse/html/html_inline_rule.ts'
-import { createSerializedTask } from './utils/serialized-task.ts'
+import { createSerializedTask } from './utils/helpers.ts'
 
 // Re-export frontmatter utilities
 export { parseFrontmatter } from './internal/frontmatter.ts'
+
+// Re-export plugin utilities
+export { defineComarkPlugin } from './utils/helpers.ts'
 
 /**
  * Creates a parser function for Comark content.

@@ -1,5 +1,6 @@
-import type MarkdownIt from 'markdown-it'
-import type { ComarkPlugin, MarkdownItPlugin } from 'comark'
+import type { MarkdownExit } from 'markdown-exit'
+import type { MarkdownItPlugin } from 'comark'
+import { defineComarkPlugin } from '../utils/helpers.ts'
 
 export type ThemeNames = 'zinc-light' | 'zinc-dark' | 'tokyo-night' | 'tokyo-night-storm' | 'tokyo-night-light' | 'catppuccin-mocha' | 'catppuccin-latte' | 'nord' | 'nord-light' | 'dracula' | 'github-light' | 'github-dark' | 'solarized-light' | 'solarized-dark' | 'one-dark'
 
@@ -21,7 +22,7 @@ export interface MermaidConfig {
  * markdown-it plugin for mermaid diagrams
  * This handles ```mermaid code blocks
  */
-function markdownItMermaid(md: MarkdownIt, config?: MermaidConfig) {
+function markdownItMermaid(md: MarkdownExit, config?: MermaidConfig) {
   md.core.ruler.after('block', 'replace-pre', (state) => {
     for (const token of state.tokens) {
       if (token.type === 'fence' && token.info?.startsWith('mermaid')) {
@@ -206,11 +207,9 @@ export function searchProps(content: string, index = 0) {
  * })
  * ```
  */
-export default function comarkMermaid(config?: MermaidConfig): ComarkPlugin {
-  return {
-    name: 'mermaid',
-    markdownItPlugins: [
-      ((md: MarkdownIt) => markdownItMermaid(md, config)) as unknown as MarkdownItPlugin,
-    ],
-  }
-}
+export default defineComarkPlugin((config: MermaidConfig = {}) => ({
+  name: 'mermaid',
+  markdownItPlugins: [
+    ((md: MarkdownExit) => markdownItMermaid(md, config)) as unknown as MarkdownItPlugin,
+  ],
+}))

@@ -1,8 +1,7 @@
-import type MarkdownIt from 'markdown-it'
-import type StateInline from 'markdown-it/lib/rules_inline/state_inline.mjs'
-import type StateBlock from 'markdown-it/lib/rules_block/state_block.mjs'
+import type { MarkdownExit, StateInline, StateBlock } from 'markdown-exit'
 import katex from 'katex'
-import type { ComarkPlugin, MarkdownItPlugin } from 'comark'
+import type { MarkdownItPlugin } from 'comark'
+import { defineComarkPlugin } from '../utils/helpers.ts'
 
 export interface MathConfig {
   /**
@@ -284,7 +283,7 @@ function mathBlockRule(state: StateBlock, startLine: number, endLine: number, si
 /**
  * Create markdown-it plugin for math support
  */
-function markdownItMath(md: MarkdownIt, config: MathConfig = {}) {
+function markdownItMath(md: MarkdownExit, config: MathConfig = {}) {
   // Add inline display math rule ($$...$$) - must come before inline math ($...$)
   md.inline.ruler.before('escape', 'math_inline_display', (state, silent) =>
     mathInlineDisplayRule(state, silent, config),
@@ -319,11 +318,9 @@ function markdownItMath(md: MarkdownIt, config: MathConfig = {}) {
  * })
  * ```
  */
-export default function math(config?: MathConfig): ComarkPlugin {
-  return {
-    name: 'math',
-    markdownItPlugins: [
-      ((md: MarkdownIt) => markdownItMath(md, config ?? {})) as unknown as MarkdownItPlugin,
-    ],
-  }
-}
+export default defineComarkPlugin((config: MathConfig = {}) => ({
+  name: 'math',
+  markdownItPlugins: [
+    ((md: MarkdownExit) => markdownItMath(md, config)) as unknown as MarkdownItPlugin,
+  ],
+}))

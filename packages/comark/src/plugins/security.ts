@@ -1,4 +1,5 @@
-import type { ComarkElement, ComarkPlugin } from 'comark'
+import type { ComarkElement } from 'comark'
+import { defineComarkPlugin } from '../utils/helpers.ts'
 import { visit } from 'comark/utils'
 import { validateProps } from '../internal/props-validation.ts'
 import type { PropsValidationOptions } from '../internal/props-validation.ts'
@@ -11,7 +12,7 @@ interface SecurityOptions extends PropsValidationOptions {
   blockedTags?: string[]
 }
 
-export default function security(options: SecurityOptions = {}): ComarkPlugin {
+export default defineComarkPlugin((options: SecurityOptions = {}) => {
   const {
     blockedTags = [],
     allowedLinkPrefixes,
@@ -56,4 +57,4 @@ export default function security(options: SecurityOptions = {}): ComarkPlugin {
         })
     },
   }
-}
+})

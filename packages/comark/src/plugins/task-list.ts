@@ -5,7 +5,7 @@
  * task list markers [X] and [ ] as Comark inline span syntax.
  */
 
-import type { ComarkPlugin } from 'comark'
+import { defineComarkPlugin } from '../utils/helpers.ts'
 
 interface MarkdownItToken {
   type: string
@@ -177,10 +177,7 @@ function markdownItTaskList(md: MarkdownIt, options?: TaskListOptions) {
     }
   })
 }
-
-export default function comarkTaskList(): ComarkPlugin {
-  return {
-    name: 'task-list',
-    markdownItPlugins: [markdownItTaskList],
-  }
-}
+export default defineComarkPlugin(() => ({
+  name: 'task-list',
+  markdownItPlugins: [markdownItTaskList],
+}))

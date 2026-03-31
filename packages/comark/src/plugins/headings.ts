@@ -1,4 +1,5 @@
-import type { ComarkPlugin, ComarkNode } from 'comark'
+import type { ComarkNode } from 'comark'
+import { defineComarkPlugin } from '../utils/helpers.ts'
 
 export interface HeadingsOptions {
   /**
@@ -73,7 +74,7 @@ function flattenNodeText(node: ComarkNode): string {
  * headings({ remove: false })
  * ```
  */
-export default function headings(options: HeadingsOptions = {}): ComarkPlugin {
+export default defineComarkPlugin((options: HeadingsOptions = {}) => {
   const { titleTag = 'h1', descriptionTag = 'p', remove = false } = options
 
   return {
@@ -112,4 +113,4 @@ export default function headings(options: HeadingsOptions = {}): ComarkPlugin {
       }
     },
   }
-}
+})

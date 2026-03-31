@@ -35,7 +35,6 @@
     "build": "tsc",
     "dev": "tsc --watch",
     "test": "vitest run",
-    "benchmark": "node --import tsx benchmark.ts",
     "prepack": "tsc",
     "release": "release-it",
     "release:dry": "release-it --dry-run"
@@ -61,9 +60,9 @@
     "@shikijs/primitive": "^4.0.2",
     "@shikijs/twoslash": "^4.0.2",
     "@types/js-yaml": "^4.0.9",
+    "@types/markdown-it": "^14.1.2",
     "github-slugger": "^2.0.0",
     "hast-util-to-string": "^3.0.1",
-    "markdown-it": "^14.1.1",
     "minimark": "0.2.0",
     "mitata": "^1.0.34",
     "tsx": "^4.21.0",

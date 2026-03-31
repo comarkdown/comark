@@ -45,6 +45,7 @@
   "devDependencies": {
     "@nuxt/eslint-config": "^1.15.2",
     "@release-it/conventional-changelog": "^10.0.6",
+    "@stylistic/eslint-plugin": "^5.10.0",
     "@types/node": "^25.5.0",
     "@vitejs/plugin-vue": "^6.0.5",
     "eslint": "^10.1.0",

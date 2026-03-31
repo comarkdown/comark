@@ -1,4 +1,5 @@
-import type { ComarkPlugin, ComarkNode, ComarkTree } from 'comark'
+import type { ComarkNode, ComarkTree } from 'comark'
+import { defineComarkPlugin } from '../utils/helpers.ts'
 
 export interface TocLink {
   id: string
@@ -137,7 +138,7 @@ export function generateFlatToc(body: ComarkTree, options: Toc): Toc {
   }
 }
 
-export default function toc(options: Partial<Toc> = {}): ComarkPlugin {
+export default defineComarkPlugin((options: Partial<Toc> = {}) => {
   const { title = '', depth = 2, searchDepth = 2, links = [] } = options
   return {
     name: 'toc',
@@ -148,4 +149,4 @@ export default function toc(options: Partial<Toc> = {}): ComarkPlugin {
       state.tree.meta.toc = toc
     },
   }
-}
+})

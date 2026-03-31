@@ -13,7 +13,6 @@
     "@vercel/speed-insights": "^2.0.0",
     "vue-json-pretty": "^2.6.0",
     "docus": "https://pkg.pr.new/docus@a30dcb8",
-    "markdown-it": "^14.1.1",
     "markdown-it-math": "^5.2.1",
     "nuxt": "^4.4.2",
     "nuxt-studio": "1.5.1",

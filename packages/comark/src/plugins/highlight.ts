@@ -1,9 +1,8 @@
-import type { LanguageRegistration } from 'shiki'
-import type { ComarkElement, ComarkNode, ComarkTree, ComarkPlugin, ComarkElementAttributes } from 'comark'
-import type { ShikiPrimitive, ThemeRegistration } from '@shikijs/primitive'
-import { createShikiPrimitive } from '@shikijs/primitive'
+import type { LanguageRegistration, ShikiTransformer, ShikiInternal, ThemeRegistration } from 'shiki'
+import type { ComarkElement, ComarkNode, ComarkTree, ComarkElementAttributes } from 'comark'
+import { defineComarkPlugin } from '../utils/helpers.ts'
+import { createShikiInternal } from 'shiki'
 import { createJavaScriptRegexEngine } from 'shiki/engine/javascript'
-import type { ShikiTransformer } from '@shikijs/types'
 import { codeToHast } from 'shiki/core'
 
 export interface HighlightOptions {
@@ -53,8 +52,8 @@ export interface CodeBlockAttributes {
   meta?: string
 }
 
-let highlighter: ShikiPrimitive | null = null
-let highlighterPromise: Promise<ShikiPrimitive> | null = null
+let highlighter: ShikiInternal | null = null
+let highlighterPromise: Promise<ShikiInternal> | null = null
 const loadedThemes: Set<string> = new Set()
 const loadedLanguages: Set<string> = new Set()
 
@@ -62,7 +61,7 @@ const loadedLanguages: Set<string> = new Set()
  * Get or create the Shiki highlighter instance
  * Uses a singleton pattern to avoid creating multiple highlighters
  */
-export async function getHighlighter(options: HighlightOptions = {}): Promise<ShikiPrimitive> {
+export async function getHighlighter(options: HighlightOptions = {}): Promise<ShikiInternal> {
   // If highlighter exists, load any new themes that aren't loaded yet
   if (highlighter) {
     const { themes, languages } = await registerDefaults(options)
@@ -79,7 +78,7 @@ export async function getHighlighter(options: HighlightOptions = {}): Promise<Sh
   try {
     highlighterPromise = (async () => {
       const { themes, languages } = await registerDefaults(options)
-      const hl = createShikiPrimitive({
+      const hl = await createShikiInternal({
         themes: themes,
         langs: languages,
         langAlias: {
@@ -94,7 +93,7 @@ export async function getHighlighter(options: HighlightOptions = {}): Promise<Sh
       await Promise.all(languages.map(language => loadLanguage(hl, language)))
 
       return hl
-    })() as Promise<ShikiPrimitive>
+    })() as Promise<ShikiInternal>
 
     highlighter = await highlighterPromise
     highlighterPromise = null
@@ -114,22 +113,22 @@ async function registerDefaults(options: HighlightOptions) {
 
   if (options.registerDefaultThemes !== false) {
     promises.push(
-      import('@shikijs/themes/material-theme-lighter').then(m => ({ type: 'theme' as const, value: m.default })),
-      import('@shikijs/themes/material-theme-palenight').then(m => ({ type: 'theme' as const, value: m.default })),
+      import('shiki/dist/themes/material-theme-lighter.mjs').then(m => ({ type: 'theme' as const, value: m.default })),
+      import('shiki/dist/themes/material-theme-palenight.mjs').then(m => ({ type: 'theme' as const, value: m.default })),
     )
   }
   if (options.registerDefaultLanguages !== false) {
     promises.push(
-      import('@shikijs/langs/vue').then(m => ({ type: 'lang' as const, value: m.default })),
-      import('@shikijs/langs/tsx').then(m => ({ type: 'lang' as const, value: m.default })),
-      import('@shikijs/langs/svelte').then(m => ({ type: 'lang' as const, value: m.default })),
-      import('@shikijs/langs/typescript').then(m => ({ type: 'lang' as const, value: m.default })),
-      import('@shikijs/langs/javascript').then(m => ({ type: 'lang' as const, value: m.default })),
-      import('@shikijs/langs/mdc').then(m => ({ type: 'lang' as const, value: m.default })),
-      import('@shikijs/langs/bash').then(m => ({ type: 'lang' as const, value: m.default })),
-      import('@shikijs/langs/json').then(m => ({ type: 'lang' as const, value: m.default })),
-      import('@shikijs/langs/yaml').then(m => ({ type: 'lang' as const, value: m.default })),
-      import('@shikijs/langs/astro').then(m => ({ type: 'lang' as const, value: m.default })),
+      import('shiki/dist/langs/vue.mjs').then(m => ({ type: 'lang' as const, value: m.default })),
+      import('shiki/dist/langs/tsx.mjs').then(m => ({ type: 'lang' as const, value: m.default })),
+      import('shiki/dist/langs/svelte.mjs').then(m => ({ type: 'lang' as const, value: m.default })),
+      import('shiki/dist/langs/typescript.mjs').then(m => ({ type: 'lang' as const, value: m.default })),
+      import('shiki/dist/langs/javascript.mjs').then(m => ({ type: 'lang' as const, value: m.default })),
+      import('shiki/dist/langs/mdc.mjs').then(m => ({ type: 'lang' as const, value: m.default })),
+      import('shiki/dist/langs/bash.mjs').then(m => ({ type: 'lang' as const, value: m.default })),
+      import('shiki/dist/langs/json.mjs').then(m => ({ type: 'lang' as const, value: m.default })),
+      import('shiki/dist/langs/yaml.mjs').then(m => ({ type: 'lang' as const, value: m.default })),
+      import('shiki/dist/langs/astro.mjs').then(m => ({ type: 'lang' as const, value: m.default })),
     )
   }
 
@@ -142,7 +141,7 @@ async function registerDefaults(options: HighlightOptions) {
   return { themes, languages }
 }
 
-async function loadTheme(hl: ShikiPrimitive, theme: ThemeRegistration) {
+async function loadTheme(hl: ShikiInternal, theme: ThemeRegistration) {
   if (loadedThemes.has(theme.name || '')) {
     return
   }
@@ -150,7 +149,7 @@ async function loadTheme(hl: ShikiPrimitive, theme: ThemeRegistration) {
   loadedThemes.add(theme.name || '')
 }
 
-async function loadLanguage(hl: ShikiPrimitive, language: LanguageRegistration | LanguageRegistration[]) {
+async function loadLanguage(hl: ShikiInternal, language: LanguageRegistration | LanguageRegistration[]) {
   if (loadedLanguages.has(Array.isArray(language) ? language.map(l => l.name || '').join(',') : language.name || '')) {
     return
   }
@@ -326,11 +325,9 @@ export function resetHighlighter(): void {
   loadedThemes.clear()
 }
 
-export default function highlight(options: HighlightOptions = {}): ComarkPlugin {
-  return {
-    name: 'highlight',
-    async post(state) {
-      state.tree = await highlightCodeBlocks(state.tree, options)
-    },
-  }
-}
+export default defineComarkPlugin<HighlightOptions>((options: HighlightOptions = {}) => ({
+  name: 'highlight',
+  async post(state) {
+    state.tree = await highlightCodeBlocks(state.tree, options)
+  },
+}))

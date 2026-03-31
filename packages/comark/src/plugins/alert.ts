@@ -1,5 +1,6 @@
-import type { ComarkElement, ComarkPlugin } from 'comark'
+import type { ComarkElement } from 'comark'
 import { visit } from 'comark/utils'
+import { defineComarkPlugin } from '../utils/helpers.ts'
 
 interface Marker {
   type: 'tip' | 'note' | 'important' | 'warning' | 'caution'
@@ -35,46 +36,44 @@ const markers: Record<string, Marker> = {
   },
 }
 
-export default function alert(): ComarkPlugin {
-  return {
-    name: 'alert',
-    post(state) {
-      visit(
-        state.tree,
-        node => Array.isArray(node) && node[0] === 'blockquote',
-        (node) => {
-          const element = node as ComarkElement
-          if (node[2]?.[0] === 'span') {
-            const content = String(node[2][2] as keyof typeof markers).toUpperCase()
+export default defineComarkPlugin(() => ({
+  name: 'alert',
+  post(state) {
+    visit(
+      state.tree,
+      node => Array.isArray(node) && node[0] === 'blockquote',
+      (node) => {
+        const element = node as ComarkElement
+        if (node[2]?.[0] === 'span') {
+          const content = String(node[2][2] as keyof typeof markers).toUpperCase()
+          const marker = markers[content]
+          if (marker) {
+            if (typeof node[3] === 'string') {
+              element[3] = String(element[3]).trimStart()
+            }
+            // remove span node
+            element.splice(2, 1)
+            element[1].as = marker.type
+          }
+        }
+        else if (node[2]?.[0] === 'p') {
+          const paragraph = node[2] as ComarkElement
+          if (paragraph[2]?.[0] === 'span') {
+            const content = String(paragraph[2][2] as keyof typeof markers).toUpperCase()
             const marker = markers[content]
+
             if (marker) {
-              if (typeof node[3] === 'string') {
-                element[3] = String(element[3]).trimStart()
+              if (typeof paragraph[3] === 'string') {
+                paragraph[3] = String(paragraph[3]).trimStart()
               }
               // remove span node
-              element.splice(2, 1)
+              paragraph.splice(2, 1)
+              // transform node
               element[1].as = marker.type
             }
           }
-          else if (node[2]?.[0] === 'p') {
-            const paragraph = node[2] as ComarkElement
-            if (paragraph[2]?.[0] === 'span') {
-              const content = String(paragraph[2][2] as keyof typeof markers).toUpperCase()
-              const marker = markers[content]
-
-              if (marker) {
-                if (typeof paragraph[3] === 'string') {
-                  paragraph[3] = String(paragraph[3]).trimStart()
-                }
-                // remove span node
-                paragraph.splice(2, 1)
-                // transform node
-                element[1].as = marker.type
-              }
-            }
-          }
-        },
-      )
-    },
-  }
-}
+        }
+      },
+    )
+  },
+}))

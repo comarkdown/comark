@@ -3,7 +3,7 @@ import MarkdownIt from 'markdown-it'
 import MarkdownExit from 'markdown-exit'
 import pluginMdc from '@comark/markdown-it'
 import { createParse } from './src/index'
-import { renderHTML } from '@comark/html'
+import { renderHTMLForTest } from './test/utils/render-html'
 
 // Sample markdown content to test with
 const sampleMarkdown = `---
@@ -104,10 +104,10 @@ bench('markdown-exit render', () => {
   markdownExit.render(sampleMarkdown)
 })
 
-// Benchmark: comark parse + renderHTML
-bench('comark parse + renderHTML', async () => {
+// Benchmark: comark parse + renderHTMLForTest
+bench('comark parse + renderHTMLForTest', async () => {
   const tree = await comark(sampleMarkdown)
-  renderHTML(tree)
+  renderHTMLForTest(tree)
 })
 
 bench('comark parse streaming', async () => {

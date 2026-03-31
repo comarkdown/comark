@@ -1,3 +1,6 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
+
 import type { Root, RootContent, MDCNode, MDCRoot, NodePosition } from '@nuxtjs/mdc'
 import Slugger from 'github-slugger'
 import { toString } from 'hast-util-to-string'
