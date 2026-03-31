@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.2](https://github.com/nuxt-content/mdc-syntax/compare/comark@0.1.1...comark@0.1.2) (2026-03-31)
+
+### Bug Fixes
+
+* **headings:** do not remove extracted node ([f31b23b](https://github.com/nuxt-content/mdc-syntax/commit/f31b23b40c5c10ff9f19e7336cc507fad1075cdd))
+* **nuxt:** re-export Math & Mermaid plugins from Vue package ([caee05e](https://github.com/nuxt-content/mdc-syntax/commit/caee05ee50e0af5e1412186e80f449f650750bc2))
+* **plugins:** add missing file extensions ([d72c7dc](https://github.com/nuxt-content/mdc-syntax/commit/d72c7dcffc8a88e7be3087e77f8b78325ad8f2c2))
+
 ## [0.1.1](https://github.com/nuxt-content/mdc-syntax/compare/comark@0.1.0...comark@0.1.1) (2026-03-25)
 
 ### Features
