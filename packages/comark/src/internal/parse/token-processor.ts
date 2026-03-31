@@ -39,7 +39,9 @@ export function marmdownItTokensToComarkTree(tokens: any[], options: { startLine
       if (options.preservePositions) {
         for (let j = i; j < result.nextIndex; j++) {
           if (tokens[j].map && tokens[j].map[1]) {
-            endLine = (tokens[j].map[1] as number) + options.startLine
+            endLine = (tokens[j].map[1] as number)
+              + options.startLine
+              + (tokens[j].type?.endsWith('_close') ? 1 : 0)
           }
         }
         if (!(result.node[1] as Record<string, unknown>).$) {

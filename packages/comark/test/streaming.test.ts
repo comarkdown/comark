@@ -336,4 +336,62 @@ Everything you need for modern content parsing
       }
     }
   })
+
+  it('Should parse content chunk by chunk into a valid Comark tree', async () => {
+    const steps = [
+      {
+        input: '# title\nM',
+        output: {
+          frontmatter: {},
+          meta: {},
+          nodes: [
+            ['h1', { id: 'title', $: { line: 1 } }, 'title'],
+            ['p', { $: { line: 2 } }, 'M'],
+          ],
+        },
+      },
+      {
+        input: `# title\nMarkdown bu`,
+        output: {
+          frontmatter: {},
+          meta: {},
+          nodes: [
+            ['h1', { id: 'title', $: { line: 1 } }, 'title'],
+            ['p', { $: { line: 2 } }, 'Markdown bu'],
+          ],
+        },
+      },
+      {
+        input: `# title\nMarkdown but with Com`,
+        output: {
+          frontmatter: {},
+          meta: {},
+          nodes: [
+            ['h1', { id: 'title', $: { line: 1 } }, 'title'],
+            ['p', { $: { line: 2 } }, 'Markdown but with Com'],
+          ],
+        },
+      },
+      {
+        input:
+        `# title\nMarkdown but with Components\n\n#`,
+        output: {
+          frontmatter: {},
+          meta: {},
+          nodes: [
+            ['h1', { id: 'title', $: { line: 1 } }, 'title'],
+            ['p', { $: { line: 2 } }, 'Markdown but with Components'],
+          ],
+        },
+      },
+    ]
+
+    const parse = createParse()
+    for (const step of steps) {
+      const result = await parse(step.input, { streaming: true })
+      console.log(JSON.stringify(result, null, 2))
+      console.log(result)
+      expect(result).toEqual(step.output)
+    }
+  })
 })

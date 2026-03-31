@@ -1,6 +1,6 @@
 import type { PropType } from 'vue'
 import { computed, defineComponent, h, shallowRef, watch } from 'vue'
-import { createParse } from 'comark'
+import { createSerializedParse } from 'comark'
 import type { ParseOptions, ComponentManifest, ComarkTree } from 'comark'
 import { ComarkRenderer } from './ComarkRenderer.ts'
 
@@ -171,15 +171,15 @@ export const Comark: ComarkComponent = defineComponent({
 
     const parsed = shallowRef<ComarkTree | null>(null)
 
-    const parse = createParse({ ...props.options, plugins: props.plugins })
+    const parse = createSerializedParse({ ...props.options, plugins: props.plugins })
 
-    async function parseMarkdown() {
-      parsed.value = await parse(markdown.value, { streaming: props.streaming })
-    }
+    watch(
+      () => [markdown.value, props.streaming] as const,
+      () => parse(markdown.value, { streaming: props.streaming }).then(result => parsed.value = result),
+    )
 
-    watch(markdown, parseMarkdown)
-
-    await parseMarkdown()
+    await parse(markdown.value, { streaming: props.streaming })
+      .then(result => parsed.value = result)
 
     return () => {
       // Render using ComarkRenderer

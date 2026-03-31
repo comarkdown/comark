@@ -29,8 +29,7 @@ export function extractReusableNodes(markdown: string, lastOutput: ComarkTree) {
     return {
       remainingMarkdownStartLine,
       reusedNodes: lastOutput.nodes.slice(0, lastValidNodeIndex + 1),
-      remainingMarkdown: '\n' // Add back the new line character which will be remove by the slice and join
-        + markdown.split('\n').slice(remainingMarkdownStartLine + 1).join('\n') || '',
+      remainingMarkdown: markdown.split('\n').slice(remainingMarkdownStartLine).join('\n') || '',
     }
   }
 

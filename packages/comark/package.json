@@ -1,7 +1,7 @@
 {
   "name": "comark",
   "type": "module",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Components in Markdown (Comark) parser with streaming support for Vue, React, Svelte and HTML",
   "author": "",
   "license": "MIT",

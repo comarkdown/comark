@@ -10,6 +10,7 @@ import { parseFrontmatter } from './internal/frontmatter.ts'
 import { extractReusableNodes } from './internal/parse/incremental.ts'
 import html_block from './internal/parse/html/html_block_rule.ts'
 import html_inline from './internal/parse/html/html_inline_rule.ts'
+import { createSerializedTask } from './utils/serialized-task.ts'
 
 // Re-export frontmatter utilities
 export { parseFrontmatter } from './internal/frontmatter.ts'
@@ -182,4 +183,23 @@ export async function parse(markdown: string, options: ParseOptions = {}): Promi
   const parse = createParse(options)
 
   return await parse(markdown)
+}
+
+/**
+ * Creates a serialized parser function for Comark content.
+ * This is useful for parsing large files in a streaming manner.
+ *
+ * @param options - Parser options
+ * @returns ComarkParseFn - The serialized parser function
+ *
+ * @example
+ * ```typescript
+ * import { createSerializedParse } from 'comark'
+ *
+ * const parse = createSerializedParse()
+ * const tree = await parse(content)
+ * console.log(tree.nodes)
+ */
+export function createSerializedParse(options: ParseOptions = {}): ComarkParseFn {
+  return createSerializedTask(createParse(options))
 }
