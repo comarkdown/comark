@@ -23,12 +23,16 @@ const INLINE_TAG_MAP: Record<string, string> = {
   sub_open: 'del',
 }
 
+// Track heading slug counts for deduplication within a single parse
+const headingSlugCounts: Map<string, number> = new Map()
+
 // ─── main entry point ───────────────────────────────────────────────────────
 
 /**
  * Convert Markdown-It tokens to a Comark tree
  */
 export function marmdownItTokensToComarkTree(tokens: any[], options: { startLine: number, preservePositions: boolean } = { startLine: 0, preservePositions: false }): ComarkNode[] {
+  headingSlugCounts.clear()
   const nodes: ComarkNode[] = []
 
   let i = 0
@@ -657,7 +661,16 @@ function slugify(text: string): string {
     slug = '_' + slug
   }
 
-  return slug
+  return uniqueSlug(slug)
+}
+
+/**
+ * Return a unique slug by appending a numeric suffix for duplicates
+ */
+function uniqueSlug(slug: string): string {
+  const count = headingSlugCounts.get(slug) ?? 0
+  headingSlugCounts.set(slug, count + 1)
+  return count === 0 ? slug : `${slug}-${count}`
 }
 
 export function processInlineTokens(tokens: any[], inHeading: boolean = false): ComarkNode[] {
