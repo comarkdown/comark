@@ -44,7 +44,7 @@ function renderHighlighted(codeNode: ComarkElement, colors: boolean): string {
     if (child[0] !== 'span') return ''
     // span.line — render its token children
     return (child.slice(2) as ComarkNode[]).map(t => renderToken(t, colors)).join('')
-  }).join('\n')
+  }).join('')
 }
 
 // --- Handler ---

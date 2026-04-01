@@ -1,5 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { parse } from 'comark'
+import highlight from 'comark/plugins/highlight'
+import githubDark from 'shiki/dist/themes/github-dark.mjs'
 import { renderANSI, createLog, log } from '../src/index'
 
 // Helpers
@@ -159,6 +161,65 @@ describe('renderANSI', () => {
       const out = await plain('```ts [app.ts]\nconst x = 1\n```')
       expect(out).toContain('app.ts')
       expect(out).toContain('const x = 1')
+    })
+  })
+
+  describe('code highlight', () => {
+    const highlightPlugin = highlight({
+      themes: { light: githubDark, dark: githubDark },
+    })
+
+    async function highlighted(markdown: string, colors = false) {
+      const tree = await parse(markdown, { plugins: [highlightPlugin] })
+      return renderANSI(tree, { colors })
+    }
+
+    it('renders highlighted code with ANSI true-color sequences', async () => {
+      const out = await highlighted('```js\nconst x = 1\n```', true)
+      // Should contain true-color ANSI escape (38;2;r;g;b)
+      expect(out).toMatch(/\x1B\[38;2;\d+;\d+;\d+m/)
+      expect(out).toContain('const')
+      expect(out).toContain('x')
+    })
+
+    it('renders highlighted code without ANSI true-color when colors disabled', async () => {
+      const out = await highlighted('```js\nconst x = 1\n```', false)
+      // No true-color sequences in token output
+      expect(out).not.toMatch(/\x1B\[38;2;\d+;\d+;\d+m/)
+      expect(out).toContain('const')
+      expect(out).toContain('x')
+    })
+
+    it('renders multi-line highlighted code', async () => {
+      const out = await highlighted('```js\nconst a = 1\nconst b = 2\n```', false)
+      expect(out).toContain('const a = 1')
+      expect(out).toContain('const b = 2')
+    })
+
+    it('renders highlighted code with language header', async () => {
+      const out = await highlighted('```typescript\nlet x = 1\n```', false)
+      expect(out).toContain('typescript')
+      expect(out).toContain('let')
+    })
+
+    it('renders highlighted code with line highlights', async () => {
+      const out = await highlighted('```js {1}\nconst a = 1\n\nconst b = 2\n```', false)
+      expect(out).toContain('const a = 1')
+      expect(out).toContain('const b = 2')
+      expect(out).toBe("```\u001b[1m\u001b[36mjs\u001b[0m\nconst a = 1\n\nconst b = 2\n```\n")
+    })
+
+    it('each token gets its own color escape', async () => {
+      const out = await highlighted('```js\nfunction hello() {}\n```', true)
+      // Multiple color codes for different tokens (keyword, name, punctuation)
+      const colorMatches = out.match(/\x1B\[38;2;\d+;\d+;\d+m/g)
+      expect(colorMatches).not.toBeNull()
+      expect(colorMatches!.length).toBeGreaterThanOrEqual(2)
+    })
+
+    it('resets color after each token', async () => {
+      const out = await highlighted('```js\nconst x = 1\n```', true)
+      expect(out).toContain('\x1B[0m') // RESET
     })
   })
 
