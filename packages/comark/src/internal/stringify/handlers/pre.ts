@@ -30,18 +30,6 @@ export function pre(node: ComarkElement, state: State) {
   return result + state.context.blockSeparator
 }
 
-function extractCode(node: ComarkElement): string {
-  const codeNode = node[2]
-  if (Array.isArray(codeNode) && codeNode[0] === 'code') {
-    const spans = (codeNode as ComarkElement).slice(2)
-    const lineSpans = spans.filter(s => Array.isArray(s) && String((s as ComarkElement)[1]?.class ?? '').includes('line'))
-    if (lineSpans.length > 0) {
-      return lineSpans.map(span => textContent(span as ComarkElement)).join('\n')
-    }
-  }
-  return textContent(node)
-}
-
 function formatHighlights(highlights: number[]): string {
   if (highlights.length === 0) return ''
 

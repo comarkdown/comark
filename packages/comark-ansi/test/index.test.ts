@@ -177,6 +177,7 @@ describe('renderANSI', () => {
     it('renders highlighted code with ANSI true-color sequences', async () => {
       const out = await highlighted('```js\nconst x = 1\n```', true)
       // Should contain true-color ANSI escape (38;2;r;g;b)
+      // eslint-disable-next-line no-control-regex
       expect(out).toMatch(/\x1B\[38;2;\d+;\d+;\d+m/)
       expect(out).toContain('const')
       expect(out).toContain('x')
@@ -185,6 +186,7 @@ describe('renderANSI', () => {
     it('renders highlighted code without ANSI true-color when colors disabled', async () => {
       const out = await highlighted('```js\nconst x = 1\n```', false)
       // No true-color sequences in token output
+      // eslint-disable-next-line no-control-regex
       expect(out).not.toMatch(/\x1B\[38;2;\d+;\d+;\d+m/)
       expect(out).toContain('const')
       expect(out).toContain('x')
@@ -206,12 +208,13 @@ describe('renderANSI', () => {
       const out = await highlighted('```js {1}\nconst a = 1\n\nconst b = 2\n```', false)
       expect(out).toContain('const a = 1')
       expect(out).toContain('const b = 2')
-      expect(out).toBe("```\u001b[1m\u001b[36mjs\u001b[0m\nconst a = 1\n\nconst b = 2\n```\n")
+      expect(out).toBe('```\u001B[1m\u001B[36mjs\u001B[0m\nconst a = 1\n\nconst b = 2\n```\n')
     })
 
     it('each token gets its own color escape', async () => {
       const out = await highlighted('```js\nfunction hello() {}\n```', true)
       // Multiple color codes for different tokens (keyword, name, punctuation)
+      // eslint-disable-next-line no-control-regex
       const colorMatches = out.match(/\x1B\[38;2;\d+;\d+;\d+m/g)
       expect(colorMatches).not.toBeNull()
       expect(colorMatches!.length).toBeGreaterThanOrEqual(2)

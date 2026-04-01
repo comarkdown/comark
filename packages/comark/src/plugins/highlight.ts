@@ -265,10 +265,9 @@ export async function highlightCodeBlocks(
         )
 
     const codeChildren = preNode[2].slice(2) as ComarkNode[]
-    let children = typeof preNode === 'string'
+    const children = typeof preNode === 'string'
       ? preNode
       : codeChildren
-
 
     if (Array.isArray(children)) {
       let line = 1
@@ -277,18 +276,17 @@ export async function highlightCodeBlocks(
           if (Array.isArray(preAttrs.highlights) && preAttrs.highlights.includes(line)) {
             child[1].class = `${child[1].class ?? ''} highlight`.trim()
             // TODO: (enforcing default style) once we unify all ecosystem styles we can remove this
-            child[1].style = "display: inline-block"
-          } else {
-            // TODO: (enforcing default style) once we unify all ecosystem styles we can remove this
-            child[1].style = "display: inline"
+            child[1].style = 'display: inline-block'
           }
-
+          else {
+            // TODO: (enforcing default style) once we unify all ecosystem styles we can remove this
+            child[1].style = 'display: inline'
+          }
 
           line += 1
         }
       }
     }
-
 
     const newPreAttrs: Record<string, any> = {
       ...preAttrs,
