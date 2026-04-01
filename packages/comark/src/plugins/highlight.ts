@@ -276,10 +276,13 @@ export async function highlightCodeBlocks(
         if (Array.isArray(child)) {
           if (Array.isArray(preAttrs.highlights) && preAttrs.highlights.includes(line)) {
             child[1].class = `${child[1].class ?? ''} highlight`.trim()
+            // TODO: (enforcing default style) once we unify all ecosystem styles we can remove this
+            child[1].style = "display: inline-block"
+          } else {
+            // TODO: (enforcing default style) once we unify all ecosystem styles we can remove this
+            child[1].style = "display: inline"
           }
 
-          // TODO: (enforcing default style) once we unify all ecosystem styles we can remove this
-          child[1].style = "display: inline-block"
 
           line += 1
         }

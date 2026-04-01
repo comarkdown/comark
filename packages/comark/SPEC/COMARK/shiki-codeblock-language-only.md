@@ -40,7 +40,8 @@ console.log(greeting)
         [
           "span",
           {
-            "class": "line"
+            "class": "line",
+            "style": "display: inline"
           },
           [
             "span",
@@ -85,10 +86,12 @@ console.log(greeting)
             " \"Hello, World!\""
           ]
         ],
+        "\n",
         [
           "span",
           {
-            "class": "line"
+            "class": "line",
+            "style": "display: inline"
           },
           [
             "span",
@@ -121,7 +124,8 @@ console.log(greeting)
 ## HTML
 
 ```html
-<pre language="typescript" class="shiki shiki-themes github-dark dark:github-dark" tabindex="0"><code class="language-typescript"><span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> greeting</span><span style="color:#F97583">:</span><span style="color:#79B8FF"> string</span><span style="color:#F97583"> =</span><span style="color:#9ECBFF"> "Hello, World!"</span></span><span class="line"><span style="color:#E1E4E8">console.</span><span style="color:#B392F0">log</span><span style="color:#E1E4E8">(greeting)</span></span></code></pre>
+<pre language="typescript" class="shiki shiki-themes github-dark dark:github-dark" tabindex="0"><code class="language-typescript"><span class="line" style="display: inline"><span style="color:#F97583">const</span><span style="color:#79B8FF"> greeting</span><span style="color:#F97583">:</span><span style="color:#79B8FF"> string</span><span style="color:#F97583"> =</span><span style="color:#9ECBFF"> "Hello, World!"</span></span>
+<span class="line" style="display: inline"><span style="color:#E1E4E8">console.</span><span style="color:#B392F0">log</span><span style="color:#E1E4E8">(greeting)</span></span></code></pre>
 ```
 
 ## Markdown

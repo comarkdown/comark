@@ -52,7 +52,8 @@ fn main() {
         [
           "span",
           {
-            "class": "line"
+            "class": "line highlight",
+            "style": "display: inline-block"
           },
           [
             "span",
@@ -76,10 +77,12 @@ fn main() {
             "() {"
           ]
         ],
+        "\n",
         [
           "span",
           {
-            "class": "line"
+            "class": "line highlight",
+            "style": "display: inline-block"
           },
           [
             "span",
@@ -117,10 +120,12 @@ fn main() {
             ";"
           ]
         ],
+        "\n",
         [
           "span",
           {
-            "class": "line"
+            "class": "line highlight",
+            "style": "display: inline-block"
           },
           [
             "span",
@@ -158,10 +163,12 @@ fn main() {
             ";"
           ]
         ],
+        "\n",
         [
           "span",
           {
-            "class": "line"
+            "class": "line highlight",
+            "style": "display: inline-block"
           },
           [
             "span",
@@ -206,10 +213,12 @@ fn main() {
             " y);"
           ]
         ],
+        "\n",
         [
           "span",
           {
-            "class": "line"
+            "class": "line",
+            "style": "display: inline"
           },
           [
             "span",
@@ -228,7 +237,11 @@ fn main() {
 ## HTML
 
 ```html
-<pre language="rust" filename="main.rs" highlights="[1,2,3,4]" class="shiki shiki-themes github-dark dark:github-dark" tabindex="0" style="background-color:#24292e;color:#e1e4e8"><code class="language-rust"><span class="line"><span style="color:#F97583">fn</span><span style="color:#B392F0"> main</span><span style="color:#E1E4E8">() {</span></span><span class="line"><span style="color:#F97583">    let</span><span style="color:#E1E4E8"> x </span><span style="color:#F97583">=</span><span style="color:#79B8FF"> 5</span><span style="color:#E1E4E8">;</span></span><span class="line"><span style="color:#F97583">    let</span><span style="color:#E1E4E8"> y </span><span style="color:#F97583">=</span><span style="color:#79B8FF"> 10</span><span style="color:#E1E4E8">;</span></span><span class="line"><span style="color:#B392F0">    println!</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"Sum: {}"</span><span style="color:#E1E4E8">, x </span><span style="color:#F97583">+</span><span style="color:#E1E4E8"> y);</span></span><span class="line"><span style="color:#E1E4E8">}</span></span></code></pre>
+<pre language="rust" filename="main.rs" highlights="[1,2,3,4]" class="shiki shiki-themes github-dark dark:github-dark" tabindex="0" style="background-color:#24292e;color:#e1e4e8"><code class="language-rust"><span class="line highlight" style="display: inline-block"><span style="color:#F97583">fn</span><span style="color:#B392F0"> main</span><span style="color:#E1E4E8">() {</span></span>
+<span class="line highlight" style="display: inline-block"><span style="color:#F97583">    let</span><span style="color:#E1E4E8"> x </span><span style="color:#F97583">=</span><span style="color:#79B8FF"> 5</span><span style="color:#E1E4E8">;</span></span>
+<span class="line highlight" style="display: inline-block"><span style="color:#F97583">    let</span><span style="color:#E1E4E8"> y </span><span style="color:#F97583">=</span><span style="color:#79B8FF"> 10</span><span style="color:#E1E4E8">;</span></span>
+<span class="line highlight" style="display: inline-block"><span style="color:#B392F0">    println!</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"Sum: {}"</span><span style="color:#E1E4E8">, x </span><span style="color:#F97583">+</span><span style="color:#E1E4E8"> y);</span></span>
+<span class="line" style="display: inline"><span style="color:#E1E4E8">}</span></span></code></pre>
 ```
 
 ## Markdown

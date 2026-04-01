@@ -39,7 +39,8 @@ No language specified
         [
           "span",
           {
-            "class": "line"
+            "class": "line",
+            "style": "display: inline"
           },
           [
             "span",
@@ -47,10 +48,12 @@ No language specified
             "Plain text code block"
           ]
         ],
+        "\n",
         [
           "span",
           {
-            "class": "line"
+            "class": "line",
+            "style": "display: inline"
           },
           [
             "span",
@@ -67,7 +70,8 @@ No language specified
 ## HTML
 
 ```html
-<pre class="shiki shiki-themes github-dark dark:github-dark" tabindex="0" style="background-color:#24292e;color:#e1e4e8"><code><span class="line"><span>Plain text code block</span></span><span class="line"><span>No language specified</span></span></code></pre>
+<pre class="shiki shiki-themes github-dark dark:github-dark" tabindex="0" style="background-color:#24292e;color:#e1e4e8"><code><span class="line" style="display: inline"><span>Plain text code block</span></span>
+<span class="line" style="display: inline"><span>No language specified</span></span></code></pre>
 ```
 
 ## Markdown

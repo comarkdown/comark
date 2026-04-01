@@ -59,7 +59,8 @@ func main() {
         [
           "span",
           {
-            "class": "line"
+            "class": "line highlight",
+            "style": "display: inline-block"
           },
           [
             "span",
@@ -76,16 +77,20 @@ func main() {
             " main"
           ]
         ],
+        "\n",
         [
           "span",
           {
-            "class": "line"
+            "class": "line",
+            "style": "display: inline"
           }
         ],
+        "\n",
         [
           "span",
           {
-            "class": "line"
+            "class": "line highlight",
+            "style": "display: inline-block"
           },
           [
             "span",
@@ -116,16 +121,20 @@ func main() {
             "\""
           ]
         ],
+        "\n",
         [
           "span",
           {
-            "class": "line"
+            "class": "line",
+            "style": "display: inline"
           }
         ],
+        "\n",
         [
           "span",
           {
-            "class": "line"
+            "class": "line highlight",
+            "style": "display: inline-block"
           },
           [
             "span",
@@ -149,10 +158,12 @@ func main() {
             "() {"
           ]
         ],
+        "\n",
         [
           "span",
           {
-            "class": "line"
+            "class": "line highlight",
+            "style": "display: inline-block"
           },
           [
             "span",
@@ -190,10 +201,12 @@ func main() {
             ")"
           ]
         ],
+        "\n",
         [
           "span",
           {
-            "class": "line"
+            "class": "line highlight",
+            "style": "display: inline-block"
           },
           [
             "span",
@@ -231,10 +244,12 @@ func main() {
             ")"
           ]
         ],
+        "\n",
         [
           "span",
           {
-            "class": "line"
+            "class": "line",
+            "style": "display: inline"
           },
           [
             "span",
@@ -272,10 +287,12 @@ func main() {
             ")"
           ]
         ],
+        "\n",
         [
           "span",
           {
-            "class": "line"
+            "class": "line",
+            "style": "display: inline"
           },
           [
             "span",
@@ -313,10 +330,12 @@ func main() {
             ")"
           ]
         ],
+        "\n",
         [
           "span",
           {
-            "class": "line"
+            "class": "line highlight",
+            "style": "display: inline-block"
           },
           [
             "span",
@@ -354,10 +373,12 @@ func main() {
             ")"
           ]
         ],
+        "\n",
         [
           "span",
           {
-            "class": "line"
+            "class": "line",
+            "style": "display: inline"
           },
           [
             "span",
@@ -376,7 +397,17 @@ func main() {
 ## HTML
 
 ```html
-<pre language="go" highlights="[1,3,5,6,7,10]" class="shiki shiki-themes github-dark dark:github-dark" tabindex="0" style="background-color:#24292e;color:#e1e4e8"><code class="language-go"><span class="line"><span style="color:#F97583">package</span><span style="color:#B392F0"> main</span></span><span class="line"></span><span class="line"><span style="color:#F97583">import</span><span style="color:#9ECBFF"> "</span><span style="color:#B392F0">fmt</span><span style="color:#9ECBFF">"</span></span><span class="line"></span><span class="line"><span style="color:#F97583">func</span><span style="color:#B392F0"> main</span><span style="color:#E1E4E8">() {</span></span><span class="line"><span style="color:#E1E4E8">    fmt.</span><span style="color:#B392F0">Println</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"Line 6"</span><span style="color:#E1E4E8">)</span></span><span class="line"><span style="color:#E1E4E8">    fmt.</span><span style="color:#B392F0">Println</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"Line 7"</span><span style="color:#E1E4E8">)</span></span><span class="line"><span style="color:#E1E4E8">    fmt.</span><span style="color:#B392F0">Println</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"Line 8"</span><span style="color:#E1E4E8">)</span></span><span class="line"><span style="color:#E1E4E8">    fmt.</span><span style="color:#B392F0">Println</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"Line 9"</span><span style="color:#E1E4E8">)</span></span><span class="line"><span style="color:#E1E4E8">    fmt.</span><span style="color:#B392F0">Println</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"Line 10"</span><span style="color:#E1E4E8">)</span></span><span class="line"><span style="color:#E1E4E8">}</span></span></code></pre>
+<pre language="go" highlights="[1,3,5,6,7,10]" class="shiki shiki-themes github-dark dark:github-dark" tabindex="0" style="background-color:#24292e;color:#e1e4e8"><code class="language-go"><span class="line highlight" style="display: inline-block"><span style="color:#F97583">package</span><span style="color:#B392F0"> main</span></span>
+<span class="line" style="display: inline"></span>
+<span class="line highlight" style="display: inline-block"><span style="color:#F97583">import</span><span style="color:#9ECBFF"> "</span><span style="color:#B392F0">fmt</span><span style="color:#9ECBFF">"</span></span>
+<span class="line" style="display: inline"></span>
+<span class="line highlight" style="display: inline-block"><span style="color:#F97583">func</span><span style="color:#B392F0"> main</span><span style="color:#E1E4E8">() {</span></span>
+<span class="line highlight" style="display: inline-block"><span style="color:#E1E4E8">    fmt.</span><span style="color:#B392F0">Println</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"Line 6"</span><span style="color:#E1E4E8">)</span></span>
+<span class="line highlight" style="display: inline-block"><span style="color:#E1E4E8">    fmt.</span><span style="color:#B392F0">Println</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"Line 7"</span><span style="color:#E1E4E8">)</span></span>
+<span class="line" style="display: inline"><span style="color:#E1E4E8">    fmt.</span><span style="color:#B392F0">Println</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"Line 8"</span><span style="color:#E1E4E8">)</span></span>
+<span class="line" style="display: inline"><span style="color:#E1E4E8">    fmt.</span><span style="color:#B392F0">Println</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"Line 9"</span><span style="color:#E1E4E8">)</span></span>
+<span class="line highlight" style="display: inline-block"><span style="color:#E1E4E8">    fmt.</span><span style="color:#B392F0">Println</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"Line 10"</span><span style="color:#E1E4E8">)</span></span>
+<span class="line" style="display: inline"><span style="color:#E1E4E8">}</span></span></code></pre>
 ```
 
 ## Markdown
