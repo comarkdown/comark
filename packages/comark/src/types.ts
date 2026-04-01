@@ -15,7 +15,7 @@ export type ComarkText = string
  * @param {} - The attributes of the comment
  * @param string - The content of the comment
  */
-export type ComarkComment = [null, {}, string]
+export type ComarkComment = [null, ComarkElementAttributes, string]
 
 /**
  * The Comark element attributes

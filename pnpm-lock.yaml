@@ -586,8 +586,8 @@ importers:
         specifier: workspace:*
         version: link:../comark
       shiki:
-        specifier: ^3.22.0
-        version: 3.23.0
+        specifier: ^4.0.0
+        version: 4.0.2
     devDependencies:
       beautiful-mermaid:
         specifier: ^1.1.3

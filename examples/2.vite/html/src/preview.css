@@ -33,7 +33,7 @@ code {
 pre {
   background: #0d1117;
   border-radius: 6px;
-  padding: 16px;
+  padding: 1rem;
   overflow-x: auto;
   margin: 0 0 16px;
 }
@@ -44,15 +44,10 @@ pre code {
   font-size: 85%;
   white-space: pre;
 }
-.shiki span.line {
-  display: block;
-}
-.shiki span.line:empty {
-  height: 1lh;
-}
 .shiki span.line.highlight {
+  display: inline-block;
   background-color: rgba(255, 255, 0, 0.1);
-  display: block;
+  width: calc(100% + 2rem);
   margin: 0 -1rem;
   padding: 0 1rem;
 }

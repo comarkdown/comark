@@ -1,5 +1,5 @@
 import { createRender } from '@comark/html'
-import highlight from 'comark/plugins/highlight'
+import highlight from '@comark/html/plugins/highlight'
 import math, { Math } from '@comark/html/plugins/math'
 import mermaid, { Mermaid } from '@comark/html/plugins/mermaid'
 import katexCss from 'katex/dist/katex.min.css?raw'
@@ -26,7 +26,7 @@ Links look like this: [comark.dev](https://comark.dev)
 
 ## Code Block
 
-\`\`\`typescript [main.ts]
+\`\`\`typescript [main.ts] {1,3}
 import { render } from '@comark/html'
 
 const html = await render('# Hello World')

@@ -40,8 +40,8 @@ for (const srcFile of srcFiles) {
   if (!srcRel.startsWith('.')) srcRel = './' + srcRel
 
   const content = readFileSync(srcFile, 'utf-8')
-  const hasDefault = /\bexport\s+default\b/.test(content)
-    || /export\s*\{\s*default\s*\}/.test(content)
+  const hasDefault = /^\bexport\s+default\b/.test(content)
+    || /^export\s*\{\s*default\s*\}/.test(content)
 
   // JS stub: re-export from source (bundlers handle .ts imports)
   writeFileSync(distJs,

@@ -33,7 +33,7 @@
   "peerDependencies": {
     "katex": ">=0.16",
     "beautiful-mermaid": ">=1.0",
-    "shiki": "^3.22.0"
+    "shiki": "^4.0.0"
   },
   "peerDependenciesMeta": {
     "katex": {

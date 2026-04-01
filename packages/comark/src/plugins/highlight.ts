@@ -252,6 +252,7 @@ export async function highlightCodeBlocks(
   const newNodes = JSON.parse(JSON.stringify(tree.nodes)) as ComarkNode[]
   for (let i = 0; i < codeBlocks.length; i++) {
     const { node, path } = codeBlocks[i]
+    const preAttrs = node[1] as Record<string, any>
     const result = highlightedResults[i]
 
     const preNode = result.nodes[0]
@@ -264,9 +265,28 @@ export async function highlightCodeBlocks(
         )
 
     const codeChildren = preNode[2].slice(2) as ComarkNode[]
-    const children = typeof preNode === 'string' ? preNode : codeChildren.filter(element => element !== '\n')
+    let children = typeof preNode === 'string'
+      ? preNode
+      : codeChildren
 
-    const preAttrs = node[1] as Record<string, any>
+
+    if (Array.isArray(children)) {
+      let line = 1
+      for (const child of children) {
+        if (Array.isArray(child)) {
+          if (Array.isArray(preAttrs.highlights) && preAttrs.highlights.includes(line)) {
+            child[1].class = `${child[1].class ?? ''} highlight`.trim()
+          }
+
+          // TODO: (enforcing default style) once we unify all ecosystem styles we can remove this
+          child[1].style = "display: inline-block"
+
+          line += 1
+        }
+      }
+    }
+
+
     const newPreAttrs: Record<string, any> = {
       ...preAttrs,
       class: [...preNodeClasses, options.themes?.dark?.name ? `dark:${options.themes?.dark?.name}` : ''].filter(Boolean).join(' '),
