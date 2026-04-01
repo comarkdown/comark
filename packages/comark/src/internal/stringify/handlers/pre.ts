@@ -24,7 +24,7 @@ export function pre(node: ComarkElement, state: State) {
     : ''
 
   const result = '```' + language + filename + highlights + meta + '\n'
-    + String(node[1]?.code || extractCode(node)).trim()
+    + String(node[1]?.code || textContent(node)).trim()
     + '\n```'
 
   return result + state.context.blockSeparator
