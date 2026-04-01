@@ -389,8 +389,6 @@ Everything you need for modern content parsing
     const parse = createParse()
     for (const step of steps) {
       const result = await parse(step.input, { streaming: true })
-      console.log(JSON.stringify(result, null, 2))
-      console.log(result)
       expect(result).toEqual(step.output)
     }
   })

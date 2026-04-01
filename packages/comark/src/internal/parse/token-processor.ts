@@ -23,8 +23,10 @@ const INLINE_TAG_MAP: Record<string, string> = {
   sub_open: 'del',
 }
 
-// Track heading slug counts for deduplication within a single parse
-const headingSlugCounts: Map<string, number> = new Map()
+interface ProcessState {
+  headingSlugCounts: Map<string, number>
+  preservePositions: boolean
+}
 
 // ─── main entry point ───────────────────────────────────────────────────────
 
@@ -32,13 +34,16 @@ const headingSlugCounts: Map<string, number> = new Map()
  * Convert Markdown-It tokens to a Comark tree
  */
 export function marmdownItTokensToComarkTree(tokens: any[], options: { startLine: number, preservePositions: boolean } = { startLine: 0, preservePositions: false }): ComarkNode[] {
-  headingSlugCounts.clear()
+  const state: ProcessState = {
+    headingSlugCounts: new Map<string, number>(),
+    preservePositions: options.preservePositions,
+  }
   const nodes: ComarkNode[] = []
 
   let i = 0
   let endLine = options.startLine
   while (i < tokens.length) {
-    const result = processBlockToken(tokens, i, false)
+    const result = processBlockToken(tokens, i, false, state)
     if (result.node) {
       if (options.preservePositions) {
         for (let j = i; j < result.nextIndex; j++) {
@@ -261,7 +266,7 @@ function extractAttributes(
   return { attrs: {}, nextIndex: startIndex }
 }
 
-function processBlockToken(tokens: any[], startIndex: number, insideNestedContext: boolean = false): { node: ComarkNode | null, nextIndex: number } {
+function processBlockToken(tokens: any[], startIndex: number, insideNestedContext: boolean = false, state?: ProcessState): { node: ComarkNode | null, nextIndex: number } {
   const token = tokens[startIndex]
 
   if (token.type === 'hr') {
@@ -278,7 +283,7 @@ function processBlockToken(tokens: any[], startIndex: number, insideNestedContex
       return { node: [null, {}, inner] as unknown as ComarkNode, nextIndex: startIndex + 1 }
     }
 
-    const children = processBlockChildren(tokens, startIndex + 1, 'html_block_close', false, false, false)
+    const children = processBlockChildren(tokens, startIndex + 1, 'html_block_close', false, false, false, state)
     const [node1] = htmlToComarkNodes(content)
     if (!node1) {
       return { node: null, nextIndex: startIndex + 1 }
@@ -293,7 +298,7 @@ function processBlockToken(tokens: any[], startIndex: number, insideNestedContex
     const componentName = token.tag || 'component'
     const attrs = processAttributes(token.attrs)
     // Process children until mdc_block_close, handling slots (#slotname)
-    const children = processBlockChildrenWithSlots(tokens, startIndex + 1, 'mdc_block_close')
+    const children = processBlockChildrenWithSlots(tokens, startIndex + 1, 'mdc_block_close', state)
     // Return the component even if it has no children (empty component like ::component\n::)
     return { node: [componentName, attrs, ...children.nodes] as ComarkNode, nextIndex: children.nextIndex + 1 }
   }
@@ -370,12 +375,11 @@ function processBlockToken(tokens: any[], startIndex: number, insideNestedContex
     const level = token.tag.replace('h', '')
     const headingTag = `h${level}` as 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
     // Process heading children with inHeading flag for Comark component handling
-    const children = processBlockChildren(tokens, startIndex + 1, 'heading_close', true, true, insideNestedContext)
-
+    const children = processBlockChildren(tokens, startIndex + 1, 'heading_close', true, true, insideNestedContext, state)
     if (children.nodes.length > 0) {
       // Always generate ID for all headings, no exceptions
       const textContent = extractTextContent(children.nodes)
-      const headingId = slugify(textContent)
+      const headingId = uniqueSlug(slugify(textContent), state)
 
       // Always attach ID to the heading element itself
       return { node: [headingTag, { id: headingId }, ...children.nodes] as ComarkNode, nextIndex: children.nextIndex + 1 }
@@ -386,7 +390,7 @@ function processBlockToken(tokens: any[], startIndex: number, insideNestedContex
   // Handle list items - paragraphs should be unwrapped
   if (token.type === 'list_item_open') {
     const attrs = processAttributes(token.attrs, { handleBoolean: false, handleJSON: false })
-    const children = processBlockChildren(tokens, startIndex + 1, 'list_item_close', false, false, true)
+    const children = processBlockChildren(tokens, startIndex + 1, 'list_item_close', false, false, true, state)
     // Unwrap paragraphs in list items
     const unwrapped: ComarkNode[] = []
     for (const child of children.nodes) {
@@ -410,40 +414,8 @@ function processBlockToken(tokens: any[], startIndex: number, insideNestedContex
     const attrs = processAttributes(token.attrs, { handleBoolean: false, handleJSON: false })
     const closeType = token.type.replace('_open', '_close')
 
-    // Special handling for blockquotes
-    if (tagName === 'blockquote') {
-      // First pass: get children
-      const children = processBlockChildren(tokens, startIndex + 1, closeType, false, false, false)
-
-      // Rule: If a heading is the FIRST child AND there are additional children after it,
-      // then the heading should NOT have an ID. Otherwise, headings should have IDs.
-      if (children.nodes.length > 1) {
-        const firstChild = children.nodes[0]
-        // Check if first child is a heading (h1-h6)
-        const isHeading = Array.isArray(firstChild)
-          && typeof firstChild[0] === 'string'
-          && /^h[1-6]$/.test(firstChild[0])
-
-        if (isHeading) {
-          // Heading is first child with more siblings - reprocess without IDs
-          const childrenNoIds = processBlockChildren(tokens, startIndex + 1, closeType, false, false, true)
-          if (childrenNoIds.nodes.length > 0) {
-            return { node: [tagName, attrs, ...childrenNoIds.nodes] as ComarkNode, nextIndex: childrenNoIds.nextIndex + 1 }
-          }
-          return { node: null, nextIndex: childrenNoIds.nextIndex + 1 }
-        }
-      }
-
-      // All other cases: use original processing (allows IDs)
-      if (children.nodes.length > 0) {
-        return { node: [tagName, attrs, ...children.nodes] as ComarkNode, nextIndex: children.nextIndex + 1 }
-      }
-      return { node: null, nextIndex: children.nextIndex + 1 }
-    }
-
-    // For other elements (tables, etc.)
     const isNestedContext = ['td', 'th'].includes(tagName)
-    const children = processBlockChildren(tokens, startIndex + 1, closeType, false, false, isNestedContext)
+    const children = processBlockChildren(tokens, startIndex + 1, closeType, false, false, isNestedContext, state)
     if (children.nodes.length > 0) {
       return { node: [tagName, attrs, ...children.nodes] as ComarkNode, nextIndex: children.nextIndex + 1 }
     }
@@ -459,6 +431,7 @@ function processBlockChildrenWithSlots(
   tokens: any[],
   startIndex: number,
   closeType: string,
+  state?: ProcessState,
 ): { nodes: ComarkNode[], nextIndex: number } {
   const nodes: ComarkNode[] = []
   let i = startIndex
@@ -513,7 +486,7 @@ function processBlockChildrenWithSlots(
 
     // Process other block tokens
     // Comark components are not nested contexts - headings inside them should get IDs
-    const result = processBlockToken(tokens, i, false)
+    const result = processBlockToken(tokens, i, false, state)
     i = result.nextIndex
     if (result.node) {
       if (currentSlotName !== null) {
@@ -542,6 +515,7 @@ function processBlockChildren(
   inlineOnly: boolean,
   inHeading: boolean = false,
   insideNestedContext: boolean = false,
+  state?: ProcessState,
 ): { nodes: ComarkNode[], nextIndex: number } {
   const nodes: ComarkNode[] = []
   let i = startIndex
@@ -577,7 +551,7 @@ function processBlockChildren(
       i++
     }
     else {
-      const result = processBlockToken(tokens, i, insideNestedContext)
+      const result = processBlockToken(tokens, i, insideNestedContext, state)
       i = result.nextIndex
       if (result.node) {
         nodes.push(result.node)
@@ -661,15 +635,16 @@ function slugify(text: string): string {
     slug = '_' + slug
   }
 
-  return uniqueSlug(slug)
+  return slug
 }
 
 /**
  * Return a unique slug by appending a numeric suffix for duplicates
  */
-function uniqueSlug(slug: string): string {
-  const count = headingSlugCounts.get(slug) ?? 0
-  headingSlugCounts.set(slug, count + 1)
+function uniqueSlug(slug: string, state?: ProcessState): string {
+  if (!state) return slug
+  const count = state.headingSlugCounts.get(slug) ?? 0
+  state.headingSlugCounts.set(slug, count + 1)
   return count === 0 ? slug : `${slug}-${count}`
 }
 
