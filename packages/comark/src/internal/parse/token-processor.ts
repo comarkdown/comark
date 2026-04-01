@@ -416,10 +416,7 @@ function processBlockToken(tokens: any[], startIndex: number, insideNestedContex
 
     const isNestedContext = ['td', 'th'].includes(tagName)
     const children = processBlockChildren(tokens, startIndex + 1, closeType, false, false, isNestedContext, state)
-    if (children.nodes.length > 0) {
-      return { node: [tagName, attrs, ...children.nodes] as ComarkNode, nextIndex: children.nextIndex + 1 }
-    }
-    return { node: null, nextIndex: children.nextIndex + 1 }
+    return { node: [tagName, attrs, ...children.nodes] as ComarkNode, nextIndex: children.nextIndex + 1 }
   }
 
   const componentName = token.tag || 'component'
