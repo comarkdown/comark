@@ -25,7 +25,8 @@ body {
 }
 .shiki span.line.highlight {
   background-color: rgba(255, 255, 0, 0.1);
-  display: block;
+  display: inline-block;
+  width: calc(100% + 2rem);
   margin: 0 -1rem;
   padding: 0 1rem;
 }
