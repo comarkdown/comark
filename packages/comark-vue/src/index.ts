@@ -128,7 +128,7 @@ export function defineComarkComponent(config: DefineComarkComponentOptions = {})
           streaming: props.streaming,
           summary: props.summary,
           caret: props.caret,
-          class: config.class
+          class: config.class,
         }, {
           default: slots.default,
         })
