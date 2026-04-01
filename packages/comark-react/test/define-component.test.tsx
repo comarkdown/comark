@@ -119,6 +119,37 @@ describe('defineComarkComponent — plugin inheritance via extends', () => {
 })
 
 // ---------------------------------------------------------------------------
+// defineComarkComponent — className
+// ---------------------------------------------------------------------------
+
+describe('defineComarkComponent — className via config', () => {
+  it('applies config className to wrapper div', async () => {
+    const Custom = defineComarkComponent({ name: 'WithClass', className: 'prose dark' })
+    const html = await renderAsync(<Custom markdown="hello" />)
+    expect(html).toContain('comark-content prose dark')
+  })
+
+  it('merges config className with prop className', async () => {
+    const Custom = defineComarkComponent({ name: 'WithClass', className: 'prose' })
+    const html = await renderAsync(<Custom markdown="hello" className="extra" />)
+    expect(html).toContain('prose extra')
+  })
+
+  it('prop className works without config className', async () => {
+    const Custom = defineComarkComponent({ name: 'NoConfigClass' })
+    const html = await renderAsync(<Custom markdown="hello" className="only-prop" />)
+    expect(html).toContain('comark-content only-prop')
+  })
+
+  it('inherited component preserves parent className', async () => {
+    const Base = defineComarkComponent({ name: 'Base', className: 'base-class' })
+    const Child = defineComarkComponent({ name: 'Child', extends: Base })
+    const html = await renderAsync(<Child markdown="hello" />)
+    expect(html).toContain('base-class')
+  })
+})
+
+// ---------------------------------------------------------------------------
 // defineComarkRendererComponent
 // ---------------------------------------------------------------------------
 
@@ -188,5 +219,41 @@ describe('defineComarkRendererComponent — component inheritance via extends', 
 
     expect(html).toContain('alert-child')
     expect(html).toContain('card-base')
+  })
+})
+
+// ---------------------------------------------------------------------------
+// defineComarkRendererComponent — className
+// ---------------------------------------------------------------------------
+
+describe('defineComarkRendererComponent — className via config', () => {
+  it('applies config className to wrapper div', async () => {
+    const Renderer = defineComarkRendererComponent({ name: 'WithClass', className: 'prose dark' })
+    const tree = await parse('hello')
+    const html = await renderAsync(<Renderer tree={tree} />)
+    expect(html).toContain('comark-content prose dark')
+  })
+
+  it('merges config className with prop className', async () => {
+    const Renderer = defineComarkRendererComponent({ name: 'WithClass', className: 'prose' })
+    const tree = await parse('hello')
+    const html = await renderAsync(<Renderer tree={tree} className="extra" />)
+    expect(html).toContain('prose extra')
+  })
+
+  it('prop className works without config className', async () => {
+    const Renderer = defineComarkRendererComponent({ name: 'NoConfigClass' })
+    const tree = await parse('hello')
+    const html = await renderAsync(<Renderer tree={tree} className="only-prop" />)
+    expect(html).toContain('comark-content only-prop')
+  })
+
+  it('inherited renderer preserves parent className', async () => {
+    const Base = defineComarkRendererComponent({ name: 'BaseRenderer', className: 'base-class' })
+    const Child = defineComarkRendererComponent({ name: 'ChildRenderer', extends: Base, className: 'child-class' })
+    const tree = await parse('hello')
+    const html = await renderAsync(<Child tree={tree} />)
+    expect(html).toContain('base-class')
+    expect(html).toContain('child-class')
   })
 })

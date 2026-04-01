@@ -16,6 +16,10 @@ interface DefineComarkComponentOptions extends ParseOptions {
   /** Display name shown in React DevTools. */
   name?: string
   components?: Record<string, React.ComponentType<any>>
+  /**
+   * Additional classes for the wrapper div
+   */
+  className?: string
 }
 
 /**
@@ -42,7 +46,7 @@ interface DefineComarkComponentOptions extends ParseOptions {
  * ```
  */
 export function defineComarkComponent(config: DefineComarkComponentOptions = {}) {
-  const { name, components: configComponents = {}, extends: BaseComponent, ...parseOptions } = config
+  const { name, components: configComponents = {}, className: configClassName, extends: BaseComponent, ...parseOptions } = config
 
   const ComarkComponent: React.FC<ComarkProps> = (props) => {
     const mergedOptions: Exclude<ParseOptions, 'plugins'> = {
@@ -60,11 +64,14 @@ export function defineComarkComponent(config: DefineComarkComponentOptions = {})
       ...props.components,
     }
 
+    const mergedClassName = [configClassName, props.className].filter(Boolean).join(' ') || undefined
+
     return React.createElement(BaseComponent ?? Comark, {
       ...props,
       options: mergedOptions,
       plugins: mergedPlugins,
       components: mergedComponents,
+      className: mergedClassName,
     })
   }
 
@@ -79,6 +86,10 @@ interface DefineComarkRendererOptions {
   /** Display name shown in React DevTools. */
   name?: string
   components?: Record<string, React.ComponentType<any>>
+  /**
+   * Additional classes for the wrapper div
+   */
+  className?: string
 }
 
 /**
@@ -108,7 +119,7 @@ interface DefineComarkRendererOptions {
  * ```
  */
 export function defineComarkRendererComponent(config: DefineComarkRendererOptions = {}) {
-  const { name, components: configComponents = {}, extends: BaseComponent } = config
+  const { name, components: configComponents = {}, className: configClassName, extends: BaseComponent } = config
 
   const RendererComponent: React.FC<ComarkRendererProps> = (props) => {
     const mergedComponents = {
@@ -116,9 +127,12 @@ export function defineComarkRendererComponent(config: DefineComarkRendererOption
       ...props.components,
     }
 
+    const mergedClassName = [configClassName, props.className].filter(Boolean).join(' ') || undefined
+
     return React.createElement(BaseComponent ?? ComarkRenderer, {
       ...props,
       components: mergedComponents,
+      className: mergedClassName,
     })
   }
 

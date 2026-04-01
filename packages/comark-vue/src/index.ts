@@ -12,12 +12,20 @@ interface DefineComarkComponentOptions extends ParseOptions {
   extends?: typeof Comark
   name?: string
   components?: Record<string, any>
+  /**
+   * Additional classes for the wrapper div
+   */
+  class?: string
 }
 
 interface DefineComarkRendererOptions {
   extends?: typeof ComarkRenderer
   name?: string
   components?: Record<string, any>
+  /**
+   * Additional classes for the wrapper div
+   */
+  class?: string
 }
 
 export function defineComarkComponent(config: DefineComarkComponentOptions = {}): typeof Comark {
@@ -120,6 +128,7 @@ export function defineComarkComponent(config: DefineComarkComponentOptions = {})
           streaming: props.streaming,
           summary: props.summary,
           caret: props.caret,
+          class: config.class
         }, {
           default: slots.default,
         })
@@ -189,6 +198,7 @@ export function defineComarkRendererComponent(config: DefineComarkRendererOption
           componentsManifest: props.componentsManifest,
           streaming: props.streaming,
           caret: props.caret,
+          class: config.class,
         }, {
           default: slots.default,
         })

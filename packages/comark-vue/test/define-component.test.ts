@@ -129,6 +129,33 @@ describe('defineComarkComponent — plugin inheritance via extends', () => {
 })
 
 // ---------------------------------------------------------------------------
+// defineComarkComponent — class
+// ---------------------------------------------------------------------------
+
+describe('defineComarkComponent — class via config', () => {
+  it('applies config class to wrapper div', async () => {
+    const Custom = defineComarkComponent({ name: 'WithClass', class: 'prose dark' })
+    const html = await renderComponent(Custom, { markdown: 'hello' })
+    expect(html).toContain('prose dark')
+    expect(html).toContain('comark-content')
+  })
+
+  it('prop class works without config class', async () => {
+    const Custom = defineComarkComponent({ name: 'NoConfigClass' })
+    const html = await renderComponent(Custom, { markdown: 'hello' })
+    expect(html).toContain('comark-content')
+  })
+
+  it('inherited component preserves parent class', async () => {
+    const Base = defineComarkComponent({ name: 'Base', class: 'base-class' })
+    const Child = defineComarkComponent({ name: 'Child', extends: Base, class: 'child-class' })
+    const html = await renderComponent(Child, { markdown: 'hello' })
+    expect(html).toContain('base-class')
+    expect(html).toContain('child-class')
+  })
+})
+
+// ---------------------------------------------------------------------------
 // defineComarkRendererComponent
 // ---------------------------------------------------------------------------
 
@@ -199,5 +226,35 @@ describe('defineComarkRendererComponent — component inheritance via extends', 
     // alert overridden in Middle, card still from Base
     expect(html).toContain('alert-child')
     expect(html).toContain('card-base')
+  })
+})
+
+// ---------------------------------------------------------------------------
+// defineComarkRendererComponent — class
+// ---------------------------------------------------------------------------
+
+describe('defineComarkRendererComponent — class via config', () => {
+  it('applies config class to wrapper div', async () => {
+    const Renderer = defineComarkRendererComponent({ name: 'WithClass', class: 'prose dark' })
+    const tree = await parse('hello')
+    const html = await renderComponent(Renderer, { tree })
+    expect(html).toContain('prose dark')
+    expect(html).toContain('comark-content')
+  })
+
+  it('prop class works without config class', async () => {
+    const Renderer = defineComarkRendererComponent({ name: 'NoConfigClass' })
+    const tree = await parse('hello')
+    const html = await renderComponent(Renderer, { tree })
+    expect(html).toContain('comark-content')
+  })
+
+  it('inherited renderer preserves parent class', async () => {
+    const Base = defineComarkRendererComponent({ name: 'BaseRenderer', class: 'base-class' })
+    const Child = defineComarkRendererComponent({ name: 'ChildRenderer', extends: Base, class: 'child-class' })
+    const tree = await parse('hello')
+    const html = await renderComponent(Child, { tree })
+    expect(html).toContain('base-class')
+    expect(html).toContain('child-class')
   })
 })
