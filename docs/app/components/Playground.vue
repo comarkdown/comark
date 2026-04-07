@@ -93,8 +93,8 @@ function resetComark(): void {
 
 const formattedOutput = ref<string>('')
 
-watch(tree, async (t) => {
-  formattedOutput.value = t ? await renderMarkdown(t as ComarkTree) : ''
+watch(tree, async (t: ComarkTree | null) => {
+  formattedOutput.value = t ? await renderMarkdown(t) : ''
 }, { immediate: true })
 
 const formattedOutputModel = computed({
