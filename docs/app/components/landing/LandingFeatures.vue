@@ -12,6 +12,8 @@ defineProps<{
   frameworksVueLinkTo: string
   frameworksReactLinkLabel: string
   frameworksReactLinkTo: string
+  frameworksSvelteLinkLabel: string
+  frameworksSvelteLinkTo: string
 }>()
 </script>
 
@@ -33,6 +35,8 @@ defineProps<{
       :vue-link-to="frameworksVueLinkTo"
       :react-link-label="frameworksReactLinkLabel"
       :react-link-to="frameworksReactLinkTo"
+      :svelte-link-label="frameworksSvelteLinkLabel"
+      :svelte-link-to="frameworksSvelteLinkTo"
       class="min-w-0"
     />
   </div>
