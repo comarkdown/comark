@@ -103,8 +103,6 @@ date: 2024-01-15
 tags:
   - markdown
   - documentation
-depth: 3
-searchDepth: 2
 custom_field: custom value
 ---
 
@@ -120,11 +118,11 @@ Your markdown content here...
 - Parsed as YAML
 - Available in the `frontmatter` property of ComarkTree
 
-### Special Fields
+### Common Fields
 
-- **title**: Used in table of contents generation
-- **depth**: Maximum heading level for TOC (default: 2)
-- **searchDepth**: Depth for TOC search (default: 2)
+- **title**: Often used for page titles or TOC labels
+
+Note: `depth` and `searchDepth` are not automatically processed from frontmatter. They must be explicitly passed to the `toc` plugin options.
 
 ### Example
 
@@ -254,6 +252,9 @@ This is the main content of the card
 
 #footer
 Footer text here
+
+#default
+Default slot
 ::
 ```
 
@@ -279,6 +280,11 @@ Footer text here
         "template",
         { "name": "footer" },
         ["p", {}, "Footer text here"]
+      ],
+      [
+        "template",
+        { "name": "default" },
+        ["p", {}, "Default slot"]
       ]
     ]
   ],
@@ -286,6 +292,35 @@ Footer text here
   "meta": {}
 }
 ```
+
+### Default Slot
+
+Content inside a component without a slot marker is the **default slot**. These two forms are equivalent in rendering but produce different ASTs:
+
+```markdown
+::component
+hello
+::
+```
+
+```markdown
+::component
+#default
+hello
+::
+```
+
+**Without `#default`** — content becomes direct children (auto-unwrapped):
+```json
+["component", {}, "hello"]
+```
+
+**With `#default`** — content is wrapped in an explicit template node:
+```json
+["component", {}, ["template", { "name": "default" }, "hello"]]
+```
+
+Both serialize back to the same Markdown (without `#default`). The Vue and React renderers treat both forms identically — direct children and `template[name="default"]` children both become the default slot. Use `#default` explicitly when mixing named and default slots in the same component.
 
 ### Nested Components
 
@@ -295,9 +330,9 @@ Components can be nested within each other:
 ::outer-component
 Content in outer
 
-::inner-component{variant="compact"}
+:::inner-component{variant="compact"}
 Content in inner
-::
+:::
 
 More content in outer
 ::

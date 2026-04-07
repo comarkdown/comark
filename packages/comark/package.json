@@ -25,7 +25,8 @@
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
-    "dist"
+    "dist",
+    "skills"
   ],
   "publishConfig": {
     "access": "public"

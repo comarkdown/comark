@@ -353,25 +353,21 @@ const components = {
 
 ## Error Handling
 
-The `Comark` component captures component errors automatically:
+The `ComarkRenderer` component has built-in error capture via Vue's `onErrorCaptured` hook. Component rendering errors are caught automatically without crashing the application. You can also use Vue's native `onErrorCaptured` in a parent component to handle errors:
 
 ```vue
 <template>
-  <ErrorBoundary @error="handleError">
-    <Comark :markdown="content" />
-  </ErrorBoundary>
+  <Comark :markdown="content" />
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onErrorCaptured } from 'vue'
 import { Comark } from '@comark/vue'
 
-const errors = ref<Error[]>([])
-
-function handleError(error: Error) {
+onErrorCaptured((error) => {
   console.error('Component error:', error)
-  errors.value.push(error)
-}
+  return false // prevent propagation
+})
 </script>
 ```
 
@@ -463,4 +459,4 @@ Table content here
 
 ---
 
-[← Back to Main Skills Guide](../../SKILLS.md)
+[← Back to Main Skills Guide](../SKILL.md)

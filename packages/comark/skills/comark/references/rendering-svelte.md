@@ -7,6 +7,7 @@ Complete guide for rendering Comark AST in Svelte 5 applications.
 - [Basic Usage](#basic-usage)
 - [Custom Components](#custom-components)
 - [Dynamic Component Resolution](#dynamic-component-resolution)
+- [Slots Support](#slots-support)
 - [Props Mapping](#props-mapping)
 - [Streaming Mode](#streaming-mode)
 - [Prose Components](#prose-components)
@@ -142,6 +143,59 @@ Load components dynamically using `componentsManifest`:
 
 <Comark markdown={content} componentsManifest={loadComponent} />
 ```
+
+---
+
+## Slots Support
+
+Comark components with named slots work in Svelte using the `children` snippet pattern:
+
+### Markdown with Slots
+
+```markdown
+::card
+#header
+## Card Title
+
+#default
+Main content here with **markdown** support
+
+#footer
+Footer text
+::
+```
+
+### Custom Component with Slots
+
+In Svelte 5, children are passed as implicit slot content and received as a `Snippet`:
+
+```svelte
+<!-- Card.svelte -->
+<script lang="ts">
+  import type { Snippet } from 'svelte'
+
+  let {
+    children,
+  }: {
+    children?: Snippet
+  } = $props()
+</script>
+
+<div class="card">
+  {@render children?.()}
+</div>
+
+<style>
+  .card {
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    padding: 1rem;
+  }
+</style>
+```
+
+Note: Named slots from Comark (`#header`, `#content`, `#footer`) are rendered as `template` elements in the AST. The Svelte renderer passes all children (including named slot templates) as a single `children` snippet. To handle named slots individually, access the `__node` prop and filter children by template name.
 
 ---
 
@@ -396,4 +450,4 @@ Add a custom wrapper class:
 
 ---
 
-[← Back to Main Skills Guide](../../SKILLS.md)
+[← Back to Main Skills Guide](../SKILL.md)
