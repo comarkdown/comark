@@ -18,9 +18,10 @@ useSeo({
 })
 
 if (!page.value?.seo?.ogImage) {
-  defineOgImage('Landing', {
+  defineOgImage('OgImageDocs', {
     title,
     description: description?.replace(/,/g, ''),
+    headline: 'Components in Markdown',
   })
 }
 

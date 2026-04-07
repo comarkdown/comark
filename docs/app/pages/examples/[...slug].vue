@@ -62,7 +62,7 @@ useSeoMeta({
   title,
   description,
 })
-defineOgImage('Docs', {
+defineOgImage('OgImageDocs', {
   headline: 'Examples',
   title,
   description,

@@ -108,6 +108,9 @@ importers:
       splitpanes:
         specifier: ^4.0.4
         version: 4.0.4(vue@3.5.30(typescript@5.9.3))
+      tailwindcss:
+        specifier: ^4.2.2
+        version: 4.2.2
       vue-json-pretty:
         specifier: ^2.6.0
         version: 2.6.0(vue@3.5.30(typescript@5.9.3))

@@ -14,7 +14,7 @@ useSeoMeta({
   title,
   description,
 })
-defineOgImage('Docs', {
+defineOgImage('OgImageDocs', {
   headline: 'Streaming',
   title,
   description,

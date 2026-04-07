@@ -17,7 +17,8 @@
     "markdown-it-math": "^5.2.1",
     "nuxt": "^4.4.2",
     "nuxt-studio": "1.5.1",
-    "splitpanes": "^4.0.4"
+    "splitpanes": "^4.0.4",
+    "tailwindcss": "^4.2.2"
   },
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.19",
