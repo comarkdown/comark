@@ -1,14 +1,13 @@
-import {type Spec, type UIElement  } from '@json-render/core'
-import { ComarkElement, ComarkElementAttributes, ComarkNode, ComarkTree } from '../types'
+import type { Spec, UIElement } from '@json-render/core'
+import type { ComarkElementAttributes, ComarkNode } from '../types'
 import { defineComarkPlugin } from '../parse'
 import { textContent, visit } from '../utils'
-
 
 function jsonRenderToAst(jrt: Spec | UIElement) {
   if (!(jrt as Spec).root) {
     jrt = {
       root: 'template',
-      elements: { template: jrt as UIElement }
+      elements: { template: jrt as UIElement },
     }
   }
 
@@ -28,7 +27,7 @@ function jsonRenderElementToAst(element: UIElement, elements: Record<string, UIE
   return [
     element.type,
     element.props,
-    ...children.map((child) => jsonRenderElementToAst(child, elements))
+    ...children.map(child => jsonRenderElementToAst(child, elements)),
   ]
 }
 
@@ -36,9 +35,9 @@ interface JsonRenderConfig {
 
 }
 
-export default defineComarkPlugin((config: JsonRenderConfig = {}) => ({
+export default defineComarkPlugin((_config: JsonRenderConfig = {}) => ({
   name: 'json-render',
-  pre: async (state) => {
+  pre: async (_state) => {
     // register options to for highlight to ignore json-render blocks
   },
   post: async (state) => {
