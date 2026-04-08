@@ -25,6 +25,7 @@
     "dev:nextjs": "pnpm --filter comark-nextjs run dev",
     "dev:highlight": "pnpm --filter comark-vue-vite-highlight run dev",
     "dev:twoslash": "pnpm --filter comark-vue-vite-twoslash run dev",
+    "dev:json-render": "pnpm --filter comark-vue-vite-json-render run dev",
     "benchmark": "pnpm --filter comark run benchmark",
     "docs": "nuxt dev --extends docus docs",
     "prepack": "pnpm build && pnpm sync-plugins",

@@ -64,7 +64,7 @@ async function parseMarkdown(): Promise<void> {
     return
   }
   parsing.value = true
-  const plugins = [highlight(), math(), mermaid(), emoji(), jsonRender()]
+  const plugins = [jsonRender(), highlight(), math(), mermaid(), emoji()]
   const start = performance.now()
   try {
     const result = await parse(markdown.value, {

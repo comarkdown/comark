@@ -31,24 +31,70 @@ function jsonRenderElementToAst(element: UIElement, elements: Record<string, UIE
   ]
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface JsonRenderConfig {
 
 }
 
+/**
+ * Plugin for rendering [JSON Render](https://json-render.dev/) specs as UI components.
+ *
+ * Transforms `json-render` fenced code blocks into Comark AST nodes at parse time.
+ * Supports both full specs (with `root` and `elements`) and single-element shorthand.
+ *
+ * @param config - Plugin configuration options
+ *
+ * @example
+ * ```ts
+ * import { parse } from 'comark'
+ * import jsonRender from 'comark/plugins/json-render'
+ *
+ * const result = await parse(`
+ * \`\`\`json-render
+ * {
+ *   "root": "card",
+ *   "elements": {
+ *     "card": {
+ *       "type": "Card",
+ *       "props": { "title": "Hello" },
+ *       "children": ["text"]
+ *     },
+ *     "text": {
+ *       "type": "Text",
+ *       "props": { "content": "World" }
+ *     }
+ *   }
+ * }
+ * \`\`\`
+ * `, {
+ *   plugins: [jsonRender()]
+ * })
+ * ```
+ *
+ * @example
+ * ```vue
+ * <script setup>
+ * import { Comark } from '@comark/vue'
+ * import jsonRender from '@comark/vue/plugins/json-render'
+ * </script>
+ *
+ * <template>
+ *   <Suspense>
+ *     <Comark :plugins="[jsonRender()]">{{ content }}</Comark>
+ *   </Suspense>
+ * </template>
+ * ```
+ */
 export default defineComarkPlugin((_config: JsonRenderConfig = {}) => ({
   name: 'json-render',
-  pre: async (_state) => {
-    // register options to for highlight to ignore json-render blocks
-  },
   post: async (state) => {
-    visit(state.tree, (node) => {
-      if (node[0] === 'pre' && (node[1] as ComarkElementAttributes).language === 'json-render') {
-        return true
-      }
-      return false
-    }, (preNode) => {
-      const ast = JSON.parse(textContent(preNode))
-      return jsonRenderToAst(ast)
-    })
+    visit(
+      state.tree,
+      node => node[0] === 'pre' && (node[1] as ComarkElementAttributes).language === 'json-render',
+      (preNode) => {
+        const ast = JSON.parse(textContent(preNode))
+        return jsonRenderToAst(ast)
+      },
+    )
   },
 }))

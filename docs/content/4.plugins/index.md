@@ -44,6 +44,10 @@ Comark's plugin system extends markdown functionality with specialized features.
   ::card{icon="i-lucide-calculator" title="Math" to="/plugins/core/math"}
   Render LaTeX math formulas using KaTeX with inline and display equations
   ::
+
+  ::card{icon="i-lucide-braces" title="JSON Render" to="/plugins/core/json-render"}
+  Transform JSON Render specs into UI components within markdown
+  ::
 ::
 
 ## Guides
