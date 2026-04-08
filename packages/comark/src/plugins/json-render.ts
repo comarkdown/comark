@@ -2,6 +2,7 @@ import type { Spec, UIElement } from '@json-render/core'
 import type { ComarkElementAttributes, ComarkNode } from '../types'
 import { defineComarkPlugin } from '../parse'
 import { textContent, visit } from '../utils'
+import { parseYaml } from '../internal/yaml'
 
 function jsonRenderToAst(jrt: Spec | UIElement) {
   if (!(jrt as Spec).root) {
@@ -92,8 +93,20 @@ export default defineComarkPlugin((_config: JsonRenderConfig = {}) => ({
       state.tree,
       node => node[0] === 'pre' && (node[1] as ComarkElementAttributes).language === 'json-render',
       (preNode) => {
-        const ast = JSON.parse(textContent(preNode))
-        return jsonRenderToAst(ast)
+        const content = textContent(preNode)
+        try {
+          /**
+           * Json Render works with both JSON and YAML syntax
+           * Here plugin tries to detect JSON by looking at first character
+           */
+          const ast = content.startsWith('{')
+            ? JSON.parse(content)
+            : parseYaml(content)
+
+          return jsonRenderToAst(ast)
+        } catch (e) {
+          return undefined
+        }
       },
     )
   },
