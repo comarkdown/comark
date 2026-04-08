@@ -64,4 +64,23 @@ console.log(tree.nodes)
 | Vue       | ✅      |
 | React     | ✅      |
 
+### JSON Render
+
+\`\`\`json-render
+{
+  "root": "card-1",
+  "elements": {
+    "card-1": {
+      "type": "Card",
+      "props": { "title": "Welcome" },
+      "children": ["text-1"]
+    },
+    "text-1": {
+      "type": "Text",
+      "props": { "content": "This is Json Render inside Comark" },
+      "children": []
+    }
+  }
+}
+\`\`\`
 `
