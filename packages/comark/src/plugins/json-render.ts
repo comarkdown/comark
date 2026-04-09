@@ -32,7 +32,6 @@ function jsonRenderElementToAst(element: UIElement, elements: Record<string, UIE
   ]
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface JsonRenderConfig {
 
 }
@@ -92,8 +91,8 @@ export default defineComarkPlugin((_config: JsonRenderConfig = {}) => ({
     visit(
       state.tree,
       node => node[0] === 'pre' && (
-        (node[1] as ComarkElementAttributes).language === 'json-render' ||
-        (node[1] as ComarkElementAttributes).language === 'yaml-render'
+        (node[1] as ComarkElementAttributes).language === 'json-render'
+        || (node[1] as ComarkElementAttributes).language === 'yaml-render'
       ),
       (preNode) => {
         const language = (preNode[1] as ComarkElementAttributes).language
@@ -101,14 +100,17 @@ export default defineComarkPlugin((_config: JsonRenderConfig = {}) => ({
           let spec: Spec | UIElement | undefined = undefined
           if (language === 'json-render') {
             spec = JSON.parse(textContent(preNode)) as unknown as Spec | UIElement
-          } else if (language === 'yaml-render') {
+          }
+          else if (language === 'yaml-render') {
             spec = parseYaml(textContent(preNode)) as unknown as Spec | UIElement
           }
 
           if (spec) {
             return jsonRenderToAst(spec)
           }
-        } catch (e) {
+        }
+        catch {
+          // nothing to do
         }
       },
     )
