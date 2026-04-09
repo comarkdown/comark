@@ -2,12 +2,7 @@ import { defineNuxtConfig } from 'nuxt/config'
 
 export default defineNuxtConfig({
   extends: ['docus'],
-  modules: [
-    'nuxt-studio',
-    '@comark/nuxt',
-    '@vercel/speed-insights',
-    '@vercel/analytics',
-  ],
+  modules: ['nuxt-studio', '@comark/nuxt', '@vercel/speed-insights', '@vercel/analytics', '@nuxtjs/mcp-toolkit'],
 
   app: {
     head: {
