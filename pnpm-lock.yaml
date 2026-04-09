@@ -211,8 +211,8 @@ importers:
   examples/1.frameworks/vitepress:
     dependencies:
       '@comark/markdown-it':
-        specifier: ^0.3.2
-        version: 0.3.2(@types/markdown-it@14.1.2)(markdown-it@14.1.1)
+        specifier: ^0.3.3
+        version: 0.3.3(@types/markdown-it@14.1.2)(markdown-it@14.1.1)
       vue:
         specifier: ^3.5.30
         version: 3.5.30(typescript@5.9.3)
@@ -579,8 +579,8 @@ importers:
   packages/comark:
     dependencies:
       '@comark/markdown-it':
-        specifier: ^0.3.2
-        version: 0.3.2(@types/markdown-it@14.1.2)(markdown-it@14.1.1)
+        specifier: ^0.3.3
+        version: 0.3.3(@types/markdown-it@14.1.2)(markdown-it@14.1.1)
       beautiful-mermaid:
         specifier: ^1.1.3
         version: 1.1.3
@@ -1165,8 +1165,8 @@ packages:
     resolution: {integrity: sha512-SIOD2DxrRRwQ+jgzlXCqoEFiKOFqaPjhnNTGKXSRLvp1HiOvapLaFG2kEr9dYQTYe8rKrd9uvDUzmAITeNyaHQ==}
     engines: {node: '>=18.0.0'}
 
-  '@comark/markdown-it@0.3.2':
-    resolution: {integrity: sha512-h+zwwsqr2zLBajKqdzLiLjhccO8+euTAKiBRLJcJvaMGma4yPCrYfWM0dgO0AFz3gK030cf5I5qBN0a3C3jzpQ==}
+  '@comark/markdown-it@0.3.3':
+    resolution: {integrity: sha512-qG+dbiwPKcaO3kzABw0dxtLqTxHAgqpklLwnu56jiYX3V/0dpVYCTIhXRhKgAo1JasBhcPP+OeHAENziXxGYbg==}
     peerDependencies:
       '@types/markdown-it': '*'
       markdown-it: ^14.0.0
@@ -10937,7 +10937,7 @@ snapshots:
 
   '@cloudflare/kv-asset-handler@0.4.2': {}
 
-  '@comark/markdown-it@0.3.2(@types/markdown-it@14.1.2)(markdown-it@14.1.1)':
+  '@comark/markdown-it@0.3.3(@types/markdown-it@14.1.2)(markdown-it@14.1.1)':
     dependencies:
       '@types/markdown-it': 14.1.2
       js-yaml: 4.1.1
