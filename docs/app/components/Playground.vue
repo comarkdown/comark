@@ -4,6 +4,7 @@ import highlight from '@comark/vue/plugins/highlight'
 import math from '@comark/vue/plugins/math'
 import emoji from '@comark/vue/plugins/emoji'
 import mermaid from '@comark/vue/plugins/mermaid'
+import jsonRender from '@comark/vue/plugins/json-render'
 
 import { renderMarkdown } from 'comark/render'
 import { Splitpanes, Pane } from 'splitpanes'
@@ -63,7 +64,7 @@ async function parseMarkdown(): Promise<void> {
     return
   }
   parsing.value = true
-  const plugins = [highlight(), math(), mermaid(), emoji()]
+  const plugins = [jsonRender(), highlight(), math(), mermaid(), emoji()]
   const start = performance.now()
   try {
     const result = await parse(markdown.value, {
@@ -91,9 +92,11 @@ function resetComark(): void {
   markdown.value = defaultMarkdown.trim()
 }
 
-const formattedOutput = computed<string>(() =>
-  tree.value ? renderMarkdown(tree.value as ComarkTree) : '',
-)
+const formattedOutput = ref<string>('')
+
+watch(tree, async (t: ComarkTree | null) => {
+  formattedOutput.value = t ? await renderMarkdown(t) : ''
+}, { immediate: true })
 
 const formattedOutputModel = computed({
   get: () => formattedOutput.value,

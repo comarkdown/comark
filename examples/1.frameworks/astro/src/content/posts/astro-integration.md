@@ -18,7 +18,7 @@ Instead of using Astro's built-in remark/rehype pipeline, we use Comark's framew
 
 ```ts
 import { parse } from 'comark'
-import { renderHTML } from 'comark/string'
+import { renderHTML } from '@comark/html'
 
 const tree = await parse(entry.body)
 const html = await renderHTML(tree, {

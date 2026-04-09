@@ -9,8 +9,8 @@
     "preview": "vitepress preview"
   },
   "dependencies": {
-    "@comark/markdown-it": "^0.3.2",
-    "vue": "^3.5.30"
+    "@comark/markdown-it": "^0.3.3",
+    "vue": "^3.5.32"
   },
   "devDependencies": {
     "vitepress": "^1.6.4"

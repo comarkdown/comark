@@ -1,7 +1,7 @@
 {
   "name": "@comark/vue",
   "type": "module",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Vue components for Comark",
   "exports": {
     ".": "./dist/index.js",
@@ -47,13 +47,13 @@
     }
   },
   "dependencies": {
-    "comark": "^0.2.0"
+    "comark": "^0.2.1"
   },
   "devDependencies": {
-    "@vue/compiler-core": "^3.5.31",
-    "@vue/server-renderer": "^3.5.30",
-    "vite": "^8.0.2",
-    "vitest": "^4.1.1",
-    "vue": "^3.5.30"
+    "@vue/compiler-core": "^3.5.32",
+    "@vue/server-renderer": "^3.5.32",
+    "vite": "^8.0.8",
+    "vitest": "^4.1.4",
+    "vue": "^3.5.32"
   }
 }

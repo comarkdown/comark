@@ -9,12 +9,12 @@
     "preview": "astro preview"
   },
   "dependencies": {
-    "@astrojs/react": "^5.0.1",
+    "@astrojs/react": "^5.0.3",
     "@tailwindcss/vite": "^4.2.2",
-    "astro": "^6.0.8",
-    "comark": "^0.2.0",
-    "react": "^19.2.4",
-    "react-dom": "^19.2.4"
+    "astro": "^6.1.5",
+    "comark": "^0.2.1",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5"
   },
   "devDependencies": {
     "@types/react": "^19.2.14",

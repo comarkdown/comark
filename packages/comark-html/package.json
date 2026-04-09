@@ -1,7 +1,7 @@
 {
   "name": "@comark/html",
   "type": "module",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "HTML renderer for Comark",
   "exports": {
     ".": "./dist/index.js",
@@ -28,7 +28,7 @@
     "release": "release-it"
   },
   "dependencies": {
-    "comark": "^0.2.0"
+    "comark": "^0.2.1"
   },
   "peerDependencies": {
     "katex": ">=0.16",
@@ -47,8 +47,8 @@
     }
   },
   "devDependencies": {
-    "katex": "^0.16.40",
+    "katex": "^0.16.45",
     "beautiful-mermaid": "^1.1.3",
-    "vitest": "^4.1.1"
+    "vitest": "^4.1.4"
   }
 }

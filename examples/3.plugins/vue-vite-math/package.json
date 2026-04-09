@@ -9,13 +9,13 @@
   },
   "dependencies": {
     "@comark/vue": "workspace:*",
-    "katex": "^0.16.40",
-    "vue": "^3.5.30"
+    "katex": "^0.16.45",
+    "vue": "^3.5.32"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^6.0.5",
     "typescript": "^5.9.3",
-    "vite": "^8.0.2",
+    "vite": "^8.0.8",
     "vue-tsc": "^3.2.6"
   }
 }

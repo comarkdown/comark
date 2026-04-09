@@ -48,6 +48,7 @@ interface TestCase {
     autoUnwrap?: boolean
     maxInlineAttributes?: number
   }
+  skip?: boolean
 }
 
 function parseTimeout(timeoutStr: string): number {
@@ -77,6 +78,7 @@ function extractFrontmatter(content: string): { timeouts?: TestCase['timeouts'],
   }
 
   return {
+    ...data,
     timeouts: Object.keys(timeouts).length > 0 ? timeouts : undefined,
     options: data.options as TestCase['options'] | undefined,
     body,
@@ -84,7 +86,7 @@ function extractFrontmatter(content: string): { timeouts?: TestCase['timeouts'],
 }
 
 function extractTestCase(content: string): TestCase {
-  const { timeouts, body, options } = extractFrontmatter(content)
+  const { timeouts, body, options, ...frontmatter } = extractFrontmatter(content)
   const sections: Record<string, string> = {}
 
   // Extract sections - find each section header and its content
@@ -138,6 +140,7 @@ function extractTestCase(content: string): TestCase {
   }
 
   return {
+    ...frontmatter,
     input: (sections.input || '').trim(),
     ast: (sections.ast || ''),
     html: sections.html || '',
@@ -192,6 +195,9 @@ describe('Comark Tests', () => {
   })
 
   testCases.forEach(({ file, testCase }) => {
+    if (testCase.skip) {
+      return
+    }
     describe(file, () => {
       let parsedAST: Awaited<ReturnType<typeof parse>>
 

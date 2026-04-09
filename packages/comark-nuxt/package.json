@@ -1,7 +1,7 @@
 {
   "name": "@comark/nuxt",
   "type": "module",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Nuxt module for Comark",
   "exports": {
     ".": "./dist/module.js",
@@ -31,13 +31,13 @@
     "nuxt": "^3.0.0"
   },
   "dependencies": {
-    "comark": "^0.2.0",
-    "@comark/vue": "^0.2.0",
+    "comark": "^0.2.1",
+    "@comark/vue": "^0.2.1",
     "@nuxt/kit": "^4.4.2"
   },
   "devDependencies": {
-    "@vue/server-renderer": "^3.5.30",
-    "vitest": "^4.1.1",
-    "vue": "^3.5.30"
+    "@vue/server-renderer": "^3.5.32",
+    "vitest": "^4.1.4",
+    "vue": "^3.5.32"
   }
 }

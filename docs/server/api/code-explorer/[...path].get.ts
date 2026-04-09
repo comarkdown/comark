@@ -155,7 +155,7 @@ export default defineEventHandler(async (event) => {
   }
   else {
     repo = repoSegment
-    branch = 'main'
+    branch = 'master'
   }
 
   const dirPath = segments.slice(2).join('/')

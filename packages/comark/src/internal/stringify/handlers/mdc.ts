@@ -40,6 +40,7 @@ export async function mdc(node: ComarkElement, state: State, parent?: ComarkElem
 
   if (tag === 'span') {
     return `[${content}]${attrs}`
+      + (inline ? '' : state.context.blockSeparator)
   }
 
   const fence = ':'.repeat((state.nodeDepthInTree || 0) + 2)

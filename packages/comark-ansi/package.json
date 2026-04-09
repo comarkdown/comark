@@ -1,7 +1,7 @@
 {
   "name": "@comark/ansi",
   "type": "module",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "ANSI terminal renderer for Comark",
   "exports": {
     ".": "./dist/index.js",
@@ -44,9 +44,9 @@
     }
   },
   "dependencies": {
-    "comark": "^0.2.0"
+    "comark": "^0.2.1"
   },
   "devDependencies": {
-    "vitest": "^4.1.1"
+    "vitest": "^4.1.4"
   }
 }

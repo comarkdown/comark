@@ -9,9 +9,11 @@ defineProps<{
   vueLinkTo: string
   reactLinkLabel: string
   reactLinkTo: string
+  svelteLinkLabel: string
+  svelteLinkTo: string
 }>()
 
-const activeTab = ref<'vue' | 'react'>('vue')
+const activeTab = ref<'vue' | 'react' | 'svelte'>('vue')
 
 const vueCode = `<script setup lang="ts">
 import { Comark } from '@comark/vue'
@@ -53,13 +55,28 @@ export default function App() {
   )
 }`
 
+const svelteCode = `<script lang="ts">
+  import { Comark } from '@comark/svelte'
+  import Alert from './components/Alert.svelte'
+
+  const markdown = \`
+# Hello **World**
+
+::alert{type="info"}
+This is a Comark component!
+::\`
+${'<'}/script>
+
+<Comark markdown={markdown} components={{ Alert }} />`
+
 const { data: highlighted } = await useAsyncData('fw-highlight', async () => {
   const themes = { light: 'github-light', dark: 'github-dark' } as const
-  const [vue, react] = await Promise.all([
+  const [vue, react, svelte] = await Promise.all([
     codeToHtml(vueCode, { lang: 'vue', themes }),
     codeToHtml(reactCode, { lang: 'tsx', themes }),
+    codeToHtml(svelteCode, { lang: 'svelte', themes }),
   ])
-  return { vue, react }
+  return { vue, react, svelte }
 })
 </script>
 
@@ -102,6 +119,17 @@ const { data: highlighted } = await useAsyncData('fw-highlight', async () => {
           />
           App.tsx
         </button>
+        <button
+          class="flex items-center gap-2 border-b-2 px-4 py-2 font-mono text-xs"
+          :class="activeTab === 'svelte' ? 'border-primary text-primary' : 'border-transparent text-muted hover:text-highlighted'"
+          @click="activeTab = 'svelte'"
+        >
+          <UIcon
+            name="i-logos-svelte-icon"
+            class="size-3.5"
+          />
+          App.svelte
+        </button>
       </div>
       <div class="shiki-block h-[280px] overflow-auto p-4">
         <div
@@ -113,6 +141,11 @@ const { data: highlighted } = await useAsyncData('fw-highlight', async () => {
           v-show="activeTab === 'react'"
           class="text-sm/6"
           v-html="highlighted?.react"
+        />
+        <div
+          v-show="activeTab === 'svelte'"
+          class="text-sm/6"
+          v-html="highlighted?.svelte"
         />
       </div>
     </div>
@@ -128,6 +161,13 @@ const { data: highlighted } = await useAsyncData('fw-highlight', async () => {
       <UButton
         :label="reactLinkLabel"
         :to="reactLinkTo"
+        variant="link"
+        trailing-icon="i-lucide-arrow-right"
+        class="px-0"
+      />
+      <UButton
+        :label="svelteLinkLabel"
+        :to="svelteLinkTo"
         variant="link"
         trailing-icon="i-lucide-arrow-right"
         class="px-0"

@@ -1,10 +1,10 @@
 ---
 navigation: false
 title: Comark
-description: A fast, streaming-ready markdown parser with component support for Vue and React.
+description: A fast, streaming-ready markdown parser with component support for Vue, React, and Svelte.
 seo:
   title: Components in Markdown
-  description: Fast, streaming-ready markdown parser with Vue and React component support. Parse Comark content from strings or streams with TypeScript support.
+  description: Fast, streaming-ready markdown parser with Vue, React, and Svelte component support. Parse Comark content from strings or streams with TypeScript support.
   ogImage: /social-card.jpg
 
 ---
@@ -19,7 +19,7 @@ demoMarkdown: |-
   ## Features
 
   - Parse markdown in real-time
-  - Vue & React components
+  - Vue, React, and Svelte components
   - Auto-close incomplete syntax
 
   ::callout{color="info" icon="i-lucide-info"}
@@ -48,12 +48,14 @@ title: Comark
 
 ::landing-features
 ---
-frameworksDescription: First-class support for both frameworks. Embed custom
-  components in your markdown.
+frameworksDescription: First-class support for all major frameworks. Embed
+  custom components in your markdown.
 frameworksHeadline: Frameworks
 frameworksReactLinkLabel: React docs
 frameworksReactLinkTo: /rendering/react
-frameworksTitle: Vue & React
+frameworksSvelteLinkLabel: Svelte docs
+frameworksSvelteLinkTo: /rendering/svelte
+frameworksTitle: Vue, React & Svelte
 frameworksVueLinkLabel: Vue docs
 frameworksVueLinkTo: /rendering/vue
 streamingDescription: Parse content as it arrives. Perfect for AI-generated
@@ -181,7 +183,7 @@ footerSections:
 description: Add rich, interactive components to your markdown today.
 footerCopyright: © 2026 Comark. Released under the MIT License.
 footerDescription: A fast, streaming-ready markdown parser with component
-  support for Vue and React.
+  support for Vue, React, and Svelte.
 githubUrl: https://github.com/comarkdown/comark
 install: npm install comark
 npmUrl: https://www.npmjs.com/package/comark

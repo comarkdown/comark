@@ -50,7 +50,7 @@ export async function html(node: ComarkElement, state: State, parent?: ComarkEle
   for (let i = 0; i < children.length; i++) {
     const childContent = childrenContent[i]
     const child = children[i]
-    const isBlock = blockTags.has(String(child?.[0])) || (!inlineTags.has(String(child?.[0])) && !hasTextSibling)
+    const isBlock = typeof child !== 'string' && (blockTags.has(String(child?.[0])) || (!inlineTags.has(String(child?.[0])) && !hasTextSibling))
 
     if (i > 0 && !isPrevBlock && isBlock) {
       content += state.context.blockSeparator

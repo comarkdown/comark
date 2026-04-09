@@ -11,7 +11,6 @@ path: /examples/vite/vue
 ---
 org: comarkdown
 repo: comark
-branch: docs/demo
 path: examples/2.vite/vue
 defaultValue: src/App.vue
 ---

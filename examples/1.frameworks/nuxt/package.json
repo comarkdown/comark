@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@comark/nuxt": "latest",
-    "@nuxt/ui": "^4.6.0",
+    "@nuxt/ui": "^4.6.1",
     "nuxt": "^4.4.2",
     "shiki": "^4.0.2",
     "tailwindcss": "^4.2.2"

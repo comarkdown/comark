@@ -17,9 +17,9 @@
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^7.0.0",
     "autoprefixer": "^10.4.27",
-    "postcss": "^8.5.8",
-    "svelte": "^5.55.0",
+    "postcss": "^8.5.9",
+    "svelte": "^5.55.2",
     "typescript": "^5.9.3",
-    "vite": "^8.0.2"
+    "vite": "^8.0.8"
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "@comark/svelte",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Svelte renderer for Comark (Components in Markdown)",
   "svelte": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -72,17 +72,17 @@
     }
   },
   "dependencies": {
-    "comark": "^0.2.0"
+    "comark": "^0.2.1"
   },
   "devDependencies": {
     "@sveltejs/package": "^2.5.7",
     "@sveltejs/vite-plugin-svelte": "^7.0.0",
-    "@vitest/browser": "^4.1.1",
-    "@vitest/browser-playwright": "^4.1.1",
+    "@vitest/browser": "^4.1.4",
+    "@vitest/browser-playwright": "^4.1.4",
     "release-it": "^19.2.4",
-    "svelte": "^5.55.0",
-    "svelte-check": "^4.4.5",
-    "vitest": "^4.1.1",
+    "svelte": "^5.55.2",
+    "svelte-check": "^4.4.6",
+    "vitest": "^4.1.4",
     "vitest-browser-svelte": "^2.1.0"
   }
 }

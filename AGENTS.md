@@ -46,7 +46,7 @@ Located at `packages/comark/`:
 packages/comark/
 ├── src/
 │   ├── index.ts              # Core parser: parse(), autoCloseMarkdown()
-│   ├── string.ts             # String rendering: renderHTML(), renderMarkdown()
+│   ├── render.ts             # String rendering: renderMarkdown() (renderHTML moved to @comark/html)
 │   ├── types.ts              # TypeScript interfaces (ParseOptions, etc.)
 │   ├── ast/                  # Comark AST types and utilities
 │   │   ├── index.ts          # Re-exports (comark/ast entry point)

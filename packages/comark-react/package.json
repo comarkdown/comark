@@ -1,7 +1,7 @@
 {
   "name": "@comark/react",
   "type": "module",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "React components for Comark",
   "exports": {
     ".": "./dist/index.js",
@@ -46,13 +46,13 @@
     }
   },
   "dependencies": {
-    "comark": "^0.2.0"
+    "comark": "^0.2.1"
   },
   "devDependencies": {
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "react": "^19.2.4",
-    "react-dom": "^19.2.4",
-    "vitest": "^4.1.1"
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5",
+    "vitest": "^4.1.4"
   }
 }

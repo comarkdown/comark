@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.2.1](https://github.com/nuxt-content/mdc-syntax/compare/@comark/html@0.2.0...@comark/html@0.2.1) (2026-04-09)
+
+### Features
+
+* add Svelte example to docs ([#92](https://github.com/nuxt-content/mdc-syntax/issues/92)) ([d483aff](https://github.com/nuxt-content/mdc-syntax/commit/d483affee40729ad312242bf3d059a0752d9ccc2))
+* improve Comark compatibility with Markdown Directives ([#99](https://github.com/nuxt-content/mdc-syntax/issues/99)) ([e4ed303](https://github.com/nuxt-content/mdc-syntax/commit/e4ed3035fcf89c99f35821c834cef0ef242bca2d))
+* introduce json-render plugin ([#96](https://github.com/nuxt-content/mdc-syntax/issues/96)) ([753253f](https://github.com/nuxt-content/mdc-syntax/commit/753253f9ade46172915b25f15403f77ae8ada68f))
+* **json-render:** support YAML via `yaml-render` code block ([#98](https://github.com/nuxt-content/mdc-syntax/issues/98)) ([91ac137](https://github.com/nuxt-content/mdc-syntax/commit/91ac1378cf04d9c249b6058506f57c085708769b))
+
+### Bug Fixes
+
+* **docs:** update formattedOutput to use reactive ref ([#95](https://github.com/nuxt-content/mdc-syntax/issues/95)) ([a1ef432](https://github.com/nuxt-content/mdc-syntax/commit/a1ef432e57f7285a49c858e5df38d092ec6ee4e1))
+
 ## [0.2.0](https://github.com/nuxt-content/mdc-syntax/compare/@comark/html@0.1.1...@comark/html@0.2.0) (2026-04-01)
 
 ### Features
