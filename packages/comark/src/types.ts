@@ -1,3 +1,4 @@
+import type { DumpOptions } from 'js-yaml'
 import type MarkdownExit from 'markdown-exit'
 import type MarkdownIt from 'markdown-it'
 
@@ -203,6 +204,11 @@ export interface RenderMarkdownOptions extends RenderOptions {
    * @default 3
    */
   maxInlineAttributes?: number
+  /**
+   * Options for YAML serialization of frontmatter (js-yaml DumpOptions).
+   * Defaults: indent=2, lineWidth=-1.
+   */
+  frontmatterOptions?: DumpOptions
 }
 // #endregion
 
