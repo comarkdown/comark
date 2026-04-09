@@ -16,6 +16,9 @@ defaultValue: src/App.vue
 ---
 ::
 
+::browser{src="https://comark-json-render.vercel.app"}
+::
+
 ## Features
 
 This example demonstrates how to use Comark with JSON Render and YAML Render in Vue:

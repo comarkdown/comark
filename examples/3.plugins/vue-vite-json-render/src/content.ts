@@ -21,7 +21,7 @@ A full spec defines a tree of named elements with a \`root\` entry point and an 
     },
     "description": {
       "type": "Text",
-      "props": { "content": "This card was described entirely in JSON and rendered by the Comark plugin.\n" }
+      "props": { "content": "This card was described entirely in JSON and rendered by the Comark plugin." }
     },
     "badge": {
       "type": "Badge",
@@ -50,7 +50,7 @@ elements:
   description:
     type: Text
     props:
-      content: "This card was described in YAML and rendered by the same Comark plugin.\n"
+      content: "This card was described in YAML and rendered by the same Comark plugin."
   badge:
     type: Badge
     children:

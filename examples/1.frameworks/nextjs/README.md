@@ -17,7 +17,7 @@ defaultValue: content/posts/comark-syntax.md
 ---
 ::
 
-::browser{src="https://comark-nextjs.vercel.app"}
+::browser{src="https://comark-nextjs.vercel.app/blog/comark-syntax"}
 ::
 
 This example demonstrates how to use Comark with Next.js App Router and React Server Components. Blog posts are stored as `.md` files with frontmatter, parsed using `parse()` from comark, and rendered using `ComarkRenderer` from `comark/react` with custom components like `Alert`.
