@@ -204,7 +204,7 @@ describe('Comark Tests', () => {
       beforeAll(async () => {
         const declaredPlugins = testCase.options?.plugins ?? []
         const plugins: ComarkPlugin[] = declaredPlugins.map(name => pluginRegistry[name]())
-        console.log(testCase)
+
         if (testCase.options?.highlight) {
           const themes = {
             'min-light': minLight,

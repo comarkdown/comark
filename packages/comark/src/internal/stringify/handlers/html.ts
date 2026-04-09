@@ -42,7 +42,6 @@ export async function html(node: ComarkElement, state: State, parent?: ComarkEle
 
   const childrenContent: string[] = []
   for (const child of children) {
-    console.log({ child, s: await state.one(child, state, node) })
     childrenContent.push(await state.one(child, state, node))
   }
 
