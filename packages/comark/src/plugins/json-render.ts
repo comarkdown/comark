@@ -2,6 +2,7 @@ import type { Spec, UIElement } from '@json-render/core'
 import type { ComarkElementAttributes, ComarkNode } from '../types'
 import { defineComarkPlugin } from '../parse'
 import { textContent, visit } from '../utils'
+import { parseYaml } from '../internal/yaml'
 
 function jsonRenderToAst(jrt: Spec | UIElement) {
   if (!(jrt as Spec).root) {
@@ -31,7 +32,6 @@ function jsonRenderElementToAst(element: UIElement, elements: Record<string, UIE
   ]
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface JsonRenderConfig {
 
 }
@@ -90,10 +90,28 @@ export default defineComarkPlugin((_config: JsonRenderConfig = {}) => ({
   post: async (state) => {
     visit(
       state.tree,
-      node => node[0] === 'pre' && (node[1] as ComarkElementAttributes).language === 'json-render',
+      node => node[0] === 'pre' && (
+        (node[1] as ComarkElementAttributes).language === 'json-render'
+        || (node[1] as ComarkElementAttributes).language === 'yaml-render'
+      ),
       (preNode) => {
-        const ast = JSON.parse(textContent(preNode))
-        return jsonRenderToAst(ast)
+        const language = (preNode[1] as ComarkElementAttributes).language
+        try {
+          let spec: Spec | UIElement | undefined = undefined
+          if (language === 'json-render') {
+            spec = JSON.parse(textContent(preNode)) as unknown as Spec | UIElement
+          }
+          else if (language === 'yaml-render') {
+            spec = parseYaml(textContent(preNode)) as unknown as Spec | UIElement
+          }
+
+          if (spec) {
+            return jsonRenderToAst(spec)
+          }
+        }
+        catch {
+          // nothing to do
+        }
       },
     )
   },

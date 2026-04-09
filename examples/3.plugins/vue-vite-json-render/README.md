@@ -1,6 +1,6 @@
 ---
 title: JSON Render
-description: Example showing how to use Comark with JSON Render in Vue and Vite.
+description: Example showing how to use Comark with JSON Render and YAML Render in Vue and Vite.
 navigation:
   icon: i-lucide-braces
 category: Plugins
@@ -18,12 +18,13 @@ defaultValue: src/App.vue
 
 ## Features
 
-This example demonstrates how to use Comark with JSON Render in Vue:
+This example demonstrates how to use Comark with JSON Render and YAML Render in Vue:
 
-- **JSON Render Plugin**: Import and configure the `json-render` plugin to parse `json-render` code blocks
+- **JSON Render Plugin**: Import and configure the `json-render` plugin to parse `json-render` and `yaml-render` code blocks
 - **Full Spec Format**: Define a tree of named elements with a root entry point
 - **Single Element Shorthand**: Use a simplified format for single elements
 - **Nested Layout**: Compose deep component trees by referencing children by key
+- **YAML Support**: Write specs in YAML for improved readability
 - **Nuxt UI**: Styled with Nuxt UI for a polished look with dark mode support
 
 ## Usage
@@ -38,13 +39,21 @@ This example demonstrates how to use Comark with JSON Render in Vue:
    <Comark :plugins="[jsonRender()]" />
    ```
 
-3. Use json-render code blocks in your markdown:
+3. Use `json-render` or `yaml-render` code blocks in your markdown:
    ````markdown
    ```json-render
    {
      "type": "Text",
      "props": { "content": "Hello" }
    }
+   ```
+   ````
+
+   ````markdown
+   ```yaml-render
+   type: Text
+   props:
+     content: Hello
    ```
    ````
 

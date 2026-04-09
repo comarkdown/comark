@@ -1,6 +1,6 @@
 export const content = `# JSON Render for Comark
 
-[JSON Render](https://json-render.dev/) lets you describe **UI components declaratively as JSON** inside Markdown code blocks. The Comark plugin parses \`json-render\` fenced blocks and converts them into AST nodes at parse time — no client-side runtime needed.
+[JSON Render](https://json-render.dev/) lets you describe **UI components declaratively as JSON or YAML** inside Markdown code blocks. The Comark plugin parses \`json-render\` and \`yaml-render\` fenced blocks and converts them into AST nodes at parse time — no client-side runtime needed.
 
 ---
 
@@ -35,6 +35,32 @@ A full spec defines a tree of named elements with a \`root\` entry point and an 
 }
 \`\`\`
 
+The same spec in YAML:
+
+\`\`\`yaml-render
+root: card
+elements:
+  card:
+    type: Card
+    props:
+      title: Welcome to YAML Render
+    children:
+      - description
+      - badge
+  description:
+    type: Text
+    props:
+      content: "This card was described in YAML and rendered by the same Comark plugin.\n"
+  badge:
+    type: Badge
+    children:
+      - poweredby
+  poweredby:
+    type: Text
+    props:
+      content: Powered by Comark
+\`\`\`
+
 ### Single Element (Shorthand)
 
 When you only need one element, skip \`root\` and \`elements\` — the plugin wraps it automatically:
@@ -42,8 +68,14 @@ When you only need one element, skip \`root\` and \`elements\` — the plugin wr
 \`\`\`json-render
 {
   "type": "Text",
-  "props": { "content": "A standalone text element using the shorthand format." }
+  "props": { "content": "A standalone text element using the JSON shorthand format." }
 }
+\`\`\`
+
+\`\`\`yaml-render
+type: Text
+props:
+  content: A standalone text element using the YAML shorthand format.
 \`\`\`
 
 ### Nested Layout
@@ -134,4 +166,6 @@ import jsonRender from '@comark/vue/plugins/json-render'
 | \`children\` | \`string[]\` | No | Keys of child elements in the \`elements\` map |
 
 > **Tip** — \`Text\` is a special element type: its \`props.content\` value is rendered as a plain text node rather than as a component.
+
+> **Tip** — Both \`json-render\` and \`yaml-render\` code blocks use the same plugin and produce identical output. Choose whichever format you prefer.
 `
