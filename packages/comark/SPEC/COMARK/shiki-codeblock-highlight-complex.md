@@ -47,6 +47,7 @@ func main() {
           7,
           10
         ],
+        "code": "package main\n\nimport \"fmt\"\n\nfunc main() {\n    fmt.Println(\"Line 6\")\n    fmt.Println(\"Line 7\")\n    fmt.Println(\"Line 8\")\n    fmt.Println(\"Line 9\")\n    fmt.Println(\"Line 10\")\n}",
         "class": "shiki shiki-themes github-dark dark:github-dark",
         "tabindex": "0",
         "style": "background-color:#24292e;color:#e1e4e8"

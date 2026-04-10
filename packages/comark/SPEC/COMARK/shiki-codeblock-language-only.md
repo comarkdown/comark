@@ -29,6 +29,7 @@ console.log(greeting)
       "pre",
       {
         "language": "typescript",
+        "code": "const greeting: string = \"Hello, World!\"\nconsole.log(greeting)",
         "class": "shiki shiki-themes github-dark dark:github-dark",
         "tabindex": "0"
       },

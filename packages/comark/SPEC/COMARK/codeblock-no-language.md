@@ -16,7 +16,9 @@ No language specified
   "nodes": [
     [
       "pre",
-      {},
+      {
+        "code": "Plain text code block\nNo language specified"
+      },
       [
         "code",
         {},

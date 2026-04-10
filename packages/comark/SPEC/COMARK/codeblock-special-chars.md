@@ -21,7 +21,8 @@
       "pre",
       {
         "language": "html",
-        "filename": "template.html"
+        "filename": "template.html",
+        "code": "<div class=\"container\">\n  <h1>Title & Subtitle</h1>\n  <p>Text with \"quotes\" and 'apostrophes'</p>\n  <script>alert('XSS < > test');</script>\n</div>"
       },
       [
         "code",

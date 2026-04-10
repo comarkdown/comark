@@ -16,7 +16,8 @@ pnpm add comark
     [
       "pre",
       {
-        "language": "bash"
+        "language": "bash",
+        "code": "pnpm add comark"
       },
       [
         "code",

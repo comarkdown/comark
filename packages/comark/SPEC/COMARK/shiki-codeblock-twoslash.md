@@ -32,6 +32,7 @@ const message = "Hello from twoslash"
       {
         "language": "ts",
         "meta": "twoslash",
+        "code": "const message = \"Hello from twoslash\"\n//    ^?",
         "class": "shiki shiki-themes min-light twoslash lsp dark:min-light",
         "tabindex": "0"
       },
@@ -160,6 +161,7 @@ const message = "Hello from twoslash"
 
 ```md
 ```ts twoslash
-const const message: "Hello from twoslash"message = "Hello from twoslash"
+const message = "Hello from twoslash"
+//    ^?
 ```
 ```

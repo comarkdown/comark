@@ -36,6 +36,7 @@ console.log(greeting)
           2
         ],
         "meta": "some meta",
+        "code": "const greeting: string = \"Hello, World!\"\nconsole.log(greeting)",
         "class": "shiki shiki-themes github-dark dark:github-dark",
         "tabindex": "0",
         "style": "background-color:#24292e;color:#e1e4e8"

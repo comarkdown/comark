@@ -18,7 +18,8 @@ def greet(name):
       "pre",
       {
         "language": "python",
-        "meta": "showLineNumbers=true startLine=10 title=\"Example\""
+        "meta": "showLineNumbers=true startLine=10 title=\"Example\"",
+        "code": "def greet(name):\n    return f\"Hello, {name}!\""
       },
       [
         "code",

@@ -27,7 +27,8 @@ fn main() {
           2,
           3,
           4
-        ]
+        ],
+        "code": "fn main() {\n    let x = 5;\n    let y = 10;\n    println!(\"Sum: {}\", x + y);\n}"
       },
       [
         "code",

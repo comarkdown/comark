@@ -29,6 +29,7 @@ No language specified
     [
       "pre",
       {
+        "code": "Plain text code block\nNo language specified",
         "class": "shiki shiki-themes github-dark dark:github-dark",
         "tabindex": "0",
         "style": "background-color:#24292e;color:#e1e4e8"

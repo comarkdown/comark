@@ -31,6 +31,7 @@ console.log(greeting)
       "pre",
       {
         "language": "typescript",
+        "code": "const greeting: string = \"Hello, World!\"\nconsole.log(greeting)",
         "class": "shiki shiki-themes min-light nord dark:nord",
         "tabindex": "0",
         "style": "background-color:#ffffff;color:#212121;--shiki-dark-bg:#2e3440;--shiki-dark:#d8dee9"

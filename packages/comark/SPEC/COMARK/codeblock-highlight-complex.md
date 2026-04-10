@@ -34,7 +34,8 @@ func main() {
           6,
           7,
           10
-        ]
+        ],
+        "code": "package main\n\nimport \"fmt\"\n\nfunc main() {\n    fmt.Println(\"Line 6\")\n    fmt.Println(\"Line 7\")\n    fmt.Println(\"Line 8\")\n    fmt.Println(\"Line 9\")\n    fmt.Println(\"Line 10\")\n}"
       },
       [
         "code",

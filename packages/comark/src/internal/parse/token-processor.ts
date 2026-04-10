@@ -366,6 +366,10 @@ function processBlockToken(tokens: any[], startIndex: number, insideNestedContex
     }
 
     const codeContentWithoutLastNewline = content.endsWith('\n') ? content.slice(0, -1) : content
+
+    // Add code as props to component
+    preAttrs.code = codeContentWithoutLastNewline
+
     const code: ComarkNode = ['code', codeAttrs, codeContentWithoutLastNewline] as ComarkNode
     const pre: ComarkNode = ['pre', preAttrs, code] as ComarkNode
     return { node: pre, nextIndex: startIndex + 1 }

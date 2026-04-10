@@ -18,7 +18,8 @@
     [
       "pre",
       {
-        "language": "diff"
+        "language": "diff",
+        "code": "- const oldValue = 42;\n+ const newValue = 100;\n  const unchanged = \"same\";"
       },
       [
         "code",

@@ -31,8 +31,9 @@ More content here.
     [
       "pre",
       {
+        "language": "markdown",
         "filename": "content.md",
-        "language": "markdown"
+        "code": "# My Page Title\n\nThis is the opening paragraph used as the description.\n\n## Section One\n\nMore content here."
       },
       [
         "code",

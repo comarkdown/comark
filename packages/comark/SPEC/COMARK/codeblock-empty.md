@@ -15,6 +15,7 @@
     [
       "pre",
       {
+        "code": "",
         "language": "javascript"
       },
       [

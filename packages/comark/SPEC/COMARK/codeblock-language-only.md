@@ -17,7 +17,8 @@ console.log(greeting)
     [
       "pre",
       {
-        "language": "typescript"
+        "language": "typescript",
+        "code": "const greeting: string = \"Hello, World!\"\nconsole.log(greeting)"
       },
       [
         "code",

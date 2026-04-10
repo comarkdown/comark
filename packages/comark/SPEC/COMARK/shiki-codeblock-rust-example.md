@@ -40,6 +40,7 @@ fn main() {
           3,
           4
         ],
+        "code": "fn main() {\n    let x = 5;\n    let y = 10;\n    println!(\"Sum: {}\", x + y);\n}",
         "class": "shiki shiki-themes github-dark dark:github-dark",
         "tabindex": "0",
         "style": "background-color:#24292e;color:#e1e4e8"

@@ -29,7 +29,8 @@ function hello() {
           10,
           11
         ],
-        "meta": "meta=meta-value"
+        "meta": "meta=meta-value",
+        "code": "function hello() {\n  console.log(\"Hello, World!\");\n}"
       },
       [
         "code",

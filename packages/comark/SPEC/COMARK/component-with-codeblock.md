@@ -43,7 +43,8 @@ options:
         "pre",
         {
           "language": "mdc",
-          "filename": "content/index.md"
+          "filename": "content/index.md",
+          "code": "---\ntitle: The Mountains Website\ndescription: A website about the most iconic mountains in the world.\n---\n\n::my-vue-hero-component{orientation=\"horizontal\"}\n#title\nWelcome to the Mountains Website.\n#description\nThis is a description of the Mountains Website.\n::\n\nThis is a paragraph with **bold** and _italic_ text."
         },
         [
           "code",

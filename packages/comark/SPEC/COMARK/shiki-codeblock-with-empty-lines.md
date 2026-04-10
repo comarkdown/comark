@@ -36,6 +36,7 @@ More content here.
       {
         "language": "markdown",
         "filename": "content.md",
+        "code": "# My Page Title\n\nThis is the opening paragraph used as the description.\n\n## Section One\n\nMore content here.",
         "class": "shiki shiki-themes github-dark dark:github-dark",
         "tabindex": "0",
         "style": "background-color:#24292e;color:#e1e4e8"

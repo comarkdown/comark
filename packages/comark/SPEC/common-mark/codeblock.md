@@ -26,7 +26,9 @@ function hello() {
   "nodes": [
     [
       "pre",
-      {},
+      {
+        "code": "function hello() {\n  console.log(\"Hello, World!\");\n}"
+      },
       [
         "code",
         {},

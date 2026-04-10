@@ -37,6 +37,7 @@ options:
           "pre",
           {
             "language": "rust",
+            "code": "let x = 1;",
             "class": "shiki shiki-themes github-dark dark:github-dark",
             "tabindex": "0"
           },

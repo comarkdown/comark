@@ -24,6 +24,7 @@ export async function html(node: ComarkElement, state: State, parent?: ComarkEle
   }
   if (tag === 'pre') {
     oneLiner = true
+    Reflect.deleteProperty(attributes, 'code')
   }
 
   // If parent is a paragraph, it is inline

@@ -19,7 +19,8 @@ function hello() {
       "pre",
       {
         "language": "javascript",
-        "filename": "hello.js"
+        "filename": "hello.js",
+        "code": "function hello() {\n  console.log(\"Hello, World!\");\n}"
       },
       [
         "code",
