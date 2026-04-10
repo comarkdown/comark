@@ -83,4 +83,11 @@ console.log(tree.nodes)
   }
 }
 \`\`\`
+
+### Footnotes
+
+Comark supports footnotes[^1] with automatic numbering and back-references[^2].
+
+[^1]: Footnotes are collected and rendered as a list at the end of the document.
+[^2]: Each footnote includes a back-reference link (↩) to jump back to the reference.
 `

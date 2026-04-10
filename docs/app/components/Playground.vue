@@ -5,6 +5,7 @@ import math from '@comark/vue/plugins/math'
 import emoji from '@comark/vue/plugins/emoji'
 import mermaid from '@comark/vue/plugins/mermaid'
 import jsonRender from '@comark/vue/plugins/json-render'
+import footnotes from '@comark/vue/plugins/footnotes'
 
 import { renderMarkdown } from 'comark/render'
 import { Splitpanes, Pane } from 'splitpanes'
@@ -64,7 +65,7 @@ async function parseMarkdown(): Promise<void> {
     return
   }
   parsing.value = true
-  const plugins = [jsonRender(), highlight(), math(), mermaid(), emoji()]
+  const plugins = [jsonRender(), highlight(), math(), mermaid(), emoji(), footnotes()]
   const start = performance.now()
   try {
     const result = await parse(markdown.value, {
