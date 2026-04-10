@@ -281,6 +281,63 @@ describe('renderFrontmatter', () => {
   })
 })
 
+describe('renderFrontmatter with frontmatterOptions', () => {
+  it('should pass lineWidth to js-yaml', () => {
+    const data = {
+      description: 'This is a very long description that should be wrapped when lineWidth is set to a small value',
+    }
+    const result = renderFrontmatter(data, 'Content', { lineWidth: 40 })
+    expect(result).toContain('---')
+    // With lineWidth: 40, js-yaml should wrap the long string
+    const lines = result.split('\n')
+    const descLines = lines.filter(l => l.includes('description') || (l.startsWith('  ') && !l.startsWith('  -')))
+    expect(descLines.length).toBeGreaterThan(1)
+
+    expect(result).toEqual(`---\ndescription: >-
+  This is a very long description that
+  should be wrapped when lineWidth is set
+  to a small value
+---
+
+Content`)
+  })
+
+  it('should sort keys when sortKeys is true', () => {
+    const data = { zebra: 'last', alpha: 'first', middle: 'mid' }
+    const result = renderFrontmatter(data, 'Content', { sortKeys: true })
+    const alphaIdx = result.indexOf('alpha')
+    const middleIdx = result.indexOf('middle')
+    const zebraIdx = result.indexOf('zebra')
+    expect(alphaIdx).toBeLessThan(middleIdx)
+    expect(middleIdx).toBeLessThan(zebraIdx)
+  })
+
+  it('should use custom indent', () => {
+    const data = {
+      meta: { title: 'Test', nested: { deep: true } },
+    }
+    const result = renderFrontmatter(data, 'Content', { indent: 4 })
+    expect(result).toContain('    title: Test')
+  })
+
+  it('should default to lineWidth -1 (no wrapping)', () => {
+    const longValue = 'x'.repeat(200)
+    const data = { description: longValue }
+    const result = renderFrontmatter(data, 'Content')
+    // Default: no line wrapping, value stays on one line
+    const descLine = result.split('\n').find(l => l.startsWith('description:'))
+    expect(descLine).toContain(longValue)
+  })
+
+  it('should override defaults when options provided', () => {
+    const data = { title: 'Hello' }
+    const result = renderFrontmatter(data, 'Content', { indent: 4 })
+    expect(result).toContain('---')
+    expect(result).toContain('title: Hello')
+    expect(result).toContain('Content')
+  })
+})
+
 describe('parseFrontmatter and renderFrontmatter roundtrip', () => {
   it('should roundtrip simple frontmatter', () => {
     const original = { title: 'Test', author: 'John' }
