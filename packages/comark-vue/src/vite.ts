@@ -4,6 +4,7 @@ import { join, basename } from 'node:path'
 import type { Plugin, ResolvedConfig } from 'vite'
 import type { ElementNode, DirectiveNode, TransformContext } from '@vue/compiler-core'
 import { existsSync } from 'node:fs'
+import { comarkDevtools } from 'comark/vite'
 
 const runtimeDir = fileURLToPath(new URL('./utils', import.meta.url))
 
@@ -112,7 +113,7 @@ function generateComponentsModule(files: string[]): string {
  * })
  * ```
  */
-export default function comark(): Plugin {
+export default function comark(): Plugin[] {
   let proseDir: string
   let proseFilesCache: string[] | null = null
 
@@ -131,81 +132,73 @@ export default function comark(): Plugin {
     }
   }
 
-  return {
-    name: 'comark-vue',
-    enforce: 'pre',
+  return [
+    {
+      name: 'comark-vue',
+      enforce: 'pre',
 
-    configResolved(config: ResolvedConfig) {
-      if (existsSync(join(config.root, 'src', 'components', 'prose'))) {
-        proseDir = join(config.root, 'src', 'components', 'prose')
-      }
-      if (existsSync(join(config.root, 'components', 'prose'))) {
-        proseDir = join(config.root, 'components', 'prose')
-      }
+      configResolved(config: ResolvedConfig) {
+        if (existsSync(join(config.root, 'src', 'components', 'prose'))) {
+          proseDir = join(config.root, 'src', 'components', 'prose')
+        }
+        if (existsSync(join(config.root, 'components', 'prose'))) {
+          proseDir = join(config.root, 'components', 'prose')
+        }
 
-      const vuePlugin = config.plugins.find(p => p.name === 'vite:vue')
-      if (!vuePlugin) {
-        console.warn('[comark-vue] @vitejs/plugin-vue not found. Make sure vue() is in your plugins.')
-        return
-      }
+        const vuePlugin = config.plugins.find(p => p.name === 'vite:vue')
+        if (!vuePlugin) {
+          console.warn('[comark-vue] @vitejs/plugin-vue not found. Make sure vue() is in your plugins.')
+          return
+        }
 
-      const vueOptions = (vuePlugin as any).api?.options
-      if (!vueOptions) return
+        const vueOptions = (vuePlugin as any).api?.options
+        if (!vueOptions) return
 
-      vueOptions.template ??= {}
-      vueOptions.template.compilerOptions ??= {}
-      vueOptions.template.compilerOptions.nodeTransforms ??= []
-      vueOptions.template.compilerOptions.nodeTransforms.unshift(viteComarkSlot)
-    },
+        vueOptions.template ??= {}
+        vueOptions.template.compilerOptions ??= {}
+        vueOptions.template.compilerOptions.nodeTransforms ??= []
+        vueOptions.template.compilerOptions.nodeTransforms.unshift(viteComarkSlot)
+      },
 
-    resolveId(id) {
-      if (id === VIRTUAL_COMPONENTS_ID) return RESOLVED_COMPONENTS_ID
-    },
+      resolveId(id) {
+        if (id === VIRTUAL_COMPONENTS_ID) return RESOLVED_COMPONENTS_ID
+      },
 
-    async load(id) {
-      if (id !== RESOLVED_COMPONENTS_ID) return
-      const files = await resolveProseFiles()
-      return generateComponentsModule(files)
-    },
+      async load(id) {
+        if (id !== RESOLVED_COMPONENTS_ID) return
+        const files = await resolveProseFiles()
+        return generateComponentsModule(files)
+      },
 
-    async transform(code) {
-      if (!code.includes('createApp') || !code.includes('.mount(')) return null
-      // Skip if already injected
-      if (code.includes(VIRTUAL_COMPONENTS_ID)) return null
+      async transform(code) {
+        if (!code.includes('createApp') || !code.includes('.mount(')) return null
+        // Skip if already injected
+        if (code.includes(VIRTUAL_COMPONENTS_ID)) return null
 
-      const files = await resolveProseFiles()
-      if (!files.length) return null
+        const files = await resolveProseFiles()
+        if (!files.length) return null
 
-      const injected = `import __comarkProse from ${JSON.stringify(VIRTUAL_COMPONENTS_ID)};\n`
-        + code.replace(/\.mount\s*\(/, '.use(__comarkProse).mount(')
+        const injected = `import __comarkProse from ${JSON.stringify(VIRTUAL_COMPONENTS_ID)};\n`
+          + code.replace(/\.mount\s*\(/, '.use(__comarkProse).mount(')
 
-      return { code: injected, map: null }
-    },
+        return { code: injected, map: null }
+      },
 
-    configureServer(server) {
-      if (!proseDir) return
+      configureServer(server) {
+        if (!proseDir) return
 
-      server.watcher.add(proseDir)
+        server.watcher.add(proseDir)
 
-      const invalidate = (file: string) => {
-        invalidateCache(file)
-        const mod = server.moduleGraph.getModuleById(RESOLVED_COMPONENTS_ID)
-        if (mod) server.moduleGraph.invalidateModule(mod)
-      }
+        const invalidate = (file: string) => {
+          invalidateCache(file)
+          const mod = server.moduleGraph.getModuleById(RESOLVED_COMPONENTS_ID)
+          if (mod) server.moduleGraph.invalidateModule(mod)
+        }
 
-      server.watcher.on('add', invalidate)
-      server.watcher.on('unlink', invalidate)
-    },
-    devtools: {
-      setup(ctx) {
-        ctx.docks.register({
-          id: 'comark',
-          title: 'Comark',
-          icon: `data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 212 212"><path stroke="currentColor" stroke-width="8" fill="none" d="M200.4 52.5v110H10.4v-110h190z"/><path fill="currentColor" d="M129.4 94.8V75.5h19.9v19.3h-19.9zm0 44.7v-19.2h19.9v19.2h-19.9zm30.1-44.7V75.5h19.9v19.3h-19.9zm0 44.7v-19.2h19.9v19.2h-19.9zM31.4 141.5v-68h20l20 25 20-25h20v68h-20v-39l-20 25-20-25v39h-20z"/></svg>')}`,
-          type: 'iframe',
-          url: 'https://comark.dev/play',
-        })
+        server.watcher.on('add', invalidate)
+        server.watcher.on('unlink', invalidate)
       },
     },
-  }
+    comarkDevtools(),
+  ]
 }
