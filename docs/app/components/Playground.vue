@@ -43,28 +43,28 @@ const parseOptions = useLocalStorage('comark-playground-parse-options', {
 
 const pluginDefs = [
   {
-    key: 'highlight',
-    label: 'Syntax Highlighting',
-    icon: 'i-lucide-code',
-    factory: () => highlight(),
-  },
-  {
-    key: 'math',
-    label: 'Math (KaTeX)',
-    icon: 'i-lucide-calculator',
-    factory: () => math(),
-  },
-  {
     key: 'emoji',
     label: 'Emoji',
     icon: 'i-lucide-smile',
     factory: () => emoji(),
   },
   {
+    key: 'highlight',
+    label: 'Syntax Highlighting',
+    icon: 'i-lucide-code',
+    factory: () => highlight(),
+  },
+  {
     key: 'mermaid',
-    label: 'Mermaid',
-    icon: 'i-lucide-git-branch',
+    label: 'Mermaid Diagrams',
+    icon: 'i-simple-icons:mermaid',
     factory: () => mermaid(),
+  },
+  {
+    key: 'math',
+    label: 'Mathematics (KaTeX)',
+    icon: 'i-lucide-calculator',
+    factory: () => math(),
   },
   {
     key: 'jsonRender',
