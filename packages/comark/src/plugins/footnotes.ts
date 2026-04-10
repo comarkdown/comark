@@ -23,7 +23,7 @@ export interface FootnotesConfig {
 
 // Regex to match footnote definitions at the start of a line:
 // [^label]: content
-const FOOTNOTE_DEF_RE = /^\[\^([^\s\]]+)\]:\s*(.*)$/gm
+const FOOTNOTE_DEF_RE = /^\[\^([^\s\]]+)\]:[ \t]?(.*)$/gm
 
 /**
  * Check if a node is a footnote reference: ['span', {}, '^label']
