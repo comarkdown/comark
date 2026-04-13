@@ -5,7 +5,7 @@ import type { ComarkElement, ComarkNode } from 'comark'
 export async function template(node: ComarkElement, state: State, parent?: ComarkElement) {
   const [_, attrs] = node
 
-  const content = (await state.flow(node, state)).trim()
+  const content = (await state.flow(node, state)).trimEnd()
 
   // Omit #default marker if this is the only slot
   if (attrs.name === 'default') {

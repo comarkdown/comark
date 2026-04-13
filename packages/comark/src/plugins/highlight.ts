@@ -78,13 +78,15 @@ export async function getHighlighter(options: HighlightOptions = {}): Promise<Sh
   try {
     highlighterPromise = (async () => {
       const { themes, languages } = await registerDefaults(options)
-      const hl = await createShikiPrimitive({
+      const hl = createShikiPrimitive({
         themes: themes,
         langs: languages,
         langAlias: {
-          md: 'mdc',
-          markdown: 'mdc',
-          comark: 'mdc',
+          'md': 'mdc',
+          'markdown': 'mdc',
+          'comark': 'mdc',
+          'json-render': 'json',
+          'yaml-render': 'yaml',
         },
         engine: createJavaScriptRegexEngine({ forgiving: true }),
       })
