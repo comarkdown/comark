@@ -124,7 +124,7 @@ Complete guide for parsing documents and working with AST:
 - **String Parsing:** `parse()` function with options (autoUnwrap, autoClose)
 - **Async Parsing:** `parse()` with Shiki syntax highlighting
 - **AST Structure:** Comark AST format - lightweight array-based AST
-- **Rendering AST:** convert to HTML (`renderHTML`) via `@comark/html`, or markdown (`renderMarkdown`) via `comark/render`
+- **Rendering AST:** convert to HTML (`renderHTML` via `@comark/html`) or markdown (`renderMarkdown` via `comark/render`)
 - **Auto-close:** automatic closing of unclosed syntax
 - **Auto-unwrap:** remove unnecessary paragraph wrappers from container components
 
