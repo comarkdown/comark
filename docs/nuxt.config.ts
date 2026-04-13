@@ -39,5 +39,9 @@ export default defineNuxtConfig({
     ],
   },
 
+  llms: {
+    domain: 'https://comark.dev',
+  },
+
   studio: false,
 })

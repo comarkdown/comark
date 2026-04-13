@@ -8,7 +8,6 @@
     "@comark/nuxt": "^0.2.0",
     "@monaco-editor/loader": "^1.7.0",
     "@nuxt/content": "^3.12.0",
-    "@nuxt/ui": "^4.6.0",
     "@nuxt/ui": "^4.6.1",
     "@nuxtjs/mcp-toolkit": "0.13.4",
     "@nuxtlabs/monarch-mdc": "^0.9.0",

@@ -1,3 +1,9 @@
+---
+name: comark
+description: >-
+  Comark (Components in Markdown) parser — syntax, AST, Vue/React/Svelte renderers, plugins, and LLM streaming with auto-close.
+---
+
 # Comark - Skills Guide
 
 A high-performance markdown parser with Comark (Components in Markdown) support, built on markdown-it, offering both string-based and streaming APIs.
