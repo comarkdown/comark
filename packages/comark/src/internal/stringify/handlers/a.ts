@@ -12,5 +12,9 @@ export async function a(node: ComarkElement, state: State) {
     : ''
   const content = await state.flow(node, state)
 
+  if (content === href && !attrsString) {
+    return `<${href}>`
+  }
+
   return `[${content}](${href})${attrsString}`
 }
