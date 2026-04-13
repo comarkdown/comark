@@ -9,8 +9,8 @@ import jsonRender from '@comark/vue/plugins/json-render'
 import { renderMarkdown } from 'comark/render'
 import { Splitpanes, Pane } from 'splitpanes'
 import { defaultMarkdown } from '~/constants'
-import { watchDebounced } from '@vueuse/core'
-import type { ComarkTree } from 'comark'
+import { useLocalStorage, watchDebounced } from '@vueuse/core'
+import type { ComarkTree, ComarkPlugin } from 'comark'
 import VueJsonPretty from 'vue-json-pretty'
 
 const props = defineProps<{
@@ -26,6 +26,79 @@ const parsing = ref<boolean>(false)
 
 const colorMode = useColorMode()
 const isDark = computed(() => colorMode.value === 'dark')
+
+const pluginToggles = useLocalStorage('comark-playground-plugins', {
+  highlight: true,
+  math: true,
+  emoji: true,
+  mermaid: true,
+  jsonRender: true,
+}, { mergeDefaults: true })
+
+const parseOptions = useLocalStorage('comark-playground-parse-options', {
+  autoUnwrap: true,
+  autoClose: true,
+  html: true,
+}, { mergeDefaults: true })
+
+const pluginDefs = [
+  {
+    key: 'emoji',
+    label: 'Emoji',
+    icon: 'i-lucide-smile',
+    factory: () => emoji(),
+  },
+  {
+    key: 'highlight',
+    label: 'Syntax Highlighting',
+    icon: 'i-lucide-code',
+    factory: () => highlight(),
+  },
+  {
+    key: 'mermaid',
+    label: 'Mermaid Diagrams',
+    icon: 'i-simple-icons:mermaid',
+    factory: () => mermaid(),
+  },
+  {
+    key: 'math',
+    label: 'Mathematics (KaTeX)',
+    icon: 'i-lucide-calculator',
+    factory: () => math(),
+  },
+  {
+    key: 'jsonRender',
+    label: 'JSON Render',
+    icon: 'i-lucide-braces',
+    factory: () => jsonRender(),
+  },
+] as const
+
+const parseOptionDefs = [
+  {
+    key: 'autoUnwrap',
+    label: 'Auto Unwrap',
+    icon: 'i-lucide-ungroup',
+  },
+  {
+    key: 'autoClose',
+    label: 'Auto Close',
+    icon: 'i-lucide-shield-check',
+  },
+  {
+    key: 'html',
+    label: 'HTML Parsing',
+    icon: 'i-lucide-file-code',
+  },
+] as const
+
+const activePlugins = computed<ComarkPlugin[]>(() =>
+  pluginDefs
+    .filter(p => pluginToggles.value[p.key])
+    .map(p => p.factory()),
+)
+
+const enabledPluginCount = computed<number>(() => Object.values(pluginToggles.value).filter(Boolean).length)
 
 const activeTab = ref('preview')
 const tabs = [
@@ -64,11 +137,13 @@ async function parseMarkdown(): Promise<void> {
     return
   }
   parsing.value = true
-  const plugins = [jsonRender(), highlight(), math(), mermaid(), emoji()]
   const start = performance.now()
   try {
     const result = await parse(markdown.value, {
-      plugins,
+      plugins: activePlugins.value,
+      autoUnwrap: parseOptions.value.autoUnwrap,
+      autoClose: parseOptions.value.autoClose,
+      html: parseOptions.value.html,
     })
     tree.value = result
     parseTime.value = Math.round((performance.now() - start) * 10) / 10
@@ -84,6 +159,7 @@ async function parseMarkdown(): Promise<void> {
 }
 
 watchDebounced(markdown, parseMarkdown, { debounce: 300 })
+watchDebounced([activePlugins, parseOptions], parseMarkdown, { deep: true, debounce: 300 })
 onMounted(() => {
   nextTick(() => parseMarkdown())
 })
@@ -135,6 +211,93 @@ const isMatch = computed(() =>
                 @click="resetComark"
               />
             </UTooltip>
+
+            <div class="flex-1" />
+
+            <!-- Settings popover -->
+            <UPopover
+              v-if="!compact"
+              :ui="{ content: 'p-0' }"
+            >
+              <UButton
+                size="xs"
+                color="neutral"
+                variant="ghost"
+                icon="i-lucide-settings-2"
+              >
+                <template #trailing>
+                  <UBadge
+                    size="xs"
+                    color="neutral"
+                    variant="subtle"
+                    :label="`${enabledPluginCount}/${pluginDefs.length}`"
+                  />
+                </template>
+              </UButton>
+
+              <template #content>
+                <div class="w-72">
+                  <!-- Plugins section -->
+                  <div class="px-3 pt-3 pb-1.5">
+                    <p class="text-xs font-semibold text-muted uppercase tracking-wider">
+                      Plugins
+                    </p>
+                  </div>
+                  <div class="px-1 pb-1.5">
+                    <button
+                      v-for="plugin in pluginDefs"
+                      :key="plugin.key"
+                      class="flex items-center gap-2.5 w-full px-2 py-1.5 rounded-md text-sm hover:bg-elevated transition-colors"
+                      @click="pluginToggles[plugin.key] = !pluginToggles[plugin.key] as any"
+                    >
+                      <UIcon
+                        :name="plugin.icon"
+                        class="size-4 text-muted shrink-0"
+                      />
+                      <span class="flex-1 text-left truncate">{{ plugin.label }}</span>
+                      <USwitch
+                        :model-value="pluginToggles[plugin.key]"
+                        size="xs"
+                        tabindex="-1"
+                        @click.stop
+                        @update:model-value="(pluginToggles[plugin.key] as any) = $event"
+                      />
+                    </button>
+                  </div>
+
+                  <!-- Divider -->
+                  <div class="border-t border-default" />
+
+                  <!-- Parse options section -->
+                  <div class="px-3 pt-2.5 pb-1.5">
+                    <p class="text-xs font-semibold text-muted uppercase tracking-wider">
+                      Parse Options
+                    </p>
+                  </div>
+                  <div class="px-1 pb-2">
+                    <button
+                      v-for="opt in parseOptionDefs"
+                      :key="opt.key"
+                      class="flex items-center gap-2.5 w-full px-2 py-1.5 rounded-md text-sm hover:bg-elevated transition-colors"
+                      @click="parseOptions[opt.key] = !parseOptions[opt.key]"
+                    >
+                      <UIcon
+                        :name="opt.icon"
+                        class="size-4 text-muted shrink-0"
+                      />
+                      <span class="flex-1 text-left">{{ opt.label }}</span>
+                      <USwitch
+                        :model-value="parseOptions[opt.key]"
+                        size="xs"
+                        tabindex="-1"
+                        @click.stop
+                        @update:model-value="parseOptions[opt.key] = $event"
+                      />
+                    </button>
+                  </div>
+                </div>
+              </template>
+            </UPopover>
           </div>
           <div class="flex-1 min-h-0">
             <Editor
@@ -289,6 +452,13 @@ const isMatch = computed(() =>
                 class="size-3"
               />
               {{ parseTime }}ms
+            </span>
+            <span class="flex items-center gap-1 text-xs text-muted">
+              <UIcon
+                name="i-lucide-puzzle"
+                class="size-3"
+              />
+              {{ enabledPluginCount }} plugins
             </span>
           </div>
         </div>

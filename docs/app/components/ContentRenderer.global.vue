@@ -9,6 +9,8 @@ import alert from '@comark/vue/plugins/alert'
 import { Mermaid } from '@comark/vue/plugins/mermaid'
 import type { ComarkTree, ComarkElement } from 'comark'
 import type { MinimarkNode, MinimarkTree } from 'minimark'
+import Browser from './prose/Browser.vue'
+import CodeExplorer from './prose/CodeExplorer.vue'
 
 interface Renderable {
   render?: (props: Record<string, unknown>) => unknown
@@ -122,6 +124,8 @@ const componentsMap = computed(() => {
   return {
     ...body.value ? resolveContentComponents(body.value, { tags: tags.value }) : {},
     Mermaid,
+    Browser,
+    CodeExplorer,
   }
 })
 

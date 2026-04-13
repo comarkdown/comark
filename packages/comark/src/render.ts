@@ -33,5 +33,5 @@ export async function render(tree: ComarkTree, context: RenderOptions = {}): Pro
  */
 export async function renderMarkdown(tree: ComarkTree, options?: RenderMarkdownOptions): Promise<string> {
   const content = await render(tree, { format: 'markdown/comark', ...options })
-  return renderFrontmatter(tree.frontmatter, content)
+  return renderFrontmatter(tree.frontmatter, content, options?.frontmatterOptions)
 }

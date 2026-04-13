@@ -16,6 +16,9 @@ defaultValue: src/App.vue
 ---
 ::
 
+::browser{src="https://comark-json-render.vercel.app"}
+::
+
 ## Features
 
 This example demonstrates how to use Comark with JSON Render and YAML Render in Vue:
@@ -40,7 +43,7 @@ This example demonstrates how to use Comark with JSON Render and YAML Render in 
    ```
 
 3. Use `json-render` or `yaml-render` code blocks in your markdown:
-   ````markdown
+   ````json
    ```json-render
    {
      "type": "Text",
@@ -49,7 +52,7 @@ This example demonstrates how to use Comark with JSON Render and YAML Render in 
    ```
    ````
 
-   ````markdown
+   ````yaml
    ```yaml-render
    type: Text
    props:

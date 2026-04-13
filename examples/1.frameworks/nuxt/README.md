@@ -1,5 +1,5 @@
 ---
-title: Nuxt UI
+title: Nuxt
 description: A minimal example showing how to use Comark Syntax with Nuxt UI.
 category: Frameworks
 navigation:
@@ -7,13 +7,16 @@ navigation:
 path: /examples/frameworks/nuxt-ui
 ---
 
-::code-explorer
+::CodeExplorer
 ---
 org: comarkdown
 repo: comark
-path: examples/1.frameworks/nuxt-ui
-defaultValue: app/app.vue
+path: examples/1.frameworks/nuxt
+defaultValue: content/posts/comark-syntax.md
 ---
+::
+
+::Browser{src="https://comark-nuxt.vercel.app/blog/comark-syntax"}
 ::
 
 This example demonstrates how to use Comark Syntax with Nuxt UI. Comark Syntax automatically detects when Nuxt UI is installed and uses its components for rendering. Simply add both `comark/nuxt` and `@nuxt/ui` modules to your Nuxt config, and the `Comark` component will use Nuxt UI components automatically.
