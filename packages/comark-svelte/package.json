@@ -6,7 +6,14 @@
   "types": "./dist/index.d.ts",
   "type": "module",
   "license": "MIT",
-  "repository": "comarkdown/comark",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/comarkdown/comark.git"
+  },
+  "bugs": {
+    "url": "https://github.com/comarkdown/comark/issues"
+  },
+  "homepage": "https://comark.dev/rendering/svelte",
   "keywords": [
     "markdown",
     "mdc",

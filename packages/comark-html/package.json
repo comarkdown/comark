@@ -3,6 +3,14 @@
   "type": "module",
   "version": "0.2.1",
   "description": "HTML renderer for Comark",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/comarkdown/comark.git"
+  },
+  "bugs": {
+    "url": "https://github.com/comarkdown/comark/issues"
+  },
+  "homepage": "https://comark.dev/rendering/html",
   "exports": {
     ".": "./dist/index.js",
     "./plugins/*": "./dist/plugins/*.js",

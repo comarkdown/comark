@@ -8,6 +8,16 @@ This directory contains comprehensive documentation for the Comark library, buil
 - **[Documentation Home](./content/index.md)** - Start here for an overview
 - **[Installation](./content/1.getting-started/1.installation.md)** - Set up Comark in your project
 
+### Agent skill
+
+To install the Comark [Agent Skill](https://agentskills.io) from the published documentation site:
+
+```bash
+npx skills add https://comark.dev
+```
+
+See the [Installation guide](./content/1.getting-started/1.installation.md) (section *Agent Skill*) for more context.
+
 ### Core API Documentation
 1. **[Parse API](./content/4.api/1.parse.md)** - String parsing
    - `parse()` - Parse markdown strings
@@ -36,6 +46,7 @@ This directory contains comprehensive documentation for the Comark library, buil
 **I want to...**
 
 - **Install Comark** → [Installation Guide](./content/1.getting-started/1.installation.md)
+- **Install the Agent Skill** → `npx skills add https://comark.dev` (see [Getting Started → Agent skill](#agent-skill-ai-assistants) above)
 - **Parse markdown from a string** → [Parse API](./content/4.api/1.parse.md)
 - **Handle incomplete markdown** → [Auto-Close API](./content/4.api/2.auto-close.md)
 - **Render Comark in Vue** → [Vue Rendering](./content/3.rendering/1.vue.md)

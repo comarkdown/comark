@@ -1,3 +1,9 @@
+---
+name: comark
+description: >-
+  Comark (Components in Markdown) parser — syntax, AST, Vue/React/Svelte renderers, plugins, and LLM streaming with auto-close.
+---
+
 # Comark - Skills Guide
 
 A high-performance markdown parser with Comark (Components in Markdown) support, built on markdown-it, offering both string-based and streaming APIs.
@@ -27,6 +33,7 @@ A high-performance markdown parser with Comark (Components in Markdown) support,
   - Svelte components: `@comark/svelte`
   - HTML rendering: `@comark/html`
   - ANSI terminal rendering: `@comark/ansi`
+  - Nuxt module: `@comark/nuxt`
 
 ## Quick Start
 
@@ -51,7 +58,7 @@ Important message
 const result = await parse(content)
 console.log(result.nodes)       // Comark AST
 console.log(result.frontmatter) // { title: 'Hello World' }
-console.log(result.meta.toc)    // Table of contents
+console.log(result.meta)    // Additional metadata
 ```
 
 ### Vue Rendering
@@ -94,7 +101,7 @@ export default function App() {
 
 This guide is organized into focused sections covering different aspects of the package:
 
-### 📝 [1. Markdown Syntax](./docs/skills/markdown-syntax.md)
+### 📝 [1. Markdown Syntax](./references/markdown-syntax.md)
 
 Learn how to write Comark documents with complete syntax reference:
 
@@ -110,14 +117,14 @@ Learn how to write Comark documents with complete syntax reference:
 
 ---
 
-### 🔧 [2. Parsing & AST Generation](./docs/skills/parsing-ast.md)
+### 🔧 [2. Parsing & AST Generation](./references/parsing-ast.md)
 
 Complete guide for parsing documents and working with AST:
 
 - **String Parsing:** `parse()` function with options (autoUnwrap, autoClose)
 - **Async Parsing:** `parse()` with Shiki syntax highlighting
 - **AST Structure:** Comark AST format - lightweight array-based AST
-- **Rendering AST:** convert to HTML (`renderHTML`) via `@comark/html`, or markdown (`renderMarkdown`) via `comark/render`
+- **Rendering AST:** convert to HTML (`renderHTML` via `@comark/html`) or markdown (`renderMarkdown` via `comark/render`)
 - **Auto-close:** automatic closing of unclosed syntax
 - **Auto-unwrap:** remove unnecessary paragraph wrappers from container components
 
@@ -125,7 +132,7 @@ Complete guide for parsing documents and working with AST:
 
 ---
 
-### ⚛️ [3. Vue Rendering](./docs/skills/rendering-vue.md)
+### ⚛️ [3. Vue Rendering](./references/rendering-vue.md)
 
 Comprehensive guide for rendering in Vue applications:
 
@@ -142,7 +149,7 @@ Comprehensive guide for rendering in Vue applications:
 
 ---
 
-### ⚛️ [4. React Rendering](./docs/skills/rendering-react.md)
+### ⚛️ [4. React Rendering](./references/rendering-react.md)
 
 Comprehensive guide for rendering in React applications:
 
@@ -231,17 +238,6 @@ interface ComarkTree {
   frontmatter: {},
   meta: {}
 }
-```
-
-### Auto-Close
-
-O(n) algorithm that handles unclosed syntax:
-
-```typescript
-import { autoCloseMarkdown } from 'comark'
-
-// Handles: *, **, ***, ~~, `, [, ], (, ), ::component, {...}
-const closed = autoCloseMarkdown('**bold text') // → '**bold text**'
 ```
 
 ## Common Use Cases
@@ -345,7 +341,7 @@ autoCloseMarkdown(source: string): string
 render(markdown: string, options?: RenderOptions): Promise<string>
 
 // Render a pre-parsed tree to HTML
-renderHTML(tree: ComarkTree, options?: RenderOptions): string
+renderHTML(tree: ComarkTree, options?: RenderOptions): Promise<string>
 
 // Create a reusable render function with shared parser instance
 createRender(options?: ParseOptions & RenderOptions): (markdown: string) => Promise<string>
@@ -371,7 +367,6 @@ createRender(options?: ParseOptions & RenderOptions): (markdown: string) => Prom
 
 ## Performance Characteristics
 
-- **O(n) auto-close algorithm** - linear time without regex
 - **Comark AST format** - lightweight array-based AST
 - **Lazy component loading** - only load what's needed
 - **Shiki highlighter caching** - avoid re-initialization
@@ -386,7 +381,6 @@ import type {
   ComarkTree,
   ComarkNode,
   ParseOptions,
-  ShikiOptions
 } from 'comark'
 ```
 
@@ -447,7 +441,7 @@ import type {
 
 ## Contributing & Testing
 
-See the [test specifications](./SPEC/) for examples of all supported syntax features.
+See the [test specifications](../../packages/comark/SPEC/) for examples of all supported syntax features.
 
 Run tests:
 ```bash
@@ -461,9 +455,8 @@ pnpm test -- tests/parse.test.ts
 
 ## Resources
 
-- **README:** [README.md](./README.md) - Installation and quick start
-- **Specifications:** [SPEC/](./SPEC/) - Complete syntax test cases
-- **Playground:** [playground/](./playground/) - Live examples and testing
+- **README:** [README.md](../../README.md) - Installation and quick start
+- **Specifications:** [SPEC/](../../packages/comark/SPEC/) - Complete syntax test cases
 
 ---
 

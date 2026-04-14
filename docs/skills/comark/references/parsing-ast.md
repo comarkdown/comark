@@ -6,7 +6,6 @@ Complete guide for parsing Comark documents and working with the Comark AST form
 
 - [String Parsing](#string-parsing)
 - [Async Parsing with Syntax Highlighting](#async-parsing-with-syntax-highlighting)
-- [Stream Parsing](#stream-parsing)
 - [AST Structure](#ast-structure)
 - [Rendering AST](#rendering-ast)
 
@@ -92,7 +91,7 @@ Auto-unwrap removes unnecessary paragraph wrappers from container components:
 ["alert", {}, "Text"]
 ```
 
-Container components: `alert`, `card`, `callout`, `note`, `warning`, `tip`, `info`
+Auto-unwrap applies to any component whose only child is a single paragraph.
 
 ### Auto-Close Feature
 
@@ -166,9 +165,15 @@ const result = await parse(content, {
 
 ```typescript
 interface HighlightOptions {
-  themes?: Record<string, string>  // { light: 'github-light', dark: 'github-dark' }
-  languages?: string[]             // Languages to preload
-  preStyles?: boolean              // Add pre background/foreground styles
+  registerDefaultLanguages?: boolean  // default: true
+  registerDefaultThemes?: boolean     // default: true
+  themes?: {
+    light?: ThemeRegistration         // default: 'material-theme-lighter'
+    dark?: ThemeRegistration          // default: 'material-theme-palenight'
+  }
+  languages?: Array<LanguageRegistration | LanguageRegistration[]>  // Load on demand by default
+  transformers?: ShikiTransformer[]
+  preStyles?: boolean                 // Add pre background/foreground styles
 }
 ```
 
@@ -250,6 +255,12 @@ type ComarkNode =
   ["template", { "name": "header" }, ["h2", {}, "Title"]],
   ["template", { "name": "content" }, ["p", {}, "Content"]]
 ]
+
+// Default slot: content without #slot-name becomes direct children
+["component", {}, "hello"]
+
+// Explicit #default wraps in a template node (equivalent in rendering)
+["component", {}, ["template", { "name": "default" }, "hello"]]
 ```
 
 ### Complete AST Example
