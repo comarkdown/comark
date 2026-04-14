@@ -72,7 +72,7 @@ catalog:
   '@nuxt/ui': ^4.6.1
   '@nuxtjs/mcp-toolkit': 0.13.4
   '@nuxtlabs/monarch-mdc': ^0.9.0
-  nuxt-studio: 1.5.1
+  nuxt-studio: 1.6.0
   docus: ^5.9.0
 
   # React
