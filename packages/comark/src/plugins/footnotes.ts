@@ -1,4 +1,4 @@
-import type { ComarkElement, ComarkNode } from 'comark'
+import type { ComarkNode } from 'comark'
 import { defineComarkPlugin } from '../utils/helpers.ts'
 import { visit } from '../utils'
 
@@ -27,24 +27,41 @@ export interface FootnotesConfig {
 const FOOTNOTE_DEF_RE = /^\[\^([^\s\]]+)\]:[ \t]?(.*)$/gm
 
 /**
+ * Quick structural check: is this a ['span', {…}, string] tuple?
+ * Used as the visit() checker to avoid running the full extraction
+ * on every node in the tree.
+ */
+function maybeFootnoteRef(node: ComarkNode): boolean {
+  return Array.isArray(node)
+    && node[0] === 'span'
+    && node.length === 3
+    && typeof node[2] === 'string'
+}
+
+/**
  * Check if a node is a footnote reference: ['span', {}, '^label']
  * The MDC parser converts [^label] into ['span', {}, '^label']
+ * Returns the label string or null.
  */
 function isFootnoteRef(node: ComarkNode): string | null {
-  if (!Array.isArray(node) || node[0] !== 'span') return null
-  if (node.length !== 3) return null
-
+  // Caller should pre-check with maybeFootnoteRef for fast rejection
   const attrs = node[1] as Record<string, any>
-  const keys = Object.keys(attrs).filter(k => k !== '$')
-  if (keys.length > 0) return null
+  // Check attrs has no keys other than '$' — avoid Object.keys() allocation
+  for (const k in attrs) {
+    if (k !== '$') return null
+  }
 
-  const child = node[2]
-  if (typeof child !== 'string' || !child.startsWith('^')) return null
+  const child = node[2] as string
+  // Must start with '^' and have at least one label char
+  if (child.charCodeAt(0) !== 0x5E /* ^ */ || child.length < 2) return null
 
-  const label = child.slice(1)
-  if (!label || /\s/.test(label)) return null
+  // Check for whitespace using charCode scanning (avoid regex)
+  for (let i = 1; i < child.length; i++) {
+    const c = child.charCodeAt(i)
+    if (c === 0x20 || c === 0x09 || c === 0x0A || c === 0x0D) return null
+  }
 
-  return label
+  return child.slice(1)
 }
 
 /**
@@ -97,22 +114,22 @@ export default defineComarkPlugin((config: FootnotesConfig = {}) => {
       // Replace footnote reference spans with sup > a elements
       visit(
         state.tree,
-        node => Boolean(isFootnoteRef(node)),
+        maybeFootnoteRef,
         (node) => {
           const refLabel = isFootnoteRef(node)
-          if (refLabel && definitions.has(refLabel)) {
-            if (!refIndexMap.has(refLabel)) {
-              refIndexMap.set(refLabel, refIndexMap.size + 1)
-            }
-            const refIndex = refIndexMap.get(refLabel)!
+          if (!refLabel || !definitions.has(refLabel)) return
 
-            return ['sup', { class: 'footnote-ref' },
-              ['a', {
-                href: `#fn-${refLabel}`,
-                id: `fnref-${refLabel}`,
-              }, `[${refIndex}]`],
-            ]
+          if (!refIndexMap.has(refLabel)) {
+            refIndexMap.set(refLabel, refIndexMap.size + 1)
           }
+          const refIndex = refIndexMap.get(refLabel)!
+
+          return ['sup', { class: 'footnote-ref' },
+            ['a', {
+              href: `#fn-${refLabel}`,
+              id: `fnref-${refLabel}`,
+            }, `[${refIndex}]`],
+          ]
         },
       )
 
@@ -122,14 +139,16 @@ export default defineComarkPlugin((config: FootnotesConfig = {}) => {
       nodes = nodes.filter((node) => {
         if (!Array.isArray(node) || node[0] !== 'p') return true
         // A paragraph with only whitespace children is considered empty
-        const children = (node as ComarkElement).slice(2)
-        return children.some((child) => {
+        for (let i = 2; i < node.length; i++) {
+          const child = node[i]
           if (typeof child === 'string') {
-            return child.trim().length > 0
+            if ((child as string).trim().length > 0) return true
           }
-          // Keep if meaningful element exists
-          return Array.isArray(child) && child[0] != null
-        })
+          else if (Array.isArray(child) && child[0] != null) {
+            return true
+          }
+        }
+        return false
       })
 
       // Build the footnotes section
