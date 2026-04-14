@@ -79,7 +79,7 @@ const pluginDefs = [
     label: 'Footnotes',
     icon: 'i-lucide-footprint',
     factory: () => footnotes(),
-  }
+  },
 ] as const
 
 const parseOptionDefs = [
@@ -145,7 +145,6 @@ async function parseMarkdown(): Promise<void> {
     return
   }
   parsing.value = true
-
   const start = performance.now()
   try {
     const result = await parse(markdown.value, {
