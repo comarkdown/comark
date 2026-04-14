@@ -676,20 +676,20 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/comark-vue
       vue:
-        specifier: ^3.5.32
+        specifier: 'catalog:'
         version: 3.5.32(typescript@5.9.3)
     devDependencies:
       '@vitejs/plugin-vue':
-        specifier: ^6.0.5
+        specifier: 'catalog:'
         version: 6.0.5(vite@8.0.8(@types/node@25.5.2)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(vue@3.5.32(typescript@5.9.3))
       typescript:
-        specifier: ^5.9.3
+        specifier: 'catalog:'
         version: 5.9.3
       vite:
-        specifier: ^8.0.8
+        specifier: 'catalog:'
         version: 8.0.8(@types/node@25.5.2)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
       vue-tsc:
-        specifier: ^3.2.6
+        specifier: 'catalog:'
         version: 3.2.6(typescript@5.9.3)
 
   examples/3.plugins/vue-vite-highlight:
