@@ -341,8 +341,8 @@ And here's an ordered list:
 1. First numbered item
 2. Second numbered item
 3. Third numbered item
-  - Nested unordered item
-  - Another nested item
+   - Nested unordered item
+   - Another nested item
 
 ## Section Two
 

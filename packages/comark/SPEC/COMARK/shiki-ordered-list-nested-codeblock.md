@@ -108,7 +108,8 @@ options:
 ## Markdown
 
 ```md
-1. Setup:```rust
-let x = 1;
-```
+1. Setup:
+   ```rust
+   let x = 1;
+   ```
 ```
