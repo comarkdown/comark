@@ -14,7 +14,7 @@
     "@vercel/analytics": "catalog:",
     "@vercel/speed-insights": "catalog:",
     "comark": "catalog:",
-    "docus": "catalog:",
+    "docus": "https://pkg.pr.new/docus@6983451",
     "markdown-it-math": "catalog:",
     "nuxt": "catalog:",
     "nuxt-studio": "catalog:",
