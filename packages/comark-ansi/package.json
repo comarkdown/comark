@@ -38,7 +38,7 @@
   "peerDependencies": {
     "katex": ">=0.16",
     "beautiful-mermaid": ">=1.0",
-    "shiki": "^4.0.0"
+    "shiki": "catalog:"
   },
   "peerDependenciesMeta": {
     "katex": {
@@ -52,9 +52,9 @@
     }
   },
   "dependencies": {
-    "comark": "^0.2.1"
+    "comark": "catalog:"
   },
   "devDependencies": {
-    "vitest": "^4.1.4"
+    "vitest": "catalog:"
   }
 }

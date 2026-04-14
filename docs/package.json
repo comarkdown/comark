@@ -5,25 +5,25 @@
     "build": " pnpm --filter '../' run build && nuxt build --extends docus"
   },
   "dependencies": {
-    "@comark/nuxt": "^0.2.0",
-    "@monaco-editor/loader": "^1.7.0",
-    "@nuxt/content": "^3.12.0",
-    "@nuxt/ui": "^4.6.1",
-    "@nuxtjs/mcp-toolkit": "0.13.4",
-    "@nuxtlabs/monarch-mdc": "^0.9.0",
-    "@vercel/analytics": "^2.0.1",
-    "@vercel/speed-insights": "^2.0.0",
-    "comark": "^0.2.1",
-    "docus": "^5.9.0",
-    "markdown-it-math": "^5.2.1",
-    "nuxt": "^4.4.2",
-    "nuxt-studio": "1.5.1",
-    "splitpanes": "^4.0.4",
-    "tailwindcss": "^4.2.2",
-    "vue-json-pretty": "^2.6.0"
+    "@comark/nuxt": "catalog:",
+    "@monaco-editor/loader": "catalog:",
+    "@nuxt/content": "catalog:",
+    "@nuxt/ui": "catalog:",
+    "@nuxtjs/mcp-toolkit": "catalog:",
+    "@nuxtlabs/monarch-mdc": "catalog:",
+    "@vercel/analytics": "catalog:",
+    "@vercel/speed-insights": "catalog:",
+    "comark": "catalog:",
+    "docus": "catalog:",
+    "markdown-it-math": "catalog:",
+    "nuxt": "catalog:",
+    "nuxt-studio": "catalog:",
+    "splitpanes": "catalog:",
+    "tailwindcss": "catalog:",
+    "vue-json-pretty": "catalog:"
   },
   "devDependencies": {
-    "@tailwindcss/typography": "^0.5.19",
-    "@types/splitpanes": "^2.2.6"
+    "@tailwindcss/typography": "catalog:",
+    "@types/splitpanes": "catalog:"
   }
 }

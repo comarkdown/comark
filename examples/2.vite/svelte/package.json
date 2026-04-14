@@ -10,16 +10,16 @@
   },
   "dependencies": {
     "@comark/svelte": "latest",
-    "@shikijs/langs": "^4.0.2",
-    "@tailwindcss/vite": "^4.2.2",
-    "tailwindcss": "^4.2.2"
+    "@shikijs/langs": "catalog:",
+    "@tailwindcss/vite": "catalog:",
+    "tailwindcss": "catalog:"
   },
   "devDependencies": {
-    "@sveltejs/vite-plugin-svelte": "^7.0.0",
-    "autoprefixer": "^10.4.27",
-    "postcss": "^8.5.9",
-    "svelte": "^5.55.2",
-    "typescript": "^5.9.3",
-    "vite": "^8.0.8"
+    "@sveltejs/vite-plugin-svelte": "catalog:",
+    "autoprefixer": "catalog:",
+    "postcss": "catalog:",
+    "svelte": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:"
   }
 }

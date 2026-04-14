@@ -4,6 +4,270 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+catalogs:
+  default:
+    '@astrojs/react':
+      specifier: ^5.0.3
+      version: 5.0.3
+    '@clack/prompts':
+      specifier: ^1.2.0
+      version: 1.2.0
+    '@comark/markdown-it':
+      specifier: ^0.3.3
+      version: 0.3.3
+    '@json-render/core':
+      specifier: ^0.16.0
+      version: 0.16.0
+    '@monaco-editor/loader':
+      specifier: ^1.7.0
+      version: 1.7.0
+    '@nuxt/content':
+      specifier: ^3.12.0
+      version: 3.12.0
+    '@nuxt/eslint-config':
+      specifier: ^1.15.2
+      version: 1.15.2
+    '@nuxt/kit':
+      specifier: ^4.4.2
+      version: 4.4.2
+    '@nuxt/ui':
+      specifier: ^4.6.1
+      version: 4.6.1
+    '@nuxtjs/mcp-toolkit':
+      specifier: 0.13.4
+      version: 0.13.4
+    '@nuxtlabs/monarch-mdc':
+      specifier: ^0.9.0
+      version: 0.9.0
+    '@release-it/conventional-changelog':
+      specifier: ^10.0.6
+      version: 10.0.6
+    '@shikijs/langs':
+      specifier: ^4.0.2
+      version: 4.0.2
+    '@shikijs/primitive':
+      specifier: ^4.0.2
+      version: 4.0.2
+    '@shikijs/themes':
+      specifier: ^4.0.2
+      version: 4.0.2
+    '@shikijs/twoslash':
+      specifier: ^4.0.2
+      version: 4.0.2
+    '@stylistic/eslint-plugin':
+      specifier: ^5.10.0
+      version: 5.10.0
+    '@sveltejs/package':
+      specifier: ^2.5.7
+      version: 2.5.7
+    '@sveltejs/vite-plugin-svelte':
+      specifier: ^7.0.0
+      version: 7.0.0
+    '@tailwindcss/postcss':
+      specifier: ^4.2.2
+      version: 4.2.2
+    '@tailwindcss/typography':
+      specifier: ^0.5.19
+      version: 0.5.19
+    '@tailwindcss/vite':
+      specifier: ^4.2.2
+      version: 4.2.2
+    '@types/js-yaml':
+      specifier: ^4.0.9
+      version: 4.0.9
+    '@types/markdown-it':
+      specifier: ^14.1.2
+      version: 14.1.2
+    '@types/node':
+      specifier: ^25.5.2
+      version: 25.5.2
+    '@types/react':
+      specifier: ^19.2.14
+      version: 19.2.14
+    '@types/react-dom':
+      specifier: ^19.2.3
+      version: 19.2.3
+    '@types/splitpanes':
+      specifier: ^2.2.6
+      version: 2.2.6
+    '@vercel/analytics':
+      specifier: ^2.0.1
+      version: 2.0.1
+    '@vercel/speed-insights':
+      specifier: ^2.0.0
+      version: 2.0.0
+    '@vitejs/plugin-react':
+      specifier: ^6.0.1
+      version: 6.0.1
+    '@vitejs/plugin-vue':
+      specifier: ^6.0.5
+      version: 6.0.5
+    '@vitest/browser':
+      specifier: ^4.1.4
+      version: 4.1.4
+    '@vitest/browser-playwright':
+      specifier: ^4.1.4
+      version: 4.1.4
+    '@vue/compiler-core':
+      specifier: ^3.5.32
+      version: 3.5.32
+    '@vue/server-renderer':
+      specifier: ^3.5.32
+      version: 3.5.32
+    '@vueuse/core':
+      specifier: ^14.2.1
+      version: 14.2.1
+    '@xterm/addon-fit':
+      specifier: ^0.11.0
+      version: 0.11.0
+    '@xterm/xterm':
+      specifier: ^6.0.0
+      version: 6.0.0
+    astro:
+      specifier: ^6.1.5
+      version: 6.1.5
+    autoprefixer:
+      specifier: ^10.4.27
+      version: 10.4.27
+    beautiful-mermaid:
+      specifier: ^1.1.3
+      version: 1.1.3
+    citty:
+      specifier: ^0.2.2
+      version: 0.2.2
+    docus:
+      specifier: ^5.9.0
+      version: 5.9.0
+    entities:
+      specifier: ^8.0.0
+      version: 8.0.0
+    eslint:
+      specifier: ^10.2.0
+      version: 10.2.0
+    eslint-plugin-svelte:
+      specifier: ^3.17.0
+      version: 3.17.0
+    github-slugger:
+      specifier: ^2.0.0
+      version: 2.0.0
+    hast-util-to-string:
+      specifier: ^3.0.1
+      version: 3.0.1
+    htmlparser2:
+      specifier: ^12.0.0
+      version: 12.0.0
+    js-yaml:
+      specifier: ^4.1.1
+      version: 4.1.1
+    katex:
+      specifier: ^0.16.45
+      version: 0.16.45
+    markdown-exit:
+      specifier: 1.0.0-beta.9
+      version: 1.0.0-beta.9
+    markdown-it-math:
+      specifier: ^5.2.1
+      version: 5.2.1
+    minimark:
+      specifier: 0.2.0
+      version: 0.2.0
+    mitata:
+      specifier: ^1.0.34
+      version: 1.0.34
+    next:
+      specifier: ^16.2.3
+      version: 16.2.3
+    nuxt:
+      specifier: ^4.4.2
+      version: 4.4.2
+    nuxt-studio:
+      specifier: 1.5.1
+      version: 1.5.1
+    playwright:
+      specifier: ^1.59.1
+      version: 1.59.1
+    postcss:
+      specifier: ^8.5.9
+      version: 8.5.9
+    react:
+      specifier: ^19.2.5
+      version: 19.2.5
+    react-dom:
+      specifier: ^19.2.5
+      version: 19.2.5
+    release-it:
+      specifier: ^19.2.4
+      version: 19.2.4
+    remark-gfm:
+      specifier: ^4.0.1
+      version: 4.0.1
+    remark-mdc:
+      specifier: ^3.10.0
+      version: 3.10.0
+    remark-parse:
+      specifier: ^11.0.0
+      version: 11.0.0
+    remark-rehype:
+      specifier: ^11.1.2
+      version: 11.1.2
+    scule:
+      specifier: ^1.3.0
+      version: 1.3.0
+    shiki:
+      specifier: ^4.0.0
+      version: 4.0.2
+    splitpanes:
+      specifier: ^4.0.4
+      version: 4.0.4
+    svelte:
+      specifier: ^5.55.2
+      version: 5.55.2
+    svelte-check:
+      specifier: ^4.4.6
+      version: 4.4.6
+    tailwindcss:
+      specifier: ^4.2.2
+      version: 4.2.2
+    tsx:
+      specifier: ^4.21.0
+      version: 4.21.0
+    twoslash:
+      specifier: ^0.3.6
+      version: 0.3.6
+    twoslash-cdn:
+      specifier: ^0.3.6
+      version: 0.3.6
+    typescript:
+      specifier: ^5.9.3
+      version: 5.9.3
+    unified:
+      specifier: ^11.0.5
+      version: 11.0.5
+    vite:
+      specifier: ^8.0.8
+      version: 8.0.8
+    vitepress:
+      specifier: ^1.6.4
+      version: 1.6.4
+    vitest:
+      specifier: ^4.1.4
+      version: 4.1.4
+    vitest-browser-svelte:
+      specifier: ^2.1.0
+      version: 2.1.0
+    vue:
+      specifier: ^3.5.32
+      version: 3.5.32
+    vue-json-pretty:
+      specifier: ^2.6.0
+      version: 2.6.0
+    vue-router:
+      specifier: ^5.0.4
+      version: 5.0.4
+    vue-tsc:
+      specifier: ^3.2.6
+      version: 3.2.6
+
 overrides:
   comark: workspace:*
   '@comark/vue': workspace:*
@@ -19,55 +283,55 @@ importers:
   .:
     devDependencies:
       '@nuxt/eslint-config':
-        specifier: ^1.15.2
+        specifier: 'catalog:'
         version: 1.15.2(@typescript-eslint/utils@8.56.1(eslint@10.2.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.32)(eslint@10.2.0(jiti@2.6.1))(typescript@5.9.3)
       '@release-it/conventional-changelog':
-        specifier: ^10.0.6
+        specifier: 'catalog:'
         version: 10.0.6(conventional-commits-filter@5.0.0)(conventional-commits-parser@6.3.0)(release-it@19.2.4(@types/node@25.5.2)(magicast@0.5.2))
       '@stylistic/eslint-plugin':
-        specifier: ^5.10.0
+        specifier: 'catalog:'
         version: 5.10.0(eslint@10.2.0(jiti@2.6.1))
       '@types/node':
-        specifier: ^25.5.2
+        specifier: 'catalog:'
         version: 25.5.2
       '@vitejs/plugin-vue':
-        specifier: ^6.0.5
+        specifier: 'catalog:'
         version: 6.0.5(vite@8.0.8(@types/node@25.5.2)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(vue@3.5.32(typescript@5.9.3))
       eslint:
-        specifier: ^10.2.0
+        specifier: 'catalog:'
         version: 10.2.0(jiti@2.6.1)
       eslint-plugin-svelte:
-        specifier: ^3.17.0
+        specifier: 'catalog:'
         version: 3.17.0(eslint@10.2.0(jiti@2.6.1))(svelte@5.55.2)
       nuxt:
-        specifier: ^4.4.2
+        specifier: 'catalog:'
         version: 4.4.2(@babel/core@7.29.0)(@babel/plugin-syntax-jsx@7.28.6(@babel/core@7.29.0))(@parcel/watcher@2.5.6)(@types/node@25.5.2)(@vue/compiler-sfc@3.5.32)(better-sqlite3@12.6.2)(cac@6.7.14)(db0@0.3.4(better-sqlite3@12.6.2))(eslint@10.2.0(jiti@2.6.1))(ioredis@5.10.0)(lightningcss@1.32.0)(magicast@0.5.2)(meow@13.2.0)(optionator@0.9.4)(rolldown@1.0.0-rc.15)(rollup-plugin-visualizer@6.0.11(rolldown@1.0.0-rc.15)(rollup@4.59.0))(rollup@4.59.0)(terser@5.46.0)(tsx@4.21.0)(typescript@5.9.3)(vite@8.0.8(@types/node@25.5.2)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(vue-tsc@3.2.6(typescript@5.9.3))(yaml@2.8.2)
       playwright:
-        specifier: ^1.59.1
+        specifier: 'catalog:'
         version: 1.59.1
       release-it:
-        specifier: ^19.2.4
+        specifier: 'catalog:'
         version: 19.2.4(@types/node@25.5.2)(magicast@0.5.2)
       remark-gfm:
-        specifier: ^4.0.1
+        specifier: 'catalog:'
         version: 4.0.1
       remark-mdc:
-        specifier: ^3.10.0
+        specifier: 'catalog:'
         version: 3.10.0
       remark-parse:
-        specifier: ^11.0.0
+        specifier: 'catalog:'
         version: 11.0.0
       remark-rehype:
-        specifier: ^11.1.2
+        specifier: 'catalog:'
         version: 11.1.2
       scule:
-        specifier: ^1.3.0
+        specifier: 'catalog:'
         version: 1.3.0
       typescript:
-        specifier: ^5.9.3
+        specifier: 'catalog:'
         version: 5.9.3
       unified:
-        specifier: ^11.0.5
+        specifier: 'catalog:'
         version: 11.0.5
 
   docs:
@@ -76,87 +340,87 @@ importers:
         specifier: workspace:*
         version: link:../packages/comark-nuxt
       '@monaco-editor/loader':
-        specifier: ^1.7.0
+        specifier: 'catalog:'
         version: 1.7.0
       '@nuxt/content':
-        specifier: ^3.12.0
+        specifier: 'catalog:'
         version: 3.12.0(better-sqlite3@12.6.2)(magicast@0.5.2)
       '@nuxt/ui':
-        specifier: ^4.6.1
+        specifier: 'catalog:'
         version: 4.6.1(@nuxt/content@3.12.0(better-sqlite3@12.6.2)(magicast@0.5.2))(@tiptap/extensions@3.22.3(@tiptap/core@3.22.3(@tiptap/pm@3.22.3))(@tiptap/pm@3.22.3))(@tiptap/y-tiptap@3.0.2(prosemirror-model@1.25.4)(prosemirror-state@1.4.4)(prosemirror-view@1.41.6)(y-protocols@1.0.7(yjs@13.6.29))(yjs@13.6.29))(change-case@5.4.4)(db0@0.3.4(better-sqlite3@12.6.2))(embla-carousel@8.6.0)(focus-trap@7.8.0)(ioredis@5.10.0)(magicast@0.5.2)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(tailwindcss@4.2.2)(typescript@5.9.3)(vite@8.0.8(@types/node@25.5.2)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(vue-router@4.6.4(vue@3.5.32(typescript@5.9.3)))(vue@3.5.32(typescript@5.9.3))(yjs@13.6.29)(zod@4.3.6)
       '@nuxtjs/mcp-toolkit':
-        specifier: 0.13.4
+        specifier: 'catalog:'
         version: 0.13.4(h3@1.15.11)(magicast@0.5.2)(zod@4.3.6)
       '@nuxtlabs/monarch-mdc':
-        specifier: ^0.9.0
+        specifier: 'catalog:'
         version: 0.9.0
       '@vercel/analytics':
-        specifier: ^2.0.1
+        specifier: 'catalog:'
         version: 2.0.1(next@16.2.3(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.58.2)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(nuxt@4.4.2(@babel/core@7.29.0)(@babel/plugin-syntax-jsx@7.28.6(@babel/core@7.29.0))(@parcel/watcher@2.5.6)(@types/node@25.5.2)(@vue/compiler-sfc@3.5.32)(better-sqlite3@12.6.2)(cac@6.7.14)(db0@0.3.4(better-sqlite3@12.6.2))(eslint@10.2.0(jiti@2.6.1))(ioredis@5.10.0)(lightningcss@1.32.0)(magicast@0.5.2)(meow@13.2.0)(optionator@0.9.4)(rolldown@1.0.0-rc.15)(rollup-plugin-visualizer@6.0.11(rolldown@1.0.0-rc.15)(rollup@4.59.0))(rollup@4.59.0)(terser@5.46.0)(tsx@4.21.0)(typescript@5.9.3)(vite@8.0.8(@types/node@25.5.2)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(vue-tsc@3.2.6(typescript@5.9.3))(yaml@2.8.2))(react@19.2.5)(svelte@5.55.2)(vue-router@4.6.4(vue@3.5.32(typescript@5.9.3)))(vue@3.5.32(typescript@5.9.3))
       '@vercel/speed-insights':
-        specifier: ^2.0.0
+        specifier: 'catalog:'
         version: 2.0.0(next@16.2.3(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.58.2)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(nuxt@4.4.2(@babel/core@7.29.0)(@babel/plugin-syntax-jsx@7.28.6(@babel/core@7.29.0))(@parcel/watcher@2.5.6)(@types/node@25.5.2)(@vue/compiler-sfc@3.5.32)(better-sqlite3@12.6.2)(cac@6.7.14)(db0@0.3.4(better-sqlite3@12.6.2))(eslint@10.2.0(jiti@2.6.1))(ioredis@5.10.0)(lightningcss@1.32.0)(magicast@0.5.2)(meow@13.2.0)(optionator@0.9.4)(rolldown@1.0.0-rc.15)(rollup-plugin-visualizer@6.0.11(rolldown@1.0.0-rc.15)(rollup@4.59.0))(rollup@4.59.0)(terser@5.46.0)(tsx@4.21.0)(typescript@5.9.3)(vite@8.0.8(@types/node@25.5.2)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(vue-tsc@3.2.6(typescript@5.9.3))(yaml@2.8.2))(react@19.2.5)(svelte@5.55.2)(vue-router@4.6.4(vue@3.5.32(typescript@5.9.3)))(vue@3.5.32(typescript@5.9.3))
       comark:
         specifier: workspace:*
         version: link:../packages/comark
       docus:
-        specifier: ^5.9.0
-        version: 5.9.0(c58649d43ca5b0d03309638cbcec9a00)
+        specifier: 'catalog:'
+        version: 5.9.0(70faa858d43b8ff95d45a4d86ac61d27)
       markdown-it-math:
-        specifier: ^5.2.1
+        specifier: 'catalog:'
         version: 5.2.1
       nuxt:
-        specifier: ^4.4.2
+        specifier: 'catalog:'
         version: 4.4.2(@babel/core@7.29.0)(@babel/plugin-syntax-jsx@7.28.6(@babel/core@7.29.0))(@parcel/watcher@2.5.6)(@types/node@25.5.2)(@vue/compiler-sfc@3.5.32)(better-sqlite3@12.6.2)(cac@6.7.14)(db0@0.3.4(better-sqlite3@12.6.2))(eslint@10.2.0(jiti@2.6.1))(ioredis@5.10.0)(lightningcss@1.32.0)(magicast@0.5.2)(meow@13.2.0)(optionator@0.9.4)(rolldown@1.0.0-rc.15)(rollup-plugin-visualizer@6.0.11(rolldown@1.0.0-rc.15)(rollup@4.59.0))(rollup@4.59.0)(terser@5.46.0)(tsx@4.21.0)(typescript@5.9.3)(vite@8.0.8(@types/node@25.5.2)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(vue-tsc@3.2.6(typescript@5.9.3))(yaml@2.8.2)
       nuxt-studio:
-        specifier: 1.5.1
+        specifier: 'catalog:'
         version: 1.5.1(db0@0.3.4(better-sqlite3@12.6.2))(ioredis@5.10.0)(magicast@0.5.2)(vue@3.5.32(typescript@5.9.3))
       splitpanes:
-        specifier: ^4.0.4
+        specifier: 'catalog:'
         version: 4.0.4(vue@3.5.32(typescript@5.9.3))
       tailwindcss:
-        specifier: ^4.2.2
+        specifier: 'catalog:'
         version: 4.2.2
       vue-json-pretty:
-        specifier: ^2.6.0
+        specifier: 'catalog:'
         version: 2.6.0(vue@3.5.32(typescript@5.9.3))
     devDependencies:
       '@tailwindcss/typography':
-        specifier: ^0.5.19
+        specifier: 'catalog:'
         version: 0.5.19(tailwindcss@4.2.2)
       '@types/splitpanes':
-        specifier: ^2.2.6
+        specifier: 'catalog:'
         version: 2.2.6
 
   examples/1.frameworks/astro:
     dependencies:
       '@astrojs/react':
-        specifier: ^5.0.3
+        specifier: 'catalog:'
         version: 5.0.3(@types/node@25.5.2)(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(jiti@2.6.1)(lightningcss@1.32.0)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
       '@tailwindcss/vite':
-        specifier: ^4.2.2
+        specifier: 'catalog:'
         version: 4.2.2(vite@8.0.8(@types/node@25.5.2)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
       astro:
-        specifier: ^6.1.5
+        specifier: 'catalog:'
         version: 6.1.5(@types/node@25.5.2)(db0@0.3.4(better-sqlite3@12.6.2))(ioredis@5.10.0)(jiti@2.6.1)(lightningcss@1.32.0)(rollup@4.59.0)(terser@5.46.0)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
       comark:
         specifier: workspace:*
         version: link:../../../packages/comark
       react:
-        specifier: ^19.2.5
+        specifier: 'catalog:'
         version: 19.2.5
       react-dom:
-        specifier: ^19.2.5
+        specifier: 'catalog:'
         version: 19.2.5(react@19.2.5)
     devDependencies:
       '@types/react':
-        specifier: ^19.2.14
+        specifier: 'catalog:'
         version: 19.2.14
       '@types/react-dom':
-        specifier: ^19.2.3
+        specifier: 'catalog:'
         version: 19.2.3(@types/react@19.2.14)
       typescript:
-        specifier: ^5.9.3
+        specifier: 'catalog:'
         version: 5.9.3
 
   examples/1.frameworks/nextjs:
@@ -165,32 +429,32 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/comark
       next:
-        specifier: ^16.2.3
+        specifier: 'catalog:'
         version: 16.2.3(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.58.2)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       react:
-        specifier: ^19.2.5
+        specifier: 'catalog:'
         version: 19.2.5
       react-dom:
-        specifier: ^19.2.5
+        specifier: 'catalog:'
         version: 19.2.5(react@19.2.5)
       shiki:
-        specifier: ^4.0.2
+        specifier: 'catalog:'
         version: 4.0.2
     devDependencies:
       '@tailwindcss/postcss':
-        specifier: ^4.2.2
+        specifier: 'catalog:'
         version: 4.2.2
       '@types/react':
-        specifier: ^19.2.14
+        specifier: 'catalog:'
         version: 19.2.14
       '@types/react-dom':
-        specifier: ^19.2.3
+        specifier: 'catalog:'
         version: 19.2.3(@types/react@19.2.14)
       tailwindcss:
-        specifier: ^4.2.2
+        specifier: 'catalog:'
         version: 4.2.2
       typescript:
-        specifier: ^5.9.3
+        specifier: 'catalog:'
         version: 5.9.3
 
   examples/1.frameworks/nuxt:
@@ -199,29 +463,29 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/comark-nuxt
       '@nuxt/ui':
-        specifier: ^4.6.1
+        specifier: 'catalog:'
         version: 4.6.1(@nuxt/content@3.12.0(better-sqlite3@12.6.2)(magicast@0.5.2))(@tiptap/extensions@3.22.3(@tiptap/core@3.22.3(@tiptap/pm@3.22.3))(@tiptap/pm@3.22.3))(@tiptap/y-tiptap@3.0.2(prosemirror-model@1.25.4)(prosemirror-state@1.4.4)(prosemirror-view@1.41.6)(y-protocols@1.0.7(yjs@13.6.29))(yjs@13.6.29))(change-case@5.4.4)(db0@0.3.4(better-sqlite3@12.6.2))(embla-carousel@8.6.0)(focus-trap@7.8.0)(ioredis@5.10.0)(magicast@0.5.2)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(tailwindcss@4.2.2)(typescript@5.9.3)(vite@8.0.8(@types/node@25.5.2)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(vue-router@5.0.4(@vue/compiler-sfc@3.5.32)(vue@3.5.32(typescript@5.9.3)))(vue@3.5.32(typescript@5.9.3))(yjs@13.6.29)(zod@4.3.6)
       nuxt:
-        specifier: ^4.4.2
+        specifier: 'catalog:'
         version: 4.4.2(@babel/core@7.29.0)(@babel/plugin-syntax-jsx@7.28.6(@babel/core@7.29.0))(@parcel/watcher@2.5.6)(@types/node@25.5.2)(@vue/compiler-sfc@3.5.32)(better-sqlite3@12.6.2)(cac@6.7.14)(db0@0.3.4(better-sqlite3@12.6.2))(eslint@10.2.0(jiti@2.6.1))(ioredis@5.10.0)(lightningcss@1.32.0)(magicast@0.5.2)(meow@13.2.0)(optionator@0.9.4)(rolldown@1.0.0-rc.15)(rollup-plugin-visualizer@6.0.11(rolldown@1.0.0-rc.15)(rollup@4.59.0))(rollup@4.59.0)(terser@5.46.0)(tsx@4.21.0)(typescript@5.9.3)(vite@8.0.8(@types/node@25.5.2)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(vue-tsc@3.2.6(typescript@5.9.3))(yaml@2.8.2)
       shiki:
-        specifier: ^4.0.2
+        specifier: 'catalog:'
         version: 4.0.2
       tailwindcss:
-        specifier: ^4.2.2
+        specifier: 'catalog:'
         version: 4.2.2
 
   examples/1.frameworks/vitepress:
     dependencies:
       '@comark/markdown-it':
-        specifier: ^0.3.3
+        specifier: 'catalog:'
         version: 0.3.3(@types/markdown-it@14.1.2)(markdown-it@14.1.1)
       vue:
-        specifier: ^3.5.32
+        specifier: 'catalog:'
         version: 3.5.32(typescript@5.9.3)
     devDependencies:
       vitepress:
-        specifier: ^1.6.4
+        specifier: 'catalog:'
         version: 1.6.4(@algolia/client-search@5.49.1)(@types/node@25.5.2)(change-case@5.4.4)(fuse.js@7.1.0)(lightningcss@1.32.0)(postcss@8.5.9)(search-insights@2.17.3)(terser@5.46.0)(typescript@5.9.3)
 
   examples/2.vite/ansi:
@@ -230,26 +494,26 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/comark-ansi
       '@xterm/addon-fit':
-        specifier: ^0.11.0
+        specifier: 'catalog:'
         version: 0.11.0
       '@xterm/xterm':
-        specifier: ^6.0.0
+        specifier: 'catalog:'
         version: 6.0.0
       comark:
         specifier: workspace:*
         version: link:../../../packages/comark
       katex:
-        specifier: ^0.16.45
+        specifier: 'catalog:'
         version: 0.16.45
       shiki:
-        specifier: ^4.0.2
+        specifier: 'catalog:'
         version: 4.0.2
     devDependencies:
       typescript:
-        specifier: ^5.9.3
+        specifier: 'catalog:'
         version: 5.9.3
       vite:
-        specifier: ^8.0.8
+        specifier: 'catalog:'
         version: 8.0.8(@types/node@25.5.2)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
   examples/2.vite/html:
@@ -258,20 +522,20 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/comark-html
       beautiful-mermaid:
-        specifier: ^1.1.3
+        specifier: 'catalog:'
         version: 1.1.3
       katex:
-        specifier: ^0.16.45
+        specifier: 'catalog:'
         version: 0.16.45
       shiki:
-        specifier: ^4.0.2
+        specifier: 'catalog:'
         version: 4.0.2
     devDependencies:
       typescript:
-        specifier: ^5.9.3
+        specifier: 'catalog:'
         version: 5.9.3
       vite:
-        specifier: ^8.0.8
+        specifier: 'catalog:'
         version: 8.0.8(@types/node@25.5.2)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
   examples/2.vite/react:
@@ -280,38 +544,38 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/comark-react
       '@tailwindcss/vite':
-        specifier: ^4.2.2
+        specifier: 'catalog:'
         version: 4.2.2(vite@8.0.8(@types/node@25.5.2)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
       comark:
         specifier: workspace:*
         version: link:../../../packages/comark
       react:
-        specifier: ^19.2.5
+        specifier: 'catalog:'
         version: 19.2.5
       react-dom:
-        specifier: ^19.2.5
+        specifier: 'catalog:'
         version: 19.2.5(react@19.2.5)
     devDependencies:
       '@types/react':
-        specifier: ^19.2.14
+        specifier: 'catalog:'
         version: 19.2.14
       '@types/react-dom':
-        specifier: ^19.2.3
+        specifier: 'catalog:'
         version: 19.2.3(@types/react@19.2.14)
       '@vitejs/plugin-react':
-        specifier: ^6.0.1
+        specifier: 'catalog:'
         version: 6.0.1(vite@8.0.8(@types/node@25.5.2)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
       autoprefixer:
-        specifier: ^10.4.27
+        specifier: 'catalog:'
         version: 10.4.27(postcss@8.5.9)
       postcss:
-        specifier: ^8.5.9
+        specifier: 'catalog:'
         version: 8.5.9
       typescript:
-        specifier: ^5.9.3
+        specifier: 'catalog:'
         version: 5.9.3
       vite:
-        specifier: ^8.0.8
+        specifier: 'catalog:'
         version: 8.0.8(@types/node@25.5.2)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
   examples/2.vite/svelte:
@@ -320,32 +584,32 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/comark-svelte
       '@shikijs/langs':
-        specifier: ^4.0.2
+        specifier: 'catalog:'
         version: 4.0.2
       '@tailwindcss/vite':
-        specifier: ^4.2.2
+        specifier: 'catalog:'
         version: 4.2.2(vite@8.0.8(@types/node@25.5.2)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
       tailwindcss:
-        specifier: ^4.2.2
+        specifier: 'catalog:'
         version: 4.2.2
     devDependencies:
       '@sveltejs/vite-plugin-svelte':
-        specifier: ^7.0.0
+        specifier: 'catalog:'
         version: 7.0.0(svelte@5.55.2)(vite@8.0.8(@types/node@25.5.2)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
       autoprefixer:
-        specifier: ^10.4.27
+        specifier: 'catalog:'
         version: 10.4.27(postcss@8.5.9)
       postcss:
-        specifier: ^8.5.9
+        specifier: 'catalog:'
         version: 8.5.9
       svelte:
-        specifier: ^5.55.2
+        specifier: 'catalog:'
         version: 5.55.2
       typescript:
-        specifier: ^5.9.3
+        specifier: 'catalog:'
         version: 5.9.3
       vite:
-        specifier: ^8.0.8
+        specifier: 'catalog:'
         version: 8.0.8(@types/node@25.5.2)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
   examples/2.vite/vue:
@@ -354,59 +618,59 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/comark-vue
       '@nuxt/ui':
-        specifier: ^4.6.1
+        specifier: 'catalog:'
         version: 4.6.1(@nuxt/content@3.12.0(better-sqlite3@12.6.2)(magicast@0.5.2))(@tiptap/extensions@3.22.3(@tiptap/core@3.22.3(@tiptap/pm@3.22.3))(@tiptap/pm@3.22.3))(@tiptap/y-tiptap@3.0.2(prosemirror-model@1.25.4)(prosemirror-state@1.4.4)(prosemirror-view@1.41.6)(y-protocols@1.0.7(yjs@13.6.29))(yjs@13.6.29))(change-case@5.4.4)(db0@0.3.4(better-sqlite3@12.6.2))(embla-carousel@8.6.0)(focus-trap@7.8.0)(ioredis@5.10.0)(magicast@0.5.2)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(tailwindcss@4.2.2)(typescript@5.9.3)(vite@8.0.8(@types/node@25.5.2)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(vue-router@5.0.4(@vue/compiler-sfc@3.5.32)(vue@3.5.32(typescript@5.9.3)))(vue@3.5.32(typescript@5.9.3))(yjs@13.6.29)(zod@4.3.6)
       '@shikijs/langs':
-        specifier: ^4.0.2
+        specifier: 'catalog:'
         version: 4.0.2
       shiki:
-        specifier: ^4.0.2
+        specifier: 'catalog:'
         version: 4.0.2
       tailwindcss:
-        specifier: ^4.2.2
+        specifier: 'catalog:'
         version: 4.2.2
       vue:
-        specifier: ^3.5.32
+        specifier: 'catalog:'
         version: 3.5.32(typescript@5.9.3)
       vue-router:
-        specifier: ^5.0.4
+        specifier: 'catalog:'
         version: 5.0.4(@vue/compiler-sfc@3.5.32)(vue@3.5.32(typescript@5.9.3))
     devDependencies:
       '@vitejs/plugin-vue':
-        specifier: ^6.0.5
+        specifier: 'catalog:'
         version: 6.0.5(vite@8.0.8(@types/node@25.5.2)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(vue@3.5.32(typescript@5.9.3))
       autoprefixer:
-        specifier: ^10.4.27
+        specifier: 'catalog:'
         version: 10.4.27(postcss@8.5.9)
       postcss:
-        specifier: ^8.5.9
+        specifier: 'catalog:'
         version: 8.5.9
       typescript:
-        specifier: ^5.9.3
+        specifier: 'catalog:'
         version: 5.9.3
       vite:
-        specifier: ^8.0.8
+        specifier: 'catalog:'
         version: 8.0.8(@types/node@25.5.2)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
       vue-tsc:
-        specifier: ^3.2.6
+        specifier: 'catalog:'
         version: 3.2.6(typescript@5.9.3)
 
   examples/3.cli/md-prompts:
     dependencies:
       '@clack/prompts':
-        specifier: ^1.2.0
+        specifier: 'catalog:'
         version: 1.2.0
       '@comark/ansi':
         specifier: workspace:*
         version: link:../../../packages/comark-ansi
       citty:
-        specifier: ^0.2.2
+        specifier: 'catalog:'
         version: 0.2.2
       comark:
         specifier: workspace:*
         version: link:../../../packages/comark
       shiki:
-        specifier: ^4.0.2
+        specifier: 'catalog:'
         version: 4.0.2
 
   examples/3.plugins/vue-vite-highlight:
@@ -415,32 +679,32 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/comark-vue
       '@shikijs/langs':
-        specifier: ^4.0.2
+        specifier: 'catalog:'
         version: 4.0.2
       '@shikijs/themes':
-        specifier: ^4.0.2
+        specifier: 'catalog:'
         version: 4.0.2
       comark:
         specifier: workspace:*
         version: link:../../../packages/comark
       shiki:
-        specifier: ^4.0.2
+        specifier: 'catalog:'
         version: 4.0.2
       vue:
-        specifier: ^3.5.32
+        specifier: 'catalog:'
         version: 3.5.32(typescript@5.9.3)
     devDependencies:
       '@vitejs/plugin-vue':
-        specifier: ^6.0.5
+        specifier: 'catalog:'
         version: 6.0.5(vite@8.0.8(@types/node@25.5.2)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(vue@3.5.32(typescript@5.9.3))
       typescript:
-        specifier: ^5.9.3
+        specifier: 'catalog:'
         version: 5.9.3
       vite:
-        specifier: ^8.0.8
+        specifier: 'catalog:'
         version: 8.0.8(@types/node@25.5.2)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
       vue-tsc:
-        specifier: ^3.2.6
+        specifier: 'catalog:'
         version: 3.2.6(typescript@5.9.3)
 
   examples/3.plugins/vue-vite-json-render:
@@ -449,38 +713,38 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/comark-vue
       '@nuxt/ui':
-        specifier: ^4.6.1
+        specifier: 'catalog:'
         version: 4.6.1(@nuxt/content@3.12.0(better-sqlite3@12.6.2)(magicast@0.5.2))(@tiptap/extensions@3.22.3(@tiptap/core@3.22.3(@tiptap/pm@3.22.3))(@tiptap/pm@3.22.3))(@tiptap/y-tiptap@3.0.2(prosemirror-model@1.25.4)(prosemirror-state@1.4.4)(prosemirror-view@1.41.6)(y-protocols@1.0.7(yjs@13.6.29))(yjs@13.6.29))(change-case@5.4.4)(db0@0.3.4(better-sqlite3@12.6.2))(embla-carousel@8.6.0)(focus-trap@7.8.0)(ioredis@5.10.0)(magicast@0.5.2)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(tailwindcss@4.2.2)(typescript@5.9.3)(vite@8.0.8(@types/node@25.5.2)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(vue-router@5.0.4(@vue/compiler-sfc@3.5.32)(vue@3.5.32(typescript@5.9.3)))(vue@3.5.32(typescript@5.9.3))(yjs@13.6.29)(zod@4.3.6)
       '@shikijs/themes':
-        specifier: ^4.0.2
+        specifier: 'catalog:'
         version: 4.0.2
       '@vueuse/core':
-        specifier: ^14.2.1
+        specifier: 'catalog:'
         version: 14.2.1(vue@3.5.32(typescript@5.9.3))
       comark:
         specifier: workspace:*
         version: link:../../../packages/comark
       shiki:
-        specifier: ^4.0.2
+        specifier: 'catalog:'
         version: 4.0.2
       tailwindcss:
-        specifier: ^4.2.2
+        specifier: 'catalog:'
         version: 4.2.2
       vue:
-        specifier: ^3.5.32
+        specifier: 'catalog:'
         version: 3.5.32(typescript@5.9.3)
     devDependencies:
       '@vitejs/plugin-vue':
-        specifier: ^6.0.5
+        specifier: 'catalog:'
         version: 6.0.5(vite@8.0.8(@types/node@25.5.2)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(vue@3.5.32(typescript@5.9.3))
       typescript:
-        specifier: ^5.9.3
+        specifier: 'catalog:'
         version: 5.9.3
       vite:
-        specifier: ^8.0.8
+        specifier: 'catalog:'
         version: 8.0.8(@types/node@25.5.2)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
       vue-tsc:
-        specifier: ^3.2.6
+        specifier: 'catalog:'
         version: 3.2.6(typescript@5.9.3)
 
   examples/3.plugins/vue-vite-math:
@@ -489,23 +753,23 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/comark-vue
       katex:
-        specifier: ^0.16.45
+        specifier: 'catalog:'
         version: 0.16.45
       vue:
-        specifier: ^3.5.32
+        specifier: 'catalog:'
         version: 3.5.32(typescript@5.9.3)
     devDependencies:
       '@vitejs/plugin-vue':
-        specifier: ^6.0.5
+        specifier: 'catalog:'
         version: 6.0.5(vite@8.0.8(@types/node@25.5.2)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(vue@3.5.32(typescript@5.9.3))
       typescript:
-        specifier: ^5.9.3
+        specifier: 'catalog:'
         version: 5.9.3
       vite:
-        specifier: ^8.0.8
+        specifier: 'catalog:'
         version: 8.0.8(@types/node@25.5.2)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
       vue-tsc:
-        specifier: ^3.2.6
+        specifier: 'catalog:'
         version: 3.2.6(typescript@5.9.3)
 
   examples/3.plugins/vue-vite-mermaid:
@@ -514,35 +778,35 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/comark-vue
       '@tailwindcss/vite':
-        specifier: ^4.2.2
+        specifier: 'catalog:'
         version: 4.2.2(vite@8.0.8(@types/node@25.5.2)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
       beautiful-mermaid:
-        specifier: ^1.1.3
+        specifier: 'catalog:'
         version: 1.1.3
       tailwindcss:
-        specifier: ^4.2.2
+        specifier: 'catalog:'
         version: 4.2.2
       vue:
-        specifier: ^3.5.32
+        specifier: 'catalog:'
         version: 3.5.32(typescript@5.9.3)
     devDependencies:
       '@vitejs/plugin-vue':
-        specifier: ^6.0.5
+        specifier: 'catalog:'
         version: 6.0.5(vite@8.0.8(@types/node@25.5.2)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(vue@3.5.32(typescript@5.9.3))
       autoprefixer:
-        specifier: ^10.4.27
+        specifier: 'catalog:'
         version: 10.4.27(postcss@8.5.9)
       postcss:
-        specifier: ^8.5.9
+        specifier: 'catalog:'
         version: 8.5.9
       typescript:
-        specifier: ^5.9.3
+        specifier: 'catalog:'
         version: 5.9.3
       vite:
-        specifier: ^8.0.8
+        specifier: 'catalog:'
         version: 8.0.8(@types/node@25.5.2)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
       vue-tsc:
-        specifier: ^3.2.6
+        specifier: 'catalog:'
         version: 3.2.6(typescript@5.9.3)
 
   examples/3.plugins/vue-vite-twoslash:
@@ -551,114 +815,114 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/comark-vue
       '@nuxt/ui':
-        specifier: ^4.6.1
+        specifier: 'catalog:'
         version: 4.6.1(@nuxt/content@3.12.0(better-sqlite3@12.6.2)(magicast@0.5.2))(@tiptap/extensions@3.22.3(@tiptap/core@3.22.3(@tiptap/pm@3.22.3))(@tiptap/pm@3.22.3))(@tiptap/y-tiptap@3.0.2(prosemirror-model@1.25.4)(prosemirror-state@1.4.4)(prosemirror-view@1.41.6)(y-protocols@1.0.7(yjs@13.6.29))(yjs@13.6.29))(change-case@5.4.4)(db0@0.3.4(better-sqlite3@12.6.2))(embla-carousel@8.6.0)(focus-trap@7.8.0)(ioredis@5.10.0)(magicast@0.5.2)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(tailwindcss@4.2.2)(typescript@5.9.3)(vite@8.0.8(@types/node@25.5.2)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(vue-router@5.0.4(@vue/compiler-sfc@3.5.32)(vue@3.5.32(typescript@5.9.3)))(vue@3.5.32(typescript@5.9.3))(yjs@13.6.29)(zod@4.3.6)
       '@shikijs/langs':
-        specifier: ^4.0.2
+        specifier: 'catalog:'
         version: 4.0.2
       '@shikijs/themes':
-        specifier: ^4.0.2
+        specifier: 'catalog:'
         version: 4.0.2
       '@shikijs/twoslash':
-        specifier: ^4.0.2
+        specifier: 'catalog:'
         version: 4.0.2(typescript@5.9.3)
       '@vueuse/core':
-        specifier: ^14.2.1
+        specifier: 'catalog:'
         version: 14.2.1(vue@3.5.32(typescript@5.9.3))
       comark:
         specifier: workspace:*
         version: link:../../../packages/comark
       shiki:
-        specifier: ^4.0.2
+        specifier: 'catalog:'
         version: 4.0.2
       tailwindcss:
-        specifier: ^4.2.2
+        specifier: 'catalog:'
         version: 4.2.2
       twoslash-cdn:
-        specifier: ^0.3.6
+        specifier: 'catalog:'
         version: 0.3.6(typescript@5.9.3)
       vue:
-        specifier: ^3.5.32
+        specifier: 'catalog:'
         version: 3.5.32(typescript@5.9.3)
     devDependencies:
       '@vitejs/plugin-vue':
-        specifier: ^6.0.5
+        specifier: 'catalog:'
         version: 6.0.5(vite@8.0.8(@types/node@25.5.2)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(vue@3.5.32(typescript@5.9.3))
       typescript:
-        specifier: ^5.9.3
+        specifier: 'catalog:'
         version: 5.9.3
       vite:
-        specifier: ^8.0.8
+        specifier: 'catalog:'
         version: 8.0.8(@types/node@25.5.2)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
       vue-tsc:
-        specifier: ^3.2.6
+        specifier: 'catalog:'
         version: 3.2.6(typescript@5.9.3)
 
   packages/comark:
     dependencies:
       '@comark/markdown-it':
-        specifier: ^0.3.3
+        specifier: 'catalog:'
         version: 0.3.3(@types/markdown-it@14.1.2)(markdown-it@14.1.1)
       beautiful-mermaid:
-        specifier: ^1.1.3
+        specifier: 'catalog:'
         version: 1.1.3
       entities:
-        specifier: ^8.0.0
+        specifier: 'catalog:'
         version: 8.0.0
       htmlparser2:
-        specifier: ^12.0.0
+        specifier: 'catalog:'
         version: 12.0.0
       js-yaml:
-        specifier: ^4.1.1
+        specifier: 'catalog:'
         version: 4.1.1
       katex:
-        specifier: ^0.16.33
-        version: 0.16.35
+        specifier: 'catalog:'
+        version: 0.16.45
       markdown-exit:
-        specifier: 1.0.0-beta.9
+        specifier: 'catalog:'
         version: 1.0.0-beta.9
       shiki:
-        specifier: ^4.0.0
+        specifier: 'catalog:'
         version: 4.0.2
     devDependencies:
       '@json-render/core':
-        specifier: ^0.16.0
+        specifier: 'catalog:'
         version: 0.16.0(zod@4.3.6)
       '@nuxt/kit':
-        specifier: ^4.4.2
+        specifier: 'catalog:'
         version: 4.4.2(magicast@0.5.2)
       '@shikijs/primitive':
-        specifier: ^4.0.2
+        specifier: 'catalog:'
         version: 4.0.2
       '@shikijs/twoslash':
-        specifier: ^4.0.2
+        specifier: 'catalog:'
         version: 4.0.2(typescript@5.9.3)
       '@types/js-yaml':
-        specifier: ^4.0.9
+        specifier: 'catalog:'
         version: 4.0.9
       '@types/markdown-it':
-        specifier: ^14.1.2
+        specifier: 'catalog:'
         version: 14.1.2
       github-slugger:
-        specifier: ^2.0.0
+        specifier: 'catalog:'
         version: 2.0.0
       hast-util-to-string:
-        specifier: ^3.0.1
+        specifier: 'catalog:'
         version: 3.0.1
       minimark:
-        specifier: 0.2.0
+        specifier: 'catalog:'
         version: 0.2.0
       mitata:
-        specifier: ^1.0.34
+        specifier: 'catalog:'
         version: 1.0.34
       tsx:
-        specifier: ^4.21.0
+        specifier: 'catalog:'
         version: 4.21.0
       twoslash:
-        specifier: ^0.3.6
+        specifier: 'catalog:'
         version: 0.3.6(typescript@5.9.3)
       vitest:
-        specifier: ^4.1.4
+        specifier: 'catalog:'
         version: 4.1.4(@opentelemetry/api@1.9.0)(@types/node@25.5.2)(@vitest/browser-playwright@4.1.4)(vite@8.0.8(@types/node@25.5.2)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
 
   packages/comark-ansi:
@@ -673,11 +937,11 @@ importers:
         specifier: '>=0.16'
         version: 0.16.35
       shiki:
-        specifier: ^4.0.0
+        specifier: 'catalog:'
         version: 4.0.2
     devDependencies:
       vitest:
-        specifier: ^4.1.4
+        specifier: 'catalog:'
         version: 4.1.4(@opentelemetry/api@1.9.0)(@types/node@25.5.2)(@vitest/browser-playwright@4.1.4)(vite@8.0.8(@types/node@25.5.2)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
 
   packages/comark-html:
@@ -686,17 +950,17 @@ importers:
         specifier: workspace:*
         version: link:../comark
       shiki:
-        specifier: ^4.0.0
+        specifier: 'catalog:'
         version: 4.0.2
     devDependencies:
       beautiful-mermaid:
-        specifier: ^1.1.3
+        specifier: 'catalog:'
         version: 1.1.3
       katex:
-        specifier: ^0.16.45
+        specifier: 'catalog:'
         version: 0.16.45
       vitest:
-        specifier: ^4.1.4
+        specifier: 'catalog:'
         version: 4.1.4(@opentelemetry/api@1.9.0)(@types/node@25.5.2)(@vitest/browser-playwright@4.1.4)(vite@8.0.8(@types/node@25.5.2)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
 
   packages/comark-nuxt:
@@ -705,7 +969,7 @@ importers:
         specifier: workspace:*
         version: link:../comark-vue
       '@nuxt/kit':
-        specifier: ^4.4.2
+        specifier: 'catalog:'
         version: 4.4.2(magicast@0.5.2)
       comark:
         specifier: workspace:*
@@ -715,127 +979,121 @@ importers:
         version: 3.21.1(@parcel/watcher@2.5.6)(@types/node@25.5.2)(@vue/compiler-sfc@3.5.32)(better-sqlite3@12.6.2)(cac@6.7.14)(db0@0.3.4(better-sqlite3@12.6.2))(eslint@10.2.0(jiti@2.6.1))(ioredis@5.10.0)(lightningcss@1.32.0)(magicast@0.5.2)(meow@13.2.0)(optionator@0.9.4)(rolldown@1.0.0-rc.15)(rollup@4.59.0)(terser@5.46.0)(tsx@4.21.0)(typescript@5.9.3)(vite@8.0.8(@types/node@25.5.2)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(vue-tsc@3.2.6(typescript@5.9.3))(yaml@2.8.2)
     devDependencies:
       '@vue/server-renderer':
-        specifier: ^3.5.32
+        specifier: 'catalog:'
         version: 3.5.32(vue@3.5.32(typescript@5.9.3))
       vitest:
-        specifier: ^4.1.4
+        specifier: 'catalog:'
         version: 4.1.4(@opentelemetry/api@1.9.0)(@types/node@25.5.2)(@vitest/browser-playwright@4.1.4)(vite@8.0.8(@types/node@25.5.2)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
       vue:
-        specifier: ^3.5.32
+        specifier: 'catalog:'
         version: 3.5.32(typescript@5.9.3)
 
   packages/comark-react:
     dependencies:
       beautiful-mermaid:
-        specifier: ^1.1.3
+        specifier: 'catalog:'
         version: 1.1.3
       comark:
         specifier: workspace:*
         version: link:../comark
       katex:
-        specifier: ^0.16.33
-        version: 0.16.35
+        specifier: 'catalog:'
+        version: 0.16.45
       shiki:
-        specifier: ^4.0.0
+        specifier: 'catalog:'
         version: 4.0.2
     devDependencies:
       '@types/react':
-        specifier: ^19.2.14
+        specifier: 'catalog:'
         version: 19.2.14
       '@types/react-dom':
-        specifier: ^19.2.3
+        specifier: 'catalog:'
         version: 19.2.3(@types/react@19.2.14)
       react:
-        specifier: ^19.2.5
+        specifier: 'catalog:'
         version: 19.2.5
       react-dom:
-        specifier: ^19.2.5
+        specifier: 'catalog:'
         version: 19.2.5(react@19.2.5)
       vitest:
-        specifier: ^4.1.4
+        specifier: 'catalog:'
         version: 4.1.4(@opentelemetry/api@1.9.0)(@types/node@25.5.2)(@vitest/browser-playwright@4.1.4)(vite@8.0.8(@types/node@25.5.2)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
 
   packages/comark-svelte:
     dependencies:
       beautiful-mermaid:
-        specifier: ^1.1.3
+        specifier: 'catalog:'
         version: 1.1.3
       comark:
         specifier: workspace:*
         version: link:../comark
       katex:
-        specifier: ^0.16.33
-        version: 0.16.35
+        specifier: 'catalog:'
+        version: 0.16.45
       shiki:
-        specifier: ^4.0.0
+        specifier: 'catalog:'
         version: 4.0.2
     devDependencies:
       '@sveltejs/package':
-        specifier: ^2.5.7
+        specifier: 'catalog:'
         version: 2.5.7(svelte@5.55.2)(typescript@5.9.3)
       '@sveltejs/vite-plugin-svelte':
-        specifier: ^7.0.0
+        specifier: 'catalog:'
         version: 7.0.0(svelte@5.55.2)(vite@8.0.8(@types/node@25.5.2)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
       '@vitest/browser':
-        specifier: ^4.1.4
+        specifier: 'catalog:'
         version: 4.1.4(vite@8.0.8(@types/node@25.5.2)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(vitest@4.1.4)
       '@vitest/browser-playwright':
-        specifier: ^4.1.4
+        specifier: 'catalog:'
         version: 4.1.4(playwright@1.59.1)(vite@8.0.8(@types/node@25.5.2)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(vitest@4.1.4)
       release-it:
-        specifier: ^19.2.4
+        specifier: 'catalog:'
         version: 19.2.4(@types/node@25.5.2)(magicast@0.5.2)
       svelte:
-        specifier: ^5.55.2
+        specifier: 'catalog:'
         version: 5.55.2
       svelte-check:
-        specifier: ^4.4.6
+        specifier: 'catalog:'
         version: 4.4.6(picomatch@4.0.4)(svelte@5.55.2)(typescript@5.9.3)
       vitest:
-        specifier: ^4.1.4
+        specifier: 'catalog:'
         version: 4.1.4(@opentelemetry/api@1.9.0)(@types/node@25.5.2)(@vitest/browser-playwright@4.1.4)(vite@8.0.8(@types/node@25.5.2)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
       vitest-browser-svelte:
-        specifier: ^2.1.0
+        specifier: 'catalog:'
         version: 2.1.0(svelte@5.55.2)(vitest@4.1.4)
 
   packages/comark-vue:
     dependencies:
       beautiful-mermaid:
-        specifier: ^1.1.3
+        specifier: 'catalog:'
         version: 1.1.3
       comark:
         specifier: workspace:*
         version: link:../comark
       katex:
-        specifier: ^0.16.33
-        version: 0.16.35
+        specifier: 'catalog:'
+        version: 0.16.45
       shiki:
-        specifier: ^4.0.0
+        specifier: 'catalog:'
         version: 4.0.2
     devDependencies:
       '@vue/compiler-core':
-        specifier: ^3.5.32
+        specifier: 'catalog:'
         version: 3.5.32
       '@vue/server-renderer':
-        specifier: ^3.5.32
+        specifier: 'catalog:'
         version: 3.5.32(vue@3.5.32(typescript@5.9.3))
       vite:
-        specifier: ^8.0.8
+        specifier: 'catalog:'
         version: 8.0.8(@types/node@25.5.2)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
       vitest:
-        specifier: ^4.1.4
+        specifier: 'catalog:'
         version: 4.1.4(@opentelemetry/api@1.9.0)(@types/node@25.5.2)(@vitest/browser-playwright@4.1.4)(vite@8.0.8(@types/node@25.5.2)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
       vue:
-        specifier: ^3.5.32
+        specifier: 'catalog:'
         version: 3.5.32(typescript@5.9.3)
 
 packages:
-
-  '@ai-sdk/gateway@3.0.66':
-    resolution: {integrity: sha512-SIQ0YY0iMuv+07HLsZ+bB990zUJ6S4ujORAh+Jv1V2KGNn73qQKnGO0JBk+w+Res8YqOFSycwDoWcFlQrVxS4A==}
-    engines: {node: '>=18'}
-    peerDependencies:
-      zod: ^3.25.76 || ^4.1.8
 
   '@ai-sdk/gateway@3.0.83':
     resolution: {integrity: sha512-LvlWujbSdEkTBXBLFtF7GS6riXdHhH0O+DpDrCaNQvXeHmSF2jKsOg7JWXiCgygAHM5cWFAO3JYmZp83DjiuBQ==}
@@ -855,12 +1113,6 @@ packages:
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
 
-  '@ai-sdk/provider-utils@4.0.19':
-    resolution: {integrity: sha512-3eG55CrSWCu2SXlqq2QCsFjo3+E7+Gmg7i/oRVoSZzIodTuDSfLb3MRje67xE9RFea73Zao7Lm4mADIfUETKGg==}
-    engines: {node: '>=18'}
-    peerDependencies:
-      zod: ^3.25.76 || ^4.1.8
-
   '@ai-sdk/provider-utils@4.0.21':
     resolution: {integrity: sha512-MtFUYI1/8mgDvRmaBDjbLJPFFrMG777AvSgyIFQtZHIMzm88R/12vYBBpnk7pfiWLFE1DSZzY4WDYzGbKAcmiw==}
     engines: {node: '>=18'}
@@ -876,12 +1128,6 @@ packages:
   '@ai-sdk/provider@3.0.8':
     resolution: {integrity: sha512-oGMAgGoQdBXbZqNG0Ze56CHjDZ1IDYOwGYxYjO5KLSlz5HiNQ9udIXsPZ61VWaHGZ5XW/jyjmr6t2xz2jGVwbQ==}
     engines: {node: '>=18'}
-
-  '@ai-sdk/vue@3.0.116':
-    resolution: {integrity: sha512-9+3Pi2T9F4ImvboJabeoApcXz4zjk1Gi2USjFscGfapfBIuYBkPBfJLmG1/7EAt0+3/GieGqeU553jVPa7pnQw==}
-    engines: {node: '>=18'}
-    peerDependencies:
-      vue: ^3.3.4
 
   '@ai-sdk/vue@3.0.141':
     resolution: {integrity: sha512-Q5oyZVLvJ7XTHk9NRDJ/mNlvGZbBjB7eezROLBZ1uofaS5Mb4L0McBjFLNX2xYYBmcpKZi8ZqNkNoVmkyb2KzQ==}
@@ -1173,14 +1419,8 @@ packages:
     resolution: {integrity: sha512-VERIM64vtTP1C4mxQ5thVT9fK0apjPFobqybMtA1UdUujWka24ERHbRHFGmpbbhp73MhV+KSsHQH9C6uOTdEQA==}
     engines: {node: '>=18'}
 
-  '@clack/core@1.1.0':
-    resolution: {integrity: sha512-SVcm4Dqm2ukn64/8Gub2wnlA5nS2iWJyCkdNHcvNHPIeBTGojpdJ+9cZKwLfmqy7irD4N5qLteSilJlE0WLAtA==}
-
   '@clack/core@1.2.0':
     resolution: {integrity: sha512-qfxof/3T3t9DPU/Rj3OmcFyZInceqj/NVtO9rwIuJqCUgh32gwPjpFQQp/ben07qKlhpwq7GzfWpST4qdJ5Drg==}
-
-  '@clack/prompts@1.1.0':
-    resolution: {integrity: sha512-pkqbPGtohJAvm4Dphs2M8xE29ggupihHdy1x84HNojZuMtFsHiUlRvqD24tM2+XmI+61LlfNceM3Wr7U5QES5g==}
 
   '@clack/prompts@1.2.0':
     resolution: {integrity: sha512-4jmztR9fMqPMjz6H/UZXj0zEmE43ha1euENwkckKKel4XpSfokExPo5AiVStdHSAlHekz4d0CA/r45Ok1E4D3w==}
@@ -1740,16 +1980,8 @@ packages:
     resolution: {integrity: sha512-Y3kKLvC1dvTOT+oGlqNQ1XLqK6D1HU2YXPc52NmAlJZbMMWDzGYXMiPRJ8TYD39muD/OTjlZmNJ4ib7dvSrMBA==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=24}
 
-  '@eslint/config-helpers@0.5.2':
-    resolution: {integrity: sha512-a5MxrdDXEvqnIq+LisyCX6tQMPF/dSJpCfBgBauY+pNZ28yCtSsTvyTYrMhaI+LK26bVyCJfJkT0u8KIj2i1dQ==}
-    engines: {node: ^20.19.0 || ^22.13.0 || >=24}
-
   '@eslint/config-helpers@0.5.5':
     resolution: {integrity: sha512-eIJYKTCECbP/nsKaaruF6LW967mtbQbsw4JTtSVkUQc9MneSkbrgPJAbKl9nWr0ZeowV8BfsarBmPpBzGelA2w==}
-    engines: {node: ^20.19.0 || ^22.13.0 || >=24}
-
-  '@eslint/core@1.1.0':
-    resolution: {integrity: sha512-/nr9K9wkr3P1EzFTdFdMoLuo1PmIxjmwvPozwoSodjNBdefGujXQUF93u1DDZpEaTuDvMsIQddsd35BwtrW9Xw==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=24}
 
   '@eslint/core@1.2.1':
@@ -1810,12 +2042,6 @@ packages:
 
   '@iconify-json/lucide@1.2.101':
     resolution: {integrity: sha512-JUN7uuSLRG3GK/9c5b8cK9e7sL6EAWDaASIwBOd0zUeKS0ACcokJubo2RMQHyVUVpd8mYkrR3Zd2mkH9ghhw1Q==}
-
-  '@iconify-json/lucide@1.2.96':
-    resolution: {integrity: sha512-EICTusj67lvSmEaH/Lhe68ZyzcgfcPNpY00exAOkoo+z2fnLeNy31mdE3E/4/q8WjzZrICAZDxY3d6j7LzkgNA==}
-
-  '@iconify-json/simple-icons@1.2.72':
-    resolution: {integrity: sha512-wkcixntHvaCoqPqerGrNFcHQ3Yx1ux4ZkhscCDK0DEHpP62XCH+cxq1HTsRjbUiQl/M9K8bj03HF6Wgn5iE2rQ==}
 
   '@iconify-json/simple-icons@1.2.75':
     resolution: {integrity: sha512-KvcCUbvcBWb0sbqLIxHoY8z5/piXY08wcY9gfMhF+ph3AfzGMaSmZFkUY71HSXAljQngXkgs4bdKdekO0HQWvg==}
@@ -5401,12 +5627,6 @@ packages:
     resolution: {integrity: sha512-MnA+YT8fwfJPgBx3m60MNqakm30XOkyIoH1y6huTQvC0PwZG7ki8NacLBcrPbNoo8vEZy7Jpuk7+jMO+CUovTQ==}
     engines: {node: '>= 14'}
 
-  ai@6.0.116:
-    resolution: {integrity: sha512-7yM+cTmyRLeNIXwt4Vj+mrrJgVQ9RMIW5WO0ydoLoYkewIvsMcvUmqS4j2RJTUXaF1HphwmSKUMQ/HypNRGOmA==}
-    engines: {node: '>=18'}
-    peerDependencies:
-      zod: ^3.25.76 || ^4.1.8
-
   ai@6.0.141:
     resolution: {integrity: sha512-+GomGQWaId3xN0wcugUW/H7xMMaFkID2PiS7K/Wugj45G3efv0BXhQ3psRZoQVoRbOpdNoUqcK/KTB+FR4h6qg==}
     engines: {node: '>=18'}
@@ -5610,6 +5830,7 @@ packages:
   basic-ftp@5.2.0:
     resolution: {integrity: sha512-VoMINM2rqJwJgfdHq6RiUudKt2BV+FY5ZFezP/ypmwayk68+NzzAQy4XXLlqsGD4MCzq3DrmNFD/uUmBJuGoXw==}
     engines: {node: '>=10.0.0'}
+    deprecated: Security vulnerability fixed in 5.2.1, please upgrade
 
   beautiful-mermaid@1.1.3:
     resolution: {integrity: sha512-TItrtrAyHp1vwFfFVYauWGrquouk/6SS21Aq3RsxindSYZODcN4xYrPZD6BiZRU+o5mKJzDPz9MUSMvELdylyg==}
@@ -6520,10 +6741,6 @@ packages:
     resolution: {integrity: sha512-sNXOfKCn74rt8RICKMvJS7XKV/Xk9kA7DyJr8mJik3S7Cwgy3qlkkmyS2uQB3jiJg6VNdZd/pDBJu0nvG2NlTg==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
-  eslint-scope@9.1.1:
-    resolution: {integrity: sha512-GaUN0sWim5qc8KVErfPBWmc31LEsOkrUJbvJZV+xuL3u2phMUK4HIvXlWAakfC8W4nzlK+chPEAkYOYb5ZScIw==}
-    engines: {node: ^20.19.0 || ^22.13.0 || >=24}
-
   eslint-scope@9.1.2:
     resolution: {integrity: sha512-xS90H51cKw0jltxmvmHy2Iai1LIqrfbw57b79w/J7MfvDfkIkFZ+kj6zC3BjtUwh150HsSSdxXZcsuv72miDFQ==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=24}
@@ -6556,10 +6773,6 @@ packages:
   espree@10.4.0:
     resolution: {integrity: sha512-j6PAQ2uUr79PZhBjP5C5fhl8e39FmRnOjsD5lGnWrFU8i2G776tBK7+nP8KuQUTTyAZUwfQqXAgrVH5MbH9CYQ==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
-
-  espree@11.1.1:
-    resolution: {integrity: sha512-AVHPqQoZYc+RUM4/3Ly5udlZY/U4LS8pIG05jEjWM2lQMU/oaZ7qshzAl2YP1tfNmXfftH3ohurfwNAug+MnsQ==}
-    engines: {node: ^20.19.0 || ^22.13.0 || >=24}
 
   espree@11.2.0:
     resolution: {integrity: sha512-7p3DrVEIopW1B1avAGLuCSh1jubc01H2JHc8B4qqGblmg5gI9yumBgACjWo4JlIc04ufug4xJ3SQI8HkS/Rgzw==}
@@ -8696,10 +8909,6 @@ packages:
     resolution: {integrity: sha512-PS08Iboia9mts/2ygV3eLpY5ghnUcfLV/EXTOW1E2qYxJKGGBUtNjN76FYHnMs36RmARn41bC0AZmn+rR0OVpQ==}
     engines: {node: ^10 || ^12 || >=14}
 
-  postcss@8.5.8:
-    resolution: {integrity: sha512-OW/rX8O/jXnm82Ey1k44pObPtdblfiuWnrd8X7GJ7emImCOstunGbXUpp7HdBrFQX6rJzn3sPT397Wp5aCwCHg==}
-    engines: {node: ^10 || ^12 || >=14}
-
   postcss@8.5.9:
     resolution: {integrity: sha512-7a70Nsot+EMX9fFU3064K/kdHWZqGVY+BADLyXc8Dfv+mTLLVl6JzJpPaCZ2kQL9gIJvKXSLMHhqdRRjwQeFtw==}
     engines: {node: ^10 || ^12 || >=14}
@@ -10528,11 +10737,6 @@ packages:
     resolution: {integrity: sha512-zK7YHHz4ZXpW89AHXUPbQVGKI7uvkd3hzusTdotCg1UxyaVtg0zFJSTfW/Dq5f7OBBVnq6cZIaC8Ti4hb6dtCA==}
     engines: {node: '>= 14'}
 
-  zod-to-json-schema@3.25.1:
-    resolution: {integrity: sha512-pM/SU9d3YAggzi6MtR4h7ruuQlqKtad8e9S0fmxcMi+ueAK5Korys/aWcV9LIIHTVbj01NdzxcnXSN+O74ZIVA==}
-    peerDependencies:
-      zod: ^3.25 || ^4
-
   zod-to-json-schema@3.25.2:
     resolution: {integrity: sha512-O/PgfnpT1xKSDeQYSCfRI5Gy3hPf91mKVDuYLUHZJMiDFptvP41MSnWofm8dnCm0256ZNfZIM7DSzuSMAFnjHA==}
     peerDependencies:
@@ -10548,13 +10752,6 @@ packages:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
 
 snapshots:
-
-  '@ai-sdk/gateway@3.0.66(zod@4.3.6)':
-    dependencies:
-      '@ai-sdk/provider': 3.0.8
-      '@ai-sdk/provider-utils': 4.0.19(zod@4.3.6)
-      '@vercel/oidc': 3.1.0
-      zod: 4.3.6
 
   '@ai-sdk/gateway@3.0.83(zod@4.3.6)':
     dependencies:
@@ -10577,13 +10774,6 @@ snapshots:
       pkce-challenge: 5.0.1
       zod: 4.3.6
 
-  '@ai-sdk/provider-utils@4.0.19(zod@4.3.6)':
-    dependencies:
-      '@ai-sdk/provider': 3.0.8
-      '@standard-schema/spec': 1.1.0
-      eventsource-parser: 3.0.6
-      zod: 4.3.6
-
   '@ai-sdk/provider-utils@4.0.21(zod@4.3.6)':
     dependencies:
       '@ai-sdk/provider': 3.0.8
@@ -10601,15 +10791,6 @@ snapshots:
   '@ai-sdk/provider@3.0.8':
     dependencies:
       json-schema: 0.4.0
-
-  '@ai-sdk/vue@3.0.116(vue@3.5.32(typescript@5.9.3))(zod@4.3.6)':
-    dependencies:
-      '@ai-sdk/provider-utils': 4.0.19(zod@4.3.6)
-      ai: 6.0.116(zod@4.3.6)
-      swrv: 1.1.0(vue@3.5.32(typescript@5.9.3))
-      vue: 3.5.32(typescript@5.9.3)
-    transitivePeerDependencies:
-      - zod
 
   '@ai-sdk/vue@3.0.141(vue@3.5.32(typescript@5.9.3))(zod@4.3.6)':
     dependencies:
@@ -10737,7 +10918,7 @@ snapshots:
   '@antfu/install-pkg@1.1.0':
     dependencies:
       package-manager-detector: 1.6.0
-      tinyexec: 1.0.2
+      tinyexec: 1.0.4
 
   '@apidevtools/json-schema-ref-parser@11.9.3':
     dependencies:
@@ -10749,7 +10930,7 @@ snapshots:
 
   '@astrojs/internal-helpers@0.8.0':
     dependencies:
-      picomatch: 4.0.3
+      picomatch: 4.0.4
 
   '@astrojs/markdown-remark@7.1.0':
     dependencies:
@@ -11015,18 +11196,9 @@ snapshots:
     dependencies:
       fontkitten: 1.0.2
 
-  '@clack/core@1.1.0':
-    dependencies:
-      sisteransi: 1.0.5
-
   '@clack/core@1.2.0':
     dependencies:
       fast-wrap-ansi: 0.1.6
-      sisteransi: 1.0.5
-
-  '@clack/prompts@1.1.0':
-    dependencies:
-      '@clack/core': 1.1.0
       sisteransi: 1.0.5
 
   '@clack/prompts@1.2.0':
@@ -11376,7 +11548,7 @@ snapshots:
 
   '@eslint/compat@2.0.2(eslint@10.2.0(jiti@2.6.1))':
     dependencies:
-      '@eslint/core': 1.1.0
+      '@eslint/core': 1.2.1
     optionalDependencies:
       eslint: 10.2.0(jiti@2.6.1)
 
@@ -11388,17 +11560,9 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@eslint/config-helpers@0.5.2':
-    dependencies:
-      '@eslint/core': 1.1.0
-
   '@eslint/config-helpers@0.5.5':
     dependencies:
       '@eslint/core': 1.2.1
-
-  '@eslint/core@1.1.0':
-    dependencies:
-      '@types/json-schema': 7.0.15
 
   '@eslint/core@1.2.1':
     dependencies:
@@ -11453,14 +11617,6 @@ snapshots:
   '@humanwhocodes/retry@0.4.3': {}
 
   '@iconify-json/lucide@1.2.101':
-    dependencies:
-      '@iconify/types': 2.0.0
-
-  '@iconify-json/lucide@1.2.96':
-    dependencies:
-      '@iconify/types': 2.0.0
-
-  '@iconify-json/simple-icons@1.2.72':
     dependencies:
       '@iconify/types': 2.0.0
 
@@ -11573,7 +11729,7 @@ snapshots:
 
   '@img/sharp-wasm32@0.34.5':
     dependencies:
-      '@emnapi/runtime': 1.8.1
+      '@emnapi/runtime': 1.9.2
     optional: true
 
   '@img/sharp-win32-arm64@0.34.5':
@@ -11891,8 +12047,8 @@ snapshots:
 
   '@napi-rs/wasm-runtime@0.2.12':
     dependencies:
-      '@emnapi/core': 1.8.1
-      '@emnapi/runtime': 1.8.1
+      '@emnapi/core': 1.9.2
+      '@emnapi/runtime': 1.9.2
       '@tybys/wasm-util': 0.10.1
     optional: true
 
@@ -11962,7 +12118,7 @@ snapshots:
       consola: 3.4.2
       copy-paste: 2.2.0
       debug: 4.4.3
-      defu: 6.1.4
+      defu: 6.1.6
       exsolve: 1.0.8
       fuse.js: 7.1.0
       fzf: 0.5.2
@@ -12220,7 +12376,7 @@ snapshots:
   '@nuxt/eslint-config@1.15.2(@typescript-eslint/utils@8.56.1(eslint@10.2.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.32)(eslint@10.2.0(jiti@2.6.1))(typescript@5.9.3)':
     dependencies:
       '@antfu/install-pkg': 1.1.0
-      '@clack/prompts': 1.1.0
+      '@clack/prompts': 1.2.0
       '@eslint/js': 9.39.3
       '@nuxt/eslint-plugin': 1.15.2(eslint@10.2.0(jiti@2.6.1))(typescript@5.9.3)
       '@stylistic/eslint-plugin': 5.10.0(eslint@10.2.0(jiti@2.6.1))
@@ -12310,7 +12466,7 @@ snapshots:
       mlly: 1.8.2
       ohash: 2.0.11
       pathe: 2.0.3
-      picomatch: 4.0.3
+      picomatch: 4.0.4
       std-env: 3.10.0
       tinyglobby: 0.2.15
     transitivePeerDependencies:
@@ -12358,7 +12514,7 @@ snapshots:
     dependencies:
       c12: 3.3.3(magicast@0.5.2)
       consola: 3.4.2
-      defu: 6.1.4
+      defu: 6.1.6
       destr: 2.0.5
       errx: 0.1.0
       exsolve: 1.0.8
@@ -12366,7 +12522,7 @@ snapshots:
       jiti: 2.6.1
       klona: 2.0.6
       knitwork: 1.3.0
-      mlly: 1.8.1
+      mlly: 1.8.2
       ohash: 2.0.11
       pathe: 2.0.3
       pkg-types: 2.3.0
@@ -12384,14 +12540,14 @@ snapshots:
     dependencies:
       c12: 3.3.3(magicast@0.5.2)
       consola: 3.4.2
-      defu: 6.1.4
+      defu: 6.1.6
       destr: 2.0.5
       errx: 0.1.0
       exsolve: 1.0.8
       ignore: 7.0.5
       jiti: 2.6.1
       klona: 2.0.6
-      mlly: 1.8.1
+      mlly: 1.8.2
       ohash: 2.0.11
       pathe: 2.0.3
       pkg-types: 2.3.0
@@ -12412,7 +12568,7 @@ snapshots:
       '@unhead/vue': 2.1.12(vue@3.5.32(typescript@5.9.3))
       '@vue/shared': 3.5.32
       consola: 3.4.2
-      defu: 6.1.4
+      defu: 6.1.6
       destr: 2.0.5
       devalue: 5.6.4
       errx: 0.1.0
@@ -12543,7 +12699,7 @@ snapshots:
   '@nuxt/schema@3.21.1':
     dependencies:
       '@vue/shared': 3.5.32
-      defu: 6.1.4
+      defu: 6.1.6
       pathe: 2.0.3
       pkg-types: 2.3.0
       std-env: 3.10.0
@@ -12811,7 +12967,7 @@ snapshots:
       autoprefixer: 10.4.27(postcss@8.5.9)
       consola: 3.4.2
       cssnano: 7.1.2(postcss@8.5.9)
-      defu: 6.1.4
+      defu: 6.1.6
       esbuild: 0.27.3
       escape-string-regexp: 5.0.0
       exsolve: 1.0.8
@@ -12820,7 +12976,7 @@ snapshots:
       jiti: 2.6.1
       knitwork: 1.3.0
       magic-string: 0.30.21
-      mlly: 1.8.1
+      mlly: 1.8.2
       mocked-exports: 0.1.1
       nuxt: 3.21.1(@parcel/watcher@2.5.6)(@types/node@25.5.2)(@vue/compiler-sfc@3.5.32)(better-sqlite3@12.6.2)(cac@6.7.14)(db0@0.3.4(better-sqlite3@12.6.2))(eslint@10.2.0(jiti@2.6.1))(ioredis@5.10.0)(lightningcss@1.32.0)(magicast@0.5.2)(meow@13.2.0)(optionator@0.9.4)(rolldown@1.0.0-rc.15)(rollup@4.59.0)(terser@5.46.0)(tsx@4.21.0)(typescript@5.9.3)(vite@8.0.8(@types/node@25.5.2)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(vue-tsc@3.2.6(typescript@5.9.3))(yaml@2.8.2)
       ohash: 2.0.11
@@ -13019,7 +13175,7 @@ snapshots:
       '@vue/compiler-core': 3.5.32
       consola: 3.4.2
       debug: 4.4.3
-      defu: 6.1.4
+      defu: 6.1.6
       destr: 2.0.5
       detab: 3.0.2
       github-slugger: 2.0.0
@@ -13524,9 +13680,12 @@ snapshots:
       '@napi-rs/wasm-runtime': 1.1.1
     optional: true
 
-  '@oxc-parser/binding-wasm32-wasi@0.121.0':
+  '@oxc-parser/binding-wasm32-wasi@0.121.0(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)':
     dependencies:
-      '@napi-rs/wasm-runtime': 1.1.1
+      '@napi-rs/wasm-runtime': 1.1.3(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)
+    transitivePeerDependencies:
+      - '@emnapi/core'
+      - '@emnapi/runtime'
     optional: true
 
   '@oxc-parser/binding-win32-arm64-msvc@0.112.0':
@@ -13721,7 +13880,7 @@ snapshots:
   '@parcel/watcher-wasm@2.5.6':
     dependencies:
       is-glob: 4.0.3
-      picomatch: 4.0.3
+      picomatch: 4.0.4
 
   '@parcel/watcher-win32-arm64@2.5.6':
     optional: true
@@ -13737,7 +13896,7 @@ snapshots:
       detect-libc: 2.1.2
       is-glob: 4.0.3
       node-addon-api: 7.1.1
-      picomatch: 4.0.3
+      picomatch: 4.0.4
     optionalDependencies:
       '@parcel/watcher-android-arm64': 2.5.6
       '@parcel/watcher-darwin-arm64': 2.5.6
@@ -13913,10 +14072,10 @@ snapshots:
       '@rollup/pluginutils': 5.3.0(rollup@4.59.0)
       commondir: 1.0.1
       estree-walker: 2.0.2
-      fdir: 6.5.0(picomatch@4.0.3)
+      fdir: 6.5.0(picomatch@4.0.4)
       is-reference: 1.2.1
       magic-string: 0.30.21
-      picomatch: 4.0.3
+      picomatch: 4.0.4
     optionalDependencies:
       rollup: 4.59.0
 
@@ -14216,7 +14375,7 @@ snapshots:
       eslint-visitor-keys: 4.2.1
       espree: 10.4.0
       estraverse: 5.3.0
-      picomatch: 4.0.3
+      picomatch: 4.0.4
 
   '@sveltejs/acorn-typescript@1.0.9(acorn@8.16.0)':
     dependencies:
@@ -14316,7 +14475,7 @@ snapshots:
       '@alloc/quick-lru': 5.2.0
       '@tailwindcss/node': 4.2.2
       '@tailwindcss/oxide': 4.2.2
-      postcss: 8.5.8
+      postcss: 8.5.9
       tailwindcss: 4.2.2
 
   '@tailwindcss/typography@0.5.19(tailwindcss@4.2.2)':
@@ -14916,7 +15075,7 @@ snapshots:
       glob: 13.0.6
       graceful-fs: 4.2.11
       node-gyp-build: 4.8.4
-      picomatch: 4.0.3
+      picomatch: 4.0.4
       resolve-from: 5.0.0
     transitivePeerDependencies:
       - encoding
@@ -15171,7 +15330,7 @@ snapshots:
 
   '@vue/compiler-sfc@2.7.16':
     dependencies:
-      '@babel/parser': 7.29.0
+      '@babel/parser': 7.29.2
       postcss: 8.5.9
       source-map: 0.6.1
     optionalDependencies:
@@ -15191,7 +15350,7 @@ snapshots:
 
   '@vue/compiler-sfc@3.5.30':
     dependencies:
-      '@babel/parser': 7.29.0
+      '@babel/parser': 7.29.2
       '@vue/compiler-core': 3.5.30
       '@vue/compiler-dom': 3.5.30
       '@vue/compiler-ssr': 3.5.30
@@ -15290,17 +15449,17 @@ snapshots:
       alien-signals: 3.1.2
       muggle-string: 0.4.1
       path-browserify: 1.0.1
-      picomatch: 4.0.3
+      picomatch: 4.0.4
 
   '@vue/language-core@3.2.6':
     dependencies:
       '@volar/language-core': 2.4.28
-      '@vue/compiler-dom': 3.5.29
-      '@vue/shared': 3.5.30
+      '@vue/compiler-dom': 3.5.32
+      '@vue/shared': 3.5.32
       alien-signals: 3.1.2
       muggle-string: 0.4.1
       path-browserify: 1.0.1
-      picomatch: 4.0.3
+      picomatch: 4.0.4
 
   '@vue/reactivity@3.5.30':
     dependencies:
@@ -15463,14 +15622,6 @@ snapshots:
 
   agent-base@7.1.4: {}
 
-  ai@6.0.116(zod@4.3.6):
-    dependencies:
-      '@ai-sdk/gateway': 3.0.66(zod@4.3.6)
-      '@ai-sdk/provider': 3.0.8
-      '@ai-sdk/provider-utils': 4.0.19(zod@4.3.6)
-      '@opentelemetry/api': 1.9.0
-      zod: 4.3.6
-
   ai@6.0.141(zod@4.3.6):
     dependencies:
       '@ai-sdk/gateway': 3.0.83(zod@4.3.6)
@@ -15625,7 +15776,7 @@ snapshots:
       p-queue: 9.1.0
       package-manager-detector: 1.6.0
       piccolore: 0.1.3
-      picomatch: 4.0.3
+      picomatch: 4.0.4
       rehype: 13.0.2
       semver: 7.7.4
       shiki: 4.0.2
@@ -16345,7 +16496,7 @@ snapshots:
 
   dlv@1.1.3: {}
 
-  docus@5.9.0(c58649d43ca5b0d03309638cbcec9a00):
+  docus@5.9.0(70faa858d43b8ff95d45a4d86ac61d27):
     dependencies:
       '@ai-sdk/gateway': 3.0.87(zod@4.3.6)
       '@ai-sdk/mcp': 1.0.32(zod@4.3.6)
@@ -16375,7 +16526,7 @@ snapshots:
       motion-v: 2.2.0(@vueuse/core@14.2.1(vue@3.5.32(typescript@5.9.3)))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(vue@3.5.32(typescript@5.9.3))
       nuxt: 4.4.2(@babel/core@7.29.0)(@babel/plugin-syntax-jsx@7.28.6(@babel/core@7.29.0))(@parcel/watcher@2.5.6)(@types/node@25.5.2)(@vue/compiler-sfc@3.5.32)(better-sqlite3@12.6.2)(cac@6.7.14)(db0@0.3.4(better-sqlite3@12.6.2))(eslint@10.2.0(jiti@2.6.1))(ioredis@5.10.0)(lightningcss@1.32.0)(magicast@0.5.2)(meow@13.2.0)(optionator@0.9.4)(rolldown@1.0.0-rc.15)(rollup-plugin-visualizer@6.0.11(rolldown@1.0.0-rc.15)(rollup@4.59.0))(rollup@4.59.0)(terser@5.46.0)(tsx@4.21.0)(typescript@5.9.3)(vite@8.0.8(@types/node@25.5.2)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(vue-tsc@3.2.6(typescript@5.9.3))(yaml@2.8.2)
       nuxt-llms: 0.2.0(magicast@0.5.2)
-      nuxt-og-image: 6.3.2(490374489f0cd3cafde6db93a0f709c2)
+      nuxt-og-image: 6.3.2(10e77b644adf9f0aedc534198353b59b)
       pkg-types: 2.3.0
       scule: 1.3.0
       shiki-stream: 0.1.4(react@19.2.5)(vue@3.5.32(typescript@5.9.3))
@@ -16395,6 +16546,8 @@ snapshots:
       - '@cfworker/json-schema'
       - '@deno/kv'
       - '@electric-sql/pglite'
+      - '@emnapi/core'
+      - '@emnapi/runtime'
       - '@emotion/is-prop-valid'
       - '@inertiajs/vue3'
       - '@libsql/client'
@@ -16734,7 +16887,7 @@ snapshots:
 
   eslint-flat-config-utils@3.0.1:
     dependencies:
-      '@eslint/config-helpers': 0.5.2
+      '@eslint/config-helpers': 0.5.5
       pathe: 2.0.3
 
   eslint-import-context@0.1.9(unrs-resolver@1.11.1):
@@ -16778,7 +16931,7 @@ snapshots:
       debug: 4.4.3
       escape-string-regexp: 4.0.0
       eslint: 10.2.0(jiti@2.6.1)
-      espree: 11.1.1
+      espree: 11.2.0
       esquery: 1.7.0
       html-entities: 2.6.0
       object-deep-merge: 2.0.0
@@ -16862,13 +17015,6 @@ snapshots:
       esrecurse: 4.3.0
       estraverse: 5.3.0
 
-  eslint-scope@9.1.1:
-    dependencies:
-      '@types/esrecurse': 4.3.1
-      '@types/estree': 1.0.8
-      esrecurse: 4.3.0
-      estraverse: 5.3.0
-
   eslint-scope@9.1.2:
     dependencies:
       '@types/esrecurse': 4.3.1
@@ -16926,12 +17072,6 @@ snapshots:
       acorn: 8.16.0
       acorn-jsx: 5.3.2(acorn@8.16.0)
       eslint-visitor-keys: 4.2.1
-
-  espree@11.1.1:
-    dependencies:
-      acorn: 8.16.0
-      acorn-jsx: 5.3.2(acorn@8.16.0)
-      eslint-visitor-keys: 5.0.1
 
   espree@11.2.0:
     dependencies:
@@ -17375,7 +17515,7 @@ snapshots:
     dependencies:
       cookie-es: 1.2.2
       crossws: 0.3.5
-      defu: 6.1.4
+      defu: 6.1.6
       destr: 2.0.5
       iron-webcrypto: 1.2.1
       node-mock-http: 1.0.4
@@ -17705,10 +17845,10 @@ snapshots:
       '@fastify/accept-negotiator': 2.0.1
       citty: 0.1.6
       consola: 3.4.2
-      defu: 6.1.4
+      defu: 6.1.6
       destr: 2.0.5
       etag: 1.8.1
-      h3: 1.15.8
+      h3: 1.15.11
       image-meta: 0.2.2
       listhen: 1.9.0
       ofetch: 1.5.1
@@ -18044,12 +18184,12 @@ snapshots:
       clipboardy: 4.0.0
       consola: 3.4.2
       crossws: 0.3.5
-      defu: 6.1.4
+      defu: 6.1.6
       get-port-please: 3.2.0
       h3: 1.15.5
       http-shutdown: 1.2.2
       jiti: 2.6.1
-      mlly: 1.8.1
+      mlly: 1.8.2
       node-forge: 1.3.3
       pathe: 1.1.2
       std-env: 3.10.0
@@ -18059,7 +18199,7 @@ snapshots:
 
   local-pkg@1.1.2:
     dependencies:
-      mlly: 1.8.1
+      mlly: 1.8.2
       pkg-types: 2.3.0
       quansync: 0.2.11
 
@@ -18114,7 +18254,7 @@ snapshots:
     dependencies:
       estree-walker: 3.0.3
       magic-string: 0.30.21
-      mlly: 1.8.1
+      mlly: 1.8.2
       regexp-tree: 0.1.27
       type-level-regexp: 0.1.17
       ufo: 1.6.3
@@ -18820,7 +18960,7 @@ snapshots:
     transitivePeerDependencies:
       - magicast
 
-  nuxt-og-image@6.3.2(490374489f0cd3cafde6db93a0f709c2):
+  nuxt-og-image@6.3.2(10e77b644adf9f0aedc534198353b59b):
     dependencies:
       '@clack/prompts': 1.2.0
       '@nuxt/devtools-kit': 3.2.4(magicast@0.5.2)(vite@8.0.8(@types/node@25.5.2)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
@@ -18843,8 +18983,8 @@ snapshots:
       nypm: 0.6.5
       ofetch: 1.5.1
       ohash: 2.0.11
-      oxc-parser: 0.121.0
-      oxc-walker: 0.7.0(oxc-parser@0.121.0)
+      oxc-parser: 0.121.0(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)
+      oxc-walker: 0.7.0(oxc-parser@0.121.0(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2))
       pathe: 2.0.3
       pkg-types: 2.3.0
       radix3: 1.1.2
@@ -18876,6 +19016,8 @@ snapshots:
       - '@azure/storage-blob'
       - '@capacitor/preferences'
       - '@deno/kv'
+      - '@emnapi/core'
+      - '@emnapi/runtime'
       - '@emotion/is-prop-valid'
       - '@inertiajs/vue3'
       - '@netlify/blobs'
@@ -18950,13 +19092,13 @@ snapshots:
 
   nuxt-studio@1.5.1(db0@0.3.4(better-sqlite3@12.6.2))(ioredis@5.10.0)(magicast@0.5.2)(vue@3.5.32(typescript@5.9.3)):
     dependencies:
-      '@ai-sdk/gateway': 3.0.66(zod@4.3.6)
-      '@ai-sdk/vue': 3.0.116(vue@3.5.32(typescript@5.9.3))(zod@4.3.6)
-      '@iconify-json/lucide': 1.2.96
+      '@ai-sdk/gateway': 3.0.87(zod@4.3.6)
+      '@ai-sdk/vue': 3.0.141(vue@3.5.32(typescript@5.9.3))(zod@4.3.6)
+      '@iconify-json/lucide': 1.2.101
       '@nuxtjs/mdc': 0.20.2(magicast@0.5.2)
       '@vueuse/core': 14.2.1(vue@3.5.32(typescript@5.9.3))
-      ai: 6.0.116(zod@4.3.6)
-      defu: 6.1.4
+      ai: 6.0.141(zod@4.3.6)
+      defu: 6.1.6
       destr: 2.0.5
       ipx: 3.1.1(db0@0.3.4(better-sqlite3@12.6.2))(ioredis@5.10.0)
       js-yaml: 4.1.1
@@ -18966,7 +19108,7 @@ snapshots:
       shiki: 3.23.0
       unstorage: 1.17.4(db0@0.3.4(better-sqlite3@12.6.2))(ioredis@5.10.0)
       zod: 4.3.6
-      zod-to-json-schema: 3.25.1(zod@4.3.6)
+      zod-to-json-schema: 3.25.2(zod@4.3.6)
     transitivePeerDependencies:
       - '@azure/app-configuration'
       - '@azure/cosmos'
@@ -19622,7 +19764,7 @@ snapshots:
       '@oxc-parser/binding-win32-ia32-msvc': 0.117.0
       '@oxc-parser/binding-win32-x64-msvc': 0.117.0
 
-  oxc-parser@0.121.0:
+  oxc-parser@0.121.0(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2):
     dependencies:
       '@oxc-project/types': 0.121.0
     optionalDependencies:
@@ -19642,10 +19784,13 @@ snapshots:
       '@oxc-parser/binding-linux-x64-gnu': 0.121.0
       '@oxc-parser/binding-linux-x64-musl': 0.121.0
       '@oxc-parser/binding-openharmony-arm64': 0.121.0
-      '@oxc-parser/binding-wasm32-wasi': 0.121.0
+      '@oxc-parser/binding-wasm32-wasi': 0.121.0(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)
       '@oxc-parser/binding-win32-arm64-msvc': 0.121.0
       '@oxc-parser/binding-win32-ia32-msvc': 0.121.0
       '@oxc-parser/binding-win32-x64-msvc': 0.121.0
+    transitivePeerDependencies:
+      - '@emnapi/core'
+      - '@emnapi/runtime'
 
   oxc-transform@0.112.0:
     optionalDependencies:
@@ -19703,10 +19848,10 @@ snapshots:
       magic-regexp: 0.10.0
       oxc-parser: 0.117.0
 
-  oxc-walker@0.7.0(oxc-parser@0.121.0):
+  oxc-walker@0.7.0(oxc-parser@0.121.0(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)):
     dependencies:
       magic-regexp: 0.10.0
-      oxc-parser: 0.121.0
+      oxc-parser: 0.121.0(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)
 
   p-limit@3.1.0:
     dependencies:
@@ -19851,7 +19996,7 @@ snapshots:
   pkg-types@1.3.1:
     dependencies:
       confbox: 0.1.8
-      mlly: 1.8.1
+      mlly: 1.8.2
       pathe: 2.0.3
 
   pkg-types@2.3.0:
@@ -20122,12 +20267,6 @@ snapshots:
   postcss-value-parser@4.2.0: {}
 
   postcss@8.4.31:
-    dependencies:
-      nanoid: 3.3.11
-      picocolors: 1.1.1
-      source-map-js: 1.2.1
-
-  postcss@8.5.8:
     dependencies:
       nanoid: 3.3.11
       picocolors: 1.1.1
@@ -20679,7 +20818,7 @@ snapshots:
   rollup-plugin-visualizer@6.0.11(rolldown@1.0.0-rc.15)(rollup@4.59.0):
     dependencies:
       open: 8.4.2
-      picomatch: 4.0.3
+      picomatch: 4.0.4
       source-map: 0.7.6
       yargs: 17.7.2
     optionalDependencies:
@@ -21495,7 +21634,7 @@ snapshots:
       estree-walker: 3.0.3
       local-pkg: 1.1.2
       magic-string: 0.30.21
-      mlly: 1.8.1
+      mlly: 1.8.2
       pathe: 2.0.3
       picomatch: 4.0.3
       pkg-types: 2.3.0
@@ -21576,7 +21715,7 @@ snapshots:
     dependencies:
       local-pkg: 1.1.2
       magic-string: 0.30.21
-      picomatch: 4.0.3
+      picomatch: 4.0.4
       unimport: 5.7.0
       unplugin: 2.3.11
       unplugin-utils: 0.3.1
@@ -21596,7 +21735,7 @@ snapshots:
       magic-string: 0.30.21
       mlly: 1.8.2
       obug: 2.1.1
-      picomatch: 4.0.3
+      picomatch: 4.0.4
       tinyglobby: 0.2.15
       unplugin: 3.0.0
       unplugin-utils: 0.3.1
@@ -21609,13 +21748,13 @@ snapshots:
       '@babel/generator': 7.29.1
       '@vue-macros/common': 3.1.2(vue@3.5.32(typescript@5.9.3))
       '@vue/compiler-sfc': 3.5.32
-      '@vue/language-core': 3.2.5
+      '@vue/language-core': 3.2.6
       ast-walker-scope: 0.8.3
       chokidar: 5.0.0
       json5: 2.2.3
       local-pkg: 1.1.2
       magic-string: 0.30.21
-      mlly: 1.8.1
+      mlly: 1.8.2
       muggle-string: 0.4.1
       pathe: 2.0.3
       picomatch: 4.0.3
@@ -21790,7 +21929,7 @@ snapshots:
       chokidar: 4.0.3
       npm-run-path: 6.0.0
       picocolors: 1.1.1
-      picomatch: 4.0.3
+      picomatch: 4.0.4
       tiny-invariant: 1.3.3
       tinyglobby: 0.2.15
       vite: 7.3.1(@types/node@25.5.2)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
@@ -21895,14 +22034,14 @@ snapshots:
     dependencies:
       '@docsearch/css': 3.8.2
       '@docsearch/js': 3.8.2(@algolia/client-search@5.49.1)(search-insights@2.17.3)
-      '@iconify-json/simple-icons': 1.2.72
+      '@iconify-json/simple-icons': 1.2.75
       '@shikijs/core': 2.5.0
       '@shikijs/transformers': 2.5.0
       '@shikijs/types': 2.5.0
       '@types/markdown-it': 14.1.2
       '@vitejs/plugin-vue': 5.2.4(vite@5.4.21(@types/node@25.5.2)(lightningcss@1.32.0)(terser@5.46.0))(vue@3.5.32(typescript@5.9.3))
       '@vue/devtools-api': 7.7.9
-      '@vue/shared': 3.5.29
+      '@vue/shared': 3.5.32
       '@vueuse/core': 12.8.2(typescript@5.9.3)
       '@vueuse/integrations': 12.8.2(change-case@5.4.4)(focus-trap@7.8.0)(fuse.js@7.1.0)(typescript@5.9.3)
       focus-trap: 7.8.0
@@ -21961,7 +22100,7 @@ snapshots:
       magic-string: 0.30.21
       obug: 2.1.1
       pathe: 2.0.3
-      picomatch: 4.0.3
+      picomatch: 4.0.4
       std-env: 4.0.0
       tinybench: 2.9.0
       tinyexec: 1.0.4
@@ -22002,9 +22141,9 @@ snapshots:
     dependencies:
       debug: 4.4.3
       eslint: 10.2.0(jiti@2.6.1)
-      eslint-scope: 9.1.1
+      eslint-scope: 9.1.2
       eslint-visitor-keys: 5.0.1
-      espree: 11.1.1
+      espree: 11.2.0
       esquery: 1.7.0
       semver: 7.7.4
     transitivePeerDependencies:
@@ -22059,10 +22198,10 @@ snapshots:
       json5: 2.2.3
       local-pkg: 1.1.2
       magic-string: 0.30.21
-      mlly: 1.8.1
+      mlly: 1.8.2
       muggle-string: 0.4.1
       pathe: 2.0.3
-      picomatch: 4.0.3
+      picomatch: 4.0.4
       scule: 1.3.0
       tinyglobby: 0.2.15
       unplugin: 3.0.0
@@ -22267,10 +22406,6 @@ snapshots:
       archiver-utils: 5.0.2
       compress-commons: 6.0.2
       readable-stream: 4.7.0
-
-  zod-to-json-schema@3.25.1(zod@4.3.6):
-    dependencies:
-      zod: 4.3.6
 
   zod-to-json-schema@3.25.2(zod@3.25.76):
     dependencies:

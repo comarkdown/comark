@@ -11,10 +11,10 @@
   "author": "Comark team",
   "license": "MIT",
   "dependencies": {
-    "@clack/prompts": "^1.2.0",
+    "@clack/prompts": "catalog:",
     "@comark/ansi": "workspace:*",
-    "citty": "^0.2.2",
-    "comark": "^0.2.1",
-    "shiki": "^4.0.2"
+    "citty": "catalog:",
+    "comark": "catalog:",
+    "shiki": "catalog:"
   }
 }
