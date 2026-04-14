@@ -78,14 +78,72 @@ export default defineAppConfig({
       },
     },
   },
-
-  docus: {
-    footer: {
-      credits: {
-        text: 'Made with Comark',
-        href: 'https://github.com/comarkdown/comark',
+  footer: {
+    sections: [
+      {
+        title: 'Documentation',
+        links: [
+          {
+            label: 'Getting Started',
+            to: '/getting-started/introduction',
+          },
+          {
+            label: 'Syntax',
+            to: '/syntax/components',
+          },
+          {
+            label: 'Rendering',
+            to: '/rendering/vue',
+          },
+          {
+            label: 'API Reference',
+            to: '/api/parse',
+          },
+        ],
       },
-    },
+      {
+        title: 'Plugins',
+        links: [
+          {
+            label: 'Syntax Highlighting',
+            to: '/plugins/core/highlight',
+          },
+          {
+            label: 'Math',
+            to: '/plugins/core/math',
+          },
+          {
+            label: 'Mermaid',
+            to: '/plugins/core/mermaid',
+          },
+        ],
+      },
+      {
+        title: 'Community',
+        links: [
+          {
+            label: 'GitHub',
+            to: 'https://github.com/comarkdown/comark',
+            external: true,
+          },
+          {
+            label: 'Issues',
+            to: 'https://github.com/comarkdown/comark/issues',
+            external: true,
+          },
+          {
+            label: 'Changelog',
+            to: 'https://github.com/comarkdown/comark/blob/main/CHANGELOG.md',
+            external: true,
+          },
+          {
+            label: 'License',
+            to: 'https://github.com/comarkdown/comark/blob/main/LICENSE',
+            external: true,
+          },
+        ],
+      },
+    ],
   },
   aside: {
     level: 1,

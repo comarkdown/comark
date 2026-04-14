@@ -9,16 +9,16 @@
     "preview": "astro preview"
   },
   "dependencies": {
-    "@astrojs/react": "^5.0.3",
-    "@tailwindcss/vite": "^4.2.2",
-    "astro": "^6.1.5",
-    "comark": "^0.2.1",
-    "react": "^19.2.5",
-    "react-dom": "^19.2.5"
+    "@astrojs/react": "catalog:",
+    "@tailwindcss/vite": "catalog:",
+    "astro": "catalog:",
+    "comark": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:"
   },
   "devDependencies": {
-    "@types/react": "^19.2.14",
-    "@types/react-dom": "^19.2.3",
-    "typescript": "^5.9.3"
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "typescript": "catalog:"
   }
 }

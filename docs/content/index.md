@@ -147,46 +147,8 @@ title: Extensible plugins
 
 ::landing-cta
 ---
-footerSections:
-  - title: Documentation
-    links:
-      - label: Getting Started
-        to: /getting-started/introduction
-      - label: Syntax
-        to: /syntax/components
-      - label: Rendering
-        to: /rendering/vue
-      - label: API Reference
-        to: /api/parse
-  - title: Plugins
-    links:
-      - label: Syntax Highlighting
-        to: /plugins/core/highlight
-      - label: Math
-        to: /plugins/core/math
-      - label: Mermaid
-        to: /plugins/core/mermaid
-  - title: Community
-    links:
-      - label: GitHub
-        to: https://github.com/comarkdown/comark
-        external: true
-      - label: Issues
-        to: https://github.com/comarkdown/comark/issues
-        external: true
-      - label: Changelog
-        to: https://github.com/comarkdown/comark/blob/main/CHANGELOG.md
-        external: true
-      - label: License
-        to: https://github.com/comarkdown/comark/blob/main/LICENSE
-        external: true
 description: Add rich, interactive components to your markdown today.
-footerCopyright: © 2026 Comark. Released under the MIT License.
-footerDescription: A fast, streaming-ready markdown parser with component
-  support for Vue, React, and Svelte.
-githubUrl: https://github.com/comarkdown/comark
 install: npm install comark
-npmUrl: https://www.npmjs.com/package/comark
 primaryLabel: Get Started
 primaryTo: /getting-started/introduction
 secondaryLabel: GitHub

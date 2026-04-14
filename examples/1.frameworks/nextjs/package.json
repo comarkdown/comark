@@ -9,17 +9,17 @@
     "start": "next start"
   },
   "dependencies": {
-    "comark": "^0.2.1",
-    "next": "^16.2.3",
-    "shiki": "^4.0.2",
-    "react": "^19.2.5",
-    "react-dom": "^19.2.5"
+    "comark": "catalog:",
+    "next": "catalog:",
+    "shiki": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.2.2",
-    "@types/react": "^19.2.14",
-    "@types/react-dom": "^19.2.3",
-    "tailwindcss": "^4.2.2",
-    "typescript": "^5.9.3"
+    "@tailwindcss/postcss": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "tailwindcss": "catalog:",
+    "typescript": "catalog:"
   }
 }

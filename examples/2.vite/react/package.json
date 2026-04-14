@@ -9,19 +9,19 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@comark/react": "^0.2.0",
-    "@tailwindcss/vite": "^4.2.2",
-    "comark": "^0.2.1",
-    "react": "^19.2.5",
-    "react-dom": "^19.2.5"
+    "@comark/react": "catalog:",
+    "@tailwindcss/vite": "catalog:",
+    "comark": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:"
   },
   "devDependencies": {
-    "@types/react": "^19.2.14",
-    "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^6.0.1",
-    "autoprefixer": "^10.4.27",
-    "postcss": "^8.5.9",
-    "typescript": "^5.9.3",
-    "vite": "^8.0.8"
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
+    "autoprefixer": "catalog:",
+    "postcss": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:"
   }
 }

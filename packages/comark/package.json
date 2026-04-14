@@ -48,9 +48,9 @@
     "release:dry": "release-it --dry-run"
   },
   "peerDependencies": {
-    "beautiful-mermaid": "^1.1.3",
-    "katex": "^0.16.33",
-    "shiki": "^4.0.0"
+    "beautiful-mermaid": "catalog:",
+    "katex": "catalog:",
+    "shiki": "catalog:"
   },
   "peerDependenciesMeta": {
     "shiki": {
@@ -64,25 +64,25 @@
     }
   },
   "devDependencies": {
-    "@json-render/core": "^0.16.0",
-    "@nuxt/kit": "^4.4.2",
-    "@shikijs/primitive": "^4.0.2",
-    "@shikijs/twoslash": "^4.0.2",
-    "@types/js-yaml": "^4.0.9",
-    "@types/markdown-it": "^14.1.2",
-    "github-slugger": "^2.0.0",
-    "hast-util-to-string": "^3.0.1",
-    "minimark": "0.2.0",
-    "mitata": "^1.0.34",
-    "tsx": "^4.21.0",
-    "twoslash": "^0.3.6",
-    "vitest": "^4.1.4"
+    "@json-render/core": "catalog:",
+    "@nuxt/kit": "catalog:",
+    "@shikijs/primitive": "catalog:",
+    "@shikijs/twoslash": "catalog:",
+    "@types/js-yaml": "catalog:",
+    "@types/markdown-it": "catalog:",
+    "github-slugger": "catalog:",
+    "hast-util-to-string": "catalog:",
+    "minimark": "catalog:",
+    "mitata": "catalog:",
+    "tsx": "catalog:",
+    "twoslash": "catalog:",
+    "vitest": "catalog:"
   },
   "dependencies": {
-    "@comark/markdown-it": "^0.3.3",
-    "entities": "^8.0.0",
-    "htmlparser2": "^12.0.0",
-    "js-yaml": "^4.1.1",
-    "markdown-exit": "1.0.0-beta.9"
+    "@comark/markdown-it": "catalog:",
+    "entities": "catalog:",
+    "htmlparser2": "catalog:",
+    "js-yaml": "catalog:",
+    "markdown-exit": "catalog:"
   }
 }

@@ -5,3 +5,127 @@ packages:
 
 ignoredBuiltDependencies:
   - sharp
+
+catalog:
+  # Workspace packages (publish versions, locally overridden by resolutions)
+  comark: ^0.2.1
+  '@comark/vue': ^0.2.1
+  '@comark/nuxt': ^0.2.0
+  '@comark/html': ^0.2.0
+  '@comark/react': ^0.2.0
+  '@comark/markdown-it': ^0.3.3
+
+  # Core comark dependencies
+  entities: ^8.0.0
+  htmlparser2: ^12.0.0
+  js-yaml: ^4.1.1
+  markdown-exit: 1.0.0-beta.9
+
+  # Shared peer dependencies
+  shiki: ^4.0.0
+  katex: ^0.16.45
+  beautiful-mermaid: ^1.1.3
+
+  # Build tooling
+  release-it: ^19.2.4
+  '@release-it/conventional-changelog': ^10.0.6
+  vite: ^8.0.8
+  typescript: ^5.9.3
+  tsx: ^4.21.0
+  '@vitejs/plugin-react': ^6.0.1
+
+  # Types
+  '@types/node': ^25.5.2
+  '@types/js-yaml': ^4.0.9
+  '@types/markdown-it': ^14.1.2
+  '@types/react': ^19.2.14
+  '@types/react-dom': ^19.2.3
+  '@types/splitpanes': ^2.2.6
+
+  # Testing
+  vitest: ^4.1.4
+  '@vitest/browser': ^4.1.4
+  '@vitest/browser-playwright': ^4.1.4
+  vitest-browser-svelte: ^2.1.0
+  playwright: ^1.59.1
+
+  # Linting
+  eslint: ^10.2.0
+  eslint-plugin-svelte: ^3.17.0
+  '@stylistic/eslint-plugin': ^5.10.0
+
+  # Vue
+  vue: ^3.5.32
+  '@vue/server-renderer': ^3.5.32
+  '@vue/compiler-core': ^3.5.32
+  '@vitejs/plugin-vue': ^6.0.5
+  vue-tsc: ^3.2.6
+  vue-router: ^5.0.4
+  '@vueuse/core': ^14.2.1
+  vue-json-pretty: ^2.6.0
+
+  # Nuxt
+  nuxt: ^4.4.2
+  '@nuxt/kit': ^4.4.2
+  '@nuxt/eslint-config': ^1.15.2
+  '@nuxt/content': ^3.12.0
+  '@nuxt/ui': ^4.6.1
+  '@nuxtjs/mcp-toolkit': 0.13.4
+  '@nuxtlabs/monarch-mdc': ^0.9.0
+  nuxt-studio: 1.5.1
+  docus: ^5.9.0
+
+  # React
+  react: ^19.2.5
+  react-dom: ^19.2.5
+
+  # Svelte
+  svelte: ^5.55.2
+  '@sveltejs/package': ^2.5.7
+  '@sveltejs/vite-plugin-svelte': ^7.0.0
+  svelte-check: ^4.4.6
+
+  # Other Frameworks
+  astro: ^6.1.5
+  '@astrojs/react': ^5.0.3
+  next: ^16.2.3
+  vitepress: ^1.6.4
+
+  # Shiki
+  '@shikijs/primitive': ^4.0.2
+  '@shikijs/twoslash': ^4.0.2
+  '@shikijs/langs': ^4.0.2
+  '@shikijs/themes': ^4.0.2
+
+  # CSS
+  tailwindcss: ^4.2.2
+  '@tailwindcss/vite': ^4.2.2
+  '@tailwindcss/postcss': ^4.2.2
+  '@tailwindcss/typography': ^0.5.19
+  autoprefixer: ^10.4.27
+  postcss: ^8.5.9
+
+  # Misc
+  '@json-render/core': ^0.16.0
+  github-slugger: ^2.0.0
+  hast-util-to-string: ^3.0.1
+  minimark: 0.2.0
+  mitata: ^1.0.34
+  twoslash: ^0.3.6
+  twoslash-cdn: ^0.3.6
+  scule: ^1.3.0
+  unified: ^11.0.5
+  remark-gfm: ^4.0.1
+  remark-mdc: ^3.10.0
+  remark-parse: ^11.0.0
+  remark-rehype: ^11.1.2
+  '@unhead/vue': ^2.1.12
+  '@monaco-editor/loader': ^1.7.0
+  '@vercel/analytics': ^2.0.1
+  '@vercel/speed-insights': ^2.0.0
+  markdown-it-math: ^5.2.1
+  splitpanes: ^4.0.4
+  '@clack/prompts': ^1.2.0
+  citty: ^0.2.2
+  '@xterm/addon-fit': ^0.11.0
+  '@xterm/xterm': ^6.0.0

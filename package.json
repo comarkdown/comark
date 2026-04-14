@@ -44,23 +44,23 @@
     "postinstall": "pnpm stub"
   },
   "devDependencies": {
-    "@nuxt/eslint-config": "^1.15.2",
-    "@release-it/conventional-changelog": "^10.0.6",
-    "@stylistic/eslint-plugin": "^5.10.0",
-    "@types/node": "^25.5.2",
-    "@vitejs/plugin-vue": "^6.0.5",
-    "eslint": "^10.2.0",
-    "eslint-plugin-svelte": "^3.17.0",
-    "nuxt": "^4.4.2",
-    "playwright": "^1.59.1",
-    "release-it": "^19.2.4",
-    "remark-gfm": "^4.0.1",
-    "remark-mdc": "^3.10.0",
-    "remark-parse": "^11.0.0",
-    "remark-rehype": "^11.1.2",
-    "scule": "^1.3.0",
-    "typescript": "^5.9.3",
-    "unified": "^11.0.5"
+    "@nuxt/eslint-config": "catalog:",
+    "@release-it/conventional-changelog": "catalog:",
+    "@stylistic/eslint-plugin": "catalog:",
+    "@types/node": "catalog:",
+    "@vitejs/plugin-vue": "catalog:",
+    "eslint": "catalog:",
+    "eslint-plugin-svelte": "catalog:",
+    "nuxt": "catalog:",
+    "playwright": "catalog:",
+    "release-it": "catalog:",
+    "remark-gfm": "catalog:",
+    "remark-mdc": "catalog:",
+    "remark-parse": "catalog:",
+    "remark-rehype": "catalog:",
+    "scule": "catalog:",
+    "typescript": "catalog:",
+    "unified": "catalog:"
   },
   "resolutions": {
     "comark": "workspace:*",
@@ -70,6 +70,6 @@
     "@comark/nuxt": "workspace:*",
     "@comark/html": "workspace:*",
     "@comark/ansi": "workspace:*",
-    "@unhead/vue": "^2.1.12"
+    "@unhead/vue": "catalog:"
   }
 }

@@ -39,13 +39,13 @@
     "nuxt": "^3.0.0"
   },
   "dependencies": {
-    "comark": "^0.2.1",
-    "@comark/vue": "^0.2.1",
-    "@nuxt/kit": "^4.4.2"
+    "comark": "catalog:",
+    "@comark/vue": "catalog:",
+    "@nuxt/kit": "catalog:"
   },
   "devDependencies": {
-    "@vue/server-renderer": "^3.5.32",
-    "vitest": "^4.1.4",
-    "vue": "^3.5.32"
+    "@vue/server-renderer": "catalog:",
+    "vitest": "catalog:",
+    "vue": "catalog:"
   }
 }
