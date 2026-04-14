@@ -111,4 +111,4 @@ See [Installation](https://comark.dev/getting-started/installation) on comark.de
 
 Made with ❤️
 
-Published under [MIT License](./LICENSE).
+Published under [MIT License](https://github.com/comarkdown/comark/blob/main/LICENSE).
