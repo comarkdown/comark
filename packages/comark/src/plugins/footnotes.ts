@@ -1,5 +1,6 @@
 import type { ComarkElement, ComarkNode } from 'comark'
 import { defineComarkPlugin } from '../utils/helpers.ts'
+import { visit } from '../utils'
 
 export interface FootnotesConfig {
   /**
@@ -94,21 +95,10 @@ export default defineComarkPlugin((config: FootnotesConfig = {}) => {
       const refIndexMap = new Map<string, number>()
 
       // Replace footnote reference spans with sup > a elements
-      function processNodes(nodes: ComarkNode[]): ComarkNode[] {
-        const result: ComarkNode[] = []
-
-        for (const node of nodes) {
-          if (typeof node === 'string') {
-            result.push(node)
-            continue
-          }
-
-          if (!Array.isArray(node) || node[0] == null) {
-            result.push(node)
-            continue
-          }
-
-          // Check if this is a footnote reference span
+      visit(
+        state.tree,
+        node => Boolean(isFootnoteRef(node)),
+        (node) => {
           const refLabel = isFootnoteRef(node)
           if (refLabel && definitions.has(refLabel)) {
             if (!refIndexMap.has(refLabel)) {
@@ -116,26 +106,17 @@ export default defineComarkPlugin((config: FootnotesConfig = {}) => {
             }
             const refIndex = refIndexMap.get(refLabel)!
 
-            result.push(['sup', { class: 'footnote-ref' },
+            return ['sup', { class: 'footnote-ref' },
               ['a', {
                 href: `#fn-${refLabel}`,
                 id: `fnref-${refLabel}`,
               }, `[${refIndex}]`],
-            ])
-            continue
+            ]
           }
+        },
+      )
 
-          // Recurse into children of element nodes
-          const [tag, attrs, ...children] = node as ComarkElement
-          const processedChildren = processNodes(children as ComarkNode[])
-          result.push([tag, attrs, ...processedChildren] as ComarkNode)
-        }
-
-        return result
-      }
-
-      let nodes = processNodes(state.tree.nodes)
-      // state.tree.nodes = processNodes(state.tree.nodes)
+      let nodes = state.tree.nodes
 
       // Remove empty paragraphs left after definition removal
       nodes = nodes.filter((node) => {
