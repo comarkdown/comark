@@ -20,10 +20,10 @@ defaultValue: src/App.vue
 
 This example demonstrates the punctuation plugin in Vue:
 
-- **Smart quotes**: `"text"` → \u201Ctext\u201D, `'text'` → \u2018text\u2019
-- **Dashes**: `--` → \u2013 (en-dash), `---` → \u2014 (em-dash)
-- **Ellipsis**: `...` → \u2026
-- **Symbols**: `(c)` → \u00A9, `(r)` → \u00AE, `(tm)` → \u2122, `+-` → \u00B1
+- **Smart quotes**: `"text"` → “text”, `'text'` → ‘text’
+- **Dashes**: `--` → – (en-dash), `---` → — (em-dash)
+- **Ellipsis**: `...` → …
+- **Symbols**: `(c)` → ©, `(r)` → ®, `(tm)` → ™, `+-` → ±
 
 ## Usage
 
