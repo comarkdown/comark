@@ -13,7 +13,7 @@ catalog:
   '@comark/nuxt': ^0.2.0
   '@comark/html': ^0.2.0
   '@comark/react': ^0.2.0
-  '@comark/markdown-it': ^0.3.3
+  '@comark/markdown-it': https://pkg.pr.new/@comark/markdown-it@28
 
   # Core comark dependencies
   entities: ^8.0.0
