@@ -1,7 +1,13 @@
 ## Input
 
 ```md
-::component{title="Hello" color="primary" size="lg" variant="soft"}
+::component
+```yaml [props]
+title: Hello
+color: primary
+size: lg
+variant: soft
+```
 Content
 ::
 ```

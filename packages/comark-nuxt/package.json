@@ -36,7 +36,7 @@
     "release": "release-it"
   },
   "peerDependencies": {
-    "nuxt": "^3.0.0"
+    "nuxt": "^4.0.0"
   },
   "dependencies": {
     "comark": "catalog:",

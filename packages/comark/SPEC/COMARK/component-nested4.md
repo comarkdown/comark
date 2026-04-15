@@ -28,12 +28,12 @@ timeout:
     ::::
 
     ::::button
-    ---
+    ```yaml [props]
     :data-testid: $doc.snippet.description
     external: true
     :to: $doc.snippet.link
     appearance: primary
-    ---
+    ```
     Button Text
     ::::
   :::
@@ -160,12 +160,12 @@ timeout:
     ::::
 
     ::::button
-    ---
+    ```yaml [props]
     :data-testid: $doc.snippet.description
     external: true
     :to: $doc.snippet.link
     appearance: primary
-    ---
+    ```
     Button Text
     ::::
   :::

@@ -14,7 +14,7 @@ export interface MermaidProps {
 export function Mermaid({
   content,
   class: className = '',
-  height = '400px',
+  height = 'auto',
   width = '100%',
   theme,
   themeDark,
