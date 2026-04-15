@@ -90,23 +90,24 @@ export default defineComarkPlugin((config: FootnotesConfig = {}) => {
     backRef = '↩',
   } = config
 
-  // Store definitions extracted during `pre` for use in `post`
-  let definitions: Map<string, string>
-
   return {
     name: 'footnotes',
     // extract footnote definitions from markdown before MDC parsing
     pre(state) {
-      definitions = new Map<string, string>()
+      const definitions = new Map<string, string>()
 
       // Extract and remove footnote definitions from the source
       state.markdown = state.markdown.replace(FOOTNOTE_DEF_RE, (_match, defLabel: string, content: string) => {
         definitions.set(defLabel, content.trim())
         return '' // Remove the definition line
       })
+
+      // Store on state to avoid mixing definitions across parallel parses
+      state.context.footnote = definitions
     },
     // replace [^ref] spans and build footnotes section
     post(state) {
+      const definitions: Map<string, string> = state.context.footnote
       if (!definitions || definitions.size === 0) return
 
       const refIndexMap = new Map<string, number>()
