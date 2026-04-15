@@ -35,19 +35,19 @@ const CLOSE_SINGLE = '\u2019'
 /** Tags whose text content should not be transformed */
 const SKIP_TAGS = new Set(['code', 'pre', 'math', 'script', 'style', 'kbd'])
 
-function isWhitespaceOrOpener(code: number): boolean {
-  // space, tab, newline, carriage return, (, [, {
-  return code === 32 || code === 9 || code === 10 || code === 13
-    || code === 40 || code === 91 || code === 123
+function isWhitespaceOrOpener(ch: string): boolean {
+  return ch === ' ' || ch === '\t' || ch === '\n' || ch === '\r'
+    || ch === '(' || ch === '[' || ch === '{'
 }
 
-function isLetter(code: number): boolean {
-  return (code >= 65 && code <= 90) || (code >= 97 && code <= 122)
+function isLetter(ch: string): boolean {
+  return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z')
 }
 
 /**
- * Single-pass text transformation
+ * Single-pass O(n) text transformation — replaces punctuation patterns
  * (ellipsis, dashes, symbols, smart quotes) in one scan with no regex.
+ * Uses slice-based string building to minimize allocations.
  */
 function applyPunctuation(
   text: string,
@@ -58,93 +58,99 @@ function applyPunctuation(
 ): string {
   const len = text.length
   let result = ''
+  let last = 0
 
   for (let i = 0; i < len; i++) {
-    const code = text.charCodeAt(i)
+    const ch = text[i]
 
     // Ellipsis: ...
-    if (ellipsis && code === 46 /* . */ && i + 2 < len
-      && text.charCodeAt(i + 1) === 46 && text.charCodeAt(i + 2) === 46) {
-      result += '\u2026'
+    if (ellipsis && ch === '.' && i + 2 < len
+      && text[i + 1] === '.' && text[i + 2] === '.') {
+      result += text.slice(last, i) + '\u2026'
       i += 2
+      last = i + 1
       continue
     }
 
     // Dashes: --- (em-dash) or -- (en-dash)
-    if (dashes && code === 45 /* - */ && i + 1 < len && text.charCodeAt(i + 1) === 45) {
-      if (i + 2 < len && text.charCodeAt(i + 2) === 45) {
-        result += '\u2014'
+    if (dashes && ch === '-' && i + 1 < len && text[i + 1] === '-') {
+      if (i + 2 < len && text[i + 2] === '-') {
+        result += text.slice(last, i) + '\u2014'
         i += 2
       }
       else {
-        result += '\u2013'
+        result += text.slice(last, i) + '\u2013'
         i += 1
       }
+      last = i + 1
       continue
     }
 
     // Symbols: (c), (C), (r), (R), (tm), (TM), +-
-    if (symbols) {
-      if (code === 40 /* ( */) {
-        const remaining = len - i
-        if (remaining >= 3 && text.charCodeAt(i + 2) === 41 /* ) */) {
-          const inner = text.charCodeAt(i + 1)
-          // c, C
-          if (inner === 99 || inner === 67) {
-            result += '\u00A9'
-            i += 2
-            continue
-          }
-          // r, R
-          if (inner === 114 || inner === 82) {
-            result += '\u00AE'
-            i += 2
-            continue
-          }
+    if (symbols && ch === '(') {
+      const remaining = len - i
+      if (remaining >= 3 && text[i + 2] === ')') {
+        const inner = text[i + 1]
+        if (inner === 'c' || inner === 'C') {
+          result += text.slice(last, i) + '\u00A9'
+          i += 2
+          last = i + 1
+          continue
         }
-        if (remaining >= 4 && text.charCodeAt(i + 3) === 41 /* ) */) {
-          const c1 = text.charCodeAt(i + 1)
-          const c2 = text.charCodeAt(i + 2)
-          // t/T, m/M
-          if ((c1 === 116 || c1 === 84) && (c2 === 109 || c2 === 77)) {
-            result += '\u2122'
-            i += 3
-            continue
-          }
+        if (inner === 'r' || inner === 'R') {
+          result += text.slice(last, i) + '\u00AE'
+          i += 2
+          last = i + 1
+          continue
         }
       }
-      if (code === 43 /* + */ && i + 1 < len && text.charCodeAt(i + 1) === 45 /* - */) {
-        result += '\u00B1'
-        i += 1
-        continue
+      if (remaining >= 4 && text[i + 3] === ')') {
+        const c1 = text[i + 1]
+        const c2 = text[i + 2]
+        if ((c1 === 't' || c1 === 'T') && (c2 === 'm' || c2 === 'M')) {
+          result += text.slice(last, i) + '\u2122'
+          i += 3
+          last = i + 1
+          continue
+        }
       }
+    }
+    if (symbols && ch === '+' && i + 1 < len && text[i + 1] === '-') {
+      result += text.slice(last, i) + '\u00B1'
+      i += 1
+      last = i + 1
+      continue
     }
 
     // Smart quotes
     if (quotes) {
-      if (code === 34 /* " */) {
-        const prevCode = i > 0 ? text.charCodeAt(i - 1) : 32
-        result += (isWhitespaceOrOpener(prevCode) || i === 0) ? OPEN_DOUBLE : CLOSE_DOUBLE
+      if (ch === '"') {
+        const prev = i > 0 ? text[i - 1] : ' '
+        result += text.slice(last, i) + ((isWhitespaceOrOpener(prev) || i === 0) ? OPEN_DOUBLE : CLOSE_DOUBLE)
+        last = i + 1
         continue
       }
-      if (code === 39 /* ' */) {
-        const prevCode = i > 0 ? text.charCodeAt(i - 1) : 32
-        const nextCode = i + 1 < len ? text.charCodeAt(i + 1) : 0
+      if (ch === '\'') {
+        const prev = i > 0 ? text[i - 1] : ' '
+        const next = i + 1 < len ? text[i + 1] : ''
+        result += text.slice(last, i)
         // Apostrophe in contractions: letter before AND letter after
-        if (isLetter(prevCode) && isLetter(nextCode)) {
+        if (isLetter(prev) && isLetter(next)) {
           result += CLOSE_SINGLE
         }
         else {
-          result += (isWhitespaceOrOpener(prevCode) || i === 0) ? OPEN_SINGLE : CLOSE_SINGLE
+          result += (isWhitespaceOrOpener(prev) || i === 0) ? OPEN_SINGLE : CLOSE_SINGLE
         }
+        last = i + 1
         continue
       }
     }
-
-    result += text[i]
   }
 
-  return result
+  // Fast path: no substitutions were made
+  if (last === 0) return text
+
+  return result + text.slice(last)
 }
 
 /**
