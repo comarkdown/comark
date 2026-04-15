@@ -381,10 +381,7 @@ function processBlockToken(tokens: any[], startIndex: number, insideNestedContex
     if (children.nodes.length > 0) {
       // Always generate ID for all headings, no exceptions
       const textContent = extractTextContent(children.nodes)
-      const baseSlug = slugify(textContent)
-      const uniqueBaseSlug = uniqueSlug(baseSlug, level, state)
-
-      const headingId = uniqueBaseSlug
+      const headingId = uniqueSlug(slugify(textContent), level, state)
 
       // Always attach ID to the heading element itself
       return { node: [headingTag, { id: headingId }, ...children.nodes] as ComarkNode, nextIndex: children.nextIndex + 1 }
