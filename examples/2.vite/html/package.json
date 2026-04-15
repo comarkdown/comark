@@ -9,13 +9,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@comark/html": "^0.2.0",
-    "beautiful-mermaid": "^1.1.3",
-    "katex": "^0.16.45",
-    "shiki": "^4.0.2"
+    "@comark/html": "catalog:",
+    "beautiful-mermaid": "catalog:",
+    "katex": "catalog:",
+    "shiki": "catalog:"
   },
   "devDependencies": {
-    "typescript": "^5.9.3",
-    "vite": "^8.0.8"
+    "typescript": "catalog:",
+    "vite": "catalog:"
   }
 }

@@ -56,6 +56,7 @@ export function createState(ctx: Partial<Context> = {}): State {
     blockSeparator: ctx.blockSeparator || '\n\n',
     format: ctx.format || 'markdown/comark',
     handlers: ctx.handlers || {}, // user defined node handlers
+    blockAttributesStyle: ctx.blockAttributesStyle || 'codeblock',
     // Enable html mode for text/html format
     html: ctx.format === 'text/html',
   } as Context
@@ -99,6 +100,7 @@ export const state: State = {
     blockSeparator: '\n\n',
     format: 'markdown/comark',
     handlers: {}, // user defined node handlers
+    blockAttributesStyle: 'codeblock',
   },
   flow,
   one,

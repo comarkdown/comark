@@ -47,6 +47,7 @@ interface TestCase {
     plugins?: PluginName[]
     autoUnwrap?: boolean
     maxInlineAttributes?: number
+    blockAttributesStyle?: 'frontmatter' | 'codeblock'
   }
   skip?: boolean
 }
@@ -247,7 +248,7 @@ describe('Comark Tests', () => {
       })
 
       it('should render AST to Markdown', { timeout: testCase.timeouts?.markdown ?? 5000 }, async () => {
-        const result = await renderMarkdown(parsedAST, { maxInlineAttributes: testCase.options?.maxInlineAttributes })
+        const result = await renderMarkdown(parsedAST, testCase.options || {})
         const expectedMarkdown = testCase.markdown.trim()
         expect(result).toBe(expectedMarkdown)
       })

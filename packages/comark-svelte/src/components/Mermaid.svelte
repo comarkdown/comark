@@ -28,7 +28,7 @@ Automatically detects dark mode from the `<html>` element's `dark` class.
   let {
     content,
     class: className = '',
-    height = '400px',
+    height = 'auto',
     width = '100%',
     theme,
     'theme-dark': themeDark,

@@ -1,4 +1,4 @@
-import { dump, JSON_SCHEMA, load } from 'js-yaml'
+import { dump, JSON_SCHEMA, load, type DumpOptions } from 'js-yaml'
 
 /**
  * Parse YAML content
@@ -14,9 +14,11 @@ export function parseYaml(content: string): Record<string, unknown> {
  * @param data - The data to stringify
  * @returns The stringified data
  */
-export function stringifyYaml(data: Record<string, unknown>): string {
+export function stringifyYaml(data: Record<string, unknown>, options?: DumpOptions): string {
   const yamlOutput = dump(data, {
     indent: 2,
+    lineWidth: -1,
+    ...options,
     replacer: (_key, value) => {
       if (value === 'true') return true
       if (value === 'false') return false

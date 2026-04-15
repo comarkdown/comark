@@ -39,12 +39,12 @@ Content
 
 ```md
 ::component
----
+```yaml [props]
 title: Hello
 color: primary
 size: lg
 variant: soft
----
+```
 Content
 ::
 ```

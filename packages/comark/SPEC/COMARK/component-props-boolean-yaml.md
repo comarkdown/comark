@@ -48,12 +48,12 @@ My button
 
 ```md
 ::my-component
----
+```yaml [props]
 block: true
 reverse: true
 square: false
 disabled: true
----
+```
 My button
 ::
 ```

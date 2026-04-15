@@ -8,19 +8,19 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@comark/vue": "^0.2.1",
-    "@nuxt/ui": "^4.6.1",
-    "@shikijs/themes": "^4.0.2",
-    "@vueuse/core": "^14.2.1",
-    "comark": "^0.2.1",
-    "shiki": "^4.0.2",
-    "tailwindcss": "^4.2.2",
-    "vue": "^3.5.32"
+    "@comark/vue": "catalog:",
+    "@nuxt/ui": "catalog:",
+    "@shikijs/themes": "catalog:",
+    "@vueuse/core": "catalog:",
+    "comark": "catalog:",
+    "shiki": "catalog:",
+    "tailwindcss": "catalog:",
+    "vue": "catalog:"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^6.0.5",
-    "typescript": "^5.9.3",
-    "vite": "^8.0.8",
-    "vue-tsc": "^3.2.6"
+    "@vitejs/plugin-vue": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vue-tsc": "catalog:"
   }
 }

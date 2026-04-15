@@ -9,15 +9,15 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@xterm/addon-fit": "^0.11.0",
-    "@xterm/xterm": "^6.0.0",
-    "comark": "^0.2.1",
+    "@xterm/addon-fit": "catalog:",
+    "@xterm/xterm": "catalog:",
+    "comark": "catalog:",
     "@comark/ansi": "workspace:*",
-    "katex": "^0.16.45",
-    "shiki": "^4.0.2"
+    "katex": "catalog:",
+    "shiki": "catalog:"
   },
   "devDependencies": {
-    "typescript": "^5.9.3",
-    "vite": "^8.0.8"
+    "typescript": "catalog:",
+    "vite": "catalog:"
   }
 }

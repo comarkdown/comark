@@ -16,7 +16,7 @@ export const Mermaid = defineComponent({
     },
     height: {
       type: String,
-      default: '400px',
+      default: 'auto',
     },
     width: {
       type: String,

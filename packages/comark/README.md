@@ -48,7 +48,7 @@ const chatMessage = ...
 ```bash
 npm install @comark/react katex
 # or
-pnpm add @comark/react katex 
+pnpm add @comark/react katex
 ```
 
 ```tsx
@@ -97,8 +97,18 @@ const html = await render(chatMessage)
 ```
 
 
+## Agent skill
+
+Coding agents can install the Comark skill from the docs site:
+
+```bash
+npx skills add https://comark.dev
+```
+
+See [Installation](https://comark.dev/getting-started/installation) on comark.dev for details.
+
 ## License
 
 Made with ❤️
 
-Published under [MIT License](./LICENSE).
+Published under [MIT License](https://github.com/comarkdown/comark/blob/main/LICENSE).

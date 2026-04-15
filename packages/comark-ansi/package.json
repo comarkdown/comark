@@ -3,6 +3,14 @@
   "type": "module",
   "version": "0.2.1",
   "description": "ANSI terminal renderer for Comark",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/comarkdown/comark.git"
+  },
+  "bugs": {
+    "url": "https://github.com/comarkdown/comark/issues"
+  },
+  "homepage": "https://comark.dev/rendering/ansi",
   "exports": {
     ".": "./dist/index.js",
     "./plugins/*": "./dist/plugins/*.js",
@@ -30,7 +38,7 @@
   "peerDependencies": {
     "katex": ">=0.16",
     "beautiful-mermaid": ">=1.0",
-    "shiki": "^4.0.0"
+    "shiki": "catalog:"
   },
   "peerDependenciesMeta": {
     "katex": {
@@ -44,9 +52,9 @@
     }
   },
   "dependencies": {
-    "comark": "^0.2.1"
+    "comark": "catalog:"
   },
   "devDependencies": {
-    "vitest": "^4.1.4"
+    "vitest": "catalog:"
   }
 }

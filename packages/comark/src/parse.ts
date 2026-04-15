@@ -106,7 +106,7 @@ export function createParse(options: ParseOptions = {}): ComarkParseFn {
       await plugin.pre?.(state)
     }
 
-    const { content, data } = await parseFrontmatter(state.markdown)
+    const { content, data } = parseFrontmatter(state.markdown)
 
     state.tokens = parser.parse(content, {})
 

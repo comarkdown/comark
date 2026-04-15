@@ -2,12 +2,7 @@ import { defineNuxtConfig } from 'nuxt/config'
 
 export default defineNuxtConfig({
   extends: ['docus'],
-  modules: [
-    'nuxt-studio',
-    '@comark/nuxt',
-    '@vercel/speed-insights',
-    '@vercel/analytics',
-  ],
+  modules: ['nuxt-studio', '@comark/nuxt', '@vercel/speed-insights', '@vercel/analytics', '@nuxtjs/mcp-toolkit'],
 
   app: {
     head: {
@@ -42,6 +37,10 @@ export default defineNuxtConfig({
       { name: 'Geist', weights: [400, 500, 600, 700], global: true },
       { name: 'Geist Mono', weights: [400, 500, 600], global: true },
     ],
+  },
+
+  llms: {
+    domain: 'https://comark.dev',
   },
 
   studio: false,

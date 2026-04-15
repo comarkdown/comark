@@ -63,7 +63,7 @@ export function htmlAttributes(attributes: Record<string, unknown>) {
  * @param attributes - The attributes to stringify
  * @returns The stringified attributes
  */
-export function comarkYamlAttributes(attributes: Record<string, unknown>) {
+export function comarkYamlAttributes(attributes: Record<string, unknown>, style: 'frontmatter' | 'codeblock' = 'codeblock') {
   // Normalize boolean attributes to remove the colon prefix
   const normalized = Object.fromEntries(
     Object.entries(attributes).map(([key, value]) => {
@@ -73,5 +73,13 @@ export function comarkYamlAttributes(attributes: Record<string, unknown>) {
       return [key, value]
     }),
   )
-  return `---\n${stringifyYaml(normalized).trim()}\n---`
+
+  const yamlContent = stringifyYaml(normalized).trim()
+
+  if (style === 'frontmatter') {
+    return `---\n${yamlContent}\n---`
+  }
+
+  const fence = yamlContent.includes('```') ? '~~~' : '```'
+  return `${fence}yaml [props]\n${yamlContent}\n${fence}`
 }

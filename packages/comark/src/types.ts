@@ -1,3 +1,4 @@
+import type { DumpOptions } from 'js-yaml'
 import type MarkdownExit from 'markdown-exit'
 import type MarkdownIt from 'markdown-it'
 
@@ -87,6 +88,14 @@ interface StringifyOptions {
    * @default 3
    */
   maxInlineAttributes?: number
+
+  /**
+   * Default syntax for block attributes when attributes exceed `maxInlineAttributes`.
+   * - `'codeblock'` — wraps attributes in a fenced YAML code block with `[props]` label
+   * - `'frontmatter'` — wraps attributes in `---` delimiters (frontmatter style)
+   * @default 'codeblock'
+   */
+  blockAttributesStyle?: 'frontmatter' | 'codeblock'
 
   /**
    * Additional options
@@ -203,6 +212,18 @@ export interface RenderMarkdownOptions extends RenderOptions {
    * @default 3
    */
   maxInlineAttributes?: number
+  /**
+   * Default syntax for block attributes when attributes exceed `maxInlineAttributes`.
+   * - `'codeblock'` — wraps attributes in a fenced YAML code block with `[props]` label
+   * - `'frontmatter'` — wraps attributes in `---` delimiters (frontmatter style)
+   * @default 'codeblock'
+   */
+  blockAttributesStyle?: 'frontmatter' | 'codeblock'
+  /**
+   * Options for YAML serialization of frontmatter (js-yaml DumpOptions).
+   * Defaults: indent=2, lineWidth=-1.
+   */
+  frontmatterOptions?: DumpOptions
 }
 // #endregion
 

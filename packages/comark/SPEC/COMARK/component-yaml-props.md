@@ -65,7 +65,7 @@ Second Paragraph
 
 ```md
 ::component
----
+```yaml [props]
 attr: value
 object-attr:
   key1: value1
@@ -73,7 +73,7 @@ object-attr:
 array:
   - item 1
   - item 2
----
+```
 First Paragraph
 
 Second Paragraph
