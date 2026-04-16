@@ -78,11 +78,6 @@ export default defineAppConfig({
         'svelte': 'i-simple-icons-svelte',
       },
     },
-    contentToc: {
-      defaultVariants: {
-        highlightVariant: 'straight',
-      },
-    },
   },
   footer: {
     sections: [

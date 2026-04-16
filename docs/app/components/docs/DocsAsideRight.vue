@@ -25,6 +25,7 @@ function refreshHeading(opened: boolean) {
     <UContentToc
       :links="page?.body?.toc?.links"
       highlight
+      highlight-variant="circuit"
       class="hidden lg:block lg:backdrop-blur-none lg:col-span-2"
     />
     <div class="order-first lg:hidden sticky top-(--ui-header-height) z-10 bg-default/75 lg:bg-[initial] backdrop-blur -mx-4 p-6 border-b border-dashed border-default flex justify-between">
