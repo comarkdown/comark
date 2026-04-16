@@ -73,7 +73,7 @@ catalog:
   '@nuxtjs/mcp-toolkit': 0.13.4
   '@nuxtlabs/monarch-mdc': ^0.9.0
   nuxt-studio: 1.6.0
-  docus: ^5.9.0
+  docus: https://pkg.pr.new/docus@1339
 
   # React
   react: ^19.2.5
