@@ -103,11 +103,11 @@ export default defineComarkPlugin((config: FootnotesConfig = {}) => {
       })
 
       // Store on state to avoid mixing definitions across parallel parses
-      state.context.footnote = definitions
+      state.footnote = definitions
     },
     // replace [^ref] spans and build footnotes section
     post(state) {
-      const definitions: Map<string, string> = state.context.footnote
+      const definitions: Map<string, string> = state.footnote
       if (!definitions || definitions.size === 0) return
 
       const refIndexMap = new Map<string, number>()
