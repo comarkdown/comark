@@ -109,6 +109,32 @@ export default defineNuxtConfig({
 | `<MDCSlot unwrap="p" />` | `<slot unwrap="p" />` |
 | `<slot mdc-unwrap="p" />` | `<slot unwrap="p" />` |
 
+For a pre-parsed tree, use `<ComarkRenderer>` directly instead of `<Comark>`.
+
+#### `<ComarkRenderer>` props changes
+
+| MDC `<MDCRenderer>` | Comark `<ComarkRenderer>` | Notes |
+|---|---|---|
+| `body` (`MDCRoot`) | `tree` (`ComarkTree`) | Different AST shape |
+| `data` | — | Frontmatter is in `tree.frontmatter` |
+| `tag` | — | Wrapper is always `<div class="comark-content">` |
+| `prose` | — | `Prose*` resolution is automatic |
+| `unwrap` | — | Use `autoUnwrap` in parse options |
+| `components` | `components` | Same purpose |
+| — | `componentsManifest` | New: dynamic async component resolver |
+| — | `streaming` | New: streaming mode |
+| — | `caret` | New: animated caret for streaming |
+
+#### Summary rendering
+
+```vue
+<!-- Before -->
+<MDCRenderer :body="result.excerpt ?? result.body" :data="result.data" />
+
+<!-- After -->
+<Comark summary>{{ markdown }}</Comark>
+```
+
 ### `defineComarkComponent`
 
 Replaces global `mdc: { ... }` config. Define reusable components with their own plugins and component mappings:
@@ -124,6 +150,10 @@ export const ArticleComark = defineComarkComponent({
   components: { alert: CustomAlert },
 })
 ```
+
+### Slots
+
+`<MDCSlot />` → native `<slot />`. Named slots work the same (`#slotName` in markdown, `<slot name="slotName">` in component). The `unwrap` attribute (`<slot unwrap="p">`) strips wrapper tags from children.
 
 ### Prose Components
 
@@ -150,6 +180,10 @@ These are **only available with Nuxt UI**. Without it, use `::callout{icon="..."
 4. **`renderMarkdown` includes frontmatter** — reads `tree.frontmatter` automatically
 5. **No `unified` pipeline** — `mdc.config.ts` hooks (`pre`, `remark`, `rehype`, `post`) have no equivalent, use `ComarkPlugin` interface instead
 6. **Emoji is opt-in** — not enabled by default like in MDC's `remark-emoji`
+
+## Component Syntax
+
+The MDC block and inline component syntax is identical — no changes needed in `.md` files.
 
 ## Unsupported Features
 
