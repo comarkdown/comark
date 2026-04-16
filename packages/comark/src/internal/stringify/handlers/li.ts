@@ -31,8 +31,7 @@ export async function li(node: ComarkElement, state: State) {
 
     if (Array.isArray(child) && blockElements.has(child[0] as string)) {
       // Block-level child: put on its own line and indent to align with list prefix
-      const trimmed = rendered.replace(/\n\n$/, '\n').replace(/\n$/, '')
-      const indented = indent(trimmed, { width: prefixWidth })
+      const indented = indent(rendered, { width: prefixWidth })
       result = result.trimEnd() + '\n' + indented + '\n'
     }
     else {
