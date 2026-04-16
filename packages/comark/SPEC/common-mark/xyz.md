@@ -114,7 +114,7 @@ And here's a code block:
     [
       "h3",
       {
-        "id": "subsection"
+        "id": "section-one-subsection"
       },
       "Subsection"
     ],
@@ -141,7 +141,7 @@ And here's a code block:
     [
       "h4",
       {
-        "id": "nested-heading"
+        "id": "section-one-subsection-nested-heading"
       },
       "Nested Heading"
     ],
@@ -273,12 +273,12 @@ And here's a code block:
 <p>This is a comprehensive markdown document with <strong>multiple features</strong> and <em>various</em> formatting options.</p>
 <h2 id="section-one">Section One</h2>
 <p>Here's a paragraph with a <a href="https://nuxt.com">link to Nuxt</a> and some <code>inline code</code>. You can also find <strong>bold text</strong> and <em>italic text</em> together.</p>
-<h3 id="subsection">Subsection</h3>
+<h3 id="section-one-subsection">Subsection</h3>
 <blockquote>
   <p>This is a blockquote with important information.</p>
   <p>It can span multiple lines and contain <strong>formatted text</strong>.</p>
 </blockquote>
-<h4 id="nested-heading">Nested Heading</h4>
+<h4 id="section-one-subsection-nested-heading">Nested Heading</h4>
 <p>Here's an unordered list:</p>
 <ul>
   <li>First item</li>

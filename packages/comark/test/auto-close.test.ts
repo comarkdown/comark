@@ -48,7 +48,7 @@ const multilines = `
 | :- | --- |
 ###
 | Month    | Savings |
-| :-: 
+| :-:
 →
 | Month    | Savings |
 | :-: | --- |
@@ -541,6 +541,14 @@ describe('frontmatter', () => {
   it('should not treat --- in middle of content as frontmatter', () => {
     const input = 'Some content\n---\nMore content'
     const expected = 'Some content\n---\nMore content'
+    expect(autoCloseMarkdown(input)).toBe(expected)
+  })
+})
+
+describe('link', () => {
+  it('should not add underscore when doc ends with link', () => {
+    const input = 'https://errors.pydantic.dev/2.13/v/value_error'
+    const expected = 'https://errors.pydantic.dev/2.13/v/value_error'
     expect(autoCloseMarkdown(input)).toBe(expected)
   })
 })

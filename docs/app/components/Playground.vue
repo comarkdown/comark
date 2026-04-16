@@ -5,6 +5,7 @@ import math from '@comark/vue/plugins/math'
 import emoji from '@comark/vue/plugins/emoji'
 import mermaid from '@comark/vue/plugins/mermaid'
 import jsonRender from '@comark/vue/plugins/json-render'
+import punctuation from '@comark/vue/plugins/punctuation'
 
 import { renderMarkdown } from 'comark/render'
 import { Splitpanes, Pane } from 'splitpanes'
@@ -33,6 +34,7 @@ const pluginToggles = useLocalStorage('comark-playground-plugins', {
   emoji: true,
   mermaid: true,
   jsonRender: true,
+  punctuation: false,
 }, { mergeDefaults: true })
 
 const parseOptions = useLocalStorage('comark-playground-parse-options', {
@@ -71,6 +73,12 @@ const pluginDefs = [
     label: 'JSON Render',
     icon: 'i-lucide-braces',
     factory: () => jsonRender(),
+  },
+  {
+    key: 'punctuation',
+    label: 'Punctuation',
+    icon: 'i-lucide-quote',
+    factory: () => punctuation(),
   },
 ] as const
 

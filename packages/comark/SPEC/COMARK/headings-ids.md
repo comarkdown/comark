@@ -9,9 +9,11 @@
 
 #### H4
 
-##### H5
+### Another H3
 
-###### H6
+## Another H2
+
+#### H4
 ```
 
 ## AST
@@ -50,18 +52,25 @@
       "H4"
     ],
     [
-      "h5",
+      "h3",
       {
-        "id": "h2-h3-h4-h5"
+        "id": "h2-another-h3"
       },
-      "H5"
+      "Another H3"
     ],
     [
-      "h6",
+      "h2",
       {
-        "id": "h2-h3-h4-h5-h6"
+        "id": "another-h2"
       },
-      "H6"
+      "Another H2"
+    ],
+    [
+      "h4",
+      {
+        "id": "another-h2-h4"
+      },
+      "H4"
     ]
   ]
 }
@@ -74,8 +83,9 @@
 <h2 id="h2">H2</h2>
 <h3 id="h2-h3">H3</h3>
 <h4 id="h2-h3-h4">H4</h4>
-<h5 id="h2-h3-h4-h5">H5</h5>
-<h6 id="h2-h3-h4-h5-h6">H6</h6>
+<h3 id="h2-another-h3">Another H3</h3>
+<h2 id="another-h2">Another H2</h2>
+<h4 id="another-h2-h4">H4</h4>
 ```
 
 ## Markdown
@@ -89,7 +99,9 @@
 
 #### H4
 
-##### H5
+### Another H3
 
-###### H6
+## Another H2
+
+#### H4
 ```
