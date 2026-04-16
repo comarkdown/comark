@@ -228,10 +228,17 @@ function closeInlineMarkersLinear(line: string): string {
       }
     }
     else if (ch === '_') {
-      underscoreCount++
-      // Track __ positions (for bold)
-      if (i + 1 < len && line[i + 1] === '_') {
-        doubleUnderscorePositions.push(i)
+      // Skip intra-word underscores (not emphasis delimiters per CommonMark)
+      const prevCh = i > 0 ? line[i - 1] : ''
+      const nextCh = i + 1 < len ? line[i + 1] : ''
+      const prevIsWord = (prevCh >= 'a' && prevCh <= 'z') || (prevCh >= 'A' && prevCh <= 'Z') || (prevCh >= '0' && prevCh <= '9')
+      const nextIsWord = (nextCh >= 'a' && nextCh <= 'z') || (nextCh >= 'A' && nextCh <= 'Z') || (nextCh >= '0' && nextCh <= '9')
+      if (!(prevIsWord && nextIsWord)) {
+        underscoreCount++
+        // Track __ positions (for bold)
+        if (nextCh === '_') {
+          doubleUnderscorePositions.push(i)
+        }
       }
     }
     else if (ch === '~') {
