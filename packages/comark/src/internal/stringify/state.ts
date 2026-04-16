@@ -74,7 +74,8 @@ export function createState(ctx: Partial<Context> = {}): State {
   for (const [key, value] of Object.entries(ctx.handlers || {})) {
     if (typeof value === 'function') {
       handlers[key] = value
-    } else {
+    }
+    else {
       conditionalHandlers.push(value)
     }
   }
