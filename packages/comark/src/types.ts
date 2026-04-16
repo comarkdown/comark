@@ -90,6 +90,14 @@ interface StringifyOptions {
   maxInlineAttributes?: number
 
   /**
+   * Default syntax for block attributes when attributes exceed `maxInlineAttributes`.
+   * - `'codeblock'` — wraps attributes in a fenced YAML code block with `[props]` label
+   * - `'frontmatter'` — wraps attributes in `---` delimiters (frontmatter style)
+   * @default 'codeblock'
+   */
+  blockAttributesStyle?: 'frontmatter' | 'codeblock'
+
+  /**
    * Additional options
    */
   [key: string]: unknown
@@ -204,6 +212,13 @@ export interface RenderMarkdownOptions extends RenderOptions {
    * @default 3
    */
   maxInlineAttributes?: number
+  /**
+   * Default syntax for block attributes when attributes exceed `maxInlineAttributes`.
+   * - `'codeblock'` — wraps attributes in a fenced YAML code block with `[props]` label
+   * - `'frontmatter'` — wraps attributes in `---` delimiters (frontmatter style)
+   * @default 'codeblock'
+   */
+  blockAttributesStyle?: 'frontmatter' | 'codeblock'
   /**
    * Options for YAML serialization of frontmatter (js-yaml DumpOptions).
    * Defaults: indent=2, lineWidth=-1.

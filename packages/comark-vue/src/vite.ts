@@ -9,7 +9,7 @@ const runtimeDir = fileURLToPath(new URL('./utils', import.meta.url))
 
 function viteComarkSlot(node: ElementNode, context: TransformContext) {
   const isVueSlotWithUnwrap = node.tag === 'slot'
-    && node.props.find(p => p.name === 'unwrap' || p.name === 'mdc-wunwrap' || (p.name === 'bind' && (p as DirectiveNode).rawName === ':comark-unwrap'))
+    && node.props.find(p => p.name === 'unwrap' || p.name === 'mdc-unwrap' || (p.name === 'bind' && (p as DirectiveNode).rawName === ':comark-unwrap'))
 
   if (isVueSlotWithUnwrap) {
     const transform = context.ssr

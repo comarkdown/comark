@@ -45,9 +45,9 @@ Content
 
 ```md
 ::component
----
+```yaml [props]
 title: Hello
----
+```
 Content
 ::
 ```
