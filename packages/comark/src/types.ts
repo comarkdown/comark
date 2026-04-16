@@ -62,7 +62,22 @@ export interface ComarkTree {
 // #endregion
 
 // #region Renderer types and interfaces
-interface StringifyOptions {
+export interface Context {
+  /**
+   * true if node is inside html scope
+   */
+  html?: boolean
+
+  /**
+   * true if node is inside a list
+   */
+  list?: boolean
+
+  /**
+   * number if node is inside an ordered list
+   */
+  order?: number
+
   /**
    * @default '\n\n'
    */
@@ -72,10 +87,6 @@ interface StringifyOptions {
    * @default 'markdown/comark'
    */
   format: 'markdown/comark' | 'markdown/html' | 'text/html' | 'text'
-  /**
-   * user defined node handlers
-   */
-  handlers: Record<string, NodeHandler>
 
   /**
    * @default true
@@ -98,26 +109,14 @@ interface StringifyOptions {
   blockAttributesStyle?: 'frontmatter' | 'codeblock'
 
   /**
-   * Additional options
+   * user defined node handlers
    */
-  [key: string]: unknown
-}
-
-export interface Context extends StringifyOptions {
-  /**
-   * true if node is inside html scope
-   */
-  html?: boolean
+  handlers: Record<string, NodeHandler>
 
   /**
-   * true if node is inside a list
+   * The conditional handlers of the renderer
    */
-  list?: boolean
-
-  /**
-   * number if node is inside an ordered list
-   */
-  order?: number
+  conditionalHandlers: ConditionalNodeHandler[]
 
   [key: string]: unknown
 }
@@ -130,6 +129,15 @@ export interface Context extends StringifyOptions {
  * @returns The rendered node
  */
 export type NodeHandler = (node: ComarkElement, state: State, parent?: ComarkElement) => string | Promise<string>
+
+/**
+ * A node handler rule that pairs a match predicate with a handler function.
+ * When `match` returns true for a node, the associated `handler` is used to render it.
+ */
+export type ConditionalNodeHandler = {
+  match: (node: ComarkElement) => boolean
+  handler: NodeHandler
+}
 
 /**
  * The State of the renderer
@@ -193,7 +201,7 @@ export interface RenderOptions {
   /**
    * Additional node handlers to pass to the renderer
    */
-  components?: Record<string, NodeHandler>
+  components?: Record<string, NodeHandler | ConditionalNodeHandler>
   /**
    * Additional data to pass to the renderer nodes, can be used to pass pre-fetched data to the renderer nodes
    */
