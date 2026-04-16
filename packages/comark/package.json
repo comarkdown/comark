@@ -49,16 +49,12 @@
     "release:dry": "release-it --dry-run"
   },
   "peerDependencies": {
-    "@vitejs/devtools-kit": "catalog:",
     "beautiful-mermaid": "catalog:",
     "katex": "catalog:",
     "shiki": "catalog:",
     "vite": "catalog:"
   },
   "peerDependenciesMeta": {
-    "@vitejs/devtools-kit": {
-      "optional": true
-    },
     "shiki": {
       "optional": true
     },
@@ -73,7 +69,6 @@
     }
   },
   "devDependencies": {
-    "@vitejs/devtools-kit": "catalog:",
     "@json-render/core": "catalog:",
     "@nuxt/kit": "catalog:",
     "@shikijs/primitive": "catalog:",

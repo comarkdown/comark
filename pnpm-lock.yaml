@@ -99,9 +99,6 @@ catalogs:
     '@vitejs/devtools':
       specifier: ^0.1.0
       version: 0.1.13
-    '@vitejs/devtools-kit':
-      specifier: ^0.1.0
-      version: 0.1.13
     '@vitejs/plugin-react':
       specifier: ^6.0.1
       version: 6.0.1
@@ -909,9 +906,6 @@ importers:
       '@types/markdown-it':
         specifier: 'catalog:'
         version: 14.1.2
-      '@vitejs/devtools-kit':
-        specifier: 'catalog:'
-        version: 0.1.13(typescript@5.9.3)(vite@8.0.8)(ws@8.20.0)
       github-slugger:
         specifier: 'catalog:'
         version: 2.0.0
