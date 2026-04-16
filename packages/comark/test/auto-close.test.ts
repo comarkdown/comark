@@ -543,7 +543,6 @@ describe('frontmatter', () => {
     const expected = 'Some content\n---\nMore content'
     expect(autoCloseMarkdown(input)).toBe(expected)
   })
-
 })
 
 describe('link', () => {
