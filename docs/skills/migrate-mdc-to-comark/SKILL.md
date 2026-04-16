@@ -30,10 +30,11 @@ The migration has two parts: **Core Package** (programmatic API) and **Nuxt Modu
 | `@nuxtjs/mdc` | `comark` |
 |---|---|
 | `parseMarkdown(md, opts)` | `parse(md, opts)` from `comark` |
-| `createMarkdownParser(opts)` (async) | `createParse(opts)` (sync) |
+| `createMarkdownParser(opts)` (async) | `createParse(opts)` (sync — no await) |
 | `stringifyMarkdown(body, data)` | `renderMarkdown(tree)` from `comark/render` |
 | `result.body` (`MDCRoot`) | `tree.nodes` (`ComarkNode[]`) |
 | `result.data` | `tree.frontmatter` |
+| `result.data.title` | `tree.frontmatter.title` |
 | `result.toc` | `tree.meta.toc` (requires `toc` plugin) |
 | `result.excerpt` | `tree.meta.summary` (requires `summary` plugin) |
 
