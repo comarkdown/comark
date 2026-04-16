@@ -56,6 +56,10 @@ catalog:
 
   # Vue
   vue: ^3.5.32
+  '@vue/runtime-core': ^3.5.32
+  '@vue/runtime-dom': ^3.5.32
+  '@vue/reactivity': ^3.5.32
+  '@vue/shared': ^3.5.32
   '@vue/server-renderer': ^3.5.32
   '@vue/compiler-core': ^3.5.32
   '@vitejs/plugin-vue': ^6.0.5
