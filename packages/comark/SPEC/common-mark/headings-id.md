@@ -65,28 +65,28 @@
     [
       "h3",
       {
-        "id": "slash-in-title"
+        "id": "ending-space-slash-in-title"
       },
       "Slash - in - Title"
     ],
     [
       "h3",
       {
-        "id": "starting-dash"
+        "id": "ending-space-starting-dash"
       },
       "-Starting dash"
     ],
     [
       "h3",
       {
-        "id": "ending-dash"
+        "id": "ending-space-ending-dash"
       },
       "Ending dash-"
     ],
     [
       "h3",
       {
-        "id": "dash"
+        "id": "ending-space-dash"
       },
       "-Dash-"
     ]
@@ -102,10 +102,10 @@
 <h2 id="c-great">C. Great</h2>
 <h2 id="_1-introduction">1. Introduction</h2>
 <h2 id="ending-space">ending space</h2>
-<h3 id="slash-in-title">Slash - in - Title</h3>
-<h3 id="starting-dash">-Starting dash</h3>
-<h3 id="ending-dash">Ending dash-</h3>
-<h3 id="dash">-Dash-</h3>
+<h3 id="ending-space-slash-in-title">Slash - in - Title</h3>
+<h3 id="ending-space-starting-dash">-Starting dash</h3>
+<h3 id="ending-space-ending-dash">Ending dash-</h3>
+<h3 id="ending-space-dash">-Dash-</h3>
 ```
 
 ## Markdown

@@ -48,6 +48,10 @@ Comark's plugin system extends markdown functionality with specialized features.
   ::card{icon="i-lucide-braces" title="JSON Render" to="/plugins/core/json-render"}
   Transform JSON Render specs into UI components using `json-render` or `yaml-render` code blocks
   ::
+
+  ::card{icon="i-lucide-quote" title="Punctuation" to="/plugins/core/punctuation"}
+  Convert plain-text punctuation into typographically correct Unicode characters
+  ::
 ::
 
 ## Guides

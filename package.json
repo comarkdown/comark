@@ -70,6 +70,13 @@
     "@comark/nuxt": "workspace:*",
     "@comark/html": "workspace:*",
     "@comark/ansi": "workspace:*",
-    "@unhead/vue": "catalog:"
+    "@unhead/vue": "catalog:",
+    "vue": "catalog:",
+    "@vue/runtime-core": "catalog:",
+    "@vue/runtime-dom": "catalog:",
+    "@vue/server-renderer": "catalog:",
+    "@vue/compiler-core": "catalog:",
+    "@vue/reactivity": "catalog:",
+    "@vue/shared": "catalog:"
   }
 }

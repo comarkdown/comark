@@ -25,6 +25,7 @@ const INLINE_TAG_MAP: Record<string, string> = {
 
 interface ProcessState {
   headingSlugCounts: Map<string, number>
+  headingStack: Array<{ level: number, id: string }>
   preservePositions: boolean
 }
 
@@ -36,6 +37,7 @@ interface ProcessState {
 export function marmdownItTokensToComarkTree(tokens: any[], options: { startLine: number, preservePositions: boolean } = { startLine: 0, preservePositions: false }): ComarkNode[] {
   const state: ProcessState = {
     headingSlugCounts: new Map<string, number>(),
+    headingStack: [],
     preservePositions: options.preservePositions,
   }
   const nodes: ComarkNode[] = []
@@ -372,14 +374,14 @@ function processBlockToken(tokens: any[], startIndex: number, insideNestedContex
   }
 
   if (token.type === 'heading_open') {
-    const level = token.tag.replace('h', '')
+    const level = Number.parseInt(token.tag.replace('h', ''), 10)
     const headingTag = `h${level}` as 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
     // Process heading children with inHeading flag for Comark component handling
     const children = processBlockChildren(tokens, startIndex + 1, 'heading_close', true, true, insideNestedContext, state)
     if (children.nodes.length > 0) {
       // Always generate ID for all headings, no exceptions
       const textContent = extractTextContent(children.nodes)
-      const headingId = uniqueSlug(slugify(textContent), state)
+      const headingId = uniqueSlug(slugify(textContent), level, state)
 
       // Always attach ID to the heading element itself
       return { node: [headingTag, { id: headingId }, ...children.nodes] as ComarkNode, nextIndex: children.nextIndex + 1 }
@@ -638,8 +640,24 @@ function slugify(text: string): string {
 /**
  * Return a unique slug by appending a numeric suffix for duplicates
  */
-function uniqueSlug(slug: string, state?: ProcessState): string {
+function uniqueSlug(slug: string, level: number, state?: ProcessState): string {
   if (!state) return slug
+  // Build hierarchical ID: pop headings at same or deeper level, then prefix with parent's ID
+  // Pop headings at same level or deeper
+  while (state.headingStack.length > 0 && state.headingStack[state.headingStack.length - 1].level >= level) {
+    state.headingStack.pop()
+  }
+  // Use parent's full ID as prefix (h1 doesn't prefix children)
+  if (state.headingStack.length > 0) {
+    const parent = state.headingStack[state.headingStack.length - 1]
+    if (parent.level >= 2) {
+      slug = parent.id + '-' + slug
+    }
+  }
+
+  // Push onto stack for child headings to reference
+  state.headingStack.push({ level, id: slug })
+
   const count = state.headingSlugCounts.get(slug) ?? 0
   state.headingSlugCounts.set(slug, count + 1)
   return count === 0 ? slug : `${slug}-${count}`
