@@ -62,7 +62,7 @@ export interface ComarkTree {
 // #endregion
 
 // #region Renderer types and interfaces
-export interface Context {
+export interface ContextBase {
   /**
    * true if node is inside html scope
    */
@@ -108,6 +108,18 @@ export interface Context {
    */
   blockAttributesStyle?: 'frontmatter' | 'codeblock'
 
+  [key: string]: unknown
+}
+
+export interface CreateContext extends ContextBase {
+
+  /**
+   * user defined node handlers
+   */
+  handlers: Record<string, NodeHandler | ConditionalNodeHandler>
+}
+
+export interface Context extends ContextBase {
   /**
    * user defined node handlers
    */
@@ -117,8 +129,6 @@ export interface Context {
    * The conditional handlers of the renderer
    */
   conditionalHandlers: ConditionalNodeHandler[]
-
-  [key: string]: unknown
 }
 
 /**

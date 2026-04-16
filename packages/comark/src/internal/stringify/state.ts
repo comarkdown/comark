@@ -1,6 +1,6 @@
 import { handlers as defaultHandlers } from './handlers/index.ts'
 import type { State, Context } from 'comark/render'
-import type { ComarkElement, ComarkNode, ConditionalNodeHandler, NodeHandler } from 'comark'
+import type { ComarkElement, ComarkNode, ConditionalNodeHandler, CreateContext, NodeHandler } from 'comark'
 import { pascalCase } from '../../utils/index.ts'
 
 function findHandler(ctx: Context, node: ComarkElement): NodeHandler | undefined {
@@ -67,7 +67,7 @@ export async function flow(node: ComarkElement, state: State, parent?: ComarkEle
   return result
 }
 
-export function createState(ctx: Partial<Context> = {}): State {
+export function createState(ctx: Partial<CreateContext> = {}): State {
   const conditionalHandlers: ConditionalNodeHandler[] = []
   const handlers = {} as Record<string, NodeHandler>
 
