@@ -1,5 +1,6 @@
 {
-  "name": "Comark",
+  "name": "comark",
+  "type": "module",
   "scripts": {
     "dev": "nuxt dev --extends docus",
     "build": " pnpm --filter '../' run build && nuxt build --extends docus"
@@ -24,6 +25,7 @@
   },
   "devDependencies": {
     "@tailwindcss/typography": "catalog:",
+    "@nuxt/devtools-kit": "catalog:",
     "@types/splitpanes": "catalog:"
   }
 }
