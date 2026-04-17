@@ -220,8 +220,14 @@ function closeInlineMarkersLinear(line: string): string {
     const prevCh = i > 0 ? line[i - 1] : ''
     const ch = line[i]
 
-    if (ch === '{' && prevCh !== ' ') { inAttributes++; continue }
-    if (ch === '}') { if (inAttributes > 0) inAttributes--; continue }
+    if (ch === '{' && prevCh !== ' ') {
+      inAttributes++
+      continue
+    }
+    if (ch === '}') {
+      if (inAttributes > 0) inAttributes--
+      continue
+    }
     if (inAttributes > 0) continue
 
     if (ch === '*') {

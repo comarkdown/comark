@@ -1,3 +1,4 @@
+// @ts-expect-error - ignore @nuxtjs/mdc types
 import type { MDCRoot } from '@nuxtjs/mdc'
 import type { ComarkTree } from 'comark'
 import remarkGFM from 'remark-gfm'
