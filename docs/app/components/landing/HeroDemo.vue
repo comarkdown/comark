@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { codeToHtml } from 'shiki'
+
 const props = defineProps<{
   demoMarkdown: string
 }>()
@@ -20,7 +22,6 @@ watch(rawText, (text) => {
       highlightedSource.value = ''
       return
     }
-    const { codeToHtml } = await import('shiki')
     highlightedSource.value = await codeToHtml(text, {
       lang: 'mdc',
       themes: { light: 'github-light', dark: 'github-dark' },
