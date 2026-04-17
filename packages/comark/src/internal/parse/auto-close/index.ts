@@ -214,8 +214,15 @@ function closeInlineMarkersLinear(line: string): string {
   const doubleUnderscorePositions: number[] = []
 
   // Single-pass scan through the line - O(n)
+  // Skip markers inside attribute scopes {...}
+  let inAttributes = 0
   for (let i = 0; i < len; i++) {
+    const prevCh = i > 0 ? line[i - 1] : ''
     const ch = line[i]
+
+    if (ch === '{' && prevCh !== ' ') { inAttributes++; continue }
+    if (ch === '}') { if (inAttributes > 0) inAttributes--; continue }
+    if (inAttributes > 0) continue
 
     if (ch === '*') {
       asteriskCount++
@@ -228,10 +235,16 @@ function closeInlineMarkersLinear(line: string): string {
       }
     }
     else if (ch === '_') {
-      underscoreCount++
-      // Track __ positions (for bold)
-      if (i + 1 < len && line[i + 1] === '_') {
-        doubleUnderscorePositions.push(i)
+      // Skip intra-word underscores (not emphasis delimiters per CommonMark)
+      const nextCh = i + 1 < len ? line[i + 1] : ''
+      const prevIsWord = (prevCh >= 'a' && prevCh <= 'z') || (prevCh >= 'A' && prevCh <= 'Z') || (prevCh >= '0' && prevCh <= '9')
+      const nextIsWord = (nextCh >= 'a' && nextCh <= 'z') || (nextCh >= 'A' && nextCh <= 'Z') || (nextCh >= '0' && nextCh <= '9')
+      if (!(prevIsWord && nextIsWord)) {
+        underscoreCount++
+        // Track __ positions (for bold)
+        if (nextCh === '_') {
+          doubleUnderscorePositions.push(i)
+        }
       }
     }
     else if (ch === '~') {
