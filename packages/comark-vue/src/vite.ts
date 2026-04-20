@@ -112,7 +112,7 @@ function generateComponentsModule(files: string[]): string {
  * })
  * ```
  */
-export default function comark(): Plugin {
+export default function comark(opts: { prose?: boolean } = {}): Plugin {
   let proseDir: string
   let proseFilesCache: string[] | null = null
 
@@ -169,6 +169,7 @@ export default function comark(): Plugin {
     },
 
     async transform(code) {
+      if (opts.prose === false) return null
       if (!code.includes('createApp') || !code.includes('.mount(')) return null
       // Skip if already injected
       if (code.includes(VIRTUAL_COMPONENTS_ID)) return null

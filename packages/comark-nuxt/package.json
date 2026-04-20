@@ -41,7 +41,8 @@
   "dependencies": {
     "comark": "catalog:",
     "@comark/vue": "catalog:",
-    "@nuxt/kit": "catalog:"
+    "@nuxt/kit": "catalog:",
+    "shiki": "catalog:"
   },
   "devDependencies": {
     "@vue/server-renderer": "catalog:",
