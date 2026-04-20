@@ -108,7 +108,18 @@ export function createParse(options: ParseOptions = {}): ComarkParseFn {
 
     const { content, data } = parseFrontmatter(state.markdown)
 
-    state.tokens = parser.parse(content, {})
+    try {
+      state.tokens = parser.parse(content, {})
+    }
+    catch (e) {
+      // in case of streaming, return the previous output if parsing fails
+      // This is to avoid resetting the tree to an empty state on failure
+      // resetting the tree will re-redner whole tree
+      if (opts.streaming && prevOutput) {
+        return prevOutput
+      }
+      throw e
+    }
 
     // Convert tokens to Comark structure
     let nodes = marmdownItTokensToComarkTree(state.tokens, {

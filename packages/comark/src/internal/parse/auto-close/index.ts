@@ -214,8 +214,52 @@ function closeInlineMarkersLinear(line: string): string {
   const doubleUnderscorePositions: number[] = []
 
   // Single-pass scan through the line - O(n)
+  // Skip markers inside attribute scopes {...} and link text [...] / link URL (...)
+  let inAttributes = 0
+  let inLinkText = 0
+  let inLinkUrl = 0
   for (let i = 0; i < len; i++) {
+    const prevCh = i > 0 ? line[i - 1] : ''
     const ch = line[i]
+
+    if (ch === '{' && prevCh !== ' ') {
+      inAttributes++
+      continue
+    }
+    if (ch === '}') {
+      if (inAttributes > 0) inAttributes--
+      continue
+    }
+    if (inAttributes > 0) continue
+
+    if (ch === '[') {
+      bracketBalance++
+      lastBracketPos = i
+      inLinkText++
+      continue
+    }
+    if (ch === ']') {
+      bracketBalance--
+      lastBracketPos = i
+      if (inLinkText > 0) inLinkText--
+      continue
+    }
+    if (ch === '(') {
+      if (lastBracketPos >= 0 && i > lastBracketPos) {
+        parenBalance++
+        if (prevCh === ']') inLinkUrl++
+      }
+      continue
+    }
+    if (ch === ')') {
+      if (lastBracketPos >= 0 && i > lastBracketPos) {
+        parenBalance--
+        if (inLinkUrl > 0) inLinkUrl--
+      }
+      continue
+    }
+
+    if (inLinkText > 0 || inLinkUrl > 0) continue
 
     if (ch === '*') {
       asteriskCount++
@@ -229,7 +273,6 @@ function closeInlineMarkersLinear(line: string): string {
     }
     else if (ch === '_') {
       // Skip intra-word underscores (not emphasis delimiters per CommonMark)
-      const prevCh = i > 0 ? line[i - 1] : ''
       const nextCh = i + 1 < len ? line[i + 1] : ''
       const prevIsWord = (prevCh >= 'a' && prevCh <= 'z') || (prevCh >= 'A' && prevCh <= 'Z') || (prevCh >= '0' && prevCh <= '9')
       const nextIsWord = (nextCh >= 'a' && nextCh <= 'z') || (nextCh >= 'A' && nextCh <= 'Z') || (nextCh >= '0' && nextCh <= '9')
@@ -256,24 +299,6 @@ function closeInlineMarkersLinear(line: string): string {
       }
       else {
         dollarCount++ // Single $ for inline math
-      }
-    }
-    else if (ch === '[') {
-      bracketBalance++
-      lastBracketPos = i
-    }
-    else if (ch === ']') {
-      bracketBalance--
-      lastBracketPos = i
-    }
-    else if (ch === '(') {
-      if (lastBracketPos >= 0 && i > lastBracketPos) {
-        parenBalance++
-      }
-    }
-    else if (ch === ')') {
-      if (lastBracketPos >= 0 && i > lastBracketPos) {
-        parenBalance--
       }
     }
   }
