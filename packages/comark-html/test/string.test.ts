@@ -128,4 +128,21 @@ More content
     expect(html).toContain('<div class="alert-warning">')
     expect(html).toContain('Message')
   })
+
+  it('renders conditional component handler', async () => {
+    const tree = await parse('::alert{type="info"}\nInfo message\n::\n\n::alert{type="warning"}\nWarning message\n::')
+    const html = await renderHTML(tree, {
+      components: {
+        infoAlert: {
+          match: node => node[0] === 'alert' && node[1].type === 'info',
+          handler: async ([_tag, _attrs, ...children], { render }) => {
+            return `<div class="info-box">${await render(children)}</div>`
+          },
+        },
+      },
+    })
+
+    expect(html).toContain('<div class="info-box">')
+    expect(html).toContain('Info message')
+  })
 })

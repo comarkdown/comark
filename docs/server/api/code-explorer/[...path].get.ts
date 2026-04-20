@@ -1,7 +1,6 @@
 import { parse } from 'comark'
 import type { ComarkTree } from 'comark'
 import highlight from 'comark/plugins/highlight'
-import astroLanguage from '@shikijs/langs/astro'
 
 const EXT_TO_LANG: Record<string, string> = {
   ts: 'typescript',
@@ -176,7 +175,10 @@ export default defineEventHandler(async (event) => {
       light: (await import('@shikijs/themes/material-theme-lighter')).default,
       dark: (await import('@shikijs/themes/material-theme-palenight')).default,
     },
-    languages: [astroLanguage],
+    languages: [
+      (await import('@shikijs/langs/python')).default,
+      (await import('@shikijs/langs/astro')).default,
+    ],
   })
 
   const fileResults: Record<string, ComarkTree> = {}

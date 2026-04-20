@@ -72,6 +72,7 @@ export default defineAppConfig({
         'astro.config.mjs': 'i-simple-icons:astro',
         'astro': 'i-simple-icons:astro',
         'md': 'i-custom-comark',
+        'mdc': 'i-custom-comark',
         'react': 'i-logos-react',
         'html': 'i-vscode-icons-file-type-html',
         'svelte': 'i-simple-icons-svelte',

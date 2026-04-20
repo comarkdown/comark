@@ -5,6 +5,7 @@
     fill="none"
     role="img"
     aria-label="Comark"
+    class="text-black dark:text-white"
   >
     <path
       stroke="currentColor"
