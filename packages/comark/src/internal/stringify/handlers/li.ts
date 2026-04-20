@@ -1,5 +1,10 @@
 import type { State } from 'comark/render'
 import type { ComarkElement, ComarkNode } from 'comark'
+import { indent } from '../indent.ts'
+
+// Block elements that need explicit indentation in list items.
+// Note: ol/ul are handled by their own handlers which manage indentation via listIndent context.
+const blockElements = new Set(['pre', 'blockquote', 'table'])
 
 export async function li(node: ComarkElement, state: State) {
   const children = node.slice(2) as ComarkNode[]
@@ -18,9 +23,20 @@ export async function li(node: ComarkElement, state: State) {
     prefix += input[1].checked || input[1][':checked'] ? '[x] ' : '[ ] '
   }
 
+  const prefixWidth = prefix.length
   let result = ''
+
   for (const child of children) {
-    result += await state.one(child, state, node)
+    const rendered = await state.one(child, state, node)
+
+    if (Array.isArray(child) && blockElements.has(child[0] as string)) {
+      // Block-level child: put on its own line and indent to align with list prefix
+      const indented = indent(rendered, { width: prefixWidth })
+      result = result.trimEnd() + '\n' + indented.trimEnd() + '\n'
+    }
+    else {
+      result += rendered
+    }
   }
   result = result.trim()
 

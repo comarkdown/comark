@@ -5,7 +5,7 @@ import { indent } from '../indent.ts'
 export async function ul(node: ComarkElement, state: State) {
   const children = node.slice(2) as ComarkNode[]
 
-  const revert = state.applyContext({ list: true, order: false })
+  const revert = state.applyContext({ list: true, order: false, listIndent: 2 })
 
   let result = ''
   for (const child of children) {
@@ -14,7 +14,7 @@ export async function ul(node: ComarkElement, state: State) {
   result = result.trim()
 
   if (revert.list) {
-    result = '\n' + indent(result)
+    result = '\n' + indent(result, { width: revert.listIndent as number || 2 })
   }
   else {
     result = result + state.context.blockSeparator

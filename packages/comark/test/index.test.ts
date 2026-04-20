@@ -255,3 +255,67 @@ describe('Comark Tests', () => {
     })
   })
 })
+
+describe('custom components', () => {
+  it('renders with custom component handler in markdown', async () => {
+    const tree = await parse('::alert{type="warning"}\nWatch out!\n::')
+    const md = await renderMarkdown(tree, {
+      components: {
+        alert: async ([, attrs, ...children], { render }) => {
+          return `> [!${attrs.type}]\n> ${(await render(children)).trim()}\n`
+        },
+      },
+    })
+    expect(md).toContain('> [!warning]')
+    expect(md).toContain('Watch out!')
+  })
+
+  it('renders with custom component handler in html', async () => {
+    const tree = await parse('::alert{type="info"}\nHello!\n::')
+    const html = await renderHTMLForTest(tree, {
+      components: {
+        alert: async ([, attrs, ...children], { render }) => {
+          return `<div class="alert alert-${attrs.type}">${await render(children)}</div>`
+        },
+      },
+    })
+    expect(html).toContain('<div class="alert alert-info">')
+    expect(html).toContain('Hello!')
+  })
+
+  it('renders with conditional handler in markdown', async () => {
+    const tree = await parse('::alert{type="info"}\nInfo\n::\n\n::alert{type="warning"}\nWarning\n::')
+    const md = await renderMarkdown(tree, {
+      components: {
+        infoAlert: {
+          match: node => node[0] === 'alert' && node[1].type === 'info',
+          handler: async ([, , ...children], { render }) => {
+            return `> **Info:** ${(await render(children)).trim()}\n`
+          },
+        },
+      },
+    })
+    expect(md).toContain('> **Info:** Info')
+    // warning alert falls through to default
+    expect(md).toContain('::alert{type="warning"}')
+  })
+
+  it('renders with conditional handler in html', async () => {
+    const tree = await parse('::alert{type="info"}\nInfo\n::\n\n::alert{type="warning"}\nWarning\n::')
+    const html = await renderHTMLForTest(tree, {
+      components: {
+        infoAlert: {
+          match: node => node[0] === 'alert' && node[1].type === 'info',
+          handler: async ([, , ...children], { render }) => {
+            return `<div class="info-box">${await render(children)}</div>`
+          },
+        },
+      },
+    })
+    expect(html).toContain('<div class="info-box">')
+    expect(html).toContain('Info')
+    // warning alert falls through to default
+    expect(html).not.toContain('<div class="info-box">Warning')
+    expect(html).toContain('Warning')
+  })
+})

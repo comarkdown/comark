@@ -113,7 +113,7 @@ function generateComponentsModule(files: string[]): string {
  * })
  * ```
  */
-export default function comark(): Plugin[] {
+export default function comark(opts: { prose?: boolean } = {}): Plugin[] {
   let proseDir: string
   let proseFilesCache: string[] | null = null
 
@@ -185,6 +185,7 @@ export default function comark(): Plugin[] {
       },
 
       configureServer(server) {
+        if (opts.prose === false) return null
         if (!proseDir) return
 
         server.watcher.add(proseDir)

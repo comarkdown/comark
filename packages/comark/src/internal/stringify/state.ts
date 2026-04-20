@@ -1,7 +1,23 @@
-import { handlers } from './handlers/index.ts'
+import { handlers as defaultHandlers } from './handlers/index.ts'
 import type { State, Context } from 'comark/render'
-import type { ComarkElement, ComarkNode } from 'comark'
+import type { ComarkElement, ComarkNode, ConditionalNodeHandler, CreateContext, NodeHandler } from 'comark'
 import { pascalCase } from '../../utils/index.ts'
+
+function findHandler(ctx: Context, node: ComarkElement): NodeHandler | undefined {
+  const userHandler = ctx.handlers[node[0] as string] || ctx.handlers[pascalCase(node[0] as string)]
+
+  if (typeof userHandler === 'function') {
+    return userHandler
+  }
+
+  for (const handler of ctx.conditionalHandlers) {
+    if (handler?.match(node)) {
+      return handler.handler
+    }
+  }
+
+  return userHandler
+}
 
 /**
  * Render a single node
@@ -22,7 +38,7 @@ export async function one(node: ComarkNode, state: State, parent?: ComarkElement
     return await state.handlers.comment(node as unknown as ComarkElement, state)
   }
 
-  const userHandler = state.context.handlers[node[0] as string] || state.context.handlers[pascalCase(node[0] as string)]
+  const userHandler = findHandler(state.context, node)
   if (userHandler) {
     return await userHandler(node, state, parent)
   }
@@ -31,6 +47,7 @@ export async function one(node: ComarkNode, state: State, parent?: ComarkElement
     return await state.handlers.html(node, state, parent)
   }
 
+  // fallback to default handlers
   const nodeHandler = state.handlers[node[0] as string]
   if (nodeHandler) {
     return await nodeHandler(node, state, parent)
@@ -50,19 +67,32 @@ export async function flow(node: ComarkElement, state: State, parent?: ComarkEle
   return result
 }
 
-export function createState(ctx: Partial<Context> = {}): State {
+export function createState(ctx: Partial<CreateContext> = {}): State {
+  const conditionalHandlers: ConditionalNodeHandler[] = []
+  const handlers = {} as Record<string, NodeHandler>
+
+  for (const [key, value] of Object.entries(ctx.handlers || {})) {
+    if (typeof value === 'function') {
+      handlers[key] = value
+    }
+    else {
+      conditionalHandlers.push(value)
+    }
+  }
+
   const context = {
     ...ctx,
     blockSeparator: ctx.blockSeparator || '\n\n',
     format: ctx.format || 'markdown/comark',
-    handlers: ctx.handlers || {}, // user defined node handlers
+    handlers, // user defined node handlers
+    conditionalHandlers,
     blockAttributesStyle: ctx.blockAttributesStyle || 'codeblock',
     // Enable html mode for text/html format
     html: ctx.format === 'text/html',
   } as Context
 
   const state = {
-    handlers,
+    handlers: defaultHandlers,
     context,
     one,
     flow,
@@ -94,12 +124,14 @@ export function createState(ctx: Partial<Context> = {}): State {
 }
 
 export const state: State = {
-  handlers,
+  handlers: defaultHandlers,
+  conditionalHandlers: [],
   data: {},
   context: {
     blockSeparator: '\n\n',
     format: 'markdown/comark',
     handlers: {}, // user defined node handlers
+    conditionalHandlers: [], // user defined conditional handlers
     blockAttributesStyle: 'codeblock',
   },
   flow,

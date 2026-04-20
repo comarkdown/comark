@@ -4,6 +4,7 @@ import mermaid, { Mermaid } from '@comark/vue/plugins/mermaid'
 import emoji from '@comark/vue/plugins/emoji'
 import ProsePre from './landing/ProsePre.vue'
 import highlight from 'comark/plugins/highlight'
+import Python from '@shikijs/langs/python'
 import githubLight from '@shikijs/themes/github-light'
 import githubDark from '@shikijs/themes/github-dark'
 
@@ -29,6 +30,9 @@ export default defineComarkComponent({
   name: 'ComarkDocs',
   plugins: [
     highlight({
+      languages: [
+        Python,
+      ],
       themes: {
         light: githubLight,
         dark: githubDark,
