@@ -2,7 +2,7 @@ import type { PropType, VNode } from 'vue'
 import type { ComponentManifest, ComarkContextProvider, ComarkElement, ComarkNode, ComarkTree, NodeRenderData } from 'comark'
 import { computed, defineAsyncComponent, defineComponent, getCurrentInstance, h, inject, onErrorCaptured, ref, toRaw } from 'vue'
 import { findLastTextNodeAndAppendNode, getCaret } from '../utils/caret.ts'
-import { get, pascalCase } from 'comark/utils'
+import { pascalCase, resolveAttributes } from 'comark/utils'
 
 // Cache for dynamically resolved components
 const asyncComponentCache = new Map<string, any>()
@@ -25,20 +25,6 @@ function getProps(node: ComarkNode): Record<string, any> {
     return (node[1] as Record<string, any>) || {}
   }
   return {}
-}
-
-function parsePropValue(value: string, data: NodeRenderData): any {
-  if (value === 'true') return true
-  if (value === 'false') return false
-  if (value === 'null') return null
-  try {
-    return JSON.parse(value)
-  }
-  catch {
-    return get(data, value)
-  }
-
-  return value
 }
 
 /**
@@ -116,21 +102,16 @@ function renderNode(
 
     const component = customComponent || tag
 
-    // Prepare props
-    // Prepare props — use for...in instead of Object.entries() to avoid intermediate array allocation
+    // Resolve `:prefix` bindings and let Vue-specific attribute mapping run
+    // on top (e.g. `className` → `class`).
+    const resolved = resolveAttributes(nodeProps, renderData, { parseJson: true })
     const props: Record<string, any> = {}
-    for (const k in nodeProps) {
-      if (k === '$') {
-        continue
-      }
+    for (const k in resolved) {
       if (k === 'className') {
-        props.class = nodeProps[k]
-      }
-      else if (k.charCodeAt(0) === 58 /* ':' */) {
-        props[k.substring(1)] = parsePropValue(nodeProps[k], renderData)
+        props.class = resolved[k]
       }
       else {
-        props[k] = nodeProps[k]
+        props[k] = resolved[k]
       }
     }
 

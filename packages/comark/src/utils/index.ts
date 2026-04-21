@@ -189,3 +189,8 @@ export function get(data: unknown, key: string): unknown {
   return value
 }
 // #endregion
+
+// Re-export the shared attribute resolvers so framework renderers can apply the
+// same `:prefix` semantics as the HTML/ANSI handlers without duplicating logic.
+export { resolveAttributes, resolveAttribute } from '../internal/stringify/attributes.ts'
+export type { ResolveAttributesOptions } from '../internal/stringify/attributes.ts'

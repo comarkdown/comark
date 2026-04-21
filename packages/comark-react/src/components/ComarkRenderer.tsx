@@ -1,6 +1,6 @@
 import type { ComarkElement, ComarkNode, ComarkTree, ComponentManifest, NodeRenderData } from 'comark'
 import React, { lazy, Suspense, useMemo } from 'react'
-import { pascalCase, camelCase, get } from 'comark/utils'
+import { pascalCase, camelCase, resolveAttributes } from 'comark/utils'
 import { findLastTextNodeAndAppendNode, getCaret } from '../utils/caret'
 
 /**
@@ -40,18 +40,6 @@ function getProps(node: ComarkNode): Record<string, any> {
     return (node[1] as Record<string, any>) || {}
   }
   return {}
-}
-
-function parsePropValue(value: string, data: NodeRenderData): any {
-  if (value === 'true') return true
-  if (value === 'false') return false
-  if (value === 'null') return null
-  try {
-    return JSON.parse(value)
-  }
-  catch {
-    return get(data, value)
-  }
 }
 
 /**
@@ -129,26 +117,24 @@ function renderNode(
 
     const Component = customComponent || tag
 
-    // Prepare props — use for...in instead of Object.entries() to avoid intermediate array allocation
+    // Resolve `:prefix` bindings, then apply React-specific attribute
+    // remapping (`class` → `className`, string `style` → object, `tabindex`
+    // → `tabIndex`).
+    const resolved = resolveAttributes(nodeProps, renderData, { parseJson: true })
     const props: Record<string, any> = {}
-    for (const k in nodeProps) {
-      if (k === 'className') {
-        props.className = nodeProps[k]
+    for (const k in resolved) {
+      const v = resolved[k]
+      if (k === 'className' || k === 'class') {
+        props.className = v
       }
-      else if (k === 'class') {
-        props.className = nodeProps[k]
-      }
-      else if (k === 'style' && typeof nodeProps[k] === 'string') {
-        props.style = cssStringToObject(nodeProps[k])
+      else if (k === 'style' && typeof v === 'string') {
+        props.style = cssStringToObject(v)
       }
       else if (k === 'tabindex') {
-        props.tabIndex = nodeProps[k]
-      }
-      else if (k.charCodeAt(0) === 58 /* ':' */) {
-        props[k.substring(1)] = parsePropValue(nodeProps[k], renderData)
+        props.tabIndex = v
       }
       else {
-        props[k] = nodeProps[k]
+        props[k] = v
       }
     }
 
@@ -156,29 +142,6 @@ function renderNode(
       props.__node = node
     }
 
-    // Parse special prop values (props starting with :)
-    for (const [propKey, value] of Object.entries(nodeProps)) {
-      if (propKey === '$') {
-        Reflect.deleteProperty(props, propKey)
-      }
-      if (propKey === 'style') {
-        props.style = cssStringToObject(value)
-      }
-      else if (propKey === 'tabindex') {
-        props.tabIndex = value
-        Reflect.deleteProperty(props, propKey)
-      }
-      if (propKey === 'class') {
-        props.className = value
-        Reflect.deleteProperty(props, propKey)
-      }
-      else {
-        if (propKey.startsWith(':')) {
-          props[propKey.substring(1)] = parsePropValue(value, renderData)
-          Reflect.deleteProperty(props, propKey)
-        }
-      }
-    }
     // Add key if provided
     if (key !== undefined) {
       props.key = key

@@ -17,7 +17,7 @@ naturally appears inline after the deepest trailing text node.
 <script lang="ts">
   import type { ComarkNode as ComarkNodeType, ComponentManifest, NodeRenderData } from 'comark'
   import ComarkNode from './ComarkNode.svelte'
-  import { pascalCase, get } from 'comark/utils'
+  import { pascalCase, resolveAttributes } from 'comark/utils'
 
   const EMPTY_RENDER_DATA: NodeRenderData = { frontmatter: {}, meta: {}, data: {}, props: {} }
 
@@ -38,18 +38,6 @@ naturally appears inline after the deepest trailing text node.
   const CARET_TEXT = '\u2009'
   const CARET_STYLE
     = 'background-color: currentColor; display: inline-block; margin-left: 0.25rem; margin-right: 0.25rem; animation: pulse 0.75s cubic-bezier(0.4,0,0.6,1) infinite;'
-
-  function parsePropValue(value: string, data: NodeRenderData): any {
-    if (value === 'true') return true
-    if (value === 'false') return false
-    if (value === 'null') return null
-    try {
-      return JSON.parse(value)
-    }
-    catch {
-      return get(data, value)
-    }
-  }
 
   const VOID_ELEMENTS = new Set([
     'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input',
@@ -92,16 +80,15 @@ naturally appears inline after the deepest trailing text node.
         || components[tag]
         || null
 
-    // Map props: className → class, :prefix → parsed value, rest pass through
-    for (const k in nodeProps) {
+    // Resolve `:prefix` bindings, then apply Svelte attribute remapping
+    // (`className` → `class`).
+    const resolved = resolveAttributes(nodeProps, renderData, { parseJson: true })
+    for (const k in resolved) {
       if (k === 'className') {
-        mappedProps.class = nodeProps[k]
-      }
-      else if (k.charCodeAt(0) === 58 /* ':' */) {
-        mappedProps[k.substring(1)] = parsePropValue(nodeProps[k], renderData)
+        mappedProps.class = resolved[k]
       }
       else {
-        mappedProps[k] = nodeProps[k]
+        mappedProps[k] = resolved[k]
       }
     }
 

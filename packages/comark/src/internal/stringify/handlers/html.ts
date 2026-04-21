@@ -10,7 +10,15 @@ const blockTags = new Set(['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'li', 'ul', 
 
 export async function html(node: ComarkElement, state: State, parent?: ComarkElement) {
   const [tag, attr, ...children] = node
-  const { $ = {}, ...attributes } = attr
+  const { $ = {}, ...rawAttributes } = attr
+
+  // In text/html mode, `one()` has already resolved this element's `:prefix`
+  // bindings against the parent's render context and stored the result in
+  // `state.renderData.props`. Use that for serialization; in markdown modes
+  // (e.g. html-source nodes in mdc output) keep the raw attributes.
+  const attributes = state.context.html
+    ? state.renderData.props
+    : rawAttributes
 
   const hasOnlyTextChildren = children.every(child => typeof child === 'string' || inlineTags.has(String(child?.[0])))
   const hasTextSibling = children.some(child => typeof child === 'string')

@@ -165,6 +165,14 @@ export type State = {
   data: Record<string, any>
 
   /**
+   * Render context — `{ frontmatter, meta, data, props }` — used to
+   * resolve `:prefixed` attributes that reference dot-paths in markdown.
+   * `props` is scoped to the nearest enclosing element as it's mutated during
+   * recursion.
+   */
+  renderData: NodeRenderData
+
+  /**
    * The context of the renderer
    */
   context: Context
