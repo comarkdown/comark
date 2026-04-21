@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { parse } from 'comark'
-import highlight from '@comark/vue/plugins/highlight'
-import math from '@comark/vue/plugins/math'
-import emoji from '@comark/vue/plugins/emoji'
-import mermaid from '@comark/vue/plugins/mermaid'
-import jsonRender from '@comark/vue/plugins/json-render'
-import punctuation from '@comark/vue/plugins/punctuation'
+import highlight from '@comark/nuxt/plugins/highlight'
+import math from '@comark/nuxt/plugins/math'
+import binding, { Binding } from '@comark/nuxt/plugins/binding'
+import emoji from '@comark/nuxt/plugins/emoji'
+import mermaid from '@comark/nuxt/plugins/mermaid'
+import jsonRender from '@comark/nuxt/plugins/json-render'
+import punctuation from '@comark/nuxt/plugins/punctuation'
 
 import { renderMarkdown } from 'comark/render'
 import { Splitpanes, Pane } from 'splitpanes'
@@ -79,6 +80,12 @@ const pluginDefs = [
     label: 'Punctuation',
     icon: 'i-lucide-quote',
     factory: () => punctuation(),
+  },
+  {
+    key: 'binding',
+    label: 'Binding',
+    icon: 'i-lucide-link',
+    factory: () => binding(),
   },
 ] as const
 
@@ -409,6 +416,7 @@ const isMatch = computed(() =>
               >
                 <ComarkDocsRenderer
                   :tree="tree"
+                  :components="{ Binding }"
                 />
               </div>
             </UScrollArea>

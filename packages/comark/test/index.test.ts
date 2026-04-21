@@ -7,6 +7,7 @@ import { renderMarkdown } from 'comark/render'
 import highlight from 'comark/plugins/highlight'
 import type { HighlightOptions } from '../src/plugins/highlight'
 import emoji from '../src/plugins/emoji'
+import binding from '../src/plugins/binding'
 import type { ComarkPlugin } from 'comark'
 import githubDark from 'shiki/dist/themes/github-dark.mjs'
 import minLight from 'shiki/dist/themes/min-light.mjs'
@@ -17,10 +18,11 @@ import type { ParseOptions } from '../src/types'
 import type { ShikiTransformer } from 'shiki'
 import { renderHTMLForTest } from './utils/render-html'
 
-type PluginName = 'emoji'
+type PluginName = 'emoji' | 'binding'
 
 const pluginRegistry: Record<PluginName, () => ComarkPlugin> = {
   emoji,
+  binding,
 }
 
 type TransformerName = 'twoslash'
