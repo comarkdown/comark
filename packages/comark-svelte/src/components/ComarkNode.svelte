@@ -15,27 +15,31 @@ naturally appears inline after the deepest trailing text node.
 ```
 -->
 <script lang="ts">
-  import type { ComarkNode as ComarkNodeType, ComponentManifest } from 'comark'
-    import ComarkNode from './ComarkNode.svelte'
-  import { pascalCase } from 'comark/utils'
+  import type { ComarkNode as ComarkNodeType, ComponentManifest, NodeRenderData } from 'comark'
+  import ComarkNode from './ComarkNode.svelte'
+  import { pascalCase, get } from 'comark/utils'
+
+  const EMPTY_RENDER_DATA: NodeRenderData = { frontmatter: {}, meta: {}, data: {}, props: {} }
 
   let {
     node,
     components = {},
     componentsManifest,
     caretClass = null,
+    renderData = EMPTY_RENDER_DATA,
   }: {
     node: ComarkNodeType
     components?: Record<string, any>
     componentsManifest?: ComponentManifest
     caretClass?: string | null
+    renderData?: NodeRenderData
   } = $props()
 
   const CARET_TEXT = '\u2009'
   const CARET_STYLE
     = 'background-color: currentColor; display: inline-block; margin-left: 0.25rem; margin-right: 0.25rem; animation: pulse 0.75s cubic-bezier(0.4,0,0.6,1) infinite;'
 
-  function parsePropValue(value: string): any {
+  function parsePropValue(value: string, data: NodeRenderData): any {
     if (value === 'true') return true
     if (value === 'false') return false
     if (value === 'null') return null
@@ -43,7 +47,7 @@ naturally appears inline after the deepest trailing text node.
       return JSON.parse(value)
     }
     catch {
-      return value
+      return get(data, value)
     }
   }
 
@@ -94,7 +98,7 @@ naturally appears inline after the deepest trailing text node.
         mappedProps.class = nodeProps[k]
       }
       else if (k.charCodeAt(0) === 58 /* ':' */) {
-        mappedProps[k.substring(1)] = parsePropValue(nodeProps[k])
+        mappedProps[k.substring(1)] = parsePropValue(nodeProps[k], renderData)
       }
       else {
         mappedProps[k] = nodeProps[k]
@@ -103,6 +107,8 @@ naturally appears inline after the deepest trailing text node.
 
     return { isText, tag, isVoid, children, Component, mappedProps }
   })
+
+  let childrenRenderData = $derived<NodeRenderData>({ ...renderData, props: mappedProps })
 </script>
 
 {#if isText}
@@ -118,6 +124,7 @@ naturally appears inline after the deepest trailing text node.
         {components}
         {componentsManifest}
         caretClass={i === children.length - 1 ? caretClass : null}
+        renderData={childrenRenderData}
       />
     {/each}
   </Component>
@@ -131,6 +138,7 @@ naturally appears inline after the deepest trailing text node.
         {components}
         {componentsManifest}
         caretClass={i === children.length - 1 ? caretClass : null}
+        renderData={childrenRenderData}
       />
     {/each}
   </svelte:element>

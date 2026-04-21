@@ -1,6 +1,6 @@
-import type { ComarkElement, ComarkNode, ComarkTree, ComponentManifest } from 'comark'
+import type { ComarkElement, ComarkNode, ComarkTree, ComponentManifest, NodeRenderData } from 'comark'
 import React, { lazy, Suspense, useMemo } from 'react'
-import { pascalCase, camelCase } from 'comark/utils'
+import { pascalCase, camelCase, get } from 'comark/utils'
 import { findLastTextNodeAndAppendNode, getCaret } from '../utils/caret'
 
 /**
@@ -42,7 +42,7 @@ function getProps(node: ComarkNode): Record<string, any> {
   return {}
 }
 
-function parsePropValue(value: string): any {
+function parsePropValue(value: string, data: NodeRenderData): any {
   if (value === 'true') return true
   if (value === 'false') return false
   if (value === 'null') return null
@@ -50,9 +50,8 @@ function parsePropValue(value: string): any {
     return JSON.parse(value)
   }
   catch {
-    // noop
+    return get(data, value)
   }
-  return value
 }
 
 /**
@@ -101,6 +100,7 @@ function renderNode(
   key?: string | number,
   componentsManifest?: ComponentManifest,
   parent?: ComarkNode,
+  renderData: NodeRenderData = { frontmatter: {}, meta: {}, data: {}, props: {} },
 ): React.ReactNode {
   // Handle text nodes (strings)
   if (typeof node === 'string') {
@@ -145,7 +145,7 @@ function renderNode(
         props.tabIndex = nodeProps[k]
       }
       else if (k.charCodeAt(0) === 58 /* ':' */) {
-        props[k.substring(1)] = parsePropValue(nodeProps[k])
+        props[k.substring(1)] = parsePropValue(nodeProps[k], renderData)
       }
       else {
         props[k] = nodeProps[k]
@@ -174,7 +174,7 @@ function renderNode(
       }
       else {
         if (propKey.startsWith(':')) {
-          props[propKey.substring(1)] = parsePropValue(value)
+          props[propKey.substring(1)] = parsePropValue(value, renderData)
           Reflect.deleteProperty(props, propKey)
         }
       }
@@ -189,6 +189,7 @@ function renderNode(
       return React.createElement(Component, props)
     }
 
+    const childrenRenderData: NodeRenderData = { ...renderData, props }
     // Separate template elements (slots) from regular children
     const slots: Record<string, React.ReactNode[]> = {}
     const regularChildren: React.ReactNode[] = []
@@ -223,13 +224,13 @@ function renderNode(
         if (slotName) {
           const slotChildren = getChildren(child)
           slots[slotName] = slotChildren
-            .map((slotChild: ComarkNode, idx: number) => renderNode(slotChild, components, idx, componentsManifest, node))
+            .map((slotChild: ComarkNode, idx: number) => renderNode(slotChild, components, idx, componentsManifest, node, childrenRenderData))
             .filter((slotChild): slotChild is React.ReactNode => slotChild !== null)
           continue
         }
       }
 
-      const rendered = renderNode(child, components, i, componentsManifest, node)
+      const rendered = renderNode(child, components, i, componentsManifest, node, childrenRenderData)
       if (rendered !== null) {
         regularChildren.push(rendered)
       }
@@ -307,6 +308,12 @@ export interface ComarkRendererProps {
   caret?: boolean | { class: string }
 
   /**
+   * Additional data to pass to the renderer — referenced from markdown
+   * via `:`-prefixed props using dot paths (e.g. `:foo="data.user.name"`).
+   */
+  data?: Record<string, unknown>
+
+  /**
    * Additional className for the wrapper div
    */
   className?: string
@@ -339,6 +346,7 @@ export const ComarkRenderer: React.FC<ComarkRendererProps> = ({
   componentsManifest,
   streaming = false,
   caret: caretProp = false,
+  data,
   className,
 }) => {
   const caret = useMemo(() => getCaret(caretProp), [caretProp])
@@ -354,10 +362,17 @@ export const ComarkRenderer: React.FC<ComarkRendererProps> = ({
       }
     }
 
+    const renderData: NodeRenderData = {
+      frontmatter: tree.frontmatter,
+      meta: tree.meta,
+      data: data || {},
+      props: {},
+    }
+
     return nodes
-      .map((node, index) => renderNode(node, customComponents, index, componentsManifest))
+      .map((node, index) => renderNode(node, customComponents, index, componentsManifest, undefined, renderData))
       .filter((child): child is React.ReactNode => child !== null)
-  }, [tree, customComponents, componentsManifest, streaming, caret])
+  }, [tree, customComponents, componentsManifest, streaming, caret, data])
 
   // Wrap in a fragment
   return (

@@ -243,6 +243,25 @@ export interface RenderMarkdownOptions extends RenderOptions {
    */
   frontmatterOptions?: DumpOptions
 }
+
+export interface NodeRenderData {
+  /*
+   * Frontmatter data from the markdown file
+   */
+  frontmatter: Record<string, unknown>
+  /**
+   * Meta information from Comark Tree
+   */
+  meta: Record<string, unknown>
+  /**
+   * Additional data paased to rendere
+   */
+  data: Record<string, unknown>
+  /**
+   * Props from parent node
+   */
+  props: Record<string, unknown>
+}
 // #endregion
 
 export type MarkdownExitPlugin = (md: MarkdownExit) => void
@@ -277,6 +296,7 @@ export interface ComarkContextProvider {
   components: Record<string, any>
   componentManifest: ComponentManifest
 }
+
 export interface ParseOptions {
   /**
    * Whether to automatically unwrap single paragraphs in container components.

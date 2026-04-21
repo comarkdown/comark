@@ -16,6 +16,7 @@ function ComarkContent({
   componentsManifest,
   streaming = false,
   caret = false,
+  data,
   className,
 }: ComarkContentProps) {
   const parsed = use(parsePromise)
@@ -28,6 +29,7 @@ function ComarkContent({
       streaming={streaming}
       className={className}
       caret={caret}
+      data={data}
     />
   )
 }

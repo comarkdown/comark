@@ -40,6 +40,7 @@ and wrap this component in a `<svelte:boundary>` for pending/error states.
     componentsManifest,
     streaming = false,
     caret = false,
+    data,
     class: className = '',
   }: {
     markdown?: string
@@ -49,6 +50,7 @@ and wrap this component in a `<svelte:boundary>` for pending/error states.
     componentsManifest?: ComponentManifest
     streaming?: boolean
     caret?: boolean | { class: string }
+    data?: Record<string, unknown>
     class?: string
   } = $props()
 
@@ -67,5 +69,6 @@ and wrap this component in a `<svelte:boundary>` for pending/error states.
   {componentsManifest}
   {streaming}
   {caret}
+  {data}
   class={className}
 />
