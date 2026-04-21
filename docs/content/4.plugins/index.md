@@ -9,47 +9,47 @@ Comark's plugin system extends markdown functionality with specialized features.
 ## Plugins
 
 ::card-group{cols="2"}
-  ::card{icon="i-lucide-shield-check" title="Security" to="/plugins/core/security"}
+  ::card{icon="i-lucide-shield-check" title="Security" to="/plugins/built-in/security"}
   Sanitize markdown by removing dangerous HTML elements and attributes
   ::
 
-  ::card{icon="i-lucide-smile" title="Emoji" to="/plugins/core/emoji"}
+  ::card{icon="i-lucide-smile" title="Emoji" to="/plugins/built-in/emoji"}
   Convert emoji shortcodes like `:smile:` into emoji characters
   ::
 
-  ::card{icon="i-lucide-code" title="Syntax Highlighting" to="/plugins/core/highlight"}
+  ::card{icon="i-lucide-code" title="Syntax Highlighting" to="/plugins/built-in/highlight"}
   Beautiful code syntax highlighting using Shiki with multi-theme support
   ::
 
-  ::card{icon="i-lucide-file-text" title="Summary" to="/plugins/core/summary"}
+  ::card{icon="i-lucide-file-text" title="Summary" to="/plugins/built-in/summary"}
   Extract content summaries using `<!-- more -->` delimiter
   ::
 
-  ::card{icon="i-lucide-list" title="Table of Contents" to="/plugins/core/toc"}
+  ::card{icon="i-lucide-list" title="Table of Contents" to="/plugins/built-in/toc"}
   Generate hierarchical TOC from headings automatically
   ::
 
-  ::card{icon="i-lucide-bell" title="Alerts" to="/plugins/core/alert"}
+  ::card{icon="i-lucide-bell" title="Alerts" to="/plugins/built-in/alert"}
   Render GitHub-style alert blockquotes with icons and colors
   ::
 
-  ::card{icon="i-lucide-check-square" title="Task List" to="/plugins/core/task-list"}
+  ::card{icon="i-lucide-check-square" title="Task List" to="/plugins/built-in/task-list"}
   Render interactive checkboxes from `[ ]` and `[x]` list syntax
   ::
 
-  ::card{icon="i-simple-icons-mermaid" title="Mermaid" to="/plugins/core/mermaid"}
+  ::card{icon="i-simple-icons-mermaid" title="Mermaid" to="/plugins/built-in/mermaid"}
   Create diagrams and visualizations using Mermaid syntax in code blocks
   ::
 
-  ::card{icon="i-lucide-calculator" title="Math" to="/plugins/core/math"}
+  ::card{icon="i-lucide-calculator" title="Math" to="/plugins/built-in/math"}
   Render LaTeX math formulas using KaTeX with inline and display equations
   ::
 
-  ::card{icon="i-lucide-braces" title="JSON Render" to="/plugins/core/json-render"}
+  ::card{icon="i-lucide-braces" title="JSON Render" to="/plugins/built-in/json-render"}
   Transform JSON Render specs into UI components using `json-render` or `yaml-render` code blocks
   ::
 
-  ::card{icon="i-lucide-quote" title="Punctuation" to="/plugins/core/punctuation"}
+  ::card{icon="i-lucide-quote" title="Punctuation" to="/plugins/built-in/punctuation"}
   Convert plain-text punctuation into typographically correct Unicode characters
   ::
 ::
@@ -57,8 +57,16 @@ Comark's plugin system extends markdown functionality with specialized features.
 ## Guides
 
 ::card-group{cols="2"}
-  ::card{icon="i-lucide-wrench" title="Creating Plugins" to="/plugins/creating-plugins"}
-  Build custom plugins, use existing markdown-it plugins, and transform the AST
+  ::card{icon="i-lucide-wrench" title="Plugin API" to="/plugins/custom/plugin-api"}
+  Define plugins with the ComarkPlugin interface and lifecycle hooks
+  ::
+
+  ::card{icon="i-simple-icons-markdown" title="Markdown-it Plugins" to="/plugins/custom/markdown-it"}
+  Use existing markdown-it plugins or create new parser syntax rules
+  ::
+
+  ::card{icon="i-lucide-git-branch" title="AST API" to="/plugins/custom/ast-api"}
+  Traverse and transform the ComarkTree AST using the visit() utility
   ::
 ::
 
