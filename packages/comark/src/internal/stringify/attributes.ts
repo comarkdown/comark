@@ -41,9 +41,11 @@ export function resolveAttributes(
     if (key === '$') continue
 
     const value = attrs[key]
+    const isBinding = key.charCodeAt(0) === 58 /* ':' */
 
-    if (key.charCodeAt(0) === 58 /* ':' */ && typeof value === 'string') {
-      if (options.parseJson) {
+    if (options.parseJson && isBinding) {
+      // Framework mode: always strip `:` and hand components real JS values.
+      if (typeof value === 'string') {
         try {
           result[key.slice(1)] = JSON.parse(value)
           continue
@@ -54,7 +56,13 @@ export function resolveAttributes(
         result[key.slice(1)] = get(renderData, value)
         continue
       }
+      // Non-string binding value (e.g. an object literal the parser already
+      // decoded) — pass through with the prefix stripped.
+      result[key.slice(1)] = value
+      continue
+    }
 
+    if (isBinding && typeof value === 'string') {
       const resolved = get(renderData, value)
       if (resolved !== undefined) {
         result[key.slice(1)] = resolved
