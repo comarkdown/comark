@@ -1,8 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(mv 2.markdown-it.md 3.markdown-it.md)",
-      "Bash(mv 3.ast-transforms.md 2.ast-api.md)"
-    ]
-  }
-}
