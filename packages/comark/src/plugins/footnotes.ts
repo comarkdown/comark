@@ -1,4 +1,4 @@
-import type { ComarkNode } from 'comark'
+import type { ComarkNode, ComarkElement, ComarkElementAttributes, ConditionalNodeHandler } from 'comark'
 import { defineComarkPlugin } from '../utils/helpers.ts'
 import { visit } from '../utils'
 
@@ -188,3 +188,49 @@ export default defineComarkPlugin((config: FootnotesConfig = {}) => {
     },
   }
 })
+
+/**
+ * Conditional stringify handler for footnotes.
+ *
+ * Converts footnote AST nodes back to standard markdown footnote syntax
+ * (`[^key]` for references, `[^key]: content` for definitions).
+ *
+ * @example
+ * ```ts
+ * import { parse } from 'comark'
+ * import { renderMarkdown } from 'comark/render'
+ * import footnotes, { footnotesStringify } from 'comark/plugins/footnotes'
+ *
+ * const tree = await parse('Hello[^1]\n\n[^1]: World', {
+ *   plugins: [footnotes()]
+ * })
+ *
+ * const md = await renderMarkdown(tree, {
+ *   components: { footnotes: footnotesStringify },
+ * })
+ * ```
+ */
+export const footnotesStringify: ConditionalNodeHandler = {
+  match: (node) => {
+    return node[1].class === 'footnotes' || node[1].class === 'footnote-ref'
+  },
+  handler: (node) => {
+    if (node[1].class === 'footnotes') {
+      const ol = node.find(n => Array.isArray(n) && n[0] === 'ol') as ComarkElement
+      if (!ol) return ''
+      let result = ''
+      for (let i = 2; i < ol.length; i++) {
+        const key = String(((ol[i] as ComarkElement)[1] as ComarkElementAttributes)?.id)?.replace('fn-', '')
+        const value = (ol[i] as ComarkElement)[2] as string
+        result += `[^${key}]: ${value}\n`
+      }
+      return result
+    }
+    if (node[1].class === 'footnote-ref') {
+      const link = node[2] as ComarkElement
+      const key = String((link[1] as ComarkElementAttributes)?.id)?.replace('fnref-', '')
+      return `[^${key}]`
+    }
+    return ''
+  },
+}

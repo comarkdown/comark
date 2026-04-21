@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { parse } from '../src/parse'
-import footnotes from '../src/plugins/footnotes'
+import footnotes, { footnotesStringify } from '../src/plugins/footnotes'
+import { renderMarkdown } from '../src/render'
 
 describe('footnotes plugin', () => {
   it('should parse a simple footnote reference and definition', async () => {
@@ -242,5 +243,52 @@ describe('footnotes plugin', () => {
     )
     expect(secondRef).toBeTruthy()
     expect(secondRef[2]).toBe('[2]')
+  })
+})
+
+describe('footnotes stringify', () => {
+  it('should render footnotes back to markdown syntax', async () => {
+    const md = `Hello world[^1]
+
+[^1]: This is a footnote`
+
+    const tree = await parse(md, { plugins: [footnotes()] })
+    const result = await renderMarkdown(tree, {
+      components: { footnotes: footnotesStringify },
+    })
+
+    expect(result).toContain('[^1]')
+    expect(result).toContain('[^1]: This is a footnote')
+  })
+
+  it('should render multiple footnotes back to markdown', async () => {
+    const md = `First[^1] and second[^2]
+
+[^1]: First note
+[^2]: Second note`
+
+    const tree = await parse(md, { plugins: [footnotes()] })
+    const result = await renderMarkdown(tree, {
+      components: { footnotes: footnotesStringify },
+    })
+
+    expect(result).toContain('[^1]')
+    expect(result).toContain('[^2]')
+    expect(result).toContain('[^1]: First note')
+    expect(result).toContain('[^2]: Second note')
+  })
+
+  it('should render named footnote keys', async () => {
+    const md = `Text[^note]
+
+[^note]: A note`
+
+    const tree = await parse(md, { plugins: [footnotes()] })
+    const result = await renderMarkdown(tree, {
+      components: { footnotes: footnotesStringify },
+    })
+
+    expect(result).toContain('[^note]')
+    expect(result).toContain('[^note]: A note')
   })
 })
