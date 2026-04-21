@@ -7,14 +7,20 @@ options:
 ## Input
 
 ```md
-[highlighted {{ color }} text]{.glow}
+---
+color: red
+---
+
+[highlighted {{ frontmatter.color }} text]{.glow}
 ```
 
 ## AST
 
 ```json
 {
-  "frontmatter": {},
+  "frontmatter": {
+    "color": "red"
+  },
   "meta": {},
   "nodes": [
     [
@@ -29,7 +35,7 @@ options:
         [
           "binding",
           {
-            ":value": "color"
+            ":value": "frontmatter.color"
           }
         ],
         " text"
@@ -42,11 +48,15 @@ options:
 ## HTML
 
 ```html
-<p><span class="glow">highlighted <binding value="color"></binding> text</span></p>
+<p><span class="glow">highlighted red text</span></p>
 ```
 
 ## Markdown
 
 ```md
-[highlighted :binding{:value="color"} text]{.glow}
+---
+color: red
+---
+
+[highlighted {{ frontmatter.color }} text]{.glow}
 ```

@@ -7,14 +7,23 @@ options:
 ## Input
 
 ```md
-Welcome, {{ user.name || guest }}.
+---
+user:
+  name: Ada
+---
+
+Welcome, {{ frontmatter.user.name || guest }}.
 ```
 
 ## AST
 
 ```json
 {
-  "frontmatter": {},
+  "frontmatter": {
+    "user": {
+      "name": "Ada"
+    }
+  },
   "meta": {},
   "nodes": [
     [
@@ -24,7 +33,7 @@ Welcome, {{ user.name || guest }}.
       [
         "binding",
         {
-          ":value": "user.name",
+          ":value": "frontmatter.user.name",
           "defaultValue": "guest"
         }
       ],
@@ -38,12 +47,17 @@ Welcome, {{ user.name || guest }}.
 
 ```html
 <p>
-  Welcome, <binding value="user.name" defaultValue="guest"></binding>.
+  Welcome, Ada.
 </p>
 ```
 
 ## Markdown
 
 ```md
-Welcome, :binding{:value="user.name" defaultValue="guest"}.
+---
+user:
+  name: Ada
+---
+
+Welcome, {{ frontmatter.user.name || guest }}.
 ```

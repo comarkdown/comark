@@ -7,17 +7,35 @@ options:
 ## Input
 
 ```md
+---
+a:
+  name: Alice
+  score: 90
+b:
+  name: Bob
+  score: 85
+---
+
 | Name | Score |
 | --- | --- |
-| {{ a.name }} | {{ a.score }} |
-| {{ b.name }} | {{ b.score }} |
+| {{ frontmatter.a.name }} | {{ frontmatter.a.score }} |
+| {{ frontmatter.b.name }} | {{ frontmatter.b.score }} |
 ```
 
 ## AST
 
 ```json
 {
-  "frontmatter": {},
+  "frontmatter": {
+    "a": {
+      "name": "Alice",
+      "score": 90
+    },
+    "b": {
+      "name": "Bob",
+      "score": 85
+    }
+  },
   "meta": {},
   "nodes": [
     [
@@ -53,7 +71,7 @@ options:
             [
               "binding",
               {
-                ":value": "a.name"
+                ":value": "frontmatter.a.name"
               }
             ]
           ],
@@ -63,7 +81,7 @@ options:
             [
               "binding",
               {
-                ":value": "a.score"
+                ":value": "frontmatter.a.score"
               }
             ]
           ]
@@ -77,7 +95,7 @@ options:
             [
               "binding",
               {
-                ":value": "b.name"
+                ":value": "frontmatter.b.name"
               }
             ]
           ],
@@ -87,7 +105,7 @@ options:
             [
               "binding",
               {
-                ":value": "b.score"
+                ":value": "frontmatter.b.score"
               }
             ]
           ]
@@ -111,18 +129,18 @@ options:
   <tbody>
     <tr>
       <td>
-        <binding value="a.name"></binding>
+        Alice
       </td>
       <td>
-        <binding value="a.score"></binding>
+        90
       </td>
     </tr>
     <tr>
       <td>
-        <binding value="b.name"></binding>
+        Bob
       </td>
       <td>
-        <binding value="b.score"></binding>
+        85
       </td>
     </tr>
   </tbody>
@@ -132,8 +150,17 @@ options:
 ## Markdown
 
 ```md
-| Name                            | Score                            |
-| ------------------------------- | -------------------------------- |
-| ::binding{:value="a.name"}   :: | ::binding{:value="a.score"}   :: |
-| ::binding{:value="b.name"}   :: | ::binding{:value="b.score"}   :: |
+---
+a:
+  name: Alice
+  score: 90
+b:
+  name: Bob
+  score: 85
+---
+
+| Name                     | Score                     |
+| ------------------------ | ------------------------- |
+| {{ frontmatter.a.name }} | {{ frontmatter.a.score }} |
+| {{ frontmatter.b.name }} | {{ frontmatter.b.score }} |
 ```

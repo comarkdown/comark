@@ -7,7 +7,7 @@ import { renderMarkdown } from 'comark/render'
 import highlight from 'comark/plugins/highlight'
 import type { HighlightOptions } from '../src/plugins/highlight'
 import emoji from '../src/plugins/emoji'
-import binding from '../src/plugins/binding'
+import binding, { Binding as MarkdownBinding } from '../src/plugins/binding'
 import type { ComarkPlugin } from 'comark'
 import githubDark from 'shiki/dist/themes/github-dark.mjs'
 import minLight from 'shiki/dist/themes/min-light.mjs'
@@ -17,6 +17,7 @@ import goLanguage from 'shiki/dist/langs/go.mjs'
 import type { ParseOptions } from '../src/types'
 import type { ShikiTransformer } from 'shiki'
 import { renderHTMLForTest } from './utils/render-html'
+import { Binding as HTMLBiniding } from '../../comark-html/src/plugins/binding'
 
 type PluginName = 'emoji' | 'binding'
 
@@ -244,13 +245,22 @@ describe('Comark Tests', () => {
       })
 
       it('should render AST to HTML', { timeout: testCase.timeouts?.html ?? 5000 }, async () => {
-        const result = await renderHTMLForTest(parsedAST)
+        const result = await renderHTMLForTest(parsedAST, {
+          components: {
+            binding: HTMLBiniding,
+          },
+        })
         const expectedHTML = testCase.html.trim()
         expect(result).toBe(expectedHTML)
       })
 
       it('should render AST to Markdown', { timeout: testCase.timeouts?.markdown ?? 5000 }, async () => {
-        const result = await renderMarkdown(parsedAST, testCase.options || {})
+        const result = await renderMarkdown(parsedAST, {
+          ...(testCase.options || {}),
+          components: {
+            binding: MarkdownBinding,
+          },
+        })
         const expectedMarkdown = testCase.markdown.trim()
         expect(result).toBe(expectedMarkdown)
       })

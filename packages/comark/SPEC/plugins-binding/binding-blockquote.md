@@ -7,14 +7,23 @@ options:
 ## Input
 
 ```md
-> Quote from {{ author.name || anonymous }}.
+---
+author:
+  name: Rumi
+---
+
+> Quote from {{ frontmatter.author.name || anonymous }}.
 ```
 
 ## AST
 
 ```json
 {
-  "frontmatter": {},
+  "frontmatter": {
+    "author": {
+      "name": "Rumi"
+    }
+  },
   "meta": {},
   "nodes": [
     [
@@ -24,7 +33,7 @@ options:
       [
         "binding",
         {
-          ":value": "author.name",
+          ":value": "frontmatter.author.name",
           "defaultValue": "anonymous"
         }
       ],
@@ -38,12 +47,17 @@ options:
 
 ```html
 <blockquote>
-  Quote from <binding value="author.name" defaultValue="anonymous"></binding>.
+  Quote from Rumi.
 </blockquote>
 ```
 
 ## Markdown
 
 ```md
-> Quote from :binding{:value="author.name" defaultValue="anonymous"}.
+---
+author:
+  name: Rumi
+---
+
+> Quote from {{ frontmatter.author.name || anonymous }}.
 ```

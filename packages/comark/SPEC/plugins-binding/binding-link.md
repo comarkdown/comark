@@ -7,14 +7,20 @@ options:
 ## Input
 
 ```md
-Read the [{{ label }} guide](/docs) today.
+---
+label: Quick Start
+---
+
+Read the [{{ frontmatter.label }} guide](/docs) today.
 ```
 
 ## AST
 
 ```json
 {
-  "frontmatter": {},
+  "frontmatter": {
+    "label": "Quick Start"
+  },
   "meta": {},
   "nodes": [
     [
@@ -29,7 +35,7 @@ Read the [{{ label }} guide](/docs) today.
         [
           "binding",
           {
-            ":value": "label"
+            ":value": "frontmatter.label"
           }
         ],
         " guide"
@@ -43,11 +49,15 @@ Read the [{{ label }} guide](/docs) today.
 ## HTML
 
 ```html
-<p>Read the <a href="/docs"><binding value="label"></binding> guide</a> today.</p>
+<p>Read the <a href="/docs">Quick Start guide</a> today.</p>
 ```
 
 ## Markdown
 
 ```md
-Read the [:binding{:value="label"} guide](/docs) today.
+---
+label: Quick Start
+---
+
+Read the [{{ frontmatter.label }} guide](/docs) today.
 ```

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { parse } from '../../src/parse'
 import { renderMarkdown } from '../../src/render'
-import binding from '../../src/plugins/binding'
+import binding, { Binding } from '../../src/plugins/binding'
 import { renderHTMLForTest } from '../utils/render-html'
 
 const parseWithBinding = (md: string, opts: Parameters<typeof binding>[0] = {}) =>
@@ -106,5 +106,23 @@ Hello {{ frontmatter.user.name }}!
     const tree = await parseWithBinding('score {{ a || b }} ok')
     const md = await renderMarkdown(tree)
     expect(md.trim()).toBe('score :binding{:value="a" defaultValue="b"} ok')
+  })
+})
+
+describe('binding plugin — exported Binding markdown handler', () => {
+  it('renders a `{{ path }}` binding back to its source shorthand', async () => {
+    const tree = await parseWithBinding('Hello {{ user.name }}!')
+    const md = await renderMarkdown(tree, { components: { binding: Binding } })
+    expect(md.trim()).toBe('Hello {{ user.name }}!')
+  })
+
+  it('renders a `{{ path || default }}` binding back to its source shorthand', async () => {
+    const tree = await parseWithBinding('score {{ a || b }} ok')
+    const md = await renderMarkdown(tree, { components: { binding: Binding } })
+    expect(md.trim()).toBe('score {{ a || b }} ok')
+  })
+
+  it('returns an empty string when the binding has no path (defensive)', () => {
+    expect(Binding(['binding', {}] as any, {} as any)).toBe('')
   })
 })

@@ -7,15 +7,26 @@ options:
 ## Input
 
 ```md
-- Alice {{ user.age }}
-- Bob {{ user.role }}
+---
+user:
+  age: 30
+  role: admin
+---
+
+- Alice {{ frontmatter.user.age }}
+- Bob {{ frontmatter.user.role }}
 ```
 
 ## AST
 
 ```json
 {
-  "frontmatter": {},
+  "frontmatter": {
+    "user": {
+      "age": 30,
+      "role": "admin"
+    }
+  },
   "meta": {},
   "nodes": [
     [
@@ -28,7 +39,7 @@ options:
         [
           "binding",
           {
-            ":value": "user.age"
+            ":value": "frontmatter.user.age"
           }
         ]
       ],
@@ -39,7 +50,7 @@ options:
         [
           "binding",
           {
-            ":value": "user.role"
+            ":value": "frontmatter.user.role"
           }
         ]
       ]
@@ -53,10 +64,10 @@ options:
 ```html
 <ul>
   <li>
-    Alice <binding value="user.age"></binding>
+    Alice 30
   </li>
   <li>
-    Bob <binding value="user.role"></binding>
+    Bob admin
   </li>
 </ul>
 ```
@@ -64,6 +75,12 @@ options:
 ## Markdown
 
 ```md
-- Alice :binding{:value="user.age"}
-- Bob :binding{:value="user.role"}
+---
+user:
+  age: 30
+  role: admin
+---
+
+- Alice {{ frontmatter.user.age }}
+- Bob {{ frontmatter.user.role }}
 ```

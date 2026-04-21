@@ -1,6 +1,6 @@
 import type { PluginWithOptions, MarkdownExit } from 'markdown-exit'
 import { defineComarkPlugin } from '../utils/helpers'
-import type { MarkdownItPlugin } from '../types'
+import type { MarkdownItPlugin, NodeHandler } from '../types'
 
 export interface MdcInlineBindingOptions {
   /**
@@ -65,3 +65,21 @@ export default defineComarkPlugin((opts: MdcInlineBindingOptions = {}) => {
     ],
   }
 })
+
+/**
+ * Markdown-format handler that renders a `binding` node back to the
+ * `{{ path || default }}` source form.
+ *
+ * Wire it via `renderMarkdown(tree, { components: { Binding } })`
+ * to round-trip faithfully to the authored shorthand instead of the generic
+ * `:binding{:value="..."}` component form.
+ */
+export const Binding: NodeHandler = (node) => {
+  const attrs = (node[1] || {}) as Record<string, unknown>
+  const path = attrs[':value']
+  if (typeof path !== 'string' || !path) return ''
+  const defaultValue = attrs.defaultValue
+  return typeof defaultValue === 'string' && defaultValue.length > 0
+    ? `{{ ${path} || ${defaultValue} }}`
+    : `{{ ${path} }}`
+}

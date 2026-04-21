@@ -7,14 +7,20 @@ options:
 ## Input
 
 ```md
-## Hello {{ name }}
+---
+name: Ada
+---
+
+## Hello {{ frontmatter.name }}
 ```
 
 ## AST
 
 ```json
 {
-  "frontmatter": {},
+  "frontmatter": {
+    "name": "Ada"
+  },
   "meta": {},
   "nodes": [
     [
@@ -26,7 +32,7 @@ options:
       [
         "binding",
         {
-          ":value": "name"
+          ":value": "frontmatter.name"
         }
       ]
     ]
@@ -38,12 +44,16 @@ options:
 
 ```html
 <h2 id="hello-binding">
-  Hello <binding value="name"></binding>
+  Hello Ada
 </h2>
 ```
 
 ## Markdown
 
 ```md
-## Hello :binding{:value="name"}
+---
+name: Ada
+---
+
+## Hello {{ frontmatter.name }}
 ```
