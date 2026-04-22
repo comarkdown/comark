@@ -7,6 +7,7 @@ import emoji from '@comark/nuxt/plugins/emoji'
 import mermaid from '@comark/nuxt/plugins/mermaid'
 import jsonRender from '@comark/nuxt/plugins/json-render'
 import punctuation from '@comark/nuxt/plugins/punctuation'
+import breaks from '@comark/vue/plugins/breaks'
 
 import { renderMarkdown } from 'comark/render'
 import { Splitpanes, Pane } from 'splitpanes'
@@ -36,6 +37,7 @@ const pluginToggles = useLocalStorage('comark-playground-plugins', {
   mermaid: true,
   jsonRender: true,
   punctuation: false,
+  breaks: false,
 }, { mergeDefaults: true })
 
 const parseOptions = useLocalStorage('comark-playground-parse-options', {
@@ -86,6 +88,12 @@ const pluginDefs = [
     label: 'Binding',
     icon: 'i-lucide-link',
     factory: () => binding(),
+  },
+  {
+    key: 'breaks',
+    label: 'Breaks',
+    icon: 'i-lucide-corner-down-left',
+    factory: () => breaks(),
   },
 ] as const
 

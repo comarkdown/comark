@@ -1,9 +1,8 @@
-import { bench, run } from 'mitata'
+import { bench, run, barplot, group } from 'mitata'
 import MarkdownIt from 'markdown-it'
 import MarkdownExit from 'markdown-exit'
 import pluginMdc from '@comark/markdown-it'
-import { createParse } from './src/index'
-import { renderHTMLForTest } from './test/utils/render-html'
+import { createParse } from 'comark'
 
 // Sample markdown content to test with
 const sampleMarkdown = `---
@@ -76,42 +75,30 @@ const comark = createParse()
 const comarkNoClose = createParse({ autoClose: false })
 const comarkStreaming = createParse()
 
-// Benchmark: markdown-it parsing
-bench('markdown-it parse', () => {
-  markdownIt.parse(sampleMarkdown, {})
-})
+barplot(() => {
+  group('parse', () => {
+    // Benchmark: markdown-it parsing
+    bench('markdown-it parse', () => {
+      markdownIt.parse(sampleMarkdown, {})
+    })
 
-// Benchmark: markdown-exit parsing
-bench('markdown-exit parse', () => {
-  markdownExit.parse(sampleMarkdown, {})
-})
+    // Benchmark: markdown-exit parsing
+    bench('markdown-exit parse', () => {
+      markdownExit.parse(sampleMarkdown, {})
+    })
 
-bench('comark parse', async () => {
-  await comark(sampleMarkdown)
-})
+    bench('comark parse', async () => {
+      await comark(sampleMarkdown)
+    })
 
-bench('comark parse no close', async () => {
-  await comarkNoClose(sampleMarkdown)
-})
+    bench('comark parse no close', async () => {
+      await comarkNoClose(sampleMarkdown)
+    })
 
-// Benchmark: markdown-it render
-bench('markdown-it render', () => {
-  markdownIt.render(sampleMarkdown)
-})
-
-// Benchmark: markdown-exit render
-bench('markdown-exit render', () => {
-  markdownExit.render(sampleMarkdown)
-})
-
-// Benchmark: comark parse + renderHTMLForTest
-bench('comark parse + renderHTMLForTest', async () => {
-  const tree = await comark(sampleMarkdown)
-  renderHTMLForTest(tree)
-})
-
-bench('comark parse streaming', async () => {
-  await comarkStreaming(sampleMarkdown, { streaming: true })
+    bench('comark parse streaming', async () => {
+      await comarkStreaming(sampleMarkdown, { streaming: true })
+    })
+  })
 })
 
 // Run all benchmarks
