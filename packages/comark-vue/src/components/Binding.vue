@@ -1,7 +1,9 @@
 <script setup lang="ts">
-defineProps({
+import { computed } from 'vue'
+
+const props = defineProps({
   value: {
-    type: [String, Number, Boolean, Object],
+    type: [String, Number, Boolean, Object, Array],
     default: undefined,
   },
   defaultValue: {
@@ -9,8 +11,15 @@ defineProps({
     default: undefined,
   },
 })
+
+const rendered = computed(() => {
+  if (props.value !== undefined && props.value !== null) {
+    return typeof props.value === 'object' ? JSON.stringify(props.value) : String(props.value)
+  }
+  return props.defaultValue ?? ''
+})
 </script>
 
 <template>
-  ss{{ value || defaultValue }} dd
+  {{ rendered }}
 </template>

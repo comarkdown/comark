@@ -129,7 +129,11 @@ function renderNode(
       return h(component, props)
     }
 
-    const childrenRenderData = { ...renderData, props }
+    // Only shadow the parent's `props` scope when the current element has its
+    // own attributes. Bare wrappers (`<p>`, `<ul>`, `<li>`, …) must keep the
+    // parent's scope so bindings like `{{ props.x }}` reach across them.
+    const hasOwnAttrs = Object.keys(resolved).length > 0
+    const childrenRenderData = hasOwnAttrs ? { ...renderData, props } : renderData
     // Separate template elements (slots) from regular children
     const slots: Record<string, () => (VNode | string)[]> = {}
     const regularChildren: (VNode | string)[] = []

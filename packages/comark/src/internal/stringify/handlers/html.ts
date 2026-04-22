@@ -14,10 +14,14 @@ export async function html(node: ComarkElement, state: State, parent?: ComarkEle
 
   // In text/html mode, `one()` has already resolved this element's `:prefix`
   // bindings against the parent's render context and stored the result in
-  // `state.renderData.props`. Use that for serialization; in markdown modes
-  // (e.g. html-source nodes in mdc output) keep the raw attributes.
+  // `state.renderData.props` — but only when the element has its own attrs.
+  // If it doesn't, `state.renderData.props` still holds the enclosing scope
+  // (so that `{{ props.* }}` in nested children keeps working), so we fall
+  // back to the raw (empty) attrs to avoid leaking parent props onto native
+  // wrappers like `<p>` or `<ul>`.
+  const rawHasAttrs = Object.keys(rawAttributes).length > 0
   const attributes = state.context.html
-    ? state.renderData.props
+    ? (rawHasAttrs ? state.renderData.props : rawAttributes)
     : rawAttributes
 
   const hasOnlyTextChildren = children.every(child => typeof child === 'string' || inlineTags.has(String(child?.[0])))

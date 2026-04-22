@@ -95,7 +95,14 @@ naturally appears inline after the deepest trailing text node.
     return { isText, tag, isVoid, children, Component, mappedProps }
   })
 
-  let childrenRenderData = $derived<NodeRenderData>({ ...renderData, props: mappedProps })
+  // Only shadow the parent's `props` scope when the current element has its
+  // own attributes. Bare wrappers (`<p>`, `<ul>`, `<li>`, …) must keep the
+  // parent's scope so bindings like `{{ props.x }}` reach across them.
+  let childrenRenderData = $derived<NodeRenderData>(
+    Object.keys(mappedProps).length > 0
+      ? { ...renderData, props: mappedProps }
+      : renderData,
+  )
 </script>
 
 {#if isText}

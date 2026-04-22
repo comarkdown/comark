@@ -125,4 +125,19 @@ describe('binding plugin — exported Binding markdown handler', () => {
   it('returns an empty string when the binding has no path (defensive)', () => {
     expect(Binding(['binding', {}] as any, {} as any)).toBe('')
   })
+
+  it('resolves `{{ props.* }}` across auto-generated paragraph wrappers', async () => {
+    const { Binding: HTMLBinding } = await import('../../../comark-html/src/plugins/binding')
+    const tree = await parseWithBinding(`::card{title="Hello"}
+Intro text.
+
+{{ props.title }}
+::`)
+    const html = await renderHTMLForTest(tree, { components: { binding: HTMLBinding } })
+    // The binding lives inside a second `<p>` wrapper, but the card's `title`
+    // prop must still reach across it.
+    expect(html).toContain('Hello')
+    // The wrapper paragraph must not inherit the card's `title` attribute.
+    expect(html).not.toContain('<p title=')
+  })
 })

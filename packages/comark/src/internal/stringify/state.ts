@@ -42,11 +42,14 @@ export async function one(node: ComarkNode, state: State, parent?: ComarkElement
   // Scope `renderData.props` to the current element's resolved attributes so
   // nested bindings like `:prop="props.x"` resolve against the enclosing
   // element's values, regardless of which handler (html / ansi / user) runs.
+  // Elements with no attributes (e.g. an auto-generated `<p>` wrapper) must
+  // NOT shadow the parent's scope, otherwise `{{ props.* }}` inside them would
+  // resolve to nothing.
   const prevRenderData = state.renderData
   if (state.renderData && node[1]) {
-    state.renderData = {
-      ...prevRenderData,
-      props: resolveAttributes(node[1] as Record<string, unknown>, prevRenderData),
+    const resolved = resolveAttributes(node[1] as Record<string, unknown>, prevRenderData)
+    if (Object.keys(resolved).length > 0) {
+      state.renderData = { ...prevRenderData, props: resolved }
     }
   }
 
