@@ -159,6 +159,9 @@ catalogs:
     markdown-exit:
       specifier: 1.0.0-beta.9
       version: 1.0.0-beta.9
+    markdown-it:
+      specifier: ^14.1.1
+      version: 14.1.1
     markdown-it-math:
       specifier: ^5.2.1
       version: 5.2.1
@@ -280,6 +283,12 @@ importers:
 
   .:
     devDependencies:
+      '@comark/ansi':
+        specifier: workspace:*
+        version: link:packages/comark-ansi
+      '@comark/markdown-it':
+        specifier: 'catalog:'
+        version: 0.3.4(@types/markdown-it@14.1.2)(markdown-it@14.1.1)
       '@nuxt/eslint-config':
         specifier: 'catalog:'
         version: 1.15.2(@typescript-eslint/utils@8.56.1(eslint@10.2.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.32)(eslint@10.2.0(jiti@2.6.1))(typescript@5.9.3)
@@ -295,12 +304,24 @@ importers:
       '@vitejs/plugin-vue':
         specifier: 'catalog:'
         version: 6.0.5(vite@8.0.8(@types/node@25.5.2)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(vue@3.5.32(typescript@5.9.3))
+      comark:
+        specifier: workspace:*
+        version: link:packages/comark
       eslint:
         specifier: 'catalog:'
         version: 10.2.0(jiti@2.6.1)
       eslint-plugin-svelte:
         specifier: 'catalog:'
         version: 3.17.0(eslint@10.2.0(jiti@2.6.1))(svelte@5.55.2)
+      markdown-exit:
+        specifier: 'catalog:'
+        version: 1.0.0-beta.9
+      markdown-it:
+        specifier: 'catalog:'
+        version: 14.1.1
+      mitata:
+        specifier: 'catalog:'
+        version: 1.0.34
       nuxt:
         specifier: 'catalog:'
         version: 4.4.2(@babel/core@7.29.0)(@babel/plugin-syntax-jsx@7.28.6(@babel/core@7.29.0))(@parcel/watcher@2.5.6)(@types/node@25.5.2)(@vue/compiler-sfc@3.5.32)(better-sqlite3@12.6.2)(cac@6.7.14)(db0@0.3.4(better-sqlite3@12.6.2))(eslint@10.2.0(jiti@2.6.1))(ioredis@5.10.0)(lightningcss@1.32.0)(magicast@0.5.2)(meow@13.2.0)(optionator@0.9.4)(rolldown@1.0.0-rc.15)(rollup-plugin-visualizer@6.0.11(rolldown@1.0.0-rc.15)(rollup@4.59.0))(rollup@4.59.0)(terser@5.46.0)(tsx@4.21.0)(typescript@5.9.3)(vite@8.0.8(@types/node@25.5.2)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(vue-tsc@3.2.6(typescript@5.9.3))(yaml@2.8.2)
@@ -325,6 +346,9 @@ importers:
       scule:
         specifier: 'catalog:'
         version: 1.3.0
+      tsx:
+        specifier: 'catalog:'
+        version: 4.21.0
       typescript:
         specifier: 'catalog:'
         version: 5.9.3
@@ -935,9 +959,6 @@ importers:
       minimark:
         specifier: 'catalog:'
         version: 0.2.0
-      mitata:
-        specifier: 'catalog:'
-        version: 1.0.34
       tsx:
         specifier: 'catalog:'
         version: 4.21.0

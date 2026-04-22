@@ -1,8 +1,9 @@
-import { bench, run, group } from 'mitata'
+import { bench, run, group, barplot } from 'mitata'
 import MarkdownExit from 'markdown-exit'
 import pluginMdc from '@comark/markdown-it'
-import { createParse } from './src/index'
-import punctuation from './src/plugins/punctuation'
+import { createParse } from 'comark'
+import { log } from '@comark/ansi'
+import punctuation from '../packages/comark/src/plugins/punctuation'
 
 // ── Test content (exercises ALL features: quotes, dashes, ellipsis, symbols, normalization) ──
 
@@ -59,48 +60,54 @@ const comarkBaseline = createParse()
 
 // ── Benchmarks ──────────────────────────────────────────────────────────────
 
-group('short text (all features)', () => {
-  bench('markdown-it typographer', () => {
-    parserTypographer.parse(short, {})
-  })
-  bench('markdown-it baseline', () => {
-    parserNoTypographer.parse(short, {})
-  })
-  bench('comark + punctuation (full)', async () => {
-    await comarkFull(short)
-  })
-  bench('comark baseline', async () => {
-    await comarkBaseline(short)
-  })
-})
-
-group('medium text (all features)', () => {
-  bench('markdown-it typographer', () => {
-    parserTypographer.parse(medium, {})
-  })
-  bench('markdown-it baseline', () => {
-    parserNoTypographer.parse(medium, {})
-  })
-  bench('comark + punctuation (full)', async () => {
-    await comarkFull(medium)
-  })
-  bench('comark baseline', async () => {
-    await comarkBaseline(medium)
+barplot(() => {
+  group('short text (all features)', () => {
+    bench('markdown-it typographer', () => {
+      parserTypographer.parse(short, {})
+    })
+    bench('markdown-it baseline', () => {
+      parserNoTypographer.parse(short, {})
+    })
+    bench('comark + punctuation (full)', async () => {
+      await comarkFull(short)
+    })
+    bench('comark baseline', async () => {
+      await comarkBaseline(short)
+    })
   })
 })
 
-group('long text — 50 sections (all features)', () => {
-  bench('markdown-it typographer', () => {
-    parserTypographer.parse(long, {})
+barplot(() => {
+  group('medium text (all features)', () => {
+    bench('markdown-it typographer', () => {
+      parserTypographer.parse(medium, {})
+    })
+    bench('markdown-it baseline', () => {
+      parserNoTypographer.parse(medium, {})
+    })
+    bench('comark + punctuation (full)', async () => {
+      await comarkFull(medium)
+    })
+    bench('comark baseline', async () => {
+      await comarkBaseline(medium)
+    })
   })
-  bench('markdown-it baseline', () => {
-    parserNoTypographer.parse(long, {})
-  })
-  bench('comark + punctuation (full)', async () => {
-    await comarkFull(long)
-  })
-  bench('comark baseline', async () => {
-    await comarkBaseline(long)
+})
+
+barplot(() => {
+  group('long text — 50 sections (all features)', () => {
+    bench('markdown-it typographer', () => {
+      parserTypographer.parse(long, {})
+    })
+    bench('markdown-it baseline', () => {
+      parserNoTypographer.parse(long, {})
+    })
+    bench('comark + punctuation (full)', async () => {
+      await comarkFull(long)
+    })
+    bench('comark baseline', async () => {
+      await comarkBaseline(long)
+    })
   })
 })
 
@@ -129,3 +136,9 @@ console.log('comark punctuation:     ', JSON.stringify(flattenText(comarkTree.no
 
 console.log('\n🏃 Running benchmarks...\n')
 await run()
+
+await log(`> [!NOTE]
+> The goal of this benchmark is to compare the additional time each parser takes when
+> using punctuation plugins.
+>
+> Official plugin adds ~100% the execution time, while comark adds ~25% execution time`)
