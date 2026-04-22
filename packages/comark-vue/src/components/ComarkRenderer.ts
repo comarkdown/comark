@@ -1,14 +1,11 @@
 import type { PropType, VNode } from 'vue'
-import type { ComponentManifest, ComarkContextProvider, ComarkElement, ComarkNode, ComarkTree } from 'comark'
+import type { ComponentManifest, ComarkContextProvider, ComarkElement, ComarkNode, ComarkTree, NodeRenderData } from 'comark'
 import { computed, defineAsyncComponent, defineComponent, getCurrentInstance, h, inject, onErrorCaptured, ref, toRaw } from 'vue'
 import { findLastTextNodeAndAppendNode, getCaret } from '../utils/caret.ts'
+import { pascalCase, resolveAttributes } from 'comark/utils'
 
 // Cache for dynamically resolved components
 const asyncComponentCache = new Map<string, any>()
-
-const camelize = (s: string) => s.replace(/-(\w)/g, (_, c: string) => c ? c.toUpperCase() : '')
-const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
-const pascalCase = (str: string) => capitalize(camelize(str))
 
 /**
  * Helper to get tag from a ComarkNode
@@ -28,20 +25,6 @@ function getProps(node: ComarkNode): Record<string, any> {
     return (node[1] as Record<string, any>) || {}
   }
   return {}
-}
-
-function parsePropValue(value: string): any {
-  if (value === 'true') return true
-  if (value === 'false') return false
-  if (value === 'null') return null
-  try {
-    return JSON.parse(value)
-  }
-  catch {
-    // noop
-  }
-
-  return value
 }
 
 /**
@@ -90,6 +73,7 @@ function renderNode(
   key?: string | number,
   componentsManifest?: ComponentManifest,
   parent?: ComarkNode,
+  renderData: NodeRenderData = { frontmatter: {}, meta: {}, data: {}, props: {} },
 ): VNode | string | null {
   // Handle text nodes (strings)
   if (typeof node === 'string') {
@@ -118,21 +102,16 @@ function renderNode(
 
     const component = customComponent || tag
 
-    // Prepare props
-    // Prepare props — use for...in instead of Object.entries() to avoid intermediate array allocation
+    // Resolve `:prefix` bindings and let Vue-specific attribute mapping run
+    // on top (e.g. `className` → `class`).
+    const resolved = resolveAttributes(nodeProps, renderData, { parseJson: true })
     const props: Record<string, any> = {}
-    for (const k in nodeProps) {
-      if (k === '$') {
-        continue
-      }
+    for (const k in resolved) {
       if (k === 'className') {
-        props.class = nodeProps[k]
-      }
-      else if (k.charCodeAt(0) === 58 /* ':' */) {
-        props[k.substring(1)] = parsePropValue(nodeProps[k])
+        props.class = resolved[k]
       }
       else {
-        props[k] = nodeProps[k]
+        props[k] = resolved[k]
       }
     }
 
@@ -150,6 +129,11 @@ function renderNode(
       return h(component, props)
     }
 
+    // Only shadow the parent's `props` scope when the current element has its
+    // own attributes. Bare wrappers (`<p>`, `<ul>`, `<li>`, …) must keep the
+    // parent's scope so bindings like `{{ props.x }}` reach across them.
+    const hasOwnAttrs = Object.keys(resolved).length > 0
+    const childrenRenderData = hasOwnAttrs ? { ...renderData, props } : renderData
     // Separate template elements (slots) from regular children
     const slots: Record<string, () => (VNode | string)[]> = {}
     const regularChildren: (VNode | string)[] = []
@@ -184,13 +168,13 @@ function renderNode(
         if (slotName) {
           const slotChildren = getChildren(child)
           slots[slotName] = () => slotChildren
-            .map((slotChild: ComarkNode, idx: number) => renderNode(slotChild, components, idx, componentsManifest, node))
+            .map((slotChild: ComarkNode, idx: number) => renderNode(slotChild, components, idx, componentsManifest, node, childrenRenderData))
             .filter((slotChild): slotChild is VNode | string => slotChild !== null)
           continue
         }
       }
 
-      const rendered = renderNode(child, components, i, componentsManifest, node)
+      const rendered = renderNode(child, components, i, componentsManifest, node, childrenRenderData)
       if (rendered !== null) {
         regularChildren.push(rendered)
       }
@@ -241,6 +225,11 @@ export interface ComarkRendererProps {
    * If caret is true, a caret will be appended to the last text node in the tree
    */
   caret?: boolean | { class: string }
+
+  /**
+   * Additional data to pass to the renderer
+   */
+  data?: Record<string, unknown>
 }
 
 type ComarkRendererComponent = ReturnType<typeof defineComponent<ComarkRendererProps>>
@@ -317,6 +306,14 @@ export const ComarkRenderer: ComarkRendererComponent = defineComponent({
       type: [Boolean, Object] as PropType<boolean | { class: string }>,
       default: false,
     },
+
+    /**
+     * Additional data to pass to the renderer
+     */
+    data: {
+      type: Object as PropType<Record<string, unknown>>,
+      default: () => ({}),
+    },
   },
 
   async setup(props) {
@@ -362,8 +359,15 @@ export const ComarkRenderer: ComarkRendererComponent = defineComponent({
         }
       }
 
+      const renderData: NodeRenderData = {
+        frontmatter: props.tree.frontmatter,
+        meta: props.tree.meta,
+        data: props.data || {},
+        props: {},
+      }
+
       const children = nodes
-        .map((node, index) => renderNode(node, components.value, index, componentManifest))
+        .map((node, index) => renderNode(node, components.value, index, componentManifest, undefined, renderData))
         .filter((child): child is VNode | string => child !== null)
 
       // Wrap in a fragment

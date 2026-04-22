@@ -36,6 +36,7 @@ This is an alert component
     componentsManifest,
     streaming = false,
     caret = false,
+    data,
     class: className = '',
   }: {
     markdown?: string
@@ -45,6 +46,7 @@ This is an alert component
     componentsManifest?: ComponentManifest
     streaming?: boolean
     caret?: boolean | { class: string }
+    data?: Record<string, unknown>
     class?: string
   } = $props()
 
@@ -75,6 +77,7 @@ This is an alert component
     {componentsManifest}
     {streaming}
     {caret}
+    {data}
     class={className}
   />
 {/if}

@@ -59,6 +59,24 @@ describe('punctuation plugin', () => {
     expect(text).not.toContain('...')
   })
 
+  it('should normalize multiple dots to ellipsis', async () => {
+    const md = 'hmm..... really.......'
+    const tree = await parse(md, { plugins: [punctuation()] })
+
+    const text = flattenText(tree.nodes)
+    // Any run of 2+ dots becomes ellipsis
+    expect(text).toBe('hmm\u2026 really\u2026')
+  })
+
+  it('should collapse ?.... to ?..', async () => {
+    const md = 'what?.... really!....'
+    const tree = await parse(md, { plugins: [punctuation()] })
+
+    const text = flattenText(tree.nodes)
+    expect(text).toContain('what?..') // ? followed by ..
+    expect(text).toContain('really!..') // ! followed by ..
+  })
+
   it('should convert (c) to copyright symbol', async () => {
     const md = 'Copyright (c) 2024'
     const tree = await parse(md, { plugins: [punctuation()] })
@@ -127,6 +145,68 @@ describe('punctuation plugin', () => {
     expect(text).toContain('--')
     expect(text).toContain('...')
     expect(text).toContain('(c)')
+  })
+
+  it('should normalize repeated question marks', async () => {
+    const md = 'what???? really????'
+    const tree = await parse(md, { plugins: [punctuation()] })
+
+    const text = flattenText(tree.nodes)
+    expect(text).toBe('what??? really???')
+  })
+
+  it('should normalize repeated exclamation marks', async () => {
+    const md = 'wow!!!!! amazing!!!!!'
+    const tree = await parse(md, { plugins: [punctuation()] })
+
+    const text = flattenText(tree.nodes)
+    expect(text).toBe('wow!!! amazing!!!')
+  })
+
+  it('should collapse repeated commas', async () => {
+    const md = 'one,, two,,, three'
+    const tree = await parse(md, { plugins: [punctuation()] })
+
+    const text = flattenText(tree.nodes)
+    expect(text).toBe('one, two, three')
+  })
+
+  it('should not normalize 3 or fewer repeated punctuation', async () => {
+    const md = 'what??? really!!! ok'
+    const tree = await parse(md, { plugins: [punctuation()] })
+
+    const text = flattenText(tree.nodes)
+    expect(text).toBe('what??? really!!! ok')
+  })
+
+  it('should support locale-aware quotes with string', async () => {
+    const md = '"Hello" and \'world\''
+    const tree = await parse(md, { plugins: [punctuation({ quotes: '\u00AB\u00BB\u201E\u201C' })] })
+
+    const text = flattenText(tree.nodes)
+    expect(text).toContain('\u00AB') // «
+    expect(text).toContain('\u00BB') // »
+    expect(text).toContain('\u201E') // „
+  })
+
+  it('should support locale-aware quotes with array (French with nbsp)', async () => {
+    const md = '"Hello"'
+    const tree = await parse(md, {
+      plugins: [punctuation({ quotes: ['\u00AB\u00A0', '\u00A0\u00BB', '\u2039\u00A0', '\u00A0\u203A'] })],
+    })
+
+    const text = flattenText(tree.nodes)
+    expect(text).toContain('\u00AB\u00A0') // « + nbsp
+    expect(text).toContain('\u00A0\u00BB') // nbsp + »
+  })
+
+  it('should allow disabling normalize independently', async () => {
+    const md = 'what???? test,, end'
+    const tree = await parse(md, { plugins: [punctuation({ normalize: false })] })
+
+    const text = flattenText(tree.nodes)
+    expect(text).toContain('????')
+    expect(text).toContain(',,')
   })
 
   it('should handle mixed content with formatting', async () => {

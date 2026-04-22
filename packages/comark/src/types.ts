@@ -165,6 +165,14 @@ export type State = {
   data: Record<string, any>
 
   /**
+   * Render context — `{ frontmatter, meta, data, props }` — used to
+   * resolve `:prefixed` attributes that reference dot-paths in markdown.
+   * `props` is scoped to the nearest enclosing element as it's mutated during
+   * recursion.
+   */
+  renderData: NodeRenderData
+
+  /**
    * The context of the renderer
    */
   context: Context
@@ -243,6 +251,25 @@ export interface RenderMarkdownOptions extends RenderOptions {
    */
   frontmatterOptions?: DumpOptions
 }
+
+export interface NodeRenderData {
+  /*
+   * Frontmatter data from the markdown file
+   */
+  frontmatter: Record<string, unknown>
+  /**
+   * Meta information from Comark Tree
+   */
+  meta: Record<string, unknown>
+  /**
+   * Additional data paased to rendere
+   */
+  data: Record<string, unknown>
+  /**
+   * Props from parent node
+   */
+  props: Record<string, unknown>
+}
 // #endregion
 
 export type MarkdownExitPlugin = (md: MarkdownExit) => void
@@ -277,6 +304,7 @@ export interface ComarkContextProvider {
   components: Record<string, any>
   componentManifest: ComponentManifest
 }
+
 export interface ParseOptions {
   /**
    * Whether to automatically unwrap single paragraphs in container components.

@@ -167,3 +167,30 @@ function splitByCase(str: string) {
 }
 
 // #endregion
+
+// #region Object Utils
+/**
+ * Retrieves a value from a nested object using a dot-separated key path.
+ * @param data - The object to retrieve the value from.
+ * @param key - The dot-separated key path to the value.
+ * @returns The value at the specified key path, or `undefined` if the key path does not exist.
+ */
+export function get(data: unknown, key: string): unknown {
+  const keys = key.split('.')
+  let value: unknown = data
+  for (const k of keys) {
+    if (value && typeof value === 'object' && k in (value as Record<string, unknown>)) {
+      value = (value as Record<string, unknown>)[k]
+    }
+    else {
+      return undefined
+    }
+  }
+  return value
+}
+// #endregion
+
+// Re-export the shared attribute resolvers so framework renderers can apply the
+// same `:prefix` semantics as the HTML/ANSI handlers without duplicating logic.
+export { resolveAttributes, resolveAttribute } from '../internal/stringify/attributes.ts'
+export type { ResolveAttributesOptions } from '../internal/stringify/attributes.ts'

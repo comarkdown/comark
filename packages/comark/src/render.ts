@@ -3,10 +3,13 @@ import { renderFrontmatter } from './internal/frontmatter.ts'
 
 import { createState, one } from './internal/stringify/state.ts'
 
-export type { NodeHandler, State, Context, RenderOptions, RenderMarkdownOptions } from './types.ts'
+export type { NodeHandler, State, Context, RenderOptions, RenderMarkdownOptions, NodeRenderData } from './types.ts'
 
 // Re-export frontmatter renderer
 export { renderFrontmatter } from './internal/frontmatter.ts'
+
+// Re-export attribute resolvers for custom handlers that want to honor `:prefix` bindings
+export { resolveAttributes, resolveAttribute } from './internal/stringify/attributes.ts'
 
 /**
  * Generate a string from a Comark tree

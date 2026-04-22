@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { parse } from 'comark'
-import highlight from '@comark/vue/plugins/highlight'
-import math from '@comark/vue/plugins/math'
-import emoji from '@comark/vue/plugins/emoji'
-import mermaid from '@comark/vue/plugins/mermaid'
-import jsonRender from '@comark/vue/plugins/json-render'
-import footnotes from '@comark/vue/plugins/footnotes'
-import punctuation from '@comark/vue/plugins/punctuation'
+import highlight from '@comark/nuxt/plugins/highlight'
+import math from '@comark/nuxt/plugins/math'
+import binding, { Binding } from '@comark/nuxt/plugins/binding'
+import emoji from '@comark/nuxt/plugins/emoji'
+import mermaid from '@comark/nuxt/plugins/mermaid'
+import jsonRender from '@comark/nuxt/plugins/json-render'
+import footnotes from '@comark/nuxt/plugins/footnotes'
+import punctuation from '@comark/nuxt/plugins/punctuation'
+import breaks from '@comark/vue/plugins/breaks'
 
 import { renderMarkdown } from 'comark/render'
 import { Splitpanes, Pane } from 'splitpanes'
@@ -37,6 +39,7 @@ const pluginToggles = useLocalStorage('comark-playground-plugins', {
   jsonRender: true,
   footnotes: true,
   punctuation: false,
+  breaks: false,
 }, { mergeDefaults: true })
 
 const parseOptions = useLocalStorage('comark-playground-parse-options', {
@@ -87,6 +90,18 @@ const pluginDefs = [
     label: 'Punctuation',
     icon: 'i-lucide-quote',
     factory: () => punctuation(),
+  },
+  {
+    key: 'binding',
+    label: 'Binding',
+    icon: 'i-lucide-link',
+    factory: () => binding(),
+  },
+  {
+    key: 'breaks',
+    label: 'Breaks',
+    icon: 'i-lucide-corner-down-left',
+    factory: () => breaks(),
   },
 ] as const
 
@@ -417,6 +432,7 @@ const isMatch = computed(() =>
               >
                 <ComarkDocsRenderer
                   :tree="tree"
+                  :components="{ Binding }"
                 />
               </div>
             </UScrollArea>

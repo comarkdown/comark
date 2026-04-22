@@ -32,6 +32,7 @@ logs
 
 .vscode
 .history
+.claude
 
 # Svelte
 .svelte-kit

@@ -1,6 +1,6 @@
-import type { ComarkElement, ComarkNode, ComarkTree, ComponentManifest } from 'comark'
+import type { ComarkElement, ComarkNode, ComarkTree, ComponentManifest, NodeRenderData } from 'comark'
 import React, { lazy, Suspense, useMemo } from 'react'
-import { pascalCase, camelCase } from 'comark/utils'
+import { pascalCase, camelCase, resolveAttributes } from 'comark/utils'
 import { findLastTextNodeAndAppendNode, getCaret } from '../utils/caret'
 
 /**
@@ -40,19 +40,6 @@ function getProps(node: ComarkNode): Record<string, any> {
     return (node[1] as Record<string, any>) || {}
   }
   return {}
-}
-
-function parsePropValue(value: string): any {
-  if (value === 'true') return true
-  if (value === 'false') return false
-  if (value === 'null') return null
-  try {
-    return JSON.parse(value)
-  }
-  catch {
-    // noop
-  }
-  return value
 }
 
 /**
@@ -101,6 +88,7 @@ function renderNode(
   key?: string | number,
   componentsManifest?: ComponentManifest,
   parent?: ComarkNode,
+  renderData: NodeRenderData = { frontmatter: {}, meta: {}, data: {}, props: {} },
 ): React.ReactNode {
   // Handle text nodes (strings)
   if (typeof node === 'string') {
@@ -129,26 +117,24 @@ function renderNode(
 
     const Component = customComponent || tag
 
-    // Prepare props — use for...in instead of Object.entries() to avoid intermediate array allocation
+    // Resolve `:prefix` bindings, then apply React-specific attribute
+    // remapping (`class` → `className`, string `style` → object, `tabindex`
+    // → `tabIndex`).
+    const resolved = resolveAttributes(nodeProps, renderData, { parseJson: true })
     const props: Record<string, any> = {}
-    for (const k in nodeProps) {
-      if (k === 'className') {
-        props.className = nodeProps[k]
+    for (const k in resolved) {
+      const v = resolved[k]
+      if (k === 'className' || k === 'class') {
+        props.className = v
       }
-      else if (k === 'class') {
-        props.className = nodeProps[k]
-      }
-      else if (k === 'style' && typeof nodeProps[k] === 'string') {
-        props.style = cssStringToObject(nodeProps[k])
+      else if (k === 'style' && typeof v === 'string') {
+        props.style = cssStringToObject(v)
       }
       else if (k === 'tabindex') {
-        props.tabIndex = nodeProps[k]
-      }
-      else if (k.charCodeAt(0) === 58 /* ':' */) {
-        props[k.substring(1)] = parsePropValue(nodeProps[k])
+        props.tabIndex = v
       }
       else {
-        props[k] = nodeProps[k]
+        props[k] = v
       }
     }
 
@@ -156,29 +142,6 @@ function renderNode(
       props.__node = node
     }
 
-    // Parse special prop values (props starting with :)
-    for (const [propKey, value] of Object.entries(nodeProps)) {
-      if (propKey === '$') {
-        Reflect.deleteProperty(props, propKey)
-      }
-      if (propKey === 'style') {
-        props.style = cssStringToObject(value)
-      }
-      else if (propKey === 'tabindex') {
-        props.tabIndex = value
-        Reflect.deleteProperty(props, propKey)
-      }
-      if (propKey === 'class') {
-        props.className = value
-        Reflect.deleteProperty(props, propKey)
-      }
-      else {
-        if (propKey.startsWith(':')) {
-          props[propKey.substring(1)] = parsePropValue(value)
-          Reflect.deleteProperty(props, propKey)
-        }
-      }
-    }
     // Add key if provided
     if (key !== undefined) {
       props.key = key
@@ -189,6 +152,11 @@ function renderNode(
       return React.createElement(Component, props)
     }
 
+    // Only shadow the parent's `props` scope when the current element has its
+    // own attributes. Bare wrappers (`<p>`, `<ul>`, `<li>`, …) must keep the
+    // parent's scope so bindings like `{{ props.x }}` reach across them.
+    const hasOwnAttrs = Object.keys(resolved).length > 0
+    const childrenRenderData: NodeRenderData = hasOwnAttrs ? { ...renderData, props } : renderData
     // Separate template elements (slots) from regular children
     const slots: Record<string, React.ReactNode[]> = {}
     const regularChildren: React.ReactNode[] = []
@@ -223,13 +191,13 @@ function renderNode(
         if (slotName) {
           const slotChildren = getChildren(child)
           slots[slotName] = slotChildren
-            .map((slotChild: ComarkNode, idx: number) => renderNode(slotChild, components, idx, componentsManifest, node))
+            .map((slotChild: ComarkNode, idx: number) => renderNode(slotChild, components, idx, componentsManifest, node, childrenRenderData))
             .filter((slotChild): slotChild is React.ReactNode => slotChild !== null)
           continue
         }
       }
 
-      const rendered = renderNode(child, components, i, componentsManifest, node)
+      const rendered = renderNode(child, components, i, componentsManifest, node, childrenRenderData)
       if (rendered !== null) {
         regularChildren.push(rendered)
       }
@@ -307,6 +275,12 @@ export interface ComarkRendererProps {
   caret?: boolean | { class: string }
 
   /**
+   * Additional data to pass to the renderer — referenced from markdown
+   * via `:`-prefixed props using dot paths (e.g. `:foo="data.user.name"`).
+   */
+  data?: Record<string, unknown>
+
+  /**
    * Additional className for the wrapper div
    */
   className?: string
@@ -339,6 +313,7 @@ export const ComarkRenderer: React.FC<ComarkRendererProps> = ({
   componentsManifest,
   streaming = false,
   caret: caretProp = false,
+  data,
   className,
 }) => {
   const caret = useMemo(() => getCaret(caretProp), [caretProp])
@@ -354,10 +329,17 @@ export const ComarkRenderer: React.FC<ComarkRendererProps> = ({
       }
     }
 
+    const renderData: NodeRenderData = {
+      frontmatter: tree.frontmatter,
+      meta: tree.meta,
+      data: data || {},
+      props: {},
+    }
+
     return nodes
-      .map((node, index) => renderNode(node, customComponents, index, componentsManifest))
+      .map((node, index) => renderNode(node, customComponents, index, componentsManifest, undefined, renderData))
       .filter((child): child is React.ReactNode => child !== null)
-  }, [tree, customComponents, componentsManifest, streaming, caret])
+  }, [tree, customComponents, componentsManifest, streaming, caret, data])
 
   // Wrap in a fragment
   return (
