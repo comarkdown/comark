@@ -1,4 +1,4 @@
-import { computed, defineComponent, h } from 'vue'
+import { Text, computed, defineComponent, h } from 'vue'
 
 export const Binding = defineComponent({
   name: 'Binding',
@@ -21,6 +21,6 @@ export const Binding = defineComponent({
       return props.defaultValue ?? ''
     })
 
-    return () => h('span', rendered.value)
+    return () => h(Text, rendered.value)
   },
 })
