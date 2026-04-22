@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { parse } from '../src/parse'
-import footnotes, { footnotesStringify } from '../src/plugins/footnotes'
+import footnotes, { Footnote } from '../src/plugins/footnotes'
 import { renderMarkdown } from '../src/render'
 
 describe('footnotes plugin', () => {
@@ -254,7 +254,7 @@ describe('footnotes stringify', () => {
 
     const tree = await parse(md, { plugins: [footnotes()] })
     const result = await renderMarkdown(tree, {
-      components: { footnotes: footnotesStringify },
+      components: { footnotes: Footnote },
     })
 
     expect(result).toContain('[^1]')
@@ -269,7 +269,7 @@ describe('footnotes stringify', () => {
 
     const tree = await parse(md, { plugins: [footnotes()] })
     const result = await renderMarkdown(tree, {
-      components: { footnotes: footnotesStringify },
+      components: { footnotes: Footnote },
     })
 
     expect(result).toContain('[^1]')
@@ -285,7 +285,7 @@ describe('footnotes stringify', () => {
 
     const tree = await parse(md, { plugins: [footnotes()] })
     const result = await renderMarkdown(tree, {
-      components: { footnotes: footnotesStringify },
+      components: { footnotes: Footnote },
     })
 
     expect(result).toContain('[^note]')

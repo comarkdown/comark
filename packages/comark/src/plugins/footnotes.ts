@@ -199,18 +199,18 @@ export default defineComarkPlugin((config: FootnotesConfig = {}) => {
  * ```ts
  * import { parse } from 'comark'
  * import { renderMarkdown } from 'comark/render'
- * import footnotes, { footnotesStringify } from 'comark/plugins/footnotes'
+ * import footnotes, { Footnote } from 'comark/plugins/footnotes'
  *
  * const tree = await parse('Hello[^1]\n\n[^1]: World', {
  *   plugins: [footnotes()]
  * })
  *
  * const md = await renderMarkdown(tree, {
- *   components: { footnotes: footnotesStringify },
+ *   components: { footnotes: Footnote },
  * })
  * ```
  */
-export const footnotesStringify: ConditionalNodeHandler = {
+export const Footnote: ConditionalNodeHandler = {
   match: (node) => {
     return node[1].class === 'footnotes' || node[1].class === 'footnote-ref'
   },
