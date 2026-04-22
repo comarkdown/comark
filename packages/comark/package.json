@@ -65,8 +65,6 @@
   },
   "devDependencies": {
     "@json-render/core": "catalog:",
-    "@nuxt/kit": "catalog:",
-    "@shikijs/primitive": "catalog:",
     "@shikijs/twoslash": "catalog:",
     "@types/js-yaml": "catalog:",
     "@types/markdown-it": "catalog:",

@@ -48,9 +48,6 @@ catalogs:
     '@shikijs/langs':
       specifier: ^4.0.2
       version: 4.0.2
-    '@shikijs/primitive':
-      specifier: ^4.0.2
-      version: 4.0.2
     '@shikijs/themes':
       specifier: ^4.0.2
       version: 4.0.2
@@ -957,12 +954,6 @@ importers:
       '@json-render/core':
         specifier: 'catalog:'
         version: 0.16.0(zod@4.3.6)
-      '@nuxt/kit':
-        specifier: 'catalog:'
-        version: 4.4.2(magicast@0.5.2)
-      '@shikijs/primitive':
-        specifier: 'catalog:'
-        version: 4.0.2
       '@shikijs/twoslash':
         specifier: 'catalog:'
         version: 4.0.2(typescript@5.9.3)
@@ -1043,9 +1034,6 @@ importers:
       nuxt:
         specifier: ^4.0.0
         version: 4.4.2(@babel/core@7.29.0)(@babel/plugin-syntax-jsx@7.28.6(@babel/core@7.29.0))(@parcel/watcher@2.5.6)(@types/node@25.5.2)(@vue/compiler-sfc@3.5.32)(better-sqlite3@12.6.2)(cac@6.7.14)(db0@0.3.4(better-sqlite3@12.6.2))(eslint@10.2.0(jiti@2.6.1))(ioredis@5.10.0)(lightningcss@1.32.0)(magicast@0.5.2)(meow@13.2.0)(optionator@0.9.4)(rolldown@1.0.0-rc.15)(rollup-plugin-visualizer@6.0.11(rolldown@1.0.0-rc.15)(rollup@4.59.0))(rollup@4.59.0)(terser@5.46.0)(tsx@4.21.0)(typescript@5.9.3)(vite@8.0.8(@types/node@25.5.2)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(vue-tsc@3.2.6(typescript@5.9.3))(yaml@2.8.2)
-      shiki:
-        specifier: 'catalog:'
-        version: 4.0.2
     devDependencies:
       '@vue/server-renderer':
         specifier: ^3.5.32
