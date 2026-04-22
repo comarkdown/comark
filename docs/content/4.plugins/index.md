@@ -53,7 +53,7 @@ Comark's plugin system extends markdown functionality with specialized features.
   Convert plain-text punctuation into typographically correct Unicode characters
   ::
 
-  ::card{icon="i-lucide-braces-curly" title="Binding" to="/plugins/core/binding"}
+  ::card{icon="i-lucide-replace" title="Binding" to="/plugins/core/binding"}
   Interpolate frontmatter, runtime data, or parent props with `{{ path || default }}` shorthand
   ::
 ::
