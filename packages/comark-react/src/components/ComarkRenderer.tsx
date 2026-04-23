@@ -1,7 +1,7 @@
 import type { ComarkElement, ComarkNode, ComarkTree, ComponentManifest, NodeRenderData } from 'comark'
 import React, { lazy, Suspense, useMemo } from 'react'
 import { pascalCase, camelCase, resolveAttributes } from 'comark/utils'
-import { findLastTextNodeAndAppendNode, getCaret } from '../utils/caret'
+import { findLastTextNodeAndAppendNode, getCaret } from '../utils/caret.ts'
 
 /**
  * Helper to get tag from a ComarkNode

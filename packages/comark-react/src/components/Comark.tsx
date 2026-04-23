@@ -1,8 +1,8 @@
 import React from 'react'
 import { parse } from 'comark'
 import type { ParseOptions } from 'comark'
-import { ComarkRenderer } from './ComarkRenderer'
-import { ComarkClient } from './ComarkClient'
+import { ComarkRenderer } from './ComarkRenderer.tsx'
+import { ComarkClient } from './ComarkClient.tsx'
 
 export interface ComarkProps {
   /**

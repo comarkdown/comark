@@ -1,5 +1,5 @@
 import { defineComarkPlugin } from '../utils/helpers.ts'
-import { visit } from 'comark/utils'
+import { visit } from '../utils/index.ts'
 
 export default defineComarkPlugin(() => ({
   name: 'breaks',
