@@ -55,8 +55,8 @@ const fillPercent = computed(() => `${(ratingNum.value / 5) * 100}%`)
           <UIcon
             v-for="i in 5"
             :key="i"
-            name="i-lucide-star"
-            class="size-3 shrink-0 text-yellow-400 **:fill-current"
+            name="i-heroicons-star-20-solid"
+            class="size-3 shrink-0 text-yellow-400"
           />
         </div>
       </div>
