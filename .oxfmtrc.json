@@ -1,7 +1,9 @@
 {
   "$schema": "./node_modules/oxfmt/configuration_schema.json",
   "semi": false,
+  "printWidth": 120,
   "singleQuote": true,
   "trailingComma": "es5",
+  "singleAttributePerLine": true,
   "ignorePatterns": ["*.md", "pnpm*.yaml", "**/*.gen.ts", "**/dist/**"]
 }
