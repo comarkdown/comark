@@ -1,0 +1,7 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "semi": false,
+  "singleQuote": true,
+  "trailingComma": "es5",
+  "ignorePatterns": ["*.md", "pnpm*.yaml", "**/*.gen.ts", "**/dist/**"]
+}

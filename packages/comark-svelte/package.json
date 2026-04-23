@@ -2,26 +2,31 @@
   "name": "@comark/svelte",
   "version": "0.2.1",
   "description": "Svelte renderer for Comark (Components in Markdown)",
-  "svelte": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "type": "module",
+  "keywords": [
+    "comark",
+    "markdown",
+    "mdc",
+    "renderer",
+    "streaming",
+    "svelte"
+  ],
+  "homepage": "https://comark.dev/rendering/svelte",
+  "bugs": {
+    "url": "https://github.com/comarkdown/comark/issues"
+  },
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/comarkdown/comark.git"
   },
-  "bugs": {
-    "url": "https://github.com/comarkdown/comark/issues"
-  },
-  "homepage": "https://comark.dev/rendering/svelte",
-  "keywords": [
-    "markdown",
-    "mdc",
-    "comark",
-    "svelte",
-    "renderer",
-    "streaming"
+  "files": [
+    "dist",
+    "!dist/**/*.test.*",
+    "!dist/**/*.spec.*"
   ],
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "svelte": "./dist/index.js",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -43,11 +48,6 @@
       "svelte": "./dist/components/*"
     }
   },
-  "files": [
-    "dist",
-    "!dist/**/*.test.*",
-    "!dist/**/*.spec.*"
-  ],
   "publishConfig": {
     "access": "public"
   },
@@ -57,9 +57,21 @@
     "build:watch": "svelte-package --input src --watch",
     "test": "vitest run",
     "check": "svelte-check --tsconfig ./tsconfig.json",
-    "lint": "eslint src/",
-    "lint:fix": "eslint src/ --fix",
     "release": "release-it"
+  },
+  "dependencies": {
+    "comark": "catalog:"
+  },
+  "devDependencies": {
+    "@sveltejs/package": "catalog:",
+    "@sveltejs/vite-plugin-svelte": "catalog:",
+    "@vitest/browser": "catalog:",
+    "@vitest/browser-playwright": "catalog:",
+    "release-it": "catalog:",
+    "svelte": "catalog:",
+    "svelte-check": "catalog:",
+    "vitest": "catalog:",
+    "vitest-browser-svelte": "catalog:"
   },
   "peerDependencies": {
     "beautiful-mermaid": "catalog:",
@@ -77,19 +89,5 @@
     "katex": {
       "optional": true
     }
-  },
-  "dependencies": {
-    "comark": "catalog:"
-  },
-  "devDependencies": {
-    "@sveltejs/package": "catalog:",
-    "@sveltejs/vite-plugin-svelte": "catalog:",
-    "@vitest/browser": "catalog:",
-    "@vitest/browser-playwright": "catalog:",
-    "release-it": "catalog:",
-    "svelte": "catalog:",
-    "svelte-check": "catalog:",
-    "vitest": "catalog:",
-    "vitest-browser-svelte": "catalog:"
   }
 }
