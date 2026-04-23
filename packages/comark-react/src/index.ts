@@ -1,12 +1,12 @@
 import React from 'react'
-import { Comark } from './components/Comark'
-import { ComarkRenderer } from './components/ComarkRenderer'
+import { Comark } from './components/Comark.tsx'
+import { ComarkRenderer } from './components/ComarkRenderer.tsx'
 import type { ComarkProps } from './components/Comark'
 import type { ComarkRendererProps } from './components/ComarkRenderer'
 import type { ParseOptions } from 'comark'
 
-export { ComarkRenderer } from './components/ComarkRenderer'
-export { ComarkClient } from './components/ComarkClient'
+export { ComarkRenderer } from './components/ComarkRenderer.tsx'
+export { ComarkClient } from './components/ComarkClient.tsx'
 export { Comark }
 export type * from 'comark'
 

@@ -6,6 +6,7 @@ import binding, { Binding } from '@comark/nuxt/plugins/binding'
 import emoji from '@comark/nuxt/plugins/emoji'
 import mermaid from '@comark/nuxt/plugins/mermaid'
 import jsonRender from '@comark/nuxt/plugins/json-render'
+import footnotes from '@comark/nuxt/plugins/footnotes'
 import punctuation from '@comark/nuxt/plugins/punctuation'
 import breaks from '@comark/nuxt/plugins/breaks'
 
@@ -47,6 +48,7 @@ const pluginToggles = useLocalStorage('comark-playground-plugins', {
   emoji: true,
   mermaid: true,
   jsonRender: true,
+  footnotes: true,
   punctuation: false,
   breaks: false,
 }, { mergeDefaults: true })
@@ -87,6 +89,12 @@ const pluginDefs = [
     label: 'JSON Render',
     icon: 'i-lucide-braces',
     factory: () => jsonRender(),
+  },
+  {
+    key: 'footnotes',
+    label: 'Footnotes',
+    icon: 'i-lucide-footprint',
+    factory: () => footnotes(),
   },
   {
     key: 'punctuation',

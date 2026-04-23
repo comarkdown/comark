@@ -1,5 +1,5 @@
 import type { PluginWithOptions, MarkdownExit } from 'markdown-exit'
-import { defineComarkPlugin } from '../utils/helpers'
+import { defineComarkPlugin } from '../utils/helpers.ts'
 import type { MarkdownItPlugin, NodeHandler } from '../types'
 
 export interface MdcInlineBindingOptions {

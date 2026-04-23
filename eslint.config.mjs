@@ -13,6 +13,15 @@ export default createConfigForNuxt({
     stylistic: true,
   },
 })
+  .append({
+    files: ['packages/**/src/**'],
+    rules: {
+      'import/extensions': [
+        'error',
+        'ignorePackages',
+      ],
+    },
+  })
   .append(
     ...svelte.configs.recommended,
   )

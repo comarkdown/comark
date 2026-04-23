@@ -1,6 +1,6 @@
 import type { ComarkElement } from 'comark'
 import { defineComarkPlugin } from '../utils/helpers.ts'
-import { visit } from 'comark/utils'
+import { visit } from '../utils/index.ts'
 import { validateProps } from '../internal/props-validation.ts'
 import type { PropsValidationOptions } from '../internal/props-validation.ts'
 

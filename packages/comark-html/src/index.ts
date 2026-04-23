@@ -1,8 +1,8 @@
 import type { ParseOptions, RenderOptions } from 'comark'
 import { createParse } from 'comark'
-import { renderHTML } from './render'
+import { renderHTML } from './render.ts'
 
-export { renderHTML } from './render'
+export { renderHTML } from './render.ts'
 
 /**
  * Creates a reusable parse+render function with pre-configured options.
