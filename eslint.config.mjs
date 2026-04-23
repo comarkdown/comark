@@ -49,10 +49,6 @@ export default createConfigForNuxt({
         '@stylistic/indent': ['error', 2],
         '@stylistic/quotes': ['error', 'single'],
         '@stylistic/semi': ['error', 'never'],
-        'import/extensions': [
-          'error',
-          'ignorePackages',
-        ],
       },
     },
   )
