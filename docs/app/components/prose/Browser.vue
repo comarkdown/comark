@@ -13,7 +13,9 @@ defineProps<{
         <span class="size-3 rounded-full bg-green-400/80" />
       </div>
 
-      <div class="flex-1 flex items-center gap-1.5 bg-default rounded-md px-2 py-1.5 text-xs text-muted font-mono truncate border border-muted">
+      <div
+        class="flex-1 flex items-center gap-1.5 bg-default rounded-md px-2 py-1.5 text-xs text-muted font-mono truncate border border-muted"
+      >
         <UIcon
           name="i-lucide-lock"
           class="size-3.5 shrink-0 text-green-500 dark:text-green-400"

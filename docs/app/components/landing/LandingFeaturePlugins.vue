@@ -21,16 +21,20 @@ const props = defineProps<{
 
 const activePlugin = ref(props.plugins[0]?.id ?? '')
 
-const current = computed(() => props.plugins.find(p => p.id === activePlugin.value) ?? props.plugins[0]!)
+const current = computed(() => props.plugins.find((p) => p.id === activePlugin.value) ?? props.plugins[0]!)
 
 const highlightedSource = ref('')
 
-watch(current, async (plugin) => {
-  highlightedSource.value = await codeToHtml(plugin.input, {
-    lang: 'mdc',
-    themes: { light: 'github-light', dark: 'github-dark' },
-  })
-}, { immediate: true })
+watch(
+  current,
+  async (plugin) => {
+    highlightedSource.value = await codeToHtml(plugin.input, {
+      lang: 'mdc',
+      themes: { light: 'github-light', dark: 'github-dark' },
+    })
+  },
+  { immediate: true }
+)
 </script>
 
 <template>

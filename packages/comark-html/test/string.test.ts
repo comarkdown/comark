@@ -134,7 +134,7 @@ More content
     const html = await renderHTML(tree, {
       components: {
         infoAlert: {
-          match: node => node[0] === 'alert' && node[1].type === 'info',
+          match: (node) => node[0] === 'alert' && node[1].type === 'info',
           handler: async ([_tag, _attrs, ...children], { render }) => {
             return `<div class="info-box">${await render(children)}</div>`
           },
@@ -176,7 +176,7 @@ Hello :badge{:label="frontmatter.user.name"}!
       expect(html).toContain('title="42"')
     })
 
-    it('exposes the enclosing component\'s props to nested bindings', async () => {
+    it("exposes the enclosing component's props to nested bindings", async () => {
       const tree = await parse(`::card{title="Hello" variant="primary"}
 :::badge{:color="props.variant" :text="props.title"}
 :::

@@ -11,7 +11,7 @@ const filteredNavigation = useFilteredNavigation()
 const mainNavigation = useMainNavigation()
 const nuxtApp = useNuxtApp()
 const currentSectionTitle = computed(() => {
-  return mainNavigation.value.find(item => item.active)?.label
+  return mainNavigation.value.find((item) => item.active)?.label
 })
 
 function refreshHeading(opened: boolean) {
@@ -28,7 +28,9 @@ function refreshHeading(opened: boolean) {
       highlight-variant="circuit"
       class="hidden lg:block lg:backdrop-blur-none lg:col-span-2"
     />
-    <div class="order-first lg:hidden sticky top-(--ui-header-height) z-10 bg-default/75 lg:bg-[initial] backdrop-blur -mx-4 p-6 border-b border-dashed border-default flex justify-between">
+    <div
+      class="order-first lg:hidden sticky top-(--ui-header-height) z-10 bg-default/75 lg:bg-[initial] backdrop-blur -mx-4 p-6 border-b border-dashed border-default flex justify-between"
+    >
       <UDrawer
         v-model:open="menuDrawerOpen"
         direction="left"

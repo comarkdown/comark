@@ -1,16 +1,22 @@
 {
   "name": "@comark/nuxt",
-  "type": "module",
   "version": "0.2.1",
   "description": "Nuxt module for Comark",
+  "homepage": "https://comark.dev/rendering/nuxt",
+  "bugs": {
+    "url": "https://github.com/comarkdown/comark/issues"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/comarkdown/comark.git"
   },
-  "bugs": {
-    "url": "https://github.com/comarkdown/comark/issues"
-  },
-  "homepage": "https://comark.dev/rendering/nuxt",
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "main": "./dist/module.js",
+  "module": "./dist/module.js",
+  "types": "./dist/module.d.ts",
   "exports": {
     ".": "./dist/module.js",
     "./plugins/*": "./dist/plugins/*.js",
@@ -18,12 +24,6 @@
     "./parse": "./dist/parse.js",
     "./render": "./dist/render.js"
   },
-  "main": "./dist/module.js",
-  "module": "./dist/module.js",
-  "types": "./dist/module.d.ts",
-  "files": [
-    "dist"
-  ],
   "publishConfig": {
     "access": "public"
   },
@@ -35,17 +35,17 @@
     "prepack": "tsc",
     "release": "release-it"
   },
-  "peerDependencies": {
-    "nuxt": "^4.0.0"
-  },
   "dependencies": {
-    "comark": "catalog:",
     "@comark/vue": "catalog:",
-    "@nuxt/kit": "catalog:"
+    "@nuxt/kit": "catalog:",
+    "comark": "catalog:"
   },
   "devDependencies": {
     "@vue/server-renderer": "catalog:",
     "vitest": "catalog:",
     "vue": "catalog:"
+  },
+  "peerDependencies": {
+    "nuxt": "^4.0.0"
   }
 }

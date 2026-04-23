@@ -6,7 +6,7 @@ export default defineComarkPlugin(() => ({
   post(state) {
     visit(
       state.tree,
-      node => Array.isArray(node) && node.length > 2,
+      (node) => Array.isArray(node) && node.length > 2,
       (node) => {
         const parent = node as any[]
         const newParent = [parent[0], parent[1]]
@@ -27,8 +27,7 @@ export default defineComarkPlugin(() => ({
                 newParent.push(['br', {}])
               }
             })
-          }
-          else {
+          } else {
             newParent.push(child)
           }
         }
@@ -37,8 +36,7 @@ export default defineComarkPlugin(() => ({
           parent.length = 0
           parent.push(...newParent)
         }
-      },
-
+      }
     )
   },
 }))

@@ -56,8 +56,7 @@ export function Mermaid({
         let resolvedTheme
         if (typeof themeProp === 'string') {
           resolvedTheme = THEMES[themeProp]
-        }
-        else if (typeof themeProp === 'object') {
+        } else if (typeof themeProp === 'object') {
           resolvedTheme = themeProp
         }
 
@@ -68,8 +67,7 @@ export function Mermaid({
 
         const svg = renderMermaidSVG(content, resolvedTheme)
         setSvgContent(svg)
-      }
-      catch (err) {
+      } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to render diagram')
       }
     }

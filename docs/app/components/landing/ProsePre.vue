@@ -1,15 +1,18 @@
 <script setup lang="ts">
 import { textContent } from 'comark/utils'
 
-const props = withDefaults(defineProps<{
-  // eslint-disable-next-line vue/prop-name-casing
-  __node: any
-  language?: string
-  filename?: string
-  containerClass?: string
-}>(), {
-  containerClass: 'my-5',
-})
+const props = withDefaults(
+  defineProps<{
+    // eslint-disable-next-line vue/prop-name-casing
+    __node: any
+    language?: string
+    filename?: string
+    containerClass?: string
+  }>(),
+  {
+    containerClass: 'my-5',
+  }
+)
 
 const langToIcon: Record<string, string> = {
   ts: 'i-logos-typescript-icon',
@@ -60,8 +63,9 @@ async function copyCode() {
     setTimeout(() => {
       copied.value = false
     }, 2000)
+  } catch {
+    /* clipboard API may fail silently */
   }
-  catch { /* clipboard API may fail silently */ }
 }
 </script>
 
@@ -85,11 +89,19 @@ async function copyCode() {
       variant="outline"
       size="xs"
       :aria-label="copied ? 'Copied' : 'Copy code'"
-      :class="['absolute z-10 lg:opacity-0 lg:group-hover:opacity-100 transition', hasHeader ? 'top-[11px] right-[11px]' : 'top-2.5 right-2.5']"
+      :class="[
+        'absolute z-10 lg:opacity-0 lg:group-hover:opacity-100 transition',
+        hasHeader ? 'top-[11px] right-[11px]' : 'top-2.5 right-2.5',
+      ]"
       @click="copyCode"
     />
 
-    <pre :class="['shiki-container !m-0 font-mono text-sm border border-muted bg-muted overflow-x-auto px-4 py-3', hasHeader ? 'rounded-b-md rounded-t-none' : 'rounded-md']"><slot /></pre>
+    <pre
+      :class="[
+        'shiki-container !m-0 font-mono text-sm border border-muted bg-muted overflow-x-auto px-4 py-3',
+        hasHeader ? 'rounded-b-md rounded-t-none' : 'rounded-md',
+      ]"
+    ><slot /></pre>
   </div>
 </template>
 

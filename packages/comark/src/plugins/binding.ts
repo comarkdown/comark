@@ -17,41 +17,34 @@ const markdownItInlineBinding: PluginWithOptions<MdcInlineBindingOptions> = (md,
   md.inline.ruler.after('entity', 'mdc_inline_binding', (state, silent) => {
     const start = state.pos
 
-    if (state.src[start] !== '{' || state.src[start + 1] !== '{')
-      return false
+    if (state.src[start] !== '{' || state.src[start + 1] !== '{') return false
 
     // Find the closing `}}`
     let end = start + 2
     while (end < state.posMax - 1) {
-      if (state.src[end] === '}' && state.src[end + 1] === '}')
-        break
+      if (state.src[end] === '}' && state.src[end + 1] === '}') break
       end += 1
     }
 
-    if (end >= state.posMax - 1)
-      return false
+    if (end >= state.posMax - 1) return false
 
     const inner = state.src.slice(start + 2, end).trim()
-    if (!inner)
-      return false
+    if (!inner) return false
 
     // Split on the first `||` to separate value and default
     const separator = inner.indexOf('||')
     const value = separator === -1 ? inner : inner.slice(0, separator).trim()
     const defaultValue = separator === -1 ? '' : inner.slice(separator + 2).trim()
 
-    if (!value)
-      return false
+    if (!value) return false
 
     state.pos = end + 2
 
-    if (silent)
-      return true
+    if (silent) return true
 
     const token = state.push('mdc_inline_component', tag, 0)
     token.attrSet(':value', value)
-    if (defaultValue)
-      token.attrSet('defaultValue', defaultValue)
+    if (defaultValue) token.attrSet('defaultValue', defaultValue)
 
     return true
   })
@@ -60,9 +53,7 @@ const markdownItInlineBinding: PluginWithOptions<MdcInlineBindingOptions> = (md,
 export default defineComarkPlugin((opts: MdcInlineBindingOptions = {}) => {
   return {
     name: 'binding',
-    markdownItPlugins: [
-      ((md: MarkdownExit) => markdownItInlineBinding(md, opts)) as unknown as MarkdownItPlugin,
-    ],
+    markdownItPlugins: [((md: MarkdownExit) => markdownItInlineBinding(md, opts)) as unknown as MarkdownItPlugin],
   }
 })
 

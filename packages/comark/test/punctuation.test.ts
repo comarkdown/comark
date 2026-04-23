@@ -14,7 +14,7 @@ describe('punctuation plugin', () => {
   })
 
   it('should convert straight single quotes to smart quotes', async () => {
-    const md = 'She said \'hello\' to him.'
+    const md = "She said 'hello' to him."
     const tree = await parse(md, { plugins: [punctuation()] })
 
     const text = flattenText(tree.nodes)
@@ -23,7 +23,7 @@ describe('punctuation plugin', () => {
   })
 
   it('should handle apostrophes in contractions', async () => {
-    const md = 'don\'t won\'t can\'t'
+    const md = "don't won't can't"
     const tree = await parse(md, { plugins: [punctuation()] })
 
     const text = flattenText(tree.nodes)
@@ -226,8 +226,7 @@ function flattenText(nodes: any[]): string {
   for (const node of nodes) {
     if (typeof node === 'string') {
       text += node
-    }
-    else if (Array.isArray(node) && node.length > 2) {
+    } else if (Array.isArray(node) && node.length > 2) {
       text += flattenText(node.slice(2))
     }
   }

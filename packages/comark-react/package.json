@@ -1,16 +1,22 @@
 {
   "name": "@comark/react",
-  "type": "module",
   "version": "0.2.1",
   "description": "React components for Comark",
+  "homepage": "https://comark.dev/rendering/react",
+  "bugs": {
+    "url": "https://github.com/comarkdown/comark/issues"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/comarkdown/comark.git"
   },
-  "bugs": {
-    "url": "https://github.com/comarkdown/comark/issues"
-  },
-  "homepage": "https://comark.dev/rendering/react",
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": "./dist/index.js",
     "./plugins/*": "./dist/plugins/*.js",
@@ -19,12 +25,6 @@
     "./render": "./dist/render.js",
     "./components/*": "./dist/components/*.js"
   },
-  "main": "./dist/index.js",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "files": [
-    "dist"
-  ],
   "publishConfig": {
     "access": "public"
   },
@@ -36,10 +36,20 @@
     "prepack": "tsc",
     "release": "release-it"
   },
+  "dependencies": {
+    "comark": "catalog:"
+  },
+  "devDependencies": {
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "vitest": "catalog:"
+  },
   "peerDependencies": {
-    "react": "^19.0.0",
     "beautiful-mermaid": "catalog:",
     "katex": "catalog:",
+    "react": "^19.0.0",
     "shiki": "catalog:"
   },
   "peerDependenciesMeta": {
@@ -52,15 +62,5 @@
     "katex": {
       "optional": true
     }
-  },
-  "dependencies": {
-    "comark": "catalog:"
-  },
-  "devDependencies": {
-    "@types/react": "catalog:",
-    "@types/react-dom": "catalog:",
-    "react": "catalog:",
-    "react-dom": "catalog:",
-    "vitest": "catalog:"
   }
 }

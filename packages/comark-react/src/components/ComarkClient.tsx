@@ -34,21 +34,12 @@ function ComarkContent({
   )
 }
 
-export function ComarkClient({
-  children,
-  markdown = '',
-  options = {},
-  plugins = [],
-  ...rest
-}: ComarkProps) {
+export function ComarkClient({ children, markdown = '', options = {}, plugins = [], ...rest }: ComarkProps) {
   const content = children ? String(children) : markdown
 
   // Re-creates the promise only when content changes.
   // Note: options/plugins should be stable references (defined outside render or memoized).
-  const parsePromise = useMemo(
-    () => parse(content, { ...options, plugins }),
-    [content],
-  )
+  const parsePromise = useMemo(() => parse(content, { ...options, plugins }), [content])
 
   // Keep showing the previous parsed result while a new parse is pending —
   // prevents blank flashes during rapid streaming updates.
@@ -56,7 +47,10 @@ export function ComarkClient({
 
   return (
     <Suspense fallback={null}>
-      <ComarkContent parsePromise={deferredPromise} {...rest} />
+      <ComarkContent
+        parsePromise={deferredPromise}
+        {...rest}
+      />
     </Suspense>
   )
 }

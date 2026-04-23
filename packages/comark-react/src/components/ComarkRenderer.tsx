@@ -17,19 +17,22 @@ function cssStringToObject(cssString: string): Record<string, string> {
   return cssString
     .split(';')
     .filter(Boolean)
-    .reduce((acc, rule) => {
-      const [prop, value] = rule.split(':')
-      if (!prop || !value) return acc
+    .reduce(
+      (acc, rule) => {
+        const [prop, value] = rule.split(':')
+        if (!prop || !value) return acc
 
-      let camelProp = prop.trim()
+        let camelProp = prop.trim()
 
-      if (!prop.startsWith('--')) {
-        camelProp = camelCase(camelProp)
-      }
+        if (!prop.startsWith('--')) {
+          camelProp = camelCase(camelProp)
+        }
 
-      acc[camelProp] = value.trim()
-      return acc
-    }, {} as Record<string, string>)
+        acc[camelProp] = value.trim()
+        return acc
+      },
+      {} as Record<string, string>
+    )
 }
 
 /**
@@ -59,9 +62,7 @@ function resolveComponent(tag: string, components: Record<string, any>, componen
   const pascalTag = pascalCase(tag)
   const proseTag = `Prose${pascalTag}`
 
-  let resolvedComponent = components[proseTag]
-    || components[tag]
-    || components[pascalTag]
+  let resolvedComponent = components[proseTag] || components[tag] || components[pascalTag]
 
   // If not in components map and manifest is provided, try dynamic resolution
   if (!resolvedComponent && componentsManifest) {
@@ -70,7 +71,10 @@ function resolveComponent(tag: string, components: Record<string, any>, componen
     if (!asyncComponentCache.has(cacheKey)) {
       const promise = componentsManifest(tag)
       if (promise) {
-        asyncComponentCache.set(cacheKey, lazy(() => promise as Promise<{ default: React.ComponentType<any> }>))
+        asyncComponentCache.set(
+          cacheKey,
+          lazy(() => promise as Promise<{ default: React.ComponentType<any> }>)
+        )
       }
     }
     resolvedComponent = asyncComponentCache.get(cacheKey)
@@ -88,7 +92,7 @@ function renderNode(
   key?: string | number,
   componentsManifest?: ComponentManifest,
   parent?: ComarkNode,
-  renderData: NodeRenderData = { frontmatter: {}, meta: {}, data: {}, props: {} },
+  renderData: NodeRenderData = { frontmatter: {}, meta: {}, data: {}, props: {} }
 ): React.ReactNode {
   // Handle text nodes (strings)
   if (typeof node === 'string') {
@@ -126,14 +130,11 @@ function renderNode(
       const v = resolved[k]
       if (k === 'className' || k === 'class') {
         props.className = v
-      }
-      else if (k === 'style' && typeof v === 'string') {
+      } else if (k === 'style' && typeof v === 'string') {
         props.style = cssStringToObject(v)
-      }
-      else if (k === 'tabindex') {
+      } else if (k === 'tabindex') {
         props.tabIndex = v
-      }
-      else {
+      } else {
         props[k] = v
       }
     }
@@ -163,8 +164,7 @@ function renderNode(
 
     for (let i = 0; i < children.length; i++) {
       const child = children[i]
-      if (child === undefined || child === null)
-        continue
+      if (child === undefined || child === null) continue
 
       // Check if this is a slot template (array with tag 'template')
       const childTag = getTag(child)
@@ -177,8 +177,7 @@ function renderNode(
 
         if (childProps.name) {
           slotName = childProps.name
-        }
-        else {
+        } else {
           // Use for...in instead of Object.keys().find() — avoids intermediate array
           for (const pk in childProps) {
             if (pk.startsWith('#')) {
@@ -191,7 +190,9 @@ function renderNode(
         if (slotName) {
           const slotChildren = getChildren(child)
           slots[slotName] = slotChildren
-            .map((slotChild: ComarkNode, idx: number) => renderNode(slotChild, components, idx, componentsManifest, node, childrenRenderData))
+            .map((slotChild: ComarkNode, idx: number) =>
+              renderNode(slotChild, components, idx, componentsManifest, node, childrenRenderData)
+            )
             .filter((slotChild): slotChild is React.ReactNode => slotChild !== null)
           continue
         }
@@ -216,8 +217,7 @@ function renderNode(
         if (slotName === 'default') {
           // Default slot becomes children
           finalProps.children = slots[slotName]
-        }
-        else {
+        } else {
           // Named slots become props with slot prefix
           finalProps[`slot${slotName.charAt(0).toUpperCase() + slotName.slice(1)}`] = slots[slotName]
         }
@@ -228,7 +228,10 @@ function renderNode(
       const isLazyComponent = asyncComponentCache.has(componentTag)
       if (isLazyComponent) {
         return (
-          <Suspense key={key} fallback={null}>
+          <Suspense
+            key={key}
+            fallback={null}
+          >
             {React.createElement(Component, finalProps)}
           </Suspense>
         )
@@ -342,9 +345,5 @@ export const ComarkRenderer: React.FC<ComarkRendererProps> = ({
   }, [tree, customComponents, componentsManifest, streaming, caret, data])
 
   // Wrap in a fragment
-  return (
-    <div className={`comark-content ${className || ''}`}>
-      {renderedNodes}
-    </div>
-  )
+  return <div className={`comark-content ${className || ''}`}>{renderedNodes}</div>
 }

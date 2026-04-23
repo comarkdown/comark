@@ -41,7 +41,8 @@ export default defineNuxtModule<ComarkModuleOptions>({
         name: 'defineComarkComponent',
         as: 'defineComarkComponent',
         from: '@comark/vue',
-      }, {
+      },
+      {
         name: 'defineComarkRendererComponent',
         as: 'defineComarkRendererComponent',
         from: '@comark/vue',

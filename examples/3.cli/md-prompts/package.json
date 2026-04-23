@@ -3,13 +3,13 @@
   "version": "0.0.1",
   "private": true,
   "description": "CLI prompts with Comark",
-  "main": "index.js",
+  "license": "MIT",
+  "author": "Comark team",
   "type": "module",
+  "main": "index.js",
   "scripts": {
     "dev": "node cli.ts"
   },
-  "author": "Comark team",
-  "license": "MIT",
   "dependencies": {
     "@clack/prompts": "catalog:",
     "@comark/ansi": "workspace:*",

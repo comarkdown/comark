@@ -116,7 +116,7 @@ description: "It's a test"
 Content`
     const result = parseFrontmatter(input)
     expect(result.data.title).toBe('Hello: World')
-    expect(result.data.description).toBe('It\'s a test')
+    expect(result.data.description).toBe("It's a test")
   })
 
   it('should handle CRLF line endings', () => {
@@ -290,7 +290,7 @@ describe('renderFrontmatter with frontmatterOptions', () => {
     expect(result).toContain('---')
     // With lineWidth: 40, js-yaml should wrap the long string
     const lines = result.split('\n')
-    const descLines = lines.filter(l => l.includes('description') || (l.startsWith('  ') && !l.startsWith('  -')))
+    const descLines = lines.filter((l) => l.includes('description') || (l.startsWith('  ') && !l.startsWith('  -')))
     expect(descLines.length).toBeGreaterThan(1)
 
     expect(result).toEqual(`---\ndescription: >-
@@ -325,7 +325,7 @@ Content`)
     const data = { description: longValue }
     const result = renderFrontmatter(data, 'Content')
     // Default: no line wrapping, value stays on one line
-    const descLine = result.split('\n').find(l => l.startsWith('description:'))
+    const descLine = result.split('\n').find((l) => l.startsWith('description:'))
     expect(descLine).toContain(longValue)
   })
 

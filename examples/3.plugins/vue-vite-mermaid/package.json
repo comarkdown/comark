@@ -9,8 +9,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@tailwindcss/vite": "catalog:",
     "@comark/vue": "catalog:",
+    "@tailwindcss/vite": "catalog:",
     "beautiful-mermaid": "catalog:",
     "tailwindcss": "catalog:",
     "vue": "catalog:"

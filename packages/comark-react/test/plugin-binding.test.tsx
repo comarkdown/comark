@@ -7,7 +7,11 @@ import binding, { Binding } from '../src/plugins/binding'
 async function renderMarkdown(markdown: string, props: Record<string, any> = {}) {
   const tree = await parse(markdown, { plugins: [binding()] })
   const html = renderToString(
-    <ComarkRenderer tree={tree} components={{ binding: Binding }} {...props} />,
+    <ComarkRenderer
+      tree={tree}
+      components={{ binding: Binding }}
+      {...props}
+    />
   )
   // React SSR inserts `<!-- -->` separators between adjacent text nodes; strip
   // them so assertions compare against the visible text.

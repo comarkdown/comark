@@ -17,8 +17,7 @@ function walkDir(dir) {
     const full = join(dir, entry)
     if (statSync(full).isDirectory()) {
       files.push(...walkDir(full))
-    }
-    else if (/\.tsx?$/.test(entry) && !entry.endsWith('.d.ts')) {
+    } else if (/\.tsx?$/.test(entry) && !entry.endsWith('.d.ts')) {
       files.push(full)
     }
   }
@@ -40,20 +39,16 @@ for (const srcFile of srcFiles) {
   if (!srcRel.startsWith('.')) srcRel = './' + srcRel
 
   const content = readFileSync(srcFile, 'utf-8')
-  const hasDefault = /(?:^|\n)export\s+default\b/.test(content)
-    || /(?:^|\n)export\s*\{\s*default\s*\}/.test(content)
+  const hasDefault = /(?:^|\n)export\s+default\b/.test(content) || /(?:^|\n)export\s*\{\s*default\s*\}/.test(content)
 
   // JS stub: re-export from source (bundlers handle .ts imports)
-  writeFileSync(distJs,
-    `export * from '${srcRel}'\n`
-    + (hasDefault ? `export { default } from '${srcRel}'\n` : ''),
-  )
+  writeFileSync(distJs, `export * from '${srcRel}'\n` + (hasDefault ? `export { default } from '${srcRel}'\n` : ''))
 
   // .d.ts stub: TypeScript follows this to find types from source
   const srcRelNoExt = srcRel.replace(/\.tsx?$/, '')
-  writeFileSync(distDts,
-    `export * from '${srcRelNoExt}'\n`
-    + (hasDefault ? `export { default } from '${srcRelNoExt}'\n` : ''),
+  writeFileSync(
+    distDts,
+    `export * from '${srcRelNoExt}'\n` + (hasDefault ? `export { default } from '${srcRelNoExt}'\n` : '')
   )
 }
 

@@ -62,7 +62,9 @@ export default function App() {
       <div class="flex items-center border-b border-default">
         <button
           class="flex items-center gap-2 border-b-2 px-5 py-2.5 font-mono text-sm"
-          :class="activeTab === 'vue' ? 'border-primary text-primary' : 'border-transparent text-muted hover:text-highlighted'"
+          :class="
+            activeTab === 'vue' ? 'border-primary text-primary' : 'border-transparent text-muted hover:text-highlighted'
+          "
           @click="activeTab = 'vue'"
         >
           <UIcon
@@ -73,7 +75,11 @@ export default function App() {
         </button>
         <button
           class="flex items-center gap-2 border-b-2 px-5 py-2.5 font-mono text-sm"
-          :class="activeTab === 'react' ? 'border-primary text-primary' : 'border-transparent text-muted hover:text-highlighted'"
+          :class="
+            activeTab === 'react'
+              ? 'border-primary text-primary'
+              : 'border-transparent text-muted hover:text-highlighted'
+          "
           @click="activeTab = 'react'"
         >
           <UIcon

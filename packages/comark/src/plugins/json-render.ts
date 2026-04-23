@@ -23,18 +23,11 @@ function jsonRenderElementToAst(element: UIElement, elements: Record<string, UIE
     return String(element.props.content)
   }
 
-  const children = element.children?.map(childName => elements[childName])
-    .filter(Boolean) || []
-  return [
-    element.type,
-    element.props,
-    ...children.map(child => jsonRenderElementToAst(child, elements)),
-  ]
+  const children = element.children?.map((childName) => elements[childName]).filter(Boolean) || []
+  return [element.type, element.props, ...children.map((child) => jsonRenderElementToAst(child, elements))]
 }
 
-interface JsonRenderConfig {
-
-}
+interface JsonRenderConfig {}
 
 /**
  * Plugin for rendering [JSON Render](https://json-render.dev/) specs as UI components.
@@ -90,29 +83,27 @@ export default defineComarkPlugin((_config: JsonRenderConfig = {}) => ({
   post: async (state) => {
     visit(
       state.tree,
-      node => node[0] === 'pre' && (
-        (node[1] as ComarkElementAttributes).language === 'json-render'
-        || (node[1] as ComarkElementAttributes).language === 'yaml-render'
-      ),
+      (node) =>
+        node[0] === 'pre' &&
+        ((node[1] as ComarkElementAttributes).language === 'json-render' ||
+          (node[1] as ComarkElementAttributes).language === 'yaml-render'),
       (preNode) => {
         const language = (preNode[1] as ComarkElementAttributes).language
         try {
           let spec: Spec | UIElement | undefined = undefined
           if (language === 'json-render') {
             spec = JSON.parse(textContent(preNode)) as unknown as Spec | UIElement
-          }
-          else if (language === 'yaml-render') {
+          } else if (language === 'yaml-render') {
             spec = parseYaml(textContent(preNode)) as unknown as Spec | UIElement
           }
 
           if (spec) {
             return jsonRenderToAst(spec)
           }
-        }
-        catch {
+        } catch {
           // nothing to do
         }
-      },
+      }
     )
   },
 }))

@@ -28,8 +28,7 @@ export const Mermaid = ([, attrs]: ComarkElement, state: State): string => {
   try {
     const svg = renderMermaidASCII(content, { theme })
     return svg + state.context.blockSeparator
-  }
-  catch {
+  } catch {
     return content + state.context.blockSeparator
   }
 }

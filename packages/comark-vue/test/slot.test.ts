@@ -21,9 +21,10 @@ describe('renderSlot with unwrap prop', () => {
 
     const app = createSSRApp({
       setup() {
-        return () => h(TestComponent, null, {
-          default: () => h('div', {}, [h('p', {}, 'Hello World')]),
-        })
+        return () =>
+          h(TestComponent, null, {
+            default: () => h('div', {}, [h('p', {}, 'Hello World')]),
+          })
       },
     })
 
@@ -43,9 +44,10 @@ describe('renderSlot with unwrap prop', () => {
 
     const app = createSSRApp({
       setup() {
-        return () => h(TestComponent, null, {
-          default: () => h('div', {}, [h('p', {}, 'Hello World')]),
-        })
+        return () =>
+          h(TestComponent, null, {
+            default: () => h('div', {}, [h('p', {}, 'Hello World')]),
+          })
       },
     })
 
@@ -64,9 +66,10 @@ describe('renderSlot with unwrap prop', () => {
 
     const app = createSSRApp({
       setup() {
-        return () => h(TestComponent, null, {
-          default: () => h('div', {}, [h('p', {}, 'Content')]),
-        })
+        return () =>
+          h(TestComponent, null, {
+            default: () => h('div', {}, [h('p', {}, 'Content')]),
+          })
       },
     })
 
@@ -84,9 +87,10 @@ describe('renderSlot with unwrap prop', () => {
 
     const app = createSSRApp({
       setup() {
-        return () => h(TestComponent, null, {
-          default: () => h('div', {}, [h('p', {}, 'Bare text')]),
-        })
+        return () =>
+          h(TestComponent, null, {
+            default: () => h('div', {}, [h('p', {}, 'Bare text')]),
+          })
       },
     })
 
@@ -106,9 +110,10 @@ describe('renderSlot with unwrap prop', () => {
 
     const app = createSSRApp({
       setup() {
-        return () => h(TestComponent, null, {
-          default: () => h('p', 'provided slot'),
-        })
+        return () =>
+          h(TestComponent, null, {
+            default: () => h('p', 'provided slot'),
+          })
       },
     })
 

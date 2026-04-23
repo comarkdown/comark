@@ -11,8 +11,8 @@ function html(body: string): string {
   return body.replace(/<!--[[\]\-\d!]*-->/g, '').replace(/<!---->/g, '')
 }
 
-const CARET_STYLE
-  = 'background-color: currentColor; display: inline-block; margin-left: 0.25rem; margin-right: 0.25rem; animation: pulse 0.75s cubic-bezier(0.4,0,0.6,1) infinite;'
+const CARET_STYLE =
+  'background-color: currentColor; display: inline-block; margin-left: 0.25rem; margin-right: 0.25rem; animation: pulse 0.75s cubic-bezier(0.4,0,0.6,1) infinite;'
 
 describe('ComarkNode', () => {
   it('renders a paragraph', async () => {
@@ -86,9 +86,7 @@ describe('ComarkNode', () => {
     const { body } = render(ComarkNode, {
       props: { node: 'text', caretClass: 'my-caret' },
     })
-    expect(html(body)).toBe(
-      `text<span class="my-caret" style="${CARET_STYLE}">\u2009</span>`,
-    )
+    expect(html(body)).toBe(`text<span class="my-caret" style="${CARET_STYLE}">\u2009</span>`)
   })
 
   it('renders caret without class when caretClass is empty string', () => {
@@ -105,9 +103,7 @@ describe('ComarkNode', () => {
     })
     const output = html(body)
     // Caret should be inside <strong>, after "last"
-    expect(output).toContain(
-      `last<span style="${CARET_STYLE}">\u2009</span></strong>`,
-    )
+    expect(output).toContain(`last<span style="${CARET_STYLE}">\u2009</span></strong>`)
     // Not after the </strong>
     expect(output).not.toContain(`</strong><span`)
   })
@@ -119,9 +115,7 @@ describe('ComarkNode', () => {
     })
     const output = html(body)
     // Caret should be at the very deepest level, after "deep"
-    expect(output).toContain(
-      `deep<span class="c" style="${CARET_STYLE}">\u2009</span>`,
-    )
+    expect(output).toContain(`deep<span class="c" style="${CARET_STYLE}">\u2009</span>`)
   })
 
   it('does not attach caret to non-last children', async () => {

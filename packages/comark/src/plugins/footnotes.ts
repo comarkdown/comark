@@ -32,10 +32,7 @@ const FOOTNOTE_DEF_RE = /^\[\^([^\s\]]+)\]:[ \t]?(.*)$/gm
  * on every node in the tree.
  */
 function maybeFootnoteRef(node: ComarkNode): boolean {
-  return Array.isArray(node)
-    && node[0] === 'span'
-    && node.length === 3
-    && typeof node[2] === 'string'
+  return Array.isArray(node) && node[0] === 'span' && node.length === 3 && typeof node[2] === 'string'
 }
 
 /**
@@ -53,12 +50,12 @@ function isFootnoteRef(node: ComarkNode): string | null {
 
   const child = node[2] as string
   // Must start with '^' and have at least one label char
-  if (child.charCodeAt(0) !== 0x5E /* ^ */ || child.length < 2) return null
+  if (child.charCodeAt(0) !== 0x5e /* ^ */ || child.length < 2) return null
 
   // Check for whitespace using charCode scanning (avoid regex)
   for (let i = 1; i < child.length; i++) {
     const c = child.charCodeAt(i)
-    if (c === 0x20 || c === 0x09 || c === 0x0A || c === 0x0D) return null
+    if (c === 0x20 || c === 0x09 || c === 0x0a || c === 0x0d) return null
   }
 
   return child.slice(1)
@@ -84,11 +81,7 @@ function isFootnoteRef(node: ComarkNode): string | null {
  * ```
  */
 export default defineComarkPlugin((config: FootnotesConfig = {}) => {
-  const {
-    label = 'Footnotes',
-    hr = true,
-    backRef = '↩',
-  } = config
+  const { label = 'Footnotes', hr = true, backRef = '↩' } = config
 
   return {
     name: 'footnotes',
@@ -113,26 +106,28 @@ export default defineComarkPlugin((config: FootnotesConfig = {}) => {
       const refIndexMap = new Map<string, number>()
 
       // Replace footnote reference spans with sup > a elements
-      visit(
-        state.tree,
-        maybeFootnoteRef,
-        (node) => {
-          const refLabel = isFootnoteRef(node)
-          if (!refLabel || !definitions.has(refLabel)) return
+      visit(state.tree, maybeFootnoteRef, (node) => {
+        const refLabel = isFootnoteRef(node)
+        if (!refLabel || !definitions.has(refLabel)) return
 
-          if (!refIndexMap.has(refLabel)) {
-            refIndexMap.set(refLabel, refIndexMap.size + 1)
-          }
-          const refIndex = refIndexMap.get(refLabel)!
+        if (!refIndexMap.has(refLabel)) {
+          refIndexMap.set(refLabel, refIndexMap.size + 1)
+        }
+        const refIndex = refIndexMap.get(refLabel)!
 
-          return ['sup', { class: 'footnote-ref' },
-            ['a', {
+        return [
+          'sup',
+          { class: 'footnote-ref' },
+          [
+            'a',
+            {
               href: `#fn-${refLabel}`,
               id: `fnref-${refLabel}`,
-            }, `[${refIndex}]`],
-          ]
-        },
-      )
+            },
+            `[${refIndex}]`,
+          ],
+        ]
+      })
 
       let nodes = state.tree.nodes
 
@@ -144,8 +139,7 @@ export default defineComarkPlugin((config: FootnotesConfig = {}) => {
           const child = node[i]
           if (typeof child === 'string') {
             if ((child as string).trim().length > 0) return true
-          }
-          else if (Array.isArray(child) && child[0] != null) {
+          } else if (Array.isArray(child) && child[0] != null) {
             return true
           }
         }
@@ -163,12 +157,13 @@ export default defineComarkPlugin((config: FootnotesConfig = {}) => {
       for (const [refLabel] of refIndexMap) {
         const content = definitions.get(refLabel)!
 
-        footnoteItems.push(
-          ['li', { id: `fn-${refLabel}` },
-            content, ' ',
-            ['a', { href: `#fnref-${refLabel}`, class: 'footnote-backref' }, backRef],
-          ],
-        )
+        footnoteItems.push([
+          'li',
+          { id: `fn-${refLabel}` },
+          content,
+          ' ',
+          ['a', { href: `#fnref-${refLabel}`, class: 'footnote-backref' }, backRef],
+        ])
       }
 
       const sectionChildren: ComarkNode[] = []
@@ -180,9 +175,7 @@ export default defineComarkPlugin((config: FootnotesConfig = {}) => {
       }
       sectionChildren.push(['ol', { class: 'footnotes-list' }, ...footnoteItems])
 
-      nodes.push(
-        ['section', { class: 'footnotes' }, ...sectionChildren],
-      )
+      nodes.push(['section', { class: 'footnotes' }, ...sectionChildren])
 
       state.tree.nodes = nodes
     },
@@ -216,7 +209,7 @@ export const Footnote: ConditionalNodeHandler = {
   },
   handler: (node) => {
     if (node[1].class === 'footnotes') {
-      const ol = node.find(n => Array.isArray(n) && n[0] === 'ol') as ComarkElement
+      const ol = node.find((n) => Array.isArray(n) && n[0] === 'ol') as ComarkElement
       if (!ol) return ''
       let result = ''
       for (let i = 2; i < ol.length; i++) {

@@ -24,7 +24,7 @@ const props = defineProps({
    * Content to render
    */
   value: {
-    type: Object as PropType<{ id?: string, body: MinimarkTree, summary: MinimarkTree }>,
+    type: Object as PropType<{ id?: string; body: MinimarkTree; summary: MinimarkTree }>,
     required: true,
   },
   /**
@@ -109,20 +109,48 @@ const data = computed(() => {
   }
 })
 
-const proseComponentMap = Object.fromEntries(['p', 'a', 'blockquote', 'code', 'pre', 'em', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'hr', 'img', 'ul', 'ol', 'li', 'strong', 'table', 'thead', 'tbody', 'td', 'th', 'tr', 'script'].map(t => [t, `prose-${t}`]))
+const proseComponentMap = Object.fromEntries(
+  [
+    'p',
+    'a',
+    'blockquote',
+    'code',
+    'pre',
+    'em',
+    'h1',
+    'h2',
+    'h3',
+    'h4',
+    'h5',
+    'h6',
+    'hr',
+    'img',
+    'ul',
+    'ol',
+    'li',
+    'strong',
+    'table',
+    'thead',
+    'tbody',
+    'td',
+    'th',
+    'tr',
+    'script',
+  ].map((t) => [t, `prose-${t}`])
+)
 
 const { mdc } = useRuntimeConfig().public || {}
 const propsDataMDC = computed(() => props.data.mdc)
 const tags = computed(() => ({
-  ...mdc?.components?.prose && props.prose !== false ? proseComponentMap : {},
-  ...mdc?.components?.map || {},
+  ...(mdc?.components?.prose && props.prose !== false ? proseComponentMap : {}),
+  ...(mdc?.components?.map || {}),
   ...toRaw(propsDataMDC.value?.components || {}),
   ...props.components,
 }))
 
 const componentsMap = computed(() => {
   return {
-    ...body.value ? resolveContentComponents(body.value, { tags: tags.value }) : {},
+    ...(body.value ? resolveContentComponents(body.value, { tags: tags.value }) : {}),
     Mermaid,
     Browser,
     CodeExplorer,
@@ -137,15 +165,13 @@ function resolveVueComponent(component: string | Renderable) {
     }
     if (globalComponents.includes(pascalCase(component))) {
       _component = resolveComponent(component, false)
-    }
-    else if (localComponents.includes(pascalCase(component))) {
+    } else if (localComponents.includes(pascalCase(component))) {
       const loader: AsyncComponentLoader = () => {
-        return import('#content/components')
-          .then((m: any) => {
-            const loaders = m.localComponentLoaders || m
-            const comp = loaders[pascalCase(component)] as () => unknown
-            return comp ? comp() : undefined
-          })
+        return import('#content/components').then((m: any) => {
+          const loaders = m.localComponentLoaders || m
+          const comp = loaders[pascalCase(component)] as () => unknown
+          return comp ? comp() : undefined
+        })
       }
       _component = defineAsyncComponent(loader)
     }
@@ -181,7 +207,7 @@ function resolveContentComponents(body: ComarkTree, meta: Record<string, unknown
       continue
     }
 
-    if (typeof component === 'object' && renderFunctions.some(fn => Object.hasOwnProperty.call(component, fn))) {
+    if (typeof component === 'object' && renderFunctions.some((fn) => Object.hasOwnProperty.call(component, fn))) {
       result[tag] = component
       continue
     }

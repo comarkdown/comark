@@ -22,11 +22,12 @@ Footer content
     const TestComponent = defineComponent({
       name: 'TestComponent',
       setup(props, { slots }) {
-        return () => h('div', { class: 'test-component' }, [
-          h('header', {}, slots.header?.()),
-          h('main', {}, slots.default?.()),
-          h('footer', {}, slots.footer?.()),
-        ])
+        return () =>
+          h('div', { class: 'test-component' }, [
+            h('header', {}, slots.header?.()),
+            h('main', {}, slots.default?.()),
+            h('footer', {}, slots.footer?.()),
+          ])
       },
     })
 
@@ -34,12 +35,13 @@ Footer content
     const app = createSSRApp({
       components: { ComarkRenderer },
       setup() {
-        return () => h(ComarkRenderer, {
-          tree: result,
-          components: {
-            'test-component': TestComponent,
-          },
-        })
+        return () =>
+          h(ComarkRenderer, {
+            tree: result,
+            components: {
+              'test-component': TestComponent,
+            },
+          })
       },
     })
 
@@ -73,21 +75,19 @@ This is a description
     const Callout = defineComponent({
       name: 'Callout',
       setup(props, { slots }) {
-        return () => h('div', { class: 'callout' }, [
-          h('h3', {}, slots.title?.()),
-          h('p', {}, slots.description?.()),
-        ])
+        return () => h('div', { class: 'callout' }, [h('h3', {}, slots.title?.()), h('p', {}, slots.description?.())])
       },
     })
 
     const app = createSSRApp({
       setup() {
-        return () => h(ComarkRenderer, {
-          tree: result,
-          components: {
-            Callout,
-          },
-        })
+        return () =>
+          h(ComarkRenderer, {
+            tree: result,
+            components: {
+              Callout,
+            },
+          })
       },
     })
 
@@ -113,22 +113,24 @@ Copyright by Nuxt
     const MultiSlotTest = defineComponent({
       name: 'MultiSlotTest',
       setup(props, { slots }) {
-        return () => h('div', { class: 'multi-slot' }, [
-          h('div', { class: 'slot-header' }, slots.header?.()),
-          h('div', { class: 'slot-default' }, slots.default?.()),
-          h('div', { class: 'slot-footer' }, slots.footer?.()),
-        ])
+        return () =>
+          h('div', { class: 'multi-slot' }, [
+            h('div', { class: 'slot-header' }, slots.header?.()),
+            h('div', { class: 'slot-default' }, slots.default?.()),
+            h('div', { class: 'slot-footer' }, slots.footer?.()),
+          ])
       },
     })
 
     const app = createSSRApp({
       setup() {
-        return () => h(ComarkRenderer, {
-          tree: result,
-          components: {
-            'multi-slot-test': MultiSlotTest,
-          },
-        })
+        return () =>
+          h(ComarkRenderer, {
+            tree: result,
+            components: {
+              'multi-slot-test': MultiSlotTest,
+            },
+          })
       },
     })
 

@@ -188,11 +188,10 @@ export const Comark: ComarkComponent = defineComponent({
 
     watch(
       () => [markdown.value, props.streaming] as const,
-      () => parse(markdown.value, { streaming: props.streaming }).then(result => parsed.value = result),
+      () => parse(markdown.value, { streaming: props.streaming }).then((result) => (parsed.value = result))
     )
 
-    await parse(markdown.value, { streaming: props.streaming })
-      .then(result => parsed.value = result)
+    await parse(markdown.value, { streaming: props.streaming }).then((result) => (parsed.value = result))
 
     return () => {
       // Render using ComarkRenderer

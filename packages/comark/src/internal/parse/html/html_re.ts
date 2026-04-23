@@ -3,7 +3,7 @@
 const attr_name = '[a-zA-Z_:][a-zA-Z0-9:._-]*'
 
 const unquoted = '[^"\'=<>`\\x00-\\x20]+'
-const single_quoted = '\'[^\']*\''
+const single_quoted = "'[^']*'"
 const double_quoted = '"[^"]*"'
 
 const attr_value = `(?:${unquoted}|${single_quoted}|${double_quoted})`

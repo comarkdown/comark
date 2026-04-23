@@ -37,7 +37,7 @@ export function visit(
   tree: ComarkTree,
   checker: (node: ComarkNode) => boolean,
   // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
-  visitor: (node: ComarkNode) => ComarkNode | false | undefined | void,
+  visitor: (node: ComarkNode) => ComarkNode | false | undefined | void
 ) {
   function walk(node: ComarkNode, parent: ComarkNode | ComarkNode[], index: number): boolean {
     let currentNode = node
@@ -46,12 +46,12 @@ export function visit(
       const res = visitor(node)
       if (res === false) {
         // remove the node from the parent
-        (parent as ComarkNode[]).splice(index, 1)
+        ;(parent as ComarkNode[]).splice(index, 1)
         return true // signal that node was removed
       }
 
       if (res !== undefined) {
-        (parent as ComarkNode[])[index] = res
+        ;(parent as ComarkNode[])[index] = res
         currentNode = res
       }
     }
@@ -94,7 +94,11 @@ export function visit(
  * @returns The pascal case string
  */
 export function pascalCase(str: string) {
-  return str ? splitByCase(str).map(p => p[0].toUpperCase() + p.slice(1)).join('') : ''
+  return str
+    ? splitByCase(str)
+        .map((p) => p[0].toUpperCase() + p.slice(1))
+        .join('')
+    : ''
 }
 
 /**
@@ -103,7 +107,11 @@ export function pascalCase(str: string) {
  * @returns The kebab case string
  */
 export function kebabCase(str: string) {
-  return str ? splitByCase(str).map(p => p.toLowerCase()).join('-') : ''
+  return str
+    ? splitByCase(str)
+        .map((p) => p.toLowerCase())
+        .join('-')
+    : ''
 }
 
 /**
@@ -142,7 +150,7 @@ function splitByCase(str: string) {
     const charCode = char.charCodeAt(0)
     const isNumber = charCode >= 48 && charCode <= 57 // '0' to '9'
     // Fast uppercase check using character codes
-    const isUpper = isNumber ? void 0 : (charCode >= 65 && charCode <= 90) // 'A' to 'Z'
+    const isUpper = isNumber ? void 0 : charCode >= 65 && charCode <= 90 // 'A' to 'Z'
     if (previousSplitter === false) {
       if (previousUpper === false && isUpper === true) {
         parts.push(buff)
@@ -181,8 +189,7 @@ export function get(data: unknown, key: string): unknown {
   for (const k of keys) {
     if (value && typeof value === 'object' && k in (value as Record<string, unknown>)) {
       value = (value as Record<string, unknown>)[k]
-    }
-    else {
+    } else {
       return undefined
     }
   }

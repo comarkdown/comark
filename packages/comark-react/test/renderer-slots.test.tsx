@@ -34,7 +34,7 @@ Footer content
       <ComarkRenderer
         tree={result}
         components={{ 'test-component': TestComponent }}
-      />,
+      />
     )
 
     expect(html).toContain('test-component')
@@ -74,7 +74,7 @@ This is a description
       <ComarkRenderer
         tree={result}
         components={{ Callout }}
-      />,
+      />
     )
 
     expect(html).toContain('Warning Title')
@@ -108,7 +108,7 @@ Copyright by Nuxt
       <ComarkRenderer
         tree={result}
         components={{ 'multi-slot-test': MultiSlotTest }}
-      />,
+      />
     )
 
     expect(html).toContain('This is default content')

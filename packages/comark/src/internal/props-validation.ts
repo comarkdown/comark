@@ -1,11 +1,6 @@
-export const unsafeTags = [
-  'object',
-]
+export const unsafeTags = ['object']
 
-export const unsafeAttributes = [
-  'srcdoc',
-  'formaction',
-]
+export const unsafeAttributes = ['srcdoc', 'formaction']
 
 export const unsafeLinkPrefix = [
   'javascript:',
@@ -33,17 +28,12 @@ function rewriteToDefaultOrigin(urlStr: string, defaultOrigin: string): string {
     parsed.protocol = origin.protocol
     parsed.host = origin.host
     return parsed.href
-  }
-  catch {
+  } catch {
     return defaultOrigin
   }
 }
 
-function validateUrl(
-  value: string,
-  mode: 'link' | 'image',
-  options: PropsValidationOptions,
-): string | false {
+function validateUrl(value: string, mode: 'link' | 'image', options: PropsValidationOptions): string | false {
   const {
     allowedLinkPrefixes = ['*'],
     allowedImagePrefixes = ['*'],
@@ -62,14 +52,13 @@ function validateUrl(
   try {
     // Parse without a base — throws for relative URLs, succeeds for absolute
     url = new URL(urlSanitized)
-  }
-  catch {
+  } catch {
     // Relative URLs are always allowed
     return value
   }
 
   // Block known-unsafe protocols — hard floor, not overrideable by options
-  if (unsafeLinkPrefix.some(prefix => url.href.toLowerCase().startsWith(prefix))) {
+  if (unsafeLinkPrefix.some((prefix) => url.href.toLowerCase().startsWith(prefix))) {
     return false
   }
 
@@ -90,7 +79,7 @@ function validateUrl(
   const allowedPrefixes = mode === 'link' ? allowedLinkPrefixes : allowedImagePrefixes
   if (!allowedPrefixes.includes('*')) {
     const href = url.href.toLowerCase()
-    const matchesPrefix = allowedPrefixes.some(prefix => href.startsWith(prefix.toLowerCase()))
+    const matchesPrefix = allowedPrefixes.some((prefix) => href.startsWith(prefix.toLowerCase()))
     if (!matchesPrefix) {
       if (defaultOrigin) {
         return rewriteToDefaultOrigin(urlSanitized, defaultOrigin)
@@ -102,11 +91,7 @@ function validateUrl(
   return value
 }
 
-export function validateProp(
-  attribute: string,
-  value: string,
-  options: PropsValidationOptions = {},
-): string | false {
+export function validateProp(attribute: string, value: string, options: PropsValidationOptions = {}): string | false {
   attribute = attribute.toLowerCase()
   if (attribute.startsWith('on') || unsafeAttributes.includes(attribute)) {
     return false
@@ -126,7 +111,7 @@ export function validateProp(
 export function validateProps(
   type: string,
   props?: Record<string, any>,
-  options: PropsValidationOptions = {},
+  options: PropsValidationOptions = {}
 ): Record<string, any> {
   /**
    * If the tag is marked as unsafe, drop all props
@@ -155,7 +140,7 @@ export function validateProps(
       }
 
       return [[name, result]]
-    }),
+    })
   )
 
   return props

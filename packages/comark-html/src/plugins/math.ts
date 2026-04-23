@@ -30,13 +30,8 @@ export const Math = ([, attrs]: ComarkElement): string => {
       throwOnError: false,
       output: 'html',
     })
-    return isInline
-      ? `<span class="math inline">${rendered}</span>`
-      : `<div class="math block">${rendered}</div>`
-  }
-  catch {
-    return isInline
-      ? `<span class="math inline">${content}</span>`
-      : `<div class="math block">${content}</div>`
+    return isInline ? `<span class="math inline">${rendered}</span>` : `<div class="math block">${rendered}</div>`
+  } catch {
+    return isInline ? `<span class="math inline">${content}</span>` : `<div class="math block">${content}</div>`
   }
 }

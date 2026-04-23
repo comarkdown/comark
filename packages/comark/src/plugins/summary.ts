@@ -11,7 +11,7 @@ export default defineComarkPlugin((options: { delimiter?: string } = {}) => {
       let summary: ComarkNode[] | undefined
 
       const delimiterIndex = state.tokens.findIndex(
-        (token: any) => token.type === 'html_block' && token.content?.includes(delimiter),
+        (token: any) => token.type === 'html_block' && token.content?.includes(delimiter)
       )
 
       if (delimiterIndex !== -1) {

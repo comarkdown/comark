@@ -2,7 +2,7 @@
 const props = defineProps<{
   title?: string
   servings?: number
-  items?: Array<{ image: string, quantity: string, name: string }>
+  items?: Array<{ image: string; quantity: string; name: string }>
 }>()
 
 const count = ref(props.servings ?? 4)
@@ -42,7 +42,7 @@ const count = ref(props.servings ?? 4)
           :src="item.image"
           :alt="item.name"
           class="size-16 rounded-lg object-cover"
-        >
+        />
         <p class="text-xs font-semibold leading-tight">
           {{ item.quantity }}
         </p>

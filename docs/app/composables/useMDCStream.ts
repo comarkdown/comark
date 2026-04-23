@@ -100,8 +100,7 @@ export function useMDCStream(options?: MDCStreamOptions) {
           if (options?.onChunk) {
             options.onChunk(chunk)
           }
-        }
-        catch {
+        } catch {
           // Ignore errors
         }
       }
@@ -118,8 +117,7 @@ export function useMDCStream(options?: MDCStreamOptions) {
       if (options?.onComplete) {
         options.onComplete(finalResult)
       }
-    }
-    catch (error) {
+    } catch (error) {
       state.value = {
         ...state.value,
         error: error as Error,
@@ -130,8 +128,7 @@ export function useMDCStream(options?: MDCStreamOptions) {
       }
 
       throw error
-    }
-    finally {
+    } finally {
       isStreaming.value = false
     }
   }

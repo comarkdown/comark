@@ -12,7 +12,10 @@ interface BadgeProps {
 
 function Badge({ label = '', count = 0, config = {} }: BadgeProps) {
   return (
-    <span className="badge" data-count={count}>
+    <span
+      className="badge"
+      data-count={count}
+    >
       {label}
       {Object.keys(config).length > 0 ? JSON.stringify(config) : null}
     </span>
@@ -36,7 +39,12 @@ function Card({ title = '', variant = '', children }: CardProps) {
 
 async function renderMarkdown(markdown: string, props: Record<string, any> = {}) {
   const tree = await parse(markdown)
-  return renderToString(<ComarkRenderer tree={tree} {...props} />)
+  return renderToString(
+    <ComarkRenderer
+      tree={tree}
+      {...props}
+    />
+  )
 }
 
 describe('ComarkRenderer — data binding', () => {
@@ -50,7 +58,7 @@ site:
 ::badge{:label="frontmatter.site.name"}
 ::
 `,
-      { components: { badge: Badge } },
+      { components: { badge: Badge } }
     )
     expect(html).toContain('class="badge"')
     expect(html).toContain('My Blog')
@@ -60,7 +68,7 @@ site:
     const html = await renderMarkdown(
       `::badge{:count="42"}
 ::`,
-      { components: { badge: Badge } },
+      { components: { badge: Badge } }
     )
     expect(html).toContain('data-count="42"')
   })
@@ -69,7 +77,7 @@ site:
     const html = await renderMarkdown(
       `::badge{:config='{"k":"v"}'}
 ::`,
-      { components: { badge: Badge } },
+      { components: { badge: Badge } }
     )
     expect(html).toContain('{&quot;k&quot;:&quot;v&quot;}')
   })
@@ -78,7 +86,7 @@ site:
     const html = await renderMarkdown(
       `::badge{:label="data.user.name"}
 ::`,
-      { components: { badge: Badge }, data: { user: { name: 'Ada' } } },
+      { components: { badge: Badge }, data: { user: { name: 'Ada' } } }
     )
     expect(html).toContain('Ada')
   })
@@ -90,7 +98,7 @@ site:
 :::
 ::
 `,
-      { components: { card: Card, badge: Badge } },
+      { components: { card: Card, badge: Badge } }
     )
     expect(html).toContain('class="card card-primary"')
     expect(html).toContain('Hello')
@@ -100,7 +108,7 @@ site:
     const html = await renderMarkdown(
       `::badge{:label="frontmatter.missing"}
 ::`,
-      { components: { badge: Badge } },
+      { components: { badge: Badge } }
     )
     expect(html).toContain('class="badge"')
     expect(html).not.toContain('frontmatter.missing')
@@ -115,7 +123,7 @@ site: Blog
 ::badge{label="frontmatter.site"}
 ::
 `,
-      { components: { badge: Badge } },
+      { components: { badge: Badge } }
     )
     expect(html).toContain('frontmatter.site')
   })

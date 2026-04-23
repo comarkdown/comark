@@ -12,9 +12,13 @@ export const ol: NodeHandler = async (node, state) => {
   result = result.trimEnd()
 
   if (revert.list) {
-    result = '\n' + result.split('\n').map(line => '  ' + line).join('\n')
-  }
-  else {
+    result =
+      '\n' +
+      result
+        .split('\n')
+        .map((line) => '  ' + line)
+        .join('\n')
+  } else {
     result = result + '\n\n'
   }
 

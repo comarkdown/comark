@@ -12,9 +12,10 @@ export async function li(node: ComarkElement, state: State) {
   const order = state.context.order
   let prefix = order ? `${order}. ` : '- '
 
-  const className = (node[1].className as string) && Array.isArray(node[1].className)
-    ? node[1].className.join(' ')
-    : String(node[1].className || node[1].class)
+  const className =
+    (node[1].className as string) && Array.isArray(node[1].className)
+      ? node[1].className.join(' ')
+      : String(node[1].className || node[1].class)
 
   const taskList = className.includes('task-list-item')
 
@@ -33,8 +34,7 @@ export async function li(node: ComarkElement, state: State) {
       // Block-level child: put on its own line and indent to align with list prefix
       const indented = indent(rendered, { width: prefixWidth })
       result = result.trimEnd() + '\n' + indented.trimEnd() + '\n'
-    }
-    else {
+    } else {
       result += rendered
     }
   }

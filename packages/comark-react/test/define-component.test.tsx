@@ -68,7 +68,10 @@ describe('defineComarkComponent — component inheritance via extends', () => {
     const Child = defineComarkComponent({ name: 'Child', extends: Base, components: { alert: AlertChild } })
 
     const html = await renderAsync(
-      <Child markdown={'::alert\nhello\n::'} components={{ alert: AlertProp }} />,
+      <Child
+        markdown={'::alert\nhello\n::'}
+        components={{ alert: AlertProp }}
+      />
     )
 
     expect(html).toContain('alert-prop')
@@ -101,7 +104,12 @@ describe('defineComarkComponent — plugin inheritance via extends', () => {
     const Base = defineComarkComponent({ name: 'Base', plugins: [emoji()] })
     const Child = defineComarkComponent({ name: 'Child', extends: Base })
 
-    const html = await renderAsync(<Child markdown=":smile:" plugins={[emoji()]} />)
+    const html = await renderAsync(
+      <Child
+        markdown=":smile:"
+        plugins={[emoji()]}
+      />
+    )
 
     expect(html).toContain('😄')
   })
@@ -131,13 +139,23 @@ describe('defineComarkComponent — className via config', () => {
 
   it('merges config className with prop className', async () => {
     const Custom = defineComarkComponent({ name: 'WithClass', className: 'prose' })
-    const html = await renderAsync(<Custom markdown="hello" className="extra" />)
+    const html = await renderAsync(
+      <Custom
+        markdown="hello"
+        className="extra"
+      />
+    )
     expect(html).toContain('prose extra')
   })
 
   it('prop className works without config className', async () => {
     const Custom = defineComarkComponent({ name: 'NoConfigClass' })
-    const html = await renderAsync(<Custom markdown="hello" className="only-prop" />)
+    const html = await renderAsync(
+      <Custom
+        markdown="hello"
+        className="only-prop"
+      />
+    )
     expect(html).toContain('comark-content only-prop')
   })
 
@@ -177,7 +195,11 @@ describe('defineComarkRendererComponent — component inheritance via extends', 
 
   it('child components override the same tag from parent', async () => {
     const Base = defineComarkRendererComponent({ name: 'BaseRenderer', components: { alert: AlertBase } })
-    const Child = defineComarkRendererComponent({ name: 'ChildRenderer', extends: Base, components: { alert: AlertChild } })
+    const Child = defineComarkRendererComponent({
+      name: 'ChildRenderer',
+      extends: Base,
+      components: { alert: AlertChild },
+    })
 
     const tree = await parse('::alert\nhello\n::')
     const html = await renderAsync(<Child tree={tree} />)
@@ -187,8 +209,15 @@ describe('defineComarkRendererComponent — component inheritance via extends', 
   })
 
   it('child keeps parent components that it does not override', async () => {
-    const Base = defineComarkRendererComponent({ name: 'BaseRenderer', components: { alert: AlertBase, card: CardBase } })
-    const Child = defineComarkRendererComponent({ name: 'ChildRenderer', extends: Base, components: { alert: AlertChild } })
+    const Base = defineComarkRendererComponent({
+      name: 'BaseRenderer',
+      components: { alert: AlertBase, card: CardBase },
+    })
+    const Child = defineComarkRendererComponent({
+      name: 'ChildRenderer',
+      extends: Base,
+      components: { alert: AlertChild },
+    })
 
     const tree = await parse('::alert\nA\n::\n\n::card\nB\n::')
     const html = await renderAsync(<Child tree={tree} />)
@@ -199,10 +228,19 @@ describe('defineComarkRendererComponent — component inheritance via extends', 
 
   it('prop-level components override child and parent config', async () => {
     const Base = defineComarkRendererComponent({ name: 'BaseRenderer', components: { alert: AlertBase } })
-    const Child = defineComarkRendererComponent({ name: 'ChildRenderer', extends: Base, components: { alert: AlertChild } })
+    const Child = defineComarkRendererComponent({
+      name: 'ChildRenderer',
+      extends: Base,
+      components: { alert: AlertChild },
+    })
 
     const tree = await parse('::alert\nhello\n::')
-    const html = await renderAsync(<Child tree={tree} components={{ alert: AlertProp }} />)
+    const html = await renderAsync(
+      <Child
+        tree={tree}
+        components={{ alert: AlertProp }}
+      />
+    )
 
     expect(html).toContain('alert-prop')
     expect(html).not.toContain('alert-child')
@@ -210,8 +248,15 @@ describe('defineComarkRendererComponent — component inheritance via extends', 
   })
 
   it('multi-level extends stacks component maps correctly', async () => {
-    const Base = defineComarkRendererComponent({ name: 'BaseRenderer', components: { alert: AlertBase, card: CardBase } })
-    const Middle = defineComarkRendererComponent({ name: 'MiddleRenderer', extends: Base, components: { alert: AlertChild } })
+    const Base = defineComarkRendererComponent({
+      name: 'BaseRenderer',
+      components: { alert: AlertBase, card: CardBase },
+    })
+    const Middle = defineComarkRendererComponent({
+      name: 'MiddleRenderer',
+      extends: Base,
+      components: { alert: AlertChild },
+    })
     const Child = defineComarkRendererComponent({ name: 'ChildRenderer', extends: Middle })
 
     const tree = await parse('::alert\nA\n::\n\n::card\nB\n::')
@@ -237,14 +282,24 @@ describe('defineComarkRendererComponent — className via config', () => {
   it('merges config className with prop className', async () => {
     const Renderer = defineComarkRendererComponent({ name: 'WithClass', className: 'prose' })
     const tree = await parse('hello')
-    const html = await renderAsync(<Renderer tree={tree} className="extra" />)
+    const html = await renderAsync(
+      <Renderer
+        tree={tree}
+        className="extra"
+      />
+    )
     expect(html).toContain('prose extra')
   })
 
   it('prop className works without config className', async () => {
     const Renderer = defineComarkRendererComponent({ name: 'NoConfigClass' })
     const tree = await parse('hello')
-    const html = await renderAsync(<Renderer tree={tree} className="only-prop" />)
+    const html = await renderAsync(
+      <Renderer
+        tree={tree}
+        className="only-prop"
+      />
+    )
     expect(html).toContain('comark-content only-prop')
   })
 

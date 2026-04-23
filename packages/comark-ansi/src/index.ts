@@ -7,8 +7,7 @@ export { renderANSI, type RenderANSIOptions } from './render.ts'
 function defaultWrite(string: string) {
   if (typeof process !== 'undefined') {
     process.stdout.write(string)
-  }
-  else {
+  } else {
     console.log(string.trim())
   }
 }
@@ -47,7 +46,7 @@ export function createLog(options?: LogOptions): (markdown: string) => Promise<v
     const tree = await parse(markdown)
     const write = options?.write ?? defaultWrite
 
-    write(await renderANSI(tree, options as RenderOptions) + '\n')
+    write((await renderANSI(tree, options as RenderOptions)) + '\n')
   }
 }
 

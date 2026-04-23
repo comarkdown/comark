@@ -72,7 +72,13 @@ const plugins = [
   line-height: 1.65;
   font-size: 0.88rem;
 }
-.prose .shiki .line { display: block; }
-.prose .shiki .line:empty { height: 1lh; }
-.dark .prose pre.shiki span { color: var(--shiki-dark) !important; }
+.prose .shiki .line {
+  display: block;
+}
+.prose .shiki .line:empty {
+  height: 1lh;
+}
+.dark .prose pre.shiki span {
+  color: var(--shiki-dark) !important;
+}
 </style>

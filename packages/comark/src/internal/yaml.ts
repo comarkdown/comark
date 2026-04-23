@@ -38,7 +38,7 @@ export function stringifyYaml(data: Record<string, unknown>, options?: DumpOptio
     const trimmed = line.trimStart()
 
     // Check if line starts with a quote followed by colon
-    if (trimmed[0] === '\'' || trimmed[0] === '"') {
+    if (trimmed[0] === "'" || trimmed[0] === '"') {
       const quote = trimmed[0]
       if (trimmed[1] === ':') {
         // Find the closing quote

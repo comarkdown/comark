@@ -10,7 +10,9 @@ export async function template(node: ComarkElement, state: State, parent?: Comar
   // Omit #default marker if this is the only slot
   if (attrs.name === 'default') {
     const siblings = parent ? (parent.slice(2) as ComarkNode[]) : []
-    const templateCount = siblings.filter(child => Array.isArray(child) && (child as ComarkElement)[0] === 'template').length
+    const templateCount = siblings.filter(
+      (child) => Array.isArray(child) && (child as ComarkElement)[0] === 'template'
+    ).length
     if (templateCount === 1) {
       return content + state.context.blockSeparator
     }

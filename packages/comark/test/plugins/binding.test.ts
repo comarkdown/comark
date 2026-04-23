@@ -10,37 +10,23 @@ const parseWithBinding = (md: string, opts: Parameters<typeof binding>[0] = {}) 
 describe('binding plugin — parsing', () => {
   it('captures `{{ path }}` as a self-closing <binding> element with :value', async () => {
     const tree = await parseWithBinding('Hello {{ user.name }}!')
-    expect(tree.nodes).toEqual([
-      ['p', {}, 'Hello ', ['binding', { ':value': 'user.name' }], '!'],
-    ])
+    expect(tree.nodes).toEqual([['p', {}, 'Hello ', ['binding', { ':value': 'user.name' }], '!']])
   })
 
   it('captures the `|| default` fallback as a defaultValue attribute', async () => {
     const tree = await parseWithBinding('Score: {{ data.score || 0 }}')
-    expect(tree.nodes).toEqual([
-      ['p', {}, 'Score: ', ['binding', { ':value': 'data.score', 'defaultValue': '0' }]],
-    ])
+    expect(tree.nodes).toEqual([['p', {}, 'Score: ', ['binding', { ':value': 'data.score', defaultValue: '0' }]]])
   })
 
   it('trims whitespace inside the braces and around the `||` separator', async () => {
     const tree = await parseWithBinding('{{   user.name   ||   guest   }}')
-    expect(tree.nodes).toEqual([
-      ['p', {}, ['binding', { ':value': 'user.name', 'defaultValue': 'guest' }]],
-    ])
+    expect(tree.nodes).toEqual([['p', {}, ['binding', { ':value': 'user.name', defaultValue: 'guest' }]]])
   })
 
   it('supports multiple bindings in the same paragraph', async () => {
     const tree = await parseWithBinding('Hi {{ a }}, welcome to {{ b }}.')
     expect(tree.nodes).toEqual([
-      [
-        'p',
-        {},
-        'Hi ',
-        ['binding', { ':value': 'a' }],
-        ', welcome to ',
-        ['binding', { ':value': 'b' }],
-        '.',
-      ],
+      ['p', {}, 'Hi ', ['binding', { ':value': 'a' }], ', welcome to ', ['binding', { ':value': 'b' }], '.'],
     ])
   })
 
@@ -65,9 +51,7 @@ describe('binding plugin — parsing', () => {
 describe('binding plugin — options', () => {
   it('uses a custom tag when the `tag` option is set', async () => {
     const tree = await parseWithBinding('x {{ y }} z', { tag: 'prop' })
-    expect(tree.nodes).toEqual([
-      ['p', {}, 'x ', ['prop', { ':value': 'y' }], ' z'],
-    ])
+    expect(tree.nodes).toEqual([['p', {}, 'x ', ['prop', { ':value': 'y' }], ' z']])
   })
 
   it('defaults the tag name to `binding`', async () => {

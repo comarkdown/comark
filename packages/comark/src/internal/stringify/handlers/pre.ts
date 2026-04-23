@@ -7,25 +7,19 @@ export function pre(node: ComarkElement, state: State) {
 
   const codeClasses = (children[0]?.[1] as Record<string, string>)?.class
 
-  const language = (attributes.language || (codeClasses?.split(' ').find(cls => cls.startsWith('language-')))?.slice(9)) || ''
+  const language =
+    attributes.language || codeClasses?.split(' ').find((cls) => cls.startsWith('language-'))?.slice(9) || ''
 
   // Escape ] in filename
-  const filename = attributes.filename
-    ? ' [' + String(attributes.filename).split(']').join('\\\\]') + ']'
-    : ''
+  const filename = attributes.filename ? ' [' + String(attributes.filename).split(']').join('\\\\]') + ']' : ''
 
-  const highlights = attributes.highlights
-    ? ' {' + formatHighlights(attributes.highlights as number[]) + '}'
-    : ''
+  const highlights = attributes.highlights ? ' {' + formatHighlights(attributes.highlights as number[]) + '}' : ''
 
   // Meta always has a leading space
-  const meta = attributes.meta
-    ? ' ' + attributes.meta
-    : ''
+  const meta = attributes.meta ? ' ' + attributes.meta : ''
 
-  const result = '```' + language + filename + highlights + meta + '\n'
-    + String(node[1]?.code || textContent(node)).trim()
-    + '\n```'
+  const result =
+    '```' + language + filename + highlights + meta + '\n' + String(node[1]?.code || textContent(node)).trim() + '\n```'
 
   return result + state.context.blockSeparator
 }
@@ -41,13 +35,11 @@ function formatHighlights(highlights: number[]): string {
   for (let i = 1; i <= sorted.length; i++) {
     if (i < sorted.length && sorted[i] === end + 1) {
       end = sorted[i]
-    }
-    else {
+    } else {
       // Add the current range
       if (start === end) {
         ranges.push(String(start))
-      }
-      else {
+      } else {
         ranges.push(start + '-' + end)
       }
       // Start a new range

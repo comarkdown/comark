@@ -52,8 +52,7 @@ describe('render', () => {
   it('accepts render options with custom components', async () => {
     const html = await render('::note\nHello!\n::', {
       components: {
-        note: async ([, , ...children], { render }) =>
-          `<aside>${await render(children)}</aside>`,
+        note: async ([, , ...children], { render }) => `<aside>${await render(children)}</aside>`,
       },
     })
     expect(html).toContain('<aside>')
@@ -81,8 +80,7 @@ describe('createRender', () => {
   it('reuses parser options across calls', async () => {
     const renderFn = createRender({
       components: {
-        badge: ([, attrs]) =>
-          `<span class="badge badge-${attrs.type}">${attrs.label}</span>`,
+        badge: ([, attrs]) => `<span class="badge badge-${attrs.type}">${attrs.label}</span>`,
       },
     })
 
@@ -96,7 +94,7 @@ describe('createRender', () => {
   it('passes data to component renderers', async () => {
     const renderFn = createRender({
       components: {
-        version: async ([,, ...children], { render, data }) =>
+        version: async ([, , ...children], { render, data }) =>
           `<span data-v="${data?.version}">${await render(children)}</span>`,
       },
       data: { version: '2.0' },
@@ -151,7 +149,7 @@ describe('renderHTML', () => {
     const html = await renderHTML(tree, {
       data: { siteName: 'My Blog' },
       components: {
-        header: async ([,, ...children], { render, data }) =>
+        header: async ([, , ...children], { render, data }) =>
           `<header><h1>${data?.siteName}</h1>${await render(children)}</header>`,
       },
     })
@@ -163,8 +161,8 @@ describe('renderHTML', () => {
     const tree = await parse('::outer\n:::inner\nDeep\n:::\n::')
     const html = await renderHTML(tree, {
       components: {
-        outer: async ([,, ...children], { render }) => `<div class="outer">${await render(children)}</div>`,
-        inner: async ([,, ...children], { render }) => `<div class="inner">${await render(children)}</div>`,
+        outer: async ([, , ...children], { render }) => `<div class="outer">${await render(children)}</div>`,
+        inner: async ([, , ...children], { render }) => `<div class="inner">${await render(children)}</div>`,
       },
     })
     expect(html).toContain('<div class="outer">')
@@ -205,16 +203,16 @@ describe('async node handlers', () => {
     const log: string[] = []
     const html = await renderHTML(tree, {
       components: {
-        a: async ([,, ...children], { render }) => {
+        a: async ([, , ...children], { render }) => {
           const content = await render(children)
           return `<div class="a">${content}</div>`
         },
-        b: async ([,, ...children], { render }) => {
+        b: async ([, , ...children], { render }) => {
           await Promise.resolve()
           log.push('b')
           return `<b>${await render(children)}</b>`
         },
-        c: async ([,, ...children], { render }) => {
+        c: async ([, , ...children], { render }) => {
           await Promise.resolve()
           log.push('c')
           return `<c>${await render(children)}</c>`
@@ -243,11 +241,11 @@ describe('async node handlers', () => {
     const tree = await parse('::outer\n:::inner\nDeep\n:::\n::')
     const html = await renderHTML(tree, {
       components: {
-        outer: async ([,, ...children], { render }) => {
+        outer: async ([, , ...children], { render }) => {
           const content = await Promise.resolve(await render(children))
           return `<outer>${content}</outer>`
         },
-        inner: async ([,, ...children], { render }) => {
+        inner: async ([, , ...children], { render }) => {
           const content = await Promise.resolve(await render(children))
           return `<inner>${content}</inner>`
         },

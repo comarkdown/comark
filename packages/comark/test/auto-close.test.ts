@@ -90,21 +90,27 @@ const multilines = `
 `
 
 describe('auto close inlines', () => {
-  inlines.trim().split('\n').forEach((inline) => {
-    it(`should auto-close ${inline}`, () => {
-      const [input, expected] = inline.split(' → ')
-      expect(autoCloseMarkdown(input)).toBe(expected)
+  inlines
+    .trim()
+    .split('\n')
+    .forEach((inline) => {
+      it(`should auto-close ${inline}`, () => {
+        const [input, expected] = inline.split(' → ')
+        expect(autoCloseMarkdown(input)).toBe(expected)
+      })
     })
-  })
 })
 
 describe('auto close multilines', () => {
-  multilines.trim().split('###').forEach((multiline) => {
-    it(`should auto-close ${multiline}`, () => {
-      const [input, expected] = multiline.trim().split('\n→\n')
-      expect(autoCloseMarkdown(input)).toBe(expected)
+  multilines
+    .trim()
+    .split('###')
+    .forEach((multiline) => {
+      it(`should auto-close ${multiline}`, () => {
+        const [input, expected] = multiline.trim().split('\n→\n')
+        expect(autoCloseMarkdown(input)).toBe(expected)
+      })
     })
-  })
 })
 
 describe('autoCloseMarkdown - Inline Syntax', () => {
@@ -331,7 +337,6 @@ describe('edge Cases', () => {
   })
 
   const cases = [
-
     {
       input: `::u-page-section`,
       expected: `::u-page-section\n::`,

@@ -4,12 +4,7 @@ import { parse } from '../src/index'
 import { parseWithRemark } from './utils/index'
 
 // Deep comparison function for Comark nodes
-function deepCompareNodes(
-  node1: any,
-  node2: any,
-  path: string = 'root',
-  testCase: string,
-): void {
+function deepCompareNodes(node1: any, node2: any, path: string = 'root', testCase: string): void {
   // Compare types
   // expect(node1.type, `${testCase}: ${path} - type should match`).toBe(node2.type)
 
@@ -17,7 +12,7 @@ function deepCompareNodes(
     // Compare children count
     expect(
       node1.children.length,
-      `${testCase}: ${path} - children count should match (got ${node1.children.length} vs ${node2.children.length})`,
+      `${testCase}: ${path} - children count should match (got ${node1.children.length} vs ${node2.children.length})`
     ).toBe(node2.children.length)
 
     // Recursively compare each child
@@ -28,10 +23,7 @@ function deepCompareNodes(
 
     // For elements, compare tag and props
     if (node1.type === 'element') {
-      expect(
-        node1.tag,
-        `${testCase}: ${path} - tag should match`,
-      ).toBe(node2.tag)
+      expect(node1.tag, `${testCase}: ${path} - tag should match`).toBe(node2.tag)
 
       // Compare props
       const props1 = node1.props || {}
@@ -45,15 +37,13 @@ function deepCompareNodes(
         const normalized: Record<string, any> = {}
         for (const [key, value] of Object.entries(props)) {
           // Skip 'align' and 'style' props as they differ between parsers for table alignment
-          if (key === 'align' || key === 'style')
-            continue
+          if (key === 'align' || key === 'style') continue
 
           // If this is from unified parser, keep as is
           // If this is from markdown-it, remove ':' prefix and filter out if unified doesn't have it
           if (isUnified) {
             normalized[key] = value
-          }
-          else {
+          } else {
             // For markdown-it, remove ':' prefix
             const normalizedKey = key.startsWith(':') ? key.slice(1) : key
             // Only include if unified parser would have it (check if it exists in unified props)
@@ -65,8 +55,8 @@ function deepCompareNodes(
       }
 
       // Determine which is unified and which is markdown-it by checking for ':' prefix
-      const hasColonPrefix1 = Object.keys(props1).some(k => k.startsWith(':'))
-      const hasColonPrefix2 = Object.keys(props2).some(k => k.startsWith(':'))
+      const hasColonPrefix1 = Object.keys(props1).some((k) => k.startsWith(':'))
+      const hasColonPrefix2 = Object.keys(props2).some((k) => k.startsWith(':'))
       const isUnified1 = !hasColonPrefix1
       const isUnified2 = !hasColonPrefix2
 
@@ -80,45 +70,37 @@ function deepCompareNodes(
 
         // Normalize values for comparison (handle arrays, objects, etc.)
         if (Array.isArray(value1) && Array.isArray(value2)) {
+          expect(value1, `${testCase}: ${path}.props.${key} - array should match`).toEqual(value2)
+        } else {
           expect(
             value1,
-            `${testCase}: ${path}.props.${key} - array should match`,
-          ).toEqual(value2)
-        }
-        else {
-          expect(
-            value1,
-            `${testCase}: ${path}.props.${key} - value should match (got ${JSON.stringify(value1)} vs ${JSON.stringify(value2)})`,
+            `${testCase}: ${path}.props.${key} - value should match (got ${JSON.stringify(value1)} vs ${JSON.stringify(value2)})`
           ).toEqual(value2)
         }
       }
     }
-  }
-  else if (node1.type === 'text') {
+  } else if (node1.type === 'text') {
     // Compare text values (normalized)
     const value1 = typeof node1.value === 'string' ? node1.value.trim() : node1.value
     const value2 = typeof node2.value === 'string' ? node2.value.trim() : node2.value
-    expect(
-      value1,
-      `${testCase}: ${path} - text value should match (got "${value1}" vs "${value2}")`,
-    ).toBe(value2)
-  }
-  else if (node1.type === 'comment') {
+    expect(value1, `${testCase}: ${path} - text value should match (got "${value1}" vs "${value2}")`).toBe(value2)
+  } else if (node1.type === 'comment') {
     // Compare comment values
-    expect(
-      node1.value,
-      `${testCase}: ${path} - comment value should match`,
-    ).toBe(node2.value)
+    expect(node1.value, `${testCase}: ${path} - comment value should match`).toBe(node2.value)
   }
 }
 
-function compareResults(result1: { body: ComarkTree, data: any, excerpt?: ComarkTree }, result2: ComarkTree, testCase: string) {
+function compareResults(
+  result1: { body: ComarkTree; data: any; excerpt?: ComarkTree },
+  result2: ComarkTree,
+  testCase: string
+) {
   // Compare data (frontmatter)
   expect(result1.data, `${testCase}: data should match`).toEqual(result2.frontmatter)
 
   // Normalize structures for comparison
-  const body1 = (result1.body)
-  const body2 = (result2.nodes)
+  const body1 = result1.body
+  const body2 = result2.nodes
 
   // Deep compare body structures
   deepCompareNodes(body1, body2, 'body', testCase)
@@ -253,7 +235,8 @@ console.log('code');
   },
   {
     name: 'component with content and attributes',
-    content: '::component{data-component="test" #id .class-x .class-y boolean number=100}\nThis is a component with content and attributes.\n::',
+    content:
+      '::component{data-component="test" #id .class-x .class-y boolean number=100}\nThis is a component with content and attributes.\n::',
   },
   {
     name: 'Nested components',
@@ -276,11 +259,11 @@ Watch how **bold text** and components render correctly even when syntax arrives
   },
   {
     name: 'inline component with attributes',
-    content: 'Hello :world{data-component=\'test\'}',
+    content: "Hello :world{data-component='test'}",
   },
   {
     name: 'inline component with content and attributes',
-    content: 'Hello :world[Inline Component Content]{data-component=\'test\'}',
+    content: "Hello :world[Inline Component Content]{data-component='test'}",
   },
   // Span
   {
@@ -289,28 +272,28 @@ Watch how **bold text** and components render correctly even when syntax arrives
   },
   {
     name: 'span with attributes',
-    content: 'Hello [World]{data-component=\'test\'}',
+    content: "Hello [World]{data-component='test'}",
   },
   // markdown native elements with attributes, bold, italic, code, link, image
   {
     name: 'bold with attributes',
-    content: 'Hello **World**{data-component=\'test\'}',
+    content: "Hello **World**{data-component='test'}",
   },
   {
     name: 'italic with attributes',
-    content: 'Hello *italic*{data-component=\'test\'}',
+    content: "Hello *italic*{data-component='test'}",
   },
   {
     name: 'code with attributes',
-    content: 'Hello `code`{data-component=\'test\'}',
+    content: "Hello `code`{data-component='test'}",
   },
   {
     name: 'link with attributes',
-    content: 'Hello [World](https://example.com){data-component=\'test\'}',
+    content: "Hello [World](https://example.com){data-component='test'}",
   },
   {
     name: 'image with attributes',
-    content: 'Hello ![World](https://example.com/image.png){data-component=\'test\'}',
+    content: "Hello ![World](https://example.com/image.png){data-component='test'}",
   },
   // Tables
   {

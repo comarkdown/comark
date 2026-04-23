@@ -9,20 +9,20 @@ useSeoMeta({
 
 <template>
   <div>
-    <h1 class="text-3xl font-bold mb-2">
-      Comark Blog
-    </h1>
+    <h1 class="text-3xl font-bold mb-2">Comark Blog</h1>
     <p class="text-gray-500 dark:text-gray-400 mb-8">
       A blog built with
       <a
         href="https://nuxt.com"
         class="underline"
-      >Nuxt</a>
+        >Nuxt</a
+      >
       and
       <a
         href="https://comark.dev"
         class="underline"
-      >Comark</a>
+        >Comark</a
+      >
       rendering.
     </p>
     <ul class="space-y-6">
@@ -42,7 +42,9 @@ useSeoMeta({
           </p>
           <div class="flex items-center gap-3 text-xs text-gray-400 dark:text-gray-500">
             <time :datetime="post.pubDate">
-              {{ new Date(post.pubDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) }}
+              {{
+                new Date(post.pubDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+              }}
             </time>
             <div class="flex gap-1.5">
               <UBadge

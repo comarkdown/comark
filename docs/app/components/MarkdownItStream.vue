@@ -33,7 +33,7 @@ async function startStream() {
     html.value = markdownIt.render(accumulated)
 
     if (i + chunkSize < props.markdown.length) {
-      await new Promise(resolve => setTimeout(resolve, delayMs))
+      await new Promise((resolve) => setTimeout(resolve, delayMs))
     }
   }
 

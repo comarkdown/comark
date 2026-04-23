@@ -101,7 +101,7 @@ onMounted(() => {
         }
       }
     },
-    { threshold: 0.3 },
+    { threshold: 0.3 }
   )
   observer.observe(sectionRef.value)
 })
@@ -118,9 +118,7 @@ onBeforeUnmount(() => {
     class="border-b border-default"
   >
     <div class="grid lg:grid-cols-2">
-      <div
-        class="border-b border-default p-6 lg:border-r lg:border-b-0 lg:p-8"
-      >
+      <div class="border-b border-default p-6 lg:border-r lg:border-b-0 lg:p-8">
         <span
           v-if="headline"
           class="section-label"
@@ -179,7 +177,8 @@ onBeforeUnmount(() => {
                   v-if="showAutoClosed"
                   class="autoclose-suffix"
                   :class="suffixVisible ? 'opacity-100' : 'opacity-0'"
-                >{{ autoClosedSuffix }}</span>
+                  >{{ autoClosedSuffix }}</span
+                >
               </div>
             </div>
           </div>

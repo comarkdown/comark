@@ -112,7 +112,6 @@ export interface ContextBase {
 }
 
 export interface CreateContext extends ContextBase {
-
   /**
    * user defined node handlers
    */

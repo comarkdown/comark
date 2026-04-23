@@ -18,7 +18,9 @@ const fillPercent = computed(() => `${(ratingNum.value / 5) * 100}%`)
             class="size-4 text-primary"
           />
         </div>
-        <div class="flex size-8 items-center justify-center rounded-full border-2 border-white bg-primary-100 dark:border-neutral-900 dark:bg-primary-900">
+        <div
+          class="flex size-8 items-center justify-center rounded-full border-2 border-white bg-primary-100 dark:border-neutral-900 dark:bg-primary-900"
+        >
           <UIcon
             name="i-lucide-user"
             class="size-4 text-primary"
@@ -68,9 +70,7 @@ const fillPercent = computed(() => `${(ratingNum.value / 5) * 100}%`)
       <p class="text-xl font-bold text-highlighted">
         {{ reviews }}
       </p>
-      <p class="text-xs text-muted">
-        Reviews
-      </p>
+      <p class="text-xs text-muted">Reviews</p>
     </div>
   </div>
 </template>

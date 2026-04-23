@@ -1,7 +1,7 @@
 {
   "name": "comark-vue-vite-punctuation",
-  "type": "module",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc && vite build",

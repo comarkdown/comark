@@ -83,7 +83,7 @@ export default defineComarkPlugin((options: HeadingsOptions = {}) => {
       const nodes = state.tree.nodes
 
       // Top-level content nodes — skip raw text nodes and <hr>
-      const contentNodes = nodes.filter(node => Array.isArray(node) && getTag(node) !== 'hr')
+      const contentNodes = nodes.filter((node) => Array.isArray(node) && getTag(node) !== 'hr')
 
       let titleNodeIndex = -1
       let descriptionNodeIndex = -1
@@ -104,9 +104,7 @@ export default defineComarkPlugin((options: HeadingsOptions = {}) => {
 
       if (remove) {
         // Remove in reverse order to preserve indices
-        const toRemove = [titleNodeIndex, descriptionNodeIndex]
-          .filter(i => i !== -1)
-          .sort((a, b) => b - a)
+        const toRemove = [titleNodeIndex, descriptionNodeIndex].filter((i) => i !== -1).sort((a, b) => b - a)
         for (const i of toRemove) {
           nodes.splice(i, 1)
         }

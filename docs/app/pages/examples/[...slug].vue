@@ -10,7 +10,7 @@ const appConfig = useAppConfig()
 const route = useRoute()
 
 const { data: page } = await useAsyncData(kebabCase(route.path), () =>
-  queryCollection('examples').path(`${route.path}`).first(),
+  queryCollection('examples').path(`${route.path}`).first()
 )
 if (!page.value) {
   throw createError({

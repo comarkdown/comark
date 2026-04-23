@@ -1,6 +1,23 @@
 import type { PropType, VNode } from 'vue'
-import type { ComponentManifest, ComarkContextProvider, ComarkElement, ComarkNode, ComarkTree, NodeRenderData } from 'comark'
-import { computed, defineAsyncComponent, defineComponent, getCurrentInstance, h, inject, onErrorCaptured, ref, toRaw } from 'vue'
+import type {
+  ComponentManifest,
+  ComarkContextProvider,
+  ComarkElement,
+  ComarkNode,
+  ComarkTree,
+  NodeRenderData,
+} from 'comark'
+import {
+  computed,
+  defineAsyncComponent,
+  defineComponent,
+  getCurrentInstance,
+  h,
+  inject,
+  onErrorCaptured,
+  ref,
+  toRaw,
+} from 'vue'
 import { findLastTextNodeAndAppendNode, getCaret } from '../utils/caret.ts'
 import { pascalCase, resolveAttributes } from 'comark/utils'
 
@@ -37,17 +54,22 @@ function getChildren(node: ComarkNode): ComarkNode[] {
   return []
 }
 
-function resolveComponent(tag: string, components: Record<string, any>, componentsManifest?: ComponentManifest): string {
+function resolveComponent(
+  tag: string,
+  components: Record<string, any>,
+  componentsManifest?: ComponentManifest
+): string {
   const appComponents = getCurrentInstance()?.appContext?.components
   const pascalTag = pascalCase(tag)
   const proseTag = `Prose${pascalTag}`
 
-  let resolvedComponent = components[proseTag]
-    || components[tag]
-    || components[pascalTag]
+  let resolvedComponent =
+    components[proseTag] ||
+    components[tag] ||
+    components[pascalTag] ||
     // If the component is not found in the components map, try to find it in the app context
-    || appComponents?.[proseTag]
-    || appComponents?.[pascalTag]
+    appComponents?.[proseTag] ||
+    appComponents?.[pascalTag]
 
   // If not in components map and manifest is provided, try dynamic resolution
   if (!resolvedComponent && componentsManifest) {
@@ -56,7 +78,10 @@ function resolveComponent(tag: string, components: Record<string, any>, componen
     if (!asyncComponentCache.has(cacheKey)) {
       const promise = componentsManifest(tag)
       if (promise) {
-        asyncComponentCache.set(cacheKey, defineAsyncComponent(() => promise as Promise<any>))
+        asyncComponentCache.set(
+          cacheKey,
+          defineAsyncComponent(() => promise as Promise<any>)
+        )
       }
     }
     resolvedComponent = asyncComponentCache.get(cacheKey)
@@ -73,7 +98,7 @@ function renderNode(
   key?: string | number,
   componentsManifest?: ComponentManifest,
   parent?: ComarkNode,
-  renderData: NodeRenderData = { frontmatter: {}, meta: {}, data: {}, props: {} },
+  renderData: NodeRenderData = { frontmatter: {}, meta: {}, data: {}, props: {} }
 ): VNode | string | null {
   // Handle text nodes (strings)
   if (typeof node === 'string') {
@@ -109,8 +134,7 @@ function renderNode(
     for (const k in resolved) {
       if (k === 'className') {
         props.class = resolved[k]
-      }
-      else {
+      } else {
         props[k] = resolved[k]
       }
     }
@@ -140,8 +164,7 @@ function renderNode(
 
     for (let i = 0; i < children.length; i++) {
       const child = children[i]
-      if (child === undefined || child === null)
-        continue
+      if (child === undefined || child === null) continue
 
       // Check if this is a slot template (array with tag 'template')
       const childTag = getTag(child)
@@ -154,8 +177,7 @@ function renderNode(
 
         if (childProps.name) {
           slotName = childProps.name
-        }
-        else {
+        } else {
           // Use for...in instead of Object.keys().find() — avoids intermediate array
           for (const pk in childProps) {
             if (pk.startsWith('v-slot:')) {
@@ -167,9 +189,12 @@ function renderNode(
 
         if (slotName) {
           const slotChildren = getChildren(child)
-          slots[slotName] = () => slotChildren
-            .map((slotChild: ComarkNode, idx: number) => renderNode(slotChild, components, idx, componentsManifest, node, childrenRenderData))
-            .filter((slotChild): slotChild is VNode | string => slotChild !== null)
+          slots[slotName] = () =>
+            slotChildren
+              .map((slotChild: ComarkNode, idx: number) =>
+                renderNode(slotChild, components, idx, componentsManifest, node, childrenRenderData)
+              )
+              .filter((slotChild): slotChild is VNode | string => slotChild !== null)
           continue
         }
       }

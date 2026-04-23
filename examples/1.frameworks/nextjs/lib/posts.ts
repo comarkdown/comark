@@ -18,9 +18,9 @@ export interface Post extends PostMeta {
 
 const postsDir = path.join(process.cwd(), 'content/posts')
 
-function getMarkdownFiles(): { slug: string, content: string }[] {
-  const files = fs.readdirSync(postsDir).filter(f => f.endsWith('.md'))
-  return files.map(file => ({
+function getMarkdownFiles(): { slug: string; content: string }[] {
+  const files = fs.readdirSync(postsDir).filter((f) => f.endsWith('.md'))
+  return files.map((file) => ({
     slug: file.replace(/\.md$/, ''),
     content: fs.readFileSync(path.join(postsDir, file), 'utf-8'),
   }))
@@ -50,9 +50,7 @@ export async function getPost(slug: string): Promise<Post> {
   const content = fs.readFileSync(filePath, 'utf-8')
 
   const tree = await parse(content, {
-    plugins: [
-      highlight(),
-    ],
+    plugins: [highlight()],
   })
 
   const fm = tree.frontmatter as Record<string, unknown>

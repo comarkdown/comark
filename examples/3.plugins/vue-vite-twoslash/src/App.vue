@@ -127,15 +127,37 @@ onMounted(async () => {
   line-height: 1.65;
   font-size: 0.88rem;
 }
-.prose .shiki .line { display: block; }
-.prose .shiki .line:empty { height: 1lh; }
-.dark .prose pre.shiki span { color: var(--shiki-dark) !important; }
+.prose .shiki .line {
+  display: block;
+}
+.prose .shiki .line:empty {
+  height: 1lh;
+}
+.dark .prose pre.shiki span {
+  color: var(--shiki-dark) !important;
+}
 
 /* Twoslash popup */
-.prose .twoslash-popup-container { width: max-content; }
-.prose pre .twoslash-hover pre { margin: 0; padding: 0; background: transparent !important; border: none; }
-.prose pre .twoslash-hover pre .line { display: inline; }
-.dark .twoslash-popup-container { background: var(--ui-bg-elevated) !important; border-color: var(--ui-border) !important; }
-.dark .twoslash-popup-code span { color: var(--shiki-dark) !important; }
-.dark .twoslash .twoslash-popup-arrow { background: var(--ui-bg) !important; }
+.prose .twoslash-popup-container {
+  width: max-content;
+}
+.prose pre .twoslash-hover pre {
+  margin: 0;
+  padding: 0;
+  background: transparent !important;
+  border: none;
+}
+.prose pre .twoslash-hover pre .line {
+  display: inline;
+}
+.dark .twoslash-popup-container {
+  background: var(--ui-bg-elevated) !important;
+  border-color: var(--ui-border) !important;
+}
+.dark .twoslash-popup-code span {
+  color: var(--shiki-dark) !important;
+}
+.dark .twoslash .twoslash-popup-arrow {
+  background: var(--ui-bg) !important;
+}
 </style>

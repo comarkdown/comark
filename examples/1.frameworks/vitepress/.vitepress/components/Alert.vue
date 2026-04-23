@@ -1,9 +1,12 @@
 <script setup lang="ts">
-const props = withDefaults(defineProps<{
-  type?: 'info' | 'warning' | 'success' | 'danger'
-}>(), {
-  type: 'info',
-})
+const props = withDefaults(
+  defineProps<{
+    type?: 'info' | 'warning' | 'success' | 'danger'
+  }>(),
+  {
+    type: 'info',
+  }
+)
 </script>
 
 <template>

@@ -46,7 +46,13 @@ interface DefineComarkComponentOptions extends ParseOptions {
  * ```
  */
 export function defineComarkComponent(config: DefineComarkComponentOptions = {}) {
-  const { name, components: configComponents = {}, className: configClassName, extends: BaseComponent, ...parseOptions } = config
+  const {
+    name,
+    components: configComponents = {},
+    className: configClassName,
+    extends: BaseComponent,
+    ...parseOptions
+  } = config
 
   const ComarkComponent: React.FC<ComarkProps> = (props) => {
     const mergedOptions: Exclude<ParseOptions, 'plugins'> = {
@@ -54,10 +60,7 @@ export function defineComarkComponent(config: DefineComarkComponentOptions = {})
       ...props.options,
     }
 
-    const mergedPlugins = [
-      ...(config.plugins || []),
-      ...(props.plugins || []),
-    ]
+    const mergedPlugins = [...(config.plugins || []), ...(props.plugins || [])]
 
     const mergedComponents = {
       ...configComponents,

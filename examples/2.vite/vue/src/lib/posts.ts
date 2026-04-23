@@ -2,10 +2,11 @@ import { parse } from '@comark/vue/parse'
 import highlight from '@comark/vue/plugins/highlight'
 import type { ComarkTree } from '@comark/vue'
 
-const rawFiles = import.meta.glob(
-  '../../content/posts/*.md',
-  { query: '?raw', import: 'default', eager: true },
-) as Record<string, string>
+const rawFiles = import.meta.glob('../../content/posts/*.md', {
+  query: '?raw',
+  import: 'default',
+  eager: true,
+}) as Record<string, string>
 
 export interface PostMeta {
   slug: string

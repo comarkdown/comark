@@ -151,8 +151,8 @@ describe('flatUnwrap', () => {
     const result = flatUnwrap(div, 'div p') as any[]
     expect(Array.isArray(result)).toBe(true)
     // result should be strings (merged text nodes) not element vnodes
-    expect(result.some(item => typeof item === 'string')).toBe(true)
-    expect(result.find(item => typeof item === 'string')).toBe('content')
+    expect(result.some((item) => typeof item === 'string')).toBe(true)
+    expect(result.find((item) => typeof item === 'string')).toBe('content')
   })
 
   it('unwraps comma-separated tags', () => {
@@ -161,7 +161,7 @@ describe('flatUnwrap', () => {
     const div = h('div', {}, [span])
     const result = flatUnwrap(div, 'div,span') as any[]
     expect(Array.isArray(result)).toBe(true)
-    expect(result.some(item => typeof item === 'string' && item === 'hello')).toBe(true)
+    expect(result.some((item) => typeof item === 'string' && item === 'hello')).toBe(true)
   })
 
   it('filters out empty whitespace-only text nodes', () => {
@@ -169,7 +169,7 @@ describe('flatUnwrap', () => {
     const realChild = h('p', {}, [createTextVNode('content')])
     const div = h('div', {}, [emptyText, realChild])
     const result = flatUnwrap(div, 'div') as any[]
-    const hasEmpty = result.some(item => typeof item === 'string' && item.trim() === '')
+    const hasEmpty = result.some((item) => typeof item === 'string' && item.trim() === '')
     expect(hasEmpty).toBe(false)
     expect(result).toContain(realChild)
   })
@@ -179,7 +179,7 @@ describe('flatUnwrap', () => {
     const text2 = createTextVNode('World')
     const div = h('div', {}, [text1, text2])
     const result = flatUnwrap(div, 'div') as any[]
-    const strings = result.filter(item => typeof item === 'string')
+    const strings = result.filter((item) => typeof item === 'string')
     expect(strings).toHaveLength(1)
     expect(strings[0]).toBe('Hello World')
   })

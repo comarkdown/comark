@@ -23,22 +23,18 @@ export default function html_block(state: StateBlock, startLine: number, endLine
   let max = state.eMarks[startLine]
 
   // if it's indented more than 3 spaces, it should be a code block
-  if (state.sCount[startLine] - state.blkIndent >= 4)
-    return false
+  if (state.sCount[startLine] - state.blkIndent >= 4) return false
 
-  if (state.src.charCodeAt(pos) !== 0x3C/* < */)
-    return false
+  if (state.src.charCodeAt(pos) !== 0x3c /* < */) return false
 
   let lineText = state.src.slice(pos, max)
 
   let i = 0
   for (; i < HTML_SEQUENCES.length; i++) {
-    if (HTML_SEQUENCES[i][0].test(lineText))
-      break
+    if (HTML_SEQUENCES[i][0].test(lineText)) break
   }
 
-  if (i === HTML_SEQUENCES.length)
-    return false
+  if (i === HTML_SEQUENCES.length) return false
 
   if (silent) {
     // true if this sequence can be a terminator, false otherwise
@@ -60,8 +56,7 @@ export default function html_block(state: StateBlock, startLine: number, endLine
       lineText = state.src.slice(pos, max)
 
       if (HTML_SEQUENCES[i][1].test(lineText)) {
-        if (lineText.length !== 0)
-          nextLine++
+        if (lineText.length !== 0) nextLine++
         break
       }
     }

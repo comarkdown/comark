@@ -34,7 +34,7 @@ export function nodeTextContent(node: VNode): string {
     return (node as VNode[]).map(nodeTextContent).join('')
   }
   if (isText(node)) {
-    return node.children as string || ''
+    return (node.children as string) || ''
   }
   const children = nodeChildren(node)
   if (Array.isArray(children)) {
@@ -45,12 +45,12 @@ export function nodeTextContent(node: VNode): string {
 
 export function unwrap(vnode: VNode, tags: string[] = []): VNode | VNode[] {
   if (Array.isArray(vnode)) {
-    return (vnode as VNode[]).flatMap(node => unwrap(node, tags))
+    return (vnode as VNode[]).flatMap((node) => unwrap(node, tags))
   }
   let result: VNode | VNode[] = vnode
-  if (tags.some(tag => tag === '*' || isTag(vnode, tag))) {
+  if (tags.some((tag) => tag === '*' || isTag(vnode, tag))) {
     result = nodeChildren(vnode) || vnode
-    if (!Array.isArray(result) && TEXT_TAGS.some(tag => isTag(vnode, tag))) {
+    if (!Array.isArray(result) && TEXT_TAGS.some((tag) => isTag(vnode, tag))) {
       result = [result]
     }
   }
@@ -63,30 +63,33 @@ function _flatUnwrap(vnodes: VNode | VNode[], tags: string[] = []): Array<VNode>
     return vnodes
   }
   return vnodes
-    .flatMap(vnode => _flatUnwrap(unwrap(vnode, [tags[0]!]), tags.slice(1)))
-    .filter(vnode => !(isText(vnode) && nodeTextContent(vnode).trim() === ''))
+    .flatMap((vnode) => _flatUnwrap(unwrap(vnode, [tags[0]!]), tags.slice(1)))
+    .filter((vnode) => !(isText(vnode) && nodeTextContent(vnode).trim() === ''))
 }
 
 export function flatUnwrap(vnodes: VNode | VNode[], tags: string | string[] = []): Array<VNode | string> | VNode {
   if (typeof tags === 'string') {
-    tags = tags.split(/[,\s]/).map(tag => tag.trim()).filter(Boolean)
+    tags = tags
+      .split(/[,\s]/)
+      .map((tag) => tag.trim())
+      .filter(Boolean)
   }
   if (!tags.length) {
     return vnodes
   }
-  return _flatUnwrap(vnodes, tags as unknown as string[])
-    .reduce((acc, item) => {
+  return _flatUnwrap(vnodes, tags as unknown as string[]).reduce(
+    (acc, item) => {
       if (isText(item)) {
         if (typeof acc[acc.length - 1] === 'string') {
           acc[acc.length - 1] += item.children as string
-        }
-        else {
+        } else {
           acc.push(item.children as string)
         }
-      }
-      else {
+      } else {
         acc.push(item)
       }
       return acc
-    }, [] as Array<VNode | string>)
+    },
+    [] as Array<VNode | string>
+  )
 }

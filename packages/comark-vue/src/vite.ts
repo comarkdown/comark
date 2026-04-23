@@ -8,13 +8,19 @@ import { existsSync } from 'node:fs'
 const runtimeDir = fileURLToPath(new URL('./utils', import.meta.url))
 
 function viteComarkSlot(node: ElementNode, context: TransformContext) {
-  const isVueSlotWithUnwrap = node.tag === 'slot'
-    && node.props.find(p => p.name === 'unwrap' || p.name === 'mdc-unwrap' || (p.name === 'bind' && (p as DirectiveNode).rawName === ':comark-unwrap'))
+  const isVueSlotWithUnwrap =
+    node.tag === 'slot' &&
+    node.props.find(
+      (p) =>
+        p.name === 'unwrap' ||
+        p.name === 'mdc-unwrap' ||
+        (p.name === 'bind' && (p as DirectiveNode).rawName === ':comark-unwrap')
+    )
 
   if (isVueSlotWithUnwrap) {
     const transform = context.ssr
-      ? context.nodeTransforms.find(nt => nt.name === 'ssrTransformSlotOutlet')
-      : context.nodeTransforms.find(nt => nt.name === 'transformSlotOutlet')
+      ? context.nodeTransforms.find((nt) => nt.name === 'ssrTransformSlotOutlet')
+      : context.nodeTransforms.find((nt) => nt.name === 'transformSlotOutlet')
 
     return () => {
       node.tag = 'slot'
@@ -30,7 +36,7 @@ function viteComarkSlot(node: ElementNode, context: TransformContext) {
         ? '{ ssrRenderSlot as _ssrRenderComarkSlot }'
         : '{ renderSlot as _renderComarkSlot }'
 
-      if (!context.imports.some(i => String(i.exp) === importExp)) {
+      if (!context.imports.some((i) => String(i.exp) === importExp)) {
         context.imports.push({
           exp: importExp,
           path: `${runtimeDir}/${context.ssr ? 'ssrSlot' : 'slot'}`,
@@ -40,7 +46,7 @@ function viteComarkSlot(node: ElementNode, context: TransformContext) {
   }
 
   if (context.nodeTransforms[0]?.name !== 'viteComarkSlot') {
-    const index = context.nodeTransforms.findIndex(f => f.name === 'viteComarkSlot')
+    const index = context.nodeTransforms.findIndex((f) => f.name === 'viteComarkSlot')
     if (index !== -1) {
       const nt = context.nodeTransforms.splice(index, 1)
       context.nodeTransforms.unshift(nt[0]!)
@@ -65,8 +71,7 @@ async function getProseFiles(proseDir: string): Promise<string[]> {
       const dir = (entry as any).parentPath ?? (entry as any).path
       files.push(join(dir, entry.name))
     }
-  }
-  catch {
+  } catch {
     // prose directory doesn't exist — that's fine
   }
   return files
@@ -143,7 +148,7 @@ export default function comark(opts: { prose?: boolean } = {}): Plugin {
         proseDir = join(config.root, 'components', 'prose')
       }
 
-      const vuePlugin = config.plugins.find(p => p.name === 'vite:vue')
+      const vuePlugin = config.plugins.find((p) => p.name === 'vite:vue')
       if (!vuePlugin) {
         console.warn('[comark-vue] @vitejs/plugin-vue not found. Make sure vue() is in your plugins.')
         return
@@ -177,8 +182,9 @@ export default function comark(opts: { prose?: boolean } = {}): Plugin {
       const files = await resolveProseFiles()
       if (!files.length) return null
 
-      const injected = `import __comarkProse from ${JSON.stringify(VIRTUAL_COMPONENTS_ID)};\n`
-        + code.replace(/\.mount\s*\(/, '.use(__comarkProse).mount(')
+      const injected =
+        `import __comarkProse from ${JSON.stringify(VIRTUAL_COMPONENTS_ID)};\n` +
+        code.replace(/\.mount\s*\(/, '.use(__comarkProse).mount(')
 
       return { code: injected, map: null }
     },

@@ -43,13 +43,7 @@ function toggleTheme() {
               light: githubLight,
               dark: githubDark,
             },
-            languages: [
-              python,
-              rust,
-              go,
-              sql,
-              css,
-            ],
+            languages: [python, rust, go, sql, css],
           }),
         ]"
       >

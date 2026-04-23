@@ -30,8 +30,8 @@ This is **bold** text
     const children = getChildren(alert)
     expect(children.length).toBeGreaterThan(0)
     // Should have text and strong elements as direct children (no wrapping p)
-    const hasDirectText = children.some(child => typeof child === 'string')
-    const hasDirectStrong = children.some(child => isElement(child, 'strong'))
+    const hasDirectText = children.some((child) => typeof child === 'string')
+    const hasDirectStrong = children.some((child) => isElement(child, 'strong'))
     expect(hasDirectText).toBe(true)
     expect(hasDirectStrong).toBe(true)
   })
@@ -66,7 +66,7 @@ Second paragraph
 
     // Should have two paragraphs (not unwrapped)
     const children = getChildren(card)
-    const paragraphs = children.filter(child => isElement(child, 'p'))
+    const paragraphs = children.filter((child) => isElement(child, 'p'))
     expect(paragraphs).toHaveLength(2)
   })
 
@@ -85,8 +85,8 @@ Second paragraph
 
     // Should have both paragraph and list (not unwrapped)
     const children = getChildren(warning)
-    const hasParagraph = children.some(child => isElement(child, 'p'))
-    const hasList = children.some(child => isElement(child, 'ul'))
+    const hasParagraph = children.some((child) => isElement(child, 'p'))
+    const hasList = children.some((child) => isElement(child, 'ul'))
 
     expect(hasParagraph).toBe(true)
     expect(hasList).toBe(true)
@@ -106,7 +106,7 @@ console.log('hello')
 
     // Code block (pre) should be preserved, not unwrapped
     const children = getChildren(tip)
-    const hasPreElement = children.some(child => isElement(child, 'pre'))
+    const hasPreElement = children.some((child) => isElement(child, 'pre'))
     expect(hasPreElement).toBe(true)
   })
 
@@ -124,7 +124,7 @@ console.log('hello')
 
     // Table should be preserved, not unwrapped
     const children = getChildren(info)
-    const hasTable = children.some(child => isElement(child, 'table'))
+    const hasTable = children.some((child) => isElement(child, 'table'))
     expect(hasTable).toBe(true)
   })
 
@@ -143,7 +143,7 @@ console.log('hello')
 
       // Should have unwrapped (no paragraph wrapper)
       const childrenWith = getChildren(containerWith)
-      const hasDirectStrong = childrenWith.some(child => isElement(child, 'strong'))
+      const hasDirectStrong = childrenWith.some((child) => isElement(child, 'strong'))
       expect(hasDirectStrong).toBe(true)
 
       // Compare with disabled
@@ -152,7 +152,7 @@ console.log('hello')
 
       // Should have paragraph wrapper when disabled
       const childrenWithout = getChildren(containerWithout)
-      const hasParagraph = childrenWithout.some(child => isElement(child, 'p'))
+      const hasParagraph = childrenWithout.some((child) => isElement(child, 'p'))
       expect(hasParagraph).toBe(true)
     }
   })

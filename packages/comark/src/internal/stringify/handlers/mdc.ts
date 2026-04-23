@@ -39,8 +39,7 @@ export async function mdc(node: ComarkElement, state: State, parent?: ComarkElem
   const attrs = attributeEntries.length > 0 ? comarkAttributes(attributes) : ''
 
   if (tag === 'span') {
-    return `[${content}]${attrs}`
-      + (inline ? '' : state.context.blockSeparator)
+    return `[${content}]${attrs}` + (inline ? '' : state.context.blockSeparator)
   }
 
   const fence = ':'.repeat((state.nodeDepthInTree || 0) + 2)
@@ -53,8 +52,7 @@ export async function mdc(node: ComarkElement, state: State, parent?: ComarkElem
     if (useYaml) {
       const yamlAttrs = comarkYamlAttributes(attributes, state.context.blockAttributesStyle)
       result = `${fence}${tag}\n${yamlAttrs}${content ? `\n${content}` : ''}\n${fence}` + state.context.blockSeparator
-    }
-    else {
+    } else {
       result = `${fence}${tag}${attrs}${content ? `\n${content}` : ''}\n${fence}` + state.context.blockSeparator
     }
   }

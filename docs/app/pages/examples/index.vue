@@ -5,13 +5,15 @@ definePageMeta({
 
 // Fetch all examples
 const nuxtApp = useNuxtApp()
-const { data: examples } = await useAsyncData('examples-list', () => {
-  return queryCollection('examples')
-    .select('title', 'description', 'category', 'path', 'navigation')
-    .all()
-}, {
-  getCachedData: key => nuxtApp.payload.data[key],
-})
+const { data: examples } = await useAsyncData(
+  'examples-list',
+  () => {
+    return queryCollection('examples').select('title', 'description', 'category', 'path', 'navigation').all()
+  },
+  {
+    getCachedData: (key) => nuxtApp.payload.data[key],
+  }
+)
 
 // Group examples by category
 const groupedExamples = computed(() => {
@@ -91,9 +93,7 @@ defineOgImage('OgImageDocs', {
           name="i-lucide-book-dashed"
           class="size-12 text-muted mx-auto mb-4"
         />
-        <p class="text-muted">
-          No examples
-        </p>
+        <p class="text-muted">No examples</p>
       </div>
     </UPageBody>
   </UPage>

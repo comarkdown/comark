@@ -20,7 +20,7 @@ describe('visit', () => {
       (node) => {
         visited.push(node)
         return undefined
-      },
+      }
     )
 
     expect(visited.length).toBe(4) // h1, 'Hello', p, 'World'
@@ -44,11 +44,11 @@ describe('visit', () => {
     const visited: string[] = []
     visit(
       tree,
-      node => Array.isArray(node) && node[0] === 'p', // only visit p elements
+      (node) => Array.isArray(node) && node[0] === 'p', // only visit p elements
       (node) => {
         visited.push((node as [string, any, ...any[]])[0])
         return undefined
-      },
+      }
     )
 
     expect(visited).toEqual(['p'])
@@ -66,10 +66,10 @@ describe('visit', () => {
 
     visit(
       tree,
-      node => Array.isArray(node) && node[0] === 'h1',
+      (node) => Array.isArray(node) && node[0] === 'h1',
       () => {
         return ['h2', {}, 'Modified']
-      },
+      }
     )
 
     expect(tree.nodes[0]).toEqual(['h2', {}, 'Modified'])
@@ -90,8 +90,8 @@ describe('visit', () => {
 
     visit(
       tree,
-      node => Array.isArray(node) && node[0] === 'div',
-      () => false, // remove div elements
+      (node) => Array.isArray(node) && node[0] === 'div',
+      () => false // remove div elements
     )
 
     expect(tree.nodes.length).toBe(3)
@@ -116,7 +116,7 @@ describe('visit', () => {
     const visited: string[] = []
     visit(
       tree,
-      node => Array.isArray(node),
+      (node) => Array.isArray(node),
       (node) => {
         const tag = (node as [string, any, ...any[]])[0]
         visited.push(tag)
@@ -124,7 +124,7 @@ describe('visit', () => {
           return false // remove div
         }
         return undefined
-      },
+      }
     )
 
     // Should visit all nodes including those after the removed one
@@ -138,23 +138,15 @@ describe('visit', () => {
 
   it('should handle nested node removal correctly', () => {
     const tree: ComarkTree = {
-      nodes: [
-        [
-          'div',
-          {},
-          ['p', {}, 'Keep'],
-          ['span', {}, 'Remove'],
-          ['p', {}, 'Keep too'],
-        ],
-      ],
+      nodes: [['div', {}, ['p', {}, 'Keep'], ['span', {}, 'Remove'], ['p', {}, 'Keep too']]],
       frontmatter: {},
       meta: {},
     }
 
     visit(
       tree,
-      node => Array.isArray(node) && node[0] === 'span',
-      () => false, // remove span elements
+      (node) => Array.isArray(node) && node[0] === 'span',
+      () => false // remove span elements
     )
 
     const div = tree.nodes[0] as [string, any, ...any[]]
@@ -166,14 +158,7 @@ describe('visit', () => {
   it('should visit all remaining nested nodes after removal', () => {
     const tree: ComarkTree = {
       nodes: [
-        [
-          'div',
-          {},
-          ['p', {}, 'Before'],
-          ['span', {}, 'Remove'],
-          ['p', {}, 'After'],
-          ['strong', {}, 'Also after'],
-        ],
+        ['div', {}, ['p', {}, 'Before'], ['span', {}, 'Remove'], ['p', {}, 'After'], ['strong', {}, 'Also after']],
       ],
       frontmatter: {},
       meta: {},
@@ -182,7 +167,7 @@ describe('visit', () => {
     const visited: string[] = []
     visit(
       tree,
-      node => Array.isArray(node),
+      (node) => Array.isArray(node),
       (node) => {
         const tag = (node as [string, any, ...any[]])[0]
         visited.push(tag)
@@ -190,7 +175,7 @@ describe('visit', () => {
           return false // remove span
         }
         return undefined
-      },
+      }
     )
 
     // Should visit all nodes including those after the removed span
@@ -219,8 +204,8 @@ describe('visit', () => {
 
     visit(
       tree,
-      node => Array.isArray(node) && node[0] === 'div',
-      () => false, // remove all div elements
+      (node) => Array.isArray(node) && node[0] === 'div',
+      () => false // remove all div elements
     )
 
     expect(tree.nodes.length).toBe(3)
@@ -243,7 +228,7 @@ describe('visit', () => {
     visit(
       tree,
       () => true, // visit all nodes
-      () => false, // remove all nodes
+      () => false // remove all nodes
     )
 
     expect(tree.nodes.length).toBe(0)
@@ -263,7 +248,7 @@ describe('visit', () => {
       (node) => {
         visited.push(node)
         return undefined
-      },
+      }
     )
 
     expect(visited.length).toBe(0)
@@ -272,9 +257,7 @@ describe('visit', () => {
 
   it('should handle text nodes', () => {
     const tree: ComarkTree = {
-      nodes: [
-        ['p', {}, 'Text 1', 'Text 2'],
-      ],
+      nodes: [['p', {}, 'Text 1', 'Text 2']],
       frontmatter: {},
       meta: {},
     }
@@ -286,7 +269,7 @@ describe('visit', () => {
       (node) => {
         visited.push(node as string | [string, any, ...any[]])
         return undefined
-      },
+      }
     )
 
     expect(visited.length).toBe(3) // p, 'Text 1', 'Text 2'
@@ -297,9 +280,7 @@ describe('visit', () => {
 
   it('should handle text nodes with removals', () => {
     const tree: ComarkTree = {
-      nodes: [
-        ['p', {}, 'Text 1', 'Text 2', 'Text 3'],
-      ],
+      nodes: [['p', {}, 'Text 1', 'Text 2', 'Text 3']],
       frontmatter: {},
       meta: {},
     }
@@ -314,7 +295,7 @@ describe('visit', () => {
           return false
         }
         return undefined
-      },
+      }
     )
 
     expect(visited.length).toBe(4) // p, 'Text 1', 'Text 2', 'Text 3'
@@ -332,17 +313,15 @@ describe('visit', () => {
 
   it('should handle replacing text nodes', () => {
     const tree: ComarkTree = {
-      nodes: [
-        ['p', {}, 'Old text'],
-      ],
+      nodes: [['p', {}, 'Old text']],
       frontmatter: {},
       meta: {},
     }
 
     visit(
       tree,
-      node => typeof node === 'string' && node === 'Old text',
-      () => 'New text',
+      (node) => typeof node === 'string' && node === 'Old text',
+      () => 'New text'
     )
 
     const p = tree.nodes[0] as [string, any, ...any[]]
@@ -351,17 +330,15 @@ describe('visit', () => {
 
   it('should handle removing text nodes', () => {
     const tree: ComarkTree = {
-      nodes: [
-        ['p', {}, 'Keep', 'Remove', 'Keep too'],
-      ],
+      nodes: [['p', {}, 'Keep', 'Remove', 'Keep too']],
       frontmatter: {},
       meta: {},
     }
 
     visit(
       tree,
-      node => typeof node === 'string' && node === 'Remove',
-      () => false, // remove 'Remove' text
+      (node) => typeof node === 'string' && node === 'Remove',
+      () => false // remove 'Remove' text
     )
 
     const p = tree.nodes[0] as [string, any, ...any[]]
@@ -372,19 +349,7 @@ describe('visit', () => {
 
   it('should handle deep nesting with removals', () => {
     const tree: ComarkTree = {
-      nodes: [
-        [
-          'div',
-          {},
-          [
-            'section',
-            {},
-            ['p', {}, 'Before'],
-            ['span', {}, 'Remove'],
-            ['p', {}, 'After'],
-          ],
-        ],
-      ],
+      nodes: [['div', {}, ['section', {}, ['p', {}, 'Before'], ['span', {}, 'Remove'], ['p', {}, 'After']]]],
       frontmatter: {},
       meta: {},
     }
@@ -392,7 +357,7 @@ describe('visit', () => {
     const visited: string[] = []
     visit(
       tree,
-      node => Array.isArray(node),
+      (node) => Array.isArray(node),
       (node) => {
         const tag = (node as [string, any, ...any[]])[0]
         visited.push(tag)
@@ -400,7 +365,7 @@ describe('visit', () => {
           return false
         }
         return undefined
-      },
+      }
     )
 
     expect(visited).toEqual(['div', 'section', 'p', 'span', 'p'])
@@ -426,7 +391,7 @@ describe('visit', () => {
 
     visit(
       tree,
-      node => Array.isArray(node),
+      (node) => Array.isArray(node),
       (node) => {
         const tag = (node as [string, any, ...any[]])[0]
         if (tag === 'p') {
@@ -436,7 +401,7 @@ describe('visit', () => {
           return ['section', {}, 'Replaced'] // replace
         }
         return undefined
-      },
+      }
     )
 
     expect(tree.nodes.length).toBe(3)

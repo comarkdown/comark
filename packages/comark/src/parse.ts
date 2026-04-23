@@ -1,4 +1,11 @@
-import type { ComarkParseFn, ComarkParsePostState, MarkdownExitPlugin, ParseOptions, ComarkTree, ComarkNode } from './types.ts'
+import type {
+  ComarkParseFn,
+  ComarkParsePostState,
+  MarkdownExitPlugin,
+  ParseOptions,
+  ComarkTree,
+  ComarkNode,
+} from './types.ts'
 import MarkdownExit from 'markdown-exit'
 import pluginMdc from '@comark/markdown-it'
 import taskList from './plugins/task-list.ts'
@@ -68,7 +75,7 @@ export function createParse(options: ParseOptions = {}): ComarkParseFn {
   }
 
   for (const plugin of plugins) {
-    for (const markdownItPlugin of (plugin.markdownItPlugins || [])) {
+    for (const markdownItPlugin of plugin.markdownItPlugins || []) {
       parser.use(markdownItPlugin as unknown as MarkdownExitPlugin)
     }
   }
@@ -110,8 +117,7 @@ export function createParse(options: ParseOptions = {}): ComarkParseFn {
 
     try {
       state.tokens = parser.parse(content, {})
-    }
-    catch (e) {
+    } catch (e) {
       // in case of streaming, return the previous output if parsing fails
       // This is to avoid resetting the tree to an empty state on failure
       // resetting the tree will re-redner whole tree
@@ -140,8 +146,7 @@ export function createParse(options: ParseOptions = {}): ComarkParseFn {
       // Set last output and input for streaming mode
       lastOutput = state.tree
       lastInput = markdown
-    }
-    else {
+    } else {
       state.tree = {
         frontmatter: data,
         meta: {},

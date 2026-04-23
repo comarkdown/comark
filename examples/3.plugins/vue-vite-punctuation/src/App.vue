@@ -54,7 +54,10 @@ Inline code like \`"hello" -- world...\` is not transformed.
 
 <style>
 body {
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
   max-width: 720px;
   margin: 2rem auto;
   padding: 0 1rem;
@@ -62,7 +65,9 @@ body {
   color: #1a1a1a;
 }
 
-h1, h2, h3 {
+h1,
+h2,
+h3 {
   margin-top: 2rem;
 }
 

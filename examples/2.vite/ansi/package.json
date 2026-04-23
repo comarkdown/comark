@@ -9,10 +9,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@comark/ansi": "workspace:*",
     "@xterm/addon-fit": "catalog:",
     "@xterm/xterm": "catalog:",
     "comark": "catalog:",
-    "@comark/ansi": "workspace:*",
     "katex": "catalog:",
     "shiki": "catalog:"
   },

@@ -26,9 +26,7 @@ export function applyAutoUnwrap(node: ComarkNode): ComarkNode {
   const [tag, props, ...children] = node
 
   // Filter out empty text nodes for checking
-  const nonEmptyChildren = children.filter((child: ComarkNode) =>
-    typeof child !== 'string' || (child && child.trim()),
-  )
+  const nonEmptyChildren = children.filter((child: ComarkNode) => typeof child !== 'string' || (child && child.trim()))
 
   if (nonEmptyChildren.length === 0) {
     return node
@@ -36,16 +34,8 @@ export function applyAutoUnwrap(node: ComarkNode): ComarkNode {
 
   // Check if we have exactly one paragraph child (and possibly empty text nodes)
   if (nonEmptyChildren.length > 1 || typeof nonEmptyChildren[0] === 'string' || nonEmptyChildren[0][0] !== 'p') {
-    return [
-      tag,
-      props,
-      ...children.map((child: ComarkNode) => applyAutoUnwrap(child as ComarkNode)),
-    ] as ComarkNode
+    return [tag, props, ...children.map((child: ComarkNode) => applyAutoUnwrap(child as ComarkNode))] as ComarkNode
   }
 
-  return [
-    tag,
-    props,
-    ...nonEmptyChildren[0].slice(2) as ComarkNode[],
-  ] as ComarkNode
+  return [tag, props, ...(nonEmptyChildren[0].slice(2) as ComarkNode[])] as ComarkNode
 }

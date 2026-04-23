@@ -41,7 +41,7 @@ export default defineComarkPlugin(() => ({
   post(state) {
     visit(
       state.tree,
-      node => Array.isArray(node) && node[0] === 'blockquote',
+      (node) => Array.isArray(node) && node[0] === 'blockquote',
       (node) => {
         const element = node as ComarkElement
         if (node[2]?.[0] === 'span') {
@@ -55,8 +55,7 @@ export default defineComarkPlugin(() => ({
             element.splice(2, 1)
             element[1].as = marker.type
           }
-        }
-        else if (node[2]?.[0] === 'p') {
+        } else if (node[2]?.[0] === 'p') {
           const paragraph = node[2] as ComarkElement
           if (paragraph[2]?.[0] === 'span') {
             const content = String(paragraph[2][2] as keyof typeof markers).toUpperCase()
@@ -73,7 +72,7 @@ export default defineComarkPlugin(() => ({
             }
           }
         }
-      },
+      }
     )
   },
 }))

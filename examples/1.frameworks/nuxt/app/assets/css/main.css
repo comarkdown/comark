@@ -1,5 +1,5 @@
-@import "tailwindcss";
-@import "@nuxt/ui";
+@import 'tailwindcss';
+@import '@nuxt/ui';
 
 body {
   @apply bg-neutral-50 dark:bg-neutral-950 p-4 text-neutral-900 dark:text-neutral-50;

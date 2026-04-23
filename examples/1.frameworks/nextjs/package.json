@@ -11,9 +11,9 @@
   "dependencies": {
     "comark": "catalog:",
     "next": "catalog:",
-    "shiki": "catalog:",
     "react": "catalog:",
-    "react-dom": "catalog:"
+    "react-dom": "catalog:",
+    "shiki": "catalog:"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "catalog:",

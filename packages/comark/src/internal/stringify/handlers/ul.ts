@@ -14,9 +14,8 @@ export async function ul(node: ComarkElement, state: State) {
   result = result.trim()
 
   if (revert.list) {
-    result = '\n' + indent(result, { width: revert.listIndent as number || 2 })
-  }
-  else {
+    result = '\n' + indent(result, { width: (revert.listIndent as number) || 2 })
+  } else {
     result = result + state.context.blockSeparator
   }
 

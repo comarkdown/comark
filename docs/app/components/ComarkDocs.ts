@@ -13,12 +13,7 @@ import binding, { Binding } from '@comark/nuxt/plugins/binding'
 const BaseComarkDocs = defineComarkComponent({
   name: 'BaseComarkDocs',
   autoClose: true,
-  plugins: [
-    math(),
-    mermaid(),
-    emoji(),
-    binding(),
-  ],
+  plugins: [math(), mermaid(), emoji(), binding()],
   components: {
     Math,
     Mermaid,
@@ -33,9 +28,7 @@ export default defineComarkComponent({
   name: 'ComarkDocs',
   plugins: [
     highlight({
-      languages: [
-        Python,
-      ],
+      languages: [Python],
       themes: {
         light: githubLight,
         dark: githubDark,

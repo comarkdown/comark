@@ -32,15 +32,35 @@ const EXT_TO_LANG: Record<string, string> = {
 }
 
 const EXCLUDED_EXTENSIONS = new Set([
-  'png', 'jpg', 'jpeg', 'gif', 'svg', 'ico', 'webp', 'avif',
-  'woff', 'woff2', 'ttf', 'eot',
-  'mp3', 'mp4', 'webm', 'ogg',
-  'zip', 'tar', 'gz', 'br',
+  'png',
+  'jpg',
+  'jpeg',
+  'gif',
+  'svg',
+  'ico',
+  'webp',
+  'avif',
+  'woff',
+  'woff2',
+  'ttf',
+  'eot',
+  'mp3',
+  'mp4',
+  'webm',
+  'ogg',
+  'zip',
+  'tar',
+  'gz',
+  'br',
 ])
 
 const EXCLUDED_FILES = new Set([
-  'pnpm-lock.yaml', 'package-lock.json', 'yarn.lock', 'bun.lockb',
-  '.DS_Store', 'Thumbs.db',
+  'pnpm-lock.yaml',
+  'package-lock.json',
+  'yarn.lock',
+  'bun.lockb',
+  '.DS_Store',
+  'Thumbs.db',
 ])
 
 const EXCLUDED_DIRS = ['.git', 'node_modules', 'dist', '.output', '.nuxt', '.next']
@@ -55,7 +75,7 @@ function shouldExclude(relativePath: string): boolean {
 
   if (EXCLUDED_EXTENSIONS.has(ext)) return true
   if (EXCLUDED_FILES.has(filename)) return true
-  return EXCLUDED_DIRS.some(dir => relativePath.includes(`/${dir}/`) || relativePath.startsWith(`${dir}/`))
+  return EXCLUDED_DIRS.some((dir) => relativePath.includes(`/${dir}/`) || relativePath.startsWith(`${dir}/`))
 }
 
 interface CodeExplorerTreeItem {
@@ -81,9 +101,8 @@ function buildTree(filePaths: string[]): CodeExplorerTreeItem[] {
           filename: part,
           path: currentPath,
         })
-      }
-      else {
-        let dir = current.find(item => item.children && item.path === currentPath)
+      } else {
+        let dir = current.find((item) => item.children && item.path === currentPath)
         if (!dir) {
           dir = {
             filename: part,
@@ -129,7 +148,7 @@ async function processInBatches<T, R>(items: T[], fn: (item: T) => Promise<R>): 
   const results: R[] = []
   for (let i = 0; i < items.length; i += CONCURRENCY) {
     const batch = items.slice(i, i + CONCURRENCY)
-    results.push(...await Promise.all(batch.map(fn)))
+    results.push(...(await Promise.all(batch.map(fn))))
   }
   return results
 }
@@ -151,8 +170,7 @@ export default defineEventHandler(async (event) => {
   if (atIdx !== -1) {
     repo = repoSegment.substring(0, atIdx)
     branch = repoSegment.substring(atIdx + 1).replaceAll('~', '/')
-  }
-  else {
+  } else {
     repo = repoSegment
     branch = 'master'
   }
@@ -160,14 +178,14 @@ export default defineEventHandler(async (event) => {
   const dirPath = segments.slice(2).join('/')
   const encodedBranch = branch.replaceAll('/', '%2F')
   const listing = await $fetch<JsDelivrResponse>(
-    `https://data.jsdelivr.com/v1/package/gh/${org}/${repo}@${encodedBranch}/flat`,
+    `https://data.jsdelivr.com/v1/package/gh/${org}/${repo}@${encodedBranch}/flat`
   )
 
   const prefix = `/${dirPath}/`.replaceAll('//', '/')
   const files = listing.files
-    .filter(f => f.name.startsWith(prefix))
-    .map(f => f.name.slice(prefix.length))
-    .filter(relativePath => !shouldExclude(relativePath))
+    .filter((f) => f.name.startsWith(prefix))
+    .map((f) => f.name.slice(prefix.length))
+    .filter((relativePath) => !shouldExclude(relativePath))
     .sort()
 
   const highlightPlugin = highlight({
@@ -175,10 +193,7 @@ export default defineEventHandler(async (event) => {
       light: (await import('@shikijs/themes/material-theme-lighter')).default,
       dark: (await import('@shikijs/themes/material-theme-palenight')).default,
     },
-    languages: [
-      (await import('@shikijs/langs/python')).default,
-      (await import('@shikijs/langs/astro')).default,
-    ],
+    languages: [(await import('@shikijs/langs/python')).default, (await import('@shikijs/langs/astro')).default],
   })
 
   const fileResults: Record<string, ComarkTree> = {}

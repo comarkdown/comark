@@ -11,13 +11,11 @@ export async function blockquote(node: ComarkElement, state: State) {
   const content = childResult
     .trim()
     .split('\n')
-    .map(line => line ? `> ${line}` : '>')
+    .map((line) => (line ? `> ${line}` : '>'))
     .join('\n')
 
   if (node[1].as) {
-    return `> [!${String(node[1].as).toUpperCase()}]\n`
-      + content
-      + state.context.blockSeparator
+    return `> [!${String(node[1].as).toUpperCase()}]\n` + content + state.context.blockSeparator
   }
 
   return content + state.context.blockSeparator

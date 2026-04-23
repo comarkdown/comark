@@ -18,8 +18,8 @@ const frameworkPackages = ['comark-vue', 'comark-react', 'comark-svelte', 'comar
 
 // Collect plugin names from comark/dist/plugins/ (by .js files)
 const comarkPlugins = readdirSync(comarkPluginsDir)
-  .filter(f => f.endsWith('.js') && !f.endsWith('.mjs'))
-  .map(f => basename(f, '.js'))
+  .filter((f) => f.endsWith('.js') && !f.endsWith('.mjs'))
+  .map((f) => basename(f, '.js'))
 
 for (const pkg of frameworkPackages) {
   const distPluginsDir = join(packagesDir, pkg, 'dist', 'plugins')
@@ -34,12 +34,12 @@ for (const pkg of frameworkPackages) {
     let hasDefault = existsSync(comarkDtsPath)
     if (hasDefault) {
       const content = readFileSync(comarkDtsPath, 'utf-8')
-      hasDefault = /^export default /m.test(content)
-        || /export\s*\{\s*default/.test(content)
+      hasDefault = /^export default /m.test(content) || /export\s*\{\s*default/.test(content)
     }
 
-    const reexport = `export * from 'comark/plugins/${name}';\n`
-      + (hasDefault ? `export { default } from 'comark/plugins/${name}';\n` : '')
+    const reexport =
+      `export * from 'comark/plugins/${name}';\n` +
+      (hasDefault ? `export { default } from 'comark/plugins/${name}';\n` : '')
 
     if (existsSync(join(srcPluginsDir, `${name}.ts`))) {
       continue

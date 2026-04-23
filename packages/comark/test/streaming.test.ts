@@ -27,7 +27,7 @@ describe('streaming mode', () => {
       const result = await parse('# Heading\n\nPara 1\n\nPara 2\n\nPara 3\n', { streaming: true })
 
       const nodes = result.nodes as ComarkElement[]
-      const lines = nodes.map(n => n[1].$?.line ?? 0)
+      const lines = nodes.map((n) => n[1].$?.line ?? 0)
       for (let i = 1; i < lines.length; i++) {
         expect(lines[i]).toBeGreaterThan(lines[i - 1])
       }
@@ -229,9 +229,7 @@ describe('streaming mode', () => {
       const p = result.nodes[1] as ComarkElement
       expect(p[0]).toBe('p')
       // The bold should be auto-closed so it appears as strong
-      const strong = p.slice(2).find(
-        child => Array.isArray(child) && (child as ComarkElement)[0] === 'strong',
-      )
+      const strong = p.slice(2).find((child) => Array.isArray(child) && (child as ComarkElement)[0] === 'strong')
       expect(strong).toBeDefined()
     })
 
@@ -252,8 +250,8 @@ describe('streaming mode', () => {
 
       // With autoUnwrap, single paragraph inside component is unwrapped
       const children = alert.slice(2)
-      const hasDirectText = children.some(c => typeof c === 'string')
-      const hasNoP = !children.some(c => Array.isArray(c) && (c as ComarkElement)[0] === 'p')
+      const hasDirectText = children.some((c) => typeof c === 'string')
+      const hasNoP = !children.some((c) => Array.isArray(c) && (c as ComarkElement)[0] === 'p')
       expect(hasDirectText || hasNoP).toBe(true)
     })
 
@@ -264,7 +262,7 @@ describe('streaming mode', () => {
       const alert = result.nodes[0] as ComarkElement
 
       // Without autoUnwrap, the p element should be present
-      const p = alert.slice(2).find(c => Array.isArray(c) && (c as ComarkElement)[0] === 'p')
+      const p = alert.slice(2).find((c) => Array.isArray(c) && (c as ComarkElement)[0] === 'p')
       expect(p).toBeDefined()
     })
   })
@@ -373,8 +371,7 @@ Everything you need for modern content parsing
         },
       },
       {
-        input:
-        `# title\nMarkdown but with Components\n\n#`,
+        input: `# title\nMarkdown but with Components\n\n#`,
         output: {
           frontmatter: {},
           meta: {},

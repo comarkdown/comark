@@ -50,17 +50,22 @@ const appConfig = useAppConfig()
 
         <div class="flex items-center justify-between px-6 py-4 md:px-8">
           <p class="text-xs text-dimmed">
-            Copyright <a
+            Copyright
+            <a
               href="https://vercel.com"
               target="_blank"
               class="text-default"
               rel="noopener"
-            >Vercel</a> 2026. Released under the <a
+              >Vercel</a
+            >
+            2026. Released under the
+            <a
               href="https://github.com/comarkdown/comark/blob/main/LICENSE"
               target="_blank"
               class="text-default"
               rel="noopener"
-            >MIT License</a>.
+              >MIT License</a
+            >.
           </p>
           <div class="flex items-center gap-1">
             <UColorModeButton size="xs" />

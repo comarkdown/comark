@@ -25,7 +25,7 @@ const INLINE_TAG_MAP: Record<string, string> = {
 
 interface ProcessState {
   headingSlugCounts: Map<string, number>
-  headingStack: Array<{ level: number, id: string }>
+  headingStack: Array<{ level: number; id: string }>
   preservePositions: boolean
 }
 
@@ -34,7 +34,10 @@ interface ProcessState {
 /**
  * Convert Markdown-It tokens to a Comark tree
  */
-export function marmdownItTokensToComarkTree(tokens: any[], options: { startLine: number, preservePositions: boolean } = { startLine: 0, preservePositions: false }): ComarkNode[] {
+export function marmdownItTokensToComarkTree(
+  tokens: any[],
+  options: { startLine: number; preservePositions: boolean } = { startLine: 0, preservePositions: false }
+): ComarkNode[] {
   const state: ProcessState = {
     headingSlugCounts: new Map<string, number>(),
     headingStack: [],
@@ -50,13 +53,11 @@ export function marmdownItTokensToComarkTree(tokens: any[], options: { startLine
       if (options.preservePositions) {
         for (let j = i; j < result.nextIndex; j++) {
           if (tokens[j].map && tokens[j].map[1]) {
-            endLine = (tokens[j].map[1] as number)
-              + options.startLine
-              + (tokens[j].type?.endsWith('_close') ? 1 : 0)
+            endLine = (tokens[j].map[1] as number) + options.startLine + (tokens[j].type?.endsWith('_close') ? 1 : 0)
           }
         }
         if (!(result.node[1] as Record<string, unknown>).$) {
-          (result.node[1] as Record<string, unknown>).$ = {}
+          ;(result.node[1] as Record<string, unknown>).$ = {}
         }
         ;((result.node[1] as Record<string, unknown>).$ as Record<string, unknown>).line = endLine
       }
@@ -77,7 +78,7 @@ function processAttributes(
     handleBoolean?: boolean
     handleJSON?: boolean
     filterEmpty?: boolean
-  } = {},
+  } = {}
 ): Record<string, unknown> {
   const { handleBoolean = true, handleJSON = true, filterEmpty = false } = options
   const attrs: Record<string, unknown> = {}
@@ -97,7 +98,13 @@ function processAttributes(
       }
 
       // Handle boolean attributes: {bool} -> {":bool": "true"}
-      if (handleBoolean && !key.startsWith(':') && !key.startsWith('#') && !key.startsWith('.') && (!value || value === 'true' || value === '')) {
+      if (
+        handleBoolean &&
+        !key.startsWith(':') &&
+        !key.startsWith('#') &&
+        !key.startsWith('.') &&
+        (!value || value === 'true' || value === '')
+      ) {
         attrs[`:${key}`] = 'true'
         continue
       }
@@ -107,16 +114,13 @@ function processAttributes(
         if (value.startsWith('{') && value.endsWith('}')) {
           try {
             value = JSON.parse(value)
-          }
-          catch {
+          } catch {
             // Keep original value if parsing fails
           }
-        }
-        else if (value.startsWith('[') && value.endsWith(']')) {
+        } else if (value.startsWith('[') && value.endsWith(']')) {
           try {
             value = JSON.parse(value)
-          }
-          catch {
+          } catch {
             // Keep original value if parsing fails
           }
         }
@@ -125,8 +129,7 @@ function processAttributes(
       // Handle class attribute (multiple classes)
       if (key === 'class' && typeof attrs[key] === 'string') {
         attrs[key] = `${attrs[key]} ${value}`
-      }
-      else {
+      } else {
         attrs[key] = value
       }
     }
@@ -183,14 +186,13 @@ function parseCodeblockInfo(info: string): {
           const trimmed = part.trim()
           if (trimmed.includes('-')) {
             // Range like "1-3"
-            const [start, end] = trimmed.split('-').map(s => Number.parseInt(s.trim(), 10))
+            const [start, end] = trimmed.split('-').map((s) => Number.parseInt(s.trim(), 10))
             if (!Number.isNaN(start) && !Number.isNaN(end)) {
               for (let i = start; i <= end; i++) {
                 highlights.push(i)
               }
             }
-          }
-          else {
+          } else {
             // Single number
             const num = Number.parseInt(trimmed, 10)
             if (!Number.isNaN(num)) {
@@ -201,20 +203,17 @@ function parseCodeblockInfo(info: string): {
         if (highlights.length > 0) {
           result.highlights = highlights
         }
-      }
-      else {
+      } else {
         break
       }
-    }
-    else if (remaining.startsWith('[')) {
+    } else if (remaining.startsWith('[')) {
       // Extract filename [filename.ts] - handle nested brackets and escaped backslashes
       let depth = 0
       let i = 0
       for (; i < remaining.length; i++) {
         if (remaining[i] === '[') {
           depth++
-        }
-        else if (remaining[i] === ']') {
+        } else if (remaining[i] === ']') {
           depth--
           if (depth === 0) {
             // Found the closing bracket
@@ -247,8 +246,8 @@ function parseCodeblockInfo(info: string): {
 function extractAttributes(
   tokens: any[],
   startIndex: number,
-  skipEmptyText: boolean = true,
-): { attrs: Record<string, unknown>, nextIndex: number } {
+  skipEmptyText: boolean = true
+): { attrs: Record<string, unknown>; nextIndex: number } {
   let propsIndex = startIndex
 
   // Skip empty text tokens if requested
@@ -268,7 +267,12 @@ function extractAttributes(
   return { attrs: {}, nextIndex: startIndex }
 }
 
-function processBlockToken(tokens: any[], startIndex: number, insideNestedContext: boolean = false, state?: ProcessState): { node: ComarkNode | null, nextIndex: number } {
+function processBlockToken(
+  tokens: any[],
+  startIndex: number,
+  insideNestedContext: boolean = false,
+  state?: ProcessState
+): { node: ComarkNode | null; nextIndex: number } {
   const token = tokens[startIndex]
 
   if (token.type === 'hr') {
@@ -336,7 +340,10 @@ function processBlockToken(tokens: any[], startIndex: number, insideNestedContex
   }
 
   if (token.type === 'math_block') {
-    return { node: ['math', { class: 'math block', content: token.content }, token.content] as ComarkNode, nextIndex: startIndex + 1 }
+    return {
+      node: ['math', { class: 'math block', content: token.content }, token.content] as ComarkNode,
+      nextIndex: startIndex + 1,
+    }
   }
 
   if (token.type === 'fence' || token.type === 'fenced_code_block' || token.type === 'code_block') {
@@ -377,14 +384,25 @@ function processBlockToken(tokens: any[], startIndex: number, insideNestedContex
     const level = Number.parseInt(token.tag.replace('h', ''), 10)
     const headingTag = `h${level}` as 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
     // Process heading children with inHeading flag for Comark component handling
-    const children = processBlockChildren(tokens, startIndex + 1, 'heading_close', true, true, insideNestedContext, state)
+    const children = processBlockChildren(
+      tokens,
+      startIndex + 1,
+      'heading_close',
+      true,
+      true,
+      insideNestedContext,
+      state
+    )
     if (children.nodes.length > 0) {
       // Always generate ID for all headings, no exceptions
       const textContent = extractTextContent(children.nodes)
       const headingId = uniqueSlug(slugify(textContent), level, state)
 
       // Always attach ID to the heading element itself
-      return { node: [headingTag, { id: headingId }, ...children.nodes] as ComarkNode, nextIndex: children.nextIndex + 1 }
+      return {
+        node: [headingTag, { id: headingId }, ...children.nodes] as ComarkNode,
+        nextIndex: children.nextIndex + 1,
+      }
     }
     return { node: null, nextIndex: children.nextIndex + 1 }
   }
@@ -399,8 +417,7 @@ function processBlockToken(tokens: any[], startIndex: number, insideNestedContex
       if (Array.isArray(child) && child[0] === 'p') {
         // Unwrap paragraph, add its children directly
         unwrapped.push(...(child.slice(2) as ComarkNode[]))
-      }
-      else {
+      } else {
         unwrapped.push(child)
       }
     }
@@ -430,8 +447,8 @@ function processBlockChildrenWithSlots(
   tokens: any[],
   startIndex: number,
   closeType: string,
-  state?: ProcessState,
-): { nodes: ComarkNode[], nextIndex: number } {
+  state?: ProcessState
+): { nodes: ComarkNode[]; nextIndex: number } {
   const nodes: ComarkNode[] = []
   let i = startIndex
   let currentSlotName: string | null = null
@@ -445,8 +462,7 @@ function processBlockChildrenWithSlots(
       const htmlNodes = htmlToComarkNodes(token.content)
       if (currentSlotName !== null) {
         currentSlotChildren.push(...htmlNodes)
-      }
-      else {
+      } else {
         nodes.push(...htmlNodes)
       }
       i++
@@ -491,8 +507,7 @@ function processBlockChildrenWithSlots(
       if (currentSlotName !== null) {
         // Add to current slot
         currentSlotChildren.push(result.node)
-      }
-      else {
+      } else {
         // Add directly to component
         nodes.push(result.node)
       }
@@ -514,8 +529,8 @@ function processBlockChildren(
   inlineOnly: boolean,
   inHeading: boolean = false,
   insideNestedContext: boolean = false,
-  state?: ProcessState,
-): { nodes: ComarkNode[], nextIndex: number } {
+  state?: ProcessState
+): { nodes: ComarkNode[]; nextIndex: number } {
   const nodes: ComarkNode[] = []
   let i = startIndex
 
@@ -533,23 +548,19 @@ function processBlockChildren(
       const inlineNodes = processInlineTokens(token.children || [], inHeading)
       nodes.push(...inlineNodes)
       i++
-    }
-    else if (token.type === 'hardbreak' || token.type === 'hard_break') {
+    } else if (token.type === 'hardbreak' || token.type === 'hard_break') {
       nodes.push(['br', {}] as ComarkNode)
       i++
-    }
-    else if (token.type === 'softbreak') {
+    } else if (token.type === 'softbreak') {
       // Soft breaks are preserved as newlines in the text content
       nodes.push('\n')
       i++
-    }
-    else if (inlineOnly && (token.type === 'text' || token.type === 'code_inline')) {
+    } else if (inlineOnly && (token.type === 'text' || token.type === 'code_inline')) {
       if (token.content) {
         nodes.push(token.content)
       }
       i++
-    }
-    else {
+    } else {
       const result = processBlockToken(tokens, i, insideNestedContext, state)
       i = result.nextIndex
       if (result.node) {
@@ -574,8 +585,7 @@ function mergeAdjacentTextNodes(nodes: ComarkNode[]): ComarkNode[] {
     // If both current and last nodes are strings, merge them
     if (typeof node === 'string' && typeof lastNode === 'string') {
       merged[merged.length - 1] = lastNode + node
-    }
-    else {
+    } else {
       merged.push(node)
     }
   }
@@ -592,8 +602,7 @@ function extractTextContent(nodes: ComarkNode[]): string {
   for (const node of nodes) {
     if (typeof node === 'string') {
       text += node
-    }
-    else if (Array.isArray(node)) {
+    } else if (Array.isArray(node)) {
       // For array nodes (elements), include the tag name (for inline components)
       const tag = node[0]
       const children = node.slice(2) as ComarkNode[]
@@ -690,7 +699,11 @@ export function processInlineTokens(tokens: any[], inHeading: boolean = false): 
   return mergeAdjacentTextNodes(nodes)
 }
 
-function processInlineToken(tokens: any[], startIndex: number, inHeading: boolean = false): { node: ComarkNode | string | null, nextIndex: number } {
+function processInlineToken(
+  tokens: any[],
+  startIndex: number,
+  inHeading: boolean = false
+): { node: ComarkNode | string | null; nextIndex: number } {
   const token = tokens[startIndex]
 
   if (token.type === 'text') {
@@ -742,9 +755,10 @@ function processInlineToken(tokens: any[], startIndex: number, inHeading: boolea
       }
     }
 
-    const node = children.length > 0
-      ? [tagInfo.tag, tagInfo.attrs, ...children] as ComarkNode
-      : [tagInfo.tag, tagInfo.attrs] as ComarkNode
+    const node =
+      children.length > 0
+        ? ([tagInfo.tag, tagInfo.attrs, ...children] as ComarkNode)
+        : ([tagInfo.tag, tagInfo.attrs] as ComarkNode)
     return { node, nextIndex: j }
   }
 
@@ -841,12 +855,10 @@ function processInlineToken(tokens: any[], startIndex: number, inHeading: boolea
 
       // No closing tag found, return what we have
       return { node: [componentName, {}, ...children] as ComarkNode, nextIndex: i }
-    }
-    else if (token.nesting === -1) {
+    } else if (token.nesting === -1) {
       // Closing tag - should be handled by the opening tag processing
       return { node: null, nextIndex: startIndex + 1 }
-    }
-    else {
+    } else {
       // Self-closing component (nesting === 0)
       const attrs: Record<string, unknown> = {}
 
@@ -895,7 +907,10 @@ function processInlineToken(tokens: any[], startIndex: number, inHeading: boolea
   }
 
   if (token.type === 'math_inline') {
-    return { node: ['math', { class: 'math inline', content: token.content }, token.content] as ComarkNode, nextIndex: startIndex + 1 }
+    return {
+      node: ['math', { class: 'math inline', content: token.content }, token.content] as ComarkNode,
+      nextIndex: startIndex + 1,
+    }
   }
 
   // Handle generic inline open/close pairs
@@ -925,8 +940,8 @@ function processInlineChildren(
   tokens: any[],
   startIndex: number,
   closeType: string,
-  inHeading: boolean = false,
-): { nodes: ComarkNode[], nextIndex: number } {
+  inHeading: boolean = false
+): { nodes: ComarkNode[]; nextIndex: number } {
   const nodes: ComarkNode[] = []
   let i = startIndex
 
@@ -937,8 +952,7 @@ function processInlineChildren(
     if (token.type === closeType) {
       if (closeType === 'mdc_inline_span' && token.nesting === -1) {
         break
-      }
-      else if (closeType !== 'mdc_inline_span') {
+      } else if (closeType !== 'mdc_inline_span') {
         break
       }
     }
@@ -961,8 +975,7 @@ function processInlineChildren(
       Object.assign(attrs, componentAttrs)
       if (Object.keys(componentAttrs).length > 0) {
         i = componentNextIndex // Skip both component and props tokens
-      }
-      else {
+      } else {
         i++
       }
 

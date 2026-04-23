@@ -66,7 +66,11 @@ function parseTimeout(timeoutStr: string): number {
   return ms + 5 + (process.env.GITHUB_ACTIONS ? 40 : 0) /* add 40ms to avoid random Github Actions failures */
 }
 
-function extractFrontmatter(content: string): { timeouts?: TestCase['timeouts'], body: string, options?: TestCase['options'] } {
+function extractFrontmatter(content: string): {
+  timeouts?: TestCase['timeouts']
+  body: string
+  options?: TestCase['options']
+} {
   const { content: body, data } = parseFrontmatter(content)
 
   if (!data || Object.keys(data).length === 0) {
@@ -102,9 +106,7 @@ function extractTestCase(content: string): TestCase {
     const startPos = match.index! + match[0].length
 
     // Find the end position - either the next section header or end of body
-    const endPos = i < sectionHeaders.length - 1
-      ? sectionHeaders[i + 1].index!
-      : body.length
+    const endPos = i < sectionHeaders.length - 1 ? sectionHeaders[i + 1].index! : body.length
 
     // Extract content between start and end, then find the last ``` before the next section
     const sectionText = body.substring(startPos, endPos)
@@ -120,22 +122,19 @@ function extractTestCase(content: string): TestCase {
     while ((currentMatch = closingPattern.exec(body)) !== null) {
       if (currentMatch.index < endPos) {
         lastMatch = currentMatch
-      }
-      else {
+      } else {
         break
       }
     }
 
     if (lastMatch) {
       content = body.substring(startPos, lastMatch.index)
-    }
-    else {
+    } else {
       // Fallback: try to find ``` and remove it
       const fallbackMatch = sectionText.match(/^([\s\S]*?)```\s*$/)
       if (fallbackMatch) {
         content = fallbackMatch[1].trim()
-      }
-      else {
+      } else {
         content = sectionText.trim()
       }
     }
@@ -146,7 +145,7 @@ function extractTestCase(content: string): TestCase {
   return {
     ...frontmatter,
     input: (sections.input || '').trim(),
-    ast: (sections.ast || ''),
+    ast: sections.ast || '',
     html: sections.html || '',
     markdown: sections.markdown || '',
     timeouts,
@@ -164,8 +163,7 @@ function findMarkdownFiles(dir: string, baseDir: string = dir): string[] {
 
     if (entry.isDirectory()) {
       files.push(...findMarkdownFiles(fullPath, baseDir))
-    }
-    else if (entry.isFile() && entry.name.endsWith('.md')) {
+    } else if (entry.isFile() && entry.name.endsWith('.md')) {
       files.push(relativePath)
     }
   }
@@ -177,7 +175,7 @@ function findMarkdownFiles(dir: string, baseDir: string = dir): string[] {
 const specDir = join(process.cwd(), 'SPEC')
 const specArg = String(process.env.npm_lifecycle_script || '').split('-- -spec ')[1] || ''
 
-function loadTestCases(): Array<{ file: string, testCase: TestCase }> {
+function loadTestCases(): Array<{ file: string; testCase: TestCase }> {
   if (specArg) {
     const absPath = specArg.startsWith('/') ? specArg : join(process.cwd(), specArg)
     const relativePath = absPath.replace(specDir + '/', '')
@@ -207,25 +205,32 @@ describe('Comark Tests', () => {
 
       beforeAll(async () => {
         const declaredPlugins = testCase.options?.plugins ?? []
-        const plugins: ComarkPlugin[] = declaredPlugins.map(name => pluginRegistry[name]())
+        const plugins: ComarkPlugin[] = declaredPlugins.map((name) => pluginRegistry[name]())
 
         if (testCase.options?.highlight) {
           const themes = {
             'min-light': minLight,
             'github-dark': githubDark,
-            'nord': nord,
+            nord: nord,
           } as Record<string, any>
 
           const transformerNames = testCase.options.highlight.transformers as unknown as TransformerName[] | undefined
-          plugins.push(highlight({
-            ...testCase.options.highlight,
-            languages: [rustLanguage, goLanguage],
-            themes: {
-              light: themes[testCase.options.highlight.themes?.light as string || 'github-dark'],
-              dark: themes[testCase.options.highlight.themes?.dark as string || testCase.options.highlight.themes?.light as string],
-            },
-            transformers: transformerNames ? await Promise.all(transformerNames.map(name => transformerRegistry[name]())) : undefined,
-          }))
+          plugins.push(
+            highlight({
+              ...testCase.options.highlight,
+              languages: [rustLanguage, goLanguage],
+              themes: {
+                light: themes[(testCase.options.highlight.themes?.light as string) || 'github-dark'],
+                dark: themes[
+                  (testCase.options.highlight.themes?.dark as string) ||
+                    (testCase.options.highlight.themes?.light as string)
+                ],
+              },
+              transformers: transformerNames
+                ? await Promise.all(transformerNames.map((name) => transformerRegistry[name]()))
+                : undefined,
+            })
+          )
         }
 
         const parseOptions: ParseOptions = {
@@ -300,7 +305,7 @@ describe('custom components', () => {
     const md = await renderMarkdown(tree, {
       components: {
         infoAlert: {
-          match: node => node[0] === 'alert' && node[1].type === 'info',
+          match: (node) => node[0] === 'alert' && node[1].type === 'info',
           handler: async ([, , ...children], { render }) => {
             return `> **Info:** ${(await render(children)).trim()}\n`
           },
@@ -317,7 +322,7 @@ describe('custom components', () => {
     const html = await renderHTMLForTest(tree, {
       components: {
         infoAlert: {
-          match: node => node[0] === 'alert' && node[1].type === 'info',
+          match: (node) => node[0] === 'alert' && node[1].type === 'info',
           handler: async ([, , ...children], { render }) => {
             return `<div class="info-box">${await render(children)}</div>`
           },

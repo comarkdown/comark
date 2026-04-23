@@ -7,15 +7,6 @@ describe('breaks plugin', () => {
     const md = 'She said "hello world" to\nhim.'
     const tree = await parse(md, { plugins: [breaks()] })
 
-    expect(tree.nodes).toEqual([[
-      'p',
-      {},
-      'She said "hello world" to',
-      [
-        'br',
-        {},
-      ],
-      'him.',
-    ]])
+    expect(tree.nodes).toEqual([['p', {}, 'She said "hello world" to', ['br', {}], 'him.']])
   })
 })

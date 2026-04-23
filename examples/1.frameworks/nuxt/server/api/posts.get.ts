@@ -4,7 +4,7 @@ import { parse } from 'comark'
 
 export default defineEventHandler(async () => {
   const postsDir = path.join(process.cwd(), 'content/posts')
-  const files = fs.readdirSync(postsDir).filter(f => f.endsWith('.md'))
+  const files = fs.readdirSync(postsDir).filter((f) => f.endsWith('.md'))
 
   const posts = []
 

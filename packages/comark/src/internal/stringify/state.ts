@@ -72,8 +72,7 @@ export async function one(node: ComarkNode, state: State, parent?: ComarkElement
     return state.context.format === 'markdown/comark'
       ? await state.handlers.mdc(node, state, parent)
       : await state.handlers.html(node, state, parent)
-  }
-  finally {
+  } finally {
     state.renderData = prevRenderData
   }
 }
@@ -94,8 +93,7 @@ export function createState(ctx: Partial<CreateContext> = {}): State {
   for (const [key, value] of Object.entries(ctx.handlers || {})) {
     if (typeof value === 'function') {
       handlers[key] = value
-    }
-    else {
+    } else {
       conditionalHandlers.push(value)
     }
   }
@@ -131,7 +129,7 @@ export function createState(ctx: Partial<CreateContext> = {}): State {
       }
 
       let result = ''
-      for (const child of (input as ComarkNode[])) {
+      for (const child of input as ComarkNode[]) {
         result += await state.one(child, state)
       }
       return result
@@ -175,7 +173,7 @@ export const state: State = {
     }
 
     let result = ''
-    for (const child of (input as ComarkNode[])) {
+    for (const child of input as ComarkNode[]) {
       result += await one(child, state)
     }
     return result
@@ -201,5 +199,5 @@ function escapeHtml(text: string): string {
     '>': '&gt;',
     '&amp;': '&',
   }
-  return text.replace(/[<>]/g, char => map[char])
+  return text.replace(/[<>]/g, (char) => map[char])
 }

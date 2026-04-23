@@ -99,7 +99,9 @@ const { data: highlighted } = await useAsyncData('fw-highlight', async () => {
       <div class="flex items-center border-b border-muted">
         <button
           class="flex items-center gap-2 border-b-2 px-4 py-2 font-mono text-xs"
-          :class="activeTab === 'vue' ? 'border-primary text-primary' : 'border-transparent text-muted hover:text-highlighted'"
+          :class="
+            activeTab === 'vue' ? 'border-primary text-primary' : 'border-transparent text-muted hover:text-highlighted'
+          "
           @click="activeTab = 'vue'"
         >
           <UIcon
@@ -110,7 +112,11 @@ const { data: highlighted } = await useAsyncData('fw-highlight', async () => {
         </button>
         <button
           class="flex items-center gap-2 border-b-2 px-4 py-2 font-mono text-xs"
-          :class="activeTab === 'react' ? 'border-primary text-primary' : 'border-transparent text-muted hover:text-highlighted'"
+          :class="
+            activeTab === 'react'
+              ? 'border-primary text-primary'
+              : 'border-transparent text-muted hover:text-highlighted'
+          "
           @click="activeTab = 'react'"
         >
           <UIcon
@@ -121,7 +127,11 @@ const { data: highlighted } = await useAsyncData('fw-highlight', async () => {
         </button>
         <button
           class="flex items-center gap-2 border-b-2 px-4 py-2 font-mono text-xs"
-          :class="activeTab === 'svelte' ? 'border-primary text-primary' : 'border-transparent text-muted hover:text-highlighted'"
+          :class="
+            activeTab === 'svelte'
+              ? 'border-primary text-primary'
+              : 'border-transparent text-muted hover:text-highlighted'
+          "
           @click="activeTab = 'svelte'"
         >
           <UIcon

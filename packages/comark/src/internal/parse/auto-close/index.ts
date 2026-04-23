@@ -59,8 +59,7 @@ export function autoCloseMarkdown(markdown: string): string {
     // Table block tracking (consecutive pipe-starting lines)
     if (trimmed.startsWith('|')) {
       tableStart = tableStart === -1 ? idx : tableStart
-    }
-    else if (tableStart !== -1) {
+    } else if (tableStart !== -1) {
       tableStart = -1
     }
 
@@ -90,12 +89,27 @@ export function autoCloseMarkdown(markdown: string): string {
           let nameEnd = colonCount
           while (nameEnd < trimmed.length) {
             const c = trimmed[nameEnd]
-            if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c === '$' || c === '.' || c === '-' || c === '_')) break
+            if (
+              !(
+                (c >= 'a' && c <= 'z') ||
+                (c >= 'A' && c <= 'Z') ||
+                (c >= '0' && c <= '9') ||
+                c === '$' ||
+                c === '.' ||
+                c === '-' ||
+                c === '_'
+              )
+            )
+              break
             nameEnd++
           }
-          componentStack.push({ depth: colonCount, name: trimmed.slice(colonCount, nameEnd), indent, hasYamlProps: false })
-        }
-        else if (colonCount === trimmed.length && componentStack.length > 0) {
+          componentStack.push({
+            depth: colonCount,
+            name: trimmed.slice(colonCount, nameEnd),
+            indent,
+            hasYamlProps: false,
+          })
+        } else if (colonCount === trimmed.length && componentStack.length > 0) {
           const top = componentStack[componentStack.length - 1]
           if (top.depth === colonCount) componentStack.pop()
         }
@@ -121,8 +135,7 @@ export function autoCloseMarkdown(markdown: string): string {
     const lastTrimmed = lines[lastIdx].trim()
     if (lastTrimmed === '-' || lastTrimmed === '--') {
       result += '-'.repeat(3 - lastTrimmed.length)
-    }
-    else {
+    } else {
       result += result.endsWith('\n') ? '---' : '\n---'
     }
   }
@@ -151,11 +164,11 @@ export function autoCloseMarkdown(markdown: string): string {
       let sq = 0
       for (let i = 0; i < propsContent.length; i++) {
         if (propsContent[i] === '"') dq++
-        if (propsContent[i] === '\'') sq++
+        if (propsContent[i] === "'") sq++
       }
       let braceClose = ''
       if (dq % 2 === 1) braceClose += '"'
-      if (sq % 2 === 1) braceClose += '\''
+      if (sq % 2 === 1) braceClose += "'"
       result += braceClose + '}'
     }
 
@@ -270,12 +283,13 @@ function closeInlineMarkersLinear(line: string): string {
           doubleAsteriskPositions.push(i)
         }
       }
-    }
-    else if (ch === '_') {
+    } else if (ch === '_') {
       // Skip intra-word underscores (not emphasis delimiters per CommonMark)
       const nextCh = i + 1 < len ? line[i + 1] : ''
-      const prevIsWord = (prevCh >= 'a' && prevCh <= 'z') || (prevCh >= 'A' && prevCh <= 'Z') || (prevCh >= '0' && prevCh <= '9')
-      const nextIsWord = (nextCh >= 'a' && nextCh <= 'z') || (nextCh >= 'A' && nextCh <= 'Z') || (nextCh >= '0' && nextCh <= '9')
+      const prevIsWord =
+        (prevCh >= 'a' && prevCh <= 'z') || (prevCh >= 'A' && prevCh <= 'Z') || (prevCh >= '0' && prevCh <= '9')
+      const nextIsWord =
+        (nextCh >= 'a' && nextCh <= 'z') || (nextCh >= 'A' && nextCh <= 'Z') || (nextCh >= '0' && nextCh <= '9')
       if (!(prevIsWord && nextIsWord)) {
         underscoreCount++
         // Track __ positions (for bold)
@@ -283,21 +297,17 @@ function closeInlineMarkersLinear(line: string): string {
           doubleUnderscorePositions.push(i)
         }
       }
-    }
-    else if (ch === '~') {
+    } else if (ch === '~') {
       tildeCount++
-    }
-    else if (ch === '`') {
+    } else if (ch === '`') {
       backtickCount++
-    }
-    else if (ch === '$' && prevCh !== '\\') {
+    } else if (ch === '$' && prevCh !== '\\') {
       // Count $$ pairs for block/display math
       if (i + 1 < len && line[i + 1] === '$') {
         dollarPairCount++
         dollarCount += 2 // Count both dollars in the pair
         i++ // Skip next $ since we counted the pair
-      }
-      else {
+      } else {
         dollarCount++ // Single $ for inline math
       }
     }
@@ -319,13 +329,19 @@ function closeInlineMarkersLinear(line: string): string {
       // Check if line starts with more than 3 asterisks (e.g., ****)
       if (!(line[3] === '*')) {
         // Check if marker at end with no content
-        if (!(contentEnd >= 3 && line[contentEnd - 1] === '*' && line[contentEnd - 2] === '*'
-          && line[contentEnd - 3] === '*' && (contentEnd === 3 || line[contentEnd - 4] === ' '))) {
+        if (
+          !(
+            contentEnd >= 3 &&
+            line[contentEnd - 1] === '*' &&
+            line[contentEnd - 2] === '*' &&
+            line[contentEnd - 3] === '*' &&
+            (contentEnd === 3 || line[contentEnd - 4] === ' ')
+          )
+        ) {
           closingSuffix = '***'
         }
       }
-    }
-    else if (remainder > 3 && remainder < 6) {
+    } else if (remainder > 3 && remainder < 6) {
       const needed = 6 - remainder
       closingSuffix = '*'.repeat(needed)
     }
@@ -357,9 +373,10 @@ function closeInlineMarkersLinear(line: string): string {
             if (!allPaired) {
               // Check if line ends with word (not just a closing marker)
               const lastChar = line[contentEnd - 1]
-              const endsWithWord = (lastChar >= 'a' && lastChar <= 'z')
-                || (lastChar >= 'A' && lastChar <= 'Z')
-                || (lastChar >= '0' && lastChar <= '9')
+              const endsWithWord =
+                (lastChar >= 'a' && lastChar <= 'z') ||
+                (lastChar >= 'A' && lastChar <= 'Z') ||
+                (lastChar >= '0' && lastChar <= '9')
 
               if (!hasCompleteBoldPair || endsWithWord) {
                 closingSuffix = '**'
@@ -371,8 +388,7 @@ function closeInlineMarkersLinear(line: string): string {
           }
         }
       }
-    }
-    else if (remainder > 2 && remainder < 4) {
+    } else if (remainder > 2 && remainder < 4) {
       const needed = 4 - remainder
       closingSuffix = '*'.repeat(needed)
     }
@@ -403,8 +419,8 @@ function closeInlineMarkersLinear(line: string): string {
         // Check marker at end with no content
         // Only skip if it's truly isolated (e.g., "input *")
         // Don't skip if there are complete pairs before it (e.g., "input **bold** *")
-        const markerAtEnd = contentEnd >= 1 && line[contentEnd - 1] === '*'
-          && (contentEnd === 1 || line[contentEnd - 2] === ' ')
+        const markerAtEnd =
+          contentEnd >= 1 && line[contentEnd - 1] === '*' && (contentEnd === 1 || line[contentEnd - 2] === ' ')
 
         if (!markerAtEnd || asteriskCount > 1) {
           closingSuffix = '*'
@@ -436,8 +452,7 @@ function closeInlineMarkersLinear(line: string): string {
           }
         }
       }
-    }
-    else if (remainder > 2 && remainder < 4) {
+    } else if (remainder > 2 && remainder < 4) {
       const needed = 4 - remainder
       closingSuffix = '_'.repeat(needed)
     }
@@ -461,8 +476,8 @@ function closeInlineMarkersLinear(line: string): string {
 
     if (validItalic) {
       // Check marker at end with no content
-      const markerAtEnd = contentEnd >= 1 && line[contentEnd - 1] === '_'
-        && (contentEnd === 1 || line[contentEnd - 2] === ' ')
+      const markerAtEnd =
+        contentEnd >= 1 && line[contentEnd - 1] === '_' && (contentEnd === 1 || line[contentEnd - 2] === ' ')
 
       if (!markerAtEnd) {
         closingSuffix = '_'
@@ -481,8 +496,7 @@ function closeInlineMarkersLinear(line: string): string {
       // Two tildes unclosed, close with ~~
       closingSuffix = '~~'
       if (hasTrailingSpace) shouldTrim = true
-    }
-    else if (remainder > 2 && remainder < 4) {
+    } else if (remainder > 2 && remainder < 4) {
       // Partial marker like ~~text~ (3 tildes), need 1 more
       const needed = 4 - remainder
       closingSuffix = '~'.repeat(needed)

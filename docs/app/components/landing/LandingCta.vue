@@ -14,7 +14,9 @@ defineProps<{
   <div>
     <section class="relative overflow-hidden border-b border-default">
       <div class="cta-dots absolute inset-0" />
-      <div class="absolute top-1/2 left-1/2 size-[400px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/8 blur-[100px]" />
+      <div
+        class="absolute top-1/2 left-1/2 size-[400px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/8 blur-[100px]"
+      />
 
       <div class="relative px-5 py-16 text-center sm:px-8 sm:py-24 md:px-12 md:py-32">
         <h2 class="text-3xl font-bold text-highlighted md:text-4xl">

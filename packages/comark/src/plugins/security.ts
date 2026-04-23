@@ -22,7 +22,7 @@ export default defineComarkPlugin((options: SecurityOptions = {}) => {
     allowDataImages,
   } = options
 
-  const dropSet = new Set(blockedTags.map(t => t.toLowerCase()))
+  const dropSet = new Set(blockedTags.map((t) => t.toLowerCase()))
 
   const propsOptions: PropsValidationOptions = {
     allowedLinkPrefixes,
@@ -37,7 +37,7 @@ export default defineComarkPlugin((options: SecurityOptions = {}) => {
     post(state) {
       visit(
         state.tree,
-        node => typeof node !== 'string' && node[0] !== null,
+        (node) => typeof node !== 'string' && node[0] !== null,
         (node) => {
           const element = node as ComarkElement
 
@@ -54,7 +54,8 @@ export default defineComarkPlugin((options: SecurityOptions = {}) => {
           if (keys.length) {
             element[1] = validateProps(element[0], element[1], propsOptions)
           }
-        })
+        }
+      )
     },
   }
 })

@@ -246,8 +246,7 @@ describe('renderANSI', () => {
         colors: false,
         data: { version: '3.0' },
         components: {
-          info: async ([,, ...children], { render, data }) =>
-            `v${data?.version}: ${await render(children)}`,
+          info: async ([, , ...children], { render, data }) => `v${data?.version}: ${await render(children)}`,
         },
       })
       expect(out).toContain('v3.0:')
@@ -259,7 +258,7 @@ describe('renderANSI', () => {
       const out = await renderANSI(tree, {
         colors: false,
         components: {
-          wrapper: async ([,, ...children], { render }) => `>> ${await render(children)}`,
+          wrapper: async ([, , ...children], { render }) => `>> ${await render(children)}`,
         },
       })
       expect(out).toContain('>>')
@@ -289,13 +288,13 @@ describe('renderANSI', () => {
       const out = await renderANSI(tree, {
         colors: false,
         components: {
-          a: async ([,, ...children], { render }) => await render(children),
-          b: async ([,, ...children], { render }) => {
+          a: async ([, , ...children], { render }) => await render(children),
+          b: async ([, , ...children], { render }) => {
             await Promise.resolve()
             log.push('b')
             return `B:${await render(children)}`
           },
-          c: async ([,, ...children], { render }) => {
+          c: async ([, , ...children], { render }) => {
             await Promise.resolve()
             log.push('c')
             return `C:${await render(children)}`
@@ -373,7 +372,7 @@ describe('createLog', () => {
 
   it('calls write with rendered output', async () => {
     const written: string[] = []
-    const logFn = createLog({ write: s => written.push(s) })
+    const logFn = createLog({ write: (s) => written.push(s) })
     await logFn('# Hello')
     expect(written).toHaveLength(1)
     expect(written[0]).toContain('Hello')
@@ -381,14 +380,14 @@ describe('createLog', () => {
 
   it('appends newline to output', async () => {
     const written: string[] = []
-    const logFn = createLog({ write: s => written.push(s) })
+    const logFn = createLog({ write: (s) => written.push(s) })
     await logFn('Hello')
     expect(written[0]).toMatch(/\n$/)
   })
 
   it('reuses parser across calls', async () => {
     const written: string[] = []
-    const logFn = createLog({ write: s => written.push(s) })
+    const logFn = createLog({ write: (s) => written.push(s) })
     await logFn('# Doc 1')
     await logFn('# Doc 2')
     expect(written[0]).toContain('Doc 1')
@@ -399,7 +398,7 @@ describe('createLog', () => {
     const written: string[] = []
     const logFn = createLog({
       colors: false,
-      write: s => written.push(s),
+      write: (s) => written.push(s),
     })
     await logFn('**bold**')
     expect(written[0]).not.toContain('\x1B[')
@@ -410,7 +409,7 @@ describe('createLog', () => {
 describe('log', () => {
   it('calls write with rendered output', async () => {
     const written: string[] = []
-    await log('# Title', { write: s => written.push(s) })
+    await log('# Title', { write: (s) => written.push(s) })
     expect(written).toHaveLength(1)
     expect(written[0]).toContain('Title')
   })

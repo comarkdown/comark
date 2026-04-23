@@ -9,7 +9,8 @@ definePageMeta({
   footer: false,
 })
 const title = 'Streaming Demo - Comark'
-const description = 'See Comark streaming in action. Watch markdown content parse and render in real-time as it arrives.'
+const description =
+  'See Comark streaming in action. Watch markdown content parse and render in real-time as it arrives.'
 useSeoMeta({
   title,
   description,
@@ -20,7 +21,12 @@ defineOgImage('OgImageDocs', {
   description,
 })
 
-const { state, startStream, isStreaming, reset: resetStream } = useMDCStream({
+const {
+  state,
+  startStream,
+  isStreaming,
+  reset: resetStream,
+} = useMDCStream({
   onChunk: (_chunk: string) => {
     scrollToBottom()
   },
@@ -72,8 +78,7 @@ function togglePause() {
   if (streamController.isPaused) {
     streamController.resume()
     isPaused.value = false
-  }
-  else {
+  } else {
     streamController.pause()
     isPaused.value = true
   }
@@ -91,27 +96,25 @@ function reset() {
 </script>
 
 <template>
-  <div class="h-[calc(100vh-64px)] flex flex-col  overflow-hidden">
+  <div class="h-[calc(100vh-64px)] flex flex-col overflow-hidden">
     <!-- Compact Header -->
     <div class="flex-shrink-0 relative px-3 py-3 sm:p-4">
-      <div class="absolute z-[-1] inset-0 bg-grid-slate-100 [mask-image:linear-gradient(0deg,rgba(255,255,255,0.2),rgba(255,255,255,0.5))] dark:bg-grid-slate-700/25 dark:[mask-image:linear-gradient(0deg,rgba(255,255,255,0.2),rgba(255,255,255,0.5))]" />
+      <div
+        class="absolute z-[-1] inset-0 bg-grid-slate-100 [mask-image:linear-gradient(0deg,rgba(255,255,255,0.2),rgba(255,255,255,0.5))] dark:bg-grid-slate-700/25 dark:[mask-image:linear-gradient(0deg,rgba(255,255,255,0.2),rgba(255,255,255,0.5))]"
+      />
       <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-0">
         <div>
           <h1 class="text-neutral-900 dark:text-white text-lg sm:text-2xl font-bold mb-0.5 sm:mb-1">
             Comark Streaming Demo
           </h1>
-          <p class="text-neutral-600 dark:text-neutral-400 text-xs sm:text-sm">
-            Real-time markdown rendering with Vue
-          </p>
+          <p class="text-neutral-600 dark:text-neutral-400 text-xs sm:text-sm">Real-time markdown rendering with Vue</p>
         </div>
         <div class="flex gap-2 items-center flex-wrap">
           <div
             v-if="isStreaming || elementsCount > 0"
             class="text-right mr-2 sm:mr-4"
           >
-            <div class="text-white text-xs opacity-90">
-              {{ bytesLength }} bytes · {{ elementsCount }} nodes
-            </div>
+            <div class="text-white text-xs opacity-90">{{ bytesLength }} bytes · {{ elementsCount }} nodes</div>
             <div class="w-32 sm:w-48 h-1 bg-white/20 rounded-full overflow-hidden mt-1 sm:mt-2">
               <div
                 class="h-full bg-white transition-all duration-300"
@@ -153,11 +156,11 @@ function reset() {
     <div class="flex-1 grid grid-cols-1 lg:grid-cols-3 overflow-hidden">
       <!-- Rendered Output Column -->
       <div class="flex flex-col overflow-hidden bg-white dark:bg-neutral-950 lg:col-span-2">
-        <div class="flex justify-between items-center px-4 py-3 bg-neutral-100 dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 flex-shrink-0">
+        <div
+          class="flex justify-between items-center px-4 py-3 bg-neutral-100 dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 flex-shrink-0"
+        >
           <div class="flex items-center gap-2">
-            <h3 class="text-neutral-800 dark:text-neutral-200 font-semibold">
-              Rendered Output
-            </h3>
+            <h3 class="text-neutral-800 dark:text-neutral-200 font-semibold">Rendered Output</h3>
             <UBadge
               color="neutral"
               variant="soft"
@@ -202,11 +205,13 @@ function reset() {
       </div>
 
       <!-- Markdown Column (hidden on mobile) -->
-      <div class="hidden lg:flex flex-col overflow-hidden bg-white dark:bg-neutral-950 border-l border-neutral-200 dark:border-neutral-800">
-        <div class="flex justify-between items-center px-4 py-3 bg-neutral-100 dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 flex-shrink-0">
-          <h3 class="text-neutral-800 dark:text-neutral-200 font-semibold">
-            Markdown
-          </h3>
+      <div
+        class="hidden lg:flex flex-col overflow-hidden bg-white dark:bg-neutral-950 border-l border-neutral-200 dark:border-neutral-800"
+      >
+        <div
+          class="flex justify-between items-center px-4 py-3 bg-neutral-100 dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 flex-shrink-0"
+        >
+          <h3 class="text-neutral-800 dark:text-neutral-200 font-semibold">Markdown</h3>
           <UBadge
             color="neutral"
             variant="soft"
@@ -221,7 +226,8 @@ function reset() {
           <pre
             v-if="elementsCount > 0"
             class="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed"
-          >{{ state.content }}</pre>
+            >{{ state.content }}</pre
+          >
           <div
             v-else
             class="text-center text-neutral-500 dark:text-neutral-600 py-12"
@@ -268,13 +274,15 @@ function reset() {
 
 <style scoped>
 .bg-grid-slate-100 {
-  background-image: linear-gradient(to right, rgb(148 163 184 / 0.25) 1px, transparent 1px),
+  background-image:
+    linear-gradient(to right, rgb(148 163 184 / 0.25) 1px, transparent 1px),
     linear-gradient(to bottom, rgb(148 163 184 / 0.25) 1px, transparent 1px);
   background-size: 4rem 4rem;
 }
 
 .dark .bg-grid-slate-700\/25 {
-  background-image: linear-gradient(to right, rgb(51 65 85 / 0.25) 1px, transparent 1px),
+  background-image:
+    linear-gradient(to right, rgb(51 65 85 / 0.25) 1px, transparent 1px),
     linear-gradient(to bottom, rgb(51 65 85 / 0.25) 1px, transparent 1px);
   background-size: 4rem 4rem;
 }

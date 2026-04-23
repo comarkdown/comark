@@ -15,15 +15,18 @@ interface CodeExplorerData {
   files: Record<string, ComarkTree>
 }
 
-const props = withDefaults(defineProps<{
-  org: string
-  repo: string
-  path: string
-  branch?: string
-  defaultValue?: string
-}>(), {
-  branch: 'main',
-})
+const props = withDefaults(
+  defineProps<{
+    org: string
+    repo: string
+    path: string
+    branch?: string
+    defaultValue?: string
+  }>(),
+  {
+    branch: 'main',
+  }
+)
 
 const repoSegment = computed(() => {
   if (props.branch === 'main') return props.repo
@@ -35,11 +38,13 @@ const apiUrl = computed(() => `/api/code-explorer/${props.org}/${repoSegment.val
 prerenderRoutes([apiUrl.value])
 const nuxtApp = useNuxtApp()
 const { data } = await useFetch<CodeExplorerData>(apiUrl, {
-  getCachedData: key => nuxtApp.payload.data[key],
+  getCachedData: (key) => nuxtApp.payload.data[key],
 })
 
-const selected = ref(props.defaultValue ? findFile(props.defaultValue, data.value?.tree) : findFirstFile(data.value?.tree))
-const selectedFile = computed(() => selected.value ? data.value?.files[selected.value.path] : undefined)
+const selected = ref(
+  props.defaultValue ? findFile(props.defaultValue, data.value?.tree) : findFirstFile(data.value?.tree)
+)
+const selectedFile = computed(() => (selected.value ? data.value?.files[selected.value.path] : undefined))
 
 expandDefaultSelected(data.value?.tree)
 

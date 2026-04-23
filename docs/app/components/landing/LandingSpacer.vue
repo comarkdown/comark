@@ -1,9 +1,12 @@
 <script setup lang="ts">
-withDefaults(defineProps<{
-  height?: string
-}>(), {
-  height: '2.5rem',
-})
+withDefaults(
+  defineProps<{
+    height?: string
+  }>(),
+  {
+    height: '2.5rem',
+  }
+)
 </script>
 
 <template>
@@ -11,10 +14,18 @@ withDefaults(defineProps<{
     class="landing-spacer relative border-b border-default"
     :style="{ height }"
   >
-    <span class="absolute -left-px top-0 size-2 -translate-x-1/2 -translate-y-1/2 rotate-45 border border-default bg-default" />
-    <span class="absolute -right-px top-0 size-2 translate-x-1/2 -translate-y-1/2 rotate-45 border border-default bg-default" />
-    <span class="absolute -left-px bottom-0 size-2 -translate-x-1/2 translate-y-1/2 rotate-45 border border-default bg-default" />
-    <span class="absolute -right-px bottom-0 size-2 translate-x-1/2 translate-y-1/2 rotate-45 border border-default bg-default" />
+    <span
+      class="absolute -left-px top-0 size-2 -translate-x-1/2 -translate-y-1/2 rotate-45 border border-default bg-default"
+    />
+    <span
+      class="absolute -right-px top-0 size-2 translate-x-1/2 -translate-y-1/2 rotate-45 border border-default bg-default"
+    />
+    <span
+      class="absolute -left-px bottom-0 size-2 -translate-x-1/2 translate-y-1/2 rotate-45 border border-default bg-default"
+    />
+    <span
+      class="absolute -right-px bottom-0 size-2 translate-x-1/2 translate-y-1/2 rotate-45 border border-default bg-default"
+    />
   </div>
 </template>
 

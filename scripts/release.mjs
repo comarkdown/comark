@@ -39,8 +39,7 @@ function getLatestTag(tagPrefix) {
   try {
     const tags = run(`git tag --list "${tagPrefix}@*" --sort=-version:refname`)
     return tags.split('\n').filter(Boolean)[0] ?? null
-  }
-  catch {
+  } catch {
     return null
   }
 }
@@ -55,8 +54,7 @@ function hasChangesSince(tag, pkgDir) {
     const rel = relative(root, pkgDir)
     const diff = run(`git diff --name-only "${tag}"..HEAD -- "${rel}"`)
     return diff.length > 0
-  }
-  catch {
+  } catch {
     return true
   }
 }
@@ -66,7 +64,7 @@ function hasChangesSince(tag, pkgDir) {
  */
 function getReleasablePackages() {
   return readdirSync(packagesDir, { withFileTypes: true })
-    .filter(d => d.isDirectory())
+    .filter((d) => d.isDirectory())
     .map((d) => {
       const pkgDir = join(packagesDir, d.name)
       const pkgJsonPath = join(pkgDir, 'package.json')
@@ -112,7 +110,9 @@ function waitAndUpdateDependents(pkg) {
   }
 
   if (!available) {
-    console.error(`\n${pkg.name}@${newVersion} did not appear on npm after ${maxAttempts} attempts. Skipping dependency update.`)
+    console.error(
+      `\n${pkg.name}@${newVersion} did not appear on npm after ${maxAttempts} attempts. Skipping dependency update.`
+    )
     return
   }
 
@@ -125,7 +125,11 @@ function waitAndUpdateDependents(pkg) {
   if (ncuResult.status === 0) {
     spawnSync('pnpm', ['install'], { cwd: root, stdio: 'inherit', env: process.env })
     spawnSync('git', ['add', '-A'], { cwd: root, stdio: 'inherit', env: process.env })
-    spawnSync('git', ['commit', '-m', `chore(deps): update ${pkg.name} to v${newVersion}`], { cwd: root, stdio: 'inherit', env: process.env })
+    spawnSync('git', ['commit', '-m', `chore(deps): update ${pkg.name} to v${newVersion}`], {
+      cwd: root,
+      stdio: 'inherit',
+      env: process.env,
+    })
   }
 }
 
@@ -164,20 +168,20 @@ if (toRelease.length === 0) {
 
 // Ensure release order: comark first, then @comark/vue, then the rest, nuxt last
 for (const priorityName of ['@comark/vue', 'comark']) {
-  const idx = toRelease.findIndex(p => p.name === priorityName)
+  const idx = toRelease.findIndex((p) => p.name === priorityName)
   if (idx > 0) {
     const [pkg] = toRelease.splice(idx, 1)
     toRelease.unshift(pkg)
   }
 }
-const nuxtIdx = toRelease.findIndex(p => p.name === '@comark/nuxt')
+const nuxtIdx = toRelease.findIndex((p) => p.name === '@comark/nuxt')
 if (nuxtIdx >= 0 && nuxtIdx < toRelease.length - 1) {
   const [nuxtPkg] = toRelease.splice(nuxtIdx, 1)
   toRelease.push(nuxtPkg)
 }
 
 const dryLabel = isDry ? ' [DRY RUN]' : ''
-console.log(`Releasing ${toRelease.length} package(s)${dryLabel}: ${toRelease.map(p => p.name).join(', ')}\n`)
+console.log(`Releasing ${toRelease.length} package(s)${dryLabel}: ${toRelease.map((p) => p.name).join(', ')}\n`)
 
 for (const pkg of toRelease) {
   console.log(`${'─'.repeat(60)}`)

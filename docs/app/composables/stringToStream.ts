@@ -44,8 +44,7 @@ export function stringToStream(string: string, chunkSize = 10, delayMs = 50) {
 
     if (position < string.length) {
       timeoutId = setTimeout(() => streamChunks(), delayMs)
-    }
-    else {
+    } else {
       controller.close()
       isStreaming = false
     }

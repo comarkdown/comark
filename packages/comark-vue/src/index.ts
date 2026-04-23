@@ -107,10 +107,7 @@ export function defineComarkComponent(config: DefineComarkComponentOptions = {})
         ...props.options,
       }))
 
-      const plugins = computed(() => [
-        ...(config.plugins || []),
-        ...(props.plugins || []),
-      ])
+      const plugins = computed(() => [...(config.plugins || []), ...(props.plugins || [])])
 
       const components = computed(() => ({
         ...config.components,
@@ -119,19 +116,23 @@ export function defineComarkComponent(config: DefineComarkComponentOptions = {})
 
       return () => {
         const component = config.extends || Comark
-        return h(component, {
-          markdown: props.markdown,
-          options: options.value,
-          plugins: plugins.value,
-          components: components.value,
-          componentsManifest: props.componentsManifest,
-          streaming: props.streaming,
-          summary: props.summary,
-          caret: props.caret,
-          class: config.class,
-        }, {
-          default: slots.default,
-        })
+        return h(
+          component,
+          {
+            markdown: props.markdown,
+            options: options.value,
+            plugins: plugins.value,
+            components: components.value,
+            componentsManifest: props.componentsManifest,
+            streaming: props.streaming,
+            summary: props.summary,
+            caret: props.caret,
+            class: config.class,
+          },
+          {
+            default: slots.default,
+          }
+        )
       }
     },
   })
@@ -192,16 +193,20 @@ export function defineComarkRendererComponent(config: DefineComarkRendererOption
 
       return () => {
         const component = config.extends || ComarkRenderer
-        return h(component, {
-          tree: props.tree,
-          components: components.value,
-          componentsManifest: props.componentsManifest,
-          streaming: props.streaming,
-          caret: props.caret,
-          class: config.class,
-        }, {
-          default: slots.default,
-        })
+        return h(
+          component,
+          {
+            tree: props.tree,
+            components: components.value,
+            componentsManifest: props.componentsManifest,
+            streaming: props.streaming,
+            caret: props.caret,
+            class: config.class,
+          },
+          {
+            default: slots.default,
+          }
+        )
       }
     },
   })

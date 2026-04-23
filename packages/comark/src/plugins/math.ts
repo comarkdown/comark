@@ -30,11 +30,7 @@ export interface MathConfig {
  * const display = renderMath('x^2', true)
  * ```
  */
-export function renderMath(
-  code: string,
-  displayMode: boolean,
-  config: MathConfig = {},
-): string {
+export function renderMath(code: string, displayMode: boolean, config: MathConfig = {}): string {
   try {
     const options = {
       displayMode,
@@ -43,8 +39,7 @@ export function renderMath(
     }
 
     return katex.renderToString(code, options)
-  }
-  catch (error) {
+  } catch (error) {
     console.error('Math rendering error:', error)
     if (config.throwOnError) {
       throw error
@@ -69,8 +64,7 @@ export function validateMath(code: string): boolean {
   try {
     katex.renderToString(code, { throwOnError: true })
     return true
-  }
-  catch {
+  } catch {
     return false
   }
 }
@@ -93,7 +87,7 @@ function mathInlineDisplayRule(state: StateInline, silent: boolean, _config: Mat
 
   while (pos + 1 < max) {
     // Stop at newline
-    if (state.src.charCodeAt(pos) === 0x0A /* \n */) {
+    if (state.src.charCodeAt(pos) === 0x0a /* \n */) {
       return false
     }
 
@@ -144,7 +138,7 @@ function mathInlineRule(state: StateInline, silent: boolean, _config: MathConfig
     const char = state.src.charCodeAt(pos)
 
     // Stop at newline - $ must close on same line
-    if (char === 0x0A /* \n */) {
+    if (char === 0x0a /* \n */) {
       return false
     }
 
@@ -154,7 +148,7 @@ function mathInlineRule(state: StateInline, silent: boolean, _config: MathConfig
       // it's not preceded by another $ (which would make it $$),
       // and it's not followed by another $ (which would make it $$)
       const hasContent = pos > start + 1
-      const notEscaped = pos === start + 1 || state.src.charCodeAt(pos - 1) !== 0x5C /* \ */
+      const notEscaped = pos === start + 1 || state.src.charCodeAt(pos - 1) !== 0x5c /* \ */
       const notPrecededByDollar = pos === start + 1 || state.src.charCodeAt(pos - 1) !== 0x24
       const notFollowedByDollar = pos + 1 >= max || state.src.charCodeAt(pos + 1) !== 0x24
 
@@ -286,13 +280,11 @@ function mathBlockRule(state: StateBlock, startLine: number, endLine: number, si
 function markdownItMath(md: MarkdownExit, config: MathConfig = {}) {
   // Add inline display math rule ($$...$$) - must come before inline math ($...$)
   md.inline.ruler.before('escape', 'math_inline_display', (state, silent) =>
-    mathInlineDisplayRule(state, silent, config),
+    mathInlineDisplayRule(state, silent, config)
   )
 
   // Add inline math rule ($...$)
-  md.inline.ruler.before('escape', 'math_inline', (state, silent) =>
-    mathInlineRule(state, silent, config),
-  )
+  md.inline.ruler.before('escape', 'math_inline', (state, silent) => mathInlineRule(state, silent, config))
 
   // Add block math rule ($$...$$)
   md.block.ruler.before('fence', 'math_block', mathBlockRule, {
@@ -320,7 +312,5 @@ function markdownItMath(md: MarkdownExit, config: MathConfig = {}) {
  */
 export default defineComarkPlugin((config: MathConfig = {}) => ({
   name: 'math',
-  markdownItPlugins: [
-    ((md: MarkdownExit) => markdownItMath(md, config)) as unknown as MarkdownItPlugin,
-  ],
+  markdownItPlugins: [((md: MarkdownExit) => markdownItMath(md, config)) as unknown as MarkdownItPlugin],
 }))

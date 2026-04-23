@@ -46,29 +46,21 @@ describe('streaming mode', () => {
     })
 
     await expect.element(screen.getByText('Hello')).toBeInTheDocument()
-    expect(
-      screen.container.querySelector('span[style*="currentColor"]'),
-    ).toBeNull()
+    expect(screen.container.querySelector('span[style*="currentColor"]')).toBeNull()
   })
 
   it('progressively renders content as markdown grows', async () => {
     const screen = render(Comark, { markdown: '# Title' })
 
-    await expect
-      .element(screen.getByRole('heading', { name: 'Title', level: 1 }))
-      .toBeInTheDocument()
+    await expect.element(screen.getByRole('heading', { name: 'Title', level: 1 })).toBeInTheDocument()
 
     await screen.rerender({ markdown: '# Title\n\nFirst paragraph' })
-    await expect
-      .element(screen.getByText('First paragraph'))
-      .toBeInTheDocument()
+    await expect.element(screen.getByText('First paragraph')).toBeInTheDocument()
 
     await screen.rerender({
       markdown: '# Title\n\nFirst paragraph\n\n- item 1',
     })
-    await expect
-      .element(screen.getByRole('listitem'))
-      .toHaveTextContent('item 1')
+    await expect.element(screen.getByRole('listitem')).toHaveTextContent('item 1')
 
     await screen.rerender({
       markdown: '# Title\n\nFirst paragraph\n\n- item 1\n- item 2',
@@ -104,9 +96,7 @@ describe('streaming mode', () => {
       caret: true,
     })
 
-    await expect
-      .element(screen.getByRole('heading', { level: 1 }))
-      .toBeInTheDocument()
+    await expect.element(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()
     await expect.element(screen.getByText(/Hell/)).toBeInTheDocument()
 
     await screen.rerender({
@@ -115,9 +105,7 @@ describe('streaming mode', () => {
       caret: false,
     })
 
-    await expect
-      .element(screen.getByRole('heading', { name: 'Hello World', level: 1 }))
-      .toBeInTheDocument()
+    await expect.element(screen.getByRole('heading', { name: 'Hello World', level: 1 })).toBeInTheDocument()
   })
 
   it('handles incomplete MDC component during streaming with autoClose', async () => {
@@ -140,9 +128,7 @@ describe('streaming mode', () => {
       components: { alert: Alert },
     })
 
-    await expect
-      .element(screen.getByRole('alert'))
-      .toHaveTextContent('Danger zone')
+    await expect.element(screen.getByRole('alert')).toHaveTextContent('Danger zone')
   })
 
   it('removes caret when streaming ends', async () => {

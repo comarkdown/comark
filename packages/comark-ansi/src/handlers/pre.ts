@@ -26,9 +26,7 @@ function renderToken(token: ComarkNode, colors: boolean): string {
   if (typeof token === 'string') return token
   if (token[0] !== 'span') return typeof token[2] === 'string' ? token[2] : ''
 
-  const content = (token.slice(2) as ComarkNode[])
-    .map(t => (typeof t === 'string' ? t : ''))
-    .join('')
+  const content = (token.slice(2) as ComarkNode[]).map((t) => (typeof t === 'string' ? t : '')).join('')
 
   if (!colors) return content
 
@@ -39,12 +37,14 @@ function renderToken(token: ComarkNode, colors: boolean): string {
 
 function renderHighlighted(codeNode: ComarkElement, colors: boolean): string {
   const children = codeNode.slice(2) as ComarkNode[]
-  return children.map((child) => {
-    if (typeof child === 'string') return child // newline separator
-    if (child[0] !== 'span') return ''
-    // span.line — render its token children
-    return (child.slice(2) as ComarkNode[]).map(t => renderToken(t, colors)).join('')
-  }).join('')
+  return children
+    .map((child) => {
+      if (typeof child === 'string') return child // newline separator
+      if (child[0] !== 'span') return ''
+      // span.line — render its token children
+      return (child.slice(2) as ComarkNode[]).map((t) => renderToken(t, colors)).join('')
+    })
+    .join('')
 }
 
 // --- Handler ---
@@ -53,9 +53,12 @@ export const pre: NodeHandler = (node, state) => {
   const attrs = node[1]
   const codeClasses = (node[2]?.[1] as Record<string, string> | undefined)?.class
   const language = String(
-    attrs.language
-    || codeClasses?.split(' ').find((c: string) => c.startsWith('language-'))?.slice(9)
-    || '',
+    attrs.language ||
+      codeClasses
+        ?.split(' ')
+        .find((c: string) => c.startsWith('language-'))
+        ?.slice(9) ||
+      ''
   )
   const filename = attrs.filename ? String(attrs.filename) : ''
   const { colors } = state.context
@@ -63,16 +66,15 @@ export const pre: NodeHandler = (node, state) => {
   // Header: "typescript  main.ts" or just "typescript"
   const langPart = language ? BOLD + CYAN + language + RESET : ''
   const filePart = filename ? DIM + '  ' + filename + RESET : ''
-  const header = (langPart || filePart) ? (langPart + filePart + '\n') : ''
+  const header = langPart || filePart ? langPart + filePart + '\n' : ''
 
   // Check if already highlighted by the highlight plugin (code has span.line children)
   const codeNode = node[2] as ComarkElement | undefined
-  const isHighlighted = codeNode?.[0] === 'code'
-    && (codeNode.slice(2) as ComarkNode[]).some(c => !isString(c) && (c as ComarkElement)[0] === 'span')
+  const isHighlighted =
+    codeNode?.[0] === 'code' &&
+    (codeNode.slice(2) as ComarkNode[]).some((c) => !isString(c) && (c as ComarkElement)[0] === 'span')
 
-  const code = isHighlighted
-    ? renderHighlighted(codeNode!, Boolean(colors))
-    : textContent(node).trim()
+  const code = isHighlighted ? renderHighlighted(codeNode!, Boolean(colors)) : textContent(node).trim()
 
   return '```' + (header || '\n') + code + '\n```\n\n'
 }

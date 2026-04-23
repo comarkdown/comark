@@ -11,9 +11,7 @@ export async function strong(node: ComarkElement, state: State) {
   }
   content = content.trim()
 
-  const attrsString = Object.keys(attrs).length > 0
-    ? comarkAttributes(attrs)
-    : ''
+  const attrsString = Object.keys(attrs).length > 0 ? comarkAttributes(attrs) : ''
 
   return `**${content}**${attrsString}`
 }

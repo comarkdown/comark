@@ -41,7 +41,9 @@ useEventListener(document, 'keydown', (e: KeyboardEvent) => {
     <div class="row-span-2 overflow-hidden [&_img]:block [&_img]:size-full [&_img]:cursor-zoom-in [&_img]:object-cover">
       <slot name="main" />
     </div>
-    <div class="col-span-2 row-span-2 grid grid-cols-2 grid-rows-2 gap-2 *:overflow-hidden [&>p]:m-0 [&_img]:block [&_img]:size-full [&_img]:cursor-zoom-in [&_img]:object-cover">
+    <div
+      class="col-span-2 row-span-2 grid grid-cols-2 grid-rows-2 gap-2 *:overflow-hidden [&>p]:m-0 [&_img]:block [&_img]:size-full [&_img]:cursor-zoom-in [&_img]:object-cover"
+    >
       <slot name="thumbnails" />
     </div>
   </div>
@@ -56,7 +58,7 @@ useEventListener(document, 'keydown', (e: KeyboardEvent) => {
         <img
           :src="zoomed"
           class="max-h-[90vh] max-w-[90vw] rounded-xl object-contain shadow-2xl"
-        >
+        />
       </div>
     </Transition>
   </Teleport>

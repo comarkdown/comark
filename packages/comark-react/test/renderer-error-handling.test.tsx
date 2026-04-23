@@ -20,7 +20,7 @@ Some content
       <ComarkRenderer
         tree={result}
         components={{ 'good-component': GoodComponent }}
-      />,
+      />
     )
 
     expect(html).toContain('comark-content')
@@ -50,11 +50,10 @@ Some content
           <ComarkRenderer
             tree={result}
             components={{ 'error-component': ErrorComponent }}
-          />,
-        ),
+          />
+        )
       ).toThrow('Component error during render')
-    }
-    finally {
+    } finally {
       errSpy.mockRestore()
     }
   })
@@ -82,7 +81,7 @@ Good content
       <ComarkRenderer
         tree={result}
         components={{ 'good-component': GoodComponent }}
-      />,
+      />
     )
 
     expect(html).toContain('Working Heading')

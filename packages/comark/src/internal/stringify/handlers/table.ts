@@ -37,8 +37,7 @@ async function getCellContent(cell: ComarkNode, state: State): Promise<string> {
   for (const child of children) {
     if (typeof child === 'string') {
       content += child
-    }
-    else {
+    } else {
       content += await state.one(child, state, cell as unknown as ComarkElement)
     }
   }
@@ -68,9 +67,7 @@ function getRows(element: ComarkNode): ComarkElement[] {
 
   // If it's thead/tbody, extract tr elements
   if (tag === 'thead' || tag === 'tbody') {
-    return children.filter(child =>
-      typeof child !== 'string' && child[0] === 'tr',
-    ) as ComarkElement[]
+    return children.filter((child) => typeof child !== 'string' && child[0] === 'tr') as ComarkElement[]
   }
 
   return []
@@ -79,8 +76,8 @@ function getRows(element: ComarkNode): ComarkElement[] {
 // Helper function to get cells from a row
 function getCells(row: ComarkElement): ComarkElement[] {
   const [, , ...children] = row
-  return children.filter(child =>
-    typeof child !== 'string' && (child[0] === 'th' || child[0] === 'td'),
+  return children.filter(
+    (child) => typeof child !== 'string' && (child[0] === 'th' || child[0] === 'td')
   ) as ComarkElement[]
 }
 
@@ -97,17 +94,14 @@ export async function table(node: ComarkElement, state: State) {
     const [tag] = child
     if (tag === 'thead') {
       headerRows = getRows(child)
-    }
-    else if (tag === 'tbody') {
+    } else if (tag === 'tbody') {
       bodyRows = getRows(child)
-    }
-    else if (tag === 'tr') {
+    } else if (tag === 'tr') {
       // Direct tr children (no thead/tbody wrapper)
       const cells = getCells(child)
       if (cells.length > 0 && cells[0][0] === 'th') {
         headerRows.push(child)
-      }
-      else {
+      } else {
         bodyRows.push(child)
       }
     }
@@ -117,9 +111,7 @@ export async function table(node: ComarkElement, state: State) {
   if (headerRows.length === 0 && bodyRows.length > 0) {
     const firstRow = bodyRows[0]
     const cells = getCells(firstRow)
-    const headerCells: ComarkElement[] = cells.map((_, i) =>
-      ['th', {}, `Column ${i + 1}`] as ComarkElement,
-    )
+    const headerCells: ComarkElement[] = cells.map((_, i) => ['th', {}, `Column ${i + 1}`] as ComarkElement)
     headerRows = [['tr', {}, ...headerCells] as ComarkElement]
   }
 
@@ -142,7 +134,7 @@ export async function table(node: ComarkElement, state: State) {
   })
 
   // Calculate column widths (minimum 3 characters per column)
-  const columnWidths = headerContent.map(content => Math.max(3, content.length))
+  const columnWidths = headerContent.map((content) => Math.max(3, content.length))
 
   // Update column widths based on body content
   for (const row of bodyRows) {
@@ -157,26 +149,24 @@ export async function table(node: ComarkElement, state: State) {
 
   // Build the markdown table
   let result = '| '
-  result += headerContent.map((content, i) =>
-    content.padEnd(columnWidths[i]),
-  ).join(' | ')
+  result += headerContent.map((content, i) => content.padEnd(columnWidths[i])).join(' | ')
   result += ' |\n'
 
   // Add separator row with alignment
   result += '| '
-  result += columnWidths.map((width, i) => {
-    const alignment = alignments[i]
-    if (alignment === 'left') {
-      return ':' + '-'.repeat(width - 1)
-    }
-    else if (alignment === 'center') {
-      return ':' + '-'.repeat(width - 2) + ':'
-    }
-    else if (alignment === 'right') {
-      return '-'.repeat(width - 1) + ':'
-    }
-    return '-'.repeat(width)
-  }).join(' | ')
+  result += columnWidths
+    .map((width, i) => {
+      const alignment = alignments[i]
+      if (alignment === 'left') {
+        return ':' + '-'.repeat(width - 1)
+      } else if (alignment === 'center') {
+        return ':' + '-'.repeat(width - 2) + ':'
+      } else if (alignment === 'right') {
+        return '-'.repeat(width - 1) + ':'
+      }
+      return '-'.repeat(width)
+    })
+    .join(' | ')
   result += ' |\n'
 
   // Add body rows

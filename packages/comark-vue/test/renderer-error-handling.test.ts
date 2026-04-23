@@ -27,12 +27,13 @@ Some content
     try {
       const app = createSSRApp({
         setup() {
-          return () => h(ComarkRenderer, {
-            tree: result,
-            components: {
-              'error-component': ErrorComponent,
-            },
-          })
+          return () =>
+            h(ComarkRenderer, {
+              tree: result,
+              components: {
+                'error-component': ErrorComponent,
+              },
+            })
         },
       })
 
@@ -45,8 +46,7 @@ Some content
 
       // Verify error was captured and logged
       expect(warnSpy).toHaveBeenCalled()
-    }
-    finally {
+    } finally {
       warnSpy.mockRestore()
     }
   })
@@ -79,12 +79,13 @@ Some content
     try {
       const app = createSSRApp({
         setup() {
-          return () => h(ComarkRenderer, {
-            tree: result,
-            components: {
-              'required-prop-test': RequiredPropTest,
-            },
-          })
+          return () =>
+            h(ComarkRenderer, {
+              tree: result,
+              components: {
+                'required-prop-test': RequiredPropTest,
+              },
+            })
         },
       })
 
@@ -93,8 +94,7 @@ Some content
 
       expect(html).toBeTruthy()
       expect(html).toContain('comark-content')
-    }
-    finally {
+    } finally {
       warnSpy.mockRestore()
     }
   })
@@ -131,13 +131,14 @@ Good content
     try {
       const app = createSSRApp({
         setup() {
-          return () => h(ComarkRenderer, {
-            tree: result,
-            components: {
-              'error-component': ErrorComponent,
-              'good-component': GoodComponent,
-            },
-          })
+          return () =>
+            h(ComarkRenderer, {
+              tree: result,
+              components: {
+                'error-component': ErrorComponent,
+                'good-component': GoodComponent,
+              },
+            })
         },
       })
 
@@ -147,8 +148,7 @@ Good content
       expect(html).toContain('Working Heading')
       expect(html).toContain('good-component')
       expect(html).toContain('Good content')
-    }
-    finally {
+    } finally {
       warnSpy.mockRestore()
     }
   })

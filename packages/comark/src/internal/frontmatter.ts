@@ -10,7 +10,7 @@ const CR = '\r'
  * @param content - The content to parse
  * @returns The content and data
  */
-export function parseFrontmatter(content: string): { content: string, data: Record<string, any> } {
+export function parseFrontmatter(content: string): { content: string; data: Record<string, any> } {
   let data: Record<string, any> = {}
   if (content.startsWith(FRONTMATTER_DELIMITER_DEFAULT)) {
     const idx = content.indexOf(LF + FRONTMATTER_DELIMITER_DEFAULT)
@@ -36,9 +36,13 @@ export function parseFrontmatter(content: string): { content: string, data: Reco
  * @param content - The content to render
  * @returns The rendered content
  */
-export function renderFrontmatter(data: Record<string, any> | undefined | null, content?: string, yamlOptions?: DumpOptions): string {
+export function renderFrontmatter(
+  data: Record<string, any> | undefined | null,
+  content?: string,
+  yamlOptions?: DumpOptions
+): string {
   if (!data || Object.keys(data).length === 0) {
-    return (content?.trim() || '')
+    return content?.trim() || ''
   }
 
   const fm = stringifyYaml(data, yamlOptions).trim()

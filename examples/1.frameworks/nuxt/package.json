@@ -1,7 +1,7 @@
 {
   "name": "comark-nuxt",
-  "type": "module",
   "private": true,
+  "type": "module",
   "scripts": {
     "build": "nuxt build",
     "dev": "nuxt dev",

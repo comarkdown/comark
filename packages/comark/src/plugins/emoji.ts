@@ -390,7 +390,7 @@ const emojiRule = (state: any, silent: boolean) => {
   const start = state.pos
 
   // Quick check: must start with ':'
-  if (state.src.charCodeAt(start) !== 0x3A /* : */) {
+  if (state.src.charCodeAt(start) !== 0x3a /* : */) {
     return false
   }
 
@@ -400,7 +400,7 @@ const emojiRule = (state: any, silent: boolean) => {
     const code = state.src.charCodeAt(pos)
 
     // Found closing ':'
-    if (code === 0x3A /* : */) {
+    if (code === 0x3a /* : */) {
       const emojiName = state.src.slice(start + 1, pos)
 
       // Check if this is a valid emoji
@@ -422,12 +422,12 @@ const emojiRule = (state: any, silent: boolean) => {
     // Only allow word characters, digits, underscores, hyphens, and plus
     // This matches the pattern of valid emoji names
     if (
-      (code >= 0x61 && code <= 0x7A) // a-z
-      || (code >= 0x41 && code <= 0x5A) // A-Z
-      || (code >= 0x30 && code <= 0x39) // 0-9
-      || code === 0x5F // _
-      || code === 0x2D // -
-      || code === 0x2B // +
+      (code >= 0x61 && code <= 0x7a) || // a-z
+      (code >= 0x41 && code <= 0x5a) || // A-Z
+      (code >= 0x30 && code <= 0x39) || // 0-9
+      code === 0x5f || // _
+      code === 0x2d || // -
+      code === 0x2b // +
     ) {
       pos++
       continue

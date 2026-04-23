@@ -183,7 +183,11 @@ describe('defineComarkRendererComponent — component inheritance via extends', 
 
   it('child components override the same tag from parent', async () => {
     const Base = defineComarkRendererComponent({ name: 'BaseRenderer', components: { alert: AlertBase } })
-    const Child = defineComarkRendererComponent({ name: 'ChildRenderer', extends: Base, components: { alert: AlertChild } })
+    const Child = defineComarkRendererComponent({
+      name: 'ChildRenderer',
+      extends: Base,
+      components: { alert: AlertChild },
+    })
 
     const tree = await parse('::alert\nhello\n::')
     const html = await renderComponent(Child, { tree })
@@ -193,8 +197,15 @@ describe('defineComarkRendererComponent — component inheritance via extends', 
   })
 
   it('child keeps parent components that it does not override', async () => {
-    const Base = defineComarkRendererComponent({ name: 'BaseRenderer', components: { alert: AlertBase, card: CardBase } })
-    const Child = defineComarkRendererComponent({ name: 'ChildRenderer', extends: Base, components: { alert: AlertChild } })
+    const Base = defineComarkRendererComponent({
+      name: 'BaseRenderer',
+      components: { alert: AlertBase, card: CardBase },
+    })
+    const Child = defineComarkRendererComponent({
+      name: 'ChildRenderer',
+      extends: Base,
+      components: { alert: AlertChild },
+    })
 
     const tree = await parse('::alert\nA\n::\n\n::card\nB\n::')
     const html = await renderComponent(Child, { tree })
@@ -205,7 +216,11 @@ describe('defineComarkRendererComponent — component inheritance via extends', 
 
   it('prop-level components override child and parent config', async () => {
     const Base = defineComarkRendererComponent({ name: 'BaseRenderer', components: { alert: AlertBase } })
-    const Child = defineComarkRendererComponent({ name: 'ChildRenderer', extends: Base, components: { alert: AlertChild } })
+    const Child = defineComarkRendererComponent({
+      name: 'ChildRenderer',
+      extends: Base,
+      components: { alert: AlertChild },
+    })
 
     const tree = await parse('::alert\nhello\n::')
     const html = await renderComponent(Child, { tree, components: { alert: AlertProp } })
@@ -216,8 +231,15 @@ describe('defineComarkRendererComponent — component inheritance via extends', 
   })
 
   it('multi-level extends stacks component maps correctly', async () => {
-    const Base = defineComarkRendererComponent({ name: 'BaseRenderer', components: { alert: AlertBase, card: CardBase } })
-    const Middle = defineComarkRendererComponent({ name: 'MiddleRenderer', extends: Base, components: { alert: AlertChild } })
+    const Base = defineComarkRendererComponent({
+      name: 'BaseRenderer',
+      components: { alert: AlertBase, card: CardBase },
+    })
+    const Middle = defineComarkRendererComponent({
+      name: 'MiddleRenderer',
+      extends: Base,
+      components: { alert: AlertChild },
+    })
     const Child = defineComarkRendererComponent({ name: 'ChildRenderer', extends: Middle })
 
     const tree = await parse('::alert\nA\n::\n\n::card\nB\n::')

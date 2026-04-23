@@ -16,8 +16,7 @@ function parseCellWidths(row: string): number[] {
         cellContent = ''
       }
       inCell = true
-    }
-    else if (inCell) {
+    } else if (inCell) {
       cellContent += ch
     }
   }
@@ -48,8 +47,7 @@ function parseCells(row: string): string[] {
         cell = ''
       }
       inCell = true
-    }
-    else if (inCell) {
+    } else if (inCell) {
       cell += ch
     }
   }
@@ -69,14 +67,13 @@ export function closeTables(markdown: string): string {
   const lines = markdown.split('\n')
 
   // Group consecutive table rows (lines starting with |) into blocks
-  const tableBlocks: Array<{ start: number, end: number }> = []
+  const tableBlocks: Array<{ start: number; end: number }> = []
   let blockStart = -1
 
   for (let i = 0; i < lines.length; i++) {
     if (lines[i].trim().startsWith('|')) {
       if (blockStart === -1) blockStart = i
-    }
-    else if (blockStart !== -1) {
+    } else if (blockStart !== -1) {
       tableBlocks.push({ start: blockStart, end: i - 1 })
       blockStart = -1
     }
@@ -102,13 +99,11 @@ export function closeTables(markdown: string): string {
 
   // Check if separator exists (including incomplete ones with just :)
   const secondLine = end - start >= 1 ? lines[start + 1].trim() : ''
-  const hasSeparator = secondLine.startsWith('|')
-    && (secondLine.includes('-') || secondLine.includes(':'))
+  const hasSeparator = secondLine.startsWith('|') && (secondLine.includes('-') || secondLine.includes(':'))
 
   // Handle last line
   const lastLine = lines[end].trim()
-  const isSeparator = lastLine.startsWith('|')
-    && (lastLine.includes('-') || lastLine.includes(':'))
+  const isSeparator = lastLine.startsWith('|') && (lastLine.includes('-') || lastLine.includes(':'))
 
   if (isSeparator) {
     // Parse and complete separator cells
@@ -127,18 +122,15 @@ export function closeTables(markdown: string): string {
         // Center align :-:
         if (dashes.length < 1) dashes = '-'
         return ':' + dashes + ':'
-      }
-      else if (hasLeftAlign) {
+      } else if (hasLeftAlign) {
         // Left align :-
         if (dashes.length < 1) dashes = '-'
         return ':' + dashes
-      }
-      else if (hasRightAlign) {
+      } else if (hasRightAlign) {
         // Right align -:
         if (dashes.length < 1) dashes = '-'
         return dashes + ':'
-      }
-      else {
+      } else {
         // No align ---
         while (dashes.length < 3) dashes += '-'
         return dashes
@@ -151,8 +143,7 @@ export function closeTables(markdown: string): string {
     }
 
     lines[end] = '| ' + completedCells.join(' | ') + ' |'
-  }
-  else if (lastLine.startsWith('|') && !lastLine.endsWith('|')) {
+  } else if (lastLine.startsWith('|') && !lastLine.endsWith('|')) {
     // Complete data row - find reference widths and pad
     let refRow = lines[start].trim()
     for (let i = start + (hasSeparator ? 2 : 1); i < end; i++) {
@@ -167,11 +158,16 @@ export function closeTables(markdown: string): string {
     const cells = parseCells(lastLine)
 
     // Rebuild with padding
-    lines[end] = '| ' + cells.map((cell, i) => {
-      const targetWidth = refWidths[i] || cell.length + 2
-      const padding = ' '.repeat(Math.max(0, targetWidth - cell.length - 2))
-      return cell + padding
-    }).join(' | ') + ' |'
+    lines[end] =
+      '| ' +
+      cells
+        .map((cell, i) => {
+          const targetWidth = refWidths[i] || cell.length + 2
+          const padding = ' '.repeat(Math.max(0, targetWidth - cell.length - 2))
+          return cell + padding
+        })
+        .join(' | ') +
+      ' |'
   }
 
   // Add separator if missing

@@ -16,8 +16,7 @@ export function extractReusableNodes(markdown: string, lastOutput: ComarkTree) {
       if (lastNodeIgnored) {
         lastValidNodeIndex = i
         break
-      }
-      else {
+      } else {
         lastNodeIgnored = true
       }
     }

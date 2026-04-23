@@ -6,7 +6,7 @@ import Alert from '@/components/Alert'
 
 export async function generateStaticParams() {
   const posts = await getAllPosts()
-  return posts.map(post => ({ slug: post.slug }))
+  return posts.map((post) => ({ slug: post.slug }))
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
@@ -37,15 +37,22 @@ export default async function BlogPost({ params }: { params: Promise<{ slug: str
             {post.pubDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
           </time>
           <div className="flex gap-1.5">
-            {post.tags.map(tag => (
-              <span key={tag} className="bg-neutral-200 dark:bg-neutral-800 px-2 py-0.5 rounded-full text-xs">
+            {post.tags.map((tag) => (
+              <span
+                key={tag}
+                className="bg-neutral-200 dark:bg-neutral-800 px-2 py-0.5 rounded-full text-xs"
+              >
                 {tag}
               </span>
             ))}
           </div>
         </div>
       </header>
-      <ComarkRenderer tree={post.tree} className="prose" components={{ Alert }} />
+      <ComarkRenderer
+        tree={post.tree}
+        className="prose"
+        components={{ Alert }}
+      />
     </article>
   )
 }

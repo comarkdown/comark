@@ -6,22 +6,25 @@ interface TypedChar {
   syntax: SyntaxType
 }
 
-const props = withDefaults(defineProps<{
-  text: string
-  speed?: number
-  resolveDelay?: number
-  resolve?: boolean
-  loop?: boolean
-  triggerOnView?: boolean
-  tag?: string
-}>(), {
-  speed: 80,
-  resolveDelay: 600,
-  resolve: true,
-  loop: false,
-  triggerOnView: true,
-  tag: 'span',
-})
+const props = withDefaults(
+  defineProps<{
+    text: string
+    speed?: number
+    resolveDelay?: number
+    resolve?: boolean
+    loop?: boolean
+    triggerOnView?: boolean
+    tag?: string
+  }>(),
+  {
+    speed: 80,
+    resolveDelay: 600,
+    resolve: true,
+    loop: false,
+    triggerOnView: true,
+    tag: 'span',
+  }
+)
 
 const typedIndex = ref(0)
 const phase = ref<'idle' | 'typing' | 'paused' | 'resolved'>('idle')
@@ -72,8 +75,7 @@ function typeNext() {
           setTimeout(() => startTyping(), 2000)
         }
       }, props.resolveDelay)
-    }
-    else if (props.loop) {
+    } else if (props.loop) {
       setTimeout(() => startTyping(), 2000)
     }
     return
@@ -106,18 +108,21 @@ onMounted(() => {
         }
       }
     },
-    { threshold: 0.5 },
+    { threshold: 0.5 }
   )
   observer.observe(containerRef.value)
 })
 
 onUnmounted(cleanup)
 
-watch(() => props.text, () => {
-  cleanup()
-  typedIndex.value = 0
-  phase.value = 'idle'
-})
+watch(
+  () => props.text,
+  () => {
+    cleanup()
+    typedIndex.value = 0
+    phase.value = 'idle'
+  }
+)
 
 defineExpose({ startTyping })
 </script>
@@ -136,7 +141,8 @@ defineExpose({ startTyping })
         v-for="(tc, i) in typedChars"
         :key="i"
         :class="`syntax-${tc.syntax}`"
-      >{{ tc.char }}</span>
+        >{{ tc.char }}</span
+      >
       <span
         v-if="showCaret"
         class="caret"

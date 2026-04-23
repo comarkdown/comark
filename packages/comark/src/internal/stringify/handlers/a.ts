@@ -7,9 +7,7 @@ export async function a(node: ComarkElement, state: State) {
   const [_, attrs] = node
 
   const { href, ...rest } = attrs
-  const attrsString = Object.keys(rest).length > 0
-    ? comarkAttributes(rest)
-    : ''
+  const attrsString = Object.keys(rest).length > 0 ? comarkAttributes(rest) : ''
   const content = await state.flow(node, state)
 
   if (content === href && !attrsString) {

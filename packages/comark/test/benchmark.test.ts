@@ -16,8 +16,7 @@ function getMemoryUsage(): number {
 
 // Helper to format bytes
 function formatBytes(bytes: number): string {
-  if (bytes === 0)
-    return '0 B'
+  if (bytes === 0) return '0 B'
   const k = 1024
   const sizes = ['B', 'KB', 'MB', 'GB']
   const i = Math.floor(Math.log(bytes) / Math.log(k))
@@ -126,14 +125,15 @@ describe('benchmark parse vs parse', () => {
     console.log('Test Case'.padEnd(30), 'parse (ms)'.padEnd(15), 'markdown-it (ms)'.padEnd(15), 'Speedup')
     console.log('-'.repeat(80))
     for (const result of results) {
-      const speedupStr = result.speedup > 1
-        ? `${result.speedup.toFixed(2)}x faster (markdown-it)`
-        : `${(1 / result.speedup).toFixed(2)}x faster (parse)`
+      const speedupStr =
+        result.speedup > 1
+          ? `${result.speedup.toFixed(2)}x faster (markdown-it)`
+          : `${(1 / result.speedup).toFixed(2)}x faster (parse)`
       console.log(
         result.testCase.padEnd(30),
         result.parseTime.toFixed(3).padEnd(15),
         result.markdownItTime.toFixed(3).padEnd(15),
-        speedupStr,
+        speedupStr
       )
     }
 
@@ -154,8 +154,7 @@ describe('benchmark parse vs parse', () => {
       let parseMemorySum = 0
       let parseMemoryCount = 0
       for (let i = 0; i < 5; i++) {
-        if (global.gc)
-          global.gc()
+        if (global.gc) global.gc()
         const beforeParse = getMemoryUsage()
         const parseResult = await parse(testCase.content)
         const afterParse = getMemoryUsage()
@@ -173,8 +172,7 @@ describe('benchmark parse vs parse', () => {
       let markdownItMemorySum = 0
       let markdownItMemoryCount = 0
       for (let i = 0; i < 5; i++) {
-        if (global.gc)
-          global.gc()
+        if (global.gc) global.gc()
         const beforeMarkdownIt = getMemoryUsage()
         const markdownItResult = await parse(testCase.content)
         const afterMarkdownIt = getMemoryUsage()
@@ -207,26 +205,19 @@ describe('benchmark parse vs parse', () => {
       if (Number.isFinite(result.memoryDiff) && !Number.isNaN(result.memoryDiff)) {
         if (result.memoryDiff > 0) {
           diffStr = `+${formatBytes(result.memoryDiff)} (markdown-it uses less)`
-        }
-        else if (result.memoryDiff < 0) {
+        } else if (result.memoryDiff < 0) {
           diffStr = `${formatBytes(Math.abs(result.memoryDiff))} (parse uses less)`
-        }
-        else {
+        } else {
           diffStr = 'Equal'
         }
       }
-      const parseMemStr = result.parseMemory > 0 && Number.isFinite(result.parseMemory)
-        ? formatBytes(result.parseMemory)
-        : 'N/A'
-      const markdownItMemStr = result.markdownItMemory > 0 && Number.isFinite(result.markdownItMemory)
-        ? formatBytes(result.markdownItMemory)
-        : 'N/A'
-      console.log(
-        result.testCase.padEnd(30),
-        parseMemStr.padEnd(20),
-        markdownItMemStr.padEnd(20),
-        diffStr,
-      )
+      const parseMemStr =
+        result.parseMemory > 0 && Number.isFinite(result.parseMemory) ? formatBytes(result.parseMemory) : 'N/A'
+      const markdownItMemStr =
+        result.markdownItMemory > 0 && Number.isFinite(result.markdownItMemory)
+          ? formatBytes(result.markdownItMemory)
+          : 'N/A'
+      console.log(result.testCase.padEnd(30), parseMemStr.padEnd(20), markdownItMemStr.padEnd(20), diffStr)
     }
 
     // Test passes - we're just benchmarking
@@ -260,8 +251,7 @@ describe('benchmark parse vs parse', () => {
       let parseMemorySum = 0
       let parseMemoryCount = 0
       for (let i = 0; i < 5; i++) {
-        if (global.gc)
-          global.gc()
+        if (global.gc) global.gc()
         const beforeParse = getMemoryUsage()
         const parseResult = await parse(testCase.content)
         const afterParse = getMemoryUsage()
@@ -285,8 +275,7 @@ describe('benchmark parse vs parse', () => {
       let markdownItMemorySum = 0
       let markdownItMemoryCount = 0
       for (let i = 0; i < 5; i++) {
-        if (global.gc)
-          global.gc()
+        if (global.gc) global.gc()
         const beforeMarkdownIt = getMemoryUsage()
         const markdownItResult = await parse(testCase.content)
         const afterMarkdownIt = getMemoryUsage()
@@ -326,7 +315,7 @@ describe('benchmark parse vs parse', () => {
         result.testCase.padEnd(30),
         result.parseScore.toFixed(2).padEnd(20),
         result.markdownItScore.toFixed(2).padEnd(20),
-        `${winner} (${scoreDiffPercent}% difference)`,
+        `${winner} (${scoreDiffPercent}% difference)`
       )
     }
 

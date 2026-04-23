@@ -28,10 +28,7 @@
     }
   },
   "hooks": {
-    "before:init": [
-      "cp -r ../../docs/skills ./skills",
-      "pnpm run test"
-    ],
+    "before:init": ["cp -r ../../docs/skills ./skills", "pnpm run test"],
     "before:release": ["pnpm run build"]
   }
 }

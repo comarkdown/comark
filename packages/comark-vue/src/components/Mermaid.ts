@@ -49,8 +49,7 @@ export const Mermaid = defineComponent({
       let theme
       if (typeof themeProp === 'string') {
         theme = THEMES[themeProp]
-      }
-      else if (typeof themeProp === 'object') {
+      } else if (typeof themeProp === 'object') {
         theme = themeProp
       }
 
@@ -67,8 +66,7 @@ export const Mermaid = defineComponent({
         error.value = null
         const svg = renderMermaidSVG(props.content, beautifulTheme.value)
         svgContent.value = svg
-      }
-      catch (err) {
+      } catch (err) {
         error.value = err instanceof Error ? err.message : 'Failed to render diagram'
       }
     }
@@ -103,15 +101,15 @@ export const Mermaid = defineComponent({
 
     return () => {
       return h('div', {
-        'class': `mermaid ${props.class}`,
-        'style': {
+        class: `mermaid ${props.class}`,
+        style: {
           display: 'flex',
           justifyContent: 'center',
           width: props.width,
           height: props.height,
         },
         'data-error': error.value,
-        'innerHTML': svgContent.value,
+        innerHTML: svgContent.value,
       })
     }
   },

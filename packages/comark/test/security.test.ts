@@ -138,7 +138,9 @@ describe('validateProp', () => {
     })
 
     it('allows mailto when included in the list', () => {
-      expect(validateProp('href', 'mailto:hi@example.com', { allowedProtocols: ['https', 'mailto'] })).toBe('mailto:hi@example.com')
+      expect(validateProp('href', 'mailto:hi@example.com', { allowedProtocols: ['https', 'mailto'] })).toBe(
+        'mailto:hi@example.com'
+      )
     })
 
     it('always blocks javascript: even if listed in allowedProtocols', () => {
@@ -146,13 +148,17 @@ describe('validateProp', () => {
     })
 
     it('wildcard ["*"] allows all safe protocols', () => {
-      expect(validateProp('href', 'ftp://files.example.com', { allowedProtocols: ['*'] })).toBe('ftp://files.example.com')
+      expect(validateProp('href', 'ftp://files.example.com', { allowedProtocols: ['*'] })).toBe(
+        'ftp://files.example.com'
+      )
     })
   })
 
   describe('allowedLinkPrefixes', () => {
     it('allows href that matches an allowed prefix', () => {
-      expect(validateProp('href', 'https://myapp.com/page', { allowedLinkPrefixes: ['https://myapp.com'] })).toBe('https://myapp.com/page')
+      expect(validateProp('href', 'https://myapp.com/page', { allowedLinkPrefixes: ['https://myapp.com'] })).toBe(
+        'https://myapp.com/page'
+      )
     })
 
     it('blocks href that does not match any allowed prefix', () => {
@@ -172,21 +178,29 @@ describe('validateProp', () => {
     })
 
     it('allowedLinkPrefixes does not restrict src attributes', () => {
-      expect(validateProp('src', 'https://any.com/img.png', { allowedLinkPrefixes: ['https://myapp.com'] })).toBe('https://any.com/img.png')
+      expect(validateProp('src', 'https://any.com/img.png', { allowedLinkPrefixes: ['https://myapp.com'] })).toBe(
+        'https://any.com/img.png'
+      )
     })
   })
 
   describe('allowedImagePrefixes', () => {
     it('allows src that matches an allowed prefix', () => {
-      expect(validateProp('src', 'https://cdn.myapp.com/img.png', { allowedImagePrefixes: ['https://cdn.myapp.com'] })).toBe('https://cdn.myapp.com/img.png')
+      expect(
+        validateProp('src', 'https://cdn.myapp.com/img.png', { allowedImagePrefixes: ['https://cdn.myapp.com'] })
+      ).toBe('https://cdn.myapp.com/img.png')
     })
 
     it('blocks src that does not match any allowed prefix', () => {
-      expect(validateProp('src', 'https://tracker.evil.com/px.gif', { allowedImagePrefixes: ['https://cdn.myapp.com'] })).toBe(false)
+      expect(
+        validateProp('src', 'https://tracker.evil.com/px.gif', { allowedImagePrefixes: ['https://cdn.myapp.com'] })
+      ).toBe(false)
     })
 
     it('relative src is always allowed regardless of prefix list', () => {
-      expect(validateProp('src', '/img/logo.png', { allowedImagePrefixes: ['https://cdn.myapp.com'] })).toBe('/img/logo.png')
+      expect(validateProp('src', '/img/logo.png', { allowedImagePrefixes: ['https://cdn.myapp.com'] })).toBe(
+        '/img/logo.png'
+      )
     })
 
     it('rewrites disallowed src to defaultOrigin when provided', () => {
@@ -198,7 +212,9 @@ describe('validateProp', () => {
     })
 
     it('allowedImagePrefixes does not restrict href attributes', () => {
-      expect(validateProp('href', 'https://any.com/page', { allowedImagePrefixes: ['https://cdn.myapp.com'] })).toBe('https://any.com/page')
+      expect(validateProp('href', 'https://any.com/page', { allowedImagePrefixes: ['https://cdn.myapp.com'] })).toBe(
+        'https://any.com/page'
+      )
     })
   })
 
@@ -308,9 +324,7 @@ describe('security plugin', () => {
     })
 
     it('removes nested blocked tags', async () => {
-      const tree = makeTree([
-        ['div', {}, ['script', {}, 'evil()'], ['p', {}, 'safe']],
-      ])
+      const tree = makeTree([['div', {}, ['script', {}, 'evil()'], ['p', {}, 'safe']]])
       await runPlugin(tree, { blockedTags: ['script'] })
       const div = tree.nodes[0] as [string, any, ...any[]]
       expect(div).toHaveLength(3) // tag, attrs, p
@@ -371,9 +385,7 @@ describe('security plugin', () => {
     })
 
     it('drops nested mixed-case tag', async () => {
-      const tree = makeTree([
-        ['div', {}, ['SCRIPT', {}, 'evil()'], ['p', {}, 'safe']],
-      ])
+      const tree = makeTree([['div', {}, ['SCRIPT', {}, 'evil()'], ['p', {}, 'safe']]])
       await runPlugin(tree, { blockedTags: ['script'] })
       const div = tree.nodes[0] as [string, any, ...any[]]
       expect(div).toHaveLength(3) // tag, attrs, p
@@ -427,9 +439,7 @@ describe('security plugin', () => {
     })
 
     it('sanitizes props on nested elements', async () => {
-      const tree = makeTree([
-        ['div', {}, ['a', { href: 'javascript:evil()' }, 'click']],
-      ])
+      const tree = makeTree([['div', {}, ['a', { href: 'javascript:evil()' }, 'click']]])
       await runPlugin(tree)
       const div = tree.nodes[0] as [string, any, ...any[]]
       const a = div[2] as [string, any]

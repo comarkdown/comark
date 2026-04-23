@@ -11,7 +11,7 @@ export const li: NodeHandler = async (node, state) => {
   const className = String((node[1].className as string[])?.join?.(' ') ?? node[1].class ?? '')
   if (className.includes('task-list-item')) {
     const input = children.shift() as ComarkElement
-    prefix += (input[1].checked || input[1][':checked']) ? '[x] ' : '[ ] '
+    prefix += input[1].checked || input[1][':checked'] ? '[x] ' : '[ ] '
   }
 
   let content = ''

@@ -98,16 +98,14 @@ function nestHeaders(headers: TocLink[]): TocLink[] {
       header.children = []
       parent = header
       toc.push(header)
-    }
-    else {
+    } else {
       parent.children!.push(header)
     }
   })
   toc.forEach((header) => {
     if (header.children?.length) {
       header.children = nestHeaders(header.children)
-    }
-    else {
+    } else {
       delete header.children
     }
   })
@@ -124,7 +122,7 @@ export function generateFlatToc(body: ComarkTree, options: Toc): Toc {
     return tag !== null && tags.includes(tag)
   })
 
-  const links: TocLink[] = headers.map(node => ({
+  const links: TocLink[] = headers.map((node) => ({
     id: getProps(node).id || '',
     depth: getHeaderDepth(node),
     text: flattenNodeText(node),

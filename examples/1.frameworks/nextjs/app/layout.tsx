@@ -19,9 +19,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <main>{children}</main>
         <footer>
           <p>
-            Built with
-            {' '}
-            <a href="https://nextjs.org">Next.js</a>
+            Built with <a href="https://nextjs.org">Next.js</a>
             {' + '}
             <a href="https://github.com/comarkdown/comark">Comark</a>
           </p>

@@ -12,10 +12,11 @@ const Badge = defineComponent({
     config: { type: Object, default: () => ({}) },
   },
   setup(props) {
-    return () => h('span', { 'class': 'badge', 'data-count': props.count }, [
-      props.label,
-      props.config && typeof props.config === 'object' ? JSON.stringify(props.config) : '',
-    ])
+    return () =>
+      h('span', { class: 'badge', 'data-count': props.count }, [
+        props.label,
+        props.config && typeof props.config === 'object' ? JSON.stringify(props.config) : '',
+      ])
   },
 })
 
@@ -26,10 +27,8 @@ const Card = defineComponent({
     variant: { type: String, default: '' },
   },
   setup(_, { slots }) {
-    return () => h('div', { class: 'card' }, [
-      h('h3', {}, slots.title?.()),
-      h('div', { class: 'body' }, slots.default?.()),
-    ])
+    return () =>
+      h('div', { class: 'card' }, [h('h3', {}, slots.title?.()), h('div', { class: 'body' }, slots.default?.())])
   },
 })
 
@@ -52,7 +51,7 @@ site:
 ::badge{:label="frontmatter.site.name"}
 ::
 `,
-      { components: { badge: Badge } },
+      { components: { badge: Badge } }
     )
     expect(html).toContain('class="badge"')
     expect(html).toContain('My Blog')
@@ -62,7 +61,7 @@ site:
     const html = await renderMarkdown(
       `::badge{:count="42"}
 ::`,
-      { components: { badge: Badge } },
+      { components: { badge: Badge } }
     )
     // data-count attribute on a number prop is serialised without quotes in
     // the VNode, but string conversion is fine — what matters is that the
@@ -74,7 +73,7 @@ site:
     const html = await renderMarkdown(
       `::badge{:config='{"k":"v"}'}
 ::`,
-      { components: { badge: Badge } },
+      { components: { badge: Badge } }
     )
     expect(html).toContain('{&quot;k&quot;:&quot;v&quot;}')
   })
@@ -83,7 +82,7 @@ site:
     const html = await renderMarkdown(
       `::badge{:label="data.user.name"}
 ::`,
-      { components: { badge: Badge }, data: { user: { name: 'Ada' } } },
+      { components: { badge: Badge }, data: { user: { name: 'Ada' } } }
     )
     expect(html).toContain('Ada')
   })
@@ -95,7 +94,7 @@ site:
 :::
 ::
 `,
-      { components: { card: Card, badge: Badge } },
+      { components: { card: Card, badge: Badge } }
     )
     // The badge is rendered inside the card's default slot with the card's
     // title surfacing through props.title.
@@ -106,7 +105,7 @@ site:
     const html = await renderMarkdown(
       `::badge{:label="frontmatter.missing"}
 ::`,
-      { components: { badge: Badge } },
+      { components: { badge: Badge } }
     )
     // label default is '' — resolved undefined becomes the empty default.
     expect(html).toContain('class="badge"')
@@ -122,7 +121,7 @@ site: Blog
 ::badge{label="frontmatter.site"}
 ::
 `,
-      { components: { badge: Badge } },
+      { components: { badge: Badge } }
     )
     // literal string, not resolved because there's no colon prefix
     expect(html).toContain('frontmatter.site')

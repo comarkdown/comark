@@ -17,14 +17,14 @@ function getRows(node: ComarkNode): ComarkElement[] {
   const [tag, , ...children] = node
   if (tag === 'tr') return [node as ComarkElement]
   if (tag === 'thead' || tag === 'tbody') {
-    return children.filter(c => typeof c !== 'string' && c[0] === 'tr') as ComarkElement[]
+    return children.filter((c) => typeof c !== 'string' && c[0] === 'tr') as ComarkElement[]
   }
   return []
 }
 
 function getCells(row: ComarkElement): ComarkElement[] {
   return (row.slice(2) as ComarkNode[]).filter(
-    c => typeof c !== 'string' && (c[0] === 'th' || c[0] === 'td'),
+    (c) => typeof c !== 'string' && (c[0] === 'th' || c[0] === 'td')
   ) as ComarkElement[]
 }
 
@@ -52,7 +52,7 @@ export const table: NodeHandler = async (node, state) => {
   for (const c of headerCells) {
     headers.push(await getCellText(c, state))
   }
-  const colWidths = headers.map(h => Math.max(3, h.length))
+  const colWidths = headers.map((h) => Math.max(3, h.length))
 
   for (const row of bodyRows) {
     const cells = getCells(row)
@@ -66,7 +66,7 @@ export const table: NodeHandler = async (node, state) => {
 
   const { colors } = state.context
   const sep = (left: string, mid: string, right: string, fill: string) =>
-    left + colWidths.map(w => fill.repeat(w + 2)).join(mid) + right
+    left + colWidths.map((w) => fill.repeat(w + 2)).join(mid) + right
 
   const topBorder = sep('┌', '┬', '┐', '─')
   const midBorder = sep('├', '┼', '┤', '─')
@@ -74,7 +74,7 @@ export const table: NodeHandler = async (node, state) => {
 
   const fmtRow = (cells: string[], bold = false) => {
     const cols = cells.map((c, i) => ' ' + c.padEnd(colWidths[i]) + ' ')
-    if (colors && bold) return '│' + cols.map(c => BOLD + c + RESET).join('│') + '│'
+    if (colors && bold) return '│' + cols.map((c) => BOLD + c + RESET).join('│') + '│'
     if (colors) return DIM + '│' + RESET + cols.join(DIM + '│' + RESET) + DIM + '│' + RESET
     return '│' + cols.join('│') + '│'
   }

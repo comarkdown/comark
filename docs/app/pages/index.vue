@@ -3,9 +3,7 @@ definePageMeta({
   layout: false,
 })
 
-const { data: page } = await useAsyncData('index', () =>
-  queryCollection('landing').path('/').first(),
-)
+const { data: page } = await useAsyncData('index', () => queryCollection('landing').path('/').first())
 
 const title = page.value?.seo?.title || page.value?.title
 const description = page.value?.seo?.description || page.value?.description
@@ -42,15 +40,17 @@ useHead({
 </template>
 
 <style>
-.landing-page footer[data-slot="root"] {
+.landing-page footer[data-slot='root'] {
   display: none;
 }
 
 @media (min-width: 1024px) {
-  .landing-page header[data-slot="root"] > div {
+  .landing-page header[data-slot='root'] > div {
     max-width: var(--ui-container);
     margin-inline: auto;
-    box-shadow: inset 1px 0 0 var(--ui-border), inset -1px 0 0 var(--ui-border);
+    box-shadow:
+      inset 1px 0 0 var(--ui-border),
+      inset -1px 0 0 var(--ui-border);
   }
 }
 </style>

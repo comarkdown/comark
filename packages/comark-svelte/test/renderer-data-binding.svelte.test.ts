@@ -21,7 +21,7 @@ site:
 ::badge{:label="frontmatter.site.name"}
 ::
 `,
-      { components: { badge: Badge } },
+      { components: { badge: Badge } }
     )
     const badge = screen.container.querySelector<HTMLElement>('.badge')!
     expect(badge).not.toBeNull()
@@ -32,7 +32,7 @@ site:
     const screen = await renderMarkdown(
       `::badge{:count="42"}
 ::`,
-      { components: { badge: Badge } },
+      { components: { badge: Badge } }
     )
     const badge = screen.container.querySelector<HTMLElement>('.badge')!
     expect(badge.getAttribute('data-count')).toBe('42')
@@ -42,7 +42,7 @@ site:
     const screen = await renderMarkdown(
       `::badge{:config='{"k":"v"}'}
 ::`,
-      { components: { badge: Badge } },
+      { components: { badge: Badge } }
     )
     const badge = screen.container.querySelector<HTMLElement>('.badge')!
     expect(badge.getAttribute('data-config')).toBe('{"k":"v"}')
@@ -52,7 +52,7 @@ site:
     const screen = await renderMarkdown(
       `::badge{:label="data.user.name"}
 ::`,
-      { components: { badge: Badge }, data: { user: { name: 'Ada' } } },
+      { components: { badge: Badge }, data: { user: { name: 'Ada' } } }
     )
     const badge = screen.container.querySelector<HTMLElement>('.badge')!
     expect(badge.textContent?.trim()).toBe('Ada')
@@ -65,7 +65,7 @@ site:
 :::
 ::
 `,
-      { components: { card: Card, badge: Badge } },
+      { components: { card: Card, badge: Badge } }
     )
     const card = screen.container.querySelector<HTMLElement>('.card')!
     expect(card).toHaveClass('card-primary')
@@ -78,7 +78,7 @@ site:
     const screen = await renderMarkdown(
       `::badge{:label="frontmatter.missing"}
 ::`,
-      { components: { badge: Badge } },
+      { components: { badge: Badge } }
     )
     const badge = screen.container.querySelector<HTMLElement>('.badge')!
     expect(badge).not.toBeNull()
@@ -96,7 +96,7 @@ site: Blog
 ::badge{label="frontmatter.site"}
 ::
 `,
-      { components: { badge: Badge } },
+      { components: { badge: Badge } }
     )
     const badge = screen.container.querySelector<HTMLElement>('.badge')!
     expect(badge.textContent?.trim()).toBe('frontmatter.site')

@@ -65,8 +65,8 @@ export async function getHighlighter(options: HighlightOptions = {}): Promise<Sh
   // If highlighter exists, load any new themes that aren't loaded yet
   if (highlighter) {
     const { themes, languages } = await registerDefaults(options)
-    await Promise.all(themes.map(theme => loadTheme(highlighter!, theme)))
-    await Promise.all(languages.map(language => loadLanguage(highlighter!, language)))
+    await Promise.all(themes.map((theme) => loadTheme(highlighter!, theme)))
+    await Promise.all(languages.map((language) => loadLanguage(highlighter!, language)))
 
     return highlighter
   }
@@ -82,17 +82,17 @@ export async function getHighlighter(options: HighlightOptions = {}): Promise<Sh
         themes: themes,
         langs: languages,
         langAlias: {
-          'md': 'mdc',
-          'markdown': 'mdc',
-          'comark': 'mdc',
+          md: 'mdc',
+          markdown: 'mdc',
+          comark: 'mdc',
           'json-render': 'json',
           'yaml-render': 'yaml',
         },
         engine: createJavaScriptRegexEngine({ forgiving: true }),
       })
 
-      await Promise.all(themes.map(theme => loadTheme(hl, theme)))
-      await Promise.all(languages.map(language => loadLanguage(hl, language)))
+      await Promise.all(themes.map((theme) => loadTheme(hl, theme)))
+      await Promise.all(languages.map((language) => loadLanguage(hl, language)))
 
       return hl
     })() as Promise<ShikiPrimitive>
@@ -101,8 +101,7 @@ export async function getHighlighter(options: HighlightOptions = {}): Promise<Sh
     highlighterPromise = null
 
     return highlighter
-  }
-  catch (error) {
+  } catch (error) {
     console.error('Failed to create highlighter: make sure `shiki` is installed', error)
     throw error
   }
@@ -110,27 +109,33 @@ export async function getHighlighter(options: HighlightOptions = {}): Promise<Sh
 
 async function registerDefaults(options: HighlightOptions) {
   const themes = Object.values(options.themes || {}) as ThemeRegistration[]
-  const languages = options.languages || [] as Array<LanguageRegistration | LanguageRegistration[]>
-  const promises: Array<Promise<{ type: 'theme' | 'lang', value: any }>> = []
+  const languages = options.languages || ([] as Array<LanguageRegistration | LanguageRegistration[]>)
+  const promises: Array<Promise<{ type: 'theme' | 'lang'; value: any }>> = []
 
   if (options.registerDefaultThemes !== false) {
     promises.push(
-      import('shiki/dist/themes/material-theme-lighter.mjs').then(m => ({ type: 'theme' as const, value: m.default })),
-      import('shiki/dist/themes/material-theme-palenight.mjs').then(m => ({ type: 'theme' as const, value: m.default })),
+      import('shiki/dist/themes/material-theme-lighter.mjs').then((m) => ({
+        type: 'theme' as const,
+        value: m.default,
+      })),
+      import('shiki/dist/themes/material-theme-palenight.mjs').then((m) => ({
+        type: 'theme' as const,
+        value: m.default,
+      }))
     )
   }
   if (options.registerDefaultLanguages !== false) {
     promises.push(
-      import('shiki/dist/langs/vue.mjs').then(m => ({ type: 'lang' as const, value: m.default })),
-      import('shiki/dist/langs/tsx.mjs').then(m => ({ type: 'lang' as const, value: m.default })),
-      import('shiki/dist/langs/svelte.mjs').then(m => ({ type: 'lang' as const, value: m.default })),
-      import('shiki/dist/langs/typescript.mjs').then(m => ({ type: 'lang' as const, value: m.default })),
-      import('shiki/dist/langs/javascript.mjs').then(m => ({ type: 'lang' as const, value: m.default })),
-      import('shiki/dist/langs/mdc.mjs').then(m => ({ type: 'lang' as const, value: m.default })),
-      import('shiki/dist/langs/bash.mjs').then(m => ({ type: 'lang' as const, value: m.default })),
-      import('shiki/dist/langs/json.mjs').then(m => ({ type: 'lang' as const, value: m.default })),
-      import('shiki/dist/langs/yaml.mjs').then(m => ({ type: 'lang' as const, value: m.default })),
-      import('shiki/dist/langs/astro.mjs').then(m => ({ type: 'lang' as const, value: m.default })),
+      import('shiki/dist/langs/vue.mjs').then((m) => ({ type: 'lang' as const, value: m.default })),
+      import('shiki/dist/langs/tsx.mjs').then((m) => ({ type: 'lang' as const, value: m.default })),
+      import('shiki/dist/langs/svelte.mjs').then((m) => ({ type: 'lang' as const, value: m.default })),
+      import('shiki/dist/langs/typescript.mjs').then((m) => ({ type: 'lang' as const, value: m.default })),
+      import('shiki/dist/langs/javascript.mjs').then((m) => ({ type: 'lang' as const, value: m.default })),
+      import('shiki/dist/langs/mdc.mjs').then((m) => ({ type: 'lang' as const, value: m.default })),
+      import('shiki/dist/langs/bash.mjs').then((m) => ({ type: 'lang' as const, value: m.default })),
+      import('shiki/dist/langs/json.mjs').then((m) => ({ type: 'lang' as const, value: m.default })),
+      import('shiki/dist/langs/yaml.mjs').then((m) => ({ type: 'lang' as const, value: m.default })),
+      import('shiki/dist/langs/astro.mjs').then((m) => ({ type: 'lang' as const, value: m.default }))
     )
   }
 
@@ -152,18 +157,24 @@ async function loadTheme(hl: ShikiPrimitive, theme: ThemeRegistration) {
 }
 
 async function loadLanguage(hl: ShikiPrimitive, language: LanguageRegistration | LanguageRegistration[]) {
-  if (loadedLanguages.has(Array.isArray(language) ? language.map(l => l.name || '').join(',') : language.name || '')) {
+  if (
+    loadedLanguages.has(Array.isArray(language) ? language.map((l) => l.name || '').join(',') : language.name || '')
+  ) {
     return
   }
   await hl.loadLanguage(language)
-  loadedLanguages.add(Array.isArray(language) ? language.map(l => l.name || '').join(',') : language.name || '')
+  loadedLanguages.add(Array.isArray(language) ? language.map((l) => l.name || '').join(',') : language.name || '')
 }
 
 /**
  * Highlight code using Shiki with codeToTokens
  * Returns comark nodes built from hast
  */
-export async function highlightCode(code: string, attrs: CodeBlockAttributes, options: HighlightOptions = {}): Promise<{ nodes: ComarkNode[], language: string, bgColor?: string, fgColor?: string }> {
+export async function highlightCode(
+  code: string,
+  attrs: CodeBlockAttributes,
+  options: HighlightOptions = {}
+): Promise<{ nodes: ComarkNode[]; language: string; bgColor?: string; fgColor?: string }> {
   // Extract language from attributes
   const language: string = (attrs as any)?.language
   try {
@@ -190,8 +201,7 @@ export async function highlightCode(code: string, attrs: CodeBlockAttributes, op
       nodes: allTokens,
       language,
     }
-  }
-  catch (error) {
+  } catch (error) {
     // If highlighting fails, return the original code
     console.error('Shiki highlighting error:', error)
     return {
@@ -205,11 +215,7 @@ export async function highlightCode(code: string, attrs: CodeBlockAttributes, op
     if (input.type === 'comment') return [null, {}, input.value]
     if (input.type === 'text') return input.value
     if (input.tag === 'code' && props?.className && props.className.length === 0) delete props.className
-    return [
-      input.tagName,
-      props,
-      ...(input.children || []).map(hastToMinimarkNode),
-    ]
+    return [input.tagName, props, ...(input.children || []).map(hastToMinimarkNode)]
   }
 }
 
@@ -217,11 +223,11 @@ export async function highlightCode(code: string, attrs: CodeBlockAttributes, op
  * Apply syntax highlighting to all code blocks in a Comark tree
  * Uses codeToTokens API with batched async operations
  */
-export async function highlightCodeBlocks(
-  tree: ComarkTree,
-  options: HighlightOptions = {},
-): Promise<ComarkTree> {
-  interface CodeBlockRef { node: ComarkNode, path: number[] }
+export async function highlightCodeBlocks(tree: ComarkTree, options: HighlightOptions = {}): Promise<ComarkTree> {
+  interface CodeBlockRef {
+    node: ComarkNode
+    path: number[]
+  }
 
   const codeBlocks: CodeBlockRef[] = []
 
@@ -248,7 +254,7 @@ export async function highlightCodeBlocks(
   const highlightedResults = await Promise.all(
     codeBlocks.map(({ node }) => {
       return highlightCode((node[2] as any)[2] as string, node[1] as CodeBlockAttributes, options)
-    }),
+    })
   )
 
   const newNodes = JSON.parse(JSON.stringify(tree.nodes)) as ComarkNode[]
@@ -258,18 +264,15 @@ export async function highlightCodeBlocks(
     const result = highlightedResults[i]
 
     const preNode = result.nodes[0]
-    const preNodeClasses = typeof preNode === 'string'
-      ? ['shiki', options.themes?.light?.name]
-      : (
-          Array.isArray((preNode[1] as ComarkElementAttributes).class)
-            ? (preNode[1] as ComarkElementAttributes).class as string[]
-            : String((preNode[1] as ComarkElementAttributes).class).split(' ')
-        )
+    const preNodeClasses =
+      typeof preNode === 'string'
+        ? ['shiki', options.themes?.light?.name]
+        : Array.isArray((preNode[1] as ComarkElementAttributes).class)
+          ? ((preNode[1] as ComarkElementAttributes).class as string[])
+          : String((preNode[1] as ComarkElementAttributes).class).split(' ')
 
     const codeChildren = preNode[2].slice(2) as ComarkNode[]
-    const children = typeof preNode === 'string'
-      ? preNode
-      : codeChildren
+    const children = typeof preNode === 'string' ? preNode : codeChildren
 
     if (Array.isArray(children)) {
       let line = 1
@@ -279,8 +282,7 @@ export async function highlightCodeBlocks(
             child[1].class = `${child[1].class ?? ''} highlight`.trim()
             // TODO: (enforcing default style) once we unify all ecosystem styles we can remove this
             child[1].style = 'display: inline-block'
-          }
-          else {
+          } else {
             // TODO: (enforcing default style) once we unify all ecosystem styles we can remove this
             child[1].style = 'display: inline'
           }
@@ -292,7 +294,9 @@ export async function highlightCodeBlocks(
 
     const newPreAttrs: Record<string, any> = {
       ...preAttrs,
-      class: [...preNodeClasses, options.themes?.dark?.name ? `dark:${options.themes?.dark?.name}` : ''].filter(Boolean).join(' '),
+      class: [...preNodeClasses, options.themes?.dark?.name ? `dark:${options.themes?.dark?.name}` : '']
+        .filter(Boolean)
+        .join(' '),
       tabindex: '0',
     }
 
@@ -324,8 +328,7 @@ export async function highlightCodeBlocks(
 
     if (path.length === 1) {
       newNodes[path[0]] = newPreNode
-    }
-    else {
+    } else {
       let current = newNodes[path[0]] as ComarkElement
       for (let j = 1; j < path.length - 1; j++) {
         current = current[path[j] + 2] as ComarkElement

@@ -1,16 +1,22 @@
 {
   "name": "@comark/ansi",
-  "type": "module",
   "version": "0.2.1",
   "description": "ANSI terminal renderer for Comark",
+  "homepage": "https://comark.dev/rendering/ansi",
+  "bugs": {
+    "url": "https://github.com/comarkdown/comark/issues"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/comarkdown/comark.git"
   },
-  "bugs": {
-    "url": "https://github.com/comarkdown/comark/issues"
-  },
-  "homepage": "https://comark.dev/rendering/ansi",
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": "./dist/index.js",
     "./plugins/*": "./dist/plugins/*.js",
@@ -18,12 +24,6 @@
     "./parse": "./dist/parse.js",
     "./render": "./dist/render.js"
   },
-  "main": "./dist/index.js",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "files": [
-    "dist"
-  ],
   "publishConfig": {
     "access": "public"
   },
@@ -35,9 +35,15 @@
     "prepack": "tsc",
     "release": "release-it"
   },
+  "dependencies": {
+    "comark": "catalog:"
+  },
+  "devDependencies": {
+    "vitest": "catalog:"
+  },
   "peerDependencies": {
-    "katex": ">=0.16",
     "beautiful-mermaid": ">=1.0",
+    "katex": ">=0.16",
     "shiki": "catalog:"
   },
   "peerDependenciesMeta": {
@@ -50,11 +56,5 @@
     "shiki": {
       "optional": true
     }
-  },
-  "dependencies": {
-    "comark": "catalog:"
-  },
-  "devDependencies": {
-    "vitest": "catalog:"
   }
 }

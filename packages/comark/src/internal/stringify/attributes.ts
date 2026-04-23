@@ -34,7 +34,7 @@ export interface ResolveAttributesOptions {
 export function resolveAttributes(
   attrs: Record<string, unknown>,
   renderData: NodeRenderData,
-  options: ResolveAttributesOptions = {},
+  options: ResolveAttributesOptions = {}
 ): Record<string, unknown> {
   const result: Record<string, unknown> = {}
   for (const key in attrs) {
@@ -49,8 +49,7 @@ export function resolveAttributes(
         try {
           result[key.slice(1)] = JSON.parse(value)
           continue
-        }
-        catch {
+        } catch {
           // not JSON — fall through to dot-path lookup
         }
         result[key.slice(1)] = get(renderData, value)
@@ -80,11 +79,7 @@ export function resolveAttributes(
  * `renderData`) over the literal `key`. Falls back to the raw value when the
  * binding doesn't resolve.
  */
-export function resolveAttribute(
-  attrs: Record<string, unknown>,
-  renderData: NodeRenderData,
-  key: string,
-): unknown {
+export function resolveAttribute(attrs: Record<string, unknown>, renderData: NodeRenderData, key: string): unknown {
   const bindKey = `:${key}`
   if (bindKey in attrs) {
     const value = attrs[bindKey]
@@ -113,7 +108,10 @@ export function comarkAttributes(attributes: Record<string, unknown>) {
         return `#${value}`
       }
       if (key === 'class') {
-        return (value as string).split(' ').map(c => `.${c}`).join('')
+        return (value as string)
+          .split(' ')
+          .map((c) => `.${c}`)
+          .join('')
       }
 
       if (typeof value === 'object') {
@@ -171,7 +169,10 @@ export function htmlAttributes(attributes: Record<string, unknown>) {
  * @param attributes - The attributes to stringify
  * @returns The stringified attributes
  */
-export function comarkYamlAttributes(attributes: Record<string, unknown>, style: 'frontmatter' | 'codeblock' = 'codeblock') {
+export function comarkYamlAttributes(
+  attributes: Record<string, unknown>,
+  style: 'frontmatter' | 'codeblock' = 'codeblock'
+) {
   // Normalize boolean attributes to remove the colon prefix
   const normalized = Object.fromEntries(
     Object.entries(attributes).map(([key, value]) => {
@@ -179,7 +180,7 @@ export function comarkYamlAttributes(attributes: Record<string, unknown>, style:
         return [key.slice(1), value]
       }
       return [key, value]
-    }),
+    })
   )
 
   const yamlContent = stringifyYaml(normalized).trim()

@@ -24,16 +24,11 @@ export function parseWithRemark(source: string): ParseResult {
   const { content, data } = parseFrontMatter(source)
   const processor = unified()
 
-  processor
-    .use(remarkParse)
-    .use(remarkGFM)
-    .use(remarkMdc)
-    .use(remark2rehype)
-    .use(mdcCompiler)
+  processor.use(remarkParse).use(remarkGFM).use(remarkMdc).use(remark2rehype).use(mdcCompiler)
 
   const { result } = processor.processSync(content)
 
-  const { body, excerpt } = result as { body: MDCRoot, excerpt?: MDCRoot }
+  const { body, excerpt } = result as { body: MDCRoot; excerpt?: MDCRoot }
 
   // Convert to ComarkTree before generating TOC
   const minimarkBody = fromHast(body) as unknown as ComarkTree

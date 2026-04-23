@@ -116,7 +116,7 @@ const term = new Terminal({
   cursorBlink: false,
   cursorStyle: 'underline',
   disableStdin: true,
-  fontFamily: '\'JetBrains Mono\', \'Fira Code\', \'Cascadia Code\', ui-monospace, monospace',
+  fontFamily: "'JetBrains Mono', 'Fira Code', 'Cascadia Code', ui-monospace, monospace",
   fontSize: 13,
   lineHeight: 1.4,
   theme: {

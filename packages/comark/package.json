@@ -1,26 +1,33 @@
 {
   "name": "comark",
-  "type": "module",
   "version": "0.2.1",
   "description": "Components in Markdown (Comark) parser with streaming support for Vue, React, Svelte and HTML",
-  "author": "",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/comarkdown/comark.git"
-  },
-  "bugs": {
-    "url": "https://github.com/comarkdown/comark/issues"
-  },
-  "homepage": "https://comark.dev",
   "keywords": [
     "markdown",
     "mdc",
     "parser",
+    "react",
     "streaming",
-    "vue",
-    "react"
+    "vue"
   ],
+  "homepage": "https://comark.dev",
+  "bugs": {
+    "url": "https://github.com/comarkdown/comark/issues"
+  },
+  "license": "MIT",
+  "author": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/comarkdown/comark.git"
+  },
+  "files": [
+    "dist",
+    "skills"
+  ],
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": "./dist/index.js",
     "./plugins/*": "./dist/plugins/*.js",
@@ -28,13 +35,6 @@
     "./parse": "./dist/parse.js",
     "./render": "./dist/render.js"
   },
-  "main": "./dist/index.js",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "files": [
-    "dist",
-    "skills"
-  ],
   "publishConfig": {
     "access": "public"
   },
@@ -46,6 +46,25 @@
     "prepack": "tsc",
     "release": "release-it",
     "release:dry": "release-it --dry-run"
+  },
+  "dependencies": {
+    "@comark/markdown-it": "catalog:",
+    "entities": "catalog:",
+    "htmlparser2": "catalog:",
+    "js-yaml": "catalog:",
+    "markdown-exit": "catalog:"
+  },
+  "devDependencies": {
+    "@json-render/core": "catalog:",
+    "@shikijs/twoslash": "catalog:",
+    "@types/js-yaml": "catalog:",
+    "@types/markdown-it": "catalog:",
+    "github-slugger": "catalog:",
+    "hast-util-to-string": "catalog:",
+    "minimark": "catalog:",
+    "tsx": "catalog:",
+    "twoslash": "catalog:",
+    "vitest": "catalog:"
   },
   "peerDependencies": {
     "beautiful-mermaid": "catalog:",
@@ -62,24 +81,5 @@
     "katex": {
       "optional": true
     }
-  },
-  "devDependencies": {
-    "@json-render/core": "catalog:",
-    "@shikijs/twoslash": "catalog:",
-    "@types/js-yaml": "catalog:",
-    "@types/markdown-it": "catalog:",
-    "github-slugger": "catalog:",
-    "hast-util-to-string": "catalog:",
-    "minimark": "catalog:",
-    "tsx": "catalog:",
-    "twoslash": "catalog:",
-    "vitest": "catalog:"
-  },
-  "dependencies": {
-    "@comark/markdown-it": "catalog:",
-    "entities": "catalog:",
-    "htmlparser2": "catalog:",
-    "js-yaml": "catalog:",
-    "markdown-exit": "catalog:"
   }
 }

@@ -28,8 +28,7 @@ export const Mermaid = ([, attrs]: ComarkElement): string => {
   try {
     const svg = renderMermaidSVG(content, theme)
     return `<div class="mermaid">${svg}</div>`
-  }
-  catch {
+  } catch {
     return `<pre class="mermaid">${content}</pre>`
   }
 }

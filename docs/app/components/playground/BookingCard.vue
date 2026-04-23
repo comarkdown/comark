@@ -1,6 +1,13 @@
 <script setup lang="ts">
-interface DateValue { year: number, month: number, day: number }
-interface DateRange { start: DateValue, end: DateValue }
+interface DateValue {
+  year: number
+  month: number
+  day: number
+}
+interface DateRange {
+  start: DateValue
+  end: DateValue
+}
 
 defineProps<{
   title: string
@@ -13,7 +20,7 @@ const guests = ref(1)
 function formatDate(date: DateValue | undefined) {
   if (!date) return null
   return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' }).format(
-    new Date(date.year, date.month - 1, date.day),
+    new Date(date.year, date.month - 1, date.day)
   )
 }
 
@@ -32,9 +39,7 @@ const guestLabel = computed(() => `${guests.value} guest${guests.value > 1 ? 's'
       <UPopover :ui="{ content: 'p-0' }">
         <div class="grid cursor-pointer grid-cols-2 divide-x divide-muted transition-colors hover:bg-muted/30">
           <div class="p-3">
-            <p class="text-[10px] font-semibold uppercase tracking-wider text-muted">
-              Check-in
-            </p>
+            <p class="text-[10px] font-semibold uppercase tracking-wider text-muted">Check-in</p>
             <p
               class="text-sm"
               :class="checkIn ? 'text-highlighted' : 'text-dimmed'"
@@ -43,9 +48,7 @@ const guestLabel = computed(() => `${guests.value} guest${guests.value > 1 ? 's'
             </p>
           </div>
           <div class="p-3">
-            <p class="text-[10px] font-semibold uppercase tracking-wider text-muted">
-              Checkout
-            </p>
+            <p class="text-[10px] font-semibold uppercase tracking-wider text-muted">Checkout</p>
             <p
               class="text-sm"
               :class="checkOut ? 'text-highlighted' : 'text-dimmed'"
@@ -64,11 +67,11 @@ const guestLabel = computed(() => `${guests.value} guest${guests.value > 1 ? 's'
       </UPopover>
 
       <UPopover :ui="{ content: 'p-4 w-64' }">
-        <div class="flex cursor-pointer items-center justify-between border-t border-muted p-3 transition-colors hover:bg-muted/30">
+        <div
+          class="flex cursor-pointer items-center justify-between border-t border-muted p-3 transition-colors hover:bg-muted/30"
+        >
           <div>
-            <p class="text-[10px] font-semibold uppercase tracking-wider text-muted">
-              Guests
-            </p>
+            <p class="text-[10px] font-semibold uppercase tracking-wider text-muted">Guests</p>
             <p class="text-sm text-highlighted">
               {{ guestLabel }}
             </p>
@@ -79,9 +82,7 @@ const guestLabel = computed(() => `${guests.value} guest${guests.value > 1 ? 's'
           />
         </div>
         <template #content>
-          <p class="mb-3 text-sm font-semibold text-highlighted">
-            Guests
-          </p>
+          <p class="mb-3 text-sm font-semibold text-highlighted">Guests</p>
           <div class="flex items-center justify-between">
             <span class="text-sm text-muted">Number of guests</span>
             <div class="flex items-center gap-3">
@@ -112,8 +113,6 @@ const guestLabel = computed(() => `${guests.value} guest${guests.value > 1 ? 's'
       :label="cta"
     />
 
-    <p class="mt-3 text-center text-xs text-muted">
-      You won't be charged yet
-    </p>
+    <p class="mt-3 text-center text-xs text-muted">You won't be charged yet</p>
   </div>
 </template>

@@ -70,8 +70,7 @@ export function useMDC(options?: MDCOptions) {
       }
 
       return result
-    }
-    catch (error) {
+    } catch (error) {
       state.value = {
         ...state.value,
         error: error as Error,
@@ -83,8 +82,7 @@ export function useMDC(options?: MDCOptions) {
       }
 
       throw error
-    }
-    finally {
+    } finally {
       isLoading.value = false
     }
   }

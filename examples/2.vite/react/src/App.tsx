@@ -10,9 +10,5 @@ This is an alert!
 `
 
 export default function App() {
-  return (
-    <Comark components={{ Alert }}>
-      {markdown}
-    </Comark>
-  )
+  return <Comark components={{ Alert }}>{markdown}</Comark>
 }

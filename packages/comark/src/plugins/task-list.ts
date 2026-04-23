@@ -60,8 +60,7 @@ function attrSet(token: MarkdownItToken, name: string, value: string) {
       token.attrs = []
     }
     token.attrs.push(attr)
-  }
-  else {
+  } else {
     token.attrs![index] = attr
   }
 }
@@ -85,8 +84,10 @@ function findParentList(tokens: MarkdownItToken[], listItemIndex: number): numbe
 
   // Look backwards for the list (ul/ol) that contains this list item
   for (let i = listItemIndex - 1; i >= 0; i--) {
-    if (tokens[i].level === targetLevel
-      && (tokens[i].type === 'bullet_list_open' || tokens[i].type === 'ordered_list_open')) {
+    if (
+      tokens[i].level === targetLevel &&
+      (tokens[i].type === 'bullet_list_open' || tokens[i].type === 'ordered_list_open')
+    ) {
       return i
     }
   }
@@ -156,7 +157,10 @@ function markdownItTaskList(md: MarkdownIt, options?: TaskListOptions) {
 
               // Create checkbox token
               const checkbox = new state.Token('mdc_inline_component', 'input', 0)
-              checkbox.attrs = [['class', 'task-list-item-checkbox'], ['type', 'checkbox']]
+              checkbox.attrs = [
+                ['class', 'task-list-item-checkbox'],
+                ['type', 'checkbox'],
+              ]
               if (disableCheckboxes) {
                 checkbox.attrs.push([':disabled', 'true'])
               }

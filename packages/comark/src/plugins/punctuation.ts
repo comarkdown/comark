@@ -39,8 +39,7 @@ const DEFAULT_QUOTES = '\u201C\u201D\u2018\u2019' // ""''
 const SKIP_TAGS = new Set(['code', 'pre', 'math', 'script', 'style', 'kbd'])
 
 function isWhitespaceOrOpener(ch: string): boolean {
-  return ch === ' ' || ch === '\t' || ch === '\n' || ch === '\r'
-    || ch === '(' || ch === '[' || ch === '{'
+  return ch === ' ' || ch === '\t' || ch === '\n' || ch === '\r' || ch === '(' || ch === '[' || ch === '{'
 }
 
 function isLetter(ch: string): boolean {
@@ -62,7 +61,7 @@ function applyPunctuation(
   openDouble: string,
   closeDouble: string,
   openSingle: string,
-  closeSingle: string,
+  closeSingle: string
 ): string {
   const len = text.length
   let result = ''
@@ -82,8 +81,7 @@ function applyPunctuation(
         const prev = i > 0 ? text[i - 1] : ''
         if (prev === '?' || prev === '!') {
           result += text.slice(last, i) + '..'
-        }
-        else {
+        } else {
           result += text.slice(last, i) + '\u2026'
         }
         i = end - 1
@@ -97,8 +95,7 @@ function applyPunctuation(
       if (i + 2 < len && text[i + 2] === '-') {
         result += text.slice(last, i) + '\u2014'
         i += 2
-      }
-      else {
+      } else {
         result += text.slice(last, i) + '\u2013'
         i += 1
       }
@@ -170,20 +167,19 @@ function applyPunctuation(
     if (enableQuotes) {
       if (ch === '"') {
         const prev = i > 0 ? text[i - 1] : ' '
-        result += text.slice(last, i) + ((isWhitespaceOrOpener(prev) || i === 0) ? openDouble : closeDouble)
+        result += text.slice(last, i) + (isWhitespaceOrOpener(prev) || i === 0 ? openDouble : closeDouble)
         last = i + 1
         continue
       }
-      if (ch === '\'') {
+      if (ch === "'") {
         const prev = i > 0 ? text[i - 1] : ' '
         const next = i + 1 < len ? text[i + 1] : ''
         result += text.slice(last, i)
         // Apostrophe in contractions: letter before AND letter after
         if (isLetter(prev) && isLetter(next)) {
           result += closeSingle
-        }
-        else {
-          result += (isWhitespaceOrOpener(prev) || i === 0) ? openSingle : closeSingle
+        } else {
+          result += isWhitespaceOrOpener(prev) || i === 0 ? openSingle : closeSingle
         }
         last = i + 1
         continue
@@ -236,13 +232,7 @@ function applyPunctuation(
  * ```
  */
 export default defineComarkPlugin((options: PunctuationOptions = {}) => {
-  const {
-    quotes = true,
-    dashes = true,
-    ellipsis = true,
-    symbols = true,
-    normalize = true,
-  } = options
+  const { quotes = true, dashes = true, ellipsis = true, symbols = true, normalize = true } = options
 
   // Resolve quote characters
   let enableQuotes: boolean
@@ -254,22 +244,19 @@ export default defineComarkPlugin((options: PunctuationOptions = {}) => {
   if (quotes === false) {
     enableQuotes = false
     openDouble = closeDouble = openSingle = closeSingle = ''
-  }
-  else if (Array.isArray(quotes)) {
+  } else if (Array.isArray(quotes)) {
     enableQuotes = true
     openDouble = quotes[0]
     closeDouble = quotes[1]
     openSingle = quotes[2]
     closeSingle = quotes[3]
-  }
-  else if (typeof quotes === 'string') {
+  } else if (typeof quotes === 'string') {
     enableQuotes = true
     openDouble = quotes[0]
     closeDouble = quotes[1]
     openSingle = quotes[2]
     closeSingle = quotes[3]
-  }
-  else {
+  } else {
     enableQuotes = true
     openDouble = DEFAULT_QUOTES[0]
     closeDouble = DEFAULT_QUOTES[1]
@@ -286,7 +273,18 @@ export default defineComarkPlugin((options: PunctuationOptions = {}) => {
 
           if (typeof node === 'string') {
             if (!skip) {
-              nodes[i] = applyPunctuation(node, enableQuotes, dashes, ellipsis, symbols, normalize, openDouble, closeDouble, openSingle, closeSingle)
+              nodes[i] = applyPunctuation(
+                node,
+                enableQuotes,
+                dashes,
+                ellipsis,
+                symbols,
+                normalize,
+                openDouble,
+                closeDouble,
+                openSingle,
+                closeSingle
+              )
             }
             continue
           }

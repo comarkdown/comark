@@ -23,7 +23,9 @@ Copyright (c) 2025 Acme Corp(r). All rights reserved...
 Really?.... wow!!!!! hmm,, ok
 `
 
-const long = Array.from({ length: 50 }, (_, i) => `
+const long = Array.from(
+  { length: 50 },
+  (_, i) => `
 ## Section ${i + 1}
 
 "Paragraph ${i + 1}" has some 'quoted text' and contractions like don't, won't, can't.
@@ -33,7 +35,8 @@ The range is ${i}--${i + 10} and the em-dash --- is used here... plus (c) (r) (t
 Another line with "double quotes" and 'single quotes' and more ellipsis...
 
 Really????  Wow!!!!! hmm,, ok?.... end
-`).join('\n')
+`
+).join('\n')
 
 // ── markdown-it typographer ─────────────────────────────────────────────────
 
@@ -128,7 +131,10 @@ console.log('=== Output Comparison ===\n')
 console.log('Input:', JSON.stringify(testStr))
 
 const miTokens = parserTypographer.parse(testStr, {})
-const miText = miTokens.filter((t: any) => t.type === 'inline').map((t: any) => t.content).join('')
+const miText = miTokens
+  .filter((t: any) => t.type === 'inline')
+  .map((t: any) => t.content)
+  .join('')
 console.log('markdown-it typographer:', JSON.stringify(miText))
 
 const comarkTree = await comarkFull(testStr)

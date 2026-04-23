@@ -21,7 +21,7 @@ const editorContainer = useTemplateRef('editorContainer')
 let editor: any = null
 let monaco: any | null = null
 const colorMode = useColorMode()
-const theme = computed<string>(() => colorMode.value === 'dark' ? 'vs-dark' : 'vs-light')
+const theme = computed<string>(() => (colorMode.value === 'dark' ? 'vs-dark' : 'vs-light'))
 const loaded = ref(false)
 
 onMounted(async () => {
@@ -72,14 +72,17 @@ watch(model, (newCode) => {
   }
 })
 
-watch(() => language, (newLanguage) => {
-  if (monaco && editor) {
-    const model = editor.getModel()
-    if (model) {
-      monaco.editor.setModelLanguage(model, newLanguage === 'vue' ? 'mdc' : newLanguage)
+watch(
+  () => language,
+  (newLanguage) => {
+    if (monaco && editor) {
+      const model = editor.getModel()
+      if (model) {
+        monaco.editor.setModelLanguage(model, newLanguage === 'vue' ? 'mdc' : newLanguage)
+      }
     }
   }
-})
+)
 
 watch(theme, (newTheme) => {
   if (monaco) {

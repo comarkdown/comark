@@ -2,7 +2,22 @@ import type { MarkdownExit } from 'markdown-exit'
 import type { MarkdownItPlugin } from 'comark'
 import { defineComarkPlugin } from '../utils/helpers.ts'
 
-export type ThemeNames = 'zinc-light' | 'zinc-dark' | 'tokyo-night' | 'tokyo-night-storm' | 'tokyo-night-light' | 'catppuccin-mocha' | 'catppuccin-latte' | 'nord' | 'nord-light' | 'dracula' | 'github-light' | 'github-dark' | 'solarized-light' | 'solarized-dark' | 'one-dark'
+export type ThemeNames =
+  | 'zinc-light'
+  | 'zinc-dark'
+  | 'tokyo-night'
+  | 'tokyo-night-storm'
+  | 'tokyo-night-light'
+  | 'catppuccin-mocha'
+  | 'catppuccin-latte'
+  | 'nord'
+  | 'nord-light'
+  | 'dracula'
+  | 'github-light'
+  | 'github-dark'
+  | 'solarized-light'
+  | 'solarized-dark'
+  | 'one-dark'
 
 export interface MermaidConfig {
   /**
@@ -63,68 +78,47 @@ export function searchProps(content: string, index = 0) {
     '(': ')',
   }
   const quotePairs = {
-    '\'': '\'',
+    "'": "'",
     '"': '"',
     '`': '`',
   }
-  if (content[index] !== '{')
-    throw new Error(`Invalid props, expected \`{\` but got '${content[index]}'`)
+  if (content[index] !== '{') throw new Error(`Invalid props, expected \`{\` but got '${content[index]}'`)
 
   const props: [string, string][] = []
 
   // Vue's mustache {{ }} syntax
-  if (content[index + 1] === '{')
-    return undefined
+  if (content[index + 1] === '{') return undefined
 
   index += 1
 
   while (index < content.length) {
     if (content[index] === '\\') {
       index += 2
-    }
-    else if (content[index] === '}') {
+    } else if (content[index] === '}') {
       index += 1
       break
-    }
-    else if (content[index] === ' ') {
+    } else if (content[index] === ' ') {
       index += 1
-    }
-    else if (content[index] === '.') {
+    } else if (content[index] === '.') {
       index += 1
-      props.push([
-        'class',
-        searchUntil(' #.}'),
-      ])
-    }
-    else if (content[index] === '#') {
+      props.push(['class', searchUntil(' #.}')])
+    } else if (content[index] === '#') {
       index += 1
-      props.push([
-        'id',
-        searchUntil(' #.}'),
-      ])
-    }
-    else {
+      props.push(['id', searchUntil(' #.}')])
+    } else {
       const start = index
       while (index < content.length) {
         index += 1
-        if (' }='.includes(content[index]))
-          break
+        if (' }='.includes(content[index])) break
       }
       const char = content[index]
       if (start !== index) {
         const key = content.slice(start, index).trim()
         if (char === '=') {
           index += 1
-          props.push([
-            key,
-            searchValue(),
-          ])
-        }
-        else {
-          props.push([
-            key,
-            'true',
-          ])
+          props.push([key, searchValue()])
+        } else {
+          props.push([key, 'true'])
         }
       }
     }
@@ -134,10 +128,8 @@ export function searchProps(content: string, index = 0) {
     const start = index
     while (index < content.length) {
       index += 1
-      if (content[index] === '\\')
-        index += 2
-      if (str.includes(content[index]))
-        break
+      if (content[index] === '\\') index += 2
+      if (str.includes(content[index])) break
     }
     return content.slice(start, index)
   }
@@ -148,13 +140,11 @@ export function searchProps(content: string, index = 0) {
       searchBracket(bracketPairs[content[index] as keyof typeof bracketPairs])
       index += 1
       return content.slice(start, index)
-    }
-    else if (content[index] in quotePairs) {
+    } else if (content[index] in quotePairs) {
       searchString(quotePairs[content[index] as keyof typeof quotePairs])
       index += 1
       return content.slice(start, index)
-    }
-    else {
+    } else {
       // unquoted value
       return searchUntil(' }')
     }
@@ -163,12 +153,9 @@ export function searchProps(content: string, index = 0) {
   function searchBracket(end: string) {
     while (index < content.length) {
       index++
-      if (content[index] in quotePairs)
-        searchString(quotePairs[content[index] as keyof typeof quotePairs])
-      else if (content[index] in bracketPairs)
-        searchBracket(bracketPairs[content[index] as keyof typeof bracketPairs])
-      else if (content[index] === end)
-        return
+      if (content[index] in quotePairs) searchString(quotePairs[content[index] as keyof typeof quotePairs])
+      else if (content[index] in bracketPairs) searchBracket(bracketPairs[content[index] as keyof typeof bracketPairs])
+      else if (content[index] === end) return
     }
   }
 
@@ -178,8 +165,7 @@ export function searchProps(content: string, index = 0) {
 
   // Escale quotes
   props.forEach((v) => {
-    if (v[1].match(/^(['"`]).*\1$/))
-      v[1] = v[1].slice(1, -1)
+    if (v[1].match(/^(['"`]).*\1$/)) v[1] = v[1].slice(1, -1)
   })
 
   return {
@@ -209,7 +195,5 @@ export function searchProps(content: string, index = 0) {
  */
 export default defineComarkPlugin((config: MermaidConfig = {}) => ({
   name: 'mermaid',
-  markdownItPlugins: [
-    ((md: MarkdownExit) => markdownItMermaid(md, config)) as unknown as MarkdownItPlugin,
-  ],
+  markdownItPlugins: [((md: MarkdownExit) => markdownItMermaid(md, config)) as unknown as MarkdownItPlugin],
 }))

@@ -271,9 +271,11 @@ Text before the comment and text after the comment both render normally.
 
 <template>
   <Comark
-    :plugins="[highlight({
-      languages: [python],
-    })]"
+    :plugins="[
+      highlight({
+        languages: [python],
+      }),
+    ]"
     :markdown="markdown"
     :components="{ Alert, ProseUnwrapDiv }"
   />

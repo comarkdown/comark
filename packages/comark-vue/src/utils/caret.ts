@@ -5,7 +5,8 @@ interface CaretOptions {
 }
 
 const CARET_TEXT = ' ' // thin space is used to avoid wide spaces between text and caret
-const CARET_STYLE = 'background-color: currentColor; display: inline-block; margin-left: 0.25rem; margin-right: 0.25rem; animation: pulse 0.75s cubic-bezier(0.4,0,0.6,1) infinite;'
+const CARET_STYLE =
+  'background-color: currentColor; display: inline-block; margin-left: 0.25rem; margin-right: 0.25rem; animation: pulse 0.75s cubic-bezier(0.4,0,0.6,1) infinite;'
 
 export function getCaret(options: boolean | CaretOptions): ComarkElement | null {
   if (options === true) {

@@ -7,7 +7,6 @@
   },
   "dependencies": {
     "@comark/nuxt": "catalog:",
-    "@vueuse/core": "catalog:",
     "@monaco-editor/loader": "catalog:",
     "@nuxt/content": "catalog:",
     "@nuxt/ui": "catalog:",
@@ -15,6 +14,7 @@
     "@nuxtlabs/monarch-mdc": "catalog:",
     "@vercel/analytics": "catalog:",
     "@vercel/speed-insights": "catalog:",
+    "@vueuse/core": "catalog:",
     "comark": "catalog:",
     "docus": "https://pkg.pr.new/docus@6983451",
     "markdown-it-math": "catalog:",
@@ -25,8 +25,8 @@
     "vue-json-pretty": "catalog:"
   },
   "devDependencies": {
-    "@tailwindcss/typography": "catalog:",
     "@nuxt/devtools-kit": "catalog:",
+    "@tailwindcss/typography": "catalog:",
     "@types/splitpanes": "catalog:"
   }
 }

@@ -14,8 +14,9 @@ async function copy() {
     timer = setTimeout(() => {
       copied.value = false
     }, 2000)
+  } catch {
+    /* clipboard API may fail silently */
   }
-  catch { /* clipboard API may fail silently */ }
 }
 
 onBeforeUnmount(() => {

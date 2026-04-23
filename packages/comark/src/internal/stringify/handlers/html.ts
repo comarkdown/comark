@@ -6,7 +6,23 @@ import { indent } from '../indent.ts'
 const textBlocks = new Set(['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'li', 'td', 'th'])
 const selfCloseTags = new Set(['br', 'hr', 'img', 'input', 'link', 'meta', 'source', 'track', 'wbr'])
 const inlineTags = new Set(['strong', 'em', 'code', 'a', 'br', 'span', 'img'])
-const blockTags = new Set(['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'li', 'ul', 'ol', 'blockquote', 'hr', 'table', 'td', 'th'])
+const blockTags = new Set([
+  'p',
+  'h1',
+  'h2',
+  'h3',
+  'h4',
+  'h5',
+  'h6',
+  'li',
+  'ul',
+  'ol',
+  'blockquote',
+  'hr',
+  'table',
+  'td',
+  'th',
+])
 
 export async function html(node: ComarkElement, state: State, parent?: ComarkElement) {
   const [tag, attr, ...children] = node
@@ -20,12 +36,10 @@ export async function html(node: ComarkElement, state: State, parent?: ComarkEle
   // back to the raw (empty) attrs to avoid leaking parent props onto native
   // wrappers like `<p>` or `<ul>`.
   const rawHasAttrs = Object.keys(rawAttributes).length > 0
-  const attributes = state.context.html
-    ? (rawHasAttrs ? state.renderData.props : rawAttributes)
-    : rawAttributes
+  const attributes = state.context.html ? (rawHasAttrs ? state.renderData.props : rawAttributes) : rawAttributes
 
-  const hasOnlyTextChildren = children.every(child => typeof child === 'string' || inlineTags.has(String(child?.[0])))
-  const hasTextSibling = children.some(child => typeof child === 'string')
+  const hasOnlyTextChildren = children.every((child) => typeof child === 'string' || inlineTags.has(String(child?.[0])))
+  const hasTextSibling = children.some((child) => typeof child === 'string')
   const isBlock = textBlocks.has(String(tag))
   const isInline = inlineTags.has(String(tag)) && $.block === 0
 
@@ -62,7 +76,9 @@ export async function html(node: ComarkElement, state: State, parent?: ComarkEle
   for (let i = 0; i < children.length; i++) {
     const childContent = childrenContent[i]
     const child = children[i]
-    const isBlock = typeof child !== 'string' && (blockTags.has(String(child?.[0])) || (!inlineTags.has(String(child?.[0])) && !hasTextSibling))
+    const isBlock =
+      typeof child !== 'string' &&
+      (blockTags.has(String(child?.[0])) || (!inlineTags.has(String(child?.[0])) && !hasTextSibling))
 
     if (i > 0 && !isPrevBlock && isBlock) {
       content += state.context.blockSeparator
@@ -80,9 +96,7 @@ export async function html(node: ComarkElement, state: State, parent?: ComarkEle
     state.applyContext(revert)
   }
 
-  const attrs = Object.keys(attributes).length > 0
-    ? ` ${htmlAttributes(attributes)}`
-    : ''
+  const attrs = Object.keys(attributes).length > 0 ? ` ${htmlAttributes(attributes)}` : ''
 
   if (isSelfClose) {
     return `<${tag}${attrs} />` + (!parent && !isInline ? state.context.blockSeparator : '')
@@ -92,8 +106,7 @@ export async function html(node: ComarkElement, state: State, parent?: ComarkEle
     content = '\n' + paddNoneHtmlContent(content, state).trimEnd() + '\n'
   }
 
-  return `<${tag}${attrs}>${content}</${tag}>`
-    + (!parent && !isInline ? state.context.blockSeparator : '')
+  return `<${tag}${attrs}>${content}</${tag}>` + (!parent && !isInline ? state.context.blockSeparator : '')
 }
 
 function paddNoneHtmlContent(content: string, state: State) {
@@ -101,9 +114,5 @@ function paddNoneHtmlContent(content: string, state: State) {
     return indent(content)
   }
 
-  return (
-    (content.trim().startsWith('<') ? '' : '')
-    + content
-    + (content.trim().endsWith('>') ? '' : '')
-  )
+  return (content.trim().startsWith('<') ? '' : '') + content + (content.trim().endsWith('>') ? '' : '')
 }
