@@ -1,0 +1,56 @@
+name: "\U0001F41E Bug Report"
+description: Create a report to help us improve Comark
+labels: ["bug", "pending triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for taking the time to report a bug!
+        Please make sure that you have read through our [documentation](https://comark.dev/) before submitting.
+  - type: textarea
+    id: env
+    attributes:
+      label: Environment
+      description: Please provide your environment details
+      placeholder: |
+        - Operating System: `Darwin`
+        - Node Version:     `v22.x.x`
+        - Package Manager:  `pnpm@10.x.x`
+        - Comark Version:   `x.x.x`
+        - Framework:        `Vue / React / Svelte / None`
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Comark Version
+      placeholder: v0.x.x
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: Please provide a reproduction link. A minimal [reproduction is required](https://antfu.me/posts/why-reproductions-are-required) unless you are absolutely sure that the issue is obvious and the provided information is enough to understand the problem. If a report is vague (e.g. just a generic error message) and has no reproduction, it will receive a "needs reproduction" label. If no reproduction is provided we might close it.
+      placeholder: https://github.com/my/reproduction
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: A clear and concise description of what the bug is. If you intend to submit a PR for this issue, tell us in the description.
+    validations:
+      required: true
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: If applicable, add any other context or screenshots here.
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: |
+        Optional if provided reproduction. Please try not to insert an image but copy paste the log text.
+      render: shell-script
