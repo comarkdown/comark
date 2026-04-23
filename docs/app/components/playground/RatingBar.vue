@@ -1,8 +1,11 @@
 <script setup lang="ts">
-defineProps<{
-  rating: string
+const props = defineProps<{
+  rating?: string
   reviews: string | number
 }>()
+
+const ratingNum = computed(() => Number.parseFloat(props.rating ?? '') || 0)
+const fillPercent = computed(() => `${(ratingNum.value / 5) * 100}%`)
 </script>
 
 <template>
@@ -22,12 +25,12 @@ defineProps<{
           />
         </div>
       </div>
-      <div class="min-w-0">
+      <div class="min-w-0 [&>p]:m-0">
         <p class="text-sm font-semibold text-highlighted">
-          Guest favorite
+          <slot name="title" />
         </p>
         <p class="text-xs leading-snug text-muted">
-          One of the most loved homes on Airbnb, according to guests
+          <slot name="description" />
         </p>
       </div>
     </div>
@@ -36,15 +39,26 @@ defineProps<{
 
     <div class="shrink-0 text-center">
       <p class="text-xl font-bold text-highlighted">
-        {{ rating }}
+        {{ ratingNum }}
       </p>
-      <div class="mt-0.5 flex justify-center gap-0.5">
+      <div class="relative mt-0.5 flex justify-center gap-0.5">
         <UIcon
           v-for="i in 5"
           :key="i"
           name="i-lucide-star"
-          class="size-3 text-primary"
+          class="size-3 text-neutral-300 dark:text-neutral-600"
         />
+        <div
+          class="pointer-events-none absolute inset-0 flex gap-0.5 overflow-hidden"
+          :style="{ width: fillPercent }"
+        >
+          <UIcon
+            v-for="i in 5"
+            :key="i"
+            name="i-lucide-star"
+            class="size-3 shrink-0 text-yellow-400 **:fill-current"
+          />
+        </div>
       </div>
     </div>
 

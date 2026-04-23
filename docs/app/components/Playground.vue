@@ -13,12 +13,14 @@ import breaks from '@comark/nuxt/plugins/breaks'
 import { renderMarkdown } from 'comark/render'
 import { Splitpanes, Pane } from 'splitpanes'
 import { airbnbMarkdown, playgroundExamples } from '~/constants'
-import PropertyGallery from '~/components/playground/PropertyGallery.vue'
+import Gallery from '~/components/playground/Gallery.vue'
 import RatingBar from '~/components/playground/RatingBar.vue'
 import HostInfo from '~/components/playground/HostInfo.vue'
 import Facility from '~/components/playground/Facility.vue'
 import TwoColumn from '~/components/playground/TwoColumn.vue'
 import BookingCard from '~/components/playground/BookingCard.vue'
+import Ingredients from '~/components/playground/Ingredients.vue'
+import ProseSteps from '@nuxt/ui/components/prose/Steps.vue'
 import { useLocalStorage, watchDebounced } from '@vueuse/core'
 import type { ComarkTree, ComarkPlugin } from 'comark'
 import VueJsonPretty from 'vue-json-pretty'
@@ -451,11 +453,11 @@ const isMatch = computed(() =>
               />
               <div
                 v-else-if="tree"
-                class="prose prose-sm dark:prose-invert max-w-none prose-headings:no-underline"
+                class="max-w-none"
               >
                 <ComarkDocsRenderer
                   :tree="tree"
-                  :components="{ Binding, PropertyGallery, RatingBar, HostInfo, Facility, TwoColumn, BookingCard }"
+                  :components="{ Binding, Gallery, RatingBar, HostInfo, Facility, TwoColumn, BookingCard, Ingredients, steps: ProseSteps }"
                 />
               </div>
             </UScrollArea>
