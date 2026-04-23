@@ -321,6 +321,48 @@ describe('renderANSI', () => {
       expect(out).toContain('Uptime: 99.9%')
     })
   })
+
+  describe('data binding', () => {
+    it('resolves :href on links from frontmatter', async () => {
+      const tree = await parse(`---
+home: https://example.com
+---
+
+[Home](placeholder){:href="frontmatter.home"}
+`)
+      const out = await renderANSI(tree, { colors: false })
+      expect(out).toContain('Home (https://example.com)')
+    })
+
+    it('resolves :alt on images from data', async () => {
+      const tree = await parse('![x](/x.png){:alt="data.caption"}')
+      const out = await renderANSI(tree, { colors: false, data: { caption: 'Photo of Ada' } })
+      expect(out).toContain('[image: Photo of Ada]')
+    })
+
+    it('exposes parent props for custom handlers via resolveAttribute', async () => {
+      const { resolveAttribute } = await import('comark/render')
+      const tree = await parse(`---
+user: Ada
+---
+
+::callout{:who="frontmatter.user"}
+Hello
+::
+`)
+      const out = await renderANSI(tree, {
+        colors: false,
+        components: {
+          callout: async ([, attrs, ...children], state) => {
+            const who = resolveAttribute(attrs, state.renderData, 'who')
+            const content = await state.render(children as any)
+            return `[${who}]: ${content.trim()}\n`
+          },
+        },
+      })
+      expect(out).toContain('[Ada]: Hello')
+    })
+  })
 })
 
 describe('createLog', () => {

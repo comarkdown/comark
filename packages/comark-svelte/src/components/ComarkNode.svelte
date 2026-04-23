@@ -15,37 +15,29 @@ naturally appears inline after the deepest trailing text node.
 ```
 -->
 <script lang="ts">
-  import type { ComarkNode as ComarkNodeType, ComponentManifest } from 'comark'
-    import ComarkNode from './ComarkNode.svelte'
-  import { pascalCase } from 'comark/utils'
+  import type { ComarkNode as ComarkNodeType, ComponentManifest, NodeRenderData } from 'comark'
+  import ComarkNode from './ComarkNode.svelte'
+  import { pascalCase, resolveAttributes } from 'comark/utils'
+
+  const EMPTY_RENDER_DATA: NodeRenderData = { frontmatter: {}, meta: {}, data: {}, props: {} }
 
   let {
     node,
     components = {},
     componentsManifest,
     caretClass = null,
+    renderData = EMPTY_RENDER_DATA,
   }: {
     node: ComarkNodeType
     components?: Record<string, any>
     componentsManifest?: ComponentManifest
     caretClass?: string | null
+    renderData?: NodeRenderData
   } = $props()
 
   const CARET_TEXT = '\u2009'
   const CARET_STYLE
     = 'background-color: currentColor; display: inline-block; margin-left: 0.25rem; margin-right: 0.25rem; animation: pulse 0.75s cubic-bezier(0.4,0,0.6,1) infinite;'
-
-  function parsePropValue(value: string): any {
-    if (value === 'true') return true
-    if (value === 'false') return false
-    if (value === 'null') return null
-    try {
-      return JSON.parse(value)
-    }
-    catch {
-      return value
-    }
-  }
 
   const VOID_ELEMENTS = new Set([
     'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input',
@@ -88,21 +80,29 @@ naturally appears inline after the deepest trailing text node.
         || components[tag]
         || null
 
-    // Map props: className → class, :prefix → parsed value, rest pass through
-    for (const k in nodeProps) {
+    // Resolve `:prefix` bindings, then apply Svelte attribute remapping
+    // (`className` → `class`).
+    const resolved = resolveAttributes(nodeProps, renderData, { parseJson: true })
+    for (const k in resolved) {
       if (k === 'className') {
-        mappedProps.class = nodeProps[k]
-      }
-      else if (k.charCodeAt(0) === 58 /* ':' */) {
-        mappedProps[k.substring(1)] = parsePropValue(nodeProps[k])
+        mappedProps.class = resolved[k]
       }
       else {
-        mappedProps[k] = nodeProps[k]
+        mappedProps[k] = resolved[k]
       }
     }
 
     return { isText, tag, isVoid, children, Component, mappedProps }
   })
+
+  // Only shadow the parent's `props` scope when the current element has its
+  // own attributes. Bare wrappers (`<p>`, `<ul>`, `<li>`, …) must keep the
+  // parent's scope so bindings like `{{ props.x }}` reach across them.
+  let childrenRenderData = $derived<NodeRenderData>(
+    Object.keys(mappedProps).length > 0
+      ? { ...renderData, props: mappedProps }
+      : renderData,
+  )
 </script>
 
 {#if isText}
@@ -118,6 +118,7 @@ naturally appears inline after the deepest trailing text node.
         {components}
         {componentsManifest}
         caretClass={i === children.length - 1 ? caretClass : null}
+        renderData={childrenRenderData}
       />
     {/each}
   </Component>
@@ -131,6 +132,7 @@ naturally appears inline after the deepest trailing text node.
         {components}
         {componentsManifest}
         caretClass={i === children.length - 1 ? caretClass : null}
+        renderData={childrenRenderData}
       />
     {/each}
   </svelte:element>

@@ -47,6 +47,11 @@ export interface ComarkProps {
    * If caret is true, a caret will be appended to the last text node in the tree
    */
   caret?: boolean | { class: string }
+
+  /**
+   * Additional data to pass to the renderer
+   */
+  data?: Record<string, unknown>
 }
 
 type ComarkComponent = ReturnType<typeof defineComponent<ComarkProps>>
@@ -154,6 +159,14 @@ export const Comark: ComarkComponent = defineComponent({
       type: [Boolean, Object] as PropType<boolean | { class: string }>,
       default: false,
     },
+
+    /**
+     * Additional data to pass to the renderer
+     */
+    data: {
+      type: Object as PropType<Record<string, unknown>>,
+      default: () => ({}),
+    },
   },
 
   async setup(props, ctx) {
@@ -190,6 +203,7 @@ export const Comark: ComarkComponent = defineComponent({
         componentsManifest: props.componentsManifest,
         class: props.streaming ? 'comark-stream' : '',
         caret: props.caret,
+        data: props.data,
       })
     }
   },

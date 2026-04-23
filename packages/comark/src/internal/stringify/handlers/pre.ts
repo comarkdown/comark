@@ -1,6 +1,6 @@
 import type { State } from 'comark/render'
 import type { ComarkElement } from 'comark'
-import { textContent } from 'comark/utils'
+import { textContent } from '../../../utils/index.ts'
 
 export function pre(node: ComarkElement, state: State) {
   const [_, attributes, ...children] = node

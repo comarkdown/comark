@@ -27,6 +27,7 @@ Supports custom component mappings and a streaming caret indicator.
     componentsManifest,
     streaming = false,
     caret: caretProp = false,
+    data,
     class: className = '',
   }: {
     tree: ComarkTree
@@ -34,6 +35,7 @@ Supports custom component mappings and a streaming caret indicator.
     componentsManifest?: ComponentManifest
     streaming?: boolean
     caret?: boolean | { class: string }
+    data?: Record<string, unknown>
     class?: string
   } = $props()
 
@@ -42,6 +44,13 @@ Supports custom component mappings and a streaming caret indicator.
       ? (typeof caretProp === 'object' && caretProp.class) || ''
       : null,
   )
+
+  let renderData = $derived({
+    frontmatter: tree.frontmatter,
+    meta: tree.meta,
+    data: data || {},
+    props: {},
+  })
 </script>
 
 <div class="comark-content {className}">
@@ -51,6 +60,7 @@ Supports custom component mappings and a streaming caret indicator.
       {components}
       {componentsManifest}
       caretClass={i === tree.nodes.length - 1 ? caretClass : null}
+      {renderData}
     />
   {/each}
 </div>

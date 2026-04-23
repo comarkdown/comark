@@ -1,6 +1,6 @@
 import type { State } from 'comark/render'
 import type { ComarkElement } from 'comark'
-import { textContent } from 'comark/utils'
+import { textContent } from '../../../utils/index.ts'
 
 export function math(node: ComarkElement, state: State, parent?: ComarkElement) {
   const content = textContent(node)

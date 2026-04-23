@@ -1,8 +1,8 @@
 import React from 'react'
 import { parse } from 'comark'
 import type { ParseOptions } from 'comark'
-import { ComarkRenderer } from './ComarkRenderer'
-import { ComarkClient } from './ComarkClient'
+import { ComarkRenderer } from './ComarkRenderer.tsx'
+import { ComarkClient } from './ComarkClient.tsx'
 
 export interface ComarkProps {
   /**
@@ -51,6 +51,12 @@ export interface ComarkProps {
   caret?: boolean | { class: string }
 
   /**
+   * Additional data to pass to the renderer — referenced from markdown
+   * via `:`-prefixed props using dot paths (e.g. `:foo="data.user.name"`).
+   */
+  data?: Record<string, unknown>
+
+  /**
    * Additional className for the wrapper div
    */
   className?: string
@@ -96,6 +102,7 @@ export async function Comark({
   componentsManifest,
   streaming = false,
   caret = false,
+  data,
   className,
 }: ComarkProps) {
   const source = children ? String(children) : markdown
@@ -110,6 +117,7 @@ export async function Comark({
         componentsManifest={componentsManifest}
         streaming={streaming}
         caret={caret}
+        data={data}
         className={className}
       />
     )
@@ -125,6 +133,7 @@ export async function Comark({
       streaming={streaming}
       className={className}
       caret={caret}
+      data={data}
     />
   )
 }

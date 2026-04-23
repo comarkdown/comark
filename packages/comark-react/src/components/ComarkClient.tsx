@@ -3,7 +3,7 @@
 import { use, useDeferredValue, useMemo, Suspense } from 'react'
 import { parse } from 'comark'
 import type { ComarkTree } from 'comark'
-import { ComarkRenderer } from './ComarkRenderer'
+import { ComarkRenderer } from './ComarkRenderer.tsx'
 import type { ComarkProps } from './Comark'
 
 interface ComarkContentProps extends Omit<ComarkProps, 'markdown' | 'children' | 'options' | 'plugins'> {
@@ -16,6 +16,7 @@ function ComarkContent({
   componentsManifest,
   streaming = false,
   caret = false,
+  data,
   className,
 }: ComarkContentProps) {
   const parsed = use(parsePromise)
@@ -28,6 +29,7 @@ function ComarkContent({
       streaming={streaming}
       className={className}
       caret={caret}
+      data={data}
     />
   )
 }

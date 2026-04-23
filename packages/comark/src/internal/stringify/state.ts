@@ -1,7 +1,8 @@
 import { handlers as defaultHandlers } from './handlers/index.ts'
-import type { State, Context } from 'comark/render'
-import type { ComarkElement, ComarkNode, ConditionalNodeHandler, CreateContext, NodeHandler } from 'comark'
+import type { NodeRenderData, State, Context } from 'comark/render'
+import type { ComarkElement, ComarkNode, ComarkTree, ConditionalNodeHandler, CreateContext, NodeHandler } from 'comark'
 import { pascalCase } from '../../utils/index.ts'
+import { resolveAttributes } from './attributes.ts'
 
 function findHandler(ctx: Context, node: ComarkElement): NodeHandler | undefined {
   const userHandler = ctx.handlers[node[0] as string] || ctx.handlers[pascalCase(node[0] as string)]
@@ -38,24 +39,43 @@ export async function one(node: ComarkNode, state: State, parent?: ComarkElement
     return await state.handlers.comment(node as unknown as ComarkElement, state)
   }
 
-  const userHandler = findHandler(state.context, node)
-  if (userHandler) {
-    return await userHandler(node, state, parent)
+  // Scope `renderData.props` to the current element's resolved attributes so
+  // nested bindings like `:prop="props.x"` resolve against the enclosing
+  // element's values, regardless of which handler (html / ansi / user) runs.
+  // Elements with no attributes (e.g. an auto-generated `<p>` wrapper) must
+  // NOT shadow the parent's scope, otherwise `{{ props.* }}` inside them would
+  // resolve to nothing.
+  const prevRenderData = state.renderData
+  if (state.renderData && node[1]) {
+    const resolved = resolveAttributes(node[1] as Record<string, unknown>, prevRenderData)
+    if (Object.keys(resolved).length > 0) {
+      state.renderData = { ...prevRenderData, props: resolved }
+    }
   }
 
-  if (state.context.html || node[1].$?.html === 1) {
-    return await state.handlers.html(node, state, parent)
-  }
+  try {
+    const userHandler = findHandler(state.context, node)
+    if (userHandler) {
+      return await userHandler(node, state, parent)
+    }
 
-  // fallback to default handlers
-  const nodeHandler = state.handlers[node[0] as string]
-  if (nodeHandler) {
-    return await nodeHandler(node, state, parent)
-  }
+    if (state.context.html || node[1].$?.html === 1) {
+      return await state.handlers.html(node, state, parent)
+    }
 
-  return state.context.format === 'markdown/comark'
-    ? await state.handlers.mdc(node, state, parent)
-    : await state.handlers.html(node, state, parent)
+    // fallback to default handlers
+    const nodeHandler = state.handlers[node[0] as string]
+    if (nodeHandler) {
+      return await nodeHandler(node, state, parent)
+    }
+
+    return state.context.format === 'markdown/comark'
+      ? await state.handlers.mdc(node, state, parent)
+      : await state.handlers.html(node, state, parent)
+  }
+  finally {
+    state.renderData = prevRenderData
+  }
 }
 
 export async function flow(node: ComarkElement, state: State, parent?: ComarkElement): Promise<string> {
@@ -91,12 +111,20 @@ export function createState(ctx: Partial<CreateContext> = {}): State {
     html: ctx.format === 'text/html',
   } as Context
 
+  const tree = ctx.tree as ComarkTree | undefined
+  const renderData: NodeRenderData = {
+    frontmatter: (tree?.frontmatter || {}) as Record<string, unknown>,
+    meta: (tree?.meta || {}) as Record<string, unknown>,
+    data: (ctx.data || {}) as Record<string, unknown>,
+    props: {} as Record<string, unknown>,
+  }
   const state = {
     handlers: defaultHandlers,
     context,
     one,
     flow,
     data: ctx.data || {},
+    renderData,
     render: async (input: ComarkNode[] | ComarkElement) => {
       if (Array.isArray(input) && typeof input[0] === 'string' && input.length > 1) {
         return state.one(input as ComarkElement, state)
@@ -127,6 +155,7 @@ export const state: State = {
   handlers: defaultHandlers,
   conditionalHandlers: [],
   data: {},
+  renderData: { frontmatter: {}, meta: {}, data: {}, props: {} } as NodeRenderData,
   context: {
     blockSeparator: '\n\n',
     format: 'markdown/comark',

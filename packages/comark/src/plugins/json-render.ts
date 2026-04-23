@@ -1,8 +1,8 @@
 import type { Spec, UIElement } from '@json-render/core'
 import type { ComarkElementAttributes, ComarkNode } from '../types'
-import { defineComarkPlugin } from '../parse'
-import { textContent, visit } from '../utils'
-import { parseYaml } from '../internal/yaml'
+import { defineComarkPlugin } from '../parse.ts'
+import { textContent, visit } from '../utils/index.ts'
+import { parseYaml } from '../internal/yaml.ts'
 
 function jsonRenderToAst(jrt: Spec | UIElement) {
   if (!(jrt as Spec).root) {
