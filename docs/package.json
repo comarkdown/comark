@@ -7,6 +7,7 @@
   },
   "dependencies": {
     "@comark/nuxt": "catalog:",
+    "@vueuse/core": "catalog:",
     "@monaco-editor/loader": "catalog:",
     "@nuxt/content": "catalog:",
     "@nuxt/ui": "catalog:",

@@ -7,11 +7,17 @@ import emoji from '@comark/nuxt/plugins/emoji'
 import mermaid from '@comark/nuxt/plugins/mermaid'
 import jsonRender from '@comark/nuxt/plugins/json-render'
 import punctuation from '@comark/nuxt/plugins/punctuation'
-import breaks from '@comark/vue/plugins/breaks'
+import breaks from '@comark/nuxt/plugins/breaks'
 
 import { renderMarkdown } from 'comark/render'
 import { Splitpanes, Pane } from 'splitpanes'
-import { defaultMarkdown } from '~/constants'
+import { airbnbMarkdown, playgroundExamples } from '~/constants'
+import PropertyGallery from '~/components/playground/PropertyGallery.vue'
+import RatingBar from '~/components/playground/RatingBar.vue'
+import HostInfo from '~/components/playground/HostInfo.vue'
+import Facility from '~/components/playground/Facility.vue'
+import TwoColumn from '~/components/playground/TwoColumn.vue'
+import BookingCard from '~/components/playground/BookingCard.vue'
 import { useLocalStorage, watchDebounced } from '@vueuse/core'
 import type { ComarkTree, ComarkPlugin } from 'comark'
 import VueJsonPretty from 'vue-json-pretty'
@@ -20,7 +26,12 @@ const props = defineProps<{
   compact?: boolean
 }>()
 
-const markdown = ref<string>(defaultMarkdown.trim())
+const selectedExample = ref('airbnb')
+const currentExample = computed(() =>
+  playgroundExamples.find(e => e.value === selectedExample.value) ?? playgroundExamples[0]!,
+)
+
+const markdown = ref<string>(airbnbMarkdown.trim())
 const tree = ref<ComarkTree | null>(null)
 const parseTime = ref<number>(0)
 const nodeCount = ref<number>(0)
@@ -117,7 +128,7 @@ const parseOptionDefs = [
 
 const activePlugins = computed<ComarkPlugin[]>(() =>
   pluginDefs
-    .filter(p => pluginToggles.value[p.key])
+    .filter(p => pluginToggles.value[p.key as keyof typeof pluginToggles.value])
     .map(p => p.factory()),
 )
 
@@ -187,15 +198,19 @@ onMounted(() => {
   nextTick(() => parseMarkdown())
 })
 
+watch(selectedExample, () => {
+  markdown.value = currentExample.value.content.trim()
+})
+
 function resetComark(): void {
-  markdown.value = defaultMarkdown.trim()
+  markdown.value = currentExample.value.content.trim()
 }
 
 const formattedOutput = ref<string>('')
 
-watch(tree, async (t: ComarkTree | null) => {
-  formattedOutput.value = t ? await renderMarkdown(t) : ''
-}, { immediate: true })
+watchEffect(async () => {
+  formattedOutput.value = tree.value ? await renderMarkdown(tree.value as any) : ''
+})
 
 const formattedOutputModel = computed({
   get: () => formattedOutput.value,
@@ -220,12 +235,20 @@ const isMatch = computed(() =>
       >
         <div class="h-full flex flex-col">
           <div class="shrink-0 flex items-center gap-2 px-3 h-9 border-b border-default bg-default">
+            <USelect
+              v-if="!compact"
+              v-model="selectedExample"
+              :items="playgroundExamples"
+              size="xs"
+              color="neutral"
+              variant="ghost"
+              class="w-32"
+            />
             <UTooltip
-              v-if="markdown !== defaultMarkdown.trim()"
-              text="Reset to default content"
+              v-if="markdown !== currentExample.content.trim()"
+              text="Reset to example"
             >
               <UButton
-                :disabled="markdown === defaultMarkdown.trim()"
                 size="xs"
                 color="neutral"
                 variant="ghost"
@@ -271,7 +294,7 @@ const isMatch = computed(() =>
                       v-for="plugin in pluginDefs"
                       :key="plugin.key"
                       class="flex items-center gap-2.5 w-full px-2 py-1.5 rounded-md text-sm hover:bg-elevated transition-colors"
-                      @click="pluginToggles[plugin.key] = !pluginToggles[plugin.key] as any"
+                      @click="pluginToggles[plugin.key] = !pluginToggles[plugin.key]"
                     >
                       <UIcon
                         :name="plugin.icon"
@@ -424,7 +447,7 @@ const isMatch = computed(() =>
               >
                 <ComarkDocsRenderer
                   :tree="tree"
-                  :components="{ Binding }"
+                  :components="{ Binding, PropertyGallery, RatingBar, HostInfo, Facility, TwoColumn, BookingCard }"
                 />
               </div>
             </UScrollArea>
