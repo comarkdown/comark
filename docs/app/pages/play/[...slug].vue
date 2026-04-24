@@ -14,7 +14,7 @@ import Ingredients from '~/components/playground/Ingredients.vue'
 import { playgroundExamples } from '~/constants'
 
 definePageMeta({
-  layout: 'empty',
+  layout: 'default',
 })
 
 const components = {
@@ -25,13 +25,12 @@ const components = {
   TwoColumn,
   BookingCard,
   Ingredients,
-  Binding
+  Binding,
 }
 
-const router = useRouter()
 const route = useRoute()
 const slug = computed(() => Array.isArray(route.params.slug) ? route.params.slug.join('/') : route.params.slug as string)
-const markdown = computed(() =>
+const markdown = ref(
   slug.value
     ? playgroundExamples.find(example => example.value === slug.value)?.content
     : playgroundExamples[0].content,
@@ -165,11 +164,15 @@ defineOgImage('OgImageDocs', {
 </script>
 
 <template>
-  <UPage v-if="page" :style="{ maxWidth: page?.frontmatter?.page?.maxWidth }" class="mx-auto">
+  <UPage
+    v-if="page"
+    :style="{ maxWidth: page?.frontmatter?.page?.maxWidth }"
+    class="mx-auto"
+  >
     <UPageHeader>
       <Comark>
         {{
-        `> [!NOTE]
+          `> [!NOTE]
         > This page is rendered live from Comark markdown. Edit the source inline with **Edit Page** at the bottom right.`
         }}
       </Comark>
@@ -199,95 +202,98 @@ defineOgImage('OgImageDocs', {
       />
     </div>
 
-    <div
-      v-show="isEditing"
-      ref="editorWindow"
-      :style="[style, { width: `${editorWidth}px`, height: `${editorHeight}px` }]"
-      class="fixed top-0 left-0 p-1 z-50 bg-border rounded-lg hover:opacity-100 xl:opacity-40"
-    >
-      <div class="relative size-full bg-default rounded-md shadow-2xl flex flex-col overflow-hidden">
+    <ClientOnly>
+      <!-- Prevent hydration due to useDraggable styles (display: none on server) -->
+      <div
+        v-show="isEditing"
+        ref="editorWindow"
+        :style="[style, { width: `${editorWidth}px`, height: `${editorHeight}px` }]"
+        class="fixed top-0 left-0 p-1 z-50 bg-border rounded-lg hover:opacity-100 xl:opacity-40"
+      >
+        <div class="relative size-full bg-default rounded-md shadow-2xl flex flex-col overflow-hidden">
+          <div
+            ref="editorHandle"
+            class="shrink-0 flex items-center gap-2 px-3 h-10 border-b border-default bg-elevated/50 cursor-move select-none touch-none"
+          >
+            <UIcon
+              name="i-lucide-pencil"
+              class="size-4 text-muted"
+            />
+            <span class="text-sm font-medium">Page editor</span>
+            <div class="flex-1" />
+            <UButton
+              :to="`/play/editor?example=${slug}`"
+              icon="i-lucide-expand"
+              color="neutral"
+              variant="ghost"
+              size="xs"
+            />
+            <UButton
+              icon="i-lucide-minus"
+              size="xs"
+              variant="ghost"
+              color="neutral"
+              @click="isEditing = false"
+            />
+          </div>
+          <div class="flex-1 min-h-0">
+            <Editor
+              v-if="isEditing"
+              v-model="markdown"
+            />
+          </div>
+        </div>
+
         <div
-          ref="editorHandle"
-          class="shrink-0 flex items-center gap-2 px-3 h-10 border-b border-default bg-elevated/50 cursor-move select-none touch-none"
-        >
-          <UIcon
-            name="i-lucide-pencil"
-            class="size-4 text-muted"
-          />
-          <span class="text-sm font-medium">Page editor</span>
-          <div class="flex-1" />
-          <UButton
-            :to="`/play/editor?example=${slug}`"
-            icon="i-lucide-expand"
-            color="neutral"
-            variant="ghost"
-            size="xs"
-          />
-          <UButton
-            icon="i-lucide-minus"
-            size="xs"
-            variant="ghost"
-            color="neutral"
-            @click="isEditing = false"
-          />
-        </div>
-        <div class="flex-1 min-h-0">
-          <Editor
-            v-if="isEditing"
-            v-model="markdown"
-          />
-        </div>
+          class="absolute top-0 inset-x-3 h-2 cursor-ns-resize touch-none"
+          @pointerdown="(e: PointerEvent) => onResizeDown('n', e)"
+          @pointermove="onResizeMove"
+          @pointerup="onResizeUp"
+        />
+        <div
+          class="absolute bottom-0 inset-x-3 h-2 cursor-ns-resize touch-none"
+          @pointerdown="(e: PointerEvent) => onResizeDown('s', e)"
+          @pointermove="onResizeMove"
+          @pointerup="onResizeUp"
+        />
+        <div
+          class="absolute left-0 inset-y-3 w-2 cursor-ew-resize touch-none"
+          @pointerdown="(e: PointerEvent) => onResizeDown('w', e)"
+          @pointermove="onResizeMove"
+          @pointerup="onResizeUp"
+        />
+        <div
+          class="absolute right-0 inset-y-3 w-2 cursor-ew-resize touch-none"
+          @pointerdown="(e: PointerEvent) => onResizeDown('e', e)"
+          @pointermove="onResizeMove"
+          @pointerup="onResizeUp"
+        />
+
+        <div
+          class="absolute top-0 left-0 size-3 cursor-nwse-resize touch-none"
+          @pointerdown="(e: PointerEvent) => onResizeDown('nw', e)"
+          @pointermove="onResizeMove"
+          @pointerup="onResizeUp"
+        />
+        <div
+          class="absolute top-0 right-0 size-3 cursor-nesw-resize touch-none"
+          @pointerdown="(e: PointerEvent) => onResizeDown('ne', e)"
+          @pointermove="onResizeMove"
+          @pointerup="onResizeUp"
+        />
+        <div
+          class="absolute bottom-0 left-0 size-3 cursor-nesw-resize touch-none"
+          @pointerdown="(e: PointerEvent) => onResizeDown('sw', e)"
+          @pointermove="onResizeMove"
+          @pointerup="onResizeUp"
+        />
+        <div
+          class="absolute bottom-0 right-0 size-3 cursor-nwse-resize touch-none"
+          @pointerdown="(e: PointerEvent) => onResizeDown('se', e)"
+          @pointermove="onResizeMove"
+          @pointerup="onResizeUp"
+        />
       </div>
-
-      <div
-        class="absolute top-0 inset-x-3 h-2 cursor-ns-resize touch-none"
-        @pointerdown="(e: PointerEvent) => onResizeDown('n', e)"
-        @pointermove="onResizeMove"
-        @pointerup="onResizeUp"
-      />
-      <div
-        class="absolute bottom-0 inset-x-3 h-2 cursor-ns-resize touch-none"
-        @pointerdown="(e: PointerEvent) => onResizeDown('s', e)"
-        @pointermove="onResizeMove"
-        @pointerup="onResizeUp"
-      />
-      <div
-        class="absolute left-0 inset-y-3 w-2 cursor-ew-resize touch-none"
-        @pointerdown="(e: PointerEvent) => onResizeDown('w', e)"
-        @pointermove="onResizeMove"
-        @pointerup="onResizeUp"
-      />
-      <div
-        class="absolute right-0 inset-y-3 w-2 cursor-ew-resize touch-none"
-        @pointerdown="(e: PointerEvent) => onResizeDown('e', e)"
-        @pointermove="onResizeMove"
-        @pointerup="onResizeUp"
-      />
-
-      <div
-        class="absolute top-0 left-0 size-3 cursor-nwse-resize touch-none"
-        @pointerdown="(e: PointerEvent) => onResizeDown('nw', e)"
-        @pointermove="onResizeMove"
-        @pointerup="onResizeUp"
-      />
-      <div
-        class="absolute top-0 right-0 size-3 cursor-nesw-resize touch-none"
-        @pointerdown="(e: PointerEvent) => onResizeDown('ne', e)"
-        @pointermove="onResizeMove"
-        @pointerup="onResizeUp"
-      />
-      <div
-        class="absolute bottom-0 left-0 size-3 cursor-nesw-resize touch-none"
-        @pointerdown="(e: PointerEvent) => onResizeDown('sw', e)"
-        @pointermove="onResizeMove"
-        @pointerup="onResizeUp"
-      />
-      <div
-        class="absolute bottom-0 right-0 size-3 cursor-nwse-resize touch-none"
-        @pointerdown="(e: PointerEvent) => onResizeDown('se', e)"
-        @pointermove="onResizeMove"
-        @pointerup="onResizeUp"
-      />
-    </div>
+    </ClientOnly>
   </UPage>
 </template>

@@ -126,7 +126,7 @@ function markdownItTaskList(md: MarkdownIt, options?: TaskListOptions) {
             // Replace the task marker with a placeholder that won't be processed by Comark
             // We use a special format that we can detect later
             // Keep one space after the placeholder to match expected output
-            const checkboxPlaceholder = `{{TASK_CHECKBOX_${isChecked ? 'CHECKED' : 'UNCHECKED'}}} `
+            const checkboxPlaceholder = `TASK_CHECKBOX_${isChecked ? 'CHECKED' : 'UNCHECKED'} `
             token.content = token.content.replace(/^\[[ x]\]\s+/i, checkboxPlaceholder)
           }
         }
@@ -148,8 +148,8 @@ function markdownItTaskList(md: MarkdownIt, options?: TaskListOptions) {
 
           if (child.type === 'text' && child.content) {
             // Check for our checkbox placeholder
-            const checkedMatch = child.content.match(/^\{\{TASK_CHECKBOX_CHECKED\}\}/)
-            const uncheckedMatch = child.content.match(/^\{\{TASK_CHECKBOX_UNCHECKED\}\}/)
+            const checkedMatch = child.content.match(/^TASK_CHECKBOX_CHECKED/)
+            const uncheckedMatch = child.content.match(/^TASK_CHECKBOX_UNCHECKED/)
 
             if (checkedMatch || uncheckedMatch) {
               const isChecked = !!checkedMatch
@@ -165,7 +165,7 @@ function markdownItTaskList(md: MarkdownIt, options?: TaskListOptions) {
               }
 
               // Remove placeholder from text
-              child.content = child.content.replace(/^\{\{TASK_CHECKBOX_(CHECKED|UNCHECKED)\}\}/, '')
+              child.content = child.content.replace(/^TASK_CHECKBOX_(CHECKED|UNCHECKED)/, '')
 
               // Insert checkbox before the text
               token.children.splice(j, 0, checkbox)

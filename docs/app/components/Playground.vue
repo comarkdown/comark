@@ -63,7 +63,7 @@ const pluginToggles = useLocalStorage('comark-playground-plugins', {
   footnotes: true,
   punctuation: false,
   breaks: false,
-  binding: true
+  binding: true,
 }, { mergeDefaults: true })
 
 const parseOptions = useLocalStorage('comark-playground-parse-options', {
