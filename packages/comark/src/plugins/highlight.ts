@@ -178,6 +178,7 @@ function hastToComarkNode(input: any): ComarkNode {
   const children = input.children
   if (!children || children.length === 0) return [input.tagName, props]
   const len = children.length
+  // eslint-disable-next-line unicorn/no-new-array -- pre-allocated for perf
   const result = new Array(len + 2)
   result[0] = input.tagName
   result[1] = props
@@ -287,6 +288,7 @@ export async function highlightCodeBlocks(
   }
 
   // codeToHast (shiki/core) is synchronous, so we loop directly instead of using Promise.all
+  // eslint-disable-next-line unicorn/no-new-array -- pre-allocated for perf
   const highlightedResults: Array<{ nodes: ComarkNode[], language: string }> = new Array(codeBlocks.length)
   for (let i = 0; i < codeBlocks.length; i++) {
     const { node } = codeBlocks[i]
@@ -388,6 +390,7 @@ export async function highlightCodeBlocks(
     const codeAttrs = (codeEl[1] as Record<string, any>) || {}
     let newPreNode: ComarkNode
     if (Array.isArray(codeChildren)) {
+      // eslint-disable-next-line unicorn/no-new-array -- pre-allocated for perf
       const codeNode = new Array(codeChildren.length + 2) as ComarkElement
       codeNode[0] = 'code'
       codeNode[1] = codeAttrs
