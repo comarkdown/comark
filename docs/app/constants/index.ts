@@ -1,6 +1,9 @@
 export const airbnbMarkdown = `---
 title: Secluded Log Cabin in the Forest
 description: A nature retreat powered by Comark
+page:
+  "#comment": The "page" field is custom field and exists only for demonstration, it is no part of Comark core
+  maxWidth: 1120px
 ---
 
 ::Gallery
@@ -113,6 +116,9 @@ Mobile signal is unreliable past the village. Download offline maps before you a
 export const allFeaturesMarkdown = `---
 title: Hello Comark
 description: A Comark playground
+page:
+  "#comment": The "page" field is custom field and exists only for demonstration, it is no part of Comark core
+  maxWidth: 1120px
 ---
 
 # Hello Comark
@@ -206,6 +212,9 @@ Comark supports footnotes[^1] with automatic numbering and back-references[^2].
 export const recipeMarkdown = `---
 title: Gratin Dauphinois
 description: A classic French comfort dish powered by Comark
+page:
+  "#comment": The "page" field is custom field and exists only for demonstration, it is no part of Comark core
+  maxWidth: 1120px
 ---
 
 ::Gallery{cover}
