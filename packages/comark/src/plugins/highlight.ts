@@ -62,8 +62,11 @@ const loadedLanguages: Set<string> = new Set()
  * Uses a singleton pattern to avoid creating multiple highlighters
  */
 export async function getHighlighter(options: HighlightOptions = {}): Promise<ShikiPrimitive> {
-  // If highlighter exists, load any new themes that aren't loaded yet
   if (highlighter) {
+    // Fast path: skip registerDefaults() when no custom themes/languages are requested
+    if (!options.themes && !options.languages) {
+      return highlighter
+    }
     const { themes, languages } = await registerDefaults(options)
     await Promise.all(themes.map(theme => loadTheme(highlighter!, theme)))
     await Promise.all(languages.map(language => loadLanguage(highlighter!, language)))
@@ -160,6 +163,31 @@ async function loadLanguage(hl: ShikiPrimitive, language: LanguageRegistration |
 }
 
 /**
+ * Convert a hast (HTML AST) node into a ComarkNode.
+ * Uses pre-allocated arrays to avoid spread overhead.
+ */
+function hastToComarkNode(input: any): ComarkNode {
+  if (input.type === 'text') return input.value
+  if (input.type === 'comment') return [null, {}, input.value]
+
+  const props = input.properties || {}
+  if (input.tag === 'code' && props?.className && props.className.length === 0) {
+    delete props.className
+  }
+
+  const children = input.children
+  if (!children || children.length === 0) return [input.tagName, props]
+  const len = children.length
+  const result = new Array(len + 2)
+  result[0] = input.tagName
+  result[1] = props
+  for (let i = 0; i < len; i++) {
+    result[i + 2] = hastToComarkNode(children[i])
+  }
+  return result as ComarkNode
+}
+
+/**
  * Highlight code using Shiki with codeToTokens
  * Returns comark nodes built from hast
  */
@@ -184,7 +212,7 @@ export async function highlightCode(code: string, attrs: CodeBlockAttributes, op
         __raw: attrs.meta,
       },
     })
-    const allTokens = result.children.map(hastToMinimarkNode) as ComarkNode[]
+    const allTokens = result.children.map(hastToComarkNode) as ComarkNode[]
 
     return {
       nodes: allTokens,
@@ -199,18 +227,6 @@ export async function highlightCode(code: string, attrs: CodeBlockAttributes, op
       language,
     }
   }
-
-  function hastToMinimarkNode(input: any) {
-    const props = input.properties || {}
-    if (input.type === 'comment') return [null, {}, input.value]
-    if (input.type === 'text') return input.value
-    if (input.tag === 'code' && props?.className && props.className.length === 0) delete props.className
-    return [
-      input.tagName,
-      props,
-      ...(input.children || []).map(hastToMinimarkNode),
-    ]
-  }
 }
 
 /**
@@ -224,58 +240,108 @@ export async function highlightCodeBlocks(
   interface CodeBlockRef { node: ComarkNode, path: number[] }
 
   const codeBlocks: CodeBlockRef[] = []
+  const pathBuf: number[] = []
 
-  const findCodeBlocks = (nodes: ComarkNode[], path: number[]): void => {
-    for (let i = 0; i < nodes.length; i++) {
-      const node = nodes[i]
-      if (typeof node === 'string') continue
-      if (!Array.isArray(node) || node.length < 3) continue
-
-      if (node[0] === 'pre' && Array.isArray(node[2]) && node[2][0] === 'code') {
-        const codeContent = node[2][2]
+  // Recursively find <pre><code> blocks, tracking their path via push/pop on a shared buffer
+  const walkChildren = (element: ComarkElement): void => {
+    for (let i = 2; i < element.length; i++) {
+      const child = element[i]
+      if (typeof child === 'string') continue
+      if (!Array.isArray(child) || child.length < 3) continue
+      pathBuf.push(i - 2)
+      if (child[0] === 'pre' && Array.isArray(child[2]) && child[2][0] === 'code') {
+        const codeContent = child[2][2]
         if (typeof codeContent === 'string') {
-          codeBlocks.push({ node, path: [...path, i] })
+          codeBlocks.push({ node: child, path: pathBuf.slice() })
         }
       }
-
-      findCodeBlocks(node.slice(2) as ComarkNode[], [...path, i])
+      walkChildren(child as ComarkElement)
+      pathBuf.pop()
     }
   }
-  findCodeBlocks(tree.nodes, [])
+
+  for (let i = 0; i < tree.nodes.length; i++) {
+    const node = tree.nodes[i]
+    if (typeof node === 'string') continue
+    if (!Array.isArray(node) || node.length < 3) continue
+    if (node[0] === 'pre' && Array.isArray(node[2]) && node[2][0] === 'code') {
+      const codeContent = node[2][2]
+      if (typeof codeContent === 'string') {
+        codeBlocks.push({ node, path: [i] })
+      }
+    }
+    pathBuf.length = 1
+    pathBuf[0] = i
+    walkChildren(node as ComarkElement)
+  }
 
   if (codeBlocks.length === 0) return tree
 
-  const highlightedResults = await Promise.all(
-    codeBlocks.map(({ node }) => {
-      return highlightCode((node[2] as any)[2] as string, node[1] as CodeBlockAttributes, options)
-    }),
-  )
+  const hl = await getHighlighter(options)
+  const { themes = { light: 'material-theme-lighter', dark: 'material-theme-palenight' } } = options
+  const lightTheme = themes.light || themes.dark || 'material-theme-lighter'
+  const darkTheme = themes.dark || themes.light || 'material-theme-palenight'
+  const themeOptions = {
+    light: lightTheme,
+    dark: lightTheme !== darkTheme ? darkTheme : undefined,
+  }
 
-  const newNodes = JSON.parse(JSON.stringify(tree.nodes)) as ComarkNode[]
+  // codeToHast (shiki/core) is synchronous, so we loop directly instead of using Promise.all
+  const highlightedResults: Array<{ nodes: ComarkNode[], language: string }> = new Array(codeBlocks.length)
+  for (let i = 0; i < codeBlocks.length; i++) {
+    const { node } = codeBlocks[i]
+    const code = (node[2] as any)[2] as string
+    const attrs = node[1] as CodeBlockAttributes
+    const language: string = (attrs as any)?.language
+    try {
+      const result = codeToHast(hl, code, {
+        lang: language,
+        transformers: options.transformers,
+        themes: themeOptions,
+        meta: {
+          __raw: attrs.meta,
+        },
+      })
+      highlightedResults[i] = {
+        nodes: result.children.map(hastToComarkNode) as ComarkNode[],
+        language,
+      }
+    }
+    catch {
+      highlightedResults[i] = { nodes: [code], language }
+    }
+  }
+
+  const darkClassSuffix = options.themes?.dark?.name ? ` dark:${options.themes.dark.name}` : ''
+
+  // Build new nodes array, spine-copying only paths to modified <pre> nodes
+  const newNodes = [...tree.nodes] as ComarkNode[]
   for (let i = 0; i < codeBlocks.length; i++) {
     const { node, path } = codeBlocks[i]
     const preAttrs = node[1] as Record<string, any>
     const result = highlightedResults[i]
 
     const preNode = result.nodes[0]
-    const preNodeClasses = typeof preNode === 'string'
-      ? ['shiki', options.themes?.light?.name]
-      : (
-          Array.isArray((preNode[1] as ComarkElementAttributes).class)
-            ? (preNode[1] as ComarkElementAttributes).class as string[]
-            : String((preNode[1] as ComarkElementAttributes).class).split(' ')
-        )
+    let classStr: string
+    if (typeof preNode === 'string') {
+      classStr = 'shiki' + (options.themes?.light?.name ? ` ${options.themes.light.name}` : '')
+    }
+    else {
+      const cls = (preNode[1] as ComarkElementAttributes).class
+      classStr = Array.isArray(cls) ? cls.join(' ') : String(cls)
+    }
+    if (darkClassSuffix) classStr += darkClassSuffix
 
-    const codeChildren = preNode[2].slice(2) as ComarkNode[]
-    const children = typeof preNode === 'string'
+    const codeChildren = typeof preNode === 'string'
       ? preNode
-      : codeChildren
+      : (preNode[2] as ComarkElement).slice(2) as ComarkNode[]
 
-    if (Array.isArray(children)) {
+    if (Array.isArray(codeChildren)) {
+      const highlightSet = Array.isArray(preAttrs.highlights) ? new Set<number>(preAttrs.highlights) : null
       let line = 1
-      for (const child of children) {
+      for (const child of codeChildren) {
         if (Array.isArray(child)) {
-          if (Array.isArray(preAttrs.highlights) && preAttrs.highlights.includes(line)) {
+          if (highlightSet !== null && highlightSet.has(line)) {
             child[1].class = `${child[1].class ?? ''} highlight`.trim()
             // TODO: (enforcing default style) once we unify all ecosystem styles we can remove this
             child[1].style = 'display: inline-block'
@@ -292,7 +358,7 @@ export async function highlightCodeBlocks(
 
     const newPreAttrs: Record<string, any> = {
       ...preAttrs,
-      class: [...preNodeClasses, options.themes?.dark?.name ? `dark:${options.themes?.dark?.name}` : ''].filter(Boolean).join(' '),
+      class: classStr,
       tabindex: '0',
     }
 
@@ -320,15 +386,31 @@ export async function highlightCodeBlocks(
 
     const codeEl = node[2] as ComarkElement
     const codeAttrs = (codeEl[1] as Record<string, any>) || {}
-    const newPreNode: ComarkNode = ['pre', newPreAttrs, ['code', codeAttrs, ...children]]
+    let newPreNode: ComarkNode
+    if (Array.isArray(codeChildren)) {
+      const codeNode = new Array(codeChildren.length + 2) as ComarkElement
+      codeNode[0] = 'code'
+      codeNode[1] = codeAttrs
+      for (let j = 0; j < codeChildren.length; j++) codeNode[j + 2] = codeChildren[j]
+      newPreNode = ['pre', newPreAttrs, codeNode]
+    }
+    else {
+      newPreNode = ['pre', newPreAttrs, ['code', codeAttrs, codeChildren]]
+    }
 
     if (path.length === 1) {
       newNodes[path[0]] = newPreNode
     }
     else {
-      let current = newNodes[path[0]] as ComarkElement
+      // Copy only the spine from root to this node to preserve immutability
+      const rootIdx = path[0]
+      let current = [...(newNodes[rootIdx] as ComarkElement)] as ComarkElement
+      newNodes[rootIdx] = current
       for (let j = 1; j < path.length - 1; j++) {
-        current = current[path[j] + 2] as ComarkElement
+        const childSlot = path[j] + 2
+        const next = [...(current[childSlot] as ComarkElement)] as ComarkElement
+        current[childSlot] = next
+        current = next
       }
       const childSlot = path[path.length - 1] + 2
       current[childSlot] = newPreNode
