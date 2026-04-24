@@ -50,6 +50,7 @@ function startStream() {
   const chunkSize = 4
 
   function next() {
+    if (!props.demoMarkdown) return
     if (i >= props.demoMarkdown.length) {
       isStreaming.value = false
       return

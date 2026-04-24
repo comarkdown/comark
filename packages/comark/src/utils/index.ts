@@ -94,7 +94,7 @@ export function visit(
  * @returns The pascal case string
  */
 export function pascalCase(str: string) {
-  return str ? splitByCase(str).map(p => p[0].toUpperCase() + p.slice(1)).join('') : ''
+  return str ? splitByCase(str).map(p => p ? p[0].toUpperCase() + p.slice(1) : '').join('') : ''
 }
 
 /**

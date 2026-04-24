@@ -35,7 +35,6 @@ const bytesLength = computed(() => state.value.content.length)
 const elementsCount = computed(() => state.value.tree?.nodes?.length ?? 0)
 const outputColumn = ref<HTMLElement | null>(null)
 const astColumn = ref<HTMLElement | null>(null)
-const selectedParser = ref<'remark' | 'markdown-it'>('markdown-it')
 
 // Stream controller
 let streamController: ReturnType<typeof stringToStream> | null = null
@@ -57,7 +56,7 @@ async function simulateStream() {
   isPaused.value = false
 
   // Create stream controller with stringToStream
-  streamController = stringToStream(sampleMarkdown, 10, 100)
+  streamController = stringToStream(sampleMarkdown, 10, 40)
 
   // Start the stream
   streamController.start()
@@ -158,13 +157,6 @@ function reset() {
             <h3 class="text-neutral-800 dark:text-neutral-200 font-semibold">
               Rendered Output
             </h3>
-            <UBadge
-              color="neutral"
-              variant="soft"
-              size="xs"
-            >
-              {{ selectedParser }}
-            </UBadge>
           </div>
           <UBadge
             v-if="isStreaming && isPaused"
