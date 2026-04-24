@@ -11,7 +11,9 @@
   },
   "npm": {
     "publish": true,
-    "publishPath": "."
+    "publishPath": ".",
+    "publishPackageManager": "pnpm",
+    "publishArgs": ["--no-git-checks"]
   },
   "plugins": {
     "@release-it/conventional-changelog": {
@@ -24,11 +26,14 @@
           { "type": "perf", "section": "Performance" }
         ]
       },
-      "infile": "CHANGELOG.md"
+      "infile": "CHANGELOG.md",
+      "gitRawCommitsOpts": {
+        "path": "."
+      }
     }
   },
   "hooks": {
-    "before:init": ["cp -r ../../docs/skills ./skills", "pnpm run test"],
+    "before:init": ["rm -rf ./skills &&cp -r ../../docs/skills ./skills", "pnpm run test"],
     "before:release": ["pnpm run build"]
   }
 }

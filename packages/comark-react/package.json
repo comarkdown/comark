@@ -1,6 +1,6 @@
 {
   "name": "@comark/react",
-  "version": "0.2.1",
+  "version": "0.3.1",
   "description": "React components for Comark",
   "homepage": "https://comark.dev/rendering/react",
   "bugs": {

@@ -13,7 +13,7 @@
  */
 
 import { execSync, spawnSync } from 'node:child_process'
-import { existsSync, readdirSync, readFileSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -86,7 +86,28 @@ function getReleasablePackages() {
 }
 
 /**
- * Wait for a package to appear on npm, then update its version across the monorepo.
+ * Bump a package's version in the pnpm-workspace.yaml catalog. Returns true on
+ * success. Other workspace packages depend on this package via "catalog:", so
+ * updating the catalog is what makes pnpm publish resolve to the new version.
+ */
+function updateCatalogVersion(name, newVersion) {
+  const yamlPath = join(root, 'pnpm-workspace.yaml')
+  const content = readFileSync(yamlPath, 'utf-8')
+  const escaped = name.replace(/\./g, '\\.')
+  const re = new RegExp(`^(\\s*"?${escaped}"?\\s*:\\s*)\\^?[^\\s#]+`, 'm')
+  if (!re.test(content)) {
+    console.error(`  Could not find catalog entry for ${name} in pnpm-workspace.yaml`)
+    return false
+  }
+  const updated = content.replace(re, `$1^${newVersion}`)
+  if (updated === content) return false
+  writeFileSync(yamlPath, updated)
+  return true
+}
+
+/**
+ * Wait for a package to appear on npm, then bump its catalog entry so the next
+ * package release picks up the new version through pnpm's catalog resolution.
  */
 function waitAndUpdateDependents(pkg) {
   const newVersion = JSON.parse(readFileSync(join(pkg.dir, 'package.json'), 'utf-8')).version
@@ -111,26 +132,26 @@ function waitAndUpdateDependents(pkg) {
 
   if (!available) {
     console.error(
-      `\n${pkg.name}@${newVersion} did not appear on npm after ${maxAttempts} attempts. Skipping dependency update.`
+      `\n${pkg.name}@${newVersion} did not appear on npm after ${maxAttempts} attempts. Skipping catalog bump.`
     )
     return
   }
 
-  console.log(`Updating ${pkg.name} version in all packages...\n`)
-  const ncuResult = spawnSync('npx', ['npm-check-updates', '-u', '--deep', '--filter', pkg.name], {
+  console.log(`Bumping ${pkg.name} catalog entry to ^${newVersion}...\n`)
+  if (!updateCatalogVersion(pkg.name, newVersion)) return
+
+  const installResult = spawnSync('pnpm', ['install'], { cwd: root, stdio: 'inherit', env: process.env })
+  if (installResult.status !== 0) {
+    console.error(`  pnpm install failed; leaving catalog change uncommitted.`)
+    return
+  }
+
+  spawnSync('git', ['add', 'pnpm-workspace.yaml', 'pnpm-lock.yaml'], { cwd: root, stdio: 'inherit', env: process.env })
+  spawnSync('git', ['commit', '-m', `chore(deps): bump ${pkg.name} catalog to v${newVersion}`], {
     cwd: root,
     stdio: 'inherit',
     env: process.env,
   })
-  if (ncuResult.status === 0) {
-    spawnSync('pnpm', ['install'], { cwd: root, stdio: 'inherit', env: process.env })
-    spawnSync('git', ['add', '-A'], { cwd: root, stdio: 'inherit', env: process.env })
-    spawnSync('git', ['commit', '-m', `chore(deps): update ${pkg.name} to v${newVersion}`], {
-      cwd: root,
-      stdio: 'inherit',
-      env: process.env,
-    })
-  }
 }
 
 // --- Main ---

@@ -1,6 +1,6 @@
 {
   "name": "@comark/html",
-  "version": "0.2.1",
+  "version": "0.3.1",
   "description": "HTML renderer for Comark",
   "homepage": "https://comark.dev/rendering/html",
   "bugs": {

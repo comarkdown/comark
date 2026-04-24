@@ -1,5 +1,37 @@
 # Changelog
 
+## [0.3.1](https://github.com/comarkdown/comark/compare/@comark/nuxt@0.2.1...@comark/nuxt@0.3.1) (2026-04-24)
+
+### Features
+
+* **comark:** add breaks plugin ([#149](https://github.com/comarkdown/comark/issues/149)) ([90dca0d](https://github.com/comarkdown/comark/commit/90dca0dbc7749c1a54e80c14749023a1c3796375))
+* **comark:** add footnotes plugin with parsing and rendering support ([#104](https://github.com/comarkdown/comark/issues/104)) ([3d74274](https://github.com/comarkdown/comark/commit/3d74274722e35f87180071285d16c8b519e26b40))
+* **comark:** add punctuation plugin ([#123](https://github.com/comarkdown/comark/issues/123)) ([9b76e11](https://github.com/comarkdown/comark/commit/9b76e11e801e77e8403f71fbf642dccd8867e362))
+* data binding in components ([#143](https://github.com/comarkdown/comark/issues/143)) ([feedcd7](https://github.com/comarkdown/comark/commit/feedcd71b14ec0909c3d7117d7ba3debb4cdf8ff))
+* **docs:** enhance Playground with plugin management and parse options ([#107](https://github.com/comarkdown/comark/issues/107)) ([1dcb21b](https://github.com/comarkdown/comark/commit/1dcb21b47db747e8607e620236d95d53b148db30))
+* new/default block attributes syntax ([#125](https://github.com/comarkdown/comark/issues/125)) ([5222cf9](https://github.com/comarkdown/comark/commit/5222cf95a5eb2ef7e61f3b7343fccfc4ed4245aa))
+* **punctuation:** enhance punctuation plugin with normalization and locale-aware quotes ([#144](https://github.com/comarkdown/comark/issues/144)) ([62d996f](https://github.com/comarkdown/comark/commit/62d996f53f167e8f9e077a6d9db599fd4834c44e))
+* **render:** conditional handlers to match nodes based on attributes or children or ... ([#130](https://github.com/comarkdown/comark/issues/130)) ([25e45cc](https://github.com/comarkdown/comark/commit/25e45ccca6ba21b37ea09119010ff3e4288f8e77))
+* **rendering:** expose `dump` options for frontmatter serialization ([#101](https://github.com/comarkdown/comark/issues/101)) ([d294b0d](https://github.com/comarkdown/comark/commit/d294b0d732e04e129a93af4b3dccba16594492de))
+* **specs:** autolink support ([#112](https://github.com/comarkdown/comark/issues/112)) ([1f8442f](https://github.com/comarkdown/comark/commit/1f8442f2b08ce3d579813f224e02e6c343a02aca))
+* use parent heading id as prefix for child headings ([#126](https://github.com/comarkdown/comark/issues/126)) ([e83d889](https://github.com/comarkdown/comark/commit/e83d88992638a6ca7522b4156e30a7d34f9776a9))
+
+### Bug Fixes
+
+* **auto-close:** ensure underscore syntax does not joined with a word ([#131](https://github.com/comarkdown/comark/issues/131)) ([dd3fc00](https://github.com/comarkdown/comark/commit/dd3fc004e7db8816548154711e7174377f513dfe))
+* **auto-close:** ignore contents inside attributes fence ([9eefd87](https://github.com/comarkdown/comark/commit/9eefd87f33f6dacd592745bc634938a8cd8aac50))
+* **auto-close:** skip full link content and url part ([7e378be](https://github.com/comarkdown/comark/commit/7e378be4020adbd1e803845b91c8de5b31578798))
+* **auto-close:** support ignore char in math syntax `\$` ([b1641ce](https://github.com/comarkdown/comark/commit/b1641ce818ad12d9fe1ea8ce5bcdcca14d0c82af))
+* **deps:** deduplicate vue runtime to single version ([#133](https://github.com/comarkdown/comark/issues/133)) ([669ea89](https://github.com/comarkdown/comark/commit/669ea895daa28f7860d0a1755af780cbd1ea2864))
+* **examples:** add tailwindcss to dependencies ([#109](https://github.com/comarkdown/comark/issues/109)) ([d17259b](https://github.com/comarkdown/comark/commit/d17259b3f527c431ae137d8e2cac6d8aa0811971))
+* force extension for relative imports ([#152](https://github.com/comarkdown/comark/issues/152)) ([515c4dd](https://github.com/comarkdown/comark/commit/515c4ddcdbbb77eb2dbfe4923eb502b3675ca954))
+* **img:** default alt to empty string to prevent 'undefined' in output ([#148](https://github.com/comarkdown/comark/issues/148)) ([5ba5507](https://github.com/comarkdown/comark/commit/5ba5507914e6dcabbc0e8c602613a45a392304c6))
+* **mermaid:** set default height to auto ([#119](https://github.com/comarkdown/comark/issues/119)) ([fb5b909](https://github.com/comarkdown/comark/commit/fb5b909c900b12f636fcbc6800217065c09856c7))
+* **parser:** return previous output on parse error while streaming ([#132](https://github.com/comarkdown/comark/issues/132)) ([7cf2c17](https://github.com/comarkdown/comark/commit/7cf2c17bd7c35955f87516e80657c37d7f3ea288))
+* **render:** correct list indentation and block content in list items ([#120](https://github.com/comarkdown/comark/issues/120)) ([aad5516](https://github.com/comarkdown/comark/commit/aad5516565dd7cdc6c7e782c48e0a13abe4d993a))
+* **specs:** preserve indentation of nested components in named slots ([#106](https://github.com/comarkdown/comark/issues/106)) ([9ebddfd](https://github.com/comarkdown/comark/commit/9ebddfd4dd29ac9259f689b7150953f1e61b7001))
+* **vue:** typo in slot unwrap prop name ([#127](https://github.com/comarkdown/comark/issues/127)) ([1517e95](https://github.com/comarkdown/comark/commit/1517e95bdcd5176fa36aec643d9ccef4b1a277f6))
+
 ## [0.2.1](https://github.com/comarkdown/comark/compare/@comark/nuxt@0.2.0...@comark/nuxt@0.2.1) (2026-04-09)
 
 ### Features

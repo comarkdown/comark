@@ -1,6 +1,6 @@
 {
   "name": "@comark/nuxt",
-  "version": "0.2.1",
+  "version": "0.3.1",
   "description": "Nuxt module for Comark",
   "homepage": "https://comark.dev/rendering/nuxt",
   "bugs": {

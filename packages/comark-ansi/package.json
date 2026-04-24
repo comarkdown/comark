@@ -1,6 +1,6 @@
 {
   "name": "@comark/ansi",
-  "version": "0.2.1",
+  "version": "0.3.1",
   "description": "ANSI terminal renderer for Comark",
   "homepage": "https://comark.dev/rendering/ansi",
   "bugs": {

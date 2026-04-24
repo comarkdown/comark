@@ -103,7 +103,7 @@ const pluginDefs = [
   {
     key: 'footnotes',
     label: 'Footnotes',
-    icon: 'i-lucide-footprint',
+    icon: 'i-lucide-footprints',
     factory: () => footnotes(),
   },
   {
