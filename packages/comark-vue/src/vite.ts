@@ -185,7 +185,7 @@ export default function comark(opts: { prose?: boolean } = {}): Plugin[] {
       },
 
       configureServer(server) {
-        if (opts.prose === false) return null
+        if (opts.prose === false) return
         if (!proseDir) return
 
         server.watcher.add(proseDir)

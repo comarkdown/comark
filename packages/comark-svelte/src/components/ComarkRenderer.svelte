@@ -19,6 +19,7 @@ Supports custom component mappings and a streaming caret indicator.
 -->
 <script lang="ts">
   import type { ComarkTree, ComponentManifest } from 'comark'
+  import { onDestroy } from 'svelte'
   import ComarkNode from './ComarkNode.svelte'
 
   let {
@@ -38,6 +39,43 @@ Supports custom component mappings and a streaming caret indicator.
     data?: Record<string, unknown>
     class?: string
   } = $props()
+
+  // Devtools instance registration
+  let devtools: import('comark/devtools').RegisteredInstance | null = null
+  let devtoolsCancelled = false
+
+  if (import.meta.env?.DEV) {
+    import('comark/devtools').then(({ registerDevtoolsInstanceFromTree }) =>
+      registerDevtoolsInstanceFromTree({
+        hot: import.meta.hot,
+        tree,
+      }).then((inst) => {
+        if (devtoolsCancelled) {
+          inst?.unregister()
+        }
+        else {
+          devtools = inst
+        }
+      }),
+    )
+
+    $effect(() => {
+      // Re-run when tree changes — track `tree` reactively
+      const currentTree = tree
+      if (devtools) {
+        import('comark/render').then(({ renderMarkdown }) =>
+          renderMarkdown(currentTree).then(md =>
+            devtools?.update({ tree: currentTree, markdown: md }),
+          ),
+        )
+      }
+    })
+
+    onDestroy(() => {
+      devtoolsCancelled = true
+      devtools?.unregister()
+    })
+  }
 
   let caretClass = $derived(
     streaming && caretProp

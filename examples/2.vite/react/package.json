@@ -18,6 +18,7 @@
   "devDependencies": {
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
+    "@vitejs/devtools": "catalog:",
     "@vitejs/plugin-react": "catalog:",
     "autoprefixer": "catalog:",
     "postcss": "catalog:",

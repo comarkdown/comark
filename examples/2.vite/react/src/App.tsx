@@ -1,4 +1,4 @@
-import { Comark } from '@comark/react'
+import { ComarkClient } from '@comark/react'
 import Alert from './components/Alert'
 
 const markdown = `
@@ -11,8 +11,9 @@ This is an alert!
 
 export default function App() {
   return (
-    <Comark components={{ Alert }}>
-      {markdown}
-    </Comark>
+    <ComarkClient
+      markdown={markdown}
+      components={{ Alert }}
+    />
   )
 }

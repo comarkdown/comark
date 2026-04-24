@@ -3,7 +3,8 @@
   "type": "module",
   "scripts": {
     "dev": "nuxt dev --extends docus",
-    "build": " pnpm --filter '../' run build && nuxt build --extends docus"
+    "build": " pnpm --filter '../' run build && nuxt build --extends docus",
+    "preview": "nuxt preview --extends docus"
   },
   "dependencies": {
     "@comark/nuxt": "catalog:",
@@ -22,7 +23,8 @@
     "nuxt-studio": "catalog:",
     "splitpanes": "catalog:",
     "tailwindcss": "catalog:",
-    "vue-json-pretty": "catalog:"
+    "vue-json-pretty": "catalog:",
+    "@vitejs/devtools-kit": "catalog:"
   },
   "devDependencies": {
     "@tailwindcss/typography": "catalog:",

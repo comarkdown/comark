@@ -1,5 +1,5 @@
 import type { ComarkElement, ComarkNode, ComarkTree, ComponentManifest, NodeRenderData } from 'comark'
-import React, { lazy, Suspense, useMemo } from 'react'
+import React, { lazy, Suspense, useEffect, useMemo, useRef } from 'react'
 import { pascalCase, camelCase, resolveAttributes } from 'comark/utils'
 import { findLastTextNodeAndAppendNode, getCaret } from '../utils/caret.ts'
 
@@ -317,6 +317,42 @@ export const ComarkRenderer: React.FC<ComarkRendererProps> = ({
   className,
 }) => {
   const caret = useMemo(() => getCaret(caretProp), [caretProp])
+
+  // Devtools instance registration
+  const devtoolsRef = useRef<import('comark/devtools').RegisteredInstance | null>(null)
+  if (process.env.NODE_ENV === 'development') {
+    useEffect(() => {
+      let cancelled = false
+      import('comark/devtools').then(({ registerDevtoolsInstanceFromTree }) =>
+        registerDevtoolsInstanceFromTree({
+          hot: (import.meta as any).hot,
+          tree,
+        }).then((inst) => {
+          if (cancelled) {
+            inst?.unregister()
+          }
+          else {
+            devtoolsRef.current = inst
+          }
+        }),
+      )
+      return () => {
+        cancelled = true
+        devtoolsRef.current?.unregister()
+        devtoolsRef.current = null
+      }
+    }, [])
+
+    useEffect(() => {
+      if (devtoolsRef.current) {
+        import('comark/render').then(({ renderMarkdown }) =>
+          renderMarkdown(tree).then(md =>
+            devtoolsRef.current?.update({ tree, markdown: md }),
+          ),
+        )
+      }
+    }, [tree])
+  }
 
   const renderedNodes = useMemo(() => {
     // Render all nodes from the tree value

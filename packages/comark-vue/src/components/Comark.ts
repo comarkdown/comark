@@ -1,5 +1,5 @@
 import type { PropType } from 'vue'
-import { computed, defineComponent, h, shallowRef, watch } from 'vue'
+import { computed, defineComponent, h, onScopeDispose, provide, shallowRef, watch } from 'vue'
 import { createSerializedParse } from 'comark'
 import type { ParseOptions, ComponentManifest, ComarkTree } from 'comark'
 import { ComarkRenderer } from './ComarkRenderer.ts'
@@ -170,7 +170,19 @@ export const Comark: ComarkComponent = defineComponent({
   },
 
   async setup(props, ctx) {
+    // Devtools can override the markdown source for live editing.
+    // Cleared when the parent changes the prop so it doesn't stick.
+    const devtoolsOverride = shallowRef<string | null>(null)
+
+    watch(() => props.markdown, () => {
+      devtoolsOverride.value = null
+    })
+
     const markdown = computed(() => {
+      if (devtoolsOverride.value !== null) {
+        return devtoolsOverride.value
+      }
+
       let result = props.markdown
       const childrent = ctx.slots.default?.()
       if (childrent && childrent.length > 0 && typeof childrent[0].children === 'string') {
@@ -190,6 +202,36 @@ export const Comark: ComarkComponent = defineComponent({
       () => [markdown.value, props.streaming] as const,
       () => parse(markdown.value, { streaming: props.streaming }).then(result => parsed.value = result),
     )
+
+    // Devtools instance registration
+    // Must be before await so onScopeDispose has the active component scope.
+    // Use import.meta.hot as the dev-mode guard — Vite only defines it in dev.
+    const _hot = (import.meta as any).hot
+    if (_hot) {
+      // Tell child ComarkRenderer not to double-register
+      provide('__comark_devtools_registered__', true)
+
+      let devtools: import('comark/devtools').RegisteredInstance | null = null
+      onScopeDispose(() => devtools?.unregister())
+
+      import('comark/devtools').then(({ registerDevtoolsInstance }) =>
+        registerDevtoolsInstance({
+          hot: _hot,
+          tree: parsed.value || { nodes: [], frontmatter: {}, meta: {} },
+          markdown: markdown.value,
+          onUpdate: (md: string) => { devtoolsOverride.value = md },
+        }).then((inst) => {
+          devtools = inst
+          watch(
+            () => [parsed.value, markdown.value] as const,
+            () => devtools?.update({
+              tree: parsed.value || { nodes: [], frontmatter: {}, meta: {} },
+              markdown: markdown.value,
+            }),
+          )
+        }),
+      )
+    }
 
     await parse(markdown.value, { streaming: props.streaming })
       .then(result => parsed.value = result)

@@ -30,9 +30,28 @@ export { renderHTML } from './render.ts'
 export function createRender(options?: ParseOptions & RenderOptions): (markdown: string) => Promise<string> {
   const parse = createParse(options)
 
+  // Devtools auto-registration
+  const _hot = (import.meta as any).hot
+  const devtoolsReady = _hot
+    ? import('comark/devtools').then(({ registerDevtoolsInstance }) =>
+        registerDevtoolsInstance({
+          hot: _hot,
+          tree: { nodes: [], frontmatter: {}, meta: {} },
+        }),
+      )
+    : null
+
   return async (markdown: string) => {
     const tree = await parse(markdown)
-    return await renderHTML(tree, options as RenderOptions)
+    const html = await renderHTML(tree, options as RenderOptions)
+
+    // Update devtools with latest markdown + tree
+    if (devtoolsReady) {
+      const devtools = await devtoolsReady
+      devtools?.update({ tree, markdown })
+    }
+
+    return html
   }
 }
 

@@ -23,7 +23,8 @@
   ],
   "exports": {
     ".": "./dist/index.js",
-    "./vite": "./dist/vite.js",
+    "./vite": "./dist/devtools/vite.js",
+    "./devtools": "./dist/devtools/index.js",
     "./plugins/*": "./dist/plugins/*.js",
     "./utils": "./dist/utils/index.js",
     "./parse": "./dist/parse.js",

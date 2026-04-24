@@ -16,6 +16,8 @@
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "catalog:",
+    "@vitejs/devtools": "catalog:",
+    "comark": "catalog:",
     "autoprefixer": "catalog:",
     "postcss": "catalog:",
     "svelte": "catalog:",

@@ -4,6 +4,10 @@ export default defineNuxtConfig({
   extends: ['docus'],
   modules: ['nuxt-studio', '@comark/nuxt', '@vercel/speed-insights', '@vercel/analytics'],
 
+  devtools: {
+    enabled: false,
+  },
+
   app: {
     head: {
       link: [

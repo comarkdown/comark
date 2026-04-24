@@ -20,6 +20,7 @@ import Facility from '~/components/playground/Facility.vue'
 import TwoColumn from '~/components/playground/TwoColumn.vue'
 import BookingCard from '~/components/playground/BookingCard.vue'
 import Ingredients from '~/components/playground/Ingredients.vue'
+import { useDevtoolsConnection } from '~/composables/useDevtoolsConnection'
 import ProseSteps from '@nuxt/ui/components/prose/Steps.vue'
 import { useLocalStorage, watchDebounced } from '@vueuse/core'
 import type { ComarkTree, ComarkPlugin } from 'comark'
@@ -40,6 +41,28 @@ const parseTime = ref<number>(0)
 const nodeCount = ref<number>(0)
 const error = ref<string | null>(null)
 const parsing = ref<boolean>(false)
+
+const {
+  isDevtoolsConnected,
+  liveInstances,
+  selectedInstanceId,
+  selectInstance,
+  pushToInstance,
+} = useDevtoolsConnection(markdown)
+
+function selectInstanceById(id: string): void {
+  const inst = liveInstances.value.find(i => i.id === id)
+  if (inst) {
+    selectInstance(inst)
+  }
+}
+
+// Switch to AST tab when devtools connects
+watch(isDevtoolsConnected, (connected) => {
+  if (connected) {
+    activeTab.value = 'ast'
+  }
+})
 
 const colorMode = useColorMode()
 const isDark = computed(() => colorMode.value === 'dark')
@@ -143,8 +166,7 @@ const activePlugins = computed<ComarkPlugin[]>(() =>
 )
 
 const enabledPluginCount = computed<number>(() => Object.values(pluginToggles.value).filter(Boolean).length)
-
-const activeTab = ref('preview')
+const activeTab = ref(isDevtoolsConnected.value ? 'ast' : 'preview')
 const tabs = [
   { label: 'Preview', value: 'preview', icon: 'i-lucide-eye' },
   { label: 'AST', value: 'ast', icon: 'i-lucide-git-branch' },
@@ -204,6 +226,16 @@ async function parseMarkdown(): Promise<void> {
 
 watchDebounced(markdown, parseMarkdown, { debounce: 300 })
 watchDebounced([activePlugins, parseOptions], parseMarkdown, { deep: true, debounce: 300 })
+
+// In connected mode, push edits to the live instance
+watchDebounced(markdown, () => {
+  if (isDevtoolsConnected.value && selectedInstanceId.value) {
+    pushToInstance()
+  }
+}, {
+  debounce: 500,
+})
+
 onMounted(() => {
   nextTick(() => parseMarkdown())
 })
@@ -245,28 +277,57 @@ const isMatch = computed(() =>
       >
         <div class="h-full flex flex-col">
           <div class="shrink-0 flex items-center gap-2 px-3 h-9 border-b border-default bg-default">
-            <USelect
-              v-if="!compact"
-              v-model="selectedExample"
-              :items="playgroundExamples"
-              size="xs"
-              color="neutral"
-              variant="ghost"
-              class="w-32"
-            />
-            <UTooltip
-              v-if="markdown !== currentExample.content.trim()"
-              text="Reset to example"
-            >
-              <UButton
+            <!-- Connected mode: instance picker -->
+            <template v-if="isDevtoolsConnected && liveInstances.length > 0">
+              <UTooltip text="Connected to dev server">
+                <span class="flex items-center gap-1.5 text-xs text-success">
+                  <span class="size-2 rounded-full bg-success animate-pulse" />
+                  Live
+                </span>
+              </UTooltip>
+              <USelect
+                v-if="selectedInstanceId"
+                :model-value="selectedInstanceId"
+                :items="liveInstances.map(i => ({ label: `${i.id} (${i.nodeCount} nodes)`, value: i.id }))"
                 size="xs"
                 color="neutral"
                 variant="ghost"
-                icon="i-lucide-rotate-ccw"
-                label="Reset"
-                @click="resetComark"
+                class="w-44"
+                @update:model-value="selectInstanceById"
               />
-            </UTooltip>
+            </template>
+            <template v-else-if="isDevtoolsConnected">
+              <span class="flex items-center gap-1.5 text-xs text-warning">
+                <span class="size-2 rounded-full bg-warning" />
+                No Comark instances found
+              </span>
+            </template>
+
+            <!-- Standalone mode: example picker -->
+            <template v-if="!isDevtoolsConnected">
+              <USelect
+                v-if="!compact"
+                v-model="selectedExample"
+                :items="playgroundExamples"
+                size="xs"
+                color="neutral"
+                variant="ghost"
+                class="w-32"
+              />
+              <UTooltip
+                v-if="markdown !== currentExample.content.trim()"
+                text="Reset to example"
+              >
+                <UButton
+                  size="xs"
+                  color="neutral"
+                  variant="ghost"
+                  icon="i-lucide-rotate-ccw"
+                  label="Reset"
+                  @click="resetComark"
+                />
+              </UTooltip>
+            </template>
 
             <div class="flex-1" />
 

@@ -33,7 +33,8 @@ catalog:
   typescript: ^5.9.3
   tsx: ^4.21.0
   '@vitejs/plugin-react': ^6.0.1
-  '@vitejs/devtools': ^0.1.0
+  '@vitejs/devtools': ^0.1.15
+  '@vitejs/devtools-kit': ^0.1.15
 
   # Types
   "@types/node": ^25.5.2

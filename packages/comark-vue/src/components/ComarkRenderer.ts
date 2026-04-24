@@ -1,6 +1,6 @@
 import type { PropType, VNode } from 'vue'
 import type { ComponentManifest, ComarkContextProvider, ComarkElement, ComarkNode, ComarkTree, NodeRenderData } from 'comark'
-import { computed, defineAsyncComponent, defineComponent, getCurrentInstance, h, inject, onErrorCaptured, ref, toRaw } from 'vue'
+import { computed, defineAsyncComponent, defineComponent, getCurrentInstance, h, inject, onErrorCaptured, onScopeDispose, ref, toRaw, watch } from 'vue'
 import { findLastTextNodeAndAppendNode, getCaret } from '../utils/caret.ts'
 import { pascalCase, resolveAttributes } from 'comark/utils'
 
@@ -347,6 +347,40 @@ export const ComarkRenderer: ComarkRendererComponent = defineComponent({
     }
 
     const caret = computed<ComarkElement | null>(() => getCaret(props.caret || false))
+
+    // Devtools instance registration (standalone fallback)
+    // When ComarkRenderer is used without a parent <Comark>, register here.
+    // The parent <Comark> sets '__comark_devtools_registered__' to avoid duplicates.
+    const _hot = (import.meta as any).hot
+    const alreadyRegistered = inject<boolean>('__comark_devtools_registered__', false)
+    if (_hot && !alreadyRegistered) {
+      let devtools: import('comark/devtools').RegisteredInstance | null = null
+      let cancelled = false
+      onScopeDispose(() => {
+        cancelled = true
+        devtools?.unregister()
+      })
+
+      import('comark/devtools').then(({ registerDevtoolsInstanceFromTree }) =>
+        registerDevtoolsInstanceFromTree({
+          hot: _hot,
+          tree: props.tree,
+        }).then((inst) => {
+          if (cancelled) {
+            return inst?.unregister()
+          }
+          devtools = inst
+          watch(
+            () => props.tree,
+            async () => {
+              const { renderMarkdown } = await import('comark/render')
+              const md = await renderMarkdown(props.tree)
+              devtools?.update({ tree: props.tree, markdown: md })
+            },
+          )
+        }),
+      )
+    }
 
     return () => {
       // Render all nodes from the tree value
