@@ -74,7 +74,18 @@ function replay() {
 }
 
 onMounted(() => {
-  setTimeout(startStream, 200)
+  let timeout
+  if (!props.demoMarkdown) {
+    watch(() => props.demoMarkdown, (newValue, oldValue) => {
+      if (!oldValue) {
+        if (timeout) clearTimeout(timeout)
+        timeout = setTimeout(startStream, 400)
+      }
+    })
+  }
+  else {
+    setTimeout(startStream, 200)
+  }
 })
 
 onBeforeUnmount(() => {
