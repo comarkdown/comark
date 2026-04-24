@@ -8,7 +8,12 @@ export function pre(node: ComarkElement, state: State) {
   const codeClasses = (children[0]?.[1] as Record<string, string>)?.class
 
   const language =
-    attributes.language || codeClasses?.split(' ').find((cls) => cls.startsWith('language-'))?.slice(9) || ''
+    attributes.language ||
+    codeClasses
+      ?.split(' ')
+      .find((cls) => cls.startsWith('language-'))
+      ?.slice(9) ||
+    ''
 
   // Escape ] in filename
   const filename = attributes.filename ? ' [' + String(attributes.filename).split(']').join('\\\\]') + ']' : ''
