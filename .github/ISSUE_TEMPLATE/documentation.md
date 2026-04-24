@@ -24,7 +24,7 @@ body:
     attributes:
       label: Page URL or section
       description: Link to the page or name of the section with the issue.
-      placeholder: https://comark.dev/getting-started
+      placeholder: https://comark.dev/getting-started/introduction
   - type: textarea
     id: description
     attributes:
