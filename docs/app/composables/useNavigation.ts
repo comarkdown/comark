@@ -27,6 +27,23 @@ export function useMainNavigation() {
       to: '/play',
       icon: 'i-lucide-play',
       active: route.path.startsWith('/play'),
+      children: [
+        {
+          label: 'Booking',
+          to: '/play/booking',
+          active: route.path.startsWith('/play/booking'),
+        },
+        {
+          label: 'Recipe',
+          to: '/play/recipe',
+          active: route.path.startsWith('/play/recipe'),
+        },
+        {
+          label: 'All Features',
+          to: '/play/all-features',
+          active: route.path.startsWith('/play/all-features'),
+        },
+      ],
     },
   ])
 }

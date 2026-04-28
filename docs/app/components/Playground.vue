@@ -12,7 +12,7 @@ import breaks from '@comark/nuxt/plugins/breaks'
 
 import { renderMarkdown } from 'comark/render'
 import { Splitpanes, Pane } from 'splitpanes'
-import { airbnbMarkdown, playgroundExamples } from '~/constants'
+import { playgroundExamples } from '~/constants'
 import Gallery from '~/components/playground/Gallery.vue'
 import RatingBar from '~/components/playground/RatingBar.vue'
 import HostInfo from '~/components/playground/HostInfo.vue'
@@ -29,12 +29,22 @@ const props = defineProps<{
   compact?: boolean
 }>()
 
-const selectedExample = ref('airbnb')
+const router = useRouter()
+const route = useRoute()
+const knownExamples = playgroundExamples.map(e => e.value)
+const selectedExample = computed({
+  get: () => knownExamples.includes(route.query.example as string) ? (route.query.example as string) : knownExamples[0],
+  set: (value: string) => {
+    if (knownExamples.includes(value)) {
+      router.push({ query: { example: value } })
+    }
+  },
+})
 const currentExample = computed(() =>
   playgroundExamples.find(e => e.value === selectedExample.value) ?? playgroundExamples[0]!,
 )
 
-const markdown = ref<string>(airbnbMarkdown.trim())
+const markdown = ref<string>(currentExample.value.content.trim())
 const tree = ref<ComarkTree | null>(null)
 const parseTime = ref<number>(0)
 const nodeCount = ref<number>(0)
@@ -53,6 +63,7 @@ const pluginToggles = useLocalStorage('comark-playground-plugins', {
   footnotes: true,
   punctuation: false,
   breaks: false,
+  binding: true,
 }, { mergeDefaults: true })
 
 const parseOptions = useLocalStorage('comark-playground-parse-options', {
@@ -354,6 +365,13 @@ const isMatch = computed(() =>
                 </div>
               </template>
             </UPopover>
+            <UButton
+              :to="`/play/${selectedExample}`"
+              icon="i-lucide-minimize"
+              color="neutral"
+              variant="ghost"
+              size="xs"
+            />
           </div>
           <div class="flex-1 min-h-0">
             <Editor

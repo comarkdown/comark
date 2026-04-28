@@ -1,6 +1,9 @@
-export const airbnbMarkdown = `---
-title: Secluded Log Cabin in the Forest
+export const bookingMarkdown = `---
+title: Amazing Cabin in the Forest
 description: A nature retreat powered by Comark
+page:
+  "#comment": The "page" field is custom field and exists only for demonstration, it is no part of Comark core
+  maxWidth: 1120px
 ---
 
 ::Gallery
@@ -14,7 +17,7 @@ description: A nature retreat powered by Comark
 ![Private deck overlooking the forest](https://picsum.photos/seed/cabin/400/300)
 ::
 
-# Amazing Cabin in the Forest
+# {{ frontmatter.title }}
 
 Entire cabin · 4 guests · 2 bedrooms · 2 beds · 1 bath
 
@@ -23,7 +26,7 @@ Entire cabin · 4 guests · 2 bedrooms · 2 beds · 1 bath
 Guest favorite
 
 #description
-One of the most loved homes on Airbnb, according to guests
+One of the most loved homes to book, according to guests
 ::
 
 \`\`\`json-render
@@ -113,6 +116,9 @@ Mobile signal is unreliable past the village. Download offline maps before you a
 export const allFeaturesMarkdown = `---
 title: Hello Comark
 description: A Comark playground
+page:
+  "#comment": The "page" field is custom field and exists only for demonstration, it is no part of Comark core
+  maxWidth: 1120px
 ---
 
 # Hello Comark
@@ -206,6 +212,9 @@ Comark supports footnotes[^1] with automatic numbering and back-references[^2].
 export const recipeMarkdown = `---
 title: Gratin Dauphinois
 description: A classic French comfort dish powered by Comark
+page:
+  "#comment": The "page" field is custom field and exists only for demonstration, it is no part of Comark core
+  maxWidth: 1120px
 ---
 
 ::Gallery{cover}
@@ -283,9 +292,9 @@ Slice the potatoes directly into the dish — rinsing them washes away the starc
 `
 
 export const playgroundExamples: { label: string, value: string, content: string }[] = [
-  { label: 'Airbnb', value: 'airbnb', content: airbnbMarkdown },
+  { label: 'Booking', value: 'booking', content: bookingMarkdown },
   { label: 'Recipe', value: 'recipe', content: recipeMarkdown },
   { label: 'All Features', value: 'all-features', content: allFeaturesMarkdown },
 ]
 
-export const defaultMarkdown = airbnbMarkdown
+export const defaultMarkdown = bookingMarkdown

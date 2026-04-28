@@ -42,6 +42,6 @@ This policy applies to all packages in the Comark monorepo:
 
 ## Built-in Security
 
-Comark includes a built-in [security plugin](https://comark.dev/plugins/core/security) (`comark/plugins/security`) that provides XSS sanitization. We recommend enabling it when rendering user-generated content.
+Comark includes a built-in [security plugin](https://comark.dev/plugins/built-in/security) (`comark/plugins/security`) that provides XSS sanitization. We recommend enabling it when rendering user-generated content.
 
 Thank you for helping keep Comark and its users safe.
