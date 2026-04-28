@@ -10,13 +10,14 @@ const CR = '\r'
  * @param content - The content to parse
  * @returns The content and data
  */
-export function parseFrontmatter(content: string): { content: string, data: Record<string, any> } {
+export function parseFrontmatter(content: string) {
   let data: Record<string, any> = {}
+  let frontmatter = ''
   if (content.startsWith(FRONTMATTER_DELIMITER_DEFAULT)) {
     const idx = content.indexOf(LF + FRONTMATTER_DELIMITER_DEFAULT)
     if (idx !== -1) {
       const hasCarriageReturn = content[idx - 1] === CR
-      const frontmatter = content.slice(4, idx - (hasCarriageReturn ? 1 : 0))
+      frontmatter = content.slice(4, idx - (hasCarriageReturn ? 1 : 0))
       if (frontmatter) {
         data = parseYaml(frontmatter)
         content = content.slice(idx + 4 + (hasCarriageReturn ? 1 : 0))
@@ -27,6 +28,7 @@ export function parseFrontmatter(content: string): { content: string, data: Reco
   return {
     content,
     data,
+    frontmatterText: frontmatter,
   }
 }
 

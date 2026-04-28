@@ -106,7 +106,13 @@ export function createParse(options: ParseOptions = {}): ComarkParseFn {
       await plugin.pre?.(state)
     }
 
-    const { content, data } = parseFrontmatter(state.markdown)
+    const { content, data, frontmatterText } = parseFrontmatter(state.markdown)
+
+    // Count frontmatter lines for line number tracking
+    if (frontmatterText) {
+      state.parsedLines += frontmatterText.split('\n').length // Number of lines in frontmatter
+        + 1 // Separator line
+    }
 
     try {
       state.tokens = parser.parse(content, {})
