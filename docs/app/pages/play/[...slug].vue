@@ -29,17 +29,22 @@ const components = {
 }
 
 const route = useRoute()
-const slug = computed(() => Array.isArray(route.params.slug) ? route.params.slug.join('/') : route.params.slug as string)
+const slug = computed(() =>
+  Array.isArray(route.params.slug) ? route.params.slug.join('/') : (route.params.slug as string)
+)
 const markdown = ref(
   slug.value
-    ? playgroundExamples.find(example => example.value === slug.value)?.content
-    : playgroundExamples[0].content,
+    ? playgroundExamples.find((example) => example.value === slug.value)?.content
+    : playgroundExamples[0].content
 )
 const parse = createParse({
   plugins: [jsonRenderer(), binding()],
 })
 
-const { data: page, refresh } = await useAsyncData(() => `play-${slug.value}`, () => parse(markdown.value))
+const { data: page, refresh } = await useAsyncData(
+  () => `play-${slug.value}`,
+  () => parse(markdown.value)
+)
 if (!page.value) {
   throw createError({
     statusCode: 404,
@@ -112,8 +117,7 @@ function onResizeMove(e: PointerEvent) {
   if (dir.includes('e')) {
     const maxW = windowWidth.value - resizeStart.x
     editorWidth.value = Math.max(MIN_WIDTH, Math.min(maxW, resizeStart.w + dx))
-  }
-  else if (dir.includes('w')) {
+  } else if (dir.includes('w')) {
     const rightEdge = resizeStart.x + resizeStart.w
     const newWidth = Math.max(MIN_WIDTH, Math.min(rightEdge, resizeStart.w - dx))
     editorWidth.value = newWidth
@@ -123,8 +127,7 @@ function onResizeMove(e: PointerEvent) {
   if (dir.includes('s')) {
     const maxH = windowHeight.value - resizeStart.y
     editorHeight.value = Math.max(MIN_HEIGHT, Math.min(maxH, resizeStart.h + dy))
-  }
-  else if (dir.includes('n')) {
+  } else if (dir.includes('n')) {
     const bottomEdge = resizeStart.y + resizeStart.h
     const newHeight = Math.max(MIN_HEIGHT, Math.min(bottomEdge, resizeStart.h - dy))
     editorHeight.value = newHeight

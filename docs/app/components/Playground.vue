@@ -31,17 +31,18 @@ const props = defineProps<{
 
 const router = useRouter()
 const route = useRoute()
-const knownExamples = playgroundExamples.map(e => e.value)
+const knownExamples = playgroundExamples.map((e) => e.value)
 const selectedExample = computed({
-  get: () => knownExamples.includes(route.query.example as string) ? (route.query.example as string) : knownExamples[0],
+  get: () =>
+    knownExamples.includes(route.query.example as string) ? (route.query.example as string) : knownExamples[0],
   set: (value: string) => {
     if (knownExamples.includes(value)) {
       router.push({ query: { example: value } })
     }
   },
 })
-const currentExample = computed(() =>
-  playgroundExamples.find(e => e.value === selectedExample.value) ?? playgroundExamples[0]!,
+const currentExample = computed(
+  () => playgroundExamples.find((e) => e.value === selectedExample.value) ?? playgroundExamples[0]!
 )
 
 const markdown = ref<string>(currentExample.value.content.trim())
@@ -54,17 +55,21 @@ const parsing = ref<boolean>(false)
 const colorMode = useColorMode()
 const isDark = computed(() => colorMode.value === 'dark')
 
-const pluginToggles = useLocalStorage('comark-playground-plugins', {
-  highlight: true,
-  math: true,
-  emoji: true,
-  mermaid: true,
-  jsonRender: true,
-  footnotes: true,
-  punctuation: false,
-  breaks: false,
-  binding: true,
-}, { mergeDefaults: true })
+const pluginToggles = useLocalStorage(
+  'comark-playground-plugins',
+  {
+    highlight: true,
+    math: true,
+    emoji: true,
+    mermaid: true,
+    jsonRender: true,
+    footnotes: true,
+    punctuation: false,
+    breaks: false,
+    binding: true,
+  },
+  { mergeDefaults: true }
+)
 
 const parseOptions = useLocalStorage(
   'comark-playground-parse-options',

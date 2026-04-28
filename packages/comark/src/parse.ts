@@ -117,8 +117,9 @@ export function createParse(options: ParseOptions = {}): ComarkParseFn {
     const { content, data, frontmatterText } = parseFrontmatter(state.markdown)
     // Count frontmatter lines for line number tracking
     if (content && frontmatterText) {
-      state.parsedLines += frontmatterText.split('\n').length // Number of lines in frontmatter
-        + 1 // Separator line
+      state.parsedLines +=
+        frontmatterText.split('\n').length + // Number of lines in frontmatter
+        1 // Separator line
     }
 
     try {

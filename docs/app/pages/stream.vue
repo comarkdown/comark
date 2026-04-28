@@ -159,9 +159,7 @@ function reset() {
           class="flex justify-between items-center px-4 py-3 bg-neutral-100 dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 flex-shrink-0"
         >
           <div class="flex items-center gap-2">
-            <h3 class="text-neutral-800 dark:text-neutral-200 font-semibold">
-              Rendered Output
-            </h3>
+            <h3 class="text-neutral-800 dark:text-neutral-200 font-semibold">Rendered Output</h3>
           </div>
           <UBadge
             v-if="isStreaming && isPaused"

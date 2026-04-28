@@ -1,6 +1,6 @@
-name: "✨ Feature Request"
+name: '✨ Feature Request'
 description: Suggest a new feature or enhancement for Comark
-labels: ["enhancement", "pending triage"]
+labels: ['enhancement', 'pending triage']
 body:
   - type: markdown
     attributes:

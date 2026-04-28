@@ -71,7 +71,9 @@ import highlight from '@comark/vue/plugins/highlight'
 \`\`\`
 `
 
-const long = Array.from({ length: 20 }, (_, i) => `
+const long = Array.from(
+  { length: 20 },
+  (_, i) => `
 ## Module ${i + 1}
 
 \`\`\`typescript
@@ -84,14 +86,13 @@ export function module${i + 1}(input: string): string {
 \`\`\`bash
 npm run build:module-${i + 1}
 \`\`\`
-`).join('\n')
+`
+).join('\n')
 
 // markdown-it / markdown-exit produce flat tokens — to get syntax highlighting
 // they still need shiki. We benchmark both pipelines with the same shiki work.
-const markdownIt = new MarkdownIt({ html: true, linkify: true })
-  .enable(['table', 'strikethrough']).use(pluginMdc)
-const markdownExit = new MarkdownExit({ html: true, linkify: true })
-  .enable(['table', 'strikethrough']).use(pluginMdc)
+const markdownIt = new MarkdownIt({ html: true, linkify: true }).enable(['table', 'strikethrough']).use(pluginMdc)
+const markdownExit = new MarkdownExit({ html: true, linkify: true }).enable(['table', 'strikethrough']).use(pluginMdc)
 
 // comark: baseline vs highlight plugin
 const comark = createParse()

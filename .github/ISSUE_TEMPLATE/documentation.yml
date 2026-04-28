@@ -1,6 +1,6 @@
-name: "📖 Documentation"
+name: '📖 Documentation'
 description: Report a documentation issue or suggest an improvement
-labels: ["documentation", "pending triage"]
+labels: ['documentation', 'pending triage']
 body:
   - type: markdown
     attributes:

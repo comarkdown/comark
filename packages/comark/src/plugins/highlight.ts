@@ -130,16 +130,16 @@ async function registerDefaults(options: HighlightOptions) {
   }
   if (options.registerDefaultLanguages !== false) {
     promises.push(
-      import('shiki/dist/langs/vue.mjs').then(m => ({ type: 'lang' as const, value: m.default })),
-      import('shiki/dist/langs/tsx.mjs').then(m => ({ type: 'lang' as const, value: m.default })),
-      import('shiki/dist/langs/svelte.mjs').then(m => ({ type: 'lang' as const, value: m.default })),
-      import('shiki/dist/langs/typescript.mjs').then(m => ({ type: 'lang' as const, value: m.default })),
-      import('shiki/dist/langs/javascript.mjs').then(m => ({ type: 'lang' as const, value: m.default })),
+      import('shiki/dist/langs/vue.mjs').then((m) => ({ type: 'lang' as const, value: m.default })),
+      import('shiki/dist/langs/tsx.mjs').then((m) => ({ type: 'lang' as const, value: m.default })),
+      import('shiki/dist/langs/svelte.mjs').then((m) => ({ type: 'lang' as const, value: m.default })),
+      import('shiki/dist/langs/typescript.mjs').then((m) => ({ type: 'lang' as const, value: m.default })),
+      import('shiki/dist/langs/javascript.mjs').then((m) => ({ type: 'lang' as const, value: m.default })),
       // import('shiki/dist/langs/mdc.mjs').then(m => ({ type: 'lang' as const, value: m.default })),
-      import('shiki/dist/langs/bash.mjs').then(m => ({ type: 'lang' as const, value: m.default })),
-      import('shiki/dist/langs/json.mjs').then(m => ({ type: 'lang' as const, value: m.default })),
-      import('shiki/dist/langs/yaml.mjs').then(m => ({ type: 'lang' as const, value: m.default })),
-      import('shiki/dist/langs/astro.mjs').then(m => ({ type: 'lang' as const, value: m.default })),
+      import('shiki/dist/langs/bash.mjs').then((m) => ({ type: 'lang' as const, value: m.default })),
+      import('shiki/dist/langs/json.mjs').then((m) => ({ type: 'lang' as const, value: m.default })),
+      import('shiki/dist/langs/yaml.mjs').then((m) => ({ type: 'lang' as const, value: m.default })),
+      import('shiki/dist/langs/astro.mjs').then((m) => ({ type: 'lang' as const, value: m.default }))
     )
   }
 
@@ -203,7 +203,10 @@ function hastToComarkNode(input: any): ComarkNode {
  * Uses codeToTokens API with batched async operations
  */
 export async function highlightCodeBlocks(tree: ComarkTree, options: HighlightOptions = {}): Promise<ComarkTree> {
-  interface CodeBlockRef { node: ComarkNode, path: number[] }
+  interface CodeBlockRef {
+    node: ComarkNode
+    path: number[]
+  }
 
   const codeBlocks: CodeBlockRef[] = []
   const pathBuf: number[] = []
@@ -253,7 +256,7 @@ export async function highlightCodeBlocks(tree: ComarkTree, options: HighlightOp
   }
 
   // eslint-disable-next-line unicorn/no-new-array -- pre-allocated for perf
-  const highlightedResults: Array<{ nodes: ComarkNode[], language: string }> = new Array(codeBlocks.length)
+  const highlightedResults: Array<{ nodes: ComarkNode[]; language: string }> = new Array(codeBlocks.length)
   for (let i = 0; i < codeBlocks.length; i++) {
     const { node } = codeBlocks[i]
     const code = (node[2] as any)[2] as string
@@ -272,8 +275,7 @@ export async function highlightCodeBlocks(tree: ComarkTree, options: HighlightOp
         nodes: result.children.map(hastToComarkNode) as ComarkNode[],
         language,
       }
-    }
-    catch {
+    } catch {
       highlightedResults[i] = { nodes: [code], language }
     }
   }
@@ -291,16 +293,14 @@ export async function highlightCodeBlocks(tree: ComarkTree, options: HighlightOp
     let classStr: string
     if (typeof preNode === 'string') {
       classStr = 'shiki' + (options.themes?.light?.name ? ` ${options.themes.light.name}` : '')
-    }
-    else {
+    } else {
       const cls = (preNode[1] as ComarkElementAttributes).class
       classStr = Array.isArray(cls) ? cls.join(' ') : String(cls)
     }
     if (darkClassSuffix) classStr += darkClassSuffix
 
-    const codeChildren = typeof preNode === 'string'
-      ? preNode
-      : (preNode[2] as ComarkElement).slice(2) as ComarkNode[]
+    const codeChildren =
+      typeof preNode === 'string' ? preNode : ((preNode[2] as ComarkElement).slice(2) as ComarkNode[])
 
     if (Array.isArray(codeChildren)) {
       const highlightSet = Array.isArray(preAttrs.highlights) ? new Set<number>(preAttrs.highlights) : null
@@ -359,15 +359,13 @@ export async function highlightCodeBlocks(tree: ComarkTree, options: HighlightOp
       codeNode[1] = codeAttrs
       for (let j = 0; j < codeChildren.length; j++) codeNode[j + 2] = codeChildren[j]
       newPreNode = ['pre', newPreAttrs, codeNode]
-    }
-    else {
+    } else {
       newPreNode = ['pre', newPreAttrs, ['code', codeAttrs, codeChildren]]
     }
 
     if (path.length === 1) {
       newNodes[path[0]] = newPreNode
-    }
-    else {
+    } else {
       // Copy only the spine from root to this node to preserve immutability
       const rootIdx = path[0]
       let current = [...(newNodes[rootIdx] as ComarkElement)] as ComarkElement

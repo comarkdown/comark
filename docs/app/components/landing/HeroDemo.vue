@@ -76,14 +76,16 @@ function replay() {
 onMounted(() => {
   let timeout
   if (!props.demoMarkdown) {
-    watch(() => props.demoMarkdown, (newValue, oldValue) => {
-      if (!oldValue) {
-        if (timeout) clearTimeout(timeout)
-        timeout = setTimeout(startStream, 400)
+    watch(
+      () => props.demoMarkdown,
+      (newValue, oldValue) => {
+        if (!oldValue) {
+          if (timeout) clearTimeout(timeout)
+          timeout = setTimeout(startStream, 400)
+        }
       }
-    })
-  }
-  else {
+    )
+  } else {
     setTimeout(startStream, 200)
   }
 })
