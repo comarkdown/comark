@@ -50,6 +50,7 @@ function startStream() {
   const chunkSize = 4
 
   function next() {
+    if (!props.demoMarkdown) return
     if (i >= props.demoMarkdown.length) {
       isStreaming.value = false
       return
@@ -73,7 +74,18 @@ function replay() {
 }
 
 onMounted(() => {
-  setTimeout(startStream, 200)
+  let timeout
+  if (!props.demoMarkdown) {
+    watch(() => props.demoMarkdown, (newValue, oldValue) => {
+      if (!oldValue) {
+        if (timeout) clearTimeout(timeout)
+        timeout = setTimeout(startStream, 400)
+      }
+    })
+  }
+  else {
+    setTimeout(startStream, 200)
+  }
 })
 
 onBeforeUnmount(() => {

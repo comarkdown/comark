@@ -27,7 +27,7 @@ useEventListener(document, 'keydown', (e: KeyboardEvent) => {
 <template>
   <div
     v-if="cover"
-    class="not-prose relative mb-6 h-80 overflow-hidden rounded-xl [&>p]:m-0 [&>p]:h-full [&_img]:block [&_img]:size-full [&_img]:cursor-zoom-in [&_img]:object-cover"
+    class="not-prose relative mb-6 h-[calc(60vh - 64px)] overflow-hidden rounded-xl [&>p]:m-0 [&>p]:h-full [&_img]:block [&_img]:size-full [&_img]:cursor-zoom-in [&_img]:object-cover"
     @click.capture="handleClick"
   >
     <slot />
@@ -35,7 +35,7 @@ useEventListener(document, 'keydown', (e: KeyboardEvent) => {
 
   <div
     v-else
-    class="not-prose relative mb-6 grid h-72 grid-cols-[2fr_1fr_1fr] grid-rows-2 gap-2 overflow-hidden rounded-xl"
+    class="not-prose relative mb-6 grid [calc(60vh - 64px)] grid-cols-[2fr_1fr_1fr] grid-rows-2 gap-2 overflow-hidden rounded-xl"
     @click.capture="handleClick"
   >
     <div class="row-span-2 overflow-hidden [&_img]:block [&_img]:size-full [&_img]:cursor-zoom-in [&_img]:object-cover">

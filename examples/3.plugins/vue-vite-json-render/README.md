@@ -62,5 +62,5 @@ This example demonstrates how to use Comark with JSON Render and YAML Render in 
 
 ## Learn More
 
-- [JSON Render Plugin Documentation](/plugins/core/json-render)
+- [JSON Render Plugin Documentation](/plugins/built-in/json-render)
 - [JSON Render](https://json-render.dev/)

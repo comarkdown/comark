@@ -107,15 +107,15 @@ export default defineAppConfig({
         links: [
           {
             label: 'Syntax Highlighting',
-            to: '/plugins/core/highlight',
+            to: '/plugins/built-in/highlight',
           },
           {
             label: 'Math',
-            to: '/plugins/core/math',
+            to: '/plugins/built-in/math',
           },
           {
             label: 'Mermaid',
-            to: '/plugins/core/mermaid',
+            to: '/plugins/built-in/mermaid',
           },
         ],
       },

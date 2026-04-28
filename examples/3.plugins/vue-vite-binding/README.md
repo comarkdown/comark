@@ -66,4 +66,4 @@ Bindings resolve against four namespaces:
 | `data`        | The `data` prop passed to `<Comark>`                   |
 | `props`       | Props of the enclosing Comark component                |
 
-See the [Binding plugin docs](/plugins/core/binding) and the [data binding contract](/syntax/components#data-binding) for the full reference.
+See the [Binding plugin docs](/plugins/built-in/binding) and the [data binding contract](/syntax/components#data-binding) for the full reference.

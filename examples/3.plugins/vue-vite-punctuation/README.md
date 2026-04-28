@@ -42,5 +42,5 @@ import punctuation from '@comark/vue/plugins/punctuation'
 
 ## Learn More
 
-- [Punctuation Plugin Documentation](/plugins/core/punctuation)
+- [Punctuation Plugin Documentation](/plugins/built-in/punctuation)
 - [Comark Documentation](https://comark.dev)
