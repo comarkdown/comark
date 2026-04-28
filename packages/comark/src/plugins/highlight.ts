@@ -283,8 +283,7 @@ export async function highlightCodeBlocks(tree: ComarkTree, options: HighlightOp
         const cls = (preNode[1] as ComarkElementAttributes).class
         classStr = Array.isArray(cls) ? cls.join(' ') : String(cls)
         codeChildren = (preNode[2] as ComarkElement).slice(2) as ComarkNode[]
-      }
-      else {
+      } else {
         // Fast path: build ComarkNodes directly from tokens, skipping hast
         const result = codeToTokens(hl, code, {
           lang: language,
@@ -305,22 +304,22 @@ export async function highlightCodeBlocks(tree: ComarkTree, options: HighlightOp
           const spans: ComarkNode[] = []
           for (let t = 0; t < spanCount; t++) {
             const tk = line[t]
-            const canMerge = !(tk.fontStyle && (tk.fontStyle & 8 /* Strikethrough */ || tk.fontStyle & 4 /* Underline */))
+            const canMerge = !(
+              tk.fontStyle &&
+              (tk.fontStyle & 8 /* Strikethrough */ || tk.fontStyle & 4) /* Underline */
+            )
             if (canMerge && /^\s+$/.test(tk.content) && t + 1 < spanCount) {
               carry += tk.content
-            }
-            else if (carry) {
+            } else if (carry) {
               const style = stringifyTokenStyle(tk.htmlStyle || getTokenStyleObject(tk))
               if (canMerge) {
                 spans.push(style ? ['span', { style }, carry + tk.content] : ['span', {}, carry + tk.content])
-              }
-              else {
+              } else {
                 spans.push(['span', {}, carry])
                 spans.push(style ? ['span', { style }, tk.content] : ['span', {}, tk.content])
               }
               carry = ''
-            }
-            else {
+            } else {
               const style = stringifyTokenStyle(tk.htmlStyle || getTokenStyleObject(tk))
               spans.push(style ? ['span', { style }, tk.content] : ['span', {}, tk.content])
             }
@@ -340,8 +339,7 @@ export async function highlightCodeBlocks(tree: ComarkTree, options: HighlightOp
           if (li < tokenLines.length - 1) codeChildren.push('\n')
         }
       }
-    }
-    catch {
+    } catch {
       classStr = 'shiki'
       codeChildren = [code]
     }
@@ -357,8 +355,7 @@ export async function highlightCodeBlocks(tree: ComarkTree, options: HighlightOp
           child[1].class = `${child[1].class ?? ''} highlight`.trim()
           // TODO: (enforcing default style) once we unify all ecosystem styles we can remove this
           child[1].style = 'display: inline-block'
-        }
-        else {
+        } else {
           // TODO: (enforcing default style) once we unify all ecosystem styles we can remove this
           child[1].style = 'display: inline'
         }
