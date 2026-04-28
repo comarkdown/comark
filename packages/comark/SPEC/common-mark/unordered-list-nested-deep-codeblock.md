@@ -23,21 +23,33 @@
       [
         "li",
         {},
-        "Level 1",
+        [
+          "p",
+          {},
+          "Level 1"
+        ],
         [
           "ul",
           {},
           [
             "li",
             {},
-            "Level 2",
+            [
+              "p",
+              {},
+              "Level 2"
+            ],
             [
               "ul",
               {},
               [
                 "li",
                 {},
-                "Level 3 with code:",
+                [
+                  "p",
+                  {},
+                  "Level 3 with code:"
+                ],
                 [
                   "pre",
                   {
@@ -66,13 +78,14 @@
 ```html
 <ul>
   <li>
-    Level 1
+    <p>Level 1</p>
     <ul>
       <li>
-        Level 2
+        <p>Level 2</p>
         <ul>
           <li>
-            Level 3 with code:<pre language="py"><code class="language-py">print("deep")</code></pre>
+            <p>Level 3 with code:</p>
+            <pre language="py"><code class="language-py">print("deep")</code></pre>
           </li>
         </ul>
       </li>

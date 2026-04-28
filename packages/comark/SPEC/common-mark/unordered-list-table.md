@@ -21,7 +21,11 @@
       [
         "li",
         {},
-        "Item with table:",
+        [
+          "p",
+          {},
+          "Item with table:"
+        ],
         [
           "table",
           {},
@@ -73,7 +77,7 @@
 ```html
 <ul>
   <li>
-    Item with table:
+    <p>Item with table:</p>
     <table>
       <thead>
         <tr>

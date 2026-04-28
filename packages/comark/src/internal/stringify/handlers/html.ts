@@ -1,7 +1,7 @@
 import type { State } from 'comark/render'
 import type { ComarkElement } from 'comark'
 import { htmlAttributes } from '../attributes.ts'
-import { indent } from '../indent.ts'
+import { indent } from '../../../utils/index.ts'
 
 const textBlocks = new Set(['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'li', 'td', 'th'])
 const selfCloseTags = new Set(['br', 'hr', 'img', 'input', 'link', 'meta', 'source', 'track', 'wbr'])

@@ -1,9 +1,9 @@
 ## Input
 
 ```md
-- Item with quote:
+- para1
 
-  > This is a blockquote
+  para2
 ```
 
 ## AST
@@ -22,12 +22,12 @@
         [
           "p",
           {},
-          "Item with quote:"
+          "para1"
         ],
         [
-          "blockquote",
+          "p",
           {},
-          "This is a blockquote"
+          "para2"
         ]
       ]
     ]
@@ -40,10 +40,8 @@
 ```html
 <ul>
   <li>
-    <p>Item with quote:</p>
-    <blockquote>
-      This is a blockquote
-    </blockquote>
+    <p>para1</p>
+    <p>para2</p>
   </li>
 </ul>
 ```
@@ -51,6 +49,7 @@
 ## Markdown
 
 ```md
-- Item with quote:
-  > This is a blockquote
+- para1
+
+  para2
 ```

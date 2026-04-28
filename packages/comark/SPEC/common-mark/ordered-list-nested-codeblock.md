@@ -22,14 +22,22 @@
       [
         "li",
         {},
-        "First level",
+        [
+          "p",
+          {},
+          "First level"
+        ],
         [
           "ol",
           {},
           [
             "li",
             {},
-            "Second level with code:",
+            [
+              "p",
+              {},
+              "Second level with code:"
+            ],
             [
               "pre",
               {
@@ -56,10 +64,11 @@
 ```html
 <ol>
   <li>
-    First level
+    <p>First level</p>
     <ol>
       <li>
-        Second level with code:<pre language="rust"><code class="language-rust">let x = 42;</code></pre>
+        <p>Second level with code:</p>
+        <pre language="rust"><code class="language-rust">let x = 42;</code></pre>
       </li>
     </ol>
   </li>

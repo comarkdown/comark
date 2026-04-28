@@ -411,18 +411,8 @@ function processBlockToken(
   if (token.type === 'list_item_open') {
     const attrs = processAttributes(token.attrs, { handleBoolean: false, handleJSON: false })
     const children = processBlockChildren(tokens, startIndex + 1, 'list_item_close', false, false, true, state)
-    // Unwrap paragraphs in list items
-    const unwrapped: ComarkNode[] = []
-    for (const child of children.nodes) {
-      if (Array.isArray(child) && child[0] === 'p') {
-        // Unwrap paragraph, add its children directly
-        unwrapped.push(...(child.slice(2) as ComarkNode[]))
-      } else {
-        unwrapped.push(child)
-      }
-    }
-    if (unwrapped.length > 0) {
-      return { node: ['li', attrs, ...unwrapped] as ComarkNode, nextIndex: children.nextIndex + 1 }
+    if (children.nodes.length > 0) {
+      return { node: ['li', attrs, ...children.nodes] as ComarkNode, nextIndex: children.nextIndex + 1 }
     }
     return { node: null, nextIndex: children.nextIndex + 1 }
   }

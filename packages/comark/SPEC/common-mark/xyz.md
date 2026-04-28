@@ -171,13 +171,17 @@ And here's a code block:
       [
         "li",
         {},
-        "Third item with ",
         [
-          "a",
-          {
-            "href": "https://example.com"
-          },
-          "a link"
+          "p",
+          {},
+          "Third item with ",
+          [
+            "a",
+            {
+              "href": "https://example.com"
+            },
+            "a link"
+          ]
         ],
         [
           "ul",
@@ -216,7 +220,11 @@ And here's a code block:
       [
         "li",
         {},
-        "Third numbered item",
+        [
+          "p",
+          {},
+          "Third numbered item"
+        ],
         [
           "ul",
           {},
@@ -284,7 +292,7 @@ And here's a code block:
   <li>First item</li>
   <li>Second item with <strong>bold</strong></li>
   <li>
-    Third item with <a href="https://example.com">a link</a>
+    <p>Third item with <a href="https://example.com">a link</a></p>
     <ul>
       <li>Nested item one</li>
       <li>Nested item two</li>
@@ -296,7 +304,7 @@ And here's a code block:
   <li>First numbered item</li>
   <li>Second numbered item</li>
   <li>
-    Third numbered item
+    <p>Third numbered item</p>
     <ul>
       <li>Nested unordered item</li>
       <li>Another nested item</li>

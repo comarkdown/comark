@@ -88,6 +88,22 @@ export function visit(
 
 // #region String Utils
 
+export function indent(
+  text: string,
+  { ignoreFirstLine = false, level = 1, width }: { ignoreFirstLine?: boolean; level?: number; width?: number } = {}
+) {
+  const pad = width ? ' '.repeat(width) : '  '.repeat(level)
+  return text
+    .split('\n')
+    .map((line, index) => {
+      if (ignoreFirstLine && index === 0) {
+        return line
+      }
+      return line ? pad + line : line
+    })
+    .join('\n')
+}
+
 /**
  * Convert a string to pascal case
  * @param str - The string to convert

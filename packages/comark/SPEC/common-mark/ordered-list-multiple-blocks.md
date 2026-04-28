@@ -25,7 +25,11 @@
       [
         "li",
         {},
-        "First point:",
+        [
+          "p",
+          {},
+          "First point:"
+        ],
         [
           "blockquote",
           {},
@@ -60,7 +64,7 @@
 ```html
 <ol>
   <li>
-    First point:
+    <p>First point:</p>
     <blockquote>
       A quote here
     </blockquote>

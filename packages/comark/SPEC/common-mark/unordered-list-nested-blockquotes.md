@@ -23,7 +23,11 @@
       [
         "li",
         {},
-        "Item with quote:",
+        [
+          "p",
+          {},
+          "Item with quote:"
+        ],
         [
           "blockquote",
           {},
@@ -35,7 +39,11 @@
           [
             "li",
             {},
-            "Nested item with quote:",
+            [
+              "p",
+              {},
+              "Nested item with quote:"
+            ],
             [
               "blockquote",
               {},
@@ -54,13 +62,13 @@
 ```html
 <ul>
   <li>
-    Item with quote:
+    <p>Item with quote:</p>
     <blockquote>
       Quote level 1
     </blockquote>
     <ul>
       <li>
-        Nested item with quote:
+        <p>Nested item with quote:</p>
         <blockquote>
           Quote level 2
         </blockquote>

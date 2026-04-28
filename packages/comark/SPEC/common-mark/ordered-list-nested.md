@@ -32,7 +32,11 @@
       [
         "li",
         {},
-        "Third item",
+        [
+          "p",
+          {},
+          "Third item"
+        ],
         [
           "ol",
           {},
@@ -65,7 +69,7 @@
   <li>First item</li>
   <li>Second item</li>
   <li>
-    Third item
+    <p>Third item</p>
     <ol>
       <li>Indented item</li>
       <li>Indented item</li>

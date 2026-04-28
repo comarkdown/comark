@@ -1,6 +1,6 @@
 import type { State } from 'comark/render'
 import type { ComarkElement, ComarkNode } from 'comark'
-import { indent } from '../indent.ts'
+import { indent } from '../../../utils/index.ts'
 
 // Block elements that need explicit indentation in list items.
 // Note: ol/ul are handled by their own handlers which manage indentation via listIndent context.
@@ -29,14 +29,21 @@ export async function li(node: ComarkElement, state: State) {
 
   for (const child of children) {
     const rendered = await state.one(child, state, node)
+    if (result && Array.isArray(child)) {
+      if (blockElements.has(child[0] as string)) {
+        // Block-level child: put on its own line and indent to align with list prefix
+        const indented = indent(rendered, { width: prefixWidth })
+        result = result.trimEnd() + '\n' + indented.trimEnd() + '\n'
+        continue
+      }
 
-    if (Array.isArray(child) && blockElements.has(child[0] as string)) {
-      // Block-level child: put on its own line and indent to align with list prefix
-      const indented = indent(rendered, { width: prefixWidth })
-      result = result.trimEnd() + '\n' + indented.trimEnd() + '\n'
-    } else {
-      result += rendered
+      if (child[0] === 'p') {
+        const indented = indent(rendered, { width: prefixWidth })
+        result = result.trimEnd() + '\n\n' + indented.trimEnd() + '\n'
+        continue
+      }
     }
+    result += rendered
   }
   result = result.trim()
 

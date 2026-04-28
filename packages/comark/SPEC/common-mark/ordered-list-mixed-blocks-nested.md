@@ -29,7 +29,11 @@
       [
         "li",
         {},
-        "Complex item:",
+        [
+          "p",
+          {},
+          "Complex item:"
+        ],
         [
           "pre",
           {
@@ -54,7 +58,11 @@
           [
             "li",
             {},
-            "Nested with table:",
+            [
+              "p",
+              {},
+              "Nested with table:"
+            ],
             [
               "table",
               {},
@@ -108,13 +116,14 @@
 ```html
 <ol>
   <li>
-    Complex item:<pre language="js"><code class="language-js">code()</code></pre>
+    <p>Complex item:</p>
+    <pre language="js"><code class="language-js">code()</code></pre>
     <blockquote>
       A note
     </blockquote>
     <ul>
       <li>
-        Nested with table:
+        <p>Nested with table:</p>
         <table>
           <thead>
             <tr>
