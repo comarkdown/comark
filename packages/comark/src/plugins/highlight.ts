@@ -4,6 +4,7 @@ import { defineComarkPlugin } from '../utils/helpers.ts'
 import { createShikiPrimitive } from 'shiki'
 import { createJavaScriptRegexEngine } from 'shiki/engine/javascript'
 import { codeToHast } from 'shiki/core'
+import comakLanguage from '../utils/comark.tmLanguage.ts'
 
 export interface HighlightOptions {
   /**
@@ -129,7 +130,7 @@ async function registerDefaults(options: HighlightOptions) {
       import('shiki/dist/langs/svelte.mjs').then(m => ({ type: 'lang' as const, value: m.default })),
       import('shiki/dist/langs/typescript.mjs').then(m => ({ type: 'lang' as const, value: m.default })),
       import('shiki/dist/langs/javascript.mjs').then(m => ({ type: 'lang' as const, value: m.default })),
-      import('shiki/dist/langs/mdc.mjs').then(m => ({ type: 'lang' as const, value: m.default })),
+      // import('shiki/dist/langs/mdc.mjs').then(m => ({ type: 'lang' as const, value: m.default })),
       import('shiki/dist/langs/bash.mjs').then(m => ({ type: 'lang' as const, value: m.default })),
       import('shiki/dist/langs/json.mjs').then(m => ({ type: 'lang' as const, value: m.default })),
       import('shiki/dist/langs/yaml.mjs').then(m => ({ type: 'lang' as const, value: m.default })),
@@ -142,6 +143,8 @@ async function registerDefaults(options: HighlightOptions) {
     if (result.type === 'theme') themes.push(result.value)
     else languages.push(result.value)
   }
+  // Remove custom language after updating language in shiki core
+  languages.push(comakLanguage as LanguageRegistration)
 
   return { themes, languages }
 }
@@ -189,55 +192,10 @@ function hastToComarkNode(input: any): ComarkNode {
 }
 
 /**
- * Highlight code using Shiki with codeToTokens
- * Returns comark nodes built from hast
- */
-export async function highlightCode(code: string, attrs: CodeBlockAttributes, options: HighlightOptions = {}): Promise<{ nodes: ComarkNode[], language: string, bgColor?: string, fgColor?: string }> {
-  // Extract language from attributes
-  const language: string = (attrs as any)?.language
-  try {
-    const hl = await getHighlighter(options)
-    const { themes = { light: 'material-theme-lighter', dark: 'material-theme-palenight' } } = options
-
-    const lightTheme = themes.light || themes.dark || 'material-theme-lighter'
-    const darkTheme = themes.dark || themes.light || 'material-theme-palenight'
-    // Use codeToTokens to get raw tokens
-    const result = await codeToHast(hl, code, {
-      lang: language,
-      transformers: options.transformers,
-      themes: {
-        light: lightTheme,
-        dark: lightTheme !== darkTheme ? darkTheme : undefined,
-      },
-      meta: {
-        __raw: attrs.meta,
-      },
-    })
-    const allTokens = result.children.map(hastToComarkNode) as ComarkNode[]
-
-    return {
-      nodes: allTokens,
-      language,
-    }
-  }
-  catch (error) {
-    // If highlighting fails, return the original code
-    console.error('Shiki highlighting error:', error)
-    return {
-      nodes: [code],
-      language,
-    }
-  }
-}
-
-/**
  * Apply syntax highlighting to all code blocks in a Comark tree
  * Uses codeToTokens API with batched async operations
  */
-export async function highlightCodeBlocks(
-  tree: ComarkTree,
-  options: HighlightOptions = {},
-): Promise<ComarkTree> {
+export async function highlightCodeBlocks(tree: ComarkTree, options: HighlightOptions = {}): Promise<ComarkTree> {
   interface CodeBlockRef { node: ComarkNode, path: number[] }
 
   const codeBlocks: CodeBlockRef[] = []
@@ -287,7 +245,6 @@ export async function highlightCodeBlocks(
     dark: lightTheme !== darkTheme ? darkTheme : undefined,
   }
 
-  // codeToHast (shiki/core) is synchronous, so we loop directly instead of using Promise.all
   // eslint-disable-next-line unicorn/no-new-array -- pre-allocated for perf
   const highlightedResults: Array<{ nodes: ComarkNode[], language: string }> = new Array(codeBlocks.length)
   for (let i = 0; i < codeBlocks.length; i++) {
