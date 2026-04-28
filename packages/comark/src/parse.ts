@@ -87,7 +87,8 @@ export function createParse(options: ParseOptions = {}): ComarkParseFn {
     }
 
     const prevOutput = lastOutput
-    if (opts.streaming && prevOutput && markdown.startsWith(lastInput ?? '')) {
+    const isStartsWithLastInput = markdown.startsWith(lastInput ?? '')
+    if (opts.streaming && prevOutput && isStartsWithLastInput) {
       const { remainingMarkdownStartLine, reusedNodes, remainingMarkdown } = extractReusableNodes(markdown, prevOutput)
 
       // If there is no remaining markdown, return the previous output
@@ -107,9 +108,8 @@ export function createParse(options: ParseOptions = {}): ComarkParseFn {
     }
 
     const { content, data, frontmatterText } = parseFrontmatter(state.markdown)
-
     // Count frontmatter lines for line number tracking
-    if (frontmatterText) {
+    if (content && frontmatterText) {
       state.parsedLines += frontmatterText.split('\n').length // Number of lines in frontmatter
         + 1 // Separator line
     }
@@ -139,7 +139,7 @@ export function createParse(options: ParseOptions = {}): ComarkParseFn {
 
     if (opts.streaming) {
       state.tree = {
-        frontmatter: state.parsedLines > 0 ? (prevOutput?.frontmatter ?? data) : data,
+        frontmatter: frontmatterText ? data : (prevOutput?.frontmatter ?? data),
         meta: {},
         nodes: [...state.reusableNodes, ...nodes],
       }
