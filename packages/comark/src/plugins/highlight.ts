@@ -3,7 +3,7 @@ import type { ComarkElement, ComarkNode, ComarkTree, ComarkElementAttributes } f
 import { defineComarkPlugin } from '../utils/helpers.ts'
 import { createShikiPrimitive } from 'shiki'
 import { createJavaScriptRegexEngine } from 'shiki/engine/javascript'
-import { codeToHast } from 'shiki/core'
+import { codeToHast, codeToTokens, getTokenStyleObject, stringifyTokenStyle } from 'shiki/core'
 import comakLanguage from '../utils/comark.tmLanguage.ts'
 
 export interface HighlightOptions {
@@ -255,69 +255,115 @@ export async function highlightCodeBlocks(tree: ComarkTree, options: HighlightOp
     dark: lightTheme !== darkTheme ? darkTheme : undefined,
   }
 
-  // eslint-disable-next-line unicorn/no-new-array -- pre-allocated for perf
-  const highlightedResults: Array<{ nodes: ComarkNode[]; language: string }> = new Array(codeBlocks.length)
-  for (let i = 0; i < codeBlocks.length; i++) {
-    const { node } = codeBlocks[i]
-    const code = (node[2] as any)[2] as string
-    const attrs = node[1] as CodeBlockAttributes
-    const language: string = (attrs as any)?.language
-    try {
-      const result = codeToHast(hl, code, {
-        lang: language,
-        transformers: options.transformers,
-        themes: themeOptions,
-        meta: {
-          __raw: attrs.meta,
-        },
-      })
-      highlightedResults[i] = {
-        nodes: result.children.map(hastToComarkNode) as ComarkNode[],
-        language,
-      }
-    } catch {
-      highlightedResults[i] = { nodes: [code], language }
-    }
-  }
-
+  const hasTransformers = options.transformers && options.transformers.length > 0
   const darkClassSuffix = options.themes?.dark?.name ? ` dark:${options.themes.dark.name}` : ''
 
   // Build new nodes array, spine-copying only paths to modified <pre> nodes
   const newNodes = [...tree.nodes] as ComarkNode[]
   for (let i = 0; i < codeBlocks.length; i++) {
     const { node, path } = codeBlocks[i]
-    const preAttrs = node[1] as Record<string, any>
-    const result = highlightedResults[i]
+    const code = (node[2] as any)[2] as string
+    const attrs = node[1] as CodeBlockAttributes
+    const preAttrs = attrs as Record<string, any>
+    const language: string = (attrs as any)?.language
 
-    const preNode = result.nodes[0]
     let classStr: string
-    if (typeof preNode === 'string') {
-      classStr = 'shiki' + (options.themes?.light?.name ? ` ${options.themes.light.name}` : '')
-    } else {
-      const cls = (preNode[1] as ComarkElementAttributes).class
-      classStr = Array.isArray(cls) ? cls.join(' ') : String(cls)
-    }
-    if (darkClassSuffix) classStr += darkClassSuffix
+    let codeChildren: ComarkNode[]
 
-    const codeChildren =
-      typeof preNode === 'string' ? preNode : ((preNode[2] as ComarkElement).slice(2) as ComarkNode[])
+    try {
+      if (hasTransformers) {
+        // Transformers operate on hast, so we must go through codeToHast
+        const result = codeToHast(hl, code, {
+          lang: language,
+          transformers: options.transformers,
+          themes: themeOptions,
+          meta: { __raw: attrs.meta },
+        })
+        const preNode = result.children.map(hastToComarkNode)[0] as ComarkElement
+        const cls = (preNode[1] as ComarkElementAttributes).class
+        classStr = Array.isArray(cls) ? cls.join(' ') : String(cls)
+        codeChildren = (preNode[2] as ComarkElement).slice(2) as ComarkNode[]
+      }
+      else {
+        // Fast path: build ComarkNodes directly from tokens, skipping hast
+        const result = codeToTokens(hl, code, {
+          lang: language,
+          themes: themeOptions,
+        })
+        classStr = `shiki ${result.themeName || ''}`
 
-    if (Array.isArray(codeChildren)) {
-      const highlightSet = Array.isArray(preAttrs.highlights) ? new Set<number>(preAttrs.highlights) : null
-      let line = 1
-      for (const child of codeChildren) {
-        if (Array.isArray(child)) {
-          if (highlightSet !== null && highlightSet.has(line)) {
-            child[1].class = `${child[1].class ?? ''} highlight`.trim()
-            // TODO: (enforcing default style) once we unify all ecosystem styles we can remove this
-            child[1].style = 'display: inline-block'
-          } else {
-            // TODO: (enforcing default style) once we unify all ecosystem styles we can remove this
-            child[1].style = 'display: inline'
+        // Replicate shiki's mergeWhitespaceTokens: merge pure-whitespace tokens
+        // into the following token (unless underline/strikethrough styled)
+        const tokenLines = result.tokens
+        codeChildren = []
+        for (let li = 0; li < tokenLines.length; li++) {
+          const line = tokenLines[li]
+          const spanCount = line.length
+
+          // Merge whitespace tokens inline while building spans
+          let carry = ''
+          const spans: ComarkNode[] = []
+          for (let t = 0; t < spanCount; t++) {
+            const tk = line[t]
+            const canMerge = !(tk.fontStyle && (tk.fontStyle & 8 /* Strikethrough */ || tk.fontStyle & 4 /* Underline */))
+            if (canMerge && /^\s+$/.test(tk.content) && t + 1 < spanCount) {
+              carry += tk.content
+            }
+            else if (carry) {
+              const style = stringifyTokenStyle(tk.htmlStyle || getTokenStyleObject(tk))
+              if (canMerge) {
+                spans.push(style ? ['span', { style }, carry + tk.content] : ['span', {}, carry + tk.content])
+              }
+              else {
+                spans.push(['span', {}, carry])
+                spans.push(style ? ['span', { style }, tk.content] : ['span', {}, tk.content])
+              }
+              carry = ''
+            }
+            else {
+              const style = stringifyTokenStyle(tk.htmlStyle || getTokenStyleObject(tk))
+              spans.push(style ? ['span', { style }, tk.content] : ['span', {}, tk.content])
+            }
+          }
+          // If trailing whitespace wasn't merged, emit it
+          if (carry) {
+            spans.push(['span', {}, carry])
           }
 
-          line += 1
+          // eslint-disable-next-line unicorn/no-new-array -- pre-allocated for perf
+          const lineNode = new Array(spans.length + 2) as ComarkElement
+          lineNode[0] = 'span'
+          lineNode[1] = { class: 'line' }
+          for (let s = 0; s < spans.length; s++) lineNode[s + 2] = spans[s]
+
+          codeChildren.push(lineNode as ComarkNode)
+          if (li < tokenLines.length - 1) codeChildren.push('\n')
         }
+      }
+    }
+    catch {
+      classStr = 'shiki'
+      codeChildren = [code]
+    }
+
+    if (darkClassSuffix) classStr += darkClassSuffix
+
+    // Apply line highlights
+    const highlightSet = Array.isArray(preAttrs.highlights) ? new Set<number>(preAttrs.highlights) : null
+    let line = 1
+    for (const child of codeChildren) {
+      if (Array.isArray(child)) {
+        if (highlightSet !== null && highlightSet.has(line)) {
+          child[1].class = `${child[1].class ?? ''} highlight`.trim()
+          // TODO: (enforcing default style) once we unify all ecosystem styles we can remove this
+          child[1].style = 'display: inline-block'
+        }
+        else {
+          // TODO: (enforcing default style) once we unify all ecosystem styles we can remove this
+          child[1].style = 'display: inline'
+        }
+
+        line += 1
       }
     }
 
@@ -351,17 +397,12 @@ export async function highlightCodeBlocks(tree: ComarkTree, options: HighlightOp
 
     const codeEl = node[2] as ComarkElement
     const codeAttrs = (codeEl[1] as Record<string, any>) || {}
-    let newPreNode: ComarkNode
-    if (Array.isArray(codeChildren)) {
-      // eslint-disable-next-line unicorn/no-new-array -- pre-allocated for perf
-      const codeNode = new Array(codeChildren.length + 2) as ComarkElement
-      codeNode[0] = 'code'
-      codeNode[1] = codeAttrs
-      for (let j = 0; j < codeChildren.length; j++) codeNode[j + 2] = codeChildren[j]
-      newPreNode = ['pre', newPreAttrs, codeNode]
-    } else {
-      newPreNode = ['pre', newPreAttrs, ['code', codeAttrs, codeChildren]]
-    }
+    // eslint-disable-next-line unicorn/no-new-array -- pre-allocated for perf
+    const codeNode = new Array(codeChildren.length + 2) as ComarkElement
+    codeNode[0] = 'code'
+    codeNode[1] = codeAttrs
+    for (let j = 0; j < codeChildren.length; j++) codeNode[j + 2] = codeChildren[j]
+    const newPreNode: ComarkNode = ['pre', newPreAttrs, codeNode]
 
     if (path.length === 1) {
       newNodes[path[0]] = newPreNode
