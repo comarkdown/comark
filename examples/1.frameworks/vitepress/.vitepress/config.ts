@@ -1,12 +1,12 @@
 import { defineConfig } from 'vitepress'
-import pluginMdc from '@comark/markdown-it'
+import { markdownItComark } from 'comark/plugins/syntax'
 
 export default defineConfig({
   title: 'Comark + VitePress',
   description: 'Using Comark component syntax inside VitePress.',
   markdown: {
     config(md) {
-      md.use(pluginMdc)
+      md.use(markdownItComark)
     },
   },
   themeConfig: {

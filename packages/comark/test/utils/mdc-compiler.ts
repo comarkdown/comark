@@ -86,7 +86,7 @@ export function mdcCompiler(this: any, options: CompilerOptions = {}) {
 
       const props = validateProps(node.tagName, node.properties)
 
-      // To match with @comark/markdown-it plugin
+      // To match with the Comark syntax plugin
       if (node.tagName === 'pre') {
         if (children[0]?.type === 'element' && children[0]?.tag === 'code' && children[0]?.props?.class) {
           props.class = children[0].props.class

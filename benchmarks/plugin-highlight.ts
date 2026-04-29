@@ -1,7 +1,7 @@
 import { bench, run, group, barplot } from 'mitata'
 import MarkdownIt from 'markdown-it'
 import MarkdownExit from 'markdown-exit'
-import pluginMdc from '@comark/markdown-it'
+import { markdownItComark } from 'comark/plugins/syntax'
 import { createParse } from 'comark'
 import highlight, { getHighlighter } from '../packages/comark/src/plugins/highlight'
 import { codeToHast } from 'shiki/core'
@@ -91,8 +91,12 @@ npm run build:module-${i + 1}
 
 // markdown-it / markdown-exit produce flat tokens — to get syntax highlighting
 // they still need shiki. We benchmark both pipelines with the same shiki work.
-const markdownIt = new MarkdownIt({ html: true, linkify: true }).enable(['table', 'strikethrough']).use(pluginMdc)
-const markdownExit = new MarkdownExit({ html: true, linkify: true }).enable(['table', 'strikethrough']).use(pluginMdc)
+const markdownIt = new MarkdownIt({ html: true, linkify: true })
+  .enable(['table', 'strikethrough'])
+  .use(markdownItComark)
+const markdownExit = new MarkdownExit({ html: true, linkify: true })
+  .enable(['table', 'strikethrough'])
+  .use(markdownItComark)
 
 // comark: baseline vs highlight plugin
 const comark = createParse()

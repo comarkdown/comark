@@ -7,7 +7,7 @@ import type {
   ComarkNode,
 } from './types.ts'
 import MarkdownExit from 'markdown-exit'
-import pluginMdc from '@comark/markdown-it'
+import syntax from './plugins/syntax.ts'
 import taskList from './plugins/task-list.ts'
 import alert from './plugins/alert.ts'
 import { applyAutoUnwrap } from './internal/parse/auto-unwrap.ts'
@@ -57,15 +57,14 @@ export { defineComarkPlugin } from './utils/helpers.ts'
 export function createParse(options: ParseOptions = {}): ComarkParseFn {
   const { autoUnwrap = true, autoClose = true, plugins = [] } = options
 
+  plugins.unshift(syntax())
   plugins.unshift(taskList())
   plugins.unshift(alert())
 
   const parser = new MarkdownExit({
     html: false,
     linkify: true,
-  })
-    .enable(['table', 'strikethrough'])
-    .use(pluginMdc)
+  }).enable(['table', 'strikethrough'])
 
   if (options.html !== false) {
     parser.inline.ruler.before('text', 'comark_html_inline', html_inline)

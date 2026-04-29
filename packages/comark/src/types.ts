@@ -273,6 +273,7 @@ export interface NodeRenderData {
 
 export type MarkdownExitPlugin = (md: MarkdownExit) => void
 export type MarkdownItPlugin = (md: MarkdownIt) => void
+export type MarkdownItPluginWithOptions<T> = (md: MarkdownIt, options: T) => void
 
 export type ComarkParsePreState = {
   markdown: string

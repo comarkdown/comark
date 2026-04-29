@@ -1,6 +1,6 @@
 import { bench, run, group, barplot } from 'mitata'
 import MarkdownExit from 'markdown-exit'
-import pluginMdc from '@comark/markdown-it'
+import { markdownItComark } from 'comark/plugins/syntax'
 import { createParse } from 'comark'
 import { log } from '@comark/ansi'
 import punctuation from '../packages/comark/src/plugins/punctuation'
@@ -46,7 +46,7 @@ const parserTypographer = new MarkdownExit({
   typographer: true,
 })
   .enable(['table', 'strikethrough'])
-  .use(pluginMdc)
+  .use(markdownItComark)
 
 const parserNoTypographer = new MarkdownExit({
   html: false,
@@ -54,7 +54,7 @@ const parserNoTypographer = new MarkdownExit({
   typographer: false,
 })
   .enable(['table', 'strikethrough'])
-  .use(pluginMdc)
+  .use(markdownItComark)
 
 // ── comark with full punctuation plugin (all features) ──────────────────────
 

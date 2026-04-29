@@ -763,7 +763,7 @@ function processInlineToken(
   }
 
   // Handle Comark inline span (e.g., [text]{attr})
-  // @comark/markdown-it creates mdc_inline_span tokens, and props appear AFTER the close token
+  // The syntax plugin emits mdc_inline_span tokens, and props appear AFTER the close token
   if (token.type === 'mdc_inline_span' && token.nesting === 1) {
     const attrs: Record<string, unknown> = {}
     let i = startIndex + 1
@@ -862,12 +862,12 @@ function processInlineToken(
       // Self-closing component (nesting === 0)
       const attrs: Record<string, unknown> = {}
 
-      // @comark/markdown-it stores attributes in a separate mdc_inline_props token
+      // The syntax plugin stores attributes in a separate mdc_inline_props token
       // that appears right after the component token
       const { attrs: componentAttrs, nextIndex: propsNextIndex } = extractAttributes(tokens, startIndex + 1, false)
       Object.assign(attrs, componentAttrs)
 
-      // Extract attributes from token.attrs (fallback, though @comark/markdown-it uses mdc_inline_props)
+      // Extract attributes from token.attrs (fallback, though the syntax plugin uses mdc_inline_props)
       const fallbackAttrs = processAttributes(token.attrs, { handleBoolean: false })
       Object.assign(attrs, fallbackAttrs)
 

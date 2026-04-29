@@ -45,7 +45,6 @@
   },
   "devDependencies": {
     "@comark/ansi": "workspace:*",
-    "@comark/markdown-it": "catalog:",
     "@release-it/conventional-changelog": "catalog:",
     "@types/node": "catalog:",
     "@vitejs/plugin-vue": "catalog:",

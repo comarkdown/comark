@@ -48,7 +48,6 @@
     "release:dry": "release-it --dry-run"
   },
   "dependencies": {
-    "@comark/markdown-it": "catalog:",
     "entities": "catalog:",
     "htmlparser2": "catalog:",
     "js-yaml": "catalog:",

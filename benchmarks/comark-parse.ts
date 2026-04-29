@@ -1,7 +1,7 @@
 import { bench, run, barplot, group } from 'mitata'
 import MarkdownIt from 'markdown-it'
 import MarkdownExit from 'markdown-exit'
-import pluginMdc from '@comark/markdown-it'
+import { markdownItComark } from 'comark/plugins/syntax'
 import { createParse } from 'comark'
 
 // Sample markdown content to test with
@@ -61,7 +61,7 @@ const markdownIt = new MarkdownIt({
   linkify: true,
 })
   .enable(['table', 'strikethrough'])
-  .use(pluginMdc)
+  .use(markdownItComark)
 
 // Initialize markdown-exit with MDC plugin
 const markdownExit = new MarkdownExit({
@@ -69,7 +69,7 @@ const markdownExit = new MarkdownExit({
   linkify: true,
 })
   .enable(['table', 'strikethrough'])
-  .use(pluginMdc)
+  .use(markdownItComark)
 
 const comark = createParse()
 const comarkNoClose = createParse({ autoClose: false })
