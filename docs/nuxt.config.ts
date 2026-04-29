@@ -34,6 +34,12 @@ export default defineNuxtConfig({
     },
   },
 
+  vite: {
+    optimizeDeps: {
+      include: ['debug', '@vercel/oidc'],
+    },
+  },
+
   fonts: {
     families: [
       { name: 'Geist', weights: [400, 500, 600, 700], global: true },

@@ -291,10 +291,11 @@ Slice the potatoes directly into the dish — rinsing them washes away the starc
 > For extra richness, replace 100 ml of milk with an equal amount of crème fraîche.
 `
 
-export const playgroundExamples: { label: string; value: string; content: string }[] = [
+export const playgroundExamples: { label: string, value: string, content: string, to?: string }[] = [
   { label: 'Booking', value: 'booking', content: bookingMarkdown },
   { label: 'Recipe', value: 'recipe', content: recipeMarkdown },
   { label: 'All Features', value: 'all-features', content: allFeaturesMarkdown },
+  { label: 'Custom with AI', value: 'ai', content: '', to: '/play/editor?example=ai' },
 ]
 
 export const defaultMarkdown = bookingMarkdown

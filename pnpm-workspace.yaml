@@ -7,6 +7,10 @@ ignoredBuiltDependencies:
   - sharp
 
 catalog:
+  # AI
+  ai: ^6.0.168
+  "@ai-sdk/gateway": ^3.0.104
+
   # Workspace packages (publish versions, locally overridden by resolutions)
   comark: ^0.3.1
   "@comark/vue": ^0.3.1

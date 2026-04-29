@@ -6,6 +6,7 @@
     "build": " pnpm --filter '../' run build && nuxt build --extends docus"
   },
   "dependencies": {
+    "@ai-sdk/gateway": "catalog:",
     "@comark/nuxt": "catalog:",
     "@monaco-editor/loader": "catalog:",
     "@nuxt/content": "catalog:",
@@ -15,6 +16,7 @@
     "@vercel/analytics": "catalog:",
     "@vercel/speed-insights": "catalog:",
     "@vueuse/core": "catalog:",
+    "ai": "catalog:",
     "comark": "catalog:",
     "docus": "https://pkg.pr.new/docus@6983451",
     "markdown-it-math": "catalog:",

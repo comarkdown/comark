@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { parse } from 'comark'
+import { parse, autoCloseMarkdown } from 'comark'
 import highlight from '@comark/nuxt/plugins/highlight'
 import math from '@comark/nuxt/plugins/math'
 import binding, { Binding } from '@comark/nuxt/plugins/binding'
@@ -13,21 +13,17 @@ import breaks from '@comark/nuxt/plugins/breaks'
 import { renderMarkdown } from 'comark/render'
 import { Splitpanes, Pane } from 'splitpanes'
 import { playgroundExamples } from '~/constants'
-import Gallery from '~/components/playground/Gallery.vue'
-import RatingBar from '~/components/playground/RatingBar.vue'
-import HostInfo from '~/components/playground/HostInfo.vue'
-import Facility from '~/components/playground/Facility.vue'
-import TwoColumn from '~/components/playground/TwoColumn.vue'
-import BookingCard from '~/components/playground/BookingCard.vue'
-import Ingredients from '~/components/playground/Ingredients.vue'
+import PlaygroundGallery from '~/components/playground/Gallery.vue'
+import PlaygroundRatingBar from '~/components/playground/RatingBar.vue'
+import PlaygroundHostInfo from '~/components/playground/HostInfo.vue'
+import PlaygroundFacility from '~/components/playground/Facility.vue'
+import PlaygroundTwoColumn from '~/components/playground/TwoColumn.vue'
+import PlaygroundBookingCard from '~/components/playground/BookingCard.vue'
+import PlaygroundIngredients from '~/components/playground/Ingredients.vue'
 import ProseSteps from '@nuxt/ui/components/prose/Steps.vue'
 import { useLocalStorage, watchDebounced } from '@vueuse/core'
 import type { ComarkTree, ComarkPlugin } from 'comark'
 import VueJsonPretty from 'vue-json-pretty'
-
-const props = defineProps<{
-  compact?: boolean
-}>()
 
 const router = useRouter()
 const route = useRoute()
@@ -169,8 +165,7 @@ const tabs = [
   { label: 'Formatted', value: 'formatted', icon: 'i-lucide-code' },
 ]
 
-// In compact mode the tab is always locked to preview
-const currentTab = computed(() => (props.compact ? 'preview' : activeTab.value))
+const currentTab = computed(() => activeTab.value)
 
 function countNodes(nodes: unknown[]): number {
   let count = 0
@@ -242,13 +237,68 @@ const formattedOutputModel = computed({
   set: () => {},
 })
 
-const isMatch = computed(() => !!formattedOutput.value && formattedOutput.value.trim() === markdown.value.trim())
+const isMatch = computed(() =>
+  !!formattedOutput.value && formattedOutput.value.trim() === markdown.value.trim(),
+)
+
+const isAiMode = computed(() => selectedExample.value === 'ai')
+const isGenerating = ref(false)
+const previewBottom = ref<HTMLElement | null>(null)
+
+function scrollToBottom() {
+  nextTick(() => previewBottom.value?.scrollIntoView({ behavior: 'instant' }))
+}
+
+async function generatePage(prompt: string) {
+  isGenerating.value = true
+  markdown.value = ''
+  tree.value = null
+  error.value = null
+
+  try {
+    const response = await fetch('/api/generate-page', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt }),
+    })
+
+    if (!response.ok) throw new Error('Generation failed')
+
+    const reader = response.body!.getReader()
+    const decoder = new TextDecoder()
+
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+      markdown.value += decoder.decode(value, { stream: true })
+
+      try {
+        tree.value = await parse(autoCloseMarkdown(markdown.value), {
+          plugins: activePlugins.value,
+          autoUnwrap: parseOptions.value.autoUnwrap,
+          autoClose: false,
+          html: parseOptions.value.html,
+        })
+      }
+      catch { /* ignore intermediate parse errors */ }
+
+      scrollToBottom()
+    }
+  }
+  catch (err: any) {
+    error.value = err.message || 'Generation failed'
+  }
+  finally {
+    isGenerating.value = false
+    await parseMarkdown()
+    scrollToBottom()
+  }
+}
 </script>
 
 <template>
   <div
-    class="overflow-hidden"
-    :class="compact ? 'h-[420px] border-b border-default bg-elevated' : 'h-[calc(100vh-64px)]'"
+    class="relative overflow-hidden h-[calc(100vh-64px)]"
   >
     <Splitpanes class="h-full">
       <!-- ── Left pane: Markdown editor ── -->
@@ -259,7 +309,6 @@ const isMatch = computed(() => !!formattedOutput.value && formattedOutput.value.
         <div class="h-full flex flex-col">
           <div class="shrink-0 flex items-center gap-2 px-3 h-9 border-b border-default bg-default">
             <USelect
-              v-if="!compact"
               v-model="selectedExample"
               :items="playgroundExamples"
               size="xs"
@@ -285,7 +334,6 @@ const isMatch = computed(() => !!formattedOutput.value && formattedOutput.value.
 
             <!-- Settings popover -->
             <UPopover
-              v-if="!compact"
               :ui="{ content: 'p-0' }"
             >
               <UButton
@@ -363,18 +411,11 @@ const isMatch = computed(() => !!formattedOutput.value && formattedOutput.value.
                 </div>
               </template>
             </UPopover>
-            <UButton
-              :to="`/play/${selectedExample}`"
-              icon="i-lucide-minimize"
-              color="neutral"
-              variant="ghost"
-              size="xs"
-            />
           </div>
           <div class="flex-1 min-h-0">
             <Editor
               v-model="markdown"
-              :font-size="compact ? 12 : 14"
+              :font-size="14"
             />
           </div>
         </div>
@@ -387,9 +428,8 @@ const isMatch = computed(() => !!formattedOutput.value && formattedOutput.value.
       >
         <div class="h-full flex flex-col">
           <div class="shrink-0 flex items-center px-3 h-9 border-b border-default bg-default">
-            <!-- Roundtrip match indicator (full mode only) -->
             <div
-              v-if="!compact && tree && activeTab === 'formatted'"
+              v-if="tree && activeTab === 'formatted'"
               class="flex-1 flex items-center gap-1.5"
             >
               <UTooltip :text="isMatch ? 'Stringify output matches source' : 'Stringify output differs from source'">
@@ -406,17 +446,7 @@ const isMatch = computed(() => !!formattedOutput.value && formattedOutput.value.
               v-else
               class="flex-1"
             />
-            <UButton
-              v-if="compact"
-              to="/play"
-              size="xs"
-              color="neutral"
-              variant="soft"
-              trailing-icon="i-lucide-arrow-right"
-              label="Try playground"
-            />
             <UTabs
-              v-else
               v-model="activeTab"
               :content="false"
               :items="tabs"
@@ -433,8 +463,11 @@ const isMatch = computed(() => !!formattedOutput.value && formattedOutput.value.
             v-if="currentTab === 'preview'"
             class="flex-1 min-h-0 relative overflow-hidden bg-white dark:bg-neutral-900"
           >
+            <PlaygroundGeneratingIndicator
+              v-if="isGenerating && !tree"
+            />
             <div
-              v-if="parsing && !tree"
+              v-else-if="parsing && !tree"
               class="absolute inset-0 flex flex-col items-center justify-center gap-3 text-muted"
             >
               <UIcon
@@ -448,10 +481,12 @@ const isMatch = computed(() => !!formattedOutput.value && formattedOutput.value.
               class="absolute inset-0 flex flex-col items-center justify-center gap-3 text-muted"
             >
               <UIcon
-                name="i-lucide-eye-off"
+                :name="isAiMode ? 'i-lucide-sparkles' : 'i-lucide-eye-off'"
                 class="size-8 opacity-40"
               />
-              <p class="text-sm font-medium">Nothing to preview</p>
+              <p class="text-sm font-medium">
+                {{ isAiMode ? 'Describe your page below to generate it' : 'Nothing to preview' }}
+              </p>
             </div>
             <UScrollArea
               v-else
@@ -471,19 +506,10 @@ const isMatch = computed(() => !!formattedOutput.value && formattedOutput.value.
               >
                 <ComarkDocsRenderer
                   :tree="tree"
-                  :components="{
-                    Binding,
-                    Gallery,
-                    RatingBar,
-                    HostInfo,
-                    Facility,
-                    TwoColumn,
-                    BookingCard,
-                    Ingredients,
-                    steps: ProseSteps,
-                  }"
+                  :components="{ Binding, Gallery: PlaygroundGallery, RatingBar: PlaygroundRatingBar, HostInfo: PlaygroundHostInfo, Facility: PlaygroundFacility, TwoColumn: PlaygroundTwoColumn, BookingCard: PlaygroundBookingCard, Ingredients: PlaygroundIngredients, steps: ProseSteps }"
                 />
               </div>
+              <div ref="previewBottom" />
             </UScrollArea>
           </div>
 
@@ -511,13 +537,12 @@ const isMatch = computed(() => !!formattedOutput.value && formattedOutput.value.
               v-model="formattedOutputModel"
               language="mdc"
               :read-only="true"
-              :font-size="compact ? 12 : 14"
+              :font-size="14"
             />
           </div>
 
-          <!-- Status bar (full mode only) -->
+          <!-- Status bar -->
           <div
-            v-if="!compact"
             class="shrink-0 flex items-center gap-4 px-4 h-7 border-t border-default bg-default"
           >
             <span class="flex items-center gap-1 text-xs text-muted">
@@ -545,6 +570,12 @@ const isMatch = computed(() => !!formattedOutput.value && formattedOutput.value.
         </div>
       </Pane>
     </Splitpanes>
+
+    <PlaygroundAIFloatingInput
+      v-if="isAiMode"
+      :is-generating="isGenerating"
+      @submit="generatePage"
+    />
   </div>
 </template>
 
