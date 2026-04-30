@@ -255,6 +255,9 @@ catalogs:
     vue-tsc:
       specifier: ^3.2.6
       version: 3.2.6
+    zod:
+      specifier: ^4.1.8
+      version: 4.3.6
 
 overrides:
   '@comark/ansi': workspace:*
@@ -400,6 +403,9 @@ importers:
       vue-json-pretty:
         specifier: 'catalog:'
         version: 2.6.0(vue@3.5.32(typescript@5.9.3))
+      zod:
+        specifier: 'catalog:'
+        version: 4.3.6
     devDependencies:
       '@nuxt/devtools-kit':
         specifier: 'catalog:'

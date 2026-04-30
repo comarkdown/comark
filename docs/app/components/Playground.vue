@@ -13,14 +13,7 @@ import breaks from '@comark/nuxt/plugins/breaks'
 import { renderMarkdown } from 'comark/render'
 import { Splitpanes, Pane } from 'splitpanes'
 import { playgroundExamples } from '~/constants'
-import PlaygroundGallery from '~/components/playground/Gallery.vue'
-import PlaygroundRatingBar from '~/components/playground/RatingBar.vue'
-import PlaygroundHostInfo from '~/components/playground/HostInfo.vue'
-import PlaygroundFacility from '~/components/playground/Facility.vue'
-import PlaygroundTwoColumn from '~/components/playground/TwoColumn.vue'
-import PlaygroundBookingCard from '~/components/playground/BookingCard.vue'
-import PlaygroundIngredients from '~/components/playground/Ingredients.vue'
-import ProseSteps from '@nuxt/ui/components/prose/Steps.vue'
+import resolveComponent from '~/utils/components-manifest'
 import { useLocalStorage, watchDebounced } from '@vueuse/core'
 import type { ComarkTree, ComarkPlugin } from 'comark'
 import VueJsonPretty from 'vue-json-pretty'
@@ -243,13 +236,25 @@ const isMatch = computed(() =>
 
 const isAiMode = computed(() => selectedExample.value === 'ai')
 const isGenerating = ref(false)
+const aiGenerationMode = ref<'nuxt-ui' | 'showcase'>('nuxt-ui')
+
+watch(aiGenerationMode, () => {
+  if (!isAiMode.value) return
+  markdown.value = ''
+  tree.value = null
+  error.value = null
+})
 const previewBottom = ref<HTMLElement | null>(null)
+const markdownEditor = ref<{ scrollToBottom: () => void } | null>(null)
 
 function scrollToBottom() {
-  nextTick(() => previewBottom.value?.scrollIntoView({ behavior: 'instant' }))
+  nextTick(() => {
+    previewBottom.value?.scrollIntoView({ behavior: 'instant' })
+    markdownEditor.value?.scrollToBottom()
+  })
 }
 
-async function generatePage(prompt: string) {
+async function generatePage(prompt: string, mode: 'nuxt-ui' | 'showcase') {
   isGenerating.value = true
   markdown.value = ''
   tree.value = null
@@ -259,7 +264,7 @@ async function generatePage(prompt: string) {
     const response = await fetch('/api/generate-page', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt }),
+      body: JSON.stringify({ prompt, mode }),
     })
 
     if (!response.ok) throw new Error('Generation failed')
@@ -414,6 +419,7 @@ async function generatePage(prompt: string) {
           </div>
           <div class="flex-1 min-h-0">
             <Editor
+              ref="markdownEditor"
               v-model="markdown"
               :font-size="14"
             />
@@ -426,7 +432,7 @@ async function generatePage(prompt: string) {
         :size="50"
         :min-size="20"
       >
-        <div class="h-full flex flex-col">
+        <div class="relative h-full flex flex-col">
           <div class="shrink-0 flex items-center px-3 h-9 border-b border-default bg-default">
             <div
               v-if="tree && activeTab === 'formatted'"
@@ -463,7 +469,7 @@ async function generatePage(prompt: string) {
             v-if="currentTab === 'preview'"
             class="flex-1 min-h-0 relative overflow-hidden bg-white dark:bg-neutral-900"
           >
-            <PlaygroundGeneratingIndicator
+            <GeneratingIndicator
               v-if="isGenerating && !tree"
             />
             <div
@@ -506,7 +512,8 @@ async function generatePage(prompt: string) {
               >
                 <ComarkDocsRenderer
                   :tree="tree"
-                  :components="{ Binding, Gallery: PlaygroundGallery, RatingBar: PlaygroundRatingBar, HostInfo: PlaygroundHostInfo, Facility: PlaygroundFacility, TwoColumn: PlaygroundTwoColumn, BookingCard: PlaygroundBookingCard, Ingredients: PlaygroundIngredients, steps: ProseSteps }"
+                  :components="{ Binding }"
+                  :components-manifest="resolveComponent"
                 />
               </div>
               <div ref="previewBottom" />
@@ -567,15 +574,15 @@ async function generatePage(prompt: string) {
               {{ enabledPluginCount }} plugins
             </span>
           </div>
+          <AIFloatingInput
+            v-if="isAiMode"
+            v-model:mode="aiGenerationMode"
+            :is-generating="isGenerating"
+            @submit="generatePage"
+          />
         </div>
       </Pane>
     </Splitpanes>
-
-    <PlaygroundAIFloatingInput
-      v-if="isAiMode"
-      :is-generating="isGenerating"
-      @submit="generatePage"
-    />
   </div>
 </template>
 

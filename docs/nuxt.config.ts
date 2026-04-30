@@ -51,5 +51,10 @@ export default defineNuxtConfig({
     domain: 'https://comark.dev',
   },
 
+  components: [
+    { path: '~/components' },
+    { path: '~/components/playground', pathPrefix: false },
+  ],
+
   studio: false,
 })

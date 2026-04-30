@@ -89,6 +89,14 @@ watch(theme, (newTheme) => {
     monaco.editor.setTheme(newTheme)
   }
 })
+
+defineExpose({
+  scrollToBottom() {
+    if (!editor) return
+    const lineCount = editor.getModel()?.getLineCount() ?? 1
+    editor.revealLine(lineCount)
+  },
+})
 </script>
 
 <template>

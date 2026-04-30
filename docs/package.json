@@ -17,6 +17,7 @@
     "@vercel/speed-insights": "catalog:",
     "@vueuse/core": "catalog:",
     "ai": "catalog:",
+    "zod": "catalog:",
     "comark": "catalog:",
     "docus": "https://pkg.pr.new/docus@6983451",
     "markdown-it-math": "catalog:",

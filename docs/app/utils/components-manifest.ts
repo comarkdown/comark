@@ -1,5 +1,6 @@
 import { pascalCase } from 'scule'
 import { localComponents, localComponentLoaders } from '#content/components'
+import * as nuxtComponents from '#components'
 
 // Define component imports for the docs app
 const components = {
@@ -15,16 +16,23 @@ export default function resolveComponent(name: string) {
     return null
   }
 
-  // Try the name as-is first
   const componentKey = name as keyof typeof components
   const pascalName = pascalCase(name) as keyof typeof components
 
+  // 1. Explicit local components
   const loader = components[componentKey] || components[pascalName]
-  if (!loader) {
-    if (localComponents.includes(pascalName)) {
-      return localComponentLoaders[pascalName]()
-    }
+  if (loader) return loader()
+
+  // 2. Content components (custom playground components)
+  if (localComponents.includes(pascalName)) {
+    return localComponentLoaders[pascalName]()
   }
 
-  return loader?.()
+  // 3. All registered Nuxt components (covers non-prose Nuxt UI components)
+  try {
+    const nuxtComponent = (nuxtComponents as Record<string, unknown>)[pascalName]
+    if (nuxtComponent) return Promise.resolve(nuxtComponent)
+  } catch {}
+
+  return null
 }

@@ -10,6 +10,7 @@ catalog:
   # AI
   ai: ^6.0.168
   "@ai-sdk/gateway": ^3.0.104
+  zod: ^4.1.8
 
   # Workspace packages (publish versions, locally overridden by resolutions)
   comark: ^0.3.1

@@ -295,7 +295,7 @@ export const playgroundExamples: { label: string, value: string, content: string
   { label: 'Booking', value: 'booking', content: bookingMarkdown },
   { label: 'Recipe', value: 'recipe', content: recipeMarkdown },
   { label: 'All Features', value: 'all-features', content: allFeaturesMarkdown },
-  { label: 'Custom with AI', value: 'ai', content: '', to: '/play/editor?example=ai' },
+  { label: 'Generate with AI', value: 'ai', content: '', to: '/play/editor?example=ai' },
 ]
 
 export const defaultMarkdown = bookingMarkdown

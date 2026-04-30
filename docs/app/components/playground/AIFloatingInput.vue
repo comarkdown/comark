@@ -4,25 +4,45 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  submit: [prompt: string]
+  submit: [prompt: string, mode: 'nuxt-ui' | 'showcase']
 }>()
 
 const input = ref('')
+const mode = defineModel<'nuxt-ui' | 'showcase'>('mode', { default: 'nuxt-ui' })
+
+const modes = [
+  { value: 'nuxt-ui', label: 'Nuxt UI components' },
+  { value: 'showcase', label: 'Playground components' },
+] as const
 
 function handleSubmit() {
   if (!input.value.trim() || props.isGenerating) return
-  emit('submit', input.value.trim())
+  emit('submit', input.value.trim(), mode.value)
   input.value = ''
 }
 </script>
 
 <template>
-  <div class="pointer-events-none absolute inset-x-0 bottom-6 z-10 px-4 sm:px-80 flex justify-center">
-    <form
-      class="pointer-events-none flex w-full justify-center"
-      @submit.prevent="handleSubmit"
-    >
-      <div class="pointer-events-auto w-full max-w-96">
+  <div class="pointer-events-none absolute inset-x-0 bottom-6 z-10 px-4 flex justify-center">
+    <div class="pointer-events-auto w-full max-w-96 flex flex-col items-center gap-2">
+      <div class="flex items-center gap-1 bg-default border border-default rounded-lg px-1 py-1 shadow-sm">
+        <button
+          v-for="m in modes"
+          :key="m.value"
+          class="px-3 py-0.5 rounded-md text-xs font-medium transition-colors"
+          :class="mode === m.value
+            ? 'bg-primary text-inverted'
+            : 'text-muted hover:text-default'"
+          @click="mode = m.value"
+        >
+          {{ m.label }}
+        </button>
+      </div>
+
+      <form
+        class="w-full"
+        @submit.prevent="handleSubmit"
+      >
         <UInput
           v-model="input"
           placeholder="Describe the page you want to generate…"
@@ -39,15 +59,20 @@ function handleSubmit() {
           <template #trailing>
             <UButton
               type="submit"
-              :icon="isGenerating ? 'i-lucide-loader-circle' : 'i-lucide-arrow-up'"
-              :ui="{ icon: isGenerating ? 'animate-spin' : '' }"
               color="primary"
               size="xs"
               :disabled="!input.trim() || isGenerating"
-            />
+            >
+              <template #leading>
+                <UIcon
+                  :name="isGenerating ? 'i-lucide-loader-circle' : 'i-lucide-arrow-up'"
+                  :class="isGenerating ? 'animate-spin' : ''"
+                />
+              </template>
+            </UButton>
           </template>
         </UInput>
-      </div>
-    </form>
+      </form>
+    </div>
   </div>
 </template>
