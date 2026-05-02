@@ -19,7 +19,7 @@ import {
   toRaw,
 } from 'vue'
 import { findLastTextNodeAndAppendNode, getCaret } from '../utils/caret.ts'
-import { pascalCase, resolveAttributes } from 'comark/utils'
+import { pascalCase, resolveAttributes, textContent } from 'comark/utils'
 
 // Cache for dynamically resolved components
 const asyncComponentCache = new Map<string, any>()
@@ -142,6 +142,11 @@ function renderNode(
     // @ts-expect-error - component might be a Vue component
     if (component?.props?.__node || component?.__asyncResolved?.props?.__node) {
       props.__node = node
+    }
+
+    // When a custom `pre` component is used (e.g. Nuxt UI ProsePre) pass the plain-text content as `code` so copy-to-clipboard works
+    if (tag === 'pre' && customComponent) {
+      props.code = textContent(node)
     }
 
     // Add key if provided
