@@ -3,7 +3,8 @@
   "type": "module",
   "scripts": {
     "dev": "nuxt dev --extends docus",
-    "build": " pnpm --filter '../' run build && nuxt build --extends docus"
+    "build": " pnpm --filter '../' run build && nuxt build --extends docus",
+    "generate:schema": "tsx --env-file=.env scripts/generate-schema.ts"
   },
   "dependencies": {
     "@ai-sdk/gateway": "catalog:",
@@ -25,11 +26,15 @@
     "nuxt-studio": "catalog:",
     "splitpanes": "catalog:",
     "tailwindcss": "catalog:",
-    "vue-json-pretty": "catalog:"
+    "vue-json-pretty": "catalog:",
+    "ufo": "catalog:"
   },
   "devDependencies": {
     "@nuxt/devtools-kit": "catalog:",
     "@tailwindcss/typography": "catalog:",
-    "@types/splitpanes": "catalog:"
+    "@types/splitpanes": "catalog:",
+    "tsx": "catalog:",
+    "@ai-sdk/anthropic": "catalog:",
+    "@types/json-schema": "catalog:"
   }
 }

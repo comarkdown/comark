@@ -200,6 +200,7 @@ async function parseMarkdown(): Promise<void> {
     error.value = null
   } catch (err: any) {
     error.value = err.message || 'Failed to parse markdown'
+    console.error('[Comark] Parse error:', err)
   } finally {
     parsing.value = false
   }
@@ -380,10 +381,11 @@ function handleGenerate(prompt: string) {
               v-model="markdown"
               :font-size="14"
             />
-            <AIFloatingInput
+            <PromptInput
               v-if="currentExample.mode"
               :is-generating="isGenerating"
-              :placeholder="currentExample.placeholder"
+              :prompt="currentExample.prompt"
+              floating
               @submit="handleGenerate"
             />
           </div>

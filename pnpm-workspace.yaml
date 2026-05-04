@@ -10,6 +10,7 @@ catalog:
   # AI
   ai: ^6.0.168
   "@ai-sdk/gateway": ^3.0.104
+  "@ai-sdk/anthropic": ^3.0.74
   zod: ^4.1.8
 
   # Workspace packages (publish versions, locally overridden by resolutions)
@@ -39,6 +40,7 @@ catalog:
   "@vitejs/plugin-react": ^6.0.1
 
   # Types
+  "@types/json-schema": ^7.0.15
   "@types/node": ^25.5.2
   "@types/js-yaml": ^4.0.9
   "@types/markdown-it": ^14.1.2
@@ -111,6 +113,8 @@ catalog:
   "@tailwindcss/typography": ^0.5.19
   autoprefixer: ^10.4.27
   postcss: ^8.5.9
+
+  ufo: ^1.6.4
 
   # Misc
   "@json-render/core": ^0.16.0

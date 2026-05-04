@@ -1,20 +1,24 @@
 <script setup lang="ts">
 const props = defineProps<{
   isGenerating: boolean
-  placeholder?: string
+  prompt?: string
+  floating?: boolean
 }>()
 
 const emit = defineEmits<{
   submit: [prompt: string]
 }>()
 
-const input = ref(props.placeholder ?? '')
+const input = ref('')
 
-watch(() => props.placeholder, (val) => {
-  input.value = val ?? ''
+watch(() => props.prompt, () => {
+  input.value = ''
 })
 
-function selectAll(e: FocusEvent) {
+function handleFocus(e: FocusEvent) {
+  if (!input.value) {
+    input.value = props.prompt ?? ''
+  }
   (e.target as HTMLInputElement).select()
 }
 
@@ -26,26 +30,27 @@ function handleSubmit() {
 </script>
 
 <template>
-  <div class="pointer-events-none absolute inset-x-0 bottom-6 z-10 px-4 flex justify-center">
+  <div :class="floating ? 'pointer-events-none absolute inset-x-0 bottom-6 z-10 px-4 flex justify-center' : 'flex-1'">
     <form
-      class="pointer-events-auto w-full max-w-96"
+      :class="floating ? 'pointer-events-auto w-full max-w-96' : 'flex-1 flex items-center gap-1'"
       @submit.prevent="handleSubmit"
     >
       <UInput
         v-model="input"
-        :placeholder="placeholder ?? 'Describe the page you want to generate…'"
-        size="lg"
+        placeholder="Generate your own version and stream it with AI..."
+        :size="floating ? 'lg' : 'sm'"
         maxlength="1000"
         :disabled="isGenerating"
-        :ui="{
+        :class="!floating && 'flex-1'"
+        :ui="floating ? {
           root: 'group w-full! min-w-0 transition-all duration-300 ease-out [@media(hover:hover)]:hover:scale-105 [@media(hover:hover)]:focus-within:scale-105',
           base: 'bg-default shadow-lg rounded-xl text-base',
           trailing: 'pe-2',
-        }"
-        @focus="selectAll"
+        } : {}"
+        @focus="handleFocus"
         @keydown.enter.exact.prevent="handleSubmit"
       >
-        <template #trailing>
+        <template v-if="floating" #trailing>
           <UButton
             type="submit"
             color="primary"
@@ -61,6 +66,18 @@ function handleSubmit() {
           </UButton>
         </template>
       </UInput>
+
+      <UButton
+        v-if="!floating"
+        type="submit"
+        color="primary"
+        :disabled="!input.trim() || isGenerating"
+      >
+        <UIcon
+          :name="isGenerating ? 'i-lucide-loader-circle' : 'i-lucide-arrow-up'"
+          :class="isGenerating ? 'animate-spin' : ''"
+        />
+      </UButton>
     </form>
   </div>
 </template>

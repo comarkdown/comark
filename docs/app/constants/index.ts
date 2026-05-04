@@ -435,13 +435,13 @@ export type PlaygroundExample = {
   value: string
   content: string
   mode?: AiMode
-  placeholder?: string
+  prompt?: string
 }
 
 export const playgroundExamples: PlaygroundExample[] = [
-  { label: 'Airbnb', value: 'booking', content: bookingMarkdown, mode: 'showcase', placeholder: 'A beachfront villa in Malibu with ocean views…' },
-  { label: 'Recipe', value: 'recipe', content: recipeMarkdown, mode: 'showcase', placeholder: 'My grandmother\'s secret tiramisu recipe…' },
-  { label: 'Nuxt UI', value: 'nuxt-ui', content: nuxtUiMarkdown, mode: 'nuxt-ui', placeholder: 'Landing page for a mountain bike rental in the Alps…' },
+  { label: 'Airbnb', value: 'booking', content: bookingMarkdown, mode: 'showcase', prompt: 'A beachfront villa in Malibu with ocean views.' },
+  { label: 'Recipe', value: 'recipe', content: recipeMarkdown, mode: 'showcase', prompt: 'My grandmother\'s secret tiramisu recipe.' },
+  { label: 'Nuxt UI', value: 'nuxt-ui', content: nuxtUiMarkdown, mode: 'nuxt-ui', prompt: 'Landing page for a mountain bike rental in the Alps.' },
   { label: 'All Features', value: 'all-features', content: allFeaturesMarkdown },
 ]
 

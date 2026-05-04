@@ -57,11 +57,6 @@ if (!page.value) {
 
 const currentExample = computed(() => playgroundExamples.find(e => e.value === slug.value))
 
-const aiPrompt = ref(currentExample.value?.placeholder ?? '')
-
-watch(currentExample, (example) => {
-  aiPrompt.value = example?.placeholder ?? ''
-})
 
 const { isGenerating, previewBottom, markdownEditor, generate } = useAiStream(markdown, {
   onStart: () => {
@@ -88,11 +83,9 @@ watchDebounced(
   { debounce: 100 }
 )
 
-async function submitAiPrompt() {
+async function submitAiPrompt(prompt: string) {
   const example = currentExample.value
-  if (!aiPrompt.value.trim() || isGenerating.value || !example?.mode) return
-  const prompt = aiPrompt.value.trim()
-  aiPrompt.value = example.placeholder ?? ''
+  if (!example?.mode) return
   await generate(prompt, example.mode, example.content)
 }
 
@@ -307,25 +300,11 @@ defineOgImage('OgImageDocs', {
           v-if="currentExample?.mode"
           class="shrink-0 border-t border-default bg-default flex items-center gap-1 p-1.5"
         >
-          <UInput
-            v-model="aiPrompt"
-            :placeholder="currentExample.placeholder ?? 'Prompt your page'"
-            size="sm"
-            :disabled="isGenerating"
-            class="flex-1"
-            @focus="($event.target as HTMLInputElement).select()"
-            @keydown.enter.exact.prevent="submitAiPrompt"
+          <PromptInput
+            :is-generating="isGenerating"
+            :prompt="currentExample.prompt"
+            @submit="submitAiPrompt"
           />
-          <UButton
-            color="primary"
-            :disabled="!aiPrompt.trim() || isGenerating"
-            @click="submitAiPrompt"
-          >
-            <UIcon
-              :name="isGenerating ? 'i-lucide-loader-circle' : 'i-lucide-arrow-up'"
-              :class="isGenerating ? 'animate-spin' : ''"
-            />
-          </UButton>
         </div>
       </div>
 
