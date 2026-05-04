@@ -230,81 +230,40 @@ const formattedOutputModel = computed({
   set: () => {},
 })
 
-const isMatch = computed(() =>
-  !!formattedOutput.value && formattedOutput.value.trim() === markdown.value.trim(),
-)
+const isMatch = computed(() => !!formattedOutput.value && formattedOutput.value.trim() === markdown.value.trim())
 
-const isAiMode = computed(() => selectedExample.value === 'ai')
-const isGenerating = ref(false)
-const aiGenerationMode = ref<'nuxt-ui' | 'showcase'>('nuxt-ui')
-
-watch(aiGenerationMode, () => {
-  if (!isAiMode.value) return
-  markdown.value = ''
-  tree.value = null
-  error.value = null
-})
-const previewBottom = ref<HTMLElement | null>(null)
-const markdownEditor = ref<{ scrollToBottom: () => void } | null>(null)
-
-function scrollToBottom() {
-  nextTick(() => {
-    previewBottom.value?.scrollIntoView({ behavior: 'instant' })
-    markdownEditor.value?.scrollToBottom()
-  })
-}
-
-async function generatePage(prompt: string, mode: 'nuxt-ui' | 'showcase') {
-  isGenerating.value = true
-  markdown.value = ''
-  tree.value = null
-  error.value = null
-
-  try {
-    const response = await fetch('/api/generate-page', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt, mode }),
-    })
-
-    if (!response.ok) throw new Error('Generation failed')
-
-    const reader = response.body!.getReader()
-    const decoder = new TextDecoder()
-
-    while (true) {
-      const { done, value } = await reader.read()
-      if (done) break
-      markdown.value += decoder.decode(value, { stream: true })
-
-      try {
-        tree.value = await parse(autoCloseMarkdown(markdown.value), {
-          plugins: activePlugins.value,
-          autoUnwrap: parseOptions.value.autoUnwrap,
-          autoClose: false,
-          html: parseOptions.value.html,
-        })
-      }
-      catch { /* ignore intermediate parse errors */ }
-
-      scrollToBottom()
-    }
-  }
-  catch (err: any) {
-    error.value = err.message || 'Generation failed'
-  }
-  finally {
-    isGenerating.value = false
+const { isGenerating, previewBottom, markdownEditor, generate } = useAiStream(markdown, {
+  onStart: () => {
+    tree.value = null
+    error.value = null
+  },
+  onChunk: async (md: string) => {
+    try {
+      tree.value = await parse(autoCloseMarkdown(md), {
+        plugins: activePlugins.value,
+        autoUnwrap: parseOptions.value.autoUnwrap,
+        autoClose: false,
+        html: parseOptions.value.html,
+      })
+    } catch { /* ignore intermediate parse errors */ }
+  },
+  onError: (_prev: string) => {
+    error.value = 'Generation failed'
+  },
+  onFinish: async () => {
     await parseMarkdown()
-    scrollToBottom()
-  }
+  },
+})
+
+function handleGenerate(prompt: string) {
+  const example = currentExample.value
+  if (!example.mode) return
+  generate(prompt, example.mode, example.content)
 }
 </script>
 
 <template>
-  <div
-    class="relative overflow-hidden h-[calc(100vh-64px)]"
-  >
+  <div class="relative overflow-hidden h-[calc(100vh-64px)]">
     <Splitpanes class="h-full">
       <!-- ── Left pane: Markdown editor ── -->
       <Pane
@@ -338,9 +297,7 @@ async function generatePage(prompt: string, mode: 'nuxt-ui' | 'showcase') {
             <div class="flex-1" />
 
             <!-- Settings popover -->
-            <UPopover
-              :ui="{ content: 'p-0' }"
-            >
+            <UPopover :ui="{ content: 'p-0' }">
               <UButton
                 size="xs"
                 color="neutral"
@@ -417,11 +374,17 @@ async function generatePage(prompt: string, mode: 'nuxt-ui' | 'showcase') {
               </template>
             </UPopover>
           </div>
-          <div class="flex-1 min-h-0">
+          <div class="relative flex-1 min-h-0">
             <Editor
               ref="markdownEditor"
               v-model="markdown"
               :font-size="14"
+            />
+            <AIFloatingInput
+              v-if="currentExample.mode"
+              :is-generating="isGenerating"
+              :placeholder="currentExample.placeholder"
+              @submit="handleGenerate"
             />
           </div>
         </div>
@@ -469,9 +432,7 @@ async function generatePage(prompt: string, mode: 'nuxt-ui' | 'showcase') {
             v-if="currentTab === 'preview'"
             class="flex-1 min-h-0 relative overflow-hidden bg-white dark:bg-neutral-900"
           >
-            <GeneratingIndicator
-              v-if="isGenerating && !tree"
-            />
+            <GeneratingIndicator v-if="isGenerating && !tree" />
             <div
               v-else-if="parsing && !tree"
               class="absolute inset-0 flex flex-col items-center justify-center gap-3 text-muted"
@@ -487,12 +448,10 @@ async function generatePage(prompt: string, mode: 'nuxt-ui' | 'showcase') {
               class="absolute inset-0 flex flex-col items-center justify-center gap-3 text-muted"
             >
               <UIcon
-                :name="isAiMode ? 'i-lucide-sparkles' : 'i-lucide-eye-off'"
+                name="i-lucide-eye-off"
                 class="size-8 opacity-40"
               />
-              <p class="text-sm font-medium">
-                {{ isAiMode ? 'Describe your page below to generate it' : 'Nothing to preview' }}
-              </p>
+              <p class="text-sm font-medium">Nothing to preview</p>
             </div>
             <UScrollArea
               v-else
@@ -549,9 +508,7 @@ async function generatePage(prompt: string, mode: 'nuxt-ui' | 'showcase') {
           </div>
 
           <!-- Status bar -->
-          <div
-            class="shrink-0 flex items-center gap-4 px-4 h-7 border-t border-default bg-default"
-          >
+          <div class="shrink-0 flex items-center gap-4 px-4 h-7 border-t border-default bg-default">
             <span class="flex items-center gap-1 text-xs text-muted">
               <UIcon
                 name="i-lucide-git-branch"
@@ -574,12 +531,6 @@ async function generatePage(prompt: string, mode: 'nuxt-ui' | 'showcase') {
               {{ enabledPluginCount }} plugins
             </span>
           </div>
-          <AIFloatingInput
-            v-if="isAiMode"
-            v-model:mode="aiGenerationMode"
-            :is-generating="isGenerating"
-            @submit="generatePage"
-          />
         </div>
       </Pane>
     </Splitpanes>

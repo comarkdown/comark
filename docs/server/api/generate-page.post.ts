@@ -161,7 +161,7 @@ Props: \`title\`, \`servings\` (number), \`items\` (JSON array of \`{ image, qua
 - Square crops (\`w=100&h=100\`) for thumbnails`
 
 export default defineEventHandler(async (event) => {
-  const { prompt, mode = 'nuxt-ui' } = await readBody(event)
+  const { prompt, mode = 'nuxt-ui', structure } = await readBody(event)
 
   if (!prompt?.trim()) {
     throw createError({ statusCode: 400, message: 'Prompt is required' })
@@ -169,10 +169,15 @@ export default defineEventHandler(async (event) => {
 
   const systemPrompt = mode === 'showcase' ? SHOWCASE_PROMPT : NUXT_UI_PROMPT
 
+  const structureTrimmed = structure?.trim()
+  const userPrompt = structureTrimmed
+    ? `${prompt}\n\n## REFERENCE STRUCTURE\n\nUse the following page as a structural reference — keep the same layout pattern and component types, but adapt all content to match the user's request:\n\n\`\`\`\n${structureTrimmed}\n\`\`\``
+    : prompt
+
   const result = streamText({
     model: 'anthropic/claude-sonnet-4.6',
     system: systemPrompt,
-    prompt,
+    prompt: userPrompt,
     stopWhen: stepCountIs(5),
     tools: {
       fetchSkill: tool({

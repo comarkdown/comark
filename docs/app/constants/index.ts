@@ -112,7 +112,6 @@ Mobile signal is unreliable past the village. Download offline maps before you a
 ::
 `
 
-// ─── Comark Parser State ───
 export const allFeaturesMarkdown = `---
 title: Hello Comark
 description: A Comark playground
@@ -291,11 +290,159 @@ Slice the potatoes directly into the dish — rinsing them washes away the starc
 > For extra richness, replace 100 ml of milk with an equal amount of crème fraîche.
 `
 
-export const playgroundExamples: { label: string, value: string, content: string, to?: string }[] = [
-  { label: 'Booking', value: 'booking', content: bookingMarkdown },
-  { label: 'Recipe', value: 'recipe', content: recipeMarkdown },
+export const nuxtUiMarkdown = `---
+title: Observe less. Understand more.
+description: Map your entire system in real-time, surface anomalies before they cascade, and eliminate the dashboards you never needed.
+page:
+  "#comment": The "page" field is custom field and exists only for demonstration, it is no part of Comark core
+  maxWidth: 1120px
+---
+
+::UPageHero
+#headline
+:::badge
+v2.0 — Now with predictive alerting
+:::
+
+#title
+Observe less. **Understand more.**
+
+#description
+Map your entire system in real-time, surface anomalies before they cascade, and eliminate the dashboards you never needed.
+
+#links
+  :::UButton{color="primary" size="xl" to="#"}
+  Start for free
+  :::
+
+  :::UButton{color="neutral" variant="soft" size="xl" to="#"}
+  View demo
+  :::
+::
+
+::UPageSection
+#title
+Every signal, one surface.
+
+#description
+No more tab-switching between metrics, traces, and logs. Correlate everything into a single explorable topology.
+
+#features
+  :::UPageCard{icon="i-lucide-zap" to="#"}
+  #title
+  Predictive Alerts
+
+  #description
+  ML models trained on your baselines detect anomalies 4 minutes before they hit your SLOs.
+  :::
+
+  :::UPageCard{icon="i-lucide-radar" to="#"}
+  #title
+  Topology Mapping
+
+  #description
+  Auto-discovers service dependencies with zero config. See how a deploy in auth-service ripples through checkout.
+  :::
+
+  :::UPageCard{icon="i-lucide-layers" to="#"}
+  #title
+  Unified Telemetry
+
+  #description
+  Logs, metrics, and traces in one query language. Stop context-switching. Start correlating.
+  :::
+
+  :::UPageCard{icon="i-lucide-git-commit-horizontal" to="#"}
+  #title
+  Deploy Tracking
+
+  #description
+  Every deploy is automatically correlated with performance changes. Know which commit caused the regression.
+  :::
+
+  :::UPageCard{icon="i-lucide-filter" to="#"}
+  #title
+  Smart Sampling
+
+  #description
+  AI-driven sampling retains interesting traces and drops noise. Cut storage costs 10× without losing signal.
+  :::
+
+  :::UPageCard{icon="i-lucide-notebook-pen" to="#"}
+  #title
+  Team Notebooks
+
+  #description
+  Collaborative investigation notebooks that turn incident debugging into reusable runbooks.
+  :::
+::
+
+::UPageSection
+#title
+Built for scale you haven't hit yet.
+
+#description
+Process billions of events per day across thousands of production environments with an architecture designed for the workloads of 2030.
+
+#features
+  :::UPageCard{to="#"}
+  #title
+  99.99%
+
+  #description
+  Uptime SLA
+  :::
+
+  :::UPageCard{to="#"}
+  #title
+  50ms P99
+
+  #description
+  Median query latency
+  :::
+
+  :::UPageCard{to="#"}
+  #title
+  14B+
+
+  #description
+  Events / day
+  :::
+::
+
+::UPageSection
+#title
+Ready to stop firefighting?
+
+#description
+Free for up to 5 services. No credit card. Deploys in under a minute.
+
+#links
+  :::UButton{color="primary" size="xl" to="#"}
+  Start for free
+  :::
+
+  :::UButton{color="neutral" variant="outline" size="xl" trailing-icon="i-lucide-book-open" to="#"}
+  Read the documentation
+  :::
+::
+`
+
+export type AiMode = 'showcase' | 'nuxt-ui'
+
+export type PlaygroundExample = {
+  label: string
+  value: string
+  content: string
+  mode?: AiMode
+  placeholder?: string
+}
+
+export const playgroundExamples: PlaygroundExample[] = [
+  { label: 'Airbnb', value: 'booking', content: bookingMarkdown, mode: 'showcase', placeholder: 'A beachfront villa in Malibu with ocean views…' },
+  { label: 'Recipe', value: 'recipe', content: recipeMarkdown, mode: 'showcase', placeholder: 'My grandmother\'s secret tiramisu recipe…' },
+  { label: 'Nuxt UI', value: 'nuxt-ui', content: nuxtUiMarkdown, mode: 'nuxt-ui', placeholder: 'Landing page for a mountain bike rental in the Alps…' },
   { label: 'All Features', value: 'all-features', content: allFeaturesMarkdown },
-  { label: 'Generate with AI', value: 'ai', content: '', to: '/play/editor?example=ai' },
 ]
 
 export const defaultMarkdown = bookingMarkdown
