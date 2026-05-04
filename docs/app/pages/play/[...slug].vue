@@ -2,7 +2,6 @@
 import { joinURL } from 'ufo'
 import { useDraggable, useWindowSize, watchDebounced } from '@vueuse/core'
 import { createParse } from '@comark/nuxt/parse'
-import { autoCloseMarkdown } from 'comark'
 import jsonRenderer from '@comark/nuxt/plugins/json-render'
 import binding, { Binding } from '@comark/nuxt/plugins/binding'
 import Gallery from '~/components/playground/Gallery.vue'
@@ -70,7 +69,7 @@ const { isGenerating, previewBottom, markdownEditor, generate } = useAiStream(ma
   },
   onChunk: async (md) => {
     try {
-      page.value = await parse(autoCloseMarkdown(md))
+      page.value = await parse(md)
     } catch { /* ignore intermediate parse errors */ }
   },
   onError: (prev) => {

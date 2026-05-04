@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { parse, autoCloseMarkdown } from 'comark'
+import { parse } from 'comark'
 import highlight from '@comark/nuxt/plugins/highlight'
 import math from '@comark/nuxt/plugins/math'
 import binding, { Binding } from '@comark/nuxt/plugins/binding'
@@ -239,10 +239,10 @@ const { isGenerating, previewBottom, markdownEditor, generate } = useAiStream(ma
   },
   onChunk: async (md: string) => {
     try {
-      tree.value = await parse(autoCloseMarkdown(md), {
+      tree.value = await parse(md, {
         plugins: activePlugins.value,
         autoUnwrap: parseOptions.value.autoUnwrap,
-        autoClose: false,
+        autoClose: true,
         html: parseOptions.value.html,
       })
     } catch { /* ignore intermediate parse errors */ }
