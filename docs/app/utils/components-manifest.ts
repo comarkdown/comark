@@ -1,6 +1,16 @@
 import { pascalCase } from 'scule'
 import { localComponents, localComponentLoaders } from '#content/components'
-import { UPageHero, UPageSection, UPageCard, UPageCTA, UButton, UBadge, UPageFeature, UPageGrid, UPricingPlan } from '#components'
+import {
+  UPageHero,
+  UPageSection,
+  UPageCard,
+  UPageCTA,
+  UButton,
+  UBadge,
+  UPageFeature,
+  UPageGrid,
+  UPricingPlan,
+} from '#components'
 import Gallery from '@/components/playground/Gallery.vue'
 import RatingBar from '@/components/playground/RatingBar.vue'
 import HostInfo from '@/components/playground/HostInfo.vue'
