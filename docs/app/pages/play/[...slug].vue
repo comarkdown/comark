@@ -41,17 +41,18 @@ if (!page.value) {
   })
 }
 
-const currentExample = computed(() => playgroundExamples.find(e => e.value === slug.value))
+const currentExample = computed(() => playgroundExamples.find((e) => e.value === slug.value))
 
-
-const { isGenerating, previewBottom, markdownEditor, generate } = useAiStream(markdown, {
+const { isGenerating, generate } = useAiStream(markdown, {
   onStart: () => {
     page.value = undefined
   },
   onChunk: async (md) => {
     try {
       page.value = await parse(md)
-    } catch { /* ignore intermediate parse errors */ }
+    } catch {
+      /* ignore intermediate parse errors */
+    }
   },
   onError: (prev) => {
     markdown.value = prev
@@ -208,7 +209,6 @@ defineOgImage('OgImageDocs', {
         :components="components"
         :components-manifest="resolveComponent"
       />
-      <div ref="previewBottom" />
     </UPageBody>
   </UPage>
 
@@ -268,7 +268,6 @@ defineOgImage('OgImageDocs', {
         <div class="relative flex-1 min-h-0">
           <Editor
             v-if="isEditing"
-            ref="markdownEditor"
             v-model="markdown"
           />
           <div

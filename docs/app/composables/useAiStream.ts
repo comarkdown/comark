@@ -5,7 +5,6 @@ interface UseAiStreamOptions {
   onChunk: (markdown: string) => Promise<void>
   onError: (previousMarkdown: string) => void
   onFinish: () => Promise<void>
-  autoScroll: boolean
 }
 
 export function useAiStream(
@@ -13,15 +12,6 @@ export function useAiStream(
   options: UseAiStreamOptions,
 ) {
   const isGenerating = ref(false)
-  const previewBottom = ref<HTMLElement | null>(null)
-  const markdownEditor = ref<{ scrollToBottom: () => void } | null>(null)
-
-  function scrollToBottom() {
-    nextTick(() => {
-      previewBottom.value?.scrollIntoView({ behavior: 'instant' })
-      markdownEditor.value?.scrollToBottom()
-    })
-  }
 
   async function generate(prompt: string, mode: AiMode, structure: string) {
     isGenerating.value = true
@@ -46,16 +36,14 @@ export function useAiStream(
         if (done) break
         markdown.value = (markdown.value ?? '') + decoder.decode(value, { stream: true })
         await options.onChunk(markdown.value)
-        if (options.autoScroll) scrollToBottom()
       }
     } catch {
       options.onError(previousMarkdown)
     } finally {
       isGenerating.value = false
       await options.onFinish()
-      if (options.autoScroll) scrollToBottom()
     }
   }
 
-  return { isGenerating, previewBottom, markdownEditor, scrollToBottom, generate }
+  return { isGenerating, generate }
 }

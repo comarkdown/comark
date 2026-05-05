@@ -235,7 +235,7 @@ const formattedOutputModel = computed({
 
 const isMatch = computed(() => !!formattedOutput.value && formattedOutput.value.trim() === markdown.value.trim())
 
-const { isGenerating, previewBottom, markdownEditor, generate } = useAiStream(markdown, {
+const { isGenerating, generate } = useAiStream(markdown, {
   onStart: () => {
     tree.value = null
     error.value = null
@@ -379,7 +379,6 @@ function handleGenerate(prompt: string) {
           </div>
           <div class="relative flex-1 min-h-0">
             <Editor
-              ref="markdownEditor"
               v-model="markdown"
               :font-size="14"
             />
@@ -479,7 +478,6 @@ function handleGenerate(prompt: string) {
                   :components-manifest="resolveComponent"
                 />
               </div>
-              <div ref="previewBottom" />
             </UScrollArea>
           </div>
 
