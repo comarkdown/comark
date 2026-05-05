@@ -44,7 +44,11 @@ const currentExample = computed(() => playgroundExamples.find((e) => e.value ===
 
 let previousMarkdown = ''
 
-const { completion, complete, isLoading: isGenerating } = useCompletion({
+const {
+  completion,
+  complete,
+  isLoading: isGenerating,
+} = useCompletion({
   api: '/api/generate-page',
   streamProtocol: 'text',
   onError: () => {

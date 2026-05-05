@@ -236,7 +236,11 @@ const formattedOutputModel = computed({
 
 const isMatch = computed(() => !!formattedOutput.value && formattedOutput.value.trim() === markdown.value.trim())
 
-const { completion, complete, isLoading: isGenerating } = useCompletion({
+const {
+  completion,
+  complete,
+  isLoading: isGenerating,
+} = useCompletion({
   api: '/api/generate-page',
   streamProtocol: 'text',
   onError: () => {
