@@ -1,11 +1,4 @@
-import {
-  Component,
-  Input,
-  OnChanges,
-  SimpleChanges,
-  ChangeDetectionStrategy,
-  ElementRef,
-} from '@angular/core'
+import { Component, Input, OnChanges, SimpleChanges, ChangeDetectionStrategy, ElementRef } from '@angular/core'
 import katex from 'katex'
 import 'katex/dist/katex.min.css'
 

@@ -83,38 +83,38 @@ body {
 }
 
 /* Alert blockquotes (> [!NOTE], > [!TIP], etc.) */
-.prose blockquote[as="note"] {
+.prose blockquote[as='note'] {
   @apply border-l-blue-500 bg-blue-50 dark:bg-blue-950 not-italic text-blue-800 dark:text-blue-300;
 }
-.prose blockquote[as="note"]::before {
-  content: "ℹ️ Note";
+.prose blockquote[as='note']::before {
+  content: 'ℹ️ Note';
   @apply block font-semibold mb-1;
 }
-.prose blockquote[as="tip"] {
+.prose blockquote[as='tip'] {
   @apply border-l-green-500 bg-green-50 dark:bg-green-950 not-italic text-green-800 dark:text-green-300;
 }
-.prose blockquote[as="tip"]::before {
-  content: "💡 Tip";
+.prose blockquote[as='tip']::before {
+  content: '💡 Tip';
   @apply block font-semibold mb-1;
 }
-.prose blockquote[as="warning"] {
+.prose blockquote[as='warning'] {
   @apply border-l-yellow-500 bg-yellow-50 dark:bg-yellow-950 not-italic text-yellow-800 dark:text-yellow-300;
 }
-.prose blockquote[as="warning"]::before {
-  content: "⚠️ Warning";
+.prose blockquote[as='warning']::before {
+  content: '⚠️ Warning';
   @apply block font-semibold mb-1;
 }
-.prose blockquote[as="caution"] {
+.prose blockquote[as='caution'] {
   @apply border-l-red-500 bg-red-50 dark:bg-red-950 not-italic text-red-800 dark:text-red-300;
 }
-.prose blockquote[as="caution"]::before {
-  content: "🚨 Caution";
+.prose blockquote[as='caution']::before {
+  content: '🚨 Caution';
   @apply block font-semibold mb-1;
 }
-.prose blockquote[as="important"] {
+.prose blockquote[as='important'] {
   @apply border-l-purple-500 bg-purple-50 dark:bg-purple-950 not-italic text-purple-800 dark:text-purple-300;
 }
-.prose blockquote[as="important"]::before {
-  content: "❗ Important";
+.prose blockquote[as='important']::before {
+  content: '❗ Important';
   @apply block font-semibold mb-1;
 }

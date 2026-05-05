@@ -31,18 +31,31 @@ import { SyntaxComponent } from './pages/syntax.component'
             <app-home (openPost)="openPost($event)" />
           }
           @case ('blog') {
-            <app-blog-post [slug]="currentSlug()" (back)="navigate('home')" />
+            <app-blog-post
+              [slug]="currentSlug()"
+              (back)="navigate('home')"
+            />
           }
           @case ('syntax') {
             <app-syntax />
           }
         }
       </main>
-      <footer class="border-t border-neutral-200 dark:border-neutral-800 text-center text-sm text-neutral-500 dark:text-neutral-400 py-6">
+      <footer
+        class="border-t border-neutral-200 dark:border-neutral-800 text-center text-sm text-neutral-500 dark:text-neutral-400 py-6"
+      >
         Built with
-        <a href="https://angular.dev" class="text-neutral-700 dark:text-neutral-300 underline">Angular</a>
+        <a
+          href="https://angular.dev"
+          class="text-neutral-700 dark:text-neutral-300 underline"
+          >Angular</a
+        >
         +
-        <a href="https://comark.dev" class="text-neutral-700 dark:text-neutral-300 underline">Comark</a>
+        <a
+          href="https://comark.dev"
+          class="text-neutral-700 dark:text-neutral-300 underline"
+          >Comark</a
+        >
       </footer>
     </div>
   `,

@@ -24,7 +24,9 @@ import { AlertComponent } from '../components/alert.component'
             </time>
             <div class="flex gap-1.5">
               @for (tag of post.tags; track tag) {
-                <span class="px-1.5 py-0.5 rounded text-xs bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400">
+                <span
+                  class="px-1.5 py-0.5 rounded text-xs bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400"
+                >
                   {{ tag }}
                 </span>
               }

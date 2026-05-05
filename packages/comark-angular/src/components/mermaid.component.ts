@@ -40,7 +40,7 @@ export class Mermaid implements OnInit, OnChanges, OnDestroy {
 
   constructor(
     private elementRef: ElementRef,
-    private cdr: ChangeDetectorRef,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {

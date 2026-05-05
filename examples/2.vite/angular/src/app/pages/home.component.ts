@@ -9,9 +9,17 @@ import { getAllPosts, type PostMeta } from '../lib/posts'
       <h1 class="text-3xl font-bold mb-2">Comark Blog</h1>
       <p class="text-neutral-500 dark:text-neutral-400 mb-8">
         A blog built with
-        <a href="https://angular.dev" class="underline">Angular</a>
+        <a
+          href="https://angular.dev"
+          class="underline"
+          >Angular</a
+        >
         and
-        <a href="https://comark.dev" class="underline">Comark</a>
+        <a
+          href="https://comark.dev"
+          class="underline"
+          >Comark</a
+        >
         rendering.
       </p>
       @if (posts.length === 0) {
@@ -36,7 +44,9 @@ import { getAllPosts, type PostMeta } from '../lib/posts'
                 </time>
                 <div class="flex gap-1.5">
                   @for (tag of post.tags; track tag) {
-                    <span class="px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400">
+                    <span
+                      class="px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400"
+                    >
                       {{ tag }}
                     </span>
                   }

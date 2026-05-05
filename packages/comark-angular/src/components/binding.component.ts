@@ -33,7 +33,7 @@ export class Binding implements OnChanges {
 
   constructor(
     private elementRef: ElementRef,
-    private renderer: Renderer2,
+    private renderer: Renderer2
   ) {}
 
   ngOnChanges(_changes: SimpleChanges): void {
@@ -42,9 +42,7 @@ export class Binding implements OnChanges {
       hostEl.removeChild(hostEl.firstChild)
     }
 
-    const text = (this.value !== undefined && this.value !== null)
-      ? String(this.value)
-      : (this.defaultValue ?? '')
+    const text = this.value !== undefined && this.value !== null ? String(this.value) : (this.defaultValue ?? '')
 
     const textNode = this.renderer.createText(text)
     this.renderer.appendChild(hostEl, textNode)

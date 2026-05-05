@@ -37,14 +37,14 @@
     "comark": "catalog:"
   },
   "devDependencies": {
+    "@angular/common": "catalog:",
     "@angular/compiler": "catalog:",
     "@angular/compiler-cli": "catalog:",
     "@angular/core": "catalog:",
-    "@angular/common": "catalog:",
     "@angular/platform-browser": "catalog:",
     "@angular/platform-server": "catalog:",
-    "vitest": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   },
   "peerDependencies": {
     "@angular/common": ">=17.0.0 <22.0.0",

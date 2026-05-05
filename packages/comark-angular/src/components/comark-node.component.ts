@@ -12,11 +12,7 @@ import {
   createComponent,
   reflectComponentType,
 } from '@angular/core'
-import type {
-  ComarkElement,
-  ComarkNode,
-  NodeRenderData,
-} from 'comark'
+import type { ComarkElement, ComarkNode, NodeRenderData } from 'comark'
 import { pascalCase, resolveAttributes } from 'comark/utils'
 
 /**
@@ -52,10 +48,7 @@ function getChildren(node: ComarkNode): ComarkNode[] {
 /**
  * Resolve a custom component from the components map.
  */
-function resolveComponent(
-  tag: string,
-  components: Record<string, Type<any>>
-): Type<any> | undefined {
+function resolveComponent(tag: string, components: Record<string, Type<any>>): Type<any> | undefined {
   const pascalTag = pascalCase(tag)
   const proseTag = `Prose${pascalTag}`
   return components[proseTag] || components[tag] || components[pascalTag]
@@ -63,8 +56,20 @@ function resolveComponent(
 
 /** Void (self-closing) HTML elements that must not have children. */
 const VOID_ELEMENTS = new Set([
-  'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input',
-  'link', 'meta', 'param', 'source', 'track', 'wbr',
+  'area',
+  'base',
+  'br',
+  'col',
+  'embed',
+  'hr',
+  'img',
+  'input',
+  'link',
+  'meta',
+  'param',
+  'source',
+  'track',
+  'wbr',
 ])
 
 /**
@@ -97,7 +102,7 @@ export class ComarkNodeComponent implements OnChanges {
     private vcr: ViewContainerRef,
     private renderer: Renderer2,
     private elementRef: ElementRef,
-    private injector: Injector,
+    private injector: Injector
   ) {}
 
   ngOnChanges(_changes: SimpleChanges): void {
@@ -147,9 +152,7 @@ export class ComarkNodeComponent implements OnChanges {
 
       // Build childrenRenderData — only shadow parent scope when element has own attrs
       const hasOwnAttrs = Object.keys(resolved).length > 0
-      const childrenRenderData: NodeRenderData = hasOwnAttrs
-        ? { ...this.renderData, props: resolved }
-        : this.renderData
+      const childrenRenderData: NodeRenderData = hasOwnAttrs ? { ...this.renderData, props: resolved } : this.renderData
 
       if (customComponent) {
         this.renderCustomComponent(customComponent, resolved, children, childrenRenderData)
@@ -163,7 +166,7 @@ export class ComarkNodeComponent implements OnChanges {
     tag: string,
     attrs: Record<string, any>,
     children: ComarkNode[],
-    childrenRenderData: NodeRenderData,
+    childrenRenderData: NodeRenderData
   ): void {
     const hostEl = this.elementRef.nativeElement as HTMLElement
     const el = this.renderer.createElement(tag)
@@ -199,7 +202,7 @@ export class ComarkNodeComponent implements OnChanges {
     componentType: Type<any>,
     attrs: Record<string, any>,
     children: ComarkNode[],
-    childrenRenderData: NodeRenderData,
+    childrenRenderData: NodeRenderData
   ): void {
     const hostEl = this.elementRef.nativeElement as HTMLElement
 
@@ -257,17 +260,14 @@ export class ComarkNodeComponent implements OnChanges {
 
     // Create the Angular component with projected content
     const componentRef = createComponent(componentType, {
-      environmentInjector: this.vcr.injector.get(
-        Injector as any,
-        this.injector
-      ) as any,
+      environmentInjector: this.vcr.injector.get(Injector as any, this.injector) as any,
       elementInjector: this.injector,
       projectableNodes,
     })
 
     // Set inputs
     const mirror = reflectComponentType(componentType)
-    const inputNames = new Set(mirror?.inputs.map(i => i.propName) || [])
+    const inputNames = new Set(mirror?.inputs.map((i) => i.propName) || [])
 
     for (const key in attrs) {
       if (key === 'as') continue
@@ -300,11 +300,7 @@ export class ComarkNodeComponent implements OnChanges {
    * Render an array of ComarkNode children into a parent DOM element.
    * Each child gets its own `comark-node` component created dynamically.
    */
-  private renderChildren(
-    parentEl: HTMLElement,
-    children: ComarkNode[],
-    renderData: NodeRenderData,
-  ): void {
+  private renderChildren(parentEl: HTMLElement, children: ComarkNode[], renderData: NodeRenderData): void {
     for (const child of children) {
       if (child === undefined || child === null) continue
 
@@ -336,9 +332,7 @@ export class ComarkNodeComponent implements OnChanges {
 
         const resolved = resolveAttributes(childProps, renderData, { parseJson: true })
         const hasOwnAttrs = Object.keys(resolved).length > 0
-        const childRenderData: NodeRenderData = hasOwnAttrs
-          ? { ...renderData, props: resolved }
-          : renderData
+        const childRenderData: NodeRenderData = hasOwnAttrs ? { ...renderData, props: resolved } : renderData
 
         if (customComponent) {
           // Create a host element for the dynamic component

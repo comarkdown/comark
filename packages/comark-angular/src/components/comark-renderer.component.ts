@@ -1,15 +1,5 @@
-import {
-  Component,
-  Input,
-  ChangeDetectionStrategy,
-  Type,
-} from '@angular/core'
-import type {
-  ComarkElement,
-  ComarkNode,
-  ComarkTree,
-  NodeRenderData,
-} from 'comark'
+import { Component, Input, ChangeDetectionStrategy, Type } from '@angular/core'
+import type { ComarkElement, ComarkNode, ComarkTree, NodeRenderData } from 'comark'
 import { ComarkNodeComponent } from './comark-node.component.ts'
 import { findLastTextNodeAndAppendNode, getCaret } from '../utils/caret.ts'
 
@@ -62,10 +52,7 @@ export class ComarkRendererComponent {
     const caretNode = getCaret(this.caret)
 
     if (this.streaming && caretNode && nodes.length > 0) {
-      const hasStreamCaret = findLastTextNodeAndAppendNode(
-        nodes[nodes.length - 1] as ComarkElement,
-        caretNode
-      )
+      const hasStreamCaret = findLastTextNodeAndAppendNode(nodes[nodes.length - 1] as ComarkElement, caretNode)
       if (!hasStreamCaret) {
         nodes.push(caretNode)
       }
