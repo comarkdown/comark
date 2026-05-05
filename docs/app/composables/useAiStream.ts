@@ -5,6 +5,7 @@ interface UseAiStreamOptions {
   onChunk: (markdown: string) => Promise<void>
   onError: (previousMarkdown: string) => void
   onFinish: () => Promise<void>
+  autoScroll: boolean
 }
 
 export function useAiStream(
@@ -45,14 +46,14 @@ export function useAiStream(
         if (done) break
         markdown.value = (markdown.value ?? '') + decoder.decode(value, { stream: true })
         await options.onChunk(markdown.value)
-        scrollToBottom()
+        if (options.autoScroll) scrollToBottom()
       }
     } catch {
       options.onError(previousMarkdown)
     } finally {
       isGenerating.value = false
       await options.onFinish()
-      scrollToBottom()
+      if (options.autoScroll) scrollToBottom()
     }
   }
 
