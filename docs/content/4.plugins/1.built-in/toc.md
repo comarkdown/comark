@@ -71,9 +71,9 @@ interface TocLink {
 
 | Option | Type | Default | Description |
 |---|---|---|---|
-| [`depth`](#code-depth) | `number` | `2` | Heading levels to include: `1` = h2 only, `2` = h2–h3, `3` = h2–h4, etc. |
-| [`searchDepth`](#code-searchdepth) | `number` | `2` | How deep to search for headings in nested component structures |
-| [`title`](#code-title) | `string` | `''` | Title field on the returned `TocTree` |
+| [`depth`](#options-code-depth) | `number` | `2` | Heading levels to include: `1` = h2 only, `2` = h2–h3, `3` = h2–h4, etc. |
+| [`searchDepth`](#options-code-searchdepth) | `number` | `2` | How deep to search for headings in nested component structures |
+| [`title`](#options-code-title) | `string` | `''` | Title field on the returned `TocTree` |
 
 ::tip
 All three options can also be set via frontmatter — `depth`, `searchDepth`, and `title` keys are read automatically and override the plugin options.

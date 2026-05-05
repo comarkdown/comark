@@ -137,12 +137,12 @@ Returns a `ComarkPlugin` that sanitizes the parsed AST.
 
 | Option | Type | Default | Description |
 |---|---|---|---|
-| [`blockedTags`](#code-blockedtags) | `string[]` | `[]` | Tag names to remove entirely from the AST |
-| [`allowedProtocols`](#code-allowedprotocols) | `string[]` | `['*']` | Protocols permitted in `href` and `src` |
-| [`allowedLinkPrefixes`](#code-allowedlinkprefixes) | `string[]` | `['*']` | URL prefixes permitted in `href` |
-| [`allowedImagePrefixes`](#code-allowedimageprefixes) | `string[]` | `['*']` | URL prefixes permitted in `src` |
-| [`defaultOrigin`](#code-defaultorigin) | `string` | `undefined` | Rewrite disallowed URLs to this origin instead of stripping |
-| [`allowDataImages`](#code-allowdataimages) | `boolean` | `true` | Allow `data:image/*` URIs in `src` |
+| [`blockedTags`](#options-code-blockedtags) | `string[]` | `[]` | Tag names to remove entirely from the AST |
+| [`allowedProtocols`](#options-code-allowedprotocols) | `string[]` | `['*']` | Protocols permitted in `href` and `src` |
+| [`allowedLinkPrefixes`](#options-code-allowedlinkprefixes) | `string[]` | `['*']` | URL prefixes permitted in `href` |
+| [`allowedImagePrefixes`](#options-code-allowedimageprefixes) | `string[]` | `['*']` | URL prefixes permitted in `src` |
+| [`defaultOrigin`](#options-code-defaultorigin) | `string` | `undefined` | Rewrite disallowed URLs to this origin instead of stripping |
+| [`allowDataImages`](#options-code-allowdataimages) | `boolean` | `true` | Allow `data:image/*` URIs in `src` |
 
 ### `blockedTags`
 
