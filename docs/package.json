@@ -18,7 +18,6 @@
     "@vercel/speed-insights": "catalog:",
     "@vueuse/core": "catalog:",
     "ai": "catalog:",
-    "zod": "catalog:",
     "comark": "catalog:",
     "docus": "https://pkg.pr.new/docus@6983451",
     "markdown-it-math": "catalog:",
@@ -26,14 +25,15 @@
     "nuxt-studio": "catalog:",
     "splitpanes": "catalog:",
     "tailwindcss": "catalog:",
+    "ufo": "catalog:",
     "vue-json-pretty": "catalog:",
-    "ufo": "catalog:"
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@nuxt/devtools-kit": "catalog:",
     "@tailwindcss/typography": "catalog:",
+    "@types/json-schema": "catalog:",
     "@types/splitpanes": "catalog:",
-    "tsx": "catalog:",
-    "@types/json-schema": "catalog:"
+    "tsx": "catalog:"
   }
 }
