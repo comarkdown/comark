@@ -51,9 +51,5 @@ export default defineNuxtConfig({
     domain: 'https://comark.dev',
   },
 
-  components: [
-    { path: '~/components' },
-  ],
-
   studio: false,
 })

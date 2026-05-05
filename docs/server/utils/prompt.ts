@@ -32,14 +32,12 @@ export function schemaToMarkdown(components: ComponentSchema[]): string {
 }
 
 /** Builds the system prompt for showcase mode, injecting the live component registry. */
-export async function buildShowcasePrompt(base: string, rules: string): Promise<string> {
+export async function buildShowcasePrompt(base: string): Promise<string> {
   const componentsBlock = await loadInternalComponents()
   return [
     base,
     '\nBefore generating, call fetchComarkSkill to retrieve Comark component syntax, slots, and props.',
     componentsBlock,
-    '---',
-    rules,
   ].filter(Boolean).join('\n\n')
 }
 

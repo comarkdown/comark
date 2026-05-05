@@ -9,49 +9,33 @@ const NUXT_UI_SKILL_FILES = {
   'nuxt-ui-component-selection': 'https://ui.nuxt.com/.well-known/skills/nuxt-ui/references/guidelines/component-selection.md',
 } as const
 
-const BASE_PROMPT = `You are a Comark page generator. Comark is a superset of Markdown that supports Vue component syntax.
+const BASE_PROMPT = `You are a Comark page generator. Comark is a superset of Markdown with component syntax (MDC — Markdown with Components), framework-agnostic with renderers for Vue, React, and Svelte.
 
 IMPORTANT: Do NOT output any text before or between tool calls. Call fetchSkill tools silently. Your first output must be the page content itself — starting with the frontmatter \`---\` block.
 
-Then generate ONLY the raw page content — no explanation, no wrapping code block, no preamble.`
-
-const NUXT_UI_PROMPT = `${BASE_PROMPT}
-
-Before generating, call both fetchComarkSkill and fetchNuxtUISkill to retrieve the documentation you need. Always fetch:
-- fetchComarkSkill — Comark component syntax, slots, props
-- fetchNuxtUISkill with nuxt-ui-components — available components (Steps, Callout, Badge, etc.)
+Then generate ONLY the raw page content — no explanation, no wrapping code block, no preamble.
 
 ## RULES
 
-- Always open with YAML frontmatter (title, description).
+- Always open with YAML frontmatter (title, description). Add \`page: { maxWidth: 1120px }\` for rich layout pages.
 - NEVER use json-render blocks — use Comark component syntax exclusively
 - Use real, plausible content — names, prices, places, measurements
-- Mix element types: headings, lists, tables, components, callouts, steps
 - Keep pages concise: 80–150 lines of comark source (roughly 2 viewport scrolls)
 - **Prefer named slots over props for any text content.** Only use props for scalar values (booleans, numbers, icon names). Put titles, descriptions, and body content in slots.
 - Where it improves the visual, consider placing an image inside a slot instead of (or alongside) text — e.g. a photo in a description slot or a cover image in a header slot.
+- Mix element types: headings, lists, tables, components, callouts, steps
+- Square crops (\`w=100&h=100\`) for thumbnails
 
 ## IMAGE GUIDELINES
 
 - Unsplash: \`https://images.unsplash.com/photo-{id}?w=800&h=400&fit=crop&q=80\`
 - Picsum: \`https://picsum.photos/seed/{word}/{width}/{height}\``
 
-const SHOWCASE_RULES = `
-## RULES
+const NUXT_UI_PROMPT = `${BASE_PROMPT}
 
-- Always open with YAML frontmatter (title, description). Add \`page: { maxWidth: 1120px }\` for rich layout pages.
-- NEVER use json-render blocks — use Comark component syntax exclusively (e.g. \`::HostInfo{name="Sophie" badge="Superhost"}\`)
-- Use real, plausible content — names, prices, places, measurements
-- Mix element types: headings, lists, tables, components
-- Keep pages concise: 80–150 lines of comark source (roughly 2 viewport scrolls)
-- **Prefer named slots over props for any text content.** Only use props for scalar values (booleans, numbers, icon names). Put titles, descriptions, and body content in slots.
-- Where it improves the visual, consider placing an image inside a slot instead of (or alongside) text — e.g. a photo in a description slot or a cover image in a header slot.
-
-## IMAGE GUIDELINES
-
-- Unsplash: \`https://images.unsplash.com/photo-{id}?w=800&h=400&fit=crop&q=80\`
-- Picsum: \`https://picsum.photos/seed/{word}/{width}/{height}\`
-- Square crops (\`w=100&h=100\`) for thumbnails`
+Before generating, call both fetchComarkSkill and fetchNuxtUISkill to retrieve the documentation you need. Always fetch:
+- fetchComarkSkill — Comark component syntax, slots, props
+- fetchNuxtUISkill with nuxt-ui-components — available components (Steps, Callout, Badge, etc.)`
 
 export default defineEventHandler(async (event) => {
   const { prompt, mode = 'nuxt-ui', structure } = await readBody(event)
@@ -60,7 +44,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Prompt is required' })
   }
 
-  const systemPrompt = mode === 'showcase' ? await buildShowcasePrompt(BASE_PROMPT, SHOWCASE_RULES) : NUXT_UI_PROMPT
+  const systemPrompt = mode === 'showcase' ? await buildShowcasePrompt(BASE_PROMPT) : NUXT_UI_PROMPT
 
   const result = streamText({
     model: 'anthropic/claude-sonnet-4.6',

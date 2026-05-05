@@ -380,7 +380,6 @@ function handleGenerate(prompt: string) {
           <div class="relative flex-1 min-h-0">
             <Editor
               v-model="markdown"
-              :font-size="14"
             />
             <PromptInput
               v-if="currentExample.mode"
@@ -504,7 +503,6 @@ function handleGenerate(prompt: string) {
               v-model="formattedOutputModel"
               language="mdc"
               :read-only="true"
-              :font-size="14"
             />
           </div>
 

@@ -5,11 +5,9 @@ import { language as mdc } from '@nuxtlabs/monarch-mdc'
 const {
   language = 'mdc',
   readOnly = false,
-  fontSize = 14,
 } = defineProps<{
   language?: string
   readOnly?: boolean
-  fontSize?: number
 }>()
 
 const model = defineModel<string>({
@@ -40,7 +38,7 @@ onMounted(async () => {
     minimap: {
       enabled: false,
     },
-    fontSize,
+    fontSize: 14,
     lineNumbers: 'on',
     scrollBeyondLastLine: false,
     roundedSelection: false,
