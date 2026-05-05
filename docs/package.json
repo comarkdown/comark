@@ -16,13 +16,14 @@
     "@vercel/speed-insights": "catalog:",
     "@vueuse/core": "catalog:",
     "comark": "catalog:",
-    "docus": "https://pkg.pr.new/docus@6983451",
+    "docus": "catalog:",
     "markdown-it-math": "catalog:",
     "nuxt": "catalog:",
     "nuxt-studio": "catalog:",
     "splitpanes": "catalog:",
     "tailwindcss": "catalog:",
-    "vue-json-pretty": "catalog:"
+    "vue-json-pretty": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@nuxt/devtools-kit": "catalog:",

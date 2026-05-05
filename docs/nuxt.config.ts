@@ -48,6 +48,6 @@ export default defineNuxtConfig({
   studio: false,
 
   routeRules: {
-    '/plugins/built-in/highlight': { redirect: '/plugins/built-in/syntax-highlight' }
-  }
+    '/plugins/built-in/highlight': { redirect: '/plugins/built-in/syntax-highlight' },
+  },
 })
