@@ -1,6 +1,6 @@
 import { pascalCase } from 'scule'
 import { localComponents, localComponentLoaders } from '#content/components'
-import { UPageHero, UPageSection, UPageCard, UPageCTA, UButton, UBadge } from '#components'
+import { UPageHero, UPageSection, UPageCard, UPageCTA, UButton, UBadge, UPageFeature, UPageGrid, UPricingPlan } from '#components'
 import Gallery from '@/components/playground/Gallery.vue'
 import RatingBar from '@/components/playground/RatingBar.vue'
 import HostInfo from '@/components/playground/HostInfo.vue'
@@ -25,6 +25,9 @@ const components: Record<string, () => Promise<unknown>> = {
   UButton: () => Promise.resolve(UButton),
   UBadge: () => Promise.resolve(UBadge),
   Badge: () => Promise.resolve(UBadge),
+  UPageFeature: () => Promise.resolve(UPageFeature),
+  UPageGrid: () => Promise.resolve(UPageGrid),
+  UPricingPlan: () => Promise.resolve(UPricingPlan),
 
   // Custom playground showcase components (explicit imports to ensure bundle inclusion)
   Gallery: () => Promise.resolve(Gallery),
