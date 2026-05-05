@@ -17,7 +17,7 @@ Comark's plugin system extends markdown functionality with specialized features.
   Convert emoji shortcodes like `:smile:` into emoji characters
   ::
 
-  ::card{icon="i-lucide-code" title="Syntax Highlighting" to="/plugins/built-in/highlight"}
+  ::card{icon="i-lucide-code" title="Syntax Highlighting" to="/plugins/built-in/syntax-highlight"}
   Beautiful code syntax highlighting using Shiki with multi-theme support
   ::
 

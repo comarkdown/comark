@@ -19,7 +19,7 @@
     "@vueuse/core": "catalog:",
     "ai": "catalog:",
     "comark": "catalog:",
-    "docus": "https://pkg.pr.new/docus@6983451",
+    "docus": "catalog:",
     "markdown-it-math": "catalog:",
     "nuxt": "catalog:",
     "nuxt-studio": "catalog:",

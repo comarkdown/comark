@@ -20,9 +20,11 @@ links:
 
 The `comark/plugins/math` plugin renders LaTeX math formulas using [KaTeX](https://katex.org/). It supports both inline and display math expressions.
 
-::note
-`katex` is a peer dependency — install it alongside Comark: `npm install katex`
-::
+`katex` is a peer dependency, install it alongside Comark:
+
+```bash [terminal]
+npm install katex
+```
 
 ## Usage
 

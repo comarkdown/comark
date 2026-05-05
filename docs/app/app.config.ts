@@ -107,7 +107,7 @@ export default defineAppConfig({
         links: [
           {
             label: 'Syntax Highlighting',
-            to: '/plugins/built-in/highlight',
+            to: '/plugins/built-in/syntax-highlight',
           },
           {
             label: 'Math',

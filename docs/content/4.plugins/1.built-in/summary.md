@@ -98,7 +98,7 @@ The extracted nodes are stored at `tree.meta.summary` as `ComarkNode[]`. If no d
 
 | Option | Type | Default | Description |
 |---|---|---|---|
-| [`delimiter`](#code-delimiter) | `string` | `'<!-- more -->'` | HTML comment used to split summary from full content |
+| [`delimiter`](#options-code-delimiter) | `string` | `'<!-- more -->'` | HTML comment used to split summary from full content |
 
 ### `delimiter`
 

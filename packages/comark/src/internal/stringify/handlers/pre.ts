@@ -23,8 +23,10 @@ export function pre(node: ComarkElement, state: State) {
   // Meta always has a leading space
   const meta = attributes.meta ? ' ' + attributes.meta : ''
 
-  const result =
-    '```' + language + filename + highlights + meta + '\n' + String(node[1]?.code || textContent(node)).trim() + '\n```'
+  const code = String(node[1]?.code || textContent(node)).trim()
+  const fence = code.includes('```') ? '~~~' : '```'
+
+  const result = fence + language + filename + highlights + meta + '\n' + code + '\n' + fence
 
   return result + state.context.blockSeparator
 }
