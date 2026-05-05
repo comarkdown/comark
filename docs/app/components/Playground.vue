@@ -248,7 +248,9 @@ const { isGenerating, generate } = useAiStream(markdown, {
         autoClose: true,
         html: parseOptions.value.html,
       })
-    } catch { /* ignore intermediate parse errors */ }
+    } catch {
+      /* ignore intermediate parse errors */
+    }
   },
   onError: (_prev: string) => {
     error.value = 'Generation failed'
@@ -378,9 +380,7 @@ function handleGenerate(prompt: string) {
             </UPopover>
           </div>
           <div class="relative flex-1 min-h-0">
-            <Editor
-              v-model="markdown"
-            />
+            <Editor v-model="markdown" />
             <PromptInput
               v-if="currentExample.mode"
               :is-generating="isGenerating"

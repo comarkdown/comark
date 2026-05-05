@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import React from 'react'
+import type { ReactNode } from 'react'
 import { renderToString } from 'react-dom/server'
 import { parse } from 'comark'
 import { ComarkRenderer } from '../src/components/ComarkRenderer'
@@ -37,9 +37,8 @@ Some content
 
     const result = await parse(markdown)
 
-    function ErrorComponent() {
+    function ErrorComponent(): ReactNode {
       throw new Error('Component error during render')
-      return null
     }
 
     const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {})

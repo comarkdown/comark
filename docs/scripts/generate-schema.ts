@@ -69,13 +69,13 @@ async function extractComponent(file: string, dir: string): Promise<z.infer<type
   return result
 }
 
-const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
 async function main() {
   const [proseFiles, playgroundFiles] = await Promise.all([
-    readdir(proseDir).then(files => files.filter(f => f.endsWith('.vue'))),
-    readdir(playgroundDir).then(files =>
-      files.filter(f => f.endsWith('.vue') && !['AIFloatingInput.vue', 'GeneratingIndicator.vue'].includes(f))
+    readdir(proseDir).then((files) => files.filter((f) => f.endsWith('.vue'))),
+    readdir(playgroundDir).then((files) =>
+      files.filter((f) => f.endsWith('.vue') && !['AIFloatingInput.vue', 'GeneratingIndicator.vue'].includes(f))
     ),
   ])
 

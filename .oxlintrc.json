@@ -9,9 +9,9 @@
   },
   "overrides": [
     {
-      "files": ["packages/**/src/**"],
+      "files": ["**/next-env.d.ts"],
       "rules": {
-        "import/extensions": ["error", "ignorePackages"]
+        "typescript/triple-slash-reference": "off"
       }
     }
   ]

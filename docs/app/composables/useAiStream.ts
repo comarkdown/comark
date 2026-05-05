@@ -7,10 +7,7 @@ interface UseAiStreamOptions {
   onFinish: () => Promise<void>
 }
 
-export function useAiStream(
-  markdown: Ref<string | undefined>,
-  options: UseAiStreamOptions,
-) {
+export function useAiStream(markdown: Ref<string | undefined>, options: UseAiStreamOptions) {
   const isGenerating = ref(false)
 
   async function generate(prompt: string, mode: AiMode, structure: string) {

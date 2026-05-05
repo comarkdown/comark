@@ -30,7 +30,7 @@ export function useMainNavigation() {
       to: '/play',
       icon: 'i-lucide-play',
       active: route.path.startsWith('/play'),
-      children: playgroundExamples.map(example => ({
+      children: playgroundExamples.map((example) => ({
         label: example.label,
         to: example.to ?? `/play/${example.value}`,
         active: route.path.startsWith(`/play/${example.value}`),

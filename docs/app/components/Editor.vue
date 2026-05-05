@@ -2,10 +2,7 @@
 import loader from '@monaco-editor/loader'
 import { language as mdc } from '@nuxtlabs/monarch-mdc'
 
-const {
-  language = 'mdc',
-  readOnly = false,
-} = defineProps<{
+const { language = 'mdc', readOnly = false } = defineProps<{
   language?: string
   readOnly?: boolean
 }>()

@@ -6,7 +6,8 @@ const COMARK_SKILL_URL = 'https://comark.dev/.well-known/skills/comark/reference
 
 const NUXT_UI_SKILL_FILES = {
   'nuxt-ui-components': 'https://ui.nuxt.com/.well-known/skills/nuxt-ui/references/components.md',
-  'nuxt-ui-component-selection': 'https://ui.nuxt.com/.well-known/skills/nuxt-ui/references/guidelines/component-selection.md',
+  'nuxt-ui-component-selection':
+    'https://ui.nuxt.com/.well-known/skills/nuxt-ui/references/guidelines/component-selection.md',
 } as const
 
 const BASE_PROMPT = `You are a Comark page generator. Comark is a superset of Markdown with component syntax (MDC — Markdown with Components), framework-agnostic with renderers for Vue, React, and Svelte.
@@ -53,7 +54,8 @@ export default defineEventHandler(async (event) => {
     stopWhen: stepCountIs(5),
     tools: {
       fetchComarkSkill: tool({
-        description: 'Fetch the Comark MDC syntax reference — component syntax, slots, and props. Call this before generating in any mode.',
+        description:
+          'Fetch the Comark MDC syntax reference — component syntax, slots, and props. Call this before generating in any mode.',
         inputSchema: z.object({}),
         execute: async () => {
           const response = await fetch(COMARK_SKILL_URL)
@@ -61,20 +63,24 @@ export default defineEventHandler(async (event) => {
           return response.text()
         },
       }),
-      ...(mode === 'nuxt-ui' ? {
-        fetchNuxtUISkill: tool({
-          description: 'Fetch Nuxt UI documentation to understand available components and when to use them.',
-          inputSchema: z.object({
-            skill: z.enum(['nuxt-ui-components', 'nuxt-ui-component-selection']).describe('The Nuxt UI skill file to fetch'),
-          }),
-          execute: async ({ skill }) => {
-            const url = NUXT_UI_SKILL_FILES[skill]
-            const response = await fetch(url)
-            if (!response.ok) return `Failed to fetch ${skill}: ${response.status}`
-            return response.text()
-          },
-        }),
-      } : {}),
+      ...(mode === 'nuxt-ui'
+        ? {
+            fetchNuxtUISkill: tool({
+              description: 'Fetch Nuxt UI documentation to understand available components and when to use them.',
+              inputSchema: z.object({
+                skill: z
+                  .enum(['nuxt-ui-components', 'nuxt-ui-component-selection'])
+                  .describe('The Nuxt UI skill file to fetch'),
+              }),
+              execute: async ({ skill }) => {
+                const url = NUXT_UI_SKILL_FILES[skill]
+                const response = await fetch(url)
+                if (!response.ok) return `Failed to fetch ${skill}: ${response.status}`
+                return response.text()
+              },
+            }),
+          }
+        : {}),
     },
   })
 
@@ -106,7 +112,7 @@ export default defineEventHandler(async (event) => {
           controller.enqueue(encoder.encode(preambleBuffer))
         }
       },
-    }),
+    })
   )
 
   return sendStream(event, byteStream)

@@ -14,9 +14,7 @@
       ],
       "x-example": "::browser{src=\"https://example.com\"}\n::",
       "type": "object",
-      "required": [
-        "src"
-      ],
+      "required": ["src"],
       "properties": {}
     },
     {
@@ -31,11 +29,7 @@
       ],
       "x-example": "::code-explorer{org=\"nuxt\" repo=\"nuxt\" path=\"examples/hello-world\" branch=\"main\" defaultValue=\"app.vue\"}\n::",
       "type": "object",
-      "required": [
-        "org",
-        "repo",
-        "path"
-      ],
+      "required": ["org", "repo", "path"],
       "properties": {}
     }
   ],
@@ -52,10 +46,7 @@
       ],
       "x-example": "::booking-card{title=\"$129 / night\" cta=\"Reserve now\"}\n::",
       "type": "object",
-      "required": [
-        "title",
-        "cta"
-      ],
+      "required": ["title", "cta"],
       "properties": {}
     },
     {
@@ -74,9 +65,7 @@
       ],
       "x-example": "::facility{icon=\"i-heroicons-wifi\"}\n#title\nHigh-Speed WiFi\n#description\nComplimentary high-speed internet access throughout the facility\n::",
       "type": "object",
-      "required": [
-        "icon"
-      ],
+      "required": ["icon"],
       "properties": {}
     },
     {
@@ -114,9 +103,7 @@
       ],
       "x-example": "::host-info{name=\"Sarah Johnson\" badge=\"Senior Developer\" duration=\"45 minutes\"}",
       "type": "object",
-      "required": [
-        "name"
-      ],
+      "required": ["name"],
       "properties": {}
     },
     {
@@ -154,9 +141,7 @@
       ],
       "x-example": "::rating-bar{rating=\"4.8\" reviews=\"1247\"}\n#title\nExcellent Customer Service\n#description\nBased on reviews from the last 6 months\n::",
       "type": "object",
-      "required": [
-        "reviews"
-      ],
+      "required": ["reviews"],
       "properties": {}
     },
     {

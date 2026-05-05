@@ -19,9 +19,12 @@ function focusInput() {
   nextTick(() => el.select())
 }
 
-watch(() => props.prompt, () => {
-  input.value = ''
-})
+watch(
+  () => props.prompt,
+  () => {
+    input.value = ''
+  }
+)
 
 function handleFocus(e: FocusEvent) {
   if (!input.value) {
@@ -39,7 +42,10 @@ function handleSubmit() {
 </script>
 
 <template>
-  <div :class="floating ? 'pointer-events-none absolute inset-x-0 bottom-6 z-10 px-4 flex justify-center' : 'flex-1'" @click="focusInput">
+  <div
+    :class="floating ? 'pointer-events-none absolute inset-x-0 bottom-6 z-10 px-4 flex justify-center' : 'flex-1'"
+    @click="focusInput"
+  >
     <form
       ref="formRef"
       :class="floating ? 'pointer-events-auto w-full max-w-96' : 'flex-1 flex items-center gap-1'"
@@ -52,15 +58,22 @@ function handleSubmit() {
         maxlength="1000"
         :disabled="isGenerating"
         :class="!floating && 'flex-1'"
-        :ui="floating ? {
-          root: 'group w-full! min-w-0 transition-all duration-300 ease-out [@media(hover:hover)]:hover:scale-105 [@media(hover:hover)]:focus-within:scale-105',
-          base: 'bg-default shadow-lg rounded-xl text-base',
-          trailing: 'pe-2',
-        } : {}"
+        :ui="
+          floating
+            ? {
+                root: 'group w-full! min-w-0 transition-all duration-300 ease-out [@media(hover:hover)]:hover:scale-105 [@media(hover:hover)]:focus-within:scale-105',
+                base: 'bg-default shadow-lg rounded-xl text-base',
+                trailing: 'pe-2',
+              }
+            : {}
+        "
         @focus="handleFocus"
         @keydown.enter.exact.prevent="handleSubmit"
       >
-        <template v-if="floating" #trailing>
+        <template
+          v-if="floating"
+          #trailing
+        >
           <UButton
             type="submit"
             color="primary"
