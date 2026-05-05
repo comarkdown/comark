@@ -14,6 +14,8 @@ defineProps<{
   frameworksReactLinkTo: string
   frameworksSvelteLinkLabel: string
   frameworksSvelteLinkTo: string
+  frameworksAngularLinkLabel: string
+  frameworksAngularLinkTo: string
 }>()
 </script>
 
@@ -37,6 +39,8 @@ defineProps<{
       :react-link-to="frameworksReactLinkTo"
       :svelte-link-label="frameworksSvelteLinkLabel"
       :svelte-link-to="frameworksSvelteLinkTo"
+      :angular-link-label="frameworksAngularLinkLabel"
+      :angular-link-to="frameworksAngularLinkTo"
       class="min-w-0"
     />
   </div>
