@@ -117,6 +117,21 @@ catalog:
   svelte: ^5.55.2
   svelte-check: ^4.4.6
 
+  # Angular
+  "@angular/common": ^21.0.0
+  "@angular/compiler": ^21.0.0
+  "@angular/compiler-cli": ^21.0.0
+  "@angular/core": ^21.0.0
+  "@angular/build": ^21.0.0
+  "@angular/platform-browser": ^21.0.0
+  "@angular/platform-browser-dynamic": ^21.0.0
+  "@angular/platform-server": ^21.0.0
+  "@angular/router": ^21.0.0
+  "@analogjs/vite-plugin-angular": ^3.0.0-alpha.53
+  zone.js: ^0.16.0
+  rxjs: ^7.8.0
+  tslib: ^2.6.0
+
   # CSS
   tailwindcss: ^4.2.2
   tsx: ^4.22.4

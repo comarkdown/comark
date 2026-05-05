@@ -1,0 +1,61 @@
+import {
+  Component,
+  Input,
+  OnChanges,
+  SimpleChanges,
+  ChangeDetectionStrategy,
+  ElementRef,
+} from '@angular/core'
+import katex from 'katex'
+import 'katex/dist/katex.min.css'
+
+/**
+ * Math rendering component for Angular.
+ * Renders LaTeX math expressions using KaTeX.
+ *
+ * @example
+ * ```typescript
+ * import { Math } from '@comark/angular/plugins/math'
+ * ```
+ */
+@Component({
+  selector: 'comark-math',
+  standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: '',
+})
+export class Math implements OnChanges {
+  @Input({ required: true }) content!: string
+  @Input() class: string = ''
+  @Input() __node: any = {}
+
+  constructor(private elementRef: ElementRef) {}
+
+  ngOnChanges(_changes: SimpleChanges): void {
+    this.renderMath()
+  }
+
+  private renderMath(): void {
+    const isInline = this.class?.includes('inline')
+    const hostEl = this.elementRef.nativeElement as HTMLElement
+
+    // Clear previous content
+    while (hostEl.firstChild) {
+      hostEl.removeChild(hostEl.firstChild)
+    }
+
+    const wrapper = document.createElement(isInline ? 'span' : 'div')
+    wrapper.className = isInline ? 'math inline' : 'math block'
+
+    try {
+      wrapper.innerHTML = katex.renderToString(this.content, {
+        throwOnError: true,
+        displayMode: !isInline,
+      })
+    } catch {
+      wrapper.textContent = '...'
+    }
+
+    hostEl.appendChild(wrapper)
+  }
+}
