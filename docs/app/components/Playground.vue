@@ -390,6 +390,16 @@ function handleGenerate(prompt: string) {
           </div>
           <div class="relative flex-1 min-h-0">
             <Editor v-model="markdown" />
+            <div
+              v-if="isGenerating && !markdown"
+              class="absolute inset-0 flex flex-col items-center justify-center gap-3 text-muted bg-white dark:bg-[#1e1e1e]"
+            >
+              <UIcon
+                name="i-lucide-loader-circle"
+                class="size-6 animate-spin text-primary"
+              />
+              <span class="text-sm">Generating...</span>
+            </div>
             <PromptInput
               v-if="currentExample.mode"
               :is-generating="isGenerating"

@@ -22,7 +22,7 @@ Then generate ONLY the raw page content — no explanation, no wrapping code blo
 - Always open with YAML frontmatter (title, description) and add \`page: { maxWidth: 1120px }\` for rich layout pages.
 - NEVER USE \`---\` separators.
 - NEVER use json-render blocks — use Comark component syntax exclusively
-- **Prefer named slots over props for any text content.**
+- Prefer named slots over props for any text content (ie description, title)
 - Where it improves the visual, consider placing an image inside a slot instead of (or alongside) text.
 - Mix element types: headings, lists, tables, components, callouts, steps
 
