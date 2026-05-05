@@ -34,7 +34,6 @@
     "@tailwindcss/typography": "catalog:",
     "@types/splitpanes": "catalog:",
     "tsx": "catalog:",
-    "@ai-sdk/anthropic": "catalog:",
     "@types/json-schema": "catalog:"
   }
 }
