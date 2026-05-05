@@ -4,30 +4,16 @@ import { useDraggable, useWindowSize, watchDebounced } from '@vueuse/core'
 import { createParse } from '@comark/nuxt/parse'
 import jsonRenderer from '@comark/nuxt/plugins/json-render'
 import binding, { Binding } from '@comark/nuxt/plugins/binding'
-import Gallery from '~/components/playground/Gallery.vue'
-import RatingBar from '~/components/playground/RatingBar.vue'
-import HostInfo from '~/components/playground/HostInfo.vue'
-import Facility from '~/components/playground/Facility.vue'
-import TwoColumn from '~/components/playground/TwoColumn.vue'
-import BookingCard from '~/components/playground/BookingCard.vue'
-import Ingredients from '~/components/playground/Ingredients.vue'
 import { playgroundExamples } from '~/constants'
 import resolveComponent from '~/utils/components-manifest'
+import PromptInput from '~/components/playground/PromptInput.vue'
+import GeneratingIndicator from '~/components/playground/GeneratingIndicator.vue'
 
 definePageMeta({
   layout: 'default',
 })
 
-const components = {
-  Gallery,
-  RatingBar,
-  HostInfo,
-  Facility,
-  TwoColumn,
-  BookingCard,
-  Ingredients,
-  Binding,
-}
+const components = { Binding }
 
 const route = useRoute()
 const slug = computed(() =>

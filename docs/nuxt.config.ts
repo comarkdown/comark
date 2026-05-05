@@ -53,7 +53,6 @@ export default defineNuxtConfig({
 
   components: [
     { path: '~/components' },
-    { path: '~/components/playground', pathPrefix: false },
   ],
 
   studio: false,
