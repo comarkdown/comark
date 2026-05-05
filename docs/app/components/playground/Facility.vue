@@ -1,12 +1,13 @@
 <script setup lang="ts">
 defineProps<{
-  icon: string
+  icon?: string | boolean
 }>()
 </script>
 
 <template>
   <div class="not-prose flex items-start gap-4 py-3">
     <UIcon
+      v-if="typeof icon === 'string' && icon"
       :name="icon"
       class="mt-0.5 size-6 shrink-0 text-highlighted"
     />

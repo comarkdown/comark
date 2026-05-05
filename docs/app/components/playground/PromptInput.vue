@@ -10,6 +10,14 @@ const emit = defineEmits<{
 }>()
 
 const input = ref('')
+const formRef = useTemplateRef<HTMLFormElement>('formRef')
+
+function focusInput() {
+  const el = formRef.value?.querySelector<HTMLInputElement>('input')
+  if (!el) return
+  el.focus()
+  nextTick(() => el.select())
+}
 
 watch(() => props.prompt, () => {
   input.value = ''
@@ -19,7 +27,8 @@ function handleFocus(e: FocusEvent) {
   if (!input.value) {
     input.value = props.prompt ?? ''
   }
-  (e.target as HTMLInputElement).select()
+  const el = e.target as HTMLInputElement
+  nextTick(() => el.select())
 }
 
 function handleSubmit() {
@@ -30,8 +39,9 @@ function handleSubmit() {
 </script>
 
 <template>
-  <div :class="floating ? 'pointer-events-none absolute inset-x-0 bottom-6 z-10 px-4 flex justify-center' : 'flex-1'">
+  <div :class="floating ? 'pointer-events-none absolute inset-x-0 bottom-6 z-10 px-4 flex justify-center' : 'flex-1'" @click="focusInput">
     <form
+      ref="formRef"
       :class="floating ? 'pointer-events-auto w-full max-w-96' : 'flex-1 flex items-center gap-1'"
       @submit.prevent="handleSubmit"
     >
