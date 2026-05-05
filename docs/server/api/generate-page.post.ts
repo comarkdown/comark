@@ -46,8 +46,6 @@ const SHOWCASE_RULES = `
 - Keep pages concise: 80–150 lines of comark source (roughly 2 viewport scrolls)
 - **Prefer named slots over props for any text content.** Only use props for scalar values (booleans, numbers, icon names). Put titles, descriptions, and body content in slots.
 - Where it improves the visual, consider placing an image inside a slot instead of (or alongside) text — e.g. a photo in a description slot or a cover image in a header slot.
-- **Never start a heading or bold span with a digit and period** (e.g. \`### 3. Title\` or \`**3. Title**\`). The pattern \`N.\` at the start of YAML block content is parsed as a float literal and causes a parse error. Write \`### Title\` or \`#### Step three\` instead.
-- **Never start a slot or block content with \`**bold**\`**. A line beginning with \`*\` is parsed as a YAML alias (e.g. \`**Nearby**\` → \`*Nearby**\` → alias error). Use a heading (\`### Nearby\`) or plain text instead.
 
 ## IMAGE GUIDELINES
 
