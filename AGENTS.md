@@ -10,7 +10,7 @@ This is a **monorepo** containing multiple packages related to Comark (Component
 
 - Fast synchronous and async parsing via markdown-it
 - Streaming support for real-time/incremental parsing
-- Vue, React and Svelte renderers
+- Vue, React, Svelte and Angular renderers
 - Syntax highlighting via Shiki
 - Auto-close utilities for incomplete markdown (useful for AI streaming)
 
@@ -25,6 +25,7 @@ This is a **monorepo** containing multiple packages related to Comark (Component
 │   ├── comark-vue/       # Vue renderer + plugins (@comark/vue)
 │   ├── comark-react/     # React renderer + plugins (@comark/react)
 │   ├── comark-svelte/    # Svelte renderer + plugins (@comark/svelte)
+│   ├── comark-angular/   # Angular renderer + plugins (@comark/angular)
 │   └── comark-nuxt/      # Nuxt module (@comark/nuxt)
 ├── examples/             # Example applications
 │   ├── 1.frameworks/     # Framework examples (Nuxt, Next.js, Astro, SvelteKit, ...)
@@ -301,6 +302,56 @@ Uses Vitest with two test projects:
 </svelte:boundary>
 ```
 
+## Package: @comark/angular
+
+Located at `packages/comark-angular/`. Angular 17+ renderer with standalone components.
+
+```
+packages/comark-angular/
+├── src/
+│   ├── index.ts                          # Entry point
+│   ├── components/
+│   │   ├── comark.component.ts           # High-level markdown → render component
+│   │   ├── comark-renderer.component.ts  # Low-level AST → render component
+│   │   ├── comark-node.component.ts      # Recursive AST node renderer
+│   │   ├── binding.component.ts          # Binding rendering component
+│   │   ├── math.component.ts             # Math rendering component
+│   │   └── mermaid.component.ts          # Mermaid rendering component
+│   ├── plugins/
+│   │   ├── binding.ts                    # Re-exports comark/plugins/binding + Binding component
+│   │   ├── math.ts                       # Re-exports comark/plugins/math + Math component
+│   │   └── mermaid.ts                    # Re-exports comark/plugins/mermaid + Mermaid component
+│   └── utils/
+│       ├── caret.ts                      # Caret utilities for streaming
+│       └── index.ts                      # Re-exports comark/utils
+├── package.json
+├── tsconfig.json
+└── vitest.config.ts
+```
+
+### Exports
+
+```json
+{
+  ".": "./dist/index.js",
+  "./plugins/*": "./dist/plugins/*.js",
+  "./utils": "./dist/utils/index.js"
+}
+```
+
+### Usage
+
+```typescript
+import { ComarkComponent, ComarkRendererComponent } from '@comark/angular'
+import math, { Math } from '@comark/angular/plugins/math'
+import mermaid, { Mermaid } from '@comark/angular/plugins/mermaid'
+```
+
+```html
+<!-- In Angular template -->
+<comark [markdown]="content" [components]="customComponents" />
+```
+
 ## Package Exports Reference
 
 ```typescript
@@ -359,6 +410,11 @@ import { Comark, ComarkRenderer } from '@comark/svelte'
 import { ComarkAsync } from '@comark/svelte/async' // requires experimental.async
 import math, { Math } from '@comark/svelte/plugins/math'
 import mermaid, { Mermaid } from '@comark/svelte/plugins/mermaid'
+
+// Angular — renderer + plugin wrappers (plugin fn + Angular component)
+import { ComarkComponent, ComarkRendererComponent } from '@comark/angular'
+import math, { Math } from '@comark/angular/plugins/math'
+import mermaid, { Mermaid } from '@comark/angular/plugins/mermaid'
 ```
 
 ## Coding Principles
@@ -381,7 +437,7 @@ import mermaid, { Mermaid } from '@comark/svelte/plugins/mermaid'
 1. Keep internal implementation in `packages/comark/src/internal/`
 2. AST types and utilities in `packages/comark/src/ast/`
 3. Core plugins (parser-only) in `packages/comark/src/plugins/`
-4. Framework renderers in separate packages (`comark-vue`, `comark-react`, `comark-svelte`)
+4. Framework renderers in separate packages (`comark-vue`, `comark-react`, `comark-svelte`, `comark-angular`)
 5. Framework plugin wrappers (plugin fn + component) in `packages/comark-{framework}/src/plugins/`
 
 ## Testing Guidelines
@@ -542,7 +598,8 @@ export const DocsComark = defineComarkComponent({
 1. Vue components in `packages/comark-vue/src/components/`
 2. React components in `packages/comark-react/src/components/`
 3. Svelte components in `packages/comark-svelte/src/`
-4. All three should have similar APIs for consistency
+4. Angular components in `packages/comark-angular/src/components/`
+5. All four should have similar APIs for consistency
 
 ### Adding a new core plugin
 
@@ -552,6 +609,7 @@ export const DocsComark = defineComarkComponent({
    - `packages/comark-vue/src/plugins/{name}.ts` (re-export plugin + Vue component)
    - `packages/comark-react/src/plugins/{name}.ts` (re-export plugin + React component)
    - `packages/comark-svelte/src/plugins/{name}.ts` (re-export plugin + Svelte component)
+   - `packages/comark-angular/src/plugins/{name}.ts` (re-export plugin + Angular component)
 4. Run `node scripts/sync-plugins.mjs` to sync plain re-exports for plugins without components
 
 ### Adding a new package
