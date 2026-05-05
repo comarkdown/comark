@@ -2,7 +2,7 @@
 import { parse } from 'comark'
 import highlight from '@comark/nuxt/plugins/highlight'
 import math from '@comark/nuxt/plugins/math'
-import binding, { Binding } from '@comark/nuxt/plugins/binding'
+import binding from '@comark/nuxt/plugins/binding'
 import emoji from '@comark/nuxt/plugins/emoji'
 import mermaid from '@comark/nuxt/plugins/mermaid'
 import jsonRender from '@comark/nuxt/plugins/json-render'
@@ -472,9 +472,8 @@ function handleGenerate(prompt: string) {
                 v-else-if="tree"
                 class="max-w-none"
               >
-                <ComarkDocsRenderer
+                <ComarkPlaygroundRenderer
                   :tree="tree"
-                  :components="{ Binding }"
                   :components-manifest="resolveComponent"
                 />
               </div>

@@ -3,7 +3,7 @@ import { joinURL } from 'ufo'
 import { useDraggable, useWindowSize, watchDebounced } from '@vueuse/core'
 import { createParse } from '@comark/nuxt/parse'
 import jsonRenderer from '@comark/nuxt/plugins/json-render'
-import binding, { Binding } from '@comark/nuxt/plugins/binding'
+import binding from '@comark/nuxt/plugins/binding'
 import { playgroundExamples } from '~/constants'
 import resolveComponent from '~/utils/components-manifest'
 import PromptInput from '~/components/playground/PromptInput.vue'
@@ -12,8 +12,6 @@ import GeneratingIndicator from '~/components/playground/GeneratingIndicator.vue
 definePageMeta({
   layout: 'default',
 })
-
-const components = { Binding }
 
 const route = useRoute()
 const slug = computed(() =>
@@ -204,9 +202,8 @@ defineOgImage('OgImageDocs', {
       prose
       class="wrap-break-word mx-auto"
     >
-      <ComarkDocsRenderer
+      <ComarkPlaygroundRenderer
         :tree="page"
-        :components="components"
         :components-manifest="resolveComponent"
       />
     </UPageBody>
