@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { joinURL } from 'ufo'
 import { useDraggable, useWindowSize, watchDebounced } from '@vueuse/core'
+import { useCompletion } from '@ai-sdk/vue'
 import { createParse } from '@comark/nuxt/parse'
 import jsonRenderer from '@comark/nuxt/plugins/json-render'
 import binding from '@comark/nuxt/plugins/binding'
@@ -41,23 +42,27 @@ if (!page.value) {
 
 const currentExample = computed(() => playgroundExamples.find((e) => e.value === slug.value))
 
-const { isGenerating, generate } = useAiStream(markdown, {
-  onStart: () => {
-    page.value = undefined
-  },
-  onChunk: async (md) => {
-    try {
-      page.value = await parse(md)
-    } catch {
-      /* ignore intermediate parse errors */
-    }
-  },
-  onError: (prev) => {
-    markdown.value = prev
+let previousMarkdown = ''
+
+const { completion, complete, isLoading: isGenerating } = useCompletion({
+  api: '/api/generate-page',
+  streamProtocol: 'text',
+  onError: () => {
+    markdown.value = previousMarkdown
   },
   onFinish: async () => {
     await refresh()
   },
+})
+
+watch(completion, async (md) => {
+  if (!md) return
+  markdown.value = md
+  try {
+    page.value = await parse(md)
+  } catch {
+    /* ignore intermediate parse errors */
+  }
 })
 
 watchDebounced(
@@ -71,7 +76,10 @@ watchDebounced(
 async function submitAiPrompt(prompt: string) {
   const example = currentExample.value
   if (!example?.mode) return
-  await generate(prompt, example.mode, example.content)
+  previousMarkdown = markdown.value ?? ''
+  markdown.value = ''
+  page.value = undefined
+  complete(prompt, { body: { mode: example.mode, structure: example.content } })
 }
 
 const isEditing = ref(false)

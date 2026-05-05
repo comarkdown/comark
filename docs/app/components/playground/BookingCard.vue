@@ -30,7 +30,7 @@ const guestLabel = computed(() => `${guests.value} guest${guests.value > 1 ? 's'
 </script>
 
 <template>
-  <div class="not-prose rounded-xl border border-muted p-5 shadow-lg">
+  <div class="not-prose rounded-xl border border-muted p-5 shadow-lg my-4">
     <p class="mb-4 text-base font-semibold text-highlighted">
       {{ title }}
     </p>

@@ -17,6 +17,7 @@ import resolveComponent from '~/utils/components-manifest'
 import PromptInput from '~/components/playground/PromptInput.vue'
 import GeneratingIndicator from '~/components/playground/GeneratingIndicator.vue'
 import { useLocalStorage, watchDebounced } from '@vueuse/core'
+import { useCompletion } from '@ai-sdk/vue'
 import type { ComarkTree, ComarkPlugin } from 'comark'
 import VueJsonPretty from 'vue-json-pretty'
 
@@ -235,24 +236,10 @@ const formattedOutputModel = computed({
 
 const isMatch = computed(() => !!formattedOutput.value && formattedOutput.value.trim() === markdown.value.trim())
 
-const { isGenerating, generate } = useAiStream(markdown, {
-  onStart: () => {
-    tree.value = null
-    error.value = null
-  },
-  onChunk: async (md: string) => {
-    try {
-      tree.value = await parse(md, {
-        plugins: activePlugins.value,
-        autoUnwrap: parseOptions.value.autoUnwrap,
-        autoClose: true,
-        html: parseOptions.value.html,
-      })
-    } catch {
-      /* ignore intermediate parse errors */
-    }
-  },
-  onError: (_prev: string) => {
+const { completion, complete, isLoading: isGenerating } = useCompletion({
+  api: '/api/generate-page',
+  streamProtocol: 'text',
+  onError: () => {
     error.value = 'Generation failed'
   },
   onFinish: async () => {
@@ -260,10 +247,28 @@ const { isGenerating, generate } = useAiStream(markdown, {
   },
 })
 
+watch(completion, async (md) => {
+  if (!md) return
+  markdown.value = md
+  try {
+    tree.value = await parse(md, {
+      plugins: activePlugins.value,
+      autoUnwrap: parseOptions.value.autoUnwrap,
+      autoClose: true,
+      html: parseOptions.value.html,
+    })
+  } catch {
+    /* ignore intermediate parse errors */
+  }
+})
+
 function handleGenerate(prompt: string) {
   const example = currentExample.value
   if (!example.mode) return
-  generate(prompt, example.mode, example.content)
+  markdown.value = ''
+  tree.value = null
+  error.value = null
+  complete(prompt, { body: { mode: example.mode, structure: example.content } })
 }
 </script>
 

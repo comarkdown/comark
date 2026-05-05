@@ -1,4 +1,5 @@
 import { streamText, tool, stepCountIs } from 'ai'
+import { gateway } from '@ai-sdk/gateway'
 import { z } from 'zod'
 import { buildShowcasePrompt } from '../utils/prompt'
 
@@ -18,14 +19,12 @@ Then generate ONLY the raw page content — no explanation, no wrapping code blo
 
 ## RULES
 
-- Always open with YAML frontmatter (title, description). Add \`page: { maxWidth: 1120px }\` for rich layout pages.
+- Always open with YAML frontmatter (title, description) and add \`page: { maxWidth: 1120px }\` for rich layout pages.
+- NEVER USE \`---\` separators.
 - NEVER use json-render blocks — use Comark component syntax exclusively
-- Use real, plausible content — names, prices, places, measurements
-- Keep pages concise: 80–150 lines of comark source (roughly 2 viewport scrolls)
-- **Prefer named slots over props for any text content.** Only use props for scalar values (booleans, numbers, icon names). Put titles, descriptions, and body content in slots.
-- Where it improves the visual, consider placing an image inside a slot instead of (or alongside) text — e.g. a photo in a description slot or a cover image in a header slot.
+- **Prefer named slots over props for any text content.**
+- Where it improves the visual, consider placing an image inside a slot instead of (or alongside) text.
 - Mix element types: headings, lists, tables, components, callouts, steps
-- Square crops (\`w=100&h=100\`) for thumbnails
 
 ## IMAGE GUIDELINES
 
@@ -33,6 +32,10 @@ Then generate ONLY the raw page content — no explanation, no wrapping code blo
 - Picsum: \`https://picsum.photos/seed/{word}/{width}/{height}\``
 
 const NUXT_UI_PROMPT = `${BASE_PROMPT}
+
+## NUXT UI RULES
+
+- **Always use the \`U\` prefix for Nuxt UI components** (e.g. \`UButton\`, \`UPageHero\`, \`UPageCard\`) — never drop the prefix (e.g. never \`Button\`, \`PageHero\`). This rule only applies for NON PROSE components.
 
 Before generating, call both fetchComarkSkill and fetchNuxtUISkill to retrieve the documentation you need. Always fetch:
 - fetchComarkSkill — Comark component syntax, slots, props
@@ -48,7 +51,7 @@ export default defineEventHandler(async (event) => {
   const systemPrompt = mode === 'showcase' ? await buildShowcasePrompt(BASE_PROMPT) : NUXT_UI_PROMPT
 
   const result = streamText({
-    model: 'anthropic/claude-sonnet-4.6',
+    model: gateway('anthropic/claude-sonnet-4.6'),
     system: systemPrompt,
     prompt,
     stopWhen: stepCountIs(5),

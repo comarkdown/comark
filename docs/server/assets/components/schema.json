@@ -151,11 +151,11 @@
       "x-slots": [
         {
           "name": "left",
-          "description": "Main content area with prose styling for markdown content"
+          "description": "Main content area with prose styling for markdown content. It's larger than the right side."
         },
         {
           "name": "right",
-          "description": "Sidebar content that becomes sticky on larger screens"
+          "description": "Sidebar content that becomes sticky on larger screens. It's thiner than the left side so it can't contains large components."
         }
       ],
       "x-example": "::two-column\n#left\nThis is the main content area with full markdown support.\n\n## Headings work\n\nAs do paragraphs and **formatting**.\n\n#right\n**Quick Links**\n- [Getting Started](#start)\n- [Examples](#examples)\n::",

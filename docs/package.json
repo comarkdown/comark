@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@ai-sdk/gateway": "catalog:",
+    "@ai-sdk/vue": "catalog:",
     "@comark/nuxt": "catalog:",
     "@monaco-editor/loader": "catalog:",
     "@nuxt/content": "catalog:",
