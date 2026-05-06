@@ -5,6 +5,14 @@ import { useCompletion } from '@ai-sdk/vue'
 import { createParse } from '@comark/nuxt/parse'
 import jsonRenderer from '@comark/nuxt/plugins/json-render'
 import binding from '@comark/nuxt/plugins/binding'
+import highlight from '@comark/nuxt/plugins/highlight'
+import math from '@comark/nuxt/plugins/math'
+import emoji from '@comark/nuxt/plugins/emoji'
+import mermaid from '@comark/nuxt/plugins/mermaid'
+import jsonRender from '@comark/nuxt/plugins/json-render'
+import footnotes from '@comark/nuxt/plugins/footnotes'
+import punctuation from '@comark/nuxt/plugins/punctuation'
+import breaks from '@comark/nuxt/plugins/breaks'
 import { playgroundExamples } from '~/constants'
 import resolveComponent from '~/utils/components-manifest'
 import PromptInput from '~/components/playground/PromptInput.vue'
@@ -24,7 +32,7 @@ const markdown = ref(
     : playgroundExamples[0]!.content
 )
 const parse = createParse({
-  plugins: [jsonRenderer(), binding()],
+  plugins: [jsonRenderer(), binding(), highlight(), math(), emoji(), mermaid(), footnotes(), punctuation(), breaks()],
 })
 
 const { data: page, refresh } = await useAsyncData(
