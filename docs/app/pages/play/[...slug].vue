@@ -214,7 +214,7 @@ defineOgImage('OgImageDocs', {
       <Comark>
         {{
           `> [!NOTE]
-        > This page is rendered live from Comark markdown. Edit the source inline with **Edit Page** at the bottom right.`
+        > This page is rendered live from markdown. Edit the source inline with **Edit Page** at the bottom right.`
         }}
       </Comark>
     </UPageHeader>
