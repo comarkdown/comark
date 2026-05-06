@@ -292,4 +292,4 @@ Without `Footnote`, `renderMarkdown` would serialize the footnote HTML structure
 - [Render API](/api/render) — Rendering API with conditional handlers
 - [Alerts](/plugins/built-in/alert) — GitHub-style alert blockquotes
 - [Task List](/plugins/built-in/task-list) — Checkbox syntax
-- [Creating Plugins](/plugins/creating-plugins) — Build your own plugin
+- [Creating Plugins](/plugins/custom/plugin-api) — Build your own plugin

@@ -180,7 +180,6 @@ function onResizeUp(e: PointerEvent) {
 
 const site = useSiteConfig()
 const path = computed(() => route.path.replace(/\/$/, ''))
-prerenderRoutes([joinURL('/raw', `${path.value}.md`)])
 useHead({
   link: [
     {
