@@ -172,6 +172,21 @@ describe('custom components', () => {
     await expect.element(screen.getByRole('alert')).toHaveClass('alert-info')
   })
 
+  it('resolves custom components from componentsManifest', async () => {
+    const tree = await parse('::alert{type="warning"}\nLazy content\n::')
+    const screen = render(ComarkRenderer, {
+      tree,
+      componentsManifest: (name: string) => {
+        if (name === 'alert') {
+          return import('./test-components/Alert.svelte')
+        }
+      },
+    })
+
+    await expect.element(screen.getByRole('alert')).toHaveTextContent('Lazy content')
+    await expect.element(screen.getByRole('alert')).toHaveClass('alert-warning')
+  })
+
   it('falls back to native element when no component matches', async () => {
     const tree = await parse('::alert{type="info"}\ncontent\n::')
     const screen = render(ComarkRenderer, { tree, components: {} })

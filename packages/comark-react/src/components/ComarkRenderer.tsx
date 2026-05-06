@@ -56,7 +56,17 @@ function getChildren(node: ComarkNode): ComarkNode[] {
 }
 
 // Cache for dynamically resolved components
-const asyncComponentCache = new Map<string, React.LazyExoticComponent<any>>()
+const asyncComponentCache = new Map<string, any>()
+
+function isPromiseLike(value: unknown): value is Promise<unknown> {
+  return !!value && typeof (value as { then?: unknown }).then === 'function'
+}
+
+function unwrapComponent(mod: unknown): any {
+  return mod && typeof mod === 'object' && 'default' in mod
+    ? (mod as { default?: any }).default
+    : mod
+}
 
 function resolveComponent(tag: string, components: Record<string, any>, componentsManifest?: ComponentManifest): any {
   const pascalTag = pascalCase(tag)
@@ -69,12 +79,14 @@ function resolveComponent(tag: string, components: Record<string, any>, componen
     // Check cache first to avoid creating duplicate async components
     const cacheKey = tag
     if (!asyncComponentCache.has(cacheKey)) {
-      const promise = componentsManifest(tag)
-      if (promise) {
+      const resolved = componentsManifest(tag)
+      if (isPromiseLike(resolved)) {
         asyncComponentCache.set(
           cacheKey,
-          lazy(() => promise as Promise<{ default: React.ComponentType<any> }>)
+          lazy(() => resolved as Promise<{ default: React.ComponentType<any> }>)
         )
+      } else if (resolved) {
+        asyncComponentCache.set(cacheKey, unwrapComponent(resolved))
       }
     }
     resolvedComponent = asyncComponentCache.get(cacheKey)

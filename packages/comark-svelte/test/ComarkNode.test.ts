@@ -245,6 +245,23 @@ describe('custom components', () => {
     expect(output).toContain(' text')
   })
 
+  it('resolves eager componentsManifest entries during SSR', async () => {
+    const tree = await parse('::alert{type="warning"}\nLazy content\n::')
+    const { body } = render(ComarkRenderer, {
+      props: {
+        tree,
+        componentsManifest: (name: string) => {
+          if (name === 'alert') {
+            return { default: Alert }
+          }
+        },
+      },
+    })
+    const output = html(body)
+    expect(output).toContain('<div class="alert alert-warning" role="alert">')
+    expect(output).toContain('Lazy content')
+  })
+
   it('falls back to native element when no component matches', async () => {
     const tree = await parse('::alert{type="info"}\ncontent\n::')
     const { body } = render(ComarkRenderer, {

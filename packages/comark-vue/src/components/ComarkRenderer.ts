@@ -24,6 +24,16 @@ import { pascalCase, resolveAttributes } from 'comark/utils'
 // Cache for dynamically resolved components
 const asyncComponentCache = new Map<string, any>()
 
+function isPromiseLike(value: unknown): value is Promise<unknown> {
+  return !!value && typeof (value as { then?: unknown }).then === 'function'
+}
+
+function unwrapComponent(mod: unknown): any {
+  return mod && typeof mod === 'object' && 'default' in mod
+    ? (mod as { default?: any }).default
+    : mod
+}
+
 /**
  * Helper to get tag from a ComarkNode
  */
@@ -76,12 +86,14 @@ function resolveComponent(
     // Check cache first to avoid creating duplicate async components
     const cacheKey = tag
     if (!asyncComponentCache.has(cacheKey)) {
-      const promise = componentsManifest(tag)
-      if (promise) {
+      const resolved = componentsManifest(tag)
+      if (isPromiseLike(resolved)) {
         asyncComponentCache.set(
           cacheKey,
-          defineAsyncComponent(() => promise as Promise<any>)
+          defineAsyncComponent(() => resolved as Promise<any>)
         )
+      } else if (resolved) {
+        asyncComponentCache.set(cacheKey, unwrapComponent(resolved))
       }
     }
     resolvedComponent = asyncComponentCache.get(cacheKey)

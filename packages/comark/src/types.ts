@@ -299,7 +299,7 @@ export type ComarkPlugin = {
 }
 export type ComarkPluginFactory<Options> = (opts?: Options) => ComarkPlugin
 
-export type ComponentManifest = (name: string) => Promise<unknown> | undefined | null
+export type ComponentManifest = (name: string) => unknown | Promise<unknown> | undefined | null
 export interface ComarkContextProvider {
   components: Record<string, any>
   componentManifest: ComponentManifest

@@ -4,6 +4,12 @@
   import Alert from './components/Alert.svelte'
   import python from '@shikijs/langs/python'
 
+  const componentsManifest = (name: string) => {
+    if (name === 'lazy-card') {
+      return import('./components/LazyCard.svelte')
+    }
+  }
+
   const markdown = `
 # Comark Syntax Showcase
 
@@ -180,6 +186,14 @@ Task completed successfully.
 Something went wrong.
 ::
 
+### Lazy-loaded components
+
+The \`componentsManifest\` prop resolves missing components on demand:
+
+::lazy-card{title="Loaded only when rendered" accent="cyan"}
+This card is not part of the static \`components\` map. It is imported by the Svelte renderer from \`componentsManifest\`.
+::
+
 ### YAML frontmatter props
 
 ::alert
@@ -250,4 +264,5 @@ Text before the comment and text after the comment both render normally.
   {markdown}
   plugins={[highlight({ languages: [python] })]}
   components={{ Alert }}
+  {componentsManifest}
 />
