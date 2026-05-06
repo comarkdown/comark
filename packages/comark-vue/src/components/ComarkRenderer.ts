@@ -29,9 +29,7 @@ function isPromiseLike(value: unknown): value is Promise<unknown> {
 }
 
 function unwrapComponent(mod: unknown): any {
-  return mod && typeof mod === 'object' && 'default' in mod
-    ? (mod as { default?: any }).default
-    : mod
+  return mod && typeof mod === 'object' && 'default' in mod ? (mod as { default?: any }).default : mod
 }
 
 /**
