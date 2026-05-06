@@ -91,9 +91,7 @@ export default defineEventHandler(async (event) => {
               description:
                 'Fetch the full documentation for a specific Nuxt UI component to learn its exact props, slots, and usage examples. Pass the kebab-case component name (e.g. "blog-post", "page-card", "page-hero"). ALWAYS call this before using a component to avoid inventing props or slots that do not exist.',
               inputSchema: z.object({
-                component: z
-                  .string()
-                  .describe('Kebab-case component name, e.g. "blog-post", "page-hero", "page-card"'),
+                component: z.string().describe('Kebab-case component name, e.g. "blog-post", "page-hero", "page-card"'),
               }),
               execute: async ({ component }) => {
                 const url = `https://ui.nuxt.com/raw/docs/components/${component}.md`
