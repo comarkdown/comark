@@ -35,11 +35,16 @@ const NUXT_UI_PROMPT = `${BASE_PROMPT}
 
 ## NUXT UI RULES
 
-- **Always use the \`U\` prefix for Nuxt UI components** (e.g. \`UButton\`, \`UPageHero\`, \`UPageCard\`) — never drop the prefix (e.g. never \`Button\`, \`PageHero\`). This rule only applies for NON PROSE components.
+- **Never use the \`U\` prefix** for Nuxt UI components (e.g. \`Button\`, \`PageHero\`, \`PageCard\`).
+- You can use all the components within the **Elements** and **Page** sections of the Nuxt UI documentation. As well as all the Typography components.
+- **Before using ANY Nuxt UI component**, call \`fetchComponentDoc\` with its kebab-case name to learn its exact props and slots. NEVER guess or invent slot names.
+- Only use slot names that appear in the component's \`Slots\` interface. If a value is a prop (not a slot), pass it as an inline attribute.
+- \`image\` is almost always a **prop**, not a slot. Pass it as \`image="url"\` unless the Slots interface explicitly lists \`#image\`.
 
-Before generating, call both fetchComarkSkill and fetchNuxtUISkill to retrieve the documentation you need. Always fetch:
-- fetchComarkSkill — Comark component syntax, slots, props
-- fetchNuxtUISkill with nuxt-ui-components — available components (Steps, Callout, Badge, etc.)`
+Before generating, fetch the documentation you need:
+1. fetchComarkSkill — Comark component syntax, slots, props
+2. fetchNuxtUISkill with "nuxt-ui-components" — discover available components
+3. fetchComponentDoc for EACH component you plan to use — learn exact props and slots`
 
 export default defineEventHandler(async (event) => {
   const { prompt, mode = 'nuxt-ui', structure } = await readBody(event)
@@ -54,7 +59,7 @@ export default defineEventHandler(async (event) => {
     model: gateway('anthropic/claude-sonnet-4.6'),
     system: systemPrompt,
     prompt,
-    stopWhen: stepCountIs(5),
+    stopWhen: stepCountIs(8),
     tools: {
       fetchComarkSkill: tool({
         description:
@@ -80,6 +85,30 @@ export default defineEventHandler(async (event) => {
                 const response = await fetch(url)
                 if (!response.ok) return `Failed to fetch ${skill}: ${response.status}`
                 return response.text()
+              },
+            }),
+            fetchComponentDoc: tool({
+              description:
+                'Fetch the full documentation for a specific Nuxt UI component to learn its exact props, slots, and usage examples. Pass the kebab-case component name (e.g. "blog-post", "page-card", "page-hero"). ALWAYS call this before using a component to avoid inventing props or slots that do not exist.',
+              inputSchema: z.object({
+                component: z
+                  .string()
+                  .describe('Kebab-case component name, e.g. "blog-post", "page-hero", "page-card"'),
+              }),
+              execute: async ({ component }) => {
+                const url = `https://ui.nuxt.com/raw/docs/components/${component}.md`
+                const response = await fetch(url)
+                if (!response.ok)
+                  return `Component "${component}" not found (${response.status}). Check the name and try again.`
+                const text = await response.text()
+                if (text.includes('title: Not Found') || !text.includes('## Usage'))
+                  return `Component "${component}" not found. Check the kebab-case name and try again.`
+                const usageStart = text.indexOf('\n## Usage')
+                const themeStart = text.indexOf('\n## Theme')
+                if (usageStart !== -1 && themeStart !== -1) {
+                  return text.slice(usageStart, themeStart).trim()
+                }
+                return text
               },
             }),
           }

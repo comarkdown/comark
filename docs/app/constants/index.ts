@@ -298,7 +298,7 @@ page:
   maxWidth: 1120px
 ---
 
-::UPageHero
+::PageHero
 #headline
 :::badge
 v2.0 — Now with predictive alerting
@@ -311,16 +311,16 @@ Observe less. **Understand more.**
 Map your entire system in real-time, surface anomalies before they cascade, and eliminate the dashboards you never needed.
 
 #links
-  :::UButton{color="primary" size="xl" to="#"}
+  :::Button{color="primary" size="xl" to="#"}
   Start for free
   :::
 
-  :::UButton{color="neutral" variant="soft" size="xl" to="#"}
+  :::Button{color="neutral" variant="soft" size="xl" to="#"}
   View demo
   :::
 ::
 
-::UPageSection
+::PageSection
 #title
 Every signal, one surface.
 
@@ -328,7 +328,7 @@ Every signal, one surface.
 No more tab-switching between metrics, traces, and logs. Correlate everything into a single explorable topology.
 
 #features
-  :::UPageCard{icon="i-lucide-zap" to="#"}
+  :::PageCard{icon="i-lucide-zap" to="#"}
   #title
   Predictive Alerts
 
@@ -336,7 +336,7 @@ No more tab-switching between metrics, traces, and logs. Correlate everything in
   ML models trained on your baselines detect anomalies 4 minutes before they hit your SLOs.
   :::
 
-  :::UPageCard{icon="i-lucide-radar" to="#"}
+  :::PageCard{icon="i-lucide-radar" to="#"}
   #title
   Topology Mapping
 
@@ -344,7 +344,7 @@ No more tab-switching between metrics, traces, and logs. Correlate everything in
   Auto-discovers service dependencies with zero config. See how a deploy in auth-service ripples through checkout.
   :::
 
-  :::UPageCard{icon="i-lucide-layers" to="#"}
+  :::PageCard{icon="i-lucide-layers" to="#"}
   #title
   Unified Telemetry
 
@@ -352,7 +352,7 @@ No more tab-switching between metrics, traces, and logs. Correlate everything in
   Logs, metrics, and traces in one query language. Stop context-switching. Start correlating.
   :::
 
-  :::UPageCard{icon="i-lucide-git-commit-horizontal" to="#"}
+  :::PageCard{icon="i-lucide-git-commit-horizontal" to="#"}
   #title
   Deploy Tracking
 
@@ -360,7 +360,7 @@ No more tab-switching between metrics, traces, and logs. Correlate everything in
   Every deploy is automatically correlated with performance changes. Know which commit caused the regression.
   :::
 
-  :::UPageCard{icon="i-lucide-filter" to="#"}
+  :::PageCard{icon="i-lucide-filter" to="#"}
   #title
   Smart Sampling
 
@@ -368,7 +368,7 @@ No more tab-switching between metrics, traces, and logs. Correlate everything in
   AI-driven sampling retains interesting traces and drops noise. Cut storage costs 10× without losing signal.
   :::
 
-  :::UPageCard{icon="i-lucide-notebook-pen" to="#"}
+  :::PageCard{icon="i-lucide-notebook-pen" to="#"}
   #title
   Team Notebooks
 
@@ -377,7 +377,7 @@ No more tab-switching between metrics, traces, and logs. Correlate everything in
   :::
 ::
 
-::UPageSection
+::PageSection
 #title
 Built for scale you haven't hit yet.
 
@@ -385,7 +385,7 @@ Built for scale you haven't hit yet.
 Process billions of events per day across thousands of production environments with an architecture designed for the workloads of 2030.
 
 #features
-  :::UPageCard{to="#"}
+  :::PageCard{to="#"}
   #title
   99.99%
 
@@ -393,7 +393,7 @@ Process billions of events per day across thousands of production environments w
   Uptime SLA
   :::
 
-  :::UPageCard{to="#"}
+  :::PageCard{to="#"}
   #title
   50ms P99
 
@@ -401,7 +401,7 @@ Process billions of events per day across thousands of production environments w
   Median query latency
   :::
 
-  :::UPageCard{to="#"}
+  :::PageCard{to="#"}
   #title
   14B+
 
@@ -410,7 +410,7 @@ Process billions of events per day across thousands of production environments w
   :::
 ::
 
-::UPageSection
+::PageSection
 #title
 Ready to stop firefighting?
 
@@ -418,11 +418,11 @@ Ready to stop firefighting?
 Free for up to 5 services. No credit card. Deploys in under a minute.
 
 #links
-  :::UButton{color="primary" size="xl" to="#"}
+  :::Button{color="primary" size="xl" to="#"}
   Start for free
   :::
 
-  :::UButton{color="neutral" variant="outline" size="xl" trailing-icon="i-lucide-book-open" to="#"}
+  :::Button{color="neutral" variant="outline" size="xl" trailing-icon="i-lucide-book-open" to="#"}
   Read the documentation
   :::
 ::
