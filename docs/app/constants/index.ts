@@ -440,7 +440,7 @@ export type PlaygroundExample = {
 
 export const playgroundExamples: PlaygroundExample[] = [
   {
-    label: 'Airbnb',
+    label: 'Booking',
     value: 'booking',
     content: bookingMarkdown,
     mode: 'showcase',
