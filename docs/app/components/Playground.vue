@@ -236,6 +236,12 @@ const formattedOutputModel = computed({
 
 const isMatch = computed(() => !!formattedOutput.value && formattedOutput.value.trim() === markdown.value.trim())
 
+const markdownEditor = useTemplateRef<{ scrollToBottom: () => void }>('markdownEditor')
+
+function scrollEditorToBottom() {
+  nextTick(() => markdownEditor.value?.scrollToBottom())
+}
+
 const {
   completion,
   complete,
@@ -248,6 +254,7 @@ const {
   },
   onFinish: async () => {
     await parseMarkdown()
+    scrollEditorToBottom()
   },
 })
 
@@ -264,6 +271,7 @@ watch(completion, async (md) => {
   } catch {
     /* ignore intermediate parse errors */
   }
+  scrollEditorToBottom()
 })
 
 function handleGenerate(prompt: string) {
@@ -389,7 +397,10 @@ function handleGenerate(prompt: string) {
             </UPopover>
           </div>
           <div class="relative flex-1 min-h-0">
-            <Editor v-model="markdown" />
+            <Editor
+              ref="markdownEditor"
+              v-model="markdown"
+            />
             <div
               v-if="isGenerating && !markdown"
               class="absolute inset-0 flex flex-col items-center justify-center gap-3 text-muted bg-white dark:bg-[#1e1e1e]"

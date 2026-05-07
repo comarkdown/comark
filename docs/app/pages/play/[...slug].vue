@@ -51,6 +51,12 @@ const currentExample = computed(() => playgroundExamples.find((e) => e.value ===
 
 let previousMarkdown = ''
 
+const markdownEditor = useTemplateRef<{ scrollToBottom: () => void }>('markdownEditor')
+
+function scrollEditorToBottom() {
+  nextTick(() => markdownEditor.value?.scrollToBottom())
+}
+
 const {
   completion,
   complete,
@@ -63,6 +69,7 @@ const {
   },
   onFinish: async () => {
     await refresh()
+    scrollEditorToBottom()
   },
 })
 
@@ -74,6 +81,7 @@ watch(completion, async (md) => {
   } catch {
     /* ignore intermediate parse errors */
   }
+  scrollEditorToBottom()
 })
 
 watchDebounced(
@@ -283,6 +291,7 @@ defineOgImage('OgImageDocs', {
         <div class="relative flex-1 min-h-0">
           <Editor
             v-if="isEditing"
+            ref="markdownEditor"
             v-model="markdown"
           />
           <div
