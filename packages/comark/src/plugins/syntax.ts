@@ -283,6 +283,12 @@ const markdownItComarkBlock: PluginSimple = (md) => {
 
     if (!blockAttributesClosingFence) return false
 
+    // The `---` fence is only valid on the line immediately after the component opener. Any other `---` is a thematic break.
+    if (line === '---') {
+      const parentOpenLine = state.env.comarkBlockTokens[0].map?.[0]
+      if (parentOpenLine === undefined || startLine !== parentOpenLine + 1) return false
+    }
+
     let lineEnd = startLine + 1
     let found = false
     while (lineEnd < endLine) {
