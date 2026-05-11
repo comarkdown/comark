@@ -4,15 +4,17 @@ import { defineComarkPlugin } from '../utils/helpers.ts'
 export interface HeadingsOptions {
   /**
    * Tag to extract as title and set to `tree.meta.title`.
+   * Set to `false` to disable title extraction.
    * @default 'h1'
    */
-  titleTag?: string
+  titleTag?: string | false
   /**
    * Tag to extract as description and set to `tree.meta.description`.
    * Useful alternatives: `'blockquote'`
+   * Set to `false` to disable description extraction.
    * @default 'p'
    */
-  descriptionTag?: string
+  descriptionTag?: string | false
   /**
    * Whether to remove the extracted nodes from the tree.
    * @default false
@@ -72,6 +74,12 @@ function flattenNodeText(node: ComarkNode): string {
  *
  * // Extract metadata and remove the matched nodes from the tree
  * headings({ remove: true })
+ *
+ * // Disable title extraction, only extract description
+ * headings({ titleTag: false })
+ *
+ * // Disable description extraction, only extract title
+ * headings({ descriptionTag: false })
  * ```
  */
 export default defineComarkPlugin((options: HeadingsOptions = {}) => {
@@ -88,18 +96,23 @@ export default defineComarkPlugin((options: HeadingsOptions = {}) => {
       let titleNodeIndex = -1
       let descriptionNodeIndex = -1
 
-      const first = contentNodes[0]
-      if (first && getTag(first) === titleTag) {
-        titleNodeIndex = nodes.indexOf(first)
-        state.tree.meta.title = flattenNodeText(first)
+      let nextContentIndex = 0
+
+      if (titleTag !== false) {
+        const first = contentNodes[0]
+        if (first && getTag(first) === titleTag) {
+          titleNodeIndex = nodes.indexOf(first)
+          state.tree.meta.title = flattenNodeText(first)
+          nextContentIndex = 1
+        }
       }
 
-      // Description is the first content node after the (optional) title
-      const afterTitle = titleNodeIndex !== -1 ? contentNodes.slice(1) : contentNodes
-      const second = afterTitle[0]
-      if (second && getTag(second) === descriptionTag) {
-        descriptionNodeIndex = nodes.indexOf(second)
-        state.tree.meta.description = flattenNodeText(second)
+      if (descriptionTag !== false) {
+        const candidate = contentNodes[nextContentIndex]
+        if (candidate && getTag(candidate) === descriptionTag) {
+          descriptionNodeIndex = nodes.indexOf(candidate)
+          state.tree.meta.description = flattenNodeText(candidate)
+        }
       }
 
       if (remove) {

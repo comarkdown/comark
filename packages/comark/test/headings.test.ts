@@ -55,6 +55,30 @@ describe('headings plugin', () => {
     expect(tree.meta.description).toBe('Just a paragraph.')
   })
 
+  it('disables title extraction with titleTag: false', async () => {
+    const md = 'Just a paragraph.\n'
+    const tree = await parse(md, { plugins: [headings({ titleTag: false })] })
+
+    expect(tree.meta.title).toBeUndefined()
+    expect(tree.meta.description).toBe('Just a paragraph.')
+  })
+
+  it('disables description extraction with descriptionTag: false', async () => {
+    const tree = await parse(CONTENT, { plugins: [headings({ descriptionTag: false })] })
+
+    expect(tree.meta.title).toBe('My Page Title')
+    expect(tree.meta.description).toBeUndefined()
+  })
+
+  it('disables both with titleTag: false and descriptionTag: false', async () => {
+    const tree = await parse(CONTENT, {
+      plugins: [headings({ titleTag: false, descriptionTag: false })],
+    })
+
+    expect(tree.meta.title).toBeUndefined()
+    expect(tree.meta.description).toBeUndefined()
+  })
+
   it('uses custom titleTag and descriptionTag', async () => {
     const md = `## Custom Title
 
