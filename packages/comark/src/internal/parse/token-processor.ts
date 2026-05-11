@@ -479,7 +479,7 @@ function processBlockChildrenWithSlots(
                 'template',
                 {
                   name: currentSlotName,
-                  ...currentSlotAttrs
+                  ...currentSlotAttrs,
                 },
                 ...currentSlotChildren,
               ] as ComarkNode)
@@ -520,7 +520,7 @@ function processBlockChildrenWithSlots(
       'template',
       {
         name: currentSlotName,
-        ...currentSlotAttrs
+        ...currentSlotAttrs,
       },
       ...currentSlotChildren,
     ] as ComarkNode)
