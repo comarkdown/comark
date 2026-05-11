@@ -59,19 +59,19 @@ function flattenNodeText(node: ComarkNode): string {
  *    content is written to `tree.meta.description`. When no title was found,
  *    this check starts from the very first content node.
  *
- * Both nodes are removed from the tree by default so they are not rendered
- * twice. Set `remove: false` to keep them in place.
+ * By default the extracted nodes are kept in the tree. Set `remove: true`
+ * to strip them so they are not rendered twice.
  *
  * @example
  * ```ts
- * // Default — h1 as title, first paragraph as description
+ * // Default — h1 as title, first paragraph as description, nodes kept in tree
  * headings()
  *
  * // Use a blockquote as the description instead of a paragraph
  * headings({ descriptionTag: 'blockquote' })
  *
- * // Extract metadata without removing the nodes from the tree
- * headings({ remove: false })
+ * // Extract metadata and remove the matched nodes from the tree
+ * headings({ remove: true })
  * ```
  */
 export default defineComarkPlugin((options: HeadingsOptions = {}) => {
