@@ -442,6 +442,7 @@ function processBlockChildrenWithSlots(
   const nodes: ComarkNode[] = []
   let i = startIndex
   let currentSlotName: string | null = null
+  let currentSlotAttrs: Record<string, unknown> = {}
   let currentSlotChildren: ComarkNode[] = []
 
   while (i < tokens.length && tokens[i].type !== closeType) {
@@ -462,7 +463,7 @@ function processBlockChildrenWithSlots(
     // Check for slot marker: #slotname creates mdc_block_slot tokens
     if (token.type === 'mdc_block_slot') {
       // Extract slot name from token.attrs
-      // The attrs array contains [["#slotname", ""]] for open, and null/empty for close
+      // The attrs array contains [["#slotname", ""], ...props] for open, and null/empty for close
       if (token.attrs && Array.isArray(token.attrs) && token.attrs.length > 0) {
         const firstAttr = token.attrs[0]
         if (Array.isArray(firstAttr) && firstAttr.length > 0) {
@@ -470,14 +471,23 @@ function processBlockChildrenWithSlots(
           // Remove the # prefix to get the slot name
           if (slotKey.startsWith('#')) {
             const slotName = slotKey.substring(1)
+            const slotAttrs = processAttributes(token.attrs.slice(1))
 
             // Save previous slot if any
             if (currentSlotName !== null && currentSlotChildren.length > 0) {
-              nodes.push(['template', { name: currentSlotName }, ...currentSlotChildren] as ComarkNode)
+              nodes.push([
+                'template',
+                {
+                  name: currentSlotName,
+                  ...currentSlotAttrs
+                },
+                ...currentSlotChildren,
+              ] as ComarkNode)
               currentSlotChildren = []
             }
 
             currentSlotName = slotName
+            currentSlotAttrs = slotAttrs
             i++
             continue
           }
@@ -506,7 +516,14 @@ function processBlockChildrenWithSlots(
 
   // Save last slot if any
   if (currentSlotName !== null && currentSlotChildren.length > 0) {
-    nodes.push(['template', { name: currentSlotName }, ...currentSlotChildren] as ComarkNode)
+    nodes.push([
+      'template',
+      {
+        name: currentSlotName,
+        ...currentSlotAttrs
+      },
+      ...currentSlotChildren,
+    ] as ComarkNode)
   }
 
   return { nodes, nextIndex: i }
