@@ -22,9 +22,7 @@ describe('headings plugin', () => {
   it('keeps extracted nodes in the tree by default (remove: false)', async () => {
     const tree = await parse(CONTENT, { plugins: [headings()] })
 
-    const tags = tree.nodes
-      .filter((n) => Array.isArray(n))
-      .map((n) => (n as any)[0])
+    const tags = tree.nodes.filter((n) => Array.isArray(n)).map((n) => (n as any)[0])
 
     expect(tags).toContain('h1')
     expect(tags).toContain('p')
@@ -36,20 +34,18 @@ describe('headings plugin', () => {
     expect(tree.meta.title).toBe('My Page Title')
     expect(tree.meta.description).toBe('This is the description paragraph.')
 
-    const tags = tree.nodes
-      .filter((n) => Array.isArray(n))
-      .map((n) => (n as any)[0])
+    const tags = tree.nodes.filter((n) => Array.isArray(n)).map((n) => (n as any)[0])
 
     expect(tags).not.toContain('h1')
     expect(tags).toContain('h2')
     // The first <p> (description) should be removed, but the second section content stays
-    const paragraphs = tree.nodes.filter(
-      (n) => Array.isArray(n) && (n as any)[0] === 'p',
-    )
-    expect(paragraphs.every((p) => {
-      const text = Array.isArray(p) && p.length > 2 ? String(p[2]) : ''
-      return text !== 'This is the description paragraph.'
-    })).toBe(true)
+    const paragraphs = tree.nodes.filter((n) => Array.isArray(n) && (n as any)[0] === 'p')
+    expect(
+      paragraphs.every((p) => {
+        const text = Array.isArray(p) && p.length > 2 ? String(p[2]) : ''
+        return text !== 'This is the description paragraph.'
+      })
+    ).toBe(true)
   })
 
   it('does not set meta.title when no matching tag exists', async () => {
