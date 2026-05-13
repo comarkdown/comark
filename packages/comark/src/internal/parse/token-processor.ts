@@ -321,18 +321,11 @@ function processBlockToken(
       return { node: [null, {}, inner] as unknown as ComarkNode, nextIndex: startIndex + 1 }
     }
 
-    const htmlNodes = htmlToComarkNodes(content)
-    const [node1] = htmlNodes
+    const children = processBlockChildren(tokens, startIndex + 1, 'html_block_close', false, false, false, state)
+    const [node1] = htmlToComarkNodes(content)
     if (!node1) {
       return { node: null, nextIndex: startIndex + 1 }
     }
-
-    const isVoid = Array.isArray(node1) && VOID_ELEMENTS.has(node1[0] as string)
-    if (isVoid) {
-      return { node: node1, nextIndex: startIndex + 1 }
-    }
-
-    const children = processBlockChildren(tokens, startIndex + 1, 'html_block_close', false, false, false, state)
     const node = [node1[0]!, node1[1]! as ComarkElementAttributes, ...children.nodes] as ComarkNode
 
     return { node, nextIndex: children.nextIndex + 1 }
