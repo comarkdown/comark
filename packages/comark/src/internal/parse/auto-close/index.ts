@@ -207,7 +207,8 @@ function closeInlineMarkersLinear(line: string): string {
   // Count markers by scanning
   let asteriskCount = 0
   let underscoreCount = 0
-  let tildeCount = 0 // Count individual tildes
+  let doubleTildeCount = 0 // Count ~~ occurrences (GFM strikethrough delimiter)
+  let singleTildeCount = 0 // Count standalone ~ (not part of ~~)
   let backtickCount = 0
   let dollarCount = 0 // Count $ for math
   let dollarPairCount = 0 // Count $$ pairs for block math
@@ -298,7 +299,12 @@ function closeInlineMarkersLinear(line: string): string {
         }
       }
     } else if (ch === '~') {
-      tildeCount++
+      if (i + 1 < len && line[i + 1] === '~') {
+        doubleTildeCount++
+        i++ // Skip second tilde since we counted the pair
+      } else {
+        singleTildeCount++
+      }
     } else if (ch === '`') {
       backtickCount++
     } else if (ch === '$' && prevCh !== '\\') {
@@ -489,19 +495,12 @@ function closeInlineMarkersLinear(line: string): string {
     }
   }
 
-  // Check ~~ (strikethrough)
-  if (!closingSuffix && tildeCount >= 2) {
-    const remainder = tildeCount % 4
-    if (remainder === 2) {
-      // Two tildes unclosed, close with ~~
-      closingSuffix = '~~'
-      if (hasTrailingSpace) shouldTrim = true
-    } else if (remainder > 2 && remainder < 4) {
-      // Partial marker like ~~text~ (3 tildes), need 1 more
-      const needed = 4 - remainder
-      closingSuffix = '~'.repeat(needed)
-      if (hasTrailingSpace) shouldTrim = true
-    }
+  // Check ~~ (strikethrough). Single tildes alone (e.g. ~Hello~) are not GFM
+  // strikethrough delimiters and must not trigger auto-close.
+  if (!closingSuffix && doubleTildeCount % 2 === 1) {
+    // A trailing single ~ after an open ~~ is a partial closer (~~text~)
+    closingSuffix = singleTildeCount === 1 ? '~' : '~~'
+    if (hasTrailingSpace) shouldTrim = true
   }
 
   // Check ` (code)
