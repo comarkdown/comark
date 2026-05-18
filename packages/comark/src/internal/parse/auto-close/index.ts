@@ -495,11 +495,14 @@ function closeInlineMarkersLinear(line: string): string {
     }
   }
 
-  // Check ~~ (strikethrough). Single tildes alone (e.g. ~Hello~) are not GFM
-  // strikethrough delimiters and must not trigger auto-close.
+  // Check ~~ (strikethrough) and ~ (single-tilde) separately so that paired
+  // singles like ~Hello~ are left alone while ~~text and ~Hello both close.
   if (!closingSuffix && doubleTildeCount % 2 === 1) {
     // A trailing single ~ after an open ~~ is a partial closer (~~text~)
     closingSuffix = singleTildeCount === 1 ? '~' : '~~'
+    if (hasTrailingSpace) shouldTrim = true
+  } else if (!closingSuffix && singleTildeCount % 2 === 1) {
+    closingSuffix = '~'
     if (hasTrailingSpace) shouldTrim = true
   }
 

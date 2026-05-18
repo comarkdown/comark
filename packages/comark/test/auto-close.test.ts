@@ -22,7 +22,10 @@ Some text with **bold → Some text with **bold**
 **bold** and *italic* and \`code\` → **bold** and *italic* and \`code\`
 [text](url → [text](url)
 $$formula → $$formula$$
-~Hello~ → ~Hello~`
+~Hello → ~Hello~
+~~Hello → ~~Hello~~
+~Hello~ → ~Hello~
+~~Hello~~ → ~~Hello~~`
 
 const multilines = `
 | Month    | Savings
