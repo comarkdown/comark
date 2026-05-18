@@ -326,10 +326,7 @@ type PluginFrontmatterOf<P> = P extends ComarkPlugin<any, infer F> ? F : {}
  * Walk a tuple of plugins and intersect their meta contributions.
  * Returns `{}` when the tuple is empty or when nothing was contributed.
  */
-export type MergePluginMeta<TPlugins extends readonly unknown[]> = TPlugins extends readonly [
-  infer Head,
-  ...infer Rest,
-]
+export type MergePluginMeta<TPlugins extends readonly unknown[]> = TPlugins extends readonly [infer Head, ...infer Rest]
   ? PluginMetaOf<Head> & MergePluginMeta<Rest extends readonly unknown[] ? Rest : []>
   : {}
 
@@ -359,9 +356,7 @@ export interface ComarkContextProvider {
   componentManifest: ComponentManifest
 }
 
-export interface ParseOptions<
-  TPlugins extends readonly ComarkPlugin<any, any>[] = readonly ComarkPlugin<any, any>[],
-> {
+export interface ParseOptions<TPlugins extends readonly ComarkPlugin<any, any>[] = readonly ComarkPlugin<any, any>[]> {
   /**
    * Whether to automatically unwrap single paragraphs in container components.
    * When enabled, if a container component (alert, card, callout, note, warning, tip, info)
