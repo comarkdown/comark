@@ -17,11 +17,25 @@ export function createSerializedTask<TArgs extends unknown[], TResult>(
 // #region define plugin
 
 /**
- * Define a Comark plugin
- * @param fn - The plugin factory function
- * @returns The defined plugin
+ * Define a Comark plugin.
+ *
+ * `TMeta` and `TFrontmatter` declare what the plugin contributes to
+ * `tree.meta` / `tree.frontmatter`. They are inferred from the factory's
+ * return type when set via the `__meta` / `__frontmatter` phantom markers,
+ * or can be passed explicitly. Plugins that don't contribute typed keys can
+ * omit them entirely.
+ *
+ * @example
+ * ```ts
+ * defineComarkPlugin<Options, { toc: Toc }>((opts) => ({
+ *   name: 'toc',
+ *   post(state) { state.tree.meta.toc = ... },
+ * }))
+ * ```
  */
-export function defineComarkPlugin<Options>(fn: ComarkPluginFactory<Options>): ComarkPluginFactory<Options> {
+export function defineComarkPlugin<Options, TMeta = {}, TFrontmatter = {}>(
+  fn: ComarkPluginFactory<Options, TMeta, TFrontmatter>
+): ComarkPluginFactory<Options, TMeta, TFrontmatter> {
   return fn
 }
 
