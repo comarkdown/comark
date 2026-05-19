@@ -2,6 +2,15 @@ import type { DumpOptions } from 'js-yaml'
 import type MarkdownExit from 'markdown-exit'
 import type MarkdownIt from 'markdown-it'
 
+// #region Utility Types
+/**
+ * The `[keyof T] extends [never]` form (rather than `keyof T extends never`)
+ * is the standard trick to prevent TS from distributing the check over a
+ * union — we want to test "is T's keyset empty?" as one yes/no question.
+ */
+type Writable<T> = [keyof T] extends [never] ? Record<string, any> : T
+// #endregion Utility Types
+
 // #region ComarkTree
 
 /**
@@ -285,9 +294,9 @@ export type ComarkParsePreState = {
   [key: string]: any
 }
 
-export type ComarkParsePostState = {
+export type ComarkParsePostState<TMeta = Record<string, any>, TFrontmatter = Record<string, any>> = {
   markdown: string
-  tree: ComarkTree
+  tree: ComarkTree<TMeta, TFrontmatter>
   options: ParseOptions
   tokens: unknown[]
 
@@ -307,7 +316,7 @@ export type ComarkPlugin<TMeta = {}, TFrontmatter = {}> = {
   name: string
   markdownItPlugins?: MarkdownItPlugin[]
   pre?: (state: ComarkParsePreState) => Promise<void> | void
-  post?: (state: ComarkParsePostState) => Promise<void> | void
+  post?: (state: ComarkParsePostState<Writable<TMeta>, Writable<TFrontmatter>>) => Promise<void> | void
   /** Phantom — used for type inference only. Never set at runtime. */
   __meta?: TMeta
   /** Phantom — used for type inference only. Never set at runtime. */
