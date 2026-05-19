@@ -37,8 +37,11 @@ naturally appears inline after the deepest trailing text node.
         || components[pascal]
         || components[tag]
 
-    if (Component || !componentsManifest) {
-      return Component || null
+    if (Component) {
+      return Component
+    }
+    if (!componentsManifest) {
+      return null;
     }
 
     if (!componentCache.has(tag)) {
