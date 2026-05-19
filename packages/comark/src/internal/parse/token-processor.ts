@@ -20,7 +20,8 @@ const INLINE_TAG_MAP: Record<string, string> = {
   strong_open: 'strong',
   em_open: 'em',
   s_open: 'del',
-  sub_open: 'del',
+  sub_open: 'sub',
+  sup_open: 'sup',
 }
 
 interface ProcessState {
