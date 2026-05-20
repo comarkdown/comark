@@ -82,7 +82,7 @@ function flattenNodeText(node: ComarkNode): string {
  * headings({ descriptionTag: false })
  * ```
  */
-export default defineComarkPlugin((options: HeadingsOptions = {}) => {
+export default defineComarkPlugin<HeadingsOptions, { title?: string; description?: string }>((options = {}) => {
   const { titleTag = 'h1', descriptionTag = 'p', remove = false } = options
 
   return {

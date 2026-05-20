@@ -2,6 +2,15 @@ import type { DumpOptions } from 'js-yaml'
 import type MarkdownExit from 'markdown-exit'
 import type MarkdownIt from 'markdown-it'
 
+// #region Utility Types
+/**
+ * The `[keyof T] extends [never]` form (rather than `keyof T extends never`)
+ * is the standard trick to prevent TS from distributing the check over a
+ * union — we want to test "is T's keyset empty?" as one yes/no question.
+ */
+type Writable<T> = [keyof T] extends [never] ? Record<string, any> : T
+// #endregion Utility Types
+
 // #region ComarkTree
 
 /**
@@ -52,11 +61,14 @@ export type ComarkNode = ComarkElement | ComarkText | ComarkComment
  * @param nodes - The nodes of the tree
  * @param frontmatter - The frontmatter data which is the data at the top of the file
  * @param meta - The meta data of tree, it can be used to store additional data for the tree
+ *
+ * The `TMeta` and `TFrontmatter` type parameters allow `parse` / `createParse`
+ * to surface plugin-contributed keys with narrow types (see `MergePluginMeta`).
  */
-export interface ComarkTree {
+export interface ComarkTree<TMeta = Record<string, any>, TFrontmatter = Record<string, any>> {
   nodes: ComarkNode[]
-  frontmatter: Record<string, any>
-  meta: Record<string, any>
+  frontmatter: TFrontmatter
+  meta: TMeta
 }
 
 // #endregion
@@ -282,22 +294,70 @@ export type ComarkParsePreState = {
   [key: string]: any
 }
 
-export type ComarkParsePostState = {
+export type ComarkParsePostState<TMeta = Record<string, any>, TFrontmatter = Record<string, any>> = {
   markdown: string
-  tree: ComarkTree
+  tree: ComarkTree<TMeta, TFrontmatter>
   options: ParseOptions
   tokens: unknown[]
 
   [key: string]: any
 }
 
-export type ComarkPlugin = {
+/**
+ * A Comark plugin.
+ *
+ * `TMeta` / `TFrontmatter` are phantom type parameters that record what this
+ * plugin contributes to `tree.meta` / `tree.frontmatter`. They are surfaced
+ * only via the optional `__meta` / `__frontmatter` markers — implementations
+ * never set these at runtime; they exist purely so the contribution survives
+ * `ReturnType<typeof factory>` inference and can be merged in `createParse`.
+ */
+export type ComarkPlugin<TMeta = {}, TFrontmatter = {}> = {
   name: string
   markdownItPlugins?: MarkdownItPlugin[]
   pre?: (state: ComarkParsePreState) => Promise<void> | void
-  post?: (state: ComarkParsePostState) => Promise<void> | void
+  post?: (state: ComarkParsePostState<Writable<TMeta>, Writable<TFrontmatter>>) => Promise<void> | void
+  /** Phantom — used for type inference only. Never set at runtime. */
+  __meta?: TMeta
+  /** Phantom — used for type inference only. Never set at runtime. */
+  __frontmatter?: TFrontmatter
 }
-export type ComarkPluginFactory<Options> = (opts?: Options) => ComarkPlugin
+export type ComarkPluginFactory<Options, TMeta = {}, TFrontmatter = {}> = (
+  opts?: Options
+) => ComarkPlugin<TMeta, TFrontmatter>
+
+// #region Plugin type inference helpers
+
+type PluginMetaOf<P> = P extends ComarkPlugin<infer M, any> ? M : {}
+type PluginFrontmatterOf<P> = P extends ComarkPlugin<any, infer F> ? F : {}
+
+/**
+ * Walk a tuple of plugins and intersect their meta contributions.
+ * Returns `{}` when the tuple is empty or when nothing was contributed.
+ */
+export type MergePluginMeta<TPlugins extends readonly unknown[]> = TPlugins extends readonly [infer Head, ...infer Rest]
+  ? PluginMetaOf<Head> & MergePluginMeta<Rest extends readonly unknown[] ? Rest : []>
+  : {}
+
+/**
+ * Walk a tuple of plugins and intersect their frontmatter contributions.
+ */
+export type MergePluginFrontmatter<TPlugins extends readonly unknown[]> = TPlugins extends readonly [
+  infer Head,
+  ...infer Rest,
+]
+  ? PluginFrontmatterOf<Head> & MergePluginFrontmatter<Rest extends readonly unknown[] ? Rest : []>
+  : {}
+
+/**
+ * When no plugin contributed meta keys, fall back to the permissive
+ * `Record<string, any>` (backwards-compatible). Otherwise, preserve narrow
+ * keys and type unknown accesses as `unknown` (safer than `any`).
+ */
+export type ResolvedMeta<T> = [keyof T] extends [never] ? Record<string, any> : T & Record<string, unknown>
+export type ResolvedFrontmatter<T> = [keyof T] extends [never] ? Record<string, any> : T & Record<string, unknown>
+
+// #endregion
 
 export type ComponentManifest = (name: string) => Promise<unknown> | undefined | null
 export interface ComarkContextProvider {
@@ -305,7 +365,7 @@ export interface ComarkContextProvider {
   componentManifest: ComponentManifest
 }
 
-export interface ParseOptions {
+export interface ParseOptions<TPlugins extends readonly ComarkPlugin<any, any>[] = readonly ComarkPlugin<any, any>[]> {
   /**
    * Whether to automatically unwrap single paragraphs in container components.
    * When enabled, if a container component (alert, card, callout, note, warning, tip, info)
@@ -355,7 +415,7 @@ export interface ParseOptions {
    * Additional plugins to use
    * @default []
    */
-  plugins?: ComarkPlugin[]
+  plugins?: TPlugins
 }
 
 /**
@@ -367,4 +427,7 @@ export type ComarkParseFnOptions = { streaming?: boolean }
  * Type signature for the async Comark parser function returned by createParse().
  * Accepts a markdown string and optional parsing options, and returns a Promise of ComarkTree.
  */
-export type ComarkParseFn = (markdown: string, opts?: ComarkParseFnOptions) => Promise<ComarkTree>
+export type ComarkParseFn<TMeta = Record<string, any>, TFrontmatter = Record<string, any>> = (
+  markdown: string,
+  opts?: ComarkParseFnOptions
+) => Promise<ComarkTree<TMeta, TFrontmatter>>

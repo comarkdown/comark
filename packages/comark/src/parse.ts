@@ -1,8 +1,13 @@
 import type {
   ComarkParseFn,
   ComarkParsePostState,
+  ComarkPlugin,
   MarkdownExitPlugin,
+  MergePluginFrontmatter,
+  MergePluginMeta,
   ParseOptions,
+  ResolvedFrontmatter,
+  ResolvedMeta,
   ComarkTree,
   ComarkNode,
 } from './types.ts'
@@ -54,8 +59,13 @@ export { defineComarkPlugin } from './utils/helpers.ts'
  * const parseNoHtml = createParse({ html: false })
  * ```
  */
-export function createParse(options: ParseOptions = {}): ComarkParseFn {
-  const { autoUnwrap = true, autoClose = true, plugins = [] } = options
+export function createParse<const TPlugins extends readonly ComarkPlugin<any, any>[] = []>(
+  options: ParseOptions<TPlugins> = {} as ParseOptions<TPlugins>
+): ComarkParseFn<ResolvedMeta<MergePluginMeta<TPlugins>>, ResolvedFrontmatter<MergePluginFrontmatter<TPlugins>>> {
+  const { autoUnwrap = true, autoClose = true } = options
+  // Make a mutable working copy so the inferred (possibly readonly) user tuple
+  // isn't mutated by the unshift calls below.
+  const plugins: ComarkPlugin<any, any>[] = options.plugins ? [...options.plugins] : []
 
   plugins.unshift(syntax())
   plugins.unshift(taskList())
@@ -82,7 +92,7 @@ export function createParse(options: ParseOptions = {}): ComarkParseFn {
   let lastOutput: ComarkTree | null = null
   let lastInput: string | null = null
 
-  return async (markdown, opts = {}) => {
+  const parseFn: ComarkParseFn = async (markdown, opts = {}) => {
     const state = {
       options,
       tokens: [] as unknown[],
@@ -169,6 +179,11 @@ export function createParse(options: ParseOptions = {}): ComarkParseFn {
 
     return state.tree
   }
+
+  return parseFn as ComarkParseFn<
+    ResolvedMeta<MergePluginMeta<TPlugins>>,
+    ResolvedFrontmatter<MergePluginFrontmatter<TPlugins>>
+  >
 }
 
 /**
@@ -204,7 +219,10 @@ export function createParse(options: ParseOptions = {}): ComarkParseFn {
  * const tree2 = await parse(content, { autoUnwrap: false })
  * ```
  */
-export async function parse(markdown: string, options: ParseOptions = {}): Promise<ComarkTree> {
+export async function parse<const TPlugins extends readonly ComarkPlugin<any, any>[] = []>(
+  markdown: string,
+  options: ParseOptions<TPlugins> = {} as ParseOptions<TPlugins>
+): Promise<ComarkTree<ResolvedMeta<MergePluginMeta<TPlugins>>, ResolvedFrontmatter<MergePluginFrontmatter<TPlugins>>>> {
   const parse = createParse(options)
 
   return await parse(markdown)
@@ -225,6 +243,8 @@ export async function parse(markdown: string, options: ParseOptions = {}): Promi
  * const tree = await parse(content)
  * console.log(tree.nodes)
  */
-export function createSerializedParse(options: ParseOptions = {}): ComarkParseFn {
+export function createSerializedParse<const TPlugins extends readonly ComarkPlugin<any, any>[] = []>(
+  options: ParseOptions<TPlugins> = {} as ParseOptions<TPlugins>
+): ComarkParseFn<ResolvedMeta<MergePluginMeta<TPlugins>>, ResolvedFrontmatter<MergePluginFrontmatter<TPlugins>>> {
   return createSerializedTask(createParse(options))
 }
