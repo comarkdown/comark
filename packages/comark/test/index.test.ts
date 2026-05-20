@@ -272,16 +272,20 @@ describe('Comark Tests', () => {
         expect(result).toBe(expectedHTML)
       })
 
-      it('should render AST to Markdown', { timeout: testCase.timeouts?.markdown ?? DEFAULT_TEST_TIMEOUT }, async () => {
-        const result = await renderMarkdown(parsedAST, {
-          ...(testCase.options || {}),
-          components: {
-            binding: MarkdownBinding,
-          },
-        })
-        const expectedMarkdown = testCase.markdown.trim()
-        expect(result).toBe(expectedMarkdown)
-      })
+      it(
+        'should render AST to Markdown',
+        { timeout: testCase.timeouts?.markdown ?? DEFAULT_TEST_TIMEOUT },
+        async () => {
+          const result = await renderMarkdown(parsedAST, {
+            ...(testCase.options || {}),
+            components: {
+              binding: MarkdownBinding,
+            },
+          })
+          const expectedMarkdown = testCase.markdown.trim()
+          expect(result).toBe(expectedMarkdown)
+        }
+      )
     })
   })
 })
