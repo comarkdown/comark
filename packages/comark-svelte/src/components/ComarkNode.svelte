@@ -18,7 +18,7 @@ naturally appears inline after the deepest trailing text node.
   import type { ComponentManifest as ComarkComponentManifest } from 'comark'
   import { pascalCase } from 'comark/utils'
 
-  const componentCache = new Map<string, any>()
+  const componentCache = new WeakMap<ComarkComponentManifest, Map<string, any>>()
 
   function isPromiseLike(value: unknown): value is Promise<unknown> {
     return !!value && typeof (value as { then?: unknown }).then === 'function'
@@ -44,10 +44,16 @@ naturally appears inline after the deepest trailing text node.
       return null;
     }
 
-    if (!componentCache.has(tag)) {
+    let cache = componentCache.get(componentsManifest)
+    if (!cache) {
+      cache = new Map<string, any>()
+      componentCache.set(componentsManifest, cache)
+    }
+
+    if (!cache.has(tag)) {
       const resolved = componentsManifest(tag)
       if (resolved) {
-        componentCache.set(
+        cache.set(
           tag,
           isPromiseLike(resolved)
             ? Promise.resolve(resolved).then(unwrapComponent)
@@ -56,13 +62,15 @@ naturally appears inline after the deepest trailing text node.
       }
     }
 
-    return componentCache.get(tag) || null
+    return cache.get(tag) || null
   }
 </script>
 
 <script lang="ts">
   import type { ComarkNode as ComarkNodeType, ComponentManifest, NodeRenderData } from 'comark'
+  import type { ComponentResolver } from '../types.js'
   import ComarkNode from './ComarkNode.svelte'
+  import Resolve from './Resolve.svelte'
   import { resolveAttributes } from 'comark/utils'
 
   const EMPTY_RENDER_DATA: NodeRenderData = { frontmatter: {}, meta: {}, data: {}, props: {} }
@@ -71,12 +79,14 @@ naturally appears inline after the deepest trailing text node.
     node,
     components = {},
     componentsManifest,
+    resolver: Resolver = Resolve,
     caretClass = null,
     renderData = EMPTY_RENDER_DATA,
   }: {
     node: ComarkNodeType
     components?: Record<string, any>
     componentsManifest?: ComponentManifest
+    resolver?: ComponentResolver
     caretClass?: string | null
     renderData?: NodeRenderData
   } = $props()
@@ -157,6 +167,7 @@ naturally appears inline after the deepest trailing text node.
       node={child}
       {components}
       {componentsManifest}
+      resolver={Resolver}
       caretClass={i === children.length - 1 ? caretClass : null}
       renderData={childrenRenderData}
     />
@@ -173,11 +184,9 @@ naturally appears inline after the deepest trailing text node.
     {@render renderChildren()}
   </Component>
 {:else if componentPromise}
-  {#await componentPromise then AsyncComponent}
-    <AsyncComponent {...mappedProps}>
-      {@render renderChildren()}
-    </AsyncComponent>
-  {/await}
+  <Resolver promise={componentPromise} props={mappedProps}>
+    {@render renderChildren()}
+  </Resolver>
 {:else if isVoid}
   <svelte:element this={tag} {...mappedProps} />
 {:else if tag}

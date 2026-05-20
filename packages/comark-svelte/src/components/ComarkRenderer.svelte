@@ -19,12 +19,14 @@ Supports custom component mappings and a streaming caret indicator.
 -->
 <script lang="ts">
   import type { ComarkTree, ComponentManifest } from 'comark'
+  import type { ComponentResolver } from '../types.js'
   import ComarkNode from './ComarkNode.svelte'
 
   let {
     tree,
     components = {},
     componentsManifest,
+    resolver,
     streaming = false,
     caret: caretProp = false,
     data,
@@ -33,6 +35,7 @@ Supports custom component mappings and a streaming caret indicator.
     tree: ComarkTree
     components?: Record<string, any>
     componentsManifest?: ComponentManifest
+    resolver?: ComponentResolver
     streaming?: boolean
     caret?: boolean | { class: string }
     data?: Record<string, unknown>
@@ -59,6 +62,7 @@ Supports custom component mappings and a streaming caret indicator.
       {node}
       {components}
       {componentsManifest}
+      {resolver}
       caretClass={i === tree.nodes.length - 1 ? caretClass : null}
       {renderData}
     />

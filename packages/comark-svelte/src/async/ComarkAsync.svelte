@@ -31,6 +31,7 @@ and wrap this component in a `<svelte:boundary>` for pending/error states.
   import type { ComarkPlugin, ComponentManifest } from 'comark'
   import { parse } from 'comark'
   import ComarkRenderer from '../components/ComarkRenderer.svelte'
+  import ResolveAsync from './ResolveAsync.svelte'
 
   let {
     markdown = '',
@@ -67,6 +68,7 @@ and wrap this component in a `<svelte:boundary>` for pending/error states.
   tree={parsed}
   {components}
   {componentsManifest}
+  resolver={ResolveAsync}
   {streaming}
   {caret}
   {data}
