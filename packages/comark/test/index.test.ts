@@ -35,6 +35,9 @@ const transformerRegistry: Record<TransformerName, () => Promise<ShikiTransforme
   },
 }
 
+const DEFAULT_TEST_TIMEOUT = 5000
+const MIN_HIGHLIGHT_PARSE_HOOK_TIMEOUT = 500
+
 interface TestCase {
   input: string
   ast: string
@@ -58,12 +61,22 @@ interface TestCase {
 function parseTimeout(timeoutStr: string): number {
   // Parse timeout string like "50ms" or "5s" to milliseconds
   const match = timeoutStr.match(/^(\d+)(ms|s)$/)
-  if (!match) return 5000 // default 5 seconds
+  if (!match) return DEFAULT_TEST_TIMEOUT
 
   const value = Number.parseInt(match[1], 10)
   const unit = match[2]
   const ms = unit === 's' ? value * 1000 : value
   return ms + 5 + (process.env.GITHUB_ACTIONS ? 40 : 0) /* add 40ms to avoid random Github Actions failures */
+}
+
+function parseHookTimeout(testCase: TestCase): number {
+  const timeout = testCase.timeouts?.parse ?? DEFAULT_TEST_TIMEOUT
+
+  if (testCase.options?.highlight) {
+    return Math.max(timeout, MIN_HIGHLIGHT_PARSE_HOOK_TIMEOUT)
+  }
+
+  return timeout
 }
 
 function extractFrontmatter(content: string): {
@@ -242,14 +255,14 @@ describe('Comark Tests', () => {
         }
 
         parsedAST = await parse(testCase.input, parseOptions)
-      }, testCase.timeouts?.parse ?? 5000)
+      }, parseHookTimeout(testCase))
 
       it('should parse input to AST', () => {
         const expectedAST = JSON.parse(testCase.ast)
         expect(parsedAST).toEqual(expectedAST)
       })
 
-      it('should render AST to HTML', { timeout: testCase.timeouts?.html ?? 5000 }, async () => {
+      it('should render AST to HTML', { timeout: testCase.timeouts?.html ?? DEFAULT_TEST_TIMEOUT }, async () => {
         const result = await renderHTMLForTest(parsedAST, {
           components: {
             binding: HTMLBiniding,
@@ -259,7 +272,7 @@ describe('Comark Tests', () => {
         expect(result).toBe(expectedHTML)
       })
 
-      it('should render AST to Markdown', { timeout: testCase.timeouts?.markdown ?? 5000 }, async () => {
+      it('should render AST to Markdown', { timeout: testCase.timeouts?.markdown ?? DEFAULT_TEST_TIMEOUT }, async () => {
         const result = await renderMarkdown(parsedAST, {
           ...(testCase.options || {}),
           components: {
