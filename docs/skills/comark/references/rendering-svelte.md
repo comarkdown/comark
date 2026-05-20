@@ -146,7 +146,26 @@ Load components dynamically using `componentsManifest`:
 
 In SvelteKit projects, keep components rendered from Markdown in a dedicated folder such as `$lib/components/comark/`. This keeps Comark-rendered components separate from normal app UI components and makes `componentsManifest` globs easier to audit.
 
-For SvelteKit SSR with non-eager lazy components, use `ComarkAsync` and a manifest that returns dynamic imports:
+For SvelteKit SSR with non-eager lazy components, use `ComarkAsync` and a manifest that returns dynamic imports. An explicit map is the easiest option to audit:
+
+```svelte
+<script lang="ts">
+  import { ComarkAsync } from '@comark/svelte/async'
+
+  const componentMap: Record<string, () => Promise<any>> = {
+    'alert': () => import('$lib/components/comark/Alert.svelte'),
+    'lazy-card': () => import('$lib/components/comark/LazyCard.svelte'),
+  }
+
+  const componentsManifest = (name: string) => componentMap[name]?.()
+</script>
+
+<svelte:boundary>
+  <ComarkAsync markdown={content} {componentsManifest} />
+</svelte:boundary>
+```
+
+Use `import.meta.glob` when you want the manifest to cover every Svelte component in a folder:
 
 ```svelte
 <script lang="ts">

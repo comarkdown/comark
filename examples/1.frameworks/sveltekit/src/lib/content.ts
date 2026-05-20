@@ -1,14 +1,14 @@
 export const lazyMarkdown = `
 # Lazy SvelteKit SSR
 
-This route renders markdown with \`<ComarkAsync>\`. The alert is statically mapped, while the card below is resolved by a non-eager \`import.meta.glob\` entry.
+This route renders markdown with \`<ComarkAsync>\`. Its custom components are resolved from an explicit dynamic import map.
 
 ::alert{type="warning"}
-The lazy card is returned from \`componentsManifest\` as a dynamic import and is awaited during SvelteKit SSR.
+This alert is returned from \`componentsManifest\` as a dynamic import and is awaited during SvelteKit SSR.
 ::
 
 ::lazy-card{title="Lazy import rendered by SSR" accent="cyan"}
-This component is not part of the static component map. It is loaded only when the \`lazy-card\` tag appears in the rendered markdown.
+This component is loaded only when the \`lazy-card\` tag appears in the rendered markdown.
 ::
 `.trim()
 

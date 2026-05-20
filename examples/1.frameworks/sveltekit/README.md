@@ -20,7 +20,7 @@ This example demonstrates how to use Comark with SvelteKit and server-side rende
 
 ## How it works
 
-- **Lazy SSR route** — `/` renders markdown with `<ComarkAsync>` and resolves `src/lib/components/comark/LazyCard.svelte` through a non-eager `import.meta.glob`.
+- **Lazy SSR route** — `/` renders markdown with `<ComarkAsync>` and resolves custom components through an explicit dynamic import map.
 - **Stable SSR route** — `/stable` parses markdown in `+page.server.ts` and renders the AST with `<ComarkRenderer>`.
 - **Scoped Markdown components** — components rendered from Comark live in `src/lib/components/comark/`, separate from normal app UI components.
 - **Component manifest** — the examples show when to return dynamic imports and when to use eager/static entries for synchronous SSR.

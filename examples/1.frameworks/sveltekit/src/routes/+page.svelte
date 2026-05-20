@@ -1,6 +1,5 @@
 <script lang="ts">
   import { ComarkAsync } from '@comark/svelte/async'
-  import Alert from '$lib/components/comark/Alert.svelte'
   import type { PageData } from './$types'
   import { pascalCase } from '@comark/svelte/utils';
 
@@ -23,7 +22,6 @@
       <ComarkAsync
         class="prose"
         markdown={data.markdown}
-        components={{ alert: Alert }}
         {componentsManifest}
       />
       {#snippet failed(error)}
