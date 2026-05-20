@@ -139,8 +139,8 @@ catalogs:
       specifier: ^0.2.2
       version: 0.2.2
     docus:
-      specifier: ^5.10.1
-      version: 5.10.1
+      specifier: ^5.11.0
+      version: 5.11.0
     entities:
       specifier: ^8.0.0
       version: 8.0.0
@@ -410,7 +410,7 @@ importers:
         version: link:../packages/comark
       docus:
         specifier: 'catalog:'
-        version: 5.10.1(b927d32a0b0e4e2a56ba354600fb5b9f)
+        version: 5.11.0(b927d32a0b0e4e2a56ba354600fb5b9f)
       markdown-it-math:
         specifier: 'catalog:'
         version: 5.2.1
@@ -6501,9 +6501,6 @@ packages:
   devalue@5.6.4:
     resolution: {integrity: sha512-Gp6rDldRsFh/7XuouDbxMH3Mx8GMCcgzIb1pDTvNyn8pZGQ22u+Wa+lGV9dQCltFQ7uVw0MhRyb8XDskNFOReA==}
 
-  devalue@5.8.0:
-    resolution: {integrity: sha512-2zA9pFEsnp7vWBZbXF5JAgAq0fsUIt/1XPbRiAmRV3lp/2C3upzH+sADiyy66aFCihoLEsrQHxNM5w1gIDfsBg==}
-
   devalue@5.8.1:
     resolution: {integrity: sha512-4CXDYRBGqN+57wVJkuXBYmpAVUSg3L6JAQa/DFqm238G73E1wuyc/JhGQJzN7vUf/CMphYau2zXbfWzDR5aTEw==}
 
@@ -6520,8 +6517,8 @@ packages:
   dlv@1.1.3:
     resolution: {integrity: sha512-+HlytyjlPKnIG8XuRG8WvmBP8xs8P71y+SKKS6ZXWoEgLuePxtDoUEiH7WkdePWrQ5JBpE6aoVqfZfJUQkjXwA==}
 
-  docus@5.10.1:
-    resolution: {integrity: sha512-AEC8YU8HnflHOrqmaSa1X+K5bBNeThIVowPPObZoIaTDU+Rw6mwCfcELg15xiO6TombAQ2tD2FvZ9UPdnslYdw==}
+  docus@5.11.0:
+    resolution: {integrity: sha512-4/6O+mAOmEGJsjAVJNNBm60wyYfmUoj+kv+ZjoI4p3trMpe7JShWHzXeG6NrO/WuQSrXm0ODneMs2Bg6dWQgBA==}
     peerDependencies:
       better-sqlite3: 12.x
       nuxt: 4.x
@@ -12750,7 +12747,7 @@ snapshots:
       '@rollup/plugin-yaml': 4.1.2(rollup@4.59.0)
       '@vue/compiler-sfc': 3.5.33
       defu: 6.1.7
-      devalue: 5.8.0
+      devalue: 5.8.1
       h3: 1.15.11
       knitwork: 1.3.0
       magic-string: 0.30.21
@@ -15887,8 +15884,6 @@ snapshots:
 
   devalue@5.6.4: {}
 
-  devalue@5.8.0: {}
-
   devalue@5.8.1: {}
 
   devlop@1.1.0:
@@ -15901,9 +15896,9 @@ snapshots:
 
   dlv@1.1.3: {}
 
-  docus@5.10.1(b927d32a0b0e4e2a56ba354600fb5b9f):
+  docus@5.11.0(b927d32a0b0e4e2a56ba354600fb5b9f):
     dependencies:
-      '@ai-sdk/gateway': 3.0.110(zod@4.4.3)
+      '@ai-sdk/gateway': 3.0.116(zod@4.4.3)
       '@ai-sdk/mcp': 1.0.39(zod@4.4.3)
       '@ai-sdk/vue': 3.0.168(vue@3.5.32(typescript@5.9.3))(zod@4.4.3)
       '@iconify-json/lucide': 1.2.105
@@ -15932,6 +15927,7 @@ snapshots:
       nuxt: 4.4.2(@babel/core@7.29.0)(@babel/plugin-syntax-jsx@7.28.6(@babel/core@7.29.0))(@parcel/watcher@2.5.6)(@types/node@25.5.2)(@vue/compiler-sfc@3.5.33)(better-sqlite3@12.6.2)(cac@6.7.14)(db0@0.3.4(better-sqlite3@12.6.2))(eslint@10.2.0(jiti@2.6.1))(ioredis@5.10.0)(lightningcss@1.32.0)(magicast@0.5.2)(meow@13.2.0)(optionator@0.9.4)(oxlint@1.61.0)(rolldown@1.0.0-rc.15)(rollup-plugin-visualizer@6.0.11(rolldown@1.0.0-rc.15)(rollup@4.59.0))(rollup@4.59.0)(terser@5.46.0)(tsx@4.21.0)(typescript@5.9.3)(vite@8.0.8(@types/node@25.5.2)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.4))(vue-tsc@3.2.6(typescript@5.9.3))(yaml@2.8.4)
       nuxt-llms: 0.2.0(magicast@0.5.2)
       nuxt-og-image: 6.5.0(e7d4dc8e55e2ab84f05f794bb3a537a6)
+      pathe: 2.0.3
       pkg-types: 2.3.1
       scule: 1.3.0
       shiki-stream: 0.1.4(react@19.2.5)(vue@3.5.32(typescript@5.9.3))
@@ -18180,7 +18176,7 @@ snapshots:
       consola: 3.4.2
       culori: 4.0.2
       defu: 6.1.7
-      devalue: 5.8.0
+      devalue: 5.8.1
       exsolve: 1.0.8
       lightningcss: 1.32.0
       magic-string: 0.30.21

@@ -1,12 +1,7 @@
-@import 'tailwindcss';
-@import '@nuxt/ui';
 @plugin "@tailwindcss/typography";
-
 @theme {
   --font-sans: 'Geist', 'Public Sans', sans-serif;
   --font-mono: 'Geist Mono', ui-monospace, monospace;
-
-  --breakpoint-3xl: 1920px;
 
   --color-green-50: #effdf5;
   --color-green-100: #d9fbe8;

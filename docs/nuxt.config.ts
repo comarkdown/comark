@@ -14,8 +14,6 @@ export default defineNuxtConfig({
     },
   },
 
-  css: ['~/assets/styles/main.css'],
-
   site: {
     name: 'Comark',
   },
