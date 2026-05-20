@@ -5,7 +5,7 @@ defineProps<{
 </script>
 
 <template>
-  <div class="not-prose flex items-start gap-4 py-3">
+  <div class="flex items-start gap-4 py-3">
     <UIcon
       v-if="typeof icon === 'string' && icon"
       :name="icon"

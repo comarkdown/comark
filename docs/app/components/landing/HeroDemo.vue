@@ -157,7 +157,7 @@ onBeforeUnmount(() => {
         >
           <ComarkDocs
             v-if="rawText"
-            class="prose prose-sm max-w-none dark:prose-invert"
+            class="text-sm"
             :markdown="rawText"
             :streaming="isStreaming"
           />

@@ -194,7 +194,7 @@ onBeforeUnmount(() => {
                 <ComarkDocs
                   v-if="liveMarkdown"
                   :key="currentStep"
-                  class="prose prose-sm max-w-none dark:prose-invert"
+                  class="text-sm"
                   :markdown="liveMarkdown"
                   :streaming="!showAutoClosed"
                 />

@@ -87,7 +87,7 @@ onBeforeUnmount(() => {
     <div class="mt-6 h-[280px] overflow-auto border border-muted bg-muted/50 p-4">
       <ComarkDocs
         v-if="streamedText"
-        class="prose prose-sm max-w-none dark:prose-invert"
+        class="text-sm"
         :markdown="streamedText"
         :streaming="isStreaming"
         :caret="{ class: 'caret' }"

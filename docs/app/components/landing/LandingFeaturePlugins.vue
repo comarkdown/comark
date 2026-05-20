@@ -103,7 +103,7 @@ watch(
             <div class="h-[200px] overflow-auto p-4 sm:h-[360px] sm:p-6 lg:p-8">
               <ComarkDocs
                 :key="current.id"
-                class="prose prose-sm max-w-none dark:prose-invert"
+                class="text-sm"
                 :markdown="current.input"
               />
             </div>

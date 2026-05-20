@@ -9,7 +9,7 @@ const count = ref(props.servings ?? 4)
 </script>
 
 <template>
-  <div class="not-prose my-6">
+  <div class="my-6">
     <div class="mb-4 flex items-center justify-between">
       <h2 class="text-lg font-bold [&>p]:m-0">
         <slot name="title">

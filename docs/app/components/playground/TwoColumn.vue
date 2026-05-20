@@ -1,6 +1,6 @@
 <template>
-  <div class="not-prose mt-6 grid grid-cols-1 gap-8 lg:grid-cols-[1fr_320px]">
-    <div class="prose prose-sm max-w-none dark:prose-invert prose-headings:no-underline">
+  <div class="text-sm mt-6 grid grid-cols-1 gap-8 lg:grid-cols-[1fr_320px]">
+    <div class="text-sm">
       <slot name="left" />
     </div>
     <div class="self-start lg:sticky lg:top-(--ui-header-height)">

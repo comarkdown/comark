@@ -9,7 +9,7 @@ const fillPercent = computed(() => `${(ratingNum.value / 5) * 100}%`)
 </script>
 
 <template>
-  <div class="not-prose my-4 flex items-center gap-5 rounded-xl border border-muted px-5 py-4">
+  <div class="my-4 flex items-center gap-5 rounded-xl border border-muted px-5 py-4">
     <div class="flex min-w-0 flex-1 items-start gap-3">
       <div class="flex shrink-0 -space-x-2">
         <div class="flex size-8 items-center justify-center rounded-full bg-primary-100 dark:bg-primary-900">

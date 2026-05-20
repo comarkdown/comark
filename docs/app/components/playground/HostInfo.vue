@@ -7,7 +7,7 @@ defineProps<{
 </script>
 
 <template>
-  <div class="not-prose flex items-center gap-3 py-5">
+  <div class="flex items-center gap-3 py-5">
     <div
       class="flex size-11 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-primary-200 to-primary-400 text-sm font-semibold text-white dark:from-primary-700 dark:to-primary-500"
     >

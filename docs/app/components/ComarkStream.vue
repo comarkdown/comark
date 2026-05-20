@@ -55,7 +55,6 @@ defineExpose({
 <template>
   <ComarkDocs
     v-if="markdown"
-    class="prose dark:prose-invert max-w-none"
     :markdown="accumulated"
     :streaming="isStreaming"
     v-bind="comarkProps"
