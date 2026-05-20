@@ -10,10 +10,13 @@ path: /examples/frameworks/sveltekit
 ::code-explorer
 ---
 org: comarkdown
-repo: comark
+repo: comark@c78885ca7504b38afc7ced59aac1a3c6b3cc5425
 path: examples/1.frameworks/sveltekit
-defaultValue: src/routes/+page.svelte
+defaultValue: 'src/routes/+page.svelte'
 ---
+::
+
+::Browser{src="https://comark-sveltekit.vercel.app"}
 ::
 
 This example demonstrates how to use Comark with SvelteKit and server-side rendering.

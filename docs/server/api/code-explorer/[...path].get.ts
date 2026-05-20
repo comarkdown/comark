@@ -172,7 +172,7 @@ export default defineEventHandler(async (event) => {
     branch = repoSegment.substring(atIdx + 1).replaceAll('~', '/')
   } else {
     repo = repoSegment
-    branch = 'master'
+    branch = 'main'
   }
 
   const dirPath = segments.slice(2).join('/')
