@@ -2,14 +2,9 @@
 import loader from '@monaco-editor/loader'
 import { language as mdc } from '@nuxtlabs/monarch-mdc'
 
-const {
-  language = 'mdc',
-  readOnly = false,
-  fontSize = 14,
-} = defineProps<{
+const { language = 'mdc', readOnly = false } = defineProps<{
   language?: string
   readOnly?: boolean
-  fontSize?: number
 }>()
 
 const model = defineModel<string>({
@@ -40,7 +35,7 @@ onMounted(async () => {
     minimap: {
       enabled: false,
     },
-    fontSize,
+    fontSize: 14,
     lineNumbers: 'on',
     scrollBeyondLastLine: false,
     roundedSelection: false,
@@ -88,6 +83,14 @@ watch(theme, (newTheme) => {
   if (monaco) {
     monaco.editor.setTheme(newTheme)
   }
+})
+
+defineExpose({
+  scrollToBottom() {
+    if (!editor) return
+    const lineCount = editor.getModel()?.getLineCount() ?? 1
+    editor.revealLine(lineCount)
+  },
 })
 </script>
 

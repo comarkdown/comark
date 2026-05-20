@@ -1,0 +1,168 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Comark Component Registry",
+  "proseComponents": [
+    {
+      "title": "Browser",
+      "description": "Displays an interactive iframe preview of a webpage with a realistic browser chrome interface, including window controls, address bar with lock icon, and external link button",
+      "x-tag": "browser",
+      "x-slots": [
+        {
+          "name": "default",
+          "description": "This component does not accept slot content"
+        }
+      ],
+      "x-example": "::browser{src=\"https://example.com\"}\n::",
+      "type": "object",
+      "required": ["src"],
+      "properties": {}
+    },
+    {
+      "title": "CodeExplorer",
+      "description": "Interactive code file explorer that displays a repository directory tree with file selection and syntax-highlighted code preview. Fetches code from GitHub repositories and renders it with syntax highlighting.",
+      "x-tag": "code-explorer",
+      "x-slots": [
+        {
+          "name": "default",
+          "description": "Not used - component does not accept slot content"
+        }
+      ],
+      "x-example": "::code-explorer{org=\"nuxt\" repo=\"nuxt\" path=\"examples/hello-world\" branch=\"main\" defaultValue=\"app.vue\"}\n::",
+      "type": "object",
+      "required": ["org", "repo", "path"],
+      "properties": {}
+    }
+  ],
+  "playgroundComponents": [
+    {
+      "title": "BookingCard",
+      "description": "An interactive booking widget that allows users to select check-in/check-out dates via a calendar popover and choose the number of guests. Displays selected booking details with a call-to-action button, commonly used for hotel, vacation rental, or accommodation booking interfaces.",
+      "x-tag": "booking-card",
+      "x-slots": [
+        {
+          "name": "default",
+          "description": "This component does not accept slot content"
+        }
+      ],
+      "x-example": "::booking-card{title=\"$129 / night\" cta=\"Reserve now\"}\n::",
+      "type": "object",
+      "required": ["title", "cta"],
+      "properties": {}
+    },
+    {
+      "title": "Facility",
+      "description": "Displays a facility or feature with an icon, title, and description in a horizontal layout. Use this to highlight key features, amenities, or capabilities of a product or service.",
+      "x-tag": "facility",
+      "x-slots": [
+        {
+          "name": "title",
+          "description": "The title or name of the facility/feature"
+        },
+        {
+          "name": "description",
+          "description": "A brief description or details about the facility/feature"
+        }
+      ],
+      "x-example": "::facility{icon=\"i-heroicons-wifi\"}\n#title\nHigh-Speed WiFi\n#description\nComplimentary high-speed internet access throughout the facility\n::",
+      "type": "object",
+      "required": ["icon"],
+      "properties": {}
+    },
+    {
+      "title": "Gallery",
+      "description": "An image gallery component that displays images in either a single cover layout or a grid layout with a main image and thumbnails. Images can be clicked to view in a fullscreen modal with zoom capability. Press Escape to close the zoomed view.",
+      "x-tag": "gallery",
+      "x-slots": [
+        {
+          "name": "default",
+          "description": "Used when cover prop is true. Contains the cover image that fills the gallery area."
+        },
+        {
+          "name": "main",
+          "description": "Used in grid layout (when cover is false). Contains the main/featured image displayed on the left side."
+        },
+        {
+          "name": "thumbnails",
+          "description": "Used in grid layout (when cover is false). Contains 2-4 thumbnail images displayed in a 2x2 grid on the right side."
+        }
+      ],
+      "x-example": "::gallery{cover}\n![Mountain landscape](/images/mountain.jpg)\n::\n\nor for grid layout:\n\n::gallery\n#main\n![Featured image](/images/featured.jpg)\n#thumbnails\n![Thumbnail 1](/images/thumb1.jpg)\n![Thumbnail 2](/images/thumb2.jpg)\n![Thumbnail 3](/images/thumb3.jpg)\n![Thumbnail 4](/images/thumb4.jpg)\n::",
+      "type": "object",
+      "required": [],
+      "properties": {}
+    },
+    {
+      "title": "HostInfo",
+      "description": "Displays host information with an avatar initial, name, optional badge, and optional duration. Useful for showing event or content host details in documentation.",
+      "x-tag": "host-info",
+      "x-slots": [
+        {
+          "name": "default",
+          "description": "This component does not accept slot content"
+        }
+      ],
+      "x-example": "::host-info{name=\"Sarah Johnson\" badge=\"Senior Developer\" duration=\"45 minutes\"}",
+      "type": "object",
+      "required": ["name"],
+      "properties": {}
+    },
+    {
+      "title": "Ingredients",
+      "description": "A visual ingredient list component with adjustable servings counter, displaying ingredient cards with images, quantities, and names. Ideal for recipe documentation or cooking guides.",
+      "x-tag": "ingredients",
+      "x-slots": [
+        {
+          "name": "title",
+          "description": "Custom title content for the ingredients section, defaults to the title prop"
+        },
+        {
+          "name": "default",
+          "description": "Not used - component displays items from the items prop"
+        }
+      ],
+      "x-example": "::ingredients{title=\"Recipe Ingredients\" servings=4 :items='[{\"image\":\"/images/flour.jpg\",\"quantity\":\"2 cups\",\"name\":\"All-purpose flour\"},{\"image\":\"/images/sugar.jpg\",\"quantity\":\"1 cup\",\"name\":\"Granulated sugar\"},{\"image\":\"/images/eggs.jpg\",\"quantity\":\"3 large\",\"name\":\"Eggs\"}]'}\n::",
+      "type": "object",
+      "required": [],
+      "properties": {}
+    },
+    {
+      "title": "RatingBar",
+      "description": "Displays an aggregate rating with star visualization and review count, showing overlapping user avatars and customizable title and description slots. Use this to showcase product or service ratings with social proof indicators.",
+      "x-tag": "rating-bar",
+      "x-slots": [
+        {
+          "name": "title",
+          "description": "The main heading text, typically the product or service name being rated"
+        },
+        {
+          "name": "description",
+          "description": "Supporting text that provides context about the rating, such as time period or user segment"
+        }
+      ],
+      "x-example": "::rating-bar{rating=\"4.8\" reviews=\"1247\"}\n#title\nExcellent Customer Service\n#description\nBased on reviews from the last 6 months\n::",
+      "type": "object",
+      "required": ["reviews"],
+      "properties": {}
+    },
+    {
+      "title": "TwoColumn",
+      "description": "A responsive two-column layout component with a main content area and a sticky sidebar. On large screens, displays content side-by-side with the right column sticky to viewport. On smaller screens, stacks columns vertically.",
+      "x-tag": "two-column",
+      "x-slots": [
+        {
+          "name": "left",
+          "description": "Main content area with prose styling for markdown content. It's larger than the right side."
+        },
+        {
+          "name": "right",
+          "description": "Sidebar content that becomes sticky on larger screens. It's thiner than the left side so it can't contains large components."
+        }
+      ],
+      "x-example": "::two-column\n#left\nThis is the main content area with full markdown support.\n\n## Headings work\n\nAs do paragraphs and **formatting**.\n\n#right\n**Quick Links**\n- [Getting Started](#start)\n- [Examples](#examples)\n::",
+      "type": "object",
+      "required": [],
+      "properties": {}
+    }
+  ],
+  "generatedAt": "2026-05-04T19:48:42.849Z"
+}

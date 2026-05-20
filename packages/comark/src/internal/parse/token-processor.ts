@@ -1,5 +1,5 @@
 import type { ComarkElementAttributes, ComarkNode } from 'comark'
-import { htmlToComarkNodes, parseInlineHtmlTag } from './html/index.ts'
+import { htmlToComarkNodes, parseInlineHtmlTag, VOID_ELEMENTS } from './html/index.ts'
 
 // Mapping from token types to tag names
 const BLOCK_TAG_MAP: Record<string, string> = {
@@ -20,7 +20,8 @@ const INLINE_TAG_MAP: Record<string, string> = {
   strong_open: 'strong',
   em_open: 'em',
   s_open: 'del',
-  sub_open: 'del',
+  sub_open: 'sub',
+  sup_open: 'sup',
 }
 
 interface ProcessState {
@@ -48,6 +49,20 @@ export function marmdownItTokensToComarkTree(
   let i = 0
   let endLine = options.startLine
   while (i < tokens.length) {
+    const token = tokens[i]
+
+    // An html_block whose own content already closes its outer element
+    // (e.g. `<p><img></p>`, `<div>foo</div>`, `<img>`, `<!-- ... -->`) has no
+    // paired html_block_close later in the stream.
+    if (token.type === 'html_block' && htmlBlockHasOwnClose(token.content || '')) {
+      const htmlNodes = htmlToComarkNodes(token.content || '')
+      for (const htmlNode of htmlNodes) {
+        nodes.push(htmlNode)
+      }
+      i++
+      continue
+    }
+
     const result = processBlockToken(tokens, i, false, state)
     if (result.node) {
       if (options.preservePositions) {
@@ -67,6 +82,24 @@ export function marmdownItTokensToComarkTree(
   }
 
   return nodes
+}
+
+/**
+ * Whether an `html_block` token's content already closes its own outer element.
+ * The block tokeniser only emits an `html_block_close` for lines that begin with
+ * `</`, so any block whose closer sits on the opener's line (`<p><img></p>`),
+ * including void elements and comments, has no companion close token.
+ */
+function htmlBlockHasOwnClose(content: string): boolean {
+  const trimmed = content.trim()
+  if (!trimmed) return false
+  // Comments, declarations, CDATA, processing instructions: self-terminating.
+  if (trimmed.startsWith('<!') || trimmed.startsWith('<?')) return true
+  const match = trimmed.match(/^<\s*([a-zA-Z][a-zA-Z0-9]*)/)
+  if (!match) return false
+  const tag = match[1]
+  if (VOID_ELEMENTS.has(tag.toLowerCase())) return true
+  return new RegExp(`</\\s*${tag}\\s*>`, 'i').test(trimmed)
 }
 
 /**
@@ -442,6 +475,7 @@ function processBlockChildrenWithSlots(
   const nodes: ComarkNode[] = []
   let i = startIndex
   let currentSlotName: string | null = null
+  let currentSlotAttrs: Record<string, unknown> = {}
   let currentSlotChildren: ComarkNode[] = []
 
   while (i < tokens.length && tokens[i].type !== closeType) {
@@ -462,7 +496,7 @@ function processBlockChildrenWithSlots(
     // Check for slot marker: #slotname creates mdc_block_slot tokens
     if (token.type === 'mdc_block_slot') {
       // Extract slot name from token.attrs
-      // The attrs array contains [["#slotname", ""]] for open, and null/empty for close
+      // The attrs array contains [["#slotname", ""], ...props] for open, and null/empty for close
       if (token.attrs && Array.isArray(token.attrs) && token.attrs.length > 0) {
         const firstAttr = token.attrs[0]
         if (Array.isArray(firstAttr) && firstAttr.length > 0) {
@@ -470,14 +504,23 @@ function processBlockChildrenWithSlots(
           // Remove the # prefix to get the slot name
           if (slotKey.startsWith('#')) {
             const slotName = slotKey.substring(1)
+            const slotAttrs = processAttributes(token.attrs.slice(1))
 
             // Save previous slot if any
             if (currentSlotName !== null && currentSlotChildren.length > 0) {
-              nodes.push(['template', { name: currentSlotName }, ...currentSlotChildren] as ComarkNode)
+              nodes.push([
+                'template',
+                {
+                  name: currentSlotName,
+                  ...currentSlotAttrs,
+                },
+                ...currentSlotChildren,
+              ] as ComarkNode)
               currentSlotChildren = []
             }
 
             currentSlotName = slotName
+            currentSlotAttrs = slotAttrs
             i++
             continue
           }
@@ -506,7 +549,14 @@ function processBlockChildrenWithSlots(
 
   // Save last slot if any
   if (currentSlotName !== null && currentSlotChildren.length > 0) {
-    nodes.push(['template', { name: currentSlotName }, ...currentSlotChildren] as ComarkNode)
+    nodes.push([
+      'template',
+      {
+        name: currentSlotName,
+        ...currentSlotAttrs,
+      },
+      ...currentSlotChildren,
+    ] as ComarkNode)
   }
 
   return { nodes, nextIndex: i }

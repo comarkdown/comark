@@ -21,7 +21,11 @@ Some text with **bold → Some text with **bold**
 ~~strikethrough text → ~~strikethrough text~~
 **bold** and *italic* and \`code\` → **bold** and *italic* and \`code\`
 [text](url → [text](url)
-$$formula → $$formula$$`
+$$formula → $$formula$$
+~Hello → ~Hello~
+~~Hello → ~~Hello~~
+~Hello~ → ~Hello~
+~~Hello~~ → ~~Hello~~`
 
 const multilines = `
 | Month    | Savings

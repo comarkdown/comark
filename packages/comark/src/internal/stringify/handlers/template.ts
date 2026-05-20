@@ -1,5 +1,6 @@
 import type { State } from 'comark/render'
 import type { ComarkElement, ComarkNode } from 'comark'
+import { comarkAttributes } from '../attributes.ts'
 
 // slot template
 export async function template(node: ComarkElement, state: State, parent?: ComarkElement) {
@@ -18,5 +19,8 @@ export async function template(node: ComarkElement, state: State, parent?: Comar
     }
   }
 
-  return `#${attrs.name}\n${content}` + state.context.blockSeparator
+  const { name: _name, $: _$, ...rest } = attrs
+  const extraAttrs = comarkAttributes(rest)
+
+  return `#${attrs.name}${extraAttrs}\n${content}` + state.context.blockSeparator
 }

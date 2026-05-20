@@ -302,4 +302,4 @@ import { Binding } from '@comark/vue/plugins/binding'
 
 - [Data Binding](/syntax/components#data-binding) — the underlying `:prefix` resolution contract
 - [Component Syntax](/syntax/components) — the full Comark component API
-- [Creating Plugins](/plugins/creating-plugins) — build your own plugins
+- [Creating Plugins](/plugins/custom/plugin-api) — build your own plugins

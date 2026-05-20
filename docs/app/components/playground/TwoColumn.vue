@@ -3,7 +3,7 @@
     <div class="prose prose-sm max-w-none dark:prose-invert prose-headings:no-underline">
       <slot name="left" />
     </div>
-    <div class="self-start lg:sticky lg:top-4">
+    <div class="self-start lg:sticky lg:top-(--ui-header-height)">
       <slot name="right" />
     </div>
   </div>

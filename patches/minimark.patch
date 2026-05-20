@@ -1,0 +1,13 @@
+diff --git a/dist/stringify.mjs b/dist/stringify.mjs
+index 5854f6173ad1ef3442c18397c271748e219b18bb..d4c815ccc030414e775daa10a0105c830929697e 100644
+--- a/dist/stringify.mjs
++++ b/dist/stringify.mjs
+@@ -26,7 +26,7 @@ function pre(node, state) {
+ 	const [_, attributes, ...children] = node;
+ 	const language = attributes.language || "";
+ 	const filename = attributes.filename ? " [" + attributes.filename + "]" : "";
+-	const result = "```" + language + filename + (attributes.meta || "") + "\n" + String(node[1]?.code || children.join("")).trim() + "\n```";
++	const result = "```" + language + filename + (attributes.meta || "") + "\n" + String(node[1]?.code || textContent(node)).trim() + "\n```";
+ 	return result + state.context.blockSeparator;
+ }
+ 

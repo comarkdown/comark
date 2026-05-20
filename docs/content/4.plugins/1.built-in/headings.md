@@ -18,7 +18,7 @@ links:
     variant: soft
 ---
 
-The `comark/plugins/headings` plugin extracts the page title and description from the top of a document and stores them in `tree.meta.title` and `tree.meta.description`. By default it reads the first `h1` as the title and the first `p` as the description, then removes both nodes from the tree so they are not rendered twice.
+The `comark/plugins/headings` plugin extracts the page title and description from the top of a document and stores them in `tree.meta.title` and `tree.meta.description`. By default it reads the first `h1` as the title and the first `p` as the description, keeping both nodes in the tree. Set `remove: true` to strip them so they are not rendered twice.
 
 ## Usage
 
@@ -60,39 +60,45 @@ The description check always looks at the node **immediately after** the title �
 
 | Option | Type | Default | Description |
 |---|---|---|---|
-| [`titleTag`](#options-code-titletag) | `string` | `'h1'` | Element tag to extract as the page title |
-| [`descriptionTag`](#options-code-descriptiontag) | `string` | `'p'` | Element tag to extract as the page description |
-| [`remove`](#options-code-remove) | `boolean` | `true` | Remove extracted nodes from the tree after extraction |
+| [`titleTag`](#options-code-titletag) | `string \| false` | `'h1'` | Element tag to extract as the page title, or `false` to disable |
+| [`descriptionTag`](#options-code-descriptiontag) | `string \| false` | `'p'` | Element tag to extract as the page description, or `false` to disable |
+| [`remove`](#options-code-remove) | `boolean` | `false` | Remove extracted nodes from the tree after extraction |
 
 ### `titleTag`
 
-The element tag to read the title from.
+The element tag to read the title from. Set to `false` to disable title extraction entirely.
 
 ```typescript
 headings({ titleTag: 'h2' })
+
+// Disable title extraction
+headings({ titleTag: false })
 ```
 
 **Default:** `'h1'`
 
 ### `descriptionTag`
 
-The element tag to read the description from. Use `'blockquote'` if you prefer a block quote as the lead-in description.
+The element tag to read the description from. Use `'blockquote'` if you prefer a block quote as the lead-in description. Set to `false` to disable description extraction entirely.
 
 ```typescript
 headings({ descriptionTag: 'blockquote' })
+
+// Disable description extraction
+headings({ descriptionTag: false })
 ```
 
 **Default:** `'p'`
 
 ### `remove`
 
-Whether to remove the extracted nodes from the tree after extraction. Set to `false` when you want the metadata available but still need the nodes rendered — for example, when a custom component handles the `h1` display.
+Whether to remove the extracted nodes from the tree after extraction. Set to `true` when you don't want the title and description rendered — for example, when a layout already displays them separately.
 
 ```typescript
-headings({ remove: false })
+headings({ remove: true })
 ```
 
-**Default:** `true`
+**Default:** `false`
 
 ---
 
@@ -122,7 +128,7 @@ const result = await parse(content, {
 
 console.log(result.meta.title)       // "My Page Title"
 console.log(result.meta.description) // "This is the opening paragraph used as the description."
-// result.nodes no longer contains the h1 or the first p
+// result.nodes still contains the h1 and the first p (use remove: true to strip them)
 ```
 
 ::

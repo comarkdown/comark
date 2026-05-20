@@ -1,32 +1,25 @@
 <script setup lang="ts">
 import { joinURL } from 'ufo'
 import { useDraggable, useWindowSize, watchDebounced } from '@vueuse/core'
+import { useCompletion } from '@ai-sdk/vue'
 import { createParse } from '@comark/nuxt/parse'
 import jsonRenderer from '@comark/nuxt/plugins/json-render'
-import binding, { Binding } from '@comark/nuxt/plugins/binding'
-import Gallery from '~/components/playground/Gallery.vue'
-import RatingBar from '~/components/playground/RatingBar.vue'
-import HostInfo from '~/components/playground/HostInfo.vue'
-import Facility from '~/components/playground/Facility.vue'
-import TwoColumn from '~/components/playground/TwoColumn.vue'
-import BookingCard from '~/components/playground/BookingCard.vue'
-import Ingredients from '~/components/playground/Ingredients.vue'
+import binding from '@comark/nuxt/plugins/binding'
+import highlight from '@comark/nuxt/plugins/highlight'
+import math from '@comark/nuxt/plugins/math'
+import emoji from '@comark/nuxt/plugins/emoji'
+import mermaid from '@comark/nuxt/plugins/mermaid'
+import jsonRender from '@comark/nuxt/plugins/json-render'
+import footnotes from '@comark/nuxt/plugins/footnotes'
+import punctuation from '@comark/nuxt/plugins/punctuation'
 import { playgroundExamples } from '~/constants'
+import resolveComponent from '~/utils/components-manifest'
+import PromptInput from '~/components/playground/PromptInput.vue'
+import GeneratingIndicator from '~/components/playground/GeneratingIndicator.vue'
 
 definePageMeta({
   layout: 'default',
 })
-
-const components = {
-  Gallery,
-  RatingBar,
-  HostInfo,
-  Facility,
-  TwoColumn,
-  BookingCard,
-  Ingredients,
-  Binding,
-}
 
 const route = useRoute()
 const slug = computed(() =>
@@ -35,15 +28,15 @@ const slug = computed(() =>
 const markdown = ref(
   slug.value
     ? playgroundExamples.find((example) => example.value === slug.value)?.content
-    : playgroundExamples[0].content
+    : playgroundExamples[0]!.content
 )
 const parse = createParse({
-  plugins: [jsonRenderer(), binding()],
+  plugins: [jsonRenderer(), binding(), highlight(), math(), emoji(), mermaid(), footnotes(), punctuation()],
 })
 
 const { data: page, refresh } = await useAsyncData(
   () => `play-${slug.value}`,
-  () => parse(markdown.value)
+  () => parse(markdown.value!)
 )
 if (!page.value) {
   throw createError({
@@ -54,7 +47,59 @@ if (!page.value) {
   })
 }
 
-watchDebounced(markdown, () => refresh(), { debounce: 100 })
+const currentExample = computed(() => playgroundExamples.find((e) => e.value === slug.value))
+
+let previousMarkdown = ''
+
+const markdownEditor = useTemplateRef<{ scrollToBottom: () => void }>('markdownEditor')
+
+function scrollEditorToBottom() {
+  nextTick(() => markdownEditor.value?.scrollToBottom())
+}
+
+const {
+  completion,
+  complete,
+  isLoading: isGenerating,
+} = useCompletion({
+  api: '/api/generate-page',
+  streamProtocol: 'text',
+  onError: () => {
+    markdown.value = previousMarkdown
+  },
+  onFinish: async () => {
+    await refresh()
+    scrollEditorToBottom()
+  },
+})
+
+watch(completion, async (md) => {
+  if (!md) return
+  markdown.value = md
+  try {
+    page.value = await parse(md)
+  } catch {
+    /* ignore intermediate parse errors */
+  }
+  scrollEditorToBottom()
+})
+
+watchDebounced(
+  markdown,
+  () => {
+    if (!isGenerating.value) refresh()
+  },
+  { debounce: 100 }
+)
+
+async function submitAiPrompt(prompt: string) {
+  const example = currentExample.value
+  if (!example?.mode) return
+  previousMarkdown = markdown.value ?? ''
+  markdown.value = ''
+  page.value = undefined
+  complete(prompt, { body: { mode: example.mode, structure: example.content } })
+}
 
 const isEditing = ref(false)
 
@@ -142,7 +187,6 @@ function onResizeUp(e: PointerEvent) {
 
 const site = useSiteConfig()
 const path = computed(() => route.path.replace(/\/$/, ''))
-prerenderRoutes([joinURL('/raw', `${path.value}.md`)])
 useHead({
   link: [
     {
@@ -176,7 +220,7 @@ defineOgImage('OgImageDocs', {
       <Comark>
         {{
           `> [!NOTE]
-        > This page is rendered live from Comark markdown. Edit the source inline with **Edit Page** at the bottom right.`
+        > This page is rendered live from markdown. Edit the source inline with **Edit Page** at the bottom right.`
         }}
       </Comark>
     </UPageHeader>
@@ -184,119 +228,144 @@ defineOgImage('OgImageDocs', {
       prose
       class="wrap-break-word mx-auto"
     >
-      <ComarkRenderer
-        v-if="page"
+      <ComarkPlaygroundRenderer
         :tree="page"
-        :components="components"
+        :components-manifest="resolveComponent"
       />
     </UPageBody>
+  </UPage>
 
+  <GeneratingIndicator
+    v-if="isGenerating && !page"
+    class="fixed inset-0"
+  />
+
+  <div
+    v-show="!isEditing"
+    class="fixed bottom-5 right-5 flex items-center gap-2 z-50"
+  >
+    <UButton
+      icon="i-lucide-pencil"
+      color="primary"
+      size="md"
+      class="shadow-lg"
+      label="Edit Page"
+      @click="isEditing = true"
+    />
+  </div>
+
+  <ClientOnly>
+    <!-- Prevent hydration due to useDraggable styles (display: none on server) -->
     <div
-      v-show="!isEditing"
-      class="fixed bottom-5 right-5 flex items-center gap-2 z-50"
+      v-show="isEditing"
+      ref="editorWindow"
+      :style="[style, { width: `${editorWidth}px`, height: `${editorHeight}px` }]"
+      class="fixed top-0 left-0 p-1 z-50 bg-border rounded-lg hover:opacity-100 xl:opacity-40"
     >
-      <UButton
-        icon="i-lucide-pencil"
-        color="primary"
-        size="md"
-        class="shadow-lg"
-        label="Edit Page"
-        @click="isEditing = true"
-      />
-    </div>
-
-    <ClientOnly>
-      <!-- Prevent hydration due to useDraggable styles (display: none on server) -->
-      <div
-        v-show="isEditing"
-        ref="editorWindow"
-        :style="[style, { width: `${editorWidth}px`, height: `${editorHeight}px` }]"
-        class="fixed top-0 left-0 p-1 z-50 bg-border rounded-lg hover:opacity-100 xl:opacity-40"
-      >
-        <div class="relative size-full bg-default rounded-md shadow-2xl flex flex-col overflow-hidden">
+      <div class="relative size-full bg-default rounded-md shadow-2xl flex flex-col overflow-hidden">
+        <div
+          ref="editorHandle"
+          class="shrink-0 flex items-center gap-2 px-3 h-10 border-b border-default bg-elevated/50 cursor-move select-none touch-none"
+        >
+          <UIcon
+            name="i-lucide-pencil"
+            class="size-4 text-muted"
+          />
+          <span class="text-sm font-medium">Page editor</span>
+          <div class="flex-1" />
+          <UButton
+            :to="`/play/editor?example=${slug}`"
+            icon="i-lucide-expand"
+            color="neutral"
+            variant="ghost"
+            size="xs"
+          />
+          <UButton
+            icon="i-lucide-minus"
+            size="xs"
+            variant="ghost"
+            color="neutral"
+            @click="isEditing = false"
+          />
+        </div>
+        <div class="relative flex-1 min-h-0">
+          <Editor
+            v-if="isEditing"
+            ref="markdownEditor"
+            v-model="markdown"
+          />
           <div
-            ref="editorHandle"
-            class="shrink-0 flex items-center gap-2 px-3 h-10 border-b border-default bg-elevated/50 cursor-move select-none touch-none"
+            v-if="isGenerating && !markdown"
+            class="absolute inset-0 flex flex-col items-center justify-center gap-3 text-muted bg-white dark:bg-[#1e1e1e]"
           >
             <UIcon
-              name="i-lucide-pencil"
-              class="size-4 text-muted"
+              name="i-lucide-loader-circle"
+              class="size-6 animate-spin text-primary"
             />
-            <span class="text-sm font-medium">Page editor</span>
-            <div class="flex-1" />
-            <UButton
-              :to="`/play/editor?example=${slug}`"
-              icon="i-lucide-expand"
-              color="neutral"
-              variant="ghost"
-              size="xs"
-            />
-            <UButton
-              icon="i-lucide-minus"
-              size="xs"
-              variant="ghost"
-              color="neutral"
-              @click="isEditing = false"
-            />
-          </div>
-          <div class="flex-1 min-h-0">
-            <Editor
-              v-if="isEditing"
-              v-model="markdown"
-            />
+            <span class="text-sm">Generating...</span>
           </div>
         </div>
-
         <div
-          class="absolute top-0 inset-x-3 h-2 cursor-ns-resize touch-none"
-          @pointerdown="(e: PointerEvent) => onResizeDown('n', e)"
-          @pointermove="onResizeMove"
-          @pointerup="onResizeUp"
-        />
-        <div
-          class="absolute bottom-0 inset-x-3 h-2 cursor-ns-resize touch-none"
-          @pointerdown="(e: PointerEvent) => onResizeDown('s', e)"
-          @pointermove="onResizeMove"
-          @pointerup="onResizeUp"
-        />
-        <div
-          class="absolute left-0 inset-y-3 w-2 cursor-ew-resize touch-none"
-          @pointerdown="(e: PointerEvent) => onResizeDown('w', e)"
-          @pointermove="onResizeMove"
-          @pointerup="onResizeUp"
-        />
-        <div
-          class="absolute right-0 inset-y-3 w-2 cursor-ew-resize touch-none"
-          @pointerdown="(e: PointerEvent) => onResizeDown('e', e)"
-          @pointermove="onResizeMove"
-          @pointerup="onResizeUp"
-        />
-
-        <div
-          class="absolute top-0 left-0 size-3 cursor-nwse-resize touch-none"
-          @pointerdown="(e: PointerEvent) => onResizeDown('nw', e)"
-          @pointermove="onResizeMove"
-          @pointerup="onResizeUp"
-        />
-        <div
-          class="absolute top-0 right-0 size-3 cursor-nesw-resize touch-none"
-          @pointerdown="(e: PointerEvent) => onResizeDown('ne', e)"
-          @pointermove="onResizeMove"
-          @pointerup="onResizeUp"
-        />
-        <div
-          class="absolute bottom-0 left-0 size-3 cursor-nesw-resize touch-none"
-          @pointerdown="(e: PointerEvent) => onResizeDown('sw', e)"
-          @pointermove="onResizeMove"
-          @pointerup="onResizeUp"
-        />
-        <div
-          class="absolute bottom-0 right-0 size-3 cursor-nwse-resize touch-none"
-          @pointerdown="(e: PointerEvent) => onResizeDown('se', e)"
-          @pointermove="onResizeMove"
-          @pointerup="onResizeUp"
-        />
+          v-if="currentExample?.mode"
+          class="shrink-0 border-t border-default bg-default flex items-center gap-1 p-1.5"
+        >
+          <PromptInput
+            :is-generating="isGenerating"
+            :prompt="currentExample.prompt"
+            @submit="submitAiPrompt"
+          />
+        </div>
       </div>
-    </ClientOnly>
-  </UPage>
+
+      <div
+        class="absolute top-0 inset-x-3 h-2 cursor-ns-resize touch-none"
+        @pointerdown="(e: PointerEvent) => onResizeDown('n', e)"
+        @pointermove="onResizeMove"
+        @pointerup="onResizeUp"
+      />
+      <div
+        class="absolute bottom-0 inset-x-3 h-2 cursor-ns-resize touch-none"
+        @pointerdown="(e: PointerEvent) => onResizeDown('s', e)"
+        @pointermove="onResizeMove"
+        @pointerup="onResizeUp"
+      />
+      <div
+        class="absolute left-0 inset-y-3 w-2 cursor-ew-resize touch-none"
+        @pointerdown="(e: PointerEvent) => onResizeDown('w', e)"
+        @pointermove="onResizeMove"
+        @pointerup="onResizeUp"
+      />
+      <div
+        class="absolute right-0 inset-y-3 w-2 cursor-ew-resize touch-none"
+        @pointerdown="(e: PointerEvent) => onResizeDown('e', e)"
+        @pointermove="onResizeMove"
+        @pointerup="onResizeUp"
+      />
+
+      <div
+        class="absolute top-0 left-0 size-3 cursor-nwse-resize touch-none"
+        @pointerdown="(e: PointerEvent) => onResizeDown('nw', e)"
+        @pointermove="onResizeMove"
+        @pointerup="onResizeUp"
+      />
+      <div
+        class="absolute top-0 right-0 size-3 cursor-nesw-resize touch-none"
+        @pointerdown="(e: PointerEvent) => onResizeDown('ne', e)"
+        @pointermove="onResizeMove"
+        @pointerup="onResizeUp"
+      />
+      <div
+        class="absolute bottom-0 left-0 size-3 cursor-nesw-resize touch-none"
+        @pointerdown="(e: PointerEvent) => onResizeDown('sw', e)"
+        @pointermove="onResizeMove"
+        @pointerup="onResizeUp"
+      />
+      <div
+        class="absolute bottom-0 right-0 size-3 cursor-nwse-resize touch-none"
+        @pointerdown="(e: PointerEvent) => onResizeDown('se', e)"
+        @pointermove="onResizeMove"
+        @pointerup="onResizeUp"
+      />
+    </div>
+  </ClientOnly>
 </template>

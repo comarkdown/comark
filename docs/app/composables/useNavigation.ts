@@ -1,5 +1,6 @@
 import type { ContentNavigationItem } from '@nuxt/content'
-import type { NavigationMenuItem } from '@nuxt/ui'
+import type { NavigationMenuItem } from '@nuxt/ui/components/NavigationMenu.vue'
+import { playgroundExamples } from '~/constants'
 
 export function useMainNavigation() {
   const route = useRoute()
@@ -29,23 +30,11 @@ export function useMainNavigation() {
       to: '/play',
       icon: 'i-lucide-play',
       active: route.path.startsWith('/play'),
-      children: [
-        {
-          label: 'Booking',
-          to: '/play/booking',
-          active: route.path.startsWith('/play/booking'),
-        },
-        {
-          label: 'Recipe',
-          to: '/play/recipe',
-          active: route.path.startsWith('/play/recipe'),
-        },
-        {
-          label: 'All Features',
-          to: '/play/all-features',
-          active: route.path.startsWith('/play/all-features'),
-        },
-      ],
+      children: playgroundExamples.map((example) => ({
+        label: example.label,
+        to: example.to ?? `/play/${example.value}`,
+        active: route.path.startsWith(`/play/${example.value}`),
+      })),
     },
   ])
 }

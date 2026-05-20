@@ -1,7 +1,7 @@
 import { Parser } from 'htmlparser2'
 import type { ComarkNode } from 'comark'
 
-const VOID_ELEMENTS = new Set([
+export const VOID_ELEMENTS = new Set([
   'area',
   'base',
   'br',

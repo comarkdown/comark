@@ -3,7 +3,7 @@ import { applyAutoUnwrap } from '../internal/parse/auto-unwrap.ts'
 import { marmdownItTokensToComarkTree } from '../internal/parse/token-processor.ts'
 import { defineComarkPlugin } from '../utils/helpers.ts'
 
-export default defineComarkPlugin((options: { delimiter?: string } = {}) => {
+export default defineComarkPlugin<{ delimiter?: string }, { summary: ComarkNode[] }>((options = {}) => {
   const { delimiter = '<!-- more -->' } = options
   return {
     name: 'summary',
