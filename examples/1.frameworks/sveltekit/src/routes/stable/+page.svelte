@@ -1,18 +1,18 @@
 <script lang="ts">
   import { ComarkRenderer } from '@comark/svelte'
+  import { pascalCase } from '@comark/svelte/utils';
   import Alert from '$lib/components/comark/Alert.svelte'
   import type { PageData } from './$types'
 
   let { data }: { data: PageData } = $props()
 
-  const modules = import.meta.glob('../../lib/components/comark/*.svelte', {
+  const modules = import.meta.glob('./*.svelte', {
+    base: '../../lib/components/comark',
     eager: true,
   })
 
   const componentsManifest = (name: string) => {
-    if (name === 'lazy-card') {
-      return modules['../../lib/components/comark/LazyCard.svelte']
-    }
+    return modules[`./${pascalCase(name)}.svelte`]
   }
 </script>
 

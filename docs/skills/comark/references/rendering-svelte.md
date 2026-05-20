@@ -151,13 +151,12 @@ For SvelteKit SSR with non-eager lazy components, use `ComarkAsync` and a manife
 ```svelte
 <script lang="ts">
   import { ComarkAsync } from '@comark/svelte/async'
+  import { pascalCase } from '@comark/svelte/utils'
 
   const modules = import.meta.glob('../lib/components/comark/*.svelte')
 
   const componentsManifest = (name: string) => {
-    if (name === 'lazy-card') {
-      return modules['../lib/components/comark/LazyCard.svelte']?.()
-    }
+    return modules[`../lib/components/comark/${pascalCase(name)}.svelte`]?.()
   }
 </script>
 
