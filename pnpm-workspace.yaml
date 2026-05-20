@@ -83,6 +83,8 @@ catalog:
 
   # Svelte
   svelte: ^5.55.2
+  "@sveltejs/adapter-auto": ^7.0.1
+  "@sveltejs/kit": ^2.60.1
   "@sveltejs/package": ^2.5.7
   "@sveltejs/vite-plugin-svelte": ^7.0.0
   svelte-check: ^4.4.6

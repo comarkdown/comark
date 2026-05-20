@@ -27,9 +27,9 @@ This is a **monorepo** containing multiple packages related to Comark (Component
 │   ├── comark-svelte/    # Svelte renderer + plugins (@comark/svelte)
 │   └── comark-nuxt/      # Nuxt module (@comark/nuxt)
 ├── examples/             # Example applications
-│   ├── 1.vue-vite/       # Vue + Vite + Tailwind CSS v4
-│   ├── 2.react-vite/     # React 19 + Vite + Tailwind CSS v4
-│   └── 3.plugins/        # Plugin examples (vue-vite-math, vue-vite-mermaid)
+│   ├── 1.frameworks/     # Framework examples (Nuxt, Next.js, Astro, SvelteKit, ...)
+│   ├── 2.vite/           # Vite examples (Vue, React, Svelte, HTML, ANSI)
+│   └── 3.plugins/        # Plugin examples (math, mermaid, highlight, ...)
 ├── docs/                 # Documentation site (Docus-based)
 ├── scripts/              # Build/sync scripts
 ├── pnpm-workspace.yaml   # Workspace configuration
@@ -235,11 +235,15 @@ packages/comark-svelte/
 ├── src/
 │   ├── index.ts              # Entry point (@comark/svelte)
 │   ├── types.ts              # Shared prop interfaces
-│   ├── Comark.svelte         # High-level markdown → render ($state + $effect)
-│   ├── ComarkAsync.svelte    # High-level markdown → render (experimental await)
-│   ├── ComarkRenderer.svelte # Low-level AST → render component
-│   ├── ComarkNode.svelte     # Recursive AST node renderer
-│   ├── async/index.ts        # Async export (@comark/svelte/async)
+│   ├── components/
+│   │   ├── Comark.svelte         # High-level markdown → render ($state + $effect)
+│   │   ├── ComarkRenderer.svelte # Low-level AST → render component
+│   │   ├── ComarkNode.svelte     # Recursive AST node renderer
+│   │   └── Resolve.svelte        # Stable promise resolver for lazy components
+│   ├── async/
+│   │   ├── index.ts              # Async export (@comark/svelte/async)
+│   │   ├── ComarkAsync.svelte    # High-level markdown → render (experimental await)
+│   │   └── ResolveAsync.svelte   # Async SSR resolver for lazy components
 │   └── plugins/
 │       ├── math.ts           # Re-exports comark/plugins/math
 │       ├── Math.svelte       # Math rendering component
@@ -256,7 +260,8 @@ packages/comark-svelte/
 {
   ".": { "svelte": "./dist/index.js" },
   "./async": { "svelte": "./dist/async/index.js" },
-  "./plugins/*": { "svelte": "./dist/plugins/*.js" }
+  "./plugins/*": { "svelte": "./dist/plugins/*.js" },
+  "./components/*": { "svelte": "./dist/components/*" }
 }
 ```
 

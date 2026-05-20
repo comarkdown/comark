@@ -1,0 +1,287 @@
+:root {
+  color-scheme: light dark;
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    sans-serif;
+  background: #f6f7f8;
+  color: #172026;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+a {
+  color: inherit;
+}
+
+.shell {
+  width: min(1120px, calc(100vw - 32px));
+  margin: 0 auto;
+}
+
+.site-header {
+  border-bottom: 1px solid #d8dee4;
+  background: rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(12px);
+}
+
+.site-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 64px;
+  gap: 16px;
+}
+
+.brand {
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.nav-links {
+  display: flex;
+  gap: 8px;
+}
+
+.nav-links a {
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 8px 10px;
+  color: #52616b;
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.nav-links a:hover {
+  border-color: #c6d0d8;
+  color: #172026;
+}
+
+.page {
+  padding: 40px 0 56px;
+}
+
+.page-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 24px;
+  align-items: start;
+}
+
+.panel {
+  border: 1px solid #d8dee4;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 24px;
+}
+
+.aside {
+  position: sticky;
+  top: 24px;
+}
+
+.eyebrow {
+  margin: 0 0 8px;
+  color: #0f766e;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.lead {
+  margin: 0 0 24px;
+  max-width: 760px;
+  color: #52616b;
+  line-height: 1.65;
+}
+
+.status-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.status-list li {
+  border-left: 3px solid #0f766e;
+  padding-left: 12px;
+  color: #52616b;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.boundary-state {
+  border: 1px solid #c6d0d8;
+  border-radius: 8px;
+  padding: 16px;
+  color: #52616b;
+}
+
+.prose h1 {
+  margin: 0 0 12px;
+  font-size: 32px;
+  line-height: 1.15;
+}
+
+.prose h2 {
+  margin: 28px 0 12px;
+  font-size: 22px;
+}
+
+.prose p {
+  margin: 0 0 16px;
+  line-height: 1.65;
+}
+
+.prose strong {
+  font-weight: 700;
+}
+
+.prose code {
+  border-radius: 4px;
+  background: #edf1f4;
+  padding: 2px 5px;
+  font-size: 0.9em;
+}
+
+.prose ul {
+  margin: 0 0 18px;
+  padding-left: 22px;
+  line-height: 1.65;
+}
+
+.alert {
+  margin: 18px 0;
+  border-left: 4px solid #2563eb;
+  border-radius: 6px;
+  background: #eff6ff;
+  padding: 14px 16px;
+  color: #1e3a8a;
+}
+
+.alert-success {
+  border-color: #059669;
+  background: #ecfdf5;
+  color: #064e3b;
+}
+
+.alert-warning {
+  border-color: #d97706;
+  background: #fffbeb;
+  color: #78350f;
+}
+
+.lazy-card {
+  margin: 18px 0;
+  border: 1px solid #67e8f9;
+  border-radius: 8px;
+  background: #ecfeff;
+  padding: 18px;
+  color: #164e63;
+}
+
+.lazy-card[data-accent='emerald'] {
+  border-color: #6ee7b7;
+  background: #ecfdf5;
+  color: #064e3b;
+}
+
+.lazy-card__label {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.lazy-card h3 {
+  margin: 0 0 8px;
+  font-size: 20px;
+}
+
+.lazy-card p:last-child {
+  margin-bottom: 0;
+}
+
+@media (max-width: 800px) {
+  .site-nav,
+  .page-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .site-nav {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 14px 0;
+  }
+
+  .aside {
+    position: static;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    background: #0f1419;
+    color: #f6f7f8;
+  }
+
+  .site-header,
+  .panel {
+    border-color: #2d3842;
+    background: #161d24;
+  }
+
+  .nav-links a,
+  .lead,
+  .status-list li {
+    color: #a7b2bc;
+  }
+
+  .nav-links a:hover {
+    border-color: #465662;
+    color: #f6f7f8;
+  }
+
+  .boundary-state {
+    border-color: #465662;
+    color: #a7b2bc;
+  }
+
+  .prose code {
+    background: #24313b;
+  }
+
+  .alert {
+    border-color: #60a5fa;
+    background: #172554;
+    color: #dbeafe;
+  }
+
+  .alert-success,
+  .lazy-card[data-accent='emerald'] {
+    border-color: #34d399;
+    background: #052e2b;
+    color: #d1fae5;
+  }
+
+  .alert-warning {
+    border-color: #f59e0b;
+    background: #451a03;
+    color: #fef3c7;
+  }
+
+  .lazy-card {
+    border-color: #22d3ee;
+    background: #083344;
+    color: #cffafe;
+  }
+}
