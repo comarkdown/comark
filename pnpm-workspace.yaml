@@ -114,7 +114,6 @@ catalog:
   tailwindcss: ^4.2.2
   "@tailwindcss/vite": ^4.2.2
   "@tailwindcss/postcss": ^4.2.2
-  "@tailwindcss/typography": ^0.5.19
   autoprefixer: ^10.4.27
   postcss: ^8.5.9
 

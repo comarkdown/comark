@@ -1,7 +1,6 @@
-@plugin "@tailwindcss/typography";
 @theme {
-  --font-sans: 'Geist', 'Public Sans', sans-serif;
-  --font-mono: 'Geist Mono', ui-monospace, monospace;
+  --font-sans: "Geist", "Public Sans", sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
 
   --color-green-50: #effdf5;
   --color-green-100: #d9fbe8;
@@ -30,8 +29,8 @@
 :where(code, kbd, samp, pre, .font-mono) {
   font-variant-ligatures: none;
   font-feature-settings:
-    'liga' 0,
-    'calt' 0;
+    "liga" 0,
+    "calt" 0;
 }
 
 @keyframes caret-blink {
@@ -72,11 +71,15 @@
 .dark .section-label {
   color: var(--ui-color-primary-400);
   background: color-mix(in oklch, var(--ui-color-primary-900) 15%, transparent);
-  border-color: color-mix(in oklch, var(--ui-color-primary-600) 30%, transparent);
+  border-color: color-mix(
+    in oklch,
+    var(--ui-color-primary-600) 30%,
+    transparent
+  );
 }
 
 .section-label::before {
-  content: '';
+  content: "";
   display: inline-block;
   width: 6px;
   height: 6px;

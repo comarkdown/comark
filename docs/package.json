@@ -32,7 +32,6 @@
   },
   "devDependencies": {
     "@nuxt/devtools-kit": "catalog:",
-    "@tailwindcss/typography": "catalog:",
     "@types/json-schema": "catalog:",
     "@types/splitpanes": "catalog:",
     "tsx": "catalog:"
