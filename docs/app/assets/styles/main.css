@@ -32,6 +32,13 @@
   --ui-primary: var(--ui-color-primary-400);
 }
 
+:where(code, kbd, samp, pre, .font-mono) {
+  font-variant-ligatures: none;
+  font-feature-settings:
+    'liga' 0,
+    'calt' 0;
+}
+
 @keyframes caret-blink {
   0%,
   100% {
