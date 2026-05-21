@@ -465,7 +465,7 @@ export const playgroundExamples: PlaygroundExample[] = [
     label: 'All Features',
     value: 'all-features',
     to: '/play/editor?example=all-features',
-    content: allFeaturesMarkdown
+    content: allFeaturesMarkdown,
   },
 ]
 
