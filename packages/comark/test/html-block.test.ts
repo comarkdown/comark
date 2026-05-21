@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { parse } from '../src/index'
 
+const sponsorsUrl = 'https://cdn.jsdelivr.net/gh/antfu/static/sponsors.svg'
+
 describe('block-level raw HTML', () => {
   it('preserves inline children inside a self-contained block-level <p>', async () => {
     const result = await parse('<p><img src="/foo.png" alt="x"></p>')
@@ -44,5 +46,106 @@ That is some text here.`
     const result = await parse('<div>foo</div>')
 
     expect(result.nodes).toEqual([['div', { $: { html: 1, block: 1 } }, 'foo']])
+  })
+
+  it('preserves markdown formatting inside a multiline raw HTML <p>', async () => {
+    const result = await parse(`<p>
+  this is **markdown**
+</p>`)
+
+    expect(result.nodes).toEqual([['p', { $: { html: 1, block: 1 } }, 'this is ', ['strong', {}, 'markdown']]])
+  })
+
+  it('preserves mixed markdown and raw HTML children inside a multiline raw HTML block', async () => {
+    const result = await parse(`<div>
+  before **strong**
+  <img src="/x.png" alt="x"/>
+  after \`code\`
+</div>`)
+
+    expect(result.nodes).toEqual([
+      [
+        'div',
+        { $: { html: 1, block: 1 } },
+        ['p', {}, 'before ', ['strong', {}, 'strong']],
+        ['img', { $: { html: 1, block: 1 }, src: '/x.png', alt: 'x' }],
+        ['p', {}, 'after ', ['code', {}, 'code']],
+      ],
+    ])
+  })
+
+  it('keeps indented non-HTML code blocks inside a multiline raw HTML block', async () => {
+    const result = await parse(`<div>
+    const value = 1
+</div>`)
+
+    expect(result.nodes).toEqual([['div', { $: { html: 1, block: 1 } }, ['pre', {}, ['code', {}, 'const value = 1']]]])
+  })
+
+  it('preserves HTML comments inside a multiline raw HTML block', async () => {
+    const result = await parse(`<div>
+  <!-- note -->
+  <img src="/x.png"/>
+</div>`)
+
+    expect(result.nodes).toEqual([
+      ['div', { $: { html: 1, block: 1 } }, [null, {}, ' note '], ['img', { $: { html: 1, block: 1 }, src: '/x.png' }]],
+    ])
+  })
+
+  it('preserves nested indented raw HTML children inside a multiline <a>', async () => {
+    const result = await parse(`<a href="${sponsorsUrl}">
+  <img src="${sponsorsUrl}" alt="Sponsors"/>
+</a>`)
+
+    expect(result.nodes).toEqual([
+      [
+        'a',
+        { $: { html: 1, block: 1 }, href: sponsorsUrl },
+        ['img', { $: { html: 1, block: 1 }, src: sponsorsUrl, alt: 'Sponsors' }],
+      ],
+    ])
+  })
+
+  it('preserves nested indented raw HTML children inside a wrapped multiline <p>', async () => {
+    const result = await parse(`<p align="center">
+  <a href="${sponsorsUrl}">
+    <img src="${sponsorsUrl}" alt="Sponsors"/>
+  </a>
+</p>`)
+
+    expect(result.nodes).toEqual([
+      [
+        'p',
+        { $: { html: 1, block: 1 }, align: 'center' },
+        [
+          'a',
+          { $: { html: 1, block: 1 }, href: sponsorsUrl },
+          ['img', { $: { html: 1, block: 1 }, src: sponsorsUrl, alt: 'Sponsors' }],
+        ],
+      ],
+    ])
+  })
+
+  it('does not emit a stray empty component for multiline raw HTML closes', async () => {
+    const result = await parse(`<p align="center">
+  <a href="${sponsorsUrl}">
+    <img src="${sponsorsUrl}" alt="Sponsors"/>
+  </a>
+</p>`)
+
+    expect(result.nodes).not.toContainEqual(['component', {}])
+  })
+
+  it('keeps real indented markdown code blocks outside raw HTML blocks', async () => {
+    const result = await parse('    <img src="/foo.png" alt="x"/>')
+
+    expect(result.nodes).toEqual([['pre', {}, ['code', {}, '<img src="/foo.png" alt="x"/>']]])
+  })
+
+  it('keeps indented HTML comments outside raw HTML blocks as markdown code', async () => {
+    const result = await parse('    <!-- note -->')
+
+    expect(result.nodes).toEqual([['pre', {}, ['code', {}, '<!-- note -->']]])
   })
 })

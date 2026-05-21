@@ -1,4 +1,4 @@
-import type { ComarkElementAttributes, ComarkNode } from 'comark'
+import type { ComarkElement, ComarkNode } from 'comark'
 import { htmlToComarkNodes, parseInlineHtmlTag, VOID_ELEMENTS } from './html/index.ts'
 
 // Mapping from token types to tag names
@@ -51,14 +51,14 @@ export function marmdownItTokensToComarkTree(
   while (i < tokens.length) {
     const token = tokens[i]
 
-    // An html_block whose own content already closes its outer element
-    // (e.g. `<p><img></p>`, `<div>foo</div>`, `<img>`, `<!-- ... -->`) has no
-    // paired html_block_close later in the stream.
-    if (token.type === 'html_block' && htmlBlockHasOwnClose(token.content || '')) {
-      const htmlNodes = htmlToComarkNodes(token.content || '')
-      for (const htmlNode of htmlNodes) {
-        nodes.push(htmlNode)
-      }
+    if (token.type === 'html_block') {
+      const result = processHtmlBlockTokens(tokens, i, state)
+      nodes.push(...result.nodes)
+      i = result.nextIndex
+      continue
+    }
+
+    if (token.type === 'html_block_close') {
       i++
       continue
     }
@@ -100,6 +100,40 @@ function htmlBlockHasOwnClose(content: string): boolean {
   const tag = match[1]
   if (VOID_ELEMENTS.has(tag.toLowerCase())) return true
   return new RegExp(`</\\s*${tag}\\s*>`, 'i').test(trimmed)
+}
+
+function processHtmlBlockTokens(
+  tokens: any[],
+  startIndex: number,
+  state?: ProcessState
+): { nodes: ComarkNode[]; nextIndex: number } {
+  const content = tokenContentForHtml(tokens[startIndex])
+  if (htmlBlockHasOwnClose(content)) {
+    return { nodes: htmlToComarkNodes(content), nextIndex: startIndex + 1 }
+  }
+
+  const [node] = htmlToComarkNodes(content)
+  if (!node || typeof node === 'string' || node[0] === null) {
+    return { nodes: [], nextIndex: startIndex + 1 }
+  }
+
+  const children = processBlockChildren(tokens, startIndex + 1, 'html_block_close', false, false, false, state, true)
+  const nextIndex =
+    tokens[children.nextIndex]?.type === 'html_block_close' ? children.nextIndex + 1 : children.nextIndex
+  const element = node as ComarkElement
+
+  return { nodes: [[element[0], element[1], ...children.nodes]], nextIndex }
+}
+
+function tokenContentForHtml(token: any): string {
+  return typeof token?.content === 'string' ? token.content : ''
+}
+
+function isHtmlLikeBlockContent(content: string): boolean {
+  const trimmed = content.trim()
+  if (!trimmed.startsWith('<')) return false
+  if (trimmed.startsWith('<!') || trimmed.startsWith('<?')) return true
+  return parseInlineHtmlTag(trimmed) !== null
 }
 
 /**
@@ -316,20 +350,16 @@ function processBlockToken(
   // processBlockChildren / processBlockChildrenWithSlots) before reaching here.
   // This branch is kept as a safety fallback.
   if (token.type === 'html_block') {
-    const content = token.content?.trim() || ''
-    if (content.startsWith('<!--')) {
-      const inner = content.endsWith('-->') ? content.slice(4, -3) : content.slice(4)
-      return { node: [null, {}, inner] as unknown as ComarkNode, nextIndex: startIndex + 1 }
+    const result = processHtmlBlockTokens(tokens, startIndex, state)
+    if (!result.nodes[0]) {
+      return { node: null, nextIndex: result.nextIndex }
     }
 
-    const children = processBlockChildren(tokens, startIndex + 1, 'html_block_close', false, false, false, state)
-    const [node1] = htmlToComarkNodes(content)
-    if (!node1) {
-      return { node: null, nextIndex: startIndex + 1 }
-    }
-    const node = [node1[0]!, node1[1]! as ComarkElementAttributes, ...children.nodes] as ComarkNode
+    return { node: result.nodes[0], nextIndex: result.nextIndex }
+  }
 
-    return { node, nextIndex: children.nextIndex + 1 }
+  if (token.type === 'html_block_close') {
+    return { node: null, nextIndex: startIndex + 1 }
   }
 
   // Handle Comark block components (e.g., ::component ... ::)
@@ -483,12 +513,17 @@ function processBlockChildrenWithSlots(
 
     // html_block can produce multiple nodes — handle before processBlockToken
     if (token.type === 'html_block') {
-      const htmlNodes = htmlToComarkNodes(token.content)
+      const result = processHtmlBlockTokens(tokens, i, state)
       if (currentSlotName !== null) {
-        currentSlotChildren.push(...htmlNodes)
+        currentSlotChildren.push(...result.nodes)
       } else {
-        nodes.push(...htmlNodes)
+        nodes.push(...result.nodes)
       }
+      i = result.nextIndex
+      continue
+    }
+
+    if (token.type === 'html_block_close') {
       i++
       continue
     }
@@ -569,7 +604,8 @@ function processBlockChildren(
   inlineOnly: boolean,
   inHeading: boolean = false,
   insideNestedContext: boolean = false,
-  state?: ProcessState
+  state?: ProcessState,
+  insideHtmlBlock: boolean = false
 ): { nodes: ComarkNode[]; nextIndex: number } {
   const nodes: ComarkNode[] = []
   let i = startIndex
@@ -579,7 +615,19 @@ function processBlockChildren(
 
     // html_block can produce multiple nodes — handle before processBlockToken
     if (token.type === 'html_block') {
-      nodes.push(...htmlToComarkNodes(token.content))
+      const result = processHtmlBlockTokens(tokens, i, state)
+      nodes.push(...result.nodes)
+      i = result.nextIndex
+      continue
+    }
+
+    if (token.type === 'html_block_close') {
+      i++
+      continue
+    }
+
+    if (insideHtmlBlock && token.type === 'code_block' && isHtmlLikeBlockContent(token.content || '')) {
+      nodes.push(...htmlToComarkNodes(token.content || ''))
       i++
       continue
     }
