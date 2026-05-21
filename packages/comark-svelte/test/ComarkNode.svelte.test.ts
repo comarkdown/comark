@@ -4,6 +4,7 @@ import { parse } from 'comark'
 import ComarkRenderer from '../src/components/ComarkRenderer.svelte'
 import ComarkNode from '../src/components/ComarkNode.svelte'
 import Alert from './test-components/Alert.svelte'
+import CardWithHeaderFooter from './test-components/CardWithHeaderFooter.svelte'
 import CardWithFooter from './test-components/CardWithFooter.svelte'
 import ProseH1 from './test-components/ProseH1.svelte'
 
@@ -189,6 +190,34 @@ Footer slot content.
     await expect.element(screen.getByRole('heading', { name: 'My Card', level: 3 })).toBeInTheDocument()
     await expect.element(screen.getByText('Default slot content.')).toBeInTheDocument()
     await expect.element(footer).toHaveTextContent('Footer slot content.')
+    expect(screen.container.querySelector('template[name="footer"]')).toBeNull()
+  })
+
+  it('passes multiple named slots as Svelte snippet props', async () => {
+    const tree = await parse(`::card{title="My Card"}
+Default slot content.
+
+#header
+Header slot content.
+
+#footer
+Footer slot content.
+::`)
+    const screen = render(ComarkRenderer, {
+      tree,
+      components: { card: CardWithHeaderFooter },
+    })
+    const header = screen.container.querySelector<HTMLElement>('header')!
+    const main = screen.container.querySelector<HTMLElement>('main')!
+    const footer = screen.container.querySelector<HTMLElement>('footer')!
+
+    expect(header).not.toBeNull()
+    expect(main).not.toBeNull()
+    expect(footer).not.toBeNull()
+    await expect.element(header).toHaveTextContent('Header slot content.')
+    await expect.element(main).toHaveTextContent('Default slot content.')
+    await expect.element(footer).toHaveTextContent('Footer slot content.')
+    expect(screen.container.querySelector('template[name="header"]')).toBeNull()
     expect(screen.container.querySelector('template[name="footer"]')).toBeNull()
   })
 

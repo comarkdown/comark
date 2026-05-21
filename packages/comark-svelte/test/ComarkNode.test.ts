@@ -6,6 +6,7 @@ import ComarkNode from '../src/components/ComarkNode.svelte'
 import ComarkAsync from '../src/async/ComarkAsync.svelte'
 import Alert from './test-components/Alert.svelte'
 import Card from './test-components/Card.svelte'
+import CardWithHeaderFooter from './test-components/CardWithHeaderFooter.svelte'
 import CardWithFooter from './test-components/CardWithFooter.svelte'
 import ProseH1 from './test-components/ProseH1.svelte'
 
@@ -261,6 +262,26 @@ Footer slot content.
     const output = html(body)
     expect(output).toContain('<h3>My Card</h3>')
     expect(output).toContain('<p>Default slot content.</p>')
+    expect(output).toContain('<footer>Footer slot content.</footer>')
+    expect(output).not.toContain('<template')
+  })
+
+  it('passes multiple named slots as Svelte snippet props during SSR', async () => {
+    const tree = await parse(`::card{title="My Card"}
+Default slot content.
+
+#header
+Header slot content.
+
+#footer
+Footer slot content.
+::`)
+    const { body } = render(ComarkRenderer, {
+      props: { tree, components: { card: CardWithHeaderFooter } },
+    })
+    const output = html(body)
+    expect(output).toContain('<header>Header slot content.</header>')
+    expect(output).toContain('<main><p>Default slot content.</p></main>')
     expect(output).toContain('<footer>Footer slot content.</footer>')
     expect(output).not.toContain('<template')
   })

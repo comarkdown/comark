@@ -68,9 +68,9 @@ naturally appears inline after the deepest trailing text node.
 
 <script lang="ts">
   import type { ComarkNode as ComarkNodeType, ComponentManifest, NodeRenderData } from 'comark'
-  import type { Snippet } from 'svelte'
   import type { ComponentResolver } from '../types.js'
   import ComarkNode from './ComarkNode.svelte'
+  import ComarkComponent from './ComarkComponent.svelte'
   import Resolve from './Resolve.svelte'
   import { resolveAttributes } from 'comark/utils'
 
@@ -106,6 +106,12 @@ naturally appears inline after the deepest trailing text node.
     caretClass: string | null
   }
 
+  interface NamedSlot {
+    name: string
+    children: ComarkNodeType[]
+    caretClass: string | null
+  }
+
   function getSlotName(node: ComarkNodeType): string | null {
     if (typeof node === 'string' || !Array.isArray(node) || node[0] !== 'template') {
       return null
@@ -123,26 +129,6 @@ naturally appears inline after the deepest trailing text node.
     }
 
     return null
-  }
-
-  function createChildrenSnippet(
-    snippetChildren: ComarkNodeType[],
-    snippetRenderData: NodeRenderData,
-    snippetCaretClass: string | null,
-  ): Snippet {
-    return ((anchor: unknown) => {
-      const renderNode = ComarkNode as unknown as (anchor: unknown, props: Record<string, unknown>) => void
-      for (let i = 0; i < snippetChildren.length; i++) {
-        renderNode(anchor, {
-          node: snippetChildren[i],
-          components,
-          componentsManifest,
-          resolver: Resolver,
-          caretClass: i === snippetChildren.length - 1 ? snippetCaretClass : null,
-          renderData: snippetRenderData,
-        })
-      }
-    }) as unknown as Snippet
   }
 
   function toRenderChildren(
@@ -217,9 +203,9 @@ naturally appears inline after the deepest trailing text node.
       : renderData,
   )
 
-  let { defaultChildren, namedSlotProps } = $derived.by(() => {
+  let { defaultChildren, namedSlots } = $derived.by(() => {
     const defaultChildren: RenderChild[] = []
-    const slotProps: Record<string, Snippet> = {}
+    const slots: NamedSlot[] = []
 
     for (let i = 0; i < children.length; i++) {
       const child = children[i]
@@ -230,11 +216,11 @@ naturally appears inline after the deepest trailing text node.
           defaultChildren.push(...toRenderChildren(slotChildren, i, children.length, caretClass))
         }
         else {
-          slotProps[slotName] = createChildrenSnippet(
-            slotChildren,
-            childrenRenderData,
-            i === children.length - 1 ? caretClass : null,
-          )
+          slots.push({
+            name: slotName,
+            children: slotChildren,
+            caretClass: i === children.length - 1 ? caretClass : null,
+          })
         }
       }
       else {
@@ -242,14 +228,8 @@ naturally appears inline after the deepest trailing text node.
       }
     }
 
-    return { defaultChildren, namedSlotProps: slotProps }
+    return { defaultChildren, namedSlots: slots }
   })
-
-  let componentProps = $derived(
-    Object.keys(namedSlotProps).length > 0
-      ? { ...mappedProps, ...namedSlotProps }
-      : mappedProps,
-  )
 </script>
 
 {#snippet renderChildren()}
@@ -270,12 +250,36 @@ naturally appears inline after the deepest trailing text node.
       class={caretClass || undefined}
       style={CARET_STYLE}>{CARET_TEXT}</span
     >{/if}
+{:else if Component && namedSlots.length > 0}
+  <ComarkComponent
+    {Component}
+    props={mappedProps}
+    {namedSlots}
+    {components}
+    {componentsManifest}
+    resolver={Resolver}
+    renderData={childrenRenderData}
+  >
+    {@render renderChildren()}
+  </ComarkComponent>
 {:else if Component}
-  <Component {...componentProps}>
+  <Component {...mappedProps}>
     {@render renderChildren()}
   </Component>
+{:else if componentPromise && namedSlots.length > 0}
+  <ComarkComponent
+    {componentPromise}
+    props={mappedProps}
+    {namedSlots}
+    {components}
+    {componentsManifest}
+    resolver={Resolver}
+    renderData={childrenRenderData}
+  >
+    {@render renderChildren()}
+  </ComarkComponent>
 {:else if componentPromise}
-  <Resolver promise={componentPromise} props={componentProps}>
+  <Resolver promise={componentPromise} props={mappedProps}>
     {@render renderChildren()}
   </Resolver>
 {:else if isVoid}

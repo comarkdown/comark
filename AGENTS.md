@@ -239,6 +239,7 @@ packages/comark-svelte/
 │   │   ├── Comark.svelte         # High-level markdown → render ($state + $effect)
 │   │   ├── ComarkRenderer.svelte # Low-level AST → render component
 │   │   ├── ComarkNode.svelte     # Recursive AST node renderer
+│   │   ├── ComarkComponent.svelte # Custom component renderer with named snippets
 │   │   └── Resolve.svelte        # Stable promise resolver for lazy components
 │   ├── async/
 │   │   ├── index.ts              # Async export (@comark/svelte/async)
