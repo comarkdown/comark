@@ -7,6 +7,10 @@ import { existsSync } from 'node:fs'
 
 const runtimeDir = fileURLToPath(new URL('./utils', import.meta.url))
 
+function toImportPath(filePath: string): string {
+  return filePath.replace(/\\/g, '/')
+}
+
 function viteComarkSlot(node: ElementNode, context: TransformContext) {
   const isVueSlotWithUnwrap =
     node.tag === 'slot' &&
@@ -39,7 +43,7 @@ function viteComarkSlot(node: ElementNode, context: TransformContext) {
       if (!context.imports.some((i) => String(i.exp) === importExp)) {
         context.imports.push({
           exp: importExp,
-          path: `${runtimeDir}/${context.ssr ? 'ssrSlot' : 'slot'}`,
+          path: `${toImportPath(runtimeDir)}/${context.ssr ? 'ssrSlot' : 'slot'}`,
         })
       }
     }
@@ -84,7 +88,7 @@ function generateComponentsModule(files: string[]): string {
 
   const lines: string[] = []
   for (let i = 0; i < files.length; i++) {
-    lines.push(`import __comp_${i} from ${JSON.stringify(files[i]!.replace(/\\/g, '/'))}`)
+    lines.push(`import __comp_${i} from ${JSON.stringify(toImportPath(files[i]!))}`)
   }
   lines.push('')
   lines.push('export default {')
