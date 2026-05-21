@@ -207,6 +207,14 @@ a {
   font-size: 20px;
 }
 
+.lazy-card__footer {
+  margin-top: 14px;
+  border-top: 1px solid currentColor;
+  padding-top: 12px;
+  font-size: 14px;
+  opacity: 0.78;
+}
+
 .lazy-card p:last-child {
   margin-bottom: 0;
 }

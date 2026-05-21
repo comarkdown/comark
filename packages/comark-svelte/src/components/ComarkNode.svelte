@@ -68,6 +68,7 @@ naturally appears inline after the deepest trailing text node.
 
 <script lang="ts">
   import type { ComarkNode as ComarkNodeType, ComponentManifest, NodeRenderData } from 'comark'
+  import type { Snippet } from 'svelte'
   import type { ComponentResolver } from '../types.js'
   import ComarkNode from './ComarkNode.svelte'
   import Resolve from './Resolve.svelte'
@@ -99,6 +100,62 @@ naturally appears inline after the deepest trailing text node.
     'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input',
     'link', 'meta', 'param', 'source', 'track', 'wbr',
   ])
+
+  interface RenderChild {
+    node: ComarkNodeType
+    caretClass: string | null
+  }
+
+  function getSlotName(node: ComarkNodeType): string | null {
+    if (typeof node === 'string' || !Array.isArray(node) || node[0] !== 'template') {
+      return null
+    }
+
+    const props = (node.length >= 2 ? node[1] : {}) ?? {}
+    if (typeof props.name === 'string' && props.name) {
+      return props.name
+    }
+
+    for (const key in props) {
+      if (key.startsWith('#') && key.length > 1) {
+        return key.slice(1)
+      }
+    }
+
+    return null
+  }
+
+  function createChildrenSnippet(
+    snippetChildren: ComarkNodeType[],
+    snippetRenderData: NodeRenderData,
+    snippetCaretClass: string | null,
+  ): Snippet {
+    return ((anchor: unknown) => {
+      const renderNode = ComarkNode as unknown as (anchor: unknown, props: Record<string, unknown>) => void
+      for (let i = 0; i < snippetChildren.length; i++) {
+        renderNode(anchor, {
+          node: snippetChildren[i],
+          components,
+          componentsManifest,
+          resolver: Resolver,
+          caretClass: i === snippetChildren.length - 1 ? snippetCaretClass : null,
+          renderData: snippetRenderData,
+        })
+      }
+    }) as unknown as Snippet
+  }
+
+  function toRenderChildren(
+    sourceChildren: ComarkNodeType[],
+    sourceIndex: number,
+    totalChildren: number,
+    nodeCaretClass: string | null,
+  ): RenderChild[] {
+    return sourceChildren.map((child, index) => ({
+      node: child,
+      caretClass: sourceIndex === totalChildren - 1 && index === sourceChildren.length - 1 ? nodeCaretClass : null,
+    }))
+  }
 
   let { isText, tag, isVoid, children, Component, componentPromise, mappedProps } = $derived.by(() => {
     let isText = false
@@ -159,16 +216,50 @@ naturally appears inline after the deepest trailing text node.
       ? { ...renderData, props: mappedProps }
       : renderData,
   )
+
+  let { defaultChildren, namedSlotProps } = $derived.by(() => {
+    const defaultChildren: RenderChild[] = []
+    const slotProps: Record<string, Snippet> = {}
+
+    for (let i = 0; i < children.length; i++) {
+      const child = children[i]
+      const slotName = getSlotName(child)
+      if (slotName) {
+        const slotChildren = (child as unknown as ComarkNodeType[]).slice(2) as ComarkNodeType[]
+        if (slotName === 'default') {
+          defaultChildren.push(...toRenderChildren(slotChildren, i, children.length, caretClass))
+        }
+        else {
+          slotProps[slotName] = createChildrenSnippet(
+            slotChildren,
+            childrenRenderData,
+            i === children.length - 1 ? caretClass : null,
+          )
+        }
+      }
+      else {
+        defaultChildren.push({ node: child, caretClass: i === children.length - 1 ? caretClass : null })
+      }
+    }
+
+    return { defaultChildren, namedSlotProps: slotProps }
+  })
+
+  let componentProps = $derived(
+    Object.keys(namedSlotProps).length > 0
+      ? { ...mappedProps, ...namedSlotProps }
+      : mappedProps,
+  )
 </script>
 
 {#snippet renderChildren()}
-  {#each children as child, i (i)}
+  {#each defaultChildren as child, i (i)}
     <ComarkNode
-      node={child}
+      node={child.node}
       {components}
       {componentsManifest}
       resolver={Resolver}
-      caretClass={i === children.length - 1 ? caretClass : null}
+      caretClass={child.caretClass}
       renderData={childrenRenderData}
     />
   {/each}
@@ -180,11 +271,11 @@ naturally appears inline after the deepest trailing text node.
       style={CARET_STYLE}>{CARET_TEXT}</span
     >{/if}
 {:else if Component}
-  <Component {...mappedProps}>
+  <Component {...componentProps}>
     {@render renderChildren()}
   </Component>
 {:else if componentPromise}
-  <Resolver promise={componentPromise} props={mappedProps}>
+  <Resolver promise={componentPromise} props={componentProps}>
     {@render renderChildren()}
   </Resolver>
 {:else if isVoid}

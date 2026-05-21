@@ -6,6 +6,7 @@ import ComarkNode from '../src/components/ComarkNode.svelte'
 import ComarkAsync from '../src/async/ComarkAsync.svelte'
 import Alert from './test-components/Alert.svelte'
 import Card from './test-components/Card.svelte'
+import CardWithFooter from './test-components/CardWithFooter.svelte'
 import ProseH1 from './test-components/ProseH1.svelte'
 
 /** Strip Svelte SSR hydration comments from rendered HTML */
@@ -247,6 +248,23 @@ describe('custom components', () => {
     expect(output).toContain(' text')
   })
 
+  it('passes named slots as Svelte snippet props during SSR', async () => {
+    const tree = await parse(`::card{title="My Card"}
+Default slot content.
+
+#footer
+Footer slot content.
+::`)
+    const { body } = render(ComarkRenderer, {
+      props: { tree, components: { card: CardWithFooter } },
+    })
+    const output = html(body)
+    expect(output).toContain('<h3>My Card</h3>')
+    expect(output).toContain('<p>Default slot content.</p>')
+    expect(output).toContain('<footer>Footer slot content.</footer>')
+    expect(output).not.toContain('<template')
+  })
+
   it('resolves eager componentsManifest entries during SSR', async () => {
     const tree = await parse('::alert{type="warning"}\nLazy content\n::')
     const { body } = render(ComarkRenderer, {
@@ -279,6 +297,29 @@ describe('custom components', () => {
     expect(output).toContain('<div class="card card-warning">')
     expect(output).toContain('<h3>Async</h3>')
     expect(output).toContain('Lazy content')
+  })
+
+  it('passes named slots through async componentsManifest entries during SSR', async () => {
+    const { body } = await render(ComarkAsync, {
+      props: {
+        markdown: `::card{title="Async Card"}
+Default slot content.
+
+#footer
+Footer slot content.
+::`,
+        componentsManifest: (name: string) => {
+          if (name === 'card') {
+            return Promise.resolve({ default: CardWithFooter })
+          }
+        },
+      },
+    })
+    const output = html(body)
+    expect(output).toContain('<h3>Async Card</h3>')
+    expect(output).toContain('<p>Default slot content.</p>')
+    expect(output).toContain('<footer>Footer slot content.</footer>')
+    expect(output).not.toContain('<template')
   })
 
   it('keeps componentsManifest caches isolated by manifest function', async () => {

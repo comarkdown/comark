@@ -4,6 +4,7 @@ import { parse } from 'comark'
 import ComarkRenderer from '../src/components/ComarkRenderer.svelte'
 import ComarkNode from '../src/components/ComarkNode.svelte'
 import Alert from './test-components/Alert.svelte'
+import CardWithFooter from './test-components/CardWithFooter.svelte'
 import ProseH1 from './test-components/ProseH1.svelte'
 
 describe('ComarkNode', () => {
@@ -170,6 +171,25 @@ describe('custom components', () => {
     })
     await expect.element(screen.getByRole('alert')).toHaveTextContent('Bold text')
     await expect.element(screen.getByRole('alert')).toHaveClass('alert-info')
+  })
+
+  it('passes named slots as Svelte snippet props', async () => {
+    const tree = await parse(`::card{title="My Card"}
+Default slot content.
+
+#footer
+Footer slot content.
+::`)
+    const screen = render(ComarkRenderer, {
+      tree,
+      components: { card: CardWithFooter },
+    })
+    const footer = screen.container.querySelector<HTMLElement>('footer')!
+    expect(footer).not.toBeNull()
+    await expect.element(screen.getByRole('heading', { name: 'My Card', level: 3 })).toBeInTheDocument()
+    await expect.element(screen.getByText('Default slot content.')).toBeInTheDocument()
+    await expect.element(footer).toHaveTextContent('Footer slot content.')
+    expect(screen.container.querySelector('template[name="footer"]')).toBeNull()
   })
 
   it('resolves custom components from componentsManifest', async () => {

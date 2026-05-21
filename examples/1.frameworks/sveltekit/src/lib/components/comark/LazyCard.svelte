@@ -5,10 +5,12 @@
     title = 'Lazy card',
     accent = 'cyan',
     children,
+    footer,
   }: {
     title?: string
     accent?: 'cyan' | 'emerald'
     children?: Snippet
+    footer?: Snippet
   } = $props()
 </script>
 
@@ -18,4 +20,9 @@
   <div>
     {@render children?.()}
   </div>
+  {#if footer}
+    <footer class="lazy-card__footer">
+      {@render footer()}
+    </footer>
+  {/if}
 </section>

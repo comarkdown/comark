@@ -9,6 +9,9 @@ This alert is returned from \`componentsManifest\` as a dynamic import and is aw
 
 ::lazy-card{title="Lazy import rendered by SSR" accent="cyan"}
 This component is loaded only when the \`lazy-card\` tag appears in the rendered markdown.
+
+#footer
+Named snippets are forwarded through the lazy component resolver.
 ::
 `.trim()
 
@@ -23,5 +26,8 @@ Use this pattern when you want stable, non-experimental SSR.
 
 ::lazy-card{title="Eager manifest entry" accent="emerald"}
 This card is resolved synchronously from an eager manifest, so it can render during SSR without Svelte's experimental async support.
+
+#footer
+The same \`#footer\` slot works with \`<ComarkRenderer>\` and an eager manifest.
 ::
 `.trim()
