@@ -7,8 +7,9 @@
 
 import { readFileSync, writeFileSync, mkdirSync, readdirSync, existsSync } from 'node:fs'
 import { join, basename } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
-const root = new URL('..', import.meta.url).pathname.replace(/\/$/, '')
+const root = fileURLToPath(new URL('..', import.meta.url)).replace(/\/$/, '')
 const packagesDir = join(root, 'packages')
 
 const comarkPluginsDir = join(packagesDir, 'comark', 'dist', 'plugins')
