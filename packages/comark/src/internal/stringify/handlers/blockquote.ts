@@ -12,14 +12,18 @@ export async function blockquote(node: ComarkElement, state: State) {
 
   const userAttrs = userBlockAttrs('blockquote', node[1] as Record<string, unknown>)
   const attrs = comarkAttributes(userAttrs)
+  const hasBlockChildren = children.some((c) => Array.isArray(c))
 
   // Multi-block content with attrs has no unambiguous inline form — round-trip
   // via `::blockquote{attrs}` so the attrs aren't visually attached to one
   // paragraph and parsers can recover the same AST.
-  const hasBlockChildren = children.some((c) => Array.isArray(c))
   if (attrs && hasBlockChildren) {
-    const inner = childResult.trim()
-    return `::blockquote${attrs}\n${inner}\n::` + state.context.blockSeparator
+    const content = childResult
+      .trim()
+      .split('\n')
+      .map((line) => (line ? `> ${line}` : '>'))
+      .join('\n')
+    return `::blockquote${attrs}\n${content}\n::` + state.context.blockSeparator
   }
 
   if (attrs) childResult = `${childResult.replace(/[ \t]+$/, '')} ${attrs}`

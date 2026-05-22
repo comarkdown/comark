@@ -52,8 +52,8 @@
 
 ```md
 ::blockquote{attr="value"}
-Blockquote paragraph 1 {attr="value"}
-
-Blockquote paragraph 2 {attr2="value2"}
+> Blockquote paragraph 1 {attr="value"}
+>
+> Blockquote paragraph 2 {attr2="value2"}
 ::
 ```
