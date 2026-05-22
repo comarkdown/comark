@@ -2,7 +2,6 @@
 
 ```md
 ::component
-#code
 ```mdc
 ::alert
 hello
@@ -22,22 +21,16 @@ hello
       "component",
       {},
       [
-        "template",
+        "pre",
         {
-          "name": "code"
+          "language": "mdc"
         },
         [
-          "pre",
+          "code",
           {
-            "language": "mdc"
+            "class": "language-mdc"
           },
-          [
-            "code",
-            {
-              "class": "language-mdc"
-            },
-            "::alert\nhello\n::"
-          ]
+          "::alert\nhello\n::"
         ]
       ]
     ]
@@ -49,11 +42,9 @@ hello
 
 ```html
 <component>
-  <template name="code">
-    <pre language="mdc"><code class="language-mdc">::alert
-    hello
-    ::</code></pre>
-  </template>
+  <pre language="mdc"><code class="language-mdc">::alert
+  hello
+  ::</code></pre>
 </component>
 ```
 
@@ -61,7 +52,6 @@ hello
 
 ```md
 ::component
-#code
 ```mdc
 ::alert
 hello
