@@ -48,15 +48,15 @@ That is some text here.`
     expect(result.nodes).toEqual([['div', { $: { html: 1, block: 1 } }, 'foo']])
   })
 
-  it('preserves markdown formatting inside a multiline raw HTML <p>', async () => {
+  it('preserves text inside a multiline raw HTML <p> verbatim — no markdown re-parsing', async () => {
     const result = await parse(`<p>
   this is **markdown**
 </p>`)
 
-    expect(result.nodes).toEqual([['p', { $: { html: 1, block: 1 } }, 'this is ', ['strong', {}, 'markdown']]])
+    expect(result.nodes).toEqual([['p', { $: { html: 1, block: 1 } }, 'this is **markdown**']])
   })
 
-  it('preserves mixed markdown and raw HTML children inside a multiline raw HTML block', async () => {
+  it('preserves mixed text and raw HTML children verbatim inside a multiline raw HTML block', async () => {
     const result = await parse(`<div>
   before **strong**
   <img src="/x.png" alt="x"/>
@@ -67,19 +67,19 @@ That is some text here.`
       [
         'div',
         { $: { html: 1, block: 1 } },
-        ['p', {}, 'before ', ['strong', {}, 'strong']],
+        'before **strong**',
         ['img', { $: { html: 1, block: 1 }, src: '/x.png', alt: 'x' }],
-        ['p', {}, 'after ', ['code', {}, 'code']],
+        'after `code`',
       ],
     ])
   })
 
-  it('keeps indented non-HTML code blocks inside a multiline raw HTML block', async () => {
+  it('keeps indented non-HTML content inside a multiline raw HTML block as raw text', async () => {
     const result = await parse(`<div>
     const value = 1
 </div>`)
 
-    expect(result.nodes).toEqual([['div', { $: { html: 1, block: 1 } }, ['pre', {}, ['code', {}, 'const value = 1']]]])
+    expect(result.nodes).toEqual([['div', { $: { html: 1, block: 1 } }, 'const value = 1']])
   })
 
   it('preserves HTML comments inside a multiline raw HTML block', async () => {

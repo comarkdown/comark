@@ -16,7 +16,7 @@ import syntax from './plugins/syntax.ts'
 import taskList from './plugins/task-list.ts'
 import alert from './plugins/alert.ts'
 import { applyAutoUnwrap } from './internal/parse/auto-unwrap.ts'
-import { marmdownItTokensToComarkTree, processInlineTokens } from './internal/parse/token-processor.ts'
+import { marmdownItTokensToComarkTree } from './internal/parse/token-processor.ts'
 import { autoCloseMarkdown } from './internal/parse/auto-close/index.ts'
 import { parseFrontmatter } from './internal/frontmatter.ts'
 import { extractReusableNodes } from './internal/parse/incremental.ts'
@@ -147,13 +147,6 @@ export function createParse<const TPlugins extends readonly ComarkPlugin<any, an
     let nodes = marmdownItTokensToComarkTree(state.tokens, {
       startLine: state.parsedLines,
       preservePositions: opts.streaming ?? false,
-      parseInlineMarkdown: (text) => {
-        const inlineTokens = parser.parseInline(text, {})
-        if (inlineTokens.length === 1 && inlineTokens[0].type === 'inline') {
-          return processInlineTokens((inlineTokens[0].children || []) as any[])
-        }
-        return [text]
-      },
     })
 
     if (autoUnwrap) {

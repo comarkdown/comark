@@ -20,11 +20,7 @@ Default Slot
       {
         "$": { "html": 1, "block": 1 }
       },
-      [
-        "component",
-        {},
-        "Default Slot"
-      ]
+      "::component\nDefault Slot\n::"
     ]
   ]
 }
@@ -34,9 +30,9 @@ Default Slot
 
 ```html
 <hello>
-  <component>
-    Default Slot
-  </component>
+  ::component
+  Default Slot
+  ::
 </hello>
 ```
 
@@ -44,8 +40,8 @@ Default Slot
 
 ```md
 <hello>
-  ::component
-  Default Slot
-  ::
+::component
+Default Slot
+::
 </hello>
 ```

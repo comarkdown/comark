@@ -1,5 +1,5 @@
 import type { ComarkElement, ComarkNode } from 'comark'
-import { htmlToComarkNodes, parseInlineHtmlTag, VOID_ELEMENTS } from './html/index.ts'
+import { htmlToComarkNodes, parseInlineHtmlTag } from './html/index.ts'
 
 // Mapping from token types to tag names
 const BLOCK_TAG_MAP: Record<string, string> = {
@@ -28,11 +28,6 @@ interface ProcessState {
   headingSlugCounts: Map<string, number>
   headingStack: Array<{ level: number; id: string }>
   preservePositions: boolean
-  /**
-   * Re-parse a plain string as inline markdown (e.g. `_ilo_` → `<em>ilo</em>`).
-   * Used when an HTML block contains markdown text that needs lifting to AST.
-   */
-  parseInlineMarkdown?: (text: string) => ComarkNode[]
 }
 
 // ─── main entry point ───────────────────────────────────────────────────────
@@ -42,17 +37,12 @@ interface ProcessState {
  */
 export function marmdownItTokensToComarkTree(
   tokens: any[],
-  options: {
-    startLine: number
-    preservePositions: boolean
-    parseInlineMarkdown?: (text: string) => ComarkNode[]
-  } = { startLine: 0, preservePositions: false }
+  options: { startLine: number; preservePositions: boolean } = { startLine: 0, preservePositions: false }
 ): ComarkNode[] {
   const state: ProcessState = {
     headingSlugCounts: new Map<string, number>(),
     headingStack: [],
     preservePositions: options.preservePositions,
-    parseInlineMarkdown: options.parseInlineMarkdown,
   }
   const nodes: ComarkNode[] = []
 
@@ -62,14 +52,9 @@ export function marmdownItTokensToComarkTree(
     const token = tokens[i]
 
     if (token.type === 'html_block') {
-      const result = processHtmlBlockTokens(tokens, i, state)
+      const result = processHtmlBlockTokens(tokens, i)
       nodes.push(...result.nodes)
       i = result.nextIndex
-      continue
-    }
-
-    if (token.type === 'html_block_close') {
-      i++
       continue
     }
 
@@ -95,195 +80,13 @@ export function marmdownItTokensToComarkTree(
 }
 
 /**
- * Whether an `html_block` token's content already closes its own outer element.
- * The block tokeniser only emits an `html_block_close` for lines that begin with
- * `</`, so any block whose closer sits on the opener's line (`<p><img></p>`),
- * including void elements and comments, has no companion close token.
+ * Convert an html_block token into Comark nodes. The whole HTML payload is
+ * parsed once by htmlparser2; text inside is preserved verbatim (no markdown
+ * re-parsing — CommonMark default).
  */
-function htmlBlockHasOwnClose(content: string): boolean {
-  const trimmed = content.trim()
-  if (!trimmed) return false
-  // Comments, declarations, CDATA, processing instructions: self-terminating.
-  if (trimmed.startsWith('<!') || trimmed.startsWith('<?')) return true
-  const match = trimmed.match(/^<\s*([a-zA-Z][a-zA-Z0-9]*)/)
-  if (!match) return false
-  const tag = match[1]
-  if (VOID_ELEMENTS.has(tag.toLowerCase())) return true
-  return new RegExp(`</\\s*${tag}\\s*>`, 'i').test(trimmed)
-}
-
-/**
- * HTML tags whose text content must be preserved verbatim — markdown inside
- * them is *not* re-parsed. Covers raw-text elements (script/style/textarea
- * per the HTML spec) and code-display elements where `_x_` / `**x**` should
- * stay literal (code/pre/kbd/samp/var).
- */
-const LITERAL_CONTENT_TAGS = new Set(['code', 'kbd', 'pre', 'samp', 'script', 'style', 'textarea', 'var'])
-
-/**
- * Re-parse text leaves of a parsed HTML tree as inline markdown.
- * Returns the new node list and a flag indicating whether any text was
- * actually re-parsed (used to decide whether HTML descendants should be
- * downgraded from block:1 to block:0).
- */
-function reparseHtmlTextAsMarkdown(
-  nodes: ComarkNode[],
-  parseInline: (text: string) => ComarkNode[]
-): { nodes: ComarkNode[]; hadMarkdownText: boolean } {
-  let hadMarkdownText = false
-  const out: ComarkNode[] = []
-  for (const node of nodes) {
-    if (typeof node === 'string') {
-      const trimmed = node.trim()
-      if (!trimmed) {
-        // whitespace-only — drop it (matches markdown's own behavior for
-        // standalone text inside a block-level HTML wrapper).
-        continue
-      }
-      const parsed = parseInline(trimmed)
-      // If parseInline returned just the original string (no markdown was
-      // present), keep it as-is and don't flag re-parsing.
-      const isPlainPassthrough = parsed.length === 1 && typeof parsed[0] === 'string' && parsed[0] === trimmed
-      if (isPlainPassthrough) {
-        out.push(trimmed)
-      } else {
-        hadMarkdownText = true
-        out.push(...parsed)
-      }
-    } else if (Array.isArray(node) && typeof node[0] === 'string') {
-      const tag = (node[0] as string).toLowerCase()
-      // Inside code/style/script/etc., children are literal — don't walk in
-      // and re-parse text as markdown.
-      if (LITERAL_CONTENT_TAGS.has(tag)) {
-        // A literal tag carrying real text content still signals "this
-        // wrapper has inline-style content" to the caller. That makes
-        // siblings + the literal tag itself get `block:0` later — so
-        // `<p><code>x</code></p>` produces a code element with `block:0`,
-        // matching the spec.
-        const hasTextContent = node.slice(2).some((c) => typeof c === 'string' && c.trim() !== '')
-        if (hasTextContent) hadMarkdownText = true
-        out.push(node)
-        continue
-      }
-      const children = node.slice(2) as ComarkNode[]
-      const sub = reparseHtmlTextAsMarkdown(children, parseInline)
-      if (sub.hadMarkdownText) hadMarkdownText = true
-      out.push([node[0], node[1], ...sub.nodes] as ComarkNode)
-    } else {
-      out.push(node)
-    }
-  }
-  return { nodes: out, hadMarkdownText }
-}
-
-/**
- * Re-tag HTML descendants of a block-level wrapper as inline (`$.block = 0`).
- * The outermost element keeps `block: 1`; everything inside it is structurally
- * inline-within-block per the SPEC.
- */
-function markHtmlDescendantsInline(node: ComarkNode): void {
-  if (!Array.isArray(node) || typeof node[0] !== 'string') return
-  for (let i = 2; i < node.length; i++) {
-    const child = node[i] as ComarkNode
-    if (Array.isArray(child) && typeof child[0] === 'string') {
-      const attrs = child[1] as Record<string, any> | undefined
-      if (attrs && attrs.$ && typeof attrs.$ === 'object' && (attrs.$ as any).html === 1) {
-        ;(attrs.$ as any).block = 0
-      }
-      markHtmlDescendantsInline(child)
-    }
-  }
-}
-
-/**
- * Whether a node is a markdown-generated paragraph (no `$.html=1` marker).
- */
-function isMarkdownParagraph(node: ComarkNode): boolean {
-  return Array.isArray(node) && node[0] === 'p' && !(node[1] as Record<string, any> | undefined)?.$
-}
-
-function processHtmlBlockTokens(
-  tokens: any[],
-  startIndex: number,
-  state?: ProcessState
-): { nodes: ComarkNode[]; nextIndex: number } {
-  const content = tokenContentForHtml(tokens[startIndex])
-  if (htmlBlockHasOwnClose(content)) {
-    // Self-contained block (e.g. `<p><img></p>` on one line, or
-    // `<p><img>\n_ilo_\n</p>` where the closer sits on the opener's run).
-    let nodes = htmlToComarkNodes(content)
-    if (state?.parseInlineMarkdown) {
-      const result = reparseHtmlTextAsMarkdown(nodes, state.parseInlineMarkdown)
-      nodes = result.nodes
-      // When markdown text was found inside the HTML wrapper, descendants are
-      // semantically inline-within-block (block:0). When the block contained
-      // only HTML, leave descendants at block:1.
-      if (result.hadMarkdownText) {
-        for (const n of nodes) markHtmlDescendantsInline(n)
-      }
-    }
-    return { nodes, nextIndex: startIndex + 1 }
-  }
-
-  let [node] = htmlToComarkNodes(content)
-  if (!node || typeof node === 'string' || node[0] === null) {
-    return { nodes: [], nextIndex: startIndex + 1 }
-  }
-
-  const children = processBlockChildren(tokens, startIndex + 1, 'html_block_close', false, false, false, state, true)
-  const nextIndex =
-    tokens[children.nextIndex]?.type === 'html_block_close' ? children.nextIndex + 1 : children.nextIndex
-
-  // The opener can hold markdown text on the same line — e.g. an unclosed
-  // `<p>Hello *this* is **fantastic**` should still parse the inline `_`/`**`.
-  // htmlparser2 auto-closes the tag for us; we re-parse its text leaves as
-  // markdown the same way we do for self-contained blocks above.
-  let openerHadMarkdownText = false
-  if (state?.parseInlineMarkdown) {
-    const r = reparseHtmlTextAsMarkdown([node], state.parseInlineMarkdown)
-    node = r.nodes[0] as ComarkNode
-    openerHadMarkdownText = r.hadMarkdownText
-  }
-  const element = node as ComarkElement
-  // The opening chunk of the html_block can already contain inline children
-  // parsed from the same line (e.g. `<p><img><strong>x</strong>`).
-  const openerChildren = element.slice(2) as ComarkNode[]
-
-  // When the block has a SINGLE markdown paragraph as its only content, that
-  // paragraph is really a stand-in for "inline content mixed into the HTML
-  // wrapper" — unwrap it. With MULTIPLE markdown paragraphs, the user
-  // genuinely meant separate `<p>` blocks inside the wrapper; preserve them.
-  const isSingleMarkdownParagraph = children.nodes.length === 1 && isMarkdownParagraph(children.nodes[0])
-  const blockChildren = isSingleMarkdownParagraph ? (children.nodes[0].slice(2) as ComarkNode[]) : children.nodes
-
-  const merged: ComarkElement = [element[0], element[1], ...openerChildren, ...blockChildren] as ComarkElement
-
-  // After unwrapping a single markdown paragraph, HTML opener children and
-  // markdown inline content now sit at the same level — the HTML descendants
-  // are inline-within-block (block:0). When the wrapper contains only HTML
-  // (no unwrap happened) or contains multiple markdown paragraphs as siblings
-  // of HTML blocks, descendants stay at block:1 — they still render on their
-  // own lines, not inline within a paragraph context.
-  //
-  // `openerHadMarkdownText` covers the unclosed-tag case: an
-  // `<p>Hello *this* is **fantastic**` with no `</p>` has its inline markers
-  // re-parsed above; the resulting HTML descendants should be block:0 too.
-  if ((isSingleMarkdownParagraph && openerChildren.length > 0) || openerHadMarkdownText) {
-    markHtmlDescendantsInline(merged)
-  }
-
-  return { nodes: [merged], nextIndex }
-}
-
-function tokenContentForHtml(token: any): string {
-  return typeof token?.content === 'string' ? token.content : ''
-}
-
-function isHtmlLikeBlockContent(content: string): boolean {
-  const trimmed = content.trim()
-  if (!trimmed.startsWith('<')) return false
-  if (trimmed.startsWith('<!') || trimmed.startsWith('<?')) return true
-  return parseInlineHtmlTag(trimmed) !== null
+function processHtmlBlockTokens(tokens: any[], startIndex: number): { nodes: ComarkNode[]; nextIndex: number } {
+  const content = typeof tokens[startIndex]?.content === 'string' ? tokens[startIndex].content : ''
+  return { nodes: htmlToComarkNodes(content), nextIndex: startIndex + 1 }
 }
 
 /**
@@ -496,20 +299,12 @@ function processBlockToken(
     return { node: ['hr', {}] as ComarkNode, nextIndex: startIndex + 1 }
   }
 
-  // html_block is now handled upstream (in marmdownItTokensToComarkTree /
+  // html_block is normally handled upstream (in marmdownItTokensToComarkTree /
   // processBlockChildren / processBlockChildrenWithSlots) before reaching here.
-  // This branch is kept as a safety fallback.
+  // Safety fallback when it slips through.
   if (token.type === 'html_block') {
-    const result = processHtmlBlockTokens(tokens, startIndex, state)
-    if (!result.nodes[0]) {
-      return { node: null, nextIndex: result.nextIndex }
-    }
-
-    return { node: result.nodes[0], nextIndex: result.nextIndex }
-  }
-
-  if (token.type === 'html_block_close') {
-    return { node: null, nextIndex: startIndex + 1 }
+    const result = processHtmlBlockTokens(tokens, startIndex)
+    return { node: result.nodes[0] ?? null, nextIndex: result.nextIndex }
   }
 
   // Handle Comark block components (e.g., ::component ... ::)
@@ -663,18 +458,13 @@ function processBlockChildrenWithSlots(
 
     // html_block can produce multiple nodes — handle before processBlockToken
     if (token.type === 'html_block') {
-      const result = processHtmlBlockTokens(tokens, i, state)
+      const result = processHtmlBlockTokens(tokens, i)
       if (currentSlotName !== null) {
         currentSlotChildren.push(...result.nodes)
       } else {
         nodes.push(...result.nodes)
       }
       i = result.nextIndex
-      continue
-    }
-
-    if (token.type === 'html_block_close') {
-      i++
       continue
     }
 
@@ -754,8 +544,7 @@ function processBlockChildren(
   inlineOnly: boolean,
   inHeading: boolean = false,
   insideNestedContext: boolean = false,
-  state?: ProcessState,
-  insideHtmlBlock: boolean = false
+  state?: ProcessState
 ): { nodes: ComarkNode[]; nextIndex: number } {
   const nodes: ComarkNode[] = []
   let i = startIndex
@@ -763,22 +552,10 @@ function processBlockChildren(
   while (i < tokens.length && tokens[i].type !== closeType) {
     const token = tokens[i]
 
-    // html_block can produce multiple nodes — handle before processBlockToken
     if (token.type === 'html_block') {
-      const result = processHtmlBlockTokens(tokens, i, state)
+      const result = processHtmlBlockTokens(tokens, i)
       nodes.push(...result.nodes)
       i = result.nextIndex
-      continue
-    }
-
-    if (token.type === 'html_block_close') {
-      i++
-      continue
-    }
-
-    if (insideHtmlBlock && token.type === 'code_block' && isHtmlLikeBlockContent(token.content || '')) {
-      nodes.push(...htmlToComarkNodes(token.content || ''))
-      i++
       continue
     }
 
