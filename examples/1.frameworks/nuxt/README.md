@@ -7,10 +7,10 @@ navigation:
 path: /examples/frameworks/nuxt-ui
 ---
 
-::CodeExplorer
+::code-explorer
 ---
 org: comarkdown
-repo: comark
+repo: comark@c78885ca7504b38afc7ced59aac1a3c6b3cc5425
 path: examples/1.frameworks/nuxt
 defaultValue: content/posts/comark-syntax.md
 ---

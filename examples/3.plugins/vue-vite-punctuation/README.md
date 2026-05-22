@@ -10,7 +10,7 @@ path: /examples/plugins/vue-vite-punctuation
 ::code-explorer
 ---
 org: comarkdown
-repo: comark
+repo: comark@c78885ca7504b38afc7ced59aac1a3c6b3cc5425
 path: examples/3.plugins/vue-vite-punctuation
 defaultValue: src/App.vue
 ---

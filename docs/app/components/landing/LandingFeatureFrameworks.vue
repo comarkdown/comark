@@ -13,7 +13,7 @@ defineProps<{
   svelteLinkTo: string
 }>()
 
-const activeTab = ref<'vue' | 'react' | 'svelte'>('vue')
+const activeTab = ref<'react' | 'svelte' | 'vue'>('react')
 
 const vueCode = `<script setup lang="ts">
 import { Comark } from '@comark/vue'
@@ -72,9 +72,9 @@ ${'<'}/script>
 const { data: highlighted } = await useAsyncData('fw-highlight', async () => {
   const themes = { light: 'github-light', dark: 'github-dark' } as const
   const [vue, react, svelte] = await Promise.all([
-    codeToHtml(vueCode, { lang: 'vue', themes }),
     codeToHtml(reactCode, { lang: 'tsx', themes }),
     codeToHtml(svelteCode, { lang: 'svelte', themes }),
+    codeToHtml(vueCode, { lang: 'vue', themes }),
   ])
   return { vue, react, svelte }
 })
@@ -97,19 +97,6 @@ const { data: highlighted } = await useAsyncData('fw-highlight', async () => {
 
     <div class="mt-6 overflow-hidden border border-muted bg-muted/50">
       <div class="flex items-center border-b border-muted">
-        <button
-          class="flex items-center gap-2 border-b-2 px-4 py-2 font-mono text-xs"
-          :class="
-            activeTab === 'vue' ? 'border-primary text-primary' : 'border-transparent text-muted hover:text-highlighted'
-          "
-          @click="activeTab = 'vue'"
-        >
-          <UIcon
-            name="i-logos-vue"
-            class="size-3.5"
-          />
-          App.vue
-        </button>
         <button
           class="flex items-center gap-2 border-b-2 px-4 py-2 font-mono text-xs"
           :class="
@@ -140,13 +127,21 @@ const { data: highlighted } = await useAsyncData('fw-highlight', async () => {
           />
           App.svelte
         </button>
+        <button
+          class="flex items-center gap-2 border-b-2 px-4 py-2 font-mono text-xs"
+          :class="
+            activeTab === 'vue' ? 'border-primary text-primary' : 'border-transparent text-muted hover:text-highlighted'
+          "
+          @click="activeTab = 'vue'"
+        >
+          <UIcon
+            name="i-logos-vue"
+            class="size-3.5"
+          />
+          App.vue
+        </button>
       </div>
       <div class="shiki-block h-[280px] overflow-auto p-4">
-        <div
-          v-show="activeTab === 'vue'"
-          class="text-sm/6"
-          v-html="highlighted?.vue"
-        />
         <div
           v-show="activeTab === 'react'"
           class="text-sm/6"
@@ -157,21 +152,21 @@ const { data: highlighted } = await useAsyncData('fw-highlight', async () => {
           class="text-sm/6"
           v-html="highlighted?.svelte"
         />
+        <div
+          v-show="activeTab === 'vue'"
+          class="text-sm/6"
+          v-html="highlighted?.vue"
+        />
       </div>
     </div>
 
     <div class="mt-4 flex items-center gap-4">
       <UButton
-        :label="vueLinkLabel"
-        :to="vueLinkTo"
-        variant="link"
-        trailing-icon="i-lucide-arrow-right"
-        class="px-0"
-      />
-      <UButton
         :label="reactLinkLabel"
         :to="reactLinkTo"
         variant="link"
+        color="neutral"
+        leading-icon="i-simple-icons-react"
         trailing-icon="i-lucide-arrow-right"
         class="px-0"
       />
@@ -179,6 +174,17 @@ const { data: highlighted } = await useAsyncData('fw-highlight', async () => {
         :label="svelteLinkLabel"
         :to="svelteLinkTo"
         variant="link"
+        color="neutral"
+        leading-icon="i-simple-icons-svelte"
+        trailing-icon="i-lucide-arrow-right"
+        class="px-0"
+      />
+      <UButton
+        :label="vueLinkLabel"
+        :to="vueLinkTo"
+        variant="link"
+        color="neutral"
+        leading-icon="i-simple-icons-vuedotjs"
         trailing-icon="i-lucide-arrow-right"
         class="px-0"
       />

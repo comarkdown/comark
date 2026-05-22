@@ -113,7 +113,7 @@ onBeforeUnmount(() => {
         variant="subtle"
         color="neutral"
         size="xs"
-        to="/play"
+        to="/play/editor?example=all-features"
       />
     </div>
 

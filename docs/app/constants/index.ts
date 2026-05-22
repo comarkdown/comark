@@ -120,11 +120,9 @@ page:
   maxWidth: 1120px
 ---
 
-# Hello Comark
+# Comark Playground
 
-This is a **Comark** playground inside DevTools.
-
-Write Markdown with component syntax and see the parsed AST in real-time.
+Write Markdown with component syntax and see the preview and parsed AST in real-time.
 
 ## Features
 
@@ -140,14 +138,23 @@ Write Markdown with component syntax and see the parsed AST in real-time.
 
 ### Component Syntax
 
-::callout{color="info" icon="i-lucide-info"}
-This is a Comark component using MDC syntax.
+::callout{color="success" icon="i-lucide-lightbulb"}
+This is a Vue component using the Markdown components syntax.
 ::
+
+::card{icon="i-lucide-rocket" color="primary"}
+#title
+Another component
+#default
+With 2 slots, title and default.
+::
+
+You can use all the [Nuxt UI Typography components](https://ui.nuxt.com/docs/typography/accordion){target="_blank"} in this playground.
 
 ### Github Alert
 
-> [!WARNING]
-> This is a warning alert.
+> [!NOTE]
+> This is a note callout.
 
 ### Math
 
