@@ -103,14 +103,20 @@ export async function html(node: ComarkElement, state: State, parent?: ComarkEle
   }
 
   if (!oneLiner && content) {
-    content = '\n' + paddNoneHtmlContent(content, state).trimEnd() + '\n'
+    content = '\n' + paddNoneHtmlContent(content, state, String(tag)).trimEnd() + '\n'
   }
 
   return `<${tag}${attrs}>${content}</${tag}>` + (!parent && !isInline ? state.context.blockSeparator : '')
 }
 
-function paddNoneHtmlContent(content: string, state: State) {
+// Literal-content tags whose body must be rendered verbatim (no indentation
+// re-flow). Matches the parser-side set so `<style>` / `<script>` etc. stay
+// flush-left in the output, the way they were authored.
+const LITERAL_CONTENT_TAGS = new Set(['code', 'kbd', 'pre', 'samp', 'script', 'style', 'textarea', 'var'])
+
+function paddNoneHtmlContent(content: string, state: State, tag: string) {
   if (state.context.html) {
+    if (LITERAL_CONTENT_TAGS.has(tag.toLowerCase())) return content
     return indent(content)
   }
 

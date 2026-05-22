@@ -22,6 +22,11 @@ export function autoCloseMarkdown(markdown: string): string {
   let inFrontmatter = false
   let inBlockMath = false
   let tableStart = -1
+  // Tag name when inside a raw-text HTML element (`<style>`, `<script>`,
+  // `<pre>`, `<textarea>`). Their bodies must be passed through verbatim —
+  // any `::root`/`**` markers there are CSS/JS/text, not Comark/markdown.
+  let inRawTextElement: 'style' | 'script' | 'pre' | 'textarea' | null = null
+  const RAW_TEXT_OPEN_RE = /^<(script|pre|style|textarea)(\s|>|$)/i
 
   const componentStack: Array<{
     depth: number
@@ -33,6 +38,23 @@ export function autoCloseMarkdown(markdown: string): string {
   for (let idx = 0; idx < n; idx++) {
     const line = lines[idx]
     const trimmed = line.trim()
+
+    // Raw-text HTML element: skip all line-level processing inside its body,
+    // and update the open/close state. Open and close can sit on the same
+    // line (e.g. `<style>body { ... }</style>` inline).
+    if (inRawTextElement) {
+      const closeRe = new RegExp(`</${inRawTextElement}\\s*>`, 'i')
+      if (closeRe.test(line)) inRawTextElement = null
+      continue
+    }
+    const rawTextMatch = trimmed.match(RAW_TEXT_OPEN_RE)
+    if (rawTextMatch) {
+      const tag = rawTextMatch[1].toLowerCase() as 'style' | 'script' | 'pre' | 'textarea'
+      // Stay "inside" only if the close tag isn't already on this line.
+      const closeRe = new RegExp(`</${tag}\\s*>`, 'i')
+      if (!closeRe.test(line)) inRawTextElement = tag
+      continue
+    }
 
     // Frontmatter: only starts at document line 0
     if (idx === 0 && trimmed === '---') {

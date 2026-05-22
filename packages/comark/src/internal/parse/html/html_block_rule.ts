@@ -5,11 +5,13 @@ import block_names from './html_blocks.ts'
 import { HTML_OPEN_CLOSE_TAG_RE } from './html_re.ts'
 
 // An array of opening and corresponding closing sequences for html tags,
-// last argument defines whether it can terminate a paragraph or not
+// last argument defines whether it can terminate a paragraph or not.
 //
 const HTML_SEQUENCES: [RegExp, RegExp, boolean][] = [
-  [new RegExp(`${HTML_OPEN_CLOSE_TAG_RE.source}\\s*$`), /^<\/[^>]+>$/, true],
   [/^<(script|pre|style|textarea)(?=(\s|>|$))/i, /<\/(script|pre|style|textarea)>/i, true],
+  // Generic single-line — the rule's `i !== GENERIC_SINGLE_LINE_INDEX` check
+  // below refers to this entry by its position (now 1).
+  [new RegExp(`${HTML_OPEN_CLOSE_TAG_RE.source}\\s*$`), /^<\/[^>]+>$/, true],
   [/^<!--/, /-->/, true],
   [/^<\?/, /\?>/, true],
   [/^<![A-Z]/, />/, true],
@@ -17,6 +19,8 @@ const HTML_SEQUENCES: [RegExp, RegExp, boolean][] = [
   [new RegExp(`^</?(${block_names.join('|')})(?=(\\s|/?>|$))`, 'i'), /^$/, true],
   [new RegExp(`${HTML_OPEN_CLOSE_TAG_RE.source}\\s*$`), /^$/, false],
 ]
+
+const GENERIC_SINGLE_LINE_INDEX = 1
 
 export default function html_block(state: StateBlock, startLine: number, endLine: number, silent: boolean) {
   let pos = state.bMarks[startLine] + state.tShift[startLine]
@@ -28,6 +32,10 @@ export default function html_block(state: StateBlock, startLine: number, endLine
   if (state.src.charCodeAt(pos) !== 0x3c /* < */) return false
 
   let lineText = state.src.slice(pos, max)
+  // Whether the block was started by a closing tag — must be decided from the
+  // first line that triggered the rule, before the loop below reassigns
+  // `lineText` to the last consumed line.
+  const startsWithCloseTag = lineText.startsWith('</')
 
   let i = 0
   for (; i < HTML_SEQUENCES.length; i++) {
@@ -45,7 +53,8 @@ export default function html_block(state: StateBlock, startLine: number, endLine
 
   // If we are here - we detected HTML block.
   // Let's roll down till block end.
-  if (i !== 0 && !HTML_SEQUENCES[i][1].test(lineText)) {
+  // The generic single-line sequence is treated as a 1-line block (no loop).
+  if (i !== GENERIC_SINGLE_LINE_INDEX && !HTML_SEQUENCES[i][1].test(lineText)) {
     for (; nextLine < endLine; nextLine++) {
       if (state.sCount[nextLine] < state.blkIndent) {
         break
@@ -63,7 +72,7 @@ export default function html_block(state: StateBlock, startLine: number, endLine
   }
   state.line = nextLine
 
-  const token = lineText.startsWith('</') ? state.push('html_block_close', '', -1) : state.push('html_block', '', 1)
+  const token = startsWithCloseTag ? state.push('html_block_close', '', -1) : state.push('html_block', '', 1)
   token.map = [startLine, nextLine]
   token.content = state.getLines(startLine, nextLine, state.blkIndent, true)
 
