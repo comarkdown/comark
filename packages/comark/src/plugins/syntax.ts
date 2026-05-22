@@ -547,29 +547,51 @@ const markdownItInlineProps: PluginSimple = (md) => {
   md.parse = function (src, env) {
     const tokens = _parse.call(this, src, env)
 
-    // When the props token is the only inline child of a heading/paragraph/list_item,
-    // apply it to the parent block tag instead of producing a `span`
+    // When the trailing inline child is a props token directly after a text
+    // node, lift the props onto the surrounding heading/paragraph/list_item.
+    // (If the props follow a closing tag, they belong to that inline tag, not
+    // the parent — leave them alone.)
     tokens.forEach((token, index) => {
       const prev = tokens[index - 1]
       const next = tokens[index + 1]
       if (!prev || !['heading_open', 'paragraph_open', 'list_item_open'].includes(prev.type) || prev.hidden) return
 
-      // list item handling
+      // Tight-list paragraph: the inline lives one slot ahead
       if (token.hidden && next?.type === 'inline') token = next
 
-      if (
-        token.type === 'inline' &&
-        token.children?.length === 2 &&
-        token.children[0].type === 'text' &&
-        token.children[1].type === 'mdc_inline_props'
-      ) {
-        const props = token.children[1].attrs
-        token.children.splice(1, 1)
-        props?.forEach(([key, value]) => {
-          if (key === 'class') prev.attrJoin('class', value)
-          else prev.attrSet(key, value)
-        })
+      if (token.type !== 'inline' || !token.children?.length) return
+
+      const last = token.children[token.children.length - 1]
+      if (last.type !== 'mdc_inline_props') return
+
+      // Find the previous non-empty child. Markdown-it's emphasis tokenizer
+      // can leave an empty text token between the closing delimiter and the
+      // props — skipping it lets us distinguish "props on the parent" from
+      // "props on the preceding inline tag".
+      let beforeIdx = token.children.length - 2
+      while (beforeIdx >= 0) {
+        const child = token.children[beforeIdx]
+        if (child.type === 'text' && !child.content) {
+          beforeIdx--
+          continue
+        }
+        break
       }
+      const beforeProps = beforeIdx >= 0 ? token.children[beforeIdx] : undefined
+      if (!beforeProps || beforeProps.type !== 'text') return
+
+      // Strip the trailing space the text picked up before the `{...}` token.
+      if (typeof beforeProps.content === 'string') {
+        beforeProps.content = beforeProps.content.replace(/[ \t]+$/, '')
+      }
+
+      const props = last.attrs
+      // Drop the props token (last) plus any empty text tokens it left behind.
+      token.children.length = beforeProps.content ? beforeIdx + 1 : beforeIdx
+      props?.forEach(([key, value]) => {
+        if (key === 'class') prev.attrJoin('class', value)
+        else prev.attrSet(key, value)
+      })
     })
 
     // Deduplicate `ul` wrapping when `::ul` is used and contains exactly one bullet list

@@ -385,6 +385,7 @@ function processBlockToken(
   if (token.type === 'heading_open') {
     const level = Number.parseInt(token.tag.replace('h', ''), 10)
     const headingTag = `h${level}` as 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
+    const userAttrs = processAttributes(token.attrs, { handleBoolean: false, handleJSON: false })
     // Process heading children with inHeading flag for Comark component handling
     const children = processBlockChildren(
       tokens,
@@ -400,9 +401,11 @@ function processBlockToken(
       const textContent = extractTextContent(children.nodes)
       const headingId = uniqueSlug(slugify(textContent), level, state)
 
-      // Always attach ID to the heading element itself
+      // Merge user-supplied attrs with the auto-generated id; user `id` wins.
+      const attrs: Record<string, unknown> = { id: headingId, ...userAttrs }
+
       return {
-        node: [headingTag, { id: headingId }, ...children.nodes] as ComarkNode,
+        node: [headingTag, attrs, ...children.nodes] as ComarkNode,
         nextIndex: children.nextIndex + 1,
       }
     }

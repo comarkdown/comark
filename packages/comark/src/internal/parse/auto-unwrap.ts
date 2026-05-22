@@ -37,5 +37,10 @@ export function applyAutoUnwrap(node: ComarkNode): ComarkNode {
     return [tag, props, ...children.map((child: ComarkNode) => applyAutoUnwrap(child as ComarkNode))] as ComarkNode
   }
 
-  return [tag, props, ...(nonEmptyChildren[0].slice(2) as ComarkNode[])] as ComarkNode
+  // Lift the paragraph's attrs onto the parent so trailing `{attr}` survives the unwrap.
+  // Parent attrs take precedence so explicit component props aren't overridden.
+  const paragraphAttrs = nonEmptyChildren[0][1] as Record<string, unknown>
+  const mergedProps = paragraphAttrs && Object.keys(paragraphAttrs).length > 0 ? { ...paragraphAttrs, ...props } : props
+
+  return [tag, mergedProps, ...(nonEmptyChildren[0].slice(2) as ComarkNode[])] as ComarkNode
 }

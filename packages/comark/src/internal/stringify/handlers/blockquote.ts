@@ -1,5 +1,6 @@
 import type { State } from 'comark/render'
 import type { ComarkElement, ComarkNode } from 'comark'
+import { comarkAttributes } from '../attributes.ts'
 
 export async function blockquote(node: ComarkElement, state: State) {
   const children = node.slice(2) as ComarkNode[]
@@ -8,6 +9,12 @@ export async function blockquote(node: ComarkElement, state: State) {
   for (const child of children) {
     childResult += await state.one(child, state, node)
   }
+
+  // `as` drives the alert-style `> [!NOTE]` prefix — don't echo it as `{as="…"}`.
+  const { as: _as, ...rest } = node[1] as Record<string, unknown>
+  const attrs = comarkAttributes(rest)
+  if (attrs) childResult = `${childResult.replace(/[ \t]+$/, '')} ${attrs}`
+
   const content = childResult
     .trim()
     .split('\n')
