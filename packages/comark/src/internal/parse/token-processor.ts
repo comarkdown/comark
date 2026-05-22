@@ -1,4 +1,4 @@
-import type { ComarkElement, ComarkNode } from 'comark'
+import type { ComarkNode } from 'comark'
 import { htmlToComarkNodes, parseInlineHtmlTag } from './html/index.ts'
 
 // Mapping from token types to tag names

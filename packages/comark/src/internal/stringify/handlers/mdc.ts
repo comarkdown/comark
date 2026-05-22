@@ -9,7 +9,7 @@ const INLINE_HTML_ELEMENTS = new Set(['a', 'strong', 'em', 'span'])
 
 export async function mdc(node: ComarkElement, state: State, parent?: ComarkElement) {
   const [tag, attr, ...children] = node
-  const { $, ...attributes } = attr
+  const { $: _, ...attributes } = attr
 
   if (tag === 'table') {
     return html(node, state)

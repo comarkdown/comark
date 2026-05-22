@@ -47,7 +47,7 @@ Before generating, fetch the documentation you need:
 3. fetchComponentDoc for EACH component you plan to use — learn exact props and slots`
 
 export default defineEventHandler(async (event) => {
-  const { prompt, mode = 'nuxt-ui', structure } = await readBody(event)
+  const { prompt, mode = 'nuxt-ui', _structure } = await readBody(event)
 
   if (!prompt?.trim()) {
     throw createError({ statusCode: 400, message: 'Prompt is required' })

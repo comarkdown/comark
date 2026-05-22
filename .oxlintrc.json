@@ -2,9 +2,6 @@
   "$schema": "./node_modules/oxlint/configuration_schema.json",
   "plugins": ["typescript", "oxc", "import"],
   "rules": {
-    "no-control-regex": "off",
-    "no-unused-expressions": "off",
-    "no-unused-vars": "off",
     "typescript/no-useless-empty-export": "off"
   },
   "overrides": [

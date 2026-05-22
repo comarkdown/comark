@@ -1,16 +1,5 @@
 import { pascalCase } from 'scule'
 import { localComponents, localComponentLoaders } from '#content/components'
-import {
-  UPageHero,
-  UPageSection,
-  UPageCard,
-  UPageCTA,
-  UButton,
-  UBadge,
-  UPageFeature,
-  UPageGrid,
-  UPricingPlan,
-} from '#components'
 
 // Define component imports for the docs app
 const components: Record<string, () => Promise<unknown>> = {
