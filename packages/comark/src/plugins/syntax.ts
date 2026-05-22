@@ -329,8 +329,39 @@ const markdownItComarkBlock: PluginSimple = (md) => {
     const { name, props } = parseBlockParams(line.slice(1))
 
     let lineEnd = startLine + 1
+    let inCodeFence = false
+    let codeFenceChar = ''
+    let codeFenceCount = 0
     while (lineEnd < endLine) {
       const inner = state.src.slice(state.bMarks[lineEnd] + state.tShift[startLine], state.eMarks[lineEnd])
+
+      if (inCodeFence) {
+        // Look for matching closing fence (same char, >= opening count, nothing but spaces after)
+        if (inner[0] === codeFenceChar) {
+          let fencePos = 1
+          while (fencePos < inner.length && inner[fencePos] === codeFenceChar) fencePos++
+          if (fencePos >= codeFenceCount && inner.slice(fencePos).trim() === '') {
+            inCodeFence = false
+          }
+        }
+        lineEnd += 1
+        continue
+      }
+
+      // Detect opening code fence (``` or ~~~, length >= 3)
+      if (inner[0] === '`' || inner[0] === '~') {
+        const ch = inner[0]
+        let fencePos = 1
+        while (fencePos < inner.length && inner[fencePos] === ch) fencePos++
+        if (fencePos >= 3) {
+          inCodeFence = true
+          codeFenceChar = ch
+          codeFenceCount = fencePos
+          lineEnd += 1
+          continue
+        }
+      }
+
       if (/^#\w+/.test(inner) || inner.startsWith('::')) break
       lineEnd += 1
     }
