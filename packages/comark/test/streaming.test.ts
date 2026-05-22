@@ -204,6 +204,25 @@ describe('streaming mode', () => {
       expect(alert[0]).toBe('alert')
     })
 
+    it('keeps auto-closed empty string attributes as strings', async () => {
+      const parse = createParse()
+      const result = await parse('::callout{color="info" icon', { streaming: true })
+      const callout = result.nodes[0] as ComarkElement
+
+      expect(callout[0]).toBe('callout')
+      expect(callout[1]).toMatchObject({ color: 'info', ':icon': 'true' })
+    })
+
+    it('keeps auto-closed empty string attributes as strings', async () => {
+      const parse = createParse()
+      const result = await parse('::callout{color="info" icon="', { streaming: true })
+      const callout = result.nodes[0] as ComarkElement
+
+      expect(callout[0]).toBe('callout')
+      expect(callout[1]).toMatchObject({ color: 'info', icon: '' })
+      expect(callout[1]).not.toHaveProperty(':icon')
+    })
+
     it('caches nodes before MDC components', async () => {
       const parse = createParse()
 

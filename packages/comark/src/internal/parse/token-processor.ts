@@ -131,13 +131,7 @@ function processAttributes(
       }
 
       // Handle boolean attributes: {bool} -> {":bool": "true"}
-      if (
-        handleBoolean &&
-        !key.startsWith(':') &&
-        !key.startsWith('#') &&
-        !key.startsWith('.') &&
-        (!value || value === 'true' || value === '')
-      ) {
+      if (handleBoolean && !key.startsWith(':') && !key.startsWith('#') && !key.startsWith('.') && value === 'true') {
         attrs[`:${key}`] = 'true'
         continue
       }
