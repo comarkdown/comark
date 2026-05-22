@@ -1,6 +1,6 @@
 import type { State } from 'comark/render'
 import type { ComarkElement, ComarkNode } from 'comark'
-import { comarkAttributes } from '../attributes.ts'
+import { comarkAttributes, userBlockAttrs } from '../attributes.ts'
 
 export async function blockquote(node: ComarkElement, state: State) {
   const children = node.slice(2) as ComarkNode[]
@@ -10,9 +10,18 @@ export async function blockquote(node: ComarkElement, state: State) {
     childResult += await state.one(child, state, node)
   }
 
-  // `as` drives the alert-style `> [!NOTE]` prefix — don't echo it as `{as="…"}`.
-  const { as: _as, ...rest } = node[1] as Record<string, unknown>
-  const attrs = comarkAttributes(rest)
+  const userAttrs = userBlockAttrs('blockquote', node[1] as Record<string, unknown>)
+  const attrs = comarkAttributes(userAttrs)
+
+  // Multi-block content with attrs has no unambiguous inline form — round-trip
+  // via `::blockquote{attrs}` so the attrs aren't visually attached to one
+  // paragraph and parsers can recover the same AST.
+  const hasBlockChildren = children.some((c) => Array.isArray(c))
+  if (attrs && hasBlockChildren) {
+    const inner = childResult.trim()
+    return `::blockquote${attrs}\n${inner}\n::` + state.context.blockSeparator
+  }
+
   if (attrs) childResult = `${childResult.replace(/[ \t]+$/, '')} ${attrs}`
 
   const content = childResult

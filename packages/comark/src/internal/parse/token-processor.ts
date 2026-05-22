@@ -1,5 +1,8 @@
-import type { ComarkNode } from 'comark'
+import type { ComarkElement, ComarkNode } from 'comark'
 import { htmlToComarkNodes, parseInlineHtmlTag } from './html/index.ts'
+
+// `::tag` components that should fold into a single same-tagged child.
+const WRAPPER_TAGS = new Set(['ul', 'ol', 'table', 'blockquote'])
 
 // Mapping from token types to tag names
 const BLOCK_TAG_MAP: Record<string, string> = {
@@ -307,6 +310,24 @@ function processBlockToken(
     const attrs = processAttributes(token.attrs)
     // Process children until mdc_block_close, handling slots (#slotname)
     const children = processBlockChildrenWithSlots(tokens, startIndex + 1, 'mdc_block_close', state)
+
+    // `::ul`/`::ol`/`::table`/`::blockquote` wrapping a single same-tag child
+    // collapses into a single element with the wrapper's attrs (outer wins).
+    if (
+      WRAPPER_TAGS.has(componentName) &&
+      children.nodes.length === 1 &&
+      Array.isArray(children.nodes[0]) &&
+      children.nodes[0][0] === componentName
+    ) {
+      const inner = children.nodes[0] as ComarkElement
+      const innerAttrs = inner[1] as Record<string, unknown>
+      const innerChildren = inner.slice(2) as ComarkNode[]
+      return {
+        node: [componentName, { ...innerAttrs, ...attrs }, ...innerChildren] as ComarkNode,
+        nextIndex: children.nextIndex + 1,
+      }
+    }
+
     // Return the component even if it has no children (empty component like ::component\n::)
     return { node: [componentName, attrs, ...children.nodes] as ComarkNode, nextIndex: children.nextIndex + 1 }
   }

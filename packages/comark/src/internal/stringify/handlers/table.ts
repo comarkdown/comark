@@ -1,5 +1,6 @@
 import type { State } from 'comark/render'
 import type { ComarkElement, ComarkNode } from 'comark'
+import { comarkAttributes, userBlockAttrs } from '../attributes.ts'
 
 type Alignment = 'left' | 'center' | 'right' | null
 
@@ -187,6 +188,13 @@ export async function table(node: ComarkElement, state: State) {
   }
 
   // result already ends with \n, so we only need to add one more \n
+  // table with user attrs round-trips via `::table{attrs}\n<table>\n::` —
+  // GFM table syntax has no slot for table-level attrs.
+  const attrs = comarkAttributes(userBlockAttrs('table', node[1] as Record<string, unknown>))
+  if (attrs) {
+    return `::table${attrs}\n${result.trimEnd()}\n::\n\n`
+  }
+
   return result + '\n'
 }
 

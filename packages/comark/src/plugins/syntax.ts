@@ -594,29 +594,6 @@ const markdownItInlineProps: PluginSimple = (md) => {
       })
     })
 
-    // Deduplicate `ul` wrapping when `::ul` is used and contains exactly one bullet list
-    tokens.forEach((tokenOpen, index) => {
-      if (tokenOpen.type !== 'bullet_list_open') return
-
-      const prev = tokens[index - 1]
-      if (!prev || prev.type !== 'mdc_block_open' || prev.tag !== 'ul') return
-
-      let closeIndex = index + 1
-      while (closeIndex < tokens.length) {
-        const close = tokens[closeIndex]
-        if (close.type === 'bullet_list_close' && close.level === tokenOpen.level) break
-        closeIndex += 1
-      }
-      const tokenClose = tokens[closeIndex]
-      if (tokenClose?.type !== 'bullet_list_close') return
-
-      const next = tokens[closeIndex + 1]
-      if (next?.type === 'mdc_block_close' && next.tag === 'ul') {
-        tokenOpen.hidden = true
-        tokenClose.hidden = true
-      }
-    })
-
     return tokens
   }
 

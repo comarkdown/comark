@@ -92,6 +92,41 @@ export function resolveAttribute(attrs: Record<string, unknown>, renderData: Nod
   return attrs[key]
 }
 
+// Implicit attributes the parser injects per tag — they're conveyed by the
+// native markdown syntax (e.g. `as` becomes `> [!NOTE]`, `task-list-item`
+// is implicit in `- [ ]`) so they should not echo back as user attrs.
+const IMPLICIT_ATTRS: Record<string, { drop?: string[]; classBlocklist?: string[] }> = {
+  blockquote: { drop: ['as'] },
+  ul: { classBlocklist: ['contains-task-list'] },
+  li: { classBlocklist: ['task-list-item'] },
+}
+
+/**
+ * Filter implicit/auto-generated attrs that are encoded by the native
+ * markdown syntax and shouldn't echo back as `{attr=...}`. Used by the
+ * block stringifiers to decide whether a node has *user* attrs that must
+ * be preserved via the `::tag{...}` wrapper form.
+ */
+export function userBlockAttrs(tag: string, attributes: Record<string, unknown>): Record<string, unknown> {
+  const rule = IMPLICIT_ATTRS[tag]
+  if (!rule) return { ...attributes }
+
+  const result: Record<string, unknown> = {}
+  for (const [key, value] of Object.entries(attributes)) {
+    if (rule.drop?.includes(key)) continue
+    if (key === 'class' && rule.classBlocklist && typeof value === 'string') {
+      const remaining = value
+        .split(/\s+/)
+        .filter((c) => c && !rule.classBlocklist!.includes(c))
+        .join(' ')
+      if (remaining) result[key] = remaining
+      continue
+    }
+    result[key] = value
+  }
+  return result
+}
+
 /**
  * Convert attributes to a string of Comark attributes
  *
