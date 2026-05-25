@@ -25,7 +25,18 @@ $$formula → $$formula$$
 ~Hello → ~Hello~
 ~~Hello → ~~Hello~~
 ~Hello~ → ~Hello~
-~~Hello~~ → ~~Hello~~`
+~~Hello~~ → ~~Hello~~
+<!-- space broke inline --> → <!-- space broke inline -->
+_ text → _ text
+_ text { → _ text {
+* text → * text
+** text → ** text
+~ text → ~ text
+~~ text → ~~ text
+_ d → _ d
+__ d → __ d
+___ d → ___ d
+`
 
 const multilines = `
 | Month    | Savings

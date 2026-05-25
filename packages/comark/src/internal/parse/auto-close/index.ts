@@ -219,353 +219,226 @@ export function autoCloseMarkdown(markdown: string): string {
 }
 
 /**
- * Closes inline markers (*, **, ***, ~~, `, $, $$, [, () on the last line
- * without using regex - pure character scanning in O(n) time
+ * Closes inline markers (`*`, `_`, `~`, `` ` ``, `$`, `[` / `(`) on the last
+ * line of streaming markdown.
+ *
+ * Algorithm (per marker type, independent stacks):
+ *   1. Scan the line once, skipping characters inside `{...}` attribute scopes
+ *      and link `[text](url)` payloads, and collecting runs of each marker.
+ *   2. Match runs left-to-right with CommonMark flanking rules:
+ *        - left-flanking (opener): not followed by whitespace
+ *        - right-flanking (closer): not preceded by whitespace
+ *        - underscore: also disqualified when both neighbours are word chars
+ *   3. Any opener still on the stack at end-of-line needs a closer.
+ *
+ * The first marker type to need closing wins (priority: `*`, `_`, `~`, `` ` ``,
+ * `$`, `]`, `)`), matching the previous one-suffix behaviour.
  */
 function closeInlineMarkersLinear(line: string): string {
   const len = line.length
   if (len === 0) return line
 
-  // Count markers by scanning
-  let asteriskCount = 0
-  let underscoreCount = 0
-  let doubleTildeCount = 0 // Count ~~ occurrences (GFM strikethrough delimiter)
-  let singleTildeCount = 0 // Count standalone ~ (not part of ~~)
-  let backtickCount = 0
-  let dollarCount = 0 // Count $ for math
-  let dollarPairCount = 0 // Count $$ pairs for block math
-  let bracketBalance = 0 // [ minus ]
-  let parenBalance = 0 // ( minus ) after last ]
-  let lastBracketPos = -1
-
-  // Track trailing whitespace
   let contentEnd = len
   while (contentEnd > 0 && (line[contentEnd - 1] === ' ' || line[contentEnd - 1] === '\t')) {
     contentEnd--
   }
   const hasTrailingSpace = contentEnd < len
 
-  // Track ** positions for O(n) complete pair detection (avoids O(n^3) nested loops)
-  const doubleAsteriskPositions: number[] = []
-  const doubleUnderscorePositions: number[] = []
+  // Scan once, collect marker runs (skipping attribute & link scopes) and
+  // track unmatched bracket / paren counts for link auto-close.
+  const asteriskRuns: Run[] = []
+  const underscoreRuns: Run[] = []
+  const tildeRuns: Run[] = []
+  const backtickRuns: Run[] = []
+  const dollarRuns: Run[] = []
+  let bracketBalance = 0
+  let parenBalance = 0
+  {
+    let attrDepth = 0
+    let inLinkText = 0
+    let inLinkUrl = 0
+    let lastBracketPos = -1
+    let i = 0
+    while (i < len) {
+      const ch = line[i]
+      const prevCh = i > 0 ? line[i - 1] : ''
 
-  // Single-pass scan through the line - O(n)
-  // Skip markers inside attribute scopes {...} and link text [...] / link URL (...)
-  let inAttributes = 0
-  let inLinkText = 0
-  let inLinkUrl = 0
-  for (let i = 0; i < len; i++) {
-    const prevCh = i > 0 ? line[i - 1] : ''
-    const ch = line[i]
-
-    if (ch === '{' && prevCh !== ' ') {
-      inAttributes++
-      continue
-    }
-    if (ch === '}') {
-      if (inAttributes > 0) inAttributes--
-      continue
-    }
-    if (inAttributes > 0) continue
-
-    if (ch === '[') {
-      bracketBalance++
-      lastBracketPos = i
-      inLinkText++
-      continue
-    }
-    if (ch === ']') {
-      bracketBalance--
-      lastBracketPos = i
-      if (inLinkText > 0) inLinkText--
-      continue
-    }
-    if (ch === '(') {
-      if (lastBracketPos >= 0 && i > lastBracketPos) {
-        parenBalance++
-        if (prevCh === ']') inLinkUrl++
+      // {…} attribute scope swallows everything inside.
+      if (ch === '{' && prevCh !== ' ') {
+        attrDepth++
+        i++
+        continue
       }
-      continue
-    }
-    if (ch === ')') {
-      if (lastBracketPos >= 0 && i > lastBracketPos) {
-        parenBalance--
-        if (inLinkUrl > 0) inLinkUrl--
+      if (ch === '}') {
+        if (attrDepth > 0) attrDepth--
+        i++
+        continue
       }
-      continue
-    }
+      if (attrDepth > 0) {
+        i++
+        continue
+      }
 
-    if (inLinkText > 0 || inLinkUrl > 0) continue
-
-    if (ch === '*') {
-      asteriskCount++
-      // Track ** positions (not part of ***)
-      if (i + 1 < len && line[i + 1] === '*') {
-        const isPartOfTriple = (i > 0 && line[i - 1] === '*') || (i + 2 < len && line[i + 2] === '*')
-        if (!isPartOfTriple) {
-          doubleAsteriskPositions.push(i)
+      // Link brackets/parens: track balance for auto-close, swallow their interior.
+      if (ch === '[') {
+        bracketBalance++
+        lastBracketPos = i
+        inLinkText++
+        i++
+        continue
+      }
+      if (ch === ']') {
+        bracketBalance--
+        lastBracketPos = i
+        if (inLinkText > 0) inLinkText--
+        i++
+        continue
+      }
+      if (ch === '(') {
+        if (lastBracketPos >= 0 && i > lastBracketPos) {
+          parenBalance++
+          if (prevCh === ']') inLinkUrl++
         }
+        i++
+        continue
       }
-    } else if (ch === '_') {
-      // Skip intra-word underscores (not emphasis delimiters per CommonMark)
-      const nextCh = i + 1 < len ? line[i + 1] : ''
-      const prevIsWord =
-        (prevCh >= 'a' && prevCh <= 'z') || (prevCh >= 'A' && prevCh <= 'Z') || (prevCh >= '0' && prevCh <= '9')
-      const nextIsWord =
-        (nextCh >= 'a' && nextCh <= 'z') || (nextCh >= 'A' && nextCh <= 'Z') || (nextCh >= '0' && nextCh <= '9')
-      if (!(prevIsWord && nextIsWord)) {
-        underscoreCount++
-        // Track __ positions (for bold)
-        if (nextCh === '_') {
-          doubleUnderscorePositions.push(i)
+      if (ch === ')') {
+        if (lastBracketPos >= 0 && i > lastBracketPos) {
+          parenBalance--
+          if (inLinkUrl > 0) inLinkUrl--
         }
+        i++
+        continue
       }
-    } else if (ch === '~') {
-      if (i + 1 < len && line[i + 1] === '~') {
-        doubleTildeCount++
-        i++ // Skip second tilde since we counted the pair
-      } else {
-        singleTildeCount++
+      if (inLinkText > 0 || inLinkUrl > 0) {
+        i++
+        continue
       }
-    } else if (ch === '`') {
-      backtickCount++
-    } else if (ch === '$' && prevCh !== '\\') {
-      // Count $$ pairs for block/display math
-      if (i + 1 < len && line[i + 1] === '$') {
-        dollarPairCount++
-        dollarCount += 2 // Count both dollars in the pair
-        i++ // Skip next $ since we counted the pair
-      } else {
-        dollarCount++ // Single $ for inline math
+
+      // Marker runs.
+      if (ch === '*' || ch === '_' || ch === '~' || ch === '`' || ch === '$') {
+        const start = i
+        while (i < len && line[i] === ch) i++
+        const bucket =
+          ch === '*'
+            ? asteriskRuns
+            : ch === '_'
+              ? underscoreRuns
+              : ch === '~'
+                ? tildeRuns
+                : ch === '`'
+                  ? backtickRuns
+                  : dollarRuns
+        bucket.push({ start, end: i })
+        continue
       }
+
+      i++
     }
   }
-
-  // Check for complete ** pairs in O(1) - pairs are matched left to right
-  const hasCompleteBoldPair = doubleAsteriskPositions.length >= 2
 
   let closingSuffix = ''
   let shouldTrim = false
 
-  // Check for unclosed markers in priority order
-
-  // Check *** (bold+italic)
-  // Only treat as *** if line actually starts with *** (not just has 3 asterisks total)
-  if (asteriskCount >= 3 && line[0] === '*' && line[1] === '*' && line[2] === '*') {
-    const remainder = asteriskCount % 6
-    if (remainder === 3) {
-      // Check if line starts with more than 3 asterisks (e.g., ****)
-      if (!(line[3] === '*')) {
-        // Check if marker at end with no content
-        if (
-          !(
-            contentEnd >= 3 &&
-            line[contentEnd - 1] === '*' &&
-            line[contentEnd - 2] === '*' &&
-            line[contentEnd - 3] === '*' &&
-            (contentEnd === 3 || line[contentEnd - 4] === ' ')
-          )
-        ) {
-          closingSuffix = '***'
-        }
+  // Flanking-aware emphasis stack — used for `*`, `_`, `~`.
+  const emphasisSuffix = (marker: '*' | '_' | '~', runs: Run[]): string => {
+    if (runs.length === 0) return ''
+    const stack: number[] = []
+    for (const r of runs) {
+      const prevCh = r.start > 0 ? line[r.start - 1] : ''
+      const afterCh = r.end < len ? line[r.end] : ''
+      const prevWs = prevCh === '' || prevCh === ' ' || prevCh === '\t'
+      const afterWs = afterCh === '' || afterCh === ' ' || afterCh === '\t'
+      let canOpen = !afterWs
+      let canClose = !prevWs
+      if (marker === '_' && isWordChar(prevCh) && isWordChar(afterCh)) {
+        canOpen = false
+        canClose = false
       }
-    } else if (remainder > 3 && remainder < 6) {
-      const needed = 6 - remainder
-      closingSuffix = '*'.repeat(needed)
+      let remaining = r.end - r.start
+      while (canClose && remaining > 0 && stack.length > 0) {
+        const top = stack.length - 1
+        const consume = Math.min(stack[top], remaining)
+        stack[top] -= consume
+        remaining -= consume
+        if (stack[top] === 0) stack.pop()
+      }
+      if (canOpen && remaining > 0) stack.push(remaining)
     }
+    return stack.length === 0 ? '' : stack.map((n) => marker.repeat(n)).join('')
   }
 
-  // Check ** (bold) if not already closing
-  if (!closingSuffix && asteriskCount >= 2) {
-    const remainder = asteriskCount % 4
-    if (remainder === 2) {
-      // Only check for ** if there are actually ** markers in the line
-      // This prevents "*italic*" (2 asterisks) from being treated as unclosed **
-      if (doubleAsteriskPositions.length > 0) {
-        // Check if line starts with more asterisks than ** (e.g., *** or more)
-        // This prevents "***text***" or "***text** *more" from being seen as unclosed **
-        const startsWithMoreAsterisks = line[0] === '*' && line[1] === '*' && line[2] === '*'
-
-        if (!startsWithMoreAsterisks) {
-          // Check if marker at end with no content
-          const endsWithMarker = contentEnd >= 2 && line[contentEnd - 1] === '*' && line[contentEnd - 2] === '*'
-          const markerAtEnd = endsWithMarker && (contentEnd === 2 || line[contentEnd - 3] === ' ')
-
-          if (!markerAtEnd) {
-            // Check if all asterisks are paired (bold + italic complete)
-            // If we have complete ** pairs, check remaining asterisks for italic
-            const boldAsterisksUsed = Math.floor(doubleAsteriskPositions.length / 2) * 4
-            const remainingSingle = asteriskCount - boldAsterisksUsed
-            const allPaired = hasCompleteBoldPair && remainingSingle % 2 === 0
-
-            if (!allPaired) {
-              // Check if line ends with word (not just a closing marker)
-              const lastChar = line[contentEnd - 1]
-              const endsWithWord =
-                (lastChar >= 'a' && lastChar <= 'z') ||
-                (lastChar >= 'A' && lastChar <= 'Z') ||
-                (lastChar >= '0' && lastChar <= '9')
-
-              if (!hasCompleteBoldPair || endsWithWord) {
-                closingSuffix = '**'
-                if (hasTrailingSpace && !endsWithMarker) {
-                  shouldTrim = true
-                }
-              }
-            }
-          }
-        }
-      }
-    } else if (remainder > 2 && remainder < 4) {
-      const needed = 4 - remainder
-      closingSuffix = '*'.repeat(needed)
-    }
-  }
-
-  // Check * (italic) if not already closing
-  if (!closingSuffix && asteriskCount % 2 === 1) {
-    // Check if line starts with more asterisks (e.g., ** or ***)
-    // But allow italic closing if bold pairs are complete
-    const startsWithMoreAsterisks = line[0] === '*' && line[1] === '*'
-
-    if (!startsWithMoreAsterisks || hasCompleteBoldPair) {
-      // Check if * followed by space (invalid italic)
-      let validItalic = false
-      for (let i = 0; i < len; i++) {
-        if (line[i] === '*') {
-          const nextCh = i + 1 < len ? line[i + 1] : ''
-          const prevCh = i > 0 ? line[i - 1] : ''
-          // Valid if not followed by space, or if it's preceded by space (closing)
-          if (nextCh !== ' ' || prevCh === ' ') {
-            validItalic = true
-            break
-          }
-        }
-      }
-
-      if (validItalic) {
-        // Check marker at end with no content
-        // Only skip if it's truly isolated (e.g., "input *")
-        // Don't skip if there are complete pairs before it (e.g., "input **bold** *")
-        const markerAtEnd =
-          contentEnd >= 1 && line[contentEnd - 1] === '*' && (contentEnd === 1 || line[contentEnd - 2] === ' ')
-
-        if (!markerAtEnd || asteriskCount > 1) {
-          closingSuffix = '*'
-          const endsWithMarker = line[contentEnd - 1] === '*'
-          if (hasTrailingSpace && !endsWithMarker) {
-            shouldTrim = true
-          }
-        }
-      }
-    }
-  }
-
-  // Check __ (double underscore bold)
-  if (!closingSuffix && underscoreCount >= 2) {
-    const remainder = underscoreCount % 4
-    if (remainder === 2) {
-      // Only check for __ if there are actually __ markers in the line
-      if (doubleUnderscorePositions.length > 0) {
-        const hasCompleteUnderscorePair = doubleUnderscorePositions.length >= 2
-
-        // Check if marker at end with no content
-        const endsWithMarker = contentEnd >= 2 && line[contentEnd - 1] === '_' && line[contentEnd - 2] === '_'
-        const markerAtEnd = endsWithMarker && (contentEnd === 2 || line[contentEnd - 3] === ' ')
-
-        if (!markerAtEnd && !hasCompleteUnderscorePair) {
-          closingSuffix = '__'
-          if (hasTrailingSpace && !endsWithMarker) {
-            shouldTrim = true
-          }
-        }
-      }
-    } else if (remainder > 2 && remainder < 4) {
-      const needed = 4 - remainder
-      closingSuffix = '_'.repeat(needed)
-    }
-  }
-
-  // Check _ (underscore italic)
-  if (!closingSuffix && underscoreCount % 2 === 1) {
-    // Check if _ followed by space (invalid italic)
-    let validItalic = false
-    for (let i = 0; i < len; i++) {
-      if (line[i] === '_') {
-        const nextCh = i + 1 < len ? line[i + 1] : ''
-        const prevCh = i > 0 ? line[i - 1] : ''
-        // Valid if not followed by space, or if it's preceded by space (closing)
-        if (nextCh !== ' ' || prevCh === ' ') {
-          validItalic = true
-          break
-        }
-      }
-    }
-
-    if (validItalic) {
-      // Check marker at end with no content
-      const markerAtEnd =
-        contentEnd >= 1 && line[contentEnd - 1] === '_' && (contentEnd === 1 || line[contentEnd - 2] === ' ')
-
-      if (!markerAtEnd) {
-        closingSuffix = '_'
-        const endsWithMarker = line[contentEnd - 1] === '_'
-        if (hasTrailingSpace && !endsWithMarker) {
-          shouldTrim = true
-        }
-      }
-    }
-  }
-
-  // Check ~~ (strikethrough) and ~ (single-tilde) separately so that paired
-  // singles like ~Hello~ are left alone while ~~text and ~Hello both close.
-  if (!closingSuffix && doubleTildeCount % 2 === 1) {
-    // A trailing single ~ after an open ~~ is a partial closer (~~text~)
-    closingSuffix = singleTildeCount === 1 ? '~' : '~~'
-    if (hasTrailingSpace) shouldTrim = true
-  } else if (!closingSuffix && singleTildeCount % 2 === 1) {
-    closingSuffix = '~'
+  // Asterisk emphasis (`*`, `**`, `***`).
+  const aSuffix = emphasisSuffix('*', asteriskRuns)
+  if (aSuffix) {
+    closingSuffix = aSuffix
     if (hasTrailingSpace) shouldTrim = true
   }
 
-  // Check ` (code)
-  if (!closingSuffix && backtickCount % 2 === 1) {
-    closingSuffix = '`'
-  }
-
-  // Check $$ (block math) - takes priority over single $
-  // Don't close if the line is just $$ (block math delimiter on its own line)
-  if (!closingSuffix && dollarPairCount % 2 === 1) {
-    const trimmedLine = line.trim()
-    // Only close if this isn't a standalone $$ (which would be a block math delimiter)
-    if (trimmedLine !== '$$') {
-      closingSuffix = '$$'
+  // Underscore emphasis (`_`, `__`, `___`).
+  if (!closingSuffix) {
+    const uSuffix = emphasisSuffix('_', underscoreRuns)
+    if (uSuffix) {
+      closingSuffix = uSuffix
+      if (hasTrailingSpace) shouldTrim = true
     }
   }
 
-  // Check $ (inline math)
-  if (!closingSuffix && dollarCount % 2 === 1) {
-    closingSuffix = '$'
+  // Tildes — single `~` and GFM `~~` use the same flanking rules.
+  if (!closingSuffix) {
+    const tSuffix = emphasisSuffix('~', tildeRuns)
+    if (tSuffix) {
+      closingSuffix = tSuffix
+      if (hasTrailingSpace) shouldTrim = true
+    }
   }
 
-  // Check [ ] (brackets)
-  if (!closingSuffix && bracketBalance > 0) {
-    closingSuffix = ']'
+  // Backticks — code spans match by exact run length, with no flanking rules.
+  // Don't trim trailing whitespace inside a code span.
+  if (!closingSuffix && backtickRuns.length > 0) {
+    const stack: number[] = []
+    for (const r of backtickRuns) {
+      const myLen = r.end - r.start
+      const matchIdx = stack.lastIndexOf(myLen)
+      if (matchIdx >= 0) stack.splice(matchIdx, 1)
+      else stack.push(myLen)
+    }
+    if (stack.length > 0) {
+      // Close the most recent unmatched opener (markdown-it picks the same).
+      closingSuffix = '`'.repeat(stack[stack.length - 1])
+    }
   }
 
-  // Check ( ) (parens)
-  if (!closingSuffix && parenBalance > 0) {
-    closingSuffix = ')'
+  // Dollars — `$$` for block math, `$` for inline. Length-exact matching.
+  // Standalone `$$` on its own line is a block-math delimiter; the caller
+  // skips us in that case, so we don't need to special-case it here.
+  if (!closingSuffix && dollarRuns.length > 0) {
+    const stack: number[] = []
+    for (const r of dollarRuns) {
+      const myLen = r.end - r.start
+      const matchIdx = stack.lastIndexOf(myLen)
+      if (matchIdx >= 0) stack.splice(matchIdx, 1)
+      else stack.push(myLen)
+    }
+    if (stack.length > 0) {
+      closingSuffix = '$'.repeat(stack[stack.length - 1])
+    }
   }
 
-  // Apply closing
+  if (!closingSuffix && bracketBalance > 0) closingSuffix = ']'
+  if (!closingSuffix && parenBalance > 0) closingSuffix = ')'
+
   if (shouldTrim && closingSuffix) {
-    let trimmedLen = len
-    while (trimmedLen > 0 && (line[trimmedLen - 1] === ' ' || line[trimmedLen - 1] === '\t')) {
-      trimmedLen--
-    }
-    return line.slice(0, trimmedLen) + closingSuffix
+    return line.slice(0, contentEnd) + closingSuffix
   }
-
   return line + closingSuffix
+}
+
+interface Run {
+  start: number
+  end: number
+}
+
+function isWordChar(ch: string): boolean {
+  return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || (ch >= '0' && ch <= '9')
 }
