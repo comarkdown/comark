@@ -71,7 +71,7 @@ ${'<'}/script>
 
 const { data: highlighted } = await useAsyncData('fw-highlight', async () => {
   const themes = { light: 'github-light', dark: 'github-dark' } as const
-  const [vue, react, svelte] = await Promise.all([
+  const [react, svelte, vue] = await Promise.all([
     codeToHtml(reactCode, { lang: 'tsx', themes }),
     codeToHtml(svelteCode, { lang: 'svelte', themes }),
     codeToHtml(vueCode, { lang: 'vue', themes }),
