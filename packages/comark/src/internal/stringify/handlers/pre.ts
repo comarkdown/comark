@@ -1,6 +1,7 @@
 import type { State } from 'comark/render'
 import type { ComarkElement } from 'comark'
 import { textContent } from '../../../utils/index.ts'
+import { comarkAttributes, userBlockAttrs } from '../attributes.ts'
 
 export function pre(node: ComarkElement, state: State) {
   const [_, attributes, ...children] = node
@@ -26,9 +27,15 @@ export function pre(node: ComarkElement, state: State) {
   const code = String(node[1]?.code || textContent(node)).trim()
   const fence = code.includes('```') ? '~~~' : '```'
 
-  const result = fence + language + filename + highlights + meta + '\n' + code + '\n' + fence
+  const fenceBlock = fence + language + filename + highlights + meta + '\n' + code + '\n' + fence
+  // Extra user attrs that can't ride on the fence info string round-trip via
+  // `::pre{attrs}\n```…```\n::` — mirrors the wrapper form for ul/ol/table/blockquote.
+  const attrs = comarkAttributes(userBlockAttrs('pre', attributes as Record<string, unknown>))
+  if (attrs) {
+    return `::pre${attrs}\n${fenceBlock}\n::` + state.context.blockSeparator
+  }
 
-  return result + state.context.blockSeparator
+  return fenceBlock + state.context.blockSeparator
 }
 
 function formatHighlights(highlights: number[]): string {

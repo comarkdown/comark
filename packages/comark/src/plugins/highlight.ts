@@ -363,9 +363,12 @@ export async function highlightCodeBlocks(tree: ComarkTree, options: HighlightOp
       }
     }
 
+    // Merge highlighter class with any user-supplied class (e.g. from
+    // `::pre{.user-class}`) so the wrapper's class isn't lost.
+    const userClass = typeof preAttrs.class === 'string' ? preAttrs.class.trim() : ''
     const newPreAttrs: Record<string, any> = {
       ...preAttrs,
-      class: classStr,
+      class: userClass ? `${classStr} ${userClass}` : classStr,
       tabindex: '0',
     }
 

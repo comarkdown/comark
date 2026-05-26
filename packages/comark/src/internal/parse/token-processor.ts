@@ -2,7 +2,7 @@ import type { ComarkElement, ComarkNode } from 'comark'
 import { htmlToComarkNodes, parseInlineHtmlTag } from './html/index.ts'
 
 // `::tag` components that should fold into a single same-tagged child.
-const WRAPPER_TAGS = new Set(['ul', 'ol', 'table', 'blockquote'])
+const WRAPPER_TAGS = new Set(['ul', 'ol', 'table', 'blockquote', 'pre'])
 
 // Mapping from token types to tag names
 const BLOCK_TAG_MAP: Record<string, string> = {
@@ -311,8 +311,8 @@ function processBlockToken(
     // Process children until mdc_block_close, handling slots (#slotname)
     const children = processBlockChildrenWithSlots(tokens, startIndex + 1, 'mdc_block_close', state)
 
-    // `::ul`/`::ol`/`::table`/`::blockquote` wrapping a single same-tag child
-    // collapses into a single element with the wrapper's attrs (outer wins).
+    // `::ul`/`::ol`/`::table`/`::blockquote`/`::pre` wrapping a single same-tag
+    // child collapses into a single element with the wrapper's attrs (outer wins).
     if (
       WRAPPER_TAGS.has(componentName) &&
       children.nodes.length === 1 &&
