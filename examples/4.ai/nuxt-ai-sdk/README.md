@@ -17,6 +17,18 @@ defaultValue: server/api/chat.post.ts
 ---
 ::
 
+:br
+
+::video
+---
+src: https://res.cloudinary.com/nuxt/video/upload/v1779805747/aisdk-nuxt_wdqrnc.mp4
+controls: true
+autoplay: true
+muted: true
+loop: true
+---
+::
+
 ## How it works
 
 - **`server/api/chat.post.ts`** — `streamText` with two tools: `fetchComarkSkill` (loads the Comark syntax reference) and `fetchComponents` (lists available UI components), so the model knows how to use both before responding
