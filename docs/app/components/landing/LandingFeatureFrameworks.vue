@@ -175,7 +175,7 @@ const { data: highlighted } = await useAsyncData('fw-highlight', async () => {
         :to="svelteLinkTo"
         variant="link"
         color="neutral"
-        leading-icon="i-simple-icons-svelte"
+        leading-icon="i-logos-svelte-icon"
         trailing-icon="i-lucide-arrow-right"
         class="px-0"
       />
