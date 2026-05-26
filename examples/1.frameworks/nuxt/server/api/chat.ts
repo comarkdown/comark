@@ -1,12 +1,11 @@
 import {
   convertToModelMessages,
   streamText,
-  type UIMessage,
 } from 'ai'
 
 export default defineLazyEventHandler(async () => {
   return defineEventHandler(async (event) => {
-    const { messages }: { messages: UIMessage[] } = await readBody(event)
+    const { messages } = await readBody(event)
 
     const result = streamText({
       model: 'anthropic/claude-sonnet-4.6',

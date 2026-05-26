@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Chat } from '@ai-sdk/vue'
-import { isTextUIPart, type UIMessage } from 'ai'
+import { isTextUIPart } from 'ai'
+import { isPartStreaming } from '@nuxt/ui/utils/ai'
 
 useSeoMeta({
   title: 'Chat',
@@ -8,26 +9,9 @@ useSeoMeta({
 })
 
 const input = ref('')
-
 const chat = new Chat({})
 
-function getMessageText(message: UIMessage) {
-  return message.parts
-    .filter(isTextUIPart)
-    .map(part => part.text)
-    .join('')
-}
-
-function isStreamingMessage(message: UIMessage) {
-  return chat.status === 'streaming'
-    && message.role === 'assistant'
-    && message.id === chat.messages.at(-1)?.id
-}
-
-function handleSubmit(e: Event) {
-  e.preventDefault()
-  if (!input.value.trim()) return
-
+function onSubmit() {
   chat.sendMessage({ text: input.value })
   input.value = ''
 }
@@ -40,17 +24,11 @@ function handleSubmit(e: Event) {
         Chat
       </h1>
       <p class="text-gray-500 dark:text-gray-400">
-        Minimal AI chat powered by the
-        <a
-          href="https://ai-sdk.dev/docs/getting-started/nuxt"
-          class="underline"
-        >AI SDK</a>
-        with
-        <a
-          href="https://comark.dev"
-          class="underline"
-        >Comark</a>
-        streaming markdown rendering.
+        Minimal AI chat with
+        <a href="https://ai-sdk.dev/docs/getting-started/nuxt" class="underline">AI SDK</a>
+        and
+        <a href="https://comark.dev" class="underline">Comark</a>
+        streaming markdown.
       </p>
     </div>
 
@@ -63,27 +41,27 @@ function handleSubmit(e: Event) {
         :ui="{ root: 'min-h-0' }"
       >
         <template #indicator>
-          <UChatShimmer
-            text="Thinking..."
-            class="text-sm"
-          />
+          <UChatShimmer text="Thinking..." class="text-sm" />
         </template>
 
         <template #content="{ message }">
-          <p
-            v-if="message.role === 'user'"
-            class="whitespace-pre-wrap"
+          <template
+            v-for="(part, index) in message.parts"
+            :key="`${message.id}-${part.type}-${index}`"
           >
-            {{ getMessageText(message) }}
-          </p>
-
-          <Suspense v-else>
-            <Comark
-              :markdown="getMessageText(message)"
-              :streaming="isStreamingMessage(message)"
-              caret
-            />
-          </Suspense>
+            <template v-if="isTextUIPart(part)">
+              <p v-if="message.role === 'user'" class="whitespace-pre-wrap">
+                {{ part.text }}
+              </p>
+              <Suspense v-else>
+                <Comark
+                  :markdown="part.text"
+                  :streaming="isPartStreaming(part)"
+                  caret
+                />
+              </Suspense>
+            </template>
+          </template>
         </template>
       </UChatMessages>
 
@@ -93,7 +71,7 @@ function handleSubmit(e: Event) {
         variant="subtle"
         placeholder="Ask something…"
         class="shrink-0"
-        @submit="handleSubmit"
+        @submit="onSubmit"
       >
         <template #footer>
           <UChatPromptSubmit
