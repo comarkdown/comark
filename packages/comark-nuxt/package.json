@@ -1,7 +1,17 @@
 {
   "name": "@comark/nuxt",
   "version": "0.3.1",
-  "description": "Nuxt module for Comark",
+  "description": "Nuxt module for Comark (Components in Markdown)",
+  "keywords": [
+    "comark",
+    "markdown",
+    "mdc",
+    "nuxt",
+    "nuxt-module",
+    "renderer",
+    "streaming",
+    "vue"
+  ],
   "homepage": "https://comark.dev/rendering/nuxt",
   "bugs": {
     "url": "https://github.com/comarkdown/comark/issues"

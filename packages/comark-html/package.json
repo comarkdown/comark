@@ -1,7 +1,16 @@
 {
   "name": "@comark/html",
   "version": "0.3.1",
-  "description": "HTML renderer for Comark",
+  "description": "HTML renderer for Comark (Components in Markdown)",
+  "keywords": [
+    "comark",
+    "html",
+    "markdown",
+    "mdc",
+    "renderer",
+    "ssr",
+    "streaming"
+  ],
   "homepage": "https://comark.dev/rendering/html",
   "bugs": {
     "url": "https://github.com/comarkdown/comark/issues"

@@ -1,7 +1,15 @@
 {
   "name": "@comark/react",
   "version": "0.3.1",
-  "description": "React components for Comark",
+  "description": "React renderer for Comark (Components in Markdown)",
+  "keywords": [
+    "comark",
+    "markdown",
+    "mdc",
+    "react",
+    "renderer",
+    "streaming"
+  ],
   "homepage": "https://comark.dev/rendering/react",
   "bugs": {
     "url": "https://github.com/comarkdown/comark/issues"
