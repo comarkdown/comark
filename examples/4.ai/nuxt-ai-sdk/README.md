@@ -1,8 +1,8 @@
 ---
-title: AI SDK x Nuxt
+title: AI SDK
 description: Streaming AI chat with live Comark rendering — server tools teach the model comark syntax and available components before responding.
 navigation:
-  icon: i-lucide-bot
+  icon: i-simple-icons-vercel
 category: AI
 path: /examples/ai/nuxt-ai-sdk
 ---
@@ -14,18 +14,6 @@ repo: comark
 branch: feat/aisdk-nuxt-example
 path: examples/4.ai/nuxt-ai-sdk
 defaultValue: server/api/chat.post.ts
----
-::
-
-:br
-
-::video
----
-src: https://res.cloudinary.com/nuxt/video/upload/v1779805747/aisdk-nuxt_wdqrnc.mp4
-controls: true
-autoplay: true
-muted: true
-loop: true
 ---
 ::
 
