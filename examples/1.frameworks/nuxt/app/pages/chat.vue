@@ -34,8 +34,8 @@ function handleSubmit(e: Event) {
 </script>
 
 <template>
-  <div class="flex flex-col gap-4 min-h-[calc(100dvh-12rem)]">
-    <div>
+  <div class="flex h-full min-h-0 flex-col gap-4 overflow-hidden">
+    <div class="shrink-0">
       <h1 class="text-3xl font-bold mb-2">
         Chat
       </h1>
@@ -54,13 +54,13 @@ function handleSubmit(e: Event) {
       </p>
     </div>
 
-    <div class="flex flex-1 flex-col gap-4 min-h-0">
+    <div class="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden">
       <UChatMessages
         should-auto-scroll
         :messages="chat.messages"
         :status="chat.status"
-        :spacing-offset="120"
-        class="flex-1 min-h-0"
+        class="min-h-0 flex-1 overflow-y-auto overscroll-contain"
+        :ui="{ root: 'min-h-0' }"
       >
         <template #indicator>
           <UChatShimmer
@@ -92,13 +92,10 @@ function handleSubmit(e: Event) {
         :error="chat.error"
         variant="subtle"
         placeholder="Ask something…"
+        class="shrink-0"
         @submit="handleSubmit"
       >
         <template #footer>
-          <p class="text-xs text-muted">
-            Requires <code>NUXT_AI_GATEWAY_API_KEY</code> in <code>.env</code>
-          </p>
-
           <UChatPromptSubmit
             :status="chat.status"
             color="neutral"

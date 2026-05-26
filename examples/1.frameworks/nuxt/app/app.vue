@@ -1,6 +1,14 @@
+<script setup lang="ts">
+const route = useRoute()
+const isChatPage = computed(() => route.path === '/chat')
+</script>
+
 <template>
-  <div class="min-h-screen flex flex-col">
-    <header class="border-b border-gray-200 dark:border-gray-800">
+  <div
+    class="flex flex-col"
+    :class="isChatPage ? 'h-[calc(100dvh-2rem)] overflow-hidden' : 'min-h-screen'"
+  >
+    <header class="shrink-0 border-b border-gray-200 dark:border-gray-800">
       <nav class="max-w-2xl mx-auto px-6 py-4 flex items-center justify-between gap-6">
         <NuxtLink
           to="/"
@@ -33,11 +41,14 @@
         </div>
       </nav>
     </header>
-    <main class="max-w-2xl mx-auto px-6 py-8 flex-1 w-full">
+    <main
+      class="max-w-2xl mx-auto px-6 w-full flex-1"
+      :class="isChatPage ? 'min-h-0 overflow-hidden py-4 flex flex-col' : 'py-8'"
+    >
       <NuxtPage />
     </main>
     <footer
-      class="border-t border-gray-200 dark:border-gray-800 text-center text-sm text-gray-500 dark:text-gray-400 py-6"
+      class="shrink-0 border-t border-gray-200 dark:border-gray-800 text-center text-sm text-gray-500 dark:text-gray-400 py-6"
     >
       Built with
       <a
