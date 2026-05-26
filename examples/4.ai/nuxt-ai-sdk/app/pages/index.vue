@@ -16,9 +16,7 @@ function onSubmit() {
 
 <template>
   <div class="max-w-2xl mx-auto flex flex-col h-screen p-6">
-    <h1 class="text-xl font-semibold mb-6 shrink-0">
-      AI SDK + Comark
-    </h1>
+    <h1 class="text-xl font-semibold mb-6 shrink-0">AI SDK + Comark</h1>
 
     <div class="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden">
       <UChatMessages
@@ -28,7 +26,10 @@ function onSubmit() {
         class="min-h-0 flex-1 overflow-y-auto overscroll-contain"
       >
         <template #indicator>
-          <UChatShimmer text="Thinking..." class="text-sm" />
+          <UChatShimmer
+            text="Thinking..."
+            class="text-sm"
+          />
         </template>
 
         <template #content="{ message }">
@@ -37,7 +38,10 @@ function onSubmit() {
             :key="`${message.id}-${part.type}-${index}`"
           >
             <template v-if="isTextUIPart(part)">
-              <p v-if="message.role === 'user'" class="whitespace-pre-wrap">
+              <p
+                v-if="message.role === 'user'"
+                class="whitespace-pre-wrap"
+              >
                 {{ part.text }}
               </p>
               <Suspense v-else>

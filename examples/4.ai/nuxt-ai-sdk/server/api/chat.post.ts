@@ -15,7 +15,8 @@ Call fetchComarkSkill to learn the syntax and fetchComponents to discover availa
     stopWhen: stepCountIs(4),
     tools: {
       fetchComarkSkill: tool({
-        description: 'Fetch the Comark MDC syntax reference — component syntax, slots, and props. Call this before generating rich responses.',
+        description:
+          'Fetch the Comark MDC syntax reference — component syntax, slots, and props. Call this before generating rich responses.',
         inputSchema: z.object({}),
         execute: async () => {
           const response = await fetch(COMARK_SKILL_URL)
@@ -24,7 +25,8 @@ Call fetchComarkSkill to learn the syntax and fetchComponents to discover availa
         },
       }),
       fetchComponents: tool({
-        description: 'List all custom UI components available in this app. Call this to know which components you can use and how to use them.',
+        description:
+          'List all custom UI components available in this app. Call this to know which components you can use and how to use them.',
         inputSchema: z.object({}),
         execute: async () => `\
 List of all the custom components available in this example:
