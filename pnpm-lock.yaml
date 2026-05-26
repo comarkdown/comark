@@ -10,7 +10,7 @@ catalogs:
       specifier: ^3.0.104
       version: 3.0.110
     '@ai-sdk/vue':
-      specifier: ^3.0.175
+      specifier: ^3.0.185
       version: 3.0.185
     '@astrojs/react':
       specifier: ^5.0.3
@@ -513,12 +513,18 @@ importers:
 
   examples/1.frameworks/nuxt:
     dependencies:
+      '@ai-sdk/vue':
+        specifier: 'catalog:'
+        version: 3.0.185(vue@3.5.32(typescript@5.9.3))(zod@4.4.3)
       '@comark/nuxt':
         specifier: workspace:*
         version: link:../../../packages/comark-nuxt
       '@nuxt/ui':
         specifier: 'catalog:'
         version: 4.7.1(@internationalized/date@3.12.0)(@internationalized/number@3.6.5)(@nuxt/content@3.13.0(better-sqlite3@12.6.2)(magicast@0.5.2))(@tiptap/extensions@3.22.5(@tiptap/core@3.22.5(@tiptap/pm@3.22.5))(@tiptap/pm@3.22.5))(@tiptap/y-tiptap@3.0.2(prosemirror-model@1.25.4)(prosemirror-state@1.4.4)(prosemirror-view@1.41.6)(y-protocols@1.0.7(yjs@13.6.29))(yjs@13.6.29))(change-case@5.4.4)(db0@0.3.4(better-sqlite3@12.6.2))(embla-carousel@8.6.0)(focus-trap@7.8.0)(ioredis@5.10.0)(magicast@0.5.2)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(tailwindcss@4.2.2)(typescript@5.9.3)(vite@8.0.8(@types/node@25.5.2)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.4))(vue-router@5.0.4(@vue/compiler-sfc@3.5.33)(vue@3.5.32(typescript@5.9.3)))(vue@3.5.32(typescript@5.9.3))(yjs@13.6.29)(zod@4.4.3)
+      ai:
+        specifier: 'catalog:'
+        version: 6.0.168(zod@4.4.3)
       nuxt:
         specifier: 'catalog:'
         version: 4.4.2(@babel/core@7.29.0)(@babel/plugin-syntax-jsx@7.28.6(@babel/core@7.29.0))(@parcel/watcher@2.5.6)(@types/node@25.5.2)(@vue/compiler-sfc@3.5.33)(better-sqlite3@12.6.2)(cac@6.7.14)(db0@0.3.4(better-sqlite3@12.6.2))(eslint@10.2.0(jiti@2.6.1))(ioredis@5.10.0)(lightningcss@1.32.0)(magicast@0.5.2)(meow@13.2.0)(optionator@0.9.4)(oxlint@1.61.0)(rolldown@1.0.0-rc.15)(rollup-plugin-visualizer@6.0.11(rolldown@1.0.0-rc.15)(rollup@4.59.0))(rollup@4.59.0)(terser@5.46.0)(tsx@4.21.0)(typescript@5.9.3)(vite@8.0.8(@types/node@25.5.2)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.4))(vue-tsc@3.2.6(typescript@5.9.3))(yaml@2.8.4)
@@ -18233,7 +18239,7 @@ snapshots:
       '@iconify-json/lucide': 1.2.101
       '@nuxtjs/mdc': 0.21.1(magicast@0.5.2)
       '@vueuse/core': 14.2.1(vue@3.5.32(typescript@5.9.3))
-      ai: 6.0.168(zod@4.4.3)
+      ai: 6.0.185(zod@4.4.3)
       defu: 6.1.7
       destr: 2.0.5
       js-yaml: 4.1.1

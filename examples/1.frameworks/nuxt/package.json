@@ -9,8 +9,10 @@
     "preview": "nuxt preview"
   },
   "dependencies": {
+    "@ai-sdk/vue": "catalog:",
     "@comark/nuxt": "latest",
     "@nuxt/ui": "catalog:",
+    "ai": "catalog:",
     "nuxt": "catalog:",
     "shiki": "catalog:",
     "tailwindcss": "catalog:"
