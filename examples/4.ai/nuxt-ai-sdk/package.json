@@ -1,0 +1,17 @@
+{
+  "name": "comark-ai-sdk-example",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "nuxt dev",
+    "build": "nuxt build",
+    "preview": "nuxt preview"
+  },
+  "dependencies": {
+    "@ai-sdk/vue": "catalog:",
+    "@comark/nuxt": "catalog:",
+    "@nuxt/ui": "catalog:",
+    "ai": "catalog:",
+    "nuxt": "catalog:"
+  }
+}
