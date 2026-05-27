@@ -22,7 +22,7 @@ defaultValue: server/api/chat.post.ts
 - **`server/api/chat.post.ts`** — `streamText` to stream the Markdown response from the model
 - **`app/pages/index.vue`** — `Chat` from `@ai-sdk/vue` + `<Comark :streaming="isPartStreaming(part)" caret>` for live per-part rendering
 
-The server uses `stopWhen: stepCountIs(4)` to allow the model to call tools before producing its final response. On the client, `<Comark>` is used to parse and render the Markdown response and receives `:streaming="isPartStreaming(part)"` for accurate per-part streaming state.
+On the client, `<Comark>` parses and renders the Markdown response and receives `:streaming="isPartStreaming(part)"` for accurate per-part streaming state.
 
 ## Setup
 
