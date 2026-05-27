@@ -26,7 +26,7 @@ Zero-config Nuxt module for [Comark](https://comark.dev) — a high-performance 
 Add `@comark/nuxt` to your project — this installs the dependency and registers the module in `nuxt.config.ts`:
 
 ```bash
-npx nuxt module add @comark/nuxt
+npx nuxt add comark
 ```
 
 ### Manual
