@@ -19,6 +19,21 @@ Components use the `::` syntax. They can have attributes and children:
 Pay attention to the double-colon syntax — it's how Comark identifies components.
 ::
 
+## Component slots
+
+React components receive default content as `children`, and named slots as props like `slotHeader` and `slotFooter`:
+
+::feature-card
+#header
+Slot-aware React component
+
+#default
+This body is the default slot. It can contain **Markdown**, links, lists, or any nested Comark content.
+
+#footer
+Rendered through the `slotFooter` prop in `FeatureCard.tsx`.
+::
+
 ## Lists
 
 Comark handles lists, of course:
