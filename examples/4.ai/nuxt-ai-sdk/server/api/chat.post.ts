@@ -1,5 +1,4 @@
-import { convertToModelMessages, streamText, tool, stepCountIs } from 'ai'
-import { z } from 'zod'
+import { convertToModelMessages, streamText } from 'ai'
 
 export default defineEventHandler(async (event) => {
   const { messages } = await readBody(event)

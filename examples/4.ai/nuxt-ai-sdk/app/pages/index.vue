@@ -2,11 +2,9 @@
 import { Chat } from '@ai-sdk/vue'
 import { isTextUIPart } from 'ai'
 import { isPartStreaming } from '@nuxt/ui/utils/ai'
-import Alert from '~/components/Alert.vue'
 
 const chat = new Chat({})
 const input = ref('')
-const components = { alert: Alert }
 
 function onSubmit() {
   chat.sendMessage({ text: input.value })
@@ -48,7 +46,6 @@ function onSubmit() {
                 <Comark
                   :markdown="part.text"
                   :streaming="isPartStreaming(part)"
-                  :components="components"
                   caret
                 />
               </Suspense>

@@ -8,12 +8,10 @@
     "preview": "nuxt preview"
   },
   "dependencies": {
-    "@ai-sdk/gateway": "catalog:",
     "@ai-sdk/vue": "catalog:",
     "@comark/nuxt": "catalog:",
     "@nuxt/ui": "catalog:",
     "ai": "catalog:",
-    "nuxt": "catalog:",
-    "zod": "catalog:"
+    "nuxt": "catalog:"
   }
 }
