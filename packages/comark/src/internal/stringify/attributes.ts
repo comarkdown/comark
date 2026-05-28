@@ -133,7 +133,7 @@ export function userBlockAttrs(tag: string, attributes: Record<string, unknown>)
       // user-supplied class is appended after it. Recover the user portion by
       // dropping everything up to and including the first `dark:*` token.
       const tokens = value.split(/\s+/)
-      let cutoff = tokens.findIndex((t) => t.startsWith('dark:'))
+      let cutoff = tokens.findIndex((t) => t === '.')
 
       const userClass = cutoff >= 0 ? tokens.slice(cutoff + 1).join(' ') : ''
       if (userClass) result[key] = userClass

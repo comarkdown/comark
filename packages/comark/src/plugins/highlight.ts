@@ -368,7 +368,7 @@ export async function highlightCodeBlocks(tree: ComarkTree, options: HighlightOp
     const userClass = typeof preAttrs.class === 'string' ? preAttrs.class.trim() : ''
     const newPreAttrs: Record<string, any> = {
       ...preAttrs,
-      class: userClass ? `${classStr} ${userClass}` : classStr,
+      class: userClass ? `${classStr} . ${userClass}` : classStr,
       tabindex: '0',
     }
 
