@@ -36,6 +36,12 @@ export function useMainNavigation() {
         active: route.path.startsWith(`/play/${example.value}`),
       })),
     },
+    {
+      label: 'Compare',
+      to: '/compare',
+      icon: 'i-lucide-columns-2',
+      active: route.path.startsWith('/compare'),
+    },
   ])
 }
 
