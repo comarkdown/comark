@@ -7,7 +7,7 @@ import {
   ChangeDetectorRef,
   Type,
 } from '@angular/core'
-import { parse, createSerializedParse } from 'comark'
+import { createSerializedParse } from 'comark'
 import type { ParseOptions, ComarkTree } from 'comark'
 import { ComarkRendererComponent } from './comark-renderer.component.ts'
 
@@ -69,6 +69,9 @@ export class ComarkComponent implements OnChanges {
   constructor(private cdr: ChangeDetectorRef) {}
 
   ngOnChanges(changes: SimpleChanges): void {
+    if (changes['options'] || changes['plugins']) {
+      this.serializedParse = createSerializedParse({ ...this.options, plugins: this.plugins })
+    }
     if (changes['markdown'] || changes['options'] || changes['plugins'] || changes['streaming'] || changes['summary']) {
       this.parseMarkdown()
     }
@@ -81,7 +84,6 @@ export class ComarkComponent implements OnChanges {
     }
     source = source.trim()
 
-    this.serializedParse = createSerializedParse({ ...this.options, plugins: this.plugins })
     this.serializedParse(source, { streaming: this.streaming }).then((result) => {
       this.tree = result
       this.cdr.markForCheck()

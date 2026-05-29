@@ -241,6 +241,8 @@ const { data: highlighted } = await useAsyncData('fw-highlight', async () => {
         :label="angularLinkLabel"
         :to="angularLinkTo"
         variant="link"
+        color="neutral"
+        leading-icon="i-logos-angular-icon"
         trailing-icon="i-lucide-arrow-right"
         class="px-0"
       />

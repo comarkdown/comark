@@ -9,6 +9,7 @@ import {
   SimpleChanges,
   Type,
   Injector,
+  EnvironmentInjector,
   createComponent,
   reflectComponentType,
 } from '@angular/core'
@@ -260,7 +261,7 @@ export class ComarkNodeComponent implements OnChanges {
 
     // Create the Angular component with projected content
     const componentRef = createComponent(componentType, {
-      environmentInjector: this.vcr.injector.get(Injector as any, this.injector) as any,
+      environmentInjector: this.injector.get(EnvironmentInjector),
       elementInjector: this.injector,
       projectableNodes,
     })
@@ -335,11 +336,6 @@ export class ComarkNodeComponent implements OnChanges {
         const childRenderData: NodeRenderData = hasOwnAttrs ? { ...renderData, props: resolved } : renderData
 
         if (customComponent) {
-          // Create a host element for the dynamic component
-          const hostEl = this.renderer.createElement('comark-node')
-          this.renderer.setStyle(hostEl, 'display', 'contents')
-          this.renderer.appendChild(parentEl, hostEl)
-
           const componentRef = this.vcr.createComponent(ComarkNodeComponent)
           componentRef.instance.node = child
           componentRef.instance.components = this.components
@@ -348,7 +344,9 @@ export class ComarkNodeComponent implements OnChanges {
           componentRef.changeDetectorRef.detectChanges()
 
           // Move the component's host element into the parent
-          this.renderer.appendChild(parentEl, componentRef.location.nativeElement)
+          const nativeEl = componentRef.location.nativeElement as HTMLElement
+          nativeEl.style.display = 'contents'
+          this.renderer.appendChild(parentEl, nativeEl)
         } else {
           // Native element — render inline for performance
           const el = this.renderer.createElement(childTag)
