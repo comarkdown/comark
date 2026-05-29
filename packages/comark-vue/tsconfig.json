@@ -6,6 +6,7 @@
     "moduleResolution": "bundler",
     "strict": true,
     "strictNullChecks": true,
+    "types": ["vite/client"],
     "esModuleInterop": true,
     "skipDefaultLibCheck": true,
     "skipLibCheck": true,

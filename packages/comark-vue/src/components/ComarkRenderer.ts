@@ -15,8 +15,10 @@ import {
   h,
   inject,
   onErrorCaptured,
+  onScopeDispose,
   ref,
   toRaw,
+  watch,
 } from 'vue'
 import { findLastTextNodeAndAppendNode, getCaret } from '../utils/caret.ts'
 import { pascalCase, resolveAttributes } from 'comark/utils'
@@ -367,6 +369,43 @@ export const ComarkRenderer: ComarkRendererComponent = defineComponent({
     })
 
     const comark = inject<ComarkContextProvider>('comark', { components: {}, componentManifest: () => null })
+
+    // Devtools: register this instance if no parent Comark already registered
+    const parentRegistered = inject('__comark_devtools_registered__', false)
+    if (!parentRegistered && import.meta.hot) {
+      let devtoolsHandle: { unregister: () => void } | null = null
+      let disposed = false
+      const renderMdPromise = import('comark/render')
+
+      import('comark/devtools').then(({ registerDevtoolsInstanceFromTree }) => {
+        if (disposed) return
+        registerDevtoolsInstanceFromTree({
+          hot: import.meta.hot!,
+          tree: props.tree,
+        }).then((handle) => {
+          if (disposed) {
+            handle?.unregister()
+            return
+          }
+          devtoolsHandle = handle
+          if (handle) {
+            watch(
+              () => props.tree,
+              (tree) => {
+                renderMdPromise.then(({ renderMarkdown }) => {
+                  renderMarkdown(tree).then((md) => handle.update({ tree, markdown: md }))
+                })
+              }
+            )
+          }
+        })
+      })
+
+      onScopeDispose(() => {
+        disposed = true
+        devtoolsHandle?.unregister()
+      })
+    }
 
     const components = computed(() => ({
       ...comark?.components,

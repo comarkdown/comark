@@ -1,3 +1,4 @@
+import { DevTools } from '@vitejs/devtools'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import ui from '@nuxt/ui/vite'
@@ -6,6 +7,7 @@ import { fileURLToPath } from 'node:url'
 
 export default defineConfig({
   plugins: [
+    DevTools(),
     vue(),
     comark(),
     ui({

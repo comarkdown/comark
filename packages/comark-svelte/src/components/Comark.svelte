@@ -26,6 +26,7 @@ This is an alert component
 <script lang="ts">
   import type { ComarkTree, ComarkPlugin, ComponentManifest } from 'comark'
     import { parse } from 'comark'
+  import type { RegisteredInstance } from 'comark/devtools'
   import ComarkRenderer from './ComarkRenderer.svelte'
 
   let {
@@ -51,8 +52,9 @@ This is an alert component
   } = $props()
 
   let parsed: ComarkTree | null = $state(null)
+  let devtoolsOverride: string | null = $state(null)
 
-  let content = $derived((markdown || '').trim())
+  let content = $derived((devtoolsOverride ?? (markdown || '')).trim())
 
   let requestVersion = 0
   let appliedVersion = 0
@@ -68,6 +70,45 @@ This is an alert component
       }
     })
   })
+
+  // Devtools instance registration (dev mode only)
+  let devtoolsHandle: RegisteredInstance | null = $state(null)
+
+  if (import.meta.hot) {
+    const hot = import.meta.hot
+    $effect(() => {
+      let cancelled = false
+
+      import('comark/devtools').then(({ registerDevtoolsInstance }) => {
+        if (cancelled) return
+        registerDevtoolsInstance({
+          hot,
+          tree: { nodes: [], frontmatter: {}, meta: {} },
+          markdown: '',
+          onUpdate: (md: string) => { devtoolsOverride = md },
+        }).then((handle) => {
+          if (cancelled) {
+            handle?.unregister()
+            return
+          }
+          devtoolsHandle = handle
+        })
+      })
+
+      return () => {
+        cancelled = true
+        devtoolsHandle?.unregister()
+        devtoolsHandle = null
+      }
+    })
+
+    // Update instance when tree changes
+    $effect(() => {
+      if (devtoolsHandle && parsed) {
+        devtoolsHandle.update({ tree: parsed, markdown: content })
+      }
+    })
+  }
 </script>
 
 {#if parsed}

@@ -8,6 +8,7 @@
     "outDir": "./dist",
     "strict": true,
     "declaration": true,
+    "types": ["vite/client"],
     "strictNullChecks": true,
     "esModuleInterop": true,
     "skipDefaultLibCheck": true,

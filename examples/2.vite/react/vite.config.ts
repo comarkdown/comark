@@ -1,7 +1,9 @@
+import { DevTools } from '@vitejs/devtools'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
+import { comarkDevtools } from 'comark/vite'
 
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [DevTools(), react(), comarkDevtools(), tailwindcss()],
 })

@@ -1,5 +1,5 @@
 import type { PropType } from 'vue'
-import { computed, defineComponent, h, shallowRef, watch } from 'vue'
+import { computed, defineComponent, h, onScopeDispose, provide, ref, shallowRef, watch } from 'vue'
 import { createSerializedParse } from 'comark'
 import type { ParseOptions, ComponentManifest, ComarkTree } from 'comark'
 import { ComarkRenderer } from './ComarkRenderer.ts'
@@ -183,15 +183,40 @@ export const Comark: ComarkComponent = defineComponent({
     })
 
     const parsed = shallowRef<ComarkTree | null>(null)
+    const devtoolsOverride = ref<string | null>(null)
 
     const parse = createSerializedParse({ ...props.options, plugins: props.plugins })
 
+    const effectiveMarkdown = computed(() => devtoolsOverride.value ?? markdown.value)
+
     watch(
-      () => [markdown.value, props.streaming] as const,
-      () => parse(markdown.value, { streaming: props.streaming }).then((result) => (parsed.value = result))
+      () => [effectiveMarkdown.value, props.streaming] as const,
+      () => parse(effectiveMarkdown.value, { streaming: props.streaming }).then((result) => (parsed.value = result))
     )
 
-    await parse(markdown.value, { streaming: props.streaming }).then((result) => (parsed.value = result))
+    await parse(effectiveMarkdown.value, { streaming: props.streaming }).then((result) => (parsed.value = result))
+
+    // Devtools instance registration (dev mode only)
+    provide('__comark_devtools_registered__', true)
+
+    if (import.meta.hot) {
+      const { registerDevtoolsInstance } = await import('comark/devtools')
+      const handle = await registerDevtoolsInstance({
+        hot: import.meta.hot,
+        tree: parsed.value || { nodes: [], frontmatter: {}, meta: {} },
+        markdown: effectiveMarkdown.value,
+        onUpdate: (md: string) => {
+          devtoolsOverride.value = md
+        },
+      })
+
+      if (handle) {
+        watch(parsed, (tree) => {
+          if (tree) handle.update({ tree, markdown: effectiveMarkdown.value })
+        })
+        onScopeDispose(() => handle.unregister())
+      }
+    }
 
     return () => {
       // Render using ComarkRenderer

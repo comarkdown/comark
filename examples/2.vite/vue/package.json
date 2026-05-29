@@ -18,6 +18,7 @@
     "vue-router": "catalog:"
   },
   "devDependencies": {
+    "@vitejs/devtools": "catalog:",
     "@vitejs/plugin-vue": "catalog:",
     "autoprefixer": "catalog:",
     "postcss": "catalog:",

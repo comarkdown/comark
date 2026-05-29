@@ -30,6 +30,9 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": "./dist/index.js",
+    "./vite": "./dist/devtools/vite.js",
+    "./devtools": "./dist/devtools/index.js",
+    "./devtools-renderer": "./dist/devtools/renderer/index.js",
     "./plugins/*": "./dist/plugins/*.js",
     "./utils": "./dist/utils/index.js",
     "./parse": "./dist/parse.js",
@@ -40,7 +43,7 @@
   },
   "scripts": {
     "stub": "node ../../scripts/stub.mjs",
-    "build": "tsc",
+    "build": "node ../../scripts/sync-devtools-css.mjs && tsc",
     "dev": "tsc --watch",
     "test": "vitest run",
     "prepack": "tsc",
@@ -58,17 +61,21 @@
     "@shikijs/twoslash": "catalog:",
     "@types/js-yaml": "catalog:",
     "@types/markdown-it": "catalog:",
+    "@vitejs/devtools-kit": "catalog:",
     "github-slugger": "catalog:",
     "hast-util-to-string": "catalog:",
     "minimark": "catalog:",
     "tsx": "catalog:",
     "twoslash": "catalog:",
+    "vite": "catalog:",
     "vitest": "catalog:"
   },
   "peerDependencies": {
+    "@vitejs/devtools-kit": "catalog:",
     "beautiful-mermaid": "catalog:",
     "katex": "catalog:",
-    "shiki": "catalog:"
+    "shiki": "catalog:",
+    "vite": "catalog:"
   },
   "peerDependenciesMeta": {
     "shiki": {
@@ -78,6 +85,12 @@
       "optional": true
     },
     "katex": {
+      "optional": true
+    },
+    "@vitejs/devtools-kit": {
+      "optional": true
+    },
+    "vite": {
       "optional": true
     }
   }
