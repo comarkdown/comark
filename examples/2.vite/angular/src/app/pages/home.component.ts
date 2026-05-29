@@ -28,9 +28,10 @@ import { getAllPosts, type PostMeta } from '../lib/posts'
       <ul class="space-y-6 list-none p-0">
         @for (post of posts; track post.slug) {
           <li>
-            <a
+            <button
+              type="button"
               (click)="openPost.emit(post.slug)"
-              class="group block rounded-lg border border-neutral-200 dark:border-neutral-800 p-5 transition hover:border-neutral-400 dark:hover:border-neutral-600 no-underline cursor-pointer"
+              class="group block rounded-lg border border-neutral-200 dark:border-neutral-800 p-5 transition hover:border-neutral-400 dark:hover:border-neutral-600 no-underline cursor-pointer bg-transparent text-left w-full"
             >
               <h2 class="text-xl font-semibold group-hover:text-blue-600 dark:group-hover:text-blue-400 mb-1">
                 {{ post.title }}
@@ -52,7 +53,7 @@ import { getAllPosts, type PostMeta } from '../lib/posts'
                   }
                 </div>
               </div>
-            </a>
+            </button>
           </li>
         }
       </ul>

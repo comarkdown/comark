@@ -44,6 +44,8 @@ export class Mermaid implements OnInit, OnChanges, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    if (typeof document === 'undefined') return
+
     const htmlEl = document.querySelector('html')
     if (htmlEl) {
       this.isDark = htmlEl.classList.contains('dark')
@@ -91,6 +93,8 @@ export class Mermaid implements OnInit, OnChanges, OnDestroy {
   }
 
   private renderDiagram(): void {
+    if (typeof document === 'undefined') return
+
     const hostEl = this.elementRef.nativeElement as HTMLElement
 
     // Clear previous content

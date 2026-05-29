@@ -176,7 +176,7 @@ export class ComarkNodeComponent implements OnChanges {
     for (const key in attrs) {
       const value = attrs[key]
       if (key === 'className' || key === 'class') {
-        this.renderer.setAttribute(el, 'class', value)
+        this.renderer.setAttribute(el, 'class', String(value))
       } else if (key === 'innerHTML' || key === 'dangerouslySetInnerHTML') {
         // handled after children
       } else if (typeof value === 'boolean') {
@@ -331,10 +331,6 @@ export class ComarkNodeComponent implements OnChanges {
           }
         }
 
-        const resolved = resolveAttributes(childProps, renderData, { parseJson: true })
-        const hasOwnAttrs = Object.keys(resolved).length > 0
-        const childRenderData: NodeRenderData = hasOwnAttrs ? { ...renderData, props: resolved } : renderData
-
         if (customComponent) {
           const componentRef = this.vcr.createComponent(ComarkNodeComponent)
           componentRef.instance.node = child
@@ -348,6 +344,10 @@ export class ComarkNodeComponent implements OnChanges {
           nativeEl.style.display = 'contents'
           this.renderer.appendChild(parentEl, nativeEl)
         } else {
+          const resolved = resolveAttributes(childProps, renderData, { parseJson: true })
+          const hasOwnAttrs = Object.keys(resolved).length > 0
+          const childRenderData: NodeRenderData = hasOwnAttrs ? { ...renderData, props: resolved } : renderData
+
           // Native element — render inline for performance
           const el = this.renderer.createElement(childTag)
 

@@ -29,6 +29,8 @@ export class Math implements OnChanges {
   }
 
   private renderMath(): void {
+    if (typeof document === 'undefined') return
+
     const isInline = this.class?.includes('inline')
     const hostEl = this.elementRef.nativeElement as HTMLElement
 

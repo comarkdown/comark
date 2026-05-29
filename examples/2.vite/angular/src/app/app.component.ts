@@ -11,18 +11,20 @@ import { SyntaxComponent } from './pages/syntax.component'
     <div class="min-h-screen flex flex-col">
       <header class="border-b border-neutral-200 dark:border-neutral-800">
         <nav class="max-w-2xl mx-auto px-6 py-4 flex items-center gap-6">
-          <a
+          <button
+            type="button"
             (click)="navigate('home')"
-            class="text-lg font-semibold text-neutral-900 dark:text-white no-underline cursor-pointer"
+            class="text-lg font-semibold text-neutral-900 dark:text-white no-underline cursor-pointer bg-transparent border-none p-0"
           >
             Comark Blog
-          </a>
-          <a
+          </button>
+          <button
+            type="button"
             (click)="navigate('syntax')"
-            class="text-sm text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 no-underline cursor-pointer"
+            class="text-sm text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 no-underline cursor-pointer bg-transparent border-none p-0"
           >
             Syntax
-          </a>
+          </button>
         </nav>
       </header>
       <main class="max-w-2xl mx-auto px-6 py-8 flex-1 w-full prose">
