@@ -16,7 +16,8 @@ describe('@comark/vue vite plugin', () => {
     })
 
     const { default: comark } = await import('../src/vite.ts')
-    const plugin = comark()
+    const plugins = comark()
+    const plugin = Array.isArray(plugins) ? plugins[0] : plugins
     const vueOptions: Record<string, any> = {}
 
     plugin.configResolved?.({
