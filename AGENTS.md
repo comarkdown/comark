@@ -328,6 +328,11 @@ import emoji from 'comark/plugins/emoji'
 import toc from 'comark/plugins/toc'
 import alert from 'comark/plugins/alert'
 
+// Vite DevTools integration
+import { comarkDevtools } from 'comark/vite'
+// Devtools registry (used internally by framework renderers)
+import { registerDevtoolsInstance, getDevtoolsRegistry } from 'comark/devtools'
+
 // NOTE: All framework packages re-export every core plugin via their own subpath.
 // Prefer the framework-specific path when using a framework renderer:
 //   @comark/vue/plugins/highlight, @comark/react/plugins/highlight, etc.
@@ -350,7 +355,7 @@ import math, { Math } from '@comark/vue/plugins/math'
 import mermaid, { Mermaid } from '@comark/vue/plugins/mermaid'
 
 // React — renderer + plugin wrappers (plugin fn + React component)
-import { Comark, ComarkRenderer, defineComarkComponent } from '@comark/react'
+import { Comark, ComarkServer, ComarkClient, ComarkRenderer, defineComarkComponent } from '@comark/react'
 import math, { Math } from '@comark/react/plugins/math'
 import mermaid, { Mermaid } from '@comark/react/plugins/mermaid'
 
