@@ -1,6 +1,6 @@
 'use client'
 
-import { use, useDeferredValue, useEffect, useMemo, useRef, useState, Suspense } from 'react'
+import { use, useDeferredValue, useEffect, useMemo, useRef, Suspense } from 'react'
 import { parse } from 'comark'
 import type { ComarkTree } from 'comark'
 import { ComarkRenderer } from './ComarkRenderer.tsx'
@@ -37,12 +37,10 @@ function ComarkContent({
 
 export function ComarkClient({ children, markdown = '', options = {}, plugins = [], ...rest }: ComarkProps) {
   const content = children ? String(children) : markdown
-  const [devtoolsOverride, setDevtoolsOverride] = useState<string | null>(null)
-  const effectiveContent = devtoolsOverride ?? content
 
   // Re-creates the promise only when content changes.
   // Note: options/plugins should be stable references (defined outside render or memoized).
-  const parsePromise = useMemo(() => parse(effectiveContent, { ...options, plugins }), [effectiveContent])
+  const parsePromise = useMemo(() => parse(content, { ...options, plugins }), [content])
 
   // Keep showing the previous parsed result while a new parse is pending —
   // prevents blank flashes during rapid streaming updates.
@@ -56,14 +54,12 @@ export function ComarkClient({ children, markdown = '', options = {}, plugins = 
 
     import('comark/devtools').then(({ registerDevtoolsInstance }) => {
       if (cancelled) return
-      // We resolve the current parse to get the tree for registration
       parsePromise.then((tree) => {
         if (cancelled) return
         registerDevtoolsInstance({
           hot: import.meta.hot!,
           tree,
-          markdown: effectiveContent,
-          onUpdate: (md: string) => setDevtoolsOverride(md),
+          markdown: content,
         }).then((handle) => {
           if (cancelled) {
             handle?.unregister()
@@ -85,9 +81,9 @@ export function ComarkClient({ children, markdown = '', options = {}, plugins = 
   useEffect(() => {
     if (!instanceRef.current) return
     parsePromise.then((tree) => {
-      instanceRef.current?.update({ tree, markdown: effectiveContent })
+      instanceRef.current?.update({ tree, markdown: content })
     })
-  }, [parsePromise, effectiveContent])
+  }, [parsePromise, content])
 
   return (
     <Suspense fallback={null}>

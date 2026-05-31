@@ -242,29 +242,6 @@
   color: var(--comark-devtools-text-muted);
 }
 
-.comark-push-btn {
-  padding: 2px 8px;
-  border: 1px solid var(--comark-devtools-border);
-  border-radius: 4px;
-  background: var(--comark-devtools-bg);
-  color: inherit;
-  font-size: 11px;
-  cursor: pointer;
-  transition:
-    background 0.15s,
-    border-color 0.15s;
-}
-
-.comark-push-btn:hover {
-  background: var(--comark-devtools-bg-muted);
-  border-color: var(--comark-devtools-primary);
-}
-
-.comark-push-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
 .comark-theme-toggle {
   margin-left: auto;
   display: flex;

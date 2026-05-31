@@ -14,8 +14,6 @@ export interface RegisterInstanceOptions {
   tree: ComarkTree
   /** Initial markdown source, if known */
   markdown?: string
-  /** Callback invoked when the devtools pushes an edit */
-  onUpdate?: (markdown: string) => void
 }
 
 export interface RegisteredInstance {
@@ -55,10 +53,6 @@ export async function registerDevtoolsInstance(options: RegisterInstanceOptions)
     label,
     tree: options.tree,
     markdown: options.markdown,
-  }
-
-  if (options.onUpdate) {
-    instance.update = options.onUpdate
   }
 
   const unregister = registry.register(instance)

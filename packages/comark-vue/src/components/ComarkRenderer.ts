@@ -1,3 +1,4 @@
+/// <reference types="vite/client" />
 import type { PropType, VNode } from 'vue'
 import type {
   ComponentManifest,

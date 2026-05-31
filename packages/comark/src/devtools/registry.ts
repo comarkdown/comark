@@ -15,8 +15,6 @@ export interface ComarkInstance {
   tree: ComarkTree
   /** Current markdown source (if available) */
   markdown?: string
-  /** Callback to update the markdown source and trigger re-parse */
-  update?: (markdown: string) => void
 }
 
 export interface ComarkInstanceSummary {
@@ -24,8 +22,6 @@ export interface ComarkInstanceSummary {
   label?: string
   markdown?: string
   nodeCount: number
-  /** Whether the instance accepts live updates (has an onUpdate callback) */
-  updatable: boolean
 }
 
 type InstanceListener = (instances: Map<string, ComarkInstance>) => void
@@ -48,14 +44,6 @@ class ComarkDevtoolsRegistry {
    */
   connectHMR(hot: HotModule): void {
     this.hot = hot
-
-    // Re-register the update listener on the new handle
-    hot.on('comark:update', (data: { id: string; markdown: string }) => {
-      const instance = this.instances.get(data.id)
-      if (instance?.update) {
-        instance.update(data.markdown)
-      }
-    })
   }
 
   register(instance: ComarkInstance): () => void {
@@ -89,7 +77,6 @@ class ComarkDevtoolsRegistry {
       label: inst.label,
       markdown: inst.markdown,
       nodeCount: inst.tree?.nodes?.length || 0,
-      updatable: typeof inst.update === 'function',
     }))
   }
 

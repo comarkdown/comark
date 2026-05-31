@@ -52,6 +52,17 @@ packages/comark/
 │   │   ├── index.ts          # Re-exports (comark/ast entry point)
 │   │   ├── types.ts          # ComarkTree, ComarkNode, ComarkElement, ComarkText
 │   │   └── utils.ts          # textContent(), visit() tree utilities
+│   ├── devtools/             # Vite DevTools integration
+│   │   ├── index.ts          # Public exports (comark/devtools entry point)
+│   │   ├── registry.ts       # Global singleton registry for live instances
+│   │   ├── register.ts       # Instance registration helpers
+│   │   ├── vite.ts           # Vite plugin with RPC endpoints (comark/vite entry point)
+│   │   ├── constants/        # Icon assets
+│   │   └── renderer/         # DevTools panel UI (comark/devtools-renderer entry point)
+│   │       ├── index.ts      # Panel setup, editor, tabs, push-to-app
+│   │       ├── output.ts     # AST, roundtrip, info rendering
+│   │       ├── styles.ts     # CSS styles
+│   │       └── theme.ts      # Light/dark/auto theme toggle
 │   ├── plugins/              # Built-in and optional plugins
 │   │   ├── alert.ts          # Alert/callout blocks
 │   │   ├── emoji.ts          # Emoji shortcodes
@@ -78,6 +89,7 @@ packages/comark/
 | `shiki` | `comark/plugins/highlight` |
 | `katex` | `comark/plugins/math` |
 | `beautiful-mermaid` | `comark/plugins/mermaid` |
+| `@vitejs/devtools-kit` | `comark/vite` (Vite DevTools integration) |
 
 All are optional — only install what you use.
 

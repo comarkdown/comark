@@ -20,17 +20,22 @@ describe('@comark/vue vite plugin', () => {
     const plugin = Array.isArray(plugins) ? plugins[0] : plugins
     const vueOptions: Record<string, any> = {}
 
-    plugin.configResolved?.({
-      root: '/repo',
-      plugins: [
-        {
-          name: 'vite:vue',
-          api: {
-            options: vueOptions,
+    const configResolved =
+      typeof plugin.configResolved === 'function' ? plugin.configResolved : (plugin.configResolved as any)?.handler
+    configResolved?.call(
+      {} as any,
+      {
+        root: '/repo',
+        plugins: [
+          {
+            name: 'vite:vue',
+            api: {
+              options: vueOptions,
+            },
           },
-        },
-      ],
-    } as any)
+        ],
+      } as any
+    )
 
     const transform = vueOptions.template.compilerOptions.nodeTransforms[0]
 
@@ -52,7 +57,7 @@ describe('@comark/vue vite plugin', () => {
     const run = transform(node, context)
     run?.()
 
-    expect(node.codegenNode.callee).toBe('_renderComarkSlot')
+    expect((node as any).codegenNode.callee).toBe('_renderComarkSlot')
     expect(context.imports).toHaveLength(1)
     expect(context.imports[0]).toMatchObject({
       exp: '{ renderSlot as _renderComarkSlot }',

@@ -69,6 +69,10 @@ Comark's plugin system extends markdown functionality with specialized features.
   Generate hierarchical TOC from headings automatically
   ::
 
+  ::card{icon="i-lucide-wrench" title="Vite DevTools" to="/plugins/built-in/devtools"}
+  Interactive markdown playground with AST inspection and live push-to-app inside Vite DevTools
+  ::
+
 ::
 
 ## Guides

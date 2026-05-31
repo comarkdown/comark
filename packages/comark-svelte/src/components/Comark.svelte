@@ -52,9 +52,8 @@ This is an alert component
   } = $props()
 
   let parsed: ComarkTree | null = $state(null)
-  let devtoolsOverride: string | null = $state(null)
 
-  let content = $derived((devtoolsOverride ?? (markdown || '')).trim())
+  let content = $derived((markdown || '').trim())
 
   let requestVersion = 0
   let appliedVersion = 0
@@ -85,7 +84,6 @@ This is an alert component
           hot,
           tree: { nodes: [], frontmatter: {}, meta: {} },
           markdown: '',
-          onUpdate: (md: string) => { devtoolsOverride = md },
         }).then((handle) => {
           if (cancelled) {
             handle?.unregister()

@@ -9,7 +9,6 @@ interface InstanceSummary {
   label?: string
   markdown?: string
   nodeCount: number
-  updatable: boolean
 }
 
 type ComarkTree = {
@@ -46,7 +45,6 @@ export default function setup(ctx: DockClientScriptContext) {
   let activeInstance: InstanceSummary | null = null
   let instanceDot: HTMLElement
   let instanceLabel: HTMLElement
-  let pushBtn: HTMLButtonElement
   let pollInterval: ReturnType<typeof setInterval> | undefined
 
   // Theme state
@@ -87,14 +85,6 @@ export default function setup(ctx: DockClientScriptContext) {
     instanceLabel.className = 'comark-instance-label'
     instanceLabel.textContent = 'No instance'
     instanceBar.appendChild(instanceLabel)
-
-    pushBtn = document.createElement('button')
-    pushBtn.className = 'comark-push-btn'
-    pushBtn.textContent = 'Push to app'
-    pushBtn.title = 'Push edited markdown back to the live component'
-    pushBtn.style.display = 'none'
-    pushBtn.addEventListener('click', pushToInstance)
-    instanceBar.appendChild(pushBtn)
 
     // Theme toggle
     const themeToggle = createThemeToggle(theme, (t) => {
@@ -212,7 +202,6 @@ export default function setup(ctx: DockClientScriptContext) {
     if (current) {
       instanceDot.dataset.connected = 'true'
       instanceLabel.textContent = current.label || current.id
-      pushBtn.style.display = current.updatable ? '' : 'none'
 
       if (current.id !== prevId && current.markdown) {
         editor.value = current.markdown
@@ -221,19 +210,6 @@ export default function setup(ctx: DockClientScriptContext) {
     } else {
       instanceDot.dataset.connected = 'false'
       instanceLabel.textContent = 'No instance'
-      pushBtn.style.display = 'none'
-    }
-  }
-
-  async function pushToInstance() {
-    if (!activeInstance) return
-    try {
-      await ctx.rpc.call('comark:update-instance', {
-        id: activeInstance.id,
-        markdown: editor.value,
-      })
-    } catch {
-      // Silently ignore push errors
     }
   }
 

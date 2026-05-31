@@ -9,7 +9,6 @@ declare module '@vitejs/devtools-kit' {
     'comark:parse': (markdown: string) => Promise<ComarkTree>
     'comark:render-markdown': (markdown: string) => Promise<string>
     'comark:list-instances': () => Promise<ComarkInstanceSummary[]>
-    'comark:update-instance': (args: { id: string; markdown: string }) => Promise<{ ok: boolean }>
   }
 }
 
@@ -35,16 +34,13 @@ declare module '@vitejs/devtools-kit' {
 export function comarkDevtools(): Plugin {
   // Instance data pushed from the user's app via HMR
   let instancesData: ComarkInstanceSummary[] = []
-  let server: ViteDevServer | undefined
 
   return {
     name: 'comark:devtools',
 
     configureServer(_server: ViteDevServer) {
-      server = _server
-
       // Receive instance data from the user's app (sent by the devtools registry)
-      server.hot.on('comark:instances', (data: ComarkInstanceSummary[]) => {
+      _server.hot.on('comark:instances', (data: ComarkInstanceSummary[]) => {
         instancesData = data
       })
     },
@@ -78,19 +74,6 @@ export function comarkDevtools(): Plugin {
           name: 'comark:list-instances',
           type: 'query',
           handler: () => instancesData,
-        })
-
-        // RPC: update an instance's markdown (push from devtools to the user's app)
-        ctx.rpc.register({
-          name: 'comark:update-instance',
-          type: 'mutation',
-          handler: (args: { id: string; markdown: string }) => {
-            server?.hot.send('comark:update', {
-              id: args.id,
-              markdown: args.markdown,
-            })
-            return { ok: true }
-          },
         })
 
         // Register the dock entry with a custom renderer
