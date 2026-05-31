@@ -65,8 +65,9 @@ export interface ComarkProps {
 /**
  * Comark component
  *
- * Async server component that parses markdown on the server and renders it.
- * When `streaming` is true, delegates to ComarkClient for client-side re-rendering.
+ * Works in both client and server contexts. In client contexts (Vite, CRA, etc.),
+ * it parses markdown on the client using React hooks. In React Server Components
+ * (Next.js, etc.), use `ComarkServer` for async server-side parsing.
  *
  * @example
  * ```tsx
@@ -93,7 +94,19 @@ export interface ComarkProps {
  * }
  * ```
  */
-export async function Comark({
+export function Comark(props: ComarkProps) {
+  return <ComarkClient {...props} />
+}
+
+/**
+ * Async server-only Comark component.
+ *
+ * Parses markdown on the server using `await`. Only works in React Server
+ * Components (Next.js `app/` directory, etc.). For client-side usage, use `Comark`.
+ *
+ * When `streaming` is true, delegates to `ComarkClient` for client-side re-rendering.
+ */
+export async function ComarkServer({
   children,
   markdown = '',
   options = {},
