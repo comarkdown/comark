@@ -49,7 +49,8 @@ export function ComarkClient({ children, markdown = '', options = {}, plugins = 
   // Devtools instance registration (dev mode only)
   const instanceRef = useRef<RegisteredInstance | null>(null)
   useEffect(() => {
-    if (!import.meta.hot) return
+    const hot = (import.meta as Record<string, any>).hot
+    if (!hot) return
     let cancelled = false
 
     import('comark/devtools').then(({ registerDevtoolsInstance }) => {
@@ -57,7 +58,7 @@ export function ComarkClient({ children, markdown = '', options = {}, plugins = 
       parsePromise.then((tree) => {
         if (cancelled) return
         registerDevtoolsInstance({
-          hot: import.meta.hot!,
+          hot,
           tree,
           markdown: content,
         }).then((handle) => {

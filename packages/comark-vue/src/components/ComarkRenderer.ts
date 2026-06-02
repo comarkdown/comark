@@ -373,7 +373,8 @@ export const ComarkRenderer: ComarkRendererComponent = defineComponent({
 
     // Devtools: register this instance if no parent Comark already registered
     const parentRegistered = inject('__comark_devtools_registered__', false)
-    if (!parentRegistered && import.meta.hot) {
+    const hot = (import.meta as Record<string, any>).hot
+    if (!parentRegistered && hot) {
       let devtoolsHandle: { unregister: () => void } | null = null
       let disposed = false
       const renderMdPromise = import('comark/render')
@@ -381,7 +382,7 @@ export const ComarkRenderer: ComarkRendererComponent = defineComponent({
       import('comark/devtools').then(({ registerDevtoolsInstanceFromTree }) => {
         if (disposed) return
         registerDevtoolsInstanceFromTree({
-          hot: import.meta.hot!,
+          hot,
           tree: props.tree,
         }).then((handle) => {
           if (disposed) {

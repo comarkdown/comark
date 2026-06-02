@@ -73,8 +73,8 @@ This is an alert component
   // Devtools instance registration (dev mode only)
   let devtoolsHandle: RegisteredInstance | null = $state(null)
 
-  if (import.meta.hot) {
-    const hot = import.meta.hot
+  const hot = (import.meta as Record<string, any>).hot
+  if (hot) {
     $effect(() => {
       let cancelled = false
 

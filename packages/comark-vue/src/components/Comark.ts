@@ -196,10 +196,11 @@ export const Comark: ComarkComponent = defineComponent({
     // Devtools instance registration (dev mode only)
     provide('__comark_devtools_registered__', true)
 
-    if (import.meta.hot) {
+    const hot = (import.meta as Record<string, any>).hot
+    if (hot) {
       const { registerDevtoolsInstance } = await import('comark/devtools')
       const handle = await registerDevtoolsInstance({
-        hot: import.meta.hot,
+        hot,
         tree: parsed.value || { nodes: [], frontmatter: {}, meta: {} },
         markdown: markdown.value,
       })
