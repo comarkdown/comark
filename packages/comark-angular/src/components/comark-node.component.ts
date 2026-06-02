@@ -211,7 +211,6 @@ export class ComarkNodeComponent implements OnChanges {
     children: ComarkNode[],
     childrenRenderData: NodeRenderData
   ): void {
-
     // Separate slots from regular children
     const slots: Record<string, ComarkNode[]> = {}
     const regularChildren: ComarkNode[] = []
