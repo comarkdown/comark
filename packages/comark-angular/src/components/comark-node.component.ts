@@ -175,10 +175,16 @@ export class ComarkNodeComponent implements OnChanges {
     // Apply attributes
     for (const key in attrs) {
       const value = attrs[key]
-      if (key === 'className' || key === 'class') {
+      if (key === 'as') {
+        continue
+      } else if (key === 'className' || key === 'class') {
         this.renderer.setAttribute(el, 'class', String(value))
       } else if (key === 'innerHTML' || key === 'dangerouslySetInnerHTML') {
         // handled after children
+      } else if (key === 'style' && typeof value === 'string') {
+        this.renderer.setAttribute(el, 'style', value)
+      } else if (key === 'tabindex') {
+        this.renderer.setAttribute(el, 'tabindex', String(value))
       } else if (typeof value === 'boolean') {
         if (value) {
           this.renderer.setAttribute(el, key, '')
@@ -205,7 +211,6 @@ export class ComarkNodeComponent implements OnChanges {
     children: ComarkNode[],
     childrenRenderData: NodeRenderData
   ): void {
-    const hostEl = this.elementRef.nativeElement as HTMLElement
 
     // Separate slots from regular children
     const slots: Record<string, ComarkNode[]> = {}
@@ -358,6 +363,10 @@ export class ComarkNodeComponent implements OnChanges {
               this.renderer.setAttribute(el, 'class', String(value))
             } else if (key === 'innerHTML') {
               // handled below
+            } else if (key === 'style' && typeof value === 'string') {
+              this.renderer.setAttribute(el, 'style', value)
+            } else if (key === 'tabindex') {
+              this.renderer.setAttribute(el, 'tabindex', String(value))
             } else if (typeof value === 'boolean') {
               if (value) this.renderer.setAttribute(el, key, '')
             } else if (value != null) {

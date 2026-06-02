@@ -412,7 +412,7 @@ import math, { Math } from '@comark/svelte/plugins/math'
 import mermaid, { Mermaid } from '@comark/svelte/plugins/mermaid'
 
 // Angular — renderer + plugin wrappers (plugin fn + Angular component)
-import { ComarkComponent, ComarkRendererComponent } from '@comark/angular'
+import { ComarkComponent, ComarkRendererComponent, defineComarkComponent, defineComarkRendererComponent } from '@comark/angular'
 import math, { Math } from '@comark/angular/plugins/math'
 import mermaid, { Mermaid } from '@comark/angular/plugins/mermaid'
 ```
