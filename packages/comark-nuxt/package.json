@@ -24,6 +24,7 @@
     "dist"
   ],
   "type": "module",
+  "sideEffects": false,
   "main": "./dist/module.js",
   "module": "./dist/module.js",
   "types": "./dist/module.d.ts",

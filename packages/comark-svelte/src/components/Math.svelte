@@ -17,7 +17,6 @@ determines inline vs display mode (display when class does NOT contain "inline")
 -->
 <script lang="ts">
   import katex from 'katex'
-  import 'katex/dist/katex.min.css'
 
   let {
     content,
