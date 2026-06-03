@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Comark } from '@comark/vue'
 import math, { Math } from '@comark/vue/plugins/math'
+import 'katex/dist/katex.min.css'
 
 const markdown = `
 # Math Formula Examples
