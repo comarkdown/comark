@@ -196,7 +196,6 @@ const { data: highlighted } = await useAsyncData('fw-highlight', async () => {
           v-html="highlighted?.svelte"
         />
         <div
-        <div
           v-show="activeTab === 'vue'"
           class="text-sm/6"
           v-html="highlighted?.vue"
