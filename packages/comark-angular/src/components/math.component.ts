@@ -1,10 +1,12 @@
 import { Component, Input, OnChanges, SimpleChanges, ChangeDetectionStrategy, ElementRef } from '@angular/core'
 import katex from 'katex'
-import 'katex/dist/katex.min.css'
 
 /**
  * Math rendering component for Angular.
  * Renders LaTeX math expressions using KaTeX.
+ *
+ * Note: Consumers must import `katex/dist/katex.min.css` in their own
+ * project to load the KaTeX styles (e.g. in `styles.css` or a global import).
  *
  * @example
  * ```typescript

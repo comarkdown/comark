@@ -310,6 +310,7 @@ Located at `packages/comark-angular/`. Angular 17+ renderer with standalone comp
 packages/comark-angular/
 ├── src/
 │   ├── index.ts                          # Entry point
+│   ├── define.ts                         # defineComarkComponent / defineComarkRendererComponent
 │   ├── components/
 │   │   ├── comark.component.ts           # High-level markdown → render component
 │   │   ├── comark-renderer.component.ts  # Low-level AST → render component
@@ -342,7 +343,7 @@ packages/comark-angular/
 ### Usage
 
 ```typescript
-import { ComarkComponent, ComarkRendererComponent } from '@comark/angular'
+import { ComarkComponent, ComarkRendererComponent, defineComarkComponent, defineComarkRendererComponent } from '@comark/angular'
 import math, { Math } from '@comark/angular/plugins/math'
 import mermaid, { Mermaid } from '@comark/angular/plugins/mermaid'
 ```

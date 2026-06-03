@@ -3,6 +3,7 @@ import { ComarkComponent } from '@comark/angular'
 import highlight from 'comark/plugins/highlight'
 import alert from 'comark/plugins/alert'
 import { AlertComponent } from '../components/alert.component'
+import { FeatureCardComponent } from '../components/feature-card.component'
 import python from '@shikijs/langs/python'
 
 @Component({
@@ -18,7 +19,7 @@ import python from '@shikijs/langs/python'
   `,
 })
 export class SyntaxComponent {
-  components = { alert: AlertComponent }
+  components = { alert: AlertComponent, 'feature-card': FeatureCardComponent }
   plugins = [
     highlight({
       languages: [python],
@@ -195,6 +196,23 @@ Something went wrong.
 type: warning
 ---
 This alert uses **YAML frontmatter** for its \`type\` prop.
+::
+
+---
+
+## Component Slots
+
+Angular components receive default content via \`<ng-content />\`, and named slots via \`<ng-content select="[slot=name]" />\`:
+
+::feature-card
+#header
+Slot-aware Angular component
+
+#default
+This body is the default slot. It can contain **Markdown**, links, lists, or any nested Comark content.
+
+#footer
+Rendered through the \`footer\` slot in \`FeatureCardComponent\`.
 ::
 
 ---
