@@ -1,5 +1,5 @@
 import type { Theme } from '../types.ts'
-import { LUCIDE_MOON, LUCIDE_MONITOR, LUCIDE_SUN } from '../constants/index.ts'
+import { LUCIDE_MOON, LUCIDE_MONITOR, LUCIDE_SUN } from '../constants.ts'
 
 /** Apply a color scheme to the devtools root element via `data-*` attributes */
 export function applyTheme(rootEl: HTMLElement, theme: Theme): void {
