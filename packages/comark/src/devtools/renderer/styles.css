@@ -13,6 +13,7 @@
   --comark-devtools-success: #22c55e;
 
   display: flex;
+  flex-direction: column;
   height: 100%;
   font-family: 'Geist', 'Public Sans', ui-sans-serif, system-ui, sans-serif;
   color: var(--comark-devtools-text);
@@ -26,61 +27,10 @@
   box-sizing: border-box;
 }
 
-/* Editor pane */
-.comark-editor-pane {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  border-right: 1px solid var(--comark-devtools-border);
-}
-
-.comark-pane-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 12px;
-  border-bottom: 1px solid var(--comark-devtools-border);
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--comark-devtools-text-muted);
-  flex-shrink: 0;
-}
-
-.comark-editor {
-  flex: 1;
-  width: 100%;
-  padding: 12px;
-  border: none;
-  resize: none;
-  outline: none;
-  background: transparent;
-  color: inherit;
-  font-family: 'Geist Mono', ui-monospace, 'SF Mono', Monaco, Menlo, monospace;
-  font-size: 13px;
-  line-height: 1.6;
-  tab-size: 2;
-}
-
-.comark-editor::placeholder {
-  color: var(--comark-devtools-text-muted);
-  opacity: 0.5;
-}
-
-/* Output pane */
-.comark-output-pane {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  overflow: hidden;
-}
-
 /* Tabs */
 .comark-tabs {
   display: flex;
+  align-items: center;
   border-bottom: 1px solid var(--comark-devtools-border);
   flex-shrink: 0;
 }
@@ -110,32 +60,128 @@
   border-bottom-color: var(--comark-devtools-primary);
 }
 
-/* Status bar */
-.comark-status {
+/* Tab bar right section */
+.comark-tab-right {
+  margin-left: auto;
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 4px 12px;
-  border-top: 1px solid var(--comark-devtools-border);
-  font-size: 11px;
+  gap: 8px;
+  padding: 0 12px;
+}
+
+/* Content area */
+.comark-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Editor overlay */
+.comark-editor-wrap {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+.comark-editor-highlight,
+.comark-editor {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  padding: 12px;
+  margin: 0;
+  border: none;
+  font-family: 'Geist Mono', ui-monospace, 'SF Mono', Monaco, Menlo, monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  tab-size: 2;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow: auto;
+}
+
+.comark-editor-highlight {
+  color: var(--comark-devtools-text);
+  pointer-events: none;
+}
+
+.comark-editor {
+  color: transparent;
+  caret-color: var(--comark-devtools-text);
+  background: transparent;
+  resize: none;
+  outline: none;
+  -webkit-text-fill-color: transparent;
+}
+
+.comark-editor::placeholder {
   color: var(--comark-devtools-text-muted);
-  flex-shrink: 0;
+  -webkit-text-fill-color: var(--comark-devtools-text-muted);
+  opacity: 0.5;
 }
 
-.comark-status-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--comark-devtools-success);
-  flex-shrink: 0;
+/* Shiki dual-theme support */
+.comark-editor-highlight span {
+  color: var(--shiki-light);
+}
+.comark-devtools[data-theme='dark'] .comark-editor-highlight span,
+.comark-devtools:not([data-theme='light']):is([data-auto-dark='true']) .comark-editor-highlight span {
+  color: var(--shiki-dark);
 }
 
-.comark-status-dot[data-state='error'] {
-  background: var(--comark-devtools-error);
+/* Markdown syntax highlighting (regex fallback) */
+.comark-md-heading {
+  color: #9333ea;
+  font-weight: 600;
 }
-
-.comark-status-dot[data-state='parsing'] {
-  background: var(--comark-devtools-warning);
+.comark-md-bold {
+  color: var(--comark-devtools-text);
+  font-weight: 700;
+}
+.comark-md-italic {
+  font-style: italic;
+}
+.comark-md-code {
+  color: #d97706;
+  background: var(--comark-devtools-bg-muted);
+  border-radius: 3px;
+  padding: 1px 3px;
+}
+.comark-md-code-fence {
+  color: #d97706;
+}
+.comark-md-code-lang {
+  color: #059669;
+  font-weight: 600;
+}
+.comark-md-code-content {
+  color: var(--comark-devtools-text-muted);
+}
+.comark-md-link {
+  color: #2563eb;
+}
+.comark-md-url {
+  opacity: 0.6;
+}
+.comark-md-component {
+  color: #059669;
+  font-weight: 600;
+}
+.comark-md-attrs {
+  color: #71717a;
+}
+.comark-md-blockquote {
+  color: #71717a;
+  font-style: italic;
+}
+.comark-md-list-marker {
+  color: #d97706;
+}
+.comark-md-frontmatter {
+  color: #71717a;
 }
 
 /* Output content */
@@ -172,24 +218,6 @@
   color: #dc2626;
 }
 
-/* Info table */
-.comark-info-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 12px;
-}
-
-.comark-info-table td {
-  padding: 6px 12px;
-  border-bottom: 1px solid var(--comark-devtools-border);
-}
-
-.comark-info-table td:first-child {
-  font-weight: 600;
-  width: 140px;
-  color: var(--comark-devtools-text-muted);
-}
-
 /* Error display */
 .comark-error {
   color: var(--comark-devtools-error);
@@ -199,18 +227,7 @@
   white-space: pre-wrap;
 }
 
-/* Instance bar */
-.comark-instance-bar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 4px 12px;
-  border-bottom: 1px solid var(--comark-devtools-border);
-  font-size: 11px;
-  flex-shrink: 0;
-  background: var(--comark-devtools-bg-soft);
-}
-
+/* Instance status */
 .comark-instance-dot {
   width: 6px;
   height: 6px;
@@ -238,12 +255,76 @@
 }
 
 .comark-instance-label {
+  font-size: 11px;
   font-weight: 500;
   color: var(--comark-devtools-text-muted);
 }
 
+/* Loading state */
+.comark-loading-state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  color: var(--comark-devtools-text-muted);
+  padding: 32px;
+  user-select: none;
+}
+
+.comark-loading-spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid var(--comark-devtools-border);
+  border-top-color: var(--comark-devtools-primary);
+  border-radius: 50%;
+  animation: comark-spin 0.8s linear infinite;
+}
+
+@keyframes comark-spin {
+  to { transform: rotate(360deg); }
+}
+
+.comark-loading-text {
+  margin: 0;
+  font-size: 13px;
+}
+
+/* Empty state */
+.comark-empty-state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  color: var(--comark-devtools-text-muted);
+  padding: 32px;
+  user-select: none;
+}
+
+.comark-empty-icon {
+  opacity: 0.25;
+}
+
+.comark-empty-title {
+  margin: 0;
+  font-size: 13px;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.comark-empty-state code {
+  font-family: 'Geist Mono', ui-monospace, 'SF Mono', Monaco, Menlo, monospace;
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--comark-devtools-bg-muted);
+}
+
+/* Theme toggle */
 .comark-theme-toggle {
-  margin-left: auto;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -300,4 +381,40 @@
 .comark-devtools[data-theme='dark'] .comark-tree-bool,
 .comark-devtools:not([data-theme='light']):is([data-auto-dark='true']) .comark-tree-bool {
   color: #f87171;
+}
+.comark-devtools[data-theme='dark'] .comark-md-heading,
+.comark-devtools:not([data-theme='light']):is([data-auto-dark='true']) .comark-md-heading {
+  color: #c084fc;
+}
+.comark-devtools[data-theme='dark'] .comark-md-code,
+.comark-devtools:not([data-theme='light']):is([data-auto-dark='true']) .comark-md-code {
+  color: #fbbf24;
+}
+.comark-devtools[data-theme='dark'] .comark-md-code-fence,
+.comark-devtools:not([data-theme='light']):is([data-auto-dark='true']) .comark-md-code-fence {
+  color: #fbbf24;
+}
+.comark-devtools[data-theme='dark'] .comark-md-code-lang,
+.comark-devtools:not([data-theme='light']):is([data-auto-dark='true']) .comark-md-code-lang {
+  color: #34d399;
+}
+.comark-devtools[data-theme='dark'] .comark-md-link,
+.comark-devtools:not([data-theme='light']):is([data-auto-dark='true']) .comark-md-link {
+  color: #60a5fa;
+}
+.comark-devtools[data-theme='dark'] .comark-md-component,
+.comark-devtools:not([data-theme='light']):is([data-auto-dark='true']) .comark-md-component {
+  color: #34d399;
+}
+.comark-devtools[data-theme='dark'] .comark-md-list-marker,
+.comark-devtools:not([data-theme='light']):is([data-auto-dark='true']) .comark-md-list-marker {
+  color: #fbbf24;
+}
+.comark-devtools[data-theme='dark'] .comark-md-blockquote,
+.comark-devtools:not([data-theme='light']):is([data-auto-dark='true']) .comark-md-blockquote {
+  color: #a1a1aa;
+}
+.comark-devtools[data-theme='dark'] .comark-md-frontmatter,
+.comark-devtools:not([data-theme='light']):is([data-auto-dark='true']) .comark-md-frontmatter {
+  color: #a1a1aa;
 }

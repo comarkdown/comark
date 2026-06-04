@@ -1,29 +1,4 @@
-import type { ComarkTree } from '../types.ts'
-import type { ComarkInstance } from './registry.ts'
-
-/** Minimal subset of Vite's `import.meta.hot` used by the helper */
-interface HotHandle {
-  send(event: string, data?: any): void
-  on(event: string, cb: (...args: any[]) => void): void
-}
-
-export interface RegisterInstanceOptions {
-  /** The HMR handle (`import.meta.hot`). Pass `null` to skip registration. */
-  hot: HotHandle | null | undefined
-  /** Initial tree (may be empty for string renderers) */
-  tree: ComarkTree
-  /** Initial markdown source, if known */
-  markdown?: string
-}
-
-export interface RegisteredInstance {
-  /** The assigned instance id */
-  id: string
-  /** Update the instance's tree and/or markdown */
-  update(patch: { tree?: ComarkTree; markdown?: string }): void
-  /** Unregister the instance */
-  unregister(): void
-}
+import type { ComarkInstance, RegisterInstanceOptions, RegisteredInstance } from './types.ts'
 
 /**
  * Register a Comark devtools instance.

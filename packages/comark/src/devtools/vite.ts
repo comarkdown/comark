@@ -1,15 +1,31 @@
 /// <reference types="@vitejs/devtools-kit" />
 import type { Plugin, ViteDevServer } from 'vite'
-import type { ComarkTree } from '../types.ts'
-import type { ComarkInstanceSummary } from './registry.ts'
-import { COMARK_DARK_ICON, COMARK_LIGHT_ICON } from './constants/index.ts'
+import type { Highlighter } from 'shiki'
+import type { ComarkTree, ComarkInstanceSummary } from './types.ts'
+import { COMARK_DARK_ICON, COMARK_LIGHT_ICON, DEVTOOLS_SHIKI_LANGS, DEVTOOLS_SHIKI_THEMES } from './constants/index.ts'
 
 declare module '@vitejs/devtools-kit' {
   interface DevToolsRpcServerFunctions {
     'comark:parse': (markdown: string) => Promise<ComarkTree>
-    'comark:render-markdown': (markdown: string) => Promise<string>
+    'comark:highlight': (markdown: string) => Promise<string | null>
     'comark:list-instances': () => Promise<ComarkInstanceSummary[]>
   }
+}
+
+// Lazy Shiki highlighter singleton
+let highlighterPromise: Promise<Highlighter | null> | null = null
+function getHighlighter(): Promise<Highlighter | null> {
+  if (!highlighterPromise) {
+    highlighterPromise = import('shiki')
+      .then((shiki) =>
+        shiki.createHighlighter({
+          themes: [...DEVTOOLS_SHIKI_THEMES],
+          langs: [...DEVTOOLS_SHIKI_LANGS],
+        })
+      )
+      .catch(() => null)
+  }
+  return highlighterPromise
 }
 
 /**
@@ -57,15 +73,19 @@ export function comarkDevtools(): Plugin {
           },
         })
 
-        // RPC: render tree back to markdown (roundtrip)
+        // RPC: highlight markdown using Shiki with the mdc grammar
         ctx.rpc.register({
-          name: 'comark:render-markdown',
+          name: 'comark:highlight',
           type: 'query',
           handler: async (markdown: string) => {
-            const { parse } = await import('../index.ts')
-            const { renderMarkdown } = await import('../render.ts')
-            const tree = await parse(markdown)
-            return await renderMarkdown(tree)
+            const highlighter = await getHighlighter()
+            if (!highlighter) return null
+            const html = highlighter.codeToHtml(markdown, {
+              lang: 'mdc',
+              themes: { light: DEVTOOLS_SHIKI_THEMES[0], dark: DEVTOOLS_SHIKI_THEMES[1] },
+              defaultColor: false,
+            })
+            return html.replace(/^<pre[^>]*><code[^>]*>/, '').replace(/<\/code><\/pre>$/, '')
           },
         })
 

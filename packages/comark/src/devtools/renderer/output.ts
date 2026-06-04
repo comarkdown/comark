@@ -1,74 +1,13 @@
-type ComarkTree = {
-  nodes: unknown[]
-  frontmatter: Record<string, unknown>
-  meta: Record<string, unknown>
-}
+import type { ComarkTree } from '../types.ts'
 
+/** Render a Comark AST as syntax-highlighted JSON into the given container */
 export function renderAST(container: HTMLElement, tree: ComarkTree): void {
   const pre = document.createElement('pre')
   pre.innerHTML = syntaxHighlightJSON(tree)
   container.appendChild(pre)
 }
 
-export function renderRoundtrip(container: HTMLElement, roundtrip: string, original: string): void {
-  const pre = document.createElement('pre')
-  pre.textContent = roundtrip
-  container.appendChild(pre)
-
-  const isMatch = original.trim() === roundtrip.trim()
-  const indicator = document.createElement('div')
-  indicator.style.cssText = `
-    margin-top: 12px;
-    padding: 8px 12px;
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: 500;
-    background: ${isMatch ? 'rgba(16, 185, 129, 0.1)' : 'rgba(245, 158, 11, 0.1)'};
-    color: ${isMatch ? '#10b981' : '#f59e0b'};
-  `
-  indicator.textContent = isMatch
-    ? '✓ Roundtrip match — parse → render produces identical output'
-    : '⚠ Roundtrip mismatch — output differs from input (whitespace or formatting changes)'
-  container.appendChild(indicator)
-}
-
-export function renderInfo(container: HTMLElement, tree: ComarkTree, inputLength: number): void {
-  const table = document.createElement('table')
-  table.className = 'comark-info-table'
-
-  const rows = [
-    ['Nodes', String(tree.nodes.length)],
-    ['Total nodes (deep)', String(countNodes(tree.nodes))],
-    ['Input length', `${inputLength} chars`],
-    ['Frontmatter keys', Object.keys(tree.frontmatter).join(', ') || '(none)'],
-    ['Meta keys', Object.keys(tree.meta).join(', ') || '(none)'],
-  ]
-
-  if (Object.keys(tree.frontmatter).length > 0) {
-    rows.push(['Frontmatter', JSON.stringify(tree.frontmatter, null, 2)])
-  }
-
-  for (const [key, value] of rows) {
-    const tr = document.createElement('tr')
-    const td1 = document.createElement('td')
-    td1.textContent = key
-    const td2 = document.createElement('td')
-    td2.textContent = value
-    if (key === 'Frontmatter') {
-      const pre = document.createElement('pre')
-      pre.style.margin = '0'
-      pre.textContent = value
-      td2.textContent = ''
-      td2.appendChild(pre)
-    }
-    tr.appendChild(td1)
-    tr.appendChild(td2)
-    table.appendChild(tr)
-  }
-
-  container.appendChild(table)
-}
-
+/** Recursively count the total number of nodes in a Comark AST */
 export function countNodes(nodes: unknown[]): number {
   let count = 0
   for (const node of nodes) {
@@ -110,6 +49,97 @@ function syntaxHighlightJSON(obj: unknown, indent = 0): string {
     return `{\n${items.join(',\n')}\n${pad}}`
   }
   return String(obj)
+}
+
+/** Regex-based fallback markdown highlighter used when Shiki is unavailable */
+export function highlightMarkdown(source: string): string {
+  const lines = source.split('\n')
+  const result: string[] = []
+  let inCodeBlock = false
+
+  for (const line of lines) {
+    if (/^```/.test(line)) {
+      if (inCodeBlock) {
+        // Closing fence
+        result.push(`<span class="comark-md-code-fence">${escapeHTML(line)}</span>`)
+        inCodeBlock = false
+      } else {
+        // Opening fence — highlight language name
+        const match = line.match(/^(```)(\w*)(.*)/)
+        if (match && match[2]) {
+          result.push(
+            `<span class="comark-md-code-fence">${escapeHTML(match[1])}</span>` +
+            `<span class="comark-md-code-lang">${escapeHTML(match[2])}</span>` +
+            (match[3] ? `<span class="comark-md-code-fence">${escapeHTML(match[3])}</span>` : '')
+          )
+        } else {
+          result.push(`<span class="comark-md-code-fence">${escapeHTML(line)}</span>`)
+        }
+        inCodeBlock = true
+      }
+    } else if (inCodeBlock) {
+      result.push(`<span class="comark-md-code-content">${escapeHTML(line)}</span>`)
+    } else {
+      result.push(highlightLine(line))
+    }
+  }
+
+  return result.join('\n')
+}
+
+function highlightLine(line: string): string {
+  const escaped = escapeHTML(line)
+
+  // Frontmatter delimiters
+  if (/^---\s*$/.test(line)) {
+    return `<span class="comark-md-frontmatter">${escaped}</span>`
+  }
+
+  // Headings
+  if (/^#{1,6}\s/.test(line)) {
+    return `<span class="comark-md-heading">${escaped}</span>`
+  }
+
+  // Component syntax (::name or ::name{...})
+  if (/^:{2,3}\w*/.test(line)) {
+    return `<span class="comark-md-component">${escaped}</span>`
+  }
+
+  // Code block fences — handled by highlightMarkdown statefully
+
+  // Blockquotes
+  if (/^>\s?/.test(line)) {
+    return `<span class="comark-md-blockquote">${highlightInline(escaped)}</span>`
+  }
+
+  // List items
+  if (/^\s*[-*+]\s/.test(line) || /^\s*\d+\.\s/.test(line)) {
+    const match = escaped.match(/^(\s*(?:[-*+]|\d+\.)\s)(.*)$/)
+    if (match) {
+      return `<span class="comark-md-list-marker">${match[1]}</span>${highlightInline(match[2])}`
+    }
+  }
+
+  return highlightInline(escaped)
+}
+
+function highlightInline(text: string): string {
+  return (
+    text
+      // Bold (**...**)
+      .replace(/(\*\*|__)(.*?)\1/g, '<span class="comark-md-bold">$1$2$1</span>')
+      // Italic (*...* or _..._) — avoid matching ** or __
+      .replace(/(?<!\*)\*(?!\*)(.*?)(?<!\*)\*(?!\*)/g, '<span class="comark-md-italic">*$1*</span>')
+      // Inline code (`...`)
+      .replace(/(`)(.*?)(`)/g, '<span class="comark-md-code">$1$2$3</span>')
+      // Links ([text](url))
+      .replace(
+        /(\[)(.*?)(\]\()(.*?)(\))/g,
+        '<span class="comark-md-link">$1$2$3<span class="comark-md-url">$4</span>$5</span>'
+      )
+      // Component attributes ({key="value"})
+      .replace(/(\{)(.*?)(\})/g, '<span class="comark-md-attrs">$1$2$3</span>')
+  )
 }
 
 function escapeHTML(str: string): string {

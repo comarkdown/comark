@@ -1,7 +1,7 @@
+import type { Theme } from '../types.ts'
 import { LUCIDE_MOON, LUCIDE_MONITOR, LUCIDE_SUN } from '../constants/index.ts'
 
-export type Theme = 'auto' | 'light' | 'dark'
-
+/** Apply a color scheme to the devtools root element via `data-*` attributes */
 export function applyTheme(rootEl: HTMLElement, theme: Theme): void {
   if (theme === 'auto') {
     delete rootEl.dataset.theme
@@ -13,12 +13,14 @@ export function applyTheme(rootEl: HTMLElement, theme: Theme): void {
   }
 }
 
+/** Return the Lucide SVG icon string matching the given theme */
 export function getThemeIcon(theme: Theme): string {
   if (theme === 'dark') return LUCIDE_MOON
   if (theme === 'light') return LUCIDE_SUN
   return LUCIDE_MONITOR
 }
 
+/** Create a button that cycles through `auto, light, dark` themes */
 export function createThemeToggle(initial: Theme, onChange: (theme: Theme) => void): HTMLButtonElement {
   let theme = initial
 
