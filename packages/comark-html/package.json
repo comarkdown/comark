@@ -1,6 +1,6 @@
 {
   "name": "@comark/html",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "HTML renderer for Comark (Components in Markdown)",
   "keywords": [
     "comark",

@@ -1,6 +1,6 @@
 {
   "name": "@comark/react",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "React renderer for Comark (Components in Markdown)",
   "keywords": [
     "comark",

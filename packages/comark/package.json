@@ -1,6 +1,6 @@
 {
   "name": "comark",
-  "version": "0.3.2",
+  "version": "0.4.0",
   "description": "Components in Markdown (Comark) parser with streaming support for Vue, React, Svelte and HTML",
   "keywords": [
     "markdown",

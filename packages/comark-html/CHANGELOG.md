@@ -1,5 +1,7 @@
 # Changelog
 
+## [0.4.0](https://github.com/comarkdown/comark/compare/@comark/html@0.3.1...@comark/html@0.4.0) (2026-06-04)
+
 ## [0.3.1](https://github.com/comarkdown/comark/compare/@comark/html@0.2.1...@comark/html@0.3.1) (2026-04-24)
 
 ### Features

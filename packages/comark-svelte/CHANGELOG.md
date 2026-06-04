@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.0](https://github.com/comarkdown/comark/compare/@comark/svelte@0.3.1...@comark/svelte@0.4.0) (2026-06-04)
+
+### Bug Fixes
+
+* support Svelte named snippets ([#206](https://github.com/comarkdown/comark/issues/206)) ([660747e](https://github.com/comarkdown/comark/commit/660747e94be5534992c410522cbb186bda77be18))
+* **svelte:** add missing components-manifest prop ([#183](https://github.com/comarkdown/comark/issues/183)) ([c78885c](https://github.com/comarkdown/comark/commit/c78885ca7504b38afc7ced59aac1a3c6b3cc5425))
+* **svelte:** avoid runtime snippet casts for slots ([#209](https://github.com/comarkdown/comark/issues/209)) ([8ec994d](https://github.com/comarkdown/comark/commit/8ec994d7b2747829649966968796f3c15d821955))
+
 ## [0.3.1](https://github.com/comarkdown/comark/compare/@comark/svelte@0.2.1...@comark/svelte@0.3.1) (2026-04-24)
 
 ### Features
