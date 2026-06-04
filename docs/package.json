@@ -10,6 +10,7 @@
     "@ai-sdk/gateway": "catalog:",
     "@ai-sdk/vue": "catalog:",
     "@comark/nuxt": "catalog:",
+    "@shikijs/langs": "catalog:",
     "@monaco-editor/loader": "catalog:",
     "@nuxt/content": "catalog:",
     "@nuxt/ui": "catalog:",
@@ -34,6 +35,7 @@
     "@nuxt/devtools-kit": "catalog:",
     "@types/json-schema": "catalog:",
     "@types/splitpanes": "catalog:",
+    "satori": "catalog:",
     "tsx": "catalog:"
   }
 }

@@ -21,6 +21,7 @@ catalog:
   "@nuxt/devtools-kit": ^4.0.0-alpha.4
   "@nuxt/kit": ^4.4.2
   "@nuxt/ui": ^4.7.1
+  "satori": ^0.26.0
   "@nuxtjs/mcp-toolkit": 0.13.4
   "@nuxtlabs/monarch-mdc": ^0.9.0
   "@release-it/conventional-changelog": ^10.0.6
