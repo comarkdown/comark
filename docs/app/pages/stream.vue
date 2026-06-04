@@ -15,7 +15,7 @@ useSeoMeta({
   title,
   description,
 })
-defineOgImage('OgImageDocs', {
+defineOgImage('Docs.satori', {
   headline: 'Streaming',
   title,
   description,

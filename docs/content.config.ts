@@ -23,5 +23,23 @@ export default defineContentConfig({
         demo: z.string().optional(),
       }),
     }),
+    releases: defineCollection({
+      type: 'page',
+      source: 'releases.yml',
+      schema: z.object({
+        title: z.string(),
+        description: z.string(),
+        navigation: z.boolean().optional(),
+        hero: z.object({
+          title: z.string(),
+          description: z.string(),
+          hero: z.object({
+            title: z.string(),
+            description: z.string(),
+            links: z.array().optional(),
+          }),
+        }),
+      }),
+    }),
   },
 })

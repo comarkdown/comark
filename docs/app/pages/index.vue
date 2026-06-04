@@ -16,7 +16,7 @@ useSeo({
 })
 
 if (!page.value?.seo?.ogImage) {
-  defineOgImage('OgImageDocs', {
+  defineOgImage('Docs.satori', {
     title,
     description: description?.replace(/,/g, ''),
     headline: 'Components in Markdown',

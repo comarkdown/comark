@@ -36,6 +36,12 @@ export function useMainNavigation() {
         active: route.path.startsWith(`/play/${example.value}`),
       })),
     },
+    {
+      label: 'Releases',
+      to: '/releases',
+      icon: 'i-lucide-tag',
+      active: route.path.startsWith('/releases'),
+    },
   ])
 }
 

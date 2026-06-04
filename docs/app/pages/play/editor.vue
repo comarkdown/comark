@@ -9,7 +9,7 @@ useSeoMeta({
   title,
   description,
 })
-defineOgImage('OgImageDocs', {
+defineOgImage('Docs.satori', {
   headline: 'Playground',
   title,
   description,

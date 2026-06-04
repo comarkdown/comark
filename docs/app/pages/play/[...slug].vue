@@ -203,7 +203,7 @@ useSeoMeta({
   title,
   description,
 })
-defineOgImage('OgImageDocs', {
+defineOgImage('Docs.satori', {
   headline: 'Examples',
   title,
   description,
