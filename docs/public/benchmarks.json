@@ -1,0 +1,492 @@
+{
+  "generated": "2026-06-04T02:15:31.529Z",
+  "runtime": "node 24.16.0 (arm64-darwin)",
+  "cpu": "Apple M4 Max",
+  "benchmarks": {
+    "comark-parse": [
+      {
+        "name": "parse",
+        "entries": [
+          {
+            "name": "markdown-it parse",
+            "avg": 22.82,
+            "unit": "µs",
+            "avgNs": 22820
+          },
+          {
+            "name": "markdown-exit parse",
+            "avg": 19.61,
+            "unit": "µs",
+            "avgNs": 19610
+          },
+          {
+            "name": "comark parse",
+            "avg": 37.42,
+            "unit": "µs",
+            "avgNs": 37420
+          },
+          {
+            "name": "comark parse no close",
+            "avg": 35.35,
+            "unit": "µs",
+            "avgNs": 35350
+          },
+          {
+            "name": "comark parse streaming",
+            "avg": 3.62,
+            "unit": "µs",
+            "avgNs": 3620
+          }
+        ]
+      }
+    ],
+    "comark-render": [
+      {
+        "name": "render",
+        "entries": [
+          {
+            "name": "markdown-it render",
+            "avg": 27.42,
+            "unit": "µs",
+            "avgNs": 27420
+          },
+          {
+            "name": "markdown-exit render",
+            "avg": 24.46,
+            "unit": "µs",
+            "avgNs": 24460
+          },
+          {
+            "name": "comark parse + renderHTML",
+            "avg": 74.9,
+            "unit": "µs",
+            "avgNs": 74900
+          },
+          {
+            "name": "comark parse no close",
+            "avg": 70.54,
+            "unit": "µs",
+            "avgNs": 70540
+          },
+          {
+            "name": "comark parse streaming",
+            "avg": 37.99,
+            "unit": "µs",
+            "avgNs": 37990
+          }
+        ]
+      }
+    ],
+    "plugin-emoji": [
+      {
+        "name": "emoji — short text",
+        "entries": [
+          {
+            "name": "comark",
+            "avg": 3.48,
+            "unit": "µs",
+            "avgNs": 3480
+          },
+          {
+            "name": "comark + emoji",
+            "avg": 2.44,
+            "unit": "µs",
+            "avgNs": 2440
+          },
+          {
+            "name": "markdown-it",
+            "avg": 1.88,
+            "unit": "µs",
+            "avgNs": 1880
+          },
+          {
+            "name": "markdown-it + emoji",
+            "avg": 1.97,
+            "unit": "µs",
+            "avgNs": 1970
+          },
+          {
+            "name": "markdown-exit",
+            "avg": 1.68,
+            "unit": "µs",
+            "avgNs": 1680
+          },
+          {
+            "name": "markdown-exit + emoji",
+            "avg": 1.77,
+            "unit": "µs",
+            "avgNs": 1770
+          },
+          {
+            "name": "remark",
+            "avg": 30.29,
+            "unit": "µs",
+            "avgNs": 30290
+          },
+          {
+            "name": "remark + emoji",
+            "avg": 31.62,
+            "unit": "µs",
+            "avgNs": 31620
+          }
+        ]
+      },
+      {
+        "name": "emoji — medium text",
+        "entries": [
+          {
+            "name": "comark",
+            "avg": 19.34,
+            "unit": "µs",
+            "avgNs": 19340
+          },
+          {
+            "name": "comark + emoji",
+            "avg": 16.32,
+            "unit": "µs",
+            "avgNs": 16320
+          },
+          {
+            "name": "markdown-it",
+            "avg": 11.78,
+            "unit": "µs",
+            "avgNs": 11780
+          },
+          {
+            "name": "markdown-it + emoji",
+            "avg": 12.09,
+            "unit": "µs",
+            "avgNs": 12090
+          },
+          {
+            "name": "markdown-exit",
+            "avg": 10.37,
+            "unit": "µs",
+            "avgNs": 10370
+          },
+          {
+            "name": "markdown-exit + emoji",
+            "avg": 10.9,
+            "unit": "µs",
+            "avgNs": 10900
+          },
+          {
+            "name": "remark",
+            "avg": 142.75,
+            "unit": "µs",
+            "avgNs": 142750
+          },
+          {
+            "name": "remark + emoji",
+            "avg": 151.47,
+            "unit": "µs",
+            "avgNs": 151470
+          }
+        ]
+      },
+      {
+        "name": "emoji — long text (50 sections)",
+        "entries": [
+          {
+            "name": "comark",
+            "avg": 559.26,
+            "unit": "µs",
+            "avgNs": 559260
+          },
+          {
+            "name": "comark + emoji",
+            "avg": 438.11,
+            "unit": "µs",
+            "avgNs": 438110
+          },
+          {
+            "name": "markdown-it",
+            "avg": 364.89,
+            "unit": "µs",
+            "avgNs": 364890
+          },
+          {
+            "name": "markdown-it + emoji",
+            "avg": 378.86,
+            "unit": "µs",
+            "avgNs": 378860
+          },
+          {
+            "name": "markdown-exit",
+            "avg": 326.09,
+            "unit": "µs",
+            "avgNs": 326090
+          },
+          {
+            "name": "markdown-exit + emoji",
+            "avg": 344.24,
+            "unit": "µs",
+            "avgNs": 344240
+          },
+          {
+            "name": "remark",
+            "avg": 4.63,
+            "unit": "ms",
+            "avgNs": 4630000
+          },
+          {
+            "name": "remark + emoji",
+            "avg": 4.96,
+            "unit": "ms",
+            "avgNs": 4960000
+          }
+        ]
+      }
+    ],
+    "plugin-highlight": [
+      {
+        "name": "highlight — short (2 blocks)",
+        "entries": [
+          {
+            "name": "comark",
+            "avg": 4.5,
+            "unit": "µs",
+            "avgNs": 4500
+          },
+          {
+            "name": "comark + highlight",
+            "avg": 170.33,
+            "unit": "µs",
+            "avgNs": 170330
+          },
+          {
+            "name": "markdown-it + shiki",
+            "avg": 173.02,
+            "unit": "µs",
+            "avgNs": 173020
+          },
+          {
+            "name": "markdown-exit + shiki",
+            "avg": 174.17,
+            "unit": "µs",
+            "avgNs": 174170
+          }
+        ]
+      },
+      {
+        "name": "highlight — medium (3 blocks)",
+        "entries": [
+          {
+            "name": "comark",
+            "avg": 7.7,
+            "unit": "µs",
+            "avgNs": 7700
+          },
+          {
+            "name": "comark + highlight",
+            "avg": 732.79,
+            "unit": "µs",
+            "avgNs": 732790
+          },
+          {
+            "name": "markdown-it + shiki",
+            "avg": 751.98,
+            "unit": "µs",
+            "avgNs": 751980
+          },
+          {
+            "name": "markdown-exit + shiki",
+            "avg": 762.79,
+            "unit": "µs",
+            "avgNs": 762790
+          }
+        ]
+      },
+      {
+        "name": "highlight — long (40 blocks)",
+        "entries": [
+          {
+            "name": "comark",
+            "avg": 47.44,
+            "unit": "µs",
+            "avgNs": 47440
+          },
+          {
+            "name": "comark + highlight",
+            "avg": 7.56,
+            "unit": "ms",
+            "avgNs": 7560000
+          },
+          {
+            "name": "markdown-it + shiki",
+            "avg": 7.65,
+            "unit": "ms",
+            "avgNs": 7650000
+          },
+          {
+            "name": "markdown-exit + shiki",
+            "avg": 7.58,
+            "unit": "ms",
+            "avgNs": 7580000
+          }
+        ]
+      }
+    ],
+    "plugin-punctuation": [
+      {
+        "name": "punctuation — short text",
+        "entries": [
+          {
+            "name": "comark",
+            "avg": 1.94,
+            "unit": "µs",
+            "avgNs": 1940
+          },
+          {
+            "name": "comark + punctuation",
+            "avg": 2.49,
+            "unit": "µs",
+            "avgNs": 2490
+          },
+          {
+            "name": "markdown-it",
+            "avg": 956.48,
+            "unit": "ns",
+            "avgNs": 956.48
+          },
+          {
+            "name": "markdown-it + typographer",
+            "avg": 2.37,
+            "unit": "µs",
+            "avgNs": 2370
+          },
+          {
+            "name": "markdown-exit",
+            "avg": 802.68,
+            "unit": "ns",
+            "avgNs": 802.68
+          },
+          {
+            "name": "markdown-exit + typographer",
+            "avg": 2.06,
+            "unit": "µs",
+            "avgNs": 2060
+          },
+          {
+            "name": "remark",
+            "avg": 29.14,
+            "unit": "µs",
+            "avgNs": 29140
+          },
+          {
+            "name": "remark + smartypants",
+            "avg": 56.29,
+            "unit": "µs",
+            "avgNs": 56290
+          }
+        ]
+      },
+      {
+        "name": "punctuation — medium text",
+        "entries": [
+          {
+            "name": "comark",
+            "avg": 8.48,
+            "unit": "µs",
+            "avgNs": 8480
+          },
+          {
+            "name": "comark + punctuation",
+            "avg": 10.93,
+            "unit": "µs",
+            "avgNs": 10930
+          },
+          {
+            "name": "markdown-it",
+            "avg": 5.89,
+            "unit": "µs",
+            "avgNs": 5890
+          },
+          {
+            "name": "markdown-it + typographer",
+            "avg": 11.6,
+            "unit": "µs",
+            "avgNs": 11600
+          },
+          {
+            "name": "markdown-exit",
+            "avg": 5.08,
+            "unit": "µs",
+            "avgNs": 5080
+          },
+          {
+            "name": "markdown-exit + typographer",
+            "avg": 10.54,
+            "unit": "µs",
+            "avgNs": 10540
+          },
+          {
+            "name": "remark",
+            "avg": 96.22,
+            "unit": "µs",
+            "avgNs": 96220
+          },
+          {
+            "name": "remark + smartypants",
+            "avg": 255.47,
+            "unit": "µs",
+            "avgNs": 255470
+          }
+        ]
+      },
+      {
+        "name": "punctuation — long text (50 sections)",
+        "entries": [
+          {
+            "name": "comark",
+            "avg": 424.01,
+            "unit": "µs",
+            "avgNs": 424010
+          },
+          {
+            "name": "comark + punctuation",
+            "avg": 525.64,
+            "unit": "µs",
+            "avgNs": 525640
+          },
+          {
+            "name": "markdown-it",
+            "avg": 264.75,
+            "unit": "µs",
+            "avgNs": 264750
+          },
+          {
+            "name": "markdown-it + typographer",
+            "avg": 487.09,
+            "unit": "µs",
+            "avgNs": 487090
+          },
+          {
+            "name": "markdown-exit",
+            "avg": 234.3,
+            "unit": "µs",
+            "avgNs": 234300
+          },
+          {
+            "name": "markdown-exit + typographer",
+            "avg": 444.92,
+            "unit": "µs",
+            "avgNs": 444920
+          },
+          {
+            "name": "remark",
+            "avg": 3.81,
+            "unit": "ms",
+            "avgNs": 3810000
+          },
+          {
+            "name": "remark + smartypants",
+            "avg": 11.11,
+            "unit": "ms",
+            "avgNs": 11110000
+          }
+        ]
+      }
+    ]
+  }
+}

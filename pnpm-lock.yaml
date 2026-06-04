@@ -217,7 +217,7 @@ catalogs:
       specifier: ^1.3.0
       version: 1.3.0
     shiki:
-      specifier: ^4.0.0
+      specifier: ^4.1.0
       version: 4.1.0
     splitpanes:
       specifier: ^4.0.4
@@ -321,6 +321,9 @@ importers:
       markdown-it:
         specifier: 'catalog:'
         version: 14.2.0
+      markdown-it-emoji:
+        specifier: ^3.0.0
+        version: 3.0.0
       mitata:
         specifier: 'catalog:'
         version: 1.0.34
@@ -339,6 +342,9 @@ importers:
       release-it:
         specifier: 'catalog:'
         version: 19.2.4(@types/node@25.9.1)(magicast@0.5.3)
+      remark-emoji:
+        specifier: ^5.0.2
+        version: 5.0.2
       remark-gfm:
         specifier: 'catalog:'
         version: 4.0.1
@@ -351,9 +357,15 @@ importers:
       remark-rehype:
         specifier: 'catalog:'
         version: 11.1.2
+      remark-smartypants:
+        specifier: ^3.0.2
+        version: 3.0.2
       scule:
         specifier: 'catalog:'
         version: 1.3.0
+      shiki:
+        specifier: 'catalog:'
+        version: 4.1.0
       tsx:
         specifier: 'catalog:'
         version: 4.22.4
@@ -7679,6 +7691,9 @@ packages:
 
   markdown-exit@1.0.0-beta.9:
     resolution: {integrity: sha512-5tzrMKMF367amyBly131vm6eGuWRL2DjBqWaFmPzPbLyuxP0XOmyyyroOAIXuBAMF/3kZbbfqOxvW/SotqKqbQ==}
+
+  markdown-it-emoji@3.0.0:
+    resolution: {integrity: sha512-+rUD93bXHubA4arpEZO3q80so0qgoFJEKRkRbjKX8RTdca89v2kfyF+xR3i2sQTwql9tpPZPOQN5B+PunspXRg==}
 
   markdown-it-math@5.2.1:
     resolution: {integrity: sha512-0YJczaqvBxgOt13oKj/4HYs/34Y9FsHiTktsIBaWYqrE+k1JxmMSTxCcTezTVul0YjmhmCBDehK65vWxjzRbdg==}
@@ -16944,6 +16959,8 @@ snapshots:
       mdurl: 2.0.0
       punycode.js: 2.3.1
       uc.micro: 2.1.0
+
+  markdown-it-emoji@3.0.0: {}
 
   markdown-it-math@5.2.1: {}
 
