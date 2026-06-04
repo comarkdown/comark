@@ -17,7 +17,7 @@ body:
         - Node Version:     `v22.x.x`
         - Package Manager:  `pnpm@10.x.x`
         - Comark Version:   `x.x.x`
-        - Framework:        `Vue / React / Svelte / None`
+        - Framework:        `Vue / React / Svelte / Angular / None`
     validations:
       required: true
   - type: input

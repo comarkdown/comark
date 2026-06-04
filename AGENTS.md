@@ -29,7 +29,7 @@ This is a **monorepo** containing multiple packages related to Comark (Component
 │   └── comark-nuxt/      # Nuxt module (@comark/nuxt)
 ├── examples/             # Example applications
 │   ├── 1.frameworks/     # Framework examples (Nuxt, Next.js, Astro, SvelteKit, ...)
-│   ├── 2.vite/           # Vite examples (Vue, React, Svelte, HTML, ANSI)
+│   ├── 2.vite/           # Vite examples (Vue, React, Svelte, Angular, HTML, ANSI)
 │   └── 3.plugins/        # Plugin examples (math, mermaid, highlight, ...)
 ├── docs/                 # Documentation site (Docus-based)
 ├── scripts/              # Build/sync scripts
@@ -519,7 +519,7 @@ Example:
 }
 ```
 
-## Vue/React/Svelte Components
+## Vue/React/Svelte/Angular Components
 
 ### Comark Component (High-level)
 
@@ -552,7 +552,13 @@ Example:
 </svelte:boundary>
 ```
 
-### defineComarkComponent (Vue & React)
+**Angular**:
+
+```html
+<comark [markdown]="content" [components]="customComponents" />
+```
+
+### defineComarkComponent (Vue, React & Angular)
 
 Creates a pre-configured Comark component with default plugins and components:
 
@@ -574,6 +580,16 @@ import math, { Math } from '@comark/react/plugins/math'
 
 export const DocsComark = defineComarkComponent({
   name: 'DocsComark',
+  plugins: [math()],
+  components: { Math },
+})
+
+// Angular
+import { defineComarkComponent } from '@comark/angular'
+import math, { Math } from '@comark/angular/plugins/math'
+
+export const DocsComark = defineComarkComponent({
+  name: 'docs-comark',
   plugins: [math()],
   components: { Math },
 })
@@ -670,7 +686,7 @@ chore: update dependencies           # No version bump
 
 2. **Documentation** (`docs/content/`)
    - `1.getting-started/` — Installation or quick start changes
-   - `3.rendering/` — Vue/React/Svelte/HTML/ANSI renderer changes
+   - `3.rendering/` — Vue/React/Svelte/Angular/HTML/ANSI renderer changes
    - `4.plugins/` — Plugin changes
 
 ### Documentation Checklist

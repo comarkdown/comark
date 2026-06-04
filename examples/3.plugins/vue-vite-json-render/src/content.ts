@@ -122,7 +122,7 @@ Build deeper trees by referencing children by key:
 The plugin is built into the core \`comark\` package — no extra dependencies required.
 
 \`\`\`bash
-pnpm add comark        # or @comark/vue, @comark/react, @comark/svelte
+pnpm add comark        # or @comark/vue, @comark/react, @comark/svelte, @comark/angular
 \`\`\`
 
 ### Usage

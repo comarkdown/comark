@@ -224,7 +224,7 @@ Guide for integrating Comark in AI agent and LLM streaming workflows:
 - **Streaming from LLMs:** rendering incremental AI output in real time
 - **Auto-Close:** handling incomplete syntax from partial LLM tokens
 - **Caret Indicator:** showing a live cursor during generation
-- **Framework Examples:** Vue, React, Svelte streaming patterns
+- **Framework Examples:** Vue, React, Svelte, Angular streaming patterns
 - **ANSI for CLIs:** rendering AI output in terminal agents
 
 **[→ Read Full Agents Guide](./AGENTS.md)**

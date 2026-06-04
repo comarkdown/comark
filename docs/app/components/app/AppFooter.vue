@@ -13,7 +13,7 @@ const appConfig = useAppConfig()
           <div class="border-b border-default p-6 sm:border-r md:p-8 lg:border-b-0">
             <AppHeaderLogo class="h-5 text-highlighted" />
             <p class="mt-3 max-w-xs text-xs/5 text-muted">
-              A fast, streaming-ready markdown parser with component support for Vue, React, and Svelte.
+              A fast, streaming-ready markdown parser with component support for Vue, React, Svelte, and Angular.
             </p>
           </div>
 
