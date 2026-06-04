@@ -2,7 +2,7 @@
 import type { Plugin, ViteDevServer } from 'vite'
 import type { Highlighter } from 'shiki'
 import type { ComarkTree, ComarkInstanceSummary } from './types.ts'
-import { COMARK_DARK_ICON, COMARK_LIGHT_ICON, DEVTOOLS_SHIKI_LANGS, DEVTOOLS_SHIKI_THEMES } from './constants/index.ts'
+import { COMARK_DARK_ICON, COMARK_LIGHT_ICON, DEVTOOLS_SHIKI_LANGS, DEVTOOLS_SHIKI_THEMES } from './constants.ts'
 
 declare module '@vitejs/devtools-kit' {
   interface DevToolsRpcServerFunctions {
