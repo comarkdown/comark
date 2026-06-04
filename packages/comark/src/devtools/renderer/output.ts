@@ -69,8 +69,8 @@ export function highlightMarkdown(source: string): string {
         if (match && match[2]) {
           result.push(
             `<span class="comark-md-code-fence">${escapeHTML(match[1])}</span>` +
-            `<span class="comark-md-code-lang">${escapeHTML(match[2])}</span>` +
-            (match[3] ? `<span class="comark-md-code-fence">${escapeHTML(match[3])}</span>` : '')
+              `<span class="comark-md-code-lang">${escapeHTML(match[2])}</span>` +
+              (match[3] ? `<span class="comark-md-code-fence">${escapeHTML(match[3])}</span>` : '')
           )
         } else {
           result.push(`<span class="comark-md-code-fence">${escapeHTML(line)}</span>`)

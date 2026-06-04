@@ -283,7 +283,9 @@
 }
 
 @keyframes comark-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .comark-loading-text {

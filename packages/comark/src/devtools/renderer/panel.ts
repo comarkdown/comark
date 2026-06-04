@@ -69,11 +69,7 @@ export class DevtoolsPanel {
     panel.appendChild(root)
 
     // Tab bar
-    const { tabs, tabButtons } = createTabBar(
-      [...TAB_DEFS],
-      this.activeTab,
-      (id) => this.switchTab(id),
-    )
+    const { tabs, tabButtons } = createTabBar([...TAB_DEFS], this.activeTab, (id) => this.switchTab(id))
     this.tabButtons = tabButtons
     root.appendChild(tabs)
 
@@ -103,7 +99,7 @@ export class DevtoolsPanel {
       (scrollTop, scrollLeft) => {
         this.editorHighlight.scrollTop = scrollTop
         this.editorHighlight.scrollLeft = scrollLeft
-      },
+      }
     )
     this.editorWrap = editorResult.wrap
     this.editor = editorResult.textarea

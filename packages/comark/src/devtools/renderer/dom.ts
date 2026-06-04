@@ -4,7 +4,7 @@
 export function createTabBar(
   tabDefs: { id: string; label: string }[],
   activeTab: string,
-  onSwitch: (tabId: string) => void,
+  onSwitch: (tabId: string) => void
 ): { tabs: HTMLDivElement; tabButtons: HTMLButtonElement[] } {
   const tabs = document.createElement('div')
   tabs.className = 'comark-tabs'
@@ -50,7 +50,7 @@ export function createTabRight(): {
 /** Create the markdown editor with a transparent textarea overlaying a syntax-highlighted `<pre>` */
 export function createEditor(
   onInput: () => void,
-  onScroll: (scrollTop: number, scrollLeft: number) => void,
+  onScroll: (scrollTop: number, scrollLeft: number) => void
 ): { wrap: HTMLDivElement; textarea: HTMLTextAreaElement; highlight: HTMLPreElement } {
   const wrap = document.createElement('div')
   wrap.className = 'comark-editor-wrap'
