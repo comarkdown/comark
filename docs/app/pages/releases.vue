@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { parse } from 'comark'
+import emoji from 'comark/plugins/emoji'
+
 const { data: page } = await useAsyncData('releases', () => queryCollection('releases').first())
 if (!page.value) {
   throw createError({ statusCode: 404, statusMessage: 'Page not found', fatal: true })
@@ -15,22 +18,25 @@ defineOgImage('Docs.satori', {
   description: page.value.description,
 })
 
-const { data: versions } = await useFetch('https://ungh.cc/repos/comarkdown/comark/releases', {
-  transform: (data: {
+const { data: versions } = await useAsyncData('release-versions', async () => {
+  const data = await $fetch<{
     releases: {
       name?: string
       tag: string
       publishedAt: string
       markdown: string
     }[]
-  }) => {
-    return data.releases.map((release) => ({
-      tag: release.tag,
-      title: release.name || release.tag,
-      date: release.publishedAt,
-      markdown: release.markdown,
-    }))
-  },
+  }>('https://ungh.cc/repos/comarkdown/comark/releases')
+
+  return Promise.all(data.releases.map(async (release) => ({
+    tag: release.tag,
+    title: release.name || release.tag,
+    date: release.publishedAt,
+    tree: await parse(release.markdown, {
+      plugins: [emoji()],
+      autoClose: true,
+    }),
+  })))
 })
 </script>
 
@@ -64,7 +70,9 @@ const { data: versions } = await useFetch('https://ungh.cc/repos/comarkdown/coma
             <UChangelogVersion
               v-for="version in versions"
               :key="version.tag"
-              v-bind="version"
+              :tag="version.tag"
+              :title="version.title"
+              :date="version.date"
               :ui="{
                 root: 'flex items-start',
                 container: 'max-w-xl',
@@ -75,9 +83,7 @@ const { data: versions } = await useFetch('https://ungh.cc/repos/comarkdown/coma
               }"
             >
               <template #body>
-                <Suspense>
-                  <ComarkDocs v-if="version.markdown">{{ version.markdown }}</ComarkDocs>
-                </Suspense>
+                <ComarkDocsRenderer v-if="version.tree" :tree="version.tree" />
               </template>
             </UChangelogVersion>
           </UChangelogVersions>
