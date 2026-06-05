@@ -28,15 +28,17 @@ const { data: versions } = await useAsyncData('release-versions', async () => {
     }[]
   }>('https://ungh.cc/repos/comarkdown/comark/releases')
 
-  return Promise.all(data.releases.map(async (release) => ({
-    tag: release.tag,
-    title: release.name || release.tag,
-    date: release.publishedAt,
-    tree: await parse(release.markdown, {
-      plugins: [emoji()],
-      autoClose: true,
-    }),
-  })))
+  return Promise.all(
+    data.releases.map(async (release) => ({
+      tag: release.tag,
+      title: release.name || release.tag,
+      date: release.publishedAt,
+      tree: await parse(release.markdown, {
+        plugins: [emoji()],
+        autoClose: true,
+      }),
+    }))
+  )
 })
 </script>
 
@@ -83,7 +85,10 @@ const { data: versions } = await useAsyncData('release-versions', async () => {
               }"
             >
               <template #body>
-                <ComarkDocsRenderer v-if="version.tree" :tree="version.tree" />
+                <ComarkDocsRenderer
+                  v-if="version.tree"
+                  :tree="version.tree"
+                />
               </template>
             </UChangelogVersion>
           </UChangelogVersions>
