@@ -182,3 +182,114 @@ after \`code\`
     expect(result.nodes).toEqual([['pre', {}, ['code', {}, '<!-- note -->']]])
   })
 })
+
+describe('<details> block handling', () => {
+  it('keeps content inside <details> when blank line separates summary from body', async () => {
+    const md = `<details>
+<summary>Title</summary>
+
+xxx
+</details>`
+
+    const result = await parse(md)
+
+    expect(result.nodes).toEqual([
+      [
+        'details',
+        { $: { html: 1, block: 1 } },
+        ['summary', { $: { html: 1, block: 1 } }, 'Title'],
+        ['p', {}, 'xxx'],
+      ],
+    ])
+  })
+
+  it('keeps multiple paragraphs inside <details>', async () => {
+    const md = `<details>
+<summary>Title</summary>
+
+paragraph 1
+
+paragraph 2
+</details>`
+
+    const result = await parse(md)
+
+    expect(result.nodes).toEqual([
+      [
+        'details',
+        { $: { html: 1, block: 1 } },
+        ['summary', { $: { html: 1, block: 1 } }, 'Title'],
+        ['p', {}, 'paragraph 1'],
+        ['p', {}, 'paragraph 2'],
+      ],
+    ])
+  })
+
+  it('handles nested <details> blocks', async () => {
+    const md = `<details>
+<summary>Outer</summary>
+
+<details>
+<summary>Inner</summary>
+
+inner content
+</details>
+
+outer content
+</details>`
+
+    const result = await parse(md)
+
+    expect(result.nodes).toEqual([
+      [
+        'details',
+        { $: { html: 1, block: 1 } },
+        ['summary', { $: { html: 1, block: 1 } }, 'Outer'],
+        [
+          'details',
+          { $: { html: 1, block: 1 } },
+          ['summary', { $: { html: 1, block: 1 } }, 'Inner'],
+          ['p', {}, 'inner content'],
+        ],
+        ['p', {}, 'outer content'],
+      ],
+    ])
+  })
+
+  it('handles <details> without blank line (self-contained HTML block)', async () => {
+    const md = `<details>
+<summary>Title</summary>
+Content without blank line
+</details>`
+
+    const result = await parse(md)
+
+    expect(result.nodes).toEqual([
+      [
+        'details',
+        { $: { html: 1, block: 1 } },
+        ['summary', { $: { html: 1, block: 1 } }, 'Title'],
+        'Content without blank line',
+      ],
+    ])
+  })
+
+  it('handles <details open> with attributes', async () => {
+    const md = `<details open>
+<summary>Title</summary>
+
+content
+</details>`
+
+    const result = await parse(md)
+
+    expect(result.nodes).toEqual([
+      [
+        'details',
+        { $: { html: 1, block: 1 }, ':open': 'true' },
+        ['summary', { $: { html: 1, block: 1 } }, 'Title'],
+        ['p', {}, 'content'],
+      ],
+    ])
+  })
+})

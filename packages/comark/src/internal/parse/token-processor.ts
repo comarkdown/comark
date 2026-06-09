@@ -55,6 +55,13 @@ export function marmdownItTokensToComarkTree(
     const token = tokens[i]
 
     if (token.type === 'html_block') {
+      const content = typeof token.content === 'string' ? token.content : ''
+      if (isUnclosedDetailsBlock(content)) {
+        const result = processUnclosedDetailsTokens(tokens, i, state)
+        nodes.push(result.node)
+        i = result.nextIndex
+        continue
+      }
       const result = processHtmlBlockTokens(tokens, i)
       nodes.push(...result.nodes)
       i = result.nextIndex
@@ -90,6 +97,84 @@ export function marmdownItTokensToComarkTree(
 function processHtmlBlockTokens(tokens: any[], startIndex: number): { nodes: ComarkNode[]; nextIndex: number } {
   const content = typeof tokens[startIndex]?.content === 'string' ? tokens[startIndex].content : ''
   return { nodes: htmlToComarkNodes(content), nextIndex: startIndex + 1 }
+}
+
+/**
+ * Check whether an html_block token opens a `<details>` without closing it.
+ * CommonMark type-6 blocks terminate on blank lines, so `<details>` followed
+ * by a blank line splits into separate tokens and the body content ends up
+ * outside the element.
+ */
+function isUnclosedDetailsBlock(content: string): boolean {
+  const trimmed = content.trim()
+  return /^<details[\s>]/i.test(trimmed) && !/<\/details\s*>/i.test(trimmed)
+}
+
+/**
+ * Check whether an html_block token is a standalone `</details>` closer.
+ */
+function isClosingDetailsBlock(content: string): boolean {
+  return /^\s*<\/details\s*>\s*$/i.test(content)
+}
+
+/**
+ * Process a `<details>` block whose opening and closing tags are split across
+ * multiple markdown-it tokens (due to blank-line termination of type-6 HTML
+ * blocks).  Collects all intermediate tokens as children of the `<details>`
+ * element, with proper markdown parsing.
+ */
+function processUnclosedDetailsTokens(
+  tokens: any[],
+  startIndex: number,
+  state?: ProcessState,
+): { node: ComarkNode; nextIndex: number } {
+  const content = typeof tokens[startIndex]?.content === 'string' ? tokens[startIndex].content : ''
+  const detailsNodes = htmlToComarkNodes(content)
+
+  // The first node should be the <details> element
+  const detailsNode = detailsNodes[0]
+  if (!Array.isArray(detailsNode) || detailsNode[0] !== 'details') {
+    return { node: detailsNode ?? ['details', {}] as ComarkNode, nextIndex: startIndex + 1 }
+  }
+
+  let i = startIndex + 1
+
+  while (i < tokens.length) {
+    const token = tokens[i]
+
+    if (token.type === 'html_block') {
+      const tokenContent = typeof token.content === 'string' ? token.content : ''
+
+      // Nested <details> — recurse
+      if (isUnclosedDetailsBlock(tokenContent)) {
+        const nested = processUnclosedDetailsTokens(tokens, i, state)
+        detailsNode.push(nested.node)
+        i = nested.nextIndex
+        continue
+      }
+
+      // Closing </details> — done
+      if (isClosingDetailsBlock(tokenContent)) {
+        i++
+        break
+      }
+
+      // Other html_block inside <details>
+      const result = processHtmlBlockTokens(tokens, i)
+      detailsNode.push(...result.nodes)
+      i = result.nextIndex
+      continue
+    }
+
+    // Process regular block tokens as children of <details>
+    const result = processBlockToken(tokens, i, false, state)
+    if (result.node) {
+      detailsNode.push(result.node)
+    }
+    i = result.nextIndex
+  }
+
+  return { node: detailsNode as ComarkNode, nextIndex: i }
 }
 
 /**
@@ -476,6 +561,17 @@ function processBlockChildrenWithSlots(
 
     // html_block can produce multiple nodes — handle before processBlockToken
     if (token.type === 'html_block') {
+      const tokenContent = typeof token.content === 'string' ? token.content : ''
+      if (isUnclosedDetailsBlock(tokenContent)) {
+        const result = processUnclosedDetailsTokens(tokens, i, state)
+        if (currentSlotName !== null) {
+          currentSlotChildren.push(result.node)
+        } else {
+          nodes.push(result.node)
+        }
+        i = result.nextIndex
+        continue
+      }
       const result = processHtmlBlockTokens(tokens, i)
       if (currentSlotName !== null) {
         currentSlotChildren.push(...result.nodes)
@@ -571,6 +667,13 @@ function processBlockChildren(
     const token = tokens[i]
 
     if (token.type === 'html_block') {
+      const tokenContent = typeof token.content === 'string' ? token.content : ''
+      if (isUnclosedDetailsBlock(tokenContent)) {
+        const result = processUnclosedDetailsTokens(tokens, i, state)
+        nodes.push(result.node)
+        i = result.nextIndex
+        continue
+      }
       const result = processHtmlBlockTokens(tokens, i)
       nodes.push(...result.nodes)
       i = result.nextIndex
