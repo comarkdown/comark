@@ -254,6 +254,7 @@ function closeInlineMarkersLinear(line: string): string {
   let inAttributes = 0
   let inLinkText = 0
   let inLinkUrl = 0
+  let linkTextBacktickCount = 0
   for (let i = 0; i < len; i++) {
     const prevCh = i > 0 ? line[i - 1] : ''
     const ch = line[i]
@@ -295,7 +296,11 @@ function closeInlineMarkersLinear(line: string): string {
       continue
     }
 
-    if (inLinkText > 0 || inLinkUrl > 0) continue
+    if (inLinkText > 0) {
+      if (ch === '`') linkTextBacktickCount++
+      continue
+    }
+    if (inLinkUrl > 0) continue
 
     if (ch === '*') {
       asteriskCount++
@@ -550,7 +555,9 @@ function closeInlineMarkersLinear(line: string): string {
 
   // Check [ ] (brackets)
   if (!closingSuffix && bracketBalance > 0) {
-    closingSuffix = ']'
+    // An odd backtick opened inside the unclosed link text is an unclosed
+    // inline code span; close it before the bracket so `]` stays outside it.
+    closingSuffix = linkTextBacktickCount % 2 === 1 ? '`]' : ']'
   }
 
   // Check ( ) (parens)

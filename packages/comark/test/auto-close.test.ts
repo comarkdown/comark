@@ -560,6 +560,14 @@ describe('link', () => {
     const expected = 'https://errors.pydantic.dev/2.13/v/value_error'
     expect(autoCloseMarkdown(input)).toBe(expected)
   })
+
+  it('should close inline code inside unclosed link text', () => {
+    // Backtick must close before the bracket, else `]` lands inside the
+    // unclosed code span and renders as literal "`foo]" not a code link.
+    const input = '[`foo'
+    const expected = '[`foo`]'
+    expect(autoCloseMarkdown(input)).toBe(expected)
+  })
 })
 describe('attributes scope', () => {
   it('should ignore $ in inline attributes', () => {
