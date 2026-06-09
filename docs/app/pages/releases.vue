@@ -29,15 +29,17 @@ const { data: versions } = await useAsyncData('release-versions', async () => {
   }>('https://ungh.cc/repos/comarkdown/comark/releases')
 
   return Promise.all(
-    data.releases.map(async (release) => ({
-      tag: release.tag,
-      title: release.name || release.tag,
-      date: release.publishedAt,
-      tree: await parse(release.markdown, {
-        plugins: [emoji()],
-        autoClose: true,
-      }),
-    }))
+    data.releases
+      .filter((release) => release.tag.startsWith('comark@'))
+      .map(async (release) => ({
+        tag: release.tag,
+        title: release.name || release.tag,
+        date: release.publishedAt,
+        tree: await parse(release.markdown, {
+          plugins: [emoji()],
+          autoClose: true,
+        }),
+      }))
   )
 })
 </script>
