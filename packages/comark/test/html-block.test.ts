@@ -194,12 +194,7 @@ xxx
     const result = await parse(md)
 
     expect(result.nodes).toEqual([
-      [
-        'details',
-        { $: { html: 1, block: 1 } },
-        ['summary', { $: { html: 1, block: 1 } }, 'Title'],
-        ['p', {}, 'xxx'],
-      ],
+      ['details', { $: { html: 1, block: 1 } }, ['summary', { $: { html: 1, block: 1 } }, 'Title'], ['p', {}, 'xxx']],
     ])
   })
 

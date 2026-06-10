@@ -126,7 +126,7 @@ function isClosingDetailsBlock(content: string): boolean {
 function processUnclosedDetailsTokens(
   tokens: any[],
   startIndex: number,
-  state?: ProcessState,
+  state?: ProcessState
 ): { node: ComarkNode; nextIndex: number } {
   const content = typeof tokens[startIndex]?.content === 'string' ? tokens[startIndex].content : ''
   const detailsNodes = htmlToComarkNodes(content)
@@ -134,7 +134,7 @@ function processUnclosedDetailsTokens(
   // The first node should be the <details> element
   const detailsNode = detailsNodes[0]
   if (!Array.isArray(detailsNode) || detailsNode[0] !== 'details') {
-    return { node: detailsNode ?? ['details', {}] as ComarkNode, nextIndex: startIndex + 1 }
+    return { node: detailsNode ?? (['details', {}] as ComarkNode), nextIndex: startIndex + 1 }
   }
 
   let i = startIndex + 1
