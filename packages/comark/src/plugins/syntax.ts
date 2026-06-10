@@ -53,6 +53,23 @@ export interface SyntaxOptions {
   bindingTag?: string
 }
 
+/**
+ * Whether a character code can start a component name.
+ *
+ * Component names must begin with an ASCII letter or `$`, mirroring the block
+ * name grammar (`RE_BLOCK_NAME = /^[a-z$]/i`). This prevents sequences such as
+ * `:8100` or `::30` from being treated as components — a purely numeric name is
+ * not a valid component and would otherwise produce invalid output like
+ * `createElement('8100')` (inline) or throw `Invalid block params` (block).
+ */
+function isComponentNameStart(code: number): boolean {
+  return (
+    (code >= 0x61 && code <= 0x7a) || // a-z
+    (code >= 0x41 && code <= 0x5a) || // A-Z
+    code === 0x24 // $
+  )
+}
+
 // #region Block component plugin (`::name` and `::name ... ::`)
 
 const blockYamlLines: Record<string, string> = {
@@ -74,7 +91,9 @@ const markdownItComarkBlock: PluginSimple = (md) => {
     function comark_block_shorthand(state, startLine, _endLine, silent) {
       const line = state.src.slice(state.bMarks[startLine] + state.tShift[startLine], state.eMarks[startLine])
 
-      if (!/^:\w/.test(line)) return false
+      // `:name` shorthand — the name must start with a letter or `$`. This also
+      // leaves `::` (block) and `:8100` (plain text) to other handlers.
+      if (line[0] !== ':' || !isComponentNameStart(line.charCodeAt(1))) return false
 
       const { name, content, props, remaining } = parseBlockParams(line.slice(1))
 
@@ -142,6 +161,13 @@ const markdownItComarkBlock: PluginSimple = (md) => {
       if (marker_count < min_markers) return false
 
       const markup = state.src.slice(start, pos)
+
+      // When a name is present it must start with a letter or `$`; otherwise
+      // treat the line as plain text rather than letting parseBlockParams throw
+      // on e.g. `::8100`.
+      const nameStart = state.skipSpaces(pos)
+      if (nameStart < max && !isComponentNameStart(state.src.charCodeAt(nameStart))) return false
+
       const params = parseBlockParams(state.src.slice(pos, max))
 
       if (!params.name) return false
@@ -458,6 +484,10 @@ const markdownItInlineComponent: PluginSimple = (md) => {
 
     const prevChar = state.src[start - 1]
     if (start > 0 && !ALLOWED_PREV_CHARS.has(prevChar)) return false
+
+    // A component name must start with a letter or `$`. Without this, `:8100`,
+    // `:30`, etc. are captured as components (e.g. `createElement('8100')`).
+    if (!isComponentNameStart(state.src.charCodeAt(start + 1))) return false
 
     let index = start + 1
     let nameEnd = -1
