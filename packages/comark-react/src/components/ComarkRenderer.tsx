@@ -4,6 +4,22 @@ import { pascalCase, camelCase, resolveAttributes } from 'comark/utils'
 import { findLastTextNodeAndAppendNode, getCaret } from '../utils/caret.ts'
 
 /**
+ * Recursively clone a node's array structure so the caret can be appended
+ * without mutating cached/reused node objects. Attribute objects are shared
+ * (they are never mutated when appending a caret).
+ */
+function cloneNode(node: ComarkNode): ComarkNode {
+  if (typeof node === 'string') return node
+  const len = node.length
+  // eslint-disable-next-line unicorn/no-new-array -- pre-allocated for perf
+  const cloned = new Array(len) as ComarkNode & unknown[]
+  cloned[0] = node[0]
+  cloned[1] = node[1]
+  for (let i = 2; i < len; i++) cloned[i] = cloneNode(node[i] as ComarkNode)
+  return cloned as ComarkNode
+}
+
+/**
  * Helper to get tag from a ComarkNode
  */
 function getTag(node: ComarkNode): string | null {
@@ -336,8 +352,18 @@ export const ComarkRenderer: React.FC<ComarkRendererProps> = ({
     const nodes = [...(tree.nodes || [])]
 
     if (streaming && caret && nodes.length > 0) {
-      const hasStreamCaret = findLastTextNodeAndAppendNode(nodes[nodes.length - 1] as ComarkElement, caret)
-      if (!hasStreamCaret) {
+      // Clone the last node before appending the caret. The streaming parser
+      // reuses (caches) node objects across parses, so mutating them in place
+      // would accumulate carets on re-render (and corrupt the reuse cache).
+      const lastIdx = nodes.length - 1
+      const clonedLast = cloneNode(nodes[lastIdx])
+      const appended =
+        typeof clonedLast !== 'string' &&
+        clonedLast[0] !== null &&
+        findLastTextNodeAndAppendNode(clonedLast as ComarkElement, caret)
+      if (appended) {
+        nodes[lastIdx] = clonedLast
+      } else {
         nodes.push(caret)
       }
     }

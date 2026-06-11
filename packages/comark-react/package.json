@@ -19,7 +19,8 @@
     "url": "git+https://github.com/comarkdown/comark.git"
   },
   "files": [
-    "dist"
+    "dist",
+    "streamdown.css"
   ],
   "type": "module",
   "sideEffects": false,
@@ -28,6 +29,8 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": "./dist/index.js",
+    "./streamdown": "./dist/components/Streamdown.js",
+    "./streamdown.css": "./streamdown.css",
     "./plugins/*": "./dist/plugins/*.js",
     "./utils": "./dist/utils/index.js",
     "./parse": "./dist/parse.js",
