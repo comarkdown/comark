@@ -17,8 +17,11 @@ export { resolveAttributes, resolveAttribute } from './internal/stringify/attrib
  * @param context - The context of the renderer
  * @returns The string representation of the Comark tree
  */
-export async function render(tree: ComarkTree, context: RenderOptions = {}): Promise<string> {
-  const state = createState({ ...context, tree, handlers: context.components })
+export async function render(
+  tree: ComarkTree | { nodes: ComarkTree['nodes'] },
+  context: RenderOptions = {}
+): Promise<string> {
+  const state = createState({ ...context, tree: tree as ComarkTree, handlers: context.components })
 
   let result = ''
   for (const child of tree.nodes) {
@@ -34,7 +37,10 @@ export async function render(tree: ComarkTree, context: RenderOptions = {}): Pro
  * @param options - Optional rendering options
  * @returns The markdown string with optional frontmatter
  */
-export async function renderMarkdown(tree: ComarkTree, options?: RenderMarkdownOptions): Promise<string> {
+export async function renderMarkdown(
+  tree: ComarkTree | { nodes: ComarkTree['nodes'] },
+  options?: RenderMarkdownOptions
+): Promise<string> {
   const content = await render(tree, { format: 'markdown/comark', ...options })
-  return renderFrontmatter(tree.frontmatter, content, options?.frontmatterOptions)
+  return renderFrontmatter((tree as ComarkTree).frontmatter || {}, content, options?.frontmatterOptions)
 }
