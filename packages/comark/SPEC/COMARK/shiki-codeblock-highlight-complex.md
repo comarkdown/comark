@@ -48,7 +48,6 @@ func main() {
           10
         ],
         "class": "shiki shiki-themes github-dark dark:github-dark",
-        "tabindex": "0",
         "style": "background-color:#24292e;color:#e1e4e8"
       },
       [
@@ -397,7 +396,7 @@ func main() {
 ## HTML
 
 ```html
-<pre language="go" highlights="[1,3,5,6,7,10]" class="shiki shiki-themes github-dark dark:github-dark" tabindex="0" style="background-color:#24292e;color:#e1e4e8"><code class="language-go"><span class="line highlight" style="display: inline-block"><span style="color:#F97583">package</span><span style="color:#B392F0"> main</span></span>
+<pre language="go" highlights="[1,3,5,6,7,10]" class="shiki shiki-themes github-dark dark:github-dark" style="background-color:#24292e;color:#e1e4e8"><code class="language-go"><span class="line highlight" style="display: inline-block"><span style="color:#F97583">package</span><span style="color:#B392F0"> main</span></span>
 <span class="line" style="display: inline"></span>
 <span class="line highlight" style="display: inline-block"><span style="color:#F97583">import</span><span style="color:#9ECBFF"> "</span><span style="color:#B392F0">fmt</span><span style="color:#9ECBFF">"</span></span>
 <span class="line" style="display: inline"></span>

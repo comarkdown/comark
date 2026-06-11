@@ -32,7 +32,6 @@ console.log(greeting)
       {
         "language": "typescript",
         "class": "shiki shiki-themes min-light nord dark:nord",
-        "tabindex": "0",
         "style": "background-color:#ffffff;color:#212121;--shiki-dark-bg:#2e3440;--shiki-dark:#d8dee9"
       },
       [
@@ -162,7 +161,7 @@ console.log(greeting)
 ## HTML
 
 ```html
-<pre language="typescript" class="shiki shiki-themes min-light nord dark:nord" tabindex="0" style="background-color:#ffffff;color:#212121;--shiki-dark-bg:#2e3440;--shiki-dark:#d8dee9"><code class="language-typescript"><span class="line" style="display: inline"><span style="color:#D32F2F;--shiki-dark:#81A1C1">const</span><span style="color:#1976D2;--shiki-dark:#D8DEE9"> greeting</span><span style="color:#D32F2F;--shiki-dark:#81A1C1">:</span><span style="color:#1976D2;--shiki-dark:#8FBCBB"> string</span><span style="color:#D32F2F;--shiki-dark:#81A1C1"> =</span><span style="color:#22863A;--shiki-dark:#ECEFF4"> "</span><span style="color:#22863A;--shiki-dark:#A3BE8C">Hello, World!</span><span style="color:#22863A;--shiki-dark:#ECEFF4">"</span></span>
+<pre language="typescript" class="shiki shiki-themes min-light nord dark:nord" style="background-color:#ffffff;color:#212121;--shiki-dark-bg:#2e3440;--shiki-dark:#d8dee9"><code class="language-typescript"><span class="line" style="display: inline"><span style="color:#D32F2F;--shiki-dark:#81A1C1">const</span><span style="color:#1976D2;--shiki-dark:#D8DEE9"> greeting</span><span style="color:#D32F2F;--shiki-dark:#81A1C1">:</span><span style="color:#1976D2;--shiki-dark:#8FBCBB"> string</span><span style="color:#D32F2F;--shiki-dark:#81A1C1"> =</span><span style="color:#22863A;--shiki-dark:#ECEFF4"> "</span><span style="color:#22863A;--shiki-dark:#A3BE8C">Hello, World!</span><span style="color:#22863A;--shiki-dark:#ECEFF4">"</span></span>
 <span class="line" style="display: inline"><span style="color:#1976D2;--shiki-dark:#D8DEE9">console</span><span style="color:#6F42C1;--shiki-dark:#ECEFF4">.</span><span style="color:#6F42C1;--shiki-dark:#88C0D0">log</span><span style="color:#24292EFF;--shiki-dark:#D8DEE9FF">(</span><span style="color:#24292EFF;--shiki-dark:#D8DEE9">greeting</span><span style="color:#24292EFF;--shiki-dark:#D8DEE9FF">)</span></span></code></pre>
 ```
 
