@@ -77,7 +77,12 @@ function nodeText(node: React.ReactNode): string {
 }
 
 const LANG_EXT: Record<string, string> = {
-  javascript: 'js', typescript: 'ts', python: 'py', markdown: 'md', shell: 'sh', bash: 'sh',
+  javascript: 'js',
+  typescript: 'ts',
+  python: 'py',
+  markdown: 'md',
+  shell: 'sh',
+  bash: 'sh',
 }
 
 /** Default code-block renderer with copy + download controls (Streamdown parity). */
@@ -108,15 +113,34 @@ function CodeBlock({ className, children, language, ...rest }: any) {
   }
 
   return (
-    <div className="comark-codeblock" data-language={language}>
+    <div
+      className="comark-codeblock"
+      data-language={language}
+    >
       <div className="comark-codeblock-header">
         <span className="comark-codeblock-lang">{language ?? 'text'}</span>
         <div className="comark-codeblock-actions">
-          <button type="button" onClick={copy}>{copied ? 'Copied' : 'Copy'}</button>
-          <button type="button" onClick={download}>Download</button>
+          <button
+            type="button"
+            onClick={copy}
+          >
+            {copied ? 'Copied' : 'Copy'}
+          </button>
+          <button
+            type="button"
+            onClick={download}
+          >
+            Download
+          </button>
         </div>
       </div>
-      <pre ref={preRef} className={className} {...rest}>{children}</pre>
+      <pre
+        ref={preRef}
+        className={className}
+        {...rest}
+      >
+        {children}
+      </pre>
     </div>
   )
 }
