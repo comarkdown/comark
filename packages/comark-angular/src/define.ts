@@ -41,13 +41,7 @@ export interface DefineComarkRendererOptions {
  * ```
  */
 export function defineComarkComponent(config: DefineComarkComponentOptions = {}): Type<ComarkComponent> {
-  const {
-    name,
-    components: configComponents = {},
-    class: configClass,
-    plugins: configPlugins = [],
-    ...parseOptions
-  } = config
+  const { components: configComponents = {}, class: configClass, plugins: configPlugins = [], ...parseOptions } = config
 
   @Component({
     selector: 'comark-defined',
@@ -117,7 +111,7 @@ export function defineComarkComponent(config: DefineComarkComponentOptions = {})
  * ```
  */
 export function defineComarkRendererComponent(config: DefineComarkRendererOptions = {}): Type<ComarkRendererComponent> {
-  const { name, components: configComponents = {}, class: configClass } = config
+  const { components: configComponents = {}, class: configClass } = config
 
   @Component({
     selector: 'comark-renderer-defined',

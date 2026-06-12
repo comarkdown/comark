@@ -1,4 +1,5 @@
-import { Component, Input, Output, EventEmitter, OnChanges, ChangeDetectorRef } from '@angular/core'
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core'
+import { ActivatedRoute, RouterLink } from '@angular/router'
 import { ComarkRendererComponent } from '@comark/angular'
 import { getPost, type Post } from '../lib/posts'
 import { AlertComponent } from '../components/alert.component'
@@ -6,13 +7,13 @@ import { AlertComponent } from '../components/alert.component'
 @Component({
   selector: 'app-blog-post',
   standalone: true,
-  imports: [ComarkRendererComponent],
+  imports: [ComarkRendererComponent, RouterLink],
   template: `
     @if (post) {
       <article>
         <header class="pb-4 mb-8">
           <a
-            (click)="back.emit()"
+            routerLink="/"
             class="text-sm text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 mb-4 inline-block no-underline cursor-pointer"
           >
             &larr; Back to all posts
@@ -41,19 +42,23 @@ import { AlertComponent } from '../components/alert.component'
     }
   `,
 })
-export class BlogPostComponent implements OnChanges {
-  @Input() slug = ''
-  @Output() back = new EventEmitter<void>()
+export class BlogPostComponent implements OnInit {
   post: Post | null = null
   components = { alert: AlertComponent }
 
-  constructor(private cdr: ChangeDetectorRef) {}
+  constructor(
+    private route: ActivatedRoute,
+    private cdr: ChangeDetectorRef
+  ) {}
 
-  async ngOnChanges() {
-    if (this.slug) {
-      this.post = await getPost(this.slug)
-      this.cdr.detectChanges()
-    }
+  async ngOnInit() {
+    this.route.params.subscribe(async (params) => {
+      const slug = params['slug']
+      if (slug) {
+        this.post = await getPost(slug)
+        this.cdr.detectChanges()
+      }
+    })
   }
 
   formatDate(date: string): string {

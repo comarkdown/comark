@@ -1,9 +1,11 @@
-import { Component, OnInit, Output, EventEmitter, ChangeDetectorRef } from '@angular/core'
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core'
+import { RouterLink } from '@angular/router'
 import { getAllPosts, type PostMeta } from '../lib/posts'
 
 @Component({
   selector: 'app-home',
   standalone: true,
+  imports: [RouterLink],
   template: `
     <div>
       <h1 class="text-3xl font-bold mb-2">Comark Blog</h1>
@@ -28,10 +30,9 @@ import { getAllPosts, type PostMeta } from '../lib/posts'
       <ul class="space-y-6 list-none p-0">
         @for (post of posts; track post.slug) {
           <li>
-            <button
-              type="button"
-              (click)="openPost.emit(post.slug)"
-              class="group block rounded-lg border border-neutral-200 dark:border-neutral-800 p-5 transition hover:border-neutral-400 dark:hover:border-neutral-600 no-underline cursor-pointer bg-transparent text-left w-full"
+            <a
+              [routerLink]="['/post', post.slug]"
+              class="group block rounded-lg border border-neutral-200 dark:border-neutral-800 p-5 transition hover:border-neutral-400 dark:hover:border-neutral-600 no-underline cursor-pointer"
             >
               <h2 class="text-xl font-semibold group-hover:text-blue-600 dark:group-hover:text-blue-400 mb-1">
                 {{ post.title }}
@@ -53,7 +54,7 @@ import { getAllPosts, type PostMeta } from '../lib/posts'
                   }
                 </div>
               </div>
-            </button>
+            </a>
           </li>
         }
       </ul>
@@ -61,7 +62,6 @@ import { getAllPosts, type PostMeta } from '../lib/posts'
   `,
 })
 export class HomeComponent implements OnInit {
-  @Output() openPost = new EventEmitter<string>()
   posts: PostMeta[] = []
 
   constructor(private cdr: ChangeDetectorRef) {}

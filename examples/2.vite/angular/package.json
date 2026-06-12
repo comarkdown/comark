@@ -14,6 +14,7 @@
     "@angular/core": "catalog:",
     "@angular/platform-browser": "catalog:",
     "@angular/platform-browser-dynamic": "catalog:",
+    "@angular/router": "catalog:",
     "@comark/angular": "workspace:",
     "@shikijs/langs": "catalog:",
     "comark": "catalog:",
