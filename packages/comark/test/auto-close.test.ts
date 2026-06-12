@@ -560,6 +560,14 @@ describe('link', () => {
     const expected = 'https://errors.pydantic.dev/2.13/v/value_error'
     expect(autoCloseMarkdown(input)).toBe(expected)
   })
+
+  it('should close inline code inside unclosed link text', () => {
+    // Backtick must close before the bracket, else `]` lands inside the
+    // unclosed code span and renders as literal "`foo]" not a code link.
+    const input = '[`foo'
+    const expected = '[`foo`]'
+    expect(autoCloseMarkdown(input)).toBe(expected)
+  })
 })
 describe('attributes scope', () => {
   it('should ignore $ in inline attributes', () => {
@@ -608,5 +616,93 @@ describe('attributes scope', () => {
     const input = '![$link](https://example.com/icons.png)'
     const expected = '![$link](https://example.com/icons.png)'
     expect(autoCloseMarkdown(input)).toBe(expected)
+  })
+})
+
+describe('inline code spans as literal regions', () => {
+  it('should not count asterisks inside a closed code span', () => {
+    const input = 'text `a*b` and **bold'
+    const expected = 'text `a*b` and **bold**'
+    expect(autoCloseMarkdown(input)).toBe(expected)
+  })
+
+  it('should not count underscores inside a closed code span', () => {
+    const input = 'see `a_b_c` then __bold'
+    const expected = 'see `a_b_c` then __bold__'
+    expect(autoCloseMarkdown(input)).toBe(expected)
+  })
+
+  it('should close an open code span without leaking an asterisk', () => {
+    const input = '`x * y'
+    const expected = '`x * y`'
+    expect(autoCloseMarkdown(input)).toBe(expected)
+  })
+
+  it('should close only the code span when bold wraps an open code span', () => {
+    const input = '**bold `code'
+    const expected = '**bold `code`'
+    expect(autoCloseMarkdown(input)).toBe(expected)
+  })
+
+  it('should treat an underscore inside an open code span as literal', () => {
+    const input = '`snake_case'
+    const expected = '`snake_case`'
+    expect(autoCloseMarkdown(input)).toBe(expected)
+  })
+})
+
+describe('inline math as literal regions', () => {
+  it('should not count asterisks inside closed inline math', () => {
+    const input = '$a * b$ and *italic'
+    const expected = '$a * b$ and *italic*'
+    expect(autoCloseMarkdown(input)).toBe(expected)
+  })
+
+  it('should not count an underscore inside an open math region', () => {
+    const input = 'value $x_0'
+    const expected = 'value $x_0$'
+    expect(autoCloseMarkdown(input)).toBe(expected)
+  })
+
+  it('should close inline math without leaking an asterisk', () => {
+    const input = '$a * b'
+    const expected = '$a * b$'
+    expect(autoCloseMarkdown(input)).toBe(expected)
+  })
+})
+
+describe('escaped markers', () => {
+  it('should not count an escaped asterisk as a delimiter', () => {
+    const input = 'a \\* b *it'
+    const expected = 'a \\* b *it*'
+    expect(autoCloseMarkdown(input)).toBe(expected)
+  })
+
+  it('should not count an escaped underscore as a delimiter', () => {
+    const input = 'a \\_ b _it'
+    const expected = 'a \\_ b _it_'
+    expect(autoCloseMarkdown(input)).toBe(expected)
+  })
+
+  it('should not count an escaped backtick as a code span', () => {
+    const input = 'literal \\` then `code'
+    const expected = 'literal \\` then `code`'
+    expect(autoCloseMarkdown(input)).toBe(expected)
+  })
+
+  it('should leave a fully escaped marker untouched', () => {
+    const input = 'just a \\* star'
+    expect(autoCloseMarkdown(input)).toBe(input)
+  })
+})
+
+describe('nested emphasis (known limitations)', () => {
+  // Mixed-marker nesting needs CommonMark flanking resolution, out of scope here
+  it.todo('should close nested bold + underscore-italic (**_text -> **_text_**)', () => {
+    expect(autoCloseMarkdown('**_text')).toBe('**_text_**')
+  })
+
+  it.todo('should close nested italic + bold (*a **b -> *a **b***)', () => {
+    expect(autoCloseMarkdown('*a **b')).toBe('*a **b***')
   })
 })

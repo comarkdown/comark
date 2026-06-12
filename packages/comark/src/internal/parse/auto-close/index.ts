@@ -254,9 +254,33 @@ function closeInlineMarkersLinear(line: string): string {
   let inAttributes = 0
   let inLinkText = 0
   let inLinkUrl = 0
+  let linkTextBacktickCount = 0
+  // Markers inside an inline code span (`...`) or math ($...$) are literal text
+  let inCode = false
+  let inMath = false
   for (let i = 0; i < len; i++) {
     const prevCh = i > 0 ? line[i - 1] : ''
     const ch = line[i]
+
+    if (ch === '\\') {
+      i++ // Backslash escapes the next char, so neither is a delimiter
+      continue
+    }
+
+    if (inCode) {
+      if (ch === '`') {
+        backtickCount++
+        inCode = false
+      }
+      continue
+    }
+    if (inMath) {
+      if (ch === '$' && !(i + 1 < len && line[i + 1] === '$')) {
+        dollarCount++
+        inMath = false
+      }
+      continue
+    }
 
     if (ch === '{' && prevCh !== ' ') {
       inAttributes++
@@ -295,7 +319,28 @@ function closeInlineMarkersLinear(line: string): string {
       continue
     }
 
-    if (inLinkText > 0 || inLinkUrl > 0) continue
+    if (inLinkText > 0) {
+      if (ch === '`') linkTextBacktickCount++
+      continue
+    }
+    if (inLinkUrl > 0) continue
+
+    if (ch === '`') {
+      backtickCount++
+      inCode = true
+      continue
+    }
+    if (ch === '$') {
+      if (i + 1 < len && line[i + 1] === '$') {
+        dollarPairCount++ // `$$` is block math, counted as a pair
+        dollarCount += 2
+        i++
+      } else {
+        dollarCount++
+        inMath = true
+      }
+      continue
+    }
 
     if (ch === '*') {
       asteriskCount++
@@ -327,18 +372,15 @@ function closeInlineMarkersLinear(line: string): string {
       } else {
         singleTildeCount++
       }
-    } else if (ch === '`') {
-      backtickCount++
-    } else if (ch === '$' && prevCh !== '\\') {
-      // Count $$ pairs for block/display math
-      if (i + 1 < len && line[i + 1] === '$') {
-        dollarPairCount++
-        dollarCount += 2 // Count both dollars in the pair
-        i++ // Skip next $ since we counted the pair
-      } else {
-        dollarCount++ // Single $ for inline math
-      }
     }
+  }
+
+  // Open code/math region: close only it; everything after the opener is literal
+  if (inCode) {
+    return line + '`'
+  }
+  if (inMath) {
+    return line.trim() === '$$' ? line : line + '$'
   }
 
   // Check for complete ** pairs in O(1) - pairs are matched left to right
@@ -550,7 +592,9 @@ function closeInlineMarkersLinear(line: string): string {
 
   // Check [ ] (brackets)
   if (!closingSuffix && bracketBalance > 0) {
-    closingSuffix = ']'
+    // An odd backtick opened inside the unclosed link text is an unclosed
+    // inline code span; close it before the bracket so `]` stays outside it.
+    closingSuffix = linkTextBacktickCount % 2 === 1 ? '`]' : ']'
   }
 
   // Check ( ) (parens)

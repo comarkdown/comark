@@ -53,6 +53,24 @@ export interface SyntaxOptions {
   bindingTag?: string
 }
 
+/**
+ * A component name must start with a letter or `$`, followed by word chars,
+ * `$` or `-`. Mirrors the block name grammar (`RE_BLOCK_NAME = /^[a-z$]/i`).
+ */
+const RE_COMPONENT_NAME = /^[a-z$][\w$-]*/i
+
+/**
+ * Whether `name` begins with a syntactically valid component name.
+ *
+ * This prevents sequences such as `:8100` or `::30` from being treated as
+ * components — a purely numeric name is not a valid component and would
+ * otherwise produce invalid output like `createElement('8100')` (inline) or
+ * throw `Invalid block params` (block).
+ */
+function isValidComponentName(name: string): boolean {
+  return RE_COMPONENT_NAME.test(name)
+}
+
 // #region Block component plugin (`::name` and `::name ... ::`)
 
 const blockYamlLines: Record<string, string> = {
@@ -74,7 +92,7 @@ const markdownItComarkBlock: PluginSimple = (md) => {
     function comark_block_shorthand(state, startLine, _endLine, silent) {
       const line = state.src.slice(state.bMarks[startLine] + state.tShift[startLine], state.eMarks[startLine])
 
-      if (!/^:\w/.test(line)) return false
+      if (line[0] !== ':' || !isValidComponentName(line.slice(1))) return false
 
       const { name, content, props, remaining } = parseBlockParams(line.slice(1))
 
@@ -142,6 +160,12 @@ const markdownItComarkBlock: PluginSimple = (md) => {
       if (marker_count < min_markers) return false
 
       const markup = state.src.slice(start, pos)
+
+      // Bail out (plain text) on an invalid name instead of letting
+      // parseBlockParams throw on e.g. `::8100`.
+      const nameStart = state.skipSpaces(pos)
+      if (nameStart < max && !isValidComponentName(state.src.slice(nameStart, max))) return false
+
       const params = parseBlockParams(state.src.slice(pos, max))
 
       if (!params.name) return false
@@ -485,11 +509,12 @@ const markdownItInlineComponent: PluginSimple = (md) => {
     // Empty name
     if (nameEnd <= start + 1) return false
 
+    const name = state.src.slice(start + 1, nameEnd)
+    if (!isValidComponentName(name)) return false
+
     state.pos = index
 
     if (silent) return true
-
-    const name = state.src.slice(start + 1, nameEnd)
 
     if (contentStart !== -1) {
       state.push('mdc_inline_component', name, 1)

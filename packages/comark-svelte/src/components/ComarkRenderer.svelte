@@ -32,7 +32,7 @@ Supports custom component mappings and a streaming caret indicator.
     data,
     class: className = '',
   }: {
-    tree: ComarkTree
+    tree: ComarkTree | { nodes: ComarkTree['nodes'] }
     components?: Record<string, any>
     componentsManifest?: ComponentManifest
     resolver?: ComponentResolver
@@ -49,8 +49,8 @@ Supports custom component mappings and a streaming caret indicator.
   )
 
   let renderData = $derived({
-    frontmatter: tree.frontmatter,
-    meta: tree.meta,
+    frontmatter: (tree as ComarkTree).frontmatter || (tree as unknown as { data: Record<string, unknown> }).data || {},
+    meta: (tree as ComarkTree).meta || {},
     data: data || {},
     props: {},
   })
