@@ -50,7 +50,7 @@ export function defineComarkComponent(config: DefineComarkComponentOptions = {})
   } = config
 
   @Component({
-    selector: name || 'comark-defined',
+    selector: 'comark-defined',
     standalone: true,
     imports: [ComarkRendererComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -120,7 +120,7 @@ export function defineComarkRendererComponent(config: DefineComarkRendererOption
   const { name, components: configComponents = {}, class: configClass } = config
 
   @Component({
-    selector: name || 'comark-renderer-defined',
+    selector: 'comark-renderer-defined',
     standalone: true,
     imports: [ComarkRendererComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
