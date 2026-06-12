@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.4.0](https://github.com/comarkdown/comark/compare/@comark/react@0.3.1...@comark/react@0.4.0) (2026-06-04)
+
+### Bug Fixes
+
+* **svelte:** add missing components-manifest prop ([#183](https://github.com/comarkdown/comark/issues/183)) ([c78885c](https://github.com/comarkdown/comark/commit/c78885ca7504b38afc7ced59aac1a3c6b3cc5425))
+
 ## [0.3.1](https://github.com/comarkdown/comark/compare/@comark/react@0.2.1...@comark/react@0.3.1) (2026-04-24)
 
 ### Features

@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import katex from 'katex'
-import 'katex/dist/katex.min.css'
 
 export interface MathProps {
   content: string

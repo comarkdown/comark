@@ -100,11 +100,11 @@ const IMPLICIT_ATTRS: Record<string, { drop?: string[]; classBlocklist?: string[
   ul: { classBlocklist: ['contains-task-list'] },
   li: { classBlocklist: ['task-list-item'] },
   // `language`/`filename`/`highlights`/`meta` ride on the fence info string.
-  // `tabindex`/`style` come from render-time plugins (e.g. shiki) and have no
-  // markdown form. `class` is handled specially in userBlockAttrs because shiki
-  // merges its injected classes with the user's class — we need to strip just
-  // the highlighter portion.
-  pre: { drop: ['language', 'filename', 'highlights', 'meta', 'tabindex', 'style'] },
+  // `style` comes from render-time plugins (e.g. shiki) and has no markdown
+  // form. `class` is handled specially in userBlockAttrs because shiki merges
+  // its injected classes with the user's class — we need to strip just the
+  // highlighter portion.
+  pre: { drop: ['language', 'filename', 'highlights', 'meta', 'style'] },
 }
 
 /**

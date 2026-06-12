@@ -1,6 +1,5 @@
 import { defineComponent, h, computed, watch, ref } from 'vue'
 import katex from 'katex'
-import 'katex/dist/katex.min.css'
 
 export const Math = defineComponent({
   name: 'Math',

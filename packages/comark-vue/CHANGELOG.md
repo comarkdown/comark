@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/comarkdown/comark/compare/@comark/vue@0.3.1...@comark/vue@0.4.0) (2026-06-04)
+
+### Bug Fixes
+
+* normalize Vue Vite import paths on Windows ([#207](https://github.com/comarkdown/comark/issues/207)) ([1b3304e](https://github.com/comarkdown/comark/commit/1b3304ef34c64226bd9030712197f02f00871f63))
+* **svelte:** add missing components-manifest prop ([#183](https://github.com/comarkdown/comark/issues/183)) ([c78885c](https://github.com/comarkdown/comark/commit/c78885ca7504b38afc7ced59aac1a3c6b3cc5425))
+
 ## [0.3.1](https://github.com/comarkdown/comark/compare/@comark/vue@0.3.0...@comark/vue@0.3.1) (2026-04-24)
 
 ## [0.3.0](https://github.com/comarkdown/comark/compare/@comark/vue@0.2.1...@comark/vue@0.3.0) (2026-04-24)

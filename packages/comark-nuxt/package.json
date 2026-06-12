@@ -1,6 +1,6 @@
 {
   "name": "@comark/nuxt",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "Nuxt module for Comark (Components in Markdown)",
   "keywords": [
     "comark",
@@ -24,6 +24,7 @@
     "dist"
   ],
   "type": "module",
+  "sideEffects": false,
   "main": "./dist/module.js",
   "module": "./dist/module.js",
   "types": "./dist/module.d.ts",

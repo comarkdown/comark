@@ -65,7 +65,8 @@
     "scule": "catalog:",
     "tsx": "catalog:",
     "typescript": "catalog:",
-    "unified": "catalog:"
+    "unified": "catalog:",
+    "vitest": "catalog:"
   },
   "resolutions": {
     "@comark/ansi": "workspace:*",

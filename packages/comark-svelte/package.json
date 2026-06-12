@@ -1,6 +1,6 @@
 {
   "name": "@comark/svelte",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "Svelte renderer for Comark (Components in Markdown)",
   "keywords": [
     "comark",
@@ -25,6 +25,7 @@
     "!dist/**/*.spec.*"
   ],
   "type": "module",
+  "sideEffects": false,
   "types": "./dist/index.d.ts",
   "svelte": "./dist/index.js",
   "exports": {

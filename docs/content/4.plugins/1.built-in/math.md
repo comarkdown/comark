@@ -26,6 +26,12 @@ The `comark/plugins/math` plugin renders LaTeX math formulas using [KaTeX](https
 npm install katex
 ```
 
+KaTeX requires its stylesheet to render correctly. Import it once in your app entry point:
+
+```ts
+import 'katex/dist/katex.min.css'
+```
+
 ## Usage
 
 ```typescript

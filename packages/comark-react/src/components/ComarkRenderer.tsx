@@ -259,9 +259,11 @@ function renderNode(
 
 export interface ComarkRendererProps {
   /**
-   * The Comark tree to render
+   * The Comark tree to render — either a full `ComarkTree` or a bare
+   * `ComarkNode[]`.  When a node array is passed, frontmatter and meta
+   * default to `{}` and runtime data should be supplied via `data`.
    */
-  tree: ComarkTree
+  tree: ComarkTree | { nodes: ComarkTree['nodes'] }
 
   /**
    * Custom component mappings for element tags
@@ -343,8 +345,9 @@ export const ComarkRenderer: React.FC<ComarkRendererProps> = ({
     }
 
     const renderData: NodeRenderData = {
-      frontmatter: tree.frontmatter,
-      meta: tree.meta,
+      frontmatter:
+        (tree as ComarkTree).frontmatter || (tree as unknown as { data: Record<string, unknown> }).data || {},
+      meta: (tree as ComarkTree).meta || {},
       data: data || {},
       props: {},
     }

@@ -15,6 +15,7 @@
     "@nuxt/ui": "catalog:",
     "@nuxtjs/mcp-toolkit": "catalog:",
     "@nuxtlabs/monarch-mdc": "catalog:",
+    "@shikijs/langs": "catalog:",
     "@vercel/analytics": "catalog:",
     "@vercel/speed-insights": "catalog:",
     "@vueuse/core": "catalog:",
@@ -34,6 +35,7 @@
     "@nuxt/devtools-kit": "catalog:",
     "@types/json-schema": "catalog:",
     "@types/splitpanes": "catalog:",
+    "satori": "catalog:",
     "tsx": "catalog:"
   }
 }

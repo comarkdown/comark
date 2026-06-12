@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.4.0](https://github.com/comarkdown/comark/compare/@comark/ansi@0.3.1...@comark/ansi@0.4.0) (2026-06-04)
+
+### Bug Fixes
+
+* **stringify:** handle multiple paragraphs in a list item ([#169](https://github.com/comarkdown/comark/issues/169)) ([e9b9546](https://github.com/comarkdown/comark/commit/e9b9546698ac8ced0c223a62c5e08ba2973a50e4))
+
 ## [0.3.1](https://github.com/comarkdown/comark/compare/@comark/ansi@0.2.1...@comark/ansi@0.3.1) (2026-04-24)
 
 ### Features

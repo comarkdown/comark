@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.4.0](https://github.com/comarkdown/comark/compare/comark@0.3.2...comark@0.4.0) (2026-06-04)
+
+### Features
+
+* **block-attributes:** attach trailing `{attr}` to nearest block element ([#214](https://github.com/comarkdown/comark/issues/214)) ([93202c3](https://github.com/comarkdown/comark/commit/93202c3f8d7095a4403c8a92d682e5e08194cd01))
+* **parse:** handle slot attributes ([#189](https://github.com/comarkdown/comark/issues/189)) ([ef2921e](https://github.com/comarkdown/comark/commit/ef2921efa3726c1e0b3047ad6141c90d515c1956))
+* **parse:** infer typed meta/frontmatter from plugins ([#198](https://github.com/comarkdown/comark/issues/198)) ([299f8eb](https://github.com/comarkdown/comark/commit/299f8eb1f06f4c984b3736f2e4694e9eef37f530))
+* **plugins:** allow disabling headings title/description extraction ([#188](https://github.com/comarkdown/comark/issues/188)) ([82095d2](https://github.com/comarkdown/comark/commit/82095d2b4ccf0139388cf9ef4bde6d187d85b77e))
+
+### Bug Fixes
+
+* **auto-close:** handle strike through syntax ([#197](https://github.com/comarkdown/comark/issues/197)) ([181301c](https://github.com/comarkdown/comark/commit/181301ce75c01dcfe8ee0ca9c8c90af8d99925db))
+* parse indented raw html children in html blocks ([#208](https://github.com/comarkdown/comark/issues/208)) ([6f8f4b3](https://github.com/comarkdown/comark/commit/6f8f4b3b27a1329959a13b1a0c3657e8735a702b))
+* **parse:** map sub/sup tokens to correct tags ([#202](https://github.com/comarkdown/comark/issues/202)) ([f64ce5b](https://github.com/comarkdown/comark/commit/f64ce5b81262612c403af394ab4aec1dda836ee6))
+* **parse:** preserve inline children inside self-contained block-level HTML ([#192](https://github.com/comarkdown/comark/issues/192)) ([95e3cc8](https://github.com/comarkdown/comark/commit/95e3cc8827f66f10595ec94644e1e5797fe6776f))
+* **plugins:** headings plugin has remove false by default ([#187](https://github.com/comarkdown/comark/issues/187)) ([78c2e66](https://github.com/comarkdown/comark/commit/78c2e66ade89ab63040bfbda0955b10c2053fa81))
+* prevent void HTML elements from swallowing subsequent content ([#190](https://github.com/comarkdown/comark/issues/190)) ([6a27384](https://github.com/comarkdown/comark/commit/6a27384757f67c8fb1ecff12d9252d2945d86a02))
+* **specs:** nested codeblocks ([#173](https://github.com/comarkdown/comark/issues/173)) ([e448900](https://github.com/comarkdown/comark/commit/e448900bd287a559d9181f40ae650f8cd63f7b49))
+* stricter boolean prop guessing ([#212](https://github.com/comarkdown/comark/issues/212)) ([34f75a5](https://github.com/comarkdown/comark/commit/34f75a5bcce7ea7ae27dfdcba68e4d854ecd0ca0))
+* **svelte:** add missing components-manifest prop ([#183](https://github.com/comarkdown/comark/issues/183)) ([c78885c](https://github.com/comarkdown/comark/commit/c78885ca7504b38afc7ced59aac1a3c6b3cc5425))
+* **syntax:** nested codeblock inside slots ([#213](https://github.com/comarkdown/comark/issues/213)) ([503f4c0](https://github.com/comarkdown/comark/commit/503f4c0044edf3d473a9f920c43234887d19a18e))
+* **syntax:** thematic breaks in component slots ([#184](https://github.com/comarkdown/comark/issues/184)) ([bbb4301](https://github.com/comarkdown/comark/commit/bbb430129698d669834588fa57c63070f867adf9))
+
 ## [0.3.2](https://github.com/comarkdown/comark/compare/comark@0.3.1...comark@0.3.2) (2026-04-29)
 
 ### Bug Fixes
