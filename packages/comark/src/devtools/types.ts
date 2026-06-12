@@ -8,6 +8,9 @@ export interface HotModule {
   on(event: string, cb: (...args: any[]) => void): void
 }
 
+/** Callback invoked when devtools sends an update to this instance */
+export type InstanceUpdateCallback = (markdown: string, tree?: ComarkTree | null) => void
+
 /** A live Comark renderer instance tracked by the devtools registry */
 export interface ComarkInstance {
   /** Unique instance identifier (e.g. `comark-1`) */
@@ -18,6 +21,8 @@ export interface ComarkInstance {
   tree: ComarkTree | { nodes: ComarkTree['nodes'] }
   /** Current markdown source (if available) */
   markdown?: string
+  /** Optional callback fired when devtools updates this instance */
+  onUpdate?: InstanceUpdateCallback
 }
 
 /** Serializable snapshot of a {@link ComarkInstance} sent over RPC */
@@ -37,6 +42,8 @@ export interface RegisterInstanceOptions {
   tree: ComarkTree | { nodes: ComarkTree['nodes'] }
   /** Initial markdown source, if known */
   markdown?: string
+  /** Optional callback fired when devtools updates this instance */
+  onUpdate?: InstanceUpdateCallback
 }
 
 /** Handles returned after a successful instance registration */

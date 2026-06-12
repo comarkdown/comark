@@ -18,6 +18,7 @@ import {
   onErrorCaptured,
   onScopeDispose,
   ref,
+  shallowRef,
   toRaw,
   watch,
 } from 'vue'
@@ -358,6 +359,7 @@ export const ComarkRenderer: ComarkRendererComponent = defineComponent({
 
   async setup(props) {
     const componentErrors = ref(new Set<string>())
+    const tree = shallowRef(toRaw(props.tree))
 
     // Capture errors from child components (e.g., during streaming when props are incomplete)
     onErrorCaptured((_err, instance, _info) => {
@@ -374,9 +376,8 @@ export const ComarkRenderer: ComarkRendererComponent = defineComponent({
     const comark = inject<ComarkContextProvider>('comark', { components: {}, componentManifest: () => null })
 
     // Devtools: register this instance if no parent Comark already registered
-    const parentRegistered = inject('__comark_devtools_registered__', false)
     const hot = (import.meta as Record<string, any>).hot
-    if (!parentRegistered && hot) {
+    if (hot) {
       let devtoolsHandle: { unregister: () => void } | null = null
       let disposed = false
       const renderMdPromise = import('comark/render')
@@ -386,6 +387,12 @@ export const ComarkRenderer: ComarkRendererComponent = defineComponent({
         registerDevtoolsInstanceFromTree({
           hot,
           tree: props.tree,
+          // When devtools updates the markdown, use the provided tree
+          onUpdate: (newMarkdown: string, newTree?: ComarkTree | null) => {
+            if (newTree) {
+              tree.value = newTree
+            }
+          },
         }).then((handle) => {
           if (disposed) {
             handle?.unregister()
@@ -428,8 +435,7 @@ export const ComarkRenderer: ComarkRendererComponent = defineComponent({
 
     return () => {
       // Render all nodes from the tree value
-      const rawTree = toRaw(props.tree)
-      const nodes = [...(rawTree.nodes || [])]
+      const nodes = [...(tree.value.nodes || [])]
 
       if (props.streaming && caret.value && nodes.length > 0) {
         const hasStreamCaret = findLastTextNodeAndAppendNode(nodes[nodes.length - 1] as ComarkElement, caret.value)
@@ -440,8 +446,8 @@ export const ComarkRenderer: ComarkRendererComponent = defineComponent({
 
       const renderData: NodeRenderData = {
         frontmatter:
-          (rawTree as ComarkTree).frontmatter || (rawTree as unknown as { data: Record<string, unknown> }).data || {},
-        meta: (rawTree as ComarkTree).meta || {},
+          (tree.value as ComarkTree).frontmatter || (tree.value as unknown as { data: Record<string, unknown> }).data || {},
+        meta: (tree.value as ComarkTree).meta || {},
         data: props.data || {},
         props: {},
       }

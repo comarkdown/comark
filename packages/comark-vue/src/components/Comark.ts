@@ -1,5 +1,5 @@
 import type { PropType } from 'vue'
-import { computed, defineComponent, h, onScopeDispose, provide, shallowRef, watch } from 'vue'
+import { computed, defineComponent, h, shallowRef, watch } from 'vue'
 import { createSerializedParse } from 'comark'
 import type { ParseOptions, ComponentManifest, ComarkTree } from 'comark'
 import { ComarkRenderer } from './ComarkRenderer.ts'
@@ -192,26 +192,6 @@ export const Comark: ComarkComponent = defineComponent({
     )
 
     await parse(markdown.value, { streaming: props.streaming }).then((result) => (parsed.value = result))
-
-    // Devtools instance registration (dev mode only)
-    provide('__comark_devtools_registered__', true)
-
-    const hot = (import.meta as Record<string, any>).hot
-    if (hot) {
-      const { registerDevtoolsInstance } = await import('comark/devtools')
-      const handle = await registerDevtoolsInstance({
-        hot,
-        tree: parsed.value || { nodes: [], frontmatter: {}, meta: {} },
-        markdown: markdown.value,
-      })
-
-      if (handle) {
-        watch(parsed, (tree) => {
-          if (tree) handle.update({ tree, markdown: markdown.value })
-        })
-        onScopeDispose(() => handle.unregister())
-      }
-    }
 
     return () => {
       // Render using ComarkRenderer

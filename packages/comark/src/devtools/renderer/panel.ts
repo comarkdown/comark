@@ -177,12 +177,18 @@ export class DevtoolsPanel {
     this.lastError = null
 
     try {
-      const [tree, highlightHtml] = await Promise.all([
-        this.ctx.rpc.call('comark:parse', this.editor.value) as Promise<ComarkTree>,
+      const promises = [
+        // Send the parsed tree and markdown to update the instance
+        // Use lastTree which was just populated by parseMarkdown()
+        this.ctx.rpc.call('comark:update-instance', this.activeInstance!.id, {
+          markdown: this.editor.value,
+          tree: this.lastTree,
+        }),
         this.ctx.rpc.call('comark:highlight', this.editor.value) as Promise<string | null>,
-      ])
-      this.lastTree = tree
-      this.lastHighlightHtml = highlightHtml
+      ]
+      const [tree, highlightHtml] = await Promise.all(promises)
+      this.lastTree = tree as ComarkTree
+      this.lastHighlightHtml = highlightHtml as string
       this.lastError = null
     } catch (err) {
       this.lastError = err instanceof Error ? err.message : String(err)

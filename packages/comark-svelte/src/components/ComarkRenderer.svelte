@@ -20,6 +20,7 @@ Supports custom component mappings and a streaming caret indicator.
 <script lang="ts">
   import type { ComarkTree, ComponentManifest } from 'comark'
   import type { ComponentResolver } from '../types.js'
+  import type { RegisteredInstance } from 'comark/devtools'
   import ComarkNode from './ComarkNode.svelte'
 
   let {
@@ -54,6 +55,50 @@ Supports custom component mappings and a streaming caret indicator.
     data: data || {},
     props: {},
   })
+
+  // Devtools: register this instance if devtools is available
+  let devtoolsHandle: RegisteredInstance | null = $state(null)
+  const hot = (import.meta as Record<string, any>).hot
+
+  if (hot) {
+    $effect(() => {
+      let cancelled = false
+
+      import('comark/devtools').then(({ registerDevtoolsInstanceFromTree }) => {
+        if (cancelled) return
+        registerDevtoolsInstanceFromTree({
+          hot,
+          tree,
+          // When devtools updates the markdown, use the provided tree
+          onUpdate: (newMarkdown: string, newTree?: ComarkTree | null) => {
+            if (newTree) {
+              tree = newTree
+            }
+          },
+        }).then((handle) => {
+          if (cancelled) {
+            handle?.unregister()
+            return
+          }
+          devtoolsHandle = handle
+        })
+      })
+
+      return () => {
+        cancelled = true
+        devtoolsHandle?.unregister()
+      }
+    })
+
+    // Update devtools instance when tree changes
+    $effect(() => {
+      if (devtoolsHandle) {
+        import('comark/render').then(({ renderMarkdown }) => {
+          renderMarkdown(tree).then((md) => devtoolsHandle?.update({ tree, markdown: md }))
+        })
+      }
+    })
+  }
 </script>
 
 <div class="comark-content {className}">

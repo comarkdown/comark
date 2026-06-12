@@ -28,6 +28,7 @@ export async function registerDevtoolsInstance(options: RegisterInstanceOptions)
     label,
     tree: options.tree,
     markdown: options.markdown,
+    onUpdate: options.onUpdate,
   }
 
   const unregister = registry.register(instance)

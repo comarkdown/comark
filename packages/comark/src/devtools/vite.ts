@@ -6,9 +6,9 @@ import { COMARK_DARK_ICON, COMARK_LIGHT_ICON, DEVTOOLS_SHIKI_LANGS, DEVTOOLS_SHI
 
 declare module '@vitejs/devtools-kit' {
   interface DevToolsRpcServerFunctions {
-    'comark:parse': (markdown: string) => Promise<ComarkTree>
     'comark:highlight': (markdown: string) => Promise<string | null>
     'comark:list-instances': () => Promise<ComarkInstanceSummary[]>
+    'comark:update-instance': (id: string, data: { markdown: string; tree: ComarkTree | null }) => Promise<ComarkTree>
   }
 }
 
@@ -50,11 +50,13 @@ function getHighlighter(): Promise<Highlighter | null> {
 export function comarkDevtools(): Plugin {
   // Instance data pushed from the user's app via HMR
   let instancesData: ComarkInstanceSummary[] = []
+  let server: ViteDevServer | null = null
 
   return {
     name: 'comark:devtools',
 
     configureServer(_server: ViteDevServer) {
+      server = _server
       // Receive instance data from the user's app (sent by the devtools registry)
       _server.hot.on('comark:instances', (data: ComarkInstanceSummary[]) => {
         instancesData = data
@@ -63,16 +65,6 @@ export function comarkDevtools(): Plugin {
 
     devtools: {
       setup(ctx) {
-        // RPC: parse markdown and return the tree
-        ctx.rpc.register({
-          name: 'comark:parse',
-          type: 'query',
-          handler: async (markdown: string) => {
-            const { parse } = await import('../index.ts')
-            return await parse(markdown)
-          },
-        })
-
         // RPC: highlight markdown using Shiki with the mdc grammar
         ctx.rpc.register({
           name: 'comark:highlight',
@@ -95,6 +87,22 @@ export function comarkDevtools(): Plugin {
           type: 'query',
           handler: () => instancesData,
         })
+
+        // RPC: update an instance with new markdown and parsed tree from devtools
+        ctx.rpc.register({
+          name: 'comark:update-instance',
+          type: 'mutation',
+          handler: async (id: string, data: { markdown: string; tree: ComarkTree | null }) => {
+            const { parse } = await import('../index.ts')
+            const tree = await parse(data.markdown)
+            if (server) {
+              // Broadcast update to the instance via HMR
+              server.hot.send('comark:update', { id, markdown: data.markdown, tree })
+            }
+            return tree
+          },
+        })
+
 
         // Register the dock entry with a custom renderer
         ctx.docks.register({

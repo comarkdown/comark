@@ -25,8 +25,7 @@ This is an alert component
 -->
 <script lang="ts">
   import type { ComarkTree, ComarkPlugin, ComponentManifest } from 'comark'
-    import { parse } from 'comark'
-  import type { RegisteredInstance } from 'comark/devtools'
+  import { parse } from 'comark'
   import ComarkRenderer from './ComarkRenderer.svelte'
 
   let {
@@ -69,44 +68,6 @@ This is an alert component
       }
     })
   })
-
-  // Devtools instance registration (dev mode only)
-  let devtoolsHandle: RegisteredInstance | null = $state(null)
-
-  const hot = (import.meta as Record<string, any>).hot
-  if (hot) {
-    $effect(() => {
-      let cancelled = false
-
-      import('comark/devtools').then(({ registerDevtoolsInstance }) => {
-        if (cancelled) return
-        registerDevtoolsInstance({
-          hot,
-          tree: { nodes: [], frontmatter: {}, meta: {} },
-          markdown: '',
-        }).then((handle) => {
-          if (cancelled) {
-            handle?.unregister()
-            return
-          }
-          devtoolsHandle = handle
-        })
-      })
-
-      return () => {
-        cancelled = true
-        devtoolsHandle?.unregister()
-        devtoolsHandle = null
-      }
-    })
-
-    // Update instance when tree changes
-    $effect(() => {
-      if (devtoolsHandle && parsed) {
-        devtoolsHandle.update({ tree: parsed, markdown: content })
-      }
-    })
-  }
 </script>
 
 {#if parsed}

@@ -1,4 +1,4 @@
-import type { ComarkInstance, ComarkInstanceSummary, HotModule, InstanceListener } from './types.ts'
+import type { ComarkInstance, ComarkInstanceSummary, HotModule, InstanceListener, ComarkTree } from './types.ts'
 
 /**
  * Singleton registry tracking all live Comark instances in the browser.
@@ -25,6 +25,19 @@ class ComarkDevtoolsRegistry {
    */
   connectHMR(hot: HotModule): void {
     this.hot = hot
+    // Listen for updates sent from devtools
+    hot.on('comark:update', (data: { id: string; markdown: string; tree: ComarkTree }) => {
+      const instance = this.instances.get(data.id)
+      if (instance) {
+        instance.markdown = data.markdown
+        if (data.tree) instance.tree = data.tree
+        instance.onUpdate?.(data.markdown, data.tree as any)
+        // Notify listeners but skip pushing back to HMR to avoid loops
+        for (const listener of this.listeners) {
+          listener(this.instances)
+        }
+      }
+    })
   }
 
   /** Add an instance to the registry and return an unregister callback */
