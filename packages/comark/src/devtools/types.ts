@@ -15,7 +15,7 @@ export interface ComarkInstance {
   /** Human-readable label — typically the current page URL path or hash */
   label?: string
   /** Current parsed AST */
-  tree: ComarkTree
+  tree: ComarkTree | { nodes: ComarkTree['nodes'] }
   /** Current markdown source (if available) */
   markdown?: string
 }
@@ -34,7 +34,7 @@ export interface RegisterInstanceOptions {
   /** The HMR handle (`import.meta.hot`). Pass `null` to skip registration. */
   hot: HotModule | null | undefined
   /** Initial tree (may be empty for string renderers) */
-  tree: ComarkTree
+  tree: ComarkTree | { nodes: ComarkTree['nodes'] }
   /** Initial markdown source, if known */
   markdown?: string
 }
@@ -44,7 +44,7 @@ export interface RegisteredInstance {
   /** The assigned instance id */
   id: string
   /** Push an updated tree and/or markdown source to the devtools */
-  update(patch: { tree?: ComarkTree; markdown?: string }): void
+  update(patch: { tree?: ComarkTree | { nodes: ComarkTree['nodes'] }; markdown?: string }): void
   /** Remove the instance from the devtools registry */
   unregister(): void
 }
