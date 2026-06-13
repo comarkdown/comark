@@ -110,7 +110,6 @@ export function comarkDevtools(): Plugin {
           },
         })
 
-
         // Register the dock entry with a custom renderer
         ctx.docks.register({
           id: 'comark',

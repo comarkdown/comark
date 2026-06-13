@@ -446,7 +446,9 @@ export const ComarkRenderer: ComarkRendererComponent = defineComponent({
 
       const renderData: NodeRenderData = {
         frontmatter:
-          (tree.value as ComarkTree).frontmatter || (tree.value as unknown as { data: Record<string, unknown> }).data || {},
+          (tree.value as ComarkTree).frontmatter ||
+          (tree.value as unknown as { data: Record<string, unknown> }).data ||
+          {},
         meta: (tree.value as ComarkTree).meta || {},
         data: props.data || {},
         props: {},

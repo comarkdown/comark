@@ -47,7 +47,10 @@ export function ComarkClient({ children, markdown = '', options = {}, plugins = 
 
   return (
     <Suspense fallback={null}>
-      <ComarkContent parsePromise={deferredPromise} {...rest} />
+      <ComarkContent
+        parsePromise={deferredPromise}
+        {...rest}
+      />
     </Suspense>
   )
 }

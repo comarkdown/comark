@@ -155,7 +155,7 @@ export class DevtoolsPanel {
     const markdown = this.editor.value
     const gen = ++this.highlightGeneration
     try {
-      const html = await this.ctx.rpc.call('comark:highlight', markdown) as string | null
+      const html = (await this.ctx.rpc.call('comark:highlight', markdown)) as string | null
       if (gen !== this.highlightGeneration) return
       this.lastHighlightHtml = html
     } catch {
