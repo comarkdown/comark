@@ -184,7 +184,13 @@ export class ComarkNodeComponent implements OnChanges {
   }
 
   /** Create a native DOM element with attributes and children, append to parent. */
-  private renderNativeEl(parentEl: HTMLElement, tag: string, attrs: Record<string, any>, children: ComarkNode[], childrenRenderData: NodeRenderData): void {
+  private renderNativeEl(
+    parentEl: HTMLElement,
+    tag: string,
+    attrs: Record<string, any>,
+    children: ComarkNode[],
+    childrenRenderData: NodeRenderData
+  ): void {
     const el = this.renderer.createElement(tag)
     this.applyAttributes(el, attrs)
 

@@ -3,12 +3,12 @@
   "version": "0.4.0",
   "description": "Angular components for Comark",
   "keywords": [
+    "angular",
     "comark",
     "markdown",
     "mdc",
     "renderer",
-    "streaming",
-    "angular"
+    "streaming"
   ],
   "homepage": "https://comark.dev/rendering/angular",
   "bugs": {
