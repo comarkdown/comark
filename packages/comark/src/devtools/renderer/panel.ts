@@ -37,10 +37,13 @@ export class DevtoolsPanel {
   // State
   private activeTab = 'markdown'
   private parseTimer: ReturnType<typeof setTimeout> | undefined
+  private highlightTimer: ReturnType<typeof setTimeout> | undefined
   private lastTree: ComarkTree | null = null
   private lastHighlightHtml: string | null = null
   private lastError: string | null = null
   private activeInstance: ComarkInstanceSummary | null = null
+  private parseGeneration = 0
+  private highlightGeneration = 0
   private initialLoading = true
   private pollInterval: ReturnType<typeof setInterval> | undefined
   private theme: Theme = 'auto'
@@ -93,7 +96,7 @@ export class DevtoolsPanel {
     // Editor
     const editorResult = createEditor(
       () => {
-        this.syncHighlight()
+        this.scheduleHighlight()
         this.scheduleParse()
       },
       (scrollTop, scrollLeft) => {
@@ -121,6 +124,8 @@ export class DevtoolsPanel {
     this.pollInterval = undefined
     clearTimeout(this.parseTimer)
     this.parseTimer = undefined
+    clearTimeout(this.highlightTimer)
+    this.highlightTimer = undefined
     this.activeInstance = null
     this.initialLoading = true
     this.tabButtons = []
@@ -132,12 +137,32 @@ export class DevtoolsPanel {
     this.parseTimer = setTimeout(() => this.parseMarkdown(), PARSE_DEBOUNCE_MS)
   }
 
+  private scheduleHighlight(): void {
+    clearTimeout(this.highlightTimer)
+    this.highlightTimer = setTimeout(() => this.refreshHighlight(), 16)
+  }
+
   private syncHighlight(): void {
     if (this.lastHighlightHtml) {
       this.editorHighlight.innerHTML = this.lastHighlightHtml + '\n'
     } else {
       this.editorHighlight.innerHTML = highlightMarkdown(this.editor.value) + '\n'
     }
+  }
+
+  /** Fetch Shiki highlighting independently of instance updates */
+  private async refreshHighlight(): Promise<void> {
+    const markdown = this.editor.value
+    const gen = ++this.highlightGeneration
+    try {
+      const html = await this.ctx.rpc.call('comark:highlight', markdown) as string | null
+      if (gen !== this.highlightGeneration) return
+      this.lastHighlightHtml = html
+    } catch {
+      if (gen !== this.highlightGeneration) return
+      this.lastHighlightHtml = null
+    }
+    this.syncHighlight()
   }
 
   private async pollInstances(): Promise<void> {
@@ -163,6 +188,7 @@ export class DevtoolsPanel {
       if (current.id !== prevId && current.markdown) {
         this.editor.value = current.markdown
         this.syncHighlight()
+        this.scheduleHighlight()
         this.scheduleParse()
       }
     } else {
@@ -174,27 +200,28 @@ export class DevtoolsPanel {
   }
 
   private async parseMarkdown(): Promise<void> {
+    if (!this.activeInstance) return
+
+    const markdown = this.editor.value
+    const gen = ++this.parseGeneration
+
     this.lastError = null
 
     try {
-      const promises = [
-        // Send the parsed tree and markdown to update the instance
-        // Use lastTree which was just populated by parseMarkdown()
-        this.ctx.rpc.call('comark:update-instance', this.activeInstance!.id, {
-          markdown: this.editor.value,
-          tree: this.lastTree,
-        }),
-        this.ctx.rpc.call('comark:highlight', this.editor.value) as Promise<string | null>,
-      ]
-      const [tree, highlightHtml] = await Promise.all(promises)
+      const tree = await this.ctx.rpc.call('comark:update-instance', this.activeInstance.id, {
+        markdown,
+        tree: this.lastTree,
+      })
+
+      if (gen !== this.parseGeneration) return
+
       this.lastTree = tree as ComarkTree
-      this.lastHighlightHtml = highlightHtml as string
       this.lastError = null
     } catch (err) {
+      if (gen !== this.parseGeneration) return
       this.lastError = err instanceof Error ? err.message : String(err)
     }
 
-    this.syncHighlight()
     this.updateView()
   }
 

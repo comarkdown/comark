@@ -94,7 +94,14 @@ export function comarkDevtools(): Plugin {
           type: 'mutation',
           handler: async (id: string, data: { markdown: string; tree: ComarkTree | null }) => {
             const { parse } = await import('../index.ts')
-            const tree = await parse(data.markdown)
+            let tree: ComarkTree
+            try {
+              tree = await parse(data.markdown)
+            } catch {
+              // Parse can fail mid-edit (e.g. malformed frontmatter YAML).
+              // Fall back to the previous tree so the RPC does not throw.
+              tree = (data.tree as ComarkTree) || { nodes: [], frontmatter: {}, meta: {} }
+            }
             if (server) {
               // Broadcast update to the instance via HMR
               server.hot.send('comark:update', { id, markdown: data.markdown, tree })
