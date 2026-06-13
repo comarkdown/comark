@@ -18,7 +18,7 @@ links:
     variant: soft
 ---
 
-The Vite DevTools plugin registers an interactive Comark panel inside [Vite DevTools](https://devtools.vite.dev/). It provides a markdown playground with live AST inspection and roundtrip rendering.
+The Vite DevTools plugin registers an interactive Comark panel inside [Vite DevTools](https://devtools.vite.dev/). It provides a markdown editor with Shiki syntax highlighting, live AST inspection, and push-to-app editing.
 
 ## Setup
 
@@ -72,28 +72,23 @@ export default defineConfig({
 
 ### Markdown Editor
 
-The panel includes a full-featured markdown editor on the left side. Changes are parsed in real time (300ms debounce) by the Comark parser running on the Vite dev server via RPC.
+The panel includes a markdown editor with [Shiki](https://shiki.style/)-powered syntax highlighting using the `mdc` grammar. A transparent `<textarea>` overlays a syntax-highlighted `<pre>` element, providing native editing (cursor, selection, undo/redo) with rich colors.
+
+Highlighting updates are near-instant (16ms debounce) via a dedicated Shiki RPC call, while instance updates are debounced at 300ms to avoid excessive parsing. If Shiki is unavailable, a regex-based fallback highlighter provides basic coloring.
 
 ### AST Tab
 
-Displays the full parsed AST with syntax-highlighted JSON. Useful for understanding how Comark transforms your markdown and inspecting node structure.
+Displays the full parsed AST as syntax-highlighted JSON. Useful for understanding how Comark transforms your markdown and inspecting node structure.
 
-### Roundtrip Tab
+### Push to App
 
-Shows the result of parsing the markdown and then rendering it back to a markdown string via `renderMarkdown()`. A match indicator shows whether the roundtrip produces identical output.
+When a live `<Comark>` instance is connected, edits in the devtools editor are pushed to the running application in real time. The Vite plugin parses the markdown on the server and broadcasts the updated tree to the browser via HMR, where the framework renderer (Vue, React, or Svelte) re-renders the component with the new content.
 
-### Info Tab
-
-Displays metadata about the current parse result:
-
-- Node count (top-level and deep)
-- Input character count
-- Frontmatter keys and values
-- Meta keys
+Parse errors during editing (e.g. malformed frontmatter YAML) are caught gracefully — the previous tree is preserved so the editor never breaks mid-edit.
 
 ### Live Instance Connection
 
-When a Comark component (`<Comark>` from `@comark/vue`, `@comark/react`, or `@comark/svelte`) is mounted on the page, the DevTools panel automatically detects it.
+When a Comark component (`<Comark>` from `@comark/vue`, `@comark/react`, or `@comark/svelte`) is mounted on the page, the DevTools panel automatically detects it via polling.
 
 A green dot in the instance bar indicates a connected instance. The editor loads the instance's current markdown source so you can inspect and experiment with it.
 
@@ -134,9 +129,9 @@ The Vite plugin registers three RPC endpoints:
 
 | Endpoint | Type | Description |
 |---|---|---|
-| `comark:parse` | query | Parse markdown string → `ComarkTree` |
-| `comark:render-markdown` | query | Parse then render back to markdown (roundtrip) |
-| `comark:list-instances` | query | List all registered Comark instances |
+| `comark:highlight` | query | Syntax-highlight markdown via Shiki with the `mdc` grammar (dual light/dark themes) |
+| `comark:list-instances` | query | List all registered Comark instances on the page |
+| `comark:update-instance` | mutation | Parse markdown and broadcast the updated tree to the live instance via HMR |
 
 ## Theme Support
 
