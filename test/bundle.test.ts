@@ -58,9 +58,6 @@ function roundToKilobytes(bytes: number): string {
 }
 
 describe.skipIf(stubbed || process.env.SKIP_BUNDLE_SIZE === 'true')('package bundle size', { timeout: 60_000 }, () => {
-  // The unpacked size (raw bytes) is fully deterministic, so it is what we snapshot.
-  // A PR that changes the published output of any package must update this snapshot,
-  // surfacing the size diff in review.
   it('published size of each package', () => {
     const report: Record<string, string> = {}
     for (const pkg of packages) {
@@ -70,13 +67,14 @@ describe.skipIf(stubbed || process.env.SKIP_BUNDLE_SIZE === 'true')('package bun
 
     expect(report).toMatchInlineSnapshot(`
       {
-        "@comark/ansi": "34.4k (82 files)",
-        "@comark/html": "16.2k (42 files)",
-        "@comark/nuxt": "10.1k (42 files)",
-        "@comark/react": "37.2k (56 files)",
-        "@comark/svelte": "39.2k (66 files)",
-        "@comark/vue": "54.8k (62 files)",
-        "comark": "344k (132 files)",
+        "@comark/angular": "48.0k (55 files)",
+        "@comark/ansi": "34.6k (84 files)",
+        "@comark/html": "16.4k (44 files)",
+        "@comark/nuxt": "10.3k (44 files)",
+        "@comark/react": "37.5k (60 files)",
+        "@comark/svelte": "39.4k (68 files)",
+        "@comark/vue": "55.0k (66 files)",
+        "comark": "345k (136 files)",
       }
     `)
   })

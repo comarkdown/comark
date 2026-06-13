@@ -1,7 +1,15 @@
 {
   "name": "@comark/angular",
-  "version": "0.1.0",
+  "version": "0.4.0",
   "description": "Angular components for Comark",
+  "keywords": [
+    "comark",
+    "markdown",
+    "mdc",
+    "renderer",
+    "streaming",
+    "angular"
+  ],
   "homepage": "https://comark.dev/rendering/angular",
   "bugs": {
     "url": "https://github.com/comarkdown/comark/issues"

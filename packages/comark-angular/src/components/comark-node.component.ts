@@ -163,46 +163,47 @@ export class ComarkNodeComponent implements OnChanges {
     }
   }
 
+  /** Apply resolved attributes to a DOM element. */
+  private applyAttributes(el: HTMLElement, attrs: Record<string, any>): void {
+    for (const key in attrs) {
+      const value = attrs[key]
+      if (key === 'as' || key === 'innerHTML' || key === 'dangerouslySetInnerHTML') {
+        continue
+      } else if (key === 'className' || key === 'class') {
+        this.renderer.setAttribute(el, 'class', String(value))
+      } else if (key === 'style' && typeof value === 'string') {
+        this.renderer.setAttribute(el, 'style', value)
+      } else if (key === 'tabindex') {
+        this.renderer.setAttribute(el, 'tabindex', String(value))
+      } else if (typeof value === 'boolean') {
+        if (value) this.renderer.setAttribute(el, key, '')
+      } else if (value != null) {
+        this.renderer.setAttribute(el, key, String(value))
+      }
+    }
+  }
+
+  /** Create a native DOM element with attributes and children, append to parent. */
+  private renderNativeEl(parentEl: HTMLElement, tag: string, attrs: Record<string, any>, children: ComarkNode[], childrenRenderData: NodeRenderData): void {
+    const el = this.renderer.createElement(tag)
+    this.applyAttributes(el, attrs)
+
+    if (attrs['innerHTML'] != null) {
+      el.innerHTML = attrs['innerHTML']
+    } else if (!VOID_ELEMENTS.has(tag)) {
+      this.renderChildren(el, children, childrenRenderData)
+    }
+
+    this.renderer.appendChild(parentEl, el)
+  }
+
   private renderNativeElement(
     tag: string,
     attrs: Record<string, any>,
     children: ComarkNode[],
     childrenRenderData: NodeRenderData
   ): void {
-    const hostEl = this.elementRef.nativeElement as HTMLElement
-    const el = this.renderer.createElement(tag)
-
-    // Apply attributes
-    for (const key in attrs) {
-      const value = attrs[key]
-      if (key === 'as') {
-        continue
-      } else if (key === 'className' || key === 'class') {
-        this.renderer.setAttribute(el, 'class', String(value))
-      } else if (key === 'innerHTML' || key === 'dangerouslySetInnerHTML') {
-        // handled after children
-      } else if (key === 'style' && typeof value === 'string') {
-        this.renderer.setAttribute(el, 'style', value)
-      } else if (key === 'tabindex') {
-        this.renderer.setAttribute(el, 'tabindex', String(value))
-      } else if (typeof value === 'boolean') {
-        if (value) {
-          this.renderer.setAttribute(el, key, '')
-        }
-      } else if (value != null) {
-        this.renderer.setAttribute(el, key, String(value))
-      }
-    }
-
-    // Handle innerHTML (used by some plugins like math/mermaid)
-    if (attrs['innerHTML'] != null) {
-      el.innerHTML = attrs['innerHTML']
-    } else if (!VOID_ELEMENTS.has(tag)) {
-      // Render children
-      this.renderChildren(el, children, childrenRenderData)
-    }
-
-    this.renderer.appendChild(hostEl, el)
+    this.renderNativeEl(this.elementRef.nativeElement as HTMLElement, tag, attrs, children, childrenRenderData)
   }
 
   private renderCustomComponent(
@@ -351,35 +352,7 @@ export class ComarkNodeComponent implements OnChanges {
           const resolved = resolveAttributes(childProps, renderData, { parseJson: true })
           const hasOwnAttrs = Object.keys(resolved).length > 0
           const childRenderData: NodeRenderData = hasOwnAttrs ? { ...renderData, props: resolved } : renderData
-
-          // Native element — render inline for performance
-          const el = this.renderer.createElement(childTag)
-
-          for (const key in resolved) {
-            if (key === 'as') continue
-            const value = resolved[key]
-            if (key === 'className' || key === 'class') {
-              this.renderer.setAttribute(el, 'class', String(value))
-            } else if (key === 'innerHTML') {
-              // handled below
-            } else if (key === 'style' && typeof value === 'string') {
-              this.renderer.setAttribute(el, 'style', value)
-            } else if (key === 'tabindex') {
-              this.renderer.setAttribute(el, 'tabindex', String(value))
-            } else if (typeof value === 'boolean') {
-              if (value) this.renderer.setAttribute(el, key, '')
-            } else if (value != null) {
-              this.renderer.setAttribute(el, key, String(value))
-            }
-          }
-
-          if (resolved['innerHTML'] != null) {
-            el.innerHTML = resolved['innerHTML']
-          } else if (!VOID_ELEMENTS.has(childTag)) {
-            this.renderChildren(el, grandChildren, childRenderData)
-          }
-
-          this.renderer.appendChild(parentEl, el)
+          this.renderNativeEl(parentEl, childTag, resolved, grandChildren, childRenderData)
         }
       }
     }
