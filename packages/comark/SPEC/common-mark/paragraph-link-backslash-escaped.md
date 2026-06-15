@@ -29,5 +29,5 @@
 ## Markdown
 
 ```md
-\[Animation Bug](/bugs#section)
+\[Animation Bug\](/bugs#section)
 ```

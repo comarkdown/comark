@@ -1,7 +1,7 @@
 ## Input
 
 ```md
-Escaped \[text\] in a sentence.
+[dsd\]dsd](/test)
 ```
 
 ## AST
@@ -14,7 +14,13 @@ Escaped \[text\] in a sentence.
     [
       "p",
       {},
-      "Escaped [text] in a sentence."
+      [
+        "a",
+        {
+          "href": "/test"
+        },
+        "dsd]dsd"
+      ]
     ]
   ]
 }
@@ -23,11 +29,11 @@ Escaped \[text\] in a sentence.
 ## HTML
 
 ```html
-<p>Escaped [text] in a sentence.</p>
+<p><a href="/test">dsd]dsd</a></p>
 ```
 
 ## Markdown
 
 ```md
-Escaped \[text\] in a sentence.
+[dsd\]dsd](/test)
 ```

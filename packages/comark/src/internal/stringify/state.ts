@@ -206,9 +206,11 @@ function escapeHtml(text: string): string {
  * Escape characters in a markdown text node that would otherwise be
  * misinterpreted as markdown syntax on a subsequent parse.
  *
- * `[` must be escaped because it opens link and image syntax.  Without it,
- * a text node like `[foo](bar)` would round-trip back as a real link.
+ * `[` opens link/image syntax; `]` closes it.  Both must be escaped so that
+ * a text node like `[foo](bar)` round-trips as plain text, and a text node
+ * containing `]` inside a link (e.g. `dsd]dsd`) doesn't prematurely close
+ * the surrounding `[…]` brackets.
  */
 function escapeMarkdownText(text: string): string {
-  return text.replace(/\[/g, '\\[')
+  return text.replace(/[\[\]]/g, (ch) => `\\${ch}`)
 }
