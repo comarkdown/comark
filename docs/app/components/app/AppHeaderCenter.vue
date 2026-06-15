@@ -5,8 +5,9 @@ const navigation = useMainNavigation()
 <template>
   <UNavigationMenu
     :items="navigation.map(({ icon, ...item }) => item)"
+    color="neutral"
     variant="link"
-    :ui="{ list: 'gap-x-2', childLink: 'py-1', content: 'w-fit', childList: 'p-1' }"
+    :ui="{ list: '', link: 'font-normal', childLink: 'py-1', content: 'w-fit', childList: 'p-1' }"
     content-orientation="vertical"
   />
 </template>

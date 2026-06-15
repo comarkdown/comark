@@ -1,29 +1,34 @@
 @theme {
   --font-sans: 'Geist', 'Public Sans', sans-serif;
   --font-mono: 'Geist Mono', ui-monospace, monospace;
-
-  --color-green-50: #effdf5;
-  --color-green-100: #d9fbe8;
-  --color-green-200: #b3f5d1;
-  --color-green-300: #75edae;
-  --color-green-400: #00dc82;
-  --color-green-500: #00c16a;
-  --color-green-600: #00a155;
-  --color-green-700: #007f45;
-  --color-green-800: #016538;
-  --color-green-900: #0a5331;
-  --color-green-950: #052e16;
 }
 
 :root {
   overscroll-behavior-y: none;
 
-  --ui-container: 85rem;
+  --ui-container: 91.5rem;
   --ui-primary: var(--ui-color-primary-600);
+
+  --ui-text: var(--ui-color-neutral-800);
+  --ui-text-highlighted: var(--ui-color-neutral-950);
+
+  --ui-bg-inverted: var(--ui-color-neutral-950);
 }
 
 .dark {
   --ui-primary: var(--ui-color-primary-400);
+
+  --ui-text: var(--ui-color-neutral-100);
+  --ui-text-highlighted: white;
+
+  --ui-bg: var(--ui-color-neutral-950);
+  --ui-bg-muted: var(--ui-color-neutral-900);
+  --ui-bg-elevated: var(--ui-color-neutral-900);
+  --ui-bg-accented: var(--ui-color-neutral-800);
+
+  --ui-border: var(--ui-color-neutral-900);
+  --ui-border-muted: var(--ui-color-neutral-800);
+  --ui-border-accented: var(--ui-color-neutral-800);
 }
 
 :where(code, kbd, samp, pre, .font-mono) {

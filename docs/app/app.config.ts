@@ -55,12 +55,16 @@ export default defineAppConfig({
   ui: {
     colors: {
       primary: 'yellow',
-      neutral: 'zinc',
+      neutral: 'neutral',
     },
-    header: {
-      slots: {
-        body: 'sm:p-4',
-      },
+    button: {
+      variants: {
+        size: {
+          md: {
+            base: 'px-3'
+          }
+        }
+      }
     },
     prose: {
       codePreview: {

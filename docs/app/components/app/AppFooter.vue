@@ -5,14 +5,14 @@ const appConfig = useAppConfig()
 <template>
   <div :class="[$route.path === '/' ? '' : 'border-t border-default']">
     <UContainer
-      class="border-default border-b"
-      :class="[$route.path === '/' ? 'px-0! border-x' : '']"
+      class="border-default px-0!"
+      :class="[$route.path === '/' ? 'border-x' : '']"
     >
       <footer>
         <div class="grid border-b border-default sm:grid-cols-2 lg:grid-cols-4">
           <div class="border-b border-default p-6 sm:border-r md:p-8 lg:border-b-0">
             <AppHeaderLogo class="h-5 text-highlighted" />
-            <p class="mt-3 max-w-xs text-xs/5 text-muted">
+            <p class="mt-3 max-w-xs text-sm text-muted">
               A fast, streaming-ready markdown parser with component support for Vue, React, and Svelte.
             </p>
           </div>
@@ -48,8 +48,8 @@ const appConfig = useAppConfig()
           </div>
         </div>
 
-        <div class="flex items-center justify-between px-6 py-4 md:px-8">
-          <p class="text-xs text-dimmed">
+        <div class="flex items-center justify-between px-6 py-6 md:px-8">
+          <p class="text-sm text-muted">
             Copyright
             <a
               href="https://vercel.com"
@@ -67,15 +67,15 @@ const appConfig = useAppConfig()
               >MIT License</a
             >.
           </p>
-          <div class="flex items-center gap-1">
-            <UColorModeButton size="xs" />
+          <div class="flex items-center gap-2">
+            <UColorModeButton size="sm" />
             <UButton
               to="https://github.com/comarkdown/comark"
               external
               icon="i-simple-icons-github"
               variant="ghost"
               color="neutral"
-              size="xs"
+              size="sm"
               aria-label="GitHub"
             />
             <UButton
@@ -84,7 +84,7 @@ const appConfig = useAppConfig()
               icon="i-simple-icons-npm"
               variant="ghost"
               color="neutral"
-              size="xs"
+              size="sm"
               aria-label="npm"
             />
           </div>
