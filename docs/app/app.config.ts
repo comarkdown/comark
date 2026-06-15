@@ -57,15 +57,6 @@ export default defineAppConfig({
       primary: 'yellow',
       neutral: 'neutral',
     },
-    button: {
-      variants: {
-        size: {
-          md: {
-            base: 'px-3'
-          }
-        }
-      }
-    },
     prose: {
       codePreview: {
         slots: {

@@ -1,27 +1,9 @@
 <script setup lang="ts">
-const appConfig = useAppConfig()
-const { forced: forcedColorMode } = useDocusColorMode()
-
 const { isEnabled: isAssistantEnabled } = useAssistant()
-const { isEnabled, locales } = useDocusI18n()
-const { subNavigationMode } = useSubNavigation()
-
-const links = computed(() => appConfig.github && appConfig.github.url
-  ? [
-      {
-        'icon': 'i-simple-icons-github',
-        'to': appConfig.github.url,
-        'target': '_blank',
-        'aria-label': 'GitHub',
-      },
-    ]
-  : [])
 </script>
 
 <template>
-  <UHeader
-    :ui="{ left: 'lg:flex-none', right: 'gap-2.5', body: 'sm:p-4' }"
-  >
+  <UHeader :ui="{ left: 'lg:flex-none', right: 'gap-2.5', body: 'sm:p-4' }">
     <AppHeaderCenter />
 
     <template #left>
@@ -53,13 +35,6 @@ const links = computed(() => appConfig.github && appConfig.github.url
 
     <template #body>
       <AppHeaderBody />
-    </template>
-
-    <template
-      v-if="subNavigationMode === 'header'"
-      #bottom
-    >
-      <AppHeaderBottom />
     </template>
   </UHeader>
 </template>

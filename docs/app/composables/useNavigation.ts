@@ -42,7 +42,7 @@ export function useMainNavigation() {
       to: 'https://github.com/comarkdown/comark',
       target: '_blank',
       icon: 'i-lucide-github',
-    }
+    },
   ])
 }
 
