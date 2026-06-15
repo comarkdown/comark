@@ -1,7 +1,7 @@
 ## Input
 
 ```md
-[dsd\]dsd](/test)
+[foo\] bar](/url)
 ```
 
 ## AST
@@ -17,9 +17,9 @@
       [
         "a",
         {
-          "href": "/test"
+          "href": "/url"
         },
-        "dsd]dsd"
+        "foo] bar"
       ]
     ]
   ]
@@ -29,11 +29,11 @@
 ## HTML
 
 ```html
-<p><a href="/test">dsd]dsd</a></p>
+<p><a href="/url">foo] bar</a></p>
 ```
 
 ## Markdown
 
 ```md
-[dsd\]dsd](/test)
+[foo\] bar](/url)
 ```
