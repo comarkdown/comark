@@ -237,9 +237,11 @@ function renderNode(
  */
 export interface ComarkRendererProps {
   /**
-   * The Comark tree to render
+   * The Comark tree to render — either a full `ComarkTree` or a bare
+   * `ComarkNode[]`.  When a node array is passed, frontmatter and meta
+   * default to `{}` and runtime data should be supplied via `data`.
    */
-  tree: ComarkTree
+  tree: ComarkTree | { nodes: ComarkTree['nodes'] }
 
   /**
    * Custom component mappings for element tags
@@ -302,7 +304,7 @@ export const ComarkRenderer: ComarkRendererComponent = defineComponent({
      * The Comark tree to render
      */
     tree: {
-      type: Object as PropType<ComarkTree>,
+      type: Object as PropType<ComarkTree | { nodes: ComarkTree['nodes'] }>,
       required: true,
     },
 
@@ -385,7 +387,8 @@ export const ComarkRenderer: ComarkRendererComponent = defineComponent({
 
     return () => {
       // Render all nodes from the tree value
-      const nodes = toRaw(props.tree.nodes || []) || []
+      const rawTree = toRaw(props.tree)
+      const nodes = [...(rawTree.nodes || [])]
 
       if (props.streaming && caret.value && nodes.length > 0) {
         const hasStreamCaret = findLastTextNodeAndAppendNode(nodes[nodes.length - 1] as ComarkElement, caret.value)
@@ -395,8 +398,9 @@ export const ComarkRenderer: ComarkRendererComponent = defineComponent({
       }
 
       const renderData: NodeRenderData = {
-        frontmatter: props.tree.frontmatter,
-        meta: props.tree.meta,
+        frontmatter:
+          (rawTree as ComarkTree).frontmatter || (rawTree as unknown as { data: Record<string, unknown> }).data || {},
+        meta: (rawTree as ComarkTree).meta || {},
         data: props.data || {},
         props: {},
       }
