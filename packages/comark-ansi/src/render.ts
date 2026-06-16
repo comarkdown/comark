@@ -33,7 +33,10 @@ export interface RenderANSIOptions extends RenderOptions {
  * console.log(renderANSI(tree))
  * ```
  */
-export async function renderANSI(tree: ComarkTree, options?: RenderANSIOptions): Promise<string> {
+export async function renderANSI(
+  tree: ComarkTree | { nodes: ComarkTree['nodes'] },
+  options?: RenderANSIOptions
+): Promise<string> {
   const colors = options?.colors ?? (typeof process !== 'undefined' ? !process.env.NO_COLOR : true)
   const width = options?.width ?? 80
 

@@ -36,6 +36,9 @@ export type ComponentRenderFn = (element: ComarkElement, ctx: RenderHTMLContext)
  * })
  * ```
  */
-export async function renderHTML(tree: ComarkTree, options?: RenderOptions): Promise<string> {
+export async function renderHTML(
+  tree: ComarkTree | { nodes: ComarkTree['nodes'] },
+  options?: RenderOptions
+): Promise<string> {
   return (await render(tree, { blockSeparator: '\n', format: 'text/html', ...options })).trim()
 }
