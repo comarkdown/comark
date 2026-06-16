@@ -212,5 +212,5 @@ function escapeHtml(text: string): string {
  * the surrounding `[…]` brackets.
  */
 function escapeMarkdownText(text: string): string {
-  return text.replace(/[\[\]]/g, (ch) => `\\${ch}`)
+  return text.replace(/[[\]]/g, (ch) => `\\${ch}`)
 }
