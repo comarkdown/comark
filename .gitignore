@@ -43,3 +43,5 @@ logs
 
 # Comark
 packages/comark/skills
+.vercel
+.env*
