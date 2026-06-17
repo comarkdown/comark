@@ -4,6 +4,7 @@ import { playgroundExamples } from '~/constants'
 
 export function useMainNavigation() {
   const route = useRoute()
+
   return computed<NavigationMenuItem[]>(() => [
     {
       label: 'Documentation',
@@ -35,6 +36,12 @@ export function useMainNavigation() {
         to: example.to ?? `/play/${example.value}`,
         active: route.path.startsWith(`/play/${example.value}`),
       })),
+    },
+    {
+      label: 'GitHub',
+      to: 'https://github.com/comarkdown/comark',
+      target: '_blank',
+      icon: 'i-lucide-github',
     },
   ])
 }
