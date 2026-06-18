@@ -32,7 +32,7 @@ export async function one(node: ComarkNode, state: State, parent?: ComarkElement
     if (state.context.html) {
       return escapeHtml(node)
     }
-    return node
+    return escapeMarkdownText(node)
   }
 
   if (node[0] === null) {
@@ -200,4 +200,17 @@ function escapeHtml(text: string): string {
     '&amp;': '&',
   }
   return text.replace(/[<>]/g, (char) => map[char])
+}
+
+/**
+ * Escape characters in a markdown text node that would otherwise be
+ * misinterpreted as markdown syntax on a subsequent parse.
+ *
+ * `[` opens link/image syntax; `]` closes it.  Both must be escaped so that
+ * a text node like `[foo](bar)` round-trips as plain text, and a text node
+ * containing `]` inside a link (e.g. `dsd]dsd`) doesn't prematurely close
+ * the surrounding `[…]` brackets.
+ */
+function escapeMarkdownText(text: string): string {
+  return text.replace(/[[\]]/g, (ch) => `\\${ch}`)
 }
