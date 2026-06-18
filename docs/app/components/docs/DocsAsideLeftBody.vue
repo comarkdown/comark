@@ -5,6 +5,7 @@ const filteredNavigation = useFilteredNavigation()
 <template>
   <UContentNavigation
     highlight
+    :collapsible="false"
     :navigation="filteredNavigation"
   />
 </template>

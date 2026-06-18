@@ -2,7 +2,8 @@ import { defineNuxtConfig } from 'nuxt/config'
 
 export default defineNuxtConfig({
   extends: ['docus'],
-  modules: ['nuxt-studio', '@comark/nuxt', '@vercel/speed-insights', '@vercel/analytics'],
+
+  modules: ['nuxt-studio', '@comark/nuxt', '@vercel/speed-insights', '@vercel/analytics', '@nuxt/ui'],
 
   app: {
     head: {
@@ -30,6 +31,10 @@ export default defineNuxtConfig({
       },
       transformers: ['~~/utils/comark-transformers.ts'],
     },
+  },
+
+  colorMode: {
+    preference: 'dark',
   },
 
   fonts: {

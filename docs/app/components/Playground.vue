@@ -9,6 +9,10 @@ import jsonRender from '@comark/nuxt/plugins/json-render'
 import footnotes from '@comark/nuxt/plugins/footnotes'
 import punctuation from '@comark/nuxt/plugins/punctuation'
 import breaks from '@comark/nuxt/plugins/breaks'
+import headings from '@comark/nuxt/plugins/headings'
+import toc from '@comark/nuxt/plugins/toc'
+import summary from '@comark/nuxt/plugins/summary'
+import security from '@comark/nuxt/plugins/security'
 
 import { renderMarkdown } from 'comark/render'
 import { Splitpanes, Pane } from 'splitpanes'
@@ -59,6 +63,10 @@ const pluginToggles = useLocalStorage(
     punctuation: false,
     breaks: false,
     binding: true,
+    headings: false,
+    toc: false,
+    summary: false,
+    security: false,
   },
   { mergeDefaults: true }
 )
@@ -128,6 +136,30 @@ const pluginDefs = [
     icon: 'i-lucide-corner-down-left',
     factory: () => breaks(),
   },
+  {
+    key: 'headings',
+    label: 'Headings',
+    icon: 'i-lucide-heading',
+    factory: () => headings(),
+  },
+  {
+    key: 'toc',
+    label: 'Table of Contents',
+    icon: 'i-lucide-list-tree',
+    factory: () => toc(),
+  },
+  {
+    key: 'summary',
+    label: 'Summary',
+    icon: 'i-lucide-text-quote',
+    factory: () => summary(),
+  },
+  {
+    key: 'security',
+    label: 'Security',
+    icon: 'i-lucide-shield',
+    factory: () => security(),
+  },
 ] as const
 
 const parseOptionDefs = [
@@ -149,7 +181,9 @@ const parseOptionDefs = [
 ] as const
 
 const activePlugins = computed<ComarkPlugin[]>(() =>
-  pluginDefs.filter((p) => pluginToggles.value[p.key as keyof typeof pluginToggles.value]).map((p) => p.factory())
+  pluginDefs
+    .filter((p) => pluginToggles.value[p.key as keyof typeof pluginToggles.value])
+    .map((p) => p.factory() as ComarkPlugin)
 )
 
 const enabledPluginCount = computed<number>(() => Object.values(pluginToggles.value).filter(Boolean).length)
@@ -262,12 +296,13 @@ watch(completion, async (md) => {
   if (!md) return
   markdown.value = md
   try {
-    tree.value = await parse(md, {
+    const result = await parse(md, {
       plugins: activePlugins.value,
       autoUnwrap: parseOptions.value.autoUnwrap,
       autoClose: true,
       html: parseOptions.value.html,
     })
+    tree.value = result
   } catch {
     /* ignore intermediate parse errors */
   }
@@ -413,7 +448,7 @@ function handleGenerate(prompt: string) {
             </div>
             <PromptInput
               v-if="currentExample.mode"
-              :is-generating="isGenerating"
+              :is-generating="!!isGenerating"
               :prompt="currentExample.prompt"
               floating
               @submit="handleGenerate"

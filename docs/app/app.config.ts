@@ -55,12 +55,7 @@ export default defineAppConfig({
   ui: {
     colors: {
       primary: 'yellow',
-      neutral: 'zinc',
-    },
-    header: {
-      slots: {
-        body: 'sm:p-4',
-      },
+      neutral: 'neutral',
     },
     prose: {
       codePreview: {
