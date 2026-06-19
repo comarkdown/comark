@@ -412,6 +412,12 @@ export interface ParseOptions<TPlugins extends readonly ComarkPlugin<any, any>[]
   html?: boolean
 
   /**
+   * Set `false` to disable autoconvert URL-like text to links.
+   * @default true
+   */
+  linkify?: boolean
+
+  /**
    * Additional plugins to use
    * @default []
    */
