@@ -11,11 +11,9 @@ defineProps<{
   reactLinkTo: string
   svelteLinkLabel: string
   svelteLinkTo: string
-  angularLinkLabel: string
-  angularLinkTo: string
 }>()
 
-const activeTab = ref<'vue' | 'react' | 'svelte' | 'angular'>('vue')
+const activeTab = ref<'react' | 'svelte' | 'vue'>('react')
 
 const vueCode = `<script setup lang="ts">
 import { Comark } from '@comark/vue'
@@ -71,40 +69,14 @@ ${'<'}/script>
 
 <Comark markdown={markdown} components={{ Alert }} />`
 
-const angularCode = `import { Component } from '@angular/core'
-import { ComarkComponent } from '@comark/angular'
-import { AlertComponent } from './components/alert.component'
-
-@Component({
-  selector: 'app-root',
-  standalone: true,
-  imports: [ComarkComponent],
-  template: \`
-    <comark
-      [markdown]="markdown"
-      [components]="components"
-    />
-  \`,
-})
-export class AppComponent {
-  components = { alert: AlertComponent }
-  markdown = \`
-# Hello **World**
-
-::alert{type="info"}
-This is a Comark component!
-::\`
-}`
-
 const { data: highlighted } = await useAsyncData('fw-highlight', async () => {
   const themes = { light: 'github-light', dark: 'github-dark' } as const
-  const [vue, react, svelte, angular] = await Promise.all([
-    codeToHtml(vueCode, { lang: 'vue', themes }),
+  const [react, svelte, vue] = await Promise.all([
     codeToHtml(reactCode, { lang: 'tsx', themes }),
     codeToHtml(svelteCode, { lang: 'svelte', themes }),
-    codeToHtml(angularCode, { lang: 'typescript', themes }),
+    codeToHtml(vueCode, { lang: 'vue', themes }),
   ])
-  return { vue, react, svelte, angular }
+  return { vue, react, svelte }
 })
 </script>
 
@@ -168,21 +140,6 @@ const { data: highlighted } = await useAsyncData('fw-highlight', async () => {
           />
           App.vue
         </button>
-        <button
-          class="flex items-center gap-2 border-b-2 px-4 py-2 font-mono text-xs"
-          :class="
-            activeTab === 'angular'
-              ? 'border-primary text-primary'
-              : 'border-transparent text-muted hover:text-highlighted'
-          "
-          @click="activeTab = 'angular'"
-        >
-          <UIcon
-            name="i-logos-angular-icon"
-            class="size-3.5"
-          />
-          app.component.ts
-        </button>
       </div>
       <div class="shiki-block h-[280px] overflow-auto p-4">
         <div
@@ -199,11 +156,6 @@ const { data: highlighted } = await useAsyncData('fw-highlight', async () => {
           v-show="activeTab === 'vue'"
           class="text-sm/6"
           v-html="highlighted?.vue"
-        />
-        <div
-          v-show="activeTab === 'angular'"
-          class="text-sm/6"
-          v-html="highlighted?.angular"
         />
       </div>
     </div>
@@ -233,15 +185,6 @@ const { data: highlighted } = await useAsyncData('fw-highlight', async () => {
         variant="link"
         color="neutral"
         leading-icon="i-simple-icons-vuedotjs"
-        trailing-icon="i-lucide-arrow-right"
-        class="px-0"
-      />
-      <UButton
-        :label="angularLinkLabel"
-        :to="angularLinkTo"
-        variant="link"
-        color="neutral"
-        leading-icon="i-logos-angular-icon"
         trailing-icon="i-lucide-arrow-right"
         class="px-0"
       />
