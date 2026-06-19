@@ -125,6 +125,53 @@ export default function Chat() {
 
 ---
 
+## Angular
+
+```typescript
+import { Component } from '@angular/core'
+import { ComarkComponent } from '@comark/angular'
+
+@Component({
+  selector: 'app-chat',
+  standalone: true,
+  imports: [ComarkComponent],
+  template: `
+    <comark
+      [markdown]="content"
+      [streaming]="streaming"
+      [caret]="streaming"
+    />
+  `,
+})
+export class ChatComponent {
+  content = ''
+  streaming = false
+
+  async generate(prompt: string) {
+    this.content = ''
+    this.streaming = true
+
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      body: JSON.stringify({ prompt }),
+    })
+
+    const reader = res.body!.getReader()
+    const decoder = new TextDecoder()
+
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+      this.content += decoder.decode(value, { stream: true })
+    }
+
+    this.streaming = false
+  }
+}
+```
+
+---
+
 ## Terminal / CLI Agents
 
 Use `@comark/ansi` to render LLM markdown output in terminal-based agents:
@@ -165,6 +212,11 @@ The `caret` prop appends a blinking cursor to the last text node while `streamin
 
 ```svelte
 <Comark markdown={content} {streaming} caret={{ class: 'animate-blink' }} />
+```
+
+```html
+<!-- Angular -->
+<comark [markdown]="content" [streaming]="streaming" [caret]="{ class: 'animate-blink' }" />
 ```
 
 ---
