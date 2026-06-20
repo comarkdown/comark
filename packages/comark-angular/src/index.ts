@@ -1,0 +1,5 @@
+export { ComarkComponent } from './components/comark.component.ts'
+export { ComarkRendererComponent } from './components/comark-renderer.component.ts'
+export { ComarkNodeComponent } from './components/comark-node.component.ts'
+export { defineComarkComponent, defineComarkRendererComponent } from './define.ts'
+export type * from 'comark'

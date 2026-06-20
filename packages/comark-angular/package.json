@@ -1,0 +1,77 @@
+{
+  "name": "@comark/angular",
+  "version": "0.4.0",
+  "description": "Angular components for Comark",
+  "keywords": [
+    "angular",
+    "comark",
+    "markdown",
+    "mdc",
+    "renderer",
+    "streaming"
+  ],
+  "homepage": "https://comark.dev/rendering/angular",
+  "bugs": {
+    "url": "https://github.com/comarkdown/comark/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/comarkdown/comark.git"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js",
+    "./plugins/*": "./dist/plugins/*.js",
+    "./utils": "./dist/utils/index.js"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "stub": "node ../../scripts/stub.mjs",
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest run",
+    "prepack": "tsc",
+    "release": "release-it"
+  },
+  "dependencies": {
+    "comark": "catalog:"
+  },
+  "devDependencies": {
+    "@angular/common": "catalog:",
+    "@angular/compiler": "catalog:",
+    "@angular/compiler-cli": "catalog:",
+    "@angular/core": "catalog:",
+    "@angular/platform-browser": "catalog:",
+    "@angular/platform-server": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "peerDependencies": {
+    "@angular/common": ">=17.0.0 <22.0.0",
+    "@angular/core": ">=17.0.0 <22.0.0",
+    "@angular/platform-browser": ">=17.0.0 <22.0.0",
+    "beautiful-mermaid": "catalog:",
+    "katex": "catalog:",
+    "shiki": "catalog:"
+  },
+  "peerDependenciesMeta": {
+    "shiki": {
+      "optional": true
+    },
+    "beautiful-mermaid": {
+      "optional": true
+    },
+    "katex": {
+      "optional": true
+    }
+  }
+}

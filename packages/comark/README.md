@@ -8,7 +8,7 @@
 [![Documentation](https://img.shields.io/badge/Documentation-black?logo=readme&logoColor=white)](https://comark.dev)
 [![license](https://img.shields.io/github/license/comarkdown/comark?color=black)](https://github.com/comarkdown/comark/blob/main/LICENSE)
 
-A high-performance markdown parser and renderer with Vue, React, Svelte, HTML and ANSI terminal.
+A high-performance markdown parser and renderer with Vue, React, Svelte, Angular, HTML and ANSI terminal.
 
 ## Features
 
@@ -78,6 +78,30 @@ pnpm add @comark/svelte katex
 </script>
 
 <Comark markdown={chatMessage} components={{ math: Math }} plugins={[math()]} />
+```
+
+### Angular
+
+```bash
+npm install @comark/angular katex
+# or
+pnpm add @comark/angular katex
+```
+
+```typescript
+import { Component } from '@angular/core'
+import { ComarkComponent } from '@comark/angular'
+import math, { Math } from '@comark/angular/plugins/math'
+
+@Component({
+  selector: 'app-chat',
+  standalone: true,
+  imports: [ComarkComponent],
+  template: `<comark [markdown]="chatMessage" [components]="{ Math }" [plugins]="[math()]" />`,
+})
+export class ChatComponent {
+  chatMessage = ...
+}
 ```
 
 ### HTML (No Framework)

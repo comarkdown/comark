@@ -14,6 +14,7 @@
     "dev:html": "pnpm --filter comark-html run dev",
     "dev:react": "pnpm --filter comark-react run dev",
     "dev:svelte": "pnpm --filter comark-svelte run dev",
+    "dev:angular": "pnpm --filter comark-angular run dev",
     "dev:ansi": "pnpm --filter comark-ansi run dev",
     "dev:vue": "pnpm --filter comark-vue run dev",
     "dev:vue:mermaid": "pnpm --filter comark-vue-vite-mermaid run dev",

@@ -438,7 +438,7 @@ function handleGenerate(prompt: string) {
             />
             <div
               v-if="isGenerating && !markdown"
-              class="absolute inset-0 flex flex-col items-center justify-center gap-3 text-muted bg-white dark:bg-[#1e1e1e]"
+              class="absolute inset-0 flex flex-col items-center justify-center gap-3 text-muted bg-white dark:bg-[#0a0a0a]"
             >
               <UIcon
                 name="i-lucide-loader-circle"

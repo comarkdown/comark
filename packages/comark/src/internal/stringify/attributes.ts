@@ -8,7 +8,7 @@ export interface ResolveAttributesOptions {
    * `:` prefix is always stripped. Non-JSON strings fall back to a dot-path
    * lookup in `renderData`; unresolved paths yield `undefined`.
    *
-   * This matches the Vue/React/Svelte renderer semantics, which always
+   * This matches the Vue/React/Svelte/Angular renderer semantics, which always
    * normalize bindings into real JS values suitable for typed component props.
    *
    * When false (default) only dot-path lookups are applied — literals and

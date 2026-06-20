@@ -1,0 +1,120 @@
+@import 'tailwindcss';
+
+body {
+  @apply bg-neutral-50 dark:bg-neutral-950 p-4 text-neutral-900 dark:text-neutral-50;
+}
+
+/* Prose styles for rendered Comark content */
+.prose h1 {
+  @apply text-3xl font-bold mb-4 mt-0;
+}
+.prose h2 {
+  @apply text-2xl font-semibold mt-8 mb-3;
+}
+.prose h3 {
+  @apply text-xl font-semibold mt-6 mb-2;
+}
+.prose p {
+  @apply mb-4 leading-relaxed;
+}
+.prose a {
+  @apply text-blue-600 dark:text-blue-400 underline;
+}
+.prose strong {
+  @apply font-semibold;
+}
+.prose ul {
+  @apply list-disc pl-6 mb-4 space-y-1;
+}
+.prose ol {
+  @apply list-decimal pl-6 mb-4 space-y-1;
+}
+.prose li {
+  @apply leading-relaxed;
+}
+.prose blockquote {
+  @apply border-l-4 border-neutral-300 dark:border-neutral-700 pl-4 italic text-neutral-600 dark:text-neutral-400 my-4;
+}
+.prose code {
+  @apply bg-neutral-200 dark:bg-neutral-800 px-1.5 py-0.5 rounded text-sm font-mono;
+}
+.prose pre {
+  @apply bg-neutral-100 dark:bg-neutral-800 dark:text-neutral-100 text-neutral-800 rounded-lg p-4 overflow-x-auto mb-4;
+}
+.prose pre code {
+  @apply bg-transparent p-0 text-inherit;
+}
+
+/* Tables */
+.prose table {
+  @apply w-full border-collapse mb-4;
+}
+.prose th {
+  @apply bg-neutral-100 dark:bg-neutral-800 font-semibold text-sm px-4 py-2 border border-neutral-200 dark:border-neutral-700;
+}
+.prose td {
+  @apply text-sm px-4 py-2 border border-neutral-200 dark:border-neutral-700;
+}
+
+/* Shiki line highlight */
+.shiki span.line.highlight {
+  background-color: rgba(255, 255, 0, 0.1);
+  display: inline-block;
+  width: calc(100% + 2rem);
+  margin: 0 -1rem;
+  padding: 0 1rem;
+}
+
+/* Shiki code block filename */
+.prose pre[filename]::before {
+  content: attr(filename);
+  @apply block text-xs text-neutral-500 dark:text-neutral-400 mb-2 font-mono;
+}
+
+/* Shiki dark mode */
+@media (prefers-color-scheme: dark) {
+  .shiki span {
+    color: var(--shiki-dark) !important;
+    background-color: var(--shiki-dark-bg) !important;
+    font-style: var(--shiki-dark-font-style) !important;
+    font-weight: var(--shiki-dark-font-weight) !important;
+    text-decoration: var(--shiki-dark-text-decoration) !important;
+  }
+}
+
+/* Alert blockquotes (> [!NOTE], > [!TIP], etc.) */
+.prose blockquote[as='note'] {
+  @apply border-l-blue-500 bg-blue-50 dark:bg-blue-950 not-italic text-blue-800 dark:text-blue-300;
+}
+.prose blockquote[as='note']::before {
+  content: 'ℹ️ Note';
+  @apply block font-semibold mb-1;
+}
+.prose blockquote[as='tip'] {
+  @apply border-l-green-500 bg-green-50 dark:bg-green-950 not-italic text-green-800 dark:text-green-300;
+}
+.prose blockquote[as='tip']::before {
+  content: '💡 Tip';
+  @apply block font-semibold mb-1;
+}
+.prose blockquote[as='warning'] {
+  @apply border-l-yellow-500 bg-yellow-50 dark:bg-yellow-950 not-italic text-yellow-800 dark:text-yellow-300;
+}
+.prose blockquote[as='warning']::before {
+  content: '⚠️ Warning';
+  @apply block font-semibold mb-1;
+}
+.prose blockquote[as='caution'] {
+  @apply border-l-red-500 bg-red-50 dark:bg-red-950 not-italic text-red-800 dark:text-red-300;
+}
+.prose blockquote[as='caution']::before {
+  content: '🚨 Caution';
+  @apply block font-semibold mb-1;
+}
+.prose blockquote[as='important'] {
+  @apply border-l-purple-500 bg-purple-50 dark:bg-purple-950 not-italic text-purple-800 dark:text-purple-300;
+}
+.prose blockquote[as='important']::before {
+  content: '❗ Important';
+  @apply block font-semibold mb-1;
+}
