@@ -1,7 +1,9 @@
+import { DevTools } from '@vitejs/devtools'
 import { defineConfig } from 'vite'
 import angular from '@analogjs/vite-plugin-angular'
 import tailwindcss from '@tailwindcss/vite'
 import { resolve } from 'node:path'
+import { comarkDevtools } from 'comark/vite'
 import type { Plugin } from 'vite'
 
 /**
@@ -56,6 +58,7 @@ function escapeRegExp(s: string): string {
 
 export default defineConfig({
   plugins: [
+    DevTools(),
     pnpmWorkspaceCompat(),
     angular({
       tsconfig: './tsconfig.json',
@@ -66,5 +69,6 @@ export default defineConfig({
       transformFilter: (_code, id) => !id.includes('/define.ts'),
     }),
     tailwindcss(),
+    comarkDevtools(),
   ],
 })
