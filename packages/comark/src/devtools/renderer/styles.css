@@ -95,7 +95,7 @@
   margin: 0;
   border: none;
   font-family: 'Geist Mono', ui-monospace, 'SF Mono', Monaco, Menlo, monospace;
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.6;
   tab-size: 2;
   white-space: pre-wrap;
@@ -353,12 +353,12 @@
 /* Dark theme via data attribute */
 .comark-devtools[data-theme='dark'],
 .comark-devtools:not([data-theme='light']):is([data-auto-dark='true']) {
-  --comark-devtools-bg: #18181b;
-  --comark-devtools-bg-soft: #27272a;
-  --comark-devtools-bg-muted: #3f3f46;
-  --comark-devtools-text: #fafafa;
-  --comark-devtools-text-muted: #a1a1aa;
-  --comark-devtools-border: #3f3f46;
+  --comark-devtools-bg: #0a0a0a;
+  --comark-devtools-bg-soft: #171717;
+  --comark-devtools-bg-muted: #262626;
+  --comark-devtools-text: #e5e5e5;
+  --comark-devtools-text-muted: #a3a3a3;
+  --comark-devtools-border: #262626;
   --comark-devtools-primary: #facc15;
   --comark-devtools-primary-soft: rgba(250, 204, 21, 0.12);
   --comark-devtools-accent: #fde047;

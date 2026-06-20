@@ -12,7 +12,7 @@ const COMARK_SVG = (color: string) =>
 export const COMARK_LIGHT_ICON = `data:image/svg+xml,${encodeURIComponent(COMARK_SVG('#000'))}`
 export const COMARK_DARK_ICON = `data:image/svg+xml,${encodeURIComponent(COMARK_SVG('#fff'))}`
 
-export const DEVTOOLS_SHIKI_THEMES = ['vitesse-light', 'vitesse-dark'] as const
+export const DEVTOOLS_SHIKI_THEMES = ['github-light', 'github-dark'] as const
 
 /** Languages loaded by the devtools Shiki highlighter */
 export const DEVTOOLS_SHIKI_LANGS = [

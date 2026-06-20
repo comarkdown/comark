@@ -46,7 +46,7 @@ export class DevtoolsPanel {
   private highlightGeneration = 0
   private initialLoading = true
   private pollInterval: ReturnType<typeof setInterval> | undefined
-  private theme: Theme = 'auto'
+  private theme: Theme = 'dark'
   private currentView: ViewState | null = null
   private astOutputEl: HTMLElement | null = null
 
