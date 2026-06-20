@@ -1,4 +1,14 @@
-import { Component, Input, ChangeDetectionStrategy, ChangeDetectorRef, OnChanges, OnDestroy, OnInit, SimpleChanges, Type } from '@angular/core'
+import {
+  Component,
+  Input,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  OnChanges,
+  OnDestroy,
+  OnInit,
+  SimpleChanges,
+  Type,
+} from '@angular/core'
 import type { ComarkElement, ComarkNode, ComarkTree, NodeRenderData } from 'comark'
 import type { RegisteredInstance } from 'comark/devtools'
 import { ComarkNodeComponent } from './comark-node.component.ts'
@@ -69,7 +79,10 @@ export class ComarkRendererComponent implements OnInit, OnChanges, OnDestroy {
           }
         },
       }).then((handle) => {
-        if (this.devtoolsDisposed) { handle?.unregister(); return }
+        if (this.devtoolsDisposed) {
+          handle?.unregister()
+          return
+        }
         this.devtoolsHandle = handle
       })
     })
