@@ -43,5 +43,6 @@ logs
 
 # Comark
 packages/comark/skills
+packages/comark/src/devtools/renderer/styles.ts
 .vercel
 .env*

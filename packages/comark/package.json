@@ -33,9 +33,8 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": "./dist/index.js",
-    "./vite": "./dist/devtools/vite.js",
     "./devtools": "./dist/devtools/index.js",
-    "./devtools-renderer": "./dist/devtools/renderer/index.js",
+    "./devtools/*": "./dist/devtools/*.js",
     "./plugins/*": "./dist/plugins/*.js",
     "./utils": "./dist/utils/index.js",
     "./parse": "./dist/parse.js",

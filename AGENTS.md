@@ -57,10 +57,11 @@ packages/comark/
 │   │   ├── index.ts          # Public exports (comark/devtools entry point)
 │   │   ├── registry.ts       # Global singleton registry for live instances
 │   │   ├── register.ts       # Instance registration helpers
-│   │   ├── vite.ts           # Vite plugin with RPC endpoints (comark/vite entry point)
+│   │   ├── vite.ts           # Vite plugin with RPC endpoints (comark/devtools/vite entry point)
+│   │   ├── renderer.ts       # Re-export barrel (comark/devtools/renderer entry point)
 │   │   ├── types.ts          # Shared TypeScript interfaces for RPC and registry
 │   │   ├── constants.ts      # Icon assets and Shiki theme/lang config
-│   │   └── renderer/         # DevTools panel UI (comark/devtools-renderer entry point)
+│   │   └── renderer/         # DevTools panel UI (internal)
 │   │       ├── index.ts      # Entry point, exports DevtoolsPanel
 │   │       ├── panel.ts      # Panel class: tabs, editor, polling, RPC orchestration
 │   │       ├── dom.ts        # DOM element factories (editor, tab bar, states)
@@ -91,10 +92,10 @@ packages/comark/
 
 | Peer | Required by |
 |------|-------------|
-| `shiki` | `comark/plugins/highlight`, `comark/vite` (devtools Shiki highlighting) |
+| `shiki` | `comark/plugins/highlight`, `comark/devtools/vite` (devtools Shiki highlighting) |
 | `katex` | `comark/plugins/math` |
 | `beautiful-mermaid` | `comark/plugins/mermaid` |
-| `@vitejs/devtools-kit` | `comark/vite` (Vite DevTools integration) |
+| `@vitejs/devtools-kit` | `comark/devtools/vite` (Vite DevTools integration) |
 
 All are optional — only install what you use.
 
@@ -397,7 +398,7 @@ import toc from 'comark/plugins/toc'
 import alert from 'comark/plugins/alert'
 
 // Vite DevTools integration
-import { comarkDevtools } from 'comark/vite'
+import { comarkDevtools } from 'comark/devtools/vite'
 // Devtools registry (used internally by framework renderers)
 import { registerDevtoolsInstance, getDevtoolsRegistry } from 'comark/devtools'
 

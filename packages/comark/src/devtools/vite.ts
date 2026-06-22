@@ -40,7 +40,7 @@ function getHighlighter(): Promise<Highlighter | null> {
  * @example
  * ```ts
  * import { DevTools } from '@vitejs/devtools'
- * import { comarkDevtools } from 'comark/vite'
+ * import { comarkDevtools } from 'comark/devtools/vite'
  *
  * export default defineConfig({
  *   plugins: [DevTools(), comarkDevtools()],
@@ -120,7 +120,7 @@ export function comarkDevtools(): Plugin {
           },
           type: 'custom-render',
           renderer: {
-            importFrom: 'comark/devtools-renderer',
+            importFrom: 'comark/devtools/renderer',
             importName: 'default',
           },
         })

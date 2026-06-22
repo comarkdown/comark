@@ -4,7 +4,7 @@ import { join, basename } from 'node:path'
 import type { Plugin, ResolvedConfig } from 'vite'
 import type { ElementNode, DirectiveNode, TransformContext } from '@vue/compiler-core'
 import { existsSync } from 'node:fs'
-import { comarkDevtools } from 'comark/vite'
+import { comarkDevtools } from 'comark/devtools/vite'
 
 const runtimeDir = fileURLToPath(new URL('./utils', import.meta.url))
 
