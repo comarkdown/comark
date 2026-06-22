@@ -73,7 +73,7 @@ export function createParse<const TPlugins extends readonly ComarkPlugin<any, an
 
   const parser = new MarkdownExit({
     html: false,
-    linkify: true,
+    linkify: options.linkify ?? true,
   }).enable(['table', 'strikethrough'])
 
   if (options.html !== false) {
