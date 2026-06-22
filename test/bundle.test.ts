@@ -74,7 +74,7 @@ describe.skipIf(stubbed || process.env.SKIP_BUNDLE_SIZE === 'true')('package bun
         "@comark/react": "39.8k (56 files)",
         "@comark/svelte": "40.4k (66 files)",
         "@comark/vue": "56.7k (62 files)",
-        "comark": "409k (156 files)",
+        "comark": "409k (158 files)",
       }
     `)
   })
