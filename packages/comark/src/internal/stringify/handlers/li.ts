@@ -3,7 +3,8 @@ import type { ComarkElement, ComarkNode } from 'comark'
 import { indent } from '../../../utils/index.ts'
 import { comarkAttributes, userBlockAttrs } from '../attributes.ts'
 
-// ol/ul indent themselves via the listIndent context.
+// Block elements that need explicit indentation in list items.
+// Note: ol/ul are handled by their own handlers which manage indentation via listIndent context.
 const blockElements = new Set(['pre', 'blockquote', 'table'])
 
 export async function li(node: ComarkElement, state: State) {
@@ -77,7 +78,7 @@ function escapeLeadingNumberDot(str: string): string {
 
   const len = str.length
   const firstChar = str.charCodeAt(0)
-  if (firstChar < 48 || firstChar > 57) return str
+  if (firstChar < 48 || firstChar > 57) return str // Not a digit
 
   let i = 1
   for (; i < len; i++) {
