@@ -5,6 +5,7 @@ import { createShikiPrimitive } from 'shiki'
 import { createJavaScriptRegexEngine } from 'shiki/engine/javascript'
 import { codeToHast, codeToTokens, getTokenStyleObject, stringifyTokenStyle } from 'shiki/core'
 import comakLanguage from '../utils/comark.tmLanguage.ts'
+import { HIGHLIGHT_CLASS_SEPARATOR } from '../internal/stringify/attributes.ts'
 
 export interface HighlightOptions {
   /**
@@ -177,8 +178,9 @@ async function loadLanguage(hl: ShikiPrimitive, language: LanguageRegistration |
 function extractUserClass(cls: string): string {
   const trimmed = cls.trim()
   if (!/^shiki(?:\s|$)/.test(trimmed)) return trimmed
-  const sentinel = trimmed.indexOf(' . ')
-  return sentinel >= 0 ? trimmed.slice(sentinel + 3).trim() : ''
+  const needle = ` ${HIGHLIGHT_CLASS_SEPARATOR} `
+  const sentinel = trimmed.indexOf(needle)
+  return sentinel >= 0 ? trimmed.slice(sentinel + needle.length).trim() : ''
 }
 
 /**
@@ -378,7 +380,7 @@ export async function highlightCodeBlocks(tree: ComarkTree, options: HighlightOp
     const userClass = extractUserClass(typeof preAttrs.class === 'string' ? preAttrs.class : '')
     const newPreAttrs: Record<string, any> = {
       ...preAttrs,
-      class: userClass ? `${classStr} . ${userClass}` : classStr,
+      class: userClass ? `${classStr} ${HIGHLIGHT_CLASS_SEPARATOR} ${userClass}` : classStr,
     }
 
     if (options.preStyles) {
