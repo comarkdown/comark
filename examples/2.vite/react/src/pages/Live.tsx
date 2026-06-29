@@ -1,5 +1,5 @@
 import { createComarkContext, parse, type ComarkTree } from 'comark'
-import { ComarkRenderer } from '@comark/react'
+import { ComarkLive } from '@comark/react'
 import { useEffect, useState } from 'react'
 
 // A driver installs a context on globalThis once; every <ComarkRenderer comarkKey>
@@ -76,7 +76,7 @@ export default function Live() {
         </button>
       </div>
 
-      <ComarkRenderer
+      <ComarkLive
         comarkKey="demo"
         tree={tree}
       />
