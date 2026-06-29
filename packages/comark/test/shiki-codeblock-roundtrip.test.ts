@@ -51,6 +51,21 @@ describe('shiki code block round-trip', () => {
     expect(md).toContain('```bash\nnpx install\n```')
   })
 
+  it('serializes a `pre` carrying a `code` fence-body attr to a plain fence', async () => {
+    // Editors (e.g. round-tripping through a WYSIWYG layer) preserve the raw
+    // source as a `code` attr while the children hold highlighted spans. The
+    // `pre` handler reads `node[1].code` as the fence body, so it must not also
+    // echo back as a `::pre{code="…"}` wrapper attr.
+    const tree: ComarkTree = {
+      frontmatter: {},
+      meta: {},
+      nodes: [['pre', { language: 'bash', class: 'shiki', code: 'npx install' }, ['code', {}, 'npx install']]],
+    }
+    const md = await renderMarkdown(tree)
+    expect(md).not.toContain('::pre')
+    expect(md.trim()).toBe('```bash\nnpx install\n```')
+  })
+
   it('re-highlighting an already-highlighted block is idempotent', async () => {
     // Studio stores a highlighted block, then re-highlights after a tiptap
     // edit round-trip. The injected `shiki` class must not accumulate as

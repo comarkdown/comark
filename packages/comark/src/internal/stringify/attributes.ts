@@ -100,11 +100,13 @@ const IMPLICIT_ATTRS: Record<string, { drop?: string[]; classBlocklist?: string[
   ul: { classBlocklist: ['contains-task-list'] },
   li: { classBlocklist: ['task-list-item'] },
   // `language`/`filename`/`highlights`/`meta` ride on the fence info string.
+  // `code` carries the raw fence body (the `pre` handler reads `node[1].code`
+  // as the source), so it's encoded by the fence and must not echo as an attr.
   // `style` comes from render-time plugins (e.g. shiki) and has no markdown
   // form. `class` is handled specially in userBlockAttrs because shiki merges
   // its injected classes with the user's class — we need to strip just the
   // highlighter portion.
-  pre: { drop: ['language', 'filename', 'highlights', 'meta', 'style'] },
+  pre: { drop: ['language', 'filename', 'highlights', 'meta', 'style', 'code'] },
 }
 
 /**
