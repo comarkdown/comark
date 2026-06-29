@@ -382,7 +382,7 @@ export const ComarkRenderer: ComarkRendererComponent = defineComponent({
       const cleanup = globalThis.comarkContext.get(key, toRaw(props.tree as ComarkTree)).listen((tree) => {
         liveTree.value = tree
       })
-      onUnmounted(cleanup)
+      onUnmounted(() => cleanup(true))
     }
 
     // Capture errors from child components (e.g., during streaming when props are incomplete)

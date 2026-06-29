@@ -94,7 +94,7 @@ export interface ComarkDocument {
   /** Apply one or more patches against the current tree (structural sharing). */
   patch(patch: ComarkPatch | ComarkPatch[]): void
   /** Subscribe to tree changes. Returns the cleanup function. */
-  listen(fn: (tree: ComarkTree) => void): () => void
+  listen(fn: (tree: ComarkTree) => void): (clear?: boolean) => void
 }
 
 function createDocument(initial: ComarkTree, onEmpty: (tree: ComarkTree) => void): ComarkDocument {
@@ -116,8 +116,16 @@ function createDocument(initial: ComarkTree, onEmpty: (tree: ComarkTree) => void
     },
     listen(fn) {
       listeners.add(fn)
-      return () => {
-        listeners.delete(fn)
+      return (clear = false) => {
+        if (!listeners.has(fn)) {
+          return
+        }
+
+        if (clear) {
+          listeners.clear()
+        } else {
+          listeners.delete(fn)
+        }
         // Drop the document once nobody is listening — frees ids on unmount.
         if (listeners.size === 0) onEmpty(tree)
       }
@@ -196,6 +204,7 @@ export function createComarkContext(install = true): ComarkContext {
     },
   }
   if (install) globalThis.comarkContext = ctx
+
   return ctx
 }
 
