@@ -99,13 +99,9 @@ const IMPLICIT_ATTRS: Record<string, { drop?: string[]; classBlocklist?: string[
   blockquote: { drop: ['as'] },
   ul: { classBlocklist: ['contains-task-list'] },
   li: { classBlocklist: ['task-list-item'] },
-  // `language`/`filename`/`highlights`/`meta` ride on the fence info string.
-  // `code` carries the raw fence body (the `pre` handler reads `node[1].code`
-  // as the source), so it's encoded by the fence and must not echo as an attr.
-  // `style` comes from render-time plugins (e.g. shiki) and has no markdown
-  // form. `class` is handled specially in userBlockAttrs because shiki merges
-  // its injected classes with the user's class — we need to strip just the
-  // highlighter portion.
+  // `language`/`filename`/`highlights`/`meta`/`code` are encoded by the fence
+  // itself. `style` comes from render-time plugins (e.g. shiki) and has no
+  // markdown form. `class` is handled specially in userBlockAttrs.
   pre: { drop: ['language', 'filename', 'highlights', 'meta', 'style', 'code'] },
 }
 
@@ -131,13 +127,9 @@ export function userBlockAttrs(tag: string, attributes: Record<string, unknown>)
       continue
     }
     if (key === 'class' && tag === 'pre' && typeof value === 'string' && /^shiki(?:\s|$)/.test(value)) {
-      // Shiki injects `shiki [shiki-themes] <themes…> dark:<theme>` and any
-      // user-supplied class is appended after it. In single-theme mode it can
-      // inject a bare `shiki` with no trailing tokens, so match that too —
-      // otherwise the injected class survives as a "user attr" and forces the
-      // `::pre{.shiki}` wrapper form on every highlighted code block.
-      // Recover the user portion by dropping everything up to and including
-      // the first `dark:*` token.
+      // Shiki injects `shiki [shiki-themes] <themes…>` (or a bare `shiki`) and
+      // appends any user class after a `.` separator. Recover the user portion
+      // by dropping everything up to and including that separator.
       const tokens = value.split(/\s+/)
       let cutoff = tokens.findIndex((t) => t === '.')
 

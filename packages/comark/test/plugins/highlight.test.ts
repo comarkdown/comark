@@ -1,13 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import type { ComarkTree } from '../src/types'
-import { renderMarkdown } from '../src/render'
-import { highlightCodeBlocks } from '../src/plugins/highlight'
+import type { ComarkTree } from '../../src/types'
+import { renderMarkdown } from '../../src/render'
+import { highlightCodeBlocks } from '../../src/plugins/highlight'
 
 describe('shiki code block round-trip', () => {
-  // A highlighted code block is just a `pre.shiki` wrapper around a `code`
-  // node. Its `class`/`style`/`language` are injected by the highlight plugin
-  // at render time and have no markdown form, so the block must serialize back
-  // to a plain fence — never the `::pre{...}` block-attribute wrapper.
+  // The highlight plugin's injected attrs have no markdown form, so a
+  // highlighted block must serialize to a plain fence, never a `::pre{...}`.
   function preTree(preClass: string): ComarkTree {
     return {
       frontmatter: {},
@@ -17,7 +15,7 @@ describe('shiki code block round-trip', () => {
   }
 
   it('serializes a bare `shiki` class back to a plain fence', async () => {
-    // Single-theme shiki emits a bare `class="shiki"` with no trailing tokens.
+    // Single-theme shiki emits a bare `class="shiki"`.
     const md = await renderMarkdown(preTree('shiki'))
     expect(md.trim()).toBe('```bash\nnpx install\n```')
     expect(md).not.toContain('::pre')
@@ -52,10 +50,8 @@ describe('shiki code block round-trip', () => {
   })
 
   it('serializes a `pre` carrying a `code` fence-body attr to a plain fence', async () => {
-    // Editors (e.g. round-tripping through a WYSIWYG layer) preserve the raw
-    // source as a `code` attr while the children hold highlighted spans. The
-    // `pre` handler reads `node[1].code` as the fence body, so it must not also
-    // echo back as a `::pre{code="…"}` wrapper attr.
+    // A WYSIWYG round-trip can keep the raw source in a `code` attr; since the
+    // `pre` handler reads it as the fence body, it must not echo as a wrapper attr.
     const tree: ComarkTree = {
       frontmatter: {},
       meta: {},
@@ -67,9 +63,8 @@ describe('shiki code block round-trip', () => {
   })
 
   it('re-highlighting an already-highlighted block is idempotent', async () => {
-    // Studio stores a highlighted block, then re-highlights after a tiptap
-    // edit round-trip. The injected `shiki` class must not accumulate as
-    // `shiki . shiki` and leak back out as a `::pre{.shiki}` wrapper.
+    // Re-highlighting a stored block must not accumulate `shiki . shiki` and
+    // leak back out as a `::pre{.shiki}` wrapper.
     const tree: ComarkTree = {
       frontmatter: {},
       meta: {},
@@ -80,7 +75,6 @@ describe('shiki code block round-trip', () => {
 
     const onceClass = (once.nodes[0] as [string, Record<string, unknown>])[1].class as string
     const twiceClass = (twice.nodes[0] as [string, Record<string, unknown>])[1].class as string
-    // Stable across passes, with no ` . ` user-class sentinel accumulating.
     expect(twiceClass).toBe(onceClass)
     expect(twiceClass).not.toContain(' . ')
 
@@ -98,7 +92,6 @@ describe('shiki code block round-trip', () => {
     const once = await highlightCodeBlocks(tree, {})
     const twice = await highlightCodeBlocks(once, {})
 
-    // Stable across passes — no `shiki` accumulation, user class retained.
     expect((once.nodes[0] as [string, Record<string, unknown>])[1].class).toBe(
       (twice.nodes[0] as [string, Record<string, unknown>])[1].class
     )

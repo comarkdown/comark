@@ -172,14 +172,8 @@ async function loadLanguage(hl: ShikiPrimitive, language: LanguageRegistration |
   loadedLanguages.add(Array.isArray(language) ? language.map((l) => l.name || '').join(',') : language.name || '')
 }
 
-/**
- * Convert a hast (HTML AST) node into a ComarkNode.
- * Uses pre-allocated arrays to avoid spread overhead.
- */
-// Recover the real user-supplied class from a `pre` class that may already
-// carry a highlighter injection. The injected form is `shiki … . <user>` (or a
-// bare `shiki …` when there was no user class), so strip our own portion to
-// keep re-highlighting idempotent.
+// Strip a prior highlighter injection (`shiki … . <user>`, or a bare `shiki …`)
+// down to the user class, so re-highlighting stays idempotent.
 function extractUserClass(cls: string): string {
   const trimmed = cls.trim()
   if (!/^shiki(?:\s|$)/.test(trimmed)) return trimmed
@@ -187,6 +181,10 @@ function extractUserClass(cls: string): string {
   return sentinel >= 0 ? trimmed.slice(sentinel + 3).trim() : ''
 }
 
+/**
+ * Convert a hast (HTML AST) node into a ComarkNode.
+ * Uses pre-allocated arrays to avoid spread overhead.
+ */
 function hastToComarkNode(input: any): ComarkNode {
   if (input.type === 'text') return input.value
   if (input.type === 'comment') return [null, {}, input.value]
@@ -374,14 +372,9 @@ export async function highlightCodeBlocks(tree: ComarkTree, options: HighlightOp
       }
     }
 
-    // Merge highlighter class with any user-supplied class (e.g. from
-    // `::pre{.user-class}`) so the wrapper's class isn't lost. Highlighting can
-    // run more than once on the same tree (e.g. a stored, already-highlighted
-    // block that's re-highlighted after an edit round-trip), so recover the
-    // *real* user class first: strip a prior `shiki … . <user>` injection down
-    // to its `<user>` portion (empty when there was none). Without this, the
-    // previous `shiki` class is mistaken for a user class and accumulates as
-    // `shiki . shiki`, leaking back out as a `::pre{.shiki}` wrapper on render.
+    // Merge the highlighter class with any user-supplied class (e.g. from
+    // `::pre{.user-class}`). extractUserClass discards a prior injection so a
+    // re-highlighted block doesn't accumulate `shiki . shiki`.
     const userClass = extractUserClass(typeof preAttrs.class === 'string' ? preAttrs.class : '')
     const newPreAttrs: Record<string, any> = {
       ...preAttrs,
