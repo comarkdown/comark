@@ -128,10 +128,14 @@ export function userBlockAttrs(tag: string, attributes: Record<string, unknown>)
       if (remaining) result[key] = remaining
       continue
     }
-    if (key === 'class' && tag === 'pre' && typeof value === 'string' && value.startsWith('shiki ')) {
+    if (key === 'class' && tag === 'pre' && typeof value === 'string' && /^shiki(?:\s|$)/.test(value)) {
       // Shiki injects `shiki [shiki-themes] <themes…> dark:<theme>` and any
-      // user-supplied class is appended after it. Recover the user portion by
-      // dropping everything up to and including the first `dark:*` token.
+      // user-supplied class is appended after it. In single-theme mode it can
+      // inject a bare `shiki` with no trailing tokens, so match that too —
+      // otherwise the injected class survives as a "user attr" and forces the
+      // `::pre{.shiki}` wrapper form on every highlighted code block.
+      // Recover the user portion by dropping everything up to and including
+      // the first `dark:*` token.
       const tokens = value.split(/\s+/)
       let cutoff = tokens.findIndex((t) => t === '.')
 
