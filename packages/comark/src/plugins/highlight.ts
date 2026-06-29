@@ -5,7 +5,6 @@ import { createShikiPrimitive } from 'shiki'
 import { createJavaScriptRegexEngine } from 'shiki/engine/javascript'
 import { codeToHast, codeToTokens, getTokenStyleObject, stringifyTokenStyle } from 'shiki/core'
 import comakLanguage from '../utils/comark.tmLanguage.ts'
-import { HIGHLIGHT_CLASS_SEPARATOR } from '../internal/stringify/attributes.ts'
 
 export interface HighlightOptions {
   /**
@@ -171,16 +170,6 @@ async function loadLanguage(hl: ShikiPrimitive, language: LanguageRegistration |
   }
   await hl.loadLanguage(language)
   loadedLanguages.add(Array.isArray(language) ? language.map((l) => l.name || '').join(',') : language.name || '')
-}
-
-// Strip a prior highlighter injection (`shiki … . <user>`, or a bare `shiki …`)
-// down to the user class, so re-highlighting stays idempotent.
-function extractUserClass(cls: string): string {
-  const trimmed = cls.trim()
-  if (!/^shiki(?:\s|$)/.test(trimmed)) return trimmed
-  const needle = ` ${HIGHLIGHT_CLASS_SEPARATOR} `
-  const sentinel = trimmed.indexOf(needle)
-  return sentinel >= 0 ? trimmed.slice(sentinel + needle.length).trim() : ''
 }
 
 /**
@@ -374,13 +363,12 @@ export async function highlightCodeBlocks(tree: ComarkTree, options: HighlightOp
       }
     }
 
-    // Merge the highlighter class with any user-supplied class (e.g. from
-    // `::pre{.user-class}`). extractUserClass discards a prior injection so a
-    // re-highlighted block doesn't accumulate `shiki . shiki`.
-    const userClass = extractUserClass(typeof preAttrs.class === 'string' ? preAttrs.class : '')
+    // Merge highlighter class with any user-supplied class (e.g. from
+    // `::pre{.user-class}`) so the wrapper's class isn't lost.
+    const userClass = typeof preAttrs.class === 'string' ? preAttrs.class.trim() : ''
     const newPreAttrs: Record<string, any> = {
       ...preAttrs,
-      class: userClass ? `${classStr} ${HIGHLIGHT_CLASS_SEPARATOR} ${userClass}` : classStr,
+      class: userClass ? `${classStr} . ${userClass}` : classStr,
     }
 
     if (options.preStyles) {

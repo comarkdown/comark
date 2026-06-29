@@ -92,11 +92,6 @@ export function resolveAttribute(attrs: Record<string, unknown>, renderData: Nod
   return attrs[key]
 }
 
-// Separates the highlighter-injected classes from the user's class within a
-// `pre` class string (e.g. `shiki github-dark . my-class`). Written by the
-// highlight plugin, read here and on re-highlight to recover the user portion.
-export const HIGHLIGHT_CLASS_SEPARATOR = '.'
-
 // Implicit attributes the parser injects per tag — they're conveyed by the
 // native markdown syntax (e.g. `as` becomes `> [!NOTE]`, `task-list-item`
 // is implicit in `- [ ]`) so they should not echo back as user attrs.
@@ -131,12 +126,12 @@ export function userBlockAttrs(tag: string, attributes: Record<string, unknown>)
       if (remaining) result[key] = remaining
       continue
     }
-    if (key === 'class' && tag === 'pre' && typeof value === 'string' && /^shiki(?:\s|$)/.test(value)) {
+    if (key === 'class' && tag === 'pre' && typeof value === 'string' && value.startsWith('shiki')) {
       // Shiki injects `shiki [shiki-themes] <themes…>` (or a bare `shiki`) and
       // appends any user class after a `.` separator. Recover the user portion
       // by dropping everything up to and including that separator.
       const tokens = value.split(/\s+/)
-      let cutoff = tokens.findIndex((t) => t === HIGHLIGHT_CLASS_SEPARATOR)
+      let cutoff = tokens.findIndex((t) => t === '.')
 
       const userClass = cutoff >= 0 ? tokens.slice(cutoff + 1).join(' ') : ''
       if (userClass) result[key] = userClass
