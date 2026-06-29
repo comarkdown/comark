@@ -18,6 +18,7 @@ Supports custom component mappings and a streaming caret indicator.
 ```
 -->
 <script lang="ts">
+  import { untrack } from 'svelte'
   import type { ComarkTree, ComponentManifest } from 'comark'
   import type { ComponentResolver } from '../types.js'
   import ComarkNode from './ComarkNode.svelte'
@@ -31,6 +32,7 @@ Supports custom component mappings and a streaming caret indicator.
     caret: caretProp = false,
     data,
     class: className = '',
+    comarkKey,
   }: {
     tree: ComarkTree | { nodes: ComarkTree['nodes'] }
     components?: Record<string, any>
@@ -40,7 +42,22 @@ Supports custom component mappings and a streaming caret indicator.
     caret?: boolean | { class: string }
     data?: Record<string, unknown>
     class?: string
+    comarkKey?: string
   } = $props()
+
+  // Live document support: if an ambient context exists, subscribe to updates
+  // for this key and re-render with the pushed tree. Cleaned up on unmount.
+  // The key is the tree's own `meta.key` (set by a plugin) or the `comarkKey` prop.
+  let liveTree = $state<ComarkTree | null>(null)
+  let key = $derived((tree as ComarkTree).meta?.key || comarkKey)
+  $effect(() => {
+    if (!key || !globalThis.comarkContext) return
+    const seed = untrack(() => tree as ComarkTree)
+    const cleanup = globalThis.comarkContext.get(key, seed).listen((next) => (liveTree = next))
+    return () => cleanup(true)
+  })
+
+  let activeTree = $derived(liveTree ?? tree)
 
   let caretClass = $derived(
     streaming && caretProp
@@ -49,21 +66,22 @@ Supports custom component mappings and a streaming caret indicator.
   )
 
   let renderData = $derived({
-    frontmatter: (tree as ComarkTree).frontmatter || (tree as unknown as { data: Record<string, unknown> }).data || {},
-    meta: (tree as ComarkTree).meta || {},
+    frontmatter:
+      (activeTree as ComarkTree).frontmatter || (activeTree as unknown as { data: Record<string, unknown> }).data || {},
+    meta: (activeTree as ComarkTree).meta || {},
     data: data || {},
     props: {},
   })
 </script>
 
 <div class="comark-content {className}">
-  {#each tree.nodes as node, i (i)}
+  {#each activeTree.nodes as node, i (i)}
     <ComarkNode
       {node}
       {components}
       {componentsManifest}
       {resolver}
-      caretClass={i === tree.nodes.length - 1 ? caretClass : null}
+      caretClass={i === activeTree.nodes.length - 1 ? caretClass : null}
       {renderData}
     />
   {/each}

@@ -1,5 +1,5 @@
 import type { ComarkElement, ComarkNode, ComarkTree, ComponentManifest, NodeRenderData } from 'comark'
-import React, { lazy, Suspense, useMemo } from 'react'
+import React, { lazy, Suspense, useEffect, useMemo, useState } from 'react'
 import { pascalCase, camelCase, resolveAttributes } from 'comark/utils'
 import { findLastTextNodeAndAppendNode, getCaret } from '../utils/caret.ts'
 
@@ -299,6 +299,12 @@ export interface ComarkRendererProps {
    * Additional className for the wrapper div
    */
   className?: string
+
+  /**
+   * Document key used to subscribe to live updates via `globalThis.comarkContext`.
+   * Falls back to the tree's own `meta.key` when set by a plugin.
+   */
+  comarkKey?: string
 }
 
 /**
@@ -330,12 +336,27 @@ export const ComarkRenderer: React.FC<ComarkRendererProps> = ({
   caret: caretProp = false,
   data,
   className,
+  comarkKey,
 }) => {
   const caret = useMemo(() => getCaret(caretProp), [caretProp])
 
+  // Live document support: if an ambient context exists, subscribe to updates
+  // for this key and re-render with the pushed tree. Cleaned up on unmount.
+  // The key is the tree's own `meta.key` (set by a plugin) or the `comarkKey` prop.
+  const [liveTree, setLiveTree] = useState<ComarkTree | null>(null)
+  const key = (tree as ComarkTree).meta?.key || comarkKey
+  useEffect(() => {
+    if (!key || !globalThis.comarkContext) return
+    const cleanup = globalThis.comarkContext.get(key, tree as ComarkTree).listen(setLiveTree)
+    return () => cleanup(true)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key])
+
+  const activeTree = liveTree ?? tree
+
   const renderedNodes = useMemo(() => {
     // Render all nodes from the tree value
-    const nodes = [...(tree.nodes || [])]
+    const nodes = [...(activeTree.nodes || [])]
 
     if (streaming && caret && nodes.length > 0) {
       const hasStreamCaret = findLastTextNodeAndAppendNode(nodes[nodes.length - 1] as ComarkElement, caret)
@@ -346,8 +367,10 @@ export const ComarkRenderer: React.FC<ComarkRendererProps> = ({
 
     const renderData: NodeRenderData = {
       frontmatter:
-        (tree as ComarkTree).frontmatter || (tree as unknown as { data: Record<string, unknown> }).data || {},
-      meta: (tree as ComarkTree).meta || {},
+        (activeTree as ComarkTree).frontmatter ||
+        (activeTree as unknown as { data: Record<string, unknown> }).data ||
+        {},
+      meta: (activeTree as ComarkTree).meta || {},
       data: data || {},
       props: {},
     }
@@ -355,7 +378,7 @@ export const ComarkRenderer: React.FC<ComarkRendererProps> = ({
     return nodes
       .map((node, index) => renderNode(node, customComponents, index, componentsManifest, undefined, renderData))
       .filter((child): child is React.ReactNode => child !== null)
-  }, [tree, customComponents, componentsManifest, streaming, caret, data])
+  }, [activeTree, customComponents, componentsManifest, streaming, caret, data])
 
   // Wrap in a fragment
   return <div className={`comark-content ${className || ''}`}>{renderedNodes}</div>

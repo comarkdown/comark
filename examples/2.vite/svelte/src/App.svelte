@@ -2,6 +2,7 @@
   import { Comark } from '@comark/svelte'
   import highlight from '@comark/svelte/plugins/highlight'
   import Alert from './components/Alert.svelte'
+  import Live from './Live.svelte'
   import python from '@shikijs/langs/python'
 
   const componentsManifest = (name: string) => {
@@ -266,3 +267,7 @@ Text before the comment and text after the comment both render normally.
   components={{ Alert }}
   {componentsManifest}
 />
+
+<hr class="my-8" />
+
+<Live />

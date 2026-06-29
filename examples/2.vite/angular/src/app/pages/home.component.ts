@@ -7,7 +7,7 @@ import { getAllPosts, type PostMeta } from '../lib/posts'
   standalone: true,
   imports: [RouterLink],
   template: `
-    <div>
+    <div class="not-prose">
       <h1 class="text-3xl font-bold mb-2">Comark Blog</h1>
       <p class="text-neutral-500 dark:text-neutral-400 mb-8">
         A blog built with
@@ -27,7 +27,7 @@ import { getAllPosts, type PostMeta } from '../lib/posts'
       @if (posts.length === 0) {
         <p class="text-neutral-400">Loading posts...</p>
       }
-      <ul class="space-y-6 list-none p-0">
+      <ul class="space-y-6 list-none! p-0">
         @for (post of posts; track post.slug) {
           <li>
             <a

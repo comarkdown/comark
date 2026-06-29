@@ -21,6 +21,12 @@ import { RouterLink, RouterOutlet } from '@angular/router'
           >
             Syntax
           </a>
+          <a
+            routerLink="/live"
+            class="text-sm text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 no-underline cursor-pointer"
+          >
+            Live
+          </a>
         </nav>
       </header>
       <main class="max-w-2xl mx-auto px-6 py-8 flex-1 w-full prose">
