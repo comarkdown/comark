@@ -97,8 +97,6 @@ export function resolveAttribute(attrs: Record<string, unknown>, renderData: Nod
 // is implicit in `- [ ]`) so they should not echo back as user attrs.
 const IMPLICIT_ATTRS: Record<string, { drop?: string[]; classBlocklist?: string[] }> = {
   blockquote: { drop: ['as'] },
-  // `start` is conveyed by the native ordered-list numbering (`5. …`), so it
-  // must not echo back as a `::ol{start=…}` wrapper.
   ol: { drop: ['start'] },
   ul: { classBlocklist: ['contains-task-list'] },
   li: { classBlocklist: ['task-list-item'] },

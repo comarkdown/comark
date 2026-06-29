@@ -6,10 +6,8 @@ import { comarkAttributes, userBlockAttrs } from '../attributes.ts'
 export async function ol(node: ComarkElement, state: State) {
   const children = node.slice(2) as ComarkNode[]
 
-  // A non-1 `start` is conveyed by the native list numbering (`5. …`), so seed
-  // the item counter from it instead of forcing 1. `userBlockAttrs` drops
-  // `start` (see IMPLICIT_ATTRS), so it never also leaks into a `::ol{…}` wrapper.
-  const start = Number((node[1] as Record<string, unknown>)?.start)
+  // `start` is carried by the native numbering; IMPLICIT_ATTRS drops it from user attrs.
+  const start = Number((node[1] as Record<string, unknown>).start)
   const order = Number.isInteger(start) && start >= 1 ? start : 1
 
   const revert = state.applyContext({ list: true, order, listIndent: 3 })
