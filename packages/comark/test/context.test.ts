@@ -124,4 +124,30 @@ describe('createComarkContext', () => {
       expect(ctx.keys()).toEqual([]) // pruned
     })
   })
+
+  describe('lifecycle', () => {
+    it('emits create on first access and remove on prune', () => {
+      const ctx = createComarkContext(false)
+      const fn = vi.fn()
+      ctx.listen(fn)
+
+      const seed = tree([['p', {}, 'seed']])
+      const cleanup = ctx.get('x', seed).listen(vi.fn())
+      expect(fn).toHaveBeenCalledWith({ event: 'create', id: 'x', tree: seed })
+
+      ctx.get('x') // existing doc — no second create
+      expect(fn).toHaveBeenCalledTimes(1)
+
+      cleanup()
+      expect(fn).toHaveBeenLastCalledWith({ event: 'remove', id: 'x', tree: seed })
+    })
+
+    it('stops emitting after cleanup', () => {
+      const ctx = createComarkContext(false)
+      const fn = vi.fn()
+      ctx.listen(fn)()
+      ctx.get('x')
+      expect(fn).not.toHaveBeenCalled()
+    })
+  })
 })

@@ -97,7 +97,7 @@ export interface ComarkDocument {
   listen(fn: (tree: ComarkTree) => void): () => void
 }
 
-function createDocument(initial: ComarkTree, onEmpty: () => void): ComarkDocument {
+function createDocument(initial: ComarkTree, onEmpty: (tree: ComarkTree) => void): ComarkDocument {
   let tree = initial
   const listeners = new Set<(tree: ComarkTree) => void>()
   const emit = () => listeners.forEach((fn) => fn(tree))
@@ -119,7 +119,7 @@ function createDocument(initial: ComarkTree, onEmpty: () => void): ComarkDocumen
       return () => {
         listeners.delete(fn)
         // Drop the document once nobody is listening — frees ids on unmount.
-        if (listeners.size === 0) onEmpty()
+        if (listeners.size === 0) onEmpty(tree)
       }
     },
   }
@@ -140,11 +140,20 @@ function createDocument(initial: ComarkTree, onEmpty: () => void): ComarkDocumen
  * exists, so it costs one global lookup when absent and tree-shakes out of any
  * build that never sets it.
  */
+/** Document lifecycle event emitted by the context. */
+export interface ComarkContextEvent {
+  event: 'create' | 'remove'
+  id: string
+  tree: ComarkTree
+}
+
 export interface ComarkContext {
   /** Get the document for `id`, creating it (with `initial`) on first access. */
   get(id: string, initial?: ComarkTree): ComarkDocument
   /** Ids currently tracked — for devtools enumeration. */
   keys(): string[]
+  /** Listen for documents being created or removed. Returns the cleanup. */
+  listen(fn: (e: ComarkContextEvent) => void): () => void
 }
 
 declare global {
@@ -162,13 +171,29 @@ export function createComarkContext(install = true): ComarkContext {
   }
 
   const docs = new Map<string, ComarkDocument>()
+  const lifecycle = new Set<(e: ComarkContextEvent) => void>()
+  const emit = (e: ComarkContextEvent) => lifecycle.forEach((fn) => fn(e))
+
   const ctx: ComarkContext = {
     get(id, initial) {
       let doc = docs.get(id)
-      if (!doc) docs.set(id, (doc = createDocument(initial ?? emptyTree(), () => docs.delete(id))))
+      if (!doc) {
+        docs.set(
+          id,
+          (doc = createDocument(initial ?? emptyTree(), (tree) => {
+            docs.delete(id)
+            emit({ event: 'remove', id, tree })
+          }))
+        )
+        emit({ event: 'create', id, tree: doc.tree })
+      }
       return doc
     },
     keys: () => [...docs.keys()],
+    listen(fn) {
+      lifecycle.add(fn)
+      return () => lifecycle.delete(fn)
+    },
   }
   if (install) globalThis.comarkContext = ctx
   return ctx
