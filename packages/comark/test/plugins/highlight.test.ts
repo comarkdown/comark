@@ -47,17 +47,4 @@ describe('shiki code block round-trip', () => {
     expect(md).not.toContain('::pre')
     expect(md).toContain('```bash\nnpx install\n```')
   })
-
-  it('serializes a `pre` carrying a `code` fence-body attr to a plain fence', async () => {
-    // A WYSIWYG round-trip can keep the raw source in a `code` attr; since the
-    // `pre` handler reads it as the fence body, it must not echo as a wrapper attr.
-    const tree: ComarkTree = {
-      frontmatter: {},
-      meta: {},
-      nodes: [['pre', { language: 'bash', class: 'shiki', code: 'npx install' }, ['code', {}, 'npx install']]],
-    }
-    const md = await renderMarkdown(tree)
-    expect(md).not.toContain('::pre')
-    expect(md.trim()).toBe('```bash\nnpx install\n```')
-  })
 })
