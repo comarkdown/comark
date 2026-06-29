@@ -176,6 +176,17 @@ async function loadLanguage(hl: ShikiPrimitive, language: LanguageRegistration |
  * Convert a hast (HTML AST) node into a ComarkNode.
  * Uses pre-allocated arrays to avoid spread overhead.
  */
+// Recover the real user-supplied class from a `pre` class that may already
+// carry a highlighter injection. The injected form is `shiki … . <user>` (or a
+// bare `shiki …` when there was no user class), so strip our own portion to
+// keep re-highlighting idempotent.
+function extractUserClass(cls: string): string {
+  const trimmed = cls.trim()
+  if (!/^shiki(?:\s|$)/.test(trimmed)) return trimmed
+  const sentinel = trimmed.indexOf(' . ')
+  return sentinel >= 0 ? trimmed.slice(sentinel + 3).trim() : ''
+}
+
 function hastToComarkNode(input: any): ComarkNode {
   if (input.type === 'text') return input.value
   if (input.type === 'comment') return [null, {}, input.value]
@@ -364,8 +375,14 @@ export async function highlightCodeBlocks(tree: ComarkTree, options: HighlightOp
     }
 
     // Merge highlighter class with any user-supplied class (e.g. from
-    // `::pre{.user-class}`) so the wrapper's class isn't lost.
-    const userClass = typeof preAttrs.class === 'string' ? preAttrs.class.trim() : ''
+    // `::pre{.user-class}`) so the wrapper's class isn't lost. Highlighting can
+    // run more than once on the same tree (e.g. a stored, already-highlighted
+    // block that's re-highlighted after an edit round-trip), so recover the
+    // *real* user class first: strip a prior `shiki … . <user>` injection down
+    // to its `<user>` portion (empty when there was none). Without this, the
+    // previous `shiki` class is mistaken for a user class and accumulates as
+    // `shiki . shiki`, leaking back out as a `::pre{.shiki}` wrapper on render.
+    const userClass = extractUserClass(typeof preAttrs.class === 'string' ? preAttrs.class : '')
     const newPreAttrs: Record<string, any> = {
       ...preAttrs,
       class: userClass ? `${classStr} . ${userClass}` : classStr,

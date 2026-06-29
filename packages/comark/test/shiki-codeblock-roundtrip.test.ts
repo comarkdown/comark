@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { ComarkTree } from '../src/types'
 import { renderMarkdown } from '../src/render'
+import { highlightCodeBlocks } from '../src/plugins/highlight'
 
 describe('shiki code block round-trip', () => {
   // A highlighted code block is just a `pre.shiki` wrapper around a `code`
@@ -48,5 +49,46 @@ describe('shiki code block round-trip', () => {
     const md = await renderMarkdown(tree)
     expect(md).not.toContain('::pre')
     expect(md).toContain('```bash\nnpx install\n```')
+  })
+
+  it('re-highlighting an already-highlighted block is idempotent', async () => {
+    // Studio stores a highlighted block, then re-highlights after a tiptap
+    // edit round-trip. The injected `shiki` class must not accumulate as
+    // `shiki . shiki` and leak back out as a `::pre{.shiki}` wrapper.
+    const tree: ComarkTree = {
+      frontmatter: {},
+      meta: {},
+      nodes: [['pre', { language: 'bash' }, ['code', { class: 'language-bash' }, 'npx install']]],
+    }
+    const once = await highlightCodeBlocks(tree, {})
+    const twice = await highlightCodeBlocks(once, {})
+
+    const onceClass = (once.nodes[0] as [string, Record<string, unknown>])[1].class as string
+    const twiceClass = (twice.nodes[0] as [string, Record<string, unknown>])[1].class as string
+    // Stable across passes, with no ` . ` user-class sentinel accumulating.
+    expect(twiceClass).toBe(onceClass)
+    expect(twiceClass).not.toContain(' . ')
+
+    const md = await renderMarkdown(twice)
+    expect(md).not.toContain('::pre')
+    expect(md.trim()).toBe('```bash\nnpx install\n```')
+  })
+
+  it('preserves a genuine user class across re-highlighting', async () => {
+    const tree: ComarkTree = {
+      frontmatter: {},
+      meta: {},
+      nodes: [['pre', { language: 'bash', class: 'my-class' }, ['code', { class: 'language-bash' }, 'npx install']]],
+    }
+    const once = await highlightCodeBlocks(tree, {})
+    const twice = await highlightCodeBlocks(once, {})
+
+    // Stable across passes — no `shiki` accumulation, user class retained.
+    expect((once.nodes[0] as [string, Record<string, unknown>])[1].class).toBe(
+      (twice.nodes[0] as [string, Record<string, unknown>])[1].class
+    )
+
+    const md = await renderMarkdown(twice)
+    expect(md).toContain('::pre{.my-class}')
   })
 })
