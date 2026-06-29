@@ -271,11 +271,11 @@ export interface ComarkRendererProps {
   data?: Record<string, unknown>
 
   /**
-   * Document id. When set and `globalThis.comarkContext` exists, the renderer
-   * subscribes to live updates for this id (HMR, devtools, collab, agents) and
+   * Document keys. When set and `globalThis.comarkContext` exists, the renderer
+   * subscribes to live updates for this key (HMR, devtools, collab, agents) and
    * re-renders with the pushed tree. No-op otherwise.
    */
-  id?: string
+  comarkKey?: string
 }
 
 type ComarkRendererComponent = ReturnType<typeof defineComponent<ComarkRendererProps>>
@@ -362,9 +362,9 @@ export const ComarkRenderer: ComarkRendererComponent = defineComponent({
     },
 
     /**
-     * Document id used to subscribe to live updates via `globalThis.comarkContext`
+     * Document key used to subscribe to live updates via `globalThis.comarkContext`
      */
-    id: {
+    comarkKey: {
       type: String as PropType<string>,
       default: undefined,
     },
@@ -375,9 +375,9 @@ export const ComarkRenderer: ComarkRendererComponent = defineComponent({
 
     // Live document support: if an ambient context exists, subscribe to updates
     // for this id and re-render with the pushed tree. Cleaned up on unmount.
-    // The key is the tree's own `meta.key` (set by a plugin) or the `id` prop.
+    // The key is the tree's own `meta.key` (set by a plugin) or the `comarkKey` prop.
     const liveTree = shallowRef<ComarkTree | null>(null)
-    const key = (props.tree as ComarkTree).meta?.key || props.id
+    const key = (props.tree as ComarkTree).meta?.key || props.comarkKey
     if (key && globalThis.comarkContext) {
       const cleanup = globalThis.comarkContext.get(key, toRaw(props.tree as ComarkTree)).listen((tree) => {
         liveTree.value = tree

@@ -64,7 +64,7 @@ globalThis.parse = parse
     </div>
 
     <ComarkRenderer
-      id="demo"
+      comarkKey="demos"
       :tree="tree"
     />
   </div>
