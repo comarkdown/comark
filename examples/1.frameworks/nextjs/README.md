@@ -11,7 +11,7 @@ demo: https://comark-nextjs.vercel.app
 ::code-explorer
 ---
 org: comarkdown
-repo: comark
+repo: comark@81a416b278b0f304d7e7577c7ac6bbfc78414790
 path: examples/1.frameworks/nextjs
 defaultValue: content/posts/comark-syntax.md
 ---

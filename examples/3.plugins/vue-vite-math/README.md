@@ -10,7 +10,7 @@ path: /examples/plugins/vue-vite-math
 ::code-explorer
 ---
 org: comarkdown
-repo: comark
+repo: comark@81a416b278b0f304d7e7577c7ac6bbfc78414790
 path: examples/3.plugins/vue-vite-math
 defaultValue: src/App.vue
 ---
