@@ -128,10 +128,10 @@ export function userBlockAttrs(tag: string, attributes: Record<string, unknown>)
       if (remaining) result[key] = remaining
       continue
     }
-    if (key === 'class' && tag === 'pre' && typeof value === 'string' && value.startsWith('shiki ')) {
-      // Shiki injects `shiki [shiki-themes] <themes…> dark:<theme>` and any
-      // user-supplied class is appended after it. Recover the user portion by
-      // dropping everything up to and including the first `dark:*` token.
+    if (key === 'class' && tag === 'pre' && typeof value === 'string' && value.startsWith('shiki')) {
+      // Shiki injects `shiki [shiki-themes] <themes…>` (or a bare `shiki`) and
+      // appends any user class after a `.` separator. Recover the user portion
+      // by dropping everything up to and including that separator.
       const tokens = value.split(/\s+/)
       let cutoff = tokens.findIndex((t) => t === '.')
 
