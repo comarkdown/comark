@@ -97,6 +97,7 @@ export function resolveAttribute(attrs: Record<string, unknown>, renderData: Nod
 // is implicit in `- [ ]`) so they should not echo back as user attrs.
 const IMPLICIT_ATTRS: Record<string, { drop?: string[]; classBlocklist?: string[] }> = {
   blockquote: { drop: ['as'] },
+  ol: { drop: ['start'] },
   ul: { classBlocklist: ['contains-task-list'] },
   li: { classBlocklist: ['task-list-item'] },
   // `language`/`filename`/`highlights`/`meta` ride on the fence info string.
