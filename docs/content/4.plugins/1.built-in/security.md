@@ -138,6 +138,8 @@ Returns a `ComarkPlugin` that sanitizes the parsed AST.
 | Option | Type | Default | Description |
 |---|---|---|---|
 | [`blockedTags`](#options-code-blockedtags) | `string[]` | `[]` | Tag names to remove entirely from the AST |
+| [`allowedTags`](#options-code-allowedtags) | `string[]` | `[]` | Tag names to allow exclusively in the AST |
+| [`tagFallback`](#options-code-tagfallback) | `function` | `false`  | Defines how to handle unallowed tags in the AST |
 | [`allowedProtocols`](#options-code-allowedprotocols) | `string[]` | `['*']` | Protocols permitted in `href` and `src` |
 | [`allowedLinkPrefixes`](#options-code-allowedlinkprefixes) | `string[]` | `['*']` | URL prefixes permitted in `href` |
 | [`allowedImagePrefixes`](#options-code-allowedimageprefixes) | `string[]` | `['*']` | URL prefixes permitted in `src` |
@@ -164,6 +166,28 @@ security({
 | `style` | CSS with `javascript:` expressions |
 | `base` | Changes base URL for relative links |
 | `meta` | HTTP refresh / redirect |
+
+### `allowedTags`
+
+Tag names to exclusively keep in the AST. Matching is case-insensitive, so, so `SPAN`, `Span`, and `span` are all caught.
+
+```typescript
+security({
+  allowedTags: ['p', 'span', 'ul', 'li', 'ol', 'strong']
+})
+```
+
+### `tagFallback`
+
+Defines the replacement strategy for tags that are filtered out because they are not present in the `allowedTags` (whitelist) or present in the `blockedTags` (blacklist).
+
+```typescript
+security({
+  allowedTags: ['p', 'span'],
+  tagFallback: (element: ComarkElement) => 
+})
+
+```
 
 ### `allowedProtocols`
 

@@ -10,7 +10,7 @@ path: /examples/ai/nuxt-ai-sdk
 ::code-explorer
 ---
 org: comarkdown
-repo: comark@81a416b278b0f304d7e7577c7ac6bbfc78414790
+repo: comark
 branch: feat/aisdk-nuxt-example
 path: examples/4.ai/nuxt-ai-sdk
 defaultValue: server/api/chat.post.ts
