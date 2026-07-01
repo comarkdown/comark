@@ -1,4 +1,4 @@
-import type { ComarkElement } from 'comark'
+import type { ComarkElement, ComarkNode } from 'comark'
 import { defineComarkPlugin } from '../utils/helpers.ts'
 import { visitAsync } from '../utils/index.ts'
 import { validateProps } from '../internal/props-validation.ts'
@@ -21,7 +21,7 @@ interface SecurityOptions extends PropsValidationOptions {
    * Behavior when encountering an unallowed or blocked tag.
    * @default undefined
    */
-  tagFallback?: undefined | ((element: ComarkElement) => any | Promise<any>)
+  tagFallback?: (element: ComarkElement) => false | ComarkNode | Promise<false | ComarkNode>
 }
 
 export default defineComarkPlugin((options: SecurityOptions = {}) => {

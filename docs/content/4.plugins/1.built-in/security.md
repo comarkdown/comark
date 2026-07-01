@@ -182,9 +182,14 @@ security({
 Defines the replacement strategy for tags that are filtered out because they are not present in the `allowedTags` (whitelist) or present in the `blockedTags` (blacklist).
 
 ```typescript
+import { textContent } from 'comark/utils'
+
 security({
   allowedTags: ['p', 'span'],
-  tagFallback: (element: ComarkElement) => 
+  tagFallback: (element: ComarkElement) => {
+    // Remove all tags and return the text content
+    return textContent(element)
+  }
 })
 
 ```
