@@ -26,25 +26,36 @@ export async function li(node: ComarkElement, state: State) {
   }
 
   const prefixWidth = prefix.length
+
+  // Direct text children render sibling components inline.
+  const hasInlineContent = children.some((child) => typeof child === 'string')
+
   let result = ''
 
   for (const child of children) {
-    const rendered = await state.one(child, state, node)
-    if (result && Array.isArray(child)) {
-      if (blockElements.has(child[0] as string)) {
-        // Block-level child: put on its own line and indent to align with list prefix
-        const indented = indent(rendered, { width: prefixWidth })
+    if (Array.isArray(child)) {
+      const tag = child[0] as string
+
+      if (result && blockElements.has(tag)) {
+        const indented = indent(await state.one(child, state, node), { width: prefixWidth })
         result = result.trimEnd() + '\n' + indented.trimEnd() + '\n'
         continue
       }
 
-      if (child[0] === 'p') {
-        const indented = indent(rendered, { width: prefixWidth })
+      if (result && tag === 'p') {
+        const indented = indent(await state.one(child, state, node), { width: prefixWidth })
         result = result.trimEnd() + '\n\n' + indented.trimEnd() + '\n'
         continue
       }
+
+      // No parent → mdc skips its own nesting indentation, so li owns it here.
+      if (!hasInlineContent && !(tag in state.handlers)) {
+        const indented = indent(await state.one(child, state), { width: prefixWidth, ignoreFirstLine: !result })
+        result = result ? result.trimEnd() + '\n' + indented.trimEnd() + '\n' : indented.trimEnd() + '\n'
+        continue
+      }
     }
-    result += rendered
+    result += await state.one(child, state, node)
   }
   result = result.trim()
 
