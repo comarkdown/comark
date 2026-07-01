@@ -21,7 +21,7 @@ interface SecurityOptions extends PropsValidationOptions {
    * Behavior when encountering an unallowed or blocked tag.
    * @default undefined
    */
-  tagFallback?: undefined | ((element: ComarkElement) => any | Promise<any>)
+  tagFallback?: (element: ComarkElement) => false | string | ComarkElement | Promise<false | string | ComarkElement>
 }
 
 export default defineComarkPlugin((options: SecurityOptions = {}) => {
