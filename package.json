@@ -70,6 +70,7 @@
     "vitest": "catalog:"
   },
   "resolutions": {
+    "@comark/angular": "workspace:*",
     "@comark/ansi": "workspace:*",
     "@comark/html": "workspace:*",
     "@comark/nuxt": "workspace:*",

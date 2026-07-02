@@ -223,7 +223,7 @@ const { data: highlighted } = await useAsyncData('fw-highlight', async () => {
         :to="svelteLinkTo"
         variant="link"
         color="neutral"
-        leading-icon="i-logos-svelte-icon"
+        leading-icon="i-simple-icons-svelte"
         trailing-icon="i-lucide-arrow-right"
         class="px-0"
       />
@@ -241,7 +241,7 @@ const { data: highlighted } = await useAsyncData('fw-highlight', async () => {
         :to="angularLinkTo"
         variant="link"
         color="neutral"
-        leading-icon="i-logos-angular-icon"
+        leading-icon="i-simple-icons-angular"
         trailing-icon="i-lucide-arrow-right"
         class="px-0"
       />

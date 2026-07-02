@@ -320,7 +320,7 @@ hello
 ["component", {}, ["template", { "name": "default" }, "hello"]]
 ```
 
-Both serialize back to the same Markdown (without `#default`). The Vue and React renderers treat both forms identically — direct children and `template[name="default"]` children both become the default slot. Use `#default` explicitly when mixing named and default slots in the same component.
+Both serialize back to the same Markdown (without `#default`). The Vue, React, Svelte, and Angular renderers treat both forms identically — direct children and `template[name="default"]` children both become the default slot. Use `#default` explicitly when mixing named and default slots in the same component.
 
 ### Nested Components
 

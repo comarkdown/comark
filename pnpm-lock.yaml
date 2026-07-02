@@ -318,6 +318,7 @@ catalogs:
 
 overrides:
   '@comark/ansi': workspace:*
+  '@comark/angular': workspace:*
   '@comark/html': workspace:*
   '@comark/nuxt': workspace:*
   '@comark/react': workspace:*
@@ -642,7 +643,7 @@ importers:
         specifier: 'catalog:'
         version: 21.2.17(@angular/common@21.2.16(@angular/core@21.2.16(@angular/compiler@21.2.16)(rxjs@7.8.2)(zone.js@0.16.2))(rxjs@7.8.2))(@angular/core@21.2.16(@angular/compiler@21.2.16)(rxjs@7.8.2)(zone.js@0.16.2))(@angular/platform-browser@21.2.16(@angular/common@21.2.16(@angular/core@21.2.16(@angular/compiler@21.2.16)(rxjs@7.8.2)(zone.js@0.16.2))(rxjs@7.8.2))(@angular/core@21.2.16(@angular/compiler@21.2.16)(rxjs@7.8.2)(zone.js@0.16.2)))(rxjs@7.8.2)
       '@comark/angular':
-        specifier: 'workspace:'
+        specifier: workspace:*
         version: link:../../../packages/comark-angular
       '@shikijs/langs':
         specifier: 'catalog:'

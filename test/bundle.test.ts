@@ -25,14 +25,7 @@ const packages: Package[] = readdirSync(packagesDir)
 
 // `postinstall` runs `pnpm stub`, which fills `dist/` with files that just
 // re-export from `src/`. Bundle sizes are only meaningful after a real build
-// (`pnpm prepack`), so skip when we detect the dev stubs.
-function isStubbed(pkg: Package): boolean {
-  const entry = join(pkg.dir, pkg.main)
-  if (!existsSync(entry)) return true
-  return readFileSync(entry, 'utf-8').includes('/src/')
-}
-
-const stubbed = packages.some(isStubbed)
+// (`pnpm prepack`).
 
 // `npm pack --dry-run --json` reports exactly what would be published (honouring
 // the `files` field and `.npmignore`), so we measure the real shipped size.
