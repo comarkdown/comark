@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.5.0](https://github.com/comarkdown/comark/compare/comark@0.4.0...comark@0.5.0) (2026-07-02)
+
+### Features
+
+* allow rendering tree object without frontmatter and meta ([#241](https://github.com/comarkdown/comark/issues/241)) ([1432806](https://github.com/comarkdown/comark/commit/1432806501dbcd2aecac45f6a3754341af6ebafd))
+* **frameworks:** add angular support (@comark/angular) ([#178](https://github.com/comarkdown/comark/issues/178)) ([e49ba52](https://github.com/comarkdown/comark/commit/e49ba52bd48a971ee56c807df9db7514f93cfd80))
+* introduce Comark Context, a way to update rendered tree ([#258](https://github.com/comarkdown/comark/issues/258)) ([fc08315](https://github.com/comarkdown/comark/commit/fc0831532108e97ac79b46c806a7dddc6c6979f3))
+* new `linkify` option to control auto-link behavior ([#248](https://github.com/comarkdown/comark/issues/248)) ([f9d6ba4](https://github.com/comarkdown/comark/commit/f9d6ba441bb3925e6ef756426a3e4d4f22858f57))
+* **plugins:** add `allowedTags` and `tagFallback` option into security plugin ([#245](https://github.com/comarkdown/comark/issues/245)) ([10ca6d9](https://github.com/comarkdown/comark/commit/10ca6d91c3a2e31540dc63e7999e6202c756b7e2))
+
+### Bug Fixes
+
+* **comark:** harden auto-close for code spans, math, escapes, and link text ([#233](https://github.com/comarkdown/comark/issues/233)) ([c810aab](https://github.com/comarkdown/comark/commit/c810aabb6567f15c147081798a19f3f9b074e582))
+* **comark:** treat colon followed by digits as plain text, not a component ([#234](https://github.com/comarkdown/comark/issues/234)) ([cad7fa5](https://github.com/comarkdown/comark/commit/cad7fa5ee1b52300c8255b7ac147898d9f89a138))
+* **highlight:** stop injecting `tabindex="0"` on pre blocks ([#239](https://github.com/comarkdown/comark/issues/239)) ([11e7fa0](https://github.com/comarkdown/comark/commit/11e7fa03f3a6019776c936b2ebc6ce5eee5f3906))
+* improve security plugin types and docs ([#262](https://github.com/comarkdown/comark/issues/262)) ([e59b6e6](https://github.com/comarkdown/comark/commit/e59b6e6202b0ba5d5557213530c10436546f580e))
+* **renderer:** escape `[` in markdown text nodes to prevent link re-injection ([#240](https://github.com/comarkdown/comark/issues/240)) ([09dd13d](https://github.com/comarkdown/comark/commit/09dd13d2db7d8a54056f881e8e0bf10600fb7d70))
+* **render:** unwrap a bare `shiki` class on `pre` back to a plain fence ([#259](https://github.com/comarkdown/comark/issues/259)) ([63d0217](https://github.com/comarkdown/comark/commit/63d021768a30dd13015e0a90220139cdf193c675))
+* restore three PRs clobbered by stale-tree merge of [#245](https://github.com/comarkdown/comark/issues/245) ([#261](https://github.com/comarkdown/comark/issues/261)) ([aba6281](https://github.com/comarkdown/comark/commit/aba628141ef89c0523311df36be336ae18f52267))
+* **stringify:** render block component children of list items on their own line ([#252](https://github.com/comarkdown/comark/issues/252)) ([722c844](https://github.com/comarkdown/comark/commit/722c8444005a09caf5be56a79827327dd42d0984))
+* **stringify:** render ordered-list `start` as native numbering ([#255](https://github.com/comarkdown/comark/issues/255)) ([e5275e3](https://github.com/comarkdown/comark/commit/e5275e3e8646ff1b9e3d42b8cd16f97755b73a98))
+
 ## [0.4.0](https://github.com/comarkdown/comark/compare/comark@0.3.2...comark@0.4.0) (2026-06-04)
 
 ### Features
