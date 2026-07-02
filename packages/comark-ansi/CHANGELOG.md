@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.5.0](https://github.com/comarkdown/comark/compare/@comark/ansi@0.4.0...@comark/ansi@0.5.0) (2026-07-02)
+
+### Features
+
+* allow rendering tree object without frontmatter and meta ([#241](https://github.com/comarkdown/comark/issues/241)) ([1432806](https://github.com/comarkdown/comark/commit/1432806501dbcd2aecac45f6a3754341af6ebafd))
+
 ## [0.4.0](https://github.com/comarkdown/comark/compare/@comark/ansi@0.3.1...@comark/ansi@0.4.0) (2026-06-04)
 
 ### Bug Fixes
