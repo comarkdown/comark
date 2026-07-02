@@ -57,7 +57,7 @@ function roundToKilobytes(bytes: number): string {
   return (bytes / 1024).toFixed(bytes > 100 * 1024 ? 0 : 1) + 'k'
 }
 
-describe.skipIf(stubbed || process.env.SKIP_BUNDLE_SIZE === 'true')('package bundle size', { timeout: 60_000 }, () => {
+describe('package bundle size', { timeout: 60_000 }, () => {
   it('published size of each package', () => {
     const report: Record<string, string> = {}
     for (const pkg of packages) {
@@ -72,9 +72,9 @@ describe.skipIf(stubbed || process.env.SKIP_BUNDLE_SIZE === 'true')('package bun
         "@comark/html": "16.2k (42 files)",
         "@comark/nuxt": "10.1k (42 files)",
         "@comark/react": "39.9k (58 files)",
-        "@comark/svelte": "39.9k (66 files)",
-        "@comark/vue": "55.9k (62 files)",
-        "comark": "353k (134 files)",
+        "@comark/svelte": "40.0k (66 files)",
+        "@comark/vue": "61.9k (66 files)",
+        "comark": "357k (160 files)",
       }
     `)
   })

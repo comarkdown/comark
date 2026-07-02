@@ -25,11 +25,11 @@ Comark's plugin system extends markdown functionality with specialized features.
   Convert emoji shortcodes like `:smile:` into emoji characters
   ::
 
-  ::card{icon="i-lucide-footprints" title="Footnotes" to="/plugins/built-in/footnotes"}
+  ::card{icon="i-lucide-footprints" title="Footnotes" to="/plugins/built-in/emoji"}
   Plugin for adding footnote references and definitions to your Comark documents.
   ::
 
-  ::card{icon="i-lucide-heading" title="Headings" to="/plugins/built-in/headings"}
+  ::card{icon="i-lucide-heading" title="Headings" to="/plugins/built-in/emoji"}
   Plugin for extracting the page title and description from document content.
   ::
 
