@@ -71,6 +71,7 @@
   },
   "resolutions": {
     "@comark/ansi": "workspace:*",
+    "@comark/angular": "workspace:*",
     "@comark/html": "workspace:*",
     "@comark/nuxt": "workspace:*",
     "@comark/react": "workspace:*",
