@@ -15,7 +15,9 @@ import {
   h,
   inject,
   onErrorCaptured,
+  onUnmounted,
   ref,
+  shallowRef,
   toRaw,
 } from 'vue'
 import { findLastTextNodeAndAppendNode, getCaret } from '../utils/caret.ts'
@@ -267,6 +269,13 @@ export interface ComarkRendererProps {
    * Additional data to pass to the renderer
    */
   data?: Record<string, unknown>
+
+  /**
+   * Document keys. When set and `globalThis.comarkContext` exists, the renderer
+   * subscribes to live updates for this key (HMR, devtools, collab, agents) and
+   * re-renders with the pushed tree. No-op otherwise.
+   */
+  comarkKey?: string
 }
 
 type ComarkRendererComponent = ReturnType<typeof defineComponent<ComarkRendererProps>>
@@ -351,10 +360,30 @@ export const ComarkRenderer: ComarkRendererComponent = defineComponent({
       type: Object as PropType<Record<string, unknown>>,
       default: () => ({}),
     },
+
+    /**
+     * Document key used to subscribe to live updates via `globalThis.comarkContext`
+     */
+    comarkKey: {
+      type: String as PropType<string>,
+      default: undefined,
+    },
   },
 
   async setup(props) {
     const componentErrors = ref(new Set<string>())
+
+    // Live document support: if an ambient context exists, subscribe to updates
+    // for this id and re-render with the pushed tree. Cleaned up on unmount.
+    // The key is the tree's own `meta.key` (set by a plugin) or the `comarkKey` prop.
+    const liveTree = shallowRef<ComarkTree | null>(null)
+    const key = (props.tree as ComarkTree).meta?.key || props.comarkKey
+    if (key && globalThis.comarkContext) {
+      const cleanup = globalThis.comarkContext.get(key, toRaw(props.tree as ComarkTree)).listen((tree) => {
+        liveTree.value = tree
+      })
+      onUnmounted(() => cleanup(true))
+    }
 
     // Capture errors from child components (e.g., during streaming when props are incomplete)
     onErrorCaptured((_err, instance, _info) => {
@@ -386,8 +415,8 @@ export const ComarkRenderer: ComarkRendererComponent = defineComponent({
     const caret = computed<ComarkElement | null>(() => getCaret(props.caret || false))
 
     return () => {
-      // Render all nodes from the tree value
-      const rawTree = toRaw(props.tree)
+      // Render all nodes from the live tree when present, else the tree prop
+      const rawTree = toRaw(liveTree.value ?? props.tree)
       const nodes = [...(rawTree.nodes || [])]
 
       if (props.streaming && caret.value && nodes.length > 0) {

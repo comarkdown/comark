@@ -4,59 +4,74 @@ body {
   @apply bg-neutral-50 dark:bg-neutral-950 p-4 text-neutral-900 dark:text-neutral-50;
 }
 
-/* Prose styles for rendered Comark content */
-.prose h1 {
+.prose :where(h1):not(:where(.not-prose, .not-prose *)) {
   @apply text-3xl font-bold mb-4 mt-0;
 }
-.prose h2 {
+
+.prose :where(h2):not(:where(.not-prose, .not-prose *)) {
   @apply text-2xl font-semibold mt-8 mb-3;
 }
-.prose h3 {
+
+.prose :where(h3):not(:where(.not-prose, .not-prose *)) {
   @apply text-xl font-semibold mt-6 mb-2;
 }
-.prose p {
+
+.prose :where(p):not(:where(.not-prose, .not-prose *)) {
   @apply mb-4 leading-relaxed;
 }
-.prose a {
+
+.prose :where(a):not(:where(.not-prose, .not-prose *)) {
   @apply text-blue-600 dark:text-blue-400 underline;
 }
-.prose strong {
+
+.prose :where(strong):not(:where(.not-prose, .not-prose *)) {
   @apply font-semibold;
 }
-.prose ul {
+
+.prose :where(ul):not(:where(.not-prose, .not-prose *)) {
   @apply list-disc pl-6 mb-4 space-y-1;
 }
-.prose ol {
+
+.prose :where(ol):not(:where(.not-prose, .not-prose *)) {
   @apply list-decimal pl-6 mb-4 space-y-1;
 }
-.prose li {
+
+.prose :where(li):not(:where(.not-prose, .not-prose *)) {
   @apply leading-relaxed;
 }
-.prose blockquote {
+
+.prose :where(blockquote):not(:where(.not-prose, .not-prose *)) {
   @apply border-l-4 border-neutral-300 dark:border-neutral-700 pl-4 italic text-neutral-600 dark:text-neutral-400 my-4;
 }
-.prose code {
+
+.prose :where(code):not(:where(.not-prose, .not-prose *)) {
   @apply bg-neutral-200 dark:bg-neutral-800 px-1.5 py-0.5 rounded text-sm font-mono;
 }
-.prose pre {
+
+.prose :where(pre):not(:where(.not-prose, .not-prose *)) {
   @apply bg-neutral-100 dark:bg-neutral-800 dark:text-neutral-100 text-neutral-800 rounded-lg p-4 overflow-x-auto mb-4;
 }
-.prose pre code {
+
+.prose :where(pre code):not(:where(.not-prose, .not-prose *)) {
   @apply bg-transparent p-0 text-inherit;
 }
 
 /* Tables */
-.prose table {
+
+.prose :where(table):not(:where(.not-prose, .not-prose *)) {
   @apply w-full border-collapse mb-4;
 }
-.prose th {
+
+.prose :where(th):not(:where(.not-prose, .not-prose *)) {
   @apply bg-neutral-100 dark:bg-neutral-800 font-semibold text-sm px-4 py-2 border border-neutral-200 dark:border-neutral-700;
 }
-.prose td {
+
+.prose :where(td):not(:where(.not-prose, .not-prose *)) {
   @apply text-sm px-4 py-2 border border-neutral-200 dark:border-neutral-700;
 }
 
 /* Shiki line highlight */
+
 .shiki span.line.highlight {
   background-color: rgba(255, 255, 0, 0.1);
   display: inline-block;
@@ -66,12 +81,14 @@ body {
 }
 
 /* Shiki code block filename */
-.prose pre[filename]::before {
+
+.prose :where(pre[filename]::before):not(:where(.not-prose, .not-prose *)) {
   content: attr(filename);
   @apply block text-xs text-neutral-500 dark:text-neutral-400 mb-2 font-mono;
 }
 
 /* Shiki dark mode */
+
 @media (prefers-color-scheme: dark) {
   .shiki span {
     color: var(--shiki-dark) !important;
@@ -82,39 +99,49 @@ body {
   }
 }
 
-/* Alert blockquotes (> [!NOTE], > [!TIP], etc.) */
-.prose blockquote[as='note'] {
+/* Alert blockquotes */
+
+.prose :where(blockquote[as='note']):not(:where(.not-prose, .not-prose *)) {
   @apply border-l-blue-500 bg-blue-50 dark:bg-blue-950 not-italic text-blue-800 dark:text-blue-300;
 }
-.prose blockquote[as='note']::before {
+
+.prose :where(blockquote[as='note']::before):not(:where(.not-prose, .not-prose *)) {
   content: 'ℹ️ Note';
   @apply block font-semibold mb-1;
 }
-.prose blockquote[as='tip'] {
+
+.prose :where(blockquote[as='tip']):not(:where(.not-prose, .not-prose *)) {
   @apply border-l-green-500 bg-green-50 dark:bg-green-950 not-italic text-green-800 dark:text-green-300;
 }
-.prose blockquote[as='tip']::before {
+
+.prose :where(blockquote[as='tip']::before):not(:where(.not-prose, .not-prose *)) {
   content: '💡 Tip';
   @apply block font-semibold mb-1;
 }
-.prose blockquote[as='warning'] {
+
+.prose :where(blockquote[as='warning']):not(:where(.not-prose, .not-prose *)) {
   @apply border-l-yellow-500 bg-yellow-50 dark:bg-yellow-950 not-italic text-yellow-800 dark:text-yellow-300;
 }
-.prose blockquote[as='warning']::before {
+
+.prose :where(blockquote[as='warning']::before):not(:where(.not-prose, .not-prose *)) {
   content: '⚠️ Warning';
   @apply block font-semibold mb-1;
 }
-.prose blockquote[as='caution'] {
+
+.prose :where(blockquote[as='caution']):not(:where(.not-prose, .not-prose *)) {
   @apply border-l-red-500 bg-red-50 dark:bg-red-950 not-italic text-red-800 dark:text-red-300;
 }
-.prose blockquote[as='caution']::before {
+
+.prose :where(blockquote[as='caution']::before):not(:where(.not-prose, .not-prose *)) {
   content: '🚨 Caution';
   @apply block font-semibold mb-1;
 }
-.prose blockquote[as='important'] {
+
+.prose :where(blockquote[as='important']):not(:where(.not-prose, .not-prose *)) {
   @apply border-l-purple-500 bg-purple-50 dark:bg-purple-950 not-italic text-purple-800 dark:text-purple-300;
 }
-.prose blockquote[as='important']::before {
+
+.prose :where(blockquote[as='important']::before):not(:where(.not-prose, .not-prose *)) {
   content: '❗ Important';
   @apply block font-semibold mb-1;
 }
