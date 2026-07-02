@@ -67,14 +67,14 @@ describe.skipIf(stubbed || process.env.SKIP_BUNDLE_SIZE === 'true')('package bun
 
     expect(report).toMatchInlineSnapshot(`
       {
-        "@comark/angular": "47.8k (53 files)",
+        "@comark/angular": "49.2k (53 files)",
         "@comark/ansi": "34.4k (82 files)",
         "@comark/html": "16.2k (42 files)",
         "@comark/nuxt": "10.1k (42 files)",
-        "@comark/react": "37.2k (56 files)",
-        "@comark/svelte": "39.2k (66 files)",
-        "@comark/vue": "54.8k (62 files)",
-        "comark": "346k (132 files)",
+        "@comark/react": "39.9k (58 files)",
+        "@comark/svelte": "39.9k (66 files)",
+        "@comark/vue": "55.9k (62 files)",
+        "comark": "353k (134 files)",
       }
     `)
   })
