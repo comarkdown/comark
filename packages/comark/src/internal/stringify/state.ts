@@ -210,7 +210,10 @@ function escapeHtml(text: string): string {
  * a text node like `[foo](bar)` round-trips as plain text, and a text node
  * containing `]` inside a link (e.g. `dsd]dsd`) doesn't prematurely close
  * the surrounding `[…]` brackets.
+ *
+ * `` ` `` opens/closes a code span, so a text node like `` use `ls` here ``
+ * must escape its backticks to avoid round-tripping into a `<code>` element.
  */
 function escapeMarkdownText(text: string): string {
-  return text.replace(/[[\]]/g, (ch) => `\\${ch}`)
+  return text.replace(/[[\]`]/g, (ch) => `\\${ch}`)
 }
