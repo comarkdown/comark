@@ -10,16 +10,23 @@ import { closeTables } from './table.ts'
  * Processes markdown in O(n) time by scanning character-by-character
  *
  * @param markdown - The markdown content to auto-close
+ * @param options - `streaming` completes an unclosed leading frontmatter block.
  * @returns The markdown with unclosed syntax closed
  */
-export function autoCloseMarkdown(markdown: string): string {
+export function autoCloseMarkdown(markdown: string, options: { streaming?: boolean } = {}): string {
   if (!markdown || markdown === '') return markdown
+
+  const { streaming = false } = options
 
   const lines = markdown.split('\n')
   const n = lines.length
 
   // Single linear pass to collect document state
   let inFrontmatter = false
+  // Whether the open frontmatter block has received any content. Empty
+  // frontmatter is not valid (`parseFrontmatter` ignores it), so a lone `---`
+  // is a thematic break, not an unclosed frontmatter block to complete.
+  let frontmatterHasContent = false
   let inBlockMath = false
   let tableStart = -1
   // Tag name when inside a raw-text HTML element (`<style>`, `<script>`,
@@ -63,6 +70,7 @@ export function autoCloseMarkdown(markdown: string): string {
     }
     if (inFrontmatter) {
       if (trimmed === '---') inFrontmatter = false
+      else if (trimmed !== '') frontmatterHasContent = true
       continue
     }
 
@@ -152,8 +160,12 @@ export function autoCloseMarkdown(markdown: string): string {
     result = closeTables(result)
   }
 
-  // Close unclosed frontmatter
-  if (inFrontmatter) {
+  // Complete an unclosed frontmatter block only while streaming, and only when
+  // it has content. A complete document with a leading `---` and no closing
+  // delimiter is a thematic break (see `parseFrontmatter`), not frontmatter, so
+  // completing it would swallow the body; and completing an empty block would
+  // turn a lone `---` into two thematic breaks.
+  if (streaming && inFrontmatter && frontmatterHasContent) {
     const lastTrimmed = lines[lastIdx].trim()
     if (lastTrimmed === '-' || lastTrimmed === '--') {
       result += '-'.repeat(3 - lastTrimmed.length)
