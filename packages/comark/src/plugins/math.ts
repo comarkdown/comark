@@ -1,5 +1,4 @@
 import type { MarkdownExit, StateInline, StateBlock } from 'markdown-exit'
-import katex from 'katex'
 import type { MarkdownItPlugin } from 'comark'
 import { defineComarkPlugin } from '../utils/helpers.ts'
 
@@ -30,8 +29,10 @@ export interface MathConfig {
  * const display = renderMath('x^2', true)
  * ```
  */
-export function renderMath(code: string, displayMode: boolean, config: MathConfig = {}): string {
+export async function renderMath(code: string, displayMode: boolean, config: MathConfig = {}): Promise<string> {
   try {
+    const katex = (await import('katex')).default
+
     const options = {
       displayMode,
       throwOnError: config.throwOnError ?? false,
@@ -60,8 +61,9 @@ export function renderMath(code: string, displayMode: boolean, config: MathConfi
  * validateMath('\\invalid') // false
  * ```
  */
-export function validateMath(code: string): boolean {
+export async function validateMath(code: string): Promise<boolean> {
   try {
+    const katex = (await import('katex')).default
     katex.renderToString(code, { throwOnError: true })
     return true
   } catch {
