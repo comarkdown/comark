@@ -1,9 +1,10 @@
 {
   "name": "@comark/html",
   "version": "0.5.0",
-  "description": "HTML renderer for Comark (Components in Markdown)",
+  "description": "HTML string renderer for Comark. Render Markdown with components on the server, no framework required.",
   "keywords": [
     "comark",
+    "components",
     "html",
     "markdown",
     "mdc",

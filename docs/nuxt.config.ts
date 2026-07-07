@@ -3,7 +3,14 @@ import { defineNuxtConfig } from 'nuxt/config'
 export default defineNuxtConfig({
   extends: ['docus'],
 
-  modules: ['nuxt-studio', '@comark/nuxt', '@vercel/speed-insights', '@vercel/analytics', '@nuxt/ui'],
+  modules: [
+    'nuxt-studio',
+    '@comark/nuxt',
+    '@vercel/speed-insights',
+    '@vercel/analytics',
+    '@nuxt/ui',
+    '@nuxtjs/sitemap',
+  ],
 
   app: {
     head: {
@@ -17,6 +24,7 @@ export default defineNuxtConfig({
 
   site: {
     name: 'Comark',
+    url: 'https://comark.dev',
   },
 
   content: {
@@ -46,6 +54,10 @@ export default defineNuxtConfig({
 
   llms: {
     domain: 'https://comark.dev',
+  },
+
+  sitemap: {
+    sources: ['/api/__sitemap__/urls'],
   },
 
   studio: false,

@@ -310,17 +310,17 @@ hello
 ::
 ```
 
-**Without `#default`** — content becomes direct children (auto-unwrapped):
+**Without `#default`**: content becomes direct children (auto-unwrapped):
 ```json
 ["component", {}, "hello"]
 ```
 
-**With `#default`** — content is wrapped in an explicit template node:
+**With `#default`**: content is wrapped in an explicit template node:
 ```json
 ["component", {}, ["template", { "name": "default" }, "hello"]]
 ```
 
-Both serialize back to the same Markdown (without `#default`). The Vue, React, Svelte, and Angular renderers treat both forms identically — direct children and `template[name="default"]` children both become the default slot. Use `#default` explicitly when mixing named and default slots in the same component.
+Both serialize back to the same Markdown (without `#default`). The Vue, React, Svelte, and Angular renderers treat both forms identically: direct children and `template[name="default"]` children both become the default slot. Use `#default` explicitly when mixing named and default slots in the same component.
 
 ### Nested Components
 

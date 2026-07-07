@@ -108,7 +108,7 @@ The theory of relativity[^1] changed physics.
 Einstein also contributed to quantum mechanics[^qm].
 ```
 
-Labels can be numbers or text — they serve as identifiers and are replaced with sequential numbers in the output.
+Labels can be numbers or text; they serve as identifiers and are replaced with sequential numbers in the output.
 
 ### Footnote Definitions
 
@@ -119,7 +119,7 @@ Define footnotes with `[^label]: content` on its own line:
 [^qm]: See the photoelectric effect paper, also from 1905.
 ```
 
-Definitions can appear anywhere in the document — they are removed from their original position and collected into the footnotes section.
+Definitions can appear anywhere in the document. They are removed from their original position and collected into the footnotes section.
 
 ### Complete Example
 
@@ -288,8 +288,8 @@ Without `Footnote`, `renderMarkdown` would serialize the footnote HTML structure
 
 ## Related
 
-- [Parse API](/api/parse) — Main parsing API
-- [Render API](/api/render) — Rendering API with conditional handlers
-- [Alerts](/plugins/built-in/alert) — GitHub-style alert blockquotes
-- [Task List](/plugins/built-in/task-list) — Checkbox syntax
-- [Creating Plugins](/plugins/custom/plugin-api) — Build your own plugin
+- [Parse API](/api/parse): Main parsing API
+- [Render API](/api/render): Rendering API with conditional handlers
+- [Alerts](/plugins/built-in/alert): GitHub-style alert blockquotes
+- [Task List](/plugins/built-in/task-list): Checkbox syntax
+- [Creating Plugins](/plugins/custom/plugin-api): Build your own plugin

@@ -21,7 +21,7 @@ links:
 The `comark/plugins/mermaid` plugin renders [Mermaid](https://mermaid.js.org/) diagrams from ` ```mermaid ` code blocks. Diagrams are rendered client-side via the `<Mermaid>` component exported alongside the plugin.
 
 ::note
-[`beautiful-mermaid`](https://github.com/lukilabs/beautiful-mermaid) is a peer dependency — install it alongside Comark: `npm install beautiful-mermaid`
+[`beautiful-mermaid`](https://github.com/lukilabs/beautiful-mermaid) is a peer dependency, install it alongside Comark: `npm install beautiful-mermaid`
 ::
 
 ## Usage
@@ -35,7 +35,7 @@ const result = await parse(content, {
 })
 ```
 
-With framework components — pass both the plugin and the `Mermaid` renderer component:
+With framework components, pass both the plugin and the `Mermaid` renderer component:
 
 ::code-group
 
@@ -203,7 +203,7 @@ Returns a `ComarkPlugin` that marks ` ```mermaid ` code blocks for custom render
 
 **Returns:** `ComarkPlugin`
 
-The plugin converts mermaid code blocks into AST nodes that the `<Mermaid>` component renders. Rendering requires passing `Mermaid` to the `components` prop of `<Comark>` — see [Usage](#usage).
+The plugin converts mermaid code blocks into AST nodes that the `<Mermaid>` component renders. Rendering requires passing `Mermaid` to the `components` prop of `<Comark>` (see [Usage](#usage)).
 
 ---
 
@@ -214,7 +214,7 @@ Props accepted by the `<Mermaid>` component:
 | Prop | Type | Default | Description |
 |---|---|---|---|
 | `content` | `string` | required | The Mermaid diagram source |
-| `theme` | `string` | `'default'` | Mermaid theme — see [available themes](https://github.com/lukilabs/beautiful-mermaid#built-in-themes) |
+| `theme` | `string` | `'default'` | Mermaid theme, see [available themes](https://github.com/lukilabs/beautiful-mermaid#built-in-themes) |
 | `themeDark` | `string` | `undefined` | Theme to use in dark mode |
 | `width` | `string` | `'100%'` | Container width |
 | `height` | `string` | `'auto'` | Container height |

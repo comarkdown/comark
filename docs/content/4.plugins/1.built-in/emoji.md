@@ -83,16 +83,16 @@ Shortcodes are case-sensitive and must use exact names. Invalid or unknown short
 
 The plugin supports 200+ popular emojis across all common categories:
 
-- **Smileys & Emotions** — `:smile:` `:heart_eyes:` `:thinking:` `:cry:` `:joy:`
-- **People & Gestures** — `:thumbsup:` `:clap:` `:wave:` `:muscle:` `:pray:`
-- **Hearts** — `:heart:` `:yellow_heart:` `:blue_heart:` `:purple_heart:` `:broken_heart:`
-- **Animals** — `:dog:` `:cat:` `:lion:` `:bear:` `:penguin:` `:fish:`
-- **Food** — `:pizza:` `:hamburger:` `:coffee:` `:beer:` `:cake:`
-- **Activities** — `:soccer:` `:basketball:` `:trophy:` `:guitar:` `:art:`
-- **Travel** — `:airplane:` `:rocket:` `:car:` `:train:` `:ship:`
-- **Objects** — `:fire:` `:sparkles:` `:bulb:` `:book:` `:computer:`
-- **Symbols** — `:white_check_mark:` `:x:` `:warning:` `:star:` `:100:`
-- **Nature** — `:tree:` `:sunflower:` `:rainbow:` `:sunny:`
+- **Smileys & Emotions**: `:smile:` `:heart_eyes:` `:thinking:` `:cry:` `:joy:`
+- **People & Gestures**: `:thumbsup:` `:clap:` `:wave:` `:muscle:` `:pray:`
+- **Hearts**: `:heart:` `:yellow_heart:` `:blue_heart:` `:purple_heart:` `:broken_heart:`
+- **Animals**: `:dog:` `:cat:` `:lion:` `:bear:` `:penguin:` `:fish:`
+- **Food**: `:pizza:` `:hamburger:` `:coffee:` `:beer:` `:cake:`
+- **Activities**: `:soccer:` `:basketball:` `:trophy:` `:guitar:` `:art:`
+- **Travel**: `:airplane:` `:rocket:` `:car:` `:train:` `:ship:`
+- **Objects**: `:fire:` `:sparkles:` `:bulb:` `:book:` `:computer:`
+- **Symbols**: `:white_check_mark:` `:x:` `:warning:` `:star:` `:100:`
+- **Nature**: `:tree:` `:sunflower:` `:rainbow:` `:sunny:`
 
 ### Aliases
 
