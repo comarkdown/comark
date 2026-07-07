@@ -15,7 +15,6 @@
     "@nuxt/content": "catalog:",
     "@nuxt/ui": "catalog:",
     "@nuxtjs/mcp-toolkit": "catalog:",
-    "@nuxtjs/sitemap": "catalog:",
     "@nuxtlabs/monarch-mdc": "catalog:",
     "@shikijs/langs": "catalog:",
     "@vercel/analytics": "catalog:",

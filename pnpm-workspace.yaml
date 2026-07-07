@@ -23,7 +23,6 @@ catalog:
   "@nuxt/ui": ^4.7.1
   "satori": ^0.26.0
   "@nuxtjs/mcp-toolkit": 0.13.4
-  "@nuxtjs/sitemap": ^8.2.2
   "@nuxtlabs/monarch-mdc": ^0.9.0
   "@release-it/conventional-changelog": ^10.0.6
   "@shikijs/langs": ^4.0.2
