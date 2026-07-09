@@ -3,6 +3,15 @@ packages:
   - docs
   - examples/*/*
 
+allowBuilds:
+  '@parcel/watcher': false
+  better-sqlite3: true
+  esbuild: false
+  lmdb: false
+  msgpackr-extract: false
+  sharp: false
+  vue-demi: false
+
 catalog:
   # AI
   "@ai-sdk/gateway": ^3.0.104
