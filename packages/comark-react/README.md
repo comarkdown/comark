@@ -8,7 +8,7 @@
 [![Documentation](https://img.shields.io/badge/Documentation-black?logo=readme&logoColor=white)](https://comark.dev/rendering/react)
 [![license](https://img.shields.io/github/license/comarkdown/comark?color=black)](https://github.com/comarkdown/comark/blob/main/LICENSE)
 
-React renderer for [Comark](https://comark.dev) — render markdown with custom React components, streaming support, and Server Components.
+React renderer for [Comark](https://comark.dev). Render markdown with custom React components, streaming support, and Server Components.
 
 ## Features
 

@@ -108,9 +108,9 @@ export class AppComponent {
 ### Component Resolution Order
 
 Components are resolved by checking these keys in order:
-1. `Prose{PascalTag}` — e.g., `ProseH1` for `<h1>` tags
-2. `tag` — e.g., `alert` for `::alert` components
-3. `PascalTag` — e.g., `Alert` for `::alert` components
+1. `Prose{PascalTag}`, e.g., `ProseH1` for `<h1>` tags
+2. `tag`, e.g., `alert` for `::alert` components
+3. `PascalTag`, e.g., `Alert` for `::alert` components
 
 ### Custom Component Example
 
@@ -343,10 +343,10 @@ export class StreamingComponent {
 The `caret` input controls the streaming cursor indicator:
 
 ```typescript
-// Boolean — use default pulsing caret
+// Boolean: use default pulsing caret
 <comark [markdown]="content" [streaming]="true" [caret]="true" />
 
-// Object — custom CSS class for the caret
+// Object: custom CSS class for the caret
 <comark [markdown]="content" [streaming]="true" [caret]="{ class: 'my-caret' }" />
 ```
 
@@ -594,7 +594,7 @@ export class AppComponent {
 }
 ```
 
-The Mermaid component includes automatic dark mode support — it watches the `<html>` element for `.dark` class changes and re-renders diagrams accordingly.
+The Mermaid component includes automatic dark mode support: it watches the `<html>` element for `.dark` class changes and re-renders diagrams accordingly.
 
 ### Binding
 
@@ -610,10 +610,10 @@ import binding, { Binding } from '@comark/angular/plugins/binding'
 
 All `@comark/angular` components use:
 
-- **Standalone Components** — no `NgModule` required
-- **`ChangeDetectionStrategy.OnPush`** — minimal change detection overhead
-- **Dynamic component creation** via `createComponent` — efficient runtime instantiation
-- **`reflectComponentType`** — only set inputs the component actually declares
+- **Standalone Components**: no `NgModule` required
+- **`ChangeDetectionStrategy.OnPush`**: minimal change detection overhead
+- **Dynamic component creation** via `createComponent`: efficient runtime instantiation
+- **`reflectComponentType`**: only set inputs the component actually declares
 
 ---
 

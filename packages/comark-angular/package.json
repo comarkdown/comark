@@ -1,10 +1,12 @@
 {
   "name": "@comark/angular",
   "version": "0.5.0",
-  "description": "Angular components for Comark",
+  "description": "Angular renderer for Comark. Render Markdown with components at runtime, with streaming support for AI output.",
   "keywords": [
+    "ai",
     "angular",
     "comark",
+    "components",
     "markdown",
     "mdc",
     "renderer",

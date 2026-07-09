@@ -9,7 +9,7 @@ function isJsonSchema7(def: JSONSchema7Definition): def is JSONSchema7 {
 export function schemaToMarkdown(components: ComponentSchema[]): string {
   return components
     .map((c) => {
-      const lines: string[] = [`### ${c.title} — ${c.description}`]
+      const lines: string[] = [`### ${c.title}: ${c.description}`]
       const propEntries = Object.entries(c.properties ?? {}).filter((entry): entry is [string, JSONSchema7] =>
         isJsonSchema7(entry[1])
       )

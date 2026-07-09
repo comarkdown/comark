@@ -3,15 +3,24 @@ packages:
   - docs
   - examples/*/*
 
+allowBuilds:
+  '@parcel/watcher': false
+  better-sqlite3: true
+  esbuild: false
+  lmdb: false
+  msgpackr-extract: false
+  sharp: false
+  vue-demi: false
+
 catalog:
   # AI
   "@ai-sdk/gateway": ^3.0.104
   "@ai-sdk/vue": ^3.0.175
   "@astrojs/react": ^5.0.3
   "@clack/prompts": ^1.2.0
-  "@comark/html": ^0.2.0
-  "@comark/nuxt": ^0.2.0
-  "@comark/react": ^0.2.0
+  "@comark/html": ^0.5.0
+  "@comark/nuxt": ^0.5.0
+  "@comark/react": ^0.5.0
   "@comark/vue": ^0.5.0
 
   # Misc
