@@ -47,6 +47,13 @@ export class ComarkComponent implements OnChanges {
   /** Additional plugins to use */
   @Input() plugins: ParseOptions['plugins'] = []
 
+  /**
+   * Strip wrapper tags from the top level of the tree — shorthand for
+   * `options.unwrap`. `true` unwraps `<p>`; a space-separated string or array
+   * unwraps the listed tags.
+   */
+  @Input() unwrap: boolean | string | string[] = false
+
   /** Custom component mappings for element tags */
   @Input() components: Record<string, Type<any>> = {}
 
@@ -69,10 +76,21 @@ export class ComarkComponent implements OnChanges {
   constructor(private cdr: ChangeDetectorRef) {}
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['options'] || changes['plugins']) {
-      this.serializedParse = createSerializedParse({ ...this.options, plugins: this.plugins })
+    if (changes['options'] || changes['plugins'] || changes['unwrap']) {
+      this.serializedParse = createSerializedParse({
+        ...this.options,
+        ...(this.unwrap ? { unwrap: this.unwrap } : {}),
+        plugins: this.plugins,
+      })
     }
-    if (changes['markdown'] || changes['options'] || changes['plugins'] || changes['streaming'] || changes['summary']) {
+    if (
+      changes['markdown'] ||
+      changes['options'] ||
+      changes['plugins'] ||
+      changes['unwrap'] ||
+      changes['streaming'] ||
+      changes['summary']
+    ) {
       this.parseMarkdown()
     }
   }

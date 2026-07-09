@@ -32,6 +32,12 @@ export interface ComarkProps {
   markdown?: string
   options?: Exclude<ParseOptions, 'plugins'>
   plugins?: ComarkPlugin[]
+  /**
+   * Strip wrapper tags from the top level of the tree — shorthand for
+   * `options.unwrap`. `true` unwraps `<p>`; a space-separated string or array
+   * unwraps the listed tags.
+   */
+  unwrap?: boolean | string | string[]
   components?: Record<string, any>
   componentsManifest?: ComponentManifest
   streaming?: boolean

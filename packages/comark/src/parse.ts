@@ -16,6 +16,7 @@ import syntax from './plugins/syntax.ts'
 import taskList from './plugins/task-list.ts'
 import alert from './plugins/alert.ts'
 import { applyAutoUnwrap } from './internal/parse/auto-unwrap.ts'
+import { applyUnwrap, resolveUnwrapTags } from './internal/parse/unwrap.ts'
 import { marmdownItTokensToComarkTree } from './internal/parse/token-processor.ts'
 import { autoCloseMarkdown } from './internal/parse/auto-close/index.ts'
 import { parseFrontmatter } from './internal/frontmatter.ts'
@@ -63,6 +64,8 @@ export function createParse<const TPlugins extends readonly ComarkPlugin<any, an
   options: ParseOptions<TPlugins> = {} as ParseOptions<TPlugins>
 ): ComarkParseFn<ResolvedMeta<MergePluginMeta<TPlugins>>, ResolvedFrontmatter<MergePluginFrontmatter<TPlugins>>> {
   const { autoUnwrap = true, autoClose = true } = options
+  // Tag set to strip from the top level of the tree (MDC `unwrap`). Resolved once.
+  const unwrapTags = resolveUnwrapTags(options.unwrap)
   // Make a mutable working copy so the inferred (possibly readonly) user tuple
   // isn't mutated by the unshift calls below.
   const plugins: ComarkPlugin<any, any>[] = options.plugins ? [...options.plugins] : []
@@ -151,6 +154,10 @@ export function createParse<const TPlugins extends readonly ComarkPlugin<any, an
 
     if (autoUnwrap) {
       nodes = nodes.map((node: ComarkNode) => applyAutoUnwrap(node))
+    }
+
+    if (unwrapTags.length > 0) {
+      nodes = applyUnwrap(nodes, unwrapTags)
     }
 
     if (opts.streaming) {

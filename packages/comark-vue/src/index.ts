@@ -59,6 +59,16 @@ export function defineComarkComponent(config: DefineComarkComponentOptions = {})
       },
 
       /**
+       * Strip wrapper tags from the top level of the tree — shorthand for
+       * `options.unwrap`. `true` unwraps `<p>`; a space-separated string or
+       * array unwraps the listed tags.
+       */
+      unwrap: {
+        type: [Boolean, String, Array] as PropType<boolean | string | string[]>,
+        default: false,
+      },
+
+      /**
        * Custom component mappings for element tags
        * Key: tag name (e.g., 'h1', 'p', 'MyComponent')
        * Value: Vue component
@@ -122,6 +132,7 @@ export function defineComarkComponent(config: DefineComarkComponentOptions = {})
             markdown: props.markdown,
             options: options.value,
             plugins: plugins.value,
+            unwrap: props.unwrap,
             components: components.value,
             componentsManifest: props.componentsManifest,
             streaming: props.streaming,

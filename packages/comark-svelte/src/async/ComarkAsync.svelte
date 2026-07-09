@@ -37,6 +37,7 @@ and wrap this component in a `<svelte:boundary>` for pending/error states.
     markdown = '',
     options = {},
     plugins = [],
+    unwrap = false,
     components = {},
     componentsManifest,
     streaming = false,
@@ -47,6 +48,7 @@ and wrap this component in a `<svelte:boundary>` for pending/error states.
     markdown?: string
     options?: Record<string, any>
     plugins?: ComarkPlugin[]
+    unwrap?: boolean | string | string[]
     components?: Record<string, any>
     componentsManifest?: ComponentManifest
     streaming?: boolean
@@ -60,7 +62,7 @@ and wrap this component in a `<svelte:boundary>` for pending/error states.
     // `parse` directly mutates `plugins` which creates an infinite effect loop
     // so we copy it before passing it in so it gets a regular JS array and we get to still
     // track dependencies from an external perspective
-    await parse(content, { ...options, plugins: [...plugins] }),
+    await parse(content, { ...options, ...(unwrap ? { unwrap } : {}), plugins: [...plugins] }),
   )
 </script>
 
