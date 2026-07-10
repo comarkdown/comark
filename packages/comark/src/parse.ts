@@ -63,7 +63,7 @@ export function createParse<const TPlugins extends readonly ComarkPlugin<any, an
   options: ParseOptions<TPlugins> = {} as ParseOptions<TPlugins>
 ): ComarkParseFn<ResolvedMeta<MergePluginMeta<TPlugins>>, ResolvedFrontmatter<MergePluginFrontmatter<TPlugins>>> {
   const { autoUnwrap = true, autoClose = true } = options
-  const plugins = dedupePlugins([alert(), taskList(), syntax(), ...options.plugins])
+  const plugins = dedupePlugins([alert(), taskList(), syntax(), ...(options.plugins ? [...options.plugins] : [])])
 
   const parser = new MarkdownExit({
     html: false,
