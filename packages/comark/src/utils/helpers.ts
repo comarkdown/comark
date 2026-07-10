@@ -1,4 +1,4 @@
-import type { ComarkPluginFactory } from '../types.ts'
+import type { ComarkPlugin, ComarkPluginFactory } from '../types.ts'
 
 /**
  * Returns a function that invokes `fn` **strictly one at a time**: each call waits until the
@@ -12,6 +12,24 @@ export function createSerializedTask<TArgs extends unknown[], TResult>(
     chain = chain.then(() => fn(...args)).catch(() => null as TResult)
     return chain
   }
+}
+
+/**
+ * Remove duplicate plugins by name, keeping the first occurrence.
+ */
+export function dedupePlugins(plugins: ComarkPlugin<any, any>[]): ComarkPlugin<any, any>[] {
+  const seen = new Set<string>()
+  const result: ComarkPlugin<any, any>[] = []
+
+  for (const plugin of plugins) {
+    if (seen.has(plugin.name)) {
+      continue
+    }
+    seen.add(plugin.name)
+    result.push(plugin)
+  }
+
+  return result
 }
 
 // #region define plugin
