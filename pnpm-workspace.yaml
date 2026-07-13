@@ -4,7 +4,7 @@ packages:
   - examples/*/*
 
 allowBuilds:
-  '@parcel/watcher': false
+  "@parcel/watcher": false
   better-sqlite3: true
   esbuild: false
   lmdb: false
@@ -24,7 +24,7 @@ catalog:
   "@comark/vue": ^0.5.0
 
   # Misc
-  "@json-render/core": ^0.16.0
+  "@json-render/core": ^0.19.0
   "@monaco-editor/loader": ^1.7.0
   "@nuxt/content": ^3.13.0
   "@nuxt/devtools-kit": ^4.0.0-alpha.4
@@ -39,14 +39,13 @@ catalog:
   # Shiki
   "@shikijs/primitive": ^4.0.2
   "@shikijs/themes": ^4.0.2
-  "@shikijs/twoslash": ^4.0.2
+  "@shikijs/twoslash": ^4.3.1
   "@sveltejs/adapter-auto": ^7.0.1
   "@sveltejs/kit": ^2.60.1
   "@sveltejs/package": ^2.5.7
   "@sveltejs/vite-plugin-svelte": ^7.0.0
   "@tailwindcss/postcss": ^4.2.2
   "@tailwindcss/vite": ^4.2.2
-  "@types/js-yaml": ^4.0.9
 
   # Types
   "@types/json-schema": ^7.0.15
@@ -88,9 +87,9 @@ catalog:
   github-slugger: ^2.0.0
   hast-util-to-string: ^3.0.1
   htmlparser2: ^12.0.0
-  js-yaml: ^4.1.1
+  js-yaml: ^5.2.1
   katex: ^0.16.45
-  markdown-exit: 1.0.0-beta.9
+  markdown-exit: 1.1.0-beta.2
   "markdown-it": ^14.2.0
   markdown-it-math: ^5.2.1
   minimark: 0.2.0
@@ -144,8 +143,8 @@ catalog:
 
   # CSS
   tailwindcss: ^4.2.2
-  tsx: ^4.22.4
-  twoslash: ^0.3.6
+  tsx: ^4.23.0
+  twoslash: ^0.3.9
   twoslash-cdn: ^0.3.6
   typescript: ^5.9.3
 
@@ -155,7 +154,7 @@ catalog:
   vitepress: ^1.6.4
 
   # Testing
-  vitest: ^4.1.4
+  vitest: ^4.1.10
   vitest-browser-svelte: ^2.1.0
 
   # Vue
