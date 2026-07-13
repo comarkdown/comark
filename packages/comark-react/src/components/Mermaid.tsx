@@ -4,7 +4,7 @@ import type { ThemeNames } from 'comark/plugins/mermaid'
 
 export interface MermaidProps {
   content: string
-  class?: string
+  className?: string
   height?: string
   width?: string
   theme?: ThemeNames | DiagramColors
@@ -13,7 +13,7 @@ export interface MermaidProps {
 
 export function Mermaid({
   content,
-  class: className = '',
+  className = '',
   height = 'auto',
   width = '100%',
   theme,
