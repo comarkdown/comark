@@ -11,14 +11,7 @@ export interface MermaidProps {
   themeDark?: ThemeNames | DiagramColors
 }
 
-export function Mermaid({
-  content,
-  className = '',
-  height = 'auto',
-  width = '100%',
-  theme,
-  themeDark,
-}: MermaidProps) {
+export function Mermaid({ content, className = '', height = 'auto', width = '100%', theme, themeDark }: MermaidProps) {
   const [svgContent, setSvgContent] = useState<string>('')
   const [error, setError] = useState<string | null>(null)
   const [isDark, setIsDark] = useState(false)
