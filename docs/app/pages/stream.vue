@@ -218,8 +218,7 @@ function reset() {
           <pre
             v-if="elementsCount > 0"
             class="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed"
-            >{{ state.content }}</pre
-          >
+            >{{ state.content }}</pre>
           <div
             v-else
             class="text-center text-neutral-500 dark:text-neutral-600 py-12"

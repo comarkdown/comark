@@ -216,6 +216,15 @@ export function htmlAttributes(attributes: Record<string, unknown>) {
   return parts.join(' ')
 }
 
+// Coerce string `'true'`/`'false'` (how the parser stores boolean attrs) to
+// native booleans so js-yaml v5 emits them unquoted, matching the markdown
+// source. Numbers stay strings — the parser keeps numeric attrs as strings.
+function normalizeValue(value: unknown): unknown {
+  if (value === 'true') return true
+  if (value === 'false') return false
+  return value
+}
+
 /**
  * Convert attributes to a string of YAML attributes
  *
@@ -226,13 +235,17 @@ export function comarkYamlAttributes(
   attributes: Record<string, unknown>,
   style: 'frontmatter' | 'codeblock' = 'codeblock'
 ) {
-  // Normalize boolean attributes to remove the colon prefix
+  // Normalize attribute values for YAML serialization:
+  //  - Strip the `:` binding prefix from boolean-like values (`:block="true"`
+  //    becomes `block: true`), since the YAML props block is the canonical form
+  //    for `::tag{...}` shorthand.
+  //  - Coerce string literals `'true'`/`'false'`
   const normalized = Object.fromEntries(
     Object.entries(attributes).map(([key, value]) => {
       if (key.startsWith(':') && (value === 'true' || value === 'false')) {
-        return [key.slice(1), value]
+        return [key.slice(1), normalizeValue(value)]
       }
-      return [key, value]
+      return [key, normalizeValue(value)]
     })
   )
 

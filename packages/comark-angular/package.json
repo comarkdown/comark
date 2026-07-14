@@ -48,11 +48,11 @@
     "comark": "catalog:"
   },
   "devDependencies": {
-    "@angular/common": "catalog:",
+    "@angular/common": "^22.0.6",
     "@angular/compiler": "catalog:",
     "@angular/compiler-cli": "catalog:",
-    "@angular/core": "catalog:",
-    "@angular/platform-browser": "catalog:",
+    "@angular/core": "^22.0.6",
+    "@angular/platform-browser": "^22.0.6",
     "@angular/platform-server": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"

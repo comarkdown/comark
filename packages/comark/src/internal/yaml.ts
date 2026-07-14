@@ -19,11 +19,6 @@ export function stringifyYaml(data: Record<string, unknown>, options?: DumpOptio
     indent: 2,
     lineWidth: -1,
     ...options,
-    replacer: (_key, value) => {
-      if (value === 'true') return true
-      if (value === 'false') return false
-      return value
-    },
   })
 
   /**
