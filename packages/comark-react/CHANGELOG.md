@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.5.1](https://github.com/comarkdown/comark/compare/@comark/react@0.5.0...@comark/react@0.5.1) (2026-07-14)
+
+### Bug Fixes
+
+* **react:** pass class name to Math and Mermaid components ([#279](https://github.com/comarkdown/comark/issues/279)) ([10ec9a8](https://github.com/comarkdown/comark/commit/10ec9a8d102bdb1043bdbc15298097acab3b4d8e))
+
 ## [0.5.0](https://github.com/comarkdown/comark/compare/@comark/react@0.4.0...@comark/react@0.5.0) (2026-07-02)
 
 ### Features
