@@ -7,7 +7,7 @@ export async function p(node: ComarkElement, state: State, parent?: ComarkElemen
 
   let result = ''
   for (const child of children) {
-    result += await state.one(child, state, node)
+    result += await state.one(child, state, node, result === '' || result.endsWith('\n'))
   }
 
   const attrs = comarkAttributes(node[1])

@@ -201,7 +201,7 @@ export type State = {
   /**
    * Render a single node
    */
-  one: (node: ComarkNode, state: State, parent?: ComarkElement) => Promise<string>
+  one: (node: ComarkNode, state: State, parent?: ComarkElement, atLineStart?: boolean) => Promise<string>
 
   /**
    * Render the input
