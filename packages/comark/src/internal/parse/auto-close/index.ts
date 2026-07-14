@@ -218,6 +218,30 @@ export function autoCloseMarkdown(markdown: string): string {
   return result
 }
 
+/** Whitespace or a line boundary (empty string) — treated the same for flanking checks. */
+function isSpaceOrBoundary(ch: string): boolean {
+  return ch === '' || ch === ' ' || ch === '\t'
+}
+
+/**
+ * Scans a run of the same delimiter char starting at `start`.
+ * Returns the run length and whether it's surrounded by whitespace/boundaries
+ * (in which case it's neither left- nor right-flanking and cannot delimit emphasis).
+ */
+function scanDelimiterRun(line: string, start: number, marker: string) {
+  const len = line.length
+  let end = start
+  while (end + 1 < len && line[end + 1] === marker) end++
+  const prevCh = start > 0 ? line[start - 1] : ''
+  const afterCh = end + 1 < len ? line[end + 1] : ''
+  return {
+    end,
+    length: end - start + 1,
+    afterCh,
+    surroundedBySpace: isSpaceOrBoundary(prevCh) && isSpaceOrBoundary(afterCh),
+  }
+}
+
 /**
  * Closes inline markers (*, **, ***, ~~, `, $, $$, [, () on the last line
  * without using regex - pure character scanning in O(n) time
@@ -342,36 +366,38 @@ function closeInlineMarkersLinear(line: string): string {
       continue
     }
 
+    // A delimiter run surrounded by whitespace (e.g. `* item`, `** not valid`) is
+    // neither left- nor right-flanking per CommonMark, so it cannot delimit emphasis.
     if (ch === '*') {
-      asteriskCount++
-      // Track ** positions (not part of ***)
-      if (i + 1 < len && line[i + 1] === '*') {
-        const isPartOfTriple = (i > 0 && line[i - 1] === '*') || (i + 2 < len && line[i + 2] === '*')
-        if (!isPartOfTriple) {
-          doubleAsteriskPositions.push(i)
-        }
+      const run = scanDelimiterRun(line, i, '*')
+      if (!run.surroundedBySpace) {
+        asteriskCount += run.length
+        // Track a lone `**` run (exactly two asterisks) for complete-pair detection.
+        if (run.length === 2) doubleAsteriskPositions.push(i)
       }
+      i = run.end // Skip the rest of the run (loop increments past it)
     } else if (ch === '_') {
-      // Skip intra-word underscores (not emphasis delimiters per CommonMark)
-      const nextCh = i + 1 < len ? line[i + 1] : ''
+      const run = scanDelimiterRun(line, i, '_')
       const prevIsWord =
         (prevCh >= 'a' && prevCh <= 'z') || (prevCh >= 'A' && prevCh <= 'Z') || (prevCh >= '0' && prevCh <= '9')
       const nextIsWord =
-        (nextCh >= 'a' && nextCh <= 'z') || (nextCh >= 'A' && nextCh <= 'Z') || (nextCh >= '0' && nextCh <= '9')
-      if (!(prevIsWord && nextIsWord)) {
-        underscoreCount++
-        // Track __ positions (for bold)
-        if (nextCh === '_') {
-          doubleUnderscorePositions.push(i)
-        }
+        (run.afterCh >= 'a' && run.afterCh <= 'z') ||
+        (run.afterCh >= 'A' && run.afterCh <= 'Z') ||
+        (run.afterCh >= '0' && run.afterCh <= '9')
+      // Also skip intra-word underscores (not emphasis delimiters per CommonMark).
+      if (!(prevIsWord && nextIsWord) && !run.surroundedBySpace) {
+        underscoreCount += run.length
+        // Track a lone `__` run (exactly two underscores) for bold.
+        if (run.length === 2) doubleUnderscorePositions.push(i)
       }
+      i = run.end
     } else if (ch === '~') {
-      if (i + 1 < len && line[i + 1] === '~') {
-        doubleTildeCount++
-        i++ // Skip second tilde since we counted the pair
-      } else {
-        singleTildeCount++
+      const run = scanDelimiterRun(line, i, '~')
+      if (!run.surroundedBySpace) {
+        doubleTildeCount += run.length >> 1 // number of `~~` pairs in the run
+        if (run.length & 1) singleTildeCount++ // leftover single `~`
       }
+      i = run.end
     }
   }
 
