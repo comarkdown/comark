@@ -18,7 +18,7 @@ links:
     variant: soft
 ---
 
-The `comark/plugins/toc` plugin generates a hierarchical table of contents from document headings and stores it in `tree.meta.toc`. Headings `h2` through `h6` are included — `h1` is always excluded.
+The `comark/plugins/toc` plugin generates a hierarchical table of contents from document headings and stores it in `tree.meta.toc`. Headings `h2` through `h6` are included; `h1` is always excluded.
 
 ## Usage
 
@@ -43,7 +43,7 @@ Returns a `ComarkPlugin` that generates a hierarchical TOC from headings.
 
 **Parameters:**
 
-- `options?` - Optional configuration — see [Options](#options)
+- `options?` - Optional configuration, see [Options](#options)
 
 **Returns:** `ComarkPlugin`
 
@@ -76,7 +76,7 @@ interface TocLink {
 | [`title`](#options-code-title) | `string` | `''` | Title field on the returned `TocTree` |
 
 ::tip
-All three options can also be set via frontmatter — `depth`, `searchDepth`, and `title` keys are read automatically and override the plugin options.
+All three options can also be set via frontmatter: `depth`, `searchDepth`, and `title` keys are read automatically and override the plugin options.
 ::
 
 ### `depth`
@@ -101,7 +101,7 @@ toc({ searchDepth: 3 })
 
 ### `title`
 
-Sets the `title` field on the returned `TocTree`. Has no effect on rendering — use it to label the TOC in your layout component.
+Sets the `title` field on the returned `TocTree`. Has no effect on rendering; use it to label the TOC in your layout component.
 
 ```typescript
 toc({ title: 'On This Page' })
@@ -250,7 +250,7 @@ export function DocsLayout({ content }: { content: string }) {
 ::
 
 ::tip
-For deeply nested TOCs, render `link.children` recursively — define a `TocLink` component that calls itself for each child.
+For deeply nested TOCs, render `link.children` recursively: define a `TocLink` component that calls itself for each child.
 ::
 
 ### With Frontmatter
@@ -273,6 +273,6 @@ searchDepth: 3
 
 ```typescript
 const result = await parse(content, { plugins: [toc()] })
-console.log(result.meta.toc.depth) // 3 — from frontmatter
-console.log(result.meta.toc.title) // "My Guide" — from frontmatter
+console.log(result.meta.toc.depth) // 3 (from frontmatter)
+console.log(result.meta.toc.title) // "My Guide" (from frontmatter)
 ```

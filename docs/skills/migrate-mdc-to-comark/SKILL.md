@@ -6,7 +6,7 @@ description: >-
 
 # Migrate from @nuxtjs/mdc to Comark
 
-`@nuxtjs/mdc` was Nuxt-only. Comark is its successor — the markdown syntax is fully compatible, your `.md` files need no changes. What changes is the JavaScript API.
+`@nuxtjs/mdc` was Nuxt-only. Comark is its successor: the markdown syntax is fully compatible, your `.md` files need no changes. What changes is the JavaScript API.
 
 The migration has two parts: **Core Package** (programmatic API) and **Nuxt Module** (components, slots, config).
 
@@ -30,7 +30,7 @@ The migration has two parts: **Core Package** (programmatic API) and **Nuxt Modu
 | `@nuxtjs/mdc` | `comark` |
 |---|---|
 | `parseMarkdown(md, opts)` | `parse(md, opts)` from `comark` |
-| `createMarkdownParser(opts)` (async) | `createParse(opts)` (sync — no await) |
+| `createMarkdownParser(opts)` (async) | `createParse(opts)` (sync, no await) |
 | `stringifyMarkdown(body, data)` | `renderMarkdown(tree)` from `comark/render` |
 | `result.body` (`MDCRoot`) | `tree.nodes` (`ComarkNode[]`) |
 | `result.data` | `tree.frontmatter` |
@@ -49,7 +49,7 @@ The migration has two parts: **Core Package** (programmatic API) and **Nuxt Modu
 ### Parse Options
 
 ```typescript
-// Before — MDCParseOptions
+// Before: MDCParseOptions
 {
   remark: { plugins: { /* record */ } },
   rehype: { options: {...}, plugins: { /* record */ } },
@@ -57,7 +57,7 @@ The migration has two parts: **Core Package** (programmatic API) and **Nuxt Modu
   toc: { depth: 3, searchDepth: 2 } | false,
 }
 
-// After — ParseOptions
+// After: ParseOptions
 {
   plugins: ComarkPlugin[],   // ordered array, not a record
   autoUnwrap: true,          // removes <p> from single-paragraph containers
@@ -93,7 +93,7 @@ export default defineNuxtConfig({
 // After
 export default defineNuxtConfig({
   modules: ['@comark/nuxt'],
-  // No plugin config here — plugins are defined per-component
+  // No plugin config here (plugins are defined per-component)
 })
 ```
 
@@ -157,35 +157,35 @@ export const ArticleComark = defineComarkComponent({
 
 ### Prose Components
 
-Same `Prose*.vue` naming convention in `components/prose/`. Resolution changed from kebab-case (`prose-p`) to PascalCase (`ProseP`) internally — no file changes needed.
+Same `Prose*.vue` naming convention in `components/prose/`. Resolution changed from kebab-case (`prose-p`) to PascalCase (`ProseP`) internally. No file changes needed.
 
 ### Nuxt UI Integration
 
 When using Nuxt UI, `@comark/nuxt` registers Nuxt UI prose components automatically. Shorthand callout components are available:
 
 ```mdc
-::note    — informational
-::tip     — helpful suggestion
-::warning — something to watch out for
-::caution — critical warning
+::note    (informational)
+::tip     (helpful suggestion)
+::warning (something to watch out for)
+::caution (critical warning)
 ```
 
 These are **only available with Nuxt UI**. Without it, use `::callout{icon="..." color="..."}`.
 
 ## Common Pitfalls
 
-1. **`createParse` is sync** — no `await` needed (unlike `createMarkdownParser`)
+1. **`createParse` is sync**: no `await` needed (unlike `createMarkdownParser`)
 2. **Attribute naming**: Comark uses `attrs.lang`, not `attrs.language`
 3. **Frontmatter**: stored in `tree.frontmatter`, not passed separately
-4. **`renderMarkdown` includes frontmatter** — reads `tree.frontmatter` automatically
-5. **No `unified` pipeline** — `mdc.config.ts` hooks (`pre`, `remark`, `rehype`, `post`) have no equivalent, use `ComarkPlugin` interface instead
-6. **Emoji is opt-in** — not enabled by default like in MDC's `remark-emoji`
+4. **`renderMarkdown` includes frontmatter**: reads `tree.frontmatter` automatically
+5. **No `unified` pipeline**: `mdc.config.ts` hooks (`pre`, `remark`, `rehype`, `post`) have no equivalent, use `ComarkPlugin` interface instead
+6. **Emoji is opt-in**: not enabled by default like in MDC's `remark-emoji`
 
 ## Component Syntax
 
-The MDC block and inline component syntax is identical — no changes needed in `.md` files.
+The MDC block and inline component syntax is identical, so no changes are needed in `.md` files.
 
 ## Unsupported Features
 
-- **Binding syntax** (`{{ variable }}`) — not supported, rendered as plain text
-- **Props binding / data passing** — no equivalent for `parseMarkdown(md, { data: { ... } })`
+- **Binding syntax** (`{{ variable }}`): not supported, rendered as plain text
+- **Props binding / data passing**: no equivalent for `parseMarkdown(md, { data: { ... } })`

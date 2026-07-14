@@ -25,6 +25,28 @@ if (!page.value?.seo?.ogImage) {
 
 useHead({
   bodyAttrs: { class: 'landing-page' },
+  script: [
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'SoftwareApplication',
+        name: 'Comark',
+        description: description,
+        url: 'https://comark.dev',
+        applicationCategory: 'DeveloperApplication',
+        operatingSystem: 'Any',
+        offers: {
+          '@type': 'Offer',
+          price: '0',
+          priceCurrency: 'USD',
+        },
+        license: 'https://github.com/comarkdown/comark/blob/main/LICENSE',
+        codeRepository: 'https://github.com/comarkdown/comark',
+        programmingLanguage: 'TypeScript',
+      }),
+    },
+  ],
 })
 </script>
 

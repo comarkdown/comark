@@ -8,7 +8,7 @@
 [![Documentation](https://img.shields.io/badge/Documentation-black?logo=readme&logoColor=white)](https://comark.dev/rendering/svelte)
 [![license](https://img.shields.io/github/license/comarkdown/comark?color=black)](https://github.com/comarkdown/comark/blob/main/LICENSE)
 
-Svelte renderer for [Comark](https://comark.dev) — render markdown with custom Svelte components, streaming support, and SvelteKit SSR.
+Svelte renderer for [Comark](https://comark.dev). Render markdown with custom Svelte components, streaming support, and SvelteKit SSR.
 
 ## Features
 

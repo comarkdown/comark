@@ -1,6 +1,6 @@
 ---
 title: Plugins
-description: Extend Comark with powerful plugins for syntax highlighting, emojis, table of contents, math equations, diagrams, and more.
+description: Extend Comark with plugins for syntax highlighting, emoji, table of contents, math, and diagrams, or reuse existing markdown-it plugins.
 navigation: false
 ---
 

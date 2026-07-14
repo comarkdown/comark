@@ -9,7 +9,7 @@ useHead({
 const markdown = ref(`
 ---
 seo:
-  title: Big Markdown Example — Components, Code, Lists, Tables!
+  title: 'Big Markdown Example: Components, Code, Lists, Tables!'
   description: Showcase of Markdown, MDC components, code blocks, lists, tables, and more using Comark.
   ogImage: '/social-card.jpg'
 ---

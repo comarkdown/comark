@@ -72,7 +72,7 @@ Several sanitizations are applied automatically and cannot be disabled:
 
 ### Event Handlers
 
-All `on*` attributes are stripped regardless of case — `onclick`, `onerror`, `onload`, `onmouseover`, and any other `on*` attribute.
+All `on*` attributes are stripped regardless of case: `onclick`, `onerror`, `onload`, `onmouseover`, and any other `on*` attribute.
 
 ::code-group
 
@@ -127,7 +127,7 @@ Returns a `ComarkPlugin` that sanitizes the parsed AST.
 
 **Parameters:**
 
-- `options?` - Optional configuration — see [Options](#options)
+- `options?` - Optional configuration, see [Options](#options)
 
 **Returns:** `ComarkPlugin`
 
@@ -205,7 +205,7 @@ security({
 ```
 
 ::warning
-The hard-coded unsafe protocols (`javascript:`, `vbscript:`, `data:text/*`) are a floor that cannot be overridden — even `allowedProtocols: ['javascript']` will not unblock `javascript:` URLs.
+The hard-coded unsafe protocols (`javascript:`, `vbscript:`, `data:text/*`) are a floor that cannot be overridden. Even `allowedProtocols: ['javascript']` will not unblock `javascript:` URLs.
 ::
 
 ### `allowedLinkPrefixes`
@@ -222,7 +222,7 @@ security({
 
 ### `allowedImagePrefixes`
 
-Same as `allowedLinkPrefixes` but applies to `src` attributes only. The two options are checked independently — restricting one does not affect the other.
+Same as `allowedLinkPrefixes` but applies to `src` attributes only. The two options are checked independently; restricting one does not affect the other.
 
 ```typescript
 security({
@@ -262,7 +262,7 @@ security({
 
 ### User-Generated Content
 
-The most common use case — lock down everything that could execute code or phone home:
+The most common use case: lock down everything that could execute code or phone home:
 
 ```typescript
 import { parse } from 'comark'
@@ -308,7 +308,7 @@ security({
 
 ### Block tags, not just attributes
 
-Blocking only `<script>` may not be enough — `<iframe>`, `<object>`, `<embed>`, `<link>`, and `<style>` can also execute or load external content:
+Blocking only `<script>` may not be enough: `<iframe>`, `<object>`, `<embed>`, `<link>`, and `<style>` can also execute or load external content:
 
 ```typescript
 // ✅ More thorough
@@ -349,5 +349,5 @@ res.setHeader(
 ```
 
 ::tip
-The plugin runs during the `post` phase and traverses the AST once — O(n) in the number of nodes, with no impact on render time.
+The plugin runs during the `post` phase and traverses the AST once (O(n) in the number of nodes), with no impact on render time.
 ::
