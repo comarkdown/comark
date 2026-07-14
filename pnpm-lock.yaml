@@ -181,8 +181,8 @@ catalogs:
       specifier: ^0.2.2
       version: 0.2.2
     comark:
-      specifier: ^0.5.0
-      version: 0.5.0
+      specifier: ^0.5.1
+      version: 0.5.1
     docus:
       specifier: ^5.12.3
       version: 5.12.3
@@ -454,7 +454,7 @@ importers:
         version: 7.0.22(zod@4.4.3)
       comark:
         specifier: 'catalog:'
-        version: 0.5.0(beautiful-mermaid@1.1.3)(katex@0.16.47)(shiki@4.3.1)
+        version: 0.5.1(beautiful-mermaid@1.1.3)(katex@0.17.0)(shiki@4.3.1)
       docus:
         specifier: 'catalog:'
         version: 5.12.3(93b014f08695998b4d8d019e6e30491f)
@@ -512,7 +512,7 @@ importers:
         version: 7.0.7(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.2)(@types/node@26.1.1)(db0@0.3.4(better-sqlite3@12.10.0))(ioredis@5.11.1)(jiti@2.7.0)(rollup@4.62.2)(sass@1.99.0)(terser@5.49.0)(tsx@4.23.0)(yaml@2.9.0)
       comark:
         specifier: 'catalog:'
-        version: 0.5.0(beautiful-mermaid@1.1.3)(katex@0.16.47)(shiki@4.3.1)
+        version: 0.5.1(beautiful-mermaid@1.1.3)(katex@0.17.0)(shiki@4.3.1)
       react:
         specifier: 'catalog:'
         version: 19.2.7
@@ -537,7 +537,7 @@ importers:
         version: 0.5.0(beautiful-mermaid@1.1.3)(katex@0.16.47)(react@19.2.7)(shiki@4.3.1)
       comark:
         specifier: 'catalog:'
-        version: 0.5.0(beautiful-mermaid@1.1.3)(katex@0.16.47)(shiki@4.3.1)
+        version: 0.5.1(beautiful-mermaid@1.1.3)(katex@0.17.0)(shiki@4.3.1)
       next:
         specifier: 'catalog:'
         version: 16.2.10(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(sass@1.99.0)
@@ -651,7 +651,7 @@ importers:
         version: 4.3.1
       comark:
         specifier: 'catalog:'
-        version: 0.5.0(beautiful-mermaid@1.1.3)(katex@0.16.47)(shiki@4.3.1)
+        version: 0.5.1(beautiful-mermaid@1.1.3)(katex@0.17.0)(shiki@4.3.1)
       rxjs:
         specifier: 'catalog:'
         version: 7.8.2
@@ -703,7 +703,7 @@ importers:
         version: 6.0.0
       comark:
         specifier: 'catalog:'
-        version: 0.5.0(beautiful-mermaid@1.1.3)(katex@0.17.0)(shiki@4.3.1)
+        version: 0.5.1(beautiful-mermaid@1.1.3)(katex@0.17.0)(shiki@4.3.1)
       katex:
         specifier: 'catalog:'
         version: 0.17.0
@@ -750,7 +750,7 @@ importers:
         version: 4.3.2(vite@8.1.4(@types/node@26.1.1)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.99.0)(terser@5.49.0)(tsx@4.23.0)(yaml@2.9.0))
       comark:
         specifier: 'catalog:'
-        version: 0.5.0(beautiful-mermaid@1.1.3)(katex@0.16.47)(shiki@4.3.1)
+        version: 0.5.1(beautiful-mermaid@1.1.3)(katex@0.17.0)(shiki@4.3.1)
       react:
         specifier: 'catalog:'
         version: 19.2.7
@@ -870,7 +870,7 @@ importers:
         version: 0.2.2
       comark:
         specifier: 'catalog:'
-        version: 0.5.0(beautiful-mermaid@1.1.3)(katex@0.16.47)(shiki@4.3.1)
+        version: 0.5.1(beautiful-mermaid@1.1.3)(katex@0.17.0)(shiki@4.3.1)
       shiki:
         specifier: 'catalog:'
         version: 4.3.1
@@ -1006,7 +1006,7 @@ importers:
         version: 4.3.1
       comark:
         specifier: 'catalog:'
-        version: 0.5.0(beautiful-mermaid@1.1.3)(katex@0.16.47)(shiki@4.3.1)
+        version: 0.5.1(beautiful-mermaid@1.1.3)(katex@0.17.0)(shiki@4.3.1)
       shiki:
         specifier: 'catalog:'
         version: 4.3.1
@@ -1043,7 +1043,7 @@ importers:
         version: 14.3.0(vue@3.5.39(typescript@5.9.3))
       comark:
         specifier: 'catalog:'
-        version: 0.5.0(beautiful-mermaid@1.1.3)(katex@0.16.47)(shiki@4.3.1)
+        version: 0.5.1(beautiful-mermaid@1.1.3)(katex@0.17.0)(shiki@4.3.1)
       shiki:
         specifier: 'catalog:'
         version: 4.3.1
@@ -1173,7 +1173,7 @@ importers:
         version: 14.3.0(vue@3.5.39(typescript@5.9.3))
       comark:
         specifier: 'catalog:'
-        version: 0.5.0(beautiful-mermaid@1.1.3)(katex@0.16.47)(shiki@4.3.1)
+        version: 0.5.1(beautiful-mermaid@1.1.3)(katex@0.17.0)(shiki@4.3.1)
       shiki:
         specifier: 'catalog:'
         version: 4.3.1
@@ -1277,7 +1277,7 @@ importers:
         version: 1.1.3
       comark:
         specifier: 'catalog:'
-        version: 0.5.0(beautiful-mermaid@1.1.3)(katex@0.17.0)(shiki@4.3.1)
+        version: 0.5.1(beautiful-mermaid@1.1.3)(katex@0.17.0)(shiki@4.3.1)
       katex:
         specifier: 'catalog:'
         version: 0.17.0
@@ -1317,7 +1317,7 @@ importers:
         version: 1.1.3
       comark:
         specifier: 'catalog:'
-        version: 0.5.0(beautiful-mermaid@1.1.3)(katex@0.16.47)(shiki@4.3.1)
+        version: 0.5.1(beautiful-mermaid@1.1.3)(katex@0.16.47)(shiki@4.3.1)
       katex:
         specifier: '>=0.16'
         version: 0.16.47
@@ -1333,7 +1333,7 @@ importers:
     dependencies:
       comark:
         specifier: 'catalog:'
-        version: 0.5.0(beautiful-mermaid@1.1.3)(katex@0.17.0)(shiki@4.3.1)
+        version: 0.5.1(beautiful-mermaid@1.1.3)(katex@0.17.0)(shiki@4.3.1)
       shiki:
         specifier: 'catalog:'
         version: 4.3.1
@@ -1358,7 +1358,7 @@ importers:
         version: 4.4.8(magicast@0.5.3)
       comark:
         specifier: 'catalog:'
-        version: 0.5.0(beautiful-mermaid@1.1.3)(katex@0.16.47)(shiki@4.3.1)
+        version: 0.5.1(beautiful-mermaid@1.1.3)(katex@0.17.0)(shiki@4.3.1)
       nuxt:
         specifier: ^4.0.0
         version: 4.4.6(@babel/plugin-syntax-jsx@7.29.7(@babel/core@7.29.7))(@babel/plugin-syntax-typescript@7.29.7(@babel/core@7.29.7))(@parcel/watcher@2.5.6)(@types/node@26.1.1)(@vue/compiler-sfc@3.5.39)(better-sqlite3@12.10.0)(cac@6.7.14)(db0@0.3.4(better-sqlite3@12.10.0))(esbuild@0.28.1)(eslint@10.4.1(jiti@2.7.0))(ioredis@5.11.1)(lightningcss@1.32.0)(magicast@0.5.3)(meow@13.2.0)(optionator@0.9.4)(oxlint@1.73.0)(rolldown@1.1.5)(rollup-plugin-visualizer@7.0.1(rolldown@1.1.5)(rollup@4.62.2))(rollup@4.62.2)(sass@1.99.0)(srvx@0.11.22)(terser@5.49.0)(tsx@4.23.0)(typescript@5.9.3)(vite@8.1.4(@types/node@26.1.1)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.99.0)(terser@5.49.0)(tsx@4.23.0)(yaml@2.9.0))(vue-tsc@3.3.7(typescript@5.9.3))(yaml@2.9.0)
@@ -1380,7 +1380,7 @@ importers:
         version: 1.1.3
       comark:
         specifier: 'catalog:'
-        version: 0.5.0(beautiful-mermaid@1.1.3)(katex@0.17.0)(shiki@4.3.1)
+        version: 0.5.1(beautiful-mermaid@1.1.3)(katex@0.17.0)(shiki@4.3.1)
       katex:
         specifier: 'catalog:'
         version: 0.17.0
@@ -1411,7 +1411,7 @@ importers:
         version: 1.1.3
       comark:
         specifier: 'catalog:'
-        version: 0.5.0(beautiful-mermaid@1.1.3)(katex@0.17.0)(shiki@4.3.1)
+        version: 0.5.1(beautiful-mermaid@1.1.3)(katex@0.17.0)(shiki@4.3.1)
       katex:
         specifier: 'catalog:'
         version: 0.17.0
@@ -1454,7 +1454,7 @@ importers:
         version: 1.1.3
       comark:
         specifier: 'catalog:'
-        version: 0.5.0(beautiful-mermaid@1.1.3)(katex@0.17.0)(shiki@4.3.1)
+        version: 0.5.1(beautiful-mermaid@1.1.3)(katex@0.17.0)(shiki@4.3.1)
       katex:
         specifier: 'catalog:'
         version: 0.17.0
@@ -8202,6 +8202,20 @@ packages:
       shiki:
         optional: true
 
+  comark@0.5.1:
+    resolution: {integrity: sha512-RRRmUaEc6tokYJhgIGHrl8+pUt3kY1BxMnbRrxMxkCk2RcPcrilq9OmmPWIO7zuUIF7qLLRCCQz+wPuMg7Vz9w==}
+    peerDependencies:
+      beautiful-mermaid: ^1.1.3
+      katex: ^0.17.0
+      shiki: ^4.3.1
+    peerDependenciesMeta:
+      beautiful-mermaid:
+        optional: true
+      katex:
+        optional: true
+      shiki:
+        optional: true
+
   comma-separated-tokens@2.0.3:
     resolution: {integrity: sha512-Fu4hJdvzeylCfQPp9SGWidpzrMs7tTrlu6Vb8XGaRGck8QSNZJJp538Wrb60Lax4fPwR64ViY468OIUTbRlGZg==}
 
@@ -9600,10 +9614,6 @@ packages:
   js-tokens@9.0.1:
     resolution: {integrity: sha512-mxa9E9ITFOt0ban3j6L5MpjwegGz6lBQmM1IJkWeBZGcMxto50+eWdjC/52xDbS2vy0k7vIMK0Fe2wfL9OQSpQ==}
 
-  js-yaml@4.2.0:
-    resolution: {integrity: sha512-ePWsvanv0DWuDRsW8dnt+R4jQ31SCRCQ7hhNcPXZPsoBZiemuZNYGf7adZdqX2D86j6rvKp3RpCxVTSb8WQlOw==}
-    hasBin: true
-
   js-yaml@4.3.0:
     resolution: {integrity: sha512-1td788aAnnZ5qs7V2QIRl1owjtYpbKt749Y3xauqQgwIIGF/xXWz1wMTEBx5O3LK3lXLVuqXPdPxj2BoFHaW9Q==}
     hasBin: true
@@ -9774,9 +9784,6 @@ packages:
 
   linebreak@1.1.0:
     resolution: {integrity: sha512-MHp03UImeVhB7XZtjd0E4n6+3xr5Dq/9xI/5FptGk5FrbDR3zagPa2DS6U8ks/3HjbKWG9Q1M2ufOzxV2qLYSQ==}
-
-  linkify-it@5.0.1:
-    resolution: {integrity: sha512-wVoTjP4Q6R0NW5hiZkVJaFZPWgtXfoGF+6LucL3/FtiNjmcHhYjEr5f1Kqjirc1nBW07J/ZuRFumqr2oqccEWg==}
 
   linkify-it@5.0.2:
     resolution: {integrity: sha512-ONTm2jCMAVZjgQa/Fy1kScXsuOoF5NPTsoFBdE1KVIZ2vAh/r9+Bqo+0jINCBYnavTPQZz38QzFTme79ENoN3Q==}
@@ -13734,7 +13741,7 @@ snapshots:
     dependencies:
       '@comark/vue': 0.5.0(beautiful-mermaid@1.1.3)(katex@0.16.47)(shiki@4.3.1)(vue@3.5.39(typescript@5.9.3))
       '@nuxt/kit': 4.4.8(magicast@0.5.3)
-      comark: 0.5.0(beautiful-mermaid@1.1.3)(katex@0.16.47)(shiki@4.3.1)
+      comark: 0.5.0(beautiful-mermaid@1.1.3)(katex@0.17.0)(shiki@4.3.1)
       nuxt: 4.4.8(@babel/plugin-syntax-jsx@7.29.7(@babel/core@7.29.7))(@babel/plugin-syntax-typescript@7.29.7(@babel/core@7.29.7))(@parcel/watcher@2.5.6)(@types/node@26.1.1)(@vue/compiler-sfc@3.5.39)(better-sqlite3@12.10.0)(cac@6.7.14)(db0@0.3.4(better-sqlite3@12.10.0))(esbuild@0.28.1)(eslint@10.4.1(jiti@2.7.0))(ioredis@5.11.1)(lightningcss@1.32.0)(magicast@0.5.3)(meow@13.2.0)(optionator@0.9.4)(oxlint@1.73.0)(rolldown@1.1.5)(rollup-plugin-visualizer@7.0.1(rolldown@1.1.5)(rollup@4.62.2))(rollup@4.62.2)(sass@1.99.0)(srvx@0.11.22)(terser@5.49.0)(tsx@4.23.0)(typescript@5.9.3)(vite@8.1.4(@types/node@26.1.1)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.99.0)(terser@5.49.0)(tsx@4.23.0)(yaml@2.9.0))(vue-tsc@3.3.7(typescript@5.9.3))(yaml@2.9.0)
     transitivePeerDependencies:
       - beautiful-mermaid
@@ -19098,7 +19105,7 @@ snapshots:
     dependencies:
       entities: 8.0.0
       htmlparser2: 12.0.0
-      js-yaml: 4.2.0
+      js-yaml: 4.3.0
       markdown-exit: 1.0.0-beta.9
     optionalDependencies:
       beautiful-mermaid: 1.1.3
@@ -19109,8 +19116,30 @@ snapshots:
     dependencies:
       entities: 8.0.0
       htmlparser2: 12.0.0
-      js-yaml: 4.2.0
+      js-yaml: 4.3.0
       markdown-exit: 1.0.0-beta.9
+    optionalDependencies:
+      beautiful-mermaid: 1.1.3
+      katex: 0.17.0
+      shiki: 4.3.1
+
+  comark@0.5.1(beautiful-mermaid@1.1.3)(katex@0.16.47)(shiki@4.3.1):
+    dependencies:
+      entities: 8.0.0
+      htmlparser2: 12.0.0
+      js-yaml: 5.2.1
+      markdown-exit: 1.1.0-beta.2
+    optionalDependencies:
+      beautiful-mermaid: 1.1.3
+      katex: 0.16.47
+      shiki: 4.3.1
+
+  comark@0.5.1(beautiful-mermaid@1.1.3)(katex@0.17.0)(shiki@4.3.1):
+    dependencies:
+      entities: 8.0.0
+      htmlparser2: 12.0.0
+      js-yaml: 5.2.1
+      markdown-exit: 1.1.0-beta.2
     optionalDependencies:
       beautiful-mermaid: 1.1.3
       katex: 0.17.0
@@ -20901,10 +20930,6 @@ snapshots:
 
   js-tokens@9.0.1: {}
 
-  js-yaml@4.2.0:
-    dependencies:
-      argparse: 2.0.1
-
   js-yaml@4.3.0:
     dependencies:
       argparse: 2.0.1
@@ -21043,10 +21068,6 @@ snapshots:
     dependencies:
       base64-js: 0.0.8
       unicode-trie: 2.0.0
-
-  linkify-it@5.0.1:
-    dependencies:
-      uc.micro: 2.1.0
 
   linkify-it@5.0.2:
     dependencies:
@@ -21231,7 +21252,7 @@ snapshots:
       '@types/linkify-it': 5.0.0
       '@types/mdurl': 2.0.0
       entities: 7.0.1
-      linkify-it: 5.0.1
+      linkify-it: 5.0.2
       mdurl: 2.0.0
       punycode.js: 2.3.1
       uc.micro: 2.1.0
