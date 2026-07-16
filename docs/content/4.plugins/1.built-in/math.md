@@ -43,7 +43,7 @@ const result = await parse('Inline $x^2$ and display $$E = mc^2$$', {
 })
 ```
 
-With framework components — pass both the plugin and the `Math` renderer component:
+With framework components, pass both the plugin and the `Math` renderer component:
 
 ::code-group
 
@@ -128,7 +128,7 @@ In JavaScript strings, escape backslashes before LaTeX commands:
 
 ```javascript
 const latex = '\\frac{a}{b}' // correct
-const wrong = '\frac{a}{b}'  // wrong — \f is a JS escape sequence
+const wrong = '\frac{a}{b}'  // wrong: \f is a JS escape sequence
 ```
 
 ---
@@ -141,7 +141,7 @@ Returns a `ComarkPlugin` that tokenizes `$...$` and `$$...$$` expressions. Takes
 
 **Returns:** `ComarkPlugin`
 
-The plugin stores LaTeX source as plain text in the AST. Rendering requires passing `Math` to the `components` prop of `<Comark>` — see [Usage](#usage). KaTeX only runs when the component mounts.
+The plugin stores LaTeX source as plain text in the AST. Rendering requires passing `Math` to the `components` prop of `<Comark>` (see [Usage](#usage)). KaTeX only runs when the component mounts.
 
 ---
 
@@ -152,4 +152,4 @@ Props accepted by the `<Math>` component:
 | Prop | Type | Default | Description |
 |---|---|---|---|
 | `content` | `string` | required | The LaTeX expression to render |
-| `class` | `string` | `''` | CSS classes — when set to `'block'`, renders in display mode; otherwise inline |
+| `class` | `string` | `''` | CSS classes. When set to `'block'`, renders in display mode; otherwise inline |

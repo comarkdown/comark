@@ -39,7 +39,7 @@ const result = await parse(content, {
   plugins: [summary()]
 })
 
-console.log(result.meta.summary) // ComarkNode[] — nodes before <!-- more -->
+console.log(result.meta.summary) // ComarkNode[]: nodes before <!-- more -->
 console.log(result.nodes)        // full content
 ```
 
@@ -86,7 +86,7 @@ Returns a `ComarkPlugin` that extracts content before the delimiter.
 
 **Parameters:**
 
-- `options?` - Optional configuration — see [Options](#options)
+- `options?` - Optional configuration, see [Options](#options)
 
 **Returns:** `ComarkPlugin`
 

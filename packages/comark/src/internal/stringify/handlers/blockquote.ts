@@ -7,7 +7,7 @@ export async function blockquote(node: ComarkElement, state: State) {
 
   let childResult = ''
   for (const child of children) {
-    childResult += await state.one(child, state, node)
+    childResult += await state.one(child, state, node, childResult === '' || childResult.endsWith('\n'))
   }
 
   const userAttrs = userBlockAttrs('blockquote', node[1] as Record<string, unknown>)

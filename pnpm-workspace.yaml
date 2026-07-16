@@ -3,162 +3,174 @@ packages:
   - docs
   - examples/*/*
 
+allowBuilds:
+  "@parcel/watcher": false
+  better-sqlite3: true
+  esbuild: false
+  lmdb: false
+  msgpackr-extract: false
+  sharp: false
+  vue-demi: false
+
 catalog:
   # AI
-  "@ai-sdk/gateway": ^3.0.104
-  "@ai-sdk/vue": ^3.0.175
-  "@astrojs/react": ^5.0.3
-  "@clack/prompts": ^1.2.0
-  "@comark/html": ^0.2.0
-  "@comark/nuxt": ^0.2.0
-  "@comark/react": ^0.2.0
-  "@comark/vue": ^0.5.0
+  "@ai-sdk/gateway": ^4.0.16
+  "@ai-sdk/vue": ^4.0.22
+  "@astrojs/react": ^6.0.1
+  "@clack/prompts": ^1.7.0
+  "@comark/html": ^0.5.0
+  "@comark/nuxt": ^0.5.0
+  "@comark/react": ^0.5.0
+  "@comark/vue": ^0.5.1
 
   # Misc
-  "@json-render/core": ^0.16.0
+  "@json-render/core": ^0.19.0
   "@monaco-editor/loader": ^1.7.0
-  "@nuxt/content": ^3.13.0
-  "@nuxt/devtools-kit": ^4.0.0-alpha.4
-  "@nuxt/kit": ^4.4.2
-  "@nuxt/ui": ^4.7.1
+  "@nuxt/content": ^3.15.0
+  "@nuxt/devtools-kit": 4.0.0-alpha.7
+  "@nuxt/kit": ^4.4.8
+  "@nuxt/ui": ^4.9.0
   "satori": ^0.26.0
   "@resvg/resvg-js": ^2.6.2
-  "@nuxtjs/mcp-toolkit": 0.13.4
+  "@nuxtjs/mcp-toolkit": 0.17.2
   "@nuxtlabs/monarch-mdc": ^0.9.0
-  "@release-it/conventional-changelog": ^10.0.6
-  "@shikijs/langs": ^4.0.2
+  "@release-it/conventional-changelog": ^11.0.1
+  "@shikijs/langs": ^4.3.1
 
   # Shiki
   "@shikijs/primitive": ^4.0.2
-  "@shikijs/themes": ^4.0.2
-  "@shikijs/twoslash": ^4.0.2
+  "@shikijs/themes": ^4.3.1
+  "@shikijs/twoslash": ^4.3.1
   "@sveltejs/adapter-auto": ^7.0.1
-  "@sveltejs/kit": ^2.60.1
-  "@sveltejs/package": ^2.5.7
-  "@sveltejs/vite-plugin-svelte": ^7.0.0
-  "@tailwindcss/postcss": ^4.2.2
-  "@tailwindcss/vite": ^4.2.2
-  "@types/js-yaml": ^4.0.9
+  "@sveltejs/kit": ^2.69.2
+  "@sveltejs/package": ^2.5.8
+  "@sveltejs/vite-plugin-svelte": ^7.2.0
+  "@tailwindcss/postcss": ^4.3.2
+  "@tailwindcss/vite": ^4.3.2
 
   # Types
   "@types/json-schema": ^7.0.15
   "@types/markdown-it": ^14.1.2
-  "@types/node": ^25.9.1
-  "@types/react": ^19.2.14
+  "@types/node": ^26.1.1
+  "@types/react": ^19.2.17
   "@types/react-dom": ^19.2.3
   "@types/splitpanes": ^2.2.6
   "@unhead/vue": ^2.1.12
   "@vercel/analytics": ^2.0.1
   "@vercel/speed-insights": ^2.0.0
-  "@vitejs/plugin-react": ^6.0.1
+  "@vitejs/plugin-react": ^6.0.3
   "@vitejs/plugin-vue": ^6.0.7
-  "@vitest/browser": ^4.1.4
-  "@vitest/browser-playwright": ^4.1.4
-  "@vue/compiler-core": ^3.5.32
+  "@vitest/browser": ^4.1.10
+  "@vitest/browser-playwright": ^4.1.10
+  "@vue/compiler-core": ^3.5.39
   "@vue/reactivity": ^3.5.32
   "@vue/runtime-core": ^3.5.32
   "@vue/runtime-dom": ^3.5.32
-  "@vue/server-renderer": ^3.5.32
+  "@vue/server-renderer": ^3.5.39
   "@vue/shared": ^3.5.32
   "@vueuse/core": ^14.2.1
   "@xterm/addon-fit": ^0.11.0
   "@xterm/xterm": ^6.0.0
-  ai: ^6.0.168
+  ai: ^7.0.22
 
   # Other Frameworks
-  astro: ^6.1.5
-  autoprefixer: ^10.4.27
+  astro: ^7.0.7
+  autoprefixer: ^10.5.2
   beautiful-mermaid: ^1.1.3
   citty: ^0.2.2
 
   # Workspace packages (publish versions, locally overridden by resolutions)
-  comark: ^0.5.0
-  docus: ^5.11.0
+  comark: ^0.5.1
+  docus: ^5.12.3
 
   # Core comark dependencies
   entities: ^8.0.0
   github-slugger: ^2.0.0
   hast-util-to-string: ^3.0.1
   htmlparser2: ^12.0.0
-  js-yaml: ^4.1.1
-  katex: ^0.16.45
-  markdown-exit: 1.0.0-beta.9
-  "markdown-it": ^14.2.0
-  markdown-it-math: ^5.2.1
+  js-yaml: ^5.2.1
+  katex: ^0.17.0
+  markdown-exit: 1.1.0-beta.2
+  "markdown-it": ^14.3.0
+  markdown-it-math: ^6.0.0
   minimark: 0.2.0
   mitata: ^1.0.34
-  next: ^16.2.3
+  next: ^16.2.10
 
   # Nuxt
-  nuxt: ^4.4.6
-  nuxt-studio: 1.6.0
+  nuxt: ^4.4.8
+  nuxt-studio: 1.7.0
 
   # Linting
-  oxfmt: ^0.46.0
-  oxlint: ^1.67.0
-  playwright: ^1.60.0
-  postcss: ^8.5.9
+  oxfmt: ^0.58.0
+  oxlint: ^1.73.0
+  playwright: ^1.61.1
+  postcss: ^8.5.17
 
   # React
-  react: ^19.2.5
-  react-dom: ^19.2.5
+  react: ^19.2.7
+  react-dom: ^19.2.7
 
   # Build tooling
-  release-it: ^19.2.4
+  release-it: ^20.2.1
   remark-gfm: ^4.0.1
-  remark-mdc: ^3.11.0
+  remark-mdc: ^3.11.1
   remark-parse: ^11.0.0
   remark-rehype: ^11.1.2
   scule: ^1.3.0
 
   # Shared peer dependencies
-  shiki: ^4.0.0
+  shiki: ^4.3.1
   splitpanes: ^4.0.4
 
   # Svelte
-  svelte: ^5.55.2
-  svelte-check: ^4.4.6
+  svelte: ^5.56.4
+  svelte-check: ^4.7.2
 
   # Angular
-  "@angular/common": ^21.0.0
-  "@angular/compiler": ^21.0.0
-  "@angular/compiler-cli": ^21.0.0
-  "@angular/core": ^21.0.0
-  "@angular/build": ^21.0.0
-  "@angular/platform-browser": ^21.0.0
-  "@angular/platform-browser-dynamic": ^21.0.0
-  "@angular/platform-server": ^21.0.0
-  "@angular/router": ^21.0.0
-  "@analogjs/vite-plugin-angular": ^3.0.0-alpha.53
+  "@angular/common": ^22.0.6
+  "@angular/compiler": ^22.0.6
+  "@angular/compiler-cli": ^22.0.6
+  "@angular/core": ^22.0.6
+  "@angular/build": ^22.0.6
+  "@angular/platform-browser": ^22.0.6
+  "@angular/platform-browser-dynamic": ^22.0.6
+  "@angular/platform-server": ^22.0.6
+  "@angular/router": ^22.0.6
+  "@analogjs/vite-plugin-angular": 3.0.0-alpha.61
   zone.js: ^0.16.0
   rxjs: ^7.8.0
   tslib: ^2.6.0
 
   # CSS
-  tailwindcss: ^4.2.2
-  tsx: ^4.22.4
-  twoslash: ^0.3.6
-  twoslash-cdn: ^0.3.6
+  tailwindcss: ^4.3.2
+  tsx: ^4.23.0
+  twoslash: ^0.3.9
+  twoslash-cdn: ^0.3.9
   typescript: ^5.9.3
 
   ufo: ^1.6.4
   unified: ^11.0.5
-  vite: ^8.0.8
+  vite: ^8.1.4
   vitepress: ^1.6.4
 
   # Testing
-  vitest: ^4.1.4
-  vitest-browser-svelte: ^2.1.0
+  vitest: ^4.1.10
+  vitest-browser-svelte: ^3.0.0
 
   # Vue
-  vue: ^3.5.32
+  vue: ^3.5.39
   vue-json-pretty: ^2.6.0
   vue-router: ^5.0.4
-  vue-tsc: ^3.2.6
+  vue-tsc: ^3.3.7
   zod: "^4.4.3"
 
 ignoredBuiltDependencies:
   - sharp
+
+minimumReleaseAgeExclude:
+  - comark@0.5.1
+  - "@comark/vue@0.5.1"
 
 patchedDependencies:
   minimark: patches/minimark.patch

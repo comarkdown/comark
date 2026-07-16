@@ -8,7 +8,7 @@
 [![Documentation](https://img.shields.io/badge/Documentation-black?logo=readme&logoColor=white)](https://comark.dev/rendering/nuxt)
 [![license](https://img.shields.io/github/license/comarkdown/comark?color=black)](https://github.com/comarkdown/comark/blob/main/LICENSE)
 
-Zero-config Nuxt module for [Comark](https://comark.dev) — a high-performance markdown parser and renderer.
+Zero-config Nuxt module for [Comark](https://comark.dev), a high-performance markdown parser and renderer.
 
 ## Features
 
@@ -23,7 +23,7 @@ Zero-config Nuxt module for [Comark](https://comark.dev) — a high-performance 
 
 ### Automatic
 
-Add `@comark/nuxt` to your project — this installs the dependency and registers the module in `nuxt.config.ts`:
+Add `@comark/nuxt` to your project. This installs the dependency and registers the module in `nuxt.config.ts`:
 
 ```bash
 npx nuxt add comark
@@ -49,7 +49,7 @@ export default defineNuxtConfig({
 
 ## Usage
 
-The `<Comark>` component is available globally — no imports needed. Pass markdown via the default slot or the `markdown` prop:
+The `<Comark>` component is available globally, no imports needed. Pass markdown via the default slot or the `markdown` prop:
 
 ```vue
 <script setup lang="ts">

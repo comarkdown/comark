@@ -17,6 +17,7 @@ export default defineNuxtConfig({
 
   site: {
     name: 'Comark',
+    url: 'https://comark.dev',
   },
 
   content: {

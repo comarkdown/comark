@@ -12,7 +12,7 @@ Framework-free HTML renderer for [Comark](https://comark.dev). Use it for SSR, s
 
 ## Features
 
-- 📦 No framework dependencies — pure HTML output
+- 📦 No framework dependencies, pure HTML output
 - 🎯 Map any Comark tag to a custom render function
 - 🌊 Stream API for buffered/incremental rendering
 - 🔌 Plugin ecosystem (math, mermaid, highlight, binding…)

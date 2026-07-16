@@ -1,0 +1,29 @@
+@import 'tailwindcss';
+
+body {
+  @apply bg-neutral-50 dark:bg-neutral-950 p-4 text-neutral-900 dark:text-neutral-50;
+}
+
+.prose :where(h1):not(:where(.not-prose, .not-prose *)) {
+  @apply text-3xl font-bold mb-4 mt-0;
+}
+
+.prose :where(h2):not(:where(.not-prose, .not-prose *)) {
+  @apply text-2xl font-semibold mt-8 mb-3;
+}
+
+.prose :where(p):not(:where(.not-prose, .not-prose *)) {
+  @apply mb-4 leading-relaxed;
+}
+
+.prose :where(pre):not(:where(.not-prose, .not-prose *)) {
+  @apply bg-neutral-100 dark:bg-neutral-800 dark:text-neutral-100 text-neutral-800 rounded-lg p-4 overflow-x-auto mb-4;
+}
+
+.prose :where(.mermaid):not(:where(.not-prose, .not-prose *)) {
+  @apply my-6;
+}
+
+.prose :where(.mermaid svg):not(:where(.not-prose, .not-prose *)) {
+  @apply max-w-full h-auto;
+}
