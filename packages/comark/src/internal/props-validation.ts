@@ -92,12 +92,16 @@ function validateUrl(value: string, mode: 'link' | 'image', options: PropsValida
 }
 
 export function validateProp(attribute: string, value: string, options: PropsValidationOptions = {}): string | false {
-  attribute = attribute.toLowerCase()
+  attribute = attribute
+    .toLowerCase()
+    .replace(/^(:|v-bind:)/, '')
+    .replace(/^(@|v-on:)/, 'on')
+    .replace(/:/g, '')
   if (attribute.startsWith('on') || unsafeAttributes.includes(attribute)) {
     return false
   }
 
-  if (attribute === 'href') {
+  if (attribute === 'href' || attribute === 'xlinkhref') {
     return validateUrl(value, 'link', options)
   }
 

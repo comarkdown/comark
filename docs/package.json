@@ -34,6 +34,7 @@
   },
   "devDependencies": {
     "@nuxt/devtools-kit": "catalog:",
+    "@resvg/resvg-js": "catalog:",
     "@types/json-schema": "catalog:",
     "@types/splitpanes": "catalog:",
     "satori": "catalog:",
