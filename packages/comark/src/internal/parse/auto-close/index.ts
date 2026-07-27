@@ -10,9 +10,10 @@ import { closeTables } from './table.ts'
  * Processes markdown in O(n) time by scanning character-by-character
  *
  * @param markdown - The markdown content to auto-close
+ * @param options - `frontmatter` completes an unclosed leading frontmatter block.
  * @returns The markdown with unclosed syntax closed
  */
-export function autoCloseMarkdown(markdown: string): string {
+export function autoCloseMarkdown(markdown: string, options: { frontmatter?: boolean } = {}): string {
   if (!markdown || markdown === '') return markdown
 
   const lines = markdown.split('\n')
@@ -20,6 +21,10 @@ export function autoCloseMarkdown(markdown: string): string {
 
   // Single linear pass to collect document state
   let inFrontmatter = false
+  // Whether the open frontmatter block has received any content. Empty
+  // frontmatter is not valid (`parseFrontmatter` ignores it), so a lone `---`
+  // is a thematic break, not an unclosed frontmatter block to complete.
+  let frontmatterHasContent = false
   let inBlockMath = false
   let tableStart = -1
   // Tag name when inside a raw-text HTML element (`<style>`, `<script>`,
@@ -57,12 +62,13 @@ export function autoCloseMarkdown(markdown: string): string {
     }
 
     // Frontmatter: only starts at document line 0
-    if (idx === 0 && trimmed === '---') {
+    if (idx === 0 && options.frontmatter && trimmed === '---') {
       inFrontmatter = true
       continue
     }
     if (inFrontmatter) {
       if (trimmed === '---') inFrontmatter = false
+      else if (trimmed !== '') frontmatterHasContent = true
       continue
     }
 
@@ -152,8 +158,8 @@ export function autoCloseMarkdown(markdown: string): string {
     result = closeTables(result)
   }
 
-  // Close unclosed frontmatter
-  if (inFrontmatter) {
+  // Complete an unclosed frontmatter block only when `frontmatter` is enabled,
+  if (inFrontmatter && frontmatterHasContent) {
     const lastTrimmed = lines[lastIdx].trim()
     if (lastTrimmed === '-' || lastTrimmed === '--') {
       result += '-'.repeat(3 - lastTrimmed.length)
