@@ -4,21 +4,14 @@ import type { ThemeNames } from 'comark/plugins/mermaid'
 
 export interface MermaidProps {
   content: string
-  class?: string
+  className?: string
   height?: string
   width?: string
   theme?: ThemeNames | DiagramColors
   themeDark?: ThemeNames | DiagramColors
 }
 
-export function Mermaid({
-  content,
-  class: className = '',
-  height = 'auto',
-  width = '100%',
-  theme,
-  themeDark,
-}: MermaidProps) {
+export function Mermaid({ content, className = '', height = 'auto', width = '100%', theme, themeDark }: MermaidProps) {
   const [svgContent, setSvgContent] = useState<string>('')
   const [error, setError] = useState<string | null>(null)
   const [isDark, setIsDark] = useState(false)

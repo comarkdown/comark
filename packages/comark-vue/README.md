@@ -8,7 +8,7 @@
 [![Documentation](https://img.shields.io/badge/Documentation-black?logo=readme&logoColor=white)](https://comark.dev/rendering/vue)
 [![license](https://img.shields.io/github/license/comarkdown/comark?color=black)](https://github.com/comarkdown/comark/blob/main/LICENSE)
 
-Vue renderer for [Comark](https://comark.dev) — render markdown with custom Vue components, streaming support, and SSR.
+Vue renderer for [Comark](https://comark.dev). Render markdown with custom Vue components, streaming support, and SSR.
 
 ## Features
 

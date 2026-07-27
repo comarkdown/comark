@@ -1,7 +1,8 @@
 export default defineAppConfig({
   seo: {
     title: 'Comark',
-    description: 'Components in Markdown (Comark) parser with streaming support for Vue, React, Svelte and Angular.',
+    description:
+      'The Markdown engine for the modern web. One parser, every renderer: Vue, React, Svelte, Angular, HTML and ANSI, with components, plugins and streaming.',
     url: 'https://comark.dev',
     socials: {
       github: 'comarkdown/comark',
@@ -48,10 +49,6 @@ export default defineAppConfig({
     ],
   },
 
-  title: 'Comark',
-  description: 'Components in Markdown (Comark) parser with streaming support for Vue, React, Svelte and Angular.',
-  url: 'https://comark.dev',
-
   ui: {
     colors: {
       primary: 'yellow',
@@ -95,6 +92,10 @@ export default defineAppConfig({
           {
             label: 'API Reference',
             to: '/api/parse',
+          },
+          {
+            label: 'Comark vs MDX',
+            to: '/compare/comark-vs-mdx',
           },
         ],
       },

@@ -11,17 +11,18 @@ const NUXT_UI_SKILL_FILES = {
     'https://ui.nuxt.com/.well-known/skills/nuxt-ui/references/guidelines/component-selection.md',
 } as const
 
-const BASE_PROMPT = `You are a Comark page generator. Comark is a superset of Markdown with component syntax (MDC — Markdown with Components), framework-agnostic with renderers for Vue, React, Svelte, and Angular.
+const BASE_PROMPT = `You are a Comark page generator. Comark is a superset of Markdown with component syntax (MDC, Markdown with Components), framework-agnostic with renderers for Vue, React, Svelte, and Angular.
 
-IMPORTANT: Do NOT output any text before or between tool calls. Call fetchSkill tools silently. Your first output must be the page content itself — starting with the frontmatter \`---\` block.
+IMPORTANT: Do NOT output any text before or between tool calls. Call fetchSkill tools silently. Your first output must be the page content itself, starting with the frontmatter \`---\` block.
 
-Then generate ONLY the raw page content — no explanation, no wrapping code block, no preamble.
+Then generate ONLY the raw page content: no explanation, no wrapping code block, no preamble.
 
 ## RULES
 
 - Always open with YAML frontmatter (title, description) and add \`page: { maxWidth: 1120px }\` for rich layout pages.
 - NEVER USE \`---\` separators.
-- NEVER use json-render blocks — use Comark component syntax exclusively
+- NEVER use json-render blocks, use Comark component syntax exclusively
+- NEVER use em-dashes (—) in prose. Use commas, colons, or periods instead.
 - Prefer named slots over props for any text content (ie description, title)
 - Where it improves the visual, consider placing an image inside a slot instead of (or alongside) text.
 - Mix element types: headings, lists, tables, components, callouts, steps
@@ -42,9 +43,9 @@ const NUXT_UI_PROMPT = `${BASE_PROMPT}
 - \`image\` is almost always a **prop**, not a slot. Pass it as \`image="url"\` unless the Slots interface explicitly lists \`#image\`.
 
 Before generating, fetch the documentation you need:
-1. fetchComarkSkill — Comark component syntax, slots, props
-2. fetchNuxtUISkill with "nuxt-ui-components" — discover available components
-3. fetchComponentDoc for EACH component you plan to use — learn exact props and slots`
+1. fetchComarkSkill: Comark component syntax, slots, props
+2. fetchNuxtUISkill with "nuxt-ui-components": discover available components
+3. fetchComponentDoc for EACH component you plan to use: learn exact props and slots`
 
 export default defineEventHandler(async (event) => {
   const { prompt, mode = 'nuxt-ui', _structure } = await readBody(event)
@@ -63,7 +64,7 @@ export default defineEventHandler(async (event) => {
     tools: {
       fetchComarkSkill: tool({
         description:
-          'Fetch the Comark MDC syntax reference — component syntax, slots, and props. Call this before generating in any mode.',
+          'Fetch the Comark MDC syntax reference: component syntax, slots, and props. Call this before generating in any mode.',
         inputSchema: z.object({}),
         execute: async () => {
           const response = await fetch(COMARK_SKILL_URL)
@@ -119,7 +120,7 @@ export default defineEventHandler(async (event) => {
   setResponseHeader(event, 'X-Content-Type-Options', 'nosniff')
 
   const encoder = new TextEncoder()
-  // Buffer until frontmatter `---` is found — discards any preamble text from tool-call steps
+  // Buffer until frontmatter `---` is found, discards any preamble text from tool-call steps
   let preambleBuffer = ''
   let frontmatterFound = false
   const byteStream = result.textStream.pipeThrough(

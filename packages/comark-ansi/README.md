@@ -8,7 +8,7 @@
 [![Documentation](https://img.shields.io/badge/Documentation-black?logo=readme&logoColor=white)](https://comark.dev/rendering/ansi)
 [![license](https://img.shields.io/github/license/comarkdown/comark?color=black)](https://github.com/comarkdown/comark/blob/main/LICENSE)
 
-ANSI terminal renderer for [Comark](https://comark.dev). Render markdown as styled terminal output — perfect for CLIs, scripts, and developer tooling.
+ANSI terminal renderer for [Comark](https://comark.dev). Render markdown as styled terminal output for CLIs, scripts, and developer tooling.
 
 ## Features
 

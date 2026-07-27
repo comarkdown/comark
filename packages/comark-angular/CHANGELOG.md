@@ -1,5 +1,7 @@
 # Changelog
 
+## [0.5.1](https://github.com/comarkdown/comark/compare/@comark/angular@0.5.0...@comark/angular@0.5.1) (2026-07-14)
+
 ## 0.5.0 (2026-07-02)
 
 ### Features

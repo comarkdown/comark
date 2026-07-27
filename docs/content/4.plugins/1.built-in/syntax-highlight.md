@@ -104,7 +104,7 @@ import githubDark from '@shikijs/themes/github-dark'
 
 ### Dual-Theme Support
 
-Highlight code with different themes for light and dark modes. Both palettes are embedded as CSS custom properties — no flash on theme switch. See all [available themes →](https://shiki.style/themes)
+Highlight code with different themes for light and dark modes. Both palettes are embedded as CSS custom properties, so there is no flash on theme switch. See all [available themes →](https://shiki.style/themes)
 
 ```typescript
 highlight({
@@ -140,7 +140,7 @@ function example() {
 ```
 ````
 
-Lines receive the `.highlight` class — see [Styling](#styling) for the required CSS.
+Lines receive the `.highlight` class; see [Styling](#styling) for the required CSS.
 
 ### Filename Metadata
 
@@ -183,7 +183,7 @@ highlight({
 })
 ```
 
-The most powerful transformer is [`@shikijs/twoslash`](/kb/twoslash) — it runs the TypeScript compiler on your code blocks to add inline type tooltips and error annotations.
+The most powerful transformer is [`@shikijs/twoslash`](/kb/twoslash): it runs the TypeScript compiler on your code blocks to add inline type tooltips and error annotations.
 
 ### Pre Styles
 
@@ -199,7 +199,7 @@ Returns a `ComarkPlugin` that enables Shiki syntax highlighting.
 
 **Parameters:**
 
-- `options?` - Optional configuration — see [Options](#options)
+- `options?` - Optional configuration, see [Options](#options)
 
 **Returns:** `ComarkPlugin`
 

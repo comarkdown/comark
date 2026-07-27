@@ -18,7 +18,7 @@ links:
     variant: soft
 ---
 
-The `comark/plugins/punctuation` plugin transforms plain-text punctuation into typographically correct Unicode characters — smart quotes, dashes, ellipsis, and common symbols. No peer dependencies required.
+The `comark/plugins/punctuation` plugin transforms plain-text punctuation into typographically correct Unicode characters: smart quotes, dashes, ellipsis, and common symbols. No peer dependencies required.
 
 ## Usage
 
@@ -121,7 +121,7 @@ Returns a `ComarkPlugin` that applies typographic transformations to text nodes.
 
 **Parameters:**
 
-- `options?` - Optional configuration — see [Options](#options)
+- `options?` - Optional configuration, see [Options](#options)
 
 **Returns:** `ComarkPlugin`
 

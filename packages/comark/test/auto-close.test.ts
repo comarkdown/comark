@@ -25,7 +25,14 @@ $$formula → $$formula$$
 ~Hello → ~Hello~
 ~~Hello → ~~Hello~~
 ~Hello~ → ~Hello~
-~~Hello~~ → ~~Hello~~`
+~~Hello~~ → ~~Hello~~
+* not valid → * not valid
+** not valid → ** not valid
+*** not valid → *** not valid
+_ not valid → _ not valid
+__ not valid → __ not valid
+~ not valid → ~ not valid
+~~ not valid → ~~ not valid`
 
 const multilines = `
 | Month    | Savings
@@ -213,6 +220,11 @@ describe('autoCloseMarkdown - Comark Components', () => {
     const input = '* not an italic'
     const expected = '* not an italic'
     expect(autoCloseMarkdown(input)).toBe(expected)
+  })
+
+  it('should not close a bullet-list asterisk with nested bold', () => {
+    const input = '*   **Preheat:** Set  '
+    expect(autoCloseMarkdown(input)).toBe(input)
   })
 
   it('valid italic syntax', () => {
@@ -497,30 +509,41 @@ describe('frontmatter', () => {
     const expected = '---\ntitle: Test\n---'
     expect(autoCloseMarkdown(input)).toBe(expected)
   })
-  it('should handle frontmatter partial', () => {
+  // Partial frontmatter is only completed when `frontmatter: true` — for a
+  // complete document a leading `---` with no closing delimiter is a thematic
+  // break, so completing it would swallow the body (see the default cases below).
+  it('should complete partial frontmatter when frontmatter option is enabled', () => {
     const input = '---\ntitle: Test'
     const expected = '---\ntitle: Test\n---'
-    expect(autoCloseMarkdown(input)).toBe(expected)
+    expect(autoCloseMarkdown(input, { frontmatter: true })).toBe(expected)
   })
-  it('should handle frontmatter partial', () => {
+  it('should complete a partial closing delimiter (-) when frontmatter option is enabled', () => {
     const input = '---\ntitle: Test\n-'
     const expected = '---\ntitle: Test\n---'
-    expect(autoCloseMarkdown(input)).toBe(expected)
+    expect(autoCloseMarkdown(input, { frontmatter: true })).toBe(expected)
   })
-  it('should handle frontmatter partial', () => {
+  it('should complete a partial closing delimiter (--) when frontmatter option is enabled', () => {
     const input = '---\ntitle: Test\n--'
     const expected = '---\ntitle: Test\n---'
-    expect(autoCloseMarkdown(input)).toBe(expected)
+    expect(autoCloseMarkdown(input, { frontmatter: true })).toBe(expected)
   })
-  it('should handle frontmatter partial 2', () => {
+  it('should complete partial frontmatter with an empty value when frontmatter option is enabled', () => {
     const input = '---\ntitle: '
     const expected = '---\ntitle: \n---'
-    expect(autoCloseMarkdown(input)).toBe(expected)
+    expect(autoCloseMarkdown(input, { frontmatter: true })).toBe(expected)
   })
-  it('should handle frontmatter partial 3', () => {
+  it('should complete partial frontmatter with a trailing newline when frontmatter option is enabled', () => {
     const input = '---\ntitle: Test\n'
     const expected = '---\ntitle: Test\n---'
-    expect(autoCloseMarkdown(input)).toBe(expected)
+    expect(autoCloseMarkdown(input, { frontmatter: true })).toBe(expected)
+  })
+
+  it('should not complete unclosed frontmatter by default', () => {
+    // Default (`frontmatter: false`): a leading `---` with content but no close
+    // is a thematic break followed by body — completing it would swallow the body.
+    const input = '---\ntitle: Test'
+    expect(autoCloseMarkdown(input)).toBe(input)
+    expect(autoCloseMarkdown('---\n# Heading')).toBe('---\n# Heading')
   })
 
   it('should handle frontmatter with content after', () => {
@@ -541,9 +564,17 @@ describe('frontmatter', () => {
     expect(autoCloseMarkdown(input)).toBe(expected)
   })
 
-  it('should handle just opening ---', () => {
+  it('should not complete a lone --- (thematic break, not frontmatter)', () => {
+    // A lone `---` has no frontmatter content; completing it to `---\n---`
+    // would parse as two thematic breaks (#268).
     const input = '---'
-    const expected = '---\n---'
+    const expected = '---'
+    expect(autoCloseMarkdown(input)).toBe(expected)
+  })
+
+  it('should not complete an empty --- opener', () => {
+    const input = '---\n'
+    const expected = '---\n'
     expect(autoCloseMarkdown(input)).toBe(expected)
   })
 

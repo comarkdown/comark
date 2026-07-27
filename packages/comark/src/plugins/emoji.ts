@@ -1,9 +1,11 @@
 import type { MarkdownItPlugin } from 'comark'
 import { defineComarkPlugin } from '../utils/helpers.ts'
 
-// Common emoji definitions (200+ emojis)
-// Organized by category for easier maintenance
-const EMOJI_MAP = new Map<string, string>([
+// Curated set of common emoji shortcodes, organized by category.
+// For the full GitHub set, install a dataset (e.g. `gemoji`) and pass it via
+// the `extend` option — see EmojiOptions below.
+const BASE_EMOJI = new Map<string, string>([
+  // Smileys & emotions
   ['grinning', '😀'],
   ['smiley', '😃'],
   ['smile', '😄'],
@@ -67,12 +69,16 @@ const EMOJI_MAP = new Map<string, string>([
   ['nose', '👃'],
   ['lips', '👄'],
   ['tongue', '👅'],
+
+  // Hearts
   ['heart', '❤️'],
   ['yellow_heart', '💛'],
   ['green_heart', '💚'],
   ['blue_heart', '💙'],
   ['purple_heart', '💜'],
   ['broken_heart', '💔'],
+
+  // People & gestures
   ['thumbsup', '👍'],
   ['+1', '👍'],
   ['thumbsdown', '👎'],
@@ -96,6 +102,8 @@ const EMOJI_MAP = new Map<string, string>([
   ['writing_hand', '✍️'],
   ['nail_care', '💅'],
   ['selfie', '🤳'],
+
+  // Objects & symbols
   ['fire', '🔥'],
   ['sparkles', '✨'],
   ['star', '⭐'],
@@ -110,6 +118,8 @@ const EMOJI_MAP = new Map<string, string>([
   ['gift', '🎁'],
   ['birthday', '🎂'],
   ['cake', '🍰'],
+
+  // Travel & places
   ['rocket', '🚀'],
   ['helicopter', '🚁'],
   ['airplane', '✈️'],
@@ -121,6 +131,8 @@ const EMOJI_MAP = new Map<string, string>([
   ['car', '🚗'],
   ['bike', '🚲'],
   ['checkered_flag', '🏁'],
+
+  // Activities
   ['medal', '🏅'],
   ['trophy', '🏆'],
   ['medal_sports', '🏅'],
@@ -133,6 +145,8 @@ const EMOJI_MAP = new Map<string, string>([
   ['bowling', '🎳'],
   ['golf', '⛳'],
   ['dart', '🎯'],
+
+  // Food & drink
   ['beer', '🍺'],
   ['beers', '🍻'],
   ['wine_glass', '🍷'],
@@ -174,6 +188,8 @@ const EMOJI_MAP = new Map<string, string>([
   ['sake', '🍶'],
   ['champagne', '🍾'],
   ['tropical_drink', '🍹'],
+
+  // Weather & nature
   ['sunny', '☀️'],
   ['cloud', '☁️'],
   ['umbrella', '☂️'],
@@ -182,14 +198,13 @@ const EMOJI_MAP = new Map<string, string>([
   ['rainbow', '🌈'],
   ['ocean', '🌊'],
   ['droplet', '💧'],
-  ['zap', '⚡'],
-  ['fire', '🔥'],
-  ['star', '⭐'],
   ['moon', '🌙'],
   ['partly_sunny', '⛅'],
   ['thunder_cloud_and_rain', '⛈️'],
   ['wind_face', '🌬️'],
   ['fog', '🌫️'],
+
+  // Animals
   ['dog', '🐶'],
   ['cat', '🐱'],
   ['mouse', '🐭'],
@@ -225,6 +240,8 @@ const EMOJI_MAP = new Map<string, string>([
   ['octopus', '🐙'],
   ['shell', '🐚'],
   ['crab', '🦀'],
+
+  // Plants
   ['tree', '🌲'],
   ['evergreen_tree', '🌲'],
   ['deciduous_tree', '🌳'],
@@ -249,6 +266,8 @@ const EMOJI_MAP = new Map<string, string>([
   ['gift_heart', '💝'],
   ['ring', '💍'],
   ['gem', '💎'],
+
+  // Tech & objects
   ['bulb', '💡'],
   ['book', '📖'],
   ['pencil', '📝'],
@@ -265,7 +284,7 @@ const EMOJI_MAP = new Map<string, string>([
   ['keyboard', '⌨️'],
   ['desktop_computer', '🖥️'],
   ['printer', '🖨️'],
-  ['mouse', '🖱️'],
+  ['computer_mouse', '🖱️'],
   ['trackball', '🖲️'],
   ['joystick', '🕹️'],
   ['watch', '⌚'],
@@ -289,6 +308,8 @@ const EMOJI_MAP = new Map<string, string>([
   ['wrench', '🔧'],
   ['hammer', '🔨'],
   ['nut_and_bolt', '🔩'],
+
+  // Symbols
   ['thinking', '🤔'],
   ['thinking_face', '🤔'],
   ['question', '❓'],
@@ -335,6 +356,8 @@ const EMOJI_MAP = new Map<string, string>([
   ['radio_button', '🔘'],
   ['white_square_button', '🔳'],
   ['black_square_button', '🔲'],
+
+  // Office & documents
   ['scissors', '✂️'],
   ['paperclip', '📎'],
   ['pushpin', '📌'],
@@ -344,7 +367,7 @@ const EMOJI_MAP = new Map<string, string>([
   ['open_book', '📖'],
   ['green_book', '📗'],
   ['blue_book', '📘'],
-  ['orange_book', '�orange_book'],
+  ['orange_book', '📙'],
   ['notebook', '📓'],
   ['ledger', '📒'],
   ['page_with_curl', '📃'],
@@ -364,6 +387,8 @@ const EMOJI_MAP = new Map<string, string>([
   ['package', '📦'],
   ['inbox_tray', '📥'],
   ['outbox_tray', '📤'],
+
+  // Music & art
   ['musical_note', '🎵'],
   ['notes', '🎶'],
   ['microphone', '🎤'],
@@ -381,11 +406,36 @@ const EMOJI_MAP = new Map<string, string>([
 ])
 
 /**
- * Emoji parser for markdown-it
- * Only supports :emoji_name: syntax (no shortcuts/emoticons)
- * Uses Map for O(1) lookups and simple string scanning
+ * Options for the emoji plugin.
  */
-const emojiRule = (state: any, silent: boolean) => {
+export interface EmojiOptions {
+  /**
+   * Add or override shortcodes. Values take precedence over the built-in set,
+   * so this can also be used to remap an existing shortcode.
+   *
+   * Pass a full dataset here to go beyond the curated built-in set — install a
+   * package such as `gemoji` and forward its map:
+   *
+   * @example
+   * ```ts
+   * import { nameToEmoji } from 'gemoji'
+   * emoji({ extend: nameToEmoji })
+   * ```
+   *
+   * @example
+   * ```ts
+   * emoji({ extend: { shipit: '🚀', myteam: '🦄' } })
+   * ```
+   */
+  extend?: Record<string, string>
+}
+
+/**
+ * Emoji parser for markdown-it.
+ * Only supports :emoji_name: syntax (no shortcuts/emoticons).
+ * Uses a Map for O(1) lookups and simple string scanning.
+ */
+const createEmojiRule = (emojiMap: Map<string, string>) => (state: any, silent: boolean) => {
   const max = state.posMax
   const start = state.pos
 
@@ -404,7 +454,7 @@ const emojiRule = (state: any, silent: boolean) => {
       const emojiName = state.src.slice(start + 1, pos)
 
       // Check if this is a valid emoji
-      const emojiChar = EMOJI_MAP.get(emojiName)
+      const emojiChar = emojiMap.get(emojiName)
       if (emojiChar) {
         if (!silent) {
           const token = state.push('emoji', '', 0)
@@ -442,10 +492,20 @@ const emojiRule = (state: any, silent: boolean) => {
 }
 
 export const markdownItEmoji: MarkdownItPlugin = (md) => {
-  md.inline.ruler.before('emphasis', 'emoji', emojiRule)
+  md.inline.ruler.before('emphasis', 'emoji', createEmojiRule(BASE_EMOJI))
 }
 
-export default defineComarkPlugin(() => ({
-  name: 'emoji',
-  markdownItPlugins: [markdownItEmoji],
-}))
+export default defineComarkPlugin<EmojiOptions>((options) => {
+  const emojiMap = options?.extend
+    ? new Map<string, string>([...BASE_EMOJI, ...Object.entries(options.extend)])
+    : BASE_EMOJI
+
+  const markdownItPlugin: MarkdownItPlugin = (md) => {
+    md.inline.ruler.before('emphasis', 'emoji', createEmojiRule(emojiMap))
+  }
+
+  return {
+    name: 'emoji',
+    markdownItPlugins: [markdownItPlugin],
+  }
+})
