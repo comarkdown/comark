@@ -1,0 +1,27 @@
+@import 'tailwindcss';
+
+body {
+  @apply bg-neutral-50 dark:bg-neutral-950 p-4 text-neutral-900 dark:text-neutral-50;
+}
+
+.prose :where(h1):not(:where(.not-prose, .not-prose *)) {
+  @apply text-3xl font-bold mb-4 mt-0;
+}
+
+.prose :where(h2):not(:where(.not-prose, .not-prose *)) {
+  @apply text-2xl font-semibold mt-8 mb-3;
+}
+
+.prose :where(p):not(:where(.not-prose, .not-prose *)) {
+  @apply mb-4 leading-relaxed;
+}
+
+.prose :where(code):not(:where(.not-prose, .not-prose *)) {
+  @apply bg-neutral-200 dark:bg-neutral-800 px-1.5 py-0.5 rounded text-sm font-mono;
+}
+
+/* KaTeX block math */
+
+.prose :where(.math.block):not(:where(.not-prose, .not-prose *)) {
+  @apply my-6 overflow-x-auto;
+}

@@ -449,7 +449,12 @@ const markdownItInlineSpan: PluginSimple = (md) => {
     const nextChar = state.src[index + 1]
     if (nextChar === '(' || nextChar === '[') return false
 
-    if (silent) return true
+    // Inside a link label, bare `[text]` stays literal (plain-markdown behavior,
+    // e.g. `[[1] Document](#)`); only an explicit `[text]{attrs}` span matches
+    if (state.linkLevel > 0 && nextChar !== '{') return false
+
+    // Returning `false` lets `parseLinkLabel`'s own depth tracking consume nested brackets and the outer link parse
+    if (silent) return false
 
     state.push('mdc_inline_span', 'span', 1)
 

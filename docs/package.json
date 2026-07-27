@@ -1,5 +1,6 @@
 {
   "name": "comark",
+  "description": "The Markdown engine for the modern web. One parser, every renderer: Vue, React, Svelte, Angular, HTML and ANSI, with components, plugins and streaming.",
   "type": "module",
   "scripts": {
     "dev": "nuxt dev --extends docus",
@@ -33,6 +34,7 @@
   },
   "devDependencies": {
     "@nuxt/devtools-kit": "catalog:",
+    "@resvg/resvg-js": "catalog:",
     "@types/json-schema": "catalog:",
     "@types/splitpanes": "catalog:",
     "satori": "catalog:",

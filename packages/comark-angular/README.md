@@ -8,7 +8,7 @@
 [![Documentation](https://img.shields.io/badge/Documentation-black?logo=readme&logoColor=white)](https://comark.dev/rendering/angular)
 [![license](https://img.shields.io/github/license/comarkdown/comark?color=black)](https://github.com/comarkdown/comark/blob/main/LICENSE)
 
-Angular renderer for [Comark](https://comark.dev) — render markdown with custom standalone components, streaming support, and SSR.
+Angular renderer for [Comark](https://comark.dev). Render markdown with custom standalone components, streaming support, and SSR.
 
 ## Features
 

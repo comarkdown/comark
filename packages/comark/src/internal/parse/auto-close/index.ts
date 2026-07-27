@@ -10,9 +10,10 @@ import { closeTables } from './table.ts'
  * Processes markdown in O(n) time by scanning character-by-character
  *
  * @param markdown - The markdown content to auto-close
+ * @param options - `frontmatter` completes an unclosed leading frontmatter block.
  * @returns The markdown with unclosed syntax closed
  */
-export function autoCloseMarkdown(markdown: string): string {
+export function autoCloseMarkdown(markdown: string, options: { frontmatter?: boolean } = {}): string {
   if (!markdown || markdown === '') return markdown
 
   const lines = markdown.split('\n')
@@ -20,6 +21,10 @@ export function autoCloseMarkdown(markdown: string): string {
 
   // Single linear pass to collect document state
   let inFrontmatter = false
+  // Whether the open frontmatter block has received any content. Empty
+  // frontmatter is not valid (`parseFrontmatter` ignores it), so a lone `---`
+  // is a thematic break, not an unclosed frontmatter block to complete.
+  let frontmatterHasContent = false
   let inBlockMath = false
   let tableStart = -1
   // Tag name when inside a raw-text HTML element (`<style>`, `<script>`,
@@ -57,12 +62,13 @@ export function autoCloseMarkdown(markdown: string): string {
     }
 
     // Frontmatter: only starts at document line 0
-    if (idx === 0 && trimmed === '---') {
+    if (idx === 0 && options.frontmatter && trimmed === '---') {
       inFrontmatter = true
       continue
     }
     if (inFrontmatter) {
       if (trimmed === '---') inFrontmatter = false
+      else if (trimmed !== '') frontmatterHasContent = true
       continue
     }
 
@@ -152,8 +158,8 @@ export function autoCloseMarkdown(markdown: string): string {
     result = closeTables(result)
   }
 
-  // Close unclosed frontmatter
-  if (inFrontmatter) {
+  // Complete an unclosed frontmatter block only when `frontmatter` is enabled,
+  if (inFrontmatter && frontmatterHasContent) {
     const lastTrimmed = lines[lastIdx].trim()
     if (lastTrimmed === '-' || lastTrimmed === '--') {
       result += '-'.repeat(3 - lastTrimmed.length)
@@ -216,6 +222,30 @@ export function autoCloseMarkdown(markdown: string): string {
   }
 
   return result
+}
+
+/** Whitespace or a line boundary (empty string) — treated the same for flanking checks. */
+function isSpaceOrBoundary(ch: string): boolean {
+  return ch === '' || ch === ' ' || ch === '\t'
+}
+
+/**
+ * Scans a run of the same delimiter char starting at `start`.
+ * Returns the run length and whether it's surrounded by whitespace/boundaries
+ * (in which case it's neither left- nor right-flanking and cannot delimit emphasis).
+ */
+function scanDelimiterRun(line: string, start: number, marker: string) {
+  const len = line.length
+  let end = start
+  while (end + 1 < len && line[end + 1] === marker) end++
+  const prevCh = start > 0 ? line[start - 1] : ''
+  const afterCh = end + 1 < len ? line[end + 1] : ''
+  return {
+    end,
+    length: end - start + 1,
+    afterCh,
+    surroundedBySpace: isSpaceOrBoundary(prevCh) && isSpaceOrBoundary(afterCh),
+  }
 }
 
 /**
@@ -342,36 +372,38 @@ function closeInlineMarkersLinear(line: string): string {
       continue
     }
 
+    // A delimiter run surrounded by whitespace (e.g. `* item`, `** not valid`) is
+    // neither left- nor right-flanking per CommonMark, so it cannot delimit emphasis.
     if (ch === '*') {
-      asteriskCount++
-      // Track ** positions (not part of ***)
-      if (i + 1 < len && line[i + 1] === '*') {
-        const isPartOfTriple = (i > 0 && line[i - 1] === '*') || (i + 2 < len && line[i + 2] === '*')
-        if (!isPartOfTriple) {
-          doubleAsteriskPositions.push(i)
-        }
+      const run = scanDelimiterRun(line, i, '*')
+      if (!run.surroundedBySpace) {
+        asteriskCount += run.length
+        // Track a lone `**` run (exactly two asterisks) for complete-pair detection.
+        if (run.length === 2) doubleAsteriskPositions.push(i)
       }
+      i = run.end // Skip the rest of the run (loop increments past it)
     } else if (ch === '_') {
-      // Skip intra-word underscores (not emphasis delimiters per CommonMark)
-      const nextCh = i + 1 < len ? line[i + 1] : ''
+      const run = scanDelimiterRun(line, i, '_')
       const prevIsWord =
         (prevCh >= 'a' && prevCh <= 'z') || (prevCh >= 'A' && prevCh <= 'Z') || (prevCh >= '0' && prevCh <= '9')
       const nextIsWord =
-        (nextCh >= 'a' && nextCh <= 'z') || (nextCh >= 'A' && nextCh <= 'Z') || (nextCh >= '0' && nextCh <= '9')
-      if (!(prevIsWord && nextIsWord)) {
-        underscoreCount++
-        // Track __ positions (for bold)
-        if (nextCh === '_') {
-          doubleUnderscorePositions.push(i)
-        }
+        (run.afterCh >= 'a' && run.afterCh <= 'z') ||
+        (run.afterCh >= 'A' && run.afterCh <= 'Z') ||
+        (run.afterCh >= '0' && run.afterCh <= '9')
+      // Also skip intra-word underscores (not emphasis delimiters per CommonMark).
+      if (!(prevIsWord && nextIsWord) && !run.surroundedBySpace) {
+        underscoreCount += run.length
+        // Track a lone `__` run (exactly two underscores) for bold.
+        if (run.length === 2) doubleUnderscorePositions.push(i)
       }
+      i = run.end
     } else if (ch === '~') {
-      if (i + 1 < len && line[i + 1] === '~') {
-        doubleTildeCount++
-        i++ // Skip second tilde since we counted the pair
-      } else {
-        singleTildeCount++
+      const run = scanDelimiterRun(line, i, '~')
+      if (!run.surroundedBySpace) {
+        doubleTildeCount += run.length >> 1 // number of `~~` pairs in the run
+        if (run.length & 1) singleTildeCount++ // leftover single `~`
       }
+      i = run.end
     }
   }
 

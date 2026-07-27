@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.5.1](https://github.com/comarkdown/comark/compare/comark@0.5.0...comark@0.5.1) (2026-07-14)
+
+### Features
+
+* **emoji:** add `extend` option for custom shortcodes ([#278](https://github.com/comarkdown/comark/issues/278)) ([efecc73](https://github.com/comarkdown/comark/commit/efecc7354261785d081604459e835aff0f9ba1f1))
+* prevent instaling duplicate plugins ([#277](https://github.com/comarkdown/comark/issues/277)) ([3454162](https://github.com/comarkdown/comark/commit/3454162096c04cf619b2745e08af326d52821960))
+
+### Bug Fixes
+
+* **stringify:** escape inline and block markdown syntax in text nodes ([#267](https://github.com/comarkdown/comark/issues/267)) ([51e0eef](https://github.com/comarkdown/comark/commit/51e0eefcd0145d22234952403213b9e2739e5f34))
+
 ## [0.5.0](https://github.com/comarkdown/comark/compare/comark@0.4.0...comark@0.5.0) (2026-07-02)
 
 ### Features

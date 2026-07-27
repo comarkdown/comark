@@ -36,10 +36,10 @@ defineProps<{
           <UButton
             :label="secondaryLabel"
             :to="secondaryTo"
-            external
+            :external="secondaryTo.startsWith('http')"
             color="neutral"
             variant="outline"
-            icon="i-simple-icons-github"
+            :icon="secondaryTo.startsWith('http') ? 'i-simple-icons-github' : 'i-lucide-book-open'"
           />
         </div>
 

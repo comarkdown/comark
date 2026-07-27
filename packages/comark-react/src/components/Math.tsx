@@ -3,10 +3,10 @@ import katex from 'katex'
 
 export interface MathProps {
   content: string
-  class?: string
+  className?: string
 }
 
-export function Math({ content, class: className = '' }: MathProps) {
+export function Math({ content, className = '' }: MathProps) {
   const isInline = className.includes('inline')
   const [mathml, setMathml] = useState<string>('...')
 

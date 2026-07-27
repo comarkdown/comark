@@ -201,7 +201,7 @@ export type State = {
   /**
    * Render a single node
    */
-  one: (node: ComarkNode, state: State, parent?: ComarkElement) => Promise<string>
+  one: (node: ComarkNode, state: State, parent?: ComarkElement, atLineStart?: boolean) => Promise<string>
 
   /**
    * Render the input
@@ -440,6 +440,21 @@ export interface ParseOptions<TPlugins extends readonly ComarkPlugin<any, any>[]
    * @default true
    */
   linkify?: boolean
+
+  /**
+   * Whether to auto-generate `id` attributes for `h1`–`h6` headings from their text content.
+   * Set `false` to skip auto-generated ids; user-supplied `id` attributes are still preserved.
+   *
+   * @default true
+   * @example
+   * // With headingIds: true (default)
+   * // # Hello World → ['h1', { id: 'hello-world' }, 'Hello World']
+   *
+   * // With headingIds: false
+   * // # Hello World → ['h1', {}, 'Hello World']
+   * // # Hello {id="custom"} → ['h1', { id: 'custom' }, 'Hello']
+   */
+  headingIds?: boolean
 
   /**
    * Additional plugins to use
