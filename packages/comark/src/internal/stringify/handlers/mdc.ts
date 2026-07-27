@@ -36,9 +36,14 @@ export async function mdc(node: ComarkElement, state: State, parent?: ComarkElem
   }
   content = content.trimEnd()
 
-  const attrs = attributeEntries.length > 0 ? comarkAttributes(attributes) : ''
+  let attrs = attributeEntries.length > 0 ? comarkAttributes(attributes) : ''
 
   if (tag === 'span') {
+    if (!attrs && parent?.[0] == 'a') {
+      // Add empty attributes syntax to end of spans inside Anchor links
+      // This will force Comark to parse them as span and prevent conflict
+      attrs ||= "{}"
+    }
     return `[${content}]${attrs}` + (inline ? '' : state.context.blockSeparator)
   }
 
