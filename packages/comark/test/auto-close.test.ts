@@ -25,7 +25,14 @@ $$formula → $$formula$$
 ~Hello → ~Hello~
 ~~Hello → ~~Hello~~
 ~Hello~ → ~Hello~
-~~Hello~~ → ~~Hello~~`
+~~Hello~~ → ~~Hello~~
+* not valid → * not valid
+** not valid → ** not valid
+*** not valid → *** not valid
+_ not valid → _ not valid
+__ not valid → __ not valid
+~ not valid → ~ not valid
+~~ not valid → ~~ not valid`
 
 const multilines = `
 | Month    | Savings
@@ -213,6 +220,11 @@ describe('autoCloseMarkdown - Comark Components', () => {
     const input = '* not an italic'
     const expected = '* not an italic'
     expect(autoCloseMarkdown(input)).toBe(expected)
+  })
+
+  it('should not close a bullet-list asterisk with nested bold', () => {
+    const input = '*   **Preheat:** Set  '
+    expect(autoCloseMarkdown(input)).toBe(input)
   })
 
   it('valid italic syntax', () => {
