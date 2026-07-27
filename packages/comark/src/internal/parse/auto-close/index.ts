@@ -62,7 +62,7 @@ export function autoCloseMarkdown(markdown: string, options: { frontmatter?: boo
     }
 
     // Frontmatter: only starts at document line 0
-    if (idx === 0 && trimmed === '---') {
+    if (idx === 0 && options.frontmatter && trimmed === '---') {
       inFrontmatter = true
       continue
     }
@@ -159,7 +159,7 @@ export function autoCloseMarkdown(markdown: string, options: { frontmatter?: boo
   }
 
   // Complete an unclosed frontmatter block only when `frontmatter` is enabled,
-  if (options.frontmatter && inFrontmatter && frontmatterHasContent) {
+  if (inFrontmatter && frontmatterHasContent) {
     const lastTrimmed = lines[lastIdx].trim()
     if (lastTrimmed === '-' || lastTrimmed === '--') {
       result += '-'.repeat(3 - lastTrimmed.length)
