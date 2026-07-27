@@ -10,13 +10,11 @@ import { closeTables } from './table.ts'
  * Processes markdown in O(n) time by scanning character-by-character
  *
  * @param markdown - The markdown content to auto-close
- * @param options - `streaming` completes an unclosed leading frontmatter block.
+ * @param options - `frontmatter` completes an unclosed leading frontmatter block.
  * @returns The markdown with unclosed syntax closed
  */
-export function autoCloseMarkdown(markdown: string, options: { streaming?: boolean } = {}): string {
+export function autoCloseMarkdown(markdown: string, options: { frontmatter?: boolean } = {}): string {
   if (!markdown || markdown === '') return markdown
-
-  const { streaming = false } = options
 
   const lines = markdown.split('\n')
   const n = lines.length
@@ -160,12 +158,8 @@ export function autoCloseMarkdown(markdown: string, options: { streaming?: boole
     result = closeTables(result)
   }
 
-  // Complete an unclosed frontmatter block only while streaming, and only when
-  // it has content. A complete document with a leading `---` and no closing
-  // delimiter is a thematic break (see `parseFrontmatter`), not frontmatter, so
-  // completing it would swallow the body; and completing an empty block would
-  // turn a lone `---` into two thematic breaks.
-  if (streaming && inFrontmatter && frontmatterHasContent) {
+  // Complete an unclosed frontmatter block only when `frontmatter` is enabled,
+  if (options.frontmatter && inFrontmatter && frontmatterHasContent) {
     const lastTrimmed = lines[lastIdx].trim()
     if (lastTrimmed === '-' || lastTrimmed === '--') {
       result += '-'.repeat(3 - lastTrimmed.length)

@@ -497,38 +497,38 @@ describe('frontmatter', () => {
     const expected = '---\ntitle: Test\n---'
     expect(autoCloseMarkdown(input)).toBe(expected)
   })
-  // Partial frontmatter is only completed while streaming — for a complete
-  // document a leading `---` with no closing delimiter is a thematic break, so
-  // completing it would swallow the body (see the non-streaming cases below).
-  it('should complete partial frontmatter while streaming', () => {
+  // Partial frontmatter is only completed when `frontmatter: true` — for a
+  // complete document a leading `---` with no closing delimiter is a thematic
+  // break, so completing it would swallow the body (see the default cases below).
+  it('should complete partial frontmatter when frontmatter option is enabled', () => {
     const input = '---\ntitle: Test'
     const expected = '---\ntitle: Test\n---'
-    expect(autoCloseMarkdown(input, { streaming: true })).toBe(expected)
+    expect(autoCloseMarkdown(input, { frontmatter: true })).toBe(expected)
   })
-  it('should complete a partial closing delimiter (-) while streaming', () => {
+  it('should complete a partial closing delimiter (-) when frontmatter option is enabled', () => {
     const input = '---\ntitle: Test\n-'
     const expected = '---\ntitle: Test\n---'
-    expect(autoCloseMarkdown(input, { streaming: true })).toBe(expected)
+    expect(autoCloseMarkdown(input, { frontmatter: true })).toBe(expected)
   })
-  it('should complete a partial closing delimiter (--) while streaming', () => {
+  it('should complete a partial closing delimiter (--) when frontmatter option is enabled', () => {
     const input = '---\ntitle: Test\n--'
     const expected = '---\ntitle: Test\n---'
-    expect(autoCloseMarkdown(input, { streaming: true })).toBe(expected)
+    expect(autoCloseMarkdown(input, { frontmatter: true })).toBe(expected)
   })
-  it('should complete partial frontmatter with an empty value while streaming', () => {
+  it('should complete partial frontmatter with an empty value when frontmatter option is enabled', () => {
     const input = '---\ntitle: '
     const expected = '---\ntitle: \n---'
-    expect(autoCloseMarkdown(input, { streaming: true })).toBe(expected)
+    expect(autoCloseMarkdown(input, { frontmatter: true })).toBe(expected)
   })
-  it('should complete partial frontmatter with a trailing newline while streaming', () => {
+  it('should complete partial frontmatter with a trailing newline when frontmatter option is enabled', () => {
     const input = '---\ntitle: Test\n'
     const expected = '---\ntitle: Test\n---'
-    expect(autoCloseMarkdown(input, { streaming: true })).toBe(expected)
+    expect(autoCloseMarkdown(input, { frontmatter: true })).toBe(expected)
   })
 
-  it('should not complete unclosed frontmatter in a complete document', () => {
-    // Not streaming: a leading `---` with content but no close is a thematic
-    // break followed by body — completing it would swallow the body.
+  it('should not complete unclosed frontmatter by default', () => {
+    // Default (`frontmatter: false`): a leading `---` with content but no close
+    // is a thematic break followed by body — completing it would swallow the body.
     const input = '---\ntitle: Test'
     expect(autoCloseMarkdown(input)).toBe(input)
     expect(autoCloseMarkdown('---\n# Heading')).toBe('---\n# Heading')
