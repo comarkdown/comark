@@ -38,7 +38,7 @@ ${'<'}/script>
   </Suspense>
 </template>`
 
-const reactCode = `import { Comark } from 'comark/react'
+const reactCode = `import { Comark } from '@comark/react'
 import { Alert } from './components/Alert'
 
 const markdown = \`
