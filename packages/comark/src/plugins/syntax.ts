@@ -453,9 +453,7 @@ const markdownItInlineSpan: PluginSimple = (md) => {
     // e.g. `[[1] Document](#)`); only an explicit `[text]{attrs}` span matches
     if (state.linkLevel > 0 && nextChar !== '{') return false
 
-    // Returning `true` without advancing `state.pos` breaks the inline-rule
-    // contract (`skipToken` throws); returning `false` lets `parseLinkLabel`'s
-    // own depth tracking consume nested brackets and the outer link parse
+    // Returning `false` lets `parseLinkLabel`'s own depth tracking consume nested brackets and the outer link parse
     if (silent) return false
 
     state.push('mdc_inline_span', 'span', 1)
