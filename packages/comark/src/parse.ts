@@ -141,6 +141,7 @@ export function createParse<const TPlugins extends readonly ComarkPlugin<any, an
     let nodes = marmdownItTokensToComarkTree(state.tokens, {
       startLine: state.parsedLines,
       preservePositions: opts.streaming ?? false,
+      headingIds: options.headingIds ?? true,
     })
 
     if (autoUnwrap) {

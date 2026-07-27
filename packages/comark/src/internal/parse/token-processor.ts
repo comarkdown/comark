@@ -31,21 +31,27 @@ interface ProcessState {
   headingSlugCounts: Map<string, number>
   headingStack: Array<{ level: number; id: string }>
   preservePositions: boolean
+  headingIds: boolean
 }
 
 // ─── main entry point ───────────────────────────────────────────────────────
 
+interface TokenProcessorOptions {
+  startLine?: number
+  preservePositions?: boolean
+  headingIds?: boolean
+}
+
 /**
  * Convert Markdown-It tokens to a Comark tree
  */
-export function marmdownItTokensToComarkTree(
-  tokens: any[],
-  options: { startLine: number; preservePositions: boolean } = { startLine: 0, preservePositions: false }
-): ComarkNode[] {
+export function marmdownItTokensToComarkTree(tokens: any[], opts?: TokenProcessorOptions): ComarkNode[] {
+  const options = { startLine: 0, preservePositions: false, headingIds: true, ...opts }
   const state: ProcessState = {
     headingSlugCounts: new Map<string, number>(),
     headingStack: [],
     preservePositions: options.preservePositions,
+    headingIds: options.headingIds ?? true,
   }
   const nodes: ComarkNode[] = []
 
@@ -418,12 +424,15 @@ function processBlockToken(
       state
     )
     if (children.nodes.length > 0) {
-      // Always generate ID for all headings, no exceptions
-      const textContent = extractTextContent(children.nodes)
-      const headingId = uniqueSlug(slugify(textContent), level, state)
-
-      // Merge user-supplied attrs with the auto-generated id; user `id` wins.
-      const attrs: Record<string, unknown> = { id: headingId, ...userAttrs }
+      let attrs: Record<string, unknown>
+      if (state?.headingIds) {
+        const textContent = extractTextContent(children.nodes)
+        const headingId = uniqueSlug(slugify(textContent), level, state)
+        // Merge user-supplied attrs with the auto-generated id; user `id` wins.
+        attrs = { id: headingId, ...userAttrs }
+      } else {
+        attrs = userAttrs
+      }
 
       return {
         node: [headingTag, attrs, ...children.nodes] as ComarkNode,
