@@ -8,6 +8,7 @@ import {
   OnInit,
   SimpleChanges,
   Type,
+  inject,
 } from '@angular/core'
 import type { ComarkElement, ComarkNode, ComarkTree, NodeRenderData } from 'comark'
 import type { RegisteredInstance } from 'comark/devtools'
@@ -58,12 +59,28 @@ export class ComarkRendererComponent implements OnInit, OnChanges, OnDestroy {
   /** Additional data to pass to the renderer for :binding resolution */
   @Input() data: Record<string, unknown> = {}
 
+  /**
+   * Document key used to subscribe to live updates via `globalThis.comarkContext`.
+   * Falls back to the tree's own `meta.key` when set by a plugin.
+   */
+  @Input() comarkKey?: string
+
+  private cdr = inject(ChangeDetectorRef)
+  private liveTree: ComarkTree | null = null
+  private cleanup?: (clear?: boolean) => void
   private devtoolsHandle: RegisteredInstance | null = null
   private devtoolsDisposed = false
 
-  constructor(private cdr: ChangeDetectorRef) {}
-
+  // Live document + devtools support. Cleaned up on destroy.
   ngOnInit(): void {
+    const key = this.tree.meta?.key || this.comarkKey
+    if (key && globalThis.comarkContext) {
+      this.cleanup = globalThis.comarkContext.get(key, this.tree).listen((tree) => {
+        this.liveTree = tree
+        this.cdr.markForCheck()
+      })
+    }
+
     const hot = (import.meta as Record<string, any>).hot
     if (!hot) return
 
@@ -101,10 +118,15 @@ export class ComarkRendererComponent implements OnInit, OnChanges, OnDestroy {
   ngOnDestroy(): void {
     this.devtoolsDisposed = true
     this.devtoolsHandle?.unregister()
+    this.cleanup?.(true)
+  }
+
+  private get activeTree(): ComarkTree {
+    return this.liveTree ?? this.tree
   }
 
   get renderedNodes(): ComarkNode[] {
-    const nodes = [...(this.tree.nodes || [])]
+    const nodes = [...(this.activeTree.nodes || [])]
     const caretNode = getCaret(this.caret)
 
     if (this.streaming && caretNode && nodes.length > 0) {
@@ -119,8 +141,8 @@ export class ComarkRendererComponent implements OnInit, OnChanges, OnDestroy {
 
   get renderData(): NodeRenderData {
     return {
-      frontmatter: this.tree.frontmatter,
-      meta: this.tree.meta,
+      frontmatter: this.activeTree.frontmatter,
+      meta: this.activeTree.meta,
       data: this.data || {},
       props: {},
     }

@@ -1,11 +1,15 @@
 {
   "name": "@comark/react",
-  "version": "0.4.0",
-  "description": "React renderer for Comark (Components in Markdown)",
+  "version": "0.5.1",
+  "description": "React renderer for Comark. Render Markdown with components at runtime, with streaming support for AI output. Works with Next.js and Server Components.",
   "keywords": [
+    "ai",
     "comark",
+    "components",
     "markdown",
     "mdc",
+    "mdx",
+    "nextjs",
     "react",
     "renderer",
     "streaming"
@@ -46,12 +50,12 @@
     "release": "release-it"
   },
   "dependencies": {
-    "comark": "catalog:"
+    "comark": "workspace:*"
   },
   "devDependencies": {
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "react": "catalog:",
+    "react": "^19.2.7",
     "react-dom": "catalog:",
     "vite": "catalog:",
     "vitest": "catalog:"

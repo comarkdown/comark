@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.5.1](https://github.com/comarkdown/comark/compare/@comark/html@0.5.0...@comark/html@0.5.1) (2026-07-14)
+
+## [0.5.0](https://github.com/comarkdown/comark/compare/@comark/html@0.4.0...@comark/html@0.5.0) (2026-07-02)
+
+### Features
+
+* allow rendering tree object without frontmatter and meta ([#241](https://github.com/comarkdown/comark/issues/241)) ([1432806](https://github.com/comarkdown/comark/commit/1432806501dbcd2aecac45f6a3754341af6ebafd))
+
 ## [0.4.0](https://github.com/comarkdown/comark/compare/@comark/html@0.3.1...@comark/html@0.4.0) (2026-06-04)
 
 ## [0.3.1](https://github.com/comarkdown/comark/compare/@comark/html@0.2.1...@comark/html@0.3.1) (2026-04-24)

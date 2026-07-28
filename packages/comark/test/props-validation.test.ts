@@ -1,9 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import security from '../src/plugins/security'
 import { validateProp, validateProps } from '../src/internal/props-validation'
-import type { ComarkTree } from 'comark'
-
-// ─── validateProp ────────────────────────────────────────────────────────────
 
 describe('validateProp', () => {
   describe('event handlers', () => {
@@ -240,8 +236,46 @@ describe('validateProp', () => {
       expect(validateProp('href', 'data:text/html,<script>evil()</script>', { allowDataImages: true })).toBe(false)
     })
   })
-})
 
+  describe('xlink:href', () => {
+    it('allows safe xlink:href values', () => {
+      expect(validateProp('xlinkhref', 'https://example.com')).toBe('https://example.com')
+      expect(validateProp('xLinkHref', 'https://example.com')).toBe('https://example.com')
+      expect(validateProp('xlink:href', 'https://example.com')).toBe('https://example.com')
+      expect(validateProp('xlinkhref', '/relative/path')).toBe('/relative/path')
+    })
+
+    it('blocks javascript: xlink:href', () => {
+      expect(validateProp('xlink:href', 'javascript:alert(1)')).toBe(false)
+    })
+  })
+
+  describe('Vue directive form', () => {
+    it('blocks Vue directive-form event handlers and unsafe URLs', () => {
+      const payloads: Array<[string, string]> = [
+        [':onerror', 'alert(1)'],
+        [':onload', 'alert(1)'],
+        ['v-bind:onerror', 'alert(1)'],
+        ['@click', 'alert(1)'],
+        ['v-on:click', 'alert(1)'],
+        [':href', 'javascript:alert(1)'],
+        ['v-bind:href', 'javascript:alert(1)'],
+        [':src', 'javascript:alert(1)'],
+        ['v-bind:src', 'data:text/html,<script>alert(1)</script>'],
+      ]
+
+      for (const [attribute, value] of payloads) {
+        expect(validateProp(attribute, value), `${attribute}="${value}"`).toBe(false)
+      }
+    })
+
+    it('allows safe Vue directive-form href and src values', () => {
+      expect(validateProp(':href', 'https://example.com')).toBe('https://example.com')
+      expect(validateProp('v-bind:href', '/relative/path')).toBe('/relative/path')
+      expect(validateProp(':src', 'https://example.com/image.png')).toBe('https://example.com/image.png')
+    })
+  })
+})
 // ─── validateProps ────────────────────────────────────────────────────────────
 
 describe('validateProps', () => {
@@ -296,249 +330,5 @@ describe('validateProps – unsafe tag case bypass', () => {
 
   it('strips all props from Object (mixed case)', () => {
     expect(validateProps('Object', { data: '/foo' })).toEqual({})
-  })
-})
-
-// ─── security plugin ──────────────────────────────────────────────────────────
-
-function makeTree(nodes: ComarkTree['nodes']): ComarkTree {
-  return { nodes, frontmatter: {}, meta: {} }
-}
-
-async function runPlugin(tree: ComarkTree, options: Parameters<typeof security>[0] = {}) {
-  const plugin = security(options)
-  await plugin.post!({ tree, markdown: '', tokens: [], options: {} })
-  return tree
-}
-
-describe('security plugin', () => {
-  describe('blockedTags', () => {
-    it('removes a blocked tag', async () => {
-      const tree = makeTree([
-        ['script', {}, 'evil()'],
-        ['p', {}, 'safe'],
-      ])
-      await runPlugin(tree, { blockedTags: ['script'] })
-      expect(tree.nodes).toHaveLength(1)
-      expect((tree.nodes[0] as [string, any])[0]).toBe('p')
-    })
-
-    it('removes nested blocked tags', async () => {
-      const tree = makeTree([['div', {}, ['script', {}, 'evil()'], ['p', {}, 'safe']]])
-      await runPlugin(tree, { blockedTags: ['script'] })
-      const div = tree.nodes[0] as [string, any, ...any[]]
-      expect(div).toHaveLength(3) // tag, attrs, p
-      expect((div[2] as [string, any])[0]).toBe('p')
-    })
-
-    it('removes multiple different blocked tags', async () => {
-      const tree = makeTree([
-        ['script', {}, 'evil()'],
-        ['iframe', {}, ''],
-        ['p', {}, 'safe'],
-      ])
-      await runPlugin(tree, { blockedTags: ['script', 'iframe'] })
-      expect(tree.nodes).toHaveLength(1)
-    })
-
-    it('keeps all tags when blockedTags is empty', async () => {
-      const tree = makeTree([
-        ['script', {}, 'evil()'],
-        ['p', {}, 'safe'],
-      ])
-      await runPlugin(tree, { blockedTags: [] })
-      expect(tree.nodes).toHaveLength(2)
-    })
-
-    it('uses empty blockedTags by default', async () => {
-      const tree = makeTree([['p', {}, 'hello']])
-      await runPlugin(tree)
-      expect(tree.nodes).toHaveLength(1)
-    })
-
-    it('drops uppercase variant of a tag in blockedTags', async () => {
-      const tree = makeTree([
-        ['SCRIPT', {}, 'evil()'],
-        ['p', {}, 'safe'],
-      ])
-      await runPlugin(tree, { blockedTags: ['script'] })
-      expect(tree.nodes).toHaveLength(1)
-      expect((tree.nodes[0] as [string, any])[0]).toBe('p')
-    })
-
-    it('drops mixed-case ScRipt when script is blocked', async () => {
-      const tree = makeTree([
-        ['ScRipt', {}, 'evil()'],
-        ['p', {}, 'safe'],
-      ])
-      await runPlugin(tree, { blockedTags: ['script'] })
-      expect(tree.nodes).toHaveLength(1)
-    })
-
-    it('drops uppercase IFRAME when iframe is blocked', async () => {
-      const tree = makeTree([
-        ['IFRAME', { src: 'https://evil.com' }],
-        ['p', {}, 'safe'],
-      ])
-      await runPlugin(tree, { blockedTags: ['iframe'] })
-      expect(tree.nodes).toHaveLength(1)
-    })
-
-    it('drops nested mixed-case tag', async () => {
-      const tree = makeTree([['div', {}, ['SCRIPT', {}, 'evil()'], ['p', {}, 'safe']]])
-      await runPlugin(tree, { blockedTags: ['script'] })
-      const div = tree.nodes[0] as [string, any, ...any[]]
-      expect(div).toHaveLength(3) // tag, attrs, p
-      expect((div[2] as [string, any])[0]).toBe('p')
-    })
-  })
-
-  describe('prop sanitization', () => {
-    it('strips event handler props', async () => {
-      const tree = makeTree([['div', { onclick: 'evil()', class: 'safe' }]])
-      await runPlugin(tree)
-      const el = tree.nodes[0] as [string, any]
-      expect(el[1]).not.toHaveProperty('onclick')
-      expect(el[1]).toHaveProperty('class', 'safe')
-    })
-
-    it('strips unsafe href', async () => {
-      const tree = makeTree([['a', { href: 'javascript:alert(1)', class: 'link' }]])
-      await runPlugin(tree)
-      const el = tree.nodes[0] as [string, any]
-      expect(el[1]).not.toHaveProperty('href')
-      expect(el[1]).toHaveProperty('class', 'link')
-    })
-
-    it('keeps safe href', async () => {
-      const tree = makeTree([['a', { href: 'https://example.com' }]])
-      await runPlugin(tree)
-      const el = tree.nodes[0] as [string, any]
-      expect(el[1]).toHaveProperty('href', 'https://example.com')
-    })
-
-    it('leaves string nodes untouched', async () => {
-      const tree = makeTree([['p', {}, 'hello']])
-      await runPlugin(tree)
-      const el = tree.nodes[0] as [string, any, ...any[]]
-      expect(el[2]).toBe('hello')
-    })
-
-    it('leaves comment nodes untouched', async () => {
-      const commentNode: [null, {}, string] = [null, {}, 'comment text']
-      const tree = makeTree([commentNode])
-      await runPlugin(tree)
-      expect(tree.nodes[0]).toEqual([null, {}, 'comment text'])
-    })
-
-    it('does not modify elements with no props', async () => {
-      const tree = makeTree([['p', {}]])
-      await runPlugin(tree)
-      expect(tree.nodes).toHaveLength(1)
-      expect((tree.nodes[0] as [string, any])[1]).toEqual({})
-    })
-
-    it('sanitizes props on nested elements', async () => {
-      const tree = makeTree([['div', {}, ['a', { href: 'javascript:evil()' }, 'click']]])
-      await runPlugin(tree)
-      const div = tree.nodes[0] as [string, any, ...any[]]
-      const a = div[2] as [string, any]
-      expect(a[1]).not.toHaveProperty('href')
-    })
-  })
-
-  describe('allowedLinkPrefixes', () => {
-    it('strips href that does not match allowed prefix', async () => {
-      const tree = makeTree([['a', { href: 'https://evil.com/page' }]])
-      await runPlugin(tree, { allowedLinkPrefixes: ['https://myapp.com'] })
-      expect((tree.nodes[0] as [string, any])[1]).not.toHaveProperty('href')
-    })
-
-    it('keeps href that matches allowed prefix', async () => {
-      const tree = makeTree([['a', { href: 'https://myapp.com/page' }]])
-      await runPlugin(tree, { allowedLinkPrefixes: ['https://myapp.com'] })
-      expect((tree.nodes[0] as [string, any])[1]).toHaveProperty('href', 'https://myapp.com/page')
-    })
-
-    it('rewrites disallowed href to defaultOrigin', async () => {
-      const tree = makeTree([['a', { href: 'https://evil.com/page' }]])
-      await runPlugin(tree, {
-        allowedLinkPrefixes: ['https://myapp.com'],
-        defaultOrigin: 'https://myapp.com',
-      })
-      const href = (tree.nodes[0] as [string, any])[1].href as string
-      expect(href).toMatch(/^https:\/\/myapp\.com/)
-    })
-
-    it('always keeps relative hrefs', async () => {
-      const tree = makeTree([['a', { href: '/about' }]])
-      await runPlugin(tree, { allowedLinkPrefixes: ['https://myapp.com'] })
-      expect((tree.nodes[0] as [string, any])[1]).toHaveProperty('href', '/about')
-    })
-  })
-
-  describe('allowedImagePrefixes', () => {
-    it('strips src that does not match allowed prefix', async () => {
-      const tree = makeTree([['img', { src: 'https://tracker.evil.com/px.gif', alt: 'x' }]])
-      await runPlugin(tree, { allowedImagePrefixes: ['https://cdn.myapp.com'] })
-      expect((tree.nodes[0] as [string, any])[1]).not.toHaveProperty('src')
-      expect((tree.nodes[0] as [string, any])[1]).toHaveProperty('alt', 'x')
-    })
-
-    it('keeps src that matches allowed prefix', async () => {
-      const tree = makeTree([['img', { src: 'https://cdn.myapp.com/logo.png' }]])
-      await runPlugin(tree, { allowedImagePrefixes: ['https://cdn.myapp.com'] })
-      expect((tree.nodes[0] as [string, any])[1]).toHaveProperty('src', 'https://cdn.myapp.com/logo.png')
-    })
-
-    it('rewrites disallowed src to defaultOrigin', async () => {
-      const tree = makeTree([['img', { src: 'https://evil.com/tracker.gif' }]])
-      await runPlugin(tree, {
-        allowedImagePrefixes: ['https://cdn.myapp.com'],
-        defaultOrigin: 'https://cdn.myapp.com',
-      })
-      const src = (tree.nodes[0] as [string, any])[1].src as string
-      expect(src).toMatch(/^https:\/\/cdn\.myapp\.com/)
-    })
-  })
-
-  describe('allowedProtocols', () => {
-    it('strips href with disallowed protocol', async () => {
-      const tree = makeTree([['a', { href: 'http://example.com' }]])
-      await runPlugin(tree, { allowedProtocols: ['https'] })
-      expect((tree.nodes[0] as [string, any])[1]).not.toHaveProperty('href')
-    })
-
-    it('keeps href with allowed protocol', async () => {
-      const tree = makeTree([['a', { href: 'https://example.com' }]])
-      await runPlugin(tree, { allowedProtocols: ['https'] })
-      expect((tree.nodes[0] as [string, any])[1]).toHaveProperty('href', 'https://example.com')
-    })
-
-    it('always blocks javascript: regardless of allowedProtocols', async () => {
-      const tree = makeTree([['a', { href: 'javascript:alert(1)' }]])
-      await runPlugin(tree, { allowedProtocols: ['*'] })
-      expect((tree.nodes[0] as [string, any])[1]).not.toHaveProperty('href')
-    })
-  })
-
-  describe('allowDataImages', () => {
-    it('allows data: src by default', async () => {
-      const tree = makeTree([['img', { src: 'data:image/png;base64,abc' }]])
-      await runPlugin(tree)
-      expect((tree.nodes[0] as [string, any])[1]).toHaveProperty('src')
-    })
-
-    it('strips data: src when allowDataImages is false', async () => {
-      const tree = makeTree([['img', { src: 'data:image/png;base64,abc' }]])
-      await runPlugin(tree, { allowDataImages: false })
-      expect((tree.nodes[0] as [string, any])[1]).not.toHaveProperty('src')
-    })
-
-    it('data:text/* hrefs are always stripped regardless of allowDataImages', async () => {
-      const tree = makeTree([['a', { href: 'data:text/html,<script>evil()</script>' }]])
-      await runPlugin(tree, { allowDataImages: true })
-      expect((tree.nodes[0] as [string, any])[1]).not.toHaveProperty('href')
-    })
   })
 })

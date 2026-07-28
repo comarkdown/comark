@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.5.1](https://github.com/comarkdown/comark/compare/@comark/react@0.5.0...@comark/react@0.5.1) (2026-07-14)
+
+### Bug Fixes
+
+* **react:** pass class name to Math and Mermaid components ([#279](https://github.com/comarkdown/comark/issues/279)) ([10ec9a8](https://github.com/comarkdown/comark/commit/10ec9a8d102bdb1043bdbc15298097acab3b4d8e))
+
+## [0.5.0](https://github.com/comarkdown/comark/compare/@comark/react@0.4.0...@comark/react@0.5.0) (2026-07-02)
+
+### Features
+
+* allow rendering tree object without frontmatter and meta ([#241](https://github.com/comarkdown/comark/issues/241)) ([1432806](https://github.com/comarkdown/comark/commit/1432806501dbcd2aecac45f6a3754341af6ebafd))
+* introduce Comark Context, a way to update rendered tree ([#258](https://github.com/comarkdown/comark/issues/258)) ([fc08315](https://github.com/comarkdown/comark/commit/fc0831532108e97ac79b46c806a7dddc6c6979f3))
+
 ## [0.4.0](https://github.com/comarkdown/comark/compare/@comark/react@0.3.1...@comark/react@0.4.0) (2026-06-04)
 
 ### Bug Fixes

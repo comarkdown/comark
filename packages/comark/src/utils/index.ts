@@ -3,6 +3,8 @@
 import { decodeHTML } from 'entities'
 import type { ComarkNode, ComarkTree } from 'comark'
 
+type VisitResult = ComarkNode | false | undefined | void
+
 /**
  * Get the text content of a Comark node
  *
@@ -26,6 +28,60 @@ export function textContent(node: ComarkNode, options: { decodeUnicodeEntities?:
   return out
 }
 
+function* walkGenerator(
+  tree: ComarkTree,
+  checker: (node: ComarkNode) => boolean
+): Generator<ComarkNode, void, VisitResult> {
+  function* walk(
+    node: ComarkNode,
+    parent: ComarkNode | ComarkNode[],
+    index: number
+  ): Generator<ComarkNode, boolean, VisitResult> {
+    let currentNode = node
+
+    if (checker(node)) {
+      const res = yield node
+
+      if (res === false) {
+        // remove the node from the parent
+        ;(parent as ComarkNode[]).splice(index, 1)
+        return true // signal that node was removed
+      }
+
+      if (res !== undefined) {
+        ;(parent as ComarkNode[])[index] = res as ComarkNode
+        currentNode = res as ComarkNode
+      }
+    }
+
+    if (Array.isArray(currentNode) && currentNode.length > 2) {
+      // Use a while loop to handle removals correctly - don't increment if node was removed
+      let i = 2
+      while (i < currentNode.length) {
+        const childRemoved = yield* walk(currentNode[i] as ComarkNode, currentNode, i)
+        if (childRemoved) {
+          // If removed, i stays the same (next node is now at this index)
+          continue
+        }
+        i += 1
+      }
+    }
+
+    return false
+  }
+
+  // Use a while loop to handle removals correctly - don't increment if node was removed
+  let i = 0
+  while (i < tree.nodes.length) {
+    const removed = yield* walk(tree.nodes[i], tree.nodes, i)
+    if (removed) {
+      // If removed, i stays the same (next node is now at this index)
+      continue
+    }
+    i += 1
+  }
+}
+
 /**
  * Visit a Comark tree and apply a visitor function to each node
  *
@@ -37,52 +93,28 @@ export function visit(
   tree: ComarkTree,
   checker: (node: ComarkNode) => boolean,
   // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
-  visitor: (node: ComarkNode) => ComarkNode | false | undefined | void
+  visitor: (node: ComarkNode) => VisitResult
 ) {
-  function walk(node: ComarkNode, parent: ComarkNode | ComarkNode[], index: number): boolean {
-    let currentNode = node
+  const iterator = walkGenerator(tree, checker)
+  let step = iterator.next()
 
-    if (checker(node)) {
-      const res = visitor(node)
-      if (res === false) {
-        // remove the node from the parent
-        ;(parent as ComarkNode[]).splice(index, 1)
-        return true // signal that node was removed
-      }
-
-      if (res !== undefined) {
-        ;(parent as ComarkNode[])[index] = res
-        currentNode = res
-      }
-    }
-
-    if (Array.isArray(currentNode) && currentNode.length > 2) {
-      // Use a while loop to handle removals correctly - don't increment if node was removed
-      let i = 2
-      while (i < currentNode.length) {
-        const childRemoved = walk(currentNode[i] as ComarkNode, currentNode, i)
-        if (childRemoved) {
-          // If removed, i stays the same (next node is now at this index)
-          continue
-        }
-
-        i += 1
-      }
-    }
-
-    return false
+  while (!step.done) {
+    const res = visitor(step.value)
+    step = iterator.next(res)
   }
+}
 
-  // Use a while loop to handle removals correctly - don't increment if node was removed
-  let i = 0
-  while (i < tree.nodes.length) {
-    const removed = walk(tree.nodes[i], tree.nodes, i)
-    if (removed) {
-      // If removed, i stays the same (next node is now at this index)
-      continue
-    }
+export async function visitAsync(
+  tree: ComarkTree,
+  checker: (node: ComarkNode) => boolean,
+  visitor: (node: ComarkNode) => Promise<VisitResult> | VisitResult
+): Promise<void> {
+  const iterator = walkGenerator(tree, checker)
+  let step = iterator.next()
 
-    i += 1
+  while (!step.done) {
+    const res = await visitor(step.value)
+    step = iterator.next(res)
   }
 }
 

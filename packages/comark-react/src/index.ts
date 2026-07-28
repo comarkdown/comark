@@ -6,6 +6,7 @@ import type { ComarkRendererProps } from './components/ComarkRenderer'
 import type { ParseOptions } from 'comark'
 
 export { ComarkRenderer } from './components/ComarkRenderer.tsx'
+export { ComarkLive } from './components/ComarkLive.tsx'
 export { ComarkClient } from './components/ComarkClient.tsx'
 export { Comark, ComarkServer } from './components/Comark.tsx'
 export type * from 'comark'

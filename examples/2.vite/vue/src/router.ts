@@ -2,6 +2,7 @@ import { createRouter, createWebHashHistory } from 'vue-router'
 import IndexPage from './pages/index.vue'
 import BlogPost from './pages/blog/slug.vue'
 import SyntaxPage from './pages/syntax.vue'
+import LivePage from './pages/live.vue'
 
 export default createRouter({
   history: createWebHashHistory(),
@@ -9,5 +10,6 @@ export default createRouter({
     { path: '/', component: IndexPage },
     { path: '/blog/:slug', component: BlogPost },
     { path: '/syntax', component: SyntaxPage },
+    { path: '/live', component: LivePage },
   ],
 })

@@ -24,6 +24,14 @@ export interface ComarkProps {
   plugins?: ParseOptions['plugins']
 
   /**
+   * Strip wrapper tags from the top level of the tree — shorthand for
+   * `options.unwrap`. `true` unwraps `<p>` (single-line rendering); a
+   * space-separated string or array unwraps the listed tags. Useful for inline
+   * usage like `<UButton><Comark :markdown="text" unwrap /></UButton>`.
+   */
+  unwrap?: boolean | string | string[]
+
+  /**
    * Custom component mappings for element tags
    */
   components?: Record<string, any>
@@ -118,6 +126,16 @@ export const Comark: ComarkComponent = defineComponent({
     },
 
     /**
+     * Strip wrapper tags from the top level of the tree — shorthand for
+     * `options.unwrap`. `true` unwraps `<p>`; a space-separated string or array
+     * unwraps the listed tags.
+     */
+    unwrap: {
+      type: [Boolean, String, Array] as PropType<boolean | string | string[]>,
+      default: false,
+    },
+
+    /**
      * Custom component mappings for element tags
      * Key: tag name (e.g., 'h1', 'p', 'MyComponent')
      * Value: Vue component
@@ -184,7 +202,13 @@ export const Comark: ComarkComponent = defineComponent({
 
     const parsed = shallowRef<ComarkTree | null>(null)
 
-    const parse = createSerializedParse({ ...props.options, plugins: props.plugins })
+    const parse = createSerializedParse({
+      ...props.options,
+      // `unwrap` prop is a shorthand for the `unwrap` parse option; an explicit
+      // `options.unwrap` still wins when the prop is left at its default.
+      ...(props.unwrap ? { unwrap: props.unwrap } : {}),
+      plugins: props.plugins,
+    })
 
     watch(
       () => [markdown.value, props.streaming] as const,

@@ -25,14 +25,7 @@ const packages: Package[] = readdirSync(packagesDir)
 
 // `postinstall` runs `pnpm stub`, which fills `dist/` with files that just
 // re-export from `src/`. Bundle sizes are only meaningful after a real build
-// (`pnpm prepack`), so skip when we detect the dev stubs.
-function isStubbed(pkg: Package): boolean {
-  const entry = join(pkg.dir, pkg.main)
-  if (!existsSync(entry)) return true
-  return readFileSync(entry, 'utf-8').includes('/src/')
-}
-
-const stubbed = packages.some(isStubbed)
+// (`pnpm prepack`).
 
 // `npm pack --dry-run --json` reports exactly what would be published (honouring
 // the `files` field and `.npmignore`), so we measure the real shipped size.
@@ -57,7 +50,7 @@ function roundToKilobytes(bytes: number): string {
   return (bytes / 1024).toFixed(bytes > 100 * 1024 ? 0 : 1) + 'k'
 }
 
-describe.skipIf(stubbed || process.env.SKIP_BUNDLE_SIZE === 'true')('package bundle size', { timeout: 60_000 }, () => {
+describe('package bundle size', { timeout: 60_000 }, () => {
   it('published size of each package', () => {
     const report: Record<string, string> = {}
     for (const pkg of packages) {
@@ -67,13 +60,13 @@ describe.skipIf(stubbed || process.env.SKIP_BUNDLE_SIZE === 'true')('package bun
 
     expect(report).toMatchInlineSnapshot(`
       {
-        "@comark/angular": "49.5k (53 files)",
+        "@comark/angular": "52.5k (54 files)",
         "@comark/ansi": "34.4k (82 files)",
-        "@comark/html": "16.2k (42 files)",
-        "@comark/nuxt": "10.1k (42 files)",
-        "@comark/react": "39.8k (56 files)",
-        "@comark/svelte": "40.4k (66 files)",
-        "@comark/vue": "56.7k (62 files)",
+        "@comark/html": "16.3k (42 files)",
+        "@comark/nuxt": "10.2k (42 files)",
+        "@comark/react": "40.5k (58 files)",
+        "@comark/svelte": "40.6k (66 files)",
+        "@comark/vue": "57.3k (62 files)",
         "comark": "409k (158 files)",
       }
     `)

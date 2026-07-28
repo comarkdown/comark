@@ -10,7 +10,6 @@
   },
   "dependencies": {
     "@angular/common": "catalog:",
-    "@angular/compiler": "catalog:",
     "@angular/core": "catalog:",
     "@angular/platform-browser": "catalog:",
     "@angular/platform-browser-dynamic": "catalog:",
@@ -26,6 +25,7 @@
   "devDependencies": {
     "@analogjs/vite-plugin-angular": "catalog:",
     "@angular/build": "catalog:",
+    "@angular/compiler": "catalog:",
     "@angular/compiler-cli": "catalog:",
     "@tailwindcss/vite": "catalog:",
     "@vitejs/devtools": "catalog:",

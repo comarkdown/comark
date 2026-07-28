@@ -3,7 +3,7 @@
 import { use, useDeferredValue, useMemo, Suspense } from 'react'
 import { parse } from 'comark'
 import type { ComarkTree } from 'comark'
-import { ComarkRenderer } from './ComarkRenderer.tsx'
+import { ComarkLive } from './ComarkLive.tsx'
 import type { ComarkProps } from './Comark'
 
 interface ComarkContentProps extends Omit<ComarkProps, 'markdown' | 'children' | 'options' | 'plugins'> {
@@ -22,7 +22,7 @@ function ComarkContent({
   const parsed = use(parsePromise)
 
   return (
-    <ComarkRenderer
+    <ComarkLive
       tree={parsed}
       components={customComponents}
       componentsManifest={componentsManifest}

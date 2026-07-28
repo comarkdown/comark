@@ -6,7 +6,11 @@ import { comarkAttributes, userBlockAttrs } from '../attributes.ts'
 export async function ol(node: ComarkElement, state: State) {
   const children = node.slice(2) as ComarkNode[]
 
-  const revert = state.applyContext({ list: true, order: 1, listIndent: 3 })
+  // `start` is carried by the native numbering; IMPLICIT_ATTRS drops it from user attrs.
+  const start = Number((node[1] as Record<string, unknown>).start)
+  const order = Number.isInteger(start) && start >= 1 ? start : 1
+
+  const revert = state.applyContext({ list: true, order, listIndent: 3 })
 
   let result = ''
   for (const child of children) {

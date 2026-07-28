@@ -71,6 +71,26 @@ function App() {
 <!-- <p>Hello<br>world</p> -->
 ```
 
+### With Angular
+
+```typescript [app.component.ts]
+import { Component } from '@angular/core'
+import { ComarkComponent } from '@comark/angular'
+import breaks from '@comark/angular/plugins/breaks'
+
+@Component({
+  selector: 'app-root',
+  standalone: true,
+  imports: [ComarkComponent],
+  template: `<comark [markdown]="markdown" [plugins]="[breaks()]" />`,
+})
+export class AppComponent {
+  markdown = `Hello
+world`
+  // <p>Hello<br>world</p>
+}
+```
+
 ### With Parse API
 
 ```typescript [parse.ts]

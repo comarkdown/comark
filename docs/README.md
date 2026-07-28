@@ -19,25 +19,37 @@ npx skills add https://comark.dev
 See the [Installation guide](./content/1.getting-started/1.installation.md) (section *Agent Skill*) for more context.
 
 ### Core API Documentation
-1. **[Parse API](./content/4.api/1.parse.md)** - String parsing
+1. **[Parse API](./content/5.api/1.parse.md)** - String parsing
    - `parse()` - Parse markdown strings
    - Types and interfaces
 
-2. **[Auto-Close API](./content/4.api/2.auto-close.md)** - Handle incomplete syntax
+2. **[Auto-Close API](./content/5.api/2.auto-close.md)** - Handle incomplete syntax
    - `autoCloseMarkdown()` - Auto-close unclosed syntax
    - Streaming integration
    - Use cases
 
 ### Rendering
-3. **[Vue Rendering](./content/3.rendering/1.vue.md)** - Render Comark content in Vue
+3. **[Vue Rendering](./content/3.rendering/3.vue.md)** - Render Comark content in Vue
    - Component props
    - Custom components
    - Slots and error handling
 
-4. **[React Rendering](./content/3.rendering/2.react.md)** - Render Comark content in React
+4. **[React Rendering](./content/3.rendering/5.react.md)** - Render Comark content in React
    - Component props
    - Custom components
    - Props conversion
+
+5. **[Svelte Rendering](./content/3.rendering/6.svelte.md)** - Render Comark content in Svelte
+   - Snippets and streaming
+   - SvelteKit SSR
+
+6. **[Angular Rendering](./content/3.rendering/7.angular.md)** - Render Comark content in Angular
+   - Standalone components
+   - Custom components and streaming
+
+7. **[HTML Rendering](./content/3.rendering/2.html.md)** - Framework-free HTML strings
+
+8. **[ANSI Rendering](./content/3.rendering/8.ansi.md)** - Terminal output
 
 ## Quick Navigation
 
@@ -47,17 +59,21 @@ See the [Installation guide](./content/1.getting-started/1.installation.md) (sec
 
 - **Install Comark** → [Installation Guide](./content/1.getting-started/1.installation.md)
 - **Install the Agent Skill** → `npx skills add https://comark.dev` (see [Getting Started → Agent skill](#agent-skill-ai-assistants) above)
-- **Parse markdown from a string** → [Parse API](./content/4.api/1.parse.md)
-- **Handle incomplete markdown** → [Auto-Close API](./content/4.api/2.auto-close.md)
-- **Render Comark in Vue** → [Vue Rendering](./content/3.rendering/1.vue.md)
-- **Render Comark in React** → [React Rendering](./content/3.rendering/2.react.md)
-- **Create custom components** → [Vue - Custom Components](./content/3.rendering/1.vue.md#custom-components)
+- **Parse markdown from a string** → [Parse API](./content/5.api/1.parse.md)
+- **Handle incomplete markdown** → [Auto-Close API](./content/5.api/2.auto-close.md)
+- **Render Comark in Vue** → [Vue Rendering](./content/3.rendering/3.vue.md)
+- **Render Comark in React** → [React Rendering](./content/3.rendering/5.react.md)
+- **Render Comark in Svelte** → [Svelte Rendering](./content/3.rendering/6.svelte.md)
+- **Render Comark in Angular** → [Angular Rendering](./content/3.rendering/7.angular.md)
+- **Create custom components** → [Vue - Custom Components](./content/3.rendering/3.vue.md#custom-components)
 
 ### By Technology
 
 - **TypeScript** → All documentation includes TypeScript examples
-- **Vue** → [Vue Rendering](./content/3.rendering/1.vue.md)
-- **React** → [React Rendering](./content/3.rendering/2.react.md)
+- **Vue** → [Vue Rendering](./content/3.rendering/3.vue.md)
+- **React** → [React Rendering](./content/3.rendering/5.react.md)
+- **Svelte** → [Svelte Rendering](./content/3.rendering/6.svelte.md)
+- **Angular** → [Angular Rendering](./content/3.rendering/7.angular.md)
 
 ## Development
 
@@ -81,9 +97,9 @@ docs/
 │   ├── index.md              # Documentation home
 │   ├── 1.getting-started/    # Getting started guides
 │   ├── 2.syntax/             # Syntax documentation
-│   ├── 3.rendering/          # Vue and React rendering
-│   ├── 4.api/                # API reference docs
-│   └── 5.examples.md         # Examples
+│   ├── 3.rendering/          # Framework and string rendering
+│   ├── 5.api/                # API reference docs
+│   └── 8.examples.md         # Examples
 ├── public/              # Static assets
 └── package.json         # Dependencies and scripts
 ```
@@ -94,29 +110,31 @@ docs/
 
 | Function | Purpose | Documentation |
 |----------|---------|---------------|
-| `parse()` | Parse string | [Parse API](./content/4.api/1.parse.md) |
-| `autoCloseMarkdown()` | Auto-close syntax | [Auto-Close API](./content/4.api/2.auto-close.md) |
+| `parse()` | Parse string | [Parse API](./content/5.api/1.parse.md) |
+| `autoCloseMarkdown()` | Auto-close syntax | [Auto-Close API](./content/5.api/2.auto-close.md) |
 
-### Vue & React Components
+### Framework Components
 
 | Export | Type | Documentation |
 |--------|------|---------------|
-| `Comark` (Vue) | Component | [Vue Rendering](./content/3.rendering/1.vue.md) |
-| `Comark` (React) | Component | [React Rendering](./content/3.rendering/2.react.md) |
+| `Comark` (Vue) | Component | [Vue Rendering](./content/3.rendering/3.vue.md) |
+| `Comark` (React) | Component | [React Rendering](./content/3.rendering/5.react.md) |
+| `Comark` (Svelte) | Component | [Svelte Rendering](./content/3.rendering/6.svelte.md) |
+| `ComarkComponent` (Angular) | Component | [Angular Rendering](./content/3.rendering/7.angular.md) |
 
 ### Types
 
 | Type | Purpose | Documentation |
 |------|---------|---------------|
-| `ComarkTree` | Parse output & AST root | [API Reference](./content/4.api/3.reference.md) |
-| `ComarkNode` | AST node | [API Reference](./content/4.api/3.reference.md) |
+| `ComarkTree` | Parse output & AST root | [API Reference](./content/5.api/3.reference.md) |
+| `ComarkNode` | AST node | [API Reference](./content/5.api/3.reference.md) |
 
 ## Contributing to Documentation
 
 When contributing documentation:
 
 1. **Follow the existing structure** - Match the format of existing docs
-2. **Include code examples** - Show both TypeScript and Vue examples
+2. **Include code examples** - Show TypeScript and framework-specific examples
 3. **Add cross-references** - Link to related documentation
 4. **Test all examples** - Ensure code examples actually work
 5. **Use proper markdown** - Follow Comark for components

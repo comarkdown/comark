@@ -16,7 +16,7 @@ const JsonSchemaProperty = z.object({
 })
 
 const ComponentSlot = z.object({
-  name: z.string().describe('Slot name — "default" for the unnamed default slot'),
+  name: z.string().describe('Slot name, "default" for the unnamed default slot'),
   description: z.string().describe('What content goes in this slot'),
 })
 

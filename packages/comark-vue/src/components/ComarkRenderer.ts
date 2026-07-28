@@ -17,6 +17,7 @@ import {
   inject,
   onErrorCaptured,
   onScopeDispose,
+  onUnmounted,
   ref,
   shallowRef,
   toRaw,
@@ -271,6 +272,13 @@ export interface ComarkRendererProps {
    * Additional data to pass to the renderer
    */
   data?: Record<string, unknown>
+
+  /**
+   * Document keys. When set and `globalThis.comarkContext` exists, the renderer
+   * subscribes to live updates for this key (HMR, devtools, collab, agents) and
+   * re-renders with the pushed tree. No-op otherwise.
+   */
+  comarkKey?: string
 }
 
 type ComarkRendererComponent = ReturnType<typeof defineComponent<ComarkRendererProps>>
@@ -355,11 +363,39 @@ export const ComarkRenderer: ComarkRendererComponent = defineComponent({
       type: Object as PropType<Record<string, unknown>>,
       default: () => ({}),
     },
+
+    /**
+     * Document key used to subscribe to live updates via `globalThis.comarkContext`
+     */
+    comarkKey: {
+      type: String as PropType<string>,
+      default: undefined,
+    },
   },
 
   async setup(props) {
     const componentErrors = ref(new Set<string>())
+    // Local tree state so devtools (and other live sources) can push updates
+    // without requiring the parent to re-render.
     const tree = shallowRef(toRaw(props.tree))
+    watch(
+      () => props.tree,
+      (next) => {
+        tree.value = toRaw(next)
+      }
+    )
+
+    // Live document support: if an ambient context exists, subscribe to updates
+    // for this id and re-render with the pushed tree. Cleaned up on unmount.
+    // The key is the tree's own `meta.key` (set by a plugin) or the `comarkKey` prop.
+    const liveTree = shallowRef<ComarkTree | null>(null)
+    const key = (props.tree as ComarkTree).meta?.key || props.comarkKey
+    if (key && globalThis.comarkContext) {
+      const cleanup = globalThis.comarkContext.get(key, toRaw(props.tree as ComarkTree)).listen((next) => {
+        liveTree.value = next
+      })
+      onUnmounted(() => cleanup(true))
+    }
 
     // Capture errors from child components (e.g., during streaming when props are incomplete)
     onErrorCaptured((_err, instance, _info) => {
@@ -378,7 +414,10 @@ export const ComarkRenderer: ComarkRendererComponent = defineComponent({
     // Devtools: register this instance if no parent Comark already registered
     const hot = (import.meta as Record<string, any>).hot
     if (hot) {
-      let devtoolsHandle: { unregister: () => void } | null = null
+      let devtoolsHandle: {
+        unregister: () => void
+        update: (payload: { tree: any; markdown: string }) => void
+      } | null = null
       let disposed = false
       const renderMdPromise = import('comark/render')
 
@@ -388,7 +427,7 @@ export const ComarkRenderer: ComarkRendererComponent = defineComponent({
           hot,
           tree: props.tree,
           // When devtools updates the markdown, use the provided tree
-          onUpdate: (newMarkdown: string, newTree?: ComarkTree | null) => {
+          onUpdate: (_newMarkdown: string, newTree?: ComarkTree | null) => {
             if (newTree) {
               tree.value = newTree
             }
@@ -401,10 +440,10 @@ export const ComarkRenderer: ComarkRendererComponent = defineComponent({
           devtoolsHandle = handle
           if (handle) {
             watch(
-              () => props.tree,
-              (tree) => {
+              () => tree.value,
+              (current) => {
                 renderMdPromise.then(({ renderMarkdown }) => {
-                  renderMarkdown(tree).then((md) => handle.update({ tree, markdown: md }))
+                  renderMarkdown(current).then((md) => handle.update({ tree: current, markdown: md }))
                 })
               }
             )
@@ -434,8 +473,9 @@ export const ComarkRenderer: ComarkRendererComponent = defineComponent({
     const caret = computed<ComarkElement | null>(() => getCaret(props.caret || false))
 
     return () => {
-      // Render all nodes from the tree value
-      const nodes = [...(tree.value.nodes || [])]
+      // Prefer live context updates, else the local tree (prop + devtools).
+      const rawTree = toRaw(liveTree.value ?? tree.value)
+      const nodes = [...(rawTree.nodes || [])]
 
       if (props.streaming && caret.value && nodes.length > 0) {
         const hasStreamCaret = findLastTextNodeAndAppendNode(nodes[nodes.length - 1] as ComarkElement, caret.value)
@@ -446,10 +486,8 @@ export const ComarkRenderer: ComarkRendererComponent = defineComponent({
 
       const renderData: NodeRenderData = {
         frontmatter:
-          (tree.value as ComarkTree).frontmatter ||
-          (tree.value as unknown as { data: Record<string, unknown> }).data ||
-          {},
-        meta: (tree.value as ComarkTree).meta || {},
+          (rawTree as ComarkTree).frontmatter || (rawTree as unknown as { data: Record<string, unknown> }).data || {},
+        meta: (rawTree as ComarkTree).meta || {},
         data: props.data || {},
         props: {},
       }

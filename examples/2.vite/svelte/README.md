@@ -10,7 +10,7 @@ path: /examples/vite/svelte
 ::CodeExplorer
 ---
 org: comarkdown
-repo: comark
+repo: comark@81a416b278b0f304d7e7577c7ac6bbfc78414790
 path: examples/2.vite/svelte
 defaultValue: src/App.svelte
 ---

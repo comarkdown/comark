@@ -103,8 +103,8 @@ elements:
 
 ::
 
-- **`root`** — Key of the root element in the `elements` map
-- **`elements`** — Map of element definitions, each with `type`, `props`, and optional `children`
+- **`root`**: Key of the root element in the `elements` map
+- **`elements`**: Map of element definitions, each with `type`, `props`, and optional `children`
 
 ### Single Element
 

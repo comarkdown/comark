@@ -72,7 +72,7 @@ Several sanitizations are applied automatically and cannot be disabled:
 
 ### Event Handlers
 
-All `on*` attributes are stripped regardless of case — `onclick`, `onerror`, `onload`, `onmouseover`, and any other `on*` attribute.
+All `on*` attributes are stripped regardless of case: `onclick`, `onerror`, `onload`, `onmouseover`, and any other `on*` attribute.
 
 ::code-group
 
@@ -127,7 +127,7 @@ Returns a `ComarkPlugin` that sanitizes the parsed AST.
 
 **Parameters:**
 
-- `options?` - Optional configuration — see [Options](#options)
+- `options?` - Optional configuration, see [Options](#options)
 
 **Returns:** `ComarkPlugin`
 
@@ -138,6 +138,8 @@ Returns a `ComarkPlugin` that sanitizes the parsed AST.
 | Option | Type | Default | Description |
 |---|---|---|---|
 | [`blockedTags`](#options-code-blockedtags) | `string[]` | `[]` | Tag names to remove entirely from the AST |
+| [`allowedTags`](#options-code-allowedtags) | `string[]` | `[]` | Tag names to allow exclusively in the AST |
+| [`tagFallback`](#options-code-tagfallback) | `function` | `false`  | Defines how to handle unallowed tags in the AST |
 | [`allowedProtocols`](#options-code-allowedprotocols) | `string[]` | `['*']` | Protocols permitted in `href` and `src` |
 | [`allowedLinkPrefixes`](#options-code-allowedlinkprefixes) | `string[]` | `['*']` | URL prefixes permitted in `href` |
 | [`allowedImagePrefixes`](#options-code-allowedimageprefixes) | `string[]` | `['*']` | URL prefixes permitted in `src` |
@@ -165,6 +167,33 @@ security({
 | `base` | Changes base URL for relative links |
 | `meta` | HTTP refresh / redirect |
 
+### `allowedTags`
+
+Tag names to exclusively keep in the AST. Matching is case-insensitive, so, so `SPAN`, `Span`, and `span` are all caught.
+
+```typescript
+security({
+  allowedTags: ['p', 'span', 'ul', 'li', 'ol', 'strong']
+})
+```
+
+### `tagFallback`
+
+Defines the replacement strategy for tags that are filtered out because they are not present in the `allowedTags` (whitelist) or present in the `blockedTags` (blacklist).
+
+```typescript
+import { textContent } from 'comark/utils'
+
+security({
+  allowedTags: ['p', 'span'],
+  tagFallback: (element: ComarkElement) => {
+    // Remove all tags and return the text content
+    return textContent(element)
+  }
+})
+
+```
+
 ### `allowedProtocols`
 
 Restricts which URL protocols are permitted in `href` and `src` attributes. Use `['*']` to allow all protocols not already on the hard-coded block list.
@@ -176,7 +205,7 @@ security({
 ```
 
 ::warning
-The hard-coded unsafe protocols (`javascript:`, `vbscript:`, `data:text/*`) are a floor that cannot be overridden — even `allowedProtocols: ['javascript']` will not unblock `javascript:` URLs.
+The hard-coded unsafe protocols (`javascript:`, `vbscript:`, `data:text/*`) are a floor that cannot be overridden. Even `allowedProtocols: ['javascript']` will not unblock `javascript:` URLs.
 ::
 
 ### `allowedLinkPrefixes`
@@ -193,7 +222,7 @@ security({
 
 ### `allowedImagePrefixes`
 
-Same as `allowedLinkPrefixes` but applies to `src` attributes only. The two options are checked independently — restricting one does not affect the other.
+Same as `allowedLinkPrefixes` but applies to `src` attributes only. The two options are checked independently; restricting one does not affect the other.
 
 ```typescript
 security({
@@ -233,7 +262,7 @@ security({
 
 ### User-Generated Content
 
-The most common use case — lock down everything that could execute code or phone home:
+The most common use case: lock down everything that could execute code or phone home:
 
 ```typescript
 import { parse } from 'comark'
@@ -279,7 +308,7 @@ security({
 
 ### Block tags, not just attributes
 
-Blocking only `<script>` may not be enough — `<iframe>`, `<object>`, `<embed>`, `<link>`, and `<style>` can also execute or load external content:
+Blocking only `<script>` may not be enough: `<iframe>`, `<object>`, `<embed>`, `<link>`, and `<style>` can also execute or load external content:
 
 ```typescript
 // ✅ More thorough
@@ -320,5 +349,5 @@ res.setHeader(
 ```
 
 ::tip
-The plugin runs during the `post` phase and traverses the AST once — O(n) in the number of nodes, with no impact on render time.
+The plugin runs during the `post` phase and traverses the AST once (O(n) in the number of nodes), with no impact on render time.
 ::

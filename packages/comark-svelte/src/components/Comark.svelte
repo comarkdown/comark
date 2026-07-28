@@ -32,6 +32,7 @@ This is an alert component
     markdown = '',
     options = {},
     plugins = [],
+    unwrap = false,
     components = {},
     componentsManifest,
     streaming = false,
@@ -42,6 +43,7 @@ This is an alert component
     markdown?: string
     options?: Record<string, any>
     plugins?: ComarkPlugin[]
+    unwrap?: boolean | string | string[]
     components?: Record<string, any>
     componentsManifest?: ComponentManifest
     streaming?: boolean
@@ -61,7 +63,7 @@ This is an alert component
     // `parse` directly mutates `plugins` which creates an infinite effect loop
     // so we copy it before passing it in so it gets a regular JS array and we get to still
     // track dependencies from an external perspective
-    parse(content, { ...options, plugins: [...plugins] }).then((result) => {
+    parse(content, { ...options, ...(unwrap ? { unwrap } : {}), plugins: [...plugins] }).then((result) => {
       if (currentVersion > appliedVersion) {
         appliedVersion = currentVersion
         parsed = result

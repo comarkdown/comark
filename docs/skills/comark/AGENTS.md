@@ -1,15 +1,15 @@
-# Comark — AI Agents & LLM Streaming
+# Comark: AI Agents & LLM Streaming
 
 A guide for using Comark in AI agent and LLM-powered applications where markdown is generated incrementally by a language model.
 
 ## Why Comark for AI?
 
-LLMs stream markdown token-by-token. Standard markdown parsers expect complete input — they fail or produce broken output on partial streams. Comark was built to handle exactly this:
+LLMs stream markdown token-by-token. Standard markdown parsers expect complete input. They fail or produce broken output on partial streams. Comark was built to handle exactly this:
 
-- **`autoClose`** (default: `true`) — incomplete syntax like `**bold text` is automatically closed on every parse, so partial tokens always render correctly
-- **Streaming mode** — re-renders efficiently as content arrives
-- **Caret indicator** — shows a live cursor during generation
-- **ANSI rendering** — styled terminal output for CLI agents
+- **`autoClose`** (default: `true`): incomplete syntax like `**bold text` is automatically closed on every parse, so partial tokens always render correctly
+- **Streaming mode**: re-renders efficiently as content arrives
+- **Caret indicator**: shows a live cursor during generation
+- **ANSI rendering**: styled terminal output for CLI agents
 
 ---
 
@@ -125,6 +125,53 @@ export default function Chat() {
 
 ---
 
+## Angular
+
+```typescript
+import { Component } from '@angular/core'
+import { ComarkComponent } from '@comark/angular'
+
+@Component({
+  selector: 'app-chat',
+  standalone: true,
+  imports: [ComarkComponent],
+  template: `
+    <comark
+      [markdown]="content"
+      [streaming]="streaming"
+      [caret]="streaming"
+    />
+  `,
+})
+export class ChatComponent {
+  content = ''
+  streaming = false
+
+  async generate(prompt: string) {
+    this.content = ''
+    this.streaming = true
+
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      body: JSON.stringify({ prompt }),
+    })
+
+    const reader = res.body!.getReader()
+    const decoder = new TextDecoder()
+
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+      this.content += decoder.decode(value, { stream: true })
+    }
+
+    this.streaming = false
+  }
+}
+```
+
+---
+
 ## Terminal / CLI Agents
 
 Use `@comark/ansi` to render LLM markdown output in terminal-based agents:
@@ -167,6 +214,11 @@ The `caret` prop appends a blinking cursor to the last text node while `streamin
 <Comark markdown={content} {streaming} caret={{ class: 'animate-blink' }} />
 ```
 
+```html
+<!-- Angular -->
+<comark [markdown]="content" [streaming]="streaming" [caret]="{ class: 'animate-blink' }" />
+```
+
 ---
 
 ## With Custom Components
@@ -191,7 +243,7 @@ import CodeBlock from './CodeBlock.vue'
 
 ## With Syntax Highlighting
 
-Syntax highlighting works during streaming — each re-parse will highlight newly completed code blocks:
+Syntax highlighting works during streaming: each re-parse will highlight newly completed code blocks:
 
 ```vue
 <script setup lang="ts">
