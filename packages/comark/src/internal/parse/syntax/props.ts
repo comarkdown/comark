@@ -55,7 +55,7 @@ export function searchProps(content: string, index = 0) {
         if (char === '=') {
           index += 1
           props.push([key, searchValue()])
-        } else {
+        } else if (key.match(/^[a-z0-9_\-:]+$/gi)) {
           props.push([key, 'true'])
         }
       }
