@@ -48,7 +48,7 @@
     "release": "release-it"
   },
   "dependencies": {
-    "comark": "catalog:"
+    "comark": "workspace:*"
   },
   "devDependencies": {
     "vitest": "catalog:"

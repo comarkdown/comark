@@ -39,6 +39,14 @@ export interface ComarkProps {
   componentsManifest?: (name: string) => Promise<{ default: React.ComponentType<any> }>
 
   /**
+   * Strip wrapper tags from the top level of the tree — shorthand for
+   * `options.unwrap`. `true` unwraps `<p>` (single-line rendering); a
+   * space-separated string or array unwraps the listed tags. Useful for inline
+   * usage like `<button><Comark markdown={text} unwrap /></button>`.
+   */
+  unwrap?: boolean | string | string[]
+
+  /**
    * Enable streaming mode — delegates to ComarkClient for client-side re-rendering
    * when the markdown prop changes. Use this for LLM streaming output.
    */
@@ -98,6 +106,7 @@ export async function Comark({
   markdown = '',
   options = {},
   plugins = [],
+  unwrap = false,
   components: customComponents = {},
   componentsManifest,
   streaming = false,
@@ -106,12 +115,15 @@ export async function Comark({
   className,
 }: ComarkProps) {
   const source = children ? String(children) : markdown
+  // `unwrap` prop is a shorthand for the `unwrap` parse option; an explicit
+  // `options.unwrap` still wins when the prop is left at its default.
+  const parseOptions = unwrap ? { ...options, unwrap } : options
 
   if (streaming) {
     return (
       <ComarkClient
         markdown={source}
-        options={options}
+        options={parseOptions}
         plugins={plugins}
         components={customComponents}
         componentsManifest={componentsManifest}
@@ -123,7 +135,7 @@ export async function Comark({
     )
   }
 
-  const parsed = await parse(source, { ...options, plugins })
+  const parsed = await parse(source, { ...parseOptions, plugins })
 
   return (
     <ComarkRenderer

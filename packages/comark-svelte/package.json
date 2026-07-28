@@ -64,7 +64,7 @@
     "release": "release-it"
   },
   "dependencies": {
-    "comark": "catalog:"
+    "comark": "workspace:*"
   },
   "devDependencies": {
     "@sveltejs/package": "catalog:",

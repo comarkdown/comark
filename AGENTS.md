@@ -479,6 +479,7 @@ describe('functionUnderTest', () => {
 const result = await parse(markdownContent, {
   autoUnwrap: true,   // Remove <p> wrappers from single-paragraph containers
   autoClose: true,    // Auto-close incomplete syntax
+  unwrap: 'p',        // Strip top-level wrapper tags (MDC unwrap); merges paragraphs
 })
 
 result.nodes       // ComarkNode[]

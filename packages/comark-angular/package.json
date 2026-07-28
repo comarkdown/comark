@@ -45,7 +45,7 @@
     "release": "release-it"
   },
   "dependencies": {
-    "comark": "catalog:"
+    "comark": "workspace:*"
   },
   "devDependencies": {
     "@angular/common": "^22.0.6",

@@ -383,6 +383,30 @@ export interface ParseOptions<TPlugins extends readonly ComarkPlugin<any, any>[]
   autoUnwrap?: boolean
 
   /**
+   * Remove wrapper tags from the parsed tree, hoisting their children up in
+   * place. Mirrors the MDC `unwrap` behaviour and is primarily used to strip
+   * the `<p>` wrapper for single-line / inline rendering, e.g.
+   * `<Button><Comark :markdown="text" :options="{ unwrap: 'p' }" /></Button>`.
+   *
+   * - `true` — unwrap paragraphs (`p`)
+   * - `string` — comma- or whitespace-separated tag names, e.g. `'p, h1'` or `'div p'`
+   * - `string[]` — explicit list of tag names
+   * - `'*'` — matches any tag
+   *
+   * Tags are applied sequentially: each tag descends one level into the result
+   * of the previous one, so `'div p'` unwraps a `<div>` then the `<p>` inside
+   * it. After unwrapping, adjacent text nodes are merged into a single string
+   * (like MDC): `a\n\nb` becomes `ab`.
+   *
+   * @default false
+   * @example
+   * // With unwrap: 'p'
+   * // Input:  `Hello **world**`
+   * // Nodes:  ['Hello ', ['strong', {}, 'world']]   (no <p> wrapper)
+   */
+  unwrap?: boolean | string | string[]
+
+  /**
    * Whether to automatically close unclosed markdown and Comark components.
    * @default true
    */

@@ -47,7 +47,7 @@
     "release": "release-it"
   },
   "dependencies": {
-    "comark": "catalog:"
+    "comark": "workspace:*"
   },
   "devDependencies": {
     "beautiful-mermaid": "catalog:",
