@@ -110,7 +110,7 @@ export function createParse<const TPlugins extends readonly ComarkPlugin<any, an
     }
 
     if (autoClose) {
-      state.markdown = autoCloseMarkdown(state.markdown)
+      state.markdown = autoCloseMarkdown(state.markdown, { frontmatter: opts.streaming })
     }
 
     for (const plugin of plugins) {
