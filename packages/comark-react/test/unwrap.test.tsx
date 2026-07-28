@@ -1,16 +1,16 @@
 import { describe, expect, it } from 'vitest'
 import { renderToString } from 'react-dom/server'
-import { Comark } from '../src/components/Comark'
+import { ComarkServer } from '../src/components/Comark'
 
 /**
  * Tests for the `unwrap` shorthand prop / `options.unwrap` on the high-level
  * Comark component — the MDC `unwrap="p"` migration path for inline rendering.
  *
- * `Comark` is an async server component, so we await it to obtain the element
- * before handing it to `renderToString`.
+ * `Comark` is the client entry (hooks); the async server entry is `ComarkServer`.
+ * Await that to obtain the element before handing it to `renderToString`.
  */
 async function renderComark(props: Record<string, unknown>) {
-  const element = await Comark(props as any)
+  const element = await ComarkServer(props as any)
   return renderToString(element as React.ReactElement)
 }
 
