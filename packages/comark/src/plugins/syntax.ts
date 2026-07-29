@@ -2,7 +2,7 @@ import type { MarkdownExit, PluginSimple, Renderer } from 'markdown-exit'
 import { Token } from 'markdown-exit'
 import type { MarkdownItPlugin, MarkdownItPluginWithOptions } from '../types.ts'
 import { defineComarkPlugin } from '../utils/helpers.ts'
-import { parseBracketContent } from '../internal/parse/syntax/brackets.ts'
+import { findClosingBracket, parseBracketContent } from '../internal/parse/syntax/brackets.ts'
 import { searchProps } from '../internal/parse/syntax/props.ts'
 import { parseBlockParams } from '../internal/parse/syntax/block-params.ts'
 import { parseYaml } from '../internal/yaml.ts'
@@ -427,23 +427,9 @@ const markdownItInlineSpan: PluginSimple = (md) => {
     const start = state.pos
     if (state.src[start] !== '[') return false
 
-    let index = start + 1
-    let depth = 0
-    while (index < state.src.length) {
-      if (state.src[index] === '\\') {
-        index += 2
-        continue
-      }
-      if (state.src[index] === '[') {
-        depth++
-      } else if (state.src[index] === ']') {
-        if (depth === 0) break
-        depth--
-      }
-      index += 1
-    }
-
-    if (index === start) return false
+    // An unclosed span consumes to the end of input (streaming auto-close)
+    const close = findClosingBracket(state.src, start)
+    const index = close === -1 ? state.src.length : close
 
     // Don't match `[text](url)` or `[text][ref]` — let the link parser handle those
     const nextChar = state.src[index + 1]
