@@ -119,6 +119,7 @@ class ComarkDevtoolsBridge {
         id,
         label,
         markdown,
+        tree,
         nodeCount: tree?.nodes?.length || 0,
       })
     }

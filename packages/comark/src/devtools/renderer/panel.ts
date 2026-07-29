@@ -10,8 +10,12 @@ const TAB_DEFS = [
   { id: 'ast', label: 'AST' },
 ] as const
 
-const POLL_INTERVAL_MS = 1500
+// Keep this snappy — navigation mounts a new renderer and the bridge pushes
+// over HMR immediately, but the panel only learns about it via poll.
+const POLL_INTERVAL_MS = 250
+// Debounce only user typing in the editor, not instance switches.
 const PARSE_DEBOUNCE_MS = 300
+const HIGHLIGHT_DEBOUNCE_MS = 16
 
 /**
  * Manages the Comark devtools panel lifecycle, state, and DOM.
@@ -137,9 +141,9 @@ export class DevtoolsPanel {
     this.parseTimer = setTimeout(() => this.parseMarkdown(), PARSE_DEBOUNCE_MS)
   }
 
-  private scheduleHighlight(): void {
+  private scheduleHighlight(delay = HIGHLIGHT_DEBOUNCE_MS): void {
     clearTimeout(this.highlightTimer)
-    this.highlightTimer = setTimeout(() => this.refreshHighlight(), 16)
+    this.highlightTimer = setTimeout(() => this.refreshHighlight(), delay)
   }
 
   private syncHighlight(): void {
@@ -178,6 +182,7 @@ export class DevtoolsPanel {
 
     const current = instances[0] || null
     const prevId = this.activeInstance?.id
+    const prevMarkdown = this.activeInstance?.markdown
 
     this.activeInstance = current
 
@@ -185,15 +190,37 @@ export class DevtoolsPanel {
       this.instanceDot.dataset.connected = 'true'
       this.instanceLabel.textContent = current.label || current.id
 
-      if (current.id !== prevId && current.markdown) {
+      const switched = current.id !== prevId
+      const markdownArrived = !!current.markdown && current.markdown !== prevMarkdown
+
+      // Apply source + AST immediately on switch / when reverse-render catches up.
+      // Do NOT go through scheduleParse here — that re-pushes to the app and adds
+      // a 300ms debounce that only makes sense for user edits.
+      if ((switched || markdownArrived) && current.markdown != null) {
         this.editor.value = current.markdown
+        if (current.tree) {
+          this.lastTree = current.tree
+          this.lastError = null
+        }
+        // Cheap regex fallback first so the editor isn't blank while Shiki RPC runs.
+        this.lastHighlightHtml = null
         this.syncHighlight()
-        this.scheduleHighlight()
-        this.scheduleParse()
+        this.scheduleHighlight(0)
+      } else if (switched && current.tree) {
+        this.lastTree = current.tree
+        this.lastError = null
       }
     } else {
       this.instanceDot.dataset.connected = 'false'
       this.instanceLabel.textContent = ''
+      if (prevId) {
+        // Left a page with no Comark docs — clear stale editor state.
+        this.editor.value = ''
+        this.lastTree = null
+        this.lastHighlightHtml = null
+        this.lastError = null
+        this.syncHighlight()
+      }
     }
 
     this.updateView()

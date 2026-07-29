@@ -13,6 +13,8 @@ export interface ComarkInstanceSummary {
   id: string
   label?: string
   markdown?: string
+  /** Current tree — included so the panel can show AST without a round-trip parse. */
+  tree?: ComarkTree
   /** Total number of top-level AST nodes */
   nodeCount: number
 }
