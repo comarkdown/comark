@@ -28,4 +28,37 @@ describe('headingIds option', () => {
       ['h2', { id: 'section' }, 'Section'],
     ])
   })
+
+  it('deduplicates hierarchical ids with a numeric suffix', async () => {
+    const tree = await parse('## Options\n\n## Options')
+
+    const ids = tree.nodes.map((n: any) => n[1].id)
+    expect(ids).toEqual(['options', 'options-1'])
+  })
+
+  describe('slug text extraction', () => {
+    it('does not leak tag names from bold text', async () => {
+      const tree = await parse('## 1. Never let an LLM **speak** for you')
+
+      expect((tree.nodes[0] as any)[1].id).toBe('_1-never-let-an-llm-speak-for-you')
+    })
+
+    it('does not leak tag names from inline code', async () => {
+      const tree = await parse('## The `parse` function')
+
+      expect((tree.nodes[0] as any)[1].id).toBe('the-parse-function')
+    })
+
+    it('does not leak tag names from links', async () => {
+      const tree = await parse('## See [Nuxt](https://nuxt.com) docs')
+
+      expect((tree.nodes[0] as any)[1].id).toBe('see-nuxt-docs')
+    })
+
+    it('includes inline component names in the slug', async () => {
+      const tree = await parse('## Star :icon-star here')
+
+      expect((tree.nodes[0] as any)[1].id).toBe('star-icon-star-here')
+    })
+  })
 })

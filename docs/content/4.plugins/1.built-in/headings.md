@@ -60,9 +60,9 @@ The description check always looks at the node **immediately after** the title: 
 
 | Option | Type | Default | Description |
 |---|---|---|---|
-| [`titleTag`](#options-code-titletag) | `string \| false` | `'h1'` | Element tag to extract as the page title, or `false` to disable |
-| [`descriptionTag`](#options-code-descriptiontag) | `string \| false` | `'p'` | Element tag to extract as the page description, or `false` to disable |
-| [`remove`](#options-code-remove) | `boolean` | `false` | Remove extracted nodes from the tree after extraction |
+| [`titleTag`](#options-titletag) | `string \| false` | `'h1'` | Element tag to extract as the page title, or `false` to disable |
+| [`descriptionTag`](#options-descriptiontag) | `string \| false` | `'p'` | Element tag to extract as the page description, or `false` to disable |
+| [`remove`](#options-remove) | `boolean` | `false` | Remove extracted nodes from the tree after extraction |
 
 ### `titleTag`
 
