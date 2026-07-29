@@ -55,11 +55,11 @@ packages/comark/
 │   │   └── utils.ts          # textContent(), visit() tree utilities
 │   ├── devtools/             # Vite DevTools integration
 │   │   ├── index.ts          # Public exports (comark/devtools entry point)
-│   │   ├── registry.ts       # Global singleton registry for live instances
-│   │   ├── register.ts       # Instance registration helpers
+│   │   ├── bridge.ts         # Context ↔ HMR bridge for the Vite DevTools panel
+│   │   ├── client.ts         # Injected client entry (connectDevtools)
 │   │   ├── vite.ts           # Vite plugin with RPC endpoints (comark/devtools/vite entry point)
 │   │   ├── renderer.ts       # Re-export barrel (comark/devtools/renderer entry point)
-│   │   ├── types.ts          # Shared TypeScript interfaces for RPC and registry
+│   │   ├── types.ts          # Shared TypeScript interfaces for RPC and panel
 │   │   ├── constants.ts      # Icon assets and Shiki theme/lang config
 │   │   └── renderer/         # DevTools panel UI (internal)
 │   │       ├── index.ts      # Entry point, exports DevtoolsPanel
@@ -399,8 +399,10 @@ import alert from 'comark/plugins/alert'
 
 // Vite DevTools integration
 import { comarkDevtools } from 'comark/devtools/vite'
-// Devtools registry (used internally by framework renderers)
-import { registerDevtoolsInstance, getDevtoolsRegistry } from 'comark/devtools'
+// Ambient live-document context (used by renderers via comarkKey)
+import { createComarkContext } from 'comark'
+// Optional: manual bridge connect (normally injected by comarkDevtools())
+import { connectDevtools } from 'comark/devtools'
 
 // NOTE: All framework packages re-export every core plugin via their own subpath.
 // Prefer the framework-specific path when using a framework renderer:

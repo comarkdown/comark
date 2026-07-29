@@ -10,8 +10,14 @@ import {
   Type,
   inject,
 } from '@angular/core'
-import type { ComarkElement, ComarkNode, ComarkTree, NodeRenderData } from 'comark'
-import type { RegisteredInstance } from 'comark/devtools'
+import {
+  subscribeComarkDocument,
+  type ComarkDocumentSubscription,
+  type ComarkElement,
+  type ComarkNode,
+  type ComarkTree,
+  type NodeRenderData,
+} from 'comark'
 import { ComarkNodeComponent } from './comark-node.component.ts'
 import { findLastTextNodeAndAppendNode, getCaret } from '../utils/caret.ts'
 
@@ -62,63 +68,33 @@ export class ComarkRendererComponent implements OnInit, OnChanges, OnDestroy {
   /**
    * Document key used to subscribe to live updates via `globalThis.comarkContext`.
    * Falls back to the tree's own `meta.key` when set by a plugin.
+   * When a context exists but no key is provided, an auto id is allocated so the
+   * instance still appears in Vite DevTools.
    */
   @Input() comarkKey?: string
 
   private cdr = inject(ChangeDetectorRef)
   private liveTree: ComarkTree | null = null
-  private cleanup?: (clear?: boolean) => void
-  private devtoolsHandle: RegisteredInstance | null = null
-  private devtoolsDisposed = false
+  private subscription: ComarkDocumentSubscription | null = null
 
-  // Live document + devtools support. Cleaned up on destroy.
+  // Live document support via ambient context (auto-id when DevTools is present).
   ngOnInit(): void {
-    const key = this.tree.meta?.key || this.comarkKey
-    if (key && globalThis.comarkContext) {
-      this.cleanup = globalThis.comarkContext.get(key, this.tree).listen((tree) => {
-        this.liveTree = tree
-        this.cdr.markForCheck()
-      })
-    }
-
-    const hot = (import.meta as Record<string, any>).hot
-    if (!hot) return
-
-    import('comark/devtools').then(({ registerDevtoolsInstanceFromTree }) => {
-      if (this.devtoolsDisposed) return
-      registerDevtoolsInstanceFromTree({
-        hot,
-        tree: this.tree,
-        onUpdate: (_newMarkdown, newTree) => {
-          if (newTree) {
-            this.tree = newTree
-            this.cdr.markForCheck()
-          }
-        },
-      }).then((handle) => {
-        if (this.devtoolsDisposed) {
-          handle?.unregister()
-          return
-        }
-        this.devtoolsHandle = handle
-      })
+    this.subscription = subscribeComarkDocument(this.tree, this.comarkKey, (tree) => {
+      this.liveTree = tree
+      this.cdr.markForCheck()
     })
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['tree'] && !changes['tree'].firstChange && this.devtoolsHandle) {
-      import('comark/render').then(({ renderMarkdown }) => {
-        renderMarkdown(this.tree).then((md) => {
-          this.devtoolsHandle?.update({ tree: this.tree, markdown: md })
-        })
-      })
+    // Keep the context document in sync when the parent re-parses.
+    if (changes['tree'] && !changes['tree'].firstChange) {
+      this.subscription?.set(this.tree)
     }
   }
 
   ngOnDestroy(): void {
-    this.devtoolsDisposed = true
-    this.devtoolsHandle?.unregister()
-    this.cleanup?.(true)
+    this.subscription?.cleanup(true)
+    this.subscription = null
   }
 
   private get activeTree(): ComarkTree {

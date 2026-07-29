@@ -1,13 +1,15 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import type { ComarkTree } from 'comark'
+import { useEffect, useRef, useState } from 'react'
+import { subscribeComarkDocument, type ComarkDocumentSubscription, type ComarkTree } from 'comark'
 import { ComarkRenderer, type ComarkRendererProps } from './ComarkRenderer.tsx'
 
 export interface ComarkLiveProps extends ComarkRendererProps {
   /**
    * Document key used to subscribe to live updates via `globalThis.comarkContext`.
    * Falls back to the tree's own `meta.key` when set by a plugin.
+   * When a context exists but no key is provided, an auto id is allocated so the
+   * instance still appears in Vite DevTools.
    */
   comarkKey?: string
 }
@@ -31,17 +33,31 @@ export interface ComarkLiveProps extends ComarkRendererProps {
  * ```
  */
 export function ComarkLive({ tree, comarkKey, ...rest }: ComarkLiveProps) {
-  // Live document support: if an ambient context exists, subscribe to updates
-  // for this key and re-render with the pushed tree. Cleaned up on unmount.
-  // The key is the tree's own `meta.key` (set by a plugin) or the `comarkKey` prop.
   const [liveTree, setLiveTree] = useState<ComarkTree | null>(null)
-  const key = (tree as ComarkTree).meta?.key || comarkKey
+  const subscriptionRef = useRef<ComarkDocumentSubscription | null>(null)
+
   useEffect(() => {
-    if (!key || !globalThis.comarkContext) return
-    const cleanup = globalThis.comarkContext.get(key, tree as ComarkTree).listen(setLiveTree)
-    return () => cleanup(true)
+    const subscription = subscribeComarkDocument(tree as ComarkTree, comarkKey, setLiveTree)
+    subscriptionRef.current = subscription
+    return () => {
+      subscription?.cleanup(true)
+      subscriptionRef.current = null
+    }
+    // Resubscribe only when the document identity changes — prop tree updates
+    // are pushed via subscription.set below.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key])
+  }, [comarkKey, (tree as ComarkTree).meta?.key])
+
+  // Keep the context document in sync when the parent re-parses.
+  // Skip the first run — subscribe already seeded the document.
+  const treeSyncedRef = useRef(false)
+  useEffect(() => {
+    if (!treeSyncedRef.current) {
+      treeSyncedRef.current = true
+      return
+    }
+    subscriptionRef.current?.set(tree as ComarkTree)
+  }, [tree])
 
   return (
     <ComarkRenderer

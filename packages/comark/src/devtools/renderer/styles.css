@@ -317,6 +317,15 @@
   line-height: 1.5;
 }
 
+.comark-empty-hint {
+  margin: 0;
+  max-width: 320px;
+  font-size: 12px;
+  text-align: center;
+  line-height: 1.5;
+  opacity: 0.75;
+}
+
 .comark-empty-state code {
   font-family: 'Geist Mono', ui-monospace, 'SF Mono', Monaco, Menlo, monospace;
   font-size: 12px;

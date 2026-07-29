@@ -19,9 +19,13 @@ Supports custom component mappings and a streaming caret indicator.
 -->
 <script lang="ts">
   import { untrack } from 'svelte'
-  import type { ComarkTree, ComponentManifest } from 'comark'
+  import {
+    subscribeComarkDocument,
+    type ComarkDocumentSubscription,
+    type ComarkTree,
+    type ComponentManifest,
+  } from 'comark'
   import type { ComponentResolver } from '../types.js'
-  import type { RegisteredInstance } from 'comark/devtools'
   import ComarkNode from './ComarkNode.svelte'
 
   let {
@@ -43,19 +47,41 @@ Supports custom component mappings and a streaming caret indicator.
     caret?: boolean | { class: string }
     data?: Record<string, unknown>
     class?: string
+    /**
+     * Document key used to subscribe to live updates via `globalThis.comarkContext`.
+     * Falls back to the tree's own `meta.key` when set by a plugin.
+     * When a context exists but no key is provided, an auto id is allocated so the
+     * instance still appears in Vite DevTools.
+     */
     comarkKey?: string
   } = $props()
 
-  // Live document support: if an ambient context exists, subscribe to updates
-  // for this key and re-render with the pushed tree. Cleaned up on unmount.
-  // The key is the tree's own `meta.key` (set by a plugin) or the `comarkKey` prop.
+  // Live document support via ambient context (auto-id when DevTools is present).
   let liveTree = $state<ComarkTree | null>(null)
-  let key = $derived((tree as ComarkTree).meta?.key || comarkKey)
+  let subscription: ComarkDocumentSubscription | null = null
+
   $effect(() => {
-    if (!key || !globalThis.comarkContext) return
+    // Track key identity so we resubscribe when comarkKey / meta.key change.
+    const keyHint = (tree as ComarkTree).meta?.key || comarkKey
+    void keyHint
     const seed = untrack(() => tree as ComarkTree)
-    const cleanup = globalThis.comarkContext.get(key, seed).listen((next) => (liveTree = next))
-    return () => cleanup(true)
+    subscription = subscribeComarkDocument(seed, comarkKey, (next) => (liveTree = next))
+    return () => {
+      subscription?.cleanup(true)
+      subscription = null
+    }
+  })
+
+  // Keep the context document in sync when the parent re-parses.
+  // Skip the first run — subscribe already seeded the document.
+  let treeSynced = false
+  $effect(() => {
+    const current = tree
+    if (!treeSynced) {
+      treeSynced = true
+      return
+    }
+    untrack(() => subscription?.set(current as ComarkTree))
   })
 
   let activeTree = $derived(liveTree ?? tree)
@@ -73,50 +99,6 @@ Supports custom component mappings and a streaming caret indicator.
     data: data || {},
     props: {},
   })
-
-  // Devtools: register this instance if devtools is available
-  let devtoolsHandle: RegisteredInstance | null = $state(null)
-  const hot = (import.meta as Record<string, any>).hot
-
-  if (hot) {
-    $effect(() => {
-      let cancelled = false
-
-      import('comark/devtools').then(({ registerDevtoolsInstanceFromTree }) => {
-        if (cancelled) return
-        registerDevtoolsInstanceFromTree({
-          hot,
-          tree,
-          // When devtools updates the markdown, use the provided tree
-          onUpdate: (newMarkdown: string, newTree?: ComarkTree | null) => {
-            if (newTree) {
-              tree = newTree
-            }
-          },
-        }).then((handle) => {
-          if (cancelled) {
-            handle?.unregister()
-            return
-          }
-          devtoolsHandle = handle
-        })
-      })
-
-      return () => {
-        cancelled = true
-        devtoolsHandle?.unregister()
-      }
-    })
-
-    // Update devtools instance when tree changes
-    $effect(() => {
-      if (devtoolsHandle) {
-        import('comark/render').then(({ renderMarkdown }) => {
-          renderMarkdown(tree).then((md) => devtoolsHandle?.update({ tree, markdown: md }))
-        })
-      }
-    })
-  }
 </script>
 
 <div class="comark-content {className}">

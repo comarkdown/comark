@@ -47,6 +47,9 @@ function getHighlighter(): Promise<Highlighter | null> {
  * })
  * ```
  */
+const CLIENT_ENTRY = 'virtual:comark-devtools-client'
+const CLIENT_ENTRY_RESOLVED = '\0' + CLIENT_ENTRY
+
 export function comarkDevtools(): Plugin {
   // Instance data pushed from the user's app via HMR
   let instancesData: ComarkInstanceSummary[] = []
@@ -54,10 +57,33 @@ export function comarkDevtools(): Plugin {
 
   return {
     name: 'comark:devtools',
+    // Dev-only — the panel and HMR bridge are meaningless in production builds.
+    apply: 'serve',
+
+    resolveId(id) {
+      if (id === CLIENT_ENTRY) return CLIENT_ENTRY_RESOLVED
+    },
+
+    load(id) {
+      if (id === CLIENT_ENTRY_RESOLVED) {
+        // Import the real client bridge; Vite resolves the package export.
+        return `import 'comark/devtools/client'\n`
+      }
+    },
+
+    transformIndexHtml() {
+      return [
+        {
+          tag: 'script',
+          attrs: { type: 'module', src: `/@id/${CLIENT_ENTRY}` },
+          injectTo: 'head-prepend',
+        },
+      ]
+    },
 
     configureServer(_server: ViteDevServer) {
       server = _server
-      // Receive instance data from the user's app (sent by the devtools registry)
+      // Receive instance data from the user's app (sent by the context bridge)
       _server.hot.on('comark:instances', (data: ComarkInstanceSummary[]) => {
         instancesData = data
       })
@@ -114,6 +140,10 @@ export function comarkDevtools(): Plugin {
         ctx.docks.register({
           id: 'comark',
           title: 'Comark',
+          // Category + order keep the entry on the primary dock rail (not buried
+          // under "Settings") next to other framework tools.
+          category: 'framework',
+          defaultOrder: 10,
           icon: {
             light: COMARK_LIGHT_ICON,
             dark: COMARK_DARK_ICON,

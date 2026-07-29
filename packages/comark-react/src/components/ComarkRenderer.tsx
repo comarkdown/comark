@@ -1,8 +1,7 @@
 import type { ComarkElement, ComarkNode, ComarkTree, ComponentManifest, NodeRenderData } from 'comark'
-import React, { lazy, Suspense, useMemo, useState, useEffect, useRef } from 'react'
+import React, { lazy, Suspense, useMemo } from 'react'
 import { pascalCase, camelCase, resolveAttributes } from 'comark/utils'
 import { findLastTextNodeAndAppendNode, getCaret } from '../utils/caret.ts'
-import type { RegisteredInstance } from 'comark/devtools'
 
 /**
  * Helper to get tag from a ComarkNode
@@ -324,7 +323,7 @@ export interface ComarkRendererProps {
  * ```
  */
 export const ComarkRenderer: React.FC<ComarkRendererProps> = ({
-  tree: treeProp,
+  tree,
   components: customComponents = {},
   componentsManifest,
   streaming = false,
@@ -332,59 +331,9 @@ export const ComarkRenderer: React.FC<ComarkRendererProps> = ({
   data,
   className,
 }) => {
-  // Track tree state for devtools updates
-  const [tree, setTree] = useState(treeProp)
-
-  // Update tree when prop changes
-  useEffect(() => {
-    setTree(treeProp)
-  }, [treeProp])
-
+  // Pure prop-driven renderer. For live document updates via
+  // `globalThis.comarkContext`, wrap with `ComarkLive` (client-only).
   const caret = useMemo(() => getCaret(caretProp), [caretProp])
-
-  // Devtools: register this instance if devtools is available
-  const instanceRef = useRef<RegisteredInstance | null>(null)
-  useEffect(() => {
-    const hot = (import.meta as Record<string, any>).hot
-    if (!hot) return
-    let cancelled = false
-
-    import('comark/devtools').then(({ registerDevtoolsInstanceFromTree }) => {
-      if (cancelled) return
-      registerDevtoolsInstanceFromTree({
-        hot,
-        tree: treeProp,
-        // When devtools updates the markdown, use the provided tree
-        onUpdate: (newMarkdown: string, newTree?: ComarkTree | null) => {
-          if (newTree) {
-            setTree(newTree)
-          }
-        },
-      }).then((handle) => {
-        if (cancelled) {
-          handle?.unregister()
-          return
-        }
-        instanceRef.current = handle
-      })
-    })
-
-    return () => {
-      cancelled = true
-      instanceRef.current?.unregister()
-    }
-  }, [])
-
-  // Update devtools instance when tree changes
-  useEffect(() => {
-    if (!instanceRef.current) return
-
-    import('comark/render').then(({ renderMarkdown }) => {
-      renderMarkdown(tree).then((md) => {
-        instanceRef.current?.update({ tree, markdown: md })
-      })
-    })
-  }, [tree])
 
   const renderedNodes = useMemo(() => {
     // Render all nodes from the tree value

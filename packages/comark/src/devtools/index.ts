@@ -1,3 +1,2 @@
-export { getDevtoolsRegistry } from './registry.ts'
-export { registerDevtoolsInstance, registerDevtoolsInstanceFromTree } from './register.ts'
-export type { ComarkInstance, ComarkInstanceSummary, RegisterInstanceOptions, RegisteredInstance } from './types.ts'
+export { connectDevtools } from './bridge.ts'
+export type { ComarkInstanceSummary } from './types.ts'

@@ -850,8 +850,8 @@ importers:
   examples/2.vite/vue:
     dependencies:
       '@comark/vue':
-        specifier: latest
-        version: 0.5.1(beautiful-mermaid@1.1.3)(katex@0.17.0)(shiki@4.3.1)(vue@3.5.39(typescript@5.9.3))
+        specifier: workspace:*
+        version: link:../../../packages/comark-vue
       '@nuxt/ui':
         specifier: 'catalog:'
         version: 4.9.0(b3bcc043c42e8015bb54d3826f9063e3)

@@ -1,4 +1,3 @@
-/// <reference types="vite/client" />
 import type { PropType, VNode } from 'vue'
 import type {
   ComponentManifest,
@@ -8,6 +7,7 @@ import type {
   ComarkTree,
   NodeRenderData,
 } from 'comark'
+import { subscribeComarkDocument } from 'comark'
 import {
   computed,
   defineAsyncComponent,
@@ -16,9 +16,7 @@ import {
   h,
   inject,
   onErrorCaptured,
-  onScopeDispose,
   onUnmounted,
-  ref,
   shallowRef,
   toRaw,
   watch,
@@ -374,88 +372,26 @@ export const ComarkRenderer: ComarkRendererComponent = defineComponent({
   },
 
   async setup(props) {
-    const componentErrors = ref(new Set<string>())
-    // Local tree state so devtools (and other live sources) can push updates
-    // without requiring the parent to re-render.
-    const tree = shallowRef(toRaw(props.tree))
-    watch(
-      () => props.tree,
-      (next) => {
-        tree.value = toRaw(next)
-      }
-    )
-
-    // Live document support: if an ambient context exists, subscribe to updates
-    // for this id and re-render with the pushed tree. Cleaned up on unmount.
-    // The key is the tree's own `meta.key` (set by a plugin) or the `comarkKey` prop.
+    // Live document support via ambient context (auto-id when DevTools is present).
+    // Drivers (HMR, collab, agents, Vite DevTools) push via `doc.set` / `doc.patch`.
     const liveTree = shallowRef<ComarkTree | null>(null)
-    const key = (props.tree as ComarkTree).meta?.key || props.comarkKey
-    if (key && globalThis.comarkContext) {
-      const cleanup = globalThis.comarkContext.get(key, toRaw(props.tree as ComarkTree)).listen((next) => {
-        liveTree.value = next
-      })
-      onUnmounted(() => cleanup(true))
+    const subscription = subscribeComarkDocument(toRaw(props.tree), props.comarkKey, (next) => {
+      liveTree.value = next
+    })
+    if (subscription) {
+      // Keep the context document in sync when the parent re-parses.
+      watch(
+        () => props.tree,
+        (next) => subscription.set(toRaw(next))
+      )
+      onUnmounted(() => subscription.cleanup(true))
     }
 
-    // Capture errors from child components (e.g., during streaming when props are incomplete)
-    onErrorCaptured((_err, instance, _info) => {
-      // Get component name from instance
-      const componentName = (instance?.$?.type as any)?.name || (instance as any)?.type?.name || 'unknown'
-
-      // Track failed component to prevent re-rendering during streaming
-      componentErrors.value.add(componentName)
-
-      // Prevent error from propagating (don't crash the app during streaming)
-      return false
-    })
+    // Swallow child-component errors (e.g. incomplete props during streaming)
+    // so one bad node does not tear down the whole renderer.
+    onErrorCaptured(() => false)
 
     const comark = inject<ComarkContextProvider>('comark', { components: {}, componentManifest: () => null })
-
-    // Devtools: register this instance if no parent Comark already registered
-    const hot = (import.meta as Record<string, any>).hot
-    if (hot) {
-      let devtoolsHandle: {
-        unregister: () => void
-        update: (payload: { tree: any; markdown: string }) => void
-      } | null = null
-      let disposed = false
-      const renderMdPromise = import('comark/render')
-
-      import('comark/devtools').then(({ registerDevtoolsInstanceFromTree }) => {
-        if (disposed) return
-        registerDevtoolsInstanceFromTree({
-          hot,
-          tree: props.tree,
-          // When devtools updates the markdown, use the provided tree
-          onUpdate: (_newMarkdown: string, newTree?: ComarkTree | null) => {
-            if (newTree) {
-              tree.value = newTree
-            }
-          },
-        }).then((handle) => {
-          if (disposed) {
-            handle?.unregister()
-            return
-          }
-          devtoolsHandle = handle
-          if (handle) {
-            watch(
-              () => tree.value,
-              (current) => {
-                renderMdPromise.then(({ renderMarkdown }) => {
-                  renderMarkdown(current).then((md) => handle.update({ tree: current, markdown: md }))
-                })
-              }
-            )
-          }
-        })
-      })
-
-      onScopeDispose(() => {
-        disposed = true
-        devtoolsHandle?.unregister()
-      })
-    }
 
     const components = computed(() => ({
       ...comark?.components,
@@ -473,8 +409,8 @@ export const ComarkRenderer: ComarkRendererComponent = defineComponent({
     const caret = computed<ComarkElement | null>(() => getCaret(props.caret || false))
 
     return () => {
-      // Prefer live context updates, else the local tree (prop + devtools).
-      const rawTree = toRaw(liveTree.value ?? tree.value)
+      // Prefer live context updates, else the tree prop.
+      const rawTree = toRaw(liveTree.value ?? props.tree)
       const nodes = [...(rawTree.nodes || [])]
 
       if (props.streaming && caret.value && nodes.length > 0) {

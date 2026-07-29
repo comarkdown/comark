@@ -106,7 +106,8 @@ export function createEmptyState(): HTMLDivElement {
     '<path fill="currentColor" d="M129.4 94.8V75.5h19.9v19.3h-19.9zm0 44.7v-19.2h19.9v19.2h-19.9zm30.1-44.7V75.5h19.9v19.3h-19.9zm0 44.7v-19.2h19.9v19.2h-19.9zM31.4 141.5v-68h20l20 25 20-25h20v68h-20V102.5l-20 25-20-25v39z"/>',
     '</svg>',
     '</div>',
-    '<p class="comark-empty-title">No <code>&lt;Comark&gt;</code> detected on the current page.</p>',
+    '<p class="comark-empty-title">No live Comark documents on this page.</p>',
+    '<p class="comark-empty-hint">Mount a <code>&lt;Comark&gt;</code> / <code>&lt;ComarkRenderer&gt;</code>, or open a page that seeds <code>globalThis.comarkContext</code> (e.g. via <code>createComarkContext()</code> + <code>comarkKey</code>).</p>',
   ].join('')
   return el
 }

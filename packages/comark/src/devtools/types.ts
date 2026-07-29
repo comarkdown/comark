@@ -8,24 +8,7 @@ export interface HotModule {
   on(event: string, cb: (...args: any[]) => void): void
 }
 
-/** Callback invoked when devtools sends an update to this instance */
-export type InstanceUpdateCallback = (markdown: string, tree?: ComarkTree | null) => void
-
-/** A live Comark renderer instance tracked by the devtools registry */
-export interface ComarkInstance {
-  /** Unique instance identifier (e.g. `comark-1`) */
-  id: string
-  /** Human-readable label — typically the current page URL path or hash */
-  label?: string
-  /** Current parsed AST */
-  tree: ComarkTree | { nodes: ComarkTree['nodes'] }
-  /** Current markdown source (if available) */
-  markdown?: string
-  /** Optional callback fired when devtools updates this instance */
-  onUpdate?: InstanceUpdateCallback
-}
-
-/** Serializable snapshot of a {@link ComarkInstance} sent over RPC */
+/** Serializable snapshot of a live document, pushed over HMR / RPC to the panel */
 export interface ComarkInstanceSummary {
   id: string
   label?: string
@@ -33,31 +16,6 @@ export interface ComarkInstanceSummary {
   /** Total number of top-level AST nodes */
   nodeCount: number
 }
-
-/** Options accepted by {@link registerDevtoolsInstance} */
-export interface RegisterInstanceOptions {
-  /** The HMR handle (`import.meta.hot`). Pass `null` to skip registration. */
-  hot: HotModule | null | undefined
-  /** Initial tree (may be empty for string renderers) */
-  tree: ComarkTree | { nodes: ComarkTree['nodes'] }
-  /** Initial markdown source, if known */
-  markdown?: string
-  /** Optional callback fired when devtools updates this instance */
-  onUpdate?: InstanceUpdateCallback
-}
-
-/** Handles returned after a successful instance registration */
-export interface RegisteredInstance {
-  /** The assigned instance id */
-  id: string
-  /** Push an updated tree and/or markdown source to the devtools */
-  update(patch: { tree?: ComarkTree | { nodes: ComarkTree['nodes'] }; markdown?: string }): void
-  /** Remove the instance from the devtools registry */
-  unregister(): void
-}
-
-/** Callback invoked whenever the set of tracked instances changes */
-export type InstanceListener = (instances: Map<string, ComarkInstance>) => void
 
 /** Active view in the devtools panel */
 export type ViewState = 'loading' | 'empty' | 'markdown' | 'ast-error' | 'ast'

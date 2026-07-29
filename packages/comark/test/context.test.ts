@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { createComarkContext } from '../src/context'
+import { createComarkContext, subscribeComarkDocument } from '../src/context'
 import type { ComarkTree } from '../src/types'
 
 function tree(nodes: ComarkTree['nodes']): ComarkTree {
@@ -122,6 +122,100 @@ describe('createComarkContext', () => {
       expect(ctx.keys()).toEqual(['x']) // still one listener
       c2()
       expect(ctx.keys()).toEqual([]) // pruned
+    })
+
+    it('sticky listeners receive updates and survive cleanup(true), but do not pin the doc', () => {
+      const ctx = createComarkContext(false)
+      const stickyFn = vi.fn()
+      const a = vi.fn()
+      const b = vi.fn()
+      const ca = ctx.get('x').listen(a)
+      ctx.get('x').listen(b)
+      const stickyCleanup = ctx.get('x').listen(stickyFn, { sticky: true })
+
+      const next = tree([['p', {}, 'hi']])
+      ctx.get('x').set(next)
+      expect(stickyFn).toHaveBeenCalledWith(next)
+      expect(a).toHaveBeenCalledWith(next)
+      expect(b).toHaveBeenCalledWith(next)
+
+      // Force-clear from one renderer wipes every normal listener; sticky alone
+      // does not pin the document, so it is pruned.
+      ca(true)
+      expect(ctx.keys()).toEqual([])
+
+      // Tearing down sticky after prune must not throw or re-emit remove forever.
+      expect(() => stickyCleanup()).not.toThrow()
+    })
+
+    it('remove lifecycle is emitted once on prune', () => {
+      const ctx = createComarkContext(false)
+      const life = vi.fn()
+      ctx.listen(life)
+      const cleanup = ctx.get('x', tree([['p', {}, 'a']])).listen(vi.fn())
+      life.mockClear()
+      cleanup(true)
+      expect(life).toHaveBeenCalledTimes(1)
+      expect(life).toHaveBeenCalledWith(expect.objectContaining({ event: 'remove', id: 'x' }))
+    })
+  })
+
+  describe('ensure', () => {
+    it('creates like get on first access', () => {
+      const ctx = createComarkContext(false)
+      const seed = tree([['p', {}, 'a']])
+      expect(ctx.ensure('x', seed).tree).toBe(seed)
+      expect(ctx.keys()).toEqual(['x'])
+    })
+
+    it('re-seeds an empty document', () => {
+      const ctx = createComarkContext(false)
+      ctx.ensure('x') // empty
+      const seed = tree([['p', {}, 'filled']])
+      ctx.ensure('x', seed)
+      expect(ctx.get('x').tree).toEqual(seed)
+    })
+
+    it('does not overwrite a non-empty document', () => {
+      const ctx = createComarkContext(false)
+      const first = tree([['p', {}, 'first']])
+      ctx.ensure('x', first)
+      ctx.ensure('x', tree([['p', {}, 'second']]))
+      expect(ctx.get('x').tree).toBe(first)
+    })
+  })
+
+  describe('subscribeComarkDocument', () => {
+    it('is a no-op without an ambient context', () => {
+      expect(subscribeComarkDocument(tree([]), 'x', vi.fn())).toBeNull()
+    })
+
+    it('auto-allocates an id when none is provided', () => {
+      createComarkContext()
+      const onTree = vi.fn()
+      const sub = subscribeComarkDocument(tree([['p', {}, 'hi']]), undefined, onTree)
+      expect(sub).not.toBeNull()
+      expect(sub!.id).toMatch(/^comark-\d+$/)
+      expect(globalThis.comarkContext!.keys()).toEqual([sub!.id])
+      sub!.cleanup(true)
+    })
+
+    it('uses the explicit key when provided', () => {
+      createComarkContext()
+      const sub = subscribeComarkDocument(tree([['p', {}, 'hi']]), 'page', vi.fn())
+      expect(sub!.id).toBe('page')
+      expect(globalThis.comarkContext!.keys()).toEqual(['page'])
+      sub!.cleanup(true)
+    })
+
+    it('set pushes a new tree to listeners', () => {
+      createComarkContext()
+      const onTree = vi.fn()
+      const sub = subscribeComarkDocument(tree([['p', {}, 'a']]), 'page', onTree)
+      const next = tree([['p', {}, 'b']])
+      sub!.set(next)
+      expect(onTree).toHaveBeenCalledWith(next)
+      sub!.cleanup(true)
     })
   })
 

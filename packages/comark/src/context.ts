@@ -93,14 +93,30 @@ export interface ComarkDocument {
   set(tree: ComarkTree): void
   /** Apply one or more patches against the current tree (structural sharing). */
   patch(patch: ComarkPatch | ComarkPatch[]): void
-  /** Subscribe to tree changes. Returns the cleanup function. */
-  listen(fn: (tree: ComarkTree) => void): (clear?: boolean) => void
+  /**
+   * Subscribe to tree changes. Returns the cleanup function.
+   *
+   * Pass `{ sticky: true }` for system subscribers (e.g. the Vite DevTools bridge)
+   * that must survive a renderer's `cleanup(true)` — sticky listeners are never
+   * bulk-cleared and do not keep a document alive on their own once every normal
+   * listener is gone.
+   */
+  listen(fn: (tree: ComarkTree) => void, options?: { sticky?: boolean }): (clear?: boolean) => void
 }
 
 function createDocument(initial: ComarkTree, onEmpty: (tree: ComarkTree) => void): ComarkDocument {
   let tree = initial
   const listeners = new Set<(tree: ComarkTree) => void>()
-  const emit = () => listeners.forEach((fn) => fn(tree))
+  const sticky = new Set<(tree: ComarkTree) => void>()
+  const emit = () => {
+    listeners.forEach((fn) => fn(tree))
+    sticky.forEach((fn) => fn(tree))
+  }
+  const pruneIfEmpty = () => {
+    // Sticky-only docs still prune — system subscribers shouldn't pin documents
+    // that no renderer cares about anymore.
+    if (listeners.size === 0) onEmpty(tree)
+  }
   return {
     get tree() {
       return tree
@@ -114,20 +130,26 @@ function createDocument(initial: ComarkTree, onEmpty: (tree: ComarkTree) => void
       for (const p of patches) tree = applyPatch(tree, p)
       emit()
     },
-    listen(fn) {
-      listeners.add(fn)
+    listen(fn, options) {
+      const bucket = options?.sticky ? sticky : listeners
+      bucket.add(fn)
       return (clear = false) => {
-        if (!listeners.has(fn)) {
+        if (options?.sticky) {
+          // Sticky unsub never prunes — the document is already empty of
+          // normal listeners (or still in use). Pruning from here races the
+          // lifecycle 'remove' handler that is tearing the sticky down.
+          sticky.delete(fn)
           return
         }
+        if (!listeners.has(fn) && !clear) return
 
         if (clear) {
+          // Drop every normal listener (renderers); sticky system listeners stay.
           listeners.clear()
         } else {
           listeners.delete(fn)
         }
-        // Drop the document once nobody is listening — frees ids on unmount.
-        if (listeners.size === 0) onEmpty(tree)
+        pruneIfEmpty()
       }
     },
   }
@@ -158,6 +180,12 @@ export interface ComarkContextEvent {
 export interface ComarkContext {
   /** Get the document for `id`, creating it (with `initial`) on first access. */
   get(id: string, initial?: ComarkTree): ComarkDocument
+  /**
+   * Ensure a document for `id` exists and is seeded. Like {@link get}, but if the
+   * document already exists and `initial` is provided, its tree is replaced when
+   * the current tree is empty (devtools auto-ids that race the first parse).
+   */
+  ensure(id: string, initial?: ComarkTree): ComarkDocument
   /** Ids currently tracked — for devtools enumeration. */
   keys(): string[]
   /** Listen for documents being created or removed. Returns the cleanup. */
@@ -182,20 +210,29 @@ export function createComarkContext(install = true): ComarkContext {
   const lifecycle = new Set<(e: ComarkContextEvent) => void>()
   const emit = (e: ComarkContextEvent) => lifecycle.forEach((fn) => fn(e))
 
+  const create = (id: string, initial?: ComarkTree): ComarkDocument => {
+    const doc = createDocument(initial ?? emptyTree(), (tree) => {
+      // Idempotent: sticky teardown after a renderer prune must not re-emit.
+      if (!docs.delete(id)) return
+      emit({ event: 'remove', id, tree })
+    })
+    docs.set(id, doc)
+    emit({ event: 'create', id, tree: doc.tree })
+    return doc
+  }
+
   const ctx: ComarkContext = {
     get(id, initial) {
-      let doc = docs.get(id)
-      if (!doc) {
-        docs.set(
-          id,
-          (doc = createDocument(initial ?? emptyTree(), (tree) => {
-            docs.delete(id)
-            emit({ event: 'remove', id, tree })
-          }))
-        )
-        emit({ event: 'create', id, tree: doc.tree })
+      return docs.get(id) ?? create(id, initial)
+    },
+    ensure(id, initial) {
+      const existing = docs.get(id)
+      if (!existing) return create(id, initial)
+      // Re-seed empty docs (e.g. auto-id reserved before parse finished).
+      if (initial && existing.tree.nodes.length === 0 && initial.nodes.length > 0) {
+        existing.set(initial)
       }
-      return doc
+      return existing
     },
     keys: () => [...docs.keys()],
     listen(fn) {
@@ -206,6 +243,66 @@ export function createComarkContext(install = true): ComarkContext {
   if (install) globalThis.comarkContext = ctx
 
   return ctx
+}
+
+// #endregion
+
+// #region renderer helper
+
+/** Allocate a short unique id for auto-registered renderer documents. */
+let __comarkAutoId = 0
+function nextDocumentId(): string {
+  return `comark-${++__comarkAutoId}`
+}
+
+/** Handle returned by {@link subscribeComarkDocument}. */
+export interface ComarkDocumentSubscription {
+  /** Document id in the ambient context. */
+  id: string
+  /** Push a new tree into the document (e.g. when the renderer's `tree` prop changes). */
+  set(tree: ComarkTree | { nodes: ComarkTree['nodes'] }): void
+  /** Unsubscribe. Pass `true` to clear sibling listeners and prune the document. */
+  cleanup(clear?: boolean): void
+}
+
+function asTree(tree: ComarkTree | { nodes: ComarkTree['nodes'] }): ComarkTree {
+  return {
+    nodes: tree.nodes || [],
+    frontmatter: (tree as ComarkTree).frontmatter || {},
+    meta: (tree as ComarkTree).meta || {},
+  }
+}
+
+/**
+ * Subscribe a mounted renderer to the ambient `globalThis.comarkContext`.
+ *
+ * - If `comarkKey` or `tree.meta.key` is set, uses that id.
+ * - Otherwise, when a context exists (e.g. Vite DevTools installed one),
+ *   allocates an auto id so the instance still shows up in the panel.
+ * - No-op (returns `null`) when no context is present — zero cost in prod.
+ */
+export function subscribeComarkDocument(
+  tree: ComarkTree | { nodes: ComarkTree['nodes'] },
+  comarkKey: string | undefined,
+  onTree: (tree: ComarkTree) => void
+): ComarkDocumentSubscription | null {
+  const ctx = globalThis.comarkContext
+  if (!ctx) return null
+
+  const seed = asTree(tree)
+  const id = seed.meta?.key || comarkKey || nextDocumentId()
+  const doc = ctx.ensure(id, seed)
+  const unsub = doc.listen(onTree)
+
+  return {
+    id,
+    set(next) {
+      doc.set(asTree(next))
+    },
+    cleanup(clear) {
+      unsub(clear)
+    },
+  }
 }
 
 // #endregion

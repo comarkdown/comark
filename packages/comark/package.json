@@ -34,7 +34,9 @@
     "skills"
   ],
   "type": "module",
-  "sideEffects": false,
+  "sideEffects": [
+    "./dist/devtools/client.js"
+  ],
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -51,7 +53,7 @@
     "access": "public"
   },
   "scripts": {
-    "stub": "node ../../scripts/stub.mjs",
+    "stub": "node ../../scripts/sync-devtools-css.mjs && node ../../scripts/stub.mjs",
     "build": "node ../../scripts/sync-devtools-css.mjs && tsc",
     "dev": "tsc --watch",
     "test": "vitest run",
