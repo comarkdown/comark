@@ -602,4 +602,9 @@ const comark = {
   },
 }
 
+const jsonb = markdown[0].repository.fenced_code_block_json
+const yamlb = markdown[0].repository.fenced_code_block_yaml
+jsonb.begin = jsonb.begin.replace('json5??|', 'json5??|json-render|')
+yamlb.begin = yamlb.begin.replace('(ya?ml)', '(ya?ml|ya?ml-render)')
+
 export default [...markdown, ...yaml, ...html_derivative, comark]
