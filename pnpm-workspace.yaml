@@ -6,6 +6,7 @@ packages:
 allowBuilds:
   "@parcel/watcher": false
   better-sqlite3: true
+  comark-docs: false
   esbuild: false
   lmdb: false
   msgpackr-extract: false

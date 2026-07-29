@@ -3,8 +3,9 @@
   "description": "The Markdown engine for the modern web. One parser, every renderer: Vue, React, Svelte, Angular, HTML and ANSI, with components, plugins and streaming.",
   "type": "module",
   "scripts": {
-    "dev": "nuxt dev --extends docus",
-    "build": " pnpm --filter '../' run build && nuxt build --extends docus",
+    "dev": "nuxt dev",
+    "prebuild": "pnpm --filter '../' run build",
+    "build": "nuxt build",
     "generate:schema": "tsx --env-file=.env scripts/generate-schema.ts"
   },
   "dependencies": {
@@ -12,9 +13,6 @@
     "@ai-sdk/vue": "catalog:",
     "@comark/nuxt": "catalog:",
     "@monaco-editor/loader": "catalog:",
-    "@nuxt/content": "catalog:",
-    "@nuxt/ui": "catalog:",
-    "@nuxtjs/mcp-toolkit": "catalog:",
     "@nuxtlabs/monarch-mdc": "catalog:",
     "@shikijs/langs": "catalog:",
     "@vercel/analytics": "catalog:",
@@ -22,12 +20,10 @@
     "@vueuse/core": "catalog:",
     "ai": "catalog:",
     "comark": "catalog:",
-    "docus": "catalog:",
+    "comark-docs": "github:comarkdown/comark-docs",
     "markdown-it-math": "catalog:",
     "nuxt": "catalog:",
-    "nuxt-studio": "catalog:",
     "splitpanes": "catalog:",
-    "tailwindcss": "catalog:",
     "ufo": "catalog:",
     "vue-json-pretty": "catalog:",
     "zod": "catalog:"

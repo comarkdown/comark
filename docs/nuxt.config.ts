@@ -1,9 +1,14 @@
-import { defineNuxtConfig } from 'nuxt/config'
-
 export default defineNuxtConfig({
-  extends: ['docus'],
+  // Develop against a local checkout of the layer:
+  // COMARK_DOCS_LAYER=../../comark-docs pnpm dev
+  extends: [process.env.COMARK_DOCS_LAYER || 'comark-docs'],
 
-  modules: ['nuxt-studio', '@comark/nuxt', '@vercel/speed-insights', '@vercel/analytics', '@nuxt/ui'],
+  modules: ['@vercel/analytics', '@vercel/speed-insights'],
+
+  site: {
+    url: 'https://comark.dev',
+    name: 'Comark',
+  },
 
   app: {
     head: {
@@ -15,43 +20,39 @@ export default defineNuxtConfig({
     },
   },
 
-  site: {
-    name: 'Comark',
-    url: 'https://comark.dev',
-  },
-
-  content: {
-    experimental: {
-      sqliteConnector: 'native',
-    },
-    build: {
-      markdown: {
-        highlight: {
-          langs: ['tsx', 'svelte', 'vue', 'html', 'css', 'json', 'markdown', 'bash', 'shell', 'astro'],
-        },
-      },
-      transformers: ['~~/utils/comark-transformers.ts'],
-    },
-  },
-
   colorMode: {
     preference: 'dark',
   },
 
-  fonts: {
-    families: [
-      { name: 'Geist', weights: [400, 500, 600, 700], global: true },
-      { name: 'Geist Mono', weights: [400, 500, 600], global: true },
-    ],
-  },
-
-  llms: {
-    domain: 'https://comark.dev',
-  },
-
-  studio: false,
-
   routeRules: {
     '/plugins/built-in/highlight': { redirect: '/plugins/built-in/syntax-highlight' },
+  },
+
+  $production: {
+    routeRules: {
+      /*
+       * ISR for this site's content URLs (top-level dirs of `content/`),
+       * revalidated on-demand by the push webhook with a 300s safety-net TTL.
+       * Both the bare section index and everything under it, per section.
+       * The layer declares rules for its own routes (/, /tree/**, /blob/**,
+       * /raw/**, /llms*.txt, /rss.xml, search-sections, /api/code-explorer/**).
+       */
+      '/getting-started': { isr: 300 },
+      '/getting-started/**': { isr: 300 },
+      '/syntax': { isr: 300 },
+      '/syntax/**': { isr: 300 },
+      '/rendering': { isr: 300 },
+      '/rendering/**': { isr: 300 },
+      '/plugins': { isr: 300 },
+      '/plugins/**': { isr: 300 },
+      '/api': { isr: 300 },
+      '/api/**': { isr: 300 },
+      '/compare': { isr: 300 },
+      '/compare/**': { isr: 300 },
+      '/examples': { isr: 300 },
+      '/examples/**': { isr: 300 },
+      '/kb': { isr: 300 },
+      '/kb/**': { isr: 300 },
+    },
   },
 })
