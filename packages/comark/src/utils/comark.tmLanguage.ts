@@ -220,7 +220,6 @@ const comark = {
           ],
         },
         {
-          // (^|\G): bare ^ fails when the engine resumes at \G inside a parent rule
           match: '(^|\\G)(\\s*)(#[\\w\\-\\_]*)\\s*(<!--(.*)-->)?$',
           captures: {
             '3': {
@@ -570,7 +569,6 @@ const comark = {
       ],
     },
     paragraph: {
-      // Any indent: content inside indented components must still be paragraphs
       begin: '(^|\\G)[ ]*(?=\\S)',
       name: 'meta.paragraph.markdown',
       patterns: [
@@ -584,8 +582,6 @@ const comark = {
           include: '#heading-setext',
         },
       ],
-      // Setext only. Do not continue on 4-space-indented lines — that swallows
-      // nested slots (#name) and closing fences after a truly empty blank line.
       while: '(^|\\G)(?=\\s*[-=]{3,}\\s*$)',
     },
     blockquote: {
