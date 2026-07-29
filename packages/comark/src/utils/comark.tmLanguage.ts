@@ -220,12 +220,13 @@ const comark = {
           ],
         },
         {
-          match: '^(\\s*)(#[\\w\\-\\_]*)\\s*(<!--(.*)-->)?$',
+          // (^|\G): bare ^ fails when the engine resumes at \G inside a parent rule
+          match: '(^|\\G)(\\s*)(#[\\w\\-\\_]*)\\s*(<!--(.*)-->)?$',
           captures: {
-            '2': {
+            '3': {
               name: 'entity.other.attribute-name.html',
             },
-            '3': {
+            '4': {
               name: 'comment.block.html',
             },
           },
@@ -569,6 +570,7 @@ const comark = {
       ],
     },
     paragraph: {
+      // Any indent: content inside indented components must still be paragraphs
       begin: '(^|\\G)[ ]*(?=\\S)',
       name: 'meta.paragraph.markdown',
       patterns: [
@@ -582,7 +584,9 @@ const comark = {
           include: '#heading-setext',
         },
       ],
-      while: '(^|\\G)((?=\\s*[-=]{3,}\\s*$)|[ ]{4,}(?=\\S))',
+      // Setext only. Do not continue on 4-space-indented lines — that swallows
+      // nested slots (#name) and closing fences after a truly empty blank line.
+      while: '(^|\\G)(?=\\s*[-=]{3,}\\s*$)',
     },
     blockquote: {
       begin: '(^|\\G)[ ]*(>) ?',
@@ -604,7 +608,13 @@ const comark = {
 
 const jsonb = markdown[0].repository.fenced_code_block_json
 const yamlb = markdown[0].repository.fenced_code_block_yaml
-jsonb.begin = jsonb.begin.replace('json5??|', 'json5??|json-render|')
-yamlb.begin = yamlb.begin.replace('(ya?ml)', '(ya?ml|ya?ml-render)')
+markdown[0].repository.fenced_code_block_json = {
+  ...markdown[0].repository.fenced_code_block_json,
+  begin: String(jsonb.begin).replace('json5??|', 'json5??|json-render|'),
+}
+markdown[0].repository.fenced_code_block_yaml = {
+  ...markdown[0].repository.fenced_code_block_yaml,
+  begin: String(yamlb.begin).replace('(ya?ml)', '(ya?ml|ya?ml-render)'),
+}
 
 export default [...markdown, ...yaml, ...html_derivative, comark]
