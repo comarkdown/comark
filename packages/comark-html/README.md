@@ -68,11 +68,9 @@ const html = await render(`::alert{type="warning"}\nHeads up!\n::`, {
 ```ts
 import { render } from '@comark/html'
 import highlight from '@comark/html/plugins/highlight'
-import githubLight from '@shikijs/themes/github-light'
-import githubDark from '@shikijs/themes/github-dark'
 
 const html = await render(content, {
-  plugins: [highlight({ themes: { light: githubLight, dark: githubDark } })],
+  plugins: [highlight({ themes: { light: 'github-light', dark: 'github-dark' } })],
 })
 ```
 

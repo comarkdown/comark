@@ -76,7 +76,7 @@ describe('MarkdownParsed', () => {
       level: 1,
     })
     await expect.element(heading).toBeInTheDocument()
-    await expect.element(heading).toHaveAttribute('id', 'hello-strong-world')
+    await expect.element(heading).toHaveAttribute('id', 'hello-world')
   })
 
   it('renders multiple block elements', async () => {

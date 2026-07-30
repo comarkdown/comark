@@ -635,6 +635,40 @@ function mergeAdjacentTextNodes(nodes: ComarkNode[]): ComarkNode[] {
   return merged
 }
 
+const HTML_INLINE_TAGS = new Set([
+  'a',
+  'abbr',
+  'b',
+  'bdi',
+  'bdo',
+  'cite',
+  'code',
+  'data',
+  'del',
+  'dfn',
+  'em',
+  'i',
+  'img',
+  'ins',
+  'kbd',
+  'mark',
+  'q',
+  'rp',
+  'rt',
+  'ruby',
+  's',
+  'samp',
+  'small',
+  'span',
+  'strong',
+  'sub',
+  'sup',
+  'time',
+  'u',
+  'var',
+  'wbr',
+])
+
 /**
  * Extract text content from nodes for heading ID generation
  */
@@ -654,9 +688,11 @@ function extractTextContent(nodes: ComarkNode[]): string {
         continue
       }
 
-      // Include the tag name (e.g., "inline" from :inline component)
-      text += ' ' + tag + ' '
-      // Also include any text from children
+      // Only inline components contribute their name to the slug; standard
+      // HTML tags (emphasis, code, links, ...) contribute text content only
+      if (typeof tag === 'string' && !HTML_INLINE_TAGS.has(tag)) {
+        text += ' ' + tag + ' '
+      }
       if (children.length > 0) {
         text += extractTextContent(children)
       }

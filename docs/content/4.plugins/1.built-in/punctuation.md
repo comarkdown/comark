@@ -131,10 +131,10 @@ Returns a `ComarkPlugin` that applies typographic transformations to text nodes.
 
 | Option | Type | Default | Description |
 |---|---|---|---|
-| [`quotes`](#options-code-quotes) | `boolean` | `true` | Convert straight quotes to smart quotes |
-| [`dashes`](#options-code-dashes) | `boolean` | `true` | Convert `--` to en-dash and `---` to em-dash |
-| [`ellipsis`](#options-code-ellipsis) | `boolean` | `true` | Convert `...` to ellipsis character |
-| [`symbols`](#options-code-symbols) | `boolean` | `true` | Convert `(c)`, `(r)`, `(tm)`, `+-` |
+| [`quotes`](#options-quotes) | `boolean` | `true` | Convert straight quotes to smart quotes |
+| [`dashes`](#options-dashes) | `boolean` | `true` | Convert `--` to en-dash and `---` to em-dash |
+| [`ellipsis`](#options-ellipsis) | `boolean` | `true` | Convert `...` to ellipsis character |
+| [`symbols`](#options-symbols) | `boolean` | `true` | Convert `(c)`, `(r)`, `(tm)`, `+-` |
 
 ### `quotes`
 

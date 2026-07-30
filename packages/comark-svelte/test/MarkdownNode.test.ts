@@ -139,7 +139,7 @@ describe('MarkdownParsed', () => {
     const tree = await parse('# Hello **World**')
     const { body } = render(MarkdownParsed, { props: { value: tree } })
     const output = html(body)
-    expect(output).toContain('<h1 id="hello-strong-world">')
+    expect(output).toContain('<h1 id="hello-world">')
     expect(output).toContain('Hello <strong>World</strong>')
     expect(output).toContain('</h1>')
     expect(output).toMatch(/^<div class="comark-content ">.*<\/div>$/)

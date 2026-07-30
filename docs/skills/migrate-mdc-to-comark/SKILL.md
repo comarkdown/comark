@@ -146,7 +146,7 @@ import toc from 'comark/plugins/toc'
 
 export const ArticleComark = defineMarkdownComponent({
   name: 'ArticleComark',
-  plugins: [highlight({ themes: { light: githubLight, dark: githubDark } }), toc()],
+  plugins: [highlight({ themes: { light: 'github-light', dark: 'github-dark' } }), toc()],
   components: { alert: CustomAlert },
 })
 ```
