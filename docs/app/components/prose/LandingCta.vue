@@ -12,7 +12,7 @@ defineProps<{
 
 <template>
   <div>
-    <section class="relative overflow-hidden border-b border-default">
+    <section class="relative mx-auto w-full max-w-(--ui-container) overflow-hidden border-b border-default">
       <div class="cta-dots absolute inset-0" />
       <div
         class="absolute top-1/2 left-1/2 size-[400px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/8 blur-[100px]"

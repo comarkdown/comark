@@ -38,7 +38,7 @@ watch(
 </script>
 
 <template>
-  <div class="border-b border-default">
+  <div class="mx-auto w-full max-w-(--ui-container) border-b border-default">
     <div class="grid lg:grid-cols-2">
       <div class="border-b border-default p-6 lg:border-r lg:border-b-0 lg:p-8">
         <span

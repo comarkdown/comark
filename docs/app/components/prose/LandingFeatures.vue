@@ -20,7 +20,7 @@ defineProps<{
 </script>
 
 <template>
-  <div class="grid border-b border-default lg:grid-cols-2">
+  <div class="mx-auto grid w-full max-w-(--ui-container) border-b border-default lg:grid-cols-2">
     <LandingFeatureStreaming
       :headline="streamingHeadline"
       :title="streamingTitle"

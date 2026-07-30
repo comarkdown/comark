@@ -12,7 +12,7 @@ const props = defineProps<{
 </script>
 
 <template>
-  <section class="relative overflow-hidden border-b border-default">
+  <section class="relative mx-auto w-full max-w-(--ui-container) overflow-hidden border-b border-default">
     <div class="absolute inset-0 hero-dots" />
 
     <div class="relative">

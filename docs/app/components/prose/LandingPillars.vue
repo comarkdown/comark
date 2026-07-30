@@ -15,7 +15,7 @@ defineProps<{
 </script>
 
 <template>
-  <section class="border-b border-default">
+  <section class="mx-auto w-full max-w-(--ui-container) border-b border-default">
     <div class="p-6 lg:p-8">
       <span
         v-if="headline"

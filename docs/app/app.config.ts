@@ -86,10 +86,27 @@ export default defineAppConfig({
   assistant: {
     enabled: true,
     faqQuestions: [
-      { category: 'Getting Started', items: ['What is Comark and how does it differ from MDX?'] },
-      { category: 'Syntax', items: ['How do I write block and inline components in Comark?'] },
-      { category: 'Rendering & Streaming', items: ['How do I stream AI-generated Markdown with Comark?'] },
-      { category: 'Plugins & Advanced', items: ['How do I add syntax highlighting to code blocks?'] },
+      {
+        category: 'Getting Started',
+        items: [
+          'What is Comark and how does it differ from MDX?',
+          'How do I install and set up Comark in my project?',
+        ],
+      },
+      {
+        category: 'Syntax',
+        items: [
+          'How do I write block and inline components in Comark?',
+          'How do I pass props and attributes to components?',
+        ],
+      },
+      {
+        category: 'Rendering & Streaming',
+        items: [
+          'How do I stream AI-generated Markdown with Comark?',
+          'How do I add syntax highlighting to code blocks?',
+        ],
+      },
     ],
   },
 

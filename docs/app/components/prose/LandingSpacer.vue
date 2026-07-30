@@ -11,7 +11,7 @@ withDefaults(
 
 <template>
   <div
-    class="landing-spacer relative border-b border-default"
+    class="landing-spacer relative mx-auto w-full max-w-(--ui-container) border-b border-default"
     :style="{ height }"
   >
     <span
