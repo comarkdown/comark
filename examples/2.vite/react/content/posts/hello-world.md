@@ -21,10 +21,10 @@ This alert is rendered using a custom Comark component mapped via the `component
 
 ```ts
 import { parse } from '@comark/react/parse'
-import { ComarkRenderer } from '@comark/react'
+import { MarkdownParsed } from '@comark/react'
 
 const tree = await parse(markdown)
-// <ComarkRenderer tree={tree} components={{ Alert }} />
+// <MarkdownParsed value={tree} components={{ Alert }} />
 ```
 
 ::Alert{type="success"}

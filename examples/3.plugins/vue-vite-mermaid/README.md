@@ -35,12 +35,12 @@ This example demonstrates how to use Comark with Mermaid diagrams in Vue:
 
 2. Pass the plugin to Comark:
    ```vue
-   <Comark :plugins="[mermaid()]" />
+   <Markdown :plugins="[mermaid()]" />
    ```
 
 3. Register the Mermaid component:
    ```vue
-   <Comark :components="{ mermaid: Mermaid }" />
+   <Markdown :components="{ mermaid: Mermaid }" />
    ```
 
 4. Use mermaid code blocks in your markdown:

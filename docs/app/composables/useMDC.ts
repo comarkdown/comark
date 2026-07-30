@@ -30,7 +30,7 @@ export interface MDCOptions extends ParseOptions {
  *
  * <template>
  *   <div>
- *     <ComarkRenderer v-if="state.tree" :tree="state.tree" />
+ *     <MarkdownParsed v-if="state.tree" :value="state.tree" />
  *     <div v-if="state.isLoading">Loading...</div>
  *     <div v-if="state.error">Error: {{ state.error.message }}</div>
  *   </div>

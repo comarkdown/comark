@@ -9,7 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@comark/svelte": "latest",
+    "@comark/svelte": "workspace:*",
     "@shikijs/langs": "catalog:",
     "@tailwindcss/vite": "catalog:",
     "tailwindcss": "catalog:"

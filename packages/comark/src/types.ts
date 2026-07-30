@@ -386,7 +386,7 @@ export interface ParseOptions<TPlugins extends readonly ComarkPlugin<any, any>[]
    * Remove wrapper tags from the parsed tree, hoisting their children up in
    * place. Mirrors the MDC `unwrap` behaviour and is primarily used to strip
    * the `<p>` wrapper for single-line / inline rendering, e.g.
-   * `<Button><Comark :markdown="text" :options="{ unwrap: 'p' }" /></Button>`.
+   * `<Button><Markdown :value="text" :options="{ unwrap: 'p' }" /></Button>`.
    *
    * - `true` — unwrap paragraphs (`p`)
    * - `string` — comma- or whitespace-separated tag names, e.g. `'p, h1'` or `'div p'`

@@ -88,7 +88,7 @@ onBeforeUnmount(() => {
       <ComarkDocs
         v-if="streamedText"
         class="text-sm"
-        :markdown="streamedText"
+        :value="streamedText"
         :streaming="isStreaming"
         :caret="{ class: 'caret' }"
       />

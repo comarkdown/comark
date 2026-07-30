@@ -24,7 +24,7 @@ No peer dependencies are required.
 
 ```vue [App.vue]
 <script setup lang="ts">
-import { Comark } from '@comark/vue'
+import { Markdown } from '@comark/vue'
 import breaks from '@comark/vue/plugins/breaks'
 
 const markdown = `Hello
@@ -33,7 +33,7 @@ world`
 
 <template>
   <Suspense>
-    <Comark :plugins="[breaks()]">{{ markdown }}</Comark>
+    <Markdown :plugins="[breaks()]">{{ markdown }}</Markdown>
     <!-- <p>Hello<br>world</p> -->
   </Suspense>
 </template>
@@ -42,7 +42,7 @@ world`
 ### With React
 
 ```tsx [App.tsx]
-import { Comark } from '@comark/react'
+import { Markdown } from '@comark/react'
 import breaks from '@comark/react/plugins/breaks'
 
 const markdown = `Hello
@@ -50,7 +50,7 @@ World`
 
 function App() {
   return (
-    <Comark plugins={[breaks()]}>{markdown}</Comark>
+    <Markdown plugins={[breaks()]}>{markdown}</Markdown>
   )
   // <p>Hello<br>world</p>
 }
@@ -60,14 +60,14 @@ function App() {
 
 ```svelte [App.svelte]
 <script lang="ts">
-  import { Comark } from '@comark/svelte'
+  import { Markdown } from '@comark/svelte'
   import breaks from '@comark/svelte/plugins/breaks'
 
   const markdown = `Hello
   world`
 </script>
 
-<Comark {markdown} plugins={[breaks()]} />
+<Markdown value={markdown} plugins={[breaks()]} />
 <!-- <p>Hello<br>world</p> -->
 ```
 
@@ -75,14 +75,14 @@ function App() {
 
 ```typescript [app.component.ts]
 import { Component } from '@angular/core'
-import { ComarkComponent } from '@comark/angular'
+import { Markdown } from '@comark/angular'
 import breaks from '@comark/angular/plugins/breaks'
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [ComarkComponent],
-  template: `<comark [markdown]="markdown" [plugins]="[breaks()]" />`,
+  imports: [Markdown],
+  template: `<comark-markdown [value]="markdown" [plugins]="[breaks()]" />`,
 })
 export class AppComponent {
   markdown = `Hello

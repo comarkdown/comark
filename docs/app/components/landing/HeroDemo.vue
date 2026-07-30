@@ -49,7 +49,7 @@ const sourceAsCode = computed(() => ['```md', props.demoMarkdown, '```'].join('\
           <ComarkDocs
             v-if="demoMarkdown"
             class="text-sm"
-            :markdown="demoMarkdown"
+            :value="demoMarkdown"
           />
         </div>
       </div>

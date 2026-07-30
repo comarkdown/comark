@@ -8,13 +8,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@comark/vue": "catalog:",
+    "@comark/vue": "workspace:*",
     "@nuxt/ui": "catalog:",
     "@shikijs/langs": "catalog:",
     "@shikijs/themes": "catalog:",
     "@shikijs/twoslash": "catalog:",
     "@vueuse/core": "catalog:",
-    "comark": "catalog:",
+    "comark": "workspace:*",
     "shiki": "catalog:",
     "tailwindcss": "catalog:",
     "twoslash-cdn": "catalog:",

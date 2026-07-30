@@ -12,7 +12,7 @@
     "@comark/ansi": "workspace:*",
     "@xterm/addon-fit": "catalog:",
     "@xterm/xterm": "catalog:",
-    "comark": "catalog:",
+    "comark": "workspace:*",
     "katex": "catalog:",
     "shiki": "catalog:"
   },

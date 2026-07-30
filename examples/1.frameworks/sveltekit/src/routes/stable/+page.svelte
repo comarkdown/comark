@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { ComarkRenderer } from '@comark/svelte'
+  import { MarkdownParsed } from '@comark/svelte'
   import { pascalCase } from '@comark/svelte/utils';
   import Alert from '$lib/components/comark/Alert.svelte'
   import type { PageData } from './$types'
@@ -18,9 +18,9 @@
 
 <div class="page-grid">
   <article class="panel">
-    <ComarkRenderer
+    <MarkdownParsed
       class="prose"
-      tree={data.tree}
+      value={data.tree}
       components={{ alert: Alert }}
       {componentsManifest}
     />
@@ -34,7 +34,7 @@
     </p>
     <ul class="status-list">
       <li><code>parse()</code> runs in <code>+page.server.ts</code>.</li>
-      <li><code>ComarkRenderer</code> receives a serialized AST.</li>
+      <li><code>MarkdownParsed</code> receives a serialized AST.</li>
       <li>The manifest uses <code>eager: true</code> for synchronous SSR rendering.</li>
     </ul>
   </aside>

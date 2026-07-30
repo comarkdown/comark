@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { ComarkAsync } from '@comark/svelte/async'
+  import { MarkdownAsync } from '@comark/svelte/async'
   import type { PageData } from './$types'
   import { pascalCase } from '@comark/svelte/utils';
 
@@ -19,9 +19,9 @@
 <div class="page-grid">
   <article class="panel">
     <svelte:boundary>
-      <ComarkAsync
+      <MarkdownAsync
         class="prose"
-        markdown={data.markdown}
+        value={data.markdown}
         {componentsManifest}
       />
       {#snippet failed(error)}
@@ -37,7 +37,7 @@
       still renders it into the SvelteKit SSR HTML.
     </p>
     <ul class="status-list">
-      <li><code>ComarkAsync</code> parses markdown during SSR.</li>
+      <li><code>MarkdownAsync</code> parses markdown during SSR.</li>
       <li><code>componentsManifest</code> returns a non-eager dynamic import.</li>
       <li><code>&lt;svelte:boundary&gt;</code> handles async errors without replacing SSR HTML.</li>
     </ul>

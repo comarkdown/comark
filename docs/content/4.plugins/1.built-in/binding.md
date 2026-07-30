@@ -96,7 +96,7 @@ const out = await renderANSI(tree, {
 
 ```vue [Vue]
 <script setup lang="ts">
-import { Comark } from '@comark/vue'
+import { Markdown } from '@comark/vue'
 import binding, { Binding } from '@comark/vue/plugins/binding'
 
 const markdown = `---
@@ -109,8 +109,8 @@ Welcome, {{ frontmatter.user.name || guest }}.`
 
 <template>
   <Suspense>
-    <Comark
-      :markdown="markdown"
+    <Markdown
+      :value="markdown"
       :plugins="[binding()]"
       :components="{ Binding }"
     />
@@ -119,7 +119,7 @@ Welcome, {{ frontmatter.user.name || guest }}.`
 ```
 
 ```tsx [React]
-import { Comark } from '@comark/react'
+import { Markdown } from '@comark/react'
 import binding, { Binding } from '@comark/react/plugins/binding'
 
 const markdown = `---
@@ -131,8 +131,8 @@ Welcome, {{ frontmatter.user.name || guest }}.`
 
 export default function App() {
   return (
-    <Comark
-      markdown={markdown}
+    <Markdown
+      value={markdown}
       plugins={[binding()]}
       components={{ Binding }}
     />
@@ -142,7 +142,7 @@ export default function App() {
 
 ```svelte [Svelte]
 <script lang="ts">
-  import { Comark } from '@comark/svelte'
+  import { Markdown } from '@comark/svelte'
   import binding, { Binding } from '@comark/svelte/plugins/binding'
 
   const markdown = `---
@@ -153,8 +153,8 @@ user:
 Welcome, {{ frontmatter.user.name || guest }}.`
 </script>
 
-<Comark
-  {markdown}
+<Markdown
+  value={markdown}
   plugins={[binding()]}
   components={{ Binding }}
 />

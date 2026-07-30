@@ -37,7 +37,7 @@ With framework components:
 
 ```vue [Vue]
 <script setup lang="ts">
-import { Comark } from '@comark/vue'
+import { Markdown } from '@comark/vue'
 import security from '@comark/vue/plugins/security'
 
 const plugins = [
@@ -49,17 +49,17 @@ const plugins = [
 </script>
 
 <template>
-  <Comark :plugins="plugins">{{ content }}</Comark>
+  <Markdown :plugins="plugins">{{ content }}</Markdown>
 </template>
 ```
 
 ```tsx [React]
-import { Comark } from '@comark/react'
+import { Markdown } from '@comark/react'
 import security from '@comark/react/plugins/security'
 
-<Comark plugins={[security({ blockedTags: ['script', 'iframe'] })]}>
+<Markdown plugins={[security({ blockedTags: ['script', 'iframe'] })]}>
   {content}
-</Comark>
+</Markdown>
 ```
 
 ::

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { parse } from '@comark/react/parse'
 import highlight from '@comark/react/plugins/highlight'
-import { ComarkRenderer } from '@comark/react'
+import { MarkdownParsed } from '@comark/react'
 import type { ComarkTree } from '@comark/react'
 import Alert from '../components/Alert'
 
@@ -143,7 +143,7 @@ Outer info alert.
 
 ## Frontmatter
 
-Documents can declare YAML frontmatter at the top (before any content). Access it via \`tree.frontmatter\` when using \`ComarkRenderer\`.
+Documents can declare YAML frontmatter at the top (before any content). Access it via \`tree.frontmatter\` when using \`MarkdownParsed\`.
 
 ---
 
@@ -166,8 +166,8 @@ export default function Syntax() {
   if (!tree) return null
 
   return (
-    <ComarkRenderer
-      tree={tree}
+    <MarkdownParsed
+      value={tree}
       components={{ Alert }}
     />
   )

@@ -10,7 +10,8 @@
   "dependencies": {
     "@ai-sdk/gateway": "catalog:",
     "@ai-sdk/vue": "catalog:",
-    "@comark/nuxt": "catalog:",
+    "@comark/nuxt": "workspace:*",
+    "@comark/vue": "workspace:*",
     "@monaco-editor/loader": "catalog:",
     "@nuxt/content": "catalog:",
     "@nuxt/ui": "catalog:",
@@ -22,7 +23,7 @@
     "@vueuse/core": "catalog:",
     "ai": "catalog:",
     "beautiful-mermaid": "catalog:",
-    "comark": "catalog:",
+    "comark": "workspace:*",
     "docus": "catalog:",
     "markdown-it-math": "catalog:",
     "nuxt": "catalog:",

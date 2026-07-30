@@ -1,5 +1,5 @@
 import { Component } from '@angular/core'
-import { ComarkComponent } from '@comark/angular'
+import { Markdown } from '@comark/angular'
 import highlight from 'comark/plugins/highlight'
 import alert from 'comark/plugins/alert'
 import { AlertComponent } from '../components/alert.component'
@@ -9,10 +9,10 @@ import python from '@shikijs/langs/python'
 @Component({
   selector: 'app-syntax',
   standalone: true,
-  imports: [ComarkComponent],
+  imports: [Markdown],
   template: `
-    <comark
-      [markdown]="markdown"
+    <comark-markdown
+      [value]="markdown"
       [plugins]="plugins"
       [components]="components"
     />
@@ -257,7 +257,7 @@ published: true
 ---
 ~~~
 
-Access frontmatter via \`tree.frontmatter\` when using the \`ComarkRendererComponent\`.
+Access frontmatter via \`tree.frontmatter\` when using the \`MarkdownParsed\` component.
 
 ---
 

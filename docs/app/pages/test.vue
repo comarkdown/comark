@@ -189,11 +189,11 @@ Thanks for trying the **Comark test page**! 🚀
 
 <template>
   <UContainer>
-    <Comark
+    <Markdown
       :components-manifest="resolveComponent"
       :plugins="[highlight()]"
     >
       {{ markdown }}
-    </Comark>
+    </Markdown>
   </UContainer>
 </template>

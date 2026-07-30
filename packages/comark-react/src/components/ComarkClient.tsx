@@ -1,56 +1,18 @@
 'use client'
 
-import { use, useDeferredValue, useMemo, Suspense } from 'react'
-import { parse } from 'comark'
-import type { ComarkTree } from 'comark'
-import { ComarkLive } from './ComarkLive.tsx'
-import type { ComarkProps } from './Comark'
+import React from 'react'
+import { MarkdownClient } from './MarkdownClient.tsx'
+import type { MarkdownProps } from './Markdown.tsx'
+import { warnDeprecated } from '../internal/deprecation.ts'
 
-interface ComarkContentProps extends Omit<ComarkProps, 'markdown' | 'children' | 'options' | 'plugins'> {
-  parsePromise: Promise<ComarkTree>
-}
-
-function ComarkContent({
-  parsePromise,
-  components: customComponents = {},
-  componentsManifest,
-  streaming = false,
-  caret = false,
-  data,
-  className,
-}: ComarkContentProps) {
-  const parsed = use(parsePromise)
-
-  return (
-    <ComarkLive
-      tree={parsed}
-      components={customComponents}
-      componentsManifest={componentsManifest}
-      streaming={streaming}
-      className={className}
-      caret={caret}
-      data={data}
-    />
-  )
-}
-
-export function ComarkClient({ children, markdown = '', options = {}, plugins = [], ...rest }: ComarkProps) {
-  const content = children ? String(children) : markdown
-
-  // Re-creates the promise only when content changes.
-  // Note: options/plugins should be stable references (defined outside render or memoized).
-  const parsePromise = useMemo(() => parse(content, { ...options, plugins }), [content])
-
-  // Keep showing the previous parsed result while a new parse is pending —
-  // prevents blank flashes during rapid streaming updates.
-  const deferredPromise = useDeferredValue(parsePromise)
-
-  return (
-    <Suspense fallback={null}>
-      <ComarkContent
-        parsePromise={deferredPromise}
-        {...rest}
-      />
-    </Suspense>
-  )
+/**
+ * ComarkClient component
+ *
+ * @deprecated Use `MarkdownClient` instead — same component, renamed to
+ * describe what it renders. `ComarkClient` will be removed in a future
+ * major version.
+ */
+export function ComarkClient(props: MarkdownProps) {
+  warnDeprecated('ComarkClient', 'MarkdownClient')
+  return React.createElement(MarkdownClient, props)
 }

@@ -23,7 +23,7 @@ This example demonstrates how to use Comark Syntax with Nuxt UI. Comark Syntax a
 
 ## What does `comark/nuxt` module do
 
-- Registers the `<Comark>` component in Nuxt for automatic import.
+- Registers the `<Markdown>` component in Nuxt for automatic import.
 - Registers the `~/components/prose` directory in the app and all layers as a global components directory.
   - This allows users to override prose components by creating components in this directory.
 - Detects Nuxt UI and tells Nuxt UI to register its Prose components

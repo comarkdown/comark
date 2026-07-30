@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Comark } from '@comark/svelte'
+  import { Markdown } from '@comark/svelte'
   import highlight from '@comark/svelte/plugins/highlight'
   import Alert from '../components/Alert.svelte'
   import python from '@shikijs/langs/python'
@@ -158,7 +158,7 @@ Outer info alert.
 
 ## Frontmatter
 
-Documents can declare YAML frontmatter at the top (before any content). Access it via \`tree.frontmatter\` when using \`ComarkRenderer\`.
+Documents can declare YAML frontmatter at the top (before any content). Access it via \`tree.frontmatter\` when using \`MarkdownParsed\`.
 
 ---
 
@@ -172,7 +172,7 @@ Text before the comment and text after the comment both render normally.
 `
 </script>
 
-<Comark
+<Markdown
   {markdown}
   plugins={[highlight({ languages: [python] })]}
   components={{ Alert }}

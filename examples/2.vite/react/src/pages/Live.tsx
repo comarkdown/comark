@@ -1,15 +1,15 @@
 import { createComarkContext, parse, type ComarkTree } from 'comark'
-import { ComarkLive } from '@comark/react'
+import { MarkdownLive } from '@comark/react'
 import { useEffect, useState } from 'react'
 
-// A driver installs a context on globalThis once; every <ComarkRenderer comarkKey>
+// A driver installs a context on globalThis once; every <MarkdownParsed comarkKey>
 // then auto-subscribes. The buttons act as the driver here — but it could just as
 // well be HMR, a collab socket, an agent, or devtools.
 const ctx = createComarkContext()
 
 const INITIAL = `# Live document
 
-This paragraph is rendered from a **ComarkRenderer** wired to \`globalThis.comarkContext\`.
+This paragraph is rendered from a **MarkdownParsed** wired to \`globalThis.comarkContext\`.
 
 Use the buttons to push updates by key — no re-mount.
 
@@ -76,9 +76,9 @@ export default function Live() {
         </button>
       </div>
 
-      <ComarkLive
+      <MarkdownLive
         comarkKey="demo"
-        tree={tree}
+        value={tree}
       />
     </div>
   )

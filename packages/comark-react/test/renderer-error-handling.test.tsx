@@ -2,9 +2,9 @@ import { describe, expect, it, vi } from 'vitest'
 import type { ReactNode } from 'react'
 import { renderToString } from 'react-dom/server'
 import { parse } from 'comark'
-import { ComarkRenderer } from '../src/components/ComarkRenderer'
+import { MarkdownParsed } from '../src/components/MarkdownParsed'
 
-describe('ComarkRenderer Error Handling', () => {
+describe('MarkdownParsed Error Handling', () => {
   it('should render successfully with valid components', async () => {
     const markdown = `::good-component
 Some content
@@ -17,8 +17,8 @@ Some content
     }
 
     const html = renderToString(
-      <ComarkRenderer
-        tree={result}
+      <MarkdownParsed
+        value={result}
         components={{ 'good-component': GoodComponent }}
       />
     )
@@ -46,8 +46,8 @@ Some content
     try {
       expect(() =>
         renderToString(
-          <ComarkRenderer
-            tree={result}
+          <MarkdownParsed
+            value={result}
             components={{ 'error-component': ErrorComponent }}
           />
         )
@@ -77,8 +77,8 @@ Good content
 
     // Only register good-component; error-component falls back to a native element
     const html = renderToString(
-      <ComarkRenderer
-        tree={result}
+      <MarkdownParsed
+        value={result}
         components={{ 'good-component': GoodComponent }}
       />
     )
@@ -91,7 +91,7 @@ Good content
   it('should render an empty tree without errors', async () => {
     const result = await parse('')
 
-    const html = renderToString(<ComarkRenderer tree={result} />)
+    const html = renderToString(<MarkdownParsed value={result} />)
 
     expect(html).toContain('comark-content')
   })

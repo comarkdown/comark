@@ -48,15 +48,6 @@ catalogs:
     '@clack/prompts':
       specifier: ^1.7.0
       version: 1.7.0
-    '@comark/html':
-      specifier: ^0.5.0
-      version: 0.5.0
-    '@comark/nuxt':
-      specifier: ^0.5.0
-      version: 0.5.0
-    '@comark/react':
-      specifier: ^0.5.0
-      version: 0.5.0
     '@comark/vue':
       specifier: ^0.5.1
       version: 0.5.1
@@ -183,9 +174,6 @@ catalogs:
     citty:
       specifier: ^0.2.2
       version: 0.2.2
-    comark:
-      specifier: ^0.5.1
-      version: 0.5.1
     docus:
       specifier: ^5.12.3
       version: 5.12.3
@@ -423,8 +411,11 @@ importers:
         specifier: 'catalog:'
         version: 4.0.22(vue@3.5.39(typescript@5.9.3))(zod@4.4.3)
       '@comark/nuxt':
-        specifier: 'catalog:'
-        version: 0.5.0(beautiful-mermaid@1.1.3)(katex@0.17.0)(magicast@0.5.3)(nuxt@4.4.8(@babel/plugin-syntax-jsx@7.29.7(@babel/core@7.29.7))(@babel/plugin-syntax-typescript@7.29.7(@babel/core@7.29.7))(@parcel/watcher@2.5.6)(@types/node@26.1.1)(@vue/compiler-sfc@3.5.39)(better-sqlite3@12.10.0)(cac@6.7.14)(db0@0.3.4(better-sqlite3@12.10.0))(esbuild@0.28.1)(eslint@10.4.1(jiti@2.7.0))(ioredis@5.11.1)(lightningcss@1.32.0)(magicast@0.5.3)(meow@13.2.0)(optionator@0.9.4)(oxlint@1.73.0)(rolldown@1.1.5)(rollup-plugin-visualizer@7.0.1(rolldown@1.1.5)(rollup@4.62.2))(rollup@4.62.2)(sass@1.99.0)(srvx@0.11.22)(terser@5.49.0)(tsx@4.23.0)(typescript@5.9.3)(vite@8.1.4(@types/node@26.1.1)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.99.0)(terser@5.49.0)(tsx@4.23.0)(yaml@2.9.0))(vue-tsc@3.3.7(typescript@5.9.3))(yaml@2.9.0))(shiki@4.3.1)(vue@3.5.39(typescript@5.9.3))
+        specifier: workspace:*
+        version: link:../packages/comark-nuxt
+      '@comark/vue':
+        specifier: workspace:*
+        version: link:../packages/comark-vue
       '@monaco-editor/loader':
         specifier: 'catalog:'
         version: 1.7.0
@@ -459,11 +450,11 @@ importers:
         specifier: 'catalog:'
         version: 1.1.3
       comark:
-        specifier: 'catalog:'
-        version: 0.5.1(beautiful-mermaid@1.1.3)(katex@0.17.0)(shiki@4.3.1)
+        specifier: workspace:*
+        version: link:../packages/comark
       docus:
         specifier: 'catalog:'
-        version: 5.12.3(1126519ea8184b02cac1f0595258f036)
+        version: 5.12.3(bdb4387cb78d540ac036c3d6ff0b164f)
       markdown-it-math:
         specifier: 'catalog:'
         version: 6.0.0
@@ -520,8 +511,8 @@ importers:
         specifier: 'catalog:'
         version: 7.0.7(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.2)(@types/node@26.1.1)(db0@0.3.4(better-sqlite3@12.10.0))(ioredis@5.11.1)(jiti@2.7.0)(rollup@4.62.2)(sass@1.99.0)(terser@5.49.0)(tsx@4.23.0)(yaml@2.9.0)
       comark:
-        specifier: 'catalog:'
-        version: 0.5.1(beautiful-mermaid@1.1.3)(katex@0.17.0)(shiki@4.3.1)
+        specifier: workspace:*
+        version: link:../../../packages/comark
       react:
         specifier: 'catalog:'
         version: 19.2.7
@@ -542,11 +533,11 @@ importers:
   examples/1.frameworks/nextjs:
     dependencies:
       '@comark/react':
-        specifier: 'catalog:'
-        version: 0.5.0(beautiful-mermaid@1.1.3)(katex@0.17.0)(react@19.2.7)(shiki@4.3.1)
+        specifier: workspace:*
+        version: link:../../../packages/comark-react
       comark:
-        specifier: 'catalog:'
-        version: 0.5.1(beautiful-mermaid@1.1.3)(katex@0.17.0)(shiki@4.3.1)
+        specifier: workspace:*
+        version: link:../../../packages/comark
       next:
         specifier: 'catalog:'
         version: 16.2.10(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(sass@1.99.0)
@@ -579,8 +570,11 @@ importers:
   examples/1.frameworks/nuxt:
     dependencies:
       '@comark/nuxt':
-        specifier: latest
-        version: 0.5.1(beautiful-mermaid@1.1.3)(katex@0.17.0)(magicast@0.5.3)(nuxt@4.4.8(@babel/plugin-syntax-jsx@7.29.7(@babel/core@7.29.7))(@babel/plugin-syntax-typescript@7.29.7(@babel/core@7.29.7))(@parcel/watcher@2.5.6)(@types/node@26.1.1)(@vue/compiler-sfc@3.5.39)(better-sqlite3@12.10.0)(cac@6.7.14)(db0@0.3.4(better-sqlite3@12.10.0))(esbuild@0.28.1)(eslint@10.4.1(jiti@2.7.0))(ioredis@5.11.1)(lightningcss@1.32.0)(magicast@0.5.3)(meow@13.2.0)(optionator@0.9.4)(oxlint@1.73.0)(rolldown@1.1.5)(rollup-plugin-visualizer@7.0.1(rolldown@1.1.5)(rollup@4.62.2))(rollup@4.62.2)(sass@1.99.0)(srvx@0.11.22)(terser@5.49.0)(tsx@4.23.0)(typescript@5.9.3)(vite@8.1.4(@types/node@26.1.1)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.99.0)(terser@5.49.0)(tsx@4.23.0)(yaml@2.9.0))(vue-tsc@3.3.7(typescript@5.9.3))(yaml@2.9.0))(shiki@4.3.1)(vue@3.5.39(typescript@5.9.3))
+        specifier: workspace:*
+        version: link:../../../packages/comark-nuxt
+      '@comark/vue':
+        specifier: workspace:*
+        version: link:../../../packages/comark-vue
       '@nuxt/ui':
         specifier: 'catalog:'
         version: 4.9.0(73bfceadd494cca602f69458f5df2a07)
@@ -597,8 +591,8 @@ importers:
   examples/1.frameworks/sveltekit:
     dependencies:
       '@comark/svelte':
-        specifier: latest
-        version: 0.5.1(beautiful-mermaid@1.1.3)(katex@0.17.0)(shiki@4.3.1)(svelte@5.56.4(@typescript-eslint/types@8.63.0))
+        specifier: workspace:*
+        version: link:../../../packages/comark-svelte
     devDependencies:
       '@sveltejs/adapter-auto':
         specifier: 'catalog:'
@@ -653,14 +647,14 @@ importers:
         specifier: 'catalog:'
         version: 22.0.6(@angular/common@22.0.6(@angular/core@22.0.6(@angular/compiler@22.0.6)(rxjs@7.8.2)(zone.js@0.16.2))(rxjs@7.8.2))(@angular/core@22.0.6(@angular/compiler@22.0.6)(rxjs@7.8.2)(zone.js@0.16.2))(@angular/platform-browser@22.0.6(@angular/common@22.0.6(@angular/core@22.0.6(@angular/compiler@22.0.6)(rxjs@7.8.2)(zone.js@0.16.2))(rxjs@7.8.2))(@angular/core@22.0.6(@angular/compiler@22.0.6)(rxjs@7.8.2)(zone.js@0.16.2)))(rxjs@7.8.2)
       '@comark/angular':
-        specifier: 'workspace:'
+        specifier: workspace:*
         version: link:../../../packages/comark-angular
       '@shikijs/langs':
         specifier: 'catalog:'
         version: 4.3.1
       comark:
-        specifier: 'catalog:'
-        version: 0.5.1(beautiful-mermaid@1.1.3)(katex@0.17.0)(shiki@4.3.1)
+        specifier: workspace:*
+        version: link:../../../packages/comark
       rxjs:
         specifier: 'catalog:'
         version: 7.8.2
@@ -711,8 +705,8 @@ importers:
         specifier: 'catalog:'
         version: 6.0.0
       comark:
-        specifier: 'catalog:'
-        version: 0.5.1(beautiful-mermaid@1.1.3)(katex@0.17.0)(shiki@4.3.1)
+        specifier: workspace:*
+        version: link:../../../packages/comark
       katex:
         specifier: 'catalog:'
         version: 0.17.0
@@ -730,8 +724,8 @@ importers:
   examples/2.vite/html:
     dependencies:
       '@comark/html':
-        specifier: 'catalog:'
-        version: 0.5.0(beautiful-mermaid@1.1.3)(katex@0.17.0)(shiki@4.3.1)
+        specifier: workspace:*
+        version: link:../../../packages/comark-html
       beautiful-mermaid:
         specifier: 'catalog:'
         version: 1.1.3
@@ -752,14 +746,14 @@ importers:
   examples/2.vite/react:
     dependencies:
       '@comark/react':
-        specifier: 'catalog:'
-        version: 0.5.0(beautiful-mermaid@1.1.3)(katex@0.17.0)(react@19.2.7)(shiki@4.3.1)
+        specifier: workspace:*
+        version: link:../../../packages/comark-react
       '@tailwindcss/vite':
         specifier: 'catalog:'
         version: 4.3.2(vite@8.1.4(@types/node@26.1.1)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.99.0)(terser@5.49.0)(tsx@4.23.0)(yaml@2.9.0))
       comark:
-        specifier: 'catalog:'
-        version: 0.5.1(beautiful-mermaid@1.1.3)(katex@0.17.0)(shiki@4.3.1)
+        specifier: workspace:*
+        version: link:../../../packages/comark
       react:
         specifier: 'catalog:'
         version: 19.2.7
@@ -792,8 +786,8 @@ importers:
   examples/2.vite/svelte:
     dependencies:
       '@comark/svelte':
-        specifier: latest
-        version: 0.5.1(beautiful-mermaid@1.1.3)(katex@0.17.0)(shiki@4.3.1)(svelte@5.56.4(@typescript-eslint/types@8.63.0))
+        specifier: workspace:*
+        version: link:../../../packages/comark-svelte
       '@shikijs/langs':
         specifier: 'catalog:'
         version: 4.3.1
@@ -826,8 +820,8 @@ importers:
   examples/2.vite/vue:
     dependencies:
       '@comark/vue':
-        specifier: latest
-        version: 0.5.1(beautiful-mermaid@1.1.3)(katex@0.17.0)(shiki@4.3.1)(vue@3.5.39(typescript@5.9.3))
+        specifier: workspace:*
+        version: link:../../../packages/comark-vue
       '@nuxt/ui':
         specifier: 'catalog:'
         version: 4.9.0(73bfceadd494cca602f69458f5df2a07)
@@ -878,8 +872,8 @@ importers:
         specifier: 'catalog:'
         version: 0.2.2
       comark:
-        specifier: 'catalog:'
-        version: 0.5.1(beautiful-mermaid@1.1.3)(katex@0.17.0)(shiki@4.3.1)
+        specifier: workspace:*
+        version: link:../../../packages/comark
       shiki:
         specifier: 'catalog:'
         version: 4.3.1
@@ -924,8 +918,8 @@ importers:
   examples/3.plugins/react-vite-mermaid:
     dependencies:
       '@comark/react':
-        specifier: 'catalog:'
-        version: 0.5.0(beautiful-mermaid@1.1.3)(katex@0.17.0)(react@19.2.7)(shiki@4.3.1)
+        specifier: workspace:*
+        version: link:../../../packages/comark-react
       '@tailwindcss/vite':
         specifier: 'catalog:'
         version: 4.3.2(vite@8.1.4(@types/node@26.1.1)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.99.0)(terser@5.49.0)(tsx@4.23.0)(yaml@2.9.0))
@@ -1005,8 +999,8 @@ importers:
   examples/3.plugins/vue-vite-highlight:
     dependencies:
       '@comark/vue':
-        specifier: 'catalog:'
-        version: 0.5.1(beautiful-mermaid@1.1.3)(katex@0.17.0)(shiki@4.3.1)(vue@3.5.39(typescript@5.9.3))
+        specifier: workspace:*
+        version: link:../../../packages/comark-vue
       '@shikijs/langs':
         specifier: 'catalog:'
         version: 4.3.1
@@ -1014,8 +1008,8 @@ importers:
         specifier: 'catalog:'
         version: 4.3.1
       comark:
-        specifier: 'catalog:'
-        version: 0.5.1(beautiful-mermaid@1.1.3)(katex@0.17.0)(shiki@4.3.1)
+        specifier: workspace:*
+        version: link:../../../packages/comark
       shiki:
         specifier: 'catalog:'
         version: 4.3.1
@@ -1039,8 +1033,8 @@ importers:
   examples/3.plugins/vue-vite-json-render:
     dependencies:
       '@comark/vue':
-        specifier: 'catalog:'
-        version: 0.5.1(beautiful-mermaid@1.1.3)(katex@0.17.0)(shiki@4.3.1)(vue@3.5.39(typescript@5.9.3))
+        specifier: workspace:*
+        version: link:../../../packages/comark-vue
       '@nuxt/ui':
         specifier: 'catalog:'
         version: 4.9.0(73bfceadd494cca602f69458f5df2a07)
@@ -1051,8 +1045,8 @@ importers:
         specifier: 'catalog:'
         version: 14.3.0(vue@3.5.39(typescript@5.9.3))
       comark:
-        specifier: 'catalog:'
-        version: 0.5.1(beautiful-mermaid@1.1.3)(katex@0.17.0)(shiki@4.3.1)
+        specifier: workspace:*
+        version: link:../../../packages/comark
       shiki:
         specifier: 'catalog:'
         version: 4.3.1
@@ -1104,8 +1098,8 @@ importers:
   examples/3.plugins/vue-vite-mermaid:
     dependencies:
       '@comark/vue':
-        specifier: 'catalog:'
-        version: 0.5.1(beautiful-mermaid@1.1.3)(katex@0.17.0)(shiki@4.3.1)(vue@3.5.39(typescript@5.9.3))
+        specifier: workspace:*
+        version: link:../../../packages/comark-vue
       '@tailwindcss/vite':
         specifier: 'catalog:'
         version: 4.3.2(vite@8.1.4(@types/node@26.1.1)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.99.0)(terser@5.49.0)(tsx@4.23.0)(yaml@2.9.0))
@@ -1163,8 +1157,8 @@ importers:
   examples/3.plugins/vue-vite-twoslash:
     dependencies:
       '@comark/vue':
-        specifier: 'catalog:'
-        version: 0.5.1(beautiful-mermaid@1.1.3)(katex@0.17.0)(shiki@4.3.1)(vue@3.5.39(typescript@5.9.3))
+        specifier: workspace:*
+        version: link:../../../packages/comark-vue
       '@nuxt/ui':
         specifier: 'catalog:'
         version: 4.9.0(73bfceadd494cca602f69458f5df2a07)
@@ -1181,8 +1175,8 @@ importers:
         specifier: 'catalog:'
         version: 14.3.0(vue@3.5.39(typescript@5.9.3))
       comark:
-        specifier: 'catalog:'
-        version: 0.5.1(beautiful-mermaid@1.1.3)(katex@0.17.0)(shiki@4.3.1)
+        specifier: workspace:*
+        version: link:../../../packages/comark
       shiki:
         specifier: 'catalog:'
         version: 4.3.1
@@ -1215,8 +1209,8 @@ importers:
         specifier: 'catalog:'
         version: 4.0.22(vue@3.5.39(typescript@5.9.3))(zod@4.4.3)
       '@comark/nuxt':
-        specifier: 'catalog:'
-        version: 0.5.0(beautiful-mermaid@1.1.3)(katex@0.17.0)(magicast@0.5.3)(nuxt@4.4.8(@babel/plugin-syntax-jsx@7.29.7(@babel/core@7.29.7))(@babel/plugin-syntax-typescript@7.29.7(@babel/core@7.29.7))(@parcel/watcher@2.5.6)(@types/node@26.1.1)(@vue/compiler-sfc@3.5.39)(better-sqlite3@12.10.0)(cac@6.7.14)(db0@0.3.4(better-sqlite3@12.10.0))(esbuild@0.28.1)(eslint@10.4.1(jiti@2.7.0))(ioredis@5.11.1)(lightningcss@1.32.0)(magicast@0.5.3)(meow@13.2.0)(optionator@0.9.4)(oxlint@1.73.0)(rolldown@1.1.5)(rollup-plugin-visualizer@7.0.1(rolldown@1.1.5)(rollup@4.62.2))(rollup@4.62.2)(sass@1.99.0)(srvx@0.11.22)(terser@5.49.0)(tsx@4.23.0)(typescript@5.9.3)(vite@8.1.4(@types/node@26.1.1)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.99.0)(terser@5.49.0)(tsx@4.23.0)(yaml@2.9.0))(vue-tsc@3.3.7(typescript@5.9.3))(yaml@2.9.0))(shiki@4.3.1)(vue@3.5.39(typescript@5.9.3))
+        specifier: workspace:*
+        version: link:../../../packages/comark-nuxt
       '@nuxt/ui':
         specifier: 'catalog:'
         version: 4.9.0(73bfceadd494cca602f69458f5df2a07)
@@ -2137,60 +2131,6 @@ packages:
 
   '@colordx/core@5.5.0':
     resolution: {integrity: sha512-3PxTH8itZzltK0U9jTwVVnjLXvnDYuq3m+QXsHkENxWiPRh4WaoLcs1SQjqgZ55kS+QyirpH5BVwzP2gMVG6EQ==}
-
-  '@comark/html@0.5.0':
-    resolution: {integrity: sha512-n9wiM8i+DQwHD1n4l9bOqhQFQm6QzX4x3385v4cY4QE/c4mq/U/Gsk2Gxk2ebxIEj3Oi4d8xCZ5Lg6tje8gBRw==}
-    peerDependencies:
-      beautiful-mermaid: '>=1.0'
-      katex: '>=0.16'
-      shiki: ^4.0.0
-    peerDependenciesMeta:
-      beautiful-mermaid:
-        optional: true
-      katex:
-        optional: true
-      shiki:
-        optional: true
-
-  '@comark/nuxt@0.5.0':
-    resolution: {integrity: sha512-shOsTFYEDq4/3X5uGtYt6JQKfj5jePg6NvdBH2wx2DMiJZNthc0itBvwqsRUeij5cerpsl5Vc4Xpc6GikTTiMA==}
-    peerDependencies:
-      nuxt: ^4.0.0
-
-  '@comark/nuxt@0.5.1':
-    resolution: {integrity: sha512-BvXUbzasGRqQ6bWGuRMO0E6KhWXXpv8FpursPHTixTwJxYVa7BFHUVqvq4cfjj5/6VgbXwofvHiawVQV2k33og==}
-    peerDependencies:
-      nuxt: ^4.0.0
-
-  '@comark/react@0.5.0':
-    resolution: {integrity: sha512-kcDt3ZLRZO250okJa38JL4siEyD2F+dqFJzNcR5Klk6D+ye6j9mWYm1Hh/lgp/SpFv93cO/Rnt+avK20wmPqgg==}
-    peerDependencies:
-      beautiful-mermaid: ^1.1.3
-      katex: ^0.16.45
-      react: ^19.0.0
-      shiki: ^4.0.0
-    peerDependenciesMeta:
-      beautiful-mermaid:
-        optional: true
-      katex:
-        optional: true
-      shiki:
-        optional: true
-
-  '@comark/svelte@0.5.1':
-    resolution: {integrity: sha512-F2hBTOTW60qYZ37iobrR4KIzktt2x21GIgbTscF5vuCYUcZwoRlITvTTWDVmSPRlK3PJKdBjogQAyd6UpyIL7w==}
-    peerDependencies:
-      beautiful-mermaid: ^1.1.3
-      katex: ^0.17.0
-      shiki: ^4.3.1
-      svelte: ^5.0.0
-    peerDependenciesMeta:
-      beautiful-mermaid:
-        optional: true
-      katex:
-        optional: true
-      shiki:
-        optional: true
 
   '@comark/vue@0.4.0':
     resolution: {integrity: sha512-1o4BBBzVIcxCsPOfWUzcYqdnSSI+bCyldxzlrbATc5U+s40Hm+ls7UppYAHPyOqUQPpMZy2vbvD4ESe+PD5lgg==}
@@ -13613,63 +13553,13 @@ snapshots:
 
   '@colordx/core@5.5.0': {}
 
-  '@comark/html@0.5.0(beautiful-mermaid@1.1.3)(katex@0.17.0)(shiki@4.3.1)':
+  '@comark/vue@0.4.0(beautiful-mermaid@1.1.3)(katex@0.16.47)(shiki@4.3.1)(vue@3.5.39(typescript@5.9.3))':
     dependencies:
-      comark: 0.5.1(beautiful-mermaid@1.1.3)(katex@0.17.0)(shiki@4.3.1)
-    optionalDependencies:
-      beautiful-mermaid: 1.1.3
-      katex: 0.17.0
-      shiki: 4.3.1
-
-  '@comark/nuxt@0.5.0(beautiful-mermaid@1.1.3)(katex@0.17.0)(magicast@0.5.3)(nuxt@4.4.8(@babel/plugin-syntax-jsx@7.29.7(@babel/core@7.29.7))(@babel/plugin-syntax-typescript@7.29.7(@babel/core@7.29.7))(@parcel/watcher@2.5.6)(@types/node@26.1.1)(@vue/compiler-sfc@3.5.39)(better-sqlite3@12.10.0)(cac@6.7.14)(db0@0.3.4(better-sqlite3@12.10.0))(esbuild@0.28.1)(eslint@10.4.1(jiti@2.7.0))(ioredis@5.11.1)(lightningcss@1.32.0)(magicast@0.5.3)(meow@13.2.0)(optionator@0.9.4)(oxlint@1.73.0)(rolldown@1.1.5)(rollup-plugin-visualizer@7.0.1(rolldown@1.1.5)(rollup@4.62.2))(rollup@4.62.2)(sass@1.99.0)(srvx@0.11.22)(terser@5.49.0)(tsx@4.23.0)(typescript@5.9.3)(vite@8.1.4(@types/node@26.1.1)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.99.0)(terser@5.49.0)(tsx@4.23.0)(yaml@2.9.0))(vue-tsc@3.3.7(typescript@5.9.3))(yaml@2.9.0))(shiki@4.3.1)(vue@3.5.39(typescript@5.9.3))':
-    dependencies:
-      '@comark/vue': 0.5.1(beautiful-mermaid@1.1.3)(katex@0.17.0)(shiki@4.3.1)(vue@3.5.39(typescript@5.9.3))
-      '@nuxt/kit': 4.4.8(magicast@0.5.3)
-      comark: 0.5.1(beautiful-mermaid@1.1.3)(katex@0.17.0)(shiki@4.3.1)
-      nuxt: 4.4.8(@babel/plugin-syntax-jsx@7.29.7(@babel/core@7.29.7))(@babel/plugin-syntax-typescript@7.29.7(@babel/core@7.29.7))(@parcel/watcher@2.5.6)(@types/node@26.1.1)(@vue/compiler-sfc@3.5.39)(better-sqlite3@12.10.0)(cac@6.7.14)(db0@0.3.4(better-sqlite3@12.10.0))(esbuild@0.28.1)(eslint@10.4.1(jiti@2.7.0))(ioredis@5.11.1)(lightningcss@1.32.0)(magicast@0.5.3)(meow@13.2.0)(optionator@0.9.4)(oxlint@1.73.0)(rolldown@1.1.5)(rollup-plugin-visualizer@7.0.1(rolldown@1.1.5)(rollup@4.62.2))(rollup@4.62.2)(sass@1.99.0)(srvx@0.11.22)(terser@5.49.0)(tsx@4.23.0)(typescript@5.9.3)(vite@8.1.4(@types/node@26.1.1)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.99.0)(terser@5.49.0)(tsx@4.23.0)(yaml@2.9.0))(vue-tsc@3.3.7(typescript@5.9.3))(yaml@2.9.0)
-    transitivePeerDependencies:
-      - beautiful-mermaid
-      - katex
-      - magicast
-      - shiki
-      - vue
-
-  '@comark/nuxt@0.5.1(beautiful-mermaid@1.1.3)(katex@0.17.0)(magicast@0.5.3)(nuxt@4.4.8(@babel/plugin-syntax-jsx@7.29.7(@babel/core@7.29.7))(@babel/plugin-syntax-typescript@7.29.7(@babel/core@7.29.7))(@parcel/watcher@2.5.6)(@types/node@26.1.1)(@vue/compiler-sfc@3.5.39)(better-sqlite3@12.10.0)(cac@6.7.14)(db0@0.3.4(better-sqlite3@12.10.0))(esbuild@0.28.1)(eslint@10.4.1(jiti@2.7.0))(ioredis@5.11.1)(lightningcss@1.32.0)(magicast@0.5.3)(meow@13.2.0)(optionator@0.9.4)(oxlint@1.73.0)(rolldown@1.1.5)(rollup-plugin-visualizer@7.0.1(rolldown@1.1.5)(rollup@4.62.2))(rollup@4.62.2)(sass@1.99.0)(srvx@0.11.22)(terser@5.49.0)(tsx@4.23.0)(typescript@5.9.3)(vite@8.1.4(@types/node@26.1.1)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.99.0)(terser@5.49.0)(tsx@4.23.0)(yaml@2.9.0))(vue-tsc@3.3.7(typescript@5.9.3))(yaml@2.9.0))(shiki@4.3.1)(vue@3.5.39(typescript@5.9.3))':
-    dependencies:
-      '@comark/vue': 0.5.1(beautiful-mermaid@1.1.3)(katex@0.17.0)(shiki@4.3.1)(vue@3.5.39(typescript@5.9.3))
-      '@nuxt/kit': 4.4.8(magicast@0.5.3)
-      comark: 0.5.1(beautiful-mermaid@1.1.3)(katex@0.17.0)(shiki@4.3.1)
-      nuxt: 4.4.8(@babel/plugin-syntax-jsx@7.29.7(@babel/core@7.29.7))(@babel/plugin-syntax-typescript@7.29.7(@babel/core@7.29.7))(@parcel/watcher@2.5.6)(@types/node@26.1.1)(@vue/compiler-sfc@3.5.39)(better-sqlite3@12.10.0)(cac@6.7.14)(db0@0.3.4(better-sqlite3@12.10.0))(esbuild@0.28.1)(eslint@10.4.1(jiti@2.7.0))(ioredis@5.11.1)(lightningcss@1.32.0)(magicast@0.5.3)(meow@13.2.0)(optionator@0.9.4)(oxlint@1.73.0)(rolldown@1.1.5)(rollup-plugin-visualizer@7.0.1(rolldown@1.1.5)(rollup@4.62.2))(rollup@4.62.2)(sass@1.99.0)(srvx@0.11.22)(terser@5.49.0)(tsx@4.23.0)(typescript@5.9.3)(vite@8.1.4(@types/node@26.1.1)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.99.0)(terser@5.49.0)(tsx@4.23.0)(yaml@2.9.0))(vue-tsc@3.3.7(typescript@5.9.3))(yaml@2.9.0)
-    transitivePeerDependencies:
-      - beautiful-mermaid
-      - katex
-      - magicast
-      - shiki
-      - vue
-
-  '@comark/react@0.5.0(beautiful-mermaid@1.1.3)(katex@0.17.0)(react@19.2.7)(shiki@4.3.1)':
-    dependencies:
-      comark: 0.5.1(beautiful-mermaid@1.1.3)(katex@0.17.0)(shiki@4.3.1)
-      react: 19.2.7
-    optionalDependencies:
-      beautiful-mermaid: 1.1.3
-      shiki: 4.3.1
-
-  '@comark/svelte@0.5.1(beautiful-mermaid@1.1.3)(katex@0.17.0)(shiki@4.3.1)(svelte@5.56.4(@typescript-eslint/types@8.63.0))':
-    dependencies:
-      comark: 0.5.1(beautiful-mermaid@1.1.3)(katex@0.17.0)(shiki@4.3.1)
-      svelte: 5.56.4(@typescript-eslint/types@8.63.0)
-    optionalDependencies:
-      beautiful-mermaid: 1.1.3
-      katex: 0.17.0
-      shiki: 4.3.1
-
-  '@comark/vue@0.4.0(beautiful-mermaid@1.1.3)(shiki@4.3.1)(vue@3.5.39(typescript@5.9.3))':
-    dependencies:
-      comark: 0.4.0(beautiful-mermaid@1.1.3)(shiki@4.3.1)
+      comark: 0.4.0(beautiful-mermaid@1.1.3)(katex@0.16.47)(shiki@4.3.1)
       vue: 3.5.39(typescript@5.9.3)
     optionalDependencies:
       beautiful-mermaid: 1.1.3
+      katex: 0.16.47
       shiki: 4.3.1
 
   '@comark/vue@0.5.1(beautiful-mermaid@1.1.3)(katex@0.17.0)(shiki@4.3.1)(vue@3.5.39(typescript@5.9.3))':
@@ -18932,7 +18822,7 @@ snapshots:
 
   colortranslator@5.0.0: {}
 
-  comark@0.4.0(beautiful-mermaid@1.1.3)(shiki@4.3.1):
+  comark@0.4.0(beautiful-mermaid@1.1.3)(katex@0.16.47)(shiki@4.3.1):
     dependencies:
       entities: 8.0.0
       htmlparser2: 12.0.0
@@ -18940,6 +18830,7 @@ snapshots:
       markdown-exit: 1.0.0-beta.9
     optionalDependencies:
       beautiful-mermaid: 1.1.3
+      katex: 0.16.47
       shiki: 4.3.1
 
   comark@0.5.1(beautiful-mermaid@1.1.3)(katex@0.17.0)(shiki@4.3.1):
@@ -19317,12 +19208,12 @@ snapshots:
 
   diff@8.0.4: {}
 
-  docus@5.12.3(1126519ea8184b02cac1f0595258f036):
+  docus@5.12.3(bdb4387cb78d540ac036c3d6ff0b164f):
     dependencies:
       '@ai-sdk/gateway': 3.0.148(zod@4.4.3)
       '@ai-sdk/mcp': 1.0.61(zod@4.4.3)
       '@ai-sdk/vue': 3.0.224(vue@3.5.39(typescript@5.9.3))(zod@4.4.3)
-      '@comark/vue': 0.4.0(beautiful-mermaid@1.1.3)(shiki@4.3.1)(vue@3.5.39(typescript@5.9.3))
+      '@comark/vue': 0.4.0(beautiful-mermaid@1.1.3)(katex@0.16.47)(shiki@4.3.1)(vue@3.5.39(typescript@5.9.3))
       '@iconify-json/lucide': 1.2.116
       '@iconify-json/simple-icons': 1.2.89
       '@iconify-json/vscode-icons': 1.2.66

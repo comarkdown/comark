@@ -14,7 +14,7 @@ Instead of the typical `gray-matter` + `remark` + `rehype` pipeline, we use Coma
 1. **Load markdown files** — Use Vite's `import.meta.glob` with `?raw` to eagerly load `.md` files
 2. **Parse with Comark** — Call `parse()` in the browser to build the AST and extract frontmatter
 3. **Route** — A tiny hash router for a zero-config static SPA
-4. **Render with Svelte** — Use `ComarkRenderer` from `@comark/svelte` with explicit component mapping
+4. **Render with Svelte** — Use `MarkdownParsed` from `@comark/svelte` with explicit component mapping
 
 ```ts
 // src/lib/posts.ts
@@ -39,13 +39,13 @@ export async function getPost(slug: string) {
 ```svelte
 <!-- src/pages/BlogPost.svelte -->
 <script lang="ts">
-  import { ComarkRenderer } from '@comark/svelte'
+  import { MarkdownParsed } from '@comark/svelte'
   import Alert from '../components/Alert.svelte'
 
   let { tree } = $props()
 </script>
 
-<ComarkRenderer {tree} components={{ Alert }} />
+<MarkdownParsed value={tree} components={{ Alert }} />
 ```
 
 ::Alert{type="info"}

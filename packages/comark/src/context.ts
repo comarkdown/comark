@@ -138,7 +138,7 @@ function createDocument(initial: ComarkTree, onEmpty: (tree: ComarkTree) => void
 // #region ComarkContext
 
 /**
- * Ambient registry a `ComarkRenderer` subscribes to so external sources can
+ * Ambient registry a `MarkdownParsed` renderer subscribes to so external sources can
  * drive a mounted document by `id`. A renderer calls `get(id).listen(fn)` on
  * mount and the returned cleanup on unmount; drivers (HMR, devtools, collab,
  * agents) call `get(id).set` / `.patch` to push new trees to every renderer

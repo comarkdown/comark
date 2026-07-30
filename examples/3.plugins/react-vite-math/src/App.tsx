@@ -1,4 +1,4 @@
-import { ComarkClient } from '@comark/react'
+import { MarkdownClient } from '@comark/react'
 import math, { Math } from '@comark/react/plugins/math'
 import 'katex/dist/katex.min.css'
 
@@ -46,8 +46,8 @@ $$
 export default function App() {
   return (
     <main className="max-w-2xl mx-auto prose">
-      <ComarkClient
-        markdown={markdown}
+      <MarkdownClient
+        value={markdown}
         components={{ Math }}
         plugins={[math()]}
       />

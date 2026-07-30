@@ -17,10 +17,10 @@ Complete guide for rendering Comark AST in React applications.
 
 ## Basic Usage
 
-Use the `Comark` component to render markdown:
+Use the `Markdown` component to render markdown:
 
 ```tsx
-import { Comark } from '@comark/react'
+import { Markdown } from '@comark/react'
 
 const content = `
 # Hello World
@@ -33,7 +33,7 @@ Important message
 `
 
 export default function App() {
-  return <Comark>{content}</Comark>
+  return <Markdown>{content}</Markdown>
 }
 ```
 
@@ -44,7 +44,7 @@ export default function App() {
 Map custom React components to Comark elements:
 
 ```tsx
-import { Comark } from '@comark/react'
+import { Markdown } from '@comark/react'
 import CustomHeading from './CustomHeading'
 import CustomAlert from './CustomAlert'
 import CustomCard from './CustomCard'
@@ -58,9 +58,9 @@ const customComponents = {
 
 export default function App({ content }) {
   return (
-    <Comark
+    <Markdown
       components={customComponents}
-    >{content}</Comark>
+    >{content}</Markdown>
   )
 }
 ```
@@ -150,7 +150,7 @@ export default function CustomAlert({ type = 'info', children }: AlertProps) {
 Load components dynamically using `componentsManifest`:
 
 ```tsx
-import { Comark } from '@comark/react'
+import { Markdown } from '@comark/react'
 
 const componentMap = {
   'alert': () => import('./Alert'),
@@ -167,9 +167,9 @@ async function loadComponent(name: string) {
 
 export default function App({ content }) {
   return (
-    <Comark
+    <Markdown
       componentsManifest={loadComponent}
-    >{content}</Comark>
+    >{content}</Markdown>
   )
 }
 ```
@@ -237,11 +237,11 @@ React renderer handles HTML attribute conversion automatically:
 
 ## Streaming Mode
 
-Use the `Comark` component with reactive state for streaming content:
+Use the `Markdown` component with reactive state for streaming content:
 
 ```tsx
 import { useState, useEffect } from 'react'
-import { Comark } from '@comark/react'
+import { Markdown } from '@comark/react'
 
 export default function StreamingContent() {
   const [content, setContent] = useState('')
@@ -268,7 +268,7 @@ export default function StreamingContent() {
   return (
     <>
       {isLoading && <div>Loading...</div>}
-      <Comark>{content}</Comark>
+      <Markdown>{content}</Markdown>
     </>
   )
 }
@@ -278,10 +278,10 @@ export default function StreamingContent() {
 
 ## Prose Components
 
-The `Comark` component uses built-in prose styling automatically. You can override with custom components:
+The `Markdown` component uses built-in prose styling automatically. You can override with custom components:
 
 ```tsx
-import { Comark } from '@comark/react'
+import { Markdown } from '@comark/react'
 import CustomAlert from './CustomAlert'
 
 const components = {
@@ -289,19 +289,19 @@ const components = {
 }
 
 export default function App({ content }) {
-  return <Comark components={components}>{content}</Comark>
+  return <Markdown components={components}>{content}</Markdown>
 }
 ```
 
 ### Tailwind CSS Prose
 
 ```tsx
-import { Comark } from '@comark/react'
+import { Markdown } from '@comark/react'
 
 export default function App({ content }) {
   return (
     <article className="prose prose-lg dark:prose-dark max-w-none">
-      <Comark>{content}</Comark>
+      <Markdown>{content}</Markdown>
     </article>
   )
 }
@@ -427,17 +427,17 @@ Table content here
 Add custom wrapper class:
 
 ```tsx
-<Comark
+<Markdown
   className="prose dark:prose-dark"
->{content}</Comark>
+>{content}</Markdown>
 ```
 
 ### With Tailwind CSS
 
 ```tsx
-<Comark
+<Markdown
   className="prose prose-slate lg:prose-xl dark:prose-invert max-w-none"
->{content}</Comark>
+>{content}</Markdown>
 ```
 
 ---

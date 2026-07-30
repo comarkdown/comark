@@ -29,13 +29,13 @@ This example demonstrates the punctuation plugin in Vue:
 
 ```vue
 <script setup lang="ts">
-import { Comark } from '@comark/vue'
+import { Markdown } from '@comark/vue'
 import punctuation from '@comark/vue/plugins/punctuation'
 </script>
 
 <template>
   <Suspense>
-    <Comark :plugins="[punctuation()]">{{ markdown }}</Comark>
+    <Markdown :plugins="[punctuation()]">{{ markdown }}</Markdown>
   </Suspense>
 </template>
 ```

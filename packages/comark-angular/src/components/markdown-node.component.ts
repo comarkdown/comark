@@ -15,6 +15,7 @@ import {
 } from '@angular/core'
 import type { ComarkElement, ComarkNode, NodeRenderData } from 'comark'
 import { pascalCase, resolveAttributes } from 'comark/utils'
+import { warnDeprecated } from '../internal/deprecation.ts'
 
 /**
  * Helper to get tag from a ComarkNode
@@ -74,19 +75,19 @@ const VOID_ELEMENTS = new Set([
 ])
 
 /**
- * ComarkNode — recursive component that renders a single Comark AST node.
+ * MarkdownNode — recursive component that renders a single Comark AST node.
  *
  * For text nodes, it inserts the text directly.
  * For element nodes, it creates a native DOM element or instantiates
  * a custom Angular component via ViewContainerRef.
  */
 @Component({
-  selector: 'comark-node',
+  selector: 'comark-markdown-node',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: '',
 })
-export class ComarkNodeComponent implements OnChanges {
+export class MarkdownNode implements OnChanges {
   /** The Comark AST node to render */
   @Input({ required: true }) node!: ComarkNode
 
@@ -323,7 +324,7 @@ export class ComarkNodeComponent implements OnChanges {
         continue
       }
 
-      // For element nodes, recursively create ComarkNodeComponent
+      // For element nodes, recursively create MarkdownNode
       if (Array.isArray(child)) {
         const childTag = getTag(child)
         if (!childTag) continue
@@ -343,7 +344,7 @@ export class ComarkNodeComponent implements OnChanges {
         }
 
         if (customComponent) {
-          const componentRef = this.vcr.createComponent(ComarkNodeComponent)
+          const componentRef = this.vcr.createComponent(MarkdownNode)
           componentRef.instance.node = child
           componentRef.instance.components = this.components
           componentRef.instance.renderData = renderData
@@ -362,5 +363,23 @@ export class ComarkNodeComponent implements OnChanges {
         }
       }
     }
+  }
+}
+
+/**
+ * @deprecated Use `MarkdownNode` instead — same component, renamed to
+ * describe what it renders. `ComarkNodeComponent` (selector `comark-node`)
+ * will be removed in a future major version.
+ */
+@Component({
+  selector: 'comark-node',
+  standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: '',
+})
+export class ComarkNodeComponent extends MarkdownNode {
+  override ngOnChanges(changes: SimpleChanges): void {
+    warnDeprecated('ComarkNodeComponent (<comark-node>)', 'MarkdownNode (<comark-markdown-node>)')
+    super.ngOnChanges(changes)
   }
 }
