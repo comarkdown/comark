@@ -9,7 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@comark/vue": "latest",
+    "@comark/vue": "workspace:*",
     "@nuxt/ui": "catalog:",
     "@shikijs/langs": "catalog:",
     "shiki": "catalog:",

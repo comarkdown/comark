@@ -9,7 +9,7 @@
     "preview": "nuxt preview"
   },
   "dependencies": {
-    "@comark/nuxt": "latest",
+    "@comark/nuxt": "workspace:*",
     "@nuxt/ui": "catalog:",
     "nuxt": "catalog:",
     "shiki": "catalog:",
