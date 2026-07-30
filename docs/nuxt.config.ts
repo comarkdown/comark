@@ -54,4 +54,11 @@ export default defineNuxtConfig({
   routeRules: {
     '/plugins/built-in/highlight': { redirect: '/plugins/built-in/syntax-highlight' },
   },
+  vite: {
+    optimizeDeps: {
+      include: [
+        'beautiful-mermaid'
+      ]
+    }
+  }
 })

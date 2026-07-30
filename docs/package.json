@@ -21,6 +21,7 @@
     "@vercel/speed-insights": "catalog:",
     "@vueuse/core": "catalog:",
     "ai": "catalog:",
+    "beautiful-mermaid": "catalog:",
     "comark": "catalog:",
     "docus": "catalog:",
     "markdown-it-math": "catalog:",
