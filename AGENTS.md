@@ -162,8 +162,8 @@ packages/comark-vue/
 ├── src/
 │   ├── index.ts              # Entry point
 │   ├── components/
-│   │   ├── Comark.ts         # High-level markdown → render component
-│   │   ├── ComarkRenderer.ts # Low-level AST → render component
+│   │   ├── Markdown.ts       # High-level markdown → render component
+│   │   ├── MarkdownParsed.ts # Low-level AST → render component
 │   │   ├── Math.ts           # Math rendering component
 │   │   └── Mermaid.ts        # Mermaid rendering component
 │   └── plugins/
@@ -185,7 +185,7 @@ packages/comark-vue/
 ### Usage
 
 ```typescript
-import { Comark, ComarkRenderer, defineComarkComponent } from '@comark/vue'
+import { Markdown, MarkdownParsed, defineMarkdownComponent } from '@comark/vue'
 import math, { Math } from '@comark/vue/plugins/math'
 import mermaid, { Mermaid } from '@comark/vue/plugins/mermaid'
 ```
@@ -199,8 +199,11 @@ packages/comark-react/
 ├── src/
 │   ├── index.ts              # Entry point
 │   ├── components/
-│   │   ├── Comark.tsx        # High-level markdown → render component
-│   │   ├── ComarkRenderer.tsx # Low-level AST → render component
+│   │   ├── Markdown.tsx      # High-level markdown → render component
+│   │   ├── MarkdownParsed.tsx # Low-level AST → render component
+│   │   ├── MarkdownClient.tsx # Client-only markdown component
+│   │   ├── MarkdownLive.tsx  # Streaming/live markdown component
+│   │   ├── Comark*.tsx       # Deprecated wrappers for the old component names
 │   │   ├── Math.tsx          # Math rendering component
 │   │   └── Mermaid.tsx       # Mermaid rendering component
 │   └── plugins/
@@ -222,7 +225,7 @@ packages/comark-react/
 ### Usage
 
 ```typescript
-import { Comark, ComarkRenderer, defineComarkComponent } from '@comark/react'
+import { Markdown, MarkdownParsed, defineMarkdownComponent } from '@comark/react'
 import math, { Math } from '@comark/react/plugins/math'
 import mermaid, { Mermaid } from '@comark/react/plugins/mermaid'
 ```
@@ -237,14 +240,16 @@ packages/comark-svelte/
 │   ├── index.ts              # Entry point (@comark/svelte)
 │   ├── types.ts              # Shared prop interfaces
 │   ├── components/
-│   │   ├── Comark.svelte         # High-level markdown → render ($state + $effect)
-│   │   ├── ComarkRenderer.svelte # Low-level AST → render component
-│   │   ├── ComarkNode.svelte     # Recursive AST node renderer
+│   │   ├── Markdown.svelte       # High-level markdown → render ($state + $effect)
+│   │   ├── MarkdownParsed.svelte # Low-level AST → render component
+│   │   ├── MarkdownNode.svelte   # Recursive AST node renderer
+│   │   ├── Comark*.svelte        # Deprecated wrappers for the old component names
 │   │   ├── ComarkComponent.svelte # Custom component renderer with named snippets
 │   │   └── Resolve.svelte        # Stable promise resolver for lazy components
 │   ├── async/
 │   │   ├── index.ts              # Async export (@comark/svelte/async)
-│   │   ├── ComarkAsync.svelte    # High-level markdown → render (experimental await)
+│   │   ├── MarkdownAsync.svelte  # High-level markdown → render (experimental await)
+│   │   ├── ComarkAsync.svelte    # Deprecated wrapper for the old component name
 │   │   └── ResolveAsync.svelte   # Async SSR resolver for lazy components
 │   └── plugins/
 │       ├── math.ts           # Re-exports comark/plugins/math
@@ -281,21 +286,21 @@ Uses Vitest with two test projects:
 
 ```svelte
 <script>
-  import { Comark } from '@comark/svelte'
+  import { Markdown } from '@comark/svelte'
   import math, { Math } from '@comark/svelte/plugins/math'
   import mermaid, { Mermaid } from '@comark/svelte/plugins/mermaid'
 </script>
 
-<Comark markdown={content} components={{ math: Math }} plugins={[math()]} />
+<Markdown value={content} components={{ math: Math }} plugins={[math()]} />
 ```
 
 **Experimental async** (requires `experimental.async` in Svelte config):
 ```svelte
 <script>
-  import { ComarkAsync } from '@comark/svelte/async'
+  import { MarkdownAsync } from '@comark/svelte/async'
 </script>
 <svelte:boundary>
-  <ComarkAsync markdown={content} components={customComponents} />
+  <MarkdownAsync value={content} components={customComponents} />
   {#snippet pending()}
     <p>Loading...</p>
   {/snippet}
@@ -310,11 +315,11 @@ Located at `packages/comark-angular/`. Angular 17+ renderer with standalone comp
 packages/comark-angular/
 ├── src/
 │   ├── index.ts                          # Entry point
-│   ├── define.ts                         # defineComarkComponent / defineComarkRendererComponent
+│   ├── define.ts                         # defineMarkdownComponent / defineMarkdownParsedComponent
 │   ├── components/
-│   │   ├── comark.component.ts           # High-level markdown → render component
-│   │   ├── comark-renderer.component.ts  # Low-level AST → render component
-│   │   ├── comark-node.component.ts      # Recursive AST node renderer
+│   │   ├── markdown.component.ts         # High-level markdown → render component
+│   │   ├── markdown-parsed.component.ts  # Low-level AST → render component
+│   │   ├── markdown-node.component.ts    # Recursive AST node renderer
 │   │   ├── binding.component.ts          # Binding rendering component
 │   │   ├── math.component.ts             # Math rendering component
 │   │   └── mermaid.component.ts          # Mermaid rendering component
@@ -343,14 +348,14 @@ packages/comark-angular/
 ### Usage
 
 ```typescript
-import { ComarkComponent, ComarkRendererComponent, defineComarkComponent, defineComarkRendererComponent } from '@comark/angular'
+import { Markdown, MarkdownParsed, defineMarkdownComponent, defineMarkdownParsedComponent } from '@comark/angular'
 import math, { Math } from '@comark/angular/plugins/math'
 import mermaid, { Mermaid } from '@comark/angular/plugins/mermaid'
 ```
 
 ```html
 <!-- In Angular template -->
-<comark [markdown]="content" [components]="customComponents" />
+<comark-markdown [value]="content" [components]="customComponents" />
 ```
 
 ## Package Exports Reference
@@ -397,25 +402,29 @@ import highlight from '@comark/ansi/plugins/highlight'
 import math from '@comark/ansi/plugins/math'
 
 // Vue — renderer + plugin wrappers (plugin fn + Vue component)
-import { Comark, ComarkRenderer, defineComarkComponent } from '@comark/vue'
+import { Markdown, MarkdownParsed, defineMarkdownComponent } from '@comark/vue'
 import math, { Math } from '@comark/vue/plugins/math'
 import mermaid, { Mermaid } from '@comark/vue/plugins/mermaid'
 
 // React — renderer + plugin wrappers (plugin fn + React component)
-import { Comark, ComarkRenderer, defineComarkComponent } from '@comark/react'
+import { Markdown, MarkdownParsed, defineMarkdownComponent } from '@comark/react'
 import math, { Math } from '@comark/react/plugins/math'
 import mermaid, { Mermaid } from '@comark/react/plugins/mermaid'
 
 // Svelte — renderer + plugin wrappers (plugin fn + Svelte component)
-import { Comark, ComarkRenderer } from '@comark/svelte'
-import { ComarkAsync } from '@comark/svelte/async' // requires experimental.async
+import { Markdown, MarkdownParsed } from '@comark/svelte'
+import { MarkdownAsync } from '@comark/svelte/async' // requires experimental.async
 import math, { Math } from '@comark/svelte/plugins/math'
 import mermaid, { Mermaid } from '@comark/svelte/plugins/mermaid'
 
 // Angular — renderer + plugin wrappers (plugin fn + Angular component)
-import { ComarkComponent, ComarkRendererComponent, defineComarkComponent, defineComarkRendererComponent } from '@comark/angular'
+import { Markdown, MarkdownParsed, defineMarkdownComponent, defineMarkdownParsedComponent } from '@comark/angular'
 import math, { Math } from '@comark/angular/plugins/math'
 import mermaid, { Mermaid } from '@comark/angular/plugins/mermaid'
+
+// NOTE: The old component names (Comark, ComarkRenderer, ComarkAsync,
+// defineComarkComponent, defineComarkRendererComponent, ...) remain
+// exported as deprecated aliases.
 ```
 
 ## Coding Principles
@@ -522,33 +531,33 @@ Example:
 
 ## Vue/React/Svelte/Angular Components
 
-### Comark Component (High-level)
+### Markdown Component (High-level)
 
-**Vue** (requires `<Suspense>` wrapper since Comark is async):
+**Vue** (requires `<Suspense>` wrapper since Markdown is async):
 
 ```vue
 <Suspense>
-  <Comark :components="customComponents">{{ content }}</Comark>
+  <Markdown :components="customComponents">{{ content }}</Markdown>
 </Suspense>
 ```
 
 **React**:
 
 ```tsx
-<Comark components={customComponents}>{content}</Comark>
+<Markdown components={customComponents}>{content}</Markdown>
 ```
 
 **Svelte** (stable, uses `$state` + `$effect`):
 
 ```svelte
-<Comark markdown={content} components={customComponents} />
+<Markdown value={content} components={customComponents} />
 ```
 
 **Svelte** (experimental async — requires `experimental.async` in Svelte config):
 
 ```svelte
 <svelte:boundary>
-  <ComarkAsync markdown={content} components={customComponents} />
+  <MarkdownAsync value={content} components={customComponents} />
   {#snippet pending()}<p>Loading...</p>{/snippet}
 </svelte:boundary>
 ```
@@ -556,41 +565,41 @@ Example:
 **Angular**:
 
 ```html
-<comark [markdown]="content" [components]="customComponents" />
+<comark-markdown [value]="content" [components]="customComponents" />
 ```
 
-### defineComarkComponent (Vue, React & Angular)
+### defineMarkdownComponent (Vue, React & Angular)
 
-Creates a pre-configured Comark component with default plugins and components:
+Creates a pre-configured Markdown component with default plugins and components:
 
 ```typescript
 // Vue
-import { defineComarkComponent } from '@comark/vue'
+import { defineMarkdownComponent } from '@comark/vue'
 import math, { Math } from '@comark/vue/plugins/math'
 import mermaid, { Mermaid } from '@comark/vue/plugins/mermaid'
 
-export const DocsComark = defineComarkComponent({
-  name: 'DocsComark',
+export const DocsMarkdown = defineMarkdownComponent({
+  name: 'DocsMarkdown',
   plugins: [math(), mermaid()],
   components: { Math, Mermaid },
 })
 
 // React
-import { defineComarkComponent } from '@comark/react'
+import { defineMarkdownComponent } from '@comark/react'
 import math, { Math } from '@comark/react/plugins/math'
 
-export const DocsComark = defineComarkComponent({
-  name: 'DocsComark',
+export const DocsMarkdown = defineMarkdownComponent({
+  name: 'DocsMarkdown',
   plugins: [math()],
   components: { Math },
 })
 
 // Angular
-import { defineComarkComponent } from '@comark/angular'
+import { defineMarkdownComponent } from '@comark/angular'
 import math, { Math } from '@comark/angular/plugins/math'
 
-export const DocsComark = defineComarkComponent({
-  name: 'docs-comark',
+export const DocsMarkdown = defineMarkdownComponent({
+  name: 'docs-markdown',
   plugins: [math()],
   components: { Math },
 })

@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest'
 import React from 'react'
 import { renderToString } from 'react-dom/server'
 import { parse } from 'comark'
-import { ComarkRenderer } from '../src/components/ComarkRenderer'
+import { MarkdownParsed } from '../src/components/MarkdownParsed'
 
-describe('ComarkRenderer with Slots', () => {
+describe('MarkdownParsed with Slots', () => {
   it('should pass named slots to components as props', async () => {
     const markdown = `::test-component
 Default content
@@ -31,8 +31,8 @@ Footer content
     }
 
     const html = renderToString(
-      <ComarkRenderer
-        tree={result}
+      <MarkdownParsed
+        value={result}
         components={{ 'test-component': TestComponent }}
       />
     )
@@ -71,8 +71,8 @@ This is a description
     }
 
     const html = renderToString(
-      <ComarkRenderer
-        tree={result}
+      <MarkdownParsed
+        value={result}
         components={{ Callout }}
       />
     )
@@ -105,8 +105,8 @@ Copyright by Nuxt
     }
 
     const html = renderToString(
-      <ComarkRenderer
-        tree={result}
+      <MarkdownParsed
+        value={result}
         components={{ 'multi-slot-test': MultiSlotTest }}
       />
     )

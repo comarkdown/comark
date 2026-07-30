@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { reactive } from 'vue'
-import { Comark } from '@comark/vue'
+import { Markdown } from '@comark/vue'
 import binding, { Binding } from '@comark/vue/plugins/binding'
 
 // Runtime data exposed to bindings via the `data.` namespace.
@@ -45,8 +45,8 @@ Inside the card the binding below pulls the card's title via \`props\`:
 
 <template>
   <Suspense>
-    <Comark
-      :markdown="markdown"
+    <Markdown
+      :value="markdown"
       :plugins="[binding()]"
       :components="{ Binding }"
       :data="data"

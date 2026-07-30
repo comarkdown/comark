@@ -111,7 +111,7 @@ Register a component for each alert type you want to customize:
 ::code-group
 ```vue [Vue]
 <script setup lang="ts">
-import { Comark } from '@comark/vue'
+import { Markdown } from '@comark/vue'
 import Note from './Note.vue'
 import Warning from './Warning.vue'
 
@@ -120,12 +120,12 @@ const markdown = `> [!NOTE]
 </script>
 
 <template>
-  <Comark :components="{ note: Note, warning: Warning }">{{ markdown }}</Comark>
+  <Markdown :components="{ note: Note, warning: Warning }">{{ markdown }}</Markdown>
 </template>
 ```
 
 ```tsx [React]
-import { Comark } from '@comark/react'
+import { Markdown } from '@comark/react'
 import { Note } from './Note'
 import { Warning } from './Warning'
 
@@ -133,7 +133,7 @@ const markdown = `> [!NOTE]
 > Useful information for users.`
 
 export default function Page() {
-  return <Comark components={{ note: Note, warning: Warning }}>{markdown}</Comark>
+  return <Markdown components={{ note: Note, warning: Warning }}>{markdown}</Markdown>
 }
 ```
 

@@ -9,7 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@comark/react": "catalog:",
+    "@comark/react": "workspace:*",
     "@tailwindcss/vite": "catalog:",
     "beautiful-mermaid": "catalog:",
     "react": "catalog:",

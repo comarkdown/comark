@@ -14,7 +14,7 @@
     "@clack/prompts": "catalog:",
     "@comark/ansi": "workspace:*",
     "citty": "catalog:",
-    "comark": "catalog:",
+    "comark": "workspace:*",
     "shiki": "catalog:"
   }
 }

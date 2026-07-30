@@ -12,6 +12,7 @@
     "@ai-sdk/gateway": "catalog:",
     "@ai-sdk/vue": "catalog:",
     "@comark/nuxt": "catalog:",
+    "@comark/vue": "catalog:",
     "@monaco-editor/loader": "catalog:",
     "@nuxtlabs/monarch-mdc": "catalog:",
     "@shikijs/langs": "catalog:",

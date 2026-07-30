@@ -41,8 +41,8 @@ This example demonstrates how to use Comark with LaTeX math formulas in React:
 
 3. Pass the plugin and component to `Comark`:
    ```tsx
-   <Comark
-     markdown={content}
+   <Markdown
+     value={content}
      components={{ Math }}
      plugins={[math()]}
    />

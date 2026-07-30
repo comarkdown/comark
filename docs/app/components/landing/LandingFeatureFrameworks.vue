@@ -18,7 +18,7 @@ defineProps<{
 const activeTab = ref<'vue' | 'react' | 'svelte' | 'angular'>('vue')
 
 const vueCode = `<script setup lang="ts">
-import { Comark } from '@comark/vue'
+import { Markdown } from '@comark/vue'
 import Alert from './components/Alert.vue'
 
 const md = \`
@@ -32,13 +32,13 @@ ${'<'}/script>
 
 <template>
   <Suspense>
-    <Comark :components="{ Alert }">
+    <Markdown :components="{ Alert }">
       {{ md }}
-    </Comark>
+    </Markdown>
   </Suspense>
 </template>`
 
-const reactCode = `import { Comark } from '@comark/react'
+const reactCode = `import { Markdown } from '@comark/react'
 import { Alert } from './components/Alert'
 
 const markdown = \`
@@ -51,14 +51,14 @@ This is a Comark component!
 
 export default function App() {
   return (
-    <Comark components={{ Alert }}>
+    <Markdown components={{ Alert }}>
       {markdown}
-    </Comark>
+    </Markdown>
   )
 }`
 
 const svelteCode = `<script lang="ts">
-  import { Comark } from '@comark/svelte'
+  import { Markdown } from '@comark/svelte'
   import Alert from './components/Alert.svelte'
 
   const markdown = \`
@@ -69,19 +69,19 @@ This is a Comark component!
 ::\`
 ${'<'}/script>
 
-<Comark markdown={markdown} components={{ Alert }} />`
+<Markdown value={markdown} components={{ Alert }} />`
 
 const angularCode = `import { Component } from '@angular/core'
-import { ComarkComponent } from '@comark/angular'
+import { Markdown } from '@comark/angular'
 import { AlertComponent } from './components/alert.component'
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [ComarkComponent],
+  imports: [Markdown],
   template: \`
-    <comark
-      [markdown]="markdown"
+    <comark-markdown
+      [value]="markdown"
       [components]="components"
     />
   \`,

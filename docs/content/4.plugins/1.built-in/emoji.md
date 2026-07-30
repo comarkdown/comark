@@ -53,20 +53,20 @@ With framework components:
 
 ```vue [Vue]
 <script setup lang="ts">
-import { Comark } from '@comark/vue'
+import { Markdown } from '@comark/vue'
 import emoji from '@comark/vue/plugins/emoji'
 </script>
 
 <template>
-  <Comark :plugins="[emoji()]">{{ content }}</Comark>
+  <Markdown :plugins="[emoji()]">{{ content }}</Markdown>
 </template>
 ```
 
 ```tsx [React]
-import { Comark } from '@comark/react'
+import { Markdown } from '@comark/react'
 import emoji from '@comark/react/plugins/emoji'
 
-<Comark plugins={[emoji()]}>{content}</Comark>
+<Markdown plugins={[emoji()]}>{content}</Markdown>
 ```
 
 ::

@@ -52,7 +52,7 @@ With framework components:
 
 ```vue [Vue]
 <script setup lang="ts">
-import { Comark } from '@comark/vue'
+import { Markdown } from '@comark/vue'
 import highlight from '@comark/vue/plugins/highlight'
 
 const plugins = [
@@ -64,7 +64,7 @@ const plugins = [
 
 <template>
   <Suspense>
-    <Comark :plugins="plugins">{{ content }}</Comark>
+    <Markdown :plugins="plugins">{{ content }}</Markdown>
   </Suspense>
 </template>
 
@@ -80,14 +80,14 @@ html.dark .shiki :deep(span) {
 ```
 
 ```tsx [React]
-import { Comark } from '@comark/react'
+import { Markdown } from '@comark/react'
 import highlight from '@comark/react/plugins/highlight'
 
-<Comark
+<Markdown
   plugins={[highlight({ themes: { light: 'github-light', dark: 'github-dark' } })]}
 >
   {content}
-</Comark>
+</Markdown>
 ```
 
 ::

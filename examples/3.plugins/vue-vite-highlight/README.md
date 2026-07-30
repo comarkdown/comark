@@ -50,7 +50,7 @@ import python from '@shikijs/langs/python'
 
 <template>
   <Suspense>
-    <Comark
+    <Markdown
       :plugins="[
         highlight({
           themes: {
@@ -62,7 +62,7 @@ import python from '@shikijs/langs/python'
       ]"
     >
       {{ content }}
-    </Comark>
+    </Markdown>
   </Suspense>
 </template>
 ```

@@ -104,7 +104,7 @@ watch(
               <ComarkDocs
                 :key="current.id"
                 class="text-sm"
-                :markdown="current.input"
+                :value="current.input"
               />
             </div>
           </div>

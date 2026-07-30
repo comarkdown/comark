@@ -12,7 +12,7 @@ Zero-config Nuxt module for [Comark](https://comark.dev), a high-performance mar
 
 ## Features
 
-- ⚡ Auto-imported `<Comark>` and `<ComarkRenderer>` components
+- ⚡ Auto-imported `<Markdown>` and `<MarkdownParsed>` components (the old `<Comark>` / `<ComarkRenderer>` names are still auto-registered but deprecated)
 - 📁 `~/components/prose` directory for overriding HTML elements
 - 🎨 Automatic [Nuxt UI](https://ui.nuxt.com) prose integration
 - 🖥️ SSR, SSG, and prerendering support out of the box
@@ -49,7 +49,7 @@ export default defineNuxtConfig({
 
 ## Usage
 
-The `<Comark>` component is available globally, no imports needed. Pass markdown via the default slot or the `markdown` prop:
+The `<Markdown>` component is available globally, no imports needed. Pass markdown via the default slot or the `value` prop:
 
 ```vue
 <script setup lang="ts">
@@ -57,7 +57,7 @@ const content = `# Hello Nuxt\n\nRendered with **Comark**.`
 </script>
 
 <template>
-  <Comark>{{ content }}</Comark>
+  <Markdown>{{ content }}</Markdown>
 </template>
 ```
 
@@ -71,7 +71,7 @@ import Alert from '~/components/Alert.vue'
 </script>
 
 <template>
-  <Comark :components="{ alert: Alert }">{{ content }}</Comark>
+  <Markdown :components="{ alert: Alert }">{{ content }}</Markdown>
 </template>
 ```
 
@@ -101,12 +101,12 @@ import mermaid, { Mermaid } from '@comark/nuxt/plugins/mermaid'
 </script>
 
 <template>
-  <Comark
+  <Markdown
     :components="{ math: Math, mermaid: Mermaid }"
     :plugins="[math(), mermaid()]"
   >
     {{ content }}
-  </Comark>
+  </Markdown>
 </template>
 ```
 

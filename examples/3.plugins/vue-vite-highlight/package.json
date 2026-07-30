@@ -8,10 +8,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@comark/vue": "catalog:",
+    "@comark/vue": "workspace:*",
     "@shikijs/langs": "catalog:",
     "@shikijs/themes": "catalog:",
-    "comark": "catalog:",
+    "comark": "workspace:*",
     "shiki": "catalog:",
     "vue": "catalog:"
   },

@@ -9,8 +9,8 @@
     "start": "next start"
   },
   "dependencies": {
-    "@comark/react": "catalog:",
-    "comark": "catalog:",
+    "@comark/react": "workspace:*",
+    "comark": "workspace:*",
     "next": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",

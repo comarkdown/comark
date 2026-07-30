@@ -8,11 +8,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@comark/vue": "catalog:",
+    "@comark/vue": "workspace:*",
     "@nuxt/ui": "catalog:",
     "@shikijs/themes": "catalog:",
     "@vueuse/core": "catalog:",
-    "comark": "catalog:",
+    "comark": "workspace:*",
     "shiki": "catalog:",
     "tailwindcss": "catalog:",
     "vue": "catalog:"

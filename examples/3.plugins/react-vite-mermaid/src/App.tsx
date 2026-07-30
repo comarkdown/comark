@@ -1,4 +1,4 @@
-import { ComarkClient } from '@comark/react'
+import { MarkdownClient } from '@comark/react'
 import mermaid, { Mermaid } from '@comark/react/plugins/mermaid'
 
 const markdown = `
@@ -50,8 +50,8 @@ classDiagram
 export default function App() {
   return (
     <main className="max-w-2xl mx-auto prose">
-      <ComarkClient
-        markdown={markdown}
+      <MarkdownClient
+        value={markdown}
         components={{ Mermaid }}
         plugins={[mermaid()]}
       />

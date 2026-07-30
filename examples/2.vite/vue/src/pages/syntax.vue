@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Comark } from '@comark/vue'
+import { Markdown } from '@comark/vue'
 import highlight from '@comark/vue/plugins/highlight'
 import Alert from '@/components/Alert.vue'
 import ProseUnwrapDiv from '@/components/prose/ProseUnwrapDiv.vue'
@@ -255,7 +255,7 @@ published: true
 ---
 ~~~
 
-Access frontmatter via \`tree.frontmatter\` when using the \`ComarkRenderer\`.
+Access frontmatter via \`tree.frontmatter\` when using the \`MarkdownParsed\` component.
 
 ---
 
@@ -270,13 +270,13 @@ Text before the comment and text after the comment both render normally.
 </script>
 
 <template>
-  <Comark
+  <Markdown
     :plugins="[
       highlight({
         languages: [python],
       }),
     ]"
-    :markdown="markdown"
+    :value="markdown"
     :components="{ Alert, ProseUnwrapDiv }"
   />
 </template>

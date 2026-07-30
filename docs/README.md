@@ -117,10 +117,10 @@ docs/
 
 | Export | Type | Documentation |
 |--------|------|---------------|
-| `Comark` (Vue) | Component | [Vue Rendering](./content/3.rendering/3.vue.md) |
-| `Comark` (React) | Component | [React Rendering](./content/3.rendering/5.react.md) |
-| `Comark` (Svelte) | Component | [Svelte Rendering](./content/3.rendering/6.svelte.md) |
-| `ComarkComponent` (Angular) | Component | [Angular Rendering](./content/3.rendering/7.angular.md) |
+| `Markdown` (Vue) | Component | [Vue Rendering](./content/3.rendering/3.vue.md) |
+| `Markdown` (React) | Component | [React Rendering](./content/3.rendering/5.react.md) |
+| `Markdown` (Svelte) | Component | [Svelte Rendering](./content/3.rendering/6.svelte.md) |
+| `Markdown` (Angular) | Component | [Angular Rendering](./content/3.rendering/7.angular.md) |
 
 ### Types
 

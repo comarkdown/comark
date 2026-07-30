@@ -12,7 +12,7 @@ Angular renderer for [Comark](https://comark.dev). Render markdown with custom s
 
 ## Features
 
-- 🧩 `<comark>` component for one-shot markdown rendering
+- 🧩 `<comark-markdown>` component for one-shot markdown rendering
 - 🎯 Map any Comark tag to a custom Angular component
 - 🌊 Streaming-friendly with auto-close and caret support
 - 🖥️ SSR-safe with Angular 17+ standalone components
@@ -31,14 +31,14 @@ pnpm add @comark/angular
 
 ```typescript
 import { Component } from '@angular/core'
-import { ComarkComponent } from '@comark/angular'
+import { Markdown } from '@comark/angular'
 import math, { Math } from '@comark/angular/plugins/math'
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [ComarkComponent],
-  template: `<comark [markdown]="content" [components]="{ Math }" [plugins]="[math()]" />`,
+  imports: [Markdown],
+  template: `<comark-markdown [value]="content" [components]="{ Math }" [plugins]="[math()]" />`,
 })
 export class AppComponent {
   content = `# Hello\n\nThis is **Comark** in Angular.`
@@ -49,14 +49,14 @@ export class AppComponent {
 
 ```typescript
 import { Component } from '@angular/core'
-import { ComarkComponent } from '@comark/angular'
+import { Markdown } from '@comark/angular'
 import { AlertComponent } from './alert.component'
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [ComarkComponent],
-  template: `<comark [markdown]="content" [components]="{ alert: AlertComponent }" />`,
+  imports: [Markdown],
+  template: `<comark-markdown [value]="content" [components]="{ alert: AlertComponent }" />`,
 })
 export class AppComponent {
   content = `
@@ -70,7 +70,7 @@ Heads up!
 ### Streaming
 
 ```html
-<comark [markdown]="content" [streaming]="isStreaming" caret />
+<comark-markdown [value]="content" [streaming]="isStreaming" caret />
 ```
 
 ## Documentation

@@ -9,7 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@comark/vue": "catalog:",
+    "@comark/vue": "workspace:*",
     "@tailwindcss/vite": "catalog:",
     "beautiful-mermaid": "catalog:",
     "tailwindcss": "catalog:",

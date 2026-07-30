@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { render } from 'svelte/server'
 import { parse } from 'comark'
 import math, { Math } from '../../src/plugins/math'
-import ComarkRenderer from '../../src/components/ComarkRenderer.svelte'
+import MarkdownParsed from '../../src/components/MarkdownParsed.svelte'
 
 /** Strip Svelte SSR hydration comments from rendered HTML */
 function html(body: string): string {
@@ -46,13 +46,13 @@ describe('math plugin', () => {
   })
 })
 
-describe('Math + ComarkRenderer integration (server)', () => {
+describe('Math + MarkdownParsed integration (server)', () => {
   it('renders inline math from parsed markdown', async () => {
     const tree = await parse('The formula $x^2$ is simple', {
       plugins: [math()],
     })
-    const { body } = render(ComarkRenderer, {
-      props: { tree, components: { math: Math } },
+    const { body } = render(MarkdownParsed, {
+      props: { value: tree, components: { math: Math } },
     })
     const output = html(body)
     expect(output).toContain('<span class="math inline">')
@@ -64,8 +64,8 @@ describe('Math + ComarkRenderer integration (server)', () => {
     const tree = await parse('$$\nE = mc^2\n$$', {
       plugins: [math()],
     })
-    const { body } = render(ComarkRenderer, {
-      props: { tree, components: { math: Math } },
+    const { body } = render(MarkdownParsed, {
+      props: { value: tree, components: { math: Math } },
     })
     const output = html(body)
     expect(output).toContain('<div class="math block">')
@@ -76,8 +76,8 @@ describe('Math + ComarkRenderer integration (server)', () => {
     const tree = await parse('Inline $a+b$ and display:\n\n$$\nc^2\n$$', {
       plugins: [math()],
     })
-    const { body } = render(ComarkRenderer, {
-      props: { tree, components: { math: Math } },
+    const { body } = render(MarkdownParsed, {
+      props: { value: tree, components: { math: Math } },
     })
     const output = html(body)
     expect(output).toContain('<span class="math inline">')

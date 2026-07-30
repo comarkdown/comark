@@ -17,15 +17,15 @@ Complete guide for rendering Comark AST in Vue applications.
 
 ## Basic Usage
 
-Use the `Comark` component to render markdown:
+Use the `Markdown` component to render markdown:
 
 ```vue
 <template>
-  <Comark>{{ content }}</Comark>
+  <Markdown>{{ content }}</Markdown>
 </template>
 
 <script setup lang="ts">
-import { Comark } from '@comark/vue'
+import { Markdown } from '@comark/vue'
 
 const content = `
 # Hello World
@@ -47,11 +47,11 @@ Map custom Vue components to Comark elements:
 
 ```vue
 <template>
-  <Comark :components="customComponents">{{ content }}</Comark>
+  <Markdown :components="customComponents">{{ content }}</Markdown>
 </template>
 
 <script setup lang="ts">
-import { Comark } from '@comark/vue'
+import { Markdown } from '@comark/vue'
 import CustomHeading from './CustomHeading.vue'
 import CustomAlert from './CustomAlert.vue'
 import CustomCard from './CustomCard.vue'
@@ -157,13 +157,13 @@ Load components dynamically using `componentsManifest`:
 
 ```vue
 <template>
-  <Comark
+  <Markdown
     :components-manifest="loadComponent"
-  >{{ content }}</Comark>
+  >{{ content }}</Markdown>
 </template>
 
 <script setup lang="ts">
-import { Comark } from '@comark/vue'
+import { Markdown } from '@comark/vue'
 
 const componentMap = {
   'alert': () => import('./Alert.vue'),
@@ -291,19 +291,19 @@ const activeTab = ref('tab1')
 
 ## Streaming Mode
 
-The `Comark` component can be used with reactive content for streaming scenarios:
+The `Markdown` component can be used with reactive content for streaming scenarios:
 
 ```vue
 <template>
   <div>
-    <Comark>{{ content }}</Comark>
+    <Markdown>{{ content }}</Markdown>
     <div v-if="isLoading">Loading...</div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { Comark } from '@comark/vue'
+import { Markdown } from '@comark/vue'
 
 const content = ref('')
 const isLoading = ref(true)
@@ -332,15 +332,15 @@ loadContent()
 
 ## Prose Components
 
-The `Comark` component uses built-in prose styling automatically. You can override with custom components:
+The `Markdown` component uses built-in prose styling automatically. You can override with custom components:
 
 ```vue
 <template>
-  <Comark :components="components">{{ content }}</Comark>
+  <Markdown :components="components">{{ content }}</Markdown>
 </template>
 
 <script setup lang="ts">
-import { Comark } from '@comark/vue'
+import { Markdown } from '@comark/vue'
 import CustomAlert from './CustomAlert.vue'
 
 const components = {
@@ -353,16 +353,16 @@ const components = {
 
 ## Error Handling
 
-The `ComarkRenderer` component has built-in error capture via Vue's `onErrorCaptured` hook. Component rendering errors are caught automatically without crashing the application. You can also use Vue's native `onErrorCaptured` in a parent component to handle errors:
+The `MarkdownParsed` component has built-in error capture via Vue's `onErrorCaptured` hook. Component rendering errors are caught automatically without crashing the application. You can also use Vue's native `onErrorCaptured` in a parent component to handle errors:
 
 ```vue
 <template>
-  <Comark :markdown="content" />
+  <Markdown :value="content" />
 </template>
 
 <script setup lang="ts">
 import { onErrorCaptured } from 'vue'
-import { Comark } from '@comark/vue'
+import { Markdown } from '@comark/vue'
 
 onErrorCaptured((error) => {
   console.error('Component error:', error)
