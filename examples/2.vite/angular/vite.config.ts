@@ -3,7 +3,7 @@ import { defineConfig } from 'vite'
 import angular from '@analogjs/vite-plugin-angular'
 import tailwindcss from '@tailwindcss/vite'
 import { resolve } from 'node:path'
-import { comarkDevtools } from 'comark/devtools/vite'
+import comarkDevtools from '@comark/devtools/vite'
 import type { Plugin } from 'vite'
 
 /**
@@ -69,6 +69,6 @@ export default defineConfig({
       transformFilter: (_code, id) => !id.includes('/define.ts'),
     }),
     tailwindcss(),
-    comarkDevtools(),
+    comarkDevtools,
   ],
 })

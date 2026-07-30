@@ -15,6 +15,7 @@
     "shiki": "catalog:"
   },
   "devDependencies": {
+    "@comark/devtools": "catalog:",
     "@vitejs/devtools": "catalog:",
     "comark": "catalog:",
     "typescript": "catalog:",

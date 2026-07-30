@@ -34,16 +34,12 @@
     "skills"
   ],
   "type": "module",
-  "sideEffects": [
-    "./dist/devtools/client.js"
-  ],
+  "sideEffects": false,
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": "./dist/index.js",
-    "./devtools": "./dist/devtools/index.js",
-    "./devtools/*": "./dist/devtools/*.js",
     "./plugins/*": "./dist/plugins/*.js",
     "./utils": "./dist/utils/index.js",
     "./parse": "./dist/parse.js",
@@ -53,8 +49,8 @@
     "access": "public"
   },
   "scripts": {
-    "stub": "node ../../scripts/sync-devtools-css.mjs && node ../../scripts/stub.mjs",
-    "build": "node ../../scripts/sync-devtools-css.mjs && tsc",
+    "stub": "node ../../scripts/stub.mjs",
+    "build": "tsc",
     "dev": "tsc --watch",
     "test": "vitest run",
     "prepack": "tsc",
@@ -71,7 +67,6 @@
     "@json-render/core": "catalog:",
     "@shikijs/twoslash": "catalog:",
     "@types/markdown-it": "catalog:",
-    "@vitejs/devtools-kit": "catalog:",
     "github-slugger": "catalog:",
     "hast-util-to-string": "catalog:",
     "minimark": "catalog:",
@@ -81,11 +76,9 @@
     "vitest": "catalog:"
   },
   "peerDependencies": {
-    "@vitejs/devtools-kit": "catalog:",
     "beautiful-mermaid": "catalog:",
     "katex": "catalog:",
-    "shiki": "catalog:",
-    "vite": "catalog:"
+    "shiki": "catalog:"
   },
   "peerDependenciesMeta": {
     "shiki": {
@@ -95,12 +88,6 @@
       "optional": true
     },
     "katex": {
-      "optional": true
-    },
-    "@vitejs/devtools-kit": {
-      "optional": true
-    },
-    "vite": {
       "optional": true
     }
   }

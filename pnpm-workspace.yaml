@@ -18,6 +18,7 @@ catalog:
   "@ai-sdk/vue": ^4.0.22
   "@astrojs/react": ^6.0.1
   "@clack/prompts": ^1.7.0
+  "@comark/devtools": https://pkg.pr.new/comarkdown/comark-devtools/@comark/devtools@b168cd3
   "@comark/html": ^0.5.0
   "@comark/nuxt": ^0.5.0
   "@comark/react": ^0.5.0
@@ -58,8 +59,8 @@ catalog:
   "@unhead/vue": ^2.1.12
   "@vercel/analytics": ^2.0.1
   "@vercel/speed-insights": ^2.0.0
-  "@vitejs/devtools": ^0.1.15
-  "@vitejs/devtools-kit": ^0.1.15
+  "@vitejs/devtools": ^0.4.10
+  "@vitejs/devtools-kit": ^0.4.10
   "@vitejs/plugin-react": ^6.0.3
   "@vitejs/plugin-vue": ^6.0.7
   "@vitest/browser": ^4.1.10

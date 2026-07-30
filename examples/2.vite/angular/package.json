@@ -27,6 +27,7 @@
     "@angular/build": "catalog:",
     "@angular/compiler": "catalog:",
     "@angular/compiler-cli": "catalog:",
+    "@comark/devtools": "catalog:",
     "@tailwindcss/vite": "catalog:",
     "@vitejs/devtools": "catalog:",
     "tailwindcss": "catalog:",

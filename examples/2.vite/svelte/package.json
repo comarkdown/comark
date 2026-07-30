@@ -15,6 +15,7 @@
     "tailwindcss": "catalog:"
   },
   "devDependencies": {
+    "@comark/devtools": "catalog:",
     "@sveltejs/vite-plugin-svelte": "catalog:",
     "@vitejs/devtools": "catalog:",
     "autoprefixer": "catalog:",

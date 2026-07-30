@@ -1,10 +1,22 @@
 import { fileURLToPath } from 'node:url'
 import { readdir } from 'node:fs/promises'
 import { join, basename } from 'node:path'
-import type { Plugin, ResolvedConfig } from 'vite'
+import type { Plugin, PluginOption, ResolvedConfig } from 'vite'
 import type { ElementNode, DirectiveNode, TransformContext } from '@vue/compiler-core'
 import { existsSync } from 'node:fs'
-import { comarkDevtools } from 'comark/devtools/vite'
+
+/**
+ * Soft-load `@comark/devtools/vite` when installed (optional peer).
+ * Dynamic import so the core Vue plugin still loads when the package is absent.
+ */
+async function tryLoadComarkDevtools(): Promise<Plugin | false> {
+  try {
+    const mod = await import('@comark/devtools/vite')
+    return mod.default ?? false
+  } catch {
+    return false
+  }
+}
 
 const runtimeDir = fileURLToPath(new URL('./utils', import.meta.url))
 
@@ -122,7 +134,7 @@ function generateComponentsModule(files: string[]): string {
  * })
  * ```
  */
-export default function comark(opts: { prose?: boolean } = {}): Plugin[] {
+export default function comark(opts: { prose?: boolean } = {}): PluginOption[] {
   let proseDir: string
   let proseFilesCache: string[] | null = null
 
@@ -210,6 +222,7 @@ export default function comark(opts: { prose?: boolean } = {}): Plugin[] {
         server.watcher.on('unlink', invalidate)
       },
     },
-    comarkDevtools(),
+    // Included automatically when `@comark/devtools` is installed (optional peer).
+    tryLoadComarkDevtools(),
   ]
 }

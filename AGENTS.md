@@ -53,22 +53,6 @@ packages/comark/
 │   │   ├── index.ts          # Re-exports (comark/ast entry point)
 │   │   ├── types.ts          # ComarkTree, ComarkNode, ComarkElement, ComarkText
 │   │   └── utils.ts          # textContent(), visit() tree utilities
-│   ├── devtools/             # Vite DevTools integration
-│   │   ├── index.ts          # Public exports (comark/devtools entry point)
-│   │   ├── bridge.ts         # Context ↔ HMR bridge for the Vite DevTools panel
-│   │   ├── client.ts         # Injected client entry (connectDevtools)
-│   │   ├── vite.ts           # Vite plugin with RPC endpoints (comark/devtools/vite entry point)
-│   │   ├── renderer.ts       # Re-export barrel (comark/devtools/renderer entry point)
-│   │   ├── types.ts          # Shared TypeScript interfaces for RPC and panel
-│   │   ├── constants.ts      # Icon assets and Shiki theme/lang config
-│   │   └── renderer/         # DevTools panel UI (internal)
-│   │       ├── index.ts      # Entry point, exports DevtoolsPanel
-│   │       ├── panel.ts      # Panel class: tabs, editor, polling, RPC orchestration
-│   │       ├── dom.ts        # DOM element factories (editor, tab bar, states)
-│   │       ├── output.ts     # AST rendering, regex fallback highlighter
-│   │       ├── styles.ts     # CSS styles (imports styles.css)
-│   │       ├── styles.css    # Panel stylesheet
-│   │       └── theme.ts      # Light/dark/auto theme toggle
 │   ├── plugins/              # Built-in and optional plugins
 │   │   ├── alert.ts          # Alert/callout blocks
 │   │   ├── emoji.ts          # Emoji shortcodes
@@ -92,12 +76,15 @@ packages/comark/
 
 | Peer | Required by |
 |------|-------------|
-| `shiki` | `comark/plugins/highlight`, `comark/devtools/vite` (devtools Shiki highlighting) |
+| `shiki` | `comark/plugins/highlight` |
 | `katex` | `comark/plugins/math` |
 | `beautiful-mermaid` | `comark/plugins/mermaid` |
-| `@vitejs/devtools-kit` | `comark/devtools/vite` (Vite DevTools integration) |
 
 All are optional — only install what you use.
+
+Vite DevTools UI lives in a separate package: [`@comark/devtools`](https://github.com/comarkdown/comark-devtools)
+(`@comark/devtools/vite`, optional host bridge `@comark/devtools/host-client`).
+`@comark/vue/vite` soft-loads it when installed.
 
 ## Package: @comark/html
 
@@ -397,12 +384,13 @@ import emoji from 'comark/plugins/emoji'
 import toc from 'comark/plugins/toc'
 import alert from 'comark/plugins/alert'
 
-// Vite DevTools integration
-import { comarkDevtools } from 'comark/devtools/vite'
 // Ambient live-document context (used by renderers via comarkKey)
 import { createComarkContext } from 'comark'
-// Optional: manual bridge connect (normally injected by comarkDevtools())
-import { connectDevtools } from 'comark/devtools'
+
+// Vite DevTools (separate package: @comark/devtools)
+import comarkDevtools from '@comark/devtools/vite'
+// Optional: manual host bridge (normally injected by the Vite plugin)
+import { connectDevtools } from '@comark/devtools/host-client'
 
 // NOTE: All framework packages re-export every core plugin via their own subpath.
 // Prefer the framework-specific path when using a framework renderer:
