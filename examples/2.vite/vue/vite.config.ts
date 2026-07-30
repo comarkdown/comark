@@ -3,6 +3,7 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import ui from '@nuxt/ui/vite'
 import comark from '@comark/vue/vite'
+import comarkDevtools from '@comark/devtools/vite'
 import { fileURLToPath } from 'node:url'
 
 export default defineConfig({
@@ -10,6 +11,7 @@ export default defineConfig({
     DevTools(),
     vue(),
     comark(),
+    comarkDevtools(),
     ui({
       prose: true,
     }),

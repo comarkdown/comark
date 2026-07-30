@@ -84,7 +84,7 @@ All are optional — only install what you use.
 
 Vite DevTools UI lives in a separate package: [`@comark/devtools`](https://github.com/comarkdown/comark-devtools)
 (`@comark/devtools/vite`, optional host bridge `@comark/devtools/host-client`).
-`@comark/vue/vite` soft-loads it when installed.
+Add `comarkDevtools()` next to `DevTools()` in the app Vite config — it is not auto-imported.
 
 ## Package: @comark/html
 
@@ -389,6 +389,7 @@ import { createComarkContext } from 'comark'
 
 // Vite DevTools (separate package: @comark/devtools)
 import comarkDevtools from '@comark/devtools/vite'
+// plugins: [DevTools(), comarkDevtools()]  — also injects host-client bridge
 // Optional: manual host bridge (normally injected by the Vite plugin)
 import { connectDevtools } from '@comark/devtools/host-client'
 

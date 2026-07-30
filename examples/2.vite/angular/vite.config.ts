@@ -69,6 +69,6 @@ export default defineConfig({
       transformFilter: (_code, id) => !id.includes('/define.ts'),
     }),
     tailwindcss(),
-    comarkDevtools,
+    comarkDevtools(),
   ],
 })

@@ -52,7 +52,6 @@
     "comark": "workspace:*"
   },
   "devDependencies": {
-    "@comark/devtools": "catalog:",
     "@vue/compiler-core": "catalog:",
     "@vue/server-renderer": "catalog:",
     "vite": "catalog:",
@@ -60,16 +59,12 @@
     "vue": "catalog:"
   },
   "peerDependencies": {
-    "@comark/devtools": "catalog:",
     "beautiful-mermaid": "catalog:",
     "katex": "catalog:",
     "shiki": "catalog:",
     "vue": "^3.5.0"
   },
   "peerDependenciesMeta": {
-    "@comark/devtools": {
-      "optional": true
-    },
     "shiki": {
       "optional": true
     },
