@@ -21,7 +21,6 @@
     "ai": "catalog:",
     "comark": "catalog:",
     "comark-docs": "github:comarkdown/comark-docs",
-    "markdown-it-math": "catalog:",
     "nuxt": "catalog:",
     "splitpanes": "catalog:",
     "ufo": "catalog:",
@@ -29,11 +28,8 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@nuxt/devtools-kit": "catalog:",
-    "@resvg/resvg-js": "catalog:",
     "@types/json-schema": "catalog:",
     "@types/splitpanes": "catalog:",
-    "satori": "catalog:",
     "tsx": "catalog:"
   }
 }

@@ -16,16 +16,22 @@ export default defineAppConfig({
         label: 'Comark CMS',
       },
     ],
-    // Main nav is driven by the site's useMainNavigation() override in
-    // app/composables/useNavigation.ts (adds Playground + Examples tabs that
-    // aren't content sections and don't fit the layer's `header.nav` schema).
-    nav: [],
-    links: [
+    nav: [
       {
-        icon: 'i-simple-icons-github',
-        to: 'https://github.com/comarkdown/comark',
-        target: '_blank',
-        'aria-label': 'Comark on GitHub',
+        label: 'Documentation',
+        sections: ['getting-started', 'syntax', 'rendering', 'api', 'compare', 'kb'],
+      },
+      { label: 'Plugins', sections: ['plugins'], link: 'section' as const },
+      { label: 'Examples', sections: ['examples'], link: 'section' as const },
+      {
+        label: 'Playground',
+        to: '/play',
+        children: [
+          { label: 'Booking', to: '/play/booking' },
+          { label: 'Recipe', to: '/play/recipe' },
+          { label: 'Nuxt UI', to: '/play/nuxt-ui' },
+          { label: 'All Features', to: '/play/editor?example=all-features', activePath: '/play/all-features' },
+        ],
       },
     ],
   },
@@ -59,7 +65,6 @@ export default defineAppConfig({
   docs: {
     ogImage: {
       mark: 'comark' as const,
-      accent: '#eab308',
       tagline: 'The Markdown engine for the modern web',
     },
     llms: {
@@ -76,6 +81,16 @@ export default defineAppConfig({
       sameAs: ['https://github.com/comarkdown/comark', 'https://comark.dev'],
       programmingLanguage: 'TypeScript',
     },
+  },
+
+  assistant: {
+    enabled: true,
+    faqQuestions: [
+      { category: 'Getting Started', items: ['What is Comark and how does it differ from MDX?'] },
+      { category: 'Syntax', items: ['How do I write block and inline components in Comark?'] },
+      { category: 'Rendering & Streaming', items: ['How do I stream AI-generated Markdown with Comark?'] },
+      { category: 'Plugins & Advanced', items: ['How do I add syntax highlighting to code blocks?'] },
+    ],
   },
 
   ui: {
