@@ -19,6 +19,7 @@
     "@vercel/speed-insights": "catalog:",
     "@vueuse/core": "catalog:",
     "ai": "catalog:",
+    "beautiful-mermaid": "catalog:",
     "comark": "catalog:",
     "comark-docs": "github:comarkdown/comark-docs",
     "nuxt": "catalog:",
