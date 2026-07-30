@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@comark/nuxt": "workspace:*",
+    "@comark/vue": "workspace:*",
     "@nuxt/ui": "catalog:",
     "nuxt": "catalog:",
     "shiki": "catalog:",

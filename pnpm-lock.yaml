@@ -572,6 +572,9 @@ importers:
       '@comark/nuxt':
         specifier: workspace:*
         version: link:../../../packages/comark-nuxt
+      '@comark/vue':
+        specifier: workspace:*
+        version: link:../../../packages/comark-vue
       '@nuxt/ui':
         specifier: 'catalog:'
         version: 4.9.0(73bfceadd494cca602f69458f5df2a07)
