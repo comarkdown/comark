@@ -3,11 +3,7 @@ const props = defineProps<{
   demoMarkdown: string
 }>()
 
-const sourceAsCode = computed(() => [
-  '```md',
-  props.demoMarkdown,
-  '```'
-].join('\n'))
+const sourceAsCode = computed(() => ['```md', props.demoMarkdown, '```'].join('\n'))
 </script>
 
 <template>
@@ -37,7 +33,11 @@ const sourceAsCode = computed(() => [
           <span class="font-mono text-xs text-muted">source.md</span>
         </div>
         <div class="shiki-source h-[280px] overflow-y-auto overflow-x-hidden p-4 md:h-[400px]">
-          <ComarkDocs class="font-mono text-sm/6" :markdown="sourceAsCode" :components="{ ProsePre: 'pre'}" />
+          <ComarkDocs
+            class="font-mono text-sm/6"
+            :markdown="sourceAsCode"
+            :components="{ ProsePre: 'pre' }"
+          />
         </div>
       </div>
 

@@ -56,9 +56,7 @@ export default defineNuxtConfig({
   },
   vite: {
     optimizeDeps: {
-      include: [
-        'beautiful-mermaid'
-      ]
-    }
-  }
+      include: ['beautiful-mermaid'],
+    },
+  },
 })
