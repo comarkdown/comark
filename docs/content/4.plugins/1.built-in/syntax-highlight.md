@@ -217,12 +217,12 @@ Returns a `ComarkPlugin` that enables Shiki syntax highlighting.
 
 | Option | Type | Default | Description |
 |---|---|---|---|
-| [`themes`](#options-code-themes) | `object` | Material themes | Light and dark theme names or registrations |
-| [`languages`](#options-code-languages) | `LanguageRegistration[]` | `undefined` | Languages to preload |
-| [`transformers`](#options-code-transformers) | `ShikiTransformer[]` | `undefined` | Shiki transformers applied to every block |
-| [`preStyles`](#options-code-prestyles) | `boolean` | `false` | Add inline background/foreground styles to `<pre>` |
-| [`registerDefaultLanguages`](#options-code-registerdefaultlanguages) | `boolean` | `true` | Register the built-in default language set |
-| [`registerDefaultThemes`](#options-code-registerdefaultthemes) | `boolean` | `true` | Register the built-in Material themes |
+| [`themes`](#options-themes) | `object` | Material themes | Light and dark theme names or registrations |
+| [`languages`](#options-languages) | `LanguageRegistration[]` | `undefined` | Languages to preload |
+| [`transformers`](#options-transformers) | `ShikiTransformer[]` | `undefined` | Shiki transformers applied to every block |
+| [`preStyles`](#options-prestyles) | `boolean` | `false` | Add inline background/foreground styles to `<pre>` |
+| [`registerDefaultLanguages`](#options-registerdefaultlanguages) | `boolean` | `true` | Register the built-in default language set |
+| [`registerDefaultThemes`](#options-registerdefaultthemes) | `boolean` | `true` | Register the built-in Material themes |
 
 ### `themes`
 
