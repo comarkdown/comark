@@ -160,14 +160,14 @@ console.log(result.meta.toc)
 
 ### Docs Layout
 
-Parse once to get the TOC, then render it alongside the `<Comark>` component:
+Parse once to get the TOC, then render it alongside the `<Markdown>` component:
 
 ::code-group
 
 ```vue [Vue]
 <script setup lang="ts">
 import { parse } from 'comark'
-import { Comark } from '@comark/vue'
+import { Markdown } from '@comark/vue'
 import toc from '@comark/vue/plugins/toc'
 
 const props = defineProps<{ content: string }>()
@@ -195,7 +195,7 @@ const tocData = result.meta.toc
       </nav>
     </aside>
     <main>
-      <Comark :plugins="plugins">{{ props.content }}</Comark>
+      <Markdown :plugins="plugins">{{ props.content }}</Markdown>
     </main>
   </div>
 </template>
@@ -204,7 +204,7 @@ const tocData = result.meta.toc
 ```tsx [React]
 import { useEffect, useState } from 'react'
 import { parse } from 'comark'
-import { Comark } from '@comark/react'
+import { Markdown } from '@comark/react'
 import toc from '@comark/react/plugins/toc'
 
 const plugins = [toc({ depth: 3 })]
@@ -240,7 +240,7 @@ export function DocsLayout({ content }: { content: string }) {
         </nav>
       </aside>
       <main>
-        <Comark plugins={plugins}>{content}</Comark>
+        <Markdown plugins={plugins}>{content}</Markdown>
       </main>
     </div>
   )

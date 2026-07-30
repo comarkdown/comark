@@ -38,29 +38,29 @@ With framework components:
 
 ```vue [Vue]
 <script setup lang="ts">
-import { Comark } from '@comark/vue'
+import { Markdown } from '@comark/vue'
 import punctuation from '@comark/vue/plugins/punctuation'
 </script>
 
 <template>
-  <Comark :plugins="[punctuation()]">{{ content }}</Comark>
+  <Markdown :plugins="[punctuation()]">{{ content }}</Markdown>
 </template>
 ```
 
 ```tsx [React]
-import { Comark } from '@comark/react'
+import { Markdown } from '@comark/react'
 import punctuation from '@comark/react/plugins/punctuation'
 
-<Comark plugins={[punctuation()]}>{content}</Comark>
+<Markdown plugins={[punctuation()]}>{content}</Markdown>
 ```
 
 ```svelte [Svelte]
 <script lang="ts">
-  import { Comark } from '@comark/svelte'
+  import { Markdown } from '@comark/svelte'
   import punctuation from '@comark/svelte/plugins/punctuation'
 </script>
 
-<Comark {content} plugins={[punctuation()]} />
+<Markdown {content} plugins={[punctuation()]} />
 ```
 
 ::

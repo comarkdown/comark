@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { pascalCase } from 'comark/utils'
 
 /**
- * Tests the component resolution logic used by ComarkNodeComponent.
+ * Tests the component resolution logic used by MarkdownNode.
  * The resolution order is: Prose{PascalTag} > tag > PascalTag
  */
 function resolveComponent(tag: string, components: Record<string, any>): any | undefined {

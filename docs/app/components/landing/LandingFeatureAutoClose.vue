@@ -195,7 +195,7 @@ onBeforeUnmount(() => {
                   v-if="liveMarkdown"
                   :key="currentStep"
                   class="text-sm"
-                  :markdown="liveMarkdown"
+                  :value="liveMarkdown"
                   :streaming="!showAutoClosed"
                 />
               </div>

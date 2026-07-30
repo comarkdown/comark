@@ -10,7 +10,7 @@ defineProps<{
 const activeTab = ref<'vue' | 'react'>('vue')
 
 const vueCode = `<script setup lang="ts">
-import { Comark } from '@comark/vue'
+import { Markdown } from '@comark/vue'
 import Alert from './components/Alert.vue'
 
 const components = { Alert }
@@ -19,13 +19,13 @@ ${'<'}/script>
 
 <template>
   <Suspense>
-    <Comark :components="components">
+    <Markdown :components="components">
       {{ content }}
-    </Comark>
+    </Markdown>
   </Suspense>
 </template>`
 
-const reactCode = `import { Comark } from 'comark/react'
+const reactCode = `import { Markdown } from 'comark/react'
 import { Alert } from './components/Alert'
 
 const components = { Alert }
@@ -34,9 +34,9 @@ export default function App() {
   const content = '# Hello **World**\\n\\n::alert{type="info"}\\nWelcome!\\n::'
 
   return (
-    <Comark components={components}>
+    <Markdown components={components}>
       {content}
-    </Comark>
+    </Markdown>
   )
 }`
 </script>

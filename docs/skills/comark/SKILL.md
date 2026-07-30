@@ -65,11 +65,11 @@ console.log(result.meta)    // Additional metadata
 
 ```vue
 <template>
-  <Comark :markdown="content" />
+  <Markdown :value="content" />
 </template>
 
 <script setup lang="ts">
-import { Comark } from '@comark/vue'
+import { Markdown } from '@comark/vue'
 
 const content = `# Hello World`
 </script>
@@ -78,10 +78,10 @@ const content = `# Hello World`
 ### React Rendering
 
 ```tsx
-import { Comark } from '@comark/react'
+import { Markdown } from '@comark/react'
 
 export default function App() {
-  return <Comark markdown={content} />
+  return <Markdown value={content} />
 }
 ```
 
@@ -89,25 +89,25 @@ export default function App() {
 
 ```svelte
 <script lang="ts">
-  import { Comark } from '@comark/svelte'
+  import { Markdown } from '@comark/svelte'
 
   const content = `# Hello World`
 </script>
 
-<Comark markdown={content} />
+<Markdown value={content} />
 ```
 
 ### Angular Rendering
 
 ```typescript
 import { Component } from '@angular/core'
-import { ComarkComponent } from '@comark/angular'
+import { Markdown } from '@comark/angular'
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [ComarkComponent],
-  template: `<comark [markdown]="content" />`,
+  imports: [Markdown],
+  template: `<comark-markdown [value]="content" />`,
 })
 export class AppComponent {
   content = `# Hello World`
@@ -153,7 +153,7 @@ Complete guide for parsing documents and working with AST:
 
 Comprehensive guide for rendering in Vue applications:
 
-- **Basic Usage:** `Comark` component setup
+- **Basic Usage:** `Markdown` component setup
 - **Custom Components:** mapping custom Vue components to Comark elements
 - **Dynamic Loading:** `componentsManifest` for lazy-loaded components
 - **Slots Support:** named slots with `#slot-name` syntax
@@ -170,7 +170,7 @@ Comprehensive guide for rendering in Vue applications:
 
 Comprehensive guide for rendering in React applications:
 
-- **Basic Usage:** `Comark` component setup
+- **Basic Usage:** `Markdown` component setup
 - **Custom Components:** mapping custom React components to Comark elements
 - **Dynamic Loading:** `componentsManifest` for lazy-loaded components
 - **Props Conversion:** automatic HTML attribute conversion (`class` → `className`, etc.)
@@ -187,12 +187,12 @@ Comprehensive guide for rendering in React applications:
 
 Comprehensive guide for rendering in Svelte 5 applications:
 
-- **Basic Usage:** `Comark` component setup with `$state`
+- **Basic Usage:** `Markdown` component setup with `$state`
 - **Custom Components:** mapping custom Svelte components to Comark elements
 - **Dynamic Loading:** `componentsManifest` for lazy-loaded components
 - **Props Mapping:** attribute-to-prop conversion (close to HTML semantics)
 - **Streaming Mode:** real-time rendering with reactive `$state`
-- **Experimental Async:** `ComarkAsync` with `<svelte:boundary>`
+- **Experimental Async:** `MarkdownAsync` with `<svelte:boundary>`
 - **Prose Components:** `Prose` prefix for overriding native HTML elements
 
 **[→ Read Full Svelte Rendering Guide](./references/rendering-svelte.md)**
@@ -203,13 +203,13 @@ Comprehensive guide for rendering in Svelte 5 applications:
 
 Comprehensive guide for rendering in Angular 17+ applications:
 
-- **Basic Usage:** `ComarkComponent` standalone component setup
+- **Basic Usage:** `Markdown` standalone component setup
 - **Custom Components:** mapping Angular components to Comark elements
 - **Component Resolution:** `Prose{PascalTag}`, `tag`, `PascalTag` priority order
 - **Content Projection:** named slots via `<ng-content select="[slot=name]">` 
 - **Streaming Mode:** real-time rendering with caret indicator
 - **Data Binding:** `:binding` resolution with ambient `data` input
-- **Pre-configured Components:** `defineComarkComponent` and `defineComarkRendererComponent`
+- **Pre-configured Components:** `defineMarkdownComponent` and `defineMarkdownParsedComponent`
 - **Plugins:** Math (KaTeX), Mermaid, Binding with Angular component wrappers
 
 **[→ Read Full Angular Rendering Guide](./references/rendering-angular.md)**
@@ -306,7 +306,7 @@ async function processMarkdownFile(filePath: string) {
 
 ```tsx
 import { useState } from 'react'
-import { Comark } from '@comark/react'
+import { Markdown } from '@comark/react'
 
 export default function Editor() {
   const [content, setContent] = useState('# Hello')
@@ -314,7 +314,7 @@ export default function Editor() {
   return (
     <div className="split-editor">
       <textarea value={content} onChange={e => setContent(e.target.value)} />
-      <Comark markdown={content} />
+      <Markdown value={content} />
     </div>
   )
 }
@@ -346,12 +346,12 @@ async function processMultipleFiles(files: string[]) {
 ```vue
 <template>
   <article class="prose">
-    <Comark :markdown="markdownContent" :components="docComponents" />
+    <Markdown :value="markdownContent" :components="docComponents" />
   </article>
 </template>
 
 <script setup lang="ts">
-import { Comark } from '@comark/vue'
+import { Markdown } from '@comark/vue'
 import { docComponents } from './components'
 </script>
 ```
@@ -384,25 +384,25 @@ createRender(options?: ParseOptions & RenderOptions): (markdown: string) => Prom
 ### Vue Components (`@comark/vue`)
 
 ```vue
-<Comark :markdown="markdownString" :components="customComponents" />
+<Markdown :value="markdownString" :components="customComponents" />
 ```
 
 ### React Components (`@comark/react`)
 
 ```tsx
-<Comark markdown={markdownString} components={customComponents} />
+<Markdown value={markdownString} components={customComponents} />
 ```
 
 ### Svelte Components (`@comark/svelte`)
 
 ```svelte
-<Comark markdown={markdownString} components={customComponents} />
+<Markdown value={markdownString} components={customComponents} />
 ```
 
 ### Angular Components (`@comark/angular`)
 
 ```html
-<comark [markdown]="markdownString" [components]="customComponents" />
+<comark-markdown [value]="markdownString" [components]="customComponents" />
 ```
 
 ## Performance Characteristics

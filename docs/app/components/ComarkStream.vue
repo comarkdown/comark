@@ -55,7 +55,7 @@ defineExpose({
 <template>
   <ComarkDocs
     v-if="markdown"
-    :markdown="accumulated"
+    :value="accumulated"
     :streaming="isStreaming"
     v-bind="comarkProps"
   />

@@ -1,7 +1,7 @@
 export const lazyMarkdown = `
 # Lazy SvelteKit SSR
 
-This route renders markdown with \`<ComarkAsync>\`. Its custom components are resolved from an explicit dynamic import map.
+This route renders markdown with \`<MarkdownAsync>\`. Its custom components are resolved from an explicit dynamic import map.
 
 ::alert{type="warning"}
 This alert is returned from \`componentsManifest\` as a dynamic import and is awaited during SvelteKit SSR.
@@ -18,7 +18,7 @@ Named snippets are forwarded through the lazy component resolver.
 export const stableMarkdown = `
 # Stable SvelteKit SSR
 
-This route parses markdown in \`+page.server.ts\` and renders the AST with \`<ComarkRenderer>\`.
+This route parses markdown in \`+page.server.ts\` and renders the AST with \`<MarkdownParsed>\`.
 
 ::alert{type="success"}
 Use this pattern when you want stable, non-experimental SSR.
@@ -28,6 +28,6 @@ Use this pattern when you want stable, non-experimental SSR.
 This card is resolved synchronously from an eager manifest, so it can render during SSR without Svelte's experimental async support.
 
 #footer
-The same \`#footer\` slot works with \`<ComarkRenderer>\` and an eager manifest.
+The same \`#footer\` slot works with \`<MarkdownParsed>\` and an eager manifest.
 ::
 `.trim()

@@ -57,14 +57,14 @@ npm install @comark/vue katex
 
 ```vue
 <script setup lang="ts">
-import { Comark } from '@comark/vue'
+import { Markdown } from '@comark/vue'
 import math, { Math } from '@comark/vue/plugins/math'
 
 const chatMessage = ...
 </script>
 
 <template>
-  <Comark :components="{ Math }" :plugins="[math()]">{{ chatMessage }}</Comark>
+  <Markdown :components="{ Math }" :plugins="[math()]">{{ chatMessage }}</Markdown>
 </template>
 ```
 
@@ -75,12 +75,12 @@ npm install @comark/react katex
 ```
 
 ```tsx
-import { Comark } from '@comark/react'
+import { Markdown } from '@comark/react'
 import math, { Math } from '@comark/react/plugins/math'
 
 function App() {
   const chatMessage = ...
-  return <Comark components={{ Math }} plugins={[math()]}>{chatMessage}</Comark>
+  return <Markdown components={{ Math }} plugins={[math()]}>{chatMessage}</Markdown>
 }
 ```
 
@@ -92,13 +92,13 @@ npm install @comark/svelte katex
 
 ```svelte
 <script lang="ts">
-  import { Comark } from '@comark/svelte'
+  import { Markdown } from '@comark/svelte'
   import math, { Math } from '@comark/svelte/plugins/math'
 
   const chatMessage = ...
 </script>
 
-<Comark markdown={chatMessage} components={{ math: Math }} plugins={[math()]} />
+<Markdown value={chatMessage} components={{ math: Math }} plugins={[math()]} />
 ```
 
 ### Angular
@@ -109,14 +109,14 @@ npm install @comark/angular katex
 
 ```typescript
 import { Component } from '@angular/core'
-import { ComarkComponent } from '@comark/angular'
+import { Markdown } from '@comark/angular'
 import math, { Math } from '@comark/angular/plugins/math'
 
 @Component({
   selector: 'app-chat',
   standalone: true,
-  imports: [ComarkComponent],
-  template: `<comark [markdown]="chatMessage" [components]="{ Math }" [plugins]="[math()]" />`,
+  imports: [Markdown],
+  template: `<comark-markdown [value]="chatMessage" [components]="{ Math }" [plugins]="[math()]" />`,
 })
 export class ChatComponent {
   chatMessage = ...

@@ -262,9 +262,9 @@ function findMappedTag(node: ComarkElement, tags: Record<string, string>) {
 </script>
 
 <template>
-  <ComarkRenderer
+  <MarkdownParsed
     v-if="!isEmpty"
-    :tree="body as unknown as ComarkTree"
+    :value="body as unknown as ComarkTree"
     :components="componentsMap"
     :data-content-id="debug ? value.id : undefined"
   />

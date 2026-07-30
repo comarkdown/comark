@@ -8,13 +8,13 @@ render context via the `:value` dot-path) and a `defaultValue` fallback.
 ```svelte
 <script>
   import binding, { Binding } from '@comark/svelte/plugins/binding'
-  import { Comark } from '@comark/svelte'
+  import { Markdown } from '@comark/svelte'
 
   const data = { user: { name: 'Ada' } }
 </script>
 
-<Comark
-  markdown="Hello {{ data.user.name || guest }}!"
+<Markdown
+  value="Hello {{ data.user.name || guest }}!"
   plugins={[binding()]}
   components={{ Binding }}
   {data}

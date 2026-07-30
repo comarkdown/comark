@@ -47,13 +47,13 @@ const tree = await parse(markdown, {
 
 \`\`\`vue
 <script setup>
-import { Comark } from '@comark/vue'
+import { Markdown } from '@comark/vue'
 import highlight from '@comark/vue/plugins/highlight'
 </script>
 
 <template>
   <Suspense>
-    <Comark :plugins="[highlight()]">{{ content }}</Comark>
+    <Markdown :plugins="[highlight()]">{{ content }}</Markdown>
   </Suspense>
 </template>
 \`\`\`

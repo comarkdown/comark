@@ -55,7 +55,7 @@ Pass the imported themes and languages to the plugin:
 ```vue
 <template>
   <Suspense>
-    <Comark
+    <Markdown
       :plugins="[
         highlight({
           themes: {
@@ -67,7 +67,7 @@ Pass the imported themes and languages to the plugin:
       ]"
     >
       {{ content }}
-    </Comark>
+    </Markdown>
   </Suspense>
 </template>
 ```

@@ -58,7 +58,7 @@ const { data: highlightedSource } = await useAsyncData(
           <ComarkDocs
             v-if="demoMarkdown"
             class="text-sm"
-            :markdown="demoMarkdown"
+            :value="demoMarkdown"
           />
         </div>
       </div>

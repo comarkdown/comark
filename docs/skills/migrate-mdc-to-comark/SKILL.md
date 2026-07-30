@@ -17,10 +17,10 @@ The migration has two parts: **Core Package** (programmatic API) and **Nuxt Modu
 - **Render**: `stringifyMarkdown()` → `renderMarkdown()` from `comark/render`
 - **AST**: object tree → compact tuples `['tag', props, ...children]`
 - **Result**: `result.body` / `result.data` → `tree.nodes` / `tree.frontmatter`
-- **Renderer**: `<MDCRenderer :body :data>` → `<ComarkRenderer :tree>`
-- **All-in-one**: `<MDC :value>` → `<Comark :markdown>`
+- **Renderer**: `<MDCRenderer :body :data>` → `<MarkdownParsed :value>`
+- **All-in-one**: `<MDC :value>` → `<Markdown :value>`
 - **Slots**: `<MDCSlot />` → native `<slot />`
-- **Plugins**: global `nuxt.config` → per-component `defineComarkComponent({ plugins })`
+- **Plugins**: global `nuxt.config` → per-component `defineMarkdownComponent({ plugins })`
 - **Markdown files**: no changes needed
 
 ## Core Package
@@ -97,26 +97,26 @@ export default defineNuxtConfig({
 })
 ```
 
-`@comark/nuxt` auto-imports: `Comark`, `ComarkRenderer`, `defineComarkComponent`, `defineComarkRendererComponent`.
+`@comark/nuxt` auto-imports: `Markdown`, `MarkdownParsed`, `defineMarkdownComponent`, `defineMarkdownParsedComponent`.
 
 ### Components
 
 | `@nuxtjs/mdc` | `@comark/nuxt` |
 |---|---|
-| `<MDCRenderer :body :data :components>` | `<ComarkRenderer :tree :components>` |
-| `<MDC :value :parser-options>` | `<Comark :markdown :options>` or `<Comark>{{ md }}</Comark>` |
+| `<MDCRenderer :body :data :components>` | `<MarkdownParsed :value :components>` |
+| `<MDC :value :parser-options>` | `<Markdown :value :options>` or `<Markdown>{{ md }}</Markdown>` |
 | `<MDCSlot />` | `<slot />` |
 | `<MDCSlot unwrap="p" />` | `<slot unwrap="p" />` |
 | `<slot mdc-unwrap="p" />` | `<slot unwrap="p" />` |
 
-For a pre-parsed tree, use `<ComarkRenderer>` directly instead of `<Comark>`.
+For a pre-parsed tree, use `<MarkdownParsed>` directly instead of `<Markdown>`.
 
-#### `<ComarkRenderer>` props changes
+#### `<MarkdownParsed>` props changes
 
-| MDC `<MDCRenderer>` | Comark `<ComarkRenderer>` | Notes |
+| MDC `<MDCRenderer>` | Comark `<MarkdownParsed>` | Notes |
 |---|---|---|
-| `body` (`MDCRoot`) | `tree` (`ComarkTree`) | Different AST shape |
-| `data` | — | Frontmatter is in `tree.frontmatter` |
+| `body` (`MDCRoot`) | `value` (`ComarkTree`) | Different AST shape |
+| `data` | — | Frontmatter is in `value.frontmatter` |
 | `tag` | — | Wrapper is always `<div class="comark-content">` |
 | `prose` | — | `Prose*` resolution is automatic |
 | `unwrap` | — | Use `autoUnwrap` in parse options |
@@ -132,19 +132,19 @@ For a pre-parsed tree, use `<ComarkRenderer>` directly instead of `<Comark>`.
 <MDCRenderer :body="result.excerpt ?? result.body" :data="result.data" />
 
 <!-- After -->
-<Comark summary>{{ markdown }}</Comark>
+<Markdown summary>{{ markdown }}</Markdown>
 ```
 
-### `defineComarkComponent`
+### `defineMarkdownComponent`
 
 Replaces global `mdc: { ... }` config. Define reusable components with their own plugins and component mappings:
 
 ```typescript
-import { defineComarkComponent } from '@comark/vue'
+import { defineMarkdownComponent } from '@comark/vue'
 import highlight from 'comark/plugins/highlight'
 import toc from 'comark/plugins/toc'
 
-export const ArticleComark = defineComarkComponent({
+export const ArticleComark = defineMarkdownComponent({
   name: 'ArticleComark',
   plugins: [highlight({ themes: { light: githubLight, dark: githubDark } }), toc()],
   components: { alert: CustomAlert },

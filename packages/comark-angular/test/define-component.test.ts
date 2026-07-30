@@ -1,22 +1,22 @@
 import { describe, expect, it } from 'vitest'
-import { defineComarkComponent, defineComarkRendererComponent } from '../src/define.ts'
+import { defineMarkdownComponent, defineMarkdownParsedComponent } from '../src/define.ts'
 
-describe('defineComarkComponent', () => {
+describe('defineMarkdownComponent', () => {
   it('returns a component class', () => {
-    const Defined = defineComarkComponent({ name: 'test-comark' })
+    const Defined = defineMarkdownComponent({ name: 'test-comark' })
     expect(Defined).toBeDefined()
     expect(typeof Defined).toBe('function')
   })
 
   it('returns a component class with default config', () => {
-    const Defined = defineComarkComponent()
+    const Defined = defineMarkdownComponent()
     expect(Defined).toBeDefined()
     expect(typeof Defined).toBe('function')
   })
 
   it('accepts plugins in config', () => {
     const fakePlugin = { name: 'test', setup: () => {} }
-    const Defined = defineComarkComponent({
+    const Defined = defineMarkdownComponent({
       name: 'with-plugins',
       plugins: [fakePlugin as any],
     })
@@ -25,7 +25,7 @@ describe('defineComarkComponent', () => {
 
   it('accepts components in config', () => {
     class FakeComponent {}
-    const Defined = defineComarkComponent({
+    const Defined = defineMarkdownComponent({
       name: 'with-components',
       components: { alert: FakeComponent as any },
     })
@@ -33,7 +33,7 @@ describe('defineComarkComponent', () => {
   })
 
   it('accepts class in config', () => {
-    const Defined = defineComarkComponent({
+    const Defined = defineMarkdownComponent({
       name: 'with-class',
       class: 'prose dark:prose-invert',
     })
@@ -41,7 +41,7 @@ describe('defineComarkComponent', () => {
   })
 
   it('accepts parse options in config', () => {
-    const Defined = defineComarkComponent({
+    const Defined = defineMarkdownComponent({
       name: 'with-options',
       html: true,
       autoClose: true,
@@ -50,21 +50,21 @@ describe('defineComarkComponent', () => {
   })
 })
 
-describe('defineComarkRendererComponent', () => {
+describe('defineMarkdownParsedComponent', () => {
   it('returns a component class', () => {
-    const Defined = defineComarkRendererComponent({ name: 'test-renderer' })
+    const Defined = defineMarkdownParsedComponent({ name: 'test-renderer' })
     expect(Defined).toBeDefined()
     expect(typeof Defined).toBe('function')
   })
 
   it('returns a component class with default config', () => {
-    const Defined = defineComarkRendererComponent()
+    const Defined = defineMarkdownParsedComponent()
     expect(Defined).toBeDefined()
   })
 
   it('accepts components in config', () => {
     class FakeComponent {}
-    const Defined = defineComarkRendererComponent({
+    const Defined = defineMarkdownParsedComponent({
       name: 'renderer-with-components',
       components: { Math: FakeComponent as any },
     })
@@ -72,7 +72,7 @@ describe('defineComarkRendererComponent', () => {
   })
 
   it('accepts class in config', () => {
-    const Defined = defineComarkRendererComponent({
+    const Defined = defineMarkdownParsedComponent({
       name: 'renderer-with-class',
       class: 'prose',
     })

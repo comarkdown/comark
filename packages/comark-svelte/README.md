@@ -12,7 +12,7 @@ Svelte renderer for [Comark](https://comark.dev). Render markdown with custom Sv
 
 ## Features
 
-- 🧩 `<Comark>` component for one-shot markdown rendering
+- 🧩 `<Markdown>` component for one-shot markdown rendering
 - 🎯 Map any Comark tag to a custom Svelte component
 - 🌊 Streaming-friendly with auto-close and caret support
 - 🖥️ SSR-safe, works in SvelteKit
@@ -31,24 +31,24 @@ pnpm add @comark/svelte
 
 ```svelte
 <script lang="ts">
-  import { Comark } from '@comark/svelte'
+  import { Markdown } from '@comark/svelte'
   import math, { Math } from '@comark/svelte/plugins/math'
 
   const content = `# Hello\n\nThis is **Comark** in Svelte.`
 </script>
 
-<Comark markdown={content} components={{ math: Math }} plugins={[math()]} />
+<Markdown value={content} components={{ math: Math }} plugins={[math()]} />
 ```
 
 ### Custom components
 
 ```svelte
 <script lang="ts">
-  import { Comark } from '@comark/svelte'
+  import { Markdown } from '@comark/svelte'
   import Alert from './Alert.svelte'
 </script>
 
-<Comark markdown={content} components={{ alert: Alert }} />
+<Markdown value={content} components={{ alert: Alert }} />
 ```
 
 ```mdc
@@ -60,7 +60,7 @@ Heads up!
 ### Streaming
 
 ```svelte
-<Comark markdown={content} streaming={isStreaming} caret />
+<Markdown value={content} streaming={isStreaming} caret />
 ```
 
 ## Documentation

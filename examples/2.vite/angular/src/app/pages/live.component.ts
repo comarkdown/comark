@@ -1,8 +1,8 @@
 import { ChangeDetectorRef, Component, type OnInit } from '@angular/core'
-import { ComarkRendererComponent } from '@comark/angular'
+import { MarkdownParsed } from '@comark/angular'
 import { createComarkContext, parse, type ComarkTree } from 'comark'
 
-// A driver installs a context on globalThis once; every <comark-renderer comarkKey>
+// A driver installs a context on globalThis once; every <comark-markdown-parsed comarkKey>
 // then auto-subscribes. The buttons act as the driver here — but it could just as
 // well be HMR, a collab socket, an agent, or devtools.
 const ctx = createComarkContext()
@@ -23,7 +23,7 @@ ctx.patch({ op: 'replace', path: [0, 0], node: 'Live document update' })
 @Component({
   selector: 'app-live',
   standalone: true,
-  imports: [ComarkRendererComponent],
+  imports: [MarkdownParsed],
   template: `
     @if (tree) {
       <div class="flex gap-2 mb-6 not-prose">
@@ -47,9 +47,9 @@ ctx.patch({ op: 'replace', path: [0, 0], node: 'Live document update' })
         </button>
       </div>
 
-      <comark-renderer
+      <comark-markdown-parsed
         comarkKey="demo"
-        [tree]="tree"
+        [value]="tree"
       />
     }
   `,

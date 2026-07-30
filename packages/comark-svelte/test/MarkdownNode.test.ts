@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import { render } from 'svelte/server'
 import { parse } from 'comark'
-import ComarkRenderer from '../src/components/ComarkRenderer.svelte'
-import ComarkNode from '../src/components/ComarkNode.svelte'
-import ComarkAsync from '../src/async/ComarkAsync.svelte'
+import MarkdownParsed from '../src/components/MarkdownParsed.svelte'
+import MarkdownNode from '../src/components/MarkdownNode.svelte'
+import MarkdownAsync from '../src/async/MarkdownAsync.svelte'
 import Alert from './test-components/Alert.svelte'
 import Card from './test-components/Card.svelte'
 import CardWithHeaderFooter from './test-components/CardWithHeaderFooter.svelte'
@@ -18,60 +18,60 @@ function html(body: string): string {
 const CARET_STYLE =
   'background-color: currentColor; display: inline-block; margin-left: 0.25rem; margin-right: 0.25rem; animation: pulse 0.75s cubic-bezier(0.4,0,0.6,1) infinite;'
 
-describe('ComarkNode', () => {
+describe('MarkdownNode', () => {
   it('renders a paragraph', async () => {
     const tree = await parse('A paragraph')
-    const { body } = render(ComarkNode, { props: { node: tree.nodes[0] } })
+    const { body } = render(MarkdownNode, { props: { node: tree.nodes[0] } })
     expect(html(body)).toBe('<p>A paragraph</p>')
   })
 
   it('renders nested inline markup', async () => {
     const tree = await parse('Hello **World**')
-    const { body } = render(ComarkNode, { props: { node: tree.nodes[0] } })
+    const { body } = render(MarkdownNode, { props: { node: tree.nodes[0] } })
     expect(html(body)).toBe('<p>Hello <strong>World</strong></p>')
   })
 
   it('renders mixed inline markup', async () => {
     const tree = await parse('one *two* three')
-    const { body } = render(ComarkNode, { props: { node: tree.nodes[0] } })
+    const { body } = render(MarkdownNode, { props: { node: tree.nodes[0] } })
     expect(html(body)).toBe('<p>one <em>two</em> three</p>')
   })
 
   it('renders a link with attributes', async () => {
     const tree = await parse('[link](/about)')
-    const { body } = render(ComarkNode, { props: { node: tree.nodes[0] } })
+    const { body } = render(MarkdownNode, { props: { node: tree.nodes[0] } })
     expect(html(body)).toBe('<p><a href="/about">link</a></p>')
   })
 
   it('renders a thematic break', async () => {
     const tree = await parse('---')
-    const { body } = render(ComarkNode, { props: { node: tree.nodes[0] } })
+    const { body } = render(MarkdownNode, { props: { node: tree.nodes[0] } })
     expect(html(body)).toBe('<hr>')
   })
 
   it('skips comment nodes (null tag)', () => {
-    const { body } = render(ComarkNode, {
+    const { body } = render(MarkdownNode, {
       props: { node: [null, {}, 'a comment'] },
     })
     expect(html(body)).toBe('')
   })
 
   it('maps className to class', () => {
-    const { body } = render(ComarkNode, {
+    const { body } = render(MarkdownNode, {
       props: { node: ['div', { className: 'my-class' }, 'content'] },
     })
     expect(html(body)).toBe('<div class="my-class">content</div>')
   })
 
   it('parses colon-prefixed props as values', () => {
-    const { body } = render(ComarkNode, {
+    const { body } = render(MarkdownNode, {
       props: { node: ['div', { ':hidden': 'true' }, 'content'] },
     })
     expect(html(body)).toBe('<div hidden="">content</div>')
   })
 
   it('parses colon-prefixed JSON values', () => {
-    const { body } = render(ComarkNode, {
+    const { body } = render(MarkdownNode, {
       props: { node: ['div', { ':data-count': '42' }, 'content'] },
     })
     expect(html(body)).toBe('<div data-count="42">content</div>')
@@ -79,7 +79,7 @@ describe('ComarkNode', () => {
 
   it('does not render caret when caretClass is null', async () => {
     const tree = await parse('some text')
-    const { body } = render(ComarkNode, {
+    const { body } = render(MarkdownNode, {
       props: { node: tree.nodes[0], caretClass: null },
     })
     expect(html(body)).toBe('<p>some text</p>')
@@ -87,14 +87,14 @@ describe('ComarkNode', () => {
   })
 
   it('renders caret with custom class on text node', () => {
-    const { body } = render(ComarkNode, {
+    const { body } = render(MarkdownNode, {
       props: { node: 'text', caretClass: 'my-caret' },
     })
     expect(html(body)).toBe(`text<span class="my-caret" style="${CARET_STYLE}">\u2009</span>`)
   })
 
   it('renders caret without class when caretClass is empty string', () => {
-    const { body } = render(ComarkNode, {
+    const { body } = render(MarkdownNode, {
       props: { node: 'text', caretClass: '' },
     })
     expect(html(body)).toBe(`text<span style="${CARET_STYLE}">\u2009</span>`)
@@ -102,7 +102,7 @@ describe('ComarkNode', () => {
 
   it('threads caret to deepest last text node', async () => {
     const tree = await parse('first **last**')
-    const { body } = render(ComarkNode, {
+    const { body } = render(MarkdownNode, {
       props: { node: tree.nodes[0], caretClass: '' },
     })
     const output = html(body)
@@ -114,7 +114,7 @@ describe('ComarkNode', () => {
 
   it('threads caret through deeply nested structure', async () => {
     const tree = await parse('*__**deep**__*')
-    const { body } = render(ComarkNode, {
+    const { body } = render(MarkdownNode, {
       props: { node: tree.nodes[0], caretClass: 'c' },
     })
     const output = html(body)
@@ -124,7 +124,7 @@ describe('ComarkNode', () => {
 
   it('does not attach caret to non-last children', async () => {
     const tree = await parse('**first** last')
-    const { body } = render(ComarkNode, {
+    const { body } = render(MarkdownNode, {
       props: { node: tree.nodes[0], caretClass: '' },
     })
     const output = html(body)
@@ -134,10 +134,10 @@ describe('ComarkNode', () => {
   })
 })
 
-describe('ComarkRenderer', () => {
+describe('MarkdownParsed', () => {
   it('renders a heading with inline markup', async () => {
     const tree = await parse('# Hello **World**')
-    const { body } = render(ComarkRenderer, { props: { tree } })
+    const { body } = render(MarkdownParsed, { props: { value: tree } })
     const output = html(body)
     expect(output).toContain('<h1 id="hello-strong-world">')
     expect(output).toContain('Hello <strong>World</strong>')
@@ -147,7 +147,7 @@ describe('ComarkRenderer', () => {
 
   it('renders multiple block-level elements', async () => {
     const tree = await parse('# Heading\n\nA paragraph\n\n- item 1\n- item 2')
-    const { body } = render(ComarkRenderer, { props: { tree } })
+    const { body } = render(MarkdownParsed, { props: { value: tree } })
     const output = html(body)
     expect(output).toContain('<h1')
     expect(output).toContain('<p>A paragraph</p>')
@@ -158,14 +158,14 @@ describe('ComarkRenderer', () => {
 
   it('renders an empty tree as an empty wrapper', () => {
     const tree = { nodes: [], frontmatter: {}, meta: {} }
-    const { body } = render(ComarkRenderer, { props: { tree } })
+    const { body } = render(MarkdownParsed, { props: { value: tree } })
     expect(html(body)).toBe('<div class="comark-content "></div>')
   })
 
   it('applies a custom class to the wrapper', async () => {
     const tree = await parse('hello')
-    const { body } = render(ComarkRenderer, {
-      props: { tree, class: 'prose' },
+    const { body } = render(MarkdownParsed, {
+      props: { value: tree, class: 'prose' },
     })
     const output = html(body)
     expect(output).toMatch(/^<div class="comark-content prose">/)
@@ -174,25 +174,25 @@ describe('ComarkRenderer', () => {
 
   it('renders inline code', async () => {
     const tree = await parse('use `const x = 1`')
-    const { body } = render(ComarkRenderer, { props: { tree } })
+    const { body } = render(MarkdownParsed, { props: { value: tree } })
     expect(html(body)).toContain('<code>const x = 1</code>')
   })
 
   it('renders links', async () => {
     const tree = await parse('[click me](https://example.com)')
-    const { body } = render(ComarkRenderer, { props: { tree } })
+    const { body } = render(MarkdownParsed, { props: { value: tree } })
     expect(html(body)).toContain('<a href="https://example.com">click me</a>')
   })
 
   it('renders images', async () => {
     const tree = await parse('![alt text](image.png)')
-    const { body } = render(ComarkRenderer, { props: { tree } })
+    const { body } = render(MarkdownParsed, { props: { value: tree } })
     expect(html(body)).toContain('<img src="image.png" alt="alt text">')
   })
 
   it('renders blockquotes', async () => {
     const tree = await parse('> quoted text')
-    const { body } = render(ComarkRenderer, { props: { tree } })
+    const { body } = render(MarkdownParsed, { props: { value: tree } })
     const output = html(body)
     expect(output).toContain('<blockquote>')
     expect(output).toContain('quoted text')
@@ -200,7 +200,7 @@ describe('ComarkRenderer', () => {
 
   it('renders emphasis and strong', async () => {
     const tree = await parse('*em* and **strong**')
-    const { body } = render(ComarkRenderer, { props: { tree } })
+    const { body } = render(MarkdownParsed, { props: { value: tree } })
     const output = html(body)
     expect(output).toContain('<em>em</em>')
     expect(output).toContain('<strong>strong</strong>')
@@ -210,8 +210,8 @@ describe('ComarkRenderer', () => {
 describe('custom components', () => {
   it('resolves custom component for MDC syntax', async () => {
     const tree = await parse('::alert{type="warning"}\nWatch out!\n::')
-    const { body } = render(ComarkRenderer, {
-      props: { tree, components: { alert: Alert } },
+    const { body } = render(MarkdownParsed, {
+      props: { value: tree, components: { alert: Alert } },
     })
     const output = html(body)
     expect(output).toContain('<div class="alert alert-warning" role="alert">')
@@ -220,8 +220,8 @@ describe('custom components', () => {
 
   it('resolves component by PascalCase key', async () => {
     const tree = await parse('::alert{type="info"}\nInfo message\n::')
-    const { body } = render(ComarkRenderer, {
-      props: { tree, components: { Alert } },
+    const { body } = render(MarkdownParsed, {
+      props: { value: tree, components: { Alert } },
     })
     const output = html(body)
     expect(output).toContain('<div class="alert alert-info" role="alert">')
@@ -230,8 +230,8 @@ describe('custom components', () => {
 
   it('resolves Prose-prefixed component for native tags', async () => {
     const tree = await parse('# Custom Heading')
-    const { body } = render(ComarkRenderer, {
-      props: { tree, components: { ProseH1 } },
+    const { body } = render(MarkdownParsed, {
+      props: { value: tree, components: { ProseH1 } },
     })
     const output = html(body)
     expect(output).toContain('class="prose-heading"')
@@ -240,8 +240,8 @@ describe('custom components', () => {
 
   it('renders children inside custom components', async () => {
     const tree = await parse('::alert{type="info"}\n**Bold** text\n::')
-    const { body } = render(ComarkRenderer, {
-      props: { tree, components: { alert: Alert } },
+    const { body } = render(MarkdownParsed, {
+      props: { value: tree, components: { alert: Alert } },
     })
     const output = html(body)
     expect(output).toContain('<div class="alert alert-info" role="alert">')
@@ -256,8 +256,8 @@ Default slot content.
 #footer
 Footer slot content.
 ::`)
-    const { body } = render(ComarkRenderer, {
-      props: { tree, components: { card: CardWithFooter } },
+    const { body } = render(MarkdownParsed, {
+      props: { value: tree, components: { card: CardWithFooter } },
     })
     const output = html(body)
     expect(output).toContain('<h3>My Card</h3>')
@@ -276,8 +276,8 @@ Header slot content.
 #footer
 Footer slot content.
 ::`)
-    const { body } = render(ComarkRenderer, {
-      props: { tree, components: { card: CardWithHeaderFooter } },
+    const { body } = render(MarkdownParsed, {
+      props: { value: tree, components: { card: CardWithHeaderFooter } },
     })
     const output = html(body)
     expect(output).toContain('<header>Header slot content.</header>')
@@ -288,9 +288,9 @@ Footer slot content.
 
   it('resolves eager componentsManifest entries during SSR', async () => {
     const tree = await parse('::alert{type="warning"}\nLazy content\n::')
-    const { body } = render(ComarkRenderer, {
+    const { body } = render(MarkdownParsed, {
       props: {
-        tree,
+        value: tree,
         componentsManifest: (name: string) => {
           if (name === 'alert') {
             return { default: Alert }
@@ -303,10 +303,10 @@ Footer slot content.
     expect(output).toContain('Lazy content')
   })
 
-  it('resolves async componentsManifest entries during ComarkAsync SSR', async () => {
-    const { body } = await render(ComarkAsync, {
+  it('resolves async componentsManifest entries during MarkdownAsync SSR', async () => {
+    const { body } = await render(MarkdownAsync, {
       props: {
-        markdown: '::card{title="Async" variant="warning"}\nLazy content\n::',
+        value: '::card{title="Async" variant="warning"}\nLazy content\n::',
         componentsManifest: (name: string) => {
           if (name === 'card') {
             return Promise.resolve({ default: Card })
@@ -321,9 +321,9 @@ Footer slot content.
   })
 
   it('passes named slots through async componentsManifest entries during SSR', async () => {
-    const { body } = await render(ComarkAsync, {
+    const { body } = await render(MarkdownAsync, {
       props: {
-        markdown: `::card{title="Async Card"}
+        value: `::card{title="Async Card"}
 Default slot content.
 
 #footer
@@ -344,9 +344,9 @@ Footer slot content.
   })
 
   it('keeps componentsManifest caches isolated by manifest function', async () => {
-    await render(ComarkAsync, {
+    await render(MarkdownAsync, {
       props: {
-        markdown: '::card{title="Async" variant="warning"}\nAsync content\n::',
+        value: '::card{title="Async" variant="warning"}\nAsync content\n::',
         componentsManifest: (name: string) => {
           if (name === 'card') {
             return Promise.resolve({ default: Card })
@@ -356,9 +356,9 @@ Footer slot content.
     })
 
     const tree = await parse('::card{title="Eager" variant="primary"}\nEager content\n::')
-    const { body } = render(ComarkRenderer, {
+    const { body } = render(MarkdownParsed, {
       props: {
-        tree,
+        value: tree,
         componentsManifest: (name: string) => {
           if (name === 'card') {
             return { default: Card }
@@ -375,8 +375,8 @@ Footer slot content.
 
   it('falls back to native element when no component matches', async () => {
     const tree = await parse('::alert{type="info"}\ncontent\n::')
-    const { body } = render(ComarkRenderer, {
-      props: { tree, components: {} },
+    const { body } = render(MarkdownParsed, {
+      props: { value: tree, components: {} },
     })
     const output = html(body)
     // Should render as a native <alert> element, not a custom component

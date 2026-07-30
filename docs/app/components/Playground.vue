@@ -544,7 +544,7 @@ function handleGenerate(prompt: string) {
                 class="max-w-none"
               >
                 <ComarkPlaygroundRenderer
-                  :tree="tree"
+                  :value="tree"
                   :components-manifest="resolveComponent"
                 />
               </div>

@@ -1,9 +1,9 @@
-import { defineComarkRendererComponent } from '@comark/vue'
+import { defineMarkdownParsedComponent } from '@comark/vue'
 import { Math } from '@comark/vue/plugins/math'
 import { Mermaid } from '@comark/vue/plugins/mermaid'
 import { Binding } from '@comark/vue/plugins/binding'
 
-export default defineComarkRendererComponent({
+export default defineMarkdownParsedComponent({
   name: 'ComarkPlaygroundRenderer',
   components: {
     Math,
