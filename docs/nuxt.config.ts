@@ -45,8 +45,6 @@ export default defineNuxtConfig({
       '/rendering/**': { isr: 300 },
       '/plugins': { isr: 300 },
       '/plugins/**': { isr: 300 },
-      '/api': { isr: 300 },
-      '/api/**': { isr: 300 },
       '/compare': { isr: 300 },
       '/compare/**': { isr: 300 },
       '/examples': { isr: 300 },
