@@ -61,6 +61,9 @@ onMounted(async () => {
   monaco.languages.register({ id: 'mdc' })
   monaco.languages.setMonarchTokensProvider('mdc', mdc)
 
+  // Prime worker-backed languages so fenced blocks (json / json-render) can embed them
+  monaco.editor.createModel('', 'json').dispose()
+
   // Define custom dark theme matching the website
   defineComarkDarkTheme(monaco)
 

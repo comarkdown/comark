@@ -28,20 +28,18 @@ npm install shiki
 
 ## Usage
 
-Import themes from `@shikijs/themes` for type safety and tree-shaking:
+Pass [bundled theme names](https://shiki.style/themes) as strings — no extra imports needed:
 
 ```typescript
 import { parse } from 'comark'
 import highlight from 'comark/plugins/highlight'
-import githubLight from '@shikijs/themes/github-light'
-import githubDark from '@shikijs/themes/github-dark'
 
 const result = await parse(content, {
   plugins: [
     highlight({
       themes: {
-        light: githubLight,
-        dark: githubDark
+        light: 'github-light',
+        dark: 'github-dark'
       }
     })
   ]
@@ -56,12 +54,10 @@ With framework components:
 <script setup lang="ts">
 import { Comark } from '@comark/vue'
 import highlight from '@comark/vue/plugins/highlight'
-import githubLight from '@shikijs/themes/github-light'
-import githubDark from '@shikijs/themes/github-dark'
 
 const plugins = [
   highlight({
-    themes: { light: githubLight, dark: githubDark }
+    themes: { light: 'github-light', dark: 'github-dark' }
   })
 ]
 </script>
@@ -86,11 +82,9 @@ html.dark .shiki :deep(span) {
 ```tsx [React]
 import { Comark } from '@comark/react'
 import highlight from '@comark/react/plugins/highlight'
-import githubLight from '@shikijs/themes/github-light'
-import githubDark from '@shikijs/themes/github-dark'
 
 <Comark
-  plugins={[highlight({ themes: { light: githubLight, dark: githubDark } })]}
+  plugins={[highlight({ themes: { light: 'github-light', dark: 'github-dark' } })]}
 >
   {content}
 </Comark>
@@ -107,6 +101,20 @@ import githubDark from '@shikijs/themes/github-dark'
 Highlight code with different themes for light and dark modes. Both palettes are embedded as CSS custom properties, so there is no flash on theme switch. See all [available themes →](https://shiki.style/themes)
 
 ```typescript
+highlight({
+  themes: {
+    light: 'github-light',
+    dark: 'github-dark'
+  }
+})
+```
+
+You can also pass theme registration objects (for example from `@shikijs/themes`) when you want explicit control over what gets bundled:
+
+```typescript
+import githubLight from '@shikijs/themes/github-light'
+import githubDark from '@shikijs/themes/github-dark'
+
 highlight({
   themes: {
     light: githubLight,
@@ -178,7 +186,7 @@ Pass any [Shiki transformer](https://shiki.style/guide/transformers) via `transf
 import { transformerNotationDiff } from '@shikijs/transformers'
 
 highlight({
-  themes: { light: githubLight, dark: githubDark },
+  themes: { light: 'github-light', dark: 'github-dark' },
   transformers: [transformerNotationDiff()]
 })
 ```
@@ -209,30 +217,27 @@ Returns a `ComarkPlugin` that enables Shiki syntax highlighting.
 
 | Option | Type | Default | Description |
 |---|---|---|---|
-| [`themes`](#options-code-themes) | `object` | Material themes | Light and dark theme registrations |
-| [`languages`](#options-code-languages) | `LanguageRegistration[]` | `undefined` | Languages to preload |
-| [`transformers`](#options-code-transformers) | `ShikiTransformer[]` | `undefined` | Shiki transformers applied to every block |
-| [`preStyles`](#options-code-prestyles) | `boolean` | `false` | Add inline background/foreground styles to `<pre>` |
-| [`registerDefaultLanguages`](#options-code-registerdefaultlanguages) | `boolean` | `true` | Register the built-in default language set |
-| [`registerDefaultThemes`](#options-code-registerdefaultthemes) | `boolean` | `true` | Register the built-in Material themes |
+| [`themes`](#options-themes) | `object` | Material themes | Light and dark theme names or registrations |
+| [`languages`](#options-languages) | `LanguageRegistration[]` | `undefined` | Languages to preload |
+| [`transformers`](#options-transformers) | `ShikiTransformer[]` | `undefined` | Shiki transformers applied to every block |
+| [`preStyles`](#options-prestyles) | `boolean` | `false` | Add inline background/foreground styles to `<pre>` |
+| [`registerDefaultLanguages`](#options-registerdefaultlanguages) | `boolean` | `true` | Register the built-in default language set |
+| [`registerDefaultThemes`](#options-registerdefaultthemes) | `boolean` | `true` | Register the built-in Material themes |
 
 ### `themes`
 
-Theme configuration for light and dark modes. Import from `@shikijs/themes`.
+Theme configuration for light and dark modes. Each value can be a [bundled theme name](https://shiki.style/themes) string (resolved from `shiki`) or a theme registration object.
 
 ```typescript
-import githubLight from '@shikijs/themes/github-light'
-import githubDark from '@shikijs/themes/github-dark'
-
 highlight({
   themes: {
-    light: githubLight,
-    dark: githubDark
+    light: 'github-light',
+    dark: 'github-dark'
   }
 })
 ```
 
-**Default:** `{ light: materialThemeLighter, dark: materialThemePalenight }`
+**Default:** `{ light: 'material-theme-lighter', dark: 'material-theme-palenight' }`
 
 ### `languages`
 
@@ -296,7 +301,7 @@ When `true`, `material-theme-lighter` (light) and `material-theme-palenight` (da
 ```typescript
 highlight({
   registerDefaultThemes: false,
-  themes: { light: githubLight, dark: githubDark }
+  themes: { light: 'github-light', dark: 'github-dark' }
 })
 ```
 
@@ -311,17 +316,15 @@ highlight({
 ```typescript
 import { parse } from 'comark'
 import highlight from 'comark/plugins/highlight'
-import githubLight from '@shikijs/themes/github-light'
-import githubDark from '@shikijs/themes/github-dark'
 
 const result = await parse(content, {
-  plugins: [highlight({ themes: { light: githubLight, dark: githubDark } })]
+  plugins: [highlight({ themes: { light: 'github-light', dark: 'github-dark' } })]
 })
 ```
 
 ### Minimal Bundle
 
-Disable defaults and import only what you need:
+Disable defaults and import only what you need. Prefer theme registration objects here so unused bundled themes are tree-shaken:
 
 ```typescript
 import javascript from '@shikijs/langs/javascript'
@@ -346,7 +349,7 @@ import {
 } from '@shikijs/transformers'
 
 highlight({
-  themes: { light: githubLight, dark: githubDark },
+  themes: { light: 'github-light', dark: 'github-dark' },
   transformers: [
     transformerNotationDiff(),       // [!code ++] / [!code --]
     transformerNotationHighlight(),  // [!code highlight]
