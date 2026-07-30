@@ -67,8 +67,6 @@ export function useFilteredNavigation(): ComputedRef<NavItem[]> {
       return (examplesSection?.children as NavItem[]) || []
     }
 
-    return (navigation?.value || []).filter(
-      (item) => item.path !== '/plugins' && item.path !== '/examples'
-    )
+    return (navigation?.value || []).filter((item) => item.path !== '/plugins' && item.path !== '/examples')
   })
 }

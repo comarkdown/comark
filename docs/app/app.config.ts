@@ -9,9 +9,11 @@ export default defineAppConfig({
       alt: 'Comark',
       mark: 'comark',
     },
-    ecosystem: [
-      { mark: 'comark-cms', to: 'https://cms.comark.dev', label: 'Comark CMS' },
-    ],
+    ecosystem: [{
+      mark: 'comark-cms',
+      to: 'https://cms.comark.dev',
+      label: 'Comark CMS'
+    }],
     // Main nav is driven by the site's useMainNavigation() override in
     // app/composables/useNavigation.ts (adds Playground + Examples tabs that
     // aren't content sections and don't fit the layer's `header.nav` schema).
