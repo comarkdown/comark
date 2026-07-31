@@ -56,18 +56,14 @@ That is some text here.`
     expect(result.nodes).toEqual([['p', { $: { html: 1, block: 1 } }, 'this is **markdown**']])
   })
 
-  it('parses markdown as a sibling when a blank line separates it from the HTML tags', async () => {
+  it('keeps markdown inside a type-6 HTML block across blank lines', async () => {
     const result = await parse(`<p>
 
 this is **markdown**
 
 </p>`)
 
-    expect(result.nodes).toEqual([
-      ['p', { $: { html: 1, block: 1 } }],
-      ['p', {}, 'this is ', ['strong', {}, 'markdown']],
-      ['p', { $: { html: 1, block: 1 } }],
-    ])
+    expect(result.nodes).toEqual([['p', { $: { html: 1, block: 1 } }, 'this is ', ['strong', {}, 'markdown']]])
   })
 
   it('preserves mixed text and raw HTML children verbatim inside a multiline raw HTML block', async () => {
@@ -88,7 +84,7 @@ this is **markdown**
     ])
   })
 
-  it('parses markdown and raw HTML as siblings when blank lines separate them', async () => {
+  it('keeps markdown and raw HTML inside a type-6 block across blank lines', async () => {
     const result = await parse(`<div>
 
 before **strong**
@@ -100,10 +96,13 @@ after \`code\`
 </div>`)
 
     expect(result.nodes).toEqual([
-      ['div', { $: { html: 1, block: 1 } }],
-      ['p', {}, 'before ', ['strong', {}, 'strong']],
-      ['img', { $: { html: 1, block: 1 }, src: '/x.png', alt: 'x' }],
-      ['p', {}, 'after ', ['code', {}, 'code']],
+      [
+        'div',
+        { $: { html: 1, block: 1 } },
+        ['p', {}, 'before ', ['strong', {}, 'strong']],
+        ['img', { $: { html: 1, block: 1 }, src: '/x.png', alt: 'x' }],
+        ['p', {}, 'after ', ['code', {}, 'code']],
+      ],
     ])
   })
 
@@ -183,7 +182,59 @@ after \`code\`
   })
 })
 
-describe('<details> block handling', () => {
+describe('type-6 HTML block handling', () => {
+  it('does not treat a void type-6 tag as a container', async () => {
+    const result = await parse(`<hr>
+
+after`)
+
+    expect(result.nodes).toEqual([
+      ['hr', { $: { html: 1, block: 1 } }],
+      ['p', {}, 'after'],
+    ])
+  })
+
+  it('does not let an unclosed type-6 block consume following Markdown', async () => {
+    const result = await parse(`<div>
+
+after`)
+
+    expect(result.nodes).toEqual([
+      ['div', { $: { html: 1, block: 1 } }],
+      ['p', {}, 'after'],
+    ])
+  })
+
+  it('keeps Markdown inside a div across blank lines', async () => {
+    const md = `<div class="foo">
+
+*Markdown*
+
+</div>`
+
+    const result = await parse(md)
+
+    expect(result.nodes).toEqual([['div', { $: { html: 1, block: 1 }, class: 'foo' }, ['em', {}, 'Markdown']]])
+  })
+
+  it('handles nested type-6 blocks with different tags', async () => {
+    const md = `<section>
+
+<div>
+
+content
+
+</div>
+
+</section>`
+
+    const result = await parse(md)
+
+    expect(result.nodes).toEqual([
+      ['section', { $: { html: 1, block: 1 } }, ['div', { $: { html: 1, block: 1 } }, 'content']],
+    ])
+  })
+
   it('keeps content inside <details> when blank line separates summary from body', async () => {
     const md = `<details>
 <summary>Title</summary>

@@ -46,7 +46,7 @@ function greet(name) {
 
 ## Collapsible sections
 
-GitHub-style `<details>` blocks work correctly:
+Standard HTML `<details>` blocks work correctly:
 
 <details>
 <summary>Click to expand</summary>
