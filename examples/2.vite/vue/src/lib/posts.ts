@@ -1,6 +1,6 @@
 import { parse } from '@comark/vue/parse'
 import highlight from '@comark/vue/plugins/highlight'
-import type { MarkdownDocument as Document } from '@comark/vue'
+import { type MarkdownDocument as Document } from 'comark'
 
 const rawFiles = import.meta.glob('../../content/posts/*.md', {
   query: '?raw',
