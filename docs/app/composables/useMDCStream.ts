@@ -1,10 +1,10 @@
-import type { ComarkTree, ParseOptions } from 'comark'
+import type { MarkdownTree, ParseOptions } from 'comark'
 import { readonly, ref, shallowRef } from 'vue'
 import { parse } from 'comark'
 import highlight from 'comark/plugins/highlight'
 
 export interface MDCStreamState {
-  tree: ComarkTree
+  tree: MarkdownTree
   isComplete: boolean
   content: string
   error?: Error
@@ -12,7 +12,7 @@ export interface MDCStreamState {
 
 export interface MDCStreamOptions extends ParseOptions {
   onChunk?: (chunk: string) => void
-  onComplete?: (result: ComarkTree) => void
+  onComplete?: (result: MarkdownTree) => void
   onError?: (error: Error) => void
 }
 

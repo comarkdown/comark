@@ -79,7 +79,7 @@ Comark's plugin system extends markdown functionality with specialized features.
   ::
 
   ::card{icon="i-lucide-git-branch" title="AST API" to="/plugins/custom/ast-api"}
-  Traverse and transform the ComarkTree AST using the visit() utility
+  Traverse and transform the MarkdownTree AST using the visit() utility
   ::
 
   ::card{icon="i-simple-icons-markdown" title="Markdown-it Plugins" to="/plugins/custom/markdown-it"}

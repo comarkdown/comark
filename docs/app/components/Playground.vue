@@ -22,7 +22,7 @@ import PromptInput from '~/components/playground/PromptInput.vue'
 import GeneratingIndicator from '~/components/playground/GeneratingIndicator.vue'
 import { useLocalStorage, watchDebounced } from '@vueuse/core'
 import { useCompletion } from '@ai-sdk/vue'
-import type { ComarkTree, ComarkPlugin } from 'comark'
+import type { MarkdownTree, ComarkPlugin } from 'comark'
 import VueJsonPretty from 'vue-json-pretty'
 
 const router = useRouter()
@@ -42,7 +42,7 @@ const currentExample = computed(
 )
 
 const markdown = ref<string>(currentExample.value.content.trim())
-const tree = ref<ComarkTree | null>(null)
+const tree = ref<MarkdownTree | null>(null)
 const parseTime = ref<number>(0)
 const nodeCount = ref<number>(0)
 const error = ref<string | null>(null)

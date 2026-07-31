@@ -1,4 +1,4 @@
-import type { ComarkTree, RenderOptions, RenderMarkdownOptions } from 'comark'
+import type { MarkdownTree, RenderOptions, RenderMarkdownOptions } from 'comark'
 import { renderFrontmatter } from './internal/frontmatter.ts'
 
 import { createState, one } from './internal/stringify/state.ts'
@@ -18,10 +18,10 @@ export { resolveAttributes, resolveAttribute } from './internal/stringify/attrib
  * @returns The string representation of the Comark tree
  */
 export async function render(
-  tree: ComarkTree | { nodes: ComarkTree['nodes'] },
+  tree: MarkdownTree | { nodes: MarkdownTree['nodes'] },
   context: RenderOptions = {}
 ): Promise<string> {
-  const state = createState({ ...context, tree: tree as ComarkTree, handlers: context.components })
+  const state = createState({ ...context, tree: tree as MarkdownTree, handlers: context.components })
 
   let result = ''
   for (const child of tree.nodes) {
@@ -38,9 +38,9 @@ export async function render(
  * @returns The markdown string with optional frontmatter
  */
 export async function renderMarkdown(
-  tree: ComarkTree | { nodes: ComarkTree['nodes'] },
+  tree: MarkdownTree | { nodes: MarkdownTree['nodes'] },
   options?: RenderMarkdownOptions
 ): Promise<string> {
   const content = await render(tree, { format: 'markdown/comark', ...options })
-  return renderFrontmatter((tree as ComarkTree).frontmatter || {}, content, options?.frontmatterOptions)
+  return renderFrontmatter((tree as MarkdownTree).frontmatter || {}, content, options?.frontmatterOptions)
 }

@@ -1,4 +1,4 @@
-import { createComarkContext, parse, type ComarkTree } from 'comark'
+import { createComarkContext, parse, type MarkdownTree } from 'comark'
 import { MarkdownLive } from '@comark/react'
 import { useEffect, useState } from 'react'
 
@@ -42,7 +42,7 @@ async function reset() {
 }
 
 export default function Live() {
-  const [tree, setTree] = useState<ComarkTree | null>(null)
+  const [tree, setTree] = useState<MarkdownTree | null>(null)
 
   useEffect(() => {
     parse(INITIAL).then((t) => {

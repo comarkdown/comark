@@ -2,12 +2,12 @@
 
 import { use, useDeferredValue, useMemo, Suspense } from 'react'
 import { parse } from 'comark'
-import type { ComarkTree } from 'comark'
+import type { MarkdownTree } from 'comark'
 import { MarkdownLive } from './MarkdownLive.tsx'
 import type { MarkdownProps } from './Markdown'
 
 interface MarkdownContentProps extends Omit<MarkdownProps, 'value' | 'markdown' | 'children' | 'options' | 'plugins'> {
-  parsePromise: Promise<ComarkTree>
+  parsePromise: Promise<MarkdownTree>
 }
 
 function MarkdownContent({

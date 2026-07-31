@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ComarkTree } from 'comark'
+import type { MarkdownTree } from 'comark'
 import { MarkdownParsed } from '@comark/vue'
 import CodeIcon from '@nuxt/ui/components/prose/CodeIcon.vue'
 
@@ -12,7 +12,7 @@ interface CodeExplorerTreeItem {
 
 interface CodeExplorerData {
   tree: CodeExplorerTreeItem[]
-  files: Record<string, ComarkTree>
+  files: Record<string, MarkdownTree>
 }
 
 const props = withDefaults(

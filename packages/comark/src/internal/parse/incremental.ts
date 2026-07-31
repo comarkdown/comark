@@ -1,4 +1,4 @@
-import type { ComarkElement, ComarkElementAttributes, ComarkTree } from '../../types'
+import type { ComarkElement, ComarkElementAttributes, MarkdownTree } from '../../types'
 
 /**
  * Extracts reusable nodes from the last output tree
@@ -6,7 +6,7 @@ import type { ComarkElement, ComarkElementAttributes, ComarkTree } from '../../t
  * @param lastOutput - The last output tree
  * @returns The reusable nodes and the remaining markdown
  */
-export function extractReusableNodes(markdown: string, lastOutput: ComarkTree) {
+export function extractReusableNodes(markdown: string, lastOutput: MarkdownTree) {
   let lastValidNodeIndex = -1
   let i = lastOutput.nodes.length - 1
   let lastNodeIgnored = false

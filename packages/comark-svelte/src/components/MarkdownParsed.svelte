@@ -3,7 +3,7 @@
 Renders an already-parsed Comark AST tree to Svelte components/HTML — no
 parser in the client bundle.
 
-Accepts a parsed `ComarkTree` and renders each top-level node via `MarkdownNode`.
+Accepts a parsed `MarkdownTree` and renders each top-level node via `MarkdownNode`.
 Supports custom component mappings and a streaming caret indicator.
 
 @example
@@ -20,7 +20,7 @@ Supports custom component mappings and a streaming caret indicator.
 -->
 <script lang="ts">
   import { untrack } from 'svelte'
-  import type { ComarkTree, ComponentManifest } from 'comark'
+  import type { MarkdownTree, ComponentManifest } from 'comark'
   import type { ComponentResolver } from '../types.js'
   import MarkdownNode from './MarkdownNode.svelte'
   import { warnDeprecated } from '../internal/deprecation.js'
@@ -37,9 +37,9 @@ Supports custom component mappings and a streaming caret indicator.
     class: className = '',
     comarkKey,
   }: {
-    value?: ComarkTree | { nodes: ComarkTree['nodes'] }
+    value?: MarkdownTree | { nodes: MarkdownTree['nodes'] }
     /** @deprecated Use `value` instead */
-    tree?: ComarkTree | { nodes: ComarkTree['nodes'] }
+    tree?: MarkdownTree | { nodes: MarkdownTree['nodes'] }
     components?: Record<string, any>
     componentsManifest?: ComponentManifest
     resolver?: ComponentResolver
@@ -60,11 +60,11 @@ Supports custom component mappings and a streaming caret indicator.
   // Live document support: if an ambient context exists, subscribe to updates
   // for this key and re-render with the pushed tree. Cleaned up on unmount.
   // The key is the tree's own `meta.key` (set by a plugin) or the `comarkKey` prop.
-  let liveTree = $state<ComarkTree | null>(null)
-  let key = $derived((tree as ComarkTree).meta?.key || comarkKey)
+  let liveTree = $state<MarkdownTree | null>(null)
+  let key = $derived((tree as MarkdownTree).meta?.key || comarkKey)
   $effect(() => {
     if (!key || !globalThis.comarkContext) return
-    const seed = untrack(() => tree as ComarkTree)
+    const seed = untrack(() => tree as MarkdownTree)
     const cleanup = globalThis.comarkContext.get(key, seed).listen((next) => (liveTree = next))
     return () => cleanup(true)
   })
@@ -79,8 +79,8 @@ Supports custom component mappings and a streaming caret indicator.
 
   let renderData = $derived({
     frontmatter:
-      (activeTree as ComarkTree).frontmatter || (activeTree as unknown as { data: Record<string, unknown> }).data || {},
-    meta: (activeTree as ComarkTree).meta || {},
+      (activeTree as MarkdownTree).frontmatter || (activeTree as unknown as { data: Record<string, unknown> }).data || {},
+    meta: (activeTree as MarkdownTree).meta || {},
     data: data || {},
     props: {},
   })

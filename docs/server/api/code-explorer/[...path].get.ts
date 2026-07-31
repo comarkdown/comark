@@ -1,5 +1,5 @@
 import { parse } from 'comark'
-import type { ComarkTree } from 'comark'
+import type { MarkdownTree } from 'comark'
 import highlight from 'comark/plugins/highlight'
 
 const EXT_TO_LANG: Record<string, string> = {
@@ -196,7 +196,7 @@ export default defineEventHandler(async (event) => {
     languages: [(await import('@shikijs/langs/python')).default, (await import('@shikijs/langs/astro')).default],
   })
 
-  const fileResults: Record<string, ComarkTree> = {}
+  const fileResults: Record<string, MarkdownTree> = {}
 
   await processInBatches(files, async (relativePath) => {
     const rawUrl = `https://raw.githubusercontent.com/${org}/${repo}/${branch}/${dirPath}/${relativePath}`

@@ -1,7 +1,7 @@
 import type { PropType } from 'vue'
 import { computed, defineComponent, h, shallowRef, watch } from 'vue'
 import { createSerializedParse } from 'comark'
-import type { ParseOptions, ComponentManifest, ComarkTree } from 'comark'
+import type { ParseOptions, ComponentManifest, MarkdownTree } from 'comark'
 import { MarkdownParsed } from './MarkdownParsed.ts'
 import { warnDeprecated } from '../internal/deprecation.ts'
 
@@ -219,7 +219,7 @@ export const Markdown: MarkdownComponent = defineComponent({
       return (result || '').trim()
     })
 
-    const parsed = shallowRef<ComarkTree | null>(null)
+    const parsed = shallowRef<MarkdownTree | null>(null)
 
     const parse = createSerializedParse({
       ...props.options,

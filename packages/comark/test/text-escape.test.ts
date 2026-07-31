@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import { parse } from '../src/parse'
 import { renderMarkdown } from '../src/render'
-import type { ComarkTree } from '../src'
+import type { MarkdownTree } from '../src'
 
-const paragraph = (...children: unknown[]): ComarkTree =>
-  ({ frontmatter: {}, meta: {}, nodes: [['p', {}, ...children]] }) as ComarkTree
+const paragraph = (...children: unknown[]): MarkdownTree =>
+  ({ frontmatter: {}, meta: {}, nodes: [['p', {}, ...children]] }) as MarkdownTree
 
 // A text node round-trips when re-parsing the rendered markdown yields the same
 // literal text, instead of reinterpreting a character as markdown syntax.

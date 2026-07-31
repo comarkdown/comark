@@ -1,15 +1,15 @@
-import type { ComarkTree, ParseOptions } from 'comark'
+import type { MarkdownTree, ParseOptions } from 'comark'
 import { readonly, ref, shallowRef } from 'vue'
 import { parse } from 'comark'
 
 export interface MDCState {
-  tree: ComarkTree | null
+  tree: MarkdownTree | null
   isLoading: boolean
   error?: Error
 }
 
 export interface MDCOptions extends ParseOptions {
-  onComplete?: (result: ComarkTree) => void
+  onComplete?: (result: MarkdownTree) => void
   onError?: (error: Error) => void
 }
 

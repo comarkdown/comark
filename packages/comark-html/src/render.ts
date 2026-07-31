@@ -1,4 +1,4 @@
-import type { ComarkNode, ComarkElement, ComarkTree } from 'comark'
+import type { ComarkNode, ComarkElement, MarkdownTree } from 'comark'
 import { render } from 'comark/render'
 import type { RenderOptions } from 'comark/render'
 
@@ -37,7 +37,7 @@ export type ComponentRenderFn = (element: ComarkElement, ctx: RenderHTMLContext)
  * ```
  */
 export async function renderHTML(
-  tree: ComarkTree | { nodes: ComarkTree['nodes'] },
+  tree: MarkdownTree | { nodes: MarkdownTree['nodes'] },
   options?: RenderOptions
 ): Promise<string> {
   return (await render(tree, { blockSeparator: '\n', format: 'text/html', ...options })).trim()

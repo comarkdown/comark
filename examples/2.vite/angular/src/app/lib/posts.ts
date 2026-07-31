@@ -1,6 +1,6 @@
 import { parse } from 'comark'
 import highlight from 'comark/plugins/highlight'
-import type { ComarkTree } from 'comark'
+import type { MarkdownTree } from 'comark'
 
 const rawFiles = import.meta.glob('../../../content/posts/*.md', {
   query: '?raw',
@@ -17,7 +17,7 @@ export interface PostMeta {
 }
 
 export interface Post extends PostMeta {
-  tree: ComarkTree
+  tree: MarkdownTree
 }
 
 function slugFromPath(path: string): string {

@@ -8,7 +8,7 @@ import {
   Type,
 } from '@angular/core'
 import { createSerializedParse } from 'comark'
-import type { ParseOptions, ComarkTree } from 'comark'
+import type { ParseOptions, MarkdownTree } from 'comark'
 import { MarkdownParsed } from './markdown-parsed.component.ts'
 import { warnDeprecated } from '../internal/deprecation.ts'
 
@@ -76,7 +76,7 @@ export class Markdown implements OnChanges {
   /** Additional data to pass to the renderer for :binding resolution */
   @Input() data: Record<string, unknown> = {}
 
-  tree: ComarkTree | null = null
+  tree: MarkdownTree | null = null
 
   private serializedParse = createSerializedParse({})
 

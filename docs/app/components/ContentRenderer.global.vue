@@ -7,7 +7,7 @@ import { globalComponents, localComponents } from '#content/components'
 import { useRuntimeConfig } from '#imports'
 import alert from '@comark/vue/plugins/alert'
 import { Mermaid } from '@comark/vue/plugins/mermaid'
-import type { ComarkTree, ComarkElement } from 'comark'
+import type { MarkdownTree, ComarkElement } from 'comark'
 import type { MinimarkNode, MinimarkTree } from 'minimark'
 import Browser from './prose/Browser.vue'
 import CodeExplorer from './prose/CodeExplorer.vue'
@@ -96,7 +96,7 @@ const body = computed(() => {
     frontmatter: props.data,
     nodes: replaceAlert(body.value),
     meta: {},
-  } as ComarkTree
+  } as MarkdownTree
 })
 
 const isEmpty = computed(() => !body.value?.nodes?.length)
@@ -196,7 +196,7 @@ function resolveVueComponent(component: string | Renderable) {
   return componentObject
 }
 
-function resolveContentComponents(body: ComarkTree, meta: Record<string, unknown>) {
+function resolveContentComponents(body: MarkdownTree, meta: Record<string, unknown>) {
   if (!body) {
     return
   }
@@ -221,10 +221,10 @@ function resolveContentComponents(body: ComarkTree, meta: Record<string, unknown
   return result as Record<string, unknown>
 }
 
-function loadComponents(node: ComarkTree | ComarkElement, documentMeta: { tags: Record<string, string> }) {
+function loadComponents(node: MarkdownTree | ComarkElement, documentMeta: { tags: Record<string, string> }) {
   const components2 = [] as Array<[string, unknown]>
-  if (Array.isArray((node as ComarkTree).nodes)) {
-    for (const child of (node as ComarkTree).nodes || []) {
+  if (Array.isArray((node as MarkdownTree).nodes)) {
+    for (const child of (node as MarkdownTree).nodes || []) {
       if (typeof child === 'string' || child[0] === 'binding' || child[0] === 'comment') {
         continue
       }
@@ -264,7 +264,7 @@ function findMappedTag(node: ComarkElement, tags: Record<string, string>) {
 <template>
   <MarkdownParsed
     v-if="!isEmpty"
-    :value="body as unknown as ComarkTree"
+    :value="body as unknown as MarkdownTree"
     :components="componentsMap"
     :data-content-id="debug ? value.id : undefined"
   />

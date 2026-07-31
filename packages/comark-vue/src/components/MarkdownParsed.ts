@@ -4,7 +4,7 @@ import type {
   ComarkContextProvider,
   ComarkElement,
   ComarkNode,
-  ComarkTree,
+  MarkdownTree,
   NodeRenderData,
 } from 'comark'
 import {
@@ -240,17 +240,17 @@ function renderNode(
  */
 export interface MarkdownParsedProps {
   /**
-   * The parsed Comark tree to render — either a full `ComarkTree` or a bare
+   * The parsed Comark tree to render — either a full `MarkdownTree` or a bare
    * `ComarkNode[]`.  When a node array is passed, frontmatter and meta
    * default to `{}` and runtime data should be supplied via `data`.
    */
-  value?: ComarkTree | { nodes: ComarkTree['nodes'] }
+  value?: MarkdownTree | { nodes: MarkdownTree['nodes'] }
 
   /**
    * The parsed Comark tree to render
    * @deprecated Use `value` instead
    */
-  tree?: ComarkTree | { nodes: ComarkTree['nodes'] }
+  tree?: MarkdownTree | { nodes: MarkdownTree['nodes'] }
 
   /**
    * Custom component mappings for element tags
@@ -320,7 +320,7 @@ export const MarkdownParsed: MarkdownParsedComponent = defineComponent({
      * The parsed Comark tree to render
      */
     value: {
-      type: Object as PropType<ComarkTree | { nodes: ComarkTree['nodes'] }>,
+      type: Object as PropType<MarkdownTree | { nodes: MarkdownTree['nodes'] }>,
       default: undefined,
     },
 
@@ -329,7 +329,7 @@ export const MarkdownParsed: MarkdownParsedComponent = defineComponent({
      * @deprecated Use `value` instead
      */
     tree: {
-      type: Object as PropType<ComarkTree | { nodes: ComarkTree['nodes'] }>,
+      type: Object as PropType<MarkdownTree | { nodes: MarkdownTree['nodes'] }>,
       default: undefined,
     },
 
@@ -392,7 +392,7 @@ export const MarkdownParsed: MarkdownParsedComponent = defineComponent({
     }
 
     const inputTree = computed(
-      () => (props.value ?? props.tree ?? { nodes: [], frontmatter: {}, meta: {} }) as ComarkTree
+      () => (props.value ?? props.tree ?? { nodes: [], frontmatter: {}, meta: {} }) as MarkdownTree
     )
 
     const componentErrors = ref(new Set<string>())
@@ -400,7 +400,7 @@ export const MarkdownParsed: MarkdownParsedComponent = defineComponent({
     // Live document support: if an ambient context exists, subscribe to updates
     // for this id and re-render with the pushed tree. Cleaned up on unmount.
     // The key is the tree's own `meta.key` (set by a plugin) or the `comarkKey` prop.
-    const liveTree = shallowRef<ComarkTree | null>(null)
+    const liveTree = shallowRef<MarkdownTree | null>(null)
     const key = inputTree.value.meta?.key || props.comarkKey
     if (key && globalThis.comarkContext) {
       const cleanup = globalThis.comarkContext.get(key, toRaw(inputTree.value)).listen((tree) => {
@@ -452,8 +452,8 @@ export const MarkdownParsed: MarkdownParsedComponent = defineComponent({
 
       const renderData: NodeRenderData = {
         frontmatter:
-          (rawTree as ComarkTree).frontmatter || (rawTree as unknown as { data: Record<string, unknown> }).data || {},
-        meta: (rawTree as ComarkTree).meta || {},
+          (rawTree as MarkdownTree).frontmatter || (rawTree as unknown as { data: Record<string, unknown> }).data || {},
+        meta: (rawTree as MarkdownTree).meta || {},
         data: props.data || {},
         props: {},
       }

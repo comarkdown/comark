@@ -1,7 +1,7 @@
 // #region Tree Utils
 
 import { decodeHTML } from 'entities'
-import type { ComarkNode, ComarkTree } from 'comark'
+import type { ComarkNode, MarkdownTree } from 'comark'
 
 type VisitResult = ComarkNode | false | undefined | void
 
@@ -29,7 +29,7 @@ export function textContent(node: ComarkNode, options: { decodeUnicodeEntities?:
 }
 
 function* walkGenerator(
-  tree: ComarkTree,
+  tree: MarkdownTree,
   checker: (node: ComarkNode) => boolean
 ): Generator<ComarkNode, void, VisitResult> {
   function* walk(
@@ -90,7 +90,7 @@ function* walkGenerator(
  * @param visitor - A function that visits a node
  */
 export function visit(
-  tree: ComarkTree,
+  tree: MarkdownTree,
   checker: (node: ComarkNode) => boolean,
   // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
   visitor: (node: ComarkNode) => VisitResult
@@ -105,7 +105,7 @@ export function visit(
 }
 
 export async function visitAsync(
-  tree: ComarkTree,
+  tree: MarkdownTree,
   checker: (node: ComarkNode) => boolean,
   visitor: (node: ComarkNode) => Promise<VisitResult> | VisitResult
 ): Promise<void> {

@@ -24,7 +24,7 @@ This is an alert component
 ```
 -->
 <script lang="ts">
-  import type { ComarkTree, ComarkPlugin, ComponentManifest } from 'comark'
+  import type { MarkdownTree, ComarkPlugin, ComponentManifest } from 'comark'
     import { parse } from 'comark'
   import MarkdownParsed from './MarkdownParsed.svelte'
   import { warnDeprecated } from '../internal/deprecation.js'
@@ -61,7 +61,7 @@ This is an alert component
     warnDeprecated('markdown (prop)', 'value')
   }
 
-  let parsed: ComarkTree | null = $state(null)
+  let parsed: MarkdownTree | null = $state(null)
 
   let content = $derived((value ?? markdown ?? '').trim())
 

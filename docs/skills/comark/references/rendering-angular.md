@@ -54,7 +54,7 @@ Use `MarkdownParsed` when you already have a parsed Comark tree:
 import { Component } from '@angular/core'
 import { MarkdownParsed } from '@comark/angular'
 import { parse } from 'comark'
-import type { ComarkTree } from 'comark'
+import type { MarkdownTree } from 'comark'
 
 @Component({
   selector: 'app-root',
@@ -67,7 +67,7 @@ import type { ComarkTree } from 'comark'
   `,
 })
 export class AppComponent {
-  tree: ComarkTree | null = null
+  tree: MarkdownTree | null = null
 
   async ngOnInit() {
     this.tree = await parse('# Hello World')

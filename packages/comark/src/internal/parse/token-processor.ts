@@ -43,9 +43,9 @@ interface TokenProcessorOptions {
 }
 
 /**
- * Convert Markdown-It tokens to a Comark tree
+ * Convert Markdown-It tokens to MarkdownTree nodes
  */
-export function marmdownItTokensToComarkTree(tokens: any[], opts?: TokenProcessorOptions): ComarkNode[] {
+export function marmdownItTokensToMarkdownTree(tokens: any[], opts?: TokenProcessorOptions): ComarkNode[] {
   const options = { startLine: 0, preservePositions: false, headingIds: true, ...opts }
   const state: ProcessState = {
     headingSlugCounts: new Map<string, number>(),
@@ -302,7 +302,7 @@ function processBlockToken(
     return { node: ['hr', {}] as ComarkNode, nextIndex: startIndex + 1 }
   }
 
-  // html_block is normally handled upstream (in marmdownItTokensToComarkTree /
+  // html_block is normally handled upstream (in marmdownItTokensToMarkdownTree /
   // processBlockChildren / processBlockChildrenWithSlots) before reaching here.
   // Safety fallback when it slips through.
   if (token.type === 'html_block') {

@@ -1,6 +1,6 @@
 import { handlers as defaultHandlers } from './handlers/index.ts'
 import type { NodeRenderData, State, Context } from 'comark/render'
-import type { ComarkElement, ComarkNode, ComarkTree, ConditionalNodeHandler, CreateContext, NodeHandler } from 'comark'
+import type { ComarkElement, ComarkNode, MarkdownTree, ConditionalNodeHandler, CreateContext, NodeHandler } from 'comark'
 import { pascalCase } from '../../utils/index.ts'
 import { resolveAttributes } from './attributes.ts'
 
@@ -121,7 +121,7 @@ export function createState(ctx: Partial<CreateContext> = {}): State {
     html: ctx.format === 'text/html',
   } as Context
 
-  const tree = ctx.tree as ComarkTree | undefined
+  const tree = ctx.tree as MarkdownTree | undefined
   const renderData: NodeRenderData = {
     frontmatter: (tree?.frontmatter || {}) as Record<string, unknown>,
     meta: (tree?.meta || {}) as Record<string, unknown>,

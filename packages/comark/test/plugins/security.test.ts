@@ -3,16 +3,16 @@ import { parse } from '../../src/parse'
 import security from '../../src/plugins/security'
 import { textContent } from '../../src/utils/index.ts'
 import { renderMarkdown } from 'comark/render'
-import type { ComarkElement, ComarkNode, ComarkTree } from '../../src/types'
+import type { ComarkElement, ComarkNode, MarkdownTree } from '../../src/types'
 
 const parseWithSecurity = (md: string, options: Parameters<typeof security>[0] = {}) =>
   parse(md, { plugins: [security(options)] })
 
-function makeTree(nodes: ComarkTree['nodes']): ComarkTree {
+function makeTree(nodes: MarkdownTree['nodes']): MarkdownTree {
   return { nodes, frontmatter: {}, meta: {} }
 }
 
-async function runPlugin(tree: ComarkTree, options: Parameters<typeof security>[0] = {}) {
+async function runPlugin(tree: MarkdownTree, options: Parameters<typeof security>[0] = {}) {
   const plugin = security(options)
   await plugin.post!({ tree, markdown: '', tokens: [], options: {} })
   return tree

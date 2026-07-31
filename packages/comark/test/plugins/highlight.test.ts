@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { ComarkElement, ComarkTree } from '../../src/types'
+import type { ComarkElement, MarkdownTree } from '../../src/types'
 import { parse } from '../../src'
 import { renderMarkdown } from '../../src/render'
 import highlight from '../../src/plugins/highlight'
@@ -36,7 +36,7 @@ describe('highlight themes option', () => {
 describe('shiki code block round-trip', () => {
   // The highlight plugin's injected attrs have no markdown form, so a
   // highlighted block must serialize to a plain fence, never a `::pre{...}`.
-  function preTree(preClass: string): ComarkTree {
+  function preTree(preClass: string): MarkdownTree {
     return {
       frontmatter: {},
       meta: {},
@@ -59,7 +59,7 @@ describe('shiki code block round-trip', () => {
   })
 
   it('keeps a plain fence for a highlighted code block inside a component slot', async () => {
-    const tree: ComarkTree = {
+    const tree: MarkdownTree = {
       frontmatter: {},
       meta: {},
       nodes: [

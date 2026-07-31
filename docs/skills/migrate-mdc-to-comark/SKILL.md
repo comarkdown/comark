@@ -115,7 +115,7 @@ For a pre-parsed tree, use `<MarkdownParsed>` directly instead of `<Markdown>`.
 
 | MDC `<MDCRenderer>` | Comark `<MarkdownParsed>` | Notes |
 |---|---|---|
-| `body` (`MDCRoot`) | `value` (`ComarkTree`) | Different AST shape |
+| `body` (`MDCRoot`) | `value` (`MarkdownTree`) | Different AST shape |
 | `data` | — | Frontmatter is in `value.frontmatter` |
 | `tag` | — | Wrapper is always `<div class="comark-content">` |
 | `prose` | — | `Prose*` resolution is automatic |

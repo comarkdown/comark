@@ -8,12 +8,12 @@ import {
   type OnInit,
   type OnDestroy,
 } from '@angular/core'
-import type { ComarkElement, ComarkNode, ComarkTree, NodeRenderData } from 'comark'
+import type { ComarkElement, ComarkNode, MarkdownTree, NodeRenderData } from 'comark'
 import { MarkdownNode } from './markdown-node.component.ts'
 import { findLastTextNodeAndAppendNode, getCaret } from '../utils/caret.ts'
 import { warnDeprecated } from '../internal/deprecation.ts'
 
-const EMPTY_TREE: ComarkTree = { nodes: [], frontmatter: {}, meta: {} }
+const EMPTY_TREE: MarkdownTree = { nodes: [], frontmatter: {}, meta: {} }
 
 /**
  * MarkdownParsed component
@@ -46,13 +46,13 @@ const EMPTY_TREE: ComarkTree = { nodes: [], frontmatter: {}, meta: {} }
 })
 export class MarkdownParsed implements OnInit, OnDestroy {
   /** The parsed Comark tree to render */
-  @Input() value?: ComarkTree
+  @Input() value?: MarkdownTree
 
   /**
    * The parsed Comark tree to render
    * @deprecated Use `value` instead
    */
-  @Input() tree?: ComarkTree
+  @Input() tree?: MarkdownTree
 
   /** Custom component mappings for element tags */
   @Input() components: Record<string, Type<any>> = {}
@@ -73,10 +73,10 @@ export class MarkdownParsed implements OnInit, OnDestroy {
   @Input() comarkKey?: string
 
   private cdr = inject(ChangeDetectorRef)
-  private liveTree: ComarkTree | null = null
+  private liveTree: MarkdownTree | null = null
   private cleanup?: (clear?: boolean) => void
 
-  private get inputTree(): ComarkTree {
+  private get inputTree(): MarkdownTree {
     return this.value ?? this.tree ?? EMPTY_TREE
   }
 
@@ -99,7 +99,7 @@ export class MarkdownParsed implements OnInit, OnDestroy {
     this.cleanup?.(true)
   }
 
-  private get activeTree(): ComarkTree {
+  private get activeTree(): MarkdownTree {
     return this.liveTree ?? this.inputTree
   }
 

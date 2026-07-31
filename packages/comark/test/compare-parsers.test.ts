@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { ComarkTree } from '../src/index'
+import type { MarkdownTree } from '../src/index'
 import { parse } from '../src/index'
 import { parseWithRemark } from './utils/index'
 
@@ -91,8 +91,8 @@ function deepCompareNodes(node1: any, node2: any, path: string = 'root', testCas
 }
 
 function compareResults(
-  result1: { body: ComarkTree; data: any; excerpt?: ComarkTree },
-  result2: ComarkTree,
+  result1: { body: MarkdownTree; data: any; excerpt?: MarkdownTree },
+  result2: MarkdownTree,
   testCase: string
 ) {
   // Compare data (frontmatter)

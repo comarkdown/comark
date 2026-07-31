@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { parse } from 'comark'
-import type { ComarkElement, ComarkTree } from 'comark'
+import type { ComarkElement, MarkdownTree } from 'comark'
 
 describe('@comark/angular — rendering integration', () => {
   it('parses heading with bold text into correct AST', async () => {
@@ -110,7 +110,7 @@ Card content
   })
 
   it('generates correct tree shape for renderer consumption', async () => {
-    const tree: ComarkTree = await parse('# Title\n\nParagraph with **bold** and *italic*.')
+    const tree: MarkdownTree = await parse('# Title\n\nParagraph with **bold** and *italic*.')
     expect(tree).toHaveProperty('nodes')
     expect(tree).toHaveProperty('frontmatter')
     expect(tree).toHaveProperty('meta')

@@ -11,7 +11,7 @@ import type MarkdownIt from 'markdown-it'
 type Writable<T> = [keyof T] extends [never] ? Record<string, any> : T
 // #endregion Utility Types
 
-// #region ComarkTree
+// #region MarkdownTree
 
 /**
  * The Comark text
@@ -57,7 +57,7 @@ export type ComarkElement = [string, ComarkElementAttributes, ...ComarkNode[]]
 export type ComarkNode = ComarkElement | ComarkText | ComarkComment
 
 /**
- * The Comark tree
+ * The Markdown tree (parse output / AST root).
  * @param nodes - The nodes of the tree
  * @param frontmatter - The frontmatter data which is the data at the top of the file
  * @param meta - The meta data of tree, it can be used to store additional data for the tree
@@ -65,11 +65,20 @@ export type ComarkNode = ComarkElement | ComarkText | ComarkComment
  * The `TMeta` and `TFrontmatter` type parameters allow `parse` / `createParse`
  * to surface plugin-contributed keys with narrow types (see `MergePluginMeta`).
  */
-export interface ComarkTree<TMeta = Record<string, any>, TFrontmatter = Record<string, any>> {
+export interface MarkdownTree<TMeta = Record<string, any>, TFrontmatter = Record<string, any>> {
   nodes: ComarkNode[]
   frontmatter: TFrontmatter
   meta: TMeta
 }
+
+/**
+ * @deprecated Use `MarkdownTree` instead — same type, renamed to describe what it represents.
+ * `ComarkTree` will be removed in a future major version.
+ */
+export type ComarkTree<TMeta = Record<string, any>, TFrontmatter = Record<string, any>> = MarkdownTree<
+  TMeta,
+  TFrontmatter
+>
 
 // #endregion
 
@@ -296,7 +305,7 @@ export type ComarkParsePreState = {
 
 export type ComarkParsePostState<TMeta = Record<string, any>, TFrontmatter = Record<string, any>> = {
   markdown: string
-  tree: ComarkTree<TMeta, TFrontmatter>
+  tree: MarkdownTree<TMeta, TFrontmatter>
   options: ParseOptions
   tokens: unknown[]
 
@@ -470,9 +479,9 @@ export type ComarkParseFnOptions = { streaming?: boolean }
 
 /**
  * Type signature for the async Comark parser function returned by createParse().
- * Accepts a markdown string and optional parsing options, and returns a Promise of ComarkTree.
+ * Accepts a markdown string and optional parsing options, and returns a Promise of MarkdownTree.
  */
 export type ComarkParseFn<TMeta = Record<string, any>, TFrontmatter = Record<string, any>> = (
   markdown: string,
   opts?: ComarkParseFnOptions
-) => Promise<ComarkTree<TMeta, TFrontmatter>>
+) => Promise<MarkdownTree<TMeta, TFrontmatter>>

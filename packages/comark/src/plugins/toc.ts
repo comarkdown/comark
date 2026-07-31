@@ -1,4 +1,4 @@
-import type { ComarkNode, ComarkTree } from 'comark'
+import type { ComarkNode, MarkdownTree } from 'comark'
 import { defineComarkPlugin } from '../utils/helpers.ts'
 
 export interface TocLink {
@@ -112,7 +112,7 @@ function nestHeaders(headers: TocLink[]): TocLink[] {
   return toc
 }
 
-export function generateFlatToc(body: ComarkTree, options: Toc): Toc {
+export function generateFlatToc(body: MarkdownTree, options: Toc): Toc {
   const { searchDepth, depth, title = '' } = options
   const tags = getTocTags(depth)
 

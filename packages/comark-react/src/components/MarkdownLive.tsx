@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import type { ComarkTree } from 'comark'
+import type { MarkdownTree } from 'comark'
 import { MarkdownParsed, type MarkdownParsedProps } from './MarkdownParsed.tsx'
 
 export interface MarkdownLiveProps extends MarkdownParsedProps {
@@ -35,11 +35,11 @@ export function MarkdownLive({ value, tree: treeProp, comarkKey, ...rest }: Mark
   // Live document support: if an ambient context exists, subscribe to updates
   // for this key and re-render with the pushed tree. Cleaned up on unmount.
   // The key is the tree's own `meta.key` (set by a plugin) or the `comarkKey` prop.
-  const [liveTree, setLiveTree] = useState<ComarkTree | null>(null)
-  const key = (tree as ComarkTree).meta?.key || comarkKey
+  const [liveTree, setLiveTree] = useState<MarkdownTree | null>(null)
+  const key = (tree as MarkdownTree).meta?.key || comarkKey
   useEffect(() => {
     if (!key || !globalThis.comarkContext) return
-    const cleanup = globalThis.comarkContext.get(key, tree as ComarkTree).listen(setLiveTree)
+    const cleanup = globalThis.comarkContext.get(key, tree as MarkdownTree).listen(setLiveTree)
     return () => cleanup(true)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key])

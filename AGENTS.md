@@ -51,7 +51,7 @@ packages/comark/
 │   ├── types.ts              # TypeScript interfaces (ParseOptions, etc.)
 │   ├── ast/                  # Comark AST types and utilities
 │   │   ├── index.ts          # Re-exports (comark/ast entry point)
-│   │   ├── types.ts          # ComarkTree, ComarkNode, ComarkElement, ComarkText
+│   │   ├── types.ts          # MarkdownTree (ComarkTree deprecated alias), ComarkNode, ComarkElement, ComarkText
 │   │   └── utils.ts          # textContent(), visit() tree utilities
 │   ├── plugins/              # Built-in and optional plugins
 │   │   ├── alert.ts          # Alert/callout blocks
@@ -374,7 +374,7 @@ import { log, render, renderANSI, createLog, createRender } from '@comark/ansi'
 import { renderMarkdown } from 'comark/render'
 
 // AST types and utilities
-import type { ComarkTree, ComarkNode, ComarkElement, ComarkText } from 'comark'
+import type { MarkdownTree, ComarkNode, ComarkElement, ComarkText } from 'comark'
 import { textContent, visit } from 'comark/utils'
 
 // Core plugins — use when calling parse() directly (framework-agnostic)
@@ -509,7 +509,7 @@ autoCloseMarkdown('::alert\nContent') // '::alert\nContent\n::'
 type ComarkText = string
 type ComarkElement = [string, ComarkElementAttributes, ...ComarkNode[]]
 type ComarkNode = ComarkElement | ComarkText
-type ComarkTree = {
+type MarkdownTree = {
   nodes: ComarkNode[]
   frontmatter: Record<string, any>
   meta: Record<string, any>

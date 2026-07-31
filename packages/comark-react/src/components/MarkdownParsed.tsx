@@ -1,4 +1,4 @@
-import type { ComarkElement, ComarkNode, ComarkTree, ComponentManifest, NodeRenderData } from 'comark'
+import type { ComarkElement, ComarkNode, MarkdownTree, ComponentManifest, NodeRenderData } from 'comark'
 import React, { lazy, Suspense, useMemo } from 'react'
 import { pascalCase, camelCase, resolveAttributes } from 'comark/utils'
 import { findLastTextNodeAndAppendNode, getCaret } from '../utils/caret.ts'
@@ -260,17 +260,17 @@ function renderNode(
 
 export interface MarkdownParsedProps {
   /**
-   * The parsed Comark tree to render — either a full `ComarkTree` or a bare
+   * The parsed Comark tree to render — either a full `MarkdownTree` or a bare
    * `ComarkNode[]`.  When a node array is passed, frontmatter and meta
    * default to `{}` and runtime data should be supplied via `data`.
    */
-  value?: ComarkTree | { nodes: ComarkTree['nodes'] }
+  value?: MarkdownTree | { nodes: MarkdownTree['nodes'] }
 
   /**
    * The parsed Comark tree to render
    * @deprecated Use `value` instead
    */
-  tree?: ComarkTree | { nodes: ComarkTree['nodes'] }
+  tree?: MarkdownTree | { nodes: MarkdownTree['nodes'] }
 
   /**
    * Custom component mappings for element tags
@@ -359,8 +359,8 @@ export const MarkdownParsed: React.FC<MarkdownParsedProps> = ({
 
     const renderData: NodeRenderData = {
       frontmatter:
-        (tree as ComarkTree).frontmatter || (tree as unknown as { data: Record<string, unknown> }).data || {},
-      meta: (tree as ComarkTree).meta || {},
+        (tree as MarkdownTree).frontmatter || (tree as unknown as { data: Record<string, unknown> }).data || {},
+      meta: (tree as MarkdownTree).meta || {},
       data: data || {},
       props: {},
     }

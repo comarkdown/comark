@@ -1,7 +1,7 @@
 import type { PropType } from 'vue'
 import { computed, defineComponent, h } from 'vue'
 import { Markdown } from './components/Markdown.ts'
-import type { ComarkTree, ComponentManifest, ParseOptions } from 'comark'
+import type { MarkdownTree, ComponentManifest, ParseOptions } from 'comark'
 import { MarkdownParsed } from './components/MarkdownParsed.ts'
 import { warnDeprecated } from './internal/deprecation.ts'
 
@@ -176,7 +176,7 @@ export function defineMarkdownParsedComponent(config: DefineMarkdownParsedOption
        * The parsed Comark tree to render
        */
       value: {
-        type: Object as PropType<ComarkTree>,
+        type: Object as PropType<MarkdownTree>,
         default: undefined,
       },
 
@@ -185,7 +185,7 @@ export function defineMarkdownParsedComponent(config: DefineMarkdownParsedOption
        * @deprecated Use `value` instead
        */
       tree: {
-        type: Object as PropType<ComarkTree>,
+        type: Object as PropType<MarkdownTree>,
         default: undefined,
       },
 

@@ -116,7 +116,7 @@ Your markdown content here...
 - Must be at the very beginning of the document
 - Enclosed by `---` delimiters
 - Parsed as YAML
-- Available in the `frontmatter` property of ComarkTree
+- Available in the `frontmatter` property of MarkdownTree
 
 ### Common Fields
 

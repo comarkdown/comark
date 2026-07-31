@@ -126,7 +126,7 @@ docs/
 
 | Type | Purpose | Documentation |
 |------|---------|---------------|
-| `ComarkTree` | Parse output & AST root | [API Reference](./content/5.api/3.reference.md) |
+| `MarkdownTree` | Parse output & AST root | [API Reference](./content/5.api/3.reference.md) |
 | `ComarkNode` | AST node | [API Reference](./content/5.api/3.reference.md) |
 
 ## Contributing to Documentation

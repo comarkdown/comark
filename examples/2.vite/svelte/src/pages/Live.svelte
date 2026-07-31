@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { createComarkContext, parse, type ComarkTree } from 'comark'
+  import { createComarkContext, parse, type MarkdownTree } from 'comark'
   import { MarkdownParsed } from '@comark/svelte'
 
   // A driver installs a context on globalThis once; every <MarkdownParsed comarkKey>
@@ -23,7 +23,7 @@ ctx.patch({ op: 'replace', path: [0, 0], node: 'Live document update' })
 
   const btn = 'rounded border border-gray-300 dark:border-gray-700 px-3 py-1.5 text-sm'
 
-  let tree = $state<ComarkTree | null>(null)
+  let tree = $state<MarkdownTree | null>(null)
   let counter = 0
 
   parse(INITIAL).then((t) => {

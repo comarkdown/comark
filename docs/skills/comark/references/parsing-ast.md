@@ -37,7 +37,7 @@ const result = await parse(content)
 ### Result Structure
 
 ```typescript
-interface ComarkTree {
+interface MarkdownTree {
   nodes: ComarkNode[]                   // Parsed AST nodes
   frontmatter: Record<string, any>      // YAML frontmatter data
   meta: {
@@ -203,7 +203,7 @@ Comark uses a lightweight array-based AST structure.
 ### Comark AST Format
 
 ```typescript
-interface ComarkTree {
+interface MarkdownTree {
   nodes: ComarkNode[]                   // Parsed AST nodes
   frontmatter: Record<string, any>      // YAML frontmatter data
   meta: {

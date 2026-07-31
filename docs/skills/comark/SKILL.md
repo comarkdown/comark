@@ -263,7 +263,7 @@ Footer
 Lightweight array-based structure for efficient processing:
 
 ```typescript
-interface ComarkTree {
+interface MarkdownTree {
   nodes: [
     ["h1", { "id": "hello" }, "Hello"],
     ["p", {}, "Text with ", ["strong", {}, "bold"], " word"],
@@ -362,7 +362,7 @@ import { docComponents } from './components'
 
 ```typescript
 // Asynchronous parsing
-parse(source: string, options?: ParseOptions): Promise<ComarkTree>
+parse(source: string, options?: ParseOptions): Promise<MarkdownTree>
 
 // Auto-close unclosed syntax
 autoCloseMarkdown(source: string): string
@@ -375,7 +375,7 @@ autoCloseMarkdown(source: string): string
 render(markdown: string, options?: RenderOptions): Promise<string>
 
 // Render a pre-parsed tree to HTML
-renderHTML(tree: ComarkTree, options?: RenderOptions): Promise<string>
+renderHTML(tree: MarkdownTree, options?: RenderOptions): Promise<string>
 
 // Create a reusable render function with shared parser instance
 createRender(options?: ParseOptions & RenderOptions): (markdown: string) => Promise<string>
@@ -418,7 +418,7 @@ Full TypeScript definitions included:
 
 ```typescript
 import type {
-  ComarkTree,
+  MarkdownTree,
   ComarkNode,
   ParseOptions,
 } from 'comark'
@@ -466,7 +466,7 @@ import type {
         └────────┬────────┘
                  │
         ┌────────▼────────┐
-        │  ComarkTree     │
+        │  MarkdownTree     │
         │  (nodes + data  │
         │   + meta)       │
         └────────┬────────┘

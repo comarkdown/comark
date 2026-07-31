@@ -7,7 +7,7 @@ import type {
   ThemeRegistration,
   ThemeRegistrationAny,
 } from 'shiki'
-import type { ComarkElement, ComarkNode, ComarkTree, ComarkElementAttributes } from 'comark'
+import type { ComarkElement, ComarkNode, MarkdownTree, ComarkElementAttributes } from 'comark'
 import { defineComarkPlugin } from '../utils/helpers.ts'
 import { createShikiPrimitive } from 'shiki'
 import { createJavaScriptRegexEngine } from 'shiki/engine/javascript'
@@ -226,7 +226,7 @@ function hastToComarkNode(input: any): ComarkNode {
  * Apply syntax highlighting to all code blocks in a Comark tree
  * Uses codeToTokens API with batched async operations
  */
-export async function highlightCodeBlocks(tree: ComarkTree, options: HighlightOptions = {}): Promise<ComarkTree> {
+export async function highlightCodeBlocks(tree: MarkdownTree, options: HighlightOptions = {}): Promise<MarkdownTree> {
   interface CodeBlockRef {
     node: ComarkNode
     path: number[]

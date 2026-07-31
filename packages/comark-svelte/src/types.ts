@@ -1,4 +1,4 @@
-import type { ComarkNode, ComarkTree, ComarkPlugin, ComponentManifest, ParseOptions } from 'comark'
+import type { ComarkNode, MarkdownTree, ComarkPlugin, ComponentManifest, ParseOptions } from 'comark'
 import type { Component, Snippet } from 'svelte'
 
 export interface ComponentResolverProps {
@@ -20,9 +20,9 @@ export interface MarkdownNodeProps {
 
 export interface MarkdownParsedProps {
   /** The parsed Comark tree to render */
-  value?: ComarkTree
+  value?: MarkdownTree
   /** @deprecated Use `value` instead */
-  tree?: ComarkTree
+  tree?: MarkdownTree
   components?: Record<string, any>
   componentsManifest?: ComponentManifest
   resolver?: ComponentResolver
