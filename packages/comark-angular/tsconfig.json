@@ -13,8 +13,11 @@
     "allowImportingTsExtensions": true,
     "rewriteRelativeImportExtensions": true,
     "declaration": true,
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": false
+    "experimentalDecorators": true
+  },
+  "angularCompilerOptions": {
+    "compilationMode": "partial",
+    "strictTemplates": true
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
