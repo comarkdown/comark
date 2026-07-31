@@ -1,6 +1,6 @@
 import { parse } from '@comark/svelte/parse'
 import highlight from '@comark/svelte/plugins/highlight'
-import type { MarkdownDocument } from '@comark/svelte'
+import type { MarkdownDocument } from 'comark'
 
 const rawFiles = import.meta.glob('../../content/posts/*.md', {
   query: '?raw',
