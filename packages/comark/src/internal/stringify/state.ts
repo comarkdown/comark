@@ -1,7 +1,7 @@
 import { handlers as defaultHandlers } from './handlers/index.ts'
 import type { NodeRenderData, State, Context } from 'comark/render'
 import type {
-  ComarkElement,
+  MarkdownElement,
   ComarkNode,
   MarkdownTree,
   ConditionalNodeHandler,
@@ -11,7 +11,7 @@ import type {
 import { pascalCase } from '../../utils/index.ts'
 import { resolveAttributes } from './attributes.ts'
 
-function findHandler(ctx: Context, node: ComarkElement): NodeHandler | undefined {
+function findHandler(ctx: Context, node: MarkdownElement): NodeHandler | undefined {
   const userHandler = ctx.handlers[node[0] as string] || ctx.handlers[pascalCase(node[0] as string)]
 
   if (typeof userHandler === 'function') {
@@ -38,7 +38,7 @@ function findHandler(ctx: Context, node: ComarkElement): NodeHandler | undefined
 export async function one(
   node: ComarkNode,
   state: State,
-  parent?: ComarkElement,
+  parent?: MarkdownElement,
   atLineStart = false
 ): Promise<string> {
   if (typeof node === 'string') {
@@ -55,7 +55,7 @@ export async function one(
   }
 
   if (node[0] === null) {
-    return await state.handlers.comment(node as unknown as ComarkElement, state)
+    return await state.handlers.comment(node as unknown as MarkdownElement, state)
   }
 
   // Scope `renderData.props` to the current element's resolved attributes so
@@ -96,8 +96,8 @@ export async function one(
   }
 }
 
-export async function flow(node: ComarkElement, state: State, parent?: ComarkElement): Promise<string> {
-  const children = node.slice(2) as ComarkElement[]
+export async function flow(node: MarkdownElement, state: State, parent?: MarkdownElement): Promise<string> {
+  const children = node.slice(2) as MarkdownElement[]
   let result = ''
   for (const child of children) {
     result += await one(child, state, parent || node)
@@ -142,9 +142,9 @@ export function createState(ctx: Partial<CreateContext> = {}): State {
     flow,
     data: ctx.data || {},
     renderData,
-    render: async (input: ComarkNode[] | ComarkElement) => {
+    render: async (input: ComarkNode[] | MarkdownElement) => {
       if (Array.isArray(input) && typeof input[0] === 'string' && input.length > 1) {
-        return state.one(input as ComarkElement, state)
+        return state.one(input as MarkdownElement, state)
       }
 
       let result = ''
@@ -182,13 +182,13 @@ export const state: State = {
   },
   flow,
   one,
-  render: async (input: ComarkNode[] | ComarkElement) => {
+  render: async (input: ComarkNode[] | MarkdownElement) => {
     if (typeof input === 'string') {
       return input
     }
 
     if (Array.isArray(input) && typeof input[0] === 'string') {
-      return one(input as ComarkElement, state)
+      return one(input as MarkdownElement, state)
     }
 
     let result = ''

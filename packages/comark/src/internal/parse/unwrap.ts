@@ -1,4 +1,4 @@
-import type { ComarkElement, ComarkNode } from '../../types.ts'
+import type { MarkdownElement, ComarkNode } from '../../types.ts'
 
 /**
  * Normalize the `unwrap` option into an ordered list of tag names.
@@ -23,7 +23,7 @@ export function resolveUnwrapTags(unwrap: boolean | string | string[] | undefine
   return unwrap.filter(Boolean)
 }
 
-function isElement(node: ComarkNode): node is ComarkElement {
+function isElement(node: ComarkNode): node is MarkdownElement {
   return Array.isArray(node) && typeof node[0] === 'string'
 }
 

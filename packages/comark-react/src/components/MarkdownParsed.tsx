@@ -1,4 +1,4 @@
-import type { ComarkElement, ComarkNode, MarkdownTree, ComponentManifest, NodeRenderData } from 'comark'
+import type { MarkdownElement, ComarkNode, MarkdownTree, ComponentManifest, NodeRenderData } from 'comark'
 import React, { lazy, Suspense, useMemo } from 'react'
 import { pascalCase, camelCase, resolveAttributes } from 'comark/utils'
 import { findLastTextNodeAndAppendNode, getCaret } from '../utils/caret.ts'
@@ -121,7 +121,7 @@ function renderNode(
     // Check if there's a custom component for this tag
     let customComponent
 
-    if ((parent as ComarkElement | undefined)?.[0] !== 'pre') {
+    if ((parent as MarkdownElement | undefined)?.[0] !== 'pre') {
       if (nodeProps.as) {
         customComponent = resolveComponent(nodeProps.as, components, componentsManifest)
       }
@@ -351,7 +351,7 @@ export const MarkdownParsed: React.FC<MarkdownParsedProps> = ({
     const nodes = [...(tree.nodes || [])]
 
     if (streaming && caret && nodes.length > 0) {
-      const hasStreamCaret = findLastTextNodeAndAppendNode(nodes[nodes.length - 1] as ComarkElement, caret)
+      const hasStreamCaret = findLastTextNodeAndAppendNode(nodes[nodes.length - 1] as MarkdownElement, caret)
       if (!hasStreamCaret) {
         nodes.push(caret)
       }

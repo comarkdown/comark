@@ -1,4 +1,4 @@
-import type { ComarkElement, ComarkNode } from 'comark'
+import type { MarkdownElement, ComarkNode } from 'comark'
 import { htmlToComarkNodes, parseInlineHtmlTag } from './html/index.ts'
 
 // `::tag` components that should fold into a single same-tagged child.
@@ -325,7 +325,7 @@ function processBlockToken(
       Array.isArray(children.nodes[0]) &&
       children.nodes[0][0] === componentName
     ) {
-      const inner = children.nodes[0] as ComarkElement
+      const inner = children.nodes[0] as MarkdownElement
       const innerAttrs = inner[1] as Record<string, unknown>
       const innerChildren = inner.slice(2) as ComarkNode[]
       return {

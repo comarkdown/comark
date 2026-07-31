@@ -1,4 +1,4 @@
-import type { ComarkElement, ComarkElementAttributes, MarkdownTree } from '../../types'
+import type { MarkdownElement, MarkdownElementAttributes, MarkdownTree } from '../../types'
 
 /**
  * Extracts reusable nodes from the last output tree
@@ -11,7 +11,7 @@ export function extractReusableNodes(markdown: string, lastOutput: MarkdownTree)
   let i = lastOutput.nodes.length - 1
   let lastNodeIgnored = false
   while (i >= 0) {
-    const node = lastOutput.nodes[i] as ComarkElement
+    const node = lastOutput.nodes[i] as MarkdownElement
     if (node[1] && node[1].$?.line) {
       if (lastNodeIgnored) {
         lastValidNodeIndex = i
@@ -24,7 +24,7 @@ export function extractReusableNodes(markdown: string, lastOutput: MarkdownTree)
   }
   const lastNode = lastValidNodeIndex !== -1 ? lastOutput.nodes[lastValidNodeIndex] : null
   if (lastNode) {
-    const remainingMarkdownStartLine = (lastNode[1] as ComarkElementAttributes).$?.line ?? 0
+    const remainingMarkdownStartLine = (lastNode[1] as MarkdownElementAttributes).$?.line ?? 0
     return {
       remainingMarkdownStartLine,
       reusedNodes: lastOutput.nodes.slice(0, lastValidNodeIndex + 1),

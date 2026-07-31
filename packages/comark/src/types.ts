@@ -14,24 +14,34 @@ type Writable<T> = [keyof T] extends [never] ? Record<string, any> : T
 // #region MarkdownTree
 
 /**
- * The Comark text
- * @param string - The text content
+ * A text node in the Markdown AST.
  */
-export type ComarkText = string
+export type MarkdownText = string
 
 /**
- * The Comark comment
- * @param null - The null node
- * @param {} - The attributes of the comment
- * @param string - The content of the comment
+ * @deprecated Use `MarkdownText` instead — same type, renamed for consistency with `MarkdownTree`.
+ * `ComarkText` will be removed in a future major version.
  */
-export type ComarkComment = [null, ComarkElementAttributes, string]
+export type ComarkText = MarkdownText
 
 /**
- * The Comark element attributes
- * @param [key: string]: unknown - The attributes of the element
+ * A comment node in the Markdown AST (`<!-- … -->`).
+ * @param null - Null tag marks a comment
+ * @param MarkdownElementAttributes - Comment attributes
+ * @param string - Comment content
  */
-export type ComarkElementAttributes = {
+export type MarkdownComment = [null, MarkdownElementAttributes, string]
+
+/**
+ * @deprecated Use `MarkdownComment` instead — same type, renamed for consistency with `MarkdownTree`.
+ * `ComarkComment` will be removed in a future major version.
+ */
+export type ComarkComment = MarkdownComment
+
+/**
+ * Attributes bag on a Markdown element (props + internal `$` meta).
+ */
+export type MarkdownElementAttributes = {
   [key: string]: unknown
 
   $?: {
@@ -42,19 +52,28 @@ export type ComarkElementAttributes = {
 }
 
 /**
- * The Comark element
- * @param string - The tag of the element
- * @param ComarkElementAttributes - The attributes of the element
- * @param ...ComarkNode[] - The children of the element
+ * @deprecated Use `MarkdownElementAttributes` instead — same type, renamed for consistency with `MarkdownTree`.
+ * `ComarkElementAttributes` will be removed in a future major version.
  */
-export type ComarkElement = [string, ComarkElementAttributes, ...ComarkNode[]]
+export type ComarkElementAttributes = MarkdownElementAttributes
 
 /**
- * The Comark node
- *
- * `ComarkElement` | `ComarkText` | `ComarkComment` - The node can be an element, text or comment
+ * An element node in the Markdown AST: `[tag, attrs, ...children]`.
  */
-export type ComarkNode = ComarkElement | ComarkText | ComarkComment
+export type MarkdownElement = [string, MarkdownElementAttributes, ...ComarkNode[]]
+
+/**
+ * @deprecated Use `MarkdownElement` instead — same type, renamed for consistency with `MarkdownTree`.
+ * `ComarkElement` will be removed in a future major version.
+ */
+export type ComarkElement = MarkdownElement
+
+/**
+ * A node in the Markdown AST — element, text, or comment.
+ *
+ * `MarkdownElement` | `MarkdownText` | `MarkdownComment`
+ */
+export type ComarkNode = MarkdownElement | MarkdownText | MarkdownComment
 
 /**
  * The Markdown tree (parse output / AST root).
@@ -158,14 +177,14 @@ export interface Context extends ContextBase {
  * @param parent - The parent node
  * @returns The rendered node
  */
-export type NodeHandler = (node: ComarkElement, state: State, parent?: ComarkElement) => string | Promise<string>
+export type NodeHandler = (node: MarkdownElement, state: State, parent?: MarkdownElement) => string | Promise<string>
 
 /**
  * A node handler rule that pairs a match predicate with a handler function.
  * When `match` returns true for a node, the associated `handler` is used to render it.
  */
 export type ConditionalNodeHandler = {
-  match: (node: ComarkElement) => boolean
+  match: (node: MarkdownElement) => boolean
   handler: NodeHandler
 }
 
@@ -205,17 +224,17 @@ export type State = {
   /**
    * Render children of the node
    */
-  flow: (node: ComarkElement, state: State, parent?: ComarkElement) => Promise<string>
+  flow: (node: MarkdownElement, state: State, parent?: MarkdownElement) => Promise<string>
 
   /**
    * Render a single node
    */
-  one: (node: ComarkNode, state: State, parent?: ComarkElement, atLineStart?: boolean) => Promise<string>
+  one: (node: ComarkNode, state: State, parent?: MarkdownElement, atLineStart?: boolean) => Promise<string>
 
   /**
    * Render the input
    */
-  render: (input: ComarkNode[] | ComarkElement) => Promise<string>
+  render: (input: ComarkNode[] | MarkdownElement) => Promise<string>
 
   /**
    * Apply the context

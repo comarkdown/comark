@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { getCaret, findLastTextNodeAndAppendNode } from '../src/utils/caret.ts'
-import type { ComarkElement } from 'comark'
+import type { MarkdownElement } from 'comark'
 
 describe('caret utils', () => {
   describe('getCaret', () => {
@@ -25,24 +25,24 @@ describe('caret utils', () => {
 
   describe('findLastTextNodeAndAppendNode', () => {
     it('appends to parent with text child', () => {
-      const parent: ComarkElement = ['p', {}, 'Hello world']
-      const caret: ComarkElement = ['span', { key: 'stream-caret' }, ' ']
+      const parent: MarkdownElement = ['p', {}, 'Hello world']
+      const caret: MarkdownElement = ['span', { key: 'stream-caret' }, ' ']
       const result = findLastTextNodeAndAppendNode(parent, caret)
       expect(result).toBe(true)
       expect(parent.length).toBe(4)
     })
 
     it('traverses nested elements', () => {
-      const nested: ComarkElement = ['strong', {}, 'bold text']
-      const parent: ComarkElement = ['p', {}, nested]
-      const caret: ComarkElement = ['span', { key: 'stream-caret' }, ' ']
+      const nested: MarkdownElement = ['strong', {}, 'bold text']
+      const parent: MarkdownElement = ['p', {}, nested]
+      const caret: MarkdownElement = ['span', { key: 'stream-caret' }, ' ']
       const result = findLastTextNodeAndAppendNode(parent, caret)
       expect(result).toBe(true)
     })
 
     it('returns false for empty parent', () => {
-      const parent: ComarkElement = ['p', {}]
-      const caret: ComarkElement = ['span', { key: 'stream-caret' }, ' ']
+      const parent: MarkdownElement = ['p', {}]
+      const caret: MarkdownElement = ['span', { key: 'stream-caret' }, ' ']
       const result = findLastTextNodeAndAppendNode(parent, caret)
       expect(result).toBe(false)
     })

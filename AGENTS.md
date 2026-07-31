@@ -51,7 +51,7 @@ packages/comark/
 │   ├── types.ts              # TypeScript interfaces (ParseOptions, etc.)
 │   ├── ast/                  # Comark AST types and utilities
 │   │   ├── index.ts          # Re-exports (comark/ast entry point)
-│   │   ├── types.ts          # MarkdownTree (ComarkTree deprecated alias), ComarkNode, ComarkElement, ComarkText
+│   │   ├── types.ts          # MarkdownTree (ComarkTree deprecated alias), ComarkNode, MarkdownElement, MarkdownText
 │   │   └── utils.ts          # textContent(), visit() tree utilities
 │   ├── plugins/              # Built-in and optional plugins
 │   │   ├── alert.ts          # Alert/callout blocks
@@ -374,7 +374,7 @@ import { log, render, renderANSI, createLog, createRender } from '@comark/ansi'
 import { renderMarkdown } from 'comark/render'
 
 // AST types and utilities
-import type { MarkdownTree, ComarkNode, ComarkElement, ComarkText } from 'comark'
+import type { MarkdownTree, ComarkNode, MarkdownElement, MarkdownText } from 'comark'
 import { textContent, visit } from 'comark/utils'
 
 // Core plugins — use when calling parse() directly (framework-agnostic)
@@ -503,17 +503,20 @@ autoCloseMarkdown('**bold text')     // '**bold text**'
 autoCloseMarkdown('::alert\nContent') // '::alert\nContent\n::'
 ```
 
-## Comark AST Format
+## Markdown AST Format
 
 ```typescript
-type ComarkText = string
-type ComarkElement = [string, ComarkElementAttributes, ...ComarkNode[]]
-type ComarkNode = ComarkElement | ComarkText
+type MarkdownText = string
+type MarkdownElementAttributes = { [key: string]: unknown; $?: { line?: number; html?: 0 | 1; block?: 0 | 1 } }
+type MarkdownElement = [string, MarkdownElementAttributes, ...ComarkNode[]]
+type MarkdownComment = [null, MarkdownElementAttributes, string]
+type ComarkNode = MarkdownElement | MarkdownText | MarkdownComment
 type MarkdownTree = {
   nodes: ComarkNode[]
   frontmatter: Record<string, any>
   meta: Record<string, any>
 }
+// Deprecated aliases (same types): ComarkText, ComarkElement, ComarkElementAttributes, ComarkComment, ComarkTree
 ```
 
 Example:

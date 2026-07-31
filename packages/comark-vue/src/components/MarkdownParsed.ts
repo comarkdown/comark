@@ -2,7 +2,7 @@ import type { PropType, VNode } from 'vue'
 import type {
   ComponentManifest,
   ComarkContextProvider,
-  ComarkElement,
+  MarkdownElement,
   ComarkNode,
   MarkdownTree,
   NodeRenderData,
@@ -129,7 +129,7 @@ function renderNode(
     // Check if there's a custom component for this tag
     let customComponent
 
-    if ((parent as ComarkElement | undefined)?.[0] !== 'pre') {
+    if ((parent as MarkdownElement | undefined)?.[0] !== 'pre') {
       if (nodeProps.as) {
         customComponent = resolveComponent(nodeProps.as, components, componentsManifest)
       }
@@ -436,7 +436,7 @@ export const MarkdownParsed: MarkdownParsedComponent = defineComponent({
       return resolved || null
     }
 
-    const caret = computed<ComarkElement | null>(() => getCaret(props.caret || false))
+    const caret = computed<MarkdownElement | null>(() => getCaret(props.caret || false))
 
     return () => {
       // Render all nodes from the live tree when present, else the value prop
@@ -444,7 +444,7 @@ export const MarkdownParsed: MarkdownParsedComponent = defineComponent({
       const nodes = [...(rawTree.nodes || [])]
 
       if (props.streaming && caret.value && nodes.length > 0) {
-        const hasStreamCaret = findLastTextNodeAndAppendNode(nodes[nodes.length - 1] as ComarkElement, caret.value)
+        const hasStreamCaret = findLastTextNodeAndAppendNode(nodes[nodes.length - 1] as MarkdownElement, caret.value)
         if (!hasStreamCaret) {
           nodes.push(caret.value)
         }

@@ -3,7 +3,7 @@ import { parse } from '../../src/parse'
 import security from '../../src/plugins/security'
 import { textContent } from '../../src/utils/index.ts'
 import { renderMarkdown } from 'comark/render'
-import type { ComarkElement, ComarkNode, MarkdownTree } from '../../src/types'
+import type { MarkdownElement, ComarkNode, MarkdownTree } from '../../src/types'
 
 const parseWithSecurity = (md: string, options: Parameters<typeof security>[0] = {}) =>
   parse(md, { plugins: [security(options)] })
@@ -18,12 +18,12 @@ async function runPlugin(tree: MarkdownTree, options: Parameters<typeof security
   return tree
 }
 
-function isElement(node: ComarkNode): node is ComarkElement {
+function isElement(node: ComarkNode): node is MarkdownElement {
   return typeof node !== 'string' && node[0] !== null
 }
 
-function collectElements(nodes: ComarkNode[]): ComarkElement[] {
-  const elements: ComarkElement[] = []
+function collectElements(nodes: ComarkNode[]): MarkdownElement[] {
+  const elements: MarkdownElement[] = []
 
   for (const node of nodes) {
     if (!isElement(node)) continue

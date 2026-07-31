@@ -1,4 +1,4 @@
-import type { ComarkElement } from 'comark'
+import type { MarkdownElement } from 'comark'
 import { visit } from '../utils/index.ts'
 import { defineComarkPlugin } from '../utils/helpers.ts'
 
@@ -43,7 +43,7 @@ export default defineComarkPlugin(() => ({
       state.tree,
       (node) => Array.isArray(node) && node[0] === 'blockquote',
       (node) => {
-        const element = node as ComarkElement
+        const element = node as MarkdownElement
         if (node[2]?.[0] === 'span') {
           const content = String(node[2][2] as keyof typeof markers).toUpperCase()
           const marker = markers[content]
@@ -56,7 +56,7 @@ export default defineComarkPlugin(() => ({
             element[1].as = marker.type
           }
         } else if (node[2]?.[0] === 'p') {
-          const paragraph = node[2] as ComarkElement
+          const paragraph = node[2] as MarkdownElement
           if (paragraph[2]?.[0] === 'span') {
             const content = String(paragraph[2][2] as keyof typeof markers).toUpperCase()
             const marker = markers[content]

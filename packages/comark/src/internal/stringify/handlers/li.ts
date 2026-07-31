@@ -1,5 +1,5 @@
 import type { State } from 'comark/render'
-import type { ComarkElement, ComarkNode } from 'comark'
+import type { MarkdownElement, ComarkNode } from 'comark'
 import { indent } from '../../../utils/index.ts'
 import { comarkAttributes, userBlockAttrs } from '../attributes.ts'
 
@@ -7,7 +7,7 @@ import { comarkAttributes, userBlockAttrs } from '../attributes.ts'
 // Note: ol/ul are handled by their own handlers which manage indentation via listIndent context.
 const blockElements = new Set(['pre', 'blockquote', 'table'])
 
-export async function li(node: ComarkElement, state: State) {
+export async function li(node: MarkdownElement, state: State) {
   const children = node.slice(2) as ComarkNode[]
 
   const order = state.context.order
@@ -21,7 +21,7 @@ export async function li(node: ComarkElement, state: State) {
   const taskList = className.includes('task-list-item')
 
   if (taskList) {
-    const input = children.shift() as ComarkElement
+    const input = children.shift() as MarkdownElement
     prefix += input[1].checked || input[1][':checked'] ? '[x] ' : '[ ] '
   }
 

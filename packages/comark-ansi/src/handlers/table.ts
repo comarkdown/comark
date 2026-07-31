@@ -1,5 +1,5 @@
 import type { NodeHandler, State } from 'comark/render'
-import type { ComarkElement, ComarkNode } from 'comark'
+import type { MarkdownElement, ComarkNode } from 'comark'
 import { DIM, BOLD, RESET } from '../utils/escape.ts'
 
 async function getCellText(cell: ComarkNode, state: State): Promise<string> {
@@ -7,32 +7,32 @@ async function getCellText(cell: ComarkNode, state: State): Promise<string> {
   const [, , ...children] = cell
   let result = ''
   for (const child of children) {
-    result += typeof child === 'string' ? child : await state.one(child, state, cell as ComarkElement)
+    result += typeof child === 'string' ? child : await state.one(child, state, cell as MarkdownElement)
   }
   return result.trim()
 }
 
-function getRows(node: ComarkNode): ComarkElement[] {
+function getRows(node: ComarkNode): MarkdownElement[] {
   if (typeof node === 'string') return []
   const [tag, , ...children] = node
-  if (tag === 'tr') return [node as ComarkElement]
+  if (tag === 'tr') return [node as MarkdownElement]
   if (tag === 'thead' || tag === 'tbody') {
-    return children.filter((c) => typeof c !== 'string' && c[0] === 'tr') as ComarkElement[]
+    return children.filter((c) => typeof c !== 'string' && c[0] === 'tr') as MarkdownElement[]
   }
   return []
 }
 
-function getCells(row: ComarkElement): ComarkElement[] {
+function getCells(row: MarkdownElement): MarkdownElement[] {
   return (row.slice(2) as ComarkNode[]).filter(
     (c) => typeof c !== 'string' && (c[0] === 'th' || c[0] === 'td')
-  ) as ComarkElement[]
+  ) as MarkdownElement[]
 }
 
 export const table: NodeHandler = async (node, state) => {
   const [, , ...children] = node
 
-  let headerRows: ComarkElement[] = []
-  let bodyRows: ComarkElement[] = []
+  let headerRows: MarkdownElement[] = []
+  let bodyRows: MarkdownElement[] = []
 
   for (const child of children) {
     if (typeof child === 'string') continue
@@ -87,7 +87,7 @@ export const table: NodeHandler = async (node, state) => {
     const cells = getCells(row)
     const contents: string[] = []
     for (let i = 0; i < colWidths.length; i++) {
-      contents.push(await getCellText(cells[i] ?? (['td', {}] as ComarkElement), state))
+      contents.push(await getCellText(cells[i] ?? (['td', {}] as MarkdownElement), state))
     }
     lines.push(colors ? DIM + midBorder + RESET : midBorder)
     lines.push(fmtRow(contents))

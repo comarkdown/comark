@@ -1,5 +1,5 @@
 import type { Spec, UIElement } from '@json-render/core'
-import type { ComarkElementAttributes, ComarkNode } from '../types'
+import type { MarkdownElementAttributes, ComarkNode } from '../types'
 import { defineComarkPlugin } from '../parse.ts'
 import { textContent, visit } from '../utils/index.ts'
 import { parseYaml } from '../internal/yaml.ts'
@@ -85,10 +85,10 @@ export default defineComarkPlugin((_config: JsonRenderConfig = {}) => ({
       state.tree,
       (node) =>
         node[0] === 'pre' &&
-        ((node[1] as ComarkElementAttributes).language === 'json-render' ||
-          (node[1] as ComarkElementAttributes).language === 'yaml-render'),
+        ((node[1] as MarkdownElementAttributes).language === 'json-render' ||
+          (node[1] as MarkdownElementAttributes).language === 'yaml-render'),
       (preNode) => {
-        const language = (preNode[1] as ComarkElementAttributes).language
+        const language = (preNode[1] as MarkdownElementAttributes).language
         try {
           let spec: Spec | UIElement | undefined = undefined
           if (language === 'json-render') {

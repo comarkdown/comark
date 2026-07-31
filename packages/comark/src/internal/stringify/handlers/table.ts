@@ -1,5 +1,5 @@
 import type { State } from 'comark/render'
-import type { ComarkElement, ComarkNode } from 'comark'
+import type { MarkdownElement, ComarkNode } from 'comark'
 import { comarkAttributes, userBlockAttrs } from '../attributes.ts'
 
 type Alignment = 'left' | 'center' | 'right' | null
@@ -39,7 +39,7 @@ async function getCellContent(cell: ComarkNode, state: State): Promise<string> {
     if (typeof child === 'string') {
       content += child
     } else {
-      content += await state.one(child, state, cell as unknown as ComarkElement)
+      content += await state.one(child, state, cell as unknown as MarkdownElement)
     }
   }
 
@@ -54,7 +54,7 @@ function escapePipes(text: string): string {
 }
 
 // Helper function to get all rows from thead/tbody
-function getRows(element: ComarkNode): ComarkElement[] {
+function getRows(element: ComarkNode): MarkdownElement[] {
   if (typeof element === 'string') {
     return []
   }
@@ -68,26 +68,26 @@ function getRows(element: ComarkNode): ComarkElement[] {
 
   // If it's thead/tbody, extract tr elements
   if (tag === 'thead' || tag === 'tbody') {
-    return children.filter((child) => typeof child !== 'string' && child[0] === 'tr') as ComarkElement[]
+    return children.filter((child) => typeof child !== 'string' && child[0] === 'tr') as MarkdownElement[]
   }
 
   return []
 }
 
 // Helper function to get cells from a row
-function getCells(row: ComarkElement): ComarkElement[] {
+function getCells(row: MarkdownElement): MarkdownElement[] {
   const [, , ...children] = row
   return children.filter(
     (child) => typeof child !== 'string' && (child[0] === 'th' || child[0] === 'td')
-  ) as ComarkElement[]
+  ) as MarkdownElement[]
 }
 
-export async function table(node: ComarkElement, state: State) {
+export async function table(node: MarkdownElement, state: State) {
   const [, , ...children] = node
 
   // Extract thead and tbody
-  let headerRows: ComarkElement[] = []
-  let bodyRows: ComarkElement[] = []
+  let headerRows: MarkdownElement[] = []
+  let bodyRows: MarkdownElement[] = []
 
   for (const child of children) {
     if (typeof child === 'string') continue
@@ -112,8 +112,8 @@ export async function table(node: ComarkElement, state: State) {
   if (headerRows.length === 0 && bodyRows.length > 0) {
     const firstRow = bodyRows[0]
     const cells = getCells(firstRow)
-    const headerCells: ComarkElement[] = cells.map((_, i) => ['th', {}, `Column ${i + 1}`] as ComarkElement)
-    headerRows = [['tr', {}, ...headerCells] as ComarkElement]
+    const headerCells: MarkdownElement[] = cells.map((_, i) => ['th', {}, `Column ${i + 1}`] as MarkdownElement)
+    headerRows = [['tr', {}, ...headerCells] as MarkdownElement]
   }
 
   if (headerRows.length === 0) {
@@ -198,27 +198,27 @@ export async function table(node: ComarkElement, state: State) {
   return result + '\n'
 }
 
-export function thead(_node: ComarkElement, _state: State) {
+export function thead(_node: MarkdownElement, _state: State) {
   // thead is handled by the table handler
   return ''
 }
 
-export function tbody(_node: ComarkElement, _state: State) {
+export function tbody(_node: MarkdownElement, _state: State) {
   // tbody is handled by the table handler
   return ''
 }
 
-export function tr(_node: ComarkElement, _state: State) {
+export function tr(_node: MarkdownElement, _state: State) {
   // tr is handled by the table handler
   return ''
 }
 
-export function th(_node: ComarkElement, _state: State) {
+export function th(_node: MarkdownElement, _state: State) {
   // th is handled by the table handler
   return ''
 }
 
-export function td(_node: ComarkElement, _state: State) {
+export function td(_node: MarkdownElement, _state: State) {
   // td is handled by the table handler
   return ''
 }

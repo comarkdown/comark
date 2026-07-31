@@ -7,7 +7,7 @@ import { globalComponents, localComponents } from '#content/components'
 import { useRuntimeConfig } from '#imports'
 import alert from '@comark/vue/plugins/alert'
 import { Mermaid } from '@comark/vue/plugins/mermaid'
-import type { MarkdownTree, ComarkElement } from 'comark'
+import type { MarkdownTree, MarkdownElement } from 'comark'
 import type { MinimarkNode, MinimarkTree } from 'minimark'
 import Browser from './prose/Browser.vue'
 import CodeExplorer from './prose/CodeExplorer.vue'
@@ -221,38 +221,38 @@ function resolveContentComponents(body: MarkdownTree, meta: Record<string, unkno
   return result as Record<string, unknown>
 }
 
-function loadComponents(node: MarkdownTree | ComarkElement, documentMeta: { tags: Record<string, string> }) {
+function loadComponents(node: MarkdownTree | MarkdownElement, documentMeta: { tags: Record<string, string> }) {
   const components2 = [] as Array<[string, unknown]>
   if (Array.isArray((node as MarkdownTree).nodes)) {
     for (const child of (node as MarkdownTree).nodes || []) {
       if (typeof child === 'string' || child[0] === 'binding' || child[0] === 'comment') {
         continue
       }
-      components2.push(...loadComponents(child as ComarkElement, documentMeta))
+      components2.push(...loadComponents(child as MarkdownElement, documentMeta))
     }
     return components2
   }
 
-  const tag = (node as ComarkElement)[0]
+  const tag = (node as MarkdownElement)[0]
   if (tag === 'binding' || tag === 'comment') {
     return []
   }
-  const renderTag = findMappedTag(node as ComarkElement, documentMeta.tags)
+  const renderTag = findMappedTag(node as MarkdownElement, documentMeta.tags)
   if (!htmlTags.has(renderTag)) {
     components2.push([tag, renderTag])
   }
 
-  for (let i = 2; i < (node as ComarkElement).length; i++) {
-    const child = (node as ComarkElement)[i] as ComarkElement
+  for (let i = 2; i < (node as MarkdownElement).length; i++) {
+    const child = (node as MarkdownElement)[i] as MarkdownElement
     if (typeof child === 'string' || child[0] === 'binding' || child[0] === 'comment') {
       continue
     }
-    components2.push(...loadComponents((node as ComarkElement)[i] as ComarkElement, documentMeta))
+    components2.push(...loadComponents((node as MarkdownElement)[i] as MarkdownElement, documentMeta))
   }
   return components2
 }
 
-function findMappedTag(node: ComarkElement, tags: Record<string, string>) {
+function findMappedTag(node: MarkdownElement, tags: Record<string, string>) {
   const tag = node[0]
   if (!tag || typeof node[1]?.__ignoreMap !== 'undefined') {
     return tag

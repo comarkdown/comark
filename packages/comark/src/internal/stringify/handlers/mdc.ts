@@ -1,5 +1,5 @@
 import type { State } from 'comark/render'
-import type { ComarkElement, ComarkNode } from 'comark'
+import type { MarkdownElement, ComarkNode } from 'comark'
 import { indent } from '../../../utils/index.ts'
 import { comarkAttributes, comarkYamlAttributes } from '../attributes.ts'
 import { html } from './html.ts'
@@ -7,7 +7,7 @@ import { html } from './html.ts'
 // HTML elements that always create an inline context for their children
 const INLINE_HTML_ELEMENTS = new Set(['a', 'strong', 'em', 'span'])
 
-export async function mdc(node: ComarkElement, state: State, parent?: ComarkElement) {
+export async function mdc(node: MarkdownElement, state: State, parent?: MarkdownElement) {
   const [tag, attr, ...children] = node
   const { $: _, ...attributes } = attr
 

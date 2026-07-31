@@ -1,9 +1,9 @@
 import type { State } from 'comark/render'
-import type { ComarkElement } from 'comark'
+import type { MarkdownElement } from 'comark'
 import { comarkAttributes } from '../attributes.ts'
 
 const fence = '```'
-export function mermaid(node: ComarkElement, state: State) {
+export function mermaid(node: MarkdownElement, state: State) {
   const [_, attributes] = node
 
   const { content, ...rest } = attributes

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { ComarkElement, MarkdownTree } from '../../src/types'
+import type { MarkdownElement, MarkdownTree } from '../../src/types'
 import { parse } from '../../src'
 import { renderMarkdown } from '../../src/render'
 import highlight from '../../src/plugins/highlight'
@@ -9,13 +9,13 @@ describe('highlight themes option', () => {
     const tree = await parse('```js\nconst a = 1\n```', {
       plugins: [highlight({ themes: { light: 'github-light', dark: 'github-dark' } })],
     })
-    const pre = tree.nodes[0] as ComarkElement
+    const pre = tree.nodes[0] as MarkdownElement
     expect((pre[1] as Record<string, any>).class).toContain('shiki-themes github-light github-dark')
 
-    const code = pre[2] as ComarkElement
-    const line = code[2] as ComarkElement
+    const code = pre[2] as MarkdownElement
+    const line = code[2] as MarkdownElement
     expect(line[0]).toBe('span')
-    const tokens = line.slice(2) as ComarkElement[]
+    const tokens = line.slice(2) as MarkdownElement[]
     expect(tokens.length).toBeGreaterThan(1)
     for (const token of tokens) {
       expect(token[0]).toBe('span')

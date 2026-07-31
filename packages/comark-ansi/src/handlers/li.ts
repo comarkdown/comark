@@ -1,5 +1,5 @@
 import type { NodeHandler } from 'comark/render'
-import type { ComarkElement, ComarkNode } from 'comark'
+import type { MarkdownElement, ComarkNode } from 'comark'
 import { indent } from 'comark/utils'
 
 // Block elements that need explicit indentation in list items.
@@ -15,7 +15,7 @@ export const li: NodeHandler = async (node, state) => {
   // task list item
   const className = String((node[1].className as string[])?.join?.(' ') ?? node[1].class ?? '')
   if (className.includes('task-list-item')) {
-    const input = children.shift() as ComarkElement
+    const input = children.shift() as MarkdownElement
     prefix += input[1].checked || input[1][':checked'] ? '[x] ' : '[ ] '
   }
 

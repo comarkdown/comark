@@ -1,7 +1,7 @@
 import type { State } from 'comark/render'
-import type { ComarkElement } from 'comark'
+import type { MarkdownElement } from 'comark'
 
-export function hr(_: ComarkElement, state: State, parent?: ComarkElement) {
+export function hr(_: MarkdownElement, state: State, parent?: MarkdownElement) {
   if (parent?.[0] === 'p') {
     return ':hr'
   }

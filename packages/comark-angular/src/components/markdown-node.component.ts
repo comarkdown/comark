@@ -13,7 +13,7 @@ import {
   createComponent,
   reflectComponentType,
 } from '@angular/core'
-import type { ComarkElement, ComarkNode, NodeRenderData } from 'comark'
+import type { MarkdownElement, ComarkNode, NodeRenderData } from 'comark'
 import { pascalCase, resolveAttributes } from 'comark/utils'
 import { warnDeprecated } from '../internal/deprecation.ts'
 
@@ -140,7 +140,7 @@ export class MarkdownNode implements OnChanges {
       // Resolve custom component
       let customComponent: Type<any> | undefined
 
-      if ((this.parent as ComarkElement | undefined)?.[0] !== 'pre') {
+      if ((this.parent as MarkdownElement | undefined)?.[0] !== 'pre') {
         if (nodeProps.as) {
           customComponent = resolveComponent(nodeProps.as, this.components)
         }
@@ -334,7 +334,7 @@ export class MarkdownNode implements OnChanges {
 
         // Resolve custom component for this child
         let customComponent: Type<any> | undefined
-        if ((this.node as ComarkElement)?.[0] !== 'pre') {
+        if ((this.node as MarkdownElement)?.[0] !== 'pre') {
           if (childProps.as) {
             customComponent = resolveComponent(childProps.as, this.components)
           }

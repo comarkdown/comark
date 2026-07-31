@@ -7,7 +7,7 @@ import type {
   ThemeRegistration,
   ThemeRegistrationAny,
 } from 'shiki'
-import type { ComarkElement, ComarkNode, MarkdownTree, ComarkElementAttributes } from 'comark'
+import type { MarkdownElement, ComarkNode, MarkdownTree, MarkdownElementAttributes } from 'comark'
 import { defineComarkPlugin } from '../utils/helpers.ts'
 import { createShikiPrimitive } from 'shiki'
 import { createJavaScriptRegexEngine } from 'shiki/engine/javascript'
@@ -236,7 +236,7 @@ export async function highlightCodeBlocks(tree: MarkdownTree, options: Highlight
   const pathBuf: number[] = []
 
   // Recursively find <pre><code> blocks, tracking their path via push/pop on a shared buffer
-  const walkChildren = (element: ComarkElement): void => {
+  const walkChildren = (element: MarkdownElement): void => {
     for (let i = 2; i < element.length; i++) {
       const child = element[i]
       if (typeof child === 'string') continue
@@ -248,7 +248,7 @@ export async function highlightCodeBlocks(tree: MarkdownTree, options: Highlight
           codeBlocks.push({ node: child, path: pathBuf.slice() })
         }
       }
-      walkChildren(child as ComarkElement)
+      walkChildren(child as MarkdownElement)
       pathBuf.pop()
     }
   }
@@ -265,7 +265,7 @@ export async function highlightCodeBlocks(tree: MarkdownTree, options: Highlight
     }
     pathBuf.length = 1
     pathBuf[0] = i
-    walkChildren(node as ComarkElement)
+    walkChildren(node as MarkdownElement)
   }
 
   if (codeBlocks.length === 0) return tree
@@ -307,10 +307,10 @@ export async function highlightCodeBlocks(tree: MarkdownTree, options: Highlight
           themes: themeOptions,
           meta: { __raw: attrs.meta },
         })
-        const preNode = result.children.map(hastToComarkNode)[0] as ComarkElement
-        const cls = (preNode[1] as ComarkElementAttributes).class
+        const preNode = result.children.map(hastToComarkNode)[0] as MarkdownElement
+        const cls = (preNode[1] as MarkdownElementAttributes).class
         classStr = Array.isArray(cls) ? cls.join(' ') : String(cls)
-        codeChildren = (preNode[2] as ComarkElement).slice(2) as ComarkNode[]
+        codeChildren = (preNode[2] as MarkdownElement).slice(2) as ComarkNode[]
       } else {
         // Fast path: build ComarkNodes directly from tokens, skipping hast
         const result = codeToTokens(hl, code, {
@@ -357,7 +357,7 @@ export async function highlightCodeBlocks(tree: MarkdownTree, options: Highlight
           }
 
           // eslint-disable-next-line unicorn/no-new-array -- pre-allocated for perf
-          const lineNode = new Array(spans.length + 2) as ComarkElement
+          const lineNode = new Array(spans.length + 2) as MarkdownElement
           lineNode[0] = 'span'
           lineNode[1] = { class: 'line' }
           for (let s = 0; s < spans.length; s++) lineNode[s + 2] = spans[s]
@@ -421,10 +421,10 @@ export async function highlightCodeBlocks(tree: MarkdownTree, options: Highlight
       newPreAttrs.style = styles.join(';')
     }
 
-    const codeEl = node[2] as ComarkElement
+    const codeEl = node[2] as MarkdownElement
     const codeAttrs = (codeEl[1] as Record<string, any>) || {}
     // eslint-disable-next-line unicorn/no-new-array -- pre-allocated for perf
-    const codeNode = new Array(codeChildren.length + 2) as ComarkElement
+    const codeNode = new Array(codeChildren.length + 2) as MarkdownElement
     codeNode[0] = 'code'
     codeNode[1] = codeAttrs
     for (let j = 0; j < codeChildren.length; j++) codeNode[j + 2] = codeChildren[j]
@@ -435,11 +435,11 @@ export async function highlightCodeBlocks(tree: MarkdownTree, options: Highlight
     } else {
       // Copy only the spine from root to this node to preserve immutability
       const rootIdx = path[0]
-      let current = [...(newNodes[rootIdx] as ComarkElement)] as ComarkElement
+      let current = [...(newNodes[rootIdx] as MarkdownElement)] as MarkdownElement
       newNodes[rootIdx] = current
       for (let j = 1; j < path.length - 1; j++) {
         const childSlot = path[j] + 2
-        const next = [...(current[childSlot] as ComarkElement)] as ComarkElement
+        const next = [...(current[childSlot] as MarkdownElement)] as MarkdownElement
         current[childSlot] = next
         current = next
       }

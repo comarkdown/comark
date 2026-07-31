@@ -1,8 +1,8 @@
 import type { State } from 'comark/render'
-import type { ComarkElement } from 'comark'
+import type { MarkdownElement } from 'comark'
 import { comarkAttributes } from '../attributes.ts'
 
-export async function emphesis(node: ComarkElement, state: State) {
+export async function emphesis(node: MarkdownElement, state: State) {
   const [_, attrs, ...children] = node
 
   let content = ''

@@ -1,4 +1,4 @@
-import type { ComarkElement, ComarkNode, MarkdownTree } from './types.ts'
+import type { MarkdownElement, ComarkNode, MarkdownTree } from './types.ts'
 
 // #region patches
 
@@ -7,7 +7,7 @@ import type { ComarkElement, ComarkNode, MarkdownTree } from './types.ts'
  *
  * `path` is a node index path into `tree.nodes`: the first segment indexes
  * into `tree.nodes`, each subsequent segment indexes into the *children* of
- * the addressed element. Because `ComarkElement` is `[tag, attrs, ...children]`,
+ * the addressed element. Because `MarkdownElement` is `[tag, attrs, ...children]`,
  * child index `i` is resolved against array slot `i + 2` internally — callers
  * always work in plain child indices.
  *
@@ -57,9 +57,9 @@ function patchNodeList(nodes: ComarkNode[], path: number[], patch: ComarkPatch):
   if (!Array.isArray(target) || target[0] === null) {
     throw new Error(`Comark patch: path segment [${index}] does not point to an element`)
   }
-  const element = target as ComarkElement
+  const element = target as MarkdownElement
   const children = element.slice(2) as ComarkNode[]
-  next[index] = [element[0], element[1], ...patchNodeList(children, rest, patch)] as ComarkElement
+  next[index] = [element[0], element[1], ...patchNodeList(children, rest, patch)] as MarkdownElement
   return next
 }
 

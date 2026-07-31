@@ -8,7 +8,7 @@ import {
   type OnInit,
   type OnDestroy,
 } from '@angular/core'
-import type { ComarkElement, ComarkNode, MarkdownTree, NodeRenderData } from 'comark'
+import type { MarkdownElement, ComarkNode, MarkdownTree, NodeRenderData } from 'comark'
 import { MarkdownNode } from './markdown-node.component.ts'
 import { findLastTextNodeAndAppendNode, getCaret } from '../utils/caret.ts'
 import { warnDeprecated } from '../internal/deprecation.ts'
@@ -108,7 +108,7 @@ export class MarkdownParsed implements OnInit, OnDestroy {
     const caretNode = getCaret(this.caret)
 
     if (this.streaming && caretNode && nodes.length > 0) {
-      const hasStreamCaret = findLastTextNodeAndAppendNode(nodes[nodes.length - 1] as ComarkElement, caretNode)
+      const hasStreamCaret = findLastTextNodeAndAppendNode(nodes[nodes.length - 1] as MarkdownElement, caretNode)
       if (!hasStreamCaret) {
         nodes.push(caretNode)
       }

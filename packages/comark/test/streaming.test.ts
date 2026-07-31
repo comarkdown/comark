@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { createParse } from 'comark'
-import type { ComarkElement } from 'comark'
+import type { MarkdownElement } from 'comark'
 
 describe('streaming mode', () => {
   describe('$.line metadata', () => {
@@ -8,7 +8,7 @@ describe('streaming mode', () => {
       const parse = createParse()
       const result = await parse('# Hello\n\nParagraph one.\n\nParagraph two.\n', { streaming: true })
 
-      const nodes = result.nodes as ComarkElement[]
+      const nodes = result.nodes as MarkdownElement[]
       expect(nodes[0][1].$?.line).toBeDefined()
       expect(nodes[1][1].$?.line).toBeDefined()
       expect(nodes[2][1].$?.line).toBeDefined()
@@ -18,7 +18,7 @@ describe('streaming mode', () => {
       const parse = createParse()
       const result = await parse('# Hello\n\nParagraph one.\n')
 
-      const nodes = result.nodes as ComarkElement[]
+      const nodes = result.nodes as MarkdownElement[]
       expect(nodes[0][1].$).toBeUndefined()
     })
 
@@ -26,7 +26,7 @@ describe('streaming mode', () => {
       const parse = createParse()
       const result = await parse('# Heading\n\nPara 1\n\nPara 2\n\nPara 3\n', { streaming: true })
 
-      const nodes = result.nodes as ComarkElement[]
+      const nodes = result.nodes as MarkdownElement[]
       const lines = nodes.map((n) => n[1].$?.line ?? 0)
       for (let i = 1; i < lines.length; i++) {
         expect(lines[i]).toBeGreaterThan(lines[i - 1])
@@ -40,8 +40,8 @@ describe('streaming mode', () => {
       const result = await parse('# Hello\n\nWorld\n', { streaming: true })
 
       expect(result.nodes).toHaveLength(2)
-      expect((result.nodes[0] as ComarkElement)[0]).toBe('h1')
-      expect((result.nodes[1] as ComarkElement)[0]).toBe('p')
+      expect((result.nodes[0] as MarkdownElement)[0]).toBe('h1')
+      expect((result.nodes[1] as MarkdownElement)[0]).toBe('p')
     })
 
     it('returns same node types as non-streaming for complete content', async () => {
@@ -52,8 +52,8 @@ describe('streaming mode', () => {
       const regularResult = await parse(content)
 
       // Non-streaming call resets the cache, structure should match
-      expect((streamResult.nodes[0] as ComarkElement)[0]).toBe((regularResult.nodes[0] as ComarkElement)[0])
-      expect((streamResult.nodes[1] as ComarkElement)[0]).toBe((regularResult.nodes[1] as ComarkElement)[0])
+      expect((streamResult.nodes[0] as MarkdownElement)[0]).toBe((regularResult.nodes[0] as MarkdownElement)[0])
+      expect((streamResult.nodes[1] as MarkdownElement)[0]).toBe((regularResult.nodes[1] as MarkdownElement)[0])
     })
   })
 
@@ -69,9 +69,9 @@ describe('streaming mode', () => {
       const result = await parse(c2, { streaming: true })
 
       expect(result.nodes).toHaveLength(3)
-      expect((result.nodes[0] as ComarkElement)[0]).toBe('h1')
-      expect((result.nodes[1] as ComarkElement)[0]).toBe('p')
-      expect((result.nodes[2] as ComarkElement)[0]).toBe('p')
+      expect((result.nodes[0] as MarkdownElement)[0]).toBe('h1')
+      expect((result.nodes[1] as MarkdownElement)[0]).toBe('p')
+      expect((result.nodes[2] as MarkdownElement)[0]).toBe('p')
     })
 
     it('cached nodes from previous call appear at the start', async () => {
@@ -83,8 +83,8 @@ describe('streaming mode', () => {
       await parse(step1, { streaming: true })
       const result = await parse(step2, { streaming: true })
 
-      const h1 = result.nodes[0] as ComarkElement
-      const p1 = result.nodes[1] as ComarkElement
+      const h1 = result.nodes[0] as MarkdownElement
+      const p1 = result.nodes[1] as MarkdownElement
       expect(h1[0]).toBe('h1')
       expect(h1[2]).toBe('Title')
       expect(p1[2]).toBe('Paragraph one.')
@@ -101,7 +101,7 @@ describe('streaming mode', () => {
       const result = await parse('# Title\n\nPartial paragraph.\n\nSecond paragraph complete.\n', { streaming: true })
 
       // h1 is in the cache from step 1; paragraphs come from re-parsing
-      expect((result.nodes[0] as ComarkElement)[0]).toBe('h1')
+      expect((result.nodes[0] as MarkdownElement)[0]).toBe('h1')
       expect(result.nodes.length).toBeGreaterThanOrEqual(1)
     })
 
@@ -115,10 +115,10 @@ describe('streaming mode', () => {
       const result2 = await parse(c1, { streaming: true })
 
       expect(result2.nodes).toHaveLength(result1.nodes.length)
-      expect((result2.nodes[0] as ComarkElement)[0]).toBe((result1.nodes[0] as ComarkElement)[0])
-      expect((result2.nodes[0] as ComarkElement)[2]).toBe((result1.nodes[0] as ComarkElement)[2])
-      expect((result2.nodes[1] as ComarkElement)[0]).toBe((result1.nodes[1] as ComarkElement)[0])
-      expect((result2.nodes[1] as ComarkElement)[2]).toBe((result1.nodes[1] as ComarkElement)[2])
+      expect((result2.nodes[0] as MarkdownElement)[0]).toBe((result1.nodes[0] as MarkdownElement)[0])
+      expect((result2.nodes[0] as MarkdownElement)[2]).toBe((result1.nodes[0] as MarkdownElement)[2])
+      expect((result2.nodes[1] as MarkdownElement)[0]).toBe((result1.nodes[1] as MarkdownElement)[0])
+      expect((result2.nodes[1] as MarkdownElement)[2]).toBe((result1.nodes[1] as MarkdownElement)[2])
     })
   })
 
@@ -129,7 +129,7 @@ describe('streaming mode', () => {
       await parse('# Old Heading\n\nOld content.\n', { streaming: true })
       const result = await parse('# New Heading\n\nNew content.\n', { streaming: true })
 
-      const h1 = result.nodes[0] as ComarkElement
+      const h1 = result.nodes[0] as MarkdownElement
       expect(h1[2]).toBe('New Heading')
       expect(result.nodes).toHaveLength(2)
     })
@@ -141,7 +141,7 @@ describe('streaming mode', () => {
       const result = await parse('# Doc B\n', { streaming: true })
 
       expect(result.nodes).toHaveLength(1)
-      expect((result.nodes[0] as ComarkElement)[2]).toBe('Doc B')
+      expect((result.nodes[0] as MarkdownElement)[2]).toBe('Doc B')
     })
 
     it('non-streaming call resets the cache', async () => {
@@ -153,7 +153,7 @@ describe('streaming mode', () => {
       // Next streaming call should not see the pre-non-streaming state
       const result = await parse('# Title\n\nFirst.\n\nSecond.\n', { streaming: true })
 
-      expect((result.nodes[0] as ComarkElement)[2]).toBe('Title')
+      expect((result.nodes[0] as MarkdownElement)[2]).toBe('Title')
     })
   })
 
@@ -198,8 +198,8 @@ describe('streaming mode', () => {
 
       const result = await parse('# Heading\n\n::alert\nContent\n::\n', { streaming: true })
 
-      const h1 = result.nodes[0] as ComarkElement
-      const alert = result.nodes[1] as ComarkElement
+      const h1 = result.nodes[0] as MarkdownElement
+      const alert = result.nodes[1] as MarkdownElement
       expect(h1[0]).toBe('h1')
       expect(alert[0]).toBe('alert')
     })
@@ -207,7 +207,7 @@ describe('streaming mode', () => {
     it('keeps auto-closed empty string attributes as strings', async () => {
       const parse = createParse()
       const result = await parse('::callout{color="info" icon', { streaming: true })
-      const callout = result.nodes[0] as ComarkElement
+      const callout = result.nodes[0] as MarkdownElement
 
       expect(callout[0]).toBe('callout')
       expect(callout[1]).toMatchObject({ color: 'info', ':icon': 'true' })
@@ -216,7 +216,7 @@ describe('streaming mode', () => {
     it('keeps auto-closed empty string attributes as strings', async () => {
       const parse = createParse()
       const result = await parse('::callout{color="info" icon="', { streaming: true })
-      const callout = result.nodes[0] as ComarkElement
+      const callout = result.nodes[0] as MarkdownElement
 
       expect(callout[0]).toBe('callout')
       expect(callout[1]).toMatchObject({ color: 'info', icon: '' })
@@ -232,9 +232,9 @@ describe('streaming mode', () => {
       await parse(c1, { streaming: true })
       const result = await parse(c2, { streaming: true })
 
-      expect((result.nodes[0] as ComarkElement)[0]).toBe('h1')
-      expect((result.nodes[1] as ComarkElement)[0]).toBe('p')
-      expect((result.nodes[2] as ComarkElement)[0]).toBe('note')
+      expect((result.nodes[0] as MarkdownElement)[0]).toBe('h1')
+      expect((result.nodes[1] as MarkdownElement)[0]).toBe('p')
+      expect((result.nodes[2] as MarkdownElement)[0]).toBe('note')
     })
   })
 
@@ -245,10 +245,10 @@ describe('streaming mode', () => {
       // Incomplete bold - autoClose should close it
       const result = await parse('# Title\n\nSome **bold', { streaming: true })
 
-      const p = result.nodes[1] as ComarkElement
+      const p = result.nodes[1] as MarkdownElement
       expect(p[0]).toBe('p')
       // The bold should be auto-closed so it appears as strong
-      const strong = p.slice(2).find((child) => Array.isArray(child) && (child as ComarkElement)[0] === 'strong')
+      const strong = p.slice(2).find((child) => Array.isArray(child) && (child as MarkdownElement)[0] === 'strong')
       expect(strong).toBeDefined()
     })
 
@@ -265,12 +265,12 @@ describe('streaming mode', () => {
       const parse = createParse()
 
       const result = await parse('::alert\nSimple text\n::\n', { streaming: true })
-      const alert = result.nodes[0] as ComarkElement
+      const alert = result.nodes[0] as MarkdownElement
 
       // With autoUnwrap, single paragraph inside component is unwrapped
       const children = alert.slice(2)
       const hasDirectText = children.some((c) => typeof c === 'string')
-      const hasNoP = !children.some((c) => Array.isArray(c) && (c as ComarkElement)[0] === 'p')
+      const hasNoP = !children.some((c) => Array.isArray(c) && (c as MarkdownElement)[0] === 'p')
       expect(hasDirectText || hasNoP).toBe(true)
     })
 
@@ -278,10 +278,10 @@ describe('streaming mode', () => {
       const parse = createParse({ autoUnwrap: false })
 
       const result = await parse('::alert\nSimple text\n::\n', { streaming: true })
-      const alert = result.nodes[0] as ComarkElement
+      const alert = result.nodes[0] as MarkdownElement
 
       // Without autoUnwrap, the p element should be present
-      const p = alert.slice(2).find((c) => Array.isArray(c) && (c as ComarkElement)[0] === 'p')
+      const p = alert.slice(2).find((c) => Array.isArray(c) && (c as MarkdownElement)[0] === 'p')
       expect(p).toBeDefined()
     })
   })
@@ -296,10 +296,10 @@ describe('streaming mode', () => {
 
       // Continuation on parse1 should not be affected by parse2
       const result1 = await parse1('# Parser 1\n\nContent A.\n\nMore A.\n', { streaming: true })
-      expect((result1.nodes[0] as ComarkElement)[2]).toBe('Parser 1')
+      expect((result1.nodes[0] as MarkdownElement)[2]).toBe('Parser 1')
 
       const result2 = await parse2('# Parser 2\n\nContent B.\n\nMore B.\n', { streaming: true })
-      expect((result2.nodes[0] as ComarkElement)[2]).toBe('Parser 2')
+      expect((result2.nodes[0] as MarkdownElement)[2]).toBe('Parser 2')
     })
   })
 })

@@ -1,4 +1,4 @@
-import type { ComarkNode, ComarkElement, MarkdownTree } from 'comark'
+import type { ComarkNode, MarkdownElement, MarkdownTree } from 'comark'
 import { render } from 'comark/render'
 import type { RenderOptions } from 'comark/render'
 
@@ -11,7 +11,7 @@ export interface RenderHTMLContext {
   data?: Record<string, any>
 }
 
-export type ComponentRenderFn = (element: ComarkElement, ctx: RenderHTMLContext) => string | Promise<string>
+export type ComponentRenderFn = (element: MarkdownElement, ctx: RenderHTMLContext) => string | Promise<string>
 
 /**
  * Render Comark tree to HTML

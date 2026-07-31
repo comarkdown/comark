@@ -1,5 +1,5 @@
 import type { NodeHandler } from 'comark/render'
-import type { ComarkElement, ComarkNode } from 'comark'
+import type { MarkdownElement, ComarkNode } from 'comark'
 import { textContent } from 'comark/utils'
 import { DIM, CYAN, RESET, BOLD } from '../utils/escape.ts'
 
@@ -35,7 +35,7 @@ function renderToken(token: ComarkNode, colors: boolean): string {
   return color ? hexToAnsi(color) + content + RESET : content
 }
 
-function renderHighlighted(codeNode: ComarkElement, colors: boolean): string {
+function renderHighlighted(codeNode: MarkdownElement, colors: boolean): string {
   const children = codeNode.slice(2) as ComarkNode[]
   return children
     .map((child) => {
@@ -69,10 +69,10 @@ export const pre: NodeHandler = (node, state) => {
   const header = langPart || filePart ? langPart + filePart + '\n' : ''
 
   // Check if already highlighted by the highlight plugin (code has span.line children)
-  const codeNode = node[2] as ComarkElement | undefined
+  const codeNode = node[2] as MarkdownElement | undefined
   const isHighlighted =
     codeNode?.[0] === 'code' &&
-    (codeNode.slice(2) as ComarkNode[]).some((c) => !isString(c) && (c as ComarkElement)[0] === 'span')
+    (codeNode.slice(2) as ComarkNode[]).some((c) => !isString(c) && (c as MarkdownElement)[0] === 'span')
 
   const code = isHighlighted ? renderHighlighted(codeNode!, Boolean(colors)) : textContent(node).trim()
 

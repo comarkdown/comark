@@ -1,4 +1,4 @@
-import type { ComarkNode, ComarkElement, ComarkElementAttributes, ConditionalNodeHandler } from 'comark'
+import type { ComarkNode, MarkdownElement, MarkdownElementAttributes, ConditionalNodeHandler } from 'comark'
 import { defineComarkPlugin } from '../utils/helpers.ts'
 import { visit } from '../utils/index.ts'
 
@@ -209,19 +209,19 @@ export const Footnote: ConditionalNodeHandler = {
   },
   handler: (node) => {
     if (node[1].class === 'footnotes') {
-      const ol = node.find((n) => Array.isArray(n) && n[0] === 'ol') as ComarkElement
+      const ol = node.find((n) => Array.isArray(n) && n[0] === 'ol') as MarkdownElement
       if (!ol) return ''
       let result = ''
       for (let i = 2; i < ol.length; i++) {
-        const key = String(((ol[i] as ComarkElement)[1] as ComarkElementAttributes)?.id)?.replace('fn-', '')
-        const value = (ol[i] as ComarkElement)[2] as string
+        const key = String(((ol[i] as MarkdownElement)[1] as MarkdownElementAttributes)?.id)?.replace('fn-', '')
+        const value = (ol[i] as MarkdownElement)[2] as string
         result += `[^${key}]: ${value}\n`
       }
       return result
     }
     if (node[1].class === 'footnote-ref') {
-      const link = node[2] as ComarkElement
-      const key = String((link[1] as ComarkElementAttributes)?.id)?.replace('fnref-', '')
+      const link = node[2] as MarkdownElement
+      const key = String((link[1] as MarkdownElementAttributes)?.id)?.replace('fnref-', '')
       return `[^${key}]`
     }
     return ''
