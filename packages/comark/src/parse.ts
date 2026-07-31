@@ -226,7 +226,9 @@ export function createParse<const TPlugins extends readonly ComarkPlugin<any, an
 export async function parse<const TPlugins extends readonly ComarkPlugin<any, any>[] = []>(
   markdown: string,
   options: ParseOptions<TPlugins> = {} as ParseOptions<TPlugins>
-): Promise<MarkdownTree<ResolvedMeta<MergePluginMeta<TPlugins>>, ResolvedFrontmatter<MergePluginFrontmatter<TPlugins>>>> {
+): Promise<
+  MarkdownTree<ResolvedMeta<MergePluginMeta<TPlugins>>, ResolvedFrontmatter<MergePluginFrontmatter<TPlugins>>>
+> {
   const parse = createParse(options)
 
   return await parse(markdown)

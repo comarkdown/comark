@@ -9,6 +9,7 @@ import {
 } from '@angular/core'
 import { createSerializedParse } from 'comark'
 import type { ParseOptions, MarkdownTree } from 'comark'
+import { isMarkdownTree } from 'comark/utils'
 import { MarkdownParsed } from './markdown-parsed.component.ts'
 import { warnDeprecated } from '../internal/deprecation.ts'
 
@@ -39,8 +40,8 @@ import { warnDeprecated } from '../internal/deprecation.ts'
   `,
 })
 export class Markdown implements OnChanges {
-  /** The markdown content to parse and render */
-  @Input() value?: string
+  /** The markdown content to parse and render, or a pre-parsed MarkdownTree */
+  @Input() value?: string | MarkdownTree
 
   /**
    * The markdown content to parse and render
@@ -107,7 +108,14 @@ export class Markdown implements OnChanges {
   }
 
   private parseMarkdown(): void {
-    let source = this.value ?? this.markdown ?? ''
+    // Pre-parsed tree — skip parse and render directly
+    if (isMarkdownTree(this.value)) {
+      this.tree = this.value
+      this.cdr.markForCheck()
+      return
+    }
+
+    let source = (this.value as string | undefined) ?? this.markdown ?? ''
     if (this.summary) {
       source = source.split('<!-- more -->')[0] || ''
     }

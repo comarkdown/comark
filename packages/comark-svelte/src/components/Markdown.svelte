@@ -25,7 +25,8 @@ This is an alert component
 -->
 <script lang="ts">
   import type { MarkdownTree, ComarkPlugin, ComponentManifest } from 'comark'
-    import { parse } from 'comark'
+  import { parse } from 'comark'
+  import { isMarkdownTree } from 'comark/utils'
   import MarkdownParsed from './MarkdownParsed.svelte'
   import { warnDeprecated } from '../internal/deprecation.js'
 
@@ -42,7 +43,7 @@ This is an alert component
     data,
     class: className = '',
   }: {
-    value?: string
+    value?: string | MarkdownTree
     /** @deprecated Use `value` instead */
     markdown?: string
     options?: Record<string, any>
@@ -63,11 +64,12 @@ This is an alert component
 
   let parsed: MarkdownTree | null = $state(null)
 
-  let content = $derived((value ?? markdown ?? '').trim())
+  let content = $derived(typeof value === 'string' ? value.trim() : (markdown ?? '').trim())
 
   let requestVersion = 0
   let appliedVersion = 0
   $effect(() => {
+    if (isMarkdownTree(value)) return
     const currentVersion = ++requestVersion
     // `parse` directly mutates `plugins` which creates an infinite effect loop
     // so we copy it before passing it in so it gets a regular JS array and we get to still
@@ -81,7 +83,17 @@ This is an alert component
   })
 </script>
 
-{#if parsed}
+{#if isMarkdownTree(value)}
+  <MarkdownParsed
+    {value}
+    {components}
+    {componentsManifest}
+    {streaming}
+    {caret}
+    {data}
+    class={className}
+  />
+{:else if parsed}
   <MarkdownParsed
     value={parsed}
     {components}

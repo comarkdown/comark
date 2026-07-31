@@ -6,6 +6,13 @@ import type { ComarkNode, MarkdownTree } from 'comark'
 type VisitResult = ComarkNode | false | undefined | void
 
 /**
+ * Check whether a value is a MarkdownTree (or a bare `{ nodes }` tree-like).
+ */
+export function isMarkdownTree(value: unknown): value is MarkdownTree {
+  return !!value && typeof value === 'object' && Array.isArray((value as MarkdownTree).nodes)
+}
+
+/**
  * Get the text content of a Comark node
  *
  * @param node - The Comark node

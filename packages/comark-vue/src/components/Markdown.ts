@@ -2,6 +2,7 @@ import type { PropType } from 'vue'
 import { computed, defineComponent, h, shallowRef, watch } from 'vue'
 import { createSerializedParse } from 'comark'
 import type { ParseOptions, ComponentManifest, MarkdownTree } from 'comark'
+import { isMarkdownTree } from 'comark/utils'
 import { MarkdownParsed } from './MarkdownParsed.ts'
 import { warnDeprecated } from '../internal/deprecation.ts'
 
@@ -10,9 +11,9 @@ import { warnDeprecated } from '../internal/deprecation.ts'
  */
 export interface MarkdownProps {
   /**
-   * The markdown content to parse and render
+   * The markdown content to parse and render, or a pre-parsed MarkdownTree
    */
-  value?: string
+  value?: string | MarkdownTree
 
   /**
    * The markdown content to parse and render
@@ -108,10 +109,10 @@ export const Markdown: MarkdownComponent = defineComponent({
 
   props: {
     /**
-     * The markdown content to parse and render
+     * The markdown content to parse and render, or a pre-parsed MarkdownTree
      */
     value: {
-      type: String as PropType<string>,
+      type: [String, Object] as PropType<string | MarkdownTree>,
       default: undefined,
     },
 
@@ -208,7 +209,8 @@ export const Markdown: MarkdownComponent = defineComponent({
     }
 
     const markdown = computed(() => {
-      let result = props.value ?? props.markdown
+      if (isMarkdownTree(props.value)) return ''
+      let result = (props.value as string | undefined) ?? props.markdown
       const childrent = ctx.slots.default?.()
       if (childrent && childrent.length > 0 && typeof childrent[0].children === 'string') {
         result = childrent[0].children!
@@ -231,12 +233,30 @@ export const Markdown: MarkdownComponent = defineComponent({
 
     watch(
       () => [markdown.value, props.streaming] as const,
-      () => parse(markdown.value, { streaming: props.streaming }).then((result) => (parsed.value = result))
+      () => {
+        if (isMarkdownTree(props.value)) return
+        parse(markdown.value, { streaming: props.streaming }).then((result) => (parsed.value = result))
+      }
     )
 
-    await parse(markdown.value, { streaming: props.streaming }).then((result) => (parsed.value = result))
+    if (!isMarkdownTree(props.value)) {
+      await parse(markdown.value, { streaming: props.streaming }).then((result) => (parsed.value = result))
+    }
 
     return () => {
+      // Pre-parsed tree — skip parse and render directly
+      if (isMarkdownTree(props.value)) {
+        return h(MarkdownParsed, {
+          value: props.value,
+          components: props.components,
+          streaming: props.streaming,
+          componentsManifest: props.componentsManifest,
+          class: props.streaming ? 'comark-stream' : '',
+          caret: props.caret,
+          data: props.data,
+        })
+      }
+
       // Render using MarkdownParsed
       return h(MarkdownParsed, {
         value: parsed.value || { nodes: [], frontmatter: {}, meta: {} },

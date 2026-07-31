@@ -1,6 +1,13 @@
 import { handlers as defaultHandlers } from './handlers/index.ts'
 import type { NodeRenderData, State, Context } from 'comark/render'
-import type { ComarkElement, ComarkNode, MarkdownTree, ConditionalNodeHandler, CreateContext, NodeHandler } from 'comark'
+import type {
+  ComarkElement,
+  ComarkNode,
+  MarkdownTree,
+  ConditionalNodeHandler,
+  CreateContext,
+  NodeHandler,
+} from 'comark'
 import { pascalCase } from '../../utils/index.ts'
 import { resolveAttributes } from './attributes.ts'
 

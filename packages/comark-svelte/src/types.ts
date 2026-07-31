@@ -32,8 +32,8 @@ export interface MarkdownParsedProps {
 }
 
 export interface MarkdownProps {
-  /** The markdown content to parse and render */
-  value?: string
+  /** The markdown content to parse and render, or a pre-parsed MarkdownTree */
+  value?: string | MarkdownTree
   /** @deprecated Use `value` instead */
   markdown?: string
   options?: Exclude<ParseOptions, 'plugins'>

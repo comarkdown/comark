@@ -1,6 +1,7 @@
 import React from 'react'
 import { parse } from 'comark'
-import type { ParseOptions } from 'comark'
+import type { MarkdownTree, ParseOptions } from 'comark'
+import { isMarkdownTree } from 'comark/utils'
 import { MarkdownParsed } from './MarkdownParsed.tsx'
 import { MarkdownClient } from './MarkdownClient.tsx'
 import { warnDeprecated } from '../internal/deprecation.ts'
@@ -12,9 +13,9 @@ export interface MarkdownProps {
   children?: React.ReactNode
 
   /**
-   * The markdown content to parse and render
+   * The markdown content to parse and render, or a pre-parsed MarkdownTree
    */
-  value?: string
+  value?: string | MarkdownTree
 
   /**
    * The markdown content to parse and render
@@ -125,7 +126,23 @@ export async function Markdown({
   if (markdown !== undefined && value === undefined) {
     warnDeprecated('markdown (prop)', 'value')
   }
-  const source = children ? String(children) : (value ?? markdown ?? '')
+
+  // Pre-parsed tree — skip parse and render directly
+  if (isMarkdownTree(value)) {
+    return (
+      <MarkdownParsed
+        value={value}
+        components={customComponents}
+        componentsManifest={componentsManifest}
+        streaming={streaming}
+        className={className}
+        caret={caret}
+        data={data}
+      />
+    )
+  }
+
+  const source = children ? String(children) : ((value as string | undefined) ?? markdown ?? '')
   // `unwrap` prop is a shorthand for the `unwrap` parse option; an explicit
   // `options.unwrap` still wins when the prop is left at its default.
   const parseOptions = unwrap ? { ...options, unwrap } : options
