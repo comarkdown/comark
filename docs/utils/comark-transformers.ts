@@ -8,13 +8,13 @@ import headings from '@comark/nuxt/plugins/headings'
 
 import { defineTransformer } from '@nuxt/content'
 
-let parse
+let parseMarkdown
 export default defineTransformer({
   name: 'markdown',
   extensions: ['.md'],
   parse: async (file) => {
-    if (!parse) {
-      parse = createMarkdownParser({
+    if (!parseMarkdown) {
+      parseMarkdown = createMarkdownParser({
         plugins: [
           highlight({
             languages: [latexLanguage],
