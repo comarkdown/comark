@@ -177,23 +177,22 @@ export class ChatComponent {
 Use `@comark/ansi` to render LLM markdown output in terminal-based agents:
 
 ```typescript
-import { log } from '@comark/ansi'
+import { writeAnsi } from '@comark/ansi'
 
 // Print a complete LLM response to stdout with ANSI styling
-await log(llmResponse)
+await writeAnsi(llmResponse)
 ```
 
-For streaming terminal output, use `createLog` with a custom `write` function:
+For repeated terminal output, use `createAnsiWriter` with a custom `writer` function:
 
 ```typescript
-import { createLog } from '@comark/ansi'
+import { createAnsiWriter } from '@comark/ansi'
 
-const logStream = createLog({
-  write: (s) => process.stdout.write(s),
+const writeMarkdown = createAnsiWriter({
+  writer: (output) => process.stdout.write(output),
 })
 
-// Call after each chunk to show partial output
-await logStream(partialMarkdown)
+await writeMarkdown(markdown)
 ```
 
 ---

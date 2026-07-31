@@ -47,8 +47,8 @@ Located at `packages/comark/`:
 packages/comark/
 ├── src/
 │   ├── index.ts              # Core parser: parseMarkdown(), autoCloseMarkdown()
-│   ├── render.ts             # String rendering: renderMarkdown() (renderHTML moved to @comark/html)
-│   ├── types.ts              # TypeScript interfaces (ParseOptions, etc.)
+│   ├── render.ts             # String rendering: renderMarkdown() (renderHtml() moved to @comark/html)
+│   ├── types.ts              # TypeScript interfaces (ParserOptions, etc.)
 │   ├── ast/                  # Comark AST types and utilities
 │   │   ├── index.ts          # Re-exports (comark/ast entry point)
 │   │   ├── types.ts          # MarkdownDocument (ComarkTree deprecated alias), Node, ElementNode, TextNode
@@ -99,11 +99,11 @@ Located at `packages/comark-html/`. Framework-free HTML string rendering.
 ### Usage
 
 ```typescript
-import { render, renderHTML, createRender } from '@comark/html'
+import { render, renderHtml, createRender } from '@comark/html'
 import highlight from '@comark/html/plugins/highlight'
 import math, { Math } from '@comark/html/plugins/math'
 
-// Flat options — ParseOptions & RenderOptions merged at top level
+// Flat options — ParserOptions & RendererOptions merged at top level
 const renderFn = createRender({
   plugins: [highlight({ themes: { light: 'github-light', dark: 'github-dark' } })],
   components: {
@@ -135,20 +135,20 @@ Located at `packages/comark-ansi/`. ANSI terminal renderer.
 ### Usage
 
 ```typescript
-import { log, render, renderANSI, createLog, createRender } from '@comark/ansi'
+import { createAnsiRenderer, createAnsiWriter, renderAnsi, renderAnsiFromDocument, writeAnsi } from '@comark/ansi'
 import highlight from '@comark/ansi/plugins/highlight'
 import math, { Math } from '@comark/ansi/plugins/math'
 
-// Flat options — ParseOptions & RenderANSIOptions merged at top level
-const logFn = createLog({
+// Flat options — ParserOptions & AnsiRendererOptions merged at top level
+const writeAnsi = createAnsiWriter({
   plugins: [highlight(), math()],
   components: { Math },
   width: 120,                      // terminal width
   colors: true,                    // emit ANSI escape codes
-  write: (s) => process.stderr.write(s),
+  writer: (output) => process.stderr.write(output),
 })
 
-await logFn(markdownString)
+await writeAnsi(markdownString)
 ```
 
 ---
@@ -365,10 +365,10 @@ import mermaid, { Mermaid } from '@comark/angular/plugins/mermaid'
 import { parseMarkdown, autoCloseMarkdown } from 'comark'
 
 // HTML rendering (parse + render in one step)
-import { render, renderHTML, createRender } from '@comark/html'
+import { render, renderHtml, createRender } from '@comark/html'
 
 // ANSI terminal rendering
-import { log, render, renderANSI, createLog, createRender } from '@comark/ansi'
+import { createAnsiRenderer, createAnsiWriter, renderAnsi, renderAnsiFromDocument, writeAnsi } from '@comark/ansi'
 
 // Markdown string rendering (AST → markdown)
 import { renderMarkdown } from 'comark/render'
@@ -391,13 +391,13 @@ import alert from 'comark/plugins/alert'
 // Use comark/plugins/* only when calling parseMarkdown() without a framework renderer.
 
 // HTML rendering — parse + render to HTML string
-import { render, renderHTML, createRender } from '@comark/html'
+import { render, renderHtml, createRender } from '@comark/html'
 import highlight from '@comark/html/plugins/highlight'
 import math, { Math } from '@comark/html/plugins/math'
 import mermaid, { Mermaid } from '@comark/html/plugins/mermaid'
 
 // ANSI terminal rendering — parse + render to styled terminal string
-import { log, render, renderANSI, createLog, createRender } from '@comark/ansi'
+import { createAnsiRenderer, createAnsiWriter, renderAnsi, renderAnsiFromDocument, writeAnsi } from '@comark/ansi'
 import highlight from '@comark/ansi/plugins/highlight'
 import math from '@comark/ansi/plugins/math'
 

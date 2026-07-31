@@ -83,11 +83,11 @@ Hello {{ frontmatter.user.name }}!
 
 ```typescript [ANSI]
 import binding, { Binding } from '@comark/ansi/plugins/binding'
-import { renderANSI } from '@comark/ansi'
+import { renderAnsiFromDocument } from '@comark/ansi'
 import { parseMarkdown } from 'comark'
 
 const tree = await parseMarkdown('Score: {{ data.score || 0 }}', { plugins: [binding()] })
-const out = await renderANSI(tree, {
+const out = await renderAnsiFromDocument(tree, {
   components: { Binding },
   data: { score: 42 },
 })

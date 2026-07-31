@@ -49,7 +49,7 @@ The migration has two parts: **Core Package** (programmatic API) and **Nuxt Modu
 ### Parse Options
 
 ```typescript
-// Before: MDCParseOptions
+// Before: MDCOptions
 {
   remark: { plugins: { /* record */ } },
   rehype: { options: {...}, plugins: { /* record */ } },
@@ -57,7 +57,7 @@ The migration has two parts: **Core Package** (programmatic API) and **Nuxt Modu
   toc: { depth: 3, searchDepth: 2 } | false,
 }
 
-// After: ParseOptions
+// After: ParserOptions
 {
   plugins: ComarkPlugin[],   // ordered array, not a record
   autoUnwrap: true,          // removes <p> from single-paragraph containers

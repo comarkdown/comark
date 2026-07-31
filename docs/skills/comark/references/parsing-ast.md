@@ -51,7 +51,7 @@ interface MarkdownDocument {
 ### Parse Options
 
 ```typescript
-interface ParseOptions {
+interface ParserOptions {
   autoUnwrap?: boolean      // Remove unnecessary <p> wrappers (default: true)
   autoClose?: boolean       // Auto-close unclosed syntax (default: true)
   plugins?: ComarkPlugin[]  // Enable plugins (e.g., highlight, emoji, toc)
@@ -327,12 +327,12 @@ Warning message
 
 ```typescript
 import { parseMarkdown } from 'comark'
-import { renderHTML } from '@comark/html'
+import { renderHtml } from '@comark/html'
 
 const content = '# Hello World\n\nThis is **markdown**.'
 const tree = await parseMarkdown(content)
 
-const html = renderHTML(tree)
+const html = renderHtml(tree)
 console.log(html)
 ```
 

@@ -15,16 +15,16 @@ This alert is rendered using a custom Comark component — no client-side JavaSc
 
 ## Why Comark + Astro?
 
-- **Server-rendered** — Comark parses and renders on the server via `parseMarkdown()` and `renderHTML()`
+- **Server-rendered** — Comark parses and renders on the server via `parseMarkdown()` and `renderHtml()`
 - **Content collections** — Full frontmatter validation with Zod schemas
 - **Component syntax** — Embed custom components directly in your Markdown
 
 ```ts
 import { parseMarkdown } from 'comark'
-import { renderHTML } from '@comark/html'
+import { renderHtml } from '@comark/html'
 
 const tree = await parseMarkdown(markdown)
-const html = await renderHTML(tree, { components: { alert } })
+const html = await renderHtml(tree, { components: { alert } })
 ```
 
 ::alert{type="success"}

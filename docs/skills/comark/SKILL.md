@@ -141,7 +141,7 @@ Complete guide for parsing documents and working with AST:
 - **String Parsing:** `parseMarkdown()` function with options (autoUnwrap, autoClose)
 - **Async Parsing:** `parseMarkdown()` with Shiki syntax highlighting
 - **AST Structure:** Markdown AST format - lightweight array-based AST
-- **Rendering AST:** convert to HTML (`renderHTML` via `@comark/html`) or markdown (`renderMarkdown` via `comark/render`)
+- **Rendering AST:** convert to HTML (`renderHtml` via `@comark/html`) or markdown (`renderMarkdown` via `comark/render`)
 - **Auto-close:** automatic closing of unclosed syntax
 - **Auto-unwrap:** remove unnecessary paragraph wrappers from container components
 
@@ -280,7 +280,7 @@ interface MarkdownDocument {
 
 ```typescript
 import { parseMarkdown } from 'comark'
-import { renderHTML } from '@comark/html'
+import { renderHtml } from '@comark/html'
 import highlight from '@comark/html/plugins/highlight'
 
 async function processMarkdownFile(filePath: string) {
@@ -295,7 +295,7 @@ async function processMarkdownFile(filePath: string) {
   })
 
   return {
-    html: renderHTML(tree),
+    html: renderHtml(tree),
     frontmatter: tree.frontmatter,
     toc: tree.meta.toc
   }
@@ -362,7 +362,7 @@ import { docComponents } from './components'
 
 ```typescript
 // Asynchronous parsing
-parseMarkdown(source: string, options?: ParseOptions): Promise<MarkdownDocument>
+parseMarkdown(source: string, options?: ParserOptions): Promise<MarkdownDocument>
 
 // Auto-close unclosed syntax
 autoCloseMarkdown(source: string): string
@@ -372,13 +372,13 @@ autoCloseMarkdown(source: string): string
 
 ```typescript
 // Render markdown to HTML string (parse + render in one step)
-render(markdown: string, options?: RenderOptions): Promise<string>
+render(markdown: string, options?: RendererOptions): Promise<string>
 
 // Render a pre-parsed tree to HTML
-renderHTML(tree: MarkdownDocument, options?: RenderOptions): Promise<string>
+renderHtml(tree: MarkdownDocument, options?: RendererOptions): Promise<string>
 
 // Create a reusable render function with shared parser instance
-createRender(options?: ParseOptions & RenderOptions): (markdown: string) => Promise<string>
+createRender(options?: ParserOptions & RendererOptions): (markdown: string) => Promise<string>
 ```
 
 ### Vue Components (`@comark/vue`)
@@ -420,7 +420,7 @@ Full TypeScript definitions included:
 import type {
   MarkdownDocument,
   Node,
-  ParseOptions,
+  ParserOptions,
 } from 'comark'
 ```
 
