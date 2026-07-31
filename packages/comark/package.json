@@ -1,13 +1,22 @@
 {
   "name": "comark",
-  "version": "0.4.0",
-  "description": "Components in Markdown (Comark) parser with streaming support for Vue, React, Svelte and HTML",
+  "version": "0.5.1",
+  "description": "The Markdown engine for the modern web. Parse Markdown with components, attributes and plugins to a compact AST, at build time or runtime, and render with Vue, React, Svelte, Angular, HTML or ANSI. Streaming-ready for AI output.",
   "keywords": [
+    "ai",
+    "angular",
+    "ast",
+    "commonmark",
+    "components",
+    "gfm",
     "markdown",
+    "markdown-it",
     "mdc",
+    "mdx",
     "parser",
     "react",
     "streaming",
+    "svelte",
     "vue"
   ],
   "homepage": "https://comark.dev",
@@ -57,7 +66,6 @@
   "devDependencies": {
     "@json-render/core": "catalog:",
     "@shikijs/twoslash": "catalog:",
-    "@types/js-yaml": "catalog:",
     "@types/markdown-it": "catalog:",
     "github-slugger": "catalog:",
     "hast-util-to-string": "catalog:",

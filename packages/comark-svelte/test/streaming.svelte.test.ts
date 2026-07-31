@@ -1,24 +1,24 @@
 import { describe, expect, it } from 'vitest'
 import { render } from 'vitest-browser-svelte'
 import { parse } from 'comark'
-import Comark from '../src/components/Comark.svelte'
-import ComarkRenderer from '../src/components/ComarkRenderer.svelte'
+import Markdown from '../src/components/Markdown.svelte'
+import MarkdownParsed from '../src/components/MarkdownParsed.svelte'
 import Alert from './test-components/Alert.svelte'
 
 describe('streaming mode', () => {
   it('updates content when markdown prop changes', async () => {
-    const screen = render(Comark, { markdown: 'Hello' })
+    const screen = await render(Markdown, { value: 'Hello' })
 
     await expect.element(screen.getByText('Hello')).toBeInTheDocument()
 
-    await screen.rerender({ markdown: 'Hello **World**' })
+    await screen.rerender({ value: 'Hello **World**' })
 
     await expect.element(screen.getByText('Hello World')).toBeInTheDocument()
   })
 
   it('shows caret during streaming', async () => {
-    const screen = render(Comark, {
-      markdown: 'Hello',
+    const screen = await render(Markdown, {
+      value: 'Hello',
       streaming: true,
       caret: { class: 'streaming-caret' },
     })
@@ -28,8 +28,8 @@ describe('streaming mode', () => {
   })
 
   it('shows caret with custom class', async () => {
-    const screen = render(Comark, {
-      markdown: 'Hello',
+    const screen = await render(Markdown, {
+      value: 'Hello',
       streaming: true,
       caret: { class: 'my-cursor' },
     })
@@ -39,8 +39,8 @@ describe('streaming mode', () => {
   })
 
   it('does not show caret when streaming is false', async () => {
-    const screen = render(Comark, {
-      markdown: 'Hello',
+    const screen = await render(Markdown, {
+      value: 'Hello',
       streaming: false,
       caret: true,
     })
@@ -50,28 +50,28 @@ describe('streaming mode', () => {
   })
 
   it('progressively renders content as markdown grows', async () => {
-    const screen = render(Comark, { markdown: '# Title' })
+    const screen = await render(Markdown, { value: '# Title' })
 
     await expect.element(screen.getByRole('heading', { name: 'Title', level: 1 })).toBeInTheDocument()
 
-    await screen.rerender({ markdown: '# Title\n\nFirst paragraph' })
+    await screen.rerender({ value: '# Title\n\nFirst paragraph' })
     await expect.element(screen.getByText('First paragraph')).toBeInTheDocument()
 
     await screen.rerender({
-      markdown: '# Title\n\nFirst paragraph\n\n- item 1',
+      value: '# Title\n\nFirst paragraph\n\n- item 1',
     })
     await expect.element(screen.getByRole('listitem')).toHaveTextContent('item 1')
 
     await screen.rerender({
-      markdown: '# Title\n\nFirst paragraph\n\n- item 1\n- item 2',
+      value: '# Title\n\nFirst paragraph\n\n- item 1\n- item 2',
     })
     const items = screen.getByRole('listitem')
     expect(items.length).toBe(2)
   })
 
   it('handles incomplete bold during streaming with autoClose', async () => {
-    const screen = render(Comark, {
-      markdown: 'Hello **wor',
+    const screen = await render(Markdown, {
+      value: 'Hello **wor',
       streaming: true,
       caret: true,
       options: { autoClose: true },
@@ -80,7 +80,7 @@ describe('streaming mode', () => {
     await expect.element(screen.getByText(/wor/)).toBeInTheDocument()
 
     await screen.rerender({
-      markdown: 'Hello **world**',
+      value: 'Hello **world**',
       streaming: false,
       caret: false,
       options: { autoClose: true },
@@ -90,8 +90,8 @@ describe('streaming mode', () => {
   })
 
   it('handles incomplete heading during streaming', async () => {
-    const screen = render(Comark, {
-      markdown: '# Hell',
+    const screen = await render(Markdown, {
+      value: '# Hell',
       streaming: true,
       caret: true,
     })
@@ -100,7 +100,7 @@ describe('streaming mode', () => {
     await expect.element(screen.getByText(/Hell/)).toBeInTheDocument()
 
     await screen.rerender({
-      markdown: '# Hello World',
+      value: '# Hello World',
       streaming: false,
       caret: false,
     })
@@ -109,8 +109,8 @@ describe('streaming mode', () => {
   })
 
   it('handles incomplete MDC component during streaming with autoClose', async () => {
-    const screen = render(Comark, {
-      markdown: '::alert{type="warning"}\nDang',
+    const screen = await render(Markdown, {
+      value: '::alert{type="warning"}\nDang',
       streaming: true,
       caret: true,
       options: { autoClose: true },
@@ -121,7 +121,7 @@ describe('streaming mode', () => {
     await expect.element(screen.getByText(/Dang/)).toBeInTheDocument()
 
     await screen.rerender({
-      markdown: '::alert{type="warning"}\nDanger zone\n::',
+      value: '::alert{type="warning"}\nDanger zone\n::',
       streaming: false,
       caret: false,
       options: { autoClose: true },
@@ -132,8 +132,8 @@ describe('streaming mode', () => {
   })
 
   it('removes caret when streaming ends', async () => {
-    const screen = render(Comark, {
-      markdown: 'Hello',
+    const screen = await render(Markdown, {
+      value: 'Hello',
       streaming: true,
       caret: { class: 'streaming-caret' },
     })
@@ -142,7 +142,7 @@ describe('streaming mode', () => {
     expect(screen.container.querySelector('.streaming-caret')).not.toBeNull()
 
     await screen.rerender({
-      markdown: 'Hello World',
+      value: 'Hello World',
       streaming: false,
       caret: false,
     })
@@ -152,11 +152,11 @@ describe('streaming mode', () => {
   })
 })
 
-describe('streaming with ComarkRenderer', () => {
+describe('streaming with MarkdownParsed', () => {
   it('shows and removes caret based on streaming prop', async () => {
     const tree = await parse('Hello **World**')
-    const screen = render(ComarkRenderer, {
-      tree,
+    const screen = await render(MarkdownParsed, {
+      value: tree,
       streaming: true,
       caret: { class: 'streaming-caret' },
     })
@@ -165,7 +165,7 @@ describe('streaming with ComarkRenderer', () => {
     expect(screen.container.querySelector('.streaming-caret')).not.toBeNull()
 
     await screen.rerender({
-      tree,
+      value: tree,
       streaming: false,
       caret: false,
     })
@@ -175,12 +175,12 @@ describe('streaming with ComarkRenderer', () => {
 
   it('updates tree and reflects new content', async () => {
     let tree = await parse('First')
-    const screen = render(ComarkRenderer, { tree })
+    const screen = await render(MarkdownParsed, { value: tree })
 
     await expect.element(screen.getByText('First')).toBeInTheDocument()
 
     tree = await parse('First\n\nSecond')
-    await screen.rerender({ tree })
+    await screen.rerender({ value: tree })
 
     await expect.element(screen.getByText('First')).toBeInTheDocument()
     await expect.element(screen.getByText('Second')).toBeInTheDocument()

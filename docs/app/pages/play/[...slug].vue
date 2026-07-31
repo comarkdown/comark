@@ -217,19 +217,19 @@ defineOgImage('OgImageDocs', {
     class="mx-auto"
   >
     <UPageHeader>
-      <Comark>
+      <Markdown>
         {{
           `> [!NOTE]
         > This page is rendered live from markdown. Edit the source inline with **Edit Page** at the bottom right.`
         }}
-      </Comark>
+      </Markdown>
     </UPageHeader>
     <UPageBody
       prose
       class="wrap-break-word mx-auto"
     >
       <ComarkPlaygroundRenderer
-        :tree="page"
+        :value="page"
         :components-manifest="resolveComponent"
       />
     </UPageBody>

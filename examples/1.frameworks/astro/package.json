@@ -12,7 +12,7 @@
     "@astrojs/react": "catalog:",
     "@tailwindcss/vite": "catalog:",
     "astro": "catalog:",
-    "comark": "catalog:",
+    "comark": "workspace:*",
     "react": "catalog:",
     "react-dom": "catalog:"
   },

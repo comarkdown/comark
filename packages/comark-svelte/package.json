@@ -1,14 +1,17 @@
 {
   "name": "@comark/svelte",
-  "version": "0.4.0",
-  "description": "Svelte renderer for Comark (Components in Markdown)",
+  "version": "0.5.1",
+  "description": "Svelte 5 renderer for Comark. Render Markdown with components at runtime, with streaming support for AI output.",
   "keywords": [
+    "ai",
     "comark",
+    "components",
     "markdown",
     "mdc",
     "renderer",
     "streaming",
-    "svelte"
+    "svelte",
+    "sveltekit"
   ],
   "homepage": "https://comark.dev/rendering/svelte",
   "bugs": {
@@ -54,14 +57,14 @@
   },
   "scripts": {
     "stub": "node ../../scripts/stub.mjs",
-    "build": "svelte-package --input src",
+    "build": "svelte-package --input src && node ../../scripts/sync-plugins.mjs",
     "build:watch": "svelte-package --input src --watch",
     "test": "vitest run",
     "check": "svelte-check --tsconfig ./tsconfig.json",
     "release": "release-it"
   },
   "dependencies": {
-    "comark": "catalog:"
+    "comark": "workspace:*"
   },
   "devDependencies": {
     "@sveltejs/package": "catalog:",
@@ -69,7 +72,7 @@
     "@vitest/browser": "catalog:",
     "@vitest/browser-playwright": "catalog:",
     "release-it": "catalog:",
-    "svelte": "catalog:",
+    "svelte": "^5.56.4",
     "svelte-check": "catalog:",
     "vitest": "catalog:",
     "vitest-browser-svelte": "catalog:"

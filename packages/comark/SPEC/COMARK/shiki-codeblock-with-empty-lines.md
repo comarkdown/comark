@@ -37,7 +37,6 @@ More content here.
         "language": "markdown",
         "filename": "content.md",
         "class": "shiki shiki-themes github-dark dark:github-dark",
-        "tabindex": "0",
         "style": "background-color:#24292e;color:#e1e4e8"
       },
       [
@@ -137,7 +136,7 @@ More content here.
 ## HTML
 
 ```html
-<pre language="markdown" filename="content.md" class="shiki shiki-themes github-dark dark:github-dark" tabindex="0" style="background-color:#24292e;color:#e1e4e8"><code class="language-markdown"><span class="line" style="display: inline"><span style="color:#79B8FF;--shiki-light-font-weight:bold"># My Page Title</span></span>
+<pre language="markdown" filename="content.md" class="shiki shiki-themes github-dark dark:github-dark" style="background-color:#24292e;color:#e1e4e8"><code class="language-markdown"><span class="line" style="display: inline"><span style="color:#79B8FF;--shiki-light-font-weight:bold"># My Page Title</span></span>
 <span class="line" style="display: inline"></span>
 <span class="line" style="display: inline"><span style="color:#E1E4E8">This is the opening paragraph used as the description.</span></span>
 <span class="line" style="display: inline"></span>

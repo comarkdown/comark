@@ -1,0 +1,87 @@
+<!--
+@component
+High-level Markdown component using experimental Svelte 5 async support.
+
+Uses `$derived` with `await` to parse markdown reactively. Requires the
+consumer to enable `experimental: { async: true }` in their Svelte config
+and wrap this component in a `<svelte:boundary>` for pending/error states.
+
+@example
+```svelte
+<script>
+  import { MarkdownAsync } from '@comark/svelte/async'
+  import Alert from './Alert.svelte'
+
+  let content = $state('# Hello World')
+</script>
+
+<svelte:boundary>
+  <MarkdownAsync value={content} components={{ alert: Alert }} />
+  {#snippet pending()}
+    <p>Loading...</p>
+  {/snippet}
+  {#snippet failed(error, reset)}
+    <p>Error: {error.message}</p>
+    <button onclick={reset}>Retry</button>
+  {/snippet}
+</svelte:boundary>
+```
+-->
+<script lang="ts">
+  import type { ComarkPlugin, ComponentManifest } from 'comark'
+  import { parse } from 'comark'
+  import MarkdownParsed from '../components/MarkdownParsed.svelte'
+  import ResolveAsync from './ResolveAsync.svelte'
+  import { warnDeprecated } from '../internal/deprecation.js'
+
+  let {
+    value,
+    markdown,
+    options = {},
+    plugins = [],
+    unwrap = false,
+    components = {},
+    componentsManifest,
+    streaming = false,
+    caret = false,
+    data,
+    class: className = '',
+  }: {
+    value?: string
+    /** @deprecated Use `value` instead */
+    markdown?: string
+    options?: Record<string, any>
+    plugins?: ComarkPlugin[]
+    unwrap?: boolean | string | string[]
+    components?: Record<string, any>
+    componentsManifest?: ComponentManifest
+    streaming?: boolean
+    caret?: boolean | { class: string }
+    data?: Record<string, unknown>
+    class?: string
+  } = $props()
+
+  // svelte-ignore state_referenced_locally — deprecation check only needs the initial value
+  if (markdown !== undefined && value === undefined) {
+    warnDeprecated('markdown (prop)', 'value')
+  }
+
+  let content = $derived((value ?? markdown ?? '').trim())
+  let parsed = $derived(
+    // `parse` directly mutates `plugins` which creates an infinite effect loop
+    // so we copy it before passing it in so it gets a regular JS array and we get to still
+    // track dependencies from an external perspective
+    await parse(content, { ...options, ...(unwrap ? { unwrap } : {}), plugins: [...plugins] }),
+  )
+</script>
+
+<MarkdownParsed
+  value={parsed}
+  {components}
+  {componentsManifest}
+  resolver={ResolveAsync}
+  {streaming}
+  {caret}
+  {data}
+  class={className}
+/>

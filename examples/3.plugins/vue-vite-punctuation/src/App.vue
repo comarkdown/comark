@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Comark } from '@comark/vue'
+import { Markdown } from '@comark/vue'
 import punctuation from '@comark/vue/plugins/punctuation'
 
 const markdown = `
@@ -46,9 +46,9 @@ Inline code like \`"hello" -- world...\` is not transformed.
 
 <template>
   <Suspense>
-    <Comark :plugins="[punctuation()]">
+    <Markdown :plugins="[punctuation()]">
       {{ markdown }}
-    </Comark>
+    </Markdown>
   </Suspense>
 </template>
 

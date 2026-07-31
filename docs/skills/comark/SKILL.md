@@ -1,7 +1,6 @@
 ---
 name: comark
-description: >-
-  Comark (Components in Markdown) parser — syntax, AST, Vue/React/Svelte renderers, plugins, and LLM streaming with auto-close.
+description: 'Comark (Components in Markdown) parser: syntax, AST, Vue/React/Svelte/Angular renderers, plugins, and LLM streaming with auto-close.'
 ---
 
 # Comark - Skills Guide
@@ -16,7 +15,7 @@ A high-performance markdown parser with Comark (Components in Markdown) support,
 - 📦 **Streaming support** with buffered and incremental modes
 - ⚡ **Real-time rendering** with auto-close for incomplete syntax
 - 🔧 **Comark component syntax** for custom components
-- 🎨 **Vue, React & Svelte renderers** with custom component mapping
+- 🎨 **Vue, React, Svelte & Angular renderers** with custom component mapping
 - 📝 **YAML frontmatter** support
 - 📑 **Automatic TOC generation**
 - 🎯 **Full TypeScript support**
@@ -31,6 +30,7 @@ A high-performance markdown parser with Comark (Components in Markdown) support,
   - Vue components: `@comark/vue`
   - React components: `@comark/react`
   - Svelte components: `@comark/svelte`
+  - Angular components: `@comark/angular`
   - HTML rendering: `@comark/html`
   - ANSI terminal rendering: `@comark/ansi`
   - Nuxt module: `@comark/nuxt`
@@ -65,11 +65,11 @@ console.log(result.meta)    // Additional metadata
 
 ```vue
 <template>
-  <Comark :markdown="content" />
+  <Markdown :value="content" />
 </template>
 
 <script setup lang="ts">
-import { Comark } from '@comark/vue'
+import { Markdown } from '@comark/vue'
 
 const content = `# Hello World`
 </script>
@@ -78,10 +78,10 @@ const content = `# Hello World`
 ### React Rendering
 
 ```tsx
-import { Comark } from '@comark/react'
+import { Markdown } from '@comark/react'
 
 export default function App() {
-  return <Comark markdown={content} />
+  return <Markdown value={content} />
 }
 ```
 
@@ -89,12 +89,29 @@ export default function App() {
 
 ```svelte
 <script lang="ts">
-  import { Comark } from '@comark/svelte'
+  import { Markdown } from '@comark/svelte'
 
   const content = `# Hello World`
 </script>
 
-<Comark markdown={content} />
+<Markdown value={content} />
+```
+
+### Angular Rendering
+
+```typescript
+import { Component } from '@angular/core'
+import { Markdown } from '@comark/angular'
+
+@Component({
+  selector: 'app-root',
+  standalone: true,
+  imports: [Markdown],
+  template: `<comark-markdown [value]="content" />`,
+})
+export class AppComponent {
+  content = `# Hello World`
+}
 ```
 
 ## Documentation Sections
@@ -136,7 +153,7 @@ Complete guide for parsing documents and working with AST:
 
 Comprehensive guide for rendering in Vue applications:
 
-- **Basic Usage:** `Comark` component setup
+- **Basic Usage:** `Markdown` component setup
 - **Custom Components:** mapping custom Vue components to Comark elements
 - **Dynamic Loading:** `componentsManifest` for lazy-loaded components
 - **Slots Support:** named slots with `#slot-name` syntax
@@ -153,7 +170,7 @@ Comprehensive guide for rendering in Vue applications:
 
 Comprehensive guide for rendering in React applications:
 
-- **Basic Usage:** `Comark` component setup
+- **Basic Usage:** `Markdown` component setup
 - **Custom Components:** mapping custom React components to Comark elements
 - **Dynamic Loading:** `componentsManifest` for lazy-loaded components
 - **Props Conversion:** automatic HTML attribute conversion (`class` → `className`, etc.)
@@ -170,26 +187,43 @@ Comprehensive guide for rendering in React applications:
 
 Comprehensive guide for rendering in Svelte 5 applications:
 
-- **Basic Usage:** `Comark` component setup with `$state`
+- **Basic Usage:** `Markdown` component setup with `$state`
 - **Custom Components:** mapping custom Svelte components to Comark elements
 - **Dynamic Loading:** `componentsManifest` for lazy-loaded components
 - **Props Mapping:** attribute-to-prop conversion (close to HTML semantics)
 - **Streaming Mode:** real-time rendering with reactive `$state`
-- **Experimental Async:** `ComarkAsync` with `<svelte:boundary>`
+- **Experimental Async:** `MarkdownAsync` with `<svelte:boundary>`
 - **Prose Components:** `Prose` prefix for overriding native HTML elements
 
 **[→ Read Full Svelte Rendering Guide](./references/rendering-svelte.md)**
 
 ---
 
-### 🤖 [6. Using with AI Agents](./AGENTS.md)
+### 🅰️ [6. Angular Rendering](./references/rendering-angular.md)
+
+Comprehensive guide for rendering in Angular 17+ applications:
+
+- **Basic Usage:** `Markdown` standalone component setup
+- **Custom Components:** mapping Angular components to Comark elements
+- **Component Resolution:** `Prose{PascalTag}`, `tag`, `PascalTag` priority order
+- **Content Projection:** named slots via `<ng-content select="[slot=name]">` 
+- **Streaming Mode:** real-time rendering with caret indicator
+- **Data Binding:** `:binding` resolution with ambient `data` input
+- **Pre-configured Components:** `defineMarkdownComponent` and `defineMarkdownParsedComponent`
+- **Plugins:** Math (KaTeX), Mermaid, Binding with Angular component wrappers
+
+**[→ Read Full Angular Rendering Guide](./references/rendering-angular.md)**
+
+---
+
+### 🤖 [7. Using with AI Agents](./AGENTS.md)
 
 Guide for integrating Comark in AI agent and LLM streaming workflows:
 
 - **Streaming from LLMs:** rendering incremental AI output in real time
 - **Auto-Close:** handling incomplete syntax from partial LLM tokens
 - **Caret Indicator:** showing a live cursor during generation
-- **Framework Examples:** Vue, React, Svelte streaming patterns
+- **Framework Examples:** Vue, React, Svelte, Angular streaming patterns
 - **ANSI for CLIs:** rendering AI output in terminal agents
 
 **[→ Read Full Agents Guide](./AGENTS.md)**
@@ -272,7 +306,7 @@ async function processMarkdownFile(filePath: string) {
 
 ```tsx
 import { useState } from 'react'
-import { Comark } from '@comark/react'
+import { Markdown } from '@comark/react'
 
 export default function Editor() {
   const [content, setContent] = useState('# Hello')
@@ -280,7 +314,7 @@ export default function Editor() {
   return (
     <div className="split-editor">
       <textarea value={content} onChange={e => setContent(e.target.value)} />
-      <Comark markdown={content} />
+      <Markdown value={content} />
     </div>
   )
 }
@@ -312,12 +346,12 @@ async function processMultipleFiles(files: string[]) {
 ```vue
 <template>
   <article class="prose">
-    <Comark :markdown="markdownContent" :components="docComponents" />
+    <Markdown :value="markdownContent" :components="docComponents" />
   </article>
 </template>
 
 <script setup lang="ts">
-import { Comark } from '@comark/vue'
+import { Markdown } from '@comark/vue'
 import { docComponents } from './components'
 </script>
 ```
@@ -350,19 +384,25 @@ createRender(options?: ParseOptions & RenderOptions): (markdown: string) => Prom
 ### Vue Components (`@comark/vue`)
 
 ```vue
-<Comark :markdown="markdownString" :components="customComponents" />
+<Markdown :value="markdownString" :components="customComponents" />
 ```
 
 ### React Components (`@comark/react`)
 
 ```tsx
-<Comark markdown={markdownString} components={customComponents} />
+<Markdown value={markdownString} components={customComponents} />
 ```
 
 ### Svelte Components (`@comark/svelte`)
 
 ```svelte
-<Comark markdown={markdownString} components={customComponents} />
+<Markdown value={markdownString} components={customComponents} />
+```
+
+### Angular Components (`@comark/angular`)
+
+```html
+<comark-markdown [value]="markdownString" [components]="customComponents" />
 ```
 
 ## Performance Characteristics
@@ -431,12 +471,12 @@ import type {
         │   + meta)       │
         └────────┬────────┘
                  │
-     ┌───────────┬───────────┴───────────┐
-     ▼           ▼                       ▼
-┌─────────┐ ┌─────────┐           ┌─────────┐
-│   Vue   │ │  React  │           │ Svelte  │
-│ Renderer│ │ Renderer│           │ Renderer│
-└─────────┘ └─────────┘           └─────────┘
+     ┌───────────┬──────┴──────┬───────────┐
+     ▼           ▼            ▼           ▼
+┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐
+│   Vue   │ │  React  │ │ Svelte  │ │ Angular │
+│ Renderer│ │ Renderer│ │ Renderer│ │ Renderer│
+└─────────┘ └─────────┘ └─────────┘ └─────────┘
 ```
 
 ## Contributing & Testing
@@ -467,7 +507,7 @@ pnpm test -- tests/parse.test.ts
 1. **Extending Markdown** - Component syntax without breaking compatibility
 2. **Streaming Support** - Real-time rendering with auto-close
 3. **Lightweight AST** - Efficient Comark AST format
-4. **Framework Support** - First-class Vue, React, and Svelte integration
+4. **Framework Support** - First-class Vue, React, Svelte, and Angular integration
 5. **Developer Experience** - Full TypeScript support and comprehensive documentation
 
 **Choose Comark when you need:**
@@ -486,4 +526,5 @@ pnpm test -- tests/parse.test.ts
 - ⚛️ [Explore Vue Rendering](./references/rendering-vue.md)
 - ⚛️ [Explore React Rendering](./references/rendering-react.md)
 - 🎡 [Explore Svelte Rendering](./references/rendering-svelte.md)
+- 🅰️ [Explore Angular Rendering](./references/rendering-angular.md)
 - 🤖 [Use with AI Agents](./AGENTS.md)

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { content } from './content'
-import { Comark } from '@comark/vue'
+import { Markdown } from '@comark/vue'
 import jsonRender from '@comark/vue/plugins/json-render'
 import highlight from '@comark/vue/plugins/highlight'
 import githubLight from '@shikijs/themes/github-light'
@@ -50,12 +50,12 @@ const plugins = [
     <main class="py-12 px-4">
       <UContainer class="max-w-3xl">
         <Suspense>
-          <Comark
+          <Markdown
             class="prose"
             :plugins="plugins"
           >
             {{ content }}
-          </Comark>
+          </Markdown>
         </Suspense>
       </UContainer>
     </main>

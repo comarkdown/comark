@@ -10,7 +10,7 @@ path: /examples/plugins/vue-vite-math
 ::code-explorer
 ---
 org: comarkdown
-repo: comark
+repo: comark@81a416b278b0f304d7e7577c7ac6bbfc78414790
 path: examples/3.plugins/vue-vite-math
 defaultValue: src/App.vue
 ---
@@ -36,12 +36,12 @@ This example demonstrates how to use Comark with LaTeX math formulas in Vue:
 
 2. Pass the plugin to Comark:
    ```vue
-   <Comark :plugins="[math()]" />
+   <Markdown :plugins="[math()]" />
    ```
 
 3. Register the Math component:
    ```vue
-   <Comark :components="{ math: Math }" />
+   <Markdown :components="{ math: Math }" />
    ```
 
 4. Use math expressions in your markdown:

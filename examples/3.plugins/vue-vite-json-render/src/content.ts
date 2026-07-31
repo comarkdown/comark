@@ -122,12 +122,12 @@ Build deeper trees by referencing children by key:
 The plugin is built into the core \`comark\` package — no extra dependencies required.
 
 \`\`\`bash
-pnpm add comark        # or @comark/vue, @comark/react, @comark/svelte
+pnpm add comark        # or @comark/vue, @comark/react, @comark/svelte, @comark/angular
 \`\`\`
 
 ### Usage
 
-Import the plugin and pass it to \`parse()\` or the \`<Comark>\` component:
+Import the plugin and pass it to \`parse()\` or the \`<Markdown>\` component:
 
 \`\`\`ts
 import { parse } from 'comark'
@@ -142,13 +142,13 @@ With Vue:
 
 \`\`\`vue
 <script setup>
-import { Comark } from '@comark/vue'
+import { Markdown } from '@comark/vue'
 import jsonRender from '@comark/vue/plugins/json-render'
 </script>
 
 <template>
   <Suspense>
-    <Comark :plugins="[jsonRender()]">{{ content }}</Comark>
+    <Markdown :plugins="[jsonRender()]">{{ content }}</Markdown>
   </Suspense>
 </template>
 \`\`\`

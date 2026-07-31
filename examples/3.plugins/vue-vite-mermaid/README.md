@@ -10,7 +10,7 @@ path: /examples/plugins/vue-vite-mermaid
 ::code-explorer
 ---
 org: comarkdown
-repo: comark
+repo: comark@81a416b278b0f304d7e7577c7ac6bbfc78414790
 path: examples/3.plugins/vue-vite-mermaid
 defaultValue: src/App.vue
 ---
@@ -35,12 +35,12 @@ This example demonstrates how to use Comark with Mermaid diagrams in Vue:
 
 2. Pass the plugin to Comark:
    ```vue
-   <Comark :plugins="[mermaid()]" />
+   <Markdown :plugins="[mermaid()]" />
    ```
 
 3. Register the Mermaid component:
    ```vue
-   <Comark :components="{ mermaid: Mermaid }" />
+   <Markdown :components="{ mermaid: Mermaid }" />
    ```
 
 4. Use mermaid code blocks in your markdown:

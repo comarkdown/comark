@@ -8,11 +8,11 @@
 [![Documentation](https://img.shields.io/badge/Documentation-black?logo=readme&logoColor=white)](https://comark.dev/rendering/nuxt)
 [![license](https://img.shields.io/github/license/comarkdown/comark?color=black)](https://github.com/comarkdown/comark/blob/main/LICENSE)
 
-Zero-config Nuxt module for [Comark](https://comark.dev) — a high-performance markdown parser and renderer.
+Zero-config Nuxt module for [Comark](https://comark.dev), a high-performance markdown parser and renderer.
 
 ## Features
 
-- ⚡ Auto-imported `<Comark>` and `<ComarkRenderer>` components
+- ⚡ Auto-imported `<Markdown>` and `<MarkdownParsed>` components (the old `<Comark>` / `<ComarkRenderer>` names are still auto-registered but deprecated)
 - 📁 `~/components/prose` directory for overriding HTML elements
 - 🎨 Automatic [Nuxt UI](https://ui.nuxt.com) prose integration
 - 🖥️ SSR, SSG, and prerendering support out of the box
@@ -23,7 +23,7 @@ Zero-config Nuxt module for [Comark](https://comark.dev) — a high-performance 
 
 ### Automatic
 
-Add `@comark/nuxt` to your project — this installs the dependency and registers the module in `nuxt.config.ts`:
+Add `@comark/nuxt` to your project. This installs the dependency and registers the module in `nuxt.config.ts`:
 
 ```bash
 npx nuxt add comark
@@ -49,7 +49,7 @@ export default defineNuxtConfig({
 
 ## Usage
 
-The `<Comark>` component is available globally — no imports needed. Pass markdown via the default slot or the `markdown` prop:
+The `<Markdown>` component is available globally, no imports needed. Pass markdown via the default slot or the `value` prop:
 
 ```vue
 <script setup lang="ts">
@@ -57,7 +57,7 @@ const content = `# Hello Nuxt\n\nRendered with **Comark**.`
 </script>
 
 <template>
-  <Comark>{{ content }}</Comark>
+  <Markdown>{{ content }}</Markdown>
 </template>
 ```
 
@@ -71,7 +71,7 @@ import Alert from '~/components/Alert.vue'
 </script>
 
 <template>
-  <Comark :components="{ alert: Alert }">{{ content }}</Comark>
+  <Markdown :components="{ alert: Alert }">{{ content }}</Markdown>
 </template>
 ```
 
@@ -101,12 +101,12 @@ import mermaid, { Mermaid } from '@comark/nuxt/plugins/mermaid'
 </script>
 
 <template>
-  <Comark
+  <Markdown
     :components="{ math: Math, mermaid: Mermaid }"
     :plugins="[math(), mermaid()]"
   >
     {{ content }}
-  </Comark>
+  </Markdown>
 </template>
 ```
 

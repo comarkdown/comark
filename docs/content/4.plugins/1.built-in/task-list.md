@@ -41,20 +41,20 @@ With framework components:
 
 ```vue [Vue]
 <script setup lang="ts">
-import { Comark } from '@comark/vue'
+import { Markdown } from '@comark/vue'
 import taskList from '@comark/vue/plugins/task-list'
 </script>
 
 <template>
-  <Comark :plugins="[taskList()]">{{ content }}</Comark>
+  <Markdown :plugins="[taskList()]">{{ content }}</Markdown>
 </template>
 ```
 
 ```tsx [React]
-import { Comark } from '@comark/react'
+import { Markdown } from '@comark/react'
 import taskList from '@comark/react/plugins/task-list'
 
-<Comark plugins={[taskList()]}>{content}</Comark>
+<Markdown plugins={[taskList()]}>{content}</Markdown>
 ```
 
 ::

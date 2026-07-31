@@ -1,6 +1,6 @@
 ---
 title: Plugins
-description: Extend Comark with powerful plugins for syntax highlighting, emojis, table of contents, math equations, diagrams, and more.
+description: Extend Comark with plugins for syntax highlighting, emoji, table of contents, math, and diagrams, or reuse existing markdown-it plugins.
 navigation: false
 ---
 
@@ -89,7 +89,7 @@ Comark's plugin system extends markdown functionality with specialized features.
 
 ## Use Plugins
 
-Pass plugins to `parse()` or the `<Comark>` component:
+Pass plugins to `parse()` or the `<Markdown>` component:
 
 ::code-group
 
@@ -108,30 +108,30 @@ const result = await parse(content, {
 
 ```vue [Vue]
 <script setup lang="ts">
-import { Comark } from '@comark/vue'
+import { Markdown } from '@comark/vue'
 import emoji from '@comark/vue/plugins/emoji'
 </script>
 
 <template>
-  <Comark :plugins="[emoji()]">{{ content }}</Comark>
+  <Markdown :plugins="[emoji()]">{{ content }}</Markdown>
 </template>
 ```
 
 ```tsx [React]
-import { Comark } from '@comark/react'
+import { Markdown } from '@comark/react'
 import emoji from '@comark/react/plugins/emoji'
 
-<Comark plugins={[emoji()]}>{content}</Comark>
+<Markdown plugins={[emoji()]}>{content}</Markdown>
 ```
 
 ```svelte [Svelte]
 <script>
-  import { Comark } from '@comark/svelte'
+  import { Markdown } from '@comark/svelte'
   import emoji from '@comark/svelte/plugins/emoji'
   let content = '# Awesome'
 </script>
 
-<Comark markdown={content} plugins={[emoji()]} />
+<Markdown value={content} plugins={[emoji()]} />
 ```
 
 

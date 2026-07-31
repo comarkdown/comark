@@ -18,7 +18,7 @@ links:
     variant: soft
 ---
 
-The `comark/plugins/punctuation` plugin transforms plain-text punctuation into typographically correct Unicode characters — smart quotes, dashes, ellipsis, and common symbols. No peer dependencies required.
+The `comark/plugins/punctuation` plugin transforms plain-text punctuation into typographically correct Unicode characters: smart quotes, dashes, ellipsis, and common symbols. No peer dependencies required.
 
 ## Usage
 
@@ -38,29 +38,29 @@ With framework components:
 
 ```vue [Vue]
 <script setup lang="ts">
-import { Comark } from '@comark/vue'
+import { Markdown } from '@comark/vue'
 import punctuation from '@comark/vue/plugins/punctuation'
 </script>
 
 <template>
-  <Comark :plugins="[punctuation()]">{{ content }}</Comark>
+  <Markdown :plugins="[punctuation()]">{{ content }}</Markdown>
 </template>
 ```
 
 ```tsx [React]
-import { Comark } from '@comark/react'
+import { Markdown } from '@comark/react'
 import punctuation from '@comark/react/plugins/punctuation'
 
-<Comark plugins={[punctuation()]}>{content}</Comark>
+<Markdown plugins={[punctuation()]}>{content}</Markdown>
 ```
 
 ```svelte [Svelte]
 <script lang="ts">
-  import { Comark } from '@comark/svelte'
+  import { Markdown } from '@comark/svelte'
   import punctuation from '@comark/svelte/plugins/punctuation'
 </script>
 
-<Comark {content} plugins={[punctuation()]} />
+<Markdown {content} plugins={[punctuation()]} />
 ```
 
 ::
@@ -121,7 +121,7 @@ Returns a `ComarkPlugin` that applies typographic transformations to text nodes.
 
 **Parameters:**
 
-- `options?` - Optional configuration — see [Options](#options)
+- `options?` - Optional configuration, see [Options](#options)
 
 **Returns:** `ComarkPlugin`
 
@@ -131,10 +131,10 @@ Returns a `ComarkPlugin` that applies typographic transformations to text nodes.
 
 | Option | Type | Default | Description |
 |---|---|---|---|
-| [`quotes`](#options-code-quotes) | `boolean` | `true` | Convert straight quotes to smart quotes |
-| [`dashes`](#options-code-dashes) | `boolean` | `true` | Convert `--` to en-dash and `---` to em-dash |
-| [`ellipsis`](#options-code-ellipsis) | `boolean` | `true` | Convert `...` to ellipsis character |
-| [`symbols`](#options-code-symbols) | `boolean` | `true` | Convert `(c)`, `(r)`, `(tm)`, `+-` |
+| [`quotes`](#options-quotes) | `boolean` | `true` | Convert straight quotes to smart quotes |
+| [`dashes`](#options-dashes) | `boolean` | `true` | Convert `--` to en-dash and `---` to em-dash |
+| [`ellipsis`](#options-ellipsis) | `boolean` | `true` | Convert `...` to ellipsis character |
+| [`symbols`](#options-symbols) | `boolean` | `true` | Convert `(c)`, `(r)`, `(tm)`, `+-` |
 
 ### `quotes`
 

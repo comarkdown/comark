@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Comark } from '@comark/vue'
+import { Markdown } from '@comark/vue'
 import mermaid, { Mermaid } from '@comark/vue/plugins/mermaid'
 
 const markdown = `
@@ -32,11 +32,11 @@ sequenceDiagram
 
 <template>
   <Suspense>
-    <Comark
+    <Markdown
       :components="{ Mermaid }"
       :plugins="[mermaid()]"
     >
       {{ markdown }}
-    </Comark>
+    </Markdown>
   </Suspense>
 </template>

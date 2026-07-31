@@ -61,7 +61,7 @@ Step straight onto marked hiking and mountain bike trails from the cabin's back 
 Truly off-grid feel
 
 #description
-Peaceful, no neighbours in sight — just birdsong, deer, and open sky.
+Peaceful, no neighbours in sight. Just birdsong, deer, and open sky.
 ::
 
 ---
@@ -71,7 +71,7 @@ Peaceful, no neighbours in sight — just birdsong, deer, and open sky.
 
 Tucked deep in a **pine and oak forest**, this hand-built log cabin sits beside a private stream at the edge of a national park. Every window frames a different stretch of wilderness.
 
-Wake up to *mist rolling through the treetops*, brew coffee on the wraparound deck, and spend the day exploring — or do absolutely nothing at all.
+Wake up to *mist rolling through the treetops*, brew coffee on the wraparound deck, and spend the day exploring, or do absolutely nothing at all.
 
 ### What's included
 
@@ -95,7 +95,7 @@ Wake up to *mist rolling through the treetops*, brew coffee on the wraparound de
 
 ### Getting Around
 
-The cabin is reached via a **5 km unpaved forest road** — a 4×4 or high-clearance vehicle is recommended in winter. The nearest village with shops is [15 minutes by car](#).
+The cabin is reached via a **5 km unpaved forest road**, so a 4×4 or high-clearance vehicle is recommended in winter. The nearest village with shops is [15 minutes by car](#).
 
 :::callout{color="warning" icon="i-lucide-triangle-alert"}
 Mobile signal is unreliable past the village. Download offline maps before you arrive.
@@ -269,7 +269,7 @@ Combine the cream, milk, garlic clove, nutmeg, salt and pepper in a saucepan. Wa
 
 #### Slice the potatoes
 
-Peel the potatoes and slice them very thinly — about 2 mm — using a mandoline or sharp knife.
+Peel the potatoes and slice them very thinly (about 2 mm) using a mandoline or sharp knife.
 
 #### Layer the dish
 
@@ -285,12 +285,12 @@ Bake for 45 minutes until the top is deep golden and a knife passes through the 
 
 #### Rest before serving
 
-Rest for 10 minutes before serving — the gratin firms up and the flavours settle.
+Rest for 10 minutes before serving so the gratin firms up and the flavours settle.
 
 ::
 
 :::callout{color="warning" icon="i-lucide-triangle-alert"}
-Slice the potatoes directly into the dish — rinsing them washes away the starch that thickens the sauce.
+Slice the potatoes directly into the dish: rinsing them washes away the starch that thickens the sauce.
 :::
 
 > [!TIP]
@@ -308,7 +308,7 @@ page:
 ::PageHero
 #headline
 :::badge
-v2.0 — Now with predictive alerting
+v2.0: Now with predictive alerting
 :::
 
 #title

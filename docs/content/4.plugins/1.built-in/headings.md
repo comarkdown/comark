@@ -44,14 +44,14 @@ Returns a `ComarkPlugin` that extracts title and description metadata from top-l
 
 **Parameters:**
 
-- `options?` - Optional configuration — see [Options](#options)
+- `options?` - Optional configuration, see [Options](#options)
 
 **Returns:** `ComarkPlugin`
 
 Results are stored at `tree.meta.title` and `tree.meta.description`. Neither field is set when the corresponding node is absent or does not match the configured tag.
 
 ::tip
-The description check always looks at the node **immediately after** the title — a non-matching node between them will prevent description extraction.
+The description check always looks at the node **immediately after** the title: a non-matching node between them will prevent description extraction.
 ::
 
 ---
@@ -60,9 +60,9 @@ The description check always looks at the node **immediately after** the title �
 
 | Option | Type | Default | Description |
 |---|---|---|---|
-| [`titleTag`](#options-code-titletag) | `string \| false` | `'h1'` | Element tag to extract as the page title, or `false` to disable |
-| [`descriptionTag`](#options-code-descriptiontag) | `string \| false` | `'p'` | Element tag to extract as the page description, or `false` to disable |
-| [`remove`](#options-code-remove) | `boolean` | `false` | Remove extracted nodes from the tree after extraction |
+| [`titleTag`](#options-titletag) | `string \| false` | `'h1'` | Element tag to extract as the page title, or `false` to disable |
+| [`descriptionTag`](#options-descriptiontag) | `string \| false` | `'p'` | Element tag to extract as the page description, or `false` to disable |
+| [`remove`](#options-remove) | `boolean` | `false` | Remove extracted nodes from the tree after extraction |
 
 ### `titleTag`
 
@@ -92,7 +92,7 @@ headings({ descriptionTag: false })
 
 ### `remove`
 
-Whether to remove the extracted nodes from the tree after extraction. Set to `true` when you don't want the title and description rendered — for example, when a layout already displays them separately.
+Whether to remove the extracted nodes from the tree after extraction. Set to `true` when you don't want the title and description rendered, for example, when a layout already displays them separately.
 
 ```typescript
 headings({ remove: true })

@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@ai-sdk/vue": "catalog:",
-    "@comark/nuxt": "catalog:",
+    "@comark/nuxt": "workspace:*",
     "@nuxt/ui": "catalog:",
     "ai": "catalog:",
     "nuxt": "catalog:"

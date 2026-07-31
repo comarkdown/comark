@@ -2,7 +2,8 @@ import { defineNuxtConfig } from 'nuxt/config'
 
 export default defineNuxtConfig({
   extends: ['docus'],
-  modules: ['nuxt-studio', '@comark/nuxt', '@vercel/speed-insights', '@vercel/analytics'],
+
+  modules: ['nuxt-studio', '@comark/nuxt', '@vercel/speed-insights', '@vercel/analytics', '@nuxt/ui'],
 
   app: {
     head: {
@@ -16,6 +17,7 @@ export default defineNuxtConfig({
 
   site: {
     name: 'Comark',
+    url: 'https://comark.dev',
   },
 
   content: {
@@ -30,6 +32,10 @@ export default defineNuxtConfig({
       },
       transformers: ['~~/utils/comark-transformers.ts'],
     },
+  },
+
+  colorMode: {
+    preference: 'dark',
   },
 
   fonts: {
@@ -47,5 +53,10 @@ export default defineNuxtConfig({
 
   routeRules: {
     '/plugins/built-in/highlight': { redirect: '/plugins/built-in/syntax-highlight' },
+  },
+  vite: {
+    optimizeDeps: {
+      include: ['beautiful-mermaid'],
+    },
   },
 })

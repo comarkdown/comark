@@ -43,45 +43,45 @@ const result = await parse('Inline $x^2$ and display $$E = mc^2$$', {
 })
 ```
 
-With framework components — pass both the plugin and the `Math` renderer component:
+With framework components, pass both the plugin and the `Math` renderer component:
 
 ::code-group
 
 ```vue [Vue]
 <script setup lang="ts">
-import { Comark } from '@comark/vue'
+import { Markdown } from '@comark/vue'
 import math, { Math } from '@comark/vue/plugins/math'
 </script>
 
 <template>
   <Suspense>
-    <Comark
+    <Markdown
       :components="{ math: Math }"
       :plugins="[math()]"
-    >{{ content }}</Comark>
+    >{{ content }}</Markdown>
   </Suspense>
 </template>
 ```
 
 ```tsx [React]
-import { Comark } from '@comark/react'
+import { Markdown } from '@comark/react'
 import math, { Math } from '@comark/react/plugins/math'
 
-<Comark
+<Markdown
   components={{ math: Math }}
   plugins={[math()]}
 >
   {content}
-</Comark>
+</Markdown>
 ```
 
 ```svelte [Svelte]
 <script lang="ts">
-  import { Comark } from '@comark/svelte'
+  import { Markdown } from '@comark/svelte'
   import math, { Math } from '@comark/svelte/plugins/math'
 </script>
 
-<Comark {content} components={{ math: Math }} plugins={[math()]} />
+<Markdown {content} components={{ math: Math }} plugins={[math()]} />
 ```
 
 ::
@@ -128,7 +128,7 @@ In JavaScript strings, escape backslashes before LaTeX commands:
 
 ```javascript
 const latex = '\\frac{a}{b}' // correct
-const wrong = '\frac{a}{b}'  // wrong — \f is a JS escape sequence
+const wrong = '\frac{a}{b}'  // wrong: \f is a JS escape sequence
 ```
 
 ---
@@ -141,7 +141,7 @@ Returns a `ComarkPlugin` that tokenizes `$...$` and `$$...$$` expressions. Takes
 
 **Returns:** `ComarkPlugin`
 
-The plugin stores LaTeX source as plain text in the AST. Rendering requires passing `Math` to the `components` prop of `<Comark>` — see [Usage](#usage). KaTeX only runs when the component mounts.
+The plugin stores LaTeX source as plain text in the AST. Rendering requires passing `Math` to the `components` prop of `<Markdown>` (see [Usage](#usage)). KaTeX only runs when the component mounts.
 
 ---
 
@@ -152,4 +152,4 @@ Props accepted by the `<Math>` component:
 | Prop | Type | Default | Description |
 |---|---|---|---|
 | `content` | `string` | required | The LaTeX expression to render |
-| `class` | `string` | `''` | CSS classes — when set to `'block'`, renders in display mode; otherwise inline |
+| `class` | `string` | `''` | CSS classes. When set to `'block'`, renders in display mode; otherwise inline |

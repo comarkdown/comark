@@ -220,12 +220,12 @@ const comark = {
           ],
         },
         {
-          match: '^(\\s*)(#[\\w\\-\\_]*)\\s*(<!--(.*)-->)?$',
+          match: '(^|\\G)(\\s*)(#[\\w\\-\\_]*)\\s*(<!--(.*)-->)?$',
           captures: {
-            '2': {
+            '3': {
               name: 'entity.other.attribute-name.html',
             },
-            '3': {
+            '4': {
               name: 'comment.block.html',
             },
           },
@@ -582,7 +582,7 @@ const comark = {
           include: '#heading-setext',
         },
       ],
-      while: '(^|\\G)((?=\\s*[-=]{3,}\\s*$)|[ ]{4,}(?=\\S))',
+      while: '(^|\\G)(?=\\s*[-=]{3,}\\s*$)',
     },
     blockquote: {
       begin: '(^|\\G)[ ]*(>) ?',
@@ -600,6 +600,17 @@ const comark = {
       while: '(^|\\G)\\s*(>) ?',
     },
   },
+}
+
+const jsonb = markdown[0].repository.fenced_code_block_json
+const yamlb = markdown[0].repository.fenced_code_block_yaml
+markdown[0].repository.fenced_code_block_json = {
+  ...markdown[0].repository.fenced_code_block_json,
+  begin: String(jsonb.begin).replace('json5??|', 'json5??|json-render|'),
+}
+markdown[0].repository.fenced_code_block_yaml = {
+  ...markdown[0].repository.fenced_code_block_yaml,
+  begin: String(yamlb.begin).replace('(ya?ml)', '(ya?ml|ya?ml-render)'),
 }
 
 export default [...markdown, ...yaml, ...html_derivative, comark]

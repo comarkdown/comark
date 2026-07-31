@@ -9,7 +9,7 @@ export interface ComponentResolverProps {
 
 export type ComponentResolver = Component<ComponentResolverProps>
 
-export interface ComarkNodeProps {
+export interface MarkdownNodeProps {
   node: ComarkNode
   components?: Record<string, any>
   componentsManifest?: ComponentManifest
@@ -18,8 +18,11 @@ export interface ComarkNodeProps {
   caretClass?: string | null
 }
 
-export interface ComarkRendererProps {
-  tree: ComarkTree
+export interface MarkdownParsedProps {
+  /** The parsed Comark tree to render */
+  value?: ComarkTree
+  /** @deprecated Use `value` instead */
+  tree?: ComarkTree
   components?: Record<string, any>
   componentsManifest?: ComponentManifest
   resolver?: ComponentResolver
@@ -28,13 +31,31 @@ export interface ComarkRendererProps {
   class?: string
 }
 
-export interface ComarkProps {
+export interface MarkdownProps {
+  /** The markdown content to parse and render */
+  value?: string
+  /** @deprecated Use `value` instead */
   markdown?: string
   options?: Exclude<ParseOptions, 'plugins'>
   plugins?: ComarkPlugin[]
+  /**
+   * Strip wrapper tags from the top level of the tree — shorthand for
+   * `options.unwrap`. `true` unwraps `<p>`; a space-separated string or array
+   * unwraps the listed tags.
+   */
+  unwrap?: boolean | string | string[]
   components?: Record<string, any>
   componentsManifest?: ComponentManifest
   streaming?: boolean
   caret?: boolean | { class: string }
   class?: string
 }
+
+/** @deprecated Use `MarkdownNodeProps` instead */
+export type ComarkNodeProps = MarkdownNodeProps
+
+/** @deprecated Use `MarkdownParsedProps` instead */
+export type ComarkRendererProps = MarkdownParsedProps
+
+/** @deprecated Use `MarkdownProps` instead */
+export type ComarkProps = MarkdownProps

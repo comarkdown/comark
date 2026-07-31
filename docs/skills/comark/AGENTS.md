@@ -1,15 +1,15 @@
-# Comark — AI Agents & LLM Streaming
+# Comark: AI Agents & LLM Streaming
 
 A guide for using Comark in AI agent and LLM-powered applications where markdown is generated incrementally by a language model.
 
 ## Why Comark for AI?
 
-LLMs stream markdown token-by-token. Standard markdown parsers expect complete input — they fail or produce broken output on partial streams. Comark was built to handle exactly this:
+LLMs stream markdown token-by-token. Standard markdown parsers expect complete input. They fail or produce broken output on partial streams. Comark was built to handle exactly this:
 
-- **`autoClose`** (default: `true`) — incomplete syntax like `**bold text` is automatically closed on every parse, so partial tokens always render correctly
-- **Streaming mode** — re-renders efficiently as content arrives
-- **Caret indicator** — shows a live cursor during generation
-- **ANSI rendering** — styled terminal output for CLI agents
+- **`autoClose`** (default: `true`): incomplete syntax like `**bold text` is automatically closed on every parse, so partial tokens always render correctly
+- **Streaming mode**: re-renders efficiently as content arrives
+- **Caret indicator**: shows a live cursor during generation
+- **ANSI rendering**: styled terminal output for CLI agents
 
 ---
 
@@ -18,7 +18,7 @@ LLMs stream markdown token-by-token. Standard markdown parsers expect complete i
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
-import { Comark } from '@comark/vue'
+import { Markdown } from '@comark/vue'
 
 const content = ref('')
 const streaming = ref(false)
@@ -46,7 +46,7 @@ async function generate(prompt: string) {
 </script>
 
 <template>
-  <Comark :streaming="streaming" caret>{{ content }}</Comark>
+  <Markdown :streaming="streaming" caret>{{ content }}</Markdown>
 </template>
 ```
 
@@ -56,7 +56,7 @@ async function generate(prompt: string) {
 
 ```tsx
 import { useState } from 'react'
-import { Comark } from '@comark/react'
+import { Markdown } from '@comark/react'
 
 export default function Chat() {
   const [content, setContent] = useState('')
@@ -83,7 +83,7 @@ export default function Chat() {
     setStreaming(false)
   }
 
-  return <Comark streaming={streaming} caret>{content}</Comark>
+  return <Markdown streaming={streaming} caret>{content}</Markdown>
 }
 ```
 
@@ -93,7 +93,7 @@ export default function Chat() {
 
 ```svelte
 <script lang="ts">
-  import { Comark } from '@comark/svelte'
+  import { Markdown } from '@comark/svelte'
 
   let content = $state('')
   let streaming = $state(false)
@@ -120,7 +120,54 @@ export default function Chat() {
   }
 </script>
 
-<Comark markdown={content} {streaming} caret />
+<Markdown value={content} {streaming} caret />
+```
+
+---
+
+## Angular
+
+```typescript
+import { Component } from '@angular/core'
+import { Markdown } from '@comark/angular'
+
+@Component({
+  selector: 'app-chat',
+  standalone: true,
+  imports: [Markdown],
+  template: `
+    <comark-markdown
+      [value]="content"
+      [streaming]="streaming"
+      [caret]="streaming"
+    />
+  `,
+})
+export class ChatComponent {
+  content = ''
+  streaming = false
+
+  async generate(prompt: string) {
+    this.content = ''
+    this.streaming = true
+
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      body: JSON.stringify({ prompt }),
+    })
+
+    const reader = res.body!.getReader()
+    const decoder = new TextDecoder()
+
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+      this.content += decoder.decode(value, { stream: true })
+    }
+
+    this.streaming = false
+  }
+}
 ```
 
 ---
@@ -156,15 +203,20 @@ await logStream(partialMarkdown)
 The `caret` prop appends a blinking cursor to the last text node while `streaming` is `true`. Customize it with a CSS class:
 
 ```vue
-<Comark :streaming="streaming" :caret="{ class: 'animate-blink' }">{{ content }}</Comark>
+<Markdown :streaming="streaming" :caret="{ class: 'animate-blink' }">{{ content }}</Markdown>
 ```
 
 ```tsx
-<Comark streaming={streaming} caret={{ class: 'animate-blink' }}>{content}</Comark>
+<Markdown streaming={streaming} caret={{ class: 'animate-blink' }}>{content}</Markdown>
 ```
 
 ```svelte
-<Comark markdown={content} {streaming} caret={{ class: 'animate-blink' }} />
+<Markdown value={content} {streaming} caret={{ class: 'animate-blink' }} />
+```
+
+```html
+<!-- Angular -->
+<comark-markdown [value]="content" [streaming]="streaming" [caret]="{ class: 'animate-blink' }" />
 ```
 
 ---
@@ -175,15 +227,15 @@ If your LLM produces Comark component syntax (e.g., `::alert`), register compone
 
 ```vue
 <script setup lang="ts">
-import { Comark } from '@comark/vue'
+import { Markdown } from '@comark/vue'
 import Alert from './Alert.vue'
 import CodeBlock from './CodeBlock.vue'
 </script>
 
 <template>
-  <Comark :components="{ alert: Alert, pre: CodeBlock }" :streaming="streaming" caret>
+  <Markdown :components="{ alert: Alert, pre: CodeBlock }" :streaming="streaming" caret>
     {{ content }}
-  </Comark>
+  </Markdown>
 </template>
 ```
 
@@ -191,59 +243,56 @@ import CodeBlock from './CodeBlock.vue'
 
 ## With Syntax Highlighting
 
-Syntax highlighting works during streaming — each re-parse will highlight newly completed code blocks:
+Syntax highlighting works during streaming: each re-parse will highlight newly completed code blocks:
 
 ```vue
 <script setup lang="ts">
-import { Comark } from '@comark/vue'
+import { Markdown } from '@comark/vue'
 import highlight from '@comark/vue/plugins/highlight'
-import githubDark from '@shikijs/themes/github-dark'
 
-const plugins = [highlight({ themes: { light: githubDark, dark: githubDark } })]
+const plugins = [highlight({ themes: { light: 'github-dark', dark: 'github-dark' } })]
 </script>
 
 <template>
   <Suspense>
-    <Comark :plugins="plugins" :streaming="streaming" caret>{{ content }}</Comark>
+    <Markdown :plugins="plugins" :streaming="streaming" caret>{{ content }}</Markdown>
   </Suspense>
 </template>
 ```
 
 ```tsx
-import { Comark } from '@comark/react'
+import { Markdown } from '@comark/react'
 import highlight from '@comark/react/plugins/highlight'
-import githubDark from '@shikijs/themes/github-dark'
 
-const plugins = [highlight({ themes: { light: githubDark, dark: githubDark } })]
+const plugins = [highlight({ themes: { light: 'github-dark', dark: 'github-dark' } })]
 
 export default function Chat({ content, streaming }) {
   return (
-    <Comark plugins={plugins} streaming={streaming} caret>
+    <Markdown plugins={plugins} streaming={streaming} caret>
       {content}
-    </Comark>
+    </Markdown>
   )
 }
 ```
 
 ---
 
-## defineComarkComponent for AI Chat
+## defineMarkdownComponent for AI Chat
 
 Pre-configure a Comark component for your AI chat UI once, then reuse it everywhere:
 
 ```typescript
 // comark.ts
-import { defineComarkComponent } from '@comark/vue'
+import { defineMarkdownComponent } from '@comark/vue'
 import highlight from '@comark/vue/plugins/highlight'
 import math, { Math } from '@comark/vue/plugins/math'
-import githubDark from '@shikijs/themes/github-dark'
 import Alert from './components/Alert.vue'
 
-export const ChatComark = defineComarkComponent({
+export const ChatComark = defineMarkdownComponent({
   name: 'ChatComark',
   plugins: [
     math(),
-    highlight({ themes: { light: githubDark, dark: githubDark } }),
+    highlight({ themes: { light: 'github-dark', dark: 'github-dark' } }),
   ],
   components: { Math, alert: Alert },
   autoClose: true,

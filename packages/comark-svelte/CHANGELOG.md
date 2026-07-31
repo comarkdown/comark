@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.5.1](https://github.com/comarkdown/comark/compare/@comark/svelte@0.5.0...@comark/svelte@0.5.1) (2026-07-14)
+
+## [0.5.0](https://github.com/comarkdown/comark/compare/@comark/svelte@0.4.0...@comark/svelte@0.5.0) (2026-07-02)
+
+### Features
+
+* allow rendering tree object without frontmatter and meta ([#241](https://github.com/comarkdown/comark/issues/241)) ([1432806](https://github.com/comarkdown/comark/commit/1432806501dbcd2aecac45f6a3754341af6ebafd))
+* introduce Comark Context, a way to update rendered tree ([#258](https://github.com/comarkdown/comark/issues/258)) ([fc08315](https://github.com/comarkdown/comark/commit/fc0831532108e97ac79b46c806a7dddc6c6979f3))
+
+### Bug Fixes
+
+* **svelte:** sync core plugins on build ([#260](https://github.com/comarkdown/comark/issues/260)) ([e3c01c1](https://github.com/comarkdown/comark/commit/e3c01c1633ce0b76d72f9bcfba5bd8ff4ff16fc3))
+
 ## [0.4.0](https://github.com/comarkdown/comark/compare/@comark/svelte@0.3.1...@comark/svelte@0.4.0) (2026-06-04)
 
 ### Bug Fixes

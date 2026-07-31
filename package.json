@@ -14,10 +14,13 @@
     "dev:html": "pnpm --filter comark-html run dev",
     "dev:react": "pnpm --filter comark-react run dev",
     "dev:svelte": "pnpm --filter comark-svelte run dev",
+    "dev:angular": "pnpm --filter comark-angular run dev",
     "dev:ansi": "pnpm --filter comark-ansi run dev",
     "dev:vue": "pnpm --filter comark-vue run dev",
     "dev:vue:mermaid": "pnpm --filter comark-vue-vite-mermaid run dev",
     "dev:vue:math": "pnpm --filter comark-vue-vite-math run dev",
+    "dev:react:mermaid": "pnpm --filter comark-react-vite-mermaid run dev",
+    "dev:react:math": "pnpm --filter comark-react-vite-math run dev",
     "dev:astro": "pnpm --filter comark-astro run dev",
     "dev:vitepress": "pnpm --filter comark-vitepress run dev",
     "dev:nuxt": "pnpm --filter comark-nuxt run dev",
@@ -65,9 +68,11 @@
     "scule": "catalog:",
     "tsx": "catalog:",
     "typescript": "catalog:",
-    "unified": "catalog:"
+    "unified": "catalog:",
+    "vitest": "catalog:"
   },
   "resolutions": {
+    "@comark/angular": "workspace:*",
     "@comark/ansi": "workspace:*",
     "@comark/html": "workspace:*",
     "@comark/nuxt": "workspace:*",
@@ -84,5 +89,5 @@
     "comark": "workspace:*",
     "vue": "catalog:"
   },
-  "packageManager": "pnpm@10.33.0"
+  "packageManager": "pnpm@11.11.0"
 }

@@ -1,7 +1,8 @@
 export default defineAppConfig({
   seo: {
     title: 'Comark',
-    description: 'Components in Markdown (Comark) parser with streaming support for Vue, React and Svelte.',
+    description:
+      'The Markdown engine for the modern web. One parser, every renderer: Vue, React, Svelte, Angular, HTML and ANSI, with components, plugins and streaming.',
     url: 'https://comark.dev',
     socials: {
       github: 'comarkdown/comark',
@@ -18,7 +19,7 @@ export default defineAppConfig({
         items: [
           'What is Comark and how does it differ from MDX?',
           'How do I install Comark in my project?',
-          'Can I use Comark with both Vue, React and Svelte?',
+          'Can I use Comark with both Vue, React, Svelte and Angular?',
         ],
       },
       {
@@ -48,19 +49,10 @@ export default defineAppConfig({
     ],
   },
 
-  title: 'Comark',
-  description: 'Components in Markdown (Comark) parser with streaming support for Vue, React and Svelte.',
-  url: 'https://comark.dev',
-
   ui: {
     colors: {
       primary: 'yellow',
-      neutral: 'zinc',
-    },
-    header: {
-      slots: {
-        body: 'sm:p-4',
-      },
+      neutral: 'neutral',
     },
     prose: {
       codePreview: {
@@ -100,6 +92,10 @@ export default defineAppConfig({
           {
             label: 'API Reference',
             to: '/api/parse',
+          },
+          {
+            label: 'Comark vs MDX',
+            to: '/compare/comark-vs-mdx',
           },
         ],
       },

@@ -25,14 +25,26 @@ function findHandler(ctx: Context, node: ComarkElement): NodeHandler | undefined
  * @param node - The node to render
  * @param state - The state of the renderer
  * @param parent - The parent node
+ * @param atLineStart - Whether a string node begins a line, so leading block markers are escaped
  * @returns The rendered node
  */
-export async function one(node: ComarkNode, state: State, parent?: ComarkElement): Promise<string> {
+export async function one(
+  node: ComarkNode,
+  state: State,
+  parent?: ComarkElement,
+  atLineStart = false
+): Promise<string> {
   if (typeof node === 'string') {
     if (state.context.html) {
       return escapeHtml(node)
     }
-    return node
+    // The content of a raw HTML block is copied verbatim on parse, so markdown
+    // syntax inside it must not be escaped (inline HTML, `$.block === 0`, has
+    // its markdown parsed into children and is escaped normally).
+    if (parent?.[1].$?.html === 1 && parent[1].$?.block === 1) {
+      return node
+    }
+    return escapeMarkdownText(node, atLineStart)
   }
 
   if (node[0] === null) {
@@ -130,7 +142,7 @@ export function createState(ctx: Partial<CreateContext> = {}): State {
 
       let result = ''
       for (const child of input as ComarkNode[]) {
-        result += await state.one(child, state)
+        result += await state.one(child, state, undefined, result === '' || result.endsWith('\n'))
       }
       return result
     },
@@ -174,7 +186,7 @@ export const state: State = {
 
     let result = ''
     for (const child of input as ComarkNode[]) {
-      result += await one(child, state)
+      result += await one(child, state, undefined, result === '' || result.endsWith('\n'))
     }
     return result
   },
@@ -200,4 +212,86 @@ function escapeHtml(text: string): string {
     '&amp;': '&',
   }
   return text.replace(/[<>]/g, (char) => map[char])
+}
+
+// Characters that can start an inline markdown construct anywhere on a line:
+// `\` (escape), `` ` `` (code span), `*`/`_` (emphasis), `<` (raw HTML /
+// autolink), `&` (character reference), `~` (strikethrough) and `[`/`]`
+// (link/image). `\` is included so a literal backslash is preserved instead of
+// merging with a following escape.
+const inlineSyntax = /[\\`*_<&~[\]]/g
+
+/**
+ * Escape characters in a markdown text node that would otherwise be
+ * misinterpreted as markdown syntax on a subsequent parse, so the node
+ * round-trips as literal text.
+ *
+ * Inline constructs are recognised anywhere, so their characters are escaped
+ * wherever they appear. Block constructs (headings, blockquotes, lists,
+ * thematic breaks, setext underlines) are only recognised at the start of a
+ * line, so their markers are escaped on the first line only when the node
+ * begins one (`atLineStart`) and on every line following an embedded newline.
+ */
+function escapeMarkdownText(text: string, atLineStart = false): string {
+  const escaped = escapeInline(text)
+
+  if (!atLineStart && !escaped.includes('\n')) {
+    return escaped
+  }
+
+  return escaped
+    .split('\n')
+    .map((line, index) => (index > 0 || atLineStart ? escapeLeadingBlock(line) : line))
+    .join('\n')
+}
+
+function isAlphaNumeric(char: string | undefined): boolean {
+  return char !== undefined && /[a-zA-Z0-9]/.test(char)
+}
+
+/**
+ * Escape inline syntax characters. `_`, `<` and `&` only start a construct in
+ * specific positions, so they are left alone otherwise to avoid mangling
+ * ordinary prose like `snake_case`, `a < b` or `AT&T`.
+ */
+function escapeInline(text: string): string {
+  return text.replace(inlineSyntax, (char, offset: number, source: string) => {
+    // `_` only opens emphasis at a word boundary — never between alphanumerics.
+    if (char === '_' && isAlphaNumeric(source[offset - 1]) && isAlphaNumeric(source[offset + 1])) {
+      return char
+    }
+    // `<` only starts raw HTML / an autolink when it looks like a tag, not when
+    // used as a comparison (e.g. `a < b`).
+    if (char === '<' && !/^<[a-zA-Z!?/][^>]*>/.test(source.slice(offset))) {
+      return char
+    }
+    // `&` only starts a character reference when it forms an entity.
+    if (char === '&' && !/^&#?[a-zA-Z0-9]+;/.test(source.slice(offset))) {
+      return char
+    }
+    return `\\${char}`
+  })
+}
+
+/**
+ * Escape a leading block marker so a text node that begins a line doesn't
+ * round-trip into a heading, blockquote, list, thematic break or setext
+ * heading. `*`, `_` and `~` based markers are already handled by
+ * {@link escapeInline}; only the block-exclusive markers remain here.
+ */
+function escapeLeadingBlock(line: string): string {
+  // ATX heading: 1–6 `#` followed by a space/tab or the end of the line.
+  if (/^#{1,6}([ \t]|$)/.test(line)) return `\\${line}`
+  // Blockquote: `>` (a following space is optional).
+  if (line[0] === '>') return `\\${line}`
+  // Ordered list: digits then `.`/`)` followed by a space/tab or end of line.
+  const ordered = /^(\d{1,9})[.)]([ \t]|$)/.exec(line)
+  if (ordered) return `${ordered[1]}\\${line.slice(ordered[1].length)}`
+  // Bullet, thematic break or setext underline made of `-`.
+  if (/^-([ \t-]|$)/.test(line)) return `\\${line}`
+  // Bullet with `+`.
+  if (/^\+([ \t]|$)/.test(line)) return `\\${line}`
+  // Setext underline made of `=`.
+  if (/^=+[ \t]*$/.test(line)) return `\\${line}`
+  return line
 }

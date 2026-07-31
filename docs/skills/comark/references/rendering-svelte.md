@@ -19,11 +19,11 @@ Complete guide for rendering Comark AST in Svelte 5 applications.
 
 ## Basic Usage
 
-Use the `Comark` component to render markdown:
+Use the `Markdown` component to render markdown:
 
 ```svelte
 <script lang="ts">
-  import { Comark } from '@comark/svelte'
+  import { Markdown } from '@comark/svelte'
 
   const content = `
 # Hello World
@@ -36,7 +36,7 @@ Important message
 `
 </script>
 
-<Comark markdown={content} />
+<Markdown value={content} />
 ```
 
 ---
@@ -47,7 +47,7 @@ Map custom Svelte components to Comark elements:
 
 ```svelte
 <script lang="ts">
-  import { Comark } from '@comark/svelte'
+  import { Markdown } from '@comark/svelte'
   import CustomHeading from './components/comark/CustomHeading.svelte'
   import CustomAlert from './components/comark/CustomAlert.svelte'
   import CustomCard from './components/comark/CustomCard.svelte'
@@ -60,15 +60,15 @@ Map custom Svelte components to Comark elements:
   }
 </script>
 
-<Comark markdown={content} components={customComponents} />
+<Markdown value={content} components={customComponents} />
 ```
 
 ### Component Resolution Order
 
 Components are resolved by checking these keys in order:
-1. `Prose{PascalTag}` — e.g., `ProseH1` for `<h1>` tags
-2. `PascalTag` — e.g., `Alert` for `::alert` components
-3. `tag` — e.g., `alert` for `::alert` components
+1. `Prose{PascalTag}`, e.g., `ProseH1` for `<h1>` tags
+2. `PascalTag`, e.g., `Alert` for `::alert` components
+3. `tag`, e.g., `alert` for `::alert` components
 
 ### Custom Component Example
 
@@ -124,7 +124,7 @@ Load components dynamically using `componentsManifest`:
 
 ```svelte
 <script lang="ts">
-  import { Comark } from '@comark/svelte'
+  import { Markdown } from '@comark/svelte'
 
   const componentMap: Record<string, () => Promise<any>> = {
     'alert': () => import('./components/comark/Alert.svelte'),
@@ -141,16 +141,16 @@ Load components dynamically using `componentsManifest`:
   }
 </script>
 
-<Comark markdown={content} componentsManifest={loadComponent} />
+<Markdown value={content} componentsManifest={loadComponent} />
 ```
 
 In SvelteKit projects, keep components rendered from Markdown in a dedicated folder such as `$lib/components/comark/`. This keeps Comark-rendered components separate from normal app UI components and makes `componentsManifest` globs easier to audit.
 
-For SvelteKit SSR with non-eager lazy components, use `ComarkAsync` and a manifest that returns dynamic imports. An explicit map is the easiest option to audit:
+For SvelteKit SSR with non-eager lazy components, use `MarkdownAsync` and a manifest that returns dynamic imports. An explicit map is the easiest option to audit:
 
 ```svelte
 <script lang="ts">
-  import { ComarkAsync } from '@comark/svelte/async'
+  import { MarkdownAsync } from '@comark/svelte/async'
 
   const componentMap: Record<string, () => Promise<any>> = {
     'alert': () => import('$lib/components/comark/Alert.svelte'),
@@ -161,7 +161,7 @@ For SvelteKit SSR with non-eager lazy components, use `ComarkAsync` and a manife
 </script>
 
 <svelte:boundary>
-  <ComarkAsync markdown={content} {componentsManifest} />
+  <MarkdownAsync value={content} {componentsManifest} />
 </svelte:boundary>
 ```
 
@@ -169,7 +169,7 @@ Use `import.meta.glob` when you want the manifest to cover every Svelte componen
 
 ```svelte
 <script lang="ts">
-  import { ComarkAsync } from '@comark/svelte/async'
+  import { MarkdownAsync } from '@comark/svelte/async'
   import { pascalCase } from '@comark/svelte/utils'
 
   const modules = import.meta.glob('../lib/components/comark/*.svelte')
@@ -180,13 +180,13 @@ Use `import.meta.glob` when you want the manifest to cover every Svelte componen
 </script>
 
 <svelte:boundary>
-  <ComarkAsync markdown={content} {componentsManifest} />
+  <MarkdownAsync value={content} {componentsManifest} />
 </svelte:boundary>
 ```
 
 Omit the boundary `pending` snippet when you want SvelteKit SSR to wait and include the resolved lazy components in the initial HTML.
 
-Use eager/static components with `ComarkRenderer` when you need stable SSR without Svelte's experimental async support.
+Use eager/static components with `MarkdownParsed` when you need stable SSR without Svelte's experimental async support.
 
 ---
 
@@ -296,11 +296,11 @@ Svelte is closer to HTML than React, so most attributes pass through unchanged. 
 
 ## Streaming Mode
 
-Use the `Comark` component with `$state` for streaming content:
+Use the `Markdown` component with `$state` for streaming content:
 
 ```svelte
 <script lang="ts">
-  import { Comark } from '@comark/svelte'
+  import { Markdown } from '@comark/svelte'
 
   let content = $state('')
   let isStreaming = $state(false)
@@ -321,16 +321,16 @@ Use the `Comark` component with `$state` for streaming content:
   }
 </script>
 
-<Comark markdown={content} streaming={isStreaming} caret />
+<Markdown value={content} streaming={isStreaming} caret />
 ```
 
 The `caret` prop appends a blinking cursor indicator to the last text node during streaming. Customize with a CSS class:
 
 ```svelte
-<Comark markdown={content} streaming={isStreaming} caret={{ class: 'my-caret' }} />
+<Markdown value={content} streaming={isStreaming} caret={{ class: 'my-caret' }} />
 ```
 
-`autoClose` is enabled by default — incomplete syntax like `**bold text` is automatically closed on every parse.
+`autoClose` is enabled by default: incomplete syntax like `**bold text` is automatically closed on every parse.
 
 ---
 
@@ -340,7 +340,7 @@ Override native HTML elements using the `Prose` prefix:
 
 ```svelte
 <script lang="ts">
-  import { Comark } from '@comark/svelte'
+  import { Markdown } from '@comark/svelte'
   import ProseH1 from './ProseH1.svelte'
   import ProseA from './ProseA.svelte'
   import ProsePre from './ProsePre.svelte'
@@ -348,14 +348,14 @@ Override native HTML elements using the `Prose` prefix:
   const components = { ProseH1, ProseA, ProsePre }
 </script>
 
-<Comark markdown={content} {components} />
+<Markdown value={content} {components} />
 ```
 
 ### Tailwind CSS Prose
 
 ```svelte
 <article class="prose prose-lg dark:prose-dark max-w-none">
-  <Comark markdown={content} />
+  <Markdown value={content} />
 </article>
 ```
 
@@ -363,7 +363,7 @@ Override native HTML elements using the `Prose` prefix:
 
 ## Experimental Async
 
-The `ComarkAsync` component uses Svelte's experimental `await` in `$derived` for a declarative approach. It can also await async `componentsManifest` entries during SSR, so lazy dynamic imports render into SvelteKit server HTML. Requires `experimental.async` in your Svelte config:
+The `MarkdownAsync` component uses Svelte's experimental `await` in `$derived` for a declarative approach. It can also await async `componentsManifest` entries during SSR, so lazy dynamic imports render into SvelteKit server HTML. Requires `experimental.async` in your Svelte config:
 
 ```js
 // svelte.config.js
@@ -379,11 +379,11 @@ Usage with `<svelte:boundary>`:
 
 ```svelte
 <script lang="ts">
-  import { ComarkAsync } from '@comark/svelte/async'
+  import { MarkdownAsync } from '@comark/svelte/async'
 </script>
 
 <svelte:boundary>
-  <ComarkAsync markdown={content} />
+  <MarkdownAsync value={content} />
   {#snippet pending()}
     <p>Loading...</p>
   {/snippet}
@@ -480,14 +480,14 @@ Table content here
 Add a custom wrapper class:
 
 ```svelte
-<Comark markdown={content} class="prose dark:prose-dark" />
+<Markdown value={content} class="prose dark:prose-dark" />
 ```
 
 ### With Tailwind CSS
 
 ```svelte
-<Comark
-  markdown={content}
+<Markdown
+  value={content}
   class="prose prose-slate lg:prose-xl dark:prose-invert max-w-none"
 />
 ```

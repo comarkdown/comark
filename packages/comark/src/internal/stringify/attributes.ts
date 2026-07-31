@@ -8,7 +8,7 @@ export interface ResolveAttributesOptions {
    * `:` prefix is always stripped. Non-JSON strings fall back to a dot-path
    * lookup in `renderData`; unresolved paths yield `undefined`.
    *
-   * This matches the Vue/React/Svelte renderer semantics, which always
+   * This matches the Vue/React/Svelte/Angular renderer semantics, which always
    * normalize bindings into real JS values suitable for typed component props.
    *
    * When false (default) only dot-path lookups are applied — literals and
@@ -97,14 +97,15 @@ export function resolveAttribute(attrs: Record<string, unknown>, renderData: Nod
 // is implicit in `- [ ]`) so they should not echo back as user attrs.
 const IMPLICIT_ATTRS: Record<string, { drop?: string[]; classBlocklist?: string[] }> = {
   blockquote: { drop: ['as'] },
+  ol: { drop: ['start'] },
   ul: { classBlocklist: ['contains-task-list'] },
   li: { classBlocklist: ['task-list-item'] },
   // `language`/`filename`/`highlights`/`meta` ride on the fence info string.
-  // `tabindex`/`style` come from render-time plugins (e.g. shiki) and have no
-  // markdown form. `class` is handled specially in userBlockAttrs because shiki
-  // merges its injected classes with the user's class — we need to strip just
-  // the highlighter portion.
-  pre: { drop: ['language', 'filename', 'highlights', 'meta', 'tabindex', 'style'] },
+  // `style` comes from render-time plugins (e.g. shiki) and has no markdown
+  // form. `class` is handled specially in userBlockAttrs because shiki merges
+  // its injected classes with the user's class — we need to strip just the
+  // highlighter portion.
+  pre: { drop: ['language', 'filename', 'highlights', 'meta', 'style'] },
 }
 
 /**
@@ -128,10 +129,10 @@ export function userBlockAttrs(tag: string, attributes: Record<string, unknown>)
       if (remaining) result[key] = remaining
       continue
     }
-    if (key === 'class' && tag === 'pre' && typeof value === 'string' && value.startsWith('shiki ')) {
-      // Shiki injects `shiki [shiki-themes] <themes…> dark:<theme>` and any
-      // user-supplied class is appended after it. Recover the user portion by
-      // dropping everything up to and including the first `dark:*` token.
+    if (key === 'class' && tag === 'pre' && typeof value === 'string' && value.startsWith('shiki')) {
+      // Shiki injects `shiki [shiki-themes] <themes…>` (or a bare `shiki`) and
+      // appends any user class after a `.` separator. Recover the user portion
+      // by dropping everything up to and including that separator.
       const tokens = value.split(/\s+/)
       let cutoff = tokens.findIndex((t) => t === '.')
 
@@ -215,6 +216,15 @@ export function htmlAttributes(attributes: Record<string, unknown>) {
   return parts.join(' ')
 }
 
+// Coerce string `'true'`/`'false'` (how the parser stores boolean attrs) to
+// native booleans so js-yaml v5 emits them unquoted, matching the markdown
+// source. Numbers stay strings — the parser keeps numeric attrs as strings.
+function normalizeValue(value: unknown): unknown {
+  if (value === 'true') return true
+  if (value === 'false') return false
+  return value
+}
+
 /**
  * Convert attributes to a string of YAML attributes
  *
@@ -225,13 +235,17 @@ export function comarkYamlAttributes(
   attributes: Record<string, unknown>,
   style: 'frontmatter' | 'codeblock' = 'codeblock'
 ) {
-  // Normalize boolean attributes to remove the colon prefix
+  // Normalize attribute values for YAML serialization:
+  //  - Strip the `:` binding prefix from boolean-like values (`:block="true"`
+  //    becomes `block: true`), since the YAML props block is the canonical form
+  //    for `::tag{...}` shorthand.
+  //  - Coerce string literals `'true'`/`'false'`
   const normalized = Object.fromEntries(
     Object.entries(attributes).map(([key, value]) => {
       if (key.startsWith(':') && (value === 'true' || value === 'false')) {
-        return [key.slice(1), value]
+        return [key.slice(1), normalizeValue(value)]
       }
-      return [key, value]
+      return [key, normalizeValue(value)]
     })
   )
 

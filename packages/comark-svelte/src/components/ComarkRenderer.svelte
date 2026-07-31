@@ -1,70 +1,16 @@
 <!--
 @component
-Renders a Comark AST tree to Svelte components/HTML.
-
-Accepts a parsed `ComarkTree` and renders each top-level node via `ComarkNode`.
-Supports custom component mappings and a streaming caret indicator.
-
-@example
-```svelte
-<script>
-  import { ComarkRenderer } from '@comark/svelte'
-  import { parse } from 'comark'
-
-  const tree = await parse('# Hello **World**')
-</script>
-
-<ComarkRenderer {tree} />
-```
+@deprecated Use `MarkdownParsed` instead — same component, renamed to describe
+what it renders. `ComarkRenderer` will be removed in a future major version.
 -->
 <script lang="ts">
-  import type { ComarkTree, ComponentManifest } from 'comark'
-  import type { ComponentResolver } from '../types.js'
-  import ComarkNode from './ComarkNode.svelte'
+  import type { ComarkRendererProps } from '../types.js'
+  import MarkdownParsed from './MarkdownParsed.svelte'
+  import { warnDeprecated } from '../internal/deprecation.js'
 
-  let {
-    tree,
-    components = {},
-    componentsManifest,
-    resolver,
-    streaming = false,
-    caret: caretProp = false,
-    data,
-    class: className = '',
-  }: {
-    tree: ComarkTree
-    components?: Record<string, any>
-    componentsManifest?: ComponentManifest
-    resolver?: ComponentResolver
-    streaming?: boolean
-    caret?: boolean | { class: string }
-    data?: Record<string, unknown>
-    class?: string
-  } = $props()
+  let props: ComarkRendererProps = $props()
 
-  let caretClass = $derived(
-    streaming && caretProp
-      ? (typeof caretProp === 'object' && caretProp.class) || ''
-      : null,
-  )
-
-  let renderData = $derived({
-    frontmatter: tree.frontmatter,
-    meta: tree.meta,
-    data: data || {},
-    props: {},
-  })
+  warnDeprecated('ComarkRenderer', 'MarkdownParsed')
 </script>
 
-<div class="comark-content {className}">
-  {#each tree.nodes as node, i (i)}
-    <ComarkNode
-      {node}
-      {components}
-      {componentsManifest}
-      {resolver}
-      caretClass={i === tree.nodes.length - 1 ? caretClass : null}
-      {renderData}
-    />
-  {/each}
-</div>
+<MarkdownParsed {...props} />

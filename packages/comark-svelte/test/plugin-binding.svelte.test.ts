@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import { render } from 'vitest-browser-svelte'
 import { parse } from 'comark'
-import ComarkRenderer from '../src/components/ComarkRenderer.svelte'
+import MarkdownParsed from '../src/components/MarkdownParsed.svelte'
 import binding, { Binding } from '../src/plugins/binding'
 
 async function renderMarkdown(markdown: string, props: Record<string, any> = {}) {
   const tree = await parse(markdown, { plugins: [binding()] })
-  return render(ComarkRenderer, {
-    tree,
+  return render(MarkdownParsed, {
+    value: tree,
     components: { binding: Binding },
     ...props,
   })

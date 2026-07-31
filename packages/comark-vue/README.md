@@ -8,11 +8,11 @@
 [![Documentation](https://img.shields.io/badge/Documentation-black?logo=readme&logoColor=white)](https://comark.dev/rendering/vue)
 [![license](https://img.shields.io/github/license/comarkdown/comark?color=black)](https://github.com/comarkdown/comark/blob/main/LICENSE)
 
-Vue renderer for [Comark](https://comark.dev) — render markdown with custom Vue components, streaming support, and SSR.
+Vue renderer for [Comark](https://comark.dev). Render markdown with custom Vue components, streaming support, and SSR.
 
 ## Features
 
-- 🧩 `<Comark>` component for one-shot markdown rendering
+- 🧩 `<Markdown>` component for one-shot markdown rendering
 - 🎯 Map any Comark tag to a custom Vue component
 - 🌊 Streaming-friendly with auto-close and caret support
 - 🖥️ SSR-safe, works in Nuxt and Vite
@@ -31,16 +31,16 @@ pnpm add @comark/vue
 
 ```vue
 <script setup lang="ts">
-import { Comark } from '@comark/vue'
+import { Markdown } from '@comark/vue'
 import math, { Math } from '@comark/vue/plugins/math'
 
 const content = `# Hello\n\nThis is **Comark** in Vue.`
 </script>
 
 <template>
-  <Comark :components="{ math: Math }" :plugins="[math()]">
+  <Markdown :components="{ math: Math }" :plugins="[math()]">
     {{ content }}
-  </Comark>
+  </Markdown>
 </template>
 ```
 
@@ -48,12 +48,12 @@ const content = `# Hello\n\nThis is **Comark** in Vue.`
 
 ```vue
 <script setup lang="ts">
-import { Comark } from '@comark/vue'
+import { Markdown } from '@comark/vue'
 import Alert from './components/Alert.vue'
 </script>
 
 <template>
-  <Comark :components="{ alert: Alert }">{{ content }}</Comark>
+  <Markdown :components="{ alert: Alert }">{{ content }}</Markdown>
 </template>
 ```
 
@@ -66,7 +66,7 @@ Heads up!
 ### Streaming
 
 ```vue
-<Comark :streaming="isStreaming" caret>{{ content }}</Comark>
+<Markdown :streaming="isStreaming" caret>{{ content }}</Markdown>
 ```
 
 ## Using with Vite
@@ -91,7 +91,7 @@ Pass `comark({ prose: false })` to opt out of the auto-registered prose componen
 
 ## Using with Nuxt
 
-For Nuxt, use [`@comark/nuxt`](https://comark.dev/rendering/nuxt) which auto-imports the `<Comark>` component and wires up `~/components/prose` overrides.
+For Nuxt, use [`@comark/nuxt`](https://comark.dev/rendering/nuxt) which auto-imports the `<Markdown>` component and wires up `~/components/prose` overrides.
 
 ## Documentation
 

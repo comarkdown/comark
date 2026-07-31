@@ -180,9 +180,9 @@ function reset() {
           ref="outputColumn"
           class="flex-1 overflow-y-auto relative scroll-smooth"
         >
-          <Comark
+          <Markdown
             v-if="state.content"
-            :markdown="state.content"
+            :value="state.content"
             :components-manifest="resolveComponent"
             :streaming="Boolean(streamController)"
             caret
@@ -218,8 +218,7 @@ function reset() {
           <pre
             v-if="elementsCount > 0"
             class="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed"
-            >{{ state.content }}</pre
-          >
+            >{{ state.content }}</pre>
           <div
             v-else
             class="text-center text-neutral-500 dark:text-neutral-600 py-12"

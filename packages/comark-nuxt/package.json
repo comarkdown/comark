@@ -1,9 +1,11 @@
 {
   "name": "@comark/nuxt",
-  "version": "0.4.0",
-  "description": "Nuxt module for Comark (Components in Markdown)",
+  "version": "0.5.1",
+  "description": "Nuxt module for Comark. Render Markdown with components at runtime, with auto-imported components and streaming support for AI output.",
   "keywords": [
+    "ai",
     "comark",
+    "components",
     "markdown",
     "mdc",
     "nuxt",
@@ -49,7 +51,7 @@
   "dependencies": {
     "@comark/vue": "catalog:",
     "@nuxt/kit": "catalog:",
-    "comark": "catalog:"
+    "comark": "workspace:*"
   },
   "devDependencies": {
     "@vue/server-renderer": "catalog:",

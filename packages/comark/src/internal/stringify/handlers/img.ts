@@ -8,5 +8,6 @@ export function img(node: ComarkElement, _state: State) {
 
   const attrsString = Object.keys(rest).length > 0 ? comarkAttributes(rest) : ''
 
-  return title ? `![${alt}](${src} "${title}")` : `![${alt}](${src})${attrsString}`
+  const link = title ? `![${alt}](${src} "${title}")` : `![${alt}](${src})`
+  return `${link}${attrsString}`
 }

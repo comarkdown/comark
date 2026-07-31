@@ -1,4 +1,4 @@
-import { defineComarkComponent } from '@comark/vue'
+import { defineMarkdownComponent } from '@comark/vue'
 import math, { Math } from '@comark/nuxt/plugins/math'
 import mermaid, { Mermaid } from '@comark/nuxt/plugins/mermaid'
 import emoji from '@comark/nuxt/plugins/emoji'
@@ -10,7 +10,7 @@ import githubDark from '@shikijs/themes/github-dark'
 import binding, { Binding } from '@comark/nuxt/plugins/binding'
 
 // This base renderer created to demonstrate how to create a base renderer for a specific use case.w
-const BaseComarkDocs = defineComarkComponent({
+const BaseComarkDocs = defineMarkdownComponent({
   name: 'BaseComarkDocs',
   autoClose: true,
   plugins: [math(), mermaid(), emoji(), binding()],
@@ -23,7 +23,7 @@ const BaseComarkDocs = defineComarkComponent({
 })
 
 // This renderer extends the base renderer and adds the syntax highlighting.
-export default defineComarkComponent({
+export default defineMarkdownComponent({
   extends: BaseComarkDocs,
   name: 'ComarkDocs',
   plugins: [

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Comark } from '@comark/vue'
+import { Markdown } from '@comark/vue'
 import footnotes from '@comark/vue/plugins/footnotes'
 
 const markdown = `
@@ -35,9 +35,9 @@ A single footnote can provide important context[^1] and can be referenced more t
 
 <template>
   <Suspense>
-    <Comark :plugins="[footnotes()]">
+    <Markdown :plugins="[footnotes()]">
       {{ markdown }}
-    </Comark>
+    </Markdown>
   </Suspense>
 </template>
 

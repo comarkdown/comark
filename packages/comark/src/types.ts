@@ -201,7 +201,7 @@ export type State = {
   /**
    * Render a single node
    */
-  one: (node: ComarkNode, state: State, parent?: ComarkElement) => Promise<string>
+  one: (node: ComarkNode, state: State, parent?: ComarkElement, atLineStart?: boolean) => Promise<string>
 
   /**
    * Render the input
@@ -383,6 +383,30 @@ export interface ParseOptions<TPlugins extends readonly ComarkPlugin<any, any>[]
   autoUnwrap?: boolean
 
   /**
+   * Remove wrapper tags from the parsed tree, hoisting their children up in
+   * place. Mirrors the MDC `unwrap` behaviour and is primarily used to strip
+   * the `<p>` wrapper for single-line / inline rendering, e.g.
+   * `<Button><Markdown :value="text" :options="{ unwrap: 'p' }" /></Button>`.
+   *
+   * - `true` — unwrap paragraphs (`p`)
+   * - `string` — comma- or whitespace-separated tag names, e.g. `'p, h1'` or `'div p'`
+   * - `string[]` — explicit list of tag names
+   * - `'*'` — matches any tag
+   *
+   * Tags are applied sequentially: each tag descends one level into the result
+   * of the previous one, so `'div p'` unwraps a `<div>` then the `<p>` inside
+   * it. After unwrapping, adjacent text nodes are merged into a single string
+   * (like MDC): `a\n\nb` becomes `ab`.
+   *
+   * @default false
+   * @example
+   * // With unwrap: 'p'
+   * // Input:  `Hello **world**`
+   * // Nodes:  ['Hello ', ['strong', {}, 'world']]   (no <p> wrapper)
+   */
+  unwrap?: boolean | string | string[]
+
+  /**
    * Whether to automatically close unclosed markdown and Comark components.
    * @default true
    */
@@ -410,6 +434,27 @@ export interface ParseOptions<TPlugins extends readonly ComarkPlugin<any, any>[]
    * // With html: false — HTML tags are left as raw text / ignored
    */
   html?: boolean
+
+  /**
+   * Set `false` to disable autoconvert URL-like text to links.
+   * @default true
+   */
+  linkify?: boolean
+
+  /**
+   * Whether to auto-generate `id` attributes for `h1`–`h6` headings from their text content.
+   * Set `false` to skip auto-generated ids; user-supplied `id` attributes are still preserved.
+   *
+   * @default true
+   * @example
+   * // With headingIds: true (default)
+   * // # Hello World → ['h1', { id: 'hello-world' }, 'Hello World']
+   *
+   * // With headingIds: false
+   * // # Hello World → ['h1', {}, 'Hello World']
+   * // # Hello {id="custom"} → ['h1', { id: 'custom' }, 'Hello']
+   */
+  headingIds?: boolean
 
   /**
    * Additional plugins to use

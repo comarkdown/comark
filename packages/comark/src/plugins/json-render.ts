@@ -73,7 +73,7 @@ interface JsonRenderConfig {}
  *
  * <template>
  *   <Suspense>
- *     <Comark :plugins="[jsonRender()]">{{ content }}</Comark>
+ *     <Markdown :plugins="[jsonRender()]">{{ content }}</Markdown>
  *   </Suspense>
  * </template>
  * ```

@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.5.1](https://github.com/comarkdown/comark/compare/@comark/nuxt@0.5.0...@comark/nuxt@0.5.1) (2026-07-14)
+
+## [0.5.0](https://github.com/comarkdown/comark/compare/@comark/nuxt@0.4.0...@comark/nuxt@0.5.0) (2026-07-02)
+
 ## [0.4.0](https://github.com/comarkdown/comark/compare/@comark/nuxt@0.3.1...@comark/nuxt@0.4.0) (2026-06-04)
 
 ## [0.3.1](https://github.com/comarkdown/comark/compare/@comark/nuxt@0.2.1...@comark/nuxt@0.3.1) (2026-04-24)

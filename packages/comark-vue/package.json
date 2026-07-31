@@ -1,9 +1,11 @@
 {
   "name": "@comark/vue",
-  "version": "0.4.0",
-  "description": "Vue renderer for Comark (Components in Markdown)",
+  "version": "0.5.1",
+  "description": "Vue 3 renderer for Comark. Render Markdown with components at runtime, with streaming support for AI output.",
   "keywords": [
+    "ai",
     "comark",
+    "components",
     "markdown",
     "mdc",
     "renderer",
@@ -47,7 +49,7 @@
     "release": "release-it"
   },
   "dependencies": {
-    "comark": "catalog:"
+    "comark": "workspace:*"
   },
   "devDependencies": {
     "@vue/compiler-core": "catalog:",

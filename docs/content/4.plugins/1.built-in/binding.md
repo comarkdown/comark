@@ -20,7 +20,7 @@ links:
 
 The `comark/plugins/binding` plugin adds a `{{ path || default }}` inline shorthand for interpolating values from frontmatter, the renderer's `data` prop, the tree's `meta`, or a parent component's `props` directly into your markdown.
 
-Under the hood it emits a `binding` component node whose `:value` attribute points at a dot-path. The [data binding](/syntax/components#data-binding) layer resolves that path against the ambient render context, so bindings work seamlessly across HTML, ANSI, React, Svelte, and Vue — and round-trip back to their source form via `renderMarkdown`.
+Under the hood it emits a `binding` component node whose `:value` attribute points at a dot-path. The [data binding](/syntax/components#data-binding) layer resolves that path against the ambient render context, so bindings work seamlessly across HTML, ANSI, React, Svelte, and Vue, and round-trip back to their source form via `renderMarkdown`.
 
 ## Basic Usage
 
@@ -96,7 +96,7 @@ const out = await renderANSI(tree, {
 
 ```vue [Vue]
 <script setup lang="ts">
-import { Comark } from '@comark/vue'
+import { Markdown } from '@comark/vue'
 import binding, { Binding } from '@comark/vue/plugins/binding'
 
 const markdown = `---
@@ -109,8 +109,8 @@ Welcome, {{ frontmatter.user.name || guest }}.`
 
 <template>
   <Suspense>
-    <Comark
-      :markdown="markdown"
+    <Markdown
+      :value="markdown"
       :plugins="[binding()]"
       :components="{ Binding }"
     />
@@ -119,7 +119,7 @@ Welcome, {{ frontmatter.user.name || guest }}.`
 ```
 
 ```tsx [React]
-import { Comark } from '@comark/react'
+import { Markdown } from '@comark/react'
 import binding, { Binding } from '@comark/react/plugins/binding'
 
 const markdown = `---
@@ -131,8 +131,8 @@ Welcome, {{ frontmatter.user.name || guest }}.`
 
 export default function App() {
   return (
-    <Comark
-      markdown={markdown}
+    <Markdown
+      value={markdown}
       plugins={[binding()]}
       components={{ Binding }}
     />
@@ -142,7 +142,7 @@ export default function App() {
 
 ```svelte [Svelte]
 <script lang="ts">
-  import { Comark } from '@comark/svelte'
+  import { Markdown } from '@comark/svelte'
   import binding, { Binding } from '@comark/svelte/plugins/binding'
 
   const markdown = `---
@@ -153,8 +153,8 @@ user:
 Welcome, {{ frontmatter.user.name || guest }}.`
 </script>
 
-<Comark
-  {markdown}
+<Markdown
+  value={markdown}
   plugins={[binding()]}
   components={{ Binding }}
 />
@@ -201,7 +201,7 @@ Hello {{ data.user.name || guest }}!
 ```
 
 - If `data.user.name` resolves, its value is rendered.
-- Otherwise the literal text after `||` is rendered (trim and quote as you see fit — YAML rules don't apply here).
+- Otherwise the literal text after `||` is rendered (trim and quote as you see fit; YAML rules don't apply here).
 
 ## Custom Tag Name
 
@@ -259,13 +259,13 @@ import { Binding } from '@comark/vue/plugins/binding'
 
 ## Use Cases
 
-1. **Personalized content** — greet users by name from frontmatter or runtime data:
+1. **Personalized content**: greet users by name from frontmatter or runtime data:
 
    ```mdc
    Hello {{ data.user.name || friend }}!
    ```
 
-2. **Documentation templates** — interpolate configuration or versioned values:
+2. **Documentation templates**: interpolate configuration or versioned values:
 
    ```mdc
    ---
@@ -275,7 +275,7 @@ import { Binding } from '@comark/vue/plugins/binding'
    You are reading the docs for **v{{ frontmatter.version }}**.
    ```
 
-3. **Dynamic tables** — combine with frontmatter-driven rows:
+3. **Dynamic tables**: combine with frontmatter-driven rows:
 
    ```mdc
    ---
@@ -290,7 +290,7 @@ import { Binding } from '@comark/vue/plugins/binding'
    | Uptime | {{ frontmatter.stats.uptime }} |
    ```
 
-4. **Component props** — reference an enclosing component's resolved attributes:
+4. **Component props**: reference an enclosing component's resolved attributes:
 
    ```mdc
    ::card{title="Hello"}
@@ -300,6 +300,6 @@ import { Binding } from '@comark/vue/plugins/binding'
 
 ## See Also
 
-- [Data Binding](/syntax/components#data-binding) — the underlying `:prefix` resolution contract
-- [Component Syntax](/syntax/components) — the full Comark component API
-- [Creating Plugins](/plugins/custom/plugin-api) — build your own plugins
+- [Data Binding](/syntax/components#data-binding): the underlying `:prefix` resolution contract
+- [Component Syntax](/syntax/components): the full Comark component API
+- [Creating Plugins](/plugins/custom/plugin-api): build your own plugins
