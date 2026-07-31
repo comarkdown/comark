@@ -44,6 +44,32 @@ function greet(name) {
 
 > Comark makes Markdown more powerful without sacrificing simplicity.
 
+## Collapsible sections
+
+Standard HTML `<details>` blocks work correctly:
+
+<details>
+<summary>Click to expand</summary>
+
+This content is **inside** the details block.
+
+- Item 1
+- Item 2
+- Item 3
+
+```js
+console.log('Hidden code!')
+```
+
+</details>
+
+<details open>
+<summary>This one starts open</summary>
+
+You can have multiple collapsible sections with full Markdown inside.
+
+</details>
+
 ::Alert{type="danger"}
 Don't forget to close your components with `::` — otherwise `autoClose` will handle it for you!
 ::

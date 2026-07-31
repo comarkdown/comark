@@ -27,6 +27,72 @@ const INLINE_TAG_MAP: Record<string, string> = {
   sup_open: 'sup',
 }
 
+// Block tags whose CommonMark type-6 HTML blocks end at the first blank line.
+const TYPE_6_BLOCK_TAGS = new Set([
+  'address',
+  'article',
+  'aside',
+  'base',
+  'basefont',
+  'blockquote',
+  'body',
+  'caption',
+  'center',
+  'col',
+  'colgroup',
+  'dd',
+  'details',
+  'dialog',
+  'dir',
+  'div',
+  'dl',
+  'dt',
+  'fieldset',
+  'figcaption',
+  'figure',
+  'footer',
+  'form',
+  'frame',
+  'frameset',
+  'h1',
+  'h2',
+  'h3',
+  'h4',
+  'h5',
+  'h6',
+  'head',
+  'header',
+  'hr',
+  'html',
+  'iframe',
+  'legend',
+  'li',
+  'link',
+  'main',
+  'menu',
+  'menuitem',
+  'nav',
+  'noframes',
+  'ol',
+  'optgroup',
+  'option',
+  'p',
+  'param',
+  'search',
+  'section',
+  'summary',
+  'table',
+  'tbody',
+  'td',
+  'tfoot',
+  'th',
+  'thead',
+  'title',
+  'tr',
+  'track',
+  'ul',
+])
+
 interface ProcessState {
   headingSlugCounts: Map<string, number>
   headingStack: Array<{ level: number; id: string }>
@@ -61,6 +127,14 @@ export function marmdownItTokensToComarkTree(tokens: any[], opts?: TokenProcesso
     const token = tokens[i]
 
     if (token.type === 'html_block') {
+      const content = typeof token.content === 'string' ? token.content : ''
+      const unclosedTag = getUnclosedType6BlockTag(content)
+      if (unclosedTag && hasClosingBlockAhead(tokens, i + 1, unclosedTag)) {
+        const result = processUnclosedType6BlockTokens(tokens, i, unclosedTag, state)
+        nodes.push(result.node)
+        i = result.nextIndex
+        continue
+      }
       const result = processHtmlBlockTokens(tokens, i)
       nodes.push(...result.nodes)
       i = result.nextIndex
@@ -96,6 +170,128 @@ export function marmdownItTokensToComarkTree(tokens: any[], opts?: TokenProcesso
 function processHtmlBlockTokens(tokens: any[], startIndex: number): { nodes: ComarkNode[]; nextIndex: number } {
   const content = typeof tokens[startIndex]?.content === 'string' ? tokens[startIndex].content : ''
   return { nodes: htmlToComarkNodes(content), nextIndex: startIndex + 1 }
+}
+
+/**
+ * Return the opening tag for an unclosed CommonMark type-6 HTML block.
+ * Type-6 blocks terminate at a blank line, which can split one HTML element
+ * across several markdown-it tokens.
+ */
+function getUnclosedType6BlockTag(content: string): string | null {
+  const trimmed = content.trim()
+  if (trimmed.length < 3 || trimmed.charCodeAt(0) !== 60 || trimmed.charCodeAt(1) === 47) return null
+
+  let end = 1
+  while (end < trimmed.length) {
+    const code = trimmed.charCodeAt(end)
+    const isNameChar = (code >= 65 && code <= 90) || (code >= 97 && code <= 122) || (code >= 48 && code <= 57)
+    if (!isNameChar) break
+    end++
+  }
+
+  const tag = trimmed.slice(1, end).toLowerCase()
+  if (!TYPE_6_BLOCK_TAGS.has(tag) || hasClosingTag(trimmed, tag)) return null
+  return tag
+}
+
+/**
+ * Check whether HTML contains a closing tag with the requested name.
+ */
+function hasClosingTag(content: string, tag: string): boolean {
+  const lower = content.toLowerCase()
+  let index = lower.indexOf('</')
+  while (index !== -1) {
+    const nameStart = index + 2
+    const nameEnd = nameStart + tag.length
+    if (lower.slice(nameStart, nameEnd) === tag) {
+      const next = lower.charCodeAt(nameEnd)
+      if (next === 62 || next === 9 || next === 10 || next === 12 || next === 13 || next === 32) return true
+    }
+    index = lower.indexOf('</', nameStart)
+  }
+  return false
+}
+
+/**
+ * Check whether an html_block token starts with the requested closing tag.
+ */
+function isClosingBlock(content: string, tag: string): boolean {
+  const trimmed = content.trimStart()
+  if (!trimmed.startsWith('</')) return false
+  const nameEnd = 2 + tag.length
+  if (trimmed.slice(2, nameEnd).toLowerCase() !== tag) return false
+  const next = trimmed.charCodeAt(nameEnd)
+  return next === 62 || next === 9 || next === 10 || next === 12 || next === 13 || next === 32
+}
+
+/**
+ * Only join split tokens when a later token contains the matching close.
+ * This prevents void and genuinely unclosed tags from consuming the document.
+ */
+function hasClosingBlockAhead(tokens: any[], startIndex: number, tag: string): boolean {
+  for (let i = startIndex; i < tokens.length; i++) {
+    const token = tokens[i]
+    if (token.type === 'html_block' && isClosingBlock(typeof token.content === 'string' ? token.content : '', tag)) {
+      return true
+    }
+  }
+  return false
+}
+
+/**
+ * Process a type-6 HTML block whose opening and closing tags are split across
+ * multiple markdown-it tokens. Intermediate Markdown tokens become children
+ * of the HTML element.
+ */
+function processUnclosedType6BlockTokens(
+  tokens: any[],
+  startIndex: number,
+  tag: string,
+  state?: ProcessState
+): { node: ComarkNode; nextIndex: number } {
+  const content = typeof tokens[startIndex]?.content === 'string' ? tokens[startIndex].content : ''
+  const blockNodes = htmlToComarkNodes(content)
+
+  const blockNode = blockNodes[0]
+  if (!Array.isArray(blockNode) || blockNode[0] !== tag) {
+    return { node: blockNode ?? ([tag, {}] as ComarkNode), nextIndex: startIndex + 1 }
+  }
+
+  let i = startIndex + 1
+
+  while (i < tokens.length) {
+    const token = tokens[i]
+
+    if (token.type === 'html_block') {
+      const tokenContent = typeof token.content === 'string' ? token.content : ''
+
+      const nestedTag = getUnclosedType6BlockTag(tokenContent)
+      if (nestedTag && hasClosingBlockAhead(tokens, i + 1, nestedTag)) {
+        const nested = processUnclosedType6BlockTokens(tokens, i, nestedTag, state)
+        blockNode.push(nested.node)
+        i = nested.nextIndex
+        continue
+      }
+
+      if (isClosingBlock(tokenContent, tag)) {
+        i++
+        break
+      }
+
+      const result = processHtmlBlockTokens(tokens, i)
+      blockNode.push(...result.nodes)
+      i = result.nextIndex
+      continue
+    }
+
+    const result = processBlockToken(tokens, i, false, state)
+    if (result.node) {
+      blockNode.push(result.node)
+    }
+    i = result.nextIndex
+  }
+
+  return { node: blockNode as ComarkNode, nextIndex: i }
 }
 
 /**
@@ -485,6 +681,18 @@ function processBlockChildrenWithSlots(
 
     // html_block can produce multiple nodes — handle before processBlockToken
     if (token.type === 'html_block') {
+      const tokenContent = typeof token.content === 'string' ? token.content : ''
+      const unclosedTag = getUnclosedType6BlockTag(tokenContent)
+      if (unclosedTag && hasClosingBlockAhead(tokens, i + 1, unclosedTag)) {
+        const result = processUnclosedType6BlockTokens(tokens, i, unclosedTag, state)
+        if (currentSlotName !== null) {
+          currentSlotChildren.push(result.node)
+        } else {
+          nodes.push(result.node)
+        }
+        i = result.nextIndex
+        continue
+      }
       const result = processHtmlBlockTokens(tokens, i)
       if (currentSlotName !== null) {
         currentSlotChildren.push(...result.nodes)
@@ -580,6 +788,14 @@ function processBlockChildren(
     const token = tokens[i]
 
     if (token.type === 'html_block') {
+      const tokenContent = typeof token.content === 'string' ? token.content : ''
+      const unclosedTag = getUnclosedType6BlockTag(tokenContent)
+      if (unclosedTag && hasClosingBlockAhead(tokens, i + 1, unclosedTag)) {
+        const result = processUnclosedType6BlockTokens(tokens, i, unclosedTag, state)
+        nodes.push(result.node)
+        i = result.nextIndex
+        continue
+      }
       const result = processHtmlBlockTokens(tokens, i)
       nodes.push(...result.nodes)
       i = result.nextIndex
