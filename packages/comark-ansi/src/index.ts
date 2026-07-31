@@ -1,10 +1,10 @@
-import type { ParseOptions, RenderOptions } from 'comark'
+import type { ParserOptions } from 'comark'
 import { createMarkdownParser } from 'comark'
-import { renderANSI } from './render.ts'
+import { type AnsiRendererOptions, renderAnsiFromDocument } from './render.ts'
 
-export { renderANSI, type RenderANSIOptions } from './render.ts'
+export { renderAnsiFromDocument, type AnsiRendererOptions } from './render.ts'
 
-function defaultWrite(string: string) {
+function defaultWriter(string: string) {
   if (typeof process !== 'undefined') {
     process.stdout.write(string)
   } else {
@@ -13,99 +13,101 @@ function defaultWrite(string: string) {
 }
 
 /**
- * Options for creating a log function.
+ * Options for creating an ANSI writer.
  */
-export interface LogOptions extends RenderOptions, ParseOptions {
-  write?: (string: string) => void
+export interface AnsiWriterOptions extends AnsiRendererOptions, ParserOptions {
+  writer?: (string: string) => void
 }
 
 /**
- * Creates a reusable log function with pre-configured parse and render options.
+ * Creates a reusable writer with pre-configured parse and render options.
  *
  * @param options - Comark parse and render options (plugins, autoClose, etc.)
  * @returns An async function `(markdown) => Promise<void>` that prints to stdout
  *
  * @example
  * ```typescript
- * import { createLog } from '@comark/ansi'
- * import math from 'comark/plugins/math'
+ * import { createAnsiWriter } from '@comark/ansi'
+ * import math, { Math } from '@comark/ansi/plugins/math'
  *
- * const log = createLog({
+ * const writeAnsi = createAnsiWriter({
  *   plugins: [math()],
+ *   components: { Math },
  *   width: 120,
- *   write: (s) => process.stderr.write(s)
+ *   writer: (s) => process.stderr.write(s)
  * })
  *
- * await log('# Hello\n\nThis is **bold**.')
+ * await writeAnsi('# Hello\n\nThis is **bold**.')
  * ```
  */
-export function createLog(options?: LogOptions): (markdown: string) => Promise<void> {
-  const parse = createMarkdownParser(options as ParseOptions)
+export function createAnsiWriter(options?: AnsiWriterOptions): (markdown: string) => Promise<void> {
+  const renderAnsi = createAnsiRenderer(options as AnsiRendererOptions)
+  const write = options?.writer ?? defaultWriter
   return async (markdown: string) => {
-    const tree = await parse(markdown)
-    const write = options?.write ?? defaultWrite
-
-    write((await renderANSI(tree, options as RenderOptions)) + '\n')
+    const output = await renderAnsi(markdown)
+    write(output + '\n')
   }
 }
 
 /**
  * Parse markdown and print it as ANSI-styled output to stdout.
  *
- * @param markdown - The markdown/Comark content to parse and print
- * @param options - Optional rendering options
+ * @param markdown - The markdown content to parse and print
+ * @param options - Optional markdown parser, ANSI renderer, and writer options
  *
  * @example
  * ```typescript
- * import { log } from '@comark/ansi'
+ * import { writeAnsi } from '@comark/ansi'
  *
- * await log('# Hello\n\nThis is **bold** and _italic_.')
+ * await writeAnsi('# Hello\n\nThis is **bold** and _italic_.')
  * ```
  */
-export async function log(markdown: string, options?: LogOptions): Promise<void> {
-  return createLog(options)(markdown)
+export async function writeAnsi(markdown: string, options?: AnsiWriterOptions): Promise<void> {
+  return createAnsiWriter(options)(markdown)
 }
 
 /**
  * Creates a reusable render function with pre-configured parse and render options.
  *
- * @param options - Comark parse and render options (plugins, autoClose, etc.)
+ * @param options - Markdown parser and ANSI renderer options (plugins, autoClose, etc.)
  * @returns An async function `(markdown) => Promise<string>` that returns ANSI-styled output
  *
  * @example
  * ```typescript
- * import { createRender } from '@comark/ansi'
+ * import { createAnsiRenderer } from '@comark/ansi'
  *
- * const render = createRender({
+ * const renderAnsi = createAnsiRenderer({
  *   plugins: [math()]
  * })
  *
- * const output = await render('# Hello\n\nThis is **bold** and _italic_.')
+ * const output = await renderAnsi('# Hello\n\nThis is **bold** and _italic_.')
  * console.log(output)
  * ```
  */
-export function createRender(options?: ParseOptions & RenderOptions): (markdown: string) => Promise<string> {
-  const parse = createMarkdownParser(options as ParseOptions)
+export function createAnsiRenderer(
+  options?: ParserOptions & AnsiRendererOptions
+): (markdown: string) => Promise<string> {
+  const parseMarkdown = createMarkdownParser(options as ParserOptions)
   return async (markdown: string) => {
-    const tree = await parse(markdown)
-    return await renderANSI(tree, options as RenderOptions)
+    const doc = await parseMarkdown(markdown)
+    return await renderAnsiFromDocument(doc, options as AnsiRendererOptions)
   }
 }
 
 /**
- * Parse markdown and render it as ANSI-styled output to stdout.
+ * Parse markdown and render it as an ANSI-styled string.
  *
- * @param markdown - The markdown/Comark content to parse and print
- * @param options - Optional rendering options
+ * @param markdown - The markdown content to parse and render
+ * @param options - Optional markdown parser & ANSI renderer options
  *
  * @example
  * ```typescript
- * import { render } from '@comark/ansi'
+ * import { renderAnsi } from '@comark/ansi'
  *
- * const output = await render('# Hello\n\nThis is **bold** and _italic_.')
+ * const output = await renderAnsi('# Hello\n\nThis is **bold** and _italic_.')
  * console.log(output)
  * ```
  */
-export async function render(markdown: string, options?: LogOptions): Promise<string> {
-  return createRender(options)(markdown)
+export async function renderAnsi(markdown: string, options?: ParserOptions & AnsiRendererOptions): Promise<string> {
+  return createAnsiRenderer(options)(markdown)
 }

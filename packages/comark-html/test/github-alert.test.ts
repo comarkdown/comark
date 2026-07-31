@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { parseMarkdown } from 'comark'
 import githubAlert from '@comark/html/plugins/alert'
-import { renderHTML } from '../src/index'
+import { renderHtml } from '../src/index'
 
 describe('githubAlert', () => {
   it('should convert !TIP to <svg> icon', async () => {
@@ -15,7 +15,7 @@ describe('githubAlert', () => {
         plugins: [githubAlert()],
       }
     )
-    const html = await renderHTML(tree)
+    const html = await renderHtml(tree)
     expect(html).toContain('<blockquote as="note">')
   })
 })

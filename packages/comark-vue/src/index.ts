@@ -1,7 +1,7 @@
 import type { PropType } from 'vue'
 import { computed, defineComponent, h } from 'vue'
 import { Markdown } from './components/Markdown.ts'
-import type { MarkdownDocument as MarkdownDocumentType, ComponentManifest, ParseOptions } from 'comark'
+import type { MarkdownDocument as MarkdownDocumentType, ComponentManifest, ParserOptions } from 'comark'
 import { MarkdownDocument } from './components/MarkdownDocument.ts'
 import { warnDeprecated } from './internal/deprecation.ts'
 
@@ -22,7 +22,7 @@ export type { ComarkRendererProps } from './components/ComarkRenderer.ts'
 
 export type * from 'comark'
 
-interface DefineMarkdownComponentOptions extends ParseOptions {
+interface DefineMarkdownComponentOptions extends ParserOptions {
   extends?: typeof Markdown
   name?: string
   components?: Record<string, any>
@@ -69,7 +69,7 @@ export function defineMarkdownComponent(config: DefineMarkdownComponentOptions =
        * Parser options
        */
       options: {
-        type: Object as PropType<Exclude<ParseOptions, 'plugins'>>,
+        type: Object as PropType<Exclude<ParserOptions, 'plugins'>>,
         default: () => ({}),
       },
 
@@ -77,7 +77,7 @@ export function defineMarkdownComponent(config: DefineMarkdownComponentOptions =
        * Additional plugins to use
        */
       plugins: {
-        type: Array as PropType<ParseOptions['plugins']>,
+        type: Array as PropType<ParserOptions['plugins']>,
         default: () => [],
       },
 

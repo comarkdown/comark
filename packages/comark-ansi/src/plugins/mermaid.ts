@@ -6,15 +6,15 @@ export * from 'comark/plugins/mermaid'
 export { default } from 'comark/plugins/mermaid'
 
 /**
- * HTML component render function for mermaid nodes.
- * Renders diagrams to inline SVG using `beautiful-mermaid`.
+ * ANSI component render function for mermaid nodes.
+ * Renders diagrams as terminal-friendly ASCII using `beautiful-mermaid`.
  *
  * @example
  * ```typescript
  * import mermaid, { Mermaid } from '@comark/ansi/plugins/mermaid'
- * import { createRender } from '@comark/ansi'
+ * import { createAnsiRenderer } from '@comark/ansi'
  *
- * const render = createRender({
+ * const renderAnsi = createAnsiRenderer({
  *   plugins: [mermaid()],
  *   components: { Mermaid },
  * })

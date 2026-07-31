@@ -1,9 +1,9 @@
-import type { MarkdownDocument, RenderOptions, RenderMarkdownOptions } from 'comark'
+import type { MarkdownDocument, RendererOptions, RenderMarkdownOptions } from 'comark'
 import { renderFrontmatter } from './internal/frontmatter.ts'
 
 import { createState, one } from './internal/stringify/state.ts'
 
-export type { NodeHandler, State, Context, RenderOptions, RenderMarkdownOptions, NodeRenderData } from './types.ts'
+export type { NodeHandler, State, Context, RendererOptions, RenderMarkdownOptions, NodeRenderData } from './types.ts'
 
 // Re-export frontmatter renderer
 export { renderFrontmatter } from './internal/frontmatter.ts'
@@ -19,7 +19,7 @@ export { resolveAttributes, resolveAttribute } from './internal/stringify/attrib
  */
 export async function render(
   tree: MarkdownDocument | { nodes: MarkdownDocument['nodes'] },
-  context: RenderOptions = {}
+  context: RendererOptions = {}
 ): Promise<string> {
   const state = createState({ ...context, tree: tree as MarkdownDocument, handlers: context.components })
 

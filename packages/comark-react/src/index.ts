@@ -3,7 +3,7 @@ import { Markdown } from './components/Markdown.tsx'
 import { MarkdownDocument } from './components/MarkdownDocument.tsx'
 import type { MarkdownProps } from './components/Markdown.tsx'
 import type { MarkdownDocumentProps } from './components/MarkdownDocument.tsx'
-import type { ParseOptions } from 'comark'
+import type { ParserOptions } from 'comark'
 import { warnDeprecated } from './internal/deprecation.ts'
 
 export { Markdown }
@@ -29,7 +29,7 @@ export { ComarkClient } from './components/ComarkClient.tsx'
 
 export type * from 'comark'
 
-interface DefineMarkdownComponentOptions extends ParseOptions {
+interface DefineMarkdownComponentOptions extends ParserOptions {
   /** Extend an existing defined component — inherits its plugins and components. */
   extends?: React.FC<MarkdownProps>
   /** Display name shown in React DevTools. */
@@ -74,7 +74,7 @@ export function defineMarkdownComponent(config: DefineMarkdownComponentOptions =
   } = config
 
   const MarkdownComponent: React.FC<MarkdownProps> = (props) => {
-    const mergedOptions: Exclude<ParseOptions, 'plugins'> = {
+    const mergedOptions: Exclude<ParserOptions, 'plugins'> = {
       ...parseOptions,
       ...props.options,
     }

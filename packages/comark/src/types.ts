@@ -262,7 +262,7 @@ export type State = {
 /**
  * The context of the renderer
  */
-export interface RenderOptions {
+export interface RendererOptions {
   /**
    * Additional node handlers to pass to the renderer
    */
@@ -278,7 +278,7 @@ export interface RenderOptions {
 /**
  * The options for rendering markdown
  */
-export interface RenderMarkdownOptions extends RenderOptions {
+export interface RenderMarkdownOptions extends RendererOptions {
   /**
    * Maximum number of inline attributes before switching to YAML block syntax.
    * Set to 0 to always use YAML block syntax.
@@ -325,7 +325,7 @@ export type MarkdownItPluginWithOptions<T> = (md: MarkdownIt, options: T) => voi
 
 export type ComarkParsePreState = {
   markdown: string
-  options: ParseOptions
+  options: ParserOptions
 
   [key: string]: any
 }
@@ -333,7 +333,7 @@ export type ComarkParsePreState = {
 export type ComarkParsePostState<TMeta = Record<string, any>, TFrontmatter = Record<string, any>> = {
   markdown: string
   tree: MarkdownDocument<TMeta, TFrontmatter>
-  options: ParseOptions
+  options: ParserOptions
   tokens: unknown[]
 
   [key: string]: any
@@ -401,7 +401,7 @@ export interface ComarkContextProvider {
   componentManifest: ComponentManifest
 }
 
-export interface ParseOptions<TPlugins extends readonly ComarkPlugin<any, any>[] = readonly ComarkPlugin<any, any>[]> {
+export interface ParserOptions<TPlugins extends readonly ComarkPlugin<any, any>[] = readonly ComarkPlugin<any, any>[]> {
   /**
    * Whether to automatically unwrap single paragraphs in container components.
    * When enabled, if a container component (alert, card, callout, note, warning, tip, info)

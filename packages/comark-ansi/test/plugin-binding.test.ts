@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { parseMarkdown } from 'comark'
-import { renderANSI } from '../src/render'
+import { renderAnsiFromDocument } from '../src/render'
 import binding, { Binding } from '../src/plugins/binding'
 
 const parseWithBinding = (md: string) => parseMarkdown(md, { plugins: [binding()] })
@@ -14,13 +14,13 @@ user:
 
 Hello {{ frontmatter.user.name }}!
 `)
-    const out = await renderANSI(tree, { colors: false, components: { binding: Binding } })
+    const out = await renderAnsiFromDocument(tree, { colors: false, components: { binding: Binding } })
     expect(out).toContain('Hello Ada!')
   })
 
   it('resolves a `{{ path }}` binding from the `data` render option', async () => {
     const tree = await parseWithBinding('Score: {{ data.score }}')
-    const out = await renderANSI(tree, {
+    const out = await renderAnsiFromDocument(tree, {
       colors: false,
       components: { binding: Binding },
       data: { score: 42 },
@@ -30,16 +30,16 @@ Hello {{ frontmatter.user.name }}!
 
   it('falls back to `|| default` when the path does not resolve', async () => {
     const tree = await parseWithBinding('Hello {{ data.missing || guest }}!')
-    const out = await renderANSI(tree, { colors: false, components: { binding: Binding } })
+    const out = await renderAnsiFromDocument(tree, { colors: false, components: { binding: Binding } })
     expect(out).toContain('Hello guest!')
   })
 
   it('shows a dim placeholder when the path is unresolved and no default is set', async () => {
     const tree = await parseWithBinding('before-{{ missing.path }}-after')
-    const plain = await renderANSI(tree, { colors: false, components: { binding: Binding } })
+    const plain = await renderAnsiFromDocument(tree, { colors: false, components: { binding: Binding } })
     expect(plain).toContain('before-{{ missing.path }}-after')
 
-    const colored = await renderANSI(tree, { colors: true, components: { binding: Binding } })
+    const colored = await renderAnsiFromDocument(tree, { colors: true, components: { binding: Binding } })
     // Dim escape code sits around the placeholder.
     expect(colored).toContain('\x1B[2m{{ missing.path }}\x1B[0m')
   })

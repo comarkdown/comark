@@ -31,7 +31,7 @@ const medium = `
 \`\`\`typescript
 import { parseMarkdown } from 'comark'
 
-interface ParseOptions {
+interface ParserOptions {
   autoClose?: boolean
   streaming?: boolean
   plugins?: ComarkPlugin[]

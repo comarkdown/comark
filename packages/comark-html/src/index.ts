@@ -1,8 +1,8 @@
-import type { ParseOptions, RenderOptions } from 'comark'
+import type { ParserOptions, RendererOptions } from 'comark'
 import { createMarkdownParser } from 'comark'
-import { renderHTML } from './render.ts'
+import { renderHtml } from './render.ts'
 
-export { renderHTML } from './render.ts'
+export { renderHtml } from './render.ts'
 
 /**
  * Creates a reusable parse+render function with pre-configured options.
@@ -27,11 +27,11 @@ export { renderHTML } from './render.ts'
  * const html = await render('# Hello\n\n**Bold** text.')
  * ```
  */
-export function createRender(options?: ParseOptions & RenderOptions): (markdown: string) => Promise<string> {
+export function createRender(options?: ParserOptions & RendererOptions): (markdown: string) => Promise<string> {
   const parse = createMarkdownParser(options)
   return async (markdown: string) => {
     const tree = await parse(markdown)
-    return await renderHTML(tree, options as RenderOptions)
+    return await renderHtml(tree, options as RendererOptions)
   }
 }
 
@@ -50,6 +50,6 @@ export function createRender(options?: ParseOptions & RenderOptions): (markdown:
  * document.body.innerHTML = html
  * ```
  */
-export async function render(markdown: string, options?: RenderOptions): Promise<string> {
+export async function render(markdown: string, options?: RendererOptions): Promise<string> {
   return createRender(options)(markdown)
 }

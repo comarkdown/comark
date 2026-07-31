@@ -1,18 +1,18 @@
 import { describe, it, expect } from 'vitest'
 import { parseMarkdown } from 'comark'
-import { renderHTML } from '../src/index'
+import { renderHtml } from '../src/index'
 
-describe('renderHTML', () => {
+describe('renderHtml', () => {
   it('renders without options (backward compatible)', async () => {
     const tree = await parseMarkdown('# Hello **World**')
-    const html = await renderHTML(tree)
+    const html = await renderHtml(tree)
     expect(html).toContain('<h1')
     expect(html).toContain('<strong>World</strong>')
   })
 
   it('renders custom component with render', async () => {
     const tree = await parseMarkdown('::alert{type="info"}\nHello!\n::')
-    const html = await renderHTML(tree, {
+    const html = await renderHtml(tree, {
       components: {
         alert: async ([_tag, attrs, ...children], { render }) => {
           return `<div class="alert alert-${attrs.type}">${await render(children)}</div>`
@@ -27,7 +27,7 @@ describe('renderHTML', () => {
 
   it('passes data to component renderers', async () => {
     const tree = await parseMarkdown('::banner\nContent\n::')
-    const html = await renderHTML(tree, {
+    const html = await renderHtml(tree, {
       data: { siteName: 'My Site' },
       components: {
         banner: async ([_tag, _attrs, ...children], { render, data }) => {
@@ -41,7 +41,7 @@ describe('renderHTML', () => {
 
   it('renders component attributes/props', async () => {
     const tree = await parseMarkdown('::card{title="Welcome" theme="dark"}\nBody\n::')
-    const html = await renderHTML(tree, {
+    const html = await renderHtml(tree, {
       components: {
         card: async ([_tag, attrs, ...children], { render }) => {
           return `<section data-title="${attrs.title}" data-theme="${attrs.theme}">${await render(children)}</section>`
@@ -55,7 +55,7 @@ describe('renderHTML', () => {
 
   it('renders nested custom components', async () => {
     const tree = await parseMarkdown('::outer\n:::inner\nDeep content\n:::\n::')
-    const html = await renderHTML(tree, {
+    const html = await renderHtml(tree, {
       components: {
         outer: async ([_tag, _attrs, ...children], { render }) => {
           return `<div class="outer">${await render(children)}</div>`
@@ -88,7 +88,7 @@ More content
 :::
 ::
 `)
-    const html = await renderHTML(tree, {
+    const html = await renderHtml(tree, {
       components: {
         layout: async ([_tag, attrs, ...children], { render }) => {
           return `<div class="layout" data-theme="${attrs.theme}">${await render(children)}</div>`
@@ -116,7 +116,7 @@ More content
 
   it('leaves standard HTML elements unchanged when components are provided', async () => {
     const tree = await parseMarkdown('# Title\n\n::alert{type="warning"}\nMessage\n::')
-    const html = await renderHTML(tree, {
+    const html = await renderHtml(tree, {
       components: {
         alert: async ([_tag, attrs, ...children], { render }) => {
           return `<div class="alert-${attrs.type}">${await render(children)}</div>`
@@ -133,7 +133,7 @@ More content
     const tree = await parseMarkdown(
       '::alert{type="info"}\nInfo message\n::\n\n::alert{type="warning"}\nWarning message\n::'
     )
-    const html = await renderHTML(tree, {
+    const html = await renderHtml(tree, {
       components: {
         infoAlert: {
           match: (node) => node[0] === 'alert' && node[1].type === 'info',
@@ -160,21 +160,21 @@ user:
 Hello :badge{:label="frontmatter.user.name"}!
 ::
 `)
-      const html = await renderHTML(tree)
+      const html = await renderHtml(tree)
       expect(html).toContain('title="My Blog"')
       expect(html).toContain('label="Ada"')
     })
 
     it('resolves :prop bindings from the data option', async () => {
       const tree = await parseMarkdown('::alert{:title="data.headline"}\nHi\n::')
-      const html = await renderHTML(tree, { data: { headline: 'Release notes' } })
+      const html = await renderHtml(tree, { data: { headline: 'Release notes' } })
       expect(html).toContain('title="Release notes"')
     })
 
     it('resolves :prop bindings from meta', async () => {
       const tree = await parseMarkdown('::alert{:title="meta.wordCount"}\nHi\n::')
       tree.meta = { wordCount: 42 }
-      const html = await renderHTML(tree)
+      const html = await renderHtml(tree)
       expect(html).toContain('title="42"')
     })
 
@@ -184,14 +184,14 @@ Hello :badge{:label="frontmatter.user.name"}!
 :::
 ::
 `)
-      const html = await renderHTML(tree)
+      const html = await renderHtml(tree)
       expect(html).toContain('color="primary"')
       expect(html).toContain('text="Hello"')
     })
 
     it('preserves unresolved paths as literal string attributes', async () => {
       const tree = await parseMarkdown('::card{:to="$doc.snippet.link"}\n::')
-      const html = await renderHTML(tree)
+      const html = await renderHtml(tree)
       expect(html).toContain('to="$doc.snippet.link"')
     })
 
@@ -203,7 +203,7 @@ name: Ada
 ::card{title="frontmatter.name"}
 ::
 `)
-      const html = await renderHTML(tree)
+      const html = await renderHtml(tree)
       expect(html).toContain('title="frontmatter.name"')
     })
   })

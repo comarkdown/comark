@@ -1,10 +1,10 @@
-import type { MarkdownDocument, RenderOptions } from 'comark'
+import type { MarkdownDocument, RendererOptions } from 'comark'
 import { render } from 'comark/render'
 import { handlers as defaultHandlers } from './handlers/index.ts'
 
 export * from 'comark/render'
 
-export interface RenderANSIOptions extends RenderOptions {
+export interface AnsiRendererOptions extends RendererOptions {
   /**
    * Whether to emit ANSI escape codes.
    * Defaults to `true` unless the `NO_COLOR` environment variable is set.
@@ -18,29 +18,29 @@ export interface RenderANSIOptions extends RenderOptions {
 }
 
 /**
- * Render a Comark tree to an ANSI-styled terminal string.
+ * Render a Markdown document to an ANSI-styled terminal string.
  *
- * @param tree - The Comark tree to render
- * @param options - Optional rendering options
+ * @param document - The markdown document to render (parsed markdown)
+ * @param options - Optional ANSI rendering options
  * @returns The ANSI-styled string
  *
  * @example
  * ```typescript
  * import { parseMarkdown } from 'comark'
- * import { renderANSI } from '@comark/ansi'
+ * import { renderAnsiFromDocument } from '@comark/ansi'
  *
- * const tree = await parseMarkdown('# Hello\n\nThis is **bold** and _italic_.')
- * console.log(renderANSI(tree))
+ * const doc = await parseMarkdown('# Hello\n\nThis is **bold** and _italic_.')
+ * console.log(await renderAnsiFromDocument(doc))
  * ```
  */
-export async function renderANSI(
-  tree: MarkdownDocument | { nodes: MarkdownDocument['nodes'] },
-  options?: RenderANSIOptions
+export async function renderAnsiFromDocument(
+  document: MarkdownDocument | { nodes: MarkdownDocument['nodes'] },
+  options?: AnsiRendererOptions
 ): Promise<string> {
   const colors = options?.colors ?? (typeof process !== 'undefined' ? !process.env.NO_COLOR : true)
   const width = options?.width ?? 80
 
-  return render(tree, {
+  return render(document, {
     ...options,
     colors,
     width,

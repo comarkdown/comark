@@ -5,7 +5,7 @@ import type {
   MarkdownExitPlugin,
   MergePluginFrontmatter,
   MergePluginMeta,
-  ParseOptions,
+  ParserOptions,
   ResolvedFrontmatter,
   ResolvedMeta,
   MarkdownDocument,
@@ -61,7 +61,7 @@ export { defineComarkPlugin } from './utils/helpers.ts'
  * ```
  */
 export function createMarkdownParser<const TPlugins extends readonly ComarkPlugin<any, any>[] = []>(
-  options: ParseOptions<TPlugins> = {} as ParseOptions<TPlugins>
+  options: ParserOptions<TPlugins> = {} as ParserOptions<TPlugins>
 ): ComarkParseFn<ResolvedMeta<MergePluginMeta<TPlugins>>, ResolvedFrontmatter<MergePluginFrontmatter<TPlugins>>> {
   const { autoUnwrap = true, autoClose = true } = options
   // Tag set to strip from the top level of the tree (MDC `unwrap`). Resolved once.
@@ -225,7 +225,7 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
  */
 export async function parseMarkdown<const TPlugins extends readonly ComarkPlugin<any, any>[] = []>(
   markdown: string,
-  options: ParseOptions<TPlugins> = {} as ParseOptions<TPlugins>
+  options: ParserOptions<TPlugins> = {} as ParserOptions<TPlugins>
 ): Promise<
   MarkdownDocument<ResolvedMeta<MergePluginMeta<TPlugins>>, ResolvedFrontmatter<MergePluginFrontmatter<TPlugins>>>
 > {
@@ -250,7 +250,7 @@ export async function parseMarkdown<const TPlugins extends readonly ComarkPlugin
  * console.log(tree.nodes)
  */
 export function createSerializedMarkdownParser<const TPlugins extends readonly ComarkPlugin<any, any>[] = []>(
-  options: ParseOptions<TPlugins> = {} as ParseOptions<TPlugins>
+  options: ParserOptions<TPlugins> = {} as ParserOptions<TPlugins>
 ): ComarkParseFn<ResolvedMeta<MergePluginMeta<TPlugins>>, ResolvedFrontmatter<MergePluginFrontmatter<TPlugins>>> {
   return createSerializedTask(createMarkdownParser(options))
 }

@@ -14,9 +14,9 @@ import minLight from 'shiki/dist/themes/min-light.mjs'
 import nord from 'shiki/dist/themes/nord.mjs'
 import rustLanguage from 'shiki/dist/langs/rust.mjs'
 import goLanguage from 'shiki/dist/langs/go.mjs'
-import type { ParseOptions } from '../src/types'
+import type { ParserOptions } from '../src/types'
 import type { ShikiTransformer } from 'shiki'
-import { renderHTMLForTest } from './utils/render-html'
+import { renderHtmlForTest } from './utils/render-html'
 import { Binding as HTMLBiniding } from '../../comark-html/src/plugins/binding'
 
 type PluginName = 'emoji' | 'binding'
@@ -246,7 +246,7 @@ describe('Comark Tests', () => {
           )
         }
 
-        const parseOptions: ParseOptions = {
+        const parseOptions: ParserOptions = {
           autoUnwrap: testCase.options?.autoUnwrap === false ? false : true,
         }
 
@@ -263,7 +263,7 @@ describe('Comark Tests', () => {
       })
 
       it('should render AST to HTML', { timeout: testCase.timeouts?.html ?? DEFAULT_TEST_TIMEOUT }, async () => {
-        const result = await renderHTMLForTest(parsedAST, {
+        const result = await renderHtmlForTest(parsedAST, {
           components: {
             binding: HTMLBiniding,
           },
@@ -306,7 +306,7 @@ describe('custom components', () => {
 
   it('renders with custom component handler in html', async () => {
     const tree = await parseMarkdown('::alert{type="info"}\nHello!\n::')
-    const html = await renderHTMLForTest(tree, {
+    const html = await renderHtmlForTest(tree, {
       components: {
         alert: async ([, attrs, ...children], { render }) => {
           return `<div class="alert alert-${attrs.type}">${await render(children)}</div>`
@@ -336,7 +336,7 @@ describe('custom components', () => {
 
   it('renders with conditional handler in html', async () => {
     const tree = await parseMarkdown('::alert{type="info"}\nInfo\n::\n\n::alert{type="warning"}\nWarning\n::')
-    const html = await renderHTMLForTest(tree, {
+    const html = await renderHtmlForTest(tree, {
       components: {
         infoAlert: {
           match: (node) => node[0] === 'alert' && node[1].type === 'info',

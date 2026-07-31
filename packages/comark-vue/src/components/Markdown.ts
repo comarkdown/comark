@@ -1,7 +1,7 @@
 import type { PropType } from 'vue'
 import { computed, defineComponent, h, shallowRef, watch } from 'vue'
 import { createSerializedMarkdownParser } from 'comark'
-import type { ParseOptions, ComponentManifest, MarkdownDocument as MarkdownDocumentType } from 'comark'
+import type { ParserOptions, ComponentManifest, MarkdownDocument as MarkdownDocumentType } from 'comark'
 import { isMarkdownDocument } from 'comark/utils'
 import { MarkdownDocument } from './MarkdownDocument.ts'
 import { warnDeprecated } from '../internal/deprecation.ts'
@@ -24,12 +24,12 @@ export interface MarkdownProps {
   /**
    * Parser options (excluding plugins)
    */
-  options?: Exclude<ParseOptions, 'plugins'>
+  options?: Exclude<ParserOptions, 'plugins'>
 
   /**
    * Additional plugins to use
    */
-  plugins?: ParseOptions['plugins']
+  plugins?: ParserOptions['plugins']
 
   /**
    * Strip wrapper tags from the top level of the tree — shorthand for
@@ -129,7 +129,7 @@ export const Markdown: MarkdownComponent = defineComponent({
      * Parser options
      */
     options: {
-      type: Object as PropType<Exclude<ParseOptions, 'plugins'>>,
+      type: Object as PropType<Exclude<ParserOptions, 'plugins'>>,
       default: () => ({}),
     },
 
@@ -137,7 +137,7 @@ export const Markdown: MarkdownComponent = defineComponent({
      * Additional plugins to use
      */
     plugins: {
-      type: Array as PropType<ParseOptions['plugins']>,
+      type: Array as PropType<ParserOptions['plugins']>,
       default: () => [],
     },
 

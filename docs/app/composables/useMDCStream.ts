@@ -1,4 +1,4 @@
-import type { MarkdownDocument, ParseOptions } from 'comark'
+import type { MarkdownDocument, ParserOptions } from 'comark'
 import { readonly, ref, shallowRef } from 'vue'
 import { parseMarkdown } from 'comark'
 import highlight from 'comark/plugins/highlight'
@@ -10,7 +10,7 @@ export interface MDCStreamState {
   error?: Error
 }
 
-export interface MDCStreamOptions extends ParseOptions {
+export interface MDCStreamOptions extends ParserOptions {
   onChunk?: (chunk: string) => void
   onComplete?: (result: MarkdownDocument) => void
   onError?: (error: Error) => void

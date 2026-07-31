@@ -8,7 +8,7 @@ import {
   Type,
 } from '@angular/core'
 import { createSerializedMarkdownParser } from 'comark'
-import type { ParseOptions, MarkdownDocument as MarkdownDocumentType } from 'comark'
+import type { ParserOptions, MarkdownDocument as MarkdownDocumentType } from 'comark'
 import { isMarkdownDocument } from 'comark/utils'
 import { MarkdownDocument } from './markdown-document.component.ts'
 import { warnDeprecated } from '../internal/deprecation.ts'
@@ -50,10 +50,10 @@ export class Markdown implements OnChanges {
   @Input() markdown?: string
 
   /** Parser options (excluding plugins) */
-  @Input() options: Exclude<ParseOptions, 'plugins'> = {}
+  @Input() options: Exclude<ParserOptions, 'plugins'> = {}
 
   /** Additional plugins to use */
-  @Input() plugins: ParseOptions['plugins'] = []
+  @Input() plugins: ParserOptions['plugins'] = []
 
   /**
    * Strip wrapper tags from the top level of the tree — shorthand for

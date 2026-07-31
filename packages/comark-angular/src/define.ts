@@ -1,10 +1,10 @@
 import { Component, Input, ChangeDetectionStrategy, Type } from '@angular/core'
-import type { ParseOptions } from 'comark'
+import type { ParserOptions } from 'comark'
 import { Markdown } from './components/markdown.component.ts'
 import { MarkdownDocument } from './components/markdown-document.component.ts'
 import { warnDeprecated } from './internal/deprecation.ts'
 
-export interface DefineMarkdownComponentOptions extends ParseOptions {
+export interface DefineMarkdownComponentOptions extends ParserOptions {
   /** Display name for debugging (used as Angular selector). */
   name?: string
   /** Pre-configured component mappings. */

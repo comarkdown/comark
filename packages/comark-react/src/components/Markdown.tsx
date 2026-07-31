@@ -1,6 +1,6 @@
 import React from 'react'
 import { parseMarkdown } from 'comark'
-import type { MarkdownDocument as MarkdownDocumentType, ParseOptions } from 'comark'
+import type { MarkdownDocument as MarkdownDocumentType, ParserOptions } from 'comark'
 import { isMarkdownDocument } from 'comark/utils'
 import { MarkdownDocument } from './MarkdownDocument.tsx'
 import { MarkdownClient } from './MarkdownClient.tsx'
@@ -26,12 +26,12 @@ export interface MarkdownProps {
   /**
    * Parser options (excluding plugins)
    */
-  options?: Exclude<ParseOptions, 'plugins'>
+  options?: Exclude<ParserOptions, 'plugins'>
 
   /**
    * Additional plugins to use
    */
-  plugins?: ParseOptions['plugins']
+  plugins?: ParserOptions['plugins']
 
   /**
    * Custom component mappings for element tags

@@ -1,4 +1,4 @@
-import type { Node, MarkdownDocument, ComarkPlugin, ComponentManifest, ParseOptions } from 'comark'
+import type { Node, MarkdownDocument, ComarkPlugin, ComponentManifest, ParserOptions } from 'comark'
 import type { Component, Snippet } from 'svelte'
 
 export interface ComponentResolverProps {
@@ -36,7 +36,7 @@ export interface MarkdownProps {
   value?: string | MarkdownDocument
   /** @deprecated Use `value` instead */
   markdown?: string
-  options?: Exclude<ParseOptions, 'plugins'>
+  options?: Exclude<ParserOptions, 'plugins'>
   plugins?: ComarkPlugin[]
   /**
    * Strip wrapper tags from the top level of the tree — shorthand for

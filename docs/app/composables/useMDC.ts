@@ -1,4 +1,4 @@
-import type { MarkdownDocument, ParseOptions } from 'comark'
+import type { MarkdownDocument, ParserOptions } from 'comark'
 import { readonly, ref, shallowRef } from 'vue'
 import { parseMarkdown } from 'comark'
 
@@ -8,7 +8,7 @@ export interface MDCState {
   error?: Error
 }
 
-export interface MDCOptions extends ParseOptions {
+export interface MDCOptions extends ParserOptions {
   onComplete?: (result: MarkdownDocument) => void
   onError?: (error: Error) => void
 }

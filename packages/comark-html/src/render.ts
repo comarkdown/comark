@@ -1,6 +1,6 @@
 import type { Node, ElementNode, MarkdownDocument } from 'comark'
 import { render } from 'comark/render'
-import type { RenderOptions } from 'comark/render'
+import type { RendererOptions } from 'comark/render'
 
 export * from 'comark/render'
 
@@ -23,11 +23,11 @@ export type ComponentRenderFn = (element: ElementNode, ctx: RenderHTMLContext) =
  * @example
  * ```typescript
  * import { parseMarkdown } from 'comark'
- * import { renderHTML } from '@comark/html'
+ * import { renderHtml } from '@comark/html'
  *
  * const tree = await parseMarkdown('::alert{type="info"}\nHello!\n::')
  *
- * const html = renderHTML(tree, {
+ * const html = renderHtml(tree, {
  *   components: {
  *     alert: ([tag, attrs, ...children], { render }) => {
  *       return `<div class="alert alert-${attrs.type}">${render(children)}</div>`
@@ -36,9 +36,9 @@ export type ComponentRenderFn = (element: ElementNode, ctx: RenderHTMLContext) =
  * })
  * ```
  */
-export async function renderHTML(
+export async function renderHtml(
   tree: MarkdownDocument | { nodes: MarkdownDocument['nodes'] },
-  options?: RenderOptions
+  options?: RendererOptions
 ): Promise<string> {
   return (await render(tree, { blockSeparator: '\n', format: 'text/html', ...options })).trim()
 }

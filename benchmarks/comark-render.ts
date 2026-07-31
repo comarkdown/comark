@@ -3,7 +3,7 @@ import MarkdownIt from 'markdown-it'
 import MarkdownExit from 'markdown-exit'
 import { markdownItComark } from 'comark/plugins/syntax'
 import { createMarkdownParser } from 'comark'
-import { renderHTML } from '../packages/comark-html/src/index.ts'
+import { renderHtml } from '../packages/comark-html/src/index.ts'
 
 // Sample markdown content to test with
 const sampleMarkdown = `---
@@ -88,20 +88,20 @@ barplot(() => {
       markdownExit.render(sampleMarkdown)
     })
 
-    // Benchmark: comark parse + renderHTML
-    bench('comark parse + renderHTML', async () => {
+    // Benchmark: comark parse + renderHtml
+    bench('comark parse + renderHtml', async () => {
       const tree = await comark(sampleMarkdown)
-      renderHTML(tree)
+      renderHtml(tree)
     })
 
     bench('comark parse no close', async () => {
       const tree = await comarkNoClose(sampleMarkdown)
-      renderHTML(tree)
+      renderHtml(tree)
     })
 
     bench('comark parse streaming', async () => {
       const tree = await comarkStreaming(sampleMarkdown, { streaming: true })
-      renderHTML(tree)
+      renderHtml(tree)
     })
   })
 })
