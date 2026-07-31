@@ -72,7 +72,7 @@ ${'<'}/script>
 <Markdown value={markdown} components={{ Alert }} />`
 
 const angularCode = `import { Component } from '@angular/core'
-import { Markdown } from '@comark/vue'
+import { Markdown } from '@comark/angular'
 import { AlertComponent } from './components/alert.component'
 
 @Component({
