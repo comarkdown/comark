@@ -29,8 +29,7 @@ This example demonstrates how to use Comark with Mermaid diagrams in Vue:
 
 1. Import the mermaid plugin and component:
    ```ts
-   import mermaid from '@comark/mermaid'
-   import { Mermaid }
+   import mermaid, { Mermaid } from '@comark/vue/plugins/mermaid'
    ```
 
 2. Pass the plugin to Comark:

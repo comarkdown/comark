@@ -67,7 +67,7 @@ interface JsonRenderConfig {}
  * @example
  * ```vue
  * <script setup>
- * import { Comark }
+ * import { Markdown } from '@comark/vue'
  * import jsonRender from '@comark/vue/plugins/json-render'
  * </script>
  *

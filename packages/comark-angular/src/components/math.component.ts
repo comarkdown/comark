@@ -10,7 +10,7 @@ import katex from 'katex'
  *
  * @example
  * ```typescript
- * import { Math }
+ * import { Math } from '@comark/angular/plugins/math'
  * ```
  */
 @Component({

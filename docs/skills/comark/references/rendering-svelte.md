@@ -170,7 +170,7 @@ Use `import.meta.glob` when you want the manifest to cover every Svelte componen
 ```svelte
 <script lang="ts">
   import { MarkdownAsync } from '@comark/svelte/async'
-  import { pascalCase }
+  import { pascalCase } from 'comark/utils'
 
   const modules = import.meta.glob('../lib/components/comark/*.svelte')
 

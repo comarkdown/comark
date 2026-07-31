@@ -57,7 +57,7 @@ npm install @comark/vue katex
 
 ```vue
 <script setup lang="ts">
-import { Markdown }
+import { Markdown } from '@comark/vue'
 import math, { Math } from '@comark/vue/plugins/math'
 
 const chatMessage = ...
@@ -75,7 +75,7 @@ npm install @comark/react katex
 ```
 
 ```tsx
-import { Markdown }
+import { Markdown } from '@comark/react'
 import math, { Math } from '@comark/react/plugins/math'
 
 function App() {
@@ -92,7 +92,7 @@ npm install @comark/svelte katex
 
 ```svelte
 <script lang="ts">
-  import { Markdown }
+  import { Markdown } from '@comark/svelte'
   import math, { Math } from '@comark/svelte/plugins/math'
 
   const chatMessage = ...
@@ -109,7 +109,7 @@ npm install @comark/angular katex
 
 ```typescript
 import { Component } from '@angular/core'
-import { Markdown }
+import { Markdown } from '@comark/angular'
 import math, { Math } from '@comark/angular/plugins/math'
 
 @Component({

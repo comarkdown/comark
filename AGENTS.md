@@ -185,7 +185,7 @@ packages/comark-vue/
 ### Usage
 
 ```typescript
-import { Markdown, MarkdownDocument, defineMarkdownComponent }
+import { Markdown, MarkdownDocument, defineMarkdownComponent } from '@comark/vue'
 import math, { Math } from '@comark/vue/plugins/math'
 import mermaid, { Mermaid } from '@comark/vue/plugins/mermaid'
 ```
@@ -225,7 +225,7 @@ packages/comark-react/
 ### Usage
 
 ```typescript
-import { Markdown, MarkdownDocument, defineMarkdownComponent }
+import { Markdown, MarkdownDocument, defineMarkdownComponent } from '@comark/react'
 import math, { Math } from '@comark/react/plugins/math'
 import mermaid, { Mermaid } from '@comark/react/plugins/mermaid'
 ```
@@ -286,7 +286,7 @@ Uses Vitest with two test projects:
 
 ```svelte
 <script>
-  import { Markdown }
+  import { Markdown } from '@comark/svelte'
   import math, { Math } from '@comark/svelte/plugins/math'
   import mermaid, { Mermaid } from '@comark/svelte/plugins/mermaid'
 </script>
@@ -348,7 +348,7 @@ packages/comark-angular/
 ### Usage
 
 ```typescript
-import { Markdown, MarkdownDocument, defineMarkdownComponent, defineMarkdownDocumentComponent }
+import { Markdown, MarkdownDocument, defineMarkdownComponent, defineMarkdownDocumentComponent } from '@comark/angular'
 import math, { Math } from '@comark/angular/plugins/math'
 import mermaid, { Mermaid } from '@comark/angular/plugins/mermaid'
 ```
@@ -402,23 +402,23 @@ import highlight from '@comark/ansi/plugins/highlight'
 import math from '@comark/ansi/plugins/math'
 
 // Vue — renderer + plugin wrappers (plugin fn + Vue component)
-import { Markdown, MarkdownDocument, defineMarkdownComponent }
+import { Markdown, MarkdownDocument, defineMarkdownComponent } from '@comark/vue'
 import math, { Math } from '@comark/vue/plugins/math'
 import mermaid, { Mermaid } from '@comark/vue/plugins/mermaid'
 
 // React — renderer + plugin wrappers (plugin fn + React component)
-import { Markdown, MarkdownDocument, defineMarkdownComponent }
+import { Markdown, MarkdownDocument, defineMarkdownComponent } from '@comark/react'
 import math, { Math } from '@comark/react/plugins/math'
 import mermaid, { Mermaid } from '@comark/react/plugins/mermaid'
 
 // Svelte — renderer + plugin wrappers (plugin fn + Svelte component)
-import { Markdown, MarkdownDocument }
-import { MarkdownAsync } // requires experimental.async
+import { Markdown, MarkdownDocument } from '@comark/svelte'
+import { MarkdownAsync } from '@comark/svelte/async' // requires experimental.async
 import math, { Math } from '@comark/svelte/plugins/math'
 import mermaid, { Mermaid } from '@comark/svelte/plugins/mermaid'
 
 // Angular — renderer + plugin wrappers (plugin fn + Angular component)
-import { Markdown, MarkdownDocument, defineMarkdownComponent, defineMarkdownDocumentComponent }
+import { Markdown, MarkdownDocument, defineMarkdownComponent, defineMarkdownDocumentComponent } from '@comark/angular'
 import math, { Math } from '@comark/angular/plugins/math'
 import mermaid, { Mermaid } from '@comark/angular/plugins/mermaid'
 
@@ -580,7 +580,7 @@ Creates a pre-configured Markdown component with default plugins and components:
 
 ```typescript
 // Vue
-import { defineMarkdownComponent }
+import { defineMarkdownComponent } from '@comark/vue'
 import math, { Math } from '@comark/vue/plugins/math'
 import mermaid, { Mermaid } from '@comark/vue/plugins/mermaid'
 
@@ -591,7 +591,7 @@ export const DocsMarkdown = defineMarkdownComponent({
 })
 
 // React
-import { defineMarkdownComponent }
+import { defineMarkdownComponent } from '@comark/react'
 import math, { Math } from '@comark/react/plugins/math'
 
 export const DocsMarkdown = defineMarkdownComponent({
@@ -601,7 +601,7 @@ export const DocsMarkdown = defineMarkdownComponent({
 })
 
 // Angular
-import { defineMarkdownComponent }
+import { defineMarkdownComponent } from '@comark/angular'
 import math, { Math } from '@comark/angular/plugins/math'
 
 export const DocsMarkdown = defineMarkdownComponent({

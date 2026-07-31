@@ -18,7 +18,7 @@ import type { ThemeNames } from 'comark/plugins/mermaid'
  *
  * @example
  * ```typescript
- * import { Mermaid }
+ * import { Mermaid } from '@comark/angular/plugins/mermaid'
  * ```
  */
 @Component({
