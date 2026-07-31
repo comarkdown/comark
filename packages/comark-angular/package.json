@@ -38,10 +38,10 @@
   },
   "scripts": {
     "stub": "node ../../scripts/stub.mjs",
-    "build": "tsc",
-    "dev": "tsc --watch",
+    "build": "ngc -p tsconfig.json && node scripts/verify-build.mjs",
+    "dev": "ngc -p tsconfig.json --watch",
     "test": "vitest run",
-    "prepack": "tsc",
+    "prepack": "pnpm run build",
     "release": "release-it"
   },
   "dependencies": {
