@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest'
 import { createSSRApp, defineComponent, h } from 'vue'
 import { renderToString } from '@vue/server-renderer'
 import { parse } from 'comark'
-import { MarkdownParsed } from '../src/components/MarkdownParsed'
+import { MarkdownDocument } from '../src/components/MarkdownDocument'
 
-describe('MarkdownParsed with Slots', () => {
+describe('MarkdownDocument with Slots', () => {
   it('should pass named slots to components', async () => {
     const markdown = `::test-component
 Default content
@@ -33,10 +33,10 @@ Footer content
 
     // Create app with the renderer
     const app = createSSRApp({
-      components: { MarkdownParsed },
+      components: { MarkdownDocument },
       setup() {
         return () =>
-          h(MarkdownParsed, {
+          h(MarkdownDocument, {
             value: result,
             components: {
               'test-component': TestComponent,
@@ -82,7 +82,7 @@ This is a description
     const app = createSSRApp({
       setup() {
         return () =>
-          h(MarkdownParsed, {
+          h(MarkdownDocument, {
             value: result,
             components: {
               Callout,
@@ -125,7 +125,7 @@ Copyright by Nuxt
     const app = createSSRApp({
       setup() {
         return () =>
-          h(MarkdownParsed, {
+          h(MarkdownDocument, {
             value: result,
             components: {
               'multi-slot-test': MultiSlotTest,

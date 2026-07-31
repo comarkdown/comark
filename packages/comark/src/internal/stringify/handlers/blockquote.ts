@@ -1,9 +1,9 @@
 import type { State } from 'comark/render'
-import type { MarkdownElement, ComarkNode } from 'comark'
+import type { ElementNode, Node } from 'comark'
 import { comarkAttributes, userBlockAttrs } from '../attributes.ts'
 
-export async function blockquote(node: MarkdownElement, state: State) {
-  const children = node.slice(2) as ComarkNode[]
+export async function blockquote(node: ElementNode, state: State) {
+  const children = node.slice(2) as Node[]
 
   let childResult = ''
   for (const child of children) {

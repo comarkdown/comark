@@ -1,7 +1,7 @@
 import { describe, expect, expectTypeOf, it } from 'vitest'
 import { parse } from '../../src/parse'
 import summary from '../../src/plugins/summary'
-import type { ComarkNode } from '../../src/types'
+import type { Node } from '../../src/types'
 
 const CONTENT = `Intro paragraph.
 
@@ -23,9 +23,9 @@ describe('summary plugin', () => {
     expect(tree.meta.summary).toBeUndefined()
   })
 
-  it('narrows tree.meta.summary to ComarkNode[] at the type level', async () => {
+  it('narrows tree.meta.summary to Node[] at the type level', async () => {
     const tree = await parse(CONTENT, { plugins: [summary()] })
 
-    expectTypeOf(tree.meta.summary).toEqualTypeOf<ComarkNode[]>()
+    expectTypeOf(tree.meta.summary).toEqualTypeOf<Node[]>()
   })
 })

@@ -186,7 +186,7 @@ import { textContent } from 'comark/utils'
 
 security({
   allowedTags: ['p', 'span'],
-  tagFallback: (element: MarkdownElement) => {
+  tagFallback: (element: ElementNode) => {
     // Remove all tags and return the text content
     return textContent(element)
   }

@@ -1,9 +1,9 @@
 import type { State } from 'comark/render'
-import type { MarkdownElement } from 'comark'
+import type { ElementNode } from 'comark'
 import { comarkAttributes } from '../attributes.ts'
 
 // TODO: support title & attributes
-export async function a(node: MarkdownElement, state: State) {
+export async function a(node: ElementNode, state: State) {
   const [_, attrs] = node
 
   const { href, ...rest } = attrs

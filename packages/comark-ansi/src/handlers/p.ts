@@ -1,8 +1,8 @@
 import type { NodeHandler } from 'comark/render'
-import type { ComarkNode } from 'comark'
+import type { Node } from 'comark'
 
 export const p: NodeHandler = async (node, state, parent) => {
-  const children = node.slice(2) as ComarkNode[]
+  const children = node.slice(2) as Node[]
   let result = ''
   for (const child of children) {
     result += await state.one(child, state, node)

@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { createComarkContext, parse } from 'comark'
-import { MarkdownParsed } from '@comark/vue'
+import { MarkdownDocument } from '@comark/vue'
 
-// A driver installs a context on globalThis once; every <MarkdownParsed :id>
+// A driver installs a context on globalThis once; every <MarkdownDocument :id>
 // then auto-subscribes. Here the buttons act as the driver — but it could just
 // as well be HMR, a collab socket, an agent, or devtools.
 const ctx = createComarkContext()
 const tree = await parse(`# Live document
 
-This paragraph is rendered from a **MarkdownParsed** wired to \`globalThis.comarkContext\`.
+This paragraph is rendered from a **MarkdownDocument** wired to \`globalThis.comarkContext\`.
 
 Use the buttons to push updates by id — no re-mount.
 
@@ -63,7 +63,7 @@ globalThis.parse = parse
       </button>
     </div>
 
-    <MarkdownParsed
+    <MarkdownDocument
       comark-key="demos"
       :value="tree"
     />

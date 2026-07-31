@@ -7,7 +7,7 @@ import { globalComponents, localComponents } from '#content/components'
 import { useRuntimeConfig } from '#imports'
 import alert from '@comark/vue/plugins/alert'
 import { Mermaid } from '@comark/vue/plugins/mermaid'
-import type { MarkdownTree, MarkdownElement } from 'comark'
+import type { MarkdownDocument, ElementNode } from 'comark'
 import type { MinimarkNode, MinimarkTree } from 'minimark'
 import Browser from './prose/Browser.vue'
 import CodeExplorer from './prose/CodeExplorer.vue'
@@ -96,7 +96,7 @@ const body = computed(() => {
     frontmatter: props.data,
     nodes: replaceAlert(body.value),
     meta: {},
-  } as MarkdownTree
+  } as MarkdownDocument
 })
 
 const isEmpty = computed(() => !body.value?.nodes?.length)
@@ -196,7 +196,7 @@ function resolveVueComponent(component: string | Renderable) {
   return componentObject
 }
 
-function resolveContentComponents(body: MarkdownTree, meta: Record<string, unknown>) {
+function resolveContentComponents(body: MarkdownDocument, meta: Record<string, unknown>) {
   if (!body) {
     return
   }
@@ -221,38 +221,38 @@ function resolveContentComponents(body: MarkdownTree, meta: Record<string, unkno
   return result as Record<string, unknown>
 }
 
-function loadComponents(node: MarkdownTree | MarkdownElement, documentMeta: { tags: Record<string, string> }) {
+function loadComponents(node: MarkdownDocument | ElementNode, documentMeta: { tags: Record<string, string> }) {
   const components2 = [] as Array<[string, unknown]>
-  if (Array.isArray((node as MarkdownTree).nodes)) {
-    for (const child of (node as MarkdownTree).nodes || []) {
+  if (Array.isArray((node as MarkdownDocument).nodes)) {
+    for (const child of (node as MarkdownDocument).nodes || []) {
       if (typeof child === 'string' || child[0] === 'binding' || child[0] === 'comment') {
         continue
       }
-      components2.push(...loadComponents(child as MarkdownElement, documentMeta))
+      components2.push(...loadComponents(child as ElementNode, documentMeta))
     }
     return components2
   }
 
-  const tag = (node as MarkdownElement)[0]
+  const tag = (node as ElementNode)[0]
   if (tag === 'binding' || tag === 'comment') {
     return []
   }
-  const renderTag = findMappedTag(node as MarkdownElement, documentMeta.tags)
+  const renderTag = findMappedTag(node as ElementNode, documentMeta.tags)
   if (!htmlTags.has(renderTag)) {
     components2.push([tag, renderTag])
   }
 
-  for (let i = 2; i < (node as MarkdownElement).length; i++) {
-    const child = (node as MarkdownElement)[i] as MarkdownElement
+  for (let i = 2; i < (node as ElementNode).length; i++) {
+    const child = (node as ElementNode)[i] as ElementNode
     if (typeof child === 'string' || child[0] === 'binding' || child[0] === 'comment') {
       continue
     }
-    components2.push(...loadComponents((node as MarkdownElement)[i] as MarkdownElement, documentMeta))
+    components2.push(...loadComponents((node as ElementNode)[i] as ElementNode, documentMeta))
   }
   return components2
 }
 
-function findMappedTag(node: MarkdownElement, tags: Record<string, string>) {
+function findMappedTag(node: ElementNode, tags: Record<string, string>) {
   const tag = node[0]
   if (!tag || typeof node[1]?.__ignoreMap !== 'undefined') {
     return tag
@@ -262,9 +262,9 @@ function findMappedTag(node: MarkdownElement, tags: Record<string, string>) {
 </script>
 
 <template>
-  <MarkdownParsed
+  <MarkdownDocument
     v-if="!isEmpty"
-    :value="body as unknown as MarkdownTree"
+    :value="body as unknown as MarkdownDocument"
     :components="componentsMap"
     :data-content-id="debug ? value.id : undefined"
   />

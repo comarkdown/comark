@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createSSRApp, defineComponent, h, Suspense } from 'vue'
 import { renderToString } from 'vue/server-renderer'
 import { parse } from 'comark'
-import { Comark, ComarkRenderer, Markdown, MarkdownParsed } from '../src/index'
+import { Comark, ComarkRenderer, Markdown, MarkdownDocument } from '../src/index'
 
 function renderInSuspense(component: any, props: Record<string, unknown>) {
   const app = createSSRApp(
@@ -43,7 +43,7 @@ describe('deprecated aliases', () => {
     expect(html).toContain('<strong>world</strong>')
   })
 
-  it('ComarkRenderer renders like MarkdownParsed with the deprecated tree prop', async () => {
+  it('ComarkRenderer renders like MarkdownDocument with the deprecated tree prop', async () => {
     const tree = await parse('Hello **world**')
     const html = await renderInSuspense(ComarkRenderer, { tree })
     expect(html).toContain('<strong>world</strong>')
@@ -57,9 +57,9 @@ describe('deprecated aliases', () => {
     expect(html).toContain('<strong>world</strong>')
   })
 
-  it('MarkdownParsed accepts value prop', async () => {
+  it('MarkdownDocument accepts value prop', async () => {
     const tree = await parse('Hello **world**')
-    const html = await renderInSuspense(MarkdownParsed, { value: tree })
+    const html = await renderInSuspense(MarkdownDocument, { value: tree })
     expect(html).toContain('<strong>world</strong>')
   })
 })

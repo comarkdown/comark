@@ -1,8 +1,8 @@
 import type { State } from 'comark/render'
-import type { MarkdownElement } from 'comark'
+import type { ElementNode } from 'comark'
 import { comarkAttributes } from '../attributes.ts'
 
-export function img(node: MarkdownElement, _state: State) {
+export function img(node: ElementNode, _state: State) {
   const [_, attrs] = node
   const { title, src, alt = '', ...rest } = attrs
 

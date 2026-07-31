@@ -1,4 +1,4 @@
-import type { ComarkNode } from 'comark'
+import type { Node } from 'comark'
 
 /**
  * Applies automatic unwrapping to container components.
@@ -18,7 +18,7 @@ import type { ComarkNode } from 'comark'
  * // After:
  * { tag: 'alert', children: [{ type: 'text', value: 'Text' }] }
  */
-export function applyAutoUnwrap(node: ComarkNode): ComarkNode {
+export function applyAutoUnwrap(node: Node): Node {
   if (typeof node === 'string' || node.length < 2) {
     return node
   }
@@ -26,7 +26,7 @@ export function applyAutoUnwrap(node: ComarkNode): ComarkNode {
   const [tag, props, ...children] = node
 
   // Filter out empty text nodes for checking
-  const nonEmptyChildren = children.filter((child: ComarkNode) => typeof child !== 'string' || (child && child.trim()))
+  const nonEmptyChildren = children.filter((child: Node) => typeof child !== 'string' || (child && child.trim()))
 
   if (nonEmptyChildren.length === 0) {
     return node
@@ -34,7 +34,7 @@ export function applyAutoUnwrap(node: ComarkNode): ComarkNode {
 
   // Check if we have exactly one paragraph child (and possibly empty text nodes)
   if (nonEmptyChildren.length > 1 || typeof nonEmptyChildren[0] === 'string' || nonEmptyChildren[0][0] !== 'p') {
-    return [tag, props, ...children.map((child: ComarkNode) => applyAutoUnwrap(child as ComarkNode))] as ComarkNode
+    return [tag, props, ...children.map((child: Node) => applyAutoUnwrap(child as Node))] as Node
   }
 
   // Lift the paragraph's attrs onto the parent so trailing `{attr}` survives the unwrap.
@@ -42,5 +42,5 @@ export function applyAutoUnwrap(node: ComarkNode): ComarkNode {
   const paragraphAttrs = nonEmptyChildren[0][1] as Record<string, unknown>
   const mergedProps = paragraphAttrs && Object.keys(paragraphAttrs).length > 0 ? { ...paragraphAttrs, ...props } : props
 
-  return [tag, mergedProps, ...(nonEmptyChildren[0].slice(2) as ComarkNode[])] as ComarkNode
+  return [tag, mergedProps, ...(nonEmptyChildren[0].slice(2) as Node[])] as Node
 }

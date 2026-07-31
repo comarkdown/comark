@@ -1,4 +1,4 @@
-import type { ComarkNode, MarkdownTree, ComarkPlugin, ComponentManifest, ParseOptions } from 'comark'
+import type { Node, MarkdownDocument, ComarkPlugin, ComponentManifest, ParseOptions } from 'comark'
 import type { Component, Snippet } from 'svelte'
 
 export interface ComponentResolverProps {
@@ -10,7 +10,7 @@ export interface ComponentResolverProps {
 export type ComponentResolver = Component<ComponentResolverProps>
 
 export interface MarkdownNodeProps {
-  node: ComarkNode
+  node: Node
   components?: Record<string, any>
   componentsManifest?: ComponentManifest
   resolver?: ComponentResolver
@@ -18,11 +18,11 @@ export interface MarkdownNodeProps {
   caretClass?: string | null
 }
 
-export interface MarkdownParsedProps {
+export interface MarkdownDocumentProps {
   /** The parsed Comark tree to render */
-  value?: MarkdownTree
+  value?: MarkdownDocument
   /** @deprecated Use `value` instead */
-  tree?: MarkdownTree
+  tree?: MarkdownDocument
   components?: Record<string, any>
   componentsManifest?: ComponentManifest
   resolver?: ComponentResolver
@@ -32,8 +32,8 @@ export interface MarkdownParsedProps {
 }
 
 export interface MarkdownProps {
-  /** The markdown content to parse and render, or a pre-parsed MarkdownTree */
-  value?: string | MarkdownTree
+  /** The markdown content to parse and render, or a pre-parsed MarkdownDocument */
+  value?: string | MarkdownDocument
   /** @deprecated Use `value` instead */
   markdown?: string
   options?: Exclude<ParseOptions, 'plugins'>
@@ -54,8 +54,11 @@ export interface MarkdownProps {
 /** @deprecated Use `MarkdownNodeProps` instead */
 export type ComarkNodeProps = MarkdownNodeProps
 
-/** @deprecated Use `MarkdownParsedProps` instead */
-export type ComarkRendererProps = MarkdownParsedProps
+/** @deprecated Use `MarkdownDocumentProps` instead */
+export type MarkdownParsedProps = MarkdownDocumentProps
+
+/** @deprecated Use `MarkdownDocumentProps` instead */
+export type ComarkRendererProps = MarkdownDocumentProps
 
 /** @deprecated Use `MarkdownProps` instead */
 export type ComarkProps = MarkdownProps

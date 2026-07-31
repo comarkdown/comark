@@ -1,15 +1,15 @@
-import type { MarkdownTree, ParseOptions } from 'comark'
+import type { MarkdownDocument, ParseOptions } from 'comark'
 import { readonly, ref, shallowRef } from 'vue'
 import { parse } from 'comark'
 
 export interface MDCState {
-  tree: MarkdownTree | null
+  tree: MarkdownDocument | null
   isLoading: boolean
   error?: Error
 }
 
 export interface MDCOptions extends ParseOptions {
-  onComplete?: (result: MarkdownTree) => void
+  onComplete?: (result: MarkdownDocument) => void
   onError?: (error: Error) => void
 }
 
@@ -30,7 +30,7 @@ export interface MDCOptions extends ParseOptions {
  *
  * <template>
  *   <div>
- *     <MarkdownParsed v-if="state.tree" :value="state.tree" />
+ *     <MarkdownDocument v-if="state.tree" :value="state.tree" />
  *     <div v-if="state.isLoading">Loading...</div>
  *     <div v-if="state.error">Error: {{ state.error.message }}</div>
  *   </div>

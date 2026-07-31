@@ -1,5 +1,5 @@
 import type { State } from 'comark/render'
-import type { MarkdownElement } from 'comark'
+import type { ElementNode } from 'comark'
 import { htmlAttributes } from '../attributes.ts'
 import { indent } from '../../../utils/index.ts'
 
@@ -24,7 +24,7 @@ const blockTags = new Set([
   'th',
 ])
 
-export async function html(node: MarkdownElement, state: State, parent?: MarkdownElement) {
+export async function html(node: ElementNode, state: State, parent?: ElementNode) {
   const [tag, attr, ...children] = node
   const { $ = {}, ...rawAttributes } = attr
 

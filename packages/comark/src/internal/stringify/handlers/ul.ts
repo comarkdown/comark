@@ -1,10 +1,10 @@
 import type { State } from 'comark/render'
-import type { MarkdownElement, ComarkNode } from 'comark'
+import type { ElementNode, Node } from 'comark'
 import { indent } from '../../../utils/index.ts'
 import { comarkAttributes, userBlockAttrs } from '../attributes.ts'
 
-export async function ul(node: MarkdownElement, state: State) {
-  const children = node.slice(2) as ComarkNode[]
+export async function ul(node: ElementNode, state: State) {
+  const children = node.slice(2) as Node[]
 
   const revert = state.applyContext({ list: true, order: false, listIndent: 2 })
 

@@ -37,7 +37,7 @@ describe('headings plugin — combined with toc/summary', () => {
     expectTypeOf(tree.meta.title).toEqualTypeOf<string | undefined>()
     expectTypeOf(tree.meta.description).toEqualTypeOf<string | undefined>()
     expectTypeOf(tree.meta.toc).toEqualTypeOf<import('../../src/plugins/toc').Toc>()
-    expectTypeOf(tree.meta.summary).toEqualTypeOf<import('../../src/types').ComarkNode[]>()
+    expectTypeOf(tree.meta.summary).toEqualTypeOf<import('../../src/types').Node[]>()
 
     // Unknown keys still accessible but typed as `unknown` (safer than the
     // old default of `any`).

@@ -209,7 +209,7 @@ Comprehensive guide for rendering in Angular 17+ applications:
 - **Content Projection:** named slots via `<ng-content select="[slot=name]">` 
 - **Streaming Mode:** real-time rendering with caret indicator
 - **Data Binding:** `:binding` resolution with ambient `data` input
-- **Pre-configured Components:** `defineMarkdownComponent` and `defineMarkdownParsedComponent`
+- **Pre-configured Components:** `defineMarkdownComponent` and `defineMarkdownDocumentComponent`
 - **Plugins:** Math (KaTeX), Mermaid, Binding with Angular component wrappers
 
 **[→ Read Full Angular Rendering Guide](./references/rendering-angular.md)**
@@ -263,7 +263,7 @@ Footer
 Lightweight array-based structure for efficient processing:
 
 ```typescript
-interface MarkdownTree {
+interface MarkdownDocument {
   nodes: [
     ["h1", { "id": "hello" }, "Hello"],
     ["p", {}, "Text with ", ["strong", {}, "bold"], " word"],
@@ -362,7 +362,7 @@ import { docComponents } from './components'
 
 ```typescript
 // Asynchronous parsing
-parse(source: string, options?: ParseOptions): Promise<MarkdownTree>
+parse(source: string, options?: ParseOptions): Promise<MarkdownDocument>
 
 // Auto-close unclosed syntax
 autoCloseMarkdown(source: string): string
@@ -375,7 +375,7 @@ autoCloseMarkdown(source: string): string
 render(markdown: string, options?: RenderOptions): Promise<string>
 
 // Render a pre-parsed tree to HTML
-renderHTML(tree: MarkdownTree, options?: RenderOptions): Promise<string>
+renderHTML(tree: MarkdownDocument, options?: RenderOptions): Promise<string>
 
 // Create a reusable render function with shared parser instance
 createRender(options?: ParseOptions & RenderOptions): (markdown: string) => Promise<string>
@@ -418,8 +418,8 @@ Full TypeScript definitions included:
 
 ```typescript
 import type {
-  MarkdownTree,
-  ComarkNode,
+  MarkdownDocument,
+  Node,
   ParseOptions,
 } from 'comark'
 ```
@@ -466,7 +466,7 @@ import type {
         └────────┬────────┘
                  │
         ┌────────▼────────┐
-        │  MarkdownTree     │
+        │  MarkdownDocument     │
         │  (nodes + data  │
         │   + meta)       │
         └────────┬────────┘

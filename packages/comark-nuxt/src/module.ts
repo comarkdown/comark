@@ -30,8 +30,8 @@ export default defineNuxtModule<ComarkModuleOptions>({
       priority: 1,
     })
     addComponent({
-      name: 'MarkdownParsed',
-      export: 'MarkdownParsed',
+      name: 'MarkdownDocument',
+      export: 'MarkdownDocument',
       filePath: '@comark/vue',
       priority: 1,
     })
@@ -57,8 +57,8 @@ export default defineNuxtModule<ComarkModuleOptions>({
         from: '@comark/vue',
       },
       {
-        name: 'defineMarkdownParsedComponent',
-        as: 'defineMarkdownParsedComponent',
+        name: 'defineMarkdownDocumentComponent',
+        as: 'defineMarkdownDocumentComponent',
         from: '@comark/vue',
       },
       // Deprecated aliases — will be removed in a future major version

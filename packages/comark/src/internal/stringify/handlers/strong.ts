@@ -1,8 +1,8 @@
 import type { State } from 'comark/render'
-import type { MarkdownElement } from 'comark'
+import type { ElementNode } from 'comark'
 import { comarkAttributes } from '../attributes.ts'
 
-export async function strong(node: MarkdownElement, state: State) {
+export async function strong(node: ElementNode, state: State) {
   const [_, attrs, ...children] = node
 
   let content = ''

@@ -1,9 +1,9 @@
 import type { State } from 'comark/render'
-import type { MarkdownElement, ComarkNode } from 'comark'
+import type { ElementNode, Node } from 'comark'
 import { comarkAttributes } from '../attributes.ts'
 
-export async function p(node: MarkdownElement, state: State, parent?: MarkdownElement) {
-  const children = node.slice(2) as ComarkNode[]
+export async function p(node: ElementNode, state: State, parent?: ElementNode) {
+  const children = node.slice(2) as Node[]
 
   let result = ''
   for (const child of children) {

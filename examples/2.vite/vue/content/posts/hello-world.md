@@ -22,10 +22,10 @@ This alert is rendered using a custom Comark component mapped via the `component
 
 ```ts
 import { parse } from 'comark'
-import { MarkdownParsed } from '@comark/vue'
+import { MarkdownDocument } from '@comark/vue'
 
 const tree = await parse(markdown)
-// <MarkdownParsed :value="tree" :components="{ Alert }" />
+// <MarkdownDocument :value="tree" :components="{ Alert }" />
 ```
 
 ::Alert{type="success"}

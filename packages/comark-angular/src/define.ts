@@ -1,7 +1,7 @@
 import { Component, Input, ChangeDetectionStrategy, Type } from '@angular/core'
 import type { ParseOptions } from 'comark'
 import { Markdown } from './components/markdown.component.ts'
-import { MarkdownParsed } from './components/markdown-parsed.component.ts'
+import { MarkdownDocument } from './components/markdown-document.component.ts'
 import { warnDeprecated } from './internal/deprecation.ts'
 
 export interface DefineMarkdownComponentOptions extends ParseOptions {
@@ -13,7 +13,7 @@ export interface DefineMarkdownComponentOptions extends ParseOptions {
   class?: string
 }
 
-export interface DefineMarkdownParsedOptions {
+export interface DefineMarkdownDocumentOptions {
   /** Display name for debugging (used as Angular selector). */
   name?: string
   /** Pre-configured component mappings. */
@@ -25,8 +25,11 @@ export interface DefineMarkdownParsedOptions {
 /** @deprecated Use `DefineMarkdownComponentOptions` instead */
 export type DefineComarkComponentOptions = DefineMarkdownComponentOptions
 
-/** @deprecated Use `DefineMarkdownParsedOptions` instead */
-export type DefineComarkRendererOptions = DefineMarkdownParsedOptions
+/** @deprecated Use `DefineMarkdownDocumentOptions` instead */
+export type DefineMarkdownParsedOptions = DefineMarkdownDocumentOptions
+
+/** @deprecated Use `DefineMarkdownDocumentOptions` instead */
+export type DefineComarkRendererOptions = DefineMarkdownDocumentOptions
 
 /**
  * Create a pre-configured Markdown component with default options, plugins, and components.
@@ -53,11 +56,11 @@ export function defineMarkdownComponent(config: DefineMarkdownComponentOptions =
   @Component({
     selector: 'comark-markdown-defined',
     standalone: true,
-    imports: [MarkdownParsed],
+    imports: [MarkdownDocument],
     changeDetection: ChangeDetectionStrategy.OnPush,
     template: `
       @if (tree) {
-        <comark-markdown-parsed
+        <comark-markdown-document
           [value]="tree"
           [components]="mergedComponents"
           [streaming]="streaming"
@@ -104,29 +107,29 @@ export function defineMarkdownComponent(config: DefineMarkdownComponentOptions =
 }
 
 /**
- * Create a pre-configured MarkdownParsed component with default component mappings.
+ * Create a pre-configured MarkdownDocument component with default component mappings.
  *
  * @example
  * ```typescript
- * import { defineMarkdownParsedComponent } from '@comark/angular'
+ * import { defineMarkdownDocumentComponent } from '@comark/angular'
  * import { Math } from '@comark/angular/plugins/math'
  *
- * export const DocsRenderer = defineMarkdownParsedComponent({
+ * export const DocsRenderer = defineMarkdownDocumentComponent({
  *   name: 'DocsRenderer',
  *   components: { Math },
  * })
  * ```
  */
-export function defineMarkdownParsedComponent(config: DefineMarkdownParsedOptions = {}): Type<MarkdownParsed> {
+export function defineMarkdownDocumentComponent(config: DefineMarkdownDocumentOptions = {}): Type<MarkdownDocument> {
   const { components: configComponents = {}, class: configClass } = config
 
   @Component({
-    selector: 'comark-markdown-parsed-defined',
+    selector: 'comark-markdown-document-defined',
     standalone: true,
-    imports: [MarkdownParsed],
+    imports: [MarkdownDocument],
     changeDetection: ChangeDetectionStrategy.OnPush,
     template: `
-      <comark-markdown-parsed
+      <comark-markdown-document
         [value]="value ?? tree"
         [components]="mergedComponents"
         [streaming]="streaming"
@@ -138,7 +141,7 @@ export function defineMarkdownParsedComponent(config: DefineMarkdownParsedOption
       '[class]': 'hostClass',
     },
   })
-  class DefinedMarkdownParsedComponent extends MarkdownParsed {
+  class DefinedMarkdownDocumentComponent extends MarkdownDocument {
     /** Instance-level components that are merged with config-level components. */
     @Input() override components: Record<string, Type<any>> = {}
 
@@ -151,7 +154,7 @@ export function defineMarkdownParsedComponent(config: DefineMarkdownParsedOption
     }
   }
 
-  return DefinedMarkdownParsedComponent as any
+  return DefinedMarkdownDocumentComponent as any
 }
 
 /**
@@ -163,9 +166,17 @@ export function defineComarkComponent(config: DefineMarkdownComponentOptions = {
 }
 
 /**
- * @deprecated Use `defineMarkdownParsedComponent` instead.
+ * @deprecated Use `defineMarkdownDocumentComponent` instead.
  */
-export function defineComarkRendererComponent(config: DefineMarkdownParsedOptions = {}): Type<MarkdownParsed> {
-  warnDeprecated('defineComarkRendererComponent', 'defineMarkdownParsedComponent')
-  return defineMarkdownParsedComponent(config)
+export function defineMarkdownParsedComponent(config: DefineMarkdownDocumentOptions = {}): Type<MarkdownDocument> {
+  warnDeprecated('defineMarkdownParsedComponent', 'defineMarkdownDocumentComponent')
+  return defineMarkdownDocumentComponent(config)
+}
+
+/**
+ * @deprecated Use `defineMarkdownDocumentComponent` instead.
+ */
+export function defineComarkRendererComponent(config: DefineMarkdownDocumentOptions = {}): Type<MarkdownDocument> {
+  warnDeprecated('defineComarkRendererComponent', 'defineMarkdownDocumentComponent')
+  return defineMarkdownDocumentComponent(config)
 }

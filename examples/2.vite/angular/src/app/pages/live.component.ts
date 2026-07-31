@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, type OnInit } from '@angular/core'
-import { MarkdownParsed } from '@comark/angular'
-import { createComarkContext, parse, type MarkdownTree } from 'comark'
+import { MarkdownDocument } from '@comark/angular'
+import { createComarkContext, parse, type MarkdownDocument as Document } from 'comark'
 
 // A driver installs a context on globalThis once; every <comark-markdown-parsed comarkKey>
 // then auto-subscribes. The buttons act as the driver here — but it could just as
@@ -23,7 +23,7 @@ ctx.patch({ op: 'replace', path: [0, 0], node: 'Live document update' })
 @Component({
   selector: 'app-live',
   standalone: true,
-  imports: [MarkdownParsed],
+  imports: [MarkdownDocument],
   template: `
     @if (tree) {
       <div class="flex gap-2 mb-6 not-prose">
@@ -55,7 +55,7 @@ ctx.patch({ op: 'replace', path: [0, 0], node: 'Live document update' })
   `,
 })
 export class LiveComponent implements OnInit {
-  tree: MarkdownTree | null = null
+  tree: Document | null = null
   private counter = 0
 
   constructor(private cdr: ChangeDetectorRef) {}

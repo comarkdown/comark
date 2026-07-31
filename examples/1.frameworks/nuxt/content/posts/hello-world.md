@@ -15,7 +15,7 @@ This alert is rendered using a custom Comark component — no client-side JavaSc
 
 ## Why Comark + Nuxt UI?
 
-- **Server-rendered** — Comark parses and renders on the server via `parse()` and `MarkdownParsed`
+- **Server-rendered** — Comark parses and renders on the server via `parse()` and `MarkdownDocument`
 - **Static generation** — Full SSG with `nuxt generate` for zero-latency delivery
 - **Component syntax** — Embed custom components directly in your Markdown
 - **Nuxt UI** — Beautiful prose components out of the box
@@ -24,7 +24,7 @@ This alert is rendered using a custom Comark component — no client-side JavaSc
 import { parse } from 'comark'
 
 const tree = await parse(markdown)
-// <MarkdownParsed :value="tree" />
+// <MarkdownDocument :value="tree" />
 ```
 
 ::alert{type="success"}

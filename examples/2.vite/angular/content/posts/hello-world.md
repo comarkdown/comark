@@ -22,7 +22,7 @@ This alert is rendered using a custom Comark component mapped via the `component
 
 ```ts
 import { parse } from 'comark'
-import { MarkdownParsed } from '@comark/angular'
+import { MarkdownDocument } from '@comark/angular'
 
 const tree = await parse(markdown)
 // <comark-markdown-parsed [value]="tree" [components]="components" />

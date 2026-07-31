@@ -1,10 +1,10 @@
-import type { MarkdownTree, ParseOptions } from 'comark'
+import type { MarkdownDocument, ParseOptions } from 'comark'
 import { readonly, ref, shallowRef } from 'vue'
 import { parse } from 'comark'
 import highlight from 'comark/plugins/highlight'
 
 export interface MDCStreamState {
-  tree: MarkdownTree
+  tree: MarkdownDocument
   isComplete: boolean
   content: string
   error?: Error
@@ -12,7 +12,7 @@ export interface MDCStreamState {
 
 export interface MDCStreamOptions extends ParseOptions {
   onChunk?: (chunk: string) => void
-  onComplete?: (result: MarkdownTree) => void
+  onComplete?: (result: MarkdownDocument) => void
   onError?: (error: Error) => void
 }
 
@@ -38,7 +38,7 @@ const plugins = [highlight()]
  *
  * <template>
  *   <div>
- *     <MarkdownParsed v-if="state.tree" :value="state.tree" :streaming="!state.isComplete" />
+ *     <MarkdownDocument v-if="state.tree" :value="state.tree" :streaming="!state.isComplete" />
  *     <div v-if="isStreaming">Streaming...</div>
  *   </div>
  * </template>

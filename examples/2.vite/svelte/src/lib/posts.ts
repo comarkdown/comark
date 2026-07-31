@@ -1,6 +1,6 @@
 import { parse } from '@comark/svelte/parse'
 import highlight from '@comark/svelte/plugins/highlight'
-import type { MarkdownTree } from '@comark/svelte'
+import type { MarkdownDocument } from '@comark/svelte'
 
 const rawFiles = import.meta.glob('../../content/posts/*.md', {
   query: '?raw',
@@ -17,7 +17,7 @@ export interface PostMeta {
 }
 
 export interface Post extends PostMeta {
-  tree: MarkdownTree
+  tree: MarkdownDocument
 }
 
 function slugFromPath(path: string): string {

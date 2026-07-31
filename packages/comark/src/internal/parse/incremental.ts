@@ -1,4 +1,4 @@
-import type { MarkdownElement, MarkdownElementAttributes, MarkdownTree } from '../../types'
+import type { ElementNode, ElementNodeAttributes, MarkdownDocument } from '../../types'
 
 /**
  * Extracts reusable nodes from the last output tree
@@ -6,12 +6,12 @@ import type { MarkdownElement, MarkdownElementAttributes, MarkdownTree } from '.
  * @param lastOutput - The last output tree
  * @returns The reusable nodes and the remaining markdown
  */
-export function extractReusableNodes(markdown: string, lastOutput: MarkdownTree) {
+export function extractReusableNodes(markdown: string, lastOutput: MarkdownDocument) {
   let lastValidNodeIndex = -1
   let i = lastOutput.nodes.length - 1
   let lastNodeIgnored = false
   while (i >= 0) {
-    const node = lastOutput.nodes[i] as MarkdownElement
+    const node = lastOutput.nodes[i] as ElementNode
     if (node[1] && node[1].$?.line) {
       if (lastNodeIgnored) {
         lastValidNodeIndex = i
@@ -24,7 +24,7 @@ export function extractReusableNodes(markdown: string, lastOutput: MarkdownTree)
   }
   const lastNode = lastValidNodeIndex !== -1 ? lastOutput.nodes[lastValidNodeIndex] : null
   if (lastNode) {
-    const remainingMarkdownStartLine = (lastNode[1] as MarkdownElementAttributes).$?.line ?? 0
+    const remainingMarkdownStartLine = (lastNode[1] as ElementNodeAttributes).$?.line ?? 0
     return {
       remainingMarkdownStartLine,
       reusedNodes: lastOutput.nodes.slice(0, lastValidNodeIndex + 1),

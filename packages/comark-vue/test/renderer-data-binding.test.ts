@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { createSSRApp, defineComponent, h } from 'vue'
 import { renderToString } from '@vue/server-renderer'
 import { parse } from 'comark'
-import { MarkdownParsed } from '../src/components/MarkdownParsed'
+import { MarkdownDocument } from '../src/components/MarkdownDocument'
 
 const Badge = defineComponent({
   name: 'Badge',
@@ -35,12 +35,12 @@ const Card = defineComponent({
 async function renderMarkdown(markdown: string, props: Record<string, any> = {}) {
   const tree = await parse(markdown)
   const app = createSSRApp({
-    setup: () => () => h(MarkdownParsed, { value: tree, ...props }),
+    setup: () => () => h(MarkdownDocument, { value: tree, ...props }),
   })
   return renderToString(app as any)
 }
 
-describe('MarkdownParsed — data binding', () => {
+describe('MarkdownDocument — data binding', () => {
   it('resolves :prefix bindings from frontmatter onto custom component props', async () => {
     const html = await renderMarkdown(
       `---

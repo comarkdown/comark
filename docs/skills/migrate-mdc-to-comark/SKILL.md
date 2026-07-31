@@ -17,7 +17,7 @@ The migration has two parts: **Core Package** (programmatic API) and **Nuxt Modu
 - **Render**: `stringifyMarkdown()` → `renderMarkdown()` from `comark/render`
 - **AST**: object tree → compact tuples `['tag', props, ...children]`
 - **Result**: `result.body` / `result.data` → `tree.nodes` / `tree.frontmatter`
-- **Renderer**: `<MDCRenderer :body :data>` → `<MarkdownParsed :value>`
+- **Renderer**: `<MDCRenderer :body :data>` → `<MarkdownDocument :value>`
 - **All-in-one**: `<MDC :value>` → `<Markdown :value>`
 - **Slots**: `<MDCSlot />` → native `<slot />`
 - **Plugins**: global `nuxt.config` → per-component `defineMarkdownComponent({ plugins })`
@@ -32,7 +32,7 @@ The migration has two parts: **Core Package** (programmatic API) and **Nuxt Modu
 | `parseMarkdown(md, opts)` | `parse(md, opts)` from `comark` |
 | `createMarkdownParser(opts)` (async) | `createParse(opts)` (sync, no await) |
 | `stringifyMarkdown(body, data)` | `renderMarkdown(tree)` from `comark/render` |
-| `result.body` (`MDCRoot`) | `tree.nodes` (`ComarkNode[]`) |
+| `result.body` (`MDCRoot`) | `tree.nodes` (`Node[]`) |
 | `result.data` | `tree.frontmatter` |
 | `result.data.title` | `tree.frontmatter.title` |
 | `result.toc` | `tree.meta.toc` (requires `toc` plugin) |
@@ -42,7 +42,7 @@ The migration has two parts: **Core Package** (programmatic API) and **Nuxt Modu
 
 | `@nuxtjs/mdc` | `comark` |
 |---|---|
-| `{ type: 'root', children: MDCNode[] }` | `{ nodes: ComarkNode[], frontmatter: {}, meta: {} }` |
+| `{ type: 'root', children: MDCNode[] }` | `{ nodes: Node[], frontmatter: {}, meta: {} }` |
 | `{ type: 'element', tag: 'p', props: {}, children: [] }` | `['p', {}, ...children]` |
 | `{ type: 'text', value: 'hello' }` | `'hello'` (plain string) |
 
@@ -97,25 +97,25 @@ export default defineNuxtConfig({
 })
 ```
 
-`@comark/nuxt` auto-imports: `Markdown`, `MarkdownParsed`, `defineMarkdownComponent`, `defineMarkdownParsedComponent`.
+`@comark/nuxt` auto-imports: `Markdown`, `MarkdownDocument`, `defineMarkdownComponent`, `defineMarkdownDocumentComponent`.
 
 ### Components
 
 | `@nuxtjs/mdc` | `@comark/nuxt` |
 |---|---|
-| `<MDCRenderer :body :data :components>` | `<MarkdownParsed :value :components>` |
+| `<MDCRenderer :body :data :components>` | `<MarkdownDocument :value :components>` |
 | `<MDC :value :parser-options>` | `<Markdown :value :options>` or `<Markdown>{{ md }}</Markdown>` |
 | `<MDCSlot />` | `<slot />` |
 | `<MDCSlot unwrap="p" />` | `<slot unwrap="p" />` |
 | `<slot mdc-unwrap="p" />` | `<slot unwrap="p" />` |
 
-For a pre-parsed tree, use `<MarkdownParsed>` directly instead of `<Markdown>`.
+For a pre-parsed tree, use `<MarkdownDocument>` directly instead of `<Markdown>`.
 
-#### `<MarkdownParsed>` props changes
+#### `<MarkdownDocument>` props changes
 
-| MDC `<MDCRenderer>` | Comark `<MarkdownParsed>` | Notes |
+| MDC `<MDCRenderer>` | Comark `<MarkdownDocument>` | Notes |
 |---|---|---|
-| `body` (`MDCRoot`) | `value` (`MarkdownTree`) | Different AST shape |
+| `body` (`MDCRoot`) | `value` (`MarkdownDocument`) | Different AST shape |
 | `data` | — | Frontmatter is in `value.frontmatter` |
 | `tag` | — | Wrapper is always `<div class="comark-content">` |
 | `prose` | — | `Prose*` resolution is automatic |

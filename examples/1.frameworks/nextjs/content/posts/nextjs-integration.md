@@ -14,11 +14,11 @@ Instead of using the typical `gray-matter` + `remark` + `rehype` pipeline, we us
 1. **Read markdown files** — Load `.md` files from the `content/posts/` directory
 2. **Parse with Comark** — Call `parse()` to build the AST and extract frontmatter
 3. **Static generation** — Use `generateStaticParams` for full SSG
-4. **Render with React** — Use `MarkdownParsed` from `@comark/react` with custom components
+4. **Render with React** — Use `MarkdownDocument` from `@comark/react` with custom components
 
 ```ts
 import { parse } from 'comark'
-import { MarkdownParsed } from '@comark/react'
+import { MarkdownDocument } from '@comark/react'
 import highlight from 'comark/plugins/highlight'
 import Alert from '@/components/Alert'
 
@@ -27,7 +27,7 @@ const tree = await parse(content, {
 })
 
 // In your Server Component:
-// <MarkdownParsed value={tree} components={{ Alert }} />
+// <MarkdownDocument value={tree} components={{ Alert }} />
 ```
 
 ::alert{type="info"}

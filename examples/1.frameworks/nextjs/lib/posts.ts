@@ -1,7 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { parse } from 'comark'
-import type { MarkdownTree } from 'comark'
+import type { MarkdownDocument } from 'comark'
 import highlight from 'comark/plugins/highlight'
 
 export interface PostMeta {
@@ -13,7 +13,7 @@ export interface PostMeta {
 }
 
 export interface Post extends PostMeta {
-  tree: MarkdownTree
+  tree: MarkdownDocument
 }
 
 const postsDir = path.join(process.cwd(), 'content/posts')

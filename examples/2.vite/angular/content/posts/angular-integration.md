@@ -14,7 +14,7 @@ Instead of the typical `gray-matter` + `remark` + `rehype` pipeline, we use Coma
 1. **Load markdown files** — Use Vite's `import.meta.glob` with `?raw` to eagerly load `.md` files
 2. **Parse with Comark** — Call `parse()` to build the AST and extract frontmatter
 3. **Route with Angular Router** — Hash-based routing for a zero-config static SPA
-4. **Render with Angular** — Use `MarkdownParsed` from `@comark/angular` with explicit component mapping
+4. **Render with Angular** — Use `MarkdownDocument` from `@comark/angular` with explicit component mapping
 
 ```ts
 // src/app/lib/posts.ts
@@ -38,7 +38,7 @@ export async function getPost(slug: string) {
 ```ts
 // src/app/pages/blog-post.component.ts
 @Component({
-  imports: [MarkdownParsed],
+  imports: [MarkdownDocument],
   template: `
     @if (post) {
       <comark-markdown-parsed [value]="post.tree" [components]="components" />

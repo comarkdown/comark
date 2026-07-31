@@ -28,10 +28,10 @@ and wrap this component in a `<svelte:boundary>` for pending/error states.
 ```
 -->
 <script lang="ts">
-  import type { MarkdownTree, ComarkPlugin, ComponentManifest } from 'comark'
+  import type { MarkdownDocument as MarkdownDocumentType, ComarkPlugin, ComponentManifest } from 'comark'
   import { parse } from 'comark'
-  import { isMarkdownTree } from 'comark/utils'
-  import MarkdownParsed from '../components/MarkdownParsed.svelte'
+  import { isMarkdownDocument } from 'comark/utils'
+  import MarkdownDocument from '../components/MarkdownDocument.svelte'
   import ResolveAsync from './ResolveAsync.svelte'
   import { warnDeprecated } from '../internal/deprecation.js'
 
@@ -48,7 +48,7 @@ and wrap this component in a `<svelte:boundary>` for pending/error states.
     data,
     class: className = '',
   }: {
-    value?: string | MarkdownTree
+    value?: string | MarkdownDocumentType
     /** @deprecated Use `value` instead */
     markdown?: string
     options?: Record<string, any>
@@ -69,7 +69,7 @@ and wrap this component in a `<svelte:boundary>` for pending/error states.
 
   let content = $derived(typeof value === 'string' ? value.trim() : (markdown ?? '').trim())
   let parsed = $derived(
-    isMarkdownTree(value)
+    isMarkdownDocument(value)
       ? value
       : // `parse` directly mutates `plugins` which creates an infinite effect loop
         // so we copy it before passing it in so it gets a regular JS array and we get to still
@@ -78,7 +78,7 @@ and wrap this component in a `<svelte:boundary>` for pending/error states.
   )
 </script>
 
-<MarkdownParsed
+<MarkdownDocument
   value={parsed}
   {components}
   {componentsManifest}

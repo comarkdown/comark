@@ -14,7 +14,7 @@ Instead of the typical `gray-matter` + `remark` + `rehype` pipeline, we use Coma
 1. **Load markdown files** — Use Vite's `import.meta.glob` with `?raw` to eagerly load `.md` files
 2. **Parse with Comark** — Call `parse()` in the browser to build the AST and extract frontmatter
 3. **Route** — A tiny hash router for a zero-config static SPA
-4. **Render with React** — Use `MarkdownParsed` from `@comark/react` with explicit component mapping
+4. **Render with React** — Use `MarkdownDocument` from `@comark/react` with explicit component mapping
 
 ```ts
 // src/lib/posts.ts
@@ -38,11 +38,11 @@ export async function getPost(slug: string) {
 
 ```tsx
 // src/pages/BlogPost.tsx
-import { MarkdownParsed } from '@comark/react'
+import { MarkdownDocument } from '@comark/react'
 import Alert from '../components/Alert'
 
 const post = await getPost(slug)
-// <MarkdownParsed value={post.tree} components={{ Alert }} />
+// <MarkdownDocument value={post.tree} components={{ Alert }} />
 ```
 
 ::Alert{type="info"}
@@ -51,7 +51,7 @@ Since this is a client-side SPA, `parse()` runs in the browser. Markdown files a
 
 ## Custom components
 
-Pass custom components via the `components` prop on `MarkdownParsed`. Each component receives props and children from the Comark AST:
+Pass custom components via the `components` prop on `MarkdownDocument`. Each component receives props and children from the Comark AST:
 
 ```tsx
 // src/components/Alert.tsx

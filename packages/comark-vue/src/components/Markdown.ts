@@ -1,9 +1,9 @@
 import type { PropType } from 'vue'
 import { computed, defineComponent, h, shallowRef, watch } from 'vue'
 import { createSerializedParse } from 'comark'
-import type { ParseOptions, ComponentManifest, MarkdownTree } from 'comark'
-import { isMarkdownTree } from 'comark/utils'
-import { MarkdownParsed } from './MarkdownParsed.ts'
+import type { ParseOptions, ComponentManifest, MarkdownDocument as MarkdownDocumentType } from 'comark'
+import { isMarkdownDocument } from 'comark/utils'
+import { MarkdownDocument } from './MarkdownDocument.ts'
 import { warnDeprecated } from '../internal/deprecation.ts'
 
 /**
@@ -11,9 +11,9 @@ import { warnDeprecated } from '../internal/deprecation.ts'
  */
 export interface MarkdownProps {
   /**
-   * The markdown content to parse and render, or a pre-parsed MarkdownTree
+   * The markdown content to parse and render, or a pre-parsed MarkdownDocument
    */
-  value?: string | MarkdownTree
+  value?: string | MarkdownDocumentType
 
   /**
    * The markdown content to parse and render
@@ -109,10 +109,10 @@ export const Markdown: MarkdownComponent = defineComponent({
 
   props: {
     /**
-     * The markdown content to parse and render, or a pre-parsed MarkdownTree
+     * The markdown content to parse and render, or a pre-parsed MarkdownDocument
      */
     value: {
-      type: [String, Object] as PropType<string | MarkdownTree>,
+      type: [String, Object] as PropType<string | MarkdownDocumentType>,
       default: undefined,
     },
 
@@ -209,7 +209,7 @@ export const Markdown: MarkdownComponent = defineComponent({
     }
 
     const markdown = computed(() => {
-      if (isMarkdownTree(props.value)) return ''
+      if (isMarkdownDocument(props.value)) return ''
       let result = (props.value as string | undefined) ?? props.markdown
       const childrent = ctx.slots.default?.()
       if (childrent && childrent.length > 0 && typeof childrent[0].children === 'string') {
@@ -221,7 +221,7 @@ export const Markdown: MarkdownComponent = defineComponent({
       return (result || '').trim()
     })
 
-    const parsed = shallowRef<MarkdownTree | null>(null)
+    const parsed = shallowRef<MarkdownDocumentType | null>(null)
 
     const parse = createSerializedParse({
       ...props.options,
@@ -234,19 +234,19 @@ export const Markdown: MarkdownComponent = defineComponent({
     watch(
       () => [markdown.value, props.streaming] as const,
       () => {
-        if (isMarkdownTree(props.value)) return
+        if (isMarkdownDocument(props.value)) return
         parse(markdown.value, { streaming: props.streaming }).then((result) => (parsed.value = result))
       }
     )
 
-    if (!isMarkdownTree(props.value)) {
+    if (!isMarkdownDocument(props.value)) {
       await parse(markdown.value, { streaming: props.streaming }).then((result) => (parsed.value = result))
     }
 
     return () => {
       // Pre-parsed tree — skip parse and render directly
-      if (isMarkdownTree(props.value)) {
-        return h(MarkdownParsed, {
+      if (isMarkdownDocument(props.value)) {
+        return h(MarkdownDocument, {
           value: props.value,
           components: props.components,
           streaming: props.streaming,
@@ -257,8 +257,8 @@ export const Markdown: MarkdownComponent = defineComponent({
         })
       }
 
-      // Render using MarkdownParsed
-      return h(MarkdownParsed, {
+      // Render using MarkdownDocument
+      return h(MarkdownDocument, {
         value: parsed.value || { nodes: [], frontmatter: {}, meta: {} },
         components: props.components,
         streaming: props.streaming,

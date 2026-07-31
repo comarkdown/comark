@@ -1,4 +1,4 @@
-import type { MarkdownElement } from 'comark'
+import type { ElementNode } from 'comark'
 
 interface CaretOptions {
   class?: string
@@ -8,7 +8,7 @@ const CARET_TEXT = ' ' // thin space is used to avoid wide spaces between text
 const CARET_STYLE =
   'background-color: currentColor; display: inline-block; margin-left: 0.25rem; margin-right: 0.25rem; animation: pulse 0.75s cubic-bezier(0.4,0,0.6,1) infinite;'
 
-export function getCaret(options: boolean | CaretOptions): MarkdownElement | null {
+export function getCaret(options: boolean | CaretOptions): ElementNode | null {
   if (options === true) {
     return ['span', { key: 'stream-caret', style: CARET_STYLE }, CARET_TEXT]
   }
@@ -28,7 +28,7 @@ export function getCaret(options: boolean | CaretOptions): MarkdownElement | nul
   return null
 }
 
-export function findLastTextNodeAndAppendNode(parent: MarkdownElement, nodeToAppend: MarkdownElement): boolean {
+export function findLastTextNodeAndAppendNode(parent: ElementNode, nodeToAppend: ElementNode): boolean {
   // Traverse nodes backwards to find the last text node
   for (let i = parent.length - 1; i >= 2; i--) {
     const node = parent[i]
@@ -42,7 +42,7 @@ export function findLastTextNodeAndAppendNode(parent: MarkdownElement, nodeToApp
 
     if (Array.isArray(node)) {
       // This is an element node - recursively check its children
-      if (findLastTextNodeAndAppendNode(node as MarkdownElement, nodeToAppend)) {
+      if (findLastTextNodeAndAppendNode(node as ElementNode, nodeToAppend)) {
         return true
       }
     }

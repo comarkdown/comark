@@ -1,4 +1,4 @@
-import type { ComarkNode, MarkdownTree } from 'comark'
+import type { Node, MarkdownDocument } from 'comark'
 import { defineComarkPlugin } from '../utils/helpers.ts'
 
 export interface TocLink {
@@ -22,28 +22,28 @@ const TOC_TAGS_DEPTH = TOC_TAGS.reduce((tags: Record<string, number>, tag: strin
   return tags
 }, {})
 
-function getTag(node: ComarkNode): string | null {
+function getTag(node: Node): string | null {
   if (Array.isArray(node) && node.length >= 1) {
     return node[0] as string
   }
   return null
 }
 
-function getProps(node: ComarkNode): Record<string, any> {
+function getProps(node: Node): Record<string, any> {
   if (Array.isArray(node) && node.length >= 2 && typeof node[1] === 'object' && !Array.isArray(node[1])) {
     return node[1] as Record<string, any>
   }
   return {}
 }
 
-function getChildren(node: ComarkNode): ComarkNode[] {
+function getChildren(node: Node): Node[] {
   if (Array.isArray(node) && node.length > 2) {
-    return node.slice(2) as ComarkNode[]
+    return node.slice(2) as Node[]
   }
   return []
 }
 
-function getHeaderDepth(node: ComarkNode): number {
+function getHeaderDepth(node: Node): number {
   const tag = getTag(node)
   return tag ? TOC_TAGS_DEPTH[tag] || 0 : 0
 }
@@ -57,24 +57,24 @@ function getTocTags(depth: number): string[] {
   return TOC_TAGS.slice(0, depth)
 }
 
-function flattenNodeText(node: ComarkNode): string {
+function flattenNodeText(node: Node): string {
   if (typeof node === 'string') {
     return node
   }
   if (Array.isArray(node)) {
-    return getChildren(node).reduce((text: string, child: ComarkNode) => {
+    return getChildren(node).reduce((text: string, child: Node) => {
       return text + flattenNodeText(child)
     }, '')
   }
   return ''
 }
 
-function flattenNodes(nodes: ComarkNode[], maxDepth: number, currentDepth: number = 0): ComarkNode[] {
+function flattenNodes(nodes: Node[], maxDepth: number, currentDepth: number = 0): Node[] {
   if (currentDepth >= maxDepth) {
     return nodes
   }
 
-  const result: ComarkNode[] = []
+  const result: Node[] = []
   for (const node of nodes) {
     result.push(node)
     if (Array.isArray(node)) {
@@ -112,12 +112,12 @@ function nestHeaders(headers: TocLink[]): TocLink[] {
   return toc
 }
 
-export function generateFlatToc(body: MarkdownTree, options: Toc): Toc {
+export function generateFlatToc(body: MarkdownDocument, options: Toc): Toc {
   const { searchDepth, depth, title = '' } = options
   const tags = getTocTags(depth)
 
   const allNodes = flattenNodes(body.nodes, searchDepth)
-  const headers = allNodes.filter((node: ComarkNode) => {
+  const headers = allNodes.filter((node: Node) => {
     const tag = getTag(node)
     return tag !== null && tags.includes(tag)
   })

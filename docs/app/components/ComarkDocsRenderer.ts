@@ -1,9 +1,9 @@
-import { defineMarkdownParsedComponent } from '@comark/vue'
+import { defineMarkdownDocumentComponent } from '@comark/vue'
 import { Math } from '@comark/vue/plugins/math'
 import { Mermaid } from '@comark/vue/plugins/mermaid'
 
 // This base renderer created to demonstrate how to create a base renderer for a specific use case.
-const BaseComarkDocsRenderer = defineMarkdownParsedComponent({
+const BaseComarkDocsRenderer = defineMarkdownDocumentComponent({
   name: 'ComarkDocsRendererBase',
   components: {
     Math,
@@ -11,7 +11,7 @@ const BaseComarkDocsRenderer = defineMarkdownParsedComponent({
 })
 
 // This renderer extends the base renderer and adds the Mermaid component.
-export default defineMarkdownParsedComponent({
+export default defineMarkdownDocumentComponent({
   extends: BaseComarkDocsRenderer,
   name: 'ComarkDocsRenderer',
   components: {

@@ -1,4 +1,4 @@
-import type { ComarkNode, MarkdownElement, MarkdownTree } from 'comark'
+import type { Node, ElementNode, MarkdownDocument } from 'comark'
 import { render } from 'comark/render'
 import type { RenderOptions } from 'comark/render'
 
@@ -6,12 +6,12 @@ export * from 'comark/render'
 
 export interface RenderHTMLContext {
   /** Renders the element's children to HTML */
-  render: (children: ComarkNode[]) => Promise<string>
+  render: (children: Node[]) => Promise<string>
   /** Frontmatter/metadata passed via options.data */
   data?: Record<string, any>
 }
 
-export type ComponentRenderFn = (element: MarkdownElement, ctx: RenderHTMLContext) => string | Promise<string>
+export type ComponentRenderFn = (element: ElementNode, ctx: RenderHTMLContext) => string | Promise<string>
 
 /**
  * Render Comark tree to HTML
@@ -37,7 +37,7 @@ export type ComponentRenderFn = (element: MarkdownElement, ctx: RenderHTMLContex
  * ```
  */
 export async function renderHTML(
-  tree: MarkdownTree | { nodes: MarkdownTree['nodes'] },
+  tree: MarkdownDocument | { nodes: MarkdownDocument['nodes'] },
   options?: RenderOptions
 ): Promise<string> {
   return (await render(tree, { blockSeparator: '\n', format: 'text/html', ...options })).trim()

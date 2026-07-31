@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { MarkdownTree } from 'comark'
-import { MarkdownParsed } from '@comark/vue'
+import type { MarkdownDocument as Document } from 'comark'
+import { MarkdownDocument } from '@comark/vue'
 import CodeIcon from '@nuxt/ui/components/prose/CodeIcon.vue'
 
 interface CodeExplorerTreeItem {
@@ -12,7 +12,7 @@ interface CodeExplorerTreeItem {
 
 interface CodeExplorerData {
   tree: CodeExplorerTreeItem[]
-  files: Record<string, MarkdownTree>
+  files: Record<string, Document>
 }
 
 const props = withDefaults(
@@ -122,7 +122,7 @@ function onSelect(e: Event, item: CodeExplorerTreeItem) {
           class="code-explorer-content flex-1 flex-col"
         >
           <UTheme :ui="{ prose: { pre: { root: 'my-0 h-full' } } }">
-            <MarkdownParsed
+            <MarkdownDocument
               :value="selectedFile"
               class="h-full"
             />

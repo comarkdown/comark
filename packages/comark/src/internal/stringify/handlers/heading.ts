@@ -1,9 +1,9 @@
 import type { State } from 'comark/render'
-import type { MarkdownElement } from 'comark'
+import type { ElementNode } from 'comark'
 import { comarkAttributes } from '../attributes.ts'
 
 // h1, h2, h3, h4, h5, h6
-export async function heading(node: MarkdownElement, state: State) {
+export async function heading(node: ElementNode, state: State) {
   const [tag] = node
 
   const level = Number(tag.slice(1))

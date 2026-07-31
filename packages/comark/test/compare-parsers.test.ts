@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { MarkdownTree } from '../src/index'
+import type { MarkdownDocument } from '../src/index'
 import { parse } from '../src/index'
 import { parseWithRemark } from './utils/index'
 
@@ -91,8 +91,8 @@ function deepCompareNodes(node1: any, node2: any, path: string = 'root', testCas
 }
 
 function compareResults(
-  result1: { body: MarkdownTree; data: any; excerpt?: MarkdownTree },
-  result2: MarkdownTree,
+  result1: { body: MarkdownDocument; data: any; excerpt?: MarkdownDocument },
+  result2: MarkdownDocument,
   testCase: string
 ) {
   // Compare data (frontmatter)

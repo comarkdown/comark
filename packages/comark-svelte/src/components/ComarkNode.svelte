@@ -1,7 +1,7 @@
 <!--
 @component
 @deprecated Use `MarkdownNode` instead — same component, renamed to describe
-what it renders. `ComarkNode` will be removed in a future major version.
+what it renders. `Node` will be removed in a future major version.
 -->
 <script lang="ts">
   import type { MarkdownNodeProps } from '../types.js'

@@ -8,15 +8,15 @@ import {
   type OnInit,
   type OnDestroy,
 } from '@angular/core'
-import type { MarkdownElement, ComarkNode, MarkdownTree, NodeRenderData } from 'comark'
+import type { ElementNode, Node, MarkdownDocument as MarkdownDocumentType, NodeRenderData } from 'comark'
 import { MarkdownNode } from './markdown-node.component.ts'
 import { findLastTextNodeAndAppendNode, getCaret } from '../utils/caret.ts'
 import { warnDeprecated } from '../internal/deprecation.ts'
 
-const EMPTY_TREE: MarkdownTree = { nodes: [], frontmatter: {}, meta: {} }
+const EMPTY_TREE: MarkdownDocumentType = { nodes: [], frontmatter: {}, meta: {} }
 
 /**
- * MarkdownParsed component
+ * MarkdownDocument component
  *
  * Renders an already-parsed Comark tree to Angular components/HTML — no
  * parser in the client bundle. Supports custom component mapping for
@@ -24,11 +24,11 @@ const EMPTY_TREE: MarkdownTree = { nodes: [], frontmatter: {}, meta: {} }
  *
  * @example
  * ```html
- * <comark-markdown-parsed [value]="document" [components]="customComponents" />
+ * <comark-markdown-document [value]="document" [components]="customComponents" />
  * ```
  */
 @Component({
-  selector: 'comark-markdown-parsed',
+  selector: 'comark-markdown-document',
   standalone: true,
   imports: [MarkdownNode],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -44,15 +44,15 @@ const EMPTY_TREE: MarkdownTree = { nodes: [], frontmatter: {}, meta: {} }
     </div>
   `,
 })
-export class MarkdownParsed implements OnInit, OnDestroy {
+export class MarkdownDocument implements OnInit, OnDestroy {
   /** The parsed Comark tree to render */
-  @Input() value?: MarkdownTree
+  @Input() value?: MarkdownDocumentType
 
   /**
    * The parsed Comark tree to render
    * @deprecated Use `value` instead
    */
-  @Input() tree?: MarkdownTree
+  @Input() tree?: MarkdownDocumentType
 
   /** Custom component mappings for element tags */
   @Input() components: Record<string, Type<any>> = {}
@@ -73,10 +73,10 @@ export class MarkdownParsed implements OnInit, OnDestroy {
   @Input() comarkKey?: string
 
   private cdr = inject(ChangeDetectorRef)
-  private liveTree: MarkdownTree | null = null
+  private liveTree: MarkdownDocumentType | null = null
   private cleanup?: (clear?: boolean) => void
 
-  private get inputTree(): MarkdownTree {
+  private get inputTree(): MarkdownDocumentType {
     return this.value ?? this.tree ?? EMPTY_TREE
   }
 
@@ -99,16 +99,16 @@ export class MarkdownParsed implements OnInit, OnDestroy {
     this.cleanup?.(true)
   }
 
-  private get activeTree(): MarkdownTree {
+  private get activeTree(): MarkdownDocumentType {
     return this.liveTree ?? this.inputTree
   }
 
-  get renderedNodes(): ComarkNode[] {
+  get renderedNodes(): Node[] {
     const nodes = [...(this.activeTree.nodes || [])]
     const caretNode = getCaret(this.caret)
 
     if (this.streaming && caretNode && nodes.length > 0) {
-      const hasStreamCaret = findLastTextNodeAndAppendNode(nodes[nodes.length - 1] as MarkdownElement, caretNode)
+      const hasStreamCaret = findLastTextNodeAndAppendNode(nodes[nodes.length - 1] as ElementNode, caretNode)
       if (!hasStreamCaret) {
         nodes.push(caretNode)
       }
@@ -128,7 +128,7 @@ export class MarkdownParsed implements OnInit, OnDestroy {
 }
 
 /**
- * @deprecated Use `MarkdownParsed` instead — same component, renamed to
+ * @deprecated Use `MarkdownDocument` instead — same component, renamed to
  * describe what it renders. `ComarkRendererComponent` (selector
  * `comark-renderer`) will be removed in a future major version.
  */
@@ -149,9 +149,37 @@ export class MarkdownParsed implements OnInit, OnDestroy {
     </div>
   `,
 })
-export class ComarkRendererComponent extends MarkdownParsed {
+export class ComarkRendererComponent extends MarkdownDocument {
   override ngOnInit(): void {
-    warnDeprecated('ComarkRendererComponent (<comark-renderer>)', 'MarkdownParsed (<comark-markdown-parsed>)')
+    warnDeprecated('ComarkRendererComponent (<comark-renderer>)', 'MarkdownDocument (<comark-markdown-document>)')
+    super.ngOnInit()
+  }
+}
+
+/**
+ * @deprecated Use `MarkdownDocument` instead — same component, renamed from `MarkdownParsed`.
+ * Selector `comark-markdown-parsed` will be removed in a future major version.
+ */
+@Component({
+  selector: 'comark-markdown-parsed',
+  standalone: true,
+  imports: [MarkdownNode],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: `
+    <div class="comark-content">
+      @for (node of renderedNodes; track $index) {
+        <comark-markdown-node
+          [node]="node"
+          [components]="components"
+          [renderData]="renderData"
+        />
+      }
+    </div>
+  `,
+})
+export class MarkdownParsed extends MarkdownDocument {
+  override ngOnInit(): void {
+    warnDeprecated('MarkdownParsed (<comark-markdown-parsed>)', 'MarkdownDocument (<comark-markdown-document>)')
     super.ngOnInit()
   }
 }

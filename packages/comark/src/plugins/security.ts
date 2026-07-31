@@ -1,4 +1,4 @@
-import type { MarkdownElement, ComarkNode } from 'comark'
+import type { ElementNode, Node } from 'comark'
 import { defineComarkPlugin } from '../utils/helpers.ts'
 import { visitAsync } from '../utils/index.ts'
 import { validateProps } from '../internal/props-validation.ts'
@@ -21,7 +21,7 @@ interface SecurityOptions extends PropsValidationOptions {
    * Behavior when encountering an unallowed or blocked tag.
    * @default undefined
    */
-  tagFallback?: (element: MarkdownElement) => false | ComarkNode | Promise<false | ComarkNode>
+  tagFallback?: (element: ElementNode) => false | Node | Promise<false | Node>
 }
 
 export default defineComarkPlugin((options: SecurityOptions = {}) => {
@@ -54,7 +54,7 @@ export default defineComarkPlugin((options: SecurityOptions = {}) => {
         state.tree,
         (node) => typeof node !== 'string' && node[0] !== null,
         async (node) => {
-          const element = node as MarkdownElement
+          const element = node as ElementNode
           const tagName = element[0].toLowerCase()
 
           const isBlocked = dropSet.has(tagName)

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useRoute } from 'vue-router'
-import { MarkdownParsed } from '@comark/vue'
+import { MarkdownDocument } from '@comark/vue'
 import Alert from '@/components/Alert.vue'
 import { getPost } from '@/lib/posts'
 
@@ -36,7 +36,7 @@ const post = await getPost(route.params.slug as string)
         </div>
       </div>
     </header>
-    <MarkdownParsed
+    <MarkdownDocument
       :value="post.tree"
       :components="{ Alert }"
     />

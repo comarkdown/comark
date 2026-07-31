@@ -1,15 +1,15 @@
 <script lang="ts">
-  import { createComarkContext, parse, type MarkdownTree } from 'comark'
-  import { MarkdownParsed } from '@comark/svelte'
+  import { createComarkContext, parse, type MarkdownDocument as Document } from 'comark'
+  import { MarkdownDocument } from '@comark/svelte'
 
-  // A driver installs a context on globalThis once; every <MarkdownParsed comarkKey>
+  // A driver installs a context on globalThis once; every <MarkdownDocument comarkKey>
   // then auto-subscribes. The buttons act as the driver here — but it could just as
   // well be HMR, a collab socket, an agent, or devtools.
   const ctx = createComarkContext()
 
   const INITIAL = `# Live document
 
-This paragraph is rendered from a **MarkdownParsed** wired to \`globalThis.comarkContext\`.
+This paragraph is rendered from a **MarkdownDocument** wired to \`globalThis.comarkContext\`.
 
 Use the buttons to push updates by key — no re-mount.
 
@@ -23,7 +23,7 @@ ctx.patch({ op: 'replace', path: [0, 0], node: 'Live document update' })
 
   const btn = 'rounded border border-gray-300 dark:border-gray-700 px-3 py-1.5 text-sm'
 
-  let tree = $state<MarkdownTree | null>(null)
+  let tree = $state<Document | null>(null)
   let counter = 0
 
   parse(INITIAL).then((t) => {
@@ -52,5 +52,5 @@ ctx.patch({ op: 'replace', path: [0, 0], node: 'Live document update' })
     <button class={btn} onclick={reset}>Reset</button>
   </div>
 
-  <MarkdownParsed comarkKey="demo" value={tree} />
+  <MarkdownDocument comarkKey="demo" value={tree} />
 {/if}

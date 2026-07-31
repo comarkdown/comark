@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import React from 'react'
 import { renderToString } from 'react-dom/server'
 import { parse } from 'comark'
-import { MarkdownParsed } from '../src/components/MarkdownParsed'
+import { MarkdownDocument } from '../src/components/MarkdownDocument'
 
 interface BadgeProps {
   label?: string
@@ -40,14 +40,14 @@ function Card({ title = '', variant = '', children }: CardProps) {
 async function renderMarkdown(markdown: string, props: Record<string, any> = {}) {
   const tree = await parse(markdown)
   return renderToString(
-    <MarkdownParsed
+    <MarkdownDocument
       value={tree}
       {...props}
     />
   )
 }
 
-describe('MarkdownParsed — data binding', () => {
+describe('MarkdownDocument — data binding', () => {
   it('resolves :prefix bindings from frontmatter onto component props', async () => {
     const html = await renderMarkdown(
       `---

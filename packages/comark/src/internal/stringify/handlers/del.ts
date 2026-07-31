@@ -1,7 +1,7 @@
 import type { State } from 'comark/render'
-import type { MarkdownElement } from 'comark'
+import type { ElementNode } from 'comark'
 import { textContent } from '../../../utils/index.ts'
 
-export function del(node: MarkdownElement, _: State) {
+export function del(node: ElementNode, _: State) {
   return `~~${textContent(node)}~~`
 }

@@ -3,7 +3,7 @@ import React from 'react'
 import { renderToReadableStream } from 'react-dom/server'
 import { parse } from 'comark'
 import emoji from 'comark/plugins/emoji'
-import { defineMarkdownComponent, defineMarkdownParsedComponent } from '../src/index'
+import { defineMarkdownComponent, defineMarkdownDocumentComponent } from '../src/index'
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -168,12 +168,12 @@ describe('defineMarkdownComponent — className via config', () => {
 })
 
 // ---------------------------------------------------------------------------
-// defineMarkdownParsedComponent
+// defineMarkdownDocumentComponent
 // ---------------------------------------------------------------------------
 
-describe('defineMarkdownParsedComponent — component inheritance via extends', () => {
+describe('defineMarkdownDocumentComponent — component inheritance via extends', () => {
   it('renders with config components', async () => {
-    const Renderer = defineMarkdownParsedComponent({
+    const Renderer = defineMarkdownDocumentComponent({
       name: 'TestRenderer',
       components: { alert: AlertBase },
     })
@@ -184,8 +184,8 @@ describe('defineMarkdownParsedComponent — component inheritance via extends', 
   })
 
   it('child inherits parent components when none of its own are defined', async () => {
-    const Base = defineMarkdownParsedComponent({ name: 'BaseRenderer', components: { alert: AlertBase } })
-    const Child = defineMarkdownParsedComponent({ name: 'ChildRenderer', extends: Base })
+    const Base = defineMarkdownDocumentComponent({ name: 'BaseRenderer', components: { alert: AlertBase } })
+    const Child = defineMarkdownDocumentComponent({ name: 'ChildRenderer', extends: Base })
 
     const tree = await parse('::alert\nhello\n::')
     const html = await renderAsync(<Child value={tree} />)
@@ -194,8 +194,8 @@ describe('defineMarkdownParsedComponent — component inheritance via extends', 
   })
 
   it('child components override the same tag from parent', async () => {
-    const Base = defineMarkdownParsedComponent({ name: 'BaseRenderer', components: { alert: AlertBase } })
-    const Child = defineMarkdownParsedComponent({
+    const Base = defineMarkdownDocumentComponent({ name: 'BaseRenderer', components: { alert: AlertBase } })
+    const Child = defineMarkdownDocumentComponent({
       name: 'ChildRenderer',
       extends: Base,
       components: { alert: AlertChild },
@@ -209,11 +209,11 @@ describe('defineMarkdownParsedComponent — component inheritance via extends', 
   })
 
   it('child keeps parent components that it does not override', async () => {
-    const Base = defineMarkdownParsedComponent({
+    const Base = defineMarkdownDocumentComponent({
       name: 'BaseRenderer',
       components: { alert: AlertBase, card: CardBase },
     })
-    const Child = defineMarkdownParsedComponent({
+    const Child = defineMarkdownDocumentComponent({
       name: 'ChildRenderer',
       extends: Base,
       components: { alert: AlertChild },
@@ -227,8 +227,8 @@ describe('defineMarkdownParsedComponent — component inheritance via extends', 
   })
 
   it('prop-level components override child and parent config', async () => {
-    const Base = defineMarkdownParsedComponent({ name: 'BaseRenderer', components: { alert: AlertBase } })
-    const Child = defineMarkdownParsedComponent({
+    const Base = defineMarkdownDocumentComponent({ name: 'BaseRenderer', components: { alert: AlertBase } })
+    const Child = defineMarkdownDocumentComponent({
       name: 'ChildRenderer',
       extends: Base,
       components: { alert: AlertChild },
@@ -248,16 +248,16 @@ describe('defineMarkdownParsedComponent — component inheritance via extends', 
   })
 
   it('multi-level extends stacks component maps correctly', async () => {
-    const Base = defineMarkdownParsedComponent({
+    const Base = defineMarkdownDocumentComponent({
       name: 'BaseRenderer',
       components: { alert: AlertBase, card: CardBase },
     })
-    const Middle = defineMarkdownParsedComponent({
+    const Middle = defineMarkdownDocumentComponent({
       name: 'MiddleRenderer',
       extends: Base,
       components: { alert: AlertChild },
     })
-    const Child = defineMarkdownParsedComponent({ name: 'ChildRenderer', extends: Middle })
+    const Child = defineMarkdownDocumentComponent({ name: 'ChildRenderer', extends: Middle })
 
     const tree = await parse('::alert\nA\n::\n\n::card\nB\n::')
     const html = await renderAsync(<Child value={tree} />)
@@ -268,19 +268,19 @@ describe('defineMarkdownParsedComponent — component inheritance via extends', 
 })
 
 // ---------------------------------------------------------------------------
-// defineMarkdownParsedComponent — className
+// defineMarkdownDocumentComponent — className
 // ---------------------------------------------------------------------------
 
-describe('defineMarkdownParsedComponent — className via config', () => {
+describe('defineMarkdownDocumentComponent — className via config', () => {
   it('applies config className to wrapper div', async () => {
-    const Renderer = defineMarkdownParsedComponent({ name: 'WithClass', className: 'prose dark' })
+    const Renderer = defineMarkdownDocumentComponent({ name: 'WithClass', className: 'prose dark' })
     const tree = await parse('hello')
     const html = await renderAsync(<Renderer value={tree} />)
     expect(html).toContain('comark-content prose dark')
   })
 
   it('merges config className with prop className', async () => {
-    const Renderer = defineMarkdownParsedComponent({ name: 'WithClass', className: 'prose' })
+    const Renderer = defineMarkdownDocumentComponent({ name: 'WithClass', className: 'prose' })
     const tree = await parse('hello')
     const html = await renderAsync(
       <Renderer
@@ -292,7 +292,7 @@ describe('defineMarkdownParsedComponent — className via config', () => {
   })
 
   it('prop className works without config className', async () => {
-    const Renderer = defineMarkdownParsedComponent({ name: 'NoConfigClass' })
+    const Renderer = defineMarkdownDocumentComponent({ name: 'NoConfigClass' })
     const tree = await parse('hello')
     const html = await renderAsync(
       <Renderer
@@ -304,8 +304,8 @@ describe('defineMarkdownParsedComponent — className via config', () => {
   })
 
   it('inherited renderer preserves parent className', async () => {
-    const Base = defineMarkdownParsedComponent({ name: 'BaseRenderer', className: 'base-class' })
-    const Child = defineMarkdownParsedComponent({ name: 'ChildRenderer', extends: Base, className: 'child-class' })
+    const Base = defineMarkdownDocumentComponent({ name: 'BaseRenderer', className: 'base-class' })
+    const Child = defineMarkdownDocumentComponent({ name: 'ChildRenderer', extends: Base, className: 'child-class' })
     const tree = await parse('hello')
     const html = await renderAsync(<Child value={tree} />)
     expect(html).toContain('base-class')

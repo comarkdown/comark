@@ -8,8 +8,8 @@ import type {
   ParseOptions,
   ResolvedFrontmatter,
   ResolvedMeta,
-  MarkdownTree,
-  ComarkNode,
+  MarkdownDocument,
+  Node,
 } from './types.ts'
 import MarkdownExit from 'markdown-exit'
 import syntax from './plugins/syntax.ts'
@@ -17,7 +17,7 @@ import taskList from './plugins/task-list.ts'
 import alert from './plugins/alert.ts'
 import { applyAutoUnwrap } from './internal/parse/auto-unwrap.ts'
 import { applyUnwrap, resolveUnwrapTags } from './internal/parse/unwrap.ts'
-import { marmdownItTokensToMarkdownTree } from './internal/parse/token-processor.ts'
+import { marmdownItTokensToMarkdownDocument } from './internal/parse/token-processor.ts'
 import { autoCloseMarkdown } from './internal/parse/auto-close/index.ts'
 import { parseFrontmatter } from './internal/frontmatter.ts'
 import { extractReusableNodes } from './internal/parse/incremental.ts'
@@ -34,12 +34,12 @@ export { defineComarkPlugin } from './utils/helpers.ts'
 /**
  * Creates a parser function for Comark content.
  *
- * Returns an async function that takes a markdown string and returns a Promise resolving to a MarkdownTree AST.
+ * Returns an async function that takes a markdown string and returns a Promise resolving to a MarkdownDocument AST.
  * The returned parser applies frontmatter extraction, Comark syntax parsing, token-to-AST conversion,
  * auto-closing of incomplete markdown, optional AST transformations and plugin hooks.
  *
  * @param options - Parser options controlling parsing behavior.
- * @returns An async parser function: (markdown) => Promise<MarkdownTree>
+ * @returns An async parser function: (markdown) => Promise<MarkdownDocument>
  *
  * @example
  * ```typescript
@@ -88,7 +88,7 @@ export function createParse<const TPlugins extends readonly ComarkPlugin<any, an
     }
   }
 
-  let lastOutput: MarkdownTree | null = null
+  let lastOutput: MarkdownDocument | null = null
   let lastInput: string | null = null
 
   const parseFn: ComarkParseFn = async (markdown, opts = {}) => {
@@ -96,9 +96,9 @@ export function createParse<const TPlugins extends readonly ComarkPlugin<any, an
       options,
       tokens: [] as unknown[],
       markdown,
-      tree: null as MarkdownTree | null,
+      tree: null as MarkdownDocument | null,
       parsedLines: 0,
-      reusableNodes: [] as ComarkNode[],
+      reusableNodes: [] as Node[],
     }
 
     const prevOutput = lastOutput
@@ -143,14 +143,14 @@ export function createParse<const TPlugins extends readonly ComarkPlugin<any, an
     }
 
     // Convert tokens to Comark structure
-    let nodes = marmdownItTokensToMarkdownTree(state.tokens, {
+    let nodes = marmdownItTokensToMarkdownDocument(state.tokens, {
       startLine: state.parsedLines,
       preservePositions: opts.streaming ?? false,
       headingIds: options.headingIds ?? true,
     })
 
     if (autoUnwrap) {
-      nodes = nodes.map((node: ComarkNode) => applyAutoUnwrap(node))
+      nodes = nodes.map((node: Node) => applyAutoUnwrap(node))
     }
 
     if (unwrapTags.length > 0) {
@@ -195,7 +195,7 @@ export function createParse<const TPlugins extends readonly ComarkPlugin<any, an
  *
  * @param markdown - The markdown/Comark content as a string
  * @param options - Parser options
- * @returns MarkdownTree - The parsed AST tree
+ * @returns MarkdownDocument - The parsed AST tree
  *
  * @example
  * ```typescript
@@ -227,7 +227,7 @@ export async function parse<const TPlugins extends readonly ComarkPlugin<any, an
   markdown: string,
   options: ParseOptions<TPlugins> = {} as ParseOptions<TPlugins>
 ): Promise<
-  MarkdownTree<ResolvedMeta<MergePluginMeta<TPlugins>>, ResolvedFrontmatter<MergePluginFrontmatter<TPlugins>>>
+  MarkdownDocument<ResolvedMeta<MergePluginMeta<TPlugins>>, ResolvedFrontmatter<MergePluginFrontmatter<TPlugins>>>
 > {
   const parse = createParse(options)
 

@@ -1,4 +1,4 @@
-import type { MarkdownTree, RenderOptions } from 'comark'
+import type { MarkdownDocument, RenderOptions } from 'comark'
 import { render } from 'comark/render'
 import { handlers as defaultHandlers } from './handlers/index.ts'
 
@@ -34,7 +34,7 @@ export interface RenderANSIOptions extends RenderOptions {
  * ```
  */
 export async function renderANSI(
-  tree: MarkdownTree | { nodes: MarkdownTree['nodes'] },
+  tree: MarkdownDocument | { nodes: MarkdownDocument['nodes'] },
   options?: RenderANSIOptions
 ): Promise<string> {
   const colors = options?.colors ?? (typeof process !== 'undefined' ? !process.env.NO_COLOR : true)

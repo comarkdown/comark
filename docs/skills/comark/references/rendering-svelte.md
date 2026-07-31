@@ -186,7 +186,7 @@ Use `import.meta.glob` when you want the manifest to cover every Svelte componen
 
 Omit the boundary `pending` snippet when you want SvelteKit SSR to wait and include the resolved lazy components in the initial HTML.
 
-Use eager/static components with `MarkdownParsed` when you need stable SSR without Svelte's experimental async support.
+Use eager/static components with `MarkdownDocument` when you need stable SSR without Svelte's experimental async support.
 
 ---
 

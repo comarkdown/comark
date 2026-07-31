@@ -37,12 +37,12 @@ const result = await parse(content)
 ### Result Structure
 
 ```typescript
-interface MarkdownTree {
-  nodes: ComarkNode[]                   // Parsed AST nodes
+interface MarkdownDocument {
+  nodes: Node[]                   // Parsed AST nodes
   frontmatter: Record<string, any>      // YAML frontmatter data
   meta: {
     toc?: any                           // Table of contents (from toc plugin)
-    summary?: ComarkNode[]              // Summary content (from summary plugin)
+    summary?: Node[]              // Summary content (from summary plugin)
     [key: string]: any                  // Other plugin metadata
   }
 }
@@ -203,19 +203,19 @@ Comark uses a lightweight array-based AST structure.
 ### Markdown AST Format
 
 ```typescript
-interface MarkdownTree {
-  nodes: ComarkNode[]                   // Parsed AST nodes
+interface MarkdownDocument {
+  nodes: Node[]                   // Parsed AST nodes
   frontmatter: Record<string, any>      // YAML frontmatter data
   meta: {
     toc?: any                           // Table of contents (from toc plugin)
-    summary?: ComarkNode[]              // Summary content (from summary plugin)
+    summary?: Node[]              // Summary content (from summary plugin)
     [key: string]: any                  // Other plugin metadata
   }
 }
 
-type ComarkNode =
+type Node =
   | string                    // Text nodes
-  | [tag: string, props?: Record<string, any>, ...children: ComarkNode[]]
+  | [tag: string, props?: Record<string, any>, ...children: Node[]]
 ```
 
 ### Node Structure

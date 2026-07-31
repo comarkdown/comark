@@ -1,5 +1,5 @@
 import type { State } from 'comark/render'
-import type { MarkdownElement, ComarkNode } from 'comark'
+import type { ElementNode, Node } from 'comark'
 import { comarkAttributes, userBlockAttrs } from '../attributes.ts'
 
 type Alignment = 'left' | 'center' | 'right' | null
@@ -28,7 +28,7 @@ function getAlignment(attributes: Record<string, unknown>): Alignment {
 }
 
 // Helper function to extract text content from a cell
-async function getCellContent(cell: ComarkNode, state: State): Promise<string> {
+async function getCellContent(cell: Node, state: State): Promise<string> {
   if (typeof cell === 'string') {
     return escapePipes(cell)
   }
@@ -39,7 +39,7 @@ async function getCellContent(cell: ComarkNode, state: State): Promise<string> {
     if (typeof child === 'string') {
       content += child
     } else {
-      content += await state.one(child, state, cell as unknown as MarkdownElement)
+      content += await state.one(child, state, cell as unknown as ElementNode)
     }
   }
 
@@ -54,7 +54,7 @@ function escapePipes(text: string): string {
 }
 
 // Helper function to get all rows from thead/tbody
-function getRows(element: ComarkNode): MarkdownElement[] {
+function getRows(element: Node): ElementNode[] {
   if (typeof element === 'string') {
     return []
   }
@@ -68,26 +68,26 @@ function getRows(element: ComarkNode): MarkdownElement[] {
 
   // If it's thead/tbody, extract tr elements
   if (tag === 'thead' || tag === 'tbody') {
-    return children.filter((child) => typeof child !== 'string' && child[0] === 'tr') as MarkdownElement[]
+    return children.filter((child) => typeof child !== 'string' && child[0] === 'tr') as ElementNode[]
   }
 
   return []
 }
 
 // Helper function to get cells from a row
-function getCells(row: MarkdownElement): MarkdownElement[] {
+function getCells(row: ElementNode): ElementNode[] {
   const [, , ...children] = row
   return children.filter(
     (child) => typeof child !== 'string' && (child[0] === 'th' || child[0] === 'td')
-  ) as MarkdownElement[]
+  ) as ElementNode[]
 }
 
-export async function table(node: MarkdownElement, state: State) {
+export async function table(node: ElementNode, state: State) {
   const [, , ...children] = node
 
   // Extract thead and tbody
-  let headerRows: MarkdownElement[] = []
-  let bodyRows: MarkdownElement[] = []
+  let headerRows: ElementNode[] = []
+  let bodyRows: ElementNode[] = []
 
   for (const child of children) {
     if (typeof child === 'string') continue
@@ -112,8 +112,8 @@ export async function table(node: MarkdownElement, state: State) {
   if (headerRows.length === 0 && bodyRows.length > 0) {
     const firstRow = bodyRows[0]
     const cells = getCells(firstRow)
-    const headerCells: MarkdownElement[] = cells.map((_, i) => ['th', {}, `Column ${i + 1}`] as MarkdownElement)
-    headerRows = [['tr', {}, ...headerCells] as MarkdownElement]
+    const headerCells: ElementNode[] = cells.map((_, i) => ['th', {}, `Column ${i + 1}`] as ElementNode)
+    headerRows = [['tr', {}, ...headerCells] as ElementNode]
   }
 
   if (headerRows.length === 0) {
@@ -198,27 +198,27 @@ export async function table(node: MarkdownElement, state: State) {
   return result + '\n'
 }
 
-export function thead(_node: MarkdownElement, _state: State) {
+export function thead(_node: ElementNode, _state: State) {
   // thead is handled by the table handler
   return ''
 }
 
-export function tbody(_node: MarkdownElement, _state: State) {
+export function tbody(_node: ElementNode, _state: State) {
   // tbody is handled by the table handler
   return ''
 }
 
-export function tr(_node: MarkdownElement, _state: State) {
+export function tr(_node: ElementNode, _state: State) {
   // tr is handled by the table handler
   return ''
 }
 
-export function th(_node: MarkdownElement, _state: State) {
+export function th(_node: ElementNode, _state: State) {
   // th is handled by the table handler
   return ''
 }
 
-export function td(_node: MarkdownElement, _state: State) {
+export function td(_node: ElementNode, _state: State) {
   // td is handled by the table handler
   return ''
 }

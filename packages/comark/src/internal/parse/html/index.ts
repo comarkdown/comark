@@ -1,5 +1,5 @@
 import { Parser } from 'htmlparser2'
-import type { ComarkNode } from 'comark'
+import type { Node } from 'comark'
 
 export const VOID_ELEMENTS = new Set([
   'area',
@@ -78,19 +78,19 @@ export function parseInlineHtmlTag(html: string): HtmlTagInfo | null {
 }
 
 /**
- * Parse a full HTML string into ComarkNodes using htmlparser2.
+ * Parse a full HTML string into Nodes using htmlparser2.
  * Handles nested elements, text, void elements, and comments.
  */
-export function htmlToComarkNodes(html: string): ComarkNode[] {
-  const root: ComarkNode[] = []
-  const stack: { tag: string; attrs: Record<string, unknown>; children: ComarkNode[] }[] = []
+export function htmlToNodes(html: string): Node[] {
+  const root: Node[] = []
+  const stack: { tag: string; attrs: Record<string, unknown>; children: Node[] }[] = []
 
   const parser = new Parser(
     {
       onopentag(name, attribs) {
         const attrs = attribsToComarkAttrs(attribs)
         if (VOID_ELEMENTS.has(name)) {
-          const node = [name, attrs] as ComarkNode
+          const node = [name, attrs] as Node
           if (stack.length > 0) {
             stack[stack.length - 1].children.push(node)
           } else {
@@ -125,8 +125,8 @@ export function htmlToComarkNodes(html: string): ComarkNode[] {
             const frame = stack.pop()!
             const node =
               frame.children.length > 0
-                ? ([frame.tag, frame.attrs, ...frame.children] as ComarkNode)
-                : ([frame.tag, frame.attrs] as ComarkNode)
+                ? ([frame.tag, frame.attrs, ...frame.children] as Node)
+                : ([frame.tag, frame.attrs] as Node)
             if (stack.length > 0) {
               stack[stack.length - 1].children.push(node)
             } else {
@@ -137,7 +137,7 @@ export function htmlToComarkNodes(html: string): ComarkNode[] {
       },
 
       oncomment(data) {
-        const node = [null, {}, data] as unknown as ComarkNode
+        const node = [null, {}, data] as unknown as Node
         if (stack.length > 0) {
           stack[stack.length - 1].children.push(node)
         } else {

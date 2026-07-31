@@ -2,9 +2,9 @@ import { describe, expect, it, vi } from 'vitest'
 import { computed, createSSRApp, defineComponent, h } from 'vue'
 import { renderToString } from '@vue/server-renderer'
 import { parse } from 'comark'
-import { MarkdownParsed } from '../src/components/MarkdownParsed'
+import { MarkdownDocument } from '../src/components/MarkdownDocument'
 
-describe('MarkdownParsed Error Handling', () => {
+describe('MarkdownDocument Error Handling', () => {
   it('should handle component errors gracefully without crashing', async () => {
     const markdown = `::error-component
 Some content
@@ -28,7 +28,7 @@ Some content
       const app = createSSRApp({
         setup() {
           return () =>
-            h(MarkdownParsed, {
+            h(MarkdownDocument, {
               value: result,
               components: {
                 'error-component': ErrorComponent,
@@ -80,7 +80,7 @@ Some content
       const app = createSSRApp({
         setup() {
           return () =>
-            h(MarkdownParsed, {
+            h(MarkdownDocument, {
               value: result,
               components: {
                 'required-prop-test': RequiredPropTest,
@@ -132,7 +132,7 @@ Good content
       const app = createSSRApp({
         setup() {
           return () =>
-            h(MarkdownParsed, {
+            h(MarkdownDocument, {
               value: result,
               components: {
                 'error-component': ErrorComponent,

@@ -1,8 +1,8 @@
 import React from 'react'
 import { parse } from 'comark'
-import type { MarkdownTree, ParseOptions } from 'comark'
-import { isMarkdownTree } from 'comark/utils'
-import { MarkdownParsed } from './MarkdownParsed.tsx'
+import type { MarkdownDocument as MarkdownDocumentType, ParseOptions } from 'comark'
+import { isMarkdownDocument } from 'comark/utils'
+import { MarkdownDocument } from './MarkdownDocument.tsx'
 import { MarkdownClient } from './MarkdownClient.tsx'
 import { warnDeprecated } from '../internal/deprecation.ts'
 
@@ -13,9 +13,9 @@ export interface MarkdownProps {
   children?: React.ReactNode
 
   /**
-   * The markdown content to parse and render, or a pre-parsed MarkdownTree
+   * The markdown content to parse and render, or a pre-parsed MarkdownDocument
    */
-  value?: string | MarkdownTree
+  value?: string | MarkdownDocumentType
 
   /**
    * The markdown content to parse and render
@@ -128,9 +128,9 @@ export async function Markdown({
   }
 
   // Pre-parsed tree — skip parse and render directly
-  if (isMarkdownTree(value)) {
+  if (isMarkdownDocument(value)) {
     return (
-      <MarkdownParsed
+      <MarkdownDocument
         value={value}
         components={customComponents}
         componentsManifest={componentsManifest}
@@ -166,7 +166,7 @@ export async function Markdown({
   const parsed = await parse(source, { ...parseOptions, plugins })
 
   return (
-    <MarkdownParsed
+    <MarkdownDocument
       value={parsed}
       components={customComponents}
       componentsManifest={componentsManifest}

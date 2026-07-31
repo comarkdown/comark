@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { render } from 'vitest-browser-svelte'
 import { parse } from 'comark'
-import MarkdownParsed from '../src/components/MarkdownParsed.svelte'
+import MarkdownDocument from '../src/components/MarkdownDocument.svelte'
 import MarkdownNode from '../src/components/MarkdownNode.svelte'
 import Alert from './test-components/Alert.svelte'
 import CardWithHeaderFooter from './test-components/CardWithHeaderFooter.svelte'
@@ -67,10 +67,10 @@ describe('MarkdownNode', () => {
   })
 })
 
-describe('MarkdownParsed', () => {
+describe('MarkdownDocument', () => {
   it('renders a heading with inline markup', async () => {
     const tree = await parse('# Hello **World**')
-    const screen = await render(MarkdownParsed, { value: tree })
+    const screen = await render(MarkdownDocument, { value: tree })
     const heading = screen.getByRole('heading', {
       name: 'Hello World',
       level: 1,
@@ -81,7 +81,7 @@ describe('MarkdownParsed', () => {
 
   it('renders multiple block elements', async () => {
     const tree = await parse('# Heading\n\nA paragraph\n\n- item 1\n- item 2')
-    const screen = await render(MarkdownParsed, { value: tree })
+    const screen = await render(MarkdownDocument, { value: tree })
 
     await expect.element(screen.getByRole('heading', { name: 'Heading', level: 1 })).toBeInTheDocument()
     await expect.element(screen.getByText('A paragraph')).toBeInTheDocument()
@@ -94,7 +94,7 @@ describe('MarkdownParsed', () => {
 
   it('renders empty tree as empty wrapper', async () => {
     const tree = { nodes: [], frontmatter: {}, meta: {} }
-    const screen = await render(MarkdownParsed, { value: tree })
+    const screen = await render(MarkdownDocument, { value: tree })
     const wrapper = screen.container.querySelector<HTMLElement>('.comark-content')!
     expect(wrapper).not.toBeNull()
     expect(wrapper.children.length).toBe(0)
@@ -102,39 +102,39 @@ describe('MarkdownParsed', () => {
 
   it('applies custom class to wrapper', async () => {
     const tree = await parse('hello')
-    const screen = await render(MarkdownParsed, { value: tree, class: 'prose' })
+    const screen = await render(MarkdownDocument, { value: tree, class: 'prose' })
     const wrapper = screen.container.querySelector<HTMLElement>('.comark-content')!
     await expect.element(wrapper).toHaveClass('prose')
   })
 
   it('renders inline code', async () => {
     const tree = await parse('use `const x = 1`')
-    const screen = await render(MarkdownParsed, { value: tree })
+    const screen = await render(MarkdownDocument, { value: tree })
     await expect.element(screen.getByText('const x = 1')).toBeInTheDocument()
   })
 
   it('renders links with href', async () => {
     const tree = await parse('[click](https://example.com)')
-    const screen = await render(MarkdownParsed, { value: tree })
+    const screen = await render(MarkdownDocument, { value: tree })
     await expect.element(screen.getByRole('link', { name: 'click' })).toHaveAttribute('href', 'https://example.com')
   })
 
   it('renders images with src and alt', async () => {
     const tree = await parse('![alt text](image.png)')
-    const screen = await render(MarkdownParsed, { value: tree })
+    const screen = await render(MarkdownDocument, { value: tree })
     await expect.element(screen.getByAltText('alt text')).toHaveAttribute('src', 'image.png')
   })
 
   it('renders blockquotes', async () => {
     const tree = await parse('> quoted text')
-    const screen = await render(MarkdownParsed, { value: tree })
+    const screen = await render(MarkdownDocument, { value: tree })
     expect(screen.container.querySelector('blockquote')).not.toBeNull()
     await expect.element(screen.getByText('quoted text')).toBeInTheDocument()
   })
 
   it('renders emphasis and strong', async () => {
     const tree = await parse('*em* and **strong**')
-    const screen = await render(MarkdownParsed, { value: tree })
+    const screen = await render(MarkdownDocument, { value: tree })
     await expect.element(screen.getByText('em')).toBeInTheDocument()
     await expect.element(screen.getByText('strong')).toBeInTheDocument()
   })
@@ -143,7 +143,7 @@ describe('MarkdownParsed', () => {
 describe('custom components', () => {
   it('resolves custom component for MDC syntax', async () => {
     const tree = await parse('::alert{type="warning"}\nWatch out!\n::')
-    const screen = await render(MarkdownParsed, {
+    const screen = await render(MarkdownDocument, {
       value: tree,
       components: { alert: Alert },
     })
@@ -153,20 +153,20 @@ describe('custom components', () => {
 
   it('resolves component by PascalCase key', async () => {
     const tree = await parse('::alert{type="info"}\nInfo message\n::')
-    const screen = await render(MarkdownParsed, { value: tree, components: { Alert } })
+    const screen = await render(MarkdownDocument, { value: tree, components: { Alert } })
     await expect.element(screen.getByRole('alert')).toHaveTextContent('Info message')
     await expect.element(screen.getByRole('alert')).toHaveClass('alert-info')
   })
 
   it('resolves Prose-prefixed component for native tags', async () => {
     const tree = await parse('# Custom Heading')
-    const screen = await render(MarkdownParsed, { value: tree, components: { ProseH1 } })
+    const screen = await render(MarkdownDocument, { value: tree, components: { ProseH1 } })
     await expect.element(screen.getByRole('heading', { name: 'Custom Heading', level: 1 })).toHaveClass('prose-heading')
   })
 
   it('renders children inside custom components', async () => {
     const tree = await parse('::alert{type="info"}\n**Bold** text\n::')
-    const screen = await render(MarkdownParsed, {
+    const screen = await render(MarkdownDocument, {
       value: tree,
       components: { alert: Alert },
     })
@@ -181,7 +181,7 @@ Default slot content.
 #footer
 Footer slot content.
 ::`)
-    const screen = await render(MarkdownParsed, {
+    const screen = await render(MarkdownDocument, {
       value: tree,
       components: { card: CardWithFooter },
     })
@@ -203,7 +203,7 @@ Header slot content.
 #footer
 Footer slot content.
 ::`)
-    const screen = await render(MarkdownParsed, {
+    const screen = await render(MarkdownDocument, {
       value: tree,
       components: { card: CardWithHeaderFooter },
     })
@@ -223,7 +223,7 @@ Footer slot content.
 
   it('resolves custom components from componentsManifest', async () => {
     const tree = await parse('::alert{type="warning"}\nLazy content\n::')
-    const screen = await render(MarkdownParsed, {
+    const screen = await render(MarkdownDocument, {
       value: tree,
       componentsManifest: (name: string) => {
         if (name === 'alert') {
@@ -238,7 +238,7 @@ Footer slot content.
 
   it('falls back to native element when no component matches', async () => {
     const tree = await parse('::alert{type="info"}\ncontent\n::')
-    const screen = await render(MarkdownParsed, { value: tree, components: {} })
+    const screen = await render(MarkdownDocument, { value: tree, components: {} })
     const alert = screen.container.querySelector<HTMLElement>('alert')!
     expect(alert).not.toBeNull()
     await expect.element(alert).toHaveTextContent('content')

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { render } from 'vitest-browser-svelte'
 import { parse } from 'comark'
 import Markdown from '../src/components/Markdown.svelte'
-import MarkdownParsed from '../src/components/MarkdownParsed.svelte'
+import MarkdownDocument from '../src/components/MarkdownDocument.svelte'
 import Alert from './test-components/Alert.svelte'
 
 describe('streaming mode', () => {
@@ -152,10 +152,10 @@ describe('streaming mode', () => {
   })
 })
 
-describe('streaming with MarkdownParsed', () => {
+describe('streaming with MarkdownDocument', () => {
   it('shows and removes caret based on streaming prop', async () => {
     const tree = await parse('Hello **World**')
-    const screen = await render(MarkdownParsed, {
+    const screen = await render(MarkdownDocument, {
       value: tree,
       streaming: true,
       caret: { class: 'streaming-caret' },
@@ -175,7 +175,7 @@ describe('streaming with MarkdownParsed', () => {
 
   it('updates tree and reflects new content', async () => {
     let tree = await parse('First')
-    const screen = await render(MarkdownParsed, { value: tree })
+    const screen = await render(MarkdownDocument, { value: tree })
 
     await expect.element(screen.getByText('First')).toBeInTheDocument()
 

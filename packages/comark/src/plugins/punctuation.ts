@@ -1,4 +1,4 @@
-import type { ComarkNode } from 'comark'
+import type { Node } from 'comark'
 import { defineComarkPlugin } from '../utils/helpers.ts'
 
 export interface PunctuationOptions {
@@ -267,7 +267,7 @@ export default defineComarkPlugin((options: PunctuationOptions = {}) => {
   return {
     name: 'punctuation',
     post(state) {
-      function walkNodes(nodes: ComarkNode[], startIndex: number, skip: boolean): void {
+      function walkNodes(nodes: Node[], startIndex: number, skip: boolean): void {
         for (let i = startIndex; i < nodes.length; i++) {
           const node = nodes[i]
 
@@ -290,7 +290,7 @@ export default defineComarkPlugin((options: PunctuationOptions = {}) => {
           }
 
           if (Array.isArray(node) && node[0] != null) {
-            walkNodes(node as ComarkNode[], 2, skip || SKIP_TAGS.has(node[0] as string))
+            walkNodes(node as Node[], 2, skip || SKIP_TAGS.has(node[0] as string))
           }
         }
       }

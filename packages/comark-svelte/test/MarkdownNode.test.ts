@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { render } from 'svelte/server'
 import { parse } from 'comark'
-import MarkdownParsed from '../src/components/MarkdownParsed.svelte'
+import MarkdownDocument from '../src/components/MarkdownDocument.svelte'
 import MarkdownNode from '../src/components/MarkdownNode.svelte'
 import MarkdownAsync from '../src/async/MarkdownAsync.svelte'
 import Alert from './test-components/Alert.svelte'
@@ -134,10 +134,10 @@ describe('MarkdownNode', () => {
   })
 })
 
-describe('MarkdownParsed', () => {
+describe('MarkdownDocument', () => {
   it('renders a heading with inline markup', async () => {
     const tree = await parse('# Hello **World**')
-    const { body } = render(MarkdownParsed, { props: { value: tree } })
+    const { body } = render(MarkdownDocument, { props: { value: tree } })
     const output = html(body)
     expect(output).toContain('<h1 id="hello-world">')
     expect(output).toContain('Hello <strong>World</strong>')
@@ -147,7 +147,7 @@ describe('MarkdownParsed', () => {
 
   it('renders multiple block-level elements', async () => {
     const tree = await parse('# Heading\n\nA paragraph\n\n- item 1\n- item 2')
-    const { body } = render(MarkdownParsed, { props: { value: tree } })
+    const { body } = render(MarkdownDocument, { props: { value: tree } })
     const output = html(body)
     expect(output).toContain('<h1')
     expect(output).toContain('<p>A paragraph</p>')
@@ -158,13 +158,13 @@ describe('MarkdownParsed', () => {
 
   it('renders an empty tree as an empty wrapper', () => {
     const tree = { nodes: [], frontmatter: {}, meta: {} }
-    const { body } = render(MarkdownParsed, { props: { value: tree } })
+    const { body } = render(MarkdownDocument, { props: { value: tree } })
     expect(html(body)).toBe('<div class="comark-content "></div>')
   })
 
   it('applies a custom class to the wrapper', async () => {
     const tree = await parse('hello')
-    const { body } = render(MarkdownParsed, {
+    const { body } = render(MarkdownDocument, {
       props: { value: tree, class: 'prose' },
     })
     const output = html(body)
@@ -174,25 +174,25 @@ describe('MarkdownParsed', () => {
 
   it('renders inline code', async () => {
     const tree = await parse('use `const x = 1`')
-    const { body } = render(MarkdownParsed, { props: { value: tree } })
+    const { body } = render(MarkdownDocument, { props: { value: tree } })
     expect(html(body)).toContain('<code>const x = 1</code>')
   })
 
   it('renders links', async () => {
     const tree = await parse('[click me](https://example.com)')
-    const { body } = render(MarkdownParsed, { props: { value: tree } })
+    const { body } = render(MarkdownDocument, { props: { value: tree } })
     expect(html(body)).toContain('<a href="https://example.com">click me</a>')
   })
 
   it('renders images', async () => {
     const tree = await parse('![alt text](image.png)')
-    const { body } = render(MarkdownParsed, { props: { value: tree } })
+    const { body } = render(MarkdownDocument, { props: { value: tree } })
     expect(html(body)).toContain('<img src="image.png" alt="alt text">')
   })
 
   it('renders blockquotes', async () => {
     const tree = await parse('> quoted text')
-    const { body } = render(MarkdownParsed, { props: { value: tree } })
+    const { body } = render(MarkdownDocument, { props: { value: tree } })
     const output = html(body)
     expect(output).toContain('<blockquote>')
     expect(output).toContain('quoted text')
@@ -200,7 +200,7 @@ describe('MarkdownParsed', () => {
 
   it('renders emphasis and strong', async () => {
     const tree = await parse('*em* and **strong**')
-    const { body } = render(MarkdownParsed, { props: { value: tree } })
+    const { body } = render(MarkdownDocument, { props: { value: tree } })
     const output = html(body)
     expect(output).toContain('<em>em</em>')
     expect(output).toContain('<strong>strong</strong>')
@@ -210,7 +210,7 @@ describe('MarkdownParsed', () => {
 describe('custom components', () => {
   it('resolves custom component for MDC syntax', async () => {
     const tree = await parse('::alert{type="warning"}\nWatch out!\n::')
-    const { body } = render(MarkdownParsed, {
+    const { body } = render(MarkdownDocument, {
       props: { value: tree, components: { alert: Alert } },
     })
     const output = html(body)
@@ -220,7 +220,7 @@ describe('custom components', () => {
 
   it('resolves component by PascalCase key', async () => {
     const tree = await parse('::alert{type="info"}\nInfo message\n::')
-    const { body } = render(MarkdownParsed, {
+    const { body } = render(MarkdownDocument, {
       props: { value: tree, components: { Alert } },
     })
     const output = html(body)
@@ -230,7 +230,7 @@ describe('custom components', () => {
 
   it('resolves Prose-prefixed component for native tags', async () => {
     const tree = await parse('# Custom Heading')
-    const { body } = render(MarkdownParsed, {
+    const { body } = render(MarkdownDocument, {
       props: { value: tree, components: { ProseH1 } },
     })
     const output = html(body)
@@ -240,7 +240,7 @@ describe('custom components', () => {
 
   it('renders children inside custom components', async () => {
     const tree = await parse('::alert{type="info"}\n**Bold** text\n::')
-    const { body } = render(MarkdownParsed, {
+    const { body } = render(MarkdownDocument, {
       props: { value: tree, components: { alert: Alert } },
     })
     const output = html(body)
@@ -256,7 +256,7 @@ Default slot content.
 #footer
 Footer slot content.
 ::`)
-    const { body } = render(MarkdownParsed, {
+    const { body } = render(MarkdownDocument, {
       props: { value: tree, components: { card: CardWithFooter } },
     })
     const output = html(body)
@@ -276,7 +276,7 @@ Header slot content.
 #footer
 Footer slot content.
 ::`)
-    const { body } = render(MarkdownParsed, {
+    const { body } = render(MarkdownDocument, {
       props: { value: tree, components: { card: CardWithHeaderFooter } },
     })
     const output = html(body)
@@ -288,7 +288,7 @@ Footer slot content.
 
   it('resolves eager componentsManifest entries during SSR', async () => {
     const tree = await parse('::alert{type="warning"}\nLazy content\n::')
-    const { body } = render(MarkdownParsed, {
+    const { body } = render(MarkdownDocument, {
       props: {
         value: tree,
         componentsManifest: (name: string) => {
@@ -356,7 +356,7 @@ Footer slot content.
     })
 
     const tree = await parse('::card{title="Eager" variant="primary"}\nEager content\n::')
-    const { body } = render(MarkdownParsed, {
+    const { body } = render(MarkdownDocument, {
       props: {
         value: tree,
         componentsManifest: (name: string) => {
@@ -375,7 +375,7 @@ Footer slot content.
 
   it('falls back to native element when no component matches', async () => {
     const tree = await parse('::alert{type="info"}\ncontent\n::')
-    const { body } = render(MarkdownParsed, {
+    const { body } = render(MarkdownDocument, {
       props: { value: tree, components: {} },
     })
     const output = html(body)

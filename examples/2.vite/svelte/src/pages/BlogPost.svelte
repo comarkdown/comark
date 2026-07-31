@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { MarkdownParsed } from '@comark/svelte'
+  import { MarkdownDocument } from '@comark/svelte'
   import { getPost, type Post } from '../lib/posts'
   import Alert from '../components/Alert.svelte'
 
@@ -36,6 +36,6 @@
         </div>
       </div>
     </header>
-    <MarkdownParsed value={post.tree} components={{ Alert }} />
+    <MarkdownDocument value={post.tree} components={{ Alert }} />
   </article>
 {/if}

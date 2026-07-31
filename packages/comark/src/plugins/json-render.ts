@@ -1,5 +1,5 @@
 import type { Spec, UIElement } from '@json-render/core'
-import type { MarkdownElementAttributes, ComarkNode } from '../types'
+import type { ElementNodeAttributes, Node } from '../types'
 import { defineComarkPlugin } from '../parse.ts'
 import { textContent, visit } from '../utils/index.ts'
 import { parseYaml } from '../internal/yaml.ts'
@@ -18,7 +18,7 @@ function jsonRenderToAst(jrt: Spec | UIElement) {
   return jsonRenderElementToAst(root, tree.elements)
 }
 
-function jsonRenderElementToAst(element: UIElement, elements: Record<string, UIElement>): ComarkNode {
+function jsonRenderElementToAst(element: UIElement, elements: Record<string, UIElement>): Node {
   if (element.type === 'Text') {
     return String(element.props.content)
   }
@@ -85,10 +85,10 @@ export default defineComarkPlugin((_config: JsonRenderConfig = {}) => ({
       state.tree,
       (node) =>
         node[0] === 'pre' &&
-        ((node[1] as MarkdownElementAttributes).language === 'json-render' ||
-          (node[1] as MarkdownElementAttributes).language === 'yaml-render'),
+        ((node[1] as ElementNodeAttributes).language === 'json-render' ||
+          (node[1] as ElementNodeAttributes).language === 'yaml-render'),
       (preNode) => {
-        const language = (preNode[1] as MarkdownElementAttributes).language
+        const language = (preNode[1] as ElementNodeAttributes).language
         try {
           let spec: Spec | UIElement | undefined = undefined
           if (language === 'json-render') {

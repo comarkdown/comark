@@ -1,6 +1,6 @@
 import type { State } from 'comark/render'
-import type { MarkdownElement } from 'comark'
+import type { ElementNode } from 'comark'
 
-export function br(_: MarkdownElement, _state: State) {
+export function br(_: ElementNode, _state: State) {
   return '  \n'
 }

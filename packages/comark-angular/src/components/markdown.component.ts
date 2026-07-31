@@ -8,9 +8,9 @@ import {
   Type,
 } from '@angular/core'
 import { createSerializedParse } from 'comark'
-import type { ParseOptions, MarkdownTree } from 'comark'
-import { isMarkdownTree } from 'comark/utils'
-import { MarkdownParsed } from './markdown-parsed.component.ts'
+import type { ParseOptions, MarkdownDocument as MarkdownDocumentType } from 'comark'
+import { isMarkdownDocument } from 'comark/utils'
+import { MarkdownDocument } from './markdown-document.component.ts'
 import { warnDeprecated } from '../internal/deprecation.ts'
 
 /**
@@ -25,11 +25,11 @@ import { warnDeprecated } from '../internal/deprecation.ts'
 @Component({
   selector: 'comark-markdown',
   standalone: true,
-  imports: [MarkdownParsed],
+  imports: [MarkdownDocument],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (tree) {
-      <comark-markdown-parsed
+      <comark-markdown-document
         [value]="tree"
         [components]="components"
         [streaming]="streaming"
@@ -40,8 +40,8 @@ import { warnDeprecated } from '../internal/deprecation.ts'
   `,
 })
 export class Markdown implements OnChanges {
-  /** The markdown content to parse and render, or a pre-parsed MarkdownTree */
-  @Input() value?: string | MarkdownTree
+  /** The markdown content to parse and render, or a pre-parsed MarkdownDocument */
+  @Input() value?: string | MarkdownDocumentType
 
   /**
    * The markdown content to parse and render
@@ -77,7 +77,7 @@ export class Markdown implements OnChanges {
   /** Additional data to pass to the renderer for :binding resolution */
   @Input() data: Record<string, unknown> = {}
 
-  tree: MarkdownTree | null = null
+  tree: MarkdownDocumentType | null = null
 
   private serializedParse = createSerializedParse({})
 
@@ -109,7 +109,7 @@ export class Markdown implements OnChanges {
 
   private parseMarkdown(): void {
     // Pre-parsed tree — skip parse and render directly
-    if (isMarkdownTree(this.value)) {
+    if (isMarkdownDocument(this.value)) {
       this.tree = this.value
       this.cdr.markForCheck()
       return
@@ -136,11 +136,11 @@ export class Markdown implements OnChanges {
 @Component({
   selector: 'comark',
   standalone: true,
-  imports: [MarkdownParsed],
+  imports: [MarkdownDocument],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (tree) {
-      <comark-markdown-parsed
+      <comark-markdown-document
         [value]="tree"
         [components]="components"
         [streaming]="streaming"

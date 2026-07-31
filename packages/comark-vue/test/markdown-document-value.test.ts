@@ -3,11 +3,11 @@ import { createSSRApp, h, Suspense } from 'vue'
 import { renderToString } from '@vue/server-renderer'
 import { parse } from 'comark'
 import { Markdown } from '../src/components/Markdown.ts'
-import { MarkdownParsed } from '../src/components/MarkdownParsed.ts'
+import { MarkdownDocument } from '../src/components/MarkdownDocument.ts'
 
 /**
- * Markdown accepts either a markdown string or a pre-parsed MarkdownTree on
- * `value`. When a tree is passed it should render via MarkdownParsed without
+ * Markdown accepts either a markdown string or a pre-parsed MarkdownDocument on
+ * `value`. When a tree is passed it should render via MarkdownDocument without
  * re-parsing.
  */
 function renderMarkdownComponent(props: Record<string, unknown>) {
@@ -19,20 +19,20 @@ function renderMarkdownComponent(props: Record<string, unknown>) {
   return renderToString(app as any)
 }
 
-function renderMarkdownParsedComponent(props: Record<string, unknown>) {
+function renderMarkdownDocumentComponent(props: Record<string, unknown>) {
   const app = createSSRApp({
     setup() {
-      return () => h(MarkdownParsed, props)
+      return () => h(MarkdownDocument, props)
     },
   })
   return renderToString(app as any)
 }
 
-describe('Markdown value as MarkdownTree', () => {
-  it('renders a pre-parsed tree the same as MarkdownParsed', async () => {
+describe('Markdown value as MarkdownDocument', () => {
+  it('renders a pre-parsed tree the same as MarkdownDocument', async () => {
     const tree = await parse('# Hello **World**')
     const fromMarkdown = await renderMarkdownComponent({ value: tree })
-    const fromParsed = await renderMarkdownParsedComponent({ value: tree })
+    const fromParsed = await renderMarkdownDocumentComponent({ value: tree })
 
     expect(fromMarkdown).toContain('<h1')
     expect(fromMarkdown).toContain('Hello <strong>World</strong>')

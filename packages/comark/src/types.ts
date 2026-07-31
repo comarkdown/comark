@@ -11,37 +11,17 @@ import type MarkdownIt from 'markdown-it'
 type Writable<T> = [keyof T] extends [never] ? Record<string, any> : T
 // #endregion Utility Types
 
-// #region MarkdownTree
+// #region MarkdownDocument
 
 /**
  * A text node in the Markdown AST.
  */
-export type MarkdownText = string
+export type TextNode = string
 
 /**
- * @deprecated Use `MarkdownText` instead — same type, renamed for consistency with `MarkdownTree`.
- * `ComarkText` will be removed in a future major version.
+ * Attributes bag on an element node (props + internal `$` meta).
  */
-export type ComarkText = MarkdownText
-
-/**
- * A comment node in the Markdown AST (`<!-- … -->`).
- * @param null - Null tag marks a comment
- * @param MarkdownElementAttributes - Comment attributes
- * @param string - Comment content
- */
-export type MarkdownComment = [null, MarkdownElementAttributes, string]
-
-/**
- * @deprecated Use `MarkdownComment` instead — same type, renamed for consistency with `MarkdownTree`.
- * `ComarkComment` will be removed in a future major version.
- */
-export type ComarkComment = MarkdownComment
-
-/**
- * Attributes bag on a Markdown element (props + internal `$` meta).
- */
-export type MarkdownElementAttributes = {
+export type ElementNodeAttributes = {
   [key: string]: unknown
 
   $?: {
@@ -52,49 +32,77 @@ export type MarkdownElementAttributes = {
 }
 
 /**
- * @deprecated Use `MarkdownElementAttributes` instead — same type, renamed for consistency with `MarkdownTree`.
- * `ComarkElementAttributes` will be removed in a future major version.
+ * A comment node in the Markdown AST (`<!-- … -->`).
+ * @param null - Null tag marks a comment
+ * @param ElementNodeAttributes - Comment attributes
+ * @param string - Comment content
  */
-export type ComarkElementAttributes = MarkdownElementAttributes
+export type CommentNode = [null, ElementNodeAttributes, string]
 
 /**
  * An element node in the Markdown AST: `[tag, attrs, ...children]`.
  */
-export type MarkdownElement = [string, MarkdownElementAttributes, ...ComarkNode[]]
-
-/**
- * @deprecated Use `MarkdownElement` instead — same type, renamed for consistency with `MarkdownTree`.
- * `ComarkElement` will be removed in a future major version.
- */
-export type ComarkElement = MarkdownElement
+export type ElementNode = [string, ElementNodeAttributes, ...Node[]]
 
 /**
  * A node in the Markdown AST — element, text, or comment.
  *
- * `MarkdownElement` | `MarkdownText` | `MarkdownComment`
+ * `ElementNode` | `TextNode` | `CommentNode`
  */
-export type ComarkNode = MarkdownElement | MarkdownText | MarkdownComment
+export type Node = ElementNode | TextNode | CommentNode
 
 /**
- * The Markdown tree (parse output / AST root).
- * @param nodes - The nodes of the tree
+ * The Markdown document (parse output / AST root).
+ * @param nodes - The nodes of the document
  * @param frontmatter - The frontmatter data which is the data at the top of the file
- * @param meta - The meta data of tree, it can be used to store additional data for the tree
+ * @param meta - The meta data of the document, it can be used to store additional data
  *
  * The `TMeta` and `TFrontmatter` type parameters allow `parse` / `createParse`
  * to surface plugin-contributed keys with narrow types (see `MergePluginMeta`).
  */
-export interface MarkdownTree<TMeta = Record<string, any>, TFrontmatter = Record<string, any>> {
-  nodes: ComarkNode[]
+export interface MarkdownDocument<TMeta = Record<string, any>, TFrontmatter = Record<string, any>> {
+  nodes: Node[]
   frontmatter: TFrontmatter
   meta: TMeta
 }
 
+// Deprecated aliases from main — keep only original public names.
+
 /**
- * @deprecated Use `MarkdownTree` instead — same type, renamed to describe what it represents.
+ * @deprecated Use `TextNode` instead.
+ * `ComarkText` will be removed in a future major version.
+ */
+export type ComarkText = TextNode
+
+/**
+ * @deprecated Use `ElementNodeAttributes` instead.
+ * `ComarkElementAttributes` will be removed in a future major version.
+ */
+export type ComarkElementAttributes = ElementNodeAttributes
+
+/**
+ * @deprecated Use `CommentNode` instead.
+ * `ComarkComment` will be removed in a future major version.
+ */
+export type ComarkComment = CommentNode
+
+/**
+ * @deprecated Use `ElementNode` instead.
+ * `ComarkElement` will be removed in a future major version.
+ */
+export type ComarkElement = ElementNode
+
+/**
+ * @deprecated Use `Node` instead.
+ * `ComarkNode` will be removed in a future major version.
+ */
+export type ComarkNode = Node
+
+/**
+ * @deprecated Use `MarkdownDocument` instead.
  * `ComarkTree` will be removed in a future major version.
  */
-export type ComarkTree<TMeta = Record<string, any>, TFrontmatter = Record<string, any>> = MarkdownTree<
+export type ComarkTree<TMeta = Record<string, any>, TFrontmatter = Record<string, any>> = MarkdownDocument<
   TMeta,
   TFrontmatter
 >
@@ -177,14 +185,14 @@ export interface Context extends ContextBase {
  * @param parent - The parent node
  * @returns The rendered node
  */
-export type NodeHandler = (node: MarkdownElement, state: State, parent?: MarkdownElement) => string | Promise<string>
+export type NodeHandler = (node: ElementNode, state: State, parent?: ElementNode) => string | Promise<string>
 
 /**
  * A node handler rule that pairs a match predicate with a handler function.
  * When `match` returns true for a node, the associated `handler` is used to render it.
  */
 export type ConditionalNodeHandler = {
-  match: (node: MarkdownElement) => boolean
+  match: (node: ElementNode) => boolean
   handler: NodeHandler
 }
 
@@ -224,17 +232,17 @@ export type State = {
   /**
    * Render children of the node
    */
-  flow: (node: MarkdownElement, state: State, parent?: MarkdownElement) => Promise<string>
+  flow: (node: ElementNode, state: State, parent?: ElementNode) => Promise<string>
 
   /**
    * Render a single node
    */
-  one: (node: ComarkNode, state: State, parent?: MarkdownElement, atLineStart?: boolean) => Promise<string>
+  one: (node: Node, state: State, parent?: ElementNode, atLineStart?: boolean) => Promise<string>
 
   /**
    * Render the input
    */
-  render: (input: ComarkNode[] | MarkdownElement) => Promise<string>
+  render: (input: Node[] | ElementNode) => Promise<string>
 
   /**
    * Apply the context
@@ -324,7 +332,7 @@ export type ComarkParsePreState = {
 
 export type ComarkParsePostState<TMeta = Record<string, any>, TFrontmatter = Record<string, any>> = {
   markdown: string
-  tree: MarkdownTree<TMeta, TFrontmatter>
+  tree: MarkdownDocument<TMeta, TFrontmatter>
   options: ParseOptions
   tokens: unknown[]
 
@@ -498,9 +506,9 @@ export type ComarkParseFnOptions = { streaming?: boolean }
 
 /**
  * Type signature for the async Comark parser function returned by createParse().
- * Accepts a markdown string and optional parsing options, and returns a Promise of MarkdownTree.
+ * Accepts a markdown string and optional parsing options, and returns a Promise of MarkdownDocument.
  */
 export type ComarkParseFn<TMeta = Record<string, any>, TFrontmatter = Record<string, any>> = (
   markdown: string,
   opts?: ComarkParseFnOptions
-) => Promise<MarkdownTree<TMeta, TFrontmatter>>
+) => Promise<MarkdownDocument<TMeta, TFrontmatter>>

@@ -257,7 +257,7 @@ published: true
 ---
 ~~~
 
-Access frontmatter via \`tree.frontmatter\` when using the \`MarkdownParsed\` component.
+Access frontmatter via \`tree.frontmatter\` when using the \`MarkdownDocument\` component.
 
 ---
 

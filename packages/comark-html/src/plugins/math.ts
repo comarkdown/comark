@@ -1,4 +1,4 @@
-import type { MarkdownElement } from 'comark'
+import type { ElementNode } from 'comark'
 import katex from 'katex'
 
 export * from 'comark/plugins/math'
@@ -20,7 +20,7 @@ export { default } from 'comark/plugins/math'
  * })
  * ```
  */
-export const Math = ([, attrs]: MarkdownElement): string => {
+export const Math = ([, attrs]: ElementNode): string => {
   const content = String(attrs.content ?? '')
   const isInline = String(attrs.class ?? '').includes('inline')
 

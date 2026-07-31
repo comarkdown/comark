@@ -265,7 +265,7 @@ Footnote references work inside bold, italic, and other inline formatting:
 
 ## Stringify (Markdown Rendering)
 
-The plugin exports a `Footnote` conditional handler that converts the footnote AST back into standard markdown footnote syntax. This is useful when you want to render a `MarkdownTree` back to markdown and preserve footnotes.
+The plugin exports a `Footnote` conditional handler that converts the footnote AST back into standard markdown footnote syntax. This is useful when you want to render a `MarkdownDocument` back to markdown and preserve footnotes.
 
 ```typescript
 import { parse } from 'comark'

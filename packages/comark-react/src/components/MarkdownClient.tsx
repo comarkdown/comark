@@ -2,13 +2,13 @@
 
 import { use, useDeferredValue, useMemo, Suspense } from 'react'
 import { parse } from 'comark'
-import type { MarkdownTree } from 'comark'
-import { isMarkdownTree } from 'comark/utils'
+import type { MarkdownDocument as MarkdownDocumentType } from 'comark'
+import { isMarkdownDocument } from 'comark/utils'
 import { MarkdownLive } from './MarkdownLive.tsx'
 import type { MarkdownProps } from './Markdown'
 
 interface MarkdownContentProps extends Omit<MarkdownProps, 'value' | 'markdown' | 'children' | 'options' | 'plugins'> {
-  parsePromise: Promise<MarkdownTree>
+  parsePromise: Promise<MarkdownDocumentType>
 }
 
 function MarkdownContent({
@@ -36,7 +36,7 @@ function MarkdownContent({
 }
 
 export function MarkdownClient({ children, value, markdown, options = {}, plugins = [], ...rest }: MarkdownProps) {
-  const content = isMarkdownTree(value)
+  const content = isMarkdownDocument(value)
     ? value
     : children
       ? String(children)
@@ -46,7 +46,7 @@ export function MarkdownClient({ children, value, markdown, options = {}, plugin
   // Note: options/plugins should be stable references (defined outside render or memoized).
   // Pre-parsed trees resolve immediately without calling parse().
   const parsePromise = useMemo(
-    () => (isMarkdownTree(content) ? Promise.resolve(content) : parse(content, { ...options, plugins })),
+    () => (isMarkdownDocument(content) ? Promise.resolve(content) : parse(content, { ...options, plugins })),
     [content]
   )
 
