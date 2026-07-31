@@ -9,7 +9,7 @@ and wrap this component in a `<svelte:boundary>` for pending/error states.
 @example
 ```svelte
 <script>
-  import { MarkdownAsync } from '@comark/svelte'
+  import { MarkdownAsync } from '@comark/svelte/async'
   import Alert from './Alert.svelte'
 
   let content = $state('# Hello World')
