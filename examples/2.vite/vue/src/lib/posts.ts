@@ -1,6 +1,6 @@
 import { parse } from '@comark/vue/parse'
 import highlight from '@comark/vue/plugins/highlight'
-import type { MarkdownDocument } from '@comark/vue'
+import type { MarkdownDocument as Document } from '@comark/vue'
 
 const rawFiles = import.meta.glob('../../content/posts/*.md', {
   query: '?raw',
@@ -17,7 +17,7 @@ export interface PostMeta {
 }
 
 export interface Post extends PostMeta {
-  tree: MarkdownDocument
+  tree: Document
 }
 
 function slugFromPath(path: string): string {
