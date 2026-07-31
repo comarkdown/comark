@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { parse } from '../../src/parse'
+import { parseMarkdown } from '../../src/parse'
 import { renderMarkdown } from '../../src/render'
 import binding, { Binding } from '../../src/plugins/binding'
 import { renderHTMLForTest } from '../utils/render-html'
 
 const parseWithBinding = (md: string, opts: Parameters<typeof binding>[0] = {}) =>
-  parse(md, { plugins: [binding(opts)] })
+  parseMarkdown(md, { plugins: [binding(opts)] })
 
 describe('binding plugin — parsing', () => {
   it('captures `{{ path }}` as a self-closing <binding> element with :value', async () => {

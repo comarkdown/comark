@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { parse } from '@comark/react/parse'
+import { parseMarkdown } from 'comark'
 import highlight from '@comark/react/plugins/highlight'
 import { MarkdownDocument } from '@comark/react'
 import type { MarkdownDocument as Document } from '@comark/react'
@@ -160,7 +160,7 @@ export default function Syntax() {
   const [tree, setTree] = useState<Document | null>(null)
 
   useEffect(() => {
-    parse(markdown, { plugins: [highlight()] }).then(setTree)
+    parseMarkdown(markdown, { plugins: [highlight()] }).then(setTree)
   }, [])
 
   if (!tree) return null

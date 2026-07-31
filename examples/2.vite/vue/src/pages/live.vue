@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { createComarkContext, parse } from 'comark'
+import { createComarkContext, parseMarkdown } from 'comark'
 import { MarkdownDocument } from '@comark/vue'
 
 // A driver installs a context on globalThis once; every <MarkdownDocument :id>
 // then auto-subscribes. Here the buttons act as the driver — but it could just
 // as well be HMR, a collab socket, an agent, or devtools.
 const ctx = createComarkContext()
-const tree = await parse(`# Live document
+const tree = await parseMarkdown(`# Live document
 
 This paragraph is rendered from a **MarkdownDocument** wired to \`globalThis.comarkContext\`.
 
@@ -24,16 +24,20 @@ const doc = ctx.get('demo', tree) // seed the context so patches have a base tre
 let counter = 0
 
 async function rewriteHeading() {
-  doc.patch({ op: 'replace', path: [0], node: (await parse(`# Rewritten heading (${++counter})`)).nodes[0]! })
+  doc.patch({ op: 'replace', path: [0], node: (await parseMarkdown(`# Rewritten heading (${++counter})`)).nodes[0]! })
 }
 
 async function appendParagraph() {
-  doc.patch({ op: 'insert', path: [99], node: (await parse(`A paragraph appended at ${++counter}.`)).nodes[0]! })
+  doc.patch({
+    op: 'insert',
+    path: [99],
+    node: (await parseMarkdown(`A paragraph appended at ${++counter}.`)).nodes[0]!,
+  })
 }
 
 async function reset() {
   counter = 0
-  doc.set(await parse('# Live document\n\nReset. Drive me again.'))
+  doc.set(await parseMarkdown('# Live document\n\nReset. Drive me again.'))
 }
 
 // @ts-expect-error - parse is defined in the global scope

@@ -1,4 +1,4 @@
-import { parse } from '@comark/svelte/parse'
+import { parseMarkdown } from 'comark'
 import highlight from '@comark/svelte/plugins/highlight'
 import type { MarkdownDocument } from 'comark'
 
@@ -29,7 +29,7 @@ export async function getAllPosts(): Promise<PostMeta[]> {
 
   for (const [path, content] of Object.entries(rawFiles)) {
     const slug = slugFromPath(path)
-    const tree = await parse(content)
+    const tree = await parseMarkdown(content)
     const fm = tree.frontmatter as Record<string, unknown>
 
     posts.push({
@@ -49,7 +49,7 @@ export async function getPost(slug: string): Promise<Post> {
   if (!entry) throw new Error(`Post not found: ${slug}`)
 
   const [, content] = entry
-  const tree = await parse(content, {
+  const tree = await parseMarkdown(content, {
     plugins: [highlight()],
   })
 

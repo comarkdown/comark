@@ -1,5 +1,5 @@
 import type { ParseOptions, RenderOptions } from 'comark'
-import { createParse } from 'comark'
+import { createMarkdownParser } from 'comark'
 import { renderHTML } from './render.ts'
 
 export { renderHTML } from './render.ts'
@@ -28,8 +28,7 @@ export { renderHTML } from './render.ts'
  * ```
  */
 export function createRender(options?: ParseOptions & RenderOptions): (markdown: string) => Promise<string> {
-  const parse = createParse(options)
-
+  const parse = createMarkdownParser(options)
   return async (markdown: string) => {
     const tree = await parse(markdown)
     return await renderHTML(tree, options as RenderOptions)

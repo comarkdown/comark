@@ -13,14 +13,14 @@ Instead of using Astro's built-in remark/rehype pipeline, we use Comark's framew
 
 1. **Define collections** — Use `glob()` loader to load `.md` files with Zod-validated frontmatter
 2. **Get the body** — Access the raw Markdown via `entry.body`
-3. **Parse with Comark** — Call `parse()` to build the AST
+3. **Parse with Comark** — Call `parseMarkdown()` to build the AST
 4. **Render to HTML** — Call `renderHTML()` with custom component renderers
 
 ```ts
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import { renderHTML } from '@comark/html'
 
-const tree = await parse(entry.body)
+const tree = await parseMarkdown(entry.body)
 const html = await renderHTML(tree, {
   components: {
     alert: ([tag, attrs, ...children], { render }) => {
@@ -31,7 +31,7 @@ const html = await renderHTML(tree, {
 ```
 
 ::alert{type="info"}
-Since Astro components run on the server, Comark's `parse()` and `renderHTML()` are called at build time — zero JavaScript is sent to the client.
+Since Astro components run on the server, Comark's `parseMarkdown()` and `renderHTML()` are called at build time — zero JavaScript is sent to the client.
 ::
 
 ## Custom components

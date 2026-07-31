@@ -2,7 +2,7 @@ import { describe, it, expect, beforeAll } from 'vitest'
 import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { parseFrontmatter } from '../src/internal/frontmatter'
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import { renderMarkdown } from 'comark/render'
 import highlight from 'comark/plugins/highlight'
 import type { HighlightOptions } from '../src/plugins/highlight'
@@ -254,7 +254,7 @@ describe('Comark Tests', () => {
           parseOptions.plugins = plugins
         }
 
-        parsedAST = await parse(testCase.input, parseOptions)
+        parsedAST = await parseMarkdown(testCase.input, parseOptions)
       }, parseHookTimeout(testCase))
 
       it('should parse input to AST', () => {
@@ -292,7 +292,7 @@ describe('Comark Tests', () => {
 
 describe('custom components', () => {
   it('renders with custom component handler in markdown', async () => {
-    const tree = await parse('::alert{type="warning"}\nWatch out!\n::')
+    const tree = await parseMarkdown('::alert{type="warning"}\nWatch out!\n::')
     const md = await renderMarkdown(tree, {
       components: {
         alert: async ([, attrs, ...children], { render }) => {
@@ -305,7 +305,7 @@ describe('custom components', () => {
   })
 
   it('renders with custom component handler in html', async () => {
-    const tree = await parse('::alert{type="info"}\nHello!\n::')
+    const tree = await parseMarkdown('::alert{type="info"}\nHello!\n::')
     const html = await renderHTMLForTest(tree, {
       components: {
         alert: async ([, attrs, ...children], { render }) => {
@@ -318,7 +318,7 @@ describe('custom components', () => {
   })
 
   it('renders with conditional handler in markdown', async () => {
-    const tree = await parse('::alert{type="info"}\nInfo\n::\n\n::alert{type="warning"}\nWarning\n::')
+    const tree = await parseMarkdown('::alert{type="info"}\nInfo\n::\n\n::alert{type="warning"}\nWarning\n::')
     const md = await renderMarkdown(tree, {
       components: {
         infoAlert: {
@@ -335,7 +335,7 @@ describe('custom components', () => {
   })
 
   it('renders with conditional handler in html', async () => {
-    const tree = await parse('::alert{type="info"}\nInfo\n::\n\n::alert{type="warning"}\nWarning\n::')
+    const tree = await parseMarkdown('::alert{type="info"}\nInfo\n::\n\n::alert{type="warning"}\nWarning\n::')
     const html = await renderHTMLForTest(tree, {
       components: {
         infoAlert: {

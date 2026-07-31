@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { renderToString } from 'react-dom/server'
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import { MarkdownDocument } from '../src/components/MarkdownDocument'
 import mermaid, { Mermaid } from '../src/plugins/mermaid'
 
@@ -10,7 +10,7 @@ import mermaid, { Mermaid } from '../src/plugins/mermaid'
 
 describe('@comark/react plugins/mermaid — Mermaid component', () => {
   it('applies custom fence classes to the wrapper', async () => {
-    const tree = await parse('```mermaid {.custom}\ngraph TD; A-->B;\n```', { plugins: [mermaid()] })
+    const tree = await parseMarkdown('```mermaid {.custom}\ngraph TD; A-->B;\n```', { plugins: [mermaid()] })
     const html = renderToString(
       <MarkdownDocument
         value={tree}

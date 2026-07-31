@@ -1,8 +1,8 @@
-import { parse } from '@comark/svelte/parse'
+import { parseMarkdown } from 'comark'
 import { stableMarkdown } from '$lib/content'
 
 export const load = async () => {
   return {
-    tree: await parse(stableMarkdown),
+    tree: await parseMarkdown(stableMarkdown),
   }
 }

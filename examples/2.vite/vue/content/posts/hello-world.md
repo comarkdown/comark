@@ -21,10 +21,10 @@ This alert is rendered using a custom Comark component mapped via the `component
 - **Fast** — Powered by Vite for instant HMR and fast builds
 
 ```ts
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import { MarkdownDocument } from '@comark/vue'
 
-const tree = await parse(markdown)
+const tree = await parseMarkdown(markdown)
 // <MarkdownDocument :value="tree" :components="{ Alert }" />
 ```
 

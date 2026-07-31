@@ -31,10 +31,10 @@ npm install shiki
 Pass [bundled theme names](https://shiki.style/themes) as strings — no extra imports needed:
 
 ```typescript
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import highlight from 'comark/plugins/highlight'
 
-const result = await parse(content, {
+const result = await parseMarkdown(content, {
   plugins: [
     highlight({
       themes: {
@@ -314,10 +314,10 @@ highlight({
 ### GitHub Theme
 
 ```typescript
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import highlight from 'comark/plugins/highlight'
 
-const result = await parse(content, {
+const result = await parseMarkdown(content, {
   plugins: [highlight({ themes: { light: 'github-light', dark: 'github-dark' } })]
 })
 ```

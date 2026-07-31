@@ -22,10 +22,10 @@ export type ComponentRenderFn = (element: ElementNode, ctx: RenderHTMLContext) =
  *
  * @example
  * ```typescript
- * import { parse } from 'comark'
+ * import { parseMarkdown } from 'comark'
  * import { renderHTML } from '@comark/html'
  *
- * const tree = await parse('::alert{type="info"}\nHello!\n::')
+ * const tree = await parseMarkdown('::alert{type="info"}\nHello!\n::')
  *
  * const html = renderHTML(tree, {
  *   components: {

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { createSSRApp, defineComponent, h } from 'vue'
 import { renderToString } from '@vue/server-renderer'
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import { MarkdownDocument } from '../src/components/MarkdownDocument'
 
 const Badge = defineComponent({
@@ -33,7 +33,7 @@ const Card = defineComponent({
 })
 
 async function renderMarkdown(markdown: string, props: Record<string, any> = {}) {
-  const tree = await parse(markdown)
+  const tree = await parseMarkdown(markdown)
   const app = createSSRApp({
     setup: () => () => h(MarkdownDocument, { value: tree, ...props }),
   })

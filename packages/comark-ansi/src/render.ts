@@ -26,10 +26,10 @@ export interface RenderANSIOptions extends RenderOptions {
  *
  * @example
  * ```typescript
- * import { parse } from 'comark'
+ * import { parseMarkdown } from 'comark'
  * import { renderANSI } from '@comark/ansi'
  *
- * const tree = await parse('# Hello\n\nThis is **bold** and _italic_.')
+ * const tree = await parseMarkdown('# Hello\n\nThis is **bold** and _italic_.')
  * console.log(renderANSI(tree))
  * ```
  */

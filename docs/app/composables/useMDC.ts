@@ -1,6 +1,6 @@
 import type { MarkdownDocument, ParseOptions } from 'comark'
 import { readonly, ref, shallowRef } from 'vue'
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 
 export interface MDCState {
   tree: MarkdownDocument | null
@@ -58,7 +58,7 @@ export function useMDC(options?: MDCOptions) {
     isLoading.value = true
 
     try {
-      const result = await parse(content, options)
+      const result = await parseMarkdown(content, options)
 
       state.value = {
         tree: result,

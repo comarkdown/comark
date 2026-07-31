@@ -40,7 +40,7 @@ A high-performance markdown parser with Comark (Components in Markdown) support,
 ### Basic Usage
 
 ```typescript
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 
 const content = `---
 title: Hello World
@@ -55,7 +55,7 @@ Important message
 ::
 `
 
-const result = await parse(content)
+const result = await parseMarkdown(content)
 console.log(result.nodes)       // Markdown AST
 console.log(result.frontmatter) // { title: 'Hello World' }
 console.log(result.meta)    // Additional metadata
@@ -138,8 +138,8 @@ Learn how to write Comark documents with complete syntax reference:
 
 Complete guide for parsing documents and working with AST:
 
-- **String Parsing:** `parse()` function with options (autoUnwrap, autoClose)
-- **Async Parsing:** `parse()` with Shiki syntax highlighting
+- **String Parsing:** `parseMarkdown()` function with options (autoUnwrap, autoClose)
+- **Async Parsing:** `parseMarkdown()` with Shiki syntax highlighting
 - **AST Structure:** Markdown AST format - lightweight array-based AST
 - **Rendering AST:** convert to HTML (`renderHTML` via `@comark/html`) or markdown (`renderMarkdown` via `comark/render`)
 - **Auto-close:** automatic closing of unclosed syntax
@@ -279,14 +279,14 @@ interface MarkdownDocument {
 ### 1. Static Site Generator
 
 ```typescript
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import { renderHTML } from '@comark/html'
 import highlight from '@comark/html/plugins/highlight'
 
 async function processMarkdownFile(filePath: string) {
   const content = await readFile(filePath, 'utf-8')
 
-  const tree = await parse(content, {
+  const tree = await parseMarkdown(content, {
     plugins: [
       highlight({
         themes: { light: 'github-dark', dark: 'github-dark' },
@@ -324,13 +324,13 @@ export default function Editor() {
 
 ```typescript
 import { readFile } from 'node:fs/promises'
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 
 async function processMultipleFiles(files: string[]) {
   const results = await Promise.all(
     files.map(async (file) => {
       const content = await readFile(file, 'utf-8')
-      return await parse(content)
+      return await parseMarkdown(content)
     })
   )
 
@@ -362,7 +362,7 @@ import { docComponents } from './components'
 
 ```typescript
 // Asynchronous parsing
-parse(source: string, options?: ParseOptions): Promise<MarkdownDocument>
+parseMarkdown(source: string, options?: ParseOptions): Promise<MarkdownDocument>
 
 // Auto-close unclosed syntax
 autoCloseMarkdown(source: string): string

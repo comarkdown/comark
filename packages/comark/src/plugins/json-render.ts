@@ -39,10 +39,10 @@ interface JsonRenderConfig {}
  *
  * @example
  * ```ts
- * import { parse } from 'comark'
+ * import { parseMarkdown } from 'comark'
  * import jsonRender from 'comark/plugins/json-render'
  *
- * const result = await parse(`
+ * const result = await parseMarkdown(`
  * \`\`\`json-render
  * {
  *   "root": "card",
@@ -67,7 +67,7 @@ interface JsonRenderConfig {}
  * @example
  * ```vue
  * <script setup>
- * import { Comark } from '@comark/vue'
+ * import { Comark }
  * import jsonRender from '@comark/vue/plugins/json-render'
  * </script>
  *

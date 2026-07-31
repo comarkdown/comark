@@ -57,7 +57,7 @@ export type Node = ElementNode | TextNode | CommentNode
  * @param frontmatter - The frontmatter data which is the data at the top of the file
  * @param meta - The meta data of the document, it can be used to store additional data
  *
- * The `TMeta` and `TFrontmatter` type parameters allow `parse` / `createParse`
+ * The `TMeta` and `TFrontmatter` type parameters allow `parse` / `createMarkdownParser`
  * to surface plugin-contributed keys with narrow types (see `MergePluginMeta`).
  */
 export interface MarkdownDocument<TMeta = Record<string, any>, TFrontmatter = Record<string, any>> {
@@ -346,7 +346,7 @@ export type ComarkParsePostState<TMeta = Record<string, any>, TFrontmatter = Rec
  * plugin contributes to `tree.meta` / `tree.frontmatter`. They are surfaced
  * only via the optional `__meta` / `__frontmatter` markers — implementations
  * never set these at runtime; they exist purely so the contribution survives
- * `ReturnType<typeof factory>` inference and can be merged in `createParse`.
+ * `ReturnType<typeof factory>` inference and can be merged in `createMarkdownParser`.
  */
 export type ComarkPlugin<TMeta = {}, TFrontmatter = {}> = {
   name: string
@@ -500,12 +500,12 @@ export interface ParseOptions<TPlugins extends readonly ComarkPlugin<any, any>[]
 }
 
 /**
- * Type signature for the options object passed to the Comark parser function returned by createParse().
+ * Type signature for the options object passed to the Comark parser function returned by createMarkdownParser().
  */
 export type ComarkParseFnOptions = { streaming?: boolean }
 
 /**
- * Type signature for the async Comark parser function returned by createParse().
+ * Type signature for the async Comark parser function returned by createMarkdownParser().
  * Accepts a markdown string and optional parsing options, and returns a Promise of MarkdownDocument.
  */
 export type ComarkParseFn<TMeta = Record<string, any>, TFrontmatter = Record<string, any>> = (

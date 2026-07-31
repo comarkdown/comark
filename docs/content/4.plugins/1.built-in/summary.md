@@ -23,7 +23,7 @@ The `comark/plugins/summary` plugin extracts content before a `<!-- more -->` co
 ## Usage
 
 ```typescript
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import summary from 'comark/plugins/summary'
 
 const content = `# Article Title
@@ -35,7 +35,7 @@ This is the introduction that will become the summary.
 This is the full article content.
 `
 
-const result = await parse(content, {
+const result = await parseMarkdown(content, {
   plugins: [summary()]
 })
 

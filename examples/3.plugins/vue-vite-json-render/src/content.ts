@@ -127,13 +127,13 @@ pnpm add comark        # or @comark/vue, @comark/react, @comark/svelte, @comark/
 
 ### Usage
 
-Import the plugin and pass it to \`parse()\` or the \`<Markdown>\` component:
+Import the plugin and pass it to \`parseMarkdown()\` or the \`<Markdown>\` component:
 
 \`\`\`ts
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import jsonRender from 'comark/plugins/json-render'
 
-const result = await parse(markdown, {
+const result = await parseMarkdown(markdown, {
   plugins: [jsonRender()]
 })
 \`\`\`

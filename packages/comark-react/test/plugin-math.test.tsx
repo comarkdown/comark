@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { renderToString } from 'react-dom/server'
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import { MarkdownDocument } from '../src/components/MarkdownDocument'
 import math, { Math } from '../src/plugins/math'
 
@@ -10,7 +10,7 @@ import math, { Math } from '../src/plugins/math'
 
 describe('@comark/react plugins/math — Math component', () => {
   it('renders inline math as an inline <span class="math inline">', async () => {
-    const tree = await parse('$x^2$', { plugins: [math()] })
+    const tree = await parseMarkdown('$x^2$', { plugins: [math()] })
     const html = renderToString(
       <MarkdownDocument
         value={tree}
@@ -22,7 +22,7 @@ describe('@comark/react plugins/math — Math component', () => {
   })
 
   it('renders block math as a block <div class="math block">', async () => {
-    const tree = await parse('$$E = mc^2$$', { plugins: [math()] })
+    const tree = await parseMarkdown('$$E = mc^2$$', { plugins: [math()] })
     const html = renderToString(
       <MarkdownDocument
         value={tree}

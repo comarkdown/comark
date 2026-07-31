@@ -23,10 +23,10 @@ The `comark/plugins/security` plugin sanitizes the parsed AST, removing dangerou
 ## Usage
 
 ```typescript
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import security from 'comark/plugins/security'
 
-const result = await parse(content, {
+const result = await parseMarkdown(content, {
   plugins: [security()]
 })
 ```
@@ -265,10 +265,10 @@ security({
 The most common use case: lock down everything that could execute code or phone home:
 
 ```typescript
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import security from 'comark/plugins/security'
 
-const result = await parse(userInput, {
+const result = await parseMarkdown(userInput, {
   plugins: [
     security({
       blockedTags: ['script', 'iframe', 'object', 'embed', 'link', 'style'],
@@ -329,7 +329,7 @@ Sanitizing at parse time on read means malicious content already made it into th
 ```typescript
 // ✅ Sanitize before storing
 async function saveArticle(content: string) {
-  const sanitized = await parse(content, {
+  const sanitized = await parseMarkdown(content, {
     plugins: [security({ blockedTags: ['script', 'iframe'] })]
   })
   await db.articles.create({ content: sanitized })

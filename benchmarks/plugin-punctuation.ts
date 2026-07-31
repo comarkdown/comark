@@ -1,7 +1,7 @@
 import { bench, run, group, barplot } from 'mitata'
 import MarkdownExit from 'markdown-exit'
 import { markdownItComark } from 'comark/plugins/syntax'
-import { createParse } from 'comark'
+import { createMarkdownParser } from 'comark'
 import { log } from '@comark/ansi'
 import punctuation from '../packages/comark/src/plugins/punctuation'
 
@@ -58,8 +58,8 @@ const parserNoTypographer = new MarkdownExit({
 
 // ── comark with full punctuation plugin (all features) ──────────────────────
 
-const comarkFull = createParse({ plugins: [punctuation()] })
-const comarkBaseline = createParse()
+const comarkFull = createMarkdownParser({ plugins: [punctuation()] })
+const comarkBaseline = createMarkdownParser()
 
 // ── Benchmarks ──────────────────────────────────────────────────────────────
 

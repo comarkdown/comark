@@ -1,5 +1,5 @@
 import React from 'react'
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import type { MarkdownDocument as MarkdownDocumentType, ParseOptions } from 'comark'
 import { isMarkdownDocument } from 'comark/utils'
 import { MarkdownDocument } from './MarkdownDocument.tsx'
@@ -163,7 +163,7 @@ export async function Markdown({
     )
   }
 
-  const parsed = await parse(source, { ...parseOptions, plugins })
+  const parsed = await parseMarkdown(source, { ...parseOptions, plugins })
 
   return (
     <MarkdownDocument

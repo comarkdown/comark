@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { render } from 'svelte/server'
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import Markdown from '../src/components/Markdown.svelte'
 import MarkdownDocument from '../src/components/MarkdownDocument.svelte'
 import MarkdownAsync from '../src/async/MarkdownAsync.svelte'
@@ -12,7 +12,7 @@ function html(body: string): string {
 
 describe('Markdown value as MarkdownDocument', () => {
   it('renders a pre-parsed tree the same as MarkdownDocument', async () => {
-    const tree = await parse('# Hello **World**')
+    const tree = await parseMarkdown('# Hello **World**')
     const fromMarkdown = html(render(Markdown, { props: { value: tree } }).body)
     const fromParsed = html(render(MarkdownDocument, { props: { value: tree } }).body)
 
@@ -42,7 +42,7 @@ describe('Markdown value as MarkdownDocument', () => {
 
 describe('MarkdownAsync value as MarkdownDocument', () => {
   it('renders a pre-parsed tree without parsing', async () => {
-    const tree = await parse('# Hello **World**')
+    const tree = await parseMarkdown('# Hello **World**')
     const { body } = await render(MarkdownAsync, { props: { value: tree } })
     const output = html(body)
     expect(output).toContain('<h1')
@@ -50,7 +50,7 @@ describe('MarkdownAsync value as MarkdownDocument', () => {
   })
 
   it('renders a tree the same as MarkdownDocument', async () => {
-    const tree = await parse('A paragraph with **bold**')
+    const tree = await parseMarkdown('A paragraph with **bold**')
     const fromAsync = html((await render(MarkdownAsync, { props: { value: tree } })).body)
     const fromParsed = html(render(MarkdownDocument, { props: { value: tree } }).body)
     expect(fromAsync).toBe(fromParsed)

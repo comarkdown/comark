@@ -1,7 +1,7 @@
 import React from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { renderToString } from 'react-dom/server'
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import { Comark, ComarkRenderer, Markdown, MarkdownDocument } from '../src/index'
 
 describe('deprecated aliases', () => {
@@ -35,7 +35,7 @@ describe('deprecated aliases', () => {
   })
 
   it('ComarkRenderer renders like MarkdownDocument with the deprecated tree prop', async () => {
-    const tree = await parse('Hello **world**')
+    const tree = await parseMarkdown('Hello **world**')
     const html = renderToString(<ComarkRenderer tree={tree} />)
     expect(html).toContain('<strong>world</strong>')
     expect(warnSpy.mock.calls.some((c: unknown[]) => String(c[0]).includes('`ComarkRenderer` is deprecated'))).toBe(
@@ -50,7 +50,7 @@ describe('deprecated aliases', () => {
   })
 
   it('MarkdownDocument accepts value prop', async () => {
-    const tree = await parse('Hello **world**')
+    const tree = await parseMarkdown('Hello **world**')
     const html = renderToString(<MarkdownDocument value={tree} />)
     expect(html).toContain('<strong>world</strong>')
   })

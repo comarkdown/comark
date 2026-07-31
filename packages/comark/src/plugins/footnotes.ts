@@ -72,10 +72,10 @@ function isFootnoteRef(node: Node): string | null {
  *
  * @example
  * ```ts
- * import { parse } from 'comark'
+ * import { parseMarkdown } from 'comark'
  * import footnotes from 'comark/plugins/footnotes'
  *
- * const result = await parse('Hello[^1]\n\n[^1]: World', {
+ * const result = await parseMarkdown('Hello[^1]\n\n[^1]: World', {
  *   plugins: [footnotes()]
  * })
  * ```
@@ -190,11 +190,11 @@ export default defineComarkPlugin((config: FootnotesConfig = {}) => {
  *
  * @example
  * ```ts
- * import { parse } from 'comark'
+ * import { parseMarkdown } from 'comark'
  * import { renderMarkdown } from 'comark/render'
  * import footnotes, { Footnote } from 'comark/plugins/footnotes'
  *
- * const tree = await parse('Hello[^1]\n\n[^1]: World', {
+ * const tree = await parseMarkdown('Hello[^1]\n\n[^1]: World', {
  *   plugins: [footnotes()]
  * })
  *

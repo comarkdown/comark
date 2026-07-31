@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { parse } from '@comark/html/parse'
-import { renderHTML } from '@comark/html'
+import { parseMarkdown } from 'comark'
+import { renderHTML } from '../src/index'
 import binding, { Binding } from '../src/plugins/binding'
 
-const parseWithBinding = (md: string) => parse(md, { plugins: [binding()] })
+const parseWithBinding = (md: string) => parseMarkdown(md, { plugins: [binding()] })
 
 describe('@comark/html plugins/binding — Binding handler', () => {
   it('resolves a `{{ path }}` binding against frontmatter', async () => {

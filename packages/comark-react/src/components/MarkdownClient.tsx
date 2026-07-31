@@ -1,7 +1,7 @@
 'use client'
 
 import { use, useDeferredValue, useMemo, Suspense } from 'react'
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import type { MarkdownDocument as MarkdownDocumentType } from 'comark'
 import { isMarkdownDocument } from 'comark/utils'
 import { MarkdownLive } from './MarkdownLive.tsx'
@@ -44,9 +44,9 @@ export function MarkdownClient({ children, value, markdown, options = {}, plugin
 
   // Re-creates the promise only when content changes.
   // Note: options/plugins should be stable references (defined outside render or memoized).
-  // Pre-parsed trees resolve immediately without calling parse().
+  // Pre-parsed trees resolve immediately without calling parseMarkdown().
   const parsePromise = useMemo(
-    () => (isMarkdownDocument(content) ? Promise.resolve(content) : parse(content, { ...options, plugins })),
+    () => (isMarkdownDocument(content) ? Promise.resolve(content) : parseMarkdown(content, { ...options, plugins })),
     [content]
   )
 

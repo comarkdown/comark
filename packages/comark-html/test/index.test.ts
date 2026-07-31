@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import { render, createRender, renderHTML } from '../src/index'
 
 describe('render', () => {
@@ -117,7 +117,7 @@ describe('createRender', () => {
 
 describe('renderHTML', () => {
   it('renders a pre-parsed tree', async () => {
-    const tree = await parse('# Title\n\n**Bold** text.')
+    const tree = await parseMarkdown('# Title\n\n**Bold** text.')
     const html = await renderHTML(tree)
     expect(html).toContain('<h1')
     expect(html).toContain('Title')
@@ -125,13 +125,13 @@ describe('renderHTML', () => {
   })
 
   it('renders without options', async () => {
-    const tree = await parse('Hello _world_')
+    const tree = await parseMarkdown('Hello _world_')
     const html = await renderHTML(tree)
     expect(html).toContain('<em>world</em>')
   })
 
   it('renders custom components', async () => {
-    const tree = await parse('::alert{type="warning"}\nWatch out!\n::')
+    const tree = await parseMarkdown('::alert{type="warning"}\nWatch out!\n::')
     const html = await renderHTML(tree, {
       components: {
         alert: async ([, attrs, ...children], { render }) =>
@@ -145,7 +145,7 @@ describe('renderHTML', () => {
   })
 
   it('passes data to component renderers', async () => {
-    const tree = await parse('::header\nWelcome\n::')
+    const tree = await parseMarkdown('::header\nWelcome\n::')
     const html = await renderHTML(tree, {
       data: { siteName: 'My Blog' },
       components: {
@@ -158,7 +158,7 @@ describe('renderHTML', () => {
   })
 
   it('renders nested components', async () => {
-    const tree = await parse('::outer\n:::inner\nDeep\n:::\n::')
+    const tree = await parseMarkdown('::outer\n:::inner\nDeep\n:::\n::')
     const html = await renderHTML(tree, {
       components: {
         outer: async ([, , ...children], { render }) => `<div class="outer">${await render(children)}</div>`,
@@ -171,13 +171,13 @@ describe('renderHTML', () => {
   })
 
   it('leaves unknown components as-is when no renderer provided', async () => {
-    const tree = await parse('::custom\nContent\n::')
+    const tree = await parseMarkdown('::custom\nContent\n::')
     const html = await renderHTML(tree)
     expect(html).toContain('Content')
   })
 
   it('handles inline HTML elements', async () => {
-    const tree = await parse('Text with <strong class="highlight">HTML</strong>')
+    const tree = await parseMarkdown('Text with <strong class="highlight">HTML</strong>')
     const html = await renderHTML(tree)
     expect(html).toContain('<strong class="highlight">HTML</strong>')
   })
@@ -185,7 +185,7 @@ describe('renderHTML', () => {
 
 describe('async node handlers', () => {
   it('handler returning a Promise is awaited', async () => {
-    const tree = await parse('::card{title="Hello"}\nBody\n::')
+    const tree = await parseMarkdown('::card{title="Hello"}\nBody\n::')
     const html = await renderHTML(tree, {
       components: {
         card: async ([, attrs, ...children], { render }) => {
@@ -199,7 +199,7 @@ describe('async node handlers', () => {
   })
 
   it('multiple async handlers run in the correct order', async () => {
-    const tree = await parse('::a\n::b\nB content\n::\n::c\nC content\n::\n::')
+    const tree = await parseMarkdown('::a\n::b\nB content\n::\n::c\nC content\n::\n::')
     const log: string[] = []
     const html = await renderHTML(tree, {
       components: {
@@ -225,7 +225,7 @@ describe('async node handlers', () => {
 
   it('async handler can fetch external data', async () => {
     const db: Record<string, string> = { 42: 'Fetched Content' }
-    const tree = await parse('::widget{id="42"}\n::')
+    const tree = await parseMarkdown('::widget{id="42"}\n::')
     const html = await renderHTML(tree, {
       components: {
         widget: async ([, attrs]) => {
@@ -238,7 +238,7 @@ describe('async node handlers', () => {
   })
 
   it('nested async handlers resolve correctly', async () => {
-    const tree = await parse('::outer\n:::inner\nDeep\n:::\n::')
+    const tree = await parseMarkdown('::outer\n:::inner\nDeep\n:::\n::')
     const html = await renderHTML(tree, {
       components: {
         outer: async ([, , ...children], { render }) => {

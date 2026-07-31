@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import type { ReactNode } from 'react'
 import { renderToString } from 'react-dom/server'
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import { MarkdownDocument } from '../src/components/MarkdownDocument'
 
 describe('MarkdownDocument Error Handling', () => {
@@ -10,7 +10,7 @@ describe('MarkdownDocument Error Handling', () => {
 Some content
 ::`
 
-    const result = await parse(markdown)
+    const result = await parseMarkdown(markdown)
 
     function GoodComponent({ children }: any) {
       return <div className="good-component">{children}</div>
@@ -35,7 +35,7 @@ Some content
 Some content
 ::`
 
-    const result = await parse(markdown)
+    const result = await parseMarkdown(markdown)
 
     function ErrorComponent(): ReactNode {
       throw new Error('Component error during render')
@@ -69,7 +69,7 @@ Error content
 Good content
 ::`
 
-    const result = await parse(markdown)
+    const result = await parseMarkdown(markdown)
 
     function GoodComponent({ children }: any) {
       return <div className="good-component">{children}</div>
@@ -89,7 +89,7 @@ Good content
   })
 
   it('should render an empty tree without errors', async () => {
-    const result = await parse('')
+    const result = await parseMarkdown('')
 
     const html = renderToString(<MarkdownDocument value={result} />)
 

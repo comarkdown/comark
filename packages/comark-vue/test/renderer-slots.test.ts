@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { createSSRApp, defineComponent, h } from 'vue'
 import { renderToString } from '@vue/server-renderer'
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import { MarkdownDocument } from '../src/components/MarkdownDocument'
 
 describe('MarkdownDocument with Slots', () => {
@@ -16,7 +16,7 @@ Header content
 Footer content
 ::`
 
-    const result = await parse(markdown)
+    const result = await parseMarkdown(markdown)
 
     // Define a test component that uses slots
     const TestComponent = defineComponent({
@@ -70,7 +70,7 @@ Warning Title
 This is a description
 ::`
 
-    const result = await parse(markdown)
+    const result = await parseMarkdown(markdown)
 
     const Callout = defineComponent({
       name: 'Callout',
@@ -108,7 +108,7 @@ This is header part
 Copyright by Nuxt
 ::`
 
-    const result = await parse(markdown)
+    const result = await parseMarkdown(markdown)
 
     const MultiSlotTest = defineComponent({
       name: 'MultiSlotTest',

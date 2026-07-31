@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import highlight from 'comark/plugins/highlight'
 import githubDark from 'shiki/dist/themes/github-dark.mjs'
 import { renderANSI, createLog, log } from '../src/index'
@@ -9,7 +9,7 @@ const plain = (markdown: string) => renderANSI_sync(markdown, { colors: false })
 const colored = (markdown: string) => renderANSI_sync(markdown, { colors: true })
 
 async function renderANSI_sync(markdown: string, options?: Parameters<typeof renderANSI>[1]) {
-  const tree = await parse(markdown)
+  const tree = await parseMarkdown(markdown)
   return renderANSI(tree, options)
 }
 
@@ -170,7 +170,7 @@ describe('renderANSI', () => {
     })
 
     async function highlighted(markdown: string, colors = false) {
-      const tree = await parse(markdown, { plugins: [highlightPlugin] })
+      const tree = await parseMarkdown(markdown, { plugins: [highlightPlugin] })
       return renderANSI(tree, { colors })
     }
 
@@ -228,7 +228,7 @@ describe('renderANSI', () => {
 
   describe('custom components', () => {
     it('renders custom component via components option', async () => {
-      const tree = await parse('::badge{type="success"}\nDone\n::')
+      const tree = await parseMarkdown('::badge{type="success"}\nDone\n::')
       const out = await renderANSI(tree, {
         colors: false,
         components: {
@@ -241,7 +241,7 @@ describe('renderANSI', () => {
     })
 
     it('passes data to component renderer', async () => {
-      const tree = await parse('::info\nContent\n::')
+      const tree = await parseMarkdown('::info\nContent\n::')
       const out = await renderANSI(tree, {
         colors: false,
         data: { version: '3.0' },
@@ -254,7 +254,7 @@ describe('renderANSI', () => {
     })
 
     it('renders children of custom components', async () => {
-      const tree = await parse('::wrapper\n**bold** inside\n::')
+      const tree = await parseMarkdown('::wrapper\n**bold** inside\n::')
       const out = await renderANSI(tree, {
         colors: false,
         components: {
@@ -268,7 +268,7 @@ describe('renderANSI', () => {
 
   describe('async node handlers', () => {
     it('handler returning a Promise is awaited', async () => {
-      const tree = await parse('::status{code="ok"}\nAll good\n::')
+      const tree = await parseMarkdown('::status{code="ok"}\nAll good\n::')
       const out = await renderANSI(tree, {
         colors: false,
         components: {
@@ -283,7 +283,7 @@ describe('renderANSI', () => {
     })
 
     it('multiple async handlers run in the correct order', async () => {
-      const tree = await parse('::a\n::b\nB\n::\n::c\nC\n::\n::')
+      const tree = await parseMarkdown('::a\n::b\nB\n::\n::c\nC\n::\n::')
       const log: string[] = []
       const out = await renderANSI(tree, {
         colors: false,
@@ -307,7 +307,7 @@ describe('renderANSI', () => {
 
     it('async handler can resolve external data', async () => {
       const db: Record<string, string> = { metric: '99.9%' }
-      const tree = await parse('::stat{key="metric"}\n::')
+      const tree = await parseMarkdown('::stat{key="metric"}\n::')
       const out = await renderANSI(tree, {
         colors: false,
         components: {
@@ -323,7 +323,7 @@ describe('renderANSI', () => {
 
   describe('data binding', () => {
     it('resolves :href on links from frontmatter', async () => {
-      const tree = await parse(`---
+      const tree = await parseMarkdown(`---
 home: https://example.com
 ---
 
@@ -334,14 +334,14 @@ home: https://example.com
     })
 
     it('resolves :alt on images from data', async () => {
-      const tree = await parse('![x](/x.png){:alt="data.caption"}')
+      const tree = await parseMarkdown('![x](/x.png){:alt="data.caption"}')
       const out = await renderANSI(tree, { colors: false, data: { caption: 'Photo of Ada' } })
       expect(out).toContain('[image: Photo of Ada]')
     })
 
     it('exposes parent props for custom handlers via resolveAttribute', async () => {
       const { resolveAttribute } = await import('comark/render')
-      const tree = await parse(`---
+      const tree = await parseMarkdown(`---
 user: Ada
 ---
 

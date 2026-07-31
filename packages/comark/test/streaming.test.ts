@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest'
-import { createParse } from 'comark'
+import { createMarkdownParser } from 'comark'
 import type { ElementNode } from 'comark'
 
 describe('streaming mode', () => {
   describe('$.line metadata', () => {
     it('preserves position metadata on nodes in streaming mode', async () => {
-      const parse = createParse()
+      const parse = createMarkdownParser()
       const result = await parse('# Hello\n\nParagraph one.\n\nParagraph two.\n', { streaming: true })
 
       const nodes = result.nodes as ElementNode[]
@@ -15,7 +15,7 @@ describe('streaming mode', () => {
     })
 
     it('does NOT add $.line metadata without streaming', async () => {
-      const parse = createParse()
+      const parse = createMarkdownParser()
       const result = await parse('# Hello\n\nParagraph one.\n')
 
       const nodes = result.nodes as ElementNode[]
@@ -23,7 +23,7 @@ describe('streaming mode', () => {
     })
 
     it('line numbers are monotonically increasing', async () => {
-      const parse = createParse()
+      const parse = createMarkdownParser()
       const result = await parse('# Heading\n\nPara 1\n\nPara 2\n\nPara 3\n', { streaming: true })
 
       const nodes = result.nodes as ElementNode[]
@@ -36,7 +36,7 @@ describe('streaming mode', () => {
 
   describe('first call (no previous state)', () => {
     it('parses content fully on first call', async () => {
-      const parse = createParse()
+      const parse = createMarkdownParser()
       const result = await parse('# Hello\n\nWorld\n', { streaming: true })
 
       expect(result.nodes).toHaveLength(2)
@@ -46,7 +46,7 @@ describe('streaming mode', () => {
 
     it('returns same node types as non-streaming for complete content', async () => {
       const content = '# Hello\n\nParagraph text.\n'
-      const parse = createParse()
+      const parse = createMarkdownParser()
 
       const streamResult = await parse(content, { streaming: true })
       const regularResult = await parse(content)
@@ -59,7 +59,7 @@ describe('streaming mode', () => {
 
   describe('continuation (new content starts with old content)', () => {
     it('reuses cached nodes when content grows', async () => {
-      const parse = createParse()
+      const parse = createMarkdownParser()
 
       // First call: heading + first paragraph + incomplete last paragraph
       const c1 = '# Heading\n\nFirst paragraph.\n\nInco'
@@ -75,7 +75,7 @@ describe('streaming mode', () => {
     })
 
     it('cached nodes from previous call appear at the start', async () => {
-      const parse = createParse()
+      const parse = createMarkdownParser()
 
       const step1 = '# Title\n\nParagraph one.\n\nParagraph two.\n\nPartial'
       const step2 = '# Title\n\nParagraph one.\n\nParagraph two.\n\nPartial paragraph complete.\n'
@@ -91,7 +91,7 @@ describe('streaming mode', () => {
     })
 
     it('handles a second continuation after an initial continuation', async () => {
-      const parse = createParse()
+      const parse = createMarkdownParser()
 
       // Step 1: h1 + partial paragraph
       await parse('# Title\n\nPartial', { streaming: true })
@@ -106,7 +106,7 @@ describe('streaming mode', () => {
     })
 
     it('parsing identical content twice produces equivalent node structure', async () => {
-      const parse = createParse()
+      const parse = createMarkdownParser()
 
       const c1 = '# Hello\n\nWorld.\n'
       const result1 = await parse(c1, { streaming: true })
@@ -124,7 +124,7 @@ describe('streaming mode', () => {
 
   describe('non-continuation (different content)', () => {
     it('fully re-parses when new content does not start with old content', async () => {
-      const parse = createParse()
+      const parse = createMarkdownParser()
 
       await parse('# Old Heading\n\nOld content.\n', { streaming: true })
       const result = await parse('# New Heading\n\nNew content.\n', { streaming: true })
@@ -135,7 +135,7 @@ describe('streaming mode', () => {
     })
 
     it('re-parses correctly after a reset', async () => {
-      const parse = createParse()
+      const parse = createMarkdownParser()
 
       await parse('# Doc A\n\nContent A.\n', { streaming: true })
       const result = await parse('# Doc B\n', { streaming: true })
@@ -145,7 +145,7 @@ describe('streaming mode', () => {
     })
 
     it('non-streaming call resets the cache', async () => {
-      const parse = createParse()
+      const parse = createMarkdownParser()
 
       await parse('# Title\n\nFirst.\n', { streaming: true })
       // Non-streaming call clears lastOutput/lastInput
@@ -159,14 +159,14 @@ describe('streaming mode', () => {
 
   describe('streaming with frontmatter', () => {
     it('preserves frontmatter on first parse', async () => {
-      const parse = createParse()
+      const parse = createMarkdownParser()
 
       const result = await parse('---\ntitle: Hello\n---\n\n# World\n', { streaming: true })
       expect(result.frontmatter).toEqual({ title: 'Hello' })
     })
 
     it('return full frontmatter when it was partial on previous call', async () => {
-      const parse = createParse()
+      const parse = createMarkdownParser()
 
       const c1 = '---\ntitle: Hello'
       const c2 = '---\ntitle: Hello\ncategory: Test\n---\n\n# World\n\nPartial paragraph done.\n'
@@ -179,7 +179,7 @@ describe('streaming mode', () => {
     })
 
     it('frontmatter is preserved across continuation calls', async () => {
-      const parse = createParse()
+      const parse = createMarkdownParser()
 
       const c1 = '---\ntitle: Hello\n---\n\n# World\n\nPartial'
       const c2 = '---\ntitle: Hello\n---\n\n# World\n\nPartial paragraph done.\n'
@@ -194,7 +194,7 @@ describe('streaming mode', () => {
 
   describe('streaming with MDC components', () => {
     it('parses MDC block components in streaming mode', async () => {
-      const parse = createParse()
+      const parse = createMarkdownParser()
 
       const result = await parse('# Heading\n\n::alert\nContent\n::\n', { streaming: true })
 
@@ -205,7 +205,7 @@ describe('streaming mode', () => {
     })
 
     it('keeps auto-closed empty string attributes as strings', async () => {
-      const parse = createParse()
+      const parse = createMarkdownParser()
       const result = await parse('::callout{color="info" icon', { streaming: true })
       const callout = result.nodes[0] as ElementNode
 
@@ -214,7 +214,7 @@ describe('streaming mode', () => {
     })
 
     it('keeps auto-closed empty string attributes as strings', async () => {
-      const parse = createParse()
+      const parse = createMarkdownParser()
       const result = await parse('::callout{color="info" icon="', { streaming: true })
       const callout = result.nodes[0] as ElementNode
 
@@ -224,7 +224,7 @@ describe('streaming mode', () => {
     })
 
     it('caches nodes before MDC components', async () => {
-      const parse = createParse()
+      const parse = createMarkdownParser()
 
       const c1 = '# Title\n\nParagraph.\n\n::note\nPartial'
       const c2 = '# Title\n\nParagraph.\n\n::note\nFull note content.\n::\n'
@@ -240,7 +240,7 @@ describe('streaming mode', () => {
 
   describe('streaming with autoClose interaction', () => {
     it('autoClose applies to partially complete content', async () => {
-      const parse = createParse({ autoClose: true })
+      const parse = createMarkdownParser({ autoClose: true })
 
       // Incomplete bold - autoClose should close it
       const result = await parse('# Title\n\nSome **bold', { streaming: true })
@@ -253,7 +253,7 @@ describe('streaming mode', () => {
     })
 
     it('works with autoClose disabled', async () => {
-      const parse = createParse({ autoClose: false })
+      const parse = createMarkdownParser({ autoClose: false })
 
       const result = await parse('# Hello\n\nWorld.\n', { streaming: true })
       expect(result.nodes).toHaveLength(2)
@@ -262,7 +262,7 @@ describe('streaming mode', () => {
 
   describe('streaming with autoUnwrap interaction', () => {
     it('autoUnwrap applies in streaming mode by default', async () => {
-      const parse = createParse()
+      const parse = createMarkdownParser()
 
       const result = await parse('::alert\nSimple text\n::\n', { streaming: true })
       const alert = result.nodes[0] as ElementNode
@@ -275,7 +275,7 @@ describe('streaming mode', () => {
     })
 
     it('autoUnwrap: false is respected in streaming mode', async () => {
-      const parse = createParse({ autoUnwrap: false })
+      const parse = createMarkdownParser({ autoUnwrap: false })
 
       const result = await parse('::alert\nSimple text\n::\n', { streaming: true })
       const alert = result.nodes[0] as ElementNode
@@ -287,9 +287,9 @@ describe('streaming mode', () => {
   })
 
   describe('independent parser instances', () => {
-    it('each createParse instance has independent state', async () => {
-      const parse1 = createParse()
-      const parse2 = createParse()
+    it('each createMarkdownParser instance has independent state', async () => {
+      const parse1 = createMarkdownParser()
+      const parse2 = createMarkdownParser()
 
       await parse1('# Parser 1\n\nContent A.\n', { streaming: true })
       await parse2('# Parser 2\n\nContent B.\n', { streaming: true })
@@ -304,16 +304,16 @@ describe('streaming mode', () => {
   })
 })
 
-describe('createParse', () => {
+describe('createMarkdownParser', () => {
   it('should create a parse function', async () => {
-    const parse = createParse()
+    const parse = createMarkdownParser()
     const result = await parse('# Hello\n\nParagraph one.\n\nParagraph two.\n', { streaming: true })
     const result2 = await parse('# Hello\n\nParagraph one.\n\nParagraph two.\n', { streaming: true })
     expect(result.nodes).toEqual(result2.nodes)
   })
 
   it('should parse a markdown file', async () => {
-    const parse = createParse()
+    const parse = createMarkdownParser()
     const result = await parse('\n## Key Features\n\n#', { streaming: true })
     expect(result.nodes).toHaveLength(1)
   })
@@ -336,7 +336,7 @@ Everything you need for modern content parsing
 ::
 `
 
-    const parse = createParse()
+    const parse = createMarkdownParser()
     for (let i = 10; i < md.length; i += 10) {
       const result = await parse(md.slice(0, i), { streaming: true })
       if (result.nodes.length >= 1) {
@@ -402,7 +402,7 @@ Everything you need for modern content parsing
       },
     ]
 
-    const parse = createParse()
+    const parse = createMarkdownParser()
     for (const step of steps) {
       const result = await parse(step.input, { streaming: true })
       expect(result).toEqual(step.output)

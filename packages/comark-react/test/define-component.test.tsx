@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import React from 'react'
 import { renderToReadableStream } from 'react-dom/server'
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import emoji from 'comark/plugins/emoji'
 import { defineMarkdownComponent, defineMarkdownDocumentComponent } from '../src/index'
 
@@ -177,7 +177,7 @@ describe('defineMarkdownDocumentComponent — component inheritance via extends'
       name: 'TestRenderer',
       components: { alert: AlertBase },
     })
-    const tree = await parse('::alert\nhello\n::')
+    const tree = await parseMarkdown('::alert\nhello\n::')
     const html = await renderAsync(<Renderer value={tree} />)
 
     expect(html).toContain('alert-base')
@@ -187,7 +187,7 @@ describe('defineMarkdownDocumentComponent — component inheritance via extends'
     const Base = defineMarkdownDocumentComponent({ name: 'BaseRenderer', components: { alert: AlertBase } })
     const Child = defineMarkdownDocumentComponent({ name: 'ChildRenderer', extends: Base })
 
-    const tree = await parse('::alert\nhello\n::')
+    const tree = await parseMarkdown('::alert\nhello\n::')
     const html = await renderAsync(<Child value={tree} />)
 
     expect(html).toContain('alert-base')
@@ -201,7 +201,7 @@ describe('defineMarkdownDocumentComponent — component inheritance via extends'
       components: { alert: AlertChild },
     })
 
-    const tree = await parse('::alert\nhello\n::')
+    const tree = await parseMarkdown('::alert\nhello\n::')
     const html = await renderAsync(<Child value={tree} />)
 
     expect(html).toContain('alert-child')
@@ -219,7 +219,7 @@ describe('defineMarkdownDocumentComponent — component inheritance via extends'
       components: { alert: AlertChild },
     })
 
-    const tree = await parse('::alert\nA\n::\n\n::card\nB\n::')
+    const tree = await parseMarkdown('::alert\nA\n::\n\n::card\nB\n::')
     const html = await renderAsync(<Child value={tree} />)
 
     expect(html).toContain('alert-child')
@@ -234,7 +234,7 @@ describe('defineMarkdownDocumentComponent — component inheritance via extends'
       components: { alert: AlertChild },
     })
 
-    const tree = await parse('::alert\nhello\n::')
+    const tree = await parseMarkdown('::alert\nhello\n::')
     const html = await renderAsync(
       <Child
         value={tree}
@@ -259,7 +259,7 @@ describe('defineMarkdownDocumentComponent — component inheritance via extends'
     })
     const Child = defineMarkdownDocumentComponent({ name: 'ChildRenderer', extends: Middle })
 
-    const tree = await parse('::alert\nA\n::\n\n::card\nB\n::')
+    const tree = await parseMarkdown('::alert\nA\n::\n\n::card\nB\n::')
     const html = await renderAsync(<Child value={tree} />)
 
     expect(html).toContain('alert-child')
@@ -274,14 +274,14 @@ describe('defineMarkdownDocumentComponent — component inheritance via extends'
 describe('defineMarkdownDocumentComponent — className via config', () => {
   it('applies config className to wrapper div', async () => {
     const Renderer = defineMarkdownDocumentComponent({ name: 'WithClass', className: 'prose dark' })
-    const tree = await parse('hello')
+    const tree = await parseMarkdown('hello')
     const html = await renderAsync(<Renderer value={tree} />)
     expect(html).toContain('comark-content prose dark')
   })
 
   it('merges config className with prop className', async () => {
     const Renderer = defineMarkdownDocumentComponent({ name: 'WithClass', className: 'prose' })
-    const tree = await parse('hello')
+    const tree = await parseMarkdown('hello')
     const html = await renderAsync(
       <Renderer
         value={tree}
@@ -293,7 +293,7 @@ describe('defineMarkdownDocumentComponent — className via config', () => {
 
   it('prop className works without config className', async () => {
     const Renderer = defineMarkdownDocumentComponent({ name: 'NoConfigClass' })
-    const tree = await parse('hello')
+    const tree = await parseMarkdown('hello')
     const html = await renderAsync(
       <Renderer
         value={tree}
@@ -306,7 +306,7 @@ describe('defineMarkdownDocumentComponent — className via config', () => {
   it('inherited renderer preserves parent className', async () => {
     const Base = defineMarkdownDocumentComponent({ name: 'BaseRenderer', className: 'base-class' })
     const Child = defineMarkdownDocumentComponent({ name: 'ChildRenderer', extends: Base, className: 'child-class' })
-    const tree = await parse('hello')
+    const tree = await parseMarkdown('hello')
     const html = await renderAsync(<Child value={tree} />)
     expect(html).toContain('base-class')
     expect(html).toContain('child-class')

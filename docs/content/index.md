@@ -36,9 +36,9 @@ demoMarkdown: |-
     > Built for modern web applications.
   
     ```ts [example.ts]
-    import { parse } from 'comark'
+    import { parseMarkdown } from 'comark'
   
-    const tree = await parse('# Hello **World**')
+    const tree = await parseMarkdown('# Hello **World**')
     ```
 ---
 ::

@@ -112,7 +112,7 @@ export function defineMarkdownComponent(config: DefineMarkdownComponentOptions =
  * @example
  * ```typescript
  * import { defineMarkdownDocumentComponent } from '@comark/angular'
- * import { Math } from '@comark/angular/plugins/math'
+ * import { Math }
  *
  * export const DocsRenderer = defineMarkdownDocumentComponent({
  *   name: 'DocsRenderer',

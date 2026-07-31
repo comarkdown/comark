@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createSSRApp, defineComponent, h, Suspense } from 'vue'
 import { renderToString } from 'vue/server-renderer'
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import { Comark, ComarkRenderer, Markdown, MarkdownDocument } from '../src/index'
 
 function renderInSuspense(component: any, props: Record<string, unknown>) {
@@ -44,7 +44,7 @@ describe('deprecated aliases', () => {
   })
 
   it('ComarkRenderer renders like MarkdownDocument with the deprecated tree prop', async () => {
-    const tree = await parse('Hello **world**')
+    const tree = await parseMarkdown('Hello **world**')
     const html = await renderInSuspense(ComarkRenderer, { tree })
     expect(html).toContain('<strong>world</strong>')
     expect(warnSpy.mock.calls.some((c: unknown[]) => String(c[0]).includes('`ComarkRenderer` is deprecated'))).toBe(
@@ -58,7 +58,7 @@ describe('deprecated aliases', () => {
   })
 
   it('MarkdownDocument accepts value prop', async () => {
-    const tree = await parse('Hello **world**')
+    const tree = await parseMarkdown('Hello **world**')
     const html = await renderInSuspense(MarkdownDocument, { value: tree })
     expect(html).toContain('<strong>world</strong>')
   })

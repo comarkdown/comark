@@ -2,7 +2,7 @@ import { bench, run, barplot, group } from 'mitata'
 import MarkdownIt from 'markdown-it'
 import MarkdownExit from 'markdown-exit'
 import { markdownItComark } from 'comark/plugins/syntax'
-import { createParse } from 'comark'
+import { createMarkdownParser } from 'comark'
 import { renderHTML } from '../packages/comark-html/src/index.ts'
 
 // Sample markdown content to test with
@@ -72,9 +72,9 @@ const markdownExit = new MarkdownExit({
   .enable(['table', 'strikethrough'])
   .use(markdownItComark)
 
-const comark = createParse()
-const comarkNoClose = createParse({ autoClose: false })
-const comarkStreaming = createParse()
+const comark = createMarkdownParser()
+const comarkNoClose = createMarkdownParser({ autoClose: false })
+const comarkStreaming = createMarkdownParser()
 
 barplot(() => {
   group('render', () => {

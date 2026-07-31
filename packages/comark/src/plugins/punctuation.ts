@@ -213,20 +213,20 @@ function applyPunctuation(
  *
  * @example
  * ```ts
- * import { parse } from 'comark'
+ * import { parseMarkdown } from 'comark'
  * import punctuation from 'comark/plugins/punctuation'
  *
- * const result = await parse('"Hello" -- world...', {
+ * const result = await parseMarkdown('"Hello" -- world...', {
  *   plugins: [punctuation()]
  * })
  *
  * // Locale-aware quotes (Russian)
- * const result2 = await parse('"Hello"', {
+ * const result2 = await parseMarkdown('"Hello"', {
  *   plugins: [punctuation({ quotes: '«»„"' })]
  * })
  *
  * // French quotes with non-breaking spaces
- * const result3 = await parse('"Hello"', {
+ * const result3 = await parseMarkdown('"Hello"', {
  *   plugins: [punctuation({ quotes: ['«\xA0', '\xA0»', '‹\xA0', '\xA0›'] })]
  * })
  * ```

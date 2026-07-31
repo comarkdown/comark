@@ -1,20 +1,20 @@
 import { describe, expect, it } from 'vitest'
 import { parseProps } from '../../src/internal/parse/syntax/props'
 
-function parse(str: string) {
+function parseMarkdown(str: string) {
   const props = parseProps(str) || []
   return `\n${props.map(([key, value]) => `${key}=${value}`).join('\n')}\n`
 }
 
 describe('parseProps', () => {
   it('basic', () => {
-    expect(parse('{}')).toMatchInlineSnapshot(`
+    expect(parseMarkdown('{}')).toMatchInlineSnapshot(`
       "
 
       "
     `)
 
-    expect(parse('{.foo #my-id no-border}')).toMatchInlineSnapshot(`
+    expect(parseMarkdown('{.foo #my-id no-border}')).toMatchInlineSnapshot(`
       "
       class=foo
       id=my-id
@@ -22,14 +22,14 @@ describe('parseProps', () => {
       "
     `)
 
-    expect(parse('{foo=bar baz}')).toMatchInlineSnapshot(`
+    expect(parseMarkdown('{foo=bar baz}')).toMatchInlineSnapshot(`
       "
       foo=bar
       baz=true
       "
     `)
 
-    expect(parse('{str="foo bar" :num=123 bool=true arr=[1,2,3] obj={a:1,b:2}}')).toMatchInlineSnapshot(`
+    expect(parseMarkdown('{str="foo bar" :num=123 bool=true arr=[1,2,3] obj={a:1,b:2}}')).toMatchInlineSnapshot(`
       "
       str=foo bar
       :num=123
@@ -39,19 +39,20 @@ describe('parseProps', () => {
       "
     `)
 
-    expect(parse('{:items=\'["Nuxt", "Vue", "React"]\'}')).toMatchInlineSnapshot(`
+    expect(parseMarkdown('{:items=\'["Nuxt", "Vue", "React"]\'}')).toMatchInlineSnapshot(`
       "
       :items=["Nuxt", "Vue", "React"]
       "
     `)
 
-    expect(parse('{:options=\'{"responsive": true, "scales": {"y": {"beginAtZero": true}}}\'}')).toMatchInlineSnapshot(`
+    expect(parseMarkdown('{:options=\'{"responsive": true, "scales": {"y": {"beginAtZero": true}}}\'}'))
+      .toMatchInlineSnapshot(`
       "
       :options={"responsive": true, "scales": {"y": {"beginAtZero": true}}}
       "
     `)
 
-    expect(parse('{.bold#id .text.with_attribute}')).toMatchInlineSnapshot(`
+    expect(parseMarkdown('{.bold#id .text.with_attribute}')).toMatchInlineSnapshot(`
       "
       class=bold
       id=id
@@ -61,7 +62,7 @@ describe('parseProps', () => {
     `)
 
     expect(
-      parse(`
+      parseMarkdown(`
       {items='It\\'s me'}
     `)
     ).toMatchInlineSnapshot(`

@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { computed, createSSRApp, defineComponent, h } from 'vue'
 import { renderToString } from '@vue/server-renderer'
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import { MarkdownDocument } from '../src/components/MarkdownDocument'
 
 describe('MarkdownDocument Error Handling', () => {
@@ -10,7 +10,7 @@ describe('MarkdownDocument Error Handling', () => {
 Some content
 ::`
 
-    const result = await parse(markdown)
+    const result = await parseMarkdown(markdown)
 
     // Define a component that throws an error
     const ErrorComponent = defineComponent({
@@ -56,7 +56,7 @@ Some content
     const markdown = `::required-prop-test
 ::`
 
-    const result = await parse(markdown)
+    const result = await parseMarkdown(markdown)
 
     // Component with required prop that will error if prop is missing
     const RequiredPropTest = defineComponent({
@@ -110,7 +110,7 @@ Error content
 Good content
 ::`
 
-    const result = await parse(markdown)
+    const result = await parseMarkdown(markdown)
 
     const ErrorComponent = defineComponent({
       name: 'ErrorComponent',

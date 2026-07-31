@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parse } from '../src/index'
+import { parseMarkdown } from '../src/index'
 import type { Node } from 'comark'
 
 // Helper to check if a node is an element with a specific tag
@@ -37,7 +37,7 @@ Watch how **bold text** and components render correctly.
 `
 
   it('should parse playground content correctly', async () => {
-    const result = await parse(playgroundContent)
+    const result = await parseMarkdown(playgroundContent)
 
     expect(result.nodes).toBeDefined()
     expect(Array.isArray(result.nodes)).toBe(true)
@@ -64,7 +64,7 @@ Watch how **bold text** and components render correctly.
   })
 
   it('should parse content with complex nesting', async () => {
-    const result = await parse(playgroundContent)
+    const result = await parseMarkdown(playgroundContent)
 
     expect(result.nodes).toBeDefined()
     expect(Array.isArray(result.nodes)).toBe(true)
@@ -80,7 +80,7 @@ Watch how **bold text** and components render correctly.
 Watch how **bold text** and components render correctly.
 ::`
 
-    const result = await parse(alertOnly)
+    const result = await parseMarkdown(alertOnly)
 
     expect(result.nodes).toBeDefined()
     expect(Array.isArray(result.nodes)).toBe(true)

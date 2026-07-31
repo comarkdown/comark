@@ -38,7 +38,7 @@ ${'<'}/script>
   </Suspense>
 </template>`
 
-const reactCode = `import { Markdown } from '@comark/react'
+const reactCode = `import { Markdown }
 import { Alert } from './components/Alert'
 
 const markdown = \`
@@ -72,7 +72,7 @@ ${'<'}/script>
 <Markdown value={markdown} components={{ Alert }} />`
 
 const angularCode = `import { Component } from '@angular/core'
-import { Markdown } from '@comark/angular'
+import { Markdown } from '@comark/vue'
 import { AlertComponent } from './components/alert.component'
 
 @Component({

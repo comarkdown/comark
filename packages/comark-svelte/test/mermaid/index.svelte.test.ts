@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { render } from 'vitest-browser-svelte'
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import mermaid, { Mermaid } from '../../src/plugins/mermaid'
 import MarkdownDocument from '../../src/components/MarkdownDocument.svelte'
 import Markdown from '../../src/components/Markdown.svelte'
@@ -31,7 +31,7 @@ describe('Mermaid component', () => {
 
 describe('Mermaid + MarkdownDocument integration', () => {
   it('renders a mermaid code block from parsed markdown', async () => {
-    const tree = await parse('```mermaid\ngraph TD\n    A-->B\n```', {
+    const tree = await parseMarkdown('```mermaid\ngraph TD\n    A-->B\n```', {
       plugins: [mermaid()],
     })
     const screen = await render(MarkdownDocument, {

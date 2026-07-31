@@ -21,5 +21,5 @@ This example demonstrates how to use Comark with Astro content collections and R
 ## How it works
 
 - **Content collections** — Posts are defined with `glob()` loader and a Zod schema for type-safe frontmatter (title, description, pubDate, tags).
-- **Comark parsing** — In the blog post page, `parse()` converts the raw Markdown body into a Comark AST.
+- **Comark parsing** — In the blog post page, `parseMarkdown()` converts the raw Markdown body into a Comark AST.
 - **React rendering** — `MarkdownDocument` from `comark/react` renders the AST using React components, including custom ones like `Alert`. Thanks to Astro's React integration, these are server-rendered with zero client-side JavaScript.

@@ -30,7 +30,7 @@ This example demonstrates how to use Comark with LaTeX math formulas in Vue:
 1. Import the math plugin, component, and KaTeX CSS:
    ```ts
    import math from '@comark/math'
-   import { Math } from '@comark/math/vue'
+   import { Math }
    import 'katex/dist/katex.min.css'
    ```
 

@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { parse } from '../../src/parse'
+import { parseMarkdown } from '../../src/parse'
 import security from '../../src/plugins/security'
 import { textContent } from '../../src/utils/index.ts'
 import { renderMarkdown } from 'comark/render'
 import type { ElementNode, Node, MarkdownDocument } from '../../src/types'
 
 const parseWithSecurity = (md: string, options: Parameters<typeof security>[0] = {}) =>
-  parse(md, { plugins: [security(options)] })
+  parseMarkdown(md, { plugins: [security(options)] })
 
 function makeTree(nodes: MarkdownDocument['nodes']): MarkdownDocument {
   return { nodes, frontmatter: {}, meta: {} }

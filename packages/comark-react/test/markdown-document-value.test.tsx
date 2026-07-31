@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { renderToString } from 'react-dom/server'
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import { Markdown } from '../src/components/Markdown'
 import { MarkdownDocument } from '../src/components/MarkdownDocument'
 
@@ -20,7 +20,7 @@ function renderMarkdownDocumentComponent(props: Record<string, unknown>) {
 
 describe('Markdown value as MarkdownDocument', () => {
   it('renders a pre-parsed tree the same as MarkdownDocument', async () => {
-    const tree = await parse('# Hello **World**')
+    const tree = await parseMarkdown('# Hello **World**')
     const fromMarkdown = await renderMarkdownComponent({ value: tree })
     const fromParsed = renderMarkdownDocumentComponent({ value: tree })
 

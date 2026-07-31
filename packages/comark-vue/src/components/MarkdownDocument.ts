@@ -308,7 +308,7 @@ type MarkdownDocumentComponent = ReturnType<typeof defineComponent<MarkdownDocum
  *   h2: CustomHeading,
  * }
  *
- * const document = await parse(`This is **markdown** with components.`)
+ * const document = await parseMarkdown(`This is **markdown** with components.`)
  * </script>
  * ```
  */

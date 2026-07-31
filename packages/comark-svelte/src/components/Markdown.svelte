@@ -25,7 +25,7 @@ This is an alert component
 -->
 <script lang="ts">
   import type { MarkdownDocument as MarkdownDocumentType, ComarkPlugin, ComponentManifest } from 'comark'
-  import { parse } from 'comark'
+  import { parseMarkdown } from 'comark'
   import { isMarkdownDocument } from 'comark/utils'
   import MarkdownDocument from './MarkdownDocument.svelte'
   import { warnDeprecated } from '../internal/deprecation.js'
@@ -74,7 +74,7 @@ This is an alert component
     // `parse` directly mutates `plugins` which creates an infinite effect loop
     // so we copy it before passing it in so it gets a regular JS array and we get to still
     // track dependencies from an external perspective
-    parse(content, { ...options, ...(unwrap ? { unwrap } : {}), plugins: [...plugins] }).then((result) => {
+    parseMarkdown(content, { ...options, ...(unwrap ? { unwrap } : {}), plugins: [...plugins] }).then((result) => {
       if (currentVersion > appliedVersion) {
         appliedVersion = currentVersion
         parsed = result

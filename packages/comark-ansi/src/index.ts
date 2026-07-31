@@ -1,5 +1,5 @@
 import type { ParseOptions, RenderOptions } from 'comark'
-import { createParse } from 'comark'
+import { createMarkdownParser } from 'comark'
 import { renderANSI } from './render.ts'
 
 export { renderANSI, type RenderANSIOptions } from './render.ts'
@@ -40,8 +40,7 @@ export interface LogOptions extends RenderOptions, ParseOptions {
  * ```
  */
 export function createLog(options?: LogOptions): (markdown: string) => Promise<void> {
-  const parse = createParse(options as ParseOptions)
-
+  const parse = createMarkdownParser(options as ParseOptions)
   return async (markdown: string) => {
     const tree = await parse(markdown)
     const write = options?.write ?? defaultWrite
@@ -86,8 +85,7 @@ export async function log(markdown: string, options?: LogOptions): Promise<void>
  * ```
  */
 export function createRender(options?: ParseOptions & RenderOptions): (markdown: string) => Promise<string> {
-  const parse = createParse(options as ParseOptions)
-
+  const parse = createMarkdownParser(options as ParseOptions)
   return async (markdown: string) => {
     const tree = await parse(markdown)
     return await renderANSI(tree, options as RenderOptions)

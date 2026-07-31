@@ -1,4 +1,4 @@
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import type { MarkdownDocument } from 'comark'
 import highlight from 'comark/plugins/highlight'
 
@@ -204,7 +204,7 @@ export default defineEventHandler(async (event) => {
 
     const language = EXT_TO_LANG[getExtension(relativePath)] || 'text'
     const markdown = '~~~' + language + '\n' + content + '\n~~~'
-    const tree = await parse(markdown, { plugins: [highlightPlugin] })
+    const tree = await parseMarkdown(markdown, { plugins: [highlightPlugin] })
 
     fileResults[relativePath] = tree
   })

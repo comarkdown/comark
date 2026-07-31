@@ -24,7 +24,7 @@ This is **Markdown** inside your own component.
 
 ## Why Comark
 
-- **Runtime parsing**: `parse(markdown)` is a pure function returning a compact AST. Content from a database, CMS, or LLM is live the moment it is saved. No rebuild, no redeploy. ([Comark vs MDX](https://comark.dev/compare/comark-vs-mdx))
+- **Runtime parsing**: `parseMarkdown(markdown)` is a pure function returning a compact AST. Content from a database, CMS, or LLM is live the moment it is saved. No rebuild, no redeploy. ([Comark vs MDX](https://comark.dev/compare/comark-vs-mdx))
 - **Streaming built in**: auto-close completes unterminated syntax (`**bold`, open code fences, half-open components) so AI output renders correctly at every frame.
 - **One parser, every renderer**: the same source renders to Vue, React, Svelte, Angular, Nuxt, HTML strings, and ANSI terminal output. Your content outlasts your framework.
 - **Still just Markdown**: full CommonMark + GFM, frontmatter, and `{.class}` attributes on native elements. Components are opt-in syntax, not a new language.
@@ -41,9 +41,9 @@ npm install comark
 ```
 
 ```ts
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 
-const tree = await parse('# Hello **World**')
+const tree = await parseMarkdown('# Hello **World**')
 // { nodes: [['h1', { id: 'hello' }, 'Hello ', ['strong', {}, 'World']]], frontmatter: {}, meta: {} }
 ```
 
@@ -57,7 +57,7 @@ npm install @comark/vue katex
 
 ```vue
 <script setup lang="ts">
-import { Markdown } from '@comark/vue'
+import { Markdown }
 import math, { Math } from '@comark/vue/plugins/math'
 
 const chatMessage = ...
@@ -75,7 +75,7 @@ npm install @comark/react katex
 ```
 
 ```tsx
-import { Markdown } from '@comark/react'
+import { Markdown }
 import math, { Math } from '@comark/react/plugins/math'
 
 function App() {
@@ -92,7 +92,7 @@ npm install @comark/svelte katex
 
 ```svelte
 <script lang="ts">
-  import { Markdown } from '@comark/svelte'
+  import { Markdown }
   import math, { Math } from '@comark/svelte/plugins/math'
 
   const chatMessage = ...
@@ -109,7 +109,7 @@ npm install @comark/angular katex
 
 ```typescript
 import { Component } from '@angular/core'
-import { Markdown } from '@comark/angular'
+import { Markdown }
 import math, { Math } from '@comark/angular/plugins/math'
 
 @Component({

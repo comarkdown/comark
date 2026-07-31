@@ -1,13 +1,13 @@
 import '@xterm/xterm/css/xterm.css'
 import { Terminal } from '@xterm/xterm'
 import { FitAddon } from '@xterm/addon-fit'
-import { createParse } from 'comark'
+import { createMarkdownParser } from 'comark'
 import math from 'comark/plugins/math'
 import highlight from 'comark/plugins/highlight'
 import { renderANSI } from '@comark/ansi'
 
 const plugins = [math(), highlight()]
-const parse = createParse({ plugins })
+const parseMarkdown = createMarkdownParser({ plugins })
 
 const SAMPLE = `---
 title: Comark ANSI Demo
@@ -26,10 +26,10 @@ Links look like this: [xtermjs.org](https://xtermjs.org)
 ## Code Block
 
 \`\`\`typescript [main.ts]
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import { renderANSI } from '@comark/ansi'
 
-const tree = await parse('# Hello World')
+const tree = await parseMarkdown('# Hello World')
 console.log(renderANSI(tree))
 \`\`\`
 
@@ -154,7 +154,7 @@ window.addEventListener('resize', () => fitAddon.fit())
 // --- Render logic ---
 
 async function render(markdown: string) {
-  const tree = await parse(markdown)
+  const tree = await parseMarkdown(markdown)
   const ansi = await renderANSI(tree, { width: term.cols })
 
   term.reset()

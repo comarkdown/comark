@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import { isMarkdownDocument } from 'comark/utils'
 import type { MarkdownDocument } from 'comark'
 import { Markdown } from '../src/components/markdown.component.ts'
@@ -16,7 +16,7 @@ function createMarkdown(): Markdown {
 
 describe('Markdown value as MarkdownDocument', () => {
   it('assigns a pre-parsed tree without calling parse', async () => {
-    const tree = await parse('# Hello **World**')
+    const tree = await parseMarkdown('# Hello **World**')
     const component = createMarkdown()
 
     component.value = tree

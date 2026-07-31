@@ -13,7 +13,7 @@ The migration has two parts: **Core Package** (programmatic API) and **Nuxt Modu
 ## Quick Overview
 
 - **Package**: `@nuxtjs/mdc` → `comark` (core only) or `@comark/nuxt` (Nuxt module)
-- **Parse**: `parseMarkdown()` → `parse()` · factory: `createParse()` (sync, no await)
+- **Parse**: `parseMarkdown()` → `parseMarkdown()` · factory: `createMarkdownParser()` (sync, no await)
 - **Render**: `stringifyMarkdown()` → `renderMarkdown()` from `comark/render`
 - **AST**: object tree → compact tuples `['tag', props, ...children]`
 - **Result**: `result.body` / `result.data` → `tree.nodes` / `tree.frontmatter`
@@ -29,8 +29,8 @@ The migration has two parts: **Core Package** (programmatic API) and **Nuxt Modu
 
 | `@nuxtjs/mdc` | `comark` |
 |---|---|
-| `parseMarkdown(md, opts)` | `parse(md, opts)` from `comark` |
-| `createMarkdownParser(opts)` (async) | `createParse(opts)` (sync, no await) |
+| `parseMarkdown(md, opts)` | `parseMarkdown(md, opts)` from `comark` |
+| `createMarkdownParser(opts)` (async) | `createMarkdownParser(opts)` (sync, no await) |
 | `stringifyMarkdown(body, data)` | `renderMarkdown(tree)` from `comark/render` |
 | `result.body` (`MDCRoot`) | `tree.nodes` (`Node[]`) |
 | `result.data` | `tree.frontmatter` |
@@ -174,7 +174,7 @@ These are **only available with Nuxt UI**. Without it, use `::callout{icon="..."
 
 ## Common Pitfalls
 
-1. **`createParse` is sync**: no `await` needed (unlike `createMarkdownParser`)
+1. **`createMarkdownParser` is sync**: no `await` needed (unlike `createMarkdownParser`)
 2. **Attribute naming**: Comark uses `attrs.lang`, not `attrs.language`
 3. **Frontmatter**: stored in `tree.frontmatter`, not passed separately
 4. **`renderMarkdown` includes frontmatter**: reads `tree.frontmatter` automatically

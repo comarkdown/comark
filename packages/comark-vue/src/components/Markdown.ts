@@ -1,6 +1,6 @@
 import type { PropType } from 'vue'
 import { computed, defineComponent, h, shallowRef, watch } from 'vue'
-import { createSerializedParse } from 'comark'
+import { createSerializedMarkdownParser } from 'comark'
 import type { ParseOptions, ComponentManifest, MarkdownDocument as MarkdownDocumentType } from 'comark'
 import { isMarkdownDocument } from 'comark/utils'
 import { MarkdownDocument } from './MarkdownDocument.ts'
@@ -223,7 +223,7 @@ export const Markdown: MarkdownComponent = defineComponent({
 
     const parsed = shallowRef<MarkdownDocumentType | null>(null)
 
-    const parse = createSerializedParse({
+    const parse = createSerializedMarkdownParser({
       ...props.options,
       // `unwrap` prop is a shorthand for the `unwrap` parse option; an explicit
       // `options.unwrap` still wins when the prop is left at its default.

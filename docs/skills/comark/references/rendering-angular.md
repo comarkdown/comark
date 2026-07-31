@@ -53,7 +53,7 @@ Use `MarkdownDocument` when you already have a parsed Comark tree:
 ```typescript
 import { Component } from '@angular/core'
 import { MarkdownDocument } from '@comark/angular'
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import type { MarkdownDocument } from 'comark'
 
 @Component({
@@ -70,7 +70,7 @@ export class AppComponent {
   tree: MarkdownDocument | null = null
 
   async ngOnInit() {
-    this.tree = await parse('# Hello World')
+    this.tree = await parseMarkdown('# Hello World')
   }
 }
 ```

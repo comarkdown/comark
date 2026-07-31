@@ -89,16 +89,16 @@ Comark's plugin system extends markdown functionality with specialized features.
 
 ## Use Plugins
 
-Pass plugins to `parse()` or the `<Markdown>` component:
+Pass plugins to `parseMarkdown()` or the `<Markdown>` component:
 
 ::code-group
 
 ```typescript [Parse API]
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import emoji from 'comark/plugins/emoji'
 import toc from 'comark/plugins/toc'
 
-const result = await parse(content, {
+const result = await parseMarkdown(content, {
   plugins: [
     emoji(),
     toc({ depth: 3 })

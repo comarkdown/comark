@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import { renderToString } from 'react-dom/server'
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import { MarkdownDocument } from '../src/components/MarkdownDocument'
 import binding, { Binding } from '../src/plugins/binding'
 
 async function renderMarkdown(markdown: string, props: Record<string, any> = {}) {
-  const tree = await parse(markdown, { plugins: [binding()] })
+  const tree = await parseMarkdown(markdown, { plugins: [binding()] })
   const html = renderToString(
     <MarkdownDocument
       value={tree}

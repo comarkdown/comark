@@ -10,9 +10,9 @@ Supports custom component mappings and a streaming caret indicator.
 ```svelte
 <script>
   import { MarkdownDocument } from '@comark/svelte'
-  import { parse } from 'comark'
+  import { parseMarkdown } from 'comark'
 
-  const document = await parse('# Hello **World**')
+  const document = await parseMarkdown('# Hello **World**')
 </script>
 
 <MarkdownDocument value={document} />

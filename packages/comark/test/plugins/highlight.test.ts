@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import type { ElementNode, MarkdownDocument } from '../../src/types'
-import { parse } from '../../src'
+import { parseMarkdown } from '../../src'
 import { renderMarkdown } from '../../src/render'
 import highlight from '../../src/plugins/highlight'
 
 describe('highlight themes option', () => {
   it('accepts bundled theme names as strings', async () => {
-    const tree = await parse('```js\nconst a = 1\n```', {
+    const tree = await parseMarkdown('```js\nconst a = 1\n```', {
       plugins: [highlight({ themes: { light: 'github-light', dark: 'github-dark' } })],
     })
     const pre = tree.nodes[0] as ElementNode
@@ -26,7 +26,7 @@ describe('highlight themes option', () => {
 
   it('throws on an unknown bundled theme name', async () => {
     await expect(
-      parse('```js\nconst a = 1\n```', {
+      parseMarkdown('```js\nconst a = 1\n```', {
         plugins: [highlight({ themes: { light: 'not-a-real-theme' } })],
       })
     ).rejects.toThrow('Unknown bundled theme')

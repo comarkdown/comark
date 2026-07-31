@@ -1,4 +1,4 @@
-import { createComarkContext, parse, type MarkdownDocument } from 'comark'
+import { createComarkContext, parseMarkdown, type MarkdownDocument } from 'comark'
 import { MarkdownLive } from '@comark/react'
 import { useEffect, useState } from 'react'
 
@@ -27,25 +27,25 @@ const btn = 'rounded border border-gray-300 dark:border-gray-700 px-3 py-1.5 tex
 async function appendParagraph() {
   ctx
     .get('demo')
-    .patch({ op: 'insert', path: [99], node: (await parse(`A paragraph appended at ${++counter}.`)).nodes[0]! })
+    .patch({ op: 'insert', path: [99], node: (await parseMarkdown(`A paragraph appended at ${++counter}.`)).nodes[0]! })
 }
 
 async function rewriteHeading() {
   ctx
     .get('demo')
-    .patch({ op: 'replace', path: [0], node: (await parse(`# Rewritten heading (${++counter})`)).nodes[0]! })
+    .patch({ op: 'replace', path: [0], node: (await parseMarkdown(`# Rewritten heading (${++counter})`)).nodes[0]! })
 }
 
 async function reset() {
   counter = 0
-  ctx.get('demo').set(await parse('# Live document\n\nReset. Drive me again.'))
+  ctx.get('demo').set(await parseMarkdown('# Live document\n\nReset. Drive me again.'))
 }
 
 export default function Live() {
   const [tree, setTree] = useState<MarkdownDocument | null>(null)
 
   useEffect(() => {
-    parse(INITIAL).then((t) => {
+    parseMarkdown(INITIAL).then((t) => {
       ctx.get('demo', t) // seed the context so patches have a base tree
       setTree(t)
     })

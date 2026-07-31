@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { render } from 'svelte/server'
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import math, { Math } from '../../src/plugins/math'
 import MarkdownDocument from '../../src/components/MarkdownDocument.svelte'
 
@@ -48,7 +48,7 @@ describe('math plugin', () => {
 
 describe('Math + MarkdownDocument integration (server)', () => {
   it('renders inline math from parsed markdown', async () => {
-    const tree = await parse('The formula $x^2$ is simple', {
+    const tree = await parseMarkdown('The formula $x^2$ is simple', {
       plugins: [math()],
     })
     const { body } = render(MarkdownDocument, {
@@ -61,7 +61,7 @@ describe('Math + MarkdownDocument integration (server)', () => {
   })
 
   it('renders display math from parsed markdown', async () => {
-    const tree = await parse('$$\nE = mc^2\n$$', {
+    const tree = await parseMarkdown('$$\nE = mc^2\n$$', {
       plugins: [math()],
     })
     const { body } = render(MarkdownDocument, {
@@ -73,7 +73,7 @@ describe('Math + MarkdownDocument integration (server)', () => {
   })
 
   it('renders mixed inline and display math', async () => {
-    const tree = await parse('Inline $a+b$ and display:\n\n$$\nc^2\n$$', {
+    const tree = await parseMarkdown('Inline $a+b$ and display:\n\n$$\nc^2\n$$', {
       plugins: [math()],
     })
     const { body } = render(MarkdownDocument, {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import highlight from '@comark/nuxt/plugins/highlight'
 import math from '@comark/nuxt/plugins/math'
 import binding from '@comark/nuxt/plugins/binding'
@@ -231,7 +231,7 @@ async function parseMarkdown(): Promise<void> {
   parsing.value = true
   const start = performance.now()
   try {
-    const result = await parse(markdown.value, {
+    const result = await parseMarkdown(markdown.value, {
       plugins: activePlugins.value,
       autoUnwrap: parseOptions.value.autoUnwrap,
       autoClose: parseOptions.value.autoClose,
@@ -303,7 +303,7 @@ watch(completion, async (md) => {
   if (!md) return
   markdown.value = md
   try {
-    const result = await parse(md, {
+    const result = await parseMarkdown(md, {
       plugins: activePlugins.value,
       autoUnwrap: parseOptions.value.autoUnwrap,
       autoClose: true,

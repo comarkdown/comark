@@ -12,16 +12,16 @@ This example uses Nuxt 4 with Comark as the Markdown renderer and Nuxt UI for st
 Instead of the typical `gray-matter` + `remark` + `rehype` pipeline, we use Comark's framework-agnostic API:
 
 1. **Read markdown files** — Load `.md` files from the `content/posts/` directory via a server route
-2. **Parse with Comark** — Call `parse()` to build the AST and extract frontmatter
+2. **Parse with Comark** — Call `parseMarkdown()` to build the AST and extract frontmatter
 3. **Static generation** — Use `nuxt generate` for full SSG
 4. **Render with Vue** — Use `MarkdownDocument` from `@comark/nuxt` with auto-discovered components
 
 ```ts
 // server/api/posts/[slug].get.ts
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import highlight from 'comark/plugins/highlight'
 
-const tree = await parse(content, {
+const tree = await parseMarkdown(content, {
   plugins: [highlight()],
 })
 

@@ -1,4 +1,4 @@
-import { createParse } from '@comark/nuxt/parse'
+import { createMarkdownParser } from 'comark'
 import highlight from '@comark/nuxt/plugins/highlight'
 import mermaid from '@comark/nuxt/plugins/mermaid'
 import latexLanguage from '@shikijs/langs/latex'
@@ -14,7 +14,7 @@ export default defineTransformer({
   extensions: ['.md'],
   parse: async (file) => {
     if (!parse) {
-      parse = createParse({
+      parse = createMarkdownParser({
         plugins: [
           highlight({
             languages: [latexLanguage],
@@ -26,7 +26,7 @@ export default defineTransformer({
         ],
       })
     }
-    const parsed = await parse(file.body)
+    const parsed = await parseMarkdown(file.body)
 
     const result = {
       id: file.id,

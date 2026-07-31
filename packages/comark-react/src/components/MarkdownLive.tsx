@@ -25,7 +25,7 @@ export interface MarkdownLiveProps extends MarkdownDocumentProps {
  * import { MarkdownLive } from '@comark/react'
  *
  * export default async function Page() {
- *   const tree = await parse(markdown)
+ *   const tree = await parseMarkdown(markdown)
  *   return <MarkdownLive value={tree} comarkKey="my-doc" components={{ Alert }} />
  * }
  * ```

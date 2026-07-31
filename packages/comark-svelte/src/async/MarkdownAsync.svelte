@@ -9,7 +9,7 @@ and wrap this component in a `<svelte:boundary>` for pending/error states.
 @example
 ```svelte
 <script>
-  import { MarkdownAsync } from '@comark/svelte/async'
+  import { MarkdownAsync } from '@comark/svelte'
   import Alert from './Alert.svelte'
 
   let content = $state('# Hello World')
@@ -29,7 +29,7 @@ and wrap this component in a `<svelte:boundary>` for pending/error states.
 -->
 <script lang="ts">
   import type { MarkdownDocument as MarkdownDocumentType, ComarkPlugin, ComponentManifest } from 'comark'
-  import { parse } from 'comark'
+  import { parseMarkdown } from 'comark'
   import { isMarkdownDocument } from 'comark/utils'
   import MarkdownDocument from '../components/MarkdownDocument.svelte'
   import ResolveAsync from './ResolveAsync.svelte'
@@ -74,7 +74,7 @@ and wrap this component in a `<svelte:boundary>` for pending/error states.
       : // `parse` directly mutates `plugins` which creates an infinite effect loop
         // so we copy it before passing it in so it gets a regular JS array and we get to still
         // track dependencies from an external perspective
-        await parse(content, { ...options, ...(unwrap ? { unwrap } : {}), plugins: [...plugins] }),
+        await parseMarkdown(content, { ...options, ...(unwrap ? { unwrap } : {}), plugins: [...plugins] }),
   )
 </script>
 

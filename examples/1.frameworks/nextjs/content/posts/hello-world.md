@@ -15,15 +15,15 @@ This alert is rendered using a custom Comark component — no client-side JavaSc
 
 ## Why Comark + Next.js?
 
-- **Server-rendered** — Comark parses and renders on the server via `parse()` and `MarkdownDocument`
+- **Server-rendered** — Comark parses and renders on the server via `parseMarkdown()` and `MarkdownDocument`
 - **Static generation** — Full SSG with `generateStaticParams` for zero-latency delivery
 - **Component syntax** — Embed custom components directly in your Markdown
 
 ```ts
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import { MarkdownDocument } from '@comark/react'
 
-const tree = await parse(markdown)
+const tree = await parseMarkdown(markdown)
 // <MarkdownDocument value={tree} components={{ Alert }} />
 ```
 

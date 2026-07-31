@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import { render } from 'vitest-browser-svelte'
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import MarkdownDocument from '../src/components/MarkdownDocument.svelte'
 import Badge from './test-components/Badge.svelte'
 import Card from './test-components/Card.svelte'
 
 async function renderMarkdown(markdown: string, props: Record<string, any> = {}) {
-  const tree = await parse(markdown)
+  const tree = await parseMarkdown(markdown)
   return render(MarkdownDocument, { value: tree, ...props })
 }
 

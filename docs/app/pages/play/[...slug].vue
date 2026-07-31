@@ -2,7 +2,7 @@
 import { joinURL } from 'ufo'
 import { useDraggable, useWindowSize, watchDebounced } from '@vueuse/core'
 import { useCompletion } from '@ai-sdk/vue'
-import { createParse } from '@comark/nuxt/parse'
+import { createMarkdownParser } from 'comark'
 import jsonRenderer from '@comark/nuxt/plugins/json-render'
 import binding from '@comark/nuxt/plugins/binding'
 import highlight from '@comark/nuxt/plugins/highlight'
@@ -30,13 +30,13 @@ const markdown = ref(
     ? playgroundExamples.find((example) => example.value === slug.value)?.content
     : playgroundExamples[0]!.content
 )
-const parse = createParse({
+const parse = createMarkdownParser({
   plugins: [jsonRenderer(), binding(), highlight(), math(), emoji(), mermaid(), footnotes(), punctuation()],
 })
 
 const { data: page, refresh } = await useAsyncData(
   () => `play-${slug.value}`,
-  () => parse(markdown.value!)
+  () => parseMarkdown(markdown.value!)
 )
 if (!page.value) {
   throw createError({
@@ -77,7 +77,7 @@ watch(completion, async (md) => {
   if (!md) return
   markdown.value = md
   try {
-    page.value = await parse(md)
+    page.value = await parseMarkdown(md)
   } catch {
     /* ignore intermediate parse errors */
   }

@@ -8,7 +8,7 @@ determines inline vs display mode (display when class does NOT contain "inline")
 @example
 ```svelte
 <script>
-  import { math, Math } from '@comark/svelte/plugin-math'
+  import math, { Math } from '@comark/svelte/plugins/math'
   import { Markdown } from '@comark/svelte'
 </script>
 

@@ -7,7 +7,7 @@ import {
   ChangeDetectorRef,
   Type,
 } from '@angular/core'
-import { createSerializedParse } from 'comark'
+import { createSerializedMarkdownParser } from 'comark'
 import type { ParseOptions, MarkdownDocument as MarkdownDocumentType } from 'comark'
 import { isMarkdownDocument } from 'comark/utils'
 import { MarkdownDocument } from './markdown-document.component.ts'
@@ -79,7 +79,7 @@ export class Markdown implements OnChanges {
 
   tree: MarkdownDocumentType | null = null
 
-  private serializedParse = createSerializedParse({})
+  private serializedParse = createSerializedMarkdownParser({})
 
   constructor(private cdr: ChangeDetectorRef) {}
 
@@ -88,7 +88,7 @@ export class Markdown implements OnChanges {
       warnDeprecated('markdown (input)', 'value')
     }
     if (changes['options'] || changes['plugins'] || changes['unwrap']) {
-      this.serializedParse = createSerializedParse({
+      this.serializedParse = createSerializedMarkdownParser({
         ...this.options,
         ...(this.unwrap ? { unwrap: this.unwrap } : {}),
         plugins: this.plugins,

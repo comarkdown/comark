@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import React from 'react'
 import { renderToString } from 'react-dom/server'
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import { MarkdownDocument } from '../src/components/MarkdownDocument'
 
 interface BadgeProps {
@@ -38,7 +38,7 @@ function Card({ title = '', variant = '', children }: CardProps) {
 }
 
 async function renderMarkdown(markdown: string, props: Record<string, any> = {}) {
-  const tree = await parse(markdown)
+  const tree = await parseMarkdown(markdown)
   return renderToString(
     <MarkdownDocument
       value={tree}

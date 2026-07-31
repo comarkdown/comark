@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest'
-import { parse } from '@comark/html/parse'
+import { parseMarkdown } from 'comark'
 import githubAlert from '@comark/html/plugins/alert'
-import { renderHTML } from '@comark/html'
+import { renderHTML } from '../src/index'
 
 describe('githubAlert', () => {
   it('should convert !TIP to <svg> icon', async () => {
-    const tree = await parse(
+    const tree = await parseMarkdown(
       `
 > [!NOTE]
 > Useful information that users should know, even when skimming content.

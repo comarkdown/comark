@@ -135,7 +135,7 @@ interface DefineMarkdownDocumentOptions {
  *
  * // In a Server Component:
  * export default async function Page() {
- *   const document = await parse(markdown)
+ *   const document = await parseMarkdown(markdown)
  *   return <ArticleRenderer value={document} />
  * }
  * ```

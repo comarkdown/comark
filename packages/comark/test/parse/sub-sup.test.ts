@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { MarkdownItPlugin } from '../../src/types'
-import { defineComarkPlugin, parse } from '../../src/parse'
+import { defineComarkPlugin, parseMarkdown } from '../../src/parse'
 
 // Minimal inline rules that mirror what `markdown-it-sub` / `markdown-it-sup`
 // emit: `~text~` → sub_open/text/sub_close, `^text^` → sup_open/text/sup_close.
@@ -50,17 +50,17 @@ const superscript = defineComarkPlugin(() => ({
 
 describe('sub/sup token mapping (regression for #201)', () => {
   it('maps sub_open tokens to a <sub> element (not <del>)', async () => {
-    const tree = await parse('H~2~O', { plugins: [subscript()] })
+    const tree = await parseMarkdown('H~2~O', { plugins: [subscript()] })
     expect(tree.nodes).toEqual([['p', {}, 'H', ['sub', {}, '2'], 'O']])
   })
 
   it('maps sup_open tokens to a <sup> element (not dropped)', async () => {
-    const tree = await parse('x^2^', { plugins: [superscript()] })
+    const tree = await parseMarkdown('x^2^', { plugins: [superscript()] })
     expect(tree.nodes).toEqual([['p', {}, 'x', ['sup', {}, '2']]])
   })
 
   it('preserves both sub and sup in the same paragraph', async () => {
-    const tree = await parse('H~2~O and x^2^', { plugins: [subscript(), superscript()] })
+    const tree = await parseMarkdown('H~2~O and x^2^', { plugins: [subscript(), superscript()] })
     expect(tree.nodes).toEqual([['p', {}, 'H', ['sub', {}, '2'], 'O and x', ['sup', {}, '2']]])
   })
 })

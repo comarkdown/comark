@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { parse } from '../src/index'
+import { parseMarkdown } from '../src/index'
 
 describe('parse - empty content', () => {
   it('should handle empty string', async () => {
     const content = ''
-    const result = await parse(content)
+    const result = await parseMarkdown(content)
 
     expect(result).toBeDefined()
     expect(result.nodes).toBeDefined()
@@ -13,7 +13,7 @@ describe('parse - empty content', () => {
 
   it('should handle whitespace only content', async () => {
     const content = '   \n\n\t  '
-    const result = await parse(content)
+    const result = await parseMarkdown(content)
 
     expect(result).toBeDefined()
     expect(result.nodes).toBeDefined()
@@ -22,7 +22,7 @@ describe('parse - empty content', () => {
 
   it('should handle newlines only', async () => {
     const content = '\n\n\n'
-    const result = await parse(content)
+    const result = await parseMarkdown(content)
 
     expect(result).toBeDefined()
     expect(result.nodes).toBeDefined()

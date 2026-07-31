@@ -13,10 +13,10 @@ Complete guide for parsing Comark documents and working with the Markdown AST fo
 
 ## String Parsing
 
-The primary way to parse Comark content is using the `parse()` function:
+The primary way to parse Comark content is using the `parseMarkdown()` function:
 
 ```typescript
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 
 const content = `---
 title: My Document
@@ -31,7 +31,7 @@ Important message here
 ::
 `
 
-const result = await parse(content)
+const result = await parseMarkdown(content)
 ```
 
 ### Result Structure
@@ -62,16 +62,16 @@ interface ParseOptions {
 
 ```typescript
 // Default parsing
-const result = await parse(content)
+const result = await parseMarkdown(content)
 
 // Disable auto-unwrap
-const result = await parse(content, { autoUnwrap: false })
+const result = await parseMarkdown(content, { autoUnwrap: false })
 
 // Disable auto-close
-const result = await parse(content, { autoClose: false })
+const result = await parseMarkdown(content, { autoClose: false })
 
 // Both disabled
-const result = await parse(content, {
+const result = await parseMarkdown(content, {
   autoUnwrap: false,
   autoClose: false
 })
@@ -129,7 +129,7 @@ const closedProps = autoCloseMarkdown(props)
 For syntax highlighting support, use the `highlight` plugin:
 
 ```typescript
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import highlight from 'comark/plugins/highlight'
 
 const content = `
@@ -143,12 +143,12 @@ function hello() {
 `
 
 // Enable syntax highlighting
-const result = await parse(content, {
+const result = await parseMarkdown(content, {
   plugins: [highlight()]
 })
 
 // With custom Shiki options
-const result = await parse(content, {
+const result = await parseMarkdown(content, {
   plugins: [
     highlight({
       themes: {
@@ -182,7 +182,7 @@ interface HighlightOptions {
 ```typescript
 import highlight from 'comark/plugins/highlight'
 
-const result = await parse(content, {
+const result = await parseMarkdown(content, {
   plugins: [
     highlight({
       themes: {
@@ -326,11 +326,11 @@ Warning message
 ### Render to HTML
 
 ```typescript
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import { renderHTML } from '@comark/html'
 
 const content = '# Hello World\n\nThis is **markdown**.'
-const tree = await parse(content)
+const tree = await parseMarkdown(content)
 
 const html = renderHTML(tree)
 console.log(html)
@@ -347,11 +347,11 @@ console.log(html)
 Convert AST back to Comark markdown:
 
 ```typescript
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import { renderMarkdown } from 'comark/render'
 
 const content = '# Hello\n\n::alert{type="info"}\nMessage\n::'
-const result = await parse(content)
+const result = await parseMarkdown(content)
 
 const markdown = renderMarkdown(result.nodes)
 console.log(markdown)

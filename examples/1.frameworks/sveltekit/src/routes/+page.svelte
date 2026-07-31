@@ -1,7 +1,7 @@
 <script lang="ts">
   import { MarkdownAsync } from '@comark/svelte/async'
   import type { PageData } from './$types'
-  import { pascalCase } from '@comark/svelte/utils';
+  import { pascalCase } from 'comark/utils'
 
   let { data }: { data: PageData } = $props()
 

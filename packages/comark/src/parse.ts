@@ -43,24 +43,24 @@ export { defineComarkPlugin } from './utils/helpers.ts'
  *
  * @example
  * ```typescript
- * import { createParse } from 'comark'
+ * import { createMarkdownParser } from 'comark'
  *
- * const parse = createParse({ autoUnwrap: false })
- * const tree = await parse('# Hello **World**\n::alert\nhi\n::')
+ * const parseMarkdown = createMarkdownParser({ autoUnwrap: false })
+ * const tree = await parseMarkdown('# Hello **World**\n::alert\nhi\n::')
  * console.log(tree.nodes)
  * // → [ ['h1', { id: 'hello-world' }, 'Hello ', ['strong', {}, 'World'] ], ['alert', {}, 'hi'] ]
  *
  * // Enable HTML parsing (on by default) — HTML tags are included in the AST
- * const parseWithHtml = createParse({ html: true })
+ * const parseWithHtml = createMarkdownParser({ html: true })
  * const tree2 = await parseWithHtml('<strong class="bold">Hello</strong> _world_')
  * console.log(tree2.nodes)
  * // → [ ['strong', { class: 'bold' }, 'Hello'], ' ', ['em', {}, 'world'] ]
  *
  * // Disable HTML parsing — HTML tags are treated as plain text
- * const parseNoHtml = createParse({ html: false })
+ * const parseNoHtml = createMarkdownParser({ html: false })
  * ```
  */
-export function createParse<const TPlugins extends readonly ComarkPlugin<any, any>[] = []>(
+export function createMarkdownParser<const TPlugins extends readonly ComarkPlugin<any, any>[] = []>(
   options: ParseOptions<TPlugins> = {} as ParseOptions<TPlugins>
 ): ComarkParseFn<ResolvedMeta<MergePluginMeta<TPlugins>>, ResolvedFrontmatter<MergePluginFrontmatter<TPlugins>>> {
   const { autoUnwrap = true, autoClose = true } = options
@@ -199,7 +199,7 @@ export function createParse<const TPlugins extends readonly ComarkPlugin<any, an
  *
  * @example
  * ```typescript
- * import { parse } from 'comark'
+ * import { parseMarkdown } from 'comark'
  *
  * const content = `---
  * title: Hello World
@@ -214,24 +214,24 @@ export function createParse<const TPlugins extends readonly ComarkPlugin<any, an
  * ::
  * `
  *
- * const tree = await parse(content)
+ * const tree = await parseMarkdown(content)
  * console.log(tree.nodes)        // Array of AST nodes
  * console.log(tree.frontmatter)  // { title: 'Hello World' }
  * console.log(tree.meta)         // Additional metadata
  *
  * // Disable auto-unwrap
- * const tree2 = await parse(content, { autoUnwrap: false })
+ * const tree2 = await parseMarkdown(content, { autoUnwrap: false })
  * ```
  */
-export async function parse<const TPlugins extends readonly ComarkPlugin<any, any>[] = []>(
+export async function parseMarkdown<const TPlugins extends readonly ComarkPlugin<any, any>[] = []>(
   markdown: string,
   options: ParseOptions<TPlugins> = {} as ParseOptions<TPlugins>
 ): Promise<
   MarkdownDocument<ResolvedMeta<MergePluginMeta<TPlugins>>, ResolvedFrontmatter<MergePluginFrontmatter<TPlugins>>>
 > {
-  const parse = createParse(options)
+  const parser = createMarkdownParser(options)
 
-  return await parse(markdown)
+  return await parser(markdown)
 }
 
 /**
@@ -243,14 +243,29 @@ export async function parse<const TPlugins extends readonly ComarkPlugin<any, an
  *
  * @example
  * ```typescript
- * import { createSerializedParse } from 'comark'
+ * import { createSerializedMarkdownParser } from 'comark'
  *
- * const parse = createSerializedParse()
- * const tree = await parse(content)
+ * const parseMarkdown = createSerializedMarkdownParser()
+ * const tree = await parseMarkdown(content)
  * console.log(tree.nodes)
  */
-export function createSerializedParse<const TPlugins extends readonly ComarkPlugin<any, any>[] = []>(
+export function createSerializedMarkdownParser<const TPlugins extends readonly ComarkPlugin<any, any>[] = []>(
   options: ParseOptions<TPlugins> = {} as ParseOptions<TPlugins>
 ): ComarkParseFn<ResolvedMeta<MergePluginMeta<TPlugins>>, ResolvedFrontmatter<MergePluginFrontmatter<TPlugins>>> {
-  return createSerializedTask(createParse(options))
+  return createSerializedTask(createMarkdownParser(options))
 }
+
+/**
+ * @deprecated Use `createMarkdownParser` instead.
+ */
+export const createParse = createMarkdownParser
+
+/**
+ * @deprecated Use `parseMarkdown` instead.
+ */
+export const parse = parseMarkdown
+
+/**
+ * @deprecated Use `createSerializedMarkdownParser` instead.
+ */
+export const createSerializedParse = createSerializedMarkdownParser

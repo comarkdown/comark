@@ -1,6 +1,6 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import type { MarkdownDocument } from 'comark'
 import highlight from 'comark/plugins/highlight'
 
@@ -31,7 +31,7 @@ export async function getAllPosts(): Promise<PostMeta[]> {
   const posts: PostMeta[] = []
 
   for (const { slug, content } of files) {
-    const tree = await parse(content)
+    const tree = await parseMarkdown(content)
     const fm = tree.frontmatter as Record<string, unknown>
     posts.push({
       slug,
@@ -49,7 +49,7 @@ export async function getPost(slug: string): Promise<Post> {
   const filePath = path.join(postsDir, `${slug}.md`)
   const content = fs.readFileSync(filePath, 'utf-8')
 
-  const tree = await parse(content, {
+  const tree = await parseMarkdown(content, {
     plugins: [highlight()],
   })
 

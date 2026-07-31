@@ -1,6 +1,6 @@
 import { defineMarkdownDocumentComponent } from '@comark/vue'
-import { Math } from '@comark/vue/plugins/math'
-import { Mermaid } from '@comark/vue/plugins/mermaid'
+import { Math } from '@comark/nuxt/plugins/math'
+import { Mermaid } from '@comark/nuxt/plugins/mermaid'
 
 // This base renderer created to demonstrate how to create a base renderer for a specific use case.
 const BaseComarkDocsRenderer = defineMarkdownDocumentComponent({

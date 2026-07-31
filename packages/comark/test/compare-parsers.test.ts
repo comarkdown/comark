@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { MarkdownDocument } from '../src/index'
-import { parse } from '../src/index'
+import { parseMarkdown } from '../src/index'
 import { parseWithRemark } from './utils/index'
 
 // Deep comparison function for Comark nodes
@@ -393,7 +393,7 @@ describe('compare parseWithRemark and parse', () => {
     it(`should produce similar results for: ${testCase.name}`, async () => {
       const result1 = await parseWithRemark(testCase.content)
       // Disable autoUnwrap to match remark-mdc output structure
-      const result2 = await parse(testCase.content, { autoUnwrap: false })
+      const result2 = await parseMarkdown(testCase.content, { autoUnwrap: false })
 
       // Both should return valid structures
       expect(result1, `${testCase.name}: parseWithRemark should return result`).toBeDefined()

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { createSSRApp, h, Suspense } from 'vue'
 import { renderToString } from '@vue/server-renderer'
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import { Markdown } from '../src/components/Markdown.ts'
 import { MarkdownDocument } from '../src/components/MarkdownDocument.ts'
 
@@ -30,7 +30,7 @@ function renderMarkdownDocumentComponent(props: Record<string, unknown>) {
 
 describe('Markdown value as MarkdownDocument', () => {
   it('renders a pre-parsed tree the same as MarkdownDocument', async () => {
-    const tree = await parse('# Hello **World**')
+    const tree = await parseMarkdown('# Hello **World**')
     const fromMarkdown = await renderMarkdownComponent({ value: tree })
     const fromParsed = await renderMarkdownDocumentComponent({ value: tree })
 

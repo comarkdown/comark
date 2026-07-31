@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parse } from '../src/parse'
+import { parseMarkdown } from '../src/parse'
 import footnotes, { Footnote } from '../src/plugins/footnotes'
 import { renderMarkdown } from '../src/render'
 
@@ -9,7 +9,7 @@ describe('footnotes plugin', () => {
 
 [^1]: This is a footnote`
 
-    const tree = await parse(md, { plugins: [footnotes()] })
+    const tree = await parseMarkdown(md, { plugins: [footnotes()] })
 
     // Should have the paragraph with the footnote ref and the footnotes section
     expect(tree.nodes.length).toBeGreaterThanOrEqual(2)
@@ -30,7 +30,7 @@ describe('footnotes plugin', () => {
 
 [^note]: A note`
 
-    const tree = await parse(md, { plugins: [footnotes()] })
+    const tree = await parseMarkdown(md, { plugins: [footnotes()] })
 
     // Find the sup element somewhere in the tree
     function findNode(nodes: any[], tag: string): any {
@@ -62,7 +62,7 @@ describe('footnotes plugin', () => {
 [^1]: First note
 [^2]: Second note`
 
-    const tree = await parse(md, { plugins: [footnotes()] })
+    const tree = await parseMarkdown(md, { plugins: [footnotes()] })
 
     const section = tree.nodes.find((n) => Array.isArray(n) && n[0] === 'section') as any[]
     expect(section).toBeTruthy()
@@ -84,7 +84,7 @@ describe('footnotes plugin', () => {
 
 [^1]: Note content`
 
-    const tree = await parse(md, { plugins: [footnotes()] })
+    const tree = await parseMarkdown(md, { plugins: [footnotes()] })
 
     const section = tree.nodes.find((n) => Array.isArray(n) && n[0] === 'section') as any[]
 
@@ -105,7 +105,7 @@ describe('footnotes plugin', () => {
 
 [^1]: Note`
 
-    const tree = await parse(md, { plugins: [footnotes({ backRef: '⬆' })] })
+    const tree = await parseMarkdown(md, { plugins: [footnotes({ backRef: '⬆' })] })
 
     function findNode(nodes: any[], predicate: (n: any) => boolean): any {
       for (const node of nodes) {
@@ -130,7 +130,7 @@ describe('footnotes plugin', () => {
 
 [^1]: Note`
 
-    const tree = await parse(md, { plugins: [footnotes()] })
+    const tree = await parseMarkdown(md, { plugins: [footnotes()] })
 
     const section = tree.nodes.find((n) => Array.isArray(n) && n[0] === 'section') as any[]
 
@@ -143,7 +143,7 @@ describe('footnotes plugin', () => {
 
 [^1]: Note`
 
-    const tree = await parse(md, { plugins: [footnotes({ hr: false })] })
+    const tree = await parseMarkdown(md, { plugins: [footnotes({ hr: false })] })
 
     const section = tree.nodes.find((n) => Array.isArray(n) && n[0] === 'section') as any[]
 
@@ -154,7 +154,7 @@ describe('footnotes plugin', () => {
   it('should not create footnotes section when no references exist', async () => {
     const md = `Hello world with no footnotes`
 
-    const tree = await parse(md, { plugins: [footnotes()] })
+    const tree = await parseMarkdown(md, { plugins: [footnotes()] })
 
     const section = tree.nodes.find((n) => Array.isArray(n) && n[0] === 'section')
     expect(section).toBeFalsy()
@@ -165,7 +165,7 @@ describe('footnotes plugin', () => {
 
 [^1]: Note`
 
-    const tree = await parse(md, { plugins: [footnotes()] })
+    const tree = await parseMarkdown(md, { plugins: [footnotes()] })
 
     // Should still find the footnotes section
     const section = tree.nodes.find((n) => Array.isArray(n) && n[0] === 'section')
@@ -175,7 +175,7 @@ describe('footnotes plugin', () => {
   it('should ignore references with no matching definition', async () => {
     const md = `Text[^undefined]`
 
-    const tree = await parse(md, { plugins: [footnotes()] })
+    const tree = await parseMarkdown(md, { plugins: [footnotes()] })
 
     // No footnotes section should be created
     const section = tree.nodes.find((n) => Array.isArray(n) && n[0] === 'section')
@@ -187,7 +187,7 @@ describe('footnotes plugin', () => {
 
 [^1]: Note`
 
-    const tree = await parse(md, { plugins: [footnotes({ label: 'References' })] })
+    const tree = await parseMarkdown(md, { plugins: [footnotes({ label: 'References' })] })
 
     const section = tree.nodes.find((n) => Array.isArray(n) && n[0] === 'section') as any[]
 
@@ -202,7 +202,7 @@ describe('footnotes plugin', () => {
 [^a]: Alpha note
 [^b]: Beta note`
 
-    const tree = await parse(md, { plugins: [footnotes()] })
+    const tree = await parseMarkdown(md, { plugins: [footnotes()] })
 
     function findNode(nodes: any[], predicate: (n: any) => boolean): any {
       for (const node of nodes) {
@@ -239,7 +239,7 @@ describe('footnotes stringify', () => {
 
 [^1]: This is a footnote`
 
-    const tree = await parse(md, { plugins: [footnotes()] })
+    const tree = await parseMarkdown(md, { plugins: [footnotes()] })
     const result = await renderMarkdown(tree, {
       components: { footnotes: Footnote },
     })
@@ -254,7 +254,7 @@ describe('footnotes stringify', () => {
 [^1]: First note
 [^2]: Second note`
 
-    const tree = await parse(md, { plugins: [footnotes()] })
+    const tree = await parseMarkdown(md, { plugins: [footnotes()] })
     const result = await renderMarkdown(tree, {
       components: { footnotes: Footnote },
     })
@@ -270,7 +270,7 @@ describe('footnotes stringify', () => {
 
 [^note]: A note`
 
-    const tree = await parse(md, { plugins: [footnotes()] })
+    const tree = await parseMarkdown(md, { plugins: [footnotes()] })
     const result = await renderMarkdown(tree, {
       components: { footnotes: Footnote },
     })
