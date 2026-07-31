@@ -4,7 +4,7 @@ import { FitAddon } from '@xterm/addon-fit'
 import { createMarkdownParser } from 'comark'
 import math from 'comark/plugins/math'
 import highlight from 'comark/plugins/highlight'
-import { renderANSI } from '@comark/ansi'
+import { renderAnsiFromDocument } from '@comark/ansi'
 
 const plugins = [math(), highlight()]
 const parseMarkdown = createMarkdownParser({ plugins })
@@ -27,10 +27,10 @@ Links look like this: [xtermjs.org](https://xtermjs.org)
 
 \`\`\`typescript [main.ts]
 import { parseMarkdown } from 'comark'
-import { renderANSI } from '@comark/ansi'
+import { renderAnsiFromDocument } from '@comark/ansi'
 
 const tree = await parseMarkdown('# Hello World')
-console.log(renderANSI(tree))
+console.log(await renderAnsiFromDocument(tree))
 \`\`\`
 
 ## Lists
@@ -155,7 +155,7 @@ window.addEventListener('resize', () => fitAddon.fit())
 
 async function render(markdown: string) {
   const tree = await parseMarkdown(markdown)
-  const ansi = await renderANSI(tree, { width: term.cols })
+  const ansi = await renderAnsiFromDocument(tree, { width: term.cols })
 
   term.reset()
   term.write(ansi)
