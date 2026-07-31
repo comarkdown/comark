@@ -126,9 +126,17 @@ function processAttributes(
         continue
       }
 
-      // Handle boolean attributes: {bool} -> {":bool": "true"}
-      if (handleBoolean && !key.startsWith(':') && !key.startsWith('#') && !key.startsWith('.') && value === 'true') {
-        attrs[`:${key}`] = 'true'
+      // Handle boolean attributes:
+      //   {bool} / {bool="true"} / {bool=true}  -> {":bool": "true"}
+      //   {bool="false"} / {bool=false}         -> {":bool": "false"}
+      if (
+        handleBoolean &&
+        !key.startsWith(':') &&
+        !key.startsWith('#') &&
+        !key.startsWith('.') &&
+        (value === 'true' || value === 'false')
+      ) {
+        attrs[`:${key}`] = value
         continue
       }
 

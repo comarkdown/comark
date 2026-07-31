@@ -59,7 +59,7 @@ export function searchProps(content: string, index = 0) {
         } else {
           value = 'true'
         }
-        if (key.match(/^:?[a-z_][a-z0-9_-]+$/gi)) {
+        if (key.match(/^:?[a-z_][a-z0-9_-]*$/gi)) {
           props.push([key, value])
         }
       }
