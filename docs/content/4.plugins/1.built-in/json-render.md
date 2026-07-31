@@ -18,7 +18,7 @@ links:
     variant: soft
 ---
 
-The `comark/plugins/json-render` plugin transforms `json-render` and `yaml-render` code blocks into UI components. It parses [JSON Render](https://json-render.dev/) specs and converts them into Comark AST nodes, enabling declarative UI composition within markdown. No additional dependencies required.
+The `comark/plugins/json-render` plugin transforms `json-render` and `yaml-render` code blocks into UI components. It parses [JSON Render](https://json-render.dev/) specs and converts them into Markdown AST nodes, enabling declarative UI composition within markdown. No additional dependencies required.
 
 ## Usage
 
@@ -139,7 +139,7 @@ The plugin automatically wraps this shorthand in a full spec with a `template` r
 
 ### `jsonRender()`
 
-Returns a `ComarkPlugin` that replaces `json-render` and `yaml-render` code blocks with Comark AST nodes. Takes no options.
+Returns a `ComarkPlugin` that replaces `json-render` and `yaml-render` code blocks with Markdown AST nodes. Takes no options.
 
 **Returns:** `ComarkPlugin`
 

@@ -1,6 +1,6 @@
 # Parsing & AST Generation
 
-Complete guide for parsing Comark documents and working with the Comark AST format.
+Complete guide for parsing Comark documents and working with the Markdown AST format.
 
 ## Table of Contents
 
@@ -200,7 +200,7 @@ const result = await parse(content, {
 
 Comark uses a lightweight array-based AST structure.
 
-### Comark AST Format
+### Markdown AST Format
 
 ```typescript
 interface MarkdownTree {

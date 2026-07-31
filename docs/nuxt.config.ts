@@ -53,6 +53,7 @@ export default defineNuxtConfig({
 
   routeRules: {
     '/plugins/built-in/highlight': { redirect: '/plugins/built-in/syntax-highlight' },
+    '/syntax/comark-ast': { redirect: '/syntax/markdown-ast' },
   },
   vite: {
     optimizeDeps: {

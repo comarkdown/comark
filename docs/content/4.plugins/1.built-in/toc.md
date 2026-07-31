@@ -11,9 +11,9 @@ links:
     to: /api/parse
     color: neutral
     variant: soft
-  - label: Comark AST
+  - label: Markdown AST
     icon: i-lucide-braces
-    to: /syntax/comark-ast
+    to: /syntax/markdown-ast
     color: neutral
     variant: soft
 ---

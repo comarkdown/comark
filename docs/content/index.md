@@ -75,7 +75,7 @@ pillars:
   - icon: i-lucide-braces
     title: Compact AST
     description: Parse to plain arrays that are easy to traverse, cache, serialize, and send over the wire.
-    to: /syntax/comark-ast
+    to: /syntax/markdown-ast
 ---
 ::
 
@@ -161,7 +161,7 @@ plugins:
       ```mermaid
       graph TD
           A[Markdown] --> B[Parser]
-          B --> C[Comark AST]
+          B --> C[Markdown AST]
           C --> D{Renderer}
           D --> E[Vue]
           D --> F[React]

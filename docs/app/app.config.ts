@@ -43,7 +43,7 @@ export default defineAppConfig({
         items: [
           'How do I add syntax highlighting to code blocks?',
           'How do I render math formulas with Comark?',
-          'What does the Comark AST look like?',
+          'What does the Markdown AST look like?',
         ],
       },
     ],

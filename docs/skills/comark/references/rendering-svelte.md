@@ -1,6 +1,6 @@
 # Svelte Rendering Guide
 
-Complete guide for rendering Comark AST in Svelte 5 applications.
+Complete guide for rendering Markdown AST in Svelte 5 applications.
 
 ## Table of Contents
 

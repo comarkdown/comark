@@ -1,6 +1,6 @@
 # React Rendering Guide
 
-Complete guide for rendering Comark AST in React applications.
+Complete guide for rendering Markdown AST in React applications.
 
 ## Table of Contents
 

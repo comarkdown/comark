@@ -1,6 +1,6 @@
 # Angular Rendering Guide
 
-Complete guide for rendering Comark AST in Angular 17+ applications.
+Complete guide for rendering Markdown AST in Angular 17+ applications.
 
 ## Table of Contents
 

@@ -56,7 +56,7 @@ Important message
 `
 
 const result = await parse(content)
-console.log(result.nodes)       // Comark AST
+console.log(result.nodes)       // Markdown AST
 console.log(result.frontmatter) // { title: 'Hello World' }
 console.log(result.meta)    // Additional metadata
 ```
@@ -140,7 +140,7 @@ Complete guide for parsing documents and working with AST:
 
 - **String Parsing:** `parse()` function with options (autoUnwrap, autoClose)
 - **Async Parsing:** `parse()` with Shiki syntax highlighting
-- **AST Structure:** Comark AST format - lightweight array-based AST
+- **AST Structure:** Markdown AST format - lightweight array-based AST
 - **Rendering AST:** convert to HTML (`renderHTML` via `@comark/html`) or markdown (`renderMarkdown` via `comark/render`)
 - **Auto-close:** automatic closing of unclosed syntax
 - **Auto-unwrap:** remove unnecessary paragraph wrappers from container components
@@ -258,7 +258,7 @@ Footer
 ::
 ```
 
-### Comark AST Format
+### Markdown AST Format
 
 Lightweight array-based structure for efficient processing:
 
@@ -407,7 +407,7 @@ createRender(options?: ParseOptions & RenderOptions): (markdown: string) => Prom
 
 ## Performance Characteristics
 
-- **Comark AST format** - lightweight array-based AST
+- **Markdown AST format** - lightweight array-based AST
 - **Lazy component loading** - only load what's needed
 - **Shiki highlighter caching** - avoid re-initialization
 - **Parallel processing** - batch parse multiple files efficiently
@@ -506,7 +506,7 @@ pnpm test -- tests/parse.test.ts
 
 1. **Extending Markdown** - Component syntax without breaking compatibility
 2. **Streaming Support** - Real-time rendering with auto-close
-3. **Lightweight AST** - Efficient Comark AST format
+3. **Lightweight AST** - Efficient Markdown AST format
 4. **Framework Support** - First-class Vue, React, Svelte, and Angular integration
 5. **Developer Experience** - Full TypeScript support and comprehensive documentation
 
