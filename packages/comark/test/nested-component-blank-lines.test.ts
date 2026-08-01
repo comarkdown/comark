@@ -24,13 +24,7 @@ describe('nested component with a run of blank lines between siblings', () => {
       [
         'outer',
         {},
-        [
-          'mid',
-          { columns: '3' },
-          ['a', { display: 'flex' }],
-          ['b', { display: 'flex' }],
-          ['c', { display: 'flex' }],
-        ],
+        ['mid', { columns: '3' }, ['a', { display: 'flex' }], ['b', { display: 'flex' }], ['c', { display: 'flex' }]],
       ],
     ]
 
@@ -92,7 +86,10 @@ describe('nested component with a run of blank lines between siblings', () => {
     it('still terminates at the parent close after a blank run (no over-absorption)', async () => {
       const src = '::outer\n  #title\n  Hello\n\n\n  ::\nafter\n::'
       const tree = await parse(src)
-      expect(tree.nodes).toEqual([['outer', {}, ['template', { name: 'title' }, 'Hello']], ['p', {}, 'after']])
+      expect(tree.nodes).toEqual([
+        ['outer', {}, ['template', { name: 'title' }, 'Hello']],
+        ['p', {}, 'after'],
+      ])
     })
   })
 })
