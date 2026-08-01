@@ -19,7 +19,7 @@ export function parseFrontmatter(content: string) {
       const hasCarriageReturn = content[idx - 1] === CR
       frontmatter = content.slice(4, idx - (hasCarriageReturn ? 1 : 0))
       if (frontmatter) {
-        data = parseYaml(frontmatter)
+        data = parseYaml(frontmatter) ?? {}
         content = content.slice(idx + 4 + (hasCarriageReturn ? 1 : 0))
       }
     }

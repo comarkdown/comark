@@ -1,12 +1,22 @@
-import { dump, JSON_SCHEMA, load, type DumpOptions } from 'js-yaml'
+import { dump, JSON_SCHEMA, loadAll, YAMLException, type DumpOptions } from 'js-yaml'
 
 /**
- * Parse YAML content
+ * Parse YAML content.
+ *
+ * Uses `loadAll` rather than `load` so that empty, whitespace-only, or comment-only
+ * input (which contains no YAML document) resolves to `undefined` — behaving like an
+ * omitted block — instead of throwing. Genuine syntax errors still throw during parsing.
+ *
  * @param content - The content to parse
- * @returns The parsed data
+ * @returns The parsed data, or `undefined` when the content has no YAML document
  */
-export function parseYaml(content: string): Record<string, unknown> {
-  return load(content, { schema: JSON_SCHEMA }) as Record<string, unknown>
+export function parseYaml(content: string): Record<string, unknown> | undefined {
+  const documents = loadAll(content, { schema: JSON_SCHEMA }) as Record<string, unknown>[]
+  // Preserve `load()`'s single-document guard rather than silently taking the first.
+  if (documents.length > 1) {
+    throw new YAMLException('expected a single document in the stream, but found more')
+  }
+  return documents[0]
 }
 
 /**
