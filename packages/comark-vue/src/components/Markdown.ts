@@ -32,7 +32,7 @@ export interface MarkdownProps {
   plugins?: ParserOptions['plugins']
 
   /**
-   * Strip wrapper tags from the top level of the tree — shorthand for
+   * Strip wrapper tags from the top level of the document — shorthand for
    * `options.unwrap`. `true` unwraps `<p>` (single-line rendering); a
    * space-separated string or array unwraps the listed tags. Useful for inline
    * usage like `<UButton><Markdown :value="text" unwrap /></UButton>`.
@@ -60,7 +60,7 @@ export interface MarkdownProps {
   summary?: boolean
 
   /**
-   * If caret is true, a caret will be appended to the last text node in the tree
+   * If caret is true, a caret will be appended to the document's last text node
    */
   caret?: boolean | { class: string }
 
@@ -142,7 +142,7 @@ export const Markdown: MarkdownComponent = defineComponent({
     },
 
     /**
-     * Strip wrapper tags from the top level of the tree — shorthand for
+     * Strip wrapper tags from the top level of the document — shorthand for
      * `options.unwrap`. `true` unwraps `<p>`; a space-separated string or array
      * unwraps the listed tags.
      */
@@ -187,7 +187,7 @@ export const Markdown: MarkdownComponent = defineComponent({
     },
 
     /**
-     * If caret is true, a caret will be appended to the last text node in the tree
+     * If caret is true, a caret will be appended to the document's last text node
      */
     caret: {
       type: [Boolean, Object] as PropType<boolean | { class: string }>,
@@ -244,7 +244,7 @@ export const Markdown: MarkdownComponent = defineComponent({
     }
 
     return () => {
-      // Pre-parsed tree — skip parse and render directly
+      // Pre-parsed document — skip parsing and render directly
       if (isMarkdownDocument(props.value)) {
         return h(MarkdownDocument, {
           value: props.value,

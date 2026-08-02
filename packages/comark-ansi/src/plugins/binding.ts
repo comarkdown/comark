@@ -17,7 +17,7 @@ export { default } from 'comark/plugins/binding'
  * import binding, { Binding } from '@comark/ansi/plugins/binding'
  * import { renderAnsiFromDocument } from '@comark/ansi'
  *
- * const out = await renderAnsiFromDocument(tree, {
+ * const out = await renderAnsiFromDocument(document, {
  *   components: { binding: Binding },
  * })
  * ```

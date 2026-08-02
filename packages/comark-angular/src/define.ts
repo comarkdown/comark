@@ -59,9 +59,9 @@ export function defineMarkdownComponent(config: DefineMarkdownComponentOptions =
     imports: [MarkdownDocument],
     changeDetection: ChangeDetectionStrategy.OnPush,
     template: `
-      @if (tree) {
+      @if (document) {
         <comark-markdown-document
-          [value]="tree"
+          [value]="document"
           [components]="mergedComponents"
           [streaming]="streaming"
           [caret]="caret"

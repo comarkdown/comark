@@ -1,6 +1,6 @@
 # Vue Rendering Guide
 
-Complete guide for rendering Markdown AST in Vue applications.
+Complete guide for rendering Markdown documents in Vue applications.
 
 ## Table of Contents
 

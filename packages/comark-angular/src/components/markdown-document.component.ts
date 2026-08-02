@@ -13,12 +13,12 @@ import { MarkdownNode } from './markdown-node.component.ts'
 import { findLastTextNodeAndAppendNode, getCaret } from '../utils/caret.ts'
 import { warnDeprecated } from '../internal/deprecation.ts'
 
-const EMPTY_TREE: MarkdownDocumentType = { nodes: [], frontmatter: {}, meta: {} }
+const EMPTY_DOCUMENT: MarkdownDocumentType = { nodes: [], frontmatter: {}, meta: {} }
 
 /**
  * MarkdownDocument component
  *
- * Renders an already-parsed Comark tree to Angular components/HTML — no
+ * Renders an already-parsed Markdown document to Angular components/HTML — no
  * parser in the client bundle. Supports custom component mapping for
  * element tags.
  *
@@ -45,11 +45,11 @@ const EMPTY_TREE: MarkdownDocumentType = { nodes: [], frontmatter: {}, meta: {} 
   `,
 })
 export class MarkdownDocument implements OnInit, OnDestroy {
-  /** The parsed Comark tree to render */
+  /** The parsed Markdown document to render */
   @Input() value?: MarkdownDocumentType
 
   /**
-   * The parsed Comark tree to render
+   * Deprecated alias for the parsed document.
    * @deprecated Use `value` instead
    */
   @Input() tree?: MarkdownDocumentType
@@ -68,28 +68,28 @@ export class MarkdownDocument implements OnInit, OnDestroy {
 
   /**
    * Document key used to subscribe to live updates via `globalThis.comarkContext`.
-   * Falls back to the tree's own `meta.key` when set by a plugin.
+   * Falls back to the document's own `meta.key` when set by a plugin.
    */
   @Input() comarkKey?: string
 
   private cdr = inject(ChangeDetectorRef)
-  private liveTree: MarkdownDocumentType | null = null
+  private liveDocument: MarkdownDocumentType | null = null
   private cleanup?: (clear?: boolean) => void
 
-  private get inputTree(): MarkdownDocumentType {
-    return this.value ?? this.tree ?? EMPTY_TREE
+  private get inputDocument(): MarkdownDocumentType {
+    return this.value ?? this.tree ?? EMPTY_DOCUMENT
   }
 
   // Live document support: if an ambient context exists, subscribe to updates
-  // for this key and re-render with the pushed tree. Cleaned up on destroy.
+  // for this key and re-render with the pushed document. Cleaned up on destroy.
   ngOnInit(): void {
     if (this.tree !== undefined && this.value === undefined) {
       warnDeprecated('tree (input)', 'value')
     }
-    const key = this.inputTree.meta?.key || this.comarkKey
+    const key = this.inputDocument.meta?.key || this.comarkKey
     if (key && globalThis.comarkContext) {
-      this.cleanup = globalThis.comarkContext.get(key, this.inputTree).listen((tree) => {
-        this.liveTree = tree
+      this.cleanup = globalThis.comarkContext.get(key, this.inputDocument).listen((document) => {
+        this.liveDocument = document
         this.cdr.markForCheck()
       })
     }
@@ -99,12 +99,12 @@ export class MarkdownDocument implements OnInit, OnDestroy {
     this.cleanup?.(true)
   }
 
-  private get activeTree(): MarkdownDocumentType {
-    return this.liveTree ?? this.inputTree
+  private get activeDocument(): MarkdownDocumentType {
+    return this.liveDocument ?? this.inputDocument
   }
 
   get renderedNodes(): Node[] {
-    const nodes = [...(this.activeTree.nodes || [])]
+    const nodes = [...(this.activeDocument.nodes || [])]
     const caretNode = getCaret(this.caret)
 
     if (this.streaming && caretNode && nodes.length > 0) {
@@ -119,8 +119,8 @@ export class MarkdownDocument implements OnInit, OnDestroy {
 
   get renderData(): NodeRenderData {
     return {
-      frontmatter: this.activeTree.frontmatter,
-      meta: this.activeTree.meta,
+      frontmatter: this.activeDocument.frontmatter,
+      meta: this.activeDocument.meta,
       data: this.data || {},
       props: {},
     }

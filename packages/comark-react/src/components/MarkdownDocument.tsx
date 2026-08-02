@@ -266,14 +266,14 @@ function renderNode(
 
 export interface MarkdownDocumentProps {
   /**
-   * The parsed Comark tree to render — either a full `MarkdownDocument` or a bare
+   * The parsed Comark document to render — either a full `MarkdownDocument` or a bare
    * `Node[]`.  When a node array is passed, frontmatter and meta
    * default to `{}` and runtime data should be supplied via `data`.
    */
   value?: MarkdownDocumentType | { nodes: MarkdownDocumentType['nodes'] }
 
   /**
-   * The parsed Comark tree to render
+   * Deprecated alias for the parsed document.
    * @deprecated Use `value` instead
    */
   tree?: MarkdownDocumentType | { nodes: MarkdownDocumentType['nodes'] }
@@ -297,8 +297,8 @@ export interface MarkdownDocumentProps {
   streaming?: boolean
 
   /**
-   * If caret is true, a caret will be appended to the last text node in the tree
-   * If caret is an object, it will be appended to the last text node in the tree with the given class
+   * If caret is true, a caret will be appended to the document's last text node
+   * If caret is an object, it will be appended with the given class
    */
   caret?: boolean | { class: string }
 
@@ -317,7 +317,7 @@ export interface MarkdownDocumentProps {
 /**
  * MarkdownDocument component
  *
- * Renders an already-parsed Comark tree to React components/HTML — no parser
+ * Renders an already-parsed Markdown document to React components/HTML — no parser
  * in the client bundle. Supports custom component mapping for element tags.
  *
  * @example
@@ -331,7 +331,7 @@ export interface MarkdownDocumentProps {
  * }
  *
  * export default function App() {
- *   return <MarkdownDocument value={comarkTree} components={customComponents} />
+ *   return <MarkdownDocument value={document} components={customComponents} />
  * }
  * ```
  */
@@ -348,13 +348,13 @@ export const MarkdownDocument: React.FC<MarkdownDocumentProps> = ({
   if (treeProp !== undefined && value === undefined) {
     warnDeprecated('tree (prop)', 'value')
   }
-  const tree = value ?? treeProp ?? { nodes: [] }
+  const document = value ?? treeProp ?? { nodes: [] }
 
   const caret = useMemo(() => getCaret(caretProp), [caretProp])
 
   const renderedNodes = useMemo(() => {
-    // Render all nodes from the tree value
-    const nodes = [...(tree.nodes || [])]
+    // Render all nodes from the document value
+    const nodes = [...(document.nodes || [])]
 
     if (streaming && caret && nodes.length > 0) {
       const hasStreamCaret = findLastTextNodeAndAppendNode(nodes[nodes.length - 1] as ElementNode, caret)
@@ -365,8 +365,10 @@ export const MarkdownDocument: React.FC<MarkdownDocumentProps> = ({
 
     const renderData: NodeRenderData = {
       frontmatter:
-        (tree as MarkdownDocumentType).frontmatter || (tree as unknown as { data: Record<string, unknown> }).data || {},
-      meta: (tree as MarkdownDocumentType).meta || {},
+        (document as MarkdownDocumentType).frontmatter ||
+        (document as unknown as { data: Record<string, unknown> }).data ||
+        {},
+      meta: (document as MarkdownDocumentType).meta || {},
       data: data || {},
       props: {},
     }
@@ -374,7 +376,7 @@ export const MarkdownDocument: React.FC<MarkdownDocumentProps> = ({
     return nodes
       .map((node, index) => renderNode(node, customComponents, index, componentsManifest, undefined, renderData))
       .filter((child): child is React.ReactNode => child !== null)
-  }, [tree, customComponents, componentsManifest, streaming, caret, data])
+  }, [document, customComponents, componentsManifest, streaming, caret, data])
 
   // Wrap in a fragment
   return <div className={`comark-content ${className || ''}`}>{renderedNodes}</div>

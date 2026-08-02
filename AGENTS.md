@@ -52,7 +52,7 @@ packages/comark/
 │   ├── ast/                  # Comark AST types and utilities
 │   │   ├── index.ts          # Re-exports (comark/ast entry point)
 │   │   ├── types.ts          # MarkdownDocument (ComarkTree deprecated alias), Node, ElementNode, TextNode
-│   │   └── utils.ts          # textContent(), visit() tree utilities
+│   │   └── utils.ts          # textContent(), visit() document utilities
 │   ├── plugins/              # Built-in and optional plugins
 │   │   ├── alert.ts          # Alert/callout blocks
 │   │   ├── emoji.ts          # Emoji shortcodes
@@ -503,7 +503,7 @@ autoCloseMarkdown('**bold text')     // '**bold text**'
 autoCloseMarkdown('::alert\nContent') // '::alert\nContent\n::'
 ```
 
-## Markdown AST Format
+## Markdown Document Model
 
 ```typescript
 type TextNode = string

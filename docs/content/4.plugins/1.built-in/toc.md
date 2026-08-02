@@ -11,9 +11,9 @@ links:
     to: /api/parse
     color: neutral
     variant: soft
-  - label: Markdown AST
+  - label: Document Model
     icon: i-lucide-braces
-    to: /syntax/markdown-ast
+    to: /getting-started/document-model
     color: neutral
     variant: soft
 ---

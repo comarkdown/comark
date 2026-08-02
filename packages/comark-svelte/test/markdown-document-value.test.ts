@@ -11,10 +11,10 @@ function html(body: string): string {
 }
 
 describe('Markdown value as MarkdownDocument', () => {
-  it('renders a pre-parsed tree the same as MarkdownDocument', async () => {
-    const tree = await parseMarkdown('# Hello **World**')
-    const fromMarkdown = html(render(Markdown, { props: { value: tree } }).body)
-    const fromParsed = html(render(MarkdownDocument, { props: { value: tree } }).body)
+  it('renders a pre-parsed document the same as MarkdownDocument', async () => {
+    const document = await parseMarkdown('# Hello **World**')
+    const fromMarkdown = html(render(Markdown, { props: { value: document } }).body)
+    const fromParsed = html(render(MarkdownDocument, { props: { value: document } }).body)
 
     expect(fromMarkdown).toContain('<h1')
     expect(fromMarkdown).toContain('Hello <strong>World</strong>')
@@ -32,7 +32,7 @@ describe('Markdown value as MarkdownDocument', () => {
     expect(output).toContain('<strong>world</strong>')
   })
 
-  it('renders an empty tree without crashing', () => {
+  it('renders an empty document without crashing', () => {
     const { body } = render(Markdown, {
       props: { value: { nodes: [], frontmatter: {}, meta: {} } },
     })
@@ -41,18 +41,18 @@ describe('Markdown value as MarkdownDocument', () => {
 })
 
 describe('MarkdownAsync value as MarkdownDocument', () => {
-  it('renders a pre-parsed tree without parsing', async () => {
-    const tree = await parseMarkdown('# Hello **World**')
-    const { body } = await render(MarkdownAsync, { props: { value: tree } })
+  it('renders a pre-parsed document without parsing', async () => {
+    const document = await parseMarkdown('# Hello **World**')
+    const { body } = await render(MarkdownAsync, { props: { value: document } })
     const output = html(body)
     expect(output).toContain('<h1')
     expect(output).toContain('Hello <strong>World</strong>')
   })
 
-  it('renders a tree the same as MarkdownDocument', async () => {
-    const tree = await parseMarkdown('A paragraph with **bold**')
-    const fromAsync = html((await render(MarkdownAsync, { props: { value: tree } })).body)
-    const fromParsed = html(render(MarkdownDocument, { props: { value: tree } }).body)
+  it('renders a document the same as MarkdownDocument', async () => {
+    const document = await parseMarkdown('A paragraph with **bold**')
+    const fromAsync = html((await render(MarkdownAsync, { props: { value: document } })).body)
+    const fromParsed = html(render(MarkdownDocument, { props: { value: document } }).body)
     expect(fromAsync).toBe(fromParsed)
   })
 })

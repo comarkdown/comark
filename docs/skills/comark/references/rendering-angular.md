@@ -1,6 +1,6 @@
 # Angular Rendering Guide
 
-Complete guide for rendering Markdown AST in Angular 17+ applications.
+Complete guide for rendering Markdown documents in Angular 17+ applications.
 
 ## Table of Contents
 
@@ -46,31 +46,31 @@ Important message
 }
 ```
 
-### With Pre-parsed AST
+### With a Pre-parsed Document
 
-Use `MarkdownDocument` when you already have a parsed Comark tree:
+Use `MarkdownDocument` when you already have a parsed document:
 
 ```typescript
 import { Component } from '@angular/core'
 import { MarkdownDocument } from '@comark/angular'
 import { parseMarkdown } from 'comark'
-import type { MarkdownDocument } from 'comark'
+import type { MarkdownDocument as MarkdownDocumentType } from 'comark'
 
 @Component({
   selector: 'app-root',
   standalone: true,
   imports: [MarkdownDocument],
   template: `
-    @if (tree) {
-      <comark-markdown-parsed [value]="tree" [components]="customComponents" />
+    @if (document) {
+      <comark-markdown-document [value]="document" [components]="customComponents" />
     }
   `,
 })
 export class AppComponent {
-  tree: MarkdownDocument | null = null
+  document: MarkdownDocumentType | null = null
 
   async ngOnInit() {
-    this.tree = await parseMarkdown('# Hello World')
+    this.document = await parseMarkdown('# Hello World')
   }
 }
 ```

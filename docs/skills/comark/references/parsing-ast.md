@@ -1,13 +1,13 @@
-# Parsing & AST Generation
+# Parsing & Document Model
 
-Complete guide for parsing Comark documents and working with the Markdown AST format.
+Complete guide for parsing Comark content and working with the serializable `MarkdownDocument` model.
 
 ## Table of Contents
 
 - [String Parsing](#string-parsing)
 - [Async Parsing with Syntax Highlighting](#async-parsing-with-syntax-highlighting)
-- [AST Structure](#ast-structure)
-- [Rendering AST](#rendering-ast)
+- [Document Structure](#document-structure)
+- [Rendering Documents](#rendering-documents)
 
 ---
 
@@ -196,11 +196,11 @@ const result = await parseMarkdown(content, {
 
 ---
 
-## AST Structure
+## Document Structure
 
-Comark uses a lightweight array-based AST structure.
+Comark returns a serializable `MarkdownDocument` with compact array-based nodes.
 
-### Markdown AST Format
+### MarkdownDocument Format
 
 ```typescript
 interface MarkdownDocument {
@@ -263,7 +263,7 @@ type Node =
 ["component", {}, ["template", { "name": "default" }, "hello"]]
 ```
 
-### Complete AST Example
+### Complete Document Example
 
 **Input:**
 ```markdown
@@ -321,7 +321,7 @@ Warning message
 
 ---
 
-## Rendering AST
+## Rendering Documents
 
 ### Render to HTML
 

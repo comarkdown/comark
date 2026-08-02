@@ -1,6 +1,6 @@
 <!--
 @component
-Renders an already-parsed Comark AST tree to Svelte components/HTML — no
+Renders an already-parsed Markdown document to Svelte components/HTML — no
 parser in the client bundle.
 
 Accepts a parsed `MarkdownDocument` and renders each top-level node via `MarkdownNode`.
@@ -39,7 +39,7 @@ Supports custom component mappings and a streaming caret indicator.
   }: {
     value?: MarkdownDocumentType | { nodes: MarkdownDocumentType['nodes'] }
     /** @deprecated Use `value` instead */
-    tree?: MarkdownDocument | { nodes: MarkdownDocument['nodes'] }
+    tree?: MarkdownDocumentType | { nodes: MarkdownDocumentType['nodes'] }
     components?: Record<string, any>
     componentsManifest?: ComponentManifest
     resolver?: ComponentResolver
@@ -55,21 +55,21 @@ Supports custom component mappings and a streaming caret indicator.
     warnDeprecated('tree (prop)', 'value')
   }
 
-  let tree = $derived(value ?? treeProp ?? { nodes: [] })
+  let document = $derived(value ?? treeProp ?? { nodes: [] })
 
   // Live document support: if an ambient context exists, subscribe to updates
-  // for this key and re-render with the pushed tree. Cleaned up on unmount.
-  // The key is the tree's own `meta.key` (set by a plugin) or the `comarkKey` prop.
-  let liveTree = $state<MarkdownDocument | null>(null)
-  let key = $derived((tree as MarkdownDocument).meta?.key || comarkKey)
+  // for this key and re-render with the pushed document. Cleaned up on unmount.
+  // The key is the document's own `meta.key` (set by a plugin) or the `comarkKey` prop.
+  let liveDocument = $state<MarkdownDocumentType | null>(null)
+  let key = $derived((document as MarkdownDocumentType).meta?.key || comarkKey)
   $effect(() => {
     if (!key || !globalThis.comarkContext) return
-    const seed = untrack(() => tree as MarkdownDocument)
-    const cleanup = globalThis.comarkContext.get(key, seed).listen((next) => (liveTree = next))
+    const seed = untrack(() => document as MarkdownDocumentType)
+    const cleanup = globalThis.comarkContext.get(key, seed).listen((next) => (liveDocument = next))
     return () => cleanup(true)
   })
 
-  let activeTree = $derived(liveTree ?? tree)
+  let activeDocument = $derived(liveDocument ?? document)
 
   let caretClass = $derived(
     streaming && caretProp
@@ -79,21 +79,23 @@ Supports custom component mappings and a streaming caret indicator.
 
   let renderData = $derived({
     frontmatter:
-      (activeTree as MarkdownDocument).frontmatter || (activeTree as unknown as { data: Record<string, unknown> }).data || {},
-    meta: (activeTree as MarkdownDocument).meta || {},
+      (activeDocument as MarkdownDocumentType).frontmatter ||
+      (activeDocument as unknown as { data: Record<string, unknown> }).data ||
+      {},
+    meta: (activeDocument as MarkdownDocumentType).meta || {},
     data: data || {},
     props: {},
   })
 </script>
 
 <div class="comark-content {className}">
-  {#each activeTree.nodes as node, i (i)}
+  {#each activeDocument.nodes as node, i (i)}
     <MarkdownNode
       {node}
       {components}
       {componentsManifest}
       {resolver}
-      caretClass={i === activeTree.nodes.length - 1 ? caretClass : null}
+      caretClass={i === activeDocument.nodes.length - 1 ? caretClass : null}
       {renderData}
     />
   {/each}

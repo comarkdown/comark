@@ -82,7 +82,7 @@ export function defineMarkdownComponent(config: DefineMarkdownComponentOptions =
       },
 
       /**
-       * Strip wrapper tags from the top level of the tree — shorthand for
+       * Strip wrapper tags from the top level of the document — shorthand for
        * `options.unwrap`. `true` unwraps `<p>`; a space-separated string or
        * array unwraps the listed tags.
        */
@@ -127,7 +127,7 @@ export function defineMarkdownComponent(config: DefineMarkdownComponentOptions =
       },
 
       /**
-       * If caret is true, a caret will be appended to the last text node in the tree
+       * If caret is true, a caret will be appended to the document's last text node
        */
       caret: {
         type: [Boolean, Object] as PropType<boolean | { class: string }>,
@@ -177,7 +177,7 @@ export function defineMarkdownDocumentComponent(config: DefineMarkdownDocumentOp
     name: config.name ?? 'MarkdownDocumentComponent',
     props: {
       /**
-       * The parsed Comark tree to render
+       * The parsed Markdown document to render
        */
       value: {
         type: Object as PropType<MarkdownDocumentType>,
@@ -185,7 +185,7 @@ export function defineMarkdownDocumentComponent(config: DefineMarkdownDocumentOp
       },
 
       /**
-       * The parsed Comark tree to render
+       * Deprecated alias for the parsed document.
        * @deprecated Use `value` instead
        */
       tree: {
@@ -221,7 +221,7 @@ export function defineMarkdownDocumentComponent(config: DefineMarkdownDocumentOp
       },
 
       /**
-       * If caret is true, a caret will be appended to the last text node in the tree
+       * If caret is true, a caret will be appended to the document's last text node
        */
       caret: {
         type: [Boolean, Object] as PropType<boolean | { class: string }>,

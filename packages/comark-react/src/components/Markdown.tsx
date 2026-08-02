@@ -47,7 +47,7 @@ export interface MarkdownProps {
   componentsManifest?: (name: string) => Promise<{ default: React.ComponentType<any> }>
 
   /**
-   * Strip wrapper tags from the top level of the tree — shorthand for
+   * Strip wrapper tags from the top level of the document — shorthand for
    * `options.unwrap`. `true` unwraps `<p>` (single-line rendering); a
    * space-separated string or array unwraps the listed tags. Useful for inline
    * usage like `<button><Markdown value={text} unwrap /></button>`.
@@ -61,8 +61,8 @@ export interface MarkdownProps {
   streaming?: boolean
 
   /**
-   * If caret is true, a caret will be appended to the last text node in the tree
-   * If caret is an object, it will be appended to the last text node in the tree with the given class
+   * If caret is true, a caret will be appended to the document's last text node
+   * If caret is an object, it will be appended with the given class
    */
   caret?: boolean | { class: string }
 
@@ -127,7 +127,7 @@ export async function Markdown({
     warnDeprecated('markdown (prop)', 'value')
   }
 
-  // Pre-parsed tree — skip parse and render directly
+  // Pre-parsed document — skip parsing and render directly
   if (isMarkdownDocument(value)) {
     return (
       <MarkdownDocument

@@ -240,14 +240,14 @@ function renderNode(
  */
 export interface MarkdownDocumentProps {
   /**
-   * The parsed Comark tree to render — either a full `MarkdownDocument` or a bare
+   * The parsed Comark document to render — either a full `MarkdownDocument` or a bare
    * `Node[]`.  When a node array is passed, frontmatter and meta
    * default to `{}` and runtime data should be supplied via `data`.
    */
   value?: MarkdownDocumentType | { nodes: MarkdownDocumentType['nodes'] }
 
   /**
-   * The parsed Comark tree to render
+   * Deprecated alias for the parsed document.
    * @deprecated Use `value` instead
    */
   tree?: MarkdownDocumentType | { nodes: MarkdownDocumentType['nodes'] }
@@ -268,7 +268,7 @@ export interface MarkdownDocumentProps {
   streaming?: boolean
 
   /**
-   * If caret is true, a caret will be appended to the last text node in the tree
+   * If caret is true, a caret will be appended to the document's last text node
    */
   caret?: boolean | { class: string }
 
@@ -280,7 +280,7 @@ export interface MarkdownDocumentProps {
   /**
    * Document keys. When set and `globalThis.comarkContext` exists, the renderer
    * subscribes to live updates for this key (HMR, devtools, collab, agents) and
-   * re-renders with the pushed tree. No-op otherwise.
+   * re-renders with the pushed document. No-op otherwise.
    */
   comarkKey?: string
 }
@@ -290,7 +290,7 @@ type MarkdownDocumentComponent = ReturnType<typeof defineComponent<MarkdownDocum
 /**
  * MarkdownDocument component
  *
- * Renders an already-parsed Comark tree to Vue components/HTML — no parser
+ * Renders an already-parsed Markdown document to Vue components/HTML — no parser
  * in the client bundle. Supports custom component mapping for element tags.
  *
  * @example
@@ -317,7 +317,7 @@ export const MarkdownDocument: MarkdownDocumentComponent = defineComponent({
 
   props: {
     /**
-     * The parsed Comark tree to render
+     * The parsed Markdown document to render
      */
     value: {
       type: Object as PropType<MarkdownDocumentType | { nodes: MarkdownDocumentType['nodes'] }>,
@@ -325,7 +325,7 @@ export const MarkdownDocument: MarkdownDocumentComponent = defineComponent({
     },
 
     /**
-     * The parsed Comark tree to render
+     * Deprecated alias for the parsed document.
      * @deprecated Use `value` instead
      */
     tree: {
@@ -361,8 +361,8 @@ export const MarkdownDocument: MarkdownDocumentComponent = defineComponent({
     },
 
     /**
-     * If caret is true, a caret will be appended to the last text node in the tree
-     * If caret is an object, it will be appended to the last text node in the tree with the given class
+     * If caret is true, a caret will be appended to the document's last text node
+     * If caret is an object, it will be appended with the given class
      */
     caret: {
       type: [Boolean, Object] as PropType<boolean | { class: string }>,
@@ -391,20 +391,20 @@ export const MarkdownDocument: MarkdownDocumentComponent = defineComponent({
       warnDeprecated('tree (prop)', 'value')
     }
 
-    const inputTree = computed(
+    const inputDocument = computed(
       () => (props.value ?? props.tree ?? { nodes: [], frontmatter: {}, meta: {} }) as MarkdownDocumentType
     )
 
     const componentErrors = ref(new Set<string>())
 
     // Live document support: if an ambient context exists, subscribe to updates
-    // for this id and re-render with the pushed tree. Cleaned up on unmount.
-    // The key is the tree's own `meta.key` (set by a plugin) or the `comarkKey` prop.
-    const liveTree = shallowRef<MarkdownDocumentType | null>(null)
-    const key = inputTree.value.meta?.key || props.comarkKey
+    // for this id and re-render with the pushed document. Cleaned up on unmount.
+    // The key is the document's own `meta.key` (set by a plugin) or the `comarkKey` prop.
+    const liveDocument = shallowRef<MarkdownDocumentType | null>(null)
+    const key = inputDocument.value.meta?.key || props.comarkKey
     if (key && globalThis.comarkContext) {
-      const cleanup = globalThis.comarkContext.get(key, toRaw(inputTree.value)).listen((tree) => {
-        liveTree.value = tree
+      const cleanup = globalThis.comarkContext.get(key, toRaw(inputDocument.value)).listen((document) => {
+        liveDocument.value = document
       })
       onUnmounted(() => cleanup(true))
     }
@@ -439,9 +439,9 @@ export const MarkdownDocument: MarkdownDocumentComponent = defineComponent({
     const caret = computed<ElementNode | null>(() => getCaret(props.caret || false))
 
     return () => {
-      // Render all nodes from the live tree when present, else the value prop
-      const rawTree = toRaw(liveTree.value ?? inputTree.value)
-      const nodes = [...(rawTree.nodes || [])]
+      // Render all nodes from the live document when present, else the value prop
+      const rawDocument = toRaw(liveDocument.value ?? inputDocument.value)
+      const nodes = [...(rawDocument.nodes || [])]
 
       if (props.streaming && caret.value && nodes.length > 0) {
         const hasStreamCaret = findLastTextNodeAndAppendNode(nodes[nodes.length - 1] as ElementNode, caret.value)
@@ -452,10 +452,10 @@ export const MarkdownDocument: MarkdownDocumentComponent = defineComponent({
 
       const renderData: NodeRenderData = {
         frontmatter:
-          (rawTree as MarkdownDocumentType).frontmatter ||
-          (rawTree as unknown as { data: Record<string, unknown> }).data ||
+          (rawDocument as MarkdownDocumentType).frontmatter ||
+          (rawDocument as unknown as { data: Record<string, unknown> }).data ||
           {},
-        meta: (rawTree as MarkdownDocumentType).meta || {},
+        meta: (rawDocument as MarkdownDocumentType).meta || {},
         data: props.data || {},
         props: {},
       }

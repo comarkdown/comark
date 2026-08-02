@@ -19,7 +19,7 @@ export interface MarkdownNodeProps {
 }
 
 export interface MarkdownDocumentProps {
-  /** The parsed Comark tree to render */
+  /** The parsed Markdown document to render */
   value?: MarkdownDocument
   /** @deprecated Use `value` instead */
   tree?: MarkdownDocument
@@ -39,7 +39,7 @@ export interface MarkdownProps {
   options?: Exclude<ParserOptions, 'plugins'>
   plugins?: ComarkPlugin[]
   /**
-   * Strip wrapper tags from the top level of the tree — shorthand for
+   * Strip wrapper tags from the top level of the document — shorthand for
    * `options.unwrap`. `true` unwraps `<p>`; a space-separated string or array
    * unwraps the listed tags.
    */

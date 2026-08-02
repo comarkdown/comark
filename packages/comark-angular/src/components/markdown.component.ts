@@ -15,7 +15,7 @@ import { warnDeprecated } from '../internal/deprecation.ts'
 
 /**
  * High-level Markdown component that accepts raw markdown, parses it,
- * and renders the resulting AST.
+ * and renders the resulting document.
  *
  * @example
  * ```html
@@ -28,9 +28,9 @@ import { warnDeprecated } from '../internal/deprecation.ts'
   imports: [MarkdownDocument],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    @if (tree) {
+    @if (document) {
       <comark-markdown-document
-        [value]="tree"
+        [value]="document"
         [components]="components"
         [streaming]="streaming"
         [caret]="caret"
@@ -56,7 +56,7 @@ export class Markdown implements OnChanges {
   @Input() plugins: ParserOptions['plugins'] = []
 
   /**
-   * Strip wrapper tags from the top level of the tree — shorthand for
+   * Strip wrapper tags from the top level of the document — shorthand for
    * `options.unwrap`. `true` unwraps `<p>`; a space-separated string or array
    * unwraps the listed tags.
    */
@@ -77,7 +77,7 @@ export class Markdown implements OnChanges {
   /** Additional data to pass to the renderer for :binding resolution */
   @Input() data: Record<string, unknown> = {}
 
-  tree: MarkdownDocumentType | null = null
+  document: MarkdownDocumentType | null = null
 
   private serializedParse = createSerializedMarkdownParser({})
 
@@ -108,9 +108,9 @@ export class Markdown implements OnChanges {
   }
 
   private parseMarkdown(): void {
-    // Pre-parsed tree — skip parse and render directly
+    // Pre-parsed document — skip parsing and render directly
     if (isMarkdownDocument(this.value)) {
-      this.tree = this.value
+      this.document = this.value
       this.cdr.markForCheck()
       return
     }
@@ -122,7 +122,7 @@ export class Markdown implements OnChanges {
     source = source.trim()
 
     this.serializedParse(source, { streaming: this.streaming }).then((result) => {
-      this.tree = result
+      this.document = result
       this.cdr.markForCheck()
     })
   }
@@ -139,9 +139,9 @@ export class Markdown implements OnChanges {
   imports: [MarkdownDocument],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    @if (tree) {
+    @if (document) {
       <comark-markdown-document
-        [value]="tree"
+        [value]="document"
         [components]="components"
         [streaming]="streaming"
         [caret]="caret"

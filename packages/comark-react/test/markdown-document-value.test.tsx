@@ -6,7 +6,7 @@ import { MarkdownDocument } from '../src/components/MarkdownDocument'
 
 /**
  * Markdown accepts either a markdown string or a pre-parsed MarkdownDocument on
- * `value`. When a tree is passed it should render via MarkdownDocument without
+ * `value`. When a document is passed it should render via MarkdownDocument without
  * re-parsing.
  */
 async function renderMarkdownComponent(props: Record<string, unknown>) {
@@ -19,10 +19,10 @@ function renderMarkdownDocumentComponent(props: Record<string, unknown>) {
 }
 
 describe('Markdown value as MarkdownDocument', () => {
-  it('renders a pre-parsed tree the same as MarkdownDocument', async () => {
-    const tree = await parseMarkdown('# Hello **World**')
-    const fromMarkdown = await renderMarkdownComponent({ value: tree })
-    const fromParsed = renderMarkdownDocumentComponent({ value: tree })
+  it('renders a pre-parsed document the same as MarkdownDocument', async () => {
+    const document = await parseMarkdown('# Hello **World**')
+    const fromMarkdown = await renderMarkdownComponent({ value: document })
+    const fromParsed = renderMarkdownDocumentComponent({ value: document })
 
     expect(fromMarkdown).toContain('<h1')
     expect(fromMarkdown).toContain('Hello <strong>World</strong>')
@@ -35,7 +35,7 @@ describe('Markdown value as MarkdownDocument', () => {
     expect(html).toContain('<strong>world</strong>')
   })
 
-  it('renders an empty tree without crashing', async () => {
+  it('renders an empty document without crashing', async () => {
     const html = await renderMarkdownComponent({
       value: { nodes: [], frontmatter: {}, meta: {} },
     })

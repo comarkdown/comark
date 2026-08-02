@@ -134,18 +134,18 @@ Learn how to write Comark documents with complete syntax reference:
 
 ---
 
-### 🔧 [2. Parsing & AST Generation](./references/parsing-ast.md)
+### 🔧 [2. Parsing & Document Model](./references/parsing-ast.md)
 
-Complete guide for parsing documents and working with AST:
+Complete guide for parsing and working with `MarkdownDocument`:
 
 - **String Parsing:** `parseMarkdown()` function with options (autoUnwrap, autoClose)
 - **Async Parsing:** `parseMarkdown()` with Shiki syntax highlighting
-- **AST Structure:** Markdown AST format - lightweight array-based AST
-- **Rendering AST:** convert to HTML (`renderHtmlFromDocument` via `@comark/html`) or markdown (`renderMarkdown` via `comark/render`)
+- **Document Structure:** serializable `MarkdownDocument` with compact array-based nodes
+- **Rendering Documents:** convert to HTML (`renderHtmlFromDocument` via `@comark/html`) or markdown (`renderMarkdown` via `comark/render`)
 - **Auto-close:** automatic closing of unclosed syntax
 - **Auto-unwrap:** remove unnecessary paragraph wrappers from container components
 
-**[→ Read Full Parsing & AST Guide](./references/parsing-ast.md)**
+**[→ Read Full Parsing & Document Model Guide](./references/parsing-ast.md)**
 
 ---
 
@@ -258,7 +258,7 @@ Footer
 ::
 ```
 
-### Markdown AST Format
+### Markdown Document Model
 
 Lightweight array-based structure for efficient processing:
 
@@ -374,7 +374,7 @@ autoCloseMarkdown(source: string): string
 // Render markdown to HTML string (parse + render in one step)
 renderHtml(markdown: string, options?: ParserOptions & RendererOptions): Promise<string>
 
-// Render a pre-parsed tree to HTML
+// Render a pre-parsed document to HTML
 renderHtmlFromDocument(document: MarkdownDocument, options?: RendererOptions): Promise<string>
 
 // Create a reusable render function with shared parser instance
@@ -407,7 +407,7 @@ createHtmlRenderer(options?: ParserOptions & RendererOptions): (markdown: string
 
 ## Performance Characteristics
 
-- **Markdown AST format** - lightweight array-based AST
+- **Serializable document model** - compact array-based nodes
 - **Lazy component loading** - only load what's needed
 - **Shiki highlighter caching** - avoid re-initialization
 - **Parallel processing** - batch parse multiple files efficiently
@@ -506,7 +506,7 @@ pnpm test -- tests/parse.test.ts
 
 1. **Extending Markdown** - Component syntax without breaking compatibility
 2. **Streaming Support** - Real-time rendering with auto-close
-3. **Lightweight AST** - Efficient Markdown AST format
+3. **Serializable Documents** - Efficient `MarkdownDocument` model with compact nodes
 4. **Framework Support** - First-class Vue, React, Svelte, and Angular integration
 5. **Developer Experience** - Full TypeScript support and comprehensive documentation
 

@@ -6,8 +6,8 @@ import { Markdown } from '../src/components/markdown.component.ts'
 
 /**
  * Angular's high-level Markdown component accepts a string or a pre-parsed
- * MarkdownDocument on `value`. When a tree is passed, parse is skipped and the
- * tree is assigned for MarkdownDocument to render.
+ * MarkdownDocument on `value`. When a document is passed, parsing is skipped and
+ * the document is assigned for MarkdownDocument to render.
  */
 function createMarkdown(): Markdown {
   const cdr = { markForCheck: vi.fn() }
@@ -15,14 +15,14 @@ function createMarkdown(): Markdown {
 }
 
 describe('Markdown value as MarkdownDocument', () => {
-  it('assigns a pre-parsed tree without calling parse', async () => {
-    const tree = await parseMarkdown('# Hello **World**')
+  it('assigns a pre-parsed document without calling parse', async () => {
+    const document = await parseMarkdown('# Hello **World**')
     const component = createMarkdown()
 
-    component.value = tree
+    component.value = document
     component.ngOnChanges({
       value: {
-        currentValue: tree,
+        currentValue: document,
         previousValue: undefined,
         firstChange: true,
         isFirstChange: () => true,
@@ -30,8 +30,8 @@ describe('Markdown value as MarkdownDocument', () => {
     })
 
     expect(isMarkdownDocument(component.value)).toBe(true)
-    expect(component.tree).toBe(tree)
-    expect(component.tree!.nodes[0]?.[0]).toBe('h1')
+    expect(component.document).toBe(document)
+    expect(component.document!.nodes[0]?.[0]).toBe('h1')
   })
 
   it('still parses markdown strings', async () => {
@@ -48,13 +48,13 @@ describe('Markdown value as MarkdownDocument', () => {
 
     // Wait for async parse
     await vi.waitFor(() => {
-      expect(component.tree).not.toBeNull()
+      expect(component.document).not.toBeNull()
     })
 
-    expect(component.tree!.nodes[0]?.[0]).toBe('p')
+    expect(component.document!.nodes[0]?.[0]).toBe('p')
   })
 
-  it('accepts an empty tree', () => {
+  it('accepts an empty document', () => {
     const empty: MarkdownDocument = { nodes: [], frontmatter: {}, meta: {} }
     const component = createMarkdown()
     component.value = empty
@@ -67,7 +67,7 @@ describe('Markdown value as MarkdownDocument', () => {
       },
     })
 
-    expect(component.tree).toBe(empty)
-    expect(component.tree!.nodes).toEqual([])
+    expect(component.document).toBe(empty)
+    expect(component.document!.nodes).toEqual([])
   })
 })

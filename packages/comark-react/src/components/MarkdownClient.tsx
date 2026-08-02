@@ -44,7 +44,7 @@ export function MarkdownClient({ children, value, markdown, options = {}, plugin
 
   // Re-creates the promise only when content changes.
   // Note: options/plugins should be stable references (defined outside render or memoized).
-  // Pre-parsed trees resolve immediately without calling parseMarkdown().
+  // Pre-parsed documents resolve immediately without calling parseMarkdown().
   const parsePromise = useMemo(
     () => (isMarkdownDocument(content) ? Promise.resolve(content) : parseMarkdown(content, { ...options, plugins })),
     [content]
