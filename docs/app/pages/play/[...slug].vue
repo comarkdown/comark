@@ -9,7 +9,6 @@ import highlight from '@comark/nuxt/plugins/highlight'
 import math from '@comark/nuxt/plugins/math'
 import emoji from '@comark/nuxt/plugins/emoji'
 import mermaid from '@comark/nuxt/plugins/mermaid'
-import jsonRender from '@comark/nuxt/plugins/json-render'
 import footnotes from '@comark/nuxt/plugins/footnotes'
 import punctuation from '@comark/nuxt/plugins/punctuation'
 import { playgroundExamples } from '~/constants'
@@ -30,13 +29,13 @@ const markdown = ref(
     ? playgroundExamples.find((example) => example.value === slug.value)?.content
     : playgroundExamples[0]!.content
 )
-const parse = createMarkdownParser({
+const parsePlaygroundMarkdown = createMarkdownParser({
   plugins: [jsonRenderer(), binding(), highlight(), math(), emoji(), mermaid(), footnotes(), punctuation()],
 })
 
 const { data: page, refresh } = await useAsyncData(
   () => `play-${slug.value}`,
-  () => parseMarkdown(markdown.value!)
+  () => parsePlaygroundMarkdown(markdown.value!)
 )
 if (!page.value) {
   throw createError({
@@ -77,7 +76,7 @@ watch(completion, async (md) => {
   if (!md) return
   markdown.value = md
   try {
-    page.value = await parseMarkdown(md)
+    page.value = await parsePlaygroundMarkdown(md)
   } catch {
     /* ignore intermediate parse errors */
   }

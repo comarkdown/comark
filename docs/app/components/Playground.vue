@@ -220,7 +220,7 @@ function countNodes(nodes: unknown[]): number {
   return count
 }
 
-async function parseMarkdown(): Promise<void> {
+async function updatePreview(): Promise<void> {
   if (!markdown.value.trim()) {
     tree.value = null
     parseTime.value = 0
@@ -250,10 +250,10 @@ async function parseMarkdown(): Promise<void> {
   }
 }
 
-watchDebounced(markdown, parseMarkdown, { debounce: 300 })
-watchDebounced([activePlugins, parseOptions], parseMarkdown, { deep: true, debounce: 300 })
+watchDebounced(markdown, updatePreview, { debounce: 300 })
+watchDebounced([activePlugins, parseOptions], updatePreview, { deep: true, debounce: 300 })
 onMounted(() => {
-  nextTick(() => parseMarkdown())
+  nextTick(() => updatePreview())
 })
 
 watch(selectedExample, () => {
@@ -294,7 +294,7 @@ const {
     error.value = 'Generation failed'
   },
   onFinish: async () => {
-    await parseMarkdown()
+    await updatePreview()
     scrollEditorToBottom()
   },
 })
