@@ -194,11 +194,11 @@ export default defineComarkPlugin((config: FootnotesConfig = {}) => {
  * import { renderMarkdown } from 'comark/render'
  * import footnotes, { Footnote } from 'comark/plugins/footnotes'
  *
- * const tree = await parseMarkdown('Hello[^1]\n\n[^1]: World', {
+ * const document = await parseMarkdown('Hello[^1]\n\n[^1]: World', {
  *   plugins: [footnotes()]
  * })
  *
- * const md = await renderMarkdown(tree, {
+ * const md = await renderMarkdown(document, {
  *   components: { footnotes: Footnote },
  * })
  * ```

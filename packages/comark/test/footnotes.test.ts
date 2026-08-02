@@ -239,8 +239,8 @@ describe('footnotes stringify', () => {
 
 [^1]: This is a footnote`
 
-    const tree = await parseMarkdown(md, { plugins: [footnotes()] })
-    const result = await renderMarkdown(tree, {
+    const document = await parseMarkdown(md, { plugins: [footnotes()] })
+    const result = await renderMarkdown(document, {
       components: { footnotes: Footnote },
     })
 
@@ -254,8 +254,8 @@ describe('footnotes stringify', () => {
 [^1]: First note
 [^2]: Second note`
 
-    const tree = await parseMarkdown(md, { plugins: [footnotes()] })
-    const result = await renderMarkdown(tree, {
+    const document = await parseMarkdown(md, { plugins: [footnotes()] })
+    const result = await renderMarkdown(document, {
       components: { footnotes: Footnote },
     })
 
@@ -270,8 +270,8 @@ describe('footnotes stringify', () => {
 
 [^note]: A note`
 
-    const tree = await parseMarkdown(md, { plugins: [footnotes()] })
-    const result = await renderMarkdown(tree, {
+    const document = await parseMarkdown(md, { plugins: [footnotes()] })
+    const result = await renderMarkdown(document, {
       components: { footnotes: Footnote },
     })
 

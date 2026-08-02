@@ -42,7 +42,7 @@ const currentExample = computed(
 )
 
 const markdown = ref<string>(currentExample.value.content.trim())
-const tree = ref<MarkdownDocument | null>(null)
+const document = ref<MarkdownDocument | null>(null)
 const parseTime = ref<number>(0)
 const nodeCount = ref<number>(0)
 const error = ref<string | null>(null)
@@ -222,7 +222,7 @@ function countNodes(nodes: unknown[]): number {
 
 async function updatePreview(): Promise<void> {
   if (!markdown.value.trim()) {
-    tree.value = null
+    document.value = null
     parseTime.value = 0
     nodeCount.value = 0
     error.value = null
@@ -238,7 +238,7 @@ async function updatePreview(): Promise<void> {
       html: parseOptions.value.html,
       linkify: parseOptions.value.linkify ?? true,
     })
-    tree.value = result
+    document.value = result
     parseTime.value = Math.round((performance.now() - start) * 10) / 10
     nodeCount.value = countNodes(result.nodes)
     error.value = null
@@ -267,7 +267,7 @@ function resetComark(): void {
 const formattedOutput = ref<string>('')
 
 watchEffect(async () => {
-  formattedOutput.value = tree.value ? await renderMarkdown(tree.value as any) : ''
+  formattedOutput.value = document.value ? await renderMarkdown(document.value as any) : ''
 })
 
 const formattedOutputModel = computed({
@@ -309,7 +309,7 @@ watch(completion, async (md) => {
       autoClose: true,
       html: parseOptions.value.html,
     })
-    tree.value = result
+    document.value = result
   } catch {
     /* ignore intermediate parse errors */
   }
@@ -320,7 +320,7 @@ function handleGenerate(prompt: string) {
   const example = currentExample.value
   if (!example.mode) return
   markdown.value = ''
-  tree.value = null
+  document.value = null
   error.value = null
   complete(prompt, { body: { mode: example.mode, structure: example.content } })
 }
@@ -472,7 +472,7 @@ function handleGenerate(prompt: string) {
         <div class="relative h-full flex flex-col">
           <div class="shrink-0 flex items-center px-3 h-9 border-b border-default bg-default">
             <div
-              v-if="tree && activeTab === 'formatted'"
+              v-if="document && activeTab === 'formatted'"
               class="flex-1 flex items-center gap-1.5"
             >
               <UTooltip :text="isMatch ? 'Stringify output matches source' : 'Stringify output differs from source'">
@@ -506,9 +506,9 @@ function handleGenerate(prompt: string) {
             v-if="currentTab === 'preview'"
             class="flex-1 min-h-0 relative overflow-hidden bg-white dark:bg-neutral-900"
           >
-            <GeneratingIndicator v-if="isGenerating && !tree" />
+            <GeneratingIndicator v-if="isGenerating && !document" />
             <div
-              v-else-if="parsing && !tree"
+              v-else-if="parsing && !document"
               class="absolute inset-0 flex flex-col items-center justify-center gap-3 text-muted"
             >
               <UIcon
@@ -518,7 +518,7 @@ function handleGenerate(prompt: string) {
               <span class="text-sm">Rendering preview...</span>
             </div>
             <div
-              v-else-if="!tree && !error"
+              v-else-if="!document && !error"
               class="absolute inset-0 flex flex-col items-center justify-center gap-3 text-muted"
             >
               <UIcon
@@ -540,11 +540,11 @@ function handleGenerate(prompt: string) {
                 :title="error"
               />
               <div
-                v-else-if="tree"
+                v-else-if="document"
                 class="max-w-none"
               >
                 <ComarkPlaygroundRenderer
-                  :value="tree"
+                  :value="document"
                   :components-manifest="resolveComponent"
                 />
               </div>
@@ -558,8 +558,8 @@ function handleGenerate(prompt: string) {
             :ui="{ viewport: 'p-4' }"
           >
             <VueJsonPretty
-              v-if="tree"
-              :data="tree as any"
+              v-if="document"
+              :data="document as any"
               :theme="isDark ? 'dark' : 'light'"
               :deep="6"
               show-line

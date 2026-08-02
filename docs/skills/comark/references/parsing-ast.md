@@ -351,9 +351,9 @@ import { parseMarkdown } from 'comark'
 import { renderMarkdown } from 'comark/render'
 
 const content = '# Hello\n\n::alert{type="info"}\nMessage\n::'
-const result = await parseMarkdown(content)
+const document = await parseMarkdown(content)
 
-const markdown = renderMarkdown(result.nodes)
+const markdown = await renderMarkdown(document)
 console.log(markdown)
 ```
 

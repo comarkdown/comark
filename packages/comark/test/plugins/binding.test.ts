@@ -81,28 +81,28 @@ Hello {{ frontmatter.user.name }}!
   })
 
   it('round-trips the source through renderMarkdown as `:tag{:value="..."}`', async () => {
-    const tree = await parseWithBinding('Hello {{ user.name }}!')
-    const md = await renderMarkdown(tree)
+    const document = await parseWithBinding('Hello {{ user.name }}!')
+    const md = await renderMarkdown(document)
     expect(md.trim()).toBe('Hello :binding{:value="user.name"}!')
   })
 
   it('round-trips the default value through renderMarkdown', async () => {
-    const tree = await parseWithBinding('score {{ a || b }} ok')
-    const md = await renderMarkdown(tree)
+    const document = await parseWithBinding('score {{ a || b }} ok')
+    const md = await renderMarkdown(document)
     expect(md.trim()).toBe('score :binding{:value="a" defaultValue="b"} ok')
   })
 })
 
 describe('binding plugin — exported Binding markdown handler', () => {
   it('renders a `{{ path }}` binding back to its source shorthand', async () => {
-    const tree = await parseWithBinding('Hello {{ user.name }}!')
-    const md = await renderMarkdown(tree, { components: { binding: Binding } })
+    const document = await parseWithBinding('Hello {{ user.name }}!')
+    const md = await renderMarkdown(document, { components: { binding: Binding } })
     expect(md.trim()).toBe('Hello {{ user.name }}!')
   })
 
   it('renders a `{{ path || default }}` binding back to its source shorthand', async () => {
-    const tree = await parseWithBinding('score {{ a || b }} ok')
-    const md = await renderMarkdown(tree, { components: { binding: Binding } })
+    const document = await parseWithBinding('score {{ a || b }} ok')
+    const md = await renderMarkdown(document, { components: { binding: Binding } })
     expect(md.trim()).toBe('score {{ a || b }} ok')
   })
 

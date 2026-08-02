@@ -76,8 +76,8 @@ describe('text node escaping', () => {
   it('does not escape markdown inside a raw HTML block', async () => {
     // Raw HTML block content is copied verbatim on parse, so `**World**` must
     // not gain backslashes.
-    const tree = await parseMarkdown('<Hello>\nHello **World**\n</Hello>')
-    const md = await renderMarkdown(tree)
+    const document = await parseMarkdown('<Hello>\nHello **World**\n</Hello>')
+    const md = await renderMarkdown(document)
     expect(md).toContain('Hello **World**')
     expect(md).not.toContain('\\*')
   })

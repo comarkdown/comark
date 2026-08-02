@@ -61,7 +61,7 @@ export default defineComarkPlugin((opts: MdcInlineBindingOptions = {}) => {
  * Markdown-format handler that renders a `binding` node back to the
  * `{{ path || default }}` source form.
  *
- * Wire it via `renderMarkdown(tree, { components: { Binding } })`
+ * Wire it via `renderMarkdown(document, { components: { Binding } })`
  * to round-trip faithfully to the authored shorthand instead of the generic
  * `:binding{:value="..."}` component form.
  */

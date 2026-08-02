@@ -171,9 +171,9 @@ import { parseMarkdown } from 'comark'
 import { renderMarkdown } from 'comark/render'
 import binding, { Binding } from 'comark/plugins/binding'
 
-const tree = await parseMarkdown('Hi {{ user.name }}!', { plugins: [binding()] })
+const document = await parseMarkdown('Hi {{ user.name }}!', { plugins: [binding()] })
 
-const source = await renderMarkdown(tree, {
+const source = await renderMarkdown(document, {
   components: { Binding },
 })
 // → "Hi {{ user.name }}!\n"

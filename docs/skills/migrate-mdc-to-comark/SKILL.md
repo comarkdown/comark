@@ -16,7 +16,7 @@ The migration has two parts: **Core Package** (programmatic API) and **Nuxt Modu
 - **Parse**: `parseMarkdown()` → `parseMarkdown()` · factory: `createMarkdownParser()` (sync, no await)
 - **Render**: `stringifyMarkdown()` → `renderMarkdown()` from `comark/render`
 - **AST**: object tree → compact tuples `['tag', props, ...children]`
-- **Result**: `result.body` / `result.data` → `tree.nodes` / `tree.frontmatter`
+- **Result**: `result.body` / `result.data` → `document.nodes` / `document.frontmatter`
 - **Renderer**: `<MDCRenderer :body :data>` → `<MarkdownDocument :value>`
 - **All-in-one**: `<MDC :value>` → `<Markdown :value>`
 - **Slots**: `<MDCSlot />` → native `<slot />`
@@ -31,12 +31,12 @@ The migration has two parts: **Core Package** (programmatic API) and **Nuxt Modu
 |---|---|
 | `parseMarkdown(md, opts)` | `parseMarkdown(md, opts)` from `comark` |
 | `createMarkdownParser(opts)` (async) | `createMarkdownParser(opts)` (sync, no await) |
-| `stringifyMarkdown(body, data)` | `renderMarkdown(tree)` from `comark/render` |
-| `result.body` (`MDCRoot`) | `tree.nodes` (`Node[]`) |
-| `result.data` | `tree.frontmatter` |
-| `result.data.title` | `tree.frontmatter.title` |
-| `result.toc` | `tree.meta.toc` (requires `toc` plugin) |
-| `result.excerpt` | `tree.meta.summary` (requires `summary` plugin) |
+| `stringifyMarkdown(body, data)` | `renderMarkdown(document)` from `comark/render` |
+| `result.body` (`MDCRoot`) | `document.nodes` (`Node[]`) |
+| `result.data` | `document.frontmatter` |
+| `result.data.title` | `document.frontmatter.title` |
+| `result.toc` | `document.meta.toc` (requires `toc` plugin) |
+| `result.excerpt` | `document.meta.summary` (requires `summary` plugin) |
 
 ### AST Format
 
@@ -74,7 +74,7 @@ The `unified`/`remark`/`rehype` pipeline is replaced by Comark's own lighter plu
 |---|---|---|
 | Syntax highlighting | `rehypeHighlight` via `createMarkdownParser` | `highlight()` from `comark/plugins/highlight` |
 | Table of Contents | `parseMarkdown(md, { toc: { depth: 3 } })` | `toc({ depth: 3 })` plugin |
-| Excerpt / Summary | `result.excerpt` (built-in) | `summary()` plugin → `tree.meta.summary` |
+| Excerpt / Summary | `result.excerpt` (built-in) | `summary()` plugin → `document.meta.summary` |
 | Emoji | `remark-emoji` (enabled by default) | `emoji()` plugin (opt-in) |
 
 Available plugins: `comark/plugins/toc`, `comark/plugins/highlight`, `comark/plugins/emoji`, `comark/plugins/task-list`, `comark/plugins/summary`, `comark/plugins/security`, `comark/plugins/alert`, `comark/plugins/math`, `comark/plugins/mermaid`, `comark/plugins/punctuation`
@@ -109,7 +109,7 @@ export default defineNuxtConfig({
 | `<MDCSlot unwrap="p" />` | `<slot unwrap="p" />` |
 | `<slot mdc-unwrap="p" />` | `<slot unwrap="p" />` |
 
-For a pre-parsed tree, use `<MarkdownDocument>` directly instead of `<Markdown>`.
+For a pre-parsed document, use `<MarkdownDocument>` directly instead of `<Markdown>`.
 
 #### `<MarkdownDocument>` props changes
 
@@ -176,8 +176,8 @@ These are **only available with Nuxt UI**. Without it, use `::callout{icon="..."
 
 1. **`createMarkdownParser` is sync**: no `await` needed (unlike `createMarkdownParser`)
 2. **Attribute naming**: Comark uses `attrs.lang`, not `attrs.language`
-3. **Frontmatter**: stored in `tree.frontmatter`, not passed separately
-4. **`renderMarkdown` includes frontmatter**: reads `tree.frontmatter` automatically
+3. **Frontmatter**: stored in `document.frontmatter`, not passed separately
+4. **`renderMarkdown` includes frontmatter**: reads `document.frontmatter` automatically
 5. **No `unified` pipeline**: `mdc.config.ts` hooks (`pre`, `remark`, `rehype`, `post`) have no equivalent, use `ComarkPlugin` interface instead
 6. **Emoji is opt-in**: not enabled by default like in MDC's `remark-emoji`
 

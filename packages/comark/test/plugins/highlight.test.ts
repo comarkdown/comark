@@ -59,7 +59,7 @@ describe('shiki code block round-trip', () => {
   })
 
   it('keeps a plain fence for a highlighted code block inside a component slot', async () => {
-    const tree: MarkdownDocument = {
+    const document: MarkdownDocument = {
       frontmatter: {},
       meta: {},
       nodes: [
@@ -74,7 +74,7 @@ describe('shiki code block round-trip', () => {
         ],
       ],
     }
-    const md = await renderMarkdown(tree)
+    const md = await renderMarkdown(document)
     expect(md).not.toContain('::pre')
     expect(md).toContain('```bash\nnpx install\n```')
   })
