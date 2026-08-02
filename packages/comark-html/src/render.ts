@@ -14,31 +14,31 @@ export interface RenderHTMLContext {
 export type ComponentRenderFn = (element: ElementNode, ctx: RenderHTMLContext) => string | Promise<string>
 
 /**
- * Render Comark tree to HTML
+ * Render a Markdown document to HTML.
  *
- * @param tree - The Comark tree to render
+ * @param document - The parsed Markdown document to render
  * @param options - Optional rendering options with custom components and data
  * @returns The HTML string
  *
  * @example
  * ```typescript
  * import { parseMarkdown } from 'comark'
- * import { renderHtml } from '@comark/html'
+ * import { renderHtmlFromDocument } from '@comark/html'
  *
- * const tree = await parseMarkdown('::alert{type="info"}\nHello!\n::')
+ * const document = await parseMarkdown('::alert{type="info"}\nHello!\n::')
  *
- * const html = renderHtml(tree, {
+ * const html = await renderHtmlFromDocument(document, {
  *   components: {
- *     alert: ([tag, attrs, ...children], { render }) => {
- *       return `<div class="alert alert-${attrs.type}">${render(children)}</div>`
+ *     alert: async ([tag, attrs, ...children], { render }) => {
+ *       return `<div class="alert alert-${attrs.type}">${await render(children)}</div>`
  *     }
  *   }
  * })
  * ```
  */
-export async function renderHtml(
-  tree: MarkdownDocument | { nodes: MarkdownDocument['nodes'] },
+export async function renderHtmlFromDocument(
+  document: MarkdownDocument | { nodes: MarkdownDocument['nodes'] },
   options?: RendererOptions
 ): Promise<string> {
-  return (await render(tree, { blockSeparator: '\n', format: 'text/html', ...options })).trim()
+  return (await render(document, { blockSeparator: '\n', format: 'text/html', ...options })).trim()
 }

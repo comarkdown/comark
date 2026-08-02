@@ -12,9 +12,9 @@ export { default } from 'comark/plugins/mermaid'
  * @example
  * ```typescript
  * import mermaid, { Mermaid } from '@comark/html/plugins/mermaid'
- * import { createRender } from '@comark/html'
+ * import { createHtmlRenderer } from '@comark/html'
  *
- * const render = createRender({
+ * const renderHtml = createHtmlRenderer({
  *   plugins: [mermaid()],
  *   components: { Mermaid },
  * })

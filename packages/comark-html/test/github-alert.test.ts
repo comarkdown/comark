@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest'
 import { parseMarkdown } from 'comark'
 import githubAlert from '@comark/html/plugins/alert'
-import { renderHtml } from '../src/index'
+import { renderHtmlFromDocument } from '../src/index'
 
 describe('githubAlert', () => {
   it('should convert !TIP to <svg> icon', async () => {
-    const tree = await parseMarkdown(
+    const doc = await parseMarkdown(
       `
 > [!NOTE]
 > Useful information that users should know, even when skimming content.
@@ -15,7 +15,7 @@ describe('githubAlert', () => {
         plugins: [githubAlert()],
       }
     )
-    const html = await renderHtml(tree)
+    const html = await renderHtmlFromDocument(doc)
     expect(html).toContain('<blockquote as="note">')
   })
 })

@@ -1,8 +1,8 @@
 import type { ParserOptions, RendererOptions } from 'comark'
 import { createMarkdownParser } from 'comark'
-import { renderHtml } from './render.ts'
+import { renderHtmlFromDocument } from './render.ts'
 
-export { renderHtml } from './render.ts'
+export { renderHtmlFromDocument } from './render.ts'
 
 /**
  * Creates a reusable parse+render function with pre-configured options.
@@ -13,43 +13,43 @@ export { renderHtml } from './render.ts'
  *
  * @example
  * ```typescript
- * import { createRender } from '@comark/html'
- * import highlight from 'comark/plugins/highlight'
+ * import { createHtmlRenderer } from '@comark/html'
+ * import highlight from '@comark/html/plugins/highlight'
  *
- * const render = createRender({
+ * const renderHtml = createHtmlRenderer({
  *   plugins: [highlight()],
  *   components: {
- *     alert: ([, attrs, ...children], { render }) =>
- *       `<div class="alert alert-${attrs.type}">${render(children)}</div>`
+ *     alert: async ([, attrs, ...children], { render }) =>
+ *       `<div class="alert alert-${attrs.type}">${await render(children)}</div>`
  *   }
  * })
  *
- * const html = await render('# Hello\n\n**Bold** text.')
+ * const html = await renderHtml('# Hello\n\n**Bold** text.')
  * ```
  */
-export function createRender(options?: ParserOptions & RendererOptions): (markdown: string) => Promise<string> {
-  const parse = createMarkdownParser(options)
+export function createHtmlRenderer(options?: ParserOptions & RendererOptions): (markdown: string) => Promise<string> {
+  const parseMarkdown = createMarkdownParser(options)
   return async (markdown: string) => {
-    const tree = await parse(markdown)
-    return await renderHtml(tree, options as RendererOptions)
+    const document = await parseMarkdown(markdown)
+    return await renderHtmlFromDocument(document, options as RendererOptions)
   }
 }
 
 /**
  * Parse markdown and render it to an HTML string.
  *
- * @param markdown - The markdown/Comark content to render
+ * @param markdown - The markdown content to parse and render
  * @param options - Optional parse and render options
  * @returns A Promise resolving to the HTML string
  *
  * @example
  * ```typescript
- * import { render } from '@comark/html'
+ * import { renderHtml } from '@comark/html'
  *
- * const html = await render('# Hello\n\nThis is **bold** and _italic_.')
+ * const html = await renderHtml('# Hello\n\nThis is **bold** and _italic_.')
  * document.body.innerHTML = html
  * ```
  */
-export async function render(markdown: string, options?: RendererOptions): Promise<string> {
-  return createRender(options)(markdown)
+export async function renderHtml(markdown: string, options?: ParserOptions & RendererOptions): Promise<string> {
+  return createHtmlRenderer(options)(markdown)
 }
