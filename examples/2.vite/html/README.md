@@ -10,11 +10,11 @@ path: /examples/vite/html
 ::code-tree{defaultValue="src/main.ts" expandAll}
 
 ```ts [src/main.ts]
-import { createRender } from '@comark/html'
+import { createHtmlRenderer } from '@comark/html'
 import highlight from 'comark/plugins/highlight'
 
-const render = createRender({
-  parse: { plugins: [highlight()] },
+const renderHtml = createHtmlRenderer({
+  plugins: [highlight()],
 })
 
 const PREVIEW_STYLES = `
@@ -31,7 +31,7 @@ const PREVIEW_STYLES = `
 `
 
 async function updatePreview(markdown: string) {
-  const html = await render(markdown)
+  const html = await renderHtml(markdown)
   const frame = document.getElementById('preview') as HTMLIFrameElement
   frame.srcdoc = `<!doctype html><html><head><style>${PREVIEW_STYLES}</style></head><body>${html}</body></html>`
 }
