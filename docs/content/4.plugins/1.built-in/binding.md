@@ -63,14 +63,14 @@ The plugin ships a renderer-specific `Binding` export for every first-party pack
 
 ```typescript [HTML]
 import binding, { Binding } from '@comark/html/plugins/binding'
-import { createRender } from '@comark/html'
+import { createHtmlRenderer } from '@comark/html'
 
-const render = createRender({
+const renderHtml = createHtmlRenderer({
   plugins: [binding()],
   components: { Binding },
 })
 
-const html = await render(`
+const html = await renderHtml(`
 ---
 user:
   name: Ada

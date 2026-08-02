@@ -327,12 +327,12 @@ Warning message
 
 ```typescript
 import { parseMarkdown } from 'comark'
-import { renderHtml } from '@comark/html'
+import { renderHtmlFromDocument } from '@comark/html'
 
 const content = '# Hello World\n\nThis is **markdown**.'
-const tree = await parseMarkdown(content)
+const doc = await parseMarkdown(content)
 
-const html = renderHtml(tree)
+const html = await renderHtmlFromDocument(doc)
 console.log(html)
 ```
 

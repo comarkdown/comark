@@ -130,11 +130,11 @@ npm install @comark/html
 ```
 
 ```js
-import { render } from '@comark/html'
+import { renderHtml } from '@comark/html'
 
 const chatMessage = ...
 
-const html = await render(chatMessage)
+const html = await renderHtml(chatMessage)
 ```
 
 ## Packages

@@ -138,9 +138,9 @@ export default function Page() {
 ```
 
 ```ts [HTML]
-import { render } from '@comark/html'
+import { renderHtml } from '@comark/html'
 
-const html = await render(`> [!NOTE]
+const html = await renderHtml(`> [!NOTE]
 > Useful information for users.`, {
   components: {
     // The HTML renderer resolves by tag name: read the alert type from `attrs.as`

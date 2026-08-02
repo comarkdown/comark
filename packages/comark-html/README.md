@@ -29,9 +29,9 @@ pnpm add @comark/html
 ## Usage
 
 ```ts
-import { render } from '@comark/html'
+import { renderHtml } from '@comark/html'
 
-const html = await render(`
+const html = await renderHtml(`
 # Getting Started
 
 This is a **bold** statement with a [link](https://example.com).
@@ -53,9 +53,9 @@ This is a **bold** statement with a [link](https://example.com).
 ### Custom components
 
 ```ts
-import { render } from '@comark/html'
+import { renderHtml } from '@comark/html'
 
-const html = await render(`::alert{type="warning"}\nHeads up!\n::`, {
+const html = await renderHtml(`::alert{type="warning"}\nHeads up!\n::`, {
   components: {
     alert: async ([, attrs, ...children], { render }) =>
       `<div class="alert alert-${attrs.type}">${await render(children)}</div>`,
@@ -66,13 +66,19 @@ const html = await render(`::alert{type="warning"}\nHeads up!\n::`, {
 ### Plugins
 
 ```ts
-import { render } from '@comark/html'
+import { renderHtml } from '@comark/html'
 import highlight from '@comark/html/plugins/highlight'
 
-const html = await render(content, {
+const html = await renderHtml(content, {
   plugins: [highlight({ themes: { light: 'github-light', dark: 'github-dark' } })],
 })
 ```
+
+## API
+
+- `renderHtml(markdown, options?)` parses and renders Markdown to HTML.
+- `createHtmlRenderer(options?)` creates a reusable parse-and-render function.
+- `renderHtmlFromDocument(document, options?)` renders a pre-parsed `MarkdownDocument`.
 
 ## Documentation
 

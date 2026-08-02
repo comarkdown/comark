@@ -47,7 +47,7 @@ Located at `packages/comark/`:
 packages/comark/
 ├── src/
 │   ├── index.ts              # Core parser: parseMarkdown(), autoCloseMarkdown()
-│   ├── render.ts             # String rendering: renderMarkdown() (renderHtml() moved to @comark/html)
+│   ├── render.ts             # String rendering: renderMarkdown() (renderHtmlFromDocument() moved to @comark/html)
 │   ├── types.ts              # TypeScript interfaces (ParserOptions, etc.)
 │   ├── ast/                  # Comark AST types and utilities
 │   │   ├── index.ts          # Re-exports (comark/ast entry point)
@@ -99,21 +99,21 @@ Located at `packages/comark-html/`. Framework-free HTML string rendering.
 ### Usage
 
 ```typescript
-import { render, renderHtml, createRender } from '@comark/html'
+import { createHtmlRenderer, renderHtml, renderHtmlFromDocument } from '@comark/html'
 import highlight from '@comark/html/plugins/highlight'
 import math, { Math } from '@comark/html/plugins/math'
 
 // Flat options — ParserOptions & RendererOptions merged at top level
-const renderFn = createRender({
+const renderHtml = createHtmlRenderer({
   plugins: [highlight({ themes: { light: 'github-light', dark: 'github-dark' } })],
   components: {
     Math,
-    alert: ([, attrs, ...children], { render }) =>
-      `<div class="alert alert-${attrs.type}">${render(children)}</div>`
+    alert: async ([, attrs, ...children], { render }) =>
+      `<div class="alert alert-${attrs.type}">${await render(children)}</div>`
   },
 })
 
-const html = await renderFn(markdownString)
+const html = await renderHtml(markdownString)
 ```
 
 ---
@@ -365,7 +365,7 @@ import mermaid, { Mermaid } from '@comark/angular/plugins/mermaid'
 import { parseMarkdown, autoCloseMarkdown } from 'comark'
 
 // HTML rendering (parse + render in one step)
-import { render, renderHtml, createRender } from '@comark/html'
+import { createHtmlRenderer, renderHtml, renderHtmlFromDocument } from '@comark/html'
 
 // ANSI terminal rendering
 import { createAnsiRenderer, createAnsiWriter, renderAnsi, renderAnsiFromDocument, writeAnsi } from '@comark/ansi'
@@ -391,7 +391,7 @@ import alert from 'comark/plugins/alert'
 // Use comark/plugins/* only when calling parseMarkdown() without a framework renderer.
 
 // HTML rendering — parse + render to HTML string
-import { render, renderHtml, createRender } from '@comark/html'
+import { createHtmlRenderer, renderHtml, renderHtmlFromDocument } from '@comark/html'
 import highlight from '@comark/html/plugins/highlight'
 import math, { Math } from '@comark/html/plugins/math'
 import mermaid, { Mermaid } from '@comark/html/plugins/mermaid'
