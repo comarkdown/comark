@@ -18,14 +18,14 @@ describe('parseProps', () => {
       "
       class=foo
       id=my-id
-      no-border=true
+      :no-border=true
       "
     `)
 
     expect(parse('{foo=bar baz}')).toMatchInlineSnapshot(`
       "
       foo=bar
-      baz=true
+      :baz=true
       "
     `)
 

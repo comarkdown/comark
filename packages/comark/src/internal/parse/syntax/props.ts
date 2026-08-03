@@ -51,15 +51,16 @@ export function searchProps(content: string, index = 0) {
       }
       const char = content[index]
       if (start !== index) {
-        const key = content.slice(start, index).trim()
+        let key = content.slice(start, index).trim()
         let value = ''
         if (char === '=') {
           index += 1
           value = searchValue()
         } else {
+          key = key[0] === ':' ? key : `:${key}`
           value = 'true'
         }
-        if (key.match(/^:?[a-z_][a-z0-9_-]+$/gi)) {
+        if (key.match(/^:?[a-z_][a-z0-9_-]*$/gi)) {
           props.push([key, value])
         }
       }
