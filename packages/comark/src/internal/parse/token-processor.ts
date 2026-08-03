@@ -109,7 +109,7 @@ function processAttributes(
     filterEmpty?: boolean
   } = {}
 ): Record<string, unknown> {
-  const { handleBoolean = true, handleJSON = true, filterEmpty = false } = options
+  const { handleJSON = true, filterEmpty = false } = options
   const attrs: Record<string, unknown> = {}
 
   if (!attrsArray || !Array.isArray(attrsArray)) {
@@ -123,20 +123,6 @@ function processAttributes(
 
       // Filter empty values if requested
       if (filterEmpty && (value === '' || value === null || value === undefined)) {
-        continue
-      }
-
-      // Handle boolean attributes:
-      //   {bool} / {bool="true"} / {bool=true}  -> {":bool": "true"}
-      //   {bool="false"} / {bool=false}         -> {":bool": "false"}
-      if (
-        handleBoolean &&
-        !key.startsWith(':') &&
-        !key.startsWith('#') &&
-        !key.startsWith('.') &&
-        (value === 'true' || value === 'false')
-      ) {
-        attrs[`:${key}`] = value
         continue
       }
 
@@ -420,7 +406,7 @@ function processBlockToken(
   if (token.type === 'heading_open') {
     const level = Number.parseInt(token.tag.replace('h', ''), 10)
     const headingTag = `h${level}` as 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
-    const userAttrs = processAttributes(token.attrs, { handleBoolean: false, handleJSON: false })
+    const userAttrs = processAttributes(token.attrs, { handleJSON: false })
     // Process heading children with inHeading flag for Comark component handling
     const children = processBlockChildren(
       tokens,
@@ -452,7 +438,7 @@ function processBlockToken(
 
   // Handle list items - paragraphs should be unwrapped
   if (token.type === 'list_item_open') {
-    const attrs = processAttributes(token.attrs, { handleBoolean: false, handleJSON: false })
+    const attrs = processAttributes(token.attrs, { handleJSON: false })
     const children = processBlockChildren(tokens, startIndex + 1, 'list_item_close', false, false, true, state)
     if (children.nodes.length > 0) {
       return { node: ['li', attrs, ...children.nodes] as ComarkNode, nextIndex: children.nextIndex + 1 }
@@ -463,7 +449,7 @@ function processBlockToken(
   // Handle generic block-level open/close pairs (includes blockquote, lists, tables, etc.)
   const tagName = BLOCK_TAG_MAP[token.type]
   if (tagName) {
-    const attrs = processAttributes(token.attrs, { handleBoolean: false, handleJSON: false })
+    const attrs = processAttributes(token.attrs, { handleJSON: false })
     const closeType = token.type.replace('_open', '_close')
 
     const isNestedContext = ['td', 'th'].includes(tagName)
@@ -472,7 +458,7 @@ function processBlockToken(
   }
 
   const componentName = token.tag || 'component'
-  const attrs = processAttributes(token.attrs, { handleBoolean: false, handleJSON: false })
+  const attrs = processAttributes(token.attrs, { handleJSON: false })
   return { node: [componentName, attrs], nextIndex: startIndex + 1 }
 }
 
@@ -965,7 +951,7 @@ function processInlineToken(
   }
 
   if (token.type === 'image') {
-    const attrs = processAttributes(token.attrs, { handleBoolean: false, handleJSON: false, filterEmpty: true })
+    const attrs = processAttributes(token.attrs, { handleJSON: false, filterEmpty: true })
     // Override alt with token.content if available
     if (token.content) {
       attrs.alt = token.content
@@ -979,7 +965,7 @@ function processInlineToken(
   }
 
   if (token.type === 'link_open') {
-    const attrs = processAttributes(token.attrs, { handleBoolean: false, handleJSON: false })
+    const attrs = processAttributes(token.attrs, { handleJSON: false })
     const children = processInlineChildren(tokens, startIndex + 1, 'link_close', inHeading)
 
     // Check if there's a props token right after the link_close token

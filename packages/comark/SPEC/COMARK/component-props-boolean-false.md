@@ -27,9 +27,9 @@ My button
       {
         ":block": "true",
         ":reverse": "true",
-        ":square": "false",
-        ":disabled": "true",
-        "count": "5"
+        "count": "5",
+        "disabled": "true",
+        "square": "false"
       },
       "My button"
     ]
@@ -48,7 +48,7 @@ My button
 ## Markdown
 
 ```md
-::my-component{block reverse :square="false" disabled count="5"}
+::my-component{block reverse square="false" disabled="true" count="5"}
 My button
 ::
 ```

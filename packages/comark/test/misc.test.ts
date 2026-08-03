@@ -12,8 +12,8 @@ describe('misc', () => {
       const tree = await parse('::x{flag other="true" off="false" count="5"}\n::')
       expect((tree.nodes[0] as any)[1]).toEqual({
         ':flag': 'true',
-        ':other': 'true',
-        ':off': 'false',
+        other: 'true',
+        off: 'false',
         count: '5',
       })
     })
@@ -21,8 +21,8 @@ describe('misc', () => {
     it('promotes unquoted true/false the same way', async () => {
       const tree = await parse('::x{on=true off=false}\n::')
       expect((tree.nodes[0] as any)[1]).toEqual({
-        ':on': 'true',
-        ':off': 'false',
+        on: 'true',
+        off: 'false',
       })
     })
 
@@ -38,7 +38,7 @@ describe('misc', () => {
     it('applies the same rules to inline components', async () => {
       const tree = await parse(':badge{disabled="false" active}')
       expect((tree.nodes[0] as any)[1]).toEqual({
-        ':disabled': 'false',
+        disabled: 'false',
         ':active': 'true',
       })
     })

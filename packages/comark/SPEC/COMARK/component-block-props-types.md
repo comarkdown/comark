@@ -30,8 +30,8 @@ Component content
       {
         "title": "Hello World",
         "count": "42",
-        ":enabled": "true",
-        ":hidden": "false",
+        "enabled": "true",
+        "hidden": "false",
         "tags": [
           "markdown",
           "docs"
