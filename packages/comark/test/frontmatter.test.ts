@@ -107,6 +107,33 @@ Content`
     expect(result.content).toBe(input)
   })
 
+  it('should handle comment-only frontmatter without throwing', () => {
+    const input = `---
+# no metadata yet
+---
+
+Content`
+    const result = parseFrontmatter(input)
+    expect(result.data).toEqual({})
+    expect(result.content.trim()).toBe('Content')
+  })
+
+  it('should handle whitespace-only frontmatter without throwing', () => {
+    const input = '---\n   \n---\n\nContent'
+    const result = parseFrontmatter(input)
+    expect(result.data).toEqual({})
+    expect(result.content.trim()).toBe('Content')
+  })
+
+  it('should still throw for malformed YAML in frontmatter', () => {
+    const input = `---
+foo: [1,2
+---
+
+Content`
+    expect(() => parseFrontmatter(input)).toThrow()
+  })
+
   it('should handle frontmatter with special characters', () => {
     const input = `---
 title: "Hello: World"
