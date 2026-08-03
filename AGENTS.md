@@ -482,6 +482,7 @@ const result = await parseMarkdown(markdownContent, {
   autoUnwrap: true,             // Remove <p> wrappers from single-paragraph containers
   autoClose: true,              // Auto-close incomplete syntax
   unwrap: 'p',                  // Strip top-level wrapper tags (MDC unwrap); merges paragraphs
+  frontmatter: true,            // Parse leading YAML frontmatter; false to treat it as content
   registerDefaultPlugins: true, // Built-in alert, task-list and syntax plugins; false to disable
 })
 

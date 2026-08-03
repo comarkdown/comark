@@ -63,7 +63,7 @@ export { defineComarkPlugin } from './utils/helpers.ts'
 export function createMarkdownParser<const TPlugins extends readonly ComarkPlugin<any, any>[] = []>(
   options: ParserOptions<TPlugins> = {} as ParserOptions<TPlugins>
 ): ComarkParseFn<ResolvedMeta<MergePluginMeta<TPlugins>>, ResolvedFrontmatter<MergePluginFrontmatter<TPlugins>>> {
-  const { autoUnwrap = true, autoClose = true } = options
+  const { autoUnwrap = true, autoClose = true, frontmatter = true } = options
   // Tag set to strip from the top level of the tree (MDC `unwrap`). Resolved once.
   const unwrapTags = resolveUnwrapTags(options.unwrap)
 
@@ -123,14 +123,19 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
     }
 
     if (autoClose) {
-      state.markdown = autoCloseMarkdown(state.markdown, { frontmatter: opts.streaming, syntax: syntaxEnabled })
+      state.markdown = autoCloseMarkdown(state.markdown, {
+        frontmatter: frontmatter && opts.streaming,
+        syntax: syntaxEnabled,
+      })
     }
 
     for (const plugin of plugins) {
       await plugin.pre?.(state)
     }
 
-    const { content, data, frontmatterText } = parseFrontmatter(state.markdown)
+    const { content, data, frontmatterText } = frontmatter
+      ? parseFrontmatter(state.markdown)
+      : { content: state.markdown, data: {}, frontmatterText: '' }
     // Count frontmatter lines for line number tracking
     if (content && frontmatterText) {
       state.parsedLines +=

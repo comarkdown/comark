@@ -452,6 +452,13 @@ export interface ParserOptions<TPlugins extends readonly ComarkPlugin<any, any>[
   headingIds?: boolean
 
   /**
+   * Whether to parse a leading YAML frontmatter block into `tree.frontmatter`.
+   * Set `false` to treat the `---` block as regular markdown content.
+   * @default true
+   */
+  frontmatter?: boolean
+
+  /**
    * Whether to register the built-in default plugins (`alert`, `task-list`, `syntax`).
    * Set `false` to parse plain markdown with only the plugins listed in `plugins`.
    * Without the syntax plugin, `autoClose` skips component fences and attribute braces.
