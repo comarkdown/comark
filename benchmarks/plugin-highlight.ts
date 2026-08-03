@@ -2,7 +2,7 @@ import { bench, run, group, barplot } from 'mitata'
 import MarkdownIt from 'markdown-it'
 import MarkdownExit from 'markdown-exit'
 import { markdownItComark } from 'comark/plugins/syntax'
-import { createParse } from 'comark'
+import { createMarkdownParser } from 'comark'
 import highlight, { getHighlighter } from '../packages/comark/src/plugins/highlight'
 import { codeToHast } from 'shiki/core'
 
@@ -18,8 +18,8 @@ npm install comark
 Then use it:
 
 \`\`\`javascript
-import { parse } from 'comark'
-const tree = await parse('# Hello')
+import { parseMarkdown } from 'comark'
+const tree = await parseMarkdown('# Hello')
 \`\`\`
 `
 
@@ -29,15 +29,15 @@ const medium = `
 ## Parse
 
 \`\`\`typescript
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 
-interface ParseOptions {
+interface ParserOptions {
   autoClose?: boolean
   streaming?: boolean
   plugins?: ComarkPlugin[]
 }
 
-const tree = await parse(markdown, {
+const tree = await parseMarkdown(markdown, {
   autoClose: true,
   plugins: [highlight()],
 })
@@ -99,8 +99,8 @@ const markdownExit = new MarkdownExit({ html: true, linkify: true })
   .use(markdownItComark)
 
 // comark: baseline vs highlight plugin
-const comark = createParse()
-const comarkHl = createParse({ plugins: [highlight()] })
+const comark = createMarkdownParser()
+const comarkHl = createMarkdownParser({ plugins: [highlight()] })
 
 // Pre-warm shiki so we benchmark steady-state, not cold-start
 const shiki = await getHighlighter()

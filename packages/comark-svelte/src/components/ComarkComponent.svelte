@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { ComarkNode as ComarkNodeType, ComponentManifest, NodeRenderData } from 'comark'
+  import type { Node as NodeType, ComponentManifest, NodeRenderData } from 'comark'
   import type { Snippet } from 'svelte'
   import type { ComponentResolver } from '../types.js'
   import MarkdownNode from './MarkdownNode.svelte'
@@ -8,7 +8,7 @@
 
   interface NamedSlot {
     name: string
-    children: ComarkNodeType[]
+    children: NodeType[]
     caretClass: string | null
   }
 

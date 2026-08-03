@@ -1,6 +1,6 @@
-import { parse } from '@comark/react/parse'
+import { parseMarkdown } from 'comark'
 import highlight from '@comark/react/plugins/highlight'
-import type { ComarkTree } from '@comark/react'
+import type { MarkdownDocument } from '@comark/react'
 
 const rawFiles = import.meta.glob('../../content/posts/*.md', {
   query: '?raw',
@@ -17,7 +17,7 @@ export interface PostMeta {
 }
 
 export interface Post extends PostMeta {
-  tree: ComarkTree
+  tree: MarkdownDocument
 }
 
 function slugFromPath(path: string): string {
@@ -29,7 +29,7 @@ export async function getAllPosts(): Promise<PostMeta[]> {
 
   for (const [path, content] of Object.entries(rawFiles)) {
     const slug = slugFromPath(path)
-    const tree = await parse(content)
+    const tree = await parseMarkdown(content)
     const fm = tree.frontmatter as Record<string, unknown>
 
     posts.push({
@@ -49,7 +49,7 @@ export async function getPost(slug: string): Promise<Post> {
   if (!entry) throw new Error(`Post not found: ${slug}`)
 
   const [, content] = entry
-  const tree = await parse(content, {
+  const tree = await parseMarkdown(content, {
     plugins: [highlight()],
   })
 

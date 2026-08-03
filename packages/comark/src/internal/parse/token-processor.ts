@@ -1,5 +1,5 @@
-import type { ComarkElement, ComarkNode } from 'comark'
-import { htmlToComarkNodes, parseInlineHtmlTag } from './html/index.ts'
+import type { ElementNode, Node } from 'comark'
+import { htmlToNodes, parseInlineHtmlTag } from './html/index.ts'
 
 // `::tag` components that should fold into a single same-tagged child.
 const WRAPPER_TAGS = new Set(['ul', 'ol', 'table', 'blockquote', 'pre'])
@@ -43,9 +43,9 @@ interface TokenProcessorOptions {
 }
 
 /**
- * Convert Markdown-It tokens to a Comark tree
+ * Convert Markdown-It tokens to MarkdownDocument nodes
  */
-export function marmdownItTokensToComarkTree(tokens: any[], opts?: TokenProcessorOptions): ComarkNode[] {
+export function marmdownItTokensToMarkdownDocument(tokens: any[], opts?: TokenProcessorOptions): Node[] {
   const options = { startLine: 0, preservePositions: false, headingIds: true, ...opts }
   const state: ProcessState = {
     headingSlugCounts: new Map<string, number>(),
@@ -53,7 +53,7 @@ export function marmdownItTokensToComarkTree(tokens: any[], opts?: TokenProcesso
     preservePositions: options.preservePositions,
     headingIds: options.headingIds ?? true,
   }
-  const nodes: ComarkNode[] = []
+  const nodes: Node[] = []
 
   let i = 0
   let endLine = options.startLine
@@ -93,9 +93,9 @@ export function marmdownItTokensToComarkTree(tokens: any[], opts?: TokenProcesso
  * parsed once by htmlparser2; text inside is preserved verbatim (no markdown
  * re-parsing — CommonMark default).
  */
-function processHtmlBlockTokens(tokens: any[], startIndex: number): { nodes: ComarkNode[]; nextIndex: number } {
+function processHtmlBlockTokens(tokens: any[], startIndex: number): { nodes: Node[]; nextIndex: number } {
   const content = typeof tokens[startIndex]?.content === 'string' ? tokens[startIndex].content : ''
-  return { nodes: htmlToComarkNodes(content), nextIndex: startIndex + 1 }
+  return { nodes: htmlToNodes(content), nextIndex: startIndex + 1 }
 }
 
 /**
@@ -289,14 +289,14 @@ function processBlockToken(
   startIndex: number,
   insideNestedContext: boolean = false,
   state?: ProcessState
-): { node: ComarkNode | null; nextIndex: number } {
+): { node: Node | null; nextIndex: number } {
   const token = tokens[startIndex]
 
   if (token.type === 'hr') {
-    return { node: ['hr', {}] as ComarkNode, nextIndex: startIndex + 1 }
+    return { node: ['hr', {}] as Node, nextIndex: startIndex + 1 }
   }
 
-  // html_block is normally handled upstream (in marmdownItTokensToComarkTree /
+  // html_block is normally handled upstream (in marmdownItTokensToMarkdownDocument /
   // processBlockChildren / processBlockChildrenWithSlots) before reaching here.
   // Safety fallback when it slips through.
   if (token.type === 'html_block') {
@@ -319,17 +319,17 @@ function processBlockToken(
       Array.isArray(children.nodes[0]) &&
       children.nodes[0][0] === componentName
     ) {
-      const inner = children.nodes[0] as ComarkElement
+      const inner = children.nodes[0] as ElementNode
       const innerAttrs = inner[1] as Record<string, unknown>
-      const innerChildren = inner.slice(2) as ComarkNode[]
+      const innerChildren = inner.slice(2) as Node[]
       return {
-        node: [componentName, { ...innerAttrs, ...attrs }, ...innerChildren] as ComarkNode,
+        node: [componentName, { ...innerAttrs, ...attrs }, ...innerChildren] as Node,
         nextIndex: children.nextIndex + 1,
       }
     }
 
     // Return the component even if it has no children (empty component like ::component\n::)
-    return { node: [componentName, attrs, ...children.nodes] as ComarkNode, nextIndex: children.nextIndex + 1 }
+    return { node: [componentName, attrs, ...children.nodes] as Node, nextIndex: children.nextIndex + 1 }
   }
 
   // Handle Comark block shorthand components (e.g., standalone :inline-component, ::inline-component[content])
@@ -338,7 +338,7 @@ function processBlockToken(
     let nextIndex = startIndex + 1
     const componentName = token.tag || 'component'
     const attrs = processAttributes(token.attrs, { handleJSON: false })
-    const children: ComarkNode[] = []
+    const children: Node[] = []
 
     // Opening tag with content - process children until closing tag
     if (token.nesting === 1) {
@@ -364,7 +364,7 @@ function processBlockToken(
 
   if (token.type === 'math_block') {
     return {
-      node: ['math', { class: 'math block', content: token.content }, token.content] as ComarkNode,
+      node: ['math', { class: 'math block', content: token.content }, token.content] as Node,
       nextIndex: startIndex + 1,
     }
   }
@@ -398,8 +398,8 @@ function processBlockToken(
     }
 
     const codeContentWithoutLastNewline = content.endsWith('\n') ? content.slice(0, -1) : content
-    const code: ComarkNode = ['code', codeAttrs, codeContentWithoutLastNewline] as ComarkNode
-    const pre: ComarkNode = ['pre', preAttrs, code] as ComarkNode
+    const code: Node = ['code', codeAttrs, codeContentWithoutLastNewline] as Node
+    const pre: Node = ['pre', preAttrs, code] as Node
     return { node: pre, nextIndex: startIndex + 1 }
   }
 
@@ -429,7 +429,7 @@ function processBlockToken(
       }
 
       return {
-        node: [headingTag, attrs, ...children.nodes] as ComarkNode,
+        node: [headingTag, attrs, ...children.nodes] as Node,
         nextIndex: children.nextIndex + 1,
       }
     }
@@ -441,7 +441,7 @@ function processBlockToken(
     const attrs = processAttributes(token.attrs, { handleJSON: false })
     const children = processBlockChildren(tokens, startIndex + 1, 'list_item_close', false, false, true, state)
     if (children.nodes.length > 0) {
-      return { node: ['li', attrs, ...children.nodes] as ComarkNode, nextIndex: children.nextIndex + 1 }
+      return { node: ['li', attrs, ...children.nodes] as Node, nextIndex: children.nextIndex + 1 }
     }
     return { node: null, nextIndex: children.nextIndex + 1 }
   }
@@ -454,7 +454,7 @@ function processBlockToken(
 
     const isNestedContext = ['td', 'th'].includes(tagName)
     const children = processBlockChildren(tokens, startIndex + 1, closeType, false, false, isNestedContext, state)
-    return { node: [tagName, attrs, ...children.nodes] as ComarkNode, nextIndex: children.nextIndex + 1 }
+    return { node: [tagName, attrs, ...children.nodes] as Node, nextIndex: children.nextIndex + 1 }
   }
 
   const componentName = token.tag || 'component'
@@ -467,12 +467,12 @@ function processBlockChildrenWithSlots(
   startIndex: number,
   closeType: string,
   state?: ProcessState
-): { nodes: ComarkNode[]; nextIndex: number } {
-  const nodes: ComarkNode[] = []
+): { nodes: Node[]; nextIndex: number } {
+  const nodes: Node[] = []
   let i = startIndex
   let currentSlotName: string | null = null
   let currentSlotAttrs: Record<string, unknown> = {}
-  let currentSlotChildren: ComarkNode[] = []
+  let currentSlotChildren: Node[] = []
 
   while (i < tokens.length && tokens[i].type !== closeType) {
     const token = tokens[i]
@@ -511,7 +511,7 @@ function processBlockChildrenWithSlots(
                   ...currentSlotAttrs,
                 },
                 ...currentSlotChildren,
-              ] as ComarkNode)
+              ] as Node)
               currentSlotChildren = []
             }
 
@@ -552,7 +552,7 @@ function processBlockChildrenWithSlots(
         ...currentSlotAttrs,
       },
       ...currentSlotChildren,
-    ] as ComarkNode)
+    ] as Node)
   }
 
   return { nodes, nextIndex: i }
@@ -566,8 +566,8 @@ function processBlockChildren(
   inHeading: boolean = false,
   insideNestedContext: boolean = false,
   state?: ProcessState
-): { nodes: ComarkNode[]; nextIndex: number } {
-  const nodes: ComarkNode[] = []
+): { nodes: Node[]; nextIndex: number } {
+  const nodes: Node[] = []
   let i = startIndex
 
   while (i < tokens.length && tokens[i].type !== closeType) {
@@ -585,7 +585,7 @@ function processBlockChildren(
       nodes.push(...inlineNodes)
       i++
     } else if (token.type === 'hardbreak' || token.type === 'hard_break') {
-      nodes.push(['br', {}] as ComarkNode)
+      nodes.push(['br', {}] as Node)
       i++
     } else if (token.type === 'softbreak') {
       // Soft breaks are preserved as newlines in the text content
@@ -612,8 +612,8 @@ function processBlockChildren(
 /**
  * Merge adjacent string nodes in an array of nodes
  */
-function mergeAdjacentTextNodes(nodes: ComarkNode[]): ComarkNode[] {
-  const merged: ComarkNode[] = []
+function mergeAdjacentTextNodes(nodes: Node[]): Node[] {
+  const merged: Node[] = []
 
   for (const node of nodes) {
     const lastNode = merged[merged.length - 1]
@@ -666,7 +666,7 @@ const HTML_INLINE_TAGS = new Set([
 /**
  * Extract text content from nodes for heading ID generation
  */
-function extractTextContent(nodes: ComarkNode[]): string {
+function extractTextContent(nodes: Node[]): string {
   let text = ''
 
   for (const node of nodes) {
@@ -675,7 +675,7 @@ function extractTextContent(nodes: ComarkNode[]): string {
     } else if (Array.isArray(node)) {
       // For array nodes (elements), include the tag name (for inline components)
       const tag = node[0]
-      const children = node.slice(2) as ComarkNode[]
+      const children = node.slice(2) as Node[]
 
       // Skip 'br' and 'html_inline' tags
       if (tag === 'br' || tag === 'html_inline') {
@@ -744,8 +744,8 @@ function uniqueSlug(slug: string, level: number, state?: ProcessState): string {
   return count === 0 ? slug : `${slug}-${count}`
 }
 
-export function processInlineTokens(tokens: any[], inHeading: boolean = false): ComarkNode[] {
-  const nodes: ComarkNode[] = []
+export function processInlineTokens(tokens: any[], inHeading: boolean = false): Node[] {
+  const nodes: Node[] = []
   let i = 0
 
   while (i < tokens.length) {
@@ -775,7 +775,7 @@ function processInlineToken(
   tokens: any[],
   startIndex: number,
   inHeading: boolean = false
-): { node: ComarkNode | string | null; nextIndex: number } {
+): { node: Node | string | null; nextIndex: number } {
   const token = tokens[startIndex]
 
   if (token.type === 'text') {
@@ -804,11 +804,11 @@ function processInlineToken(
 
     if (tagInfo.isVoid) {
       // Self-closing void element: <br>, <img>, <input>, …
-      return { node: [tagInfo.tag, tagInfo.attrs] as ComarkNode, nextIndex: startIndex + 1 }
+      return { node: [tagInfo.tag, tagInfo.attrs] as Node, nextIndex: startIndex + 1 }
     }
 
     // Non-void opening tag — look ahead for the matching closing tag
-    const children: ComarkNode[] = []
+    const children: Node[] = []
     let j = startIndex + 1
 
     while (j < tokens.length) {
@@ -823,14 +823,12 @@ function processInlineToken(
       const result = processInlineToken(tokens, j, inHeading)
       j = result.nextIndex
       if (result.node) {
-        children.push(result.node as ComarkNode)
+        children.push(result.node as Node)
       }
     }
 
     const node =
-      children.length > 0
-        ? ([tagInfo.tag, tagInfo.attrs, ...children] as ComarkNode)
-        : ([tagInfo.tag, tagInfo.attrs] as ComarkNode)
+      children.length > 0 ? ([tagInfo.tag, tagInfo.attrs, ...children] as Node) : ([tagInfo.tag, tagInfo.attrs] as Node)
     return { node, nextIndex: j }
   }
 
@@ -839,7 +837,7 @@ function processInlineToken(
   if (token.type === 'mdc_inline_span' && token.nesting === 1) {
     const attrs: Record<string, unknown> = {}
     let i = startIndex + 1
-    const nodes: ComarkNode[] = []
+    const nodes: Node[] = []
 
     // Process children until span close
     while (i < tokens.length) {
@@ -860,7 +858,7 @@ function processInlineToken(
       const result = processInlineToken(tokens, i, inHeading)
       i = result.nextIndex
       if (result.node) {
-        nodes.push(result.node as ComarkNode)
+        nodes.push(result.node as Node)
       }
     }
 
@@ -869,7 +867,7 @@ function processInlineToken(
     Object.assign(attrs, spanAttrs)
 
     if (nodes.length > 0 || Object.keys(attrs).length > 0) {
-      return { node: ['span', attrs, ...nodes] as ComarkNode, nextIndex }
+      return { node: ['span', attrs, ...nodes] as Node, nextIndex }
     }
     return { node: null, nextIndex }
   }
@@ -883,13 +881,13 @@ function processInlineToken(
     const { attrs, nextIndex } = extractAttributes(tokens, startIndex + 1)
 
     if (token.content) {
-      return { node: ['code', attrs, token.content] as ComarkNode, nextIndex }
+      return { node: ['code', attrs, token.content] as Node, nextIndex }
     }
     return { node: null, nextIndex }
   }
 
   if (token.type === 'hardbreak' || token.type === 'hard_break') {
-    return { node: ['br', {}] as ComarkNode, nextIndex: startIndex + 1 }
+    return { node: ['br', {}] as Node, nextIndex: startIndex + 1 }
   }
 
   if (token.type === 'softbreak') {
@@ -904,7 +902,7 @@ function processInlineToken(
     // Check if this is an opening tag (has children) or a self-closing tag
     if (token.nesting === 1) {
       // Opening tag - process children until closing tag
-      const children: ComarkNode[] = []
+      const children: Node[] = []
       let i = startIndex + 1
 
       while (i < tokens.length) {
@@ -914,19 +912,19 @@ function processInlineToken(
         if (childToken.type === 'mdc_inline_component' && childToken.nesting === -1) {
           // Found closing tag, now check for props after it
           const { attrs, nextIndex } = extractAttributes(tokens, i + 1, false)
-          return { node: [componentName, attrs, ...children] as ComarkNode, nextIndex }
+          return { node: [componentName, attrs, ...children] as Node, nextIndex }
         }
 
         // Process child token
         const result = processInlineToken(tokens, i, inHeading)
         i = result.nextIndex
         if (result.node) {
-          children.push(result.node as ComarkNode)
+          children.push(result.node as Node)
         }
       }
 
       // No closing tag found, return what we have
-      return { node: [componentName, {}, ...children] as ComarkNode, nextIndex: i }
+      return { node: [componentName, {}, ...children] as Node, nextIndex: i }
     } else if (token.nesting === -1) {
       // Closing tag - should be handled by the opening tag processing
       return { node: null, nextIndex: startIndex + 1 }
@@ -946,7 +944,7 @@ function processInlineToken(
       // Return the component without any text children
       // Text after the component will be processed as siblings by processInlineChildren
       const nextIndex = Object.keys(componentAttrs).length > 0 ? propsNextIndex : startIndex + 1
-      return { node: [componentName, attrs] as ComarkNode, nextIndex }
+      return { node: [componentName, attrs] as Node, nextIndex }
     }
   }
 
@@ -961,7 +959,7 @@ function processInlineToken(
     const { attrs: imageAttrs, nextIndex } = extractAttributes(tokens, startIndex + 1)
     Object.assign(attrs, imageAttrs)
 
-    return { node: ['img', attrs] as ComarkNode, nextIndex }
+    return { node: ['img', attrs] as Node, nextIndex }
   }
 
   if (token.type === 'link_open') {
@@ -973,14 +971,14 @@ function processInlineToken(
     Object.assign(attrs, linkAttrs)
 
     if (children.nodes.length > 0) {
-      return { node: ['a', attrs, ...children.nodes] as ComarkNode, nextIndex }
+      return { node: ['a', attrs, ...children.nodes] as Node, nextIndex }
     }
     return { node: null, nextIndex }
   }
 
   if (token.type === 'math_inline') {
     return {
-      node: ['math', { class: 'math inline', content: token.content }, token.content] as ComarkNode,
+      node: ['math', { class: 'math inline', content: token.content }, token.content] as Node,
       nextIndex: startIndex + 1,
     }
   }
@@ -995,7 +993,7 @@ function processInlineToken(
     const { attrs, nextIndex } = extractAttributes(tokens, children.nextIndex + 1)
 
     if (children.nodes.length > 0) {
-      return { node: [tagName, attrs, ...children.nodes] as ComarkNode, nextIndex }
+      return { node: [tagName, attrs, ...children.nodes] as Node, nextIndex }
     }
     return { node: null, nextIndex }
   }
@@ -1013,8 +1011,8 @@ function processInlineChildren(
   startIndex: number,
   closeType: string,
   inHeading: boolean = false
-): { nodes: ComarkNode[]; nextIndex: number } {
-  const nodes: ComarkNode[] = []
+): { nodes: Node[]; nextIndex: number } {
+  const nodes: Node[] = []
   let i = startIndex
 
   while (i < tokens.length) {
@@ -1051,7 +1049,7 @@ function processInlineChildren(
         i++
       }
 
-      nodes.push([componentName, attrs] as ComarkNode)
+      nodes.push([componentName, attrs] as Node)
       // Continue processing subsequent tokens as siblings
       continue
     }
@@ -1059,7 +1057,7 @@ function processInlineChildren(
     const result = processInlineToken(tokens, i, inHeading)
     i = result.nextIndex
     if (result.node) {
-      nodes.push(result.node as ComarkNode)
+      nodes.push(result.node as Node)
     }
   }
 

@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { parse } from '../../src/parse'
+import { parseMarkdown } from '../../src/parse'
 import { renderMarkdown } from '../../src/render'
 import binding, { Binding } from '../../src/plugins/binding'
-import { renderHTMLForTest } from '../utils/render-html'
+import { renderHtmlForTest } from '../utils/render-html'
 
 const parseWithBinding = (md: string, opts: Parameters<typeof binding>[0] = {}) =>
-  parse(md, { plugins: [binding(opts)] })
+  parseMarkdown(md, { plugins: [binding(opts)] })
 
 describe('binding plugin — parsing', () => {
   it('captures `{{ path }}` as a self-closing <binding> element with :value', async () => {
@@ -69,40 +69,40 @@ user:
 
 Hello {{ frontmatter.user.name }}!
 `)
-    const html = await renderHTMLForTest(tree)
+    const html = await renderHtmlForTest(tree)
     // The data-binding layer strips the `:` and resolves the dot path.
     expect(html).toContain('<binding value="Ada">')
   })
 
   it('leaves the raw path intact in HTML when the binding does not resolve', async () => {
     const tree = await parseWithBinding('Score: {{ data.missing }}')
-    const html = await renderHTMLForTest(tree)
+    const html = await renderHtmlForTest(tree)
     expect(html).toContain('binding value="data.missing"')
   })
 
   it('round-trips the source through renderMarkdown as `:tag{:value="..."}`', async () => {
-    const tree = await parseWithBinding('Hello {{ user.name }}!')
-    const md = await renderMarkdown(tree)
+    const document = await parseWithBinding('Hello {{ user.name }}!')
+    const md = await renderMarkdown(document)
     expect(md.trim()).toBe('Hello :binding{:value="user.name"}!')
   })
 
   it('round-trips the default value through renderMarkdown', async () => {
-    const tree = await parseWithBinding('score {{ a || b }} ok')
-    const md = await renderMarkdown(tree)
+    const document = await parseWithBinding('score {{ a || b }} ok')
+    const md = await renderMarkdown(document)
     expect(md.trim()).toBe('score :binding{:value="a" defaultValue="b"} ok')
   })
 })
 
 describe('binding plugin — exported Binding markdown handler', () => {
   it('renders a `{{ path }}` binding back to its source shorthand', async () => {
-    const tree = await parseWithBinding('Hello {{ user.name }}!')
-    const md = await renderMarkdown(tree, { components: { binding: Binding } })
+    const document = await parseWithBinding('Hello {{ user.name }}!')
+    const md = await renderMarkdown(document, { components: { binding: Binding } })
     expect(md.trim()).toBe('Hello {{ user.name }}!')
   })
 
   it('renders a `{{ path || default }}` binding back to its source shorthand', async () => {
-    const tree = await parseWithBinding('score {{ a || b }} ok')
-    const md = await renderMarkdown(tree, { components: { binding: Binding } })
+    const document = await parseWithBinding('score {{ a || b }} ok')
+    const md = await renderMarkdown(document, { components: { binding: Binding } })
     expect(md.trim()).toBe('score {{ a || b }} ok')
   })
 
@@ -117,7 +117,7 @@ Intro text.
 
 {{ props.title }}
 ::`)
-    const html = await renderHTMLForTest(tree, { components: { binding: HTMLBinding } })
+    const html = await renderHtmlForTest(tree, { components: { binding: HTMLBinding } })
     // The binding lives inside a second `<p>` wrapper, but the card's `title`
     // prop must still reach across it.
     expect(html).toContain('Hello')

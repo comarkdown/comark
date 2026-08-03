@@ -12,7 +12,7 @@ Zero-config Nuxt module for [Comark](https://comark.dev), a high-performance mar
 
 ## Features
 
-- ⚡ Auto-imported `<Markdown>` and `<MarkdownParsed>` components (the old `<Comark>` / `<ComarkRenderer>` names are still auto-registered but deprecated)
+- ⚡ Auto-imported `<Markdown>` and `<MarkdownDocument>` components (the old `<Comark>` / `<ComarkRenderer>` names are still auto-registered but deprecated)
 - 📁 `~/components/prose` directory for overriding HTML elements
 - 🎨 Automatic [Nuxt UI](https://ui.nuxt.com) prose integration
 - 🖥️ SSR, SSG, and prerendering support out of the box

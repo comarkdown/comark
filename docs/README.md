@@ -20,7 +20,7 @@ See the [Installation guide](./content/1.getting-started/1.installation.md) (sec
 
 ### Core API Documentation
 1. **[Parse API](./content/5.api/1.parse.md)** - String parsing
-   - `parse()` - Parse markdown strings
+   - `parseMarkdown()` - Parse markdown strings
    - Types and interfaces
 
 2. **[Auto-Close API](./content/5.api/2.auto-close.md)** - Handle incomplete syntax
@@ -110,7 +110,7 @@ docs/
 
 | Function | Purpose | Documentation |
 |----------|---------|---------------|
-| `parse()` | Parse string | [Parse API](./content/5.api/1.parse.md) |
+| `parseMarkdown()` | Parse string | [Parse API](./content/5.api/1.parse.md) |
 | `autoCloseMarkdown()` | Auto-close syntax | [Auto-Close API](./content/5.api/2.auto-close.md) |
 
 ### Framework Components
@@ -126,8 +126,8 @@ docs/
 
 | Type | Purpose | Documentation |
 |------|---------|---------------|
-| `ComarkTree` | Parse output & AST root | [API Reference](./content/5.api/3.reference.md) |
-| `ComarkNode` | AST node | [API Reference](./content/5.api/3.reference.md) |
+| `MarkdownDocument` | Parse Markdown document | [API Reference](./content/5.api/3.reference.md) |
+| `Node` | AST node | [API Reference](./content/5.api/3.reference.md) |
 
 ## Contributing to Documentation
 

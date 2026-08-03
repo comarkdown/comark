@@ -1,9 +1,9 @@
 import type { State } from 'comark/render'
-import type { ComarkElement } from 'comark'
+import type { ElementNode } from 'comark'
 import { textContent } from '../../../utils/index.ts'
 import { comarkAttributes, userBlockAttrs } from '../attributes.ts'
 
-export function pre(node: ComarkElement, state: State) {
+export function pre(node: ElementNode, state: State) {
   const [_, attributes, ...children] = node
 
   const codeClasses = (children[0]?.[1] as Record<string, string>)?.class

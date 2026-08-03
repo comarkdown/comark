@@ -1,22 +1,22 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import type { ComarkTree } from 'comark'
-import { MarkdownParsed, type MarkdownParsedProps } from './MarkdownParsed.tsx'
+import type { MarkdownDocument as MarkdownDocumentType } from 'comark'
+import { MarkdownDocument, type MarkdownDocumentProps } from './MarkdownDocument.tsx'
 
-export interface MarkdownLiveProps extends MarkdownParsedProps {
+export interface MarkdownLiveProps extends MarkdownDocumentProps {
   /**
    * Document key used to subscribe to live updates via `globalThis.comarkContext`.
-   * Falls back to the tree's own `meta.key` when set by a plugin.
+   * Falls back to the document's own `meta.key` when set by a plugin.
    */
-  comarkKey?: string
+  documentKey?: string
 }
 
 /**
- * Client wrapper around {@link MarkdownParsed} that subscribes to live document
- * updates via `globalThis.comarkContext` and re-renders with the pushed tree.
+ * Client wrapper around {@link MarkdownDocument} that subscribes to live document
+ * updates via `globalThis.comarkContext` and re-renders with the pushed document.
  *
- * Use this when you need live updates. `MarkdownParsed` itself stays free of
+ * Use this when you need live updates. `MarkdownDocument` itself stays free of
  * client-only hooks so it can render in a React Server Component.
  *
  * @example
@@ -25,29 +25,29 @@ export interface MarkdownLiveProps extends MarkdownParsedProps {
  * import { MarkdownLive } from '@comark/react'
  *
  * export default async function Page() {
- *   const tree = await parse(markdown)
- *   return <MarkdownLive value={tree} comarkKey="my-doc" components={{ Alert }} />
+ *   const document = await parseMarkdown(markdown)
+ *   return <MarkdownLive value={document} documentKey="my-doc" components={{ Alert }} />
  * }
  * ```
  */
-export function MarkdownLive({ value, tree: treeProp, comarkKey, ...rest }: MarkdownLiveProps) {
-  const tree = value ?? treeProp ?? { nodes: [] }
+export function MarkdownLive({ value, documentKey, ...rest }: MarkdownLiveProps) {
+  const document = value ?? { nodes: [] }
   // Live document support: if an ambient context exists, subscribe to updates
-  // for this key and re-render with the pushed tree. Cleaned up on unmount.
-  // The key is the tree's own `meta.key` (set by a plugin) or the `comarkKey` prop.
-  const [liveTree, setLiveTree] = useState<ComarkTree | null>(null)
-  const key = (tree as ComarkTree).meta?.key || comarkKey
+  // for this key and re-render with the pushed document. Cleaned up on unmount.
+  // The key is the document's own `meta.key` (set by a plugin) or the `documentKey` prop.
+  const [liveDocument, setLiveDocument] = useState<MarkdownDocumentType | null>(null)
+  const key = (document as MarkdownDocumentType).meta?.key || documentKey
   useEffect(() => {
     if (!key || !globalThis.comarkContext) return
-    const cleanup = globalThis.comarkContext.get(key, tree as ComarkTree).listen(setLiveTree)
+    const cleanup = globalThis.comarkContext.get(key, document as MarkdownDocumentType).listen(setLiveDocument)
     return () => cleanup(true)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key])
 
   return (
-    <MarkdownParsed
+    <MarkdownDocument
       {...rest}
-      value={liveTree ?? tree}
+      value={liveDocument ?? document}
     />
   )
 }

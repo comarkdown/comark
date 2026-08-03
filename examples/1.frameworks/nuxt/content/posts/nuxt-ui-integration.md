@@ -12,16 +12,16 @@ This example uses Nuxt 4 with Comark as the Markdown renderer and Nuxt UI for st
 Instead of the typical `gray-matter` + `remark` + `rehype` pipeline, we use Comark's framework-agnostic API:
 
 1. **Read markdown files** — Load `.md` files from the `content/posts/` directory via a server route
-2. **Parse with Comark** — Call `parse()` to build the AST and extract frontmatter
+2. **Parse with Comark** — Call `parseMarkdown()` to build the AST and extract frontmatter
 3. **Static generation** — Use `nuxt generate` for full SSG
-4. **Render with Vue** — Use `MarkdownParsed` from `@comark/nuxt` with auto-discovered components
+4. **Render with Vue** — Use `MarkdownDocument` from `@comark/nuxt` with auto-discovered components
 
 ```ts
 // server/api/posts/[slug].get.ts
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import highlight from 'comark/plugins/highlight'
 
-const tree = await parse(content, {
+const tree = await parseMarkdown(content, {
   plugins: [highlight()],
 })
 
@@ -36,7 +36,7 @@ const { data: post } = await useFetch(`/api/posts/${route.params.slug}`)
 </script>
 
 <template>
-  <MarkdownParsed :value="post.tree" />
+  <MarkdownDocument :value="post.tree" />
 </template>
 ```
 
@@ -54,7 +54,7 @@ When both `@comark/nuxt` and `@nuxt/ui` are installed, the module sets `ui.conte
 - `ProseUl`, `ProseOl`, `ProseLi` for lists
 - And more…
 
-`MarkdownParsed` automatically picks these up — no manual wiring required.
+`MarkdownDocument` automatically picks these up — no manual wiring required.
 
 ## Custom components
 
@@ -73,4 +73,4 @@ defineProps<{ type?: 'info' | 'warning' | 'success' | 'danger' }>()
 </template>
 ```
 
-Since Nuxt auto-registers components in `app/components/`, `MarkdownParsed` resolves them automatically.
+Since Nuxt auto-registers components in `app/components/`, `MarkdownDocument` resolves them automatically.

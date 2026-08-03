@@ -17,9 +17,9 @@ const escape = (s: string) =>
  * @example
  * ```ts
  * import binding, { Binding } from '@comark/html/plugins/binding'
- * import { createRender } from '@comark/html'
+ * import { createHtmlRenderer } from '@comark/html'
  *
- * const render = createRender({
+ * const renderHtml = createHtmlRenderer({
  *   plugins: [binding()],
  *   components: { Binding },
  * })

@@ -23,10 +23,10 @@ The `comark/plugins/task-list` plugin converts GitHub-style task list syntax int
 ## Usage
 
 ```typescript
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import taskList from 'comark/plugins/task-list'
 
-const result = await parse(`
+const result = await parseMarkdown(`
 - [x] Write the docs
 - [ ] Fix the bug
 - [x] Ship it

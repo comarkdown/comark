@@ -12,26 +12,26 @@ This example uses Next.js App Router with Comark as the Markdown renderer.
 Instead of using the typical `gray-matter` + `remark` + `rehype` pipeline, we use Comark's framework-agnostic API:
 
 1. **Read markdown files** — Load `.md` files from the `content/posts/` directory
-2. **Parse with Comark** — Call `parse()` to build the AST and extract frontmatter
+2. **Parse with Comark** — Call `parseMarkdown()` to build the AST and extract frontmatter
 3. **Static generation** — Use `generateStaticParams` for full SSG
-4. **Render with React** — Use `MarkdownParsed` from `@comark/react` with custom components
+4. **Render with React** — Use `MarkdownDocument` from `@comark/react` with custom components
 
 ```ts
-import { parse } from 'comark'
-import { MarkdownParsed } from '@comark/react'
+import { parseMarkdown } from 'comark'
+import { MarkdownDocument } from '@comark/react'
 import highlight from 'comark/plugins/highlight'
 import Alert from '@/components/Alert'
 
-const tree = await parse(content, {
+const tree = await parseMarkdown(content, {
   plugins: [highlight()],
 })
 
 // In your Server Component:
-// <MarkdownParsed value={tree} components={{ Alert }} />
+// <MarkdownDocument value={tree} components={{ Alert }} />
 ```
 
 ::alert{type="info"}
-Since Next.js Server Components run on the server, Comark's `parse()` is called at build time — zero JavaScript is sent to the client.
+Since Next.js Server Components run on the server, Comark's `parseMarkdown()` is called at build time — zero JavaScript is sent to the client.
 ::
 
 ## Custom components

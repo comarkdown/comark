@@ -1,13 +1,14 @@
 'use client'
 
 import { use, useDeferredValue, useMemo, Suspense } from 'react'
-import { parse } from 'comark'
-import type { ComarkTree } from 'comark'
+import { parseMarkdown } from 'comark'
+import type { MarkdownDocument as MarkdownDocumentType } from 'comark'
+import { isMarkdownDocument } from 'comark/utils'
 import { MarkdownLive } from './MarkdownLive.tsx'
 import type { MarkdownProps } from './Markdown'
 
-interface MarkdownContentProps extends Omit<MarkdownProps, 'value' | 'markdown' | 'children' | 'options' | 'plugins'> {
-  parsePromise: Promise<ComarkTree>
+interface MarkdownContentProps extends Omit<MarkdownProps, 'value' | 'children' | 'options' | 'plugins'> {
+  parsePromise: Promise<MarkdownDocumentType>
 }
 
 function MarkdownContent({
@@ -34,12 +35,20 @@ function MarkdownContent({
   )
 }
 
-export function MarkdownClient({ children, value, markdown, options = {}, plugins = [], ...rest }: MarkdownProps) {
-  const content = children ? String(children) : (value ?? markdown ?? '')
+export function MarkdownClient({ children, value, options = {}, plugins = [], ...rest }: MarkdownProps) {
+  const content = isMarkdownDocument(value)
+    ? value
+    : children
+      ? String(children)
+      : ((value as string | undefined) ?? '')
 
   // Re-creates the promise only when content changes.
   // Note: options/plugins should be stable references (defined outside render or memoized).
-  const parsePromise = useMemo(() => parse(content, { ...options, plugins }), [content])
+  // Pre-parsed documents resolve immediately without calling parseMarkdown().
+  const parsePromise = useMemo(
+    () => (isMarkdownDocument(content) ? Promise.resolve(content) : parseMarkdown(content, { ...options, plugins })),
+    [content]
+  )
 
   // Keep showing the previous parsed result while a new parse is pending —
   // prevents blank flashes during rapid streaming updates.

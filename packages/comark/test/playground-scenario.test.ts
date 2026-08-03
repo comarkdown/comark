@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { parse } from '../src/index'
-import type { ComarkNode } from 'comark'
+import { parseMarkdown } from '../src/index'
+import type { Node } from 'comark'
 
 // Helper to check if a node is an element with a specific tag
-function isElement(node: ComarkNode, tag: string): boolean {
+function isElement(node: Node, tag: string): boolean {
   return Array.isArray(node) && node[0] === tag
 }
 
@@ -37,22 +37,22 @@ Watch how **bold text** and components render correctly.
 `
 
   it('should parse playground content correctly', async () => {
-    const result = await parse(playgroundContent)
+    const result = await parseMarkdown(playgroundContent)
 
     expect(result.nodes).toBeDefined()
     expect(Array.isArray(result.nodes)).toBe(true)
     expect(result.nodes.length).toBeGreaterThan(0)
 
     // Check for alert
-    const hasAlert = result.nodes.some((c: ComarkNode) => isElement(c, 'alert'))
+    const hasAlert = result.nodes.some((c: Node) => isElement(c, 'alert'))
     expect(hasAlert).toBe(true)
 
     // Check for card
-    const hasCard = result.nodes.some((c: ComarkNode) => isElement(c, 'card'))
+    const hasCard = result.nodes.some((c: Node) => isElement(c, 'card'))
     expect(hasCard).toBe(true)
 
     // Check for nested card
-    const cards = result.nodes.filter((c: ComarkNode) => isElement(c, 'card'))
+    const cards = result.nodes.filter((c: Node) => isElement(c, 'card'))
     expect(cards.length).toBeGreaterThan(0)
 
     // Inspect the first card for nested content
@@ -64,14 +64,14 @@ Watch how **bold text** and components render correctly.
   })
 
   it('should parse content with complex nesting', async () => {
-    const result = await parse(playgroundContent)
+    const result = await parseMarkdown(playgroundContent)
 
     expect(result.nodes).toBeDefined()
     expect(Array.isArray(result.nodes)).toBe(true)
     expect(result.nodes.length).toBeGreaterThan(0)
 
     // Check for alert
-    const hasAlert = result.nodes.some((c: ComarkNode) => isElement(c, 'alert'))
+    const hasAlert = result.nodes.some((c: Node) => isElement(c, 'alert'))
     expect(hasAlert).toBe(true)
   })
 
@@ -80,17 +80,17 @@ Watch how **bold text** and components render correctly.
 Watch how **bold text** and components render correctly.
 ::`
 
-    const result = await parse(alertOnly)
+    const result = await parseMarkdown(alertOnly)
 
     expect(result.nodes).toBeDefined()
     expect(Array.isArray(result.nodes)).toBe(true)
 
     // Should have alert
-    const hasAlert = result.nodes.some((c: ComarkNode) => isElement(c, 'alert'))
+    const hasAlert = result.nodes.some((c: Node) => isElement(c, 'alert'))
     expect(hasAlert).toBe(true)
 
     // Get the alert element
-    const alert = result.nodes.find((c: ComarkNode) => isElement(c, 'alert'))
+    const alert = result.nodes.find((c: Node) => isElement(c, 'alert'))
     expect(alert).toBeDefined()
   })
 })

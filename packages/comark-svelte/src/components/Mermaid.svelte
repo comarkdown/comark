@@ -9,7 +9,7 @@ Automatically detects dark mode from the `<html>` element's `dark` class.
 @example
 ```svelte
 <script>
-  import { mermaid, Mermaid } from '@comark/svelte/plugin-mermaid'
+  import mermaid, { Mermaid } from '@comark/svelte/plugins/mermaid'
   import { Markdown } from '@comark/svelte'
 </script>
 

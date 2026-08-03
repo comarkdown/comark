@@ -1,10 +1,10 @@
 import type { State } from 'comark/render'
-import type { ComarkElement, ComarkNode } from 'comark'
+import type { ElementNode, Node } from 'comark'
 import { indent } from '../../../utils/index.ts'
 import { comarkAttributes, userBlockAttrs } from '../attributes.ts'
 
-export async function ol(node: ComarkElement, state: State) {
-  const children = node.slice(2) as ComarkNode[]
+export async function ol(node: ElementNode, state: State) {
+  const children = node.slice(2) as Node[]
 
   // `start` is carried by the native numbering; IMPLICIT_ATTRS drops it from user attrs.
   const start = Number((node[1] as Record<string, unknown>).start)

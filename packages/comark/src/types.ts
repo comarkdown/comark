@@ -11,27 +11,17 @@ import type MarkdownIt from 'markdown-it'
 type Writable<T> = [keyof T] extends [never] ? Record<string, any> : T
 // #endregion Utility Types
 
-// #region ComarkTree
+// #region MarkdownDocument
 
 /**
- * The Comark text
- * @param string - The text content
+ * A text node in the Markdown AST.
  */
-export type ComarkText = string
+export type TextNode = string
 
 /**
- * The Comark comment
- * @param null - The null node
- * @param {} - The attributes of the comment
- * @param string - The content of the comment
+ * Attributes bag on an element node (props + internal `$` meta).
  */
-export type ComarkComment = [null, ComarkElementAttributes, string]
-
-/**
- * The Comark element attributes
- * @param [key: string]: unknown - The attributes of the element
- */
-export type ComarkElementAttributes = {
+export type ElementNodeAttributes = {
   [key: string]: unknown
 
   $?: {
@@ -42,31 +32,36 @@ export type ComarkElementAttributes = {
 }
 
 /**
- * The Comark element
- * @param string - The tag of the element
- * @param ComarkElementAttributes - The attributes of the element
- * @param ...ComarkNode[] - The children of the element
+ * A comment node in the Markdown AST (`<!-- … -->`).
+ * @param null - Null tag marks a comment
+ * @param ElementNodeAttributes - Comment attributes
+ * @param string - Comment content
  */
-export type ComarkElement = [string, ComarkElementAttributes, ...ComarkNode[]]
+export type CommentNode = [null, ElementNodeAttributes, string]
 
 /**
- * The Comark node
+ * An element node in the Markdown AST: `[tag, attrs, ...children]`.
+ */
+export type ElementNode = [string, ElementNodeAttributes, ...Node[]]
+
+/**
+ * A node in the Markdown AST — element, text, or comment.
  *
- * `ComarkElement` | `ComarkText` | `ComarkComment` - The node can be an element, text or comment
+ * `ElementNode` | `TextNode` | `CommentNode`
  */
-export type ComarkNode = ComarkElement | ComarkText | ComarkComment
+export type Node = ElementNode | TextNode | CommentNode
 
 /**
- * The Comark tree
- * @param nodes - The nodes of the tree
+ * The Markdown document (parse output / AST root).
+ * @param nodes - The nodes of the document
  * @param frontmatter - The frontmatter data which is the data at the top of the file
- * @param meta - The meta data of tree, it can be used to store additional data for the tree
+ * @param meta - The meta data of the document, it can be used to store additional data
  *
- * The `TMeta` and `TFrontmatter` type parameters allow `parse` / `createParse`
+ * The `TMeta` and `TFrontmatter` type parameters allow `parse` / `createMarkdownParser`
  * to surface plugin-contributed keys with narrow types (see `MergePluginMeta`).
  */
-export interface ComarkTree<TMeta = Record<string, any>, TFrontmatter = Record<string, any>> {
-  nodes: ComarkNode[]
+export interface MarkdownDocument<TMeta = Record<string, any>, TFrontmatter = Record<string, any>> {
+  nodes: Node[]
   frontmatter: TFrontmatter
   meta: TMeta
 }
@@ -149,14 +144,14 @@ export interface Context extends ContextBase {
  * @param parent - The parent node
  * @returns The rendered node
  */
-export type NodeHandler = (node: ComarkElement, state: State, parent?: ComarkElement) => string | Promise<string>
+export type NodeHandler = (node: ElementNode, state: State, parent?: ElementNode) => string | Promise<string>
 
 /**
  * A node handler rule that pairs a match predicate with a handler function.
  * When `match` returns true for a node, the associated `handler` is used to render it.
  */
 export type ConditionalNodeHandler = {
-  match: (node: ComarkElement) => boolean
+  match: (node: ElementNode) => boolean
   handler: NodeHandler
 }
 
@@ -196,17 +191,17 @@ export type State = {
   /**
    * Render children of the node
    */
-  flow: (node: ComarkElement, state: State, parent?: ComarkElement) => Promise<string>
+  flow: (node: ElementNode, state: State, parent?: ElementNode) => Promise<string>
 
   /**
    * Render a single node
    */
-  one: (node: ComarkNode, state: State, parent?: ComarkElement, atLineStart?: boolean) => Promise<string>
+  one: (node: Node, state: State, parent?: ElementNode, atLineStart?: boolean) => Promise<string>
 
   /**
    * Render the input
    */
-  render: (input: ComarkNode[] | ComarkElement) => Promise<string>
+  render: (input: Node[] | ElementNode) => Promise<string>
 
   /**
    * Apply the context
@@ -226,7 +221,7 @@ export type State = {
 /**
  * The context of the renderer
  */
-export interface RenderOptions {
+export interface RendererOptions {
   /**
    * Additional node handlers to pass to the renderer
    */
@@ -242,7 +237,7 @@ export interface RenderOptions {
 /**
  * The options for rendering markdown
  */
-export interface RenderMarkdownOptions extends RenderOptions {
+export interface RenderMarkdownOptions extends RendererOptions {
   /**
    * Maximum number of inline attributes before switching to YAML block syntax.
    * Set to 0 to always use YAML block syntax.
@@ -289,15 +284,15 @@ export type MarkdownItPluginWithOptions<T> = (md: MarkdownIt, options: T) => voi
 
 export type ComarkParsePreState = {
   markdown: string
-  options: ParseOptions
+  options: ParserOptions
 
   [key: string]: any
 }
 
 export type ComarkParsePostState<TMeta = Record<string, any>, TFrontmatter = Record<string, any>> = {
   markdown: string
-  tree: ComarkTree<TMeta, TFrontmatter>
-  options: ParseOptions
+  tree: MarkdownDocument<TMeta, TFrontmatter>
+  options: ParserOptions
   tokens: unknown[]
 
   [key: string]: any
@@ -310,7 +305,7 @@ export type ComarkParsePostState<TMeta = Record<string, any>, TFrontmatter = Rec
  * plugin contributes to `tree.meta` / `tree.frontmatter`. They are surfaced
  * only via the optional `__meta` / `__frontmatter` markers — implementations
  * never set these at runtime; they exist purely so the contribution survives
- * `ReturnType<typeof factory>` inference and can be merged in `createParse`.
+ * `ReturnType<typeof factory>` inference and can be merged in `createMarkdownParser`.
  */
 export type ComarkPlugin<TMeta = {}, TFrontmatter = {}> = {
   name: string
@@ -365,7 +360,7 @@ export interface ComarkContextProvider {
   componentManifest: ComponentManifest
 }
 
-export interface ParseOptions<TPlugins extends readonly ComarkPlugin<any, any>[] = readonly ComarkPlugin<any, any>[]> {
+export interface ParserOptions<TPlugins extends readonly ComarkPlugin<any, any>[] = readonly ComarkPlugin<any, any>[]> {
   /**
    * Whether to automatically unwrap single paragraphs in container components.
    * When enabled, if a container component (alert, card, callout, note, warning, tip, info)
@@ -464,15 +459,15 @@ export interface ParseOptions<TPlugins extends readonly ComarkPlugin<any, any>[]
 }
 
 /**
- * Type signature for the options object passed to the Comark parser function returned by createParse().
+ * Type signature for the options object passed to the Comark parser function returned by createMarkdownParser().
  */
 export type ComarkParseFnOptions = { streaming?: boolean }
 
 /**
- * Type signature for the async Comark parser function returned by createParse().
- * Accepts a markdown string and optional parsing options, and returns a Promise of ComarkTree.
+ * Type signature for the async Comark parser function returned by createMarkdownParser().
+ * Accepts a markdown string and optional parsing options, and returns a Promise of MarkdownDocument.
  */
 export type ComarkParseFn<TMeta = Record<string, any>, TFrontmatter = Record<string, any>> = (
   markdown: string,
   opts?: ComarkParseFnOptions
-) => Promise<ComarkTree<TMeta, TFrontmatter>>
+) => Promise<MarkdownDocument<TMeta, TFrontmatter>>

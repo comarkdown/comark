@@ -24,12 +24,12 @@ This is **Markdown** inside your own component.
 
 ## Why Comark
 
-- **Runtime parsing**: `parse(markdown)` is a pure function returning a compact AST. Content from a database, CMS, or LLM is live the moment it is saved. No rebuild, no redeploy. ([Comark vs MDX](https://comark.dev/compare/comark-vs-mdx))
+- **Runtime parsing**: `parseMarkdown(markdown)` is a pure function returning a compact serializable Markdown document . Content from a database, CMS, or LLM is live the moment it is saved. No rebuild, no redeploy. ([Comark vs MDX](https://comark.dev/compare/comark-vs-mdx))
 - **Streaming built in**: auto-close completes unterminated syntax (`**bold`, open code fences, half-open components) so AI output renders correctly at every frame.
 - **One parser, every renderer**: the same source renders to Vue, React, Svelte, Angular, Nuxt, HTML strings, and ANSI terminal output. Your content outlasts your framework.
 - **Still just Markdown**: full CommonMark + GFM, frontmatter, and `{.class}` attributes on native elements. Components are opt-in syntax, not a new language.
 - **Plugin ecosystem**: Shiki highlighting, KaTeX math, Mermaid diagrams, TOC, alerts, footnotes and more, plus compatibility with existing markdown-it plugins.
-- **Decoupled parse & render**: parse once on the server, send the serializable AST (`['tag', props, ...children]`) to the client, render without re-parsing.
+- **Decoupled parse & render**: parse once on the server, send the serializable document (`['tag', props, ...children]`) to the client, render without re-parsing.
 - **Fast**: built on [markdown-exit](https://github.com/serkodev/markdown-exit), a TypeScript rewrite of markdown-it, with full TypeScript support.
 
 Built on five years of [MDC](https://github.com/nuxt-content/mdc), the parser behind [Nuxt Content](https://content.nuxt.com). Read [Why Comark](https://comark.dev/kb/why-comark) for the full story.
@@ -41,9 +41,9 @@ npm install comark
 ```
 
 ```ts
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 
-const tree = await parse('# Hello **World**')
+const tree = await parseMarkdown('# Hello **World**')
 // { nodes: [['h1', { id: 'hello' }, 'Hello ', ['strong', {}, 'World']]], frontmatter: {}, meta: {} }
 ```
 
@@ -130,11 +130,11 @@ npm install @comark/html
 ```
 
 ```js
-import { render } from '@comark/html'
+import { renderHtml } from '@comark/html'
 
 const chatMessage = ...
 
-const html = await render(chatMessage)
+const html = await renderHtml(chatMessage)
 ```
 
 ## Packages

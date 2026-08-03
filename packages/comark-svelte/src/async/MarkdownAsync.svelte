@@ -28,15 +28,14 @@ and wrap this component in a `<svelte:boundary>` for pending/error states.
 ```
 -->
 <script lang="ts">
-  import type { ComarkPlugin, ComponentManifest } from 'comark'
-  import { parse } from 'comark'
-  import MarkdownParsed from '../components/MarkdownParsed.svelte'
+  import type { MarkdownDocument as MarkdownDocumentType, ComarkPlugin, ComponentManifest } from 'comark'
+  import { parseMarkdown } from 'comark'
+  import { isMarkdownDocument } from 'comark/utils'
+  import MarkdownDocument from '../components/MarkdownDocument.svelte'
   import ResolveAsync from './ResolveAsync.svelte'
-  import { warnDeprecated } from '../internal/deprecation.js'
 
   let {
     value,
-    markdown,
     options = {},
     plugins = [],
     unwrap = false,
@@ -47,9 +46,7 @@ and wrap this component in a `<svelte:boundary>` for pending/error states.
     data,
     class: className = '',
   }: {
-    value?: string
-    /** @deprecated Use `value` instead */
-    markdown?: string
+    value?: string | MarkdownDocumentType
     options?: Record<string, any>
     plugins?: ComarkPlugin[]
     unwrap?: boolean | string | string[]
@@ -61,27 +58,26 @@ and wrap this component in a `<svelte:boundary>` for pending/error states.
     class?: string
   } = $props()
 
-  // svelte-ignore state_referenced_locally — deprecation check only needs the initial value
-  if (markdown !== undefined && value === undefined) {
-    warnDeprecated('markdown (prop)', 'value')
-  }
-
-  let content = $derived((value ?? markdown ?? '').trim())
+  let content = $derived(typeof value === 'string' ? value.trim() : '')
   let parsed = $derived(
-    // `parse` directly mutates `plugins` which creates an infinite effect loop
-    // so we copy it before passing it in so it gets a regular JS array and we get to still
-    // track dependencies from an external perspective
-    await parse(content, { ...options, ...(unwrap ? { unwrap } : {}), plugins: [...plugins] }),
+    isMarkdownDocument(value)
+      ? value
+      : // `parse` directly mutates `plugins` which creates an infinite effect loop
+        // so we copy it before passing it in so it gets a regular JS array and we get to still
+        // track dependencies from an external perspective
+        await parseMarkdown(content, { ...options, ...(unwrap ? { unwrap } : {}), plugins: [...plugins] }),
   )
 </script>
 
-<MarkdownParsed
-  value={parsed}
-  {components}
-  {componentsManifest}
-  resolver={ResolveAsync}
-  {streaming}
-  {caret}
-  {data}
-  class={className}
-/>
+{#if parsed}
+  <MarkdownDocument
+    value={parsed}
+    {components}
+    {componentsManifest}
+    resolver={ResolveAsync}
+    {streaming}
+    {caret}
+    {data}
+    class={className}
+  />
+{/if}

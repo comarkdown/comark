@@ -1,10 +1,10 @@
 import { handlers as defaultHandlers } from './handlers/index.ts'
 import type { NodeRenderData, State, Context } from 'comark/render'
-import type { ComarkElement, ComarkNode, ComarkTree, ConditionalNodeHandler, CreateContext, NodeHandler } from 'comark'
+import type { ElementNode, Node, MarkdownDocument, ConditionalNodeHandler, CreateContext, NodeHandler } from 'comark'
 import { pascalCase } from '../../utils/index.ts'
 import { resolveAttributes } from './attributes.ts'
 
-function findHandler(ctx: Context, node: ComarkElement): NodeHandler | undefined {
+function findHandler(ctx: Context, node: ElementNode): NodeHandler | undefined {
   const userHandler = ctx.handlers[node[0] as string] || ctx.handlers[pascalCase(node[0] as string)]
 
   if (typeof userHandler === 'function') {
@@ -28,12 +28,7 @@ function findHandler(ctx: Context, node: ComarkElement): NodeHandler | undefined
  * @param atLineStart - Whether a string node begins a line, so leading block markers are escaped
  * @returns The rendered node
  */
-export async function one(
-  node: ComarkNode,
-  state: State,
-  parent?: ComarkElement,
-  atLineStart = false
-): Promise<string> {
+export async function one(node: Node, state: State, parent?: ElementNode, atLineStart = false): Promise<string> {
   if (typeof node === 'string') {
     if (state.context.html) {
       return escapeHtml(node)
@@ -44,11 +39,11 @@ export async function one(
     if (parent?.[1].$?.html === 1 && parent[1].$?.block === 1) {
       return node
     }
-    return escapeMarkdownText(node, atLineStart)
+    return escapeTextNode(node, atLineStart)
   }
 
   if (node[0] === null) {
-    return await state.handlers.comment(node as unknown as ComarkElement, state)
+    return await state.handlers.comment(node as unknown as ElementNode, state)
   }
 
   // Scope `renderData.props` to the current element's resolved attributes so
@@ -89,8 +84,8 @@ export async function one(
   }
 }
 
-export async function flow(node: ComarkElement, state: State, parent?: ComarkElement): Promise<string> {
-  const children = node.slice(2) as ComarkElement[]
+export async function flow(node: ElementNode, state: State, parent?: ElementNode): Promise<string> {
+  const children = node.slice(2) as ElementNode[]
   let result = ''
   for (const child of children) {
     result += await one(child, state, parent || node)
@@ -121,7 +116,7 @@ export function createState(ctx: Partial<CreateContext> = {}): State {
     html: ctx.format === 'text/html',
   } as Context
 
-  const tree = ctx.tree as ComarkTree | undefined
+  const tree = ctx.tree as MarkdownDocument | undefined
   const renderData: NodeRenderData = {
     frontmatter: (tree?.frontmatter || {}) as Record<string, unknown>,
     meta: (tree?.meta || {}) as Record<string, unknown>,
@@ -135,13 +130,13 @@ export function createState(ctx: Partial<CreateContext> = {}): State {
     flow,
     data: ctx.data || {},
     renderData,
-    render: async (input: ComarkNode[] | ComarkElement) => {
+    render: async (input: Node[] | ElementNode) => {
       if (Array.isArray(input) && typeof input[0] === 'string' && input.length > 1) {
-        return state.one(input as ComarkElement, state)
+        return state.one(input as ElementNode, state)
       }
 
       let result = ''
-      for (const child of input as ComarkNode[]) {
+      for (const child of input as Node[]) {
         result += await state.one(child, state, undefined, result === '' || result.endsWith('\n'))
       }
       return result
@@ -175,17 +170,17 @@ export const state: State = {
   },
   flow,
   one,
-  render: async (input: ComarkNode[] | ComarkElement) => {
+  render: async (input: Node[] | ElementNode) => {
     if (typeof input === 'string') {
       return input
     }
 
     if (Array.isArray(input) && typeof input[0] === 'string') {
-      return one(input as ComarkElement, state)
+      return one(input as ElementNode, state)
     }
 
     let result = ''
-    for (const child of input as ComarkNode[]) {
+    for (const child of input as Node[]) {
       result += await one(child, state, undefined, result === '' || result.endsWith('\n'))
     }
     return result
@@ -232,7 +227,7 @@ const inlineSyntax = /[\\`*_<&~[\]]/g
  * line, so their markers are escaped on the first line only when the node
  * begins one (`atLineStart`) and on every line following an embedded newline.
  */
-function escapeMarkdownText(text: string, atLineStart = false): string {
+function escapeTextNode(text: string, atLineStart = false): string {
   const escaped = escapeInline(text)
 
   if (!atLineStart && !escaped.includes('\n')) {

@@ -1,6 +1,6 @@
 import { defineCommand, runMain } from 'citty'
 import { readFile } from 'node:fs/promises'
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 
 const main = defineCommand({
   meta: {
@@ -10,7 +10,7 @@ const main = defineCommand({
   },
   async setup() {
     const md = await readFile('cli.md', 'utf-8')
-    const tree = await parse(md)
+    const tree = await parseMarkdown(md)
     console.log(tree)
   },
 })

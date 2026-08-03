@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parse } from '../src/parse'
+import { parseMarkdown } from '../src/parse'
 import { applyUnwrap, resolveUnwrapTags } from '../src/internal/parse/unwrap'
 
 describe('resolveUnwrapTags', () => {
@@ -79,23 +79,23 @@ describe('applyUnwrap', () => {
 
 describe('parse with unwrap option', () => {
   it('does not unwrap by default', async () => {
-    const tree = await parse('Hello **world**')
+    const tree = await parseMarkdown('Hello **world**')
     expect(tree.nodes).toEqual([['p', {}, 'Hello ', ['strong', {}, 'world']]])
   })
 
   it('unwraps paragraphs with `unwrap: "p"`', async () => {
-    const tree = await parse('Hello **world**', { unwrap: 'p' })
+    const tree = await parseMarkdown('Hello **world**', { unwrap: 'p' })
     expect(tree.nodes).toEqual(['Hello ', ['strong', {}, 'world']])
   })
 
   it('unwraps paragraphs with `unwrap: true`', async () => {
-    const tree = await parse('a\n\nb', { unwrap: true })
+    const tree = await parseMarkdown('a\n\nb', { unwrap: true })
     // Paragraphs are merged into a single string (MDC behaviour).
     expect(tree.nodes).toEqual(['ab'])
   })
 
   it('only unwraps matching wrappers, leaving nested paragraphs', async () => {
-    const tree = await parse('::alert\nHello\n::', { unwrap: 'p', autoUnwrap: false })
+    const tree = await parseMarkdown('::alert\nHello\n::', { unwrap: 'p', autoUnwrap: false })
     // The alert container survives; only a top-level `p` would be unwrapped.
     expect(tree.nodes).toEqual([['alert', {}, ['p', {}, 'Hello']]])
   })

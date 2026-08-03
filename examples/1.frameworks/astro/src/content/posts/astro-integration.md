@@ -13,25 +13,25 @@ Instead of using Astro's built-in remark/rehype pipeline, we use Comark's framew
 
 1. **Define collections** — Use `glob()` loader to load `.md` files with Zod-validated frontmatter
 2. **Get the body** — Access the raw Markdown via `entry.body`
-3. **Parse with Comark** — Call `parse()` to build the AST
-4. **Render to HTML** — Call `renderHTML()` with custom component renderers
+3. **Parse with Comark** — Call `parseMarkdown()` to build the AST
+4. **Render to HTML** — Call `renderHtmlFromDocument()` with custom component renderers
 
 ```ts
-import { parse } from 'comark'
-import { renderHTML } from '@comark/html'
+import { parseMarkdown } from 'comark'
+import { renderHtmlFromDocument } from '@comark/html'
 
-const tree = await parse(entry.body)
-const html = await renderHTML(tree, {
+const doc = await parseMarkdown(entry.body)
+const html = await renderHtmlFromDocument(doc, {
   components: {
-    alert: ([tag, attrs, ...children], { render }) => {
-      return `<div class="alert">${render(children)}</div>`
+    alert: async ([tag, attrs, ...children], { render }) => {
+      return `<div class="alert">${await render(children)}</div>`
     },
   },
 })
 ```
 
 ::alert{type="info"}
-Since Astro components run on the server, Comark's `parse()` and `renderHTML()` are called at build time — zero JavaScript is sent to the client.
+Since Astro components run on the server, Comark's `parseMarkdown()` and `renderHtmlFromDocument()` are called at build time — zero JavaScript is sent to the client.
 ::
 
 ## Custom components
@@ -39,9 +39,9 @@ Since Astro components run on the server, Comark's `parse()` and `renderHTML()` 
 You can register any number of custom components. Each one receives the Comark AST element and a `render` helper to process children:
 
 ```ts
-const badge: ComponentRenderFn = ([tag, attrs, ...children], { render }) => {
+const badge: ComponentRenderFn = async ([tag, attrs, ...children], { render }) => {
   const color = attrs.color || 'blue'
-  return `<span class="badge badge-${color}">${render(children)}</span>`
+  return `<span class="badge badge-${color}">${await render(children)}</span>`
 }
 ```
 

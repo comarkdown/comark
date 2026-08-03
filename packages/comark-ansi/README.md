@@ -30,9 +30,9 @@ pnpm add @comark/ansi
 ## Usage
 
 ```ts
-import { render } from '@comark/ansi'
+import { renderAnsi } from '@comark/ansi'
 
-const output = await render(`
+const output = await renderAnsi(`
 # Getting Started
 
 This is a **bold** statement with a [link](https://example.com).
@@ -47,7 +47,7 @@ process.stdout.write(output)
 ### Options
 
 ```ts
-await render(content, {
+await renderAnsi(content, {
   colors: true,   // emit ANSI escape codes (defaults to true, false when NO_COLOR is set)
   width: 80,      // terminal width for HR and code block headers
   plugins: [],
@@ -58,12 +58,31 @@ await render(content, {
 ### Syntax highlighting
 
 ```ts
-import { render } from '@comark/ansi'
+import { renderAnsi } from '@comark/ansi'
 import highlight from '@comark/ansi/plugins/highlight'
 
-const output = await render('```ts\nconsole.log("hi")\n```', {
+const output = await renderAnsi('```ts\nconsole.log("hi")\n```', {
   plugins: [highlight()],
 })
+```
+
+## API
+
+- `renderAnsi(markdown, options?)` parses and renders Markdown to an ANSI string.
+- `createAnsiRenderer(options?)` creates a reusable parse-and-render function.
+- `renderAnsiFromDocument(document, options?)` renders a pre-parsed `MarkdownDocument`.
+- `writeAnsi(markdown, options?)` parses and writes Markdown to `process.stdout` or a custom `writer`.
+- `createAnsiWriter(options?)` creates a reusable writer.
+
+```ts
+import { createAnsiWriter } from '@comark/ansi'
+
+const writeAnsi = createAnsiWriter({
+  colors: false,
+  writer: (output) => process.stderr.write(output),
+})
+
+await writeAnsi('# Build complete')
 ```
 
 ## Documentation

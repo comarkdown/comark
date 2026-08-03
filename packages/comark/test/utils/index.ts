@@ -1,6 +1,6 @@
 // @ts-expect-error - ignore @nuxtjs/mdc types
 import type { MDCRoot } from '@nuxtjs/mdc'
-import type { ComarkTree } from 'comark'
+import type { MarkdownDocument } from 'comark'
 import remarkGFM from 'remark-gfm'
 import remarkMdc, { parseFrontMatter } from 'remark-mdc'
 import remarkParse from 'remark-parse'
@@ -10,7 +10,7 @@ import { mdcCompiler } from './mdc-compiler'
 import { fromHast } from 'minimark/hast'
 
 export interface ParseResult {
-  body: ComarkTree
+  body: MarkdownDocument
   excerpt?: MDCRoot
   data: any
   toc?: any
@@ -30,8 +30,8 @@ export function parseWithRemark(source: string): ParseResult {
 
   const { body, excerpt } = result as { body: MDCRoot; excerpt?: MDCRoot }
 
-  // Convert to ComarkTree before generating TOC
-  const minimarkBody = fromHast(body) as unknown as ComarkTree
+  // Convert to MarkdownDocument before generating TOC
+  const minimarkBody = fromHast(body) as unknown as MarkdownDocument
 
   return {
     body: minimarkBody,

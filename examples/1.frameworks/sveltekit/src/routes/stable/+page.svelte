@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { MarkdownParsed } from '@comark/svelte'
-  import { pascalCase } from '@comark/svelte/utils';
+  import { MarkdownDocument } from '@comark/svelte'
+  import { pascalCase } from 'comark/utils'
   import Alert from '$lib/components/comark/Alert.svelte'
   import type { PageData } from './$types'
 
@@ -18,7 +18,7 @@
 
 <div class="page-grid">
   <article class="panel">
-    <MarkdownParsed
+    <MarkdownDocument
       class="prose"
       value={data.tree}
       components={{ alert: Alert }}
@@ -33,8 +33,8 @@
       resolution. Use it when you do not want Svelte's experimental async support.
     </p>
     <ul class="status-list">
-      <li><code>parse()</code> runs in <code>+page.server.ts</code>.</li>
-      <li><code>MarkdownParsed</code> receives a serialized AST.</li>
+      <li><code>parseMarkdown()</code> runs in <code>+page.server.ts</code>.</li>
+      <li><code>MarkdownDocument</code> receives a serialized AST.</li>
       <li>The manifest uses <code>eager: true</code> for synchronous SSR rendering.</li>
     </ul>
   </aside>

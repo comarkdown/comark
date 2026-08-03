@@ -46,13 +46,13 @@ Located at `packages/comark/`:
 ```
 packages/comark/
 ├── src/
-│   ├── index.ts              # Core parser: parse(), autoCloseMarkdown()
-│   ├── render.ts             # String rendering: renderMarkdown() (renderHTML moved to @comark/html)
-│   ├── types.ts              # TypeScript interfaces (ParseOptions, etc.)
+│   ├── index.ts              # Core parser: parseMarkdown(), autoCloseMarkdown()
+│   ├── render.ts             # String rendering: renderMarkdown() (renderHtmlFromDocument() moved to @comark/html)
+│   ├── types.ts              # TypeScript interfaces (ParserOptions, etc.)
 │   ├── ast/                  # Comark AST types and utilities
 │   │   ├── index.ts          # Re-exports (comark/ast entry point)
-│   │   ├── types.ts          # ComarkTree, ComarkNode, ComarkElement, ComarkText
-│   │   └── utils.ts          # textContent(), visit() tree utilities
+│   │   ├── types.ts          # MarkdownDocument, Node, ElementNode, TextNode
+│   │   └── utils.ts          # textContent(), visit() document utilities
 │   ├── plugins/              # Built-in and optional plugins
 │   │   ├── alert.ts          # Alert/callout blocks
 │   │   ├── emoji.ts          # Emoji shortcodes
@@ -99,21 +99,21 @@ Located at `packages/comark-html/`. Framework-free HTML string rendering.
 ### Usage
 
 ```typescript
-import { render, renderHTML, createRender } from '@comark/html'
+import { createHtmlRenderer, renderHtml, renderHtmlFromDocument } from '@comark/html'
 import highlight from '@comark/html/plugins/highlight'
 import math, { Math } from '@comark/html/plugins/math'
 
-// Flat options — ParseOptions & RenderOptions merged at top level
-const renderFn = createRender({
+// Flat options — ParserOptions & RendererOptions merged at top level
+const renderHtml = createHtmlRenderer({
   plugins: [highlight({ themes: { light: 'github-light', dark: 'github-dark' } })],
   components: {
     Math,
-    alert: ([, attrs, ...children], { render }) =>
-      `<div class="alert alert-${attrs.type}">${render(children)}</div>`
+    alert: async ([, attrs, ...children], { render }) =>
+      `<div class="alert alert-${attrs.type}">${await render(children)}</div>`
   },
 })
 
-const html = await renderFn(markdownString)
+const html = await renderHtml(markdownString)
 ```
 
 ---
@@ -135,20 +135,20 @@ Located at `packages/comark-ansi/`. ANSI terminal renderer.
 ### Usage
 
 ```typescript
-import { log, render, renderANSI, createLog, createRender } from '@comark/ansi'
+import { createAnsiRenderer, createAnsiWriter, renderAnsi, renderAnsiFromDocument, writeAnsi } from '@comark/ansi'
 import highlight from '@comark/ansi/plugins/highlight'
 import math, { Math } from '@comark/ansi/plugins/math'
 
-// Flat options — ParseOptions & RenderANSIOptions merged at top level
-const logFn = createLog({
+// Flat options — ParserOptions & AnsiRendererOptions merged at top level
+const writeAnsi = createAnsiWriter({
   plugins: [highlight(), math()],
   components: { Math },
   width: 120,                      // terminal width
   colors: true,                    // emit ANSI escape codes
-  write: (s) => process.stderr.write(s),
+  writer: (output) => process.stderr.write(output),
 })
 
-await logFn(markdownString)
+await writeAnsi(markdownString)
 ```
 
 ---
@@ -163,7 +163,7 @@ packages/comark-vue/
 │   ├── index.ts              # Entry point
 │   ├── components/
 │   │   ├── Markdown.ts       # High-level markdown → render component
-│   │   ├── MarkdownParsed.ts # Low-level AST → render component
+│   │   ├── MarkdownDocument.ts # Low-level AST → render component
 │   │   ├── Math.ts           # Math rendering component
 │   │   └── Mermaid.ts        # Mermaid rendering component
 │   └── plugins/
@@ -185,7 +185,7 @@ packages/comark-vue/
 ### Usage
 
 ```typescript
-import { Markdown, MarkdownParsed, defineMarkdownComponent } from '@comark/vue'
+import { Markdown, MarkdownDocument, defineMarkdownComponent } from '@comark/vue'
 import math, { Math } from '@comark/vue/plugins/math'
 import mermaid, { Mermaid } from '@comark/vue/plugins/mermaid'
 ```
@@ -200,10 +200,9 @@ packages/comark-react/
 │   ├── index.ts              # Entry point
 │   ├── components/
 │   │   ├── Markdown.tsx      # High-level markdown → render component
-│   │   ├── MarkdownParsed.tsx # Low-level AST → render component
+│   │   ├── MarkdownDocument.tsx # Low-level AST → render component
 │   │   ├── MarkdownClient.tsx # Client-only markdown component
 │   │   ├── MarkdownLive.tsx  # Streaming/live markdown component
-│   │   ├── Comark*.tsx       # Deprecated wrappers for the old component names
 │   │   ├── Math.tsx          # Math rendering component
 │   │   └── Mermaid.tsx       # Mermaid rendering component
 │   └── plugins/
@@ -225,7 +224,7 @@ packages/comark-react/
 ### Usage
 
 ```typescript
-import { Markdown, MarkdownParsed, defineMarkdownComponent } from '@comark/react'
+import { Markdown, MarkdownDocument, defineMarkdownComponent } from '@comark/react'
 import math, { Math } from '@comark/react/plugins/math'
 import mermaid, { Mermaid } from '@comark/react/plugins/mermaid'
 ```
@@ -241,15 +240,13 @@ packages/comark-svelte/
 │   ├── types.ts              # Shared prop interfaces
 │   ├── components/
 │   │   ├── Markdown.svelte       # High-level markdown → render ($state + $effect)
-│   │   ├── MarkdownParsed.svelte # Low-level AST → render component
+│   │   ├── MarkdownDocument.svelte # Low-level AST → render component
 │   │   ├── MarkdownNode.svelte   # Recursive AST node renderer
-│   │   ├── Comark*.svelte        # Deprecated wrappers for the old component names
 │   │   ├── ComarkComponent.svelte # Custom component renderer with named snippets
 │   │   └── Resolve.svelte        # Stable promise resolver for lazy components
 │   ├── async/
 │   │   ├── index.ts              # Async export (@comark/svelte/async)
 │   │   ├── MarkdownAsync.svelte  # High-level markdown → render (experimental await)
-│   │   ├── ComarkAsync.svelte    # Deprecated wrapper for the old component name
 │   │   └── ResolveAsync.svelte   # Async SSR resolver for lazy components
 │   └── plugins/
 │       ├── math.ts           # Re-exports comark/plugins/math
@@ -315,7 +312,7 @@ Located at `packages/comark-angular/`. Angular 17+ renderer with standalone comp
 packages/comark-angular/
 ├── src/
 │   ├── index.ts                          # Entry point
-│   ├── define.ts                         # defineMarkdownComponent / defineMarkdownParsedComponent
+│   ├── define.ts                         # defineMarkdownComponent / defineMarkdownDocumentComponent
 │   ├── components/
 │   │   ├── markdown.component.ts         # High-level markdown → render component
 │   │   ├── markdown-parsed.component.ts  # Low-level AST → render component
@@ -348,7 +345,7 @@ packages/comark-angular/
 ### Usage
 
 ```typescript
-import { Markdown, MarkdownParsed, defineMarkdownComponent, defineMarkdownParsedComponent } from '@comark/angular'
+import { Markdown, MarkdownDocument, defineMarkdownComponent, defineMarkdownDocumentComponent } from '@comark/angular'
 import math, { Math } from '@comark/angular/plugins/math'
 import mermaid, { Mermaid } from '@comark/angular/plugins/mermaid'
 ```
@@ -362,22 +359,22 @@ import mermaid, { Mermaid } from '@comark/angular/plugins/mermaid'
 
 ```typescript
 // Core parsing
-import { parse, autoCloseMarkdown } from 'comark'
+import { parseMarkdown, autoCloseMarkdown } from 'comark'
 
 // HTML rendering (parse + render in one step)
-import { render, renderHTML, createRender } from '@comark/html'
+import { createHtmlRenderer, renderHtml, renderHtmlFromDocument } from '@comark/html'
 
 // ANSI terminal rendering
-import { log, render, renderANSI, createLog, createRender } from '@comark/ansi'
+import { createAnsiRenderer, createAnsiWriter, renderAnsi, renderAnsiFromDocument, writeAnsi } from '@comark/ansi'
 
 // Markdown string rendering (AST → markdown)
 import { renderMarkdown } from 'comark/render'
 
 // AST types and utilities
-import type { ComarkTree, ComarkNode, ComarkElement, ComarkText } from 'comark'
+import type { MarkdownDocument, Node, ElementNode, TextNode } from 'comark'
 import { textContent, visit } from 'comark/utils'
 
-// Core plugins — use when calling parse() directly (framework-agnostic)
+// Core plugins — use when calling parseMarkdown() directly (framework-agnostic)
 import highlight from 'comark/plugins/highlight'
 import math from 'comark/plugins/math'
 import mermaid from 'comark/plugins/mermaid'
@@ -388,43 +385,39 @@ import alert from 'comark/plugins/alert'
 // NOTE: All framework packages re-export every core plugin via their own subpath.
 // Prefer the framework-specific path when using a framework renderer:
 //   @comark/vue/plugins/highlight, @comark/react/plugins/highlight, etc.
-// Use comark/plugins/* only when calling parse() without a framework renderer.
+// Use comark/plugins/* only when calling parseMarkdown() without a framework renderer.
 
 // HTML rendering — parse + render to HTML string
-import { render, renderHTML, createRender } from '@comark/html'
+import { createHtmlRenderer, renderHtml, renderHtmlFromDocument } from '@comark/html'
 import highlight from '@comark/html/plugins/highlight'
 import math, { Math } from '@comark/html/plugins/math'
 import mermaid, { Mermaid } from '@comark/html/plugins/mermaid'
 
 // ANSI terminal rendering — parse + render to styled terminal string
-import { log, render, renderANSI, createLog, createRender } from '@comark/ansi'
+import { createAnsiRenderer, createAnsiWriter, renderAnsi, renderAnsiFromDocument, writeAnsi } from '@comark/ansi'
 import highlight from '@comark/ansi/plugins/highlight'
 import math from '@comark/ansi/plugins/math'
 
 // Vue — renderer + plugin wrappers (plugin fn + Vue component)
-import { Markdown, MarkdownParsed, defineMarkdownComponent } from '@comark/vue'
+import { Markdown, MarkdownDocument, defineMarkdownComponent } from '@comark/vue'
 import math, { Math } from '@comark/vue/plugins/math'
 import mermaid, { Mermaid } from '@comark/vue/plugins/mermaid'
 
 // React — renderer + plugin wrappers (plugin fn + React component)
-import { Markdown, MarkdownParsed, defineMarkdownComponent } from '@comark/react'
+import { Markdown, MarkdownDocument, defineMarkdownComponent } from '@comark/react'
 import math, { Math } from '@comark/react/plugins/math'
 import mermaid, { Mermaid } from '@comark/react/plugins/mermaid'
 
 // Svelte — renderer + plugin wrappers (plugin fn + Svelte component)
-import { Markdown, MarkdownParsed } from '@comark/svelte'
+import { Markdown, MarkdownDocument } from '@comark/svelte'
 import { MarkdownAsync } from '@comark/svelte/async' // requires experimental.async
 import math, { Math } from '@comark/svelte/plugins/math'
 import mermaid, { Mermaid } from '@comark/svelte/plugins/mermaid'
 
 // Angular — renderer + plugin wrappers (plugin fn + Angular component)
-import { Markdown, MarkdownParsed, defineMarkdownComponent, defineMarkdownParsedComponent } from '@comark/angular'
+import { Markdown, MarkdownDocument, defineMarkdownComponent, defineMarkdownDocumentComponent } from '@comark/angular'
 import math, { Math } from '@comark/angular/plugins/math'
 import mermaid, { Mermaid } from '@comark/angular/plugins/mermaid'
-
-// NOTE: The old component names (Comark, ComarkRenderer, ComarkAsync,
-// defineComarkComponent, defineComarkRendererComponent, ...) remain
-// exported as deprecated aliases.
 ```
 
 ## Coding Principles
@@ -482,16 +475,16 @@ describe('functionUnderTest', () => {
 
 ## Key APIs
 
-### parse(source, options)
+### parseMarkdown(source, options)
 
 ```typescript
-const result = await parse(markdownContent, {
+const result = await parseMarkdown(markdownContent, {
   autoUnwrap: true,   // Remove <p> wrappers from single-paragraph containers
   autoClose: true,    // Auto-close incomplete syntax
   unwrap: 'p',        // Strip top-level wrapper tags (MDC unwrap); merges paragraphs
 })
 
-result.nodes       // ComarkNode[]
+result.nodes       // Node[]
 result.frontmatter // Record<string, any>
 result.meta        // Record<string, any>
 ```
@@ -503,14 +496,16 @@ autoCloseMarkdown('**bold text')     // '**bold text**'
 autoCloseMarkdown('::alert\nContent') // '::alert\nContent\n::'
 ```
 
-## Comark AST Format
+## Markdown Document Model
 
 ```typescript
-type ComarkText = string
-type ComarkElement = [string, ComarkElementAttributes, ...ComarkNode[]]
-type ComarkNode = ComarkElement | ComarkText
-type ComarkTree = {
-  nodes: ComarkNode[]
+type TextNode = string
+type ElementNodeAttributes = { [key: string]: unknown; $?: { line?: number; html?: 0 | 1; block?: 0 | 1 } }
+type ElementNode = [string, ElementNodeAttributes, ...Node[]]
+type CommentNode = [null, ElementNodeAttributes, string]
+type Node = ElementNode | TextNode | CommentNode
+type MarkdownDocument = {
+  nodes: Node[]
   frontmatter: Record<string, any>
   meta: Record<string, any>
 }

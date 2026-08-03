@@ -27,10 +27,10 @@ Under the hood it emits a `binding` component node whose `:value` attribute poin
 ### Registering the Plugin
 
 ```typescript [parse.ts]
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import binding from 'comark/plugins/binding'
 
-const tree = await parse(content, {
+const tree = await parseMarkdown(content, {
   plugins: [binding()],
 })
 ```
@@ -63,14 +63,14 @@ The plugin ships a renderer-specific `Binding` export for every first-party pack
 
 ```typescript [HTML]
 import binding, { Binding } from '@comark/html/plugins/binding'
-import { createRender } from '@comark/html'
+import { createHtmlRenderer } from '@comark/html'
 
-const render = createRender({
+const renderHtml = createHtmlRenderer({
   plugins: [binding()],
   components: { Binding },
 })
 
-const html = await render(`
+const html = await renderHtml(`
 ---
 user:
   name: Ada
@@ -83,11 +83,11 @@ Hello {{ frontmatter.user.name }}!
 
 ```typescript [ANSI]
 import binding, { Binding } from '@comark/ansi/plugins/binding'
-import { renderANSI } from '@comark/ansi'
-import { parse } from 'comark'
+import { renderAnsiFromDocument } from '@comark/ansi'
+import { parseMarkdown } from 'comark'
 
-const tree = await parse('Score: {{ data.score || 0 }}', { plugins: [binding()] })
-const out = await renderANSI(tree, {
+const tree = await parseMarkdown('Score: {{ data.score || 0 }}', { plugins: [binding()] })
+const out = await renderAnsiFromDocument(tree, {
   components: { Binding },
   data: { score: 42 },
 })
@@ -167,13 +167,13 @@ Welcome, {{ frontmatter.user.name || guest }}.`
 When you re-serialize the AST with `renderMarkdown`, you can pass the core `Binding` handler to preserve the original `{{ … }}` shorthand:
 
 ```typescript [render-markdown.ts]
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import { renderMarkdown } from 'comark/render'
 import binding, { Binding } from 'comark/plugins/binding'
 
-const tree = await parse('Hi {{ user.name }}!', { plugins: [binding()] })
+const document = await parseMarkdown('Hi {{ user.name }}!', { plugins: [binding()] })
 
-const source = await renderMarkdown(tree, {
+const source = await renderMarkdown(document, {
   components: { Binding },
 })
 // → "Hi {{ user.name }}!\n"
@@ -210,7 +210,7 @@ You can swap the emitted element tag via the plugin's `tag` option. This is hand
 ```typescript
 import binding from 'comark/plugins/binding'
 
-const tree = await parse('{{ x }}', {
+const tree = await parseMarkdown('{{ x }}', {
   plugins: [binding({ tag: 'prop' })],
 })
 

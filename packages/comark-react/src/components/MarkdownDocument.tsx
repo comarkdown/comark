@@ -1,13 +1,18 @@
-import type { ComarkElement, ComarkNode, ComarkTree, ComponentManifest, NodeRenderData } from 'comark'
+import type {
+  ElementNode,
+  Node,
+  MarkdownDocument as MarkdownDocumentType,
+  ComponentManifest,
+  NodeRenderData,
+} from 'comark'
 import React, { lazy, Suspense, useMemo } from 'react'
 import { pascalCase, camelCase, resolveAttributes } from 'comark/utils'
 import { findLastTextNodeAndAppendNode, getCaret } from '../utils/caret.ts'
-import { warnDeprecated } from '../internal/deprecation.ts'
 
 /**
- * Helper to get tag from a ComarkNode
+ * Helper to get tag from a Node
  */
-function getTag(node: ComarkNode): string | null {
+function getTag(node: Node): string | null {
   if (Array.isArray(node) && node.length >= 1) {
     return node[0] as string
   }
@@ -37,9 +42,9 @@ function cssStringToObject(cssString: string): Record<string, string> {
 }
 
 /**
- * Helper to get props from a ComarkNode
+ * Helper to get props from a Node
  */
-function getProps(node: ComarkNode): Record<string, any> {
+function getProps(node: Node): Record<string, any> {
   if (Array.isArray(node) && node.length >= 2) {
     return (node[1] as Record<string, any>) || {}
   }
@@ -47,11 +52,11 @@ function getProps(node: ComarkNode): Record<string, any> {
 }
 
 /**
- * Helper to get children from a ComarkNode
+ * Helper to get children from a Node
  */
-function getChildren(node: ComarkNode): ComarkNode[] {
+function getChildren(node: Node): Node[] {
   if (Array.isArray(node) && node.length > 2) {
-    return node.slice(2) as ComarkNode[]
+    return node.slice(2) as Node[]
   }
   return []
 }
@@ -98,11 +103,11 @@ function resolveComponent(tag: string, components: Record<string, any>, componen
  * Render a single Comark node to React element
  */
 function renderNode(
-  node: ComarkNode,
+  node: Node,
   components: Record<string, any> = {},
   key?: string | number,
   componentsManifest?: ComponentManifest,
-  parent?: ComarkNode,
+  parent?: Node,
   renderData: NodeRenderData = { frontmatter: {}, meta: {}, data: {}, props: {} }
 ): React.ReactNode {
   // Handle text nodes (strings)
@@ -121,7 +126,7 @@ function renderNode(
     // Check if there's a custom component for this tag
     let customComponent
 
-    if ((parent as ComarkElement | undefined)?.[0] !== 'pre') {
+    if ((parent as ElementNode | undefined)?.[0] !== 'pre') {
       if (nodeProps.as) {
         customComponent = resolveComponent(nodeProps.as, components, componentsManifest)
       }
@@ -201,7 +206,7 @@ function renderNode(
         if (slotName) {
           const slotChildren = getChildren(child)
           slots[slotName] = slotChildren
-            .map((slotChild: ComarkNode, idx: number) =>
+            .map((slotChild: Node, idx: number) =>
               renderNode(slotChild, components, idx, componentsManifest, node, childrenRenderData)
             )
             .filter((slotChild): slotChild is React.ReactNode => slotChild !== null)
@@ -258,19 +263,13 @@ function renderNode(
   return null
 }
 
-export interface MarkdownParsedProps {
+export interface MarkdownDocumentProps {
   /**
-   * The parsed Comark tree to render — either a full `ComarkTree` or a bare
-   * `ComarkNode[]`.  When a node array is passed, frontmatter and meta
+   * The parsed Comark document to render — either a full `MarkdownDocument` or a bare
+   * `Node[]`.  When a node array is passed, frontmatter and meta
    * default to `{}` and runtime data should be supplied via `data`.
    */
-  value?: ComarkTree | { nodes: ComarkTree['nodes'] }
-
-  /**
-   * The parsed Comark tree to render
-   * @deprecated Use `value` instead
-   */
-  tree?: ComarkTree | { nodes: ComarkTree['nodes'] }
+  value?: MarkdownDocumentType | { nodes: MarkdownDocumentType['nodes'] }
 
   /**
    * Custom component mappings for element tags
@@ -291,8 +290,8 @@ export interface MarkdownParsedProps {
   streaming?: boolean
 
   /**
-   * If caret is true, a caret will be appended to the last text node in the tree
-   * If caret is an object, it will be appended to the last text node in the tree with the given class
+   * If caret is true, a caret will be appended to the document's last text node
+   * If caret is an object, it will be appended with the given class
    */
   caret?: boolean | { class: string }
 
@@ -309,14 +308,14 @@ export interface MarkdownParsedProps {
 }
 
 /**
- * MarkdownParsed component
+ * MarkdownDocument component
  *
- * Renders an already-parsed Comark tree to React components/HTML — no parser
+ * Renders an already-parsed Markdown document to React components/HTML — no parser
  * in the client bundle. Supports custom component mapping for element tags.
  *
  * @example
  * ```tsx
- * import { MarkdownParsed } from '@comark/react'
+ * import { MarkdownDocument } from '@comark/react'
  * import CustomHeading from './CustomHeading'
  *
  * const customComponents = {
@@ -325,13 +324,12 @@ export interface MarkdownParsedProps {
  * }
  *
  * export default function App() {
- *   return <MarkdownParsed value={comarkTree} components={customComponents} />
+ *   return <MarkdownDocument value={document} components={customComponents} />
  * }
  * ```
  */
-export const MarkdownParsed: React.FC<MarkdownParsedProps> = ({
+export const MarkdownDocument: React.FC<MarkdownDocumentProps> = ({
   value,
-  tree: treeProp,
   components: customComponents = {},
   componentsManifest,
   streaming = false,
@@ -339,19 +337,16 @@ export const MarkdownParsed: React.FC<MarkdownParsedProps> = ({
   data,
   className,
 }) => {
-  if (treeProp !== undefined && value === undefined) {
-    warnDeprecated('tree (prop)', 'value')
-  }
-  const tree = value ?? treeProp ?? { nodes: [] }
+  const document = value ?? { nodes: [] }
 
   const caret = useMemo(() => getCaret(caretProp), [caretProp])
 
   const renderedNodes = useMemo(() => {
-    // Render all nodes from the tree value
-    const nodes = [...(tree.nodes || [])]
+    // Render all nodes from the document value
+    const nodes = [...(document.nodes || [])]
 
     if (streaming && caret && nodes.length > 0) {
-      const hasStreamCaret = findLastTextNodeAndAppendNode(nodes[nodes.length - 1] as ComarkElement, caret)
+      const hasStreamCaret = findLastTextNodeAndAppendNode(nodes[nodes.length - 1] as ElementNode, caret)
       if (!hasStreamCaret) {
         nodes.push(caret)
       }
@@ -359,8 +354,10 @@ export const MarkdownParsed: React.FC<MarkdownParsedProps> = ({
 
     const renderData: NodeRenderData = {
       frontmatter:
-        (tree as ComarkTree).frontmatter || (tree as unknown as { data: Record<string, unknown> }).data || {},
-      meta: (tree as ComarkTree).meta || {},
+        (document as MarkdownDocumentType).frontmatter ||
+        (document as unknown as { data: Record<string, unknown> }).data ||
+        {},
+      meta: (document as MarkdownDocumentType).meta || {},
       data: data || {},
       props: {},
     }
@@ -368,7 +365,7 @@ export const MarkdownParsed: React.FC<MarkdownParsedProps> = ({
     return nodes
       .map((node, index) => renderNode(node, customComponents, index, componentsManifest, undefined, renderData))
       .filter((child): child is React.ReactNode => child !== null)
-  }, [tree, customComponents, componentsManifest, streaming, caret, data])
+  }, [document, customComponents, componentsManifest, streaming, caret, data])
 
   // Wrap in a fragment
   return <div className={`comark-content ${className || ''}`}>{renderedNodes}</div>

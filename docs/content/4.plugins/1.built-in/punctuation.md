@@ -23,10 +23,10 @@ The `comark/plugins/punctuation` plugin transforms plain-text punctuation into t
 ## Usage
 
 ```typescript
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import punctuation from 'comark/plugins/punctuation'
 
-const result = await parse('"Hello" -- world... (c)', {
+const result = await parseMarkdown('"Hello" -- world... (c)', {
   plugins: [punctuation()]
 })
 // nodes: [ [ 'p', {}, '“Hello” – world… ©' ] ]

@@ -158,7 +158,7 @@ Outer info alert.
 
 ## Frontmatter
 
-Documents can declare YAML frontmatter at the top (before any content). Access it via \`tree.frontmatter\` when using \`MarkdownParsed\`.
+Documents can declare YAML frontmatter at the top (before any content). Access it via \`tree.frontmatter\` when using \`MarkdownDocument\`.
 
 ---
 
