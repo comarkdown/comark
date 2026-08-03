@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parse } from '../src/parse'
+import { parseMarkdown } from '../src/parse'
 
 // Regression tests for https://github.com/comarkdown/comark/issues/322
 //
@@ -29,14 +29,14 @@ describe('nested component with a run of blank lines between siblings', () => {
     ]
 
     it.each([1, 2, 3, 7])('keeps every sibling with %i consecutive blank line(s) between them', async (blanks) => {
-      const tree = await parse(build(blanks))
+      const tree = await parseMarkdown(build(blanks))
       expect(tree.nodes).toEqual(expected)
     })
 
     it('still closes the enclosing component at its own marker after a blank run (no over-absorption)', async () => {
       // `mid` must still close at its own `::`, not swallow `after` too.
       const src = '::outer\n  ::mid\n  ---\n  columns: 3\n  ---\n    ::A\n    ::\n\n\n  ::\nafter\n::'
-      const tree = await parse(src)
+      const tree = await parseMarkdown(src)
       expect(tree.nodes).toEqual([['outer', {}, ['mid', { columns: '3' }, ['a', {}]], ['p', {}, 'after']]])
     })
   })
@@ -48,13 +48,13 @@ describe('nested component with a run of blank lines between siblings', () => {
     const expected = [['outer', {}, ['leaf1', {}, 'hi'], ['leaf2', {}], ['leaf3', {}]]]
 
     it.each([1, 2, 3, 7])('keeps every sibling with %i consecutive blank line(s) after it', async (blanks) => {
-      const tree = await parse(build(blanks))
+      const tree = await parseMarkdown(build(blanks))
       expect(tree.nodes).toEqual(expected)
     })
 
     it('still closes the enclosing component at its own marker after a blank run (no over-absorption)', async () => {
       const src = '::outer\n  :leaf1[hi]\n\n\nafter\n::'
-      const tree = await parse(src)
+      const tree = await parseMarkdown(src)
       expect(tree.nodes).toEqual([['outer', {}, ['leaf1', {}, 'hi'], ['p', {}, 'after']]])
     })
   })
@@ -70,14 +70,14 @@ describe('nested component with a run of blank lines between siblings', () => {
     it.each([1, 2, 3, 7])(
       'keeps every sibling with %i consecutive blank line(s) between them, with no spurious paragraph token',
       async (blanks) => {
-        const tree = await parse(build(blanks))
+        const tree = await parseMarkdown(build(blanks))
         expect(tree.nodes).toEqual(expected)
       }
     )
 
     it('still terminates at the next `#slot` marker regardless of a preceding blank run', async () => {
       const src = '::outer\n  #title\n  Hello\n\n\n  #footer\n  Bye\n  ::\n::'
-      const tree = await parse(src)
+      const tree = await parseMarkdown(src)
       expect(tree.nodes).toEqual([
         ['outer', {}, ['template', { name: 'title' }, 'Hello'], ['template', { name: 'footer' }, 'Bye']],
       ])
@@ -85,7 +85,7 @@ describe('nested component with a run of blank lines between siblings', () => {
 
     it('still terminates at the parent close after a blank run (no over-absorption)', async () => {
       const src = '::outer\n  #title\n  Hello\n\n\n  ::\nafter\n::'
-      const tree = await parse(src)
+      const tree = await parseMarkdown(src)
       expect(tree.nodes).toEqual([
         ['outer', {}, ['template', { name: 'title' }, 'Hello']],
         ['p', {}, 'after'],
