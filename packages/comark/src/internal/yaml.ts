@@ -3,10 +3,6 @@ import { dump, JSON_SCHEMA, loadAll, YAMLException, type DumpOptions } from 'js-
 /**
  * Parse YAML content.
  *
- * Uses `loadAll` rather than `load` so that empty, whitespace-only, or comment-only
- * input (which contains no YAML document) resolves to `undefined` — behaving like an
- * omitted block — instead of throwing. Genuine syntax errors still throw during parsing.
- *
  * @param content - The content to parse
  * @returns The parsed data, or `undefined` when the content has no YAML document
  */
