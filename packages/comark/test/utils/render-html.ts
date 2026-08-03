@@ -1,4 +1,4 @@
-import type { MarkdownDocument } from '../../../comark-svelte/src'
+import type { MarkdownDocument } from '../../../comark'
 import type { RendererOptions } from 'comark'
 import { render } from 'comark/render'
 

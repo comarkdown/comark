@@ -84,7 +84,7 @@ describe('@comark/angular — rendering integration', () => {
   })
 
   it('handles streaming mode', async () => {
-    const tree = await parseMarkdown('Hello **wor', { streaming: true, autoClose: true })
+    const tree = await parseMarkdown('Hello **wor', { autoClose: true })
     expect(tree.nodes).toBeDefined()
     expect(tree.nodes.length).toBeGreaterThan(0)
   })

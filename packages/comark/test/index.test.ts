@@ -214,7 +214,7 @@ describe('Comark Tests', () => {
       return
     }
     describe(file, () => {
-      let document: Awaited<ReturnType<typeof parse>>
+      let document: Awaited<ReturnType<typeof parseMarkdown>>
 
       beforeAll(async () => {
         const declaredPlugins = testCase.options?.plugins ?? []

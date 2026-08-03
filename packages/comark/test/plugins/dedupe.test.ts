@@ -24,7 +24,7 @@ describe('duplicate plugins', () => {
     const valuePlugin = defineComarkPlugin<{ value: number }, { value: number }>((opts) => ({
       name: 'test-value',
       post(state) {
-        state.tree.meta.value = opts?.value
+        state.tree.meta.value = opts!.value
       },
     }))
 
