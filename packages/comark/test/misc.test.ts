@@ -9,7 +9,7 @@ describe('misc', () => {
 
   describe('boolean attribute coercion', () => {
     it('promotes bare, explicit-true, and explicit-false attrs to :bindings', async () => {
-      const tree = await parse('::x{flag other="true" off="false" count="5"}\n::')
+      const tree = await parseMarkdown('::x{flag other="true" off="false" count="5"}\n::')
       expect((tree.nodes[0] as any)[1]).toEqual({
         ':flag': 'true',
         other: 'true',
@@ -19,7 +19,7 @@ describe('misc', () => {
     })
 
     it('promotes unquoted true/false the same way', async () => {
-      const tree = await parse('::x{on=true off=false}\n::')
+      const tree = await parseMarkdown('::x{on=true off=false}\n::')
       expect((tree.nodes[0] as any)[1]).toEqual({
         on: 'true',
         off: 'false',
@@ -27,7 +27,7 @@ describe('misc', () => {
     })
 
     it('leaves explicit :bindings and non-boolean strings alone', async () => {
-      const tree = await parse('::x{:flag="false" label="falsey" zero="0"}\n::')
+      const tree = await parseMarkdown('::x{:flag="false" label="falsey" zero="0"}\n::')
       expect((tree.nodes[0] as any)[1]).toEqual({
         ':flag': 'false',
         label: 'falsey',
@@ -36,7 +36,7 @@ describe('misc', () => {
     })
 
     it('applies the same rules to inline components', async () => {
-      const tree = await parse(':badge{disabled="false" active}')
+      const tree = await parseMarkdown(':badge{disabled="false" active}')
       expect((tree.nodes[0] as any)[1]).toEqual({
         disabled: 'false',
         ':active': 'true',
