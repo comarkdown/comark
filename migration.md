@@ -22,11 +22,11 @@ It is **not** instructions for editing the Comark monorepo itself.
 
 You are migrating **this project** (a consumer of Comark) to a newer Comark major version.
 
-In that release, Comark **removed all deprecated aliases**. Old component names, parser names, AST type aliases, and props no longer exist. Compatibility shims and deprecation warnings are gone — old code fails at compile time or runtime.
+In that release, Comark **removed all deprecated aliases** and renamed the live-document key prop. Old component names, parser names, AST type aliases, and props no longer exist. Compatibility shims and deprecation warnings are gone — old code fails at compile time or runtime.
 
 Your job:
 
-1. Find every use of removed Comark APIs in **this repository only**.
+1. Find every use of removed or renamed Comark APIs in **this repository only**.
 2. Rewrite them to the current public API.
 3. Do not reintroduce aliases or wrappers for old names.
 4. Keep app behavior the same. This is a rename migration, not a feature rewrite.
@@ -35,7 +35,7 @@ Your job:
 ### Scope
 
 - In scope: app/source code, components, pages, tests, Storybook, local docs/examples, re-export barrels, Nuxt auto-import usage.
-- Out of scope: changing Comark package internals, forking Comark, or keeping dual `value ?? tree` / `value ?? markdown` fallbacks.
+- Out of scope: changing Comark package internals, forking Comark, or keeping dual `value ?? tree` / `value ?? markdown` / `documentKey ?? comarkKey` fallbacks.
 
 ### Important: what NOT to rename
 
@@ -43,7 +43,7 @@ These are still valid current APIs and must stay:
 
 - Package names: `comark`, `@comark/vue`, `@comark/react`, `@comark/svelte`, `@comark/angular`, `@comark/nuxt`, `@comark/html`, `@comark/ansi`
 - Plugin brand APIs: `ComarkPlugin`, `defineComarkPlugin`, `ComarkParseFn`, etc.
-- Live context APIs: `createComarkContext`, `ComarkContext`, `comarkKey`, `globalThis.comarkContext`
+- Live context APIs: `createComarkContext`, `ComarkContext`, `globalThis.comarkContext`
 - CSS hooks: `comark-content`, `comark-stream`
 - Markdown syntax: `::component`, attributes, slots
 - Local variables named `tree`/`markdown` are fine if they are not the removed **public prop/export** names
@@ -146,10 +146,11 @@ import type { MarkdownDocument, ElementNode, TextNode, Node } from 'comark'
 
 ### 5) Component props
 
-| Removed prop | Replacement | Used on |
+| Removed / old prop | Replacement | Used on |
 |---|---|---|
 | `markdown` | `value` | `Markdown`, `MarkdownClient`, `MarkdownAsync`, defined markdown components |
 | `tree` | `value` | `MarkdownDocument`, `MarkdownLive`, defined document components |
+| `comarkKey` / `comark-key` | `documentKey` / `document-key` | live document subscription on `MarkdownDocument`, `MarkdownLive`, etc. |
 
 `value` accepts:
 
@@ -163,30 +164,44 @@ import type { MarkdownDocument, ElementNode, TextNode, Node } from 'comark'
 <ComarkRenderer tree={document} />
 <Markdown markdown={content} />
 <MarkdownDocument tree={document} />
+<MarkdownLive value={document} comarkKey="page" />
 
 // After
 <Markdown value={content} />
 <MarkdownDocument value={document} />
+<MarkdownLive value={document} documentKey="page" />
 ```
 
 ```vue
 <!-- Before -->
 <Comark :markdown="content" />
 <ComarkRenderer :tree="document" />
+<MarkdownDocument comark-key="page" :value="document" />
 
 <!-- After -->
 <Markdown :value="content" />
 <MarkdownDocument :value="document" />
+<MarkdownDocument document-key="page" :value="document" />
 ```
 
 ```svelte
 <!-- Before -->
 <Comark markdown={content} />
 <ComarkRenderer tree={document} />
+<MarkdownDocument comarkKey="page" value={document} />
 
 <!-- After -->
 <Markdown value={content} />
 <MarkdownDocument value={document} />
+<MarkdownDocument documentKey="page" value={document} />
+```
+
+```html
+<!-- Angular before -->
+<comark-markdown-document comarkKey="page" [value]="document"></comark-markdown-document>
+
+<!-- Angular after -->
+<comark-markdown-document documentKey="page" [value]="document"></comark-markdown-document>
 ```
 
 ### 6) Angular selectors
@@ -275,6 +290,8 @@ markdown={
 \btree=
 :tree=
 tree={
+comarkKey
+comark-key
 comark-renderer
 comark-markdown-parsed
 comark-node
@@ -303,6 +320,7 @@ When reviewing `\bComark\b` hits, keep package/plugin/context brand names listed
 5. **Rewrite props**
    - `markdown` → `value`
    - `tree` → `value`
+   - `comarkKey` / `comark-key` → `documentKey` / `document-key`
    - remove dual-prop fallbacks
 6. **Rewrite types** (`ComarkTree` → `MarkdownDocument`, etc.).
 7. **Update this project’s tests/docs/stories**.
@@ -335,6 +353,7 @@ const Docs = defineComarkComponent({ name: 'Docs' })
 <template>
   <Comark :markdown="content" />
   <ComarkRenderer :tree="tree" />
+  <MarkdownDocument comark-key="page" :value="tree" />
   <Docs :markdown="content" />
 </template>
 ```
@@ -353,6 +372,7 @@ const Docs = defineMarkdownComponent({ name: 'Docs' })
 <template>
   <Markdown :value="content" />
   <MarkdownDocument :value="document" />
+  <MarkdownDocument document-key="page" :value="document" />
   <Docs :value="content" />
 </template>
 ```
@@ -390,7 +410,7 @@ return (
     <Markdown value={md} />
     <MarkdownDocument value={document} />
     <MarkdownClient value={md} />
-    <MarkdownLive value={document} comarkKey="doc" />
+    <MarkdownLive value={document} documentKey="doc" />
   </>
 )
 ```
@@ -406,6 +426,7 @@ return (
 
 <Comark markdown={content} />
 <ComarkRenderer tree={document} />
+<MarkdownDocument comarkKey="page" value={document} />
 <ComarkAsync markdown={content} />
 ```
 
@@ -418,6 +439,7 @@ return (
 
 <Markdown value={content} />
 <MarkdownDocument value={document} />
+<MarkdownDocument documentKey="page" value={document} />
 <MarkdownAsync value={content} />
 ```
 
@@ -432,7 +454,7 @@ import { ComarkComponent, ComarkRendererComponent, defineComarkComponent } from 
 <!-- Before -->
 <comark [markdown]="content"></comark>
 <comark-renderer [tree]="document"></comark-renderer>
-<comark-markdown-parsed [value]="document"></comark-markdown-parsed>
+<comark-markdown-parsed comarkKey="page" [value]="document"></comark-markdown-parsed>
 ```
 
 ```ts
@@ -443,7 +465,7 @@ import { Markdown, MarkdownDocument, defineMarkdownComponent } from '@comark/ang
 ```html
 <!-- After -->
 <comark-markdown [value]="content"></comark-markdown>
-<comark-markdown-document [value]="document"></comark-markdown-document>
+<comark-markdown-document documentKey="page" [value]="document"></comark-markdown-document>
 ```
 
 ### Nuxt
@@ -495,7 +517,7 @@ refactor: migrate Comark usage to Markdown APIs after deprecated alias removal
 
 ```bash
 # leftover search (adjust tool if needed)
-rg -n "ComarkRenderer|ComarkClient|ComarkLive|ComarkAsync|MarkdownParsed|defineComarkComponent|defineComarkRendererComponent|ComarkTree|createParse|createSerializedParse|comark-markdown-parsed|comark-renderer" .
+rg -n "ComarkRenderer|ComarkClient|ComarkLive|ComarkAsync|MarkdownParsed|defineComarkComponent|defineComarkRendererComponent|ComarkTree|createParse|createSerializedParse|comarkKey|comark-key|comark-markdown-parsed|comark-renderer" .
 
 # then this project's checks
 pnpm typecheck

@@ -271,11 +271,11 @@ export interface MarkdownDocumentProps {
   data?: Record<string, unknown>
 
   /**
-   * Document keys. When set and `globalThis.comarkContext` exists, the renderer
+   * Document key. When set and `globalThis.comarkContext` exists, the renderer
    * subscribes to live updates for this key (HMR, devtools, collab, agents) and
    * re-renders with the pushed document. No-op otherwise.
    */
-  comarkKey?: string
+  documentKey?: string
 }
 
 type MarkdownDocumentComponent = ReturnType<typeof defineComponent<MarkdownDocumentProps>>
@@ -364,7 +364,7 @@ export const MarkdownDocument: MarkdownDocumentComponent = defineComponent({
     /**
      * Document key used to subscribe to live updates via `globalThis.comarkContext`
      */
-    comarkKey: {
+    documentKey: {
       type: String as PropType<string>,
       default: undefined,
     },
@@ -379,9 +379,9 @@ export const MarkdownDocument: MarkdownDocumentComponent = defineComponent({
 
     // Live document support: if an ambient context exists, subscribe to updates
     // for this id and re-render with the pushed document. Cleaned up on unmount.
-    // The key is the document's own `meta.key` (set by a plugin) or the `comarkKey` prop.
+    // The key is the document's own `meta.key` (set by a plugin) or the `documentKey` prop.
     const liveDocument = shallowRef<MarkdownDocumentType | null>(null)
-    const key = inputDocument.value.meta?.key || props.comarkKey
+    const key = inputDocument.value.meta?.key || props.documentKey
     if (key && globalThis.comarkContext) {
       const cleanup = globalThis.comarkContext.get(key, toRaw(inputDocument.value)).listen((document) => {
         liveDocument.value = document

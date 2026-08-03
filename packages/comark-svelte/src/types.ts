@@ -27,6 +27,11 @@ export interface MarkdownDocumentProps {
   streaming?: boolean
   caret?: boolean | { class: string }
   class?: string
+  /**
+   * Document key used to subscribe to live updates via `globalThis.comarkContext`.
+   * Falls back to the document's own `meta.key` when set by a plugin.
+   */
+  documentKey?: string
 }
 
 export interface MarkdownProps {

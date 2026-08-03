@@ -63,7 +63,7 @@ export class MarkdownDocument implements OnInit, OnDestroy {
    * Document key used to subscribe to live updates via `globalThis.comarkContext`.
    * Falls back to the document's own `meta.key` when set by a plugin.
    */
-  @Input() comarkKey?: string
+  @Input() documentKey?: string
 
   private cdr = inject(ChangeDetectorRef)
   private liveDocument: MarkdownDocumentType | null = null
@@ -76,7 +76,7 @@ export class MarkdownDocument implements OnInit, OnDestroy {
   // Live document support: if an ambient context exists, subscribe to updates
   // for this key and re-render with the pushed document. Cleaned up on destroy.
   ngOnInit(): void {
-    const key = this.inputDocument.meta?.key || this.comarkKey
+    const key = this.inputDocument.meta?.key || this.documentKey
     if (key && globalThis.comarkContext) {
       this.cleanup = globalThis.comarkContext.get(key, this.inputDocument).listen((document) => {
         this.liveDocument = document

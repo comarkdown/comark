@@ -2,7 +2,7 @@ import { ChangeDetectorRef, Component, type OnInit } from '@angular/core'
 import { MarkdownDocument } from '@comark/angular'
 import { createComarkContext, parseMarkdown, type MarkdownDocument as Document } from 'comark'
 
-// A driver installs a context on globalThis once; every <comark-markdown-document comarkKey>
+// A driver installs a context on globalThis once; every <comark-markdown-document documentKey>
 // then auto-subscribes. The buttons act as the driver here — but it could just as
 // well be HMR, a collab socket, an agent, or devtools.
 const ctx = createComarkContext()
@@ -48,7 +48,7 @@ ctx.patch({ op: 'replace', path: [0, 0], node: 'Live document update' })
       </div>
 
       <comark-markdown-document
-        comarkKey="demo"
+        documentKey="demo"
         [value]="tree"
       />
     }

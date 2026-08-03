@@ -33,7 +33,7 @@ Supports custom component mappings and a streaming caret indicator.
     caret: caretProp = false,
     data,
     class: className = '',
-    comarkKey,
+    documentKey,
   }: {
     value?: MarkdownDocumentType | { nodes: MarkdownDocumentType['nodes'] }
     components?: Record<string, any>
@@ -43,16 +43,16 @@ Supports custom component mappings and a streaming caret indicator.
     caret?: boolean | { class: string }
     data?: Record<string, unknown>
     class?: string
-    comarkKey?: string
+    documentKey?: string
   } = $props()
 
   let document = $derived(value ?? { nodes: [] })
 
   // Live document support: if an ambient context exists, subscribe to updates
   // for this key and re-render with the pushed document. Cleaned up on unmount.
-  // The key is the document's own `meta.key` (set by a plugin) or the `comarkKey` prop.
+  // The key is the document's own `meta.key` (set by a plugin) or the `documentKey` prop.
   let liveDocument = $state<MarkdownDocumentType | null>(null)
-  let key = $derived((document as MarkdownDocumentType).meta?.key || comarkKey)
+  let key = $derived((document as MarkdownDocumentType).meta?.key || documentKey)
   $effect(() => {
     if (!key || !globalThis.comarkContext) return
     const seed = untrack(() => document as MarkdownDocumentType)

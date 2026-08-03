@@ -9,7 +9,7 @@ export interface MarkdownLiveProps extends MarkdownDocumentProps {
    * Document key used to subscribe to live updates via `globalThis.comarkContext`.
    * Falls back to the document's own `meta.key` when set by a plugin.
    */
-  comarkKey?: string
+  documentKey?: string
 }
 
 /**
@@ -26,17 +26,17 @@ export interface MarkdownLiveProps extends MarkdownDocumentProps {
  *
  * export default async function Page() {
  *   const document = await parseMarkdown(markdown)
- *   return <MarkdownLive value={document} comarkKey="my-doc" components={{ Alert }} />
+ *   return <MarkdownLive value={document} documentKey="my-doc" components={{ Alert }} />
  * }
  * ```
  */
-export function MarkdownLive({ value, comarkKey, ...rest }: MarkdownLiveProps) {
+export function MarkdownLive({ value, documentKey, ...rest }: MarkdownLiveProps) {
   const document = value ?? { nodes: [] }
   // Live document support: if an ambient context exists, subscribe to updates
   // for this key and re-render with the pushed document. Cleaned up on unmount.
-  // The key is the document's own `meta.key` (set by a plugin) or the `comarkKey` prop.
+  // The key is the document's own `meta.key` (set by a plugin) or the `documentKey` prop.
   const [liveDocument, setLiveDocument] = useState<MarkdownDocumentType | null>(null)
-  const key = (document as MarkdownDocumentType).meta?.key || comarkKey
+  const key = (document as MarkdownDocumentType).meta?.key || documentKey
   useEffect(() => {
     if (!key || !globalThis.comarkContext) return
     const cleanup = globalThis.comarkContext.get(key, document as MarkdownDocumentType).listen(setLiveDocument)

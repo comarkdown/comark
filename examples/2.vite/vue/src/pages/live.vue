@@ -68,7 +68,7 @@ globalThis.parse = parse
     </div>
 
     <MarkdownDocument
-      comark-key="demos"
+      document-key="demos"
       :value="tree"
     />
   </div>
