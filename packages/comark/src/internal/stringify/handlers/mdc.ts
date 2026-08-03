@@ -18,16 +18,19 @@ export async function mdc(node: ElementNode, state: State, parent?: ElementNode)
   const attributeEntries = Object.entries(attributes)
   const hasObjectAttributes = attributeEntries.some(([, value]) => typeof value === 'object')
 
-  // Component is inline if it has text siblings in parent
-  // or is inside an inline HTML element
+  // Component is inline if it has text siblings in parent,
+  // is inside an inline HTML element or an inline-rendering ancestor
   const hasTextSiblings = parent?.some((child, index) => index > 1 && typeof child === 'string') ?? false
   const insideInlineElement = parent !== undefined && INLINE_HTML_ELEMENTS.has(String(parent[0]))
-  let inline = hasTextSiblings || insideInlineElement
+  let inline = hasTextSiblings || insideInlineElement || state.context.inline === true
 
   // if component has object attributes, it cannot be inline
   if (hasObjectAttributes) {
     inline = false
   }
+
+  // Block fences inside `:name[…]` content cannot be parsed back — keep children inline
+  const revert = inline ? state.applyContext({ inline: true }) : undefined
 
   let content = ''
   const childState = { ...state, nodeDepthInTree: (state.nodeDepthInTree || 0) + 1 }
@@ -35,6 +38,10 @@ export async function mdc(node: ElementNode, state: State, parent?: ElementNode)
     content += await state.one(child, childState, node)
   }
   content = content.trimEnd()
+
+  if (revert) {
+    state.applyContext(revert)
+  }
 
   let attrs = attributeEntries.length > 0 ? comarkAttributes(attributes) : ''
 
