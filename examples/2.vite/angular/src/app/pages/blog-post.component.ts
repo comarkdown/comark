@@ -34,7 +34,7 @@ import { AlertComponent } from '../components/alert.component'
             </div>
           </div>
         </header>
-        <comark-markdown-parsed
+        <comark-markdown-document
           [value]="post.tree"
           [components]="components"
         />

@@ -36,20 +36,6 @@ export default defineNuxtModule<ComarkModuleOptions>({
       priority: 1,
     })
 
-    // Deprecated aliases — will be removed in a future major version
-    addComponent({
-      name: 'Comark',
-      export: 'Comark',
-      filePath: '@comark/vue',
-      priority: 1,
-    })
-    addComponent({
-      name: 'ComarkRenderer',
-      export: 'ComarkRenderer',
-      filePath: '@comark/vue',
-      priority: 1,
-    })
-
     addImports([
       {
         name: 'defineMarkdownComponent',
@@ -59,17 +45,6 @@ export default defineNuxtModule<ComarkModuleOptions>({
       {
         name: 'defineMarkdownDocumentComponent',
         as: 'defineMarkdownDocumentComponent',
-        from: '@comark/vue',
-      },
-      // Deprecated aliases — will be removed in a future major version
-      {
-        name: 'defineComarkComponent',
-        as: 'defineComarkComponent',
-        from: '@comark/vue',
-      },
-      {
-        name: 'defineComarkRendererComponent',
-        as: 'defineComarkRendererComponent',
         from: '@comark/vue',
       },
     ])

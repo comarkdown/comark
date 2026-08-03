@@ -28,11 +28,9 @@ This is an alert component
   import { parseMarkdown } from 'comark'
   import { isMarkdownDocument } from 'comark/utils'
   import MarkdownDocument from './MarkdownDocument.svelte'
-  import { warnDeprecated } from '../internal/deprecation.js'
 
   let {
     value,
-    markdown,
     options = {},
     plugins = [],
     unwrap = false,
@@ -44,8 +42,6 @@ This is an alert component
     class: className = '',
   }: {
     value?: string | MarkdownDocumentType
-    /** @deprecated Use `value` instead */
-    markdown?: string
     options?: Record<string, any>
     plugins?: ComarkPlugin[]
     unwrap?: boolean | string | string[]
@@ -57,14 +53,9 @@ This is an alert component
     class?: string
   } = $props()
 
-  // svelte-ignore state_referenced_locally — deprecation check only needs the initial value
-  if (markdown !== undefined && value === undefined) {
-    warnDeprecated('markdown (prop)', 'value')
-  }
-
   let parsed: MarkdownDocumentType | null = $state(null)
 
-  let content = $derived(typeof value === 'string' ? value.trim() : (markdown ?? '').trim())
+  let content = $derived(typeof value === 'string' ? value.trim() : '')
 
   let requestVersion = 0
   let appliedVersion = 0

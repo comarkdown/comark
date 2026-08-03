@@ -21,8 +21,6 @@ export interface MarkdownNodeProps {
 export interface MarkdownDocumentProps {
   /** The parsed Markdown document to render */
   value?: MarkdownDocument
-  /** @deprecated Use `value` instead */
-  tree?: MarkdownDocument
   components?: Record<string, any>
   componentsManifest?: ComponentManifest
   resolver?: ComponentResolver
@@ -34,8 +32,6 @@ export interface MarkdownDocumentProps {
 export interface MarkdownProps {
   /** The markdown content to parse and render, or a pre-parsed MarkdownDocument */
   value?: string | MarkdownDocument
-  /** @deprecated Use `value` instead */
-  markdown?: string
   options?: Exclude<ParserOptions, 'plugins'>
   plugins?: ComarkPlugin[]
   /**
@@ -50,15 +46,3 @@ export interface MarkdownProps {
   caret?: boolean | { class: string }
   class?: string
 }
-
-/** @deprecated Use `MarkdownNodeProps` instead */
-export type ComarkNodeProps = MarkdownNodeProps
-
-/** @deprecated Use `MarkdownDocumentProps` instead */
-export type MarkdownParsedProps = MarkdownDocumentProps
-
-/** @deprecated Use `MarkdownDocumentProps` instead */
-export type ComarkRendererProps = MarkdownDocumentProps
-
-/** @deprecated Use `MarkdownProps` instead */
-export type ComarkProps = MarkdownProps

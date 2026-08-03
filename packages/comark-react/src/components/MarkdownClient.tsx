@@ -7,7 +7,7 @@ import { isMarkdownDocument } from 'comark/utils'
 import { MarkdownLive } from './MarkdownLive.tsx'
 import type { MarkdownProps } from './Markdown'
 
-interface MarkdownContentProps extends Omit<MarkdownProps, 'value' | 'markdown' | 'children' | 'options' | 'plugins'> {
+interface MarkdownContentProps extends Omit<MarkdownProps, 'value' | 'children' | 'options' | 'plugins'> {
   parsePromise: Promise<MarkdownDocumentType>
 }
 
@@ -35,12 +35,12 @@ function MarkdownContent({
   )
 }
 
-export function MarkdownClient({ children, value, markdown, options = {}, plugins = [], ...rest }: MarkdownProps) {
+export function MarkdownClient({ children, value, options = {}, plugins = [], ...rest }: MarkdownProps) {
   const content = isMarkdownDocument(value)
     ? value
     : children
       ? String(children)
-      : ((value as string | undefined) ?? markdown ?? '')
+      : ((value as string | undefined) ?? '')
 
   // Re-creates the promise only when content changes.
   // Note: options/plugins should be stable references (defined outside render or memoized).

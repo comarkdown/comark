@@ -4,7 +4,6 @@ import { createSerializedMarkdownParser } from 'comark'
 import type { ParserOptions, ComponentManifest, MarkdownDocument as MarkdownDocumentType } from 'comark'
 import { isMarkdownDocument } from 'comark/utils'
 import { MarkdownDocument } from './MarkdownDocument.ts'
-import { warnDeprecated } from '../internal/deprecation.ts'
 
 /**
  * Props for the Markdown component
@@ -14,12 +13,6 @@ export interface MarkdownProps {
    * The markdown content to parse and render, or a pre-parsed MarkdownDocument
    */
   value?: string | MarkdownDocumentType
-
-  /**
-   * The markdown content to parse and render
-   * @deprecated Use `value` instead
-   */
-  markdown?: string
 
   /**
    * Parser options (excluding plugins)
@@ -117,15 +110,6 @@ export const Markdown: MarkdownComponent = defineComponent({
     },
 
     /**
-     * The markdown content to parse and render
-     * @deprecated Use `value` instead
-     */
-    markdown: {
-      type: String as PropType<string>,
-      default: undefined,
-    },
-
-    /**
      * Parser options
      */
     options: {
@@ -204,13 +188,9 @@ export const Markdown: MarkdownComponent = defineComponent({
   },
 
   async setup(props, ctx) {
-    if (props.markdown !== undefined && props.value === undefined) {
-      warnDeprecated('markdown (prop)', 'value')
-    }
-
     const markdown = computed(() => {
       if (isMarkdownDocument(props.value)) return ''
-      let result = (props.value as string | undefined) ?? props.markdown
+      let result = props.value as string | undefined
       const childrent = ctx.slots.default?.()
       if (childrent && childrent.length > 0 && typeof childrent[0].children === 'string') {
         result = childrent[0].children!

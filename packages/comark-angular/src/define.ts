@@ -2,7 +2,6 @@ import { Component, Input, ChangeDetectionStrategy, Type } from '@angular/core'
 import type { ParserOptions } from 'comark'
 import { Markdown } from './components/markdown.component.ts'
 import { MarkdownDocument } from './components/markdown-document.component.ts'
-import { warnDeprecated } from './internal/deprecation.ts'
 
 export interface DefineMarkdownComponentOptions extends ParserOptions {
   /** Display name for debugging (used as Angular selector). */
@@ -21,15 +20,6 @@ export interface DefineMarkdownDocumentOptions {
   /** Additional CSS class for the wrapper. */
   class?: string
 }
-
-/** @deprecated Use `DefineMarkdownComponentOptions` instead */
-export type DefineComarkComponentOptions = DefineMarkdownComponentOptions
-
-/** @deprecated Use `DefineMarkdownDocumentOptions` instead */
-export type DefineMarkdownParsedOptions = DefineMarkdownDocumentOptions
-
-/** @deprecated Use `DefineMarkdownDocumentOptions` instead */
-export type DefineComarkRendererOptions = DefineMarkdownDocumentOptions
 
 /**
  * Create a pre-configured Markdown component with default options, plugins, and components.
@@ -130,7 +120,7 @@ export function defineMarkdownDocumentComponent(config: DefineMarkdownDocumentOp
     changeDetection: ChangeDetectionStrategy.OnPush,
     template: `
       <comark-markdown-document
-        [value]="value ?? tree"
+        [value]="value"
         [components]="mergedComponents"
         [streaming]="streaming"
         [caret]="caret"
@@ -155,28 +145,4 @@ export function defineMarkdownDocumentComponent(config: DefineMarkdownDocumentOp
   }
 
   return DefinedMarkdownDocumentComponent as any
-}
-
-/**
- * @deprecated Use `defineMarkdownComponent` instead.
- */
-export function defineComarkComponent(config: DefineMarkdownComponentOptions = {}): Type<Markdown> {
-  warnDeprecated('defineComarkComponent', 'defineMarkdownComponent')
-  return defineMarkdownComponent(config)
-}
-
-/**
- * @deprecated Use `defineMarkdownDocumentComponent` instead.
- */
-export function defineMarkdownParsedComponent(config: DefineMarkdownDocumentOptions = {}): Type<MarkdownDocument> {
-  warnDeprecated('defineMarkdownParsedComponent', 'defineMarkdownDocumentComponent')
-  return defineMarkdownDocumentComponent(config)
-}
-
-/**
- * @deprecated Use `defineMarkdownDocumentComponent` instead.
- */
-export function defineComarkRendererComponent(config: DefineMarkdownDocumentOptions = {}): Type<MarkdownDocument> {
-  warnDeprecated('defineComarkRendererComponent', 'defineMarkdownDocumentComponent')
-  return defineMarkdownDocumentComponent(config)
 }

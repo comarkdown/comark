@@ -4,28 +4,14 @@ import { MarkdownDocument } from './components/MarkdownDocument.tsx'
 import type { MarkdownProps } from './components/Markdown.tsx'
 import type { MarkdownDocumentProps } from './components/MarkdownDocument.tsx'
 import type { ParserOptions } from 'comark'
-import { warnDeprecated } from './internal/deprecation.ts'
 
 export { Markdown }
 export type { MarkdownProps } from './components/Markdown.tsx'
 export { MarkdownDocument } from './components/MarkdownDocument.tsx'
 export type { MarkdownDocumentProps } from './components/MarkdownDocument.tsx'
-/** @deprecated Use `MarkdownDocument` instead */
-export { MarkdownDocument as MarkdownParsed } from './components/MarkdownDocument.tsx'
-/** @deprecated Use `MarkdownDocumentProps` instead */
-export type { MarkdownDocumentProps as MarkdownParsedProps } from './components/MarkdownDocument.tsx'
 export { MarkdownLive } from './components/MarkdownLive.tsx'
 export type { MarkdownLiveProps } from './components/MarkdownLive.tsx'
 export { MarkdownClient } from './components/MarkdownClient.tsx'
-
-// Deprecated aliases — will be removed in a future major version
-export { Comark } from './components/Comark.tsx'
-export type { ComarkProps } from './components/Comark.tsx'
-export { ComarkRenderer } from './components/ComarkRenderer.tsx'
-export type { ComarkRendererProps } from './components/ComarkRenderer.tsx'
-export { ComarkLive } from './components/ComarkLive.tsx'
-export type { ComarkLiveProps } from './components/ComarkLive.tsx'
-export { ComarkClient } from './components/ComarkClient.tsx'
 
 export type * from 'comark'
 
@@ -161,28 +147,4 @@ export function defineMarkdownDocumentComponent(config: DefineMarkdownDocumentOp
   ParsedComponent.displayName = name || 'MarkdownDocumentComponent'
 
   return ParsedComponent
-}
-
-/**
- * @deprecated Use `defineMarkdownComponent` instead.
- */
-export function defineComarkComponent(config: DefineMarkdownComponentOptions = {}) {
-  warnDeprecated('defineComarkComponent', 'defineMarkdownComponent')
-  return defineMarkdownComponent(config)
-}
-
-/**
- * @deprecated Use `defineMarkdownDocumentComponent` instead.
- */
-export function defineMarkdownParsedComponent(config: DefineMarkdownDocumentOptions = {}) {
-  warnDeprecated('defineMarkdownParsedComponent', 'defineMarkdownDocumentComponent')
-  return defineMarkdownDocumentComponent(config)
-}
-
-/**
- * @deprecated Use `defineMarkdownDocumentComponent` instead.
- */
-export function defineComarkRendererComponent(config: DefineMarkdownDocumentOptions = {}) {
-  warnDeprecated('defineComarkRendererComponent', 'defineMarkdownDocumentComponent')
-  return defineMarkdownDocumentComponent(config)
 }

@@ -23,11 +23,9 @@ Supports custom component mappings and a streaming caret indicator.
   import type { MarkdownDocument as MarkdownDocumentType, ComponentManifest } from 'comark'
   import type { ComponentResolver } from '../types.js'
   import MarkdownNode from './MarkdownNode.svelte'
-  import { warnDeprecated } from '../internal/deprecation.js'
 
   let {
     value,
-    tree: treeProp,
     components = {},
     componentsManifest,
     resolver,
@@ -38,8 +36,6 @@ Supports custom component mappings and a streaming caret indicator.
     comarkKey,
   }: {
     value?: MarkdownDocumentType | { nodes: MarkdownDocumentType['nodes'] }
-    /** @deprecated Use `value` instead */
-    tree?: MarkdownDocumentType | { nodes: MarkdownDocumentType['nodes'] }
     components?: Record<string, any>
     componentsManifest?: ComponentManifest
     resolver?: ComponentResolver
@@ -50,12 +46,7 @@ Supports custom component mappings and a streaming caret indicator.
     comarkKey?: string
   } = $props()
 
-  // svelte-ignore state_referenced_locally — deprecation check only needs the initial value
-  if (treeProp !== undefined && value === undefined) {
-    warnDeprecated('tree (prop)', 'value')
-  }
-
-  let document = $derived(value ?? treeProp ?? { nodes: [] })
+  let document = $derived(value ?? { nodes: [] })
 
   // Live document support: if an ambient context exists, subscribe to updates
   // for this key and re-render with the pushed document. Cleaned up on unmount.

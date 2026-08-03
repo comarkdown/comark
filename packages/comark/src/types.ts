@@ -66,47 +66,6 @@ export interface MarkdownDocument<TMeta = Record<string, any>, TFrontmatter = Re
   meta: TMeta
 }
 
-// Deprecated aliases from main — keep only original public names.
-
-/**
- * @deprecated Use `TextNode` instead.
- * `ComarkText` will be removed in a future major version.
- */
-export type ComarkText = TextNode
-
-/**
- * @deprecated Use `ElementNodeAttributes` instead.
- * `ComarkElementAttributes` will be removed in a future major version.
- */
-export type ComarkElementAttributes = ElementNodeAttributes
-
-/**
- * @deprecated Use `CommentNode` instead.
- * `ComarkComment` will be removed in a future major version.
- */
-export type ComarkComment = CommentNode
-
-/**
- * @deprecated Use `ElementNode` instead.
- * `ComarkElement` will be removed in a future major version.
- */
-export type ComarkElement = ElementNode
-
-/**
- * @deprecated Use `Node` instead.
- * `ComarkNode` will be removed in a future major version.
- */
-export type ComarkNode = Node
-
-/**
- * @deprecated Use `MarkdownDocument` instead.
- * `ComarkTree` will be removed in a future major version.
- */
-export type ComarkTree<TMeta = Record<string, any>, TFrontmatter = Record<string, any>> = MarkdownDocument<
-  TMeta,
-  TFrontmatter
->
-
 // #endregion
 
 // #region Renderer types and interfaces

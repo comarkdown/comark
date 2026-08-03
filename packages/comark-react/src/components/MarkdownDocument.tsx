@@ -8,7 +8,6 @@ import type {
 import React, { lazy, Suspense, useMemo } from 'react'
 import { pascalCase, camelCase, resolveAttributes } from 'comark/utils'
 import { findLastTextNodeAndAppendNode, getCaret } from '../utils/caret.ts'
-import { warnDeprecated } from '../internal/deprecation.ts'
 
 /**
  * Helper to get tag from a Node
@@ -273,12 +272,6 @@ export interface MarkdownDocumentProps {
   value?: MarkdownDocumentType | { nodes: MarkdownDocumentType['nodes'] }
 
   /**
-   * Deprecated alias for the parsed document.
-   * @deprecated Use `value` instead
-   */
-  tree?: MarkdownDocumentType | { nodes: MarkdownDocumentType['nodes'] }
-
-  /**
    * Custom component mappings for element tags
    * Key: tag name (e.g., 'h1', 'p', 'MyComponent')
    * Value: React component
@@ -337,7 +330,6 @@ export interface MarkdownDocumentProps {
  */
 export const MarkdownDocument: React.FC<MarkdownDocumentProps> = ({
   value,
-  tree: treeProp,
   components: customComponents = {},
   componentsManifest,
   streaming = false,
@@ -345,10 +337,7 @@ export const MarkdownDocument: React.FC<MarkdownDocumentProps> = ({
   data,
   className,
 }) => {
-  if (treeProp !== undefined && value === undefined) {
-    warnDeprecated('tree (prop)', 'value')
-  }
-  const document = value ?? treeProp ?? { nodes: [] }
+  const document = value ?? { nodes: [] }
 
   const caret = useMemo(() => getCaret(caretProp), [caretProp])
 

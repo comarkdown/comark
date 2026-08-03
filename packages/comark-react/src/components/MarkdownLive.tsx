@@ -30,8 +30,8 @@ export interface MarkdownLiveProps extends MarkdownDocumentProps {
  * }
  * ```
  */
-export function MarkdownLive({ value, tree: treeProp, comarkKey, ...rest }: MarkdownLiveProps) {
-  const document = value ?? treeProp ?? { nodes: [] }
+export function MarkdownLive({ value, comarkKey, ...rest }: MarkdownLiveProps) {
+  const document = value ?? { nodes: [] }
   // Live document support: if an ambient context exists, subscribe to updates
   // for this key and re-render with the pushed document. Cleaned up on unmount.
   // The key is the document's own `meta.key` (set by a plugin) or the `comarkKey` prop.

@@ -22,7 +22,6 @@ import {
 } from 'vue'
 import { findLastTextNodeAndAppendNode, getCaret } from '../utils/caret.ts'
 import { pascalCase, resolveAttributes } from 'comark/utils'
-import { warnDeprecated } from '../internal/deprecation.ts'
 
 // Cache for dynamically resolved components
 const asyncComponentCache = new Map<string, any>()
@@ -247,12 +246,6 @@ export interface MarkdownDocumentProps {
   value?: MarkdownDocumentType | { nodes: MarkdownDocumentType['nodes'] }
 
   /**
-   * Deprecated alias for the parsed document.
-   * @deprecated Use `value` instead
-   */
-  tree?: MarkdownDocumentType | { nodes: MarkdownDocumentType['nodes'] }
-
-  /**
    * Custom component mappings for element tags
    */
   components?: Record<string, any>
@@ -325,15 +318,6 @@ export const MarkdownDocument: MarkdownDocumentComponent = defineComponent({
     },
 
     /**
-     * Deprecated alias for the parsed document.
-     * @deprecated Use `value` instead
-     */
-    tree: {
-      type: Object as PropType<MarkdownDocumentType | { nodes: MarkdownDocumentType['nodes'] }>,
-      default: undefined,
-    },
-
-    /**
      * Custom component mappings for element tags
      * Key: tag name (e.g., 'h1', 'p', 'MyComponent')
      * Value: Vue component
@@ -387,12 +371,8 @@ export const MarkdownDocument: MarkdownDocumentComponent = defineComponent({
   },
 
   async setup(props) {
-    if (props.tree !== undefined && props.value === undefined) {
-      warnDeprecated('tree (prop)', 'value')
-    }
-
     const inputDocument = computed(
-      () => (props.value ?? props.tree ?? { nodes: [], frontmatter: {}, meta: {} }) as MarkdownDocumentType
+      () => (props.value ?? { nodes: [], frontmatter: {}, meta: {} }) as MarkdownDocumentType
     )
 
     const componentErrors = ref(new Set<string>())

@@ -51,7 +51,7 @@ packages/comark/
 │   ├── types.ts              # TypeScript interfaces (ParserOptions, etc.)
 │   ├── ast/                  # Comark AST types and utilities
 │   │   ├── index.ts          # Re-exports (comark/ast entry point)
-│   │   ├── types.ts          # MarkdownDocument (ComarkTree deprecated alias), Node, ElementNode, TextNode
+│   │   ├── types.ts          # MarkdownDocument, Node, ElementNode, TextNode
 │   │   └── utils.ts          # textContent(), visit() document utilities
 │   ├── plugins/              # Built-in and optional plugins
 │   │   ├── alert.ts          # Alert/callout blocks
@@ -203,7 +203,6 @@ packages/comark-react/
 │   │   ├── MarkdownDocument.tsx # Low-level AST → render component
 │   │   ├── MarkdownClient.tsx # Client-only markdown component
 │   │   ├── MarkdownLive.tsx  # Streaming/live markdown component
-│   │   ├── Comark*.tsx       # Deprecated wrappers for the old component names
 │   │   ├── Math.tsx          # Math rendering component
 │   │   └── Mermaid.tsx       # Mermaid rendering component
 │   └── plugins/
@@ -243,13 +242,11 @@ packages/comark-svelte/
 │   │   ├── Markdown.svelte       # High-level markdown → render ($state + $effect)
 │   │   ├── MarkdownDocument.svelte # Low-level AST → render component
 │   │   ├── MarkdownNode.svelte   # Recursive AST node renderer
-│   │   ├── Comark*.svelte        # Deprecated wrappers for the old component names
 │   │   ├── ComarkComponent.svelte # Custom component renderer with named snippets
 │   │   └── Resolve.svelte        # Stable promise resolver for lazy components
 │   ├── async/
 │   │   ├── index.ts              # Async export (@comark/svelte/async)
 │   │   ├── MarkdownAsync.svelte  # High-level markdown → render (experimental await)
-│   │   ├── ComarkAsync.svelte    # Deprecated wrapper for the old component name
 │   │   └── ResolveAsync.svelte   # Async SSR resolver for lazy components
 │   └── plugins/
 │       ├── math.ts           # Re-exports comark/plugins/math
@@ -421,10 +418,6 @@ import mermaid, { Mermaid } from '@comark/svelte/plugins/mermaid'
 import { Markdown, MarkdownDocument, defineMarkdownComponent, defineMarkdownDocumentComponent } from '@comark/angular'
 import math, { Math } from '@comark/angular/plugins/math'
 import mermaid, { Mermaid } from '@comark/angular/plugins/mermaid'
-
-// NOTE: The old component names (Comark, ComarkRenderer, ComarkAsync,
-// defineComarkComponent, defineComarkRendererComponent, ...) remain
-// exported as deprecated aliases.
 ```
 
 ## Coding Principles
@@ -516,10 +509,6 @@ type MarkdownDocument = {
   frontmatter: Record<string, any>
   meta: Record<string, any>
 }
-// Deprecated aliases from main (same types):
-//   ComarkTree
-//   ComarkElement, ComarkElementAttributes, ComarkText, ComarkComment, ComarkNode
-//   MarkdownParsed (component alias of MarkdownDocument)
 ```
 
 Example:

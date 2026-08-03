@@ -11,7 +11,6 @@ import { createSerializedMarkdownParser } from 'comark'
 import type { ParserOptions, MarkdownDocument as MarkdownDocumentType } from 'comark'
 import { isMarkdownDocument } from 'comark/utils'
 import { MarkdownDocument } from './markdown-document.component.ts'
-import { warnDeprecated } from '../internal/deprecation.ts'
 
 /**
  * High-level Markdown component that accepts raw markdown, parses it,
@@ -42,12 +41,6 @@ import { warnDeprecated } from '../internal/deprecation.ts'
 export class Markdown implements OnChanges {
   /** The markdown content to parse and render, or a pre-parsed MarkdownDocument */
   @Input() value?: string | MarkdownDocumentType
-
-  /**
-   * The markdown content to parse and render
-   * @deprecated Use `value` instead
-   */
-  @Input() markdown?: string
 
   /** Parser options (excluding plugins) */
   @Input() options: Exclude<ParserOptions, 'plugins'> = {}
@@ -84,9 +77,6 @@ export class Markdown implements OnChanges {
   constructor(private cdr: ChangeDetectorRef) {}
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['markdown'] && this.markdown !== undefined && this.value === undefined) {
-      warnDeprecated('markdown (input)', 'value')
-    }
     if (changes['options'] || changes['plugins'] || changes['unwrap']) {
       this.serializedParse = createSerializedMarkdownParser({
         ...this.options,
@@ -96,7 +86,6 @@ export class Markdown implements OnChanges {
     }
     if (
       changes['value'] ||
-      changes['markdown'] ||
       changes['options'] ||
       changes['plugins'] ||
       changes['unwrap'] ||
@@ -115,7 +104,7 @@ export class Markdown implements OnChanges {
       return
     }
 
-    let source = (this.value as string | undefined) ?? this.markdown ?? ''
+    let source = (this.value as string | undefined) ?? ''
     if (this.summary) {
       source = source.split('<!-- more -->')[0] || ''
     }
@@ -125,34 +114,5 @@ export class Markdown implements OnChanges {
       this.document = result
       this.cdr.markForCheck()
     })
-  }
-}
-
-/**
- * @deprecated Use `Markdown` instead — same component, renamed to describe
- * what it renders. `ComarkComponent` (selector `comark`) will be removed in
- * a future major version.
- */
-@Component({
-  selector: 'comark',
-  standalone: true,
-  imports: [MarkdownDocument],
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    @if (document) {
-      <comark-markdown-document
-        [value]="document"
-        [components]="components"
-        [streaming]="streaming"
-        [caret]="caret"
-        [data]="data"
-      />
-    }
-  `,
-})
-export class ComarkComponent extends Markdown {
-  override ngOnChanges(changes: SimpleChanges): void {
-    warnDeprecated('ComarkComponent (<comark>)', 'Markdown (<comark-markdown>)')
-    super.ngOnChanges(changes)
   }
 }

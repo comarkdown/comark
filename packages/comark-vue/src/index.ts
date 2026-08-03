@@ -3,22 +3,11 @@ import { computed, defineComponent, h } from 'vue'
 import { Markdown } from './components/Markdown.ts'
 import type { MarkdownDocument as MarkdownDocumentType, ComponentManifest, ParserOptions } from 'comark'
 import { MarkdownDocument } from './components/MarkdownDocument.ts'
-import { warnDeprecated } from './internal/deprecation.ts'
 
 export { Markdown } from './components/Markdown.ts'
 export type { MarkdownProps } from './components/Markdown.ts'
 export { MarkdownDocument } from './components/MarkdownDocument.ts'
 export type { MarkdownDocumentProps } from './components/MarkdownDocument.ts'
-
-// Deprecated aliases — will be removed in a future major version
-/** @deprecated Use `MarkdownDocument` instead */
-export { MarkdownDocument as MarkdownParsed } from './components/MarkdownDocument.ts'
-/** @deprecated Use `MarkdownDocumentProps` instead */
-export type { MarkdownDocumentProps as MarkdownParsedProps } from './components/MarkdownDocument.ts'
-export { Comark } from './components/Comark.ts'
-export type { ComarkProps } from './components/Comark.ts'
-export { ComarkRenderer } from './components/ComarkRenderer.ts'
-export type { ComarkRendererProps } from './components/ComarkRenderer.ts'
 
 export type * from 'comark'
 
@@ -52,15 +41,6 @@ export function defineMarkdownComponent(config: DefineMarkdownComponentOptions =
        * The markdown content to parse and render
        */
       value: {
-        type: String as PropType<string>,
-        default: undefined,
-      },
-
-      /**
-       * The markdown content to parse and render
-       * @deprecated Use `value` instead
-       */
-      markdown: {
         type: String as PropType<string>,
         default: undefined,
       },
@@ -152,7 +132,7 @@ export function defineMarkdownComponent(config: DefineMarkdownComponentOptions =
         return h(
           component,
           {
-            value: props.value ?? props.markdown,
+            value: props.value,
             options: options.value,
             plugins: plugins.value,
             unwrap: props.unwrap,
@@ -180,15 +160,6 @@ export function defineMarkdownDocumentComponent(config: DefineMarkdownDocumentOp
        * The parsed Markdown document to render
        */
       value: {
-        type: Object as PropType<MarkdownDocumentType>,
-        default: undefined,
-      },
-
-      /**
-       * Deprecated alias for the parsed document.
-       * @deprecated Use `value` instead
-       */
-      tree: {
         type: Object as PropType<MarkdownDocumentType>,
         default: undefined,
       },
@@ -239,7 +210,7 @@ export function defineMarkdownDocumentComponent(config: DefineMarkdownDocumentOp
         return h(
           component,
           {
-            value: props.value ?? props.tree,
+            value: props.value,
             components: components.value,
             componentsManifest: props.componentsManifest,
             streaming: props.streaming,
@@ -253,28 +224,4 @@ export function defineMarkdownDocumentComponent(config: DefineMarkdownDocumentOp
       }
     },
   })
-}
-
-/**
- * @deprecated Use `defineMarkdownComponent` instead.
- */
-export function defineComarkComponent(config: DefineMarkdownComponentOptions = {}): typeof Markdown {
-  warnDeprecated('defineComarkComponent', 'defineMarkdownComponent')
-  return defineMarkdownComponent(config)
-}
-
-/**
- * @deprecated Use `defineMarkdownDocumentComponent` instead.
- */
-export function defineMarkdownParsedComponent(config: DefineMarkdownDocumentOptions = {}): typeof MarkdownDocument {
-  warnDeprecated('defineMarkdownParsedComponent', 'defineMarkdownDocumentComponent')
-  return defineMarkdownDocumentComponent(config)
-}
-
-/**
- * @deprecated Use `defineMarkdownDocumentComponent` instead.
- */
-export function defineComarkRendererComponent(config: DefineMarkdownDocumentOptions = {}): typeof MarkdownDocument {
-  warnDeprecated('defineComarkRendererComponent', 'defineMarkdownDocumentComponent')
-  return defineMarkdownDocumentComponent(config)
 }

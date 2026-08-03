@@ -4,7 +4,6 @@ import type { MarkdownDocument as MarkdownDocumentType, ParserOptions } from 'co
 import { isMarkdownDocument } from 'comark/utils'
 import { MarkdownDocument } from './MarkdownDocument.tsx'
 import { MarkdownClient } from './MarkdownClient.tsx'
-import { warnDeprecated } from '../internal/deprecation.ts'
 
 export interface MarkdownProps {
   /**
@@ -16,12 +15,6 @@ export interface MarkdownProps {
    * The markdown content to parse and render, or a pre-parsed MarkdownDocument
    */
   value?: string | MarkdownDocumentType
-
-  /**
-   * The markdown content to parse and render
-   * @deprecated Use `value` instead
-   */
-  markdown?: string
 
   /**
    * Parser options (excluding plugins)
@@ -112,7 +105,6 @@ export interface MarkdownProps {
 export async function Markdown({
   children,
   value,
-  markdown,
   options = {},
   plugins = [],
   unwrap = false,
@@ -123,10 +115,6 @@ export async function Markdown({
   data,
   className,
 }: MarkdownProps) {
-  if (markdown !== undefined && value === undefined) {
-    warnDeprecated('markdown (prop)', 'value')
-  }
-
   // Pre-parsed document — skip parsing and render directly
   if (isMarkdownDocument(value)) {
     return (
@@ -142,7 +130,7 @@ export async function Markdown({
     )
   }
 
-  const source = children ? String(children) : ((value as string | undefined) ?? markdown ?? '')
+  const source = children ? String(children) : ((value as string | undefined) ?? '')
   // `unwrap` prop is a shorthand for the `unwrap` parse option; an explicit
   // `options.unwrap` still wins when the prop is left at its default.
   const parseOptions = unwrap ? { ...options, unwrap } : options

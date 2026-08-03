@@ -15,7 +15,6 @@ import {
 } from '@angular/core'
 import type { ElementNode, Node as MarkdownAstNode, NodeRenderData } from 'comark'
 import { pascalCase, resolveAttributes } from 'comark/utils'
-import { warnDeprecated } from '../internal/deprecation.ts'
 
 /**
  * Helper to get tag from a Node
@@ -363,23 +362,5 @@ export class MarkdownNode implements OnChanges {
         }
       }
     }
-  }
-}
-
-/**
- * @deprecated Use `MarkdownNode` instead — same component, renamed to
- * describe what it renders. `NodeComponent` (selector `comark-node`)
- * will be removed in a future major version.
- */
-@Component({
-  selector: 'comark-node',
-  standalone: true,
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  template: '',
-})
-export class NodeComponent extends MarkdownNode {
-  override ngOnChanges(changes: SimpleChanges): void {
-    warnDeprecated('NodeComponent (<comark-node>)', 'MarkdownNode (<comark-markdown-node>)')
-    super.ngOnChanges(changes)
   }
 }

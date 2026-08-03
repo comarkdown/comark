@@ -254,18 +254,3 @@ export function createSerializedMarkdownParser<const TPlugins extends readonly C
 ): ComarkParseFn<ResolvedMeta<MergePluginMeta<TPlugins>>, ResolvedFrontmatter<MergePluginFrontmatter<TPlugins>>> {
   return createSerializedTask(createMarkdownParser(options))
 }
-
-/**
- * @deprecated Use `createMarkdownParser` instead.
- */
-export const createParse = createMarkdownParser
-
-/**
- * @deprecated Use `parseMarkdown` instead.
- */
-export const parse = parseMarkdown
-
-/**
- * @deprecated Use `createSerializedMarkdownParser` instead.
- */
-export const createSerializedParse = createSerializedMarkdownParser
