@@ -12,7 +12,7 @@ import type {
   Node,
 } from './types.ts'
 import MarkdownExit from 'markdown-exit'
-import syntax from './plugins/syntax.ts'
+import syntax, { SyntaxPlugin } from './plugins/syntax.ts'
 import taskList from './plugins/task-list.ts'
 import alert from './plugins/alert.ts'
 import { applyAutoUnwrap } from './internal/parse/auto-unwrap.ts'
@@ -66,9 +66,17 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
   const { autoUnwrap = true, autoClose = true } = options
   // Tag set to strip from the top level of the tree (MDC `unwrap`). Resolved once.
   const unwrapTags = resolveUnwrapTags(options.unwrap)
-  // Make a mutable working copy so the inferred (possibly readonly) user tuple
-  // isn't mutated by the unshift calls below.
-  const plugins = dedupePlugins([alert(), taskList(), syntax(), ...(options.plugins ? [...options.plugins] : [])])
+
+  const userPlugins = options.plugins ?? []
+  const defaultPlugins =
+    options.registerDefaultPlugins !== false
+      ? [alert(), taskList(), syntax()].filter(
+          (plugin) => !userPlugins.some((userPlugin) => userPlugin.name === plugin.name)
+        )
+      : []
+
+  const plugins = dedupePlugins([...defaultPlugins, ...userPlugins])
+  const syntaxEnabled = plugins.some((plugin) => plugin instanceof SyntaxPlugin)
 
   const parser = new MarkdownExit({
     html: false,
@@ -115,7 +123,7 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
     }
 
     if (autoClose) {
-      state.markdown = autoCloseMarkdown(state.markdown, { frontmatter: opts.streaming })
+      state.markdown = autoCloseMarkdown(state.markdown, { frontmatter: opts.streaming, syntax: syntaxEnabled })
     }
 
     for (const plugin of plugins) {

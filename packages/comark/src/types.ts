@@ -452,6 +452,14 @@ export interface ParserOptions<TPlugins extends readonly ComarkPlugin<any, any>[
   headingIds?: boolean
 
   /**
+   * Whether to register the built-in default plugins (`alert`, `task-list`, `syntax`).
+   * Set `false` to parse plain markdown with only the plugins listed in `plugins`.
+   * Without the syntax plugin, `autoClose` skips component fences and attribute braces.
+   * @default true
+   */
+  registerDefaultPlugins?: boolean
+
+  /**
    * Additional plugins to use
    * @default []
    */

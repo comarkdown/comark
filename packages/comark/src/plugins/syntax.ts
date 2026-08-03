@@ -678,9 +678,15 @@ function applySyntax(md: MarkdownExit, options: SyntaxOptions = {}) {
   if (inlineComponent) md.use(markdownItInlineComponent)
 }
 
-export default defineComarkPlugin((options: SyntaxOptions = {}) => ({
-  name: 'syntax',
-  markdownItPlugins: [((md: MarkdownExit) => applySyntax(md, options)) as unknown as MarkdownItPlugin],
-}))
+export class SyntaxPlugin {
+  name = 'syntax'
+  markdownItPlugins: MarkdownItPlugin[]
+
+  constructor(options: SyntaxOptions = {}) {
+    this.markdownItPlugins = [((md: MarkdownExit) => applySyntax(md, options)) as unknown as MarkdownItPlugin]
+  }
+}
+
+export default defineComarkPlugin((options: SyntaxOptions = {}) => new SyntaxPlugin(options))
 
 export const markdownItComark = applySyntax as unknown as MarkdownItPluginWithOptions<SyntaxOptions>
