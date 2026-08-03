@@ -498,13 +498,13 @@ Use `defineMarkdownComponent` or `defineMarkdownDocumentComponent` to create pre
 ### defineMarkdownComponent
 
 ```typescript
-// docs-comark.component.ts
+// docs-markdown.component.ts
 import { defineMarkdownComponent } from '@comark/angular'
 import math, { Math } from '@comark/angular/plugins/math'
 import mermaid, { Mermaid } from '@comark/angular/plugins/mermaid'
 
-export const DocsComark = defineMarkdownComponent({
-  name: 'docs-comark',
+export const DocsMarkdown = defineMarkdownComponent({
+  name: 'docs-markdown',
   plugins: [math(), mermaid()],
   components: { Math, Mermaid },
   class: 'prose dark:prose-invert',
@@ -515,14 +515,14 @@ Use the pre-configured component:
 
 ```typescript
 import { Component } from '@angular/core'
-import { DocsComark } from './docs-comark.component'
+import { DocsMarkdown } from './docs-markdown.component'
 
 @Component({
   selector: 'app-docs',
   standalone: true,
-  imports: [DocsComark],
+  imports: [DocsMarkdown],
   template: `
-    <docs-comark [value]="content" />
+    <docs-markdown [value]="content" />
   `,
 })
 export class DocsComponent {
@@ -538,8 +538,8 @@ Instance-level `components` and `plugins` are merged with the config-level defau
 import { defineMarkdownDocumentComponent } from '@comark/angular'
 import { Math } from '@comark/angular/plugins/math'
 
-export const DocsRenderer = defineMarkdownDocumentComponent({
-  name: 'docs-renderer',
+export const DocsMarkdownDocument = defineMarkdownDocumentComponent({
+  name: 'docs-markdown-document',
   components: { Math },
 })
 ```

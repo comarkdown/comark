@@ -281,14 +281,14 @@ export default function Chat({ content, streaming }) {
 Pre-configure a Comark component for your AI chat UI once, then reuse it everywhere:
 
 ```typescript
-// comark.ts
+// markdown.ts
 import { defineMarkdownComponent } from '@comark/vue'
 import highlight from '@comark/vue/plugins/highlight'
 import math, { Math } from '@comark/vue/plugins/math'
 import Alert from './components/Alert.vue'
 
-export const ChatComark = defineMarkdownComponent({
-  name: 'ChatComark',
+export const ChatMarkdown = defineMarkdownComponent({
+  name: 'ChatMarkdown',
   plugins: [
     math(),
     highlight({ themes: { light: 'github-dark', dark: 'github-dark' } }),
@@ -300,7 +300,7 @@ export const ChatComark = defineMarkdownComponent({
 
 ```vue
 <template>
-  <ChatComark :streaming="streaming" caret>{{ content }}</ChatComark>
+  <ChatMarkdown :streaming="streaming" caret>{{ content }}</ChatMarkdown>
 </template>
 ```
 

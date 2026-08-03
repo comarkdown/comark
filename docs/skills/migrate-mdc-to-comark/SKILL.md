@@ -144,8 +144,8 @@ import { defineMarkdownComponent } from '@comark/vue'
 import highlight from 'comark/plugins/highlight'
 import toc from 'comark/plugins/toc'
 
-export const ArticleComark = defineMarkdownComponent({
-  name: 'ArticleComark',
+export const ArticleMarkdown = defineMarkdownComponent({
+  name: 'ArticleMarkdown',
   plugins: [highlight({ themes: { light: 'github-light', dark: 'github-dark' } }), toc()],
   components: { alert: CustomAlert },
 })
