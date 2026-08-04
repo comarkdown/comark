@@ -30,8 +30,8 @@ export async function getPost(slug: string) {
   const content = Object.entries(rawFiles)
     .find(([path]) => path.endsWith(`${slug}.md`))?.[1]
 
-  const tree = await parseMarkdown(content!, { plugins: [highlight()] })
-  return { slug, tree, ...tree.frontmatter }
+  const document = await parseMarkdown(content!, { plugins: [highlight()] })
+  return { slug, tree: document, ...document.frontmatter }
 }
 ```
 
@@ -41,7 +41,7 @@ export async function getPost(slug: string) {
   imports: [MarkdownDocument],
   template: `
     @if (post) {
-      <comark-markdown-parsed [value]="post.tree" [components]="components" />
+      <comark-markdown-document [value]="post.tree" [components]="components" />
     }
   `,
 })
@@ -54,7 +54,7 @@ Since this is a client-side SPA, `parseMarkdown()` runs in the browser. Markdown
 
 ## Custom components
 
-Pass custom components via the `components` input on `<comark-markdown-parsed>`. Each component receives props as `@Input()` values and children via `<ng-content />`:
+Pass custom components via the `components` input on `<comark-markdown-document>`. Each component receives props as `@Input()` values and children via `<ng-content />`:
 
 ```ts
 @Component({

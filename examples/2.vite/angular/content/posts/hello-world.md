@@ -24,8 +24,8 @@ This alert is rendered using a custom Comark component mapped via the `component
 import { parseMarkdown } from 'comark'
 import { MarkdownDocument } from '@comark/angular'
 
-const tree = await parseMarkdown(markdown)
-// <comark-markdown-parsed [value]="tree" [components]="components" />
+const document = await parseMarkdown(markdown)
+// <comark-markdown-document [value]="document" [components]="components" />
 ```
 
 ::alert{type="success"}

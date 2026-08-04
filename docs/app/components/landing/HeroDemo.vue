@@ -35,7 +35,7 @@ const sourceAsCode = computed(() => ['```md', props.demoMarkdown, '```'].join('\
         <div class="shiki-source h-[280px] overflow-y-auto overflow-x-hidden p-4 md:h-[400px]">
           <ComarkDocs
             class="font-mono text-sm/6"
-            :markdown="sourceAsCode"
+            :value="sourceAsCode"
             :components="{ ProsePre: 'pre' }"
           />
         </div>
