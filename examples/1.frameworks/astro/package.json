@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@astrojs/react": "catalog:",
+    "@comark/react": "workspace:*",
     "@tailwindcss/vite": "catalog:",
     "astro": "catalog:",
     "comark": "workspace:*",
