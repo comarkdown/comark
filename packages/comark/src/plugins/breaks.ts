@@ -1,12 +1,15 @@
 import { defineComarkPlugin } from '../utils/helpers.ts'
 import { visit } from '../utils/index.ts'
 
+// Tags whose text content is whitespace-sensitive and must keep literal newlines
+const IGNORED_TAGS = new Set(['pre', 'code', 'math', 'script', 'style', 'textarea'])
+
 export default defineComarkPlugin(() => ({
   name: 'breaks',
   post(state) {
     visit(
       state.tree,
-      (node) => Array.isArray(node) && node.length > 2,
+      (node) => Array.isArray(node) && node.length > 2 && !IGNORED_TAGS.has(node[0] as string),
       (node) => {
         const parent = node as any[]
         const newParent = [parent[0], parent[1]]

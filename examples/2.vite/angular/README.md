@@ -16,4 +16,4 @@ defaultValue: src/main.ts
 ---
 ::
 
-This example demonstrates the simplest way to use Comark with Angular - use the `ComarkComponent` and pass it markdown content. The component handles parsing and rendering automatically.
+This example demonstrates the simplest way to use Comark with Angular - use the `Markdown` component and pass it markdown content. The component handles parsing and rendering automatically.

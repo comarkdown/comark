@@ -80,8 +80,8 @@ Alerts can span multiple lines and contain inline markdown:
 
 ```mdc
 > [!WARNING]
-> **Breaking change** in v2.0: the `parse()` function is now async.
-> Update all call sites to use `await parse(...)`.
+> **Breaking change** in v2.0: the `parseMarkdown()` function is now async.
+> Update all call sites to use `await parseMarkdown(...)`.
 ```
 
 ---
@@ -91,9 +91,9 @@ Alerts can span multiple lines and contain inline markdown:
 The plugin transforms the alert blockquote in the AST: the `[!NOTE]` marker is removed and an `as` attribute is added to the `blockquote` node.
 
 ```ts
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 
-const tree = await parse(`> [!NOTE]
+const tree = await parseMarkdown(`> [!NOTE]
 > Useful information for users.`)
 
 console.log(tree.nodes)
@@ -111,7 +111,7 @@ Register a component for each alert type you want to customize:
 ::code-group
 ```vue [Vue]
 <script setup lang="ts">
-import { Comark } from '@comark/vue'
+import { Markdown } from '@comark/vue'
 import Note from './Note.vue'
 import Warning from './Warning.vue'
 
@@ -120,12 +120,12 @@ const markdown = `> [!NOTE]
 </script>
 
 <template>
-  <Comark :components="{ note: Note, warning: Warning }">{{ markdown }}</Comark>
+  <Markdown :components="{ note: Note, warning: Warning }">{{ markdown }}</Markdown>
 </template>
 ```
 
 ```tsx [React]
-import { Comark } from '@comark/react'
+import { Markdown } from '@comark/react'
 import { Note } from './Note'
 import { Warning } from './Warning'
 
@@ -133,14 +133,14 @@ const markdown = `> [!NOTE]
 > Useful information for users.`
 
 export default function Page() {
-  return <Comark components={{ note: Note, warning: Warning }}>{markdown}</Comark>
+  return <Markdown components={{ note: Note, warning: Warning }}>{markdown}</Markdown>
 }
 ```
 
 ```ts [HTML]
-import { render } from '@comark/html'
+import { renderHtml } from '@comark/html'
 
-const html = await render(`> [!NOTE]
+const html = await renderHtml(`> [!NOTE]
 > Useful information for users.`, {
   components: {
     // The HTML renderer resolves by tag name: read the alert type from `attrs.as`

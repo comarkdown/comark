@@ -1,35 +1,35 @@
 import { describe, expect, it } from 'vitest'
 import { render } from 'vitest-browser-svelte'
-import { parse } from 'comark'
-import ComarkRenderer from '../src/components/ComarkRenderer.svelte'
-import ComarkNode from '../src/components/ComarkNode.svelte'
+import { parseMarkdown } from 'comark'
+import MarkdownDocument from '../src/components/MarkdownDocument.svelte'
+import MarkdownNode from '../src/components/MarkdownNode.svelte'
 import Alert from './test-components/Alert.svelte'
 import CardWithHeaderFooter from './test-components/CardWithHeaderFooter.svelte'
 import CardWithFooter from './test-components/CardWithFooter.svelte'
 import ProseH1 from './test-components/ProseH1.svelte'
 
-describe('ComarkNode', () => {
+describe('MarkdownNode', () => {
   it('renders a paragraph', async () => {
-    const tree = await parse('Hello world')
-    const screen = await render(ComarkNode, { node: tree.nodes[0] })
+    const tree = await parseMarkdown('Hello world')
+    const screen = await render(MarkdownNode, { node: tree.nodes[0] })
     await expect.element(screen.getByText('Hello world')).toBeInTheDocument()
   })
 
   it('renders nested inline markup', async () => {
-    const tree = await parse('Hello **World**')
-    const screen = await render(ComarkNode, { node: tree.nodes[0] })
+    const tree = await parseMarkdown('Hello **World**')
+    const screen = await render(MarkdownNode, { node: tree.nodes[0] })
     await expect.element(screen.getByText('Hello World')).toBeInTheDocument()
     await expect.element(screen.getByText('World')).toBeInTheDocument()
   })
 
   it('renders a link with href', async () => {
-    const tree = await parse('[link](/about)')
-    const screen = await render(ComarkNode, { node: tree.nodes[0] })
+    const tree = await parseMarkdown('[link](/about)')
+    const screen = await render(MarkdownNode, { node: tree.nodes[0] })
     await expect.element(screen.getByRole('link', { name: 'link' })).toHaveAttribute('href', '/about')
   })
 
   it('maps className to class', async () => {
-    const screen = await render(ComarkNode, {
+    const screen = await render(MarkdownNode, {
       node: ['div', { className: 'my-class' }, 'content'],
     })
     const div = screen.container.querySelector<HTMLElement>('.my-class')!
@@ -38,7 +38,7 @@ describe('ComarkNode', () => {
   })
 
   it('renders caret with custom class', async () => {
-    const screen = await render(ComarkNode, {
+    const screen = await render(MarkdownNode, {
       node: 'text',
       caretClass: 'test-caret',
     })
@@ -48,7 +48,7 @@ describe('ComarkNode', () => {
   })
 
   it('does not render caret when caretClass is null', async () => {
-    const screen = await render(ComarkNode, {
+    const screen = await render(MarkdownNode, {
       node: 'text',
       caretClass: null,
     })
@@ -56,8 +56,8 @@ describe('ComarkNode', () => {
   })
 
   it('threads caret to deepest last text node', async () => {
-    const tree = await parse('first **last**')
-    const screen = await render(ComarkNode, {
+    const tree = await parseMarkdown('first **last**')
+    const screen = await render(MarkdownNode, {
       node: tree.nodes[0],
       caretClass: 'caret',
     })
@@ -67,21 +67,21 @@ describe('ComarkNode', () => {
   })
 })
 
-describe('ComarkRenderer', () => {
+describe('MarkdownDocument', () => {
   it('renders a heading with inline markup', async () => {
-    const tree = await parse('# Hello **World**')
-    const screen = await render(ComarkRenderer, { tree })
+    const tree = await parseMarkdown('# Hello **World**')
+    const screen = await render(MarkdownDocument, { value: tree })
     const heading = screen.getByRole('heading', {
       name: 'Hello World',
       level: 1,
     })
     await expect.element(heading).toBeInTheDocument()
-    await expect.element(heading).toHaveAttribute('id', 'hello-strong-world')
+    await expect.element(heading).toHaveAttribute('id', 'hello-world')
   })
 
   it('renders multiple block elements', async () => {
-    const tree = await parse('# Heading\n\nA paragraph\n\n- item 1\n- item 2')
-    const screen = await render(ComarkRenderer, { tree })
+    const tree = await parseMarkdown('# Heading\n\nA paragraph\n\n- item 1\n- item 2')
+    const screen = await render(MarkdownDocument, { value: tree })
 
     await expect.element(screen.getByRole('heading', { name: 'Heading', level: 1 })).toBeInTheDocument()
     await expect.element(screen.getByText('A paragraph')).toBeInTheDocument()
@@ -94,47 +94,47 @@ describe('ComarkRenderer', () => {
 
   it('renders empty tree as empty wrapper', async () => {
     const tree = { nodes: [], frontmatter: {}, meta: {} }
-    const screen = await render(ComarkRenderer, { tree })
+    const screen = await render(MarkdownDocument, { value: tree })
     const wrapper = screen.container.querySelector<HTMLElement>('.comark-content')!
     expect(wrapper).not.toBeNull()
     expect(wrapper.children.length).toBe(0)
   })
 
   it('applies custom class to wrapper', async () => {
-    const tree = await parse('hello')
-    const screen = await render(ComarkRenderer, { tree, class: 'prose' })
+    const tree = await parseMarkdown('hello')
+    const screen = await render(MarkdownDocument, { value: tree, class: 'prose' })
     const wrapper = screen.container.querySelector<HTMLElement>('.comark-content')!
     await expect.element(wrapper).toHaveClass('prose')
   })
 
   it('renders inline code', async () => {
-    const tree = await parse('use `const x = 1`')
-    const screen = await render(ComarkRenderer, { tree })
+    const tree = await parseMarkdown('use `const x = 1`')
+    const screen = await render(MarkdownDocument, { value: tree })
     await expect.element(screen.getByText('const x = 1')).toBeInTheDocument()
   })
 
   it('renders links with href', async () => {
-    const tree = await parse('[click](https://example.com)')
-    const screen = await render(ComarkRenderer, { tree })
+    const tree = await parseMarkdown('[click](https://example.com)')
+    const screen = await render(MarkdownDocument, { value: tree })
     await expect.element(screen.getByRole('link', { name: 'click' })).toHaveAttribute('href', 'https://example.com')
   })
 
   it('renders images with src and alt', async () => {
-    const tree = await parse('![alt text](image.png)')
-    const screen = await render(ComarkRenderer, { tree })
+    const tree = await parseMarkdown('![alt text](image.png)')
+    const screen = await render(MarkdownDocument, { value: tree })
     await expect.element(screen.getByAltText('alt text')).toHaveAttribute('src', 'image.png')
   })
 
   it('renders blockquotes', async () => {
-    const tree = await parse('> quoted text')
-    const screen = await render(ComarkRenderer, { tree })
+    const tree = await parseMarkdown('> quoted text')
+    const screen = await render(MarkdownDocument, { value: tree })
     expect(screen.container.querySelector('blockquote')).not.toBeNull()
     await expect.element(screen.getByText('quoted text')).toBeInTheDocument()
   })
 
   it('renders emphasis and strong', async () => {
-    const tree = await parse('*em* and **strong**')
-    const screen = await render(ComarkRenderer, { tree })
+    const tree = await parseMarkdown('*em* and **strong**')
+    const screen = await render(MarkdownDocument, { value: tree })
     await expect.element(screen.getByText('em')).toBeInTheDocument()
     await expect.element(screen.getByText('strong')).toBeInTheDocument()
   })
@@ -142,9 +142,9 @@ describe('ComarkRenderer', () => {
 
 describe('custom components', () => {
   it('resolves custom component for MDC syntax', async () => {
-    const tree = await parse('::alert{type="warning"}\nWatch out!\n::')
-    const screen = await render(ComarkRenderer, {
-      tree,
+    const tree = await parseMarkdown('::alert{type="warning"}\nWatch out!\n::')
+    const screen = await render(MarkdownDocument, {
+      value: tree,
       components: { alert: Alert },
     })
     await expect.element(screen.getByRole('alert')).toHaveTextContent('Watch out!')
@@ -152,22 +152,22 @@ describe('custom components', () => {
   })
 
   it('resolves component by PascalCase key', async () => {
-    const tree = await parse('::alert{type="info"}\nInfo message\n::')
-    const screen = await render(ComarkRenderer, { tree, components: { Alert } })
+    const tree = await parseMarkdown('::alert{type="info"}\nInfo message\n::')
+    const screen = await render(MarkdownDocument, { value: tree, components: { Alert } })
     await expect.element(screen.getByRole('alert')).toHaveTextContent('Info message')
     await expect.element(screen.getByRole('alert')).toHaveClass('alert-info')
   })
 
   it('resolves Prose-prefixed component for native tags', async () => {
-    const tree = await parse('# Custom Heading')
-    const screen = await render(ComarkRenderer, { tree, components: { ProseH1 } })
+    const tree = await parseMarkdown('# Custom Heading')
+    const screen = await render(MarkdownDocument, { value: tree, components: { ProseH1 } })
     await expect.element(screen.getByRole('heading', { name: 'Custom Heading', level: 1 })).toHaveClass('prose-heading')
   })
 
   it('renders children inside custom components', async () => {
-    const tree = await parse('::alert{type="info"}\n**Bold** text\n::')
-    const screen = await render(ComarkRenderer, {
-      tree,
+    const tree = await parseMarkdown('::alert{type="info"}\n**Bold** text\n::')
+    const screen = await render(MarkdownDocument, {
+      value: tree,
       components: { alert: Alert },
     })
     await expect.element(screen.getByRole('alert')).toHaveTextContent('Bold text')
@@ -175,14 +175,14 @@ describe('custom components', () => {
   })
 
   it('passes named slots as Svelte snippet props', async () => {
-    const tree = await parse(`::card{title="My Card"}
+    const tree = await parseMarkdown(`::card{title="My Card"}
 Default slot content.
 
 #footer
 Footer slot content.
 ::`)
-    const screen = await render(ComarkRenderer, {
-      tree,
+    const screen = await render(MarkdownDocument, {
+      value: tree,
       components: { card: CardWithFooter },
     })
     const footer = screen.container.querySelector<HTMLElement>('footer')!
@@ -194,7 +194,7 @@ Footer slot content.
   })
 
   it('passes multiple named slots as Svelte snippet props', async () => {
-    const tree = await parse(`::card{title="My Card"}
+    const tree = await parseMarkdown(`::card{title="My Card"}
 Default slot content.
 
 #header
@@ -203,8 +203,8 @@ Header slot content.
 #footer
 Footer slot content.
 ::`)
-    const screen = await render(ComarkRenderer, {
-      tree,
+    const screen = await render(MarkdownDocument, {
+      value: tree,
       components: { card: CardWithHeaderFooter },
     })
     const header = screen.container.querySelector<HTMLElement>('header')!
@@ -222,9 +222,9 @@ Footer slot content.
   })
 
   it('resolves custom components from componentsManifest', async () => {
-    const tree = await parse('::alert{type="warning"}\nLazy content\n::')
-    const screen = await render(ComarkRenderer, {
-      tree,
+    const tree = await parseMarkdown('::alert{type="warning"}\nLazy content\n::')
+    const screen = await render(MarkdownDocument, {
+      value: tree,
       componentsManifest: (name: string) => {
         if (name === 'alert') {
           return import('./test-components/Alert.svelte')
@@ -237,8 +237,8 @@ Footer slot content.
   })
 
   it('falls back to native element when no component matches', async () => {
-    const tree = await parse('::alert{type="info"}\ncontent\n::')
-    const screen = await render(ComarkRenderer, { tree, components: {} })
+    const tree = await parseMarkdown('::alert{type="info"}\ncontent\n::')
+    const screen = await render(MarkdownDocument, { value: tree, components: {} })
     const alert = screen.container.querySelector<HTMLElement>('alert')!
     expect(alert).not.toBeNull()
     await expect.element(alert).toHaveTextContent('content')

@@ -1,18 +1,18 @@
-import type { ComarkTree, ParseOptions } from 'comark'
+import type { MarkdownDocument, ParserOptions } from 'comark'
 import { readonly, ref, shallowRef } from 'vue'
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import highlight from 'comark/plugins/highlight'
 
 export interface MDCStreamState {
-  tree: ComarkTree
+  tree: MarkdownDocument
   isComplete: boolean
   content: string
   error?: Error
 }
 
-export interface MDCStreamOptions extends ParseOptions {
+export interface MDCStreamOptions extends ParserOptions {
   onChunk?: (chunk: string) => void
-  onComplete?: (result: ComarkTree) => void
+  onComplete?: (result: MarkdownDocument) => void
   onError?: (error: Error) => void
 }
 
@@ -38,7 +38,7 @@ const plugins = [highlight()]
  *
  * <template>
  *   <div>
- *     <ComarkRenderer v-if="state.tree" :tree="state.tree" :streaming="!state.isComplete" />
+ *     <MarkdownDocument v-if="state.tree" :value="state.tree" :streaming="!state.isComplete" />
  *     <div v-if="isStreaming">Streaming...</div>
  *   </div>
  * </template>
@@ -88,7 +88,7 @@ export function useMDCStream(options?: MDCStreamOptions) {
 
         // Parse the accumulated content with auto-close for incomplete syntax
         try {
-          const result = await parse(accumulatedContent, { ...options, autoClose: true })
+          const result = await parseMarkdown(accumulatedContent, { ...options, autoClose: true })
 
           state.value = {
             tree: result,
@@ -105,7 +105,7 @@ export function useMDCStream(options?: MDCStreamOptions) {
       }
 
       // Final parse without auto-close
-      const finalResult = await parse(accumulatedContent, options)
+      const finalResult = await parseMarkdown(accumulatedContent, options)
 
       state.value = {
         tree: finalResult,

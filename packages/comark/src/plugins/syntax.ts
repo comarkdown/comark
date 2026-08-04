@@ -2,7 +2,7 @@ import type { MarkdownExit, PluginSimple, Renderer } from 'markdown-exit'
 import { Token } from 'markdown-exit'
 import type { MarkdownItPlugin, MarkdownItPluginWithOptions } from '../types.ts'
 import { defineComarkPlugin } from '../utils/helpers.ts'
-import { parseBracketContent } from '../internal/parse/syntax/brackets.ts'
+import { findClosingBracket, parseBracketContent } from '../internal/parse/syntax/brackets.ts'
 import { searchProps } from '../internal/parse/syntax/props.ts'
 import { parseBlockParams } from '../internal/parse/syntax/block-params.ts'
 import { parseYaml } from '../internal/yaml.ts'
@@ -98,8 +98,6 @@ const markdownItComarkBlock: PluginSimple = (md) => {
 
       // If there's unparsed remaining content, treat it as inline component in a paragraph
       if (remaining) return false
-
-      state.lineMax = startLine + 1
 
       if (!silent) {
         if (content !== undefined) {
@@ -337,7 +335,6 @@ const markdownItComarkBlock: PluginSimple = (md) => {
     }
 
     state.line = lineEnd + 1
-    state.lineMax = lineEnd + 1
     return true
   })
 
@@ -392,11 +389,12 @@ const markdownItComarkBlock: PluginSimple = (md) => {
 
     if (silent) {
       state.line = lineEnd
-      state.lineMax = lineEnd
       return true
     }
 
-    state.lineMax = startLine + 1
+    // Restore lineMax after tokenizing so it doesn't leak a narrower bound to
+    // whatever comes after this slot (see `comark_block`'s save/restore above).
+    const oldLineMax = state.lineMax
     const slot = state.push('mdc_block_slot', 'template', 1)
     slot.attrSet(`#${name}`, '')
     props?.forEach(([key, value]) => {
@@ -412,7 +410,7 @@ const markdownItComarkBlock: PluginSimple = (md) => {
     state.push('mdc_block_slot', 'template', -1)
 
     state.line = lineEnd
-    state.lineMax = lineEnd
+    state.lineMax = oldLineMax
 
     return true
   })
@@ -427,23 +425,9 @@ const markdownItInlineSpan: PluginSimple = (md) => {
     const start = state.pos
     if (state.src[start] !== '[') return false
 
-    let index = start + 1
-    let depth = 0
-    while (index < state.src.length) {
-      if (state.src[index] === '\\') {
-        index += 2
-        continue
-      }
-      if (state.src[index] === '[') {
-        depth++
-      } else if (state.src[index] === ']') {
-        if (depth === 0) break
-        depth--
-      }
-      index += 1
-    }
-
-    if (index === start) return false
+    // An unclosed span consumes to the end of input (streaming auto-close)
+    const close = findClosingBracket(state.src, start)
+    const index = close === -1 ? state.src.length : close
 
     // Don't match `[text](url)` or `[text][ref]` — let the link parser handle those
     const nextChar = state.src[index + 1]

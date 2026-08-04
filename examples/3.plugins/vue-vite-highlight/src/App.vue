@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { content } from './content'
-import { Comark } from '@comark/vue'
+import { Markdown } from '@comark/vue'
 import highlight from '@comark/vue/plugins/highlight'
 
 // Import themes and languages directly
@@ -36,7 +36,7 @@ function toggleTheme() {
     </button>
 
     <Suspense>
-      <Comark
+      <Markdown
         :plugins="[
           highlight({
             themes: {
@@ -48,7 +48,7 @@ function toggleTheme() {
         ]"
       >
         {{ content }}
-      </Comark>
+      </Markdown>
     </Suspense>
   </div>
 </template>

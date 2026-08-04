@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import { createSSRApp, defineComponent, h } from 'vue'
 import { renderToString } from '@vue/server-renderer'
-import { parse } from 'comark'
-import { ComarkRenderer } from '../src/components/ComarkRenderer'
+import { parseMarkdown } from 'comark'
+import { MarkdownDocument } from '../src/components/MarkdownDocument'
 
-describe('ComarkRenderer with Slots', () => {
+describe('MarkdownDocument with Slots', () => {
   it('should pass named slots to components', async () => {
     const markdown = `::test-component
 Default content
@@ -16,7 +16,7 @@ Header content
 Footer content
 ::`
 
-    const result = await parse(markdown)
+    const result = await parseMarkdown(markdown)
 
     // Define a test component that uses slots
     const TestComponent = defineComponent({
@@ -33,11 +33,11 @@ Footer content
 
     // Create app with the renderer
     const app = createSSRApp({
-      components: { ComarkRenderer },
+      components: { MarkdownDocument },
       setup() {
         return () =>
-          h(ComarkRenderer, {
-            tree: result,
+          h(MarkdownDocument, {
+            value: result,
             components: {
               'test-component': TestComponent,
             },
@@ -70,7 +70,7 @@ Warning Title
 This is a description
 ::`
 
-    const result = await parse(markdown)
+    const result = await parseMarkdown(markdown)
 
     const Callout = defineComponent({
       name: 'Callout',
@@ -82,8 +82,8 @@ This is a description
     const app = createSSRApp({
       setup() {
         return () =>
-          h(ComarkRenderer, {
-            tree: result,
+          h(MarkdownDocument, {
+            value: result,
             components: {
               Callout,
             },
@@ -108,7 +108,7 @@ This is header part
 Copyright by Nuxt
 ::`
 
-    const result = await parse(markdown)
+    const result = await parseMarkdown(markdown)
 
     const MultiSlotTest = defineComponent({
       name: 'MultiSlotTest',
@@ -125,8 +125,8 @@ Copyright by Nuxt
     const app = createSSRApp({
       setup() {
         return () =>
-          h(ComarkRenderer, {
-            tree: result,
+          h(MarkdownDocument, {
+            value: result,
             components: {
               'multi-slot-test': MultiSlotTest,
             },

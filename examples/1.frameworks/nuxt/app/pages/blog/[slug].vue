@@ -36,6 +36,6 @@ useSeoMeta({
         </div>
       </div>
     </header>
-    <ComarkRenderer :tree="post.tree" />
+    <MarkdownDocument :value="post.tree" />
   </article>
 </template>

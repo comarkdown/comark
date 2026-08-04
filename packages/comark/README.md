@@ -24,12 +24,12 @@ This is **Markdown** inside your own component.
 
 ## Why Comark
 
-- **Runtime parsing**: `parse(markdown)` is a pure function returning a compact AST. Content from a database, CMS, or LLM is live the moment it is saved. No rebuild, no redeploy. ([Comark vs MDX](https://comark.dev/compare/comark-vs-mdx))
+- **Runtime parsing**: `parseMarkdown(markdown)` is a pure function returning a compact serializable Markdown document . Content from a database, CMS, or LLM is live the moment it is saved. No rebuild, no redeploy. ([Comark vs MDX](https://comark.dev/compare/comark-vs-mdx))
 - **Streaming built in**: auto-close completes unterminated syntax (`**bold`, open code fences, half-open components) so AI output renders correctly at every frame.
 - **One parser, every renderer**: the same source renders to Vue, React, Svelte, Angular, Nuxt, HTML strings, and ANSI terminal output. Your content outlasts your framework.
 - **Still just Markdown**: full CommonMark + GFM, frontmatter, and `{.class}` attributes on native elements. Components are opt-in syntax, not a new language.
 - **Plugin ecosystem**: Shiki highlighting, KaTeX math, Mermaid diagrams, TOC, alerts, footnotes and more, plus compatibility with existing markdown-it plugins.
-- **Decoupled parse & render**: parse once on the server, send the serializable AST (`['tag', props, ...children]`) to the client, render without re-parsing.
+- **Decoupled parse & render**: parse once on the server, send the serializable document (`['tag', props, ...children]`) to the client, render without re-parsing.
 - **Fast**: built on [markdown-exit](https://github.com/serkodev/markdown-exit), a TypeScript rewrite of markdown-it, with full TypeScript support.
 
 Built on five years of [MDC](https://github.com/nuxt-content/mdc), the parser behind [Nuxt Content](https://content.nuxt.com). Read [Why Comark](https://comark.dev/kb/why-comark) for the full story.
@@ -41,9 +41,9 @@ npm install comark
 ```
 
 ```ts
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 
-const tree = await parse('# Hello **World**')
+const tree = await parseMarkdown('# Hello **World**')
 // { nodes: [['h1', { id: 'hello' }, 'Hello ', ['strong', {}, 'World']]], frontmatter: {}, meta: {} }
 ```
 
@@ -57,14 +57,14 @@ npm install @comark/vue katex
 
 ```vue
 <script setup lang="ts">
-import { Comark } from '@comark/vue'
+import { Markdown } from '@comark/vue'
 import math, { Math } from '@comark/vue/plugins/math'
 
 const chatMessage = ...
 </script>
 
 <template>
-  <Comark :components="{ Math }" :plugins="[math()]">{{ chatMessage }}</Comark>
+  <Markdown :components="{ Math }" :plugins="[math()]">{{ chatMessage }}</Markdown>
 </template>
 ```
 
@@ -75,12 +75,12 @@ npm install @comark/react katex
 ```
 
 ```tsx
-import { Comark } from '@comark/react'
+import { Markdown } from '@comark/react'
 import math, { Math } from '@comark/react/plugins/math'
 
 function App() {
   const chatMessage = ...
-  return <Comark components={{ Math }} plugins={[math()]}>{chatMessage}</Comark>
+  return <Markdown components={{ Math }} plugins={[math()]}>{chatMessage}</Markdown>
 }
 ```
 
@@ -92,13 +92,13 @@ npm install @comark/svelte katex
 
 ```svelte
 <script lang="ts">
-  import { Comark } from '@comark/svelte'
+  import { Markdown } from '@comark/svelte'
   import math, { Math } from '@comark/svelte/plugins/math'
 
   const chatMessage = ...
 </script>
 
-<Comark markdown={chatMessage} components={{ math: Math }} plugins={[math()]} />
+<Markdown value={chatMessage} components={{ math: Math }} plugins={[math()]} />
 ```
 
 ### Angular
@@ -109,14 +109,14 @@ npm install @comark/angular katex
 
 ```typescript
 import { Component } from '@angular/core'
-import { ComarkComponent } from '@comark/angular'
+import { Markdown } from '@comark/angular'
 import math, { Math } from '@comark/angular/plugins/math'
 
 @Component({
   selector: 'app-chat',
   standalone: true,
-  imports: [ComarkComponent],
-  template: `<comark [markdown]="chatMessage" [components]="{ Math }" [plugins]="[math()]" />`,
+  imports: [Markdown],
+  template: `<comark-markdown [value]="chatMessage" [components]="{ Math }" [plugins]="[math()]" />`,
 })
 export class ChatComponent {
   chatMessage = ...
@@ -130,11 +130,11 @@ npm install @comark/html
 ```
 
 ```js
-import { render } from '@comark/html'
+import { renderHtml } from '@comark/html'
 
 const chatMessage = ...
 
-const html = await render(chatMessage)
+const html = await renderHtml(chatMessage)
 ```
 
 ## Packages

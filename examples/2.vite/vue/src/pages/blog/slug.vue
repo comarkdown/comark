@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useRoute } from 'vue-router'
-import { ComarkRenderer } from '@comark/vue'
+import { MarkdownDocument } from '@comark/vue'
 import Alert from '@/components/Alert.vue'
 import { getPost } from '@/lib/posts'
 
@@ -36,8 +36,8 @@ const post = await getPost(route.params.slug as string)
         </div>
       </div>
     </header>
-    <ComarkRenderer
-      :tree="post.tree"
+    <MarkdownDocument
+      :value="post.tree"
       :components="{ Alert }"
     />
   </article>

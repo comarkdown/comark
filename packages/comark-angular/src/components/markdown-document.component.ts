@@ -8,30 +8,33 @@ import {
   type OnInit,
   type OnDestroy,
 } from '@angular/core'
-import type { ComarkElement, ComarkNode, ComarkTree, NodeRenderData } from 'comark'
-import { ComarkNodeComponent } from './comark-node.component.ts'
+import type { ElementNode, Node, MarkdownDocument as MarkdownDocumentType, NodeRenderData } from 'comark'
+import { MarkdownNode } from './markdown-node.component.ts'
 import { findLastTextNodeAndAppendNode, getCaret } from '../utils/caret.ts'
 
+const EMPTY_DOCUMENT: MarkdownDocumentType = { nodes: [], frontmatter: {}, meta: {} }
+
 /**
- * ComarkRenderer component
+ * MarkdownDocument component
  *
- * Renders a pre-parsed Comark tree to Angular components/HTML.
- * Supports custom component mapping for element tags.
+ * Renders an already-parsed Markdown document to Angular components/HTML — no
+ * parser in the client bundle. Supports custom component mapping for
+ * element tags.
  *
  * @example
  * ```html
- * <comark-renderer [tree]="parsedTree" [components]="customComponents" />
+ * <comark-markdown-document [value]="document" [components]="customComponents" />
  * ```
  */
 @Component({
-  selector: 'comark-renderer',
+  selector: 'comark-markdown-document',
   standalone: true,
-  imports: [ComarkNodeComponent],
+  imports: [MarkdownNode],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="comark-content">
       @for (node of renderedNodes; track $index) {
-        <comark-node
+        <comark-markdown-node
           [node]="node"
           [components]="components"
           [renderData]="renderData"
@@ -40,9 +43,9 @@ import { findLastTextNodeAndAppendNode, getCaret } from '../utils/caret.ts'
     </div>
   `,
 })
-export class ComarkRendererComponent implements OnInit, OnDestroy {
-  /** The Comark tree to render */
-  @Input({ required: true }) tree!: ComarkTree
+export class MarkdownDocument implements OnInit, OnDestroy {
+  /** The parsed Markdown document to render */
+  @Input() value?: MarkdownDocumentType
 
   /** Custom component mappings for element tags */
   @Input() components: Record<string, Type<any>> = {}
@@ -58,21 +61,25 @@ export class ComarkRendererComponent implements OnInit, OnDestroy {
 
   /**
    * Document key used to subscribe to live updates via `globalThis.comarkContext`.
-   * Falls back to the tree's own `meta.key` when set by a plugin.
+   * Falls back to the document's own `meta.key` when set by a plugin.
    */
-  @Input() comarkKey?: string
+  @Input() documentKey?: string
 
   private cdr = inject(ChangeDetectorRef)
-  private liveTree: ComarkTree | null = null
+  private liveDocument: MarkdownDocumentType | null = null
   private cleanup?: (clear?: boolean) => void
 
+  private get inputDocument(): MarkdownDocumentType {
+    return this.value ?? EMPTY_DOCUMENT
+  }
+
   // Live document support: if an ambient context exists, subscribe to updates
-  // for this key and re-render with the pushed tree. Cleaned up on destroy.
+  // for this key and re-render with the pushed document. Cleaned up on destroy.
   ngOnInit(): void {
-    const key = this.tree.meta?.key || this.comarkKey
+    const key = this.inputDocument.meta?.key || this.documentKey
     if (key && globalThis.comarkContext) {
-      this.cleanup = globalThis.comarkContext.get(key, this.tree).listen((tree) => {
-        this.liveTree = tree
+      this.cleanup = globalThis.comarkContext.get(key, this.inputDocument).listen((document) => {
+        this.liveDocument = document
         this.cdr.markForCheck()
       })
     }
@@ -82,16 +89,16 @@ export class ComarkRendererComponent implements OnInit, OnDestroy {
     this.cleanup?.(true)
   }
 
-  private get activeTree(): ComarkTree {
-    return this.liveTree ?? this.tree
+  private get activeDocument(): MarkdownDocumentType {
+    return this.liveDocument ?? this.inputDocument
   }
 
-  get renderedNodes(): ComarkNode[] {
-    const nodes = [...(this.activeTree.nodes || [])]
+  get renderedNodes(): Node[] {
+    const nodes = [...(this.activeDocument.nodes || [])]
     const caretNode = getCaret(this.caret)
 
     if (this.streaming && caretNode && nodes.length > 0) {
-      const hasStreamCaret = findLastTextNodeAndAppendNode(nodes[nodes.length - 1] as ComarkElement, caretNode)
+      const hasStreamCaret = findLastTextNodeAndAppendNode(nodes[nodes.length - 1] as ElementNode, caretNode)
       if (!hasStreamCaret) {
         nodes.push(caretNode)
       }
@@ -102,8 +109,8 @@ export class ComarkRendererComponent implements OnInit, OnDestroy {
 
   get renderData(): NodeRenderData {
     return {
-      frontmatter: this.activeTree.frontmatter,
-      meta: this.activeTree.meta,
+      frontmatter: this.activeDocument.frontmatter,
+      meta: this.activeDocument.meta,
       data: this.data || {},
       props: {},
     }

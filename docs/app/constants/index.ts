@@ -172,9 +172,9 @@ A[Start] --> B[Stop]
 ### Code Block
 
 \`\`\`ts [example.ts]
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 
-const tree = await parse('# Hello World')
+const tree = await parseMarkdown('# Hello World')
 console.log(tree.nodes)
 \`\`\`
 

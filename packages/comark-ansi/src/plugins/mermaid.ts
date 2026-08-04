@@ -1,4 +1,4 @@
-import type { ComarkElement, State } from 'comark'
+import type { ElementNode, State } from 'comark'
 import type { ThemeNames } from 'comark/plugins/mermaid'
 import { renderMermaidASCII, THEMES } from 'beautiful-mermaid'
 
@@ -6,21 +6,21 @@ export * from 'comark/plugins/mermaid'
 export { default } from 'comark/plugins/mermaid'
 
 /**
- * HTML component render function for mermaid nodes.
- * Renders diagrams to inline SVG using `beautiful-mermaid`.
+ * ANSI component render function for mermaid nodes.
+ * Renders diagrams as terminal-friendly ASCII using `beautiful-mermaid`.
  *
  * @example
  * ```typescript
  * import mermaid, { Mermaid } from '@comark/ansi/plugins/mermaid'
- * import { createRender } from '@comark/ansi'
+ * import { createAnsiRenderer } from '@comark/ansi'
  *
- * const render = createRender({
+ * const renderAnsi = createAnsiRenderer({
  *   plugins: [mermaid()],
  *   components: { Mermaid },
  * })
  * ```
  */
-export const Mermaid = ([, attrs]: ComarkElement, state: State): string => {
+export const Mermaid = ([, attrs]: ElementNode, state: State): string => {
   const content = String(attrs.content ?? '')
   const themeName = attrs.theme as ThemeNames | undefined
   const theme = (themeName && THEMES[themeName]) ?? THEMES['zinc-light']

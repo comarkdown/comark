@@ -1,4 +1,4 @@
-import type { ComarkNode, ComarkTree, ComarkPlugin, ComponentManifest, ParseOptions } from 'comark'
+import type { Node, MarkdownDocument, ComarkPlugin, ComponentManifest, ParserOptions } from 'comark'
 import type { Component, Snippet } from 'svelte'
 
 export interface ComponentResolverProps {
@@ -9,8 +9,8 @@ export interface ComponentResolverProps {
 
 export type ComponentResolver = Component<ComponentResolverProps>
 
-export interface ComarkNodeProps {
-  node: ComarkNode
+export interface MarkdownNodeProps {
+  node: Node
   components?: Record<string, any>
   componentsManifest?: ComponentManifest
   resolver?: ComponentResolver
@@ -18,22 +18,29 @@ export interface ComarkNodeProps {
   caretClass?: string | null
 }
 
-export interface ComarkRendererProps {
-  tree: ComarkTree
+export interface MarkdownDocumentProps {
+  /** The parsed Markdown document to render */
+  value?: MarkdownDocument
   components?: Record<string, any>
   componentsManifest?: ComponentManifest
   resolver?: ComponentResolver
   streaming?: boolean
   caret?: boolean | { class: string }
   class?: string
+  /**
+   * Document key used to subscribe to live updates via `globalThis.comarkContext`.
+   * Falls back to the document's own `meta.key` when set by a plugin.
+   */
+  documentKey?: string
 }
 
-export interface ComarkProps {
-  markdown?: string
-  options?: Exclude<ParseOptions, 'plugins'>
+export interface MarkdownProps {
+  /** The markdown content to parse and render, or a pre-parsed MarkdownDocument */
+  value?: string | MarkdownDocument
+  options?: Exclude<ParserOptions, 'plugins'>
   plugins?: ComarkPlugin[]
   /**
-   * Strip wrapper tags from the top level of the tree — shorthand for
+   * Strip wrapper tags from the top level of the document — shorthand for
    * `options.unwrap`. `true` unwraps `<p>`; a space-separated string or array
    * unwraps the listed tags.
    */

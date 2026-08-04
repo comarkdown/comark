@@ -9,7 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@comark/html": "catalog:",
+    "@comark/html": "workspace:*",
     "beautiful-mermaid": "catalog:",
     "katex": "catalog:",
     "shiki": "catalog:"

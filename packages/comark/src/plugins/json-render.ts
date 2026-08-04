@@ -1,5 +1,5 @@
 import type { Spec, UIElement } from '@json-render/core'
-import type { ComarkElementAttributes, ComarkNode } from '../types'
+import type { ElementNodeAttributes, Node } from '../types'
 import { defineComarkPlugin } from '../parse.ts'
 import { textContent, visit } from '../utils/index.ts'
 import { parseYaml } from '../internal/yaml.ts'
@@ -18,7 +18,7 @@ function jsonRenderToAst(jrt: Spec | UIElement) {
   return jsonRenderElementToAst(root, tree.elements)
 }
 
-function jsonRenderElementToAst(element: UIElement, elements: Record<string, UIElement>): ComarkNode {
+function jsonRenderElementToAst(element: UIElement, elements: Record<string, UIElement>): Node {
   if (element.type === 'Text') {
     return String(element.props.content)
   }
@@ -39,10 +39,10 @@ interface JsonRenderConfig {}
  *
  * @example
  * ```ts
- * import { parse } from 'comark'
+ * import { parseMarkdown } from 'comark'
  * import jsonRender from 'comark/plugins/json-render'
  *
- * const result = await parse(`
+ * const result = await parseMarkdown(`
  * \`\`\`json-render
  * {
  *   "root": "card",
@@ -67,13 +67,13 @@ interface JsonRenderConfig {}
  * @example
  * ```vue
  * <script setup>
- * import { Comark } from '@comark/vue'
+ * import { Markdown } from '@comark/vue'
  * import jsonRender from '@comark/vue/plugins/json-render'
  * </script>
  *
  * <template>
  *   <Suspense>
- *     <Comark :plugins="[jsonRender()]">{{ content }}</Comark>
+ *     <Markdown :plugins="[jsonRender()]">{{ content }}</Markdown>
  *   </Suspense>
  * </template>
  * ```
@@ -85,10 +85,10 @@ export default defineComarkPlugin((_config: JsonRenderConfig = {}) => ({
       state.tree,
       (node) =>
         node[0] === 'pre' &&
-        ((node[1] as ComarkElementAttributes).language === 'json-render' ||
-          (node[1] as ComarkElementAttributes).language === 'yaml-render'),
+        ((node[1] as ElementNodeAttributes).language === 'json-render' ||
+          (node[1] as ElementNodeAttributes).language === 'yaml-render'),
       (preNode) => {
-        const language = (preNode[1] as ComarkElementAttributes).language
+        const language = (preNode[1] as ElementNodeAttributes).language
         try {
           let spec: Spec | UIElement | undefined = undefined
           if (language === 'json-render') {

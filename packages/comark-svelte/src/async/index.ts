@@ -1,1 +1,1 @@
-export { default as ComarkAsync } from './ComarkAsync.svelte'
+export { default as MarkdownAsync } from './MarkdownAsync.svelte'

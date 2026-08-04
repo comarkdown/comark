@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, shallowRef, onMounted } from 'vue'
 import { content } from './content'
-import { Comark } from '@comark/vue'
+import { Markdown } from '@comark/vue'
 import highlight from '@comark/vue/plugins/highlight'
 import { createTransformerFactory, rendererRich } from '@shikijs/twoslash/core'
 import { createTwoslashFromCDN } from 'twoslash-cdn'
@@ -92,12 +92,12 @@ onMounted(async () => {
 
         <!-- Content -->
         <Suspense v-else>
-          <Comark
+          <Markdown
             class="prose"
             :plugins="plugins!"
           >
             {{ content }}
-          </Comark>
+          </Markdown>
         </Suspense>
       </UContainer>
     </main>

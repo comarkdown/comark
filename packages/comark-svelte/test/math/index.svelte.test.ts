@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import { render } from 'vitest-browser-svelte'
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import math, { Math } from '../../src/plugins/math'
-import ComarkRenderer from '../../src/components/ComarkRenderer.svelte'
-import Comark from '../../src/components/Comark.svelte'
+import MarkdownDocument from '../../src/components/MarkdownDocument.svelte'
+import Markdown from '../../src/components/Markdown.svelte'
 
 describe('Math component', () => {
   it('renders inline math with KaTeX', async () => {
@@ -27,13 +27,13 @@ describe('Math component', () => {
   })
 })
 
-describe('Math + ComarkRenderer integration', () => {
+describe('Math + MarkdownDocument integration', () => {
   it('renders inline math from parsed markdown', async () => {
-    const tree = await parse('The formula $x^2$ is simple', {
+    const tree = await parseMarkdown('The formula $x^2$ is simple', {
       plugins: [math()],
     })
-    const screen = await render(ComarkRenderer, {
-      tree,
+    const screen = await render(MarkdownDocument, {
+      value: tree,
       components: { math: Math },
     })
     await expect.element(screen.getByText(/The formula/)).toBeInTheDocument()
@@ -43,11 +43,11 @@ describe('Math + ComarkRenderer integration', () => {
   })
 
   it('renders display math from parsed markdown', async () => {
-    const tree = await parse('$$\nE = mc^2\n$$', {
+    const tree = await parseMarkdown('$$\nE = mc^2\n$$', {
       plugins: [math()],
     })
-    const screen = await render(ComarkRenderer, {
-      tree,
+    const screen = await render(MarkdownDocument, {
+      value: tree,
       components: { math: Math },
     })
     const blockMath = screen.container.querySelector<HTMLElement>('.math.block')!
@@ -56,10 +56,10 @@ describe('Math + ComarkRenderer integration', () => {
   })
 })
 
-describe('Math + Comark integration', () => {
-  it('renders math end-to-end via Comark component', async () => {
-    const screen = await render(Comark, {
-      markdown: 'Inline $a+b$ and display:\n\n$$\nc^2\n$$',
+describe('Math + Markdown integration', () => {
+  it('renders math end-to-end via Markdown component', async () => {
+    const screen = await render(Markdown, {
+      value: 'Inline $a+b$ and display:\n\n$$\nc^2\n$$',
       plugins: [math()],
       components: { math: Math },
     })

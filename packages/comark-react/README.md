@@ -12,7 +12,7 @@ React renderer for [Comark](https://comark.dev). Render markdown with custom Rea
 
 ## Features
 
-- 🧩 `<Comark>` component for one-shot markdown rendering
+- 🧩 `<Markdown>` component for one-shot markdown rendering
 - 🎯 Map any Comark tag to a custom React component
 - 🌊 Streaming-friendly with auto-close and caret support
 - 🖥️ Works with React Server Components and SSR
@@ -30,16 +30,16 @@ pnpm add @comark/react
 ## Usage
 
 ```tsx
-import { Comark } from '@comark/react'
+import { Markdown } from '@comark/react'
 import math, { Math } from '@comark/react/plugins/math'
 
 const content = `# Hello\n\nThis is **Comark** in React.`
 
 export default function App() {
   return (
-    <Comark components={{ math: Math }} plugins={[math()]}>
+    <Markdown components={{ math: Math }} plugins={[math()]}>
       {content}
-    </Comark>
+    </Markdown>
   )
 }
 ```
@@ -47,10 +47,10 @@ export default function App() {
 ### Custom components
 
 ```tsx
-import { Comark } from '@comark/react'
+import { Markdown } from '@comark/react'
 import { Alert } from './components/Alert'
 
-<Comark components={{ alert: Alert }}>{content}</Comark>
+<Markdown components={{ alert: Alert }}>{content}</Markdown>
 ```
 
 ```mdc
@@ -62,9 +62,9 @@ Heads up!
 ### Streaming
 
 ```tsx
-<Comark streaming={isStreaming} caret>
+<Markdown streaming={isStreaming} caret>
   {content}
-</Comark>
+</Markdown>
 ```
 
 ## Documentation

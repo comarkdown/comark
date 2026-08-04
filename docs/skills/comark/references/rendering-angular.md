@@ -1,6 +1,6 @@
 # Angular Rendering Guide
 
-Complete guide for rendering Comark AST in Angular 17+ applications.
+Complete guide for rendering Markdown documents in Angular 17+ applications.
 
 ## Table of Contents
 
@@ -18,19 +18,19 @@ Complete guide for rendering Comark AST in Angular 17+ applications.
 
 ## Basic Usage
 
-Use the `ComarkComponent` standalone component to render markdown:
+Use the `Markdown` standalone component to render markdown:
 
 ```typescript
 // app.component.ts
 import { Component } from '@angular/core'
-import { ComarkComponent } from '@comark/angular'
+import { Markdown } from '@comark/angular'
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [ComarkComponent],
+  imports: [Markdown],
   template: `
-    <comark [markdown]="content" />
+    <comark-markdown [value]="content" />
   `,
 })
 export class AppComponent {
@@ -46,31 +46,31 @@ Important message
 }
 ```
 
-### With Pre-parsed AST
+### With a Pre-parsed Document
 
-Use `ComarkRendererComponent` when you already have a parsed Comark tree:
+Use `MarkdownDocument` when you already have a parsed document:
 
 ```typescript
 import { Component } from '@angular/core'
-import { ComarkRendererComponent } from '@comark/angular'
-import { parse } from 'comark'
-import type { ComarkTree } from 'comark'
+import { MarkdownDocument } from '@comark/angular'
+import { parseMarkdown } from 'comark'
+import type { MarkdownDocument as MarkdownDocumentType } from 'comark'
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [ComarkRendererComponent],
+  imports: [MarkdownDocument],
   template: `
-    @if (tree) {
-      <comark-renderer [tree]="tree" [components]="customComponents" />
+    @if (document) {
+      <comark-markdown-document [value]="document" [components]="customComponents" />
     }
   `,
 })
 export class AppComponent {
-  tree: ComarkTree | null = null
+  document: MarkdownDocumentType | null = null
 
   async ngOnInit() {
-    this.tree = await parse('# Hello World')
+    this.document = await parseMarkdown('# Hello World')
   }
 }
 ```
@@ -83,16 +83,16 @@ Map custom Angular components to Comark element tags:
 
 ```typescript
 import { Component, Type } from '@angular/core'
-import { ComarkComponent } from '@comark/angular'
+import { Markdown } from '@comark/angular'
 import { CustomAlertComponent } from './custom-alert.component'
 import { CustomCardComponent } from './custom-card.component'
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [ComarkComponent],
+  imports: [Markdown],
   template: `
-    <comark [markdown]="content" [components]="customComponents" />
+    <comark-markdown [value]="content" [components]="customComponents" />
   `,
 })
 export class AppComponent {
@@ -187,14 +187,14 @@ The renderer uses Angular's `createComponent` API to dynamically instantiate com
 
 ```typescript
 import { Component, Type } from '@angular/core'
-import { ComarkComponent } from '@comark/angular'
+import { Markdown } from '@comark/angular'
 
 @Component({
   selector: 'app-docs',
   standalone: true,
-  imports: [ComarkComponent],
+  imports: [Markdown],
   template: `
-    <comark [markdown]="content" [components]="componentMap" />
+    <comark-markdown [value]="content" [components]="componentMap" />
   `,
 })
 export class DocsComponent {
@@ -304,15 +304,15 @@ Enable streaming mode for real-time rendering of content (e.g., AI-generated out
 
 ```typescript
 import { Component } from '@angular/core'
-import { ComarkComponent } from '@comark/angular'
+import { Markdown } from '@comark/angular'
 
 @Component({
   selector: 'app-streaming',
   standalone: true,
-  imports: [ComarkComponent],
+  imports: [Markdown],
   template: `
-    <comark
-      [markdown]="content"
+    <comark-markdown
+      [value]="content"
       [streaming]="isStreaming"
       [caret]="isStreaming"
     />
@@ -344,10 +344,10 @@ The `caret` input controls the streaming cursor indicator:
 
 ```typescript
 // Boolean: use default pulsing caret
-<comark [markdown]="content" [streaming]="true" [caret]="true" />
+<comark-markdown [value]="content" [streaming]="true" [caret]="true" />
 
 // Object: custom CSS class for the caret
-<comark [markdown]="content" [streaming]="true" [caret]="{ class: 'my-caret' }" />
+<comark-markdown [value]="content" [streaming]="true" [caret]="{ class: 'my-caret' }" />
 ```
 
 The caret is a `<span>` with a pulsing CSS animation, automatically appended to the last text node in the AST during streaming.
@@ -357,27 +357,27 @@ The caret is a `<span>` with a pulsing CSS animation, automatically appended to 
 Render only content before `<!-- more -->`:
 
 ```typescript
-<comark [markdown]="content" [summary]="true" />
+<comark-markdown [value]="content" [summary]="true" />
 ```
 
 ---
 
 ## Prose Components
 
-The `ComarkRendererComponent` renders standard HTML elements natively. Override them with custom components using the `Prose` prefix:
+The `MarkdownDocument` renders standard HTML elements natively. Override them with custom components using the `Prose` prefix:
 
 ```typescript
 import { Component, Type } from '@angular/core'
-import { ComarkComponent } from '@comark/angular'
+import { Markdown } from '@comark/angular'
 import { ProseH1Component } from './prose/prose-h1.component'
 import { ProseCodeComponent } from './prose/prose-code.component'
 
 @Component({
   selector: 'app-docs',
   standalone: true,
-  imports: [ComarkComponent],
+  imports: [Markdown],
   template: `
-    <comark [markdown]="content" [components]="components" />
+    <comark-markdown [value]="content" [components]="components" />
   `,
 })
 export class DocsComponent {
@@ -461,16 +461,16 @@ The `data` input allows passing ambient data for `:binding` resolution in markdo
 
 ```typescript
 import { Component } from '@angular/core'
-import { ComarkComponent } from '@comark/angular'
+import { Markdown } from '@comark/angular'
 import binding, { Binding } from '@comark/angular/plugins/binding'
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [ComarkComponent],
+  imports: [Markdown],
   template: `
-    <comark
-      [markdown]="content"
+    <comark-markdown
+      [value]="content"
       [plugins]="plugins"
       [components]="components"
       [data]="data"
@@ -493,18 +493,18 @@ export class AppComponent {
 
 ## Pre-configured Components
 
-Use `defineComarkComponent` or `defineComarkRendererComponent` to create pre-configured components with default plugins and component mappings:
+Use `defineMarkdownComponent` or `defineMarkdownDocumentComponent` to create pre-configured components with default plugins and component mappings:
 
-### defineComarkComponent
+### defineMarkdownComponent
 
 ```typescript
-// docs-comark.component.ts
-import { defineComarkComponent } from '@comark/angular'
+// docs-markdown.component.ts
+import { defineMarkdownComponent } from '@comark/angular'
 import math, { Math } from '@comark/angular/plugins/math'
 import mermaid, { Mermaid } from '@comark/angular/plugins/mermaid'
 
-export const DocsComark = defineComarkComponent({
-  name: 'docs-comark',
+export const DocsMarkdown = defineMarkdownComponent({
+  name: 'docs-markdown',
   plugins: [math(), mermaid()],
   components: { Math, Mermaid },
   class: 'prose dark:prose-invert',
@@ -515,14 +515,14 @@ Use the pre-configured component:
 
 ```typescript
 import { Component } from '@angular/core'
-import { DocsComark } from './docs-comark.component'
+import { DocsMarkdown } from './docs-markdown.component'
 
 @Component({
   selector: 'app-docs',
   standalone: true,
-  imports: [DocsComark],
+  imports: [DocsMarkdown],
   template: `
-    <docs-comark [markdown]="content" />
+    <docs-markdown [value]="content" />
   `,
 })
 export class DocsComponent {
@@ -532,14 +532,14 @@ export class DocsComponent {
 
 Instance-level `components` and `plugins` are merged with the config-level defaults at runtime.
 
-### defineComarkRendererComponent
+### defineMarkdownDocumentComponent
 
 ```typescript
-import { defineComarkRendererComponent } from '@comark/angular'
+import { defineMarkdownDocumentComponent } from '@comark/angular'
 import { Math } from '@comark/angular/plugins/math'
 
-export const DocsRenderer = defineComarkRendererComponent({
-  name: 'docs-renderer',
+export const DocsMarkdownDocument = defineMarkdownDocumentComponent({
+  name: 'docs-markdown-document',
   components: { Math },
 })
 ```
@@ -552,15 +552,15 @@ export const DocsRenderer = defineComarkRendererComponent({
 
 ```typescript
 import { Component } from '@angular/core'
-import { ComarkComponent } from '@comark/angular'
+import { Markdown } from '@comark/angular'
 import math, { Math } from '@comark/angular/plugins/math'
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [ComarkComponent],
+  imports: [Markdown],
   template: `
-    <comark [markdown]="content" [plugins]="plugins" [components]="components" />
+    <comark-markdown [value]="content" [plugins]="plugins" [components]="components" />
   `,
 })
 export class AppComponent {
@@ -576,15 +576,15 @@ export class AppComponent {
 
 ```typescript
 import { Component } from '@angular/core'
-import { ComarkComponent } from '@comark/angular'
+import { Markdown } from '@comark/angular'
 import mermaid, { Mermaid } from '@comark/angular/plugins/mermaid'
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [ComarkComponent],
+  imports: [Markdown],
   template: `
-    <comark [markdown]="content" [plugins]="plugins" [components]="components" />
+    <comark-markdown [value]="content" [plugins]="plugins" [components]="components" />
   `,
 })
 export class AppComponent {

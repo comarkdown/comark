@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import { createSSRApp, defineComponent, h } from 'vue'
 import { renderToString } from '@vue/server-renderer'
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import emoji from 'comark/plugins/emoji'
-import { defineComarkComponent, defineComarkRendererComponent } from '../src/index'
+import { defineMarkdownComponent, defineMarkdownDocumentComponent } from '../src/index'
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -34,45 +34,45 @@ const AlertProp = makeAlert('alert-prop')
 const CardBase = makeAlert('card-base')
 
 // ---------------------------------------------------------------------------
-// defineComarkComponent
+// defineMarkdownComponent
 // ---------------------------------------------------------------------------
 
-describe('defineComarkComponent — component inheritance via extends', () => {
+describe('defineMarkdownComponent — component inheritance via extends', () => {
   it('child inherits parent components when none of its own are defined', async () => {
-    const Base = defineComarkComponent({ name: 'Base', components: { alert: AlertBase } })
-    const Child = defineComarkComponent({ name: 'Child', extends: Base })
+    const Base = defineMarkdownComponent({ name: 'Base', components: { alert: AlertBase } })
+    const Child = defineMarkdownComponent({ name: 'Child', extends: Base })
 
-    const html = await renderComponent(Child, { markdown: '::alert\nhello\n::' })
+    const html = await renderComponent(Child, { value: '::alert\nhello\n::' })
 
     expect(html).toContain('alert-base')
   })
 
   it('child components override the same tag from parent', async () => {
-    const Base = defineComarkComponent({ name: 'Base', components: { alert: AlertBase } })
-    const Child = defineComarkComponent({ name: 'Child', extends: Base, components: { alert: AlertChild } })
+    const Base = defineMarkdownComponent({ name: 'Base', components: { alert: AlertBase } })
+    const Child = defineMarkdownComponent({ name: 'Child', extends: Base, components: { alert: AlertChild } })
 
-    const html = await renderComponent(Child, { markdown: '::alert\nhello\n::' })
+    const html = await renderComponent(Child, { value: '::alert\nhello\n::' })
 
     expect(html).toContain('alert-child')
     expect(html).not.toContain('alert-base')
   })
 
   it('child keeps parent components that it does not override', async () => {
-    const Base = defineComarkComponent({ name: 'Base', components: { alert: AlertBase, card: CardBase } })
-    const Child = defineComarkComponent({ name: 'Child', extends: Base, components: { alert: AlertChild } })
+    const Base = defineMarkdownComponent({ name: 'Base', components: { alert: AlertBase, card: CardBase } })
+    const Child = defineMarkdownComponent({ name: 'Child', extends: Base, components: { alert: AlertChild } })
 
-    const html = await renderComponent(Child, { markdown: '::alert\nA\n::\n\n::card\nB\n::' })
+    const html = await renderComponent(Child, { value: '::alert\nA\n::\n\n::card\nB\n::' })
 
     expect(html).toContain('alert-child')
     expect(html).toContain('card-base')
   })
 
   it('prop-level components override child and parent config', async () => {
-    const Base = defineComarkComponent({ name: 'Base', components: { alert: AlertBase } })
-    const Child = defineComarkComponent({ name: 'Child', extends: Base, components: { alert: AlertChild } })
+    const Base = defineMarkdownComponent({ name: 'Base', components: { alert: AlertBase } })
+    const Child = defineMarkdownComponent({ name: 'Child', extends: Base, components: { alert: AlertChild } })
 
     const html = await renderComponent(Child, {
-      markdown: '::alert\nhello\n::',
+      value: '::alert\nhello\n::',
       components: { alert: AlertProp },
     })
 
@@ -82,34 +82,34 @@ describe('defineComarkComponent — component inheritance via extends', () => {
   })
 })
 
-describe('defineComarkComponent — plugin inheritance via extends', () => {
+describe('defineMarkdownComponent — plugin inheritance via extends', () => {
   it('child inherits parent plugins', async () => {
-    const Base = defineComarkComponent({ name: 'Base', plugins: [emoji()] })
-    const Child = defineComarkComponent({ name: 'Child', extends: Base })
+    const Base = defineMarkdownComponent({ name: 'Base', plugins: [emoji()] })
+    const Child = defineMarkdownComponent({ name: 'Child', extends: Base })
 
-    const html = await renderComponent(Child, { markdown: ':smile:' })
+    const html = await renderComponent(Child, { value: ':smile:' })
 
     expect(html).toContain('😄')
   })
 
   it('parent and child plugins both run', async () => {
-    const Base = defineComarkComponent({ name: 'Base', plugins: [emoji()] })
+    const Base = defineMarkdownComponent({ name: 'Base', plugins: [emoji()] })
     // Child adds its own emoji instance (idempotent — both emojis in the source resolve)
-    const Child = defineComarkComponent({ name: 'Child', extends: Base })
+    const Child = defineMarkdownComponent({ name: 'Child', extends: Base })
 
-    const html = await renderComponent(Child, { markdown: ':smile: :heart:' })
+    const html = await renderComponent(Child, { value: ':smile: :heart:' })
 
     expect(html).toContain('😄')
     expect(html).toContain('❤️')
   })
 
   it('prop plugins are appended after config plugins', async () => {
-    const Base = defineComarkComponent({ name: 'Base', plugins: [emoji()] })
-    const Child = defineComarkComponent({ name: 'Child', extends: Base })
+    const Base = defineMarkdownComponent({ name: 'Base', plugins: [emoji()] })
+    const Child = defineMarkdownComponent({ name: 'Child', extends: Base })
 
     // Extra emoji() via prop — should not break anything
     const html = await renderComponent(Child, {
-      markdown: ':smile:',
+      value: ':smile:',
       plugins: [emoji()],
     })
 
@@ -117,11 +117,11 @@ describe('defineComarkComponent — plugin inheritance via extends', () => {
   })
 
   it('multi-level extends stacks plugins correctly', async () => {
-    const Base = defineComarkComponent({ name: 'Base', plugins: [emoji()] })
-    const Middle = defineComarkComponent({ name: 'Middle', extends: Base })
-    const Child = defineComarkComponent({ name: 'Child', extends: Middle })
+    const Base = defineMarkdownComponent({ name: 'Base', plugins: [emoji()] })
+    const Middle = defineMarkdownComponent({ name: 'Middle', extends: Base })
+    const Child = defineMarkdownComponent({ name: 'Child', extends: Middle })
 
-    const html = await renderComponent(Child, { markdown: ':smile: :heart:' })
+    const html = await renderComponent(Child, { value: ':smile: :heart:' })
 
     expect(html).toContain('😄')
     expect(html).toContain('❤️')
@@ -129,101 +129,101 @@ describe('defineComarkComponent — plugin inheritance via extends', () => {
 })
 
 // ---------------------------------------------------------------------------
-// defineComarkComponent — class
+// defineMarkdownComponent — class
 // ---------------------------------------------------------------------------
 
-describe('defineComarkComponent — class via config', () => {
+describe('defineMarkdownComponent — class via config', () => {
   it('applies config class to wrapper div', async () => {
-    const Custom = defineComarkComponent({ name: 'WithClass', class: 'prose dark' })
-    const html = await renderComponent(Custom, { markdown: 'hello' })
+    const Custom = defineMarkdownComponent({ name: 'WithClass', class: 'prose dark' })
+    const html = await renderComponent(Custom, { value: 'hello' })
     expect(html).toContain('prose dark')
     expect(html).toContain('comark-content')
   })
 
   it('prop class works without config class', async () => {
-    const Custom = defineComarkComponent({ name: 'NoConfigClass' })
-    const html = await renderComponent(Custom, { markdown: 'hello' })
+    const Custom = defineMarkdownComponent({ name: 'NoConfigClass' })
+    const html = await renderComponent(Custom, { value: 'hello' })
     expect(html).toContain('comark-content')
   })
 
   it('inherited component preserves parent class', async () => {
-    const Base = defineComarkComponent({ name: 'Base', class: 'base-class' })
-    const Child = defineComarkComponent({ name: 'Child', extends: Base, class: 'child-class' })
-    const html = await renderComponent(Child, { markdown: 'hello' })
+    const Base = defineMarkdownComponent({ name: 'Base', class: 'base-class' })
+    const Child = defineMarkdownComponent({ name: 'Child', extends: Base, class: 'child-class' })
+    const html = await renderComponent(Child, { value: 'hello' })
     expect(html).toContain('base-class')
     expect(html).toContain('child-class')
   })
 })
 
 // ---------------------------------------------------------------------------
-// defineComarkRendererComponent
+// defineMarkdownDocumentComponent
 // ---------------------------------------------------------------------------
 
-describe('defineComarkRendererComponent — component inheritance via extends', () => {
+describe('defineMarkdownDocumentComponent — component inheritance via extends', () => {
   it('renders with config components', async () => {
-    const Renderer = defineComarkRendererComponent({
+    const Renderer = defineMarkdownDocumentComponent({
       name: 'TestRenderer',
       components: { alert: AlertBase },
     })
-    const tree = await parse('::alert\nhello\n::')
-    const html = await renderComponent(Renderer, { tree })
+    const document = await parseMarkdown('::alert\nhello\n::')
+    const html = await renderComponent(Renderer, { value: document })
 
     expect(html).toContain('alert-base')
   })
 
   it('child inherits parent components when none of its own are defined', async () => {
-    const Base = defineComarkRendererComponent({ name: 'BaseRenderer', components: { alert: AlertBase } })
-    const Child = defineComarkRendererComponent({ name: 'ChildRenderer', extends: Base })
+    const Base = defineMarkdownDocumentComponent({ name: 'BaseRenderer', components: { alert: AlertBase } })
+    const Child = defineMarkdownDocumentComponent({ name: 'ChildRenderer', extends: Base })
 
-    const tree = await parse('::alert\nhello\n::')
-    const html = await renderComponent(Child, { tree })
+    const document = await parseMarkdown('::alert\nhello\n::')
+    const html = await renderComponent(Child, { value: document })
 
     expect(html).toContain('alert-base')
   })
 
   it('child components override the same tag from parent', async () => {
-    const Base = defineComarkRendererComponent({ name: 'BaseRenderer', components: { alert: AlertBase } })
-    const Child = defineComarkRendererComponent({
+    const Base = defineMarkdownDocumentComponent({ name: 'BaseRenderer', components: { alert: AlertBase } })
+    const Child = defineMarkdownDocumentComponent({
       name: 'ChildRenderer',
       extends: Base,
       components: { alert: AlertChild },
     })
 
-    const tree = await parse('::alert\nhello\n::')
-    const html = await renderComponent(Child, { tree })
+    const document = await parseMarkdown('::alert\nhello\n::')
+    const html = await renderComponent(Child, { value: document })
 
     expect(html).toContain('alert-child')
     expect(html).not.toContain('alert-base')
   })
 
   it('child keeps parent components that it does not override', async () => {
-    const Base = defineComarkRendererComponent({
+    const Base = defineMarkdownDocumentComponent({
       name: 'BaseRenderer',
       components: { alert: AlertBase, card: CardBase },
     })
-    const Child = defineComarkRendererComponent({
+    const Child = defineMarkdownDocumentComponent({
       name: 'ChildRenderer',
       extends: Base,
       components: { alert: AlertChild },
     })
 
-    const tree = await parse('::alert\nA\n::\n\n::card\nB\n::')
-    const html = await renderComponent(Child, { tree })
+    const document = await parseMarkdown('::alert\nA\n::\n\n::card\nB\n::')
+    const html = await renderComponent(Child, { value: document })
 
     expect(html).toContain('alert-child')
     expect(html).toContain('card-base')
   })
 
   it('prop-level components override child and parent config', async () => {
-    const Base = defineComarkRendererComponent({ name: 'BaseRenderer', components: { alert: AlertBase } })
-    const Child = defineComarkRendererComponent({
+    const Base = defineMarkdownDocumentComponent({ name: 'BaseRenderer', components: { alert: AlertBase } })
+    const Child = defineMarkdownDocumentComponent({
       name: 'ChildRenderer',
       extends: Base,
       components: { alert: AlertChild },
     })
 
-    const tree = await parse('::alert\nhello\n::')
-    const html = await renderComponent(Child, { tree, components: { alert: AlertProp } })
+    const document = await parseMarkdown('::alert\nhello\n::')
+    const html = await renderComponent(Child, { value: document, components: { alert: AlertProp } })
 
     expect(html).toContain('alert-prop')
     expect(html).not.toContain('alert-child')
@@ -231,19 +231,19 @@ describe('defineComarkRendererComponent — component inheritance via extends', 
   })
 
   it('multi-level extends stacks component maps correctly', async () => {
-    const Base = defineComarkRendererComponent({
+    const Base = defineMarkdownDocumentComponent({
       name: 'BaseRenderer',
       components: { alert: AlertBase, card: CardBase },
     })
-    const Middle = defineComarkRendererComponent({
+    const Middle = defineMarkdownDocumentComponent({
       name: 'MiddleRenderer',
       extends: Base,
       components: { alert: AlertChild },
     })
-    const Child = defineComarkRendererComponent({ name: 'ChildRenderer', extends: Middle })
+    const Child = defineMarkdownDocumentComponent({ name: 'ChildRenderer', extends: Middle })
 
-    const tree = await parse('::alert\nA\n::\n\n::card\nB\n::')
-    const html = await renderComponent(Child, { tree })
+    const document = await parseMarkdown('::alert\nA\n::\n\n::card\nB\n::')
+    const html = await renderComponent(Child, { value: document })
 
     // alert overridden in Middle, card still from Base
     expect(html).toContain('alert-child')
@@ -252,30 +252,30 @@ describe('defineComarkRendererComponent — component inheritance via extends', 
 })
 
 // ---------------------------------------------------------------------------
-// defineComarkRendererComponent — class
+// defineMarkdownDocumentComponent — class
 // ---------------------------------------------------------------------------
 
-describe('defineComarkRendererComponent — class via config', () => {
+describe('defineMarkdownDocumentComponent — class via config', () => {
   it('applies config class to wrapper div', async () => {
-    const Renderer = defineComarkRendererComponent({ name: 'WithClass', class: 'prose dark' })
-    const tree = await parse('hello')
-    const html = await renderComponent(Renderer, { tree })
+    const Renderer = defineMarkdownDocumentComponent({ name: 'WithClass', class: 'prose dark' })
+    const document = await parseMarkdown('hello')
+    const html = await renderComponent(Renderer, { value: document })
     expect(html).toContain('prose dark')
     expect(html).toContain('comark-content')
   })
 
   it('prop class works without config class', async () => {
-    const Renderer = defineComarkRendererComponent({ name: 'NoConfigClass' })
-    const tree = await parse('hello')
-    const html = await renderComponent(Renderer, { tree })
+    const Renderer = defineMarkdownDocumentComponent({ name: 'NoConfigClass' })
+    const document = await parseMarkdown('hello')
+    const html = await renderComponent(Renderer, { value: document })
     expect(html).toContain('comark-content')
   })
 
   it('inherited renderer preserves parent class', async () => {
-    const Base = defineComarkRendererComponent({ name: 'BaseRenderer', class: 'base-class' })
-    const Child = defineComarkRendererComponent({ name: 'ChildRenderer', extends: Base, class: 'child-class' })
-    const tree = await parse('hello')
-    const html = await renderComponent(Child, { tree })
+    const Base = defineMarkdownDocumentComponent({ name: 'BaseRenderer', class: 'base-class' })
+    const Child = defineMarkdownDocumentComponent({ name: 'ChildRenderer', extends: Base, class: 'child-class' })
+    const document = await parseMarkdown('hello')
+    const html = await renderComponent(Child, { value: document })
     expect(html).toContain('base-class')
     expect(html).toContain('child-class')
   })

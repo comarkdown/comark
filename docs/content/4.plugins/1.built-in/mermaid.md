@@ -27,10 +27,10 @@ The `comark/plugins/mermaid` plugin renders [Mermaid](https://mermaid.js.org/) d
 ## Usage
 
 ```typescript
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import mermaid from 'comark/plugins/mermaid'
 
-const result = await parse(content, {
+const result = await parseMarkdown(content, {
   plugins: [mermaid()]
 })
 ```
@@ -41,39 +41,39 @@ With framework components, pass both the plugin and the `Mermaid` renderer compo
 
 ```vue [Vue]
 <script setup lang="ts">
-import { Comark } from '@comark/vue'
+import { Markdown } from '@comark/vue'
 import mermaid, { Mermaid } from '@comark/vue/plugins/mermaid'
 </script>
 
 <template>
   <Suspense>
-    <Comark
+    <Markdown
       :components="{ mermaid: Mermaid }"
       :plugins="[mermaid()]"
-    >{{ content }}</Comark>
+    >{{ content }}</Markdown>
   </Suspense>
 </template>
 ```
 
 ```tsx [React]
-import { Comark } from '@comark/react'
+import { Markdown } from '@comark/react'
 import mermaid, { Mermaid } from '@comark/react/plugins/mermaid'
 
-<Comark
+<Markdown
   components={{ mermaid: Mermaid }}
   plugins={[mermaid()]}
 >
   {content}
-</Comark>
+</Markdown>
 ```
 
 ```svelte [Svelte]
 <script lang="ts">
-  import { Comark } from '@comark/svelte'
+  import { Markdown } from '@comark/svelte'
   import mermaid, { Mermaid } from '@comark/svelte/plugins/mermaid'
 </script>
 
-<Comark {content} components={{ mermaid: Mermaid }} plugins={[mermaid()]} />
+<Markdown {content} components={{ mermaid: Mermaid }} plugins={[mermaid()]} />
 ```
 
 ::
@@ -203,7 +203,7 @@ Returns a `ComarkPlugin` that marks ` ```mermaid ` code blocks for custom render
 
 **Returns:** `ComarkPlugin`
 
-The plugin converts mermaid code blocks into AST nodes that the `<Mermaid>` component renders. Rendering requires passing `Mermaid` to the `components` prop of `<Comark>` (see [Usage](#usage)).
+The plugin converts mermaid code blocks into AST nodes that the `<Mermaid>` component renders. Rendering requires passing `Mermaid` to the `components` prop of `<Markdown>` (see [Usage](#usage)).
 
 ---
 

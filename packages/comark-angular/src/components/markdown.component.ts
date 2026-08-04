@@ -7,28 +7,29 @@ import {
   ChangeDetectorRef,
   Type,
 } from '@angular/core'
-import { createSerializedParse } from 'comark'
-import type { ParseOptions, ComarkTree } from 'comark'
-import { ComarkRendererComponent } from './comark-renderer.component.ts'
+import { createSerializedMarkdownParser } from 'comark'
+import type { ParserOptions, MarkdownDocument as MarkdownDocumentType } from 'comark'
+import { isMarkdownDocument } from 'comark/utils'
+import { MarkdownDocument } from './markdown-document.component.ts'
 
 /**
- * High-level Comark component that accepts raw markdown, parses it,
- * and renders the resulting AST.
+ * High-level Markdown component that accepts raw markdown, parses it,
+ * and renders the resulting document.
  *
  * @example
  * ```html
- * <comark [markdown]="content" [components]="customComponents" />
+ * <comark-markdown [value]="content" [components]="customComponents" />
  * ```
  */
 @Component({
-  selector: 'comark',
+  selector: 'comark-markdown',
   standalone: true,
-  imports: [ComarkRendererComponent],
+  imports: [MarkdownDocument],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    @if (tree) {
-      <comark-renderer
-        [tree]="tree"
+    @if (document) {
+      <comark-markdown-document
+        [value]="document"
         [components]="components"
         [streaming]="streaming"
         [caret]="caret"
@@ -37,18 +38,18 @@ import { ComarkRendererComponent } from './comark-renderer.component.ts'
     }
   `,
 })
-export class ComarkComponent implements OnChanges {
-  /** The markdown content to parse and render */
-  @Input() markdown: string = ''
+export class Markdown implements OnChanges {
+  /** The markdown content to parse and render, or a pre-parsed MarkdownDocument */
+  @Input() value?: string | MarkdownDocumentType
 
   /** Parser options (excluding plugins) */
-  @Input() options: Exclude<ParseOptions, 'plugins'> = {}
+  @Input() options: Exclude<ParserOptions, 'plugins'> = {}
 
   /** Additional plugins to use */
-  @Input() plugins: ParseOptions['plugins'] = []
+  @Input() plugins: ParserOptions['plugins'] = []
 
   /**
-   * Strip wrapper tags from the top level of the tree — shorthand for
+   * Strip wrapper tags from the top level of the document — shorthand for
    * `options.unwrap`. `true` unwraps `<p>`; a space-separated string or array
    * unwraps the listed tags.
    */
@@ -69,22 +70,22 @@ export class ComarkComponent implements OnChanges {
   /** Additional data to pass to the renderer for :binding resolution */
   @Input() data: Record<string, unknown> = {}
 
-  tree: ComarkTree | null = null
+  document: MarkdownDocumentType | null = null
 
-  private serializedParse = createSerializedParse({})
+  private serializedParse = createSerializedMarkdownParser({})
 
   constructor(private cdr: ChangeDetectorRef) {}
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['options'] || changes['plugins'] || changes['unwrap']) {
-      this.serializedParse = createSerializedParse({
+      this.serializedParse = createSerializedMarkdownParser({
         ...this.options,
         ...(this.unwrap ? { unwrap: this.unwrap } : {}),
         plugins: this.plugins,
       })
     }
     if (
-      changes['markdown'] ||
+      changes['value'] ||
       changes['options'] ||
       changes['plugins'] ||
       changes['unwrap'] ||
@@ -96,14 +97,21 @@ export class ComarkComponent implements OnChanges {
   }
 
   private parseMarkdown(): void {
-    let source = this.markdown || ''
+    // Pre-parsed document — skip parsing and render directly
+    if (isMarkdownDocument(this.value)) {
+      this.document = this.value
+      this.cdr.markForCheck()
+      return
+    }
+
+    let source = (this.value as string | undefined) ?? ''
     if (this.summary) {
       source = source.split('<!-- more -->')[0] || ''
     }
     source = source.trim()
 
     this.serializedParse(source, { streaming: this.streaming }).then((result) => {
-      this.tree = result
+      this.document = result
       this.cdr.markForCheck()
     })
   }

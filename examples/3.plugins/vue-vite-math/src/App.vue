@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Comark } from '@comark/vue'
+import { Markdown } from '@comark/vue'
 import math, { Math } from '@comark/vue/plugins/math'
 import 'katex/dist/katex.min.css'
 
@@ -47,11 +47,11 @@ $$
 
 <template>
   <Suspense>
-    <Comark
+    <Markdown
       :components="{ math: Math }"
       :plugins="[math()]"
     >
       {{ markdown }}
-    </Comark>
+    </Markdown>
   </Suspense>
 </template>

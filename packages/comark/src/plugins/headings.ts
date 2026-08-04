@@ -1,4 +1,4 @@
-import type { ComarkNode } from 'comark'
+import type { Node } from 'comark'
 import { defineComarkPlugin } from '../utils/helpers.ts'
 
 export interface HeadingsOptions {
@@ -22,26 +22,26 @@ export interface HeadingsOptions {
   remove?: boolean
 }
 
-function getTag(node: ComarkNode): string | null {
+function getTag(node: Node): string | null {
   if (Array.isArray(node) && node.length >= 1) {
     return node[0] as string
   }
   return null
 }
 
-function getChildren(node: ComarkNode): ComarkNode[] {
+function getChildren(node: Node): Node[] {
   if (Array.isArray(node) && node.length > 2) {
-    return node.slice(2) as ComarkNode[]
+    return node.slice(2) as Node[]
   }
   return []
 }
 
-function flattenNodeText(node: ComarkNode): string {
+function flattenNodeText(node: Node): string {
   if (typeof node === 'string') {
     return node
   }
   if (Array.isArray(node)) {
-    return getChildren(node).reduce((text: string, child: ComarkNode) => {
+    return getChildren(node).reduce((text: string, child: Node) => {
       return text + flattenNodeText(child)
     }, '')
   }

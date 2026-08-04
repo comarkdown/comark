@@ -11,9 +11,9 @@ links:
     to: /api/parse
     color: neutral
     variant: soft
-  - label: Comark AST
+  - label: Document Model
     icon: i-lucide-braces
-    to: /syntax/comark-ast
+    to: /getting-started/document-model
     color: neutral
     variant: soft
 ---
@@ -23,10 +23,10 @@ The `comark/plugins/toc` plugin generates a hierarchical table of contents from 
 ## Usage
 
 ```typescript
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import toc from 'comark/plugins/toc'
 
-const result = await parse(content, {
+const result = await parseMarkdown(content, {
   plugins: [toc()]
 })
 
@@ -71,9 +71,9 @@ interface TocLink {
 
 | Option | Type | Default | Description |
 |---|---|---|---|
-| [`depth`](#options-code-depth) | `number` | `2` | Heading levels to include: `1` = h2 only, `2` = h2–h3, `3` = h2–h4, etc. |
-| [`searchDepth`](#options-code-searchdepth) | `number` | `2` | How deep to search for headings in nested component structures |
-| [`title`](#options-code-title) | `string` | `''` | Title field on the returned `TocTree` |
+| [`depth`](#options-depth) | `number` | `2` | Heading levels to include: `1` = h2 only, `2` = h2–h3, `3` = h2–h4, etc. |
+| [`searchDepth`](#options-searchdepth) | `number` | `2` | How deep to search for headings in nested component structures |
+| [`title`](#options-title) | `string` | `''` | Title field on the returned `TocTree` |
 
 ::tip
 All three options can also be set via frontmatter: `depth`, `searchDepth`, and `title` keys are read automatically and override the plugin options.
@@ -118,7 +118,7 @@ toc({ title: 'On This Page' })
 ::code-group
 
 ```typescript [Parse API]
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import toc from 'comark/plugins/toc'
 
 const content = `## Introduction
@@ -131,7 +131,7 @@ const content = `## Introduction
 ## Conclusion
 `
 
-const result = await parse(content, { plugins: [toc()] })
+const result = await parseMarkdown(content, { plugins: [toc()] })
 console.log(result.meta.toc)
 ```
 
@@ -160,20 +160,20 @@ console.log(result.meta.toc)
 
 ### Docs Layout
 
-Parse once to get the TOC, then render it alongside the `<Comark>` component:
+Parse once to get the TOC, then render it alongside the `<Markdown>` component:
 
 ::code-group
 
 ```vue [Vue]
 <script setup lang="ts">
-import { parse } from 'comark'
-import { Comark } from '@comark/vue'
+import { parseMarkdown } from 'comark'
+import { Markdown } from '@comark/vue'
 import toc from '@comark/vue/plugins/toc'
 
 const props = defineProps<{ content: string }>()
 
 const plugins = [toc({ depth: 3 })]
-const result = await parse(props.content, { plugins })
+const result = await parseMarkdown(props.content, { plugins })
 const tocData = result.meta.toc
 </script>
 
@@ -195,7 +195,7 @@ const tocData = result.meta.toc
       </nav>
     </aside>
     <main>
-      <Comark :plugins="plugins">{{ props.content }}</Comark>
+      <Markdown :plugins="plugins">{{ props.content }}</Markdown>
     </main>
   </div>
 </template>
@@ -203,8 +203,8 @@ const tocData = result.meta.toc
 
 ```tsx [React]
 import { useEffect, useState } from 'react'
-import { parse } from 'comark'
-import { Comark } from '@comark/react'
+import { parseMarkdown } from 'comark'
+import { Markdown } from '@comark/react'
 import toc from '@comark/react/plugins/toc'
 
 const plugins = [toc({ depth: 3 })]
@@ -213,7 +213,7 @@ export function DocsLayout({ content }: { content: string }) {
   const [tocData, setTocData] = useState<any>(null)
 
   useEffect(() => {
-    parse(content, { plugins }).then(result => setTocData(result.meta.toc))
+    parseMarkdown(content, { plugins }).then(result => setTocData(result.meta.toc))
   }, [content])
 
   return (
@@ -240,7 +240,7 @@ export function DocsLayout({ content }: { content: string }) {
         </nav>
       </aside>
       <main>
-        <Comark plugins={plugins}>{content}</Comark>
+        <Markdown plugins={plugins}>{content}</Markdown>
       </main>
     </div>
   )
@@ -272,7 +272,7 @@ searchDepth: 3
 ```
 
 ```typescript
-const result = await parse(content, { plugins: [toc()] })
+const result = await parseMarkdown(content, { plugins: [toc()] })
 console.log(result.meta.toc.depth) // 3 (from frontmatter)
 console.log(result.meta.toc.title) // "My Guide" (from frontmatter)
 ```

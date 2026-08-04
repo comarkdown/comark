@@ -21,11 +21,11 @@ This alert is rendered using a custom Comark component mapped via the `component
 - **Fast** — Powered by Vite + Analog for instant HMR
 
 ```ts
-import { parse } from 'comark'
-import { ComarkRendererComponent } from '@comark/angular'
+import { parseMarkdown } from 'comark'
+import { MarkdownDocument } from '@comark/angular'
 
-const tree = await parse(markdown)
-// <comark-renderer [tree]="tree" [components]="components" />
+const tree = await parseMarkdown(markdown)
+// <comark-markdown-parsed [value]="tree" [components]="components" />
 ```
 
 ::alert{type="success"}

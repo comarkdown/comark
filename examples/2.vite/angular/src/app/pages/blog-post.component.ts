@@ -1,13 +1,13 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core'
 import { ActivatedRoute, RouterLink } from '@angular/router'
-import { ComarkRendererComponent } from '@comark/angular'
+import { MarkdownDocument } from '@comark/angular'
 import { getPost, type Post } from '../lib/posts'
 import { AlertComponent } from '../components/alert.component'
 
 @Component({
   selector: 'app-blog-post',
   standalone: true,
-  imports: [ComarkRendererComponent, RouterLink],
+  imports: [MarkdownDocument, RouterLink],
   template: `
     @if (post) {
       <article>
@@ -34,8 +34,8 @@ import { AlertComponent } from '../components/alert.component'
             </div>
           </div>
         </header>
-        <comark-renderer
-          [tree]="post.tree"
+        <comark-markdown-document
+          [value]="post.tree"
           [components]="components"
         />
       </article>

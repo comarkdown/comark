@@ -2,7 +2,7 @@ import { describe, it, expect, beforeAll } from 'vitest'
 import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { parseFrontmatter } from '../src/internal/frontmatter'
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import { renderMarkdown } from 'comark/render'
 import highlight from 'comark/plugins/highlight'
 import type { HighlightOptions } from '../src/plugins/highlight'
@@ -14,9 +14,9 @@ import minLight from 'shiki/dist/themes/min-light.mjs'
 import nord from 'shiki/dist/themes/nord.mjs'
 import rustLanguage from 'shiki/dist/langs/rust.mjs'
 import goLanguage from 'shiki/dist/langs/go.mjs'
-import type { ParseOptions } from '../src/types'
+import type { ParserOptions } from '../src/types'
 import type { ShikiTransformer } from 'shiki'
-import { renderHTMLForTest } from './utils/render-html'
+import { renderHtmlForTest } from './utils/render-html'
 import { Binding as HTMLBiniding } from '../../comark-html/src/plugins/binding'
 
 type PluginName = 'emoji' | 'binding'
@@ -214,7 +214,7 @@ describe('Comark Tests', () => {
       return
     }
     describe(file, () => {
-      let parsedAST: Awaited<ReturnType<typeof parse>>
+      let document: Awaited<ReturnType<typeof parseMarkdown>>
 
       beforeAll(async () => {
         const declaredPlugins = testCase.options?.plugins ?? []
@@ -246,7 +246,7 @@ describe('Comark Tests', () => {
           )
         }
 
-        const parseOptions: ParseOptions = {
+        const parseOptions: ParserOptions = {
           autoUnwrap: testCase.options?.autoUnwrap === false ? false : true,
         }
 
@@ -254,16 +254,16 @@ describe('Comark Tests', () => {
           parseOptions.plugins = plugins
         }
 
-        parsedAST = await parse(testCase.input, parseOptions)
+        document = await parseMarkdown(testCase.input, parseOptions)
       }, parseHookTimeout(testCase))
 
       it('should parse input to AST', () => {
         const expectedAST = JSON.parse(testCase.ast)
-        expect(parsedAST).toEqual(expectedAST)
+        expect(document).toEqual(expectedAST)
       })
 
       it('should render AST to HTML', { timeout: testCase.timeouts?.html ?? DEFAULT_TEST_TIMEOUT }, async () => {
-        const result = await renderHTMLForTest(parsedAST, {
+        const result = await renderHtmlForTest(document, {
           components: {
             binding: HTMLBiniding,
           },
@@ -276,7 +276,7 @@ describe('Comark Tests', () => {
         'should render AST to Markdown',
         { timeout: testCase.timeouts?.markdown ?? DEFAULT_TEST_TIMEOUT },
         async () => {
-          const result = await renderMarkdown(parsedAST, {
+          const result = await renderMarkdown(document, {
             ...(testCase.options || {}),
             components: {
               binding: MarkdownBinding,
@@ -292,8 +292,8 @@ describe('Comark Tests', () => {
 
 describe('custom components', () => {
   it('renders with custom component handler in markdown', async () => {
-    const tree = await parse('::alert{type="warning"}\nWatch out!\n::')
-    const md = await renderMarkdown(tree, {
+    const document = await parseMarkdown('::alert{type="warning"}\nWatch out!\n::')
+    const md = await renderMarkdown(document, {
       components: {
         alert: async ([, attrs, ...children], { render }) => {
           return `> [!${attrs.type}]\n> ${(await render(children)).trim()}\n`
@@ -305,8 +305,8 @@ describe('custom components', () => {
   })
 
   it('renders with custom component handler in html', async () => {
-    const tree = await parse('::alert{type="info"}\nHello!\n::')
-    const html = await renderHTMLForTest(tree, {
+    const tree = await parseMarkdown('::alert{type="info"}\nHello!\n::')
+    const html = await renderHtmlForTest(tree, {
       components: {
         alert: async ([, attrs, ...children], { render }) => {
           return `<div class="alert alert-${attrs.type}">${await render(children)}</div>`
@@ -318,8 +318,8 @@ describe('custom components', () => {
   })
 
   it('renders with conditional handler in markdown', async () => {
-    const tree = await parse('::alert{type="info"}\nInfo\n::\n\n::alert{type="warning"}\nWarning\n::')
-    const md = await renderMarkdown(tree, {
+    const document = await parseMarkdown('::alert{type="info"}\nInfo\n::\n\n::alert{type="warning"}\nWarning\n::')
+    const md = await renderMarkdown(document, {
       components: {
         infoAlert: {
           match: (node) => node[0] === 'alert' && node[1].type === 'info',
@@ -335,8 +335,8 @@ describe('custom components', () => {
   })
 
   it('renders with conditional handler in html', async () => {
-    const tree = await parse('::alert{type="info"}\nInfo\n::\n\n::alert{type="warning"}\nWarning\n::')
-    const html = await renderHTMLForTest(tree, {
+    const tree = await parseMarkdown('::alert{type="info"}\nInfo\n::\n\n::alert{type="warning"}\nWarning\n::')
+    const html = await renderHtmlForTest(tree, {
       components: {
         infoAlert: {
           match: (node) => node[0] === 'alert' && node[1].type === 'info',

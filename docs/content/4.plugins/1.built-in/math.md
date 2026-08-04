@@ -35,10 +35,10 @@ import 'katex/dist/katex.min.css'
 ## Usage
 
 ```typescript
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import math from 'comark/plugins/math'
 
-const result = await parse('Inline $x^2$ and display $$E = mc^2$$', {
+const result = await parseMarkdown('Inline $x^2$ and display $$E = mc^2$$', {
   plugins: [math()]
 })
 ```
@@ -49,39 +49,39 @@ With framework components, pass both the plugin and the `Math` renderer componen
 
 ```vue [Vue]
 <script setup lang="ts">
-import { Comark } from '@comark/vue'
+import { Markdown } from '@comark/vue'
 import math, { Math } from '@comark/vue/plugins/math'
 </script>
 
 <template>
   <Suspense>
-    <Comark
+    <Markdown
       :components="{ math: Math }"
       :plugins="[math()]"
-    >{{ content }}</Comark>
+    >{{ content }}</Markdown>
   </Suspense>
 </template>
 ```
 
 ```tsx [React]
-import { Comark } from '@comark/react'
+import { Markdown } from '@comark/react'
 import math, { Math } from '@comark/react/plugins/math'
 
-<Comark
+<Markdown
   components={{ math: Math }}
   plugins={[math()]}
 >
   {content}
-</Comark>
+</Markdown>
 ```
 
 ```svelte [Svelte]
 <script lang="ts">
-  import { Comark } from '@comark/svelte'
+  import { Markdown } from '@comark/svelte'
   import math, { Math } from '@comark/svelte/plugins/math'
 </script>
 
-<Comark {content} components={{ math: Math }} plugins={[math()]} />
+<Markdown {content} components={{ math: Math }} plugins={[math()]} />
 ```
 
 ::
@@ -141,7 +141,7 @@ Returns a `ComarkPlugin` that tokenizes `$...$` and `$$...$$` expressions. Takes
 
 **Returns:** `ComarkPlugin`
 
-The plugin stores LaTeX source as plain text in the AST. Rendering requires passing `Math` to the `components` prop of `<Comark>` (see [Usage](#usage)). KaTeX only runs when the component mounts.
+The plugin stores LaTeX source as plain text in the AST. Rendering requires passing `Math` to the `components` prop of `<Markdown>` (see [Usage](#usage)). KaTeX only runs when the component mounts.
 
 ---
 

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { ComarkRenderer } from '@comark/react'
+import { MarkdownDocument } from '@comark/react'
 import { getPost, type Post } from '../lib/posts'
 import Alert from '../components/Alert'
 import { Link } from '../router'
@@ -41,8 +41,8 @@ export default function BlogPost({ slug }: { slug: string }) {
           </div>
         </div>
       </header>
-      <ComarkRenderer
-        tree={post.tree}
+      <MarkdownDocument
+        value={post.tree}
         components={{ Alert }}
       />
     </article>

@@ -29,7 +29,7 @@ No peer dependencies are required.
 
 ```vue [App.vue]
 <script setup lang="ts">
-import { Comark } from '@comark/vue'
+import { Markdown } from '@comark/vue'
 import footnotes from '@comark/vue/plugins/footnotes'
 
 const markdown = `
@@ -42,7 +42,7 @@ Comark supports footnotes[^1] with back-references[^2].
 
 <template>
   <Suspense>
-    <Comark :plugins="[footnotes()]">{{ markdown }}</Comark>
+    <Markdown :plugins="[footnotes()]">{{ markdown }}</Markdown>
   </Suspense>
 </template>
 ```
@@ -50,7 +50,7 @@ Comark supports footnotes[^1] with back-references[^2].
 ### With React
 
 ```tsx [App.tsx]
-import { Comark } from '@comark/react'
+import { Markdown } from '@comark/react'
 import footnotes from '@comark/react/plugins/footnotes'
 
 const markdown = `
@@ -62,7 +62,7 @@ Comark supports footnotes[^1] with back-references[^2].
 
 function App() {
   return (
-    <Comark plugins={[footnotes()]}>{markdown}</Comark>
+    <Markdown plugins={[footnotes()]}>{markdown}</Markdown>
   )
 }
 ```
@@ -71,7 +71,7 @@ function App() {
 
 ```svelte [App.svelte]
 <script lang="ts">
-  import { Comark } from '@comark/svelte'
+  import { Markdown } from '@comark/svelte'
   import footnotes from '@comark/svelte/plugins/footnotes'
 
   const markdown = `
@@ -82,16 +82,16 @@ Comark supports footnotes[^1] with back-references[^2].
 `
 </script>
 
-<Comark {markdown} plugins={[footnotes()]} />
+<Markdown value={markdown} plugins={[footnotes()]} />
 ```
 
 ### With Parse API
 
 ```typescript [parse.ts]
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import footnotes from 'comark/plugins/footnotes'
 
-const result = await parse('Hello[^1]\n\n[^1]: World', {
+const result = await parseMarkdown('Hello[^1]\n\n[^1]: World', {
   plugins: [footnotes()]
 })
 ```
@@ -265,18 +265,18 @@ Footnote references work inside bold, italic, and other inline formatting:
 
 ## Stringify (Markdown Rendering)
 
-The plugin exports a `Footnote` conditional handler that converts the footnote AST back into standard markdown footnote syntax. This is useful when you want to render a `ComarkTree` back to markdown and preserve footnotes.
+The plugin exports a `Footnote` conditional handler that converts the footnote AST back into standard markdown footnote syntax. This is useful when you want to render a `MarkdownDocument` back to markdown and preserve footnotes.
 
 ```typescript
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import { renderMarkdown } from 'comark/render'
 import footnotes, { Footnote } from 'comark/plugins/footnotes'
 
-const tree = await parse('Hello[^1]\n\n[^1]: World', {
+const document = await parseMarkdown('Hello[^1]\n\n[^1]: World', {
   plugins: [footnotes()]
 })
 
-const md = await renderMarkdown(tree, {
+const md = await renderMarkdown(document, {
   components: { footnotes: Footnote },
 })
 // Hello[^1]

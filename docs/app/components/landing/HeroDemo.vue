@@ -1,19 +1,9 @@
 <script setup lang="ts">
-import { codeToHtml } from 'shiki'
-
 const props = defineProps<{
   demoMarkdown: string
 }>()
 
-const { data: highlightedSource } = await useAsyncData(
-  'hero-demo-source',
-  () =>
-    codeToHtml(props.demoMarkdown, {
-      lang: 'mdc',
-      themes: { light: 'github-light', dark: 'github-dark' },
-    }),
-  { watch: [() => props.demoMarkdown] }
-)
+const sourceAsCode = computed(() => ['```md', props.demoMarkdown, '```'].join('\n'))
 </script>
 
 <template>
@@ -43,9 +33,10 @@ const { data: highlightedSource } = await useAsyncData(
           <span class="font-mono text-xs text-muted">source.md</span>
         </div>
         <div class="shiki-source h-[280px] overflow-y-auto overflow-x-hidden p-4 md:h-[400px]">
-          <div
+          <ComarkDocs
             class="font-mono text-sm/6"
-            v-html="highlightedSource"
+            :markdown="sourceAsCode"
+            :components="{ ProsePre: 'pre' }"
           />
         </div>
       </div>
@@ -58,7 +49,7 @@ const { data: highlightedSource } = await useAsyncData(
           <ComarkDocs
             v-if="demoMarkdown"
             class="text-sm"
-            :markdown="demoMarkdown"
+            :value="demoMarkdown"
           />
         </div>
       </div>

@@ -13,13 +13,13 @@ import {
   createComponent,
   reflectComponentType,
 } from '@angular/core'
-import type { ComarkElement, ComarkNode, NodeRenderData } from 'comark'
+import type { ElementNode, Node as MarkdownAstNode, NodeRenderData } from 'comark'
 import { pascalCase, resolveAttributes } from 'comark/utils'
 
 /**
- * Helper to get tag from a ComarkNode
+ * Helper to get tag from a Node
  */
-function getTag(node: ComarkNode): string | null {
+function getTag(node: MarkdownAstNode): string | null {
   if (Array.isArray(node) && node.length >= 1) {
     return node[0] as string
   }
@@ -27,9 +27,9 @@ function getTag(node: ComarkNode): string | null {
 }
 
 /**
- * Helper to get props from a ComarkNode
+ * Helper to get props from a Node
  */
-function getProps(node: ComarkNode): Record<string, any> {
+function getProps(node: MarkdownAstNode): Record<string, any> {
   if (Array.isArray(node) && node.length >= 2) {
     return (node[1] as Record<string, any>) || {}
   }
@@ -37,11 +37,11 @@ function getProps(node: ComarkNode): Record<string, any> {
 }
 
 /**
- * Helper to get children from a ComarkNode
+ * Helper to get children from a Node
  */
-function getChildren(node: ComarkNode): ComarkNode[] {
+function getChildren(node: MarkdownAstNode): MarkdownAstNode[] {
   if (Array.isArray(node) && node.length > 2) {
-    return node.slice(2) as ComarkNode[]
+    return node.slice(2) as MarkdownAstNode[]
   }
   return []
 }
@@ -74,21 +74,21 @@ const VOID_ELEMENTS = new Set([
 ])
 
 /**
- * ComarkNode — recursive component that renders a single Comark AST node.
+ * MarkdownNode — recursive component that renders a single Comark AST node.
  *
  * For text nodes, it inserts the text directly.
  * For element nodes, it creates a native DOM element or instantiates
  * a custom Angular component via ViewContainerRef.
  */
 @Component({
-  selector: 'comark-node',
+  selector: 'comark-markdown-node',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: '',
 })
-export class ComarkNodeComponent implements OnChanges {
+export class MarkdownNode implements OnChanges {
   /** The Comark AST node to render */
-  @Input({ required: true }) node!: ComarkNode
+  @Input({ required: true }) node!: MarkdownAstNode
 
   /** Custom component mappings */
   @Input() components: Record<string, Type<any>> = {}
@@ -97,7 +97,7 @@ export class ComarkNodeComponent implements OnChanges {
   @Input() renderData: NodeRenderData = { frontmatter: {}, meta: {}, data: {}, props: {} }
 
   /** Parent node (for context like `pre` tag detection) */
-  @Input() parent?: ComarkNode
+  @Input() parent?: MarkdownAstNode
 
   constructor(
     private vcr: ViewContainerRef,
@@ -139,7 +139,7 @@ export class ComarkNodeComponent implements OnChanges {
       // Resolve custom component
       let customComponent: Type<any> | undefined
 
-      if ((this.parent as ComarkElement | undefined)?.[0] !== 'pre') {
+      if ((this.parent as ElementNode | undefined)?.[0] !== 'pre') {
         if (nodeProps.as) {
           customComponent = resolveComponent(nodeProps.as, this.components)
         }
@@ -188,7 +188,7 @@ export class ComarkNodeComponent implements OnChanges {
     parentEl: HTMLElement,
     tag: string,
     attrs: Record<string, any>,
-    children: ComarkNode[],
+    children: MarkdownAstNode[],
     childrenRenderData: NodeRenderData
   ): void {
     const el = this.renderer.createElement(tag)
@@ -206,7 +206,7 @@ export class ComarkNodeComponent implements OnChanges {
   private renderNativeElement(
     tag: string,
     attrs: Record<string, any>,
-    children: ComarkNode[],
+    children: MarkdownAstNode[],
     childrenRenderData: NodeRenderData
   ): void {
     this.renderNativeEl(this.elementRef.nativeElement as HTMLElement, tag, attrs, children, childrenRenderData)
@@ -215,12 +215,12 @@ export class ComarkNodeComponent implements OnChanges {
   private renderCustomComponent(
     componentType: Type<any>,
     attrs: Record<string, any>,
-    children: ComarkNode[],
+    children: MarkdownAstNode[],
     childrenRenderData: NodeRenderData
   ): void {
     // Separate slots from regular children
-    const slots: Record<string, ComarkNode[]> = {}
-    const regularChildren: ComarkNode[] = []
+    const slots: Record<string, MarkdownAstNode[]> = {}
+    const regularChildren: MarkdownAstNode[] = []
 
     for (const child of children) {
       if (child === undefined || child === null) continue
@@ -309,10 +309,10 @@ export class ComarkNodeComponent implements OnChanges {
   }
 
   /**
-   * Render an array of ComarkNode children into a parent DOM element.
+   * Render an array of Node children into a parent DOM element.
    * Each child gets its own `comark-node` component created dynamically.
    */
-  private renderChildren(parentEl: HTMLElement, children: ComarkNode[], renderData: NodeRenderData): void {
+  private renderChildren(parentEl: HTMLElement, children: MarkdownAstNode[], renderData: NodeRenderData): void {
     for (const child of children) {
       if (child === undefined || child === null) continue
 
@@ -323,7 +323,7 @@ export class ComarkNodeComponent implements OnChanges {
         continue
       }
 
-      // For element nodes, recursively create ComarkNodeComponent
+      // For element nodes, recursively create MarkdownNode
       if (Array.isArray(child)) {
         const childTag = getTag(child)
         if (!childTag) continue
@@ -333,7 +333,7 @@ export class ComarkNodeComponent implements OnChanges {
 
         // Resolve custom component for this child
         let customComponent: Type<any> | undefined
-        if ((this.node as ComarkElement)?.[0] !== 'pre') {
+        if ((this.node as ElementNode)?.[0] !== 'pre') {
           if (childProps.as) {
             customComponent = resolveComponent(childProps.as, this.components)
           }
@@ -343,7 +343,7 @@ export class ComarkNodeComponent implements OnChanges {
         }
 
         if (customComponent) {
-          const componentRef = this.vcr.createComponent(ComarkNodeComponent)
+          const componentRef = this.vcr.createComponent(MarkdownNode)
           componentRef.instance.node = child
           componentRef.instance.components = this.components
           componentRef.instance.renderData = renderData

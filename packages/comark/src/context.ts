@@ -1,13 +1,13 @@
-import type { ComarkElement, ComarkNode, ComarkTree } from './types.ts'
+import type { ElementNode, Node, MarkdownDocument } from './types.ts'
 
 // #region patches
 
 /**
- * A patch describes a surgical mutation of a {@link ComarkTree}.
+ * A patch describes a surgical mutation of a {@link MarkdownDocument}.
  *
  * `path` is a node index path into `tree.nodes`: the first segment indexes
  * into `tree.nodes`, each subsequent segment indexes into the *children* of
- * the addressed element. Because `ComarkElement` is `[tag, attrs, ...children]`,
+ * the addressed element. Because `ElementNode` is `[tag, attrs, ...children]`,
  * child index `i` is resolved against array slot `i + 2` internally — callers
  * always work in plain child indices.
  *
@@ -15,14 +15,14 @@ import type { ComarkElement, ComarkNode, ComarkTree } from './types.ts'
  * replaces the first child of the third top-level node.
  */
 export type ComarkPatch =
-  | { op: 'replace'; path: number[]; node: ComarkNode }
-  | { op: 'insert'; path: number[]; node: ComarkNode }
+  | { op: 'replace'; path: number[]; node: Node }
+  | { op: 'insert'; path: number[]; node: Node }
   | { op: 'remove'; path: number[] }
   | { op: 'meta'; meta: Record<string, unknown> }
   | { op: 'frontmatter'; frontmatter: Record<string, unknown> }
   | { op: 'data'; data: Record<string, unknown> }
 
-function emptyTree(): ComarkTree {
+function emptyTree(): MarkdownDocument {
   return { nodes: [], frontmatter: {}, meta: {} }
 }
 
@@ -32,7 +32,7 @@ function emptyTree(): ComarkTree {
  * siblings and branches keep their references so framework identity checks
  * only re-render what actually changed.
  */
-function patchNodeList(nodes: ComarkNode[], path: number[], patch: ComarkPatch): ComarkNode[] {
+function patchNodeList(nodes: Node[], path: number[], patch: ComarkPatch): Node[] {
   const [index, ...rest] = path
   const next = nodes.slice()
 
@@ -57,13 +57,13 @@ function patchNodeList(nodes: ComarkNode[], path: number[], patch: ComarkPatch):
   if (!Array.isArray(target) || target[0] === null) {
     throw new Error(`Comark patch: path segment [${index}] does not point to an element`)
   }
-  const element = target as ComarkElement
-  const children = element.slice(2) as ComarkNode[]
-  next[index] = [element[0], element[1], ...patchNodeList(children, rest, patch)] as ComarkElement
+  const element = target as ElementNode
+  const children = element.slice(2) as Node[]
+  next[index] = [element[0], element[1], ...patchNodeList(children, rest, patch)] as ElementNode
   return next
 }
 
-function applyPatch(current: ComarkTree, patch: ComarkPatch): ComarkTree {
+function applyPatch(current: MarkdownDocument, patch: ComarkPatch): MarkdownDocument {
   switch (patch.op) {
     case 'meta':
       return { ...current, meta: { ...current.meta, ...patch.meta } }
@@ -88,18 +88,18 @@ function applyPatch(current: ComarkTree, patch: ComarkPatch): ComarkTree {
 /** A single live document: the per-id handle returned by `context.get(id)`. */
 export interface ComarkDocument {
   /** The current tree. Replaced wholesale on `set`, structurally on `patch`. */
-  readonly tree: ComarkTree
+  readonly tree: MarkdownDocument
   /** Replace the whole tree (e.g. an HMR re-parse or an agent rewrite). */
-  set(tree: ComarkTree): void
+  set(tree: MarkdownDocument): void
   /** Apply one or more patches against the current tree (structural sharing). */
   patch(patch: ComarkPatch | ComarkPatch[]): void
   /** Subscribe to tree changes. Returns the cleanup function. */
-  listen(fn: (tree: ComarkTree) => void): (clear?: boolean) => void
+  listen(fn: (tree: MarkdownDocument) => void): (clear?: boolean) => void
 }
 
-function createDocument(initial: ComarkTree, onEmpty: (tree: ComarkTree) => void): ComarkDocument {
+function createDocument(initial: MarkdownDocument, onEmpty: (tree: MarkdownDocument) => void): ComarkDocument {
   let tree = initial
-  const listeners = new Set<(tree: ComarkTree) => void>()
+  const listeners = new Set<(tree: MarkdownDocument) => void>()
   const emit = () => listeners.forEach((fn) => fn(tree))
   return {
     get tree() {
@@ -138,7 +138,7 @@ function createDocument(initial: ComarkTree, onEmpty: (tree: ComarkTree) => void
 // #region ComarkContext
 
 /**
- * Ambient registry a `ComarkRenderer` subscribes to so external sources can
+ * Ambient registry a `MarkdownDocument` renderer subscribes to so external sources can
  * drive a mounted document by `id`. A renderer calls `get(id).listen(fn)` on
  * mount and the returned cleanup on unmount; drivers (HMR, devtools, collab,
  * agents) call `get(id).set` / `.patch` to push new trees to every renderer
@@ -152,12 +152,12 @@ function createDocument(initial: ComarkTree, onEmpty: (tree: ComarkTree) => void
 export interface ComarkContextEvent {
   event: 'create' | 'remove'
   id: string
-  tree: ComarkTree
+  tree: MarkdownDocument
 }
 
 export interface ComarkContext {
   /** Get the document for `id`, creating it (with `initial`) on first access. */
-  get(id: string, initial?: ComarkTree): ComarkDocument
+  get(id: string, initial?: MarkdownDocument): ComarkDocument
   /** Ids currently tracked — for devtools enumeration. */
   keys(): string[]
   /** Listen for documents being created or removed. Returns the cleanup. */

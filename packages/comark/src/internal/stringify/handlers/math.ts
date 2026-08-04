@@ -1,8 +1,8 @@
 import type { State } from 'comark/render'
-import type { ComarkElement } from 'comark'
+import type { ElementNode } from 'comark'
 import { textContent } from '../../../utils/index.ts'
 
-export function math(node: ComarkElement, state: State, parent?: ComarkElement) {
+export function math(node: ElementNode, state: State, parent?: ElementNode) {
   const content = textContent(node)
 
   if (parent?.some((child, index) => index > 1 && typeof child === 'string')) {

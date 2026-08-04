@@ -1,14 +1,14 @@
 <script lang="ts">
-  import type { ComarkNode as ComarkNodeType, ComponentManifest, NodeRenderData } from 'comark'
+  import type { Node as NodeType, ComponentManifest, NodeRenderData } from 'comark'
   import type { Snippet } from 'svelte'
   import type { ComponentResolver } from '../types.js'
-  import ComarkNode from './ComarkNode.svelte'
+  import MarkdownNode from './MarkdownNode.svelte'
   import Resolve from './Resolve.svelte'
   import ComarkComponent from './ComarkComponent.svelte'
 
   interface NamedSlot {
     name: string
-    children: ComarkNodeType[]
+    children: NodeType[]
     caretClass: string | null
   }
 
@@ -43,7 +43,7 @@
   {@const slot = namedSlots[slotIndex]}
   {#snippet namedSlot()}
     {#each slot.children as child, i (i)}
-      <ComarkNode
+      <MarkdownNode
         node={child}
         {components}
         {componentsManifest}

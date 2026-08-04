@@ -8,11 +8,11 @@ determines inline vs display mode (display when class does NOT contain "inline")
 @example
 ```svelte
 <script>
-  import { math, Math } from '@comark/svelte/plugin-math'
-  import { Comark } from '@comark/svelte'
+  import math, { Math } from '@comark/svelte/plugins/math'
+  import { Markdown } from '@comark/svelte'
 </script>
 
-<Comark markdown="$E = mc^2$" plugins={[math()]} components={{ math: Math }} />
+<Markdown value="$E = mc^2$" plugins={[math()]} components={{ math: Math }} />
 ```
 -->
 <script lang="ts">

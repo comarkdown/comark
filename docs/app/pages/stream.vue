@@ -180,9 +180,9 @@ function reset() {
           ref="outputColumn"
           class="flex-1 overflow-y-auto relative scroll-smooth"
         >
-          <Comark
+          <Markdown
             v-if="state.content"
-            :markdown="state.content"
+            :value="state.content"
             :components-manifest="resolveComponent"
             :streaming="Boolean(streamController)"
             caret

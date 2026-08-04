@@ -9,9 +9,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@comark/react": "catalog:",
+    "@comark/react": "workspace:*",
     "@tailwindcss/vite": "catalog:",
-    "comark": "catalog:",
+    "comark": "workspace:*",
     "react": "catalog:",
     "react-dom": "catalog:"
   },

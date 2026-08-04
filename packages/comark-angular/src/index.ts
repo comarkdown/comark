@@ -1,5 +1,7 @@
-export { ComarkComponent } from './components/comark.component.ts'
-export { ComarkRendererComponent } from './components/comark-renderer.component.ts'
-export { ComarkNodeComponent } from './components/comark-node.component.ts'
-export { defineComarkComponent, defineComarkRendererComponent } from './define.ts'
+export { Markdown } from './components/markdown.component.ts'
+export { MarkdownDocument } from './components/markdown-document.component.ts'
+export { MarkdownNode } from './components/markdown-node.component.ts'
+export { defineMarkdownComponent, defineMarkdownDocumentComponent } from './define.ts'
+export type { DefineMarkdownComponentOptions, DefineMarkdownDocumentOptions } from './define.ts'
+
 export type * from 'comark'

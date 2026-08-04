@@ -23,10 +23,10 @@ The `comark/plugins/security` plugin sanitizes the parsed AST, removing dangerou
 ## Usage
 
 ```typescript
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import security from 'comark/plugins/security'
 
-const result = await parse(content, {
+const result = await parseMarkdown(content, {
   plugins: [security()]
 })
 ```
@@ -37,7 +37,7 @@ With framework components:
 
 ```vue [Vue]
 <script setup lang="ts">
-import { Comark } from '@comark/vue'
+import { Markdown } from '@comark/vue'
 import security from '@comark/vue/plugins/security'
 
 const plugins = [
@@ -49,17 +49,17 @@ const plugins = [
 </script>
 
 <template>
-  <Comark :plugins="plugins">{{ content }}</Comark>
+  <Markdown :plugins="plugins">{{ content }}</Markdown>
 </template>
 ```
 
 ```tsx [React]
-import { Comark } from '@comark/react'
+import { Markdown } from '@comark/react'
 import security from '@comark/react/plugins/security'
 
-<Comark plugins={[security({ blockedTags: ['script', 'iframe'] })]}>
+<Markdown plugins={[security({ blockedTags: ['script', 'iframe'] })]}>
   {content}
-</Comark>
+</Markdown>
 ```
 
 ::
@@ -137,14 +137,14 @@ Returns a `ComarkPlugin` that sanitizes the parsed AST.
 
 | Option | Type | Default | Description |
 |---|---|---|---|
-| [`blockedTags`](#options-code-blockedtags) | `string[]` | `[]` | Tag names to remove entirely from the AST |
-| [`allowedTags`](#options-code-allowedtags) | `string[]` | `[]` | Tag names to allow exclusively in the AST |
-| [`tagFallback`](#options-code-tagfallback) | `function` | `false`  | Defines how to handle unallowed tags in the AST |
-| [`allowedProtocols`](#options-code-allowedprotocols) | `string[]` | `['*']` | Protocols permitted in `href` and `src` |
-| [`allowedLinkPrefixes`](#options-code-allowedlinkprefixes) | `string[]` | `['*']` | URL prefixes permitted in `href` |
-| [`allowedImagePrefixes`](#options-code-allowedimageprefixes) | `string[]` | `['*']` | URL prefixes permitted in `src` |
-| [`defaultOrigin`](#options-code-defaultorigin) | `string` | `undefined` | Rewrite disallowed URLs to this origin instead of stripping |
-| [`allowDataImages`](#options-code-allowdataimages) | `boolean` | `true` | Allow `data:image/*` URIs in `src` |
+| [`blockedTags`](#options-blockedtags) | `string[]` | `[]` | Tag names to remove entirely from the AST |
+| [`allowedTags`](#options-allowedtags) | `string[]` | `[]` | Tag names to allow exclusively in the AST |
+| [`tagFallback`](#options-tagfallback) | `function` | `false`  | Defines how to handle unallowed tags in the AST |
+| [`allowedProtocols`](#options-allowedprotocols) | `string[]` | `['*']` | Protocols permitted in `href` and `src` |
+| [`allowedLinkPrefixes`](#options-allowedlinkprefixes) | `string[]` | `['*']` | URL prefixes permitted in `href` |
+| [`allowedImagePrefixes`](#options-allowedimageprefixes) | `string[]` | `['*']` | URL prefixes permitted in `src` |
+| [`defaultOrigin`](#options-defaultorigin) | `string` | `undefined` | Rewrite disallowed URLs to this origin instead of stripping |
+| [`allowDataImages`](#options-allowdataimages) | `boolean` | `true` | Allow `data:image/*` URIs in `src` |
 
 ### `blockedTags`
 
@@ -186,7 +186,7 @@ import { textContent } from 'comark/utils'
 
 security({
   allowedTags: ['p', 'span'],
-  tagFallback: (element: ComarkElement) => {
+  tagFallback: (element: ElementNode) => {
     // Remove all tags and return the text content
     return textContent(element)
   }
@@ -265,10 +265,10 @@ security({
 The most common use case: lock down everything that could execute code or phone home:
 
 ```typescript
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import security from 'comark/plugins/security'
 
-const result = await parse(userInput, {
+const result = await parseMarkdown(userInput, {
   plugins: [
     security({
       blockedTags: ['script', 'iframe', 'object', 'embed', 'link', 'style'],
@@ -329,7 +329,7 @@ Sanitizing at parse time on read means malicious content already made it into th
 ```typescript
 // ✅ Sanitize before storing
 async function saveArticle(content: string) {
-  const sanitized = await parse(content, {
+  const sanitized = await parseMarkdown(content, {
     plugins: [security({ blockedTags: ['script', 'iframe'] })]
   })
   await db.articles.create({ content: sanitized })

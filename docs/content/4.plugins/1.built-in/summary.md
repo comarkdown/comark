@@ -23,7 +23,7 @@ The `comark/plugins/summary` plugin extracts content before a `<!-- more -->` co
 ## Usage
 
 ```typescript
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import summary from 'comark/plugins/summary'
 
 const content = `# Article Title
@@ -35,11 +35,11 @@ This is the introduction that will become the summary.
 This is the full article content.
 `
 
-const result = await parse(content, {
+const result = await parseMarkdown(content, {
   plugins: [summary()]
 })
 
-console.log(result.meta.summary) // ComarkNode[]: nodes before <!-- more -->
+console.log(result.meta.summary) // Node[]: nodes before <!-- more -->
 console.log(result.nodes)        // full content
 ```
 
@@ -49,7 +49,7 @@ With framework components:
 
 ```vue [Vue]
 <script setup lang="ts">
-import { Comark } from '@comark/vue'
+import { Markdown } from '@comark/vue'
 import summary from '@comark/vue/plugins/summary'
 
 const plugins = [summary()]
@@ -57,23 +57,23 @@ const plugins = [summary()]
 
 <template>
   <!-- renders only the summary portion -->
-  <Comark :plugins="plugins" summary>{{ content }}</Comark>
+  <Markdown :plugins="plugins" summary>{{ content }}</Markdown>
 </template>
 ```
 
 ```tsx [React]
-import { Comark } from '@comark/react'
+import { Markdown } from '@comark/react'
 import summary from '@comark/react/plugins/summary'
 
-<Comark plugins={[summary()]} summary>
+<Markdown plugins={[summary()]} summary>
   {content}
-</Comark>
+</Markdown>
 ```
 
 ::
 
 ::tip
-The `summary` prop on `<Comark>` renders only the extracted summary nodes. Without it, the full content is rendered and `meta.summary` is available separately.
+The `summary` prop on `<Markdown>` renders only the extracted summary nodes. Without it, the full content is rendered and `meta.summary` is available separately.
 ::
 
 ---
@@ -90,7 +90,7 @@ Returns a `ComarkPlugin` that extracts content before the delimiter.
 
 **Returns:** `ComarkPlugin`
 
-The extracted nodes are stored at `tree.meta.summary` as `ComarkNode[]`. If no delimiter is found in the content, `meta.summary` is not set.
+The extracted nodes are stored at `tree.meta.summary` as `Node[]`. If no delimiter is found in the content, `meta.summary` is not set.
 
 ---
 
@@ -98,7 +98,7 @@ The extracted nodes are stored at `tree.meta.summary` as `ComarkNode[]`. If no d
 
 | Option | Type | Default | Description |
 |---|---|---|---|
-| [`delimiter`](#options-code-delimiter) | `string` | `'<!-- more -->'` | HTML comment used to split summary from full content |
+| [`delimiter`](#options-delimiter) | `string` | `'<!-- more -->'` | HTML comment used to split summary from full content |
 
 ### `delimiter`
 
@@ -120,7 +120,7 @@ Render summaries in a listing page and link to the full article:
 
 ```vue [Vue]
 <script setup lang="ts">
-import { Comark } from '@comark/vue'
+import { Markdown } from '@comark/vue'
 import summary from '@comark/vue/plugins/summary'
 
 const plugins = [summary()]
@@ -130,7 +130,7 @@ const plugins = [summary()]
   <div class="articles">
     <article v-for="article in articles" :key="article.slug">
       <h2>{{ article.title }}</h2>
-      <Comark :plugins="plugins" summary>{{ article.content }}</Comark>
+      <Markdown :plugins="plugins" summary>{{ article.content }}</Markdown>
       <a :href="`/articles/${article.slug}`">Read more →</a>
     </article>
   </div>
@@ -138,7 +138,7 @@ const plugins = [summary()]
 ```
 
 ```tsx [React]
-import { Comark } from '@comark/react'
+import { Markdown } from '@comark/react'
 import summary from '@comark/react/plugins/summary'
 
 const plugins = [summary()]
@@ -149,7 +149,7 @@ export function ArticleList({ articles }) {
       {articles.map(article => (
         <article key={article.slug}>
           <h2>{article.title}</h2>
-          <Comark plugins={plugins} summary>{article.content}</Comark>
+          <Markdown plugins={plugins} summary>{article.content}</Markdown>
           <a href={`/articles/${article.slug}`}>Read more →</a>
         </article>
       ))}

@@ -1,34 +1,34 @@
 import { describe, expect, it } from 'vitest'
-import { parse } from '../../src/parse'
+import { parseMarkdown } from '../../src/parse'
 import security from '../../src/plugins/security'
 import { textContent } from '../../src/utils/index.ts'
 import { renderMarkdown } from 'comark/render'
-import type { ComarkElement, ComarkNode, ComarkTree } from '../../src/types'
+import type { ElementNode, Node, MarkdownDocument } from '../../src/types'
 
 const parseWithSecurity = (md: string, options: Parameters<typeof security>[0] = {}) =>
-  parse(md, { plugins: [security(options)] })
+  parseMarkdown(md, { plugins: [security(options)] })
 
-function makeTree(nodes: ComarkTree['nodes']): ComarkTree {
+function makeTree(nodes: MarkdownDocument['nodes']): MarkdownDocument {
   return { nodes, frontmatter: {}, meta: {} }
 }
 
-async function runPlugin(tree: ComarkTree, options: Parameters<typeof security>[0] = {}) {
+async function runPlugin(tree: MarkdownDocument, options: Parameters<typeof security>[0] = {}) {
   const plugin = security(options)
   await plugin.post!({ tree, markdown: '', tokens: [], options: {} })
   return tree
 }
 
-function isElement(node: ComarkNode): node is ComarkElement {
+function isElement(node: Node): node is ElementNode {
   return typeof node !== 'string' && node[0] !== null
 }
 
-function collectElements(nodes: ComarkNode[]): ComarkElement[] {
-  const elements: ComarkElement[] = []
+function collectElements(nodes: Node[]): ElementNode[] {
+  const elements: ElementNode[] = []
 
   for (const node of nodes) {
     if (!isElement(node)) continue
     elements.push(node)
-    elements.push(...collectElements(node.slice(2) as ComarkNode[]))
+    elements.push(...collectElements(node.slice(2) as Node[]))
   }
 
   return elements

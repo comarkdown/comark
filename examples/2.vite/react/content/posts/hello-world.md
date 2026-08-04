@@ -20,11 +20,11 @@ This alert is rendered using a custom Comark component mapped via the `component
 - **Fast** — Powered by Vite for instant HMR and fast builds
 
 ```ts
-import { parse } from '@comark/react/parse'
-import { ComarkRenderer } from '@comark/react'
+import { parseMarkdown } from 'comark'
+import { MarkdownDocument } from '@comark/react'
 
-const tree = await parse(markdown)
-// <ComarkRenderer tree={tree} components={{ Alert }} />
+const tree = await parseMarkdown(markdown)
+// <MarkdownDocument value={tree} components={{ Alert }} />
 ```
 
 ::Alert{type="success"}

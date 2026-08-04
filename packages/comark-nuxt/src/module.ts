@@ -24,27 +24,27 @@ export default defineNuxtModule<ComarkModuleOptions>({
   defaults: {},
   async setup(_options, nuxt) {
     addComponent({
-      name: 'Comark',
-      export: 'Comark',
+      name: 'Markdown',
+      export: 'Markdown',
       filePath: '@comark/vue',
       priority: 1,
     })
     addComponent({
-      name: 'ComarkRenderer',
-      export: 'ComarkRenderer',
+      name: 'MarkdownDocument',
+      export: 'MarkdownDocument',
       filePath: '@comark/vue',
       priority: 1,
     })
 
     addImports([
       {
-        name: 'defineComarkComponent',
-        as: 'defineComarkComponent',
+        name: 'defineMarkdownComponent',
+        as: 'defineMarkdownComponent',
         from: '@comark/vue',
       },
       {
-        name: 'defineComarkRendererComponent',
-        as: 'defineComarkRendererComponent',
+        name: 'defineMarkdownDocumentComponent',
+        as: 'defineMarkdownDocumentComponent',
         from: '@comark/vue',
       },
     ])

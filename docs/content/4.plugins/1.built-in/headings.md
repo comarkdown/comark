@@ -11,9 +11,9 @@ links:
     to: /api/parse
     color: neutral
     variant: soft
-  - label: Comark AST
+  - label: Document Model
     icon: i-lucide-braces
-    to: /syntax/comark-ast
+    to: /getting-started/document-model
     color: neutral
     variant: soft
 ---
@@ -23,10 +23,10 @@ The `comark/plugins/headings` plugin extracts the page title and description fro
 ## Usage
 
 ```typescript
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import headings from 'comark/plugins/headings'
 
-const result = await parse(content, {
+const result = await parseMarkdown(content, {
   plugins: [headings()]
 })
 
@@ -60,9 +60,9 @@ The description check always looks at the node **immediately after** the title: 
 
 | Option | Type | Default | Description |
 |---|---|---|---|
-| [`titleTag`](#options-code-titletag) | `string \| false` | `'h1'` | Element tag to extract as the page title, or `false` to disable |
-| [`descriptionTag`](#options-code-descriptiontag) | `string \| false` | `'p'` | Element tag to extract as the page description, or `false` to disable |
-| [`remove`](#options-code-remove) | `boolean` | `false` | Remove extracted nodes from the tree after extraction |
+| [`titleTag`](#options-titletag) | `string \| false` | `'h1'` | Element tag to extract as the page title, or `false` to disable |
+| [`descriptionTag`](#options-descriptiontag) | `string \| false` | `'p'` | Element tag to extract as the page description, or `false` to disable |
+| [`remove`](#options-remove) | `boolean` | `false` | Remove extracted nodes from the tree after extraction |
 
 ### `titleTag`
 
@@ -119,10 +119,10 @@ More content here.
 ```
 
 ```typescript [parse.ts]
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import headings from 'comark/plugins/headings'
 
-const result = await parse(content, {
+const result = await parseMarkdown(content, {
   plugins: [headings()]
 })
 
@@ -136,7 +136,7 @@ console.log(result.meta.description) // "This is the opening paragraph used as t
 ### Blockquote as Description
 
 ```typescript
-const result = await parse(content, {
+const result = await parseMarkdown(content, {
   plugins: [headings({ descriptionTag: 'blockquote' })]
 })
 
@@ -146,11 +146,11 @@ console.log(result.meta.description) // "A highlighted lead-in sentence shown as
 ### Combining with the TOC Plugin
 
 ```typescript
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import headings from 'comark/plugins/headings'
 import toc from 'comark/plugins/toc'
 
-const result = await parse(content, {
+const result = await parseMarkdown(content, {
   plugins: [headings(), toc()]
 })
 

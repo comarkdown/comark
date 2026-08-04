@@ -15,16 +15,16 @@ This alert is rendered using a custom Comark component — no client-side JavaSc
 
 ## Why Comark + Nuxt UI?
 
-- **Server-rendered** — Comark parses and renders on the server via `parse()` and `ComarkRenderer`
+- **Server-rendered** — Comark parses and renders on the server via `parseMarkdown()` and `MarkdownDocument`
 - **Static generation** — Full SSG with `nuxt generate` for zero-latency delivery
 - **Component syntax** — Embed custom components directly in your Markdown
 - **Nuxt UI** — Beautiful prose components out of the box
 
 ```ts
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 
-const tree = await parse(markdown)
-// <ComarkRenderer :tree="tree" />
+const tree = await parseMarkdown(markdown)
+// <MarkdownDocument :value="tree" />
 ```
 
 ::alert{type="success"}

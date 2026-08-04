@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { parse, createParse } from 'comark'
+import { parseMarkdown, createMarkdownParser } from 'comark'
 
 describe('@comark/angular — integration', () => {
   it('parses markdown into a tree compatible with the renderer', async () => {
-    const tree = await parse('# Hello **World**')
+    const tree = await parseMarkdown('# Hello **World**')
     expect(tree.nodes).toBeDefined()
     expect(tree.nodes.length).toBeGreaterThan(0)
 
@@ -13,7 +13,7 @@ describe('@comark/angular — integration', () => {
   })
 
   it('parses component syntax', async () => {
-    const tree = await parse(`::alert{type="info"}\nThis is an alert\n::`)
+    const tree = await parseMarkdown(`::alert{type="info"}\nThis is an alert\n::`)
     expect(tree.nodes.length).toBeGreaterThan(0)
 
     const alert = tree.nodes[0] as any[]
@@ -22,12 +22,12 @@ describe('@comark/angular — integration', () => {
   })
 
   it('parses frontmatter', async () => {
-    const tree = await parse(`---\ntitle: Hello\n---\n\n# Content`)
+    const tree = await parseMarkdown(`---\ntitle: Hello\n---\n\n# Content`)
     expect(tree.frontmatter).toHaveProperty('title', 'Hello')
   })
 
   it('handles streaming with caret', async () => {
-    const comarkStreaming = createParse()
+    const comarkStreaming = createMarkdownParser()
     const tree = await comarkStreaming('Hello **wor', { streaming: true })
     expect(tree.nodes).toBeDefined()
   })

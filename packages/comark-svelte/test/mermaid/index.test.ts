@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { render } from 'svelte/server'
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import mermaid, { Mermaid } from '../../src/plugins/mermaid'
-import ComarkRenderer from '../../src/components/ComarkRenderer.svelte'
+import MarkdownDocument from '../../src/components/MarkdownDocument.svelte'
 
 /** Strip Svelte SSR hydration comments from rendered HTML */
 function html(body: string): string {
@@ -55,13 +55,13 @@ describe('mermaid plugin', () => {
   })
 })
 
-describe('Mermaid + ComarkRenderer integration (server)', () => {
+describe('Mermaid + MarkdownDocument integration (server)', () => {
   it('renders a mermaid code block from parsed markdown', async () => {
-    const tree = await parse('```mermaid\ngraph TD\n    A-->B\n```', {
+    const tree = await parseMarkdown('```mermaid\ngraph TD\n    A-->B\n```', {
       plugins: [mermaid()],
     })
-    const { body } = render(ComarkRenderer, {
-      props: { tree, components: { mermaid: Mermaid } },
+    const { body } = render(MarkdownDocument, {
+      props: { value: tree, components: { mermaid: Mermaid } },
     })
     const output = html(body)
     expect(output).toContain('<div class="mermaid')

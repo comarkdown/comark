@@ -43,8 +43,8 @@ function onSubmit() {
                 {{ part.text }}
               </p>
               <Suspense v-else>
-                <Comark
-                  :markdown="part.text"
+                <Markdown
+                  :value="part.text"
                   :streaming="isPartStreaming(part)"
                   caret
                 />

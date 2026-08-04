@@ -9,11 +9,11 @@ Automatically detects dark mode from the `<html>` element's `dark` class.
 @example
 ```svelte
 <script>
-  import { mermaid, Mermaid } from '@comark/svelte/plugin-mermaid'
-  import { Comark } from '@comark/svelte'
+  import mermaid, { Mermaid } from '@comark/svelte/plugins/mermaid'
+  import { Markdown } from '@comark/svelte'
 </script>
 
-<Comark markdown={md} plugins={[mermaid()]} components={{ mermaid: Mermaid }} />
+<Markdown value={md} plugins={[mermaid()]} components={{ mermaid: Mermaid }} />
 ```
 -->
 <script lang="ts">

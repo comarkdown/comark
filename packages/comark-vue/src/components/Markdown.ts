@@ -1,33 +1,34 @@
 import type { PropType } from 'vue'
 import { computed, defineComponent, h, shallowRef, watch } from 'vue'
-import { createSerializedParse } from 'comark'
-import type { ParseOptions, ComponentManifest, ComarkTree } from 'comark'
-import { ComarkRenderer } from './ComarkRenderer.ts'
+import { createSerializedMarkdownParser } from 'comark'
+import type { ParserOptions, ComponentManifest, MarkdownDocument as MarkdownDocumentType } from 'comark'
+import { isMarkdownDocument } from 'comark/utils'
+import { MarkdownDocument } from './MarkdownDocument.ts'
 
 /**
- * Props for the Comark component
+ * Props for the Markdown component
  */
-export interface ComarkProps {
+export interface MarkdownProps {
   /**
-   * The markdown content to parse and render
+   * The markdown content to parse and render, or a pre-parsed MarkdownDocument
    */
-  markdown?: string
+  value?: string | MarkdownDocumentType
 
   /**
    * Parser options (excluding plugins)
    */
-  options?: Exclude<ParseOptions, 'plugins'>
+  options?: Exclude<ParserOptions, 'plugins'>
 
   /**
    * Additional plugins to use
    */
-  plugins?: ParseOptions['plugins']
+  plugins?: ParserOptions['plugins']
 
   /**
-   * Strip wrapper tags from the top level of the tree — shorthand for
+   * Strip wrapper tags from the top level of the document — shorthand for
    * `options.unwrap`. `true` unwraps `<p>` (single-line rendering); a
    * space-separated string or array unwraps the listed tags. Useful for inline
-   * usage like `<UButton><Comark :markdown="text" unwrap /></UButton>`.
+   * usage like `<UButton><Markdown :value="text" unwrap /></UButton>`.
    */
   unwrap?: boolean | string | string[]
 
@@ -52,7 +53,7 @@ export interface ComarkProps {
   summary?: boolean
 
   /**
-   * If caret is true, a caret will be appended to the last text node in the tree
+   * If caret is true, a caret will be appended to the document's last text node
    */
   caret?: boolean | { class: string }
 
@@ -62,22 +63,21 @@ export interface ComarkProps {
   data?: Record<string, unknown>
 }
 
-type ComarkComponent = ReturnType<typeof defineComponent<ComarkProps>>
+type MarkdownComponent = ReturnType<typeof defineComponent<MarkdownProps>>
 
 /**
- * Comark component
+ * Markdown component
  *
- * Comark component that accepts markdown as a string prop,
- * parses it, and renders it.
+ * Accepts raw markdown as a string prop, parses it, and renders it.
  *
  * @example
  * ```vue
  * <template>
- *   <Comark :markdown="content" :components="customComponents" />
+ *   <Markdown :value="content" :components="customComponents" />
  * </template>
  *
  * <script setup lang="ts">
- * import { Comark } from '@comark/vue'
+ * import { Markdown } from '@comark/vue'
  * import CustomHeading from './CustomHeading.vue'
  *
  * const content = `
@@ -97,15 +97,15 @@ type ComarkComponent = ReturnType<typeof defineComponent<ComarkProps>>
  * </script>
  * ```
  */
-export const Comark: ComarkComponent = defineComponent({
-  name: 'Comark',
+export const Markdown: MarkdownComponent = defineComponent({
+  name: 'Markdown',
 
   props: {
     /**
-     * The markdown content to parse and render
+     * The markdown content to parse and render, or a pre-parsed MarkdownDocument
      */
-    markdown: {
-      type: String as PropType<string>,
+    value: {
+      type: [String, Object] as PropType<string | MarkdownDocumentType>,
       default: undefined,
     },
 
@@ -113,7 +113,7 @@ export const Comark: ComarkComponent = defineComponent({
      * Parser options
      */
     options: {
-      type: Object as PropType<Exclude<ParseOptions, 'plugins'>>,
+      type: Object as PropType<Exclude<ParserOptions, 'plugins'>>,
       default: () => ({}),
     },
 
@@ -121,12 +121,12 @@ export const Comark: ComarkComponent = defineComponent({
      * Additional plugins to use
      */
     plugins: {
-      type: Array as PropType<ParseOptions['plugins']>,
+      type: Array as PropType<ParserOptions['plugins']>,
       default: () => [],
     },
 
     /**
-     * Strip wrapper tags from the top level of the tree — shorthand for
+     * Strip wrapper tags from the top level of the document — shorthand for
      * `options.unwrap`. `true` unwraps `<p>`; a space-separated string or array
      * unwraps the listed tags.
      */
@@ -171,7 +171,7 @@ export const Comark: ComarkComponent = defineComponent({
     },
 
     /**
-     * If caret is true, a caret will be appended to the last text node in the tree
+     * If caret is true, a caret will be appended to the document's last text node
      */
     caret: {
       type: [Boolean, Object] as PropType<boolean | { class: string }>,
@@ -189,7 +189,8 @@ export const Comark: ComarkComponent = defineComponent({
 
   async setup(props, ctx) {
     const markdown = computed(() => {
-      let result = props.markdown
+      if (isMarkdownDocument(props.value)) return ''
+      let result = props.value as string | undefined
       const childrent = ctx.slots.default?.()
       if (childrent && childrent.length > 0 && typeof childrent[0].children === 'string') {
         result = childrent[0].children!
@@ -200,9 +201,9 @@ export const Comark: ComarkComponent = defineComponent({
       return (result || '').trim()
     })
 
-    const parsed = shallowRef<ComarkTree | null>(null)
+    const parsed = shallowRef<MarkdownDocumentType | null>(null)
 
-    const parse = createSerializedParse({
+    const parse = createSerializedMarkdownParser({
       ...props.options,
       // `unwrap` prop is a shorthand for the `unwrap` parse option; an explicit
       // `options.unwrap` still wins when the prop is left at its default.
@@ -212,15 +213,33 @@ export const Comark: ComarkComponent = defineComponent({
 
     watch(
       () => [markdown.value, props.streaming] as const,
-      () => parse(markdown.value, { streaming: props.streaming }).then((result) => (parsed.value = result))
+      () => {
+        if (isMarkdownDocument(props.value)) return
+        parse(markdown.value, { streaming: props.streaming }).then((result) => (parsed.value = result))
+      }
     )
 
-    await parse(markdown.value, { streaming: props.streaming }).then((result) => (parsed.value = result))
+    if (!isMarkdownDocument(props.value)) {
+      await parse(markdown.value, { streaming: props.streaming }).then((result) => (parsed.value = result))
+    }
 
     return () => {
-      // Render using ComarkRenderer
-      return h(ComarkRenderer, {
-        tree: parsed.value || { nodes: [], frontmatter: {}, meta: {} },
+      // Pre-parsed document — skip parsing and render directly
+      if (isMarkdownDocument(props.value)) {
+        return h(MarkdownDocument, {
+          value: props.value,
+          components: props.components,
+          streaming: props.streaming,
+          componentsManifest: props.componentsManifest,
+          class: props.streaming ? 'comark-stream' : '',
+          caret: props.caret,
+          data: props.data,
+        })
+      }
+
+      // Render using MarkdownDocument
+      return h(MarkdownDocument, {
+        value: parsed.value || { nodes: [], frontmatter: {}, meta: {} },
         components: props.components,
         streaming: props.streaming,
         componentsManifest: props.componentsManifest,

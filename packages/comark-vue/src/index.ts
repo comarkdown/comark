@@ -1,15 +1,18 @@
 import type { PropType } from 'vue'
 import { computed, defineComponent, h } from 'vue'
-import { Comark } from './components/Comark.ts'
-import type { ComarkTree, ComponentManifest, ParseOptions } from 'comark'
-import { ComarkRenderer } from './components/ComarkRenderer.ts'
+import { Markdown } from './components/Markdown.ts'
+import type { MarkdownDocument as MarkdownDocumentType, ComponentManifest, ParserOptions } from 'comark'
+import { MarkdownDocument } from './components/MarkdownDocument.ts'
 
-export { ComarkRenderer } from './components/ComarkRenderer.ts'
-export { Comark } from './components/Comark.ts'
+export { Markdown } from './components/Markdown.ts'
+export type { MarkdownProps } from './components/Markdown.ts'
+export { MarkdownDocument } from './components/MarkdownDocument.ts'
+export type { MarkdownDocumentProps } from './components/MarkdownDocument.ts'
+
 export type * from 'comark'
 
-interface DefineComarkComponentOptions extends ParseOptions {
-  extends?: typeof Comark
+interface DefineMarkdownComponentOptions extends ParserOptions {
+  extends?: typeof Markdown
   name?: string
   components?: Record<string, any>
   /**
@@ -18,8 +21,8 @@ interface DefineComarkComponentOptions extends ParseOptions {
   class?: string
 }
 
-interface DefineComarkRendererOptions {
-  extends?: typeof ComarkRenderer
+interface DefineMarkdownDocumentOptions {
+  extends?: typeof MarkdownDocument
   name?: string
   components?: Record<string, any>
   /**
@@ -28,16 +31,16 @@ interface DefineComarkRendererOptions {
   class?: string
 }
 
-export function defineComarkComponent(config: DefineComarkComponentOptions = {}): typeof Comark {
+export function defineMarkdownComponent(config: DefineMarkdownComponentOptions = {}): typeof Markdown {
   const { name, ...parseOptions } = config
 
   return defineComponent({
-    name: name ?? 'ComarkComponent',
+    name: name ?? 'MarkdownComponent',
     props: {
       /**
        * The markdown content to parse and render
        */
-      markdown: {
+      value: {
         type: String as PropType<string>,
         default: undefined,
       },
@@ -46,7 +49,7 @@ export function defineComarkComponent(config: DefineComarkComponentOptions = {})
        * Parser options
        */
       options: {
-        type: Object as PropType<Exclude<ParseOptions, 'plugins'>>,
+        type: Object as PropType<Exclude<ParserOptions, 'plugins'>>,
         default: () => ({}),
       },
 
@@ -54,12 +57,12 @@ export function defineComarkComponent(config: DefineComarkComponentOptions = {})
        * Additional plugins to use
        */
       plugins: {
-        type: Array as PropType<ParseOptions['plugins']>,
+        type: Array as PropType<ParserOptions['plugins']>,
         default: () => [],
       },
 
       /**
-       * Strip wrapper tags from the top level of the tree — shorthand for
+       * Strip wrapper tags from the top level of the document — shorthand for
        * `options.unwrap`. `true` unwraps `<p>`; a space-separated string or
        * array unwraps the listed tags.
        */
@@ -104,7 +107,7 @@ export function defineComarkComponent(config: DefineComarkComponentOptions = {})
       },
 
       /**
-       * If caret is true, a caret will be appended to the last text node in the tree
+       * If caret is true, a caret will be appended to the document's last text node
        */
       caret: {
         type: [Boolean, Object] as PropType<boolean | { class: string }>,
@@ -125,11 +128,11 @@ export function defineComarkComponent(config: DefineComarkComponentOptions = {})
       }))
 
       return () => {
-        const component = config.extends || Comark
+        const component = config.extends || Markdown
         return h(
           component,
           {
-            markdown: props.markdown,
+            value: props.value,
             options: options.value,
             plugins: plugins.value,
             unwrap: props.unwrap,
@@ -149,16 +152,16 @@ export function defineComarkComponent(config: DefineComarkComponentOptions = {})
   })
 }
 
-export function defineComarkRendererComponent(config: DefineComarkRendererOptions = {}): typeof ComarkRenderer {
+export function defineMarkdownDocumentComponent(config: DefineMarkdownDocumentOptions = {}): typeof MarkdownDocument {
   return defineComponent({
-    name: config.name ?? 'ComarkRendererComponent',
+    name: config.name ?? 'MarkdownDocumentComponent',
     props: {
       /**
-       * The Comark tree to render
+       * The parsed Markdown document to render
        */
-      tree: {
-        type: Object as PropType<ComarkTree>,
-        required: true,
+      value: {
+        type: Object as PropType<MarkdownDocumentType>,
+        default: undefined,
       },
 
       /**
@@ -189,7 +192,7 @@ export function defineComarkRendererComponent(config: DefineComarkRendererOption
       },
 
       /**
-       * If caret is true, a caret will be appended to the last text node in the tree
+       * If caret is true, a caret will be appended to the document's last text node
        */
       caret: {
         type: [Boolean, Object] as PropType<boolean | { class: string }>,
@@ -203,11 +206,11 @@ export function defineComarkRendererComponent(config: DefineComarkRendererOption
       }))
 
       return () => {
-        const component = config.extends || ComarkRenderer
+        const component = config.extends || MarkdownDocument
         return h(
           component,
           {
-            tree: props.tree,
+            value: props.value,
             components: components.value,
             componentsManifest: props.componentsManifest,
             streaming: props.streaming,

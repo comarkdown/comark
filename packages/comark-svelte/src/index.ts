@@ -1,6 +1,6 @@
-export { default as Comark } from './components/Comark.svelte'
-export { default as ComarkRenderer } from './components/ComarkRenderer.svelte'
-export { default as ComarkNode } from './components/ComarkNode.svelte'
-export type { ComarkProps, ComarkRendererProps, ComarkNodeProps } from './types.js'
+export { default as Markdown } from './components/Markdown.svelte'
+export { default as MarkdownDocument } from './components/MarkdownDocument.svelte'
+export { default as MarkdownNode } from './components/MarkdownNode.svelte'
+export type { MarkdownProps, MarkdownDocumentProps, MarkdownNodeProps } from './types.js'
 
 export type * from 'comark'

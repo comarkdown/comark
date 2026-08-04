@@ -2,7 +2,7 @@
 @component
 Recursive Comark AST node renderer.
 
-Renders a single `ComarkNode` — either a text string, a native HTML element
+Renders a single `Node` — either a text string, a native HTML element
 (via `<svelte:element>`), or a custom component (via a capitalized variable).
 
 Recurses into children by importing itself. The streaming caret is threaded
@@ -11,7 +11,7 @@ naturally appears inline after the deepest trailing text node.
 
 @example
 ```svelte
-<ComarkNode node={astNode} components={{ alert: Alert }} />
+<MarkdownNode node={astNode} components={{ alert: Alert }} />
 ```
 -->
 <script module lang="ts">
@@ -67,9 +67,9 @@ naturally appears inline after the deepest trailing text node.
 </script>
 
 <script lang="ts">
-  import type { ComarkNode as ComarkNodeType, ComponentManifest, NodeRenderData } from 'comark'
+  import type { Node as NodeType, ComponentManifest, NodeRenderData } from 'comark'
   import type { ComponentResolver } from '../types.js'
-  import ComarkNode from './ComarkNode.svelte'
+  import MarkdownNode from './MarkdownNode.svelte'
   import ComarkComponent from './ComarkComponent.svelte'
   import Resolve from './Resolve.svelte'
   import { resolveAttributes } from 'comark/utils'
@@ -84,7 +84,7 @@ naturally appears inline after the deepest trailing text node.
     caretClass = null,
     renderData = EMPTY_RENDER_DATA,
   }: {
-    node: ComarkNodeType
+    node: NodeType
     components?: Record<string, any>
     componentsManifest?: ComponentManifest
     resolver?: ComponentResolver
@@ -102,17 +102,17 @@ naturally appears inline after the deepest trailing text node.
   ])
 
   interface RenderChild {
-    node: ComarkNodeType
+    node: NodeType
     caretClass: string | null
   }
 
   interface NamedSlot {
     name: string
-    children: ComarkNodeType[]
+    children: NodeType[]
     caretClass: string | null
   }
 
-  function getSlotName(node: ComarkNodeType): string | null {
+  function getSlotName(node: NodeType): string | null {
     if (typeof node === 'string' || !Array.isArray(node) || node[0] !== 'template') {
       return null
     }
@@ -132,7 +132,7 @@ naturally appears inline after the deepest trailing text node.
   }
 
   function toRenderChildren(
-    sourceChildren: ComarkNodeType[],
+    sourceChildren: NodeType[],
     sourceIndex: number,
     totalChildren: number,
     nodeCaretClass: string | null,
@@ -147,7 +147,7 @@ naturally appears inline after the deepest trailing text node.
     let isText = false
     let tag: string | null = null
     let isVoid = false
-    let children: ComarkNodeType[] = []
+    let children: NodeType[] = []
     let Component: any = null
     let componentPromise: Promise<any> | null = null
     let mappedProps: Record<string, any> = {}
@@ -169,7 +169,7 @@ naturally appears inline after the deepest trailing text node.
     isVoid = VOID_ELEMENTS.has(tag)
     const nodeProps: Record<string, any>
       = (node.length >= 2 ? node[1] : {}) ?? {}
-    children = node.length > 2 ? (node.slice(2) as ComarkNodeType[]) : []
+    children = node.length > 2 ? (node.slice(2) as NodeType[]) : []
 
     const resolvedComponent = resolveComponent(tag, components, componentsManifest)
     if (resolvedComponent instanceof Promise) {
@@ -211,7 +211,7 @@ naturally appears inline after the deepest trailing text node.
       const child = children[i]
       const slotName = getSlotName(child)
       if (slotName) {
-        const slotChildren = (child as unknown as ComarkNodeType[]).slice(2) as ComarkNodeType[]
+        const slotChildren = (child as unknown as NodeType[]).slice(2) as NodeType[]
         if (slotName === 'default') {
           defaultChildren.push(...toRenderChildren(slotChildren, i, children.length, caretClass))
         }
@@ -234,7 +234,7 @@ naturally appears inline after the deepest trailing text node.
 
 {#snippet renderChildren()}
   {#each defaultChildren as child, i (i)}
-    <ComarkNode
+    <MarkdownNode
       node={child.node}
       {components}
       {componentsManifest}

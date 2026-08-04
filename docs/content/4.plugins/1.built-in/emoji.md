@@ -23,10 +23,10 @@ The `comark/plugins/emoji` plugin converts emoji shortcodes (e.g. `:smile:`) int
 ## Usage
 
 ```typescript
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import emoji from 'comark/plugins/emoji'
 
-const result = await parse(content, {
+const result = await parseMarkdown(content, {
   plugins: [emoji()]
 })
 ```
@@ -53,20 +53,20 @@ With framework components:
 
 ```vue [Vue]
 <script setup lang="ts">
-import { Comark } from '@comark/vue'
+import { Markdown } from '@comark/vue'
 import emoji from '@comark/vue/plugins/emoji'
 </script>
 
 <template>
-  <Comark :plugins="[emoji()]">{{ content }}</Comark>
+  <Markdown :plugins="[emoji()]">{{ content }}</Markdown>
 </template>
 ```
 
 ```tsx [React]
-import { Comark } from '@comark/react'
+import { Markdown } from '@comark/react'
 import emoji from '@comark/react/plugins/emoji'
 
-<Comark plugins={[emoji()]}>{content}</Comark>
+<Markdown plugins={[emoji()]}>{content}</Markdown>
 ```
 
 ::
@@ -112,7 +112,7 @@ Use the `extend` option to add your own shortcodes or override built-in ones. Th
 ```typescript
 import emoji from 'comark/plugins/emoji'
 
-parse(content, {
+parseMarkdown(content, {
   plugins: [
     emoji({
       extend: {
@@ -134,7 +134,7 @@ The built-in set is intentionally small to keep the bundle light. To support the
 import emoji from 'comark/plugins/emoji'
 import { nameToEmoji } from 'gemoji'
 
-parse(content, {
+parseMarkdown(content, {
   plugins: [emoji({ extend: nameToEmoji })],
 })
 ```

@@ -1,6 +1,6 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import highlight from 'comark/plugins/highlight'
 
 export default defineEventHandler(async (event) => {
@@ -12,7 +12,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const content = fs.readFileSync(filePath, 'utf-8')
-  const tree = await parse(content, {
+  const tree = await parseMarkdown(content, {
     plugins: [highlight()],
   })
 

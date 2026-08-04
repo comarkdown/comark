@@ -1,5 +1,5 @@
 import type { NodeHandler } from 'comark/render'
-import type { ComarkElement, ComarkNode } from 'comark'
+import type { ElementNode, Node } from 'comark'
 import { textContent } from 'comark/utils'
 import { DIM, CYAN, RESET, BOLD } from '../utils/escape.ts'
 
@@ -22,11 +22,11 @@ function extractColor(style: string): string | null {
 
 // --- Highlighted code rendering ---
 
-function renderToken(token: ComarkNode, colors: boolean): string {
+function renderToken(token: Node, colors: boolean): string {
   if (typeof token === 'string') return token
   if (token[0] !== 'span') return typeof token[2] === 'string' ? token[2] : ''
 
-  const content = (token.slice(2) as ComarkNode[]).map((t) => (typeof t === 'string' ? t : '')).join('')
+  const content = (token.slice(2) as Node[]).map((t) => (typeof t === 'string' ? t : '')).join('')
 
   if (!colors) return content
 
@@ -35,14 +35,14 @@ function renderToken(token: ComarkNode, colors: boolean): string {
   return color ? hexToAnsi(color) + content + RESET : content
 }
 
-function renderHighlighted(codeNode: ComarkElement, colors: boolean): string {
-  const children = codeNode.slice(2) as ComarkNode[]
+function renderHighlighted(codeNode: ElementNode, colors: boolean): string {
+  const children = codeNode.slice(2) as Node[]
   return children
     .map((child) => {
       if (typeof child === 'string') return child // newline separator
       if (child[0] !== 'span') return ''
       // span.line — render its token children
-      return (child.slice(2) as ComarkNode[]).map((t) => renderToken(t, colors)).join('')
+      return (child.slice(2) as Node[]).map((t) => renderToken(t, colors)).join('')
     })
     .join('')
 }
@@ -69,10 +69,10 @@ export const pre: NodeHandler = (node, state) => {
   const header = langPart || filePart ? langPart + filePart + '\n' : ''
 
   // Check if already highlighted by the highlight plugin (code has span.line children)
-  const codeNode = node[2] as ComarkElement | undefined
+  const codeNode = node[2] as ElementNode | undefined
   const isHighlighted =
     codeNode?.[0] === 'code' &&
-    (codeNode.slice(2) as ComarkNode[]).some((c) => !isString(c) && (c as ComarkElement)[0] === 'span')
+    (codeNode.slice(2) as Node[]).some((c) => !isString(c) && (c as ElementNode)[0] === 'span')
 
   const code = isHighlighted ? renderHighlighted(codeNode!, Boolean(colors)) : textContent(node).trim()
 

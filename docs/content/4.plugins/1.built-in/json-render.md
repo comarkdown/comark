@@ -18,7 +18,7 @@ links:
     variant: soft
 ---
 
-The `comark/plugins/json-render` plugin transforms `json-render` and `yaml-render` code blocks into UI components. It parses [JSON Render](https://json-render.dev/) specs and converts them into Comark AST nodes, enabling declarative UI composition within markdown. No additional dependencies required.
+The `comark/plugins/json-render` plugin transforms `json-render` and `yaml-render` code blocks into UI components. It parses [JSON Render](https://json-render.dev/) specs and converts them into Markdown AST nodes, enabling declarative UI composition within markdown. No additional dependencies required.
 
 ## Usage
 
@@ -26,31 +26,31 @@ The `comark/plugins/json-render` plugin transforms `json-render` and `yaml-rende
 
 ```vue [Vue]
 <script setup lang="ts">
-import { Comark } from '@comark/vue'
+import { Markdown } from '@comark/vue'
 import jsonRender from '@comark/vue/plugins/json-render'
 </script>
 
 <template>
   <Suspense>
-    <Comark :plugins="[jsonRender()]">{{ content }}</Comark>
+    <Markdown :plugins="[jsonRender()]">{{ content }}</Markdown>
   </Suspense>
 </template>
 ```
 
 ```tsx [React]
-import { Comark } from '@comark/react'
+import { Markdown } from '@comark/react'
 import jsonRender from '@comark/react/plugins/json-render'
 
-<Comark plugins={[jsonRender()]}>{content}</Comark>
+<Markdown plugins={[jsonRender()]}>{content}</Markdown>
 ```
 
 ```svelte [Svelte]
 <script lang="ts">
-  import { Comark } from '@comark/svelte'
+  import { Markdown } from '@comark/svelte'
   import jsonRender from '@comark/svelte/plugins/json-render'
 </script>
 
-<Comark {content} plugins={[jsonRender()]} />
+<Markdown {content} plugins={[jsonRender()]} />
 ```
 
 ::
@@ -139,7 +139,7 @@ The plugin automatically wraps this shorthand in a full spec with a `template` r
 
 ### `jsonRender()`
 
-Returns a `ComarkPlugin` that replaces `json-render` and `yaml-render` code blocks with Comark AST nodes. Takes no options.
+Returns a `ComarkPlugin` that replaces `json-render` and `yaml-render` code blocks with Markdown AST nodes. Takes no options.
 
 **Returns:** `ComarkPlugin`
 
