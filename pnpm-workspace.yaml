@@ -19,9 +19,9 @@ catalog:
   "@ai-sdk/vue": ^4.0.22
   "@astrojs/react": ^6.0.1
   "@clack/prompts": ^1.7.0
-  "@comark/html": ^0.5.0
-  "@comark/nuxt": ^0.5.0
-  "@comark/react": ^0.5.0
+  "@comark/html": ^0.6.0
+  "@comark/nuxt": ^0.6.0
+  "@comark/react": ^0.6.0
   "@comark/vue": ^0.6.0
 
   # Misc
@@ -171,8 +171,10 @@ ignoredBuiltDependencies:
 
 minimumReleaseAgeExclude:
   - comark@0.5.1 || 0.6.0
-  - '@comark/vue@0.5.1 || 0.6.0'
-  - '@nuxtlabs/monarch-mdc@0.10.0'
+  - "@comark/vue@0.5.1 || 0.6.0"
+  - "@nuxtlabs/monarch-mdc@0.10.0"
+  - "@comark/nuxt@0.6.0"
+  - comark-content@0.2.0
 
 patchedDependencies:
   minimark: patches/minimark.patch

@@ -35,9 +35,9 @@ This example demonstrates how to use Comark with JSON Render and YAML Render in 
    import jsonRender from '@comark/vue/plugins/json-render'
    ```
 
-2. Pass the plugin to Comark:
+2. Pass the plugin to `Markdown`:
    ```vue
-   <Comark :plugins="[jsonRender()]" />
+   <Markdown :plugins="[jsonRender()]" />
    ```
 
 3. Use `json-render` or `yaml-render` code blocks in your markdown:

@@ -1,8 +1,8 @@
 ---
 import { getCollection } from 'astro:content'
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import Layout from '../../layouts/Layout.astro'
-import { MarkdownParsed } from '@comark/react'
+import { MarkdownDocument } from '@comark/react'
 import highlight from 'comark/plugins/highlight'
 import Alert from '../../components/Alert'
 
@@ -15,7 +15,7 @@ export async function getStaticPaths() {
 }
 
 const { post } = Astro.props
-const tree = await parse(post.body!, {
+const document = await parseMarkdown(post.body!, {
   plugins: [
     highlight({
       themes: {
@@ -43,6 +43,6 @@ const tree = await parse(post.body!, {
         </div>
       </div>
     </header>
-    <MarkdownParsed value={tree} className="prose" components={{ Alert }} />
+    <MarkdownDocument value={document} className="prose" components={{ Alert }} />
   </article>
 </Layout>

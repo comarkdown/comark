@@ -27,19 +27,13 @@ This example demonstrates how to use Comark with LaTeX math formulas in Vue:
 
 1. Import the math plugin, component, and KaTeX CSS:
    ```ts
-   import math from '@comark/math'
-   import { Math } from '@comark/math/vue'
+   import math, { Math } from '@comark/vue/plugins/math'
    import 'katex/dist/katex.min.css'
    ```
 
-2. Pass the plugin to Comark:
+2. Pass the plugin and component to `Markdown`:
    ```vue
-   <Comark :plugins="[math()]" />
-   ```
-
-3. Register the Math component:
-   ```vue
-   <Comark :components="{ math: Math }" />
+   <Markdown :plugins="[math()]" :components="{ math: Math }" />
    ```
 
 4. Use math expressions in your markdown:

@@ -23,7 +23,7 @@ Each example wires Comark into a framework or build setup, with its full source 
   A minimal example showing how to use Comark Syntax with Nuxt UI.
   :::
   :::card{icon="i-simple-icons-svelte" title="SvelteKit" to="/examples/frameworks/sveltekit"}
-  A SvelteKit example showing Comark with lazy components, ComarkAsync, and SSR.
+  A SvelteKit example showing Comark with lazy components, MarkdownAsync, and SSR.
   :::
   :::card{icon="i-simple-icons-vitepress" title="VitePress" to="/examples/frameworks/vitepress"}
   Using Comark component syntax natively in VitePress via the comark syntax plugin.

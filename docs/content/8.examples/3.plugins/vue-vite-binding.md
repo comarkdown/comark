@@ -31,11 +31,11 @@ This example demonstrates the Comark `binding` plugin in a Vue + Vite app:
    import binding, { Binding } from '@comark/vue/plugins/binding'
    ```
 
-2. Wire them into `<Comark>`:
+2. Wire them into `<Markdown>`:
 
    ```vue
-   <Comark
-     :markdown="markdown"
+   <Markdown
+     :value="markdown"
      :plugins="[binding()]"
      :components="{ Binding }"
      :data="data"
@@ -61,7 +61,7 @@ Bindings resolve against four namespaces:
 | ------------- | ------------------------------------------------------ |
 | `frontmatter` | The document's YAML frontmatter                        |
 | `meta`        | Plugin-populated metadata on the parsed tree            |
-| `data`        | The `data` prop passed to `<Comark>`                   |
+| `data`        | The `data` prop passed to `<Markdown>`                 |
 | `props`       | Props of the enclosing Comark component                |
 
 See the [Binding plugin docs](/plugins/built-in/binding) and the [data binding contract](/syntax/components#data-binding) for the full reference.

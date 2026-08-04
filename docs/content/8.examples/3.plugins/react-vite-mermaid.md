@@ -32,14 +32,14 @@ This example demonstrates how to use Comark with Mermaid diagrams in React:
 
 2. Import the mermaid plugin and component:
    ```tsx
-   import { Comark } from '@comark/react'
+   import { MarkdownClient } from '@comark/react'
    import mermaid, { Mermaid } from '@comark/react/plugins/mermaid'
    ```
 
-3. Pass the plugin and component to `Comark`:
+3. Pass the plugin and component to `MarkdownClient`:
    ```tsx
-   <Comark
-     markdown={content}
+   <MarkdownClient
+     value={content}
      components={{ Mermaid }}
      plugins={[mermaid()]}
    />
