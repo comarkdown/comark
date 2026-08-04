@@ -1,8 +1,8 @@
 import type { NodeHandler } from 'comark/render'
-import type { ComarkNode } from 'comark'
+import type { Node } from 'comark'
 
 export const ul: NodeHandler = async (node, state) => {
-  const children = node.slice(2) as ComarkNode[]
+  const children = node.slice(2) as Node[]
   const revert = state.applyContext({ list: true, order: false })
 
   let result = ''

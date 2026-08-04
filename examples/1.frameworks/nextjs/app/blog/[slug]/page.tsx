@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { MarkdownParsed } from '@comark/react'
+import { MarkdownDocument } from '@comark/react'
 import { getAllPosts, getPost } from '@/lib/posts'
 import Alert from '@/components/Alert'
 import FeatureCard from '@/components/FeatureCard'
@@ -49,7 +49,7 @@ export default async function BlogPost({ params }: { params: Promise<{ slug: str
           </div>
         </div>
       </header>
-      <MarkdownParsed
+      <MarkdownDocument
         value={post.tree}
         className="prose"
         components={{ Alert, FeatureCard }}

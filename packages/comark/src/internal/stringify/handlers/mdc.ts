@@ -1,5 +1,5 @@
 import type { State } from 'comark/render'
-import type { ComarkElement, ComarkNode } from 'comark'
+import type { ElementNode, Node } from 'comark'
 import { indent } from '../../../utils/index.ts'
 import { comarkAttributes, comarkYamlAttributes } from '../attributes.ts'
 import { html } from './html.ts'
@@ -7,7 +7,7 @@ import { html } from './html.ts'
 // HTML elements that always create an inline context for their children
 const INLINE_HTML_ELEMENTS = new Set(['a', 'strong', 'em', 'span'])
 
-export async function mdc(node: ComarkElement, state: State, parent?: ComarkElement) {
+export async function mdc(node: ElementNode, state: State, parent?: ElementNode) {
   const [tag, attr, ...children] = node
   const { $: _, ...attributes } = attr
 
@@ -18,23 +18,30 @@ export async function mdc(node: ComarkElement, state: State, parent?: ComarkElem
   const attributeEntries = Object.entries(attributes)
   const hasObjectAttributes = attributeEntries.some(([, value]) => typeof value === 'object')
 
-  // Component is inline if it has text siblings in parent
-  // or is inside an inline HTML element
+  // Component is inline if it has text siblings in parent,
+  // is inside an inline HTML element or an inline-rendering ancestor
   const hasTextSiblings = parent?.some((child, index) => index > 1 && typeof child === 'string') ?? false
   const insideInlineElement = parent !== undefined && INLINE_HTML_ELEMENTS.has(String(parent[0]))
-  let inline = hasTextSiblings || insideInlineElement
+  let inline = hasTextSiblings || insideInlineElement || state.context.inline === true
 
   // if component has object attributes, it cannot be inline
   if (hasObjectAttributes) {
     inline = false
   }
 
+  // Block fences inside `:name[…]` content cannot be parsed back — keep children inline
+  const revert = inline ? state.applyContext({ inline: true }) : undefined
+
   let content = ''
   const childState = { ...state, nodeDepthInTree: (state.nodeDepthInTree || 0) + 1 }
-  for (const child of children as ComarkNode[]) {
+  for (const child of children as Node[]) {
     content += await state.one(child, childState, node)
   }
   content = content.trimEnd()
+
+  if (revert) {
+    state.applyContext(revert)
+  }
 
   let attrs = attributeEntries.length > 0 ? comarkAttributes(attributes) : ''
 

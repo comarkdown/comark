@@ -1,6 +1,6 @@
 # Angular Rendering Guide
 
-Complete guide for rendering Comark AST in Angular 17+ applications.
+Complete guide for rendering Markdown documents in Angular 17+ applications.
 
 ## Table of Contents
 
@@ -46,31 +46,31 @@ Important message
 }
 ```
 
-### With Pre-parsed AST
+### With a Pre-parsed Document
 
-Use `MarkdownParsed` when you already have a parsed Comark tree:
+Use `MarkdownDocument` when you already have a parsed document:
 
 ```typescript
 import { Component } from '@angular/core'
-import { MarkdownParsed } from '@comark/angular'
-import { parse } from 'comark'
-import type { ComarkTree } from 'comark'
+import { MarkdownDocument } from '@comark/angular'
+import { parseMarkdown } from 'comark'
+import type { MarkdownDocument as MarkdownDocumentType } from 'comark'
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [MarkdownParsed],
+  imports: [MarkdownDocument],
   template: `
-    @if (tree) {
-      <comark-markdown-parsed [value]="tree" [components]="customComponents" />
+    @if (document) {
+      <comark-markdown-document [value]="document" [components]="customComponents" />
     }
   `,
 })
 export class AppComponent {
-  tree: ComarkTree | null = null
+  document: MarkdownDocumentType | null = null
 
   async ngOnInit() {
-    this.tree = await parse('# Hello World')
+    this.document = await parseMarkdown('# Hello World')
   }
 }
 ```
@@ -364,7 +364,7 @@ Render only content before `<!-- more -->`:
 
 ## Prose Components
 
-The `MarkdownParsed` renders standard HTML elements natively. Override them with custom components using the `Prose` prefix:
+The `MarkdownDocument` renders standard HTML elements natively. Override them with custom components using the `Prose` prefix:
 
 ```typescript
 import { Component, Type } from '@angular/core'
@@ -493,18 +493,18 @@ export class AppComponent {
 
 ## Pre-configured Components
 
-Use `defineMarkdownComponent` or `defineMarkdownParsedComponent` to create pre-configured components with default plugins and component mappings:
+Use `defineMarkdownComponent` or `defineMarkdownDocumentComponent` to create pre-configured components with default plugins and component mappings:
 
 ### defineMarkdownComponent
 
 ```typescript
-// docs-comark.component.ts
+// docs-markdown.component.ts
 import { defineMarkdownComponent } from '@comark/angular'
 import math, { Math } from '@comark/angular/plugins/math'
 import mermaid, { Mermaid } from '@comark/angular/plugins/mermaid'
 
-export const DocsComark = defineMarkdownComponent({
-  name: 'docs-comark',
+export const DocsMarkdown = defineMarkdownComponent({
+  name: 'docs-markdown',
   plugins: [math(), mermaid()],
   components: { Math, Mermaid },
   class: 'prose dark:prose-invert',
@@ -515,14 +515,14 @@ Use the pre-configured component:
 
 ```typescript
 import { Component } from '@angular/core'
-import { DocsComark } from './docs-comark.component'
+import { DocsMarkdown } from './docs-markdown.component'
 
 @Component({
   selector: 'app-docs',
   standalone: true,
-  imports: [DocsComark],
+  imports: [DocsMarkdown],
   template: `
-    <docs-comark [value]="content" />
+    <docs-markdown [value]="content" />
   `,
 })
 export class DocsComponent {
@@ -532,14 +532,14 @@ export class DocsComponent {
 
 Instance-level `components` and `plugins` are merged with the config-level defaults at runtime.
 
-### defineMarkdownParsedComponent
+### defineMarkdownDocumentComponent
 
 ```typescript
-import { defineMarkdownParsedComponent } from '@comark/angular'
+import { defineMarkdownDocumentComponent } from '@comark/angular'
 import { Math } from '@comark/angular/plugins/math'
 
-export const DocsRenderer = defineMarkdownParsedComponent({
-  name: 'docs-renderer',
+export const DocsMarkdownDocument = defineMarkdownDocumentComponent({
+  name: 'docs-markdown-document',
   components: { Math },
 })
 ```

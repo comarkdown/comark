@@ -1,5 +1,30 @@
 # Changelog
 
+## [0.6.0](https://github.com/comarkdown/comark/compare/comark@0.5.1...comark@0.6.0) (2026-08-04)
+
+### Features
+
+* introduce `headindIds` option to disable auto generated id for headings ([#284](https://github.com/comarkdown/comark/issues/284)) ([b298811](https://github.com/comarkdown/comark/commit/b298811a71289eaaeffa4b3594b989ee9f1e7376))
+* introduce `unwrap` feature in parser ([#275](https://github.com/comarkdown/comark/issues/275)) ([060dfa9](https://github.com/comarkdown/comark/commit/060dfa955c7d0467f278580ccc27fa315370ac2a))
+* rename components to `Markdown` and `MarkdownParsed` ([#313](https://github.com/comarkdown/comark/issues/313)) ([e6a6b60](https://github.com/comarkdown/comark/commit/e6a6b602fe658261b5f20862d0f0faa439bf425d))
+
+### Bug Fixes
+
+* **auto-close:** ignore syntax surrounded by spaces ([#282](https://github.com/comarkdown/comark/issues/282)) ([bde872f](https://github.com/comarkdown/comark/commit/bde872fffb679eeeee284fd1b632d5e157f9e70c))
+* **breaks:** preserve newlines in whitespace-sensitive elements ([#312](https://github.com/comarkdown/comark/issues/312)) ([693e855](https://github.com/comarkdown/comark/commit/693e855042796f7c44f75e6444e023198d14faa4))
+* **comark:** consume nested brackets in inline component content ([#306](https://github.com/comarkdown/comark/issues/306)) ([56e398e](https://github.com/comarkdown/comark/commit/56e398e95635dce368c880a2ef54a2d8792383a4))
+* **comark:** only complete unclosed frontmatter while streaming ([#269](https://github.com/comarkdown/comark/issues/269)) ([aa8c235](https://github.com/comarkdown/comark/commit/aa8c235eb0b1c597ad22ebd868427722ed309e12))
+* do not include standard html tag names in heading slugs ([#309](https://github.com/comarkdown/comark/issues/309)) ([0cd5f83](https://github.com/comarkdown/comark/commit/0cd5f831d0786e6fbcd55dad7dfecff9cf0cbe24))
+* handle bracketed spans inside link labels ([#288](https://github.com/comarkdown/comark/issues/288)) ([baff140](https://github.com/comarkdown/comark/commit/baff140d3220d3ea0326024ef921019c3d1225d8))
+* **highlight:** accept bundled theme names in themes option ([#308](https://github.com/comarkdown/comark/issues/308)) ([1ad8480](https://github.com/comarkdown/comark/commit/1ad84809c8ae7dab111696174e6430a0b6a9625f))
+* **highlight:** highlight json/yaml render blocks inside comark syntax ([#300](https://github.com/comarkdown/comark/issues/300)) ([159efd7](https://github.com/comarkdown/comark/commit/159efd7ac40d2ed38bfe33dca56e905ef64cf2ee))
+* ignore props with invalid chars ([#298](https://github.com/comarkdown/comark/issues/298)) ([849c73d](https://github.com/comarkdown/comark/commit/849c73d612e6109043579e7ef4d27c6b430ab01a))
+* **parse:** keep `attr="true|false"` as string ([#321](https://github.com/comarkdown/comark/issues/321)) ([3de0854](https://github.com/comarkdown/comark/commit/3de08541bfc6df8caf183f014ad7ae6923bba8ce))
+* preserve image attributes when a title is present ([#290](https://github.com/comarkdown/comark/issues/290)) ([8d2171d](https://github.com/comarkdown/comark/commit/8d2171df1e01703f7c2f246367ce6f94547c1f89))
+* **stringify:** render children of inline components in inline form ([#305](https://github.com/comarkdown/comark/issues/305)) ([7d9a536](https://github.com/comarkdown/comark/commit/7d9a536576ade98290c76b901a2b453d1e25aeb3))
+* **syntax:** stop 2+ blank lines from closing nested components early ([#323](https://github.com/comarkdown/comark/issues/323)) ([83f67ae](https://github.com/comarkdown/comark/commit/83f67aea1b6493b896e52aa05896ef5125c4ddfc))
+* **yaml:** resolve empty props blocks instead of throwing ([#324](https://github.com/comarkdown/comark/issues/324)) ([71fbe96](https://github.com/comarkdown/comark/commit/71fbe969b5968584a8a0ba55bdf7017151a50508))
+
 ## [0.5.1](https://github.com/comarkdown/comark/compare/comark@0.5.0...comark@0.5.1) (2026-07-14)
 
 ### Features

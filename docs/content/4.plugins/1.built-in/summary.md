@@ -23,7 +23,7 @@ The `comark/plugins/summary` plugin extracts content before a `<!-- more -->` co
 ## Usage
 
 ```typescript
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import summary from 'comark/plugins/summary'
 
 const content = `# Article Title
@@ -35,11 +35,11 @@ This is the introduction that will become the summary.
 This is the full article content.
 `
 
-const result = await parse(content, {
+const result = await parseMarkdown(content, {
   plugins: [summary()]
 })
 
-console.log(result.meta.summary) // ComarkNode[]: nodes before <!-- more -->
+console.log(result.meta.summary) // Node[]: nodes before <!-- more -->
 console.log(result.nodes)        // full content
 ```
 
@@ -90,7 +90,7 @@ Returns a `ComarkPlugin` that extracts content before the delimiter.
 
 **Returns:** `ComarkPlugin`
 
-The extracted nodes are stored at `tree.meta.summary` as `ComarkNode[]`. If no delimiter is found in the content, `meta.summary` is not set.
+The extracted nodes are stored at `tree.meta.summary` as `Node[]`. If no delimiter is found in the content, `meta.summary` is not set.
 
 ---
 

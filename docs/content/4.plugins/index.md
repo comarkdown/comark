@@ -79,7 +79,7 @@ Comark's plugin system extends markdown functionality with specialized features.
   ::
 
   ::card{icon="i-lucide-git-branch" title="AST API" to="/plugins/custom/ast-api"}
-  Traverse and transform the ComarkTree AST using the visit() utility
+  Traverse and transform the MarkdownDocument AST using the visit() utility
   ::
 
   ::card{icon="i-simple-icons-markdown" title="Markdown-it Plugins" to="/plugins/custom/markdown-it"}
@@ -89,16 +89,16 @@ Comark's plugin system extends markdown functionality with specialized features.
 
 ## Use Plugins
 
-Pass plugins to `parse()` or the `<Markdown>` component:
+Pass plugins to `parseMarkdown()` or the `<Markdown>` component:
 
 ::code-group
 
 ```typescript [Parse API]
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import emoji from 'comark/plugins/emoji'
 import toc from 'comark/plugins/toc'
 
-const result = await parse(content, {
+const result = await parseMarkdown(content, {
   plugins: [
     emoji(),
     toc({ depth: 3 })

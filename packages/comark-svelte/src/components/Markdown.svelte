@@ -24,14 +24,13 @@ This is an alert component
 ```
 -->
 <script lang="ts">
-  import type { ComarkTree, ComarkPlugin, ComponentManifest } from 'comark'
-    import { parse } from 'comark'
-  import MarkdownParsed from './MarkdownParsed.svelte'
-  import { warnDeprecated } from '../internal/deprecation.js'
+  import type { MarkdownDocument as MarkdownDocumentType, ComarkPlugin, ComponentManifest } from 'comark'
+  import { parseMarkdown } from 'comark'
+  import { isMarkdownDocument } from 'comark/utils'
+  import MarkdownDocument from './MarkdownDocument.svelte'
 
   let {
     value,
-    markdown,
     options = {},
     plugins = [],
     unwrap = false,
@@ -42,9 +41,7 @@ This is an alert component
     data,
     class: className = '',
   }: {
-    value?: string
-    /** @deprecated Use `value` instead */
-    markdown?: string
+    value?: string | MarkdownDocumentType
     options?: Record<string, any>
     plugins?: ComarkPlugin[]
     unwrap?: boolean | string | string[]
@@ -56,23 +53,19 @@ This is an alert component
     class?: string
   } = $props()
 
-  // svelte-ignore state_referenced_locally — deprecation check only needs the initial value
-  if (markdown !== undefined && value === undefined) {
-    warnDeprecated('markdown (prop)', 'value')
-  }
+  let parsed: MarkdownDocumentType | null = $state(null)
 
-  let parsed: ComarkTree | null = $state(null)
-
-  let content = $derived((value ?? markdown ?? '').trim())
+  let content = $derived(typeof value === 'string' ? value.trim() : '')
 
   let requestVersion = 0
   let appliedVersion = 0
   $effect(() => {
+    if (isMarkdownDocument(value)) return
     const currentVersion = ++requestVersion
     // `parse` directly mutates `plugins` which creates an infinite effect loop
     // so we copy it before passing it in so it gets a regular JS array and we get to still
     // track dependencies from an external perspective
-    parse(content, { ...options, ...(unwrap ? { unwrap } : {}), plugins: [...plugins] }).then((result) => {
+    parseMarkdown(content, { ...options, ...(unwrap ? { unwrap } : {}), plugins: [...plugins] }).then((result) => {
       if (currentVersion > appliedVersion) {
         appliedVersion = currentVersion
         parsed = result
@@ -81,8 +74,18 @@ This is an alert component
   })
 </script>
 
-{#if parsed}
-  <MarkdownParsed
+{#if isMarkdownDocument(value)}
+  <MarkdownDocument
+    {value}
+    {components}
+    {componentsManifest}
+    {streaming}
+    {caret}
+    {data}
+    class={className}
+  />
+{:else if parsed}
+  <MarkdownDocument
     value={parsed}
     {components}
     {componentsManifest}

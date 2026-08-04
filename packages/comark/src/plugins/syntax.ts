@@ -99,8 +99,6 @@ const markdownItComarkBlock: PluginSimple = (md) => {
       // If there's unparsed remaining content, treat it as inline component in a paragraph
       if (remaining) return false
 
-      state.lineMax = startLine + 1
-
       if (!silent) {
         if (content !== undefined) {
           const tokenOpen = state.push('mdc_block_shorthand', name, 1)
@@ -337,7 +335,6 @@ const markdownItComarkBlock: PluginSimple = (md) => {
     }
 
     state.line = lineEnd + 1
-    state.lineMax = lineEnd + 1
     return true
   })
 
@@ -392,11 +389,12 @@ const markdownItComarkBlock: PluginSimple = (md) => {
 
     if (silent) {
       state.line = lineEnd
-      state.lineMax = lineEnd
       return true
     }
 
-    state.lineMax = startLine + 1
+    // Restore lineMax after tokenizing so it doesn't leak a narrower bound to
+    // whatever comes after this slot (see `comark_block`'s save/restore above).
+    const oldLineMax = state.lineMax
     const slot = state.push('mdc_block_slot', 'template', 1)
     slot.attrSet(`#${name}`, '')
     props?.forEach(([key, value]) => {
@@ -412,7 +410,7 @@ const markdownItComarkBlock: PluginSimple = (md) => {
     state.push('mdc_block_slot', 'template', -1)
 
     state.line = lineEnd
-    state.lineMax = lineEnd
+    state.lineMax = oldLineMax
 
     return true
   })

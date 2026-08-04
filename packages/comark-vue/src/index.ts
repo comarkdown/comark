@@ -1,24 +1,17 @@
 import type { PropType } from 'vue'
 import { computed, defineComponent, h } from 'vue'
 import { Markdown } from './components/Markdown.ts'
-import type { ComarkTree, ComponentManifest, ParseOptions } from 'comark'
-import { MarkdownParsed } from './components/MarkdownParsed.ts'
-import { warnDeprecated } from './internal/deprecation.ts'
+import type { MarkdownDocument as MarkdownDocumentType, ComponentManifest, ParserOptions } from 'comark'
+import { MarkdownDocument } from './components/MarkdownDocument.ts'
 
 export { Markdown } from './components/Markdown.ts'
 export type { MarkdownProps } from './components/Markdown.ts'
-export { MarkdownParsed } from './components/MarkdownParsed.ts'
-export type { MarkdownParsedProps } from './components/MarkdownParsed.ts'
-
-// Deprecated aliases — will be removed in a future major version
-export { Comark } from './components/Comark.ts'
-export type { ComarkProps } from './components/Comark.ts'
-export { ComarkRenderer } from './components/ComarkRenderer.ts'
-export type { ComarkRendererProps } from './components/ComarkRenderer.ts'
+export { MarkdownDocument } from './components/MarkdownDocument.ts'
+export type { MarkdownDocumentProps } from './components/MarkdownDocument.ts'
 
 export type * from 'comark'
 
-interface DefineMarkdownComponentOptions extends ParseOptions {
+interface DefineMarkdownComponentOptions extends ParserOptions {
   extends?: typeof Markdown
   name?: string
   components?: Record<string, any>
@@ -28,8 +21,8 @@ interface DefineMarkdownComponentOptions extends ParseOptions {
   class?: string
 }
 
-interface DefineMarkdownParsedOptions {
-  extends?: typeof MarkdownParsed
+interface DefineMarkdownDocumentOptions {
+  extends?: typeof MarkdownDocument
   name?: string
   components?: Record<string, any>
   /**
@@ -53,19 +46,10 @@ export function defineMarkdownComponent(config: DefineMarkdownComponentOptions =
       },
 
       /**
-       * The markdown content to parse and render
-       * @deprecated Use `value` instead
-       */
-      markdown: {
-        type: String as PropType<string>,
-        default: undefined,
-      },
-
-      /**
        * Parser options
        */
       options: {
-        type: Object as PropType<Exclude<ParseOptions, 'plugins'>>,
+        type: Object as PropType<Exclude<ParserOptions, 'plugins'>>,
         default: () => ({}),
       },
 
@@ -73,12 +57,12 @@ export function defineMarkdownComponent(config: DefineMarkdownComponentOptions =
        * Additional plugins to use
        */
       plugins: {
-        type: Array as PropType<ParseOptions['plugins']>,
+        type: Array as PropType<ParserOptions['plugins']>,
         default: () => [],
       },
 
       /**
-       * Strip wrapper tags from the top level of the tree — shorthand for
+       * Strip wrapper tags from the top level of the document — shorthand for
        * `options.unwrap`. `true` unwraps `<p>`; a space-separated string or
        * array unwraps the listed tags.
        */
@@ -123,7 +107,7 @@ export function defineMarkdownComponent(config: DefineMarkdownComponentOptions =
       },
 
       /**
-       * If caret is true, a caret will be appended to the last text node in the tree
+       * If caret is true, a caret will be appended to the document's last text node
        */
       caret: {
         type: [Boolean, Object] as PropType<boolean | { class: string }>,
@@ -148,7 +132,7 @@ export function defineMarkdownComponent(config: DefineMarkdownComponentOptions =
         return h(
           component,
           {
-            value: props.value ?? props.markdown,
+            value: props.value,
             options: options.value,
             plugins: plugins.value,
             unwrap: props.unwrap,
@@ -168,24 +152,15 @@ export function defineMarkdownComponent(config: DefineMarkdownComponentOptions =
   })
 }
 
-export function defineMarkdownParsedComponent(config: DefineMarkdownParsedOptions = {}): typeof MarkdownParsed {
+export function defineMarkdownDocumentComponent(config: DefineMarkdownDocumentOptions = {}): typeof MarkdownDocument {
   return defineComponent({
-    name: config.name ?? 'MarkdownParsedComponent',
+    name: config.name ?? 'MarkdownDocumentComponent',
     props: {
       /**
-       * The parsed Comark tree to render
+       * The parsed Markdown document to render
        */
       value: {
-        type: Object as PropType<ComarkTree>,
-        default: undefined,
-      },
-
-      /**
-       * The parsed Comark tree to render
-       * @deprecated Use `value` instead
-       */
-      tree: {
-        type: Object as PropType<ComarkTree>,
+        type: Object as PropType<MarkdownDocumentType>,
         default: undefined,
       },
 
@@ -217,7 +192,7 @@ export function defineMarkdownParsedComponent(config: DefineMarkdownParsedOption
       },
 
       /**
-       * If caret is true, a caret will be appended to the last text node in the tree
+       * If caret is true, a caret will be appended to the document's last text node
        */
       caret: {
         type: [Boolean, Object] as PropType<boolean | { class: string }>,
@@ -231,11 +206,11 @@ export function defineMarkdownParsedComponent(config: DefineMarkdownParsedOption
       }))
 
       return () => {
-        const component = config.extends || MarkdownParsed
+        const component = config.extends || MarkdownDocument
         return h(
           component,
           {
-            value: props.value ?? props.tree,
+            value: props.value,
             components: components.value,
             componentsManifest: props.componentsManifest,
             streaming: props.streaming,
@@ -249,20 +224,4 @@ export function defineMarkdownParsedComponent(config: DefineMarkdownParsedOption
       }
     },
   })
-}
-
-/**
- * @deprecated Use `defineMarkdownComponent` instead.
- */
-export function defineComarkComponent(config: DefineMarkdownComponentOptions = {}): typeof Markdown {
-  warnDeprecated('defineComarkComponent', 'defineMarkdownComponent')
-  return defineMarkdownComponent(config)
-}
-
-/**
- * @deprecated Use `defineMarkdownParsedComponent` instead.
- */
-export function defineComarkRendererComponent(config: DefineMarkdownParsedOptions = {}): typeof MarkdownParsed {
-  warnDeprecated('defineComarkRendererComponent', 'defineMarkdownParsedComponent')
-  return defineMarkdownParsedComponent(config)
 }

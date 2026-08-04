@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { defineComarkPlugin, parse } from 'comark'
+import { defineComarkPlugin, parseMarkdown } from 'comark'
 
 describe('duplicate plugins', () => {
   it('ignores duplicate plugins by name', async () => {
@@ -12,7 +12,7 @@ describe('duplicate plugins', () => {
       },
     }))
 
-    const tree = await parse('# Hello', {
+    const tree = await parseMarkdown('# Hello', {
       plugins: [counter(), counter()],
     })
 
@@ -24,11 +24,11 @@ describe('duplicate plugins', () => {
     const valuePlugin = defineComarkPlugin<{ value: number }, { value: number }>((opts) => ({
       name: 'test-value',
       post(state) {
-        state.tree.meta.value = opts?.value
+        state.tree.meta.value = opts!.value
       },
     }))
 
-    const tree = await parse('# Hello', {
+    const tree = await parseMarkdown('# Hello', {
       plugins: [valuePlugin({ value: 1 }), valuePlugin({ value: 2 })],
     })
 

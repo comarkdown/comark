@@ -1,19 +1,22 @@
-import { describe, it, expect, vi } from 'vitest'
-import { parse } from 'comark'
+import { afterEach, describe, it, expect, vi } from 'vitest'
+import { parseMarkdown } from 'comark'
 import highlight from 'comark/plugins/highlight'
 import githubDark from 'shiki/dist/themes/github-dark.mjs'
-import { renderANSI, createLog, log } from '../src/index'
+import { createAnsiRenderer, createAnsiWriter, renderAnsi, renderAnsiFromDocument, writeAnsi } from '../src/index'
 
-// Helpers
-const plain = (markdown: string) => renderANSI_sync(markdown, { colors: false })
-const colored = (markdown: string) => renderANSI_sync(markdown, { colors: true })
+afterEach(() => {
+  vi.unstubAllEnvs()
+})
 
-async function renderANSI_sync(markdown: string, options?: Parameters<typeof renderANSI>[1]) {
-  const tree = await parse(markdown)
-  return renderANSI(tree, options)
+async function renderAnsiFromMarkdown(markdown: string, options?: Parameters<typeof renderAnsiFromDocument>[1]) {
+  const tree = await parseMarkdown(markdown)
+  return renderAnsiFromDocument(tree, options)
 }
 
-describe('renderANSI', () => {
+const plain = (markdown: string) => renderAnsiFromMarkdown(markdown, { colors: false })
+const colored = (markdown: string) => renderAnsiFromMarkdown(markdown, { colors: true })
+
+describe('renderAnsiFromDocument', () => {
   describe('headings', () => {
     it('renders h1 with # prefix', async () => {
       const out = await plain('# Hello World')
@@ -170,8 +173,8 @@ describe('renderANSI', () => {
     })
 
     async function highlighted(markdown: string, colors = false) {
-      const tree = await parse(markdown, { plugins: [highlightPlugin] })
-      return renderANSI(tree, { colors })
+      const tree = await parseMarkdown(markdown, { plugins: [highlightPlugin] })
+      return renderAnsiFromDocument(tree, { colors })
     }
 
     it('renders highlighted code with ANSI true-color sequences', async () => {
@@ -228,8 +231,8 @@ describe('renderANSI', () => {
 
   describe('custom components', () => {
     it('renders custom component via components option', async () => {
-      const tree = await parse('::badge{type="success"}\nDone\n::')
-      const out = await renderANSI(tree, {
+      const tree = await parseMarkdown('::badge{type="success"}\nDone\n::')
+      const out = await renderAnsiFromDocument(tree, {
         colors: false,
         components: {
           badge: async ([, attrs, ...children], { render }) =>
@@ -241,8 +244,8 @@ describe('renderANSI', () => {
     })
 
     it('passes data to component renderer', async () => {
-      const tree = await parse('::info\nContent\n::')
-      const out = await renderANSI(tree, {
+      const tree = await parseMarkdown('::info\nContent\n::')
+      const out = await renderAnsiFromDocument(tree, {
         colors: false,
         data: { version: '3.0' },
         components: {
@@ -254,8 +257,8 @@ describe('renderANSI', () => {
     })
 
     it('renders children of custom components', async () => {
-      const tree = await parse('::wrapper\n**bold** inside\n::')
-      const out = await renderANSI(tree, {
+      const tree = await parseMarkdown('::wrapper\n**bold** inside\n::')
+      const out = await renderAnsiFromDocument(tree, {
         colors: false,
         components: {
           wrapper: async ([, , ...children], { render }) => `>> ${await render(children)}`,
@@ -268,8 +271,8 @@ describe('renderANSI', () => {
 
   describe('async node handlers', () => {
     it('handler returning a Promise is awaited', async () => {
-      const tree = await parse('::status{code="ok"}\nAll good\n::')
-      const out = await renderANSI(tree, {
+      const tree = await parseMarkdown('::status{code="ok"}\nAll good\n::')
+      const out = await renderAnsiFromDocument(tree, {
         colors: false,
         components: {
           status: async ([, attrs, ...children], { render }) => {
@@ -283,9 +286,9 @@ describe('renderANSI', () => {
     })
 
     it('multiple async handlers run in the correct order', async () => {
-      const tree = await parse('::a\n::b\nB\n::\n::c\nC\n::\n::')
+      const tree = await parseMarkdown('::a\n::b\nB\n::\n::c\nC\n::\n::')
       const log: string[] = []
-      const out = await renderANSI(tree, {
+      const out = await renderAnsiFromDocument(tree, {
         colors: false,
         components: {
           a: async ([, , ...children], { render }) => await render(children),
@@ -307,8 +310,8 @@ describe('renderANSI', () => {
 
     it('async handler can resolve external data', async () => {
       const db: Record<string, string> = { metric: '99.9%' }
-      const tree = await parse('::stat{key="metric"}\n::')
-      const out = await renderANSI(tree, {
+      const tree = await parseMarkdown('::stat{key="metric"}\n::')
+      const out = await renderAnsiFromDocument(tree, {
         colors: false,
         components: {
           stat: async ([, attrs]) => {
@@ -323,25 +326,25 @@ describe('renderANSI', () => {
 
   describe('data binding', () => {
     it('resolves :href on links from frontmatter', async () => {
-      const tree = await parse(`---
+      const tree = await parseMarkdown(`---
 home: https://example.com
 ---
 
 [Home](placeholder){:href="frontmatter.home"}
 `)
-      const out = await renderANSI(tree, { colors: false })
+      const out = await renderAnsiFromDocument(tree, { colors: false })
       expect(out).toContain('Home (https://example.com)')
     })
 
     it('resolves :alt on images from data', async () => {
-      const tree = await parse('![x](/x.png){:alt="data.caption"}')
-      const out = await renderANSI(tree, { colors: false, data: { caption: 'Photo of Ada' } })
+      const tree = await parseMarkdown('![x](/x.png){:alt="data.caption"}')
+      const out = await renderAnsiFromDocument(tree, { colors: false, data: { caption: 'Photo of Ada' } })
       expect(out).toContain('[image: Photo of Ada]')
     })
 
     it('exposes parent props for custom handlers via resolveAttribute', async () => {
       const { resolveAttribute } = await import('comark/render')
-      const tree = await parse(`---
+      const tree = await parseMarkdown(`---
 user: Ada
 ---
 
@@ -349,7 +352,7 @@ user: Ada
 Hello
 ::
 `)
-      const out = await renderANSI(tree, {
+      const out = await renderAnsiFromDocument(tree, {
         colors: false,
         components: {
           callout: async ([, attrs, ...children], state) => {
@@ -364,59 +367,106 @@ Hello
   })
 })
 
-describe('createLog', () => {
-  it('returns a function', () => {
-    const logFn = createLog()
-    expect(typeof logFn).toBe('function')
+describe('renderAnsi', () => {
+  it('parses and renders markdown', async () => {
+    const output = await renderAnsi('# Hello\n\nThis is **bold**.', { colors: false })
+    expect(output).toContain('# Hello')
+    expect(output).toContain('bold')
   })
 
-  it('calls write with rendered output', async () => {
+  it('passes parser and renderer options through', async () => {
+    const output = await renderAnsi('**bold', { autoClose: false, colors: false })
+    expect(output).not.toContain('\x1B[')
+    expect(output).toContain('\\*\\*bold')
+  })
+
+  it('disables colors when NO_COLOR is present', async () => {
+    vi.stubEnv('NO_COLOR', '1')
+    const output = await renderAnsi('**bold**')
+    expect(output).not.toContain('\x1B[')
+  })
+
+  it('allows colors to override NO_COLOR', async () => {
+    vi.stubEnv('NO_COLOR', '1')
+    const output = await renderAnsi('**bold**', { colors: true })
+    expect(output).toContain('\x1B[1m')
+  })
+})
+
+describe('createAnsiRenderer', () => {
+  it('returns a reusable renderer', async () => {
+    const render = createAnsiRenderer({ colors: false })
+    expect(await render('# Doc 1')).toContain('Doc 1')
+    expect(await render('# Doc 2')).toContain('Doc 2')
+  })
+
+  it('keeps configured components and data across calls', async () => {
+    const render = createAnsiRenderer({
+      colors: false,
+      data: { status: 'ready' },
+      components: {
+        badge: async ([, , ...children], { data, render }) => `[${data?.status}] ${await render(children)}`,
+      },
+    })
+
+    expect(await render('::badge\nOne\n::')).toContain('[ready] One')
+    expect(await render('::badge\nTwo\n::')).toContain('[ready] Two')
+  })
+})
+
+describe('createAnsiWriter', () => {
+  it('returns a function', () => {
+    const write = createAnsiWriter()
+    expect(typeof write).toBe('function')
+  })
+
+  it('calls writer with rendered output', async () => {
     const written: string[] = []
-    const logFn = createLog({ write: (s) => written.push(s) })
-    await logFn('# Hello')
+    const write = createAnsiWriter({ writer: (string) => written.push(string) })
+    await write('# Hello')
     expect(written).toHaveLength(1)
     expect(written[0]).toContain('Hello')
   })
 
   it('appends newline to output', async () => {
     const written: string[] = []
-    const logFn = createLog({ write: (s) => written.push(s) })
-    await logFn('Hello')
+    const write = createAnsiWriter({ writer: (string) => written.push(string) })
+    await write('Hello')
     expect(written[0]).toMatch(/\n$/)
   })
 
   it('reuses parser across calls', async () => {
     const written: string[] = []
-    const logFn = createLog({ write: (s) => written.push(s) })
-    await logFn('# Doc 1')
-    await logFn('# Doc 2')
+    const write = createAnsiWriter({ writer: (string) => written.push(string) })
+    await write('# Doc 1')
+    await write('# Doc 2')
     expect(written[0]).toContain('Doc 1')
     expect(written[1]).toContain('Doc 2')
   })
 
   it('passes render options through', async () => {
     const written: string[] = []
-    const logFn = createLog({
+    const write = createAnsiWriter({
       colors: false,
-      write: (s) => written.push(s),
+      writer: (string) => written.push(string),
     })
-    await logFn('**bold**')
+    await write('**bold**')
     expect(written[0]).not.toContain('\x1B[')
     expect(written[0]).toContain('bold')
   })
 })
 
-describe('log', () => {
-  it('calls write with rendered output', async () => {
+describe('writeAnsi', () => {
+  it('calls writer with rendered output', async () => {
     const written: string[] = []
-    await log('# Title', { write: (s) => written.push(s) })
+    await writeAnsi('# Title', { writer: (string) => written.push(string) })
     expect(written).toHaveLength(1)
     expect(written[0]).toContain('Title')
   })
 
-  it('calls write once per invocation', async () => {
-    const write = vi.fn()
-    await log('Hello', { write })
-    expect(write).toHaveBeenCalledTimes(1)
+  it('calls writer once per invocation', async () => {
+    const writer = vi.fn()
+    await writeAnsi('Hello', { writer })
+    expect(writer).toHaveBeenCalledTimes(1)
   })
 })

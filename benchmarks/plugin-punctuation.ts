@@ -1,8 +1,8 @@
 import { bench, run, group, barplot } from 'mitata'
 import MarkdownExit from 'markdown-exit'
 import { markdownItComark } from 'comark/plugins/syntax'
-import { createParse } from 'comark'
-import { log } from '@comark/ansi'
+import { createMarkdownParser } from 'comark'
+import { writeAnsi } from '@comark/ansi'
 import punctuation from '../packages/comark/src/plugins/punctuation'
 
 // ── Test content (exercises ALL features: quotes, dashes, ellipsis, symbols, normalization) ──
@@ -58,8 +58,8 @@ const parserNoTypographer = new MarkdownExit({
 
 // ── comark with full punctuation plugin (all features) ──────────────────────
 
-const comarkFull = createParse({ plugins: [punctuation()] })
-const comarkBaseline = createParse()
+const comarkFull = createMarkdownParser({ plugins: [punctuation()] })
+const comarkBaseline = createMarkdownParser()
 
 // ── Benchmarks ──────────────────────────────────────────────────────────────
 
@@ -143,7 +143,7 @@ console.log('comark punctuation:     ', JSON.stringify(flattenText(comarkTree.no
 console.log('\n🏃 Running benchmarks...\n')
 await run()
 
-await log(`> [!NOTE]
+await writeAnsi(`> [!NOTE]
 > The goal of this benchmark is to compare the additional time each parser takes when
 > using punctuation plugins.
 >

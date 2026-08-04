@@ -1,31 +1,21 @@
 import React from 'react'
 import { Markdown } from './components/Markdown.tsx'
-import { MarkdownParsed } from './components/MarkdownParsed.tsx'
-import type { MarkdownProps } from './components/Markdown'
-import type { MarkdownParsedProps } from './components/MarkdownParsed'
-import type { ParseOptions } from 'comark'
-import { warnDeprecated } from './internal/deprecation.ts'
+import { MarkdownDocument } from './components/MarkdownDocument.tsx'
+import type { MarkdownProps } from './components/Markdown.tsx'
+import type { MarkdownDocumentProps } from './components/MarkdownDocument.tsx'
+import type { ParserOptions } from 'comark'
 
 export { Markdown }
 export type { MarkdownProps } from './components/Markdown.tsx'
-export { MarkdownParsed } from './components/MarkdownParsed.tsx'
-export type { MarkdownParsedProps } from './components/MarkdownParsed.tsx'
+export { MarkdownDocument } from './components/MarkdownDocument.tsx'
+export type { MarkdownDocumentProps } from './components/MarkdownDocument.tsx'
 export { MarkdownLive } from './components/MarkdownLive.tsx'
 export type { MarkdownLiveProps } from './components/MarkdownLive.tsx'
 export { MarkdownClient } from './components/MarkdownClient.tsx'
 
-// Deprecated aliases — will be removed in a future major version
-export { Comark } from './components/Comark.tsx'
-export type { ComarkProps } from './components/Comark.tsx'
-export { ComarkRenderer } from './components/ComarkRenderer.tsx'
-export type { ComarkRendererProps } from './components/ComarkRenderer.tsx'
-export { ComarkLive } from './components/ComarkLive.tsx'
-export type { ComarkLiveProps } from './components/ComarkLive.tsx'
-export { ComarkClient } from './components/ComarkClient.tsx'
-
 export type * from 'comark'
 
-interface DefineMarkdownComponentOptions extends ParseOptions {
+interface DefineMarkdownComponentOptions extends ParserOptions {
   /** Extend an existing defined component — inherits its plugins and components. */
   extends?: React.FC<MarkdownProps>
   /** Display name shown in React DevTools. */
@@ -70,7 +60,7 @@ export function defineMarkdownComponent(config: DefineMarkdownComponentOptions =
   } = config
 
   const MarkdownComponent: React.FC<MarkdownProps> = (props) => {
-    const mergedOptions: Exclude<ParseOptions, 'plugins'> = {
+    const mergedOptions: Exclude<ParserOptions, 'plugins'> = {
       ...parseOptions,
       ...props.options,
     }
@@ -98,9 +88,9 @@ export function defineMarkdownComponent(config: DefineMarkdownComponentOptions =
   return MarkdownComponent
 }
 
-interface DefineMarkdownParsedOptions {
+interface DefineMarkdownDocumentOptions {
   /** Extend an existing defined renderer — inherits its component mappings. */
-  extends?: React.FC<MarkdownParsedProps>
+  extends?: React.FC<MarkdownDocumentProps>
   /** Display name shown in React DevTools. */
   name?: string
   components?: Record<string, React.ComponentType<any>>
@@ -111,7 +101,7 @@ interface DefineMarkdownParsedOptions {
 }
 
 /**
- * Create a pre-configured MarkdownParsed component with default component mappings.
+ * Create a pre-configured MarkdownDocument component with default component mappings.
  *
  * Use this when parsing happens separately (server, build step, API) and you want
  * a reusable renderer with baked-in component mappings.
@@ -120,26 +110,26 @@ interface DefineMarkdownParsedOptions {
  *
  * @example
  * ```tsx
- * import { defineMarkdownParsedComponent } from '@comark/react'
+ * import { defineMarkdownDocumentComponent } from '@comark/react'
  * import Alert from './Alert'
  * import CodeBlock from './CodeBlock'
  *
- * export const ArticleRenderer = defineMarkdownParsedComponent({
+ * export const ArticleRenderer = defineMarkdownDocumentComponent({
  *   name: 'ArticleRenderer',
  *   components: { alert: Alert, pre: CodeBlock },
  * })
  *
  * // In a Server Component:
  * export default async function Page() {
- *   const document = await parse(markdown)
+ *   const document = await parseMarkdown(markdown)
  *   return <ArticleRenderer value={document} />
  * }
  * ```
  */
-export function defineMarkdownParsedComponent(config: DefineMarkdownParsedOptions = {}) {
+export function defineMarkdownDocumentComponent(config: DefineMarkdownDocumentOptions = {}) {
   const { name, components: configComponents = {}, className: configClassName, extends: BaseComponent } = config
 
-  const ParsedComponent: React.FC<MarkdownParsedProps> = (props) => {
+  const ParsedComponent: React.FC<MarkdownDocumentProps> = (props) => {
     const mergedComponents = {
       ...configComponents,
       ...props.components,
@@ -147,30 +137,14 @@ export function defineMarkdownParsedComponent(config: DefineMarkdownParsedOption
 
     const mergedClassName = [configClassName, props.className].filter(Boolean).join(' ') || undefined
 
-    return React.createElement(BaseComponent ?? MarkdownParsed, {
+    return React.createElement(BaseComponent ?? MarkdownDocument, {
       ...props,
       components: mergedComponents,
       className: mergedClassName,
     })
   }
 
-  ParsedComponent.displayName = name || 'MarkdownParsedComponent'
+  ParsedComponent.displayName = name || 'MarkdownDocumentComponent'
 
   return ParsedComponent
-}
-
-/**
- * @deprecated Use `defineMarkdownComponent` instead.
- */
-export function defineComarkComponent(config: DefineMarkdownComponentOptions = {}) {
-  warnDeprecated('defineComarkComponent', 'defineMarkdownComponent')
-  return defineMarkdownComponent(config)
-}
-
-/**
- * @deprecated Use `defineMarkdownParsedComponent` instead.
- */
-export function defineComarkRendererComponent(config: DefineMarkdownParsedOptions = {}) {
-  warnDeprecated('defineComarkRendererComponent', 'defineMarkdownParsedComponent')
-  return defineMarkdownParsedComponent(config)
 }

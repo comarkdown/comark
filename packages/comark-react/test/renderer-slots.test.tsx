@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import React from 'react'
 import { renderToString } from 'react-dom/server'
-import { parse } from 'comark'
-import { MarkdownParsed } from '../src/components/MarkdownParsed'
+import { parseMarkdown } from 'comark'
+import { MarkdownDocument } from '../src/components/MarkdownDocument'
 
-describe('MarkdownParsed with Slots', () => {
+describe('MarkdownDocument with Slots', () => {
   it('should pass named slots to components as props', async () => {
     const markdown = `::test-component
 Default content
@@ -16,7 +16,7 @@ Header content
 Footer content
 ::`
 
-    const result = await parse(markdown)
+    const result = await parseMarkdown(markdown)
 
     // In React, named slots become props: slotHeader, slotFooter
     // Default slot becomes children
@@ -31,7 +31,7 @@ Footer content
     }
 
     const html = renderToString(
-      <MarkdownParsed
+      <MarkdownDocument
         value={result}
         components={{ 'test-component': TestComponent }}
       />
@@ -59,7 +59,7 @@ Warning Title
 This is a description
 ::`
 
-    const result = await parse(markdown)
+    const result = await parseMarkdown(markdown)
 
     function Callout({ slotTitle, slotDescription }: any) {
       return (
@@ -71,7 +71,7 @@ This is a description
     }
 
     const html = renderToString(
-      <MarkdownParsed
+      <MarkdownDocument
         value={result}
         components={{ Callout }}
       />
@@ -92,7 +92,7 @@ This is header part
 Copyright by Nuxt
 ::`
 
-    const result = await parse(markdown)
+    const result = await parseMarkdown(markdown)
 
     function MultiSlotTest({ children, slotHeader, slotFooter }: any) {
       return (
@@ -105,7 +105,7 @@ Copyright by Nuxt
     }
 
     const html = renderToString(
-      <MarkdownParsed
+      <MarkdownDocument
         value={result}
         components={{ 'multi-slot-test': MultiSlotTest }}
       />

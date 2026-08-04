@@ -1,14 +1,14 @@
-import type { ComarkNode } from 'comark'
+import type { Node } from 'comark'
 import { applyAutoUnwrap } from '../internal/parse/auto-unwrap.ts'
-import { marmdownItTokensToComarkTree } from '../internal/parse/token-processor.ts'
+import { marmdownItTokensToMarkdownDocument } from '../internal/parse/token-processor.ts'
 import { defineComarkPlugin } from '../utils/helpers.ts'
 
-export default defineComarkPlugin<{ delimiter?: string }, { summary: ComarkNode[] }>((options = {}) => {
+export default defineComarkPlugin<{ delimiter?: string }, { summary: Node[] }>((options = {}) => {
   const { delimiter = '<!-- more -->' } = options
   return {
     name: 'summary',
     post(state) {
-      let summary: ComarkNode[] | undefined
+      let summary: Node[] | undefined
 
       const delimiterIndex = state.tokens.findIndex(
         (token: any) => token.type === 'html_block' && token.content?.includes(delimiter)
@@ -16,11 +16,11 @@ export default defineComarkPlugin<{ delimiter?: string }, { summary: ComarkNode[
 
       if (delimiterIndex !== -1) {
         const summaryTokens = state.tokens.slice(0, delimiterIndex)
-        summary = marmdownItTokensToComarkTree(summaryTokens)
+        summary = marmdownItTokensToMarkdownDocument(summaryTokens)
 
         // Apply auto-unwrap to summary as well
         if (state.options.autoUnwrap) {
-          summary = summary?.map((child: ComarkNode) => applyAutoUnwrap(child))
+          summary = summary?.map((child: Node) => applyAutoUnwrap(child))
         }
 
         if (summary) {

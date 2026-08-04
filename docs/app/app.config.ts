@@ -105,6 +105,8 @@ export default defineAppConfig({
         items: [
           'How do I stream AI-generated Markdown with Comark?',
           'How do I add syntax highlighting to code blocks?',
+          'How do I render math formulas with Comark?',
+          'What does a MarkdownDocument look like?',
         ],
       },
     ],
@@ -130,6 +132,7 @@ export default defineAppConfig({
         html: 'i-vscode-icons-file-type-html',
         svelte: 'i-logos-svelte-icon',
         nuxt: 'i-logos-nuxt-icon',
+        angular: 'i-logos-angular-icon',
       },
     },
   },

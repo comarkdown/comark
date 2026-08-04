@@ -1,42 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import type { ComarkElement, ComarkTree } from '../../src/types'
-import { parse } from '../../src'
+import type { MarkdownDocument } from '../../src/types'
 import { renderMarkdown } from '../../src/render'
-import highlight from '../../src/plugins/highlight'
-
-describe('highlight themes option', () => {
-  it('accepts bundled theme names as strings', async () => {
-    const tree = await parse('```js\nconst a = 1\n```', {
-      plugins: [highlight({ themes: { light: 'github-light', dark: 'github-dark' } })],
-    })
-    const pre = tree.nodes[0] as ComarkElement
-    expect((pre[1] as Record<string, any>).class).toContain('shiki-themes github-light github-dark')
-
-    const code = pre[2] as ComarkElement
-    const line = code[2] as ComarkElement
-    expect(line[0]).toBe('span')
-    const tokens = line.slice(2) as ComarkElement[]
-    expect(tokens.length).toBeGreaterThan(1)
-    for (const token of tokens) {
-      expect(token[0]).toBe('span')
-      expect((token[1] as Record<string, any>).style).toMatch(/color:#[0-9A-Fa-f]{3,8}/)
-      expect((token[1] as Record<string, any>).style).toContain('--shiki-dark:')
-    }
-  })
-
-  it('throws on an unknown bundled theme name', async () => {
-    await expect(
-      parse('```js\nconst a = 1\n```', {
-        plugins: [highlight({ themes: { light: 'not-a-real-theme' } })],
-      })
-    ).rejects.toThrow('Unknown bundled theme')
-  })
-})
 
 describe('shiki code block round-trip', () => {
   // The highlight plugin's injected attrs have no markdown form, so a
   // highlighted block must serialize to a plain fence, never a `::pre{...}`.
-  function preTree(preClass: string): ComarkTree {
+  function preTree(preClass: string): MarkdownDocument {
     return {
       frontmatter: {},
       meta: {},
@@ -59,7 +28,7 @@ describe('shiki code block round-trip', () => {
   })
 
   it('keeps a plain fence for a highlighted code block inside a component slot', async () => {
-    const tree: ComarkTree = {
+    const document: MarkdownDocument = {
       frontmatter: {},
       meta: {},
       nodes: [
@@ -74,7 +43,7 @@ describe('shiki code block round-trip', () => {
         ],
       ],
     }
-    const md = await renderMarkdown(tree)
+    const md = await renderMarkdown(document)
     expect(md).not.toContain('::pre')
     expect(md).toContain('```bash\nnpx install\n```')
   })

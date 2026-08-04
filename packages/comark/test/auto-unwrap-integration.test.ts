@@ -1,16 +1,16 @@
 import { describe, expect, it } from 'vitest'
-import { parse } from '../src/index'
-import type { ComarkNode } from 'comark'
+import { parseMarkdown } from '../src/index'
+import type { Node } from 'comark'
 
 // Helper to check if a node is an element with a specific tag
-function isElement(node: ComarkNode, tag: string): boolean {
+function isElement(node: Node, tag: string): boolean {
   return Array.isArray(node) && node[0] === tag
 }
 
 // Helper to get children of an element (elements after tag and props)
-function getChildren(node: ComarkNode): ComarkNode[] {
+function getChildren(node: Node): Node[] {
   if (Array.isArray(node) && node.length > 2) {
-    return node.slice(2) as ComarkNode[]
+    return node.slice(2) as Node[]
   }
   return []
 }
@@ -21,8 +21,8 @@ describe('auto-unwrap integration', () => {
 This is **bold** text
 ::`
 
-    const result = await parse(content)
-    const alert = result.nodes[0] as ComarkNode
+    const result = await parseMarkdown(content)
+    const alert = result.nodes[0] as Node
 
     expect(alert[0]).toBe('alert')
 
@@ -41,8 +41,8 @@ This is **bold** text
 This is **bold** text
 ::`
 
-    const result = await parse(content, { autoUnwrap: false })
-    const alert = result.nodes[0] as ComarkNode
+    const result = await parseMarkdown(content, { autoUnwrap: false })
+    const alert = result.nodes[0] as Node
 
     expect(alert[0]).toBe('alert')
 
@@ -59,8 +59,8 @@ First paragraph
 Second paragraph
 ::`
 
-    const result = await parse(content)
-    const card = result.nodes[0] as ComarkNode
+    const result = await parseMarkdown(content)
+    const card = result.nodes[0] as Node
 
     expect(card[0]).toBe('card')
 
@@ -78,8 +78,8 @@ Second paragraph
 - Item 2
 ::`
 
-    const result = await parse(content)
-    const warning = result.nodes[0] as ComarkNode
+    const result = await parseMarkdown(content)
+    const warning = result.nodes[0] as Node
 
     expect(warning[0]).toBe('warning')
 
@@ -99,8 +99,8 @@ console.log('hello')
 \`\`\`
 ::`
 
-    const result = await parse(content)
-    const tip = result.nodes[0] as ComarkNode
+    const result = await parseMarkdown(content)
+    const tip = result.nodes[0] as Node
 
     expect(tip[0]).toBe('tip')
 
@@ -117,8 +117,8 @@ console.log('hello')
 | John | 30  |
 ::`
 
-    const result = await parse(content)
-    const info = result.nodes[0] as ComarkNode
+    const result = await parseMarkdown(content)
+    const info = result.nodes[0] as Node
 
     expect(info[0]).toBe('info')
 
@@ -136,8 +136,8 @@ console.log('hello')
 **Content**
 ::`
 
-      const resultWith = await parse(content)
-      const containerWith = resultWith.nodes[0] as ComarkNode
+      const resultWith = await parseMarkdown(content)
+      const containerWith = resultWith.nodes[0] as Node
 
       expect(containerWith[0]).toBe(type)
 
@@ -147,8 +147,8 @@ console.log('hello')
       expect(hasDirectStrong).toBe(true)
 
       // Compare with disabled
-      const resultWithout = await parse(content, { autoUnwrap: false })
-      const containerWithout = resultWithout.nodes[0] as ComarkNode
+      const resultWithout = await parseMarkdown(content, { autoUnwrap: false })
+      const containerWithout = resultWithout.nodes[0] as Node
 
       // Should have paragraph wrapper when disabled
       const childrenWithout = getChildren(containerWithout)

@@ -1,4 +1,4 @@
-import type { ComarkNode } from 'comark'
+import type { Node } from 'comark'
 import { defineComarkPlugin } from '../utils/helpers.ts'
 
 export interface PunctuationOptions {
@@ -213,20 +213,20 @@ function applyPunctuation(
  *
  * @example
  * ```ts
- * import { parse } from 'comark'
+ * import { parseMarkdown } from 'comark'
  * import punctuation from 'comark/plugins/punctuation'
  *
- * const result = await parse('"Hello" -- world...', {
+ * const result = await parseMarkdown('"Hello" -- world...', {
  *   plugins: [punctuation()]
  * })
  *
  * // Locale-aware quotes (Russian)
- * const result2 = await parse('"Hello"', {
+ * const result2 = await parseMarkdown('"Hello"', {
  *   plugins: [punctuation({ quotes: '«»„"' })]
  * })
  *
  * // French quotes with non-breaking spaces
- * const result3 = await parse('"Hello"', {
+ * const result3 = await parseMarkdown('"Hello"', {
  *   plugins: [punctuation({ quotes: ['«\xA0', '\xA0»', '‹\xA0', '\xA0›'] })]
  * })
  * ```
@@ -267,7 +267,7 @@ export default defineComarkPlugin((options: PunctuationOptions = {}) => {
   return {
     name: 'punctuation',
     post(state) {
-      function walkNodes(nodes: ComarkNode[], startIndex: number, skip: boolean): void {
+      function walkNodes(nodes: Node[], startIndex: number, skip: boolean): void {
         for (let i = startIndex; i < nodes.length; i++) {
           const node = nodes[i]
 
@@ -290,7 +290,7 @@ export default defineComarkPlugin((options: PunctuationOptions = {}) => {
           }
 
           if (Array.isArray(node) && node[0] != null) {
-            walkNodes(node as ComarkNode[], 2, skip || SKIP_TAGS.has(node[0] as string))
+            walkNodes(node as Node[], 2, skip || SKIP_TAGS.has(node[0] as string))
           }
         }
       }

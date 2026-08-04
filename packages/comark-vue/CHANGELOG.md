@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.0](https://github.com/comarkdown/comark/compare/@comark/vue@0.5.1...@comark/vue@0.6.0) (2026-08-04)
+
+### Features
+
+* introduce `unwrap` feature in parser ([#275](https://github.com/comarkdown/comark/issues/275)) ([060dfa9](https://github.com/comarkdown/comark/commit/060dfa955c7d0467f278580ccc27fa315370ac2a))
+* rename components to `Markdown` and `MarkdownParsed` ([#313](https://github.com/comarkdown/comark/issues/313)) ([e6a6b60](https://github.com/comarkdown/comark/commit/e6a6b602fe658261b5f20862d0f0faa439bf425d))
+
 ## [0.5.1](https://github.com/comarkdown/comark/compare/@comark/vue@0.5.0...@comark/vue@0.5.1) (2026-07-14)
 
 ## [0.5.0](https://github.com/comarkdown/comark/compare/@comark/vue@0.4.0...@comark/vue@0.5.0) (2026-07-02)

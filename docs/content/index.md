@@ -36,9 +36,9 @@ demoMarkdown: |-
     > Built for modern web applications.
   
     ```ts [example.ts]
-    import { parse } from 'comark'
+    import { parseMarkdown } from 'comark'
   
-    const tree = await parse('# Hello **World**')
+    const document = await parseMarkdown('# Hello **World**')
     ```
 ---
 ::
@@ -73,9 +73,9 @@ pillars:
     description: Compatible with markdown-it plugins. Shiki highlighting, KaTeX math, Mermaid diagrams, table of contents and more.
     to: /plugins
   - icon: i-lucide-braces
-    title: Compact AST
-    description: Parse to plain arrays that are easy to traverse, cache, serialize, and send over the wire.
-    to: /syntax/comark-ast
+    title: Serializable document
+    description: Parse to a plain MarkdownDocument that is easy to traverse, cache, serialize, and send over the wire.
+    to: /getting-started/document-model
 ---
 ::
 
@@ -161,7 +161,7 @@ plugins:
       ```mermaid
       graph TD
           A[Markdown] --> B[Parser]
-          B --> C[Comark AST]
+          B --> C[MarkdownDocument]
           C --> D{Renderer}
           D --> E[Vue]
           D --> F[React]

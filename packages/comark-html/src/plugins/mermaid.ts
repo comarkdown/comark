@@ -1,4 +1,4 @@
-import type { ComarkElement } from 'comark'
+import type { ElementNode } from 'comark'
 import type { ThemeNames } from 'comark/plugins/mermaid'
 import { renderMermaidSVG, THEMES } from 'beautiful-mermaid'
 
@@ -12,15 +12,15 @@ export { default } from 'comark/plugins/mermaid'
  * @example
  * ```typescript
  * import mermaid, { Mermaid } from '@comark/html/plugins/mermaid'
- * import { createRender } from '@comark/html'
+ * import { createHtmlRenderer } from '@comark/html'
  *
- * const render = createRender({
+ * const renderHtml = createHtmlRenderer({
  *   plugins: [mermaid()],
  *   components: { Mermaid },
  * })
  * ```
  */
-export const Mermaid = ([, attrs]: ComarkElement): string => {
+export const Mermaid = ([, attrs]: ElementNode): string => {
   const content = String(attrs.content ?? '')
   const themeName = attrs.theme as ThemeNames | undefined
   const theme = (themeName && THEMES[themeName]) ?? THEMES['zinc-light']
