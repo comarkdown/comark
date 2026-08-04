@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.6.0](https://github.com/comarkdown/comark/compare/@comark/html@0.5.1...@comark/html@0.6.0) (2026-08-04)
+
+### Features
+
+* introduce `unwrap` feature in parser ([#275](https://github.com/comarkdown/comark/issues/275)) ([060dfa9](https://github.com/comarkdown/comark/commit/060dfa955c7d0467f278580ccc27fa315370ac2a))
+
+### Bug Fixes
+
+* **highlight:** accept bundled theme names in themes option ([#308](https://github.com/comarkdown/comark/issues/308)) ([1ad8480](https://github.com/comarkdown/comark/commit/1ad84809c8ae7dab111696174e6430a0b6a9625f))
+
 ## [0.5.1](https://github.com/comarkdown/comark/compare/@comark/html@0.5.0...@comark/html@0.5.1) (2026-07-14)
 
 ## [0.5.0](https://github.com/comarkdown/comark/compare/@comark/html@0.4.0...@comark/html@0.5.0) (2026-07-02)
