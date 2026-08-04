@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.6.0](https://github.com/comarkdown/comark/compare/@comark/ansi@0.5.1...@comark/ansi@0.6.0) (2026-08-04)
+
+### Features
+
+* introduce `unwrap` feature in parser ([#275](https://github.com/comarkdown/comark/issues/275)) ([060dfa9](https://github.com/comarkdown/comark/commit/060dfa955c7d0467f278580ccc27fa315370ac2a))
+
 ## [0.5.1](https://github.com/comarkdown/comark/compare/@comark/ansi@0.5.0...@comark/ansi@0.5.1) (2026-07-14)
 
 ## [0.5.0](https://github.com/comarkdown/comark/compare/@comark/ansi@0.4.0...@comark/ansi@0.5.0) (2026-07-02)
