@@ -88,10 +88,7 @@ export default defineAppConfig({
     faqQuestions: [
       {
         category: 'Getting Started',
-        items: [
-          'What is Comark and how does it differ from MDX?',
-          'How do I install and set up Comark in my project?',
-        ],
+        items: ['What is Comark and how does it differ from MDX?', 'How do I install and set up Comark in my project?'],
       },
       {
         category: 'Syntax',
