@@ -1,20 +1,10 @@
-import type {
-  BundledTheme,
-  LanguageRegistration,
-  ShikiTransformer,
-  ShikiPrimitive,
-  StringLiteralUnion,
-  ThemeRegistration,
-  ThemeRegistrationAny,
-} from 'shiki'
+import type { LanguageRegistration, ShikiTransformer, ShikiPrimitive, ThemeRegistration } from 'shiki'
 import type { ElementNode, Node, MarkdownDocument, ElementNodeAttributes } from 'comark'
 import { defineComarkPlugin } from '../utils/helpers.ts'
 import { createShikiPrimitive } from 'shiki'
 import { createJavaScriptRegexEngine } from 'shiki/engine/javascript'
 import { codeToHast, codeToTokens, getTokenStyleObject, stringifyTokenStyle } from 'shiki/core'
 import comakLanguage from '../utils/comark.tmLanguage.ts'
-
-export type HighlightTheme = ThemeRegistrationAny | StringLiteralUnion<BundledTheme>
 
 export interface HighlightOptions {
   /**
@@ -40,8 +30,8 @@ export interface HighlightOptions {
    * @default { light: 'material-theme-lighter', dark: 'material-theme-palenight' }
    */
   themes?: {
-    light?: HighlightTheme
-    dark?: HighlightTheme
+    light?: ThemeRegistration
+    dark?: ThemeRegistration
   }
 
   /**
@@ -122,23 +112,9 @@ export async function getHighlighter(options: HighlightOptions = {}): Promise<Sh
 }
 
 async function registerDefaults(options: HighlightOptions) {
-  const themes: ThemeRegistration[] = []
+  const themes = Object.values(options.themes || {}) as ThemeRegistration[]
   const languages = options.languages || ([] as Array<LanguageRegistration | LanguageRegistration[]>)
   const promises: Array<Promise<{ type: 'theme' | 'lang'; value: any }>> = []
-
-  for (const theme of Object.values(options.themes || {})) {
-    if (typeof theme === 'string') {
-      promises.push(
-        import('shiki/themes').then(async ({ bundledThemes }) => {
-          const load = bundledThemes[theme as BundledTheme]
-          if (!load) throw new Error(`Unknown bundled theme: ${theme}`)
-          return { type: 'theme' as const, value: (await load()).default }
-        })
-      )
-    } else {
-      themes.push(theme as ThemeRegistration)
-    }
-  }
 
   if (options.registerDefaultThemes !== false) {
     promises.push(
@@ -282,12 +258,8 @@ export async function highlightCodeBlocks(
     dark: lightTheme !== darkTheme ? darkTheme : undefined,
   }
 
-  const resolveThemeOption = (theme?: HighlightTheme): ThemeRegistration | undefined =>
-    typeof theme === 'string' ? hl.getTheme(theme) : (theme as ThemeRegistration | undefined)
-
   const hasTransformers = options.transformers && options.transformers.length > 0
-  const darkThemeName = resolveThemeOption(options.themes?.dark)?.name
-  const darkClassSuffix = darkThemeName ? ` dark:${darkThemeName}` : ''
+  const darkClassSuffix = options.themes?.dark?.name ? ` dark:${options.themes.dark.name}` : ''
 
   // Build new nodes array, spine-copying only paths to modified <pre> nodes
   const newNodes = [...tree.nodes] as Node[]
@@ -403,8 +375,8 @@ export async function highlightCodeBlocks(
     }
 
     if (options.preStyles) {
-      const lightTheme = resolveThemeOption(options.themes?.light)
-      const darkTheme = resolveThemeOption(options.themes?.dark)
+      const lightTheme = options.themes?.light
+      const darkTheme = options.themes?.dark
       const styles: string[] = []
 
       if (lightTheme?.colors?.['editor.background']) {
