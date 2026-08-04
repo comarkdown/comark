@@ -143,10 +143,12 @@ Replaces global `mdc: { ... }` config. Define reusable components with their own
 import { defineMarkdownComponent } from '@comark/vue'
 import highlight from 'comark/plugins/highlight'
 import toc from 'comark/plugins/toc'
+import githubLight from '@shikijs/themes/github-light'
+import githubDark from '@shikijs/themes/github-dark'
 
 export const ArticleMarkdown = defineMarkdownComponent({
   name: 'ArticleMarkdown',
-  plugins: [highlight({ themes: { light: 'github-light', dark: 'github-dark' } }), toc()],
+  plugins: [highlight({ themes: { light: githubLight, dark: githubDark } }), toc()],
   components: { alert: CustomAlert },
 })
 ```
