@@ -4,8 +4,8 @@ import { join } from 'node:path'
 import { parseFrontmatter } from '../src/internal/frontmatter'
 import { parseMarkdown } from 'comark'
 import { renderMarkdown } from 'comark/render'
-import highlight from 'comark/plugins/highlight'
-import type { HighlightOptions } from '../src/plugins/highlight'
+import shiki from 'comark/plugins/shiki'
+import type { ShikiOptions } from '../src/plugins/shiki'
 import emoji from '../src/plugins/emoji'
 import binding, { Binding as MarkdownBinding } from '../src/plugins/binding'
 import type { ComarkPlugin } from 'comark'
@@ -49,7 +49,7 @@ interface TestCase {
     markdown?: number
   }
   options?: {
-    highlight?: HighlightOptions
+    highlight?: ShikiOptions
     plugins?: PluginName[]
     autoUnwrap?: boolean
     maxInlineAttributes?: number
@@ -229,7 +229,7 @@ describe('Comark Tests', () => {
 
           const transformerNames = testCase.options.highlight.transformers as unknown as TransformerName[] | undefined
           plugins.push(
-            highlight({
+            shiki({
               ...testCase.options.highlight,
               languages: [rustLanguage, goLanguage],
               themes: {

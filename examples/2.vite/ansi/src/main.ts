@@ -3,7 +3,7 @@ import { Terminal } from '@xterm/xterm'
 import { FitAddon } from '@xterm/addon-fit'
 import { createMarkdownParser } from 'comark'
 import math from 'comark/plugins/math'
-import highlight from 'comark/plugins/highlight'
+import shiki from 'comark/plugins/shiki'
 import { renderAnsiFromDocument } from '@comark/ansi'
 
 const plugins = [math(), highlight()]

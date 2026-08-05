@@ -113,7 +113,7 @@ Optional plugins you register via `plugins: [...]`.
   Extract content summaries using `<!-- more -->` delimiter
   ::
 
-  ::card{icon="i-lucide-code" title="Syntax Highlighting" to="/plugins/built-in/syntax-highlight"}
+  ::card{icon="i-lucide-code" title="Shiki" to="/plugins/built-in/syntax-highlight"}
   Beautiful code syntax highlighting using Shiki with multi-theme support
   ::
 

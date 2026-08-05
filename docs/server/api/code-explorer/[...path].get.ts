@@ -1,6 +1,6 @@
 import { parseMarkdown } from 'comark'
 import type { MarkdownDocument } from 'comark'
-import highlight from 'comark/plugins/highlight'
+import shiki from 'comark/plugins/shiki'
 
 const EXT_TO_LANG: Record<string, string> = {
   ts: 'typescript',
@@ -188,7 +188,7 @@ export default defineEventHandler(async (event) => {
     .filter((relativePath) => !shouldExclude(relativePath))
     .sort()
 
-  const highlightPlugin = highlight({
+  const highlightPlugin = shiki({
     themes: {
       light: (await import('@shikijs/themes/material-theme-lighter')).default,
       dark: (await import('@shikijs/themes/material-theme-palenight')).default,

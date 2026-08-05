@@ -32,7 +32,7 @@ npm install @speed-highlight/core
 ```
 
 ::tip
-Use [`comark/plugins/highlight`](/plugins/built-in/syntax-highlight) (Shiki) when you need dual themes, transformers, Twoslash, or the full VS Code grammar set. Use `speed-highlight` for a faster, smaller class-based highlighter.
+Use [`comark/plugins/shiki`](/plugins/built-in/syntax-highlight) (Shiki) when you need dual themes, transformers, Twoslash, or the full VS Code grammar set. Use `speed-highlight` for a faster, smaller class-based highlighter.
 ::
 
 ## Usage

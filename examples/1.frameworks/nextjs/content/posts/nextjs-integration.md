@@ -19,11 +19,11 @@ Instead of using the typical `gray-matter` + `remark` + `rehype` pipeline, we us
 ```ts
 import { parseMarkdown } from 'comark'
 import { MarkdownDocument } from '@comark/react'
-import highlight from 'comark/plugins/highlight'
+import shiki from 'comark/plugins/shiki'
 import Alert from '@/components/Alert'
 
 const tree = await parseMarkdown(content, {
-  plugins: [highlight()],
+  plugins: [shiki()],
 })
 
 // In your Server Component:

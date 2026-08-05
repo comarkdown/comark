@@ -295,11 +295,11 @@ check_dependencies && echo "All dependencies installed"
 +++ b/src/index.ts
 @@ -1,5 +1,6 @@
  import { parseMarkdown } from 'comark'
--import highlight from 'comark/plugins/highlight'
+-import shiki from 'comark/plugins/shiki'
 +import speedHighlight from 'comark/plugins/speed-highlight'
 
  const result = await parseMarkdown(content, {
--  plugins: [highlight()]
+-  plugins: [shiki()]
 +  plugins: [speedHighlight()]
  })
 \`\`\`

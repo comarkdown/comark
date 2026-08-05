@@ -1,5 +1,5 @@
 import { parseMarkdown } from 'comark'
-import highlight from '@comark/react/plugins/highlight'
+import shiki from '@comark/react/plugins/shiki'
 import type { MarkdownDocument } from '@comark/react'
 
 const rawFiles = import.meta.glob('../../content/posts/*.md', {
@@ -50,7 +50,7 @@ export async function getPost(slug: string): Promise<Post> {
 
   const [, content] = entry
   const tree = await parseMarkdown(content, {
-    plugins: [highlight()],
+    plugins: [shiki()],
   })
 
   const fm = tree.frontmatter as Record<string, unknown>

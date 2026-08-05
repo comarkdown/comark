@@ -14,10 +14,10 @@ export { renderHtmlFromDocument } from './render.ts'
  * @example
  * ```typescript
  * import { createHtmlRenderer } from '@comark/html'
- * import highlight from '@comark/html/plugins/highlight'
+ * import shiki from '@comark/html/plugins/shiki'
  *
  * const renderHtml = createHtmlRenderer({
- *   plugins: [highlight()],
+ *   plugins: [shiki()],
  *   components: {
  *     alert: async ([, attrs, ...children], { render }) =>
  *       `<div class="alert alert-${attrs.type}">${await render(children)}</div>`

@@ -67,12 +67,12 @@ const html = await renderHtml(`::alert{type="warning"}\nHeads up!\n::`, {
 
 ```ts
 import { renderHtml } from '@comark/html'
-import highlight from '@comark/html/plugins/highlight'
+import shiki from '@comark/html/plugins/shiki'
 import githubLight from '@shikijs/themes/github-light'
 import githubDark from '@shikijs/themes/github-dark'
 
 const html = await renderHtml(content, {
-  plugins: [highlight({ themes: { light: githubLight, dark: githubDark } })],
+  plugins: [shiki({ themes: { light: githubLight, dark: githubDark } })],
 })
 ```
 

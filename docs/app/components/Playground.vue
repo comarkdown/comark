@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { parseMarkdown } from 'comark'
-import highlight from '@comark/nuxt/plugins/highlight'
+import shiki from '@comark/nuxt/plugins/shiki'
 import math from '@comark/nuxt/plugins/math'
 import binding from '@comark/nuxt/plugins/binding'
 import emoji from '@comark/nuxt/plugins/emoji'

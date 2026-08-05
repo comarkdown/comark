@@ -1,6 +1,6 @@
 import { Component } from '@angular/core'
 import { Markdown } from '@comark/angular'
-import highlight from 'comark/plugins/highlight'
+import shiki from 'comark/plugins/shiki'
 import alert from 'comark/plugins/alert'
 import { AlertComponent } from '../components/alert.component'
 import { FeatureCardComponent } from '../components/feature-card.component'
@@ -21,7 +21,7 @@ import python from '@shikijs/langs/python'
 export class SyntaxComponent {
   components = { alert: AlertComponent, 'feature-card': FeatureCardComponent }
   plugins = [
-    highlight({
+    shiki({
       languages: [python],
     }),
     alert(),
