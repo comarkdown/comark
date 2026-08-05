@@ -1,5 +1,6 @@
 import type { ElementNode, Node, MarkdownDocument } from 'comark'
 import type { ShjLanguage, ShjToken } from '@speed-highlight/core'
+import { tokenize } from '@speed-highlight/core'
 import { defineComarkPlugin } from '../utils/helpers.ts'
 import { visitAsync } from '../utils/index.ts'
 
@@ -91,10 +92,7 @@ const DEFAULT_LANG_ALIAS: Record<string, SpeedHighlightLanguage> = {
   text: 'plain',
   txt: 'plain',
   plaintext: 'plain',
-  // Brainfuck
-  brainfuck: 'bf',
   // HTML-ish
-  htm: 'html',
   svg: 'xml',
   // JSON render fences stay json
   'json-render': 'json',
@@ -128,7 +126,6 @@ export async function tokenizeCode(
   code: string,
   language: SpeedHighlightLanguage
 ): Promise<Array<{ text: string; type?: SpeedHighlightToken }>> {
-  const { tokenize } = await import('@speed-highlight/core')
   const tokens: Array<{ text: string; type?: SpeedHighlightToken }> = []
 
   // `SpeedHighlightLanguage` is wider than `ShjLanguage` (open string for custom
