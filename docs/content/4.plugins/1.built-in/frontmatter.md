@@ -6,9 +6,9 @@ seo:
 navigation:
   icon: i-lucide-file-spreadsheet
 links:
-  - label: Parse API
-    icon: i-lucide-file-code
-    to: /api/parse
+  - label: Frontmatter Syntax
+    icon: i-lucide-file-text
+    to: /syntax/frontmatter
     color: neutral
     variant: soft
   - label: Plugins
