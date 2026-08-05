@@ -43,16 +43,16 @@ describe('resolveSpeedHighlightLanguage', () => {
     expect(resolveSpeedHighlightLanguage('json')).toBe('json')
   })
 
-  it('falls back to plain for unknown languages', () => {
-    expect(resolveSpeedHighlightLanguage('not-a-real-lang')).toBe('plain')
+  it('falls back only when the fence language is missing/empty', () => {
     expect(resolveSpeedHighlightLanguage(undefined)).toBe('plain')
     expect(resolveSpeedHighlightLanguage('')).toBe('plain')
+    // Unknown ids are passed through — speed-highlight treats them as plain text
+    expect(resolveSpeedHighlightLanguage('not-a-real-lang')).toBe('not-a-real-lang')
   })
 
   it('honors custom langAlias and defaultLanguage', () => {
     expect(resolveSpeedHighlightLanguage('vue', { langAlias: { vue: 'html' } })).toBe('html')
     expect(resolveSpeedHighlightLanguage(undefined, { defaultLanguage: 'js' })).toBe('js')
-    expect(resolveSpeedHighlightLanguage('zzz', { defaultLanguage: 'json' })).toBe('json')
   })
 })
 

@@ -122,7 +122,7 @@ const x: number = 42
 ```
 ````
 
-Unknown languages fall back to `plain`.
+Unknown language ids are passed through as-is — speed-highlight treats them as unstyled plain text (no throw). Only a missing/empty fence info string uses `defaultLanguage` (`plain` by default).
 
 ### Line highlighting
 
@@ -205,7 +205,7 @@ speedHighlight({
 
 ### `defaultLanguage`
 
-Language used when the fence has no info string, or the language is not supported:
+Language used when the fence has no info string:
 
 ```typescript
 speedHighlight({ defaultLanguage: 'js' })
@@ -381,6 +381,6 @@ pre.shj {
 | `css` | `css` |
 | `xml`, `svg` | `xml` |
 | `c`, `go`, `java`, `sql`, `lua`, `toml`, `diff`, `docker`, `http`, `ini`, … | same id |
-| _(unknown)_ | `plain` |
+| _(missing fence info)_ | `plain` (via `defaultLanguage`) |
 
 Full list: [speed-highlight languages](https://github.com/speed-highlight/core#languages-supported-).

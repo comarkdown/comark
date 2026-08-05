@@ -1,5 +1,6 @@
 import type { ElementNode, Node, MarkdownDocument } from 'comark'
 import type { ShjLanguage, ShjLanguageDefinition, ShjToken } from '@speed-highlight/core'
+import  { loadLanguage } from '@speed-highlight/core'
 import { defineComarkPlugin } from '../utils/helpers.ts'
 import { visitAsync } from '../utils/index.ts'
 
@@ -110,45 +111,12 @@ const DEFAULT_LANG_ALIAS: Record<string, SpeedHighlightLanguage> = {
   'yaml-render': 'yaml',
 }
 
-const SUPPORTED_LANGS = new Set<string>([
-  'asm',
-  'bash',
-  'bf',
-  'c',
-  'css',
-  'csv',
-  'diff',
-  'docker',
-  'git',
-  'go',
-  'html',
-  'http',
-  'ini',
-  'java',
-  'js',
-  'jsdoc',
-  'json',
-  'leanpub-md',
-  'log',
-  'lua',
-  'make',
-  'md',
-  'pl',
-  'plain',
-  'py',
-  'regex',
-  'rs',
-  'sql',
-  'todo',
-  'toml',
-  'ts',
-  'uri',
-  'xml',
-  'yaml',
-])
-
 /**
  * Resolve a fence language string to a speed-highlight language id.
+ *
+ * Applies built-in + user aliases, then hands the id straight to
+ * `@speed-highlight/core`. Unknown ids are fine — tokenize falls back to
+ * unstyled plain text rather than throwing.
  */
 export function resolveSpeedHighlightLanguage(
   language: string | undefined,
@@ -161,14 +129,7 @@ export function resolveSpeedHighlightLanguage(
   if (!raw) return fallback
 
   const alias = { ...DEFAULT_LANG_ALIAS, ...options.langAlias }
-  const mapped = alias[raw] || raw
-
-  if (SUPPORTED_LANGS.has(mapped) || options.langAlias?.[raw]) {
-    return mapped
-  }
-
-  // Unknown languages fall back so tokenize does not throw
-  return fallback
+  return alias[raw] || raw
 }
 
 /**
