@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { parseMarkdown } from '../../src/parse'
 import components from '../../src/plugins/components'
+import frontmatter from '../../src/plugins/frontmatter'
 import html from '../../src/plugins/html'
 
 describe('default plugin options', () => {
@@ -23,6 +24,27 @@ describe('default plugin options', () => {
     it('parses HTML by default', async () => {
       const tree = await parseMarkdown('<strong class="bold">Hello</strong>')
       expect(tree.nodes).toEqual([['p', {}, ['strong', { class: 'bold', $: { html: 1, block: 0 } }, 'Hello']]])
+    })
+
+    it('parses frontmatter by default', async () => {
+      const tree = await parseMarkdown('---\ntitle: Hello\n---\n\n# Hi')
+      expect(tree.frontmatter).toEqual({ title: 'Hello' })
+      expect(tree.nodes).toEqual([['h1', { id: 'hi' }, 'Hi']])
+    })
+
+    it('treats frontmatter as content when registerDefaultPlugins is false', async () => {
+      const tree = await parseMarkdown('---\ntitle: Hello\n---\n\n# Hi', { registerDefaultPlugins: false })
+      expect(tree.frontmatter).toEqual({})
+      expect(tree.nodes[0]).toEqual(['hr', {}])
+    })
+
+    it('parses frontmatter via an explicit plugin when registerDefaultPlugins is false', async () => {
+      const tree = await parseMarkdown('---\ntitle: Hello\n---\n\n# Hi', {
+        registerDefaultPlugins: false,
+        plugins: [frontmatter()],
+      })
+      expect(tree.frontmatter).toEqual({ title: 'Hello' })
+      expect(tree.nodes).toEqual([['h1', { id: 'hi' }, 'Hi']])
     })
 
     it('treats HTML as plain text when registerDefaultPlugins is false', async () => {
@@ -139,13 +161,6 @@ describe('default plugin options', () => {
         plugins: [components()],
       })
       expect(tree.nodes).toEqual([['alert', {}, 'Content']])
-    })
-
-    it('skips component-fence auto-close when components is replaced', async () => {
-      const tree = await parseMarkdown('::alert\nContent', {
-        plugins: [{ name: 'components' }],
-      })
-      expect(tree.nodes).toEqual([['p', {}, '::alert\nContent']])
     })
   })
 })

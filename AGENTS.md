@@ -55,7 +55,8 @@ packages/comark/
 │   │   └── utils.ts          # textContent(), visit() document utilities
 │   ├── plugins/              # Built-in and optional plugins
 │   │   ├── alert.ts          # Alert/callout blocks
-│   │   ├── html.ts           # HTML block/inline parsing (default via `html` option)
+│   │   ├── frontmatter.ts    # YAML frontmatter extraction (default via registerDefaultPlugins)
+│   │   ├── html.ts           # HTML block/inline parsing (default via registerDefaultPlugins)
 │   │   ├── components.ts     # Block/inline components + spans (`::name`, `:name`, `[text]`)
 │   │   ├── attributes.ts     # Inline attributes (`{props}` after tokens)
 │   │   ├── emoji.ts          # Emoji shortcodes
@@ -384,9 +385,10 @@ import mermaid from 'comark/plugins/mermaid'
 import emoji from 'comark/plugins/emoji'
 import toc from 'comark/plugins/toc'
 import alert from 'comark/plugins/alert'
+import frontmatter from 'comark/plugins/frontmatter' // default via registerDefaultPlugins
 import components from 'comark/plugins/components'   // default via registerDefaultPlugins
 import attributes from 'comark/plugins/attributes'   // default via registerDefaultPlugins
-import html from 'comark/plugins/html'               // default via registerDefaultPlugins / html option
+import html from 'comark/plugins/html'               // default via registerDefaultPlugins
 
 // markdown-it / markdown-exit adapters (e.g. VitePress)
 import { markdownItComponents } from 'comark/plugins/components'
@@ -492,9 +494,8 @@ const result = await parseMarkdown(markdownContent, {
   autoUnwrap: true,             // Remove <p> wrappers from single-paragraph containers
   autoClose: true,              // Auto-close incomplete syntax
   unwrap: 'p',                  // Strip top-level wrapper tags (MDC unwrap); merges paragraphs
-  frontmatter: true,            // Parse leading YAML frontmatter; false to treat it as content
-  html: true,                   // Built-in html plugin (via defaults); false to treat tags as plain text
-  registerDefaultPlugins: true, // Built-in html, alert, task-list, components, attributes; false to disable
+  registerDefaultPlugins: true, // frontmatter, html, alert, task-list, components, attributes; false to disable
+  // prefer plugins: [html({ enabled: false })] / [frontmatter({ enabled: false })] to turn off individual defaults
 })
 
 result.nodes       // Node[]

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { parseFrontmatter, renderFrontmatter } from '../src/internal/frontmatter'
 import { createMarkdownParser, parseMarkdown } from '../src/parse'
+import frontmatterPlugin from '../src/plugins/frontmatter'
 
 describe('parseFrontmatter', () => {
   it('should parse simple frontmatter', () => {
@@ -399,8 +400,10 @@ describe('frontmatter parse option', () => {
     expect(tree.nodes).toEqual([['h1', { id: 'hi' }, 'Hi']])
   })
 
-  it('treats the --- block as markdown content with frontmatter: false', async () => {
-    const tree = await parseMarkdown('---\ntitle: Hello\n---\n\n# Hi', { frontmatter: false })
+  it('disables frontmatter via frontmatter({ enabled: false })', async () => {
+    const tree = await parseMarkdown('---\ntitle: Hello\n---\n\n# Hi', {
+      plugins: [frontmatterPlugin({ enabled: false })],
+    })
     expect(tree.frontmatter).toEqual({})
     expect(tree.nodes).toEqual([
       ['hr', {}],
@@ -409,8 +412,8 @@ describe('frontmatter parse option', () => {
     ])
   })
 
-  it('does not complete a partial frontmatter block when streaming with frontmatter: false', async () => {
-    const parseStream = createMarkdownParser({ frontmatter: false })
+  it('does not complete a partial frontmatter block when streaming with frontmatter disabled', async () => {
+    const parseStream = createMarkdownParser({ plugins: [frontmatterPlugin({ enabled: false })] })
     const tree = await parseStream('---\ntitle: He', { streaming: true })
     expect(tree.frontmatter).toEqual({})
     expect(JSON.stringify(tree.nodes)).toContain('title: He')

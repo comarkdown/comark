@@ -9,24 +9,12 @@ Comark's plugin system extends markdown functionality with specialized features.
 ## Plugins
 
 ::card-group{cols="2"}
-  ::card{icon="i-lucide-bell" title="Alerts" to="/plugins/built-in/alert"}
-  Render GitHub-style alert blockquotes with icons and colors (default)
-  ::
-
-  ::card{icon="i-lucide-tag" title="Attributes" to="/plugins/built-in/attributes"}
-  Inline attributes (`{props}` after tokens) — enabled by default
-  ::
-
   ::card{icon="i-lucide-replace" title="Binding" to="/plugins/built-in/binding"}
   Interpolate frontmatter, runtime data, or parent props with `{{ path || default }}` shorthand
   ::
 
   ::card{icon="i-lucide-corner-down-left" title="Breaks" to="/plugins/built-in/breaks"}
   Convert soft line breaks directly into `:br` components
-  ::
-
-  ::card{icon="i-lucide-component" title="Components" to="/plugins/built-in/components"}
-  Block/inline components and spans (`::name`, `:name`, `[text]`) — enabled by default
   ::
 
   ::card{icon="i-lucide-smile" title="Emoji" to="/plugins/built-in/emoji"}
@@ -39,10 +27,6 @@ Comark's plugin system extends markdown functionality with specialized features.
 
   ::card{icon="i-lucide-heading" title="Headings" to="/plugins/built-in/headings"}
   Plugin for extracting the page title and description from document content.
-  ::
-
-  ::card{icon="i-lucide-code-xml" title="HTML" to="/plugins/built-in/html"}
-  Parse embedded HTML tags into Comark AST nodes (enabled by default)
   ::
 
   ::card{icon="i-lucide-braces" title="JSON Render" to="/plugins/built-in/json-render"}
@@ -73,10 +57,6 @@ Comark's plugin system extends markdown functionality with specialized features.
   Beautiful code syntax highlighting using Shiki with multi-theme support
   ::
 
-  ::card{icon="i-lucide-check-square" title="Task List" to="/plugins/built-in/task-list"}
-  Render interactive checkboxes from `[ ]` and `[x]` list syntax (default)
-  ::
-
   ::card{icon="i-lucide-list" title="Table of Contents" to="/plugins/built-in/toc"}
   Generate hierarchical TOC from headings automatically
   ::
@@ -88,6 +68,10 @@ Comark's plugin system extends markdown functionality with specialized features.
 These plugins are **enabled by default** whenever you call `parseMarkdown()` or `createMarkdownParser()` (or a framework `<Markdown>` component). You do not need to install or register them.
 
 ::card-group{cols="2"}
+  ::card{icon="i-lucide-file-spreadsheet" title="Frontmatter" to="/plugins/built-in/frontmatter"}
+  Parse a leading YAML frontmatter block into `tree.frontmatter`
+  ::
+
   ::card{icon="i-lucide-code-xml" title="HTML" to="/plugins/built-in/html"}
   Parse embedded HTML tags into Comark AST nodes
   ::
