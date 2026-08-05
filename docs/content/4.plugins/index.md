@@ -61,7 +61,7 @@ Comark's plugin system extends markdown functionality with specialized features.
   Beautiful code syntax highlighting using Shiki with multi-theme support
   ::
 
-  ::card{icon="i-lucide-zap" title="Speed Highlight" to="/plugins/built-in/phighlight"}
+  ::card{icon="i-lucide-zap" title="Speed Highlight" to="/plugins/built-in/speed-highlight"}
   Lightweight class-based highlighting via @speed-highlight/core (~2kB)
   ::
 

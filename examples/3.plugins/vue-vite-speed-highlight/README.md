@@ -4,21 +4,21 @@ description: Example showing how to use Comark with lightweight syntax highlight
 navigation:
   icon: i-lucide-zap
 category: Plugins
-path: /examples/plugins/vue-vite-phighlight
+path: /examples/plugins/vue-vite-speed-highlight
 ---
 
 ::code-explorer
 ---
 org: comarkdown
 repo: comark
-path: examples/3.plugins/vue-vite-phighlight
+path: examples/3.plugins/vue-vite-speed-highlight
 defaultValue: src/App.vue
 ---
 ::
 
 ## Features
 
-This example demonstrates how to use Comark with the lightweight `phighlight` plugin in Vue:
+This example demonstrates how to use Comark with the lightweight `speed-highlight` plugin in Vue:
 
 - **Tiny footprint**: `@speed-highlight/core` is ~2kB core + ~1kB per language
 - **Class-based tokens**: Theme with CSS (official themes or your own)
@@ -40,12 +40,12 @@ npm install @speed-highlight/core
 ```vue
 <script setup lang="ts">
 import { Markdown } from '@comark/vue'
-import phighlight from '@comark/vue/plugins/phighlight'
+import speedHighlight from '@comark/vue/plugins/speed-highlight'
 </script>
 
 <template>
   <Suspense>
-    <Markdown :plugins="[phighlight()]">
+    <Markdown :plugins="[speedHighlight()]">
       {{ content }}
     </Markdown>
   </Suspense>
@@ -81,7 +81,7 @@ print("Hello, Python!")
 ## Configuration Options
 
 ```typescript
-phighlight({
+speedHighlight({
   // Extra fence → language id aliases
   langAlias: { vue: 'html' },
   // Fallback when language is missing/unknown
@@ -93,9 +93,9 @@ phighlight({
 })
 ```
 
-## When to use phighlight vs highlight
+## When to use speed-highlight vs highlight
 
-| | `phighlight` | `highlight` (Shiki) |
+| | `speed-highlight` | `highlight` (Shiki) |
 |---|---|---|
 | Bundle size | Tiny | Larger (TextMate grammars) |
 | Theming | CSS classes (`shj-syn-*`) | Inline styles + dual themes |
@@ -105,7 +105,7 @@ phighlight({
 
 ## Learn More
 
-- [Speed Highlight Plugin Documentation](https://comark.dev/plugins/built-in/phighlight)
+- [Speed Highlight Plugin Documentation](https://comark.dev/plugins/built-in/speed-highlight)
 - [Shiki Highlight Plugin](https://comark.dev/plugins/built-in/syntax-highlight)
 - [@speed-highlight/core](https://github.com/speed-highlight/core)
 - [Comark Documentation](https://comark.dev)

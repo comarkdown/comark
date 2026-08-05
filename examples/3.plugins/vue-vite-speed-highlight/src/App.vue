@@ -2,7 +2,7 @@
 import { ref, onMounted, watch } from 'vue'
 import { content } from './content'
 import { Markdown } from '@comark/vue'
-import phighlight from '@comark/vue/plugins/phighlight'
+import speedHighlight from '@comark/vue/plugins/speed-highlight'
 
 // Official speed-highlight CSS themes (class-based tokens)
 import lightThemeUrl from '@speed-highlight/core/themes/github-light.css?url'
@@ -45,7 +45,7 @@ function toggleTheme() {
     </button>
 
     <Suspense>
-      <Markdown :plugins="[phighlight()]">
+      <Markdown :plugins="[speedHighlight()]">
         {{ content }}
       </Markdown>
     </Suspense>

@@ -20,7 +20,7 @@ links:
 
 The `comark/plugins/highlight` plugin provides syntax highlighting for code blocks using [Shiki](https://shiki.style/). It supports multiple themes, line highlighting, and on-demand language loading.
 
-For a lighter alternative based on class tokens (no TextMate grammars), see [`comark/plugins/phighlight`](/plugins/built-in/phighlight).
+For a lighter alternative based on class tokens (no TextMate grammars), see [`comark/plugins/speed-highlight`](/plugins/built-in/speed-highlight).
 
 `shiki` is a peer dependency, install it alongside Comark:
 

@@ -6,7 +6,7 @@ import { visitAsync } from '../utils/index.ts'
  * Languages shipped with `@speed-highlight/core`.
  * @see https://github.com/speed-highlight/core#languages-supported-
  */
-export type PhighlightLanguage =
+export type SpeedHighlightLanguage =
   | 'asm'
   | 'bash'
   | 'bf'
@@ -47,7 +47,7 @@ export type PhighlightLanguage =
  * Token types emitted by speed-highlight.
  * Rendered as `shj-syn-<type>` CSS classes.
  */
-export type PhighlightToken =
+export type SpeedHighlightToken =
   | 'deleted'
   | 'err'
   | 'var'
@@ -65,29 +65,29 @@ export type PhighlightToken =
   | 'esc'
   | (string & {})
 
-export interface PhighlightLanguageDefinition {
+export interface SpeedHighlightLanguageDefinition {
   default: Array<{ match: RegExp; type: string } | { match: RegExp; sub: string | unknown } | { expand: string }>
 }
 
-export interface PhighlightOptions {
+export interface SpeedHighlightOptions {
   /**
    * Map fence language info strings to speed-highlight language ids.
    * Merged on top of the built-in aliases.
    *
    * @example
    * ```ts
-   * phighlight({
+   * speedHighlight({
    *   langAlias: { vue: 'html', shell: 'bash' }
    * })
    * ```
    */
-  langAlias?: Record<string, PhighlightLanguage>
+  langAlias?: Record<string, SpeedHighlightLanguage>
 
   /**
    * Fallback language when the fence language is missing or unsupported.
    * @default 'plain'
    */
-  defaultLanguage?: PhighlightLanguage
+  defaultLanguage?: SpeedHighlightLanguage
 
   /**
    * Whether to wrap each source line in `<span class="line">`.
@@ -115,7 +115,7 @@ export interface CodeBlockAttributes {
 /**
  * Built-in aliases from common markdown fence names → speed-highlight ids.
  */
-const DEFAULT_LANG_ALIAS: Record<string, PhighlightLanguage> = {
+const DEFAULT_LANG_ALIAS: Record<string, SpeedHighlightLanguage> = {
   // JavaScript family
   javascript: 'js',
   jsx: 'js',
@@ -198,10 +198,10 @@ const SUPPORTED_LANGS = new Set<string>([
 /**
  * Resolve a fence language string to a speed-highlight language id.
  */
-export function resolvePhighlightLanguage(
+export function resolveSpeedHighlightLanguage(
   language: string | undefined,
-  options: Pick<PhighlightOptions, 'langAlias' | 'defaultLanguage'> = {}
-): PhighlightLanguage {
+  options: Pick<SpeedHighlightOptions, 'langAlias' | 'defaultLanguage'> = {}
+): SpeedHighlightLanguage {
   const fallback = options.defaultLanguage || 'plain'
   if (!language) return fallback
 
@@ -224,7 +224,7 @@ export function resolvePhighlightLanguage(
  */
 export async function tokenizeCode(
   code: string,
-  language: PhighlightLanguage
+  language: SpeedHighlightLanguage
 ): Promise<Array<{ text: string; type?: string }>> {
   const { tokenize } = await import('@speed-highlight/core')
   const tokens: Array<{ text: string; type?: string }> = []
@@ -313,9 +313,9 @@ function buildCodeChildren(lines: Node[][], highlights: number[] | undefined, wr
 /**
  * Apply speed-highlight syntax highlighting to every `<pre><code>` block.
  */
-export async function phighlightCodeBlocks(
+export async function speedHighlightCodeBlocks(
   tree: MarkdownDocument,
-  options: PhighlightOptions = {}
+  options: SpeedHighlightOptions = {}
 ): Promise<MarkdownDocument> {
   const { langAlias, defaultLanguage = 'plain', lineNumbers = true, classPrefix = 'shj' } = options
 
@@ -332,7 +332,7 @@ export async function phighlightCodeBlocks(
       const attrs = (pre[1] || {}) as CodeBlockAttributes
       const codeEl = pre[2] as ElementNode
       const code = codeEl[2] as string
-      const lang = resolvePhighlightLanguage(attrs.language, { langAlias, defaultLanguage })
+      const lang = resolveSpeedHighlightLanguage(attrs.language, { langAlias, defaultLanguage })
 
       let codeChildren: Node[]
       try {
@@ -362,9 +362,9 @@ export async function phighlightCodeBlocks(
   return tree
 }
 
-export default defineComarkPlugin<PhighlightOptions>((options: PhighlightOptions = {}) => ({
-  name: 'phighlight',
+export default defineComarkPlugin<SpeedHighlightOptions>((options: SpeedHighlightOptions = {}) => ({
+  name: 'speed-highlight',
   async post(state) {
-    state.tree = await phighlightCodeBlocks(state.tree, options)
+    state.tree = await speedHighlightCodeBlocks(state.tree, options)
   },
 }))

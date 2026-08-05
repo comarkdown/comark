@@ -1,6 +1,6 @@
 export const content = `# Speed Highlight Examples
 
-The \`phighlight\` plugin provides lightweight syntax highlighting using [@speed-highlight/core](https://github.com/speed-highlight/core) — ~2kB core, class-based tokens, zero dependencies.
+The \`speed-highlight\` plugin provides lightweight syntax highlighting using [@speed-highlight/core](https://github.com/speed-highlight/core) — ~2kB core, class-based tokens, zero dependencies.
 
 Prefer this when bundle size and cold-start matter. For dual themes, transformers, or Twoslash, use the [Shiki highlight](https://comark.dev/plugins/built-in/syntax-highlight) plugin instead.
 
@@ -296,11 +296,11 @@ check_dependencies && echo "All dependencies installed"
 @@ -1,5 +1,6 @@
  import { parseMarkdown } from 'comark'
 -import highlight from 'comark/plugins/highlight'
-+import phighlight from 'comark/plugins/phighlight'
++import speedHighlight from 'comark/plugins/speed-highlight'
 
  const result = await parseMarkdown(content, {
 -  plugins: [highlight()]
-+  plugins: [phighlight()]
++  plugins: [speedHighlight()]
  })
 \`\`\`
 

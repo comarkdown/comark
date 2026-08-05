@@ -2,7 +2,7 @@
 title: Speed Highlight
 description: Lightweight syntax highlighting for code blocks using @speed-highlight/core.
 seo:
-  title: Speed Highlight Plugin (phighlight)
+  title: Speed Highlight Plugin
 navigation:
   icon: i-lucide-zap
 links:
@@ -23,7 +23,7 @@ links:
     variant: soft
 ---
 
-The `comark/plugins/phighlight` plugin highlights code blocks with [`@speed-highlight/core`](https://github.com/speed-highlight/core) — a tiny (~2kB core, ~1kB per language), zero-dependency highlighter. Prefer this when bundle size and cold-start matter more than TextMate grammar depth.
+The `comark/plugins/speed-highlight` plugin highlights code blocks with [`@speed-highlight/core`](https://github.com/speed-highlight/core) — a tiny (~2kB core, ~1kB per language), zero-dependency highlighter. Prefer this when bundle size and cold-start matter more than TextMate grammar depth.
 
 `@speed-highlight/core` is a peer dependency:
 
@@ -32,17 +32,17 @@ npm install @speed-highlight/core
 ```
 
 ::tip
-Use [`comark/plugins/highlight`](/plugins/built-in/syntax-highlight) (Shiki) when you need dual themes, transformers, Twoslash, or the full VS Code grammar set. Use `phighlight` for a faster, smaller class-based highlighter.
+Use [`comark/plugins/highlight`](/plugins/built-in/syntax-highlight) (Shiki) when you need dual themes, transformers, Twoslash, or the full VS Code grammar set. Use `speed-highlight` for a faster, smaller class-based highlighter.
 ::
 
 ## Usage
 
 ```typescript
 import { parseMarkdown } from 'comark'
-import phighlight from 'comark/plugins/phighlight'
+import speedHighlight from 'comark/plugins/speed-highlight'
 
 const result = await parseMarkdown(content, {
-  plugins: [phighlight()]
+  plugins: [speedHighlight()]
 })
 ```
 
@@ -53,21 +53,21 @@ With framework components (re-exported via each framework package after `node sc
 ```vue [Vue]
 <script setup lang="ts">
 import { Markdown } from '@comark/vue'
-import phighlight from '@comark/vue/plugins/phighlight'
+import speedHighlight from '@comark/vue/plugins/speed-highlight'
 </script>
 
 <template>
   <Suspense>
-    <Markdown :plugins="[phighlight()]">{{ content }}</Markdown>
+    <Markdown :plugins="[speedHighlight()]">{{ content }}</Markdown>
   </Suspense>
 </template>
 ```
 
 ```tsx [React]
 import { Markdown } from '@comark/react'
-import phighlight from '@comark/react/plugins/phighlight'
+import speedHighlight from '@comark/react/plugins/speed-highlight'
 
-<Markdown plugins={[phighlight()]}>
+<Markdown plugins={[speedHighlight()]}>
   {content}
 </Markdown>
 ```
@@ -75,11 +75,11 @@ import phighlight from '@comark/react/plugins/phighlight'
 ```svelte [Svelte]
 <script>
   import { Markdown } from '@comark/svelte'
-  import phighlight from '@comark/svelte/plugins/phighlight'
+  import speedHighlight from '@comark/svelte/plugins/speed-highlight'
   let { content } = $props()
 </script>
 
-<Markdown value={content} plugins={[phighlight()]} />
+<Markdown value={content} plugins={[speedHighlight()]} />
 ```
 
 ::
@@ -155,7 +155,7 @@ const app = express()
 
 ## API
 
-### `phighlight(options?)`
+### `speedHighlight(options?)`
 
 Returns a `ComarkPlugin` that enables speed-highlight syntax highlighting.
 
@@ -165,11 +165,11 @@ Returns a `ComarkPlugin` that enables speed-highlight syntax highlighting.
 
 **Returns:** `ComarkPlugin`
 
-### `phighlightCodeBlocks(tree, options?)`
+### `speedHighlightCodeBlocks(tree, options?)`
 
 Apply highlighting to an existing `MarkdownDocument` without going through `parseMarkdown`.
 
-### `resolvePhighlightLanguage(language, options?)`
+### `resolveSpeedHighlightLanguage(language, options?)`
 
 Map a fence language string to a speed-highlight language id (aliases + fallback).
 
@@ -193,7 +193,7 @@ Low-level helper: tokenize source into `{ text, type? }[]` via `@speed-highlight
 Extend or override the built-in fence aliases:
 
 ```typescript
-phighlight({
+speedHighlight({
   langAlias: {
     vue: 'html',
     shellsession: 'bash',
@@ -208,7 +208,7 @@ phighlight({
 Language used when the fence has no info string, or the language is not supported:
 
 ```typescript
-phighlight({ defaultLanguage: 'js' })
+speedHighlight({ defaultLanguage: 'js' })
 ```
 
 **Default:** `'plain'`
@@ -218,7 +218,7 @@ phighlight({ defaultLanguage: 'js' })
 When `true` (default), each source line is wrapped in `<span class="line">` so `{1,3-5}` highlights can target lines. Set to `false` for a flat token stream:
 
 ```typescript
-phighlight({ lineNumbers: false })
+speedHighlight({ lineNumbers: false })
 ```
 
 **Default:** `true`
@@ -228,7 +228,7 @@ phighlight({ lineNumbers: false })
 Class applied to the `<pre>` together with `shj-lang-<id>`:
 
 ```typescript
-phighlight({ classPrefix: 'code' })
+speedHighlight({ classPrefix: 'code' })
 // → class="code shj-lang-js"
 ```
 
@@ -242,17 +242,17 @@ phighlight({ classPrefix: 'code' })
 
 ```typescript
 import { parseMarkdown } from 'comark'
-import phighlight from 'comark/plugins/phighlight'
+import speedHighlight from 'comark/plugins/speed-highlight'
 
 const result = await parseMarkdown(content, {
-  plugins: [phighlight()]
+  plugins: [speedHighlight()]
 })
 ```
 
 ### Custom aliases
 
 ```typescript
-phighlight({
+speedHighlight({
   langAlias: {
     vue: 'html',
     svelte: 'html',
@@ -265,10 +265,10 @@ phighlight({
 
 ```typescript
 import { createHtmlRenderer } from '@comark/html'
-import phighlight from '@comark/html/plugins/phighlight'
+import speedHighlight from '@comark/html/plugins/speed-highlight'
 
 const renderHtml = createHtmlRenderer({
-  plugins: [phighlight()],
+  plugins: [speedHighlight()],
 })
 
 const html = await renderHtml('```js\nconsole.log("hi")\n```')
@@ -276,7 +276,7 @@ const html = await renderHtml('```js\nconsole.log("hi")\n```')
 
 ### Live Example
 
-::card{icon="i-lucide-zap" title="Vue + Vite Speed Highlight" to="https://github.com/comarkdown/comark/tree/main/examples/3.plugins/vue-vite-phighlight"}
+::card{icon="i-lucide-zap" title="Vue + Vite Speed Highlight" to="https://github.com/comarkdown/comark/tree/main/examples/3.plugins/vue-vite-speed-highlight"}
 Class-based tokens, line highlights, light/dark CSS theme toggle. JavaScript, TypeScript, Python, Rust, Go, SQL, CSS, HTML, Diff, YAML, and more.
 ::
 

@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import { parseMarkdown } from '../../src/parse'
 import { renderMarkdown } from '../../src/render'
-import phighlight, { phighlightCodeBlocks, resolvePhighlightLanguage, tokenizeCode } from '../../src/plugins/phighlight'
+import speedHighlight, {
+  speedHighlightCodeBlocks,
+  resolveSpeedHighlightLanguage,
+  tokenizeCode,
+} from '../../src/plugins/speed-highlight'
 import type { ElementNode, MarkdownDocument, Node } from '../../src/types'
 
 function findPre(nodes: Node[]): ElementNode | undefined {
@@ -22,33 +26,33 @@ function textOf(node: Node): string {
   return out
 }
 
-describe('resolvePhighlightLanguage', () => {
+describe('resolveSpeedHighlightLanguage', () => {
   it('maps common fence aliases to speed-highlight ids', () => {
-    expect(resolvePhighlightLanguage('javascript')).toBe('js')
-    expect(resolvePhighlightLanguage('typescript')).toBe('ts')
-    expect(resolvePhighlightLanguage('python')).toBe('py')
-    expect(resolvePhighlightLanguage('rust')).toBe('rs')
-    expect(resolvePhighlightLanguage('shell')).toBe('bash')
-    expect(resolvePhighlightLanguage('yml')).toBe('yaml')
-    expect(resolvePhighlightLanguage('markdown')).toBe('md')
+    expect(resolveSpeedHighlightLanguage('javascript')).toBe('js')
+    expect(resolveSpeedHighlightLanguage('typescript')).toBe('ts')
+    expect(resolveSpeedHighlightLanguage('python')).toBe('py')
+    expect(resolveSpeedHighlightLanguage('rust')).toBe('rs')
+    expect(resolveSpeedHighlightLanguage('shell')).toBe('bash')
+    expect(resolveSpeedHighlightLanguage('yml')).toBe('yaml')
+    expect(resolveSpeedHighlightLanguage('markdown')).toBe('md')
   })
 
   it('passes through native speed-highlight language ids', () => {
-    expect(resolvePhighlightLanguage('js')).toBe('js')
-    expect(resolvePhighlightLanguage('ts')).toBe('ts')
-    expect(resolvePhighlightLanguage('json')).toBe('json')
+    expect(resolveSpeedHighlightLanguage('js')).toBe('js')
+    expect(resolveSpeedHighlightLanguage('ts')).toBe('ts')
+    expect(resolveSpeedHighlightLanguage('json')).toBe('json')
   })
 
   it('falls back to plain for unknown languages', () => {
-    expect(resolvePhighlightLanguage('not-a-real-lang')).toBe('plain')
-    expect(resolvePhighlightLanguage(undefined)).toBe('plain')
-    expect(resolvePhighlightLanguage('')).toBe('plain')
+    expect(resolveSpeedHighlightLanguage('not-a-real-lang')).toBe('plain')
+    expect(resolveSpeedHighlightLanguage(undefined)).toBe('plain')
+    expect(resolveSpeedHighlightLanguage('')).toBe('plain')
   })
 
   it('honors custom langAlias and defaultLanguage', () => {
-    expect(resolvePhighlightLanguage('vue', { langAlias: { vue: 'html' } })).toBe('html')
-    expect(resolvePhighlightLanguage(undefined, { defaultLanguage: 'js' })).toBe('js')
-    expect(resolvePhighlightLanguage('zzz', { defaultLanguage: 'json' })).toBe('json')
+    expect(resolveSpeedHighlightLanguage('vue', { langAlias: { vue: 'html' } })).toBe('html')
+    expect(resolveSpeedHighlightLanguage(undefined, { defaultLanguage: 'js' })).toBe('js')
+    expect(resolveSpeedHighlightLanguage('zzz', { defaultLanguage: 'json' })).toBe('json')
   })
 })
 
@@ -62,10 +66,10 @@ describe('tokenizeCode', () => {
   })
 })
 
-describe('phighlight plugin', () => {
+describe('speed-highlight plugin', () => {
   it('highlights a javascript fence into typed spans', async () => {
     const md = '```js\nconst x = 1\n```'
-    const tree = await parseMarkdown(md, { plugins: [phighlight()] })
+    const tree = await parseMarkdown(md, { plugins: [speedHighlight()] })
     const pre = findPre(tree.nodes)
 
     expect(pre).toBeTruthy()
@@ -96,14 +100,14 @@ describe('phighlight plugin', () => {
 
   it('resolves language aliases (typescript → ts)', async () => {
     const md = '```typescript\nconst n: number = 1\n```'
-    const tree = await parseMarkdown(md, { plugins: [phighlight()] })
+    const tree = await parseMarkdown(md, { plugins: [speedHighlight()] })
     const pre = findPre(tree.nodes)
     expect((pre![1] as any).class).toContain('shj-lang-ts')
   })
 
   it('applies line highlight classes from fence info', async () => {
     const md = '```js {2}\nconst a = 1\nconst b = 2\nconst c = 3\n```'
-    const tree = await parseMarkdown(md, { plugins: [phighlight()] })
+    const tree = await parseMarkdown(md, { plugins: [speedHighlight()] })
     const pre = findPre(tree.nodes)!
     const code = pre[2] as ElementNode
 
@@ -121,14 +125,14 @@ describe('phighlight plugin', () => {
       nodes: [['pre', { language: 'js', class: 'my-block' }, ['code', {}, 'const x = 1']]],
     }
 
-    const tree = await phighlightCodeBlocks(document)
+    const tree = await speedHighlightCodeBlocks(document)
     const pre = tree.nodes[0] as ElementNode
     expect((pre[1] as any).class).toBe('shj shj-lang-js . my-block')
   })
 
   it('leaves plain fences alone when there is no code language (plain fallback)', async () => {
     const md = '```\nhello world\n```'
-    const tree = await parseMarkdown(md, { plugins: [phighlight()] })
+    const tree = await parseMarkdown(md, { plugins: [speedHighlight()] })
     const pre = findPre(tree.nodes)!
     expect((pre[1] as any).class).toContain('shj-lang-plain')
     expect(textOf(pre)).toBe('hello world')
@@ -136,7 +140,7 @@ describe('phighlight plugin', () => {
 
   it('does not touch non-code content', async () => {
     const md = '# Title\n\nA paragraph.'
-    const tree = await parseMarkdown(md, { plugins: [phighlight()] })
+    const tree = await parseMarkdown(md, { plugins: [speedHighlight()] })
     expect(tree.nodes).toEqual([
       ['h1', { id: 'title' }, 'Title'],
       ['p', {}, 'A paragraph.'],
@@ -145,7 +149,7 @@ describe('phighlight plugin', () => {
 
   it('supports disabling line wrappers', async () => {
     const md = '```js\nconst x = 1\n```'
-    const tree = await parseMarkdown(md, { plugins: [phighlight({ lineNumbers: false })] })
+    const tree = await parseMarkdown(md, { plugins: [speedHighlight({ lineNumbers: false })] })
     const pre = findPre(tree.nodes)!
     const code = pre[2] as ElementNode
     const hasLineWrapper = code
@@ -161,14 +165,14 @@ describe('phighlight plugin', () => {
 const x = 1
 \`\`\`
 ::`
-    const tree = await parseMarkdown(md, { plugins: [phighlight()] })
+    const tree = await parseMarkdown(md, { plugins: [speedHighlight()] })
     const pre = findPre(tree.nodes)
     expect(pre).toBeTruthy()
     expect((pre![1] as any).class).toContain('shj-lang-js')
   })
 })
 
-describe('phighlight code block round-trip', () => {
+describe('speed-highlight code block round-trip', () => {
   function preTree(preClass: string): MarkdownDocument {
     return {
       frontmatter: {},
