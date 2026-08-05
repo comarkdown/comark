@@ -1,7 +1,7 @@
 /**
- * Custom task list plugin for markdown-it that integrates with the Comark syntax plugin.
+ * Custom task list plugin for markdown-it that integrates with Comark components.
  *
- * This plugin runs before inline parsing to prevent Comark from interpreting
+ * This plugin runs before inline parsing to prevent components from interpreting
  * task list markers [X] and [ ] as Comark inline span syntax.
  */
 

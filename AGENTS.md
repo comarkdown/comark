@@ -55,6 +55,10 @@ packages/comark/
 │   │   └── utils.ts          # textContent(), visit() document utilities
 │   ├── plugins/              # Built-in and optional plugins
 │   │   ├── alert.ts          # Alert/callout blocks
+│   │   ├── frontmatter.ts    # YAML frontmatter extraction (default via registerDefaultPlugins)
+│   │   ├── html.ts           # HTML block/inline parsing (default via registerDefaultPlugins)
+│   │   ├── components.ts     # Block/inline components + spans (`::name`, `:name`, `[text]`)
+│   │   ├── attributes.ts     # Inline attributes (`{props}` after tokens)
 │   │   ├── emoji.ts          # Emoji shortcodes
 │   │   ├── highlight.ts      # Syntax highlighting via Shiki (peer: shiki)
 │   │   ├── speed-highlight.ts # Lightweight highlighting via speed-highlight (peer: @speed-highlight/core)
@@ -384,6 +388,14 @@ import mermaid from 'comark/plugins/mermaid'
 import emoji from 'comark/plugins/emoji'
 import toc from 'comark/plugins/toc'
 import alert from 'comark/plugins/alert'
+import frontmatter from 'comark/plugins/frontmatter' // default via registerDefaultPlugins
+import components from 'comark/plugins/components'   // default via registerDefaultPlugins
+import attributes from 'comark/plugins/attributes'   // default via registerDefaultPlugins
+import html from 'comark/plugins/html'               // default via registerDefaultPlugins
+
+// markdown-it / markdown-exit adapters (e.g. VitePress)
+import { markdownItComponents } from 'comark/plugins/components'
+import { markdownItAttributes } from 'comark/plugins/attributes'
 
 // NOTE: All framework packages re-export every core plugin via their own subpath.
 // Prefer the framework-specific path when using a framework renderer:
@@ -482,9 +494,10 @@ describe('functionUnderTest', () => {
 
 ```typescript
 const result = await parseMarkdown(markdownContent, {
-  autoUnwrap: true,   // Remove <p> wrappers from single-paragraph containers
-  autoClose: true,    // Auto-close incomplete syntax
-  unwrap: 'p',        // Strip top-level wrapper tags (MDC unwrap); merges paragraphs
+  autoUnwrap: true,             // Remove <p> wrappers from single-paragraph containers
+  autoClose: true,              // Auto-close incomplete syntax
+  unwrap: 'p',                  // Strip top-level wrapper tags (MDC unwrap); merges paragraphs
+  registerDefaultPlugins: true, // frontmatter, html, alert, task-list, components, attributes; false to disable
 })
 
 result.nodes       // Node[]

@@ -408,25 +408,12 @@ export interface ParserOptions<TPlugins extends readonly ComarkPlugin<any, any>[
   autoClose?: boolean
 
   /**
-   * Whether to parse HTML tags embedded in Comark/markdown content.
-   * When enabled, HTML block and inline elements are parsed into AST nodes and can be
-   * mixed freely with Comark components and markdown syntax.
+   * @deprecated Use `registerDefaultPlugins: false` and register plugins explicitly
+   * (include `html()` from `comark/plugins/html` only when you need HTML parsing).
+   * Setting this option logs a deprecation warning. `html: false` still skips the
+   * default html plugin for backward compatibility.
    *
    * @default true
-   * @example
-   * // With html: true (default) — HTML is parsed into AST nodes
-   * // Input: `<strong class="bold">text</strong>`
-   * // AST:   ['strong', { class: 'bold' }, 'text']
-   *
-   * // HTML can be mixed with Comark components:
-   * // Input:
-   * // <div>
-   * //   ::alert
-   * //   Hello <em>world</em>
-   * //   ::
-   * // </div>
-   *
-   * // With html: false — HTML tags are left as raw text / ignored
    */
   html?: boolean
 
@@ -450,6 +437,15 @@ export interface ParserOptions<TPlugins extends readonly ComarkPlugin<any, any>[
    * // # Hello {id="custom"} → ['h1', { id: 'custom' }, 'Hello']
    */
   headingIds?: boolean
+
+  /**
+   * Whether to register the built-in default plugins
+   * (`frontmatter`, `html`, `alert`, `task-list`, `components`, `attributes`).
+   * Set `false` to parse plain markdown with only the plugins listed in `plugins`.
+   * Without the components/attributes plugins, `autoClose` skips component fences and attribute braces.
+   * @default true
+   */
+  registerDefaultPlugins?: boolean
 
   /**
    * Additional plugins to use
