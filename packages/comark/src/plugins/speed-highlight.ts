@@ -1,6 +1,5 @@
 import type { ElementNode, Node, MarkdownDocument } from 'comark'
-import type { ShjLanguage, ShjLanguageDefinition, ShjToken } from '@speed-highlight/core'
-import  { loadLanguage } from '@speed-highlight/core'
+import type { ShjLanguage, ShjToken } from '@speed-highlight/core'
 import { defineComarkPlugin } from '../utils/helpers.ts'
 import { visitAsync } from '../utils/index.ts'
 
@@ -19,9 +18,6 @@ export type SpeedHighlightLanguage = ShjLanguage | (string & {})
  */
 export type SpeedHighlightToken = ShjToken | (string & {})
 
-/** Re-export for consumers registering custom languages. */
-export type { ShjLanguage, ShjLanguageDefinition, ShjToken }
-
 export interface SpeedHighlightOptions {
   /**
    * Map fence language info strings to speed-highlight language ids.
@@ -35,12 +31,6 @@ export interface SpeedHighlightOptions {
    * ```
    */
   langAlias?: Record<string, SpeedHighlightLanguage>
-
-  /**
-   * Fallback language when the fence language is missing or unsupported.
-   * @default 'plain'
-   */
-  defaultLanguage?: SpeedHighlightLanguage
 
   /**
    * Whether to wrap each source line in `<span class="line">`.
@@ -115,18 +105,17 @@ const DEFAULT_LANG_ALIAS: Record<string, SpeedHighlightLanguage> = {
  * Resolve a fence language string to a speed-highlight language id.
  *
  * Applies built-in + user aliases, then hands the id straight to
- * `@speed-highlight/core`. Unknown ids are fine — tokenize falls back to
- * unstyled plain text rather than throwing.
+ * `@speed-highlight/core`. Missing/empty fence info → `plain`. Unknown ids
+ * are fine — tokenize falls back to unstyled plain text rather than throwing.
  */
 export function resolveSpeedHighlightLanguage(
   language: string | undefined,
-  options: Pick<SpeedHighlightOptions, 'langAlias' | 'defaultLanguage'> = {}
+  options: Pick<SpeedHighlightOptions, 'langAlias'> = {}
 ): SpeedHighlightLanguage {
-  const fallback = options.defaultLanguage || 'plain'
-  if (!language) return fallback
+  if (!language) return 'plain'
 
   const raw = language.trim().toLowerCase()
-  if (!raw) return fallback
+  if (!raw) return 'plain'
 
   const alias = { ...DEFAULT_LANG_ALIAS, ...options.langAlias }
   return alias[raw] || raw
@@ -232,7 +221,7 @@ export async function speedHighlightCodeBlocks(
   tree: MarkdownDocument,
   options: SpeedHighlightOptions = {}
 ): Promise<MarkdownDocument> {
-  const { langAlias, defaultLanguage = 'plain', lineNumbers = true, classPrefix = 'shj' } = options
+  const { langAlias, lineNumbers = true, classPrefix = 'shj' } = options
 
   await visitAsync(
     tree,
@@ -247,7 +236,7 @@ export async function speedHighlightCodeBlocks(
       const attrs = (pre[1] || {}) as CodeBlockAttributes
       const codeEl = pre[2] as ElementNode
       const code = codeEl[2] as string
-      const lang = resolveSpeedHighlightLanguage(attrs.language, { langAlias, defaultLanguage })
+      const lang = resolveSpeedHighlightLanguage(attrs.language, { langAlias })
 
       let codeChildren: Node[]
       try {

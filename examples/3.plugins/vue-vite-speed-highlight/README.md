@@ -84,8 +84,6 @@ print("Hello, Python!")
 speedHighlight({
   // Extra fence → language id aliases
   langAlias: { vue: 'html' },
-  // Fallback when language is missing/unknown
-  defaultLanguage: 'plain',
   // Wrap each line in <span class="line"> (needed for {n} highlights)
   lineNumbers: true,
   // Class prefix on <pre> (default: 'shj')

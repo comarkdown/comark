@@ -122,7 +122,7 @@ const x: number = 42
 ```
 ````
 
-Unknown language ids are passed through as-is — speed-highlight treats them as unstyled plain text (no throw). Only a missing/empty fence info string uses `defaultLanguage` (`plain` by default).
+Unknown language ids are passed through as-is — speed-highlight treats them as unstyled plain text (no throw). A missing/empty fence info string uses `plain`.
 
 ### Line highlighting
 
@@ -184,7 +184,6 @@ Low-level helper: tokenize source into `{ text, type? }[]` via `@speed-highlight
 | Option | Type | Default | Description |
 |---|---|---|---|
 | [`langAlias`](#langalias) | `Record<string, string>` | built-in map | Extra fence → language id aliases |
-| [`defaultLanguage`](#defaultlanguage) | `string` | `'plain'` | Fallback when language is missing/unknown |
 | [`lineNumbers`](#linenumbers) | `boolean` | `true` | Wrap each line in `<span class="line">` |
 | [`classPrefix`](#classprefix) | `string` | `'shj'` | Class prefix on the highlighted `<pre>` |
 
@@ -202,16 +201,6 @@ speedHighlight({
 ```
 
 **Built-in aliases include:** `javascript`→`js`, `typescript`→`ts`, `python`→`py`, `rust`→`rs`, `shell`/`sh`/`zsh`→`bash`, `yml`→`yaml`, `markdown`/`mdc`/`comark`→`md`, `text`/`txt`/`plaintext`→`plain`, …
-
-### `defaultLanguage`
-
-Language used when the fence has no info string:
-
-```typescript
-speedHighlight({ defaultLanguage: 'js' })
-```
-
-**Default:** `'plain'`
 
 ### `lineNumbers`
 
@@ -257,7 +246,6 @@ speedHighlight({
     vue: 'html',
     svelte: 'html',
   },
-  defaultLanguage: 'plain',
 })
 ```
 
@@ -381,6 +369,6 @@ pre.shj {
 | `css` | `css` |
 | `xml`, `svg` | `xml` |
 | `c`, `go`, `java`, `sql`, `lua`, `toml`, `diff`, `docker`, `http`, `ini`, … | same id |
-| _(missing fence info)_ | `plain` (via `defaultLanguage`) |
+| _(missing fence info)_ | `plain` |
 
 Full list: [speed-highlight languages](https://github.com/speed-highlight/core#languages-supported-).
