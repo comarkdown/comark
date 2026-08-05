@@ -1,73 +1,25 @@
 import type { ElementNode, Node, MarkdownDocument } from 'comark'
+import type { ShjLanguage, ShjLanguageDefinition, ShjToken } from '@speed-highlight/core'
 import { defineComarkPlugin } from '../utils/helpers.ts'
 import { visitAsync } from '../utils/index.ts'
 
 /**
- * Languages shipped with `@speed-highlight/core`.
- * @see https://github.com/speed-highlight/core#languages-supported-
+ * Languages accepted by the plugin.
+ *
+ * Extends the closed {@link ShjLanguage} union from `@speed-highlight/core` with
+ * an open string branch so custom languages registered via `loadLanguage`
+ * (or values from `langAlias`) type-check.
  */
-export type SpeedHighlightLanguage =
-  | 'asm'
-  | 'bash'
-  | 'bf'
-  | 'c'
-  | 'css'
-  | 'csv'
-  | 'diff'
-  | 'docker'
-  | 'git'
-  | 'go'
-  | 'html'
-  | 'http'
-  | 'ini'
-  | 'java'
-  | 'js'
-  | 'jsdoc'
-  | 'json'
-  | 'leanpub-md'
-  | 'log'
-  | 'lua'
-  | 'make'
-  | 'md'
-  | 'pl'
-  | 'plain'
-  | 'py'
-  | 'regex'
-  | 'rs'
-  | 'sql'
-  | 'todo'
-  | 'toml'
-  | 'ts'
-  | 'uri'
-  | 'xml'
-  | 'yaml'
-  | (string & {})
+export type SpeedHighlightLanguage = ShjLanguage | (string & {})
 
 /**
  * Token types emitted by speed-highlight.
  * Rendered as `shj-syn-<type>` CSS classes.
  */
-export type SpeedHighlightToken =
-  | 'deleted'
-  | 'err'
-  | 'var'
-  | 'section'
-  | 'kwd'
-  | 'class'
-  | 'cmnt'
-  | 'insert'
-  | 'type'
-  | 'func'
-  | 'bool'
-  | 'num'
-  | 'oper'
-  | 'str'
-  | 'esc'
-  | (string & {})
+export type SpeedHighlightToken = ShjToken | (string & {})
 
-export interface SpeedHighlightLanguageDefinition {
-  default: Array<{ match: RegExp; type: string } | { match: RegExp; sub: string | unknown } | { expand: string }>
-}
+/** Re-export for consumers registering custom languages. */
+export type { ShjLanguage, ShjLanguageDefinition, ShjToken }
 
 export interface SpeedHighlightOptions {
   /**
@@ -225,13 +177,13 @@ export function resolveSpeedHighlightLanguage(
 export async function tokenizeCode(
   code: string,
   language: SpeedHighlightLanguage
-): Promise<Array<{ text: string; type?: string }>> {
+): Promise<Array<{ text: string; type?: SpeedHighlightToken }>> {
   const { tokenize } = await import('@speed-highlight/core')
-  const tokens: Array<{ text: string; type?: string }> = []
+  const tokens: Array<{ text: string; type?: SpeedHighlightToken }> = []
 
-  // Cast: open language union (string & {}) is intentional for custom langs via
-  // loadLanguage / langAlias; ShjLanguage is a closed string-literal union.
-  await tokenize(code, language as Parameters<typeof tokenize>[1], (text, type) => {
+  // `SpeedHighlightLanguage` is wider than `ShjLanguage` (open string for custom
+  // langs via loadLanguage / langAlias). Cast at the library boundary.
+  await tokenize(code, language as ShjLanguage, (text, type) => {
     if (!text) return
     tokens.push(type ? { text, type } : { text })
   })
