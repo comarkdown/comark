@@ -61,6 +61,10 @@ Comark's plugin system extends markdown functionality with specialized features.
   Beautiful code syntax highlighting using Shiki with multi-theme support
   ::
 
+  ::card{icon="i-lucide-zap" title="Speed Highlight" to="/plugins/built-in/phighlight"}
+  Lightweight class-based highlighting via @speed-highlight/core (~2kB)
+  ::
+
   ::card{icon="i-lucide-check-square" title="Task List" to="/plugins/built-in/task-list"}
   Render interactive checkboxes from `[ ]` and `[x]` list syntax
   ::

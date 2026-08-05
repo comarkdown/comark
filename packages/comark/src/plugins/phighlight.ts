@@ -1,0 +1,370 @@
+import type { ElementNode, Node, MarkdownDocument } from 'comark'
+import { defineComarkPlugin } from '../utils/helpers.ts'
+import { visitAsync } from '../utils/index.ts'
+
+/**
+ * Languages shipped with `@speed-highlight/core`.
+ * @see https://github.com/speed-highlight/core#languages-supported-
+ */
+export type PhighlightLanguage =
+  | 'asm'
+  | 'bash'
+  | 'bf'
+  | 'c'
+  | 'css'
+  | 'csv'
+  | 'diff'
+  | 'docker'
+  | 'git'
+  | 'go'
+  | 'html'
+  | 'http'
+  | 'ini'
+  | 'java'
+  | 'js'
+  | 'jsdoc'
+  | 'json'
+  | 'leanpub-md'
+  | 'log'
+  | 'lua'
+  | 'make'
+  | 'md'
+  | 'pl'
+  | 'plain'
+  | 'py'
+  | 'regex'
+  | 'rs'
+  | 'sql'
+  | 'todo'
+  | 'toml'
+  | 'ts'
+  | 'uri'
+  | 'xml'
+  | 'yaml'
+  | (string & {})
+
+/**
+ * Token types emitted by speed-highlight.
+ * Rendered as `shj-syn-<type>` CSS classes.
+ */
+export type PhighlightToken =
+  | 'deleted'
+  | 'err'
+  | 'var'
+  | 'section'
+  | 'kwd'
+  | 'class'
+  | 'cmnt'
+  | 'insert'
+  | 'type'
+  | 'func'
+  | 'bool'
+  | 'num'
+  | 'oper'
+  | 'str'
+  | 'esc'
+  | (string & {})
+
+export interface PhighlightLanguageDefinition {
+  default: Array<{ match: RegExp; type: string } | { match: RegExp; sub: string | unknown } | { expand: string }>
+}
+
+export interface PhighlightOptions {
+  /**
+   * Map fence language info strings to speed-highlight language ids.
+   * Merged on top of the built-in aliases.
+   *
+   * @example
+   * ```ts
+   * phighlight({
+   *   langAlias: { vue: 'html', shell: 'bash' }
+   * })
+   * ```
+   */
+  langAlias?: Record<string, PhighlightLanguage>
+
+  /**
+   * Fallback language when the fence language is missing or unsupported.
+   * @default 'plain'
+   */
+  defaultLanguage?: PhighlightLanguage
+
+  /**
+   * Whether to wrap each source line in `<span class="line">`.
+   * Required for `{1,3-5}` line-highlight support.
+   * @default true
+   */
+  lineNumbers?: boolean
+
+  /**
+   * Class prefix for the highlighted `<pre>` element.
+   * Final class is `${classPrefix} shj-lang-${lang}`.
+   * @default 'shj'
+   */
+  classPrefix?: string
+}
+
+export interface CodeBlockAttributes {
+  language?: string
+  class?: string
+  highlights?: number[]
+  meta?: string
+  filename?: string
+}
+
+/**
+ * Built-in aliases from common markdown fence names → speed-highlight ids.
+ */
+const DEFAULT_LANG_ALIAS: Record<string, PhighlightLanguage> = {
+  // JavaScript family
+  javascript: 'js',
+  jsx: 'js',
+  mjs: 'js',
+  cjs: 'js',
+  // TypeScript family
+  typescript: 'ts',
+  tsx: 'ts',
+  mts: 'ts',
+  cts: 'ts',
+  // Python
+  python: 'py',
+  // Rust
+  rust: 'rs',
+  // Shell
+  sh: 'bash',
+  shell: 'bash',
+  zsh: 'bash',
+  // Perl
+  perl: 'pl',
+  // Makefile
+  makefile: 'make',
+  // Markdown
+  markdown: 'md',
+  mdc: 'md',
+  comark: 'md',
+  // YAML
+  yml: 'yaml',
+  // Plain text
+  text: 'plain',
+  txt: 'plain',
+  plaintext: 'plain',
+  // Brainfuck
+  brainfuck: 'bf',
+  // HTML-ish
+  htm: 'html',
+  svg: 'xml',
+  // JSON render fences stay json
+  'json-render': 'json',
+  'yaml-render': 'yaml',
+}
+
+const SUPPORTED_LANGS = new Set<string>([
+  'asm',
+  'bash',
+  'bf',
+  'c',
+  'css',
+  'csv',
+  'diff',
+  'docker',
+  'git',
+  'go',
+  'html',
+  'http',
+  'ini',
+  'java',
+  'js',
+  'jsdoc',
+  'json',
+  'leanpub-md',
+  'log',
+  'lua',
+  'make',
+  'md',
+  'pl',
+  'plain',
+  'py',
+  'regex',
+  'rs',
+  'sql',
+  'todo',
+  'toml',
+  'ts',
+  'uri',
+  'xml',
+  'yaml',
+])
+
+/**
+ * Resolve a fence language string to a speed-highlight language id.
+ */
+export function resolvePhighlightLanguage(
+  language: string | undefined,
+  options: Pick<PhighlightOptions, 'langAlias' | 'defaultLanguage'> = {}
+): PhighlightLanguage {
+  const fallback = options.defaultLanguage || 'plain'
+  if (!language) return fallback
+
+  const raw = language.trim().toLowerCase()
+  if (!raw) return fallback
+
+  const alias = { ...DEFAULT_LANG_ALIAS, ...options.langAlias }
+  const mapped = alias[raw] || raw
+
+  if (SUPPORTED_LANGS.has(mapped) || options.langAlias?.[raw]) {
+    return mapped
+  }
+
+  // Unknown languages fall back so tokenize does not throw
+  return fallback
+}
+
+/**
+ * Tokenize source into plain text / typed spans using `@speed-highlight/core`.
+ */
+export async function tokenizeCode(
+  code: string,
+  language: PhighlightLanguage
+): Promise<Array<{ text: string; type?: string }>> {
+  const { tokenize } = await import('@speed-highlight/core')
+  const tokens: Array<{ text: string; type?: string }> = []
+
+  await tokenize(code, language, (text, type) => {
+    if (!text) return
+    tokens.push(type ? { text, type } : { text })
+  })
+
+  return tokens
+}
+
+/**
+ * Group a flat token stream into line-aligned Node arrays.
+ * Newline characters may appear inside a token; they are split so each line
+ * can be wrapped independently (and receive `.highlight`).
+ */
+function tokensToLines(tokens: Array<{ text: string; type?: string }>): Node[][] {
+  const lines: Node[][] = [[]]
+
+  const pushToken = (text: string, type?: string): void => {
+    if (!text) return
+    const line = lines[lines.length - 1]
+    if (type) {
+      line.push(['span', { class: `shj-syn-${type}` }, text])
+    } else {
+      // Merge adjacent plain-text nodes to keep the AST compact
+      const last = line[line.length - 1]
+      if (typeof last === 'string') {
+        line[line.length - 1] = last + text
+      } else {
+        line.push(text)
+      }
+    }
+  }
+
+  for (const token of tokens) {
+    const parts = token.text.split('\n')
+    for (let i = 0; i < parts.length; i++) {
+      if (i > 0) lines.push([])
+      pushToken(parts[i], token.type)
+    }
+  }
+
+  return lines
+}
+
+/**
+ * Build code children from tokenized lines.
+ */
+function buildCodeChildren(lines: Node[][], highlights: number[] | undefined, wrapLines: boolean): Node[] {
+  const highlightSet = Array.isArray(highlights) && highlights.length > 0 ? new Set(highlights) : null
+  const children: Node[] = []
+
+  for (let i = 0; i < lines.length; i++) {
+    const lineNodes = lines[i]
+    const lineNumber = i + 1
+    const isHighlighted = highlightSet !== null && highlightSet.has(lineNumber)
+
+    if (wrapLines) {
+      const className = isHighlighted ? 'line highlight' : 'line'
+      // eslint-disable-next-line unicorn/no-new-array -- pre-allocated for perf
+      const lineEl = new Array(lineNodes.length + 2) as ElementNode
+      lineEl[0] = 'span'
+      lineEl[1] = {
+        class: className,
+        // Match shiki highlight plugin defaults so shared CSS works
+        style: isHighlighted ? 'display: inline-block' : 'display: inline',
+      }
+      for (let j = 0; j < lineNodes.length; j++) lineEl[j + 2] = lineNodes[j]
+      children.push(lineEl)
+    } else if (lineNodes.length === 0) {
+      // empty line — nothing to push
+    } else if (lineNodes.length === 1) {
+      children.push(lineNodes[0])
+    } else {
+      children.push(...lineNodes)
+    }
+
+    if (i < lines.length - 1) children.push('\n')
+  }
+
+  return children
+}
+
+/**
+ * Apply speed-highlight syntax highlighting to every `<pre><code>` block.
+ */
+export async function phighlightCodeBlocks(
+  tree: MarkdownDocument,
+  options: PhighlightOptions = {}
+): Promise<MarkdownDocument> {
+  const { langAlias, defaultLanguage = 'plain', lineNumbers = true, classPrefix = 'shj' } = options
+
+  await visitAsync(
+    tree,
+    (node) =>
+      Array.isArray(node) &&
+      node[0] === 'pre' &&
+      Array.isArray(node[2]) &&
+      node[2][0] === 'code' &&
+      typeof node[2][2] === 'string',
+    async (node) => {
+      const pre = node as ElementNode
+      const attrs = (pre[1] || {}) as CodeBlockAttributes
+      const codeEl = pre[2] as ElementNode
+      const code = codeEl[2] as string
+      const lang = resolvePhighlightLanguage(attrs.language, { langAlias, defaultLanguage })
+
+      let codeChildren: Node[]
+      try {
+        const tokens = await tokenizeCode(code, lang)
+        const lines = tokensToLines(tokens)
+        codeChildren = buildCodeChildren(lines, attrs.highlights, lineNumbers)
+      } catch {
+        // Fail open: leave the code unhighlighted rather than crashing parse
+        codeChildren = [code]
+      }
+
+      const userClass = typeof attrs.class === 'string' ? attrs.class.trim() : ''
+      // Mirror shiki's `.` separator so stringify can recover user classes
+      const highlighterClass = `${classPrefix} shj-lang-${lang}`
+      const classStr = userClass ? `${highlighterClass} . ${userClass}` : highlighterClass
+
+      // eslint-disable-next-line unicorn/no-new-array -- pre-allocated for perf
+      const newCode = new Array(codeChildren.length + 2) as ElementNode
+      newCode[0] = 'code'
+      newCode[1] = (codeEl[1] as Record<string, unknown>) || {}
+      for (let i = 0; i < codeChildren.length; i++) newCode[i + 2] = codeChildren[i]
+
+      return ['pre', { ...attrs, class: classStr }, newCode] as ElementNode
+    }
+  )
+
+  return tree
+}
+
+export default defineComarkPlugin<PhighlightOptions>((options: PhighlightOptions = {}) => ({
+  name: 'phighlight',
+  async post(state) {
+    state.tree = await phighlightCodeBlocks(state.tree, options)
+  },
+}))

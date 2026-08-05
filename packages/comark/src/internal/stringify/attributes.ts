@@ -101,10 +101,10 @@ const IMPLICIT_ATTRS: Record<string, { drop?: string[]; classBlocklist?: string[
   ul: { classBlocklist: ['contains-task-list'] },
   li: { classBlocklist: ['task-list-item'] },
   // `language`/`filename`/`highlights`/`meta` ride on the fence info string.
-  // `style` comes from render-time plugins (e.g. shiki) and has no markdown
-  // form. `class` is handled specially in userBlockAttrs because shiki merges
-  // its injected classes with the user's class — we need to strip just the
-  // highlighter portion.
+  // `style` comes from render-time plugins (e.g. shiki / phighlight) and has no
+  // markdown form. `class` is handled specially in userBlockAttrs because
+  // highlighters merge their injected classes with the user's class — we need
+  // to strip just the highlighter portion.
   pre: { drop: ['language', 'filename', 'highlights', 'meta', 'style'] },
 }
 
@@ -129,12 +129,17 @@ export function userBlockAttrs(tag: string, attributes: Record<string, unknown>)
       if (remaining) result[key] = remaining
       continue
     }
-    if (key === 'class' && tag === 'pre' && typeof value === 'string' && value.startsWith('shiki')) {
-      // Shiki injects `shiki [shiki-themes] <themes…>` (or a bare `shiki`) and
-      // appends any user class after a `.` separator. Recover the user portion
-      // by dropping everything up to and including that separator.
+    if (
+      key === 'class' &&
+      tag === 'pre' &&
+      typeof value === 'string' &&
+      (value.startsWith('shiki') || value.startsWith('shj'))
+    ) {
+      // Highlighters inject their own classes (`shiki …` / `shj shj-lang-…`)
+      // and append any user class after a `.` separator. Recover the user
+      // portion by dropping everything up to and including that separator.
       const tokens = value.split(/\s+/)
-      let cutoff = tokens.findIndex((t) => t === '.')
+      const cutoff = tokens.findIndex((t) => t === '.')
 
       const userClass = cutoff >= 0 ? tokens.slice(cutoff + 1).join(' ') : ''
       if (userClass) result[key] = userClass

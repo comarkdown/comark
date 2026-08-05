@@ -66,6 +66,7 @@
   "devDependencies": {
     "@json-render/core": "catalog:",
     "@shikijs/twoslash": "catalog:",
+    "@speed-highlight/core": "catalog:",
     "@types/markdown-it": "catalog:",
     "github-slugger": "catalog:",
     "hast-util-to-string": "catalog:",
@@ -75,12 +76,16 @@
     "vitest": "catalog:"
   },
   "peerDependencies": {
+    "@speed-highlight/core": "catalog:",
     "beautiful-mermaid": "catalog:",
     "katex": "catalog:",
     "shiki": "catalog:"
   },
   "peerDependenciesMeta": {
     "shiki": {
+      "optional": true
+    },
+    "@speed-highlight/core": {
       "optional": true
     },
     "beautiful-mermaid": {
