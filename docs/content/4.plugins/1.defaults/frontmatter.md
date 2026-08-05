@@ -66,27 +66,12 @@ const result = await parseMarkdown(content, {
 
 ### Disable frontmatter parsing
 
-Override the default plugin by name — the `---` block is treated as regular markdown (`hr` + content):
-
-```typescript
-import frontmatter from 'comark/plugins/frontmatter'
-
-const result = await parseMarkdown(content, {
-  plugins: [frontmatter({ enabled: false })],
-})
-```
-
-Disable all defaults (including frontmatter):
+Turn off all defaults (including frontmatter) so the `---` block is treated as regular markdown:
 
 ```typescript
 const result = await parseMarkdown(content, { registerDefaultPlugins: false })
+// result.frontmatter → {}
 ```
-
-### Options
-
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `enabled` | `boolean` | `true` | When `false`, the plugin is a no-op (frontmatter left as markdown) |
 
 ## How it works
 

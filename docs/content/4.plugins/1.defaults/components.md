@@ -22,7 +22,7 @@ The `comark/plugins/components` plugin enables Comark **block** and **inline** c
 
 - Block: `::name` … `::` (and single-line shorthand `:name[content]{props}`)
 - Inline: `:name`, `:name[content]`, `:name[content]{props}`
-- Spans: `[text]` (add `{attrs}` with the [attributes plugin](/plugins/built-in/attributes))
+- Spans: `[text]` (add `{attrs}` with the [attributes plugin](/plugins/defaults/attributes))
 
 The plugin is **enabled by default** via `registerDefaultPlugins`. No installation or registration required.
 
@@ -91,18 +91,10 @@ import components from '@comark/react/plugins/components'
 
 ### Disable component syntax
 
-Disable all defaults (including components):
+Turn off all defaults (including components):
 
 ```typescript
 const result = await parseMarkdown(content, { registerDefaultPlugins: false })
-```
-
-Or replace the built-in plugin with a same-name stub while keeping other defaults:
-
-```typescript
-const result = await parseMarkdown(content, {
-  plugins: [{ name: 'components' }],
-})
 ```
 
 When the components plugin is not active, `autoClose` also skips component-fence completion (`::` closers).

@@ -408,27 +408,12 @@ export interface ParserOptions<TPlugins extends readonly ComarkPlugin<any, any>[
   autoClose?: boolean
 
   /**
-   * Whether to enable the built-in `html` plugin among the default plugins
-   * (parses embedded HTML tags into AST nodes).
-   * Only applies when `registerDefaultPlugins` is not `false`.
-   * Set `false` to leave HTML tags as raw text, or pass
-   * `plugins: [html({ enabled: false })]` to override the default.
+   * @deprecated Use `registerDefaultPlugins: false` and register plugins explicitly
+   * (include `html()` from `comark/plugins/html` only when you need HTML parsing).
+   * Setting this option logs a deprecation warning. `html: false` still skips the
+   * default html plugin for backward compatibility.
    *
    * @default true
-   * @example
-   * // With html: true (default) — HTML is parsed into AST nodes
-   * // Input: `<strong class="bold">text</strong>`
-   * // AST:   ['strong', { class: 'bold' }, 'text']
-   *
-   * // HTML can be mixed with Comark components:
-   * // Input:
-   * // <div>
-   * //   ::alert
-   * //   Hello <em>world</em>
-   * //   ::
-   * // </div>
-   *
-   * // With html: false — HTML tags are left as raw text / ignored
    */
   html?: boolean
 

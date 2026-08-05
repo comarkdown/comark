@@ -1,6 +1,6 @@
 ---
 title: Attributes
-description: Built-in plugin that parses inline attributes and span attributes into AST props.
+description: Built-in plugin that parses inline attributes into AST props.
 seo:
   title: Attributes Plugin
 navigation:
@@ -22,7 +22,7 @@ The `comark/plugins/attributes` plugin enables Comark **inline attributes** (`{.
 
 - Props after a token: `Hello {.cls}` → paragraph gets `class="cls"`
 - Props on links, emphasis, headings, list items, and components
-- Props on span wrappers from the [components plugin](/plugins/built-in/components): `[world]{.accent}`
+- Props on span wrappers from the [components plugin](/plugins/defaults/components): `[world]{.accent}`
 
 The plugin is **enabled by default** via `registerDefaultPlugins`. No installation or registration required.
 
@@ -90,21 +90,13 @@ import attributes from '@comark/react/plugins/attributes'
 
 ### Disable attribute syntax
 
-Disable all defaults (including attributes):
+Turn off all defaults (including attributes):
 
 ```typescript
 const result = await parseMarkdown(content, { registerDefaultPlugins: false })
 ```
 
-Or replace the built-in plugin with a same-name stub while keeping other defaults:
-
-```typescript
-const result = await parseMarkdown(content, {
-  plugins: [{ name: 'attributes' }],
-})
-```
-
-With attributes disabled, `{...}` is left as plain text. Bare `[text]` span wrappers still require the [components plugin](/plugins/built-in/components).
+With attributes disabled, `{...}` is left as plain text. Bare `[text]` span wrappers still require the [components plugin](/plugins/defaults/components).
 
 ## markdown-it / markdown-exit adapter
 
@@ -114,7 +106,7 @@ import { markdownItAttributes } from 'comark/plugins/attributes'
 md.use(markdownItAttributes)
 ```
 
-Pair with [components](/plugins/built-in/components) when you also need `::name` / `:name` syntax:
+Pair with [components](/plugins/defaults/components) when you also need `::name` / `:name` syntax:
 
 ```typescript
 import { markdownItComponents } from 'comark/plugins/components'
@@ -130,4 +122,4 @@ The plugin registers `comark_inline_props` for `{class="foo" id="x"}` after a pr
 
 Hidden `mdc_inline_props` tokens are merged onto the previous token (or a wrapping span for bare text). Parent-level props on headings, paragraphs, and list items are lifted during `md.parse`.
 
-Span openers (`[text]`) are provided by the [components plugin](/plugins/built-in/components); attributes only attach the trailing `{...}`.
+Span openers (`[text]`) are provided by the [components plugin](/plugins/defaults/components); attributes only attach the trailing `{...}`.

@@ -76,7 +76,6 @@ const parseOptions = useLocalStorage(
   {
     autoUnwrap: true,
     autoClose: true,
-    html: true,
     linkify: true,
   },
   { mergeDefaults: true }
@@ -175,11 +174,6 @@ const parseOptionDefs = [
     icon: 'i-lucide-shield-check',
   },
   {
-    key: 'html',
-    label: 'HTML Parsing',
-    icon: 'i-lucide-file-code',
-  },
-  {
     key: 'linkify',
     label: 'Auto Convert urls to links',
     icon: 'i-lucide-link',
@@ -235,7 +229,6 @@ async function updatePreview(): Promise<void> {
       plugins: activePlugins.value,
       autoUnwrap: parseOptions.value.autoUnwrap,
       autoClose: parseOptions.value.autoClose,
-      html: parseOptions.value.html,
       linkify: parseOptions.value.linkify ?? true,
     })
     document.value = result
@@ -307,7 +300,6 @@ watch(completion, async (md) => {
       plugins: activePlugins.value,
       autoUnwrap: parseOptions.value.autoUnwrap,
       autoClose: true,
-      html: parseOptions.value.html,
     })
     document.value = result
   } catch {

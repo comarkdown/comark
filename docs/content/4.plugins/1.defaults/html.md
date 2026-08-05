@@ -20,7 +20,7 @@ links:
 
 The `comark/plugins/html` plugin enables embedded HTML block and inline tags in Comark/markdown content. Tags are tokenized and converted into AST nodes that can be mixed with Comark components and markdown syntax.
 
-The plugin is **enabled by default** via `registerDefaultPlugins` (and the `html` parse option). No installation or registration required.
+The plugin is **enabled by default** via `registerDefaultPlugins`. No installation or registration required.
 
 ## Usage
 
@@ -63,33 +63,15 @@ const result = await parseMarkdown(content, {
 
 ### Disable HTML parsing
 
-Treat HTML tags as plain text while keeping other defaults:
-
-```typescript
-const result = await parseMarkdown(content, { html: false })
-```
-
-Or disable via the plugin option (overrides the default `html` plugin by name):
-
-```typescript
-import html from 'comark/plugins/html'
-
-const result = await parseMarkdown(content, {
-  plugins: [html({ enabled: false })],
-})
-```
-
-Disable all defaults (including HTML):
+Turn off all defaults (including HTML) so tags are treated as plain text:
 
 ```typescript
 const result = await parseMarkdown(content, { registerDefaultPlugins: false })
 ```
 
-### Options
-
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `enabled` | `boolean` | `true` | When `false`, registers no markdown-it rules (no-op plugin) |
+::note
+`ParserOptions.html` is **deprecated** and logs a warning. Prefer `registerDefaultPlugins: false` (and register `html()` only when you need it). `html: false` still skips the default html plugin for compatibility.
+::
 
 ## How it works
 

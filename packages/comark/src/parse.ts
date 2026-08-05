@@ -55,6 +55,8 @@ export { defineComarkPlugin } from './utils/helpers.ts'
  * console.log(tree2.nodes)
  * // → [ ['strong', { class: 'bold' }, 'Hello'], ' ', ['em', {}, 'world'] ]
  *
+ * // Disable default plugins (including HTML) — HTML tags are plain text
+ * const parsePlain = createMarkdownParser({ registerDefaultPlugins: false })
  * ```
  */
 export function createMarkdownParser<const TPlugins extends readonly ComarkPlugin<any, any>[] = []>(
@@ -65,13 +67,23 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
   const unwrapTags = resolveUnwrapTags(options.unwrap)
 
   const userPlugins = options.plugins ?? []
+
+  // `options.html` is deprecated — prefer `registerDefaultPlugins: false` (or
+  // omitting the html plugin from an explicit plugins list).
+  if (options.html !== undefined) {
+    console.warn(
+      '[comark] `ParserOptions.html` is deprecated and will be removed in a future major version. ' +
+        'Use `registerDefaultPlugins: false` and register `html()` from `comark/plugins/html` only when needed.'
+    )
+  }
+
   // User plugins first so same-name entries override defaults via dedupePlugins.
-  // `options.html` is deprecated — prefer `plugins: [html({ enabled: false })]`.
   const defaultPlugins =
     options.registerDefaultPlugins !== false
       ? [
           frontmatterPlugin(),
-          html({ enabled: options.html !== false }),
+          // Honor deprecated `html: false` so callers can keep disabling HTML for now.
+          ...(options.html !== false ? [html()] : []),
           alert(),
           taskList(),
           components(),
@@ -101,6 +113,8 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
       tree: null as MarkdownDocument | null,
       parsedLines: 0,
       reusableNodes: [] as Node[],
+      frontmatterText: '',
+      frontmatter: {} as Record<string, any>,
     }
 
     const prevOutput = lastOutput
@@ -119,7 +133,6 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
     if (autoClose) {
       state.markdown = autoCloseMarkdown(state.markdown, {
         frontmatter: hasPlugin('frontmatter') && opts.streaming,
-        // Stubs that only set `name: 'components'` must not enable fence auto-close.
         syntax: hasPlugin('components'),
       })
     }

@@ -495,7 +495,6 @@ const result = await parseMarkdown(markdownContent, {
   autoClose: true,              // Auto-close incomplete syntax
   unwrap: 'p',                  // Strip top-level wrapper tags (MDC unwrap); merges paragraphs
   registerDefaultPlugins: true, // frontmatter, html, alert, task-list, components, attributes; false to disable
-  // prefer plugins: [html({ enabled: false })] / [frontmatter({ enabled: false })] to turn off individual defaults
 })
 
 result.nodes       // Node[]

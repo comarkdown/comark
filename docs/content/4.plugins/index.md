@@ -8,6 +8,8 @@ Comark's plugin system extends markdown functionality with specialized features.
 
 ## Plugins
 
+Optional plugins you register via `plugins: [...]`.
+
 ::card-group{cols="2"}
   ::card{icon="i-lucide-replace" title="Binding" to="/plugins/built-in/binding"}
   Interpolate frontmatter, runtime data, or parent props with `{{ path || default }}` shorthand
@@ -68,27 +70,27 @@ Comark's plugin system extends markdown functionality with specialized features.
 These plugins are **enabled by default** whenever you call `parseMarkdown()` or `createMarkdownParser()` (or a framework `<Markdown>` component). You do not need to install or register them.
 
 ::card-group{cols="2"}
-  ::card{icon="i-lucide-file-spreadsheet" title="Frontmatter" to="/plugins/built-in/frontmatter"}
+  ::card{icon="i-lucide-file-spreadsheet" title="Frontmatter" to="/plugins/defaults/frontmatter"}
   Parse a leading YAML frontmatter block into `tree.frontmatter`
   ::
 
-  ::card{icon="i-lucide-code-xml" title="HTML" to="/plugins/built-in/html"}
+  ::card{icon="i-lucide-code-xml" title="HTML" to="/plugins/defaults/html"}
   Parse embedded HTML tags into Comark AST nodes
   ::
 
-  ::card{icon="i-lucide-bell" title="Alerts" to="/plugins/built-in/alert"}
+  ::card{icon="i-lucide-bell" title="Alerts" to="/plugins/defaults/alert"}
   Transform GitHub-style `> [!NOTE]` blockquotes
   ::
 
-  ::card{icon="i-lucide-check-square" title="Task List" to="/plugins/built-in/task-list"}
+  ::card{icon="i-lucide-check-square" title="Task List" to="/plugins/defaults/task-list"}
   Interactive `[ ]` / `[x]` checkboxes
   ::
 
-  ::card{icon="i-lucide-component" title="Components" to="/plugins/built-in/components"}
+  ::card{icon="i-lucide-component" title="Components" to="/plugins/defaults/components"}
   Block/inline components and spans (`::name`, `:name`, `[text]`)
   ::
 
-  ::card{icon="i-lucide-tag" title="Attributes" to="/plugins/built-in/attributes"}
+  ::card{icon="i-lucide-tag" title="Attributes" to="/plugins/defaults/attributes"}
   Inline attributes (`{props}` after tokens)
   ::
 ::

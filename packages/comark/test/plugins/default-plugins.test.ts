@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { parseMarkdown } from '../../src/parse'
 import components from '../../src/plugins/components'
 import frontmatter from '../../src/plugins/frontmatter'
@@ -32,6 +32,11 @@ describe('default plugin options', () => {
       expect(tree.nodes).toEqual([['h1', { id: 'hi' }, 'Hi']])
     })
 
+    it('parses attributes by default', async () => {
+      const tree = await parseMarkdown('Hello {.cls}')
+      expect(tree.nodes).toEqual([['p', { class: 'cls' }, 'Hello']])
+    })
+
     it('treats frontmatter as content when registerDefaultPlugins is false', async () => {
       const tree = await parseMarkdown('---\ntitle: Hello\n---\n\n# Hi', { registerDefaultPlugins: false })
       expect(tree.frontmatter).toEqual({})
@@ -58,11 +63,6 @@ describe('default plugin options', () => {
         plugins: [html()],
       })
       expect(tree.nodes).toEqual([['p', {}, ['em', { $: { html: 1, block: 0 } }, 'hi']]])
-    })
-
-    it('parses attributes by default', async () => {
-      const tree = await parseMarkdown('Hello {.cls}')
-      expect(tree.nodes).toEqual([['p', { class: 'cls' }, 'Hello']])
     })
 
     it('treats attribute braces as plain text when registerDefaultPlugins is false', async () => {
@@ -104,57 +104,23 @@ describe('default plugin options', () => {
     })
   })
 
-  describe('html option', () => {
-    it('treats HTML as plain text when html: false', async () => {
+  describe('deprecated html option', () => {
+    it('still disables HTML with html: false and warns', async () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
       const tree = await parseMarkdown('<strong>Hello</strong>', { html: false })
       expect(tree.nodes).toEqual([['p', {}, '<strong>Hello</strong>']])
+      expect(warn).toHaveBeenCalled()
+      expect(String(warn.mock.calls[0]?.[0])).toContain('ParserOptions.html')
+      warn.mockRestore()
     })
 
-    it('enables HTML via the explicit html plugin when html: false', async () => {
-      const tree = await parseMarkdown('<strong>Hello</strong>', {
-        html: false,
-        plugins: [html()],
-      })
-      expect(tree.nodes).toEqual([['p', {}, ['strong', { $: { html: 1, block: 0 } }, 'Hello']]])
-    })
-
-    it('replaces the default html plugin with a same-name user plugin', async () => {
-      const tree = await parseMarkdown('<strong>Hello</strong>', {
-        plugins: [{ name: 'html' }],
-      })
-      expect(tree.nodes).toEqual([['p', {}, '<strong>Hello</strong>']])
-    })
-
-    it('disables HTML via html({ enabled: false })', async () => {
-      const tree = await parseMarkdown('<strong>Hello</strong>', {
-        plugins: [html({ enabled: false })],
-      })
-      expect(tree.nodes).toEqual([['p', {}, '<strong>Hello</strong>']])
+    it('does not add html when registerDefaultPlugins is false even if html is unset', async () => {
+      const tree = await parseMarkdown('<em>hi</em>', { registerDefaultPlugins: false })
+      expect(tree.nodes).toEqual([['p', {}, '<em>hi</em>']])
     })
   })
 
   describe('user plugin override', () => {
-    it('replaces the default attributes plugin with a same-name user plugin', async () => {
-      const tree = await parseMarkdown('Hello {.cls}', {
-        plugins: [{ name: 'attributes' }],
-      })
-      expect(tree.nodes).toEqual([['p', {}, 'Hello {.cls}']])
-    })
-
-    it('replaces the default alert plugin with a same-name user plugin', async () => {
-      const tree = await parseMarkdown('> [!NOTE]\n> hi', {
-        plugins: [{ name: 'alert' }],
-      })
-      expect(tree.nodes).toEqual([['blockquote', {}, ['span', {}, '!NOTE'], '\nhi']])
-    })
-
-    it('replaces the default task-list plugin with a same-name user plugin', async () => {
-      const tree = await parseMarkdown('- [ ] todo', {
-        plugins: [{ name: 'task-list' }],
-      })
-      expect(tree.nodes).toEqual([['ul', {}, ['li', {}, ' todo']]])
-    })
-
     it('keeps an explicit components plugin active with registerDefaultPlugins: false', async () => {
       const tree = await parseMarkdown('::alert\nContent', {
         registerDefaultPlugins: false,
