@@ -229,7 +229,9 @@ export async function tokenizeCode(
   const { tokenize } = await import('@speed-highlight/core')
   const tokens: Array<{ text: string; type?: string }> = []
 
-  await tokenize(code, language, (text, type) => {
+  // Cast: open language union (string & {}) is intentional for custom langs via
+  // loadLanguage / langAlias; ShjLanguage is a closed string-literal union.
+  await tokenize(code, language as Parameters<typeof tokenize>[1], (text, type) => {
     if (!text) return
     tokens.push(type ? { text, type } : { text })
   })
