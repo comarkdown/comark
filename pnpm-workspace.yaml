@@ -174,4 +174,5 @@ minimumReleaseAgeExclude:
   - '@nuxtlabs/monarch-mdc@0.10.0'
 
 patchedDependencies:
+  '@nuxtjs/mdc': patches/@nuxtjs__mdc.patch
   minimark: patches/minimark.patch

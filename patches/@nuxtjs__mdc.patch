@@ -1,0 +1,13 @@
+diff --git a/dist/runtime/stringify/mdc-remark.js b/dist/runtime/stringify/mdc-remark.js
+index 59b1b0881c8c97b814c7814eff2cc83513e5ec8d..e2be8a31f2a90806cb5f01ae365da46beeb6d5b5 100644
+--- a/dist/runtime/stringify/mdc-remark.js
++++ b/dist/runtime/stringify/mdc-remark.js
+@@ -203,7 +203,7 @@ const mdcRemarkHandlers = {
+       node.properties.highlights?.length ? `{${computeHighlightRanges(node.properties.highlights)}}` : "",
+       node.properties.meta
+     ].filter(Boolean).join(" ");
+-    const value = String(node.properties.code || "").replace(/\n$/, "");
++    const value = String(node.properties.code || nodeTextContent(node) || "").replace(/\n$/, "");
+     return {
+       type: "code",
+       value,
