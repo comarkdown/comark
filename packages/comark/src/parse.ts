@@ -12,17 +12,17 @@ import type {
   Node,
 } from './types.ts'
 import MarkdownExit from 'markdown-exit'
-import syntax from './plugins/syntax.ts'
+import components from './plugins/components.ts'
+import attributes from './plugins/attributes.ts'
 import taskList from './plugins/task-list.ts'
 import alert from './plugins/alert.ts'
+import html from './plugins/html.ts'
+import frontmatterPlugin from './plugins/frontmatter.ts'
 import { applyAutoUnwrap } from './internal/parse/auto-unwrap.ts'
 import { applyUnwrap, resolveUnwrapTags } from './internal/parse/unwrap.ts'
 import { marmdownItTokensToMarkdownDocument } from './internal/parse/token-processor.ts'
 import { autoCloseMarkdown } from './internal/parse/auto-close/index.ts'
-import { parseFrontmatter } from './internal/frontmatter.ts'
 import { extractReusableNodes } from './internal/parse/incremental.ts'
-import html_block from './internal/parse/html/html_block_rule.ts'
-import html_inline from './internal/parse/html/html_inline_rule.ts'
 import { createSerializedTask, dedupePlugins } from './utils/helpers.ts'
 
 // Re-export frontmatter utilities
@@ -50,14 +50,13 @@ export { defineComarkPlugin } from './utils/helpers.ts'
  * console.log(tree.nodes)
  * // → [ ['h1', { id: 'hello-world' }, 'Hello ', ['strong', {}, 'World'] ], ['alert', {}, 'hi'] ]
  *
- * // Enable HTML parsing (on by default) — HTML tags are included in the AST
- * const parseWithHtml = createMarkdownParser({ html: true })
- * const tree2 = await parseWithHtml('<strong class="bold">Hello</strong> _world_')
+ * // HTML parsing is on by default via the built-in `html` plugin
+ * const tree2 = await parseMarkdown('<strong class="bold">Hello</strong> _world_')
  * console.log(tree2.nodes)
  * // → [ ['strong', { class: 'bold' }, 'Hello'], ' ', ['em', {}, 'world'] ]
  *
- * // Disable HTML parsing — HTML tags are treated as plain text
- * const parseNoHtml = createMarkdownParser({ html: false })
+ * // Disable default plugins (including HTML) — HTML tags are plain text
+ * const parsePlain = createMarkdownParser({ registerDefaultPlugins: false })
  * ```
  */
 export function createMarkdownParser<const TPlugins extends readonly ComarkPlugin<any, any>[] = []>(
@@ -66,21 +65,36 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
   const { autoUnwrap = true, autoClose = true } = options
   // Tag set to strip from the top level of the tree (MDC `unwrap`). Resolved once.
   const unwrapTags = resolveUnwrapTags(options.unwrap)
-  // Make a mutable working copy so the inferred (possibly readonly) user tuple
-  // isn't mutated by the unshift calls below.
-  const plugins = dedupePlugins([alert(), taskList(), syntax(), ...(options.plugins ? [...options.plugins] : [])])
 
-  const parser = new MarkdownExit({
-    html: false,
-    linkify: options.linkify ?? true,
-  }).enable(['table', 'strikethrough'])
+  const userPlugins = options.plugins ?? []
 
-  if (options.html !== false) {
-    parser.inline.ruler.before('text', 'comark_html_inline', html_inline)
-    parser.block.ruler.before('html_block', 'comark_html_block', html_block, {
-      alt: ['paragraph', 'reference', 'blockquote'],
-    })
+  // `options.html` is deprecated — prefer `registerDefaultPlugins: false` (or
+  // omitting the html plugin from an explicit plugins list).
+  if (options.html !== undefined) {
+    console.warn(
+      '[comark] `ParserOptions.html` is deprecated and will be removed in a future major version. ' +
+        'Use `registerDefaultPlugins: false` and register `html()` from `comark/plugins/html` only when needed.'
+    )
   }
+
+  // User plugins first so same-name entries override defaults via dedupePlugins.
+  const defaultPlugins =
+    options.registerDefaultPlugins !== false
+      ? [
+          frontmatterPlugin(),
+          // Honor deprecated `html: false` so callers can keep disabling HTML for now.
+          ...(options.html !== false ? [html()] : []),
+          alert(),
+          taskList(),
+          components(),
+          attributes(),
+        ]
+      : []
+
+  const plugins = dedupePlugins([...userPlugins, ...defaultPlugins])
+  const hasPlugin = (name: string) => plugins.some((plugin) => plugin.name === name)
+
+  const parser = new MarkdownExit({ linkify: options.linkify ?? true }).enable(['table', 'strikethrough'])
 
   for (const plugin of plugins) {
     for (const markdownItPlugin of plugin.markdownItPlugins || []) {
@@ -99,6 +113,8 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
       tree: null as MarkdownDocument | null,
       parsedLines: 0,
       reusableNodes: [] as Node[],
+      frontmatterText: '',
+      frontmatter: {} as Record<string, any>,
     }
 
     const prevOutput = lastOutput
@@ -115,23 +131,18 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
     }
 
     if (autoClose) {
-      state.markdown = autoCloseMarkdown(state.markdown, { frontmatter: opts.streaming })
+      state.markdown = autoCloseMarkdown(state.markdown, {
+        frontmatter: hasPlugin('frontmatter') && opts.streaming,
+        syntax: hasPlugin('components'),
+      })
     }
 
     for (const plugin of plugins) {
       await plugin.pre?.(state)
     }
 
-    const { content, data, frontmatterText } = parseFrontmatter(state.markdown)
-    // Count frontmatter lines for line number tracking
-    if (content && frontmatterText) {
-      state.parsedLines +=
-        frontmatterText.split('\n').length + // Number of lines in frontmatter
-        1 // Separator line
-    }
-
     try {
-      state.tokens = parser.parse(content, {})
+      state.tokens = parser.parse(state.markdown, {})
     } catch (e) {
       // in case of streaming, return the previous output if parsing fails
       // This is to avoid resetting the tree to an empty state on failure
@@ -157,9 +168,12 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
       nodes = applyUnwrap(nodes, unwrapTags)
     }
 
+    const frontmatterData = (state.frontmatter ?? {}) as Record<string, any>
+    const frontmatterText = (state.frontmatterText ?? '') as string
+
     if (opts.streaming) {
       state.tree = {
-        frontmatter: frontmatterText ? data : (prevOutput?.frontmatter ?? data),
+        frontmatter: frontmatterText ? frontmatterData : (prevOutput?.frontmatter ?? frontmatterData),
         meta: {},
         nodes: [...state.reusableNodes, ...nodes],
       }
@@ -168,7 +182,7 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
       lastInput = markdown
     } else {
       state.tree = {
-        frontmatter: data,
+        frontmatter: frontmatterData,
         meta: {},
         nodes,
       }
