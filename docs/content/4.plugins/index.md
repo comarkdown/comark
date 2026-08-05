@@ -10,7 +10,11 @@ Comark's plugin system extends markdown functionality with specialized features.
 
 ::card-group{cols="2"}
   ::card{icon="i-lucide-bell" title="Alerts" to="/plugins/built-in/alert"}
-  Render GitHub-style alert blockquotes with icons and colors
+  Render GitHub-style alert blockquotes with icons and colors (default)
+  ::
+
+  ::card{icon="i-lucide-tag" title="Attributes" to="/plugins/built-in/attributes"}
+  Inline attributes (`{props}` after tokens) — enabled by default
   ::
 
   ::card{icon="i-lucide-replace" title="Binding" to="/plugins/built-in/binding"}
@@ -21,16 +25,24 @@ Comark's plugin system extends markdown functionality with specialized features.
   Convert soft line breaks directly into `:br` components
   ::
 
+  ::card{icon="i-lucide-component" title="Components" to="/plugins/built-in/components"}
+  Block/inline components and spans (`::name`, `:name`, `[text]`) — enabled by default
+  ::
+
   ::card{icon="i-lucide-smile" title="Emoji" to="/plugins/built-in/emoji"}
   Convert emoji shortcodes like `:smile:` into emoji characters
   ::
 
-  ::card{icon="i-lucide-footprints" title="Footnotes" to="/plugins/built-in/emoji"}
+  ::card{icon="i-lucide-footprints" title="Footnotes" to="/plugins/built-in/footnotes"}
   Plugin for adding footnote references and definitions to your Comark documents.
   ::
 
-  ::card{icon="i-lucide-heading" title="Headings" to="/plugins/built-in/emoji"}
+  ::card{icon="i-lucide-heading" title="Headings" to="/plugins/built-in/headings"}
   Plugin for extracting the page title and description from document content.
+  ::
+
+  ::card{icon="i-lucide-code-xml" title="HTML" to="/plugins/built-in/html"}
+  Parse embedded HTML tags into Comark AST nodes (enabled by default)
   ::
 
   ::card{icon="i-lucide-braces" title="JSON Render" to="/plugins/built-in/json-render"}
@@ -62,7 +74,7 @@ Comark's plugin system extends markdown functionality with specialized features.
   ::
 
   ::card{icon="i-lucide-check-square" title="Task List" to="/plugins/built-in/task-list"}
-  Render interactive checkboxes from `[ ]` and `[x]` list syntax
+  Render interactive checkboxes from `[ ]` and `[x]` list syntax (default)
   ::
 
   ::card{icon="i-lucide-list" title="Table of Contents" to="/plugins/built-in/toc"}
@@ -70,6 +82,60 @@ Comark's plugin system extends markdown functionality with specialized features.
   ::
 
 ::
+
+## Default plugins
+
+These plugins are **enabled by default** whenever you call `parseMarkdown()` or `createMarkdownParser()` (or a framework `<Markdown>` component). You do not need to install or register them.
+
+::card-group{cols="2"}
+  ::card{icon="i-lucide-code-xml" title="HTML" to="/plugins/built-in/html"}
+  Parse embedded HTML tags into Comark AST nodes
+  ::
+
+  ::card{icon="i-lucide-bell" title="Alerts" to="/plugins/built-in/alert"}
+  Transform GitHub-style `> [!NOTE]` blockquotes
+  ::
+
+  ::card{icon="i-lucide-check-square" title="Task List" to="/plugins/built-in/task-list"}
+  Interactive `[ ]` / `[x]` checkboxes
+  ::
+
+  ::card{icon="i-lucide-component" title="Components" to="/plugins/built-in/components"}
+  Block/inline components and spans (`::name`, `:name`, `[text]`)
+  ::
+
+  ::card{icon="i-lucide-tag" title="Attributes" to="/plugins/built-in/attributes"}
+  Inline attributes (`{props}` after tokens)
+  ::
+::
+
+### Disable default plugins
+
+Turn them all off with `registerDefaultPlugins: false`:
+
+```typescript
+import { parseMarkdown } from 'comark'
+
+// Plain markdown only — no components, attributes, HTML, alerts, or task lists
+const result = await parseMarkdown(content, {
+  registerDefaultPlugins: false,
+})
+```
+
+Opt back into specific defaults via `plugins`:
+
+```typescript
+import { parseMarkdown } from 'comark'
+import components from 'comark/plugins/components'
+import attributes from 'comark/plugins/attributes'
+
+const result = await parseMarkdown(content, {
+  registerDefaultPlugins: false,
+  plugins: [components(), attributes()],
+})
+```
+
+See also the [`registerDefaultPlugins` option](/api/parse#options) on the Parse API.
 
 ## Guides
 

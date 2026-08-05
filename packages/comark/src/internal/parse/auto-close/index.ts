@@ -12,7 +12,7 @@ import { closeTables } from './table.ts'
  * @param markdown - The markdown content to auto-close
  * @param options - `frontmatter` completes an unclosed leading frontmatter block.
  *   `syntax: false` disables Comark component-fence handling (`::` closers and
- *   props braces), for input parsed without the syntax plugin.
+ *   props braces), for input parsed without the components plugin.
  * @returns The markdown with unclosed syntax closed
  */
 export function autoCloseMarkdown(markdown: string, options: { frontmatter?: boolean; syntax?: boolean } = {}): string {

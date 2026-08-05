@@ -12,17 +12,17 @@ import type {
   Node,
 } from './types.ts'
 import MarkdownExit from 'markdown-exit'
-import syntax, { SyntaxPlugin } from './plugins/syntax.ts'
+import components from './plugins/components.ts'
+import attributes from './plugins/attributes.ts'
 import taskList from './plugins/task-list.ts'
 import alert from './plugins/alert.ts'
+import html from './plugins/html.ts'
 import { applyAutoUnwrap } from './internal/parse/auto-unwrap.ts'
 import { applyUnwrap, resolveUnwrapTags } from './internal/parse/unwrap.ts'
 import { marmdownItTokensToMarkdownDocument } from './internal/parse/token-processor.ts'
 import { autoCloseMarkdown } from './internal/parse/auto-close/index.ts'
 import { parseFrontmatter } from './internal/frontmatter.ts'
 import { extractReusableNodes } from './internal/parse/incremental.ts'
-import html_block from './internal/parse/html/html_block_rule.ts'
-import html_inline from './internal/parse/html/html_inline_rule.ts'
 import { createSerializedTask, dedupePlugins } from './utils/helpers.ts'
 
 // Re-export frontmatter utilities
@@ -50,9 +50,8 @@ export { defineComarkPlugin } from './utils/helpers.ts'
  * console.log(tree.nodes)
  * // → [ ['h1', { id: 'hello-world' }, 'Hello ', ['strong', {}, 'World'] ], ['alert', {}, 'hi'] ]
  *
- * // Enable HTML parsing (on by default) — HTML tags are included in the AST
- * const parseWithHtml = createMarkdownParser({ html: true })
- * const tree2 = await parseWithHtml('<strong class="bold">Hello</strong> _world_')
+ * // HTML parsing is on by default via the built-in `html` plugin
+ * const tree2 = await parseMarkdown('<strong class="bold">Hello</strong> _world_')
  * console.log(tree2.nodes)
  * // → [ ['strong', { class: 'bold' }, 'Hello'], ' ', ['em', {}, 'world'] ]
  *
@@ -68,27 +67,15 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
   const unwrapTags = resolveUnwrapTags(options.unwrap)
 
   const userPlugins = options.plugins ?? []
+  // User plugins first so same-name entries override defaults via dedupePlugins.
   const defaultPlugins =
     options.registerDefaultPlugins !== false
-      ? [alert(), taskList(), syntax()].filter(
-          (plugin) => !userPlugins.some((userPlugin) => userPlugin.name === plugin.name)
-        )
+      ? [html({ enabled: options.html !== false }), alert(), taskList(), components(), attributes()]
       : []
 
-  const plugins = dedupePlugins([...defaultPlugins, ...userPlugins])
-  const syntaxEnabled = plugins.some((plugin) => plugin instanceof SyntaxPlugin)
+  const plugins = dedupePlugins([...userPlugins, ...defaultPlugins])
 
-  const parser = new MarkdownExit({
-    html: false,
-    linkify: options.linkify ?? true,
-  }).enable(['table', 'strikethrough'])
-
-  if (options.html !== false) {
-    parser.inline.ruler.before('text', 'comark_html_inline', html_inline)
-    parser.block.ruler.before('html_block', 'comark_html_block', html_block, {
-      alt: ['paragraph', 'reference', 'blockquote'],
-    })
-  }
+  const parser = new MarkdownExit({ linkify: options.linkify ?? true }).enable(['table', 'strikethrough'])
 
   for (const plugin of plugins) {
     for (const markdownItPlugin of plugin.markdownItPlugins || []) {
@@ -125,7 +112,8 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
     if (autoClose) {
       state.markdown = autoCloseMarkdown(state.markdown, {
         frontmatter: frontmatter && opts.streaming,
-        syntax: syntaxEnabled,
+        // Stubs that only set `name: 'components'` must not enable fence auto-close.
+        syntax: plugins.some((plugin) => plugin.name === 'components' && (plugin.markdownItPlugins?.length ?? 0) > 0),
       })
     }
 

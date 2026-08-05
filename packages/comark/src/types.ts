@@ -408,9 +408,11 @@ export interface ParserOptions<TPlugins extends readonly ComarkPlugin<any, any>[
   autoClose?: boolean
 
   /**
-   * Whether to parse HTML tags embedded in Comark/markdown content.
-   * When enabled, HTML block and inline elements are parsed into AST nodes and can be
-   * mixed freely with Comark components and markdown syntax.
+   * Whether to enable the built-in `html` plugin among the default plugins
+   * (parses embedded HTML tags into AST nodes).
+   * Only applies when `registerDefaultPlugins` is not `false`.
+   * Set `false` to leave HTML tags as raw text, or pass
+   * `plugins: [html({ enabled: false })]` to override the default.
    *
    * @default true
    * @example
@@ -459,9 +461,10 @@ export interface ParserOptions<TPlugins extends readonly ComarkPlugin<any, any>[
   frontmatter?: boolean
 
   /**
-   * Whether to register the built-in default plugins (`alert`, `task-list`, `syntax`).
+   * Whether to register the built-in default plugins
+   * (`html`, `alert`, `task-list`, `components`, `attributes`).
    * Set `false` to parse plain markdown with only the plugins listed in `plugins`.
-   * Without the syntax plugin, `autoClose` skips component fences and attribute braces.
+   * Without the components/attributes plugins, `autoClose` skips component fences and attribute braces.
    * @default true
    */
   registerDefaultPlugins?: boolean

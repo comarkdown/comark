@@ -1,7 +1,8 @@
 import { bench, run, group, barplot } from 'mitata'
 import MarkdownIt from 'markdown-it'
 import MarkdownExit from 'markdown-exit'
-import { markdownItComark } from 'comark/plugins/syntax'
+import { markdownItComponents } from 'comark/plugins/components'
+import { markdownItAttributes } from 'comark/plugins/attributes'
 import { createMarkdownParser } from 'comark'
 import highlight, { getHighlighter } from '../packages/comark/src/plugins/highlight'
 import { codeToHast } from 'shiki/core'
@@ -93,10 +94,12 @@ npm run build:module-${i + 1}
 // they still need shiki. We benchmark both pipelines with the same shiki work.
 const markdownIt = new MarkdownIt({ html: true, linkify: true })
   .enable(['table', 'strikethrough'])
-  .use(markdownItComark)
+  .use(markdownItComponents)
+  .use(markdownItAttributes)
 const markdownExit = new MarkdownExit({ html: true, linkify: true })
   .enable(['table', 'strikethrough'])
-  .use(markdownItComark)
+  .use(markdownItComponents)
+  .use(markdownItAttributes)
 
 // comark: baseline vs highlight plugin
 const comark = createMarkdownParser()
