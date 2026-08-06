@@ -5,6 +5,7 @@ import type {
   MarkdownExitPlugin,
   MergePluginFrontmatter,
   MergePluginMeta,
+  ComarkPerf,
   ParserOptions,
   ResolvedFrontmatter,
   ResolvedMeta,
@@ -30,6 +31,12 @@ export { parseFrontmatter } from './internal/frontmatter.ts'
 
 // Re-export plugin utilities
 export { defineComarkPlugin } from './utils/helpers.ts'
+
+/** No-op recorder used when no `perf` option is provided — zero overhead. */
+const noopPerf: ComarkPerf = {
+  span: () => () => {},
+  measure: (_name, fn) => fn(),
+}
 
 /**
  * Creates a parser function for Comark content.
@@ -62,7 +69,7 @@ export { defineComarkPlugin } from './utils/helpers.ts'
 export function createMarkdownParser<const TPlugins extends readonly ComarkPlugin<any, any>[] = []>(
   options: ParserOptions<TPlugins> = {} as ParserOptions<TPlugins>
 ): ComarkParseFn<ResolvedMeta<MergePluginMeta<TPlugins>>, ResolvedFrontmatter<MergePluginFrontmatter<TPlugins>>> {
-  const { autoUnwrap = true, autoClose = true } = options
+  const { autoUnwrap = true, autoClose = true, perf = noopPerf } = options
   // Tag set to strip from the top level of the tree (MDC `unwrap`). Resolved once.
   const unwrapTags = resolveUnwrapTags(options.unwrap)
 
@@ -131,18 +138,21 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
     }
 
     if (autoClose) {
-      state.markdown = autoCloseMarkdown(state.markdown, {
-        frontmatter: hasPlugin('frontmatter') && opts.streaming,
-        syntax: hasPlugin('components'),
-      })
+      state.markdown = perf.measure('comark:autoclose', () =>
+        autoCloseMarkdown(state.markdown, {
+          frontmatter: hasPlugin('frontmatter') && opts.streaming,
+          syntax: hasPlugin('components'),
+        })
+      )
     }
 
     for (const plugin of plugins) {
-      await plugin.pre?.(state)
+      if (!plugin.pre) continue
+      await perf.measure(`comark:pre:${plugin.name}`, () => plugin.pre!(state))
     }
 
     try {
-      state.tokens = parser.parse(state.markdown, {})
+      state.tokens = perf.measure('comark:tokenize', () => parser.parse(state.markdown, {}))
     } catch (e) {
       // in case of streaming, return the previous output if parsing fails
       // This is to avoid resetting the tree to an empty state on failure
@@ -154,6 +164,7 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
     }
 
     // Convert tokens to Comark structure
+    const endNodes = perf.span('comark:nodes')
     let nodes = marmdownItTokensToMarkdownDocument(state.tokens, {
       startLine: state.parsedLines,
       preservePositions: opts.streaming ?? false,
@@ -167,6 +178,7 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
     if (unwrapTags.length > 0) {
       nodes = applyUnwrap(nodes, unwrapTags)
     }
+    endNodes()
 
     const frontmatterData = (state.frontmatter ?? {}) as Record<string, any>
     const frontmatterText = (state.frontmatterText ?? '') as string
@@ -192,7 +204,8 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
     }
 
     for (const plugin of plugins) {
-      await plugin.post?.(state as ComarkParsePostState)
+      if (!plugin.post) continue
+      await perf.measure(`comark:post:${plugin.name}`, () => plugin.post!(state as ComarkParsePostState))
     }
 
     return state.tree
