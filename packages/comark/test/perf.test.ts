@@ -1,28 +1,57 @@
 import { describe, expect, it } from 'vitest'
 import { createMarkdownParser } from '../src/parse'
-import type { ComarkPerf } from '../src/types'
+import type { ComarkPerf, ComarkSpan, ComarkSpanOptions } from '../src/types'
 
 interface RecordedSpan {
   name: string
-  meta?: Record<string, unknown>
+  parent?: string
+  attributes?: Record<string, unknown>
 }
 
-/** Minimal recorder capturing span names in completion order. */
+/**
+ * Minimal OTel-shaped recorder with a parent stack (correct under serial /
+ * nested async; concurrent overlapping parses need a real OTel context).
+ */
 function createRecorder() {
   const spans: RecordedSpan[] = []
+  const stack: string[] = []
+  let nextId = 0
+
+  function start(name: string, options?: ComarkSpanOptions): ComarkSpan {
+    const id = `${name}:${++nextId}`
+    const parent = stack[stack.length - 1]
+    let ended = false
+    return {
+      end() {
+        if (ended) return
+        ended = true
+        spans.push({ name, parent, attributes: options?.attributes })
+      },
+    }
+  }
+
   const perf: ComarkPerf = {
-    span: (name, meta) => () => {
-      spans.push({ name, meta })
+    startSpan(name, options) {
+      return start(name, options)
     },
-    measure: (name, fn, meta) => {
-      const result = fn()
-      if (result instanceof Promise) {
-        return result.finally(() => spans.push({ name, meta })) as typeof result
+    startActiveSpan(name: string, optionsOrFn: ComarkSpanOptions | ((span: ComarkSpan) => unknown), fn?: (span: ComarkSpan) => unknown) {
+      const options = typeof optionsOrFn === 'function' ? undefined : optionsOrFn
+      const run = typeof optionsOrFn === 'function' ? optionsOrFn : fn!
+      const id = `${name}:${++nextId}`
+      const parent = stack[stack.length - 1]
+      stack.push(id)
+      const span: ComarkSpan = {
+        end() {
+          const idx = stack.lastIndexOf(id)
+          if (idx !== -1) stack.splice(idx, 1)
+          spans.push({ name, parent, attributes: options?.attributes })
+        },
       }
-      spans.push({ name, meta })
-      return result
+      // Note: real OTel leaves end() to the caller — same here; withSpan in parse ends it.
+      return run(span)
     },
   }
+
   return { perf, spans }
 }
 
@@ -46,16 +75,49 @@ describe('ParserOptions.perf', () => {
     expect(tree.frontmatter).toEqual({ title: 'Hello' })
 
     const names = spans.map((span) => span.name)
+    expect(names).toContain('comark:parse')
     expect(names).toContain('comark:autoclose')
     expect(names).toContain('comark:tokenize')
     expect(names).toContain('comark:nodes')
     // Default plugins with hooks record under their own name.
     expect(names).toContain('comark:pre:frontmatter')
 
-    // Phases come in pipeline order: autoclose → pre hooks → tokenize → nodes → post hooks.
-    const order = ['comark:autoclose', 'comark:pre:frontmatter', 'comark:tokenize', 'comark:nodes']
+    // Completion order: children finish before parent, so comark:parse is last.
+    const order = [
+      'comark:autoclose',
+      'comark:pre:frontmatter',
+      'comark:tokenize',
+      'comark:nodes',
+      'comark:parse',
+    ]
     const indexes = order.map((name) => names.indexOf(name))
     expect(indexes).toEqual([...indexes].sort((a, b) => a - b))
+  })
+
+  it('nests children under the active comark:parse span', async () => {
+    const { perf, spans } = createRecorder()
+    const parse = createMarkdownParser({
+      perf,
+      plugins: [
+        {
+          name: 'my-plugin',
+          pre: () => {},
+          post: () => {},
+        },
+      ],
+    })
+    await parse(markdown)
+
+    const root = spans.find((span) => span.name === 'comark:parse')
+    expect(root).toBeTruthy()
+    expect(root?.parent).toBeUndefined()
+
+    const children = spans.filter((span) => span.name !== 'comark:parse')
+    expect(children.length).toBeGreaterThan(0)
+    // Every child recorded while parse was active → parent is the parse span id.
+    for (const child of children) {
+      expect(child.parent).toMatch(/^comark:parse:\d+$/)
+    }
   })
 
   it('records user plugin pre/post hooks under their plugin name', async () => {
@@ -90,6 +152,7 @@ describe('ParserOptions.perf', () => {
     await parse('# Hello', { streaming: true })
     await parse('# Hello\n\nmore **text', { streaming: true })
 
+    expect(spans.filter((span) => span.name === 'comark:parse').length).toBe(2)
     expect(spans.filter((span) => span.name === 'comark:tokenize').length).toBe(2)
   })
 })

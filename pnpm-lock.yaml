@@ -884,6 +884,15 @@ importers:
         specifier: 'catalog:'
         version: 4.3.1
 
+  examples/3.cli/perf-trace:
+    dependencies:
+      comark:
+        specifier: workspace:*
+        version: link:../../../packages/comark
+      rangi:
+        specifier: 'catalog:'
+        version: 2.2.0
+
   examples/3.plugins/react-vite-math:
     dependencies:
       '@comark/react':

@@ -1,0 +1,16 @@
+{
+  "name": "comark-perf-trace",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Hierarchical perf trace for the Comark parse pipeline",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "node --experimental-strip-types index.ts",
+    "start": "node --experimental-strip-types index.ts"
+  },
+  "dependencies": {
+    "comark": "workspace:*",
+    "rangi": "catalog:"
+  }
+}
