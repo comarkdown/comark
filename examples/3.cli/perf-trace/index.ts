@@ -34,7 +34,7 @@ function createTracePerf() {
   const stack: string[] = []
   let nextId = 0
 
-  function makeSpan(name: string): { span: ComarkSpan, id: string, parent?: string, start: number } {
+  function makeSpan(name: string): { span: ComarkSpan; id: string; parent?: string; start: number } {
     const id = `${name}:${++nextId}`
     const parent = stack[stack.length - 1]
     const start = performance.now()
@@ -57,7 +57,11 @@ function createTracePerf() {
       // Non-active child of the current active span (if any).
       return makeSpan(name).span
     },
-    startActiveSpan(name: string, optionsOrFn: ComarkSpanOptions | ((span: ComarkSpan) => unknown), fn?: (span: ComarkSpan) => unknown) {
+    startActiveSpan(
+      name: string,
+      optionsOrFn: ComarkSpanOptions | ((span: ComarkSpan) => unknown),
+      fn?: (span: ComarkSpan) => unknown
+    ) {
       const run = typeof optionsOrFn === 'function' ? optionsOrFn : fn!
       const { span, id } = makeSpan(name)
       stack.push(id)

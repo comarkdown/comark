@@ -40,7 +40,11 @@ const noopSpan: ComarkSpan = { end: () => {} }
 /** No-op recorder used when no `perf` option is provided — zero overhead. */
 const noopPerf: ComarkPerf = {
   startSpan: () => noopSpan,
-  startActiveSpan: (name: string, optionsOrFn: ComarkSpanOptions | ((span: ComarkSpan) => unknown), fn?: (span: ComarkSpan) => unknown) => {
+  startActiveSpan: (
+    name: string,
+    optionsOrFn: ComarkSpanOptions | ((span: ComarkSpan) => unknown),
+    fn?: (span: ComarkSpan) => unknown
+  ) => {
     const run = typeof optionsOrFn === 'function' ? optionsOrFn : fn!
     return run(noopSpan)
   },

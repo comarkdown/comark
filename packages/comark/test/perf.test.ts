@@ -18,7 +18,6 @@ function createRecorder() {
   let nextId = 0
 
   function start(name: string, options?: ComarkSpanOptions): ComarkSpan {
-    const id = `${name}:${++nextId}`
     const parent = stack[stack.length - 1]
     let ended = false
     return {
@@ -34,7 +33,11 @@ function createRecorder() {
     startSpan(name, options) {
       return start(name, options)
     },
-    startActiveSpan(name: string, optionsOrFn: ComarkSpanOptions | ((span: ComarkSpan) => unknown), fn?: (span: ComarkSpan) => unknown) {
+    startActiveSpan(
+      name: string,
+      optionsOrFn: ComarkSpanOptions | ((span: ComarkSpan) => unknown),
+      fn?: (span: ComarkSpan) => unknown
+    ) {
       const options = typeof optionsOrFn === 'function' ? undefined : optionsOrFn
       const run = typeof optionsOrFn === 'function' ? optionsOrFn : fn!
       const id = `${name}:${++nextId}`
@@ -83,13 +86,7 @@ describe('ParserOptions.perf', () => {
     expect(names).toContain('comark:pre:frontmatter')
 
     // Completion order: children finish before parent, so comark:parse is last.
-    const order = [
-      'comark:autoclose',
-      'comark:pre:frontmatter',
-      'comark:tokenize',
-      'comark:nodes',
-      'comark:parse',
-    ]
+    const order = ['comark:autoclose', 'comark:pre:frontmatter', 'comark:tokenize', 'comark:nodes', 'comark:parse']
     const indexes = order.map((name) => names.indexOf(name))
     expect(indexes).toEqual([...indexes].sort((a, b) => a - b))
   })
