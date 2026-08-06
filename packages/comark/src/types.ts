@@ -299,6 +299,22 @@ export type ComarkParsePostState<TMeta = Record<string, any>, TFrontmatter = Rec
 }
 
 /**
+ * Minimal timing recorder contract used to instrument the parse pipeline.
+ *
+ * Structurally compatible with richer recorders (e.g. `content.perf` from
+ * `comark-content`), so the same instance can be shared across the whole
+ * content lifecycle: pass it via {@link ParserOptions.perf} and every parse
+ * phase and plugin hook records a span into it. Universal by design — no
+ * Node-specific APIs — so it works in the browser too.
+ */
+export interface ComarkPerf {
+  /** Start a span; call the returned function to end and record it. */
+  span(name: string, meta?: Record<string, unknown>): () => void
+  /** Time a sync or async function as a single span. */
+  measure<T>(name: string, fn: () => T, meta?: Record<string, unknown>): T
+}
+
+/**
  * A Comark plugin.
  *
  * `TMeta` / `TFrontmatter` are phantom type parameters that record what this
@@ -452,6 +468,19 @@ export interface ParserOptions<TPlugins extends readonly ComarkPlugin<any, any>[
    * @default []
    */
   plugins?: TPlugins
+
+  /**
+   * Timing recorder for the parse pipeline — see {@link ComarkPerf}. When
+   * provided, each parse phase (`comark:autoclose`, `comark:tokenize`,
+   * `comark:nodes`) and every plugin hook (`comark:pre:<name>`,
+   * `comark:post:<name>`) records a span into it, so bottlenecks (e.g. a slow
+   * `post` highlight hook) become visible. Pass `content.perf` from
+   * `comark-content` to get comark spans in its debug timelines, or any object
+   * implementing the {@link ComarkPerf} contract. No timing overhead when
+   * omitted.
+   * @default undefined
+   */
+  perf?: ComarkPerf
 }
 
 /**
