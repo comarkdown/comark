@@ -41,7 +41,7 @@ const noopSpan: ComarkSpan = { end: () => {} }
 const noopPerf: ComarkPerf = {
   startSpan: () => noopSpan,
   startActiveSpan: (
-    name: string,
+    _name: string,
     optionsOrFn: ComarkSpanOptions | ((span: ComarkSpan) => unknown),
     fn?: (span: ComarkSpan) => unknown
   ) => {
