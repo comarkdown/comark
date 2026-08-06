@@ -43,8 +43,7 @@ for (const pkg of frameworkPackages) {
     let hasDefault = existsSync(comarkDtsPath)
     if (hasDefault) {
       const content = readFileSync(comarkDtsPath, 'utf-8')
-      hasDefault =
-        /^export default /m.test(content) || /export\s*\{[^}]*\bdefault\b/.test(content)
+      hasDefault = /^export default /m.test(content) || /export\s*\{[^}]*\bdefault\b/.test(content)
     }
 
     const reexport =

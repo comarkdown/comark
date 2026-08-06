@@ -78,8 +78,8 @@
   "peerDependencies": {
     "beautiful-mermaid": "catalog:",
     "katex": "catalog:",
-    "shiki": "catalog:",
-    "rangi": "catalog:"
+    "rangi": "catalog:",
+    "shiki": "catalog:"
   },
   "peerDependenciesMeta": {
     "shiki": {

@@ -6,7 +6,7 @@ import math from 'comark/plugins/math'
 import shiki from 'comark/plugins/shiki'
 import { renderAnsiFromDocument } from '@comark/ansi'
 
-const plugins = [math(), highlight()]
+const plugins = [math(), shiki()]
 const parseMarkdown = createMarkdownParser({ plugins })
 
 const SAMPLE = `---

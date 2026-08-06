@@ -16,7 +16,7 @@ export interface MDCStreamOptions extends ParserOptions {
   onError?: (error: Error) => void
 }
 
-const plugins = [highlight()]
+const plugins = [shiki()]
 
 /**
  * Vue composable for streaming Comark content parsing
