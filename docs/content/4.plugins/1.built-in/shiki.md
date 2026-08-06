@@ -1,5 +1,5 @@
 ---
-title: Shiki
+title: Shiki (Highlight)
 description: Plugin for syntax highlighting code blocks using Shiki with multi-theme support.
 seo:
   title: Syntax Highlighting using Shiki
