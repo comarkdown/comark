@@ -23,6 +23,7 @@ const frameworkPackages = [
   'comark-ansi',
   'comark-nuxt',
   'comark-angular',
+  'comark-opentui',
 ]
 
 // Collect plugin names from comark/dist/plugins/ (by .js files)

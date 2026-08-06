@@ -19,6 +19,7 @@ function MarkdownContent({
   caret = false,
   data,
   className,
+  wrapper,
 }: MarkdownContentProps) {
   const parsed = use(parsePromise)
 
@@ -29,6 +30,7 @@ function MarkdownContent({
       componentsManifest={componentsManifest}
       streaming={streaming}
       className={className}
+      wrapper={wrapper}
       caret={caret}
       data={data}
     />

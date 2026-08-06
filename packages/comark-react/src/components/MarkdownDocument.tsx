@@ -7,7 +7,7 @@ import type {
 } from 'comark'
 import React, { lazy, Suspense, useMemo } from 'react'
 import { pascalCase, camelCase, resolveAttributes } from 'comark/utils'
-import { findLastTextNodeAndAppendNode, getCaret } from '../utils/caret.ts'
+import { appendCaretToLastTextNode, getCaret } from '../utils/caret.ts'
 
 /**
  * Helper to get tag from a Node
@@ -305,6 +305,17 @@ export interface MarkdownDocumentProps {
    * Additional className for the wrapper div
    */
   className?: string
+
+  /**
+   * Element wrapping the rendered nodes. Defaults to a `div`.
+   *
+   * Pass a component to render into a React host that has no `div` — terminal
+   * renderers, react-three-fiber and other custom reconcilers throw on unknown
+   * host elements — or `false` to emit the nodes bare in a fragment. A custom
+   * wrapper still receives the `comark-content` className and is free to ignore
+   * it.
+   */
+  wrapper?: React.ComponentType<{ className?: string; children?: React.ReactNode }> | false
 }
 
 /**
@@ -336,6 +347,7 @@ export const MarkdownDocument: React.FC<MarkdownDocumentProps> = ({
   caret: caretProp = false,
   data,
   className,
+  wrapper,
 }) => {
   const document = value ?? { nodes: [] }
 
@@ -346,8 +358,14 @@ export const MarkdownDocument: React.FC<MarkdownDocumentProps> = ({
     const nodes = [...(document.nodes || [])]
 
     if (streaming && caret && nodes.length > 0) {
-      const hasStreamCaret = findLastTextNodeAndAppendNode(nodes[nodes.length - 1] as ElementNode, caret)
-      if (!hasStreamCaret) {
+      // Replaced rather than mutated in place: `nodes` is only a shallow copy of
+      // the document's own array, so appending into a node would leave the caret
+      // behind in the parsed document itself.
+      const withCaret = appendCaretToLastTextNode(nodes[nodes.length - 1] as ElementNode, caret)
+
+      if (withCaret) {
+        nodes[nodes.length - 1] = withCaret
+      } else {
         nodes.push(caret)
       }
     }
@@ -367,6 +385,11 @@ export const MarkdownDocument: React.FC<MarkdownDocumentProps> = ({
       .filter((child): child is React.ReactNode => child !== null)
   }, [document, customComponents, componentsManifest, streaming, caret, data])
 
-  // Wrap in a fragment
-  return <div className={`comark-content ${className || ''}`}>{renderedNodes}</div>
+  if (wrapper === false) {
+    return <>{renderedNodes}</>
+  }
+
+  const Wrapper = (wrapper ?? 'div') as React.ElementType
+
+  return <Wrapper className={`comark-content ${className || ''}`}>{renderedNodes}</Wrapper>
 }

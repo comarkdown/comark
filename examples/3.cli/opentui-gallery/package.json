@@ -1,0 +1,26 @@
+{
+  "name": "opentui-gallery",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Every @comark/opentui component on one scrollable page",
+  "license": "MIT",
+  "author": "Comark team",
+  "type": "module",
+  "scripts": {
+    "dev": "pnpm --filter @comark/opentui build && node run.mjs gallery.tsx",
+    "smoke": "pnpm --filter @comark/opentui build && node run.mjs smoke.tsx"
+  },
+  "dependencies": {
+    "@comark/opentui": "workspace:*",
+    "@opentui/core": "^0.4.5",
+    "@opentui/react": "^0.4.5",
+    "comark": "workspace:*",
+    "react": "^19.2.7",
+    "shiki": "catalog:"
+  },
+  "devDependencies": {
+    "@types/react": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:"
+  }
+}
