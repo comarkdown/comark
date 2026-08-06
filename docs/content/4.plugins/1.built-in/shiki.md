@@ -2,7 +2,7 @@
 title: Shiki
 description: Plugin for syntax highlighting code blocks using Shiki with multi-theme support.
 seo:
-  title: Shiki Plugin
+  title: Syntax Highlighting using Shiki
 navigation:
   icon: i-lucide-code
 links:
