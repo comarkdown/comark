@@ -29,8 +29,6 @@ export const comarkLanguages: ShjLanguages = {
   markdown: comarkLanguage,
 }
 
-export { comarkLanguage }
-
 /**
  * Token types emitted by rangi.
  * Rendered with inline colors (and optional `shj-*` / `shj-syn-*` classes).
@@ -75,6 +73,12 @@ export interface RangiOptions {
    * @see https://github.com/pi0/rangi#tokenizer
    */
   languages?: Record<string, unknown>
+
+  /**
+   * Whether to add background/foreground styles to `<pre>` elements.
+   * @default false
+   */
+  preStyles?: boolean
 }
 
 export interface CodeBlockAttributes {
@@ -256,7 +260,7 @@ function buildPreStyle(light?: ShjTheme, dark?: ShjTheme, dual?: boolean): strin
  * Apply rangi syntax highlighting to every `<pre><code>` block.
  */
 export async function rangiCodeBlocks(tree: MarkdownDocument, options: RangiOptions = {}): Promise<MarkdownDocument> {
-  const { lineNumbers = false, classPrefix = 'shj', languages, theme } = options
+  const { lineNumbers = false, classPrefix = 'shj', languages, theme, preStyles = false } = options
 
   let light: ShjTheme
   let dark: ShjTheme
@@ -305,8 +309,10 @@ export async function rangiCodeBlocks(tree: MarkdownDocument, options: RangiOpti
       const classStr = userClass ? `${highlighterClass} . ${userClass}` : highlighterClass
 
       const newPreAttrs: Record<string, unknown> = { ...attrs, class: classStr }
-      const style = buildPreStyle(light, dark, dual)
-      if (style) newPreAttrs.style = style
+      if (preStyles) {
+        const style = buildPreStyle(light, dark, dual)
+        if (style) newPreAttrs.style = style
+      }
 
       // eslint-disable-next-line unicorn/no-new-array -- pre-allocated for perf
       const newCode = new Array(codeChildren.length + 2) as ElementNode

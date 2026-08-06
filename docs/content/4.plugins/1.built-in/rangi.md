@@ -139,6 +139,10 @@ Rangi ships aliases built-in (`javascript`→`js`, `typescript`→`ts`, `python`
 
 Fence info `{2-3,5}` marks lines with the `.highlight` class — same as the Shiki plugin.
 
+### Pre Styles
+
+Set `preStyles: true` to add inline background and foreground colors to `<pre>` elements based on the active theme.
+
 ---
 
 ## API
@@ -157,6 +161,7 @@ Returns a `ComarkPlugin` that enables rangi syntax highlighting.
 | [`lineNumbers`](#linenumbers) | `boolean` | `false` | Wrap each line in `<span class="line">` |
 | [`classPrefix`](#classprefix) | `string` | `'shj'` | Class prefix on the highlighted `<pre>` |
 | [`languages`](#languages) | `Record<string, grammar>` | — | Extra custom grammars, merged over the Comark ones |
+| [`preStyles`](#prestyles) | `boolean` | `false` | Add inline background/foreground styles to `<pre>` |
 
 ### `theme`
 
@@ -212,6 +217,16 @@ Pass custom grammars through to rangi (see [rangi docs](https://github.com/pi0/r
 ```typescript
 rangi({ languages: { mine: myGrammar } })
 ```
+
+### `preStyles`
+
+Add inline background and foreground color styles to `<pre>` elements based on the active theme.
+
+```typescript
+rangi({ preStyles: true })
+```
+
+**Default:** `false`
 
 ---
 

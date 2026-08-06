@@ -162,7 +162,24 @@ describe('rangi plugin', () => {
     const pre = findPre(tree.nodes)!
     expect((pre[1] as any).class).toContain('shiki')
     expect((pre[1] as any).class).toContain('shj-lang-js')
+    // Token spans still get inline colors; pre styles are opt-in
+    expect((pre[1] as any).style).toBeUndefined()
+  })
+
+  it('adds pre background/foreground styles when preStyles is true', async () => {
+    const md = '```js\nconst x = 1\n```'
+    const tree = await parseMarkdown(md, { plugins: [rangi({ preStyles: true })] })
+    const pre = findPre(tree.nodes)!
     expect((pre[1] as any).style).toBeTruthy()
+    expect((pre[1] as any).style).toContain('background-color:')
+    expect((pre[1] as any).style).toContain('color:')
+  })
+
+  it('does not add pre styles by default', async () => {
+    const md = '```js\nconst x = 1\n```'
+    const tree = await parseMarkdown(md, { plugins: [rangi()] })
+    const pre = findPre(tree.nodes)!
+    expect((pre[1] as any).style).toBeUndefined()
   })
 
   it('highlights a javascript fence into typed spans', async () => {
@@ -294,6 +311,7 @@ const x = 1
     const tree = await parseMarkdown(md, {
       plugins: [
         rangi({
+          preStyles: true,
           theme: {
             light: {
               name: 'light',
