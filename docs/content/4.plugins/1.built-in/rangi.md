@@ -2,7 +2,7 @@
 title: Rangi
 description: Lightweight syntax highlighting for code blocks using rangi.
 seo:
-  title: Rangi Plugin
+  title: Syntax Highlighting using Rangi
 navigation:
   icon: i-lucide-zap
 links:
