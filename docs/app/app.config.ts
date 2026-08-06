@@ -104,8 +104,8 @@ export default defineAppConfig({
         title: 'Plugins',
         links: [
           {
-            label: 'Syntax Highlighting',
-            to: '/plugins/built-in/syntax-highlight',
+            label: 'Shiki',
+            to: '/plugins/built-in/shiki',
           },
           {
             label: 'Math',

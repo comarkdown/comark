@@ -130,7 +130,7 @@ For syntax highlighting support, use the `highlight` plugin:
 
 ```typescript
 import { parseMarkdown } from 'comark'
-import highlight from 'comark/plugins/highlight'
+import shiki from 'comark/plugins/shiki'
 
 const content = `
 # Code Example
@@ -144,13 +144,13 @@ function hello() {
 
 // Enable syntax highlighting
 const result = await parseMarkdown(content, {
-  plugins: [highlight()]
+  plugins: [shiki()]
 })
 
 // With custom Shiki options
 const result = await parseMarkdown(content, {
   plugins: [
-    highlight({
+    shiki({
       themes: {
         light: 'github-light',
         dark: 'github-dark'
@@ -164,7 +164,7 @@ const result = await parseMarkdown(content, {
 ### Highlight Plugin Options
 
 ```typescript
-interface HighlightOptions {
+interface ShikiOptions {
   registerDefaultLanguages?: boolean  // default: true
   registerDefaultThemes?: boolean     // default: true
   themes?: {
@@ -180,11 +180,11 @@ interface HighlightOptions {
 ### Dual Theme Support
 
 ```typescript
-import highlight from 'comark/plugins/highlight'
+import shiki from 'comark/plugins/shiki'
 
 const result = await parseMarkdown(content, {
   plugins: [
-    highlight({
+    shiki({
       themes: {
         light: 'github-light',
         dark: 'github-dark'

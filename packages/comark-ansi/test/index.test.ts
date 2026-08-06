@@ -1,6 +1,6 @@
 import { afterEach, describe, it, expect, vi } from 'vitest'
 import { parseMarkdown } from 'comark'
-import highlight from 'comark/plugins/highlight'
+import shiki from 'comark/plugins/shiki'
 import githubDark from 'shiki/dist/themes/github-dark.mjs'
 import { createAnsiRenderer, createAnsiWriter, renderAnsi, renderAnsiFromDocument, writeAnsi } from '../src/index'
 
@@ -168,7 +168,7 @@ describe('renderAnsiFromDocument', () => {
   })
 
   describe('code highlight', () => {
-    const highlightPlugin = highlight({
+    const highlightPlugin = shiki({
       themes: { light: githubDark, dark: githubDark },
     })
 

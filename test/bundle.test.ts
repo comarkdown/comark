@@ -60,14 +60,14 @@ describe('package bundle size', { timeout: 60_000 }, () => {
 
     expect(report).toMatchInlineSnapshot(`
       {
-        "@comark/angular": "53.8k (60 files)",
-        "@comark/ansi": "36.5k (88 files)",
-        "@comark/html": "17.7k (48 files)",
-        "@comark/nuxt": "10.9k (48 files)",
-        "@comark/react": "42.6k (64 files)",
-        "@comark/svelte": "42.7k (72 files)",
-        "@comark/vue": "59.5k (68 files)",
-        "comark": "382k (142 files)",
+        "@comark/angular": "54.1k (64 files)",
+        "@comark/ansi": "36.8k (92 files)",
+        "@comark/html": "18.0k (52 files)",
+        "@comark/nuxt": "11.2k (52 files)",
+        "@comark/react": "43.0k (68 files)",
+        "@comark/svelte": "43.3k (76 files)",
+        "@comark/vue": "59.8k (72 files)",
+        "comark": "402k (148 files)",
       }
     `)
   })

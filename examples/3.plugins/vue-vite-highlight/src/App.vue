@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { content } from './content'
 import { Markdown } from '@comark/vue'
-import highlight from '@comark/vue/plugins/highlight'
+import shiki from '@comark/vue/plugins/shiki'
 
 // Import themes and languages directly
 import githubLight from '@shikijs/themes/github-light'
@@ -38,7 +38,7 @@ function toggleTheme() {
     <Suspense>
       <Markdown
         :plugins="[
-          highlight({
+          shiki({
             themes: {
               light: githubLight,
               dark: githubDark,

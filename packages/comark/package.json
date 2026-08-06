@@ -70,6 +70,7 @@
     "github-slugger": "catalog:",
     "hast-util-to-string": "catalog:",
     "minimark": "catalog:",
+    "rangi": "catalog:",
     "tsx": "catalog:",
     "twoslash": "catalog:",
     "vitest": "catalog:"
@@ -77,6 +78,7 @@
   "peerDependencies": {
     "beautiful-mermaid": "catalog:",
     "katex": "catalog:",
+    "rangi": "catalog:",
     "shiki": "catalog:"
   },
   "peerDependenciesMeta": {
@@ -87,6 +89,9 @@
       "optional": true
     },
     "katex": {
+      "optional": true
+    },
+    "rangi": {
       "optional": true
     }
   }

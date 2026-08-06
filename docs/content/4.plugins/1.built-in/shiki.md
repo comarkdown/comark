@@ -1,8 +1,8 @@
 ---
-title: Syntax Highlighting
+title: Shiki (Highlight)
 description: Plugin for syntax highlighting code blocks using Shiki with multi-theme support.
 seo:
-  title: Syntax Highlighting Plugin
+  title: Syntax Highlighting using Shiki
 navigation:
   icon: i-lucide-code
 links:
@@ -18,7 +18,13 @@ links:
     variant: soft
 ---
 
-The `comark/plugins/highlight` plugin provides syntax highlighting for code blocks using [Shiki](https://shiki.style/). It supports multiple themes, line highlighting, and on-demand language loading.
+The `comark/plugins/shiki` plugin provides syntax highlighting for code blocks using [Shiki](https://shiki.style/). It supports multiple themes, line highlighting, and on-demand language loading.
+
+::note
+`comark/plugins/highlight` is a **deprecated alias** of `comark/plugins/shiki` and will be removed in the next major version. Prefer `import shiki from 'comark/plugins/shiki'`.
+::
+
+For a lighter alternative (no TextMate grammars), see [`comark/plugins/rangi`](/plugins/built-in/rangi).
 
 `shiki` is a peer dependency, install it alongside Comark:
 
@@ -32,13 +38,13 @@ Import themes from `@shikijs/themes` for type safety and tree-shaking:
 
 ```typescript
 import { parseMarkdown } from 'comark'
-import highlight from 'comark/plugins/highlight'
+import shiki from 'comark/plugins/shiki'
 import githubLight from '@shikijs/themes/github-light'
 import githubDark from '@shikijs/themes/github-dark'
 
 const result = await parseMarkdown(content, {
   plugins: [
-    highlight({
+    shiki({
       themes: {
         light: githubLight,
         dark: githubDark
@@ -55,12 +61,12 @@ With framework components:
 ```vue [Vue]
 <script setup lang="ts">
 import { Markdown } from '@comark/vue'
-import highlight from '@comark/vue/plugins/highlight'
+import shiki from '@comark/vue/plugins/shiki'
 import githubLight from '@shikijs/themes/github-light'
 import githubDark from '@shikijs/themes/github-dark'
 
 const plugins = [
-  highlight({
+  shiki({
     themes: { light: githubLight, dark: githubDark }
   })
 ]
@@ -85,12 +91,12 @@ html.dark .shiki :deep(span) {
 
 ```tsx [React]
 import { Markdown } from '@comark/react'
-import highlight from '@comark/react/plugins/highlight'
+import shiki from '@comark/react/plugins/shiki'
 import githubLight from '@shikijs/themes/github-light'
 import githubDark from '@shikijs/themes/github-dark'
 
 <Markdown
-  plugins={[highlight({ themes: { light: githubLight, dark: githubDark } })]}
+  plugins={[shiki({ themes: { light: githubLight, dark: githubDark } })]}
 >
   {content}
 </Markdown>
@@ -107,7 +113,7 @@ import githubDark from '@shikijs/themes/github-dark'
 Highlight code with different themes for light and dark modes. Both palettes are embedded as CSS custom properties, so there is no flash on theme switch. See all [available themes →](https://shiki.style/themes)
 
 ```typescript
-highlight({
+shiki({
   themes: {
     light: githubLight,
     dark: githubDark
@@ -161,7 +167,7 @@ import javascript from '@shikijs/langs/javascript'
 import typescript from '@shikijs/langs/typescript'
 import python from '@shikijs/langs/python'
 
-highlight({
+shiki({
   languages: [javascript, typescript, python]
 })
 ```
@@ -177,7 +183,7 @@ Pass any [Shiki transformer](https://shiki.style/guide/transformers) via `transf
 ```typescript
 import { transformerNotationDiff } from '@shikijs/transformers'
 
-highlight({
+shiki({
   themes: { light: githubLight, dark: githubDark },
   transformers: [transformerNotationDiff()]
 })
@@ -193,7 +199,7 @@ Set `preStyles: true` to add inline background and foreground colors to `<pre>` 
 
 ## API
 
-### `highlight(options?)`
+### `shiki(options?)`
 
 Returns a `ComarkPlugin` that enables Shiki syntax highlighting.
 
@@ -224,7 +230,7 @@ Theme configuration for light and dark modes. Import from `@shikijs/themes`.
 import githubLight from '@shikijs/themes/github-light'
 import githubDark from '@shikijs/themes/github-dark'
 
-highlight({
+shiki({
   themes: {
     light: githubLight,
     dark: githubDark
@@ -242,7 +248,7 @@ Languages to preload. Import from `@shikijs/langs`. Without this option, languag
 import javascript from '@shikijs/langs/javascript'
 import typescript from '@shikijs/langs/typescript'
 
-highlight({
+shiki({
   languages: [javascript, typescript]
 })
 ```
@@ -256,7 +262,7 @@ An array of [Shiki transformers](https://shiki.style/guide/transformers) applied
 ```typescript
 import { transformerNotationDiff, transformerNotationHighlight } from '@shikijs/transformers'
 
-highlight({
+shiki({
   transformers: [
     transformerNotationDiff(),       // [!code ++] / [!code --]
     transformerNotationHighlight(),  // [!code highlight]
@@ -271,7 +277,7 @@ highlight({
 Add inline background and foreground color styles to `<pre>` elements based on the active theme.
 
 ```typescript
-highlight({ preStyles: true })
+shiki({ preStyles: true })
 ```
 
 **Default:** `false`
@@ -281,7 +287,7 @@ highlight({ preStyles: true })
 When `true`, these languages are pre-registered: `vue`, `tsx`, `svelte`, `astro`, `typescript`, `javascript`, `mdc`, `bash`, `json`, `yaml`. Set to `false` to control the language set entirely via `languages`.
 
 ```typescript
-highlight({
+shiki({
   registerDefaultLanguages: false,
   languages: [javascript, typescript]
 })
@@ -294,7 +300,7 @@ highlight({
 When `true`, `material-theme-lighter` (light) and `material-theme-palenight` (dark) are pre-registered. Set to `false` when using only custom themes.
 
 ```typescript
-highlight({
+shiki({
   registerDefaultThemes: false,
   themes: { light: githubLight, dark: githubDark }
 })
@@ -310,12 +316,12 @@ highlight({
 
 ```typescript
 import { parseMarkdown } from 'comark'
-import highlight from 'comark/plugins/highlight'
+import shiki from 'comark/plugins/shiki'
 import githubLight from '@shikijs/themes/github-light'
 import githubDark from '@shikijs/themes/github-dark'
 
 const result = await parseMarkdown(content, {
-  plugins: [highlight({ themes: { light: githubLight, dark: githubDark } })]
+  plugins: [shiki({ themes: { light: githubLight, dark: githubDark } })]
 })
 ```
 
@@ -328,7 +334,7 @@ import javascript from '@shikijs/langs/javascript'
 import typescript from '@shikijs/langs/typescript'
 import githubDark from '@shikijs/themes/github-dark'
 
-highlight({
+shiki({
   registerDefaultLanguages: false,
   registerDefaultThemes: false,
   languages: [javascript, typescript],
@@ -345,7 +351,7 @@ import {
   transformerNotationFocus,
 } from '@shikijs/transformers'
 
-highlight({
+shiki({
   themes: { light: githubLight, dark: githubDark },
   transformers: [
     transformerNotationDiff(),       // [!code ++] / [!code --]

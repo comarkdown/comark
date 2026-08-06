@@ -113,8 +113,12 @@ Optional plugins you register via `plugins: [...]`.
   Extract content summaries using `<!-- more -->` delimiter
   ::
 
-  ::card{icon="i-lucide-code" title="Syntax Highlighting" to="/plugins/built-in/syntax-highlight"}
+  ::card{icon="i-lucide-code" title="Shiki" to="/plugins/built-in/shiki"}
   Beautiful code syntax highlighting using Shiki with multi-theme support
+  ::
+
+  ::card{icon="i-lucide-zap" title="Rangi" to="/plugins/built-in/rangi"}
+  Lightweight highlighting via rangi (~13kB all-in, dual themes)
   ::
 
   ::card{icon="i-lucide-list" title="Table of Contents" to="/plugins/built-in/toc"}

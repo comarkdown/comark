@@ -60,13 +60,21 @@ packages/comark/
 │   │   ├── components.ts     # Block/inline components + spans (`::name`, `:name`, `[text]`)
 │   │   ├── attributes.ts     # Inline attributes (`{props}` after tokens)
 │   │   ├── emoji.ts          # Emoji shortcodes
-│   │   ├── highlight.ts      # Syntax highlighting via Shiki (peer: shiki)
+│   │   ├── shiki.ts          # Syntax highlighting via Shiki (peer: shiki)
+│   │   ├── highlight.ts      # Deprecated alias → shiki (remove next major)
+│   │   ├── rangi.ts          # Lightweight highlighting via rangi (peer: rangi)
 │   │   ├── math.ts           # LaTeX math via KaTeX (peer: katex)
 │   │   ├── mermaid.ts        # Mermaid diagrams (peer: beautiful-mermaid)
 │   │   ├── security.ts       # XSS/security sanitization
 │   │   ├── summary.ts        # Summary extraction
 │   │   ├── task-list.ts      # GFM task lists
 │   │   └── toc.ts            # Table of contents
+│   ├── utils/                # Shared utilities (comark/utils entry point)
+│   │   ├── index.ts          # textContent(), visit(), visitAsync(), string/object utils
+│   │   ├── helpers.ts        # defineComarkPlugin(), dedupePlugins()
+│   │   ├── caret.ts          # Caret utilities for streaming
+│   │   ├── comark.tmLanguage.ts    # Comark TextMate grammar (Shiki plugin)
+│   │   └── comark.rangiLanguage.ts # Comark rangi grammar (rangi plugin)
 │   └── internal/             # Internal implementation (not exported)
 │       ├── front-matter.ts
 │       ├── parse/            # Parsing pipeline
@@ -80,7 +88,8 @@ packages/comark/
 
 | Peer | Required by |
 |------|-------------|
-| `shiki` | `comark/plugins/highlight` |
+| `shiki` | `comark/plugins/shiki` |
+| `rangi` | `comark/plugins/rangi` |
 | `katex` | `comark/plugins/math` |
 | `beautiful-mermaid` | `comark/plugins/mermaid` |
 
@@ -104,12 +113,12 @@ Located at `packages/comark-html/`. Framework-free HTML string rendering.
 
 ```typescript
 import { createHtmlRenderer, renderHtml, renderHtmlFromDocument } from '@comark/html'
-import highlight from '@comark/html/plugins/highlight'
+import shiki from '@comark/html/plugins/shiki'
 import math, { Math } from '@comark/html/plugins/math'
 
 // Flat options — ParserOptions & RendererOptions merged at top level
 const renderHtml = createHtmlRenderer({
-  plugins: [highlight({ themes: { light: 'github-light', dark: 'github-dark' } })],
+  plugins: [shiki({ themes: { light: 'github-light', dark: 'github-dark' } })],
   components: {
     Math,
     alert: async ([, attrs, ...children], { render }) =>
@@ -140,12 +149,12 @@ Located at `packages/comark-ansi/`. ANSI terminal renderer.
 
 ```typescript
 import { createAnsiRenderer, createAnsiWriter, renderAnsi, renderAnsiFromDocument, writeAnsi } from '@comark/ansi'
-import highlight from '@comark/ansi/plugins/highlight'
+import shiki from '@comark/ansi/plugins/shiki'
 import math, { Math } from '@comark/ansi/plugins/math'
 
 // Flat options — ParserOptions & AnsiRendererOptions merged at top level
 const writeAnsi = createAnsiWriter({
-  plugins: [highlight(), math()],
+  plugins: [shiki(), math()],
   components: { Math },
   width: 120,                      // terminal width
   colors: true,                    // emit ANSI escape codes
@@ -379,7 +388,9 @@ import type { MarkdownDocument, Node, ElementNode, TextNode } from 'comark'
 import { textContent, visit } from 'comark/utils'
 
 // Core plugins — use when calling parseMarkdown() directly (framework-agnostic)
-import highlight from 'comark/plugins/highlight'
+import shiki from 'comark/plugins/shiki'
+import rangi, { comarkLanguage, comarkLanguages } from 'comark/plugins/rangi'
+// import highlight from 'comark/plugins/highlight' // deprecated alias → shiki
 import math from 'comark/plugins/math'
 import mermaid from 'comark/plugins/mermaid'
 import emoji from 'comark/plugins/emoji'
@@ -396,18 +407,18 @@ import { markdownItAttributes } from 'comark/plugins/attributes'
 
 // NOTE: All framework packages re-export every core plugin via their own subpath.
 // Prefer the framework-specific path when using a framework renderer:
-//   @comark/vue/plugins/highlight, @comark/react/plugins/highlight, etc.
+//   @comark/vue/plugins/shiki, @comark/react/plugins/shiki, etc.
 // Use comark/plugins/* only when calling parseMarkdown() without a framework renderer.
 
 // HTML rendering — parse + render to HTML string
 import { createHtmlRenderer, renderHtml, renderHtmlFromDocument } from '@comark/html'
-import highlight from '@comark/html/plugins/highlight'
+import shiki from '@comark/html/plugins/shiki'
 import math, { Math } from '@comark/html/plugins/math'
 import mermaid, { Mermaid } from '@comark/html/plugins/mermaid'
 
 // ANSI terminal rendering — parse + render to styled terminal string
 import { createAnsiRenderer, createAnsiWriter, renderAnsi, renderAnsiFromDocument, writeAnsi } from '@comark/ansi'
-import highlight from '@comark/ansi/plugins/highlight'
+import shiki from '@comark/ansi/plugins/shiki'
 import math from '@comark/ansi/plugins/math'
 
 // Vue — renderer + plugin wrappers (plugin fn + Vue component)

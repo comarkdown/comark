@@ -19,10 +19,10 @@ Instead of the typical `gray-matter` + `remark` + `rehype` pipeline, we use Coma
 ```ts
 // server/api/posts/[slug].get.ts
 import { parseMarkdown } from 'comark'
-import highlight from 'comark/plugins/highlight'
+import shiki from 'comark/plugins/shiki'
 
 const tree = await parseMarkdown(content, {
-  plugins: [highlight()],
+  plugins: [shiki()],
 })
 
 return { slug, title, description, pubDate, tags, tree }

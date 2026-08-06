@@ -2,7 +2,7 @@
 import { ref, shallowRef, onMounted } from 'vue'
 import { content } from './content'
 import { Markdown } from '@comark/vue'
-import highlight from '@comark/vue/plugins/highlight'
+import shiki from '@comark/vue/plugins/shiki'
 import { createTransformerFactory, rendererRich } from '@shikijs/twoslash/core'
 import { createTwoslashFromCDN } from 'twoslash-cdn'
 import githubLight from '@shikijs/themes/github-light'
@@ -25,7 +25,7 @@ onMounted(async () => {
   })
 
   plugins.value = [
-    highlight({
+    shiki({
       themes: { light: githubLight, dark: githubDark },
       transformers: [transformer],
     }),

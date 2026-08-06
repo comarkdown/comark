@@ -4,7 +4,7 @@ import MarkdownExit from 'markdown-exit'
 import { markdownItComponents } from 'comark/plugins/components'
 import { markdownItAttributes } from 'comark/plugins/attributes'
 import { createMarkdownParser } from 'comark'
-import highlight, { getHighlighter } from '../packages/comark/src/plugins/highlight'
+import shiki, { getHighlighter } from '../packages/comark/src/plugins/shiki'
 import { codeToHast } from 'shiki/core'
 
 const short = `
@@ -40,7 +40,7 @@ interface ParserOptions {
 
 const tree = await parseMarkdown(markdown, {
   autoClose: true,
-  plugins: [highlight()],
+  plugins: [shiki()],
 })
 \`\`\`
 
@@ -49,12 +49,12 @@ const tree = await parseMarkdown(markdown, {
 \`\`\`vue
 <script setup>
 import { Markdown } from '@comark/vue'
-import highlight from '@comark/vue/plugins/highlight'
+import shiki from '@comark/vue/plugins/shiki'
 </script>
 
 <template>
   <Suspense>
-    <Markdown :plugins="[highlight()]">{{ content }}</Markdown>
+    <Markdown :plugins="[shiki()]">{{ content }}</Markdown>
   </Suspense>
 </template>
 \`\`\`
@@ -103,12 +103,12 @@ const markdownExit = new MarkdownExit({ html: true, linkify: true })
 
 // comark: baseline vs highlight plugin
 const comark = createMarkdownParser()
-const comarkHl = createMarkdownParser({ plugins: [highlight()] })
+const comarkHl = createMarkdownParser({ plugins: [shiki()] })
 
 // Pre-warm shiki so we benchmark steady-state, not cold-start
 const shiki = await getHighlighter()
 
-// Warm up comark highlight to ensure shiki languages are loaded
+// Warm up comark shiki to ensure shiki languages are loaded
 await comarkHl(medium)
 
 // Helper: extract fence tokens from markdown-it/exit and highlight them with shiki
