@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.6.1](https://github.com/comarkdown/comark/compare/@comark/ansi@0.6.0...@comark/ansi@0.6.1) (2026-08-06)
+
+### Features
+
+* add rangi plugin + rename highlight to shiki ([#332](https://github.com/comarkdown/comark/issues/332)) ([bb015e4](https://github.com/comarkdown/comark/commit/bb015e485cbeb10ccd16c54dae4262864b9cb59c))
+
 ## [0.6.0](https://github.com/comarkdown/comark/compare/@comark/ansi@0.5.1...@comark/ansi@0.6.0) (2026-08-04)
 
 ### Features
