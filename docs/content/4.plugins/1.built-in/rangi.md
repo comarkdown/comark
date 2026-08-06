@@ -113,10 +113,6 @@ rangi({ theme: { light: githubLight, dark: githubDark } })
 Comark ships its own rangi grammar, registered automatically for the `comark`, `mdc`, `md` and `markdown` fence languages. It is built on [rangi's official markdown grammar](https://github.com/pi0/rangi/blob/main/src/languages/md.ts) and adds the Comark syntax on top:
 
 ````comark
-
-```comark
-const a= "DsD"
-```
 ---
 title: Frontmatter is highlighted as YAML
 ---
