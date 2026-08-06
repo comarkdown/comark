@@ -121,6 +121,6 @@ rangi({
 ## Learn More
 
 - [Rangi Plugin Documentation](https://comark.dev/plugins/built-in/rangi)
-- [Shiki Plugin](https://comark.dev/plugins/built-in/syntax-highlight)
+- [Shiki Plugin](https://comark.dev/plugins/built-in/shiki)
 - [rangi](https://github.com/pi0/rangi)
 - [Comark Documentation](https://comark.dev)

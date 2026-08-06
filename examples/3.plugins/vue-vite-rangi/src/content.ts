@@ -2,7 +2,7 @@ export const content = `# Rangi Highlight Examples
 
 The \`rangi\` plugin provides lightweight syntax highlighting using [rangi](https://github.com/pi0/rangi) — tiny, zero-dependency, fully synchronous, with built-in light/dark themes.
 
-Prefer this when bundle size and cold-start matter. For transformers or Twoslash, use the [Shiki plugin](https://comark.dev/plugins/built-in/syntax-highlight) instead.
+Prefer this when bundle size and cold-start matter. For transformers or Twoslash, use the [Shiki plugin](https://comark.dev/plugins/built-in/shiki) instead.
 
 ## JavaScript
 

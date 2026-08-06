@@ -157,6 +157,6 @@ import bash from '@shikijs/langs/bash'
 
 ## Learn More
 
-- [Highlight Plugin Documentation](https://comark.dev/plugins/built-in/syntax-highlight)
+- [Shiki Plugin Documentation](https://comark.dev/plugins/built-in/shiki)
 - [Shiki Documentation](https://shiki.style/)
 - [Comark Documentation](https://comark.dev)

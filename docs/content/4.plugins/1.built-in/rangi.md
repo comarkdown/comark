@@ -13,7 +13,7 @@ links:
     variant: soft
   - label: Shiki
     icon: i-lucide-code
-    to: /plugins/built-in/syntax-highlight
+    to: /plugins/built-in/shiki
     color: neutral
     variant: soft
   - label: rangi
@@ -32,7 +32,7 @@ npm install rangi
 ```
 
 ::tip
-Use [`comark/plugins/shiki`](/plugins/built-in/syntax-highlight) when you need transformers, Twoslash, or the full VS Code grammar set. Use `rangi` for a faster, smaller highlighter with built-in light/dark themes.
+Use [`comark/plugins/shiki`](/plugins/built-in/shiki) when you need transformers, Twoslash, or the full VS Code grammar set. Use `rangi` for a faster, smaller highlighter with built-in light/dark themes.
 ::
 
 ## Usage
@@ -112,8 +112,11 @@ rangi({ theme: { light: githubLight, dark: githubDark } })
 
 Comark ships its own rangi grammar, registered automatically for the `comark`, `mdc`, `md` and `markdown` fence languages. It is built on [rangi's official markdown grammar](https://github.com/pi0/rangi/blob/main/src/languages/md.ts) and adds the Comark syntax on top:
 
-````md
+````comark
+
 ```comark
+const a= "DsD"
+```
 ---
 title: Frontmatter is highlighted as YAML
 ---
@@ -127,7 +130,6 @@ and a {{ user.name || Anonymous }} binding.
 #footer
 Named slot body
 ::
-```
 ````
 
 
