@@ -1,6 +1,6 @@
 {
   "name": "@comark/nuxt",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "Nuxt module for Comark. Render Markdown with components at runtime, with auto-imported components and streaming support for AI output.",
   "keywords": [
     "ai",
