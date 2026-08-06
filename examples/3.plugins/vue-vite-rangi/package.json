@@ -1,5 +1,5 @@
 {
-  "name": "comark-vue-vite-speed-highlight",
+  "name": "comark-vue-vite-rangi",
   "private": true,
   "type": "module",
   "scripts": {
@@ -9,8 +9,8 @@
   },
   "dependencies": {
     "@comark/vue": "workspace:*",
-    "@speed-highlight/core": "catalog:",
     "comark": "workspace:*",
+    "rangi": "catalog:",
     "vue": "catalog:"
   },
   "devDependencies": {

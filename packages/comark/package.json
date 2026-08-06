@@ -66,32 +66,32 @@
   "devDependencies": {
     "@json-render/core": "catalog:",
     "@shikijs/twoslash": "catalog:",
-    "@speed-highlight/core": "catalog:",
     "@types/markdown-it": "catalog:",
     "github-slugger": "catalog:",
     "hast-util-to-string": "catalog:",
     "minimark": "catalog:",
+    "rangi": "catalog:",
     "tsx": "catalog:",
     "twoslash": "catalog:",
     "vitest": "catalog:"
   },
   "peerDependencies": {
-    "@speed-highlight/core": "catalog:",
     "beautiful-mermaid": "catalog:",
     "katex": "catalog:",
-    "shiki": "catalog:"
+    "shiki": "catalog:",
+    "rangi": "catalog:"
   },
   "peerDependenciesMeta": {
     "shiki": {
-      "optional": true
-    },
-    "@speed-highlight/core": {
       "optional": true
     },
     "beautiful-mermaid": {
       "optional": true
     },
     "katex": {
+      "optional": true
+    },
+    "rangi": {
       "optional": true
     }
   }

@@ -117,8 +117,8 @@ Optional plugins you register via `plugins: [...]`.
   Beautiful code syntax highlighting using Shiki with multi-theme support
   ::
 
-  ::card{icon="i-lucide-zap" title="Speed Highlight" to="/plugins/built-in/speed-highlight"}
-  Lightweight class-based highlighting via @speed-highlight/core (~2kB)
+  ::card{icon="i-lucide-zap" title="Rangi" to="/plugins/built-in/rangi"}
+  Lightweight highlighting via rangi (~13kB all-in, dual themes)
   ::
 
   ::card{icon="i-lucide-list" title="Table of Contents" to="/plugins/built-in/toc"}

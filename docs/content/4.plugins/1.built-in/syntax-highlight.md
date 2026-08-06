@@ -24,7 +24,7 @@ The `comark/plugins/shiki` plugin provides syntax highlighting for code blocks u
 `comark/plugins/highlight` is a **deprecated alias** of `comark/plugins/shiki` and will be removed in the next major version. Prefer `import shiki from 'comark/plugins/shiki'`.
 ::
 
-For a lighter alternative based on class tokens (no TextMate grammars), see [`comark/plugins/speed-highlight`](/plugins/built-in/speed-highlight).
+For a lighter alternative (no TextMate grammars), see [`comark/plugins/rangi`](/plugins/built-in/rangi).
 
 `shiki` is a peer dependency, install it alongside Comark:
 

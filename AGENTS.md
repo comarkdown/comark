@@ -62,7 +62,7 @@ packages/comark/
 │   │   ├── emoji.ts          # Emoji shortcodes
 │   │   ├── shiki.ts          # Syntax highlighting via Shiki (peer: shiki)
 │   │   ├── highlight.ts      # Deprecated alias → shiki (remove next major)
-│   │   ├── speed-highlight.ts # Lightweight highlighting via speed-highlight (peer: @speed-highlight/core)
+│   │   ├── rangi.ts          # Lightweight highlighting via rangi (peer: rangi)
 │   │   ├── math.ts           # LaTeX math via KaTeX (peer: katex)
 │   │   ├── mermaid.ts        # Mermaid diagrams (peer: beautiful-mermaid)
 │   │   ├── security.ts       # XSS/security sanitization
@@ -83,7 +83,7 @@ packages/comark/
 | Peer | Required by |
 |------|-------------|
 | `shiki` | `comark/plugins/shiki` |
-| `@speed-highlight/core` | `comark/plugins/speed-highlight` |
+| `rangi` | `comark/plugins/rangi` |
 | `katex` | `comark/plugins/math` |
 | `beautiful-mermaid` | `comark/plugins/mermaid` |
 
@@ -383,7 +383,7 @@ import { textContent, visit } from 'comark/utils'
 
 // Core plugins — use when calling parseMarkdown() directly (framework-agnostic)
 import shiki from 'comark/plugins/shiki'
-import speedHighlight from 'comark/plugins/speed-highlight'
+import rangi from 'comark/plugins/rangi'
 // import highlight from 'comark/plugins/highlight' // deprecated alias → shiki
 import math from 'comark/plugins/math'
 import mermaid from 'comark/plugins/mermaid'
