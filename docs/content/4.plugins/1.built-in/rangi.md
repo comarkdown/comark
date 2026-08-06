@@ -32,7 +32,7 @@ npm install rangi
 ```
 
 ::tip
-Use [`comark/plugins/shiki`](/plugins/built-in/syntax-highlight) when you need dual CSS-variable themes with transformers, Twoslash, or the full VS Code grammar set. Use `rangi` for a faster, smaller highlighter with built-in light/dark themes.
+Use [`comark/plugins/shiki`](/plugins/built-in/syntax-highlight) when you need transformers, Twoslash, or the full VS Code grammar set. Use `rangi` for a faster, smaller highlighter with built-in light/dark themes.
 ::
 
 ## Usage
@@ -130,24 +130,6 @@ Named slot body
 ```
 ````
 
-Covered on top of standard Markdown: YAML frontmatter, block components (`::name`), YAML props blocks, inline components (`:name`), spans (`[text]{attrs}`), inline attributes (`{.class #id key=value}`), bindings (`{{ value || default }}`), named slots (`#slot`), alerts (`> [!NOTE]`), task lists and HTML comments.
-
-Because Comark is a superset of Markdown, `md` and `markdown` fences use it too. Pass your own grammar to opt out:
-
-```typescript
-import { md } from 'rangi/languages'
-
-rangi({ languages: { md, markdown: md } })
-```
-
-The grammar is also exported on its own:
-
-```typescript
-import { comarkLanguage, comarkLanguages } from 'comark/plugins/rangi'
-import { codeToHtml } from 'rangi'
-
-codeToHtml(source, { lang: 'comark', languages: comarkLanguages })
-```
 
 ### Language aliases
 
@@ -164,26 +146,6 @@ Fence info `{2-3,5}` marks lines with the `.highlight` class — same as the Shi
 ### `rangi(options?)`
 
 Returns a `ComarkPlugin` that enables rangi syntax highlighting.
-
-### `rangiCodeBlocks(tree, options?)`
-
-Apply highlighting to an existing `MarkdownDocument`.
-
-### `resolveRangiLanguage(language)`
-
-Normalize a fence language string (`plain` when missing/empty).
-
-### `tokenizeCode(code, language, languages?)`
-
-Low-level helper wrapping `rangi`'s `tokenize`, with `comarkLanguages` registered.
-
-### `comarkLanguage`
-
-The Comark `ShjLanguageDefinition`, for use with `rangi` directly.
-
-### `comarkLanguages`
-
-The Comark grammar keyed by every alias it answers to — `comark`, `mdc`, `md`, `markdown`.
 
 ---
 
