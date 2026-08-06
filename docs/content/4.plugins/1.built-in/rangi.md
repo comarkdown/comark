@@ -1,5 +1,5 @@
 ---
-title: Rangi
+title: Rangi (Highlight)
 description: Lightweight syntax highlighting for code blocks using rangi.
 seo:
   title: Syntax Highlighting using Rangi
