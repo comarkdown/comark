@@ -1,6 +1,6 @@
 {
   "name": "@comark/react",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "React renderer for Comark. Render Markdown with components at runtime, with streaming support for AI output. Works with Next.js and Server Components.",
   "keywords": [
     "ai",
