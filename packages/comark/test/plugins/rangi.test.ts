@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { parseMarkdown } from '../../src/parse'
 import { renderMarkdown } from '../../src/render'
-import rangi, { rangiCodeBlocks, resolveRangiLanguage, tokenizeCode } from '../../src/plugins/rangi'
+import rangi, { comarkLanguages, rangiCodeBlocks, resolveRangiLanguage, tokenizeCode } from '../../src/plugins/rangi'
 import type { ElementNode, MarkdownDocument, Node } from '../../src/types'
 
 function findPre(nodes: Node[]): ElementNode | undefined {
@@ -51,6 +51,110 @@ describe('tokenizeCode', () => {
   })
 })
 
+describe('comark language', () => {
+  const typesOf = (code: string, lang = 'comark') => {
+    const map = new Map<string, string>()
+    for (const token of tokenizeCode(code, lang)) {
+      if (token.type) map.set(token.text, token.type)
+    }
+    return map
+  }
+
+  it('is registered under every comark/markdown alias', () => {
+    expect(Object.keys(comarkLanguages).sort()).toEqual(['comark', 'markdown', 'md', 'mdc'])
+    for (const lang of ['comark', 'mdc', 'md', 'markdown']) {
+      expect(typesOf('::alert\nhi\n::', lang).get('alert')).toBe('class')
+    }
+  })
+
+  it('never loses or reorders source text', () => {
+    const code = '---\ntitle: x\n---\n\n# H{#id}\n\n::alert{type="a"}\n:icon[x]\n::\n\n```js\nconst a = 1\n```\n'
+    expect(
+      tokenizeCode(code, 'comark')
+        .map((t) => t.text)
+        .join('')
+    ).toBe(code)
+  })
+
+  it('highlights block components, their attributes and their terminator', () => {
+    const types = typesOf('::alert{type="warning" .rounded}\nbody\n::')
+    expect(types.get('::')).toBe('oper')
+    expect(types.get('alert')).toBe('class')
+    expect(types.get('type')).toBe('var')
+    expect(types.get('"warning"')).toBe('str')
+    expect(types.get('.rounded')).toBe('class')
+  })
+
+  it('highlights inline components and spans', () => {
+    const inline = typesOf('Text :icon{name="check"} here.')
+    expect(inline.get('icon')).toBe('class')
+    expect(inline.get('name')).toBe('var')
+
+    const span = typesOf('A [text]{.accent} span.')
+    expect(span.get('[text]')).toBe('oper')
+    expect(span.get('.accent')).toBe('class')
+  })
+
+  it('highlights bindings with their default operator', () => {
+    const types = typesOf('{{ user.name || Anonymous }}')
+    expect(types.get('{{')).toBe('oper')
+    expect(types.get(' user.name ')).toBe('var')
+    expect(types.get('||')).toBe('oper')
+    expect(types.get(' Anonymous ')).toBe('str')
+  })
+
+  it('highlights frontmatter as yaml, but only at the top of the document', () => {
+    const types = typesOf('---\ntitle: Hello\n---\n\nbody\n')
+    expect(types.get('---')).toBe('oper')
+    expect(types.get('title')).toBe('var')
+
+    // A `---` further down is a thematic break, not frontmatter
+    expect(typesOf('body\n\n---\n\nmore').get('---')).toBe('cmnt')
+  })
+
+  it('highlights yaml props inside a block component', () => {
+    const types = typesOf('::card\n---\ntitle: x\n---\n::')
+    expect(types.get('---')).toBe('oper')
+    expect(types.get('title')).toBe('var')
+  })
+
+  it('highlights headings with attributes, alerts, slots and task lists', () => {
+    expect(typesOf('# Title{#slug}').get('#slug')).toBe('class')
+    expect(typesOf('> [!NOTE]').get('[!NOTE]')).toBe('kwd')
+    expect(typesOf('::card\n#footer\nbody\n::').get('#footer')).toBe('var')
+    expect(typesOf('- [x] done').get('[x]')).toBe('bool')
+  })
+
+  it('keeps rangi markdown rules for standard syntax', () => {
+    const types = typesOf('# Heading\n\n**bold** _em_ `code` ~~del~~ [link](/a)')
+    expect(types.get('# Heading')).toBe('section')
+    expect(types.get('**bold**')).toBe('class')
+    expect(types.get('_em_')).toBe('kwd')
+    expect(types.get('`code`')).toBe('str')
+    expect(types.get('~~del~~')).toBe('var')
+    expect(types.get('[link]')).toBe('oper')
+  })
+
+  it('highlights fenced code with the fenced language', () => {
+    const types = typesOf('```js\nconst x = 1\n```')
+    expect(types.get('```js')).toBe('kwd')
+    expect(types.get('const')).toBe('kwd')
+    expect(types.get('1')).toBe('num')
+  })
+
+  it('leaves colons that are not components alone', () => {
+    const code = 'A ratio of 16:9, a time of 1:30 and http://x.dev.'
+    const tokens = tokenizeCode(code, 'comark')
+    expect(tokens.every((t) => t.type !== 'class')).toBe(true)
+  })
+
+  it('lets a custom grammar override the comark default', () => {
+    const tokens = tokenizeCode('::alert\nhi\n::', 'md', { md: [[/hi/g, 'num']] })
+    expect(tokens.find((t) => t.text === 'hi')?.type).toBe('num')
+    expect(tokens.some((t) => t.text === 'alert')).toBe(false)
+  })
+})
+
 describe('rangi plugin', () => {
   it('applies default dual theme inline colors when theme is omitted', async () => {
     const md = '```js\nconst x = 1\n```'
@@ -86,6 +190,20 @@ describe('rangi plugin', () => {
     })
     expect(hasTokenSpan).toBe(true)
     expect(textOf(pre!)).toBe('const x = 1')
+  })
+
+  it('highlights a comark fence with the comark grammar', async () => {
+    const md = '````comark\n::alert{type="info"}\nBody\n::\n````'
+    const tree = await parseMarkdown(md, { plugins: [rangi()] })
+    const pre = findPre(tree.nodes)!
+    expect((pre[1] as any).class).toContain('shj-lang-comark')
+    expect(textOf(pre)).toBe('::alert{type="info"}\nBody\n::')
+
+    const code = pre[2] as ElementNode
+    const hasComponentName = code
+      .slice(2)
+      .some((n) => Array.isArray(n) && n[2] === 'alert' && String((n[1] as any)?.class).includes('shj-class'))
+    expect(hasComponentName).toBe(true)
   })
 
   it('resolves language aliases (typescript)', async () => {

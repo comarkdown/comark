@@ -108,6 +108,47 @@ rangi({ theme: github })
 rangi({ theme: { light: githubLight, dark: githubDark } })
 ```
 
+### Comark language
+
+Comark ships its own rangi grammar, registered automatically for the `comark`, `mdc`, `md` and `markdown` fence languages. It is built on [rangi's official markdown grammar](https://github.com/pi0/rangi/blob/main/src/languages/md.ts) and adds the Comark syntax on top:
+
+````md
+```comark
+---
+title: Frontmatter is highlighted as YAML
+---
+
+# Heading{#slug .lead}
+
+::alert{type="warning" .rounded}
+A :icon{name="lucide:check"} inline component, a [span]{.accent},
+and a {{ user.name || Anonymous }} binding.
+
+#footer
+Named slot body
+::
+```
+````
+
+Covered on top of standard Markdown: YAML frontmatter, block components (`::name`), YAML props blocks, inline components (`:name`), spans (`[text]{attrs}`), inline attributes (`{.class #id key=value}`), bindings (`{{ value || default }}`), named slots (`#slot`), alerts (`> [!NOTE]`), task lists and HTML comments.
+
+Because Comark is a superset of Markdown, `md` and `markdown` fences use it too. Pass your own grammar to opt out:
+
+```typescript
+import { md } from 'rangi/languages'
+
+rangi({ languages: { md, markdown: md } })
+```
+
+The grammar is also exported on its own:
+
+```typescript
+import { comarkLanguage, comarkLanguages } from 'comark/plugins/rangi'
+import { codeToHtml } from 'rangi'
+
+codeToHtml(source, { lang: 'comark', languages: comarkLanguages })
+```
+
 ### Language aliases
 
 Rangi ships aliases built-in (`javascript`→`js`, `typescript`→`ts`, `python`→`py`, `yml`→`yaml`, …). Comark passes the fence info string straight through. Unknown languages fall back to plain text (no throw).
@@ -134,7 +175,15 @@ Normalize a fence language string (`plain` when missing/empty).
 
 ### `tokenizeCode(code, language, languages?)`
 
-Low-level helper wrapping `rangi`'s `tokenize`.
+Low-level helper wrapping `rangi`'s `tokenize`, with `comarkLanguages` registered.
+
+### `comarkLanguage`
+
+The Comark `ShjLanguageDefinition`, for use with `rangi` directly.
+
+### `comarkLanguages`
+
+The Comark grammar keyed by every alias it answers to — `comark`, `mdc`, `md`, `markdown`.
 
 ---
 
@@ -145,7 +194,7 @@ Low-level helper wrapping `rangi`'s `tokenize`.
 | [`theme`](#theme) | `ShjTheme \| { light, dark }` | rangi default pair | Inline colors |
 | [`lineNumbers`](#linenumbers) | `boolean` | `false` | Wrap each line in `<span class="line">` |
 | [`classPrefix`](#classprefix) | `string` | `'shj'` | Class prefix on the highlighted `<pre>` |
-| [`languages`](#languages) | `Record<string, grammar>` | — | Extra custom grammars for `tokenize` |
+| [`languages`](#languages) | `Record<string, grammar>` | — | Extra custom grammars, merged over the Comark ones |
 
 ### `theme`
 
@@ -196,10 +245,9 @@ rangi({ classPrefix: 'code' })
 
 ### `languages`
 
-Pass custom grammars through to rangi (see [rangi docs](https://github.com/pi0/rangi)):
+Pass custom grammars through to rangi (see [rangi docs](https://github.com/pi0/rangi)). They are merged over the built-in [Comark grammar](#comark-language), so a key such as `md` overrides it:
 
 ```typescript
-import { codeToHtml } from 'rangi' // not needed for the plugin
 rangi({ languages: { mine: myGrammar } })
 ```
 
@@ -276,6 +324,6 @@ html.dark pre.shj {
 
 ## Supported languages
 
-46 languages including `js`/`javascript`, `ts`/`typescript`, `tsx`, `jsx`, `py`/`python`, `rs`/`rust`, `go`, `vue`, `svelte`, `astro`, `css`, `html`, `json`, `yaml`/`yml`, `bash`/`sh`/`shell`, and more.
+46 languages including `js`/`javascript`, `ts`/`typescript`, `tsx`, `jsx`, `py`/`python`, `rs`/`rust`, `go`, `vue`, `svelte`, `astro`, `css`, `html`, `json`, `yaml`/`yml`, `bash`/`sh`/`shell`, and more — plus Comark itself under `comark`/`mdc`/`md`/`markdown`.
 
 Full list: [rangi languages](https://github.com/pi0/rangi#languages-supported-).

@@ -49,12 +49,41 @@ function isString(value: unknown): value is string {
 }
 \`\`\`
 
-\`\`\`comark
-# title
+## Comark
 
-::hello{attr="value"}
+Comark ships its own rangi grammar, registered for the \`comark\`, \`mdc\`, \`md\` and \`markdown\` fences — so the syntax on this page highlights itself:
+
+\`\`\`\`comark
+---
+title: Comark highlights itself
+tags: [markdown, components]
+---
+
+# Heading{#custom-id .lead}
+
+Standard **bold**, _italic_, \`code\` and [links](https://comark.dev) still work.
+
+::alert{type="warning" .rounded}
+An :icon{name="triangle"} inline component, a [span]{.accent},
+and a {{ user.name || Anonymous }} binding.
+
+#footer
+Named slot content.
 ::
-\`\`\`
+
+::card
+---
+title: YAML props are highlighted as YAML
+icon: zap
+---
+::
+
+> [!NOTE]
+> Alerts, task lists and :emoji: shortcodes too.
+
+- [x] done
+- [ ] todo
+\`\`\`\`
 
 ## Line highlighting
 

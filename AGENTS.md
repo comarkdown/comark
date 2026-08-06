@@ -69,6 +69,12 @@ packages/comark/
 │   │   ├── summary.ts        # Summary extraction
 │   │   ├── task-list.ts      # GFM task lists
 │   │   └── toc.ts            # Table of contents
+│   ├── utils/                # Shared utilities (comark/utils entry point)
+│   │   ├── index.ts          # textContent(), visit(), visitAsync(), string/object utils
+│   │   ├── helpers.ts        # defineComarkPlugin(), dedupePlugins()
+│   │   ├── caret.ts          # Caret utilities for streaming
+│   │   ├── comark.tmLanguage.ts    # Comark TextMate grammar (Shiki plugin)
+│   │   └── comark.rangiLanguage.ts # Comark rangi grammar (rangi plugin)
 │   └── internal/             # Internal implementation (not exported)
 │       ├── front-matter.ts
 │       ├── parse/            # Parsing pipeline
@@ -383,7 +389,7 @@ import { textContent, visit } from 'comark/utils'
 
 // Core plugins — use when calling parseMarkdown() directly (framework-agnostic)
 import shiki from 'comark/plugins/shiki'
-import rangi from 'comark/plugins/rangi'
+import rangi, { comarkLanguage, comarkLanguages } from 'comark/plugins/rangi'
 // import highlight from 'comark/plugins/highlight' // deprecated alias → shiki
 import math from 'comark/plugins/math'
 import mermaid from 'comark/plugins/mermaid'

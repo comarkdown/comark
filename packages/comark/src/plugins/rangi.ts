@@ -1,9 +1,10 @@
 import type { ElementNode, Node, MarkdownDocument } from 'comark'
-import type { ShjLanguage, ShjTheme, ShjThemePair, ShjToken, ShjTokenized } from 'rangi'
+import type { ShjLanguage, ShjLanguages, ShjTheme, ShjThemePair, ShjToken, ShjTokenized } from 'rangi'
 import { tokenize } from 'rangi'
 import { dark as defaultDark, defaultTheme } from 'rangi/themes'
 import { defineComarkPlugin } from '../utils/helpers.ts'
 import { visitAsync } from '../utils/index.ts'
+import comarkLanguage from '../utils/comark.rangiLanguage.ts'
 
 /**
  * Languages accepted by the plugin.
@@ -12,6 +13,23 @@ import { visitAsync } from '../utils/index.ts'
  * branch so custom languages passed via `languages` type-check.
  */
 export type RangiLanguage = ShjLanguage | (string & {})
+
+/**
+ * The Comark grammar, under every name a Comark fence may be written with.
+ *
+ * `md` and `markdown` are included on purpose: Comark is a superset of
+ * Markdown, so highlighting a plain markdown fence with it is strictly more
+ * information — and it mirrors the `md`/`markdown`/`comark` → `mdc` aliases the
+ * Shiki plugin registers. Pass your own `languages: { md: … }` to override.
+ */
+export const comarkLanguages: ShjLanguages = {
+  comark: comarkLanguage,
+  mdc: comarkLanguage,
+  md: comarkLanguage,
+  markdown: comarkLanguage,
+}
+
+export { comarkLanguage }
 
 /**
  * Token types emitted by rangi.
@@ -50,6 +68,10 @@ export interface RangiOptions {
 
   /**
    * Extra custom language grammars passed through to `tokenize`.
+   *
+   * Merged over {@link comarkLanguages}, so `{ md: myGrammar }` restores
+   * rangi's own markdown grammar for `md` fences.
+   *
    * @see https://github.com/pi0/rangi#tokenizer
    */
   languages?: Record<string, unknown>
@@ -77,7 +99,17 @@ export function resolveRangiLanguage(language: string | undefined): RangiLanguag
 }
 
 /**
+ * Merge the Comark grammars with any custom ones, custom winning.
+ */
+function resolveLanguages(languages?: Record<string, unknown>): ShjLanguages {
+  return languages ? { ...comarkLanguages, ...(languages as ShjLanguages) } : comarkLanguages
+}
+
+/**
  * Tokenize source using `rangi`.
+ *
+ * {@link comarkLanguages} is always registered, so `comark`, `mdc`, `md` and
+ * `markdown` fences are highlighted with the Comark grammar.
  */
 export function tokenizeCode(
   code: string,
@@ -86,7 +118,7 @@ export function tokenizeCode(
 ): ShjTokenized[] {
   return tokenize(code, {
     lang: language,
-    ...(languages ? { languages: languages as any } : {}),
+    languages: resolveLanguages(languages),
   })
 }
 

@@ -25,6 +25,7 @@ This example demonstrates how to use Comark with the lightweight `rangi` plugin 
 - **Dual-theme CSS vars**: Same `--shiki-dark*` hooks as the Shiki plugin
 - **Line highlighting**: Fence info `{2-3,5}` marks lines with `.highlight`
 - **Language aliases**: Built into rangi (`javascript`, `typescript`, `python`, …)
+- **Comark grammar**: `comark` / `mdc` / `md` / `markdown` fences highlight Comark syntax itself
 - **Fully synchronous**: No async highlighter warmup
 
 ## Usage
@@ -65,6 +66,35 @@ body.dark pre.shj {
 }
 ```
 
+### 4. Highlighting Comark itself
+
+The Comark grammar is registered automatically — no configuration needed. A ` ```comark ` fence highlights frontmatter, block/inline components, spans, attributes, bindings and named slots:
+
+````md
+```comark
+---
+title: Comark highlights itself
+---
+
+# Heading{#custom-id .lead}
+
+::alert{type="warning" .rounded}
+An :icon{name="triangle"} component and a {{ user.name || Anonymous }} binding.
+
+#footer
+Named slot content.
+::
+```
+````
+
+`md` and `markdown` fences use it too, since Comark is a superset of Markdown. To opt out, pass rangi's own grammar:
+
+```typescript
+import { md } from 'rangi/languages'
+
+rangi({ languages: { md, markdown: md } })
+```
+
 ## Configuration Options
 
 ```typescript
@@ -85,7 +115,7 @@ rangi({
 | Lexing | Regex tokenizer | TextMate grammars |
 | Theming | Built-in themes / pairs | Dual themes + CSS vars |
 | Transformers / Twoslash | No | Yes |
-| Language coverage | ~46 languages | 180+ |
+| Language coverage | ~46 languages + Comark | 180+ |
 | Best for | Chat UIs, SSG, small apps | Docs sites, rich code samples |
 
 ## Learn More
