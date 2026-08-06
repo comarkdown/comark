@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.6.1](https://github.com/comarkdown/comark/compare/comark@0.6.0...comark@0.6.1) (2026-08-06)
+
+### Features
+
+* add rangi plugin + rename highlight to shiki ([#332](https://github.com/comarkdown/comark/issues/332)) ([bb015e4](https://github.com/comarkdown/comark/commit/bb015e485cbeb10ccd16c54dae4262864b9cb59c))
+* **parse:** add perf option to time the parse pipeline ([#333](https://github.com/comarkdown/comark/issues/333)) ([08cec83](https://github.com/comarkdown/comark/commit/08cec834612d00bf98ead734ed9c1de425e97ad0))
+* **parse:** configuration for default plugins ([#326](https://github.com/comarkdown/comark/issues/326)) ([c354acc](https://github.com/comarkdown/comark/commit/c354acc707daa20ca5ac16d2fc7cba764ed4e861))
+
 ## [0.6.0](https://github.com/comarkdown/comark/compare/comark@0.5.1...comark@0.6.0) (2026-08-04)
 
 ### Features
