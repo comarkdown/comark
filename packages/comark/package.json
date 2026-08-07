@@ -1,6 +1,6 @@
 {
   "name": "comark",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "description": "The Markdown engine for the modern web. Parse Markdown with components, attributes and plugins to a compact AST, at build time or runtime, and render with Vue, React, Svelte, Angular, HTML or ANSI. Streaming-ready for AI output.",
   "keywords": [
     "ai",

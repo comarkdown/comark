@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.6.2](https://github.com/comarkdown/comark/compare/comark@0.6.1...comark@0.6.2) (2026-08-07)
+
+### Features
+
+* otel compatibility ([#334](https://github.com/comarkdown/comark/issues/334)) ([657cd95](https://github.com/comarkdown/comark/commit/657cd95aa13b3c5493d8ce8c455512fc3abf869a))
+
 ## [0.6.1](https://github.com/comarkdown/comark/compare/comark@0.6.0...comark@0.6.1) (2026-08-06)
 
 ### Features
