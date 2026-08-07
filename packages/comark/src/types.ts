@@ -299,19 +299,54 @@ export type ComarkParsePostState<TMeta = Record<string, any>, TFrontmatter = Rec
 }
 
 /**
- * Minimal timing recorder contract used to instrument the parse pipeline.
- *
- * Structurally compatible with richer recorders (e.g. `content.perf` from
- * `comark-content`), so the same instance can be shared across the whole
- * content lifecycle: pass it via {@link ParserOptions.perf} and every parse
- * phase and plugin hook records a span into it. Universal by design — no
- * Node-specific APIs — so it works in the browser too.
+ * Minimal span handle — structural subset of OpenTelemetry's `Span`.
+ * Call {@link ComarkSpan.end} when the timed work is done.
  */
-export interface ComarkPerf {
-  /** Start a span; call the returned function to end and record it. */
-  span(name: string, meta?: Record<string, unknown>): () => void
-  /** Time a sync or async function as a single span. */
-  measure<T>(name: string, fn: () => T, meta?: Record<string, unknown>): T
+export interface ComarkSpan {
+  end(): void
+}
+
+/**
+ * Options for starting a span — structural subset of OpenTelemetry `SpanOptions`.
+ */
+export interface ComarkSpanOptions {
+  /** Optional attributes attached to the span (OTel `SpanOptions.attributes`). */
+  attributes?: Record<string, unknown>
+}
+
+/**
+ * Timing recorder for the parse pipeline.
+ *
+ * Structural subset of OpenTelemetry's `Tracer` (`startSpan` /
+ * `startActiveSpan`), so you can pass an OTel tracer directly:
+ *
+ * ```ts
+ * import { trace } from '@opentelemetry/api'
+ * const parse = createMarkdownParser({ tracer: trace.getTracer('comark') })
+ * ```
+ *
+ * Nested `startActiveSpan` calls form a parent → child hierarchy via the
+ * active context (OTel) or an internal stack (simple recorders). Universal
+ * by design — no Node-specific APIs — so it works in the browser too.
+ *
+ * Like OTel, callers must `span.end()` (including in `finally` / promise
+ * settlement). See {@link ParserOptions.tracer}.
+ */
+export interface ComarkTracer {
+  /**
+   * Start a span without making it active. Call `span.end()` when done.
+   * Compatible with OTel `Tracer.startSpan(name, options?)`.
+   */
+  startSpan(name: string, options?: ComarkSpanOptions): ComarkSpan
+
+  /**
+   * Start a span, make it active for the duration of `fn`, and pass the span
+   * as the first argument. Nested `startActiveSpan` / `startSpan` calls become
+   * children. Compatible with OTel `Tracer.startActiveSpan` (name + fn, or
+   * name + options + fn). The caller must `span.end()`.
+   */
+  startActiveSpan<T>(name: string, fn: (span: ComarkSpan) => T): T
+  startActiveSpan<T>(name: string, options: ComarkSpanOptions, fn: (span: ComarkSpan) => T): T
 }
 
 /**
@@ -470,17 +505,17 @@ export interface ParserOptions<TPlugins extends readonly ComarkPlugin<any, any>[
   plugins?: TPlugins
 
   /**
-   * Timing recorder for the parse pipeline — see {@link ComarkPerf}. When
-   * provided, each parse phase (`comark:autoclose`, `comark:tokenize`,
-   * `comark:nodes`) and every plugin hook (`comark:pre:<name>`,
-   * `comark:post:<name>`) records a span into it, so bottlenecks (e.g. a slow
-   * `post` highlight hook) become visible. Pass `content.perf` from
-   * `comark-content` to get comark spans in its debug timelines, or any object
-   * implementing the {@link ComarkPerf} contract. No timing overhead when
-   * omitted.
+   * Timing recorder for the parse pipeline — see {@link ComarkTracer}.
+   * Structural subset of OpenTelemetry `Tracer`, so an OTel tracer works as-is:
+   * `createMarkdownParser({ tracer: trace.getTracer('comark') })`.
+   *
+   * When provided, the full parse is a root `comark:parse` active span containing
+   * child phases (`comark:autoclose`, `comark:tokenize`, `comark:nodes`) and plugin
+   * hooks (`comark:pre:<name>`, `comark:post:<name>`). Nested active spans form
+   * the hierarchy. No timing overhead when omitted.
    * @default undefined
    */
-  perf?: ComarkPerf
+  tracer?: ComarkTracer
 }
 
 /**
