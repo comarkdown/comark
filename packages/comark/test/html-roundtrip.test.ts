@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parse } from '../src/parse'
+import { parseMarkdown } from '../src/parse'
 import { renderMarkdown } from '../src/render'
 
 /**
@@ -8,9 +8,9 @@ import { renderMarkdown } from '../src/render'
  * block (or the paragraph, for inline HTML) and split the element apart.
  */
 async function roundTrip(md: string) {
-  const t1 = await parse(md)
+  const t1 = await parseMarkdown(md)
   const rendered = await renderMarkdown(t1)
-  const t2 = await parse(rendered)
+  const t2 = await parseMarkdown(rendered)
   return { t1, t2, rendered }
 }
 
