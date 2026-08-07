@@ -19,8 +19,8 @@ export const noopTracer: ComarkTracer = {
 /**
  * Run `fn` inside an active span on `tracer`; always ends the span (incl. async).
  */
-export function withSpan<T>(tracer: ComarkTracer, name: string, fn: () => T): T {
-  return tracer.startActiveSpan(name, (span) => {
+export function withSpan<T>(tracer: ComarkTracer, name: string, fn: () => T, options?: ComarkSpanOptions): T {
+  return tracer.startActiveSpan(name, options ?? {}, (span) => {
     try {
       const result = fn()
       if (result instanceof Promise) {
