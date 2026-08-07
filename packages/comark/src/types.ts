@@ -322,7 +322,7 @@ export interface ComarkSpanOptions {
  *
  * ```ts
  * import { trace } from '@opentelemetry/api'
- * const parse = createMarkdownParser({ perf: trace.getTracer('comark') })
+ * const parse = createMarkdownParser({ tracer: trace.getTracer('comark') })
  * ```
  *
  * Nested `startActiveSpan` calls form a parent → child hierarchy via the
@@ -330,9 +330,9 @@ export interface ComarkSpanOptions {
  * by design — no Node-specific APIs — so it works in the browser too.
  *
  * Like OTel, callers must `span.end()` (including in `finally` / promise
- * settlement). See {@link ParserOptions.perf}.
+ * settlement). See {@link ParserOptions.tracer}.
  */
-export interface ComarkPerf {
+export interface ComarkTracer {
   /**
    * Start a span without making it active. Call `span.end()` when done.
    * Compatible with OTel `Tracer.startSpan(name, options?)`.
@@ -505,9 +505,9 @@ export interface ParserOptions<TPlugins extends readonly ComarkPlugin<any, any>[
   plugins?: TPlugins
 
   /**
-   * Timing recorder for the parse pipeline — see {@link ComarkPerf}.
+   * Timing recorder for the parse pipeline — see {@link ComarkTracer}.
    * Structural subset of OpenTelemetry `Tracer`, so an OTel tracer works as-is:
-   * `createMarkdownParser({ perf: trace.getTracer('comark') })`.
+   * `createMarkdownParser({ tracer: trace.getTracer('comark') })`.
    *
    * When provided, the full parse is a root `comark:parse` active span containing
    * child phases (`comark:autoclose`, `comark:tokenize`, `comark:nodes`) and plugin
@@ -515,7 +515,7 @@ export interface ParserOptions<TPlugins extends readonly ComarkPlugin<any, any>[
    * the hierarchy. No timing overhead when omitted.
    * @default undefined
    */
-  perf?: ComarkPerf
+  tracer?: ComarkTracer
 }
 
 /**

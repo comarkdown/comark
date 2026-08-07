@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { createMarkdownParser } from '../src/parse'
-import type { ComarkPerf, ComarkSpan, ComarkSpanOptions } from '../src/types'
+import type { ComarkTracer, ComarkSpan, ComarkSpanOptions } from '../src/types'
 
 interface RecordedSpan {
   name: string
@@ -29,7 +29,7 @@ function createRecorder() {
     }
   }
 
-  const perf: ComarkPerf = {
+  const tracer: ComarkTracer = {
     startSpan(name, options) {
       return start(name, options)
     },
@@ -50,12 +50,12 @@ function createRecorder() {
           spans.push({ name, parent, attributes: options?.attributes })
         },
       }
-      // Note: real OTel leaves end() to the caller — same here; withSpan in parse ends it.
+      // Note: real OTel leaves end() to the caller — same here; withSpan ends it.
       return run(span)
     },
   }
 
-  return { perf, spans }
+  return { tracer, spans }
 }
 
 const markdown = `---
@@ -69,10 +69,10 @@ hi
 ::
 `
 
-describe('ParserOptions.perf', () => {
+describe('ParserOptions.tracer', () => {
   it('records phase and per-plugin spans in pipeline order', async () => {
-    const { perf, spans } = createRecorder()
-    const parse = createMarkdownParser({ perf })
+    const { tracer, spans } = createRecorder()
+    const parse = createMarkdownParser({ tracer })
     const tree = await parse(markdown)
 
     expect(tree.frontmatter).toEqual({ title: 'Hello' })
@@ -92,9 +92,9 @@ describe('ParserOptions.perf', () => {
   })
 
   it('nests children under the active comark:parse span', async () => {
-    const { perf, spans } = createRecorder()
+    const { tracer, spans } = createRecorder()
     const parse = createMarkdownParser({
-      perf,
+      tracer,
       plugins: [
         {
           name: 'my-plugin',
@@ -118,9 +118,9 @@ describe('ParserOptions.perf', () => {
   })
 
   it('records user plugin pre/post hooks under their plugin name', async () => {
-    const { perf, spans } = createRecorder()
+    const { tracer, spans } = createRecorder()
     const parse = createMarkdownParser({
-      perf,
+      tracer,
       plugins: [
         {
           name: 'my-plugin',
@@ -136,16 +136,16 @@ describe('ParserOptions.perf', () => {
     expect(names).toContain('comark:post:my-plugin')
   })
 
-  it('produces identical output with and without perf', async () => {
-    const { perf } = createRecorder()
-    const withPerf = await createMarkdownParser({ perf })(markdown)
-    const withoutPerf = await createMarkdownParser()(markdown)
-    expect(withPerf).toEqual(withoutPerf)
+  it('produces identical output with and without tracer', async () => {
+    const { tracer } = createRecorder()
+    const withTracer = await createMarkdownParser({ tracer })(markdown)
+    const withoutTracer = await createMarkdownParser()(markdown)
+    expect(withTracer).toEqual(withoutTracer)
   })
 
   it('records spans on the streaming path too', async () => {
-    const { perf, spans } = createRecorder()
-    const parse = createMarkdownParser({ perf })
+    const { tracer, spans } = createRecorder()
+    const parse = createMarkdownParser({ tracer })
     await parse('# Hello', { streaming: true })
     await parse('# Hello\n\nmore **text', { streaming: true })
 

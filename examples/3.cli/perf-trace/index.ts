@@ -11,7 +11,7 @@
  * Or from this directory:
  *   pnpm start
  */
-import { createMarkdownParser, type ComarkPerf, type ComarkSpan, type ComarkSpanOptions } from 'comark'
+import { createMarkdownParser, type ComarkTracer, type ComarkSpan, type ComarkSpanOptions } from 'comark'
 import rangi from 'comark/plugins/rangi'
 import toc from 'comark/plugins/toc'
 import security from 'comark/plugins/security'
@@ -29,7 +29,7 @@ interface TraceNode {
   children: TraceNode[]
 }
 
-function createTracePerf() {
+function createTraceTracer() {
   const entries: PerfEntry[] = []
   const stack: string[] = []
   let nextId = 0
@@ -52,7 +52,7 @@ function createTracePerf() {
     return { span, id, parent, start }
   }
 
-  const perf: ComarkPerf = {
+  const tracer: ComarkTracer = {
     startSpan(name) {
       // Non-active child of the current active span (if any).
       return makeSpan(name).span
@@ -69,7 +69,7 @@ function createTracePerf() {
     },
   }
 
-  return { perf, entries }
+  return { tracer, entries }
 }
 
 /** Rebuild a tree from parent → id links. */
@@ -171,9 +171,9 @@ Nested component body with **bold**.
 - item two
 `
 
-const { perf, entries } = createTracePerf()
+const { tracer, entries } = createTraceTracer()
 const parse = createMarkdownParser({
-  perf,
+  tracer,
   plugins: [
     rangi(),
     toc({ depth: 3 }),

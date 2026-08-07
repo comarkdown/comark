@@ -5,9 +5,6 @@ import type {
   MarkdownExitPlugin,
   MergePluginFrontmatter,
   MergePluginMeta,
-  ComarkPerf,
-  ComarkSpan,
-  ComarkSpanOptions,
   ParserOptions,
   ResolvedFrontmatter,
   ResolvedMeta,
@@ -27,28 +24,13 @@ import { marmdownItTokensToMarkdownDocument } from './internal/parse/token-proce
 import { autoCloseMarkdown } from './internal/parse/auto-close/index.ts'
 import { extractReusableNodes } from './internal/parse/incremental.ts'
 import { createSerializedTask, dedupePlugins } from './utils/helpers.ts'
+import { noopTracer, withSpan } from './utils/trace.ts'
 
 // Re-export frontmatter utilities
 export { parseFrontmatter } from './internal/frontmatter.ts'
 
 // Re-export plugin utilities
 export { defineComarkPlugin } from './utils/helpers.ts'
-
-/** No-op span used by {@link noopPerf}. */
-const noopSpan: ComarkSpan = { end: () => {} }
-
-/** No-op recorder used when no `perf` option is provided — zero overhead. */
-const noopPerf: ComarkPerf = {
-  startSpan: () => noopSpan,
-  startActiveSpan: (
-    _name: string,
-    optionsOrFn: ComarkSpanOptions | ((span: ComarkSpan) => unknown),
-    fn?: (span: ComarkSpan) => unknown
-  ) => {
-    const run = typeof optionsOrFn === 'function' ? optionsOrFn : fn!
-    return run(noopSpan)
-  },
-}
 
 /**
  * Creates a parser function for Comark content.
@@ -81,7 +63,7 @@ const noopPerf: ComarkPerf = {
 export function createMarkdownParser<const TPlugins extends readonly ComarkPlugin<any, any>[] = []>(
   options: ParserOptions<TPlugins> = {} as ParserOptions<TPlugins>
 ): ComarkParseFn<ResolvedMeta<MergePluginMeta<TPlugins>>, ResolvedFrontmatter<MergePluginFrontmatter<TPlugins>>> {
-  const { autoUnwrap = true, autoClose = true, perf = noopPerf } = options
+  const { autoUnwrap = true, autoClose = true, tracer = noopTracer } = options
   // Tag set to strip from the top level of the tree (MDC `unwrap`). Resolved once.
   const unwrapTags = resolveUnwrapTags(options.unwrap)
 
@@ -124,29 +106,12 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
   let lastOutput: MarkdownDocument | null = null
   let lastInput: string | null = null
 
-  /** Run `fn` inside an active span; always ends the span (incl. async). */
-  function withSpan<T>(name: string, fn: () => T): T {
-    return perf.startActiveSpan(name, (span) => {
-      try {
-        const result = fn()
-        if (result instanceof Promise) {
-          return result.finally(() => span.end()) as T
-        }
-        span.end()
-        return result
-      } catch (error) {
-        span.end()
-        throw error
-      }
-    })
-  }
-
   const parseFn: ComarkParseFn = async (markdown, opts = {}) => {
     // Root active span for the full parse pipeline. Nested startActiveSpan /
     // startSpan calls become children (OTel active context, or a stack in a
     // simple recorder) → hierarchical trace:
     //   comark:parse → autoclose / pre / tokenize / nodes / post
-    return await withSpan('comark:parse', async () => {
+    return await withSpan(tracer, 'comark:parse', async () => {
       const state = {
         options,
         tokens: [] as unknown[],
@@ -175,7 +140,7 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
       }
 
       if (autoClose) {
-        state.markdown = withSpan('comark:autoclose', () =>
+        state.markdown = withSpan(tracer, 'comark:autoclose', () =>
           autoCloseMarkdown(state.markdown, {
             frontmatter: hasPlugin('frontmatter') && opts.streaming,
             syntax: hasPlugin('components'),
@@ -185,11 +150,11 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
 
       for (const plugin of plugins) {
         if (!plugin.pre) continue
-        await withSpan(`comark:pre:${plugin.name}`, () => plugin.pre!(state))
+        await withSpan(tracer, `comark:pre:${plugin.name}`, () => plugin.pre!(state))
       }
 
       try {
-        state.tokens = withSpan('comark:tokenize', () => parser.parse(state.markdown, {}))
+        state.tokens = withSpan(tracer, 'comark:tokenize', () => parser.parse(state.markdown, {}))
       } catch (e) {
         // in case of streaming, return the previous output if parsing fails
         // This is to avoid resetting the tree to an empty state on failure
@@ -201,7 +166,7 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
       }
 
       // Convert tokens to Comark structure
-      const nodesSpan = perf.startSpan('comark:nodes')
+      const nodesSpan = tracer.startSpan('comark:nodes')
       let nodes = marmdownItTokensToMarkdownDocument(state.tokens, {
         startLine: state.parsedLines,
         preservePositions: opts.streaming ?? false,
@@ -242,7 +207,7 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
 
       for (const plugin of plugins) {
         if (!plugin.post) continue
-        await withSpan(`comark:post:${plugin.name}`, () => plugin.post!(state as ComarkParsePostState))
+        await withSpan(tracer, `comark:post:${plugin.name}`, () => plugin.post!(state as ComarkParsePostState))
       }
 
       return state.tree

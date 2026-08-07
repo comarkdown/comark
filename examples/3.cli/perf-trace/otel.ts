@@ -69,7 +69,7 @@ const provider = new NodeTracerProvider({
 provider.register()
 
 const parse = createMarkdownParser({
-  perf: trace.getTracer('comark'),
+  tracer: trace.getTracer('comark'),
   plugins: [
     rangi(),
     toc({ depth: 3 }),
