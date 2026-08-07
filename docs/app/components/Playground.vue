@@ -54,7 +54,7 @@ const isDark = computed(() => colorMode.value === 'dark')
 const pluginToggles = useLocalStorage(
   'comark-playground-plugins',
   {
-    highlight: true,
+    shiki: true,
     math: true,
     emoji: true,
     mermaid: true,
@@ -89,10 +89,10 @@ const pluginDefs = [
     factory: () => emoji(),
   },
   {
-    key: 'highlight',
-    label: 'Syntax Highlighting',
+    key: 'shiki',
+    label: 'Shiki Syntax Highlighting',
     icon: 'i-lucide-code',
-    factory: () => highlight(),
+    factory: () => shiki(),
   },
   {
     key: 'mermaid',

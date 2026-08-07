@@ -30,7 +30,7 @@ const markdown = ref(
     : playgroundExamples[0]!.content
 )
 const parsePlaygroundMarkdown = createMarkdownParser({
-  plugins: [jsonRenderer(), binding(), highlight(), math(), emoji(), mermaid(), footnotes(), punctuation()],
+  plugins: [jsonRenderer(), binding(), shiki(), math(), emoji(), mermaid(), footnotes(), punctuation()],
 })
 
 const { data: page, refresh } = await useAsyncData(
