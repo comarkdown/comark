@@ -17,16 +17,15 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           package-manager-cache: false
-          node-version: '24'
+          node-version: "24"
       - run: npm i -g --force corepack && corepack enable
       - run: pnpm install
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm dev:prepare
       - run: pnpm lint
       - run: pnpm prepack
-      - name: Check package bundle size
-        run: pnpm vitest run bundle
       - run: pnpm test
-
       - name: Publish
         run: pnpx pkg-pr-new publish --pnpm './packages/*'
+      - name: Check package bundle size
+        run: pnpm vitest run bundle
