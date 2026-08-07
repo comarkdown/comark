@@ -80,7 +80,7 @@ catalog:
   citty: ^0.2.2
 
   # Workspace packages (publish versions, locally overridden by resolutions)
-  comark: ^0.6.1
+  comark: ^0.6.2
   docus: ^5.12.3
 
   # Core comark dependencies
