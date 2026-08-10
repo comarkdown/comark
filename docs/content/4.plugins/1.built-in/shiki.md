@@ -54,6 +54,20 @@ const result = await parseMarkdown(content, {
 })
 ```
 
+The standard entry includes the Material light and dark themes as fallbacks. To exclude those themes from the bundle, use the `core` entry and import every theme explicitly:
+
+```typescript
+import shiki from 'comark/plugins/shiki/core'
+import githubLight from '@shikijs/themes/github-light'
+import githubDark from '@shikijs/themes/github-dark'
+
+const plugins = [
+  shiki({ themes: { light: githubLight, dark: githubDark } })
+]
+```
+
+Framework packages expose the same nested entry, for example `@comark/vue/plugins/shiki/core` and `@comark/react/plugins/shiki/core`.
+
 With framework components:
 
 ::code-group
@@ -297,7 +311,7 @@ shiki({
 
 ### `registerDefaultThemes`
 
-When `true`, `material-theme-lighter` (light) and `material-theme-palenight` (dark) are pre-registered. Set to `false` when using only custom themes.
+On the standard `comark/plugins/shiki` entry, `true` registers `material-theme-lighter` (light) and `material-theme-palenight` (dark). Set it to `false` to skip loading those themes at runtime. To keep their import chunks out of a consumer bundle entirely, use `comark/plugins/shiki/core` instead.
 
 ```typescript
 shiki({
@@ -327,16 +341,16 @@ const result = await parseMarkdown(content, {
 
 ### Minimal Bundle
 
-Disable defaults and import only what you need:
+Use the `core` entry and import only what you need:
 
 ```typescript
+import shiki from 'comark/plugins/shiki/core'
 import javascript from '@shikijs/langs/javascript'
 import typescript from '@shikijs/langs/typescript'
 import githubDark from '@shikijs/themes/github-dark'
 
 shiki({
   registerDefaultLanguages: false,
-  registerDefaultThemes: false,
   languages: [javascript, typescript],
   themes: { dark: githubDark }
 })
