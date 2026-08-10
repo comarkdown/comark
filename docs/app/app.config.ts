@@ -9,13 +9,7 @@ export default defineAppConfig({
       alt: 'Comark',
       mark: 'comark',
     },
-    ecosystem: [
-      {
-        mark: 'comark-cms',
-        to: 'https://cms.comark.dev',
-        label: 'Comark CMS',
-      },
-    ],
+    ecosystem: [],
     nav: [
       {
         label: 'Documentation',
@@ -93,7 +87,7 @@ export default defineAppConfig({
       {
         category: 'Syntax',
         items: [
-          'How do I write block and inline components in Comark?',
+          'How do I write components in Comark?',
           'How do I pass props and attributes to components?',
         ],
       },

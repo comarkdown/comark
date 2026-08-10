@@ -31,7 +31,7 @@ This is a **monorepo** containing multiple packages related to Comark (Component
 │   ├── 1.frameworks/     # Framework examples (Nuxt, Next.js, Astro, SvelteKit, ...)
 │   ├── 2.vite/           # Vite examples (Vue, React, Svelte, Angular, HTML, ANSI)
 │   └── 3.plugins/        # Plugin examples (math, mermaid, highlight, ...)
-├── docs/                 # Documentation site (Docus-based)
+├── docs/                 # Documentation site (comark-docs layer)
 ├── scripts/              # Build/sync scripts
 ├── pnpm-workspace.yaml   # Workspace configuration
 ├── tsconfig.json         # Root TypeScript config

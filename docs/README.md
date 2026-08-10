@@ -1,6 +1,6 @@
 # Comark Documentation
 
-This directory contains comprehensive documentation for the Comark library, built with Docus.
+This directory contains comprehensive documentation for the Comark library, built with the [comark-docs](https://github.com/comarkdown/comark-docs) Nuxt layer.
 
 ## Documentation Structure
 
@@ -156,7 +156,7 @@ This documentation site uses:
 - [Nuxt Content](https://content.nuxt.com/) - File-based CMS
 - [Nuxt UI](https://ui.nuxt.com) - UI components
 - [Tailwind CSS 4](https://tailwindcss.com/) - Utility-first CSS
-- [Docus](https://docus.dev) - Documentation theme
+- [comark-docs](https://github.com/comarkdown/comark-docs) - Documentation layer
 
 ## Deployment
 

@@ -1,4 +1,6 @@
 export default defineNuxtConfig({
+  compatibilityDate: '2026-08-10',
+
   // Develop against a local checkout of the layer:
   // COMARK_DOCS_LAYER=../../comark-docs pnpm dev
   extends: [process.env.COMARK_DOCS_LAYER || 'comark-docs'],
