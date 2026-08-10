@@ -86,10 +86,7 @@ export default defineAppConfig({
       },
       {
         category: 'Syntax',
-        items: [
-          'How do I write components in Comark?',
-          'How do I pass props and attributes to components?',
-        ],
+        items: ['How do I write components in Comark?', 'How do I pass props and attributes to components?'],
       },
       {
         category: 'Rendering & Streaming',
