@@ -16,6 +16,11 @@ links:
     to: /kb/twoslash
     color: neutral
     variant: soft
+  - label: Custom Pre
+    icon: i-lucide-clipboard-copy
+    to: /kb/custom-pre
+    color: neutral
+    variant: soft
 ---
 
 The `comark/plugins/shiki` plugin provides syntax highlighting for code blocks using [Shiki](https://shiki.style/). It supports multiple themes, line highlighting, and on-demand language loading.
@@ -362,6 +367,10 @@ shiki({
 ```
 
 See the [Twoslash guide](/kb/twoslash) for TypeScript-powered type tooltips and error annotations in code blocks.
+
+::tip{to="/kb/custom-pre"}
+Need a copy button or collapse threshold on a custom `ProsePre`? After highlighting there is no `code` prop — reconstruct the source with `__node` and `textContent()`. See [Custom Pre](/kb/custom-pre).
+::
 
 ### Live Examples
 
