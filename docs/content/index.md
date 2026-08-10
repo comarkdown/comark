@@ -6,188 +6,315 @@ seo:
   title: Parse and Render Markdown Anywhere with Comark
   description: 'Parse and render Markdown anywhere with one JavaScript library for HTML, ANSI, Vue, React, Svelte and Angular, plus plugins and streaming.'
   ogImage: /social-card.jpg
-
 ---
 
-::landing-hero
+::u-page-hero
 ---
-title: Parse and render Markdown anywhere
-description: A JavaScript library to parse and stream Markdown, with renderers for HTML, terminals, Vue, React, Svelte and Angular, plus components, attributes, and plugins.
-install: npm install comark
-primaryLabel: Get Started
-primaryTo: /getting-started/introduction
-secondaryLabel: GitHub
-secondaryTo: https://github.com/comarkdown/comark
-demoMarkdown: |-
-    # Hello World
-  
-    A JavaScript library to **parse and render Markdown** anywhere.
-  
-    ## Features
-  
-    - CommonMark and GFM support
-    - HTML, ANSI, and framework renderers
-    - Streaming, components, and plugins
-  
-    ::callout{color="info" icon="i-lucide-info"}
-    One Markdown source, **every renderer**.
-    ::
-  
-    > Built on markdown-exit, a TypeScript rewrite of markdown-it.
-  
-    ```ts [example.ts]
-    import { parseMarkdown } from 'comark'
-  
-    const document = await parseMarkdown('# Hello **World**')
-    ```
+orientation: horizontal
 ---
+  ```ts [markdown.ts]
+  import { parseMarkdown } from 'comark'
+  import { renderHtmlFromDocument } from '@comark/html'
+
+  // Parse once into a compact, serializable document
+  const document = await parseMarkdown('# Hello **World**')
+
+  // Render anywhere: HTML, ANSI, Vue, React,
+  // Svelte or Angular
+  const html = await renderHtmlFromDocument(document)
+  ```
+#title
+Parse and render Markdown anywhere.
+
+#description
+A JavaScript library to parse and stream Markdown, with renderers for HTML, terminals, Vue, React, Svelte and Angular, plus components, attributes, and plugins.
+
+#links
+  :::u-button
+  ---
+  to: /getting-started/introduction
+  size: lg
+  trailing-icon: i-lucide-arrow-right
+  ---
+  Get started
+  :::
+
+  :::u-button
+  ---
+  icon: i-simple-icons-github
+  color: neutral
+  variant: ghost
+  size: lg
+  to: https://github.com/comarkdown/comark
+  target: _blank
+  ---
+  View on GitHub
+  :::
 ::
 
-::landing-spacer
+::landing-stack
+---
+items:
+  - icon: i-logos-vue
+    label: Vue
+    to: /rendering/vue
+  - icon: i-logos-react
+    label: React
+    to: /rendering/react
+  - icon: i-logos-svelte-icon
+    label: Svelte
+    to: /rendering/svelte
+  - icon: i-logos-angular-icon
+    label: Angular
+    to: /rendering/angular
+  - icon: i-logos-nuxt-icon
+    label: Nuxt
+    to: /rendering/nuxt
+  - icon: i-vscode-icons-file-type-html
+    label: HTML
+    to: /rendering/html
+  - icon: i-lucide-terminal
+    label: ANSI
+    to: /rendering/ansi
+---
+One parser, every renderer
 ::
 
-::landing-pillars
+::landing-tabs
 ---
-headline: Why Comark
-title: One Markdown pipeline, every output
-description: Parse standard Markdown into serializable data, then render it anywhere. Add streaming, component syntax, attributes, and plugins when you need them.
-pillars:
-  - icon: i-lucide-zap
-    title: Runtime parsing
-    description: No build step required. Parse Markdown on the server, in the browser, in a worker, or during a build.
-    to: /api/parse
+items:
+  - icon: i-logos-vue
+    title: Vue
+    description: Drop the Markdown component in a template. Custom components and plugins are props.
+  - icon: i-logos-react
+    title: React
+    description: The same component API for React and React Server Components.
+  - icon: i-logos-svelte-icon
+    title: Svelte
+    description: Native Svelte 5 rendering with runes, no wrapper framework.
+  - icon: i-vscode-icons-file-type-html
+    title: HTML
+    description: A plain string renderer for SSG, RSS feeds, and emails. No framework required.
+---
+
+#headline
+Renderers
+
+#title
+Same document, native output
+
+#description
+Parsing and rendering are decoupled through a compact, serializable [`MarkdownDocument`](/getting-started/document-model). Parse on the server, during a build, or as content streams in, then render it natively in your framework. Your content outlasts your stack.
+
+#code-0
+  ```vue [App.vue]
+  <script setup lang="ts">
+  import { Markdown } from '@comark/vue'
+
+  const content = `# Hello
+
+  Rendered **natively** in Vue.`
+  </script>
+
+  <template>
+    <Markdown>{{ content }}</Markdown>
+  </template>
+  ```
+
+#code-1
+  ```tsx [App.tsx]
+  import { Markdown } from '@comark/react'
+
+  const content = `# Hello
+
+  Rendered **natively** in React.`
+
+  export default function App() {
+    return <Markdown>{content}</Markdown>
+  }
+  ```
+
+#code-2
+  ```svelte [App.svelte]
+  <script lang="ts">
+    import { Markdown } from '@comark/svelte'
+
+    let content = $state(`# Hello
+
+  Rendered **natively** in Svelte.`)
+  </script>
+
+  <Markdown value={content} />
+  ```
+
+#code-3
+  ```ts [render.ts]
+  import { renderHtml } from '@comark/html'
+
+  const html = await renderHtml(`# Hello
+
+  Rendered to a **plain HTML** string.`)
+  ```
+::
+
+::landing-tabs
+---
+items:
   - icon: i-lucide-radio
-    title: Streaming built in
-    description: Auto-close renders incomplete Markdown correctly at every frame. Display AI output as soon as it arrives.
-    to: /api/auto-close
-  - icon: i-lucide-layers
-    title: One parser, every renderer
-    description: The same source renders to HTML, ANSI, Vue, React, Svelte and Angular. Your content outlasts your framework.
-    to: /getting-started/installation
-  - icon: i-lucide-file-text
-    title: Still just Markdown
-    description: CommonMark and GFM by default. Attributes and components are opt-in syntax, not a new language.
-    to: /syntax/markdown
-  - icon: i-lucide-puzzle
-    title: Plugin ecosystem
-    description: Compatible with markdown-it plugins. Shiki highlighting, KaTeX math, Mermaid diagrams, table of contents and more.
-    to: /plugins
-  - icon: i-lucide-braces
-    title: Serializable document
-    description: Parse to a plain MarkdownDocument that is easy to traverse, cache, serialize, and send over the wire.
-    to: /getting-started/document-model
+    title: Streaming component
+    description: Flip the streaming prop while chunks arrive. Every frame renders correctly, with an optional caret.
+  - icon: i-lucide-scan-text
+    title: Auto-close
+    description: A pure function that completes unterminated syntax. Use it with any renderer, or on its own.
 ---
-::
 
-::landing-spacer
+#headline
+Streaming
+
+#title
+Built for AI output
+
+#description
+Auto-close completes unterminated Markdown (bold, code fences, components) so incomplete content renders correctly at every frame. Display AI responses as soon as they arrive, without flashes or broken markup.
+
+#code-0
+  ```vue [AiChat.vue]
+  <script setup lang="ts">
+  import { Markdown } from '@comark/vue'
+
+  const content = ref('')
+  const isStreaming = ref(true)
+
+  for await (const chunk of aiResponse) {
+    content.value += chunk
+  }
+  isStreaming.value = false
+  </script>
+
+  <template>
+    <Markdown :streaming="isStreaming" caret>
+      {{ content }}
+    </Markdown>
+  </template>
+  ```
+
+#code-1
+  ```ts [auto-close.ts]
+  import { autoCloseMarkdown } from 'comark'
+
+  autoCloseMarkdown('**bold text')
+  // => '**bold text**'
+
+  autoCloseMarkdown('::alert{type="info"}\nStreaming')
+  // => '::alert{type="info"}\nStreaming\n::'
+  ```
 ::
 
 ::landing-features
----
-frameworksDescription: Render the same Markdown document natively in Vue,
-  React, Svelte and Angular.
-frameworksHeadline: Frameworks
-frameworksReactLinkLabel: React docs
-frameworksReactLinkTo: /rendering/react
-frameworksSvelteLinkLabel: Svelte docs
-frameworksSvelteLinkTo: /rendering/svelte
-frameworksAngularLinkLabel: Angular docs
-frameworksAngularLinkTo: /rendering/angular
-frameworksTitle: Vue, React, Svelte & Angular
-frameworksVueLinkLabel: Vue docs
-frameworksVueLinkTo: /rendering/vue
-streamingDescription: Parse content as it arrives. Built for AI chat
-  interfaces and progressive loading.
-streamingHeadline: Streaming
-streamingLinkLabel: Learn more
-streamingLinkTo: /api/parse#stream-parsing
-streamingTitle: Real-time streaming
----
+#headline
+Why Comark
+
+#title
+One Markdown pipeline, every output
+
+#default
+  :::landing-feature-card{icon="i-lucide-zap" to="/api/parse"}
+  #title
+  Runtime parsing
+
+  #description
+  No build step required. Parse Markdown on the server, in the browser, in a worker, or during a build.
+  :::
+
+  :::landing-feature-card{icon="i-lucide-radio" to="/api/auto-close"}
+  #title
+  Streaming built in
+
+  #description
+  Auto-close renders incomplete Markdown correctly at every frame. Display AI output as soon as it arrives.
+  :::
+
+  :::landing-feature-card{icon="i-lucide-layers" to="/getting-started/installation"}
+  #title
+  One parser, every renderer
+
+  #description
+  The same source renders to HTML, ANSI, Vue, React, Svelte and Angular. Your content outlasts your framework.
+  :::
+
+  :::landing-feature-card{icon="i-lucide-file-text" to="/syntax/markdown"}
+  #title
+  Still just Markdown
+
+  #description
+  CommonMark and GFM by default. Attributes and components are opt-in syntax, not a new language.
+  :::
+
+  :::landing-feature-card{icon="i-lucide-puzzle" to="/plugins"}
+  #title
+  Plugin ecosystem
+
+  #description
+  Compatible with markdown-it plugins. Shiki highlighting, KaTeX math, Mermaid diagrams, table of contents and more.
+  :::
+
+  :::landing-feature-card{icon="i-lucide-braces" to="/getting-started/document-model"}
+  #title
+  Serializable document
+
+  #description
+  Parse to a plain MarkdownDocument that is easy to traverse, cache, serialize, and send over the wire.
+  :::
 ::
 
-::landing-spacer
-::
-
-::landing-feature-auto-close
+::landing-faq
 ---
-description: Incomplete markdown syntax is automatically closed during
-  streaming, so content renders correctly at every frame.
-headline: Auto-close
-linkLabel: Learn more
-linkTo: /api/auto-close
-title: Auto-close
+items:
+  - label: How is Comark different from MDX?
+    content: MDX compiles Markdown to JSX at build time, tying content to a bundler and to React. Comark parses Markdown into serializable data at build time or runtime, then renders it to multiple targets.
+  - label: Does Comark require a specific framework?
+    content: No. The core parser is framework-free. Renderers exist for Vue, React, Svelte, and Angular, plus string output as HTML and ANSI.
+  - label: Can I use markdown-it plugins with Comark?
+    content: Yes. Comark is built on markdown-exit, a TypeScript rewrite of markdown-it that preserves its plugin API. Existing markdown-it plugins work alongside Comark plugins.
+  - label: How does Comark handle streaming AI output?
+    content: The auto-close parser completes unterminated syntax (bold, code fences, components) so every incomplete frame renders correctly. Framework renderers expose this as a streaming prop.
+  - label: Do I have to use components?
+    content: No. Comark is a superset of CommonMark and GFM, so plain Markdown parses unchanged. Components and attributes are opt-in syntax.
+  - label: Is it free?
+    content: Yes. MIT-licensed open source, maintained by Vercel. Your only costs are your own hosting.
 ---
-::
 
-::landing-spacer
-::
+#headline
+FAQ
 
-::landing-feature-plugins
----
-plugins:
-  - id: math
-    name: Math
-    icon: i-lucide-sigma
-    description: LaTeX math formulas with KaTeX. Inline $...$ and display $$...$$ syntax.
-    input: |-
-      The area of a circle is $A = \pi r^2$.
-
-      Euler's identity:
-
-      $$e^{i\pi} + 1 = 0$$
-    package: comark/plugins/math
-  - id: highlight
-    name: Highlight
-    icon: i-lucide-code
-    description: Syntax highlighting for code blocks powered by Shiki.
-    input: |-
-      ```typescript [user.ts]
-      interface User {
-        name: string
-        email: string
-      }
-
-      async function getUser(id: number): Promise<User> {
-        const res = await fetch(`/api/users/${id}`)
-        return res.json()
-      }
-      ```
-    package: comark
-  - id: mermaid
-    name: Mermaid
-    icon: i-lucide-workflow
-    description: Render Mermaid diagrams from fenced code blocks.
-    input: |-
-      ```mermaid
-      graph TD
-          A[Markdown] --> B[Parser]
-          B --> C[MarkdownDocument]
-          C --> D{Renderer}
-          D --> E[Vue]
-          D --> F[React]
-          D --> G[HTML]
-      ```
-    package: comark/plugins/mermaid
-description: Extend Comark with plugins for math formulas, syntax
-  highlighting, and more. You can also reuse any markdown-it plugin.
-headline: Plugins
-linkLabel: Browse all plugins
-linkTo: /plugins
-title: Extensible plugins
----
-::
-
-::landing-spacer
+#title
+Common questions
 ::
 
 ::landing-cta
----
-description: Install Comark, pick a renderer, and render your first Markdown document in minutes.
-install: npm install comark
-primaryLabel: Get Started
-primaryTo: /getting-started/introduction
-secondaryLabel: Why Comark
-secondaryTo: /kb/why-comark
-title: From Markdown to UI
----
+#title
+From Markdown to UI.
+
+#description
+Install Comark, pick a renderer, and render your first Markdown document in minutes. Read [why Comark](/kb/why-comark) exists, or start with the [document model](/getting-started/document-model).
+
+#links
+  :::u-button
+  ---
+  to: /getting-started/introduction
+  trailing-icon: i-lucide-arrow-right
+  size: lg
+  ---
+  Get started
+  :::
+
+  :::u-button
+  ---
+  to: /kb/why-comark
+  color: neutral
+  variant: outline
+  size: lg
+  ---
+  Why Comark
+  :::
 ::
