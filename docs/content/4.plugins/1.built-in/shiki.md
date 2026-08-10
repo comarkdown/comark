@@ -26,10 +26,10 @@ The `comark/plugins/shiki` plugin provides syntax highlighting for code blocks u
 
 For a lighter alternative (no TextMate grammars), see [`comark/plugins/rangi`](/plugins/built-in/rangi).
 
-`shiki` is a peer dependency, install it alongside Comark:
+`shiki` is a peer dependency. Install it alongside the theme package used below:
 
 ```vash [terminal]
-npm install shiki
+npm install shiki @shikijs/themes
 ```
 
 ## Usage

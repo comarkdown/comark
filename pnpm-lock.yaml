@@ -510,6 +510,9 @@ importers:
       '@comark/react':
         specifier: workspace:*
         version: link:../../../packages/comark-react
+      '@shikijs/themes':
+        specifier: 'catalog:'
+        version: 4.3.1
       '@tailwindcss/vite':
         specifier: 'catalog:'
         version: 4.3.2(vite@8.1.4(@types/node@26.1.1)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.99.0)(terser@5.49.0)(tsx@4.23.0)(yaml@2.9.0))
@@ -525,6 +528,9 @@ importers:
       react-dom:
         specifier: 'catalog:'
         version: 19.2.7(react@19.2.7)
+      shiki:
+        specifier: 'catalog:'
+        version: 4.3.1
     devDependencies:
       '@types/react':
         specifier: 'catalog:'
