@@ -11,11 +11,13 @@
   "dependencies": {
     "@astrojs/react": "catalog:",
     "@comark/react": "workspace:*",
+    "@shikijs/themes": "catalog:",
     "@tailwindcss/vite": "catalog:",
     "astro": "catalog:",
     "comark": "workspace:*",
     "react": "catalog:",
-    "react-dom": "catalog:"
+    "react-dom": "catalog:",
+    "shiki": "catalog:"
   },
   "devDependencies": {
     "@types/react": "catalog:",

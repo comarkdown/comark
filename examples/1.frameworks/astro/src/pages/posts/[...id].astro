@@ -3,6 +3,8 @@ import { getCollection } from 'astro:content'
 import { parseMarkdown } from 'comark'
 import Layout from '../../layouts/Layout.astro'
 import { MarkdownDocument } from '@comark/react'
+import githubDark from '@shikijs/themes/github-dark'
+import githubLight from '@shikijs/themes/github-light'
 import shiki from 'comark/plugins/shiki'
 import Alert from '../../components/Alert'
 
@@ -19,9 +21,9 @@ const document = await parseMarkdown(post.body!, {
   plugins: [
     shiki({
       themes: {
-        light: 'github-light',
-        dark: 'github-dark',
-      }
+        light: githubLight,
+        dark: githubDark,
+      },
     }),
   ],
 })
