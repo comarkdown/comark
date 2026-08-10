@@ -59,15 +59,15 @@ export default defineAppConfig({
   docs: {
     ogImage: {
       mark: 'comark' as const,
-      tagline: 'The Markdown engine for the modern web',
+      tagline: 'Parse and render Markdown anywhere',
     },
     llms: {
       description:
-        'Comark is the Markdown engine for the modern web. One parser, every renderer: Vue, React, Svelte, Angular, HTML and ANSI, with components, plugins and streaming.',
+        'Parse and render Markdown anywhere with one JavaScript library for HTML, ANSI, Vue, React, Svelte and Angular, plus plugins and streaming.',
     },
     schemaOrg: {
       description:
-        'The Markdown engine for the modern web. One parser, every renderer: Vue, React, Svelte, Angular, HTML and ANSI, with components, plugins and streaming.',
+        'Parse and render Markdown anywhere with one JavaScript library for HTML, ANSI, Vue, React, Svelte and Angular, plus plugins and streaming.',
       applicationCategory: 'DeveloperApplication',
       operatingSystem: 'Any',
       offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
