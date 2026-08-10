@@ -59,10 +59,10 @@ await renderAnsi(content, {
 
 ```ts
 import { renderAnsi } from '@comark/ansi'
-import highlight from '@comark/ansi/plugins/highlight'
+import shiki from '@comark/ansi/plugins/shiki'
 
 const output = await renderAnsi('```ts\nconsole.log("hi")\n```', {
-  plugins: [highlight()],
+  plugins: [shiki()],
 })
 ```
 

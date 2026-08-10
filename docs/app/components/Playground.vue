@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { parseMarkdown } from 'comark'
-import highlight from '@comark/nuxt/plugins/highlight'
+import shiki from '@comark/nuxt/plugins/shiki'
 import math from '@comark/nuxt/plugins/math'
 import binding from '@comark/nuxt/plugins/binding'
 import emoji from '@comark/nuxt/plugins/emoji'
@@ -54,7 +54,7 @@ const isDark = computed(() => colorMode.value === 'dark')
 const pluginToggles = useLocalStorage(
   'comark-playground-plugins',
   {
-    highlight: true,
+    shiki: true,
     math: true,
     emoji: true,
     mermaid: true,
@@ -76,7 +76,6 @@ const parseOptions = useLocalStorage(
   {
     autoUnwrap: true,
     autoClose: true,
-    html: true,
     linkify: true,
   },
   { mergeDefaults: true }
@@ -90,10 +89,10 @@ const pluginDefs = [
     factory: () => emoji(),
   },
   {
-    key: 'highlight',
-    label: 'Syntax Highlighting',
+    key: 'shiki',
+    label: 'Shiki Syntax Highlighting',
     icon: 'i-lucide-code',
-    factory: () => highlight(),
+    factory: () => shiki(),
   },
   {
     key: 'mermaid',
@@ -175,11 +174,6 @@ const parseOptionDefs = [
     icon: 'i-lucide-shield-check',
   },
   {
-    key: 'html',
-    label: 'HTML Parsing',
-    icon: 'i-lucide-file-code',
-  },
-  {
     key: 'linkify',
     label: 'Auto Convert urls to links',
     icon: 'i-lucide-link',
@@ -235,7 +229,6 @@ async function updatePreview(): Promise<void> {
       plugins: activePlugins.value,
       autoUnwrap: parseOptions.value.autoUnwrap,
       autoClose: parseOptions.value.autoClose,
-      html: parseOptions.value.html,
       linkify: parseOptions.value.linkify ?? true,
     })
     document.value = result
@@ -307,7 +300,6 @@ watch(completion, async (md) => {
       plugins: activePlugins.value,
       autoUnwrap: parseOptions.value.autoUnwrap,
       autoClose: true,
-      html: parseOptions.value.html,
     })
     document.value = result
   } catch {

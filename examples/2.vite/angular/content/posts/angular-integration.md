@@ -19,7 +19,7 @@ Instead of the typical `gray-matter` + `remark` + `rehype` pipeline, we use Coma
 ```ts
 // src/app/lib/posts.ts
 import { parseMarkdown } from 'comark'
-import highlight from 'comark/plugins/highlight'
+import shiki from 'comark/plugins/shiki'
 
 const rawFiles = import.meta.glob(
   '../../../content/posts/*.md',
@@ -30,8 +30,8 @@ export async function getPost(slug: string) {
   const content = Object.entries(rawFiles)
     .find(([path]) => path.endsWith(`${slug}.md`))?.[1]
 
-  const tree = await parseMarkdown(content!, { plugins: [highlight()] })
-  return { slug, tree, ...tree.frontmatter }
+  const document = await parseMarkdown(content!, { plugins: [shiki()] })
+  return { slug, tree: document, ...document.frontmatter }
 }
 ```
 

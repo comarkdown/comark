@@ -1,5 +1,5 @@
 import { parseMarkdown, type MarkdownDocument as Document } from 'comark'
-import highlight from '@comark/vue/plugins/highlight'
+import shiki from '@comark/vue/plugins/shiki'
 
 const rawFiles = import.meta.glob('../../content/posts/*.md', {
   query: '?raw',
@@ -49,7 +49,7 @@ export async function getPost(slug: string): Promise<Post> {
 
   const [, content] = entry
   const tree = await parseMarkdown(content, {
-    plugins: [highlight()],
+    plugins: [shiki()],
   })
 
   const fm = tree.frontmatter as Record<string, unknown>

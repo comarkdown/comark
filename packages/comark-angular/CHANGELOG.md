@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.6.2](https://github.com/comarkdown/comark/compare/@comark/angular@0.6.1...@comark/angular@0.6.2) (2026-08-07)
+
+## [0.6.1](https://github.com/comarkdown/comark/compare/@comark/angular@0.6.0...@comark/angular@0.6.1) (2026-08-06)
+
+### Features
+
+* **parse:** configuration for default plugins ([#326](https://github.com/comarkdown/comark/issues/326)) ([c354acc](https://github.com/comarkdown/comark/commit/c354acc707daa20ca5ac16d2fc7cba764ed4e861))
+
 ## [0.6.0](https://github.com/comarkdown/comark/compare/@comark/angular@0.5.1...@comark/angular@0.6.0) (2026-08-04)
 
 ### Features

@@ -62,7 +62,7 @@ The migration has two parts: **Core Package** (programmatic API) and **Nuxt Modu
   plugins: ComarkPlugin[],   // ordered array, not a record
   autoUnwrap: true,          // removes <p> from single-paragraph containers
   autoClose: true,           // completes incomplete syntax (useful for streaming)
-  html: true,                // parse embedded HTML tags
+  // HTML, components, attributes, alerts, task-list, frontmatter are on by default
 }
 ```
 
@@ -72,12 +72,12 @@ The `unified`/`remark`/`rehype` pipeline is replaced by Comark's own lighter plu
 
 | Feature | Before | After |
 |---|---|---|
-| Syntax highlighting | `rehypeHighlight` via `createMarkdownParser` | `highlight()` from `comark/plugins/highlight` |
+| Syntax highlighting | `rehypeHighlight` via `createMarkdownParser` | `shiki()` from `comark/plugins/shiki` |
 | Table of Contents | `parseMarkdown(md, { toc: { depth: 3 } })` | `toc({ depth: 3 })` plugin |
 | Excerpt / Summary | `result.excerpt` (built-in) | `summary()` plugin → `document.meta.summary` |
 | Emoji | `remark-emoji` (enabled by default) | `emoji()` plugin (opt-in) |
 
-Available plugins: `comark/plugins/toc`, `comark/plugins/highlight`, `comark/plugins/emoji`, `comark/plugins/task-list`, `comark/plugins/summary`, `comark/plugins/security`, `comark/plugins/alert`, `comark/plugins/math`, `comark/plugins/mermaid`, `comark/plugins/punctuation`
+Available plugins: `comark/plugins/toc`, `comark/plugins/shiki`, `comark/plugins/emoji`, `comark/plugins/task-list`, `comark/plugins/summary`, `comark/plugins/security`, `comark/plugins/alert`, `comark/plugins/math`, `comark/plugins/mermaid`, `comark/plugins/punctuation`
 
 ## Nuxt Module
 
@@ -141,14 +141,14 @@ Replaces global `mdc: { ... }` config. Define reusable components with their own
 
 ```typescript
 import { defineMarkdownComponent } from '@comark/vue'
-import highlight from 'comark/plugins/highlight'
+import shiki from 'comark/plugins/shiki'
 import toc from 'comark/plugins/toc'
 import githubLight from '@shikijs/themes/github-light'
 import githubDark from '@shikijs/themes/github-dark'
 
 export const ArticleMarkdown = defineMarkdownComponent({
   name: 'ArticleMarkdown',
-  plugins: [highlight({ themes: { light: githubLight, dark: githubDark } }), toc()],
+  plugins: [shiki({ themes: { light: githubLight, dark: githubDark } }), toc()],
   components: { alert: CustomAlert },
 })
 ```

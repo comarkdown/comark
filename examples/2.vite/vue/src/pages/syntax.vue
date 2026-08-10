@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Markdown } from '@comark/vue'
-import highlight from '@comark/vue/plugins/highlight'
+import shiki from '@comark/vue/plugins/shiki'
 import Alert from '@/components/Alert.vue'
 import ProseUnwrapDiv from '@/components/prose/ProseUnwrapDiv.vue'
 import python from '@shikijs/langs/python'
@@ -272,7 +272,7 @@ Text before the comment and text after the comment both render normally.
 <template>
   <Markdown
     :plugins="[
-      highlight({
+      shiki({
         languages: [python],
       }),
     ]"

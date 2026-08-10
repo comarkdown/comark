@@ -247,10 +247,10 @@ Syntax highlighting works during streaming: each re-parse will highlight newly c
 ```vue
 <script setup lang="ts">
 import { Markdown } from '@comark/vue'
-import highlight from '@comark/vue/plugins/highlight'
+import shiki from '@comark/vue/plugins/shiki'
 import githubDark from '@shikijs/themes/github-dark'
 
-const plugins = [highlight({ themes: { light: githubDark, dark: githubDark } })]
+const plugins = [shiki({ themes: { light: githubDark, dark: githubDark } })]
 </script>
 
 <template>
@@ -262,10 +262,10 @@ const plugins = [highlight({ themes: { light: githubDark, dark: githubDark } })]
 
 ```tsx
 import { Markdown } from '@comark/react'
-import highlight from '@comark/react/plugins/highlight'
+import shiki from '@comark/react/plugins/shiki'
 import githubDark from '@shikijs/themes/github-dark'
 
-const plugins = [highlight({ themes: { light: githubDark, dark: githubDark } })]
+const plugins = [shiki({ themes: { light: githubDark, dark: githubDark } })]
 
 export default function Chat({ content, streaming }) {
   return (
@@ -285,7 +285,7 @@ Pre-configure a Comark component for your AI chat UI once, then reuse it everywh
 ```typescript
 // markdown.ts
 import { defineMarkdownComponent } from '@comark/vue'
-import highlight from '@comark/vue/plugins/highlight'
+import shiki from '@comark/vue/plugins/shiki'
 import math, { Math } from '@comark/vue/plugins/math'
 import githubDark from '@shikijs/themes/github-dark'
 import Alert from './components/Alert.vue'
@@ -294,7 +294,7 @@ export const ChatMarkdown = defineMarkdownComponent({
   name: 'ChatMarkdown',
   plugins: [
     math(),
-    highlight({ themes: { light: githubDark, dark: githubDark } }),
+    shiki({ themes: { light: githubDark, dark: githubDark } }),
   ],
   components: { Math, alert: Alert },
   autoClose: true,

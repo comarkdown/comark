@@ -40,7 +40,7 @@ npm install shiki @shikijs/themes @shikijs/langs
 Import directly from `@shikijs/themes` and `@shikijs/langs`:
 
 ```typescript
-import highlight from 'comark/plugins/highlight'
+import shiki from 'comark/plugins/shiki'
 import githubLight from '@shikijs/themes/github-light'
 import githubDark from '@shikijs/themes/github-dark'
 import javascript from '@shikijs/langs/javascript'
@@ -57,7 +57,7 @@ Pass the imported themes and languages to the plugin:
   <Suspense>
     <Markdown
       :plugins="[
-        highlight({
+        shiki({
           themes: {
             light: githubLight,
             dark: githubDark
@@ -100,7 +100,7 @@ print("Hello, Python!")
 ```typescript
 import type { BundledLanguage, BundledTheme } from 'shiki'
 
-interface HighlightOptions {
+interface ShikiOptions {
   // Theme configuration - import from @shikijs/themes
   themes?: Record<string, BundledTheme>
 
@@ -157,6 +157,6 @@ import bash from '@shikijs/langs/bash'
 
 ## Learn More
 
-- [Highlight Plugin Documentation](https://comark.dev/plugins/built-in/syntax-highlight)
+- [Shiki Plugin Documentation](https://comark.dev/plugins/built-in/shiki)
 - [Shiki Documentation](https://shiki.style/)
 - [Comark Documentation](https://comark.dev)

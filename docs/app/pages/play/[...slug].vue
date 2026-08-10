@@ -5,7 +5,7 @@ import { useCompletion } from '@ai-sdk/vue'
 import { createMarkdownParser } from 'comark'
 import jsonRenderer from '@comark/nuxt/plugins/json-render'
 import binding from '@comark/nuxt/plugins/binding'
-import highlight from '@comark/nuxt/plugins/highlight'
+import shiki from '@comark/nuxt/plugins/shiki'
 import math from '@comark/nuxt/plugins/math'
 import emoji from '@comark/nuxt/plugins/emoji'
 import mermaid from '@comark/nuxt/plugins/mermaid'
@@ -30,7 +30,7 @@ const markdown = ref(
     : playgroundExamples[0]!.content
 )
 const parsePlaygroundMarkdown = createMarkdownParser({
-  plugins: [jsonRenderer(), binding(), highlight(), math(), emoji(), mermaid(), footnotes(), punctuation()],
+  plugins: [jsonRenderer(), binding(), shiki(), math(), emoji(), mermaid(), footnotes(), punctuation()],
 })
 
 const { data: page, refresh } = await useAsyncData(

@@ -1,7 +1,7 @@
 import type { MarkdownDocument, ParserOptions } from 'comark'
 import { readonly, ref, shallowRef } from 'vue'
 import { parseMarkdown } from 'comark'
-import highlight from 'comark/plugins/highlight'
+import shiki from 'comark/plugins/shiki'
 
 export interface MDCStreamState {
   tree: MarkdownDocument
@@ -16,7 +16,7 @@ export interface MDCStreamOptions extends ParserOptions {
   onError?: (error: Error) => void
 }
 
-const plugins = [highlight()]
+const plugins = [shiki()]
 
 /**
  * Vue composable for streaming Comark content parsing

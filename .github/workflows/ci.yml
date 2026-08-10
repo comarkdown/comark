@@ -24,9 +24,8 @@ jobs:
       - run: pnpm dev:prepare
       - run: pnpm lint
       - run: pnpm prepack
-      - name: Check package bundle size
-        run: pnpm vitest run bundle
       - run: pnpm test
-
       - name: Publish
         run: pnpx pkg-pr-new publish --pnpm './packages/*'
+      - name: Check package bundle size
+        run: pnpm vitest run bundle

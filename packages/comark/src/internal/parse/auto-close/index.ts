@@ -11,10 +11,14 @@ import { closeTables } from './table.ts'
  *
  * @param markdown - The markdown content to auto-close
  * @param options - `frontmatter` completes an unclosed leading frontmatter block.
+ *   `syntax: false` disables Comark component-fence handling (`::` closers and
+ *   props braces), for input parsed without the components plugin.
  * @returns The markdown with unclosed syntax closed
  */
-export function autoCloseMarkdown(markdown: string, options: { frontmatter?: boolean } = {}): string {
+export function autoCloseMarkdown(markdown: string, options: { frontmatter?: boolean; syntax?: boolean } = {}): string {
   if (!markdown || markdown === '') return markdown
+
+  const syntaxEnabled = options.syntax !== false
 
   const lines = markdown.split('\n')
   const n = lines.length
@@ -92,7 +96,7 @@ export function autoCloseMarkdown(markdown: string, options: { frontmatter?: boo
     }
 
     // Clear the line if there is no open component and the last line is a component fence without name
-    if (idx === n - 1) {
+    if (idx === n - 1 && syntaxEnabled) {
       if (trimmed[0] === ':' && componentStack.length === 0) {
         let colonCount = 0
         while (colonCount < trimmed.length && trimmed[colonCount] === ':') colonCount++
@@ -103,7 +107,7 @@ export function autoCloseMarkdown(markdown: string, options: { frontmatter?: boo
     }
 
     // Component open/close (lines starting with :: or more colons)
-    if (trimmed[0] === ':') {
+    if (syntaxEnabled && trimmed[0] === ':') {
       let colonCount = 0
       while (colonCount < trimmed.length && trimmed[colonCount] === ':') colonCount++
       if (colonCount >= 2) {
@@ -148,7 +152,7 @@ export function autoCloseMarkdown(markdown: string, options: { frontmatter?: boo
   // Fix inline markers on last line (skip inside block-level structures)
   const lastIdx = n - 1
   if (!inFrontmatter && !inBlockMath && lines[lastIdx].trim() !== '$$') {
-    lines[lastIdx] = closeInlineMarkersLinear(lines[lastIdx])
+    lines[lastIdx] = closeInlineMarkersLinear(lines[lastIdx], syntaxEnabled)
   }
 
   let result = lines.join('\n')
@@ -174,7 +178,7 @@ export function autoCloseMarkdown(markdown: string, options: { frontmatter?: boo
   }
 
   // Close Comark components
-  if (markdown.includes('::')) {
+  if (syntaxEnabled && markdown.includes('::')) {
     // Close unclosed brace in last line props
     const lastLineStart = result.lastIndexOf('\n') + 1
     const finalLine = result.slice(lastLineStart)
@@ -251,8 +255,10 @@ function scanDelimiterRun(line: string, start: number, marker: string) {
 /**
  * Closes inline markers (*, **, ***, ~~, `, $, $$, [, () on the last line
  * without using regex - pure character scanning in O(n) time
+ *
+ * With `syntax` false, `{...}` is literal text instead of an attribute scope.
  */
-function closeInlineMarkersLinear(line: string): string {
+function closeInlineMarkersLinear(line: string, syntax: boolean): string {
   const len = line.length
   if (len === 0) return line
 
@@ -312,11 +318,11 @@ function closeInlineMarkersLinear(line: string): string {
       continue
     }
 
-    if (ch === '{' && prevCh !== ' ') {
+    if (syntax && ch === '{' && prevCh !== ' ') {
       inAttributes++
       continue
     }
-    if (ch === '}') {
+    if (syntax && ch === '}') {
       if (inAttributes > 0) inAttributes--
       continue
     }
