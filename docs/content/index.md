@@ -1,18 +1,18 @@
 ---
 navigation: false
 title: Comark
-description: 'The Markdown engine for the modern web. One parser, every renderer: Vue, React, Svelte, Angular, HTML and ANSI, with components, plugins and streaming.'
+description: 'Parse and render Markdown anywhere with one JavaScript library for HTML, ANSI, Vue, React, Svelte and Angular, plus plugins and streaming.'
 seo:
-  title: The Markdown Engine for the Modern Web
-  description: 'The Markdown engine for the modern web. One parser, every renderer: Vue, React, Svelte, Angular, HTML and ANSI, with components, plugins and streaming.'
+  title: Parse and Render Markdown Anywhere with Comark
+  description: 'Parse and render Markdown anywhere with one JavaScript library for HTML, ANSI, Vue, React, Svelte and Angular, plus plugins and streaming.'
   ogImage: /social-card.jpg
 
 ---
 
 ::landing-hero
 ---
-title: The Markdown engine for the modern web
-description: One parser, every renderer. Component syntax, attributes, plugins, and streaming, with decoupled parsing you can run on the server, the client, or mid-stream.
+title: Parse and render Markdown anywhere
+description: A JavaScript library to parse and stream Markdown, with renderers for HTML, terminals, Vue, React, Svelte and Angular, plus components, attributes, and plugins.
 install: npm install comark
 primaryLabel: Get Started
 primaryTo: /getting-started/introduction
@@ -21,19 +21,19 @@ secondaryTo: https://github.com/comarkdown/comark
 demoMarkdown: |-
     # Hello World
   
-    A **high-performance** markdown parser with _streaming_ support.
+    A JavaScript library to **parse and render Markdown** anywhere.
   
     ## Features
   
-    - Parse markdown in real-time
-    - Vue, React, Svelte, and Angular components
-    - Auto-close incomplete syntax
+    - CommonMark and GFM support
+    - HTML, ANSI, and framework renderers
+    - Streaming, components, and plugins
   
     ::callout{color="info" icon="i-lucide-info"}
-    Comark handles **components in markdown** natively.
+    One Markdown source, **every renderer**.
     ::
   
-    > Built for modern web applications.
+    > Built on markdown-exit, a TypeScript rewrite of markdown-it.
   
     ```ts [example.ts]
     import { parseMarkdown } from 'comark'
@@ -49,20 +49,20 @@ demoMarkdown: |-
 ::landing-pillars
 ---
 headline: Why Comark
-title: Markdown as data, not code
-description: Component syntax stays in plain text. Parsing happens at build time or runtime, your choice, and works across any renderer. Built on five years of MDC, the parser behind Nuxt Content.
+title: One Markdown pipeline, every output
+description: Parse standard Markdown into serializable data, then render it anywhere. Add streaming, component syntax, attributes, and plugins when you need them.
 pillars:
   - icon: i-lucide-zap
     title: Runtime parsing
-    description: No build step. Parse Markdown with components on the server, in the browser, or in a worker. Content is live the moment it is saved.
+    description: No build step required. Parse Markdown on the server, in the browser, in a worker, or during a build.
     to: /api/parse
   - icon: i-lucide-radio
     title: Streaming built in
-    description: Auto-close renders incomplete Markdown correctly at every frame. Pipe AI output straight into your component tree.
+    description: Auto-close renders incomplete Markdown correctly at every frame. Display AI output as soon as it arrives.
     to: /api/auto-close
   - icon: i-lucide-layers
     title: One parser, every renderer
-    description: The same source renders to Vue, React, Svelte, Angular, Nuxt, HTML and ANSI. Your content outlasts your framework.
+    description: The same source renders to HTML, ANSI, Vue, React, Svelte and Angular. Your content outlasts your framework.
     to: /getting-started/installation
   - icon: i-lucide-file-text
     title: Still just Markdown
@@ -84,8 +84,8 @@ pillars:
 
 ::landing-features
 ---
-frameworksDescription: Embed custom components in your Markdown and render them
-  natively in Vue, React, Svelte and Angular.
+frameworksDescription: Render the same Markdown document natively in Vue,
+  React, Svelte and Angular.
 frameworksHeadline: Frameworks
 frameworksReactLinkLabel: React docs
 frameworksReactLinkTo: /rendering/react
@@ -182,7 +182,7 @@ title: Extensible plugins
 
 ::landing-cta
 ---
-description: Install Comark, pick a renderer, and render your first component in minutes.
+description: Install Comark, pick a renderer, and render your first Markdown document in minutes.
 install: npm install comark
 primaryLabel: Get Started
 primaryTo: /getting-started/introduction
