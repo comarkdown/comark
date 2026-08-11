@@ -31,11 +31,7 @@ describe('MarkdownNode nested component rendering', () => {
       vcr: { createComponent: vi.fn(() => componentRef) },
     })
 
-    node.renderChildren(
-      {},
-      [['badge', {}, 'shown']],
-      { frontmatter: {}, meta: {}, data: {}, props: {} },
-    )
+    node.renderChildren({}, [['badge', {}, 'shown']], { frontmatter: {}, meta: {}, data: {}, props: {} })
 
     expect(componentRef.setInput).toHaveBeenCalledWith('node', ['badge', {}, 'shown'])
     expect(componentRef.setInput).toHaveBeenCalledWith('components', node.components)
@@ -56,11 +52,12 @@ describe('MarkdownNode nested component rendering', () => {
     })
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
 
-    node.renderChildren(
-      {},
-      [['badge', {}, 'gone'], 'still rendered'],
-      { frontmatter: {}, meta: {}, data: {}, props: {} },
-    )
+    node.renderChildren({}, [['badge', {}, 'gone'], 'still rendered'], {
+      frontmatter: {},
+      meta: {},
+      data: {},
+      props: {},
+    })
 
     expect(consoleError).toHaveBeenCalledWith('Failed to render custom component "badge"', error)
     expect(renderer.appendChild).toHaveBeenCalledWith({}, { value: 'still rendered' })
