@@ -26,6 +26,12 @@ export default defineNuxtConfig({
     preference: 'dark',
   },
 
+  nitro: {
+    externals: {
+      inline: ['comark'],
+    },
+  },
+
   routeRules: {
     '/plugins/built-in/highlight': { redirect: '/plugins/built-in/shiki' },
     '/plugins/built-in/syntax-highlight': { redirect: '/plugins/built-in/shiki' },
