@@ -6,6 +6,7 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Type,
+  inject,
 } from '@angular/core'
 import { createSerializedMarkdownParser } from 'comark'
 import type { ParserOptions, MarkdownDocument as MarkdownDocumentType } from 'comark'
@@ -74,7 +75,7 @@ export class Markdown implements OnChanges {
 
   private serializedParse = createSerializedMarkdownParser({})
 
-  constructor(private cdr: ChangeDetectorRef) {}
+  private cdr = inject(ChangeDetectorRef)
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['options'] || changes['plugins'] || changes['unwrap']) {

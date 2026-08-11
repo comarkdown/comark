@@ -8,6 +8,7 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   ElementRef,
+  inject,
 } from '@angular/core'
 import { renderMermaidSVG, THEMES, type DiagramColors } from 'beautiful-mermaid'
 import type { ThemeNames } from 'comark/plugins/mermaid'
@@ -38,10 +39,8 @@ export class Mermaid implements OnInit, OnChanges, OnDestroy {
   private isDark = false
   private observer?: MutationObserver
 
-  constructor(
-    private elementRef: ElementRef,
-    private cdr: ChangeDetectorRef
-  ) {}
+  private elementRef = inject(ElementRef)
+  private cdr = inject(ChangeDetectorRef)
 
   ngOnInit(): void {
     if (typeof document === 'undefined') return

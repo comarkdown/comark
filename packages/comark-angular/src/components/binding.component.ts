@@ -6,6 +6,7 @@ import {
   Renderer2,
   OnChanges,
   SimpleChanges,
+  inject,
 } from '@angular/core'
 
 /**
@@ -31,10 +32,8 @@ export class Binding implements OnChanges {
    */
   @Input() defaultValue?: string
 
-  constructor(
-    private elementRef: ElementRef,
-    private renderer: Renderer2
-  ) {}
+  private elementRef = inject(ElementRef)
+  private renderer = inject(Renderer2)
 
   ngOnChanges(_changes: SimpleChanges): void {
     const hostEl = this.elementRef.nativeElement as HTMLElement
