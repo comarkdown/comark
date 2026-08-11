@@ -1,4 +1,10 @@
+import '@angular/compiler'
 import { describe, expect, it, vi } from 'vitest'
+import { Component, provideZonelessChangeDetection, type Type } from '@angular/core'
+import { bootstrapApplication } from '@angular/platform-browser'
+import { renderApplication } from '@angular/platform-server'
+import { parseMarkdown, type MarkdownDocument as MarkdownDocumentType } from 'comark'
+import { MarkdownDocument } from '../src/components/markdown-document.component.ts'
 import { MarkdownNode } from '../src/components/markdown-node.component.ts'
 
 function createRenderer() {
@@ -62,5 +68,69 @@ describe('MarkdownNode nested component rendering', () => {
     expect(consoleError).toHaveBeenCalledWith('Failed to render custom component "badge"', error)
     expect(renderer.appendChild).toHaveBeenCalledWith({}, { value: 'still rendered' })
     consoleError.mockRestore()
+  })
+})
+
+
+/** Badge — applied via decorator factory so Vitest/oxc need not enable experimentalDecorators. */
+class Badge {
+  name = 'badge'
+}
+Component({
+  selector: 'app-badge',
+  standalone: true,
+  template: `<span class="badge">{{ name }}</span>`,
+  inputs: ['name'],
+})(Badge)
+
+async function renderMarkdown(
+  markdown: string,
+  components: Record<string, Type<unknown>> = { badge: Badge as Type<unknown> }
+): Promise<string> {
+  const document = await parseMarkdown(markdown)
+
+  class App {
+    document: MarkdownDocumentType = document
+    components = components
+  }
+  Component({
+    selector: 'app-root',
+    standalone: true,
+    imports: [MarkdownDocument],
+    template: `
+      <comark-markdown-document
+        [value]="document"
+        [components]="components"
+      />
+    `,
+  })(App)
+
+  return renderApplication(
+    (context) =>
+      bootstrapApplication(
+        App,
+        {
+          providers: [provideZonelessChangeDetection()],
+        },
+        context
+      ),
+    {
+      document: '<!DOCTYPE html><html><head></head><body><app-root></app-root></body></html>',
+    }
+  )
+}
+
+describe('nested components', () => {
+  it('renders Badge component name for inline :badge', async () => {
+    const html = await renderMarkdown('Hello :badge')
+
+    expect(html).toContain('class="badge"')
+    expect(html).toContain('>badge</span>')
+  })
+  it('renders Badge component name for inline :badge with custom name', async () => {
+    const html = await renderMarkdown('Hello :badge{name="Ahad"}')
+
+    expect(html).toContain('class="badge"')
+    expect(html).toContain('>Ahad</span>')
   })
 })
