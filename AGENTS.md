@@ -62,7 +62,8 @@ packages/comark/
 │   │   ├── components.ts     # Block/inline components + spans (`::name`, `:name`, `[text]`)
 │   │   ├── attributes.ts     # Inline attributes (`{props}` after tokens)
 │   │   ├── emoji.ts          # Emoji shortcodes
-│   │   ├── shiki.ts          # Syntax highlighting via Shiki (peer: shiki)
+│   │   ├── shiki.ts          # Shiki with bundled default theme + language loaders (peer: shiki)
+│   │   ├── shiki/core.ts     # Shiki without default theme/language imports
 │   │   ├── highlight.ts      # Deprecated alias → shiki (remove next major)
 │   │   ├── rangi.ts          # Lightweight highlighting via rangi (peer: rangi)
 │   │   ├── math.ts           # LaTeX math via KaTeX (peer: katex)
@@ -78,6 +79,7 @@ packages/comark/
 │   │   ├── comark.tmLanguage.ts    # Comark TextMate grammar (Shiki plugin)
 │   │   └── comark.rangiLanguage.ts # Comark rangi grammar (rangi plugin)
 │   └── internal/             # Internal implementation (not exported)
+│       ├── shiki.ts          # Shared Shiki runtime used by both entry points
 │       ├── front-matter.ts
 │       ├── parse/            # Parsing pipeline
 │       └── stringify/        # AST → string rendering
@@ -391,6 +393,7 @@ import { textContent, visit } from 'comark/utils'
 
 // Core plugins — use when calling parseMarkdown() directly (framework-agnostic)
 import shiki from 'comark/plugins/shiki'
+import shikiCore from 'comark/plugins/shiki/core' // ShikiCoreOptions: required themes + languages, no defaults
 import rangi, { comarkLanguage, comarkLanguages } from 'comark/plugins/rangi'
 // import highlight from 'comark/plugins/highlight' // deprecated alias → shiki
 import math from 'comark/plugins/math'
@@ -410,6 +413,7 @@ import { markdownItAttributes } from 'comark/plugins/attributes'
 // NOTE: All framework packages re-export every core plugin via their own subpath.
 // Prefer the framework-specific path when using a framework renderer:
 //   @comark/vue/plugins/shiki, @comark/react/plugins/shiki, etc.
+// Nested entries are re-exported too: @comark/vue/plugins/shiki/core, etc.
 // Use comark/plugins/* only when calling parseMarkdown() without a framework renderer.
 
 // HTML rendering — parse + render to HTML string

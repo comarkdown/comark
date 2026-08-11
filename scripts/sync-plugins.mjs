@@ -6,7 +6,7 @@
 // Run from repo root: node scripts/sync-plugins.mjs
 
 import { readFileSync, writeFileSync, mkdirSync, readdirSync, existsSync } from 'node:fs'
-import { join, basename } from 'node:path'
+import { dirname, join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const root = fileURLToPath(new URL('..', import.meta.url)).replace(/\/$/, '')
@@ -25,10 +25,22 @@ const frameworkPackages = [
   'comark-angular',
 ]
 
-// Collect plugin names from comark/dist/plugins/ (by .js files)
-const comarkPlugins = readdirSync(comarkPluginsDir)
-  .filter((f) => f.endsWith('.js') && !f.endsWith('.mjs'))
-  .map((f) => basename(f, '.js'))
+// Collect plugin names from comark/dist/plugins/ (by .js files), including
+// nested entry points such as `shiki/core`.
+function collectPlugins(dir) {
+  const plugins = []
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const path = join(dir, entry.name)
+    if (entry.isDirectory()) {
+      plugins.push(...collectPlugins(path))
+    } else if (entry.name.endsWith('.js') && !entry.name.endsWith('.mjs')) {
+      plugins.push(relative(comarkPluginsDir, path).slice(0, -3))
+    }
+  }
+  return plugins
+}
+
+const comarkPlugins = collectPlugins(comarkPluginsDir)
 
 for (const pkg of frameworkPackages) {
   const distPluginsDir = join(packagesDir, pkg, 'dist', 'plugins')
@@ -55,7 +67,9 @@ for (const pkg of frameworkPackages) {
     }
 
     for (const ext of ['.js', '.d.ts']) {
-      writeFileSync(join(distPluginsDir, `${name}${ext}`), reexport)
+      const outputPath = join(distPluginsDir, `${name}${ext}`)
+      mkdirSync(dirname(outputPath), { recursive: true })
+      writeFileSync(outputPath, reexport)
       created++
     }
   }

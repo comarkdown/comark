@@ -74,6 +74,7 @@
     "rangi": "catalog:",
     "tsx": "catalog:",
     "twoslash": "catalog:",
+    "vite": "catalog:",
     "vitest": "catalog:"
   },
   "peerDependencies": {
