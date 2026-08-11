@@ -69,6 +69,16 @@ footer a {
   @apply bg-transparent p-0 text-inherit;
 }
 
+.prose .code-block {
+  @apply mb-4 overflow-hidden rounded-lg border border-neutral-200 dark:border-neutral-700;
+}
+.prose .code-block-header {
+  @apply flex items-center justify-between bg-neutral-100 px-3 py-1.5 text-xs text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400;
+}
+.prose .code-block pre {
+  @apply mb-0 rounded-none;
+}
+
 .shiki span.line {
   display: block;
 }
