@@ -12,22 +12,38 @@ seo:
 ---
 orientation: horizontal
 ---
-  ```ts [markdown.ts]
-  import { parseMarkdown } from 'comark'
-  import { renderHtmlFromDocument } from '@comark/html'
+  :::landing-hero-demo
+  ---
+  playground: /play/editor?example=all-features
+  source: |-
+    # Hello World
 
-  // Parse once into a compact, serializable document
-  const document = await parseMarkdown('# Hello **World**')
+    A JavaScript library to **parse and render Markdown** anywhere.
 
-  // Render anywhere: HTML, ANSI, Vue, React,
-  // Svelte or Angular
-  const html = await renderHtmlFromDocument(document)
-  ```
+    ## Features
+
+    - CommonMark and GFM support
+    - HTML, ANSI, and framework renderers
+    - Streaming, components, and plugins
+
+    ::callout{color="info" icon="i-lucide-info"}
+    One Markdown source, **every renderer**.
+    ::
+
+    > Built on markdown-exit, a TypeScript rewrite of markdown-it.
+
+    ```ts [example.ts]
+    import { parseMarkdown } from 'comark'
+
+    const document = await parseMarkdown('# Hello **World**')
+    ```
+  ---
+  :::
 #title
 Parse and render Markdown anywhere.
 
 #description
-A JavaScript library to parse and stream Markdown, with renderers for HTML, terminals, Vue, React, Svelte and Angular, plus components, attributes, and plugins.
+A JavaScript library to parse and stream Markdown, with renderers for any framework or output format.
 
 #links
   :::u-button
@@ -52,109 +68,64 @@ A JavaScript library to parse and stream Markdown, with renderers for HTML, term
   :::
 ::
 
-::landing-stack
----
-items:
-  - icon: i-logos-vue
-    label: Vue
-    to: /rendering/vue
-  - icon: i-logos-react
-    label: React
-    to: /rendering/react
-  - icon: i-logos-svelte-icon
-    label: Svelte
-    to: /rendering/svelte
-  - icon: i-logos-angular-icon
-    label: Angular
-    to: /rendering/angular
-  - icon: i-logos-nuxt-icon
-    label: Nuxt
-    to: /rendering/nuxt
-  - icon: i-vscode-icons-file-type-html
-    label: HTML
-    to: /rendering/html
-  - icon: i-lucide-terminal
-    label: ANSI
-    to: /rendering/ansi
----
-One parser, every renderer
-::
-
-::landing-tabs
----
-items:
-  - icon: i-logos-vue
-    title: Vue
-    description: Drop the Markdown component in a template. Custom components and plugins are props.
-  - icon: i-logos-react
-    title: React
-    description: The same component API for React and React Server Components.
-  - icon: i-logos-svelte-icon
-    title: Svelte
-    description: Native Svelte 5 rendering with runes, no wrapper framework.
-  - icon: i-vscode-icons-file-type-html
-    title: HTML
-    description: A plain string renderer for SSG, RSS feeds, and emails. No framework required.
----
-
+::landing-features
 #headline
 Renderers
 
 #title
-Same document, native output
+Parse once, render anywhere
 
 #description
-Parsing and rendering are decoupled through a compact, serializable [`MarkdownDocument`](/getting-started/document-model). Parse on the server, during a build, or as content streams in, then render it natively in your framework. Your content outlasts your stack.
+Comark parses Markdown into a compact [`MarkdownDocument`](/getting-started/document-model). Parse on the server, during a build, or as content streams in, then render it natively in your framework. Your content outlasts your stack.
 
-#code-0
-  ```vue [App.vue]
-  <script setup lang="ts">
-  import { Markdown } from '@comark/vue'
+#default
+  :::landing-feature-card{icon="i-logos-nuxt-icon" to="/rendering/nuxt"}
+  #title
+  Nuxt
 
-  const content = `# Hello
+  #description
+  A module with auto-imported components, server-side parsing, and Nuxt UI prose components.
+  :::
 
-  Rendered **natively** in Vue.`
-  </script>
+  :::landing-feature-card{icon="i-logos-vue" to="/rendering/vue"}
+  #title
+  Vue
 
-  <template>
-    <Markdown>{{ content }}</Markdown>
-  </template>
-  ```
+  #description
+  Drop the `Markdown` component in a template. Custom components and plugins are props.
+  :::
 
-#code-1
-  ```tsx [App.tsx]
-  import { Markdown } from '@comark/react'
+  :::landing-feature-card{icon="i-logos-react" to="/rendering/react"}
+  #title
+  React
 
-  const content = `# Hello
+  #description
+  The same component API for React, including React Server Components and Next.js.
+  :::
 
-  Rendered **natively** in React.`
+  :::landing-feature-card{icon="i-logos-svelte-icon" to="/rendering/svelte"}
+  #title
+  Svelte
 
-  export default function App() {
-    return <Markdown>{content}</Markdown>
-  }
-  ```
+  #description
+  Native Svelte 5 rendering with runes. No wrapper framework, no `{@html}`.
+  :::
 
-#code-2
-  ```svelte [App.svelte]
-  <script lang="ts">
-    import { Markdown } from '@comark/svelte'
+  :::landing-feature-card{icon="i-logos-angular-icon" to="/rendering/angular"}
+  #title
+  Angular
 
-    let content = $state(`# Hello
+  #description
+  Standalone components for Angular 17+, with the same props and streaming support.
+  :::
 
-  Rendered **natively** in Svelte.`)
-  </script>
+  :::landing-feature-card{icon="i-vscode-icons-file-type-html" to="/rendering/html"}
+  #title
+  HTML
 
-  <Markdown value={content} />
-  ```
-
-#code-3
-  ```ts [render.ts]
-  import { renderHtml } from '@comark/html'
-
-  const html = await renderHtml(`# Hello
-
-  Rendered to a **plain HTML** string.`)
-  ```
+  #description
+  A plain string renderer for SSG, RSS feeds, and emails. No framework required.
+  :::
 ::
 
 ::landing-tabs
@@ -175,7 +146,7 @@ Streaming
 Built for AI output
 
 #description
-Auto-close completes unterminated Markdown (bold, code fences, components) so incomplete content renders correctly at every frame. Display AI responses as soon as they arrive, without flashes or broken markup.
+Auto-close completes unterminated Markdown so incomplete content renders correctly at every frame. Display AI responses as soon as they arrive, without flashes or broken markup.
 
 #code-0
   ```vue [AiChat.vue]
@@ -210,61 +181,142 @@ Auto-close completes unterminated Markdown (bold, code fences, components) so in
   ```
 ::
 
-::landing-features
+::landing-tabs
+---
+reverse: true
+items:
+  - icon: i-lucide-code
+    title: Shiki
+    description: Syntax highlighting for code blocks, with multi-theme support and on-demand language loading.
+  - icon: i-lucide-braces
+    title: JSON Render
+    description: Declarative UI specs in json-render code blocks, turned into real components.
+  - icon: i-simple-icons-mermaid
+    title: Mermaid
+    description: Flowcharts and diagrams rendered from mermaid code blocks.
+---
+
 #headline
-Why Comark
+Plugins
 
 #title
-One Markdown pipeline, every output
+Use official plugins, or write your own
 
-#default
-  :::landing-feature-card{icon="i-lucide-zap" to="/api/parse"}
-  #title
-  Runtime parsing
+#description
+Official plugins add syntax highlighting, math, diagrams, table of contents, and more. Write your own against the plugin API or [browse all plugins](/plugins).
 
-  #description
-  No build step required. Parse Markdown on the server, in the browser, in a worker, or during a build.
-  :::
+#code-0
+  ```ts [highlight.ts]
+  import { parseMarkdown } from 'comark'
+  import shiki from 'comark/plugins/shiki'
+  import githubDark from '@shikijs/themes/github-dark'
+  import githubLight from '@shikijs/themes/github-light'
 
-  :::landing-feature-card{icon="i-lucide-radio" to="/api/auto-close"}
-  #title
-  Streaming built in
+  const document = await parseMarkdown(content, {
+    plugins: [
+      shiki({
+        themes: { light: githubLight, dark: githubDark }
+      })
+    ]
+  })
+  ```
 
-  #description
-  Auto-close renders incomplete Markdown correctly at every frame. Display AI output as soon as it arrives.
-  :::
+#code-1
+  ```tsx [Dashboard.tsx]
+  import { Markdown } from '@comark/react'
+  import jsonRender from '@comark/react/plugins/json-render'
 
-  :::landing-feature-card{icon="i-lucide-layers" to="/getting-started/installation"}
-  #title
-  One parser, every renderer
+  export function Dashboard({ content }: { content: string }) {
+    return (
+      <Markdown plugins={[jsonRender()]}>
+        {content}
+      </Markdown>
+    )
+  }
+  ```
 
-  #description
-  The same source renders to HTML, ANSI, Vue, React, Svelte and Angular. Your content outlasts your framework.
-  :::
+#code-2
+  ```vue [Diagram.vue]
+  <script setup lang="ts">
+  import { Markdown } from '@comark/vue'
+  import mermaid, { Mermaid } from '@comark/vue/plugins/mermaid'
 
-  :::landing-feature-card{icon="i-lucide-file-text" to="/syntax/markdown"}
-  #title
-  Still just Markdown
+  defineProps<{ content: string }>()
+  </script>
 
-  #description
-  CommonMark and GFM by default. Attributes and components are opt-in syntax, not a new language.
-  :::
+  <template>
+    <Suspense>
+      <Markdown
+        :components="{ mermaid: Mermaid }"
+        :plugins="[mermaid()]"
+      >
+        {{ content }}
+      </Markdown>
+    </Suspense>
+  </template>
+  ```
+::
 
-  :::landing-feature-card{icon="i-lucide-puzzle" to="/plugins"}
-  #title
-  Plugin ecosystem
+::landing-tabs
+---
+items:
+  - icon: i-lucide-component
+    title: Components
+    description: Block and inline components with props, slots, and nested Markdown.
+  - icon: i-lucide-tag
+    title: Attributes
+    description: Classes, IDs, and data attributes on any native Markdown element.
+  - icon: i-lucide-list
+    title: Frontmatter
+    description: A leading YAML block parsed into metadata you can bind to component props.
+---
 
-  #description
-  Compatible with markdown-it plugins. Shiki highlighting, KaTeX math, Mermaid diagrams, table of contents and more.
-  :::
+#headline
+Syntax
 
-  :::landing-feature-card{icon="i-lucide-braces" to="/getting-started/document-model"}
-  #title
-  Serializable document
+#title
+[Co]{.font-bold}[mponents in ]{.text-muted} [Mark]{.font-bold}[down]{.text-muted}
 
-  #description
-  Parse to a plain MarkdownDocument that is easy to traverse, cache, serialize, and send over the wire.
-  :::
+#description
+Discover our opt-in syntax for components, attributes, and frontmatter, handled by default plugins you can turn off. CommonMark and GFM  are supported by default, so every Markdown file you already have keeps working. 
+
+#code-0
+  ```mdc [components.md]
+  ::alert{type="info"}
+  This is an **important** message.
+  ::
+
+  ::card{title="My Card"}
+  Card content with full **markdown** support.
+  ::
+
+  Click the :button[Submit]{type="primary"} to continue.
+  ```
+
+#code-1
+  ```mdc [attributes.md]
+  **bold text**{.highlight #important}
+
+  [Read the docs](/getting-started/introduction){.button target="_blank"}
+
+  ![Logo](logo.svg){.responsive width="800" height="600"}
+
+  Wrap [any inline text]{.text-primary} in a span.
+  ```
+
+#code-2
+  ```mdc [article.md]
+  ---
+  title: My Article
+  author: Jane Doe
+  tags:
+    - markdown
+  ---
+
+  # My Article
+
+  Written by :badge{:label="frontmatter.author"}.
+  ```
 ::
 
 ::landing-faq

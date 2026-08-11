@@ -111,17 +111,6 @@ export default defineAppConfig({
           preview: 'flex-col *:w-full [&_a]:w-fit',
         },
       },
-      codeIcon: {
-        'astro.config.mjs': 'i-simple-icons:astro',
-        astro: 'i-simple-icons:astro',
-        md: 'i-custom-comark',
-        mdc: 'i-custom-comark',
-        react: 'i-logos-react',
-        html: 'i-vscode-icons-file-type-html',
-        svelte: 'i-logos-svelte-icon',
-        nuxt: 'i-logos-nuxt-icon',
-        angular: 'i-logos-angular-icon',
-      },
     },
   },
 })
