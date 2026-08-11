@@ -1,7 +1,7 @@
 ---
 navigation: false
-title: Comark
-description: 'Parse and render Markdown anywhere with one JavaScript library for HTML, ANSI, Vue, React, Svelte and Angular, plus plugins and streaming.'
+title: Parse and Render Markdown Anywhere with Comark
+description: 'A JavaScript library to parse and stream Markdown, with renderers for HTML, terminals, Vue, React, Svelte and Angular, plus components, attributes, and plugins.'
 seo:
   title: Parse and Render Markdown Anywhere with Comark
   description: 'Parse and render Markdown anywhere with one JavaScript library for HTML, ANSI, Vue, React, Svelte and Angular, plus plugins and streaming.'
@@ -20,30 +20,28 @@ orientation: horizontal
 
     A JavaScript library to **parse and render Markdown** anywhere.
 
+    ```ts
+    import { parseMarkdown } from 'comark'
+
+    const doc = await parseMarkdown('# Hello **World**')
+    ```
+
     ## Features
 
     - CommonMark and GFM support
     - HTML, ANSI, and framework renderers
     - Streaming, components, and plugins
 
-    ::callout{color="info" icon="i-lucide-info"}
-    One Markdown source, **every renderer**.
+    ::callout{icon="i-lucide-info"}
+    Built on markdown-exit, a TypeScript rewrite of markdown-it.
     ::
-
-    > Built on markdown-exit, a TypeScript rewrite of markdown-it.
-
-    ```ts [example.ts]
-    import { parseMarkdown } from 'comark'
-
-    const document = await parseMarkdown('# Hello **World**')
-    ```
   ---
   :::
 #title
 Parse and render Markdown anywhere.
 
 #description
-A JavaScript library to parse and stream Markdown, with renderers for any framework or output format.
+A JavaScript library to parse and stream Markdown, with renderers for HTML, terminals, Vue, React, Svelte and Angular, plus components, attributes, and plugins.
 
 #links
   :::u-button
@@ -79,28 +77,44 @@ Parse once, render anywhere
 Comark parses Markdown into a compact [`MarkdownDocument`](/getting-started/document-model). Parse on the server, during a build, or as content streams in, then render it natively in your framework. Your content outlasts your stack.
 
 #default
-  :::landing-feature-card{icon="i-logos-nuxt-icon" to="/rendering/nuxt"}
+  :::landing-feature-card{icon="i-vscode-icons-file-type-html" to="/rendering/html"}
   #title
-  Nuxt
+  HTML
 
   #description
-  A module with auto-imported components, server-side parsing, and Nuxt UI prose components.
+  A plain string renderer for static site generators, RSS feeds or emails. No framework required.
   :::
-
-  :::landing-feature-card{icon="i-logos-vue" to="/rendering/vue"}
+  
+  :::landing-feature-card{icon="i-lucide-terminal" to="/rendering/ansi"}
   #title
-  Vue
+  Terminals
 
   #description
-  Drop the `Markdown` component in a template. Custom components and plugins are props.
+  Render Markdown as styled terminal output using ANSI escape codes, perfect for CLIs, scripts, and developer tooling.
   :::
 
+  :::landing-feature-card{icon="i-logos-angular-icon" to="/rendering/angular"}
+  #title
+  Angular
+
+  #description
+  Standalone components for Angular 17+, with the same props and streaming support.
+  :::
+  
   :::landing-feature-card{icon="i-logos-react" to="/rendering/react"}
   #title
   React
 
   #description
   The same component API for React, including React Server Components and Next.js.
+  :::
+  
+  :::landing-feature-card{icon="i-logos-vue" to="/rendering/vue"}
+  #title
+  Vue
+
+  #description
+  Drop the `Markdown` component in a template. Custom components and plugins are props.
   :::
 
   :::landing-feature-card{icon="i-logos-svelte-icon" to="/rendering/svelte"}
@@ -111,21 +125,6 @@ Comark parses Markdown into a compact [`MarkdownDocument`](/getting-started/docu
   Native Svelte 5 rendering with runes. No wrapper framework, no `{@html}`.
   :::
 
-  :::landing-feature-card{icon="i-logos-angular-icon" to="/rendering/angular"}
-  #title
-  Angular
-
-  #description
-  Standalone components for Angular 17+, with the same props and streaming support.
-  :::
-
-  :::landing-feature-card{icon="i-vscode-icons-file-type-html" to="/rendering/html"}
-  #title
-  HTML
-
-  #description
-  A plain string renderer for SSG, RSS feeds, and emails. No framework required.
-  :::
 ::
 
 ::landing-tabs
