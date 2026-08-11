@@ -230,9 +230,9 @@ describe('rangi plugin', () => {
     expect((pre![1] as any).class).toContain('shj-lang-typescript')
   })
 
-  it('applies line highlight classes from fence info', async () => {
-    const md = '```js {2}\nconst a = 1\nconst b = 2\nconst c = 3\n```'
-    const tree = await parseMarkdown(md, { plugins: [rangi({ lineNumbers: true })] })
+  it('applies line highlight classes from fence info without lineNumbers', async () => {
+    const md = '```js {2-3}\nconst a = 1\nconst b = 2\nconst c = 3\n```'
+    const tree = await parseMarkdown(md, { plugins: [rangi()] })
     const pre = findPre(tree.nodes)!
     const code = pre[2] as ElementNode
 
@@ -240,7 +240,8 @@ describe('rangi plugin', () => {
     expect(lines.length).toBe(3)
     expect((lines[0][1] as any).class).toBe('line')
     expect((lines[1][1] as any).class).toBe('line highlight')
-    expect((lines[2][1] as any).class).toBe('line')
+    expect((lines[2][1] as any).class).toBe('line highlight')
+    expect(textOf(pre)).toBe('const a = 1\nconst b = 2\nconst c = 3')
   })
 
   it('preserves user class after the `.` separator', async () => {
