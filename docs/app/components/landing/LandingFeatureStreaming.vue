@@ -84,7 +84,7 @@ onBeforeUnmount(() => {
       {{ description }}
     </p>
 
-    <UTheme :ui="{ prose: { p: { base: 'text-nowrap' } } }">
+    <UTheme :ui="{ prose: { p: { base: 'text-wrap' } } }">
       <div class="mt-6 h-[280px] overflow-auto border border-muted bg-muted/50 p-4">
         <ComarkDocs
           v-if="streamedText"
