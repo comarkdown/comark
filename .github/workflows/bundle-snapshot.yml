@@ -1,0 +1,457 @@
+name: bundle-snapshot
+
+# Companion to the `Check package bundle size` step in `ci.yml`.
+#
+# The bundle-size test (`test/bundle.test.ts`) asserts an inline snapshot of the
+# published size of every package. That snapshot legitimately changes whenever
+# output or dependencies change, so a failure is often "expected, please review
+# and accept" rather than "something is broken".
+#
+# This workflow:
+#   1. reports the failure on the PR with the diff, and
+#   2. gives maintainers a one-click button (a checkbox in that comment) that
+#      re-runs the bundle test with `--update` and commits the new snapshot to
+#      the PR branch.
+#
+# It runs from the default branch (`workflow_run` / `issue_comment`), so it has
+# the write permissions that `ci.yml` deliberately does not have — including for
+# pull requests opened from forks.
+
+on:
+  # Report the result once `ci` finishes.
+  workflow_run:
+    workflows: [ci]
+    types: [completed]
+  # The button: ticking the checkbox edits the comment, or a `/update-bundle-snapshot` command.
+  issue_comment:
+    types: [created, edited]
+  # Manual escape hatch: Actions → bundle-snapshot → Run workflow.
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: Pull request number to update the bundle snapshot on
+        required: true
+        type: string
+
+concurrency:
+  group: bundle-snapshot-${{ github.event.issue.number || inputs.pr || github.event.workflow_run.id }}
+  cancel-in-progress: false
+
+env:
+  MARKER: '<!-- bundle-snapshot-check -->'
+  BUTTON: '- [ ] 🔄 **Update the bundle snapshot**'
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Report: post / update / resolve the PR comment after `ci` completes.
+  # ---------------------------------------------------------------------------
+  report:
+    name: report
+    if: github.event_name == 'workflow_run' && github.event.workflow_run.event == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      issues: write
+      pull-requests: write
+
+    steps:
+      - name: Download bundle report
+        id: download
+        continue-on-error: true
+        uses: actions/download-artifact@v8
+        with:
+          name: bundle-report
+          path: bundle-report
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Comment on the pull request
+        if: steps.download.outcome == 'success'
+        uses: actions/github-script@v9
+        env:
+          RUN_URL: ${{ github.event.workflow_run.html_url }}
+        with:
+          script: |
+            const fs = require('node:fs')
+            const { owner, repo } = context.repo
+            const marker = process.env.MARKER
+            const button = process.env.BUTTON
+
+            const read = (file) => {
+              try {
+                return fs.readFileSync(`bundle-report/${file}`, 'utf8').trim()
+              } catch {
+                return ''
+              }
+            }
+
+            const prNumber = Number(read('pr-number'))
+            const outcome = read('outcome')
+            if (!prNumber || !outcome) {
+              core.info('No usable bundle report — nothing to do.')
+              return
+            }
+
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner,
+              repo,
+              issue_number: prNumber,
+              per_page: 100,
+            })
+            const existing = comments.find((c) => c.user?.type === 'Bot' && c.body?.includes(marker))
+
+            // Bundle size is back within the snapshot — clean up after ourselves.
+            if (outcome === 'success') {
+              core.info('Bundle size check passed.')
+              if (existing) {
+                await github.rest.issues.deleteComment({ owner, repo, comment_id: existing.id })
+              }
+              return
+            }
+
+            // Keep the interesting part of the vitest output: the snapshot diff.
+            // Trim the leading noise, and stop before vitest's summary and the
+            // raw `::error` workflow annotations, which are unreadable in a comment.
+            const lines = read('output.txt').split('\n')
+            const start = lines.findIndex((l) => /Snapshot\s+.*mismatched|FAIL|AssertionError/.test(l))
+            const rest = start === -1 ? lines : lines.slice(start)
+            const end = rest.findIndex((l) => /^\s*(Snapshots|Test Files)\s+\d|^::(error|warning)/.test(l))
+            const excerpt = (end === -1 ? rest : rest.slice(0, end))
+              .join('\n')
+              .trimEnd()
+              .slice(0, 20_000)
+
+            const workflowUrl = `${context.serverUrl}/${owner}/${repo}/actions/workflows/bundle-snapshot.yml`
+            const testUrl = `${context.serverUrl}/${owner}/${repo}/blob/main/test/bundle.test.ts`
+            const body = [
+              marker,
+              '## 📦 Bundle size snapshot is out of date',
+              '',
+              'The published size of one or more packages changed, so the inline snapshot in',
+              `[\`test/bundle.test.ts\`](${testUrl}) no longer matches.`,
+              '',
+              '**Please review the diff below.** If the change is expected, accept the new snapshot:',
+              '',
+              `${button} — tick this box and CI will run \`vitest run bundle --update\` and commit the result to this branch.`,
+              '',
+              `[![Update bundle snapshot](https://img.shields.io/badge/Update%20bundle%20snapshot-2088FF?style=for-the-badge&logo=githubactions&logoColor=white)](${workflowUrl})`,
+              '',
+              '<sub>Only maintainers with write access can trigger the update. You can also comment `/update-bundle-snapshot`, or run it locally with `pnpm prepack && pnpm vitest run bundle -u`.</sub>',
+              '',
+              '<details><summary>Bundle size diff</summary>',
+              '',
+              '```diff',
+              excerpt,
+              '```',
+              '',
+              `[Full CI log](${process.env.RUN_URL})`,
+              '',
+              '</details>',
+            ].join('\n')
+
+            if (existing) {
+              await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body })
+            } else {
+              await github.rest.issues.createComment({ owner, repo, issue_number: prNumber, body })
+            }
+
+  # ---------------------------------------------------------------------------
+  # Authorize: resolve the PR and make sure the actor may push to it.
+  # ---------------------------------------------------------------------------
+  authorize:
+    name: authorize
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'issue_comment' && github.event.issue.pull_request &&
+        ((github.event.action == 'edited' && contains(github.event.comment.body, '- [x] 🔄 **Update the bundle snapshot**')) ||
+         (github.event.action == 'created' && contains(github.event.comment.body, '/update-bundle-snapshot'))))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      # `write`, not `read`: reacting to a comment on a pull request goes through
+      # the pull-requests scope even via the `issues` API.
+      pull-requests: write
+    outputs:
+      authorized: ${{ steps.check.outputs.authorized }}
+      pr: ${{ steps.check.outputs.pr }}
+      head_repo: ${{ steps.check.outputs.head_repo }}
+      head_ref: ${{ steps.check.outputs.head_ref }}
+      is_fork: ${{ steps.check.outputs.is_fork }}
+
+    steps:
+      - name: Check permissions and resolve PR
+        id: check
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const { owner, repo } = context.repo
+            const marker = process.env.MARKER
+            const prNumber = Number(context.payload.issue?.number ?? context.payload.inputs?.pr ?? 0)
+            core.setOutput('authorized', 'false')
+
+            if (!prNumber) {
+              core.setFailed('Could not determine which pull request to update.')
+              return
+            }
+
+            // Only collaborators with write access may push to a PR branch.
+            const { data: perm } = await github.rest.repos.getCollaboratorPermissionLevel({
+              owner,
+              repo,
+              username: context.actor,
+            })
+            const allowed = ['admin', 'maintain', 'write'].includes(perm.permission)
+
+            // Acknowledge the click. Cosmetic only — never fail the run over it.
+            const commentId = context.payload.comment?.id
+            if (commentId) {
+              try {
+                await github.rest.reactions.createForIssueComment({
+                  owner,
+                  repo,
+                  comment_id: commentId,
+                  content: allowed ? 'eyes' : '-1',
+                })
+              } catch (error) {
+                core.warning(`Could not react to the comment: ${error.message}`)
+              }
+            }
+
+            if (!allowed) {
+              core.setFailed(`@${context.actor} does not have write access to this repository.`)
+              return
+            }
+
+            const { data: pr } = await github.rest.pulls.get({ owner, repo, pull_number: prNumber })
+
+            core.setOutput('authorized', 'true')
+            core.setOutput('pr', String(prNumber))
+            core.setOutput('head_repo', pr.head.repo.full_name)
+            core.setOutput('head_ref', pr.head.ref)
+            core.setOutput('is_fork', String(pr.head.repo.full_name !== `${owner}/${repo}`))
+
+            // Untick the button right away so it can be used again later.
+            const runUrl = `${context.serverUrl}/${owner}/${repo}/actions/runs/${context.runId}`
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner,
+              repo,
+              issue_number: prNumber,
+              per_page: 100,
+            })
+            const existing = comments.find((c) => c.user?.type === 'Bot' && c.body?.includes(marker))
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: existing.id,
+                body: existing.body
+                  .replace('- [x] 🔄 **Update the bundle snapshot**', process.env.BUTTON)
+                  .replace(marker, `${marker}\n<!-- ⏳ [Updating the snapshot…](${runUrl}) -->`),
+              })
+            }
+
+  # ---------------------------------------------------------------------------
+  # Update: rebuild, refresh the snapshot and commit it back to the PR branch.
+  # ---------------------------------------------------------------------------
+  update:
+    name: update snapshot
+    needs: authorize
+    if: needs.authorize.outputs.authorized == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+
+    steps:
+      # checkout v7 refuses to check out fork PR code under `pull_request_target`
+      # and `workflow_run`. This job runs under `issue_comment` / `workflow_dispatch`
+      # behind an explicit write-access check, so the guard does not apply and
+      # `allow-unsafe-pr-checkout` stays off.
+      - uses: actions/checkout@v7
+        with:
+          repository: ${{ needs.authorize.outputs.head_repo }}
+          ref: ${{ needs.authorize.outputs.head_ref }}
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          package-manager-cache: false
+          node-version: '24'
+      - run: npm i -g --force corepack && corepack enable
+      - run: pnpm install
+      - run: pnpm dev:prepare
+      # Bundle sizes are only meaningful after a real build — `postinstall` only stubs `dist/`.
+      - run: pnpm prepack
+      - name: Update bundle snapshot
+        env:
+          NO_COLOR: '1'
+        run: pnpm vitest run bundle --update
+
+      - name: Detect changes
+        id: diff
+        shell: bash
+        run: |
+          if git diff --quiet -- test/bundle.test.ts; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+          git --no-pager diff --stat
+
+      # Re-run the check against the refreshed snapshot. GitHub suppresses the
+      # events a GITHUB_TOKEN commit would normally raise (to avoid workflow
+      # recursion), so `ci` may not re-run on its own. Verifying here means the
+      # snapshot is proven green by the same job that wrote it, and a re-run is
+      # a convenience rather than the only signal.
+      - name: Verify updated snapshot
+        id: verify
+        if: steps.diff.outputs.changed == 'true'
+        continue-on-error: true
+        env:
+          NO_COLOR: '1'
+        run: pnpm vitest run bundle
+
+      # Committing through the API keeps the commit signed/verified, which the
+      # `commit-signature` workflow requires. It only works on branches in this
+      # repository, so fork PRs get the patch posted instead.
+      - name: Commit updated snapshot
+        id: commit
+        if: steps.diff.outputs.changed == 'true' && steps.verify.outcome == 'success' && needs.authorize.outputs.is_fork == 'false'
+        uses: actions/github-script@v9
+        env:
+          BRANCH: ${{ needs.authorize.outputs.head_ref }}
+        with:
+          script: |
+            const fs = require('node:fs')
+            const { owner, repo } = context.repo
+            const path = 'test/bundle.test.ts'
+            const branch = process.env.BRANCH
+
+            const { data: current } = await github.rest.repos.getContent({ owner, repo, path, ref: branch })
+            const { data: result } = await github.rest.repos.createOrUpdateFileContents({
+              owner,
+              repo,
+              path,
+              branch,
+              sha: current.sha,
+              message: 'test: update bundle size snapshot',
+              content: Buffer.from(fs.readFileSync(path, 'utf8')).toString('base64'),
+            })
+            core.setOutput('sha', result.commit.sha)
+
+      - name: Report result
+        if: always() && needs.authorize.outputs.pr != ''
+        uses: actions/github-script@v9
+        env:
+          PR: ${{ needs.authorize.outputs.pr }}
+          IS_FORK: ${{ needs.authorize.outputs.is_fork }}
+          CHANGED: ${{ steps.diff.outputs.changed }}
+          VERIFIED: ${{ steps.verify.outcome }}
+          COMMIT_SHA: ${{ steps.commit.outputs.sha }}
+          JOB_STATUS: ${{ job.status }}
+        with:
+          script: |
+            const fs = require('node:fs')
+            const { execFileSync } = require('node:child_process')
+            const { owner, repo } = context.repo
+            const marker = process.env.MARKER
+            const prNumber = Number(process.env.PR)
+            const runUrl = `${context.serverUrl}/${owner}/${repo}/actions/runs/${context.runId}`
+
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner,
+              repo,
+              issue_number: prNumber,
+              per_page: 100,
+            })
+            const existing = comments.find((c) => c.user?.type === 'Bot' && c.body?.includes(marker))
+
+            const post = async (body) => {
+              if (existing) {
+                await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body })
+              } else {
+                await github.rest.issues.createComment({ owner, repo, issue_number: prNumber, body })
+              }
+            }
+
+            if (process.env.JOB_STATUS === 'failure') {
+              await post(
+                [
+                  marker,
+                  '## ❌ Could not update the bundle snapshot',
+                  '',
+                  `The update run failed. See the [logs](${runUrl}) for details, or update it locally:`,
+                  '',
+                  '```bash',
+                  'pnpm install && pnpm prepack && pnpm vitest run bundle -u',
+                  '```',
+                ].join('\n')
+              )
+              return
+            }
+
+            if (process.env.CHANGED !== 'true') {
+              await post(
+                [
+                  marker,
+                  '## ✅ Bundle snapshot is already up to date',
+                  '',
+                  `Re-ran \`vitest run bundle --update\` in [this run](${runUrl}) and \`test/bundle.test.ts\` did not change.`,
+                ].join('\n')
+              )
+              return
+            }
+
+            // The refreshed snapshot did not pass a clean re-run — something is
+            // off (flaky sizes, a broken build), so do not commit it.
+            if (process.env.VERIFIED !== 'success') {
+              await post(
+                [
+                  marker,
+                  '## ⚠️ Refreshed snapshot did not verify',
+                  '',
+                  'The snapshot was regenerated, but re-running the bundle check against it still failed,',
+                  'so nothing was committed. This usually means the build is unstable rather than simply larger.',
+                  '',
+                  `See the [logs](${runUrl}).`,
+                ].join('\n')
+              )
+              return
+            }
+
+            // Fork PR: we cannot push, so hand over a ready-to-apply patch.
+            if (process.env.IS_FORK === 'true') {
+              const patch = execFileSync('git', ['diff', '--', 'test/bundle.test.ts'], { encoding: 'utf8' })
+              await post(
+                [
+                  marker,
+                  '## 📦 New bundle snapshot',
+                  '',
+                  'This pull request comes from a fork, so the snapshot cannot be committed automatically.',
+                  'Apply the patch below (or run `pnpm prepack && pnpm vitest run bundle -u` locally) and push:',
+                  '',
+                  '```diff',
+                  patch.slice(0, 20_000),
+                  '```',
+                  '',
+                  `<sub>Produced by [this run](${runUrl}).</sub>`,
+                ].join('\n')
+              )
+              return
+            }
+
+            await post(
+              [
+                marker,
+                '## ✅ Bundle snapshot updated',
+                '',
+                `Committed the new snapshot as ${process.env.COMMIT_SHA}, verified by re-running the bundle check against it.`,
+                '',
+                'GitHub suppresses the events a workflow commit would normally raise, so the `ci` check above may',
+                'still show the earlier failure. Re-run it to refresh the status — the snapshot itself is confirmed green.',
+                '',
+                `<sub>Produced by [this run](${runUrl}).</sub>`,
+              ].join('\n')
+            )
