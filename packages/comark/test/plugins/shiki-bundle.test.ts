@@ -53,9 +53,13 @@ describe('shiki consumer bundle', { timeout: 30_000 }, () => {
   it('only bundles explicitly imported themes from the core entry', async () => {
     const themes = await bundledThemes(`
       import shiki from 'comark/plugins/shiki/core'
+      import javascript from 'shiki/dist/langs/javascript.mjs'
       import githubLight from 'shiki/dist/themes/github-light.mjs'
       import githubDark from 'shiki/dist/themes/github-dark.mjs'
-      console.log(shiki({ themes: { light: githubLight, dark: githubDark } }))
+      console.log(shiki({
+        languages: [javascript],
+        themes: { light: githubLight, dark: githubDark },
+      }))
     `)
 
     expect(themes).toEqual(['github-dark.mjs', 'github-light.mjs'])

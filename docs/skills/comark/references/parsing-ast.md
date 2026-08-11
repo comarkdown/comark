@@ -164,16 +164,28 @@ const result = await parseMarkdown(content, {
 ### Highlight Plugin Options
 
 ```typescript
+// Standard entry: comark/plugins/shiki
 interface ShikiOptions {
-  registerDefaultLanguages?: boolean  // default: true (standard entry only; core has none)
-  registerDefaultThemes?: boolean     // default: true (standard entry only; core has none)
+  registerDefaultLanguages?: boolean  // default: true
+  registerDefaultThemes?: boolean     // default: true
   themes?: {
-    light?: ThemeRegistration         // default: 'material-theme-lighter' (standard entry)
-    dark?: ThemeRegistration          // default: 'material-theme-palenight' (standard entry)
+    light?: ThemeRegistration         // default: material-theme-lighter
+    dark?: ThemeRegistration          // default: material-theme-palenight
   }
-  languages?: Array<LanguageRegistration | LanguageRegistration[]>  // default set on standard entry; none on core
+  languages?: Array<LanguageRegistration | LanguageRegistration[]>  // merged onto default set
   transformers?: ShikiTransformer[]
-  preStyles?: boolean                 // Add pre background/foreground styles
+  preStyles?: boolean
+}
+
+// Core entry: comark/plugins/shiki/core — no defaults / no registerDefault*
+interface ShikiCoreOptions {
+  themes: {                           // required
+    light?: ThemeRegistration
+    dark?: ThemeRegistration
+  }
+  languages: Array<LanguageRegistration | LanguageRegistration[]>  // required
+  transformers?: ShikiTransformer[]
+  preStyles?: boolean
 }
 ```
 

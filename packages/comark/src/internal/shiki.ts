@@ -6,30 +6,17 @@ import { createJavaScriptRegexEngine } from 'shiki/engine/javascript'
 import { codeToHast, codeToTokens, getTokenStyleObject, stringifyTokenStyle } from 'shiki/core'
 import comakLanguage from '../utils/comark.tmLanguage.ts'
 
-export interface ShikiOptions {
+export interface ShikiCoreOptions {
   /**
-   * Whether to use the default language definitions
-   * @default true
+   * Languages to register. Required — core has no default language set.
    */
-  registerDefaultLanguages?: boolean
+  languages: Array<LanguageRegistration | LanguageRegistration[]>
 
   /**
-   * Whether to use the default theme definitions
-   * @default true
+   * Themes to register. Required — core has no default themes.
+   * Provide at least one of `light` or `dark`.
    */
-  registerDefaultThemes?: boolean
-
-  /**
-   * Languages to preload. If not specified, languages will be loaded on demand.
-   * @default undefined (load on demand)
-   */
-  languages?: Array<LanguageRegistration | LanguageRegistration[]>
-
-  /**
-   * Additional themes to preload
-   * @default { light: 'material-theme-lighter', dark: 'material-theme-palenight' }
-   */
-  themes?: {
+  themes: {
     light?: ThemeRegistration
     dark?: ThemeRegistration
   }
@@ -39,11 +26,44 @@ export interface ShikiOptions {
    * @default undefined
    */
   transformers?: ShikiTransformer[]
+
   /**
    * Whether to add pre styles to the code blocks
    * @default false
    */
   preStyles?: boolean
+}
+
+/**
+ * Options for the standard `comark/plugins/shiki` entry.
+ * Themes and languages are optional — defaults ship with that entry.
+ */
+export interface ShikiOptions extends Omit<ShikiCoreOptions, 'languages' | 'themes'> {
+  /**
+   * Whether to register the built-in default language set.
+   * @default true
+   */
+  registerDefaultLanguages?: boolean
+
+  /**
+   * Whether to register the built-in default theme definitions.
+   * @default true
+   */
+  registerDefaultThemes?: boolean
+
+  /**
+   * Additional languages to register (merged on top of the default set when
+   * `registerDefaultLanguages` is true).
+   */
+  languages?: Array<LanguageRegistration | LanguageRegistration[]>
+
+  /**
+   * Themes to use. Defaults to Material light/dark when `registerDefaultThemes` is true.
+   */
+  themes?: {
+    light?: ThemeRegistration
+    dark?: ThemeRegistration
+  }
 }
 
 /**
@@ -78,7 +98,7 @@ export async function getHighlighter(
   defaultLanguageLoaders: ShikiLanguageLoader[] = []
 ): Promise<ShikiPrimitive> {
   if (highlighter) {
-    // Fast path: skip registerDefaults() when no custom themes/languages are requested
+    // Fast path: skip resolveRegistrations() when no custom themes/languages are requested
     if (
       !options.themes &&
       !options.languages &&
@@ -87,7 +107,7 @@ export async function getHighlighter(
     ) {
       return highlighter
     }
-    const { themes, languages } = await registerDefaults(options, defaultThemeLoaders, defaultLanguageLoaders)
+    const { themes, languages } = await resolveRegistrations(options, defaultThemeLoaders, defaultLanguageLoaders)
     await Promise.all(themes.map((theme) => loadTheme(highlighter!, theme)))
     await Promise.all(languages.map((language) => loadLanguage(highlighter!, language)))
     if (defaultThemeLoaders.length > 0 && options.registerDefaultThemes !== false) defaultThemesLoaded = true
@@ -102,7 +122,7 @@ export async function getHighlighter(
 
   try {
     highlighterPromise = (async () => {
-      const { themes, languages } = await registerDefaults(options, defaultThemeLoaders, defaultLanguageLoaders)
+      const { themes, languages } = await resolveRegistrations(options, defaultThemeLoaders, defaultLanguageLoaders)
       const hl = createShikiPrimitive({
         themes: themes,
         langs: languages,
@@ -134,15 +154,16 @@ export async function getHighlighter(
   }
 }
 
-async function registerDefaults(
+async function resolveRegistrations(
   options: ShikiOptions,
   defaultThemeLoaders: ShikiThemeLoader[],
   defaultLanguageLoaders: ShikiLanguageLoader[]
 ) {
-  const themes = Object.values(options.themes || {}) as ThemeRegistration[]
-  const languages = options.languages || ([] as Array<LanguageRegistration | LanguageRegistration[]>)
+  const themes = Object.values(options.themes || {}).filter(Boolean) as ThemeRegistration[]
+  const languages = [...(options.languages || [])] as Array<LanguageRegistration | LanguageRegistration[]>
   const promises: Array<Promise<{ type: 'theme' | 'lang'; value: any }>> = []
 
+  // Default loaders are only provided by the standard entry; core passes empty arrays.
   if (options.registerDefaultThemes !== false) {
     for (const loadTheme of defaultThemeLoaders) {
       promises.push(loadTheme().then((value) => ({ type: 'theme' as const, value })))
@@ -159,7 +180,7 @@ async function registerDefaults(
     if (result.type === 'theme') themes.push(result.value)
     else languages.push(result.value)
   }
-  // Remove custom language after updating language in shiki core
+  // Built-in Comark grammar (mdc); always registered
   languages.push(comakLanguage as LanguageRegistration[])
 
   return { themes, languages }
@@ -452,14 +473,21 @@ export function resetHighlighter(): void {
   loadedLanguages.clear()
 }
 
-export function createShikiPlugin(
+export function createShikiPlugin<
+  TOptions extends ShikiOptions = ShikiOptions,
+>(
   defaultThemeLoaders: ShikiThemeLoader[] = [],
   defaultLanguageLoaders: ShikiLanguageLoader[] = []
 ) {
-  return defineComarkPlugin<ShikiOptions>((options: ShikiOptions = {}) => ({
+  return defineComarkPlugin<TOptions>((options) => ({
     name: 'shiki',
     async post(state) {
-      state.tree = await highlightCodeBlocks(state.tree, options, defaultThemeLoaders, defaultLanguageLoaders)
+      state.tree = await highlightCodeBlocks(
+        state.tree,
+        (options || {}) as ShikiOptions,
+        defaultThemeLoaders,
+        defaultLanguageLoaders
+      )
     },
   }))
 }

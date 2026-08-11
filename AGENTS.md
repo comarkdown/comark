@@ -391,7 +391,7 @@ import { textContent, visit } from 'comark/utils'
 
 // Core plugins — use when calling parseMarkdown() directly (framework-agnostic)
 import shiki from 'comark/plugins/shiki'
-import shikiCore from 'comark/plugins/shiki/core' // excludes default theme/language imports
+import shikiCore from 'comark/plugins/shiki/core' // ShikiCoreOptions: required themes + languages, no defaults
 import rangi, { comarkLanguage, comarkLanguages } from 'comark/plugins/rangi'
 // import highlight from 'comark/plugins/highlight' // deprecated alias → shiki
 import math from 'comark/plugins/math'

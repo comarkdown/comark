@@ -191,7 +191,7 @@ shiki({
 ```
 
 ::tip
-On the standard `comark/plugins/shiki` entry, a default language set is pre-registered. Use `registerDefaultLanguages: false` with an explicit `languages` array to control the set at runtime. To keep those language import chunks out of a consumer bundle entirely, use `comark/plugins/shiki/core` instead — it ships with no default languages.
+On the standard entry, a default language set is pre-registered. Use `registerDefaultLanguages: false` with an explicit `languages` array to control the set at runtime. For a minimal bundle with required `languages` and `themes` (and no `registerDefault*` options), use `comark/plugins/shiki/core`.
 ::
 
 ### Transformers
@@ -231,14 +231,30 @@ Returns a `ComarkPlugin` that enables Shiki syntax highlighting.
 
 ## Options
 
+Two option types, one per entry:
+
+- **`ShikiOptions`** — `comark/plugins/shiki` (standard). Themes/languages optional; includes `registerDefaultThemes` / `registerDefaultLanguages`.
+- **`ShikiCoreOptions`** — `comark/plugins/shiki/core`. `themes` and `languages` are **required**; no `registerDefault*` options (nothing is bundled by default).
+
+### Standard (`ShikiOptions`)
+
 | Option | Type | Default | Description |
 |---|---|---|---|
 | [`themes`](#options-themes) | `object` | Material themes | Light and dark theme registrations |
-| [`languages`](#options-languages) | `LanguageRegistration[]` | `undefined` | Languages to preload |
+| [`languages`](#options-languages) | `LanguageRegistration[]` | `undefined` | Extra languages (merged onto the default set) |
 | [`transformers`](#options-transformers) | `ShikiTransformer[]` | `undefined` | Shiki transformers applied to every block |
 | [`preStyles`](#options-prestyles) | `boolean` | `false` | Add inline background/foreground styles to `<pre>` |
-| [`registerDefaultLanguages`](#options-registerdefaultlanguages) | `boolean` | `true` | Register the built-in default language set (standard entry only) |
-| [`registerDefaultThemes`](#options-registerdefaultthemes) | `boolean` | `true` | Register the built-in Material themes (standard entry only) |
+| [`registerDefaultLanguages`](#options-registerdefaultlanguages) | `boolean` | `true` | Register the built-in default language set |
+| [`registerDefaultThemes`](#options-registerdefaultthemes) | `boolean` | `true` | Register the built-in Material themes |
+
+### Core (`ShikiCoreOptions`)
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `themes` | `object` | **required** | Light and/or dark theme registrations |
+| `languages` | `LanguageRegistration[]` | **required** | Languages to register |
+| `transformers` | `ShikiTransformer[]` | `undefined` | Shiki transformers applied to every block |
+| `preStyles` | `boolean` | `false` | Add inline background/foreground styles to `<pre>` |
 
 ### `themes`
 
@@ -256,11 +272,11 @@ shiki({
 })
 ```
 
-**Default:** `{ light: materialThemeLighter, dark: materialThemePalenight }`
+**Standard default:** `{ light: materialThemeLighter, dark: materialThemePalenight }` (when `registerDefaultThemes` is true). **Core:** required.
 
 ### `languages`
 
-Languages to preload. Import from `@shikijs/langs`.
+Languages to register. Import from `@shikijs/langs`. On the standard entry, values are merged on top of the default set when `registerDefaultLanguages` is true.
 
 ```typescript
 import javascript from '@shikijs/langs/javascript'
@@ -271,7 +287,7 @@ shiki({
 })
 ```
 
-**Default:** on the standard entry, the built-in default language set (see [`registerDefaultLanguages`](#options-registerdefaultlanguages)); on `core`, none — pass languages explicitly.
+**Standard default:** `undefined` (default set still registered via `registerDefaultLanguages`). **Core:** required.
 
 ### `transformers`
 
@@ -302,7 +318,7 @@ shiki({ preStyles: true })
 
 ### `registerDefaultLanguages`
 
-On the standard `comark/plugins/shiki` entry, `true` pre-registers: `vue`, `tsx`, `svelte`, `astro`, `typescript`, `javascript`, `bash`, `json`, `yaml` (plus the built-in Comark/`mdc` grammar). Set to `false` to control the language set entirely via `languages`. The `comark/plugins/shiki/core` entry never registers a default language set — pass `languages` explicitly.
+Standard entry only. When `true`, these languages are pre-registered: `vue`, `tsx`, `svelte`, `astro`, `typescript`, `javascript`, `bash`, `json`, `yaml` (plus the built-in Comark/`mdc` grammar). Set to `false` to control the language set entirely via `languages`.
 
 ```typescript
 shiki({
@@ -315,7 +331,7 @@ shiki({
 
 ### `registerDefaultThemes`
 
-On the standard `comark/plugins/shiki` entry, `true` registers `material-theme-lighter` (light) and `material-theme-palenight` (dark). Set it to `false` to skip loading those themes at runtime. To keep their import chunks out of a consumer bundle entirely, use `comark/plugins/shiki/core` instead.
+Standard entry only. When `true`, registers `material-theme-lighter` (light) and `material-theme-palenight` (dark). Set it to `false` to skip loading those themes at runtime. To keep their import chunks out of a consumer bundle entirely, use `comark/plugins/shiki/core` instead.
 
 ```typescript
 shiki({
@@ -345,7 +361,7 @@ const result = await parseMarkdown(content, {
 
 ### Minimal Bundle
 
-Use the `core` entry and import only what you need — no default themes or languages are bundled:
+Use the `core` entry (`ShikiCoreOptions`) and import only what you need — `languages` and `themes` are required, and no defaults are bundled:
 
 ```typescript
 import shiki from 'comark/plugins/shiki/core'
