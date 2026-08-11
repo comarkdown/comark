@@ -165,13 +165,13 @@ const result = await parseMarkdown(content, {
 
 ```typescript
 interface ShikiOptions {
-  registerDefaultLanguages?: boolean  // default: true
-  registerDefaultThemes?: boolean     // default: true
+  registerDefaultLanguages?: boolean  // default: true (standard entry only; core has none)
+  registerDefaultThemes?: boolean     // default: true (standard entry only; core has none)
   themes?: {
-    light?: ThemeRegistration         // default: 'material-theme-lighter'
-    dark?: ThemeRegistration          // default: 'material-theme-palenight'
+    light?: ThemeRegistration         // default: 'material-theme-lighter' (standard entry)
+    dark?: ThemeRegistration          // default: 'material-theme-palenight' (standard entry)
   }
-  languages?: Array<LanguageRegistration | LanguageRegistration[]>  // Load on demand by default
+  languages?: Array<LanguageRegistration | LanguageRegistration[]>  // default set on standard entry; none on core
   transformers?: ShikiTransformer[]
   preStyles?: boolean                 // Add pre background/foreground styles
 }

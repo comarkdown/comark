@@ -7,7 +7,13 @@ import {
   highlightCodeBlocks as highlightCoreCodeBlocks,
 } from '../../internal/shiki.ts'
 
-export type { CodeBlockAttributes, HighlightOptions, ShikiOptions } from '../../internal/shiki.ts'
+export type {
+  CodeBlockAttributes,
+  HighlightOptions,
+  ShikiLanguageLoader,
+  ShikiOptions,
+  ShikiThemeLoader,
+} from '../../internal/shiki.ts'
 export { resetHighlighter } from '../../internal/shiki.ts'
 
 export function getHighlighter(options: ShikiOptions = {}): Promise<ShikiPrimitive> {

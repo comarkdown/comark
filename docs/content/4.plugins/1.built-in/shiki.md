@@ -54,15 +54,19 @@ const result = await parseMarkdown(content, {
 })
 ```
 
-The standard entry includes the Material light and dark themes as fallbacks. To exclude those themes from the bundle, use the `core` entry and import every theme explicitly:
+The standard entry includes the Material light and dark themes plus a small default language set as fallbacks. To exclude those imports from the bundle, use the `core` entry and import every theme and language explicitly:
 
 ```typescript
 import shiki from 'comark/plugins/shiki/core'
+import javascript from '@shikijs/langs/javascript'
 import githubLight from '@shikijs/themes/github-light'
 import githubDark from '@shikijs/themes/github-dark'
 
 const plugins = [
-  shiki({ themes: { light: githubLight, dark: githubDark } })
+  shiki({
+    languages: [javascript],
+    themes: { light: githubLight, dark: githubDark },
+  })
 ]
 ```
 
@@ -187,7 +191,7 @@ shiki({
 ```
 
 ::tip
-Without explicit `languages`, unregistered languages are loaded on demand. Use `registerDefaultLanguages: false` with an explicit `languages` array for the smallest bundle.
+On the standard `comark/plugins/shiki` entry, a default language set is pre-registered. Use `registerDefaultLanguages: false` with an explicit `languages` array to control the set at runtime. To keep those language import chunks out of a consumer bundle entirely, use `comark/plugins/shiki/core` instead — it ships with no default languages.
 ::
 
 ### Transformers
@@ -233,8 +237,8 @@ Returns a `ComarkPlugin` that enables Shiki syntax highlighting.
 | [`languages`](#options-languages) | `LanguageRegistration[]` | `undefined` | Languages to preload |
 | [`transformers`](#options-transformers) | `ShikiTransformer[]` | `undefined` | Shiki transformers applied to every block |
 | [`preStyles`](#options-prestyles) | `boolean` | `false` | Add inline background/foreground styles to `<pre>` |
-| [`registerDefaultLanguages`](#options-registerdefaultlanguages) | `boolean` | `true` | Register the built-in default language set |
-| [`registerDefaultThemes`](#options-registerdefaultthemes) | `boolean` | `true` | Register the built-in Material themes |
+| [`registerDefaultLanguages`](#options-registerdefaultlanguages) | `boolean` | `true` | Register the built-in default language set (standard entry only) |
+| [`registerDefaultThemes`](#options-registerdefaultthemes) | `boolean` | `true` | Register the built-in Material themes (standard entry only) |
 
 ### `themes`
 
@@ -256,7 +260,7 @@ shiki({
 
 ### `languages`
 
-Languages to preload. Import from `@shikijs/langs`. Without this option, languages are loaded on demand.
+Languages to preload. Import from `@shikijs/langs`.
 
 ```typescript
 import javascript from '@shikijs/langs/javascript'
@@ -267,7 +271,7 @@ shiki({
 })
 ```
 
-**Default:** `undefined`
+**Default:** on the standard entry, the built-in default language set (see [`registerDefaultLanguages`](#options-registerdefaultlanguages)); on `core`, none — pass languages explicitly.
 
 ### `transformers`
 
@@ -298,7 +302,7 @@ shiki({ preStyles: true })
 
 ### `registerDefaultLanguages`
 
-When `true`, these languages are pre-registered: `vue`, `tsx`, `svelte`, `astro`, `typescript`, `javascript`, `mdc`, `bash`, `json`, `yaml`. Set to `false` to control the language set entirely via `languages`.
+On the standard `comark/plugins/shiki` entry, `true` pre-registers: `vue`, `tsx`, `svelte`, `astro`, `typescript`, `javascript`, `bash`, `json`, `yaml` (plus the built-in Comark/`mdc` grammar). Set to `false` to control the language set entirely via `languages`. The `comark/plugins/shiki/core` entry never registers a default language set — pass `languages` explicitly.
 
 ```typescript
 shiki({
@@ -341,7 +345,7 @@ const result = await parseMarkdown(content, {
 
 ### Minimal Bundle
 
-Use the `core` entry and import only what you need:
+Use the `core` entry and import only what you need — no default themes or languages are bundled:
 
 ```typescript
 import shiki from 'comark/plugins/shiki/core'
@@ -350,7 +354,6 @@ import typescript from '@shikijs/langs/typescript'
 import githubDark from '@shikijs/themes/github-dark'
 
 shiki({
-  registerDefaultLanguages: false,
   languages: [javascript, typescript],
   themes: { dark: githubDark }
 })

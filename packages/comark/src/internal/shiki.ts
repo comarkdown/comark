@@ -59,10 +59,12 @@ export interface CodeBlockAttributes {
 }
 
 export type ShikiThemeLoader = () => Promise<ThemeRegistration>
+export type ShikiLanguageLoader = () => Promise<LanguageRegistration | LanguageRegistration[]>
 
 let highlighter: ShikiPrimitive | null = null
 let highlighterPromise: Promise<ShikiPrimitive> | null = null
 let defaultThemesLoaded = false
+let defaultLanguagesLoaded = false
 const loadedThemes: Set<string> = new Set()
 const loadedLanguages: Set<string> = new Set()
 
@@ -72,17 +74,24 @@ const loadedLanguages: Set<string> = new Set()
  */
 export async function getHighlighter(
   options: ShikiOptions = {},
-  defaultThemeLoaders: ShikiThemeLoader[] = []
+  defaultThemeLoaders: ShikiThemeLoader[] = [],
+  defaultLanguageLoaders: ShikiLanguageLoader[] = []
 ): Promise<ShikiPrimitive> {
   if (highlighter) {
     // Fast path: skip registerDefaults() when no custom themes/languages are requested
-    if (!options.themes && !options.languages && (defaultThemeLoaders.length === 0 || defaultThemesLoaded)) {
+    if (
+      !options.themes &&
+      !options.languages &&
+      (defaultThemeLoaders.length === 0 || defaultThemesLoaded) &&
+      (defaultLanguageLoaders.length === 0 || defaultLanguagesLoaded)
+    ) {
       return highlighter
     }
-    const { themes, languages } = await registerDefaults(options, defaultThemeLoaders)
+    const { themes, languages } = await registerDefaults(options, defaultThemeLoaders, defaultLanguageLoaders)
     await Promise.all(themes.map((theme) => loadTheme(highlighter!, theme)))
     await Promise.all(languages.map((language) => loadLanguage(highlighter!, language)))
     if (defaultThemeLoaders.length > 0 && options.registerDefaultThemes !== false) defaultThemesLoaded = true
+    if (defaultLanguageLoaders.length > 0 && options.registerDefaultLanguages !== false) defaultLanguagesLoaded = true
 
     return highlighter
   }
@@ -93,7 +102,7 @@ export async function getHighlighter(
 
   try {
     highlighterPromise = (async () => {
-      const { themes, languages } = await registerDefaults(options, defaultThemeLoaders)
+      const { themes, languages } = await registerDefaults(options, defaultThemeLoaders, defaultLanguageLoaders)
       const hl = createShikiPrimitive({
         themes: themes,
         langs: languages,
@@ -110,6 +119,7 @@ export async function getHighlighter(
       await Promise.all(themes.map((theme) => loadTheme(hl, theme)))
       await Promise.all(languages.map((language) => loadLanguage(hl, language)))
       if (defaultThemeLoaders.length > 0 && options.registerDefaultThemes !== false) defaultThemesLoaded = true
+      if (defaultLanguageLoaders.length > 0 && options.registerDefaultLanguages !== false) defaultLanguagesLoaded = true
 
       return hl
     })() as Promise<ShikiPrimitive>
@@ -124,7 +134,11 @@ export async function getHighlighter(
   }
 }
 
-async function registerDefaults(options: ShikiOptions, defaultThemeLoaders: ShikiThemeLoader[]) {
+async function registerDefaults(
+  options: ShikiOptions,
+  defaultThemeLoaders: ShikiThemeLoader[],
+  defaultLanguageLoaders: ShikiLanguageLoader[]
+) {
   const themes = Object.values(options.themes || {}) as ThemeRegistration[]
   const languages = options.languages || ([] as Array<LanguageRegistration | LanguageRegistration[]>)
   const promises: Array<Promise<{ type: 'theme' | 'lang'; value: any }>> = []
@@ -135,18 +149,9 @@ async function registerDefaults(options: ShikiOptions, defaultThemeLoaders: Shik
     }
   }
   if (options.registerDefaultLanguages !== false) {
-    promises.push(
-      import('shiki/dist/langs/vue.mjs').then((m) => ({ type: 'lang' as const, value: m.default })),
-      import('shiki/dist/langs/tsx.mjs').then((m) => ({ type: 'lang' as const, value: m.default })),
-      import('shiki/dist/langs/svelte.mjs').then((m) => ({ type: 'lang' as const, value: m.default })),
-      import('shiki/dist/langs/typescript.mjs').then((m) => ({ type: 'lang' as const, value: m.default })),
-      import('shiki/dist/langs/javascript.mjs').then((m) => ({ type: 'lang' as const, value: m.default })),
-      // import('shiki/dist/langs/mdc.mjs').then(m => ({ type: 'lang' as const, value: m.default })),
-      import('shiki/dist/langs/bash.mjs').then((m) => ({ type: 'lang' as const, value: m.default })),
-      import('shiki/dist/langs/json.mjs').then((m) => ({ type: 'lang' as const, value: m.default })),
-      import('shiki/dist/langs/yaml.mjs').then((m) => ({ type: 'lang' as const, value: m.default })),
-      import('shiki/dist/langs/astro.mjs').then((m) => ({ type: 'lang' as const, value: m.default }))
-    )
+    for (const loadLanguage of defaultLanguageLoaders) {
+      promises.push(loadLanguage().then((value) => ({ type: 'lang' as const, value })))
+    }
   }
 
   const results = await Promise.all(promises)
@@ -211,7 +216,8 @@ function hastToNode(input: any): Node {
 export async function highlightCodeBlocks(
   tree: MarkdownDocument,
   options: ShikiOptions = {},
-  defaultThemeLoaders: ShikiThemeLoader[] = []
+  defaultThemeLoaders: ShikiThemeLoader[] = [],
+  defaultLanguageLoaders: ShikiLanguageLoader[] = []
 ): Promise<MarkdownDocument> {
   interface CodeBlockRef {
     node: Node
@@ -256,7 +262,7 @@ export async function highlightCodeBlocks(
 
   if (codeBlocks.length === 0) return tree
 
-  const hl = await getHighlighter(options, defaultThemeLoaders)
+  const hl = await getHighlighter(options, defaultThemeLoaders, defaultLanguageLoaders)
   const { themes = { light: 'material-theme-lighter', dark: 'material-theme-palenight' } } = options
   const lightTheme = themes.light || themes.dark || 'material-theme-lighter'
   const darkTheme = themes.dark || themes.light || 'material-theme-palenight'
@@ -441,15 +447,19 @@ export function resetHighlighter(): void {
   highlighter = null
   highlighterPromise = null
   defaultThemesLoaded = false
+  defaultLanguagesLoaded = false
   loadedThemes.clear()
   loadedLanguages.clear()
 }
 
-export function createShikiPlugin(defaultThemeLoaders: ShikiThemeLoader[] = []) {
+export function createShikiPlugin(
+  defaultThemeLoaders: ShikiThemeLoader[] = [],
+  defaultLanguageLoaders: ShikiLanguageLoader[] = []
+) {
   return defineComarkPlugin<ShikiOptions>((options: ShikiOptions = {}) => ({
     name: 'shiki',
     async post(state) {
-      state.tree = await highlightCodeBlocks(state.tree, options, defaultThemeLoaders)
+      state.tree = await highlightCodeBlocks(state.tree, options, defaultThemeLoaders, defaultLanguageLoaders)
     },
   }))
 }
