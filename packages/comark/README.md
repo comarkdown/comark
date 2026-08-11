@@ -8,9 +8,9 @@
 [![Documentation](https://img.shields.io/badge/Documentation-black?logo=readme&logoColor=white)](https://comark.dev)
 [![license](https://img.shields.io/github/license/comarkdown/comark?color=black)](https://github.com/comarkdown/comark/blob/main/LICENSE)
 
-The Markdown engine for the modern web. One parser, every renderer: Vue, React, Svelte, Angular, HTML and ANSI, with components, plugins and streaming.
+Parse and render Markdown anywhere with one JavaScript library for HTML, ANSI, Vue, React, Svelte and Angular, plus plugins and streaming.
 
-Comark (**Co**mponents in **Mark**down) extends standard Markdown with component syntax that stays plain text. No build step: parse at runtime or build time, on the server or in the browser, and render the same content anywhere.
+Comark supports CommonMark and GFM, then parses them into a compact, serializable document at build time, runtime, or during a stream. Use the same document across renderers, or extend the syntax with readable components and attributes when you need richer content.
 
 ```mdc
 # Regular Markdown
@@ -24,15 +24,15 @@ This is **Markdown** inside your own component.
 
 ## Why Comark
 
-- **Runtime parsing**: `parseMarkdown(markdown)` is a pure function returning a compact serializable Markdown document . Content from a database, CMS, or LLM is live the moment it is saved. No rebuild, no redeploy. ([Comark vs MDX](https://comark.dev/compare/comark-vs-mdx))
+- **Runtime parsing**: `parseMarkdown(markdown)` is a pure function returning a compact, serializable Markdown document. Content from a database, CMS, or LLM is live the moment it is saved. No rebuild, no redeploy. ([Comark vs MDX](https://comark.dev/compare/comark-vs-mdx))
 - **Streaming built in**: auto-close completes unterminated syntax (`**bold`, open code fences, half-open components) so AI output renders correctly at every frame.
-- **One parser, every renderer**: the same source renders to Vue, React, Svelte, Angular, Nuxt, HTML strings, and ANSI terminal output. Your content outlasts your framework.
+- **One parser, every renderer**: the same source renders to HTML, ANSI, Vue, React, Svelte, and Angular. Your content outlasts your framework.
 - **Still just Markdown**: full CommonMark + GFM, frontmatter, and `{.class}` attributes on native elements. Components are opt-in syntax, not a new language.
 - **Plugin ecosystem**: Shiki highlighting, KaTeX math, Mermaid diagrams, TOC, alerts, footnotes and more, plus compatibility with existing markdown-it plugins.
 - **Decoupled parse & render**: parse once on the server, send the serializable document (`['tag', props, ...children]`) to the client, render without re-parsing.
 - **Fast**: built on [markdown-exit](https://github.com/serkodev/markdown-exit), a TypeScript rewrite of markdown-it, with full TypeScript support.
 
-Built on five years of [MDC](https://github.com/nuxt-content/mdc), the parser behind [Nuxt Content](https://content.nuxt.com). Read [Why Comark](https://comark.dev/kb/why-comark) for the full story.
+The component and attribute syntax builds on five years of production use in [MDC](https://github.com/nuxt-content/mdc). Read [Why Comark](https://comark.dev/kb/why-comark) for the full story.
 
 ## Quick Start
 

@@ -4,13 +4,15 @@ This document provides guidance for AI agents working on the comark monorepo.
 
 ## Project Overview
 
-This is a **monorepo** containing multiple packages related to Comark (Components in Markdown) syntax parsing. The main package is `comark`.
+This is a **monorepo** containing the Comark Markdown parser, document model, plugins, and renderers. The main package is `comark`.
 
-**comark** is a Components in Markdown (Comark) parser that extends standard Markdown with component syntax. It provides:
+**comark** is a JavaScript library for parsing CommonMark and GFM into a compact, serializable document that can be rendered to HTML, ANSI, Vue, React, Svelte, or Angular. It provides:
 
-- Fast synchronous and async parsing via markdown-it
+- Fast synchronous and async parsing via markdown-exit, a TypeScript rewrite of markdown-it
+- CommonMark and GitHub Flavored Markdown support
 - Streaming support for real-time/incremental parsing
-- Vue, React, Svelte and Angular renderers
+- HTML, ANSI, Vue, React, Svelte and Angular renderers
+- Component and attribute syntax plus an extensible plugin system
 - Syntax highlighting via Shiki
 - Auto-close utilities for incomplete markdown (useful for AI streaming)
 
