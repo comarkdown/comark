@@ -71,7 +71,6 @@ describe('MarkdownNode nested component rendering', () => {
   })
 })
 
-
 /** Badge — applied via decorator factory so Vitest/oxc need not enable experimentalDecorators. */
 class Badge {
   name = 'badge'
