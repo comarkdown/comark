@@ -24,10 +24,7 @@ export function getHighlighter(options: ShikiCoreOptions): Promise<ShikiPrimitiv
   return getCoreHighlighter(options)
 }
 
-export function highlightCodeBlocks(
-  tree: MarkdownDocument,
-  options: ShikiCoreOptions
-): Promise<MarkdownDocument> {
+export function highlightCodeBlocks(tree: MarkdownDocument, options: ShikiCoreOptions): Promise<MarkdownDocument> {
   return highlightCoreCodeBlocks(tree, options)
 }
 

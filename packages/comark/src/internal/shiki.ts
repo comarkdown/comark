@@ -473,9 +473,7 @@ export function resetHighlighter(): void {
   loadedLanguages.clear()
 }
 
-export function createShikiPlugin<
-  TOptions extends ShikiOptions = ShikiOptions,
->(
+export function createShikiPlugin<TOptions extends ShikiOptions = ShikiOptions>(
   defaultThemeLoaders: ShikiThemeLoader[] = [],
   defaultLanguageLoaders: ShikiLanguageLoader[] = []
 ) {
