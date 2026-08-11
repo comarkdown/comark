@@ -1,5 +1,6 @@
 import {
   Component,
+  ComponentRef,
   Input,
   ChangeDetectionStrategy,
   ViewContainerRef,
@@ -75,7 +76,7 @@ const VOID_ELEMENTS = new Set([
 ])
 
 /**
- * MarkdownNode — recursive component that renders a single Comark AST node.
+ * MarkdownNode - recursive component that renders a single Comark AST node.
  *
  * For text nodes, it inserts the text directly.
  * For element nodes, it creates a native DOM element or instantiates
@@ -150,7 +151,7 @@ export class MarkdownNode implements OnChanges {
       // Resolve attributes (:binding support)
       const resolved = resolveAttributes(nodeProps, this.renderData, { parseJson: true })
 
-      // Build childrenRenderData — only shadow parent scope when element has own attrs
+      // Build childrenRenderData - only shadow parent scope when element has own attrs
       const hasOwnAttrs = Object.keys(resolved).length > 0
       const childrenRenderData: NodeRenderData = hasOwnAttrs ? { ...this.renderData, props: resolved } : this.renderData
 
@@ -266,7 +267,7 @@ export class MarkdownNode implements OnChanges {
     // Collect all rendered child nodes for the default slot
     const defaultSlotNodes: Node[] = Array.from(tempContainer.childNodes)
 
-    // Build projectableNodes array — index 0 is the default <ng-content />
+    // Build projectableNodes array - index 0 is the default <ng-content />
     const projectableNodes: Node[][] = [defaultSlotNodes]
 
     // Create the Angular component with projected content
@@ -342,17 +343,23 @@ export class MarkdownNode implements OnChanges {
         }
 
         if (customComponent) {
-          const componentRef = this.vcr.createComponent(MarkdownNode)
-          componentRef.instance.node = child
-          componentRef.instance.components = this.components
-          componentRef.instance.renderData = renderData
-          componentRef.instance.parent = this.node
-          componentRef.changeDetectorRef.detectChanges()
+          let componentRef: ComponentRef<MarkdownNode> | undefined
+          try {
+            componentRef = this.vcr.createComponent(MarkdownNode)
+            componentRef.setInput('node', child)
+            componentRef.setInput('components', this.components)
+            componentRef.setInput('renderData', renderData)
+            componentRef.setInput('parent', this.node)
+            componentRef.changeDetectorRef.detectChanges()
 
-          // Move the component's host element into the parent
-          const nativeEl = componentRef.location.nativeElement as HTMLElement
-          nativeEl.style.display = 'contents'
-          this.renderer.appendChild(parentEl, nativeEl)
+            // Move the component's host element into the parent
+            const nativeEl = componentRef.location.nativeElement as HTMLElement
+            nativeEl.style.display = 'contents'
+            this.renderer.appendChild(parentEl, nativeEl)
+          } catch (error) {
+            componentRef?.destroy()
+            console.error(`Failed to render custom component "${childTag}"`, error)
+          }
         } else {
           const resolved = resolveAttributes(childProps, renderData, { parseJson: true })
           const hasOwnAttrs = Object.keys(resolved).length > 0

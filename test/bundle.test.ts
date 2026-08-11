@@ -60,7 +60,7 @@ describe('package bundle size', { timeout: 60_000 }, () => {
 
     expect(report).toMatchInlineSnapshot(`
       {
-        "@comark/angular": "53.8k (66 files)",
+        "@comark/angular": "54.1k (66 files)",
         "@comark/ansi": "37.0k (94 files)",
         "@comark/html": "18.2k (54 files)",
         "@comark/nuxt": "11.4k (54 files)",
