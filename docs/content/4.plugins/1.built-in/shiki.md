@@ -18,7 +18,7 @@ links:
     variant: soft
   - label: Custom Pre
     icon: i-lucide-clipboard-copy
-    to: /kb/custom-pre
+    to: /kb/custom-code-block
     color: neutral
     variant: soft
 ---
@@ -460,8 +460,8 @@ shiki({
 
 See the [Twoslash guide](/kb/twoslash) for TypeScript-powered type tooltips and error annotations in code blocks.
 
-::tip{to="/kb/custom-pre"}
-Need a copy button or collapse threshold on a custom `ProsePre`? After highlighting there is no `code` prop — reconstruct the source with `__node` and `textContent()`. See [Custom Pre](/kb/custom-pre).
+::tip{to="/kb/custom-code-block"}
+Need a copy button or collapse threshold on a custom `ProsePre`? After highlighting there is no `code` prop — reconstruct the source with `__node` and `textContent()`.
 ::
 
 ### Live Examples
