@@ -3,6 +3,16 @@ packages:
   - docs
   - examples/*/*
 
+# Edge build of comark-content carrying the unpublished `plugins/tracing/otel`
+# that the comark-docs layer imports. Drop once comark-content > 0.3.0 is released.
+overrides:
+  comark-content: https://pkg.pr.new/comark-content@f43a94b
+
+# The pkg.pr.new override above is URL-resolved inside comark-docs' dependency
+# tree, which pnpm blocks by default. Re-enable (delete this line) together with
+# dropping the override.
+blockExoticSubdeps: false
+
 allowBuilds:
   "@parcel/watcher": false
   better-sqlite3: true
