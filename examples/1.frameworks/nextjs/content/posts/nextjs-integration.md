@@ -21,13 +21,14 @@ import { parseMarkdown } from 'comark'
 import { MarkdownDocument } from '@comark/react'
 import shiki from 'comark/plugins/shiki'
 import Alert from '@/components/Alert'
+import CodeBlock from '@/components/CodeBlock'
 
 const tree = await parseMarkdown(content, {
   plugins: [shiki()],
 })
 
 // In your Server Component:
-// <MarkdownDocument value={tree} components={{ Alert }} />
+// <MarkdownDocument value={tree} components={{ Alert, pre: CodeBlock }} />
 ```
 
 ::alert{type="info"}
@@ -36,7 +37,7 @@ Since Next.js Server Components run on the server, Comark's `parseMarkdown()` is
 
 ## Custom components
 
-You can register any number of custom components. Each one receives props and children from the Comark AST:
+You can register any number of custom components. Each one receives props and children from the Comark AST. This example maps `CodeBlock` to `pre` to add a copy button while keeping source extraction on the server.
 
 ```tsx
 export default function Alert({ type = 'info', children }) {
