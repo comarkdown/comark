@@ -1,6 +1,6 @@
 {
   "name": "@comark/svelte",
-  "version": "0.6.0",
+  "version": "0.6.2",
   "description": "Svelte 5 renderer for Comark. Render Markdown with components at runtime, with streaming support for AI output.",
   "keywords": [
     "ai",

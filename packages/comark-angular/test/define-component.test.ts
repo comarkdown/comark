@@ -43,8 +43,8 @@ describe('defineMarkdownComponent', () => {
   it('accepts parse options in config', () => {
     const Defined = defineMarkdownComponent({
       name: 'with-options',
-      html: true,
       autoClose: true,
+      linkify: true,
     })
     expect(Defined).toBeDefined()
   })

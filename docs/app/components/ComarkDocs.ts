@@ -3,7 +3,7 @@ import math, { Math } from '@comark/nuxt/plugins/math'
 import mermaid, { Mermaid } from '@comark/nuxt/plugins/mermaid'
 import emoji from '@comark/nuxt/plugins/emoji'
 import ProsePre from './landing/ProsePre.vue'
-import highlight from 'comark/plugins/highlight'
+import shiki from 'comark/plugins/shiki'
 import Python from '@shikijs/langs/python'
 import githubLight from '@shikijs/themes/github-light'
 import githubDark from '@shikijs/themes/github-dark'
@@ -27,7 +27,7 @@ export default defineMarkdownComponent({
   extends: BaseComarkDocs,
   name: 'ComarkDocs',
   plugins: [
-    highlight({
+    shiki({
       languages: [Python],
       themes: {
         light: githubLight,

@@ -130,7 +130,7 @@ For syntax highlighting support, use the `highlight` plugin:
 
 ```typescript
 import { parseMarkdown } from 'comark'
-import highlight from 'comark/plugins/highlight'
+import shiki from 'comark/plugins/shiki'
 
 const content = `
 # Code Example
@@ -144,13 +144,13 @@ function hello() {
 
 // Enable syntax highlighting
 const result = await parseMarkdown(content, {
-  plugins: [highlight()]
+  plugins: [shiki()]
 })
 
 // With custom Shiki options
 const result = await parseMarkdown(content, {
   plugins: [
-    highlight({
+    shiki({
       themes: {
         light: 'github-light',
         dark: 'github-dark'
@@ -164,27 +164,39 @@ const result = await parseMarkdown(content, {
 ### Highlight Plugin Options
 
 ```typescript
-interface HighlightOptions {
+// Standard entry: comark/plugins/shiki
+interface ShikiOptions {
   registerDefaultLanguages?: boolean  // default: true
   registerDefaultThemes?: boolean     // default: true
   themes?: {
-    light?: ThemeRegistration         // default: 'material-theme-lighter'
-    dark?: ThemeRegistration          // default: 'material-theme-palenight'
+    light?: ThemeRegistration         // default: material-theme-lighter
+    dark?: ThemeRegistration          // default: material-theme-palenight
   }
-  languages?: Array<LanguageRegistration | LanguageRegistration[]>  // Load on demand by default
+  languages?: Array<LanguageRegistration | LanguageRegistration[]>  // merged onto default set
   transformers?: ShikiTransformer[]
-  preStyles?: boolean                 // Add pre background/foreground styles
+  preStyles?: boolean
+}
+
+// Core entry: comark/plugins/shiki/core — no defaults / no registerDefault*
+interface ShikiCoreOptions {
+  themes: {                           // required
+    light?: ThemeRegistration
+    dark?: ThemeRegistration
+  }
+  languages: Array<LanguageRegistration | LanguageRegistration[]>  // required
+  transformers?: ShikiTransformer[]
+  preStyles?: boolean
 }
 ```
 
 ### Dual Theme Support
 
 ```typescript
-import highlight from 'comark/plugins/highlight'
+import shiki from 'comark/plugins/shiki'
 
 const result = await parseMarkdown(content, {
   plugins: [
-    highlight({
+    shiki({
       themes: {
         light: 'github-light',
         dark: 'github-dark'

@@ -13,6 +13,7 @@ import {
   EnvironmentInjector,
   createComponent,
   reflectComponentType,
+  inject,
 } from '@angular/core'
 import type { ElementNode, Node as MarkdownAstNode, NodeRenderData } from 'comark'
 import { pascalCase, resolveAttributes } from 'comark/utils'
@@ -100,12 +101,10 @@ export class MarkdownNode implements OnChanges {
   /** Parent node (for context like `pre` tag detection) */
   @Input() parent?: MarkdownAstNode
 
-  constructor(
-    private vcr: ViewContainerRef,
-    private renderer: Renderer2,
-    private elementRef: ElementRef,
-    private injector: Injector
-  ) {}
+  private vcr = inject(ViewContainerRef)
+  private renderer = inject(Renderer2)
+  private elementRef = inject(ElementRef)
+  private injector = inject(Injector)
 
   ngOnChanges(_changes: SimpleChanges): void {
     this.render()

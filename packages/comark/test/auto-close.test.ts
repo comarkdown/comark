@@ -737,3 +737,45 @@ describe('nested emphasis (known limitations)', () => {
     expect(autoCloseMarkdown('*a **b')).toBe('*a **b***')
   })
 })
+
+describe('autoCloseMarkdown - syntax option', () => {
+  it('appends component closers by default', () => {
+    expect(autoCloseMarkdown('::alert\nContent')).toBe('::alert\nContent\n::')
+  })
+
+  it('does not append component closers with syntax: false', () => {
+    expect(autoCloseMarkdown('::alert\nContent', { syntax: false })).toBe('::alert\nContent')
+  })
+
+  it('clears a trailing bare fence line by default', () => {
+    expect(autoCloseMarkdown('para\n\n::')).toBe('para\n\n')
+  })
+
+  it('keeps a trailing bare fence line with syntax: false', () => {
+    expect(autoCloseMarkdown('para\n\n::', { syntax: false })).toBe('para\n\n::')
+  })
+
+  it('closes an open props brace by default', () => {
+    expect(autoCloseMarkdown('::alert{type="info')).toBe('::alert{type="info"}\n::')
+  })
+
+  it('does not close an open props brace with syntax: false', () => {
+    expect(autoCloseMarkdown('::alert{type="info', { syntax: false })).toBe('::alert{type="info')
+  })
+
+  it('still closes inline markers with syntax: false', () => {
+    expect(autoCloseMarkdown('**bold', { syntax: false })).toBe('**bold**')
+  })
+
+  it('skips markers inside an attached attribute brace by default', () => {
+    expect(autoCloseMarkdown('text{.cls **bold')).toBe('text{.cls **bold')
+  })
+
+  it('treats an attached brace as literal text with syntax: false', () => {
+    expect(autoCloseMarkdown('text{.cls **bold', { syntax: false })).toBe('text{.cls **bold**')
+  })
+
+  it('still completes frontmatter with syntax: false', () => {
+    expect(autoCloseMarkdown('---\ntitle: Hello', { frontmatter: true, syntax: false })).toBe('---\ntitle: Hello\n---')
+  })
+})

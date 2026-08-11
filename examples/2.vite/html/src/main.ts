@@ -1,12 +1,12 @@
 import { createHtmlRenderer } from '@comark/html'
-import highlight from '@comark/html/plugins/highlight'
+import shiki from '@comark/html/plugins/shiki'
 import math, { Math } from '@comark/html/plugins/math'
 import mermaid, { Mermaid } from '@comark/html/plugins/mermaid'
 import katexCss from 'katex/dist/katex.min.css?raw'
 import previewCss from './preview.css?raw'
 
 const renderHtml = createHtmlRenderer({
-  plugins: [highlight(), math(), mermaid()],
+  plugins: [shiki(), math(), mermaid()],
   components: { Math, Mermaid },
 })
 

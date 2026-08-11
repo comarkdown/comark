@@ -1,6 +1,6 @@
 {
   "name": "@comark/html",
-  "version": "0.6.0",
+  "version": "0.6.2",
   "description": "HTML string renderer for Comark. Render Markdown with components on the server, no framework required.",
   "keywords": [
     "comark",

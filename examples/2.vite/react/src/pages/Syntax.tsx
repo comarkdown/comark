@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { parseMarkdown } from 'comark'
-import highlight from '@comark/react/plugins/highlight'
+import shiki from '@comark/react/plugins/shiki'
 import { MarkdownDocument } from '@comark/react'
 import type { MarkdownDocument as Document } from '@comark/react'
 import Alert from '../components/Alert'
@@ -160,7 +160,7 @@ export default function Syntax() {
   const [tree, setTree] = useState<Document | null>(null)
 
   useEffect(() => {
-    parseMarkdown(markdown, { plugins: [highlight()] }).then(setTree)
+    parseMarkdown(markdown, { plugins: [shiki()] }).then(setTree)
   }, [])
 
   if (!tree) return null

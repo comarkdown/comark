@@ -84,15 +84,17 @@ onBeforeUnmount(() => {
       {{ description }}
     </p>
 
-    <div class="mt-6 h-[280px] overflow-auto border border-muted bg-muted/50 p-4">
-      <ComarkDocs
-        v-if="streamedText"
-        class="text-sm"
-        :value="streamedText"
-        :streaming="isStreaming"
-        :caret="{ class: 'caret' }"
-      />
-    </div>
+    <UTheme :ui="{ prose: { p: { base: 'text-wrap' } } }">
+      <div class="mt-6 h-[280px] overflow-auto border border-muted bg-muted/50 p-4">
+        <ComarkDocs
+          v-if="streamedText"
+          class="text-sm"
+          :value="streamedText"
+          :streaming="isStreaming"
+          :caret="{ class: 'caret' }"
+        />
+      </div>
+    </UTheme>
 
     <UButton
       :label="linkLabel"

@@ -2,7 +2,7 @@
 import { content } from './content'
 import { Markdown } from '@comark/vue'
 import jsonRender from '@comark/vue/plugins/json-render'
-import highlight from '@comark/vue/plugins/highlight'
+import shiki from '@comark/vue/plugins/shiki'
 import githubLight from '@shikijs/themes/github-light'
 import githubDark from '@shikijs/themes/github-dark'
 import { useColorMode } from '@vueuse/core'
@@ -11,7 +11,7 @@ const colorMode = useColorMode()
 
 const plugins = [
   jsonRender(),
-  highlight({
+  shiki({
     themes: { light: githubLight, dark: githubDark },
   }),
 ]

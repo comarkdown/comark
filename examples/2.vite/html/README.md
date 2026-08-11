@@ -11,10 +11,10 @@ path: /examples/vite/html
 
 ```ts [src/main.ts]
 import { createHtmlRenderer } from '@comark/html'
-import highlight from 'comark/plugins/highlight'
+import shiki from 'comark/plugins/shiki'
 
 const renderHtml = createHtmlRenderer({
-  plugins: [highlight()],
+  plugins: [shiki()],
 })
 
 const PREVIEW_STYLES = `

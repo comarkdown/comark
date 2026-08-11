@@ -35,12 +35,12 @@ interface DefineMarkdownComponentOptions extends ParserOptions {
  * @example
  * ```tsx
  * import { defineMarkdownComponent } from '@comark/react'
- * import highlight from '@comark/react/plugins/highlight'
+ * import shiki from '@comark/react/plugins/shiki'
  * import toc from '@comark/react/plugins/toc'
  *
  * const BaseMarkdown = defineMarkdownComponent({
  *   name: 'BaseMarkdown',
- *   plugins: [highlight({ themes: { light: githubLight, dark: githubDark } })],
+ *   plugins: [shiki({ themes: { light: githubLight, dark: githubDark } })],
  * })
  *
  * export const ArticleMarkdown = defineMarkdownComponent({

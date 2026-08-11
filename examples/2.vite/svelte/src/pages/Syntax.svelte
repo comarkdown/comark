@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Markdown } from '@comark/svelte'
-  import highlight from '@comark/svelte/plugins/highlight'
+  import shiki from '@comark/svelte/plugins/shiki'
   import Alert from '../components/Alert.svelte'
   import python from '@shikijs/langs/python'
 
@@ -174,7 +174,7 @@ Text before the comment and text after the comment both render normally.
 
 <Markdown
   {markdown}
-  plugins={[highlight({ languages: [python] })]}
+  plugins={[shiki({ languages: [python] })]}
   components={{ Alert }}
   {componentsManifest}
 />

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { parseMarkdown } from 'comark'
-import highlight from '@comark/nuxt/plugins/highlight'
+import shiki from '@comark/nuxt/plugins/shiki'
+import rangi from '@comark/nuxt/plugins/rangi'
 import math from '@comark/nuxt/plugins/math'
 import binding from '@comark/nuxt/plugins/binding'
 import emoji from '@comark/nuxt/plugins/emoji'
@@ -54,7 +55,8 @@ const isDark = computed(() => colorMode.value === 'dark')
 const pluginToggles = useLocalStorage(
   'comark-playground-plugins',
   {
-    highlight: true,
+    shiki: true,
+    rangi: false,
     math: true,
     emoji: true,
     mermaid: true,
@@ -76,7 +78,6 @@ const parseOptions = useLocalStorage(
   {
     autoUnwrap: true,
     autoClose: true,
-    html: true,
     linkify: true,
   },
   { mergeDefaults: true }
@@ -90,10 +91,16 @@ const pluginDefs = [
     factory: () => emoji(),
   },
   {
-    key: 'highlight',
-    label: 'Syntax Highlighting',
+    key: 'shiki',
+    label: 'Shiki Syntax Highlighting',
     icon: 'i-lucide-code',
-    factory: () => highlight(),
+    factory: () => shiki(),
+  },
+  {
+    key: 'rangi',
+    label: 'Rangi Syntax Highlighting',
+    icon: 'i-lucide-gauge',
+    factory: () => rangi(),
   },
   {
     key: 'mermaid',
@@ -163,6 +170,14 @@ const pluginDefs = [
   },
 ] as const
 
+type PluginKey = (typeof pluginDefs)[number]['key']
+
+function setPluginEnabled(key: PluginKey, enabled: boolean): void {
+  if (enabled && key === 'shiki') pluginToggles.value.rangi = false
+  if (enabled && key === 'rangi') pluginToggles.value.shiki = false
+  pluginToggles.value[key] = enabled
+}
+
 const parseOptionDefs = [
   {
     key: 'autoUnwrap',
@@ -173,11 +188,6 @@ const parseOptionDefs = [
     key: 'autoClose',
     label: 'Auto Close',
     icon: 'i-lucide-shield-check',
-  },
-  {
-    key: 'html',
-    label: 'HTML Parsing',
-    icon: 'i-lucide-file-code',
   },
   {
     key: 'linkify',
@@ -235,7 +245,6 @@ async function updatePreview(): Promise<void> {
       plugins: activePlugins.value,
       autoUnwrap: parseOptions.value.autoUnwrap,
       autoClose: parseOptions.value.autoClose,
-      html: parseOptions.value.html,
       linkify: parseOptions.value.linkify ?? true,
     })
     document.value = result
@@ -307,7 +316,6 @@ watch(completion, async (md) => {
       plugins: activePlugins.value,
       autoUnwrap: parseOptions.value.autoUnwrap,
       autoClose: true,
-      html: parseOptions.value.html,
     })
     document.value = result
   } catch {
@@ -389,7 +397,7 @@ function handleGenerate(prompt: string) {
                       v-for="plugin in pluginDefs"
                       :key="plugin.key"
                       class="flex items-center gap-2.5 w-full px-2 py-1.5 rounded-md text-sm hover:bg-elevated transition-colors"
-                      @click="pluginToggles[plugin.key] = !pluginToggles[plugin.key]"
+                      @click="setPluginEnabled(plugin.key, !pluginToggles[plugin.key])"
                     >
                       <UIcon
                         :name="plugin.icon"
@@ -401,7 +409,7 @@ function handleGenerate(prompt: string) {
                         size="xs"
                         tabindex="-1"
                         @click.stop
-                        @update:model-value="(pluginToggles[plugin.key] as any) = $event"
+                        @update:model-value="setPluginEnabled(plugin.key, $event)"
                       />
                     </button>
                   </div>

@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
+import { ChangeDetectorRef, Injector, runInInjectionContext } from '@angular/core'
 import { parseMarkdown } from 'comark'
 import { isMarkdownDocument } from 'comark/utils'
 import type { MarkdownDocument } from 'comark'
@@ -8,10 +9,16 @@ import { Markdown } from '../src/components/markdown.component.ts'
  * Angular's high-level Markdown component accepts a string or a pre-parsed
  * MarkdownDocument on `value`. When a document is passed, parsing is skipped and
  * the document is assigned for MarkdownDocument to render.
+ *
+ * The component resolves its dependencies with field-level `inject()`, so it has
+ * to be instantiated inside an injection context providing a stub ChangeDetectorRef.
  */
 function createMarkdown(): Markdown {
   const cdr = { markForCheck: vi.fn() }
-  return new Markdown(cdr as any)
+  const injector = Injector.create({
+    providers: [{ provide: ChangeDetectorRef, useValue: cdr }],
+  })
+  return runInInjectionContext(injector, () => new Markdown())
 }
 
 describe('Markdown value as MarkdownDocument', () => {

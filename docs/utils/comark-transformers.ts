@@ -1,5 +1,5 @@
 import { createMarkdownParser } from 'comark'
-import highlight from '@comark/nuxt/plugins/highlight'
+import shiki from '@comark/nuxt/plugins/shiki'
 import mermaid from '@comark/nuxt/plugins/mermaid'
 import latexLanguage from '@shikijs/langs/latex'
 import emoji from '@comark/nuxt/plugins/emoji'
@@ -16,7 +16,7 @@ export default defineTransformer({
     if (!parseMarkdown) {
       parseMarkdown = createMarkdownParser({
         plugins: [
-          highlight({
+          shiki({
             languages: [latexLanguage],
           }),
           mermaid(),

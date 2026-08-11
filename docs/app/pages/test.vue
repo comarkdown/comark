@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import highlight from 'comark/plugins/highlight'
+import shiki from 'comark/plugins/shiki'
 import resolveComponent from '../utils/components-manifest'
 
 useHead({
@@ -191,7 +191,7 @@ Thanks for trying the **Comark test page**! 🚀
   <UContainer>
     <Markdown
       :components-manifest="resolveComponent"
-      :plugins="[highlight()]"
+      :plugins="[shiki()]"
     >
       {{ markdown }}
     </Markdown>

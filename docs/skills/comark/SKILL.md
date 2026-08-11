@@ -281,14 +281,14 @@ interface MarkdownDocument {
 ```typescript
 import { parseMarkdown } from 'comark'
 import { renderHtmlFromDocument } from '@comark/html'
-import highlight from '@comark/html/plugins/highlight'
+import shiki from '@comark/html/plugins/shiki'
 
 async function processMarkdownFile(filePath: string) {
   const content = await readFile(filePath, 'utf-8')
 
   const doc = await parseMarkdown(content, {
     plugins: [
-      highlight({
+      shiki({
         themes: { light: 'github-dark', dark: 'github-dark' },
       }),
     ],

@@ -299,6 +299,57 @@ export type ComarkParsePostState<TMeta = Record<string, any>, TFrontmatter = Rec
 }
 
 /**
+ * Minimal span handle — structural subset of OpenTelemetry's `Span`.
+ * Call {@link ComarkSpan.end} when the timed work is done.
+ */
+export interface ComarkSpan {
+  end(): void
+}
+
+/**
+ * Options for starting a span — structural subset of OpenTelemetry `SpanOptions`.
+ */
+export interface ComarkSpanOptions {
+  /** Optional attributes attached to the span (OTel `SpanOptions.attributes`). */
+  attributes?: Record<string, unknown>
+}
+
+/**
+ * Timing recorder for the parse pipeline.
+ *
+ * Structural subset of OpenTelemetry's `Tracer` (`startSpan` /
+ * `startActiveSpan`), so you can pass an OTel tracer directly:
+ *
+ * ```ts
+ * import { trace } from '@opentelemetry/api'
+ * const parse = createMarkdownParser({ tracer: trace.getTracer('comark') })
+ * ```
+ *
+ * Nested `startActiveSpan` calls form a parent → child hierarchy via the
+ * active context (OTel) or an internal stack (simple recorders). Universal
+ * by design — no Node-specific APIs — so it works in the browser too.
+ *
+ * Like OTel, callers must `span.end()` (including in `finally` / promise
+ * settlement). See {@link ParserOptions.tracer}.
+ */
+export interface ComarkTracer {
+  /**
+   * Start a span without making it active. Call `span.end()` when done.
+   * Compatible with OTel `Tracer.startSpan(name, options?)`.
+   */
+  startSpan(name: string, options?: ComarkSpanOptions): ComarkSpan
+
+  /**
+   * Start a span, make it active for the duration of `fn`, and pass the span
+   * as the first argument. Nested `startActiveSpan` / `startSpan` calls become
+   * children. Compatible with OTel `Tracer.startActiveSpan` (name + fn, or
+   * name + options + fn). The caller must `span.end()`.
+   */
+  startActiveSpan<T>(name: string, fn: (span: ComarkSpan) => T): T
+  startActiveSpan<T>(name: string, options: ComarkSpanOptions, fn: (span: ComarkSpan) => T): T
+}
+
+/**
  * A Comark plugin.
  *
  * `TMeta` / `TFrontmatter` are phantom type parameters that record what this
@@ -408,25 +459,12 @@ export interface ParserOptions<TPlugins extends readonly ComarkPlugin<any, any>[
   autoClose?: boolean
 
   /**
-   * Whether to parse HTML tags embedded in Comark/markdown content.
-   * When enabled, HTML block and inline elements are parsed into AST nodes and can be
-   * mixed freely with Comark components and markdown syntax.
+   * @deprecated Use `registerDefaultPlugins: false` and register plugins explicitly
+   * (include `html()` from `comark/plugins/html` only when you need HTML parsing).
+   * Setting this option logs a deprecation warning. `html: false` still skips the
+   * default html plugin for backward compatibility.
    *
    * @default true
-   * @example
-   * // With html: true (default) — HTML is parsed into AST nodes
-   * // Input: `<strong class="bold">text</strong>`
-   * // AST:   ['strong', { class: 'bold' }, 'text']
-   *
-   * // HTML can be mixed with Comark components:
-   * // Input:
-   * // <div>
-   * //   ::alert
-   * //   Hello <em>world</em>
-   * //   ::
-   * // </div>
-   *
-   * // With html: false — HTML tags are left as raw text / ignored
    */
   html?: boolean
 
@@ -452,10 +490,32 @@ export interface ParserOptions<TPlugins extends readonly ComarkPlugin<any, any>[
   headingIds?: boolean
 
   /**
+   * Whether to register the built-in default plugins
+   * (`frontmatter`, `html`, `alert`, `task-list`, `components`, `attributes`).
+   * Set `false` to parse plain markdown with only the plugins listed in `plugins`.
+   * Without the components/attributes plugins, `autoClose` skips component fences and attribute braces.
+   * @default true
+   */
+  registerDefaultPlugins?: boolean
+
+  /**
    * Additional plugins to use
    * @default []
    */
   plugins?: TPlugins
+
+  /**
+   * Timing recorder for the parse pipeline — see {@link ComarkTracer}.
+   * Structural subset of OpenTelemetry `Tracer`, so an OTel tracer works as-is:
+   * `createMarkdownParser({ tracer: trace.getTracer('comark') })`.
+   *
+   * When provided, the full parse is a root `comark:parse` active span containing
+   * child phases (`comark:autoclose`, `comark:tokenize`, `comark:nodes`) and plugin
+   * hooks (`comark:pre:<name>`, `comark:post:<name>`). Nested active spans form
+   * the hierarchy. No timing overhead when omitted.
+   * @default undefined
+   */
+  tracer?: ComarkTracer
 }
 
 /**
