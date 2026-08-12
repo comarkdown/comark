@@ -46,7 +46,9 @@ if (!page.value) {
   })
 }
 
-const currentExample = computed(() => playgroundExamples.find((e) => e.value === slug.value))
+const currentExample = computed(
+  () => playgroundExamples.find((e) => e.value === slug.value) ?? playgroundExamples[0]!
+)
 
 let previousMarkdown = ''
 
@@ -305,7 +307,7 @@ defineOgImage('DocsSatori', {
           </div>
         </div>
         <div
-          v-if="currentExample?.mode"
+          v-if="currentExample.mode"
           class="shrink-0 border-t border-default bg-default flex items-center gap-1 p-1.5"
         >
           <PromptInput
