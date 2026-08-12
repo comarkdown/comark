@@ -57,12 +57,9 @@ function scrollEditorToBottom() {
 }
 
 const generationError = ref<string | null>(null)
+const isGenerating = ref(false)
 
-const {
-  completion,
-  complete,
-  isLoading: isGenerating,
-} = useCompletion({
+const { completion, complete } = useCompletion({
   api: '/api/generate-page',
   streamProtocol: 'data',
   onError: async () => {
@@ -102,7 +99,12 @@ async function submitAiPrompt(prompt: string) {
   markdown.value = ''
   page.value = undefined
   generationError.value = null
-  complete(prompt, { body: { mode: example.mode, structure: example.content } })
+  isGenerating.value = true
+  try {
+    await complete(prompt, { body: { mode: example.mode, structure: example.content } })
+  } finally {
+    isGenerating.value = false
+  }
 }
 
 const isEditing = ref(false)

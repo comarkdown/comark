@@ -293,11 +293,9 @@ function scrollEditorToBottom() {
   nextTick(() => markdownEditor.value?.scrollToBottom())
 }
 
-const {
-  completion,
-  complete,
-  isLoading: isGenerating,
-} = useCompletion({
+const isGenerating = ref(false)
+
+const { completion, complete } = useCompletion({
   api: '/api/generate-page',
   streamProtocol: 'data',
   onError: () => {
@@ -328,7 +326,7 @@ watch(completion, async (md) => {
 
 let previousMarkdown = ''
 
-function handleGenerate(prompt: string) {
+async function handleGenerate(prompt: string) {
   const example = currentExample.value
   if (!example.mode) return
   previousMarkdown = markdown.value
@@ -336,7 +334,12 @@ function handleGenerate(prompt: string) {
   document.value = null
   error.value = null
   generationError.value = null
-  complete(prompt, { body: { mode: example.mode, structure: example.content } })
+  isGenerating.value = true
+  try {
+    await complete(prompt, { body: { mode: example.mode, structure: example.content } })
+  } finally {
+    isGenerating.value = false
+  }
 }
 </script>
 
@@ -484,7 +487,7 @@ function handleGenerate(prompt: string) {
             </div>
             <PromptInput
               v-if="currentExample.mode"
-              :is-generating="!!isGenerating"
+              :is-generating="isGenerating"
               :prompt="currentExample.prompt"
               floating
               @submit="handleGenerate"
