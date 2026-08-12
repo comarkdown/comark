@@ -1,5 +1,7 @@
 # Changelog
 
+## [0.6.2](https://github.com/comarkdown/comark/compare/@comark/svelte@0.6.1...@comark/svelte@0.6.2) (2026-08-07)
+
 ## [0.6.1](https://github.com/comarkdown/comark/compare/@comark/svelte@0.6.0...@comark/svelte@0.6.1) (2026-08-06)
 
 ### Features

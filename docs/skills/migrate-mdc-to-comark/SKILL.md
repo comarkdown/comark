@@ -72,7 +72,7 @@ The `unified`/`remark`/`rehype` pipeline is replaced by Comark's own lighter plu
 
 | Feature | Before | After |
 |---|---|---|
-| Syntax highlighting | `rehypeHighlight` via `createMarkdownParser` | `highlight()` from `comark/plugins/shiki` |
+| Syntax highlighting | `rehypeHighlight` via `createMarkdownParser` | `shiki()` from `comark/plugins/shiki` |
 | Table of Contents | `parseMarkdown(md, { toc: { depth: 3 } })` | `toc({ depth: 3 })` plugin |
 | Excerpt / Summary | `result.excerpt` (built-in) | `summary()` plugin → `document.meta.summary` |
 | Emoji | `remark-emoji` (enabled by default) | `emoji()` plugin (opt-in) |

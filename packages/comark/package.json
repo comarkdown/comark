@@ -1,7 +1,7 @@
 {
   "name": "comark",
-  "version": "0.6.1",
-  "description": "The Markdown engine for the modern web. Parse Markdown with components, attributes and plugins to a compact AST, at build time or runtime, and render with Vue, React, Svelte, Angular, HTML or ANSI. Streaming-ready for AI output.",
+  "version": "0.6.2",
+  "description": "Parse CommonMark and GFM into a compact, serializable document at build time, runtime, or during a stream, then render to HTML, ANSI, Vue, React, Svelte or Angular.",
   "keywords": [
     "ai",
     "angular",
@@ -42,6 +42,7 @@
     ".": "./dist/index.js",
     "./plugins/*": "./dist/plugins/*.js",
     "./utils": "./dist/utils/index.js",
+    "./utils/trace": "./dist/utils/trace.js",
     "./parse": "./dist/parse.js",
     "./render": "./dist/render.js"
   },
@@ -73,6 +74,7 @@
     "rangi": "catalog:",
     "tsx": "catalog:",
     "twoslash": "catalog:",
+    "vite": "catalog:",
     "vitest": "catalog:"
   },
   "peerDependencies": {

@@ -4,7 +4,9 @@ description: Extend Comark with plugins for syntax highlighting, emoji, table of
 navigation: false
 ---
 
-Comark's plugin system extends markdown functionality with specialized features. All plugins are part of the core `comark` package.
+Comark has two compatible extension layers. Comark plugins can transform source, tokens, the parsed document, or rendered output through typed lifecycle hooks. You can also reuse parser plugins written for markdown-it through Comark's markdown-exit foundation.
+
+All Comark plugins are part of the core `comark` package, while optional rendering dependencies are installed only when you use them.
 
 ## Default plugins
 

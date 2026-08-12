@@ -101,7 +101,7 @@ rangi({ languages: { md, markdown: md } })
 rangi({
   // Single theme or { light, dark } pair from rangi/themes
   theme: github,
-  // Wrap lines for gutters / {n} highlights (default: false)
+  // Always wrap lines for gutters (highlights wrap lines automatically)
   lineNumbers: true,
   classPrefix: 'shj',
 })

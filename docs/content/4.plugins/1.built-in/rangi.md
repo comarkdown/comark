@@ -135,7 +135,7 @@ Rangi ships aliases built-in (`javascript`→`js`, `typescript`→`ts`, `python`
 
 ### Line highlighting
 
-Fence info `{2-3,5}` marks lines with the `.highlight` class — same as the Shiki plugin.
+Fence info `{2-3,5}` wraps the code in line spans and marks the selected lines with the `.highlight` class — same as the Shiki plugin. No `lineNumbers` option is required.
 
 ### Pre Styles
 
@@ -156,7 +156,7 @@ Returns a `ComarkPlugin` that enables rangi syntax highlighting.
 | Option | Type | Default | Description |
 |---|---|---|---|
 | [`theme`](#theme) | `ShjTheme \| { light, dark }` | rangi default pair | Inline colors |
-| [`lineNumbers`](#linenumbers) | `boolean` | `false` | Wrap each line in `<span class="line">` |
+| [`lineNumbers`](#linenumbers) | `boolean` | `false` | Always wrap each line in `<span class="line">` |
 | [`classPrefix`](#classprefix) | `string` | `'shj'` | Class prefix on the highlighted `<pre>` |
 | [`languages`](#languages) | `Record<string, grammar>` | — | Extra custom grammars, merged over the Comark ones |
 | [`preStyles`](#prestyles) | `boolean` | `false` | Add inline background/foreground styles to `<pre>` |
@@ -193,7 +193,7 @@ rangi({
 
 ### `lineNumbers`
 
-When `true`, each source line is wrapped in `<span class="line">` so `{1,3-5}` highlights can target lines and CSS gutters can number them:
+When `true`, each source line is always wrapped in `<span class="line">` so CSS gutters can number them. Highlight metadata such as `{1,3-5}` enables line wrappers automatically, even when this option is `false`:
 
 ```typescript
 rangi({ lineNumbers: true })

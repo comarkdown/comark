@@ -5,7 +5,6 @@ import type {
   MarkdownExitPlugin,
   MergePluginFrontmatter,
   MergePluginMeta,
-  ComarkPerf,
   ParserOptions,
   ResolvedFrontmatter,
   ResolvedMeta,
@@ -25,18 +24,13 @@ import { marmdownItTokensToMarkdownDocument } from './internal/parse/token-proce
 import { autoCloseMarkdown } from './internal/parse/auto-close/index.ts'
 import { extractReusableNodes } from './internal/parse/incremental.ts'
 import { createSerializedTask, dedupePlugins } from './utils/helpers.ts'
+import { noopTracer, withSpan } from './utils/trace.ts'
 
 // Re-export frontmatter utilities
 export { parseFrontmatter } from './internal/frontmatter.ts'
 
 // Re-export plugin utilities
 export { defineComarkPlugin } from './utils/helpers.ts'
-
-/** No-op recorder used when no `perf` option is provided — zero overhead. */
-const noopPerf: ComarkPerf = {
-  span: () => () => {},
-  measure: (_name, fn) => fn(),
-}
 
 /**
  * Creates a parser function for Comark content.
@@ -69,7 +63,7 @@ const noopPerf: ComarkPerf = {
 export function createMarkdownParser<const TPlugins extends readonly ComarkPlugin<any, any>[] = []>(
   options: ParserOptions<TPlugins> = {} as ParserOptions<TPlugins>
 ): ComarkParseFn<ResolvedMeta<MergePluginMeta<TPlugins>>, ResolvedFrontmatter<MergePluginFrontmatter<TPlugins>>> {
-  const { autoUnwrap = true, autoClose = true, perf = noopPerf } = options
+  const { autoUnwrap = true, autoClose = true, tracer = noopTracer } = options
   // Tag set to strip from the top level of the tree (MDC `unwrap`). Resolved once.
   const unwrapTags = resolveUnwrapTags(options.unwrap)
 
@@ -113,102 +107,111 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
   let lastInput: string | null = null
 
   const parseFn: ComarkParseFn = async (markdown, opts = {}) => {
-    const state = {
-      options,
-      tokens: [] as unknown[],
-      markdown,
-      tree: null as MarkdownDocument | null,
-      parsedLines: 0,
-      reusableNodes: [] as Node[],
-      frontmatterText: '',
-      frontmatter: {} as Record<string, any>,
-    }
-
-    const prevOutput = lastOutput
-    const isStartsWithLastInput = markdown.startsWith(lastInput ?? '')
-    if (opts.streaming && prevOutput && isStartsWithLastInput) {
-      const { remainingMarkdownStartLine, reusedNodes, remainingMarkdown } = extractReusableNodes(markdown, prevOutput)
-
-      // If there is no remaining markdown, return the previous output
-      if (!remainingMarkdown) return prevOutput
-
-      state.parsedLines = remainingMarkdownStartLine
-      state.markdown = remainingMarkdown
-      state.reusableNodes = reusedNodes
-    }
-
-    if (autoClose) {
-      state.markdown = perf.measure('comark:autoclose', () =>
-        autoCloseMarkdown(state.markdown, {
-          frontmatter: hasPlugin('frontmatter') && opts.streaming,
-          syntax: hasPlugin('components'),
-        })
-      )
-    }
-
-    for (const plugin of plugins) {
-      if (!plugin.pre) continue
-      await perf.measure(`comark:pre:${plugin.name}`, () => plugin.pre!(state))
-    }
-
-    try {
-      state.tokens = perf.measure('comark:tokenize', () => parser.parse(state.markdown, {}))
-    } catch (e) {
-      // in case of streaming, return the previous output if parsing fails
-      // This is to avoid resetting the tree to an empty state on failure
-      // resetting the tree will re-redner whole tree
-      if (opts.streaming && prevOutput) {
-        return prevOutput
+    // Root active span for the full parse pipeline. Nested startActiveSpan /
+    // startSpan calls become children (OTel active context, or a stack in a
+    // simple recorder) → hierarchical trace:
+    //   comark:parse → autoclose / pre / tokenize / nodes / post
+    return await withSpan(tracer, 'comark:parse', async () => {
+      const state = {
+        options,
+        tokens: [] as unknown[],
+        markdown,
+        tree: null as MarkdownDocument | null,
+        parsedLines: 0,
+        reusableNodes: [] as Node[],
+        frontmatterText: '',
+        frontmatter: {} as Record<string, any>,
       }
-      throw e
-    }
 
-    // Convert tokens to Comark structure
-    const endNodes = perf.span('comark:nodes')
-    let nodes = marmdownItTokensToMarkdownDocument(state.tokens, {
-      startLine: state.parsedLines,
-      preservePositions: opts.streaming ?? false,
-      headingIds: options.headingIds ?? true,
+      const prevOutput = lastOutput
+      const isStartsWithLastInput = markdown.startsWith(lastInput ?? '')
+      if (opts.streaming && prevOutput && isStartsWithLastInput) {
+        const { remainingMarkdownStartLine, reusedNodes, remainingMarkdown } = extractReusableNodes(
+          markdown,
+          prevOutput
+        )
+
+        // If there is no remaining markdown, return the previous output
+        if (!remainingMarkdown) return prevOutput
+
+        state.parsedLines = remainingMarkdownStartLine
+        state.markdown = remainingMarkdown
+        state.reusableNodes = reusedNodes
+      }
+
+      if (autoClose) {
+        state.markdown = withSpan(tracer, 'comark:autoclose', () =>
+          autoCloseMarkdown(state.markdown, {
+            frontmatter: hasPlugin('frontmatter') && opts.streaming,
+            syntax: hasPlugin('components'),
+          })
+        )
+      }
+
+      for (const plugin of plugins) {
+        if (!plugin.pre) continue
+        await withSpan(tracer, `comark:pre:${plugin.name}`, () => plugin.pre!(state))
+      }
+
+      try {
+        state.tokens = withSpan(tracer, 'comark:tokenize', () => parser.parse(state.markdown, {}))
+      } catch (e) {
+        // in case of streaming, return the previous output if parsing fails
+        // This is to avoid resetting the tree to an empty state on failure
+        // resetting the tree will re-redner whole tree
+        if (opts.streaming && prevOutput) {
+          return prevOutput
+        }
+        throw e
+      }
+
+      // Convert tokens to Comark structure
+      const nodesSpan = tracer.startSpan('comark:nodes')
+      let nodes = marmdownItTokensToMarkdownDocument(state.tokens, {
+        startLine: state.parsedLines,
+        preservePositions: opts.streaming ?? false,
+        headingIds: options.headingIds ?? true,
+      })
+
+      if (autoUnwrap) {
+        nodes = nodes.map((node: Node) => applyAutoUnwrap(node))
+      }
+
+      if (unwrapTags.length > 0) {
+        nodes = applyUnwrap(nodes, unwrapTags)
+      }
+      nodesSpan.end()
+
+      const frontmatterData = (state.frontmatter ?? {}) as Record<string, any>
+      const frontmatterText = (state.frontmatterText ?? '') as string
+
+      if (opts.streaming) {
+        state.tree = {
+          frontmatter: frontmatterText ? frontmatterData : (prevOutput?.frontmatter ?? frontmatterData),
+          meta: {},
+          nodes: [...state.reusableNodes, ...nodes],
+        }
+        // Set last output and input for streaming mode
+        lastOutput = state.tree
+        lastInput = markdown
+      } else {
+        state.tree = {
+          frontmatter: frontmatterData,
+          meta: {},
+          nodes,
+        }
+        // Reset last output and input for non-streaming mode
+        lastOutput = null
+        lastInput = null
+      }
+
+      for (const plugin of plugins) {
+        if (!plugin.post) continue
+        await withSpan(tracer, `comark:post:${plugin.name}`, () => plugin.post!(state as ComarkParsePostState))
+      }
+
+      return state.tree
     })
-
-    if (autoUnwrap) {
-      nodes = nodes.map((node: Node) => applyAutoUnwrap(node))
-    }
-
-    if (unwrapTags.length > 0) {
-      nodes = applyUnwrap(nodes, unwrapTags)
-    }
-    endNodes()
-
-    const frontmatterData = (state.frontmatter ?? {}) as Record<string, any>
-    const frontmatterText = (state.frontmatterText ?? '') as string
-
-    if (opts.streaming) {
-      state.tree = {
-        frontmatter: frontmatterText ? frontmatterData : (prevOutput?.frontmatter ?? frontmatterData),
-        meta: {},
-        nodes: [...state.reusableNodes, ...nodes],
-      }
-      // Set last output and input for streaming mode
-      lastOutput = state.tree
-      lastInput = markdown
-    } else {
-      state.tree = {
-        frontmatter: frontmatterData,
-        meta: {},
-        nodes,
-      }
-      // Reset last output and input for non-streaming mode
-      lastOutput = null
-      lastInput = null
-    }
-
-    for (const plugin of plugins) {
-      if (!plugin.post) continue
-      await perf.measure(`comark:post:${plugin.name}`, () => plugin.post!(state as ComarkParsePostState))
-    }
-
-    return state.tree
   }
 
   return parseFn as ComarkParseFn<

@@ -4,13 +4,15 @@ This document provides guidance for AI agents working on the comark monorepo.
 
 ## Project Overview
 
-This is a **monorepo** containing multiple packages related to Comark (Components in Markdown) syntax parsing. The main package is `comark`.
+This is a **monorepo** containing the Comark Markdown parser, document model, plugins, and renderers. The main package is `comark`.
 
-**comark** is a Components in Markdown (Comark) parser that extends standard Markdown with component syntax. It provides:
+**comark** is a JavaScript library for parsing CommonMark and GFM into a compact, serializable document that can be rendered to HTML, ANSI, Vue, React, Svelte, or Angular. It provides:
 
-- Fast synchronous and async parsing via markdown-it
+- Fast synchronous and async parsing via markdown-exit, a TypeScript rewrite of markdown-it
+- CommonMark and GitHub Flavored Markdown support
 - Streaming support for real-time/incremental parsing
-- Vue, React, Svelte and Angular renderers
+- HTML, ANSI, Vue, React, Svelte and Angular renderers
+- Component and attribute syntax plus an extensible plugin system
 - Syntax highlighting via Shiki
 - Auto-close utilities for incomplete markdown (useful for AI streaming)
 
@@ -60,7 +62,8 @@ packages/comark/
 │   │   ├── components.ts     # Block/inline components + spans (`::name`, `:name`, `[text]`)
 │   │   ├── attributes.ts     # Inline attributes (`{props}` after tokens)
 │   │   ├── emoji.ts          # Emoji shortcodes
-│   │   ├── shiki.ts          # Syntax highlighting via Shiki (peer: shiki)
+│   │   ├── shiki.ts          # Shiki with bundled default theme + language loaders (peer: shiki)
+│   │   ├── shiki/core.ts     # Shiki without default theme/language imports
 │   │   ├── highlight.ts      # Deprecated alias → shiki (remove next major)
 │   │   ├── rangi.ts          # Lightweight highlighting via rangi (peer: rangi)
 │   │   ├── math.ts           # LaTeX math via KaTeX (peer: katex)
@@ -76,6 +79,7 @@ packages/comark/
 │   │   ├── comark.tmLanguage.ts    # Comark TextMate grammar (Shiki plugin)
 │   │   └── comark.rangiLanguage.ts # Comark rangi grammar (rangi plugin)
 │   └── internal/             # Internal implementation (not exported)
+│       ├── shiki.ts          # Shared Shiki runtime used by both entry points
 │       ├── front-matter.ts
 │       ├── parse/            # Parsing pipeline
 │       └── stringify/        # AST → string rendering
@@ -389,6 +393,7 @@ import { textContent, visit } from 'comark/utils'
 
 // Core plugins — use when calling parseMarkdown() directly (framework-agnostic)
 import shiki from 'comark/plugins/shiki'
+import shikiCore from 'comark/plugins/shiki/core' // ShikiCoreOptions: required themes + languages, no defaults
 import rangi, { comarkLanguage, comarkLanguages } from 'comark/plugins/rangi'
 // import highlight from 'comark/plugins/highlight' // deprecated alias → shiki
 import math from 'comark/plugins/math'
@@ -408,6 +413,7 @@ import { markdownItAttributes } from 'comark/plugins/attributes'
 // NOTE: All framework packages re-export every core plugin via their own subpath.
 // Prefer the framework-specific path when using a framework renderer:
 //   @comark/vue/plugins/shiki, @comark/react/plugins/shiki, etc.
+// Nested entries are re-exported too: @comark/vue/plugins/shiki/core, etc.
 // Use comark/plugins/* only when calling parseMarkdown() without a framework renderer.
 
 // HTML rendering — parse + render to HTML string
@@ -684,6 +690,48 @@ Utility scripts:
 node scripts/stub.mjs          # Generate stub dist files for local dev
 node scripts/sync-plugins.mjs  # Sync plugin re-exports to framework packages
 ```
+
+## Continuous Integration
+
+Workflows live in `.github/workflows/`:
+
+| Workflow | Purpose |
+|----------|---------|
+| `ci.yml` | lint → prepack → test → publish preview → bundle size check |
+| `commit-signature.yml` | Fails PRs containing unsigned commits |
+| `bundle-snapshot.yml` | Reports bundle-size snapshot drift and updates it on demand |
+
+### Bundle size snapshot
+
+`test/bundle.test.ts` asserts an inline snapshot of the published size of every
+package (measured with `npm pack --dry-run`). It only makes sense after a real
+build, so CI runs it after `pnpm prepack`:
+
+```bash
+pnpm prepack && pnpm vitest run bundle      # check
+pnpm prepack && pnpm vitest run bundle -u   # accept the new sizes
+```
+
+When the check fails on a PR, `ci.yml` uploads a `bundle-report` artifact and
+`bundle-snapshot.yml` posts a comment with the diff plus a checkbox button.
+A maintainer (write access required) can:
+
+- tick **🔄 Update the bundle snapshot** in that comment,
+- comment `/update-bundle-snapshot`, or
+- run the workflow manually with a PR number.
+
+The workflow then rebuilds, runs `vitest run bundle --update`, re-runs the check
+to verify the refreshed snapshot, and commits `test/bundle.test.ts` back to the
+PR branch via the GitHub API (so the commit is verified, satisfying
+`commit-signature.yml`). For fork PRs it cannot push, so it posts the patch in
+the comment instead. The comment is deleted automatically once the check passes.
+
+GitHub suppresses the events a `GITHUB_TOKEN` commit would raise, so `ci` does
+not reliably re-run after the snapshot lands — hence the in-job verification.
+Re-run `ci` manually to refresh a stale red check.
+
+Requires **Settings → Actions → General → Workflow permissions** to be set to
+*Read and write*, otherwise the update job cannot commit.
 
 ## Releasing
 
