@@ -38,7 +38,7 @@ orientation: horizontal
   ---
   :::
 #title
-Parse and render Markdown anywhere.
+Parse and render Markdown anywhere INSTANTLY.
 
 #description
 A JavaScript library to parse and stream Markdown, with renderers for HTML, ANSI, Vue, React, Svelte and Angular, plus components, attributes, and plugins.
