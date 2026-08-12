@@ -132,10 +132,10 @@ Comark parses Markdown into a compact [`MarkdownDocument`](/getting-started/docu
 items:
   - icon: i-lucide-radio
     title: Streaming component
-    description: Flip the streaming prop while chunks arrive. Every frame renders correctly, with an optional caret.
+    description: Chunks land mid-word, mid-token, mid-component. Flip one prop and every frame renders as finished markup, caret and all.
   - icon: i-lucide-scan-text
     title: Auto-close
-    description: A pure function that completes unterminated syntax. Use it with any renderer, or on its own.
+    description: A stream can stop mid-bold, mid-fence, mid-component. By default, Comark auto-closes what is still open, with any renderer or on its own.
 ---
 
 #headline
@@ -145,7 +145,7 @@ Streaming
 Built for AI output
 
 #description
-Auto-close completes unterminated Markdown so incomplete content renders correctly at every frame. Display AI responses as soon as they arrive, without flashes or broken markup.
+A model streams Markdown a few characters at a time. Render it as it lands and your users watch raw asterisks appear, code fences hang open, and the layout jump on every token. Comark closes what is still open, so every frame renders as finished markup.
 
 #code-0
   :::landing-streaming-demo
