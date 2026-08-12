@@ -42,11 +42,15 @@ const currentExample = computed(
   () => playgroundExamples.find((e) => e.value === selectedExample.value) ?? playgroundExamples[0]!
 )
 
-onMounted(() => {
-  if (route.query.example !== selectedExample.value) {
-    router.replace({ query: { ...route.query, example: selectedExample.value } })
-  }
-})
+watch(
+  () => route.query.example,
+  (example) => {
+    if (example !== selectedExample.value) {
+      router.replace({ query: { ...route.query, example: selectedExample.value } })
+    }
+  },
+  { immediate: true }
+)
 
 const markdown = ref<string>(currentExample.value.content.trim())
 const document = ref<MarkdownDocument | null>(null)
