@@ -1,0 +1,72 @@
+{
+  "name": "@comark/opentui",
+  "version": "0.6.1",
+  "description": "OpenTUI renderer for Comark. Render Markdown as a terminal UI layout tree, with streaming support for AI output.",
+  "keywords": [
+    "ai",
+    "cli",
+    "comark",
+    "components",
+    "markdown",
+    "mdc",
+    "opentui",
+    "renderer",
+    "streaming",
+    "terminal",
+    "tui"
+  ],
+  "homepage": "https://comark.dev/rendering/opentui",
+  "bugs": {
+    "url": "https://github.com/comarkdown/comark/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/comarkdown/comark.git"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js",
+    "./plugins/*": "./dist/plugins/*.js",
+    "./utils": "./dist/utils.js",
+    "./parse": "./dist/parse.js",
+    "./render": "./dist/render.js",
+    "./theme": "./dist/theme.js",
+    "./components/*": "./dist/components/*.js"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "stub": "node ../../scripts/stub.mjs",
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest run",
+    "test:paint": "node scripts/paint.mjs",
+    "prepack": "tsc",
+    "release": "release-it"
+  },
+  "dependencies": {
+    "@comark/react": "workspace:*",
+    "comark": "workspace:*"
+  },
+  "devDependencies": {
+    "@opentui/core": "^0.4.5",
+    "@opentui/react": "^0.4.5",
+    "@types/react": "catalog:",
+    "react": "^19.2.7",
+    "shiki": "catalog:",
+    "vitest": "catalog:"
+  },
+  "peerDependencies": {
+    "@opentui/core": "^0.4.0",
+    "@opentui/react": "^0.4.0",
+    "react": "^19.0.0"
+  }
+}

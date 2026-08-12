@@ -1,6 +1,6 @@
 import React from 'react'
 import { parseMarkdown } from 'comark'
-import type { MarkdownDocument as MarkdownDocumentType, ParserOptions } from 'comark'
+import type { ComponentManifest, MarkdownDocument as MarkdownDocumentType, ParserOptions } from 'comark'
 import { isMarkdownDocument } from 'comark/utils'
 import { MarkdownDocument } from './MarkdownDocument.tsx'
 import { MarkdownClient } from './MarkdownClient.tsx'
@@ -36,8 +36,12 @@ export interface MarkdownProps {
   /**
    * Dynamic component resolver function
    * Used to resolve components that aren't in the components map
+   *
+   * May return a component directly or a promise of a module — the resolver
+   * lazy-wraps promises and takes anything else as-is. Typed via Comark's
+   * `ComponentManifest`, matching `MarkdownDocumentProps`.
    */
-  componentsManifest?: (name: string) => Promise<{ default: React.ComponentType<any> }>
+  componentsManifest?: ComponentManifest
 
   /**
    * Strip wrapper tags from the top level of the document — shorthand for
@@ -69,6 +73,13 @@ export interface MarkdownProps {
    * Additional className for the wrapper div
    */
   className?: string
+
+  /**
+   * Element wrapping the rendered nodes. Defaults to a `div`. Pass a component
+   * to render into a React host that has no `div` (terminal renderers,
+   * react-three-fiber, …), or `false` to emit the nodes bare in a fragment.
+   */
+  wrapper?: React.ComponentType<{ className?: string; children?: React.ReactNode }> | false
 }
 
 /**
@@ -114,6 +125,7 @@ export async function Markdown({
   caret = false,
   data,
   className,
+  wrapper,
 }: MarkdownProps) {
   // Pre-parsed document — skip parsing and render directly
   if (isMarkdownDocument(value)) {
@@ -124,6 +136,7 @@ export async function Markdown({
         componentsManifest={componentsManifest}
         streaming={streaming}
         className={className}
+        wrapper={wrapper}
         caret={caret}
         data={data}
       />
@@ -147,6 +160,7 @@ export async function Markdown({
         caret={caret}
         data={data}
         className={className}
+        wrapper={wrapper}
       />
     )
   }
@@ -160,6 +174,7 @@ export async function Markdown({
       componentsManifest={componentsManifest}
       streaming={streaming}
       className={className}
+      wrapper={wrapper}
       caret={caret}
       data={data}
     />

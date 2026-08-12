@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "target": "es2024",
+    "lib": ["esnext"],
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    // The OpenTUI runtime is picked per file by the `@jsxImportSource` pragma,
+    // not set project-wide: doing that would also point @comark/react's own JSX
+    // at `@opentui/react/jsx-runtime`, which does not resolve from its directory.
+    "jsx": "react-jsx",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "allowImportingTsExtensions": true,
+    "noEmit": true
+  },
+  "include": ["*.tsx"]
+}
