@@ -3,6 +3,11 @@ packages:
   - docs
   - examples/*/*
 
+# The comark-docs layer temporarily pins comark-content to a pkg.pr.new edge build
+# (URL-resolved subdependency), which pnpm blocks by default. Delete this line once
+# comark-content > 0.3.0 is published and the layer is back on a registry range.
+blockExoticSubdeps: false
+
 
 allowBuilds:
   "@parcel/watcher": false
