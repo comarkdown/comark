@@ -1,7 +1,7 @@
 ---
 navigation: false
 title: Parse and Render Markdown Anywhere with Comark
-description: 'A JavaScript library to parse and stream Markdown, with renderers for HTML, terminals, Vue, React, Svelte and Angular, plus components, attributes, and plugins.'
+description: 'A JavaScript library to parse and stream Markdown, with renderers for HTML, ANSI, Vue, React, Svelte and Angular, plus components, attributes, and plugins.'
 seo:
   title: Parse and Render Markdown Anywhere with Comark
   description: 'Parse and render Markdown anywhere with one JavaScript library for HTML, ANSI, Vue, React, Svelte and Angular, plus plugins and streaming.'
@@ -41,7 +41,7 @@ orientation: horizontal
 Parse and render Markdown anywhere.
 
 #description
-A JavaScript library to parse and stream Markdown, with renderers for HTML, terminals, Vue, React, Svelte and Angular, plus components, attributes, and plugins.
+A JavaScript library to parse and stream Markdown, with renderers for HTML, ANSI, Vue, React, Svelte and Angular, plus components, attributes, and plugins.
 
 #links
   :::u-button
