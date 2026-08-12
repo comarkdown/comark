@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { parseMarkdown } from '../../src/parse'
 import { renderMarkdown } from '../../src/render'
 import rangi, { comarkLanguages, rangiCodeBlocks, resolveRangiLanguage, tokenizeCode } from '../../src/plugins/rangi'
+import comarkLanguage, { comarkLanguages as languageAliases } from '../../src/plugins/rangi/language'
 import type { ElementNode, MarkdownDocument, Node } from '../../src/types'
 
 function findPre(nodes: Node[]): ElementNode | undefined {
@@ -62,6 +63,8 @@ describe('comark language', () => {
 
   it('is registered under every comark/markdown alias', () => {
     expect(Object.keys(comarkLanguages).sort()).toEqual(['comark', 'markdown', 'md', 'mdc'])
+    expect(languageAliases).toBe(comarkLanguages)
+    expect(comarkLanguages.comark).toBe(comarkLanguage)
     for (const lang of ['comark', 'mdc', 'md', 'markdown']) {
       expect(typesOf('::alert\nhi\n::', lang).get('alert')).toBe('class')
     }
