@@ -1,4 +1,4 @@
-import { streamText, tool, stepCountIs } from 'ai'
+import { streamText, tool, stepCountIs, createUIMessageStream, createUIMessageStreamResponse } from 'ai'
 import { gateway } from '@ai-sdk/gateway'
 import { z } from 'zod'
 import { buildShowcasePrompt } from '../utils/prompt'
@@ -115,36 +115,38 @@ export default defineEventHandler(async (event) => {
     },
   })
 
-  setResponseHeader(event, 'Content-Type', 'text/plain; charset=utf-8')
-  setResponseHeader(event, 'Cache-Control', 'no-cache')
-  setResponseHeader(event, 'X-Content-Type-Options', 'nosniff')
+  const stream = createUIMessageStream({
+    execute: async ({ writer }) => {
+      const id = 'page'
+      writer.write({ type: 'text-start', id })
 
-  const encoder = new TextEncoder()
-  // Buffer until frontmatter `---` is found, discards any preamble text from tool-call steps
-  let preambleBuffer = ''
-  let frontmatterFound = false
-  const byteStream = result.textStream.pipeThrough(
-    new TransformStream<string, Uint8Array>({
-      transform(chunk, controller) {
+      // Buffer until frontmatter `---` is found, discards any preamble text from tool-call steps
+      let preambleBuffer = ''
+      let frontmatterFound = false
+      for await (const chunk of result.textStream) {
         if (frontmatterFound) {
-          controller.enqueue(encoder.encode(chunk))
-          return
+          writer.write({ type: 'text-delta', id, delta: chunk })
+          continue
         }
         preambleBuffer += chunk
         const idx = preambleBuffer.indexOf('---')
         if (idx !== -1) {
           frontmatterFound = true
-          controller.enqueue(encoder.encode(preambleBuffer.slice(idx)))
+          writer.write({ type: 'text-delta', id, delta: preambleBuffer.slice(idx) })
           preambleBuffer = ''
         }
-      },
-      flush(controller) {
-        if (!frontmatterFound && preambleBuffer) {
-          controller.enqueue(encoder.encode(preambleBuffer))
-        }
-      },
-    })
-  )
+      }
+      if (!frontmatterFound && preambleBuffer) {
+        writer.write({ type: 'text-delta', id, delta: preambleBuffer })
+      }
 
-  return sendStream(event, byteStream)
+      writer.write({ type: 'text-end', id })
+    },
+    onError: (error) => {
+      console.error('[generate-page] generation failed:', error)
+      return 'Generation failed'
+    },
+  })
+
+  return createUIMessageStreamResponse({ stream })
 })

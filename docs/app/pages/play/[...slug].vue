@@ -11,7 +11,7 @@ import emoji from '@comark/nuxt/plugins/emoji'
 import mermaid from '@comark/nuxt/plugins/mermaid'
 import footnotes from '@comark/nuxt/plugins/footnotes'
 import punctuation from '@comark/nuxt/plugins/punctuation'
-import { playgroundExamples } from '~/constants'
+import { generationErrorMessage, playgroundExamples } from '~/constants'
 import resolveComponent from '~/utils/components-manifest'
 import PromptInput from '~/components/playground/PromptInput.vue'
 import GeneratingIndicator from '~/components/playground/GeneratingIndicator.vue'
@@ -46,9 +46,7 @@ if (!page.value) {
   })
 }
 
-const currentExample = computed(
-  () => playgroundExamples.find((e) => e.value === slug.value) ?? playgroundExamples[0]!
-)
+const currentExample = computed(() => playgroundExamples.find((e) => e.value === slug.value) ?? playgroundExamples[0]!)
 
 let previousMarkdown = ''
 
@@ -58,15 +56,19 @@ function scrollEditorToBottom() {
   nextTick(() => markdownEditor.value?.scrollToBottom())
 }
 
+const generationError = ref<string | null>(null)
+
 const {
   completion,
   complete,
   isLoading: isGenerating,
 } = useCompletion({
   api: '/api/generate-page',
-  streamProtocol: 'text',
-  onError: () => {
+  streamProtocol: 'data',
+  onError: async () => {
+    generationError.value = generationErrorMessage
     markdown.value = previousMarkdown
+    await refresh()
   },
   onFinish: async () => {
     await refresh()
@@ -99,6 +101,7 @@ async function submitAiPrompt(prompt: string) {
   previousMarkdown = markdown.value ?? ''
   markdown.value = ''
   page.value = undefined
+  generationError.value = null
   complete(prompt, { body: { mode: example.mode, structure: example.content } })
 }
 
@@ -308,13 +311,26 @@ defineOgImage('DocsSatori', {
         </div>
         <div
           v-if="currentExample.mode"
-          class="shrink-0 border-t border-default bg-default flex items-center gap-1 p-1.5"
+          class="shrink-0 border-t border-default bg-default"
         >
-          <PromptInput
-            :is-generating="isGenerating"
-            :prompt="currentExample.prompt"
-            @submit="submitAiPrompt"
+          <UAlert
+            v-if="generationError"
+            color="error"
+            variant="soft"
+            icon="i-lucide-circle-alert"
+            :description="generationError"
+            close
+            class="rounded-none"
+            :ui="{ description: 'text-xs' }"
+            @update:open="generationError = null"
           />
+          <div class="flex items-center gap-1 p-1.5">
+            <PromptInput
+              :is-generating="isGenerating"
+              :prompt="currentExample.prompt"
+              @submit="submitAiPrompt"
+            />
+          </div>
         </div>
       </div>
 

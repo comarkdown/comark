@@ -477,3 +477,5 @@ export const playgroundExamples: PlaygroundExample[] = [
 ]
 
 export const defaultMarkdown = bookingMarkdown
+
+export const generationErrorMessage = 'Generation failed. Please try again.'

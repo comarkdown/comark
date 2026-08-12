@@ -17,7 +17,7 @@ import security from '@comark/nuxt/plugins/security'
 
 import { renderMarkdown } from 'comark/render'
 import { Splitpanes, Pane } from 'splitpanes'
-import { playgroundExamples } from '~/constants'
+import { generationErrorMessage, playgroundExamples } from '~/constants'
 import resolveComponent from '~/utils/components-manifest'
 import PromptInput from '~/components/playground/PromptInput.vue'
 import GeneratingIndicator from '~/components/playground/GeneratingIndicator.vue'
@@ -47,6 +47,7 @@ const document = ref<MarkdownDocument | null>(null)
 const parseTime = ref<number>(0)
 const nodeCount = ref<number>(0)
 const error = ref<string | null>(null)
+const generationError = ref<string | null>(null)
 const parsing = ref<boolean>(false)
 
 const colorMode = useColorMode()
@@ -298,9 +299,10 @@ const {
   isLoading: isGenerating,
 } = useCompletion({
   api: '/api/generate-page',
-  streamProtocol: 'text',
+  streamProtocol: 'data',
   onError: () => {
-    error.value = 'Generation failed'
+    generationError.value = generationErrorMessage
+    markdown.value = previousMarkdown
   },
   onFinish: async () => {
     await updatePreview()
@@ -324,12 +326,16 @@ watch(completion, async (md) => {
   scrollEditorToBottom()
 })
 
+let previousMarkdown = ''
+
 function handleGenerate(prompt: string) {
   const example = currentExample.value
   if (!example.mode) return
+  previousMarkdown = markdown.value
   markdown.value = ''
   document.value = null
   error.value = null
+  generationError.value = null
   complete(prompt, { body: { mode: example.mode, structure: example.content } })
 }
 </script>
@@ -460,6 +466,21 @@ function handleGenerate(prompt: string) {
                 class="size-6 animate-spin text-primary"
               />
               <span class="text-sm">Generating...</span>
+            </div>
+            <div
+              v-if="generationError"
+              class="absolute inset-x-0 bottom-24 z-20 px-4 flex justify-center"
+            >
+              <UAlert
+                color="error"
+                variant="soft"
+                icon="i-lucide-circle-alert"
+                :description="generationError"
+                close
+                class="w-full max-w-96 shadow-lg"
+                :ui="{ description: 'text-xs' }"
+                @update:open="generationError = null"
+              />
             </div>
             <PromptInput
               v-if="currentExample.mode"
