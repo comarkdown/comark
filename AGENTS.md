@@ -691,6 +691,48 @@ node scripts/stub.mjs          # Generate stub dist files for local dev
 node scripts/sync-plugins.mjs  # Sync plugin re-exports to framework packages
 ```
 
+## Continuous Integration
+
+Workflows live in `.github/workflows/`:
+
+| Workflow | Purpose |
+|----------|---------|
+| `ci.yml` | lint → prepack → test → publish preview → bundle size check |
+| `commit-signature.yml` | Fails PRs containing unsigned commits |
+| `bundle-snapshot.yml` | Reports bundle-size snapshot drift and updates it on demand |
+
+### Bundle size snapshot
+
+`test/bundle.test.ts` asserts an inline snapshot of the published size of every
+package (measured with `npm pack --dry-run`). It only makes sense after a real
+build, so CI runs it after `pnpm prepack`:
+
+```bash
+pnpm prepack && pnpm vitest run bundle      # check
+pnpm prepack && pnpm vitest run bundle -u   # accept the new sizes
+```
+
+When the check fails on a PR, `ci.yml` uploads a `bundle-report` artifact and
+`bundle-snapshot.yml` posts a comment with the diff plus a checkbox button.
+A maintainer (write access required) can:
+
+- tick **🔄 Update the bundle snapshot** in that comment,
+- comment `/update-bundle-snapshot`, or
+- run the workflow manually with a PR number.
+
+The workflow then rebuilds, runs `vitest run bundle --update`, re-runs the check
+to verify the refreshed snapshot, and commits `test/bundle.test.ts` back to the
+PR branch via the GitHub API (so the commit is verified, satisfying
+`commit-signature.yml`). For fork PRs it cannot push, so it posts the patch in
+the comment instead. The comment is deleted automatically once the check passes.
+
+GitHub suppresses the events a `GITHUB_TOKEN` commit would raise, so `ci` does
+not reliably re-run after the snapshot lands — hence the in-job verification.
+Re-run `ci` manually to refresh a stale red check.
+
+Requires **Settings → Actions → General → Workflow permissions** to be set to
+*Read and write*, otherwise the update job cannot commit.
+
 ## Releasing
 
 Uses [release-it](https://github.com/release-it/release-it) with conventional changelog.

@@ -52,7 +52,8 @@ export interface RangiOptions {
 
   /**
    * Whether to wrap each source line in `<span class="line">`.
-   * Required for `{1,3-5}` line-highlight support and CSS line-number gutters.
+   * Lines are also wrapped automatically when fence highlights (`{1,3-5}`)
+   * are present.
    * @default false
    */
   lineNumbers?: boolean
@@ -298,7 +299,8 @@ export async function rangiCodeBlocks(tree: MarkdownDocument, options: RangiOpti
       try {
         const tokens = tokenizeCode(code, lang, languages)
         const lines = tokensToLines(tokens, { light, dark, dual })
-        codeChildren = buildCodeChildren(lines, attrs.highlights, lineNumbers)
+        const hasHighlights = Array.isArray(attrs.highlights) && attrs.highlights.length > 0
+        codeChildren = buildCodeChildren(lines, attrs.highlights, lineNumbers || hasHighlights)
       } catch {
         codeChildren = [code]
       }

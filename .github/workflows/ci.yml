@@ -13,8 +13,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           package-manager-cache: false
           node-version: '24'
@@ -28,4 +28,34 @@ jobs:
       - name: Publish
         run: pnpx pkg-pr-new publish --pnpm './packages/*'
       - name: Check package bundle size
-        run: pnpm vitest run bundle
+        id: bundle
+        shell: bash
+        env:
+          NO_COLOR: '1'
+        run: |
+          set -o pipefail
+          pnpm vitest run bundle 2>&1 | tee bundle-check.log
+
+      # The bundle snapshot lives in `test/bundle.test.ts` and legitimately
+      # changes whenever output or dependencies change. Hand the result over to
+      # the `bundle-snapshot` workflow, which has the write permissions needed
+      # to comment on the PR (including PRs from forks) and offers maintainers a
+      # one-click way to refresh the snapshot.
+      - name: Collect bundle report
+        if: always() && github.event_name == 'pull_request' && contains(fromJSON('["success", "failure"]'), steps.bundle.outcome)
+        shell: bash
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          OUTCOME: ${{ steps.bundle.outcome }}
+        run: |
+          mkdir -p bundle-report
+          printf '%s' "$PR_NUMBER" > bundle-report/pr-number
+          printf '%s' "$OUTCOME" > bundle-report/outcome
+          tail -c 60000 bundle-check.log > bundle-report/output.txt
+      - name: Upload bundle report
+        if: always() && github.event_name == 'pull_request' && contains(fromJSON('["success", "failure"]'), steps.bundle.outcome)
+        uses: actions/upload-artifact@v7
+        with:
+          name: bundle-report
+          path: bundle-report/
+          retention-days: 7

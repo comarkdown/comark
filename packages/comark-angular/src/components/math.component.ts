@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, SimpleChanges, ChangeDetectionStrategy, ElementRef } from '@angular/core'
+import { Component, Input, OnChanges, SimpleChanges, ChangeDetectionStrategy, ElementRef, inject } from '@angular/core'
 import katex from 'katex'
 
 /**
@@ -24,7 +24,7 @@ export class Math implements OnChanges {
   @Input() class: string = ''
   @Input() __node: any = {}
 
-  constructor(private elementRef: ElementRef) {}
+  private elementRef = inject(ElementRef)
 
   ngOnChanges(_changes: SimpleChanges): void {
     this.renderMath()
