@@ -42,6 +42,12 @@ const currentExample = computed(
   () => playgroundExamples.find((e) => e.value === selectedExample.value) ?? playgroundExamples[0]!
 )
 
+onMounted(() => {
+  if (route.query.example !== selectedExample.value) {
+    router.replace({ query: { ...route.query, example: selectedExample.value } })
+  }
+})
+
 const markdown = ref<string>(currentExample.value.content.trim())
 const document = ref<MarkdownDocument | null>(null)
 const parseTime = ref<number>(0)
