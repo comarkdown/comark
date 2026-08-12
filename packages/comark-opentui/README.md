@@ -162,6 +162,14 @@ OpenTUI's own text-node renderables, including OSC 8 hyperlinks for `a`.
 `code` and `input` are mapped explicitly, because OpenTUI hosts of those names
 are a block-level highlighted panel and an interactive text field.
 
+Opening those hyperlinks is the terminal's job, and a terminal stops opening
+them for an app that has captured the mouse — OpenTUI's default. iTerm2 and VS
+Code open them anyway; Ghostty and other terminals following xterm give the
+click to the app, so the link only opens on shift-click. A host that wants a
+plain click to work should pass `useMouse: false` to `createCliRenderer` and
+enable alternate scroll mode (`\x1b[?1007h`), which keeps the wheel scrolling by
+sending cursor keys instead. `examples/3.cli/opentui-gallery` does this.
+
 ## Runtime
 
 Rendering needs native FFI, which OpenTUI reaches through `bun:ffi` or — from
