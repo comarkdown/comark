@@ -77,7 +77,7 @@ Parse once, render anywhere
 Comark parses Markdown into a compact [`MarkdownDocument`](/getting-started/document-model). Parse on the server, during a build, or as content streams in, then render it natively in your framework. Your content outlasts your stack.
 
 #default
-  :::landing-feature-card{icon="i-vscode-icons-file-type-html" to="/rendering/html"}
+  :::landing-feature-card{icon="i-vscode-icons-file-type-html" to="/rendering/html" color="#e34f26"}
   #title
   HTML
 
@@ -85,7 +85,7 @@ Comark parses Markdown into a compact [`MarkdownDocument`](/getting-started/docu
   A plain string renderer for static site generators, RSS feeds or emails. No framework required.
   :::
   
-  :::landing-feature-card{icon="i-lucide-terminal" to="/rendering/ansi"}
+  :::landing-feature-card{icon="i-lucide-terminal" to="/rendering/ansi" color="var(--ui-text-highlighted)"}
   #title
   Terminals
 
@@ -93,7 +93,7 @@ Comark parses Markdown into a compact [`MarkdownDocument`](/getting-started/docu
   Render Markdown as styled terminal output using ANSI escape codes, perfect for CLIs, scripts, and developer tooling.
   :::
 
-  :::landing-feature-card{icon="i-logos-angular-icon" to="/rendering/angular"}
+  :::landing-feature-card{icon="i-logos-angular-icon" to="/rendering/angular" color="#dd0031"}
   #title
   Angular
 
@@ -101,7 +101,7 @@ Comark parses Markdown into a compact [`MarkdownDocument`](/getting-started/docu
   Standalone components for Angular 17+, with the same props and streaming support.
   :::
   
-  :::landing-feature-card{icon="i-logos-react" to="/rendering/react"}
+  :::landing-feature-card{icon="i-logos-react" to="/rendering/react" color="#61dafb"}
   #title
   React
 
@@ -109,7 +109,7 @@ Comark parses Markdown into a compact [`MarkdownDocument`](/getting-started/docu
   The same component API for React, including React Server Components and Next.js.
   :::
   
-  :::landing-feature-card{icon="i-logos-vue" to="/rendering/vue"}
+  :::landing-feature-card{icon="i-logos-vue" to="/rendering/vue" color="#42b883"}
   #title
   Vue
 
@@ -117,7 +117,7 @@ Comark parses Markdown into a compact [`MarkdownDocument`](/getting-started/docu
   Drop the `Markdown` component in a template. Custom components and plugins are props.
   :::
 
-  :::landing-feature-card{icon="i-logos-svelte-icon" to="/rendering/svelte"}
+  :::landing-feature-card{icon="i-logos-svelte-icon" to="/rendering/svelte" color="#ff3e00"}
   #title
   Svelte
 
@@ -148,36 +148,12 @@ Built for AI output
 Auto-close completes unterminated Markdown so incomplete content renders correctly at every frame. Display AI responses as soon as they arrive, without flashes or broken markup.
 
 #code-0
-  ```vue [AiChat.vue]
-  <script setup lang="ts">
-  import { Markdown } from '@comark/vue'
-
-  const content = ref('')
-  const isStreaming = ref(true)
-
-  for await (const chunk of aiResponse) {
-    content.value += chunk
-  }
-  isStreaming.value = false
-  </script>
-
-  <template>
-    <Markdown :streaming="isStreaming" caret>
-      {{ content }}
-    </Markdown>
-  </template>
-  ```
+  :::landing-streaming-demo
+  :::
 
 #code-1
-  ```ts [auto-close.ts]
-  import { autoCloseMarkdown } from 'comark'
-
-  autoCloseMarkdown('**bold text')
-  // => '**bold text**'
-
-  autoCloseMarkdown('::alert{type="info"}\nStreaming')
-  // => '::alert{type="info"}\nStreaming\n::'
-  ```
+  :::landing-auto-close-demo
+  :::
 ::
 
 ::landing-tabs
