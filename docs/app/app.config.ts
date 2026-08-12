@@ -13,7 +13,7 @@ export default defineAppConfig({
     nav: [
       {
         label: 'Documentation',
-        sections: ['getting-started', 'syntax', 'rendering', 'api', 'compare', 'kb'],
+        sections: ['getting-started', 'syntax', 'rendering', 'reference', 'compare', 'kb'],
       },
       { label: 'Plugins', sections: ['plugins'], link: 'section' as const },
       { label: 'Examples', sections: ['examples'], link: 'section' as const },
@@ -21,10 +21,10 @@ export default defineAppConfig({
         label: 'Playground',
         to: '/play',
         children: [
-          { label: 'Booking', to: '/play/booking' },
-          { label: 'Recipe', to: '/play/recipe' },
-          { label: 'Nuxt UI', to: '/play/nuxt-ui' },
-          { label: 'All Features', to: '/play/editor?example=all-features', activePath: '/play/all-features' },
+          { label: 'Basic', to: '/play?example=basic' },
+          { label: 'Booking', to: '/play?example=booking' },
+          { label: 'Recipe', to: '/play?example=recipe' },
+          { label: 'Nuxt UI', to: '/play?example=nuxt-ui' },
         ],
       },
     ],

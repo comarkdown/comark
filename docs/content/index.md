@@ -14,7 +14,7 @@ orientation: horizontal
 ---
   :::landing-hero-demo
   ---
-  playground: /play/editor?example=all-features
+  playground: /play
   source: |-
     # Hello World
 
@@ -87,7 +87,7 @@ Comark parses Markdown into a compact [`MarkdownDocument`](/getting-started/docu
   
   :::landing-feature-card{icon="i-lucide-terminal" to="/rendering/ansi" color="var(--ui-text-highlighted)"}
   #title
-  Terminals
+  ANSI
 
   #description
   Render Markdown as styled terminal output using ANSI escape codes, perfect for CLIs, scripts, and developer tooling.

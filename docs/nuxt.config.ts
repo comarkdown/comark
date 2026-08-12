@@ -33,9 +33,18 @@ export default defineNuxtConfig({
   },
 
   routeRules: {
+    '/play/booking': { redirect: '/play?example=booking' },
+    '/play/recipe': { redirect: '/play?example=recipe' },
+    '/play/nuxt-ui': { redirect: '/play?example=nuxt-ui' },
+    '/play/all-features': { redirect: '/play?example=basic' },
     '/plugins/built-in/highlight': { redirect: '/plugins/built-in/shiki' },
     '/plugins/built-in/syntax-highlight': { redirect: '/plugins/built-in/shiki' },
     '/syntax/comark-ast': { redirect: '/getting-started/document-model' },
+    // The API Reference section moved from /api (which collided with the server endpoints) to /reference
+    '/api/render': { redirect: '/reference/render' },
+    '/api/parse': { redirect: '/reference/parse' },
+    '/api/auto-close': { redirect: '/reference/auto-close' },
+    '/api/reference': { redirect: '/reference/reference' },
   },
 
   $production: {
@@ -53,6 +62,8 @@ export default defineNuxtConfig({
       '/syntax/**': { isr: 300 },
       '/rendering': { isr: 300 },
       '/rendering/**': { isr: 300 },
+      '/reference': { isr: 300 },
+      '/reference/**': { isr: 300 },
       '/plugins': { isr: 300 },
       '/plugins/**': { isr: 300 },
       '/compare': { isr: 300 },

@@ -443,10 +443,16 @@ export type PlaygroundExample = {
   content: string
   mode?: AiMode
   prompt?: string
-  to?: string
 }
 
 export const playgroundExamples: PlaygroundExample[] = [
+  {
+    label: 'Basic',
+    value: 'basic',
+    content: allFeaturesMarkdown,
+    mode: 'showcase',
+    prompt: 'Generate me a doc page for Comark with a mermaid diagram for how it works.',
+  },
   {
     label: 'Booking',
     value: 'booking',
@@ -467,12 +473,6 @@ export const playgroundExamples: PlaygroundExample[] = [
     content: nuxtUiMarkdown,
     mode: 'nuxt-ui',
     prompt: 'Landing page for a mountain bike rental in the Alps.',
-  },
-  {
-    label: 'All Features',
-    value: 'all-features',
-    to: '/play/editor?example=all-features',
-    content: allFeaturesMarkdown,
   },
 ]
 
