@@ -132,7 +132,7 @@ The grammar also has a dedicated entry when you want Comark highlighting with ra
 
 ```typescript
 import { tokenize } from 'rangi'
-import { comarkLanguages } from 'comark/plugins/rangi/language'
+import { comarkLanguages } from 'comark/plugins/rangi/language-comark'
 
 const tokens = tokenize(source, {
   lang: 'comark',
@@ -140,7 +140,7 @@ const tokens = tokenize(source, {
 })
 ```
 
-`comark/plugins/rangi/language` contains only the rangi grammar and does not import Shiki. Its default export is the individual `comarkLanguage` definition; `comarkLanguages` maps it to all four supported aliases.
+`comark/plugins/rangi/language-comark` contains only the rangi grammar and does not import Shiki. Its default export is the individual `comarkLanguage` definition; `comarkLanguages` maps it to all four supported aliases.
 
 ### Language aliases
 

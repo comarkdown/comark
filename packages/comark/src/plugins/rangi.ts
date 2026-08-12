@@ -4,7 +4,7 @@ import { tokenize } from 'rangi'
 import { dark as defaultDark, defaultTheme } from 'rangi/themes'
 import { defineComarkPlugin } from '../utils/helpers.ts'
 import { visitAsync } from '../utils/index.ts'
-import { comarkLanguages } from './rangi/language.ts'
+import { comarkLanguages } from './rangi/language-comark.ts'
 
 /**
  * Languages accepted by the plugin.
@@ -22,7 +22,7 @@ export type RangiLanguage = ShjLanguage | (string & {})
  * information — and it mirrors the `md`/`markdown`/`comark` → `mdc` aliases the
  * Shiki plugin registers. Pass your own `languages: { md: … }` to override.
  */
-export { comarkLanguage, comarkLanguages } from './rangi/language.ts'
+export { comarkLanguage, comarkLanguages } from './rangi/language-comark.ts'
 
 /**
  * Token types emitted by rangi.

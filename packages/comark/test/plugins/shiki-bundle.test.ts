@@ -65,14 +65,14 @@ describe('shiki consumer bundle', { timeout: 30_000 }, () => {
   it('keeps the standalone language entries isolated by highlighter', async () => {
     const shikiModulesInRangi = await bundledModules(
       `
-        import comarkLanguage from 'comark/plugins/rangi/language'
+        import comarkLanguage from 'comark/plugins/rangi/language-comark'
         console.log(comarkLanguage)
       `,
       (id) => isHighlighterModule(id, 'shiki')
     )
     const rangiModulesInShiki = await bundledModules(
       `
-        import comarkLanguages from 'comark/plugins/shiki/language'
+        import comarkLanguages from 'comark/plugins/shiki/language-comark'
         console.log(comarkLanguages)
       `,
       (id) => isHighlighterModule(id, 'rangi')

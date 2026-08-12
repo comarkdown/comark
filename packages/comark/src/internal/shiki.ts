@@ -4,7 +4,7 @@ import { defineComarkPlugin } from '../utils/helpers.ts'
 import { createShikiPrimitive } from 'shiki'
 import { createJavaScriptRegexEngine } from 'shiki/engine/javascript'
 import { codeToHast, codeToTokens, getTokenStyleObject, stringifyTokenStyle } from 'shiki/core'
-import comarkLanguages from '../plugins/shiki/language.ts'
+import comarkLanguages from '../plugins/shiki/language-comark.ts'
 
 export interface ShikiCoreOptions {
   /**

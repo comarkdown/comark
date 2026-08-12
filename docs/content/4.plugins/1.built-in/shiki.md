@@ -114,7 +114,7 @@ Framework packages expose the same nested entry, for example `@comark/vue/plugin
 The Comark TextMate grammar can also be imported independently from the plugin-owned language entry:
 
 ```typescript
-import comarkLanguages, { comarkLanguage } from 'comark/plugins/shiki/language'
+import comarkLanguages, { comarkLanguage } from 'comark/plugins/shiki/language-comark'
 ```
 
 The default export includes the Comark grammar and its Markdown, YAML, and HTML dependencies, ready to pass to Shiki. This entry does not import rangi.

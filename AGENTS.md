@@ -64,10 +64,10 @@ packages/comark/
 │   │   ├── emoji.ts          # Emoji shortcodes
 │   │   ├── shiki.ts          # Shiki with bundled default theme + language loaders (peer: shiki)
 │   │   ├── shiki/core.ts     # Shiki without default theme/language imports
-│   │   ├── shiki/language.ts # Comark TextMate grammar and its Shiki dependencies
+│   │   ├── shiki/language-comark.ts # Comark TextMate grammar and its Shiki dependencies
 │   │   ├── highlight.ts      # Deprecated alias → shiki (remove next major)
 │   │   ├── rangi.ts          # Lightweight highlighting via rangi (peer: rangi)
-│   │   ├── rangi/language.ts # Standalone Comark grammar for rangi
+│   │   ├── rangi/language-comark.ts # Standalone Comark grammar for rangi
 │   │   ├── math.ts           # LaTeX math via KaTeX (peer: katex)
 │   │   ├── mermaid.ts        # Mermaid diagrams (peer: beautiful-mermaid)
 │   │   ├── security.ts       # XSS/security sanitization
@@ -395,8 +395,8 @@ import { textContent, visit } from 'comark/utils'
 import shiki from 'comark/plugins/shiki'
 import shikiCore from 'comark/plugins/shiki/core' // ShikiCoreOptions: required themes + languages, no defaults
 import rangi, { comarkLanguage, comarkLanguages } from 'comark/plugins/rangi'
-import shikiComarkLanguages from 'comark/plugins/shiki/language'
-import rangiComarkLanguage from 'comark/plugins/rangi/language'
+import shikiComarkLanguages from 'comark/plugins/shiki/language-comark'
+import rangiComarkLanguage from 'comark/plugins/rangi/language-comark'
 // import highlight from 'comark/plugins/highlight' // deprecated alias → shiki
 import math from 'comark/plugins/math'
 import mermaid from 'comark/plugins/mermaid'
