@@ -13,7 +13,7 @@ links:
     variant: soft
   - label: Parse API
     icon: i-lucide-code
-    to: /api/parse
+    to: /reference/parse
     color: neutral
     variant: soft
 ---

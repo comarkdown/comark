@@ -17,7 +17,7 @@ import security from '@comark/nuxt/plugins/security'
 
 import { renderMarkdown } from 'comark/render'
 import { Splitpanes, Pane } from 'splitpanes'
-import { playgroundExamples } from '~/constants'
+import { generationErrorMessage, playgroundExamples } from '~/constants'
 import resolveComponent from '~/utils/components-manifest'
 import PromptInput from '~/components/playground/PromptInput.vue'
 import GeneratingIndicator from '~/components/playground/GeneratingIndicator.vue'
@@ -42,11 +42,22 @@ const currentExample = computed(
   () => playgroundExamples.find((e) => e.value === selectedExample.value) ?? playgroundExamples[0]!
 )
 
+watch(
+  () => route.query.example,
+  (example) => {
+    if (example !== selectedExample.value) {
+      router.replace({ query: { ...route.query, example: selectedExample.value } })
+    }
+  },
+  { immediate: true }
+)
+
 const markdown = ref<string>(currentExample.value.content.trim())
 const document = ref<MarkdownDocument | null>(null)
 const parseTime = ref<number>(0)
 const nodeCount = ref<number>(0)
 const error = ref<string | null>(null)
+const generationError = ref<string | null>(null)
 const parsing = ref<boolean>(false)
 
 const colorMode = useColorMode()
@@ -292,15 +303,14 @@ function scrollEditorToBottom() {
   nextTick(() => markdownEditor.value?.scrollToBottom())
 }
 
-const {
-  completion,
-  complete,
-  isLoading: isGenerating,
-} = useCompletion({
+const isGenerating = ref(false)
+
+const { completion, complete } = useCompletion({
   api: '/api/generate-page',
-  streamProtocol: 'text',
+  streamProtocol: 'data',
   onError: () => {
-    error.value = 'Generation failed'
+    generationError.value = generationErrorMessage
+    markdown.value = previousMarkdown
   },
   onFinish: async () => {
     await updatePreview()
@@ -324,13 +334,22 @@ watch(completion, async (md) => {
   scrollEditorToBottom()
 })
 
-function handleGenerate(prompt: string) {
+let previousMarkdown = ''
+
+async function handleGenerate(prompt: string) {
   const example = currentExample.value
   if (!example.mode) return
+  previousMarkdown = markdown.value
   markdown.value = ''
   document.value = null
   error.value = null
-  complete(prompt, { body: { mode: example.mode, structure: example.content } })
+  generationError.value = null
+  isGenerating.value = true
+  try {
+    await complete(prompt, { body: { mode: example.mode, structure: example.content } })
+  } finally {
+    isGenerating.value = false
+  }
 }
 </script>
 
@@ -461,9 +480,24 @@ function handleGenerate(prompt: string) {
               />
               <span class="text-sm">Generating...</span>
             </div>
+            <div
+              v-if="generationError"
+              class="absolute inset-x-0 bottom-24 z-20 px-4 flex justify-center"
+            >
+              <UAlert
+                color="error"
+                variant="soft"
+                icon="i-lucide-circle-alert"
+                :description="generationError"
+                close
+                class="w-full max-w-96 shadow-lg"
+                :ui="{ description: 'text-xs' }"
+                @update:open="generationError = null"
+              />
+            </div>
             <PromptInput
               v-if="currentExample.mode"
-              :is-generating="!!isGenerating"
+              :is-generating="isGenerating"
               :prompt="currentExample.prompt"
               floating
               @submit="handleGenerate"

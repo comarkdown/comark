@@ -1,4 +1,4 @@
-import { streamText, tool, stepCountIs } from 'ai'
+import { streamText, tool, stepCountIs, createUIMessageStream, createUIMessageStreamResponse } from 'ai'
 import { gateway } from '@ai-sdk/gateway'
 import { z } from 'zod'
 import { buildShowcasePrompt } from '../utils/prompt'
@@ -47,6 +47,18 @@ Before generating, fetch the documentation you need:
 2. fetchNuxtUISkill with "nuxt-ui-components": discover available components
 3. fetchComponentDoc for EACH component you plan to use: learn exact props and slots`
 
+const FETCH_TIMEOUT_MS = 15_000
+
+async function fetchSkillText(url: string): Promise<{ ok: true; text: string } | { ok: false; reason: string }> {
+  try {
+    const response = await fetch(url, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) })
+    if (!response.ok) return { ok: false, reason: `status ${response.status}` }
+    return { ok: true, text: await response.text() }
+  } catch (error) {
+    return { ok: false, reason: error instanceof Error ? error.message : 'request failed' }
+  }
+}
+
 export default defineEventHandler(async (event) => {
   const { prompt, mode = 'nuxt-ui', _structure } = await readBody(event)
 
@@ -67,9 +79,9 @@ export default defineEventHandler(async (event) => {
           'Fetch the Comark MDC syntax reference: component syntax, slots, and props. Call this before generating in any mode.',
         inputSchema: z.object({}),
         execute: async () => {
-          const response = await fetch(COMARK_SKILL_URL)
-          if (!response.ok) return `Failed to fetch comark skill: ${response.status}`
-          return response.text()
+          const result = await fetchSkillText(COMARK_SKILL_URL)
+          if (!result.ok) return `Failed to fetch comark skill: ${result.reason}`
+          return result.text
         },
       }),
       ...(mode === 'nuxt-ui'
@@ -82,10 +94,9 @@ export default defineEventHandler(async (event) => {
                   .describe('The Nuxt UI skill file to fetch'),
               }),
               execute: async ({ skill }) => {
-                const url = NUXT_UI_SKILL_FILES[skill]
-                const response = await fetch(url)
-                if (!response.ok) return `Failed to fetch ${skill}: ${response.status}`
-                return response.text()
+                const result = await fetchSkillText(NUXT_UI_SKILL_FILES[skill])
+                if (!result.ok) return `Failed to fetch ${skill}: ${result.reason}`
+                return result.text
               },
             }),
             fetchComponentDoc: tool({
@@ -96,10 +107,10 @@ export default defineEventHandler(async (event) => {
               }),
               execute: async ({ component }) => {
                 const url = `https://ui.nuxt.com/raw/docs/components/${component}.md`
-                const response = await fetch(url)
-                if (!response.ok)
-                  return `Component "${component}" not found (${response.status}). Check the name and try again.`
-                const text = await response.text()
+                const result = await fetchSkillText(url)
+                if (!result.ok)
+                  return `Component "${component}" not found (${result.reason}). Check the name and try again.`
+                const text = result.text
                 if (text.includes('title: Not Found') || !text.includes('## Usage'))
                   return `Component "${component}" not found. Check the kebab-case name and try again.`
                 const usageStart = text.indexOf('\n## Usage')
@@ -115,36 +126,38 @@ export default defineEventHandler(async (event) => {
     },
   })
 
-  setResponseHeader(event, 'Content-Type', 'text/plain; charset=utf-8')
-  setResponseHeader(event, 'Cache-Control', 'no-cache')
-  setResponseHeader(event, 'X-Content-Type-Options', 'nosniff')
+  const stream = createUIMessageStream({
+    execute: async ({ writer }) => {
+      const id = 'page'
+      writer.write({ type: 'text-start', id })
 
-  const encoder = new TextEncoder()
-  // Buffer until frontmatter `---` is found, discards any preamble text from tool-call steps
-  let preambleBuffer = ''
-  let frontmatterFound = false
-  const byteStream = result.textStream.pipeThrough(
-    new TransformStream<string, Uint8Array>({
-      transform(chunk, controller) {
+      // Buffer until frontmatter `---` is found, discards any preamble text from tool-call steps
+      let preambleBuffer = ''
+      let frontmatterFound = false
+      for await (const chunk of result.textStream) {
         if (frontmatterFound) {
-          controller.enqueue(encoder.encode(chunk))
-          return
+          writer.write({ type: 'text-delta', id, delta: chunk })
+          continue
         }
         preambleBuffer += chunk
         const idx = preambleBuffer.indexOf('---')
         if (idx !== -1) {
           frontmatterFound = true
-          controller.enqueue(encoder.encode(preambleBuffer.slice(idx)))
+          writer.write({ type: 'text-delta', id, delta: preambleBuffer.slice(idx) })
           preambleBuffer = ''
         }
-      },
-      flush(controller) {
-        if (!frontmatterFound && preambleBuffer) {
-          controller.enqueue(encoder.encode(preambleBuffer))
-        }
-      },
-    })
-  )
+      }
+      if (!frontmatterFound && preambleBuffer) {
+        writer.write({ type: 'text-delta', id, delta: preambleBuffer })
+      }
 
-  return sendStream(event, byteStream)
+      writer.write({ type: 'text-end', id })
+    },
+    onError: (error) => {
+      console.error('[generate-page] generation failed:', error)
+      return 'Generation failed'
+    },
+  })
+
+  return createUIMessageStreamResponse({ stream })
 })

@@ -64,7 +64,7 @@ const result = await parseMarkdown(content, {
 })
 ```
 
-See also the [`registerDefaultPlugins` option](/api/parse#options) on the Parse API.
+See also the [`registerDefaultPlugins` option](/reference/parse#options) on the Parse API.
 
 ## Plugins
 

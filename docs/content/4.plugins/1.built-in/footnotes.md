@@ -9,7 +9,7 @@ seo:
 links:
   - label: Parse API
     icon: i-lucide-code
-    to: /api/parse
+    to: /reference/parse
     color: neutral
     variant: soft
   - label: Vue Rendering
@@ -288,8 +288,8 @@ Without `Footnote`, `renderMarkdown` would serialize the footnote HTML structure
 
 ## Related
 
-- [Parse API](/api/parse): Main parsing API
-- [Render API](/api/render): Rendering API with conditional handlers
+- [Parse API](/reference/parse): Main parsing API
+- [Render API](/reference/render): Rendering API with conditional handlers
 - [Alerts](/plugins/defaults/alert): GitHub-style alert blockquotes
 - [Task List](/plugins/defaults/task-list): Checkbox syntax
 - [Creating Plugins](/plugins/custom/plugin-api): Build your own plugin

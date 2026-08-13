@@ -8,7 +8,7 @@ navigation:
 links:
   - label: Parse API
     icon: i-lucide-file-code
-    to: /api/parse
+    to: /reference/parse
     color: neutral
     variant: soft
   - label: Shiki

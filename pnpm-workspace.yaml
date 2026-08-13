@@ -3,9 +3,16 @@ packages:
   - docs
   - examples/*/*
 
+# The comark-docs layer temporarily pins comark-content to a pkg.pr.new edge build
+# (URL-resolved subdependency), which pnpm blocks by default. Delete this line once
+# comark-content > 0.3.0 is published and the layer is back on a registry range.
+blockExoticSubdeps: false
+
+
 allowBuilds:
   "@parcel/watcher": false
   better-sqlite3: true
+  comark-docs: false
   esbuild: false
   lmdb: false
   msgpackr-extract: false
@@ -18,9 +25,9 @@ catalog:
   "@ai-sdk/vue": ^4.0.22
   "@astrojs/react": ^6.0.1
   "@clack/prompts": ^1.7.0
-  "@comark/html": ^0.5.0
-  "@comark/nuxt": ^0.5.0
-  "@comark/react": ^0.5.0
+  "@comark/html": ^0.6.2
+  "@comark/nuxt": ^0.6.2
+  "@comark/react": ^0.6.2
   "@comark/vue": ^0.6.2
 
   # Misc
@@ -29,7 +36,7 @@ catalog:
   "@nuxt/content": ^3.15.0
   "@nuxt/devtools-kit": 4.0.0-alpha.7
   "@nuxt/kit": ^4.4.8
-  "@nuxt/ui": ^4.9.0
+  "@nuxt/ui": ^4.10.0
   "satori": ^0.26.0
   "@resvg/resvg-js": ^2.6.2
   "@nuxtjs/mcp-toolkit": 0.17.2
@@ -81,7 +88,6 @@ catalog:
 
   # Workspace packages (publish versions, locally overridden by resolutions)
   comark: ^0.6.2
-  docus: ^5.12.3
 
   # Core comark dependencies
   entities: ^8.0.0
@@ -171,8 +177,10 @@ ignoredBuiltDependencies:
 
 minimumReleaseAgeExclude:
   - comark@0.5.1 || 0.6.0 || 0.6.1 || 0.6.2
-  - '@comark/vue@0.5.1 || 0.6.0 || 0.6.1 || 0.6.2'
+  - "@comark/vue@0.5.1 || 0.6.0 || 0.6.1 || 0.6.2"
   - "@nuxtlabs/monarch-mdc@0.10.0"
+  - "@comark/nuxt@0.6.0"
+  - comark-content@0.2.0
   - rangi@2.2.0
 
 patchedDependencies:

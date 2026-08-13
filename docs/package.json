@@ -3,8 +3,9 @@
   "description": "Parse and render Markdown anywhere with one JavaScript library for HTML, ANSI, Vue, React, Svelte and Angular, plus plugins and streaming.",
   "type": "module",
   "scripts": {
-    "dev": "nuxt dev --extends docus",
-    "build": " pnpm --filter '../' run build && nuxt build --extends docus",
+    "dev": "nuxt dev",
+    "prebuild": "pnpm --filter '../' run build",
+    "build": "nuxt build",
     "generate:schema": "tsx --env-file=.env scripts/generate-schema.ts"
   },
   "dependencies": {
@@ -13,9 +14,6 @@
     "@comark/nuxt": "workspace:*",
     "@comark/vue": "workspace:*",
     "@monaco-editor/loader": "catalog:",
-    "@nuxt/content": "catalog:",
-    "@nuxt/ui": "catalog:",
-    "@nuxtjs/mcp-toolkit": "catalog:",
     "@nuxtlabs/monarch-mdc": "catalog:",
     "@shikijs/langs": "catalog:",
     "@vercel/analytics": "catalog:",
@@ -24,22 +22,17 @@
     "ai": "catalog:",
     "beautiful-mermaid": "catalog:",
     "comark": "workspace:*",
-    "docus": "catalog:",
-    "markdown-it-math": "catalog:",
+    "comark-docs": "github:comarkdown/comark-docs",
+    "katex": "catalog:",
     "nuxt": "catalog:",
-    "nuxt-studio": "catalog:",
     "splitpanes": "catalog:",
-    "tailwindcss": "catalog:",
     "ufo": "catalog:",
     "vue-json-pretty": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@nuxt/devtools-kit": "catalog:",
-    "@resvg/resvg-js": "catalog:",
     "@types/json-schema": "catalog:",
     "@types/splitpanes": "catalog:",
-    "satori": "catalog:",
     "tsx": "catalog:"
   }
 }

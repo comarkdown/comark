@@ -40,8 +40,8 @@ async function reset() {
   doc.set(await parseMarkdown('# Live document\n\nReset. Drive me again.'))
 }
 
-// @ts-expect-error - parse is defined in the global scope
-globalThis.parse = parse
+// @ts-expect-error - parseMarkdown is exposed for console demos
+globalThis.parseMarkdown = parseMarkdown
 </script>
 
 <template>
