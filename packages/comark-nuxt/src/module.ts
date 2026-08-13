@@ -22,7 +22,7 @@ export default defineNuxtModule<ComarkModuleOptions>({
   },
   // Default configuration options of the Nuxt module
   defaults: {},
-  async setup(_options, nuxt) {
+  async setup(_options: ComarkModuleOptions, nuxt: Nuxt) {
     addComponent({
       name: 'Markdown',
       export: 'Markdown',
@@ -57,7 +57,7 @@ export default defineNuxtModule<ComarkModuleOptions>({
     })
 
     // Register user global components
-    await registerComarkGlobalComponents(resolver, nuxt as unknown as Nuxt)
+    await registerComarkGlobalComponents(resolver, nuxt)
   },
 })
 
