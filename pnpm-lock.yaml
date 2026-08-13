@@ -418,7 +418,7 @@ importers:
         version: link:../packages/comark
       comark-docs:
         specifier: github:comarkdown/comark-docs
-        version: https://codeload.github.com/comarkdown/comark-docs/tar.gz/64b913883bdb9b01c6768410effc0ae125090014(55b9cada67f42ec0c4fa21ffcc1d2464)
+        version: https://codeload.github.com/comarkdown/comark-docs/tar.gz/0974cafd009fdd3ae2473bad274e9576b00cff50(55b9cada67f42ec0c4fa21ffcc1d2464)
       katex:
         specifier: 'catalog:'
         version: 0.17.0
@@ -7208,8 +7208,8 @@ packages:
     version: 0.3.0
     hasBin: true
 
-  comark-docs@https://codeload.github.com/comarkdown/comark-docs/tar.gz/64b913883bdb9b01c6768410effc0ae125090014:
-    resolution: {gitHosted: true, integrity: sha512-7+hW7dB+etTdXKXDc+NRCim9x5UYn8irggWzxyDRE0I3D/Y4Tp4SLa5kuDR3lKgerbmP2yG6rJ7bm80CdEzm6A==, tarball: https://codeload.github.com/comarkdown/comark-docs/tar.gz/64b913883bdb9b01c6768410effc0ae125090014}
+  comark-docs@https://codeload.github.com/comarkdown/comark-docs/tar.gz/0974cafd009fdd3ae2473bad274e9576b00cff50:
+    resolution: {gitHosted: true, integrity: sha512-7AWbi4enoiZQvtYxOKr8YwP0k4T7R3DTFWyd61xIkgfHX8Gjg/hWB2Z4nPSp2BHrcMONbsAcsG2VBgYOR7HKfQ==, tarball: https://codeload.github.com/comarkdown/comark-docs/tar.gz/0974cafd009fdd3ae2473bad274e9576b00cff50}
     version: 0.0.1
     peerDependencies:
       nuxt: ^4.5.0
@@ -19261,7 +19261,7 @@ snapshots:
       - shiki
       - uploadthing
 
-  comark-docs@https://codeload.github.com/comarkdown/comark-docs/tar.gz/64b913883bdb9b01c6768410effc0ae125090014(55b9cada67f42ec0c4fa21ffcc1d2464):
+  comark-docs@https://codeload.github.com/comarkdown/comark-docs/tar.gz/0974cafd009fdd3ae2473bad274e9576b00cff50(55b9cada67f42ec0c4fa21ffcc1d2464):
     dependencies:
       '@ai-sdk/gateway': 4.0.47(zod@4.4.3)
       '@ai-sdk/vue': 4.0.59(vue@3.5.39(typescript@5.9.3))(zod@4.4.3)
@@ -19289,6 +19289,7 @@ snapshots:
       comark-content: https://pkg.pr.new/comark-content@6b8aae4(@vercel/functions@3.9.2(ws@8.21.0))(beautiful-mermaid@1.1.3)(db0@0.3.4(better-sqlite3@12.10.0))(ioredis@5.11.1)(katex@0.17.0)(rangi@2.2.0)(shiki@4.3.1)
       defu: 6.1.7
       exsolve: 1.1.1
+      js-yaml: 5.2.3
       motion-v: 2.3.0(@vueuse/core@14.4.0(vue@3.5.39(typescript@5.9.3)))(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(vue@3.5.39(typescript@5.9.3))
       nuxt: 4.4.8(@babel/plugin-syntax-jsx@7.29.7(@babel/core@7.29.7))(@babel/plugin-syntax-typescript@7.29.7(@babel/core@7.29.7))(@parcel/watcher@2.5.6)(@types/node@26.1.1)(@vercel/functions@3.9.2(ws@8.21.0))(@vue/compiler-sfc@3.5.41)(better-sqlite3@12.10.0)(cac@6.7.14)(db0@0.3.4(better-sqlite3@12.10.0))(esbuild@0.28.1)(eslint@10.4.1(jiti@2.7.0))(ioredis@5.11.1)(lightningcss@1.33.0)(magicast@0.5.4)(meow@13.2.0)(optionator@0.9.4)(oxlint@1.73.0)(rolldown@1.1.5)(rollup-plugin-visualizer@7.0.1(rolldown@1.1.5)(rollup@4.62.2))(rollup@4.62.2)(sass@1.99.0)(srvx@0.11.22)(terser@5.49.0)(tsx@4.23.0)(typescript@5.9.3)(vite@8.1.4(@types/node@26.2.0)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.99.0)(terser@5.49.0)(tsx@4.23.0)(yaml@2.9.0))(vue-tsc@3.3.7(typescript@5.9.3))(yaml@2.9.0)
       nuxt-llms: 0.2.0(magic-string@1.1.0)(magicast@0.5.4)(oxc-parser@0.133.0)(rolldown@1.1.5)(unplugin@3.3.0(esbuild@0.28.1)(rolldown@1.1.5)(rollup@4.62.2)(vite@8.1.4(@types/node@26.2.0)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.99.0)(terser@5.49.0)(tsx@4.23.0)(yaml@2.9.0)))
