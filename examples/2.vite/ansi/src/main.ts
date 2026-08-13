@@ -2,9 +2,9 @@ import '@xterm/xterm/css/xterm.css'
 import { Terminal } from '@xterm/xterm'
 import { FitAddon } from '@xterm/addon-fit'
 import { createMarkdownParser } from 'comark'
-import math from 'comark/plugins/math'
 import shiki from 'comark/plugins/shiki'
 import { renderAnsiFromDocument } from '@comark/ansi'
+import math, { Math } from '@comark/ansi/plugins/math'
 
 const plugins = [math(), shiki()]
 const parseMarkdown = createMarkdownParser({ plugins })
@@ -155,7 +155,10 @@ window.addEventListener('resize', () => fitAddon.fit())
 
 async function render(markdown: string) {
   const tree = await parseMarkdown(markdown)
-  const ansi = await renderAnsiFromDocument(tree, { width: term.cols })
+  const ansi = await renderAnsiFromDocument(tree, {
+    components: { Math },
+    width: term.cols,
+  })
 
   term.reset()
   term.write(ansi)
