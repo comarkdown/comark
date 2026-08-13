@@ -17,16 +17,7 @@ export default defineAppConfig({
       },
       { label: 'Plugins', sections: ['plugins'], link: 'section' as const },
       { label: 'Examples', sections: ['examples'], link: 'section' as const },
-      {
-        label: 'Playground',
-        to: '/play',
-        children: [
-          { label: 'Basic', to: '/play?example=basic' },
-          { label: 'Booking', to: '/play?example=booking' },
-          { label: 'Recipe', to: '/play?example=recipe' },
-          { label: 'Nuxt UI', to: '/play?example=nuxt-ui' },
-        ],
-      },
+      { label: 'Playground', to: '/play' },
     ],
   },
 
