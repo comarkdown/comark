@@ -23,6 +23,7 @@
     "beautiful-mermaid": "catalog:",
     "comark": "workspace:*",
     "comark-docs": "github:comarkdown/comark-docs",
+    "katex": "catalog:",
     "nuxt": "catalog:",
     "splitpanes": "catalog:",
     "ufo": "catalog:",
