@@ -16,6 +16,7 @@ export type {
   ShikiThemeLoader,
 } from '../internal/shiki.ts'
 export { resetHighlighter } from '../internal/shiki.ts'
+export { comarkLanguage, comarkLanguages } from './shiki/language-comark.ts'
 
 const defaultThemeLoaders: ShikiThemeLoader[] = [
   () => import('shiki/dist/themes/material-theme-lighter.mjs').then((module) => module.default),

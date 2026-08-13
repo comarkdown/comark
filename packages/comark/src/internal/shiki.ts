@@ -4,7 +4,7 @@ import { defineComarkPlugin } from '../utils/helpers.ts'
 import { createShikiPrimitive } from 'shiki'
 import { createJavaScriptRegexEngine } from 'shiki/engine/javascript'
 import { codeToHast, codeToTokens, getTokenStyleObject, stringifyTokenStyle } from 'shiki/core'
-import comakLanguage from '../utils/comark.tmLanguage.ts'
+import comarkLanguages from '../plugins/shiki/language-comark.ts'
 
 export interface ShikiCoreOptions {
   /**
@@ -181,7 +181,7 @@ async function resolveRegistrations(
     else languages.push(result.value)
   }
   // Built-in Comark grammar (mdc); always registered
-  languages.push(comakLanguage as LanguageRegistration[])
+  languages.push(comarkLanguages)
 
   return { themes, languages }
 }
