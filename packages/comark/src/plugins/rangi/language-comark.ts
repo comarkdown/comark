@@ -19,7 +19,7 @@
  * a theme keys its colors by.
  */
 
-import type { ShjLanguageComponent, ShjLanguageDefinition, ShjMatcher } from 'rangi'
+import type { ShjLanguageComponent, ShjLanguageDefinition, ShjLanguages, ShjMatcher } from 'rangi'
 
 /** A component name: same grammar as `RE_COMPONENT_NAME` in the parser. */
 const NAME = '[a-z$][\\w$-]*'
@@ -94,7 +94,7 @@ function fence(marker: '`' | '~'): ShjLanguageComponent {
   ]
 }
 
-const definition: ShjLanguageDefinition = [
+export const comarkLanguage: ShjLanguageDefinition = [
   // #region Comark
 
   // YAML frontmatter — `---` … `---` at the top of the document
@@ -200,4 +200,12 @@ const definition: ShjLanguageDefinition = [
   [RegExp(ATTRS, 'g'), undefined, attributeRules],
 ]
 
-export default definition
+/** The Comark grammar registered under every supported Markdown fence alias. */
+export const comarkLanguages: ShjLanguages = {
+  comark: comarkLanguage,
+  mdc: comarkLanguage,
+  md: comarkLanguage,
+  markdown: comarkLanguage,
+}
+
+export default comarkLanguage

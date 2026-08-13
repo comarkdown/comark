@@ -49,7 +49,39 @@ async function bundledLanguages(entry: string): Promise<string[]> {
   return bundledModules(entry, (id) => id.includes('@shikijs/langs/dist/'))
 }
 
+function isHighlighterModule(id: string, highlighter: 'rangi' | 'shiki'): boolean {
+  if (highlighter === 'rangi') {
+    return id.includes('/node_modules/rangi/') || id.includes('/node_modules/.pnpm/rangi@')
+  }
+  return (
+    id.includes('/node_modules/shiki/') ||
+    id.includes('/node_modules/@shikijs/') ||
+    id.includes('/node_modules/.pnpm/shiki@') ||
+    id.includes('/node_modules/.pnpm/@shikijs+')
+  )
+}
+
 describe('shiki consumer bundle', { timeout: 30_000 }, () => {
+  it('keeps the standalone language entries isolated by highlighter', async () => {
+    const shikiModulesInRangi = await bundledModules(
+      `
+        import comarkLanguage from 'comark/plugins/rangi/language-comark'
+        console.log(comarkLanguage)
+      `,
+      (id) => isHighlighterModule(id, 'shiki')
+    )
+    const rangiModulesInShiki = await bundledModules(
+      `
+        import comarkLanguages from 'comark/plugins/shiki/language-comark'
+        console.log(comarkLanguages)
+      `,
+      (id) => isHighlighterModule(id, 'rangi')
+    )
+
+    expect(shikiModulesInRangi).toEqual([])
+    expect(rangiModulesInShiki).toEqual([])
+  })
+
   it('only bundles explicitly imported themes from the core entry', async () => {
     const themes = await bundledThemes(`
       import shiki from 'comark/plugins/shiki/core'
@@ -76,7 +108,7 @@ describe('shiki consumer bundle', { timeout: 30_000 }, () => {
       }))
     `)
 
-    // Explicit language + deps from comark.tmLanguage (markdown/yaml/html-derivative)
+    // Explicit language + dependencies from the Comark grammar (markdown/yaml/html-derivative)
     expect(languages).toContain('javascript.mjs')
     expect(languages).toContain('markdown.mjs')
     expect(languages).toContain('yaml.mjs')

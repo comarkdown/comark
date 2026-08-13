@@ -1,8 +1,9 @@
+import type { LanguageRegistration } from 'shiki'
 import markdown from 'shiki/dist/langs/markdown.mjs'
 import yaml from 'shiki/dist/langs/yaml.mjs'
 import html_derivative from 'shiki/dist/langs/html-derivative.mjs'
 
-const comark = {
+export const comarkLanguage = {
   $schema: 'https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json',
   name: 'mdc',
   aliases: ['comark'],
@@ -600,7 +601,7 @@ const comark = {
       while: '(^|\\G)\\s*(>) ?',
     },
   },
-}
+} as LanguageRegistration
 
 const jsonb = markdown[0].repository.fenced_code_block_json
 const yamlb = markdown[0].repository.fenced_code_block_yaml
@@ -613,4 +614,7 @@ markdown[0].repository.fenced_code_block_yaml = {
   begin: String(yamlb.begin).replace('(ya?ml)', '(ya?ml|ya?ml-render)'),
 }
 
-export default [...markdown, ...yaml, ...html_derivative, comark]
+/** Shiki registrations required to highlight Comark documents. */
+export const comarkLanguages: LanguageRegistration[] = [...markdown, ...yaml, ...html_derivative, comarkLanguage]
+
+export default comarkLanguages
