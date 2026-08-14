@@ -1,6 +1,6 @@
 import type { NodeHandler, State } from 'comark/render'
 import type { ElementNode, Node } from 'comark'
-import { DIM, BOLD, RESET } from '../utils/escape.ts'
+import { DIM, BOLD, RESET, padEndVisible, visibleLength } from '../utils/escape.ts'
 
 async function getCellText(cell: Node, state: State): Promise<string> {
   if (typeof cell === 'string') return cell
@@ -52,14 +52,15 @@ export const table: NodeHandler = async (node, state) => {
   for (const c of headerCells) {
     headers.push(await getCellText(c, state))
   }
-  const colWidths = headers.map((h) => Math.max(3, h.length))
+  // Widths are visible terminal columns (ANSI escapes do not count).
+  const colWidths = headers.map((h) => Math.max(3, visibleLength(h)))
 
   for (const row of bodyRows) {
     const cells = getCells(row)
     for (let i = 0; i < cells.length; i++) {
       if (i < colWidths.length) {
         const text = await getCellText(cells[i], state)
-        colWidths[i] = Math.max(colWidths[i], text.length)
+        colWidths[i] = Math.max(colWidths[i], visibleLength(text))
       }
     }
   }
@@ -73,7 +74,7 @@ export const table: NodeHandler = async (node, state) => {
   const botBorder = sep('└', '┴', '┘', '─')
 
   const fmtRow = (cells: string[], bold = false) => {
-    const cols = cells.map((c, i) => ' ' + c.padEnd(colWidths[i]) + ' ')
+    const cols = cells.map((c, i) => ' ' + padEndVisible(c, colWidths[i]) + ' ')
     if (colors && bold) return '│' + cols.map((c) => BOLD + c + RESET).join('│') + '│'
     if (colors) return DIM + '│' + RESET + cols.join(DIM + '│' + RESET) + DIM + '│' + RESET
     return '│' + cols.join('│') + '│'

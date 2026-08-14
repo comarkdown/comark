@@ -154,6 +154,60 @@ describe('renderAnsiFromDocument', () => {
     })
   })
 
+  describe('tables', () => {
+    const tableMd = [
+      '| Argument | Type | Description |',
+      '| -------- | ---- | ----------- |',
+      '| `guard` | guard | Specifies the guard. |',
+    ].join('\n')
+
+    it('renders a plain table with aligned columns', async () => {
+      const out = await plain(tableMd)
+      expect(out).toContain('Argument')
+      expect(out).toContain('guard')
+      expect(out).toContain('┌')
+      expect(out).toContain('│')
+    })
+
+    it('aligns columns when cells contain ANSI styling', async () => {
+      const out = await colored(tableMd)
+      // Strip ANSI so column borders line up by visible width.
+      // eslint-disable-next-line no-control-regex
+      const stripped = out.replace(/\u001B\[[\d;?]*[ -/]*[@-~]/g, '')
+      const lines = stripped
+        .split('\n')
+        .map((l) => l.trimEnd())
+        .filter((l) => l.includes('│') || l.includes('┌') || l.includes('├') || l.includes('└'))
+
+      expect(lines.length).toBeGreaterThanOrEqual(4)
+      const widths = lines.map((l) => l.length)
+      expect(new Set(widths).size).toBe(1)
+
+      // Inline code still carries color escapes in the raw output.
+      expect(out).toContain('\x1B[36m')
+      expect(out).toContain('guard')
+    })
+
+    it('aligns columns with bold/italic/link mixed in cells', async () => {
+      const md = `
+| Name | Note |
+| ---- | ---- |
+| **bold** | _italic_ and [link](https://example.com) |
+| plain | short |
+`.trim()
+      const out = await colored(md)
+      // eslint-disable-next-line no-control-regex
+      const stripped = out.replace(/\u001B\[[\d;?]*[ -/]*[@-~]/g, '')
+      const lines = stripped
+        .split('\n')
+        .map((l) => l.trimEnd())
+        .filter((l) => l.includes('│') || l.includes('┌') || l.includes('├') || l.includes('└'))
+
+      const widths = lines.map((l) => l.length)
+      expect(new Set(widths).size).toBe(1)
+    })
+  })
+
   describe('code blocks', () => {
     it('renders code block content', async () => {
       const out = await plain('```js\nconsole.log("hi")\n```')

@@ -15,3 +15,23 @@ export function wrap(open: string, text: string, colors: boolean): string {
   if (!colors || !text) return text
   return open + text + RESET
 }
+
+/** CSI / OSC / other ANSI escape sequences (non-printing). */
+// eslint-disable-next-line no-control-regex
+const ANSI_RE = /\u001B(?:\[[\d;?]*[ -/]*[@-~]|\][^\u0007\u001B]*(?:\u0007|\u001B\\)?|[@-Z\\-_])/g
+
+/** Remove ANSI escape sequences so length reflects visible terminal columns. */
+export function stripAnsi(text: string): string {
+  return text.replace(ANSI_RE, '')
+}
+
+/** Visible character length of a string, ignoring ANSI escape codes. */
+export function visibleLength(text: string): number {
+  return stripAnsi(text).length
+}
+
+/** Pad `text` with spaces on the right to a target *visible* width. */
+export function padEndVisible(text: string, targetVisibleWidth: number): string {
+  const pad = targetVisibleWidth - visibleLength(text)
+  return pad > 0 ? text + ' '.repeat(pad) : text
+}
