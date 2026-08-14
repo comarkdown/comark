@@ -1,6 +1,6 @@
 # Svelte Rendering Guide
 
-Complete guide for rendering Comark AST in Svelte 5 applications.
+Complete guide for rendering Markdown documents in Svelte 5 applications.
 
 ## Table of Contents
 
@@ -170,7 +170,7 @@ Use `import.meta.glob` when you want the manifest to cover every Svelte componen
 ```svelte
 <script lang="ts">
   import { MarkdownAsync } from '@comark/svelte/async'
-  import { pascalCase } from '@comark/svelte/utils'
+  import { pascalCase } from 'comark/utils'
 
   const modules = import.meta.glob('../lib/components/comark/*.svelte')
 
@@ -186,7 +186,7 @@ Use `import.meta.glob` when you want the manifest to cover every Svelte componen
 
 Omit the boundary `pending` snippet when you want SvelteKit SSR to wait and include the resolved lazy components in the initial HTML.
 
-Use eager/static components with `MarkdownParsed` when you need stable SSR without Svelte's experimental async support.
+Use eager/static components with `MarkdownDocument` when you need stable SSR without Svelte's experimental async support.
 
 ---
 

@@ -4,15 +4,73 @@ description: Extend Comark with plugins for syntax highlighting, emoji, table of
 navigation: false
 ---
 
-Comark's plugin system extends markdown functionality with specialized features. All plugins are part of the core `comark` package.
+Comark has two compatible extension layers. Comark plugins can transform source, tokens, the parsed document, or rendered output through typed lifecycle hooks. You can also reuse parser plugins written for markdown-it through Comark's markdown-exit foundation.
+
+All Comark plugins are part of the core `comark` package, while optional rendering dependencies are installed only when you use them.
+
+## Default plugins
+
+These plugins are **enabled by default** whenever you call `parseMarkdown()` or `createMarkdownParser()` (or a framework `<Markdown>` component). You do not need to install or register them.
+
+::card-group{cols="2"}
+  ::card{icon="i-lucide-file-spreadsheet" title="Frontmatter" to="/plugins/defaults/frontmatter"}
+  Parse a leading YAML frontmatter block into `tree.frontmatter`
+  ::
+
+  ::card{icon="i-lucide-code-xml" title="HTML" to="/plugins/defaults/html"}
+  Parse embedded HTML tags into Comark AST nodes
+  ::
+
+  ::card{icon="i-lucide-bell" title="Alerts" to="/plugins/defaults/alert"}
+  Transform GitHub-style `> [!NOTE]` blockquotes
+  ::
+
+  ::card{icon="i-lucide-check-square" title="Task List" to="/plugins/defaults/task-list"}
+  Interactive `[ ]` / `[x]` checkboxes
+  ::
+
+  ::card{icon="i-lucide-component" title="Components" to="/plugins/defaults/components"}
+  Block/inline components and spans (`::name`, `:name`, `[text]`)
+  ::
+
+  ::card{icon="i-lucide-tag" title="Attributes" to="/plugins/defaults/attributes"}
+  Inline attributes (`{props}` after tokens)
+  ::
+::
+
+### Disable default plugins
+
+Turn them all off with `registerDefaultPlugins: false`:
+
+```typescript
+import { parseMarkdown } from 'comark'
+
+// Plain markdown only — no components, attributes, HTML, alerts, or task lists
+const result = await parseMarkdown(content, {
+  registerDefaultPlugins: false,
+})
+```
+
+Opt back into specific defaults via `plugins`:
+
+```typescript
+import { parseMarkdown } from 'comark'
+import components from 'comark/plugins/components'
+import attributes from 'comark/plugins/attributes'
+
+const result = await parseMarkdown(content, {
+  registerDefaultPlugins: false,
+  plugins: [components(), attributes()],
+})
+```
+
+See also the [`registerDefaultPlugins` option](/reference/parse#options) on the Parse API.
 
 ## Plugins
 
-::card-group{cols="2"}
-  ::card{icon="i-lucide-bell" title="Alerts" to="/plugins/built-in/alert"}
-  Render GitHub-style alert blockquotes with icons and colors
-  ::
+Optional plugins you register via `plugins: [...]`.
 
+::card-group{cols="2"}
   ::card{icon="i-lucide-replace" title="Binding" to="/plugins/built-in/binding"}
   Interpolate frontmatter, runtime data, or parent props with `{{ path || default }}` shorthand
   ::
@@ -25,11 +83,11 @@ Comark's plugin system extends markdown functionality with specialized features.
   Convert emoji shortcodes like `:smile:` into emoji characters
   ::
 
-  ::card{icon="i-lucide-footprints" title="Footnotes" to="/plugins/built-in/emoji"}
+  ::card{icon="i-lucide-footprints" title="Footnotes" to="/plugins/built-in/footnotes"}
   Plugin for adding footnote references and definitions to your Comark documents.
   ::
 
-  ::card{icon="i-lucide-heading" title="Headings" to="/plugins/built-in/emoji"}
+  ::card{icon="i-lucide-heading" title="Headings" to="/plugins/built-in/headings"}
   Plugin for extracting the page title and description from document content.
   ::
 
@@ -57,12 +115,12 @@ Comark's plugin system extends markdown functionality with specialized features.
   Extract content summaries using `<!-- more -->` delimiter
   ::
 
-  ::card{icon="i-lucide-code" title="Syntax Highlighting" to="/plugins/built-in/syntax-highlight"}
+  ::card{icon="i-lucide-code" title="Shiki" to="/plugins/built-in/shiki"}
   Beautiful code syntax highlighting using Shiki with multi-theme support
   ::
 
-  ::card{icon="i-lucide-check-square" title="Task List" to="/plugins/built-in/task-list"}
-  Render interactive checkboxes from `[ ]` and `[x]` list syntax
+  ::card{icon="i-lucide-zap" title="Rangi" to="/plugins/built-in/rangi"}
+  Lightweight highlighting via rangi (~13kB all-in, dual themes)
   ::
 
   ::card{icon="i-lucide-list" title="Table of Contents" to="/plugins/built-in/toc"}
@@ -79,7 +137,7 @@ Comark's plugin system extends markdown functionality with specialized features.
   ::
 
   ::card{icon="i-lucide-git-branch" title="AST API" to="/plugins/custom/ast-api"}
-  Traverse and transform the ComarkTree AST using the visit() utility
+  Traverse and transform the MarkdownDocument AST using the visit() utility
   ::
 
   ::card{icon="i-simple-icons-markdown" title="Markdown-it Plugins" to="/plugins/custom/markdown-it"}
@@ -89,16 +147,16 @@ Comark's plugin system extends markdown functionality with specialized features.
 
 ## Use Plugins
 
-Pass plugins to `parse()` or the `<Markdown>` component:
+Pass plugins to `parseMarkdown()` or the `<Markdown>` component:
 
 ::code-group
 
 ```typescript [Parse API]
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import emoji from 'comark/plugins/emoji'
 import toc from 'comark/plugins/toc'
 
-const result = await parse(content, {
+const result = await parseMarkdown(content, {
   plugins: [
     emoji(),
     toc({ depth: 3 })

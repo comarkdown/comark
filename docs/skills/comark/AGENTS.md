@@ -177,23 +177,22 @@ export class ChatComponent {
 Use `@comark/ansi` to render LLM markdown output in terminal-based agents:
 
 ```typescript
-import { log } from '@comark/ansi'
+import { writeAnsi } from '@comark/ansi'
 
 // Print a complete LLM response to stdout with ANSI styling
-await log(llmResponse)
+await writeAnsi(llmResponse)
 ```
 
-For streaming terminal output, use `createLog` with a custom `write` function:
+For repeated terminal output, use `createAnsiWriter` with a custom `writer` function:
 
 ```typescript
-import { createLog } from '@comark/ansi'
+import { createAnsiWriter } from '@comark/ansi'
 
-const logStream = createLog({
-  write: (s) => process.stdout.write(s),
+const writeMarkdown = createAnsiWriter({
+  writer: (output) => process.stdout.write(output),
 })
 
-// Call after each chunk to show partial output
-await logStream(partialMarkdown)
+await writeMarkdown(markdown)
 ```
 
 ---
@@ -248,9 +247,10 @@ Syntax highlighting works during streaming: each re-parse will highlight newly c
 ```vue
 <script setup lang="ts">
 import { Markdown } from '@comark/vue'
-import highlight from '@comark/vue/plugins/highlight'
+import shiki from '@comark/vue/plugins/shiki'
+import githubDark from '@shikijs/themes/github-dark'
 
-const plugins = [highlight({ themes: { light: 'github-dark', dark: 'github-dark' } })]
+const plugins = [shiki({ themes: { light: githubDark, dark: githubDark } })]
 </script>
 
 <template>
@@ -262,9 +262,10 @@ const plugins = [highlight({ themes: { light: 'github-dark', dark: 'github-dark'
 
 ```tsx
 import { Markdown } from '@comark/react'
-import highlight from '@comark/react/plugins/highlight'
+import shiki from '@comark/react/plugins/shiki'
+import githubDark from '@shikijs/themes/github-dark'
 
-const plugins = [highlight({ themes: { light: 'github-dark', dark: 'github-dark' } })]
+const plugins = [shiki({ themes: { light: githubDark, dark: githubDark } })]
 
 export default function Chat({ content, streaming }) {
   return (
@@ -282,17 +283,18 @@ export default function Chat({ content, streaming }) {
 Pre-configure a Comark component for your AI chat UI once, then reuse it everywhere:
 
 ```typescript
-// comark.ts
+// markdown.ts
 import { defineMarkdownComponent } from '@comark/vue'
-import highlight from '@comark/vue/plugins/highlight'
+import shiki from '@comark/vue/plugins/shiki'
 import math, { Math } from '@comark/vue/plugins/math'
+import githubDark from '@shikijs/themes/github-dark'
 import Alert from './components/Alert.vue'
 
-export const ChatComark = defineMarkdownComponent({
-  name: 'ChatComark',
+export const ChatMarkdown = defineMarkdownComponent({
+  name: 'ChatMarkdown',
   plugins: [
     math(),
-    highlight({ themes: { light: 'github-dark', dark: 'github-dark' } }),
+    shiki({ themes: { light: githubDark, dark: githubDark } }),
   ],
   components: { Math, alert: Alert },
   autoClose: true,
@@ -301,7 +303,7 @@ export const ChatComark = defineMarkdownComponent({
 
 ```vue
 <template>
-  <ChatComark :streaming="streaming" caret>{{ content }}</ChatComark>
+  <ChatMarkdown :streaming="streaming" caret>{{ content }}</ChatMarkdown>
 </template>
 ```
 

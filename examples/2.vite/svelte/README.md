@@ -19,4 +19,4 @@ defaultValue: src/App.svelte
 ::Browser{src="https://comark-svelte.vercel.app"}
 ::
 
-This example demonstrates the simplest way to use Comark with Svelte - use the `Comark` component and pass it markdown content. The component handles parsing and rendering automatically using Svelte 5's `$state` and `$effect` runes.
+This example demonstrates the simplest way to use Comark with Svelte - use the `Markdown` component and pass it markdown content. The component handles parsing and rendering automatically using Svelte 5's `$state` and `$effect` runes.

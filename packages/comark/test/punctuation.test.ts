@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { parse } from '../src/parse'
+import { parseMarkdown } from '../src/parse'
 import punctuation from '../src/plugins/punctuation'
 
 describe('punctuation plugin', () => {
   it('should convert straight double quotes to smart quotes', async () => {
     const md = 'She said "hello world" to him.'
-    const tree = await parse(md, { plugins: [punctuation()] })
+    const tree = await parseMarkdown(md, { plugins: [punctuation()] })
 
     const text = flattenText(tree.nodes)
     expect(text).toContain('\u201C') // left double quote
@@ -15,7 +15,7 @@ describe('punctuation plugin', () => {
 
   it('should convert straight single quotes to smart quotes', async () => {
     const md = "She said 'hello' to him."
-    const tree = await parse(md, { plugins: [punctuation()] })
+    const tree = await parseMarkdown(md, { plugins: [punctuation()] })
 
     const text = flattenText(tree.nodes)
     expect(text).toContain('\u2018') // left single quote
@@ -24,7 +24,7 @@ describe('punctuation plugin', () => {
 
   it('should handle apostrophes in contractions', async () => {
     const md = "don't won't can't"
-    const tree = await parse(md, { plugins: [punctuation()] })
+    const tree = await parseMarkdown(md, { plugins: [punctuation()] })
 
     const text = flattenText(tree.nodes)
     // Apostrophes should become right single quote
@@ -35,7 +35,7 @@ describe('punctuation plugin', () => {
 
   it('should convert -- to en-dash', async () => {
     const md = 'pages 10--20'
-    const tree = await parse(md, { plugins: [punctuation()] })
+    const tree = await parseMarkdown(md, { plugins: [punctuation()] })
 
     const text = flattenText(tree.nodes)
     expect(text).toContain('\u2013') // en-dash
@@ -44,7 +44,7 @@ describe('punctuation plugin', () => {
 
   it('should convert --- to em-dash', async () => {
     const md = 'hello --- world'
-    const tree = await parse(md, { plugins: [punctuation()] })
+    const tree = await parseMarkdown(md, { plugins: [punctuation()] })
 
     const text = flattenText(tree.nodes)
     expect(text).toContain('\u2014') // em-dash
@@ -52,7 +52,7 @@ describe('punctuation plugin', () => {
 
   it('should convert ... to ellipsis', async () => {
     const md = 'wait for it...'
-    const tree = await parse(md, { plugins: [punctuation()] })
+    const tree = await parseMarkdown(md, { plugins: [punctuation()] })
 
     const text = flattenText(tree.nodes)
     expect(text).toContain('\u2026') // ellipsis
@@ -61,7 +61,7 @@ describe('punctuation plugin', () => {
 
   it('should normalize multiple dots to ellipsis', async () => {
     const md = 'hmm..... really.......'
-    const tree = await parse(md, { plugins: [punctuation()] })
+    const tree = await parseMarkdown(md, { plugins: [punctuation()] })
 
     const text = flattenText(tree.nodes)
     // Any run of 2+ dots becomes ellipsis
@@ -70,7 +70,7 @@ describe('punctuation plugin', () => {
 
   it('should collapse ?.... to ?..', async () => {
     const md = 'what?.... really!....'
-    const tree = await parse(md, { plugins: [punctuation()] })
+    const tree = await parseMarkdown(md, { plugins: [punctuation()] })
 
     const text = flattenText(tree.nodes)
     expect(text).toContain('what?..') // ? followed by ..
@@ -79,7 +79,7 @@ describe('punctuation plugin', () => {
 
   it('should convert (c) to copyright symbol', async () => {
     const md = 'Copyright (c) 2024'
-    const tree = await parse(md, { plugins: [punctuation()] })
+    const tree = await parseMarkdown(md, { plugins: [punctuation()] })
 
     const text = flattenText(tree.nodes)
     expect(text).toContain('\u00A9')
@@ -87,7 +87,7 @@ describe('punctuation plugin', () => {
 
   it('should convert (r) to registered symbol', async () => {
     const md = 'Product(r) name'
-    const tree = await parse(md, { plugins: [punctuation()] })
+    const tree = await parseMarkdown(md, { plugins: [punctuation()] })
 
     const text = flattenText(tree.nodes)
     expect(text).toContain('\u00AE')
@@ -95,7 +95,7 @@ describe('punctuation plugin', () => {
 
   it('should convert (tm) to trademark symbol', async () => {
     const md = 'Brand(tm) value'
-    const tree = await parse(md, { plugins: [punctuation()] })
+    const tree = await parseMarkdown(md, { plugins: [punctuation()] })
 
     const text = flattenText(tree.nodes)
     expect(text).toContain('\u2122')
@@ -103,7 +103,7 @@ describe('punctuation plugin', () => {
 
   it('should convert +- to plus-minus symbol', async () => {
     const md = 'tolerance: +-5%'
-    const tree = await parse(md, { plugins: [punctuation()] })
+    const tree = await parseMarkdown(md, { plugins: [punctuation()] })
 
     const text = flattenText(tree.nodes)
     expect(text).toContain('\u00B1')
@@ -111,7 +111,7 @@ describe('punctuation plugin', () => {
 
   it('should NOT transform text inside code elements', async () => {
     const md = 'text `"hello" -- world...` more text'
-    const tree = await parse(md, { plugins: [punctuation()] })
+    const tree = await parseMarkdown(md, { plugins: [punctuation()] })
 
     // Find the code element
     const code = findNode(tree.nodes, 'code')
@@ -125,7 +125,7 @@ describe('punctuation plugin', () => {
 
   it('should NOT transform text inside pre elements', async () => {
     const md = '```\n"hello" -- world...\n```'
-    const tree = await parse(md, { plugins: [punctuation()] })
+    const tree = await parseMarkdown(md, { plugins: [punctuation()] })
 
     const pre = findNode(tree.nodes, 'pre')
     expect(pre).toBeTruthy()
@@ -136,7 +136,7 @@ describe('punctuation plugin', () => {
 
   it('should respect disabled options', async () => {
     const md = '"hello" -- world... (c)'
-    const tree = await parse(md, {
+    const tree = await parseMarkdown(md, {
       plugins: [punctuation({ quotes: false, dashes: false, ellipsis: false, symbols: false })],
     })
 
@@ -149,7 +149,7 @@ describe('punctuation plugin', () => {
 
   it('should normalize repeated question marks', async () => {
     const md = 'what???? really????'
-    const tree = await parse(md, { plugins: [punctuation()] })
+    const tree = await parseMarkdown(md, { plugins: [punctuation()] })
 
     const text = flattenText(tree.nodes)
     expect(text).toBe('what??? really???')
@@ -157,7 +157,7 @@ describe('punctuation plugin', () => {
 
   it('should normalize repeated exclamation marks', async () => {
     const md = 'wow!!!!! amazing!!!!!'
-    const tree = await parse(md, { plugins: [punctuation()] })
+    const tree = await parseMarkdown(md, { plugins: [punctuation()] })
 
     const text = flattenText(tree.nodes)
     expect(text).toBe('wow!!! amazing!!!')
@@ -165,7 +165,7 @@ describe('punctuation plugin', () => {
 
   it('should collapse repeated commas', async () => {
     const md = 'one,, two,,, three'
-    const tree = await parse(md, { plugins: [punctuation()] })
+    const tree = await parseMarkdown(md, { plugins: [punctuation()] })
 
     const text = flattenText(tree.nodes)
     expect(text).toBe('one, two, three')
@@ -173,7 +173,7 @@ describe('punctuation plugin', () => {
 
   it('should not normalize 3 or fewer repeated punctuation', async () => {
     const md = 'what??? really!!! ok'
-    const tree = await parse(md, { plugins: [punctuation()] })
+    const tree = await parseMarkdown(md, { plugins: [punctuation()] })
 
     const text = flattenText(tree.nodes)
     expect(text).toBe('what??? really!!! ok')
@@ -181,7 +181,7 @@ describe('punctuation plugin', () => {
 
   it('should support locale-aware quotes with string', async () => {
     const md = '"Hello" and \'world\''
-    const tree = await parse(md, { plugins: [punctuation({ quotes: '\u00AB\u00BB\u201E\u201C' })] })
+    const tree = await parseMarkdown(md, { plugins: [punctuation({ quotes: '\u00AB\u00BB\u201E\u201C' })] })
 
     const text = flattenText(tree.nodes)
     expect(text).toContain('\u00AB') // «
@@ -191,7 +191,7 @@ describe('punctuation plugin', () => {
 
   it('should support locale-aware quotes with array (French with nbsp)', async () => {
     const md = '"Hello"'
-    const tree = await parse(md, {
+    const tree = await parseMarkdown(md, {
       plugins: [punctuation({ quotes: ['\u00AB\u00A0', '\u00A0\u00BB', '\u2039\u00A0', '\u00A0\u203A'] })],
     })
 
@@ -202,7 +202,7 @@ describe('punctuation plugin', () => {
 
   it('should allow disabling normalize independently', async () => {
     const md = 'what???? test,, end'
-    const tree = await parse(md, { plugins: [punctuation({ normalize: false })] })
+    const tree = await parseMarkdown(md, { plugins: [punctuation({ normalize: false })] })
 
     const text = flattenText(tree.nodes)
     expect(text).toContain('????')
@@ -211,7 +211,7 @@ describe('punctuation plugin', () => {
 
   it('should handle mixed content with formatting', async () => {
     const md = '"Hello **bold** world"'
-    const tree = await parse(md, { plugins: [punctuation()] })
+    const tree = await parseMarkdown(md, { plugins: [punctuation()] })
 
     const text = flattenText(tree.nodes)
     expect(text).toContain('\u201C')

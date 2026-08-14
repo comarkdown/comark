@@ -1,12 +1,12 @@
-import { createRender } from '@comark/html'
-import highlight from '@comark/html/plugins/highlight'
+import { createHtmlRenderer } from '@comark/html'
+import shiki from '@comark/html/plugins/shiki'
 import math, { Math } from '@comark/html/plugins/math'
 import mermaid, { Mermaid } from '@comark/html/plugins/mermaid'
 import katexCss from 'katex/dist/katex.min.css?raw'
 import previewCss from './preview.css?raw'
 
-const render = createRender({
-  plugins: [highlight(), math(), mermaid()],
+const renderHtml = createHtmlRenderer({
+  plugins: [shiki(), math(), mermaid()],
   components: { Math, Mermaid },
 })
 
@@ -27,9 +27,9 @@ Links look like this: [comark.dev](https://comark.dev)
 ## Code Block
 
 \`\`\`typescript [main.ts] {1,3}
-import { render } from '@comark/html'
+import { renderHtml } from '@comark/html'
 
-const html = await render('# Hello World')
+const html = await renderHtml('# Hello World')
 document.body.innerHTML = html
 \`\`\`
 
@@ -109,7 +109,7 @@ _Edit the markdown on the left to see live updates._
 `
 
 async function updatePreview(markdown: string) {
-  const html = await render(markdown)
+  const html = await renderHtml(markdown)
   const frame = document.getElementById('preview') as HTMLIFrameElement
   frame.srcdoc = `<!doctype html><html><head><meta charset="utf-8"><style>${katexCss}${previewCss}</style></head><body>${html}</body></html>`
 }

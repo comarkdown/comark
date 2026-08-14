@@ -9,7 +9,7 @@ seo:
 links:
   - label: Parse API
     icon: i-lucide-code
-    to: /api/parse
+    to: /reference/parse
     color: neutral
     variant: soft
 ---
@@ -94,10 +94,10 @@ world`
 ### With Parse API
 
 ```typescript [parse.ts]
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import breaks from 'comark/plugins/breaks'
 
-const result = await parse('Hello\nWorld', {
+const result = await parseMarkdown('Hello\nWorld', {
   plugins: [breaks()]
 })
 /**

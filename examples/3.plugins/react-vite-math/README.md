@@ -34,14 +34,14 @@ This example demonstrates how to use Comark with LaTeX math formulas in React:
 
 2. Import the math plugin, component, and KaTeX CSS:
    ```tsx
-   import { Comark } from '@comark/react'
+   import { MarkdownClient } from '@comark/react'
    import math, { Math } from '@comark/react/plugins/math'
    import 'katex/dist/katex.min.css'
    ```
 
-3. Pass the plugin and component to `Comark`:
+3. Pass the plugin and component to `MarkdownClient`:
    ```tsx
-   <Markdown
+   <MarkdownClient
      value={content}
      components={{ Math }}
      plugins={[math()]}

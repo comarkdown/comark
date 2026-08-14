@@ -4,6 +4,7 @@
     "lib": ["esnext", "DOM", "DOM.Iterable"],
     "module": "esnext",
     "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
     "strict": true,
     "skipLibCheck": true,
     "noEmit": true,

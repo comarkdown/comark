@@ -1,9 +1,9 @@
 import React from 'react'
-import { parse } from 'comark'
-import type { ParseOptions } from 'comark'
-import { MarkdownParsed } from './MarkdownParsed.tsx'
+import { parseMarkdown } from 'comark'
+import type { MarkdownDocument as MarkdownDocumentType, ParserOptions } from 'comark'
+import { isMarkdownDocument } from 'comark/utils'
+import { MarkdownDocument } from './MarkdownDocument.tsx'
 import { MarkdownClient } from './MarkdownClient.tsx'
-import { warnDeprecated } from '../internal/deprecation.ts'
 
 export interface MarkdownProps {
   /**
@@ -12,25 +12,19 @@ export interface MarkdownProps {
   children?: React.ReactNode
 
   /**
-   * The markdown content to parse and render
+   * The markdown content to parse and render, or a pre-parsed MarkdownDocument
    */
-  value?: string
-
-  /**
-   * The markdown content to parse and render
-   * @deprecated Use `value` instead
-   */
-  markdown?: string
+  value?: string | MarkdownDocumentType
 
   /**
    * Parser options (excluding plugins)
    */
-  options?: Exclude<ParseOptions, 'plugins'>
+  options?: Exclude<ParserOptions, 'plugins'>
 
   /**
    * Additional plugins to use
    */
-  plugins?: ParseOptions['plugins']
+  plugins?: ParserOptions['plugins']
 
   /**
    * Custom component mappings for element tags
@@ -46,7 +40,7 @@ export interface MarkdownProps {
   componentsManifest?: (name: string) => Promise<{ default: React.ComponentType<any> }>
 
   /**
-   * Strip wrapper tags from the top level of the tree — shorthand for
+   * Strip wrapper tags from the top level of the document — shorthand for
    * `options.unwrap`. `true` unwraps `<p>` (single-line rendering); a
    * space-separated string or array unwraps the listed tags. Useful for inline
    * usage like `<button><Markdown value={text} unwrap /></button>`.
@@ -60,8 +54,8 @@ export interface MarkdownProps {
   streaming?: boolean
 
   /**
-   * If caret is true, a caret will be appended to the last text node in the tree
-   * If caret is an object, it will be appended to the last text node in the tree with the given class
+   * If caret is true, a caret will be appended to the document's last text node
+   * If caret is an object, it will be appended with the given class
    */
   caret?: boolean | { class: string }
 
@@ -111,7 +105,6 @@ export interface MarkdownProps {
 export async function Markdown({
   children,
   value,
-  markdown,
   options = {},
   plugins = [],
   unwrap = false,
@@ -122,10 +115,22 @@ export async function Markdown({
   data,
   className,
 }: MarkdownProps) {
-  if (markdown !== undefined && value === undefined) {
-    warnDeprecated('markdown (prop)', 'value')
+  // Pre-parsed document — skip parsing and render directly
+  if (isMarkdownDocument(value)) {
+    return (
+      <MarkdownDocument
+        value={value}
+        components={customComponents}
+        componentsManifest={componentsManifest}
+        streaming={streaming}
+        className={className}
+        caret={caret}
+        data={data}
+      />
+    )
   }
-  const source = children ? String(children) : (value ?? markdown ?? '')
+
+  const source = children ? String(children) : ((value as string | undefined) ?? '')
   // `unwrap` prop is a shorthand for the `unwrap` parse option; an explicit
   // `options.unwrap` still wins when the prop is left at its default.
   const parseOptions = unwrap ? { ...options, unwrap } : options
@@ -146,10 +151,10 @@ export async function Markdown({
     )
   }
 
-  const parsed = await parse(source, { ...parseOptions, plugins })
+  const parsed = await parseMarkdown(source, { ...parseOptions, plugins })
 
   return (
-    <MarkdownParsed
+    <MarkdownDocument
       value={parsed}
       components={customComponents}
       componentsManifest={componentsManifest}

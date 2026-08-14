@@ -1,6 +1,6 @@
 # Vue Rendering Guide
 
-Complete guide for rendering Comark AST in Vue applications.
+Complete guide for rendering Markdown documents in Vue applications.
 
 ## Table of Contents
 
@@ -353,7 +353,7 @@ const components = {
 
 ## Error Handling
 
-The `MarkdownParsed` component has built-in error capture via Vue's `onErrorCaptured` hook. Component rendering errors are caught automatically without crashing the application. You can also use Vue's native `onErrorCaptured` in a parent component to handle errors:
+The `MarkdownDocument` component has built-in error capture via Vue's `onErrorCaptured` hook. Component rendering errors are caught automatically without crashing the application. You can also use Vue's native `onErrorCaptured` in a parent component to handle errors:
 
 ```vue
 <template>

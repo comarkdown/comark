@@ -1,6 +1,6 @@
 {
   "name": "@comark/ansi",
-  "version": "0.5.1",
+  "version": "0.6.2",
   "description": "ANSI terminal renderer for Comark. Render Markdown with components as styled terminal output for CLIs.",
   "keywords": [
     "ansi",

@@ -6,15 +6,16 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Type,
+  inject,
 } from '@angular/core'
-import { createSerializedParse } from 'comark'
-import type { ParseOptions, ComarkTree } from 'comark'
-import { MarkdownParsed } from './markdown-parsed.component.ts'
-import { warnDeprecated } from '../internal/deprecation.ts'
+import { createSerializedMarkdownParser } from 'comark'
+import type { ParserOptions, MarkdownDocument as MarkdownDocumentType } from 'comark'
+import { isMarkdownDocument } from 'comark/utils'
+import { MarkdownDocument } from './markdown-document.component.ts'
 
 /**
  * High-level Markdown component that accepts raw markdown, parses it,
- * and renders the resulting AST.
+ * and renders the resulting document.
  *
  * @example
  * ```html
@@ -24,12 +25,12 @@ import { warnDeprecated } from '../internal/deprecation.ts'
 @Component({
   selector: 'comark-markdown',
   standalone: true,
-  imports: [MarkdownParsed],
+  imports: [MarkdownDocument],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    @if (tree) {
-      <comark-markdown-parsed
-        [value]="tree"
+    @if (document) {
+      <comark-markdown-document
+        [value]="document"
         [components]="components"
         [streaming]="streaming"
         [caret]="caret"
@@ -39,23 +40,17 @@ import { warnDeprecated } from '../internal/deprecation.ts'
   `,
 })
 export class Markdown implements OnChanges {
-  /** The markdown content to parse and render */
-  @Input() value?: string
-
-  /**
-   * The markdown content to parse and render
-   * @deprecated Use `value` instead
-   */
-  @Input() markdown?: string
+  /** The markdown content to parse and render, or a pre-parsed MarkdownDocument */
+  @Input() value?: string | MarkdownDocumentType
 
   /** Parser options (excluding plugins) */
-  @Input() options: Exclude<ParseOptions, 'plugins'> = {}
+  @Input() options: Exclude<ParserOptions, 'plugins'> = {}
 
   /** Additional plugins to use */
-  @Input() plugins: ParseOptions['plugins'] = []
+  @Input() plugins: ParserOptions['plugins'] = []
 
   /**
-   * Strip wrapper tags from the top level of the tree — shorthand for
+   * Strip wrapper tags from the top level of the document — shorthand for
    * `options.unwrap`. `true` unwraps `<p>`; a space-separated string or array
    * unwraps the listed tags.
    */
@@ -76,18 +71,15 @@ export class Markdown implements OnChanges {
   /** Additional data to pass to the renderer for :binding resolution */
   @Input() data: Record<string, unknown> = {}
 
-  tree: ComarkTree | null = null
+  document: MarkdownDocumentType | null = null
 
-  private serializedParse = createSerializedParse({})
+  private serializedParse = createSerializedMarkdownParser({})
 
-  constructor(private cdr: ChangeDetectorRef) {}
+  private cdr = inject(ChangeDetectorRef)
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['markdown'] && this.markdown !== undefined && this.value === undefined) {
-      warnDeprecated('markdown (input)', 'value')
-    }
     if (changes['options'] || changes['plugins'] || changes['unwrap']) {
-      this.serializedParse = createSerializedParse({
+      this.serializedParse = createSerializedMarkdownParser({
         ...this.options,
         ...(this.unwrap ? { unwrap: this.unwrap } : {}),
         plugins: this.plugins,
@@ -95,7 +87,6 @@ export class Markdown implements OnChanges {
     }
     if (
       changes['value'] ||
-      changes['markdown'] ||
       changes['options'] ||
       changes['plugins'] ||
       changes['unwrap'] ||
@@ -107,44 +98,22 @@ export class Markdown implements OnChanges {
   }
 
   private parseMarkdown(): void {
-    let source = this.value ?? this.markdown ?? ''
+    // Pre-parsed document — skip parsing and render directly
+    if (isMarkdownDocument(this.value)) {
+      this.document = this.value
+      this.cdr.markForCheck()
+      return
+    }
+
+    let source = (this.value as string | undefined) ?? ''
     if (this.summary) {
       source = source.split('<!-- more -->')[0] || ''
     }
     source = source.trim()
 
     this.serializedParse(source, { streaming: this.streaming }).then((result) => {
-      this.tree = result
+      this.document = result
       this.cdr.markForCheck()
     })
-  }
-}
-
-/**
- * @deprecated Use `Markdown` instead — same component, renamed to describe
- * what it renders. `ComarkComponent` (selector `comark`) will be removed in
- * a future major version.
- */
-@Component({
-  selector: 'comark',
-  standalone: true,
-  imports: [MarkdownParsed],
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    @if (tree) {
-      <comark-markdown-parsed
-        [value]="tree"
-        [components]="components"
-        [streaming]="streaming"
-        [caret]="caret"
-        [data]="data"
-      />
-    }
-  `,
-})
-export class ComarkComponent extends Markdown {
-  override ngOnChanges(changes: SimpleChanges): void {
-    warnDeprecated('ComarkComponent (<comark>)', 'Markdown (<comark-markdown>)')
-    super.ngOnChanges(changes)
   }
 }

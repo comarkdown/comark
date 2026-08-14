@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
-import { parse } from '@comark/react/parse'
-import highlight from '@comark/react/plugins/highlight'
-import { MarkdownParsed } from '@comark/react'
-import type { ComarkTree } from '@comark/react'
+import { parseMarkdown } from 'comark'
+import shiki from '@comark/react/plugins/shiki'
+import { MarkdownDocument } from '@comark/react'
+import type { MarkdownDocument as Document } from '@comark/react'
 import Alert from '../components/Alert'
 
 const markdown = `
@@ -143,7 +143,7 @@ Outer info alert.
 
 ## Frontmatter
 
-Documents can declare YAML frontmatter at the top (before any content). Access it via \`tree.frontmatter\` when using \`MarkdownParsed\`.
+Documents can declare YAML frontmatter at the top (before any content). Access it via \`tree.frontmatter\` when using \`MarkdownDocument\`.
 
 ---
 
@@ -157,16 +157,16 @@ Text before the comment and text after the comment both render normally.
 `
 
 export default function Syntax() {
-  const [tree, setTree] = useState<ComarkTree | null>(null)
+  const [tree, setTree] = useState<Document | null>(null)
 
   useEffect(() => {
-    parse(markdown, { plugins: [highlight()] }).then(setTree)
+    parseMarkdown(markdown, { plugins: [shiki()] }).then(setTree)
   }, [])
 
   if (!tree) return null
 
   return (
-    <MarkdownParsed
+    <MarkdownDocument
       value={tree}
       components={{ Alert }}
     />

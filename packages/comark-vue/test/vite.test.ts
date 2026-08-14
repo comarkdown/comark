@@ -19,6 +19,7 @@ describe('@comark/vue vite plugin', () => {
     const plugin = comark()
     const vueOptions: Record<string, any> = {}
 
+    // @ts-expect-error -- configResolved is not callable
     plugin.configResolved?.({
       root: '/repo',
       plugins: [
@@ -51,6 +52,7 @@ describe('@comark/vue vite plugin', () => {
     const run = transform(node, context)
     run?.()
 
+    // @ts-expect-error -- node.codegenNode is not defined
     expect(node.codegenNode.callee).toBe('_renderComarkSlot')
     expect(context.imports).toHaveLength(1)
     expect(context.imports[0]).toMatchObject({

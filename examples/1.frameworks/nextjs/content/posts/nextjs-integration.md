@@ -12,31 +12,32 @@ This example uses Next.js App Router with Comark as the Markdown renderer.
 Instead of using the typical `gray-matter` + `remark` + `rehype` pipeline, we use Comark's framework-agnostic API:
 
 1. **Read markdown files** — Load `.md` files from the `content/posts/` directory
-2. **Parse with Comark** — Call `parse()` to build the AST and extract frontmatter
+2. **Parse with Comark** — Call `parseMarkdown()` to build the AST and extract frontmatter
 3. **Static generation** — Use `generateStaticParams` for full SSG
-4. **Render with React** — Use `MarkdownParsed` from `@comark/react` with custom components
+4. **Render with React** — Use `MarkdownDocument` from `@comark/react` with custom components
 
 ```ts
-import { parse } from 'comark'
-import { MarkdownParsed } from '@comark/react'
-import highlight from 'comark/plugins/highlight'
+import { parseMarkdown } from 'comark'
+import { MarkdownDocument } from '@comark/react'
+import shiki from 'comark/plugins/shiki'
 import Alert from '@/components/Alert'
+import CodeBlock from '@/components/CodeBlock'
 
-const tree = await parse(content, {
-  plugins: [highlight()],
+const tree = await parseMarkdown(content, {
+  plugins: [shiki()],
 })
 
 // In your Server Component:
-// <MarkdownParsed value={tree} components={{ Alert }} />
+// <MarkdownDocument value={tree} components={{ Alert, pre: CodeBlock }} />
 ```
 
 ::alert{type="info"}
-Since Next.js Server Components run on the server, Comark's `parse()` is called at build time — zero JavaScript is sent to the client.
+Since Next.js Server Components run on the server, Comark's `parseMarkdown()` is called at build time — zero JavaScript is sent to the client.
 ::
 
 ## Custom components
 
-You can register any number of custom components. Each one receives props and children from the Comark AST:
+You can register any number of custom components. Each one receives props and children from the Comark AST. This example maps `CodeBlock` to `pre` to add a copy button while keeping source extraction on the server.
 
 ```tsx
 export default function Alert({ type = 'info', children }) {

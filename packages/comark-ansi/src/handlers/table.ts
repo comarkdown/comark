@@ -1,38 +1,38 @@
 import type { NodeHandler, State } from 'comark/render'
-import type { ComarkElement, ComarkNode } from 'comark'
-import { DIM, BOLD, RESET } from '../utils/escape.ts'
+import type { ElementNode, Node } from 'comark'
+import { DIM, BOLD, RESET, padEndVisible, visibleLength } from '../utils/escape.ts'
 
-async function getCellText(cell: ComarkNode, state: State): Promise<string> {
+async function getCellText(cell: Node, state: State): Promise<string> {
   if (typeof cell === 'string') return cell
   const [, , ...children] = cell
   let result = ''
   for (const child of children) {
-    result += typeof child === 'string' ? child : await state.one(child, state, cell as ComarkElement)
+    result += typeof child === 'string' ? child : await state.one(child, state, cell as ElementNode)
   }
   return result.trim()
 }
 
-function getRows(node: ComarkNode): ComarkElement[] {
+function getRows(node: Node): ElementNode[] {
   if (typeof node === 'string') return []
   const [tag, , ...children] = node
-  if (tag === 'tr') return [node as ComarkElement]
+  if (tag === 'tr') return [node as ElementNode]
   if (tag === 'thead' || tag === 'tbody') {
-    return children.filter((c) => typeof c !== 'string' && c[0] === 'tr') as ComarkElement[]
+    return children.filter((c) => typeof c !== 'string' && c[0] === 'tr') as ElementNode[]
   }
   return []
 }
 
-function getCells(row: ComarkElement): ComarkElement[] {
-  return (row.slice(2) as ComarkNode[]).filter(
+function getCells(row: ElementNode): ElementNode[] {
+  return (row.slice(2) as Node[]).filter(
     (c) => typeof c !== 'string' && (c[0] === 'th' || c[0] === 'td')
-  ) as ComarkElement[]
+  ) as ElementNode[]
 }
 
 export const table: NodeHandler = async (node, state) => {
   const [, , ...children] = node
 
-  let headerRows: ComarkElement[] = []
-  let bodyRows: ComarkElement[] = []
+  let headerRows: ElementNode[] = []
+  let bodyRows: ElementNode[] = []
 
   for (const child of children) {
     if (typeof child === 'string') continue
@@ -52,14 +52,15 @@ export const table: NodeHandler = async (node, state) => {
   for (const c of headerCells) {
     headers.push(await getCellText(c, state))
   }
-  const colWidths = headers.map((h) => Math.max(3, h.length))
+  // Widths are visible terminal columns (ANSI escapes do not count).
+  const colWidths = headers.map((h) => Math.max(3, visibleLength(h)))
 
   for (const row of bodyRows) {
     const cells = getCells(row)
     for (let i = 0; i < cells.length; i++) {
       if (i < colWidths.length) {
         const text = await getCellText(cells[i], state)
-        colWidths[i] = Math.max(colWidths[i], text.length)
+        colWidths[i] = Math.max(colWidths[i], visibleLength(text))
       }
     }
   }
@@ -73,7 +74,7 @@ export const table: NodeHandler = async (node, state) => {
   const botBorder = sep('└', '┴', '┘', '─')
 
   const fmtRow = (cells: string[], bold = false) => {
-    const cols = cells.map((c, i) => ' ' + c.padEnd(colWidths[i]) + ' ')
+    const cols = cells.map((c, i) => ' ' + padEndVisible(c, colWidths[i]) + ' ')
     if (colors && bold) return '│' + cols.map((c) => BOLD + c + RESET).join('│') + '│'
     if (colors) return DIM + '│' + RESET + cols.join(DIM + '│' + RESET) + DIM + '│' + RESET
     return '│' + cols.join('│') + '│'
@@ -87,7 +88,7 @@ export const table: NodeHandler = async (node, state) => {
     const cells = getCells(row)
     const contents: string[] = []
     for (let i = 0; i < colWidths.length; i++) {
-      contents.push(await getCellText(cells[i] ?? (['td', {}] as ComarkElement), state))
+      contents.push(await getCellText(cells[i] ?? (['td', {}] as ElementNode), state))
     }
     lines.push(colors ? DIM + midBorder + RESET : midBorder)
     lines.push(fmtRow(contents))

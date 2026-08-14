@@ -8,7 +8,7 @@ navigation:
 links:
   - label: Parse API
     icon: i-lucide-file-code
-    to: /api/parse
+    to: /reference/parse
     color: neutral
     variant: soft
   - label: Plugins
@@ -35,10 +35,10 @@ import 'katex/dist/katex.min.css'
 ## Usage
 
 ```typescript
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import math from 'comark/plugins/math'
 
-const result = await parse('Inline $x^2$ and display $$E = mc^2$$', {
+const result = await parseMarkdown('Inline $x^2$ and display $$E = mc^2$$', {
   plugins: [math()]
 })
 ```

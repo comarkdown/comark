@@ -1,9 +1,10 @@
 import { bench, run, barplot, group } from 'mitata'
 import MarkdownIt from 'markdown-it'
 import MarkdownExit from 'markdown-exit'
-import { markdownItComark } from 'comark/plugins/syntax'
-import { createParse } from 'comark'
-import { renderHTML } from '../packages/comark-html/src/index.ts'
+import { markdownItComponents } from 'comark/plugins/components'
+import { markdownItAttributes } from 'comark/plugins/attributes'
+import { createMarkdownParser } from 'comark'
+import { renderHtmlFromDocument } from '../packages/comark-html/src/index.ts'
 
 // Sample markdown content to test with
 const sampleMarkdown = `---
@@ -62,7 +63,8 @@ const markdownIt = new MarkdownIt({
   linkify: true,
 })
   .enable(['table', 'strikethrough'])
-  .use(markdownItComark)
+  .use(markdownItComponents)
+  .use(markdownItAttributes)
 
 // Initialize markdown-exit with MDC plugin
 const markdownExit = new MarkdownExit({
@@ -70,11 +72,12 @@ const markdownExit = new MarkdownExit({
   linkify: true,
 })
   .enable(['table', 'strikethrough'])
-  .use(markdownItComark)
+  .use(markdownItComponents)
+  .use(markdownItAttributes)
 
-const comark = createParse()
-const comarkNoClose = createParse({ autoClose: false })
-const comarkStreaming = createParse()
+const comark = createMarkdownParser()
+const comarkNoClose = createMarkdownParser({ autoClose: false })
+const comarkStreaming = createMarkdownParser()
 
 barplot(() => {
   group('render', () => {
@@ -88,20 +91,20 @@ barplot(() => {
       markdownExit.render(sampleMarkdown)
     })
 
-    // Benchmark: comark parse + renderHTML
-    bench('comark parse + renderHTML', async () => {
-      const tree = await comark(sampleMarkdown)
-      renderHTML(tree)
+    // Benchmark: comark parse + renderHtmlFromDocument
+    bench('comark parse + renderHtmlFromDocument', async () => {
+      const doc = await comark(sampleMarkdown)
+      renderHtmlFromDocument(doc)
     })
 
     bench('comark parse no close', async () => {
-      const tree = await comarkNoClose(sampleMarkdown)
-      renderHTML(tree)
+      const doc = await comarkNoClose(sampleMarkdown)
+      renderHtmlFromDocument(doc)
     })
 
     bench('comark parse streaming', async () => {
-      const tree = await comarkStreaming(sampleMarkdown, { streaming: true })
-      renderHTML(tree)
+      const doc = await comarkStreaming(sampleMarkdown, { streaming: true })
+      renderHtmlFromDocument(doc)
     })
   })
 })

@@ -1,13 +1,8 @@
 import { pascalCase } from 'scule'
-import { localComponents, localComponentLoaders } from '#content/components'
 
 // Define component imports for the docs app
 const components: Record<string, () => Promise<unknown>> = {
   Playground: () => import('@/components/Playground.vue'),
-
-  // Streaming components
-  ComarkStream: () => import('@/components/ComarkStream.vue'),
-  MarkdownItStream: () => import('@/components/MarkdownItStream.vue'),
 
   // Nuxt UI page components used in playground examples (explicit imports to ensure bundle inclusion)
   Alert: () => import('@nuxt/ui/components/Alert.vue'),
@@ -67,14 +62,8 @@ export default function resolveComponent(name: string) {
 
   const pascalName = pascalCase(name)
 
-  // 1. Explicit local components
   const loader = components[name] || components[pascalName]
   if (loader) return loader()
-
-  // 2. Content components (custom playground components)
-  if (localComponents.includes(pascalName)) {
-    return (localComponentLoaders as Record<string, () => Promise<unknown>>)[pascalName]?.()
-  }
 
   return null
 }

@@ -1,4 +1,4 @@
-import type { ComarkNode, ComarkElement, ComarkElementAttributes, ConditionalNodeHandler } from 'comark'
+import type { Node, ElementNode, ElementNodeAttributes, ConditionalNodeHandler } from 'comark'
 import { defineComarkPlugin } from '../utils/helpers.ts'
 import { visit } from '../utils/index.ts'
 
@@ -31,7 +31,7 @@ const FOOTNOTE_DEF_RE = /^\[\^([^\s\]]+)\]:[ \t]?(.*)$/gm
  * Used as the visit() checker to avoid running the full extraction
  * on every node in the tree.
  */
-function maybeFootnoteRef(node: ComarkNode): boolean {
+function maybeFootnoteRef(node: Node): boolean {
   return Array.isArray(node) && node[0] === 'span' && node.length === 3 && typeof node[2] === 'string'
 }
 
@@ -40,7 +40,7 @@ function maybeFootnoteRef(node: ComarkNode): boolean {
  * The MDC parser converts [^label] into ['span', {}, '^label']
  * Returns the label string or null.
  */
-function isFootnoteRef(node: ComarkNode): string | null {
+function isFootnoteRef(node: Node): string | null {
   // Caller should pre-check with maybeFootnoteRef for fast rejection
   const attrs = node[1] as Record<string, any>
   // Check attrs has no keys other than '$' — avoid Object.keys() allocation
@@ -72,10 +72,10 @@ function isFootnoteRef(node: ComarkNode): string | null {
  *
  * @example
  * ```ts
- * import { parse } from 'comark'
+ * import { parseMarkdown } from 'comark'
  * import footnotes from 'comark/plugins/footnotes'
  *
- * const result = await parse('Hello[^1]\n\n[^1]: World', {
+ * const result = await parseMarkdown('Hello[^1]\n\n[^1]: World', {
  *   plugins: [footnotes()]
  * })
  * ```
@@ -152,7 +152,7 @@ export default defineComarkPlugin((config: FootnotesConfig = {}) => {
         return
       }
 
-      const footnoteItems: ComarkNode[] = []
+      const footnoteItems: Node[] = []
 
       for (const [refLabel] of refIndexMap) {
         const content = definitions.get(refLabel)!
@@ -166,7 +166,7 @@ export default defineComarkPlugin((config: FootnotesConfig = {}) => {
         ])
       }
 
-      const sectionChildren: ComarkNode[] = []
+      const sectionChildren: Node[] = []
       if (hr) {
         sectionChildren.push(['hr', {}])
       }
@@ -190,15 +190,15 @@ export default defineComarkPlugin((config: FootnotesConfig = {}) => {
  *
  * @example
  * ```ts
- * import { parse } from 'comark'
+ * import { parseMarkdown } from 'comark'
  * import { renderMarkdown } from 'comark/render'
  * import footnotes, { Footnote } from 'comark/plugins/footnotes'
  *
- * const tree = await parse('Hello[^1]\n\n[^1]: World', {
+ * const document = await parseMarkdown('Hello[^1]\n\n[^1]: World', {
  *   plugins: [footnotes()]
  * })
  *
- * const md = await renderMarkdown(tree, {
+ * const md = await renderMarkdown(document, {
  *   components: { footnotes: Footnote },
  * })
  * ```
@@ -209,19 +209,19 @@ export const Footnote: ConditionalNodeHandler = {
   },
   handler: (node) => {
     if (node[1].class === 'footnotes') {
-      const ol = node.find((n) => Array.isArray(n) && n[0] === 'ol') as ComarkElement
+      const ol = node.find((n) => Array.isArray(n) && n[0] === 'ol') as ElementNode
       if (!ol) return ''
       let result = ''
       for (let i = 2; i < ol.length; i++) {
-        const key = String(((ol[i] as ComarkElement)[1] as ComarkElementAttributes)?.id)?.replace('fn-', '')
-        const value = (ol[i] as ComarkElement)[2] as string
+        const key = String(((ol[i] as ElementNode)[1] as ElementNodeAttributes)?.id)?.replace('fn-', '')
+        const value = (ol[i] as ElementNode)[2] as string
         result += `[^${key}]: ${value}\n`
       }
       return result
     }
     if (node[1].class === 'footnote-ref') {
-      const link = node[2] as ComarkElement
-      const key = String((link[1] as ComarkElementAttributes)?.id)?.replace('fnref-', '')
+      const link = node[2] as ElementNode
+      const key = String((link[1] as ElementNodeAttributes)?.id)?.replace('fnref-', '')
       return `[^${key}]`
     }
     return ''

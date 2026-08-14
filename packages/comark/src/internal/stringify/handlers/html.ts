@@ -1,5 +1,5 @@
 import type { State } from 'comark/render'
-import type { ComarkElement } from 'comark'
+import type { ElementNode } from 'comark'
 import { htmlAttributes } from '../attributes.ts'
 import { indent } from '../../../utils/index.ts'
 
@@ -24,7 +24,7 @@ const blockTags = new Set([
   'th',
 ])
 
-export async function html(node: ComarkElement, state: State, parent?: ComarkElement) {
+export async function html(node: ElementNode, state: State, parent?: ElementNode) {
   const [tag, attr, ...children] = node
   const { $ = {}, ...rawAttributes } = attr
 
@@ -71,6 +71,9 @@ export async function html(node: ComarkElement, state: State, parent?: ComarkEle
     childrenContent.push(await state.one(child, state, node))
   }
 
+  // A blank line inside a raw-HTML element would terminate it on reparse
+  const childSeparator = state.context.html ? state.context.blockSeparator : oneLiner ? '' : '\n'
+
   let content = ''
   let isPrevBlock = true
   for (let i = 0; i < children.length; i++) {
@@ -81,13 +84,13 @@ export async function html(node: ComarkElement, state: State, parent?: ComarkEle
       (blockTags.has(String(child?.[0])) || (!inlineTags.has(String(child?.[0])) && !hasTextSibling))
 
     if (i > 0 && !isPrevBlock && isBlock) {
-      content += state.context.blockSeparator
+      content += childSeparator
     }
     content += childContent
     isPrevBlock = isBlock
 
     if (isBlock && i < children.length - 1) {
-      content += state.context.blockSeparator
+      content += childSeparator
     }
   }
 

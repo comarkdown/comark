@@ -1,19 +1,26 @@
 // #region Tree Utils
 
 import { decodeHTML } from 'entities'
-import type { ComarkNode, ComarkTree } from 'comark'
+import type { Node, MarkdownDocument } from 'comark'
 
-type VisitResult = ComarkNode | false | undefined | void
+type VisitResult = Node | false | undefined | void
 
 /**
- * Get the text content of a Comark node
+ * Check whether a value is a {@link MarkdownDocument} (or a bare `{ nodes }` document-like).
+ */
+export function isMarkdownDocument(value: unknown): value is MarkdownDocument {
+  return !!value && typeof value === 'object' && Array.isArray((value as MarkdownDocument).nodes)
+}
+
+/**
+ * Get the text content of a Markdown AST node
  *
- * @param node - The Comark node
+ * @param node - The node
  * @param options - The options
  * @param options.decodeUnicodeEntities - Whether to decode Unicode entities
  * @returns The text content
  */
-export function textContent(node: ComarkNode, options: { decodeUnicodeEntities?: boolean } = {}): string {
+export function textContent(node: Node, options: { decodeUnicodeEntities?: boolean } = {}): string {
   if (typeof node === 'string') {
     if (options.decodeUnicodeEntities) {
       return decodeHTML(node)
@@ -23,20 +30,16 @@ export function textContent(node: ComarkNode, options: { decodeUnicodeEntities?:
   let out = ''
   const len = node.length
   for (let i = 2; i < len; i++) {
-    out += textContent(node[i] as ComarkNode, options)
+    out += textContent(node[i] as Node, options)
   }
   return out
 }
 
 function* walkGenerator(
-  tree: ComarkTree,
-  checker: (node: ComarkNode) => boolean
-): Generator<ComarkNode, void, VisitResult> {
-  function* walk(
-    node: ComarkNode,
-    parent: ComarkNode | ComarkNode[],
-    index: number
-  ): Generator<ComarkNode, boolean, VisitResult> {
+  document: MarkdownDocument,
+  checker: (node: Node) => boolean
+): Generator<Node, void, VisitResult> {
+  function* walk(node: Node, parent: Node | Node[], index: number): Generator<Node, boolean, VisitResult> {
     let currentNode = node
 
     if (checker(node)) {
@@ -44,13 +47,13 @@ function* walkGenerator(
 
       if (res === false) {
         // remove the node from the parent
-        ;(parent as ComarkNode[]).splice(index, 1)
+        ;(parent as Node[]).splice(index, 1)
         return true // signal that node was removed
       }
 
       if (res !== undefined) {
-        ;(parent as ComarkNode[])[index] = res as ComarkNode
-        currentNode = res as ComarkNode
+        ;(parent as Node[])[index] = res as Node
+        currentNode = res as Node
       }
     }
 
@@ -58,7 +61,7 @@ function* walkGenerator(
       // Use a while loop to handle removals correctly - don't increment if node was removed
       let i = 2
       while (i < currentNode.length) {
-        const childRemoved = yield* walk(currentNode[i] as ComarkNode, currentNode, i)
+        const childRemoved = yield* walk(currentNode[i] as Node, currentNode, i)
         if (childRemoved) {
           // If removed, i stays the same (next node is now at this index)
           continue
@@ -72,8 +75,8 @@ function* walkGenerator(
 
   // Use a while loop to handle removals correctly - don't increment if node was removed
   let i = 0
-  while (i < tree.nodes.length) {
-    const removed = yield* walk(tree.nodes[i], tree.nodes, i)
+  while (i < document.nodes.length) {
+    const removed = yield* walk(document.nodes[i], document.nodes, i)
     if (removed) {
       // If removed, i stays the same (next node is now at this index)
       continue
@@ -83,19 +86,19 @@ function* walkGenerator(
 }
 
 /**
- * Visit a Comark tree and apply a visitor function to each node
+ * Visit a Markdown document and apply a visitor function to each node
  *
- * @param tree - The Comark tree
+ * @param document - The Markdown document
  * @param checker - A function that checks if a node should be visited
  * @param visitor - A function that visits a node
  */
 export function visit(
-  tree: ComarkTree,
-  checker: (node: ComarkNode) => boolean,
+  document: MarkdownDocument,
+  checker: (node: Node) => boolean,
   // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
-  visitor: (node: ComarkNode) => VisitResult
+  visitor: (node: Node) => VisitResult
 ) {
-  const iterator = walkGenerator(tree, checker)
+  const iterator = walkGenerator(document, checker)
   let step = iterator.next()
 
   while (!step.done) {
@@ -105,11 +108,11 @@ export function visit(
 }
 
 export async function visitAsync(
-  tree: ComarkTree,
-  checker: (node: ComarkNode) => boolean,
-  visitor: (node: ComarkNode) => Promise<VisitResult> | VisitResult
+  document: MarkdownDocument,
+  checker: (node: Node) => boolean,
+  visitor: (node: Node) => Promise<VisitResult> | VisitResult
 ): Promise<void> {
-  const iterator = walkGenerator(tree, checker)
+  const iterator = walkGenerator(document, checker)
   let step = iterator.next()
 
   while (!step.done) {

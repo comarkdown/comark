@@ -177,7 +177,7 @@ for (const pkg of packages) {
 
   console.log(`  ${pkg.name.padEnd(24)} ${changeLabel}  (${tagInfo})`)
 
-  if (changed) toRelease.push(pkg)
+  toRelease.push(pkg)
 }
 
 console.log()

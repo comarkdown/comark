@@ -18,7 +18,7 @@ Named snippets are forwarded through the lazy component resolver.
 export const stableMarkdown = `
 # Stable SvelteKit SSR
 
-This route parses markdown in \`+page.server.ts\` and renders the AST with \`<MarkdownParsed>\`.
+This route parses markdown in \`+page.server.ts\` and renders the AST with \`<MarkdownDocument>\`.
 
 ::alert{type="success"}
 Use this pattern when you want stable, non-experimental SSR.
@@ -28,6 +28,6 @@ Use this pattern when you want stable, non-experimental SSR.
 This card is resolved synchronously from an eager manifest, so it can render during SSR without Svelte's experimental async support.
 
 #footer
-The same \`#footer\` slot works with \`<MarkdownParsed>\` and an eager manifest.
+The same \`#footer\` slot works with \`<MarkdownDocument>\` and an eager manifest.
 ::
 `.trim()

@@ -13,11 +13,11 @@ The migration has two parts: **Core Package** (programmatic API) and **Nuxt Modu
 ## Quick Overview
 
 - **Package**: `@nuxtjs/mdc` → `comark` (core only) or `@comark/nuxt` (Nuxt module)
-- **Parse**: `parseMarkdown()` → `parse()` · factory: `createParse()` (sync, no await)
+- **Parse**: `parseMarkdown()` → `parseMarkdown()` · factory: `createMarkdownParser()` (sync, no await)
 - **Render**: `stringifyMarkdown()` → `renderMarkdown()` from `comark/render`
 - **AST**: object tree → compact tuples `['tag', props, ...children]`
-- **Result**: `result.body` / `result.data` → `tree.nodes` / `tree.frontmatter`
-- **Renderer**: `<MDCRenderer :body :data>` → `<MarkdownParsed :value>`
+- **Result**: `result.body` / `result.data` → `document.nodes` / `document.frontmatter`
+- **Renderer**: `<MDCRenderer :body :data>` → `<MarkdownDocument :value>`
 - **All-in-one**: `<MDC :value>` → `<Markdown :value>`
 - **Slots**: `<MDCSlot />` → native `<slot />`
 - **Plugins**: global `nuxt.config` → per-component `defineMarkdownComponent({ plugins })`
@@ -29,27 +29,27 @@ The migration has two parts: **Core Package** (programmatic API) and **Nuxt Modu
 
 | `@nuxtjs/mdc` | `comark` |
 |---|---|
-| `parseMarkdown(md, opts)` | `parse(md, opts)` from `comark` |
-| `createMarkdownParser(opts)` (async) | `createParse(opts)` (sync, no await) |
-| `stringifyMarkdown(body, data)` | `renderMarkdown(tree)` from `comark/render` |
-| `result.body` (`MDCRoot`) | `tree.nodes` (`ComarkNode[]`) |
-| `result.data` | `tree.frontmatter` |
-| `result.data.title` | `tree.frontmatter.title` |
-| `result.toc` | `tree.meta.toc` (requires `toc` plugin) |
-| `result.excerpt` | `tree.meta.summary` (requires `summary` plugin) |
+| `parseMarkdown(md, opts)` | `parseMarkdown(md, opts)` from `comark` |
+| `createMarkdownParser(opts)` (async) | `createMarkdownParser(opts)` (sync, no await) |
+| `stringifyMarkdown(body, data)` | `renderMarkdown(document)` from `comark/render` |
+| `result.body` (`MDCRoot`) | `document.nodes` (`Node[]`) |
+| `result.data` | `document.frontmatter` |
+| `result.data.title` | `document.frontmatter.title` |
+| `result.toc` | `document.meta.toc` (requires `toc` plugin) |
+| `result.excerpt` | `document.meta.summary` (requires `summary` plugin) |
 
 ### AST Format
 
 | `@nuxtjs/mdc` | `comark` |
 |---|---|
-| `{ type: 'root', children: MDCNode[] }` | `{ nodes: ComarkNode[], frontmatter: {}, meta: {} }` |
+| `{ type: 'root', children: MDCNode[] }` | `{ nodes: Node[], frontmatter: {}, meta: {} }` |
 | `{ type: 'element', tag: 'p', props: {}, children: [] }` | `['p', {}, ...children]` |
 | `{ type: 'text', value: 'hello' }` | `'hello'` (plain string) |
 
 ### Parse Options
 
 ```typescript
-// Before: MDCParseOptions
+// Before: MDCOptions
 {
   remark: { plugins: { /* record */ } },
   rehype: { options: {...}, plugins: { /* record */ } },
@@ -57,12 +57,12 @@ The migration has two parts: **Core Package** (programmatic API) and **Nuxt Modu
   toc: { depth: 3, searchDepth: 2 } | false,
 }
 
-// After: ParseOptions
+// After: ParserOptions
 {
   plugins: ComarkPlugin[],   // ordered array, not a record
   autoUnwrap: true,          // removes <p> from single-paragraph containers
   autoClose: true,           // completes incomplete syntax (useful for streaming)
-  html: true,                // parse embedded HTML tags
+  // HTML, components, attributes, alerts, task-list, frontmatter are on by default
 }
 ```
 
@@ -72,12 +72,12 @@ The `unified`/`remark`/`rehype` pipeline is replaced by Comark's own lighter plu
 
 | Feature | Before | After |
 |---|---|---|
-| Syntax highlighting | `rehypeHighlight` via `createMarkdownParser` | `highlight()` from `comark/plugins/highlight` |
+| Syntax highlighting | `rehypeHighlight` via `createMarkdownParser` | `shiki()` from `comark/plugins/shiki` |
 | Table of Contents | `parseMarkdown(md, { toc: { depth: 3 } })` | `toc({ depth: 3 })` plugin |
-| Excerpt / Summary | `result.excerpt` (built-in) | `summary()` plugin → `tree.meta.summary` |
+| Excerpt / Summary | `result.excerpt` (built-in) | `summary()` plugin → `document.meta.summary` |
 | Emoji | `remark-emoji` (enabled by default) | `emoji()` plugin (opt-in) |
 
-Available plugins: `comark/plugins/toc`, `comark/plugins/highlight`, `comark/plugins/emoji`, `comark/plugins/task-list`, `comark/plugins/summary`, `comark/plugins/security`, `comark/plugins/alert`, `comark/plugins/math`, `comark/plugins/mermaid`, `comark/plugins/punctuation`
+Available plugins: `comark/plugins/toc`, `comark/plugins/shiki`, `comark/plugins/emoji`, `comark/plugins/task-list`, `comark/plugins/summary`, `comark/plugins/security`, `comark/plugins/alert`, `comark/plugins/math`, `comark/plugins/mermaid`, `comark/plugins/punctuation`
 
 ## Nuxt Module
 
@@ -97,25 +97,25 @@ export default defineNuxtConfig({
 })
 ```
 
-`@comark/nuxt` auto-imports: `Markdown`, `MarkdownParsed`, `defineMarkdownComponent`, `defineMarkdownParsedComponent`.
+`@comark/nuxt` auto-imports: `Markdown`, `MarkdownDocument`, `defineMarkdownComponent`, `defineMarkdownDocumentComponent`.
 
 ### Components
 
 | `@nuxtjs/mdc` | `@comark/nuxt` |
 |---|---|
-| `<MDCRenderer :body :data :components>` | `<MarkdownParsed :value :components>` |
+| `<MDCRenderer :body :data :components>` | `<MarkdownDocument :value :components>` |
 | `<MDC :value :parser-options>` | `<Markdown :value :options>` or `<Markdown>{{ md }}</Markdown>` |
 | `<MDCSlot />` | `<slot />` |
 | `<MDCSlot unwrap="p" />` | `<slot unwrap="p" />` |
 | `<slot mdc-unwrap="p" />` | `<slot unwrap="p" />` |
 
-For a pre-parsed tree, use `<MarkdownParsed>` directly instead of `<Markdown>`.
+For a pre-parsed document, use `<MarkdownDocument>` directly instead of `<Markdown>`.
 
-#### `<MarkdownParsed>` props changes
+#### `<MarkdownDocument>` props changes
 
-| MDC `<MDCRenderer>` | Comark `<MarkdownParsed>` | Notes |
+| MDC `<MDCRenderer>` | Comark `<MarkdownDocument>` | Notes |
 |---|---|---|
-| `body` (`MDCRoot`) | `value` (`ComarkTree`) | Different AST shape |
+| `body` (`MDCRoot`) | `value` (`MarkdownDocument`) | Different AST shape |
 | `data` | — | Frontmatter is in `value.frontmatter` |
 | `tag` | — | Wrapper is always `<div class="comark-content">` |
 | `prose` | — | `Prose*` resolution is automatic |
@@ -141,12 +141,14 @@ Replaces global `mdc: { ... }` config. Define reusable components with their own
 
 ```typescript
 import { defineMarkdownComponent } from '@comark/vue'
-import highlight from 'comark/plugins/highlight'
+import shiki from 'comark/plugins/shiki'
 import toc from 'comark/plugins/toc'
+import githubLight from '@shikijs/themes/github-light'
+import githubDark from '@shikijs/themes/github-dark'
 
-export const ArticleComark = defineMarkdownComponent({
-  name: 'ArticleComark',
-  plugins: [highlight({ themes: { light: 'github-light', dark: 'github-dark' } }), toc()],
+export const ArticleMarkdown = defineMarkdownComponent({
+  name: 'ArticleMarkdown',
+  plugins: [shiki({ themes: { light: githubLight, dark: githubDark } }), toc()],
   components: { alert: CustomAlert },
 })
 ```
@@ -174,10 +176,10 @@ These are **only available with Nuxt UI**. Without it, use `::callout{icon="..."
 
 ## Common Pitfalls
 
-1. **`createParse` is sync**: no `await` needed (unlike `createMarkdownParser`)
+1. **`createMarkdownParser` is sync**: no `await` needed (unlike `createMarkdownParser`)
 2. **Attribute naming**: Comark uses `attrs.lang`, not `attrs.language`
-3. **Frontmatter**: stored in `tree.frontmatter`, not passed separately
-4. **`renderMarkdown` includes frontmatter**: reads `tree.frontmatter` automatically
+3. **Frontmatter**: stored in `document.frontmatter`, not passed separately
+4. **`renderMarkdown` includes frontmatter**: reads `document.frontmatter` automatically
 5. **No `unified` pipeline**: `mdc.config.ts` hooks (`pre`, `remark`, `rehype`, `post`) have no equivalent, use `ComarkPlugin` interface instead
 6. **Emoji is opt-in**: not enabled by default like in MDC's `remark-emoji`
 

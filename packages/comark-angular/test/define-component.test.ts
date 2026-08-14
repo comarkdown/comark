@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { defineMarkdownComponent, defineMarkdownParsedComponent } from '../src/define.ts'
+import { defineMarkdownComponent, defineMarkdownDocumentComponent } from '../src/define.ts'
 
 describe('defineMarkdownComponent', () => {
   it('returns a component class', () => {
@@ -43,28 +43,28 @@ describe('defineMarkdownComponent', () => {
   it('accepts parse options in config', () => {
     const Defined = defineMarkdownComponent({
       name: 'with-options',
-      html: true,
       autoClose: true,
+      linkify: true,
     })
     expect(Defined).toBeDefined()
   })
 })
 
-describe('defineMarkdownParsedComponent', () => {
+describe('defineMarkdownDocumentComponent', () => {
   it('returns a component class', () => {
-    const Defined = defineMarkdownParsedComponent({ name: 'test-renderer' })
+    const Defined = defineMarkdownDocumentComponent({ name: 'test-renderer' })
     expect(Defined).toBeDefined()
     expect(typeof Defined).toBe('function')
   })
 
   it('returns a component class with default config', () => {
-    const Defined = defineMarkdownParsedComponent()
+    const Defined = defineMarkdownDocumentComponent()
     expect(Defined).toBeDefined()
   })
 
   it('accepts components in config', () => {
     class FakeComponent {}
-    const Defined = defineMarkdownParsedComponent({
+    const Defined = defineMarkdownDocumentComponent({
       name: 'renderer-with-components',
       components: { Math: FakeComponent as any },
     })
@@ -72,7 +72,7 @@ describe('defineMarkdownParsedComponent', () => {
   })
 
   it('accepts class in config', () => {
-    const Defined = defineMarkdownParsedComponent({
+    const Defined = defineMarkdownDocumentComponent({
       name: 'renderer-with-class',
       class: 'prose',
     })

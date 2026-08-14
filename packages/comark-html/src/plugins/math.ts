@@ -1,4 +1,4 @@
-import type { ComarkElement } from 'comark'
+import type { ElementNode } from 'comark'
 import katex from 'katex'
 
 export * from 'comark/plugins/math'
@@ -12,15 +12,15 @@ export { default } from 'comark/plugins/math'
  * @example
  * ```typescript
  * import math, { Math } from '@comark/html/plugins/math'
- * import { createRender } from '@comark/html'
+ * import { createHtmlRenderer } from '@comark/html'
  *
- * const render = createRender({
+ * const renderHtml = createHtmlRenderer({
  *   plugins: [math()],
  *   components: { Math },
  * })
  * ```
  */
-export const Math = ([, attrs]: ComarkElement): string => {
+export const Math = ([, attrs]: ElementNode): string => {
   const content = String(attrs.content ?? '')
   const isInline = String(attrs.class ?? '').includes('inline')
 

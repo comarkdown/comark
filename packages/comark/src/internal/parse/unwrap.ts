@@ -1,4 +1,4 @@
-import type { ComarkElement, ComarkNode } from '../../types.ts'
+import type { ElementNode, Node } from '../../types.ts'
 
 /**
  * Normalize the `unwrap` option into an ordered list of tag names.
@@ -23,11 +23,11 @@ export function resolveUnwrapTags(unwrap: boolean | string | string[] | undefine
   return unwrap.filter(Boolean)
 }
 
-function isElement(node: ComarkNode): node is ComarkElement {
+function isElement(node: Node): node is ElementNode {
   return Array.isArray(node) && typeof node[0] === 'string'
 }
 
-function matchesTag(node: ComarkNode, tag: string): boolean {
+function matchesTag(node: Node, tag: string): boolean {
   return isElement(node) && (tag === '*' || node[0] === tag)
 }
 
@@ -37,16 +37,16 @@ function matchesTag(node: ComarkNode, tag: string): boolean {
  * replaced by their children), then the remaining tags are applied to the
  * result. Whitespace-only text nodes are dropped at each level.
  */
-function flatUnwrap(nodes: ComarkNode[], tags: string[]): ComarkNode[] {
+function flatUnwrap(nodes: Node[], tags: string[]): Node[] {
   if (tags.length === 0) return nodes
 
   const [head, ...rest] = tags
-  const result: ComarkNode[] = []
+  const result: Node[] = []
 
   for (const node of nodes) {
     // Unwrap the head tag: matching elements collapse to their children,
     // everything else passes through so the remaining tags still see it.
-    const unwrapped = matchesTag(node, head!) ? (node.slice(2) as ComarkNode[]) : [node]
+    const unwrapped = matchesTag(node, head!) ? (node.slice(2) as Node[]) : [node]
     for (const child of flatUnwrap(unwrapped, rest)) {
       result.push(child)
     }
@@ -65,13 +65,13 @@ function flatUnwrap(nodes: ComarkNode[], tags: string[]): ComarkNode[] {
  * @param tags - Ordered tag names (see {@link resolveUnwrapTags})
  * @returns A new node list with matching wrappers removed
  */
-export function applyUnwrap(nodes: ComarkNode[], tags: string[]): ComarkNode[] {
+export function applyUnwrap(nodes: Node[], tags: string[]): Node[] {
   if (tags.length === 0) return nodes
 
   const unwrapped = flatUnwrap(nodes, tags)
 
   // Merge adjacent text nodes into a single string (MDC's final reduce step).
-  const merged: ComarkNode[] = []
+  const merged: Node[] = []
   for (const node of unwrapped) {
     if (typeof node === 'string' && typeof merged[merged.length - 1] === 'string') {
       merged[merged.length - 1] = (merged[merged.length - 1] as string) + node

@@ -1,9 +1,10 @@
-import { defineMarkdownParsedComponent } from '@comark/vue'
-import { Math } from '@comark/vue/plugins/math'
-import { Mermaid } from '@comark/vue/plugins/mermaid'
-import { Binding } from '@comark/vue/plugins/binding'
+import { defineMarkdownDocumentComponent } from '@comark/vue'
+import { Math } from '@comark/nuxt/plugins/math'
+import 'katex/dist/katex.min.css'
+import { Mermaid } from '@comark/nuxt/plugins/mermaid'
+import { Binding } from '@comark/nuxt/plugins/binding'
 
-export default defineMarkdownParsedComponent({
+export default defineMarkdownDocumentComponent({
   name: 'ComarkPlaygroundRenderer',
   components: {
     Math,

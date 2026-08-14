@@ -36,6 +36,6 @@ useSeoMeta({
         </div>
       </div>
     </header>
-    <MarkdownParsed :value="post.tree" />
+    <MarkdownDocument :value="post.tree" />
   </article>
 </template>

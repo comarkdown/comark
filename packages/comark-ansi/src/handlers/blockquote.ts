@@ -1,5 +1,5 @@
 import type { NodeHandler } from 'comark/render'
-import type { ComarkNode } from 'comark'
+import type { Node } from 'comark'
 import { BOLD, DIM, RESET, BLUE, GREEN, MAGENTA, YELLOW, RED } from '../utils/escape.ts'
 
 type AlertType = 'NOTE' | 'TIP' | 'IMPORTANT' | 'WARNING' | 'CAUTION'
@@ -13,7 +13,7 @@ const ALERTS: Record<AlertType, { color: string; icon: string }> = {
 }
 
 export const blockquote: NodeHandler = async (node, state) => {
-  const children = node.slice(2) as ComarkNode[]
+  const children = node.slice(2) as Node[]
   const { colors } = state.context
 
   const as = node[1].as ? (String(node[1].as).toUpperCase() as AlertType) : null

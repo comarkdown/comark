@@ -8,7 +8,7 @@ navigation:
 links:
   - label: Parse API
     icon: i-lucide-file-code
-    to: /api/parse
+    to: /reference/parse
     color: neutral
     variant: soft
   - label: Plugins
@@ -27,10 +27,10 @@ The `comark/plugins/mermaid` plugin renders [Mermaid](https://mermaid.js.org/) d
 ## Usage
 
 ```typescript
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import mermaid from 'comark/plugins/mermaid'
 
-const result = await parse(content, {
+const result = await parseMarkdown(content, {
   plugins: [mermaid()]
 })
 ```

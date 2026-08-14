@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.6.2](https://github.com/comarkdown/comark/compare/@comark/react@0.6.1...@comark/react@0.6.2) (2026-08-07)
+
+## [0.6.1](https://github.com/comarkdown/comark/compare/@comark/react@0.6.0...@comark/react@0.6.1) (2026-08-06)
+
+### Features
+
+* add rangi plugin + rename highlight to shiki ([#332](https://github.com/comarkdown/comark/issues/332)) ([bb015e4](https://github.com/comarkdown/comark/commit/bb015e485cbeb10ccd16c54dae4262864b9cb59c))
+
+## [0.6.0](https://github.com/comarkdown/comark/compare/@comark/react@0.5.1...@comark/react@0.6.0) (2026-08-04)
+
+### Features
+
+* introduce `unwrap` feature in parser ([#275](https://github.com/comarkdown/comark/issues/275)) ([060dfa9](https://github.com/comarkdown/comark/commit/060dfa955c7d0467f278580ccc27fa315370ac2a))
+* rename components to `Markdown` and `MarkdownParsed` ([#313](https://github.com/comarkdown/comark/issues/313)) ([e6a6b60](https://github.com/comarkdown/comark/commit/e6a6b602fe658261b5f20862d0f0faa439bf425d))
+
 ## [0.5.1](https://github.com/comarkdown/comark/compare/@comark/react@0.5.0...@comark/react@0.5.1) (2026-07-14)
 
 ### Bug Fixes

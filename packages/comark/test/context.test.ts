@@ -1,8 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { createComarkContext } from '../src/context'
-import type { ComarkTree } from '../src/types'
+import type { MarkdownDocument } from '../src/types'
 
-function tree(nodes: ComarkTree['nodes']): ComarkTree {
+function tree(nodes: MarkdownDocument['nodes']): MarkdownDocument {
   return { nodes, frontmatter: {}, meta: {} }
 }
 
@@ -92,7 +92,7 @@ describe('createComarkContext', () => {
 
     it('keeps untouched branches referentially identical', () => {
       const doc = createComarkContext(false).get('x')
-      const keep: ComarkTree['nodes'][number] = ['p', {}, 'keep']
+      const keep: MarkdownDocument['nodes'][number] = ['p', {}, 'keep']
       doc.set(tree([keep, ['p', {}, 'old']]))
       doc.patch({ op: 'replace', path: [1], node: ['p', {}, 'new'] })
       expect(doc.tree.nodes[0]).toBe(keep)

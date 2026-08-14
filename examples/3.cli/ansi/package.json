@@ -1,0 +1,17 @@
+{
+  "name": "comark-ansi-example",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Render markdown with Comark in the terminal",
+  "license": "MIT",
+  "author": "Comark team",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "dev": "node render.ts"
+  },
+  "dependencies": {
+    "@comark/ansi": "workspace:*",
+    "shiki": "catalog:"
+  }
+}

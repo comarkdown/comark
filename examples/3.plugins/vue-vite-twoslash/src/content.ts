@@ -93,11 +93,11 @@ In a Node.js context — SSR, static site generation, or a build-time plugin —
 \`\`\`ts
 // @lib: node
 import { transformerTwoslash } from '@shikijs/twoslash'
-import highlight from 'comark/plugins/highlight'
+import shiki from 'comark/plugins/shiki'
 import githubLight from '@shikijs/themes/github-light'
 import githubDark from '@shikijs/themes/github-dark'
 
-const plugin = highlight({
+const plugin = shiki({
   themes: { light: githubLight, dark: githubDark },
   transformers: [transformerTwoslash()],
 })
@@ -112,7 +112,7 @@ In the browser there is no filesystem, so TypeScript cannot load its type defini
 \`\`\`ts
 import { createTransformerFactory, rendererRich } from '@shikijs/twoslash/core'
 import { createTwoslashFromCDN } from 'twoslash-cdn'
-import highlight from 'comark/plugins/highlight'
+import shiki from 'comark/plugins/shiki'
 import githubLight from '@shikijs/themes/github-light'
 import githubDark from '@shikijs/themes/github-dark'
 
@@ -125,7 +125,7 @@ const transformer = createTransformerFactory(twoslash.runSync)({
   renderer: rendererRich(),
 })
 
-const plugin = highlight({
+const plugin = shiki({
   themes: { light: githubLight, dark: githubDark },
   transformers: [transformer],
 })

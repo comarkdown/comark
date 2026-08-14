@@ -1,9 +1,10 @@
 import { bench, run, group, barplot } from 'mitata'
 import MarkdownIt from 'markdown-it'
 import MarkdownExit from 'markdown-exit'
-import { markdownItComark } from 'comark/plugins/syntax'
-import { createParse } from 'comark'
-import highlight, { getHighlighter } from '../packages/comark/src/plugins/highlight'
+import { markdownItComponents } from 'comark/plugins/components'
+import { markdownItAttributes } from 'comark/plugins/attributes'
+import { createMarkdownParser } from 'comark'
+import shiki, { getHighlighter } from '../packages/comark/src/plugins/shiki'
 import { codeToHast } from 'shiki/core'
 
 const short = `
@@ -18,8 +19,8 @@ npm install comark
 Then use it:
 
 \`\`\`javascript
-import { parse } from 'comark'
-const tree = await parse('# Hello')
+import { parseMarkdown } from 'comark'
+const tree = await parseMarkdown('# Hello')
 \`\`\`
 `
 
@@ -29,17 +30,17 @@ const medium = `
 ## Parse
 
 \`\`\`typescript
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 
-interface ParseOptions {
+interface ParserOptions {
   autoClose?: boolean
   streaming?: boolean
   plugins?: ComarkPlugin[]
 }
 
-const tree = await parse(markdown, {
+const tree = await parseMarkdown(markdown, {
   autoClose: true,
-  plugins: [highlight()],
+  plugins: [shiki()],
 })
 \`\`\`
 
@@ -48,12 +49,12 @@ const tree = await parse(markdown, {
 \`\`\`vue
 <script setup>
 import { Markdown } from '@comark/vue'
-import highlight from '@comark/vue/plugins/highlight'
+import shiki from '@comark/vue/plugins/shiki'
 </script>
 
 <template>
   <Suspense>
-    <Markdown :plugins="[highlight()]">{{ content }}</Markdown>
+    <Markdown :plugins="[shiki()]">{{ content }}</Markdown>
   </Suspense>
 </template>
 \`\`\`
@@ -93,19 +94,21 @@ npm run build:module-${i + 1}
 // they still need shiki. We benchmark both pipelines with the same shiki work.
 const markdownIt = new MarkdownIt({ html: true, linkify: true })
   .enable(['table', 'strikethrough'])
-  .use(markdownItComark)
+  .use(markdownItComponents)
+  .use(markdownItAttributes)
 const markdownExit = new MarkdownExit({ html: true, linkify: true })
   .enable(['table', 'strikethrough'])
-  .use(markdownItComark)
+  .use(markdownItComponents)
+  .use(markdownItAttributes)
 
 // comark: baseline vs highlight plugin
-const comark = createParse()
-const comarkHl = createParse({ plugins: [highlight()] })
+const comark = createMarkdownParser()
+const comarkHl = createMarkdownParser({ plugins: [shiki()] })
 
 // Pre-warm shiki so we benchmark steady-state, not cold-start
 const shiki = await getHighlighter()
 
-// Warm up comark highlight to ensure shiki languages are loaded
+// Warm up comark shiki to ensure shiki languages are loaded
 await comarkHl(medium)
 
 // Helper: extract fence tokens from markdown-it/exit and highlight them with shiki

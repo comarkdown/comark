@@ -7,7 +7,7 @@
  */
 import { defineComarkPlugin } from '../../src/utils/helpers.ts'
 import type { Toc } from '../../src/plugins/toc.ts'
-import type { ComarkNode } from '../../src/types.ts'
+import type { Node } from '../../src/types.ts'
 
 // 1. Wrong value type — must error.
 defineComarkPlugin<{}, { toc: Toc }>(() => ({
@@ -67,13 +67,13 @@ defineComarkPlugin<{}, {}, { author: string }>(() => ({
   },
 }))
 
-// 7. ComarkNode[] vs other shapes for `summary`.
-defineComarkPlugin<{}, { summary: ComarkNode[] }>(() => ({
+// 7. Node[] vs other shapes for `summary`.
+defineComarkPlugin<{}, { summary: Node[] }>(() => ({
   name: 'summary-shape',
   post(state) {
     state.tree.meta.summary = []
     state.tree.meta.summary = [['p', {}, 'hi']]
-    // @ts-expect-error — string is not ComarkNode[].
+    // @ts-expect-error — string is not Node[].
     state.tree.meta.summary = 'just text'
   },
 }))

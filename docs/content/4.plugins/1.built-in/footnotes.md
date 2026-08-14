@@ -9,7 +9,7 @@ seo:
 links:
   - label: Parse API
     icon: i-lucide-code
-    to: /api/parse
+    to: /reference/parse
     color: neutral
     variant: soft
   - label: Vue Rendering
@@ -88,10 +88,10 @@ Comark supports footnotes[^1] with back-references[^2].
 ### With Parse API
 
 ```typescript [parse.ts]
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import footnotes from 'comark/plugins/footnotes'
 
-const result = await parse('Hello[^1]\n\n[^1]: World', {
+const result = await parseMarkdown('Hello[^1]\n\n[^1]: World', {
   plugins: [footnotes()]
 })
 ```
@@ -265,18 +265,18 @@ Footnote references work inside bold, italic, and other inline formatting:
 
 ## Stringify (Markdown Rendering)
 
-The plugin exports a `Footnote` conditional handler that converts the footnote AST back into standard markdown footnote syntax. This is useful when you want to render a `ComarkTree` back to markdown and preserve footnotes.
+The plugin exports a `Footnote` conditional handler that converts the footnote AST back into standard markdown footnote syntax. This is useful when you want to render a `MarkdownDocument` back to markdown and preserve footnotes.
 
 ```typescript
-import { parse } from 'comark'
+import { parseMarkdown } from 'comark'
 import { renderMarkdown } from 'comark/render'
 import footnotes, { Footnote } from 'comark/plugins/footnotes'
 
-const tree = await parse('Hello[^1]\n\n[^1]: World', {
+const document = await parseMarkdown('Hello[^1]\n\n[^1]: World', {
   plugins: [footnotes()]
 })
 
-const md = await renderMarkdown(tree, {
+const md = await renderMarkdown(document, {
   components: { footnotes: Footnote },
 })
 // Hello[^1]
@@ -288,8 +288,8 @@ Without `Footnote`, `renderMarkdown` would serialize the footnote HTML structure
 
 ## Related
 
-- [Parse API](/api/parse): Main parsing API
-- [Render API](/api/render): Rendering API with conditional handlers
-- [Alerts](/plugins/built-in/alert): GitHub-style alert blockquotes
-- [Task List](/plugins/built-in/task-list): Checkbox syntax
+- [Parse API](/reference/parse): Main parsing API
+- [Render API](/reference/render): Rendering API with conditional handlers
+- [Alerts](/plugins/defaults/alert): GitHub-style alert blockquotes
+- [Task List](/plugins/defaults/task-list): Checkbox syntax
 - [Creating Plugins](/plugins/custom/plugin-api): Build your own plugin

@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import { visit } from 'comark/utils'
-import type { ComarkTree, ComarkNode } from 'comark'
+import type { MarkdownDocument, Node } from 'comark'
 
 describe('visit', () => {
   it('should visit all nodes in a simple tree', () => {
-    const tree: ComarkTree = {
+    const tree: MarkdownDocument = {
       nodes: [
         ['h1', {}, 'Hello'],
         ['p', {}, 'World'],
@@ -13,7 +13,7 @@ describe('visit', () => {
       meta: {},
     }
 
-    const visited: ComarkNode[] = []
+    const visited: Node[] = []
     visit(
       tree,
       () => true, // visit all nodes
@@ -31,7 +31,7 @@ describe('visit', () => {
   })
 
   it('should only visit nodes that match the checker', () => {
-    const tree: ComarkTree = {
+    const tree: MarkdownDocument = {
       nodes: [
         ['h1', {}, 'Title'],
         ['p', {}, 'Paragraph'],
@@ -55,7 +55,7 @@ describe('visit', () => {
   })
 
   it('should replace nodes when visitor returns a new node', () => {
-    const tree: ComarkTree = {
+    const tree: MarkdownDocument = {
       nodes: [
         ['h1', {}, 'Hello'],
         ['p', {}, 'World'],
@@ -77,7 +77,7 @@ describe('visit', () => {
   })
 
   it('should remove nodes when visitor returns false', () => {
-    const tree: ComarkTree = {
+    const tree: MarkdownDocument = {
       nodes: [
         ['h1', {}, 'Title'],
         ['p', {}, 'Keep this'],
@@ -101,7 +101,7 @@ describe('visit', () => {
   })
 
   it('should visit all remaining nodes after removing a node', () => {
-    const tree: ComarkTree = {
+    const tree: MarkdownDocument = {
       nodes: [
         ['h1', {}, 'Title'],
         ['p', {}, 'Paragraph 1'],
@@ -137,7 +137,7 @@ describe('visit', () => {
   })
 
   it('should handle nested node removal correctly', () => {
-    const tree: ComarkTree = {
+    const tree: MarkdownDocument = {
       nodes: [['div', {}, ['p', {}, 'Keep'], ['span', {}, 'Remove'], ['p', {}, 'Keep too']]],
       frontmatter: {},
       meta: {},
@@ -156,7 +156,7 @@ describe('visit', () => {
   })
 
   it('should visit all remaining nested nodes after removal', () => {
-    const tree: ComarkTree = {
+    const tree: MarkdownDocument = {
       nodes: [
         ['div', {}, ['p', {}, 'Before'], ['span', {}, 'Remove'], ['p', {}, 'After'], ['strong', {}, 'Also after']],
       ],
@@ -189,7 +189,7 @@ describe('visit', () => {
   })
 
   it('should handle multiple removals in sequence', () => {
-    const tree: ComarkTree = {
+    const tree: MarkdownDocument = {
       nodes: [
         ['h1', {}, 'Title'],
         ['div', {}, 'Remove 1'],
@@ -215,7 +215,7 @@ describe('visit', () => {
   })
 
   it('should handle removing all nodes', () => {
-    const tree: ComarkTree = {
+    const tree: MarkdownDocument = {
       nodes: [
         ['p', {}, 'Remove'],
         ['span', {}, 'Remove'],
@@ -235,13 +235,13 @@ describe('visit', () => {
   })
 
   it('should handle empty tree', () => {
-    const tree: ComarkTree = {
+    const tree: MarkdownDocument = {
       nodes: [],
       frontmatter: {},
       meta: {},
     }
 
-    const visited: ComarkNode[] = []
+    const visited: Node[] = []
     visit(
       tree,
       () => true,
@@ -256,7 +256,7 @@ describe('visit', () => {
   })
 
   it('should handle text nodes', () => {
-    const tree: ComarkTree = {
+    const tree: MarkdownDocument = {
       nodes: [['p', {}, 'Text 1', 'Text 2']],
       frontmatter: {},
       meta: {},
@@ -279,7 +279,7 @@ describe('visit', () => {
   })
 
   it('should handle text nodes with removals', () => {
-    const tree: ComarkTree = {
+    const tree: MarkdownDocument = {
       nodes: [['p', {}, 'Text 1', 'Text 2', 'Text 3']],
       frontmatter: {},
       meta: {},
@@ -312,7 +312,7 @@ describe('visit', () => {
   })
 
   it('should handle replacing text nodes', () => {
-    const tree: ComarkTree = {
+    const tree: MarkdownDocument = {
       nodes: [['p', {}, 'Old text']],
       frontmatter: {},
       meta: {},
@@ -329,7 +329,7 @@ describe('visit', () => {
   })
 
   it('should handle removing text nodes', () => {
-    const tree: ComarkTree = {
+    const tree: MarkdownDocument = {
       nodes: [['p', {}, 'Keep', 'Remove', 'Keep too']],
       frontmatter: {},
       meta: {},
@@ -348,7 +348,7 @@ describe('visit', () => {
   })
 
   it('should handle deep nesting with removals', () => {
-    const tree: ComarkTree = {
+    const tree: MarkdownDocument = {
       nodes: [['div', {}, ['section', {}, ['p', {}, 'Before'], ['span', {}, 'Remove'], ['p', {}, 'After']]]],
       frontmatter: {},
       meta: {},
@@ -378,7 +378,7 @@ describe('visit', () => {
   })
 
   it('should handle complex scenario: remove and replace in same tree', () => {
-    const tree: ComarkTree = {
+    const tree: MarkdownDocument = {
       nodes: [
         ['h1', {}, 'Title'],
         ['p', {}, 'Remove'],

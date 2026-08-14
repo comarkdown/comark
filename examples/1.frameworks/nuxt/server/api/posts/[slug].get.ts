@@ -1,7 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import { parse } from 'comark'
-import highlight from 'comark/plugins/highlight'
+import { parseMarkdown } from 'comark'
+import shiki from 'comark/plugins/shiki'
 
 export default defineEventHandler(async (event) => {
   const slug = getRouterParam(event, 'slug')
@@ -12,8 +12,8 @@ export default defineEventHandler(async (event) => {
   }
 
   const content = fs.readFileSync(filePath, 'utf-8')
-  const tree = await parse(content, {
-    plugins: [highlight()],
+  const tree = await parseMarkdown(content, {
+    plugins: [shiki()],
   })
 
   const fm = tree.frontmatter as Record<string, unknown>
