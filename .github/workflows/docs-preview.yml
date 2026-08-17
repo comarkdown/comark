@@ -1,0 +1,150 @@
+name: docs-preview
+
+# When a pull request touches documentation pages under docs/content/, post
+# (or update) a PR comment listing the comark.dev URLs for the changed pages
+# so reviewers can jump straight to the live content.
+#
+# The comment is a single sticky note (identified by a marker string) that is
+# created or refreshed on each push, and deleted when no docs files remain.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+    paths:
+      - 'docs/content/**/*.md'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  comment:
+    name: post docs preview links
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Post or update docs preview comment
+        uses: actions/github-script@v9
+        env:
+          BASE_URL: 'https://comark.dev'
+          MARKER: '<!-- docs-preview-links -->'
+        with:
+          script: |
+            const { owner, repo } = context.repo
+            const prNumber = context.payload.pull_request.number
+            const baseUrl = process.env.BASE_URL
+            const marker = process.env.MARKER
+
+            // -----------------------------------------------------------------
+            // 1. Fetch the list of changed files for this PR.
+            // -----------------------------------------------------------------
+            const files = await github.paginate(github.rest.pulls.listFiles, {
+              owner,
+              repo,
+              pull_number: prNumber,
+              per_page: 100,
+            })
+
+            // -----------------------------------------------------------------
+            // 2. Convert docs/content file paths → comark.dev URLs.
+            //    Nuxt Content strips leading numeric prefixes (e.g. "1.") from
+            //    every path segment and treats index.md as the segment root.
+            //    Examples:
+            //      docs/content/1.getting-started/0.introduction.md
+            //        → /getting-started/introduction
+            //      docs/content/4.plugins/index.md
+            //        → /plugins
+            //      docs/content/index.md
+            //        → /
+            // -----------------------------------------------------------------
+            const CONTENT_PREFIX = 'docs/content/'
+
+            const toUrl = (filePath) => {
+              if (!filePath.startsWith(CONTENT_PREFIX)) return null
+              const relative = filePath.slice(CONTENT_PREFIX.length)
+              // Remove .md extension.
+              const withoutExt = relative.endsWith('.md') ? relative.slice(0, -3) : relative
+              // Strip leading numeric prefixes from each segment (e.g. "1.", "0.", "10.").
+              const segments = withoutExt.split('/').map((seg) => seg.replace(/^\d+\./, ''))
+              // Drop trailing "index" segment.
+              if (segments[segments.length - 1] === 'index') segments.pop()
+              // Filter out any empty segments that may result from root index.md.
+              const clean = segments.filter(Boolean)
+              return baseUrl + (clean.length ? '/' + clean.join('/') : '/')
+            }
+
+            // Only keep markdown files that belong to docs/content/.
+            const docFiles = files.filter(
+              (f) => f.filename.startsWith(CONTENT_PREFIX) && f.filename.endsWith('.md'),
+            )
+
+            // -----------------------------------------------------------------
+            // 3. Find the existing marker comment (if any).
+            // -----------------------------------------------------------------
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner,
+              repo,
+              issue_number: prNumber,
+              per_page: 100,
+            })
+            const existing = comments.find((c) => c.user?.type === 'Bot' && c.body?.includes(marker))
+
+            // -----------------------------------------------------------------
+            // 4a. PR closed or no docs files changed → clean up comment.
+            // -----------------------------------------------------------------
+            if (context.payload.action === 'closed' || docFiles.length === 0) {
+              if (existing) {
+                await github.rest.issues.deleteComment({ owner, repo, comment_id: existing.id })
+                core.info('Removed stale docs-preview comment.')
+              } else {
+                core.info('No docs files changed and no existing comment — nothing to do.')
+              }
+              return
+            }
+
+            // -----------------------------------------------------------------
+            // 4b. Build the comment body.
+            // -----------------------------------------------------------------
+            // Group files by status: added/modified vs deleted/renamed.
+            const added    = docFiles.filter((f) => ['added', 'modified', 'changed', 'renamed', 'copied'].includes(f.status))
+            const removed  = docFiles.filter((f) => ['removed'].includes(f.status))
+
+            const renderSection = (label, emoji, list) => {
+              if (!list.length) return []
+              const lines = [label]
+              for (const f of list) {
+                const url = toUrl(f.status === 'renamed' ? f.filename : f.filename)
+                if (url) lines.push(`- [${url.replace(baseUrl, '')}](${url})`)
+              }
+              return lines.length > 1 ? lines : []
+            }
+
+            const changedLines = renderSection('**Changed or added**', '✏️', added)
+            const removedLines = renderSection('**Removed**', '🗑️', removed)
+
+            const allUrls = [
+              ...added.map((f) => toUrl(f.filename)),
+              ...removed.map((f) => toUrl(f.filename)),
+            ].filter(Boolean)
+
+            const body = [
+              marker,
+              '## 📄 Docs preview',
+              '',
+              `This pull request touches **${docFiles.length}** documentation page${docFiles.length !== 1 ? 's' : ''}.`,
+              '',
+              ...changedLines,
+              ...(changedLines.length && removedLines.length ? [''] : []),
+              ...removedLines,
+            ].join('\n')
+
+            // -----------------------------------------------------------------
+            // 5. Post or update the comment.
+            // -----------------------------------------------------------------
+            if (existing) {
+              await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body })
+              core.info(`Updated docs-preview comment #${existing.id}.`)
+            } else {
+              await github.rest.issues.createComment({ owner, repo, issue_number: prNumber, body })
+              core.info('Created docs-preview comment.')
+            }
