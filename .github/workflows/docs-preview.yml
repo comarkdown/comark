@@ -9,7 +9,7 @@ name: docs-preview
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened, closed]
+    types: [opened, synchronize, reopened]
     paths:
       - 'docs/content/**/*.md'
 
@@ -90,15 +90,10 @@ jobs:
             const existing = comments.find((c) => c.user?.type === 'Bot' && c.body?.includes(marker))
 
             // -----------------------------------------------------------------
-            // 4a. PR closed or no docs files changed → clean up comment.
+            // 4a. No docs files changed — nothing to do.
             // -----------------------------------------------------------------
-            if (context.payload.action === 'closed' || docFiles.length === 0) {
-              if (existing) {
-                await github.rest.issues.deleteComment({ owner, repo, comment_id: existing.id })
-                core.info('Removed stale docs-preview comment.')
-              } else {
-                core.info('No docs files changed and no existing comment — nothing to do.')
-              }
+            if (docFiles.length === 0) {
+              core.info('No docs files changed — nothing to do.')
               return
             }
 
@@ -121,11 +116,6 @@ jobs:
 
             const changedLines = renderSection('**Changed or added**', added)
             const removedLines = renderSection('**Removed**', removed)
-
-            const allUrls = [
-              ...added.map((f) => toUrl(f.filename)),
-              ...removed.map((f) => toUrl(f.filename)),
-            ].filter(Boolean)
 
             const body = [
               marker,
