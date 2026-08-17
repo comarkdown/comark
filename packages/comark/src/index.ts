@@ -12,4 +12,4 @@ export { createComarkContext } from './context.ts'
 export type { ComarkContext, ComarkDocument, ComarkPatch } from './context.ts'
 
 // Re-export types
-export type * from './types'
+export type * from './types.ts'
