@@ -109,18 +109,18 @@ jobs:
             const added    = docFiles.filter((f) => ['added', 'modified', 'changed', 'renamed', 'copied'].includes(f.status))
             const removed  = docFiles.filter((f) => ['removed'].includes(f.status))
 
-            const renderSection = (label, emoji, list) => {
+            const renderSection = (label, list) => {
               if (!list.length) return []
               const lines = [label]
               for (const f of list) {
-                const url = toUrl(f.status === 'renamed' ? f.filename : f.filename)
+                const url = toUrl(f.filename)
                 if (url) lines.push(`- [${url.replace(baseUrl, '')}](${url})`)
               }
               return lines.length > 1 ? lines : []
             }
 
-            const changedLines = renderSection('**Changed or added**', '✏️', added)
-            const removedLines = renderSection('**Removed**', '🗑️', removed)
+            const changedLines = renderSection('**Changed or added**', added)
+            const removedLines = renderSection('**Removed**', removed)
 
             const allUrls = [
               ...added.map((f) => toUrl(f.filename)),
