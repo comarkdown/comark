@@ -69,12 +69,12 @@ catalog:
   "@vitejs/plugin-vue": ^6.0.7
   "@vitest/browser": ^4.1.10
   "@vitest/browser-playwright": ^4.1.10
-  "@vue/compiler-core": ^3.5.39
-  "@vue/reactivity": ^3.5.32
-  "@vue/runtime-core": ^3.5.32
-  "@vue/runtime-dom": ^3.5.32
-  "@vue/server-renderer": ^3.5.39
-  "@vue/shared": ^3.5.32
+  "@vue/compiler-core": 3.5.41
+  "@vue/reactivity": 3.5.41
+  "@vue/runtime-core": 3.5.41
+  "@vue/runtime-dom": 3.5.41
+  "@vue/server-renderer": 3.5.41
+  "@vue/shared": 3.5.41
   "@vueuse/core": ^14.2.1
   "@xterm/addon-fit": ^0.11.0
   "@xterm/xterm": ^6.0.0
@@ -166,7 +166,7 @@ catalog:
   vitest-browser-svelte: ^3.0.0
 
   # Vue
-  vue: ^3.5.39
+  vue: 3.5.41
   vue-json-pretty: ^2.6.0
   vue-router: ^5.0.4
   vue-tsc: ^3.3.7
