@@ -12,6 +12,21 @@ export default defineNuxtConfig({
     name: 'Comark',
   },
 
+  // nuxt-llms is provided by the comark-docs layer. `domain` is required — without it the
+  // module skips registering /llms.txt and /llms-full.txt. Content sections and page bodies
+  // are filled in by the layer's llms server plugin from navigation + appConfig.docs.llms.
+  llms: {
+    domain: 'https://comark.dev',
+    title: 'Comark',
+    description:
+      'Parse and render Markdown anywhere with one JavaScript library for HTML, ANSI, Vue, React, Svelte and Angular, plus plugins and streaming.',
+    full: {
+      title: 'Comark Documentation',
+      description:
+        'Complete Comark documentation as plain markdown — getting started, syntax, rendering, plugins, API reference, comparisons, and examples.',
+    },
+  },
+
   app: {
     head: {
       link: [
