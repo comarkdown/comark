@@ -67,12 +67,12 @@ full-width: true
     [
       "page-section",
       {
-        "full-width": "true"
+        "full-width": true
       },
       [
         "multi-column",
         {
-          "columns": "3"
+          "columns": 3
         },
         [
           "container",

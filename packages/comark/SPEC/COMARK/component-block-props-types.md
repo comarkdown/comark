@@ -29,9 +29,9 @@ Component content
       "component",
       {
         "title": "Hello World",
-        "count": "42",
-        "enabled": "true",
-        "hidden": "false",
+        "count": 42,
+        "enabled": true,
+        "hidden": false,
         "tags": [
           "markdown",
           "docs"
@@ -50,7 +50,7 @@ Component content
 ## HTML
 
 ```html
-<component title="Hello World" count="42" enabled hidden="false" tags="[\"markdown\",\"docs\"]" config="{\"theme\":\"dark\",\"debug\":false}">
+<component title="Hello World" count="42" enabled tags="[\"markdown\",\"docs\"]" config="{\"theme\":\"dark\",\"debug\":false}">
   Component content
 </component>
 ```
@@ -61,7 +61,7 @@ Component content
 ::component
 ```yaml [props]
 title: Hello World
-count: '42'
+count: 42
 enabled: true
 hidden: false
 tags:

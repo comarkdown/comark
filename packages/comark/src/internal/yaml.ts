@@ -16,6 +16,48 @@ export function parseYaml(content: string): Record<string, unknown> | undefined 
 }
 
 /**
+ * A markdown-it token attr must be a string. This prefix marks a string as an
+ * encoded value, so it can round-trip back to its real type.
+ *
+ * The prefix starts with a NUL byte. `encodeYamlTypedValue` always applies it
+ * through `JSON.stringify`, which escapes any NUL byte in the source value as
+ * literal text (` `), not a raw byte. So the raw NUL only ever appears at
+ * position 0, placed by this function. It can't collide with real content,
+ * even a quoted YAML string that itself contains an escaped NUL byte.
+ */
+const YAML_TYPED_VALUE_PREFIX = '\x00yaml:'
+
+/**
+ * Encode a value so it can be stored as a token attr string, then later
+ * restored by `decodeYamlTypedValue`. Call this for every value read from a
+ * YAML block, including strings, not only non-string values.
+ *
+ * @param value - The parsed YAML value to encode
+ * @returns The encoded string
+ */
+export function encodeYamlTypedValue(value: unknown): string {
+  return `${YAML_TYPED_VALUE_PREFIX}${JSON.stringify(value)}`
+}
+
+/**
+ * Restore a value encoded by `encodeYamlTypedValue`.
+ *
+ * @param value - The string to decode
+ * @returns The original value. Returns `value` unchanged if it has no encoding
+ * prefix, or if the encoded content is not valid JSON.
+ */
+export function decodeYamlTypedValue(value: string): unknown {
+  if (!value.startsWith(YAML_TYPED_VALUE_PREFIX)) {
+    return value
+  }
+  try {
+    return JSON.parse(value.slice(YAML_TYPED_VALUE_PREFIX.length))
+  } catch {
+    return value
+  }
+}
+
+/**
  * Stringify YAML data
  * @param data - The data to stringify
  * @returns The stringified data

@@ -61,8 +61,8 @@ describe('empty component props block (#319)', () => {
     const hero = result.nodes[0] as Node
 
     expect(isElement(hero, 'hero')).toBe(true)
-    // Non-string attribute values are JSON-stringified onto the element (see components.ts)
-    expect(getAttrs(hero).count).toBe('3')
+    // Non-string attribute values keep their native YAML type (see #364).
+    expect(getAttrs(hero).count).toBe(3)
     expect(getAttrs(hero).label).toBe('hello')
   })
 

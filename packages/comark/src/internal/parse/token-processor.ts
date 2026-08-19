@@ -1,5 +1,6 @@
 import type { ElementNode, Node } from 'comark'
 import { htmlToNodes, parseInlineHtmlTag } from './html/index.ts'
+import { decodeYamlTypedValue } from '../yaml.ts'
 
 // `::tag` components that should fold into a single same-tagged child.
 const WRAPPER_TAGS = new Set(['ul', 'ol', 'table', 'blockquote', 'pre'])
@@ -121,13 +122,27 @@ function processAttributes(
       const [key] = attr
       let value = attr[1]
 
+      // Restore the real type of a value encoded by `encodeYamlTypedValue`.
+      // A restored value is already correctly typed, so it must skip the
+      // `{`/`[` heuristic below. Otherwise a YAML string that looks like JSON
+      // (e.g. `tags: "[1,2,3]"`) would get parsed a second time and lose its
+      // real type as a string.
+      let isYamlTypedValue = false
+      if (typeof value === 'string') {
+        const decoded = decodeYamlTypedValue(value)
+        if (decoded !== value) {
+          value = decoded
+          isYamlTypedValue = true
+        }
+      }
+
       // Filter empty values if requested
       if (filterEmpty && (value === '' || value === null || value === undefined)) {
         continue
       }
 
       // Handle JSON values
-      if (handleJSON && typeof value === 'string') {
+      if (handleJSON && !isYamlTypedValue && typeof value === 'string') {
         if (value.startsWith('{') && value.endsWith('}')) {
           try {
             value = JSON.parse(value)

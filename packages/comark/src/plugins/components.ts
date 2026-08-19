@@ -13,7 +13,7 @@ import type { MarkdownItPlugin } from '../types.ts'
 import { defineComarkPlugin } from '../utils/helpers.ts'
 import { findClosingBracket, parseBracketContent } from '../internal/parse/syntax/brackets.ts'
 import { parseBlockParams } from '../internal/parse/syntax/block-params.ts'
-import { parseYaml } from '../internal/yaml.ts'
+import { encodeYamlTypedValue, parseYaml } from '../internal/yaml.ts'
 
 /**
  * A component name must start with a letter or `$`, followed by word chars,
@@ -290,7 +290,7 @@ const markdownItComarkBlock: PluginSimple = (md) => {
       const token = state.env.comarkBlockTokens[0]
       Object.entries(data || {}).forEach(([key, value]) => {
         if (key === 'class') token.attrJoin(key, value as string)
-        else token.attrSet(key, typeof value === 'string' ? value : JSON.stringify(value))
+        else token.attrSet(key, encodeYamlTypedValue(value))
       })
     }
 
