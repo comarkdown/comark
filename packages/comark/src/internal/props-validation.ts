@@ -1,3 +1,10 @@
+/**
+ * Sentinel returned by {@link validateProp} to signal "drop this attribute".
+ * A dedicated symbol (rather than `false`) keeps rejection distinguishable
+ * from a prop whose real value is the boolean `false` (#367).
+ */
+export const REJECTED_PROP = Symbol('comark:rejected-prop')
+
 export const unsafeTags = ['object']
 
 export const unsafeAttributes = ['srcdoc', 'formaction']
@@ -33,7 +40,11 @@ function rewriteToDefaultOrigin(urlStr: string, defaultOrigin: string): string {
   }
 }
 
-function validateUrl(value: string, mode: 'link' | 'image', options: PropsValidationOptions): string | false {
+function validateUrl(
+  value: string,
+  mode: 'link' | 'image',
+  options: PropsValidationOptions
+): string | typeof REJECTED_PROP {
   const {
     allowedLinkPrefixes = ['*'],
     allowedImagePrefixes = ['*'],
@@ -59,19 +70,19 @@ function validateUrl(value: string, mode: 'link' | 'image', options: PropsValida
 
   // Block known-unsafe protocols — hard floor, not overrideable by options
   if (unsafeLinkPrefix.some((prefix) => url.href.toLowerCase().startsWith(prefix))) {
-    return false
+    return REJECTED_PROP
   }
 
   // Block data: images when allowDataImages is false
   if (mode === 'image' && !allowDataImages && url.protocol === 'data:') {
-    return false
+    return REJECTED_PROP
   }
 
   // Check allowed protocols
   if (!allowedProtocols.includes('*')) {
     const protocol = url.protocol.replace(':', '')
     if (!allowedProtocols.includes(protocol)) {
-      return false
+      return REJECTED_PROP
     }
   }
 
@@ -84,29 +95,32 @@ function validateUrl(value: string, mode: 'link' | 'image', options: PropsValida
       if (defaultOrigin) {
         return rewriteToDefaultOrigin(urlSanitized, defaultOrigin)
       }
-      return false
+      return REJECTED_PROP
     }
   }
 
   return value
 }
 
-export function validateProp(attribute: string, value: string, options: PropsValidationOptions = {}): string | false {
+export function validateProp(attribute: string, value: unknown, options: PropsValidationOptions = {}): unknown {
   attribute = attribute
     .toLowerCase()
     .replace(/^(:|v-bind:)/, '')
     .replace(/^(@|v-on:)/, 'on')
     .replace(/:/g, '')
   if (attribute.startsWith('on') || unsafeAttributes.includes(attribute)) {
-    return false
+    return REJECTED_PROP
   }
 
   if (attribute === 'href' || attribute === 'xlinkhref') {
-    return validateUrl(value, 'link', options)
+    // A non-string href can reach here as an array/object from the YAML
+    // block-props JSON round-trip. Reject it instead of passing it through
+    // unvalidated (#367).
+    return typeof value === 'string' ? validateUrl(value, 'link', options) : REJECTED_PROP
   }
 
   if (attribute === 'src') {
-    return validateUrl(value, 'image', options)
+    return typeof value === 'string' ? validateUrl(value, 'image', options) : REJECTED_PROP
   }
 
   return value
@@ -138,7 +152,7 @@ export function validateProps(
 
       const result = validateProp(name, value, options)
 
-      if (result === false) {
+      if (result === REJECTED_PROP) {
         console.warn(`[comark/plugins/security] removing unsafe attribute: ${name}="${value}"`)
         return []
       }

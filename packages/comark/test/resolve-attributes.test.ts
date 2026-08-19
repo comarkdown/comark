@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
+import type { Node } from 'comark'
 import type { NodeRenderData } from '../src/types.ts'
 import { resolveAttribute, resolveAttributes } from '../src/internal/stringify/attributes.ts'
+import { parseMarkdown } from '../src/index'
 
 const makeRenderData = (overrides: Partial<NodeRenderData> = {}): NodeRenderData => ({
   frontmatter: {},
@@ -96,6 +98,50 @@ describe('resolveAttributes (parseJson mode)', () => {
   it('strips :prefix for non-string values already decoded by the parser', () => {
     const result = resolveAttributes({ ':config': { k: 'v' } }, renderData, { parseJson: true })
     expect(result).toEqual({ config: { k: 'v' } })
+  })
+})
+
+describe('parseMarkdown + resolveAttributes end-to-end (#364)', () => {
+  const renderData = makeRenderData()
+
+  it('restores native number/boolean/null/object types from a YAML block-props component', async () => {
+    const doc = await parseMarkdown(`::comp
+---
+label: "hello"
+count: 3
+a-negative-number: -1.5
+enabled: false
+active: true
+nested:
+  x: 1
+  y: true
+nothing: null
+---
+::`)
+    const comp = doc.nodes[0] as Node
+    const attrs = (comp as unknown as [string, Record<string, unknown>])[1]
+
+    const resolved = resolveAttributes(attrs, renderData, { parseJson: true })
+
+    expect(resolved).toEqual({
+      label: 'hello',
+      count: 3,
+      'a-negative-number': -1.5,
+      enabled: false,
+      active: true,
+      nested: { x: 1, y: true },
+      nothing: null,
+    })
+  })
+
+  it('keeps an explicitly-quoted YAML string a string end-to-end, not a coerced number/boolean', async () => {
+    const doc = await parseMarkdown('::comp\n---\ncount: "3"\nenabled: "false"\n---\n::')
+    const comp = doc.nodes[0] as Node
+    const attrs = (comp as unknown as [string, Record<string, unknown>])[1]
+
+    const resolved = resolveAttributes(attrs, renderData, { parseJson: true })
+
+    expect(resolved).toEqual({ count: '3', enabled: 'false' })
   })
 })
 
