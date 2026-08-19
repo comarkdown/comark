@@ -24,7 +24,13 @@ describe('nested component with a run of blank lines between siblings', () => {
       [
         'outer',
         {},
-        ['mid', { ':columns': '3' }, ['a', { display: 'flex' }], ['b', { display: 'flex' }], ['c', { display: 'flex' }]],
+        [
+          'mid',
+          { ':columns': '3' },
+          ['a', { display: 'flex' }],
+          ['b', { display: 'flex' }],
+          ['c', { display: 'flex' }],
+        ],
       ],
     ]
 
