@@ -221,9 +221,8 @@ export function htmlAttributes(attributes: Record<string, unknown>) {
   return parts.join(' ')
 }
 
-// Coerce string `'true'`/`'false'` (how the parser stores boolean attrs) to
-// native booleans so js-yaml v5 emits them unquoted, matching the markdown
-// source. Numbers stay strings — the parser keeps numeric attrs as strings.
+// Coerce string `'true'`/`'false'` (how inline `{attr}` parsing stores
+// boolean-like attrs) to native booleans so js-yaml v5 emits them unquoted.
 function normalizeValue(value: unknown): unknown {
   if (value === 'true') return true
   if (value === 'false') return false
@@ -241,14 +240,25 @@ export function comarkYamlAttributes(
   style: 'frontmatter' | 'codeblock' = 'codeblock'
 ) {
   // Normalize attribute values for YAML serialization:
-  //  - Strip the `:` binding prefix from boolean-like values (`:block="true"`
-  //    becomes `block: true`), since the YAML props block is the canonical form
-  //    for `::tag{...}` shorthand.
-  //  - Coerce string literals `'true'`/`'false'`
+  //  - `:`-prefixed JSON literals (`:count="42"`, `:config={…}`) restore to
+  //    native values and drop the prefix — matching @nuxtjs/mdc stringify.
+  //  - `:`-prefixed path bindings (`:to="$doc.link"`) stay prefixed so they
+  //    round-trip as bindings, not plain strings.
+  //  - Bare string literals `'true'`/`'false'` from inline attrs coerce to bools.
   const normalized = Object.fromEntries(
     Object.entries(attributes).map(([key, value]) => {
-      if (key.startsWith(':') && (value === 'true' || value === 'false')) {
-        return [key.slice(1), normalizeValue(value)]
+      if (key.startsWith(':')) {
+        if (typeof value === 'string') {
+          try {
+            // JSON number/boolean/null/object/array → typed YAML key without `:`
+            return [key.slice(1), JSON.parse(value)]
+          } catch {
+            // Path binding / non-JSON string — keep the `:` key
+            return [key, value]
+          }
+        }
+        // Already-decoded object/array (processAttributes) or native value
+        return [key.slice(1), value]
       }
       return [key, normalizeValue(value)]
     })

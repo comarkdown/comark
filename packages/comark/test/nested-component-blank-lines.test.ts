@@ -24,7 +24,7 @@ describe('nested component with a run of blank lines between siblings', () => {
       [
         'outer',
         {},
-        ['mid', { columns: '3' }, ['a', { display: 'flex' }], ['b', { display: 'flex' }], ['c', { display: 'flex' }]],
+        ['mid', { ':columns': '3' }, ['a', { display: 'flex' }], ['b', { display: 'flex' }], ['c', { display: 'flex' }]],
       ],
     ]
 
@@ -37,7 +37,7 @@ describe('nested component with a run of blank lines between siblings', () => {
       // `mid` must still close at its own `::`, not swallow `after` too.
       const src = '::outer\n  ::mid\n  ---\n  columns: 3\n  ---\n    ::A\n    ::\n\n\n  ::\nafter\n::'
       const tree = await parseMarkdown(src)
-      expect(tree.nodes).toEqual([['outer', {}, ['mid', { columns: '3' }, ['a', {}]], ['p', {}, 'after']]])
+      expect(tree.nodes).toEqual([['outer', {}, ['mid', { ':columns': '3' }, ['a', {}]], ['p', {}, 'after']]])
     })
   })
 

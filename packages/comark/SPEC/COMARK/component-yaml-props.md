@@ -28,11 +28,11 @@ Second Paragraph
       "component",
       {
         "attr": "value",
-        "object-attr": {
+        ":object-attr": {
           "key1": "value1",
           "key2": "value2"
         },
-        "array": [
+        ":array": [
           "item 1",
           "item 2"
         ]
