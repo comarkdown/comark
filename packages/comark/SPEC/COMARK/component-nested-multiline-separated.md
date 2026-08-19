@@ -67,12 +67,12 @@ full-width: true
     [
       "page-section",
       {
-        "full-width": "true"
+        ":full-width": "true"
       },
       [
         "multi-column",
         {
-          "columns": "3"
+          ":columns": "3"
         },
         [
           "container",
@@ -187,8 +187,8 @@ full-width: true
 ## Markdown
 
 ```md
-::page-section{full-width="true"}
-  :::multi-column{columns="3"}
+::page-section{full-width}
+  :::multi-column{:columns="3"}
     ::::container{display="flex"}
     <svg width="10"></svg>
     ::::

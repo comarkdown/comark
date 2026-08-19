@@ -29,14 +29,14 @@ Component content
       "component",
       {
         "title": "Hello World",
-        "count": "42",
-        "enabled": "true",
-        "hidden": "false",
-        "tags": [
+        ":count": "42",
+        ":enabled": "true",
+        ":hidden": "false",
+        ":tags": [
           "markdown",
           "docs"
         ],
-        "config": {
+        ":config": {
           "theme": "dark",
           "debug": false
         }
@@ -61,7 +61,7 @@ Component content
 ::component
 ```yaml [props]
 title: Hello World
-count: '42'
+count: 42
 enabled: true
 hidden: false
 tags:

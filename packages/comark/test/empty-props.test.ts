@@ -61,9 +61,39 @@ describe('empty component props block (#319)', () => {
     const hero = result.nodes[0] as Node
 
     expect(isElement(hero, 'hero')).toBe(true)
-    // Non-string attribute values are JSON-stringified onto the element (see components.ts)
-    expect(getAttrs(hero).count).toBe('3')
+    // Non-string YAML scalars are stored as `:` bindings (MDC-compatible, #364)
+    expect(getAttrs(hero)[':count']).toBe('3')
     expect(getAttrs(hero).label).toBe('hello')
+  })
+
+  it('stores non-string YAML block props as :bindings (#364)', async () => {
+    const result = await parseMarkdown(`::comp
+---
+label: "hello"
+count: 3
+enabled: false
+nested:
+  x: 1
+  y: true
+nothing: null
+---
+::`)
+    const attrs = getAttrs(result.nodes[0] as Node)
+
+    // Match @nuxtjs/mdc: `:` prefix + JSON payload for non-strings
+    expect(attrs).toEqual({
+      label: 'hello',
+      ':count': '3',
+      ':enabled': 'false',
+      ':nested': { x: 1, y: true },
+      ':nothing': 'null',
+    })
+    // Quoted YAML strings must stay unprefixed strings
+    const quoted = await parseMarkdown('::comp\n---\ncount: "3"\nenabled: "false"\n---\n::')
+    expect(getAttrs(quoted.nodes[0] as Node)).toEqual({
+      count: '3',
+      enabled: 'false',
+    })
   })
 
   it('parses document-level comment-only frontmatter without throwing', async () => {
