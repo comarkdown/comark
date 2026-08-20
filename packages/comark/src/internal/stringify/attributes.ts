@@ -18,6 +18,13 @@ export interface ResolveAttributesOptions {
   parseJson?: boolean
 }
 
+// DOM sinks that turn a string/object prop into raw markup (`innerHTML`,
+// `dangerouslySetInnerHTML`) or overwrite an element's children
+// (`textContent`). Framework renderers hand resolved attributes to
+// `h()`/`createElement`/spreads verbatim, so these keys are never forwarded
+// from document attributes — raw HTML has its own explicit path.
+const HTML_SINK_PROPS = new Set(['innerhtml', 'dangerouslysetinnerhtml', 'textcontent'])
+
 /**
  * Resolve `:prefixed` attributes against the render context.
  *
@@ -42,29 +49,32 @@ export function resolveAttributes(
 
     const value = attrs[key]
     const isBinding = key.charCodeAt(0) === 58 /* ':' */
+    const outKey = isBinding ? key.slice(1) : key
+
+    if (HTML_SINK_PROPS.has(outKey.toLowerCase())) continue
 
     if (options.parseJson && isBinding) {
       // Framework mode: always strip `:` and hand components real JS values.
       if (typeof value === 'string') {
         try {
-          result[key.slice(1)] = JSON.parse(value)
+          result[outKey] = JSON.parse(value)
           continue
         } catch {
           // not JSON — fall through to dot-path lookup
         }
-        result[key.slice(1)] = get(renderData, value)
+        result[outKey] = get(renderData, value)
         continue
       }
       // Non-string binding value (e.g. an object literal the parser already
       // decoded) — pass through with the prefix stripped.
-      result[key.slice(1)] = value
+      result[outKey] = value
       continue
     }
 
     if (isBinding && typeof value === 'string') {
       const resolved = get(renderData, value)
       if (resolved !== undefined) {
-        result[key.slice(1)] = resolved
+        result[outKey] = resolved
         continue
       }
     }

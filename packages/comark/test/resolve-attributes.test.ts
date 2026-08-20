@@ -101,6 +101,35 @@ describe('resolveAttributes (parseJson mode)', () => {
   })
 })
 
+describe('HTML sink props', () => {
+  it('drops innerHTML / dangerouslySetInnerHTML / textContent from resolved attributes', () => {
+    const result = resolveAttributes(
+      {
+        innerHTML: '<img src=x onerror=alert(1)>',
+        textContent: 'overlay',
+        dangerouslySetInnerHTML: { __html: '<img src=x onerror=alert(1)>' },
+        title: 'safe',
+      },
+      makeRenderData(),
+    )
+    expect(result).toEqual({ title: 'safe' })
+  })
+
+  it('drops sink props with any casing and with the :binding prefix', () => {
+    const result = resolveAttributes(
+      {
+        InnerHtml: '<img src=x>',
+        ':dangerouslySetInnerHTML': '{"__html":"<img src=x>"}',
+        TEXTCONTENT: 'overlay',
+        id: 'keep',
+      },
+      makeRenderData(),
+      { parseJson: true },
+    )
+    expect(result).toEqual({ id: 'keep' })
+  })
+})
+
 describe('parseMarkdown + resolveAttributes end-to-end (#364)', () => {
   const renderData = makeRenderData()
 

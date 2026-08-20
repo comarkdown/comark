@@ -194,9 +194,9 @@ export class MarkdownNode implements OnChanges {
     const el = this.renderer.createElement(tag)
     this.applyAttributes(el, attrs)
 
-    if (attrs['innerHTML'] != null) {
-      el.innerHTML = attrs['innerHTML']
-    } else if (!VOID_ELEMENTS.has(tag)) {
+    // `innerHTML` from document attributes is never applied — resolveAttributes
+    // drops DOM sink props, and raw HTML has its own explicit parse path.
+    if (!VOID_ELEMENTS.has(tag)) {
       this.renderChildren(el, children, childrenRenderData)
     }
 

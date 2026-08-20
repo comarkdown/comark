@@ -28,6 +28,20 @@ describe('validateProp', () => {
     it('blocks formaction', () => {
       expect(validateProp('formaction', 'https://evil.com')).toBe(REJECTED_PROP)
     })
+
+    it('blocks innerHTML (any case)', () => {
+      expect(validateProp('innerHTML', '<img src=x onerror=alert(1)>')).toBe(REJECTED_PROP)
+      expect(validateProp('innerHtml', '<img src=x onerror=alert(1)>')).toBe(REJECTED_PROP)
+      expect(validateProp('INNERHTML', '<img src=x onerror=alert(1)>')).toBe(REJECTED_PROP)
+    })
+
+    it('blocks dangerouslySetInnerHTML', () => {
+      expect(validateProp('dangerouslySetInnerHTML', { __html: '<img src=x onerror=alert(1)>' })).toBe(REJECTED_PROP)
+    })
+
+    it('blocks textContent', () => {
+      expect(validateProp('textContent', 'overlay')).toBe(REJECTED_PROP)
+    })
   })
 
   describe('href safety', () => {

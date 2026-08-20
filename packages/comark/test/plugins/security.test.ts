@@ -273,6 +273,24 @@ click
     expect(anchor).toBeDefined()
     expect(anchor![1].href ?? anchor![1]['v-bind:href']).toBeUndefined()
   })
+
+  it('strips framework HTML sink props from components', async () => {
+    const tree = await parseWithSecurity(
+      `\
+::div{innerHTML="<img src=x onerror=alert(1)>"}
+::
+
+:span{:dangerouslySetInnerHTML='{"__html":"<img src=x onerror=alert(1)>"}'}
+`.trim()
+    )
+
+    const div = collectElements(tree.nodes).find((element) => element[0] === 'div')
+    const span = collectElements(tree.nodes).find((element) => element[0] === 'span')
+    expect(div).toBeDefined()
+    expect(div![1].innerHTML).toBeUndefined()
+    expect(span).toBeDefined()
+    expect(span![1][':dangerouslySetInnerHTML']).toBeUndefined()
+  })
 })
 
 describe('security plugin — blockedTags', () => {
