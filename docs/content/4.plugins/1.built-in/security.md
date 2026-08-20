@@ -96,12 +96,21 @@ Attributes that can be abused regardless of value are always stripped:
 |---|---|
 | `srcdoc` | Can contain arbitrary HTML |
 | `formaction` | Can redirect form submissions |
+| `innerHTML` | Injects raw HTML through framework renderers |
+| `dangerouslySetInnerHTML` | Injects raw HTML through framework renderers |
+| `textContent` | Overwrites an element's children |
+
+::note
+Framework renderers (Vue, React, Svelte, Angular) never forward `innerHTML`, `dangerouslySetInnerHTML`, or `textContent` from document attributes, even without this plugin. Raw HTML has its own explicit path through the default `html` plugin.
+::
 
 ### Protocol Blocking
 
 `href` and `src` values are decoded (URL-encoded and HTML entity variants included) and checked against a hard-coded block list. These protocols are **always** blocked, even if `allowedProtocols: ['*']` is set:
 
 `javascript:` · `vbscript:` · `data:text/html` · `data:text/javascript` · `data:text/vbscript` · `data:text/css` · `data:text/plain` · `data:text/xml`
+
+The same check applies to `:href` and `:src` bindings twice: on the JSON-decoded value at parse time, and again on the resolved value at render time, so bindings cannot smuggle an unsafe URL through frontmatter or other data sources.
 
 ::code-group
 
@@ -177,6 +186,8 @@ security({
 })
 ```
 
+The `as` prop (which makes framework renderers resolve a different component than the element's own tag) is held to the same filters: an `as` value naming a blocked or not-allowed tag is stripped, and the element falls back to its own tag.
+
 ### `tagFallback`
 
 Defines the replacement strategy for tags that are filtered out because they are not present in the `allowedTags` (whitelist) or present in the `blockedTags` (blacklist).
@@ -211,6 +222,8 @@ The hard-coded unsafe protocols (`javascript:`, `vbscript:`, `data:text/*`) are 
 ### `allowedLinkPrefixes`
 
 Restricts which URLs are allowed in `href` attributes. Relative URLs (starting with `/`, `#`, etc.) are always allowed regardless of this setting.
+
+Prefixes compare by parsed origin plus a path-segment boundary, not by raw string matching: `https://myapp.com` allows `https://myapp.com/docs` but never a lookalike host such as `https://myapp.com.evil.com`. Scheme-relative URLs (`//evil.com/page`) resolve to an absolute URL and go through the same checks.
 
 When a URL does not match any prefix and `defaultOrigin` is set, the URL is rewritten instead of stripped.
 
