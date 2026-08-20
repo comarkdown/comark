@@ -5,7 +5,13 @@ import { pascalCase } from '../../utils/index.ts'
 import { resolveAttributes } from './attributes.ts'
 
 function findHandler(ctx: Context, node: ElementNode): NodeHandler | undefined {
-  const userHandler = ctx.handlers[node[0] as string] || ctx.handlers[pascalCase(node[0] as string)]
+  const name = node[0] as string
+  // Own-property lookups only — the handler maps are plain objects, so a node
+  // named `constructor`/`__proto__`/… would otherwise resolve through the
+  // prototype chain (XSS / render crash from untrusted markdown).
+  const userHandler =
+    (Object.hasOwn(ctx.handlers, name) ? ctx.handlers[name] : undefined) ||
+    (Object.hasOwn(ctx.handlers, pascalCase(name)) ? ctx.handlers[pascalCase(name)] : undefined)
 
   if (typeof userHandler === 'function') {
     return userHandler
@@ -70,8 +76,9 @@ export async function one(node: Node, state: State, parent?: ElementNode, atLine
       return await state.handlers.html(node, state, parent)
     }
 
-    // fallback to default handlers
-    const nodeHandler = state.handlers[node[0] as string]
+    // fallback to default handlers (own-property lookup — see findHandler)
+    const nodeName = node[0] as string
+    const nodeHandler = Object.hasOwn(state.handlers, nodeName) ? state.handlers[nodeName] : undefined
     if (nodeHandler) {
       return await nodeHandler(node, state, parent)
     }

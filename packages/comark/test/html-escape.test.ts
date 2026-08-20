@@ -59,3 +59,25 @@ describe('HTML attribute escaping', () => {
     expect(html).not.toContain('onmouseover')
   })
 })
+
+describe('prototype-safe handler lookup', () => {
+  it('does not invoke Object.prototype.constructor as a node handler', async () => {
+    const html = await renderNodes([['p', {}, 'before'], ['constructor', {}, '<img src=x onerror=alert(1)>']])
+    // The unknown element falls through to the generic html handler, which
+    // escapes text children — no raw markup may reach the output.
+    expect(html).not.toContain('<img src=x onerror=alert(1)>')
+    expect(html).toContain('<p>before</p>')
+  })
+
+  it('does not throw on __proto__ node names', async () => {
+    const html = await renderNodes([['__proto__', {}, 'x']])
+    expect(html).toContain('x')
+  })
+
+  it('does not throw on other Object.prototype member names', async () => {
+    for (const name of ['valueOf', 'hasOwnProperty', 'toString', 'isPrototypeOf']) {
+      const html = await renderNodes([[name, {}, 'x']])
+      expect(html).toContain('x')
+    }
+  })
+})
