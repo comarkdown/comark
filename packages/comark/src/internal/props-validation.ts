@@ -192,6 +192,7 @@ function matchesAllowedPrefix(url: URL, prefix: string): boolean {
 }
 
 export function validateProp(attribute: string, value: unknown, options: PropsValidationOptions = {}): unknown {
+  const isBinding = /^(:|v-bind:)/.test(attribute)
   attribute = attribute
     .toLowerCase()
     .replace(/^(:|v-bind:)/, '')
@@ -201,15 +202,31 @@ export function validateProp(attribute: string, value: unknown, options: PropsVa
     return REJECTED_PROP
   }
 
-  if (attribute === 'href' || attribute === 'xlinkhref') {
-    // A non-string href can reach here as an array/object from the YAML
+  if (attribute === 'href' || attribute === 'xlinkhref' || attribute === 'src') {
+    // A non-string href/src can reach here as an array/object from the YAML
     // block-props JSON round-trip. Reject it instead of passing it through
     // unvalidated (#367).
-    return typeof value === 'string' ? validateUrl(value, 'link', options) : REJECTED_PROP
-  }
+    if (typeof value !== 'string') return REJECTED_PROP
 
-  if (attribute === 'src') {
-    return typeof value === 'string' ? validateUrl(value, 'image', options) : REJECTED_PROP
+    // Renderers JSON-decode `:binding` values before use, so validate the
+    // decoded form — otherwise ':href' with '"javascript:..."' (a JSON-quoted
+    // string) fails URL parsing and slips through as a "relative" URL.
+    let effective = value
+    if (isBinding) {
+      try {
+        const parsed: unknown = JSON.parse(value)
+        if (typeof parsed === 'string') effective = parsed
+      } catch {
+        // Not JSON — a dot-path binding or literal, validated as-is
+      }
+    }
+
+    const mode = attribute === 'src' ? 'image' : 'link'
+    const result = validateUrl(effective, mode, options)
+    if (result === REJECTED_PROP) return REJECTED_PROP
+    // Keep the original value so bindings still resolve at render time. The
+    // defaultOrigin rewrite only makes sense for literal URLs.
+    return isBinding ? value : result
   }
 
   return value

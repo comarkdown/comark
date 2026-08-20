@@ -273,6 +273,26 @@ describe('validateProp', () => {
     })
   })
 
+  describe('binding values', () => {
+    it('validates the JSON-decoded form of :href bindings', () => {
+      expect(validateProp(':href', '"javascript:alert(1)"')).toBe(REJECTED_PROP)
+      expect(validateProp('v-bind:href', '"javascript:alert(1)"')).toBe(REJECTED_PROP)
+      expect(validateProp(':src', '"data:text/html,<script>alert(1)</script>"')).toBe(REJECTED_PROP)
+    })
+
+    it('keeps the original binding string when the decoded URL is safe', () => {
+      expect(validateProp(':href', '"https://example.com"')).toBe('"https://example.com"')
+    })
+
+    it('passes dot-path bindings through unchanged', () => {
+      expect(validateProp(':href', 'frontmatter.home')).toBe('frontmatter.home')
+    })
+
+    it('does not JSON-decode plain (non-binding) hrefs', () => {
+      expect(validateProp('href', '"https://example.com"')).toBe('"https://example.com"')
+    })
+  })
+
   describe('allowedImagePrefixes', () => {
     it('allows src that matches an allowed prefix', () => {
       expect(

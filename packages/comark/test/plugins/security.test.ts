@@ -274,6 +274,35 @@ click
     expect(anchor![1].href ?? anchor![1]['v-bind:href']).toBeUndefined()
   })
 
+  it('rejects JSON-quoted javascript: URLs in :href bindings', async () => {
+    const tree = await parseWithSecurity(
+      `\
+::a{:href='"javascript:alert(1)"'}
+click
+::
+`.trim()
+    )
+
+    const anchor = collectElements(tree.nodes).find((element) => element[0] === 'a')
+    expect(anchor).toBeDefined()
+    expect(anchor![1].href).toBeUndefined()
+    expect(anchor![1][':href']).toBeUndefined()
+  })
+
+  it('keeps JSON-quoted safe URLs in :href bindings', async () => {
+    const tree = await parseWithSecurity(
+      `\
+::a{:href='"https://example.com"'}
+click
+::
+`.trim()
+    )
+
+    const anchor = collectElements(tree.nodes).find((element) => element[0] === 'a')
+    expect(anchor).toBeDefined()
+    expect(anchor![1][':href']).toBe('"https://example.com"')
+  })
+
   it('strips framework HTML sink props from components', async () => {
     const tree = await parseWithSecurity(
       `\
