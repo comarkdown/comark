@@ -244,6 +244,33 @@ describe('validateProp', () => {
         'https://any.com/img.png'
       )
     })
+
+    it('blocks scheme-relative URLs pointing at other hosts', () => {
+      expect(validateProp('href', '//evil.com/p', { allowedLinkPrefixes: ['https://myapp.com'] })).toBe(REJECTED_PROP)
+    })
+
+    it('blocks backslash-relative URLs pointing at other hosts', () => {
+      expect(validateProp('href', '\\\\evil.com/p', { allowedLinkPrefixes: ['https://myapp.com'] })).toBe(
+        REJECTED_PROP
+      )
+    })
+
+    it('blocks lookalike hosts that share a string prefix', () => {
+      expect(validateProp('href', 'https://myapp.com.evil.com/p', { allowedLinkPrefixes: ['https://myapp.com'] })).toBe(
+        REJECTED_PROP
+      )
+    })
+
+    it('allows subpaths of an allowed origin', () => {
+      expect(validateProp('href', 'https://myapp.com/docs/page', { allowedLinkPrefixes: ['https://myapp.com'] })).toBe(
+        'https://myapp.com/docs/page'
+      )
+    })
+
+    it('allows lookalike-host URLs with the default policy', () => {
+      expect(validateProp('href', 'https://myapp.com.evil.com/p')).toBe('https://myapp.com.evil.com/p')
+      expect(validateProp('href', '//evil.com/p')).toBe('//evil.com/p')
+    })
   })
 
   describe('allowedImagePrefixes', () => {
@@ -262,6 +289,12 @@ describe('validateProp', () => {
     it('relative src is always allowed regardless of prefix list', () => {
       expect(validateProp('src', '/img/logo.png', { allowedImagePrefixes: ['https://cdn.myapp.com'] })).toBe(
         '/img/logo.png'
+      )
+    })
+
+    it('blocks scheme-relative src pointing at other hosts', () => {
+      expect(validateProp('src', '//tracker.evil.com/px.gif', { allowedImagePrefixes: ['https://cdn.myapp.com'] })).toBe(
+        REJECTED_PROP
       )
     })
 

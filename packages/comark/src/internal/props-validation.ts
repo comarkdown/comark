@@ -108,13 +108,30 @@ function validateUrl(
   }
   const urlSanitized = decodeHtmlEntities(decodedUrl)
 
+  // Dummy origin used to unmask scheme-relative (//host) and backslash
+  // (\\host) URLs: resolved against it, those land on the attacker's origin,
+  // while genuinely relative paths stay on the dummy origin.
+  const DUMMY_BASE = 'http://comark.invalid'
+
   let url: URL
   try {
     // Parse without a base — throws for relative URLs, succeeds for absolute
     url = new URL(urlSanitized)
   } catch {
-    // Relative URLs are always allowed
-    return value
+    let resolved: URL
+    try {
+      resolved = new URL(urlSanitized, DUMMY_BASE)
+    } catch {
+      // Unparseable even with a base — treat as relative
+      return value
+    }
+    if (resolved.origin === DUMMY_BASE) {
+      // Genuinely relative URLs are always allowed
+      return value
+    }
+    // Scheme-relative/backslash form — check it as the absolute URL it
+    // resolves to in the browser
+    url = resolved
   }
 
   // Block known-unsafe protocols — hard floor, not overrideable by options
@@ -138,8 +155,7 @@ function validateUrl(
   // Check allowed URL prefixes
   const allowedPrefixes = mode === 'link' ? allowedLinkPrefixes : allowedImagePrefixes
   if (!allowedPrefixes.includes('*')) {
-    const href = url.href.toLowerCase()
-    const matchesPrefix = allowedPrefixes.some((prefix) => href.startsWith(prefix.toLowerCase()))
+    const matchesPrefix = allowedPrefixes.some((prefix) => matchesAllowedPrefix(url, prefix))
     if (!matchesPrefix) {
       if (defaultOrigin) {
         return rewriteToDefaultOrigin(urlSanitized, defaultOrigin)
@@ -149,6 +165,30 @@ function validateUrl(
   }
 
   return value
+}
+
+/**
+ * Whether `url` matches an allowed prefix. Absolute-URL prefixes compare by
+ * parsed origin plus a path-segment boundary, so a lookalike host such as
+ * `https://myapp.com.evil.com` never matches the prefix `https://myapp.com`.
+ * Non-URL prefixes (unusual) fall back to a raw string prefix match.
+ */
+function matchesAllowedPrefix(url: URL, prefix: string): boolean {
+  const normalized = prefix.toLowerCase()
+  if (!normalized.includes('://')) {
+    return url.href.toLowerCase().startsWith(normalized)
+  }
+  let prefixUrl: URL
+  try {
+    prefixUrl = new URL(normalized)
+  } catch {
+    return url.href.toLowerCase().startsWith(normalized)
+  }
+  if (url.origin.toLowerCase() !== prefixUrl.origin.toLowerCase()) return false
+  const prefixPath = prefixUrl.pathname
+  if (prefixPath === '/') return true
+  const path = url.pathname.toLowerCase()
+  return path === prefixPath || path.startsWith(prefixPath.endsWith('/') ? prefixPath : `${prefixPath}/`)
 }
 
 export function validateProp(attribute: string, value: unknown, options: PropsValidationOptions = {}): unknown {
