@@ -96,6 +96,58 @@ nothing: null
     })
   })
 
+  it('preserves negative numbers and mixed-type arrays as :bindings (#364)', async () => {
+    const result = await parseMarkdown(`::comp
+---
+a-negative-number: -1.5
+a-list:
+  - 1
+  - two
+  - false
+---
+::`)
+    const attrs = getAttrs(result.nodes[0] as Node)
+
+    expect(attrs).toEqual({
+      ':a-negative-number': '-1.5',
+      ':a-list': [1, 'two', false],
+    })
+  })
+
+  it('does not confuse a quoted string scalar with an unquoted scalar in the same block (#364)', async () => {
+    const result = await parseMarkdown(`::comp
+---
+count: 3
+quoted-count: "3"
+enabled: false
+quoted-enabled: "false"
+---
+::`)
+    const attrs = getAttrs(result.nodes[0] as Node)
+
+    expect(attrs).toEqual({
+      ':count': '3',
+      'quoted-count': '3',
+      ':enabled': 'false',
+      'quoted-enabled': 'false',
+    })
+  })
+
+  it('keeps an author-supplied :prefixed path binding distinct from :bindings for typed scalars (#364)', async () => {
+    const result = await parseMarkdown(`::comp
+---
+count: 3
+:to: $doc.snippet.link
+---
+::`)
+    const attrs = getAttrs(result.nodes[0] as Node)
+
+    expect(attrs).toEqual({
+      ':count': '3',
+      ':to': '$doc.snippet.link',
+    })
+  })
+
   it('parses document-level comment-only frontmatter without throwing', async () => {
     const result = await parseMarkdown('---\n# comment only\n---\n\n# Heading')
 

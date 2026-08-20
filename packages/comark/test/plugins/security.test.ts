@@ -106,6 +106,26 @@ describe('security plugin — XSS payloads', () => {
     expect(anchor![1].href).toBeUndefined()
   })
 
+  it('strips a javascript: href delivered as an array via YAML block-props (#367)', async () => {
+    // Non-string YAML block-prop values round-trip through a `:`-prefixed
+    // JSON-string attr that gets JSON.parsed back into a real array before
+    // this plugin runs — validateProp must not skip URL validation just
+    // because the value is no longer a plain string.
+    const tree = await parseWithSecurity(`\
+::a
+---
+href:
+  - javascript:alert(1)
+---
+click
+::`)
+
+    const anchor = collectElements(tree.nodes).find((element) => element[0] === 'a')
+    expect(anchor).toBeDefined()
+    expect(anchor![1].href).toBeUndefined()
+    expect(anchor![1][':href']).toBeUndefined()
+  })
+
   it('catches XSS payloads with HTML entities', async () => {
     const md = `\
 ## XSS payloads with HTML entities
@@ -392,6 +412,20 @@ describe('security plugin — prop sanitization', () => {
     await runPlugin(tree)
     const el = tree.nodes[0] as [string, any]
     expect(el[1]).toHaveProperty('href', 'https://example.com')
+  })
+
+  it('keeps a prop whose value is the boolean `false` (#367)', async () => {
+    const tree = makeTree([['comp', { enabled: false, count: 3 }]])
+    await runPlugin(tree)
+    const el = tree.nodes[0] as [string, any]
+    expect(el[1]).toEqual({ enabled: false, count: 3 })
+  })
+
+  it('keeps a `false` prop alongside a genuinely unsafe attribute, stripping only the unsafe one', async () => {
+    const tree = makeTree([['comp', { enabled: false, onclick: 'evil()' }]])
+    await runPlugin(tree)
+    const el = tree.nodes[0] as [string, any]
+    expect(el[1]).toEqual({ enabled: false })
   })
 
   it('leaves string nodes untouched', async () => {
