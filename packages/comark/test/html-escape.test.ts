@@ -92,3 +92,11 @@ describe('footnote label sanitization', () => {
     expect(html).not.toContain('#fn-a"onmouseover')
   })
 })
+
+describe('code fence language', () => {
+  it('stops the language at quotes and angle brackets', async () => {
+    const doc = await parseMarkdown('```js"><script>\ncode\n```')
+    const pre = doc.nodes[0] as [string, Record<string, unknown>, ...Node[]]
+    expect(pre[1].language).toBe('js')
+  })
+})

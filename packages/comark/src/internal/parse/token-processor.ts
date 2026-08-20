@@ -179,8 +179,10 @@ function parseCodeblockInfo(info: string): {
 
   let remaining = info.trim()
 
-  // Extract language (stops at [ or { or whitespace)
-  const languageMatch = remaining.match(/^([^\s[{]+)/)
+  // Extract language (stops at [ or { or whitespace).
+  // Quotes and angle brackets are excluded: the language lands in the
+  // `language` attr and `language-*` class of the rendered HTML.
+  const languageMatch = remaining.match(/^([^\s[{}"'<>`]+)/)
   if (languageMatch) {
     result.language = languageMatch[1]
     remaining = remaining.slice(languageMatch[1].length).trim()
