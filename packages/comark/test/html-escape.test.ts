@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { parseMarkdown } from '../src/parse'
 import { render } from '../src/render'
+import footnotes from '../src/plugins/footnotes'
 import type { Node } from '../src/types'
 
 const renderHtml = async (md: string, options?: Parameters<typeof parseMarkdown>[1]) =>
@@ -79,5 +80,15 @@ describe('prototype-safe handler lookup', () => {
       const html = await renderNodes([[name, {}, 'x']])
       expect(html).toContain('x')
     }
+  })
+})
+
+describe('footnote label sanitization', () => {
+  it('strips unsafe characters from footnote href/id values', async () => {
+    const md = `Hi[^a"onmouseover=alert(1)]\n\n[^a"onmouseover=alert(1)]: note`
+    const html = await renderHtml(md, { plugins: [footnotes()] })
+    // `"` -> -22-, `=` -> -3d-, `(` -> -28-, `)` -> -29-
+    expect(html).toContain('href="#fn-a-22-onmouseover-3d-alert-28-1-29-"')
+    expect(html).not.toContain('#fn-a"onmouseover')
   })
 })
