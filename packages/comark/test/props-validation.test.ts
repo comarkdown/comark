@@ -157,7 +157,9 @@ describe('validateProp', () => {
     })
 
     it('blocks ftp when only https and mailto are allowed', () => {
-      expect(validateProp('href', 'ftp://files.example.com', { allowedProtocols: ['https', 'mailto'] })).toBe(REJECTED_PROP)
+      expect(validateProp('href', 'ftp://files.example.com', { allowedProtocols: ['https', 'mailto'] })).toBe(
+        REJECTED_PROP
+      )
     })
 
     it('allows mailto when included in the list', () => {
@@ -185,7 +187,9 @@ describe('validateProp', () => {
     })
 
     it('blocks href that does not match any allowed prefix', () => {
-      expect(validateProp('href', 'https://evil.com/page', { allowedLinkPrefixes: ['https://myapp.com'] })).toBe(REJECTED_PROP)
+      expect(validateProp('href', 'https://evil.com/page', { allowedLinkPrefixes: ['https://myapp.com'] })).toBe(
+        REJECTED_PROP
+      )
     })
 
     it('relative hrefs are always allowed regardless of prefix list', () => {
@@ -260,7 +264,9 @@ describe('validateProp', () => {
     })
 
     it('data:text/html in href is always blocked regardless of allowDataImages', () => {
-      expect(validateProp('href', 'data:text/html,<script>evil()</script>', { allowDataImages: true })).toBe(REJECTED_PROP)
+      expect(validateProp('href', 'data:text/html,<script>evil()</script>', { allowDataImages: true })).toBe(
+        REJECTED_PROP
+      )
     })
   })
 
