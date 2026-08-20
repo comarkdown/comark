@@ -408,6 +408,37 @@ describe('security plugin — allowedTags', () => {
   })
 })
 
+describe('security plugin — as prop', () => {
+  it('strips as pointing at a blocked tag', async () => {
+    const tree = makeTree([['span', { as: 'script' }, 'x']])
+    await runPlugin(tree, { blockedTags: ['script'] })
+    const el = tree.nodes[0] as [string, any]
+    expect(el[0]).toBe('span')
+    expect(el[1].as).toBeUndefined()
+  })
+
+  it('strips as pointing at a tag outside allowedTags', async () => {
+    const tree = makeTree([['span', { as: 'AdminPanel' }, 'x']])
+    await runPlugin(tree, { allowedTags: ['span'] })
+    const el = tree.nodes[0] as [string, any]
+    expect(el[1].as).toBeUndefined()
+  })
+
+  it('keeps as when the resolved tag is allowed', async () => {
+    const tree = makeTree([['span', { as: 'Badge' }, 'x']])
+    await runPlugin(tree, { allowedTags: ['span', 'badge'] })
+    const el = tree.nodes[0] as [string, any]
+    expect(el[1].as).toBe('Badge')
+  })
+
+  it('keeps as when no tag filters are configured', async () => {
+    const tree = makeTree([['span', { as: 'Badge' }, 'x']])
+    await runPlugin(tree)
+    const el = tree.nodes[0] as [string, any]
+    expect(el[1].as).toBe('Badge')
+  })
+})
+
 describe('security plugin — prop sanitization', () => {
   it('strips event handler props', async () => {
     const tree = makeTree([['div', { onclick: 'evil()', class: 'safe' }]])
