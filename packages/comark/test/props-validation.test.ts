@@ -93,6 +93,27 @@ describe('validateProp', () => {
       expect(validateProp('href', 'data:text/vbscript,evil')).toBe(REJECTED_PROP)
     })
 
+    it('blocks entity-encoded javascript: hrefs', () => {
+      expect(validateProp('href', 'javascript&#58;alert(1)')).toBe(REJECTED_PROP)
+      expect(validateProp('href', 'javascript&#x3A;alert(1)')).toBe(REJECTED_PROP)
+      expect(validateProp('href', 'javascript&colon;alert(1)')).toBe(REJECTED_PROP)
+    })
+
+    it('blocks entity-encoded whitespace inside the scheme', () => {
+      expect(validateProp('href', 'jav&#x09;ascript:alert(1)')).toBe(REJECTED_PROP)
+      expect(validateProp('href', 'java&Tab;script:alert(1)')).toBe(REJECTED_PROP)
+      expect(validateProp('href', '&NewLine;javascript:alert(1)')).toBe(REJECTED_PROP)
+    })
+
+    it('blocks nested-encoded javascript: hrefs', () => {
+      expect(validateProp('href', 'javascript&amp;#58;alert(1)')).toBe(REJECTED_PROP)
+    })
+
+    it('allows safe URLs containing entities', () => {
+      expect(validateProp('href', '/search?q=a&amp;b=2')).toBe('/search?q=a&amp;b=2')
+      expect(validateProp('href', 'https://example.com/?a=1&amp;b=2')).toBe('https://example.com/?a=1&amp;b=2')
+    })
+
     it('blocks vbscript: hrefs', () => {
       expect(validateProp('href', 'vbscript:MsgBox(1)')).toBe(REJECTED_PROP)
     })

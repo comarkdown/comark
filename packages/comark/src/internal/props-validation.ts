@@ -45,6 +45,47 @@ function rewriteToDefaultOrigin(urlStr: string, defaultOrigin: string): string {
   }
 }
 
+// Named entities relevant to URL smuggling — the full HTML5 table is huge,
+// but these are the ones that can hide a scheme or whitespace inside it.
+const NAMED_ENTITIES: Record<string, string> = {
+  amp: '&',
+  lt: '<',
+  gt: '>',
+  quot: '"',
+  apos: "'",
+  colon: ':',
+  sol: '/',
+  bsol: '\\',
+  Tab: '\t',
+  NewLine: '\n',
+}
+
+/**
+ * Decode HTML entities until stable. Browsers entity-decode attribute values
+ * before navigating, so validation must inspect the decoded form — stripping
+ * entities instead (the previous behavior) let `javascript&#58;alert(1)`
+ * through as a "relative" URL. Repeating the pass catches nested encodings
+ * like `&amp;#58;`.
+ */
+function decodeHtmlEntities(value: string): string {
+  let result = value
+  for (let pass = 0; pass < 10; pass++) {
+    const decoded = result
+      .replace(/&#x([0-9a-f]+);?/gi, (match, hex) => {
+        const code = Number.parseInt(hex, 16)
+        return code <= 0x10ffff ? String.fromCodePoint(code) : match
+      })
+      .replace(/&#(\d+);?/g, (match, dec) => {
+        const code = Number.parseInt(dec, 10)
+        return code <= 0x10ffff ? String.fromCodePoint(code) : match
+      })
+      .replace(/&([a-z]+);?/gi, (match, name) => NAMED_ENTITIES[name] ?? match)
+    if (decoded === result) break
+    result = decoded
+  }
+  return result
+}
+
 function validateUrl(
   value: string,
   mode: 'link' | 'image',
@@ -58,11 +99,14 @@ function validateUrl(
     allowDataImages = true,
   } = options
 
-  const decodedUrl = decodeURIComponent(value)
-  const urlSanitized = decodedUrl
-    .replace(/&#x([0-9a-f]+);?/gi, '')
-    .replace(/&#(\d+);?/g, '')
-    .replace(/&[a-z]+;?/gi, '')
+  let decodedUrl: string
+  try {
+    decodedUrl = decodeURIComponent(value)
+  } catch {
+    // Malformed percent-encoding — inspect the raw value instead of throwing
+    decodedUrl = value
+  }
+  const urlSanitized = decodeHtmlEntities(decodedUrl)
 
   let url: URL
   try {
