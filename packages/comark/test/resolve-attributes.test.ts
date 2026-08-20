@@ -110,7 +110,7 @@ describe('HTML sink props', () => {
         dangerouslySetInnerHTML: { __html: '<img src=x onerror=alert(1)>' },
         title: 'safe',
       },
-      makeRenderData(),
+      makeRenderData()
     )
     expect(result).toEqual({ title: 'safe' })
   })
@@ -124,9 +124,68 @@ describe('HTML sink props', () => {
         id: 'keep',
       },
       makeRenderData(),
-      { parseJson: true },
+      { parseJson: true }
     )
     expect(result).toEqual({ id: 'keep' })
+  })
+})
+
+describe('unsafe URL bindings (render-time hard floor)', () => {
+  it('drops :href bindings resolving to javascript: via dot-path', () => {
+    const result = resolveAttributes(
+      { ':href': 'frontmatter.home' },
+      makeRenderData({ frontmatter: { home: 'javascript:alert(1)' } })
+    )
+    expect(result).toEqual({})
+  })
+
+  it('drops :href bindings resolving to javascript: via JSON (parseJson mode)', () => {
+    const result = resolveAttributes({ ':href': '"javascript:alert(1)"' }, makeRenderData(), { parseJson: true })
+    expect(result).toEqual({})
+  })
+
+  it('drops :src bindings resolving to data:text/html', () => {
+    const result = resolveAttributes({ ':src': '"data:text/html,<script>alert(1)</script>"' }, makeRenderData(), {
+      parseJson: true,
+    })
+    expect(result).toEqual({})
+  })
+
+  it('drops bindings whose resolved value is entity-encoded javascript:', () => {
+    const result = resolveAttributes(
+      { ':href': 'frontmatter.home' },
+      makeRenderData({ frontmatter: { home: 'javascript&#58;alert(1)' } })
+    )
+    expect(result).toEqual({})
+  })
+
+  it('keeps safe URL bindings', () => {
+    const result = resolveAttributes(
+      { ':href': 'frontmatter.home' },
+      makeRenderData({ frontmatter: { home: 'https://example.com' } })
+    )
+    expect(result).toEqual({ href: 'https://example.com' })
+  })
+
+  it('keeps relative URL bindings', () => {
+    const result = resolveAttributes(
+      { ':href': 'frontmatter.home' },
+      makeRenderData({ frontmatter: { home: '/about' } })
+    )
+    expect(result).toEqual({ href: '/about' })
+  })
+
+  it('does not drop literal javascript: hrefs — parse-time validation is the plugin\u2019s job', () => {
+    const result = resolveAttributes({ href: 'javascript:alert(1)' }, makeRenderData())
+    expect(result).toEqual({ href: 'javascript:alert(1)' })
+  })
+
+  it('does not drop non-URL bindings with unsafe-looking strings', () => {
+    const result = resolveAttributes(
+      { ':title': 'frontmatter.t' },
+      makeRenderData({ frontmatter: { t: 'javascript: is a scheme' } })
+    )
+    expect(result).toEqual({ title: 'javascript: is a scheme' })
   })
 })
 

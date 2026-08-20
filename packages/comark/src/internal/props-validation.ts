@@ -191,6 +191,30 @@ function matchesAllowedPrefix(url: URL, prefix: string): boolean {
   return path === prefixPath || path.startsWith(prefixPath.endsWith('/') ? prefixPath : `${prefixPath}/`)
 }
 
+/**
+ * Hard-floor check: does this string resolve to a known-unsafe URL scheme
+ * (`javascript:`, `data:text/html`, …)? Applied to binding-resolved values at
+ * render time so dot-path data (frontmatter/meta/data) cannot smuggle an
+ * unsafe URL past parse-time validation. Relative URLs are never unsafe here.
+ */
+export function isUnsafeUrlValue(value: string): boolean {
+  let decoded = value
+  try {
+    decoded = decodeURIComponent(value)
+  } catch {
+    // Malformed percent-encoding — inspect the raw value
+  }
+  const sanitized = decodeHtmlEntities(decoded)
+
+  let url: URL
+  try {
+    url = new URL(sanitized)
+  } catch {
+    return false
+  }
+  return unsafeLinkPrefix.some((prefix) => url.href.toLowerCase().startsWith(prefix))
+}
+
 export function validateProp(attribute: string, value: unknown, options: PropsValidationOptions = {}): unknown {
   const isBinding = /^(:|v-bind:)/.test(attribute)
   attribute = attribute

@@ -1,5 +1,6 @@
 import { stringifyYaml } from '../yaml.ts'
 import { get } from '../../utils/index.ts'
+import { isUnsafeUrlValue } from '../props-validation.ts'
 import type { NodeRenderData } from '../../types.ts'
 
 export interface ResolveAttributesOptions {
@@ -53,33 +54,51 @@ export function resolveAttributes(
 
     if (HTML_SINK_PROPS.has(outKey.toLowerCase())) continue
 
+    let outValue: unknown
+    let resultKey = key
+
     if (options.parseJson && isBinding) {
       // Framework mode: always strip `:` and hand components real JS values.
       if (typeof value === 'string') {
         try {
-          result[outKey] = JSON.parse(value)
-          continue
+          outValue = JSON.parse(value)
         } catch {
           // not JSON — fall through to dot-path lookup
+          outValue = get(renderData, value)
         }
-        result[outKey] = get(renderData, value)
-        continue
+      } else {
+        // Non-string binding value (e.g. an object literal the parser already
+        // decoded) — pass through with the prefix stripped.
+        outValue = value
       }
-      // Non-string binding value (e.g. an object literal the parser already
-      // decoded) — pass through with the prefix stripped.
-      result[outKey] = value
+      resultKey = outKey
+    } else if (isBinding && typeof value === 'string') {
+      const resolved = get(renderData, value)
+      if (resolved !== undefined) {
+        outValue = resolved
+        resultKey = outKey
+      } else {
+        outValue = value
+      }
+    } else {
+      outValue = value
+    }
+
+    // Hard floor: a binding must never resolve href/src to an unsafe scheme
+    // (javascript:, data:text/html, …). Parse-time validation only sees the
+    // literal path, so the resolved value is checked here — even when the
+    // security plugin is not enabled.
+    const lowerOutKey = outKey.toLowerCase()
+    if (
+      isBinding &&
+      (lowerOutKey === 'href' || lowerOutKey === 'src' || lowerOutKey === 'xlink:href') &&
+      typeof outValue === 'string' &&
+      isUnsafeUrlValue(outValue)
+    ) {
       continue
     }
 
-    if (isBinding && typeof value === 'string') {
-      const resolved = get(renderData, value)
-      if (resolved !== undefined) {
-        result[outKey] = resolved
-        continue
-      }
-    }
-
-    result[key] = value
+    result[resultKey] = outValue
   }
   return result
 }

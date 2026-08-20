@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { parseMarkdown } from '../../src/parse'
 import security from '../../src/plugins/security'
 import { textContent } from '../../src/utils/index.ts'
-import { renderMarkdown } from 'comark/render'
+import { render, renderMarkdown } from 'comark/render'
 import type { ElementNode, Node, MarkdownDocument } from '../../src/types'
 
 const parseWithSecurity = (md: string, options: Parameters<typeof security>[0] = {}) =>
@@ -301,6 +301,22 @@ click
     const anchor = collectElements(tree.nodes).find((element) => element[0] === 'a')
     expect(anchor).toBeDefined()
     expect(anchor![1][':href']).toBe('"https://example.com"')
+  })
+
+  it('blocks javascript: URLs smuggled through frontmatter bindings at render time', async () => {
+    const md = `---
+home: javascript:alert(1)
+---
+
+[Home](placeholder){:href="frontmatter.home"}`
+
+    const tree = await parseWithSecurity(md)
+    // Parse-time validation only sees the literal dot-path…
+    const anchor = collectElements(tree.nodes).find((element) => element[0] === 'a')
+    expect(anchor).toBeDefined()
+    // …but the render-time hard floor drops the resolved unsafe URL.
+    const html = await render(tree, { format: 'text/html', blockSeparator: '\n' })
+    expect(html).not.toContain('javascript:')
   })
 
   it('strips framework HTML sink props from components', async () => {

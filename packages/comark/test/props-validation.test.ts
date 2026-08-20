@@ -250,9 +250,7 @@ describe('validateProp', () => {
     })
 
     it('blocks backslash-relative URLs pointing at other hosts', () => {
-      expect(validateProp('href', '\\\\evil.com/p', { allowedLinkPrefixes: ['https://myapp.com'] })).toBe(
-        REJECTED_PROP
-      )
+      expect(validateProp('href', '\\\\evil.com/p', { allowedLinkPrefixes: ['https://myapp.com'] })).toBe(REJECTED_PROP)
     })
 
     it('blocks lookalike hosts that share a string prefix', () => {
@@ -313,9 +311,9 @@ describe('validateProp', () => {
     })
 
     it('blocks scheme-relative src pointing at other hosts', () => {
-      expect(validateProp('src', '//tracker.evil.com/px.gif', { allowedImagePrefixes: ['https://cdn.myapp.com'] })).toBe(
-        REJECTED_PROP
-      )
+      expect(
+        validateProp('src', '//tracker.evil.com/px.gif', { allowedImagePrefixes: ['https://cdn.myapp.com'] })
+      ).toBe(REJECTED_PROP)
     })
 
     it('rewrites disallowed src to defaultOrigin when provided', () => {
