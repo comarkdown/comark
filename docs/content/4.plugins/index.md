@@ -145,7 +145,7 @@ Optional plugins you register via `plugins: [...]`.
   ::
 ::
 
-## Use Plugins
+## Use plugins
 
 Pass plugins to `parseMarkdown()` or the `<Markdown>` component:
 

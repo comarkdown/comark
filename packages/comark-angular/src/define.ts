@@ -4,7 +4,7 @@ import { Markdown } from './components/markdown.component.ts'
 import { MarkdownDocument } from './components/markdown-document.component.ts'
 
 export interface DefineMarkdownComponentOptions extends ParserOptions {
-  /** Display name for debugging (used as Angular selector). */
+  /** Display name for debugging. The Angular selector is always `comark-markdown-defined`. */
   name?: string
   /** Pre-configured component mappings. */
   components?: Record<string, Type<any>>
@@ -13,7 +13,7 @@ export interface DefineMarkdownComponentOptions extends ParserOptions {
 }
 
 export interface DefineMarkdownDocumentOptions {
-  /** Display name for debugging (used as Angular selector). */
+  /** Display name for debugging. The Angular selector is always `comark-markdown-document-defined`. */
   name?: string
   /** Pre-configured component mappings. */
   components?: Record<string, Type<any>>

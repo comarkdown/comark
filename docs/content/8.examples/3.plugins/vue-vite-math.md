@@ -46,7 +46,7 @@ This example demonstrates how to use Comark with LaTeX math formulas in Vue:
    $$
    ```
 
-## Syntax Examples
+## Syntax examples
 
 **Inline Math**: Use single `$` delimiters
 ```markdown

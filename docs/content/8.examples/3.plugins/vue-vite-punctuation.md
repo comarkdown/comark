@@ -38,7 +38,7 @@ import punctuation from '@comark/vue/plugins/punctuation'
 </template>
 ```
 
-## Learn More
+## Learn more
 
 - [Punctuation Plugin Documentation](/plugins/built-in/punctuation)
 - [Comark Documentation](https://comark.dev)

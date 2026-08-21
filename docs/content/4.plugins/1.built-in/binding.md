@@ -22,9 +22,9 @@ The `comark/plugins/binding` plugin adds a `{{ path || default }}` inline shorth
 
 Under the hood it emits a `binding` component node whose `:value` attribute points at a dot-path. The [data binding](/syntax/components#data-binding) layer resolves that path against the ambient render context, so bindings work seamlessly across HTML, ANSI, React, Svelte, and Vue, and round-trip back to their source form via `renderMarkdown`.
 
-## Basic Usage
+## Basic usage
 
-### Registering the Plugin
+### Registering the plugin
 
 ```typescript [parse.ts]
 import { parseMarkdown } from 'comark'
@@ -55,7 +55,7 @@ Rendered HTML:
 <p>Welcome, Ada (admin).</p>
 ```
 
-## Render Handlers
+## Render handlers
 
 The plugin ships a renderer-specific `Binding` export for every first-party package so the `<binding>` AST node turns into the resolved value (falling back to the `|| default`) rather than a literal `<binding>` tag.
 
@@ -179,7 +179,7 @@ const source = await renderMarkdown(document, {
 // → "Hi {{ user.name }}!\n"
 ```
 
-## Resolution Scope
+## Resolution scope
 
 A binding value (`{{ path }}`) is resolved as a dot-path against the same render context used by `:prefix` component bindings:
 
@@ -192,7 +192,7 @@ A binding value (`{{ path }}`) is resolved as a dot-path against the same render
 
 See [Data Binding](/syntax/components#data-binding) for the full contract and additional examples.
 
-## Default Values
+## Default values
 
 Use `|| default` to specify a fallback that's emitted when the dot-path does not resolve:
 
@@ -203,7 +203,7 @@ Hello {{ data.user.name || guest }}!
 - If `data.user.name` resolves, its value is rendered.
 - Otherwise the literal text after `||` is rendered (trim and quote as you see fit; YAML rules don't apply here).
 
-## Custom Tag Name
+## Custom tag name
 
 You can swap the emitted element tag via the plugin's `tag` option. This is handy if you already use `binding` as a custom component name:
 
@@ -219,7 +219,7 @@ const tree = await parseMarkdown('{{ x }}', {
 
 Pair this with a `components: { prop: Binding }` mapping to preserve the render behavior.
 
-## API Reference
+## API reference
 
 ### `binding(options?: MdcInlineBindingOptions): ComarkPlugin`
 
@@ -257,7 +257,7 @@ import { Binding } from '@comark/svelte/plugins/binding'
 import { Binding } from '@comark/vue/plugins/binding'
 ```
 
-## Use Cases
+## Use cases
 
 1. **Personalized content**: greet users by name from frontmatter or runtime data:
 
@@ -298,7 +298,7 @@ import { Binding } from '@comark/vue/plugins/binding'
    ::
    ```
 
-## See Also
+## See also
 
 - [Data Binding](/syntax/components#data-binding): the underlying `:prefix` resolution contract
 - [Component Syntax](/syntax/components): the full Comark component API
