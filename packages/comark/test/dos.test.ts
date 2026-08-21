@@ -41,4 +41,15 @@ describe('denial-of-service hardening', () => {
     expect(html).toContain('task-list-item')
     expect(html).toContain('contains-task-list')
   })
+
+  it('escapes long runs of tag-like text without quadratic rescanning', async () => {
+    // escapeInline used to re-test /^<[a-zA-Z!?/][^>]*>/ against the whole
+    // remainder of the node for every `<` — O(n²) on runs like `<a<a<a…`.
+    // (Pre-fix this payload takes ~10s and hits the test timeout.)
+    const text = '<a'.repeat(50_000)
+    const doc = { frontmatter: {}, meta: {}, nodes: [['p', {}, text]] } as any
+    const md = await renderMarkdown(doc)
+    // No `>` anywhere, so nothing is tag-like and the text stays untouched
+    expect(md.trim()).toBe(text)
+  })
 })
