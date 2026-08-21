@@ -626,7 +626,6 @@ import { defineMarkdownComponent } from '@comark/angular'
 import math, { Math } from '@comark/angular/plugins/math'
 
 export const DocsMarkdown = defineMarkdownComponent({
-  name: 'docs-markdown',
   plugins: [math()],
   components: { Math },
 })
