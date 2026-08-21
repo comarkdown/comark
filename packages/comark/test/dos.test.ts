@@ -21,4 +21,9 @@ describe('denial-of-service hardening', () => {
     const pre = doc.nodes[0] as [string, Record<string, unknown>, ...unknown[]]
     expect(pre[1].highlights).toEqual([1, 2, 3, 50])
   })
+
+  it('serializes a non-string class attribute without throwing', async () => {
+    const doc = await parseMarkdown('Hi [x]{class=["a","b"]}')
+    await expect(renderMarkdown(doc)).resolves.toContain('.a.b')
+  })
 })
