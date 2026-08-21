@@ -775,6 +775,19 @@ describe('autoCloseMarkdown - syntax option', () => {
     expect(autoCloseMarkdown('text{.cls **bold', { syntax: false })).toBe('text{.cls **bold**')
   })
 
+  it('skips _ inside attribute values when attributes are enabled without component syntax', () => {
+    expect(
+      autoCloseMarkdown('this is a [link with an attribute](https://example.com){target="_blank"}', {
+        syntax: false,
+        attributes: true,
+      })
+    ).toBe('this is a [link with an attribute](https://example.com){target="_blank"}')
+  })
+
+  it('does not treat unclosed :: as a component when only attributes are enabled', () => {
+    expect(autoCloseMarkdown('::alert\nContent', { syntax: false, attributes: true })).toBe('::alert\nContent')
+  })
+
   it('still completes frontmatter with syntax: false', () => {
     expect(autoCloseMarkdown('---\ntitle: Hello', { frontmatter: true, syntax: false })).toBe('---\ntitle: Hello\n---')
   })

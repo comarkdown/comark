@@ -13,12 +13,18 @@ import { closeTables } from './table.ts'
  * @param options - `frontmatter` completes an unclosed leading frontmatter block.
  *   `syntax: false` disables Comark component-fence handling (`::` closers and
  *   props braces), for input parsed without the components plugin.
+ *   `attributes: true` still treats `{...}` as an attribute scope (so `_` / `*`
+ *   inside values are not closed) without enabling component fences.
  * @returns The markdown with unclosed syntax closed
  */
-export function autoCloseMarkdown(markdown: string, options: { frontmatter?: boolean; syntax?: boolean } = {}): string {
+export function autoCloseMarkdown(
+  markdown: string,
+  options: { frontmatter?: boolean; syntax?: boolean; attributes?: boolean } = {}
+): string {
   if (!markdown || markdown === '') return markdown
 
   const syntaxEnabled = options.syntax !== false
+  const attributesEnabled = options.attributes ?? syntaxEnabled
 
   const lines = markdown.split('\n')
   const n = lines.length
@@ -152,7 +158,7 @@ export function autoCloseMarkdown(markdown: string, options: { frontmatter?: boo
   // Fix inline markers on last line (skip inside block-level structures)
   const lastIdx = n - 1
   if (!inFrontmatter && !inBlockMath && lines[lastIdx].trim() !== '$$') {
-    lines[lastIdx] = closeInlineMarkersLinear(lines[lastIdx], syntaxEnabled)
+    lines[lastIdx] = closeInlineMarkersLinear(lines[lastIdx], attributesEnabled)
   }
 
   let result = lines.join('\n')
@@ -256,9 +262,9 @@ function scanDelimiterRun(line: string, start: number, marker: string) {
  * Closes inline markers (*, **, ***, ~~, `, $, $$, [, () on the last line
  * without using regex - pure character scanning in O(n) time
  *
- * With `syntax` false, `{...}` is literal text instead of an attribute scope.
+ * With `attributesEnabled` false, `{...}` is literal text instead of an attribute scope.
  */
-function closeInlineMarkersLinear(line: string, syntax: boolean): string {
+function closeInlineMarkersLinear(line: string, attributesEnabled: boolean): string {
   const len = line.length
   if (len === 0) return line
 
@@ -318,11 +324,11 @@ function closeInlineMarkersLinear(line: string, syntax: boolean): string {
       continue
     }
 
-    if (syntax && ch === '{' && prevCh !== ' ') {
+    if (attributesEnabled && ch === '{' && prevCh !== ' ') {
       inAttributes++
       continue
     }
-    if (syntax && ch === '}') {
+    if (attributesEnabled && ch === '}') {
       if (inAttributes > 0) inAttributes--
       continue
     }
