@@ -93,4 +93,3 @@ describe('comarkAttributes quoting', () => {
     expect(span[1].bad).toBeUndefined()
   })
 })
-
