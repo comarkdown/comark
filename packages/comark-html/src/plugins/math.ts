@@ -1,5 +1,6 @@
 import type { ElementNode } from 'comark'
 import katex from 'katex'
+import { escapeHtml } from '../utils/index.ts'
 
 export * from 'comark/plugins/math'
 export { default } from 'comark/plugins/math'
@@ -32,6 +33,10 @@ export const Math = ([, attrs]: ElementNode): string => {
     })
     return isInline ? `<span class="math inline">${rendered}</span>` : `<div class="math block">${rendered}</div>`
   } catch {
-    return isInline ? `<span class="math inline">${content}</span>` : `<div class="math block">${content}</div>`
+    // KaTeX can still throw non-ParseErrors (e.g. RangeError on deeply nested
+    // input) — never interpolate the raw source unescaped.
+    return isInline
+      ? `<span class="math inline">${escapeHtml(content)}</span>`
+      : `<div class="math block">${escapeHtml(content)}</div>`
   }
 }
