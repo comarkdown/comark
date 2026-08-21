@@ -86,10 +86,21 @@ jobs:
               }
             }
 
-            const prNumber = Number(read('pr-number'))
+            const prNumberRaw = read('pr-number')
             const outcome = read('outcome')
-            if (!prNumber || !outcome) {
+            // The artifact is produced by the PR's own workflow run, and its
+            // content is controlled by the PR author — validate before use.
+            if (!/^\d+$/.test(prNumberRaw) || !['success', 'failure'].includes(outcome)) {
               core.info('No usable bundle report — nothing to do.')
+              return
+            }
+            const prNumber = Number(prNumberRaw)
+
+            // Confirm the referenced PR actually belongs to this run,
+            // otherwise a crafted artifact could target any issue number.
+            const { data: reportedPr } = await github.rest.pulls.get({ owner, repo, pull_number: prNumber })
+            if (reportedPr.head.sha !== context.payload.workflow_run.head_sha) {
+              core.setFailed('Bundle report artifact does not match the workflow run head SHA.')
               return
             }
 
@@ -122,6 +133,12 @@ jobs:
               .trimEnd()
               .slice(0, 20_000)
 
+            // The excerpt is attacker-controlled text — pick a comment fence
+            // longer than any backtick run it contains so it cannot break out
+            // of the code block.
+            const fenceRun = Math.max(3, ...[...excerpt.matchAll(/`+/g)].map((m) => m[0].length + 1))
+            const excerptFence = '`'.repeat(fenceRun)
+
             const workflowUrl = `${context.serverUrl}/${owner}/${repo}/actions/workflows/bundle-snapshot.yml`
             const testUrl = `${context.serverUrl}/${owner}/${repo}/blob/main/test/bundle.test.ts`
             const body = [
@@ -141,9 +158,9 @@ jobs:
               '',
               '<details><summary>Bundle size diff</summary>',
               '',
-              '```diff',
+              `${excerptFence}diff`,
               excerpt,
-              '```',
+              excerptFence,
               '',
               `[Full CI log](${process.env.RUN_URL})`,
               '',
