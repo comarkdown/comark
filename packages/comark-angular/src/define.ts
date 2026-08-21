@@ -4,8 +4,6 @@ import { Markdown } from './components/markdown.component.ts'
 import { MarkdownDocument } from './components/markdown-document.component.ts'
 
 export interface DefineMarkdownComponentOptions extends ParserOptions {
-  /** Display name for debugging (used as Angular selector). */
-  name?: string
   /** Pre-configured component mappings. */
   components?: Record<string, Type<any>>
   /** Additional CSS class for the wrapper. */
@@ -13,8 +11,6 @@ export interface DefineMarkdownComponentOptions extends ParserOptions {
 }
 
 export interface DefineMarkdownDocumentOptions {
-  /** Display name for debugging (used as Angular selector). */
-  name?: string
   /** Pre-configured component mappings. */
   components?: Record<string, Type<any>>
   /** Additional CSS class for the wrapper. */
@@ -33,7 +29,6 @@ export interface DefineMarkdownDocumentOptions {
  * import math, { Math } from '@comark/angular/plugins/math'
  *
  * export const DocsMarkdown = defineMarkdownComponent({
- *   name: 'DocsMarkdown',
  *   plugins: [math()],
  *   components: { Math },
  *   class: 'prose dark:prose-invert',
@@ -105,7 +100,6 @@ export function defineMarkdownComponent(config: DefineMarkdownComponentOptions =
  * import { Math } from '@comark/angular/plugins/math'
  *
  * export const DocsRenderer = defineMarkdownDocumentComponent({
- *   name: 'DocsRenderer',
  *   components: { Math },
  * })
  * ```
