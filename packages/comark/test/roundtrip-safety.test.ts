@@ -46,6 +46,36 @@ describe('mermaid fence selection', () => {
   })
 })
 
+describe('component marker escaping', () => {
+  it('keeps escaped :: markers as literal text through a round trip', async () => {
+    const { t2 } = await roundTrip('\\:\\:alert')
+    expect(t2.nodes).toEqual([['p', {}, '::alert']])
+  })
+
+  it('keeps entity-encoded :: markers as literal text through a round trip', async () => {
+    const { t2 } = await roundTrip('&#58;&#58;alert')
+    expect(t2.nodes).toEqual([['p', {}, '::alert']])
+  })
+
+  it('escapes a bare :: line inside block component content', async () => {
+    // The middle paragraph is the literal text `::` (escaped in the source),
+    // which must not become a fence close after serialization.
+    const md = '::card\nfirst\n\n\\::\n\nsecond\n::'
+    const { t1, t2 } = await roundTrip(md)
+    expect(t2.nodes).toEqual(t1.nodes)
+  })
+
+  it('escapes inline component markers in text', async () => {
+    const { t2 } = await roundTrip('type \\:alert to continue')
+    expect(t2.nodes).toEqual([['p', {}, 'type :alert to continue']])
+  })
+
+  it('escapes attribute block openers after inline elements', async () => {
+    const { t2 } = await roundTrip('**bold** \\{.red}')
+    expect(t2.nodes).toEqual([['p', {}, ['strong', {}, 'bold'], ' {.red}']])
+  })
+})
+
 describe('comarkAttributes quoting', () => {
   it('round-trips attribute values containing double quotes', async () => {
     // The text sibling keeps the span inline in both parses (a lone
