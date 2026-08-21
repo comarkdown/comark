@@ -177,7 +177,16 @@ export function comarkAttributes(attributes: Record<string, unknown>) {
         return `${key}="${JSON.stringify(value).replace(/"/g, '\\"')}"`
       }
 
-      return `${key}="${value}"`
+      const str = String(value)
+      // A double quote inside a double-quoted value would terminate it early,
+      // letting the remainder become new attributes on re-parse. Single
+      // quotes round-trip cleanly when the value has no single quote;
+      // otherwise backslash-escape (the parser skips \" without terminating —
+      // safe, though it keeps the backslash in the value).
+      if (str.includes('"') && !str.includes("'")) {
+        return `${key}='${str}'`
+      }
+      return `${key}="${str.replace(/"/g, '\\"')}"`
     })
     .join(' ')
 

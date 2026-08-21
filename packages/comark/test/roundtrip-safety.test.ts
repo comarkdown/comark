@@ -46,3 +46,21 @@ describe('mermaid fence selection', () => {
   })
 })
 
+describe('comarkAttributes quoting', () => {
+  it('round-trips attribute values containing double quotes', async () => {
+    // The text sibling keeps the span inline in both parses (a lone
+    // `:span[...]` line is a leaf block component — pre-existing asymmetry).
+    const md = `say :span[hi]{title='a"b'} now`
+    const { t1, t2 } = await roundTrip(md)
+    expect(t2.nodes).toEqual(t1.nodes)
+  })
+
+  it('does not let a quoted value inject a new attribute on re-parse', async () => {
+    const md = `:span[hi]{title='x" bad="1'}`
+    const { t2 } = await roundTrip(md)
+    const span = (t2.nodes[0] as any[])[2] // p > span
+    expect(span[1].title).toBe('x" bad="1')
+    expect(span[1].bad).toBeUndefined()
+  })
+})
+
