@@ -76,7 +76,7 @@ function resolveComponent(tag: string, components: Record<string, any>, componen
   const pascalTag = pascalCase(tag)
   const proseTag = `Prose${pascalTag}`
 
-  let resolvedComponent = components[proseTag] || components[pascalTag] || components[tag]
+  let resolvedComponent = components[proseTag] || components[tag] || components[pascalTag]
 
   // If not in components map and manifest is provided, try dynamic resolution
   if (!resolvedComponent && componentsManifest) {

@@ -54,7 +54,7 @@ function getChildren(node: MarkdownAstNode): MarkdownAstNode[] {
 function resolveComponent(tag: string, components: Record<string, Type<any>>): Type<any> | undefined {
   const pascalTag = pascalCase(tag)
   const proseTag = `Prose${pascalTag}`
-  return components[proseTag] || components[pascalTag] || components[tag]
+  return components[proseTag] || components[tag] || components[pascalTag]
 }
 
 /** Void (self-closing) HTML elements that must not have children. */

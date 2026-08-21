@@ -75,8 +75,8 @@ function resolveComponent(
 
   let resolvedComponent =
     components[proseTag] ||
-    components[pascalTag] ||
     components[tag] ||
+    components[pascalTag] ||
     // If the component is not found in the components map, try to find it in the app context
     appComponents?.[proseTag] ||
     appComponents?.[pascalTag]

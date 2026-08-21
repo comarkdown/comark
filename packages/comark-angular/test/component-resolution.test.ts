@@ -3,12 +3,12 @@ import { pascalCase } from 'comark/utils'
 
 /**
  * Tests the component resolution logic used by MarkdownNode.
- * The resolution order is: Prose{PascalTag} > PascalTag > tag
+ * The resolution order is: Prose{PascalTag} > tag > PascalTag
  */
 function resolveComponent(tag: string, components: Record<string, any>): any | undefined {
   const pascalTag = pascalCase(tag)
   const proseTag = `Prose${pascalTag}`
-  return components[proseTag] || components[pascalTag] || components[tag]
+  return components[proseTag] || components[tag] || components[pascalTag]
 }
 
 describe('component resolution', () => {
@@ -63,13 +63,5 @@ describe('component resolution', () => {
       ProseAlert: 'ProseAlertComponent',
     }
     expect(resolveComponent('alert', components)).toBe('ProseAlertComponent')
-  })
-
-  it('prefers PascalCase over exact tag', () => {
-    const components = {
-      alert: 'ExactAlert',
-      Alert: 'PascalAlert',
-    }
-    expect(resolveComponent('alert', components)).toBe('PascalAlert')
   })
 })
