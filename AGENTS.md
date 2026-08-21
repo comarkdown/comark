@@ -725,8 +725,12 @@ A maintainer (write access required) can:
 The workflow then rebuilds, runs `vitest run bundle --update`, re-runs the check
 to verify the refreshed snapshot, and commits `test/bundle.test.ts` back to the
 PR branch via the GitHub API (so the commit is verified, satisfying
-`commit-signature.yml`). For fork PRs it cannot push, so it posts the patch in
-the comment instead. The comment is deleted automatically once the check passes.
+`commit-signature.yml`). PR code always executes in the tokenless `build` job
+(`permissions: {}`); only its artifact reaches the write-scoped `update` job,
+which verifies the artifact against the run's head SHA and uses comment fences
+longer than any backtick run in PR-controlled text. For fork PRs it cannot
+push, so it posts the patch in the comment instead. The comment is deleted
+automatically once the check passes.
 
 GitHub suppresses the events a `GITHUB_TOKEN` commit would raise, so `ci` does
 not reliably re-run after the snapshot lands — hence the in-job verification.
