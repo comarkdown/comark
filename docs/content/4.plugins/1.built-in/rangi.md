@@ -150,7 +150,7 @@ Rangi ships aliases built-in (`javascript`→`js`, `typescript`→`ts`, `python`
 
 Fence info `{2-3,5}` wraps the code in line spans and marks the selected lines with the `.highlight` class — same as the Shiki plugin. No `lineNumbers` option is required.
 
-### Pre Styles
+### Pre styles
 
 Set `preStyles: true` to add inline background and foreground colors to `<pre>` elements based on the active theme.
 
@@ -218,7 +218,7 @@ rangi({ lineNumbers: true })
 
 ```typescript
 rangi({ classPrefix: 'code' })
-// → class="code shj-lang-js"
+// → class="code shiki shj-lang-js"
 ```
 
 ### `languages`
@@ -274,7 +274,7 @@ const renderHtml = createHtmlRenderer({
 })
 ```
 
-### Live Example
+### Live example
 
 ::card{icon="i-lucide-zap" title="Vue + Vite Rangi" to="https://github.com/comarkdown/comark/tree/main/examples/3.plugins/vue-vite-rangi"}
 Rangi dual themes as inline colors, line highlights, light/dark toggle.

@@ -173,7 +173,7 @@ import githubDark from '@shikijs/themes/github-dark'
 
 ## Features
 
-### Dual-Theme Support
+### Dual-theme support
 
 Highlight code with different themes for light and dark modes. Both palettes are embedded as CSS custom properties, so there is no flash on theme switch. See all [available themes →](https://shiki.style/themes)
 
@@ -186,7 +186,7 @@ shiki({
 })
 ```
 
-### Language Detection
+### Language detection
 
 Comark reads the language from the code fence info string and highlights accordingly. On the standard entry, the default language set is pre-registered; pass extra grammars via `languages` (from `@shikijs/langs`). On `core`, only the languages you pass are available. See all [180+ supported languages →](https://shiki.style/languages)
 
@@ -196,7 +196,7 @@ const x: number = 42
 ```
 ````
 
-### Line Highlighting
+### Line highlighting
 
 Highlight specific lines using `{line-numbers}` syntax:
 
@@ -213,7 +213,7 @@ function example() {
 
 Lines receive the `.highlight` class; see [Styling](#styling) for the required CSS.
 
-### Filename Metadata
+### Filename metadata
 
 Display a filename label above the code block:
 
@@ -223,7 +223,7 @@ const app = express()
 ```
 ````
 
-### Language Loading
+### Language loading
 
 Install `@shikijs/langs` and import grammars to register extra languages (or all languages on `core`):
 
@@ -261,7 +261,7 @@ shiki({
 
 The most powerful transformer is [`@shikijs/twoslash`](/kb/twoslash): it runs the TypeScript compiler on your code blocks to add inline type tooltips and error annotations.
 
-### Pre Styles
+### Pre styles
 
 Set `preStyles: true` to add inline background and foreground colors to `<pre>` elements based on the active theme.
 
@@ -301,7 +301,7 @@ Two option types, one per entry:
 | Option | Type | Default | Description |
 |---|---|---|---|
 | [`themes`](#options-themes) | `object` | Material themes | Light and dark theme registrations |
-| [`languages`](#options-languages) | `LanguageRegistration[]` | `undefined` | Extra languages (merged onto the default set) |
+| [`languages`](#options-languages) | `Array<LanguageRegistration \| LanguageRegistration[]>` | `undefined` | Extra languages (merged onto the default set) |
 | [`transformers`](#options-transformers) | `ShikiTransformer[]` | `undefined` | Shiki transformers applied to every block |
 | [`preStyles`](#options-prestyles) | `boolean` | `false` | Add inline background/foreground styles to `<pre>` |
 | [`registerDefaultLanguages`](#options-registerdefaultlanguages) | `boolean` | `true` | Register the built-in default language set |
@@ -312,7 +312,7 @@ Two option types, one per entry:
 | Option | Type | Default | Description |
 |---|---|---|---|
 | `themes` | `object` | **required** | Light and/or dark theme registrations |
-| `languages` | `LanguageRegistration[]` | **required** | Languages to register |
+| `languages` | `Array<LanguageRegistration \| LanguageRegistration[]>` | **required** | Languages to register |
 | `transformers` | `ShikiTransformer[]` | `undefined` | Shiki transformers applied to every block |
 | `preStyles` | `boolean` | `false` | Add inline background/foreground styles to `<pre>` |
 
@@ -414,7 +414,7 @@ shiki({
 
 ## Examples
 
-### GitHub Theme
+### GitHub theme
 
 ```typescript
 import { parseMarkdown } from 'comark'
@@ -427,7 +427,7 @@ const result = await parseMarkdown(content, {
 })
 ```
 
-### Minimal Bundle
+### Minimal bundle
 
 Install the standalone Shiki packages, use the `core` entry (`ShikiCoreOptions`), and import only what you need — `languages` and `themes` are required, and no defaults are bundled:
 
@@ -447,7 +447,7 @@ shiki({
 })
 ```
 
-### With Transformers
+### With transformers
 
 ```typescript
 import {
@@ -472,7 +472,7 @@ See the [Twoslash guide](/kb/twoslash) for TypeScript-powered type tooltips and 
 Need a copy button or collapse threshold on a custom `ProsePre`? After highlighting there is no `code` prop — reconstruct the source with `__node` and `textContent()`.
 ::
 
-### Live Examples
+### Live examples
 
 ::card{icon="i-lucide-code" title="Vue + Vite Highlight" to="https://github.com/comarkjs/comark/tree/main/examples/3.plugins/vue-vite-highlight"}
 Dual-theme support, 10+ languages, theme toggle. Includes JavaScript, TypeScript, Python, Rust, Go, SQL and more.
@@ -488,7 +488,7 @@ Browser-side twoslash with CDN-fetched TypeScript types and interactive type pop
 
 Shiki outputs tokens as `<span class="line">` elements inside a `<pre class="shiki">` block.
 
-### Line Highlight
+### Line highlight
 
 Lines set with `{1,3-5}` syntax receive the `.highlight` class:
 
@@ -502,7 +502,7 @@ Lines set with `{1,3-5}` syntax receive the `.highlight` class:
 }
 ```
 
-### Dark Mode
+### Dark mode
 
 When both `light` and `dark` themes are provided, Shiki embeds both palettes as CSS custom properties on every `<span>`. Activate the dark palette based on your project's dark-mode class:
 

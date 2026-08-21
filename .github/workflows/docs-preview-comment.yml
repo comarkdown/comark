@@ -60,6 +60,7 @@ jobs:
 
                 return {
                   filename: file.filename,
+                  route,
                   url: route ? `${previewRoot}/${route}` : `${previewRoot}/`,
                 }
               })
@@ -73,7 +74,7 @@ jobs:
               ...(pages.length
                 ? [
                     '',
-                    ...pages.map(page => `- [\`${page.filename}\`](${page.url})`),
+                    ...pages.map(page => `- [${page.route}](${page.url})`),
                   ]
                 : []),
             ].join('\n')
