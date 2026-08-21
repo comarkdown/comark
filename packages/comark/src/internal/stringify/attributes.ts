@@ -1,5 +1,6 @@
 import { stringifyYaml } from '../yaml.ts'
 import { get } from '../../utils/index.ts'
+import { pickFence } from './fence.ts'
 import type { NodeRenderData } from '../../types.ts'
 
 export interface ResolveAttributesOptions {
@@ -270,6 +271,6 @@ export function comarkYamlAttributes(
     return `---\n${yamlContent}\n---`
   }
 
-  const fence = yamlContent.includes('```') ? '~~~' : '```'
+  const fence = pickFence(yamlContent)
   return `${fence}yaml [props]\n${yamlContent}\n${fence}`
 }

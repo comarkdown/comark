@@ -2,6 +2,7 @@ import type { State } from 'comark/render'
 import type { ElementNode } from 'comark'
 import { textContent } from '../../../utils/index.ts'
 import { comarkAttributes, userBlockAttrs } from '../attributes.ts'
+import { pickFence } from '../fence.ts'
 
 export function pre(node: ElementNode, state: State) {
   const [_, attributes, ...children] = node
@@ -25,7 +26,7 @@ export function pre(node: ElementNode, state: State) {
   const meta = attributes.meta ? ' ' + attributes.meta : ''
 
   const code = String(node[1]?.code || textContent(node)).trim()
-  const fence = code.includes('```') ? '~~~' : '```'
+  const fence = pickFence(code)
 
   const fenceBlock = fence + language + filename + highlights + meta + '\n' + code + '\n' + fence
   // Extra user attrs that can't ride on the fence info string round-trip via
