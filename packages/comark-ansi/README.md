@@ -71,18 +71,18 @@ const output = await renderAnsi('```ts\nconsole.log("hi")\n```', {
 - `renderAnsi(markdown, options?)` parses and renders Markdown to an ANSI string.
 - `createAnsiRenderer(options?)` creates a reusable parse-and-render function.
 - `renderAnsiFromDocument(document, options?)` renders a pre-parsed `MarkdownDocument`.
-- `writeAnsi(markdown, options?)` parses and writes Markdown to `process.stdout` or a custom `writer`.
-- `createAnsiWriter(options?)` creates a reusable writer.
+- `printAnsi(markdown, options?)` parses and writes Markdown to `process.stdout` or a custom `writer`. (`writeAnsi` is a deprecated alias.)
+- `createAnsiPrinter(options?)` creates a reusable printer. (`createAnsiWriter` is a deprecated alias.)
 
 ```ts
-import { createAnsiWriter } from '@comark/ansi'
+import { createAnsiPrinter } from '@comark/ansi'
 
-const writeAnsi = createAnsiWriter({
+const printAnsi = createAnsiPrinter({
   colors: false,
   writer: (output) => process.stderr.write(output),
 })
 
-await writeAnsi('# Build complete')
+await printAnsi('# Build complete')
 ```
 
 ## Documentation

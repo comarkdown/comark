@@ -2,7 +2,7 @@ import { afterEach, describe, it, expect, vi } from 'vitest'
 import { parseMarkdown } from 'comark'
 import shiki from 'comark/plugins/shiki'
 import githubDark from 'shiki/dist/themes/github-dark.mjs'
-import { createAnsiRenderer, createAnsiWriter, renderAnsi, renderAnsiFromDocument, writeAnsi } from '../src/index'
+import { createAnsiPrinter, createAnsiRenderer, createAnsiWriter, printAnsi, renderAnsi, renderAnsiFromDocument, writeAnsi } from '../src/index'
 
 afterEach(() => {
   vi.unstubAllEnvs()
@@ -468,15 +468,15 @@ describe('createAnsiRenderer', () => {
   })
 })
 
-describe('createAnsiWriter', () => {
+describe('createAnsiPrinter', () => {
   it('returns a function', () => {
-    const write = createAnsiWriter()
+    const write = createAnsiPrinter()
     expect(typeof write).toBe('function')
   })
 
   it('calls writer with rendered output', async () => {
     const written: string[] = []
-    const write = createAnsiWriter({ writer: (string) => written.push(string) })
+    const write = createAnsiPrinter({ writer: (string) => written.push(string) })
     await write('# Hello')
     expect(written).toHaveLength(1)
     expect(written[0]).toContain('Hello')
@@ -484,14 +484,14 @@ describe('createAnsiWriter', () => {
 
   it('appends newline to output', async () => {
     const written: string[] = []
-    const write = createAnsiWriter({ writer: (string) => written.push(string) })
+    const write = createAnsiPrinter({ writer: (string) => written.push(string) })
     await write('Hello')
     expect(written[0]).toMatch(/\n$/)
   })
 
   it('reuses parser across calls', async () => {
     const written: string[] = []
-    const write = createAnsiWriter({ writer: (string) => written.push(string) })
+    const write = createAnsiPrinter({ writer: (string) => written.push(string) })
     await write('# Doc 1')
     await write('# Doc 2')
     expect(written[0]).toContain('Doc 1')
@@ -500,7 +500,7 @@ describe('createAnsiWriter', () => {
 
   it('passes render options through', async () => {
     const written: string[] = []
-    const write = createAnsiWriter({
+    const write = createAnsiPrinter({
       colors: false,
       writer: (string) => written.push(string),
     })
@@ -510,17 +510,25 @@ describe('createAnsiWriter', () => {
   })
 })
 
-describe('writeAnsi', () => {
+describe('printAnsi', () => {
   it('calls writer with rendered output', async () => {
     const written: string[] = []
-    await writeAnsi('# Title', { writer: (string) => written.push(string) })
+    await printAnsi('# Title', { writer: (string) => written.push(string) })
     expect(written).toHaveLength(1)
     expect(written[0]).toContain('Title')
   })
 
   it('calls writer once per invocation', async () => {
     const writer = vi.fn()
-    await writeAnsi('Hello', { writer })
+    await printAnsi('Hello', { writer })
     expect(writer).toHaveBeenCalledTimes(1)
+  })
+
+  it('keeps writeAnsi as a deprecated alias', () => {
+    expect(writeAnsi).toBe(printAnsi)
+  })
+
+  it('keeps createAnsiWriter as a deprecated alias', () => {
+    expect(createAnsiWriter).toBe(createAnsiPrinter)
   })
 })
