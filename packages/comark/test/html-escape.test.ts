@@ -63,7 +63,10 @@ describe('HTML attribute escaping', () => {
 
 describe('prototype-safe handler lookup', () => {
   it('does not invoke Object.prototype.constructor as a node handler', async () => {
-    const html = await renderNodes([['p', {}, 'before'], ['constructor', {}, '<img src=x onerror=alert(1)>']])
+    const html = await renderNodes([
+      ['p', {}, 'before'],
+      ['constructor', {}, '<img src=x onerror=alert(1)>'],
+    ])
     // The unknown element falls through to the generic html handler, which
     // escapes text children — no raw markup may reach the output.
     expect(html).not.toContain('<img src=x onerror=alert(1)>')
