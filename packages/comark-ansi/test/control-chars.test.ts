@@ -19,7 +19,16 @@ describe('control character sanitization', () => {
   })
 
   it('strips OSC sequences from code block content', async () => {
-    const md = '```\n' + String.fromCharCode(27) + ']8;;https://evil.com' + String.fromCharCode(7) + 'click' + String.fromCharCode(27) + ']8;;' + String.fromCharCode(7) + '\n```'
+    const md =
+      '```\n' +
+      String.fromCharCode(27) +
+      ']8;;https://evil.com' +
+      String.fromCharCode(7) +
+      'click' +
+      String.fromCharCode(27) +
+      ']8;;' +
+      String.fromCharCode(7) +
+      '\n```'
     const out = await plain(md)
     expect(out).not.toContain(String.fromCharCode(27))
     expect(out).not.toContain(String.fromCharCode(7))
