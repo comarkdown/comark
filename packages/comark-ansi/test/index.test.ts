@@ -470,41 +470,41 @@ describe('createAnsiRenderer', () => {
 
 describe('createAnsiPrinter', () => {
   it('returns a function', () => {
-    const write = createAnsiPrinter()
-    expect(typeof write).toBe('function')
+    const print = createAnsiPrinter()
+    expect(typeof print).toBe('function')
   })
 
   it('calls writer with rendered output', async () => {
     const written: string[] = []
-    const write = createAnsiPrinter({ writer: (string) => written.push(string) })
-    await write('# Hello')
+    const print = createAnsiPrinter({ writer: (string) => written.push(string) })
+    await print('# Hello')
     expect(written).toHaveLength(1)
     expect(written[0]).toContain('Hello')
   })
 
   it('appends newline to output', async () => {
     const written: string[] = []
-    const write = createAnsiPrinter({ writer: (string) => written.push(string) })
-    await write('Hello')
+    const print = createAnsiPrinter({ writer: (string) => written.push(string) })
+    await print('Hello')
     expect(written[0]).toMatch(/\n$/)
   })
 
   it('reuses parser across calls', async () => {
     const written: string[] = []
-    const write = createAnsiPrinter({ writer: (string) => written.push(string) })
-    await write('# Doc 1')
-    await write('# Doc 2')
+    const print = createAnsiPrinter({ writer: (string) => written.push(string) })
+    await print('# Doc 1')
+    await print('# Doc 2')
     expect(written[0]).toContain('Doc 1')
     expect(written[1]).toContain('Doc 2')
   })
 
   it('passes render options through', async () => {
     const written: string[] = []
-    const write = createAnsiPrinter({
+    const print = createAnsiPrinter({
       colors: false,
       writer: (string) => written.push(string),
     })
-    await write('**bold**')
+    await print('**bold**')
     expect(written[0]).not.toContain('\x1B[')
     expect(written[0]).toContain('bold')
   })
