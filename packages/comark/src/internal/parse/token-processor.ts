@@ -771,10 +771,18 @@ export function processInlineTokens(tokens: any[], inHeading: boolean = false): 
   return mergeAdjacentTextNodes(nodes)
 }
 
+// Cap on the html_inline lookahead recursion: each non-void opening tag
+// recurses into the following tokens while searching for its matching close,
+// so a long run of unclosed nested tags (e.g. 10k `<b>`) would otherwise
+// overflow the call stack. Beyond the cap the raw tag text is kept, matching
+// the unrecognized-tag fallback. Mirrors markdown-it's default maxNesting.
+const MAX_INLINE_HTML_DEPTH = 100
+
 function processInlineToken(
   tokens: any[],
   startIndex: number,
-  inHeading: boolean = false
+  inHeading: boolean = false,
+  htmlDepth: number = 0
 ): { node: Node | string | null; nextIndex: number } {
   const token = tokens[startIndex]
 
@@ -807,6 +815,11 @@ function processInlineToken(
       return { node: [tagInfo.tag, tagInfo.attrs] as Node, nextIndex: startIndex + 1 }
     }
 
+    if (htmlDepth >= MAX_INLINE_HTML_DEPTH) {
+      // Nesting too deep — keep the raw text instead of recursing further
+      return { node: content || null, nextIndex: startIndex + 1 }
+    }
+
     // Non-void opening tag — look ahead for the matching closing tag
     const children: Node[] = []
     let j = startIndex + 1
@@ -820,7 +833,7 @@ function processInlineToken(
           break
         }
       }
-      const result = processInlineToken(tokens, j, inHeading)
+      const result = processInlineToken(tokens, j, inHeading, htmlDepth + 1)
       j = result.nextIndex
       if (result.node) {
         children.push(result.node as Node)
@@ -855,7 +868,7 @@ function processInlineToken(
       }
 
       // Process other tokens
-      const result = processInlineToken(tokens, i, inHeading)
+      const result = processInlineToken(tokens, i, inHeading, htmlDepth)
       i = result.nextIndex
       if (result.node) {
         nodes.push(result.node as Node)
@@ -916,7 +929,7 @@ function processInlineToken(
         }
 
         // Process child token
-        const result = processInlineToken(tokens, i, inHeading)
+        const result = processInlineToken(tokens, i, inHeading, htmlDepth)
         i = result.nextIndex
         if (result.node) {
           children.push(result.node as Node)
