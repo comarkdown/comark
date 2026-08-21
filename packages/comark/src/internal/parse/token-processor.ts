@@ -155,6 +155,9 @@ function processAttributes(
   return attrs
 }
 
+// Upper bound for expanded highlight ranges in a fence info string.
+const MAX_HIGHLIGHT_LINES = 1_000
+
 /**
  * Parse codeblock info string to extract language, highlights, filename, and meta
  * Example: "javascript {1-3} [filename.ts] meta=value"
@@ -196,7 +199,9 @@ function parseCodeblockInfo(info: string): {
         const highlightsStr = highlightsMatch[1]
         remaining = remaining.slice(highlightsMatch[0].length).trim()
 
-        // Parse highlight ranges and individual numbers
+        // Parse highlight ranges and individual numbers. Range expansion is
+        // bounded — a fence like ```js {1-999999999} must not materialize a
+        // billion-entry array from 20 bytes of markdown.
         const highlights: number[] = []
         const parts = highlightsStr.split(',')
         for (const part of parts) {
@@ -204,15 +209,15 @@ function parseCodeblockInfo(info: string): {
           if (trimmed.includes('-')) {
             // Range like "1-3"
             const [start, end] = trimmed.split('-').map((s) => Number.parseInt(s.trim(), 10))
-            if (!Number.isNaN(start) && !Number.isNaN(end)) {
-              for (let i = start; i <= end; i++) {
+            if (!Number.isNaN(start) && !Number.isNaN(end) && end - start <= MAX_HIGHLIGHT_LINES) {
+              for (let i = start; i <= end && highlights.length < MAX_HIGHLIGHT_LINES; i++) {
                 highlights.push(i)
               }
             }
           } else {
             // Single number
             const num = Number.parseInt(trimmed, 10)
-            if (!Number.isNaN(num)) {
+            if (!Number.isNaN(num) && highlights.length < MAX_HIGHLIGHT_LINES) {
               highlights.push(num)
             }
           }
