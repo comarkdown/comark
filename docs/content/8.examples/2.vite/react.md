@@ -14,4 +14,4 @@ defaultValue: src/App.tsx
 ---
 ::
 
-This example demonstrates the simplest way to use Comark with React - use the `Markdown` component and pass it markdown content. The component handles parsing and rendering automatically.
+This example shows the quickest way to use Comark with React - use the `Markdown` component and pass it markdown content. The component handles parsing and rendering automatically.

@@ -18,7 +18,7 @@ The Breaks plugin transforms soft line breaks into `<br>` components.
 
 No peer dependencies are required.
 
-## Basic Usage
+## Basic usage
 
 ### With Vue
 
@@ -52,7 +52,7 @@ function App() {
   return (
     <Markdown plugins={[breaks()]}>{markdown}</Markdown>
   )
-  // <p>Hello<br>world</p>
+  // <p>Hello<br>World</p>
 }
 ```
 
@@ -91,7 +91,7 @@ world`
 }
 ```
 
-### With Parse API
+### With parse API
 
 ```typescript [parse.ts]
 import { parseMarkdown } from 'comark'
@@ -104,7 +104,7 @@ const result = await parseMarkdown('Hello\nWorld', {
 {
   frontmatter: {},
   meta: {},
-  nodes: [ [ 'p', {}, 'Hello', ['br', {}], 'world'] ]
+  nodes: [ [ 'p', {}, 'Hello', ['br', {}], 'World'] ]
 }
  */
 ```

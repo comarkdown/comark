@@ -205,7 +205,7 @@ Comprehensive guide for rendering in Angular 17+ applications:
 
 - **Basic Usage:** `Markdown` standalone component setup
 - **Custom Components:** mapping Angular components to Comark elements
-- **Component Resolution:** `Prose{PascalTag}`, `tag`, `PascalTag` priority order
+- **Component Resolution:** `Prose{PascalTag}`, `PascalTag`, `tag` priority order
 - **Content Projection:** named slots via `<ng-content select="[slot=name]">` 
 - **Streaming Mode:** real-time rendering with caret indicator
 - **Data Binding:** `:binding` resolution with ambient `data` input
