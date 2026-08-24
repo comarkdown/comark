@@ -2,7 +2,15 @@ import { afterEach, describe, it, expect, vi } from 'vitest'
 import { parseMarkdown } from 'comark'
 import shiki from 'comark/plugins/shiki'
 import githubDark from 'shiki/dist/themes/github-dark.mjs'
-import { createAnsiPrinter, createAnsiRenderer, createAnsiWriter, printAnsi, renderAnsi, renderAnsiFromDocument, writeAnsi } from '../src/index'
+import {
+  createAnsiPrinter,
+  createAnsiRenderer,
+  createAnsiWriter,
+  printAnsi,
+  renderAnsi,
+  renderAnsiFromDocument,
+  writeAnsi,
+} from '../src/index'
 
 afterEach(() => {
   vi.unstubAllEnvs()
