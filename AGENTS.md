@@ -152,12 +152,12 @@ Located at `packages/comark-ansi/`. ANSI terminal renderer.
 ### Usage
 
 ```typescript
-import { createAnsiRenderer, createAnsiWriter, renderAnsi, renderAnsiFromDocument, writeAnsi } from '@comark/ansi'
+import { createAnsiRenderer, createAnsiPrinter, printAnsi, renderAnsi, renderAnsiFromDocument } from '@comark/ansi'
 import shiki from '@comark/ansi/plugins/shiki'
 import math, { Math } from '@comark/ansi/plugins/math'
 
 // Flat options — ParserOptions & AnsiRendererOptions merged at top level
-const writeAnsi = createAnsiWriter({
+const printAnsi = createAnsiPrinter({
   plugins: [shiki(), math()],
   components: { Math },
   width: 120,                      // terminal width
@@ -165,7 +165,7 @@ const writeAnsi = createAnsiWriter({
   writer: (output) => process.stderr.write(output),
 })
 
-await writeAnsi(markdownString)
+await printAnsi(markdownString)
 ```
 
 ---
@@ -382,7 +382,7 @@ import { parseMarkdown, autoCloseMarkdown } from 'comark'
 import { createHtmlRenderer, renderHtml, renderHtmlFromDocument } from '@comark/html'
 
 // ANSI terminal rendering
-import { createAnsiRenderer, createAnsiWriter, renderAnsi, renderAnsiFromDocument, writeAnsi } from '@comark/ansi'
+import { createAnsiRenderer, createAnsiPrinter, printAnsi, renderAnsi, renderAnsiFromDocument } from '@comark/ansi'
 
 // Markdown string rendering (AST → markdown)
 import { renderMarkdown } from 'comark/render'
@@ -425,7 +425,7 @@ import math, { Math } from '@comark/html/plugins/math'
 import mermaid, { Mermaid } from '@comark/html/plugins/mermaid'
 
 // ANSI terminal rendering — parse + render to styled terminal string
-import { createAnsiRenderer, createAnsiWriter, renderAnsi, renderAnsiFromDocument, writeAnsi } from '@comark/ansi'
+import { createAnsiRenderer, createAnsiPrinter, printAnsi, renderAnsi, renderAnsiFromDocument } from '@comark/ansi'
 import shiki from '@comark/ansi/plugins/shiki'
 import math from '@comark/ansi/plugins/math'
 
