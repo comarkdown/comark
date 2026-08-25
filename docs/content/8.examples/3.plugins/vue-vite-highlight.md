@@ -1,5 +1,5 @@
 ---
-title: Syntax Highlighting
+title: Syntax highlighting
 description: Example showing how to use Comark with syntax highlighting using Shiki in Vue and Vite.
 navigation:
   icon:  i-lucide-code
@@ -27,13 +27,13 @@ This example demonstrates how to use Comark with syntax highlighting in Vue:
 
 ## Usage
 
-### 1. Install Dependencies
+### 1. Install dependencies
 
 ```bash
 npm install shiki @shikijs/themes @shikijs/langs
 ```
 
-### 2. Import Themes and Languages
+### 2. Import themes and languages
 
 Import directly from `@shikijs/themes` and `@shikijs/langs`:
 
@@ -46,7 +46,7 @@ import typescript from '@shikijs/langs/typescript'
 import python from '@shikijs/langs/python'
 ```
 
-### 3. Configure the Plugin
+### 3. Configure the plugin
 
 Pass the imported themes and languages to the plugin:
 
@@ -70,7 +70,7 @@ Pass the imported themes and languages to the plugin:
 </template>
 ```
 
-### 4. Use Code Blocks in Markdown
+### 4. Use code blocks in Markdown
 
 ````markdown
 ```javascript
@@ -86,14 +86,14 @@ print("Hello, Python!")
 ```
 ````
 
-## Why Import Directly?
+## Why import directly?
 
 - ✅ **Type Safety**: TypeScript autocomplete for themes and languages
 - ✅ **Tree Shaking**: Only bundle the themes/languages you use
 - ✅ **No Typos**: Import errors caught at build time
 - ✅ **Smaller Bundle**: Import only what you need
 
-## Configuration Options
+## Configuration options
 
 ```typescript
 import type { BundledLanguage, BundledTheme } from 'shiki'
@@ -110,7 +110,7 @@ interface HighlightOptions {
 }
 ```
 
-## Available Themes
+## Available themes
 
 Import themes from `@shikijs/themes`:
 
@@ -127,7 +127,7 @@ import monokai from '@shikijs/themes/monokai'
 
 [View all available themes →](https://shiki.style/themes)
 
-## Available Languages
+## Available languages
 
 Import languages from `@shikijs/langs`:
 
@@ -153,7 +153,7 @@ import bash from '@shikijs/langs/bash'
 
 [View all 180+ languages →](https://shiki.style/languages)
 
-## Learn More
+## Learn more
 
 - [Highlight Plugin Documentation](https://comark.dev/plugins/built-in/syntax-highlight)
 - [Shiki Documentation](https://shiki.style/)

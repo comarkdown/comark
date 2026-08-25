@@ -1,6 +1,6 @@
 ---
-title: Task List
-description: Plugin for rendering interactive checkboxes from GitHub-style task list syntax.
+title: Task list
+description: Plugin for rendering GitHub-style task list syntax as disabled checkboxes.
 seo:
   title: Task List Plugin
 navigation:
@@ -18,46 +18,33 @@ links:
     variant: soft
 ---
 
-The `comark/plugins/task-list` plugin converts GitHub-style task list syntax into interactive checkboxes. It runs before inline parsing to prevent Comark from misinterpreting `[ ]` and `[x]` as component syntax.
+The `comark/plugins/task-list` plugin converts GitHub-style task list syntax into disabled checkboxes. It runs before inline parsing to prevent Comark from misinterpreting `[ ]` and `[x]` as component syntax.
+
+The plugin is **enabled by default** via `registerDefaultPlugins`. No installation or registration required.
 
 ## Usage
 
 ```typescript
 import { parseMarkdown } from 'comark'
-import taskList from 'comark/plugins/task-list'
 
 const result = await parseMarkdown(`
 - [x] Write the docs
 - [ ] Fix the bug
 - [x] Ship it
-`, {
+`)
+```
+
+Explicit registration is only needed when default plugins are disabled:
+
+```typescript
+import { parseMarkdown } from 'comark'
+import taskList from 'comark/plugins/task-list'
+
+const result = await parseMarkdown(content, {
+  registerDefaultPlugins: false,
   plugins: [taskList()]
 })
 ```
-
-With framework components:
-
-::code-group
-
-```vue [Vue]
-<script setup lang="ts">
-import { Markdown } from '@comark/vue'
-import taskList from '@comark/vue/plugins/task-list'
-</script>
-
-<template>
-  <Markdown :plugins="[taskList()]">{{ content }}</Markdown>
-</template>
-```
-
-```tsx [React]
-import { Markdown } from '@comark/react'
-import taskList from '@comark/react/plugins/task-list'
-
-<Markdown plugins={[taskList()]}>{content}</Markdown>
-```
-
-::
 
 ---
 
@@ -82,7 +69,7 @@ Task lists also work in nested lists:
 - [ ] Another parent task
 ```
 
-### CSS Classes
+### CSS classes
 
 The plugin adds classes to help with styling:
 
@@ -108,6 +95,6 @@ The plugin adds classes to help with styling:
 
 ### `taskList()`
 
-Returns a `ComarkPlugin` that converts task list syntax to checkboxes. Takes no options.
+Returns a `ComarkPlugin` that converts task list syntax to disabled checkboxes. Takes no options.
 
 **Returns:** `ComarkPlugin`

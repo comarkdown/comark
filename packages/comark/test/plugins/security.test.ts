@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { parseMarkdown } from '../../src/parse'
 import security from '../../src/plugins/security'
 import { textContent } from '../../src/utils/index.ts'
-import { renderMarkdown } from 'comark/render'
+import { render, renderMarkdown } from 'comark/render'
 import type { ElementNode, Node, MarkdownDocument } from '../../src/types'
 
 const parseWithSecurity = (md: string, options: Parameters<typeof security>[0] = {}) =>
@@ -273,6 +273,69 @@ click
     expect(anchor).toBeDefined()
     expect(anchor![1].href ?? anchor![1]['v-bind:href']).toBeUndefined()
   })
+
+  it('rejects JSON-quoted javascript: URLs in :href bindings', async () => {
+    const tree = await parseWithSecurity(
+      `\
+::a{:href='"javascript:alert(1)"'}
+click
+::
+`.trim()
+    )
+
+    const anchor = collectElements(tree.nodes).find((element) => element[0] === 'a')
+    expect(anchor).toBeDefined()
+    expect(anchor![1].href).toBeUndefined()
+    expect(anchor![1][':href']).toBeUndefined()
+  })
+
+  it('keeps JSON-quoted safe URLs in :href bindings', async () => {
+    const tree = await parseWithSecurity(
+      `\
+::a{:href='"https://example.com"'}
+click
+::
+`.trim()
+    )
+
+    const anchor = collectElements(tree.nodes).find((element) => element[0] === 'a')
+    expect(anchor).toBeDefined()
+    expect(anchor![1][':href']).toBe('"https://example.com"')
+  })
+
+  it('blocks javascript: URLs smuggled through frontmatter bindings at render time', async () => {
+    const md = `---
+home: javascript:alert(1)
+---
+
+[Home](placeholder){:href="frontmatter.home"}`
+
+    const tree = await parseWithSecurity(md)
+    // Parse-time validation only sees the literal dot-path…
+    const anchor = collectElements(tree.nodes).find((element) => element[0] === 'a')
+    expect(anchor).toBeDefined()
+    // …but the render-time hard floor drops the resolved unsafe URL.
+    const html = await render(tree, { format: 'text/html', blockSeparator: '\n' })
+    expect(html).not.toContain('javascript:')
+  })
+
+  it('strips framework HTML sink props from components', async () => {
+    const tree = await parseWithSecurity(
+      `\
+::div{innerHTML="<img src=x onerror=alert(1)>"}
+::
+
+:span{:dangerouslySetInnerHTML='{"__html":"<img src=x onerror=alert(1)>"}'}
+`.trim()
+    )
+
+    const div = collectElements(tree.nodes).find((element) => element[0] === 'div')
+    const span = collectElements(tree.nodes).find((element) => element[0] === 'span')
+    expect(div).toBeDefined()
+    expect(div![1].innerHTML).toBeUndefined()
+    expect(span).toBeDefined()
+    expect(span![1][':dangerouslySetInnerHTML']).toBeUndefined()
+  })
 })
 
 describe('security plugin — blockedTags', () => {
@@ -387,6 +450,37 @@ describe('security plugin — allowedTags', () => {
     expect(tree.nodes).toHaveLength(2)
     expect(tree.nodes[0] as [string, any]).toBe('`evil()`')
     expect((tree.nodes[1] as [string, any])[0]).toBe('p')
+  })
+})
+
+describe('security plugin — as prop', () => {
+  it('strips as pointing at a blocked tag', async () => {
+    const tree = makeTree([['span', { as: 'script' }, 'x']])
+    await runPlugin(tree, { blockedTags: ['script'] })
+    const el = tree.nodes[0] as [string, any]
+    expect(el[0]).toBe('span')
+    expect(el[1].as).toBeUndefined()
+  })
+
+  it('strips as pointing at a tag outside allowedTags', async () => {
+    const tree = makeTree([['span', { as: 'AdminPanel' }, 'x']])
+    await runPlugin(tree, { allowedTags: ['span'] })
+    const el = tree.nodes[0] as [string, any]
+    expect(el[1].as).toBeUndefined()
+  })
+
+  it('keeps as when the resolved tag is allowed', async () => {
+    const tree = makeTree([['span', { as: 'Badge' }, 'x']])
+    await runPlugin(tree, { allowedTags: ['span', 'badge'] })
+    const el = tree.nodes[0] as [string, any]
+    expect(el[1].as).toBe('Badge')
+  })
+
+  it('keeps as when no tag filters are configured', async () => {
+    const tree = makeTree([['span', { as: 'Badge' }, 'x']])
+    await runPlugin(tree)
+    const el = tree.nodes[0] as [string, any]
+    expect(el[1].as).toBe('Badge')
   })
 })
 

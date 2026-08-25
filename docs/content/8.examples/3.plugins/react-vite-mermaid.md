@@ -53,7 +53,7 @@ This example demonstrates how to use Comark with Mermaid diagrams in React:
    ```
    ````
 
-## Theme Support
+## Theme support
 
 Pass a theme via the code block info string:
 
@@ -66,7 +66,7 @@ sequenceDiagram
 ```
 ````
 
-## Learn More
+## Learn more
 
 - [Mermaid Plugin Documentation](/plugins/built-in/mermaid)
 - [Mermaid Documentation](https://mermaid.js.org)

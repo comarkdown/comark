@@ -27,6 +27,16 @@ export interface FootnotesConfig {
 const FOOTNOTE_DEF_RE = /^\[\^([^\s\]]+)\]:[ \t]?(.*)$/gm
 
 /**
+ * Labels are author-controlled, so they must not leak raw characters into the
+ * `id`/`href` fragment values built below. Encode anything outside a safe
+ * charset as `-<hex>-` — deterministic, so references and definitions still
+ * match after sanitization.
+ */
+function sanitizeLabel(label: string): string {
+  return label.replace(/[^a-zA-Z0-9_-]/g, (char) => `-${char.charCodeAt(0).toString(16)}-`)
+}
+
+/**
  * Quick structural check: is this a ['span', {…}, string] tuple?
  * Used as the visit() checker to avoid running the full extraction
  * on every node in the tree.
@@ -114,6 +124,7 @@ export default defineComarkPlugin((config: FootnotesConfig = {}) => {
           refIndexMap.set(refLabel, refIndexMap.size + 1)
         }
         const refIndex = refIndexMap.get(refLabel)!
+        const safeLabel = sanitizeLabel(refLabel)
 
         return [
           'sup',
@@ -121,8 +132,8 @@ export default defineComarkPlugin((config: FootnotesConfig = {}) => {
           [
             'a',
             {
-              href: `#fn-${refLabel}`,
-              id: `fnref-${refLabel}`,
+              href: `#fn-${safeLabel}`,
+              id: `fnref-${safeLabel}`,
             },
             `[${refIndex}]`,
           ],
@@ -156,13 +167,14 @@ export default defineComarkPlugin((config: FootnotesConfig = {}) => {
 
       for (const [refLabel] of refIndexMap) {
         const content = definitions.get(refLabel)!
+        const safeLabel = sanitizeLabel(refLabel)
 
         footnoteItems.push([
           'li',
-          { id: `fn-${refLabel}` },
+          { id: `fn-${safeLabel}` },
           content,
           ' ',
-          ['a', { href: `#fnref-${refLabel}`, class: 'footnote-backref' }, backRef],
+          ['a', { href: `#fnref-${safeLabel}`, class: 'footnote-backref' }, backRef],
         ])
       }
 

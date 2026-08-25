@@ -8,7 +8,7 @@ navigation:
 ::code-explorer
 ---
 org: comarkdown
-repo: comark@c78885ca7504b38afc7ced59aac1a3c6b3cc5425
+repo: comark@afa4b18a806217d4b6a09696377435e77b582870
 path: examples/1.frameworks/nuxt
 defaultValue: content/posts/comark-syntax.md
 ---
