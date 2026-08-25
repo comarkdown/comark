@@ -13,34 +13,41 @@ function defaultWriter(string: string) {
 }
 
 /**
- * Options for creating an ANSI writer.
+ * Options for creating an ANSI printer.
  */
-export interface AnsiWriterOptions extends AnsiRendererOptions, ParserOptions {
+export interface AnsiPrinterOptions extends AnsiRendererOptions, ParserOptions {
   writer?: (string: string) => void
 }
 
 /**
- * Creates a reusable writer with pre-configured parse and render options.
+ * Options for creating an ANSI printer.
+ *
+ * @deprecated Use {@link AnsiPrinterOptions} instead. Will be removed in the next major version.
+ */
+export type AnsiWriterOptions = AnsiPrinterOptions
+
+/**
+ * Creates a reusable printer with pre-configured parse and render options.
  *
  * @param options - Comark parse and render options (plugins, autoClose, etc.)
  * @returns An async function `(markdown) => Promise<void>` that prints to stdout
  *
  * @example
  * ```typescript
- * import { createAnsiWriter } from '@comark/ansi'
+ * import { createAnsiPrinter } from '@comark/ansi'
  * import math, { Math } from '@comark/ansi/plugins/math'
  *
- * const writeAnsi = createAnsiWriter({
+ * const printAnsi = createAnsiPrinter({
  *   plugins: [math()],
  *   components: { Math },
  *   width: 120,
  *   writer: (s) => process.stderr.write(s)
  * })
  *
- * await writeAnsi('# Hello\n\nThis is **bold**.')
+ * await printAnsi('# Hello\n\nThis is **bold**.')
  * ```
  */
-export function createAnsiWriter(options?: AnsiWriterOptions): (markdown: string) => Promise<void> {
+export function createAnsiPrinter(options?: AnsiPrinterOptions): (markdown: string) => Promise<void> {
   const renderAnsi = createAnsiRenderer(options as AnsiRendererOptions)
   const write = options?.writer ?? defaultWriter
   return async (markdown: string) => {
@@ -50,6 +57,13 @@ export function createAnsiWriter(options?: AnsiWriterOptions): (markdown: string
 }
 
 /**
+ * Creates a reusable printer with pre-configured parse and render options.
+ *
+ * @deprecated Use {@link createAnsiPrinter} instead. Will be removed in the next major version.
+ */
+export const createAnsiWriter = createAnsiPrinter
+
+/**
  * Parse markdown and print it as ANSI-styled output to stdout.
  *
  * @param markdown - The markdown content to parse and print
@@ -57,14 +71,21 @@ export function createAnsiWriter(options?: AnsiWriterOptions): (markdown: string
  *
  * @example
  * ```typescript
- * import { writeAnsi } from '@comark/ansi'
+ * import { printAnsi } from '@comark/ansi'
  *
- * await writeAnsi('# Hello\n\nThis is **bold** and _italic_.')
+ * await printAnsi('# Hello\n\nThis is **bold** and _italic_.')
  * ```
  */
-export async function writeAnsi(markdown: string, options?: AnsiWriterOptions): Promise<void> {
-  return createAnsiWriter(options)(markdown)
+export async function printAnsi(markdown: string, options?: AnsiPrinterOptions): Promise<void> {
+  return createAnsiPrinter(options)(markdown)
 }
+
+/**
+ * Parse markdown and print it as ANSI-styled output to stdout.
+ *
+ * @deprecated Use {@link printAnsi} instead. Will be removed in the next major version.
+ */
+export const writeAnsi = printAnsi
 
 /**
  * Creates a reusable render function with pre-configured parse and render options.

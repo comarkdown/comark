@@ -3,7 +3,7 @@ import { defineMarkdownComponent, defineMarkdownDocumentComponent } from '../src
 
 describe('defineMarkdownComponent', () => {
   it('returns a component class', () => {
-    const Defined = defineMarkdownComponent({ name: 'test-comark' })
+    const Defined = defineMarkdownComponent({})
     expect(Defined).toBeDefined()
     expect(typeof Defined).toBe('function')
   })
@@ -17,7 +17,6 @@ describe('defineMarkdownComponent', () => {
   it('accepts plugins in config', () => {
     const fakePlugin = { name: 'test', setup: () => {} }
     const Defined = defineMarkdownComponent({
-      name: 'with-plugins',
       plugins: [fakePlugin as any],
     })
     expect(Defined).toBeDefined()
@@ -26,7 +25,6 @@ describe('defineMarkdownComponent', () => {
   it('accepts components in config', () => {
     class FakeComponent {}
     const Defined = defineMarkdownComponent({
-      name: 'with-components',
       components: { alert: FakeComponent as any },
     })
     expect(Defined).toBeDefined()
@@ -34,7 +32,6 @@ describe('defineMarkdownComponent', () => {
 
   it('accepts class in config', () => {
     const Defined = defineMarkdownComponent({
-      name: 'with-class',
       class: 'prose dark:prose-invert',
     })
     expect(Defined).toBeDefined()
@@ -42,7 +39,6 @@ describe('defineMarkdownComponent', () => {
 
   it('accepts parse options in config', () => {
     const Defined = defineMarkdownComponent({
-      name: 'with-options',
       autoClose: true,
       linkify: true,
     })
@@ -52,7 +48,7 @@ describe('defineMarkdownComponent', () => {
 
 describe('defineMarkdownDocumentComponent', () => {
   it('returns a component class', () => {
-    const Defined = defineMarkdownDocumentComponent({ name: 'test-renderer' })
+    const Defined = defineMarkdownDocumentComponent({})
     expect(Defined).toBeDefined()
     expect(typeof Defined).toBe('function')
   })
@@ -65,7 +61,6 @@ describe('defineMarkdownDocumentComponent', () => {
   it('accepts components in config', () => {
     class FakeComponent {}
     const Defined = defineMarkdownDocumentComponent({
-      name: 'renderer-with-components',
       components: { Math: FakeComponent as any },
     })
     expect(Defined).toBeDefined()
@@ -73,7 +68,6 @@ describe('defineMarkdownDocumentComponent', () => {
 
   it('accepts class in config', () => {
     const Defined = defineMarkdownDocumentComponent({
-      name: 'renderer-with-class',
       class: 'prose',
     })
     expect(Defined).toBeDefined()

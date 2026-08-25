@@ -86,10 +86,21 @@ jobs:
               }
             }
 
-            const prNumber = Number(read('pr-number'))
+            const prNumberRaw = read('pr-number')
             const outcome = read('outcome')
-            if (!prNumber || !outcome) {
+            // The artifact is produced by the PR's own workflow run, and its
+            // content is controlled by the PR author — validate before use.
+            if (!/^\d+$/.test(prNumberRaw) || !['success', 'failure'].includes(outcome)) {
               core.info('No usable bundle report — nothing to do.')
+              return
+            }
+            const prNumber = Number(prNumberRaw)
+
+            // Confirm the referenced PR actually belongs to this run,
+            // otherwise a crafted artifact could target any issue number.
+            const { data: reportedPr } = await github.rest.pulls.get({ owner, repo, pull_number: prNumber })
+            if (reportedPr.head.sha !== context.payload.workflow_run.head_sha) {
+              core.setFailed('Bundle report artifact does not match the workflow run head SHA.')
               return
             }
 
@@ -122,6 +133,12 @@ jobs:
               .trimEnd()
               .slice(0, 20_000)
 
+            // The excerpt is attacker-controlled text — pick a comment fence
+            // longer than any backtick run it contains so it cannot break out
+            // of the code block.
+            const fenceRun = Math.max(3, ...[...excerpt.matchAll(/`+/g)].map((m) => m[0].length + 1))
+            const excerptFence = '`'.repeat(fenceRun)
+
             const workflowUrl = `${context.serverUrl}/${owner}/${repo}/actions/workflows/bundle-snapshot.yml`
             const testUrl = `${context.serverUrl}/${owner}/${repo}/blob/main/test/bundle.test.ts`
             const body = [
@@ -141,9 +158,9 @@ jobs:
               '',
               '<details><summary>Bundle size diff</summary>',
               '',
-              '```diff',
+              `${excerptFence}diff`,
               excerpt,
-              '```',
+              excerptFence,
               '',
               `[Full CI log](${process.env.RUN_URL})`,
               '',
@@ -253,17 +270,19 @@ jobs:
             }
 
   # ---------------------------------------------------------------------------
-  # Update: rebuild, refresh the snapshot and commit it back to the PR branch.
+  # Build: regenerate the snapshot from the PR's code — WITHOUT any token.
+  # Fork PR code executes in this job, so it gets `permissions: {}` and hands
+  # the result to the privileged `update` job as an artifact.
   # ---------------------------------------------------------------------------
-  update:
-    name: update snapshot
+  build:
+    name: build snapshot
     needs: authorize
     if: needs.authorize.outputs.authorized == 'true'
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      issues: write
-      pull-requests: write
+    permissions: {}
+    outputs:
+      changed: ${{ steps.diff.outputs.changed }}
+      verified: ${{ steps.verify.outcome }}
 
     steps:
       # checkout v7 refuses to check out fork PR code under `pull_request_target`
@@ -313,48 +332,58 @@ jobs:
           NO_COLOR: '1'
         run: pnpm vitest run bundle
 
-      # Committing through the API keeps the commit signed/verified, which the
-      # `commit-signature` workflow requires. It only works on branches in this
-      # repository, so fork PRs get the patch posted instead.
-      - name: Commit updated snapshot
-        id: commit
-        if: steps.diff.outputs.changed == 'true' && steps.verify.outcome == 'success' && needs.authorize.outputs.is_fork == 'false'
-        uses: actions/github-script@v9
-        env:
-          BRANCH: ${{ needs.authorize.outputs.head_ref }}
+      - name: Collect the refreshed snapshot
+        if: steps.diff.outputs.changed == 'true' && steps.verify.outcome == 'success'
+        shell: bash
+        run: |
+          mkdir -p snapshot
+          cp test/bundle.test.ts snapshot/bundle.test.ts
+          git --no-pager diff -- test/bundle.test.ts > snapshot/patch.diff
+
+      - name: Upload snapshot
+        if: steps.diff.outputs.changed == 'true' && steps.verify.outcome == 'success'
+        uses: actions/upload-artifact@v7
         with:
-          script: |
-            const fs = require('node:fs')
-            const { owner, repo } = context.repo
-            const path = 'test/bundle.test.ts'
-            const branch = process.env.BRANCH
+          name: bundle-snapshot
+          path: snapshot/
+          if-no-files-found: error
 
-            const { data: current } = await github.rest.repos.getContent({ owner, repo, path, ref: branch })
-            const { data: result } = await github.rest.repos.createOrUpdateFileContents({
-              owner,
-              repo,
-              path,
-              branch,
-              sha: current.sha,
-              message: 'test: update bundle size snapshot',
-              content: Buffer.from(fs.readFileSync(path, 'utf8')).toString('base64'),
-            })
-            core.setOutput('sha', result.commit.sha)
+  # ---------------------------------------------------------------------------
+  # Update: apply the refreshed snapshot and report the result. This is the
+  # only write-scoped job — it never checks out or executes PR code.
+  # ---------------------------------------------------------------------------
+  update:
+    name: update snapshot
+    needs: [authorize, build]
+    if: always() && needs.authorize.outputs.authorized == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
 
-      - name: Report result
-        if: always() && needs.authorize.outputs.pr != ''
+    steps:
+      - name: Download snapshot
+        id: download
+        continue-on-error: true
+        uses: actions/download-artifact@v8
+        with:
+          name: bundle-snapshot
+          path: snapshot
+
+      - name: Apply and report
         uses: actions/github-script@v9
         env:
           PR: ${{ needs.authorize.outputs.pr }}
+          HEAD_REF: ${{ needs.authorize.outputs.head_ref }}
           IS_FORK: ${{ needs.authorize.outputs.is_fork }}
-          CHANGED: ${{ steps.diff.outputs.changed }}
-          VERIFIED: ${{ steps.verify.outcome }}
-          COMMIT_SHA: ${{ steps.commit.outputs.sha }}
-          JOB_STATUS: ${{ job.status }}
+          BUILD_RESULT: ${{ needs.build.result }}
+          CHANGED: ${{ needs.build.outputs.changed }}
+          VERIFIED: ${{ needs.build.outputs.verified }}
+          DOWNLOADED: ${{ steps.download.outcome }}
         with:
           script: |
             const fs = require('node:fs')
-            const { execFileSync } = require('node:child_process')
             const { owner, repo } = context.repo
             const marker = process.env.MARKER
             const prNumber = Number(process.env.PR)
@@ -376,7 +405,7 @@ jobs:
               }
             }
 
-            if (process.env.JOB_STATUS === 'failure') {
+            if (process.env.BUILD_RESULT === 'failure') {
               await post(
                 [
                   marker,
@@ -406,7 +435,7 @@ jobs:
 
             // The refreshed snapshot did not pass a clean re-run — something is
             // off (flaky sizes, a broken build), so do not commit it.
-            if (process.env.VERIFIED !== 'success') {
+            if (process.env.VERIFIED !== 'success' || process.env.DOWNLOADED !== 'success') {
               await post(
                 [
                   marker,
@@ -421,9 +450,15 @@ jobs:
               return
             }
 
+            const snapshotContent = fs.readFileSync('snapshot/bundle.test.ts', 'utf8')
+
             // Fork PR: we cannot push, so hand over a ready-to-apply patch.
             if (process.env.IS_FORK === 'true') {
-              const patch = execFileSync('git', ['diff', '--', 'test/bundle.test.ts'], { encoding: 'utf8' })
+              const patch = fs.readFileSync('snapshot/patch.diff', 'utf8').slice(0, 20_000)
+              // The patch is PR-controlled text — use a comment fence longer
+              // than any backtick run it contains.
+              const fenceRun = Math.max(3, ...[...patch.matchAll(/`+/g)].map((m) => m[0].length + 1))
+              const patchFence = '`'.repeat(fenceRun)
               await post(
                 [
                   marker,
@@ -432,9 +467,9 @@ jobs:
                   'This pull request comes from a fork, so the snapshot cannot be committed automatically.',
                   'Apply the patch below (or run `pnpm prepack && pnpm vitest run bundle -u` locally) and push:',
                   '',
-                  '```diff',
-                  patch.slice(0, 20_000),
-                  '```',
+                  `${patchFence}diff`,
+                  patch,
+                  patchFence,
                   '',
                   `<sub>Produced by [this run](${runUrl}).</sub>`,
                 ].join('\n')
@@ -442,16 +477,43 @@ jobs:
               return
             }
 
-            await post(
-              [
-                marker,
-                '## ✅ Bundle snapshot updated',
-                '',
-                `Committed the new snapshot as ${process.env.COMMIT_SHA}, verified by re-running the bundle check against it.`,
-                '',
-                'GitHub suppresses the events a workflow commit would normally raise, so the `ci` check above may',
-                'still show the earlier failure. Re-run it to refresh the status — the snapshot itself is confirmed green.',
-                '',
-                `<sub>Produced by [this run](${runUrl}).</sub>`,
-              ].join('\n')
-            )
+            // Committing through the API keeps the commit signed/verified, which the
+            // `commit-signature` workflow requires.
+            const path = 'test/bundle.test.ts'
+            const branch = process.env.HEAD_REF
+            try {
+              const { data: current } = await github.rest.repos.getContent({ owner, repo, path, ref: branch })
+              const { data: result } = await github.rest.repos.createOrUpdateFileContents({
+                owner,
+                repo,
+                path,
+                branch,
+                sha: current.sha,
+                message: 'test: update bundle size snapshot',
+                content: Buffer.from(snapshotContent, 'utf8').toString('base64'),
+              })
+              await post(
+                [
+                  marker,
+                  '## ✅ Bundle snapshot updated',
+                  '',
+                  `Committed the new snapshot as ${result.commit.sha}, verified by re-running the bundle check against it.`,
+                  '',
+                  'GitHub suppresses the events a workflow commit would normally raise, so the `ci` check above may',
+                  'still show the earlier failure. Re-run it to refresh the status — the snapshot itself is confirmed green.',
+                  '',
+                  `<sub>Produced by [this run](${runUrl}).</sub>`,
+                ].join('\n')
+              )
+            } catch (error) {
+              await post(
+                [
+                  marker,
+                  '## ❌ Could not update the bundle snapshot',
+                  '',
+                  `Committing the refreshed snapshot failed: ${error.message}`,
+                  '',
+                  `See the [logs](${runUrl}).`,
+                ].join('\n')
+              )
+            }

@@ -1,5 +1,5 @@
 ---
-title: Summary Extraction
+title: Summary extraction
 description: Plugin for extracting content summaries using the <!-- more --> delimiter.
 seo:
   title: Summary Extraction Plugin
@@ -62,18 +62,20 @@ const plugins = [summary()]
 ```
 
 ```tsx [React]
-import { Markdown } from '@comark/react'
+import { parseMarkdown } from 'comark'
+import { MarkdownDocument } from '@comark/react'
 import summary from '@comark/react/plugins/summary'
 
-<Markdown plugins={[summary()]} summary>
-  {content}
-</Markdown>
+const doc = await parseMarkdown(content, { plugins: [summary()] })
+
+// renders only the summary portion
+<MarkdownDocument value={{ ...doc, nodes: doc.meta.summary ?? doc.nodes }} />
 ```
 
 ::
 
 ::tip
-The `summary` prop on `<Markdown>` renders only the extracted summary nodes. Without it, the full content is rendered and `meta.summary` is available separately.
+The `summary` prop on the Vue `<Markdown>` component renders only the extracted summary nodes; without it, the full content is rendered and `meta.summary` is available separately. In React, read `meta.summary` from the parse result and render it with `<MarkdownDocument>`.
 ::
 
 ---
@@ -102,7 +104,7 @@ The extracted nodes are stored at `tree.meta.summary` as `Node[]`. If no delimit
 
 ### `delimiter`
 
-The HTML comment string that marks the end of the summary. The delimiter itself is removed from both the summary and the full content.
+The HTML comment string that marks the end of the summary. The extracted `meta.summary` nodes stop before the delimiter; the full content in `nodes` keeps the delimiter's comment node.
 
 ```typescript
 summary({ delimiter: '<!-- summary -->' })
@@ -112,7 +114,7 @@ summary({ delimiter: '<!-- summary -->' })
 
 ## Examples
 
-### Blog Listing
+### Blog listing
 
 Render summaries in a listing page and link to the full article:
 
@@ -138,18 +140,22 @@ const plugins = [summary()]
 ```
 
 ```tsx [React]
-import { Markdown } from '@comark/react'
+import { parseMarkdown } from 'comark'
+import { MarkdownDocument } from '@comark/react'
 import summary from '@comark/react/plugins/summary'
 
 const plugins = [summary()]
 
-export function ArticleList({ articles }) {
+export async function ArticleList({ articles }) {
+  const docs = await Promise.all(
+    articles.map(article => parseMarkdown(article.content, { plugins }))
+  )
   return (
     <div className="articles">
-      {articles.map(article => (
+      {articles.map((article, i) => (
         <article key={article.slug}>
           <h2>{article.title}</h2>
-          <Markdown plugins={plugins} summary>{article.content}</Markdown>
+          <MarkdownDocument value={{ ...docs[i], nodes: docs[i].meta.summary ?? docs[i].nodes }} />
           <a href={`/articles/${article.slug}`}>Read more →</a>
         </article>
       ))}

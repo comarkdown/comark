@@ -49,6 +49,38 @@ Before generating, fetch the documentation you need:
 
 const FETCH_TIMEOUT_MS = 15_000
 
+// The endpoint bills every request to the project's AI Gateway, so it must not
+// be a free public LLM proxy: browser-origin check plus a per-IP sliding
+// window. In-memory — the limit applies per serverless instance.
+const RATE_LIMIT_WINDOW_MS = 60_000
+const RATE_LIMIT_MAX = 5
+const requestLog = new Map<string, number[]>()
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now()
+  const hits = (requestLog.get(ip) ?? []).filter((t) => now - t < RATE_LIMIT_WINDOW_MS)
+  if (hits.length >= RATE_LIMIT_MAX) {
+    requestLog.set(ip, hits)
+    return true
+  }
+  hits.push(now)
+  requestLog.set(ip, hits)
+  // Opportunistic cleanup so the map cannot grow without bound
+  if (requestLog.size > 10_000) {
+    for (const [key, value] of requestLog) {
+      const alive = value.filter((t) => now - t < RATE_LIMIT_WINDOW_MS)
+      if (alive.length === 0) requestLog.delete(key)
+      else requestLog.set(key, alive)
+    }
+  }
+  return false
+}
+
+const bodySchema = z.object({
+  prompt: z.string().max(1_000),
+  mode: z.enum(['nuxt-ui', 'showcase']).default('nuxt-ui'),
+})
+
 async function fetchSkillText(url: string): Promise<{ ok: true; text: string } | { ok: false; reason: string }> {
   try {
     const response = await fetch(url, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) })
@@ -60,11 +92,29 @@ async function fetchSkillText(url: string): Promise<{ ok: true; text: string } |
 }
 
 export default defineEventHandler(async (event) => {
-  const { prompt, mode = 'nuxt-ui', _structure } = await readBody(event)
-
-  if (!prompt?.trim()) {
-    throw createError({ statusCode: 400, message: 'Prompt is required' })
+  // Same-origin browsers only: scripts and curl must not spend gateway quota.
+  const origin = getHeader(event, 'origin')
+  let originHost = ''
+  try {
+    originHost = origin ? new URL(origin).host : ''
+  } catch {
+    // invalid origin header — rejected below
   }
+  const host = getRequestHost(event, { xForwardedHost: true })
+  if (!originHost || originHost !== host) {
+    throw createError({ statusCode: 403, message: 'Cross-origin requests are not allowed' })
+  }
+
+  const ip = getRequestIP(event, { xForwardedFor: true }) ?? 'unknown'
+  if (isRateLimited(ip)) {
+    throw createError({ statusCode: 429, message: 'Too many requests — please wait a minute' })
+  }
+
+  const parsed = bodySchema.safeParse(await readBody(event))
+  if (!parsed.success || !parsed.data.prompt.trim()) {
+    throw createError({ statusCode: 400, message: 'A prompt of at most 1000 characters is required' })
+  }
+  const { prompt, mode } = parsed.data
 
   const systemPrompt = mode === 'showcase' ? await buildShowcasePrompt(BASE_PROMPT) : NUXT_UI_PROMPT
 

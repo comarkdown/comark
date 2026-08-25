@@ -1,5 +1,5 @@
 ---
-title: Mermaid Diagrams
+title: Mermaid diagrams
 description: Plugin for rendering Mermaid diagrams in Comark using code blocks.
 seo:
   title: Mermaid Diagrams Plugin
@@ -82,7 +82,7 @@ import mermaid, { Mermaid } from '@comark/react/plugins/mermaid'
 
 ## Features
 
-### Diagram Types
+### Diagram types
 
 Mermaid supports a wide range of diagram types:
 
@@ -182,7 +182,7 @@ erDiagram
 
 See the [Mermaid documentation →](https://mermaid.js.org/intro/) for full syntax reference on each diagram type.
 
-### Code Block Attributes
+### Code block attributes
 
 Pass component props directly on the opening fence:
 
@@ -197,9 +197,15 @@ graph TD
 
 ## API
 
-### `mermaid()`
+### `mermaid(options?)`
 
-Returns a `ComarkPlugin` that marks ` ```mermaid ` code blocks for custom rendering. Takes no options.
+Returns a `ComarkPlugin` that marks ` ```mermaid ` code blocks for custom rendering.
+
+**Parameters:**
+
+- `options?` - Optional `MermaidConfig`:
+  - `theme?: ThemeNames` - Sets the `theme` attribute on every diagram node, passed as a prop to the `<Mermaid>` component
+  - `themeDark?: ThemeNames` - Sets the `theme-dark` attribute, used in dark mode
 
 **Returns:** `ComarkPlugin`
 
@@ -207,14 +213,14 @@ The plugin converts mermaid code blocks into AST nodes that the `<Mermaid>` comp
 
 ---
 
-## Component Props
+## Component props
 
 Props accepted by the `<Mermaid>` component:
 
 | Prop | Type | Default | Description |
 |---|---|---|---|
 | `content` | `string` | required | The Mermaid diagram source |
-| `theme` | `string` | `'default'` | Mermaid theme, see [available themes](https://github.com/lukilabs/beautiful-mermaid#built-in-themes) |
+| `theme` | `string` | `undefined` | Mermaid theme, falls back to `tokyo-light` (`tokyo-night` in dark mode), see [available themes](https://github.com/lukilabs/beautiful-mermaid#built-in-themes) |
 | `themeDark` | `string` | `undefined` | Theme to use in dark mode |
 | `width` | `string` | `'100%'` | Container width |
 | `height` | `string` | `'auto'` | Container height |

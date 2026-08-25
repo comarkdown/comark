@@ -59,7 +59,7 @@ import jsonRender from '@comark/react/plugins/json-render'
 
 ## Features
 
-### Full Spec
+### Full spec
 
 A full spec defines a tree of named elements with a root entry point. Both JSON and YAML are supported and produce identical output:
 
@@ -106,7 +106,7 @@ elements:
 - **`root`**: Key of the root element in the `elements` map
 - **`elements`**: Map of element definitions, each with `type`, `props`, and optional `children`
 
-### Single Element
+### Single element
 
 When only one element is needed, omit `root` and `elements`:
 

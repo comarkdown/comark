@@ -56,7 +56,7 @@ This example demonstrates how to use Comark with LaTeX math formulas in React:
    $$
    ```
 
-## Syntax Examples
+## Syntax examples
 
 **Inline Math**: Use single `$` delimiters
 ```markdown
@@ -85,7 +85,7 @@ $\alpha + \beta = \gamma$
 $x_1^2 + x_2^2$
 ```
 
-## Learn More
+## Learn more
 
 - [Math Plugin Documentation](/plugins/built-in/math)
 - [KaTeX Documentation](https://katex.org)

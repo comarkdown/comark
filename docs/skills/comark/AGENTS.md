@@ -177,18 +177,18 @@ export class ChatComponent {
 Use `@comark/ansi` to render LLM markdown output in terminal-based agents:
 
 ```typescript
-import { writeAnsi } from '@comark/ansi'
+import { printAnsi } from '@comark/ansi'
 
 // Print a complete LLM response to stdout with ANSI styling
-await writeAnsi(llmResponse)
+await printAnsi(llmResponse)
 ```
 
-For repeated terminal output, use `createAnsiWriter` with a custom `writer` function:
+For repeated terminal output, use `createAnsiPrinter` with a custom `writer` function:
 
 ```typescript
-import { createAnsiWriter } from '@comark/ansi'
+import { createAnsiPrinter } from '@comark/ansi'
 
-const writeMarkdown = createAnsiWriter({
+const writeMarkdown = createAnsiPrinter({
   writer: (output) => process.stdout.write(output),
 })
 

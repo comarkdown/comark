@@ -46,6 +46,16 @@ describe('tokenizeCode', () => {
     expect(tokens.map((t) => t.text).join('')).toBe('const x = 1')
   })
 
+  it('does not catastrophically backtrack on headings without attributes', () => {
+    // The heading-with-attributes rule was `^ {0,3}#{1,6}[ \t]+.*?[ \t]*ATTRS[ \t]*$`:
+    // the lazy `.*?` and the greedy `[ \t]*` both matched spaces, so a heading
+    // followed by thousands of spaces and no `{...}` exploded combinatorially
+    // (~9s for 3000 spaces).
+    const payload = `# ${' '.repeat(3_000)}x`
+    const tokens = tokenizeCode(payload, 'md')
+    expect(tokens.map((t) => t.text).join('')).toBe(payload)
+  })
+
   it('resolves language aliases via rangi (typescript)', () => {
     const tokens = tokenizeCode('const n: number = 1', 'typescript')
     expect(tokens.some((t) => t.type === 'kwd')).toBe(true)

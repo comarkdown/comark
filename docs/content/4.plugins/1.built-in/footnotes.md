@@ -23,7 +23,7 @@ The Footnotes plugin adds support for footnote references and definitions. Refer
 
 No peer dependencies are required.
 
-## Basic Usage
+## Basic usage
 
 ### With Vue
 
@@ -85,7 +85,7 @@ Comark supports footnotes[^1] with back-references[^2].
 <Markdown value={markdown} plugins={[footnotes()]} />
 ```
 
-### With Parse API
+### With parse API
 
 ```typescript [parse.ts]
 import { parseMarkdown } from 'comark'
@@ -98,7 +98,7 @@ const result = await parseMarkdown('Hello[^1]\n\n[^1]: World', {
 
 ## Syntax
 
-### Footnote References
+### Footnote references
 
 Use `[^label]` anywhere inline to insert a footnote reference:
 
@@ -110,7 +110,7 @@ Einstein also contributed to quantum mechanics[^qm].
 
 Labels can be numbers or text; they serve as identifiers and are replaced with sequential numbers in the output.
 
-### Footnote Definitions
+### Footnote definitions
 
 Define footnotes with `[^label]: content` on its own line:
 
@@ -121,7 +121,7 @@ Define footnotes with `[^label]: content` on its own line:
 
 Definitions can appear anywhere in the document. They are removed from their original position and collected into the footnotes section.
 
-### Complete Example
+### Complete example
 
 ```mdc
 # Research Notes
@@ -136,7 +136,7 @@ Dark matter[^dm] accounts for approximately 27% of the universe.
 [^dm]: Dark matter is inferred from gravitational effects on visible matter.
 ```
 
-## Rendered Output
+## Rendered output
 
 The plugin produces the following AST structure:
 
@@ -179,7 +179,7 @@ footnotes({
 | `hr` | `boolean` | `true` | Whether to render a horizontal rule before the section |
 | `backRef` | `string` | `'↩'` | Symbol used for the back-reference link |
 
-### Custom Configuration
+### Custom configuration
 
 ```typescript
 import footnotes from 'comark/plugins/footnotes'
@@ -192,7 +192,7 @@ const plugin = footnotes({
 })
 ```
 
-## CSS Classes
+## CSS classes
 
 The plugin adds CSS classes for styling:
 
@@ -203,7 +203,7 @@ The plugin adds CSS classes for styling:
 | `<ol>` | `footnotes-list` | The ordered list of footnote definitions |
 | `<a>` | `footnote-backref` | The back-reference link in each definition |
 
-### Example Styles
+### Example styles
 
 ```css
 .footnote-ref {
@@ -252,7 +252,7 @@ Second definition referenced first[^b], then first[^a].
 
 Referencing the same footnote multiple times reuses the same number.
 
-## Footnotes in Inline Formatting
+## Footnotes in inline formatting
 
 Footnote references work inside bold, italic, and other inline formatting:
 
@@ -263,7 +263,7 @@ Footnote references work inside bold, italic, and other inline formatting:
 [^2]: Works inside italic too.
 ```
 
-## Stringify (Markdown Rendering)
+## Stringify (Markdown rendering)
 
 The plugin exports a `Footnote` conditional handler that converts the footnote AST back into standard markdown footnote syntax. This is useful when you want to render a `MarkdownDocument` back to markdown and preserve footnotes.
 
