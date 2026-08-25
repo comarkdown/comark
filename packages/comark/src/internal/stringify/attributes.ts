@@ -195,8 +195,13 @@ export function comarkAttributes(attributes: Record<string, unknown>) {
         return `#${value}`
       }
       if (key === 'class') {
-        return (value as string)
+        // The parser JSON-decodes `[...]`/`{...}` attribute values, so class
+        // can be an array/object here — normalize instead of crashing on
+        // value.split.
+        const classValue = Array.isArray(value) ? value.join(' ') : String(value)
+        return classValue
           .split(' ')
+          .filter(Boolean)
           .map((c) => `.${c}`)
           .join('')
       }

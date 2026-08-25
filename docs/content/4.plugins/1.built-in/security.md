@@ -70,7 +70,7 @@ import security from '@comark/react/plugins/security'
 
 Several sanitizations are applied automatically and cannot be disabled:
 
-### Event Handlers
+### Event handlers
 
 All `on*` attributes are stripped regardless of case: `onclick`, `onerror`, `onload`, `onmouseover`, and any other `on*` attribute.
 
@@ -88,7 +88,7 @@ All `on*` attributes are stripped regardless of case: `onclick`, `onerror`, `onl
 
 ::
 
-### Dangerous Attributes
+### Dangerous attributes
 
 Attributes that can be abused regardless of value are always stripped:
 
@@ -104,7 +104,7 @@ Attributes that can be abused regardless of value are always stripped:
 Framework renderers (Vue, React, Svelte, Angular) never forward `innerHTML`, `dangerouslySetInnerHTML`, or `textContent` from document attributes, even without this plugin. Raw HTML has its own explicit path through the default `html` plugin.
 ::
 
-### Protocol Blocking
+### Protocol blocking
 
 `href` and `src` values are decoded (URL-encoded and HTML entity variants included) and checked against a hard-coded block list. These protocols are **always** blocked, even if `allowedProtocols: ['*']` is set:
 
@@ -148,7 +148,7 @@ Returns a `ComarkPlugin` that sanitizes the parsed AST.
 |---|---|---|---|
 | [`blockedTags`](#options-blockedtags) | `string[]` | `[]` | Tag names to remove entirely from the AST |
 | [`allowedTags`](#options-allowedtags) | `string[]` | `[]` | Tag names to allow exclusively in the AST |
-| [`tagFallback`](#options-tagfallback) | `function` | `false`  | Defines how to handle unallowed tags in the AST |
+| [`tagFallback`](#options-tagfallback) | `function` | `undefined`  | Defines how to handle unallowed tags in the AST |
 | [`allowedProtocols`](#options-allowedprotocols) | `string[]` | `['*']` | Protocols permitted in `href` and `src` |
 | [`allowedLinkPrefixes`](#options-allowedlinkprefixes) | `string[]` | `['*']` | URL prefixes permitted in `href` |
 | [`allowedImagePrefixes`](#options-allowedimageprefixes) | `string[]` | `['*']` | URL prefixes permitted in `src` |
@@ -273,7 +273,7 @@ security({
 
 ## Examples
 
-### User-Generated Content
+### User-generated content
 
 The most common use case: lock down everything that could execute code or phone home:
 
@@ -292,7 +292,7 @@ const result = await parseMarkdown(userInput, {
 })
 ```
 
-### Restrict Links to Your Domain
+### Restrict links to your domain
 
 Keep all links and images within your own infrastructure, rewriting external URLs instead of stripping them:
 
@@ -304,7 +304,7 @@ security({
 })
 ```
 
-### Block External Images
+### Block external images
 
 Prevent tracking pixels and externally-hosted images while keeping everything else permissive:
 
@@ -317,7 +317,7 @@ security({
 
 ---
 
-## Best Practices
+## Recommendations
 
 ### Block tags, not just attributes
 

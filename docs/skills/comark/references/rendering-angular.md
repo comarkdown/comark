@@ -109,8 +109,8 @@ export class AppComponent {
 
 Components are resolved by checking these keys in order:
 1. `Prose{PascalTag}`, e.g., `ProseH1` for `<h1>` tags
-2. `tag`, e.g., `alert` for `::alert` components
-3. `PascalTag`, e.g., `Alert` for `::alert` components
+2. `PascalTag`, e.g., `Alert` for `::alert` components
+3. `tag`, e.g., `alert` for `::alert` components
 
 ### Custom Component Example
 
@@ -504,7 +504,6 @@ import math, { Math } from '@comark/angular/plugins/math'
 import mermaid, { Mermaid } from '@comark/angular/plugins/mermaid'
 
 export const DocsMarkdown = defineMarkdownComponent({
-  name: 'docs-markdown',
   plugins: [math(), mermaid()],
   components: { Math, Mermaid },
   class: 'prose dark:prose-invert',
@@ -539,7 +538,6 @@ import { defineMarkdownDocumentComponent } from '@comark/angular'
 import { Math } from '@comark/angular/plugins/math'
 
 export const DocsMarkdownDocument = defineMarkdownDocumentComponent({
-  name: 'docs-markdown-document',
   components: { Math },
 })
 ```

@@ -1,7 +1,7 @@
 import { handlers as defaultHandlers } from './handlers/index.ts'
 import type { NodeRenderData, State, Context } from 'comark/render'
 import type { ElementNode, Node, MarkdownDocument, ConditionalNodeHandler, CreateContext, NodeHandler } from 'comark'
-import { pascalCase } from '../../utils/index.ts'
+import { escapeHtml, pascalCase } from '../../utils/index.ts'
 import { resolveAttributes } from './attributes.ts'
 
 function findHandler(ctx: Context, node: ElementNode): NodeHandler | undefined {
@@ -37,7 +37,8 @@ function findHandler(ctx: Context, node: ElementNode): NodeHandler | undefined {
 export async function one(node: Node, state: State, parent?: ElementNode, atLineStart = false): Promise<string> {
   if (typeof node === 'string') {
     if (state.context.html) {
-      return escapeHtml(node)
+      // Do not convert ampersands to entities in raw HTML blocks
+      return escapeHtml(node, { '&': undefined, '"': undefined })
     }
     // The content of a raw HTML block is copied verbatim on parse, so markdown
     // syntax inside it must not be escaped (inline HTML, `$.block === 0`, has
@@ -204,18 +205,6 @@ export const state: State = {
   },
 }
 
-/**
- * Escape HTML special characters
- */
-function escapeHtml(text: string): string {
-  const map: Record<string, string> = {
-    '<': '&lt;',
-    '>': '&gt;',
-    '&amp;': '&',
-  }
-  return text.replace(/[<>]/g, (char) => map[char])
-}
-
 // Characters that can start an inline markdown construct anywhere on a line:
 // `\` (escape), `` ` `` (code span), `*`/`_` (emphasis), `<` (raw HTML /
 // autolink), `&` (character reference), `~` (strikethrough) and `[`/`]`
@@ -252,20 +241,56 @@ function isAlphaNumeric(char: string | undefined): boolean {
 }
 
 /**
+ * Build the index of the next `needle` from every position in `source`
+ * (-1 when none). One backwards pass, so per-position lookups are O(1).
+ */
+function buildNextIndex(source: string, charCode: number): Int32Array {
+  const next = new Int32Array(source.length + 1)
+  let last = -1
+  next[source.length] = -1
+  for (let i = source.length - 1; i >= 0; i--) {
+    if (source.charCodeAt(i) === charCode) last = i
+    next[i] = last
+  }
+  return next
+}
+
+/**
  * Escape inline syntax characters. `_`, `<` and `&` only start a construct in
  * specific positions, so they are left alone otherwise to avoid mangling
  * ordinary prose like `snake_case`, `a < b` or `AT&T`.
  */
 function escapeInline(text: string): string {
+  // Lazily-built next-`>` index: the tag-likeness check below must not
+  // rescan the remainder of the node for every `<` (quadratic on long runs
+  // of `<` without a closing `>`).
+  let nextGt: Int32Array | undefined
+
   return text.replace(inlineSyntax, (char, offset: number, source: string) => {
     // `_` only opens emphasis at a word boundary — never between alphanumerics.
     if (char === '_' && isAlphaNumeric(source[offset - 1]) && isAlphaNumeric(source[offset + 1])) {
       return char
     }
     // `<` only starts raw HTML / an autolink when it looks like a tag, not when
-    // used as a comparison (e.g. `a < b`).
-    if (char === '<' && !/^<[a-zA-Z!?/][^>]*>/.test(source.slice(offset))) {
-      return char
+    // used as a comparison (e.g. `a < b`). Tag-like means `<` followed by a
+    // letter/`!`/`?`/`/` with a `>` somewhere after — same shape as the
+    // previous /^<[a-zA-Z!?/][^>]*>/ test, minus the rescan.
+    if (char === '<') {
+      const next = source.charCodeAt(offset + 1)
+      const tagStart =
+        (next >= 65 && next <= 90) /* A-Z */ ||
+        (next >= 97 && next <= 122) /* a-z */ ||
+        next === 33 /* ! */ ||
+        next === 63 /* ? */ ||
+        next === 47 /* / */
+      if (!tagStart) {
+        return char
+      }
+      nextGt ??= buildNextIndex(source, 62 /* > */)
+      if (nextGt[offset + 1] === -1) {
+        return char
+      }
+      return `\\${char}`
     }
     // `&` only starts a character reference when it forms an entity.
     if (char === '&' && !/^&#?[a-zA-Z0-9]+;/.test(source.slice(offset))) {
