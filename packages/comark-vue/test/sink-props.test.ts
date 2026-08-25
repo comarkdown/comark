@@ -7,7 +7,7 @@ import { MarkdownDocument } from '../src/components/MarkdownDocument.ts'
 function renderDocument(document: unknown) {
   const app = createSSRApp({
     setup() {
-      return () => h(MarkdownDocument, { value: document })
+      return () => h(MarkdownDocument, { value: document as any })
     },
   })
   return renderToString(app as any)
