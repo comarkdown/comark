@@ -65,35 +65,6 @@ function attrSet(token: MarkdownItToken, name: string, value: string) {
   }
 }
 
-function findParentListItem(tokens: MarkdownItToken[], index: number): number {
-  // Look backwards for list_item_open
-  for (let i = index - 1; i >= 0; i--) {
-    if (tokens[i].type === 'list_item_open') {
-      return i
-    }
-    if (tokens[i].type === 'list_item_close') {
-      // We've gone past the current list item
-      return -1
-    }
-  }
-  return -1
-}
-
-function findParentList(tokens: MarkdownItToken[], listItemIndex: number): number {
-  const targetLevel = tokens[listItemIndex].level - 1
-
-  // Look backwards for the list (ul/ol) that contains this list item
-  for (let i = listItemIndex - 1; i >= 0; i--) {
-    if (
-      tokens[i].level === targetLevel &&
-      (tokens[i].type === 'bullet_list_open' || tokens[i].type === 'ordered_list_open')
-    ) {
-      return i
-    }
-  }
-  return -1
-}
-
 function markdownItTaskList(md: MarkdownIt, options?: TaskListOptions) {
   const disableCheckboxes = !(options?.enabled ?? false)
 
@@ -101,35 +72,59 @@ function markdownItTaskList(md: MarkdownIt, options?: TaskListOptions) {
   md.core.ruler.before('inline', 'task-lists-mdc', (state: MarkdownItState) => {
     const tokens = state.tokens
 
+    // Track the currently-open list items (and the list containing each) in a
+    // single forward pass. Scanning backwards per inline token is O(n²) on
+    // documents without any list, so plain paragraphs became a DoS vector.
+    const openItems: number[] = []
+    // Parallel to openItems: the bullet_list_open/ordered_list_open index that
+    // contains each item (-1 when the item somehow opened without a list).
+    const openItemLists: number[] = []
+    const openLists: number[] = []
+
     for (let i = 0; i < tokens.length; i++) {
       const token = tokens[i]
 
+      if (token.type === 'bullet_list_open' || token.type === 'ordered_list_open') {
+        openLists.push(i)
+        continue
+      }
+      if (token.type === 'bullet_list_close' || token.type === 'ordered_list_close') {
+        openLists.pop()
+        continue
+      }
+      if (token.type === 'list_item_open') {
+        openItems.push(i)
+        openItemLists.push(openLists.length > 0 ? openLists[openLists.length - 1] : -1)
+        continue
+      }
+      if (token.type === 'list_item_close') {
+        openItems.pop()
+        openItemLists.pop()
+        continue
+      }
+
       // Look for list items that might contain task lists
-      if (token.type === 'inline' && token.content) {
-        const parentIdx = findParentListItem(tokens, i)
+      if (token.type === 'inline' && token.content && openItems.length > 0) {
+        // Check if content starts with task list marker
+        const match = token.content.match(/^(\[[ x]\])\s+/i)
 
-        if (parentIdx >= 0) {
-          // Check if content starts with task list marker
-          const match = token.content.match(/^(\[[ x]\])\s+/i)
+        if (match) {
+          const isChecked = match[1].toLowerCase() === '[x]'
 
-          if (match) {
-            const isChecked = match[1].toLowerCase() === '[x]'
+          // Mark the list item with task-list-item class
+          attrSet(tokens[openItems[openItems.length - 1]], 'class', 'task-list-item')
 
-            // Mark the list item with task-list-item class
-            attrSet(tokens[parentIdx], 'class', 'task-list-item')
-
-            // Mark the parent list with contains-task-list class
-            const listIdx = findParentList(tokens, parentIdx)
-            if (listIdx >= 0) {
-              attrSet(tokens[listIdx], 'class', 'contains-task-list')
-            }
-
-            // Replace the task marker with a placeholder that won't be processed by Comark
-            // We use a special format that we can detect later
-            // Keep one space after the placeholder to match expected output
-            const checkboxPlaceholder = `TASK_CHECKBOX_${isChecked ? 'CHECKED' : 'UNCHECKED'} `
-            token.content = token.content.replace(/^\[[ x]\]\s+/i, checkboxPlaceholder)
+          // Mark the parent list with contains-task-list class
+          const listIdx = openItemLists[openItemLists.length - 1]
+          if (listIdx >= 0) {
+            attrSet(tokens[listIdx], 'class', 'contains-task-list')
           }
+
+          // Replace the task marker with a placeholder that won't be processed by Comark
+          // We use a special format that we can detect later
+          // Keep one space after the placeholder to match expected output
+          const checkboxPlaceholder = `TASK_CHECKBOX_${isChecked ? 'CHECKED' : 'UNCHECKED'} `
+          token.content = token.content.replace(/^\[[ x]\]\s+/i, checkboxPlaceholder)
         }
       }
     }

@@ -157,8 +157,11 @@ export const comarkLanguage: ShjLanguageDefinition = [
   ],
 
   // Heading carrying attributes — `## Title{#slug .lead}`
+  // The title is `[^{\n]*` (never `.*?[ \t]*`): both `.*?` and `[ \t]*` can
+  // match spaces, which made the rule backtrack catastrophically on headings
+  // with long space runs and no `{...}` block.
   [
-    RegExp(`^ {0,3}#{1,6}[ \\t]+.*?[ \\t]*${ATTRS}[ \\t]*$`, 'gm'),
+    RegExp(`^ {0,3}#{1,6}[ \\t]+[^\\n{]*${ATTRS}[ \\t]*$`, 'gm'),
     'section',
     [[RegExp(`${ATTRS}[ \\t]*$`, 'g'), undefined, attributeRules]],
   ],

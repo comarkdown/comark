@@ -104,7 +104,7 @@ headings({ remove: true })
 
 ## Examples
 
-### Default Extraction
+### Default extraction
 
 ::code-group
 
@@ -133,7 +133,7 @@ console.log(result.meta.description) // "This is the opening paragraph used as t
 
 ::
 
-### Blockquote as Description
+### Blockquote as description
 
 ```typescript
 const result = await parseMarkdown(content, {
@@ -143,7 +143,7 @@ const result = await parseMarkdown(content, {
 console.log(result.meta.description) // "A highlighted lead-in sentence shown as the description."
 ```
 
-### Combining with the TOC Plugin
+### Combining with the TOC plugin
 
 ```typescript
 import { parseMarkdown } from 'comark'

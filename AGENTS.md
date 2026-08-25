@@ -152,12 +152,12 @@ Located at `packages/comark-ansi/`. ANSI terminal renderer.
 ### Usage
 
 ```typescript
-import { createAnsiRenderer, createAnsiWriter, renderAnsi, renderAnsiFromDocument, writeAnsi } from '@comark/ansi'
+import { createAnsiRenderer, createAnsiPrinter, printAnsi, renderAnsi, renderAnsiFromDocument } from '@comark/ansi'
 import shiki from '@comark/ansi/plugins/shiki'
 import math, { Math } from '@comark/ansi/plugins/math'
 
 // Flat options — ParserOptions & AnsiRendererOptions merged at top level
-const writeAnsi = createAnsiWriter({
+const printAnsi = createAnsiPrinter({
   plugins: [shiki(), math()],
   components: { Math },
   width: 120,                      // terminal width
@@ -165,7 +165,7 @@ const writeAnsi = createAnsiWriter({
   writer: (output) => process.stderr.write(output),
 })
 
-await writeAnsi(markdownString)
+await printAnsi(markdownString)
 ```
 
 ---
@@ -382,7 +382,7 @@ import { parseMarkdown, autoCloseMarkdown } from 'comark'
 import { createHtmlRenderer, renderHtml, renderHtmlFromDocument } from '@comark/html'
 
 // ANSI terminal rendering
-import { createAnsiRenderer, createAnsiWriter, renderAnsi, renderAnsiFromDocument, writeAnsi } from '@comark/ansi'
+import { createAnsiRenderer, createAnsiPrinter, printAnsi, renderAnsi, renderAnsiFromDocument } from '@comark/ansi'
 
 // Markdown string rendering (AST → markdown)
 import { renderMarkdown } from 'comark/render'
@@ -425,7 +425,7 @@ import math, { Math } from '@comark/html/plugins/math'
 import mermaid, { Mermaid } from '@comark/html/plugins/mermaid'
 
 // ANSI terminal rendering — parse + render to styled terminal string
-import { createAnsiRenderer, createAnsiWriter, renderAnsi, renderAnsiFromDocument, writeAnsi } from '@comark/ansi'
+import { createAnsiRenderer, createAnsiPrinter, printAnsi, renderAnsi, renderAnsiFromDocument } from '@comark/ansi'
 import shiki from '@comark/ansi/plugins/shiki'
 import math from '@comark/ansi/plugins/math'
 
@@ -626,7 +626,6 @@ import { defineMarkdownComponent } from '@comark/angular'
 import math, { Math } from '@comark/angular/plugins/math'
 
 export const DocsMarkdown = defineMarkdownComponent({
-  name: 'docs-markdown',
   plugins: [math()],
   components: { Math },
 })
@@ -725,8 +724,12 @@ A maintainer (write access required) can:
 The workflow then rebuilds, runs `vitest run bundle --update`, re-runs the check
 to verify the refreshed snapshot, and commits `test/bundle.test.ts` back to the
 PR branch via the GitHub API (so the commit is verified, satisfying
-`commit-signature.yml`). For fork PRs it cannot push, so it posts the patch in
-the comment instead. The comment is deleted automatically once the check passes.
+`commit-signature.yml`). PR code always executes in the tokenless `build` job
+(`permissions: {}`); only its artifact reaches the write-scoped `update` job,
+which verifies the artifact against the run's head SHA and uses comment fences
+longer than any backtick run in PR-controlled text. For fork PRs it cannot
+push, so it posts the patch in the comment instead. The comment is deleted
+automatically once the check passes.
 
 GitHub suppresses the events a `GITHUB_TOKEN` commit would raise, so `ci` does
 not reliably re-run after the snapshot lands — hence the in-job verification.

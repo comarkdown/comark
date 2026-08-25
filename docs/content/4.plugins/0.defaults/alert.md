@@ -64,7 +64,7 @@ The plugin tags the blockquote in the AST and leaves the visuals to your rendere
 
 ## Features
 
-### Alert Types
+### Alert types
 
 | Marker | Color | Use for |
 |---|---|---|
@@ -74,7 +74,7 @@ The plugin tags the blockquote in the AST and leaves the visuals to your rendere
 | `[!WARNING]` | Yellow | Potential issues and gotchas |
 | `[!CAUTION]` | Red | Dangerous actions or destructive operations |
 
-### Multi-line Content
+### Multi-line content
 
 Alerts can span multiple lines and contain inline markdown:
 
@@ -86,7 +86,7 @@ Alerts can span multiple lines and contain inline markdown:
 
 ---
 
-## How It Works
+## How it works
 
 The plugin transforms the alert blockquote in the AST: the `[!NOTE]` marker is removed and an `as` attribute is added to the `blockquote` node.
 
@@ -104,7 +104,7 @@ console.log(tree.nodes)
 
 The Vue, React, and Angular renderers resolve the `as` attribute against your components map first, then fall back to the tag name (`blockquote`). This means you can render each alert type with its own component. In the HTML renderer, register a `blockquote` component and read the alert type from `attrs.as`.
 
-## Custom Components
+## Custom components
 
 Register a component for each alert type you want to customize:
 
@@ -158,6 +158,6 @@ Alert types without a registered component render as a regular `<blockquote as="
 
 ---
 
-## Nuxt UI Integration
+## Nuxt UI integration
 
 When using the [Nuxt module](/rendering/nuxt) alongside `@nuxt/ui`, alert blocks are automatically mapped to Nuxt UI's `<Note>`, `<Warning>`, `<Caution>`, and `<Tip>` components. No extra configuration needed.
