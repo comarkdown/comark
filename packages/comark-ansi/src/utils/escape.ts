@@ -25,6 +25,17 @@ export function stripAnsi(text: string): string {
   return text.replace(ANSI_RE, '')
 }
 
+// C0 controls except \t and \n, plus DEL and the C1 range. These bytes drive
+// terminal control sequences (CSI/OSC/DCS), so author-controlled markdown
+// must never pass them to the TTY.
+// eslint-disable-next-line no-control-regex
+const CONTROL_CHARS_RE = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F]/g
+
+/** Remove terminal control characters, keeping tab and newline. */
+export function stripControlChars(text: string): string {
+  return text.replace(CONTROL_CHARS_RE, '')
+}
+
 /** Visible character length of a string, ignoring ANSI escape codes. */
 export function visibleLength(text: string): number {
   return stripAnsi(text).length

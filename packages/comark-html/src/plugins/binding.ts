@@ -1,10 +1,8 @@
 import type { NodeHandler } from 'comark/render'
+import { escapeHtml } from '../utils/index.ts'
 
 export * from 'comark/plugins/binding'
 export { default } from 'comark/plugins/binding'
-
-const escape = (s: string) =>
-  s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 
 /**
  * HTML handler for `binding` nodes produced by the `binding` plugin.
@@ -30,5 +28,5 @@ export const Binding: NodeHandler = (node, state) => {
   const raw = (node[1] || {}) as Record<string, unknown>
   const out = resolved.value ?? raw.defaultValue
   if (out === undefined || out === null) return ''
-  return escape(String(out))
+  return escapeHtml(String(out))
 }
