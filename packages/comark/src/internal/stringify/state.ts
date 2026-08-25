@@ -1,7 +1,7 @@
 import { handlers as defaultHandlers } from './handlers/index.ts'
 import type { NodeRenderData, State, Context } from 'comark/render'
 import type { ElementNode, Node, MarkdownDocument, ConditionalNodeHandler, CreateContext, NodeHandler } from 'comark'
-import { pascalCase } from '../../utils/index.ts'
+import { escapeHtml, pascalCase } from '../../utils/index.ts'
 import { resolveAttributes } from './attributes.ts'
 
 function findHandler(ctx: Context, node: ElementNode): NodeHandler | undefined {
@@ -37,7 +37,8 @@ function findHandler(ctx: Context, node: ElementNode): NodeHandler | undefined {
 export async function one(node: Node, state: State, parent?: ElementNode, atLineStart = false): Promise<string> {
   if (typeof node === 'string') {
     if (state.context.html) {
-      return escapeHtml(node)
+      // Do not convert ampersands to entities in raw HTML blocks
+      return escapeHtml(node, { '&': undefined, '"': undefined })
     }
     // The content of a raw HTML block is copied verbatim on parse, so markdown
     // syntax inside it must not be escaped (inline HTML, `$.block === 0`, has
@@ -202,18 +203,6 @@ export const state: State = {
 
     return revert
   },
-}
-
-/**
- * Escape HTML special characters
- */
-function escapeHtml(text: string): string {
-  const map: Record<string, string> = {
-    '<': '&lt;',
-    '>': '&gt;',
-    '&amp;': '&',
-  }
-  return text.replace(/[<>]/g, (char) => map[char])
 }
 
 // Characters that can start an inline markdown construct anywhere on a line:

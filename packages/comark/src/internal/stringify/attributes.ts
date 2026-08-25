@@ -1,5 +1,5 @@
 import { stringifyYaml } from '../yaml.ts'
-import { get } from '../../utils/index.ts'
+import { escapeHtml, get } from '../../utils/index.ts'
 import type { NodeRenderData } from '../../types.ts'
 
 export interface ResolveAttributesOptions {
@@ -188,16 +188,6 @@ export function comarkAttributes(attributes: Record<string, unknown>) {
   return attrs.length > 0 ? `{${attrs}}` : ''
 }
 
-/**
- * Escape a value for interpolation into a double-quoted HTML attribute.
- * Prevents attribute breakout (`"` terminating the value early) and markup
- * injection (`<`/`>` closing the tag), which would otherwise bypass
- * AST-level sanitization such as `comark/plugins/security`.
- */
-function escapeHtmlAttribute(value: unknown): string {
-  return String(value).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-}
-
 // HTML attribute names must start with a letter/underscore/colon and may only
 // contain alphanumerics plus `_ : . -`. Anything else (quotes, spaces, …)
 // could break out of the attribute list, so such keys are dropped entirely.
@@ -221,10 +211,10 @@ export function htmlAttributes(attributes: Record<string, unknown>) {
         continue
       }
       if (typeof value === 'object' && value !== null) {
-        parts.push(`${key}="${escapeHtmlAttribute(JSON.stringify(value))}"`)
+        parts.push(`${key}="${escapeHtml(JSON.stringify(value))}"`)
         continue
       }
-      parts.push(`${key}="${escapeHtmlAttribute(value)}"`)
+      parts.push(`${key}="${escapeHtml(String(value))}"`)
       continue
     }
 
@@ -235,11 +225,11 @@ export function htmlAttributes(attributes: Record<string, unknown>) {
     if (value === false || value === null || value === undefined) continue
 
     if (typeof value === 'object') {
-      parts.push(`${key}="${escapeHtmlAttribute(JSON.stringify(value))}"`)
+      parts.push(`${key}="${escapeHtml(JSON.stringify(value))}"`)
       continue
     }
 
-    parts.push(`${key}="${escapeHtmlAttribute(value)}"`)
+    parts.push(`${key}="${escapeHtml(String(value))}"`)
   }
   return parts.join(' ')
 }
