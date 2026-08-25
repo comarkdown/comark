@@ -4,6 +4,13 @@ import { defineComarkPlugin } from '../parse.ts'
 import { textContent, visit } from '../utils/index.ts'
 import { parseYaml } from '../internal/yaml.ts'
 
+// Budgets for spec expansion. Specs are author-controlled and elements can
+// reference the same key many times (a DAG), so recursive materialization
+// must be bounded — otherwise a ~1KB fence inflates into billions of AST
+// nodes and exhausts the heap before any renderer or sanitizer runs.
+const MAX_EXPANDED_NODES = 10_000
+const MAX_DEPTH = 100
+
 function jsonRenderToAst(jrt: Spec | UIElement) {
   if (!(jrt as Spec).root) {
     jrt = {
@@ -15,16 +22,28 @@ function jsonRenderToAst(jrt: Spec | UIElement) {
   const tree = jrt as Spec
 
   const root = tree.elements[tree.root]
-  return jsonRenderElementToAst(root, tree.elements)
+  return jsonRenderElementToAst(root, tree.elements, 0, { nodes: 0 })
 }
 
-function jsonRenderElementToAst(element: UIElement, elements: Record<string, UIElement>): Node {
+function jsonRenderElementToAst(
+  element: UIElement,
+  elements: Record<string, UIElement>,
+  depth: number,
+  budget: { nodes: number }
+): Node {
+  if (depth > MAX_DEPTH || ++budget.nodes > MAX_EXPANDED_NODES) {
+    throw new Error('json-render spec exceeds the expansion budget')
+  }
   if (element.type === 'Text') {
     return String(element.props.content)
   }
 
   const children = element.children?.map((childName) => elements[childName]).filter(Boolean) || []
-  return [element.type, element.props, ...children.map((child) => jsonRenderElementToAst(child, elements))]
+  return [
+    element.type,
+    element.props,
+    ...children.map((child) => jsonRenderElementToAst(child, elements, depth + 1, budget)),
+  ]
 }
 
 interface JsonRenderConfig {}

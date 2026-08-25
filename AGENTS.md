@@ -75,7 +75,7 @@ packages/comark/
 │   │   ├── task-list.ts      # GFM task lists
 │   │   └── toc.ts            # Table of contents
 │   ├── utils/                # Shared utilities (comark/utils entry point)
-│   │   ├── index.ts          # textContent(), visit(), visitAsync(), string/object utils
+│   │   ├── index.ts          # textContent(), visit(), visitAsync(), escapeHtml(), string/object utils
 │   │   ├── helpers.ts        # defineComarkPlugin(), dedupePlugins()
 │   │   └── caret.ts          # Caret utilities for streaming
 │   └── internal/             # Internal implementation (not exported)
@@ -389,7 +389,7 @@ import { renderMarkdown } from 'comark/render'
 
 // AST types and utilities
 import type { MarkdownDocument, Node, ElementNode, TextNode } from 'comark'
-import { textContent, visit } from 'comark/utils'
+import { textContent, visit, escapeHtml } from 'comark/utils'
 
 // Core plugins — use when calling parseMarkdown() directly (framework-agnostic)
 import shiki from 'comark/plugins/shiki'

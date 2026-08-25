@@ -35,7 +35,7 @@ def greet(name):
 ## HTML
 
 ```html
-<pre language="python" meta="showLineNumbers=true startLine=10 title="Example""><code class="language-python">def greet(name):
+<pre language="python" meta="showLineNumbers=true startLine=10 title=&quot;Example&quot;"><code class="language-python">def greet(name):
     return f"Hello, {name}!"</code></pre>
 ```
 
