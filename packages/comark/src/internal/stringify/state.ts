@@ -1,11 +1,17 @@
 import { handlers as defaultHandlers } from './handlers/index.ts'
 import type { NodeRenderData, State, Context } from 'comark/render'
 import type { ElementNode, Node, MarkdownDocument, ConditionalNodeHandler, CreateContext, NodeHandler } from 'comark'
-import { pascalCase } from '../../utils/index.ts'
+import { escapeHtml, pascalCase } from '../../utils/index.ts'
 import { resolveAttributes } from './attributes.ts'
 
 function findHandler(ctx: Context, node: ElementNode): NodeHandler | undefined {
-  const userHandler = ctx.handlers[node[0] as string] || ctx.handlers[pascalCase(node[0] as string)]
+  const name = node[0] as string
+  // Own-property lookups only — the handler maps are plain objects, so a node
+  // named `constructor`/`__proto__`/… would otherwise resolve through the
+  // prototype chain (XSS / render crash from untrusted markdown).
+  const userHandler =
+    (Object.hasOwn(ctx.handlers, name) ? ctx.handlers[name] : undefined) ||
+    (Object.hasOwn(ctx.handlers, pascalCase(name)) ? ctx.handlers[pascalCase(name)] : undefined)
 
   if (typeof userHandler === 'function') {
     return userHandler
@@ -31,7 +37,8 @@ function findHandler(ctx: Context, node: ElementNode): NodeHandler | undefined {
 export async function one(node: Node, state: State, parent?: ElementNode, atLineStart = false): Promise<string> {
   if (typeof node === 'string') {
     if (state.context.html) {
-      return escapeHtml(node)
+      // Do not convert ampersands to entities in raw HTML blocks
+      return escapeHtml(node, { '&': undefined, '"': undefined })
     }
     // The content of a raw HTML block is copied verbatim on parse, so markdown
     // syntax inside it must not be escaped (inline HTML, `$.block === 0`, has
@@ -70,8 +77,9 @@ export async function one(node: Node, state: State, parent?: ElementNode, atLine
       return await state.handlers.html(node, state, parent)
     }
 
-    // fallback to default handlers
-    const nodeHandler = state.handlers[node[0] as string]
+    // fallback to default handlers (own-property lookup — see findHandler)
+    const nodeName = node[0] as string
+    const nodeHandler = Object.hasOwn(state.handlers, nodeName) ? state.handlers[nodeName] : undefined
     if (nodeHandler) {
       return await nodeHandler(node, state, parent)
     }
@@ -195,18 +203,6 @@ export const state: State = {
 
     return revert
   },
-}
-
-/**
- * Escape HTML special characters
- */
-function escapeHtml(text: string): string {
-  const map: Record<string, string> = {
-    '<': '&lt;',
-    '>': '&gt;',
-    '&amp;': '&',
-  }
-  return text.replace(/[<>]/g, (char) => map[char])
 }
 
 // Characters that can start an inline markdown construct anywhere on a line:

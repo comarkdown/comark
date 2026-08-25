@@ -1,5 +1,5 @@
 import { stringifyYaml } from '../yaml.ts'
-import { get } from '../../utils/index.ts'
+import { escapeHtml, get } from '../../utils/index.ts'
 import type { NodeRenderData } from '../../types.ts'
 
 export interface ResolveAttributesOptions {
@@ -188,6 +188,11 @@ export function comarkAttributes(attributes: Record<string, unknown>) {
   return attrs.length > 0 ? `{${attrs}}` : ''
 }
 
+// HTML attribute names must start with a letter/underscore/colon and may only
+// contain alphanumerics plus `_ : . -`. Anything else (quotes, spaces, …)
+// could break out of the attribute list, so such keys are dropped entirely.
+const SAFE_ATTR_NAME = /^[a-zA-Z_:][a-zA-Z0-9_:.-]*$/
+
 /**
  * Convert attributes to a string of HTML attributes
  *
@@ -196,17 +201,20 @@ export function comarkAttributes(attributes: Record<string, unknown>) {
  */
 export function htmlAttributes(attributes: Record<string, unknown>) {
   const parts: string[] = []
-  for (const [key, value] of Object.entries(attributes)) {
-    if (key.startsWith(':')) {
+  for (const [rawKey, value] of Object.entries(attributes)) {
+    const key = rawKey.startsWith(':') ? rawKey.slice(1) : rawKey
+    if (!SAFE_ATTR_NAME.test(key)) continue
+
+    if (rawKey.startsWith(':')) {
       if (value === 'true') {
-        parts.push(key.slice(1))
+        parts.push(key)
         continue
       }
       if (typeof value === 'object' && value !== null) {
-        parts.push(`${key.slice(1)}="${JSON.stringify(value).replace(/"/g, '\\"')}"`)
+        parts.push(`${key}="${escapeHtml(JSON.stringify(value))}"`)
         continue
       }
-      parts.push(`${key.slice(1)}="${value}"`)
+      parts.push(`${key}="${escapeHtml(String(value))}"`)
       continue
     }
 
@@ -217,11 +225,11 @@ export function htmlAttributes(attributes: Record<string, unknown>) {
     if (value === false || value === null || value === undefined) continue
 
     if (typeof value === 'object') {
-      parts.push(`${key}="${JSON.stringify(value).replace(/"/g, '\\"')}"`)
+      parts.push(`${key}="${escapeHtml(JSON.stringify(value))}"`)
       continue
     }
 
-    parts.push(`${key}="${value}"`)
+    parts.push(`${key}="${escapeHtml(String(value))}"`)
   }
   return parts.join(' ')
 }

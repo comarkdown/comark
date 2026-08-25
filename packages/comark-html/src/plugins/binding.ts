@@ -1,5 +1,5 @@
 import type { NodeHandler } from 'comark/render'
-import { escapeHtml } from '../utils/index.ts'
+import { escapeHtml } from 'comark/utils'
 
 export * from 'comark/plugins/binding'
 export { default } from 'comark/plugins/binding'

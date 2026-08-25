@@ -1,6 +1,6 @@
 import type { ElementNode } from 'comark'
 import katex from 'katex'
-import { escapeHtml } from '../utils/index.ts'
+import { escapeHtml } from 'comark/utils'
 
 export * from 'comark/plugins/math'
 export { default } from 'comark/plugins/math'

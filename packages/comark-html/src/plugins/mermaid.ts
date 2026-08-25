@@ -1,7 +1,7 @@
 import type { ElementNode } from 'comark'
 import type { ThemeNames } from 'comark/plugins/mermaid'
 import { renderMermaidSVG, THEMES } from 'beautiful-mermaid'
-import { escapeHtml } from '../utils/index.ts'
+import { escapeHtml } from 'comark/utils'
 
 export * from 'comark/plugins/mermaid'
 export { default } from 'comark/plugins/mermaid'
