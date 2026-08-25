@@ -207,10 +207,15 @@ export const state: State = {
 
 // Characters that can start an inline markdown construct anywhere on a line:
 // `\` (escape), `` ` `` (code span), `*`/`_` (emphasis), `<` (raw HTML /
-// autolink), `&` (character reference), `~` (strikethrough) and `[`/`]`
-// (link/image). `\` is included so a literal backslash is preserved instead of
-// merging with a following escape.
-const inlineSyntax = /[\\`*_<&~[\]]/g
+// autolink), `&` (character reference), `~` (strikethrough), `[`/`]`
+// (link/image), plus the Comark markers `:` (inline component) and `{`
+// (attribute block). `\` is included so a literal backslash is preserved
+// instead of merging with a following escape.
+const inlineSyntax = /[\\`*_<&~[\]{:]/g
+
+// Characters after which a `:` can start an inline component (`:name`).
+// Mirrors ALLOWED_PREV_CHARS in the components plugin.
+const COLON_PREV_CHARS = new Set([' ', '\t', '\n', '*', '_', '['])
 
 /**
  * Escape characters in a markdown text node that would otherwise be
@@ -296,6 +301,29 @@ function escapeInline(text: string): string {
     if (char === '&' && !/^&#?[a-zA-Z0-9]+;/.test(source.slice(offset))) {
       return char
     }
+    // `:` only starts an inline component in allowed positions, followed by a
+    // component-name character (`:name`, `:name[...]`, `:name{...}`).
+    if (char === ':') {
+      const prev = source[offset - 1]
+      const prevAllowed = prev === undefined || COLON_PREV_CHARS.has(prev)
+      const next = source[offset + 1]
+      if (prevAllowed && next !== undefined && /[a-zA-Z$]/.test(next)) {
+        return `\\${char}`
+      }
+      return char
+    }
+    // `{` only opens an attribute block when followed by a props-start
+    // character; `{{` (mustache) and `${` (template) never match.
+    if (char === '{') {
+      const prev = source[offset - 1]
+      if (prev === '{' || prev === '$') {
+        return char
+      }
+      if (/^\{[ \t]{0,3}[.#:a-zA-Z_]/.test(source.slice(offset, offset + 6))) {
+        return `\\${char}`
+      }
+      return char
+    }
     return `\\${char}`
   })
 }
@@ -320,5 +348,8 @@ function escapeLeadingBlock(line: string): string {
   if (/^\+([ \t]|$)/.test(line)) return `\\${line}`
   // Setext underline made of `=`.
   if (/^=+[ \t]*$/.test(line)) return `\\${line}`
+  // Comark block component / component fence: any run of leading colons
+  // (`:name`, `::name`, or a bare `::` fence close).
+  if (line[0] === ':') return `\\${line}`
   return line
 }

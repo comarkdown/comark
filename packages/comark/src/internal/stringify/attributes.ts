@@ -1,6 +1,7 @@
 import { stringifyYaml } from '../yaml.ts'
-import { get } from '../../utils/index.ts'
+import { escapeHtml, get } from '../../utils/index.ts'
 import { isUnsafeUrlValue } from '../props-validation.ts'
+import { pickFence } from './fence.ts'
 import type { NodeRenderData } from '../../types.ts'
 
 export interface ResolveAttributesOptions {
@@ -210,21 +211,20 @@ export function comarkAttributes(attributes: Record<string, unknown>) {
         return `${key}="${JSON.stringify(value).replace(/"/g, '\\"')}"`
       }
 
-      return `${key}="${value}"`
+      const str = String(value)
+      // A double quote inside a double-quoted value would terminate it early,
+      // letting the remainder become new attributes on re-parse. Single
+      // quotes round-trip cleanly when the value has no single quote;
+      // otherwise backslash-escape (the parser skips \" without terminating —
+      // safe, though it keeps the backslash in the value).
+      if (str.includes('"') && !str.includes("'")) {
+        return `${key}='${str}'`
+      }
+      return `${key}="${str.replace(/"/g, '\\"')}"`
     })
     .join(' ')
 
   return attrs.length > 0 ? `{${attrs}}` : ''
-}
-
-/**
- * Escape a value for interpolation into a double-quoted HTML attribute.
- * Prevents attribute breakout (`"` terminating the value early) and markup
- * injection (`<`/`>` closing the tag), which would otherwise bypass
- * AST-level sanitization such as `comark/plugins/security`.
- */
-function escapeHtmlAttribute(value: unknown): string {
-  return String(value).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 }
 
 // HTML attribute names must start with a letter/underscore/colon and may only
@@ -250,10 +250,10 @@ export function htmlAttributes(attributes: Record<string, unknown>) {
         continue
       }
       if (typeof value === 'object' && value !== null) {
-        parts.push(`${key}="${escapeHtmlAttribute(JSON.stringify(value))}"`)
+        parts.push(`${key}="${escapeHtml(JSON.stringify(value))}"`)
         continue
       }
-      parts.push(`${key}="${escapeHtmlAttribute(value)}"`)
+      parts.push(`${key}="${escapeHtml(String(value))}"`)
       continue
     }
 
@@ -264,11 +264,11 @@ export function htmlAttributes(attributes: Record<string, unknown>) {
     if (value === false || value === null || value === undefined) continue
 
     if (typeof value === 'object') {
-      parts.push(`${key}="${escapeHtmlAttribute(JSON.stringify(value))}"`)
+      parts.push(`${key}="${escapeHtml(JSON.stringify(value))}"`)
       continue
     }
 
-    parts.push(`${key}="${escapeHtmlAttribute(value)}"`)
+    parts.push(`${key}="${escapeHtml(String(value))}"`)
   }
   return parts.join(' ')
 }
@@ -322,6 +322,6 @@ export function comarkYamlAttributes(
     return `---\n${yamlContent}\n---`
   }
 
-  const fence = yamlContent.includes('```') ? '~~~' : '```'
+  const fence = pickFence(yamlContent)
   return `${fence}yaml [props]\n${yamlContent}\n${fence}`
 }
