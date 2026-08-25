@@ -28,6 +28,20 @@ describe('validateProp', () => {
     it('blocks formaction', () => {
       expect(validateProp('formaction', 'https://evil.com')).toBe(REJECTED_PROP)
     })
+
+    it('blocks innerHTML (any case)', () => {
+      expect(validateProp('innerHTML', '<img src=x onerror=alert(1)>')).toBe(REJECTED_PROP)
+      expect(validateProp('innerHtml', '<img src=x onerror=alert(1)>')).toBe(REJECTED_PROP)
+      expect(validateProp('INNERHTML', '<img src=x onerror=alert(1)>')).toBe(REJECTED_PROP)
+    })
+
+    it('blocks dangerouslySetInnerHTML', () => {
+      expect(validateProp('dangerouslySetInnerHTML', { __html: '<img src=x onerror=alert(1)>' })).toBe(REJECTED_PROP)
+    })
+
+    it('blocks textContent', () => {
+      expect(validateProp('textContent', 'overlay')).toBe(REJECTED_PROP)
+    })
   })
 
   describe('href safety', () => {
@@ -77,6 +91,27 @@ describe('validateProp', () => {
 
     it('blocks data:text/vbscript hrefs', () => {
       expect(validateProp('href', 'data:text/vbscript,evil')).toBe(REJECTED_PROP)
+    })
+
+    it('blocks entity-encoded javascript: hrefs', () => {
+      expect(validateProp('href', 'javascript&#58;alert(1)')).toBe(REJECTED_PROP)
+      expect(validateProp('href', 'javascript&#x3A;alert(1)')).toBe(REJECTED_PROP)
+      expect(validateProp('href', 'javascript&colon;alert(1)')).toBe(REJECTED_PROP)
+    })
+
+    it('blocks entity-encoded whitespace inside the scheme', () => {
+      expect(validateProp('href', 'jav&#x09;ascript:alert(1)')).toBe(REJECTED_PROP)
+      expect(validateProp('href', 'java&Tab;script:alert(1)')).toBe(REJECTED_PROP)
+      expect(validateProp('href', '&NewLine;javascript:alert(1)')).toBe(REJECTED_PROP)
+    })
+
+    it('blocks nested-encoded javascript: hrefs', () => {
+      expect(validateProp('href', 'javascript&amp;#58;alert(1)')).toBe(REJECTED_PROP)
+    })
+
+    it('allows safe URLs containing entities', () => {
+      expect(validateProp('href', '/search?q=a&amp;b=2')).toBe('/search?q=a&amp;b=2')
+      expect(validateProp('href', 'https://example.com/?a=1&amp;b=2')).toBe('https://example.com/?a=1&amp;b=2')
     })
 
     it('blocks vbscript: hrefs', () => {
@@ -209,6 +244,51 @@ describe('validateProp', () => {
         'https://any.com/img.png'
       )
     })
+
+    it('blocks scheme-relative URLs pointing at other hosts', () => {
+      expect(validateProp('href', '//evil.com/p', { allowedLinkPrefixes: ['https://myapp.com'] })).toBe(REJECTED_PROP)
+    })
+
+    it('blocks backslash-relative URLs pointing at other hosts', () => {
+      expect(validateProp('href', '\\\\evil.com/p', { allowedLinkPrefixes: ['https://myapp.com'] })).toBe(REJECTED_PROP)
+    })
+
+    it('blocks lookalike hosts that share a string prefix', () => {
+      expect(validateProp('href', 'https://myapp.com.evil.com/p', { allowedLinkPrefixes: ['https://myapp.com'] })).toBe(
+        REJECTED_PROP
+      )
+    })
+
+    it('allows subpaths of an allowed origin', () => {
+      expect(validateProp('href', 'https://myapp.com/docs/page', { allowedLinkPrefixes: ['https://myapp.com'] })).toBe(
+        'https://myapp.com/docs/page'
+      )
+    })
+
+    it('allows lookalike-host URLs with the default policy', () => {
+      expect(validateProp('href', 'https://myapp.com.evil.com/p')).toBe('https://myapp.com.evil.com/p')
+      expect(validateProp('href', '//evil.com/p')).toBe('//evil.com/p')
+    })
+  })
+
+  describe('binding values', () => {
+    it('validates the JSON-decoded form of :href bindings', () => {
+      expect(validateProp(':href', '"javascript:alert(1)"')).toBe(REJECTED_PROP)
+      expect(validateProp('v-bind:href', '"javascript:alert(1)"')).toBe(REJECTED_PROP)
+      expect(validateProp(':src', '"data:text/html,<script>alert(1)</script>"')).toBe(REJECTED_PROP)
+    })
+
+    it('keeps the original binding string when the decoded URL is safe', () => {
+      expect(validateProp(':href', '"https://example.com"')).toBe('"https://example.com"')
+    })
+
+    it('passes dot-path bindings through unchanged', () => {
+      expect(validateProp(':href', 'frontmatter.home')).toBe('frontmatter.home')
+    })
+
+    it('does not JSON-decode plain (non-binding) hrefs', () => {
+      expect(validateProp('href', '"https://example.com"')).toBe('"https://example.com"')
+    })
   })
 
   describe('allowedImagePrefixes', () => {
@@ -228,6 +308,12 @@ describe('validateProp', () => {
       expect(validateProp('src', '/img/logo.png', { allowedImagePrefixes: ['https://cdn.myapp.com'] })).toBe(
         '/img/logo.png'
       )
+    })
+
+    it('blocks scheme-relative src pointing at other hosts', () => {
+      expect(
+        validateProp('src', '//tracker.evil.com/px.gif', { allowedImagePrefixes: ['https://cdn.myapp.com'] })
+      ).toBe(REJECTED_PROP)
     })
 
     it('rewrites disallowed src to defaultOrigin when provided', () => {

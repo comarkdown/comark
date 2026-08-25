@@ -1,5 +1,6 @@
 import { stringifyYaml } from '../yaml.ts'
-import { escapeHtml, get } from '../../utils/index.ts'
+import { get } from '../../utils/index.ts'
+import { isUnsafeUrlValue } from '../props-validation.ts'
 import type { NodeRenderData } from '../../types.ts'
 
 export interface ResolveAttributesOptions {
@@ -17,6 +18,13 @@ export interface ResolveAttributesOptions {
    */
   parseJson?: boolean
 }
+
+// DOM sinks that turn a string/object prop into raw markup (`innerHTML`,
+// `dangerouslySetInnerHTML`) or overwrite an element's children
+// (`textContent`). Framework renderers hand resolved attributes to
+// `h()`/`createElement`/spreads verbatim, so these keys are never forwarded
+// from document attributes — raw HTML has its own explicit path.
+const HTML_SINK_PROPS = new Set(['innerhtml', 'dangerouslysetinnerhtml', 'textcontent'])
 
 /**
  * Resolve `:prefixed` attributes against the render context.
@@ -42,34 +50,55 @@ export function resolveAttributes(
 
     const value = attrs[key]
     const isBinding = key.charCodeAt(0) === 58 /* ':' */
+    const outKey = isBinding ? key.slice(1) : key
+
+    if (HTML_SINK_PROPS.has(outKey.toLowerCase())) continue
+
+    let outValue: unknown
+    let resultKey = key
 
     if (options.parseJson && isBinding) {
       // Framework mode: always strip `:` and hand components real JS values.
       if (typeof value === 'string') {
         try {
-          result[key.slice(1)] = JSON.parse(value)
-          continue
+          outValue = JSON.parse(value)
         } catch {
           // not JSON — fall through to dot-path lookup
+          outValue = get(renderData, value)
         }
-        result[key.slice(1)] = get(renderData, value)
-        continue
+      } else {
+        // Non-string binding value (e.g. an object literal the parser already
+        // decoded) — pass through with the prefix stripped.
+        outValue = value
       }
-      // Non-string binding value (e.g. an object literal the parser already
-      // decoded) — pass through with the prefix stripped.
-      result[key.slice(1)] = value
+      resultKey = outKey
+    } else if (isBinding && typeof value === 'string') {
+      const resolved = get(renderData, value)
+      if (resolved !== undefined) {
+        outValue = resolved
+        resultKey = outKey
+      } else {
+        outValue = value
+      }
+    } else {
+      outValue = value
+    }
+
+    // Hard floor: a binding must never resolve href/src to an unsafe scheme
+    // (javascript:, data:text/html, …). Parse-time validation only sees the
+    // literal path, so the resolved value is checked here — even when the
+    // security plugin is not enabled.
+    const lowerOutKey = outKey.toLowerCase()
+    if (
+      isBinding &&
+      (lowerOutKey === 'href' || lowerOutKey === 'src' || lowerOutKey === 'xlink:href') &&
+      typeof outValue === 'string' &&
+      isUnsafeUrlValue(outValue)
+    ) {
       continue
     }
 
-    if (isBinding && typeof value === 'string') {
-      const resolved = get(renderData, value)
-      if (resolved !== undefined) {
-        result[key.slice(1)] = resolved
-        continue
-      }
-    }
-
-    result[key] = value
+    result[resultKey] = outValue
   }
   return result
 }
@@ -188,6 +217,16 @@ export function comarkAttributes(attributes: Record<string, unknown>) {
   return attrs.length > 0 ? `{${attrs}}` : ''
 }
 
+/**
+ * Escape a value for interpolation into a double-quoted HTML attribute.
+ * Prevents attribute breakout (`"` terminating the value early) and markup
+ * injection (`<`/`>` closing the tag), which would otherwise bypass
+ * AST-level sanitization such as `comark/plugins/security`.
+ */
+function escapeHtmlAttribute(value: unknown): string {
+  return String(value).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+}
+
 // HTML attribute names must start with a letter/underscore/colon and may only
 // contain alphanumerics plus `_ : . -`. Anything else (quotes, spaces, …)
 // could break out of the attribute list, so such keys are dropped entirely.
@@ -211,10 +250,10 @@ export function htmlAttributes(attributes: Record<string, unknown>) {
         continue
       }
       if (typeof value === 'object' && value !== null) {
-        parts.push(`${key}="${escapeHtml(JSON.stringify(value))}"`)
+        parts.push(`${key}="${escapeHtmlAttribute(JSON.stringify(value))}"`)
         continue
       }
-      parts.push(`${key}="${escapeHtml(String(value))}"`)
+      parts.push(`${key}="${escapeHtmlAttribute(value)}"`)
       continue
     }
 
@@ -225,11 +264,11 @@ export function htmlAttributes(attributes: Record<string, unknown>) {
     if (value === false || value === null || value === undefined) continue
 
     if (typeof value === 'object') {
-      parts.push(`${key}="${escapeHtml(JSON.stringify(value))}"`)
+      parts.push(`${key}="${escapeHtmlAttribute(JSON.stringify(value))}"`)
       continue
     }
 
-    parts.push(`${key}="${escapeHtml(String(value))}"`)
+    parts.push(`${key}="${escapeHtmlAttribute(value)}"`)
   }
   return parts.join(' ')
 }
