@@ -143,6 +143,18 @@ describe('default plugin options', () => {
       await parseMarkdown('> [!NOTE]\n> hi', { plugins: [probe, alertOverride] })
       expect(order).toEqual(['alert-override', 'probe'])
     })
+
+    it('preserves explicit registration order when registerDefaultPlugins is false', async () => {
+      const order: string[] = []
+      const probe: ComarkPlugin = { name: 'probe', post: () => void order.push('probe') }
+      const userAlert: ComarkPlugin = { name: 'alert', post: () => void order.push('alert') }
+      await parseMarkdown('> [!NOTE]\n> hi', {
+        registerDefaultPlugins: false,
+        plugins: [probe, userAlert],
+      })
+      // No defaults registered, so nothing is hoisted — the user's order rules.
+      expect(order).toEqual(['probe', 'alert'])
+    })
   })
 
   describe('user plugin override', () => {
