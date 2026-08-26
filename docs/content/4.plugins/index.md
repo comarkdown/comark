@@ -38,7 +38,9 @@ These plugins are **enabled by default** whenever you call `parseMarkdown()` or 
   ::
 ::
 
+::callout{icon="i-lucide-lightbulb"}
 Default plugins run in the order shown above. Plugins you pass through `plugins` run afterward in the order you provide them. If an explicit plugin has the same `name` as a default plugin, it replaces that default and runs in its explicit position. If you provide the same explicit plugin name more than once, only the first instance runs.
+::
 
 ### Disable default plugins
 
