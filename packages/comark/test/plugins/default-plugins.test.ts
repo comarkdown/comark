@@ -136,12 +136,12 @@ describe('default plugin options', () => {
       expect(seen).toEqual([['blockquote', { as: 'note' }, 'hi']])
     })
 
-    it('keeps the default slot for a user plugin that overrides a default by name', async () => {
+    it('runs a user override in explicit plugin order after the remaining defaults', async () => {
       const order: string[] = []
       const probe: ComarkPlugin = { name: 'probe', post: () => void order.push('probe') }
       const alertOverride: ComarkPlugin = { name: 'alert', post: () => void order.push('alert-override') }
       await parseMarkdown('> [!NOTE]\n> hi', { plugins: [probe, alertOverride] })
-      expect(order).toEqual(['alert-override', 'probe'])
+      expect(order).toEqual(['probe', 'alert-override'])
     })
 
     it('extracts frontmatter before user pre hooks run', async () => {

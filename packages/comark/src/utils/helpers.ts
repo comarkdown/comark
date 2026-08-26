@@ -15,21 +15,32 @@ export function createSerializedTask<TArgs extends unknown[], TResult>(
 }
 
 /**
- * Remove duplicate plugins by name, keeping the first occurrence.
+ * Merge default and user plugins, deduplicating by name.
+ *
+ * User plugins replace same-name defaults and run after the remaining defaults.
+ * The default list is expected to contain unique names. The first user plugin
+ * with a given name wins.
  */
-export function dedupePlugins(plugins: ComarkPlugin<any, any>[]): ComarkPlugin<any, any>[] {
-  const seen = new Set<string>()
-  const result: ComarkPlugin<any, any>[] = []
+export function dedupePlugins(
+  defaultPlugins: readonly ComarkPlugin<any, any>[],
+  userPlugins: readonly ComarkPlugin<any, any>[]
+): ComarkPlugin<any, any>[] {
+  const plugins = new Map<string, ComarkPlugin<any, any>>()
 
-  for (const plugin of plugins) {
-    if (seen.has(plugin.name)) {
-      continue
-    }
-    seen.add(plugin.name)
-    result.push(plugin)
+  for (const plugin of defaultPlugins) {
+    plugins.set(plugin.name, plugin)
   }
 
-  return result
+  const seenUserPlugins = new Set<string>()
+  for (const plugin of userPlugins) {
+    if (seenUserPlugins.has(plugin.name)) continue
+    seenUserPlugins.add(plugin.name)
+    // Reinsert overrides so they move from the default order to the user order.
+    plugins.delete(plugin.name)
+    plugins.set(plugin.name, plugin)
+  }
+
+  return [...plugins.values()]
 }
 
 // #region define plugin

@@ -5,7 +5,7 @@ import { indent } from '../../../utils/index.ts'
 
 const textBlocks = new Set(['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'li', 'td', 'th'])
 const selfCloseTags = new Set(['br', 'hr', 'img', 'input', 'link', 'meta', 'source', 'track', 'wbr'])
-const inlineTags = new Set(['strong', 'em', 'code', 'a', 'br', 'span', 'img'])
+const inlineTags = new Set(['strong', 'em', 'del', 'code', 'a', 'br', 'span', 'img'])
 const blockTags = new Set([
   'p',
   'h1',
