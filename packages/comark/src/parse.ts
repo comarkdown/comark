@@ -32,6 +32,9 @@ export { parseFrontmatter } from './internal/frontmatter.ts'
 // Re-export plugin utilities
 export { defineComarkPlugin } from './utils/helpers.ts'
 
+/** Names of the default plugins registered by `registerDefaultPlugins` (see below). */
+const DEFAULT_PLUGIN_NAMES = new Set(['frontmatter', 'html', 'alert', 'task-list', 'components', 'attributes'])
+
 /**
  * Creates a parser function for Comark content.
  *
@@ -94,6 +97,15 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
 
   const plugins = dedupePlugins([...userPlugins, ...defaultPlugins])
   const hasPlugin = (name: string) => plugins.some((plugin) => plugin.name === name)
+
+  // Default normalizer `post` hooks run before user `post` hooks so user plugins always see
+  // the normalized tree (e.g. `alert` has rewritten `> [!note]` into `['blockquote', { as }]`).
+  // A user plugin that overrides a default by name keeps that default's slot. `pre` hooks and
+  // `markdownItPlugins` keep registration order: user plugins first.
+  const postPlugins = [
+    ...plugins.filter((plugin) => DEFAULT_PLUGIN_NAMES.has(plugin.name)),
+    ...plugins.filter((plugin) => !DEFAULT_PLUGIN_NAMES.has(plugin.name)),
+  ]
 
   const parser = new MarkdownExit({ linkify: options.linkify ?? true }).enable(['table', 'strikethrough'])
 
@@ -206,7 +218,7 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
         lastInput = null
       }
 
-      for (const plugin of plugins) {
+      for (const plugin of postPlugins) {
         if (!plugin.post) continue
         await withSpan(tracer, `comark:post:${plugin.name}`, () => plugin.post!(state as ComarkParsePostState))
       }

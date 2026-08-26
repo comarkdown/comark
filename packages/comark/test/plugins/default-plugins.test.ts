@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
+import type { ComarkPlugin } from '../../src/types'
 import { parseMarkdown } from '../../src/parse'
 import attributes from '../../src/plugins/attributes'
 import components from '../../src/plugins/components'
@@ -118,6 +119,29 @@ describe('default plugin options', () => {
     it('does not add html when registerDefaultPlugins is false even if html is unset', async () => {
       const tree = await parseMarkdown('<em>hi</em>', { registerDefaultPlugins: false })
       expect(tree.nodes).toEqual([['p', {}, '<em>hi</em>']])
+    })
+  })
+
+  describe('post hook ordering', () => {
+    it('runs default normalizer post hooks before user post hooks', async () => {
+      let seen: unknown
+      const probe: ComarkPlugin = {
+        name: 'probe',
+        post(state) {
+          seen = structuredClone(state.tree.nodes)
+        },
+      }
+      await parseMarkdown('> [!NOTE]\n> hi', { plugins: [probe] })
+      // `alert` has already rewritten the blockquote when the user post hook runs.
+      expect(seen).toEqual([['blockquote', { as: 'note' }, 'hi']])
+    })
+
+    it('keeps the default slot for a user plugin that overrides a default by name', async () => {
+      const order: string[] = []
+      const probe: ComarkPlugin = { name: 'probe', post: () => void order.push('probe') }
+      const alertOverride: ComarkPlugin = { name: 'alert', post: () => void order.push('alert-override') }
+      await parseMarkdown('> [!NOTE]\n> hi', { plugins: [probe, alertOverride] })
+      expect(order).toEqual(['alert-override', 'probe'])
     })
   })
 
