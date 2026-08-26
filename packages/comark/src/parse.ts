@@ -95,13 +95,14 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
   const plugins = dedupePlugins([...userPlugins, ...defaultPlugins])
   const hasPlugin = (name: string) => plugins.some((plugin) => plugin.name === name)
 
-  // Default normalizer `post` hooks run before user `post` hooks so user plugins always see
-  // the normalized tree (e.g. `alert` has rewritten `> [!note]` into `['blockquote', { as }]`).
-  // A user plugin that overrides a default by name keeps that default's slot. With
-  // `registerDefaultPlugins: false` this is a no-op and explicit registration order rules.
-  // `pre` hooks and `markdownItPlugins` keep registration order: user plugins first.
+  // Default normalizer hooks run before user hooks in every lifecycle phase, so user plugins
+  // always see normalized input: `frontmatter` has stripped and parsed the frontmatter block
+  // before user `pre` hooks, and `alert` has rewritten `> [!note]` into `['blockquote', { as }]`
+  // before user `post` hooks. A user plugin that overrides a default by name keeps that
+  // default's slot. With `registerDefaultPlugins: false` this is a no-op and explicit
+  // registration order rules. `markdownItPlugins` keep registration order: user plugins first.
   const defaultPluginNames = new Set(defaultPlugins.map((plugin) => plugin.name))
-  const postPlugins = [
+  const hookPlugins = [
     ...plugins.filter((plugin) => defaultPluginNames.has(plugin.name)),
     ...plugins.filter((plugin) => !defaultPluginNames.has(plugin.name)),
   ]
@@ -160,7 +161,7 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
         )
       }
 
-      for (const plugin of plugins) {
+      for (const plugin of hookPlugins) {
         if (!plugin.pre) continue
         await withSpan(tracer, `comark:pre:${plugin.name}`, () => plugin.pre!(state))
       }
@@ -217,7 +218,7 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
         lastInput = null
       }
 
-      for (const plugin of postPlugins) {
+      for (const plugin of hookPlugins) {
         if (!plugin.post) continue
         await withSpan(tracer, `comark:post:${plugin.name}`, () => plugin.post!(state as ComarkParsePostState))
       }

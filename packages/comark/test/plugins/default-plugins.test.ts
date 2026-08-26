@@ -144,6 +144,24 @@ describe('default plugin options', () => {
       expect(order).toEqual(['alert-override', 'probe'])
     })
 
+    it('extracts frontmatter before user pre hooks run', async () => {
+      let seenMarkdown = ''
+      let seenFrontmatter: unknown
+      const probe: ComarkPlugin = {
+        name: 'probe',
+        pre(state) {
+          seenMarkdown = state.markdown
+          seenFrontmatter = { ...state.frontmatter }
+        },
+      }
+      const tree = await parseMarkdown('---\ntitle: Hello\n---\n\n# Hi', { plugins: [probe] })
+      // User pre hooks see the stripped body and the parsed frontmatter.
+      expect(seenMarkdown).not.toContain('title: Hello')
+      expect(seenMarkdown).toContain('# Hi')
+      expect(seenFrontmatter).toEqual({ title: 'Hello' })
+      expect(tree.frontmatter).toEqual({ title: 'Hello' })
+    })
+
     it('preserves explicit registration order when registerDefaultPlugins is false', async () => {
       const order: string[] = []
       const probe: ComarkPlugin = { name: 'probe', post: () => void order.push('probe') }
