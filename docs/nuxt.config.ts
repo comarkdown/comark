@@ -12,6 +12,18 @@ export default defineNuxtConfig({
     name: 'Comark',
   },
 
+  llms: {
+    domain: 'https://comark.dev',
+    title: 'Comark',
+    description:
+      'Parse and render Markdown anywhere with one JavaScript library for HTML, ANSI, Vue, React, Svelte and Angular, plus plugins and streaming.',
+    full: {
+      title: 'Comark Documentation',
+      description:
+        'Complete Comark documentation as plain markdown — getting started, syntax, rendering, plugins, API reference, comparisons, and examples.',
+    },
+  },
+
   app: {
     head: {
       link: [

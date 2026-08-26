@@ -69,6 +69,18 @@ export default defineComarkPlugin((options: SecurityOptions = {}) => {
             return false
           }
 
+          // The `as` prop makes renderers resolve a different component than
+          // the element's own tag — hold it to the same tag filters, otherwise
+          // `[x]{as="AdminPanel"}` bypasses allowedTags/blockedTags.
+          const asValue = element[1].as
+          if (typeof asValue === 'string') {
+            const asTag = asValue.toLowerCase()
+            if (dropSet.has(asTag) || (allowSet.size > 0 && !allowSet.has(asTag))) {
+              console.warn(`[comark/plugins/security] removing unsafe attribute: as="${asValue}"`)
+              delete element[1].as
+            }
+          }
+
           const keys = Object.keys(element[1])
 
           /**

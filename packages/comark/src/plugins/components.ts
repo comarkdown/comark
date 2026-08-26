@@ -289,8 +289,19 @@ const markdownItComarkBlock: PluginSimple = (md) => {
       const data = parseYaml(yaml)
       const token = state.env.comarkBlockTokens[0]
       Object.entries(data || {}).forEach(([key, value]) => {
-        if (key === 'class') token.attrJoin(key, value as string)
-        else token.attrSet(key, typeof value === 'string' ? value : JSON.stringify(value))
+        if (key === 'class') {
+          token.attrJoin(key, value as string)
+          return
+        }
+        // Match @nuxtjs/mdc: non-string YAML values are stored as `:`-prefixed
+        // bindings with a JSON-string payload. Framework renderers (and
+        // resolveAttributes with parseJson) restore native types; quoted YAML
+        // strings stay unprefixed and remain strings (#364).
+        if (typeof value === 'string') {
+          token.attrSet(key, value)
+        } else {
+          token.attrSet(`:${key}`, JSON.stringify(value))
+        }
       })
     }
 

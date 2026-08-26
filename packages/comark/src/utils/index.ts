@@ -123,6 +123,32 @@ export async function visitAsync(
 
 // #region String Utils
 
+const HTML_ESCAPE_RE = /[&<>"]/g
+const HTML_ESCAPED_RE = /^&[a-zA-Z][a-zA-Z0-9]*;|#[0-9]+;|#x[0-9a-fA-F]+;/
+export function escapeHtml(value: string, replace?: Record<string, string | undefined>): string {
+  const escapeMap: Record<string, string> = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+  }
+  if (replace) {
+    Object.assign(escapeMap, replace)
+  }
+  return value.replace(HTML_ESCAPE_RE, (char, index) => {
+    switch (char) {
+      case '&': {
+        if (escapeMap[char] === '&' || value.slice(index).match(HTML_ESCAPED_RE)) {
+          return char
+        }
+        return escapeMap[char] ?? char
+      }
+      default:
+        return escapeMap[char] ?? char
+    }
+  })
+}
+
 export function indent(
   text: string,
   { ignoreFirstLine = false, level = 1, width }: { ignoreFirstLine?: boolean; level?: number; width?: number } = {}

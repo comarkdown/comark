@@ -3,7 +3,7 @@ import MarkdownExit from 'markdown-exit'
 import { markdownItComponents } from 'comark/plugins/components'
 import { markdownItAttributes } from 'comark/plugins/attributes'
 import { createMarkdownParser } from 'comark'
-import { writeAnsi } from '@comark/ansi'
+import { printAnsi } from '@comark/ansi'
 import punctuation from '../packages/comark/src/plugins/punctuation'
 
 // ── Test content (exercises ALL features: quotes, dashes, ellipsis, symbols, normalization) ──
@@ -146,7 +146,7 @@ console.log('comark punctuation:     ', JSON.stringify(flattenText(comarkTree.no
 console.log('\n🏃 Running benchmarks...\n')
 await run()
 
-await writeAnsi(`> [!NOTE]
+await printAnsi(`> [!NOTE]
 > The goal of this benchmark is to compare the additional time each parser takes when
 > using punctuation plugins.
 >

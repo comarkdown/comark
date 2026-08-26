@@ -90,7 +90,7 @@ import math, { Math } from '@comark/react/plugins/math'
 
 ## Features
 
-### Inline Math
+### Inline math
 
 Use single `$` delimiters for inline expressions:
 
@@ -100,7 +100,7 @@ The formula $E = mc^2$ relates energy and mass.
 The Pythagorean theorem: $a^2 + b^2 = c^2$
 ```
 
-### Display Math
+### Display math
 
 Use double `$$` delimiters for block-level expressions:
 
@@ -110,7 +110,7 @@ x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}
 $$
 ```
 
-### Dollar Signs in Text
+### Dollar signs in text
 
 The plugin avoids matching dollar signs that are not math. It requires at least one character between `$` delimiters and content that does not start with a digit:
 
@@ -122,7 +122,7 @@ Prices like $100 or $200 won't be parsed as math.
 See the [KaTeX supported functions →](https://katex.org/docs/supported.html) for the full LaTeX reference.
 ::
 
-### Backslash Escaping
+### Backslash escaping
 
 In JavaScript strings, escape backslashes before LaTeX commands:
 
@@ -135,9 +135,15 @@ const wrong = '\frac{a}{b}'  // wrong: \f is a JS escape sequence
 
 ## API
 
-### `math()`
+### `math(options?)`
 
-Returns a `ComarkPlugin` that tokenizes `$...$` and `$$...$$` expressions. Takes no options.
+Returns a `ComarkPlugin` that tokenizes `$...$` and `$$...$$` expressions.
+
+**Parameters:**
+
+- `options?` - Optional `MathConfig`:
+  - `throwOnError?: boolean` - Throw on parse errors instead of returning an error message. Default: `false`
+  - `options?: Record<string, unknown>` - Additional [KaTeX render options](https://katex.org/docs/options.html)
 
 **Returns:** `ComarkPlugin`
 
@@ -145,11 +151,11 @@ The plugin stores LaTeX source as plain text in the AST. Rendering requires pass
 
 ---
 
-## Component Props
+## Component props
 
 Props accepted by the `<Math>` component:
 
 | Prop | Type | Default | Description |
 |---|---|---|---|
 | `content` | `string` | required | The LaTeX expression to render |
-| `class` | `string` | `''` | CSS classes. When set to `'block'`, renders in display mode; otherwise inline |
+| `class` | `string` | `''` | CSS classes. Renders inline when the classes include `'inline'`; otherwise display mode |

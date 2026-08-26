@@ -118,7 +118,7 @@ md.use(markdownItAttributes)
 
 ## How it works
 
-The plugin registers `comark_inline_props` for `{class="foo" id="x"}` after a preceding token.
+The plugin registers `comark_inline_props` for `{class="highlight" id="intro"}` after a preceding token.
 
 Hidden `mdc_inline_props` tokens are merged onto the previous token (or a wrapping span for bare text). Parent-level props on headings, paragraphs, and list items are lifted during `md.parse`.
 

@@ -144,6 +144,7 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
           autoCloseMarkdown(state.markdown, {
             frontmatter: hasPlugin('frontmatter') && opts.streaming,
             syntax: hasPlugin('components'),
+            attributes: hasPlugin('components') || hasPlugin('attributes'),
           })
         )
       }

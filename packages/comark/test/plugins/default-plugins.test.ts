@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { parseMarkdown } from '../../src/parse'
+import attributes from '../../src/plugins/attributes'
 import components from '../../src/plugins/components'
 import frontmatter from '../../src/plugins/frontmatter'
 import html from '../../src/plugins/html'
@@ -127,6 +128,28 @@ describe('default plugin options', () => {
         plugins: [components()],
       })
       expect(tree.nodes).toEqual([['alert', {}, 'Content']])
+    })
+
+    it('renders attributes when only attributes enabled', async () => {
+      const tree = await parseMarkdown('this is a [link with an attribute](https://example.com){target="_blank"}', {
+        registerDefaultPlugins: false,
+        plugins: [attributes()],
+      })
+      expect(tree.nodes).toEqual([
+        [
+          'p',
+          {},
+          'this is a ',
+          [
+            'a',
+            {
+              href: 'https://example.com',
+              target: '_blank',
+            },
+            'link with an attribute',
+          ],
+        ],
+      ])
     })
   })
 })

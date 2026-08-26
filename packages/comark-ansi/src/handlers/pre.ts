@@ -4,18 +4,34 @@ import { textContent } from 'comark/utils'
 import { DIM, CYAN, RESET, BOLD } from '../utils/escape.ts'
 
 // --- True-color helpers ---
+const int16 = (c: string) => Number.parseInt(c, 16)
 
 function hexToAnsi(hex: string): string {
-  const m = hex.match(/^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i)
-  if (!m) return ''
-  return `\x1B[38;2;${Number.parseInt(m[1], 16)};${Number.parseInt(m[2], 16)};${Number.parseInt(m[3], 16)}m`
-}
+  if (hex[0] !== '#') return ''
 
+  let r: number, g: number, b: number
+
+  if (hex.length === 4) {
+    r = int16(hex[1] + hex[1])
+    g = int16(hex[2] + hex[2])
+    b = int16(hex[3] + hex[3])
+  } else if (hex.length === 7) {
+    r = int16(hex.slice(1, 3))
+    g = int16(hex.slice(3, 5))
+    b = int16(hex.slice(5, 7))
+  } else {
+    return ''
+  }
+
+  if (Number.isNaN(r) || Number.isNaN(g) || Number.isNaN(b)) return ''
+
+  return `\x1B[38;2;${r};${g};${b}m`
+}
 /** Prefer --shiki-dark for terminal dark backgrounds, fall back to color. */
 function extractColor(style: string): string | null {
-  const dark = style.match(/--shiki-dark:\s*(#[0-9a-f]{6})/i)
+  const dark = style.match(/--shiki-dark:\s*(#[0-9a-f]{3,6})/i)
   if (dark) return dark[1]
-  const light = style.match(/color:\s*(#[0-9a-f]{6})/i)
+  const light = style.match(/color:\s*(#[0-9a-f]{3,6})/i)
   if (light) return light[1]
   return null
 }
@@ -41,8 +57,11 @@ function renderHighlighted(codeNode: ElementNode, colors: boolean): string {
     .map((child) => {
       if (typeof child === 'string') return child // newline separator
       if (child[0] !== 'span') return ''
-      // span.line — render its token children
-      return (child.slice(2) as Node[]).map((t) => renderToken(t, colors)).join('')
+      if ((child[1]?.class as string)?.includes('line')) {
+        // span.line — render its token children
+        return (child.slice(2) as Node[]).map((t) => renderToken(t, colors)).join('')
+      }
+      return renderToken(child, colors)
     })
     .join('')
 }

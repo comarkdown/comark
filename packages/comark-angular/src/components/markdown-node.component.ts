@@ -54,7 +54,7 @@ function getChildren(node: MarkdownAstNode): MarkdownAstNode[] {
 function resolveComponent(tag: string, components: Record<string, Type<any>>): Type<any> | undefined {
   const pascalTag = pascalCase(tag)
   const proseTag = `Prose${pascalTag}`
-  return components[proseTag] || components[tag] || components[pascalTag]
+  return components[proseTag] || components[pascalTag] || components[tag]
 }
 
 /** Void (self-closing) HTML elements that must not have children. */
@@ -194,9 +194,9 @@ export class MarkdownNode implements OnChanges {
     const el = this.renderer.createElement(tag)
     this.applyAttributes(el, attrs)
 
-    if (attrs['innerHTML'] != null) {
-      el.innerHTML = attrs['innerHTML']
-    } else if (!VOID_ELEMENTS.has(tag)) {
+    // `innerHTML` from document attributes is never applied — resolveAttributes
+    // drops DOM sink props, and raw HTML has its own explicit parse path.
+    if (!VOID_ELEMENTS.has(tag)) {
       this.renderChildren(el, children, childrenRenderData)
     }
 

@@ -1,0 +1,107 @@
+name: docs preview comment
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'docs/content/**'
+    types:
+      - opened
+      - reopened
+      - synchronize
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  comment:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Create or update preview comment
+        uses: actions/github-script@v8
+        env:
+          HEAD_BRANCH: ${{ github.head_ref }}
+        with:
+          script: |
+            const marker = '<!-- comark-docs-preview -->'
+            const previewRoot = `https://comark.dev/tree/${encodeURIComponent(process.env.HEAD_BRANCH)}`
+
+            const { owner, repo } = context.repo
+            const pull_number = context.issue.number
+            const files = await github.paginate(github.rest.pulls.listFiles, {
+              owner,
+              repo,
+              pull_number,
+              per_page: 100,
+            })
+
+            const pages = files
+              .filter(file =>
+                file.status !== 'removed'
+                && file.filename.startsWith('docs/content/')
+                && file.filename.endsWith('.md'),
+              )
+              .map(file => {
+                const relativePath = file.filename
+                  .slice('docs/content/'.length)
+                  .replace(/\.md$/, '')
+                const routeSegments = relativePath
+                  .split('/')
+                  .map(segment => segment.replace(/^\d+\./, ''))
+                  .map(encodeURIComponent)
+                if (routeSegments.at(-1) === 'index') {
+                  routeSegments.pop()
+                }
+                const route = routeSegments.join('/')
+
+                return {
+                  filename: file.filename,
+                  route,
+                  url: route ? `${previewRoot}/${route}` : `${previewRoot}/`,
+                }
+              })
+              .sort((a, b) => a.filename.localeCompare(b.filename))
+
+            const body = [
+              marker,
+              '## Documentation previews',
+              '',
+              `📚 [Preview all documentation changes](${previewRoot})`,
+              ...(pages.length
+                ? [
+                    '',
+                    ...pages.map(page => `- [/${page.route}](${page.url})`),
+                  ]
+                : []),
+            ].join('\n')
+
+            const issue_number = context.issue.number
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner,
+              repo,
+              issue_number,
+              per_page: 100,
+            })
+            const existingComment = comments.find(comment =>
+              comment.user?.type === 'Bot' && comment.body?.includes(marker),
+            )
+
+            if (existingComment) {
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: existingComment.id,
+                body,
+              })
+            } else {
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number,
+                body,
+              })
+            }

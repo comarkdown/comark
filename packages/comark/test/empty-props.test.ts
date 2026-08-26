@@ -61,9 +61,91 @@ describe('empty component props block (#319)', () => {
     const hero = result.nodes[0] as Node
 
     expect(isElement(hero, 'hero')).toBe(true)
-    // Non-string attribute values are JSON-stringified onto the element (see components.ts)
-    expect(getAttrs(hero).count).toBe('3')
+    // Non-string YAML scalars are stored as `:` bindings (MDC-compatible, #364)
+    expect(getAttrs(hero)[':count']).toBe('3')
     expect(getAttrs(hero).label).toBe('hello')
+  })
+
+  it('stores non-string YAML block props as :bindings (#364)', async () => {
+    const result = await parseMarkdown(`::comp
+---
+label: "hello"
+count: 3
+enabled: false
+nested:
+  x: 1
+  y: true
+nothing: null
+---
+::`)
+    const attrs = getAttrs(result.nodes[0] as Node)
+
+    // Match @nuxtjs/mdc: `:` prefix + JSON payload for non-strings
+    expect(attrs).toEqual({
+      label: 'hello',
+      ':count': '3',
+      ':enabled': 'false',
+      ':nested': { x: 1, y: true },
+      ':nothing': 'null',
+    })
+    // Quoted YAML strings must stay unprefixed strings
+    const quoted = await parseMarkdown('::comp\n---\ncount: "3"\nenabled: "false"\n---\n::')
+    expect(getAttrs(quoted.nodes[0] as Node)).toEqual({
+      count: '3',
+      enabled: 'false',
+    })
+  })
+
+  it('preserves negative numbers and mixed-type arrays as :bindings (#364)', async () => {
+    const result = await parseMarkdown(`::comp
+---
+a-negative-number: -1.5
+a-list:
+  - 1
+  - two
+  - false
+---
+::`)
+    const attrs = getAttrs(result.nodes[0] as Node)
+
+    expect(attrs).toEqual({
+      ':a-negative-number': '-1.5',
+      ':a-list': [1, 'two', false],
+    })
+  })
+
+  it('does not confuse a quoted string scalar with an unquoted scalar in the same block (#364)', async () => {
+    const result = await parseMarkdown(`::comp
+---
+count: 3
+quoted-count: "3"
+enabled: false
+quoted-enabled: "false"
+---
+::`)
+    const attrs = getAttrs(result.nodes[0] as Node)
+
+    expect(attrs).toEqual({
+      ':count': '3',
+      'quoted-count': '3',
+      ':enabled': 'false',
+      'quoted-enabled': 'false',
+    })
+  })
+
+  it('keeps an author-supplied :prefixed path binding distinct from :bindings for typed scalars (#364)', async () => {
+    const result = await parseMarkdown(`::comp
+---
+count: 3
+:to: $doc.snippet.link
+---
+::`)
+    const attrs = getAttrs(result.nodes[0] as Node)
+
+    expect(attrs).toEqual({
+      ':count': '3',
+      ':to': '$doc.snippet.link',
+    })
   })
 
   it('parses document-level comment-only frontmatter without throwing', async () => {

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { parseMarkdown } from '../../src/parse'
 import security from '../../src/plugins/security'
 import { textContent } from '../../src/utils/index.ts'
-import { renderMarkdown } from 'comark/render'
+import { render, renderMarkdown } from 'comark/render'
 import type { ElementNode, Node, MarkdownDocument } from '../../src/types'
 
 const parseWithSecurity = (md: string, options: Parameters<typeof security>[0] = {}) =>
@@ -104,6 +104,26 @@ describe('security plugin — XSS payloads', () => {
     const anchor = collectElements(tree.nodes).find((element) => element[0] === 'a')
     expect(anchor).toBeDefined()
     expect(anchor![1].href).toBeUndefined()
+  })
+
+  it('strips a javascript: href delivered as an array via YAML block-props (#367)', async () => {
+    // Non-string YAML block-prop values round-trip through a `:`-prefixed
+    // JSON-string attr that gets JSON.parsed back into a real array before
+    // this plugin runs — validateProp must not skip URL validation just
+    // because the value is no longer a plain string.
+    const tree = await parseWithSecurity(`\
+::a
+---
+href:
+  - javascript:alert(1)
+---
+click
+::`)
+
+    const anchor = collectElements(tree.nodes).find((element) => element[0] === 'a')
+    expect(anchor).toBeDefined()
+    expect(anchor![1].href).toBeUndefined()
+    expect(anchor![1][':href']).toBeUndefined()
   })
 
   it('catches XSS payloads with HTML entities', async () => {
@@ -253,6 +273,69 @@ describe('security plugin — XSS payloads', () => {
     expect(anchor).toBeDefined()
     expect(anchor![1].href ?? anchor![1]['v-bind:href']).toBeUndefined()
   })
+
+  it('rejects JSON-quoted javascript: URLs in :href bindings', async () => {
+    const tree = await parseWithSecurity(
+      `\
+::a{:href='"javascript:alert(1)"'}
+click
+::
+`.trim()
+    )
+
+    const anchor = collectElements(tree.nodes).find((element) => element[0] === 'a')
+    expect(anchor).toBeDefined()
+    expect(anchor![1].href).toBeUndefined()
+    expect(anchor![1][':href']).toBeUndefined()
+  })
+
+  it('keeps JSON-quoted safe URLs in :href bindings', async () => {
+    const tree = await parseWithSecurity(
+      `\
+::a{:href='"https://example.com"'}
+click
+::
+`.trim()
+    )
+
+    const anchor = collectElements(tree.nodes).find((element) => element[0] === 'a')
+    expect(anchor).toBeDefined()
+    expect(anchor![1][':href']).toBe('"https://example.com"')
+  })
+
+  it('blocks javascript: URLs smuggled through frontmatter bindings at render time', async () => {
+    const md = `---
+home: javascript:alert(1)
+---
+
+[Home](placeholder){:href="frontmatter.home"}`
+
+    const tree = await parseWithSecurity(md)
+    // Parse-time validation only sees the literal dot-path…
+    const anchor = collectElements(tree.nodes).find((element) => element[0] === 'a')
+    expect(anchor).toBeDefined()
+    // …but the render-time hard floor drops the resolved unsafe URL.
+    const html = await render(tree, { format: 'text/html', blockSeparator: '\n' })
+    expect(html).not.toContain('javascript:')
+  })
+
+  it('strips framework HTML sink props from components', async () => {
+    const tree = await parseWithSecurity(
+      `\
+::div{innerHTML="<img src=x onerror=alert(1)>"}
+::
+
+:span{:dangerouslySetInnerHTML='{"__html":"<img src=x onerror=alert(1)>"}'}
+`.trim()
+    )
+
+    const div = collectElements(tree.nodes).find((element) => element[0] === 'div')
+    const span = collectElements(tree.nodes).find((element) => element[0] === 'span')
+    expect(div).toBeDefined()
+    expect(div![1].innerHTML).toBeUndefined()
+    expect(span).toBeDefined()
+    expect(span![1][':dangerouslySetInnerHTML']).toBeUndefined()
+  })
 })
 
 describe('security plugin — blockedTags', () => {
@@ -370,6 +453,37 @@ describe('security plugin — allowedTags', () => {
   })
 })
 
+describe('security plugin — as prop', () => {
+  it('strips as pointing at a blocked tag', async () => {
+    const tree = makeTree([['span', { as: 'script' }, 'x']])
+    await runPlugin(tree, { blockedTags: ['script'] })
+    const el = tree.nodes[0] as [string, any]
+    expect(el[0]).toBe('span')
+    expect(el[1].as).toBeUndefined()
+  })
+
+  it('strips as pointing at a tag outside allowedTags', async () => {
+    const tree = makeTree([['span', { as: 'AdminPanel' }, 'x']])
+    await runPlugin(tree, { allowedTags: ['span'] })
+    const el = tree.nodes[0] as [string, any]
+    expect(el[1].as).toBeUndefined()
+  })
+
+  it('keeps as when the resolved tag is allowed', async () => {
+    const tree = makeTree([['span', { as: 'Badge' }, 'x']])
+    await runPlugin(tree, { allowedTags: ['span', 'badge'] })
+    const el = tree.nodes[0] as [string, any]
+    expect(el[1].as).toBe('Badge')
+  })
+
+  it('keeps as when no tag filters are configured', async () => {
+    const tree = makeTree([['span', { as: 'Badge' }, 'x']])
+    await runPlugin(tree)
+    const el = tree.nodes[0] as [string, any]
+    expect(el[1].as).toBe('Badge')
+  })
+})
+
 describe('security plugin — prop sanitization', () => {
   it('strips event handler props', async () => {
     const tree = makeTree([['div', { onclick: 'evil()', class: 'safe' }]])
@@ -392,6 +506,20 @@ describe('security plugin — prop sanitization', () => {
     await runPlugin(tree)
     const el = tree.nodes[0] as [string, any]
     expect(el[1]).toHaveProperty('href', 'https://example.com')
+  })
+
+  it('keeps a prop whose value is the boolean `false` (#367)', async () => {
+    const tree = makeTree([['comp', { enabled: false, count: 3 }]])
+    await runPlugin(tree)
+    const el = tree.nodes[0] as [string, any]
+    expect(el[1]).toEqual({ enabled: false, count: 3 })
+  })
+
+  it('keeps a `false` prop alongside a genuinely unsafe attribute, stripping only the unsafe one', async () => {
+    const tree = makeTree([['comp', { enabled: false, onclick: 'evil()' }]])
+    await runPlugin(tree)
+    const el = tree.nodes[0] as [string, any]
+    expect(el[1]).toEqual({ enabled: false })
   })
 
   it('leaves string nodes untouched', async () => {

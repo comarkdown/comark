@@ -70,7 +70,7 @@ import security from '@comark/react/plugins/security'
 
 Several sanitizations are applied automatically and cannot be disabled:
 
-### Event Handlers
+### Event handlers
 
 All `on*` attributes are stripped regardless of case: `onclick`, `onerror`, `onload`, `onmouseover`, and any other `on*` attribute.
 
@@ -88,7 +88,7 @@ All `on*` attributes are stripped regardless of case: `onclick`, `onerror`, `onl
 
 ::
 
-### Dangerous Attributes
+### Dangerous attributes
 
 Attributes that can be abused regardless of value are always stripped:
 
@@ -96,12 +96,21 @@ Attributes that can be abused regardless of value are always stripped:
 |---|---|
 | `srcdoc` | Can contain arbitrary HTML |
 | `formaction` | Can redirect form submissions |
+| `innerHTML` | Injects raw HTML through framework renderers |
+| `dangerouslySetInnerHTML` | Injects raw HTML through framework renderers |
+| `textContent` | Overwrites an element's children |
 
-### Protocol Blocking
+::note
+Framework renderers (Vue, React, Svelte, Angular) never forward `innerHTML`, `dangerouslySetInnerHTML`, or `textContent` from document attributes, even without this plugin. Raw HTML has its own explicit path through the default `html` plugin.
+::
+
+### Protocol blocking
 
 `href` and `src` values are decoded (URL-encoded and HTML entity variants included) and checked against a hard-coded block list. These protocols are **always** blocked, even if `allowedProtocols: ['*']` is set:
 
 `javascript:` · `vbscript:` · `data:text/html` · `data:text/javascript` · `data:text/vbscript` · `data:text/css` · `data:text/plain` · `data:text/xml`
+
+The same check applies to `:href` and `:src` bindings twice: on the JSON-decoded value at parse time, and again on the resolved value at render time, so bindings cannot smuggle an unsafe URL through frontmatter or other data sources.
 
 ::code-group
 
@@ -139,7 +148,7 @@ Returns a `ComarkPlugin` that sanitizes the parsed AST.
 |---|---|---|---|
 | [`blockedTags`](#options-blockedtags) | `string[]` | `[]` | Tag names to remove entirely from the AST |
 | [`allowedTags`](#options-allowedtags) | `string[]` | `[]` | Tag names to allow exclusively in the AST |
-| [`tagFallback`](#options-tagfallback) | `function` | `false`  | Defines how to handle unallowed tags in the AST |
+| [`tagFallback`](#options-tagfallback) | `function` | `undefined`  | Defines how to handle unallowed tags in the AST |
 | [`allowedProtocols`](#options-allowedprotocols) | `string[]` | `['*']` | Protocols permitted in `href` and `src` |
 | [`allowedLinkPrefixes`](#options-allowedlinkprefixes) | `string[]` | `['*']` | URL prefixes permitted in `href` |
 | [`allowedImagePrefixes`](#options-allowedimageprefixes) | `string[]` | `['*']` | URL prefixes permitted in `src` |
@@ -177,6 +186,8 @@ security({
 })
 ```
 
+The `as` prop (which makes framework renderers resolve a different component than the element's own tag) is held to the same filters: an `as` value naming a blocked or not-allowed tag is stripped, and the element falls back to its own tag.
+
 ### `tagFallback`
 
 Defines the replacement strategy for tags that are filtered out because they are not present in the `allowedTags` (whitelist) or present in the `blockedTags` (blacklist).
@@ -211,6 +222,8 @@ The hard-coded unsafe protocols (`javascript:`, `vbscript:`, `data:text/*`) are 
 ### `allowedLinkPrefixes`
 
 Restricts which URLs are allowed in `href` attributes. Relative URLs (starting with `/`, `#`, etc.) are always allowed regardless of this setting.
+
+Prefixes compare by parsed origin plus a path-segment boundary, not by raw string matching: `https://myapp.com` allows `https://myapp.com/docs` but never a lookalike host such as `https://myapp.com.evil.com`. Scheme-relative URLs (`//evil.com/page`) resolve to an absolute URL and go through the same checks.
 
 When a URL does not match any prefix and `defaultOrigin` is set, the URL is rewritten instead of stripped.
 
@@ -260,7 +273,7 @@ security({
 
 ## Examples
 
-### User-Generated Content
+### User-generated content
 
 The most common use case: lock down everything that could execute code or phone home:
 
@@ -279,7 +292,7 @@ const result = await parseMarkdown(userInput, {
 })
 ```
 
-### Restrict Links to Your Domain
+### Restrict links to your domain
 
 Keep all links and images within your own infrastructure, rewriting external URLs instead of stripping them:
 
@@ -291,7 +304,7 @@ security({
 })
 ```
 
-### Block External Images
+### Block external images
 
 Prevent tracking pixels and externally-hosted images while keeping everything else permissive:
 
@@ -304,7 +317,7 @@ security({
 
 ---
 
-## Best Practices
+## Recommendations
 
 ### Block tags, not just attributes
 
