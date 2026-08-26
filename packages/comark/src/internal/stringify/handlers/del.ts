@@ -1,7 +1,17 @@
 import type { State } from 'comark/render'
 import type { ElementNode } from 'comark'
-import { textContent } from '../../../utils/index.ts'
+import { comarkAttributes } from '../attributes.ts'
 
-export function del(node: ElementNode, _: State) {
-  return `~~${textContent(node)}~~`
+export async function del(node: ElementNode, state: State) {
+  const [_, attrs, ...children] = node
+
+  let content = ''
+  for (const child of children) {
+    content += await state.one(child, state, node)
+  }
+  content = content.trim()
+
+  const attrsString = Object.keys(attrs).length > 0 ? comarkAttributes(attrs) : ''
+
+  return `~~${content}~~${attrsString}`
 }
