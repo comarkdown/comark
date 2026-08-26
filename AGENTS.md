@@ -349,6 +349,12 @@ packages/comark-angular/
 └── vitest.config.ts
 ```
 
+### Build
+
+Uses the Angular compiler (`ngc`) in partial-compilation mode so published
+JavaScript and declarations contain the Angular metadata required by both JIT
+and AOT consumers.
+
 ### Exports
 
 ```json
