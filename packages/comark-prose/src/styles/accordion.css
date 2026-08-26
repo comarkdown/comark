@@ -1,0 +1,55 @@
+/* Accordions — native `<details name>` groups, zero JavaScript. */
+:where(.comark-content) :where(.prose-accordion) {
+  margin-block-start: var(--prose-flow);
+  border: 1px solid var(--prose-border);
+  border-radius: var(--prose-radius);
+}
+
+:where(.comark-content) :where(.prose-accordion-item + .prose-accordion-item) {
+  border-block-start: 1px solid var(--prose-border);
+}
+
+:where(.comark-content) :where(.prose-accordion-trigger) {
+  padding: 0.75em 1em;
+  font-weight: 500;
+  cursor: pointer;
+  list-style: none;
+}
+
+:where(.comark-content) :where(.prose-accordion-trigger)::-webkit-details-marker {
+  display: none;
+}
+
+:where(.comark-content) :where(.prose-accordion-trigger)::after {
+  content: '';
+  float: inline-end;
+  width: 1em;
+  height: 1em;
+  margin-block-start: calc((var(--prose-leading) * 1em - 1em) / 2);
+  background-color: var(--prose-muted);
+  mask-image: var(--prose-icon-chevron);
+  mask-repeat: no-repeat;
+  mask-size: 100% 100%;
+  transition: rotate 0.15s;
+}
+
+:where(.comark-content) :where(.prose-accordion-item[open] > .prose-accordion-trigger)::after {
+  rotate: 180deg;
+}
+
+:where(.comark-content) :where(.prose-accordion-trigger:focus-visible) {
+  outline: 2px solid var(--prose-muted);
+  outline-offset: -2px;
+}
+
+:where(.comark-content) :where(.prose-accordion-content) {
+  padding: 0 1em 0.75em;
+}
+
+:where(.comark-content) :where(.prose-accordion-content > :first-child) {
+  margin-block-start: 0;
+}
+
+:where(.comark-content) {
+  --prose-icon-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+}

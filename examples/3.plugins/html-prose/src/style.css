@@ -1,0 +1,16 @@
+:root {
+  color-scheme: light dark;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+  margin: 0;
+  background: light-dark(#fff, #111);
+  color: light-dark(#1a1a1a, #ededed);
+}
+
+#app {
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: 3rem 1.5rem 6rem;
+}

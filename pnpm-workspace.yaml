@@ -150,6 +150,7 @@ catalog:
   tslib: ^2.6.0
 
   # CSS
+  lightningcss: ^1.33.0
   tailwindcss: ^4.3.2
   tsx: ^4.23.0
   twoslash: ^0.3.9
@@ -162,6 +163,7 @@ catalog:
   vitepress: ^1.6.4
 
   # Testing
+  happy-dom: ^20.11.6
   vitest: ^4.1.10
   vitest-browser-svelte: ^3.0.0
 

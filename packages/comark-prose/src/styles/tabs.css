@@ -1,0 +1,85 @@
+/* Tabs and code groups — `<prose-tabs>` custom element around ARIA tablist markup. */
+:where(.comark-content) :where(.prose-tabs) {
+  display: block;
+  margin-block-start: var(--prose-flow);
+  border: 1px solid var(--prose-border);
+  border-radius: var(--prose-radius);
+}
+
+:where(.comark-content) :where(.prose-tabs-list) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25em;
+  padding: 0.375em;
+  border-block-end: 1px solid var(--prose-border);
+  background: var(--prose-surface);
+  border-start-start-radius: var(--prose-radius);
+  border-start-end-radius: var(--prose-radius);
+}
+
+:where(.comark-content) :where(.prose-tab) {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375em;
+  padding: 0.25em 0.75em;
+  border: 0;
+  border-radius: calc(var(--prose-radius) - 2px);
+  background: transparent;
+  color: var(--prose-muted);
+  font: inherit;
+  font-size: 0.875em;
+  cursor: pointer;
+}
+
+:where(.comark-content) :where(.prose-tab:hover) {
+  color: inherit;
+}
+
+:where(.comark-content) :where(.prose-tab[aria-selected='true']) {
+  background: color-mix(in oklab, currentColor 8%, transparent);
+  color: inherit;
+  font-weight: 500;
+}
+
+:where(.comark-content) :where(.prose-tab:focus-visible) {
+  outline: 2px solid var(--prose-muted);
+  outline-offset: 2px;
+}
+
+:where(.comark-content) :where(.prose-tab-icon) {
+  width: 1em;
+  height: 1em;
+}
+
+:where(.comark-content) :where(.prose-tab-panel) {
+  padding: 0.75em 1em;
+}
+
+:where(.comark-content) :where(.prose-tab-panel > :first-child) {
+  margin-block-start: 0;
+}
+
+/* Code groups: the panel is just the code block — no extra padding, blend the chrome. */
+:where(.comark-content) :where(.prose-code-group .prose-tab-panel) {
+  padding: 0;
+}
+:where(.comark-content) :where(.prose-code-group .prose-pre) {
+  margin-block-start: 0;
+  border: 0;
+  border-radius: 0;
+  border-end-start-radius: var(--prose-radius);
+  border-end-end-radius: var(--prose-radius);
+}
+
+/*
+ * No-JS / pre-upgrade fallback: reveal every panel stacked so content is never
+ * unreachable. Panels carry `hidden` in the server markup; the custom element manages it
+ * after upgrade.
+ */
+prose-tabs:not(:defined) :where([role='tabpanel'][hidden]) {
+  display: block;
+}
+prose-tabs:not(:defined) :where(.prose-tab) {
+  cursor: default;
+}

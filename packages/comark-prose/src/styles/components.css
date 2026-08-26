@@ -1,0 +1,19 @@
+/*
+ * @comark/prose — component styles.
+ *
+ * Styles the markup emitted by the `prose` plugin. Token-driven, `:where()` scoped
+ * (utilities and plain CSS override without !important), and append-stable for streaming:
+ * spacing flows through `margin-block-start` only, and no forward-looking selectors
+ * (`:last-child`, `:has()`, `:empty`) are used in layout rules.
+ *
+ * Pair with `typography.css` for element rhythm, or bring your own prose stylesheet
+ * (Tailwind Typography, shadcn Typeset, ...).
+ */
+@import './tokens.css';
+@import './callout.css';
+@import './tabs.css';
+@import './copy.css';
+@import './accordion.css';
+@import './steps.css';
+@import './table.css';
+@import './anchors.css';
