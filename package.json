@@ -43,12 +43,14 @@
     "lint": "oxlint . && oxfmt --check .",
     "lint:fix": "oxlint --fix . && oxfmt .",
     "typecheck": "tsc --noEmit",
+    "bench": "vitest bench --run --config benchmarks/vitest.config.ts",
     "verify": "pnpm run lint && pnpm run test && pnpm run typecheck",
     "release": "node scripts/release.mjs",
     "release:dry": "node scripts/release.mjs --dry",
     "postinstall": "pnpm stub"
   },
   "devDependencies": {
+    "@codspeed/vitest-plugin": "^5.7.1",
     "@comark/ansi": "workspace:*",
     "@release-it/conventional-changelog": "catalog:",
     "@types/node": "catalog:",

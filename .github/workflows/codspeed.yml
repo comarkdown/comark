@@ -1,0 +1,41 @@
+name: codspeed
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  # Manual runs are useful when iterating on fixtures before merge.
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  benchmarks:
+    name: CodSpeed benchmarks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          package-manager-cache: false
+          node-version: '24'
+
+      - run: npm i -g --force corepack && corepack enable
+      - run: pnpm install
+
+      # Bench imports use package names (`comark`) and TS sources under packages.
+      # A real build ensures workspace package entry points resolve correctly.
+      - run: pnpm build:comark && pnpm --filter @comark/html run build
+
+      - name: Run CodSpeed benchmarks
+        uses: CodSpeedHQ/action@v4
+        with:
+          # Optional until the CodSpeed GitHub app is installed + secret is set.
+          # Without it the action still runs local CPU simulation and reports status.
+          token: ${{ secrets.CODSPEED_TOKEN }}
+          mode: simulation
+          run: pnpm bench

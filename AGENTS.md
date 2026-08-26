@@ -34,6 +34,7 @@ This is a **monorepo** containing the Comark Markdown parser, document model, pl
 │   ├── 2.vite/           # Vite examples (Vue, React, Svelte, Angular, HTML, ANSI)
 │   └── 3.plugins/        # Plugin examples (math, mermaid, highlight, ...)
 ├── docs/                 # Documentation site (comark-docs layer)
+├── benchmarks/           # CodSpeed / Vitest benches (isolated from unit tests)
 ├── scripts/              # Build/sync scripts
 ├── pnpm-workspace.yaml   # Workspace configuration
 ├── tsconfig.json         # Root TypeScript config
@@ -686,6 +687,7 @@ Root workspace scripts:
 pnpm docs         # Run documentation site
 pnpm build        # Build all packages
 pnpm test         # Run all package tests
+pnpm bench        # Run CodSpeed-compatible Vitest benches (local wall-clock fallback)
 pnpm lint         # Run ESLint
 pnpm typecheck    # Run TypeScript check
 pnpm verify       # Run lint + test + typecheck
@@ -705,6 +707,7 @@ Workflows live in `.github/workflows/`:
 | Workflow | Purpose |
 |----------|---------|
 | `ci.yml` | lint → prepack → test → publish preview → bundle size check |
+| `codspeed.yml` | Isolated CodSpeed CPU-simulation benches on main + PRs |
 | `commit-signature.yml` | Fails PRs containing unsigned commits |
 | `bundle-snapshot.yml` | Reports bundle-size snapshot drift and updates it on demand |
 
