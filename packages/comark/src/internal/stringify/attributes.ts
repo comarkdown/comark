@@ -244,9 +244,13 @@ export function htmlAttributes(attributes: Record<string, unknown>) {
     const key = rawKey.startsWith(':') ? rawKey.slice(1) : rawKey
     if (!SAFE_ATTR_NAME.test(key)) continue
 
+    // ARIA attributes are enumerated, not boolean: `aria-hidden=""` means absent/false,
+    // so `true`/`false` values must stay literal instead of collapsing to bare attributes.
+    const isAria = key.startsWith('aria-')
+
     if (rawKey.startsWith(':')) {
       if (value === 'true') {
-        parts.push(key)
+        parts.push(isAria ? `${key}="true"` : key)
         continue
       }
       if (typeof value === 'object' && value !== null) {
@@ -258,10 +262,14 @@ export function htmlAttributes(attributes: Record<string, unknown>) {
     }
 
     if (value === true || value === 'true') {
-      parts.push(key)
+      parts.push(isAria ? `${key}="true"` : key)
       continue
     }
-    if (value === false || value === null || value === undefined) continue
+    if (value === false) {
+      if (isAria) parts.push(`${key}="false"`)
+      continue
+    }
+    if (value === null || value === undefined) continue
 
     if (typeof value === 'object') {
       parts.push(`${key}="${escapeHtml(JSON.stringify(value))}"`)

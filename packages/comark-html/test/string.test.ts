@@ -207,4 +207,21 @@ name: Ada
       expect(html).toContain('title="frontmatter.name"')
     })
   })
+
+  describe('aria attributes', () => {
+    it('keeps literal aria-* values instead of collapsing to bare attributes', async () => {
+      const html = await renderHtmlFromDocument({
+        nodes: [
+          ['button', { 'aria-selected': 'true', 'aria-hidden': true, 'aria-expanded': false, disabled: 'true' }, 'Tab'],
+        ],
+      })
+      // `aria-hidden=""` means absent/false, so values must stay literal.
+      expect(html).toContain('aria-selected="true"')
+      expect(html).toContain('aria-hidden="true"')
+      expect(html).toContain('aria-expanded="false"')
+      // Regular boolean attributes still collapse.
+      expect(html).toContain(' disabled')
+      expect(html).not.toContain('disabled=')
+    })
+  })
 })
