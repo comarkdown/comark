@@ -18,7 +18,7 @@ links:
     variant: soft
 ---
 
-The `comark/plugins/emoji` plugin converts emoji shortcodes (e.g. `:smile:`) into their corresponding emoji characters. It ships with a curated set of common emojis, and you can add the full GitHub set or your own shortcodes with the [`extend`](#extend) option.
+The `comark/plugins/emoji` plugin converts emoji shortcodes (for example, `:smile:`) into their corresponding emoji characters. It ships with a curated set of common emojis, and you can add the full GitHub set or your own shortcodes with the [`extend`](#extend) option.
 
 ## Usage
 
@@ -72,7 +72,7 @@ import emoji from '@comark/react/plugins/emoji'
 ::
 
 ::tip
-Shortcodes are case-sensitive and must use exact names. Invalid or unknown shortcodes are left unchanged in the output.
+Shortcodes are case-sensitive and must use exact names. Unknown shortcodes are not converted; with the default plugins, the [components plugin](/plugins/defaults/components) parses them as inline component syntax instead.
 ::
 
 ---
@@ -107,7 +107,7 @@ Some emojis have multiple valid shortcodes:
 
 ### Custom shortcodes
 
-Use the `extend` option to add your own shortcodes or override built-in ones. This is handy for team-specific emojis or GitHub custom shortcodes that aren't part of the Unicode set (e.g. `:shipit:`):
+Use the `extend` option to add your own shortcodes or override built-in ones. This is handy for team-specific emojis or GitHub custom shortcodes that aren't part of the Unicode set (such as `:shipit:`):
 
 ```typescript
 import emoji from 'comark/plugins/emoji'
@@ -160,15 +160,15 @@ A map of shortcode names (without colons) to emoji characters. Added on top of t
 
 ## Examples
 
-### Documentation Markers
+### Documentation markers
 
 ```mdc
 :white_check_mark: Completed
-:construction: In Progress
+:hammer: In Progress
 :x: Blocked
 ```
 
-### Status Indicators
+### Status indicators
 
 ```mdc
 Build status: :white_check_mark:
@@ -176,10 +176,10 @@ Test coverage: 95% :fire:
 Deployment: :rocket:
 ```
 
-### Task Lists
+### Task lists
 
 ```mdc
 - :white_check_mark: Setup project
-- :construction: Write docs
+- :memo: Write docs
 - :bulb: Add examples
 ```

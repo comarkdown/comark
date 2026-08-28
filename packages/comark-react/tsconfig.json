@@ -5,6 +5,7 @@
     "module": "esnext",
     "moduleResolution": "bundler",
     "jsx": "react-jsx",
+    "rootDir": "./src",
     "outDir": "./dist",
     "strict": true,
     "declaration": true,

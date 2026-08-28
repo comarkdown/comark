@@ -499,7 +499,9 @@ export interface ParserOptions<TPlugins extends readonly ComarkPlugin<any, any>[
   registerDefaultPlugins?: boolean
 
   /**
-   * Additional plugins to use
+   * Additional plugins to use. A plugin with the same name as a default plugin
+   * replaces that default and runs, in user-defined order, after the remaining defaults.
+   * Duplicate user plugins keep their first occurrence.
    * @default []
    */
   plugins?: TPlugins

@@ -1,5 +1,7 @@
 import { stringifyYaml } from '../yaml.ts'
-import { get } from '../../utils/index.ts'
+import { escapeHtml, get } from '../../utils/index.ts'
+import { isUnsafeUrlValue } from '../props-validation.ts'
+import { pickFence } from './fence.ts'
 import type { NodeRenderData } from '../../types.ts'
 
 export interface ResolveAttributesOptions {
@@ -17,6 +19,13 @@ export interface ResolveAttributesOptions {
    */
   parseJson?: boolean
 }
+
+// DOM sinks that turn a string/object prop into raw markup (`innerHTML`,
+// `dangerouslySetInnerHTML`) or overwrite an element's children
+// (`textContent`). Framework renderers hand resolved attributes to
+// `h()`/`createElement`/spreads verbatim, so these keys are never forwarded
+// from document attributes — raw HTML has its own explicit path.
+const HTML_SINK_PROPS = new Set(['innerhtml', 'dangerouslysetinnerhtml', 'textcontent'])
 
 /**
  * Resolve `:prefixed` attributes against the render context.
@@ -42,34 +51,55 @@ export function resolveAttributes(
 
     const value = attrs[key]
     const isBinding = key.charCodeAt(0) === 58 /* ':' */
+    const outKey = isBinding ? key.slice(1) : key
+
+    if (HTML_SINK_PROPS.has(outKey.toLowerCase())) continue
+
+    let outValue: unknown
+    let resultKey = key
 
     if (options.parseJson && isBinding) {
       // Framework mode: always strip `:` and hand components real JS values.
       if (typeof value === 'string') {
         try {
-          result[key.slice(1)] = JSON.parse(value)
-          continue
+          outValue = JSON.parse(value)
         } catch {
           // not JSON — fall through to dot-path lookup
+          outValue = get(renderData, value)
         }
-        result[key.slice(1)] = get(renderData, value)
-        continue
+      } else {
+        // Non-string binding value (e.g. an object literal the parser already
+        // decoded) — pass through with the prefix stripped.
+        outValue = value
       }
-      // Non-string binding value (e.g. an object literal the parser already
-      // decoded) — pass through with the prefix stripped.
-      result[key.slice(1)] = value
+      resultKey = outKey
+    } else if (isBinding && typeof value === 'string') {
+      const resolved = get(renderData, value)
+      if (resolved !== undefined) {
+        outValue = resolved
+        resultKey = outKey
+      } else {
+        outValue = value
+      }
+    } else {
+      outValue = value
+    }
+
+    // Hard floor: a binding must never resolve href/src to an unsafe scheme
+    // (javascript:, data:text/html, …). Parse-time validation only sees the
+    // literal path, so the resolved value is checked here — even when the
+    // security plugin is not enabled.
+    const lowerOutKey = outKey.toLowerCase()
+    if (
+      isBinding &&
+      (lowerOutKey === 'href' || lowerOutKey === 'src' || lowerOutKey === 'xlink:href') &&
+      typeof outValue === 'string' &&
+      isUnsafeUrlValue(outValue)
+    ) {
       continue
     }
 
-    if (isBinding && typeof value === 'string') {
-      const resolved = get(renderData, value)
-      if (resolved !== undefined) {
-        result[key.slice(1)] = resolved
-        continue
-      }
-    }
-
-    result[key] = value
+    result[resultKey] = outValue
   }
   return result
 }
@@ -166,8 +196,13 @@ export function comarkAttributes(attributes: Record<string, unknown>) {
         return `#${value}`
       }
       if (key === 'class') {
-        return (value as string)
+        // The parser JSON-decodes `[...]`/`{...}` attribute values, so class
+        // can be an array/object here — normalize instead of crashing on
+        // value.split.
+        const classValue = Array.isArray(value) ? value.join(' ') : String(value)
+        return classValue
           .split(' ')
+          .filter(Boolean)
           .map((c) => `.${c}`)
           .join('')
       }
@@ -176,12 +211,26 @@ export function comarkAttributes(attributes: Record<string, unknown>) {
         return `${key}="${JSON.stringify(value).replace(/"/g, '\\"')}"`
       }
 
-      return `${key}="${value}"`
+      const str = String(value)
+      // A double quote inside a double-quoted value would terminate it early,
+      // letting the remainder become new attributes on re-parse. Single
+      // quotes round-trip cleanly when the value has no single quote;
+      // otherwise backslash-escape (the parser skips \" without terminating —
+      // safe, though it keeps the backslash in the value).
+      if (str.includes('"') && !str.includes("'")) {
+        return `${key}='${str}'`
+      }
+      return `${key}="${str.replace(/"/g, '\\"')}"`
     })
     .join(' ')
 
   return attrs.length > 0 ? `{${attrs}}` : ''
 }
+
+// HTML attribute names must start with a letter/underscore/colon and may only
+// contain alphanumerics plus `_ : . -`. Anything else (quotes, spaces, …)
+// could break out of the attribute list, so such keys are dropped entirely.
+const SAFE_ATTR_NAME = /^[a-zA-Z_:][a-zA-Z0-9_:.-]*$/
 
 /**
  * Convert attributes to a string of HTML attributes
@@ -191,17 +240,20 @@ export function comarkAttributes(attributes: Record<string, unknown>) {
  */
 export function htmlAttributes(attributes: Record<string, unknown>) {
   const parts: string[] = []
-  for (const [key, value] of Object.entries(attributes)) {
-    if (key.startsWith(':')) {
+  for (const [rawKey, value] of Object.entries(attributes)) {
+    const key = rawKey.startsWith(':') ? rawKey.slice(1) : rawKey
+    if (!SAFE_ATTR_NAME.test(key)) continue
+
+    if (rawKey.startsWith(':')) {
       if (value === 'true') {
-        parts.push(key.slice(1))
+        parts.push(key)
         continue
       }
       if (typeof value === 'object' && value !== null) {
-        parts.push(`${key.slice(1)}="${JSON.stringify(value).replace(/"/g, '\\"')}"`)
+        parts.push(`${key}="${escapeHtml(JSON.stringify(value))}"`)
         continue
       }
-      parts.push(`${key.slice(1)}="${value}"`)
+      parts.push(`${key}="${escapeHtml(String(value))}"`)
       continue
     }
 
@@ -212,11 +264,11 @@ export function htmlAttributes(attributes: Record<string, unknown>) {
     if (value === false || value === null || value === undefined) continue
 
     if (typeof value === 'object') {
-      parts.push(`${key}="${JSON.stringify(value).replace(/"/g, '\\"')}"`)
+      parts.push(`${key}="${escapeHtml(JSON.stringify(value))}"`)
       continue
     }
 
-    parts.push(`${key}="${value}"`)
+    parts.push(`${key}="${escapeHtml(String(value))}"`)
   }
   return parts.join(' ')
 }
@@ -270,6 +322,6 @@ export function comarkYamlAttributes(
     return `---\n${yamlContent}\n---`
   }
 
-  const fence = yamlContent.includes('```') ? '~~~' : '```'
+  const fence = pickFence(yamlContent)
   return `${fence}yaml [props]\n${yamlContent}\n${fence}`
 }

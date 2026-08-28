@@ -1,7 +1,7 @@
 name: docs preview comment
 
 on:
-  pull_request:
+  pull_request_target:
     branches:
       - main
     paths:
@@ -10,82 +10,108 @@ on:
       - opened
       - reopened
       - synchronize
+      - labeled
+      - unlabeled
 
 permissions:
-  contents: read
   pull-requests: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
 
 jobs:
   comment:
-    if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
 
     steps:
       - name: Create or update preview comment
         uses: actions/github-script@v8
         env:
-          HEAD_BRANCH: ${{ github.head_ref }}
+          SITE_URL: https://comark.dev
+          CONTENT_DIR: docs/content
+          PREVIEW_LABEL: preview:enabled
         with:
           script: |
             const marker = '<!-- comark-docs-preview -->'
-            const previewRoot = `https://comark.dev/tree/${encodeURIComponent(process.env.HEAD_BRANCH)}`
-
+            const { SITE_URL, CONTENT_DIR, PREVIEW_LABEL } = process.env
             const { owner, repo } = context.repo
-            const pull_number = context.issue.number
-            const files = await github.paginate(github.rest.pulls.listFiles, {
-              owner,
-              repo,
-              pull_number,
-              per_page: 100,
-            })
+            const pr = context.payload.pull_request
 
-            const pages = files
-              .filter(file =>
-                file.status !== 'removed'
-                && file.filename.startsWith('docs/content/')
-                && file.filename.endsWith('.md'),
-              )
-              .map(file => {
-                const relativePath = file.filename
-                  .slice('docs/content/'.length)
-                  .replace(/\.md$/, '')
-                const routeSegments = relativePath
-                  .split('/')
-                  .map(segment => segment.replace(/^\d+\./, ''))
-                  .map(encodeURIComponent)
-                if (routeSegments.at(-1) === 'index') {
-                  routeSegments.pop()
-                }
-                const route = routeSegments.join('/')
+            const internal = pr.head.repo && pr.head.repo.full_name === `${owner}/${repo}`
+            const enabled = internal || pr.labels.some((label) => label.name === PREVIEW_LABEL)
 
-                return {
-                  filename: file.filename,
-                  url: route ? `${previewRoot}/${route}` : `${previewRoot}/`,
-                }
+            let body
+            if (!enabled) {
+              body = [
+                marker,
+                '## Documentation previews',
+                '',
+                'Previews are disabled for pull requests from forks.',
+                `A maintainer can add the \`${PREVIEW_LABEL}\` label to enable them.`,
+              ].join('\n')
+            } else {
+              const previewRoot = `${SITE_URL}/pr/${pr.number}`
+              const files = await github.paginate(github.rest.pulls.listFiles, {
+                owner,
+                repo,
+                pull_number: pr.number,
+                per_page: 100,
               })
-              .sort((a, b) => a.filename.localeCompare(b.filename))
 
-            const body = [
-              marker,
-              '## Documentation previews',
-              '',
-              `📚 [Preview all documentation changes](${previewRoot})`,
-              ...(pages.length
-                ? [
-                    '',
-                    ...pages.map(page => `- [\`${page.filename}\`](${page.url})`),
-                  ]
-                : []),
-            ].join('\n')
+              const prefix = `${CONTENT_DIR}/`
+              const pages = files
+                .filter((file) =>
+                  file.status !== 'removed'
+                  && file.filename.startsWith(prefix)
+                  && file.filename.endsWith('.md'),
+                )
+                .map((file) => {
+                  const relativePath = file.filename
+                    .slice(prefix.length)
+                    .replace(/\.md$/, '')
+                  const routeSegments = relativePath
+                    .split('/')
+                    .map((segment) => segment.replace(/^\d+\./, ''))
+                    .map(encodeURIComponent)
+                  if (routeSegments.at(-1) === 'index') {
+                    routeSegments.pop()
+                  }
+                  const route = routeSegments.join('/')
 
-            const issue_number = context.issue.number
+                  return {
+                    filename: file.filename,
+                    route,
+                    url: route ? `${previewRoot}/${route}` : `${previewRoot}/`,
+                  }
+                })
+                .sort((a, b) => a.filename.localeCompare(b.filename))
+
+              body = [
+                marker,
+                '## Documentation previews',
+                '',
+                `📚 [Preview all documentation changes](${previewRoot}) (follows new pushes)`,
+                ...(pages.length
+                  ? [
+                      '',
+                      ...pages.map((page) => `- [/${page.route}](${page.url})`),
+                    ]
+                  : []),
+                '',
+                `Pinned to the current head: [\`${pr.head.sha.slice(0, 7)}\`](${SITE_URL}/blob/${pr.head.sha})`,
+                ...(internal
+                  ? []
+                  : ['', `Enabled by the \`${PREVIEW_LABEL}\` label — remove it to disable the preview.`]),
+              ].join('\n')
+            }
+
             const comments = await github.paginate(github.rest.issues.listComments, {
               owner,
               repo,
-              issue_number,
+              issue_number: pr.number,
               per_page: 100,
             })
-            const existingComment = comments.find(comment =>
+            const existingComment = comments.find((comment) =>
               comment.user?.type === 'Bot' && comment.body?.includes(marker),
             )
 
@@ -100,7 +126,7 @@ jobs:
               await github.rest.issues.createComment({
                 owner,
                 repo,
-                issue_number,
+                issue_number: pr.number,
                 body,
               })
             }

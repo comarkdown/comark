@@ -78,7 +78,6 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
     )
   }
 
-  // User plugins first so same-name entries override defaults via dedupePlugins.
   const defaultPlugins =
     options.registerDefaultPlugins !== false
       ? [
@@ -92,7 +91,7 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
         ]
       : []
 
-  const plugins = dedupePlugins([...userPlugins, ...defaultPlugins])
+  const plugins = dedupePlugins(defaultPlugins, userPlugins)
   const hasPlugin = (name: string) => plugins.some((plugin) => plugin.name === name)
 
   const parser = new MarkdownExit({ linkify: options.linkify ?? true }).enable(['table', 'strikethrough'])
@@ -144,6 +143,7 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
           autoCloseMarkdown(state.markdown, {
             frontmatter: hasPlugin('frontmatter') && opts.streaming,
             syntax: hasPlugin('components'),
+            attributes: hasPlugin('components') || hasPlugin('attributes'),
           })
         )
       }

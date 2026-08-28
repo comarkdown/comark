@@ -1,5 +1,5 @@
 ---
-title: Table of Contents
+title: Table of contents
 description: Plugin for automatically generating a table of contents from document headings.
 seo:
   title: Table of Contents Plugin
@@ -30,7 +30,7 @@ const result = await parseMarkdown(content, {
   plugins: [toc()]
 })
 
-console.log(result.meta.toc) // TocTree
+console.log(result.meta.toc) // Toc
 ```
 
 ---
@@ -50,8 +50,8 @@ Returns a `ComarkPlugin` that generates a hierarchical TOC from headings.
 The result is stored at `tree.meta.toc`:
 
 ```typescript
-interface TocTree {
-  title: string       // TOC title (from options or frontmatter)
+interface Toc {
+  title: string       // TOC title (from the `title` option)
   depth: number       // Maximum heading depth included
   searchDepth: number // Search depth in nested structures
   links: TocLink[]    // Hierarchical list of links
@@ -73,11 +73,7 @@ interface TocLink {
 |---|---|---|---|
 | [`depth`](#options-depth) | `number` | `2` | Heading levels to include: `1` = h2 only, `2` = h2–h3, `3` = h2–h4, etc. |
 | [`searchDepth`](#options-searchdepth) | `number` | `2` | How deep to search for headings in nested component structures |
-| [`title`](#options-title) | `string` | `''` | Title field on the returned `TocTree` |
-
-::tip
-All three options can also be set via frontmatter: `depth`, `searchDepth`, and `title` keys are read automatically and override the plugin options.
-::
+| [`title`](#options-title) | `string` | `''` | Title field on the returned `Toc` |
 
 ### `depth`
 
@@ -101,7 +97,7 @@ toc({ searchDepth: 3 })
 
 ### `title`
 
-Sets the `title` field on the returned `TocTree`. Has no effect on rendering; use it to label the TOC in your layout component.
+Sets the `title` field on the returned `Toc`. Has no effect on rendering; use it to label the TOC in your layout component.
 
 ```typescript
 toc({ title: 'On This Page' })
@@ -113,7 +109,7 @@ toc({ title: 'On This Page' })
 
 ## Examples
 
-### Basic TOC Generation
+### Basic TOC generation
 
 ::code-group
 
@@ -158,7 +154,7 @@ console.log(result.meta.toc)
 
 ::
 
-### Docs Layout
+### Docs layout
 
 Parse once to get the TOC, then render it alongside the `<Markdown>` component:
 
@@ -252,27 +248,3 @@ export function DocsLayout({ content }: { content: string }) {
 ::tip
 For deeply nested TOCs, render `link.children` recursively: define a `TocLink` component that calls itself for each child.
 ::
-
-### With Frontmatter
-
-`depth`, `searchDepth`, and `title` can be set in the document's frontmatter and will override plugin options:
-
-```markdown
----
-title: My Guide
-depth: 3
-searchDepth: 3
----
-
-# My Guide
-
-## Section 1
-
-### Subsection 1.1
-```
-
-```typescript
-const result = await parseMarkdown(content, { plugins: [toc()] })
-console.log(result.meta.toc.depth) // 3 (from frontmatter)
-console.log(result.meta.toc.title) // "My Guide" (from frontmatter)
-```

@@ -1,6 +1,7 @@
 import type { ElementNode } from 'comark'
 import type { ThemeNames } from 'comark/plugins/mermaid'
 import { renderMermaidSVG, THEMES } from 'beautiful-mermaid'
+import { escapeHtml } from 'comark/utils'
 
 export * from 'comark/plugins/mermaid'
 export { default } from 'comark/plugins/mermaid'
@@ -29,6 +30,7 @@ export const Mermaid = ([, attrs]: ElementNode): string => {
     const svg = renderMermaidSVG(content, theme)
     return `<div class="mermaid">${svg}</div>`
   } catch {
-    return `<pre class="mermaid">${content}</pre>`
+    // Invalid diagram source is author-controlled — escape before fallback.
+    return `<pre class="mermaid">${escapeHtml(content)}</pre>`
   }
 }
