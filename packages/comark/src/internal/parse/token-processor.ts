@@ -1,5 +1,5 @@
 import type { ElementNode, Node } from 'comark'
-import { htmlToNodes, parseInlineHtmlTag } from './html/index.ts'
+import { htmlToNodes, parseInlineHtmlTag, VOID_ELEMENTS } from './html/index.ts'
 
 // `::tag` components that should fold into a single same-tagged child.
 const WRAPPER_TAGS = new Set(['ul', 'ol', 'table', 'blockquote', 'pre'])
@@ -61,7 +61,7 @@ export function marmdownItTokensToMarkdownDocument(tokens: any[], opts?: TokenPr
     const token = tokens[i]
 
     if (token.type === 'html_block') {
-      const result = processHtmlBlockTokens(tokens, i)
+      const result = processHtmlBlockTokens(tokens, i, state)
       nodes.push(...result.nodes)
       i = result.nextIndex
       continue
@@ -89,13 +89,95 @@ export function marmdownItTokensToMarkdownDocument(tokens: any[], opts?: TokenPr
 }
 
 /**
- * Convert an html_block token into Comark nodes. The whole HTML payload is
- * parsed once by htmlparser2; text inside is preserved verbatim (no markdown
- * re-parsing — CommonMark default).
+ * Whether an `html_block` token's content already closes its own outer element
+ * (self-contained on one run: `<p><img></p>`, void tags, comments, etc.).
  */
-function processHtmlBlockTokens(tokens: any[], startIndex: number): { nodes: Node[]; nextIndex: number } {
+function htmlBlockHasOwnClose(content: string): boolean {
+  const trimmed = content.trim()
+  if (!trimmed) return false
+  // Comments, declarations, CDATA, processing instructions: self-terminating.
+  if (trimmed.startsWith('<!') || trimmed.startsWith('<?')) return true
+  const match = trimmed.match(/^<\s*([a-zA-Z][\w:-]*)/)
+  if (!match) return false
+  const tag = match[1]
+  if (VOID_ELEMENTS.has(tag.toLowerCase())) return true
+  // Self-closing start tag (`<br/>`, `<div />`)
+  if (/\/\s*>\s*$/.test(trimmed) && !trimmed.slice(1).includes('<')) return true
+  return new RegExp(`</\\s*${tag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*>`, 'i').test(trimmed)
+}
+
+/** Tag name of a bare closing HTML block (`</div>`), or null. */
+function htmlBlockCloseTag(content: string): string | null {
+  const match = content.trim().match(/^<\/\s*([a-zA-Z][\w:-]*)\s*>$/)
+  return match ? match[1].toLowerCase() : null
+}
+
+/**
+ * Convert an html_block token into Comark nodes.
+ *
+ * Self-contained blocks are parsed once by htmlparser2 (text preserved
+ * verbatim — CommonMark default). Incomplete openers with no matching closer
+ * later in the token stream absorb subsequent markdown as children
+ * (`$.block = 0`) so streaming unfinished tags (e.g. `<ai-thinking>…`) wrap
+ * their body instead of leaving siblings outside the unclosed element.
+ */
+function processHtmlBlockTokens(
+  tokens: any[],
+  startIndex: number,
+  state?: ProcessState
+): { nodes: Node[]; nextIndex: number } {
   const content = typeof tokens[startIndex]?.content === 'string' ? tokens[startIndex].content : ''
-  return { nodes: htmlToNodes(content), nextIndex: startIndex + 1 }
+
+  // Self-contained / void / comment / already-closed payload, or a bare closer
+  // token (`</p>`) — CommonMark keeps these as independent html_block siblings.
+  // Bare closers still go through htmlToNodes (htmlparser2 may emit an empty
+  // element for some tags; that matches existing SPEC/tests).
+  if (htmlBlockHasOwnClose(content) || htmlBlockCloseTag(content)) {
+    return { nodes: htmlToNodes(content), nextIndex: startIndex + 1 }
+  }
+
+  const openMatch = content.trim().match(/^<\s*([a-zA-Z][\w:-]*)/)
+  if (!openMatch) {
+    return { nodes: htmlToNodes(content), nextIndex: startIndex + 1 }
+  }
+  const tag = openMatch[1].toLowerCase()
+
+  // Matching closer later in the stream → standard blank-line-terminated HTML
+  // block behaviour (open and close are siblings; body is markdown between them).
+  for (let i = startIndex + 1; i < tokens.length; i++) {
+    const t = tokens[i]
+    if (t.type === 'html_block' && htmlBlockCloseTag(typeof t.content === 'string' ? t.content : '') === tag) {
+      return { nodes: htmlToNodes(content), nextIndex: startIndex + 1 }
+    }
+  }
+
+  // Incomplete open tag with no closer: absorb the rest of the stream as children.
+  const parsed = htmlToNodes(content)
+  const node = parsed[0]
+  if (!node || typeof node === 'string' || node[0] === null) {
+    return { nodes: parsed, nextIndex: startIndex + 1 }
+  }
+
+  // `\0` never matches a real token type — process through end of stream.
+  const children = processBlockChildren(tokens, startIndex + 1, '\0', false, false, false, state)
+  const element = node as ElementNode
+  const openerAttrs = (element[1] || {}) as Record<string, unknown>
+  const prevMeta = (openerAttrs.$ || {}) as Record<string, unknown>
+  // `block: 0` marks markdown-parsed children (vs raw HTML body at block:1).
+  const attrs: Record<string, unknown> = {
+    ...openerAttrs,
+    $: { ...prevMeta, html: 1, block: 0 },
+  }
+  const openerChildren = element.slice(2) as Node[]
+
+  // Multiple block children keep their structure (p + ul, etc.). A single
+  // markdown paragraph is left intact so incomplete multi-line bodies match
+  // the streaming SPEC; autoUnwrap does not apply at the document root to
+  // these html wrappers (the wrapper is the root node).
+  return {
+    nodes: [[element[0], attrs, ...openerChildren, ...children.nodes] as Node],
+    nextIndex: children.nextIndex,
+  }
 }
 
 /**
@@ -307,7 +389,7 @@ function processBlockToken(
   // processBlockChildren / processBlockChildrenWithSlots) before reaching here.
   // Safety fallback when it slips through.
   if (token.type === 'html_block') {
-    const result = processHtmlBlockTokens(tokens, startIndex)
+    const result = processHtmlBlockTokens(tokens, startIndex, state)
     return { node: result.nodes[0] ?? null, nextIndex: result.nextIndex }
   }
 
@@ -486,7 +568,7 @@ function processBlockChildrenWithSlots(
 
     // html_block can produce multiple nodes — handle before processBlockToken
     if (token.type === 'html_block') {
-      const result = processHtmlBlockTokens(tokens, i)
+      const result = processHtmlBlockTokens(tokens, i, state)
       if (currentSlotName !== null) {
         currentSlotChildren.push(...result.nodes)
       } else {
@@ -581,7 +663,7 @@ function processBlockChildren(
     const token = tokens[i]
 
     if (token.type === 'html_block') {
-      const result = processHtmlBlockTokens(tokens, i)
+      const result = processHtmlBlockTokens(tokens, i, state)
       nodes.push(...result.nodes)
       i = result.nextIndex
       continue

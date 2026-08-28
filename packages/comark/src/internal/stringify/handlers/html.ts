@@ -42,6 +42,11 @@ export async function html(node: ElementNode, state: State, parent?: ElementNode
   const hasTextSibling = children.some((child) => typeof child === 'string')
   const isBlock = textBlocks.has(String(tag))
   const isInline = inlineTags.has(String(tag)) && $.block === 0
+  // Incomplete HTML openers (streaming) store markdown/HTML block children under
+  // `$.block === 0`; those still need multi-line wrapping, not one-liner inline.
+  const hasBlockChildren = children.some(
+    (child) => Array.isArray(child) && child[0] !== null && !inlineTags.has(String(child[0]))
+  )
 
   let oneLiner = isBlock && hasOnlyTextChildren
 
@@ -57,7 +62,9 @@ export async function html(node: ElementNode, state: State, parent?: ElementNode
     oneLiner = true
   }
 
-  if ($.block === 0) {
+  // Inline HTML (`block: 0` with only text/inline children) collapses to one line.
+  // Incomplete block wrappers with real markdown block children stay multi-line.
+  if ($.block === 0 && !hasBlockChildren) {
     oneLiner = true
   }
 
@@ -71,8 +78,12 @@ export async function html(node: ElementNode, state: State, parent?: ElementNode
     childrenContent.push(await state.one(child, state, node))
   }
 
-  // A blank line inside a raw-HTML element would terminate it on reparse
-  const childSeparator = state.context.html ? state.context.blockSeparator : oneLiner ? '' : '\n'
+  // In markdown mode, block children already append their own blockSeparator, so
+  // we must not inject extra newlines between them. In HTML mode the separator
+  // is the pretty-print block gap. A blank line inside a *raw* HTML body would
+  // terminate the block on reparse — markdown children of incomplete openers
+  // (`$.block === 0`) intentionally use blank lines like normal markdown.
+  const childSeparator = state.context.html ? state.context.blockSeparator : ''
 
   let content = ''
   let isPrevBlock = true
@@ -106,7 +117,18 @@ export async function html(node: ElementNode, state: State, parent?: ElementNode
   }
 
   if (!oneLiner && content) {
-    content = '\n' + paddNoneHtmlContent(content, state, String(tag)).trimEnd() + '\n'
+    if (state.context.html) {
+      content = '\n' + paddNoneHtmlContent(content, state, String(tag)).trimEnd() + '\n'
+    } else if ($.block === 0 && hasBlockChildren) {
+      // Incomplete HTML openers with markdown body: blank line after open tag so
+      // the body re-parses as markdown, children's own blockSeparators between
+      // blocks, single newline before close.
+      content = '\n\n' + content.trimEnd() + '\n'
+    } else {
+      // Raw HTML block body (block:1) — keep content flush after the open tag
+      // so reparse matches CommonMark html_block runs.
+      content = '\n' + paddNoneHtmlContent(content, state, String(tag)).trimEnd() + '\n'
+    }
   }
 
   return `<${tag}${attrs}>${content}</${tag}>` + (!parent && !isInline ? state.context.blockSeparator : '')
