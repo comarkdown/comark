@@ -17,6 +17,20 @@ const HTML_SEQUENCES: [RegExp, RegExp, boolean][] = [
   [new RegExp(`${HTML_OPEN_CLOSE_TAG_RE.source}\\s*$`), /^$/, false],
 ]
 
+/** Open tag name when `line` is a lone start tag (`<foo>` / `<foo attr>`), else null. */
+function loneOpenTagName(line: string): string | null {
+  const trimmed = line.trim()
+  // Closing tags, void self-closers, comments, declarations — not incomplete openers.
+  if (!trimmed.startsWith('<') || trimmed.startsWith('</') || trimmed.startsWith('<!')) return null
+  if (/\/\s*>\s*$/.test(trimmed)) return null
+  const match = trimmed.match(/^<([a-zA-Z][\w:-]*)(?:\s[^>]*)?>\s*$/)
+  return match ? match[1] : null
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
 export default function html_block(state: StateBlock, startLine: number, endLine: number, silent: boolean) {
   let pos = state.bMarks[startLine] + state.tShift[startLine]
   let max = state.eMarks[startLine]
@@ -36,8 +50,16 @@ export default function html_block(state: StateBlock, startLine: number, endLine
 
   let nextLine = startLine + 1
 
+  // Sequences whose end condition is a blank line (type 6 block tags, type 7
+  // generic tags). A lone open tag with no matching closer before EOF is an
+  // incomplete streaming opener — only consume the opener line so following
+  // markdown can be tokenized and absorbed by the token processor.
+  const blankLineTerminated = HTML_SEQUENCES[i][1].source === '^$'
+  const openerTag = blankLineTerminated ? loneOpenTagName(lineText) : null
+
   // Walk forward until the closer regex matches or we hit a blank line.
   if (!HTML_SEQUENCES[i][1].test(lineText)) {
+    let sawMatchingClose = false
     for (; nextLine < endLine; nextLine++) {
       if (state.sCount[nextLine] < state.blkIndent) break
 
@@ -45,10 +67,19 @@ export default function html_block(state: StateBlock, startLine: number, endLine
       max = state.eMarks[nextLine]
       lineText = state.src.slice(pos, max)
 
+      if (openerTag && new RegExp(`^</\\s*${escapeRegExp(openerTag)}\\s*>\\s*$`, 'i').test(lineText.trim())) {
+        sawMatchingClose = true
+      }
+
       if (HTML_SEQUENCES[i][1].test(lineText)) {
         if (lineText.length !== 0) nextLine++
         break
       }
+    }
+
+    // Incomplete open tag running to EOF with no closer: leave body for markdown.
+    if (openerTag && !sawMatchingClose && nextLine >= endLine) {
+      nextLine = startLine + 1
     }
   }
 
