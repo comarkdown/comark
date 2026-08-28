@@ -113,13 +113,48 @@ function htmlBlockCloseTag(content: string): string | null {
 }
 
 /**
+ * Depth of `tag` openers still unclosed inside `content` (can be nested).
+ * Positive → more openers than closers; 0 → balanced; negative is treated as 0.
+ */
+function htmlOuterTagDepth(content: string, tag: string): number {
+  const escaped = tag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const re = new RegExp(`</?\\s*${escaped}\\b[^>]*>`, 'gi')
+  let depth = 0
+  let m: RegExpExecArray | null
+  while ((m = re.exec(content)) !== null) {
+    if (m[0].charAt(1) === '/') depth = Math.max(0, depth - 1)
+    else if (!/\/\s*>$/.test(m[0])) depth++
+  }
+  return depth
+}
+
+/** Normalize children of an incomplete HTML wrapper before emitting the node. */
+function finalizeIncompleteHtmlChildren(nodes: Node[]): Node[] {
+  // Markdown paragraphs that only wrap plain text under a raw HTML parent
+  // (blank-line body of `<details>`) collapse to that text so the AST matches
+  // a single content string rather than an extra `<p>`.
+  return nodes.map((child) => {
+    if (
+      Array.isArray(child) &&
+      child[0] === 'p' &&
+      !(child[1] as Record<string, unknown> | undefined)?.$ &&
+      child.length === 3 &&
+      typeof child[2] === 'string'
+    ) {
+      return child[2] as string
+    }
+    return child
+  })
+}
+
+/**
  * Convert an html_block token into Comark nodes.
  *
  * Self-contained blocks are parsed once by htmlparser2 (text preserved
- * verbatim — CommonMark default). Incomplete openers with no matching closer
- * later in the token stream absorb subsequent markdown as children
- * (`$.block = 0`) so streaming unfinished tags (e.g. `<ai-thinking>…`) wrap
- * their body instead of leaving siblings outside the unclosed element.
+ * verbatim — CommonMark default). Incomplete openers absorb subsequent tokens
+ * as children until a matching closer (`block: 1` with a closer, or `block: 0`
+ * for streaming tags with no closer) so nested blank-line HTML like
+ * `<details>…<details>…</details></details>` builds a real tree.
  */
 function processHtmlBlockTokens(
   tokens: any[],
@@ -128,11 +163,14 @@ function processHtmlBlockTokens(
 ): { nodes: Node[]; nextIndex: number } {
   const content = typeof tokens[startIndex]?.content === 'string' ? tokens[startIndex].content : ''
 
-  // Self-contained / void / comment / already-closed payload, or a bare closer
-  // token (`</p>`) — CommonMark keeps these as independent html_block siblings.
-  // Bare closers still go through htmlToNodes (htmlparser2 may emit an empty
-  // element for some tags; that matches existing SPEC/tests).
-  if (htmlBlockHasOwnClose(content) || htmlBlockCloseTag(content)) {
+  // Bare closer with no surrounding open — drop (parent consumes matching ones).
+  if (htmlBlockCloseTag(content)) {
+    return { nodes: htmlToNodes(content), nextIndex: startIndex + 1 }
+  }
+
+  // Fully closed in this token alone (including multi-line runs with matching
+  // open/close) — parse as a self-contained HTML fragment.
+  if (htmlBlockHasOwnClose(content)) {
     return { nodes: htmlToNodes(content), nextIndex: startIndex + 1 }
   }
 
@@ -142,41 +180,84 @@ function processHtmlBlockTokens(
   }
   const tag = openMatch[1].toLowerCase()
 
-  // Matching closer later in the stream → standard blank-line-terminated HTML
-  // block behaviour (open and close are siblings; body is markdown between them).
+  // How many outer `tag` frames this token opens that still need a closer.
+  // Opener-only content like `<details>\n<summary>…</summary>` starts depth 1.
+  let depth = htmlOuterTagDepth(content, tag)
+  if (depth <= 0) {
+    return { nodes: htmlToNodes(content), nextIndex: startIndex + 1 }
+  }
+
+  // Scan ahead for a matching closer (nested same-tag openers bump depth).
+  let closeIndex = -1
   for (let i = startIndex + 1; i < tokens.length; i++) {
     const t = tokens[i]
-    if (t.type === 'html_block' && htmlBlockCloseTag(typeof t.content === 'string' ? t.content : '') === tag) {
-      return { nodes: htmlToNodes(content), nextIndex: startIndex + 1 }
+    if (t.type !== 'html_block') continue
+    const c = typeof t.content === 'string' ? t.content : ''
+    const closeTag = htmlBlockCloseTag(c)
+    if (closeTag === tag) {
+      depth--
+      if (depth === 0) {
+        closeIndex = i
+        break
+      }
+      continue
+    }
+    // Nested opener of the same tag (may include its own closer in the same token).
+    if (!htmlBlockCloseTag(c)) {
+      const nestedOpen = c.trim().match(/^<\s*([a-zA-Z][\w:-]*)/)
+      if (nestedOpen && nestedOpen[1].toLowerCase() === tag) {
+        depth += htmlOuterTagDepth(c, tag)
+      }
     }
   }
 
-  // Incomplete open tag with no closer: absorb the rest of the stream as children.
   const parsed = htmlToNodes(content)
   const node = parsed[0]
   if (!node || typeof node === 'string' || node[0] === null) {
     return { nodes: parsed, nextIndex: startIndex + 1 }
   }
 
-  // `\0` never matches a real token type — process through end of stream.
-  const children = processBlockChildren(tokens, startIndex + 1, '\0', false, false, false, state)
   const element = node as ElementNode
   const openerAttrs = (element[1] || {}) as Record<string, unknown>
   const prevMeta = (openerAttrs.$ || {}) as Record<string, unknown>
-  // `block: 0` marks markdown-parsed children (vs raw HTML body at block:1).
-  const attrs: Record<string, unknown> = {
-    ...openerAttrs,
-    $: { ...prevMeta, html: 1, block: 0 },
-  }
   const openerChildren = element.slice(2) as Node[]
 
-  // Multiple block children keep their structure (p + ul, etc.). A single
-  // markdown paragraph is left intact so incomplete multi-line bodies match
-  // the streaming SPEC; autoUnwrap does not apply at the document root to
-  // these html wrappers (the wrapper is the root node).
+  // No matching closer → streaming incomplete tag (block: 0), absorb to EOF.
+  if (closeIndex < 0) {
+    const children = processBlockChildren(tokens, startIndex + 1, '\0', false, false, false, state)
+    const attrs: Record<string, unknown> = {
+      ...openerAttrs,
+      $: { ...prevMeta, html: 1, block: 0 },
+    }
+    return {
+      nodes: [
+        [
+          element[0],
+          attrs,
+          ...openerChildren,
+          ...finalizeIncompleteHtmlChildren(children.nodes),
+        ] as Node,
+      ],
+      nextIndex: children.nextIndex,
+    }
+  }
+
+  // Matching closer → nest body under the opener (block: 1). Slice so
+  // processBlockChildren stops before the closer; recurse for nested HTML.
+  const bodyTokens = tokens.slice(startIndex + 1, closeIndex)
+  const body = processBlockChildren(bodyTokens, 0, '\0', false, false, false, state)
+
+  const attrs: Record<string, unknown> = {
+    ...openerAttrs,
+    $: { ...prevMeta, html: 1, block: 1 },
+  }
+
   return {
-    nodes: [[element[0], attrs, ...openerChildren, ...children.nodes] as Node],
-    nextIndex: children.nextIndex,
+    nodes: [
+      [element[0], attrs, ...openerChildren, ...finalizeIncompleteHtmlChildren(body.nodes)] as Node,
+    ],
+    // Consume the closer as well.
+    nextIndex: closeIndex + 1,
   }
 }
 

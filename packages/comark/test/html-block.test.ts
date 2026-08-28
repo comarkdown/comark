@@ -56,7 +56,7 @@ That is some text here.`
     expect(result.nodes).toEqual([['p', { $: { html: 1, block: 1 } }, 'this is **markdown**']])
   })
 
-  it('parses markdown as a sibling when a blank line separates it from the HTML tags', async () => {
+  it('nests blank-line markdown body under a matching HTML open/close pair', async () => {
     const result = await parseMarkdown(`<p>
 
 this is **markdown**
@@ -64,9 +64,7 @@ this is **markdown**
 </p>`)
 
     expect(result.nodes).toEqual([
-      ['p', { $: { html: 1, block: 1 } }],
-      ['p', {}, 'this is ', ['strong', {}, 'markdown']],
-      ['p', { $: { html: 1, block: 1 } }],
+      ['p', { $: { html: 1, block: 1 } }, 'this is ', ['strong', {}, 'markdown']],
     ])
   })
 
@@ -88,7 +86,7 @@ this is **markdown**
     ])
   })
 
-  it('parses markdown and raw HTML as siblings when blank lines separate them', async () => {
+  it('nests blank-line markdown and HTML under a matching open/close pair', async () => {
     const result = await parseMarkdown(`<div>
 
 before **strong**
@@ -100,10 +98,13 @@ after \`code\`
 </div>`)
 
     expect(result.nodes).toEqual([
-      ['div', { $: { html: 1, block: 1 } }],
-      ['p', {}, 'before ', ['strong', {}, 'strong']],
-      ['img', { $: { html: 1, block: 1 }, src: '/x.png', alt: 'x' }],
-      ['p', {}, 'after ', ['code', {}, 'code']],
+      [
+        'div',
+        { $: { html: 1, block: 1 } },
+        ['p', {}, 'before ', ['strong', {}, 'strong']],
+        ['img', { $: { html: 1, block: 1 }, src: '/x.png', alt: 'x' }],
+        ['p', {}, 'after ', ['code', {}, 'code']],
+      ],
     ])
   })
 
