@@ -25,6 +25,7 @@ catalog:
   "@ai-sdk/vue": ^4.0.22
   "@astrojs/react": ^6.0.1
   "@clack/prompts": ^1.7.0
+  "@codspeed/vitest-plugin": ^5.7.1
   "@comark/html": ^0.6.2
   "@comark/nuxt": ^0.6.2
   "@comark/react": ^0.6.2
@@ -185,3 +186,10 @@ minimumReleaseAgeExclude:
 
 patchedDependencies:
   minimark: patches/minimark.patch
+
+# `@codspeed/vitest-plugin` has not widened its `vite` peer range to v8 yet, and
+# without this the whole workspace would be pulled back to vite 7.
+packageExtensions:
+  "@codspeed/vitest-plugin":
+    peerDependencies:
+      vite: "^4.2.0 || ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0"

@@ -40,6 +40,7 @@
     "build:comark": "cd packages/comark && pnpm build",
     "test": "pnpm --filter 'comark' run test && pnpm --filter '@comark/*' run test",
     "test:spec": "cd packages/comark && pnpm vitest run test/index.test.ts -- -spec",
+    "bench": "vitest bench --run",
     "lint": "oxlint . && oxfmt --check .",
     "lint:fix": "oxlint --fix . && oxfmt .",
     "typecheck": "tsc --noEmit",
@@ -49,6 +50,7 @@
     "postinstall": "pnpm stub"
   },
   "devDependencies": {
+    "@codspeed/vitest-plugin": "catalog:",
     "@comark/ansi": "workspace:*",
     "@release-it/conventional-changelog": "catalog:",
     "@types/node": "catalog:",
@@ -70,6 +72,7 @@
     "tsx": "catalog:",
     "typescript": "catalog:",
     "unified": "catalog:",
+    "vite": "catalog:",
     "vitest": "catalog:"
   },
   "resolutions": {
