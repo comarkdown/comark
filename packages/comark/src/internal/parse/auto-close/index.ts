@@ -378,8 +378,14 @@ function closeInlineMarkersLinear(line: string, attributesEnabled: boolean): str
         dollarCount += 2
         i++
       } else {
-        dollarCount++
-        inMath = true
+        // A lone `$` with only trailing whitespace after it is currency/literal
+        // (e.g. `The cost is $`), not an open math span to complete.
+        let j = i + 1
+        while (j < len && (line[j] === ' ' || line[j] === '\t')) j++
+        if (j < len) {
+          dollarCount++
+          inMath = true
+        }
       }
       continue
     }

@@ -22,6 +22,7 @@ Some text with **bold → Some text with **bold**
 **bold** and *italic* and \`code\` → **bold** and *italic* and \`code\`
 [text](url → [text](url)
 $$formula → $$formula$$
+The cost is $ → The cost is $
 ~Hello → ~Hello~
 ~~Hello → ~~Hello~~
 ~Hello~ → ~Hello~
