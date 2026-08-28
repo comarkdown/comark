@@ -79,10 +79,11 @@ export async function html(node: ElementNode, state: State, parent?: ElementNode
   }
 
   // In markdown mode, block children already append their own blockSeparator, so
-  // we must not inject extra newlines between them. In HTML mode the separator
-  // is the pretty-print block gap. A blank line inside a *raw* HTML body would
-  // terminate the block on reparse — markdown children of incomplete openers
-  // (`$.block === 0`) intentionally use blank lines like normal markdown.
+  // we must not inject extra newlines between *markdown* siblings. HTML element
+  // closers (`</summary>`) do not carry a trailing separator, so a following
+  // markdown body would otherwise glue on (`</summary>Nested content`). Insert
+  // a blank line when the previous render ends with an HTML closer and the next
+  // is not itself an HTML open tag. In HTML mode use the pretty-print gap.
   const childSeparator = state.context.html ? state.context.blockSeparator : ''
 
   let content = ''
@@ -90,17 +91,27 @@ export async function html(node: ElementNode, state: State, parent?: ElementNode
   for (let i = 0; i < children.length; i++) {
     const childContent = childrenContent[i]
     const child = children[i]
-    const isBlock =
+    const childIsBlock =
       typeof child !== 'string' &&
       (blockTags.has(String(child?.[0])) || (!inlineTags.has(String(child?.[0])) && !hasTextSibling))
 
-    if (i > 0 && !isPrevBlock && isBlock) {
+    if (i > 0 && !isPrevBlock && childIsBlock) {
       content += childSeparator
     }
-    content += childContent
-    isPrevBlock = isBlock
 
-    if (isBlock && i < children.length - 1) {
+    if (i > 0 && !state.context.html) {
+      const prevContent = childrenContent[i - 1]
+      // `…</summary>` + `Nested content` → blank line so the body re-parses as
+      // a separate markdown block. Keep HTML→HTML tight (`</summary><details>`).
+      if (prevContent.endsWith('>') && childContent && !childContent.startsWith('<') && !childContent.startsWith('\n')) {
+        content += state.context.blockSeparator
+      }
+    }
+
+    content += childContent
+    isPrevBlock = childIsBlock
+
+    if (childIsBlock && i < children.length - 1) {
       content += childSeparator
     }
   }

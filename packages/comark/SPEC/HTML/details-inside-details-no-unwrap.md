@@ -1,3 +1,8 @@
+---
+options:
+  autoUnwrap: false
+---
+
 ## Input
 
 ```md
@@ -45,7 +50,11 @@ Nested content
           },
           "Nested"
         ],
-        "Nested content"
+        [
+          "p",
+          {},
+          "Nested content"
+        ]
       ]
     ]
   ]
@@ -62,7 +71,8 @@ Nested content
   <details>
     <summary>
       Nested
-    </summary>Nested content
+    </summary>
+    <p>Nested content</p>
   </details>
 </details>
 ```

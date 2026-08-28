@@ -9,6 +9,8 @@
 
 Nested content
 
+Nested content2
+
 </details>
 
 </details>
@@ -45,7 +47,16 @@ Nested content
           },
           "Nested"
         ],
-        "Nested content"
+        [
+          "p",
+          {},
+          "Nested content"
+        ],
+        [
+          "p",
+          {},
+          "Nested content2"
+        ]
       ]
     ]
   ]
@@ -62,7 +73,9 @@ Nested content
   <details>
     <summary>
       Nested
-    </summary>Nested content
+    </summary>
+    <p>Nested content</p>
+    <p>Nested content2</p>
   </details>
 </details>
 ```
@@ -79,6 +92,8 @@ Nested
 </summary>
 
 Nested content
+
+Nested content2
 </details>
 </details>
 ```

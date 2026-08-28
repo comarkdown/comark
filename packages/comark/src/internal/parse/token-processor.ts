@@ -128,25 +128,6 @@ function htmlOuterTagDepth(content: string, tag: string): number {
   return depth
 }
 
-/** Normalize children of an incomplete HTML wrapper before emitting the node. */
-function finalizeIncompleteHtmlChildren(nodes: Node[]): Node[] {
-  // Markdown paragraphs that only wrap plain text under a raw HTML parent
-  // (blank-line body of `<details>`) collapse to that text so the AST matches
-  // a single content string rather than an extra `<p>`.
-  return nodes.map((child) => {
-    if (
-      Array.isArray(child) &&
-      child[0] === 'p' &&
-      !(child[1] as Record<string, unknown> | undefined)?.$ &&
-      child.length === 3 &&
-      typeof child[2] === 'string'
-    ) {
-      return child[2] as string
-    }
-    return child
-  })
-}
-
 /**
  * Convert an html_block token into Comark nodes.
  *
@@ -230,13 +211,15 @@ function processHtmlBlockTokens(
       $: { ...prevMeta, html: 1, block: 0 },
     }
     return {
-      nodes: [[element[0], attrs, ...openerChildren, ...finalizeIncompleteHtmlChildren(children.nodes)] as Node],
+      nodes: [[element[0], attrs, ...openerChildren, ...children.nodes] as Node],
       nextIndex: children.nextIndex,
     }
   }
 
   // Matching closer → nest body under the opener (block: 1). Slice so
   // processBlockChildren stops before the closer; recurse for nested HTML.
+  // Single-paragraph bodies are left as `<p>` here; `applyAutoUnwrap` lifts
+  // them when `autoUnwrap` is on (default).
   const bodyTokens = tokens.slice(startIndex + 1, closeIndex)
   const body = processBlockChildren(bodyTokens, 0, '\0', false, false, false, state)
 
@@ -246,7 +229,7 @@ function processHtmlBlockTokens(
   }
 
   return {
-    nodes: [[element[0], attrs, ...openerChildren, ...finalizeIncompleteHtmlChildren(body.nodes)] as Node],
+    nodes: [[element[0], attrs, ...openerChildren, ...body.nodes] as Node],
     // Consume the closer as well.
     nextIndex: closeIndex + 1,
   }
