@@ -230,14 +230,7 @@ function processHtmlBlockTokens(
       $: { ...prevMeta, html: 1, block: 0 },
     }
     return {
-      nodes: [
-        [
-          element[0],
-          attrs,
-          ...openerChildren,
-          ...finalizeIncompleteHtmlChildren(children.nodes),
-        ] as Node,
-      ],
+      nodes: [[element[0], attrs, ...openerChildren, ...finalizeIncompleteHtmlChildren(children.nodes)] as Node],
       nextIndex: children.nextIndex,
     }
   }
@@ -253,9 +246,7 @@ function processHtmlBlockTokens(
   }
 
   return {
-    nodes: [
-      [element[0], attrs, ...openerChildren, ...finalizeIncompleteHtmlChildren(body.nodes)] as Node,
-    ],
+    nodes: [[element[0], attrs, ...openerChildren, ...finalizeIncompleteHtmlChildren(body.nodes)] as Node],
     // Consume the closer as well.
     nextIndex: closeIndex + 1,
   }

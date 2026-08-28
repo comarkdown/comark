@@ -63,9 +63,7 @@ this is **markdown**
 
 </p>`)
 
-    expect(result.nodes).toEqual([
-      ['p', { $: { html: 1, block: 1 } }, 'this is ', ['strong', {}, 'markdown']],
-    ])
+    expect(result.nodes).toEqual([['p', { $: { html: 1, block: 1 } }, 'this is ', ['strong', {}, 'markdown']]])
   })
 
   it('preserves mixed text and raw HTML children verbatim inside a multiline raw HTML block', async () => {
