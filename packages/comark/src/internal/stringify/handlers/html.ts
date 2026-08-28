@@ -103,7 +103,12 @@ export async function html(node: ElementNode, state: State, parent?: ElementNode
       const prevContent = childrenContent[i - 1]
       // `…</summary>` + `Nested content` → blank line so the body re-parses as
       // a separate markdown block. Keep HTML→HTML tight (`</summary><details>`).
-      if (prevContent.endsWith('>') && childContent && !childContent.startsWith('<') && !childContent.startsWith('\n')) {
+      if (
+        prevContent.endsWith('>') &&
+        childContent &&
+        !childContent.startsWith('<') &&
+        !childContent.startsWith('\n')
+      ) {
         content += state.context.blockSeparator
       }
     }

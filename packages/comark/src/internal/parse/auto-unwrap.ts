@@ -19,11 +19,7 @@ import type { Node } from 'comark'
  * { tag: 'alert', children: [{ type: 'text', value: 'Text' }] }
  */
 function isMarkdownParagraph(child: Node): child is [string, Record<string, unknown>, ...Node[]] {
-  return (
-    Array.isArray(child) &&
-    child[0] === 'p' &&
-    !(child[1] as Record<string, unknown> | undefined)?.$
-  )
+  return Array.isArray(child) && child[0] === 'p' && !(child[1] as Record<string, unknown> | undefined)?.$
 }
 
 export function applyAutoUnwrap(node: Node): Node {
@@ -68,10 +64,7 @@ export function applyAutoUnwrap(node: Node): Node {
     const otherChildren = nonEmptyChildren.filter((c) => !isMarkdownParagraph(c))
     const othersAreHtml = otherChildren.every(
       (c) =>
-        Array.isArray(c) &&
-        typeof c[1] === 'object' &&
-        c[1] !== null &&
-        (c[1] as Record<string, any>).$?.html === 1
+        Array.isArray(c) && typeof c[1] === 'object' && c[1] !== null && (c[1] as Record<string, any>).$?.html === 1
     )
     if (markdownParagraphs.length === 1 && othersAreHtml) {
       const out: Node[] = []
