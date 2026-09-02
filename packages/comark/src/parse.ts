@@ -138,7 +138,9 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
         state.reusableNodes = reusedNodes
       }
 
-      if (autoClose) {
+      if (typeof autoClose === 'function') {
+        state.markdown = withSpan(tracer, 'comark:autoclose', () => autoClose(state.markdown))
+      } else if (autoClose) {
         state.markdown = withSpan(tracer, 'comark:autoclose', () =>
           autoCloseMarkdown(state.markdown, {
             frontmatter: hasPlugin('frontmatter') && opts.streaming,

@@ -258,6 +258,40 @@ describe('streaming mode', () => {
       const result = await parse('# Hello\n\nWorld.\n', { streaming: true })
       expect(result.nodes).toHaveLength(2)
     })
+
+    it('accepts a custom autoClose function', async () => {
+      const inputs: string[] = []
+      const parse = createMarkdownParser({
+        autoClose: (markdown) => {
+          inputs.push(markdown)
+          return markdown.replace('**bold', '**bold**')
+        },
+      })
+
+      const result = await parse('Some **bold', { streaming: true })
+
+      expect(inputs).toEqual(['Some **bold'])
+      const paragraph = result.nodes[0] as ElementNode
+      expect(paragraph.slice(2).some((child) => Array.isArray(child) && child[0] === 'strong')).toBe(true)
+    })
+
+    it('passes only the unstable tail to a custom autoClose function on subsequent parses', async () => {
+      const inputs: string[] = []
+      const parse = createMarkdownParser({
+        autoClose: (markdown) => {
+          inputs.push(markdown)
+          return markdown
+        },
+      })
+
+      await parse('# Title\n\nStable paragraph.\n\nPart', { streaming: true })
+      inputs.length = 0
+      await parse('# Title\n\nStable paragraph.\n\nPartial tail', { streaming: true })
+
+      expect(inputs).toHaveLength(1)
+      expect(inputs[0]).not.toContain('Stable paragraph')
+      expect(inputs[0].trim()).toBe('Partial tail')
+    })
   })
 
   describe('streaming with autoUnwrap interaction', () => {
