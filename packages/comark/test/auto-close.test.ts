@@ -20,9 +20,9 @@ Some text with **bold → Some text with **bold**
 \`code text → \`code text\`
 ~~strikethrough text → ~~strikethrough text~~
 **bold** and *italic* and \`code\` → **bold** and *italic* and \`code\`
-[text](url → [text](url)
+[text](url → [text](comark:incomplete-link)
 $$formula → $$formula$$
-~Hello → ~Hello~
+~Hello → ~Hello
 ~~Hello → ~~Hello~~
 ~Hello~ → ~Hello~
 ~~Hello~~ → ~~Hello~~
@@ -89,7 +89,7 @@ const multilines = `
 | Month    | Savings |
 | --- | ----- |
 | January  | 250    |
-| February | 80     |
+| February | 80
 ###
 | Prop       | Default       |
 | -: | --- |
@@ -125,12 +125,10 @@ describe('auto close multilines', () => {
 })
 
 describe('autoCloseMarkdown - Inline Syntax', () => {
-  it('should not close syntax in the middle of content', () => {
+  it('should close incomplete emphasis across lines (full-document heal)', () => {
     const input = 'First line **bold\nSecond line'
-    // Should only close at the end of the content
-    const result = autoCloseMarkdown(input)
-    // The bold from first line won't be closed since it's not at the end
-    expect(result).toBe(input)
+    const expected = 'First line **bold\nSecond line**'
+    expect(autoCloseMarkdown(input)).toBe(expected)
   })
 
   it('should handle bold at the end of last line', () => {
@@ -258,8 +256,9 @@ describe('autoCloseMarkdown - Comark Components', () => {
   })
 
   it('should ignore trailing space in code', () => {
+    // single trailing space is dropped before closing
     const input = '`code '
-    const expected = '`code `'
+    const expected = '`code`'
     expect(autoCloseMarkdown(input)).toBe(expected)
   })
 
@@ -427,10 +426,15 @@ Everything you need for modern content parsing
 })
 
 describe('math syntax', () => {
-  it('should auto-close unclosed inline math', () => {
+  it('should auto-close unclosed inline math by default', () => {
     const input = 'The formula is $x = 5'
     const expected = 'The formula is $x = 5$'
     expect(autoCloseMarkdown(input)).toBe(expected)
+  })
+
+  it('should leave unclosed inline math alone with math: false', () => {
+    const input = 'The formula is $x = 5'
+    expect(autoCloseMarkdown(input, { math: false })).toBe(input)
   })
 
   it('should not modify properly closed inline math', () => {
@@ -592,11 +596,9 @@ describe('link', () => {
     expect(autoCloseMarkdown(input)).toBe(expected)
   })
 
-  it('should close inline code inside unclosed link text', () => {
-    // Backtick must close before the bracket, else `]` lands inside the
-    // unclosed code span and renders as literal "`foo]" not a code link.
+  it('should heal incomplete links with a placeholder URL', () => {
     const input = '[`foo'
-    const expected = '[`foo`]'
+    const expected = '[`foo](comark:incomplete-link)'
     expect(autoCloseMarkdown(input)).toBe(expected)
   })
 })
@@ -632,11 +634,9 @@ describe('attributes scope', () => {
   })
 
   it('should not treat multi-line braces as attributes', () => {
-    // Only the last line is processed for inline markers,
-    // so $client on a middle line is left untouched
     const input = '{\n$client'
-    const expected = '{\n$client$'
-    expect(autoCloseMarkdown(input)).toBe(expected)
+    expect(autoCloseMarkdown(input)).toBe('{\n$client$')
+    expect(autoCloseMarkdown(input, { math: false })).toBe(input)
   })
   it('should work fine in link', () => {
     const input = '[$link](https://example.com)'
@@ -669,9 +669,9 @@ describe('inline code spans as literal regions', () => {
     expect(autoCloseMarkdown(input)).toBe(expected)
   })
 
-  it('should close only the code span when bold wraps an open code span', () => {
+  it('should nest closers when bold wraps an open code span', () => {
     const input = '**bold `code'
-    const expected = '**bold `code`'
+    const expected = '**bold `code**`'
     expect(autoCloseMarkdown(input)).toBe(expected)
   })
 
@@ -727,13 +727,12 @@ describe('escaped markers', () => {
   })
 })
 
-describe('nested emphasis (known limitations)', () => {
-  // Mixed-marker nesting needs CommonMark flanking resolution, out of scope here
-  it.todo('should close nested bold + underscore-italic (**_text -> **_text_**)', () => {
+describe('nested emphasis', () => {
+  it('should close nested bold + underscore-italic', () => {
     expect(autoCloseMarkdown('**_text')).toBe('**_text_**')
   })
 
-  it.todo('should close nested italic + bold (*a **b -> *a **b***)', () => {
+  it('should close nested italic + bold', () => {
     expect(autoCloseMarkdown('*a **b')).toBe('*a **b***')
   })
 })
