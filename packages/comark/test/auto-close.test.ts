@@ -125,10 +125,9 @@ describe('auto close multilines', () => {
 })
 
 describe('autoCloseMarkdown - Inline Syntax', () => {
-  it('should close incomplete emphasis across lines (full-document heal)', () => {
+  it('does not close incomplete emphasis on earlier lines (inline heal is last-line only)', () => {
     const input = 'First line **bold\nSecond line'
-    const expected = 'First line **bold\nSecond line**'
-    expect(autoCloseMarkdown(input)).toBe(expected)
+    expect(autoCloseMarkdown(input)).toBe(input)
   })
 
   it('should handle bold at the end of last line', () => {

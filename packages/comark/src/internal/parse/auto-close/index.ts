@@ -1,8 +1,10 @@
 /**
  * Auto-closes unclosed markdown and Comark component syntax.
  *
- * O(n) character scanning only — one structural line pass + one full-document
- * heal pass. Behavioral contract: `packages/comark/SPEC/auto-close.md`.
+ * O(n) character scanning. Two layers:
+ *   - Block: full-document scan (fences, components, frontmatter, tables, `$$`)
+ *   - Inline: last content line only (emphasis, links, math, HTML, tildes)
+ * Behavioral contract: `packages/comark/SPEC/auto-close.md`.
  */
 
 import { closeTables } from './table.ts'
@@ -46,7 +48,7 @@ export function autoCloseMarkdown(markdown: string, options: AutoCloseOptions = 
 
   if (options.dropTrailingOpeners === true) markdown = dropTrailingOpeners(markdown)
 
-  // --- Structural pass (components / frontmatter / fences / tables) O(lines) ---
+  // --- Block pass: full document (fences, components, frontmatter, tables, block math) ---
   const lines = markdown.split('\n')
   const n = lines.length
 
@@ -55,6 +57,7 @@ export function autoCloseMarkdown(markdown: string, options: AutoCloseOptions = 
   let tableStart = -1
   let inRawTextElement: 'style' | 'script' | 'pre' | 'textarea' | null = null
   let fenceOpen = false
+  let inBlockMath = false
 
   const componentStack: Array<{ depth: number; name: string; indent: string; hasYamlProps: boolean }> = []
   const RAW_TEXT_OPEN_RE = /^<(script|pre|style|textarea)(\s|>|$)/i
@@ -86,6 +89,12 @@ export function autoCloseMarkdown(markdown: string, options: AutoCloseOptions = 
       continue
     }
     if (fenceOpen) continue
+
+    // Standalone $$ toggles a block-math region (closed after the pass)
+    if (trimmed === '$$') {
+      inBlockMath = !inBlockMath
+      continue
+    }
 
     if (idx === 0 && options.frontmatter && trimmed === '---') {
       inFrontmatter = true
@@ -135,20 +144,35 @@ export function autoCloseMarkdown(markdown: string, options: AutoCloseOptions = 
     }
   }
 
-  let result = lines.join('\n')
-
-  // --- Full-document heal O(n) ---
-  if (!fenceOpen && !inFrontmatter) {
-    result = healDocument(result, {
-      attributesEnabled,
-      linkMode,
-      linkPh,
-      imagePh,
-      math,
-    })
+  // --- Inline heal: last content line only. Earlier lines are assumed complete. ---
+  if (!fenceOpen && !inFrontmatter && !inBlockMath) {
+    let healIdx = n - 1
+    while (healIdx > 0 && lines[healIdx] === '') healIdx--
+    const healLine = healIdx >= 0 ? lines[healIdx] : ''
+    const trimmedHeal = healLine.trim()
+    // Skip standalone block delimiters (`$$`). An incomplete inline fence like
+    // ```python print("Hello")`` still needs last-line heal.
+    const incompleteInlineFence =
+      trimmedHeal.startsWith('```') && trimmedHeal.endsWith('``') && !trimmedHeal.endsWith('```')
+    if (healLine !== '' && trimmedHeal !== '$$' && (!isFenceLine(healLine) || incompleteInlineFence)) {
+      lines[healIdx] = healInline(healLine, {
+        attributesEnabled,
+        linkMode,
+        linkPh,
+        imagePh,
+        math,
+      })
+    }
   }
 
+  let result = lines.join('\n')
+  result = applySetextGuard(result)
+
   if (tableStart !== -1) result = closeTables(result)
+
+  if (inBlockMath) {
+    result += result.endsWith('\n') ? '$$' : '\n$$'
+  }
 
   if (inFrontmatter && frontmatterHasContent) {
     const last = result.includes('\n') ? result.slice(result.lastIndexOf('\n') + 1) : result
@@ -270,7 +294,8 @@ interface HealOpts {
 
 type Marker = '***' | '**' | '*' | '__' | '_' | '~~' | '`' | '$$' | '$'
 
-function healDocument(text: string, opts: HealOpts): string {
+/** Inline heal for a single line. Previous lines are assumed already legitimate. */
+function healInline(text: string, opts: HealOpts): string {
   // 1) Trailing single space
   if (text.endsWith(' ') && !text.endsWith('  ')) {
     const nl = text.lastIndexOf('\n')
@@ -713,7 +738,7 @@ function healDocument(text: string, opts: HealOpts): string {
       opts.linkMode === 'protocol' &&
       (linked.endsWith(`](${opts.linkPh})`) || linked.endsWith(`](${opts.imagePh})`))
     ) {
-      return applySetextGuard(linked)
+      return linked
     }
     result = linked
     // text-only: continue to close other markers on the result? rarely needed
@@ -723,11 +748,11 @@ function healDocument(text: string, opts: HealOpts): string {
 
   // Close open markers (stack) — skip empty / HR / bare
   if (stack.length === 0) {
-    return applySetextGuard(result)
+    return result
   }
 
   // Bare / HR: don't close
-  if (isBareOrHr(result)) return applySetextGuard(result)
+  if (isBareOrHr(result)) return result
 
   // Still inside open inline code at EOF — close nested openers inside, then `
   // SPEC: `**bold with `code` → `**bold with `code**``
@@ -753,9 +778,9 @@ function healDocument(text: string, opts: HealOpts): string {
         const m = stack[si]
         if (m === '**' || m === '*' || m === '__' || m === '_' || m === '~~' || m === '***') inner += m
       }
-      return applySetextGuard(result + inner + '`')
+      return result + inner + '`'
     }
-    return applySetextGuard(result)
+    return result
   }
 
   // Build suffix inside-out with half-close handling
@@ -765,7 +790,7 @@ function healDocument(text: string, opts: HealOpts): string {
     tripleCount,
   })
 
-  return applySetextGuard(result)
+  return result
 }
 
 function stripIncompleteHtmlEnd(text: string): string {
