@@ -89,7 +89,7 @@ const multilines = `
 | Month    | Savings |
 | --- | ----- |
 | January  | 250    |
-| February | 80
+| February | 80     |
 ###
 | Prop       | Default       |
 | -: | --- |

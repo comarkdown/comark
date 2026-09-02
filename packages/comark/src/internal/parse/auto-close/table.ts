@@ -144,8 +144,34 @@ export function closeTables(markdown: string): string {
 
     lines[end] = '| ' + completedCells.join(' | ') + ' |'
   } else if (lastLine.startsWith('|') && !lastLine.endsWith('|')) {
-    // Leave streaming data rows without a trailing pipe alone so inline heal
-    // can finish cell content (SPEC: `| **dat` → `| **dat**`).
+    // Complete data row — pad cells to reference widths and add a trailing pipe.
+    // Skip the trailing `|` when the last cell still looks like incomplete inline
+    // syntax (SPEC: `| **dat` → `| **dat**`, not `| **dat** |`).
+    let refRow = lines[start].trim()
+    for (let i = start + (hasSeparator ? 2 : 1); i < end; i++) {
+      const row = lines[i].trim()
+      if (row.startsWith('|') && row.endsWith('|') && !row.includes('-')) {
+        refRow = row
+        break
+      }
+    }
+
+    const refWidths = parseCellWidths(refRow)
+    const cells = parseCells(lastLine)
+    const lastCell = cells[cells.length - 1] ?? ''
+    const lastCellIncomplete = /(?:\*\*?|_\_?|~~|`|\$)$/.test(lastCell) || /(?:\*\*|_\_|~~|`)[^\s*_~`]+$/.test(lastCell)
+
+    const padded =
+      '| ' +
+      cells
+        .map((cell, i) => {
+          const targetWidth = refWidths[i] || cell.length + 2
+          const padding = ' '.repeat(Math.max(0, targetWidth - cell.length - 2))
+          return cell + padding
+        })
+        .join(' | ')
+
+    lines[end] = lastCellIncomplete ? padded : padded + ' |'
   }
 
   // Add separator if missing
