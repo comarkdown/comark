@@ -791,3 +791,36 @@ describe('autoCloseMarkdown - syntax option', () => {
     expect(autoCloseMarkdown('---\ntitle: Hello', { frontmatter: true, syntax: false })).toBe('---\ntitle: Hello\n---')
   })
 })
+
+describe('autoCloseMarkdown - dropTrailingOpeners', () => {
+  it('drops a trailing space-flanked opener', () => {
+    expect(autoCloseMarkdown('hello *', { dropTrailingOpeners: true })).toBe('hello')
+    expect(autoCloseMarkdown('hello **', { dropTrailingOpeners: true })).toBe('hello')
+    expect(autoCloseMarkdown('hello _', { dropTrailingOpeners: true })).toBe('hello')
+    expect(autoCloseMarkdown('hello __', { dropTrailingOpeners: true })).toBe('hello')
+    expect(autoCloseMarkdown('hello $', { dropTrailingOpeners: true })).toBe('hello')
+    expect(autoCloseMarkdown('hello $$', { dropTrailingOpeners: true })).toBe('hello')
+    expect(autoCloseMarkdown('hello :', { dropTrailingOpeners: true })).toBe('hello')
+    expect(autoCloseMarkdown('hello [', { dropTrailingOpeners: true })).toBe('hello')
+    expect(autoCloseMarkdown('hello [[', { dropTrailingOpeners: true })).toBe('hello')
+    expect(autoCloseMarkdown('hello {', { dropTrailingOpeners: true })).toBe('hello')
+    expect(autoCloseMarkdown('hello !', { dropTrailingOpeners: true })).toBe('hello')
+  })
+
+  it('drops only the last space-flanked opener (earlier * is already followed by space)', () => {
+    expect(autoCloseMarkdown('hello * *', { dropTrailingOpeners: true })).toBe('hello *')
+  })
+
+  it('still auto-closes attached incomplete markers', () => {
+    expect(autoCloseMarkdown('hello **bold', { dropTrailingOpeners: true })).toBe('hello **bold**')
+    expect(autoCloseMarkdown('hello *italic', { dropTrailingOpeners: true })).toBe('hello *italic*')
+  })
+
+  it('does not drop escaped trailing openers', () => {
+    expect(autoCloseMarkdown('hello \\*', { dropTrailingOpeners: true })).toBe('hello \\*')
+  })
+
+  it('is off by default', () => {
+    expect(autoCloseMarkdown('hello *')).toBe('hello *')
+  })
+})

@@ -114,6 +114,10 @@ function optionsForSection(section: string): AutoCloseOptions {
     return { ...base, linkMode: 'text-only' }
   }
 
+  if (/Trailing openers/i.test(section)) {
+    return { ...base, dropTrailingOpeners: true }
+  }
+
   // Progressive streaming section mixes protocol and text-only link cases —
   // optionsForCase peeks at expected output to pick linkMode.
   return base

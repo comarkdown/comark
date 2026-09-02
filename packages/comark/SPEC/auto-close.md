@@ -12,6 +12,7 @@ options:
 - incompleteLinkPlaceholder: a placeholder for incomplete links (default: `comark:incomplete-link`)
 - incompleteImagePlaceholder: a placeholder for incomplete images (default: `comark:incomplete-image`)
 - math: auto-close inline `$…$` and block `$$…$$` (default: `true`)
+- dropTrailingOpeners: drop a trailing opener after whitespace at EOF (`hello *` → `hello`) so half-typed markers do not flash (default: `false`; enabled when parsing with `streaming: true`)
 
 
 ---
@@ -971,4 +972,79 @@ Same content as it grows, still heal at every step.
 ```diff
 - - [x] ~~done
 + - [x] ~~done~~
+```
+
+---
+
+## Trailing openers (`dropTrailingOpeners: true`)
+
+Drop a trailing opener (`* _ $ : [ { !`) after whitespace at EOF so a half-typed marker does not flash. Attached markers (`**bold`, `$x`) still auto-close. Enabled automatically when parsing with `streaming: true`.
+
+```diff
+- hello *
++ hello
+```
+
+```diff
+- hello **
++ hello
+```
+
+```diff
+- hello ***
++ hello
+```
+
+```diff
+- hello _
++ hello
+```
+
+```diff
+- hello __
++ hello
+```
+
+```diff
+- hello $
++ hello
+```
+
+```diff
+- hello $$
++ hello
+```
+
+```diff
+- hello :
++ hello
+```
+
+```diff
+- hello [
++ hello
+```
+
+```diff
+- hello [[
++ hello
+```
+
+```diff
+- hello {
++ hello
+```
+
+An earlier space-separated `*` cannot become syntax (it is already followed by space), so only the last opener is dropped:
+
+```diff
+- hello * *
++ hello *
+```
+
+Attached incomplete syntax is still closed:
+
+```diff
+- hello **bold
++ hello **bold**
 ```

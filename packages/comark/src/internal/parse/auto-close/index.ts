@@ -26,6 +26,12 @@ export interface AutoCloseOptions {
    * Default true.
    */
   math?: boolean
+  /**
+   * Drop a trailing opener (`* _ $ : [ { !`) after whitespace at EOF so a
+   * half-typed marker does not flash (`hello *` → `hello`). Default false.
+   * Enabled automatically when `parseMarkdown(..., { streaming: true })`.
+   */
+  dropTrailingOpeners?: boolean
 }
 
 export function autoCloseMarkdown(markdown: string, options: AutoCloseOptions = {}): string {
@@ -37,6 +43,8 @@ export function autoCloseMarkdown(markdown: string, options: AutoCloseOptions = 
   const linkPh = options.incompleteLinkPlaceholder ?? INCOMPLETE_LINK_PLACEHOLDER
   const imagePh = options.incompleteImagePlaceholder ?? INCOMPLETE_IMAGE_PLACEHOLDER
   const math = options.math !== false
+
+  if (options.dropTrailingOpeners === true) markdown = dropTrailingOpeners(markdown)
 
   // --- Structural pass (components / frontmatter / fences / tables) O(lines) ---
   const lines = markdown.split('\n')
@@ -209,6 +217,43 @@ function isWord(ch: string): boolean {
 
 function isSpace(ch: string): boolean {
   return ch === '' || ch === ' ' || ch === '\t' || ch === '\n'
+}
+
+/** Trailing chars dropped when `dropTrailingOpeners` is on so incomplete openers do not flash. */
+const TRAILING_OPENERS = '*_$:[{!'
+
+/**
+ * Drop a trailing opener run (`* _ $ : [ { !`) at EOF when it is preceded by
+ * whitespace (`hello *` → `hello`). Attached markers (`**bold`, `$x`) stay so
+ * the later heal can still close them.
+ */
+function dropTrailingOpeners(text: string): string {
+  let ws = text.length
+  while (ws > 0) {
+    const c = text[ws - 1]
+    if (c === ' ' || c === '\t' || c === '\n' || c === '\r') ws--
+    else break
+  }
+  if (ws === 0) return text
+
+  // Drop only the last opener run (`*`, `**`, `$`, …). An earlier space-separated
+  // `*` in `hello * *` is already followed by space, so it cannot become syntax.
+  let i = ws
+  while (i > 0 && TRAILING_OPENERS.includes(text[i - 1])) {
+    if (i >= 2 && text[i - 2] === '\\') break
+    i--
+  }
+  if (i === ws) return text
+
+  // Only drop when that run is space-flanked (preceded by whitespace or BOS)
+  const before = i > 0 ? text[i - 1] : ''
+  if (before !== '' && before !== ' ' && before !== '\t' && before !== '\n' && before !== '\r') {
+    return text
+  }
+
+  let keep = i
+  if (keep > 0 && (text[keep - 1] === ' ' || text[keep - 1] === '\t')) keep--
+  return text.slice(0, keep) + text.slice(ws)
 }
 
 // ---------------------------------------------------------------------------

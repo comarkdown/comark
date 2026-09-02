@@ -144,6 +144,7 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
             frontmatter: hasPlugin('frontmatter') && opts.streaming,
             syntax: hasPlugin('components'),
             attributes: hasPlugin('components') || hasPlugin('attributes'),
+            dropTrailingOpeners: opts.streaming === true,
           })
         )
       }

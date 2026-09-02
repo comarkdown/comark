@@ -545,9 +545,13 @@ autoCloseMarkdown('$x = 5') // '$x = 5$'
 
 // Plain markdown without Comark component fences
 autoCloseMarkdown('**bold', { syntax: false })
+
+// Streaming: drop a half-typed opener after whitespace so it does not flash
+autoCloseMarkdown('hello *', { dropTrailingOpeners: true }) // 'hello'
 ```
 
-Key options: `linkMode: 'protocol' | 'text-only'`, `math` (default true), `incompleteLinkPlaceholder`,
+Key options: `linkMode: 'protocol' | 'text-only'`, `math` (default true), `dropTrailingOpeners`
+(default false; on when parsing with `streaming: true`), `incompleteLinkPlaceholder`,
 `incompleteImagePlaceholder`, `frontmatter`, `syntax`, `attributes`. Behavioral SPEC:
 `packages/comark/SPEC/auto-close.md` (run via `test/auto-close-spec.test.ts`).
 
