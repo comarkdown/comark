@@ -133,7 +133,18 @@ export function autoCloseMarkdown(markdown: string, options: AutoCloseOptions = 
           let ne = colonCount
           while (ne < trimmed.length) {
             const c = trimmed[ne]
-            if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c === '$' || c === '.' || c === '-' || c === '_')) break
+            if (
+              !(
+                (c >= 'a' && c <= 'z') ||
+                (c >= 'A' && c <= 'Z') ||
+                (c >= '0' && c <= '9') ||
+                c === '$' ||
+                c === '.' ||
+                c === '-' ||
+                c === '_'
+              )
+            )
+              break
             ne++
           }
           componentStack.push({ depth: colonCount, name: trimmed.slice(colonCount, ne), indent, hasYamlProps: false })
@@ -204,7 +215,10 @@ export function autoCloseMarkdown(markdown: string, options: AutoCloseOptions = 
     }
     if (componentStack.length > 0) {
       const top = componentStack[componentStack.length - 1]
-      const nt = result.slice(result.lastIndexOf('\n') + 1).trim().replace(/\u200B/g, '')
+      const nt = result
+        .slice(result.lastIndexOf('\n') + 1)
+        .trim()
+        .replace(/\u200B/g, '')
       if (top.hasYamlProps && (nt === '-' || nt === '--')) {
         result = result.replace(/\u200B+$/, '') + '-'.repeat(3 - nt.length)
         top.hasYamlProps = false
@@ -319,22 +333,14 @@ function healInline(text: string, opts: HealOpts): string {
 
   // Incomplete link state
   let bracketDepth = 0
-  let lastOpenBracket = -1 // index in `out`
-  let lastOpenIsImage = false
   let linkUrlOpen = false // saw ](
-  let linkUrlStartOut = -1
 
   let lastLtOut = -1
 
   // Asterisk/underscore pair tracking for "balanced overlapping" check
   let asteriskTotal = 0
   let doubleAsteriskCount = 0
-  let doubleUnderscoreCount = 0
   let tripleCount = 0
-
-  const pushOut = (s: string) => {
-    for (let k = 0; k < s.length; k++) out.push(s[k])
-  }
 
   /** Open only when the run is not followed by space; close only when not preceded by space. */
   const toggleFlanking = (m: Marker, prevCh: string, afterCh: string) => {
@@ -517,8 +523,6 @@ function healInline(text: string, opts: HealOpts): string {
     // Links / brackets — track but copy through; rewrite at end
     if (ch === '[') {
       bracketDepth++
-      lastOpenBracket = out.length
-      lastOpenIsImage = prev === '!'
       out.push(ch)
       continue
     }
@@ -527,7 +531,6 @@ function healInline(text: string, opts: HealOpts): string {
       out.push(ch)
       if (next === '(') {
         linkUrlOpen = true
-        linkUrlStartOut = out.length // points after ]
       }
       continue
     }
@@ -691,7 +694,6 @@ function healInline(text: string, opts: HealOpts): string {
         else if (run >= 2) {
           const pairs = Math.floor(run / 2)
           for (let p = 0; p < pairs; p++) {
-            doubleUnderscoreCount++
             toggleFlanking('__', prev, after)
           }
           if (run % 2 === 1) toggleFlanking('_', prev, after)
@@ -813,7 +815,19 @@ function isBareOrHr(text: string): boolean {
   const nl = text.lastIndexOf('\n')
   const last = (nl === -1 ? text : text.slice(nl + 1)).trim()
   if (!last) return false
-  if (last === '*' || last === '**' || last === '***' || last === '****' || last === '_' || last === '__' || last === '___' || last === '~' || last === '~~' || last === '`') return true
+  if (
+    last === '*' ||
+    last === '**' ||
+    last === '***' ||
+    last === '****' ||
+    last === '_' ||
+    last === '__' ||
+    last === '___' ||
+    last === '~' ||
+    last === '~~' ||
+    last === '`'
+  )
+    return true
   if (/^\*{3,}$/.test(last) || /^_{3,}$/.test(last) || /^-{3,}$/.test(last)) return true
   return false
 }
@@ -837,9 +851,7 @@ function closeOpenStack(
   // Balanced overlapping: Combined **bold and *italic*** text
   // ** opens, * opens, *** closes both → stack may still show *** from the run
   const balancedOverlap =
-    counts.doubleAsteriskCount >= 2 &&
-    counts.doubleAsteriskCount % 2 === 0 &&
-    counts.asteriskTotal % 2 === 0
+    counts.doubleAsteriskCount >= 2 && counts.doubleAsteriskCount % 2 === 0 && counts.asteriskTotal % 2 === 0
 
   let workStack = stack.slice()
   if (balancedOverlap) {
@@ -880,8 +892,7 @@ function closeOpenStack(
 
   // Collapse same-family asterisk closers: if both *** / ** / * appear, keep only innermost needed.
   // Prefer: if top (first in closable which is reverse stack) is * and ** is also closable, only *.
-  const hasStarFamily =
-    closable.includes('*') || closable.includes('**') || closable.includes('***')
+  const hasStarFamily = closable.includes('*') || closable.includes('**') || closable.includes('***')
   if (hasStarFamily) {
     // Innermost open asterisk marker is first in closable (stack was reversed)
     let firstStar: Marker | null = null

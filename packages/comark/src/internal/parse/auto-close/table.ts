@@ -159,7 +159,7 @@ export function closeTables(markdown: string): string {
     const refWidths = parseCellWidths(refRow)
     const cells = parseCells(lastLine)
     const lastCell = cells[cells.length - 1] ?? ''
-    const lastCellIncomplete = /(?:\*\*?|_\_?|~~|`|\$)$/.test(lastCell) || /(?:\*\*|_\_|~~|`)[^\s*_~`]+$/.test(lastCell)
+    const lastCellIncomplete = /(?:\*\*?|__?|~~|`|\$)$/.test(lastCell) || /(?:\*\*|__|~~|`)[^\s*_~`]+$/.test(lastCell)
 
     const padded =
       '| ' +

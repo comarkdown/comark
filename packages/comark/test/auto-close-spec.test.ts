@@ -163,9 +163,7 @@ describe('comark — autoCloseMarkdown vs SPEC/auto-close.md', () => {
   for (const [section, sectionCases] of bySection) {
     describe(section, () => {
       for (const c of sectionCases) {
-        const label = `${JSON.stringify(c.input)} → ${JSON.stringify(c.expected)}${
-          c.note ? ` (${c.note})` : ''
-        }`
+        const label = `${JSON.stringify(c.input)} → ${JSON.stringify(c.expected)}${c.note ? ` (${c.note})` : ''}`
 
         if (c.skip) {
           it.skip(label, () => undefined)
