@@ -527,12 +527,35 @@ result.frontmatter // Record<string, any>
 result.meta        // Record<string, any>
 ```
 
-### autoCloseMarkdown(markdown)
+### autoCloseMarkdown(markdown, options?)
+
+Self-healing markdown for streaming. Heals incomplete CommonMark/GFM per
+`packages/comark/SPEC/auto-close.md`, then completes Comark components / tables / frontmatter.
 
 ```typescript
 autoCloseMarkdown('**bold text')     // '**bold text**'
 autoCloseMarkdown('::alert\nContent') // '::alert\nContent\n::'
+
+// Incomplete links get a safe placeholder URL (default protocol mode)
+autoCloseMarkdown('[partial')
+// '[partial](comark:incomplete-link)'
+
+// Math (inline `$` and block `$$`) is off by default on bare autoCloseMarkdown
+autoCloseMarkdown('$x = 5') // '$x = 5'
+autoCloseMarkdown('$x = 5', { math: true }) // '$x = 5$'
+// parseMarkdown / createMarkdownParser pass math: true when math plugin provided
+
+// Plain markdown without Comark component fences
+autoCloseMarkdown('**bold', { syntax: false })
+
+// Streaming: drop a half-typed opener after whitespace so it does not flash
+autoCloseMarkdown('hello *', { dropTrailingOpeners: true }) // 'hello'
 ```
+
+Key options: `linkMode: 'protocol' | 'text-only'`, `math` (default false; on in parse),
+`dropTrailingOpeners` (default false; on when parsing with `streaming: true`),
+`incompleteLinkPlaceholder`, `incompleteImagePlaceholder`, `frontmatter`, `syntax`, `attributes`.
+Behavioral SPEC: `packages/comark/SPEC/auto-close.md` (run via `test/auto-close-spec.test.ts`).
 
 ## Markdown Document Model
 
