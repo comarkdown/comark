@@ -388,7 +388,9 @@ export async function highlightCodeBlocks(
     for (const child of codeChildren) {
       if (Array.isArray(child)) {
         if (highlightSet !== null && highlightSet.has(line)) {
-          child[1].class = `${child[1].class ?? ''} highlight`.trim()
+          const classes = Array.isArray(child[1].class) ? child[1].class.join(' ') : (child[1].class ?? '')
+
+          child[1].class = `${classes} highlight`.trim()
           // TODO: (enforcing default style) once we unify all ecosystem styles we can remove this
           child[1].style = 'display: inline-block'
         } else {
