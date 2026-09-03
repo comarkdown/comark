@@ -11,7 +11,7 @@ Self-healing markdown for streaming. Completes incomplete syntax so partial AI o
 options:
 - incompleteLinkPlaceholder: a placeholder for incomplete links (default: `comark:incomplete-link`)
 - incompleteImagePlaceholder: a placeholder for incomplete images (default: `comark:incomplete-image`)
-- math: auto-close inline `$…$` and block `$$…$$` (default: `true`)
+- math: auto-close inline `$…$` and block `$$…$$` (default: `false`)
 - dropTrailingOpeners: drop a trailing opener after whitespace at EOF (`hello *` → `hello`) so half-typed markers do not flash (default: `false`; enabled when parsing with `streaming: true`)
 
 
@@ -378,7 +378,7 @@ Leaves finished images alone:
 
 ## Block math (KaTeX)
 
-Closes unclosed `$$…$$`.
+Closes unclosed `$$…$$` when `math: true`.
 
 ```diff
 - Text with $$formula
@@ -411,7 +411,7 @@ Multiline:
 
 ## Inline math
 
-Closes unclosed `$…$` when `math` is enabled (default).
+Closes unclosed `$…$` when `math: true` (default off for bare `autoCloseMarkdown`; on via `parseMarkdown`).
 
 ```diff
 - Text with $formula
@@ -428,7 +428,7 @@ Closes unclosed `$…$` when `math` is enabled (default).
 + $$block$$ and $inline$
 ```
 
-With `math: false`, leaves both inline and block math alone:
+Default (`math` unset / `false`) leaves math alone:
 
 ```diff
 - Text with $formula

@@ -21,7 +21,7 @@ Some text with **bold → Some text with **bold**
 ~~strikethrough text → ~~strikethrough text~~
 **bold** and *italic* and \`code\` → **bold** and *italic* and \`code\`
 [text](url → [text](comark:incomplete-link)
-$$formula → $$formula$$
+$$formula → $$formula
 ~Hello → ~Hello
 ~~Hello → ~~Hello~~
 ~Hello~ → ~Hello~
@@ -425,84 +425,91 @@ Everything you need for modern content parsing
 })
 
 describe('math syntax', () => {
-  it('should auto-close unclosed inline math by default', () => {
+  const withMath = { math: true as const }
+
+  it('should leave unclosed inline math alone by default', () => {
     const input = 'The formula is $x = 5'
-    const expected = 'The formula is $x = 5$'
-    expect(autoCloseMarkdown(input)).toBe(expected)
+    expect(autoCloseMarkdown(input)).toBe(input)
   })
 
-  it('should leave unclosed inline math alone with math: false', () => {
+  it('should auto-close unclosed inline math with math: true', () => {
     const input = 'The formula is $x = 5'
-    expect(autoCloseMarkdown(input, { math: false })).toBe(input)
+    const expected = 'The formula is $x = 5$'
+    expect(autoCloseMarkdown(input, withMath)).toBe(expected)
   })
 
   it('should not modify properly closed inline math', () => {
     const input = 'The formula is $x = 5$ and done'
+    expect(autoCloseMarkdown(input, withMath)).toBe(input)
+  })
+
+  it('should leave unclosed block math alone by default', () => {
+    const input = '$$\nx = 5'
     expect(autoCloseMarkdown(input)).toBe(input)
   })
 
-  it('should auto-close block math', () => {
+  it('should auto-close block math with math: true', () => {
     const input = '$$\nx = 5'
     const expected = '$$\nx = 5\n$$'
-    expect(autoCloseMarkdown(input)).toBe(expected)
+    expect(autoCloseMarkdown(input, withMath)).toBe(expected)
   })
 
   it('should not modify properly closed block math', () => {
     const input = '$$\nx = 5\n$$'
-    expect(autoCloseMarkdown(input)).toBe(input)
+    expect(autoCloseMarkdown(input, withMath)).toBe(input)
   })
 
-  it('should handle multiple inline math expressions', () => {
+  it('should handle multiple inline math expressions with math: true', () => {
     const input = 'First $a = 1$ and second $b = 2'
     const expected = 'First $a = 1$ and second $b = 2$'
-    expect(autoCloseMarkdown(input)).toBe(expected)
+    expect(autoCloseMarkdown(input, withMath)).toBe(expected)
   })
 
-  it('should handle inline math at start of line', () => {
+  it('should handle inline math at start of line with math: true', () => {
     const input = '$E = mc^2'
     const expected = '$E = mc^2$'
-    expect(autoCloseMarkdown(input)).toBe(expected)
+    expect(autoCloseMarkdown(input, withMath)).toBe(expected)
   })
 
-  it('should handle block math with multiple lines', () => {
+  it('should handle block math with multiple lines with math: true', () => {
     const input = '$$\nf(x) = x^2\n+ 2x + 1'
     const expected = '$$\nf(x) = x^2\n+ 2x + 1\n$$'
-    expect(autoCloseMarkdown(input)).toBe(expected)
+    expect(autoCloseMarkdown(input, withMath)).toBe(expected)
   })
 
   it('should handle block math in middle of content', () => {
     const input = 'Some text\n$$\nx = 5\n$$\nMore text'
-    expect(autoCloseMarkdown(input)).toBe(input)
+    expect(autoCloseMarkdown(input, withMath)).toBe(input)
   })
 
-  it('should handle unclosed block math with text before', () => {
+  it('should handle unclosed block math with text before with math: true', () => {
     const input = 'Introduction\n$$\nx = 5'
     const expected = 'Introduction\n$$\nx = 5\n$$'
-    expect(autoCloseMarkdown(input)).toBe(expected)
+    expect(autoCloseMarkdown(input, withMath)).toBe(expected)
   })
 
-  it('should handle inline math with complex expressions', () => {
+  it('should handle inline math with complex expressions with math: true', () => {
     const input = 'The quadratic formula is $x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}'
     const expected = 'The quadratic formula is $x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}$'
-    expect(autoCloseMarkdown(input)).toBe(expected)
+    expect(autoCloseMarkdown(input, withMath)).toBe(expected)
   })
 
-  it('should handle block math with LaTeX', () => {
+  it('should handle block math with LaTeX with math: true', () => {
     const input = '$$\n\\int_{0}^{\\infty} e^{-x} dx'
     const expected = '$$\n\\int_{0}^{\\infty} e^{-x} dx\n$$'
-    expect(autoCloseMarkdown(input)).toBe(expected)
+    expect(autoCloseMarkdown(input, withMath)).toBe(expected)
   })
 
-  it('should handle inline math with Comark components', () => {
+  it('should handle inline math with Comark components with math: true', () => {
     const input = '::alert\nThe formula is $x = 5'
     const expected = '::alert\nThe formula is $x = 5$\n::'
-    expect(autoCloseMarkdown(input)).toBe(expected)
+    expect(autoCloseMarkdown(input, withMath)).toBe(expected)
   })
 
-  it('should handle block math with Comark components', () => {
+  it('should handle block math with Comark components with math: true', () => {
     const input = '::card\n$$\nx = 5'
     const expected = '::card\n$$\nx = 5\n$$\n::'
-    expect(autoCloseMarkdown(input)).toBe(expected)
+    expect(autoCloseMarkdown(input, withMath)).toBe(expected)
   })
 })
 
@@ -634,8 +641,9 @@ describe('attributes scope', () => {
 
   it('should not treat multi-line braces as attributes', () => {
     const input = '{\n$client'
-    expect(autoCloseMarkdown(input)).toBe('{\n$client$')
-    expect(autoCloseMarkdown(input, { math: false })).toBe(input)
+    // bare autoClose leaves `$` alone (math default false)
+    expect(autoCloseMarkdown(input)).toBe(input)
+    expect(autoCloseMarkdown(input, { math: true })).toBe('{\n$client$')
   })
   it('should work fine in link', () => {
     const input = '[$link](https://example.com)'
@@ -682,22 +690,24 @@ describe('inline code spans as literal regions', () => {
 })
 
 describe('inline math as literal regions', () => {
+  const withMath = { math: true as const }
+
   it('should not count asterisks inside closed inline math', () => {
     const input = '$a * b$ and *italic'
     const expected = '$a * b$ and *italic*'
-    expect(autoCloseMarkdown(input)).toBe(expected)
+    expect(autoCloseMarkdown(input, withMath)).toBe(expected)
   })
 
   it('should not count an underscore inside an open math region', () => {
     const input = 'value $x_0'
     const expected = 'value $x_0$'
-    expect(autoCloseMarkdown(input)).toBe(expected)
+    expect(autoCloseMarkdown(input, withMath)).toBe(expected)
   })
 
   it('should close inline math without leaking an asterisk', () => {
     const input = '$a * b'
     const expected = '$a * b$'
-    expect(autoCloseMarkdown(input)).toBe(expected)
+    expect(autoCloseMarkdown(input, withMath)).toBe(expected)
   })
 })
 

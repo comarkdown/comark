@@ -126,11 +126,10 @@ function optionsForSection(section: string): AutoCloseOptions {
 function optionsForCase(c: Case): AutoCloseOptions {
   const base = optionsForSection(c.section)
 
-  // Inline math section: when expected equals input with a trailing `$…`, treat as math: false
-  // (SPEC documents the off path after the default-on cases).
-  if (/Inline math/i.test(c.section)) {
-    if (c.expected === c.input && /\$/.test(c.input)) {
-      return { ...base, math: false }
+  // Math sections need math: true (including leave-alone cases so $$…$$ protects *_ inside)
+  if (/^(Block math|Inline math|Math protects)/i.test(c.section)) {
+    if (/Inline math/i.test(c.section) && c.expected === c.input && /\$/.test(c.input)) {
+      return base // default math: false leave-alone case
     }
     return { ...base, math: true }
   }

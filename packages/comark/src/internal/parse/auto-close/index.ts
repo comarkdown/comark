@@ -25,7 +25,7 @@ export interface AutoCloseOptions {
   incompleteImagePlaceholder?: string
   /**
    * Auto-close math: inline `$…$` and block `$$…$$`.
-   * Default true.
+   * Default false. Enabled automatically when use math plugin in `parseMarkdown`
    */
   math?: boolean
   /**
@@ -44,7 +44,7 @@ export function autoCloseMarkdown(markdown: string, options: AutoCloseOptions = 
   const linkMode: LinkMode = options.linkMode ?? 'protocol'
   const linkPh = options.incompleteLinkPlaceholder ?? INCOMPLETE_LINK_PLACEHOLDER
   const imagePh = options.incompleteImagePlaceholder ?? INCOMPLETE_IMAGE_PLACEHOLDER
-  const math = options.math !== false
+  const math = options.math === true
 
   if (options.dropTrailingOpeners === true) markdown = dropTrailingOpeners(markdown)
 
@@ -90,8 +90,8 @@ export function autoCloseMarkdown(markdown: string, options: AutoCloseOptions = 
     }
     if (fenceOpen) continue
 
-    // Standalone $$ toggles a block-math region (closed after the pass)
-    if (trimmed === '$$') {
+    // Standalone $$ toggles a block-math region (closed after the pass when math is on)
+    if (math && trimmed === '$$') {
       inBlockMath = !inBlockMath
       continue
     }
@@ -181,7 +181,7 @@ export function autoCloseMarkdown(markdown: string, options: AutoCloseOptions = 
 
   if (tableStart !== -1) result = closeTables(result)
 
-  if (inBlockMath) {
+  if (math && inBlockMath) {
     result += result.endsWith('\n') ? '$$' : '\n$$'
   }
 
