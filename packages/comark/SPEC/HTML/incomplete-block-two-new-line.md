@@ -18,7 +18,7 @@
   "nodes": [
     [
       "ai-thinking",
-      {"$": { "html": 1, "block": 0 }},
+      {"$": { "html": 1, "block": 1 }},
       [
         "p",
         {},
@@ -73,5 +73,6 @@
 
 - list
 - **item**
+
 </ai-thinking>
 ```

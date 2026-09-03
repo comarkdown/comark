@@ -48,5 +48,6 @@ options:
 <ai-thinking>
 
 **bold**
+
 </ai-thinking>
 ```

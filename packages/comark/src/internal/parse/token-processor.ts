@@ -133,8 +133,9 @@ function htmlOuterTagDepth(content: string, tag: string): number {
  *
  * Self-contained blocks are parsed once by htmlparser2 (text preserved
  * verbatim — CommonMark default). Incomplete openers absorb subsequent tokens
- * as children until a matching closer (`block: 1` with a closer, or `block: 0`
- * for streaming tags with no closer) so nested blank-line HTML like
+ * as children until a matching closer (`block: 1`). Streaming openers with no
+ * closer are `block: 1` when the body is multi-block markdown, otherwise
+ * `block: 0` (lone paragraph / inline-like). Nested blank-line HTML like
  * `<details>…<details>…</details></details>` builds a real tree.
  */
 function processHtmlBlockTokens(
@@ -203,12 +204,19 @@ function processHtmlBlockTokens(
   const prevMeta = (openerAttrs.$ || {}) as Record<string, unknown>
   const openerChildren = element.slice(2) as Node[]
 
-  // No matching closer → streaming incomplete tag (block: 0), absorb to EOF.
+  // No matching closer → streaming incomplete tag, absorb to EOF.
+  // Multi-block markdown bodies are real block containers (`block: 1`).
+  // A lone paragraph (often auto-unwrapped later) stays `block: 0` so it can
+  // serialize as a one-liner: `<tag>**bold**</tag>`.
   if (closeIndex < 0) {
     const children = processBlockChildren(tokens, startIndex + 1, '\0', false, false, false, state)
+    const nonEmpty = children.nodes.filter((child) => typeof child !== 'string' || (child && child.trim()))
+    const isMultiBlock =
+      nonEmpty.length > 1 ||
+      (nonEmpty.length === 1 && Array.isArray(nonEmpty[0]) && nonEmpty[0][0] !== null && nonEmpty[0][0] !== 'p')
     const attrs: Record<string, unknown> = {
       ...openerAttrs,
-      $: { ...prevMeta, html: 1, block: 0 },
+      $: { ...prevMeta, html: 1, block: isMultiBlock ? 1 : 0 },
     }
     return {
       nodes: [[element[0], attrs, ...openerChildren, ...children.nodes] as Node],
