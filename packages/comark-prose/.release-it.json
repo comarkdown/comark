@@ -1,0 +1,38 @@
+{
+  "git": {
+    "commitMessage": "chore(prose): release v${version}",
+    "tagName": "@comark/prose@${version}",
+    "tagAnnotation": "@comark/prose v${version}",
+    "requireCleanWorkingDir": true
+  },
+  "github": {
+    "release": true,
+    "releaseName": "@comark/prose v${version}"
+  },
+  "npm": {
+    "publish": true,
+    "publishPath": ".",
+    "publishPackageManager": "pnpm",
+    "publishArgs": ["--no-git-checks"]
+  },
+  "plugins": {
+    "@release-it/conventional-changelog": {
+      "ignoreRecommendedBump": true,
+      "preset": {
+        "name": "conventionalcommits",
+        "types": [
+          { "type": "feat", "section": "Features" },
+          { "type": "fix", "section": "Bug Fixes" },
+          { "type": "perf", "section": "Performance" }
+        ]
+      },
+      "infile": "CHANGELOG.md",
+      "gitRawCommitsOpts": {
+        "path": "."
+      }
+    }
+  },
+  "hooks": {
+    "before:release": ["pnpm run build"]
+  }
+}

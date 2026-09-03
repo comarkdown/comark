@@ -1,0 +1,9 @@
+/* Table scroll wrapper — wide tables overflow horizontally instead of breaking layout. */
+:where(.comark-content) :where(.prose-table) {
+  margin-block-start: var(--prose-flow);
+  overflow-x: auto;
+}
+
+:where(.comark-content) :where(.prose-table > table) {
+  margin-block-start: 0;
+}

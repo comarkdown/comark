@@ -28,6 +28,7 @@ This is a **monorepo** containing the Comark Markdown parser, document model, pl
 │   ├── comark-react/     # React renderer + plugins (@comark/react)
 │   ├── comark-svelte/    # Svelte renderer + plugins (@comark/svelte)
 │   ├── comark-angular/   # Angular renderer + plugins (@comark/angular)
+│   ├── comark-prose/     # Framework-agnostic prose components (@comark/prose)
 │   └── comark-nuxt/      # Nuxt module (@comark/nuxt)
 ├── examples/             # Example applications
 │   ├── 1.frameworks/     # Framework examples (Nuxt, Next.js, Astro, SvelteKit, ...)
@@ -321,6 +322,58 @@ Uses Vitest with two test projects:
 </svelte:boundary>
 ```
 
+## Package: @comark/prose
+
+Located at `packages/comark-prose/`. Framework-agnostic prose components: a plugin that lowers component tags (callouts, tabs, code groups, steps, accordions, GFM alerts) plus structural elements (heading anchors, table scroll wrappers, code copy buttons) into plain HTML at parse time, working with every renderer.
+
+```
+packages/comark-prose/
+├── src/
+│   ├── index.ts              # prose() plugin (elements + components lowering passes)
+│   ├── types.ts              # ProseOptions and related types
+│   ├── utils.ts              # attr/class helpers
+│   ├── lower/                # One module per lowering (callout, tabs, code-group, ...)
+│   ├── client/
+│   │   ├── index.ts          # register() + ProseTabsElement, ProseCopyElement
+│   │   ├── tabs.ts           # <prose-tabs> custom element (ARIA tabs, keyboard, sync)
+│   │   ├── copy.ts           # <prose-copy> custom element (clipboard)
+│   │   └── register.ts       # Side-effect entry
+│   └── styles/               # CSS sources (tokens + per-component partials)
+├── scripts/build-css.mjs     # lightningcss bundling/minification into dist/
+├── test/                     # prose.test.ts (lowering) + client.test.ts (happy-dom)
+└── package.json
+```
+
+### Exports
+
+```json
+{
+  ".": "./dist/index.js",
+  "./client": "./dist/client/index.js",
+  "./client/register": "./dist/client/register.js",
+  "./components.css": "./dist/components.css",
+  "./typography.css": "./dist/typography.css",
+  "./styles/*.css": "./dist/styles/*.css"
+}
+```
+
+### Usage
+
+```typescript
+import { parseMarkdown } from 'comark'
+import prose from '@comark/prose'
+
+const tree = await parseMarkdown(content, { plugins: [prose()] })
+```
+
+```typescript
+// Client side (any framework, or none):
+import '@comark/prose/components.css'
+import '@comark/prose/client/register'
+```
+
+Interactivity is optional: without the client runtime, tabs render stacked, copy buttons stay hidden, and callouts/steps/accordions work with pure HTML + CSS.
+
 ## Package: @comark/angular
 
 Located at `packages/comark-angular/`. Angular 17+ renderer with standalone components.
@@ -417,6 +470,14 @@ import html from 'comark/plugins/html'               // default via registerDefa
 // markdown-it / markdown-exit adapters (e.g. VitePress)
 import { markdownItComponents } from 'comark/plugins/components'
 import { markdownItAttributes } from 'comark/plugins/attributes'
+
+// Prose — lower docs components to plain HTML (framework-agnostic)
+import prose from '@comark/prose'
+import { register, ProseTabsElement, ProseCopyElement } from '@comark/prose/client'
+// Side-effect registration + stylesheets:
+// import '@comark/prose/client/register'
+// import '@comark/prose/components.css'
+// import '@comark/prose/typography.css'
 
 // NOTE: All framework packages re-export every core plugin via their own subpath.
 // Prefer the framework-specific path when using a framework renderer:

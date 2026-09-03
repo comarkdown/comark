@@ -1,0 +1,43 @@
+/* Steps — CSS counters on child headings of the configured level, zero JavaScript. */
+:where(.comark-content) :where(.prose-steps) {
+  counter-reset: prose-step;
+  margin-block-start: var(--prose-flow);
+  padding-inline-start: 2.25em;
+  position: relative;
+}
+
+/* Vertical guide line. */
+:where(.comark-content) :where(.prose-steps)::before {
+  content: '';
+  position: absolute;
+  inset-block: 0.5em;
+  inset-inline-start: 0.875em;
+  width: 1px;
+  background: var(--prose-border);
+}
+
+:where(.comark-content) :where(.prose-steps[data-level='2'] > h2),
+:where(.comark-content) :where(.prose-steps[data-level='3'] > h3),
+:where(.comark-content) :where(.prose-steps[data-level='4'] > h4) {
+  position: relative;
+}
+
+:where(.comark-content) :where(.prose-steps[data-level='2'] > h2)::before,
+:where(.comark-content) :where(.prose-steps[data-level='3'] > h3)::before,
+:where(.comark-content) :where(.prose-steps[data-level='4'] > h4)::before {
+  counter-increment: prose-step;
+  content: counter(prose-step);
+  position: absolute;
+  inset-inline-start: -2.25em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75em;
+  height: 1.75em;
+  border-radius: 50%;
+  background: var(--prose-surface);
+  border: 1px solid var(--prose-border);
+  font-size: 0.875em;
+  font-weight: 600;
+  line-height: 1;
+}

@@ -1,0 +1,100 @@
+/*
+ * @comark/prose — optional element rhythm.
+ *
+ * A small typographic baseline for plain markdown elements, derived from the three rhythm
+ * tokens (`--prose-size`, `--prose-leading`, `--prose-flow`). Skip this file if you
+ * already style prose elements (Tailwind Typography, shadcn Typeset, a design system).
+ *
+ * `not-prose` opts a subtree out, in the spirit of Tailwind Typography.
+ */
+@import './tokens.css';
+
+:where(.comark-content) {
+  font-size: var(--prose-size);
+  line-height: var(--prose-leading);
+}
+
+:where(.comark-content :is(p, ul, ol, blockquote, figure, hr):not(:where(.not-prose, .not-prose *))) {
+  margin-block: 0;
+  margin-block-start: var(--prose-flow);
+}
+
+:where(.comark-content :is(h1, h2, h3, h4, h5, h6):not(:where(.not-prose, .not-prose *))) {
+  margin-block: 0;
+  margin-block-start: calc(var(--prose-flow) * 1.6);
+  font-weight: 600;
+  line-height: 1.3;
+  text-wrap: balance;
+}
+
+:where(.comark-content h1:not(:where(.not-prose, .not-prose *))) {
+  font-size: 2em;
+  letter-spacing: -0.02em;
+}
+:where(.comark-content h2:not(:where(.not-prose, .not-prose *))) {
+  font-size: 1.5em;
+  letter-spacing: -0.015em;
+}
+:where(.comark-content h3:not(:where(.not-prose, .not-prose *))) {
+  font-size: 1.25em;
+}
+:where(.comark-content h4:not(:where(.not-prose, .not-prose *))) {
+  font-size: 1.0625em;
+}
+
+/* A heading pulls its first block closer. */
+:where(.comark-content :is(h1, h2, h3, h4, h5, h6) + *:not(:where(.not-prose, .not-prose *))) {
+  margin-block-start: calc(var(--prose-flow) * 0.6);
+}
+
+:where(.comark-content :is(ul, ol):not(:where(.not-prose, .not-prose *))) {
+  padding-inline-start: 1.5em;
+}
+
+:where(.comark-content li:not(:where(.not-prose, .not-prose *))) {
+  margin-block-start: calc(var(--prose-flow) * 0.25);
+}
+
+:where(.comark-content blockquote:not(:where(.not-prose, .not-prose *))) {
+  padding-inline-start: 1em;
+  border-inline-start: 3px solid var(--prose-border);
+  color: var(--prose-muted);
+}
+
+:where(.comark-content hr:not(:where(.not-prose, .not-prose *))) {
+  border: 0;
+  border-block-start: 1px solid var(--prose-border);
+  margin-block-start: calc(var(--prose-flow) * 2);
+}
+
+:where(.comark-content :not(pre) > code:not(:where(.not-prose, .not-prose *))) {
+  padding: 0.125em 0.375em;
+  border: 1px solid var(--prose-border);
+  border-radius: calc(var(--prose-radius) - 2px);
+  background: var(--prose-surface);
+  font-family: ui-monospace, monospace;
+  font-size: 0.875em;
+}
+
+:where(.comark-content table:not(:where(.not-prose, .not-prose *))) {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9375em;
+}
+
+:where(.comark-content :is(th, td):not(:where(.not-prose, .not-prose *))) {
+  padding: 0.5em 0.75em;
+  border-block-end: 1px solid var(--prose-border);
+  text-align: start;
+}
+
+:where(.comark-content th:not(:where(.not-prose, .not-prose *))) {
+  font-weight: 600;
+  background: var(--prose-surface);
+}
+
+:where(.comark-content img:not(:where(.not-prose, .not-prose *))) {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--prose-radius);
+}

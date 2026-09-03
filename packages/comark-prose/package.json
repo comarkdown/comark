@@ -1,0 +1,62 @@
+{
+  "name": "@comark/prose",
+  "version": "0.1.0",
+  "description": "Framework-agnostic prose components for Comark: lowers callouts, tabs, code groups, steps and accordions into plain HTML, with themeable CSS and a tiny custom-elements runtime.",
+  "keywords": [
+    "callout",
+    "comark",
+    "css",
+    "custom-elements",
+    "markdown",
+    "mdc",
+    "prose",
+    "tabs",
+    "typography"
+  ],
+  "homepage": "https://comark.dev/plugins/prose",
+  "bugs": {
+    "url": "https://github.com/comarkdown/comark/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/comarkdown/comark.git"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": [
+    "*.css",
+    "./dist/client/register.js"
+  ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js",
+    "./client": "./dist/client/index.js",
+    "./client/register": "./dist/client/register.js",
+    "./components.css": "./dist/components.css",
+    "./typography.css": "./dist/typography.css",
+    "./styles/*.css": "./dist/styles/*.css"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "stub": "node ../../scripts/stub.mjs && node scripts/build-css.mjs",
+    "build": "tsc && node scripts/build-css.mjs",
+    "dev": "tsc --watch",
+    "test": "vitest run",
+    "prepack": "tsc && node scripts/build-css.mjs",
+    "release": "release-it"
+  },
+  "dependencies": {
+    "comark": "workspace:*"
+  },
+  "devDependencies": {
+    "happy-dom": "catalog:",
+    "lightningcss": "catalog:",
+    "vitest": "catalog:"
+  }
+}

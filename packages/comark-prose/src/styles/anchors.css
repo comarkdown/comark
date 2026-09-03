@@ -1,0 +1,25 @@
+/* Heading anchor links — plain anchors wrapping the heading content. */
+:where(.comark-content) :where(.prose-anchor) {
+  color: inherit;
+  text-decoration: none;
+}
+
+:where(.comark-content) :where(.prose-anchor-icon) {
+  position: absolute;
+  margin-inline-start: -1.5em;
+  margin-block-start: 0.25em;
+  width: 1em;
+  height: 1em;
+  color: var(--prose-muted);
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+:where(.comark-content) :where(h1, h2, h3, h4, h5, h6) {
+  position: relative;
+}
+
+:where(.comark-content) :where(h1, h2, h3, h4, h5, h6):hover :where(.prose-anchor-icon),
+:where(.comark-content) :where(.prose-anchor:focus-visible .prose-anchor-icon) {
+  opacity: 1;
+}
