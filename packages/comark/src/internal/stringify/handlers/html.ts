@@ -142,16 +142,10 @@ export async function html(node: ElementNode, state: State, parent?: ElementNode
   }
 
   if (!oneLiner && content) {
-    if (state.context.html) {
-      content = '\n' + paddNoneHtmlContent(content, state, String(tag)).trimEnd() + '\n'
-    } else if (bodyStartsWithMarkdown) {
-      // Markdown-first body: blank line after open so the body re-parses as
-      // markdown; blank line before close so a trailing closer is its own
-      // html_block (not absorbed into a list item / paragraph).
+    if (!state.context.html && bodyStartsWithMarkdown) {
+      // blank line after open so the body re-parses as markdown;
       content = '\n\n' + content.trimEnd() + '\n\n'
     } else {
-      // Raw HTML / HTML-first body — keep content flush after the open tag so
-      // reparse matches CommonMark html_block runs.
       content = '\n' + paddNoneHtmlContent(content, state, String(tag)).trimEnd() + '\n'
     }
   }

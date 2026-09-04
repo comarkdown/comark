@@ -40,31 +40,6 @@ export interface HtmlPluginOptions {
   /**
    * When markdown is allowed inside / after HTML **without** a blank line.
    *
-   * HTML nesting has two shapes:
-   *
-   * 1. **Blank-line body** (always markdown, either mode):
-   *    ```md
-   *    <div>
-   *
-   *    **bold**
-   *
-   *    </div>
-   *    ```
-   *    CommonMark ends the HTML block on the blank line, so the body is normal
-   *    markdown and is later nested under the open tag.
-   *
-   * 2. **Tight body** (no blank line after the open tag):
-   *    ```md
-   *    <div>
-   *    **bold**
-   *    </div>
-   *    ```
-   *    or incomplete / streaming:
-   *    ```md
-   *    <ai-thinking>
-   *    **bold**
-   *    ```
-   *
    * - `true` (default): tight incomplete openers (no closer yet) still tokenize
    *   the body as markdown. Closed tight bodies stay CommonMark-raw.
    * - `false`: tight bodies stay raw HTML (CommonMark). Markdown only when a
