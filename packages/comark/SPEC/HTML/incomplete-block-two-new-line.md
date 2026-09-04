@@ -18,7 +18,12 @@
   "nodes": [
     [
       "ai-thinking",
-      {"$": { "html": 1, "block": 1 }},
+      {
+        "$": {
+          "html": 1,
+          "block": 1
+        }
+      },
       [
         "p",
         {},

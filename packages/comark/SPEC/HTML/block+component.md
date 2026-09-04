@@ -18,7 +18,10 @@ Default Slot
     [
       "hello",
       {
-        "$": { "html": 1, "block": 1 }
+        "$": {
+          "html": 1,
+          "block": 1
+        }
       },
       "::component\nDefault Slot\n::"
     ]

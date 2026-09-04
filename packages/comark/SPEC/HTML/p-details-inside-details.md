@@ -26,24 +26,36 @@ Nested content2
     [
       "details",
       {
-        "$": { "html": 1, "block": 1 }
+        "$": {
+          "html": 1,
+          "block": 1
+        }
       },
       [
         "summary",
         {
-          "$": { "html": 1, "block": 1 }
+          "$": {
+            "html": 1,
+            "block": 0
+          }
         },
         "Top"
       ],
       [
         "details",
         {
-          "$": { "html": 1, "block": 1 }
+          "$": {
+            "html": 1,
+            "block": 1
+          }
         },
         [
           "summary",
           {
-            "$": { "html": 1, "block": 1 }
+            "$": {
+              "html": 1,
+              "block": 0
+            }
           },
           "Nested"
         ],
@@ -67,13 +79,9 @@ Nested content2
 
 ```html
 <details>
-  <summary>
-    Top
-  </summary>
+  <summary>Top</summary>
   <details>
-    <summary>
-      Nested
-    </summary>
+    <summary>Nested</summary>
     <p>Nested content</p>
     <p>Nested content2</p>
   </details>
@@ -84,12 +92,8 @@ Nested content2
 
 ```md
 <details>
-<summary>
-Top
-</summary><details>
-<summary>
-Nested
-</summary>
+<summary>Top</summary><details>
+<summary>Nested</summary>
 
 Nested content
 

@@ -22,7 +22,7 @@
 ## HTML
 
 ```html
-<hr />
+<hr>
 ```
 
 ## Markdown

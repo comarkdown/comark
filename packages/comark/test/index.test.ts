@@ -269,6 +269,7 @@ describe('Comark Tests', () => {
           },
         })
         const expectedHTML = testCase.html.trim()
+        console.log(result)
         expect(result).toBe(expectedHTML)
       })
 

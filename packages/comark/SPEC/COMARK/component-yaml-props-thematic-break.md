@@ -24,11 +24,29 @@ Below
     [
       "card",
       {},
-      ["p", {}, "Above"],
-      ["hr", {}],
-      ["p", {}, "Middle text"],
-      ["hr", {}],
-      ["p", {}, "Below"]
+      [
+        "p",
+        {},
+        "Above"
+      ],
+      [
+        "hr",
+        {}
+      ],
+      [
+        "p",
+        {},
+        "Middle text"
+      ],
+      [
+        "hr",
+        {}
+      ],
+      [
+        "p",
+        {},
+        "Below"
+      ]
     ]
   ]
 }
@@ -39,9 +57,9 @@ Below
 ```html
 <card>
   <p>Above</p>
-  <hr />
+  <hr>
   <p>Middle text</p>
-  <hr />
+  <hr>
   <p>Below</p>
 </card>
 ```

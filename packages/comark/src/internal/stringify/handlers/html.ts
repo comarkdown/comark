@@ -138,7 +138,7 @@ export async function html(node: ElementNode, state: State, parent?: ElementNode
   const attrs = Object.keys(attributes).length > 0 ? ` ${htmlAttributes(attributes)}` : ''
 
   if (isSelfClose) {
-    return `<${tag}${attrs} />` + (!parent && !isInline ? state.context.blockSeparator : '')
+    return `<${tag}${attrs}>` + (!parent && !isInline ? state.context.blockSeparator : '')
   }
 
   if (!oneLiner && content) {

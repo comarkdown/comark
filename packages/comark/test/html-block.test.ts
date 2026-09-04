@@ -8,7 +8,7 @@ describe('block-level raw HTML', () => {
     const result = await parseMarkdown('<p><img src="/foo.png" alt="x"></p>')
 
     expect(result.nodes).toEqual([
-      ['p', { $: { html: 1, block: 1 } }, ['img', { $: { html: 1, block: 1 }, src: '/foo.png', alt: 'x' }]],
+      ['p', { $: { html: 1, block: 1 } }, ['img', { $: { html: 1, block: 0 }, src: '/foo.png', alt: 'x' }]],
     ])
   })
 
@@ -20,7 +20,7 @@ describe('block-level raw HTML', () => {
         'p',
         { $: { html: 1, block: 1 } },
         'hello',
-        ['img', { $: { html: 1, block: 1 }, src: '/foo.png', alt: 'x' }],
+        ['img', { $: { html: 1, block: 0 }, src: '/foo.png', alt: 'x' }],
         'world',
       ],
     ])
@@ -37,7 +37,7 @@ That is some text here.`
 
     expect(result.nodes).toEqual([
       ['h1', { id: 'hello' }, 'Hello'],
-      ['p', { $: { html: 1, block: 1 } }, ['img', { $: { html: 1, block: 1 }, src: '/foo.png', alt: 'x' }]],
+      ['p', { $: { html: 1, block: 1 } }, ['img', { $: { html: 1, block: 0 }, src: '/foo.png', alt: 'x' }]],
       ['p', {}, 'That is some text here.'],
     ])
   })
@@ -78,7 +78,7 @@ this is **markdown**
         'div',
         { $: { html: 1, block: 1 } },
         'before **strong**',
-        ['img', { $: { html: 1, block: 1 }, src: '/x.png', alt: 'x' }],
+        ['img', { $: { html: 1, block: 0 }, src: '/x.png', alt: 'x' }],
         'after `code`',
       ],
     ])
@@ -121,7 +121,7 @@ after \`code\`
 </div>`)
 
     expect(result.nodes).toEqual([
-      ['div', { $: { html: 1, block: 1 } }, [null, {}, ' note '], ['img', { $: { html: 1, block: 1 }, src: '/x.png' }]],
+      ['div', { $: { html: 1, block: 1 } }, [null, {}, ' note '], ['img', { $: { html: 1, block: 0 }, src: '/x.png' }]],
     ])
   })
 
@@ -134,7 +134,7 @@ after \`code\`
       [
         'a',
         { $: { html: 1, block: 1 }, href: sponsorsUrl },
-        ['img', { $: { html: 1, block: 1 }, src: sponsorsUrl, alt: 'Sponsors' }],
+        ['img', { $: { html: 1, block: 0 }, src: sponsorsUrl, alt: 'Sponsors' }],
       ],
     ])
   })
@@ -152,8 +152,8 @@ after \`code\`
         { $: { html: 1, block: 1 }, align: 'center' },
         [
           'a',
-          { $: { html: 1, block: 1 }, href: sponsorsUrl },
-          ['img', { $: { html: 1, block: 1 }, src: sponsorsUrl, alt: 'Sponsors' }],
+          { $: { html: 1, block: 0 }, href: sponsorsUrl },
+          ['img', { $: { html: 1, block: 0 }, src: sponsorsUrl, alt: 'Sponsors' }],
         ],
       ],
     ])
