@@ -8,9 +8,7 @@ describe('html({ markdown })', () => {
   it('parses markdown inside incomplete HTML by default', async () => {
     const result = await parseMarkdown('<ai-thinking>\n**bold**')
 
-    expect(result.nodes).toEqual([
-      ['ai-thinking', { $: { html: 1, block: 0 } }, ['strong', {}, 'bold']],
-    ])
+    expect(result.nodes).toEqual([['ai-thinking', { $: { html: 1, block: 0 } }, ['strong', {}, 'bold']]])
   })
 
   it('keeps markdown literal inside incomplete HTML when markdown: false', async () => {
@@ -28,9 +26,7 @@ describe('html({ markdown })', () => {
       plugins: [html({ markdown: false })],
     })
 
-    expect(result.nodes).toEqual([
-      ['ai-thinking', { $: { html: 1, block: 0 } }, ['strong', {}, 'bold']],
-    ])
+    expect(result.nodes).toEqual([['ai-thinking', { $: { html: 1, block: 0 } }, ['strong', {}, 'bold']]])
   })
 
   it('still keeps closed HTML body literal without a blank line when markdown: false', async () => {
@@ -46,9 +42,7 @@ describe('html({ markdown })', () => {
       plugins: [html({ markdown: false })],
     })
 
-    expect(result.nodes).toEqual([
-      ['div', { $: { html: 1, block: 1 } }, 'Hello ', ['strong', {}, 'World']],
-    ])
+    expect(result.nodes).toEqual([['div', { $: { html: 1, block: 1 } }, 'Hello ', ['strong', {}, 'World']]])
   })
 })
 

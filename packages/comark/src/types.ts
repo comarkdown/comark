@@ -1,7 +1,6 @@
 import type { DumpOptions } from 'js-yaml'
 import type MarkdownExit from 'markdown-exit'
 import type MarkdownIt from 'markdown-it'
-import { HtmlPluginOptions } from './plugins/html'
 
 // #region Utility Types
 /**
