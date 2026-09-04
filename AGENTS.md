@@ -412,7 +412,7 @@ import alert from 'comark/plugins/alert'
 import frontmatter from 'comark/plugins/frontmatter' // default via registerDefaultPlugins
 import components from 'comark/plugins/components'   // default via registerDefaultPlugins
 import attributes from 'comark/plugins/attributes'   // default via registerDefaultPlugins
-import html from 'comark/plugins/html'               // default via registerDefaultPlugins
+import html from 'comark/plugins/html'               // default via registerDefaultPlugins; html({ markdown: false }) = blank-line-only markdown nesting (CommonMark-style)
 
 // markdown-it / markdown-exit adapters (e.g. VitePress)
 import { markdownItComponents } from 'comark/plugins/components'

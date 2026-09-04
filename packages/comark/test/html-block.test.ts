@@ -1,7 +1,56 @@
 import { describe, expect, it } from 'vitest'
 import { parseMarkdown } from '../src/index'
+import html from '../src/plugins/html'
 
 const sponsorsUrl = 'https://cdn.jsdelivr.net/gh/antfu/static/sponsors.svg'
+
+describe('html({ markdown })', () => {
+  it('parses markdown inside incomplete HTML by default', async () => {
+    const result = await parseMarkdown('<ai-thinking>\n**bold**')
+
+    expect(result.nodes).toEqual([
+      ['ai-thinking', { $: { html: 1, block: 0 } }, ['strong', {}, 'bold']],
+    ])
+  })
+
+  it('keeps markdown literal inside incomplete HTML when markdown: false', async () => {
+    const result = await parseMarkdown('<ai-thinking>\n**bold**', {
+      // Replace the default html plugin so only this config is active.
+      plugins: [html({ markdown: false })],
+    })
+
+    // Body is a single text leaf → block: 0 (inline-like incomplete opener).
+    expect(result.nodes).toEqual([['ai-thinking', { $: { html: 1, block: 0 } }, '**bold**']])
+  })
+
+  it('still parses markdown after a blank line when markdown: false', async () => {
+    const result = await parseMarkdown('<ai-thinking>\n\n**bold**\n\n', {
+      plugins: [html({ markdown: false })],
+    })
+
+    expect(result.nodes).toEqual([
+      ['ai-thinking', { $: { html: 1, block: 0 } }, ['strong', {}, 'bold']],
+    ])
+  })
+
+  it('still keeps closed HTML body literal without a blank line when markdown: false', async () => {
+    const result = await parseMarkdown('<div>\nHello **World**\n</div>', {
+      plugins: [html({ markdown: false })],
+    })
+
+    expect(result.nodes).toEqual([['div', { $: { html: 1, block: 1 } }, 'Hello **World**']])
+  })
+
+  it('parses markdown inside closed HTML after a blank line when markdown: false', async () => {
+    const result = await parseMarkdown('<div>\n\nHello **World**\n\n</div>', {
+      plugins: [html({ markdown: false })],
+    })
+
+    expect(result.nodes).toEqual([
+      ['div', { $: { html: 1, block: 1 } }, 'Hello ', ['strong', {}, 'World']],
+    ])
+  })
+})
 
 describe('block-level raw HTML', () => {
   it('preserves inline children inside a self-contained block-level <p>', async () => {
