@@ -109,14 +109,7 @@ function inferBlockFromChildren(nodes: Node[], isRootLevel: boolean): void {
     const meta = (attrs.$ ||= {}) as Record<string, unknown>
     if (meta.html !== 1) continue
 
-    if (isRootLevel) {
-      // Top-level of an html_block token is always a block unit.
-      meta.block = 1
-      continue
-    }
-
-    const hasBlockChild = children.some(isBlockHtmlElement)
-    meta.block = hasBlockChild ? 1 : 0
+    meta.block = isRootLevel || children.some(isBlockHtmlElement) ? 1 : 0
   }
 }
 

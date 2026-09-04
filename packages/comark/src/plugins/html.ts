@@ -50,19 +50,17 @@ export interface HtmlPluginOptions {
   markdown?: boolean
 }
 
-function markdownItHtml(options: HtmlPluginOptions = {}) {
+export default defineComarkPlugin<HtmlPluginOptions>((options = {}) => {
   const html_block = createHtmlBlockRule({ markdown: options.markdown })
-
-  return function install(md: MarkdownExit) {
+  function install(md: MarkdownExit) {
     md.set({ html: true })
     md.inline.ruler.before('text', 'comark_html_inline', html_inline)
     md.block.ruler.before('html_block', 'comark_html_block', html_block, {
       alt: ['paragraph', 'reference', 'blockquote'],
     })
   }
-}
-
-export default defineComarkPlugin<HtmlPluginOptions>((options = {}) => ({
-  name: 'html',
-  markdownItPlugins: [markdownItHtml(options) as unknown as MarkdownItPlugin],
-}))
+  return {
+    name: 'html',
+    markdownItPlugins: [install as unknown as MarkdownItPlugin],
+  }
+})

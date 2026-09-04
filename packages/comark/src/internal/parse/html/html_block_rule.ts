@@ -25,8 +25,6 @@ const HTML_SEQUENCES: [RegExp, RegExp, boolean][] = [
 /** Open tag name when `line` is a lone start tag (`<foo>` / `<foo attr>`), else null. */
 function loneOpenTagName(line: string): string | null {
   const trimmed = line.trim()
-  // Closing tags, void self-closers, comments, declarations — not incomplete openers.
-  if (!trimmed.startsWith('<') || trimmed.startsWith('</') || trimmed.startsWith('<!')) return null
   if (/\/\s*>\s*$/.test(trimmed)) return null
   const match = trimmed.match(/^<([a-zA-Z][\w:-]*)(?:\s[^>]*)?>\s*$/)
   return match ? match[1] : null
@@ -73,11 +71,12 @@ export default function createHtmlBlockRule(options: HtmlBlockRuleOptions = {}) 
     // incomplete streaming opener — only consume the opener line so following
     // markdown can be tokenized and absorbed by the token processor (when
     // `markdown` is enabled).
-    const blankLineTerminated = HTML_SEQUENCES[i][1].source === '^$'
-    const openerTag = blankLineTerminated ? loneOpenTagName(lineText) : null
+    const closer = HTML_SEQUENCES[i][1]
+    const openerTag = allowIncompleteMarkdown && closer.source === '^$' ? loneOpenTagName(lineText) : null
+    const matchingClose = openerTag ? new RegExp(`^</\\s*${escapeRegExp(openerTag)}\\s*>\\s*$`, 'i') : null
 
     // Walk forward until the closer regex matches or we hit a blank line.
-    if (!HTML_SEQUENCES[i][1].test(lineText)) {
+    if (!closer.test(lineText)) {
       let sawMatchingClose = false
       for (; nextLine < endLine; nextLine++) {
         if (state.sCount[nextLine] < state.blkIndent) break
@@ -86,11 +85,9 @@ export default function createHtmlBlockRule(options: HtmlBlockRuleOptions = {}) 
         max = state.eMarks[nextLine]
         lineText = state.src.slice(pos, max)
 
-        if (openerTag && new RegExp(`^</\\s*${escapeRegExp(openerTag)}\\s*>\\s*$`, 'i').test(lineText.trim())) {
-          sawMatchingClose = true
-        }
+        if (matchingClose?.test(lineText.trim())) sawMatchingClose = true
 
-        if (HTML_SEQUENCES[i][1].test(lineText)) {
+        if (closer.test(lineText)) {
           if (lineText.length !== 0) nextLine++
           break
         }

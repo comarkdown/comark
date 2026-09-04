@@ -88,37 +88,27 @@ export function marmdownItTokensToMarkdownDocument(tokens: any[], opts?: TokenPr
   return nodes
 }
 
-/**
- * Whether an `html_block` token's content already closes its own outer element
- * (self-contained on one run: `<p><img></p>`, void tags, comments, etc.).
- */
-function htmlBlockHasOwnClose(content: string): boolean {
-  const trimmed = content.trim()
-  if (!trimmed) return false
-  // Comments, declarations, CDATA, processing instructions: self-terminating.
-  if (trimmed.startsWith('<!') || trimmed.startsWith('<?')) return true
-  const match = trimmed.match(/^<\s*([a-zA-Z][\w:-]*)/)
-  if (!match) return false
-  const tag = match[1]
-  if (VOID_ELEMENTS.has(tag.toLowerCase())) return true
-  // Self-closing start tag (`<br/>`, `<div />`)
-  if (/\/\s*>\s*$/.test(trimmed) && !trimmed.slice(1).includes('<')) return true
-  return new RegExp(`</\\s*${tag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*>`, 'i').test(trimmed)
+const HTML_OPEN_TAG_RE = /^<\s*([a-zA-Z][\w:-]*)/
+const HTML_CLOSE_TAG_RE = /^<\/\s*([a-zA-Z][\w:-]*)\s*>$/
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+function htmlOpenTagName(content: string): string | null {
+  const match = content.trim().match(HTML_OPEN_TAG_RE)
+  return match ? match[1].toLowerCase() : null
 }
 
 /** Tag name of a bare closing HTML block (`</div>`), or null. */
 function htmlBlockCloseTag(content: string): string | null {
-  const match = content.trim().match(/^<\/\s*([a-zA-Z][\w:-]*)\s*>$/)
+  const match = content.trim().match(HTML_CLOSE_TAG_RE)
   return match ? match[1].toLowerCase() : null
 }
 
-/**
- * Depth of `tag` openers still unclosed inside `content` (can be nested).
- * Positive → more openers than closers; 0 → balanced; negative is treated as 0.
- */
+/** Unclosed `tag` openers in `content`. Nested same-tag pairs cancel out. */
 function htmlOuterTagDepth(content: string, tag: string): number {
-  const escaped = tag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-  const re = new RegExp(`</?\\s*${escaped}\\b[^>]*>`, 'gi')
+  const re = new RegExp(`</?\\s*${escapeRegExp(tag)}(?![\\w:-])[^>]*>`, 'gi')
   let depth = 0
   let m: RegExpExecArray | null
   while ((m = re.exec(content)) !== null) {
@@ -126,6 +116,32 @@ function htmlOuterTagDepth(content: string, tag: string): number {
     else if (!/\/\s*>$/.test(m[0])) depth++
   }
   return depth
+}
+
+/** Index of the matching closer, or -1 if this opener runs to EOF. */
+function findHtmlBlockCloseIndex(tokens: any[], startIndex: number, tag: string, depth: number): number {
+  for (let i = startIndex + 1; i < tokens.length; i++) {
+    const t = tokens[i]
+    if (t.type !== 'html_block') continue
+    const c = typeof t.content === 'string' ? t.content : ''
+    const closeTag = htmlBlockCloseTag(c)
+    if (closeTag === tag) {
+      depth--
+      if (depth === 0) return i
+      continue
+    }
+    // Nested opener of the same tag (may include its own closer in the same token).
+    if (!closeTag && htmlOpenTagName(c) === tag) depth += htmlOuterTagDepth(c, tag)
+  }
+  return -1
+}
+
+function isMultiBlockBody(nodes: Node[]): boolean {
+  const nonEmpty = nodes.filter((child) => typeof child !== 'string' || (child && child.trim()))
+  return (
+    nonEmpty.length > 1 ||
+    (nonEmpty.length === 1 && Array.isArray(nonEmpty[0]) && nonEmpty[0][0] !== null && nonEmpty[0][0] !== 'p')
+  )
 }
 
 /**
@@ -144,55 +160,18 @@ function processHtmlBlockTokens(
   state?: ProcessState
 ): { nodes: Node[]; nextIndex: number } {
   const content = typeof tokens[startIndex]?.content === 'string' ? tokens[startIndex].content : ''
-
-  // Bare closer with no surrounding open — drop (parent consumes matching ones).
-  if (htmlBlockCloseTag(content)) {
+  const tag = htmlOpenTagName(content)
+  // Comments, closers, void tags, and already-balanced fragments stay as-is.
+  if (!tag || VOID_ELEMENTS.has(tag)) {
     return { nodes: htmlToNodes(content), nextIndex: startIndex + 1 }
   }
 
-  // Fully closed in this token alone (including multi-line runs with matching
-  // open/close) — parse as a self-contained HTML fragment.
-  if (htmlBlockHasOwnClose(content)) {
-    return { nodes: htmlToNodes(content), nextIndex: startIndex + 1 }
-  }
-
-  const openMatch = content.trim().match(/^<\s*([a-zA-Z][\w:-]*)/)
-  if (!openMatch) {
-    return { nodes: htmlToNodes(content), nextIndex: startIndex + 1 }
-  }
-  const tag = openMatch[1].toLowerCase()
-
-  // How many outer `tag` frames this token opens that still need a closer.
-  // Opener-only content like `<details>\n<summary>…</summary>` starts depth 1.
-  let depth = htmlOuterTagDepth(content, tag)
+  const depth = htmlOuterTagDepth(content, tag)
   if (depth <= 0) {
     return { nodes: htmlToNodes(content), nextIndex: startIndex + 1 }
   }
 
-  // Scan ahead for a matching closer (nested same-tag openers bump depth).
-  let closeIndex = -1
-  for (let i = startIndex + 1; i < tokens.length; i++) {
-    const t = tokens[i]
-    if (t.type !== 'html_block') continue
-    const c = typeof t.content === 'string' ? t.content : ''
-    const closeTag = htmlBlockCloseTag(c)
-    if (closeTag === tag) {
-      depth--
-      if (depth === 0) {
-        closeIndex = i
-        break
-      }
-      continue
-    }
-    // Nested opener of the same tag (may include its own closer in the same token).
-    if (!htmlBlockCloseTag(c)) {
-      const nestedOpen = c.trim().match(/^<\s*([a-zA-Z][\w:-]*)/)
-      if (nestedOpen && nestedOpen[1].toLowerCase() === tag) {
-        depth += htmlOuterTagDepth(c, tag)
-      }
-    }
-  }
-
+  const closeIndex = findHtmlBlockCloseIndex(tokens, startIndex, tag, depth)
   const parsed = htmlToNodes(content)
   const node = parsed[0]
   if (!node || typeof node === 'string' || node[0] === null) {
@@ -202,44 +181,20 @@ function processHtmlBlockTokens(
   const element = node as ElementNode
   const openerAttrs = (element[1] || {}) as Record<string, unknown>
   const prevMeta = (openerAttrs.$ || {}) as Record<string, unknown>
-  const openerChildren = element.slice(2) as Node[]
-
-  // No matching closer → streaming incomplete tag, absorb to EOF.
-  // Multi-block markdown bodies are real block containers (`block: 1`).
-  // A lone paragraph (often auto-unwrapped later) stays `block: 0` so it can
-  // serialize as a one-liner: `<tag>**bold**</tag>`.
-  if (closeIndex < 0) {
-    const children = processBlockChildren(tokens, startIndex + 1, '\0', false, false, false, state)
-    const nonEmpty = children.nodes.filter((child) => typeof child !== 'string' || (child && child.trim()))
-    const isMultiBlock =
-      nonEmpty.length > 1 ||
-      (nonEmpty.length === 1 && Array.isArray(nonEmpty[0]) && nonEmpty[0][0] !== null && nonEmpty[0][0] !== 'p')
-    const attrs: Record<string, unknown> = {
-      ...openerAttrs,
-      $: { ...prevMeta, html: 1, block: isMultiBlock ? 1 : 0 },
-    }
-    return {
-      nodes: [[element[0], attrs, ...openerChildren, ...children.nodes] as Node],
-      nextIndex: children.nextIndex,
-    }
-  }
-
-  // Matching closer → nest body under the opener (block: 1). Slice so
-  // processBlockChildren stops before the closer; recurse for nested HTML.
-  // Single-paragraph bodies are left as `<p>` here; `applyAutoUnwrap` lifts
-  // them when `autoUnwrap` is on (default).
-  const bodyTokens = tokens.slice(startIndex + 1, closeIndex)
-  const body = processBlockChildren(bodyTokens, 0, '\0', false, false, false, state)
-
-  const attrs: Record<string, unknown> = {
-    ...openerAttrs,
-    $: { ...prevMeta, html: 1, block: 1 },
-  }
+  const end = closeIndex < 0 ? tokens.length : closeIndex
+  const body = processBlockChildren(tokens.slice(startIndex + 1, end), 0, '\0', false, false, false, state)
+  const block = closeIndex < 0 && !isMultiBlockBody(body.nodes) ? 0 : 1
 
   return {
-    nodes: [[element[0], attrs, ...openerChildren, ...body.nodes] as Node],
-    // Consume the closer as well.
-    nextIndex: closeIndex + 1,
+    nodes: [
+      [
+        element[0],
+        { ...openerAttrs, $: { ...prevMeta, html: 1, block } },
+        ...(element.slice(2) as Node[]),
+        ...body.nodes,
+      ] as Node,
+    ],
+    nextIndex: closeIndex < 0 ? tokens.length : closeIndex + 1,
   }
 }
 

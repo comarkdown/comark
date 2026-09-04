@@ -31,15 +31,9 @@ export function applyAutoUnwrap(node: Node): Node {
 
   // Recurse first so nested HTML wrappers (details → details → p) unwrap bottom-up.
   const unwrappedChildren = children.map((child: Node) => applyAutoUnwrap(child as Node))
-
-  // Filter out empty text nodes for checking
   const nonEmptyChildren = unwrappedChildren.filter(
     (child: Node) => typeof child !== 'string' || (child && child.trim())
   )
-
-  if (nonEmptyChildren.length === 0) {
-    return [tag, props, ...unwrappedChildren] as Node
-  }
 
   // Classic case: container has only a single markdown paragraph child.
   if (nonEmptyChildren.length === 1 && isMarkdownParagraph(nonEmptyChildren[0])) {
@@ -55,27 +49,18 @@ export function applyAutoUnwrap(node: Node): Node {
   // with `$.html`) with a single markdown paragraph body. Unwrap that lone
   // markdown p only when every other non-empty sibling is itself HTML-originated
   // — so `p + ul` under an incomplete `<ai-thinking>` stays as-is.
-  const isHtmlParent =
-    (props as Record<string, unknown> | undefined)?.$ &&
-    typeof (props as Record<string, any>).$ === 'object' &&
-    (props as Record<string, any>).$.html === 1
-  if (isHtmlParent) {
+  const htmlMeta = (props as Record<string, any>)?.$
+  if (htmlMeta && typeof htmlMeta === 'object' && htmlMeta.html === 1) {
     const markdownParagraphs = nonEmptyChildren.filter(isMarkdownParagraph)
-    const otherChildren = nonEmptyChildren.filter((c) => !isMarkdownParagraph(c))
-    const othersAreHtml = otherChildren.every(
-      (c) =>
-        Array.isArray(c) && typeof c[1] === 'object' && c[1] !== null && (c[1] as Record<string, any>).$?.html === 1
+    const othersAreHtml = nonEmptyChildren.every(
+      (c) => isMarkdownParagraph(c) || (Array.isArray(c) && (c[1] as Record<string, any>)?.$?.html === 1)
     )
     if (markdownParagraphs.length === 1 && othersAreHtml) {
-      const out: Node[] = []
-      for (const child of unwrappedChildren) {
-        if (isMarkdownParagraph(child)) {
-          out.push(...(child.slice(2) as Node[]))
-        } else {
-          out.push(child)
-        }
-      }
-      return [tag, props, ...out] as Node
+      return [
+        tag,
+        props,
+        ...unwrappedChildren.flatMap((child) => (isMarkdownParagraph(child) ? (child.slice(2) as Node[]) : [child])),
+      ] as Node
     }
   }
 

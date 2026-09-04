@@ -137,8 +137,9 @@ export async function html(node: ElementNode, state: State, parent?: ElementNode
 
   const attrs = Object.keys(attributes).length > 0 ? ` ${htmlAttributes(attributes)}` : ''
 
+  const trail = !parent && !isInline ? state.context.blockSeparator : ''
   if (isSelfClose) {
-    return `<${tag}${attrs}>` + (!parent && !isInline ? state.context.blockSeparator : '')
+    return `<${tag}${attrs}>` + trail
   }
 
   if (!oneLiner && content) {
@@ -150,19 +151,12 @@ export async function html(node: ElementNode, state: State, parent?: ElementNode
     }
   }
 
-  return `<${tag}${attrs}>${content}</${tag}>` + (!parent && !isInline ? state.context.blockSeparator : '')
+  return `<${tag}${attrs}>${content}</${tag}>` + trail
 }
 
-// Literal-content tags whose body must be rendered verbatim (no indentation
-// re-flow). Matches the parser-side set so `<style>` / `<script>` etc. stay
-// flush-left in the output, the way they were authored.
 const LITERAL_CONTENT_TAGS = new Set(['code', 'kbd', 'pre', 'samp', 'script', 'style', 'textarea', 'var'])
 
 function paddNoneHtmlContent(content: string, state: State, tag: string) {
-  if (state.context.html) {
-    if (LITERAL_CONTENT_TAGS.has(tag.toLowerCase())) return content
-    return indent(content)
-  }
-
-  return (content.trim().startsWith('<') ? '' : '') + content + (content.trim().endsWith('>') ? '' : '')
+  if (!state.context.html || LITERAL_CONTENT_TAGS.has(tag.toLowerCase())) return content
+  return indent(content)
 }
