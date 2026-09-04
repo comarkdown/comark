@@ -60,10 +60,10 @@
 ```html
 <ul class="contains-task-list">
   <li class="task-list-item" attr="value">
-    <input class="task-list-item-checkbox" type="checkbox" disabled /> Task list item
+    <input class="task-list-item-checkbox" type="checkbox" disabled> Task list item
   </li>
   <li class="task-list-item" attr2="value2">
-    <input class="task-list-item-checkbox" type="checkbox" disabled checked /> Task list item
+    <input class="task-list-item-checkbox" type="checkbox" disabled checked> Task list item
   </li>
 </ul>
 ```

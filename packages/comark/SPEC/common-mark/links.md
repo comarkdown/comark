@@ -11,55 +11,44 @@
 ## AST
 
 ```json
-
 {
-   "frontmatter":{
-      
-   },
-   "meta":{
-      
-   },
-   "nodes":[
+  "frontmatter": {},
+  "meta": {},
+  "nodes": [
+    [
+      "p",
+      {},
       [
-         "p",
-         {
-            
-         },
-         [
-            "a",
-            {
-               "href":"#"
-            },
-            "Document"
-         ]
-      ],
-      [
-         "p",
-         {
-            
-         },
-         [
-            "a",
-            {
-               "href":"#"
-            },
-            "[1] Document"
-         ]
-      ],
-      [
-         "p",
-         {
-            
-         },
-         [
-            "a",
-            {
-               "href":"https://example.com"
-            },
-            "[link-name] more"
-         ]
+        "a",
+        {
+          "href": "#"
+        },
+        "Document"
       ]
-   ]
+    ],
+    [
+      "p",
+      {},
+      [
+        "a",
+        {
+          "href": "#"
+        },
+        "[1] Document"
+      ]
+    ],
+    [
+      "p",
+      {},
+      [
+        "a",
+        {
+          "href": "https://example.com"
+        },
+        "[link-name] more"
+      ]
+    ]
+  ]
 }
 ```
 

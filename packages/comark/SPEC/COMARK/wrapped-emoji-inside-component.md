@@ -30,7 +30,9 @@ options:
   "nodes": [
     [
       "alert",
-      { "type": "success" },
+      {
+        "type": "success"
+      },
       [
         "p",
         {},
@@ -39,7 +41,9 @@ options:
     ],
     [
       "alert",
-      { "type": "warning" },
+      {
+        "type": "warning"
+      },
       [
         "p",
         {},

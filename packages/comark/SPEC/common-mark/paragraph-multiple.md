@@ -36,7 +36,7 @@ This is another paragraph
 ## HTML
 
 ```html
-<p>This is a simple paragraph<br />And continues in next line</p>
+<p>This is a simple paragraph<br>And continues in next line</p>
 <p>This is another paragraph</p>
 ```
 

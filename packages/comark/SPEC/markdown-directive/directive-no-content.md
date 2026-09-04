@@ -58,10 +58,10 @@ a :br with no content or attributes
 ```html
 <p>
   a 
-  <hr />
+  <hr>
    directive with no content
 </p>
-<p>a <br /> with no content or attributes</p>
+<p>a <br> with no content or attributes</p>
 <video file="movie.mp4"></video>
 <separator></separator>
 ```

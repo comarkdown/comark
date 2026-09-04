@@ -17,7 +17,10 @@
       [
         "hello",
         {
-          "$": { "html": 1, "block": 0 }
+          "$": {
+            "html": 1,
+            "block": 0
+          }
         },
         "Hello ",
         [

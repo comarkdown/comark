@@ -569,6 +569,7 @@ function healInline(text: string, opts: HealOpts): string {
       if (next === '$') {
         out.push('$')
         i++
+
         if (opts.math) {
           inBlockMath = !inBlockMath
           toggle('$$')

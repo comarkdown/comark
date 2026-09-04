@@ -28,7 +28,7 @@
 ## HTML
 
 ```html
-<p><img src="/my/cool/path" /></p>
+<p><img src="/my/cool/path"></p>
 ```
 
 ## Markdown

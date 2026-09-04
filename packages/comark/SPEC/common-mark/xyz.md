@@ -313,7 +313,7 @@ And here's a code block:
 </ol>
 <h2 id="section-two">Section Two</h2>
 <p>Here's an image:</p>
-<p><img src="/path/to/image.jpg" title="Image title" alt="Alt text" /></p>
+<p><img src="/path/to/image.jpg" title="Image title" alt="Alt text"></p>
 <p>And here's a code block:</p>
 ```
 
