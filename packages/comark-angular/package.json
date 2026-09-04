@@ -38,7 +38,7 @@
   },
   "scripts": {
     "stub": "node ../../scripts/stub.mjs",
-    "build": "ngc -p tsconfig.json && node scripts/verify-build.mjs",
+    "build": "ngc -p tsconfig.json && ngc -p tsconfig.json --removeComments true --declaration false && node scripts/verify-build.mjs",
     "dev": "ngc -p tsconfig.json --watch",
     "test": "vitest run",
     "prepack": "pnpm run build",

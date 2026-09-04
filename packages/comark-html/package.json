@@ -40,10 +40,10 @@
   },
   "scripts": {
     "stub": "node ../../scripts/stub.mjs",
-    "build": "tsc",
+    "build": "tsc --removeComments --declaration false && tsc --emitDeclarationOnly",
     "dev": "tsc --watch",
     "test": "vitest run",
-    "prepack": "tsc",
+    "prepack": "tsc --removeComments --declaration false && tsc --emitDeclarationOnly",
     "release": "release-it"
   },
   "dependencies": {
