@@ -5,6 +5,7 @@ import type { ComarkPlugin, MarkdownDocument } from 'comark'
 import { MarkdownClient } from '../src/components/MarkdownClient'
 import { Markdown } from '../src/components/Markdown'
 import type { MarkdownProps } from '../src/components/Markdown'
+import { defineMarkdownComponent } from '../src/index'
 
 Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true })
 
@@ -82,6 +83,38 @@ describe('MarkdownClient streaming', () => {
     await render({ value, streaming: true, plugins: replacement.plugins })
     expect(replacement.inputs).toEqual([value])
     expect(container.querySelector('h1')?.id).toBe('heading')
+  })
+
+  it.each([false, true])('reuses factory configuration with caller overrides: %s', async (override) => {
+    const probe = observe()
+    const Base = defineMarkdownComponent({ extends: MarkdownClient, plugins: probe.plugins, headingIds: false })
+    const Defined = defineMarkdownComponent({ extends: Base })
+    const props = override ? { options: { headingIds: true }, plugins: [{ name: 'caller' }] } : {}
+    const first = '# Completed\n\nFirst paragraph.\n\nLast paragraph'
+    async function update(value: string, config: Pick<MarkdownProps, 'options' | 'plugins'> = props) {
+      await act(async () =>
+        root.render(
+          <Defined
+            value={value}
+            streaming
+            {...config}
+          />
+        )
+      )
+    }
+    await update(first)
+    expect(container.querySelector('h1')?.hasAttribute('id')).toBe(override)
+    await update(first + ' grows')
+    expect(probe.inputs.at(-1)).not.toContain('# Completed')
+    expect(container.textContent).toContain('Last paragraph grows')
+
+    await update(first + ' grows', { ...props, options: { headingIds: !override } })
+    expect(probe.inputs.at(-1)).toBe(first + ' grows')
+    expect(container.querySelector('h1')?.hasAttribute('id')).toBe(!override)
+    const replacement = observe()
+    replacement.plugins[0].name = 'replacement'
+    await update(first + ' grows', { ...props, plugins: replacement.plugins })
+    expect(replacement.inputs).toEqual([first + ' grows'])
   })
 
   it('applies unwrap changes and bypasses parsing for documents', async () => {
