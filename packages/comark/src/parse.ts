@@ -191,7 +191,8 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
 
       if (opts.streaming) {
         state.tree = {
-          frontmatter: frontmatterText ? frontmatterData : (prevOutput?.frontmatter ?? frontmatterData),
+          frontmatter:
+            frontmatterText || !isStartsWithLastInput ? frontmatterData : (prevOutput?.frontmatter ?? frontmatterData),
           meta: {},
           nodes: [...state.reusableNodes, ...nodes],
         }

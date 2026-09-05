@@ -218,7 +218,7 @@ packages/comark-react/
 │   ├── components/
 │   │   ├── Markdown.tsx      # High-level markdown → render component
 │   │   ├── MarkdownDocument.tsx # Low-level AST → render component
-│   │   ├── MarkdownClient.tsx # Client-only markdown component
+│   │   ├── MarkdownClient.tsx # Client-only markdown with a serialized incremental parser
 │   │   ├── MarkdownLive.tsx  # Streaming/live markdown component
 │   │   ├── Math.tsx          # Math rendering component
 │   │   └── Mermaid.tsx       # Mermaid rendering component
@@ -255,6 +255,7 @@ packages/comark-svelte/
 ├── src/
 │   ├── index.ts              # Entry point (@comark/svelte)
 │   ├── types.ts              # Shared prop interfaces
+│   ├── internal/parse.ts     # Serialized incremental parser, preserving plugin errors
 │   ├── components/
 │   │   ├── Markdown.svelte       # High-level markdown → render ($state + $effect)
 │   │   ├── MarkdownDocument.svelte # Low-level AST → render component
