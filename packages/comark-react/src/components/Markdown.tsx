@@ -105,8 +105,8 @@ export interface MarkdownProps {
 export async function Markdown({
   children,
   value,
-  options,
-  plugins,
+  options = {},
+  plugins = [],
   unwrap = false,
   components: customComponents = {},
   componentsManifest,
@@ -139,8 +139,7 @@ export async function Markdown({
     return (
       <MarkdownClient
         value={source}
-        options={options}
-        unwrap={unwrap}
+        options={parseOptions}
         plugins={plugins}
         components={customComponents}
         componentsManifest={componentsManifest}

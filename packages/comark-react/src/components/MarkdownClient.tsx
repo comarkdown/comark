@@ -1,7 +1,7 @@
 'use client'
 
 import { use, useDeferredValue, useMemo, Suspense } from 'react'
-import { createMarkdownParser } from 'comark'
+import { parseMarkdown } from 'comark'
 import type { MarkdownDocument as MarkdownDocumentType } from 'comark'
 import { isMarkdownDocument } from 'comark/utils'
 import { MarkdownLive } from './MarkdownLive.tsx'
@@ -35,40 +35,19 @@ function MarkdownContent({
   )
 }
 
-export function MarkdownClient({
-  children,
-  value,
-  options,
-  plugins,
-  unwrap = false,
-  streaming = false,
-  ...rest
-}: MarkdownProps) {
+export function MarkdownClient({ children, value, options = {}, plugins = [], ...rest }: MarkdownProps) {
   const content = isMarkdownDocument(value)
     ? value
     : children
       ? String(children)
       : ((value as string | undefined) ?? '')
 
-  const parse = useMemo(() => {
-    let parser: ReturnType<typeof createMarkdownParser> | undefined
-    let pending: Promise<unknown> = Promise.resolve()
-
-    // Keep streaming state in order without hiding plugin errors from Suspense.
-    return (source: string, streaming: boolean) => {
-      const run = () => {
-        parser ??= createMarkdownParser({ ...options, ...(unwrap ? { unwrap } : {}), plugins })
-        return parser(source, { streaming })
-      }
-      const result = pending.then(run, run)
-      pending = result
-      return result
-    }
-  }, [options, plugins, unwrap])
-
+  // Re-creates the promise only when content changes.
+  // Note: options/plugins should be stable references (defined outside render or memoized).
+  // Pre-parsed documents resolve immediately without calling parseMarkdown().
   const parsePromise = useMemo(
-    () => (isMarkdownDocument(content) ? Promise.resolve(content) : parse(content, streaming)),
-    [content, parse, streaming]
+    () => (isMarkdownDocument(content) ? Promise.resolve(content) : parseMarkdown(content, { ...options, plugins })),
+    [content]
   )
 
   // Keep showing the previous parsed result while a new parse is pending —
@@ -80,7 +59,6 @@ export function MarkdownClient({
       <MarkdownContent
         parsePromise={deferredPromise}
         {...rest}
-        streaming={streaming}
       />
     </Suspense>
   )

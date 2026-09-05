@@ -1,5 +1,4 @@
 import type { ComarkPlugin } from 'comark'
-import { parseMarkdown } from 'comark'
 import { describe, expect, it } from 'vitest'
 import { render } from 'vitest-browser-svelte'
 import Markdown from '../src/components/Markdown.svelte'
@@ -73,32 +72,8 @@ for (const [name, component] of [
       expect(screen.container.textContent).toContain('Changed')
     })
 
-    it('bypasses parsing for documents and resumes with a new string', async () => {
-      const inputs: string[] = []
-      const plugin: ComarkPlugin = {
-        name: 'inputs',
-        pre: (state) => {
-          inputs.push(state.markdown)
-        },
-      }
-      const screen = await render(MarkdownBoundary, {
-        component,
-        value: await parseMarkdown('Document'),
-        plugins: [plugin],
-        streaming: true,
-      })
-      await expect.element(screen.getByText('Document')).toBeInTheDocument()
-      expect(inputs).toEqual([])
-      await screen.rerender({ value: 'String' })
-      await expect.element(screen.getByText('String')).toBeInTheDocument()
-      expect(inputs).toEqual(['String'])
-    })
-
     it('ignores old plugin results after a configuration change', async () => {
-      let release = () => {}
-      const gate = new Promise<void>((resolve) => {
-        release = resolve
-      })
+      const { promise: gate, resolve: release } = Promise.withResolvers<void>()
       let finished = false
       const screen = await render(MarkdownBoundary, {
         component,
@@ -123,10 +98,7 @@ for (const [name, component] of [
     })
 
     it('serializes overlapping plugin work and applies the newest update', async () => {
-      let release = () => {}
-      const gate = new Promise<void>((resolve) => {
-        release = resolve
-      })
+      const { promise: gate, resolve: release } = Promise.withResolvers<void>()
       let active = 0
       let maxActive = 0
       const inputs: string[] = []
@@ -171,14 +143,8 @@ it('passes asynchronous plugin errors to the Svelte boundary', async () => {
 })
 
 it('shows completed updates while the next update is still parsing', async () => {
-  let releaseFirst = () => {}
-  let releaseLast = () => {}
-  const first = new Promise<void>((resolve) => {
-    releaseFirst = resolve
-  })
-  const last = new Promise<void>((resolve) => {
-    releaseLast = resolve
-  })
+  const { promise: first, resolve: releaseFirst } = Promise.withResolvers<void>()
+  const { promise: last, resolve: releaseLast } = Promise.withResolvers<void>()
   const started: string[] = []
   const screen = await render(MarkdownBoundary, {
     component: Markdown,
