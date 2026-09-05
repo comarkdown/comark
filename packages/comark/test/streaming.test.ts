@@ -190,6 +190,18 @@ describe('streaming mode', () => {
       expect(result1.frontmatter).toEqual({ title: 'Hello' })
       expect(result2.frontmatter).toEqual({ title: 'Hello' })
     })
+
+    it.each([
+      ['without frontmatter', '# Replacement', {}],
+      ['with new frontmatter', '---\ntitle: New\n---\n\n# Replacement', { title: 'New' }],
+    ])('replaces stream frontmatter when the source changes %s', async (_, replacement, frontmatter) => {
+      const parse = createMarkdownParser()
+      await parse('---\ntitle: Old\n---\n\n# Original', { streaming: true })
+
+      const result = await parse(replacement, { streaming: true })
+
+      expect(result.frontmatter).toEqual(frontmatter)
+    })
   })
 
   describe('streaming with MDC components', () => {
