@@ -9,54 +9,45 @@
 ## AST
 
 ```json
-
 {
-   "frontmatter":{
-      
-   },
-   "meta":{
-      
-   },
-   "nodes":[
+  "frontmatter": {},
+  "meta": {},
+  "nodes": [
+    [
+      "p",
+      {},
       [
-         "p",
-         {
-            
-         },
-         [
-            "a",
-            {
-               "href":"#"
-            },
-            [
-              "span",
-              {},
-              "1"
-            ],
-            " Document"
-         ]
-      ],
-      [
-         "p",
-         {
-            
-         },
-         [
-            "a",
-            {
-               "href":"https://example.com"
-            },
-            [
-              "span",
-              {
-                "class": "cls"
-              },
-              "link-name"
-            ],
-            " more"
-         ]
+        "a",
+        {
+          "href": "#"
+        },
+        [
+          "span",
+          {},
+          "1"
+        ],
+        " Document"
       ]
-   ]
+    ],
+    [
+      "p",
+      {},
+      [
+        "a",
+        {
+          "href": "https://example.com"
+        },
+        [
+          "span",
+          {
+            "class": "cls"
+          },
+          "link-name"
+        ],
+        " more"
+      ]
+    ]
+  ]
 }
 ```
 

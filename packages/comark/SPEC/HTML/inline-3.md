@@ -1,9 +1,7 @@
 ## Input
 
 ```md
-<br>
-
-# After br
+<h1>Hello **World**</h1>
 ```
 
 ## AST
@@ -14,20 +12,19 @@
   "meta": {},
   "nodes": [
     [
-      "br",
+      "h1",
       {
         "$": {
           "html": 1,
           "block": 1
         }
-      }
-    ],
-    [
-      "h1",
-      {
-        "id": "after-br"
       },
-      "After br"
+      "Hello ",
+      [
+        "strong",
+        {},
+        "World"
+      ]
     ]
   ]
 }
@@ -36,14 +33,11 @@
 ## HTML
 
 ```html
-<br>
-<h1 id="after-br">After br</h1>
+<h1>Hello <strong>World</strong></h1>
 ```
 
 ## Markdown
 
 ```md
-<br>
-
-# After br
+<h1>Hello **World**</h1>
 ```

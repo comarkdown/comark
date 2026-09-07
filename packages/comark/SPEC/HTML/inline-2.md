@@ -1,7 +1,7 @@
 ## Input
 
 ```md
-<Hello>Hello **World**</Hello>
+<span>Hello **World**</span>
 ```
 
 ## AST
@@ -15,7 +15,7 @@
       "p",
       {},
       [
-        "hello",
+        "span",
         {
           "$": {
             "html": 1,
@@ -37,13 +37,11 @@
 ## HTML
 
 ```html
-<p>
-  <hello>Hello <strong>World</strong></hello>
-</p>
+<p><span>Hello <strong>World</strong></span></p>
 ```
 
 ## Markdown
 
 ```md
-<hello>Hello **World**</hello>
+<span>Hello **World**</span>
 ```

@@ -84,4 +84,29 @@ describe('applyAutoUnwrap', () => {
     // Should unwrap the paragraph and filter out whitespace
     expect(result).toEqual(['warning', {}, 'Warning text'])
   })
+
+  it('should not unwrap a markdown paragraph next to HTML siblings', () => {
+    const node: Node = [
+      'details',
+      { $: { html: 1, block: 1 } },
+      ['summary', { $: { html: 1, block: 0 } }, 'Top'],
+      ['p', {}, 'Body'],
+    ]
+
+    const result = applyAutoUnwrap(node)
+    // Paragraph is not the sole child — keep the wrapper.
+    expect(result).toEqual([
+      'details',
+      { $: { html: 1, block: 1 } },
+      ['summary', { $: { html: 1, block: 0 } }, 'Top'],
+      ['p', {}, 'Body'],
+    ])
+  })
+
+  it('should still unwrap a sole markdown paragraph under an HTML container', () => {
+    const node: Node = ['details', { $: { html: 1, block: 1 } }, ['p', {}, 'Only body']]
+
+    const result = applyAutoUnwrap(node)
+    expect(result).toEqual(['details', { $: { html: 1, block: 1 } }, 'Only body'])
+  })
 })

@@ -16,9 +16,17 @@ Hello **World**
     [
       "hello",
       {
-        "$": { "html": 1, "block": 1 }
+        "$": {
+          "html": 1,
+          "block": 1
+        }
       },
-      "Hello **World**"
+      "Hello ",
+      [
+        "strong",
+        {},
+        "World"
+      ]
     ]
   ]
 }
@@ -28,7 +36,7 @@ Hello **World**
 
 ```html
 <hello>
-  Hello **World**
+  Hello <strong>World</strong>
 </hello>
 ```
 
