@@ -226,13 +226,14 @@ after \`code\`
   </a>
 </p>`)
 
+    // Nested <a> spans multiple lines → block: 1; void <img> is single-line → block: 0
     expect(result.nodes).toEqual([
       [
         'p',
         { $: { html: 1, block: 1 }, align: 'center' },
         [
           'a',
-          { $: { html: 1, block: 0 }, href: sponsorsUrl },
+          { $: { html: 1, block: 1 }, href: sponsorsUrl },
           ['img', { $: { html: 1, block: 0 }, src: sponsorsUrl, alt: 'Sponsors' }],
         ],
       ],

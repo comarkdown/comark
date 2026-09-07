@@ -18,11 +18,11 @@ export const VOID_ELEMENTS = new Set([
   'wbr',
 ])
 
-function attribsToComarkAttrs(attribs: Record<string, string>, isInline: boolean = false): Record<string, unknown> {
+function attribsToComarkAttrs(attribs: Record<string, string>, block: 0 | 1): Record<string, unknown> {
   const attrs: Record<string, unknown> = {
     $: {
       html: 1,
-      block: isInline ? 0 : 1,
+      block,
     },
   }
   for (const key in attribs) {
@@ -36,6 +36,18 @@ function attribsToComarkAttrs(attribs: Record<string, string>, isInline: boolean
   return attrs
 }
 
+/**
+ * `$.block` rules for HTML-origin nodes:
+ * - no parent (document root of this HTML fragment) → block: 1
+ * - tag span contains a newline → block: 1
+ * - otherwise (nested, single-line) → block: 0
+ */
+function resolveHtmlBlock(isRoot: boolean, source: string, startIndex: number, endIndex: number): 0 | 1 {
+  if (isRoot) return 1
+  if (source.slice(startIndex, endIndex + 1).includes('\n')) return 1
+  return 0
+}
+
 interface HtmlTagInfo {
   tag: string
   attrs: Record<string, unknown>
@@ -46,6 +58,8 @@ interface HtmlTagInfo {
 /**
  * Parse a single inline HTML tag fragment (opening, closing, or void).
  * Returns null if the content is not a recognisable HTML tag.
+ *
+ * Inline tokens are always single-line tag fragments → block: 0.
  */
 export function parseInlineHtmlTag(html: string): HtmlTagInfo | null {
   const trimmed = html.trim()
@@ -63,7 +77,7 @@ export function parseInlineHtmlTag(html: string): HtmlTagInfo | null {
       onopentag(name, attribs) {
         info = {
           tag: name,
-          attrs: attribsToComarkAttrs(attribs, true),
+          attrs: attribsToComarkAttrs(attribs, 0),
           isVoid: VOID_ELEMENTS.has(name),
           isClose: false,
         }
@@ -77,20 +91,32 @@ export function parseInlineHtmlTag(html: string): HtmlTagInfo | null {
   return info
 }
 
+interface HtmlStackFrame {
+  tag: string
+  attrs: Record<string, unknown>
+  children: Node[]
+  startIndex: number
+  isRoot: boolean
+}
+
 /**
  * Parse a full HTML string into Nodes using htmlparser2.
  * Handles nested elements, text, void elements, and comments.
  */
 export function htmlToNodes(html: string): Node[] {
+  const source = html.trim()
   const root: Node[] = []
-  const stack: { tag: string; attrs: Record<string, unknown>; children: Node[] }[] = []
+  const stack: HtmlStackFrame[] = []
 
   const parser = new Parser(
     {
       onopentag(name, attribs) {
-        const attrs = attribsToComarkAttrs(attribs)
+        const startIndex = parser.startIndex
+        const isRoot = stack.length === 0
+
         if (VOID_ELEMENTS.has(name)) {
-          const node = [name, attrs] as Node
+          const block = resolveHtmlBlock(isRoot, source, startIndex, parser.endIndex)
+          const node = [name, attribsToComarkAttrs(attribs, block)] as Node
           if (stack.length > 0) {
             stack[stack.length - 1].children.push(node)
           } else {
@@ -98,7 +124,15 @@ export function htmlToNodes(html: string): Node[] {
           }
           return
         }
-        stack.push({ tag: name, attrs, children: [] })
+
+        // Provisional attrs; $.block is finalized on matching close (need full span).
+        stack.push({
+          tag: name,
+          attrs: attribsToComarkAttrs(attribs, isRoot ? 1 : 0),
+          children: [],
+          startIndex,
+          isRoot,
+        })
       },
 
       ontext(text) {
@@ -123,6 +157,8 @@ export function htmlToNodes(html: string): Node[] {
         if (idx >= 0) {
           while (stack.length > idx) {
             const frame = stack.pop()!
+            const block = resolveHtmlBlock(frame.isRoot, source, frame.startIndex, parser.endIndex)
+            ;(frame.attrs.$ as { html: 1; block: 0 | 1 }).block = block
             const node =
               frame.children.length > 0
                 ? ([frame.tag, frame.attrs, ...frame.children] as Node)
@@ -148,8 +184,24 @@ export function htmlToNodes(html: string): Node[] {
     { decodeEntities: true }
   )
 
-  parser.write(html.trim())
+  parser.write(source)
   parser.end()
+
+  // Incomplete open tags left on the stack (no closer) — still emit as nodes.
+  while (stack.length > 0) {
+    const frame = stack.pop()!
+    const block = resolveHtmlBlock(frame.isRoot, source, frame.startIndex, source.length - 1)
+    ;(frame.attrs.$ as { html: 1; block: 0 | 1 }).block = block
+    const node =
+      frame.children.length > 0
+        ? ([frame.tag, frame.attrs, ...frame.children] as Node)
+        : ([frame.tag, frame.attrs] as Node)
+    if (stack.length > 0) {
+      stack[stack.length - 1].children.push(node)
+    } else {
+      root.push(node)
+    }
+  }
 
   return root
 }
