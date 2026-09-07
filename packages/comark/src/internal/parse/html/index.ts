@@ -121,6 +121,10 @@ function inferBlockFromChildren(nodes: Node[], isRootLevel: boolean): void {
 export function htmlToNodes(html: string): Node[] {
   const root: Node[] = []
   const stack: { tag: string; attrs: Record<string, unknown>; children: Node[] }[] = []
+  const append = (node: Node) => {
+    if (stack.length > 0) stack[stack.length - 1].children.push(node)
+    else root.push(node)
+  }
 
   const parser = new Parser(
     {
@@ -128,12 +132,7 @@ export function htmlToNodes(html: string): Node[] {
         // Provisional block:1; refined by inferBlockFromChildren after close.
         const attrs = attribsToComarkAttrs(attribs, false)
         if (VOID_ELEMENTS.has(name)) {
-          const node = [name, attrs] as Node
-          if (stack.length > 0) {
-            stack[stack.length - 1].children.push(node)
-          } else {
-            root.push(node)
-          }
+          append([name, attrs] as Node)
           return
         }
         stack.push({ tag: name, attrs, children: [] })
@@ -141,18 +140,11 @@ export function htmlToNodes(html: string): Node[] {
 
       ontext(text) {
         const trimmed = text.trim()
-        if (!trimmed) return
-        if (stack.length > 0) {
-          stack[stack.length - 1].children.push(trimmed)
-        } else {
-          root.push(trimmed)
-        }
+        if (trimmed) append(trimmed)
       },
 
       onclosetag(name) {
-        if (VOID_ELEMENTS.has(name)) {
-          return
-        }
+        if (VOID_ELEMENTS.has(name)) return
         // Find matching frame (handles mismatched tags gracefully)
         let idx = stack.length - 1
         while (idx >= 0 && stack[idx].tag !== name) {
@@ -161,26 +153,17 @@ export function htmlToNodes(html: string): Node[] {
         if (idx >= 0) {
           while (stack.length > idx) {
             const frame = stack.pop()!
-            const node =
-              frame.children.length > 0
-                ? ([frame.tag, frame.attrs, ...frame.children] as Node)
-                : ([frame.tag, frame.attrs] as Node)
-            if (stack.length > 0) {
-              stack[stack.length - 1].children.push(node)
-            } else {
-              root.push(node)
-            }
+            append(
+              (frame.children.length > 0
+                ? [frame.tag, frame.attrs, ...frame.children]
+                : [frame.tag, frame.attrs]) as Node
+            )
           }
         }
       },
 
       oncomment(data) {
-        const node = [null, {}, data] as unknown as Node
-        if (stack.length > 0) {
-          stack[stack.length - 1].children.push(node)
-        } else {
-          root.push(node)
-        }
+        append([null, {}, data] as unknown as Node)
       },
     },
     { decodeEntities: true }

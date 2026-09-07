@@ -57,25 +57,14 @@ export async function html(node: ElementNode, state: State, parent?: ElementNode
     !inlineTags.has(String(firstMeaningfulChild[0])) &&
     !(firstMeaningfulChild[1] as Record<string, any> | undefined)?.$?.html
 
-  let oneLiner = isBlock && hasOnlyTextChildren
-
-  if (!oneLiner && inlineTags.has(String(tag)) && hasOnlyTextChildren) {
-    oneLiner = true
-  }
-  if (tag === 'pre') {
-    oneLiner = true
-  }
-
-  // If parent is a paragraph, it is inline
-  if (parent?.[0] === 'p' || state.context.inline) {
-    oneLiner = true
-  }
-
-  // Inline HTML (`block: 0` with only text/inline children) collapses to one line.
-  // Block wrappers with real block children stay multi-line.
-  if ($.block === 0 && !hasBlockChildren) {
-    oneLiner = true
-  }
+  const oneLiner =
+    tag === 'pre' ||
+    parent?.[0] === 'p' ||
+    state.context.inline ||
+    (hasOnlyTextChildren && (isBlock || inlineTags.has(String(tag)))) ||
+    // Inline HTML (`block: 0` with only text/inline children) collapses to one line.
+    // Block wrappers with real block children stay multi-line.
+    ($.block === 0 && !hasBlockChildren)
 
   const isSelfClose = selfCloseTags.has(String(tag))
 

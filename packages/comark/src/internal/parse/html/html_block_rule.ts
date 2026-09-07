@@ -12,14 +12,16 @@ import type { StateBlock } from 'markdown-exit'
 import block_names from './html_blocks.ts'
 import { HTML_OPEN_CLOSE_TAG_RE } from './html_re.ts'
 
+const BLANK_LINE = /^$/
+
 const HTML_SEQUENCES: [RegExp, RegExp, boolean][] = [
   [/^<(script|pre|style|textarea)(?=(\s|>|$))/i, /<\/(script|pre|style|textarea)>/i, true],
   [/^<!--/, /-->/, true],
   [/^<\?/, /\?>/, true],
   [/^<![A-Z]/, />/, true],
   [/^<!\[CDATA\[/, /\]\]>/, true],
-  [new RegExp(`^</?(${block_names.join('|')})(?=(\\s|/?>|$))`, 'i'), /^$/, true],
-  [new RegExp(`${HTML_OPEN_CLOSE_TAG_RE.source}\\s*$`), /^$/, false],
+  [new RegExp(`^</?(${block_names.join('|')})(?=(\\s|/?>|$))`, 'i'), BLANK_LINE, true],
+  [new RegExp(`${HTML_OPEN_CLOSE_TAG_RE.source}\\s*$`), BLANK_LINE, false],
 ]
 
 /** Open tag name when `line` is a lone start tag (`<foo>` / `<foo attr>`), else null. */
@@ -72,7 +74,7 @@ export default function createHtmlBlockRule(options: HtmlBlockRuleOptions = {}) 
     // markdown can be tokenized and absorbed by the token processor (when
     // `markdown` is enabled).
     const closer = HTML_SEQUENCES[i][1]
-    const openerTag = allowIncompleteMarkdown && closer.source === '^$' ? loneOpenTagName(lineText) : null
+    const openerTag = allowIncompleteMarkdown && closer === BLANK_LINE ? loneOpenTagName(lineText) : null
     const matchingClose = openerTag ? new RegExp(`^</\\s*${escapeRegExp(openerTag)}\\s*>\\s*$`, 'i') : null
 
     // Walk forward until the closer regex matches or we hit a blank line.
@@ -95,7 +97,7 @@ export default function createHtmlBlockRule(options: HtmlBlockRuleOptions = {}) 
 
       // Incomplete open tag running to EOF with no closer: leave body for markdown
       // (opt-in; `markdown: false` keeps CommonMark raw until blank line / EOF).
-      if (allowIncompleteMarkdown && openerTag && !sawMatchingClose && nextLine >= endLine) {
+      if (openerTag && !sawMatchingClose && nextLine >= endLine) {
         nextLine = startLine + 1
       }
     }

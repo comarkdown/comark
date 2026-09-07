@@ -161,13 +161,9 @@ function processHtmlBlockTokens(
 ): { nodes: Node[]; nextIndex: number } {
   const content = typeof tokens[startIndex]?.content === 'string' ? tokens[startIndex].content : ''
   const tag = htmlOpenTagName(content)
+  const depth = tag && !VOID_ELEMENTS.has(tag) ? htmlOuterTagDepth(content, tag) : 0
   // Comments, closers, void tags, and already-balanced fragments stay as-is.
-  if (!tag || VOID_ELEMENTS.has(tag)) {
-    return { nodes: htmlToNodes(content), nextIndex: startIndex + 1 }
-  }
-
-  const depth = htmlOuterTagDepth(content, tag)
-  if (depth <= 0) {
+  if (!tag || depth <= 0) {
     return { nodes: htmlToNodes(content), nextIndex: startIndex + 1 }
   }
 
