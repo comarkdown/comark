@@ -24,15 +24,11 @@
 import type { MarkdownExit } from 'markdown-exit'
 import type { MarkdownItPlugin } from '../types.ts'
 import { defineComarkPlugin } from '../utils/helpers.ts'
-import html_block from '../internal/parse/html/html_block_rule.ts'
-import html_inline from '../internal/parse/html/html_inline_rule.ts'
+// import html_balance from '../internal/parse/html/html_balance_rule.ts'
 
 function markdownItHtml(md: MarkdownExit) {
   md.set({ html: true })
-  md.inline.ruler.before('text', 'comark_html_inline', html_inline)
-  md.block.ruler.before('html_block', 'comark_html_block', html_block, {
-    alt: ['paragraph', 'reference', 'blockquote'],
-  })
+  // md.core.ruler.after('inline', 'comark_html_balance', html_balance)
 }
 
 export default defineComarkPlugin(() => ({

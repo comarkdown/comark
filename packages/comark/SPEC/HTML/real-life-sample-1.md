@@ -27,7 +27,7 @@
         {
           "$": {
             "html": 1,
-            "block": 0
+            "block": 1
           },
           "href": "https://go.nuxt.com/discord"
         },
@@ -36,7 +36,7 @@
           {
             "$": {
               "html": 1,
-              "block": 0
+              "block": 1
             },
             "width": "20",
             "src": "./.github/assets/discord.svg",
@@ -51,7 +51,7 @@
         {
           "$": {
             "html": 1,
-            "block": 0
+            "block": 1
           },
           "href": "https://go.nuxt.com/x"
         },
@@ -60,7 +60,7 @@
           {
             "$": {
               "html": 1,
-              "block": 0
+              "block": 1
             },
             "width": "20",
             "src": "./.github/assets/twitter.svg",
@@ -75,7 +75,7 @@
         {
           "$": {
             "html": 1,
-            "block": 0
+            "block": 1
           },
           "href": "https://go.nuxt.com/github"
         },
@@ -84,7 +84,7 @@
           {
             "$": {
               "html": 1,
-              "block": 0
+              "block": 1
             },
             "width": "20",
             "src": "./.github/assets/github.svg",
@@ -99,7 +99,7 @@
         {
           "$": {
             "html": 1,
-            "block": 0
+            "block": 1
           },
           "href": "https://go.nuxt.com/bluesky"
         },
@@ -108,7 +108,7 @@
           {
             "$": {
               "html": 1,
-              "block": 0
+              "block": 1
             },
             "width": "20",
             "src": "./.github/assets/bluesky.svg",
