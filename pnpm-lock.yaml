@@ -418,7 +418,7 @@ importers:
         version: link:../packages/comark
       comark-docs:
         specifier: github:comarkdown/comark-docs#feat/client-side-fts-search
-        version: https://codeload.github.com/comarkdown/comark-docs/tar.gz/d6a2ca864ccfa064936393a0f874fa8a3959314e(9c9e49209bc8e691974cb7f45d2ada59)
+        version: https://codeload.github.com/comarkdown/comark-docs/tar.gz/01457f6606c2d0c9bdb9b15d0f746b4923ec266f(9c9e49209bc8e691974cb7f45d2ada59)
       katex:
         specifier: 'catalog:'
         version: 0.17.0
@@ -2726,11 +2726,17 @@ packages:
     resolution: {integrity: sha512-bV0Tgo9K4hfPCek+aMAn81RppFKv2ySDQeMoSZuvTASywNTnVJCArCZE2FWqpvIatKu7VMRLWlR1EazvVhDyhQ==}
     engines: {node: '>=18.18'}
 
+  '@iconify-json/logos@1.2.14':
+    resolution: {integrity: sha512-O36DicXkgAMT6NAsH7MTWlOql8NktHz9fBCItTjz6L/9gyRXw4vQj6qTeVgww5UZWiVugUV1MhVFA/g9HWIkBw==}
+
   '@iconify-json/lucide@1.2.126':
     resolution: {integrity: sha512-Fl3OfR71yeWLrlTLp6C4W5W3rJJDWH9/e70mjtq9VAldYDxvHh149JMNPz7foTeLLTE2Paynnp2aYKVL9rgF5Q==}
 
   '@iconify-json/simple-icons@1.2.93':
     resolution: {integrity: sha512-/XhANjfGYOuqvSR3TmUnkQkINvQ4GVjVuukvymRbxtVFBvIq/yiXJqCDycKcQPT401OYT9H2vIY6ihAlz1QIAw==}
+
+  '@iconify-json/unjs@1.2.4':
+    resolution: {integrity: sha512-ueSrChjHps8u6jTSDYTAp+4OQ/k+E11PbKZQjKkDVnOxNpC+/fUXXkYgrnqEUgT0rSvUiS0B7X5A8GcsP/PjOA==}
 
   '@iconify-json/vscode-icons@1.2.75':
     resolution: {integrity: sha512-9nPLpK9cd35iCEZYRSPOmhZ7S2IK4np8Vf/tXdswe5rKhV9Twt+oJ2y+tKfRlugJQavhTJBvejvCpj7Aukki5A==}
@@ -7444,8 +7450,8 @@ packages:
     version: 0.3.0
     hasBin: true
 
-  comark-docs@https://codeload.github.com/comarkdown/comark-docs/tar.gz/d6a2ca864ccfa064936393a0f874fa8a3959314e:
-    resolution: {gitHosted: true, integrity: sha512-pmAtLU9O354sGfIs0bhEngTdOtev7gclmp7SLjasRhzQQzUUeTzw1Z6UoQTy/e4XWrkFPyM6rMUwxmm3fPJBrw==, tarball: https://codeload.github.com/comarkdown/comark-docs/tar.gz/d6a2ca864ccfa064936393a0f874fa8a3959314e}
+  comark-docs@https://codeload.github.com/comarkdown/comark-docs/tar.gz/01457f6606c2d0c9bdb9b15d0f746b4923ec266f:
+    resolution: {gitHosted: true, integrity: sha512-CkCw/Rn7mtGL0L1l6CGOGkNRs7gg4GvPsSG4Tkb9OOwwyquK0sU4Ei0h24OeWxtaiq2oJvHfW0Bl8pAkYEFH2Q==, tarball: https://codeload.github.com/comarkdown/comark-docs/tar.gz/01457f6606c2d0c9bdb9b15d0f746b4923ec266f}
     version: 0.0.1
     peerDependencies:
       nuxt: ^4.5.0
@@ -13292,11 +13298,19 @@ snapshots:
   '@humanwhocodes/retry@0.4.3':
     optional: true
 
+  '@iconify-json/logos@1.2.14':
+    dependencies:
+      '@iconify/types': 2.0.0
+
   '@iconify-json/lucide@1.2.126':
     dependencies:
       '@iconify/types': 2.0.0
 
   '@iconify-json/simple-icons@1.2.93':
+    dependencies:
+      '@iconify/types': 2.0.0
+
+  '@iconify-json/unjs@1.2.4':
     dependencies:
       '@iconify/types': 2.0.0
 
@@ -18866,13 +18880,15 @@ snapshots:
       - shiki
       - uploadthing
 
-  comark-docs@https://codeload.github.com/comarkdown/comark-docs/tar.gz/d6a2ca864ccfa064936393a0f874fa8a3959314e(9c9e49209bc8e691974cb7f45d2ada59):
+  comark-docs@https://codeload.github.com/comarkdown/comark-docs/tar.gz/01457f6606c2d0c9bdb9b15d0f746b4923ec266f(9c9e49209bc8e691974cb7f45d2ada59):
     dependencies:
       '@ai-sdk/gateway': 4.0.64(zod@4.4.3)
       '@ai-sdk/vue': 4.0.79(vue@3.5.41(typescript@6.0.3))(zod@4.4.3)
       '@comark/nuxt': 0.6.2(7193ce70ae135dfa01d97132c0c743e0)
+      '@iconify-json/logos': 1.2.14
       '@iconify-json/lucide': 1.2.126
       '@iconify-json/simple-icons': 1.2.93
+      '@iconify-json/unjs': 1.2.4
       '@iconify-json/vscode-icons': 1.2.75
       '@iconify/vue': 5.0.1(vue@3.5.41(typescript@6.0.3))
       '@nuxt/kit': 4.5.2(magic-string@1.2.3)(magicast@0.5.4)(oxc-parser@0.133.0)(rolldown@1.1.5)(unplugin@3.3.0(esbuild@0.28.1)(rolldown@1.1.5)(rollup@4.62.2)(vite@8.1.4(@types/node@26.2.0)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.99.0)(terser@5.49.0)(tsx@4.23.0)(yaml@2.9.0)))
