@@ -22,17 +22,13 @@ options:
       {
         "$": {
           "html": 1,
-          "block": 0
+          "block": 1
         }
       },
       [
-        "p",
+        "strong",
         {},
-        [
-          "strong",
-          {},
-          "bold"
-        ]
+        "bold"
       ]
     ]
   ]
@@ -43,7 +39,7 @@ options:
 
 ```html
 <ai-thinking>
-  <p><strong>bold</strong></p>
+  <strong>bold</strong>
 </ai-thinking>
 ```
 
@@ -51,8 +47,6 @@ options:
 
 ```md
 <ai-thinking>
-
 **bold**
-
 </ai-thinking>
 ```

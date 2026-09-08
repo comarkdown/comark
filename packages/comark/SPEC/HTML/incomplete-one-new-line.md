@@ -17,7 +17,7 @@
       {
         "$": {
           "html": 1,
-          "block": 0
+          "block": 1
         }
       },
       [
@@ -33,11 +33,15 @@
 ## HTML
 
 ```html
-<ai-thinking><strong>bold</strong></ai-thinking>
+<ai-thinking>
+  <strong>bold</strong>
+</ai-thinking>
 ```
 
 ## Markdown
 
 ```md
-<ai-thinking>**bold**</ai-thinking>
+<ai-thinking>
+**bold**
+</ai-thinking>
 ```

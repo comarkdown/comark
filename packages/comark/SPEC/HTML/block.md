@@ -14,7 +14,7 @@ Hello **World**
   "meta": {},
   "nodes": [
     [
-      "hello",
+      "Hello",
       {
         "$": {
           "html": 1,
@@ -35,15 +35,15 @@ Hello **World**
 ## HTML
 
 ```html
-<hello>
+<Hello>
   Hello <strong>World</strong>
-</hello>
+</Hello>
 ```
 
 ## Markdown
 
 ```md
-<hello>
+<Hello>
 Hello **World**
-</hello>
+</Hello>
 ```

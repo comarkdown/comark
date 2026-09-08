@@ -3,6 +3,8 @@
 import { decodeHTML } from 'entities'
 import type { Node, MarkdownDocument } from 'comark'
 
+export { decodeHTML } from 'entities'
+
 type VisitResult = Node | false | undefined | void
 
 /**

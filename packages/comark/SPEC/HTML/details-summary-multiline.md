@@ -65,7 +65,6 @@ Explain
 <summary>
 Hello
 </summary>
-
 Explain
 </details>
 ```

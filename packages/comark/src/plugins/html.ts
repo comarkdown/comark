@@ -8,6 +8,13 @@
  * Pass `registerDefaultPlugins: false` (and omit this plugin) to treat HTML
  * tags as plain text.
  *
+ * Options:
+ * - `markdown` (default `true`): expand text leaves inside closed HTML
+ *   fragments as inline markdown (`<h1>Hello **World**</h1>` → strong).
+ *   When `false`, text inside HTML stays literal (CommonMark default for
+ *   closed html_blocks). Blank-line bodies still nest as markdown tokens
+ *   via bare open/close pairing.
+ *
  * @example
  * ```ts
  * import { parseMarkdown } from 'comark'
@@ -24,14 +31,33 @@
 import type { MarkdownExit } from 'markdown-exit'
 import type { MarkdownItPlugin } from '../types.ts'
 import { defineComarkPlugin } from '../utils/helpers.ts'
-// import html_balance from '../internal/parse/html/html_balance_rule.ts'
 
-function markdownItHtml(md: MarkdownExit) {
-  md.set({ html: true })
-  // md.core.ruler.after('inline', 'comark_html_balance', html_balance)
+export interface HtmlPluginOptions {
+  /**
+   * Expand text leaves inside closed HTML fragments as inline markdown.
+   * @default true
+   */
+  markdown?: boolean
 }
 
-export default defineComarkPlugin(() => ({
-  name: 'html',
-  markdownItPlugins: [markdownItHtml as unknown as MarkdownItPlugin],
-}))
+export default defineComarkPlugin((opts: HtmlPluginOptions = {}) => {
+  const markdown = opts.markdown !== false
+
+  function markdownItHtml(md: MarkdownExit) {
+    md.set({ html: true })
+    // @ts-expect-error - internal utils
+    const html_block = md.block.ruler.__rules__.find((r) => r.name === 'html_block')
+    html_block.fn = () => {}
+    // md.core.ruler.after('inline', 'comark_html_balance', html_balance)
+    // Opt-out marker read by createMarkdownParser: when present, closed HTML
+    // body text stays literal instead of being re-parsed as inline markdown.
+    if (!markdown) {
+      md.core.ruler.push('comark_html_no_markdown', () => {})
+    }
+  }
+
+  return {
+    name: 'html',
+    markdownItPlugins: [markdownItHtml as unknown as MarkdownItPlugin],
+  }
+})

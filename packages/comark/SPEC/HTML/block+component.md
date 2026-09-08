@@ -18,7 +18,7 @@ Default Slot
   "meta": {},
   "nodes": [
     [
-      "hello",
+      "Hello",
       {
         "$": {
           "html": 1,
@@ -38,21 +38,19 @@ Default Slot
 ## HTML
 
 ```html
-<hello>
+<Hello>
   <component>
     Default Slot
   </component>
-</hello>
+</Hello>
 ```
 
 ## Markdown
 
 ```md
-<hello>
-
+<Hello>
   ::component
   Default Slot
   ::
-
-</hello>
+</Hello>
 ```

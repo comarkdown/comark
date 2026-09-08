@@ -92,10 +92,11 @@ Nested content2
 
 ```md
 <details>
-<summary>Top</summary><details>
+<summary>Top</summary>
+<details>
 <summary>Nested</summary>
-
 Nested content
+
 
 Nested content2
 </details>

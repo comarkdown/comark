@@ -57,7 +57,6 @@ Explain
 ```md
 <details>
 <summary>Hello</summary>
-
 Explain
 </details>
 ```
