@@ -346,7 +346,7 @@ describe('createMarkdownParser', () => {
     expect(result.nodes).toEqual(result2.nodes)
   })
 
-  it.only('should parse a markdown file', async () => {
+  it('should parse a markdown file', async () => {
     const parse = createMarkdownParser()
     const result = await parse('\n## Key Features\n\n#', { streaming: true })
     expect(result.nodes).toHaveLength(1)
