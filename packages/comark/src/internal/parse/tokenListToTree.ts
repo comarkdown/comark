@@ -158,67 +158,6 @@ function tryCommentTag(content: string, state: ProcessState): ProcessorResult | 
   return null
 }
 
-function processTokenList(tokens: Token[], state: ProcessState): Node[] {
-  const nodes: Node[] = []
-  let i = 0
-
-  while (i < tokens.length) {
-    const token = tokens[i]
-
-    if (token.type === 'inline') {
-      const free = processInline(token.children ?? [], state)
-      // Free inline at block level (rare) — if stack open, nest; else emit
-      if (state.htmlStack.length > 0) {
-        for (const n of free) state.htmlStack[state.htmlStack.length - 1].children.push(n)
-      } else {
-        nodes.push(...free)
-      }
-      i += 1
-      continue
-    }
-
-    const handler = processors[token.type]
-    if (handler) {
-      const depthBefore = state.htmlStack.length
-      const { nextIndex, node } = handler(tokens, i, state)
-
-      // Frames that were open before or opened during this block and remain open
-      // are block-spanning after we leave the token.
-      if (state.htmlStack.length > 0 && (depthBefore > 0 || state.htmlStack.length >= depthBefore)) {
-        for (const frame of state.htmlStack) frame.block = true
-      }
-
-      if (node !== undefined) {
-        if (state.preservePositions) {
-          preserveLineNumber(tokens, node, i, nextIndex, state)
-        }
-        const free = deliverBlock(state, node)
-        if (free !== undefined) nodes.push(free)
-      }
-      i = nextIndex
-    } else {
-      const componentName = token.tag || 'component'
-      const attrs = processAttributes(token.attrs, { handleJSON: false })
-      nodes.push([componentName, attrs])
-      i += 1
-    }
-  }
-
-  // EOF — close remaining unclosed HTML tags (outermost last)
-  while (state.htmlStack.length > 0) {
-    const frame = state.htmlStack.pop()!
-    frame.block = true
-    const node = frameToNode(frame)
-    if (state.htmlStack.length > 0) {
-      state.htmlStack[state.htmlStack.length - 1].children.push(node)
-    } else {
-      nodes.push(node)
-    }
-  }
-
-  return nodes
-}
-
 /**
  * Walk inline tokens. HTML open/close tags drive `state.htmlStack`.
  * Finished free nodes bubble out when the stack is empty.
@@ -320,20 +259,6 @@ function processPossibleAttributesSyntax(tokens: Token[], value: { nextIndex: nu
   }
 
   return value
-}
-
-function createTokenProcessor(closeType: string, tag: string = '', nest = false) {
-  return (tokens: Token[], start: number, state: ProcessState) => {
-    const open = tokens[start]
-    if (nest) state.insideMarkdownContainer += 1
-    const { children, nextIndex } = processChildren(tokens, start, closeType, state)
-    if (nest) state.insideMarkdownContainer -= 1
-    const attrs = processAttributes(open.attrs)
-    return processPossibleAttributesSyntax(tokens, {
-      nextIndex,
-      node: [tag || open.tag, attrs, ...mergeAdjacentTextNodes(children)],
-    })
-  }
 }
 
 function processBlockChildrenWithSlots(
@@ -471,21 +396,63 @@ function uniqueSlug(slug: string, level: number, state: ProcessState): string {
   return count === 0 ? slug : `${slug}-${count}`
 }
 
+function singleToken(fn: (token: Token) => Node) {
+  return (tokens: Token[], start: number): ProcessorResult =>
+    processPossibleAttributesSyntax(tokens, { nextIndex: start + 1, node: fn(tokens[start]) })
+}
+
+function openCloseToken(closeType: string, tag: string = '', nest = false) {
+  return (tokens: Token[], start: number, state: ProcessState) => {
+    const open = tokens[start]
+    if (nest) state.insideMarkdownContainer += 1
+    const { children, nextIndex } = processChildren(tokens, start, closeType, state)
+    if (nest) state.insideMarkdownContainer -= 1
+    const attrs = processAttributes(open.attrs)
+    return processPossibleAttributesSyntax(tokens, {
+      nextIndex,
+      node: [tag || open.tag, attrs, ...mergeAdjacentTextNodes(children)],
+    })
+  }
+}
+
 const processors: Record<string, Processor> = {
-  mdc_block_slot_open: createTokenProcessor('mdc_block_slot_close'),
+  // nest=true: containers that own child paragraphs/inlines (so free HTML stack
+  // doesn't steal their content while a block-level HTML tag is open above them).
+  mdc_block_slot_open: openCloseToken('mdc_block_slot_close'),
+  mdc_inline_span_open: openCloseToken('mdc_inline_span_close'),
+  mdc_block_shorthand_open: openCloseToken('mdc_block_shorthand_close'),
+  mdc_inline_component_open: openCloseToken('mdc_inline_component_close'),
+  blockquote_open: openCloseToken('blockquote_close', '', true),
+  bullet_list_open: openCloseToken('bullet_list_close', '', true),
+  ordered_list_open: openCloseToken('ordered_list_close', '', true),
+  list_item_open: openCloseToken('list_item_close', '', true),
+  strong_open: openCloseToken('strong_close'),
+  link_open: openCloseToken('link_close'),
+  em_open: openCloseToken('em_close'),
+  table_open: openCloseToken('table_close', '', true),
+  thead_open: openCloseToken('thead_close', '', true),
+  tbody_open: openCloseToken('tbody_close', '', true),
+  tr_open: openCloseToken('tr_close', '', true),
+  th_open: openCloseToken('th_close', '', true),
+  td_open: openCloseToken('td_close', '', true),
+  sub_open: openCloseToken('sub_close'),
+  sup_open: openCloseToken('sup_close'),
+  s_open: openCloseToken('s_close', 'del'),
   mdc_block_open: processMdcBlock,
-  mdc_inline_span_open: createTokenProcessor('mdc_inline_span_close'),
-  mdc_block_shorthand_open: createTokenProcessor('mdc_block_shorthand_close'),
-  mdc_inline_component_open: createTokenProcessor('mdc_inline_component_close'),
-  mdc_block_shorthand(tokens, start) {
-    const token = tokens[start]
-    return {
-      nextIndex: start + 1,
-      node: [token.tag, processAttributes(token.attrs)] as ElementNode,
-    }
-  },
+  code_inline: singleToken((t) => ['code', {}, t.content]),
+  math_inline: singleToken((t) => ['math', { class: 'math inline', content: t.content }, t.content]),
+  math_block: singleToken((t) => ['math', { class: 'math block', content: t.content }, t.content]),
+  emoji: singleToken((t) => t.content),
+  hr: singleToken(() => ['hr', {}]),
+  hardbreak: singleToken(() => ['br', {}]),
+  // Softbreaks inside open HTML are paragraph separators, not text content
+  softbreak: (_tokens, start, state) => ({ nextIndex: start + 1, node: state.htmlStack.length > 0 ? undefined : '\n' }),
+  code_block: codeBlockProcessor,
+  fenced_code_block: codeBlockProcessor,
+  fence: codeBlockProcessor,
+  mdc_block_shorthand: singleToken((t) => [t.tag, processAttributes(t.attrs)]),
   heading_open(tokens, start, state) {
-    const { nextIndex, node } = createTokenProcessor('heading_close')(tokens, start, state)
+    const { nextIndex, node } = openCloseToken('heading_close')(tokens, start, state)
     if (node.length === 2) {
       return { node: undefined, nextIndex }
     }
@@ -499,7 +466,6 @@ const processors: Record<string, Processor> = {
 
     return { nextIndex, node }
   },
-  blockquote_open: createTokenProcessor('blockquote_close', '', true),
 
   paragraph_open(tokens, start, state) {
     const inline = tokens[start + 1]
@@ -590,48 +556,12 @@ const processors: Record<string, Processor> = {
 
     return result
   },
-
-  // nest=true: containers that own child paragraphs/inlines (so free HTML stack
-  // doesn't steal their content while a block-level HTML tag is open above them).
-  bullet_list_open: createTokenProcessor('bullet_list_close', '', true),
-  ordered_list_open: createTokenProcessor('ordered_list_close', '', true),
-  list_item_open: createTokenProcessor('list_item_close', '', true),
-  strong_open: createTokenProcessor('strong_close'),
-  link_open: createTokenProcessor('link_close'),
-  em_open: createTokenProcessor('em_close'),
-  table_open: createTokenProcessor('table_close', '', true),
-  thead_open: createTokenProcessor('thead_close', '', true),
-  tbody_open: createTokenProcessor('tbody_close', '', true),
-  tr_open: createTokenProcessor('tr_close', '', true),
-  th_open: createTokenProcessor('th_close', '', true),
-  td_open: createTokenProcessor('td_close', '', true),
-  sub_open: createTokenProcessor('sub_close'),
-  sup_open: createTokenProcessor('sup_close'),
-  s_open: createTokenProcessor('s_close', 'del'),
   mdc_inline_component(tokens, start) {
     const token = tokens[start]
     const tokenAttrs = processAttributes(token.attrs)
     const { attrs, nextIndex } = extractAttributes(tokens, start + 1, false)
     return { node: [token.tag, { ...tokenAttrs, ...attrs }] as Node, nextIndex }
   },
-
-  code_inline: contentNodes((t) => ['code', {}, t.content]),
-  math_inline: contentNodes((t) => ['math', { class: 'math inline', content: t.content }, t.content]),
-  math_block: contentNodes((t) => ['math', { class: 'math block', content: t.content }, t.content]),
-  emoji: contentNodes((t) => t.content),
-  hr: contentNodes(() => ['hr', {}]),
-  hardbreak: contentNodes(() => ['br', {}]),
-  softbreak(_tokens, start, state) {
-    // Softbreaks inside open HTML are paragraph separators, not text content
-    if (state.htmlStack.length > 0) {
-      return { nextIndex: start + 1, node: undefined }
-    }
-    return { nextIndex: start + 1, node: '\n' }
-  },
-
-  code_block: codeBlockProcessor,
-  fenced_code_block: codeBlockProcessor,
-  fence: codeBlockProcessor,
 
   image(tokens, start) {
     const token = tokens[start]
@@ -699,11 +629,6 @@ const processors: Record<string, Processor> = {
   },
 }
 
-function contentNodes(fn: (token: Token) => Node) {
-  return (tokens: Token[], start: number): ProcessorResult =>
-    processPossibleAttributesSyntax(tokens, { nextIndex: start + 1, node: fn(tokens[start]) })
-}
-
 export function tokenListToTree(tokens: Token[], options: ProcessorOptions = {}): Node[] {
   const state: ProcessState = {
     preservePositions: options.preservePositions ?? false,
@@ -714,5 +639,62 @@ export function tokenListToTree(tokens: Token[], options: ProcessorOptions = {})
     htmlStack: [],
     insideMarkdownContainer: 0,
   }
-  return processTokenList(tokens, state)
+  const nodes: Node[] = []
+  let i = 0
+
+  while (i < tokens.length) {
+    const token = tokens[i]
+
+    if (token.type === 'inline') {
+      const free = processInline(token.children ?? [], state)
+      // Free inline at block level (rare) — if stack open, nest; else emit
+      if (state.htmlStack.length > 0) {
+        for (const n of free) state.htmlStack[state.htmlStack.length - 1].children.push(n)
+      } else {
+        nodes.push(...free)
+      }
+      i += 1
+      continue
+    }
+
+    const handler = processors[token.type]
+    if (handler) {
+      const depthBefore = state.htmlStack.length
+      const { nextIndex, node } = handler(tokens, i, state)
+
+      // Frames that were open before or opened during this block and remain open
+      // are block-spanning after we leave the token.
+      if (state.htmlStack.length > 0 && (depthBefore > 0 || state.htmlStack.length >= depthBefore)) {
+        for (const frame of state.htmlStack) frame.block = true
+      }
+
+      if (node !== undefined) {
+        if (state.preservePositions) {
+          preserveLineNumber(tokens, node, i, nextIndex, state)
+        }
+        const free = deliverBlock(state, node)
+        if (free !== undefined) nodes.push(free)
+      }
+      i = nextIndex
+    } else {
+      const componentName = token.tag || 'component'
+      const attrs = processAttributes(token.attrs, { handleJSON: false })
+      nodes.push([componentName, attrs])
+      i += 1
+    }
+  }
+
+  // EOF — close remaining unclosed HTML tags (outermost last)
+  while (state.htmlStack.length > 0) {
+    const frame = state.htmlStack.pop()!
+    frame.block = true
+    const node = frameToNode(frame)
+    if (state.htmlStack.length > 0) {
+      state.htmlStack[state.htmlStack.length - 1].children.push(node)
+    } else {
+      nodes.push(node)
+    }
+  }
+
+  return nodes
 }
