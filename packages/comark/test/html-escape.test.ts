@@ -49,6 +49,16 @@ describe('HTML attribute escaping', () => {
     expect(html).toContain('title="a&amp;b&lt;c&gt;d"')
   })
 
+  it('escapes bare ampersands in URL attribute values', async () => {
+    // Query-string `&` must become `&amp;` in HTML attrs (HTML5).
+    // Re-parse still yields bare `&` because htmlparser2 decodes entities.
+    const html = await renderHtml(`<img src="https://x.com/?a=1&b=2" alt="x">`)
+    expect(html).toContain('src="https://x.com/?a=1&amp;b=2"')
+    const tree = await parseMarkdown(html)
+    const img = tree.nodes[0] as [string, Record<string, unknown>]
+    expect(img[1].src).toBe('https://x.com/?a=1&b=2')
+  })
+
   it('escapes object attribute values as JSON with entities', async () => {
     const html = await renderNodes([['div', { ':data': { x: '"><img src=x onerror=alert(1)>' } }, 'hi']])
     expect(html).not.toContain('<img src=x onerror=alert(1)>')

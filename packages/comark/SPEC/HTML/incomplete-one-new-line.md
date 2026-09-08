@@ -1,9 +1,8 @@
 ## Input
 
 ```md
-<br>
-
-# After br
+<ai-thinking>
+**bold**
 ```
 
 ## AST
@@ -14,20 +13,18 @@
   "meta": {},
   "nodes": [
     [
-      "br",
+      "ai-thinking",
       {
         "$": {
           "html": 1,
-          "block": 1
+          "block": 0
         }
-      }
-    ],
-    [
-      "h1",
-      {
-        "id": "after-br"
       },
-      "After br"
+      [
+        "strong",
+        {},
+        "bold"
+      ]
     ]
   ]
 }
@@ -36,14 +33,11 @@
 ## HTML
 
 ```html
-<br>
-<h1 id="after-br">After br</h1>
+<ai-thinking><strong>bold</strong></ai-thinking>
 ```
 
 ## Markdown
 
 ```md
-<br>
-
-# After br
+<ai-thinking>**bold**</ai-thinking>
 ```

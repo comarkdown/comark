@@ -30,7 +30,7 @@
 ## HTML
 
 ```html
-<p><img src="https://example.com/image.jpg" title="title" alt="alt" /></p>
+<p><img src="https://example.com/image.jpg" title="title" alt="alt"></p>
 ```
 
 ## Markdown

@@ -1,5 +1,5 @@
 import { Parser } from 'htmlparser2'
-import type { Node } from 'comark'
+import type { ElementNode, Node } from 'comark'
 
 export const VOID_ELEMENTS = new Set([
   'area',
@@ -78,24 +78,61 @@ export function parseInlineHtmlTag(html: string): HtmlTagInfo | null {
 }
 
 /**
+ * Whether a node is a block-level HTML element (`$.block === 1`).
+ * Text and comments are not block elements.
+ */
+function isBlockHtmlElement(node: Node): boolean {
+  if (typeof node === 'string' || !Array.isArray(node) || node[0] === null) return false
+  const meta = (node[1] as Record<string, unknown> | undefined)?.$ as Record<string, unknown> | undefined
+  return meta?.html === 1 && meta?.block === 1
+}
+
+/**
+ * Infer `$.block` from structure (no tag-name allowlists):
+ *
+ * - Root of an `html_block` fragment stays `block: 1` (it was a block unit).
+ * - Nested element is `block: 0` when every child is text / comment / inline HTML
+ *   (no nested `block: 1` descendants that make it a block container).
+ * - Nested element is `block: 1` when it contains at least one block child.
+ *
+ * Walks bottom-up so children's flags are settled before the parent is classified.
+ */
+function inferBlockFromChildren(nodes: Node[], isRootLevel: boolean): void {
+  for (const node of nodes) {
+    if (typeof node === 'string' || !Array.isArray(node) || node[0] === null) continue
+
+    const element = node as ElementNode
+    const children = element.slice(2) as Node[]
+    inferBlockFromChildren(children, false)
+
+    const attrs = element[1] as Record<string, unknown>
+    const meta = (attrs.$ ||= {}) as Record<string, unknown>
+    if (meta.html !== 1) continue
+
+    meta.block = isRootLevel || children.some(isBlockHtmlElement) ? 1 : 0
+  }
+}
+
+/**
  * Parse a full HTML string into Nodes using htmlparser2.
  * Handles nested elements, text, void elements, and comments.
+ * `$.block` is inferred from children after the tree is built.
  */
 export function htmlToNodes(html: string): Node[] {
   const root: Node[] = []
   const stack: { tag: string; attrs: Record<string, unknown>; children: Node[] }[] = []
+  const append = (node: Node) => {
+    if (stack.length > 0) stack[stack.length - 1].children.push(node)
+    else root.push(node)
+  }
 
   const parser = new Parser(
     {
       onopentag(name, attribs) {
-        const attrs = attribsToComarkAttrs(attribs)
+        // Provisional block:1; refined by inferBlockFromChildren after close.
+        const attrs = attribsToComarkAttrs(attribs, false)
         if (VOID_ELEMENTS.has(name)) {
-          const node = [name, attrs] as Node
-          if (stack.length > 0) {
-            stack[stack.length - 1].children.push(node)
-          } else {
-            root.push(node)
-          }
+          append([name, attrs] as Node)
           return
         }
         stack.push({ tag: name, attrs, children: [] })
@@ -103,18 +140,11 @@ export function htmlToNodes(html: string): Node[] {
 
       ontext(text) {
         const trimmed = text.trim()
-        if (!trimmed) return
-        if (stack.length > 0) {
-          stack[stack.length - 1].children.push(trimmed)
-        } else {
-          root.push(trimmed)
-        }
+        if (trimmed) append(trimmed)
       },
 
       onclosetag(name) {
-        if (VOID_ELEMENTS.has(name)) {
-          return
-        }
+        if (VOID_ELEMENTS.has(name)) return
         // Find matching frame (handles mismatched tags gracefully)
         let idx = stack.length - 1
         while (idx >= 0 && stack[idx].tag !== name) {
@@ -123,26 +153,17 @@ export function htmlToNodes(html: string): Node[] {
         if (idx >= 0) {
           while (stack.length > idx) {
             const frame = stack.pop()!
-            const node =
-              frame.children.length > 0
-                ? ([frame.tag, frame.attrs, ...frame.children] as Node)
-                : ([frame.tag, frame.attrs] as Node)
-            if (stack.length > 0) {
-              stack[stack.length - 1].children.push(node)
-            } else {
-              root.push(node)
-            }
+            append(
+              (frame.children.length > 0
+                ? [frame.tag, frame.attrs, ...frame.children]
+                : [frame.tag, frame.attrs]) as Node
+            )
           }
         }
       },
 
       oncomment(data) {
-        const node = [null, {}, data] as unknown as Node
-        if (stack.length > 0) {
-          stack[stack.length - 1].children.push(node)
-        } else {
-          root.push(node)
-        }
+        append([null, {}, data] as unknown as Node)
       },
     },
     { decodeEntities: true }
@@ -151,5 +172,6 @@ export function htmlToNodes(html: string): Node[] {
   parser.write(html.trim())
   parser.end()
 
+  inferBlockFromChildren(root, true)
   return root
 }

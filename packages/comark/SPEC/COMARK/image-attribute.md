@@ -58,7 +58,7 @@ Here ![alt](https://example.com/image.jpg){bool} ![alt](https://example.com/imag
 ## HTML
 
 ```html
-<p>Here <img src="https://example.com/image.jpg" alt="alt" bool /> <img src="https://example.com/image.jpg" alt="alt" id="id1" /> <img src="https://example.com/image.jpg" alt="alt" class="class1" /> <img src="https://example.com/image.jpg" alt="alt" attr="value" /></p>
+<p>Here <img src="https://example.com/image.jpg" alt="alt" bool> <img src="https://example.com/image.jpg" alt="alt" id="id1"> <img src="https://example.com/image.jpg" alt="alt" class="class1"> <img src="https://example.com/image.jpg" alt="alt" attr="value"></p>
 ```
 
 ## Markdown

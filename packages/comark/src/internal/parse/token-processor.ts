@@ -1,5 +1,5 @@
 import type { ElementNode, Node } from 'comark'
-import { htmlToNodes, parseInlineHtmlTag } from './html/index.ts'
+import { htmlToNodes, parseInlineHtmlTag, VOID_ELEMENTS } from './html/index.ts'
 
 // `::tag` components that should fold into a single same-tagged child.
 const WRAPPER_TAGS = new Set(['ul', 'ol', 'table', 'blockquote', 'pre'])
@@ -61,7 +61,7 @@ export function marmdownItTokensToMarkdownDocument(tokens: any[], opts?: TokenPr
     const token = tokens[i]
 
     if (token.type === 'html_block') {
-      const result = processHtmlBlockTokens(tokens, i)
+      const result = processHtmlBlockTokens(tokens, i, state)
       nodes.push(...result.nodes)
       i = result.nextIndex
       continue
@@ -88,14 +88,110 @@ export function marmdownItTokensToMarkdownDocument(tokens: any[], opts?: TokenPr
   return nodes
 }
 
+const HTML_OPEN_TAG_RE = /^<\s*([a-zA-Z][\w:-]*)/
+const HTML_CLOSE_TAG_RE = /^<\/\s*([a-zA-Z][\w:-]*)\s*>$/
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+function htmlOpenTagName(content: string): string | null {
+  const match = content.trim().match(HTML_OPEN_TAG_RE)
+  return match ? match[1].toLowerCase() : null
+}
+
+/** Tag name of a bare closing HTML block (`</div>`), or null. */
+function htmlBlockCloseTag(content: string): string | null {
+  const match = content.trim().match(HTML_CLOSE_TAG_RE)
+  return match ? match[1].toLowerCase() : null
+}
+
+/** Unclosed `tag` openers in `content`. Nested same-tag pairs cancel out. */
+function htmlOuterTagDepth(content: string, tag: string): number {
+  const re = new RegExp(`</?\\s*${escapeRegExp(tag)}(?![\\w:-])[^>]*>`, 'gi')
+  let depth = 0
+  let m: RegExpExecArray | null
+  while ((m = re.exec(content)) !== null) {
+    if (m[0].charAt(1) === '/') depth = Math.max(0, depth - 1)
+    else if (!/\/\s*>$/.test(m[0])) depth++
+  }
+  return depth
+}
+
+/** Index of the matching closer, or -1 if this opener runs to EOF. */
+function findHtmlBlockCloseIndex(tokens: any[], startIndex: number, tag: string, depth: number): number {
+  for (let i = startIndex + 1; i < tokens.length; i++) {
+    const t = tokens[i]
+    if (t.type !== 'html_block') continue
+    const c = typeof t.content === 'string' ? t.content : ''
+    const closeTag = htmlBlockCloseTag(c)
+    if (closeTag === tag) {
+      depth--
+      if (depth === 0) return i
+      continue
+    }
+    // Nested opener of the same tag (may include its own closer in the same token).
+    if (!closeTag && htmlOpenTagName(c) === tag) depth += htmlOuterTagDepth(c, tag)
+  }
+  return -1
+}
+
+function isMultiBlockBody(nodes: Node[]): boolean {
+  const nonEmpty = nodes.filter((child) => typeof child !== 'string' || (child && child.trim()))
+  return (
+    nonEmpty.length > 1 ||
+    (nonEmpty.length === 1 && Array.isArray(nonEmpty[0]) && nonEmpty[0][0] !== null && nonEmpty[0][0] !== 'p')
+  )
+}
+
 /**
- * Convert an html_block token into Comark nodes. The whole HTML payload is
- * parsed once by htmlparser2; text inside is preserved verbatim (no markdown
- * re-parsing — CommonMark default).
+ * Convert an html_block token into Comark nodes.
+ *
+ * Self-contained blocks are parsed once by htmlparser2 (text preserved
+ * verbatim — CommonMark default). Incomplete openers absorb subsequent tokens
+ * as children until a matching closer (`block: 1`). Streaming openers with no
+ * closer are `block: 1` when the body is multi-block markdown, otherwise
+ * `block: 0` (lone paragraph / inline-like). Nested blank-line HTML like
+ * `<details>…<details>…</details></details>` builds a real tree.
  */
-function processHtmlBlockTokens(tokens: any[], startIndex: number): { nodes: Node[]; nextIndex: number } {
+function processHtmlBlockTokens(
+  tokens: any[],
+  startIndex: number,
+  state?: ProcessState
+): { nodes: Node[]; nextIndex: number } {
   const content = typeof tokens[startIndex]?.content === 'string' ? tokens[startIndex].content : ''
-  return { nodes: htmlToNodes(content), nextIndex: startIndex + 1 }
+  const tag = htmlOpenTagName(content)
+  const depth = tag && !VOID_ELEMENTS.has(tag) ? htmlOuterTagDepth(content, tag) : 0
+  // Comments, closers, void tags, and already-balanced fragments stay as-is.
+  if (!tag || depth <= 0) {
+    return { nodes: htmlToNodes(content), nextIndex: startIndex + 1 }
+  }
+
+  const closeIndex = findHtmlBlockCloseIndex(tokens, startIndex, tag, depth)
+  const parsed = htmlToNodes(content)
+  const node = parsed[0]
+  if (!node || typeof node === 'string' || node[0] === null) {
+    return { nodes: parsed, nextIndex: startIndex + 1 }
+  }
+
+  const element = node as ElementNode
+  const openerAttrs = (element[1] || {}) as Record<string, unknown>
+  const prevMeta = (openerAttrs.$ || {}) as Record<string, unknown>
+  const end = closeIndex < 0 ? tokens.length : closeIndex
+  const body = processBlockChildren(tokens.slice(startIndex + 1, end), 0, '\0', false, false, false, state)
+  const block = closeIndex < 0 && !isMultiBlockBody(body.nodes) ? 0 : 1
+
+  return {
+    nodes: [
+      [
+        element[0],
+        { ...openerAttrs, $: { ...prevMeta, html: 1, block } },
+        ...(element.slice(2) as Node[]),
+        ...body.nodes,
+      ] as Node,
+    ],
+    nextIndex: closeIndex < 0 ? tokens.length : closeIndex + 1,
+  }
 }
 
 /**
@@ -307,7 +403,7 @@ function processBlockToken(
   // processBlockChildren / processBlockChildrenWithSlots) before reaching here.
   // Safety fallback when it slips through.
   if (token.type === 'html_block') {
-    const result = processHtmlBlockTokens(tokens, startIndex)
+    const result = processHtmlBlockTokens(tokens, startIndex, state)
     return { node: result.nodes[0] ?? null, nextIndex: result.nextIndex }
   }
 
@@ -486,7 +582,7 @@ function processBlockChildrenWithSlots(
 
     // html_block can produce multiple nodes — handle before processBlockToken
     if (token.type === 'html_block') {
-      const result = processHtmlBlockTokens(tokens, i)
+      const result = processHtmlBlockTokens(tokens, i, state)
       if (currentSlotName !== null) {
         currentSlotChildren.push(...result.nodes)
       } else {
@@ -581,7 +677,7 @@ function processBlockChildren(
     const token = tokens[i]
 
     if (token.type === 'html_block') {
-      const result = processHtmlBlockTokens(tokens, i)
+      const result = processHtmlBlockTokens(tokens, i, state)
       nodes.push(...result.nodes)
       i = result.nextIndex
       continue

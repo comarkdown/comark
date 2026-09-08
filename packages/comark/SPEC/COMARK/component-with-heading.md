@@ -62,7 +62,7 @@ Text content
 ```html
 <steps>
   <h3 id="step-1">Step 1</h3>
-  <p><img src="https://example.com/image.jpg" alt="Image" /></p>
+  <p><img src="https://example.com/image.jpg" alt="Image"></p>
   <h3 id="step-2">Step 2</h3>
   <p>Text content</p>
 </steps>

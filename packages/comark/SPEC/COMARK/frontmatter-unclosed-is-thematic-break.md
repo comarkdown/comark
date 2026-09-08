@@ -30,7 +30,7 @@
 ## HTML
 
 ```html
-<hr />
+<hr>
 <h1 id="heading">Heading</h1>
 ```
 
