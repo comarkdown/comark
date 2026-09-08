@@ -453,9 +453,7 @@ const processors: Record<string, Processor> = {
   mdc_block_shorthand: singleToken((t) => [t.tag, processAttributes(t.attrs)]),
   heading_open(tokens, start, state) {
     const { nextIndex, node } = openCloseToken('heading_close')(tokens, start, state)
-    if (node.length === 2) {
-      return { node: undefined, nextIndex }
-    }
+    if (node.length === 2) return { node: undefined, nextIndex }
 
     if (state.headingIds) {
       const level = Number.parseInt((tokens[start].tag || 'h1').replace('h', ''), 10) || 1
