@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { applyAutoUnwrap } from '../src/internal/parse/auto-unwrap'
+import { applyAutoUnwrap } from '../src/internal/parse/utils'
 import type { Node } from 'comark'
 
 describe('applyAutoUnwrap', () => {

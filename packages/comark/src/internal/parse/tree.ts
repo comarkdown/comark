@@ -6,8 +6,8 @@ import {
   parseCodeblockInfo,
   processAttributes,
   slugify,
-} from './token-processor-utils.ts'
-import { parseHtmlInline } from './html/utils.ts'
+} from './tree-utils.ts'
+import { parseHtmlInline } from './utils.ts'
 import { textContent } from 'comark/utils'
 
 const inlineTags = new Set(['strong', 'em', 'del', 'code', 'a', 'span', 'sub', 'sup'])
@@ -361,15 +361,12 @@ function codeBlockProcessor(tokens: Token[], start: number, _state: ProcessState
 
   const parsed = parseCodeblockInfo(info)
 
-  const preAttrs: Record<string, unknown> = {}
+  const preAttrs: Record<string, unknown> = parsed
   const codeAttrs: Record<string, unknown> = {}
   if (parsed.language && parsed.language.trim()) {
     preAttrs.language = parsed.language
     codeAttrs['class'] = `language-${parsed.language}`
   }
-  if (parsed.filename) preAttrs.filename = parsed.filename
-  if (parsed.highlights) preAttrs.highlights = parsed.highlights
-  if (parsed.meta) preAttrs.meta = parsed.meta
 
   const codeContentWithoutLastNewline = content.endsWith('\n') ? content.slice(0, -1) : content
   return {

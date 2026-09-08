@@ -1,28 +1,26 @@
+import type { Node } from 'comark'
+import type { Token } from 'markdown-exit'
+
 // Upper bound for expanded highlight ranges in a fence info string.
 const MAX_HIGHLIGHT_LINES = 1_000
-import type { Node } from 'comark'
 
+interface CodeBlockInfo extends Record<string, unknown> {
+  language?: string
+  filename?: string
+  highlights?: number[]
+  meta?: string
+}
 /**
  * Parse codeblock info string to extract language, highlights, filename, and meta
  * Example: "javascript {1-3} [filename.ts] meta=value"
  * Example: "typescript[filename]{1,3-5}meta"
  */
-export function parseCodeblockInfo(info: string): {
-  language: string
-  filename?: string
-  highlights?: number[]
-  meta?: string
-} {
+export function parseCodeblockInfo(info: string): CodeBlockInfo {
   if (!info) {
-    return { language: '' }
+    return {}
   }
 
-  const result: {
-    language: string
-    filename?: string
-    highlights?: number[]
-    meta?: string
-  } = { language: '' }
+  const result: CodeBlockInfo = {}
 
   let remaining = info.trim()
 
@@ -93,10 +91,8 @@ export function parseCodeblockInfo(info: string): {
           }
         }
       }
-      if (depth !== 0) {
-        // Unclosed bracket, stop processing
-        break
-      }
+      // Unclosed bracket, stop processing
+      if (depth !== 0) break
     }
   }
 
@@ -168,7 +164,7 @@ export function processAttributes(
  * Extract Comark attributes from mdc_inline_props token
  */
 export function extractAttributes(
-  tokens: any[],
+  tokens: Token[],
   startIndex: number,
   skipEmptyText: boolean = true
 ): { attrs: Record<string, unknown>; nextIndex: number } {
@@ -206,7 +202,7 @@ export function slugify(text: string): string {
     .replace(/^-+|-+$/g, '') // Remove leading/trailing hyphens
 
   // Prefix with underscore if starts with a digit (HTML IDs can't start with numbers)
-  if (/^\d/.test(slug)) {
+  if (slug.charCodeAt(0) >= 48 && slug.charCodeAt(0) <= 57) {
     slug = '_' + slug
   }
 
