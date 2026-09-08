@@ -411,6 +411,15 @@ export interface ComarkContextProvider {
   componentManifest: ComponentManifest
 }
 
+/**
+ * Rewrites incomplete markdown before Comark tokenizes it.
+ *
+ * In streaming mode, `markdown` is the unstable tail left after Comark reuses
+ * stable nodes from the previous parse. Outside streaming mode, it is the full
+ * input string.
+ */
+export type AutoCloseFunction = (markdown: string) => string
+
 export interface ParserOptions<TPlugins extends readonly ComarkPlugin<any, any>[] = readonly ComarkPlugin<any, any>[]> {
   /**
    * Whether to automatically unwrap single paragraphs in container components.
@@ -453,10 +462,11 @@ export interface ParserOptions<TPlugins extends readonly ComarkPlugin<any, any>[
   unwrap?: boolean | string | string[]
 
   /**
-   * Whether to automatically close unclosed markdown and Comark components.
+   * Whether to automatically close unclosed markdown and Comark components,
+   * or a custom function that rewrites incomplete markdown before tokenization.
    * @default true
    */
-  autoClose?: boolean
+  autoClose?: boolean | AutoCloseFunction
 
   /**
    * @deprecated Use `registerDefaultPlugins: false` and register plugins explicitly

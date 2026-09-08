@@ -144,7 +144,9 @@ export function closeTables(markdown: string): string {
 
     lines[end] = '| ' + completedCells.join(' | ') + ' |'
   } else if (lastLine.startsWith('|') && !lastLine.endsWith('|')) {
-    // Complete data row - find reference widths and pad
+    // Complete data row — pad cells to reference widths and add a trailing pipe.
+    // Skip the trailing `|` when the last cell still looks like incomplete inline
+    // syntax (SPEC: `| **dat` → `| **dat**`, not `| **dat** |`).
     let refRow = lines[start].trim()
     for (let i = start + (hasSeparator ? 2 : 1); i < end; i++) {
       const row = lines[i].trim()
@@ -156,9 +158,10 @@ export function closeTables(markdown: string): string {
 
     const refWidths = parseCellWidths(refRow)
     const cells = parseCells(lastLine)
+    const lastCell = cells[cells.length - 1] ?? ''
+    const lastCellIncomplete = /(?:\*\*?|__?|~~|`|\$)$/.test(lastCell) || /(?:\*\*|__|~~|`)[^\s*_~`]+$/.test(lastCell)
 
-    // Rebuild with padding
-    lines[end] =
+    const padded =
       '| ' +
       cells
         .map((cell, i) => {
@@ -166,8 +169,9 @@ export function closeTables(markdown: string): string {
           const padding = ' '.repeat(Math.max(0, targetWidth - cell.length - 2))
           return cell + padding
         })
-        .join(' | ') +
-      ' |'
+        .join(' | ')
+
+    lines[end] = lastCellIncomplete ? padded : padded + ' |'
   }
 
   // Add separator if missing

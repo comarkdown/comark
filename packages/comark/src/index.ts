@@ -1,5 +1,10 @@
 // Re-export auto-close utilities
-export { autoCloseMarkdown } from './internal/parse/auto-close/index.ts'
+export {
+  autoCloseMarkdown,
+  INCOMPLETE_LINK_PLACEHOLDER,
+  INCOMPLETE_IMAGE_PLACEHOLDER,
+} from './internal/parse/auto-close/index.ts'
+export type { AutoCloseOptions, LinkMode } from './internal/parse/auto-close/index.ts'
 
 // Re-export parse utilities
 export { applyAutoUnwrap } from './internal/parse/auto-unwrap.ts'

@@ -57,7 +57,7 @@
   },
   "scripts": {
     "stub": "node ../../scripts/stub.mjs",
-    "build": "svelte-package --input src && node ../../scripts/sync-plugins.mjs",
+    "build": "svelte-package --input src && svelte-package --input src --types false --preserve-output --tsconfig ./tsconfig.build.json && node ../../scripts/sync-plugins.mjs",
     "build:watch": "svelte-package --input src --watch",
     "test": "vitest run",
     "check": "svelte-check --tsconfig ./tsconfig.json",
