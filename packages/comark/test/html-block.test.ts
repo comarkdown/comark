@@ -286,4 +286,48 @@ after \`code\`
 
     expect(result.nodes).toEqual([['pre', {}, ['code', {}, '<!-- note -->']]])
   })
+
+  it('styles', async () => {
+    const result = await parseMarkdown(`<style>
+  .warning {
+    color: red;
+  }
+  .success {
+    color: green;
+  }
+
+  .info {
+    color: blue;
+  }
+  </style>
+
+  <p class="warning">This is a warning message.</p>
+  <p class="success">Your changes have been saved.</p>
+  <p class="info">More information is available here.</p>`)
+
+    expect(result.nodes).toEqual([
+      [
+        'style',
+        {
+          $: {
+            block: 1,
+            html: 1,
+          },
+        },
+        `.warning {
+    color: red;
+  }
+  .success {
+    color: green;
+  }
+
+  .info {
+    color: blue;
+  }`,
+      ],
+      ['p', { $: { html: 1, block: 0 }, class: 'warning' }, 'This is a warning message.'],
+      ['p', { $: { html: 1, block: 0 }, class: 'success' }, 'Your changes have been saved.'],
+      ['p', { $: { html: 1, block: 0 }, class: 'info' }, 'More information is available here.'],
+    ])
+  })
 })

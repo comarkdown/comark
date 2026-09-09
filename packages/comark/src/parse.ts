@@ -175,10 +175,6 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
         )
       }
 
-      // Convert tokens to Comark structure.
-      // Pass the same markdown-exit instance so closed HTML fragments can expand
-      // their text leaves as inline markdown (e.g. `<h1>Hello **World**</h1>`).
-      // The html plugin can disable this via a `no_markdown` core rule (opt-out).
       const nodesSpan = tracer.startSpan('comark:nodes')
       let nodes = tokenListToTree(state.tokens, {
         startLine: state.parsedLines,

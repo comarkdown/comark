@@ -28,7 +28,7 @@
  * ```
  */
 
-import { Token, type MarkdownExit } from 'markdown-exit'
+import { type StateBlock, Token, type MarkdownExit } from 'markdown-exit'
 import type { ComarkParseTokensState, MarkdownItPlugin } from '../types.ts'
 import { defineComarkPlugin } from '../utils/helpers.ts'
 
@@ -51,14 +51,22 @@ export default defineComarkPlugin((opts: HtmlPluginOptions = {}) => {
     if (markdown) {
       // @ts-expect-error - internal utils
       const html_block = md.block.ruler.__rules__.find((r) => r.name === 'html_block')
-      html_block.fn = () => {}
+      const fn = html_block.fn
+      html_block.fn = (state: StateBlock, startLine: number, endLine: number, silent: boolean) => {
+        let pos = state.bMarks[startLine] + state.tShift[startLine]
+
+        const tag = state.src.substring(pos, pos + 7)
+        if (tag === '<style' || tag === `<style>`) {
+          return fn(state, startLine, endLine, silent)
+        }
+      }
     }
   }
 
   return {
     name: 'html',
     markdownItPlugins: [markdownItHtml as unknown as MarkdownItPlugin],
-    markdownItPost: markdown ? undefined : markdownItPost,
+    markdownItPost: markdownItPost,
   }
 })
 
