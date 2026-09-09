@@ -418,7 +418,7 @@ importers:
         version: link:../packages/comark
       comark-docs:
         specifier: github:comarkdown/comark-docs#feat/client-side-fts-search
-        version: https://codeload.github.com/comarkdown/comark-docs/tar.gz/01457f6606c2d0c9bdb9b15d0f746b4923ec266f(9c9e49209bc8e691974cb7f45d2ada59)
+        version: https://codeload.github.com/comarkdown/comark-docs/tar.gz/8a9b20f7591db25e3653e22923a26712482112b3(9c9e49209bc8e691974cb7f45d2ada59)
       katex:
         specifier: 'catalog:'
         version: 0.17.0
@@ -7445,13 +7445,13 @@ packages:
   colortranslator@5.0.0:
     resolution: {integrity: sha512-Z3UPUKasUVDFCDYAjP2fmlVRf1jFHJv1izAmPjiOa0OCIw1W7iC8PZ2GsoDa8uZv+mKyWopxxStT9q05+27h7w==}
 
-  comark-content@https://pkg.pr.new/comark-content@63ffc3f:
-    resolution: {integrity: sha512-F0jDyRaJqfASydFGik1UpAlfqa9SmrDV+Sj2QfjoO6vJHtH8xZiAf0XSmOFfPcGI5QMRKnrqqyZy1ei5RJ6IWQ==, tarball: https://pkg.pr.new/comark-content@63ffc3f}
+  comark-content@https://pkg.pr.new/comark-content@98457f7:
+    resolution: {integrity: sha512-dZDkLzclMwdKu7p28PetFlVW8Xj24dHElWPEWfYTL/mWv6u4MkY5ECHwVdHI+4H4wM78+/7uPB4Xq4dtoznmMw==, tarball: https://pkg.pr.new/comark-content@98457f7}
     version: 0.3.0
     hasBin: true
 
-  comark-docs@https://codeload.github.com/comarkdown/comark-docs/tar.gz/01457f6606c2d0c9bdb9b15d0f746b4923ec266f:
-    resolution: {gitHosted: true, integrity: sha512-CkCw/Rn7mtGL0L1l6CGOGkNRs7gg4GvPsSG4Tkb9OOwwyquK0sU4Ei0h24OeWxtaiq2oJvHfW0Bl8pAkYEFH2Q==, tarball: https://codeload.github.com/comarkdown/comark-docs/tar.gz/01457f6606c2d0c9bdb9b15d0f746b4923ec266f}
+  comark-docs@https://codeload.github.com/comarkdown/comark-docs/tar.gz/8a9b20f7591db25e3653e22923a26712482112b3:
+    resolution: {gitHosted: true, integrity: sha512-5NFLGiy8IAf4h8OqFQAC2A95sgE/1LyTETOvrdkf8I/9aiPEG0DJWvdobXkiplG0AuHMDa2aUpNrU2EW6t6GKg==, tarball: https://codeload.github.com/comarkdown/comark-docs/tar.gz/8a9b20f7591db25e3653e22923a26712482112b3}
     version: 0.0.1
     peerDependencies:
       nuxt: ^4.5.0
@@ -18843,7 +18843,7 @@ snapshots:
 
   colortranslator@5.0.0: {}
 
-  comark-content@https://pkg.pr.new/comark-content@63ffc3f(@vercel/functions@3.9.5(ws@8.21.0))(beautiful-mermaid@1.1.3)(db0@0.3.4(better-sqlite3@12.10.0))(ioredis@5.11.1(supports-color@10.2.2))(katex@0.17.0)(rangi@2.2.0)(shiki@4.3.1):
+  comark-content@https://pkg.pr.new/comark-content@98457f7(@vercel/functions@3.9.5(ws@8.21.0))(beautiful-mermaid@1.1.3)(db0@0.3.4(better-sqlite3@12.10.0))(ioredis@5.11.1(supports-color@10.2.2))(katex@0.17.0)(rangi@2.2.0)(shiki@4.3.1):
     dependencies:
       citty: 0.2.2
       comark: 0.6.2(beautiful-mermaid@1.1.3)(katex@0.17.0)(rangi@2.2.0)(shiki@4.3.1)
@@ -18880,7 +18880,7 @@ snapshots:
       - shiki
       - uploadthing
 
-  comark-docs@https://codeload.github.com/comarkdown/comark-docs/tar.gz/01457f6606c2d0c9bdb9b15d0f746b4923ec266f(9c9e49209bc8e691974cb7f45d2ada59):
+  comark-docs@https://codeload.github.com/comarkdown/comark-docs/tar.gz/8a9b20f7591db25e3653e22923a26712482112b3(9c9e49209bc8e691974cb7f45d2ada59):
     dependencies:
       '@ai-sdk/gateway': 4.0.64(zod@4.4.3)
       '@ai-sdk/vue': 4.0.79(vue@3.5.41(typescript@6.0.3))(zod@4.4.3)
@@ -18909,7 +18909,7 @@ snapshots:
       ai: 7.0.79(zod@4.4.3)
       beautiful-mermaid: 1.1.3
       comark: 0.6.2(beautiful-mermaid@1.1.3)(katex@0.17.0)(rangi@2.2.0)(shiki@4.3.1)
-      comark-content: https://pkg.pr.new/comark-content@63ffc3f(@vercel/functions@3.9.5(ws@8.21.0))(beautiful-mermaid@1.1.3)(db0@0.3.4(better-sqlite3@12.10.0))(ioredis@5.11.1(supports-color@10.2.2))(katex@0.17.0)(rangi@2.2.0)(shiki@4.3.1)
+      comark-content: https://pkg.pr.new/comark-content@98457f7(@vercel/functions@3.9.5(ws@8.21.0))(beautiful-mermaid@1.1.3)(db0@0.3.4(better-sqlite3@12.10.0))(ioredis@5.11.1(supports-color@10.2.2))(katex@0.17.0)(rangi@2.2.0)(shiki@4.3.1)
       defu: 6.1.7
       exsolve: 1.1.1
       js-yaml: 5.3.0
