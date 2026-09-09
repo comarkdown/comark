@@ -43,31 +43,68 @@ export type ParsedHtmlTag =
  * // After:
  * { tag: 'alert', children: [{ type: 'text', value: 'Text' }] }
  */
+function isBlankText(value: string): boolean {
+  for (let i = 0; i < value.length; i++) {
+    const c = value.charCodeAt(i)
+    if (c !== 32 && c !== 10 && c !== 9 && c !== 13 && c !== 12) return false
+  }
+  return true
+}
+
 export function applyAutoUnwrap(node: Node): Node {
-  if (typeof node === 'string' || node.length < 2) {
+  if (typeof node === 'string' || node[0] === 'p' || node[0] == null) {
     return node
   }
 
-  const [tag, props, ...children] = node
-
-  // Filter out empty text nodes for checking
-  const nonEmptyChildren = children.filter((child: Node) => typeof child !== 'string' || (child && child.trim()))
-
-  if (nonEmptyChildren.length === 0) {
+  const length = node.length
+  if (length < 3) {
     return node
   }
 
-  // Check if we have exactly one paragraph child (and possibly empty text nodes)
-  if (nonEmptyChildren.length > 1 || typeof nonEmptyChildren[0] === 'string' || nonEmptyChildren[0][0] !== 'p') {
-    return [tag, props, ...children.map((child: Node) => applyAutoUnwrap(child as Node))] as Node
+  let significant: Node | undefined
+  let significantCount = 0
+  for (let i = 2; i < length; i++) {
+    const child = node[i] as Node
+    if (typeof child === 'string' && isBlankText(child)) continue
+    significant = child
+    if (++significantCount > 1) break
   }
 
-  // Lift the paragraph's attrs onto the parent so trailing `{attr}` survives the unwrap.
-  // Parent attrs take precedence so explicit component props aren't overridden.
-  const paragraphAttrs = nonEmptyChildren[0][1] as Record<string, unknown>
-  const mergedProps = paragraphAttrs && Object.keys(paragraphAttrs).length > 0 ? { ...paragraphAttrs, ...props } : props
+  if (significantCount === 0) {
+    return node
+  }
 
-  return [tag, mergedProps, ...(nonEmptyChildren[0].slice(2) as Node[])] as Node
+  if (significantCount === 1 && Array.isArray(significant) && significant[0] === 'p') {
+    // Lift the paragraph's attrs onto the parent so trailing `{attr}` survives the unwrap.
+    // Parent attrs take precedence so explicit component props aren't overridden.
+    const paragraphAttrs = significant[1] as Record<string, unknown> | undefined
+    let mergedProps = node[1]
+    if (paragraphAttrs) {
+      for (const key in paragraphAttrs) {
+        if (key !== undefined) {
+          mergedProps = { ...paragraphAttrs, ...node[1] }
+          break
+        }
+      }
+    }
+    const unwrapped = significant.slice() as unknown as ElementNode
+    unwrapped[0] = node[0] as string
+    unwrapped[1] = mergedProps
+    return unwrapped
+  }
+
+  let copy: Node[] | undefined
+  for (let i = 2; i < length; i++) {
+    const child = node[i] as Node
+    const next = applyAutoUnwrap(child)
+    if (copy !== undefined) {
+      copy.push(next)
+    } else if (next !== child) {
+      copy = node.slice(0, i) as unknown as Node[]
+      copy.push(next)
+    }
+  }
+  return copy !== undefined ? (copy as Node) : node
 }
 
 /**

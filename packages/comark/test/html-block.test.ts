@@ -119,13 +119,13 @@ That is some text here.`
   })
 
   it('nests blank-line markdown body under a matching HTML open/close pair', async () => {
-    const result = await parseMarkdown(`<p>
+    const result = await parseMarkdown(`<main>
 
 this is **markdown**
 
-</p>`)
+</main>`)
 
-    expect(result.nodes).toEqual([['p', { $: { html: 1, block: 1 } }, 'this is ', ['strong', {}, 'markdown']]])
+    expect(result.nodes).toEqual([['main', { $: { html: 1, block: 1 } }, 'this is ', ['strong', {}, 'markdown']]])
   })
 
   it.skip('pairs HTML open/close split across paragraphs (inline opener + blank line)', async () => {
