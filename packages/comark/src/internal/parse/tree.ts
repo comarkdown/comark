@@ -163,12 +163,12 @@ function tryCommentTag(content: string, state: ProcessState): ProcessorResult | 
   return null
 }
 
+function processToken(tokens: Token[], i: number, state: ProcessState): ProcessorResult | undefined {
+  return processors[tokens[i].type]?.(tokens, i, state)
+}
+
 /**
  * Walk inline tokens. HTML open/close tags drive `state.htmlStack`.
- * Finished free nodes bubble out when the stack is empty.
- */
-/**
- * Walk inline tokens.
  * @param nestHtml When true (free paragraph / top-level), free nodes nest into
  *   the open HTML stack. When false (nested markdown containers like strong/li),
  *   free nodes return to the parent container — the container itself later lands
@@ -179,22 +179,14 @@ function processInline(inlineTokens: Token[], state: ProcessState, nestHtml = tr
   let i = 0
 
   while (i < inlineTokens.length) {
-    const token = inlineTokens[i]
-    const handler = processors[token.type]
-
-    if (handler) {
-      const { nextIndex, node } = handler(inlineTokens, i, state)
-      if (nestHtml) {
-        const free = deliverInline(state, node)
-        if (free !== undefined) pushNode(nodes, free)
-      } else if (node !== undefined) {
-        nodes.push(node)
-      }
-      i = nextIndex
-    } else {
-      // console.log('===> inline token.type', token.type)
+    const result = processToken(inlineTokens, i, state)
+    if (!result) {
       i += 1
+      continue
     }
+    const node = nestHtml ? deliverInline(state, result.node) : result.node
+    if (node !== undefined) pushNode(nodes, node)
+    i = result.nextIndex
   }
 
   return nodes
@@ -215,16 +207,13 @@ function preserveLineNumber(tokens: Token[], node: Node, start: number, nextInde
   ;((node[1] as Record<string, unknown>).$ as Record<string, unknown>).line = endLine
 }
 
-/**
- * Walk children of an open/close token pair.
- * Nested containers (strong, li, …) keep their children — deliver only for
- * free HTML roots that closed mid-stream.
- */
+/** Walk children of an open/close pair until `closeType`. */
 function processChildren(
   tokens: Token[],
   start: number,
   closeType: string,
-  state: ProcessState
+  state: ProcessState,
+  nestHtml = false
 ): { children: Node[]; nextIndex: number } {
   const children: Node[] = []
   let i = start + 1
@@ -236,18 +225,15 @@ function processChildren(
     }
 
     if (token.type === 'inline') {
-      // Nested containers own free inline nodes — don't nest into HTML stack.
-      children.push(...processInline(token.children ?? [], state, false))
+      children.push(...processInline(token.children ?? [], state, nestHtml))
       i += 1
       continue
     }
 
-    const handler = processors[token.type]
-    if (handler) {
-      const { nextIndex, node } = handler(tokens, i, state)
-      // Nested containers own their children — push directly, no block deliver.
-      if (node !== undefined) pushNode(children, node)
-      i = nextIndex
+    const result = processToken(tokens, i, state)
+    if (result) {
+      if (result.node !== undefined) pushNode(children, result.node)
+      i = result.nextIndex
     } else {
       i += 1
     }
@@ -320,14 +306,10 @@ function processBlockChildrenWithSlots(
       continue
     }
 
-    const handler = processors[token.type]
-    if (handler) {
-      const { nextIndex, node } = handler(tokens, i, state)
-      // Nested block (paragraph, list, …) may have been opened while HTML stack is
-      // active; top-level processTokenList delivers such nodes. Here inside an mdc
-      // block the paragraph is a sibling of slots — push as-is.
-      pushChild(node)
-      i = nextIndex
+    const result = processToken(tokens, i, state)
+    if (result) {
+      pushChild(result.node)
+      i = result.nextIndex
     } else {
       i += 1
     }
@@ -473,88 +455,52 @@ const processors: Record<string, Processor> = {
   paragraph_open(tokens, start, state) {
     const inline = tokens[start + 1]
     const depthBefore = state.htmlStack.length
-
-    // Paragraph body walks with nestHtml=true so free content nests into open
-    // HTML frames. Nested markdown containers (lists etc.) call processChildren
-    // with nestHtml=false so they keep ownership of their own paragraphs.
-    // Detect nesting via: was stack already open AND are we being called from
-    // processChildren of another container? We approximate: if stack open before
-    // and paragraph has no html_inline children, treat as free body paragraph
-    // that should nest — which is correct for ai-thinking body. For list items
-    // stack is open but paragraph goes through list's processChildren...
-    //
-    // list → processChildren → paragraph_open. We need nestHtml=false here when
-    // paragraph is owned by a nested container. Signal via state flag.
     const nestHtml = state.insideMarkdownContainer === 0
+    const { children, nextIndex } = processChildren(tokens, start, 'paragraph_close', state, nestHtml)
+    const asParagraph = (): ProcessorResult =>
+      children.length === 0
+        ? { nextIndex, node: undefined }
+        : {
+            nextIndex,
+            node: ['p', processAttributes(tokens[start].attrs), ...mergeAdjacentTextNodes(children)],
+          }
 
-    // Manual paragraph walk so we can pass nestHtml
-    let i = start + 1
-    const freeChildren: Node[] = []
-    while (i < tokens.length && tokens[i].type !== 'paragraph_close') {
-      const token = tokens[i]
-      if (token.type === 'inline') {
-        freeChildren.push(...processInline(token.children ?? [], state, nestHtml))
-        i += 1
-        continue
-      }
-      const handler = processors[token.type]
-      if (handler) {
-        const result = handler(tokens, i, state)
-        if (result.node !== undefined) pushNode(freeChildren, result.node)
-        i = result.nextIndex
-      } else {
-        i += 1
-      }
-    }
-    const nextIndex = i < tokens.length && tokens[i].type === 'paragraph_close' ? i + 1 : i
-
-    // Stack fully emptied during this paragraph → free children are closed HTML roots
+    // Closed HTML root that started before this paragraph.
     if (depthBefore > 0 && state.htmlStack.length === 0) {
-      if (freeChildren.length === 1 && Array.isArray(freeChildren[0])) {
-        return { nextIndex, node: freeChildren[0] as ElementNode }
+      if (children.length === 1 && Array.isArray(children[0])) {
+        return { nextIndex, node: children[0] as ElementNode }
       }
-      if (freeChildren.length === 0) return { nextIndex, node: undefined }
-      return {
-        nextIndex,
-        node: ['p', processAttributes(tokens[start].attrs), ...mergeAdjacentTextNodes(freeChildren)],
-      }
+      return asParagraph()
     }
 
-    // Stack still open after this paragraph — content already nestled via deliverInline.
+    // Stack still open — free content already nested via deliverInline.
     if (state.htmlStack.length > 0) {
       if (nestHtml) {
         for (const frame of state.htmlStack) flushPendingInline(frame)
         return { nextIndex, node: undefined }
       }
-      // Owned by nested markdown container — keep free <p> for the container
-      if (freeChildren.length === 0) return { nextIndex, node: undefined }
-      return {
-        nextIndex,
-        node: ['p', processAttributes(tokens[start].attrs), ...mergeAdjacentTextNodes(freeChildren)],
-      }
+      return asParagraph()
     }
 
-    // Normal paragraph
-    if (freeChildren.length === 0) return { nextIndex, node: undefined }
+    const empty = asParagraph()
+    if (empty.node === undefined) return empty
 
-    const node = ['p', processAttributes(tokens[start].attrs), ...mergeAdjacentTextNodes(freeChildren)] as ElementNode
-    const result = processPossibleAttributesSyntax(tokens, { nextIndex, node })
-
-    // Unwrap <p> when it wraps a single HTML root (complete tag, void, or comment)
+    const result = processPossibleAttributesSyntax(tokens, { nextIndex, node: empty.node })
     const final = result.node
     const canUnwrap =
       Array.isArray(final) &&
       final.length === 3 &&
       inline?.type === 'inline' &&
       inline.children?.[0]?.type === 'html_inline' &&
-      (!inlineTags.has((final[2] as ElementNode)?.[0] as string) || (node[2][1] as ElementNodeAttributes)?.$!.block)
+      (!inlineTags.has((final[2] as ElementNode)?.[0] as string) ||
+        (empty.node[2][1] as ElementNodeAttributes)?.$!.block)
 
     if (canUnwrap) {
-      const node = final[2]
-      if ((node[1] as ElementNodeAttributes).$) {
-        ;(node[1] as ElementNodeAttributes)!.$!.block = 1
+      const unwrapped = final[2] as ElementNode
+      if ((unwrapped[1] as ElementNodeAttributes).$) {
+        ;(unwrapped[1] as ElementNodeAttributes).$!.block = 1
       }
-      return { nextIndex: result.nextIndex, node: final[2] as ElementNode }
+      return { nextIndex: result.nextIndex, node: unwrapped }
     }
 
     if ((result.node as ElementNode).every((n, i) => i < 2 || (n?.[1] as ElementNodeAttributes)?.$?.html)) {
@@ -662,29 +608,21 @@ export function tokenListToTree(tokens: Token[], options: ProcessorOptions = {})
       continue
     }
 
-    const handler = processors[token.type]
-    if (handler) {
-      const depthBefore = state.htmlStack.length
-      const { nextIndex, node } = handler(tokens, i, state)
+    const result = processToken(tokens, i, state)
+    if (result) {
+      // Remaining open frames span past this block.
+      for (const frame of state.htmlStack) frame.block = true
 
-      // Frames that were open before or opened during this block and remain open
-      // are block-spanning after we leave the token.
-      if (state.htmlStack.length > 0 && (depthBefore > 0 || state.htmlStack.length >= depthBefore)) {
-        for (const frame of state.htmlStack) frame.block = true
-      }
-
-      if (node !== undefined) {
+      if (result.node !== undefined) {
         if (state.preservePositions) {
-          preserveLineNumber(tokens, node, i, nextIndex, state)
+          preserveLineNumber(tokens, result.node, i, result.nextIndex, state)
         }
-        const free = deliverBlock(state, node)
+        const free = deliverBlock(state, result.node)
         if (free !== undefined) pushNode(nodes, free)
       }
-      i = nextIndex
+      i = result.nextIndex
     } else {
-      const componentName = token.tag || 'component'
-      const attrs = processAttributes(token.attrs, { handleJSON: false })
-      nodes.push([componentName, attrs])
+      nodes.push([token.tag || 'component', processAttributes(token.attrs, { handleJSON: false })])
       i += 1
     }
   }
