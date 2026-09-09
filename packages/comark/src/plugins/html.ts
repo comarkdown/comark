@@ -29,7 +29,7 @@
  */
 
 import { Token, type MarkdownExit } from 'markdown-exit'
-import type { MarkdownItPlugin } from '../types.ts'
+import type { ComarkParseTokensState, MarkdownItPlugin } from '../types.ts'
 import { defineComarkPlugin } from '../utils/helpers.ts'
 
 export interface HtmlPluginOptions {
@@ -58,34 +58,36 @@ export default defineComarkPlugin((opts: HtmlPluginOptions = {}) => {
   return {
     name: 'html',
     markdownItPlugins: [markdownItHtml as unknown as MarkdownItPlugin],
-    markdownItPost(state) {
-      let i = 0
-      while (i < state.tokens.length) {
-        const token = state.tokens[i]
-        if (token.type !== 'html_block') {
-          i += 1
-          continue
-        }
-
-        // Expand raw CommonMark html_block into html_inline + text, wrapped as a
-        // paragraph so the tree walk pairs open/close the same way as html_inline.
-        // Body text stays literal (no markdown re-parse).
-        const children = htmlToTokens(token.content || '')
-        const open = new Token('paragraph_open', 'p', 1)
-        const inline = new Token('inline', '', 0)
-        const close = new Token('paragraph_close', 'p', -1)
-        inline.children = children
-        inline.content = token.content || ''
-        if (token.map) {
-          open.map = token.map
-          inline.map = token.map
-        }
-        state.tokens.splice(i, 1, open, inline, close)
-        i += 3
-      }
-    },
+    markdownItPost: markdown ? undefined : markdownItPost,
   }
 })
+
+function markdownItPost(state: ComarkParseTokensState) {
+  let i = 0
+  while (i < state.tokens.length) {
+    const token = state.tokens[i]
+    if (token.type !== 'html_block') {
+      i += 1
+      continue
+    }
+
+    // Expand raw CommonMark html_block into html_inline + text, wrapped as a
+    // paragraph so the tree walk pairs open/close the same way as html_inline.
+    // Body text stays literal (no markdown re-parse).
+    const children = htmlToTokens(token.content || '')
+    const open = new Token('paragraph_open', 'p', 1)
+    const inline = new Token('inline', '', 0)
+    const close = new Token('paragraph_close', 'p', -1)
+    inline.children = children
+    inline.content = token.content || ''
+    if (token.map) {
+      open.map = token.map
+      inline.map = token.map
+    }
+    state.tokens.splice(i, 1, open, inline, close)
+    i += 3
+  }
+}
 
 // region - https://github.com/markdown-it/markdown-it/blob/master/src/common/html_re.ts#L21
 
