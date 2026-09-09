@@ -17,6 +17,18 @@ describe('HTML attribute escaping', () => {
     expect(html).not.toContain('title="a" onmouseover=alert(1)"')
   })
 
+  it('decodes &quot; inside quoted HTML attribute values', async () => {
+    const tree = await parseMarkdown('<span title="A &quot;quote&quot;">hi</span>')
+    const p = tree.nodes[0] as [string, Record<string, unknown>, ...Node[]]
+    const span = (Array.isArray(p[2]) ? p[2] : p) as [string, Record<string, unknown>, ...Node[]]
+    expect(span[0]).toBe('span')
+    expect(span[1].title).toBe('A "quote"')
+
+    const html = await renderHtml('<span title="A &quot;quote&quot;">hi</span>')
+    expect(html).toContain('title="A &quot;quote&quot;"')
+    expect(html).not.toContain('title="A "quote""')
+  })
+
   it('escapes quotes in component attribute props', async () => {
     const html = await renderHtml(`:span[hi]{title='a" onmouseover=alert(1) x="b'}`)
     expect(html).toContain('title="a&quot; onmouseover=alert(1) x=&quot;b"')

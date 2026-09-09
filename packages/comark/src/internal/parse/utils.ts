@@ -193,14 +193,12 @@ export function parseHtmlAttributes(attrsStr: string): Record<string, unknown> {
   const attrs: Record<string, unknown> = {}
   if (!attrsStr || !attrsStr.trim()) return attrs
 
-  attrsStr = decodeHTML(attrsStr)
-
   const re = /([:\w.-]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+)))?/g
   let match: RegExpExecArray | null
   while ((match = re.exec(attrsStr)) !== null) {
     const key = match[1]
     const value = match[2] ?? match[3] ?? match[4]
-    attrs[key] = value === undefined ? true : value
+    attrs[key] = value === undefined ? true : decodeHTML(value)
   }
 
   return attrs
