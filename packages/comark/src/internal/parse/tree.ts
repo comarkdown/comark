@@ -578,12 +578,10 @@ const processors: Record<string, Processor> = {
 
     return { nextIndex: start + 1, node: content }
   },
-  /**
-   * html_inline drives the document-wide HTML open stack.
-   * - self-closing / void → single element
-   * - open → push frame (siblings / later blocks fill children)
-   * - matching close → pop frame and emit completed element
-   */
+  // html_inline drives the document-wide HTML open stack.
+  // - self-closing / void → single element
+  // - open → push frame (siblings / later blocks fill children)
+  // - matching close → pop frame and emit completed element
   html_inline(tokens, start, state) {
     const raw = tokens[start].content || ''
     const parsed = parseHtmlInline(raw)
@@ -679,7 +677,9 @@ export function tokenListToTree(tokens: Token[], options: ProcessorOptions = {})
     }
   }
 
-  // EOF — close remaining unclosed HTML tags (outermost last)
+  // EOF — close remaining unclosed HTML tags (outermost last).
+  // Incomplete openers with only text leaves stay block: 0 (inline-like).
+  // Anything with element children (markdown, nested HTML, lists) is block: 1.
   while (state.htmlStack.length > 0) {
     const frame = state.htmlStack.pop()!
     frame.block = true

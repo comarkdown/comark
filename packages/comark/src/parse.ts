@@ -168,6 +168,13 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
         throw e
       }
 
+      for (const plugin of plugins) {
+        if (!plugin.markdownItPost) continue
+        withSpan(tracer, `comark:markdownItPost:${plugin.name}`, () =>
+          plugin.markdownItPost!(state as ComarkParsePostState)
+        )
+      }
+
       // Convert tokens to Comark structure.
       // Pass the same markdown-exit instance so closed HTML fragments can expand
       // their text leaves as inline markdown (e.g. `<h1>Hello **World**</h1>`).

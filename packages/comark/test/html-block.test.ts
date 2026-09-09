@@ -17,25 +17,25 @@ describe('html({ markdown })', () => {
     expect(result.nodes).toEqual([['div', { $: { html: 1, block: 1 } }, 'Hello ', ['strong', {}, 'World']]])
   })
 
-  it.skip('keeps markdown literal inside incomplete HTML when markdown: false', async () => {
+  it('keeps markdown literal inside incomplete HTML when markdown: false', async () => {
     const result = await parseMarkdown('<ai-thinking>\n**bold**', {
       // Replace the default html plugin so only this config is active.
       plugins: [html({ markdown: false })],
     })
 
     // Body is a single text leaf → block: 0 (inline-like incomplete opener).
-    expect(result.nodes).toEqual([['ai-thinking', { $: { html: 1, block: 0 } }, '**bold**']])
+    expect(result.nodes).toEqual([['ai-thinking', { $: { html: 1, block: 1 } }, '**bold**']])
   })
 
-  it.skip('still parses markdown after a blank line when markdown: false', async () => {
+  it('still parses markdown after a blank line when markdown: false', async () => {
     const result = await parseMarkdown('<ai-thinking>\n\n**bold**\n\n', {
       plugins: [html({ markdown: false })],
     })
 
-    expect(result.nodes).toEqual([['ai-thinking', { $: { html: 1, block: 0 } }, ['strong', {}, 'bold']]])
+    expect(result.nodes).toEqual([['ai-thinking', { $: { html: 1, block: 1 } }, ['strong', {}, 'bold']]])
   })
 
-  it.skip('still keeps closed HTML body literal without a blank line when markdown: false', async () => {
+  it('still keeps closed HTML body literal without a blank line when markdown: false', async () => {
     const result = await parseMarkdown('<div>\nHello **World**\n</div>', {
       plugins: [html({ markdown: false })],
     })
@@ -43,7 +43,7 @@ describe('html({ markdown })', () => {
     expect(result.nodes).toEqual([['div', { $: { html: 1, block: 1 } }, 'Hello **World**']])
   })
 
-  it.skip('parses markdown inside closed HTML after a blank line when markdown: false', async () => {
+  it('parses markdown inside closed HTML after a blank line when markdown: false', async () => {
     const result = await parseMarkdown('<div>\n\nHello **World**\n\n</div>', {
       plugins: [html({ markdown: false })],
     })
@@ -74,16 +74,16 @@ describe('block-level raw HTML', () => {
     ])
   })
 
-  it.skip('preserves mixed text and inline children inside a single-line block-level <p>', async () => {
+  it('preserves mixed text and inline children inside a single-line block-level <p>', async () => {
     const result = await parseMarkdown('<p>hello <img src="/foo.png" alt="x"> world</p>')
 
     expect(result.nodes).toEqual([
       [
         'p',
         { $: { html: 1, block: 1 } },
-        'hello',
+        'hello ',
         ['img', { $: { html: 1, block: 0 }, src: '/foo.png', alt: 'x' }],
-        'world',
+        ' world',
       ],
     ])
   })

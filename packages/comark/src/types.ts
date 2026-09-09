@@ -361,6 +361,7 @@ export interface ComarkTracer {
 export type ComarkPlugin<TMeta = {}, TFrontmatter = {}> = {
   name: string
   markdownItPlugins?: MarkdownItPlugin[]
+  markdownItPost?: (state: ComarkParsePreState) => void
   pre?: (state: ComarkParsePreState) => Promise<void> | void
   post?: (state: ComarkParsePostState<Writable<TMeta>, Writable<TFrontmatter>>) => Promise<void> | void
   /** Phantom — used for type inference only. Never set at runtime. */
