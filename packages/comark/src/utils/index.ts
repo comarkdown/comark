@@ -37,11 +37,21 @@ export function textContent(node: Node, options: { decodeUnicodeEntities?: boole
   return out
 }
 
+/** Walk at most this many element levels. Typical markdown trees are much shallower. */
+export const TREE_WALK_MAX_DEPTH = 50
+
 function* walkGenerator(
   document: MarkdownDocument,
   checker: (node: Node) => boolean
 ): Generator<Node, void, VisitResult> {
-  function* walk(node: Node, parent: Node | Node[], index: number): Generator<Node, boolean, VisitResult> {
+  function* walk(
+    node: Node,
+    parent: Node | Node[],
+    index: number,
+    depth: number
+  ): Generator<Node, boolean, VisitResult> {
+    if (depth >= TREE_WALK_MAX_DEPTH) return false
+
     let currentNode = node
 
     if (checker(node)) {
@@ -63,7 +73,7 @@ function* walkGenerator(
       // Use a while loop to handle removals correctly - don't increment if node was removed
       let i = 2
       while (i < currentNode.length) {
-        const childRemoved = yield* walk(currentNode[i] as Node, currentNode, i)
+        const childRemoved = yield* walk(currentNode[i] as Node, currentNode, i, depth + 1)
         if (childRemoved) {
           // If removed, i stays the same (next node is now at this index)
           continue
@@ -78,7 +88,7 @@ function* walkGenerator(
   // Use a while loop to handle removals correctly - don't increment if node was removed
   let i = 0
   while (i < document.nodes.length) {
-    const removed = yield* walk(document.nodes[i], document.nodes, i)
+    const removed = yield* walk(document.nodes[i], document.nodes, i, 0)
     if (removed) {
       // If removed, i stays the same (next node is now at this index)
       continue
@@ -88,7 +98,8 @@ function* walkGenerator(
 }
 
 /**
- * Visit a Markdown document and apply a visitor function to each node
+ * Visit a Markdown document and apply a visitor function to each node.
+ * Recursion is capped at {@link TREE_WALK_MAX_DEPTH} element levels; deeper subtrees are left as-is.
  *
  * @param document - The Markdown document
  * @param checker - A function that checks if a node should be visited
@@ -109,6 +120,7 @@ export function visit(
   }
 }
 
+/** Recursion is capped at {@link TREE_WALK_MAX_DEPTH} element levels; deeper subtrees are left as-is. */
 export async function visitAsync(
   document: MarkdownDocument,
   checker: (node: Node) => boolean,

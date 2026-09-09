@@ -1,5 +1,5 @@
 import type { Node, ElementNode, ElementNodeAttributes, MarkdownDocument } from 'comark'
-import { decodeHTML } from 'comark/utils'
+import { decodeHTML, TREE_WALK_MAX_DEPTH } from 'comark/utils'
 
 /** HTML void elements — never have children / closing tags. */
 const HTML_VOID_ELEMENTS = new Set([
@@ -33,6 +33,8 @@ export type ParsedHtmlTag =
  * the paragraph is unwrapped and its children are hoisted up to be direct children
  * of the container.
  *
+ * Recursion is capped at {@link TREE_WALK_MAX_DEPTH} element levels; deeper subtrees are left as-is.
+ *
  * @param node - The Comark element to process
  * @returns The node with auto-unwrapped children (if applicable)
  *
@@ -52,7 +54,11 @@ function isBlankText(value: string): boolean {
 }
 
 export function applyAutoUnwrap(node: Node): Node {
-  if (typeof node === 'string' || node[0] === 'p' || node[0] == null) {
+  return applyAutoUnwrapAt(node, 0)
+}
+
+function applyAutoUnwrapAt(node: Node, depth: number): Node {
+  if (depth >= TREE_WALK_MAX_DEPTH || typeof node === 'string' || node[0] === 'p' || node[0] == null) {
     return node
   }
 
@@ -96,7 +102,7 @@ export function applyAutoUnwrap(node: Node): Node {
   let copy: Node[] | undefined
   for (let i = 2; i < length; i++) {
     const child = node[i] as Node
-    const next = applyAutoUnwrap(child)
+    const next = applyAutoUnwrapAt(child, depth + 1)
     if (copy !== undefined) {
       copy.push(next)
     } else if (next !== child) {
