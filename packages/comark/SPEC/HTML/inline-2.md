@@ -12,22 +12,18 @@
   "meta": {},
   "nodes": [
     [
-      "p",
-      {},
+      "span",
+      {
+        "$": {
+          "html": 1,
+          "block": 0
+        }
+      },
+      "Hello ",
       [
-        "span",
-        {
-          "$": {
-            "html": 1,
-            "block": 0
-          }
-        },
-        "Hello ",
-        [
-          "strong",
-          {},
-          "World"
-        ]
+        "strong",
+        {},
+        "World"
       ]
     ]
   ]
@@ -37,7 +33,7 @@
 ## HTML
 
 ```html
-<p><span>Hello <strong>World</strong></span></p>
+<span>Hello <strong>World</strong></span>
 ```
 
 ## Markdown

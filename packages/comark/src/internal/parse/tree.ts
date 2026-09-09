@@ -63,6 +63,11 @@ function makeHtmlAttrs(attrs: Record<string, unknown>, block: boolean): Record<s
   }
 }
 
+function pushNode(nodes: Node[], node: Node) {
+  if (node[0] === 'fragment') nodes.push(...(node.slice(2) as Node[]))
+  else nodes.push(node)
+}
+
 function isInlineish(node: Node): boolean {
   if (typeof node === 'string') return true
   if (!Array.isArray(node)) return false
@@ -181,7 +186,7 @@ function processInline(inlineTokens: Token[], state: ProcessState, nestHtml = tr
       const { nextIndex, node } = handler(inlineTokens, i, state)
       if (nestHtml) {
         const free = deliverInline(state, node)
-        if (free !== undefined) nodes.push(free)
+        if (free !== undefined) pushNode(nodes, free)
       } else if (node !== undefined) {
         nodes.push(node)
       }
@@ -241,7 +246,7 @@ function processChildren(
     if (handler) {
       const { nextIndex, node } = handler(tokens, i, state)
       // Nested containers own their children — push directly, no block deliver.
-      if (node !== undefined) children.push(node)
+      if (node !== undefined) pushNode(children, node)
       i = nextIndex
     } else {
       i += 1
@@ -279,8 +284,8 @@ function processBlockChildrenWithSlots(
 
   const pushChild = (node: Node | undefined) => {
     if (node === undefined) return
-    if (currentSlot) currentSlot.children.push(node)
-    else nodes.push(node)
+
+    pushNode(currentSlot ? currentSlot.children : nodes, node)
   }
 
   while (i < tokens.length) {
@@ -443,7 +448,10 @@ const processors: Record<string, Processor> = {
   hr: singleToken(() => ['hr', {}]),
   hardbreak: singleToken(() => ['br', {}]),
   // Softbreaks inside open HTML are paragraph separators, not text content
-  softbreak: (_tokens, start, state) => ({ nextIndex: start + 1, node: state.htmlStack.length > 0 ? undefined : '\n' }),
+  softbreak: (tokens, start, state) => ({
+    nextIndex: start + 1,
+    node: state.htmlStack.length > 0 || tokens[start - 1].type === 'html_inline' ? undefined : '\n',
+  }),
   code_block: codeBlockProcessor,
   fenced_code_block: codeBlockProcessor,
   fence: codeBlockProcessor,
@@ -492,7 +500,7 @@ const processors: Record<string, Processor> = {
       const handler = processors[token.type]
       if (handler) {
         const result = handler(tokens, i, state)
-        if (result.node !== undefined) freeChildren.push(result.node)
+        if (result.node !== undefined) pushNode(freeChildren, result.node)
         i = result.nextIndex
       } else {
         i += 1
@@ -547,6 +555,10 @@ const processors: Record<string, Processor> = {
         ;(node[1] as ElementNodeAttributes)!.$!.block = 1
       }
       return { nextIndex: result.nextIndex, node: final[2] as ElementNode }
+    }
+
+    if ((result.node as ElementNode).every((n, i) => i < 2 || (n?.[1] as ElementNodeAttributes)?.$?.html)) {
+      ;(result.node as ElementNode)[0] = 'fragment'
     }
 
     return result
@@ -666,7 +678,7 @@ export function tokenListToTree(tokens: Token[], options: ProcessorOptions = {})
           preserveLineNumber(tokens, node, i, nextIndex, state)
         }
         const free = deliverBlock(state, node)
-        if (free !== undefined) nodes.push(free)
+        if (free !== undefined) pushNode(nodes, free)
       }
       i = nextIndex
     } else {

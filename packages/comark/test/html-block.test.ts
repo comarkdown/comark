@@ -218,6 +218,18 @@ after \`code\`
     ])
   })
 
+  it('multi <p>', async () => {
+    const result = await parseMarkdown(`<p class="warning">This is a warning message.</p>
+  <p class="success">Your changes have been saved.</p>
+  <p class="info">More information is available here.</p>`)
+
+    expect(result.nodes).toEqual([
+      ['p', { $: { html: 1, block: 0 }, class: 'warning' }, 'This is a warning message.'],
+      ['p', { $: { html: 1, block: 0 }, class: 'success' }, 'Your changes have been saved.'],
+      ['p', { $: { html: 1, block: 0 }, class: 'info' }, 'More information is available here.'],
+    ])
+  })
+
   it.skip('preserves nested indented raw HTML children inside a multiline <a>', async () => {
     const result = await parseMarkdown(`<a href="${sponsorsUrl}">
   <img src="${sponsorsUrl}" alt="Sponsors"/>
