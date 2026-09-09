@@ -493,7 +493,7 @@ const processors: Record<string, Processor> = {
       inline?.type === 'inline' &&
       inline.children?.[0]?.type === 'html_inline' &&
       (!inlineTags.has((final[2] as ElementNode)?.[0] as string) ||
-        (empty.node[2][1] as ElementNodeAttributes)?.$!.block)
+        Boolean((empty.node[2][1] as ElementNodeAttributes)?.$?.block))
 
     if (canUnwrap) {
       const unwrapped = final[2] as ElementNode
