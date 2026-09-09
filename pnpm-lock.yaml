@@ -418,7 +418,7 @@ importers:
         version: link:../packages/comark
       comark-docs:
         specifier: github:comarkdown/comark-docs#feat/client-side-fts-search
-        version: https://codeload.github.com/comarkdown/comark-docs/tar.gz/8a9b20f7591db25e3653e22923a26712482112b3(9c9e49209bc8e691974cb7f45d2ada59)
+        version: https://codeload.github.com/comarkdown/comark-docs/tar.gz/31e7e7be114f4213f66f8f74a30a0a4e56475584(9c9e49209bc8e691974cb7f45d2ada59)
       katex:
         specifier: 'catalog:'
         version: 0.17.0
@@ -7450,8 +7450,8 @@ packages:
     version: 0.3.0
     hasBin: true
 
-  comark-docs@https://codeload.github.com/comarkdown/comark-docs/tar.gz/8a9b20f7591db25e3653e22923a26712482112b3:
-    resolution: {gitHosted: true, integrity: sha512-5NFLGiy8IAf4h8OqFQAC2A95sgE/1LyTETOvrdkf8I/9aiPEG0DJWvdobXkiplG0AuHMDa2aUpNrU2EW6t6GKg==, tarball: https://codeload.github.com/comarkdown/comark-docs/tar.gz/8a9b20f7591db25e3653e22923a26712482112b3}
+  comark-docs@https://codeload.github.com/comarkdown/comark-docs/tar.gz/31e7e7be114f4213f66f8f74a30a0a4e56475584:
+    resolution: {gitHosted: true, integrity: sha512-uDhmdpNvdjXxqzMaz67EG2V/MCbY+m03rkPur3Xptz5cwTUPrF9NyRaMjmxkS79hpVuVBo7D29CzwKv4cul9ng==, tarball: https://codeload.github.com/comarkdown/comark-docs/tar.gz/31e7e7be114f4213f66f8f74a30a0a4e56475584}
     version: 0.0.1
     peerDependencies:
       nuxt: ^4.5.0
@@ -18880,7 +18880,7 @@ snapshots:
       - shiki
       - uploadthing
 
-  comark-docs@https://codeload.github.com/comarkdown/comark-docs/tar.gz/8a9b20f7591db25e3653e22923a26712482112b3(9c9e49209bc8e691974cb7f45d2ada59):
+  comark-docs@https://codeload.github.com/comarkdown/comark-docs/tar.gz/31e7e7be114f4213f66f8f74a30a0a4e56475584(9c9e49209bc8e691974cb7f45d2ada59):
     dependencies:
       '@ai-sdk/gateway': 4.0.64(zod@4.4.3)
       '@ai-sdk/vue': 4.0.79(vue@3.5.41(typescript@6.0.3))(zod@4.4.3)
