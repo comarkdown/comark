@@ -144,13 +144,30 @@ const IMPLICIT_ATTRS: Record<string, { drop?: string[]; classBlocklist?: string[
 const HIGHLIGHTER_CLASS_TAGS = new Set(['pre', 'code'])
 
 /**
+ * Whether a `class` value was injected by a highlighter rather than authored.
+ *
+ * Matched on whole tokens, not a prefix, so an authored `shiki-custom` or
+ * `shj-custom` is left alone. Shiki emits `shiki <theme>…`; rangi emits
+ * `<classPrefix> shiki shj-lang-<lang>`, where the prefix defaults to `shj` but
+ * is configurable, so the third form catches a customized one.
+ */
+function isHighlighterClass(value: string): boolean {
+  const tokens = value.trim().split(/\s+/)
+  return (
+    tokens[0] === 'shiki' ||
+    tokens[0] === 'shj' ||
+    (tokens[1] === 'shiki' && (tokens[2]?.startsWith('shj-lang-') ?? false))
+  )
+}
+
+/**
  * Collapse the ` . ` separator highlighters use to mark where their injected
  * classes end and the user's begin. It exists only so `userBlockAttrs` can
  * recover the user portion on markdown stringify; it must never reach HTML.
  */
 export function mergeHighlighterClass(value: unknown): unknown {
   if (typeof value !== 'string') return value
-  if (!value.startsWith('shiki') && !value.startsWith('shj')) return value
+  if (!isHighlighterClass(value)) return value
   return value
     .split(/\s+/)
     .filter((token) => token !== '.')
@@ -179,12 +196,7 @@ export function userBlockAttrs(tag: string, attributes: Record<string, unknown>)
       if (remaining) result[key] = remaining
       continue
     }
-    if (
-      key === 'class' &&
-      stripsHighlighterClass &&
-      typeof value === 'string' &&
-      (value.startsWith('shiki') || value.startsWith('shj'))
-    ) {
+    if (key === 'class' && stripsHighlighterClass && typeof value === 'string' && isHighlighterClass(value)) {
       // Highlighters inject their own classes (`shiki …` / `shj shj-lang-…`)
       // and append any user class after a `.` separator. Recover the user
       // portion by dropping everything up to and including that separator.

@@ -93,3 +93,34 @@ describe('shiki inline code round-trip', () => {
     expect(await renderMarkdown(document)).toBe(source)
   })
 })
+
+describe('highlighter class detection', () => {
+  // Matched on whole tokens, not a prefix, so an authored class that merely
+  // starts with `shiki` or `shj` is not mistaken for highlighter output.
+  function render(node: MarkdownDocument['nodes'][number]) {
+    return renderMarkdown({ frontmatter: {}, meta: {}, nodes: [node] })
+  }
+
+  it('keeps an authored class that starts with the highlighter prefix', async () => {
+    expect(await render(['pre', { language: 'ts', class: 'shiki-custom' }, ['code', {}, 'x']])).toContain(
+      '::pre{.shiki-custom}'
+    )
+    expect(await render(['p', {}, ['code', { lang: 'ts', class: 'shj-custom' }, 'x']])).toBe(
+      '`x`{lang="ts" .shj-custom}'
+    )
+  })
+
+  it('strips shiki output', async () => {
+    expect(await render(['pre', { language: 'ts', class: 'shiki themes' }, ['code', {}, 'x']])).not.toContain('::pre')
+    expect(await render(['p', {}, ['code', { lang: 'ts', class: 'shiki themes' }, 'x']])).toBe('`x`{lang="ts"}')
+  })
+
+  it('strips rangi output, including a custom class prefix', async () => {
+    expect(await render(['pre', { language: 'ts', class: 'shj shiki shj-lang-ts' }, ['code', {}, 'x']])).not.toContain(
+      '::pre'
+    )
+    expect(await render(['pre', { language: 'ts', class: 'myhl shiki shj-lang-ts' }, ['code', {}, 'x']])).not.toContain(
+      '::pre'
+    )
+  })
+})
