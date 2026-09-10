@@ -1,7 +1,6 @@
-import type { PropType } from 'vue'
 import { computed, defineComponent, h } from 'vue'
 import { Markdown, markdownProps } from './components/Markdown.ts'
-import type { MarkdownDocument as MarkdownDocumentType, ComponentManifest, ParserOptions } from 'comark'
+import type { ParserOptions } from 'comark'
 import { MarkdownDocument, markdownDocumentProps } from './components/MarkdownDocument.ts'
 
 export { Markdown } from './components/Markdown.ts'
