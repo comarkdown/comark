@@ -27,12 +27,32 @@ Line three
       {},
       [
         "template",
-        { "name": "description" },
-        ["p", {}, "Line one"],
-        ["hr", {}],
-        ["p", {}, "Middle line"],
-        ["hr", {}],
-        ["p", {}, "Line three"]
+        {
+          "name": "description"
+        },
+        [
+          "p",
+          {},
+          "Line one"
+        ],
+        [
+          "hr",
+          {}
+        ],
+        [
+          "p",
+          {},
+          "Middle line"
+        ],
+        [
+          "hr",
+          {}
+        ],
+        [
+          "p",
+          {},
+          "Line three"
+        ]
       ]
     ]
   ]
@@ -45,9 +65,9 @@ Line three
 <card>
   <template name="description">
     <p>Line one</p>
-    <hr />
+    <hr>
     <p>Middle line</p>
-    <hr />
+    <hr>
     <p>Line three</p>
   </template>
 </card>

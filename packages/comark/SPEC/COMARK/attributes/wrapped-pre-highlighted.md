@@ -37,55 +37,55 @@ const variable = "value"
         {
           "class": "language-ts"
         },
-         [
-           "span",
-           {
-             "class": "line",
-             "style": "display: inline"
-           },
-           [
-             "span",
-             {
-               "style": "color:#D32F2F;--shiki-dark:#81A1C1"
-             },
-             "const"
-           ],
-           [
-             "span",
-             {
-               "style": "color:#1976D2;--shiki-dark:#D8DEE9"
-             },
-             " variable"
-           ],
-           [
-             "span",
-             {
-               "style": "color:#D32F2F;--shiki-dark:#81A1C1"
-             },
-             " ="
-           ],
-           [
-             "span",
-             {
-               "style": "color:#22863A;--shiki-dark:#ECEFF4"
-             },
-             " \""
-           ],
-           [
-             "span",
-             {
-               "style": "color:#22863A;--shiki-dark:#A3BE8C"
-             },
-             "value"
-           ],
-           [
-             "span",
-             {
-               "style": "color:#22863A;--shiki-dark:#ECEFF4"
-             },
-             "\""
-           ]
-         ]
+        [
+          "span",
+          {
+            "class": "line",
+            "style": "display: inline"
+          },
+          [
+            "span",
+            {
+              "style": "color:#D32F2F;--shiki-dark:#81A1C1"
+            },
+            "const"
+          ],
+          [
+            "span",
+            {
+              "style": "color:#1976D2;--shiki-dark:#D8DEE9"
+            },
+            " variable"
+          ],
+          [
+            "span",
+            {
+              "style": "color:#D32F2F;--shiki-dark:#81A1C1"
+            },
+            " ="
+          ],
+          [
+            "span",
+            {
+              "style": "color:#22863A;--shiki-dark:#ECEFF4"
+            },
+            " \""
+          ],
+          [
+            "span",
+            {
+              "style": "color:#22863A;--shiki-dark:#A3BE8C"
+            },
+            "value"
+          ],
+          [
+            "span",
+            {
+              "style": "color:#22863A;--shiki-dark:#ECEFF4"
+            },
+            "\""
+          ]
+        ]
       ]
     ]
   ]

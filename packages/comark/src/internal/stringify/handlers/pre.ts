@@ -25,7 +25,7 @@ export function pre(node: ElementNode, state: State) {
   // Meta always has a leading space
   const meta = attributes.meta ? ' ' + attributes.meta : ''
 
-  const code = String(node[1]?.code || textContent(node)).trim()
+  const code = String(node[1]?.code || textContent(node)).trimEnd()
   const fence = pickFence(code)
 
   const fenceBlock = fence + language + filename + highlights + meta + '\n' + code + '\n' + fence
