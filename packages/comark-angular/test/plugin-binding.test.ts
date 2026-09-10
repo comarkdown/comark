@@ -6,6 +6,7 @@ import { renderApplication } from '@angular/platform-server'
 import { parseMarkdown, type MarkdownDocument as MarkdownDocumentType } from 'comark'
 import { MarkdownDocument } from '../src/components/markdown-document.component.ts'
 import { If } from '../src/plugins/binding.ts'
+import { nestedIfCases, nestedIfMarkdown } from '../../../test/fixtures/if'
 
 let probeInstances = 0
 
@@ -52,6 +53,21 @@ async function renderMarkdown(markdown: string, data: Record<string, unknown>): 
 }
 
 describe('@comark/angular plugins/binding — If component', () => {
+  it.each(nestedIfCases)('selects nested branches for $data', async ({ data, expected }) => {
+    const html = await renderMarkdown(nestedIfMarkdown, data)
+    expect(html.replace(/<[^>]*>/g, '').trim()).toBe(expected)
+    expect(html).not.toContain('<template')
+  })
+
+  it.each([true, false])('does not instantiate the inactive slot for %s', async (show) => {
+    probeInstances = 0
+    const markdown = `::if{:value="data.show" as="section"}\n${show ? 'Visible' : ':probe'}\n#else\n${show ? ':probe' : 'Hidden'}\n::`
+    const html = await renderMarkdown(markdown, { show })
+    expect(html).toContain('<section>')
+    expect(html).toContain(show ? 'Visible' : 'Hidden')
+    expect(probeInstances).toBe(0)
+  })
+
   it('does not instantiate descendants of a hidden branch', async () => {
     probeInstances = 0
     const markdown = '::if{:condition="data.show" as="section"}\n:probe\n::'

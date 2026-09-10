@@ -1,13 +1,26 @@
 import { describe, expect, it } from 'vitest'
 import { parseMarkdown } from '../../src/parse'
 import { renderMarkdown } from '../../src/render'
-import binding, { Binding, resolveIfWrapper, shouldRenderIf } from '../../src/plugins/binding'
+import binding, { Binding, resolveIfWrapper, selectIfBranch, shouldRenderIf } from '../../src/plugins/binding'
+import { nestedIfMarkdown } from '../../../../test/fixtures/if'
 import { renderHtmlForTest } from '../utils/render-html'
 
 const parseWithBinding = (md: string, opts: Parameters<typeof binding>[0] = {}) =>
   parseMarkdown(md, { plugins: [binding(opts)] })
 
 describe('binding plugin — If predicate', () => {
+  it('selects explicit slots and distinguishes a missing else from an empty else', () => {
+    expect(
+      selectIfBranch(
+        ['Regular', ['template', { name: 'default' }, 'Default'], ['template', { name: 'else' }, 'Else']],
+        true
+      )
+    ).toEqual(['Default'])
+    expect(selectIfBranch(['Regular', ['template', { name: 'else' }, 'Else']], false)).toEqual(['Else'])
+    expect(selectIfBranch(['Regular'], false)).toBeUndefined()
+    expect(selectIfBranch([['template', { name: 'else' }]], false)).toEqual([])
+  })
+
   it('supports truthy conditions and values', () => {
     expect(shouldRenderIf({ condition: true })).toBe(true)
     expect(shouldRenderIf({ condition: false })).toBe(false)
@@ -95,6 +108,12 @@ describe('binding plugin — options', () => {
 })
 
 describe('binding plugin — rendering', () => {
+  it('round-trips nested If slots without evaluating the condition', async () => {
+    const document = await parseMarkdown(nestedIfMarkdown)
+    const markdown = await renderMarkdown(document)
+    expect((await parseMarkdown(markdown)).nodes).toEqual(document.nodes)
+  })
+
   it('resolves the binding against frontmatter when rendering to HTML', async () => {
     const tree = await parseWithBinding(`---
 user:

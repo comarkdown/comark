@@ -3,12 +3,15 @@ import { resolveIfWrapper, shouldRenderIf, type IfProps } from 'comark/plugins/b
 
 export interface IfComponentProps extends IfProps {
   children?: ReactNode
+  slotElse?: ReactNode
 }
 
-/** Render children when the resolved condition or comparisons pass. */
-export function If({ children, ...props }: IfComponentProps): ReactNode {
-  if (!shouldRenderIf(props)) return null
+/** Render the default or else slot according to the resolved props. */
+export function If({ children, slotElse, ...props }: IfComponentProps): ReactNode {
+  const matches = shouldRenderIf(props)
+  if (!matches && slotElse === undefined) return null
+  const branch = matches ? children : slotElse
 
   const wrapper = resolveIfWrapper(props.as)
-  return wrapper ? createElement(wrapper, null, children) : children
+  return wrapper ? createElement(wrapper, null, branch) : branch
 }

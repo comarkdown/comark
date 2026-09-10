@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { parseMarkdown } from 'comark'
 import { renderHtmlFromDocument } from '../src/index'
 import binding, { Binding, If } from '../src/plugins/binding'
+import { nestedIfCases, nestedIfMarkdown } from '../../../test/fixtures/if'
 
 const parseWithBinding = (md: string) => parseMarkdown(md, { plugins: [binding()] })
 
@@ -52,6 +53,35 @@ Hello {{ frontmatter.user.name }}!
 })
 
 describe('@comark/html plugins/binding — If handler', () => {
+  it.each(nestedIfCases)('selects nested branches for $data', async ({ data, expected }) => {
+    const doc = await parseMarkdown(nestedIfMarkdown)
+    const html = await renderHtmlFromDocument(doc, { components: { If }, data })
+    expect(html.replace(/<[^>]*>/g, '')).toBe(expected)
+    expect(html).not.toContain('<template')
+  })
+
+  it.each([true, false])('does not invoke the inactive branch handler for %s', async (show) => {
+    const doc = await parseMarkdown(
+      `::if{:value="data.show"}\n${show ? 'Visible' : ':probe'}\n#else\n${show ? ':probe' : 'Hidden'}\n::`
+    )
+    const html = await renderHtmlFromDocument(doc, {
+      components: {
+        If,
+        probe: () => {
+          throw new Error('Inactive branch rendered')
+        },
+      },
+      data: { show },
+    })
+    expect(html).toContain(show ? 'Visible' : 'Hidden')
+  })
+
+  it.each([true, false])('selects the default or else slot for value %s', async (show) => {
+    const doc = await parseMarkdown('::if{:value="data.show" as="section"}\nVisible\n#else\nHidden\n::')
+    const html = await renderHtmlFromDocument(doc, { components: { If }, data: { show } })
+    expect(html).toBe(show ? '<section><p>Visible</p></section>' : '<section>Hidden</section>')
+  })
+
   it('renders only truthy branches without requiring the binding parser plugin', async () => {
     const doc = await parseMarkdown('::if{:condition="data.show"}\nVisible\n::')
 
@@ -69,9 +99,7 @@ describe('@comark/html plugins/binding — If handler', () => {
   })
 
   it('exposes normalized If props to bindings in its children', async () => {
-    const doc = await parseWithBinding(
-      '::if{:condition="true" :enabled="false"}\nEnabled {{ props.enabled }}\n::',
-    )
+    const doc = await parseWithBinding('::if{:condition="true" :enabled="false"}\nEnabled {{ props.enabled }}\n::')
     const html = await renderHtmlFromDocument(doc, { components: { Binding, If } })
 
     expect(html).toBe('Enabled false')

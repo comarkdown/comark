@@ -424,7 +424,7 @@ import frontmatter from 'comark/plugins/frontmatter' // default via registerDefa
 import components from 'comark/plugins/components'   // default via registerDefaultPlugins
 import attributes from 'comark/plugins/attributes'   // default via registerDefaultPlugins
 import html from 'comark/plugins/html'               // default via registerDefaultPlugins
-import binding, { Binding, resolveIfWrapper, shouldRenderIf } from 'comark/plugins/binding'
+import binding, { Binding, resolveIfWrapper, selectIfBranch, shouldRenderIf } from 'comark/plugins/binding'
 import type { IfComparisonOperator, IfProps, IfWrapperTag } from 'comark/plugins/binding'
 
 // markdown-it / markdown-exit adapters (e.g. VitePress)

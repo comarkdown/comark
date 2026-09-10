@@ -16,7 +16,7 @@ import {
   inject,
 } from '@angular/core'
 import type { ElementNode, Node as MarkdownAstNode, NodeRenderData } from 'comark'
-import { resolveIfWrapper, shouldRenderIf, type IfProps } from 'comark/plugins/binding'
+import { resolveIfWrapper, selectIfBranch, shouldRenderIf, type IfProps } from 'comark/plugins/binding'
 import { pascalCase, resolveAttributes } from 'comark/utils'
 
 interface StructuralComponent extends Type<any> {
@@ -221,14 +221,15 @@ export class MarkdownNode implements OnChanges {
 
   /** Evaluate an `::if` before rendering any of its descendants. */
   private renderIf(props: IfProps, children: MarkdownAstNode[], childrenRenderData: NodeRenderData): void {
-    if (!shouldRenderIf(props)) return
+    const branch = selectIfBranch(children, shouldRenderIf(props))
+    if (!branch) return
 
     const hostEl = this.elementRef.nativeElement as HTMLElement
     const wrapper = resolveIfWrapper(props.as)
     if (wrapper) {
-      this.renderNativeEl(hostEl, wrapper, {}, children, childrenRenderData)
+      this.renderNativeEl(hostEl, wrapper, {}, branch, childrenRenderData)
     } else {
-      this.renderChildren(hostEl, children, childrenRenderData)
+      this.renderChildren(hostEl, branch, childrenRenderData)
     }
   }
 

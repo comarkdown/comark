@@ -27,6 +27,16 @@ Shown when enabled is exactly false.
 ::if{:condition="data.test" :value="data.score" :gte="80"}
 Shown when test is truthy and score is at least 80.
 ::
+
+::if{:value="data.isHappy"}
+I am happy.
+#else
+:::if{:value="data.isFine"}
+I am fine.
+#else
+I am NOT fine and NOT happy.
+:::
+::
 `
 
 const html = await renderHtml(markdown, {
@@ -37,6 +47,8 @@ const html = await renderHtml(markdown, {
   },
   data: {
     test: true,
+    isHappy: false,
+    isFine: true,
   },
 })
 

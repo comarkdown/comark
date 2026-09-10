@@ -202,7 +202,7 @@ This content is wrapped in a section.
 | Prop        | Behavior                                                    |
 | ----------- | ----------------------------------------------------------- |
 | `condition` | Must be truthy when present                                 |
-| `value`     | Checked for truthiness when no comparison prop is present   |
+| `value`     | Checked for truthiness when neither `condition` nor comparison props are present |
 | `eq`        | Requires strict equality                                    |
 | `neq`       | Requires strict inequality                                  |
 | `gt`        | Requires `value` to be greater than the comparison value    |
@@ -214,6 +214,34 @@ This content is wrapped in a section.
 A comparison never passes when `value` or its comparison value resolves to `undefined`. Use `:` on numeric, boolean, or other JSON values so Comark preserves their type. For example, `:eq="false"` compares against the boolean `false`, while `eq="false"` compares against the string `"false"`.
 
 The `as` prop accepts `div`, `span`, `p`, `section`, `article`, `aside`, `header`, `footer`, `main`, or `nav`. ANSI output validates the prop but renders no wrapper.
+
+### Else branches
+
+Use the `#else` slot to show fallback content when the condition or any comparison fails. No blank line is required before `#else`:
+
+```mdc
+::if{:value="data.isHappy"}
+I am happy.
+#else
+I am NOT happy.
+::
+```
+
+Nest another `If` in the else slot to check a second condition:
+
+```mdc
+::if{:value="data.isHappy"}
+I am happy.
+#else
+:::if{:value="data.isFine"}
+I am fine.
+#else
+I am NOT fine and NOT happy.
+:::
+::
+```
+
+Each `#else` belongs to its enclosing component. Only the selected branch renders, and `as` wraps whichever branch is selected. Without an else slot, a failed condition produces no output. This works with all renderer-specific `If` exports.
 
 ## Markdown round-trip
 
@@ -328,11 +356,16 @@ const components = { If }
 
 Replace `html` with `ansi`, `vue`, `react`, `svelte`, `angular`, or `nuxt` for the corresponding renderer. Hidden Angular branches are structural: their descendants aren't instantiated.
 
-The core entry point also exports the shared `IfProps`, `IfComparisonOperator`, and `IfWrapperTag` types, plus `shouldRenderIf(props)` and `resolveIfWrapper(value)` for custom renderer adapters:
+The core entry point also exports the shared `IfProps`, `IfComparisonOperator`, and `IfWrapperTag` types, plus helpers for custom renderer adapters:
+
+- `shouldRenderIf(props)` evaluates resolved condition and comparison props.
+- `selectIfBranch(children, matches)` selects default or else AST children. It returns `undefined` when the condition fails and no else slot exists.
+- `resolveIfWrapper(value)` validates the optional wrapper tag.
 
 ```typescript
 import {
   resolveIfWrapper,
+  selectIfBranch,
   shouldRenderIf,
   type IfProps,
 } from 'comark/plugins/binding'

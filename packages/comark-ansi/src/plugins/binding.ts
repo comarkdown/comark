@@ -1,5 +1,6 @@
 import { resolveAttributes, type NodeHandler } from 'comark/render'
-import { resolveIfWrapper, shouldRenderIf, type IfProps } from 'comark/plugins/binding'
+import { resolveIfWrapper, selectIfBranch, shouldRenderIf, type IfProps } from 'comark/plugins/binding'
+import type { Node } from 'comark'
 import { DIM, RESET } from '../utils/escape.ts'
 
 export * from 'comark/plugins/binding'
@@ -37,13 +38,14 @@ export const Binding: NodeHandler = (node, state) => {
   return state.context.colors ? `${DIM}{{ ${path} }}${RESET}` : `{{ ${path} }}`
 }
 
-/** Render the children of an `::if` component when its resolved props pass. */
+/** Render the default or else branch of an `::if` component. */
 export const If: NodeHandler = async (node, state, parent) => {
   const props = resolveAttributes(state.renderData.props, state.renderData, { parseJson: true }) as IfProps
-  if (!shouldRenderIf(props)) return ''
+  const children = selectIfBranch(node.slice(2) as Node[], shouldRenderIf(props))
+  if (!children) return ''
 
   // Validate `as` consistently with visual renderers, even though ANSI has no wrapper element.
   resolveIfWrapper(props.as)
   state.renderData = { ...state.renderData, props }
-  return (await state.flow(node, state)) + (parent ? '' : state.context.blockSeparator)
+  return (await state.flow([node[0], node[1], ...children], state)) + (parent ? '' : state.context.blockSeparator)
 }

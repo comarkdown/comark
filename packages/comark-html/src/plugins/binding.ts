@@ -1,5 +1,6 @@
 import { resolveAttributes, type NodeHandler } from 'comark/render'
-import { resolveIfWrapper, shouldRenderIf, type IfProps } from 'comark/plugins/binding'
+import { resolveIfWrapper, selectIfBranch, shouldRenderIf, type IfProps } from 'comark/plugins/binding'
+import type { Node } from 'comark'
 import { escapeHtml } from 'comark/utils'
 
 export * from 'comark/plugins/binding'
@@ -32,14 +33,15 @@ export const Binding: NodeHandler = (node, state) => {
   return escapeHtml(String(out))
 }
 
-/** Render the children of an `::if` component when its resolved props pass. */
+/** Render the default or else branch of an `::if` component. */
 export const If: NodeHandler = async (node, state, parent) => {
   const props = resolveAttributes(state.renderData.props, state.renderData, { parseJson: true }) as IfProps
-  if (!shouldRenderIf(props)) return ''
+  const children = selectIfBranch(node.slice(2) as Node[], shouldRenderIf(props))
+  if (!children) return ''
 
   const wrapper = resolveIfWrapper(props.as)
   state.renderData = { ...state.renderData, props }
-  const html = await state.flow(node, state)
+  const html = await state.flow([node[0], node[1], ...children], state)
   const output = wrapper ? `<${wrapper}>${html}</${wrapper}>` : html
   return output + (parent ? '' : state.context.blockSeparator)
 }

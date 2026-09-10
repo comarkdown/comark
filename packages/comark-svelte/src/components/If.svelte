@@ -4,21 +4,24 @@
 
   let {
     children,
+    else: elseContent,
     ...props
   }: IfProps & {
     children?: Snippet
+    else?: Snippet
   } = $props()
 
   let visible = $derived(shouldRenderIf(props))
-  let wrapper = $derived(visible ? resolveIfWrapper(props.as) : undefined)
+  let branch = $derived(visible ? children : elseContent)
+  let wrapper = $derived(visible || elseContent ? resolveIfWrapper(props.as) : undefined)
 </script>
 
-{#if visible}
+{#if visible || elseContent}
   {#if wrapper}
     <svelte:element this={wrapper}>
-      {@render children?.()}
+      {@render branch?.()}
     </svelte:element>
   {:else}
-    {@render children?.()}
+    {@render branch?.()}
   {/if}
 {/if}

@@ -1,6 +1,6 @@
 import type { PluginWithOptions, MarkdownExit } from 'markdown-exit'
 import { defineComarkPlugin } from '../utils/helpers.ts'
-import type { MarkdownItPlugin, NodeHandler } from '../types'
+import type { MarkdownItPlugin, NodeHandler, Node } from '../types'
 
 export interface MdcInlineBindingOptions {
   /**
@@ -76,6 +76,27 @@ export function shouldRenderIf(props: IfProps): boolean {
   }
 
   return hasComparison || hasCondition || Boolean(props.value)
+}
+
+/** Select an `::if` branch from AST children without rendering inactive nodes. */
+export function selectIfBranch(children: Node[], matches: boolean): Node[] | undefined {
+  const regularChildren: Node[] = []
+  let defaultSlot: Node[] | undefined
+  let elseSlot: Node[] | undefined
+  for (const child of children) {
+    if (Array.isArray(child) && child[0] === 'template') {
+      const attrs = child[1]
+      const slotKey = Object.keys(attrs).find((key) => key.startsWith('#') || key.startsWith('v-slot:'))
+      const name = attrs.name ?? (slotKey?.startsWith('#') ? slotKey.slice(1) : slotKey?.slice(7))
+      if (name) {
+        if (name === 'default') defaultSlot = child.slice(2) as Node[]
+        if (name === 'else') elseSlot = child.slice(2) as Node[]
+        continue
+      }
+    }
+    regularChildren.push(child)
+  }
+  return matches ? (defaultSlot ?? regularChildren) : elseSlot
 }
 
 /** Validate and normalize the optional HTML wrapper used by an `::if` component. */

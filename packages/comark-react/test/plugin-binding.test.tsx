@@ -3,6 +3,7 @@ import { renderToString } from 'react-dom/server'
 import { parseMarkdown } from 'comark'
 import { MarkdownDocument } from '../src/components/MarkdownDocument'
 import binding, { Binding, If } from '../src/plugins/binding'
+import { nestedIfCases, nestedIfMarkdown } from '../../../test/fixtures/if'
 
 async function renderMarkdown(markdown: string, props: Record<string, any> = {}) {
   const tree = await parseMarkdown(markdown, { plugins: [binding()] })
@@ -47,6 +48,20 @@ Hello {{ frontmatter.user.name }}!
 })
 
 describe('@comark/react plugins/binding — If component', () => {
+  it.each(nestedIfCases)('selects nested branches for $data', async ({ data, expected }) => {
+    const html = await renderMarkdown(nestedIfMarkdown, { data })
+    expect(html.replace(/<[^>]*>/g, '')).toBe(expected)
+    expect(html).not.toContain('<template')
+  })
+
+  it('wraps the else slot when a comparison fails', async () => {
+    const html = await renderMarkdown('::if{:value="data.age" :gte="18" as="section"}\nAdult\n#else\nMinor\n::', {
+      data: { age: 17 },
+    })
+    expect(html).toContain('<section>Minor</section>')
+    expect(html).not.toContain('Adult')
+  })
+
   it('renders matching branches with an optional wrapper', async () => {
     const markdown = '::if{:value="data.age" :gte="18" as="section"}\nAdult\n::'
 
