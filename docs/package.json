@@ -22,7 +22,7 @@
     "ai": "catalog:",
     "beautiful-mermaid": "catalog:",
     "comark": "workspace:*",
-    "comark-docs": "github:comarkdown/comark-docs",
+    "comark-docs": "github:comarkdown/comark-docs#feat/client-side-fts-search",
     "katex": "catalog:",
     "nuxt": "catalog:",
     "splitpanes": "catalog:",
