@@ -172,10 +172,10 @@ interface CodeBlockInfo extends Record<string, unknown> {
  */
 function parseCodeblockInfo(info: string): CodeBlockInfo {
   if (!info) {
-    return { }
+    return {}
   }
 
-  const result: CodeBlockInfo = { }
+  const result: CodeBlockInfo = {}
 
   let remaining = info.trim()
 
@@ -411,7 +411,7 @@ function processBlockToken(
     if (children.nodes.length > 0) {
       let attrs: Record<string, unknown>
       if (state?.headingIds) {
-        const text = children.nodes.map(n => textContent(n)).join('')
+        const text = children.nodes.map((n) => textContent(n)).join('')
         const headingId = uniqueSlug(slugify(text), level, state)
         // Merge user-supplied attrs with the auto-generated id; user `id` wins.
         attrs = { id: headingId, ...userAttrs }
