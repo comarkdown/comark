@@ -218,7 +218,7 @@ packages/comark-react/
 │   ├── components/
 │   │   ├── Markdown.tsx      # High-level markdown → render component
 │   │   ├── MarkdownDocument.tsx # Low-level AST → render component
-│   │   ├── MarkdownClient.tsx # Client-only markdown component
+│   │   ├── MarkdownClient.tsx # Client-only markdown with a serialized incremental parser
 │   │   ├── MarkdownLive.tsx  # Streaming/live markdown component
 │   │   ├── Math.tsx          # Math rendering component
 │   │   └── Mermaid.tsx       # Mermaid rendering component

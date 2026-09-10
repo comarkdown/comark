@@ -59,13 +59,22 @@ export function defineMarkdownComponent(config: DefineMarkdownComponentOptions =
     ...parseOptions
   } = config
 
-  const MarkdownComponent: React.FC<MarkdownProps> = (props) => {
-    const mergedOptions: Exclude<ParserOptions, 'plugins'> = {
-      ...parseOptions,
-      ...props.options,
-    }
+  // Keep parser inputs stable across renders without client-only hooks.
+  const optionsCache = new WeakMap<ParserOptions, ParserOptions>()
+  const pluginsCache = new WeakMap<NonNullable<MarkdownProps['plugins']>, NonNullable<MarkdownProps['plugins']>>()
+  const configPlugins = config.plugins ?? []
 
-    const mergedPlugins = [...(config.plugins || []), ...(props.plugins || [])]
+  const MarkdownComponent: React.FC<MarkdownProps> = (props) => {
+    let mergedOptions = parseOptions
+    if (props.options) {
+      mergedOptions = optionsCache.get(props.options) ?? { ...parseOptions, ...props.options }
+      optionsCache.set(props.options, mergedOptions)
+    }
+    let mergedPlugins = configPlugins
+    if (props.plugins) {
+      mergedPlugins = pluginsCache.get(props.plugins) ?? [...configPlugins, ...props.plugins]
+      pluginsCache.set(props.plugins, mergedPlugins)
+    }
 
     const mergedComponents = {
       ...configComponents,
