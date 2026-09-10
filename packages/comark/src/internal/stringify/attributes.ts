@@ -138,6 +138,25 @@ const IMPLICIT_ATTRS: Record<string, { drop?: string[]; classBlocklist?: string[
   pre: { drop: ['language', 'filename', 'highlights', 'meta', 'style'] },
 }
 
+// Tags whose `class` may hold highlighter-injected classes merged with the
+// user's class behind the ` . ` sentinel: `<pre>` for fenced blocks, `<code>`
+// for inline code carrying `{lang=…}`.
+const HIGHLIGHTER_CLASS_TAGS = new Set(['pre', 'code'])
+
+/**
+ * Collapse the ` . ` separator highlighters use to mark where their injected
+ * classes end and the user's begin. It exists only so `userBlockAttrs` can
+ * recover the user portion on markdown stringify; it must never reach HTML.
+ */
+export function mergeHighlighterClass(value: unknown): unknown {
+  if (typeof value !== 'string') return value
+  if (!value.startsWith('shiki') && !value.startsWith('shj')) return value
+  return value
+    .split(/\s+/)
+    .filter((token) => token !== '.')
+    .join(' ')
+}
+
 /**
  * Filter implicit/auto-generated attrs that are encoded by the native
  * markdown syntax and shouldn't echo back as `{attr=...}`. Used by the
@@ -146,22 +165,23 @@ const IMPLICIT_ATTRS: Record<string, { drop?: string[]; classBlocklist?: string[
  */
 export function userBlockAttrs(tag: string, attributes: Record<string, unknown>): Record<string, unknown> {
   const rule = IMPLICIT_ATTRS[tag]
-  if (!rule) return { ...attributes }
+  const stripsHighlighterClass = HIGHLIGHTER_CLASS_TAGS.has(tag)
+  if (!rule && !stripsHighlighterClass) return { ...attributes }
 
   const result: Record<string, unknown> = {}
   for (const [key, value] of Object.entries(attributes)) {
-    if (rule.drop?.includes(key)) continue
-    if (key === 'class' && rule.classBlocklist && typeof value === 'string') {
+    if (rule?.drop?.includes(key)) continue
+    if (key === 'class' && rule?.classBlocklist && typeof value === 'string') {
       const remaining = value
         .split(/\s+/)
-        .filter((c) => c && !rule.classBlocklist!.includes(c))
+        .filter((c) => c && !rule!.classBlocklist!.includes(c))
         .join(' ')
       if (remaining) result[key] = remaining
       continue
     }
     if (
       key === 'class' &&
-      tag === 'pre' &&
+      stripsHighlighterClass &&
       typeof value === 'string' &&
       (value.startsWith('shiki') || value.startsWith('shj'))
     ) {

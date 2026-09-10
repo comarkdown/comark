@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import type { MarkdownDocument } from '../../src/types'
 import { renderMarkdown } from '../../src/render'
+import { parseMarkdown } from '../../src/index'
+import shiki from '../../src/plugins/shiki'
 
 describe('shiki code block round-trip', () => {
   // The highlight plugin's injected attrs have no markdown form, so a
@@ -46,5 +48,48 @@ describe('shiki code block round-trip', () => {
     const md = await renderMarkdown(document)
     expect(md).not.toContain('::pre')
     expect(md).toContain('```bash\nnpx install\n```')
+  })
+})
+
+describe('shiki inline code round-trip', () => {
+  // The plugin merges its injected classes onto the node behind a ` . `
+  // sentinel, so a highlighted span must serialize back to `` `text`{lang=…} ``
+  // rather than leaking `.shiki.shiki-themes…`.
+  function inlineTree(codeClass: string): MarkdownDocument {
+    return {
+      frontmatter: {},
+      meta: {},
+      nodes: [
+        [
+          'p',
+          {},
+          'Type ',
+          [
+            'code',
+            { lang: 'ts-type', class: codeClass },
+            ['span', { style: 'color:#B392F0' }, 'Ref'],
+            ['span', { style: 'color:#E1E4E8' }, '<T>'],
+          ],
+        ],
+      ],
+    }
+  }
+
+  it('drops the injected classes', async () => {
+    const md = await renderMarkdown(inlineTree('shiki shiki-themes github-dark'))
+    expect(md).toBe('Type `Ref<T>`{lang="ts-type"}')
+    expect(md).not.toContain('.shiki')
+  })
+
+  it('keeps the user class after the sentinel', async () => {
+    const md = await renderMarkdown(inlineTree('shiki shiki-themes github-dark . foo'))
+    expect(md).toBe('Type `Ref<T>`{lang="ts-type" .foo}')
+    expect(md).not.toContain('.shiki')
+  })
+
+  it('round-trips a parsed document unchanged', async () => {
+    const source = 'Mix `a`{lang="ts-type"} and `<b />`{lang="vue-html"} and `plain` here'
+    const document = await parseMarkdown(source, { plugins: [shiki()] })
+    expect(await renderMarkdown(document)).toBe(source)
   })
 })
