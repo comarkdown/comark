@@ -425,7 +425,10 @@ export async function highlightCodeBlocks(
    * identity mapping, which is how a built-in context is disabled.
    */
   const resolveGrammar = (language: string | undefined): ShikiGrammarContext => {
-    const ctx = language && Object.hasOwn(grammarContexts, language) ? grammarContexts[language] : undefined
+    const ctx =
+      language && Object.prototype.hasOwnProperty.call(grammarContexts, language)
+        ? grammarContexts[language]
+        : undefined
     return ctx || { lang: language as string }
   }
 
