@@ -585,6 +585,62 @@ Example:
 }
 ```
 
+## Indentation Inside Components
+
+A block component's children may be indented (aligned under the `::` marker) or
+not — both are valid input. Two rules keep the two forms interchangeable and
+lossless through `parseMarkdown` → `renderMarkdown`:
+
+**Parse — dedent the children, don't raise the floor.** A child indented *less*
+than its own component marker is never dropped. Each child line is shifted left
+by `min(markerIndent, its own indentation)` and the region is tokenized against
+a zero floor (`comark_block` in `src/plugins/components.ts` via
+`src/internal/parse/indent.ts`, mirroring the line-mark mutation `blockquote`
+uses to strip its markers). Lines inside a
+fenced code block all take the *opening fence's* shift, so the fence and its
+body move together. The shift is all or nothing: a tab that would have to be
+split into columns puts the region back and keeps the marker floor. A component
+with no outdented child is untouched.
+
+**Stringify — re-indent a block, never a line.** Nested components indent their
+rendered output by 2 spaces per level (`indent()` in `src/utils/index.ts`). The
+prefix is added to every line of the block, including the body of a fenced code
+block, so the fence and its content always move together.
+
+Uniform shifting is what makes fenced code survive. Indentation inside a fence
+is significant whitespace, and the parser cannot tell padding apart from code:
+
+```md
+::tabs
+  :::tabs-item{label="Code"}
+```mdc
+  ::accordion
+  ::
+```
+  :::
+::
+```
+
+The fence sits at indent 0 under a marker at indent 2, so fence and body shift
+by 0 and the body keeps the two spaces it has relative to its fence
+(`"  ::accordion\n  ::"`). Rendering back aligns the fence with its parent and
+carries the body along, which is a fixed point on re-parse:
+
+```md
+::tabs
+  :::tabs-item{label="Code"}
+  ```mdc
+    ::accordion
+    ::
+  ```
+  :::
+::
+```
+
+SPEC coverage: `SPEC/COMARK/component-nested-*-outdented.md`,
+`SPEC/COMARK/component-nested-codeblock-indented.md`,
+`SPEC/COMARK/codeblock-indented-content.md`.
+
 ## Vue/React/Svelte/Angular Components
 
 ### Markdown Component (High-level)

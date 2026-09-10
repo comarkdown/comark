@@ -14,6 +14,7 @@ import { defineComarkPlugin } from '../utils/helpers.ts'
 import { findClosingBracket, parseBracketContent } from '../internal/parse/syntax/brackets.ts'
 import { parseBlockParams } from '../internal/parse/syntax/block-params.ts'
 import { parseYaml } from '../internal/yaml.ts'
+import { tokenizeDedented } from '../internal/parse/indent.ts'
 
 /**
  * A component name must start with a letter or `$`, followed by word chars,
@@ -130,6 +131,11 @@ const markdownItComarkBlock: PluginSimple = (md) => {
 
       if (silent) return true
 
+      // Columns to strip from each child line, indexed from `startLine + 1`.
+      const childShifts: number[] = []
+      let codeFenceShift = 0
+      let hasOutdentedChild = false
+
       nextLine = startLine
 
       for (;;) {
@@ -140,6 +146,10 @@ const markdownItComarkBlock: PluginSimple = (md) => {
         max = state.eMarks[nextLine]
 
         if (start < max && state.sCount[nextLine] < state.blkIndent) break
+
+        const lineIndent = start >= max ? indent : state.sCount[nextLine]
+        if (lineIndent < indent) hasOutdentedChild = true
+        childShifts.push(start >= max ? 0 : inCodeFence ? codeFenceShift : Math.min(indent, lineIndent))
 
         const lineCharCode = state.src.charCodeAt(start)
 
@@ -164,6 +174,7 @@ const markdownItComarkBlock: PluginSimple = (md) => {
             inCodeFence = true
             codeFenceCharCode = lineCharCode
             codeFenceCount = fencePos - start
+            codeFenceShift = childShifts[childShifts.length - 1]
             continue
           }
         }
@@ -222,12 +233,16 @@ const markdownItComarkBlock: PluginSimple = (md) => {
         state.push('paragraph_close', 'p', -1)
       }
 
-      const blkIndent = state.blkIndent
-      state.blkIndent = indent
       state.env.comarkBlockTokens ||= [] as Token[]
       state.env.comarkBlockTokens.unshift(tokenOpen)
-      state.md.block.tokenize(state, startLine + 1, nextLine)
-      state.blkIndent = blkIndent
+
+      if (!hasOutdentedChild || !tokenizeDedented(state, startLine + 1, nextLine, childShifts)) {
+        const blkIndent = state.blkIndent
+        state.blkIndent = indent
+        state.md.block.tokenize(state, startLine + 1, nextLine)
+        state.blkIndent = blkIndent
+      }
+
       state.env.comarkBlockTokens.shift()
 
       const tokenClose = state.push('mdc_block_close', params.name, -1)
@@ -285,7 +300,7 @@ const markdownItComarkBlock: PluginSimple = (md) => {
     if (!found) return false
 
     if (!silent) {
-      const yaml = state.src.slice(state.bMarks[startLine + 1], state.eMarks[lineEnd - 1])
+      const yaml = state.getLines(startLine + 1, lineEnd, state.blkIndent, false)
       const data = parseYaml(yaml)
       const token = state.env.comarkBlockTokens[0]
       Object.entries(data || {}).forEach(([key, value]) => {
