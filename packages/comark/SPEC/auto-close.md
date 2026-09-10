@@ -780,7 +780,7 @@ Space-flanked `*` is treated as multiply, not italic:
 
 ## Multiple openers on one line
 
-Two closers for the same marker emitted back to back would merge into a different
+Two closers for the same marker emitted back-to-back would merge into a different
 marker, so each run of same-marker closers collapses to one. `a _b and _c` used to
 heal to `a _b and _c__`, which nests an em inside an em.
 

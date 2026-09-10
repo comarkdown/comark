@@ -477,9 +477,9 @@ export interface ParserOptions<TPlugins extends readonly ComarkPlugin<any, any>[
    * @default 'streaming'
    * @example
    * // Default: CommonMark on a plain parse, healed while streaming
-   * await parseMarkdown('a _b')                       // 'a _b'
-   * await parse('a _b', { streaming: true })          // <em>b</em>
-   * await parseMarkdown('a _b', { autoClose: true })  // <em>b</em>
+   * await parseMarkdown('a _b')                           // 'a _b'
+   * await parseMarkdown('a _b', {}, { streaming: true })  // <em>b</em>
+   * await parseMarkdown('a _b', { autoClose: true })      // <em>b</em>
    */
   autoClose?: boolean | 'streaming' | AutoCloseFunction
 
