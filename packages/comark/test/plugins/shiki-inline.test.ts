@@ -1,7 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import javascript from 'shiki/dist/langs/javascript.mjs'
-import typescript from 'shiki/dist/langs/typescript.mjs'
-import vue from 'shiki/dist/langs/vue.mjs'
 import githubDark from 'shiki/dist/themes/github-dark.mjs'
 import { parseMarkdown } from '../../src/index'
 import type { ElementNode, Node } from '../../src/types'
