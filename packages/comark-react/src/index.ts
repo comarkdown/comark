@@ -60,7 +60,7 @@ export function defineMarkdownComponent(config: DefineMarkdownComponentOptions =
   } = config
 
   const MarkdownComponent: React.FC<MarkdownProps> = (props) => {
-    const mergedOptions: Exclude<ParserOptions, 'plugins'> = {
+    const mergedOptions: Omit<ParserOptions, 'plugins'> = {
       ...parseOptions,
       ...props.options,
     }

@@ -20,7 +20,7 @@ export interface MarkdownProps {
   /**
    * Parser options (excluding plugins)
    */
-  options?: Exclude<ParserOptions, 'plugins'>
+  options?: Omit<ParserOptions, 'plugins'>
 
   /**
    * Parser to use instead of one resolved from `options` and `plugins`

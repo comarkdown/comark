@@ -37,7 +37,7 @@ export interface MarkdownDocumentProps {
 export interface MarkdownProps {
   /** The markdown content to parse and render, or a pre-parsed MarkdownDocument */
   value?: string | MarkdownDocument
-  options?: Exclude<ParserOptions, 'plugins'>
+  options?: Omit<ParserOptions, 'plugins'>
   plugins?: ComarkPlugin[]
 
   /**
