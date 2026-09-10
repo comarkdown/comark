@@ -61,6 +61,7 @@ packages/comark/
 │   │   ├── html.ts           # HTML block/inline parsing (default via registerDefaultPlugins)
 │   │   ├── components.ts     # Block/inline components + spans (`::name`, `:name`, `[text]`)
 │   │   ├── attributes.ts     # Inline attributes (`{props}` after tokens)
+│   │   ├── binding.ts        # Inline interpolation + shared conditional rendering rules
 │   │   ├── emoji.ts          # Emoji shortcodes
 │   │   ├── shiki.ts          # Shiki with bundled default theme + language loaders (peer: shiki)
 │   │   ├── shiki/core.ts     # Shiki without default theme/language imports
@@ -181,9 +182,12 @@ packages/comark-vue/
 │   ├── components/
 │   │   ├── Markdown.ts       # High-level markdown → render component
 │   │   ├── MarkdownDocument.ts # Low-level AST → render component
+│   │   ├── Binding.ts        # Inline binding renderer
+│   │   ├── If.ts             # Conditional content renderer
 │   │   ├── Math.ts           # Math rendering component
 │   │   └── Mermaid.ts        # Mermaid rendering component
 │   └── plugins/
+│       ├── binding.ts        # Re-exports binding plugin + Binding and If components
 │       ├── math.ts           # Re-exports comark/plugins/math + Math component
 │       └── mermaid.ts        # Re-exports comark/plugins/mermaid + Mermaid component
 ├── package.json
@@ -220,9 +224,12 @@ packages/comark-react/
 │   │   ├── MarkdownDocument.tsx # Low-level AST → render component
 │   │   ├── MarkdownClient.tsx # Client-only markdown component
 │   │   ├── MarkdownLive.tsx  # Streaming/live markdown component
+│   │   ├── Binding.tsx       # Inline binding renderer
+│   │   ├── If.tsx            # Conditional content renderer
 │   │   ├── Math.tsx          # Math rendering component
 │   │   └── Mermaid.tsx       # Mermaid rendering component
 │   └── plugins/
+│       ├── binding.ts        # Re-exports binding plugin + Binding and If components
 │       ├── math.ts           # Re-exports comark/plugins/math + Math component
 │       └── mermaid.ts        # Re-exports comark/plugins/mermaid + Mermaid component
 ├── package.json
@@ -260,12 +267,15 @@ packages/comark-svelte/
 │   │   ├── MarkdownDocument.svelte # Low-level AST → render component
 │   │   ├── MarkdownNode.svelte   # Recursive AST node renderer
 │   │   ├── ComarkComponent.svelte # Custom component renderer with named snippets
-│   │   └── Resolve.svelte        # Stable promise resolver for lazy components
+│   │   ├── Resolve.svelte        # Stable promise resolver for lazy components
+│   │   ├── Binding.svelte        # Inline binding renderer
+│   │   └── If.svelte             # Conditional content renderer
 │   ├── async/
 │   │   ├── index.ts              # Async export (@comark/svelte/async)
 │   │   ├── MarkdownAsync.svelte  # High-level markdown → render (experimental await)
 │   │   └── ResolveAsync.svelte   # Async SSR resolver for lazy components
 │   └── plugins/
+│       ├── binding.ts        # Re-exports binding plugin + Binding and If components
 │       ├── math.ts           # Re-exports comark/plugins/math
 │       ├── Math.svelte       # Math rendering component
 │       ├── mermaid.ts        # Re-exports comark/plugins/mermaid
@@ -335,10 +345,11 @@ packages/comark-angular/
 │   │   ├── markdown-parsed.component.ts  # Low-level AST → render component
 │   │   ├── markdown-node.component.ts    # Recursive AST node renderer
 │   │   ├── binding.component.ts          # Binding rendering component
+│   │   ├── if.component.ts               # Structural conditional renderer
 │   │   ├── math.component.ts             # Math rendering component
 │   │   └── mermaid.component.ts          # Mermaid rendering component
 │   ├── plugins/
-│   │   ├── binding.ts                    # Re-exports comark/plugins/binding + Binding component
+│   │   ├── binding.ts                    # Re-exports binding plugin + Binding and If components
 │   │   ├── math.ts                       # Re-exports comark/plugins/math + Math component
 │   │   └── mermaid.ts                    # Re-exports comark/plugins/mermaid + Mermaid component
 │   └── utils/
@@ -413,6 +424,8 @@ import frontmatter from 'comark/plugins/frontmatter' // default via registerDefa
 import components from 'comark/plugins/components'   // default via registerDefaultPlugins
 import attributes from 'comark/plugins/attributes'   // default via registerDefaultPlugins
 import html from 'comark/plugins/html'               // default via registerDefaultPlugins
+import binding, { Binding, resolveIfWrapper, shouldRenderIf } from 'comark/plugins/binding'
+import type { IfComparisonOperator, IfProps, IfWrapperTag } from 'comark/plugins/binding'
 
 // markdown-it / markdown-exit adapters (e.g. VitePress)
 import { markdownItComponents } from 'comark/plugins/components'
@@ -429,32 +442,38 @@ import { createHtmlRenderer, renderHtml, renderHtmlFromDocument } from '@comark/
 import shiki from '@comark/html/plugins/shiki'
 import math, { Math } from '@comark/html/plugins/math'
 import mermaid, { Mermaid } from '@comark/html/plugins/mermaid'
+import binding, { Binding, If } from '@comark/html/plugins/binding'
 
 // ANSI terminal rendering — parse + render to styled terminal string
 import { createAnsiRenderer, createAnsiPrinter, printAnsi, renderAnsi, renderAnsiFromDocument } from '@comark/ansi'
 import shiki from '@comark/ansi/plugins/shiki'
 import math from '@comark/ansi/plugins/math'
+import binding, { Binding, If } from '@comark/ansi/plugins/binding'
 
 // Vue — renderer + plugin wrappers (plugin fn + Vue component)
 import { Markdown, MarkdownDocument, defineMarkdownComponent } from '@comark/vue'
 import math, { Math } from '@comark/vue/plugins/math'
 import mermaid, { Mermaid } from '@comark/vue/plugins/mermaid'
+import binding, { Binding, If } from '@comark/vue/plugins/binding'
 
 // React — renderer + plugin wrappers (plugin fn + React component)
 import { Markdown, MarkdownDocument, defineMarkdownComponent } from '@comark/react'
 import math, { Math } from '@comark/react/plugins/math'
 import mermaid, { Mermaid } from '@comark/react/plugins/mermaid'
+import binding, { Binding, If } from '@comark/react/plugins/binding'
 
 // Svelte — renderer + plugin wrappers (plugin fn + Svelte component)
 import { Markdown, MarkdownDocument } from '@comark/svelte'
 import { MarkdownAsync } from '@comark/svelte/async' // requires experimental.async
 import math, { Math } from '@comark/svelte/plugins/math'
 import mermaid, { Mermaid } from '@comark/svelte/plugins/mermaid'
+import binding, { Binding, If } from '@comark/svelte/plugins/binding'
 
 // Angular — renderer + plugin wrappers (plugin fn + Angular component)
 import { Markdown, MarkdownDocument, defineMarkdownComponent, defineMarkdownDocumentComponent } from '@comark/angular'
 import math, { Math } from '@comark/angular/plugins/math'
 import mermaid, { Mermaid } from '@comark/angular/plugins/mermaid'
+import binding, { Binding, If } from '@comark/angular/plugins/binding'
 ```
 
 ## Coding Principles

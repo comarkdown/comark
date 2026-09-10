@@ -2,14 +2,14 @@ import { describe, expect, it } from 'vitest'
 import { renderToString } from 'react-dom/server'
 import { parseMarkdown } from 'comark'
 import { MarkdownDocument } from '../src/components/MarkdownDocument'
-import binding, { Binding } from '../src/plugins/binding'
+import binding, { Binding, If } from '../src/plugins/binding'
 
 async function renderMarkdown(markdown: string, props: Record<string, any> = {}) {
   const tree = await parseMarkdown(markdown, { plugins: [binding()] })
   const html = renderToString(
     <MarkdownDocument
       value={tree}
-      components={{ binding: Binding }}
+      components={{ binding: Binding, If }}
       {...props}
     />
   )
@@ -43,5 +43,14 @@ Hello {{ frontmatter.user.name }}!
   it('renders empty when path is unresolved and no default is provided', async () => {
     const html = await renderMarkdown('before-{{ missing.path }}-after')
     expect(html).toContain('before--after')
+  })
+})
+
+describe('@comark/react plugins/binding — If component', () => {
+  it('renders matching branches with an optional wrapper', async () => {
+    const markdown = '::if{:value="data.age" :gte="18" as="section"}\nAdult\n::'
+
+    expect(await renderMarkdown(markdown, { data: { age: 21 } })).toContain('<section>Adult</section>')
+    expect(await renderMarkdown(markdown, { data: { age: 17 } })).not.toContain('Adult')
   })
 })

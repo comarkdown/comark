@@ -1,11 +1,45 @@
 import { describe, expect, it } from 'vitest'
 import { parseMarkdown } from '../../src/parse'
 import { renderMarkdown } from '../../src/render'
-import binding, { Binding } from '../../src/plugins/binding'
+import binding, { Binding, resolveIfWrapper, shouldRenderIf } from '../../src/plugins/binding'
 import { renderHtmlForTest } from '../utils/render-html'
 
 const parseWithBinding = (md: string, opts: Parameters<typeof binding>[0] = {}) =>
   parseMarkdown(md, { plugins: [binding(opts)] })
+
+describe('binding plugin — If predicate', () => {
+  it('supports truthy conditions and values', () => {
+    expect(shouldRenderIf({ condition: true })).toBe(true)
+    expect(shouldRenderIf({ condition: false })).toBe(false)
+    expect(shouldRenderIf({ value: 'Ada' })).toBe(true)
+    expect(shouldRenderIf({ value: '' })).toBe(false)
+  })
+
+  it('supports strict equality and ordered comparisons', () => {
+    expect(shouldRenderIf({ value: false, eq: false })).toBe(true)
+    expect(shouldRenderIf({ value: 'member', neq: 'guest' })).toBe(true)
+    expect(shouldRenderIf({ value: 42, gt: 18, gte: 42, lt: 65, lte: 42 })).toBe(true)
+    expect(shouldRenderIf({ value: 65, lt: 65 })).toBe(false)
+  })
+
+  it('requires both sides of every comparison', () => {
+    expect(shouldRenderIf({ neq: 'guest' })).toBe(false)
+    expect(shouldRenderIf({ value: undefined, neq: 'guest' })).toBe(false)
+    expect(shouldRenderIf({ value: 'member', eq: undefined })).toBe(false)
+  })
+
+  it('combines condition and comparison checks', () => {
+    expect(shouldRenderIf({ condition: true, value: 90, gte: 80 })).toBe(true)
+    expect(shouldRenderIf({ condition: false, value: 90, gte: 80 })).toBe(false)
+  })
+
+  it('accepts only safe wrapper tags', () => {
+    expect(resolveIfWrapper(undefined)).toBeUndefined()
+    expect(resolveIfWrapper('section')).toBe('section')
+    expect(() => resolveIfWrapper('script')).toThrow('Unsupported If wrapper tag: script')
+    expect(() => resolveIfWrapper(null)).toThrow('Unsupported If wrapper tag: null')
+  })
+})
 
 describe('binding plugin — parsing', () => {
   it('captures `{{ path }}` as a self-closing <binding> element with :value', async () => {

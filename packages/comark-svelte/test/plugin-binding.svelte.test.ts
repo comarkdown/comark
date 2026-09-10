@@ -2,13 +2,13 @@ import { describe, expect, it } from 'vitest'
 import { render } from 'vitest-browser-svelte'
 import { parseMarkdown } from 'comark'
 import MarkdownDocument from '../src/components/MarkdownDocument.svelte'
-import binding, { Binding } from '../src/plugins/binding'
+import binding, { Binding, If } from '../src/plugins/binding'
 
 async function renderMarkdown(markdown: string, props: Record<string, any> = {}) {
   const tree = await parseMarkdown(markdown, { plugins: [binding()] })
   return render(MarkdownDocument, {
     value: tree,
-    components: { binding: Binding },
+    components: { binding: Binding, If },
     ...props,
   })
 }
@@ -38,5 +38,17 @@ Hello {{ frontmatter.user.name }}!
   it('renders empty when path is unresolved and no default is provided', async () => {
     const screen = await renderMarkdown('before-{{ missing.path }}-after')
     expect(screen.container.textContent).toContain('before--after')
+  })
+})
+
+describe('@comark/svelte plugins/binding — If component', () => {
+  it('renders matching branches with an optional wrapper', async () => {
+    const markdown = '::if{:value="data.age" :gte="18" as="section"}\nAdult\n::'
+
+    const visible = await renderMarkdown(markdown, { data: { age: 21 } })
+    expect(visible.container.querySelector('section')?.textContent).toBe('Adult')
+
+    const hidden = await renderMarkdown(markdown, { data: { age: 17 } })
+    expect(hidden.container.textContent).not.toContain('Adult')
   })
 })

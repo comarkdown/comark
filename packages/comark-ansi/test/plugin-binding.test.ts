@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { parseMarkdown } from 'comark'
 import { renderAnsiFromDocument } from '../src/render'
-import binding, { Binding } from '../src/plugins/binding'
+import binding, { Binding, If } from '../src/plugins/binding'
 
 const parseWithBinding = (md: string) => parseMarkdown(md, { plugins: [binding()] })
 
@@ -42,5 +42,25 @@ Hello {{ frontmatter.user.name }}!
     const colored = await renderAnsiFromDocument(tree, { colors: true, components: { binding: Binding } })
     // Dim escape code sits around the placeholder.
     expect(colored).toContain('\x1B[2m{{ missing.path }}\x1B[0m')
+  })
+})
+
+describe('@comark/ansi plugins/binding — If handler', () => {
+  it('renders only truthy branches', async () => {
+    const tree = await parseMarkdown('Before\n\n::if{:value="data.score" :gte="80"}\nPassed\n::\n\nAfter')
+
+    const passed = await renderAnsiFromDocument(tree, {
+      colors: false,
+      components: { If },
+      data: { score: 90 },
+    })
+    const failed = await renderAnsiFromDocument(tree, {
+      colors: false,
+      components: { If },
+      data: { score: 70 },
+    })
+
+    expect(passed).toContain('Before\n\nPassed\n\nAfter')
+    expect(failed).toContain('Before\n\nAfter')
   })
 })

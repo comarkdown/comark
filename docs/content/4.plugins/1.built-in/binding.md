@@ -1,6 +1,6 @@
 ---
 title: Binding
-description: "Comark plugin that adds a `{{ path || default }}` inline shorthand for interpolating frontmatter, meta, or runtime data into your content."
+description: "Interpolate data with `{{ path || default }}` and conditionally render content with `::if`."
 navigation:
   icon: i-lucide-replace
 seo:
@@ -18,9 +18,9 @@ links:
     variant: soft
 ---
 
-The `comark/plugins/binding` plugin adds a `{{ path || default }}` inline shorthand for interpolating values from frontmatter, the renderer's `data` prop, the tree's `meta`, or a parent component's `props` directly into your markdown.
+The `comark/plugins/binding` module lets you interpolate values with `{{ path || default }}` and conditionally render content with `::if`. Values can come from frontmatter, the renderer's `data` prop, the tree's `meta`, or a parent component's `props`.
 
-Under the hood it emits a `binding` component node whose `:value` attribute points at a dot-path. The [data binding](/syntax/components#data-binding) layer resolves that path against the ambient render context, so bindings work seamlessly across HTML, ANSI, React, Svelte, and Vue, and round-trip back to their source form via `renderMarkdown`.
+The `binding()` parser plugin emits a `binding` component node whose `:value` attribute points at a dot-path. The [data binding](/syntax/components#data-binding) layer resolves that path against the ambient render context, so bindings work across HTML, ANSI, Vue, React, Svelte, Angular, and Nuxt, and round-trip back to their source form via `renderMarkdown`.
 
 ## Basic usage
 
@@ -162,7 +162,60 @@ Welcome, {{ frontmatter.user.name || guest }}.`
 
 ::
 
-### Markdown round-trip
+## Conditional content
+
+Register the renderer-specific `If` export to render a block only when its resolved props pass. The `::if` syntax uses Comark's default component parser and data-binding layer, so it doesn't require the `binding()` parser plugin unless the same document also uses `{{ … }}` interpolation.
+
+```typescript [render.ts]
+import { renderHtml } from '@comark/html'
+import { If } from '@comark/html/plugins/binding'
+
+const html = await renderHtml(markdown, {
+  components: { If },
+  data: {
+    user: { role: 'member' },
+    age: 42,
+  },
+})
+```
+
+Use `condition` for a truthy check:
+
+```mdc
+::if{:condition="data.user"}
+You are signed in.
+::
+```
+
+Use `value` by itself for a truthy check, or combine it with one or more comparison props. Every supplied comparison must pass:
+
+```mdc
+::if{:value="data.user.role" neq="guest"}
+This content is available to members.
+::
+
+::if{:value="data.age" :gte="18" :lt="65" as="section"}
+This content is wrapped in a section.
+::
+```
+
+| Prop        | Behavior                                                    |
+| ----------- | ----------------------------------------------------------- |
+| `condition` | Must be truthy when present                                 |
+| `value`     | Checked for truthiness when no comparison prop is present   |
+| `eq`        | Requires strict equality                                    |
+| `neq`       | Requires strict inequality                                  |
+| `gt`        | Requires `value` to be greater than the comparison value    |
+| `gte`       | Requires `value` to be greater than or equal to the value    |
+| `lt`        | Requires `value` to be less than the comparison value       |
+| `lte`       | Requires `value` to be less than or equal to the value       |
+| `as`        | Wraps visible content in an allowlisted semantic HTML element |
+
+A comparison never passes when `value` or its comparison value resolves to `undefined`. Use `:` on numeric, boolean, or other JSON values so Comark preserves their type. For example, `:eq="false"` compares against the boolean `false`, while `eq="false"` compares against the string `"false"`.
+
+The `as` prop accepts `div`, `span`, `p`, `section`, `article`, `aside`, `header`, `footer`, `main`, or `nav`. ANSI output validates the prop but renders no wrapper.
+
+## Markdown round-trip
 
 When you re-serialize the AST with `renderMarkdown`, you can pass the core `Binding` handler to preserve the original `{{ … }}` shorthand:
 
@@ -255,6 +308,34 @@ import { Binding } from '@comark/svelte/plugins/binding'
 
 // Vue
 import { Binding } from '@comark/vue/plugins/binding'
+
+// Angular
+import { Binding } from '@comark/angular/plugins/binding'
+
+// Nuxt (Vue implementation)
+import { Binding } from '@comark/nuxt/plugins/binding'
+```
+
+### `If`
+
+Every renderer-specific binding entry point exports an `If` adapter. Register it under `components` to enable `::if` blocks:
+
+```typescript
+import { If } from '@comark/html/plugins/binding'
+
+const components = { If }
+```
+
+Replace `html` with `ansi`, `vue`, `react`, `svelte`, `angular`, or `nuxt` for the corresponding renderer. Hidden Angular branches are structural: their descendants aren't instantiated.
+
+The core entry point also exports the shared `IfProps`, `IfComparisonOperator`, and `IfWrapperTag` types, plus `shouldRenderIf(props)` and `resolveIfWrapper(value)` for custom renderer adapters:
+
+```typescript
+import {
+  resolveIfWrapper,
+  shouldRenderIf,
+  type IfProps,
+} from 'comark/plugins/binding'
 ```
 
 ## Use cases

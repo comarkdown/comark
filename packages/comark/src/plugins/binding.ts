@@ -11,6 +11,80 @@ export interface MdcInlineBindingOptions {
   tag?: string
 }
 
+export type IfComparisonOperator = 'eq' | 'neq' | 'gt' | 'gte' | 'lt' | 'lte'
+
+export type IfWrapperTag = 'div' | 'span' | 'p' | 'section' | 'article' | 'aside' | 'header' | 'footer' | 'main' | 'nav'
+
+export interface IfProps {
+  condition?: unknown
+  value?: unknown
+  eq?: unknown
+  neq?: unknown
+  gt?: unknown
+  gte?: unknown
+  lt?: unknown
+  lte?: unknown
+  as?: unknown
+  [key: string]: unknown
+}
+
+const IF_WRAPPER_TAGS = new Set<IfWrapperTag>([
+  'div',
+  'span',
+  'p',
+  'section',
+  'article',
+  'aside',
+  'header',
+  'footer',
+  'main',
+  'nav',
+])
+
+const IF_COMPARISON_OPERATORS: readonly IfComparisonOperator[] = ['eq', 'neq', 'gt', 'gte', 'lt', 'lte']
+
+function compareIfValue(operator: IfComparisonOperator, value: unknown, expected: unknown): boolean {
+  switch (operator) {
+    case 'eq':
+      return value === expected
+    case 'neq':
+      return value !== expected
+    case 'gt':
+      return (value as any) > (expected as any)
+    case 'gte':
+      return (value as any) >= (expected as any)
+    case 'lt':
+      return (value as any) < (expected as any)
+    case 'lte':
+      return (value as any) <= (expected as any)
+  }
+}
+
+/** Evaluate the resolved props of an `::if` component. */
+export function shouldRenderIf(props: IfProps): boolean {
+  const hasCondition = Object.hasOwn(props, 'condition')
+  if (hasCondition && !props.condition) return false
+
+  let hasComparison = false
+  for (const operator of IF_COMPARISON_OPERATORS) {
+    if (!Object.hasOwn(props, operator)) continue
+    hasComparison = true
+
+    if (!Object.hasOwn(props, 'value') || props.value === undefined) return false
+    const expected = props[operator]
+    if (expected === undefined || !compareIfValue(operator, props.value, expected)) return false
+  }
+
+  return hasComparison || hasCondition || Boolean(props.value)
+}
+
+/** Validate and normalize the optional HTML wrapper used by an `::if` component. */
+export function resolveIfWrapper(value: unknown): IfWrapperTag | undefined {
+  if (value === undefined) return undefined
+  if (typeof value === 'string' && IF_WRAPPER_TAGS.has(value as IfWrapperTag)) return value as IfWrapperTag
+  throw new Error(`Unsupported If wrapper tag: ${String(value)}`)
+}
+
 const markdownItInlineBinding: PluginWithOptions<MdcInlineBindingOptions> = (md, options = {}) => {
   const tag = options.tag || 'binding'
 

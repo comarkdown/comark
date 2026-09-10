@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { parseMarkdown } from 'comark'
 import { renderHtmlFromDocument } from '../src/index'
-import binding, { Binding } from '../src/plugins/binding'
+import binding, { Binding, If } from '../src/plugins/binding'
 
 const parseWithBinding = (md: string) => parseMarkdown(md, { plugins: [binding()] })
 
@@ -48,5 +48,32 @@ Hello {{ frontmatter.user.name }}!
     })
     expect(html).toContain('&lt;script&gt;alert(1)&lt;/script&gt;')
     expect(html).not.toContain('<script>alert(1)</script>')
+  })
+})
+
+describe('@comark/html plugins/binding — If handler', () => {
+  it('renders only truthy branches without requiring the binding parser plugin', async () => {
+    const doc = await parseMarkdown('::if{:condition="data.show"}\nVisible\n::')
+
+    const visible = await renderHtmlFromDocument(doc, {
+      components: { If },
+      data: { show: true },
+    })
+    const hidden = await renderHtmlFromDocument(doc, {
+      components: { If },
+      data: { show: false },
+    })
+
+    expect(visible).toBe('Visible')
+    expect(hidden).toBe('')
+  })
+
+  it('exposes normalized If props to bindings in its children', async () => {
+    const doc = await parseWithBinding(
+      '::if{:condition="true" :enabled="false"}\nEnabled {{ props.enabled }}\n::',
+    )
+    const html = await renderHtmlFromDocument(doc, { components: { Binding, If } })
+
+    expect(html).toBe('Enabled false')
   })
 })
