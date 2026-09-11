@@ -1,6 +1,6 @@
 ---
-title: Binding (frontmatter + data)
-description: Example showing how to interpolate frontmatter and runtime data into Markdown using the Comark `binding` plugin in Vue and Vite.
+title: Binding and conditional content
+description: Update Markdown bindings and If branches with live form controls using Vue and Vite.
 navigation:
   icon: i-lucide-replace
 category: Plugins
@@ -24,13 +24,17 @@ This example demonstrates the Comark `binding` plugin in a Vue + Vite app:
 - **`|| default` fallback** — supply an inline default rendered when the dot-path doesn't resolve.
 - **Parent props** — nested components can reference their enclosing component's resolved attributes via `props.`.
 - **Typed values** — bindings come through as real JS values (strings, numbers, objects) thanks to the shared data-binding layer.
+- **Conditional content** — `If` supports truthiness checks, role comparisons, age ranges, and nested `#else` branches.
+- **Live updates** — text, select, range, and checkbox controls use `v-model` to update the same reactive data passed to the renderer. The age slider uses `v-model.number` for numeric comparisons.
+
+Run `pnpm dev:binding` from the repository root. Change the role, move the age slider across 18 or 65, and toggle the mood checkboxes to see the selected branches change. Expand **View the Markdown source** to see the syntax behind the preview.
 
 ## Usage
 
-1. Import the plugin and its matching Vue component:
+1. Import the plugin and its Vue components:
 
    ```ts
-   import binding, { Binding } from '@comark/vue/plugins/binding'
+   import binding, { Binding, If } from '@comark/vue/plugins/binding'
    ```
 
 2. Wire them into `<Markdown>`:
@@ -39,7 +43,7 @@ This example demonstrates the Comark `binding` plugin in a Vue + Vite app:
    <Markdown
      :value="markdown"
      :plugins="[binding()]"
-     :components="{ Binding }"
+     :components="{ Binding, If }"
      :data="data"
    />
    ```
@@ -54,6 +58,18 @@ This example demonstrates the Comark `binding` plugin in a Vue + Vite app:
 
    Hello, {{ data.user.name || friend }} — you are on v{{ frontmatter.release.version }}.
    ```
+
+4. Use `If` to select content based on the reactive data:
+
+   ```markdown
+   ::if{:value="data.user.age" :gte="18" :lt="65"}
+   You are eligible for the 18–64 age group.
+   #else
+   You are outside the 18–64 age group.
+   ::
+   ```
+
+   `value` alone checks truthiness. With comparison props, every comparison must pass. Nest another `If` inside `#else` to check a second value, as the mood example does.
 
 ## Namespaces
 
