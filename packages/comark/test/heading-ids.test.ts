@@ -55,10 +55,10 @@ describe('headingIds option', () => {
       expect((tree.nodes[0] as any)[1].id).toBe('see-nuxt-docs')
     })
 
-    it('includes inline component names in the slug', async () => {
+    it('does not include inline component names in the slug', async () => {
       const tree = await parseMarkdown('## Star :icon-star here')
 
-      expect((tree.nodes[0] as any)[1].id).toBe('star-icon-star-here')
+      expect((tree.nodes[0] as any)[1].id).toBe('star-here')
     })
   })
 })

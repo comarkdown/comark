@@ -281,6 +281,75 @@ export interface MarkdownDocumentProps {
 type MarkdownDocumentComponent = ReturnType<typeof defineComponent<MarkdownDocumentProps>>
 
 /**
+ * Runtime prop declarations for `<MarkdownDocument>`.
+ *
+ * Exported so `defineMarkdownDocumentComponent` can reuse them verbatim
+ * instead of hand-copying the table, which was missing `data` and
+ * `documentKey`.
+ */
+export const markdownDocumentProps = {
+  /**
+   * The parsed Markdown document to render
+   */
+  value: {
+    type: Object as PropType<MarkdownDocumentType | { nodes: MarkdownDocumentType['nodes'] }>,
+    default: undefined,
+  },
+
+  /**
+   * Custom component mappings for element tags
+   * Key: tag name (e.g., 'h1', 'p', 'MyComponent')
+   * Value: Vue component
+   */
+  components: {
+    type: Object as PropType<Record<string, any>>,
+    default: () => ({}),
+  },
+
+  /**
+   * Dynamic component resolver function
+   * Used to resolve components that aren't in the components map
+   */
+  componentsManifest: {
+    type: Function as PropType<ComponentManifest>,
+    default: undefined,
+  },
+
+  /**
+   * Enable streaming mode with stream-specific components
+   */
+  streaming: {
+    type: Boolean as PropType<boolean>,
+    default: false,
+  },
+
+  /**
+   * If caret is true, a caret will be appended to the document's last text node
+   * If caret is an object, it will be appended with the given class
+   */
+  caret: {
+    type: [Boolean, Object] as PropType<boolean | { class: string }>,
+    default: false,
+  },
+
+  /**
+   * Additional data to pass to the renderer
+   */
+  data: {
+    type: Object as PropType<Record<string, unknown>>,
+    default: () => ({}),
+  },
+
+  /**
+   * Document key used to subscribe to live updates via `globalThis.comarkContext`
+   */
+  documentKey: {
+    type: String as PropType<string>,
+    default: undefined,
+  },
+} as const
+
+/**
  * MarkdownDocument component
  *
  * Renders an already-parsed Markdown document to Vue components/HTML — no parser
@@ -308,67 +377,7 @@ type MarkdownDocumentComponent = ReturnType<typeof defineComponent<MarkdownDocum
 export const MarkdownDocument: MarkdownDocumentComponent = defineComponent({
   name: 'MarkdownDocument',
 
-  props: {
-    /**
-     * The parsed Markdown document to render
-     */
-    value: {
-      type: Object as PropType<MarkdownDocumentType | { nodes: MarkdownDocumentType['nodes'] }>,
-      default: undefined,
-    },
-
-    /**
-     * Custom component mappings for element tags
-     * Key: tag name (e.g., 'h1', 'p', 'MyComponent')
-     * Value: Vue component
-     */
-    components: {
-      type: Object as PropType<Record<string, any>>,
-      default: () => ({}),
-    },
-
-    /**
-     * Dynamic component resolver function
-     * Used to resolve components that aren't in the components map
-     */
-    componentsManifest: {
-      type: Function as PropType<ComponentManifest>,
-      default: undefined,
-    },
-
-    /**
-     * Enable streaming mode with stream-specific components
-     */
-    streaming: {
-      type: Boolean as PropType<boolean>,
-      default: false,
-    },
-
-    /**
-     * If caret is true, a caret will be appended to the document's last text node
-     * If caret is an object, it will be appended with the given class
-     */
-    caret: {
-      type: [Boolean, Object] as PropType<boolean | { class: string }>,
-      default: false,
-    },
-
-    /**
-     * Additional data to pass to the renderer
-     */
-    data: {
-      type: Object as PropType<Record<string, unknown>>,
-      default: () => ({}),
-    },
-
-    /**
-     * Document key used to subscribe to live updates via `globalThis.comarkContext`
-     */
-    documentKey: {
-      type: String as PropType<string>,
-      default: undefined,
-    },
-  },
+  props: markdownDocumentProps,
 
   async setup(props) {
     const inputDocument = computed(
