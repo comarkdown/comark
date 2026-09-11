@@ -573,8 +573,9 @@ function healInline(text: string, opts: HealOpts): string {
       while (end + 1 < len && text[end + 1] === '`') end++
       const run = end - i + 1
       if (run >= 3) {
-        // A run of three or more mid-line is fence-shaped, not an inline span.
-        // Copy it verbatim and leave it to the fence handling above.
+        // The fence handling above only fires at the start of a line, so this is
+        // what keeps a mid-line run of three or more from opening a span: it is
+        // copied verbatim and never becomes an inline span.
         for (let k = i; k <= end; k++) out.push('`')
         i = end
         continue
@@ -949,12 +950,8 @@ function closeOpenStack(
   // `a _b and _c` produced `__`, which reads as strong and nested an em inside
   // an em. Collapse each run to one closer. Non-adjacent repeats are left alone,
   // since `_a **b _c` legitimately closes `_`, `**`, `_`.
-  for (let ci = closable.length - 1; ci > 0; ci--) {
-    if (closable[ci] === closable[ci - 1]) closable.splice(ci, 1)
-  }
-
   let suffix = ''
-  for (const m of closable) {
+  for (const m of closable.filter((tok, ci) => tok !== closable[ci - 1])) {
     if (m === '$$') {
       if (text.endsWith('$') && !text.endsWith('$$')) suffix += '$'
       else {

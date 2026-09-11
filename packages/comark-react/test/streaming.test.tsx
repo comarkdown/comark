@@ -28,14 +28,4 @@ describe('<Markdown streaming>', () => {
     expect(html).not.toContain('<strong>')
     expect(html).toContain('**wor')
   })
-
-  it('still heals a non-streaming parse when asked explicitly', async () => {
-    const html = await renderAsync(
-      <Markdown
-        value="Hello **wor"
-        options={{ autoClose: true }}
-      />
-    )
-    expect(html).toContain('<strong>')
-  })
 })

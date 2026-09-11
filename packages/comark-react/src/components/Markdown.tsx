@@ -151,7 +151,7 @@ export async function Markdown({
     )
   }
 
-  const parsed = await parseMarkdown(source, { ...parseOptions, plugins }, { streaming })
+  const parsed = await parseMarkdown(source, { ...parseOptions, plugins })
 
   return (
     <MarkdownDocument

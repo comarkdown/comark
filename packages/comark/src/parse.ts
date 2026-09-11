@@ -141,11 +141,9 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
 
       // `autoClose: 'streaming'` (the default) heals only when the caller says the
       // input may be incomplete. `true` heals every parse, `false` never does.
-      const healing = autoClose === 'streaming' ? opts.streaming === true : autoClose
-
-      if (typeof healing === 'function') {
-        state.markdown = withSpan(tracer, 'comark:autoclose', () => healing(state.markdown))
-      } else if (healing) {
+      if (typeof autoClose === 'function') {
+        state.markdown = withSpan(tracer, 'comark:autoclose', () => autoClose(state.markdown))
+      } else if (autoClose === 'streaming' ? opts.streaming : autoClose) {
         state.markdown = withSpan(tracer, 'comark:autoclose', () =>
           autoCloseMarkdown(state.markdown, {
             frontmatter: hasPlugin('frontmatter') && opts.streaming,

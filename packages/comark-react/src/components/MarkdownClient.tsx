@@ -35,14 +35,9 @@ function MarkdownContent({
   )
 }
 
-export function MarkdownClient({
-  children,
-  value,
-  options = {},
-  plugins = [],
-  streaming = false,
-  ...rest
-}: MarkdownProps) {
+export function MarkdownClient({ children, value, options = {}, plugins = [], ...rest }: MarkdownProps) {
+  const streaming = rest.streaming ?? false
+
   const content = isMarkdownDocument(value)
     ? value
     : children
@@ -70,7 +65,6 @@ export function MarkdownClient({
     <Suspense fallback={null}>
       <MarkdownContent
         parsePromise={deferredPromise}
-        streaming={streaming}
         {...rest}
       />
     </Suspense>

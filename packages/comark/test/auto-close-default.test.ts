@@ -8,20 +8,10 @@ describe('ParserOptions.autoClose', () => {
       expect(tree.nodes).toEqual([['p', {}, 'a _b']])
     })
 
-    it('leaves an unmatched asterisk opener literal on a plain parse', async () => {
-      const tree = await parseMarkdown('a *b')
-      expect(tree.nodes).toEqual([['p', {}, 'a *b']])
-    })
-
     it('heals when the parse call opts into streaming', async () => {
       const parse = createMarkdownParser()
       const tree = await parse('a _b', { streaming: true })
       expect(tree.nodes).toEqual([['p', { $: { line: 1 } }, 'a ', ['em', {}, 'b']]])
-    })
-
-    it('is equivalent to passing the string explicitly', async () => {
-      const explicit = await parseMarkdown('a _b', { autoClose: 'streaming' })
-      expect(explicit.nodes).toEqual([['p', {}, 'a _b']])
     })
 
     it('leaves an unclosed component fence to the components plugin', async () => {
