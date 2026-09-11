@@ -51,15 +51,19 @@ You are eligible for the 18–64 age group.
 You are outside the 18–64 age group.
 ::
 
+::if{:value="data.user.age" :eq="100" as="div"}
+[You are a centenarian 🎉]{style="color: teal;font-weight: bold;"}
+::
+
 ## Nested conditions
 
 ::if{:value="data.isHappy"}
-I am happy.
+I am happy 😊
 #else
 :::if{:value="data.isFine"}
-I am fine.
+I am fine 🙂
 #else
-I am NOT fine and NOT happy.
+I am NOT fine and NOT happy 😩
 :::
 ::
 
@@ -88,7 +92,7 @@ ${markdown}
 <template>
   <main class="demo">
     <header>
-      <h1>Live bindings and conditional content</h1>
+      <h1>Comark: bindings and conditional content</h1>
       <p>Change the form values to update the Markdown preview instantly.</p>
     </header>
 
