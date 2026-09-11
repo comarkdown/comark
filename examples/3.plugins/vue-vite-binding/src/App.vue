@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { reactive } from 'vue'
+import { reactive, ref } from 'vue'
 import { Markdown } from '@comark/vue'
 import binding, { Binding, If } from '@comark/vue/plugins/binding'
+
+const showSource = ref(false)
 
 // Runtime data exposed to bindings via the `data.` namespace.
 const data = reactive({
@@ -135,23 +137,50 @@ Inside the card the binding below pulls the card's title via \`props\`:
 
       <section
         class="preview"
-        aria-label="Markdown preview"
+        :aria-label="showSource ? 'Markdown source' : 'Markdown preview'"
       >
-        <Suspense>
-          <Markdown
-            :value="markdown"
-            :plugins="[binding()]"
-            :components="{ Binding, If }"
-            :data="data"
-          />
-        </Suspense>
+        <div
+          class="view-toggle"
+          role="group"
+          aria-label="Markdown view"
+        >
+          <button
+            type="button"
+            :aria-pressed="!showSource"
+            aria-controls="markdown-preview"
+            @click="showSource = false"
+          >
+            Preview
+          </button>
+          <button
+            type="button"
+            :aria-pressed="showSource"
+            aria-controls="markdown-source"
+            @click="showSource = true"
+          >
+            Source
+          </button>
+        </div>
+
+        <div
+          id="markdown-preview"
+          v-show="!showSource"
+        >
+          <Suspense>
+            <Markdown
+              :value="markdown"
+              :plugins="[binding()]"
+              :components="{ Binding, If }"
+              :data="data"
+            />
+          </Suspense>
+        </div>
+        <pre
+          id="markdown-source"
+          v-show="showSource"
+        ><code>{{ markdown }}</code></pre>
       </section>
     </div>
-
-    <details>
-      <summary>View the Markdown source</summary>
-      <pre><code>{{ markdown }}</code></pre>
-    </details>
   </main>
 </template>
 
@@ -225,8 +254,30 @@ fieldset {
   font-size: 0.875rem;
 }
 
-summary {
+.preview {
+  min-width: 0;
+}
+
+.view-toggle {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.view-toggle button {
+  padding: 0.4rem 0.9rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.375rem;
+  background: #fff;
+  color: inherit;
+  font: inherit;
   cursor: pointer;
+}
+
+.view-toggle button[aria-pressed='true'] {
+  background: #1e293b;
+  border-color: #1e293b;
+  color: #fff;
 }
 
 pre {
