@@ -21,7 +21,7 @@ function encode(value: unknown): string {
  * Structural key for a set of parser options.
  *
  * Primitives, and arrays of them such as `unwrap: ['p']`, are serialised by
- * value. Objects and functions (`plugins`, `autoClose`, `tracer`, `cache`) are
+ * value. Objects and functions (`plugins`, `autoClose`, `tracer`) are
  * serialised by interned identity, so callers should create plugin instances
  * once rather than inline on every render.
  *

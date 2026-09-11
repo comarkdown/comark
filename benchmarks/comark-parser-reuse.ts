@@ -21,10 +21,6 @@ barplot(() => {
     bench('shared parser', async () => {
       await parseAll(getMarkdownParser())
     })
-
-    bench('shared parser, cached', async () => {
-      await parseAll(getMarkdownParser({ cache: true }))
-    })
   })
 })
 

@@ -23,7 +23,6 @@ import { applyUnwrap, resolveUnwrapTags } from './internal/parse/unwrap.ts'
 import { marmdownItTokensToMarkdownDocument } from './internal/parse/token-processor.ts'
 import { autoCloseMarkdown } from './internal/parse/auto-close/index.ts'
 import { extractReusableNodes } from './internal/parse/incremental.ts'
-import { resolveCache, withDocumentCache } from './internal/parse/cache.ts'
 import { parserKey } from './internal/parse/parser-key.ts'
 import { createSerializedTask, dedupePlugins } from './utils/helpers.ts'
 import { noopTracer, withSpan } from './utils/trace.ts'
@@ -220,9 +219,7 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
     })
   }
 
-  const cache = resolveCache(options.cache)
-
-  return (cache ? withDocumentCache(parseFn, cache) : parseFn) as ComarkParseFn<
+  return parseFn as ComarkParseFn<
     ResolvedMeta<MergePluginMeta<TPlugins>>,
     ResolvedFrontmatter<MergePluginFrontmatter<TPlugins>>
   >
@@ -255,7 +252,7 @@ function warnOnSharedStreaming(parse: ComarkParseFn): ComarkParseFn {
  * the cost of parsing short documents.
  *
  * Equivalence is structural for primitive options and by identity for
- * `plugins`, `autoClose`, `tracer` and `cache`, so create plugin instances once
+ * `plugins`, `autoClose` and `tracer`, so create plugin instances once
  * rather than inline on every render.
  *
  * Shared parsers are for non-streaming parses. Streaming keeps incremental

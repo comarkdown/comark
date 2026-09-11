@@ -520,7 +520,6 @@ const result = await parseMarkdown(markdownContent, {
   autoClose: true,              // Auto-close incomplete syntax; also accepts (markdown) => string
   unwrap: 'p',                  // Strip top-level wrapper tags (MDC unwrap); merges paragraphs
   registerDefaultPlugins: true, // frontmatter, html, alert, task-list, components, attributes; false to disable
-  cache: false,                 // memoize by source per parser; true is a bounded LRU of 200
 })
 
 result.nodes       // Node[]
