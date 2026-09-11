@@ -1,9 +1,22 @@
 import { describe, it, expect } from 'vitest'
 import { createMarkdownParser } from 'comark'
+import { renderMarkdown } from 'comark/render'
 import type { ElementNode } from 'comark'
 
 describe('streaming mode', () => {
   describe('$.line metadata', () => {
+    it('does not leak into rendered markdown', async () => {
+      // `$` is reserved metadata. `comarkAttributes` used to serialise it as an
+      // attribute, so a streaming parse round-tripped as `# Title {$="…"}` and
+      // forced blocks into the `::tag{…}` wrapper form.
+      const parse = createMarkdownParser()
+      const source = '# Title\n\n- a\n- b\n\n```ts\nlet a = 1\n```'
+      const document = await parse(source, { streaming: true })
+
+      expect((document.nodes[0] as ElementNode)[1].$).toEqual({ line: 1 })
+      expect(await renderMarkdown(document)).toBe(source)
+    })
+
     it('preserves position metadata on nodes in streaming mode', async () => {
       const parse = createMarkdownParser()
       const result = await parse('# Hello\n\nParagraph one.\n\nParagraph two.\n', { streaming: true })
