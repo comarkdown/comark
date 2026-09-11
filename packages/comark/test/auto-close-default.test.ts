@@ -25,6 +25,16 @@ describe('ParserOptions.autoClose', () => {
       const tree = await parseMarkdown('::alert\nHello')
       expect(tree.nodes).toEqual([['alert', {}, 'Hello']])
     })
+
+    it('keeps a trailing `::` literal instead of dropping it', async () => {
+      // Healing strips a half-typed `::` on its own line. A plain parse must not,
+      // so the two nested-component fixtures no longer carry a stray closer.
+      const tree = await parseMarkdown('para\n\n::')
+      expect(tree.nodes).toEqual([
+        ['p', {}, 'para'],
+        ['p', {}, '::'],
+      ])
+    })
   })
 
   describe('true', () => {
