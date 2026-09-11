@@ -67,7 +67,7 @@ naturally appears inline after the deepest trailing text node.
 </script>
 
 <script lang="ts">
-  import type { Node as NodeType, ComponentManifest, NodeRenderData } from 'comark'
+  import type { Node as NodeType, ComponentManifest, NodeRenderData, NodeRenderHook } from 'comark'
   import type { ComponentResolver } from '../types.js'
   import MarkdownNode from './MarkdownNode.svelte'
   import ComarkComponent from './ComarkComponent.svelte'
@@ -230,6 +230,8 @@ naturally appears inline after the deepest trailing text node.
 
     return { defaultChildren, namedSlots: slots }
   })
+  let renderHook = $derived<NodeRenderHook | undefined>(Component?.__comarkRender)
+  let renderGroups = $derived(renderHook?.({ props: mappedProps, children, renderData }) ?? [])
 </script>
 
 {#snippet renderChildren()}
@@ -250,6 +252,19 @@ naturally appears inline after the deepest trailing text node.
       class={caretClass || undefined}
       style={CARET_STYLE}>{CARET_TEXT}</span
     >{/if}
+{:else if renderHook}
+  {#each renderGroups as group (group.key)}
+    {#snippet groupChildren()}
+      {#each group.children as child, i (i)}
+        <MarkdownNode node={child} {components} {componentsManifest} resolver={Resolver} renderData={group.renderData} />
+      {/each}
+    {/snippet}
+    {#if group.wrapper}
+      <svelte:element this={group.wrapper}>{@render groupChildren()}</svelte:element>
+    {:else}
+      {@render groupChildren()}
+    {/if}
+  {/each}
 {:else if Component && namedSlots.length > 0}
   <ComarkComponent
     {Component}

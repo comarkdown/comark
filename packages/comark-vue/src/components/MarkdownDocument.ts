@@ -6,8 +6,10 @@ import type {
   Node,
   MarkdownDocument as MarkdownDocumentType,
   NodeRenderData,
+  NodeRenderHook,
 } from 'comark'
 import {
+  Fragment,
   computed,
   defineAsyncComponent,
   defineComponent,
@@ -142,6 +144,26 @@ function renderNode(
     // Resolve `:prefix` bindings and let Vue-specific attribute mapping run
     // on top (e.g. `className` → `class`).
     const resolved = resolveAttributes(nodeProps, renderData, { parseJson: true })
+    const renderHook = (customComponent as { __comarkRender?: NodeRenderHook } | undefined)?.__comarkRender
+    if (renderHook) {
+      return h(customComponent!, {
+        key,
+        __render: () =>
+          h(
+            Fragment,
+            null,
+            renderHook({ props: resolved, children, renderData }).map((group) => {
+              const children = group.children.map((child, index) =>
+                renderNode(child, components, index, componentsManifest, node, group.renderData)
+              )
+              return group.wrapper
+                ? h(group.wrapper, { key: group.key }, children)
+                : h(Fragment, { key: group.key }, children)
+            })
+          ),
+      })
+    }
+
     const props: Record<string, any> = {}
     for (const k in resolved) {
       if (k === 'className') {

@@ -275,7 +275,27 @@ export interface NodeRenderData {
    * Props from parent node
    */
   props: Record<string, unknown>
+  /** Lexical bindings supplied by structural components, preserved through child props. */
+  scope?: Record<string, unknown>
 }
+/** Input supplied to an optional component's structural rendering hook. */
+export interface NodeRenderContext {
+  props: Record<string, any>
+  children: Node[]
+  renderData: NodeRenderData
+}
+
+/** A keyed group of AST nodes to render within a supplied context. */
+export interface NodeRenderGroup {
+  key: string | number
+  children: Node[]
+  renderData: NodeRenderData
+  wrapper?: string
+}
+
+/** Optional component capability for selecting or repeating children before rendering. */
+export type NodeRenderHook = (context: NodeRenderContext) => NodeRenderGroup[]
+
 // #endregion
 
 export type MarkdownExitPlugin = (md: MarkdownExit) => void

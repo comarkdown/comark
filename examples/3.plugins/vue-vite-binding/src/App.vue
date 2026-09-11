@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue'
 import { Markdown } from '@comark/vue'
-import binding, { Binding, If } from '@comark/vue/plugins/binding'
+import binding, { Binding, For, If } from '@comark/vue/plugins/binding'
 import rangi from '@comark/vue/plugins/rangi'
 import { github } from 'rangi/themes'
 
@@ -16,6 +16,15 @@ const initialData = {
     role: 'admin',
     age: 28,
   },
+  posts: [
+    { id: 1, title: 'Hello Comark', description: 'Markdown that responds to your data.', published: true },
+    {
+      id: 2,
+      title: 'A work in progress',
+      description: 'Try editing, reordering, or removing these posts.',
+      published: false,
+    },
+  ],
   isHappy: true,
   isFine: true,
   stats: {
@@ -25,6 +34,12 @@ const initialData = {
 }
 const data = reactive(structuredClone(initialData))
 const mood = computed(() => (data.isHappy ? 'Happy' : data.isFine ? 'Fine' : 'Not happy or fine'))
+
+let nextPostId = 3
+function addPost(): void {
+  const id = nextPostId++
+  data.posts.push({ id, title: `Post ${id}`, description: 'Write a description…', published: true })
+}
 
 function resetData(): void {
   Object.assign(data, structuredClone(initialData))
@@ -74,21 +89,22 @@ I am NOT fine and NOT happy 😩
 :::
 ::
 
-## Platform stats
+## Posts
 
-| Metric | Value                            |
-| ------ | -------------------------------- |
-| Users  | {{ data.stats.users }}           |
-| Uptime | {{ data.stats.uptime }}          |
-| Plan   | {{ data.plan \\|\\| community }}     |
+::for{:each="data.posts" item="post"}
+### {{ props.post.title }}
 
-## Components see their own props
+{{ props.post.description }}
 
-::card{title="Component props"}
-Inside the card the binding below pulls the card's title via \`props\`:
-
-{{ props.title }}
+:::if{:value="props.post.published"}
+[Published]{style="background: lightseagreen; padding: 2px 4px; font-size: 0.8em; border-radius: 2px;"}
+#else
+[Draft]{style="background: lightsalmon; padding: 2px 4px; font-size: 0.8em; border-radius: 2px;"}
+:::
+#empty
+No posts published yet.
 ::
+
 `
 
 const sourceMarkdown = `~~~~mdc
@@ -243,6 +259,76 @@ ${markdown}
               Uncheck “I am happy” to explore the nested <code>#else</code> branch.
             </p>
           </fieldset>
+          <fieldset class="vbg-custom-posts">
+            <legend class="vbg-label">Posts</legend>
+            <p class="vbg-helper">Edit a post, reverse the order, or clear the list to see <code>#empty</code>.</p>
+            <div
+              v-for="(post, index) in data.posts"
+              :key="post.id"
+              class="vbg-custom-post"
+            >
+              <label
+                class="vbg-label"
+                :for="`post-title-${post.id}`"
+                >Post {{ index + 1 }} title</label
+              >
+              <input
+                :id="`post-title-${post.id}`"
+                v-model="post.title"
+                type="text"
+              />
+              <label
+                class="vbg-label"
+                :for="`post-description-${post.id}`"
+                >Description</label
+              >
+              <textarea
+                :id="`post-description-${post.id}`"
+                v-model="post.description"
+                rows="2"
+              />
+              <label class="vbg-custom-checkbox"
+                ><input
+                  v-model="post.published"
+                  type="checkbox"
+                />
+                Published</label
+              >
+              <button
+                type="button"
+                class="vbg-button vbg-button-secondary"
+                :aria-label="`Remove post ${index + 1}`"
+                @click="data.posts.splice(index, 1)"
+              >
+                Remove
+              </button>
+            </div>
+            <div class="vbg-custom-post-actions">
+              <button
+                type="button"
+                class="vbg-button vbg-button-secondary"
+                @click="addPost"
+              >
+                Add post
+              </button>
+              <button
+                type="button"
+                class="vbg-button vbg-button-secondary"
+                :disabled="data.posts.length < 2"
+                @click="data.posts.reverse()"
+              >
+                Reverse order
+              </button>
+              <button
+                type="button"
+                class="vbg-button vbg-button-secondary"
+                :disabled="!data.posts.length"
+                @click="data.posts.splice(0)"
+              >
+                Clear posts
+              </button>
+            </div>
+          </fieldset>
           <p class="vbg-custom-input-note">Changes appear immediately.<br />No submit button needed.</p>
         </form>
 
@@ -285,7 +371,7 @@ ${markdown}
               <Markdown
                 :value="markdown"
                 :plugins="previewPlugins"
-                :components="{ Binding, If, h1: 'h2', h2: 'h3' }"
+                :components="{ Binding, For, If, h1: 'h2', h2: 'h3' }"
                 :data="data"
               />
               <template #fallback><p class="vbg-caption">Rendering Markdown…</p></template>
@@ -313,7 +399,7 @@ ${markdown}
             aria-atomic="true"
           >
             <span>Current data</span>
-            <span>{{ data.user.role }} · {{ data.user.age }} years · {{ mood }}</span>
+            <span>{{ data.user.role }} · {{ data.user.age }} years · {{ mood }} · {{ data.posts.length }} posts</span>
           </div>
         </section>
       </div>
@@ -385,7 +471,7 @@ ${markdown}
   grid-template-columns: minmax(260px, 300px) minmax(0, 1fr);
   border: 1px solid var(--vbg-border-default);
   border-radius: var(--vbg-radius);
-  align-items: start;
+  align-items: stretch;
 }
 .vbg-custom-inputs {
   padding: var(--vbg-space-6);
@@ -650,5 +736,26 @@ ${markdown}
   .vbg-custom-format {
     display: none;
   }
+}
+</style>
+
+<style scoped>
+.vbg-custom-posts {
+  border: 0;
+  padding: 0;
+  margin: 24px 0 0;
+  min-width: 0;
+}
+.vbg-custom-post {
+  display: grid;
+  gap: 8px;
+  border-bottom: 1px solid var(--vbg-border);
+  padding: 16px 0;
+}
+.vbg-custom-post-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
 }
 </style>

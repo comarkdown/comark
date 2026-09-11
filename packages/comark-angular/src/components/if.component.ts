@@ -1,3 +1,5 @@
+import type { NodeRenderContext, NodeRenderGroup } from 'comark'
+import { resolveIfWrapper, selectIfBranch, shouldRenderIf } from 'comark/plugins/binding'
 import { Component, ChangeDetectionStrategy } from '@angular/core'
 
 /** Marker component for Angular's structural `::if` renderer. */
@@ -8,5 +10,16 @@ import { Component, ChangeDetectionStrategy } from '@angular/core'
   template: '',
 })
 export class If {
-  static readonly ɵcomarkIf = true
+  static __comarkRender({ props, children, renderData }: NodeRenderContext): NodeRenderGroup[] {
+    const branch = selectIfBranch(children, shouldRenderIf(props))
+    if (!branch) return []
+    return [
+      {
+        key: 'branch',
+        children: branch,
+        renderData: Object.keys(props).length ? { ...renderData, props } : renderData,
+        wrapper: resolveIfWrapper(props.as),
+      },
+    ]
+  }
 }

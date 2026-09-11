@@ -1,7 +1,8 @@
+import { forCases } from '../../../test/fixtures/for'
 import { describe, expect, it } from 'vitest'
 import { parseMarkdown } from 'comark'
 import { renderHtmlFromDocument } from '../src/index'
-import binding, { Binding, If } from '../src/plugins/binding'
+import binding, { Binding, For, If } from '../src/plugins/binding'
 import { nestedIfCases, nestedIfMarkdown } from '../../../test/fixtures/if'
 
 const parseWithBinding = (md: string) => parseMarkdown(md, { plugins: [binding()] })
@@ -100,7 +101,7 @@ describe('@comark/html plugins/binding — If handler', () => {
 
   it('exposes normalized If props to bindings in its children', async () => {
     const doc = await parseWithBinding('::if{:value="true" :enabled="false"}\nEnabled {{ props.enabled }}\n::')
-    const html = await renderHtmlFromDocument(doc, { components: { Binding, If } })
+    const html = await renderHtmlFromDocument(doc, { components: { Binding, For, If } })
 
     expect(html).toBe('Enabled false')
   })
@@ -117,4 +118,15 @@ describe('@comark/html plugins/binding — If handler', () => {
     const html = await renderHtmlFromDocument(doc, { components: { If }, data })
     expect(html).toBe(visible ? 'Adult member content.' : '')
   })
+})
+
+it.each(forCases)('For: $name', async ({ markdown, data, expected, absent }) => {
+  const output = (
+    await renderHtmlFromDocument(await parseWithBinding(markdown), { components: { Binding, For, If }, data })
+  )
+    .replace(/<[^>]*>/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+  for (const text of expected) expect(output).toContain(text)
+  for (const text of absent) expect(output).not.toContain(text)
 })
