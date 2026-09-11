@@ -29,8 +29,8 @@ and wrap this component in a `<svelte:boundary>` for pending/error states.
 -->
 <script lang="ts">
   import type { MarkdownDocument as MarkdownDocumentType, ComarkPlugin, ComponentManifest } from 'comark'
+  import { createSerializedMarkdownParser } from 'comark'
   import { isMarkdownDocument } from 'comark/utils'
-  import { createComponentParser } from '../internal/parse'
   import MarkdownDocument from '../components/MarkdownDocument.svelte'
   import ResolveAsync from './ResolveAsync.svelte'
 
@@ -63,7 +63,7 @@ and wrap this component in a `<svelte:boundary>` for pending/error states.
   let parserOptions = $derived(options)
   let parserPlugins = $derived(plugins)
   let parserUnwrap = $derived(unwrap)
-  let parse = $derived(createComponentParser({
+  let parse = $derived(createSerializedMarkdownParser({
     ...parserOptions,
     ...(parserUnwrap ? { unwrap: parserUnwrap } : {}),
     plugins: [...parserPlugins],

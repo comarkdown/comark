@@ -25,8 +25,8 @@ This is an alert component
 -->
 <script lang="ts">
   import type { MarkdownDocument as MarkdownDocumentType, ComarkPlugin, ComponentManifest } from 'comark'
+  import { createSerializedMarkdownParser } from 'comark'
   import { isMarkdownDocument } from 'comark/utils'
-  import { createComponentParser } from '../internal/parse'
   import MarkdownDocument from './MarkdownDocument.svelte'
 
   let {
@@ -60,7 +60,7 @@ This is an alert component
   let parserOptions = $derived(options)
   let parserPlugins = $derived(plugins)
   let parserUnwrap = $derived(unwrap)
-  let parse = $derived(createComponentParser({
+  let parse = $derived(createSerializedMarkdownParser({
     ...parserOptions,
     ...(parserUnwrap ? { unwrap: parserUnwrap } : {}),
     plugins: [...parserPlugins],

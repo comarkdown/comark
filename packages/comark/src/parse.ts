@@ -124,6 +124,10 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
 
       const prevOutput = lastOutput
       const isStartsWithLastInput = markdown.startsWith(lastInput ?? '')
+      // TODO(streaming): `]:` and the heading-tail check force a full reparse so
+      // reference definitions / heading IDs stay correct. Find a way to keep
+      // incremental reuse here (carry env.references + id counters into the tail
+      // parse, or patch completed nodes) without scanning/reparsing the prefix.
       if (opts.streaming && prevOutput && isStartsWithLastInput && !markdown.includes(']:')) {
         const { remainingMarkdownStartLine, reusedNodes, remainingMarkdown } = extractReusableNodes(
           markdown,
@@ -273,8 +277,9 @@ export async function parseMarkdown<const TPlugins extends readonly ComarkPlugin
 }
 
 /**
- * Creates a serialized parser function for Comark content.
- * This is useful for parsing large files in a streaming manner.
+ * Creates a serialized parser that reuses stream state across calls.
+ * Overlapping parses run one at a time; each caller still receives its own
+ * result or rejection (plugin errors are not swallowed).
  *
  * @param options - Parser options
  * @returns ComarkParseFn - The serialized parser function
@@ -284,7 +289,7 @@ export async function parseMarkdown<const TPlugins extends readonly ComarkPlugin
  * import { createSerializedMarkdownParser } from 'comark'
  *
  * const parseMarkdown = createSerializedMarkdownParser()
- * const tree = await parseMarkdown(content)
+ * const tree = await parseMarkdown(content, { streaming: true })
  * console.log(tree.nodes)
  */
 export function createSerializedMarkdownParser<const TPlugins extends readonly ComarkPlugin<any, any>[] = []>(
