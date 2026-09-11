@@ -231,7 +231,28 @@ still close inside:
 + ``a` b``
 ```
 
-A run of three or more mid-line is fence-shaped, not an inline span, and stays literal.
+A trailing run merges with the closer instead of being appended to, so only the
+backticks the run still needs are added:
+
+```diff
+- Use ``code`
++ Use ``code``
+```
+
+A trailing run longer than the opener is left alone. No closer can be appended next to
+it that would read as a run of the opener's length:
+
+```diff
+- `a``
++ `a``
+```
+
+A run of three or more mid-line is fence-shaped, not an inline span, and stays literal:
+
+```diff
+- a ```x b
++ a ```x b
+```
 
 ---
 

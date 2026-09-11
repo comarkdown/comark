@@ -805,7 +805,14 @@ function healInline(text: string, opts: HealOpts): string {
         const m = stack[si]
         if (m === '**' || m === '*' || m === '__' || m === '_' || m === '~~' || m === '***') inner += m
       }
-      return result + inner + '`'.repeat(codeRun)
+      // A backtick run already at the end merges with the closer we are about to
+      // append, so only add what that run still needs. A run longer than the
+      // opener can never be turned into a closer, so leave the text alone.
+      const base = result + inner
+      let trail = 0
+      while (trail < base.length && base[base.length - 1 - trail] === '`') trail++
+      if (trail > codeRun) return result
+      return base + '`'.repeat(codeRun - trail)
     }
     return result
   }
