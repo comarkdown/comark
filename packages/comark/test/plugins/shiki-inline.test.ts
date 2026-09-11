@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import javascript from 'shiki/dist/langs/javascript.mjs'
+import vueHtml from 'shiki/dist/langs/vue-html.mjs'
 import githubDark from 'shiki/dist/themes/github-dark.mjs'
 import { parseMarkdown } from '../../src/index'
 import type { ElementNode, Node } from '../../src/types'
@@ -85,13 +86,16 @@ describe('shiki inline code', () => {
       expect(String((custom[1] as Record<string, unknown>).class)).toMatch(/^shiki /)
     })
 
-    it('leaves a built-in alone when it is disabled', async () => {
-      const code = await inlineCode('`Ref<T>`{lang="ts-type"}', {
-        grammarContexts: { 'ts-type': false },
-      })
-      // `ts-type` is not a real grammar, so with the context gone there is
-      // nothing to highlight with.
-      expect(code).toEqual(['code', { lang: 'ts-type' }, 'Ref<T>'])
+    it('lets a registered grammar win over a built-in context', async () => {
+      const plugin = shikiCore({ languages: [vueHtml], themes: { dark: githubDark } })
+      const document = await parseMarkdown('`<b/>`{lang="vue-html"}', { plugins: [plugin] })
+      const code = (document.nodes[0] as ElementNode)[2] as ElementNode
+
+      // The built-in context would route `vue-html` through the `vue` grammar
+      // seeded with `<template>`, which is not registered here. Highlighting at
+      // all proves the real grammar was used.
+      expect(String((code[1] as Record<string, unknown>).class)).toMatch(/^shiki /)
+      expect(styles(code).some(Boolean)).toBe(true)
     })
   })
 

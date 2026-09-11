@@ -77,16 +77,15 @@ export interface ShikiCoreOptions {
 
   /**
    * Pseudo-languages usable in `{lang="…"}` and in fence info strings, merged
-   * on top of {@link defaultGrammarContexts}. Set an entry to `false` to drop
-   * a built-in one and treat the name as a plain grammar name.
+   * on top of {@link defaultGrammarContexts}. A registered grammar always wins,
+   * so a context only ever applies to a name that is not a real grammar.
    *
    * @example
    * grammarContexts: {
    *   'sql-expr': { lang: 'sql', grammarContextCode: 'select ' },
-   *   'ts-type': false,
    * }
    */
-  grammarContexts?: Record<string, ShikiGrammarContext | false>
+  grammarContexts?: Record<string, ShikiGrammarContext>
 }
 
 /**
@@ -414,22 +413,24 @@ export async function highlightCodeBlocks(
   // `langAlias` entries above resolve without touching the registry.
   const loadedLangs = new Set(hl.getLoadedLanguages())
 
-  const grammarContexts: Record<string, ShikiGrammarContext | false> = options.grammarContexts
+  const grammarContexts: Record<string, ShikiGrammarContext> = options.grammarContexts
     ? { ...defaultGrammarContexts, ...options.grammarContexts }
     : defaultGrammarContexts
 
   /**
    * Resolve a written language name to a real grammar plus optional seed source.
-   * Own-property lookup only, so a fence written ```constructor``` cannot resolve
-   * through `Object.prototype`. A `false` entry is falsy and falls through to the
-   * identity mapping, which is how a built-in context is disabled.
+   * A registered grammar wins: shiki ships a real `vue-html` grammar, so anyone
+   * who registers it gets it instead of the built-in context that seeds `vue`.
+   * The context lookup is own-property only, so a fence written ```constructor```
+   * cannot resolve through `Object.prototype`.
    */
   const resolveGrammar = (language: string | undefined): ShikiGrammarContext => {
+    if (language && loadedLangs.has(language)) return { lang: language }
     const ctx =
       language && Object.prototype.hasOwnProperty.call(grammarContexts, language)
         ? grammarContexts[language]
         : undefined
-    return ctx || { lang: language as string }
+    return ctx ?? { lang: language as string }
   }
 
   // Build new nodes array, spine-copying only paths to modified nodes

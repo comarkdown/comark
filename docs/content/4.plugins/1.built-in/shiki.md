@@ -223,16 +223,17 @@ Two ship by default, mirroring the `@nuxtjs/mdc` conventions:
 
 Without the `ts-type` seed, `Ref<HTMLInputElement | null>` tokenizes as an expression and the type names fall through to plain text.
 
-Add your own with `grammarContexts`, or set an entry to `false` to drop a built-in and treat the name as a plain grammar name:
+Add your own with `grammarContexts`:
 
 ```ts
 shiki({
   grammarContexts: {
     'sql-expr': { lang: 'sql', grammarContextCode: 'select ' },
-    'ts-type': false,
   },
 })
 ```
+
+A registered grammar always wins. Shiki ships a real `vue-html` grammar, so registering it through `languages` gets you that grammar rather than the built-in context that seeds `vue`.
 
 Contexts apply to fence info strings too. The written name stays on the `<pre>`, so ```` ```ts-type ```` still round-trips. On the `core` entry the target grammar has to be registered through `languages` like any other.
 
@@ -345,7 +346,7 @@ Two option types, one per entry:
 | [`transformers`](#options-transformers) | `ShikiTransformer[]` | `undefined` | Shiki transformers applied to every block |
 | [`preStyles`](#options-prestyles) | `boolean` | `false` | Add inline background/foreground styles to `<pre>` |
 | [`inlineCode`](#options-inlinecode) | `boolean` | `true` | Highlight inline code that declares a language |
-| [`grammarContexts`](#options-grammarcontexts) | `Record<string, ShikiGrammarContext \| false>` | Built-ins | Pseudo-languages merged over `ts-type` and `vue-html` |
+| [`grammarContexts`](#options-grammarcontexts) | `Record<string, ShikiGrammarContext>` | Built-ins | Pseudo-languages merged over `ts-type` and `vue-html` |
 | [`registerDefaultLanguages`](#options-registerdefaultlanguages) | `boolean` | `true` | Register the built-in default language set |
 | [`registerDefaultThemes`](#options-registerdefaultthemes) | `boolean` | `true` | Register the built-in Material themes |
 
@@ -358,7 +359,7 @@ Two option types, one per entry:
 | `transformers` | `ShikiTransformer[]` | `undefined` | Shiki transformers applied to every block |
 | `preStyles` | `boolean` | `false` | Add inline background/foreground styles to `<pre>` |
 | `inlineCode` | `boolean` | `true` | Highlight inline code that declares a language |
-| `grammarContexts` | `Record<string, ShikiGrammarContext \| false>` | Built-ins | Pseudo-languages merged over `ts-type` and `vue-html` |
+| `grammarContexts` | `Record<string, ShikiGrammarContext>` | Built-ins | Pseudo-languages merged over `ts-type` and `vue-html` |
 
 ### `themes`
 
@@ -454,7 +455,7 @@ shiki({
 })
 ```
 
-Each entry is `{ lang, grammarContextCode? }`, or `false` to drop a built-in. `defaultGrammarContexts` is exported so you can see what you are extending.
+Each entry is `{ lang, grammarContextCode? }`. A name that is already a registered grammar is never routed through a context.
 
 **Default:** the built-in contexts
 
