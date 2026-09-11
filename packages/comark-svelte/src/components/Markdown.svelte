@@ -65,12 +65,15 @@ This is an alert component
     // `parse` directly mutates `plugins` which creates an infinite effect loop
     // so we copy it before passing it in so it gets a regular JS array and we get to still
     // track dependencies from an external perspective
-    parseMarkdown(content, { ...options, ...(unwrap ? { unwrap } : {}), plugins: [...plugins] }).then((result) => {
-      if (currentVersion > appliedVersion) {
-        appliedVersion = currentVersion
-        parsed = result
-      }
-    })
+    parseMarkdown(content, { ...options, ...(unwrap ? { unwrap } : {}), plugins: [...plugins] })
+      .then((result) => {
+        if (currentVersion > appliedVersion) {
+          appliedVersion = currentVersion
+          parsed = result
+        }
+      })
+      // Keep the last good document rendered and report the failure.
+      .catch((error) => console.error('[comark] failed to parse markdown', error))
   })
 </script>
 
