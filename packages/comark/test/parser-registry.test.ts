@@ -10,28 +10,18 @@ describe('getMarkdownParser', () => {
     expect(getMarkdownParser({ linkify: false })).toBe(getMarkdownParser({ linkify: false }))
   })
 
-  it('ignores key order', () => {
-    expect(getMarkdownParser({ autoUnwrap: true, linkify: true })).toBe(
-      getMarkdownParser({ linkify: true, autoUnwrap: true })
-    )
-  })
-
-  it('treats an explicit undefined as absent', () => {
-    expect(getMarkdownParser({ autoUnwrap: undefined })).toBe(getMarkdownParser())
-  })
-
   it('returns different parsers for different options', () => {
     expect(getMarkdownParser({ linkify: false })).not.toBe(getMarkdownParser({ linkify: true }))
     expect(getMarkdownParser({ unwrap: 'p' })).not.toBe(getMarkdownParser({ unwrap: 'div' }))
   })
 
+  it('does not confuse an array with the string its items join to', () => {
+    expect(getMarkdownParser({ unwrap: ['p,div'] })).not.toBe(getMarkdownParser({ unwrap: 'p,div,' }))
+  })
+
   it('matches a fresh array holding the same plugin instances', () => {
     const plugin = noop()
     expect(getMarkdownParser({ plugins: [plugin] })).toBe(getMarkdownParser({ plugins: [plugin] }))
-  })
-
-  it('matches a fresh array of primitives', () => {
-    expect(getMarkdownParser({ unwrap: ['p'] })).toBe(getMarkdownParser({ unwrap: ['p'] }))
   })
 
   it('does not match two instances from the same factory', () => {

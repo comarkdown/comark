@@ -37,11 +37,7 @@ export function parserKey(options: Record<string, unknown>): string {
     const value = options[name]
     if (value === undefined) continue
     key += ` ${name}:`
-    if (Array.isArray(value)) {
-      for (const item of value) key += `${encode(item)},`
-    } else {
-      key += encode(value)
-    }
+    key += Array.isArray(value) ? `[${value.map(encode)}]` : encode(value)
   }
   return key
 }
