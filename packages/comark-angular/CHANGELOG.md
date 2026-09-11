@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.7.0](https://github.com/comarkdown/comark/compare/@comark/angular@0.6.2...@comark/angular@0.7.0) (2026-09-10)
+
+### Bug Fixes
+
+* **angular:** render nested custom components ([#351](https://github.com/comarkdown/comark/issues/351)) ([af8d3e8](https://github.com/comarkdown/comark/commit/af8d3e8ed4352d8912a35ba0c74cf59c712b24d3))
+* **angular:** update build scripts to use angular compiler ([#317](https://github.com/comarkdown/comark/issues/317)) ([de915aa](https://github.com/comarkdown/comark/commit/de915aacda1ee8c5128cc34a27cd5fa14241c264))
+* **angular:** use inject() instead of constructor DI (fixes NG0202 under AOT) ([#346](https://github.com/comarkdown/comark/issues/346)) ([c63fcce](https://github.com/comarkdown/comark/commit/c63fccec1fa15bea177db5ebe8afa07d54bd1c1b))
+* **security:** harden prop and URL validation against bypasses ([#373](https://github.com/comarkdown/comark/issues/373)) ([a6aa2b9](https://github.com/comarkdown/comark/commit/a6aa2b9da03c487597e735151f81d1eb4742dac0))
+* unify component resolution order and drop unused Angular name option ([#381](https://github.com/comarkdown/comark/issues/381)) ([b91e4c8](https://github.com/comarkdown/comark/commit/b91e4c84e51f19a927a06d8ec653819b622719a9))
+* **vue:** accept a parsed document in a defined component ([#410](https://github.com/comarkdown/comark/issues/410)) ([76c0aba](https://github.com/comarkdown/comark/commit/76c0aba15dc490170a21066825b4ce6973c77532))
+
 ## [0.6.2](https://github.com/comarkdown/comark/compare/@comark/angular@0.6.1...@comark/angular@0.6.2) (2026-08-07)
 
 ## [0.6.1](https://github.com/comarkdown/comark/compare/@comark/angular@0.6.0...@comark/angular@0.6.1) (2026-08-06)
