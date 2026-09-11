@@ -26,6 +26,7 @@ This example demonstrates the Comark `binding` plugin in a Vue + Vite app:
 - **Typed values** — bindings come through as real JS values (strings, numbers, objects) thanks to the shared data-binding layer.
 - **Conditional content** — `If` supports truthiness checks, role comparisons, age ranges, and nested `#else` branches.
 - **Live updates** — text, select, range, and checkbox controls use `v-model` to update the same reactive data passed to the renderer. The age slider uses `v-model.number` for numeric comparisons.
+- **Highlighted source** — the Source view uses the Rangi plugin's Comark grammar to highlight bindings, components, and slots.
 
 Run `pnpm dev:binding` from the repository root. Change the role, move the age slider across 18 or 65, and toggle the mood checkboxes to see the selected branches change. Use **Preview** and **Source** above the Markdown panel to switch between rendered content and its source while keeping the form values.
 

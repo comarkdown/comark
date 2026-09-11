@@ -927,6 +927,9 @@ importers:
       '@comark/vue':
         specifier: workspace:*
         version: link:../../../packages/comark-vue
+      rangi:
+        specifier: 'catalog:'
+        version: 2.2.0
       vue:
         specifier: 'catalog:'
         version: 3.5.41(typescript@6.0.3)

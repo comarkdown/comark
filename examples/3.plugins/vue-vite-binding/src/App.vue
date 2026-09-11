@@ -2,8 +2,11 @@
 import { reactive, ref } from 'vue'
 import { Markdown } from '@comark/vue'
 import binding, { Binding, If } from '@comark/vue/plugins/binding'
+import rangi from '@comark/vue/plugins/rangi'
+import { github } from 'rangi/themes'
 
 const showSource = ref(false)
+const sourcePlugins = [rangi({ theme: github })]
 
 // Runtime data exposed to bindings via the `data.` namespace.
 const data = reactive({
@@ -76,6 +79,10 @@ Inside the card the binding below pulls the card's title via \`props\`:
 {{ props.title }}
 ::
 `
+
+const sourceMarkdown = `~~~~mdc
+${markdown}
+~~~~`
 </script>
 
 <template>
@@ -175,10 +182,17 @@ Inside the card the binding below pulls the card's title via \`props\`:
             />
           </Suspense>
         </div>
-        <pre
+        <div
           id="markdown-source"
           v-show="showSource"
-        ><code>{{ markdown }}</code></pre>
+        >
+          <Suspense>
+            <Markdown
+              :value="sourceMarkdown"
+              :plugins="sourcePlugins"
+            />
+          </Suspense>
+        </div>
       </section>
     </div>
   </main>
@@ -280,10 +294,12 @@ fieldset {
   color: #fff;
 }
 
-pre {
+#markdown-source :deep(pre) {
   overflow-x: auto;
+  margin: 0;
   padding: 1rem;
   background: #f8fafc;
+  font-size: 0.875rem;
 }
 
 @media (max-width: 700px) {
