@@ -31,7 +31,7 @@ export interface AutoCloseOptions {
   /**
    * Drop a trailing opener (`* _ $ : [ { !`) after whitespace at EOF so a
    * half-typed marker does not flash (`hello *` → `hello`). Default false.
-   * Enabled automatically when `parseMarkdown(..., { streaming: true })`.
+   * Enabled automatically when `parseMarkdown(md, {}, { streaming: true })`.
    */
   dropTrailingOpeners?: boolean
 }
