@@ -352,9 +352,9 @@ export async function highlightCodeBlocks(
   const inlineEnabled = options.inlineCode !== false
 
   /**
-   * Collect a node if it is highlightable. Returns true when the subtree must
-   * NOT be descended into: a matched `<pre><code>`, whose own `<code>` child is
-   * a fenced block rather than inline code.
+   * Collect a node if it is highlightable. Returns true when the node owns its
+   * whole subtree, so the caller must not descend: a matched `<pre><code>`,
+   * whose own `<code>` child is a fenced block rather than inline code.
    */
   const collect = (node: ElementNode, path: number[]): boolean => {
     if (node[0] === 'pre') {
@@ -381,7 +381,8 @@ export async function highlightCodeBlocks(
       if (typeof child === 'string') continue
       if (!Array.isArray(child) || child.length < 3) continue
       pathBuf.push(i - 2)
-      if (!collect(child as ElementNode, pathBuf)) walkChildren(child as ElementNode)
+      const handled = collect(child as ElementNode, pathBuf)
+      if (!handled) walkChildren(child as ElementNode)
       pathBuf.pop()
     }
   }
@@ -392,7 +393,8 @@ export async function highlightCodeBlocks(
     if (!Array.isArray(node) || node.length < 3) continue
     pathBuf.length = 1
     pathBuf[0] = i
-    if (!collect(node as ElementNode, pathBuf)) walkChildren(node as ElementNode)
+    const handled = collect(node as ElementNode, pathBuf)
+    if (!handled) walkChildren(node as ElementNode)
   }
 
   if (codeBlocks.length === 0) return tree

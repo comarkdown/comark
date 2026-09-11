@@ -208,6 +208,8 @@ Inline code uses the fast token path only, so `transformers` and `preStyles` are
 
 Inline code naming a grammar that is not registered is left exactly as it was written, with no class and no spans. That is deliberate: `lang` is a real HTML attribute for natural language, so `` `Bonjour`{lang="fr"} `` must not be treated as code. A fenced block behaves differently and still falls back to an unhighlighted `.shiki` block, because a `<pre>` is unambiguously code.
 
+Plain-text language names follow the same rule: `` `x`{lang="text"} ``, `txt` and `plain` are not registered grammars, so inline code naming one is left alone. The same name on a fence still produces a `.shiki` block.
+
 Set `inlineCode: false` to turn this off.
 
 ### Grammar contexts
@@ -446,8 +448,6 @@ shiki({ inlineCode: false })
 Pseudo-languages usable in `{lang="…"}` and in fence info strings, merged on top of the built-in `ts-type` and `vue-html`. See [Grammar contexts](#grammar-contexts).
 
 ```typescript
-import shiki, { defaultGrammarContexts } from 'comark/plugins/shiki'
-
 shiki({
   grammarContexts: {
     'sql-expr': { lang: 'sql', grammarContextCode: 'select ' },

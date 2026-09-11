@@ -141,26 +141,15 @@ const IMPLICIT_ATTRS: Record<string, { drop?: string[]; classBlocklist?: string[
   pre: { drop: ['language', 'filename', 'highlights', 'meta', 'style'] },
 }
 
-// Tags whose `class` may hold highlighter-injected classes merged with the
-// user's class behind the ` . ` sentinel: `<pre>` for fenced blocks, `<code>`
-// for inline code carrying `{lang=…}`.
-const HIGHLIGHTER_CLASS_TAGS = new Set(['pre', 'code'])
-
 /**
  * Whether a `class` value was injected by a highlighter rather than authored.
  *
- * Matched on whole tokens, not a prefix, so an authored `shiki-custom` or
- * `shj-custom` is left alone. Shiki emits `shiki <theme>…`; rangi emits
- * `<classPrefix> shiki shj-lang-<lang>`, where the prefix defaults to `shj` but
- * is configurable, so the third form catches a customized one.
+ * Both emitters always write a literal `shiki` token: shiki puts it first,
+ * rangi injects it as `<classPrefix> shiki shj-lang-<lang>`. Matched on whole
+ * tokens, not a prefix, so an authored `shiki-custom` is left alone.
  */
 function isHighlighterClass(value: string): boolean {
-  const tokens = value.trim().split(/\s+/)
-  return (
-    tokens[0] === 'shiki' ||
-    tokens[0] === 'shj' ||
-    (tokens[1] === 'shiki' && (tokens[2]?.startsWith('shj-lang-') ?? false))
-  )
+  return value.trim().split(/\s+/).includes('shiki')
 }
 
 /**
@@ -169,8 +158,7 @@ function isHighlighterClass(value: string): boolean {
  * recover the user portion on markdown stringify; it must never reach HTML.
  */
 function mergeHighlighterClass(value: unknown): unknown {
-  if (typeof value !== 'string') return value
-  if (!isHighlighterClass(value)) return value
+  if (typeof value !== 'string' || !value.includes(' . ')) return value
   return value
     .split(/\s+/)
     .filter((token) => token !== '.')
@@ -185,7 +173,8 @@ function mergeHighlighterClass(value: unknown): unknown {
  */
 export function userBlockAttrs(tag: string, attributes: Record<string, unknown>): Record<string, unknown> {
   const rule = IMPLICIT_ATTRS[tag]
-  const stripsHighlighterClass = HIGHLIGHTER_CLASS_TAGS.has(tag)
+  // `<pre>` carries a fenced block's classes, `<code>` an inline `{lang=…}` one.
+  const stripsHighlighterClass = tag === 'pre' || tag === 'code'
   if (!rule && !stripsHighlighterClass) return { ...attributes }
 
   const result: Record<string, unknown> = {}

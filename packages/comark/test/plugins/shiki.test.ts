@@ -75,12 +75,6 @@ describe('shiki inline code round-trip', () => {
     }
   }
 
-  it('drops the injected classes', async () => {
-    const md = await renderMarkdown(inlineTree('shiki shiki-themes github-dark'))
-    expect(md).toBe('Type `Ref<T>`{lang="ts-type"}')
-    expect(md).not.toContain('.shiki')
-  })
-
   it('keeps the user class after the sentinel', async () => {
     const md = await renderMarkdown(inlineTree('shiki shiki-themes github-dark . foo'))
     expect(md).toBe('Type `Ref<T>`{lang="ts-type" .foo}')

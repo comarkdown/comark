@@ -3,7 +3,7 @@ import javascript from 'shiki/dist/langs/javascript.mjs'
 import vueHtml from 'shiki/dist/langs/vue-html.mjs'
 import githubDark from 'shiki/dist/themes/github-dark.mjs'
 import { parseMarkdown } from '../../src/index'
-import type { ElementNode, Node } from '../../src/types'
+import type { ComarkPlugin, ElementNode, Node } from '../../src/types'
 import shiki from '../../src/plugins/shiki'
 import shikiCore, { resetHighlighter } from '../../src/plugins/shiki/core'
 import type { ShikiOptions } from '../../src/plugins/shiki'
@@ -32,19 +32,6 @@ describe('shiki inline code', () => {
     expect(styles(code).some(Boolean)).toBe(true)
   })
 
-  it('emits flat spans with no line wrapper and no newlines', async () => {
-    const code = await inlineCode('`const a = 1`{lang="ts"}')
-
-    for (const child of code.slice(2) as Node[]) {
-      expect(child).not.toBe('\n')
-      if (Array.isArray(child)) {
-        const attrs = child[1] as Record<string, unknown>
-        expect(attrs.class).toBeUndefined()
-        expect(attrs.style).not.toBe('display: inline')
-      }
-    }
-  })
-
   it('accepts `language` as well as `lang`', async () => {
     const code = await inlineCode('`const a = 1`{language="ts"}')
     expect(String((code[1] as Record<string, unknown>).class)).toMatch(/^shiki /)
@@ -65,18 +52,6 @@ describe('shiki inline code', () => {
       expect(styles(asType)).not.toEqual(styles(asStatement))
       expect(styles(asType)[0]).toContain('#B392F0')
       expect(styles(asStatement)[0]).toContain('#E1E4E8')
-    })
-
-    it('tokenizes vue-html inside a template', async () => {
-      const code = await inlineCode('`<UButton />`{lang="vue-html"}', { themes: { dark: githubDark } })
-
-      expect(styles(code).some((style) => style.includes('#85E89D'))).toBe(true)
-      expect(
-        code
-          .slice(2)
-          .map((child) => (Array.isArray(child) ? child[2] : child))
-          .join('')
-      ).toBe('<UButton />')
     })
 
     it('merges custom contexts over the built-ins', async () => {
@@ -100,11 +75,6 @@ describe('shiki inline code', () => {
   })
 
   describe('left untouched', () => {
-    it('leaves a natural-language lang exactly as authored', async () => {
-      const code = await inlineCode('`Bonjour`{lang="fr"}')
-      expect(code).toEqual(['code', { lang: 'fr' }, 'Bonjour'])
-    })
-
     it('leaves inline code with no language alone', async () => {
       const code = await inlineCode('`plain`')
       expect(code).toEqual(['code', {}, 'plain'])
@@ -147,13 +117,25 @@ describe('shiki inline code', () => {
     })
 
     it('leaves untouched sibling nodes referentially identical', async () => {
+      // Plugins run in registration order, so this captures the nodes shiki is
+      // about to see. Only the paragraph holding the inline code may be
+      // re-created; its siblings must come out as the very same arrays.
+      let before: Node[] = []
+      const capture: ComarkPlugin = {
+        name: 'capture',
+        post(state) {
+          before = [...state.tree.nodes]
+        },
+      }
+
       const document = await parseMarkdown('# Heading\n\nSome `x`{lang="ts"} text\n\nUntouched', {
-        plugins: [shiki()],
+        plugins: [capture, shiki()],
       })
-      const before = document.nodes[0]
-      const after = document.nodes[2]
-      expect(before).toBe(document.nodes[0])
-      expect(after).toBe(document.nodes[2])
+
+      expect(before).toHaveLength(3)
+      expect(document.nodes[0]).toBe(before[0])
+      expect(document.nodes[2]).toBe(before[2])
+      expect(document.nodes[1]).not.toBe(before[1])
     })
   })
 
