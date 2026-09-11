@@ -29,8 +29,7 @@ and wrap this component in a `<svelte:boundary>` for pending/error states.
 -->
 <script lang="ts">
   import type { MarkdownDocument as MarkdownDocumentType, ComarkPlugin, ComponentManifest } from 'comark'
-  import { createSerializedMarkdownParser, getMarkdownParser } from 'comark'
-  import type { ComarkParseFn } from 'comark'
+  import { parseMarkdown } from 'comark'
   import { isMarkdownDocument } from 'comark/utils'
   import MarkdownDocument from '../components/MarkdownDocument.svelte'
   import ResolveAsync from './ResolveAsync.svelte'
@@ -39,7 +38,6 @@ and wrap this component in a `<svelte:boundary>` for pending/error states.
     value,
     options = {},
     plugins = [],
-    parser,
     unwrap = false,
     components = {},
     componentsManifest,
@@ -51,7 +49,6 @@ and wrap this component in a `<svelte:boundary>` for pending/error states.
     value?: string | MarkdownDocumentType
     options?: Record<string, any>
     plugins?: ComarkPlugin[]
-    parser?: ComarkParseFn
     unwrap?: boolean | string | string[]
     components?: Record<string, any>
     componentsManifest?: ComponentManifest
@@ -61,22 +58,15 @@ and wrap this component in a `<svelte:boundary>` for pending/error states.
     class?: string
   } = $props()
 
-  // `parse` directly mutates `plugins` which creates an infinite effect loop
-  // so we copy it before passing it in so it gets a regular JS array and we get to still
-  // track dependencies from an external perspective
-  let parseOptions = $derived({ ...options, ...(unwrap ? { unwrap } : {}), plugins: [...plugins] })
-
-  // Streaming keeps incremental state inside the parser closure, and every
-  // non-streaming parse resets it, so a streaming instance must own its parser.
-  // Non-streaming instances share one, which is where the win is. Derived from
-  // the configuration alone so a streaming instance keeps the same parser, and
-  // its incremental state, across every chunk of content.
-  let parse = $derived(
-    parser ?? (streaming ? createSerializedMarkdownParser(parseOptions) : getMarkdownParser(parseOptions)),
-  )
-
   let content = $derived(typeof value === 'string' ? value.trim() : '')
-  let parsed = $derived(isMarkdownDocument(value) ? value : await parse(content))
+  let parsed = $derived(
+    isMarkdownDocument(value)
+      ? value
+      : // `parse` directly mutates `plugins` which creates an infinite effect loop
+        // so we copy it before passing it in so it gets a regular JS array and we get to still
+        // track dependencies from an external perspective
+        await parseMarkdown(content, { ...options, ...(unwrap ? { unwrap } : {}), plugins: [...plugins] }),
+  )
 </script>
 
 {#if parsed}

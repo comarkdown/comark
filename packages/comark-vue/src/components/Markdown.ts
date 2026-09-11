@@ -1,7 +1,7 @@
 import type { PropType } from 'vue'
-import { computed, defineComponent, h, shallowRef, toRaw, watch } from 'vue'
-import { createSerializedMarkdownParser, getMarkdownParser } from 'comark'
-import type { ParserOptions, ComarkParseFn, ComponentManifest, MarkdownDocument as MarkdownDocumentType } from 'comark'
+import { computed, defineComponent, h, shallowRef, watch } from 'vue'
+import { createSerializedMarkdownParser } from 'comark'
+import type { ParserOptions, ComponentManifest, MarkdownDocument as MarkdownDocumentType } from 'comark'
 import { isMarkdownDocument } from 'comark/utils'
 import { MarkdownDocument } from './MarkdownDocument.ts'
 
@@ -23,13 +23,6 @@ export interface MarkdownProps {
    * Additional plugins to use
    */
   plugins?: ParserOptions['plugins']
-
-  /**
-   * Parser to use instead of one resolved from `options` and `plugins`.
-   * Useful when you already hold a configured parser, or want to control
-   * caching and lifetime yourself.
-   */
-  parser?: ComarkParseFn
 
   /**
    * Strip wrapper tags from the top level of the document — shorthand for
@@ -107,14 +100,6 @@ export const markdownProps = {
   plugins: {
     type: Array as PropType<ParserOptions['plugins']>,
     default: () => [],
-  },
-
-  /**
-   * Parser to use instead of one resolved from `options` and `plugins`
-   */
-  parser: {
-    type: Function as PropType<ComarkParseFn>,
-    default: undefined,
   },
 
   /**
@@ -240,44 +225,24 @@ export const Markdown: MarkdownComponent = defineComponent({
 
     const parsed = shallowRef<MarkdownDocumentType | null>(null)
 
-    const parse = computed<ComarkParseFn>(() => {
-      if (props.parser) return props.parser
-
-      const parseOptions = {
-        ...props.options,
-        // `unwrap` prop is a shorthand for the `unwrap` parse option; an explicit
-        // `options.unwrap` still wins when the prop is left at its default.
-        ...(props.unwrap ? { unwrap: props.unwrap } : {}),
-        plugins: toRaw(props.plugins),
-      }
-
-      // Streaming keeps incremental state inside the parser closure. It is read
-      // only by streaming parses and reset by every non-streaming one, so a
-      // streaming instance must own its parser: sharing would let two streams
-      // collide, and let any non-streaming parse wipe the reuse state.
-      // Non-streaming instances share one parser, which is where the win is.
-      return props.streaming ? createSerializedMarkdownParser(parseOptions) : getMarkdownParser(parseOptions)
+    const parse = createSerializedMarkdownParser({
+      ...props.options,
+      // `unwrap` prop is a shorthand for the `unwrap` parse option; an explicit
+      // `options.unwrap` still wins when the prop is left at its default.
+      ...(props.unwrap ? { unwrap: props.unwrap } : {}),
+      plugins: props.plugins,
     })
 
-    // Ordering guard rather than a queue: the shared parser is not serialized,
-    // so a slow document must not be able to overwrite a newer result.
-    let version = 0
-    async function run() {
-      if (isMarkdownDocument(props.value)) return
-      const current = ++version
-      const result = await parse.value(markdown.value, { streaming: props.streaming })
-      if (current === version) parsed.value = result
-    }
-
     watch(
-      () => [parse.value, markdown.value, props.streaming] as const,
+      () => [markdown.value, props.streaming] as const,
       () => {
-        run().catch((error) => console.error('[comark] failed to parse markdown', error))
+        if (isMarkdownDocument(props.value)) return
+        parse(markdown.value, { streaming: props.streaming }).then((result) => (parsed.value = result))
       }
     )
 
     if (!isMarkdownDocument(props.value)) {
-      await run()
+      await parse(markdown.value, { streaming: props.streaming }).then((result) => (parsed.value = result))
     }
 
     return () => {

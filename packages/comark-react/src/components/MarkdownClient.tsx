@@ -1,7 +1,7 @@
 'use client'
 
 import { use, useDeferredValue, useMemo, Suspense } from 'react'
-import { createSerializedMarkdownParser, getMarkdownParser } from 'comark'
+import { parseMarkdown } from 'comark'
 import type { MarkdownDocument as MarkdownDocumentType } from 'comark'
 import { isMarkdownDocument } from 'comark/utils'
 import { MarkdownLive } from './MarkdownLive.tsx'
@@ -35,39 +35,19 @@ function MarkdownContent({
   )
 }
 
-export function MarkdownClient({
-  children,
-  value,
-  options = {},
-  plugins = [],
-  parser,
-  streaming = false,
-  ...rest
-}: MarkdownProps) {
+export function MarkdownClient({ children, value, options = {}, plugins = [], ...rest }: MarkdownProps) {
   const content = isMarkdownDocument(value)
     ? value
     : children
       ? String(children)
       : ((value as string | undefined) ?? '')
 
-  // Streaming keeps incremental state inside the parser closure, and every
-  // non-streaming parse resets it, so a streaming instance must own its parser.
-  // Non-streaming instances share one, which is where the win is.
-  const parse = useMemo(
-    () =>
-      parser ??
-      (streaming
-        ? createSerializedMarkdownParser({ ...options, plugins })
-        : getMarkdownParser({ ...options, plugins })),
-    [parser, streaming]
-  )
-
   // Re-creates the promise only when content changes.
   // Note: options/plugins should be stable references (defined outside render or memoized).
-  // Pre-parsed documents resolve immediately without parsing.
+  // Pre-parsed documents resolve immediately without calling parseMarkdown().
   const parsePromise = useMemo(
-    () => (isMarkdownDocument(content) ? Promise.resolve(content) : parse(content)),
-    [content, parse]
+    () => (isMarkdownDocument(content) ? Promise.resolve(content) : parseMarkdown(content, { ...options, plugins })),
+    [content]
   )
 
   // Keep showing the previous parsed result while a new parse is pending —
@@ -78,7 +58,6 @@ export function MarkdownClient({
     <Suspense fallback={null}>
       <MarkdownContent
         parsePromise={deferredPromise}
-        streaming={streaming}
         {...rest}
       />
     </Suspense>
