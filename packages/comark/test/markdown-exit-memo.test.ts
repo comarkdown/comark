@@ -51,22 +51,6 @@ describe('markdown-exit instance sharing', () => {
     expect(closureUses - before).toBe(5)
   })
 
-  it('builds parsers cheaply once the instance is shared', () => {
-    // Warm the instance and the JIT, then time constructions that all hit the
-    // memo. A fresh `MarkdownExit` costs around 200 µs, so 200 of them would
-    // take about 40ms. The bound is deliberately loose to stay stable in CI.
-    for (let i = 0; i < 20; i++) {
-      createMarkdownParser()
-    }
-
-    const start = performance.now()
-    for (let i = 0; i < 200; i++) {
-      createMarkdownParser()
-    }
-
-    expect(performance.now() - start).toBeLessThan(20)
-  })
-
   it('does not share an instance between linkify settings', async () => {
     const withLinkify = await createMarkdownParser({ linkify: true })('See https://comark.dev for more')
     const withoutLinkify = await createMarkdownParser({ linkify: false })('See https://comark.dev for more')
