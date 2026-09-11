@@ -1,4 +1,5 @@
 import type { ElementNode, Node } from 'comark'
+import { textContent } from 'comark/utils'
 import { htmlToNodes, parseInlineHtmlTag } from './html/index.ts'
 
 // `::tag` components that should fold into a single same-tagged child.
@@ -158,27 +159,23 @@ function processAttributes(
 // Upper bound for expanded highlight ranges in a fence info string.
 const MAX_HIGHLIGHT_LINES = 1_000
 
+interface CodeBlockInfo extends Record<string, unknown> {
+  language?: string
+  filename?: string
+  highlights?: number[]
+  meta?: string
+}
 /**
  * Parse codeblock info string to extract language, highlights, filename, and meta
  * Example: "javascript {1-3} [filename.ts] meta=value"
  * Example: "typescript[filename]{1,3-5}meta"
  */
-function parseCodeblockInfo(info: string): {
-  language: string
-  filename?: string
-  highlights?: number[]
-  meta?: string
-} {
+function parseCodeblockInfo(info: string): CodeBlockInfo {
   if (!info) {
-    return { language: '' }
+    return {}
   }
 
-  const result: {
-    language: string
-    filename?: string
-    highlights?: number[]
-    meta?: string
-  } = { language: '' }
+  const result: CodeBlockInfo = {}
 
   let remaining = info.trim()
 
@@ -384,23 +381,10 @@ function processBlockToken(
     const parsed = parseCodeblockInfo(info)
 
     // Build pre attributes
-    const preAttrs: Record<string, unknown> = {}
-    if (parsed.language && parsed.language.trim()) {
-      preAttrs.language = parsed.language
-    }
-    if (parsed.filename) {
-      preAttrs.filename = parsed.filename
-    }
-    if (parsed.highlights) {
-      preAttrs.highlights = parsed.highlights
-    }
-    if (parsed.meta) {
-      preAttrs.meta = parsed.meta
-    }
-
-    // Build code attributes
+    const preAttrs: Record<string, unknown> = parsed
     const codeAttrs: Record<string, unknown> = {}
     if (parsed.language && parsed.language.trim()) {
+      preAttrs.language = parsed.language
       codeAttrs['class'] = `language-${parsed.language}`
     }
 
@@ -427,8 +411,8 @@ function processBlockToken(
     if (children.nodes.length > 0) {
       let attrs: Record<string, unknown>
       if (state?.headingIds) {
-        const textContent = extractTextContent(children.nodes)
-        const headingId = uniqueSlug(slugify(textContent), level, state)
+        const text = children.nodes.map((n) => textContent(n)).join('')
+        const headingId = uniqueSlug(slugify(text), level, state)
         // Merge user-supplied attrs with the auto-generated id; user `id` wins.
         attrs = { id: headingId, ...userAttrs }
       } else {
@@ -634,73 +618,6 @@ function mergeAdjacentTextNodes(nodes: Node[]): Node[] {
   }
 
   return merged
-}
-
-const HTML_INLINE_TAGS = new Set([
-  'a',
-  'abbr',
-  'b',
-  'bdi',
-  'bdo',
-  'cite',
-  'code',
-  'data',
-  'del',
-  'dfn',
-  'em',
-  'i',
-  'img',
-  'ins',
-  'kbd',
-  'mark',
-  'q',
-  'rp',
-  'rt',
-  'ruby',
-  's',
-  'samp',
-  'small',
-  'span',
-  'strong',
-  'sub',
-  'sup',
-  'time',
-  'u',
-  'var',
-  'wbr',
-])
-
-/**
- * Extract text content from nodes for heading ID generation
- */
-function extractTextContent(nodes: Node[]): string {
-  let text = ''
-
-  for (const node of nodes) {
-    if (typeof node === 'string') {
-      text += node
-    } else if (Array.isArray(node)) {
-      // For array nodes (elements), include the tag name (for inline components)
-      const tag = node[0]
-      const children = node.slice(2) as Node[]
-
-      // Skip 'br' and 'html_inline' tags
-      if (tag === 'br' || tag === 'html_inline') {
-        continue
-      }
-
-      // Only inline components contribute their name to the slug; standard
-      // HTML tags (emphasis, code, links, ...) contribute text content only
-      if (typeof tag === 'string' && !HTML_INLINE_TAGS.has(tag)) {
-        text += ' ' + tag + ' '
-      }
-      if (children.length > 0) {
-        text += extractTextContent(children)
-      }
-    }
-  }
-
-  return text
 }
 
 /**
