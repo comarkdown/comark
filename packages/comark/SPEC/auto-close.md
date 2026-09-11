@@ -803,7 +803,8 @@ Space-flanked `*` is treated as multiply, not italic:
 
 Two closers for the same marker emitted back-to-back would merge into a different
 marker, so each run of same-marker closers collapses to one. `a _b and _c` used to
-heal to `a _b and _c__`, which nests an em inside an em.
+heal to `a _b and _c__`, which nests an em inside an em. This covers `_`, `__`, `~~`
+and `*`. A pair of `**` openers follows the balanced-overlap rule below instead.
 
 ```diff
 - a _b and _c
@@ -835,6 +836,27 @@ Markers of different families still nest, so non-adjacent repeats are left alone
 ```diff
 - a _b and __c
 + a _b and __c___
+```
+
+The collapse only applies to closers that came from different openers. One run of four
+underscores opens `__` twice at the same spot, and both of those need closing:
+
+```diff
+- ____a
++ ____a____
+```
+
+```diff
+- a ______b
++ a ______b______
+```
+
+A `**` pair follows the balanced-overlap rule: an even number of `**` runs reads as
+already balanced, so nothing is appended.
+
+```diff
+- a **b and **c
++ a **b and **c
 ```
 
 ---
