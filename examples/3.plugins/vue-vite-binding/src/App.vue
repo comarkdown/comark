@@ -471,7 +471,7 @@ ${markdown}
   grid-template-columns: minmax(260px, 300px) minmax(0, 1fr);
   border: 1px solid var(--vbg-border-default);
   border-radius: var(--vbg-radius);
-  align-items: start;
+  align-items: stretch;
 }
 .vbg-custom-inputs {
   padding: var(--vbg-space-6);
