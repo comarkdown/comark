@@ -45,7 +45,7 @@ const PRE_EXISTING = {
 const converges = (input: string, healed: string) =>
   PRE_EXISTING.halfClosed(input) || PRE_EXISTING.halfClosed(healed) || PRE_EXISTING.starCollapse(input)
 
-describe('comark — autoCloseMarkdown is idempotent', () => {
+describe('autoCloseMarkdown is idempotent', () => {
   const inputs = corpus()
 
   it('heals to a fixed point', () => {
