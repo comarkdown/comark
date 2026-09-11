@@ -111,9 +111,12 @@ export class Markdown implements OnChanges {
     }
     source = source.trim()
 
-    this.serializedParse(source, { streaming: this.streaming }).then((result) => {
-      this.document = result
-      this.cdr.markForCheck()
-    })
+    this.serializedParse(source, { streaming: this.streaming })
+      .then((result) => {
+        this.document = result
+        this.cdr.markForCheck()
+      })
+      // Keep the last good document rendered and report the failure.
+      .catch((error: unknown) => console.error('[comark] failed to parse markdown', error))
   }
 }

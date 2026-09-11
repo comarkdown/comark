@@ -3,14 +3,18 @@ import type { ComarkPlugin, ComarkPluginFactory } from '../types.ts'
 /**
  * Returns a function that invokes `fn` **strictly one at a time**: each call waits until the
  * previous invocation has settled (resolved or rejected) before starting the next.
+ *
+ * A rejection is handed to the caller that triggered it, and the queue keeps accepting calls.
  */
 export function createSerializedTask<TArgs extends unknown[], TResult>(
   fn: (...args: TArgs) => Promise<TResult>
 ): (...args: TArgs) => Promise<TResult> {
-  let chain: Promise<TResult> = Promise.resolve(null as TResult)
+  let chain: Promise<unknown> = Promise.resolve()
   return (...args: TArgs) => {
-    chain = chain.then(() => fn(...args)).catch(() => null as TResult)
-    return chain
+    const result = chain.then(() => fn(...args))
+    // Keep the queue alive after a failure, but let this caller see it.
+    chain = result.catch(() => undefined)
+    return result
   }
 }
 
