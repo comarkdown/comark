@@ -495,14 +495,17 @@ export async function highlightCodeBlocks(
         continue
       }
 
-      // Same ` . ` sentinel the <pre> uses, decoded by userBlockAttrs on stringify.
+      // `class` is the full string renderers need. The author's own class is
+      // recorded in the reserved `$` metadata so markdown stringify can put
+      // back exactly what was written, and nothing else.
       const inlineUserClass = typeof inlineAttrs.class === 'string' ? inlineAttrs.class.trim() : ''
       // eslint-disable-next-line unicorn/no-new-array -- pre-allocated for perf
       const inlineNode = new Array(spans.length + 2) as ElementNode
       inlineNode[0] = 'code'
       inlineNode[1] = {
         ...inlineAttrs,
-        class: inlineUserClass ? `${inlineClass} . ${inlineUserClass}` : inlineClass,
+        class: inlineUserClass ? `${inlineClass} ${inlineUserClass}` : inlineClass,
+        $: { ...inlineAttrs.$, class: inlineUserClass },
       }
       for (let sp = 0; sp < spans.length; sp++) inlineNode[sp + 2] = spans[sp]
 
@@ -586,12 +589,15 @@ export async function highlightCodeBlocks(
       }
     }
 
-    // Merge highlighter class with any user-supplied class (e.g. from
-    // `::pre{.user-class}`) so the wrapper's class isn't lost.
+    // Merge the highlighter class with any user-supplied class (e.g. from
+    // `::pre{.user-class}`) so the wrapper's class isn't lost, and record the
+    // user portion in the reserved `$` metadata so markdown stringify can
+    // recover it without guessing which tokens came from where.
     const userClass = typeof preAttrs.class === 'string' ? preAttrs.class.trim() : ''
     const newPreAttrs: Record<string, any> = {
       ...preAttrs,
-      class: userClass ? `${classStr} . ${userClass}` : classStr,
+      class: userClass ? `${classStr} ${userClass}` : classStr,
+      $: { ...preAttrs.$, class: userClass },
     }
 
     if (options.preStyles) {

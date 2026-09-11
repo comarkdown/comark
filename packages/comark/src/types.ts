@@ -28,6 +28,13 @@ export type ElementNodeAttributes = {
     line?: number
     html?: 0 | 1
     block?: 0 | 1
+    /**
+     * The author's own `class` on a node whose `class` a highlighter has since
+     * taken over (`<pre>` and inline `<code>`). Empty string when the author
+     * wrote none. Markdown stringify puts back exactly this value, so the
+     * combined `class` that renderers need is never taken apart again.
+     */
+    class?: string
   }
 }
 

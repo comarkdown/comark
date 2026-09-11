@@ -30,6 +30,9 @@ No language specified
       "pre",
       {
         "class": "shiki shiki-themes github-dark dark:github-dark",
+        "$": {
+          "class": ""
+        },
         "style": "background-color:#24292e;color:#e1e4e8"
       },
       [

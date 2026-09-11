@@ -7,11 +7,18 @@ import shiki from '../../src/plugins/shiki'
 describe('shiki code block round-trip', () => {
   // The highlight plugin's injected attrs have no markdown form, so a
   // highlighted block must serialize to a plain fence, never a `::pre{...}`.
+  // `$.class` is what the plugin records: the author's own class, empty here.
   function preTree(preClass: string): MarkdownDocument {
     return {
       frontmatter: {},
       meta: {},
-      nodes: [['pre', { language: 'bash', class: preClass }, ['code', { class: 'language-bash' }, 'npx install']]],
+      nodes: [
+        [
+          'pre',
+          { language: 'bash', class: preClass, $: { class: '' } },
+          ['code', { class: 'language-bash' }, 'npx install'],
+        ],
+      ],
     }
   }
 
@@ -40,7 +47,11 @@ describe('shiki code block round-trip', () => {
           [
             'template',
             { name: 'code' },
-            ['pre', { language: 'bash', class: 'shiki' }, ['code', { class: 'language-bash' }, 'npx install']],
+            [
+              'pre',
+              { language: 'bash', class: 'shiki', $: { class: '' } },
+              ['code', { class: 'language-bash' }, 'npx install'],
+            ],
           ],
         ],
       ],
@@ -52,10 +63,10 @@ describe('shiki code block round-trip', () => {
 })
 
 describe('shiki inline code round-trip', () => {
-  // The plugin merges its injected classes onto the node behind a ` . `
-  // sentinel, so a highlighted span must serialize back to `` `text`{lang=…} ``
-  // rather than leaking `.shiki.shiki-themes…`.
-  function inlineTree(codeClass: string): MarkdownDocument {
+  // The plugin takes the node's `class` over and records the author's own class
+  // in `$`, so a highlighted span serializes back to `` `text`{lang=…} `` rather
+  // than leaking `.shiki.shiki-themes…`.
+  function inlineTree(codeClass: string, userClass: string): MarkdownDocument {
     return {
       frontmatter: {},
       meta: {},
@@ -66,7 +77,7 @@ describe('shiki inline code round-trip', () => {
           'Type ',
           [
             'code',
-            { lang: 'ts-type', class: codeClass },
+            { lang: 'ts-type', class: codeClass, $: { class: userClass } },
             ['span', { style: 'color:#B392F0' }, 'Ref'],
             ['span', { style: 'color:#E1E4E8' }, '<T>'],
           ],
@@ -75,10 +86,15 @@ describe('shiki inline code round-trip', () => {
     }
   }
 
-  it('keeps the user class after the sentinel', async () => {
-    const md = await renderMarkdown(inlineTree('shiki shiki-themes github-dark . foo'))
+  it('puts back the class recorded in $', async () => {
+    const md = await renderMarkdown(inlineTree('shiki shiki-themes github-dark foo', 'foo'))
     expect(md).toBe('Type `Ref<T>`{lang="ts-type" .foo}')
     expect(md).not.toContain('.shiki')
+  })
+
+  it('drops the class entirely when the author wrote none', async () => {
+    const md = await renderMarkdown(inlineTree('shiki shiki-themes github-dark', ''))
+    expect(md).toBe('Type `Ref<T>`{lang="ts-type"}')
   })
 
   it('round-trips a parsed document unchanged', async () => {
@@ -88,14 +104,40 @@ describe('shiki inline code round-trip', () => {
   })
 })
 
-describe('highlighter class detection', () => {
-  // Matched on whole tokens, not a prefix, so an authored class that merely
-  // starts with `shiki` or `shj` is not mistaken for highlighter output.
+describe('user class recorded in $', () => {
+  // Stringify never inspects the class string. `$.class` is the author's class
+  // verbatim, so anything a highlighter injected is dropped and anything the
+  // author wrote is kept, whatever it is named.
   function render(node: MarkdownDocument['nodes'][number]) {
     return renderMarkdown({ frontmatter: {}, meta: {}, nodes: [node] })
   }
 
-  it('keeps an authored class that starts with the highlighter prefix', async () => {
+  it('serializes a highlighted block with no user class as a plain fence', async () => {
+    const md = await render(['pre', { language: 'ts', class: 'shiki themes', $: { class: '' } }, ['code', {}, 'x']])
+    expect(md.trim()).toBe('```ts\nx\n```')
+  })
+
+  it('keeps the user class on a highlighted block', async () => {
+    const md = await render([
+      'pre',
+      { language: 'ts', class: 'shiki themes foo', $: { class: 'foo' } },
+      ['code', {}, 'x'],
+    ])
+    expect(md.trim()).toBe('::pre{.foo}\n```ts\nx\n```\n::')
+  })
+
+  it('keeps the user class on highlighted inline code', async () => {
+    const md = await render(['p', {}, ['code', { lang: 'ts', class: 'shiki themes foo', $: { class: 'foo' } }, 'x']])
+    expect(md).toBe('`x`{lang="ts" .foo}')
+  })
+
+  it('leaves an authored `.shiki` on unhighlighted inline code alone', async () => {
+    expect(await render(['p', {}, ['code', { class: 'shiki' }, 'x']])).toBe('`x`{.shiki}')
+    // Multi-class attrs always stringify without separators, highlighter or not.
+    expect(await render(['p', {}, ['code', { class: 'shiki foo' }, 'x']])).toBe('`x`{.shiki.foo}')
+  })
+
+  it('leaves an authored class that starts with a highlighter prefix alone', async () => {
     expect(await render(['pre', { language: 'ts', class: 'shiki-custom' }, ['code', {}, 'x']])).toContain(
       '::pre{.shiki-custom}'
     )
@@ -104,17 +146,19 @@ describe('highlighter class detection', () => {
     )
   })
 
-  it('strips shiki output', async () => {
-    expect(await render(['pre', { language: 'ts', class: 'shiki themes' }, ['code', {}, 'x']])).not.toContain('::pre')
-    expect(await render(['p', {}, ['code', { lang: 'ts', class: 'shiki themes' }, 'x']])).toBe('`x`{lang="ts"}')
+  it('serializes rangi output as a plain fence, whatever the class prefix', async () => {
+    expect(
+      await render(['pre', { language: 'ts', class: 'shj shiki shj-lang-ts', $: { class: '' } }, ['code', {}, 'x']])
+    ).not.toContain('::pre')
+    expect(
+      await render(['pre', { language: 'ts', class: 'myhl shiki shj-lang-ts', $: { class: '' } }, ['code', {}, 'x']])
+    ).not.toContain('::pre')
   })
 
-  it('strips rangi output, including a custom class prefix', async () => {
-    expect(await render(['pre', { language: 'ts', class: 'shj shiki shj-lang-ts' }, ['code', {}, 'x']])).not.toContain(
-      '::pre'
-    )
-    expect(await render(['pre', { language: 'ts', class: 'myhl shiki shj-lang-ts' }, ['code', {}, 'x']])).not.toContain(
-      '::pre'
-    )
+  it('round-trips an authored `.shiki` through the plugin', async () => {
+    for (const source of ['`x`{.shiki}', '`x`{.shiki.foo}', '`x`{.shiki-custom}']) {
+      const document = await parseMarkdown(source, { plugins: [shiki()] })
+      expect(await renderMarkdown(document)).toBe(source)
+    }
   })
 })

@@ -35,6 +35,9 @@ options:
         "language": "html",
         "filename": "template.html",
         "class": "shiki shiki-themes github-dark dark:github-dark",
+        "$": {
+          "class": ""
+        },
         "style": "background-color:#24292e;color:#e1e4e8"
       },
       [

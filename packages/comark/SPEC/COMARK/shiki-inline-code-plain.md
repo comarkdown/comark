@@ -38,7 +38,10 @@ A `Bonjour`{lang="fr"} and a `const a = 1`{lang="ts"}.
         "code",
         {
           "lang": "ts",
-          "class": "shiki shiki-themes github-dark dark:github-dark"
+          "class": "shiki shiki-themes github-dark dark:github-dark",
+          "$": {
+            "class": ""
+          }
         },
         [
           "span",

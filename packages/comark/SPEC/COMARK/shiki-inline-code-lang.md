@@ -30,7 +30,10 @@ Use `Ref<HTMLInputElement | null>`{lang="ts-type"} with `<UButton />`{lang="vue-
         "code",
         {
           "lang": "ts-type",
-          "class": "shiki shiki-themes github-dark dark:github-dark"
+          "class": "shiki shiki-themes github-dark dark:github-dark",
+          "$": {
+            "class": ""
+          }
         },
         [
           "span",
@@ -80,7 +83,10 @@ Use `Ref<HTMLInputElement | null>`{lang="ts-type"} with `<UButton />`{lang="vue-
         "code",
         {
           "lang": "vue-html",
-          "class": "shiki shiki-themes github-dark dark:github-dark"
+          "class": "shiki shiki-themes github-dark dark:github-dark",
+          "$": {
+            "class": ""
+          }
         },
         [
           "span",

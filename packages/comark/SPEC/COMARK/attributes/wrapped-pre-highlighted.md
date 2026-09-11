@@ -29,7 +29,10 @@ const variable = "value"
       {
         "language": "ts",
         "attr": "value",
-        "class": "shiki shiki-themes min-light nord dark:nord . class",
+        "class": "shiki shiki-themes min-light nord dark:nord class",
+        "$": {
+          "class": "class"
+        },
         "style": "background-color:#ffffff;color:#212121;--shiki-dark-bg:#2e3440;--shiki-dark:#d8dee9"
       },
       [

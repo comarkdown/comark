@@ -257,7 +257,7 @@ describe('rangi plugin', () => {
     expect(textOf(pre)).toBe('const a = 1\nconst b = 2\nconst c = 3')
   })
 
-  it('preserves user class after the `.` separator', async () => {
+  it('keeps the user class and records it in $', async () => {
     const document: MarkdownDocument = {
       frontmatter: {},
       meta: {},
@@ -266,7 +266,8 @@ describe('rangi plugin', () => {
 
     const tree = await rangiCodeBlocks(document)
     const pre = tree.nodes[0] as ElementNode
-    expect((pre[1] as any).class).toBe('shj shiki shj-lang-js . my-block')
+    expect((pre[1] as any).class).toBe('shj shiki shj-lang-js my-block')
+    expect((pre[1] as any).$.class).toBe('my-block')
   })
 
   it('uses plain for fences with no language', async () => {
@@ -369,22 +370,29 @@ const x = 1
 })
 
 describe('rangi code block round-trip', () => {
-  function preTree(preClass: string): MarkdownDocument {
+  // `$.class` is what the plugin records: the author's own class, verbatim.
+  function preTree(preClass: string, userClass: string): MarkdownDocument {
     return {
       frontmatter: {},
       meta: {},
-      nodes: [['pre', { language: 'bash', class: preClass }, ['code', { class: 'language-bash' }, 'npx install']]],
+      nodes: [
+        [
+          'pre',
+          { language: 'bash', class: preClass, $: { class: userClass } },
+          ['code', { class: 'language-bash' }, 'npx install'],
+        ],
+      ],
     }
   }
 
   it('serializes a bare `shj` class back to a plain fence', async () => {
-    const md = await renderMarkdown(preTree('shj shiki shj-lang-bash'))
+    const md = await renderMarkdown(preTree('shj shiki shj-lang-bash', ''))
     expect(md.trim()).toBe('```bash\nnpx install\n```')
     expect(md).not.toContain('::pre')
   })
 
-  it('serializes a highlighted block with user class via `.` separator', async () => {
-    const md = await renderMarkdown(preTree('shj shiki shj-lang-bash . my-block'))
+  it('serializes a highlighted block with a user class recorded in $', async () => {
+    const md = await renderMarkdown(preTree('shj shiki shj-lang-bash my-block', 'my-block'))
     expect(md).toContain('my-block')
     expect(md).not.toContain('shj-lang')
     expect(md).toContain('npx install')

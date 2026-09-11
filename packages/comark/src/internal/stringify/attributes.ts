@@ -99,10 +99,7 @@ export function resolveAttributes(
       continue
     }
 
-    // The ` . ` separator between a highlighter's injected classes and the
-    // user's is a markdown-stringify encoding. Every framework renderer hands
-    // this result straight to the DOM, so collapse it here.
-    result[resultKey] = outKey === 'class' ? mergeHighlighterClass(outValue) : outValue
+    result[resultKey] = outValue
   }
   return result
 }
@@ -135,34 +132,10 @@ const IMPLICIT_ATTRS: Record<string, { drop?: string[]; classBlocklist?: string[
   li: { classBlocklist: ['task-list-item'] },
   // `language`/`filename`/`highlights`/`meta` ride on the fence info string.
   // `style` comes from render-time plugins (e.g. shiki / rangi) and has no
-  // markdown form. `class` is handled specially in userBlockAttrs because
-  // highlighters merge their injected classes with the user's class — we need
-  // to strip just the highlighter portion.
+  // markdown form. `class` is handled separately in userBlockAttrs, which reads
+  // the author's own class back out of `$` when a highlighter has taken the
+  // `class` attribute over.
   pre: { drop: ['language', 'filename', 'highlights', 'meta', 'style'] },
-}
-
-/**
- * Whether a `class` value was injected by a highlighter rather than authored.
- *
- * Both emitters always write a literal `shiki` token: shiki puts it first,
- * rangi injects it as `<classPrefix> shiki shj-lang-<lang>`. Matched on whole
- * tokens, not a prefix, so an authored `shiki-custom` is left alone.
- */
-function isHighlighterClass(value: string): boolean {
-  return value.trim().split(/\s+/).includes('shiki')
-}
-
-/**
- * Collapse the ` . ` separator highlighters use to mark where their injected
- * classes end and the user's begin. It exists only so `userBlockAttrs` can
- * recover the user portion on markdown stringify; it must never reach HTML.
- */
-function mergeHighlighterClass(value: unknown): unknown {
-  if (typeof value !== 'string' || !value.includes(' . ')) return value
-  return value
-    .split(/\s+/)
-    .filter((token) => token !== '.')
-    .join(' ')
 }
 
 /**
@@ -173,30 +146,29 @@ function mergeHighlighterClass(value: unknown): unknown {
  */
 export function userBlockAttrs(tag: string, attributes: Record<string, unknown>): Record<string, unknown> {
   const rule = IMPLICIT_ATTRS[tag]
-  // `<pre>` carries a fenced block's classes, `<code>` an inline `{lang=…}` one.
-  const stripsHighlighterClass = tag === 'pre' || tag === 'code'
-  if (!rule && !stripsHighlighterClass) return { ...attributes }
+  // A highlighter owns the `class` of a `<pre>` (fenced block) or an inline
+  // `<code>`, and records the author's own class in `$`. When that record is
+  // there it is the whole truth: the user class is exactly its value, and an
+  // empty string means the author wrote none. Without it, `class` was authored
+  // and passes through untouched.
+  const recordedClass =
+    tag === 'pre' || tag === 'code' ? (attributes.$ as { class?: string } | undefined)?.class : undefined
 
   const result: Record<string, unknown> = {}
   for (const [key, value] of Object.entries(attributes)) {
+    // `$` is reserved metadata, never a user attribute.
+    if (key === '$') continue
     if (rule?.drop?.includes(key)) continue
+    if (key === 'class' && recordedClass !== undefined) {
+      if (recordedClass) result[key] = recordedClass
+      continue
+    }
     if (key === 'class' && rule?.classBlocklist && typeof value === 'string') {
       const remaining = value
         .split(/\s+/)
         .filter((c) => c && !rule!.classBlocklist!.includes(c))
         .join(' ')
       if (remaining) result[key] = remaining
-      continue
-    }
-    if (key === 'class' && stripsHighlighterClass && typeof value === 'string' && isHighlighterClass(value)) {
-      // Highlighters inject their own classes (`shiki …` / `shj shj-lang-…`)
-      // and append any user class after a `.` separator. Recover the user
-      // portion by dropping everything up to and including that separator.
-      const tokens = value.split(/\s+/)
-      const cutoff = tokens.findIndex((t) => t === '.')
-
-      const userClass = cutoff >= 0 ? tokens.slice(cutoff + 1).join(' ') : ''
-      if (userClass) result[key] = userClass
       continue
     }
     result[key] = value
@@ -212,6 +184,9 @@ export function userBlockAttrs(tag: string, attributes: Record<string, unknown>)
  */
 export function comarkAttributes(attributes: Record<string, unknown>) {
   const attrs = Object.entries(attributes)
+    // `$` holds internal metadata (source line, raw-HTML markers, the class a
+    // highlighter took over). It has no markdown form and must never round-trip.
+    .filter(([key]) => key !== '$')
     .map(([key, value]) => {
       if (key.startsWith(':') && value === 'true') {
         return key.slice(1)
@@ -264,14 +239,11 @@ const SAFE_ATTR_NAME = /^[a-zA-Z_:][a-zA-Z0-9_:.-]*$/
  */
 export function htmlAttributes(attributes: Record<string, unknown>) {
   const parts: string[] = []
-  for (const [rawKey, rawValue] of Object.entries(attributes)) {
+  for (const [rawKey, value] of Object.entries(attributes)) {
     const key = rawKey.startsWith(':') ? rawKey.slice(1) : rawKey
+    // `$` is reserved metadata and has no HTML form. `SAFE_ATTR_NAME` already
+    // rejects it, so callers that forward raw attributes stay safe.
     if (!SAFE_ATTR_NAME.test(key)) continue
-
-    // Same sentinel as in `resolveAttributes`: it is a markdown encoding and
-    // must never reach HTML. Handled here rather than in the caller because
-    // the HTML handler reads raw attributes when the node is raw HTML.
-    const value = key === 'class' ? mergeHighlighterClass(rawValue) : rawValue
 
     if (rawKey.startsWith(':')) {
       if (value === 'true') {

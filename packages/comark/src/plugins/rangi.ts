@@ -1,4 +1,4 @@
-import type { ElementNode, Node, MarkdownDocument } from 'comark'
+import type { ElementNode, ElementNodeAttributes, Node, MarkdownDocument } from 'comark'
 import type { ShjLanguage, ShjLanguages, ShjTheme, ShjThemePair, ShjToken, ShjTokenized } from 'rangi'
 import { tokenize } from 'rangi'
 import { dark as defaultDark, defaultTheme } from 'rangi/themes'
@@ -83,6 +83,7 @@ export interface CodeBlockAttributes {
   highlights?: number[]
   meta?: string
   filename?: string
+  $?: ElementNodeAttributes['$']
 }
 
 /**
@@ -303,9 +304,16 @@ export async function rangiCodeBlocks(tree: MarkdownDocument, options: RangiOpti
       const userClass = typeof attrs.class === 'string' ? attrs.class.trim() : ''
       // `shiki` so dual-theme CSS hooks shared with the Shiki plugin work
       const highlighterClass = `${classPrefix} shiki shj-lang-${lang}`
-      const classStr = userClass ? `${highlighterClass} . ${userClass}` : highlighterClass
+      const classStr = userClass ? `${highlighterClass} ${userClass}` : highlighterClass
 
-      const newPreAttrs: Record<string, unknown> = { ...attrs, class: classStr }
+      // `class` is the full string renderers need. The author's own class goes
+      // in the reserved `$` metadata so markdown stringify can put back exactly
+      // what was written.
+      const newPreAttrs: Record<string, unknown> = {
+        ...attrs,
+        class: classStr,
+        $: { ...attrs.$, class: userClass },
+      }
       if (preStyles) {
         const style = buildPreStyle(light, dark, dual)
         if (style) newPreAttrs.style = style

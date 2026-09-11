@@ -142,7 +142,14 @@ describe('shiki inline code', () => {
 
   it('keeps a user class behind the highlighter classes', async () => {
     const code = await inlineCode('`x`{lang="ts" .foo}')
-    expect(String((code[1] as Record<string, unknown>).class)).toContain(' . foo')
+    const attrs = code[1] as Record<string, any>
+    expect(String(attrs.class)).toMatch(/^shiki .* foo$/)
+    expect(attrs.$.class).toBe('foo')
+  })
+
+  it('records an empty author class when none was written', async () => {
+    const code = await inlineCode('`x`{lang="ts"}')
+    expect((code[1] as Record<string, any>).$.class).toBe('')
   })
 
   describe('raw HTML', () => {
