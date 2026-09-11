@@ -21,11 +21,13 @@ describe('binding plugin — If predicate', () => {
     expect(selectIfBranch([['template', { name: 'else' }]], false)).toEqual([])
   })
 
-  it('supports truthy conditions and values', () => {
-    expect(shouldRenderIf({ condition: true })).toBe(true)
-    expect(shouldRenderIf({ condition: false })).toBe(false)
+  it('checks value truthiness without comparisons', () => {
+    expect(shouldRenderIf({ value: true })).toBe(true)
+    expect(shouldRenderIf({ value: false })).toBe(false)
     expect(shouldRenderIf({ value: 'Ada' })).toBe(true)
     expect(shouldRenderIf({ value: '' })).toBe(false)
+    expect(shouldRenderIf({ value: 0 })).toBe(false)
+    expect(shouldRenderIf({})).toBe(false)
   })
 
   it('supports strict equality and ordered comparisons', () => {
@@ -41,9 +43,11 @@ describe('binding plugin — If predicate', () => {
     expect(shouldRenderIf({ value: 'member', eq: undefined })).toBe(false)
   })
 
-  it('combines condition and comparison checks', () => {
-    expect(shouldRenderIf({ condition: true, value: 90, gte: 80 })).toBe(true)
-    expect(shouldRenderIf({ condition: false, value: 90, gte: 80 })).toBe(false)
+  it('does not treat condition as a predicate prop', () => {
+    expect(shouldRenderIf({ condition: true })).toBe(false)
+    expect(shouldRenderIf({ condition: true, value: false })).toBe(false)
+    expect(shouldRenderIf({ condition: false, value: true })).toBe(true)
+    expect(shouldRenderIf({ condition: false, value: 90, gte: 80 })).toBe(true)
   })
 
   it('accepts only safe wrapper tags', () => {

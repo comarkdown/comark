@@ -4,7 +4,7 @@ import binding, { Binding, If } from '@comark/html/plugins/binding'
 const markdown = `
 # Hello
 
-::if{:condition="data.test" as="div"}
+::if{:value="data.test" as="div"}
 Shown when data.test is truthy.
 ::
 
@@ -24,8 +24,10 @@ Shown when the role is defined and not "guest".
 Shown when enabled is exactly false.
 ::
 
-::if{:condition="data.test" :value="data.score" :gte="80"}
+::if{:value="data.test"}
+:::if{:value="data.score" :gte="80"}
 Shown when test is truthy and score is at least 80.
+:::
 ::
 
 ::if{:value="data.isHappy"}

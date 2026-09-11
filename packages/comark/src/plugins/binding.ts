@@ -16,7 +16,6 @@ export type IfComparisonOperator = 'eq' | 'neq' | 'gt' | 'gte' | 'lt' | 'lte'
 export type IfWrapperTag = 'div' | 'span' | 'p' | 'section' | 'article' | 'aside' | 'header' | 'footer' | 'main' | 'nav'
 
 export interface IfProps {
-  condition?: unknown
   value?: unknown
   eq?: unknown
   neq?: unknown
@@ -62,9 +61,6 @@ function compareIfValue(operator: IfComparisonOperator, value: unknown, expected
 
 /** Evaluate the resolved props of an `::if` component. */
 export function shouldRenderIf(props: IfProps): boolean {
-  const hasCondition = Object.hasOwn(props, 'condition')
-  if (hasCondition && !props.condition) return false
-
   let hasComparison = false
   for (const operator of IF_COMPARISON_OPERATORS) {
     if (!Object.hasOwn(props, operator)) continue
@@ -75,7 +71,7 @@ export function shouldRenderIf(props: IfProps): boolean {
     if (expected === undefined || !compareIfValue(operator, props.value, expected)) return false
   }
 
-  return hasComparison || hasCondition || Boolean(props.value)
+  return hasComparison || Boolean(props.value)
 }
 
 /** Select an `::if` branch from AST children without rendering inactive nodes. */

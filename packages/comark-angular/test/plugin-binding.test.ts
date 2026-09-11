@@ -70,7 +70,7 @@ describe('@comark/angular plugins/binding — If component', () => {
 
   it('does not instantiate descendants of a hidden branch', async () => {
     probeInstances = 0
-    const markdown = '::if{:condition="data.show" as="section"}\n:probe\n::'
+    const markdown = '::if{:value="data.show" as="section"}\n:probe\n::'
 
     const hidden = await renderMarkdown(markdown, { show: false })
     expect(hidden).not.toContain('Probe')

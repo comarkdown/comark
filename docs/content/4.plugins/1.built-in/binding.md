@@ -179,15 +179,15 @@ const html = await renderHtml(markdown, {
 })
 ```
 
-Use `condition` for a truthy check:
+Use `value` by itself for a truthy check:
 
 ```mdc
-::if{:condition="data.user"}
+::if{:value="data.user"}
 You are signed in.
 ::
 ```
 
-Use `value` by itself for a truthy check, or combine it with one or more comparison props. Every supplied comparison must pass:
+Combine `value` with one or more comparison props. Every supplied comparison must pass:
 
 ```mdc
 ::if{:value="data.user.role" neq="guest"}
@@ -201,8 +201,7 @@ This content is wrapped in a section.
 
 | Prop        | Behavior                                                    |
 | ----------- | ----------------------------------------------------------- |
-| `condition` | Must be truthy when present                                 |
-| `value`     | Checked for truthiness when neither `condition` nor comparison props are present |
+| `value`     | Checked for truthiness when no comparison props are present |
 | `eq`        | Requires strict equality                                    |
 | `neq`       | Requires strict inequality                                  |
 | `gt`        | Requires `value` to be greater than the comparison value    |
@@ -214,6 +213,16 @@ This content is wrapped in a section.
 A comparison never passes when `value` or its comparison value resolves to `undefined`. Use `:` on numeric, boolean, or other JSON values so Comark preserves their type. For example, `:eq="false"` compares against the boolean `false`, while `eq="false"` compares against the string `"false"`.
 
 The `as` prop accepts `div`, `span`, `p`, `section`, `article`, `aside`, `header`, `footer`, `main`, or `nav`. ANSI output validates the prop but renders no wrapper.
+
+To require checks on different values, nest `If` blocks:
+
+```mdc
+::if{:value="data.isLoggedIn"}
+:::if{:value="data.age" :gte="18"}
+Adult member content.
+:::
+::
+```
 
 ### Else branches
 
@@ -356,9 +365,11 @@ const components = { If }
 
 Replace `html` with `ansi`, `vue`, `react`, `svelte`, `angular`, or `nuxt` for the corresponding renderer. Hidden Angular branches are structural: their descendants aren't instantiated.
 
+See [Conditional content](#conditional-content) for Markdown examples of truthiness checks, comparisons, wrappers, and nested `#else` branches.
+
 The core entry point also exports the shared `IfProps`, `IfComparisonOperator`, and `IfWrapperTag` types, plus helpers for custom renderer adapters:
 
-- `shouldRenderIf(props)` evaluates resolved condition and comparison props.
+- `shouldRenderIf(props)` checks the resolved `value` for truthiness or evaluates the supplied comparisons.
 - `selectIfBranch(children, matches)` selects default or else AST children. It returns `undefined` when the condition fails and no else slot exists.
 - `resolveIfWrapper(value)` validates the optional wrapper tag.
 

@@ -83,7 +83,7 @@ describe('@comark/html plugins/binding — If handler', () => {
   })
 
   it('renders only truthy branches without requiring the binding parser plugin', async () => {
-    const doc = await parseMarkdown('::if{:condition="data.show"}\nVisible\n::')
+    const doc = await parseMarkdown('::if{:value="data.show"}\nVisible\n::')
 
     const visible = await renderHtmlFromDocument(doc, {
       components: { If },
@@ -99,9 +99,22 @@ describe('@comark/html plugins/binding — If handler', () => {
   })
 
   it('exposes normalized If props to bindings in its children', async () => {
-    const doc = await parseWithBinding('::if{:condition="true" :enabled="false"}\nEnabled {{ props.enabled }}\n::')
+    const doc = await parseWithBinding('::if{:value="true" :enabled="false"}\nEnabled {{ props.enabled }}\n::')
     const html = await renderHtmlFromDocument(doc, { components: { Binding, If } })
 
     expect(html).toBe('Enabled false')
+  })
+
+  it.each([
+    { isLoggedIn: true, age: 21, visible: true },
+    { isLoggedIn: true, age: 17, visible: false },
+    { isLoggedIn: false, age: 21, visible: false },
+    { isLoggedIn: false, age: 17, visible: false },
+  ])('combines nested truthiness and comparison checks for $isLoggedIn, $age', async ({ visible, ...data }) => {
+    const doc = await parseMarkdown(
+      '::if{:value="data.isLoggedIn"}\n:::if{:value="data.age" :gte="18"}\nAdult member content.\n:::\n::'
+    )
+    const html = await renderHtmlFromDocument(doc, { components: { If }, data })
+    expect(html).toBe(visible ? 'Adult member content.' : '')
   })
 })
