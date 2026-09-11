@@ -53,7 +53,12 @@ This is an alert component
     class?: string
   } = $props()
 
-  let parsed: MarkdownDocumentType | null = $state(null)
+  let parsedValue: MarkdownDocumentType | null = $state(null)
+  let parseError: unknown = $state(null)
+  let parsed = $derived.by(() => {
+    if (parseError) throw parseError
+    return parsedValue
+  })
 
   let content = $derived(typeof value === 'string' ? value.trim() : '')
   // Compare config values before creating a parser when parent props are spread.
@@ -73,7 +78,12 @@ This is an alert component
     let active = true
     $effect(() => {
       parseMarkdown(content, { streaming }).then((result) => {
-        if (active) parsed = result
+        if (active) {
+          parseError = null
+          parsedValue = result
+        }
+      }).catch((error) => {
+        if (active) parseError = error
       })
     })
     return () => { active = false }

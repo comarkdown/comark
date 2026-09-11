@@ -125,9 +125,9 @@ for (const [name, component] of [
   })
 }
 
-it('passes asynchronous plugin errors to the Svelte boundary', async () => {
+it('passes parser errors to the Svelte boundary', async () => {
   const screen = await render(MarkdownBoundary, {
-    component: MarkdownAsync,
+    component: Markdown,
     value: 'Failure',
     streaming: true,
     plugins: [
