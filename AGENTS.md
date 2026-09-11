@@ -382,7 +382,7 @@ import mermaid, { Mermaid } from '@comark/angular/plugins/mermaid'
 
 ```typescript
 // Core parsing
-import { parseMarkdown, getMarkdownParser, createMarkdownParser, autoCloseMarkdown } from 'comark'
+import { parseMarkdown, autoCloseMarkdown } from 'comark'
 
 // HTML rendering (parse + render in one step)
 import { createHtmlRenderer, renderHtml, renderHtmlFromDocument } from '@comark/html'

@@ -1,6 +1,11 @@
 import { barplot, bench, group, run } from 'mitata'
-import { createMarkdownParser, getMarkdownParser } from '../packages/comark/src/parse.ts'
+import { createMarkdownParser } from '../packages/comark/src/parse.ts'
 
+// Building a parser is cheap because the configured markdown-it instance is
+// shared between parsers built from the same plugin functions. The two arms
+// should land close together: hoisting a parser out of a render loop is no
+// longer worth doing for performance.
+//
 // Shaped after a component documentation page: many short documents, each one a
 // prop or slot description, rendered by its own component instance.
 const DOCUMENTS = Array.from(
@@ -18,8 +23,8 @@ barplot(() => {
       for (const document of DOCUMENTS) await createMarkdownParser()(document)
     })
 
-    bench('shared parser', async () => {
-      await parseAll(getMarkdownParser())
+    bench('one shared parser', async () => {
+      await parseAll(createMarkdownParser())
     })
   })
 })
