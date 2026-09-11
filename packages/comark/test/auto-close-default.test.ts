@@ -8,6 +8,13 @@ describe('ParserOptions.autoClose', () => {
       expect(tree.nodes).toEqual([['p', {}, 'a _b']])
     })
 
+    it('heals through parseMarkdown when the per-call options say streaming', async () => {
+      // The third argument is the public streaming entry point. Nothing else
+      // exercises it, so a merge that drops it would otherwise stay green.
+      const tree = await parseMarkdown('a _b', {}, { streaming: true })
+      expect(tree.nodes).toEqual([['p', { $: { line: 1 } }, 'a ', ['em', {}, 'b']]])
+    })
+
     it('heals when the parse call opts into streaming', async () => {
       const parse = createMarkdownParser()
       const tree = await parse('a _b', { streaming: true })
