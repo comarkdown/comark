@@ -1,3 +1,4 @@
+import { renderFor } from 'comark/plugins/binding'
 import { defineComponent, type PropType, type VNodeChild } from 'vue'
 
 /** Structural component whose children are evaluated only when rendered. */
@@ -10,5 +11,5 @@ export const For = Object.assign(
       return () => props.__render()
     },
   }),
-  { __comarkFor: true }
+  { __comarkRender: renderFor }
 )

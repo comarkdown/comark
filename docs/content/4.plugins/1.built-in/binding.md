@@ -279,6 +279,8 @@ const html = await renderHtml(markdown, {
 })
 ```
 
+Iteration and comparison logic lives in the optional binding entry points. The base framework renderers retain a generic scoped-child hook, but do not import the `If` or `For` implementation.
+
 Import from your renderer's binding entry point (`html`, `ansi`, `vue`, `react`, `svelte`, `angular`, or `nuxt`). Register `For` directly in the component map. Like `If`, the block syntax uses the default component parser; `binding()` is only needed for `{{ … }}` interpolation.
 
 ### Item and index aliases
@@ -468,7 +470,13 @@ Every renderer-specific binding entry point exports `For`. Register it with `com
 
 `item` and `index` must be distinct, non-empty names without dots or prototype keys. Slots: default content repeats per item; `#empty` renders once for an empty collection. See [Repeating content](#repeating-content) for Markdown examples and renderer-specific key behavior.
 
-The core entry point exports `ForProps`, `ForIteration`, `resolveForIterations(props, renderData)`, and `selectForBranch(children, empty)` for renderer adapters. Each iteration contains a key and a render context with lexical aliases in `scope`; attribute resolution makes those aliases available under `props`.
+The core binding entry point exports `ForProps`, `ForIteration`, `resolveForIterations(props, renderData)`, `selectForBranch(children, empty)`, and `renderFor(context)` for renderer adapters. Each iteration contains a key and a render context with lexical aliases in `scope`; attribute resolution makes those aliases available under `props`.
+
+### Structural renderer hooks
+
+Framework components can supply a `__comarkRender` hook that returns keyed groups of AST children. The renderer renders each group in its supplied context, optionally inside a wrapper element. The binding adapters attach their behavior to this hook so applications that do not import them exclude that behavior from their bundles.
+
+The hook uses the `NodeRenderContext`, `NodeRenderGroup`, and `NodeRenderHook` types exported by `comark`. Its context contains resolved `props`, unrendered `children`, and `renderData`; each returned group contains a `key`, `children`, `renderData`, and optional `wrapper`. Vue and React adapters receive an internal `__render` callback, which they invoke when rendering so inactive branches stay unevaluated.
 
 ## Use cases
 

@@ -1,7 +1,7 @@
 import type { PluginWithOptions, MarkdownExit } from 'markdown-exit'
 import { get } from '../utils/index.ts'
 import { defineComarkPlugin } from '../utils/helpers.ts'
-import type { MarkdownItPlugin, NodeHandler, Node, NodeRenderData } from '../types'
+import type { MarkdownItPlugin, NodeHandler, Node, NodeRenderData, NodeRenderContext, NodeRenderGroup } from '../types'
 
 export interface MdcInlineBindingOptions {
   /**
@@ -234,4 +234,16 @@ export function selectForBranch(children: Node[], empty: boolean): Node[] {
     regular.push(child)
   }
   return empty ? (emptySlot ?? []) : (defaultSlot ?? regular)
+}
+
+/** Build the scoped, keyed groups consumed by structural renderer hooks. */
+export function renderFor({ props, children, renderData }: NodeRenderContext): NodeRenderGroup[] {
+  const iterations = resolveForIterations(props, renderData)
+  const branch = selectForBranch(children, iterations.length === 0)
+  if (!iterations.length) return [{ key: 'empty', children: branch, renderData }]
+  return iterations.map((iteration) => ({
+    key: `${typeof iteration.key}:${iteration.key}`,
+    children: branch,
+    renderData: iteration.renderData,
+  }))
 }

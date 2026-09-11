@@ -94,3 +94,11 @@ it.each(forCases)('For: $name', async ({ markdown, data, expected, absent }) => 
   for (const text of expected) expect(output).toContain(text)
   for (const text of absent) expect(output).not.toContain(text)
 })
+
+it('keeps inherited props in an If without attributes', async () => {
+  const html = await renderMarkdown(
+    '::div{title="Inherited"}\n:::if\nHidden\n#else\nValue: {{ props.title }}\n:::\n::',
+    {}
+  )
+  expect(html.replace(/<[^>]*>/g, '')).toContain('Value: Inherited')
+})

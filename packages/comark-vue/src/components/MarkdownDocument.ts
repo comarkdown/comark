@@ -1,4 +1,3 @@
-import { resolveForIterations, selectForBranch } from 'comark/plugins/binding'
 import type { PropType, VNode } from 'vue'
 import type {
   ComponentManifest,
@@ -7,6 +6,7 @@ import type {
   Node,
   MarkdownDocument as MarkdownDocumentType,
   NodeRenderData,
+  NodeRenderHook,
 } from 'comark'
 import {
   Fragment,
@@ -144,27 +144,23 @@ function renderNode(
     // Resolve `:prefix` bindings and let Vue-specific attribute mapping run
     // on top (e.g. `className` → `class`).
     const resolved = resolveAttributes(nodeProps, renderData, { parseJson: true })
-    if ((customComponent as { __comarkFor?: boolean } | undefined)?.__comarkFor) {
+    const renderHook = (customComponent as { __comarkRender?: NodeRenderHook } | undefined)?.__comarkRender
+    if (renderHook) {
       return h(customComponent!, {
         key,
-        __render: () => {
-          const iterations = resolveForIterations(resolved, renderData)
-          const branch = selectForBranch(children, iterations.length === 0)
-          const groups = iterations.length ? iterations : [{ key: 'empty', renderData }]
-          return h(
+        __render: () =>
+          h(
             Fragment,
-            { key },
-            groups.map((iteration) =>
-              h(
-                Fragment,
-                { key: iterations.length ? `${typeof iteration.key}:${iteration.key}` : 'empty' },
-                branch.map((child, index) =>
-                  renderNode(child, components, index, componentsManifest, node, iteration.renderData)
-                )
+            null,
+            renderHook({ props: resolved, children, renderData }).map((group) => {
+              const children = group.children.map((child, index) =>
+                renderNode(child, components, index, componentsManifest, node, group.renderData)
               )
-            )
-          )
-        },
+              return group.wrapper
+                ? h(group.wrapper, { key: group.key }, children)
+                : h(Fragment, { key: group.key }, children)
+            })
+          ),
       })
     }
 

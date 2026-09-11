@@ -886,9 +886,14 @@ After each change, ask:
 
 Renderer-specific `plugins/binding` entry points export `For` alongside `Binding` and `If`.
 `For` repeats default AST children for an array, with `item` and optional `index` aliases,
-optional item-property `key`, and an `#empty` slot. Core helpers `resolveForIterations`
-and `selectForBranch` live in `packages/comark/src/plugins/binding.ts`.
+optional item-property `key`, and an `#empty` slot. Core helpers `resolveForIterations`,
+`selectForBranch`, and `renderFor` live in `packages/comark/src/plugins/binding.ts`.
 `NodeRenderData.scope` preserves lexical loop aliases through descendant component props;
 attribute resolution exposes those aliases under `props`. Vue/React keyed fragments and
 Svelte keyed each blocks preserve iteration identity; Angular currently rebuilds descendants.
 Cross-renderer iteration cases live in `test/fixtures/for.ts`.
+
+Structural framework components use a generic `__comarkRender` hook returning
+`NodeRenderGroup[]` (key, AST children, render context, optional wrapper). Keep binding
+imports in optional adapters; base renderers consume this hook without importing binding
+helpers. `test/binding-bundle.test.ts` in each framework package verifies the exclusion.

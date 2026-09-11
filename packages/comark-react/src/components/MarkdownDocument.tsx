@@ -1,10 +1,10 @@
-import { resolveForIterations, selectForBranch } from 'comark/plugins/binding'
 import type {
   ElementNode,
   Node,
   MarkdownDocument as MarkdownDocumentType,
   ComponentManifest,
   NodeRenderData,
+  NodeRenderHook,
 } from 'comark'
 import React, { lazy, Suspense, useMemo } from 'react'
 import { pascalCase, camelCase, resolveAttributes } from 'comark/utils'
@@ -142,27 +142,24 @@ function renderNode(
     // remapping (`class` → `className`, string `style` → object, `tabindex`
     // → `tabIndex`).
     const resolved = resolveAttributes(nodeProps, renderData, { parseJson: true })
-    if (customComponent?.__comarkFor) {
-      return React.createElement(customComponent, {
+    const renderHook = (customComponent as { __comarkRender?: NodeRenderHook } | undefined)?.__comarkRender
+    if (renderHook) {
+      return React.createElement(customComponent!, {
         key,
-        __render: () => {
-          const iterations = resolveForIterations(resolved, renderData)
-          const branch = selectForBranch(children, iterations.length === 0)
-          const groups = iterations.length ? iterations : [{ key: 'empty', renderData }]
-          return React.createElement(
+        __render: () =>
+          React.createElement(
             React.Fragment,
-            { key },
-            groups.map((iteration) =>
+            null,
+            renderHook({ props: resolved, children, renderData }).map((group) =>
               React.createElement(
-                React.Fragment,
-                { key: iterations.length ? `${typeof iteration.key}:${iteration.key}` : 'empty' },
-                branch.map((child, index) =>
-                  renderNode(child, components, index, componentsManifest, node, iteration.renderData)
+                group.wrapper || React.Fragment,
+                { key: group.key },
+                group.children.map((child, index) =>
+                  renderNode(child, components, index, componentsManifest, node, group.renderData)
                 )
               )
             )
-          )
-        },
+          ),
       })
     }
 
