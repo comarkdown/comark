@@ -3,6 +3,7 @@ import javascript from 'shiki/dist/langs/javascript.mjs'
 import vueHtml from 'shiki/dist/langs/vue-html.mjs'
 import githubDark from 'shiki/dist/themes/github-dark.mjs'
 import { parseMarkdown } from '../../src/index'
+import { renderMarkdown } from '../../src/render'
 import type { ComarkPlugin, ElementNode, Node } from '../../src/types'
 import shiki from '../../src/plugins/shiki'
 import shikiCore, { resetHighlighter } from '../../src/plugins/shiki/core'
@@ -142,5 +143,23 @@ describe('shiki inline code', () => {
   it('keeps a user class behind the highlighter classes', async () => {
     const code = await inlineCode('`x`{lang="ts" .foo}')
     expect(String((code[1] as Record<string, unknown>).class)).toContain(' . foo')
+  })
+
+  describe('raw HTML', () => {
+    // A raw-HTML `<code lang="ts">` is the author's own markup. Highlighting it
+    // would replace the text with spans and break the byte-for-byte round-trip.
+    const source = 'A <code lang="ts">const a = 1</code> here'
+
+    it('leaves a raw-HTML code element untouched', async () => {
+      const withPlugin = await parseMarkdown(source, { plugins: [shiki()] })
+      const withoutPlugin = await parseMarkdown(source)
+
+      expect(withPlugin.nodes).toEqual(withoutPlugin.nodes)
+    })
+
+    it('round-trips the source unchanged', async () => {
+      const document = await parseMarkdown(source, { plugins: [shiki()] })
+      expect(await renderMarkdown(document)).toBe(source)
+    })
   })
 })

@@ -367,7 +367,12 @@ export async function highlightCodeBlocks(
     // An already-highlighted `<code>` has element children, so `node[2]` is not
     // a string and it is never collected twice.
     if (inlineEnabled && node[0] === 'code' && node.length === 3 && typeof node[2] === 'string') {
-      if (inlineCodeLanguage(node[1] as ElementNodeAttributes)) {
+      const inlineAttrs = node[1] as ElementNodeAttributes
+      // A raw-HTML `<code lang="ts">` is authored markup, not Comark inline
+      // code. Highlighting it would turn the author's own tag into a tree of
+      // spans and break the byte-for-byte round-trip raw HTML guarantees.
+      if (inlineAttrs?.$?.html === 1) return false
+      if (inlineCodeLanguage(inlineAttrs)) {
         codeBlocks.push({ node, path: path.slice(), inline: true })
       }
     }
