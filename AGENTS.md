@@ -61,6 +61,7 @@ packages/comark/
 │   │   ├── html.ts           # HTML block/inline parsing (default via registerDefaultPlugins)
 │   │   ├── components.ts     # Block/inline components + spans (`::name`, `:name`, `[text]`)
 │   │   ├── attributes.ts     # Inline attributes (`{props}` after tokens)
+│   │   ├── binding.ts        # Inline interpolation + shared conditional rendering rules
 │   │   ├── emoji.ts          # Emoji shortcodes
 │   │   ├── shiki.ts          # Shiki with bundled default theme + language loaders (peer: shiki)
 │   │   ├── shiki/core.ts     # Shiki without default theme/language imports
@@ -181,9 +182,12 @@ packages/comark-vue/
 │   ├── components/
 │   │   ├── Markdown.ts       # High-level markdown → render component
 │   │   ├── MarkdownDocument.ts # Low-level AST → render component
+│   │   ├── Binding.ts        # Inline binding renderer
+│   │   ├── If.ts             # Conditional content renderer
 │   │   ├── Math.ts           # Math rendering component
 │   │   └── Mermaid.ts        # Mermaid rendering component
 │   └── plugins/
+│       ├── binding.ts        # Re-exports binding plugin + Binding and If components
 │       ├── math.ts           # Re-exports comark/plugins/math + Math component
 │       └── mermaid.ts        # Re-exports comark/plugins/mermaid + Mermaid component
 ├── package.json
@@ -220,9 +224,12 @@ packages/comark-react/
 │   │   ├── MarkdownDocument.tsx # Low-level AST → render component
 │   │   ├── MarkdownClient.tsx # Client-only markdown component
 │   │   ├── MarkdownLive.tsx  # Streaming/live markdown component
+│   │   ├── Binding.tsx       # Inline binding renderer
+│   │   ├── If.tsx            # Conditional content renderer
 │   │   ├── Math.tsx          # Math rendering component
 │   │   └── Mermaid.tsx       # Mermaid rendering component
 │   └── plugins/
+│       ├── binding.ts        # Re-exports binding plugin + Binding and If components
 │       ├── math.ts           # Re-exports comark/plugins/math + Math component
 │       └── mermaid.ts        # Re-exports comark/plugins/mermaid + Mermaid component
 ├── package.json
@@ -260,12 +267,15 @@ packages/comark-svelte/
 │   │   ├── MarkdownDocument.svelte # Low-level AST → render component
 │   │   ├── MarkdownNode.svelte   # Recursive AST node renderer
 │   │   ├── ComarkComponent.svelte # Custom component renderer with named snippets
-│   │   └── Resolve.svelte        # Stable promise resolver for lazy components
+│   │   ├── Resolve.svelte        # Stable promise resolver for lazy components
+│   │   ├── Binding.svelte        # Inline binding renderer
+│   │   └── If.svelte             # Conditional content renderer
 │   ├── async/
 │   │   ├── index.ts              # Async export (@comark/svelte/async)
 │   │   ├── MarkdownAsync.svelte  # High-level markdown → render (experimental await)
 │   │   └── ResolveAsync.svelte   # Async SSR resolver for lazy components
 │   └── plugins/
+│       ├── binding.ts        # Re-exports binding plugin + Binding and If components
 │       ├── math.ts           # Re-exports comark/plugins/math
 │       ├── Math.svelte       # Math rendering component
 │       ├── mermaid.ts        # Re-exports comark/plugins/mermaid
@@ -335,10 +345,11 @@ packages/comark-angular/
 │   │   ├── markdown-parsed.component.ts  # Low-level AST → render component
 │   │   ├── markdown-node.component.ts    # Recursive AST node renderer
 │   │   ├── binding.component.ts          # Binding rendering component
+│   │   ├── if.component.ts               # Structural conditional renderer
 │   │   ├── math.component.ts             # Math rendering component
 │   │   └── mermaid.component.ts          # Mermaid rendering component
 │   ├── plugins/
-│   │   ├── binding.ts                    # Re-exports comark/plugins/binding + Binding component
+│   │   ├── binding.ts                    # Re-exports binding plugin + Binding and If components
 │   │   ├── math.ts                       # Re-exports comark/plugins/math + Math component
 │   │   └── mermaid.ts                    # Re-exports comark/plugins/mermaid + Mermaid component
 │   └── utils/
@@ -413,6 +424,8 @@ import frontmatter from 'comark/plugins/frontmatter' // default via registerDefa
 import components from 'comark/plugins/components'   // default via registerDefaultPlugins
 import attributes from 'comark/plugins/attributes'   // default via registerDefaultPlugins
 import html from 'comark/plugins/html'               // default via registerDefaultPlugins
+import binding, { Binding, resolveIfWrapper, selectIfBranch, shouldRenderIf } from 'comark/plugins/binding'
+import type { IfComparisonOperator, IfProps, IfWrapperTag } from 'comark/plugins/binding'
 
 // markdown-it / markdown-exit adapters (e.g. VitePress)
 import { markdownItComponents } from 'comark/plugins/components'
@@ -429,32 +442,38 @@ import { createHtmlRenderer, renderHtml, renderHtmlFromDocument } from '@comark/
 import shiki from '@comark/html/plugins/shiki'
 import math, { Math } from '@comark/html/plugins/math'
 import mermaid, { Mermaid } from '@comark/html/plugins/mermaid'
+import binding, { Binding, If } from '@comark/html/plugins/binding'
 
 // ANSI terminal rendering — parse + render to styled terminal string
 import { createAnsiRenderer, createAnsiPrinter, printAnsi, renderAnsi, renderAnsiFromDocument } from '@comark/ansi'
 import shiki from '@comark/ansi/plugins/shiki'
 import math from '@comark/ansi/plugins/math'
+import binding, { Binding, If } from '@comark/ansi/plugins/binding'
 
 // Vue — renderer + plugin wrappers (plugin fn + Vue component)
 import { Markdown, MarkdownDocument, defineMarkdownComponent } from '@comark/vue'
 import math, { Math } from '@comark/vue/plugins/math'
 import mermaid, { Mermaid } from '@comark/vue/plugins/mermaid'
+import binding, { Binding, If } from '@comark/vue/plugins/binding'
 
 // React — renderer + plugin wrappers (plugin fn + React component)
 import { Markdown, MarkdownDocument, defineMarkdownComponent } from '@comark/react'
 import math, { Math } from '@comark/react/plugins/math'
 import mermaid, { Mermaid } from '@comark/react/plugins/mermaid'
+import binding, { Binding, If } from '@comark/react/plugins/binding'
 
 // Svelte — renderer + plugin wrappers (plugin fn + Svelte component)
 import { Markdown, MarkdownDocument } from '@comark/svelte'
 import { MarkdownAsync } from '@comark/svelte/async' // requires experimental.async
 import math, { Math } from '@comark/svelte/plugins/math'
 import mermaid, { Mermaid } from '@comark/svelte/plugins/mermaid'
+import binding, { Binding, If } from '@comark/svelte/plugins/binding'
 
 // Angular — renderer + plugin wrappers (plugin fn + Angular component)
 import { Markdown, MarkdownDocument, defineMarkdownComponent, defineMarkdownDocumentComponent } from '@comark/angular'
 import math, { Math } from '@comark/angular/plugins/math'
 import mermaid, { Mermaid } from '@comark/angular/plugins/mermaid'
+import binding, { Binding, If } from '@comark/angular/plugins/binding'
 ```
 
 ## Coding Principles
@@ -584,6 +603,62 @@ Example:
   meta: {}
 }
 ```
+
+## Indentation Inside Components
+
+A block component's children may be indented (aligned under the `::` marker) or
+not — both are valid input. Two rules keep the two forms interchangeable and
+lossless through `parseMarkdown` → `renderMarkdown`:
+
+**Parse — dedent the children, don't raise the floor.** A child indented *less*
+than its own component marker is never dropped. Each child line is shifted left
+by `min(markerIndent, its own indentation)` and the region is tokenized against
+a zero floor (`comark_block` in `src/plugins/components.ts` via
+`src/internal/parse/indent.ts`, mirroring the line-mark mutation `blockquote`
+uses to strip its markers). Lines inside a
+fenced code block all take the *opening fence's* shift, so the fence and its
+body move together. The shift is all or nothing: a tab that would have to be
+split into columns puts the region back and keeps the marker floor. A component
+with no outdented child is untouched.
+
+**Stringify — re-indent a block, never a line.** Nested components indent their
+rendered output by 2 spaces per level (`indent()` in `src/utils/index.ts`). The
+prefix is added to every line of the block, including the body of a fenced code
+block, so the fence and its content always move together.
+
+Uniform shifting is what makes fenced code survive. Indentation inside a fence
+is significant whitespace, and the parser cannot tell padding apart from code:
+
+```md
+::tabs
+  :::tabs-item{label="Code"}
+```mdc
+  ::accordion
+  ::
+```
+  :::
+::
+```
+
+The fence sits at indent 0 under a marker at indent 2, so fence and body shift
+by 0 and the body keeps the two spaces it has relative to its fence
+(`"  ::accordion\n  ::"`). Rendering back aligns the fence with its parent and
+carries the body along, which is a fixed point on re-parse:
+
+```md
+::tabs
+  :::tabs-item{label="Code"}
+  ```mdc
+    ::accordion
+    ::
+  ```
+  :::
+::
+```
+
+SPEC coverage: `SPEC/COMARK/component-nested-*-outdented.md`,
+`SPEC/COMARK/component-nested-codeblock-indented.md`,
+`SPEC/COMARK/codeblock-indented-content.md`.
 
 ## Vue/React/Svelte/Angular Components
 

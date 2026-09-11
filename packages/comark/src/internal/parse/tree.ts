@@ -429,6 +429,7 @@ const processors: Record<string, Processor> = {
   emoji: singleToken((t) => t.content),
   hr: singleToken(() => ['hr', {}]),
   hardbreak: singleToken(() => ['br', {}]),
+  reference: (_, s) => ({ node: undefined, nextIndex: s + 1 }),
   // Softbreaks inside open HTML are paragraph separators, not text content
   softbreak: (tokens, start, state) => ({
     nextIndex: start + 1,

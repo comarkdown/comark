@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.7.0](https://github.com/comarkdown/comark/compare/@comark/nuxt@0.6.2...@comark/nuxt@0.7.0) (2026-09-10)
+
+### Bug Fixes
+
+* **angular:** update build scripts to use angular compiler ([#317](https://github.com/comarkdown/comark/issues/317)) ([de915aa](https://github.com/comarkdown/comark/commit/de915aacda1ee8c5128cc34a27cd5fa14241c264))
+
 ## [0.6.2](https://github.com/comarkdown/comark/compare/@comark/nuxt@0.6.1...@comark/nuxt@0.6.2) (2026-08-07)
 
 ## [0.6.1](https://github.com/comarkdown/comark/compare/@comark/nuxt@0.6.0...@comark/nuxt@0.6.1) (2026-08-06)

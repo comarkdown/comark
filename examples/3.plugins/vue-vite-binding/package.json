@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@comark/vue": "workspace:*",
+    "rangi": "catalog:",
     "vue": "catalog:"
   },
   "devDependencies": {

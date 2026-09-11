@@ -14,6 +14,7 @@ import { defineComarkPlugin } from '../utils/helpers.ts'
 import { findClosingBracket, parseBracketContent } from '../internal/parse/syntax/brackets.ts'
 import { parseBlockParams } from '../internal/parse/syntax/block-params.ts'
 import { parseYaml } from '../internal/yaml.ts'
+import { tokenizeDedented } from '../internal/parse/indent.ts'
 
 /**
  * A component name must start with a letter or `$`, followed by word chars,
@@ -130,6 +131,11 @@ const markdownItComarkBlock: PluginSimple = (md) => {
 
       if (silent) return true
 
+      // Columns to strip from each child line, indexed from `startLine + 1`.
+      const childShifts: number[] = []
+      let codeFenceShift = 0
+      let hasOutdentedChild = false
+
       nextLine = startLine
 
       for (;;) {
@@ -140,6 +146,10 @@ const markdownItComarkBlock: PluginSimple = (md) => {
         max = state.eMarks[nextLine]
 
         if (start < max && state.sCount[nextLine] < state.blkIndent) break
+
+        const lineIndent = start >= max ? indent : state.sCount[nextLine]
+        if (lineIndent < indent) hasOutdentedChild = true
+        childShifts.push(start >= max ? 0 : inCodeFence ? codeFenceShift : Math.min(indent, lineIndent))
 
         const lineCharCode = state.src.charCodeAt(start)
 
@@ -164,6 +174,7 @@ const markdownItComarkBlock: PluginSimple = (md) => {
             inCodeFence = true
             codeFenceCharCode = lineCharCode
             codeFenceCount = fencePos - start
+            codeFenceShift = childShifts[childShifts.length - 1]
             continue
           }
         }
@@ -222,12 +233,16 @@ const markdownItComarkBlock: PluginSimple = (md) => {
         state.push('paragraph_close', 'p', -1)
       }
 
-      const blkIndent = state.blkIndent
-      state.blkIndent = indent
       state.env.comarkBlockTokens ||= [] as Token[]
       state.env.comarkBlockTokens.unshift(tokenOpen)
-      state.md.block.tokenize(state, startLine + 1, nextLine)
-      state.blkIndent = blkIndent
+
+      if (!hasOutdentedChild || !tokenizeDedented(state, startLine + 1, nextLine, childShifts)) {
+        const blkIndent = state.blkIndent
+        state.blkIndent = indent
+        state.md.block.tokenize(state, startLine + 1, nextLine)
+        state.blkIndent = blkIndent
+      }
+
       state.env.comarkBlockTokens.shift()
 
       const tokenClose = state.push('mdc_block_close', params.name, -1)
@@ -285,7 +300,7 @@ const markdownItComarkBlock: PluginSimple = (md) => {
     if (!found) return false
 
     if (!silent) {
-      const yaml = state.src.slice(state.bMarks[startLine + 1], state.eMarks[lineEnd - 1])
+      const yaml = state.getLines(startLine + 1, lineEnd, state.blkIndent, false)
       const data = parseYaml(yaml)
       const token = state.env.comarkBlockTokens[0]
       Object.entries(data || {}).forEach(([key, value]) => {
@@ -309,82 +324,84 @@ const markdownItComarkBlock: PluginSimple = (md) => {
     return true
   })
 
-  md.block.ruler.after('code', 'comark_block_slots', function comark_block_slots(state, startLine, endLine, silent) {
-    if (!state.env.comarkBlockTokens?.length) return false
+  md.block.ruler.after(
+    'code',
+    'comark_block_slots',
+    function comark_block_slots(state, startLine, endLine, silent) {
+      if (!state.env.comarkBlockTokens?.length) return false
 
-    const start = state.bMarks[startLine] + state.tShift[startLine]
+      const start = state.bMarks[startLine] + state.tShift[startLine]
 
-    if (!(state.src[start] === '#' && state.src[start + 1] !== ' ' && state.src[start + 1] !== '#')) return false
+      if (!(state.src[start] === '#' && state.src[start + 1] !== ' ' && state.src[start + 1] !== '#')) return false
 
-    const line = state.src.slice(start, state.eMarks[startLine])
+      const line = state.src.slice(start, state.eMarks[startLine])
 
-    const { name, props } = parseBlockParams(line.slice(1))
+      const { name, props } = parseBlockParams(line.slice(1))
 
-    let lineEnd = startLine + 1
-    let inCodeFence = false
-    let codeFenceChar = ''
-    let codeFenceCount = 0
-    while (lineEnd < endLine) {
-      const inner = state.src.slice(state.bMarks[lineEnd] + state.tShift[startLine], state.eMarks[lineEnd])
+      if (silent) return true
 
-      if (inCodeFence) {
-        // Look for matching closing fence (same char, >= opening count, nothing but spaces after)
-        if (inner[0] === codeFenceChar) {
-          let fencePos = 1
-          while (fencePos < inner.length && inner[fencePos] === codeFenceChar) fencePos++
-          if (fencePos >= codeFenceCount && inner.slice(fencePos).trim() === '') {
-            inCodeFence = false
+      let lineEnd = startLine + 1
+      let inCodeFence = false
+      let codeFenceChar = ''
+      let codeFenceCount = 0
+      while (lineEnd < endLine) {
+        const inner = state.src.slice(state.bMarks[lineEnd] + state.tShift[startLine], state.eMarks[lineEnd])
+
+        if (inCodeFence) {
+          // Look for matching closing fence (same char, >= opening count, nothing but spaces after)
+          if (inner[0] === codeFenceChar) {
+            let fencePos = 1
+            while (fencePos < inner.length && inner[fencePos] === codeFenceChar) fencePos++
+            if (fencePos >= codeFenceCount && inner.slice(fencePos).trim() === '') {
+              inCodeFence = false
+            }
           }
-        }
-        lineEnd += 1
-        continue
-      }
-
-      // Detect opening code fence (``` or ~~~, length >= 3)
-      if (inner[0] === '`' || inner[0] === '~') {
-        const ch = inner[0]
-        let fencePos = 1
-        while (fencePos < inner.length && inner[fencePos] === ch) fencePos++
-        if (fencePos >= 3) {
-          inCodeFence = true
-          codeFenceChar = ch
-          codeFenceCount = fencePos
           lineEnd += 1
           continue
         }
+
+        // Detect opening code fence (``` or ~~~, length >= 3)
+        if (inner[0] === '`' || inner[0] === '~') {
+          const ch = inner[0]
+          let fencePos = 1
+          while (fencePos < inner.length && inner[fencePos] === ch) fencePos++
+          if (fencePos >= 3) {
+            inCodeFence = true
+            codeFenceChar = ch
+            codeFenceCount = fencePos
+            lineEnd += 1
+            continue
+          }
+        }
+
+        if (/^#\w+/.test(inner) || inner.startsWith('::')) break
+        lineEnd += 1
       }
 
-      if (/^#\w+/.test(inner) || inner.startsWith('::')) break
-      lineEnd += 1
-    }
+      // Restore lineMax after tokenizing so it doesn't leak a narrower bound to
+      // whatever comes after this slot (see `comark_block`'s save/restore above).
+      const oldLineMax = state.lineMax
+      const slot = state.push('mdc_block_slot_open', 'template', 1)
+      slot.attrSet('name', `${name}`)
+      props?.forEach(([key, value]) => {
+        if (key === 'class') slot.attrJoin(key, value)
+        else slot.attrSet(key, value)
+      })
 
-    if (silent) {
+      state.line = startLine + 1
+      state.lineMax = lineEnd
+
+      state.md.block.tokenize(state, startLine + 1, lineEnd)
+
+      state.push('mdc_block_slot_close', 'template', -1)
+
       state.line = lineEnd
+      state.lineMax = oldLineMax
+
       return true
-    }
-
-    // Restore lineMax after tokenizing so it doesn't leak a narrower bound to
-    // whatever comes after this slot (see `comark_block`'s save/restore above).
-    const oldLineMax = state.lineMax
-    const slot = state.push('mdc_block_slot_open', 'template', 1)
-    slot.attrSet('name', `${name}`)
-    props?.forEach(([key, value]) => {
-      if (key === 'class') slot.attrJoin(key, value)
-      else slot.attrSet(key, value)
-    })
-
-    state.line = startLine + 1
-    state.lineMax = lineEnd
-
-    state.md.block.tokenize(state, startLine + 1, lineEnd)
-
-    state.push('mdc_block_slot_close', 'template', -1)
-
-    state.line = lineEnd
-    state.lineMax = oldLineMax
-
-    return true
-  })
+    },
+    { alt: ['paragraph'] }
+  )
 }
 
 const ALLOWED_PREV_CHARS = new Set([' ', '\t', '\n', '*', '_', '['])
