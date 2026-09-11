@@ -63,6 +63,26 @@ describe('resolveAttributes (default / preserve mode)', () => {
     const result = resolveAttributes({ $: { line: 3 }, type: 'info' }, makeRenderData())
     expect(result).toEqual({ type: 'info' })
   })
+
+  // Highlighters mark where their injected classes end and the user's begin
+  // with a ` . ` sentinel, so `userBlockAttrs` can recover the user portion on
+  // markdown stringify. Every framework renderer spreads this result onto a
+  // real element, so the sentinel must be gone by the time it lands.
+  it('collapses the highlighter class sentinel', () => {
+    expect(resolveAttributes({ class: 'shiki x . foo' }, makeRenderData())).toEqual({ class: 'shiki x foo' })
+  })
+
+  it('collapses the sentinel on a resolved :class binding too', () => {
+    const result = resolveAttributes(
+      { ':class': 'frontmatter.codeClass' },
+      makeRenderData({ frontmatter: { codeClass: 'shiki x . foo' } })
+    )
+    expect(result).toEqual({ class: 'shiki x foo' })
+  })
+
+  it('leaves an authored class without the sentinel alone', () => {
+    expect(resolveAttributes({ class: 'foo bar' }, makeRenderData())).toEqual({ class: 'foo bar' })
+  })
 })
 
 describe('resolveAttributes (parseJson mode)', () => {

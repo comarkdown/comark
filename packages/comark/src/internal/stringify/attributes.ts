@@ -99,7 +99,10 @@ export function resolveAttributes(
       continue
     }
 
-    result[resultKey] = outValue
+    // The ` . ` separator between a highlighter's injected classes and the
+    // user's is a markdown-stringify encoding. Every framework renderer hands
+    // this result straight to the DOM, so collapse it here.
+    result[resultKey] = outKey === 'class' ? mergeHighlighterClass(outValue) : outValue
   }
   return result
 }
@@ -165,7 +168,7 @@ function isHighlighterClass(value: string): boolean {
  * classes end and the user's begin. It exists only so `userBlockAttrs` can
  * recover the user portion on markdown stringify; it must never reach HTML.
  */
-export function mergeHighlighterClass(value: unknown): unknown {
+function mergeHighlighterClass(value: unknown): unknown {
   if (typeof value !== 'string') return value
   if (!isHighlighterClass(value)) return value
   return value
@@ -272,9 +275,14 @@ const SAFE_ATTR_NAME = /^[a-zA-Z_:][a-zA-Z0-9_:.-]*$/
  */
 export function htmlAttributes(attributes: Record<string, unknown>) {
   const parts: string[] = []
-  for (const [rawKey, value] of Object.entries(attributes)) {
+  for (const [rawKey, rawValue] of Object.entries(attributes)) {
     const key = rawKey.startsWith(':') ? rawKey.slice(1) : rawKey
     if (!SAFE_ATTR_NAME.test(key)) continue
+
+    // Same sentinel as in `resolveAttributes`: it is a markdown encoding and
+    // must never reach HTML. Handled here rather than in the caller because
+    // the HTML handler reads raw attributes when the node is raw HTML.
+    const value = key === 'class' ? mergeHighlighterClass(rawValue) : rawValue
 
     if (rawKey.startsWith(':')) {
       if (value === 'true') {
