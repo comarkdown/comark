@@ -29,12 +29,16 @@ options:
   "nodes": [
     [
       "alert",
-      { "type": "success" },
+      {
+        "type": "success"
+      },
       "✅ Successfully deployed! 🚀"
     ],
     [
       "alert",
-      { "type": "warning" },
+      {
+        "type": "warning"
+      },
       "⚠️ Please backup your data before proceeding"
     ]
   ]

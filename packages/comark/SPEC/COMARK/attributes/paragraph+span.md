@@ -19,13 +19,23 @@ A paragraph [span]{attr="value"}
         "attr": "value"
       },
       "A paragraph ",
-      ["span", {}, "span"]
+      [
+        "span",
+        {},
+        "span"
+      ]
     ],
     [
       "p",
       {},
       "A paragraph ",
-      ["span", { "attr": "value" }, "span"]
+      [
+        "span",
+        {
+          "attr": "value"
+        },
+        "span"
+      ]
     ]
   ]
 }

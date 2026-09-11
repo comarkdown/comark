@@ -1,6 +1,6 @@
 import type { PluginWithOptions, MarkdownExit } from 'markdown-exit'
 import { defineComarkPlugin } from '../utils/helpers.ts'
-import type { MarkdownItPlugin, NodeHandler } from '../types'
+import type { MarkdownItPlugin, NodeHandler, Node } from '../types'
 
 export interface MdcInlineBindingOptions {
   /**
@@ -9,6 +9,97 @@ export interface MdcInlineBindingOptions {
    * @default 'binding'
    */
   tag?: string
+}
+
+export type IfComparisonOperator = 'eq' | 'neq' | 'gt' | 'gte' | 'lt' | 'lte'
+
+export type IfWrapperTag = 'div' | 'span' | 'p' | 'section' | 'article' | 'aside' | 'header' | 'footer' | 'main' | 'nav'
+
+export interface IfProps {
+  value?: unknown
+  eq?: unknown
+  neq?: unknown
+  gt?: unknown
+  gte?: unknown
+  lt?: unknown
+  lte?: unknown
+  as?: unknown
+  [key: string]: unknown
+}
+
+const IF_WRAPPER_TAGS = new Set<IfWrapperTag>([
+  'div',
+  'span',
+  'p',
+  'section',
+  'article',
+  'aside',
+  'header',
+  'footer',
+  'main',
+  'nav',
+])
+
+const IF_COMPARISON_OPERATORS: readonly IfComparisonOperator[] = ['eq', 'neq', 'gt', 'gte', 'lt', 'lte']
+
+function compareIfValue(operator: IfComparisonOperator, value: unknown, expected: unknown): boolean {
+  switch (operator) {
+    case 'eq':
+      return value === expected
+    case 'neq':
+      return value !== expected
+    case 'gt':
+      return (value as any) > (expected as any)
+    case 'gte':
+      return (value as any) >= (expected as any)
+    case 'lt':
+      return (value as any) < (expected as any)
+    case 'lte':
+      return (value as any) <= (expected as any)
+  }
+}
+
+/** Evaluate the resolved props of an `::if` component. */
+export function shouldRenderIf(props: IfProps): boolean {
+  let hasComparison = false
+  for (const operator of IF_COMPARISON_OPERATORS) {
+    if (!Object.hasOwn(props, operator)) continue
+    hasComparison = true
+
+    if (!Object.hasOwn(props, 'value') || props.value === undefined) return false
+    const expected = props[operator]
+    if (expected === undefined || !compareIfValue(operator, props.value, expected)) return false
+  }
+
+  return hasComparison || Boolean(props.value)
+}
+
+/** Select an `::if` branch from AST children without rendering inactive nodes. */
+export function selectIfBranch(children: Node[], matches: boolean): Node[] | undefined {
+  const regularChildren: Node[] = []
+  let defaultSlot: Node[] | undefined
+  let elseSlot: Node[] | undefined
+  for (const child of children) {
+    if (Array.isArray(child) && child[0] === 'template') {
+      const attrs = child[1]
+      const slotKey = Object.keys(attrs).find((key) => key.startsWith('#') || key.startsWith('v-slot:'))
+      const name = attrs.name ?? (slotKey?.startsWith('#') ? slotKey.slice(1) : slotKey?.slice(7))
+      if (name) {
+        if (name === 'default') defaultSlot = child.slice(2) as Node[]
+        if (name === 'else') elseSlot = child.slice(2) as Node[]
+        continue
+      }
+    }
+    regularChildren.push(child)
+  }
+  return matches ? (defaultSlot ?? regularChildren) : elseSlot
+}
+
+/** Validate and normalize the optional HTML wrapper used by an `::if` component. */
+export function resolveIfWrapper(value: unknown): IfWrapperTag | undefined {
+  if (value === undefined) return undefined
+  if (typeof value === 'string' && IF_WRAPPER_TAGS.has(value as IfWrapperTag)) return value as IfWrapperTag
+  throw new Error(`Unsupported If wrapper tag: ${String(value)}`)
 }
 
 const markdownItInlineBinding: PluginWithOptions<MdcInlineBindingOptions> = (md, options = {}) => {
