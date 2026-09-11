@@ -61,24 +61,22 @@ and wrap this component in a `<svelte:boundary>` for pending/error states.
     class?: string
   } = $props()
 
+  // `parse` directly mutates `plugins` which creates an infinite effect loop
+  // so we copy it before passing it in so it gets a regular JS array and we get to still
+  // track dependencies from an external perspective
+  let parseOptions = $derived({ ...options, ...(unwrap ? { unwrap } : {}), plugins: [...plugins] })
+
   // Streaming keeps incremental state inside the parser closure, and every
   // non-streaming parse resets it, so a streaming instance must own its parser.
-  // Non-streaming instances share one, which is where the win is.
-  function resolveParser() {
-    if (parser) return parser
-    const parseOptions = { ...options, ...(unwrap ? { unwrap } : {}), plugins: [...plugins] }
-    return streaming ? createSerializedMarkdownParser(parseOptions) : getMarkdownParser(parseOptions)
-  }
+  // Non-streaming instances share one, which is where the win is. Derived from
+  // the configuration alone so a streaming instance keeps the same parser, and
+  // its incremental state, across every chunk of content.
+  let parse = $derived(
+    parser ?? (streaming ? createSerializedMarkdownParser(parseOptions) : getMarkdownParser(parseOptions)),
+  )
 
   let content = $derived(typeof value === 'string' ? value.trim() : '')
-  let parsed = $derived(
-    isMarkdownDocument(value)
-      ? value
-      : // `parse` directly mutates `plugins` which creates an infinite effect loop
-        // so we copy it before passing it in so it gets a regular JS array and we get to still
-        // track dependencies from an external perspective
-        await resolveParser()(content),
-  )
+  let parsed = $derived(isMarkdownDocument(value) ? value : await parse(content))
 </script>
 
 {#if parsed}

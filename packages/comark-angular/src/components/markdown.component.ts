@@ -76,7 +76,7 @@ export class Markdown implements OnChanges {
 
   document: MarkdownDocumentType | null = null
 
-  private serializedParse: ComarkParseFn = getMarkdownParser({})
+  private parse: ComarkParseFn = getMarkdownParser({})
 
   private cdr = inject(ChangeDetectorRef)
 
@@ -97,7 +97,7 @@ export class Markdown implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['options'] || changes['plugins'] || changes['unwrap'] || changes['streaming'] || changes['parser']) {
-      this.serializedParse = this.resolveParser()
+      this.parse = this.resolveParser()
     }
     if (
       changes['value'] ||
@@ -105,7 +105,8 @@ export class Markdown implements OnChanges {
       changes['plugins'] ||
       changes['unwrap'] ||
       changes['streaming'] ||
-      changes['summary']
+      changes['summary'] ||
+      changes['parser']
     ) {
       this.parseMarkdown()
     }
@@ -125,7 +126,7 @@ export class Markdown implements OnChanges {
     }
     source = source.trim()
 
-    this.serializedParse(source, { streaming: this.streaming }).then((result) => {
+    this.parse(source, { streaming: this.streaming }).then((result) => {
       this.document = result
       this.cdr.markForCheck()
     })
