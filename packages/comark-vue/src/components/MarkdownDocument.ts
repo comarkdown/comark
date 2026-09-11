@@ -1,3 +1,4 @@
+import { resolveForIterations, selectForBranch } from 'comark/plugins/binding'
 import type { PropType, VNode } from 'vue'
 import type {
   ComponentManifest,
@@ -8,6 +9,7 @@ import type {
   NodeRenderData,
 } from 'comark'
 import {
+  Fragment,
   computed,
   defineAsyncComponent,
   defineComponent,
@@ -142,6 +144,30 @@ function renderNode(
     // Resolve `:prefix` bindings and let Vue-specific attribute mapping run
     // on top (e.g. `className` → `class`).
     const resolved = resolveAttributes(nodeProps, renderData, { parseJson: true })
+    if ((customComponent as { __comarkFor?: boolean } | undefined)?.__comarkFor) {
+      return h(customComponent!, {
+        key,
+        __render: () => {
+          const iterations = resolveForIterations(resolved, renderData)
+          const branch = selectForBranch(children, iterations.length === 0)
+          const groups = iterations.length ? iterations : [{ key: 'empty', renderData }]
+          return h(
+            Fragment,
+            { key },
+            groups.map((iteration) =>
+              h(
+                Fragment,
+                { key: iterations.length ? `${typeof iteration.key}:${iteration.key}` : 'empty' },
+                branch.map((child, index) =>
+                  renderNode(child, components, index, componentsManifest, node, iteration.renderData)
+                )
+              )
+            )
+          )
+        },
+      })
+    }
+
     const props: Record<string, any> = {}
     for (const k in resolved) {
       if (k === 'className') {

@@ -1,6 +1,6 @@
 ---
 title: Binding
-description: "Interpolate data with `{{ path || default }}` and conditionally render content with `::if`."
+description: "Interpolate data with `{{ path || default }}` and conditionally render content with `::if`, and repeat content with `::for`."
 navigation:
   icon: i-lucide-replace
 seo:
@@ -18,7 +18,7 @@ links:
     variant: soft
 ---
 
-The `comark/plugins/binding` module lets you interpolate values with `{{ path || default }}` and conditionally render content with `::if`. Values can come from frontmatter, the renderer's `data` prop, the tree's `meta`, or a parent component's `props`.
+The `comark/plugins/binding` module lets you interpolate values with `{{ path || default }}` and conditionally render content with `::if`, and repeat content with `::for`. Values can come from frontmatter, the renderer's `data` prop, the tree's `meta`, or a parent component's `props`.
 
 The `binding()` parser plugin emits a `binding` component node whose `:value` attribute points at a dot-path. The [data binding](/syntax/components#data-binding) layer resolves that path against the ambient render context, so bindings work across HTML, ANSI, Vue, React, Svelte, Angular, and Nuxt, and round-trip back to their source form via `renderMarkdown`.
 
@@ -252,6 +252,79 @@ I am NOT fine and NOT happy.
 
 Each `#else` belongs to its enclosing component. Only the selected branch renders, and `as` wraps whichever branch is selected. Without an else slot, a failed condition produces no output. This works with all renderer-specific `If` exports.
 
+## Repeating content
+
+Register `For` alongside `Binding` to render Markdown once per array item:
+
+```typescript [render.ts]
+import { renderHtml } from '@comark/html'
+import binding, { Binding, For } from '@comark/html/plugins/binding'
+
+const markdown = `
+::for{:each="data.posts" item="post" key="id"}
+### {{ props.post.title }}
+
+{{ props.post.description }}
+#empty
+No posts published yet.
+::
+`
+
+const html = await renderHtml(markdown, {
+  plugins: [binding()],
+  components: { Binding, For },
+  data: {
+    posts: [{ id: 'hello', title: 'Hello', description: 'Our first post.' }],
+  },
+})
+```
+
+Import from your renderer's binding entry point (`html`, `ansi`, `vue`, `react`, `svelte`, `angular`, or `nuxt`). Register `For` directly in the component map. Like `If`, the block syntax uses the default component parser; `binding()` is only needed for `{{ … }}` interpolation.
+
+### Item and index aliases
+
+`item` names the current value in `props`; its default name is `item`. Add an `index` alias to expose the zero-based array position:
+
+```mdc
+::for{:each="data.posts" item="post" index="position" key="id"}
+{{ props.position }}: {{ props.post.title }}
+::
+```
+
+Arrays can contain objects or primitive values. Loop aliases remain available inside headings, attributed elements, and nested components. An inner loop can reference outer aliases; reusing an alias shadows it only within the inner loop. Aliases take precedence over component props of the same name and do not leak into following siblings.
+
+```mdc
+::for{:each="data.posts" item="post" key="id"}
+:::for{:each="props.post.tags" item="tag"}
+{{ props.post.title }}: {{ props.tag }}
+:::
+::
+```
+
+Register `If` too when combining loops with conditional content:
+
+```mdc
+::for{:each="data.posts" item="post" key="id"}
+:::if{:value="props.post.published"}
+{{ props.post.title }}
+#else
+Draft: {{ props.post.title }}
+:::
+::
+```
+
+### Empty lists
+
+`#empty` renders once when `each` is an empty array, `null`, or `undefined`. Without it, an empty list produces no output. Other non-array values are invalid. The default branch is not evaluated for an empty list, and the empty branch is not evaluated for a populated list. An explicit `#default` slot is also supported.
+
+### Stable keys
+
+`key="id"` reads each item's `id` property; nested paths such as `key="metadata.id"` work too. Values must be unique strings or finite numbers. Missing, invalid, or duplicate keys throw an error. Without `key`, iterations use their array positions.
+
+Vue, React, and Svelte use these keys to preserve an item's rendered components and uncontrolled input state when the array is reordered. Nuxt uses the Vue implementation. HTML and ANSI have no persistent DOM state. Angular currently rebuilds rendered descendants when its inputs change, so keys do not preserve component state there.
+
+`For` adds no wrapper element. Put wrapper elements inside its default slot when needed.
+
 ## Markdown round-trip
 
 When you re-serialize the AST with `renderMarkdown`, you can pass the core `Binding` handler to preserve the original `{{ … }}` shorthand:
@@ -381,6 +454,21 @@ import {
   type IfProps,
 } from 'comark/plugins/binding'
 ```
+
+### `For`
+
+Every renderer-specific binding entry point exports `For`. Register it with `components: { Binding, For }` when using interpolation inside loops.
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `each` | `unknown[]`, `null`, or `undefined` | `undefined` | Array to iterate; nullish values select `#empty` |
+| `item` | `string` | `"item"` | Alias for the current item under `props` |
+| `index` | `string` | — | Optional alias for the zero-based array position |
+| `key` | `string` | — | Item property path used for stable identity |
+
+`item` and `index` must be distinct, non-empty names without dots or prototype keys. Slots: default content repeats per item; `#empty` renders once for an empty collection. See [Repeating content](#repeating-content) for Markdown examples and renderer-specific key behavior.
+
+The core entry point exports `ForProps`, `ForIteration`, `resolveForIterations(props, renderData)`, and `selectForBranch(children, empty)` for renderer adapters. Each iteration contains a key and a render context with lexical aliases in `scope`; attribute resolution makes those aliases available under `props`.
 
 ## Use cases
 

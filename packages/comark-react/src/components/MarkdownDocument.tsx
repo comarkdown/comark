@@ -1,3 +1,4 @@
+import { resolveForIterations, selectForBranch } from 'comark/plugins/binding'
 import type {
   ElementNode,
   Node,
@@ -141,6 +142,30 @@ function renderNode(
     // remapping (`class` → `className`, string `style` → object, `tabindex`
     // → `tabIndex`).
     const resolved = resolveAttributes(nodeProps, renderData, { parseJson: true })
+    if (customComponent?.__comarkFor) {
+      return React.createElement(customComponent, {
+        key,
+        __render: () => {
+          const iterations = resolveForIterations(resolved, renderData)
+          const branch = selectForBranch(children, iterations.length === 0)
+          const groups = iterations.length ? iterations : [{ key: 'empty', renderData }]
+          return React.createElement(
+            React.Fragment,
+            { key },
+            groups.map((iteration) =>
+              React.createElement(
+                React.Fragment,
+                { key: iterations.length ? `${typeof iteration.key}:${iteration.key}` : 'empty' },
+                branch.map((child, index) =>
+                  renderNode(child, components, index, componentsManifest, node, iteration.renderData)
+                )
+              )
+            )
+          )
+        },
+      })
+    }
+
     const props: Record<string, any> = {}
     for (const k in resolved) {
       const v = resolved[k]

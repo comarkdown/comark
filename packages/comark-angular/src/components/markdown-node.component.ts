@@ -16,11 +16,19 @@ import {
   inject,
 } from '@angular/core'
 import type { ElementNode, Node as MarkdownAstNode, NodeRenderData } from 'comark'
-import { resolveIfWrapper, selectIfBranch, shouldRenderIf, type IfProps } from 'comark/plugins/binding'
+import {
+  resolveForIterations,
+  selectForBranch,
+  resolveIfWrapper,
+  selectIfBranch,
+  shouldRenderIf,
+  type IfProps,
+} from 'comark/plugins/binding'
 import { pascalCase, resolveAttributes } from 'comark/utils'
 
 interface StructuralComponent extends Type<any> {
   ɵcomarkIf?: boolean
+  __comarkFor?: boolean
 }
 
 /**
@@ -160,7 +168,13 @@ export class MarkdownNode implements OnChanges {
       const hasOwnAttrs = Object.keys(resolved).length > 0
       const childrenRenderData: NodeRenderData = hasOwnAttrs ? { ...this.renderData, props: resolved } : this.renderData
 
-      if ((customComponent as StructuralComponent | undefined)?.ɵcomarkIf) {
+      if ((customComponent as StructuralComponent | undefined)?.__comarkFor) {
+        const iterations = resolveForIterations(resolved, this.renderData)
+        const branch = selectForBranch(children, iterations.length === 0)
+        for (const iteration of iterations.length ? iterations : [{ renderData: this.renderData }]) {
+          this.renderChildren(hostEl, branch, iteration.renderData)
+        }
+      } else if ((customComponent as StructuralComponent | undefined)?.ɵcomarkIf) {
         this.renderIf(resolved, children, childrenRenderData)
       } else if (customComponent) {
         this.renderCustomComponent(customComponent, resolved, children, childrenRenderData)
@@ -326,6 +340,7 @@ export class MarkdownNode implements OnChanges {
 
     // Attach to DOM and detect changes
     this.vcr.insert(componentRef.hostView)
+    this.renderer.appendChild(this.elementRef.nativeElement, componentRef.location.nativeElement)
     componentRef.changeDetectorRef.detectChanges()
   }
 

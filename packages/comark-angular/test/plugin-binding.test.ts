@@ -1,3 +1,4 @@
+import { forCases } from '../../../test/fixtures/for'
 import '@angular/compiler'
 import { describe, expect, it } from 'vitest'
 import { Component, provideZonelessChangeDetection, type Type } from '@angular/core'
@@ -5,7 +6,7 @@ import { bootstrapApplication } from '@angular/platform-browser'
 import { renderApplication } from '@angular/platform-server'
 import { parseMarkdown, type MarkdownDocument as MarkdownDocumentType } from 'comark'
 import { MarkdownDocument } from '../src/components/markdown-document.component.ts'
-import { If } from '../src/plugins/binding.ts'
+import binding, { Binding, For, If } from '../src/plugins/binding.ts'
 import { nestedIfCases, nestedIfMarkdown } from '../../../test/fixtures/if'
 
 let probeInstances = 0
@@ -22,9 +23,11 @@ Component({
 })(Probe)
 
 async function renderMarkdown(markdown: string, data: Record<string, unknown>): Promise<string> {
-  const document = await parseMarkdown(markdown)
+  const document = await parseMarkdown(markdown, { plugins: [binding()] })
   const components: Record<string, Type<unknown>> = {
     If: If as Type<unknown>,
+    Binding: Binding as Type<unknown>,
+    For: For as Type<unknown>,
     probe: Probe as Type<unknown>,
   }
 
@@ -81,4 +84,13 @@ describe('@comark/angular plugins/binding — If component', () => {
     expect(visible).toContain('Probe')
     expect(probeInstances).toBe(1)
   })
+})
+
+it.each(forCases)('For: $name', async ({ markdown, data, expected, absent }) => {
+  const output = (await renderMarkdown(markdown, data))
+    .replace(/<[^>]*>/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+  for (const text of expected) expect(output).toContain(text)
+  for (const text of absent) expect(output).not.toContain(text)
 })

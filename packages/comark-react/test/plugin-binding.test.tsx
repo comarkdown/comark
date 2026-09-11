@@ -1,8 +1,9 @@
+import { forCases } from '../../../test/fixtures/for'
 import { describe, expect, it } from 'vitest'
 import { renderToString } from 'react-dom/server'
 import { parseMarkdown } from 'comark'
 import { MarkdownDocument } from '../src/components/MarkdownDocument'
-import binding, { Binding, If } from '../src/plugins/binding'
+import binding, { Binding, For, If } from '../src/plugins/binding'
 import { nestedIfCases, nestedIfMarkdown } from '../../../test/fixtures/if'
 
 async function renderMarkdown(markdown: string, props: Record<string, any> = {}) {
@@ -10,7 +11,7 @@ async function renderMarkdown(markdown: string, props: Record<string, any> = {})
   const html = renderToString(
     <MarkdownDocument
       value={tree}
-      components={{ binding: Binding, If }}
+      components={{ binding: Binding, For, If }}
       {...props}
     />
   )
@@ -68,4 +69,13 @@ describe('@comark/react plugins/binding — If component', () => {
     expect(await renderMarkdown(markdown, { data: { age: 21 } })).toContain('<section>Adult</section>')
     expect(await renderMarkdown(markdown, { data: { age: 17 } })).not.toContain('Adult')
   })
+})
+
+it.each(forCases)('For: $name', async ({ markdown, data, expected, absent }) => {
+  const output = (await renderMarkdown(markdown, { data }))
+    .replace(/<[^>]*>/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+  for (const text of expected) expect(output).toContain(text)
+  for (const text of absent) expect(output).not.toContain(text)
 })

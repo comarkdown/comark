@@ -2,14 +2,14 @@ import { describe, expect, it } from 'vitest'
 import { render } from 'vitest-browser-svelte'
 import { parseMarkdown } from 'comark'
 import MarkdownDocument from '../src/components/MarkdownDocument.svelte'
-import binding, { Binding, If } from '../src/plugins/binding'
+import binding, { Binding, For, If } from '../src/plugins/binding'
 import { nestedIfCases, nestedIfMarkdown } from '../../../test/fixtures/if'
 
 async function renderMarkdown(markdown: string, props: Record<string, any> = {}) {
   const tree = await parseMarkdown(markdown, { plugins: [binding()] })
   return render(MarkdownDocument, {
     value: tree,
-    components: { binding: Binding, If },
+    components: { binding: Binding, For, If },
     ...props,
   })
 }
@@ -68,4 +68,26 @@ describe('@comark/svelte plugins/binding — If component', () => {
     const hidden = await renderMarkdown(markdown, { data: { age: 17 } })
     expect(hidden.container.textContent).not.toContain('Adult')
   })
+})
+
+it('keeps keyed inputs and their values on reorder, updates items, and renders empty', async () => {
+  const posts = [
+    { id: 'a', title: 'Alpha' },
+    { id: 'b', title: 'Beta' },
+  ]
+  const screen = await renderMarkdown(
+    '::for{:each="data.posts" item="post" key="id"}\n:input{:aria-label="props.post.title"}\n\n{{ props.post.title }}\n#empty\nNo posts\n::',
+    { data: { posts } }
+  )
+  const alpha = screen.container.querySelector('input[aria-label="Alpha"]') as HTMLInputElement
+  alpha.value = 'Keep this draft'
+  await screen.rerender({ data: { posts: posts.toReversed() } })
+  expect(screen.container.querySelectorAll('input')[1]).toBe(alpha)
+  expect(alpha.value).toBe('Keep this draft')
+  await screen.rerender({ data: { posts: [{ id: 'a', title: 'Updated' }] } })
+  expect(screen.container.textContent).toContain('Updated')
+  expect(screen.container.querySelector('input')).toBe(alpha)
+  await screen.rerender({ data: { posts: [] } })
+  expect(screen.container.textContent).toContain('No posts')
+  expect(screen.container.querySelector('input')).toBeNull()
 })

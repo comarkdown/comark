@@ -1,6 +1,7 @@
 import type { PluginWithOptions, MarkdownExit } from 'markdown-exit'
+import { get } from '../utils/index.ts'
 import { defineComarkPlugin } from '../utils/helpers.ts'
-import type { MarkdownItPlugin, NodeHandler, Node } from '../types'
+import type { MarkdownItPlugin, NodeHandler, Node, NodeRenderData } from '../types'
 
 export interface MdcInlineBindingOptions {
   /**
@@ -164,4 +165,73 @@ export const Binding: NodeHandler = (node) => {
   return typeof defaultValue === 'string' && defaultValue.length > 0
     ? `{{ ${path} || ${defaultValue} }}`
     : `{{ ${path} }}`
+}
+
+export interface ForProps {
+  each?: unknown
+  item?: unknown
+  index?: unknown
+  key?: unknown
+}
+
+export interface ForIteration {
+  key: string | number
+  renderData: NodeRenderData
+}
+
+function forAlias(value: unknown, fallback?: string): string | undefined {
+  if (value === undefined) return fallback
+  if (
+    typeof value !== 'string' ||
+    !value ||
+    value.includes('.') ||
+    ['__proto__', 'prototype', 'constructor'].includes(value)
+  ) {
+    throw new Error('For aliases must be non-empty names without dots or prototype keys')
+  }
+  return value
+}
+
+/** Resolve array iterations and lexical aliases without mutating runtime data. */
+export function resolveForIterations(props: ForProps, renderData: NodeRenderData): ForIteration[] {
+  const item = forAlias(props.item, 'item')!
+  const index = forAlias(props.index)
+  if (index === item) throw new Error('For item and index aliases must be different')
+  if (props.each == null) return []
+  if (!Array.isArray(props.each)) throw new Error('For each must be an array')
+  if (props.key !== undefined && (typeof props.key !== 'string' || !props.key)) {
+    throw new Error('For key must be a non-empty item property path')
+  }
+  const keys = new Set<string | number>()
+  return Array.from(props.each, (value: unknown, position: number): ForIteration => {
+    const key = props.key === undefined ? position : get(value, props.key as string)
+    if ((typeof key !== 'string' && typeof key !== 'number') || (typeof key === 'number' && !Number.isFinite(key))) {
+      throw new Error('For item keys must be strings or finite numbers')
+    }
+    if (keys.has(key)) throw new Error(`Duplicate For key: ${key}`)
+    keys.add(key)
+    const scope = { ...renderData.scope, [item]: value, ...(index ? { [index]: position } : {}) }
+    return { key, renderData: { ...renderData, scope } }
+  })
+}
+
+/** Select the default or empty slot without evaluating inactive content. */
+export function selectForBranch(children: Node[], empty: boolean): Node[] {
+  const regular: Node[] = []
+  let defaultSlot: Node[] | undefined
+  let emptySlot: Node[] | undefined
+  for (const child of children) {
+    if (Array.isArray(child) && child[0] === 'template') {
+      const attrs = child[1]
+      const slotKey = Object.keys(attrs).find((key) => key.startsWith('#') || key.startsWith('v-slot:'))
+      const name = attrs.name ?? (slotKey?.startsWith('#') ? slotKey.slice(1) : slotKey?.slice(7))
+      if (name) {
+        if (name === 'default') defaultSlot = child.slice(2) as Node[]
+        if (name === 'empty') emptySlot = child.slice(2) as Node[]
+        continue
+      }
+    }
+    regular.push(child)
+  }
+  return empty ? (emptySlot ?? []) : (defaultSlot ?? regular)
 }

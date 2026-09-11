@@ -275,6 +275,8 @@ export interface NodeRenderData {
    * Props from parent node
    */
   props: Record<string, unknown>
+  /** Lexical bindings supplied by structural components, preserved through child props. */
+  scope?: Record<string, unknown>
 }
 // #endregion
 

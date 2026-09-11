@@ -67,6 +67,7 @@ naturally appears inline after the deepest trailing text node.
 </script>
 
 <script lang="ts">
+  import { resolveForIterations, selectForBranch } from 'comark/plugins/binding'
   import type { Node as NodeType, ComponentManifest, NodeRenderData } from 'comark'
   import type { ComponentResolver } from '../types.js'
   import MarkdownNode from './MarkdownNode.svelte'
@@ -230,6 +231,8 @@ naturally appears inline after the deepest trailing text node.
 
     return { defaultChildren, namedSlots: slots }
   })
+  let forIterations = $derived(Component?.__comarkFor ? resolveForIterations(mappedProps, renderData) : [])
+  let forChildren = $derived(Component?.__comarkFor ? selectForBranch(children, forIterations.length === 0) : [])
 </script>
 
 {#snippet renderChildren()}
@@ -250,6 +253,16 @@ naturally appears inline after the deepest trailing text node.
       class={caretClass || undefined}
       style={CARET_STYLE}>{CARET_TEXT}</span
     >{/if}
+{:else if Component?.__comarkFor}
+  {#each forIterations as iteration (iteration.key)}
+    {#each forChildren as child, i (i)}
+      <MarkdownNode node={child} {components} {componentsManifest} resolver={Resolver} renderData={iteration.renderData} />
+    {/each}
+  {:else}
+    {#each forChildren as child, i (i)}
+      <MarkdownNode node={child} {components} {componentsManifest} resolver={Resolver} {renderData} />
+    {/each}
+  {/each}
 {:else if Component && namedSlots.length > 0}
   <ComarkComponent
     {Component}
