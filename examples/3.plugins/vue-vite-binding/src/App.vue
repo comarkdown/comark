@@ -55,24 +55,6 @@ release:
 
 Hello **{{ data.user.name || friend }}** (role: {{ data.user.role }}), welcome back!
 
-## Posts
-
-::for{:each="data.posts" item="post" index="position" key="id"}
-### {{ props.post.title }}
-
-{{ props.post.description }}
-
-Post index: {{ props.position }}
-
-:::if{:value="props.post.published"}
-Published
-#else
-Draft
-:::
-#empty
-No posts published yet.
-::
-
 ## Role comparison
 
 ::if{:value="data.user.role" eq="admin"}
@@ -107,21 +89,22 @@ I am NOT fine and NOT happy 😩
 :::
 ::
 
-## Platform stats
+## Posts
 
-| Metric | Value                            |
-| ------ | -------------------------------- |
-| Users  | {{ data.stats.users }}           |
-| Uptime | {{ data.stats.uptime }}          |
-| Plan   | {{ data.plan \\|\\| community }}     |
+::for{:each="data.posts" item="post"}
+### {{ props.post.title }}
 
-## Components see their own props
+{{ props.post.description }}
 
-::card{title="Component props"}
-Inside the card the binding below pulls the card's title via \`props\`:
-
-{{ props.title }}
+:::if{:value="props.post.published"}
+[Published]{style="background: lightseagreen; padding: 2px 4px; font-size: 0.8em; border-radius: 2px;"}
+#else
+[Draft]{style="background: lightsalmon; padding: 2px 4px; font-size: 0.8em; border-radius: 2px;"}
+:::
+#empty
+No posts published yet.
 ::
+
 `
 
 const sourceMarkdown = `~~~~mdc
