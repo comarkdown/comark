@@ -32,7 +32,10 @@ const message = "Hello from twoslash"
       {
         "language": "ts",
         "meta": "twoslash",
-        "class": "shiki shiki-themes min-light twoslash lsp dark:min-light"
+        "class": "shiki shiki-themes min-light twoslash lsp dark:min-light",
+        "$": {
+          "class": ""
+        }
       },
       [
         "code",

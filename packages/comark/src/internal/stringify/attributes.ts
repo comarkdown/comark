@@ -132,9 +132,9 @@ const IMPLICIT_ATTRS: Record<string, { drop?: string[]; classBlocklist?: string[
   li: { classBlocklist: ['task-list-item'] },
   // `language`/`filename`/`highlights`/`meta` ride on the fence info string.
   // `style` comes from render-time plugins (e.g. shiki / rangi) and has no
-  // markdown form. `class` is handled specially in userBlockAttrs because
-  // highlighters merge their injected classes with the user's class — we need
-  // to strip just the highlighter portion.
+  // markdown form. `class` is handled separately in userBlockAttrs, which reads
+  // the author's own class back out of `$` when a highlighter has taken the
+  // `class` attribute over.
   pre: { drop: ['language', 'filename', 'highlights', 'meta', 'style'] },
 }
 
@@ -146,33 +146,29 @@ const IMPLICIT_ATTRS: Record<string, { drop?: string[]; classBlocklist?: string[
  */
 export function userBlockAttrs(tag: string, attributes: Record<string, unknown>): Record<string, unknown> {
   const rule = IMPLICIT_ATTRS[tag]
-  if (!rule) return { ...attributes }
+  // A highlighter owns the `class` of a `<pre>` (fenced block) or an inline
+  // `<code>`, and records the author's own class in `$`. When that record is
+  // there it is the whole truth: the user class is exactly its value, and an
+  // empty string means the author wrote none. Without it, `class` was authored
+  // and passes through untouched.
+  const recordedClass =
+    tag === 'pre' || tag === 'code' ? (attributes.$ as { class?: string } | undefined)?.class : undefined
 
   const result: Record<string, unknown> = {}
   for (const [key, value] of Object.entries(attributes)) {
-    if (rule.drop?.includes(key)) continue
-    if (key === 'class' && rule.classBlocklist && typeof value === 'string') {
-      const remaining = value
-        .split(/\s+/)
-        .filter((c) => c && !rule.classBlocklist!.includes(c))
-        .join(' ')
-      if (remaining) result[key] = remaining
+    // `$` is reserved metadata, never a user attribute.
+    if (key === '$') continue
+    if (rule?.drop?.includes(key)) continue
+    if (key === 'class' && recordedClass !== undefined) {
+      if (recordedClass) result[key] = recordedClass
       continue
     }
-    if (
-      key === 'class' &&
-      tag === 'pre' &&
-      typeof value === 'string' &&
-      (value.startsWith('shiki') || value.startsWith('shj'))
-    ) {
-      // Highlighters inject their own classes (`shiki …` / `shj shj-lang-…`)
-      // and append any user class after a `.` separator. Recover the user
-      // portion by dropping everything up to and including that separator.
-      const tokens = value.split(/\s+/)
-      const cutoff = tokens.findIndex((t) => t === '.')
-
-      const userClass = cutoff >= 0 ? tokens.slice(cutoff + 1).join(' ') : ''
-      if (userClass) result[key] = userClass
+    if (key === 'class' && rule?.classBlocklist && typeof value === 'string') {
+      const remaining = value
+        .split(/\s+/)
+        .filter((c) => c && !rule!.classBlocklist!.includes(c))
+        .join(' ')
+      if (remaining) result[key] = remaining
       continue
     }
     result[key] = value
@@ -188,6 +184,9 @@ export function userBlockAttrs(tag: string, attributes: Record<string, unknown>)
  */
 export function comarkAttributes(attributes: Record<string, unknown>) {
   const attrs = Object.entries(attributes)
+    // `$` holds internal metadata (source line, raw-HTML markers, the class a
+    // highlighter took over). It has no markdown form and must never round-trip.
+    .filter(([key]) => key !== '$')
     .map(([key, value]) => {
       if (key.startsWith(':') && value === 'true') {
         return key.slice(1)
@@ -242,6 +241,8 @@ export function htmlAttributes(attributes: Record<string, unknown>) {
   const parts: string[] = []
   for (const [rawKey, value] of Object.entries(attributes)) {
     const key = rawKey.startsWith(':') ? rawKey.slice(1) : rawKey
+    // `$` is reserved metadata and has no HTML form. `SAFE_ATTR_NAME` already
+    // rejects it, so callers that forward raw attributes stay safe.
     if (!SAFE_ATTR_NAME.test(key)) continue
 
     if (rawKey.startsWith(':')) {

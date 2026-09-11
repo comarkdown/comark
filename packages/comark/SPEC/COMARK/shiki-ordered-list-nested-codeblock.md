@@ -41,7 +41,10 @@ options:
           "pre",
           {
             "language": "rust",
-            "class": "shiki shiki-themes github-dark dark:github-dark"
+            "class": "shiki shiki-themes github-dark dark:github-dark",
+            "$": {
+              "class": ""
+            }
           },
           [
             "code",

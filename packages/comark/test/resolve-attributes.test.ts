@@ -63,6 +63,15 @@ describe('resolveAttributes (default / preserve mode)', () => {
     const result = resolveAttributes({ $: { line: 3 }, type: 'info' }, makeRenderData())
     expect(result).toEqual({ type: 'info' })
   })
+
+  // A highlighter keeps `class` as the full string renderers need and records
+  // the author's own class in `$`. Framework renderers spread this result onto a
+  // real element, so `class` passes through verbatim and `$` never comes along.
+  it('passes a highlighter class through and leaves $ behind', () => {
+    const result = resolveAttributes({ class: 'shiki x foo', $: { class: 'foo' } }, makeRenderData())
+    expect(result).toEqual({ class: 'shiki x foo' })
+    expect(result).not.toHaveProperty('$')
+  })
 })
 
 describe('resolveAttributes (parseJson mode)', () => {

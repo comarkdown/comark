@@ -10,6 +10,7 @@ import {
 
 export type {
   CodeBlockAttributes,
+  ShikiGrammarContext,
   HighlightOptions,
   ShikiCoreOptions,
   ShikiLanguageLoader,

@@ -29,7 +29,10 @@ console.log(greeting)
       "pre",
       {
         "language": "typescript",
-        "class": "shiki shiki-themes github-dark dark:github-dark"
+        "class": "shiki shiki-themes github-dark dark:github-dark",
+        "$": {
+          "class": ""
+        }
       },
       [
         "code",
