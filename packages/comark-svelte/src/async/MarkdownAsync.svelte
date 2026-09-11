@@ -29,7 +29,7 @@ and wrap this component in a `<svelte:boundary>` for pending/error states.
 -->
 <script lang="ts">
   import type { MarkdownDocument as MarkdownDocumentType, ComarkPlugin, ComponentManifest } from 'comark'
-  import { parseMarkdown } from 'comark'
+  import { createSerializedMarkdownParser } from 'comark'
   import { isMarkdownDocument } from 'comark/utils'
   import MarkdownDocument from '../components/MarkdownDocument.svelte'
   import ResolveAsync from './ResolveAsync.svelte'
@@ -59,13 +59,19 @@ and wrap this component in a `<svelte:boundary>` for pending/error states.
   } = $props()
 
   let content = $derived(typeof value === 'string' ? value.trim() : '')
+  // Compare config values before creating a parser when parent props are spread.
+  let parserOptions = $derived(options)
+  let parserPlugins = $derived(plugins)
+  let parserUnwrap = $derived(unwrap)
+  let parse = $derived(createSerializedMarkdownParser({
+    ...parserOptions,
+    ...(parserUnwrap ? { unwrap: parserUnwrap } : {}),
+    plugins: [...parserPlugins],
+  }))
   let parsed = $derived(
     isMarkdownDocument(value)
       ? value
-      : // `parse` directly mutates `plugins` which creates an infinite effect loop
-        // so we copy it before passing it in so it gets a regular JS array and we get to still
-        // track dependencies from an external perspective
-        await parseMarkdown(content, { ...options, ...(unwrap ? { unwrap } : {}), plugins: [...plugins] }),
+      : await parse(content, { streaming }),
   )
 </script>
 
