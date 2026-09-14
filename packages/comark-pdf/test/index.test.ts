@@ -16,8 +16,14 @@ describe('renderPdf', () => {
     expect(isPdf(bytes)).toBe(true)
   })
 
-  it('renders with A4 format option', async () => {
-    const bytes = await renderPdf('# Hello', { pdf: { format: 'A4', margin: '20mm' } })
+  it('renders with custom width/height page size', async () => {
+    const { Text } = await import('@jasy/pdf')
+    const bytes = await renderPdf('::label\n::', {
+      pdf: { width: '50mm', height: '65mm', margin: '3.5mm' },
+      components: {
+        label: () => Text('Label'),
+      },
+    })
     expect(isPdf(bytes)).toBe(true)
   })
 

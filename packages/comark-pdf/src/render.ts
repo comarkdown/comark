@@ -1,7 +1,12 @@
 import { Document, Page, Column, renderToBytes } from '@jasy/pdf'
 import type { MarkdownDocument } from 'comark'
 import { astToJasy } from './jasy.ts'
-import { pdfConfigToPageProps } from './page.ts'
+import {
+  pdfConfigToDocumentOptions,
+  pdfConfigToPageProps,
+  pdfConfigToRenderOptions,
+  resolveContentGap,
+} from './page.ts'
 import type { PdfPageConfig, PdfRendererOptions } from './types.ts'
 
 export * from 'comark/render'
@@ -31,13 +36,26 @@ export const renderPdfDocument = (
   const frontmatterPdf = ((document as MarkdownDocument).frontmatter?.pdf ?? {}) as PdfPageConfig
   const pdfConfig: PdfPageConfig = { ...frontmatterPdf, ...options?.pdf }
   const pageProps = pdfConfigToPageProps(pdfConfig)
+  const documentOpts = pdfConfigToDocumentOptions(pdfConfig)
+  const gap = resolveContentGap(pdfConfig)
 
-  const nodes = astToJasy(document.nodes, options?.components)
+  const textDefaults = documentOpts
+    ? {
+        size: documentOpts.size,
+        font: documentOpts.font,
+        color: typeof documentOpts.color === 'string' ? documentOpts.color : undefined,
+        lineHeight: documentOpts.lineHeight,
+        align: documentOpts.align,
+        bold: documentOpts.bold,
+        italic: documentOpts.italic,
+      }
+    : undefined
+
+  const nodes = astToJasy(document.nodes, options?.components, textDefaults)
   const content = nodes.length > 0 ? nodes : []
+  const page = Page(pageProps, [Column({ gap }, content)])
 
-  return Document([
-    Page(pageProps, [Column({ gap: 10 }, content)]),
-  ])
+  return documentOpts ? Document(documentOpts, [page]) : Document([page])
 }
 
 /**
@@ -55,7 +73,12 @@ export const renderPdfDocument = (
 export const renderPdfBytes = (
   document: MarkdownDocument | { nodes: MarkdownDocument['nodes'] },
   options?: PdfRendererOptions,
-): Promise<Uint8Array> => renderToBytes(renderPdfDocument(document, options))
+): Promise<Uint8Array> => {
+  const frontmatterPdf = ((document as MarkdownDocument).frontmatter?.pdf ?? {}) as PdfPageConfig
+  const pdfConfig: PdfPageConfig = { ...frontmatterPdf, ...options?.pdf }
+  const renderOpts = pdfConfigToRenderOptions(pdfConfig, options?.fonts)
+  return renderToBytes(renderPdfDocument(document, options), renderOpts)
+}
 
 /**
  * Alias retained for compatibility — use `renderPdfBytes` for the recommended name.

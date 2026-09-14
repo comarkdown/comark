@@ -26,6 +26,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
   padding: 8px 14px;
   font-size: 11px;
   font-weight: 600;
@@ -35,6 +36,37 @@ body {
   background: #1e1e32;
   border-bottom: 1px solid #2a2a3e;
   user-select: none;
+}
+
+.example-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  justify-content: flex-end;
+}
+
+.example-tabs button {
+  border: 1px solid #3a3a52;
+  border-radius: 4px;
+  background: transparent;
+  color: #9aa0b8;
+  font: inherit;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+
+.example-tabs button:hover {
+  color: #e0e0f0;
+  border-color: #5a5a78;
+}
+
+.example-tabs button.active {
+  color: #1e1e32;
+  background: #cdd6f4;
+  border-color: #cdd6f4;
 }
 
 #editor-pane {

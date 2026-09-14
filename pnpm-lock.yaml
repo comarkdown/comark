@@ -709,6 +709,9 @@ importers:
       '@comark/pdf':
         specifier: workspace:*
         version: link:../../../packages/comark-pdf
+      '@jasy/pdf':
+        specifier: 1.0.0-beta.3
+        version: 1.0.0-beta.3(supports-color@10.2.2)
     devDependencies:
       typescript:
         specifier: 'catalog:'

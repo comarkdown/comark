@@ -18,13 +18,45 @@ type JasyNode = any
 /** Override hook: replace a tag's default mapping with a custom jasy node factory. */
 export type JasyComponentFn = (element: ElementNode, ctx: JasyMapContext) => JasyNode | null
 
+/** Optional body text defaults (from `pdf.fontSize` / `pdf.color` / …). */
+export interface JasyTextDefaults {
+  size?: number
+  font?: string | string[]
+  color?: string
+  lineHeight?: number
+  align?: 'left' | 'center' | 'right' | 'justify'
+  bold?: boolean
+  italic?: boolean
+}
+
 export interface JasyMapContext {
   mapNodes(nodes: Node[]): JasyNode[]
   mapInlineToSpans(nodes: Node[], inheritStyle?: Record<string, unknown>): ReturnType<typeof span>[]
   components?: Record<string, JasyComponentFn>
+  textDefaults?: JasyTextDefaults
 }
 
 const HEADING_SIZES = [28, 22, 18, 16, 14, 13] as const
+
+const DEFAULT_BODY_SIZE = 12
+
+/** Style bag for body Text / Paragraph, merging configured document defaults. */
+const bodyTextStyle = (
+  ctx: JasyMapContext,
+  extra: Record<string, unknown> = {},
+): Record<string, unknown> => {
+  const d = ctx.textDefaults
+  return {
+    size: d?.size ?? DEFAULT_BODY_SIZE,
+    ...(d?.font !== undefined ? { font: d.font } : {}),
+    ...(d?.color !== undefined ? { color: d.color } : {}),
+    ...(d?.lineHeight !== undefined ? { lineHeight: d.lineHeight } : {}),
+    ...(d?.align !== undefined ? { align: d.align } : {}),
+    ...(d?.bold !== undefined ? { bold: d.bold } : {}),
+    ...(d?.italic !== undefined ? { italic: d.italic } : {}),
+    ...extra,
+  }
+}
 
 /**
  * Recursively collect plain text from a node subtree.
@@ -117,21 +149,21 @@ const mapListItem = (
     if (Array.isArray(child) && (child as ElementNode)[0] === 'p') {
       const [, , ...pChildren] = child as ElementNode
       const content = inlineContent(pChildren)
-      return [Text(content, { size: 12 })]
+      return [Text(content, bodyTextStyle(ctx))]
     }
   }
   return ctx.mapNodes(children)
 }
 
 /** Map a GFM table thead or tbody cells to a row array (flat cell array). */
-const mapTableRow = (node: ElementNode): JasyNode[] => {
+const mapTableRow = (node: ElementNode, ctx: JasyMapContext): JasyNode[] => {
   const [, , ...cells] = node
   return cells.flatMap((cell) => {
-    if (typeof cell === 'string') return [Text(cell, { size: 12 })]
+    if (typeof cell === 'string') return [Text(cell, bodyTextStyle(ctx))]
     const [, attrs, ...children] = cell as ElementNode
     const content = inlineContent(children)
     const align = String(attrs.align ?? 'left') as 'left' | 'center' | 'right'
-    return [Text(content as string, { size: 12, align })]
+    return [Text(content as string, bodyTextStyle(ctx, { align }))]
   })
 }
 
@@ -142,7 +174,7 @@ const mapTableRow = (node: ElementNode): JasyNode[] => {
 const mapBlockNode = (node: Node, ctx: JasyMapContext): JasyNode | JasyNode[] | null => {
   if (typeof node === 'string') {
     const text = node.trim()
-    return text ? Text(text, { size: 12 }) : null
+    return text ? Text(text, bodyTextStyle(ctx)) : null
   }
 
   const [tag, attrs, ...children] = node as ElementNode
@@ -167,13 +199,15 @@ const mapBlockNode = (node: Node, ctx: JasyMapContext): JasyNode | JasyNode[] | 
       return Text(content as string, {
         size: HEADING_SIZES[level],
         bold: level < 2,
+        ...(ctx.textDefaults?.font !== undefined ? { font: ctx.textDefaults.font } : {}),
+        ...(ctx.textDefaults?.color !== undefined ? { color: ctx.textDefaults.color } : {}),
       })
     }
 
     case 'p': {
       const content = inlineContent(children)
       if (!content || (typeof content === 'string' && !content.trim())) return null
-      return Paragraph(content as string, { size: 12 })
+      return Paragraph(content as string, bodyTextStyle(ctx))
     }
 
     case 'blockquote': {
@@ -197,13 +231,13 @@ const mapBlockNode = (node: Node, ctx: JasyMapContext): JasyNode | JasyNode[] | 
       return Divider({ color: '#cccccc', margin: { y: 8 } })
 
     case 'ul': {
-      const items = children.map((child, i) => {
+      const items = children.map((child) => {
         if (typeof child === 'string') return null
         const [itemTag, , ...itemChildren] = child as ElementNode
         if (itemTag !== 'li') return null
         const inner = mapListItem(itemChildren, ctx)
         return Row({ gap: 6, align: 'start' }, [
-          Text('•', { size: 12, color: '#666666' }),
+          Text('•', bodyTextStyle(ctx, { color: '#666666' })),
           Column({ gap: 4 }, inner.length > 0 ? inner : [Text('')]),
         ])
       })
@@ -218,7 +252,7 @@ const mapBlockNode = (node: Node, ctx: JasyMapContext): JasyNode | JasyNode[] | 
         if (itemTag !== 'li') return null
         const inner = mapListItem(itemChildren, ctx)
         return Row({ gap: 6, align: 'start' }, [
-          Text(`${i + 1}.`, { size: 12, color: '#666666' }),
+          Text(`${i + 1}.`, bodyTextStyle(ctx, { color: '#666666' })),
           Column({ gap: 4 }, inner.length > 0 ? inner : [Text('')]),
         ])
       })
@@ -243,16 +277,16 @@ const mapBlockNode = (node: Node, ctx: JasyMapContext): JasyNode | JasyNode[] | 
       const headerRowNode = thead
         ? (thead[2] as ElementNode | undefined)
         : undefined
-      const headerCells = headerRowNode ? mapTableRow(headerRowNode) : undefined
+      const headerCells = headerRowNode ? mapTableRow(headerRowNode, ctx) : undefined
 
       const bodyRowNodes = tbody
         ? (tbody as ElementNode).slice(2).filter(Array.isArray) as ElementNode[]
         : []
 
-      const numCols = headerCells?.length ?? (bodyRowNodes[0] ? mapTableRow(bodyRowNodes[0]).length : 1)
+      const numCols = headerCells?.length ?? (bodyRowNodes[0] ? mapTableRow(bodyRowNodes[0], ctx).length : 1)
       const columns = Array.from({ length: numCols }, () => '1fr' as '1fr')
 
-      const rows = bodyRowNodes.map((rowNode) => mapTableRow(rowNode))
+      const rows = bodyRowNodes.map((rowNode) => mapTableRow(rowNode, ctx))
 
       return Table(
         {
@@ -313,11 +347,13 @@ const mapNodes = (nodes: Node[], ctx: JasyMapContext): JasyNode[] => {
 export const astToJasy = (
   nodes: Node[],
   components?: Record<string, JasyComponentFn>,
+  textDefaults?: JasyTextDefaults,
 ): JasyNode[] => {
   const ctx: JasyMapContext = {
     mapNodes: (ns) => mapNodes(ns, ctx),
     mapInlineToSpans: (ns, style) => mapInlineToSpans(ns, style),
     components,
+    textDefaults,
   }
   return mapNodes(nodes, ctx)
 }

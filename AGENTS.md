@@ -162,8 +162,8 @@ packages/comark-pdf/src/
 ├── index.ts              # createPdfRenderer, renderPdf, renderPdfFromDocument
 ├── render.ts             # renderPdfDocument, renderPdfBytes, renderPdfFromDocument + re-exports comark/render
 ├── jasy.ts               # Comark AST → jasy component tree mapper (astToJasy)
-├── page.ts               # PdfPageConfig → jasy Page props + header/footer (pdfConfigToPageProps)
-├── types.ts              # PdfPageConfig, PdfMargin, PdfRendererOptions, JasyComponentFn
+├── page.ts               # PdfPageConfig → jasy Page/Document/render options (pdfConfigTo*)
+├── types.ts              # PdfPageConfig (page + document + render keys), PdfRendererOptions, JasyComponentFn
 ├── parse.ts              # re-export comark/parse
 ├── preview.ts            # browser: mount() — PDF bytes → Blob URL in iframe
 ├── node.ts               # Node: renderPdfToBuffer, renderPdfToFile

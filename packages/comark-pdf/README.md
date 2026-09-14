@@ -77,9 +77,24 @@ handle.revoke()
 ```yaml
 ---
 pdf:
-  format: A4          # page size (A4, Letter, A3, …)
+  format: A4          # page size (A4, Letter, A3, A5, …); ignored when width + height are set
+  width: 50mm         # custom page width (pair with height)
+  height: 65mm        # custom page height (pair with width)
   orientation: portrait  # portrait | landscape
-  margin: 20mm        # or { top, right, bottom, left }
+  margin: 20mm        # length string, points number, or { top, right, bottom, left }
+  gap: 10             # space between block children (points)
+  justify: start      # page main-axis alignment
+  align: start        # page cross-axis alignment
+  font: Helvetica     # Document default font
+  fontSize: 11        # Document default text size (points)
+  color: "#1b2433"    # Document default text color
+  lineHeight: 1.5     # Document default line-height
+  textAlign: left     # Document default text align
+  title: "My Report"  # metadata + accessibility title
+  author: "Acme"
+  lang: en-US
+  accessible: false
+  onOverflow: error   # error | warn | ignore
   header: "My Report" # center header; tokens: {{ page }}, {{ totalPages }}
   headerLeft: "Draft"
   headerRight: "Confidential"

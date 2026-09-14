@@ -1,6 +1,6 @@
 ---
 title: PDF Preview
-description: A live markdown editor that renders Comark content to paginated PDF pages with paged.js, including headers, footers, and page breaks.
+description: A live markdown editor that renders Comark content to PDF bytes via jasy, with invoice, fillable form, and product label examples.
 navigation:
   icon: i-lucide-file-text
 category: Vite
@@ -11,29 +11,26 @@ path: /examples/vite/pdf
 
 ```ts [src/main.ts]
 import { createPdfRenderer } from '@comark/pdf'
-import { paginate } from '@comark/pdf/preview'
-import shiki from '@comark/pdf/plugins/shiki'
-import math, { Math } from '@comark/pdf/plugins/math'
-import mermaid, { Mermaid } from '@comark/pdf/plugins/mermaid'
+import { mount } from '@comark/pdf/preview'
+import { examples } from './examples'
 
 const renderPdf = createPdfRenderer({
-  plugins: [shiki(), math(), mermaid()],
-  components: { Math, Mermaid },
-  pdf: {
-    format: 'A4',
-    margin: '20mm',
-    footer: 'Page {{ page }} of {{ totalPages }}',
-  },
+  plugins: examples[0].plugins,
+  components: examples[0].components,
 })
 
-async function updatePreview(markdown: string) {
-  const html = await renderPdf(markdown)
-  const { css, body } = splitPagedHtml(html)
-  const preview = document.getElementById('preview') as HTMLDivElement
-  preview.innerHTML = ''
-  const flow = await paginate(preview, [css], body)
-  pageCount.textContent = `${flow.total} pages`
-}
+const bytes = await renderPdf(examples[0].markdown)
+mount(document.getElementById('preview')!, bytes)
+```
+
+```ts [src/examples/invoice.ts]
+import { Column, Table, Text, … } from '@jasy/pdf'
+import type { JasyComponentFn } from '@comark/pdf'
+
+export const Invoice: JasyComponentFn = () =>
+  Column({ gap: 0 }, [
+    // billed-to, line-item table, totals…
+  ])
 ```
 
 ```html [index.html]
@@ -41,14 +38,16 @@ async function updatePreview(markdown: string) {
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Comark PDF</title>
     <link rel="stylesheet" href="/src/style.css" />
   </head>
   <body>
     <div id="app">
       <div id="editor-pane">
-        <div class="pane-header">Markdown</div>
+        <div class="pane-header">
+          <span>Markdown</span>
+          <div id="example-tabs" class="example-tabs"></div>
+        </div>
         <textarea id="input" spellcheck="false"></textarea>
       </div>
       <div id="preview-pane">
@@ -64,29 +63,13 @@ async function updatePreview(markdown: string) {
 </html>
 ```
 
-```json [package.json]
-{
-  "name": "comark-pdf",
-  "version": "0.0.1",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "@comark/pdf": "workspace:*",
-    "pagedjs": "^0.4.3",
-    "shiki": "^4.0.0"
-  },
-  "devDependencies": {
-    "typescript": "^5.9.3",
-    "vite": "^7.3.1"
-  }
-}
-```
-
 ::
 
-This example shows a split-pane live preview: write Comark markdown on the left and see it rendered as paginated A4 pages on the right via `createPdfRenderer` and `paginate`. Frontmatter `pdf:` options control page size, margins, headers, and footers. Use `::page-break` to force a new page.
+This example shows a split-pane live preview: write Comark markdown on the left and see PDF bytes mounted on the right via `createPdfRenderer` and `mount`. Use the tabs to switch between:
+
+- **Markdown** — headings, lists, tables, math, and `::page-break`
+- **Invoice** — multi-page commercial invoice with a repeating footer (from [jasy showroom](https://jasy.dev/showroom))
+- **Fillable form** — AcroForm fields (`TextField`, `Checkbox`, `RadioGroup`, …) via a custom `JasyComponentFn`
+- **Product label** — custom `50mm × 65mm` page via frontmatter `pdf.width` / `pdf.height`
+
+Frontmatter `pdf:` options control page size, margins, headers, and footers.

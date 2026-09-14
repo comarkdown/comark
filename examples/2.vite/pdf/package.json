@@ -9,7 +9,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@comark/pdf": "workspace:*"
+    "@comark/pdf": "workspace:*",
+    "@jasy/pdf": "1.0.0-beta.3"
   },
   "devDependencies": {
     "typescript": "catalog:",

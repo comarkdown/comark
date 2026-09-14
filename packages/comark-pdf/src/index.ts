@@ -3,8 +3,18 @@ import { renderPdfBytes, renderPdfDocument, renderPdfFromDocument } from './rend
 import type { PdfPageConfig, PdfRendererOptions } from './types.ts'
 
 export { renderPdfDocument, renderPdfBytes, renderPdfFromDocument } from './render.ts'
-export type { PdfMargin, PdfPageConfig, PdfRendererOptions } from './types.ts'
-export type { JasyComponentFn, JasyMapContext } from './jasy.ts'
+export type { PdfMargin, PdfPageConfig, PdfRendererOptions, PdfEncryptOptions, PdfJustify, PdfAlign, PdfTextAlign, PdfOverflowPolicy } from './types.ts'
+export type { JasyComponentFn, JasyMapContext, JasyTextDefaults } from './jasy.ts'
+export {
+  pdfConfigToPageProps,
+  pdfConfigToDocumentOptions,
+  pdfConfigToRenderOptions,
+  resolveContentGap,
+  resolveJasyMargin,
+  resolveJasySize,
+  resolveJasyCustomSize,
+  parseLengthToPt,
+} from './page.ts'
 
 /**
  * Creates a reusable parse+render function with pre-configured options.
