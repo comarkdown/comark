@@ -1,2 +1,2 @@
-export * from '@comark/html/plugins/binding'
-export { default } from '@comark/html/plugins/binding'
+export * from 'comark/plugins/binding'
+export { default } from 'comark/plugins/binding'

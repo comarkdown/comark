@@ -1,6 +1,6 @@
 ---
 title: PDF preview
-description: A live markdown editor that renders Comark content to paginated PDF pages with paged.js, including headers, footers, and page breaks.
+description: A live markdown editor that renders Comark content to PDF bytes with jasy and shows them in an iframe preview.
 navigation:
   icon: i-lucide-file-text
 ---
@@ -9,13 +9,12 @@ navigation:
 
 ```ts [src/main.ts]
 import { createPdfRenderer } from '@comark/pdf'
-import { paginate } from '@comark/pdf/preview'
-import shiki from '@comark/pdf/plugins/shiki'
+import { mount } from '@comark/pdf/preview'
 import math, { Math } from '@comark/pdf/plugins/math'
 import mermaid, { Mermaid } from '@comark/pdf/plugins/mermaid'
 
 const renderPdf = createPdfRenderer({
-  plugins: [shiki(), math(), mermaid()],
+  plugins: [math(), mermaid()],
   components: { Math, Mermaid },
   pdf: {
     format: 'A4',
@@ -24,13 +23,12 @@ const renderPdf = createPdfRenderer({
   },
 })
 
+let mountHandle: { revoke(): void } | null = null
+
 async function updatePreview(markdown: string) {
-  const html = await renderPdf(markdown)
-  const { css, body } = splitPagedHtml(html)
-  const preview = document.getElementById('preview') as HTMLDivElement
-  preview.innerHTML = ''
-  const flow = await paginate(preview, [css], body)
-  pageCount.textContent = `${flow.total} pages`
+  const bytes = await renderPdf(markdown)
+  mountHandle?.revoke()
+  mountHandle = mount(document.getElementById('preview')!, bytes)
 }
 ```
 
@@ -74,17 +72,17 @@ async function updatePreview(markdown: string) {
     "preview": "vite preview"
   },
   "dependencies": {
-    "@comark/pdf": "workspace:*",
-    "pagedjs": "^0.4.3",
-    "shiki": "^4.0.0"
+    "@comark/pdf": "workspace:*"
   },
   "devDependencies": {
-    "typescript": "^5.9.3",
-    "vite": "^7.3.1"
+    "typescript": "catalog:",
+    "vite": "catalog:"
   }
 }
 ```
 
 ::
 
-This example shows a split-pane live preview: write Comark markdown on the left and see it rendered as paginated A4 pages on the right via `createPdfRenderer` and `paginate`. Frontmatter `pdf:` options control page size, margins, headers, and footers. Use `::page-break` to force a new page.
+This example shows a split-pane live preview: write Comark markdown on the left and see PDF bytes on the right via `createPdfRenderer` and `mount`. Frontmatter `pdf:` options control page size, margins, headers, and footers. Use `::page-break` to force a new page.
+
+Math and Mermaid parse correctly but **degrade** in PDF output (monospace source text). Code blocks have no Shiki colors. See [Render Comark to PDF](/rendering/pdf#feature-support) for the full support table.

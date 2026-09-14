@@ -1,30 +1,33 @@
-import type { NodeHandler } from 'comark'
+import { PageBreak as JasyPageBreak, Box } from '@jasy/pdf'
+import type { JasyComponentFn } from '../jasy.ts'
 
 /**
- * HTML component render function for `::page-break` nodes.
+ * jasy component render function for `::page-break` nodes.
  *
  * Parsing of `::page-break` is handled automatically by the core `components` plugin
- * (enabled by default). This handler converts the parsed AST node to a CSS fragmentation
- * element that paged.js and Chromium's print engine both honour.
+ * (enabled by default). This handler converts the parsed AST node to a jasy
+ * `PageBreak()` call, which forces a page break in the generated PDF.
  *
- * Supported attribute:
- *   type="after"  (default) — insert a break after this element
- *   type="before"           — insert a break before this element
+ * The `type` attribute is mapped to jasy's `breakBefore`/`breakAfter` prop on a Box:
+ *   type="after"  (default) — break after this element
+ *   type="before"           — break before this element
  *
  * @example
  * ```typescript
  * import { renderPdf } from '@comark/pdf'
  * import { PageBreak } from '@comark/pdf/plugins/page-break'
  *
- * const html = await renderPdf(markdown, {
+ * const bytes = await renderPdf(markdown, {
  *   components: { 'page-break': PageBreak },
  * })
  * ```
  */
-export const PageBreak: NodeHandler = ([, attrs]) => {
+export const PageBreak: JasyComponentFn = ([, attrs]) => {
   const type = String(attrs.type ?? 'after')
-  const style = type === 'before' ? 'break-before:page' : 'break-after:page'
-  return `<div class="comark-page-break" style="${style}" aria-hidden="true"></div>`
+  if (type === 'before') {
+    return Box({ breakBefore: true }, [])
+  }
+  return JasyPageBreak()
 }
 
 /**

@@ -1,41 +1,39 @@
 import { describe, expect, it } from 'vitest'
-import { paginate } from '../src/preview.ts'
+import { renderPdf } from '../src/index.ts'
+import { mount } from '../src/preview.ts'
+import { BASIC_MARKDOWN } from './fixtures/markdown.ts'
 
-const PAGE_CSS = '@page { size: A4; margin: 20mm; }'
-const BASIC_BODY = '<article><h1>PDF Preview</h1><p>Hello World paragraph.</p></article>'
-const ADVANCED_BODY = `
-  <article>
-    <h1>Advanced Preview</h1>
-    <p>First paragraph of content for the advanced paged.js test.</p>
-    <h2>Section B</h2>
-    <p>Second paragraph of content to verify stylesheet injection.</p>
-    <pre><code>const x = 42</code></pre>
-  </article>
-`
+const isPdf = (bytes: Uint8Array) =>
+  Buffer.from(bytes.slice(0, 4)).toString('ascii') === '%PDF'
 
-describe('paginate', () => {
-  it('basic — paginates explicit HTML and returns a page flow', async () => {
+describe('mount', () => {
+  it('basic — mounts a PDF as an iframe in the target element', async () => {
+    const bytes = await renderPdf(BASIC_MARKDOWN)
+    expect(isPdf(bytes)).toBe(true)
+
     const target = document.createElement('div')
     document.body.appendChild(target)
 
-    const flow = await paginate(target, [PAGE_CSS], BASIC_BODY)
+    const handle = mount(target, bytes)
 
-    expect(flow).toBeDefined()
-    expect(typeof flow.total).toBe('number')
-    expect(flow.total).toBeGreaterThanOrEqual(1)
+    expect(target.querySelector('iframe')).not.toBeNull()
+    const iframe = target.querySelector('iframe')!
+    expect(iframe.src).toMatch(/^blob:/)
+
+    handle.revoke()
   }, 15_000)
 
-  it('advanced — accepts additional stylesheets and still returns a flow', async () => {
+  it('replaces previous iframe on repeated mount calls', async () => {
+    const bytes = await renderPdf('# Second mount')
     const target = document.createElement('div')
     document.body.appendChild(target)
 
-    const flow = await paginate(
-      target,
-      [PAGE_CSS, 'body { font-size: 12pt; font-family: serif; }'],
-      ADVANCED_BODY,
-    )
+    const h1 = mount(target, bytes)
+    const h2 = mount(target, bytes)
 
-    expect(typeof flow.total).toBe('number')
-    expect(flow.total).toBeGreaterThanOrEqual(1)
+    expect(target.querySelectorAll('iframe').length).toBe(1)
+
+    h1.revoke()
+    h2.revoke()
   }, 15_000)
 })

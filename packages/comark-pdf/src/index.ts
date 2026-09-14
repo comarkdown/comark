@@ -1,47 +1,49 @@
 import { createMarkdownParser } from 'comark'
-import { renderPdfFromDocument } from './render.ts'
-import type { PdfRendererOptions } from './types.ts'
+import { renderPdfBytes, renderPdfDocument, renderPdfFromDocument } from './render.ts'
+import type { PdfPageConfig, PdfRendererOptions } from './types.ts'
 
-export { assemblePagedHtml, renderPdfBody, renderPdfFromDocument } from './render.ts'
-export type { PdfBrowser, PdfMargin, PdfNodeOptions, PdfPage, PdfPageConfig, PdfRendererOptions } from './types.ts'
+export { renderPdfDocument, renderPdfBytes, renderPdfFromDocument } from './render.ts'
+export type { PdfMargin, PdfPageConfig, PdfRendererOptions } from './types.ts'
+export type { JasyComponentFn, JasyMapContext } from './jasy.ts'
 
 /**
  * Creates a reusable parse+render function with pre-configured options.
- * Returns a function that accepts markdown and produces a complete paged-media HTML document string.
+ * Returns a function that accepts markdown and produces PDF bytes.
  * The underlying parser is initialized once and reused on every call.
  *
  * @example
  * ```typescript
  * import { createPdfRenderer } from '@comark/pdf'
- * import shiki from '@comark/pdf/plugins/shiki'
  *
  * const renderPdf = createPdfRenderer({
- *   plugins: [shiki()],
+ *   plugins: [],
  *   pdf: { format: 'A4', margin: '20mm', footer: 'Page {{ page }} of {{ totalPages }}' },
  * })
  *
- * const html = await renderPdf('# Hello\n\n**Bold** text.')
+ * const bytes = await renderPdf('# Hello\n\n**Bold** text.')
  * ```
  */
-export const createPdfRenderer = (options?: PdfRendererOptions): ((markdown: string) => Promise<string>) => {
+export const createPdfRenderer = (options?: PdfRendererOptions): ((markdown: string) => Promise<Uint8Array>) => {
   const parseMarkdown = createMarkdownParser(options)
   return async (markdown: string) => {
     const document = await parseMarkdown(markdown)
-    return renderPdfFromDocument(document, options)
+    return renderPdfBytes(document, options)
   }
 }
 
 /**
- * Parse markdown and render it to a complete paged-media HTML document string.
+ * Parse markdown and render it to PDF bytes.
  *
  * @example
  * ```typescript
  * import { renderPdf } from '@comark/pdf'
+ * import { writeFile } from 'node:fs/promises'
  *
- * const html = await renderPdf('# Hello', {
+ * const bytes = await renderPdf('# Hello', {
  *   pdf: { format: 'A4', margin: '25mm', footer: 'Page {{ page }} of {{ totalPages }}' },
  * })
+ * await writeFile('output.pdf', bytes)
  * ```
  */
-export const renderPdf = (markdown: string, options?: PdfRendererOptions): Promise<string> =>
+export const renderPdf = (markdown: string, options?: PdfRendererOptions): Promise<Uint8Array> =>
   createPdfRenderer(options)(markdown)

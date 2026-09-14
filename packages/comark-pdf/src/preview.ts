@@ -1,36 +1,50 @@
 /**
- * Browser-only paginated preview entry point.
+ * Browser-only PDF preview entry point.
  *
- * Uses paged.js `Previewer` to paginate the current document content into a target
- * container element, producing `.pagedjs_page` wrappers that reflect how the document
- * will look when printed.
- *
- * Requires the `pagedjs` optional peer to be installed.
+ * Renders PDF bytes using jasy and mounts them into a target element as an
+ * `<iframe>` backed by a Blob URL. This is a pure in-browser approach — no
+ * headless browser or server required. jasy runs fully in-process.
  *
  * @example
  * ```typescript
- * import { paginate } from '@comark/pdf/preview'
+ * import { mount } from '@comark/pdf/preview'
+ * import { renderPdf } from '@comark/pdf'
  *
- * const container = document.getElementById('preview')
- * const flow = await paginate(container)
- * console.log(`Rendered ${flow.total} pages`)
+ * const bytes = await renderPdf(markdown)
+ * const handle = mount(document.getElementById('preview')!, bytes)
+ *
+ * // Later, when done:
+ * handle.revoke()
  * ```
  */
 
+export interface PdfMountHandle {
+  /** Revoke the Blob URL to free browser memory. Call when the preview is removed. */
+  revoke(): void
+}
+
 /**
- * Paginate document content into a target container element using paged.js.
+ * Mount pre-rendered PDF bytes into a target element as an embedded iframe.
  *
- * @param target - The DOM element to render pages into.
- * @param stylesheets - Optional array of extra CSS strings to apply.
- * @param content - Optional HTML string to paginate. When omitted, paged.js reads the current document body.
- * @returns A paged.js flow object with `total` page count.
+ * @param target - The DOM element to render into. Its contents are replaced.
+ * @param bytes - PDF bytes, e.g. from `renderPdf(markdown)`.
+ * @returns A handle with a `revoke()` method to release the Blob URL.
  */
-export const paginate = async (
-  target: Element,
-  stylesheets: string[] = [],
-  content?: string,
-): Promise<{ total: number }> => {
-  const { Previewer } = await import('pagedjs')
-  const previewer = new Previewer()
-  return previewer.preview(content, stylesheets, target)
+export const mount = (target: Element, bytes: Uint8Array): PdfMountHandle => {
+  const blobPart = new Uint8Array(bytes)
+  const blob = new Blob([blobPart], { type: 'application/pdf' })
+  const url = URL.createObjectURL(blob)
+
+  const iframe = document.createElement('iframe')
+  iframe.src = url
+  iframe.style.cssText = 'width:100%;height:100%;border:none;display:block'
+
+  target.innerHTML = ''
+  target.appendChild(iframe)
+
+  return {
+    revoke() {
+      URL.revokeObjectURL(url)
+    },
+  }
 }

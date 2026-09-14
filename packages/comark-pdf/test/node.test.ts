@@ -13,12 +13,15 @@ beforeAll(async () => {
   await mkdir(OUTPUT_DIR, { recursive: true })
 })
 
+const isPdf = (bytes: Uint8Array) =>
+  Buffer.from(bytes.slice(0, 4)).toString('ascii') === '%PDF'
+
 describe('renderPdfToBuffer', () => {
   it('basic — returns a valid PDF buffer', async () => {
     const buffer = await renderPdfToBuffer(BASIC_MARKDOWN)
     expect(buffer).toBeInstanceOf(Uint8Array)
     expect(buffer.length).toBeGreaterThan(0)
-    expect(Buffer.from(buffer.slice(0, 4)).toString('ascii')).toBe('%PDF')
+    expect(isPdf(buffer)).toBe(true)
   }, 30_000)
 
   it('advanced — returns a valid PDF buffer with math plugin', async () => {
@@ -28,7 +31,7 @@ describe('renderPdfToBuffer', () => {
     })
     expect(buffer).toBeInstanceOf(Uint8Array)
     expect(buffer.length).toBeGreaterThan(0)
-    expect(Buffer.from(buffer.slice(0, 4)).toString('ascii')).toBe('%PDF')
+    expect(isPdf(buffer)).toBe(true)
   }, 30_000)
 })
 

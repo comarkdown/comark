@@ -28,7 +28,7 @@ This is a **monorepo** containing the Comark Markdown parser, document model, pl
 │   ├── comark-react/     # React renderer + plugins (@comark/react)
 │   ├── comark-svelte/    # Svelte renderer + plugins (@comark/svelte)
 │   ├── comark-angular/   # Angular renderer + plugins (@comark/angular)
-│   ├── comark-pdf/       # PDF renderer + paged.js preview (@comark/pdf)
+│   ├── comark-pdf/       # PDF renderer + jasy preview (@comark/pdf)
 │   └── comark-nuxt/      # Nuxt module (@comark/nuxt)
 ├── examples/             # Example applications
 │   ├── 1.frameworks/     # Framework examples (Nuxt, Next.js, Astro, SvelteKit, ...)
@@ -139,7 +139,7 @@ const html = await renderHtml(markdownString)
 
 ## Package: @comark/pdf
 
-Located at `packages/comark-pdf/`. PDF renderer powered by paged.js and Playwright.
+Located at `packages/comark-pdf/`. PDF renderer powered by jasy. Maps the Comark AST directly to a jasy component tree and renders PDF bytes in pure TypeScript — no headless browser.
 
 ### Exports
 
@@ -148,7 +148,6 @@ Located at `packages/comark-pdf/`. PDF renderer powered by paged.js and Playwrig
   ".": "./dist/index.js",
   "./node": "./dist/node.js",
   "./preview": "./dist/preview.js",
-  "./css": "./dist/css.js",
   "./plugins/*": "./dist/plugins/*.js",
   "./utils": "./dist/utils/index.js",
   "./parse": "./dist/parse.js",
@@ -161,39 +160,53 @@ Located at `packages/comark-pdf/`. PDF renderer powered by paged.js and Playwrig
 ```
 packages/comark-pdf/src/
 ├── index.ts              # createPdfRenderer, renderPdf, renderPdfFromDocument
-├── render.ts             # renderPdfBody, assemblePagedHtml + re-exports comark/render
-├── css.ts                # frontmatterToPageCss, DEFAULT_BASE_CSS
-├── types.ts              # PdfPageConfig, PdfRendererOptions, PdfNodeOptions, PdfBrowser, PdfPage
+├── render.ts             # renderPdfDocument, renderPdfBytes, renderPdfFromDocument + re-exports comark/render
+├── jasy.ts               # Comark AST → jasy component tree mapper (astToJasy)
+├── page.ts               # PdfPageConfig → jasy Page props + header/footer (pdfConfigToPageProps)
+├── types.ts              # PdfPageConfig, PdfMargin, PdfRendererOptions, JasyComponentFn
 ├── parse.ts              # re-export comark/parse
-├── preview.ts            # browser: paginate() via pagedjs Previewer (lazy import)
-├── node.ts               # Node: renderPdfToBuffer, renderPdfToFile via Playwright
-├── pagedjs.d.ts          # minimal ambient types for pagedjs (no @types/pagedjs package)
+├── preview.ts            # browser: mount() — PDF bytes → Blob URL in iframe
+├── node.ts               # Node: renderPdfToBuffer, renderPdfToFile
 ├── plugins/
-│   ├── page-break.ts     # PageBreak NodeHandler + no-op plugin default export
-│   ├── binding.ts        # re-export @comark/html/plugins/binding
-│   ├── math.ts           # re-export @comark/html/plugins/math
-│   └── mermaid.ts        # re-export @comark/html/plugins/mermaid
+│   ├── page-break.ts     # PageBreak JasyComponentFn + no-op plugin default export
+│   ├── binding.ts        # re-export comark/plugins/binding
+│   ├── math.ts           # Math JasyComponentFn (degraded: monospace LaTeX source)
+│   └── mermaid.ts        # Mermaid JasyComponentFn (degraded: monospace code block)
 └── utils/
     └── index.ts          # re-export comark/utils
 ```
 
-### Optional peers
+### Dependencies
 
-| Peer | Required by |
-|------|-------------|
-| `pagedjs` | `@comark/pdf/preview` |
-| `playwright` | `@comark/pdf/node` |
+| Dependency | Purpose |
+|------------|---------|
+| `@jasy/pdf` | Core PDF rendering |
+
+No optional peers are required.
 
 ### Usage
 
 ```typescript
 import { createPdfRenderer, renderPdf, renderPdfFromDocument } from '@comark/pdf'
-import { paginate } from '@comark/pdf/preview'                   // browser only
+import { mount } from '@comark/pdf/preview'                    // browser only
 import { renderPdfToBuffer, renderPdfToFile } from '@comark/pdf/node' // Node only
 import { PageBreak } from '@comark/pdf/plugins/page-break'
 import math, { Math } from '@comark/pdf/plugins/math'
 import mermaid, { Mermaid } from '@comark/pdf/plugins/mermaid'
 ```
+
+### Feature support (degraded plugins)
+
+jasy does not consume HTML/CSS. Plugins that emit HTML or SVG are **degraded** (source text kept; rich visual not drawn):
+
+| Area | PDF behavior |
+|------|----------------|
+| Code blocks / Shiki / highlight / rangi | Monospace text in a tinted box — no theme colors |
+| Math (KaTeX) | LaTeX source as monospace text |
+| Mermaid | Diagram source as a monospace block |
+| Images | Alt-text placeholder until local path/bytes are wired |
+
+Full table: `docs/content/3.rendering/9.pdf.md` (§ Feature support).
 
 ---
 
@@ -536,16 +549,16 @@ import math, { Math } from '@comark/angular/plugins/math'
 import mermaid, { Mermaid } from '@comark/angular/plugins/mermaid'
 import binding, { Binding, If } from '@comark/angular/plugins/binding'
 
-// PDF — parse + assemble paged-media HTML, browser preview, headless PDF export
-import { createPdfRenderer, renderPdf, renderPdfFromDocument, assemblePagedHtml, renderPdfBody } from '@comark/pdf'
-import { paginate } from '@comark/pdf/preview'                   // browser: paged.js Previewer
-import { renderPdfToBuffer, renderPdfToFile } from '@comark/pdf/node' // Node: Playwright PDF export
-import { frontmatterToPageCss, DEFAULT_BASE_CSS } from '@comark/pdf/css'
+// PDF — parse + assemble jasy document tree, browser preview, headless PDF export
+import { createPdfRenderer, renderPdf, renderPdfFromDocument, renderPdfDocument, renderPdfBytes } from '@comark/pdf'
+import { mount } from '@comark/pdf/preview'                    // browser: Blob URL in iframe
+import { renderPdfToBuffer, renderPdfToFile } from '@comark/pdf/node' // Node: write PDF bytes
+import { pdfConfigToPageProps } from '@comark/pdf/render'
 import { PageBreak } from '@comark/pdf/plugins/page-break'
 import math, { Math } from '@comark/pdf/plugins/math'
 import mermaid, { Mermaid } from '@comark/pdf/plugins/mermaid'
 import binding, { Binding, If } from '@comark/pdf/plugins/binding'
-import type { PdfPageConfig, PdfRendererOptions, PdfNodeOptions, PdfBrowser } from '@comark/pdf'
+import type { PdfPageConfig, PdfRendererOptions, JasyComponentFn } from '@comark/pdf'
 ```
 
 ## Coding Principles

@@ -110,6 +110,7 @@ catalog:
   nuxt: ^4.4.8
   nuxt-studio: 1.7.0
 
+  "@jasy/pdf": 1.0.0-beta.3
   pagedjs: ^0.4.3
 
   # Linting

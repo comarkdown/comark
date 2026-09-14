@@ -1,23 +1,23 @@
 # @comark/pdf
 
-PDF renderer for Comark. Convert Markdown to print-ready paginated HTML and PDF via [paged.js](https://pagedjs.org) and Playwright.
+PDF renderer for Comark. Convert Markdown to print-ready PDF bytes via [jasy](https://jasy.dev) — no headless browser required.
 
 ## Install
 
 ```bash
 pnpm add @comark/pdf
-# Optional: install peers for PDF export
-pnpm add -D pagedjs playwright
 ```
 
 ## Usage
 
-### Paged-media HTML (environment-neutral)
+### Render to PDF bytes
 
 ```typescript
-import { renderPdf } from '@comark/pdf'
+import { renderPdf, createPdfRenderer } from '@comark/pdf'
+import { writeFile } from 'node:fs/promises'
 
-const html = await renderPdf(`
+// One-shot
+const bytes = await renderPdf(`
 ---
 pdf:
   format: A4
@@ -37,39 +37,39 @@ Content here.
 More content.
 `)
 
-// html is a complete <!doctype html> document with @page CSS embedded.
-// Serve it in a browser with paged.js for a live paginated preview,
-// or pass it to renderPdfToBuffer() for headless PDF export.
+await writeFile('output.pdf', bytes)
+
+// Reusable renderer (parser initialized once)
+const render = createPdfRenderer({
+  pdf: { format: 'A4', margin: '20mm', footer: 'Page {{ page }} of {{ totalPages }}' },
+})
+const bytes = await render(markdownString)
 ```
 
-### Node.js PDF export (requires playwright peer)
+### Node.js PDF export
 
 ```typescript
 import { renderPdfToBuffer, renderPdfToFile } from '@comark/pdf/node'
 
-// Export to Buffer/Uint8Array
+// Export to Uint8Array
 const buffer = await renderPdfToBuffer(markdown)
-await fs.writeFile('output.pdf', buffer)
+await writeFile('output.pdf', buffer)
 
 // Or write directly to a file
 await renderPdfToFile(markdown, 'output.pdf')
-
-// Inject your own Playwright browser for connection reuse
-import { chromium } from 'playwright'
-const browser = await chromium.launch()
-await renderPdfToFile(markdown, 'output.pdf', { browser })
-await browser.close()
 ```
 
-### Browser paginated preview (requires pagedjs peer)
+### Browser preview
 
 ```typescript
-import { paginate } from '@comark/pdf/preview'
+import { renderPdf } from '@comark/pdf'
+import { mount } from '@comark/pdf/preview'
 
-// Paginates the current document into a container element.
-const container = document.getElementById('preview')
-const flow = await paginate(container)
-console.log(`Total pages: ${flow.total}`)
+const bytes = await renderPdf(markdownString)
+const handle = mount(document.getElementById('preview'), bytes)
+
+// Later, to free the Blob URL:
+handle.revoke()
 ```
 
 ## Frontmatter configuration
@@ -89,20 +89,52 @@ pdf:
 ---
 ```
 
-## Plugins
+## Plugins and feature support
 
-All core Comark plugins are available via `@comark/pdf/plugins/*`:
+Parser plugins still parse markdown. Render support depends on whether jasy can express the output.
+
+**Supported:** headings, paragraphs, bold/italic/strikethrough, links, lists, blockquotes, rules, tables, page size/margins, headers/footers (`{{ page }}` / `{{ totalPages }}`), `::page-break`, multi-page flow, browser `mount`, Node export.
+
+**Partial (degraded — source kept, rich visual not drawn):**
+
+| Feature | PDF output | Why |
+|---------|------------|-----|
+| Code blocks (+ Shiki / highlight / rangi) | Monospace text in a tinted box; no theme colors | Highlighters emit HTML; jasy has no HTML intake |
+| Math (KaTeX) | LaTeX source as monospace text | KaTeX emits HTML |
+| Mermaid | Diagram source as a monospace block | Mermaid emits SVG/HTML |
+| Images | Alt-text placeholder | Local path / bytes not wired for remote URLs yet |
+| Alerts / task checkboxes / binding UI | Structure or plain text only | No dedicated jasy chrome yet |
+
+**Not yet:** raw HTML blocks as layout, full footnote chrome, checkbox glyphs.
+
+Degrade (not omit) so author content stays in the PDF. Richer math/diagrams can later use rasterized images; Shiki tokens can later map to colored `span`s.
 
 ```typescript
 import { renderPdf } from '@comark/pdf'
-import shiki from '@comark/pdf/plugins/shiki'
 import math, { Math } from '@comark/pdf/plugins/math'
 import mermaid, { Mermaid } from '@comark/pdf/plugins/mermaid'
-import binding, { Binding, If } from '@comark/pdf/plugins/binding'
 import { PageBreak } from '@comark/pdf/plugins/page-break'
 
-const html = await renderPdf(markdown, {
-  plugins: [shiki(), math()],
-  components: { Math, Mermaid, Binding, If, 'page-break': PageBreak },
+const bytes = await renderPdf(markdown, {
+  plugins: [math(), mermaid()],
+  components: { Math, Mermaid, 'page-break': PageBreak },
+})
+```
+
+See the [PDF docs](https://comark.dev/rendering/pdf) for the full support table.
+
+## Custom components
+
+Override any Comark component tag with a jasy component function:
+
+```typescript
+import { renderPdf } from '@comark/pdf'
+import { Box, Text } from '@jasy/pdf'
+
+const bytes = await renderPdf(markdown, {
+  components: {
+    alert: ([, attrs, ...children], ctx) =>
+      Box({ bg: '#fff3cd', padding: 12, radius: 4 }, ctx.mapNodes(children)),
+  },
 })
 ```

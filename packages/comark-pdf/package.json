@@ -1,15 +1,13 @@
 {
   "name": "@comark/pdf",
   "version": "0.1.0",
-  "description": "PDF renderer for Comark. Convert Markdown to print-ready paginated HTML and PDF via paged.js and Playwright.",
+  "description": "PDF renderer for Comark. Convert Markdown to print-ready PDF via jasy.",
   "keywords": [
     "comark",
     "components",
     "markdown",
     "mdc",
     "pdf",
-    "paged.js",
-    "print",
     "renderer"
   ],
   "homepage": "https://comark.dev/rendering/pdf",
@@ -32,7 +30,6 @@
     ".": "./dist/index.js",
     "./node": "./dist/node.js",
     "./preview": "./dist/preview.js",
-    "./css": "./dist/css.js",
     "./plugins/*": "./dist/plugins/*.js",
     "./utils": "./dist/utils/index.js",
     "./parse": "./dist/parse.js",
@@ -50,27 +47,11 @@
     "release": "release-it"
   },
   "dependencies": {
-    "@comark/html": "workspace:*",
+    "@jasy/pdf": "1.0.0-beta.3",
     "comark": "workspace:*"
   },
   "devDependencies": {
-    "@vitest/browser": "catalog:",
-    "@vitest/browser-playwright": "catalog:",
-    "katex": "^0.17.0",
-    "pagedjs": "catalog:",
-    "playwright": "catalog:",
+    "happy-dom": "^20.14.5",
     "vitest": "catalog:"
-  },
-  "peerDependencies": {
-    "pagedjs": ">=0.4",
-    "playwright": ">=1.0"
-  },
-  "peerDependenciesMeta": {
-    "pagedjs": {
-      "optional": true
-    },
-    "playwright": {
-      "optional": true
-    }
   }
 }

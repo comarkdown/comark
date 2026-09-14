@@ -1,4 +1,5 @@
-import type { ParserOptions, RendererOptions } from 'comark'
+import type { ParserOptions } from 'comark'
+import type { JasyComponentFn } from './jasy.ts'
 
 export interface PdfMargin {
   top?: string
@@ -8,11 +9,11 @@ export interface PdfMargin {
 }
 
 export interface PdfPageConfig {
-  /** Named page format or custom dimensions (e.g. 'A4', 'Letter', '210mm 297mm'). Default: 'A4'. */
+  /** Named page format (e.g. 'A4', 'letter'). Default: 'A4'. */
   format?: string
   /** Page orientation. Default: 'portrait'. */
   orientation?: 'portrait' | 'landscape'
-  /** Page margin as a shorthand string (e.g. '20mm') or per-side object. Default: '20mm'. */
+  /** Page margin as a CSS length string (e.g. '20mm') or per-side object. */
   margin?: string | PdfMargin
   /** Center header text. Tokens: {{ page }}, {{ totalPages }}. */
   header?: string
@@ -28,34 +29,9 @@ export interface PdfPageConfig {
   footerRight?: string
 }
 
-export interface PdfRendererOptions extends ParserOptions, RendererOptions {
+export interface PdfRendererOptions extends ParserOptions {
   /** Explicit PDF page configuration. Merged over frontmatter.pdf. */
   pdf?: PdfPageConfig
-  /** Additional CSS injected into the document <style> block. */
-  baseCss?: string
-}
-
-/** Minimal interface satisfied by a Playwright Browser (or compatible headless browser). */
-export interface PdfBrowser {
-  newPage(): Promise<PdfPage>
-  close(): Promise<void>
-}
-
-/** Minimal interface satisfied by a Playwright Page. */
-export interface PdfPage {
-  addInitScript(script: string): Promise<void>
-  setContent(html: string, options?: { waitUntil?: string }): Promise<void>
-  addScriptTag(options: { path?: string; content?: string }): Promise<unknown>
-  evaluate<T>(fn: () => T | Promise<T>): Promise<T>
-  pdf(options?: Record<string, unknown>): Promise<Uint8Array>
-  close(): Promise<void>
-}
-
-export interface PdfNodeOptions extends PdfRendererOptions {
-  /** Pre-launched browser instance. When provided, the caller is responsible for closing it. */
-  browser?: PdfBrowser
-  /** Options forwarded to chromium.launch() when launching internally. */
-  launchOptions?: Record<string, unknown>
-  /** Options forwarded to page.pdf() (Playwright PDFOptions). */
-  pdfOptions?: Record<string, unknown>
+  /** Custom jasy component renderers, keyed by Comark component tag name. */
+  components?: Record<string, JasyComponentFn>
 }
