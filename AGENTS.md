@@ -32,7 +32,7 @@ This is a **monorepo** containing the Comark Markdown parser, document model, pl
 │   └── comark-email/     # Email renderer (@comark/email)
 ├── examples/             # Example applications
 │   ├── 1.frameworks/     # Framework examples (Nuxt, Next.js, Astro, SvelteKit, ...)
-│   ├── 2.vite/           # Vite examples (Vue, React, Svelte, Angular, HTML, ANSI)
+│   ├── 2.vite/           # Vite examples (Vue, React, Svelte, Angular, HTML, ANSI, Email)
 │   └── 3.plugins/        # Plugin examples (math, mermaid, highlight, ...)
 ├── docs/                 # Documentation site (comark-docs layer)
 ├── scripts/              # Build/sync scripts

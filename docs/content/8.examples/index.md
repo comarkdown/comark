@@ -36,6 +36,9 @@ Each example wires Comark into a framework or build setup, with its full source 
   :::card{icon="i-simple-icons-angular" title="Angular" to="/examples/vite/angular"}
   A minimal example showing how to use Comark with Angular and Vite.
   :::
+  :::card{icon="i-lucide-mail" title="Email Preview" to="/examples/vite/email"}
+  A live markdown editor that renders Comark content to inline-styled email HTML via Maizzle.
+  :::
   :::card{icon="i-lucide-file-code" title="HTML Preview" to="/examples/vite/html"}
   A live markdown editor that renders Comark content to HTML and displays it in a sandboxed iframe preview, with syntax highlighting support.
   :::
