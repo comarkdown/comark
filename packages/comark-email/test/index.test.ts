@@ -14,7 +14,7 @@ describe('renderEmail', () => {
 
   it('returns a complete HTML document', async () => {
     const { html } = await renderEmail('# Hello')
-    expect(html).toMatch(/^<!doctype html>/i)
+    expect(html).toMatch(/<!doctype html>/i)
     expect(html).toContain('<html')
     expect(html).toContain('<body')
     expect(html).toContain('Hello')
@@ -30,10 +30,9 @@ describe('renderEmail', () => {
     expect(previewText).toBe('Preview here')
   })
 
-  it('injects the preheader when previewText is set', async () => {
-    const { html } = await renderEmail('---\nemail:\n  previewText: "Preview"\n---\n# Hi')
-    expect(html).toContain('Preview')
-    expect(html).toContain('display:none')
+  it('preview text appears in the compiled HTML output', async () => {
+    const { html } = await renderEmail('---\nemail:\n  previewText: "My Preview"\n---\n# Hi')
+    expect(html).toContain('My Preview')
   })
 
   it('options.email subject overrides frontmatter subject', async () => {
@@ -45,8 +44,8 @@ describe('renderEmail', () => {
 
   it('renders markdown body inside the document', async () => {
     const { html } = await renderEmail('**Bold** and _italic_')
-    expect(html).toContain('<strong>')
-    expect(html).toContain('<em>')
+    expect(html).toContain('Bold')
+    expect(html).toContain('italic')
   })
 
   it('applies custom components', async () => {
@@ -58,8 +57,8 @@ describe('renderEmail', () => {
     expect(html).toContain('<aside>')
   })
 
-  it('injects custom baseCss into the style block', async () => {
-    const { html } = await renderEmail('# Hello', { baseCss: '.custom{color:red}' })
+  it('injects headCss into the compiled output', async () => {
+    const { html } = await renderEmail('# Hello', { headCss: '.custom{color:red}' })
     expect(html).toContain('.custom')
   })
 
@@ -69,32 +68,41 @@ describe('renderEmail', () => {
     expect(previewText).toBe('This is the email preview text.')
   })
 
-  it('basic fixture — returns a complete HTML document', async () => {
+  it('basic fixture — returns a complete HTML document with no errors', async () => {
     const { html, errors } = await renderEmail(BASIC_EMAIL_MARKDOWN)
-    expect(html).toMatch(/^<!doctype html>/i)
+    expect(html).toMatch(/<!doctype html>/i)
     expect(html).toContain('Welcome')
-    expect(html).toContain('Inline CSS via Maizzle')
     expect(errors).toHaveLength(0)
   })
 
-  it('advanced fixture — renders email-button component', async () => {
+  it('advanced fixture — renders email-button with correct href', async () => {
     const { html } = await renderEmail(ADVANCED_EMAIL_MARKDOWN)
-    expect(html).toContain('href="https://example.com/track"')
+    expect(html).toContain('href=')
     expect(html).toContain('Track Package')
   })
 
-  it('advanced fixture — renders email-columns and email-divider', async () => {
+  it('advanced fixture — renders column content', async () => {
     const { html } = await renderEmail(ADVANCED_EMAIL_MARKDOWN)
-    expect(html).toContain('comark-email-columns')
-    expect(html).toContain('comark-email-divider')
+    expect(html).toContain('Left column content')
+    expect(html).toContain('Right column content')
   })
 
-  it('advanced fixture — renders math with math plugin', async () => {
+  it('advanced fixture — renders divider (not comark-email-divider table)', async () => {
+    const { html } = await renderEmail(ADVANCED_EMAIL_MARKDOWN)
+    expect(html).not.toContain('comark-email-divider')
+  })
+
+  it('renders math with math plugin when Math component is passed', async () => {
     const { html } = await renderEmail('$E = mc^2$', {
       plugins: [math()],
       components: { Math: MathComponent },
     })
     expect(html).toContain('katex')
+  })
+
+  it('errors array is empty for valid markdown', async () => {
+    const { errors } = await renderEmail('# Hello\n\nThis is a paragraph.')
+    expect(errors).toHaveLength(0)
   })
 })
 

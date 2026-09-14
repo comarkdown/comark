@@ -1,84 +1,119 @@
 import { describe, expect, it } from 'vitest'
-import { buildPreheader, DEFAULT_EMAIL_CSS, frontmatterToMaizzleConfig } from '../src/config.ts'
+import { resolveEmailConfig, buildMjmlHead } from '../src/config.ts'
 
-describe('DEFAULT_EMAIL_CSS', () => {
-  it('includes comark-email-columns class', () => {
-    expect(DEFAULT_EMAIL_CSS).toContain('comark-email-columns')
+describe('resolveEmailConfig', () => {
+  it('returns empty config when no frontmatter or options given', () => {
+    const cfg = resolveEmailConfig({})
+    expect(cfg.subject).toBeUndefined()
+    expect(cfg.previewText).toBeUndefined()
+    expect(cfg.brandColor).toBeUndefined()
   })
 
-  it('includes comark-email-divider class', () => {
-    expect(DEFAULT_EMAIL_CSS).toContain('comark-email-divider')
+  it('reads subject from frontmatter.email', () => {
+    const cfg = resolveEmailConfig({ email: { subject: 'Hello' } })
+    expect(cfg.subject).toBe('Hello')
+  })
+
+  it('reads subject from top-level frontmatter alias', () => {
+    const cfg = resolveEmailConfig({ subject: 'Top Level' })
+    expect(cfg.subject).toBe('Top Level')
+  })
+
+  it('options.email.subject overrides frontmatter', () => {
+    const cfg = resolveEmailConfig({ email: { subject: 'Original' } }, { email: { subject: 'Override' } })
+    expect(cfg.subject).toBe('Override')
+  })
+
+  it('merge order: top-level < email: < options.email', () => {
+    const cfg = resolveEmailConfig(
+      { subject: 'TopLevel', email: { subject: 'EmailKey' } },
+      { email: { subject: 'Option' } }
+    )
+    expect(cfg.subject).toBe('Option')
+  })
+
+  it('brandColor falls back to theme.primary', () => {
+    const cfg = resolveEmailConfig({ email: { theme: { primary: '#abc123' } } })
+    expect(cfg.brandColor).toBe('#abc123')
+  })
+
+  it('explicit brandColor is used even when theme.primary differs', () => {
+    const cfg = resolveEmailConfig({ email: { brandColor: '#explicit', theme: { primary: '#other' } } })
+    expect(cfg.brandColor).toBe('#explicit')
+  })
+
+  it('reads previewText from frontmatter.email', () => {
+    const cfg = resolveEmailConfig({ email: { previewText: 'Preview' } })
+    expect(cfg.previewText).toBe('Preview')
   })
 })
 
-describe('buildPreheader', () => {
-  it('wraps text in a hidden div', () => {
-    const html = buildPreheader('Hello preview')
-    expect(html).toContain('Hello preview')
-    expect(html).toContain('display:none')
-    expect(html).toContain('overflow:hidden')
+describe('buildMjmlHead', () => {
+  it('produces mj-head node', () => {
+    const head = buildMjmlHead({})
+    expect(head.tagName).toBe('mj-head')
+    expect(Array.isArray(head.children)).toBe(true)
   })
 
-  it('returns a div element', () => {
-    const html = buildPreheader('Test')
-    expect(html).toMatch(/^<div/)
-    expect(html).toMatch(/<\/div>$/)
-  })
-})
-
-describe('frontmatterToMaizzleConfig', () => {
-  it('sets css.inline=true and css.purge=true', () => {
-    const config = frontmatterToMaizzleConfig({}, '<html></html>')
-    expect((config.css as Record<string, unknown>).inline).toBe(true)
-    expect((config.css as Record<string, unknown>).purge).toBe(true)
+  it('includes mj-title when subject is set', () => {
+    const head = buildMjmlHead({ subject: 'My Email' })
+    const title = head.children!.find((c) => c.tagName === 'mj-title')
+    expect(title).toBeDefined()
+    expect(title!.content).toBe('My Email')
   })
 
-  it('passes html as tailwind content for class detection', () => {
-    const html = '<html><body class="bg-primary">Test</body></html>'
-    const config = frontmatterToMaizzleConfig({}, html)
-    const tailwind = (config.css as Record<string, unknown>).tailwind as Record<string, unknown>
-    const content = tailwind.content as Array<{ raw: string; extension: string }>
-    expect(content).toHaveLength(1)
-    expect(content[0].raw).toBe(html)
-    expect(content[0].extension).toBe('html')
+  it('omits mj-title when subject is not set', () => {
+    const head = buildMjmlHead({})
+    expect(head.children!.find((c) => c.tagName === 'mj-title')).toBeUndefined()
   })
 
-  it('maps theme colors to tailwind theme.extend.colors', () => {
-    const config = frontmatterToMaizzleConfig({ theme: { primary: '#0066cc', background: '#f4f5f7' } }, '')
-    const tailwind = (config.css as Record<string, unknown>).tailwind as Record<string, unknown>
-    const theme = tailwind.theme as { extend: { colors: Record<string, string> } }
-    expect(theme.extend.colors.primary).toBe('#0066cc')
-    expect(theme.extend.colors.background).toBe('#f4f5f7')
+  it('includes mj-preview when previewText is set', () => {
+    const head = buildMjmlHead({ previewText: 'Preview text' })
+    const preview = head.children!.find((c) => c.tagName === 'mj-preview')
+    expect(preview).toBeDefined()
+    expect(preview!.content).toBe('Preview text')
   })
 
-  it('returns empty colors when no theme is provided', () => {
-    const config = frontmatterToMaizzleConfig({}, '')
-    const tailwind = (config.css as Record<string, unknown>).tailwind as Record<string, unknown>
-    const theme = tailwind.theme as { extend: { colors: Record<string, string> } }
-    expect(theme.extend.colors).toEqual({})
+  it('includes mj-attributes with mj-all font-family', () => {
+    const head = buildMjmlHead({})
+    const attrs = head.children!.find((c) => c.tagName === 'mj-attributes')
+    expect(attrs).toBeDefined()
+    const mjAll = attrs!.children!.find((c) => c.tagName === 'mj-all')
+    expect(mjAll).toBeDefined()
+    expect(mjAll!.attributes['font-family']).toBeTruthy()
   })
 
-  it('skips undefined theme values', () => {
-    const config = frontmatterToMaizzleConfig({ theme: { primary: '#000', secondary: undefined } }, '')
-    const tailwind = (config.css as Record<string, unknown>).tailwind as Record<string, unknown>
-    const theme = tailwind.theme as { extend: { colors: Record<string, string | undefined> } }
-    expect(theme.extend.colors.primary).toBe('#000')
-    expect('secondary' in theme.extend.colors).toBe(false)
+  it('includes mj-button in mj-attributes when brandColor is set', () => {
+    const head = buildMjmlHead({ brandColor: '#0066cc' })
+    const attrs = head.children!.find((c) => c.tagName === 'mj-attributes')!
+    const btn = attrs.children!.find((c) => c.tagName === 'mj-button')
+    expect(btn).toBeDefined()
+    expect(btn!.attributes['background-color']).toBe('#0066cc')
   })
 
-  it('merges extra tailwindConfig over base', () => {
-    const config = frontmatterToMaizzleConfig({}, '', { plugins: ['customPlugin'] })
-    const tailwind = (config.css as Record<string, unknown>).tailwind as Record<string, unknown>
-    expect(tailwind.plugins).toEqual(['customPlugin'])
+  it('omits mj-button in mj-attributes when brandColor is not set', () => {
+    const head = buildMjmlHead({})
+    const attrs = head.children!.find((c) => c.tagName === 'mj-attributes')!
+    expect(attrs.children!.find((c) => c.tagName === 'mj-button')).toBeUndefined()
   })
 
-  it('extra tailwindConfig colors are merged with theme colors', () => {
-    const config = frontmatterToMaizzleConfig({ theme: { primary: '#000' } }, '', {
-      theme: { extend: { colors: { accent: '#ff0' } } },
-    })
-    const tailwind = (config.css as Record<string, unknown>).tailwind as Record<string, unknown>
-    const colors = (tailwind.theme as { extend: { colors: Record<string, string> } }).extend.colors
-    expect(colors.primary).toBe('#000')
-    expect(colors.accent).toBe('#ff0')
+  it('includes mj-body in mj-attributes when theme.background is set', () => {
+    const head = buildMjmlHead({ theme: { background: '#f0f0f0' } })
+    const attrs = head.children!.find((c) => c.tagName === 'mj-attributes')!
+    const body = attrs.children!.find((c) => c.tagName === 'mj-body')
+    expect(body).toBeDefined()
+    expect(body!.attributes['background-color']).toBe('#f0f0f0')
+  })
+
+  it('includes mj-style when headCss is provided', () => {
+    const head = buildMjmlHead({}, '.custom { color: red }')
+    const style = head.children!.find((c) => c.tagName === 'mj-style')
+    expect(style).toBeDefined()
+    expect(style!.content).toContain('.custom')
+  })
+
+  it('omits mj-style when headCss is not provided', () => {
+    const head = buildMjmlHead({})
+    expect(head.children!.find((c) => c.tagName === 'mj-style')).toBeUndefined()
   })
 })

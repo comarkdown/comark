@@ -9,21 +9,41 @@ export interface EmailTheme {
 export interface EmailConfig {
   /** Email subject line. Extracted from frontmatter and returned in EmailRenderResult. */
   subject?: string
-  /** Short preview text shown by email clients before the body. Injected as a hidden preheader. */
+  /** Short preview text shown by email clients before the body. Injected via mj-preview. */
   previewText?: string
-  /** Theme color overrides mapped to Tailwind CSS custom colors. */
+  /**
+   * Default button background color. Applied to mj-button via mj-attributes.
+   * Falls back to theme.primary when not set.
+   */
+  brandColor?: string
+  /** Theme color overrides mapped to MJML mj-attributes. */
   theme?: EmailTheme
+}
+
+export interface MjmlCompileOptions {
+  /** Validation level for the MJML compiler. Defaults to 'soft'. */
+  validationLevel?: 'strict' | 'soft' | 'skip'
+  beautify?: boolean
+  minify?: boolean
+  /** Custom web fonts injected by MJML into the head. */
+  fonts?: Record<string, string>
+  keepComments?: boolean
 }
 
 export interface EmailRendererOptions extends ParserOptions, RendererOptions {
   /** Explicit email configuration. Merged over frontmatter.email. */
   email?: EmailConfig
-  /** Extra Tailwind CSS configuration merged into the Maizzle tailwind config. */
-  tailwindConfig?: Record<string, unknown>
-  /** Extra options forwarded directly to Maizzle render(). Merged last, overrides all computed config. */
-  maizzleOptions?: Record<string, unknown>
-  /** Additional CSS injected into the document <style> block before @tailwind utilities. */
-  baseCss?: string
+  /** Options forwarded to the MJML compiler. */
+  mjmlOptions?: MjmlCompileOptions
+  /** Additional CSS injected into <mj-style> in the email head. */
+  headCss?: string
+}
+
+export interface MjmlCompileError {
+  line?: number
+  message: string
+  tagName?: string
+  formattedMessage?: string
 }
 
 export interface EmailRenderResult {
@@ -33,6 +53,15 @@ export interface EmailRenderResult {
   subject?: string
   /** Preview text extracted from frontmatter.email.previewText or options.email.previewText. */
   previewText?: string
-  /** Any errors collected during Maizzle compilation. Empty on success. */
-  errors: unknown[]
+  /** MJML validation errors. Empty on success. */
+  errors: MjmlCompileError[]
+}
+
+/** A node in the MJML JSON tree accepted by mjml2html. */
+export interface MjmlNode {
+  tagName: string
+  attributes: Record<string, string>
+  children?: MjmlNode[]
+  /** Raw HTML content (for leaf nodes such as mj-text, mj-title, mj-preview). */
+  content?: string
 }

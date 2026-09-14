@@ -1,17 +1,16 @@
 {
   "name": "@comark/email",
   "version": "0.1.0",
-  "description": "Email renderer for Comark. Convert Markdown to responsive, inline-styled HTML for email clients via Maizzle and Tailwind CSS.",
+  "description": "Email renderer for Comark. Convert Markdown to responsive, MJML-compiled HTML for email clients.",
   "keywords": [
     "comark",
     "components",
     "email",
     "html",
-    "maizzle",
     "markdown",
     "mdc",
+    "mjml",
     "renderer",
-    "tailwindcss",
     "transactional"
   ],
   "homepage": "https://comark.dev/rendering/email",
@@ -51,10 +50,11 @@
   },
   "dependencies": {
     "@comark/html": "workspace:*",
-    "@maizzle/framework": "catalog:",
-    "comark": "workspace:*"
+    "comark": "workspace:*",
+    "mjml": "catalog:"
   },
   "devDependencies": {
+    "@types/mjml": "^5.0.0",
     "katex": "^0.17.0",
     "vitest": "catalog:"
   }

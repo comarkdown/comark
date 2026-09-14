@@ -17,14 +17,15 @@ This is a **basic** email with _italic_ text and a [link](https://comark.dev).
 ## Features
 
 - Fast rendering
-- Inline CSS via Maizzle
-- Email-safe output
+- MJML-compiled output
+- Email-safe HTML
 `
 
 export const ADVANCED_EMAIL_MARKDOWN = `---
 email:
   subject: "Your order has shipped!"
   previewText: "Track your package delivery status."
+  brandColor: "#0066cc"
   theme:
     primary: "#0066cc"
     background: "#f4f5f7"
@@ -34,7 +35,7 @@ email:
 
 Your order is on its way.
 
-::email-button{href="https://example.com/track" class="bg-primary text-white"}
+::email-button{href="https://example.com/track" background-color="#0066cc" color="#ffffff"}
 Track Package
 ::
 
@@ -48,7 +49,7 @@ Left column content.
 Right column content.
 ::
 
-::email-divider{class="border-gray-200"}
+::email-divider{border-color="#cccccc"}
 ::
 
 A final paragraph to confirm rendering.

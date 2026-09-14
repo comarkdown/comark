@@ -1,36 +1,52 @@
-import type { NodeHandler } from 'comark'
+import type { Node } from 'comark'
+import { renderHtmlFromDocument } from '@comark/html/render'
+import type { EmailRendererOptions, MjmlNode } from '../types.ts'
 
 /**
- * HTML component render function for `::email-button` nodes.
- *
- * Parsing of `::email-button` is handled automatically by the core `components`
- * plugin (enabled by default). This handler renders the parsed AST node to an
- * anchor element with Tailwind utility classes that Maizzle then inlines.
+ * Convert an `::email-button` AST node to an mj-button MjmlNode.
  *
  * Supported attributes:
- *   href   — Link destination. Defaults to '#'.
- *   class  — Tailwind utility classes (e.g. 'bg-primary text-white py-3 px-6').
+ *   href              — Link destination. Defaults to '#'.
+ *   background-color  — Button fill color (falls back to mj-attributes default).
+ *   color             — Text color.
+ *   align             — 'left' | 'center' | 'right'.
+ *   border-radius     — e.g. '4px'.
+ *   font-size         — e.g. '15px'.
+ *   width             — e.g. '200px'.
+ *   target            — e.g. '_blank'.
+ *   padding           — e.g. '12px 24px'.
+ *   class             — Mapped to css-class on the MJML tag.
  *
  * @example
  * ```markdown
- * ::email-button{href="https://example.com" class="bg-primary text-white py-3 px-6"}
+ * ::email-button{href="https://example.com" background-color="#0066cc" color="#fff"}
  * Click Here
  * ::
  * ```
  */
-export const EmailButton: NodeHandler = async ([, attrs, ...children], { render }) => {
-  const href = String(attrs.href ?? '#')
-  const cls = attrs.class ? ` class="${attrs.class}"` : ''
-  const content = await render(children)
-  return `<a href="${href}"${cls} target="_blank" rel="noopener noreferrer">${content}</a>`
+export const emailButtonToMjml = async (
+  node: [string, Record<string, unknown>, ...Node[]],
+  options?: EmailRendererOptions
+): Promise<MjmlNode> => {
+  const attrs = node[1]
+  const children = node.slice(2) as Node[]
+  const content = children.length ? await renderHtmlFromDocument({ nodes: children }, options) : ''
+
+  const mjAttrs: Record<string, string> = { href: String(attrs.href ?? '#') }
+  const passthrough = ['background-color', 'color', 'align', 'border-radius', 'font-size', 'width', 'target', 'padding']
+  for (const key of passthrough) {
+    if (attrs[key] !== undefined) mjAttrs[key] = String(attrs[key])
+  }
+  if (attrs.class) mjAttrs['css-class'] = String(attrs.class)
+
+  return { tagName: 'mj-button', attributes: mjAttrs, content }
 }
 
 /**
  * No-op parser plugin for `::email-button`.
  *
- * `::email-button` is already parsed by the built-in `components` plugin so this
- * plugin does not register any markdown-it rules. It is exported for symmetry
- * with the rest of the plugin ecosystem.
+ * `::email-button` is already parsed by the built-in `components` plugin.
+ * This plugin is exported for symmetry with the rest of the plugin ecosystem.
  */
 const emailButton = () => ({ name: 'email-button' })
 export default emailButton

@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import type { State } from 'comark'
 import { parseMarkdown } from 'comark'
-import { renderEmailFromDocument } from '../src/render.ts'
-import { EmailButton } from '../src/plugins/email-button.ts'
-import { EmailColumns } from '../src/plugins/email-columns.ts'
-import { EmailDivider } from '../src/plugins/email-divider.ts'
+import { emailButtonToMjml } from '../src/plugins/email-button.ts'
+import { emailColumnsToMjml } from '../src/plugins/email-columns.ts'
+import { emailDividerToMjml } from '../src/plugins/email-divider.ts'
+import { documentToMjmlJson } from '../src/transform.ts'
+import { serializeMjml } from '../src/serialize.ts'
 
-const fakeState = (render: (nodes: unknown) => Promise<string>) => ({ render }) as unknown as State
+// ─── AST parsing ─────────────────────────────────────────────────────────────
 
 describe('::email-button AST', () => {
   it('parses ::email-button to [email-button, {}] node', async () => {
@@ -16,56 +16,42 @@ describe('::email-button AST', () => {
     expect(node[1]).toEqual({})
   })
 
-  it('parses ::email-button with href and class attrs', async () => {
-    const doc = await parseMarkdown('::email-button{href="https://example.com" class="bg-primary"}\nClick\n::')
+  it('parses ::email-button with href and background-color', async () => {
+    const doc = await parseMarkdown('::email-button{href="https://example.com" background-color="#0066cc"}\nClick\n::')
     const node = doc.nodes[0] as [string, Record<string, unknown>, ...unknown[]]
     expect(node[0]).toBe('email-button')
-    expect(node[1]).toMatchObject({ href: 'https://example.com', class: 'bg-primary' })
+    expect(node[1]).toMatchObject({ href: 'https://example.com', 'background-color': '#0066cc' })
   })
 })
 
-describe('EmailButton handler', () => {
-  it('emits an anchor element with href', async () => {
-    const html = await EmailButton(
-      ['email-button', { href: 'https://example.com' }],
-      fakeState(async () => 'Click')
-    )
-    expect(html).toContain('href="https://example.com"')
-    expect(html).toMatch(/<a /)
-    expect(html).toContain('Click')
+describe('emailButtonToMjml', () => {
+  it('emits an mj-button with href', async () => {
+    const mjml = await emailButtonToMjml(['email-button', { href: 'https://example.com' }])
+    expect(mjml.tagName).toBe('mj-button')
+    expect(mjml.attributes.href).toBe('https://example.com')
   })
 
   it('defaults href to # when missing', async () => {
-    const html = await EmailButton(
-      ['email-button', {}],
-      fakeState(async () => 'Go')
-    )
-    expect(html).toContain('href="#"')
+    const mjml = await emailButtonToMjml(['email-button', {}])
+    expect(mjml.attributes.href).toBe('#')
   })
 
-  it('includes class attribute when provided', async () => {
-    const html = await EmailButton(
-      ['email-button', { href: '#', class: 'bg-primary text-white' }],
-      fakeState(async () => '')
-    )
-    expect(html).toContain('class="bg-primary text-white"')
+  it('passes through background-color', async () => {
+    const mjml = await emailButtonToMjml(['email-button', { 'background-color': '#0066cc' }])
+    expect(mjml.attributes['background-color']).toBe('#0066cc')
   })
 
-  it('does not include class attribute when not provided', async () => {
-    const html = await EmailButton(
-      ['email-button', { href: '#' }],
-      fakeState(async () => '')
-    )
-    expect(html).not.toContain('class=')
+  it('maps class to css-class', async () => {
+    const mjml = await emailButtonToMjml(['email-button', { class: 'my-btn' }])
+    expect(mjml.attributes['css-class']).toBe('my-btn')
+    expect(mjml.attributes['class']).toBeUndefined()
   })
 
-  it('includes target and rel for security', async () => {
-    const html = await EmailButton(
-      ['email-button', { href: '#' }],
-      fakeState(async () => '')
-    )
-    expect(html).toContain('target="_blank"')
-    expect(html).toContain('rel="noopener noreferrer"')
+  it('renders children as button content', async () => {
+    const doc = await parseMarkdown('::email-button{href="#"}\n**Click**\n::')
+    const node = doc.nodes[0] as [string, Record<string, unknown>]
+    const mjml = await emailButtonToMjml(node)
+    expect(mjml.content).toContain('<strong>')
   })
 })
 
@@ -78,37 +64,25 @@ describe('::email-columns AST', () => {
   })
 })
 
-describe('EmailColumns handler', () => {
-  it('emits a table element', async () => {
-    const html = await EmailColumns(
-      ['email-columns', {}],
-      fakeState(async () => '<td>col</td>')
-    )
-    expect(html).toContain('<table')
-    expect(html).toContain('comark-email-columns')
-    expect(html).toContain('<tr>')
+describe('emailColumnsToMjml', () => {
+  it('emits mj-section', async () => {
+    const mjml = await emailColumnsToMjml(['email-columns', {}], async () => [])
+    expect(mjml.tagName).toBe('mj-section')
   })
 
-  it('includes extra class when provided', async () => {
-    const html = await EmailColumns(
-      ['email-columns', { class: 'gap-4' }],
-      fakeState(async () => '')
+  it('creates one mj-column per child', async () => {
+    const mjml = await emailColumnsToMjml(
+      ['email-columns', {}, 'Left', 'Right'] as [string, Record<string, unknown>, ...import('comark').Node[]],
+      async () => []
     )
-    expect(html).toContain('gap-4')
+    expect(mjml.children).toHaveLength(2)
+    expect(mjml.children![0].tagName).toBe('mj-column')
+    expect(mjml.children![1].tagName).toBe('mj-column')
   })
 
-  it('wraps each child in a td', async () => {
-    const children = ['Left', 'Right']
-    let callCount = 0
-    const html = await EmailColumns(
-      ['email-columns', {}, ...children] as Parameters<typeof EmailColumns>[0],
-      fakeState(async (nodes) => {
-        callCount++
-        return `<p>${nodes}</p>`
-      })
-    )
-    expect(callCount).toBe(2)
-    expect(html).toContain('<td valign="top">')
+  it('passes background-color to the section', async () => {
+    const mjml = await emailColumnsToMjml(['email-columns', { 'background-color': '#eee' }], async () => [])
+    expect(mjml.attributes['background-color']).toBe('#eee')
   })
 })
 
@@ -121,34 +95,52 @@ describe('::email-divider AST', () => {
   })
 })
 
-describe('EmailDivider handler', () => {
-  it('emits a table with hr inside', () => {
-    const html = EmailDivider(['email-divider', {}], {} as never)
-    expect(html).toContain('comark-email-divider')
-    expect(html).toContain('<hr')
-    expect(html).toContain('<table')
+describe('emailDividerToMjml', () => {
+  it('emits mj-divider', () => {
+    const mjml = emailDividerToMjml(['email-divider', {}])
+    expect(mjml.tagName).toBe('mj-divider')
   })
 
-  it('includes class on hr when provided', () => {
-    const html = EmailDivider(['email-divider', { class: 'border-gray-200' }], {} as never)
-    expect(html).toContain('class="border-gray-200"')
+  it('passes border-color through', () => {
+    const mjml = emailDividerToMjml(['email-divider', { 'border-color': '#ccc' }])
+    expect(mjml.attributes['border-color']).toBe('#ccc')
+  })
+
+  it('maps class to css-class', () => {
+    const mjml = emailDividerToMjml(['email-divider', { class: 'my-divider' }])
+    expect(mjml.attributes['css-class']).toBe('my-divider')
   })
 })
 
-describe('renderEmailFromDocument with email components', () => {
-  it('renders email-button as an anchor element', async () => {
+// ─── Full document integration ────────────────────────────────────────────────
+
+describe('documentToMjmlJson with email components', () => {
+  it('email-button appears as mj-button (not inside mj-text)', async () => {
     const doc = await parseMarkdown('::email-button{href="https://example.com"}\nClick\n::')
-    const { html } = await renderEmailFromDocument(doc)
-    expect(html).toContain('href="https://example.com"')
-    expect(html).toContain('Click')
+    const xml = serializeMjml(await documentToMjmlJson(doc))
+    expect(xml).toContain('<mj-button')
+    expect(xml).toContain('href="https://example.com"')
+    // mj-button must be a direct child of mj-column, not inside mj-text content
+    const bodyIdx = xml.indexOf('<mj-body')
+    const btnIdx = xml.indexOf('<mj-button', bodyIdx)
+    const textBeforeBtn = xml.slice(bodyIdx, btnIdx)
+    expect(textBeforeBtn).not.toMatch(/<mj-text[^/]*>/)
   })
 
-  it('renders email-divider as a table element', async () => {
-    const doc = await parseMarkdown('Before\n\n::email-divider\n::\n\nAfter')
-    const { html } = await renderEmailFromDocument(doc)
-    expect(html).toContain('comark-email-divider')
-    expect(html).toContain('<hr')
-    expect(html).toContain('Before')
-    expect(html).toContain('After')
+  it('email-columns produces two mj-column elements', async () => {
+    const doc = await parseMarkdown('::email-columns\nLeft\n\nRight\n::')
+    const xml = serializeMjml(await documentToMjmlJson(doc))
+    const colCount = (xml.match(/<mj-column/g) ?? []).length
+    expect(colCount).toBe(2)
+  })
+
+  it('email-divider produces mj-divider (not table html)', async () => {
+    const doc = await parseMarkdown('::email-divider{border-color="#cccccc"}\n::')
+    const xml = serializeMjml(await documentToMjmlJson(doc))
+    expect(xml).toContain('<mj-divider')
+    expect(xml).toContain('border-color="#cccccc"')
+    // must NOT be table-based html
+    expect(xml).not.toContain('comark-email-divider')
+    expect(xml).not.toContain('<table')
   })
 })

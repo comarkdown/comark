@@ -1,39 +1,59 @@
-import type { NodeHandler } from 'comark'
+import type { Node } from 'comark'
+import type { EmailRendererOptions, MjmlNode } from '../types.ts'
 
 /**
- * HTML component render function for `::email-columns` nodes.
+ * Convert an `::email-columns` AST node to an mj-section MjmlNode.
  *
- * Renders a table-based multi-column layout. Each direct child block becomes a
- * table cell. Maizzle inlines the Tailwind classes after rendering.
+ * Each direct child block becomes an mj-column. The caller must ensure the
+ * columns node maps to a standalone mj-section (not nested inside another section).
  *
- * Supported attributes:
- *   class — Tailwind utility classes applied to the outer table.
+ * Supported section attributes:
+ *   background-color — Section fill color.
+ *   padding          — Section padding.
+ *   class            — Mapped to css-class on the MJML tag.
  *
  * @example
  * ```markdown
- * ::email-columns{class="gap-4"}
- * Left column text.
+ * ::email-columns{background-color="#f9f9f9"}
+ * Left column content.
  *
- * Right column text.
+ * Right column content.
  * ::
  * ```
  */
-export const EmailColumns: NodeHandler = async ([, attrs, ...children], { render }) => {
-  const cls = attrs.class ? ` class="comark-email-columns ${attrs.class}"` : ' class="comark-email-columns"'
-  const cells = await Promise.all(
+export const emailColumnsToMjml = async (
+  node: [string, Record<string, unknown>, ...Node[]],
+  nodeToMjml: (child: Node, options?: EmailRendererOptions) => Promise<MjmlNode[]>,
+  options?: EmailRendererOptions
+): Promise<MjmlNode> => {
+  const attrs = node[1]
+  const children = node.slice(2) as Node[]
+
+  const columns: MjmlNode[] = await Promise.all(
     children.map(async (child) => {
-      const html = await render([child])
-      return `<td valign="top">${html}</td>`
+      const colChildren = await nodeToMjml(child, options)
+      return {
+        tagName: 'mj-column',
+        attributes: {},
+        children: colChildren,
+      }
     })
   )
-  return `<table${cls} width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr>${cells.join('')}</tr></table>`
+
+  const sectionAttrs: Record<string, string> = {}
+  for (const key of ['background-color', 'padding']) {
+    if (attrs[key] !== undefined) sectionAttrs[key] = String(attrs[key])
+  }
+  if (attrs.class && !attrs['css-class']) sectionAttrs['css-class'] = String(attrs.class)
+  if (attrs['css-class']) sectionAttrs['css-class'] = String(attrs['css-class'])
+
+  return { tagName: 'mj-section', attributes: sectionAttrs, children: columns }
 }
 
 /**
  * No-op parser plugin for `::email-columns`.
  *
- * `::email-columns` is already parsed by the built-in `components` plugin so
- * this plugin does not register any markdown-it rules.
+ * `::email-columns` is already parsed by the built-in `components` plugin.
  */
 const emailColumns = () => ({ name: 'email-columns' })
 export default emailColumns

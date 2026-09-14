@@ -2,8 +2,17 @@ import { createMarkdownParser } from 'comark'
 import { renderEmailFromDocument } from './render.ts'
 import type { EmailRendererOptions, EmailRenderResult } from './types.ts'
 
-export { assembleEmailHtml, renderEmailBody, renderEmailFromDocument } from './render.ts'
-export type { EmailConfig, EmailRendererOptions, EmailRenderResult, EmailTheme } from './types.ts'
+export { renderEmailFromDocument, documentToMjml } from './render.ts'
+export { compileMjml } from './mjml.ts'
+export type {
+  EmailConfig,
+  EmailRendererOptions,
+  EmailRenderResult,
+  EmailTheme,
+  MjmlCompileError,
+  MjmlCompileOptions,
+  MjmlNode,
+} from './types.ts'
 
 /**
  * Creates a reusable parse+render function with pre-configured options.
@@ -15,7 +24,7 @@ export type { EmailConfig, EmailRendererOptions, EmailRenderResult, EmailTheme }
  * import { createEmailRenderer } from '@comark/email'
  *
  * const render = createEmailRenderer({
- *   email: { theme: { primary: '#0066cc' } },
+ *   email: { brandColor: '#0066cc' },
  * })
  *
  * const { html, subject } = await render(markdownString)

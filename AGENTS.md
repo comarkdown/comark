@@ -392,23 +392,25 @@ import mermaid, { Mermaid } from '@comark/angular/plugins/mermaid'
 
 ## Package: @comark/email
 
-Located at `packages/comark-email/`. Node-first email renderer using Maizzle (v4) and Tailwind CSS.
+Located at `packages/comark-email/`. Node-first email renderer using [MJML](https://mjml.io) v5.
 
 ```
 packages/comark-email/
 ├── src/
-│   ├── index.ts                # Entry point: createEmailRenderer, renderEmail
-│   ├── render.ts               # renderEmailBody, assembleEmailHtml, renderEmailFromDocument
-│   ├── maizzle.ts              # compileEmail — lazy @maizzle/framework import
-│   ├── config.ts               # frontmatterToMaizzleConfig, buildPreheader, DEFAULT_EMAIL_CSS
-│   ├── types.ts                # EmailTheme, EmailConfig, EmailRendererOptions, EmailRenderResult
+│   ├── index.ts                # Entry point: createEmailRenderer, renderEmail, compileMjml
+│   ├── render.ts               # renderEmailFromDocument, documentToMjml
+│   ├── mjml.ts                 # compileMjml — lazy mjml import
+│   ├── transform.ts            # documentToMjmlJson, nodeToColumnChildren
+│   ├── serialize.ts            # serializeMjml — MjmlNode → XML string
+│   ├── config.ts               # resolveEmailConfig, buildMjmlHead
+│   ├── types.ts                # EmailTheme, EmailConfig, EmailRendererOptions, EmailRenderResult, MjmlNode
 │   ├── parse.ts                # Re-exports comark/parse
 │   ├── utils/
 │   │   └── index.ts            # Re-exports comark/utils
 │   └── plugins/
-│       ├── email-button.ts     # NodeHandler + no-op plugin for ::email-button
-│       ├── email-columns.ts    # NodeHandler + no-op plugin for ::email-columns
-│       ├── email-divider.ts    # NodeHandler + no-op plugin for ::email-divider
+│       ├── email-button.ts     # emailButtonToMjml + no-op plugin for ::email-button
+│       ├── email-columns.ts    # emailColumnsToMjml + no-op plugin for ::email-columns
+│       ├── email-divider.ts    # emailDividerToMjml + no-op plugin for ::email-divider
 │       ├── binding.ts          # Re-exports @comark/html/plugins/binding
 │       ├── math.ts             # Re-exports @comark/html/plugins/math
 │       └── mermaid.ts          # Re-exports @comark/html/plugins/mermaid
@@ -416,6 +418,7 @@ packages/comark-email/
 │   ├── config.test.ts
 │   ├── email-components.test.ts
 │   ├── index.test.ts
+│   ├── transform.test.ts
 │   └── fixtures/markdown.ts
 ├── package.json
 ├── tsconfig.json
@@ -424,7 +427,7 @@ packages/comark-email/
 
 ### Render flow
 
-Markdown → `parseMarkdown` → `renderEmailBody` (AST to Tailwind HTML, email components active) → `assembleEmailHtml` (wrap, inject preheader, add `@tailwind utilities;`) → `compileEmail` (Maizzle inline CSS) → `EmailRenderResult`.
+Markdown → `parseMarkdown` → `resolveEmailConfig` → `documentToMjmlJson` (AST to MjmlNode tree, email directives as native MJML tags) → `compileMjml` (`mjml2html`) → `EmailRenderResult`.
 
 ### Exports
 
@@ -502,9 +505,9 @@ import math, { Math } from '@comark/html/plugins/math'
 import mermaid, { Mermaid } from '@comark/html/plugins/mermaid'
 import binding, { Binding, If } from '@comark/html/plugins/binding'
 
-// Email rendering — parse + render to inline-styled transactional email HTML (Node-first)
-import { createEmailRenderer, renderEmail, renderEmailFromDocument } from '@comark/email'
-import { assembleEmailHtml, renderEmailBody } from '@comark/email/render'
+// Email rendering — parse + render to MJML-compiled transactional email HTML (Node-first)
+import { createEmailRenderer, renderEmail, renderEmailFromDocument, compileMjml } from '@comark/email'
+import { documentToMjml } from '@comark/email/render'
 import shiki from '@comark/email/plugins/shiki'
 import math from '@comark/email/plugins/math'
 import binding, { Binding, If } from '@comark/email/plugins/binding'

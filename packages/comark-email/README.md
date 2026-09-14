@@ -1,11 +1,11 @@
 # @comark/email
 
-Email renderer for Comark. Convert Markdown to responsive, inline-styled HTML for email clients via [Maizzle](https://maizzle.com) and Tailwind CSS.
+Email renderer for Comark. Convert Markdown to responsive, MJML-compiled HTML for email clients.
 
 ## Install
 
 ```bash
-pnpm add @comark/email @maizzle/framework
+pnpm add @comark/email mjml
 ```
 
 ## Usage
@@ -20,15 +20,14 @@ const { html, subject, previewText } = await renderEmail(`
 email:
   subject: "Your order has shipped!"
   previewText: "Track your package delivery status."
-  theme:
-    primary: "#0066cc"
+  brandColor: "#0066cc"
 ---
 
 # Order Shipped
 
 Your order is on its way.
 
-::email-button{href="https://example.com/track" class="bg-primary text-white py-3 px-6"}
+::email-button{href="https://example.com/track" background-color="#0066cc" color="#ffffff"}
 Track Package
 ::
 `)
@@ -43,7 +42,7 @@ await sendEmail({ to: user.email, subject, html })
 import { createEmailRenderer } from '@comark/email'
 
 const render = createEmailRenderer({
-  email: { theme: { primary: '#0066cc' } },
+  email: { brandColor: '#0066cc' },
 })
 
 const result = await render(markdownString)
@@ -66,8 +65,8 @@ const { html, subject } = await renderEmailFromDocument(doc)
 email:
   subject: "Your order #{{ order.id }} has shipped!"
   previewText: "Track your package delivery status."
+  brandColor: "#0066cc"
   theme:
-    primary: "#0066cc"
     background: "#f4f5f7"
 ---
 ```
@@ -77,7 +76,7 @@ email:
 ```markdown
 # Send a button
 
-::email-button{href="https://example.com" class="bg-primary text-white py-3 px-6 rounded-lg"}
+::email-button{href="https://example.com" background-color="#0066cc" color="#ffffff" border-radius="4px"}
 Click Here
 ::
 
@@ -91,9 +90,11 @@ Right column content.
 
 # Horizontal divider
 
-::email-divider{class="border-gray-200"}
+::email-divider{border-color="#cccccc"}
 ::
 ```
+
+Components map directly to native MJML tags: `mj-button`, `mj-section`+`mj-column`, `mj-divider`. Use MJML attributes (not Tailwind classes).
 
 ## Plugins
 

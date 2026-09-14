@@ -1,6 +1,6 @@
 ---
 title: Email Preview
-description: A live markdown editor that renders Comark content to inline-styled email HTML via Maizzle.
+description: A live markdown editor that renders Comark content to MJML-compiled email HTML.
 navigation:
   icon: i-lucide-mail
 category: Vite
@@ -115,4 +115,4 @@ export default defineConfig({
 
 ::
 
-This example shows a split-pane live preview: write Comark markdown on the left and see Maizzle-compiled email HTML in a sandboxed `<iframe>` on the right. Rendering runs on the Vite server because `@comark/email` is Node-first.
+This example shows a split-pane live preview: write Comark markdown on the left and see MJML-compiled email HTML in a sandboxed `<iframe>` on the right. Rendering runs on the Vite server because `@comark/email` is Node-first.
