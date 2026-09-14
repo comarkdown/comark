@@ -430,7 +430,7 @@ Apply named value transforms with the `|` pipe operator. Multiple filters chain 
 ```mdc
 {{ user.name | upper }}
 {{ bio | truncate:120 | upper }}
-{{ date | format:'YYYY-MM-DD HH:mm' }}
+{{ user.joined | date:'YYYY-MM-DD' }}
 {{ title | upper | truncate:10 || Untitled }}
 ```
 
@@ -441,31 +441,167 @@ Filters also work in `:prop="..."` attribute bindings on components:
 ::
 ```
 
-### Registering filters
+### Built-in filter catalog
 
-Pass a `filters` object to the renderer. Each filter is a pure function that receives the resolved value as its first argument, followed by any colon-delimited literal arguments from the expression.
+The `filters` option defaults to `standardFilters` — a built-in catalog inspired by the [knap standard-filter library](https://knap.md/filters) ([obsidianmd/knap](https://github.com/obsidianmd/knap)), adapted to comark's `(value: unknown, ...args: unknown[]) => unknown` contract. No `filters` prop is required to use built-in filters.
 
-::code-group
+To add or override individual entries, spread `standardFilters`:
 
-```typescript [HTML]
-import binding, { Binding } from '@comark/html/plugins/binding'
+```typescript
+import { standardFilters } from 'comark/utils'
+
+const filters = {
+  ...standardFilters,
+  shout: (val) => `${String(val ?? '').toUpperCase()}!!!`,
+}
+```
+
+Pass no `filters` at all to use only built-ins. Pass a plain `{}` to opt out entirely (all filters then throw on unknown name).
+
+#### Text
+
+- `camel` — convert to camelCase · `{{ tag | camel }}`
+- `capitalize` — uppercase first character, lowercase rest · `{{ name | capitalize }}`
+- `decode_uri` — decode a percent-encoded URI · `{{ slug | decode_uri }}`
+- `encode_uri` — percent-encode a URI component · `{{ query | encode_uri }}`
+- `indent` — indent each line (default 2 spaces) · `{{ body | indent:4 }}`
+- `kebab` — convert to kebab-case · `{{ title | kebab }}`
+- `lower` — convert to lowercase · `{{ role | lower }}`
+- `pascal` — convert to PascalCase · `{{ tag | pascal }}`
+- `replace` — replace a string or `/regex/flags` · `{{ body | replace:'foo':'bar' }}`
+- `safe_name` — replace unsafe file-name characters with `_` · `{{ title | safe_name }}`
+- `snake` — convert to snake_case · `{{ label | snake }}`
+- `title` — capitalize each word · `{{ name | title }}`
+- `trim` — strip leading and trailing whitespace · `{{ input | trim }}`
+- `truncate` — cut to N characters (default suffix `…`) · `{{ bio | truncate:120 }}`
+- `truncatewords` — cut to N words (default suffix `…`) · `{{ bio | truncatewords:20 }}`
+- `uncamel` — split camelCase to spaced lowercase · `{{ prop | uncamel }}`
+- `unescape` — unescape `\n`, `\t`, `\"`, etc. · `{{ raw | unescape }}`
+- `upper` — convert to uppercase · `{{ code | upper }}`
+
+#### Numbers
+
+- `calc` — arithmetic operation · `{{ price | calc:'*':1.2 }}`
+- `number_format` — thousands separators and decimal places · `{{ total | number_format:2 }}`
+- `round` — round to N decimal places · `{{ score | round:1 }}`
+
+#### Dates
+
+- `date` — format a date with YYYY MM DD HH mm ss tokens · `{{ created | date:'YYYY-MM-DD' }}`
+- `date_modify` — shift a date by an interval · `{{ created | date_modify:'+1 month' }}`
+- `duration` — format seconds or an ISO 8601 duration as human text · `{{ elapsed | duration }}`
+
+#### Collections
+
+- `compact` — remove null and empty-string values · `{{ tags | compact | join:', ' }}`
+- `first` — first item (or first N items) · `{{ list | first }}`
+- `join` — join array with separator · `{{ tags | join:', ' }}`
+- `last` — last item (or last N items) · `{{ list | last }}`
+- `length` — count characters, items, or keys · `{{ items | length }}`
+- `map` — extract a property or render a template · `{{ users | map:'name' }}`
+- `merge` — append values to an array · `{{ base | merge:extra }}`
+- `nth` — select positions with nth-child syntax · `{{ list | nth:'2n+1' }}`
+- `object` — convert object to keys / values / entries · `{{ obj | object:'keys' }}`
+- `parse_json` — parse a JSON string · `{{ raw | parse_json }}`
+- `reverse` — reverse a string, array, or object · `{{ list | reverse }}`
+- `slice` — extract a substring or sub-array · `{{ list | slice:0:10 }}`
+- `sort` — sort by value or property · `{{ items | sort:'name' }}`
+- `split` — split string into array · `{{ csv | split:',' }}`
+- `sum` — sum numeric values or a property · `{{ cart | sum:'price' }}`
+- `template` — render each item with `${property}` interpolation · `{{ users | template:'${name} <${email}>' }}`
+- `unique` — remove duplicate values · `{{ tags | unique }}`
+- `where` — filter items by property value · `{{ items | where:'status':'active' }}`
+
+#### Formatting
+
+These filters produce Markdown or plain strings. Because comark's binding layer resolves values at render time, the returned string is inserted as **text content** and is not re-parsed into AST nodes. Use [components](/syntax/components) when structural output is needed.
+
+- `blockquote` — prefix every line with `> ` · `{{ note | blockquote }}`
+- `bold` — wrap in `**` · `{{ label | bold }}`
+- `callout` — Obsidian-style callout · `{{ msg | callout:'warning':'Heads up' }}`
+- `code` — inline code or fenced block · `{{ snippet | code:'ts' }}`
+- `code_block` — fenced code block with language · `{{ body | code_block:'python' }}`
+- `comment` — HTML comment · `{{ note | comment }}`
+- `embed` — wiki embed `![[…]]` · `{{ path | embed }}`
+- `escape_md` — escape Markdown punctuation · `{{ raw | escape_md }}`
+- `footnote` — footnote definition(s) · `{{ note | footnote:'1' }}`
+- `fragment_link` — link with text-fragment anchor · `{{ text | fragment_link:'https://example.com' }}`
+- `h1` … `h6` — heading of that level · `{{ title | h2 }}`
+- `hard_break` — convert single newlines to hard breaks · `{{ body | hard_break }}`
+- `highlight` — wrap in `==` · `{{ term | highlight }}`
+- `hr` — place a horizontal rule before / after / both · `{{ body | hr:'before' }}`
+- `image` — image syntax `![alt](url)` · `{{ url | image:'Logo' }}`
+- `italic` — wrap in `*` · `{{ label | italic }}`
+- `link` — link syntax `[text](url)` · `{{ url | link:'Click here' }}`
+- `list` — bullet list · `{{ items | list }}`
+- `math` — inline math `$…$` · `{{ expr | math }}`
+- `math_block` — block math `$$…$$` · `{{ expr | math_block }}`
+- `strike` — wrap in `~~` · `{{ old | strike }}`
+- `table` — compact Markdown table · `{{ rows | table }}`
+- `table_pretty` — padded Markdown table · `{{ rows | table_pretty }}`
+- `wikilink` — wiki link `[[…]]` · `{{ page | wikilink }}`
+- `yaml` — serialize as YAML · `{{ config | yaml }}`
+- `yaml_property` — full YAML property · `{{ value | yaml_property:'key' }}`
+
+#### HTML cleanup
+
+These filters transform HTML strings without a DOM. They are included in `standardFilters`.
+
+- `remove_attr` — remove named attributes · `{{ html | remove_attr:'style':'class' }}`
+- `remove_tags` — remove tags but keep content · `{{ html | remove_tags:'span' }}`
+- `replace_tags` — rename tags · `{{ html | replace_tags:'b':'strong' }}`
+- `strip_attr` — remove all attributes except an allowlist · `{{ html | strip_attr:'href' }}`
+- `strip_md` — remove inline Markdown formatting · `{{ body | strip_md }}`
+- `strip_tags` — remove all tags except an allowlist · `{{ html | strip_tags:'a':'strong' }}`
+
+#### HTML parsing (opt-in)
+
+Heavier HTML tree filters are excluded from `standardFilters` and must be imported explicitly:
+
+```typescript
+import { htmlFilters } from 'comark/utils/filters/html'
+import { standardFilters } from 'comark/utils'
+
+const filters = { ...standardFilters, ...htmlFilters }
+```
+
+- `html_to_json` — parse an HTML fragment into a JSON tree · `{{ markup | html_to_json }}`
+- `remove_html` — remove specific elements and their contents · `{{ html | remove_html:'script':'style' }}`
+
+### Registering custom filters
+
+Pass a `filters` object to the renderer. Custom entries are merged over `standardFilters`:
+
+```typescript
+import binding, { Binding, standardFilters } from '@comark/html/plugins/binding'
 import { createHtmlRenderer } from '@comark/html'
 
 const renderHtml = createHtmlRenderer({
   plugins: [binding()],
   components: { Binding },
   filters: {
-    upper: (val) => String(val ?? '').toUpperCase(),
-    truncate: (val, length) => {
+    ...standardFilters,
+    shout: (val) => `${String(val ?? '').toUpperCase()}!!!`,
+    excerpt: (val, length) => {
       const s = String(val ?? '')
-      return s.length > (length as number) ? `${s.slice(0, length as number)}…` : s
+      const n = typeof length === 'number' ? length : 120
+      return s.length > n ? `${s.slice(0, n)}…` : s
     },
-    format: (val, pattern) => myDateLib.format(val, pattern as string),
   },
 })
 ```
 
 ```vue [Vue]
+<script setup lang="ts">
+import { Markdown } from '@comark/vue'
+import binding, { Binding, standardFilters } from '@comark/vue/plugins/binding'
+
+const filters = {
+  ...standardFilters,
+  shout: (val: unknown) => `${String(val ?? '').toUpperCase()}!!!`,
+}
+</script>
+
 <template>
   <Suspense>
     <Markdown
@@ -476,46 +612,7 @@ const renderHtml = createHtmlRenderer({
     />
   </Suspense>
 </template>
-
-<script setup lang="ts">
-import { Markdown } from '@comark/vue'
-import binding, { Binding } from '@comark/vue/plugins/binding'
-
-const filters = {
-  upper: (val: unknown) => String(val ?? '').toUpperCase(),
-  truncate: (val: unknown, length: unknown) => {
-    const s = String(val ?? '')
-    return s.length > (length as number) ? `${s.slice(0, length as number)}…` : s
-  },
-}
-</script>
 ```
-
-```tsx [React]
-import { Markdown } from '@comark/react'
-import binding, { Binding } from '@comark/react/plugins/binding'
-
-const filters = {
-  upper: (val: unknown) => String(val ?? '').toUpperCase(),
-  truncate: (val: unknown, length: unknown) => {
-    const s = String(val ?? '')
-    return s.length > (length as number) ? `${s.slice(0, length as number)}…` : s
-  },
-}
-
-export default function App() {
-  return (
-    <Markdown
-      value={markdown}
-      plugins={[binding()]}
-      components={{ Binding }}
-      filters={filters}
-    />
-  )
-}
-```
-
-::
 
 ### Filter argument syntax
 
@@ -525,7 +622,7 @@ Arguments are colon-delimited literals appended after the filter name:
 | --- | --- |
 | `\| truncate:120` | numeric arg `120` |
 | `\| clamp:0:100` | two numeric args `0` and `100` |
-| `\| format:'YYYY-MM-DD HH:mm'` | string arg (colons inside quotes are safe) |
+| `\| date:'YYYY-MM-DD HH:mm'` | string arg (colons inside quotes are safe) |
 | `\| wrap:true` | boolean arg |
 
 ### Composing filters with the default operator

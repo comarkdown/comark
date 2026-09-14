@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue'
 import { Markdown } from '@comark/vue'
-import binding, { Binding, If } from '@comark/vue/plugins/binding'
+import binding, { Binding, If, standardFilters } from '@comark/vue/plugins/binding'
 import rangi from '@comark/vue/plugins/rangi'
 import { github } from 'rangi/themes'
 
@@ -9,15 +9,11 @@ const showSource = ref(false)
 const sourcePlugins = [rangi({ theme: github })]
 const previewPlugins = [binding()]
 
+// Custom `shout` filter merged over the built-in catalog.
+// Built-ins (upper, truncate, title, …) are active by default.
 const filters = {
-  upper: (val: unknown) => String(val ?? '').toUpperCase(),
-  lower: (val: unknown) => String(val ?? '').toLowerCase(),
-  truncate: (val: unknown, length: unknown) => {
-    const s = String(val ?? '')
-    const n = typeof length === 'number' ? length : Number(length)
-    if (!Number.isFinite(n) || n < 0) return s
-    return s.length > n ? `${s.slice(0, n)}…` : s
-  },
+  ...standardFilters,
+  shout: (val: unknown) => `${String(val ?? '').toUpperCase()}!!!`,
 }
 
 // Runtime data exposed to bindings via the `data.` namespace.
@@ -56,11 +52,11 @@ Hello **{{ data.user.name || friend }}** (role: {{ data.user.role }}), welcome b
 
 Name uppercased: **{{ data.user.name | upper }}**
 
-Bio truncated then uppercased: **{{ data.user.bio | truncate:24 | upper }}**
+Bio truncated: **{{ data.user.bio | truncate:40 }}**
 
-Role lowercased with default: **{{ data.user.role | lower || guest }}**
+Custom shout: **{{ data.user.name | shout }}**
 
-::card{:title="data.user.name | upper"}
+::card{:title="data.user.name | title"}
 Attribute binding with a filter — card title resolves to \`{{ props.title }}\`.
 ::
 
@@ -221,7 +217,7 @@ ${markdown}
                 id="bio-help"
                 class="vbg-helper"
               >
-                Used by <code>| truncate</code> and <code>| upper</code> in the Pipe filters section.
+                Used by <code>| truncate:40</code> in the Pipe filters section.
               </p>
             </div>
 

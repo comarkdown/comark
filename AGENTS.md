@@ -77,7 +77,18 @@ packages/comark/
 │   │   └── toc.ts            # Table of contents
 │   ├── utils/                # Shared utilities (comark/utils entry point)
 │   │   ├── index.ts          # textContent(), visit(), visitAsync(), escapeHtml(), string/object utils, filter utilities
-│   │   ├── filters.ts        # parseBindingExpression(), applyBindingFilters(), BindingFilter/BindingFilters/FilterSpec types
+│   │   ├── filters/          # Filter engine + built-in catalog (comark/utils/filters/html for opt-in HTML filters)
+│   │   │   ├── index.ts      # public surface: engine, types, standardFilters, resolveFilterRegistry
+│   │   │   ├── engine.ts     # parseBindingExpression(), applyBindingFilters()
+│   │   │   ├── types.ts      # BindingFilter, BindingFilters, FilterSpec, ParsedBinding
+│   │   │   ├── standard.ts   # standardFilters = all categories merged
+│   │   │   ├── text.ts       # camel, capitalize, encode_uri, kebab, lower, pascal, replace, snake, title, trim, truncate, upper, …
+│   │   │   ├── numbers.ts    # calc, number_format, round
+│   │   │   ├── dates.ts      # date, date_modify, duration
+│   │   │   ├── collections.ts # compact, first, join, last, length, map, merge, nth, object, parse_json, reverse, slice, sort, split, sum, template, unique, where
+│   │   │   ├── formatting.ts  # blockquote, bold, h1-h6, italic, link, image, list, table, yaml, yaml_property, …
+│   │   │   ├── html-cleanup.ts # remove_attr, remove_tags, replace_tags, strip_attr, strip_md, strip_tags (via htmlparser2)
+│   │   │   └── html.ts       # htmlFilters: html_to_json, remove_html — opt-in, NOT in standardFilters
 │   │   ├── helpers.ts        # defineComarkPlugin(), dedupePlugins()
 │   │   └── caret.ts          # Caret utilities for streaming
 │   └── internal/             # Internal implementation (not exported)
@@ -407,8 +418,10 @@ import { renderMarkdown } from 'comark/render'
 
 // AST types and utilities
 import type { MarkdownDocument, Node, ElementNode, TextNode } from 'comark'
-import { textContent, visit, escapeHtml, parseBindingExpression, applyBindingFilters } from 'comark/utils'
+import { textContent, visit, escapeHtml, parseBindingExpression, applyBindingFilters, standardFilters, resolveFilterRegistry } from 'comark/utils'
 import type { BindingFilter, BindingFilters, FilterSpec, ParsedBinding } from 'comark/utils'
+// HTML parsing filters (opt-in, not in standardFilters)
+import { htmlFilters } from 'comark/utils/filters/html'
 
 // Core plugins — use when calling parseMarkdown() directly (framework-agnostic)
 import shiki from 'comark/plugins/shiki'
@@ -429,7 +442,7 @@ import html from 'comark/plugins/html'               // default via registerDefa
 import binding, { Binding, resolveIfWrapper, selectIfBranch, shouldRenderIf } from 'comark/plugins/binding'
 import type { IfComparisonOperator, IfProps, IfWrapperTag } from 'comark/plugins/binding'
 // Pipe-filter utilities — also re-exported from comark/utils
-import { parseBindingExpression, applyBindingFilters } from 'comark/plugins/binding'
+import { parseBindingExpression, applyBindingFilters, standardFilters, resolveFilterRegistry } from 'comark/plugins/binding'
 import type { BindingFilter, BindingFilters, FilterSpec, ParsedBinding } from 'comark/plugins/binding'
 
 // markdown-it / markdown-exit adapters (e.g. VitePress)

@@ -20,7 +20,8 @@ This example demonstrates the Comark `binding` plugin in a Vue + Vite app:
 
 - **`{{ path }}` shorthand** — interpolate values from frontmatter, the renderer's `data` prop, or a parent component's `props` directly in your markdown.
 - **`|| default` fallback** — supply an inline default rendered when the dot-path doesn't resolve.
-- **Pipe filters** — chain `| upper`, `| lower`, and `| truncate:n` via the renderer's `filters` prop (text and attribute bindings).
+- **Built-in filters** — the `standardFilters` catalog is active by default. Pass a custom filter via the `filters` prop to extend or override.
+- **Custom filters** — spread `standardFilters` and add your own so custom filters override built-ins by name.
 - **Parent props** — nested components can reference their enclosing component's resolved attributes via `props.`.
 - **Typed values** — bindings come through as real JS values (strings, numbers, objects) thanks to the shared data-binding layer.
 
@@ -44,7 +45,7 @@ This example demonstrates the Comark `binding` plugin in a Vue + Vite app:
    />
    ```
 
-3. Use `{{ path || default }}` anywhere in your markdown:
+3. Use `{{ path || default }}` and built-in filters anywhere in your markdown:
 
    ```markdown
    ---
@@ -53,7 +54,20 @@ This example demonstrates the Comark `binding` plugin in a Vue + Vite app:
    ---
 
    Hello, {{ data.user.name || friend }} — you are on v{{ frontmatter.release.version }}.
-   {{ data.user.bio | truncate:24 | upper }}
+   {{ data.user.name | upper }}
+   {{ data.user.bio | truncate:40 }}
+   {{ data.user.name | shout }}
+   ```
+
+4. To add a custom filter, import `standardFilters` and spread it:
+
+   ```ts
+   import binding, { Binding, If, standardFilters } from '@comark/vue/plugins/binding'
+
+   const filters = {
+     ...standardFilters,
+     shout: (val: unknown) => `${String(val ?? '').toUpperCase()}!!!`,
+   }
    ```
 
 ## Namespaces

@@ -6,7 +6,7 @@ import type {
   NodeRenderData,
 } from 'comark'
 import React, { lazy, Suspense, useMemo } from 'react'
-import { pascalCase, camelCase, resolveAttributes } from 'comark/utils'
+import { pascalCase, camelCase, resolveAttributes, resolveFilterRegistry } from 'comark/utils'
 import type { BindingFilters } from 'comark/utils'
 import { findLastTextNodeAndAppendNode, getCaret } from '../utils/caret.ts'
 
@@ -110,7 +110,7 @@ function renderNode(
   componentsManifest?: ComponentManifest,
   parent?: Node,
   renderData: NodeRenderData = { frontmatter: {}, meta: {}, data: {}, props: {} },
-  filters?: BindingFilters,
+  filters?: BindingFilters
 ): React.ReactNode {
   // Handle text nodes (strings)
   if (typeof node === 'string') {
@@ -349,6 +349,8 @@ export const MarkdownDocument: React.FC<MarkdownDocumentProps> = ({
 
   const caret = useMemo(() => getCaret(caretProp), [caretProp])
 
+  const resolvedFilters = useMemo(() => resolveFilterRegistry(filters), [filters])
+
   const renderedNodes = useMemo(() => {
     // Render all nodes from the document value
     const nodes = [...(document.nodes || [])]
@@ -371,9 +373,11 @@ export const MarkdownDocument: React.FC<MarkdownDocumentProps> = ({
     }
 
     return nodes
-      .map((node, index) => renderNode(node, customComponents, index, componentsManifest, undefined, renderData, filters))
+      .map((node, index) =>
+        renderNode(node, customComponents, index, componentsManifest, undefined, renderData, resolvedFilters)
+      )
       .filter((child): child is React.ReactNode => child !== null)
-  }, [document, customComponents, componentsManifest, streaming, caret, data, filters])
+  }, [document, customComponents, componentsManifest, streaming, caret, data, resolvedFilters])
 
   // Wrap in a fragment
   return <div className={`comark-content ${className || ''}`}>{renderedNodes}</div>

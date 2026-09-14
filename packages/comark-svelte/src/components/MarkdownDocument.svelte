@@ -22,6 +22,7 @@ Supports custom component mappings and a streaming caret indicator.
   import { untrack } from 'svelte'
   import type { MarkdownDocument as MarkdownDocumentType, ComponentManifest } from 'comark'
   import type { ComponentResolver } from '../types.js'
+  import { resolveFilterRegistry } from 'comark/utils'
   import type { BindingFilters } from 'comark/utils'
   import MarkdownNode from './MarkdownNode.svelte'
 
@@ -71,6 +72,8 @@ Supports custom component mappings and a streaming caret indicator.
       : null,
   )
 
+  let resolvedFilters = $derived(resolveFilterRegistry(filters))
+
   let renderData = $derived({
     frontmatter:
       (activeDocument as MarkdownDocumentType).frontmatter ||
@@ -91,7 +94,7 @@ Supports custom component mappings and a streaming caret indicator.
       {resolver}
       caretClass={i === activeDocument.nodes.length - 1 ? caretClass : null}
       {renderData}
-      {filters}
+      filters={resolvedFilters}
     />
   {/each}
 </div>

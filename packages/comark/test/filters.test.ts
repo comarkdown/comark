@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { parseBindingExpression, applyBindingFilters } from '../src/utils/filters.ts'
-import type { BindingFilters } from '../src/utils/filters.ts'
+import { parseBindingExpression, applyBindingFilters } from '../src/utils/filters/index.ts'
+import type { BindingFilters } from '../src/utils/filters/index.ts'
 
 // ---------------------------------------------------------------------------
 // parseBindingExpression
@@ -110,10 +110,14 @@ describe('applyBindingFilters', () => {
       truncate: (v: unknown, len: unknown) => (v as string).slice(0, len as number),
     }
     expect(
-      applyBindingFilters('hello world', [
-        { name: 'upper', args: [] },
-        { name: 'truncate', args: [5] },
-      ], registry)
+      applyBindingFilters(
+        'hello world',
+        [
+          { name: 'upper', args: [] },
+          { name: 'truncate', args: [5] },
+        ],
+        registry
+      )
     ).toBe('HELLO')
   })
 
@@ -125,9 +129,9 @@ describe('applyBindingFilters', () => {
   })
 
   it('throws on an unknown filter name', () => {
-    expect(() =>
-      applyBindingFilters('value', [{ name: 'nope', args: [] }], {})
-    ).toThrow('Unknown binding filter: "nope"')
+    expect(() => applyBindingFilters('value', [{ name: 'nope', args: [] }], {})).toThrow(
+      'Unknown binding filter: "nope"'
+    )
   })
 })
 

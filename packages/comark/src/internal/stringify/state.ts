@@ -2,7 +2,8 @@ import { handlers as defaultHandlers } from './handlers/index.ts'
 import type { NodeRenderData, State, Context } from 'comark/render'
 import type { ElementNode, Node, MarkdownDocument, ConditionalNodeHandler, CreateContext, NodeHandler } from 'comark'
 import { escapeHtml, pascalCase } from '../../utils/index.ts'
-import type { BindingFilters } from '../../utils/filters.ts'
+import type { BindingFilters } from '../../utils/filters/index.ts'
+import { resolveFilterRegistry } from '../../utils/filters/index.ts'
 import { resolveAttributes } from './attributes.ts'
 
 function findHandler(ctx: Context, node: ElementNode): NodeHandler | undefined {
@@ -125,6 +126,7 @@ export function createState(ctx: Partial<CreateContext> = {}): State {
     blockAttributesStyle: ctx.blockAttributesStyle || 'codeblock',
     // Enable html mode for text/html format
     html: ctx.format === 'text/html',
+    filters: resolveFilterRegistry(ctx.filters as BindingFilters | undefined),
   } as Context
 
   const tree = ctx.tree as MarkdownDocument | undefined

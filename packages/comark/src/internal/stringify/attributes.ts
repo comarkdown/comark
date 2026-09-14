@@ -89,9 +89,10 @@ export function resolveAttributes(
       const { path, filters: filterSpecs } = parseBindingExpression(value)
       const resolved = get(renderData, path)
       if (resolved !== undefined) {
-        outValue = filterSpecs.length > 0 && options.filters
-          ? applyBindingFilters(resolved, filterSpecs, options.filters)
-          : resolved
+        outValue =
+          filterSpecs.length > 0 && options.filters
+            ? applyBindingFilters(resolved, filterSpecs, options.filters)
+            : resolved
         resultKey = outKey
       } else {
         outValue = value
@@ -128,7 +129,7 @@ export function resolveAttribute(
   attrs: Record<string, unknown>,
   renderData: NodeRenderData,
   key: string,
-  filters?: BindingFilters,
+  filters?: BindingFilters
 ): unknown {
   const bindKey = `:${key}`
   if (bindKey in attrs) {
@@ -137,9 +138,7 @@ export function resolveAttribute(
       const { path, filters: filterSpecs } = parseBindingExpression(value)
       const resolved = get(renderData, path)
       if (resolved !== undefined) {
-        return filterSpecs.length > 0 && filters
-          ? applyBindingFilters(resolved, filterSpecs, filters)
-          : resolved
+        return filterSpecs.length > 0 && filters ? applyBindingFilters(resolved, filterSpecs, filters) : resolved
       }
     }
     return value

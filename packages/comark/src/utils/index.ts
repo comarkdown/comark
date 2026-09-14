@@ -280,5 +280,5 @@ export { resolveAttributes, resolveAttribute } from '../internal/stringify/attri
 export type { ResolveAttributesOptions } from '../internal/stringify/attributes.ts'
 
 // Re-export binding filter utilities.
-export { parseBindingExpression, applyBindingFilters } from './filters.ts'
-export type { BindingFilter, BindingFilters, FilterSpec, ParsedBinding } from './filters.ts'
+export { parseBindingExpression, applyBindingFilters, standardFilters, resolveFilterRegistry } from './filters/index.ts'
+export type { BindingFilter, BindingFilters, FilterSpec, ParsedBinding } from './filters/index.ts'

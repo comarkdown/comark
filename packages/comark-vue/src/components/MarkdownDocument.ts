@@ -21,7 +21,7 @@ import {
   toRaw,
 } from 'vue'
 import { findLastTextNodeAndAppendNode, getCaret } from '../utils/caret.ts'
-import { pascalCase, resolveAttributes } from 'comark/utils'
+import { pascalCase, resolveAttributes, resolveFilterRegistry } from 'comark/utils'
 import type { BindingFilters } from 'comark/utils'
 
 // Cache for dynamically resolved components
@@ -112,7 +112,7 @@ function renderNode(
   componentsManifest?: ComponentManifest,
   parent?: Node,
   renderData: NodeRenderData = { frontmatter: {}, meta: {}, data: {}, props: {} },
-  filters?: BindingFilters,
+  filters?: BindingFilters
 ): VNode | string | null {
   // Handle text nodes (strings)
   if (typeof node === 'string') {
@@ -442,6 +442,8 @@ export const MarkdownDocument: MarkdownDocumentComponent = defineComponent({
 
     const caret = computed<ElementNode | null>(() => getCaret(props.caret || false))
 
+    const resolvedFilters = computed(() => resolveFilterRegistry(props.filters))
+
     return () => {
       // Render all nodes from the live document when present, else the value prop
       const rawDocument = toRaw(liveDocument.value ?? inputDocument.value)
@@ -465,7 +467,9 @@ export const MarkdownDocument: MarkdownDocumentComponent = defineComponent({
       }
 
       const children = nodes
-        .map((node, index) => renderNode(node, components.value, index, componentManifest, undefined, renderData, props.filters))
+        .map((node, index) =>
+          renderNode(node, components.value, index, componentManifest, undefined, renderData, resolvedFilters.value)
+        )
         .filter((child): child is VNode | string => child !== null)
 
       // Wrap in a fragment

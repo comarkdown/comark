@@ -250,7 +250,7 @@ export interface RendererOptions {
    * })
    * ```
    */
-  filters?: import('./utils/filters.ts').BindingFilters
+  filters?: import('./utils/filters/index.ts').BindingFilters
 
   [key: string]: unknown
 }

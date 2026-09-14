@@ -278,7 +278,7 @@ describe('resolveAttributes — pipe filter support (default mode)', () => {
     const result = resolveAttributes(
       { ':title': 'frontmatter.name | upper' },
       makeRenderData({ frontmatter: { name: 'hello' } }),
-      { filters: filterRegistry },
+      { filters: filterRegistry }
     )
     expect(result).toEqual({ title: 'HELLO' })
   })
@@ -287,7 +287,7 @@ describe('resolveAttributes — pipe filter support (default mode)', () => {
     const result = resolveAttributes(
       { ':label': 'frontmatter.bio | upper | truncate:5' },
       makeRenderData({ frontmatter: { bio: 'hello world' } }),
-      { filters: filterRegistry },
+      { filters: filterRegistry }
     )
     expect(result).toEqual({ label: 'HELLO…' })
   })
@@ -295,7 +295,7 @@ describe('resolveAttributes — pipe filter support (default mode)', () => {
   it('skips filter application when the registry is absent (path still resolves)', () => {
     const result = resolveAttributes(
       { ':title': 'frontmatter.name | upper' },
-      makeRenderData({ frontmatter: { name: 'hello' } }),
+      makeRenderData({ frontmatter: { name: 'hello' } })
     )
     // parseBindingExpression splits the expression: path = 'frontmatter.name'.
     // The path resolves to 'hello'; without a filter registry the filter step
@@ -309,7 +309,7 @@ describe('resolveAttributes — pipe filter support (parseJson mode)', () => {
     const result = resolveAttributes(
       { ':title': 'frontmatter.name | upper' },
       makeRenderData({ frontmatter: { name: 'hello' } }),
-      { parseJson: true, filters: filterRegistry },
+      { parseJson: true, filters: filterRegistry }
     )
     expect(result).toEqual({ title: 'HELLO' })
   })
@@ -318,7 +318,7 @@ describe('resolveAttributes — pipe filter support (parseJson mode)', () => {
     const result = resolveAttributes(
       { ':label': 'data.bio | upper | truncate:3' },
       makeRenderData({ data: { bio: 'hi there' } }),
-      { parseJson: true, filters: filterRegistry },
+      { parseJson: true, filters: filterRegistry }
     )
     // 'hi there' → upper → 'HI THERE' (8 chars > 3) → truncate:3 → 'HI ' + '…' = 'HI …'
     expect(result).toEqual({ label: 'HI …' })
@@ -329,12 +329,7 @@ describe('resolveAttribute — pipe filter support', () => {
   const rd = makeRenderData({ frontmatter: { name: 'world' } })
 
   it('applies a filter when resolving a named attribute', () => {
-    const value = resolveAttribute(
-      { ':title': 'frontmatter.name | upper' },
-      rd,
-      'title',
-      filterRegistry,
-    )
+    const value = resolveAttribute({ ':title': 'frontmatter.name | upper' }, rd, 'title', filterRegistry)
     expect(value).toBe('WORLD')
   })
 
