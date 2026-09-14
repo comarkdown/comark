@@ -1,0 +1,73 @@
+{
+  "name": "@comark/pdf",
+  "version": "0.1.0",
+  "description": "PDF renderer for Comark. Convert Markdown to print-ready paginated HTML and PDF via paged.js and Playwright.",
+  "keywords": [
+    "comark",
+    "components",
+    "markdown",
+    "mdc",
+    "pdf",
+    "paged.js",
+    "print",
+    "renderer"
+  ],
+  "homepage": "https://comark.dev/rendering/pdf",
+  "bugs": {
+    "url": "https://github.com/comarkdown/comark/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/comarkdown/comark.git"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js",
+    "./node": "./dist/node.js",
+    "./preview": "./dist/preview.js",
+    "./css": "./dist/css.js",
+    "./plugins/*": "./dist/plugins/*.js",
+    "./utils": "./dist/utils/index.js",
+    "./parse": "./dist/parse.js",
+    "./render": "./dist/render.js"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "stub": "node ../../scripts/stub.mjs",
+    "build": "tsc --removeComments --declaration false && tsc --emitDeclarationOnly",
+    "dev": "tsc --watch",
+    "test": "vitest run",
+    "prepack": "tsc --removeComments --declaration false && tsc --emitDeclarationOnly",
+    "release": "release-it"
+  },
+  "dependencies": {
+    "@comark/html": "workspace:*",
+    "comark": "workspace:*"
+  },
+  "devDependencies": {
+    "pagedjs": "catalog:",
+    "playwright": "catalog:",
+    "vitest": "catalog:"
+  },
+  "peerDependencies": {
+    "pagedjs": ">=0.4",
+    "playwright": ">=1.0"
+  },
+  "peerDependenciesMeta": {
+    "pagedjs": {
+      "optional": true
+    },
+    "playwright": {
+      "optional": true
+    }
+  }
+}

@@ -12,6 +12,8 @@ allowBuilds:
   "@parcel/watcher": false
   better-sqlite3: true
   comark-docs: false
+  core-js: false
+  es5-ext: false
   esbuild: false
   lmdb: false
   msgpackr-extract: false
@@ -108,6 +110,8 @@ catalog:
   nuxt: ^4.4.8
   nuxt-studio: 1.7.0
 
+  pagedjs: ^0.4.3
+
   # Linting
   oxfmt: ^0.58.0
   oxlint: ^1.73.0
@@ -174,6 +178,8 @@ catalog:
   zod: "^4.4.3"
 
 ignoredBuiltDependencies:
+  - core-js
+  - es5-ext
   - sharp
 
 minimumReleaseAgeExclude:

@@ -11,7 +11,7 @@ This is a **monorepo** containing the Comark Markdown parser, document model, pl
 - Fast synchronous and async parsing via markdown-exit, a TypeScript rewrite of markdown-it
 - CommonMark and GitHub Flavored Markdown support
 - Streaming support for real-time/incremental parsing
-- HTML, ANSI, Vue, React, Svelte and Angular renderers
+- HTML, ANSI, Vue, React, Svelte, Angular, and PDF renderers
 - Component and attribute syntax plus an extensible plugin system
 - Syntax highlighting via Shiki
 - Auto-close utilities for incomplete markdown (useful for AI streaming)
@@ -28,6 +28,7 @@ This is a **monorepo** containing the Comark Markdown parser, document model, pl
 │   ├── comark-react/     # React renderer + plugins (@comark/react)
 │   ├── comark-svelte/    # Svelte renderer + plugins (@comark/svelte)
 │   ├── comark-angular/   # Angular renderer + plugins (@comark/angular)
+│   ├── comark-pdf/       # PDF renderer + paged.js preview (@comark/pdf)
 │   └── comark-nuxt/      # Nuxt module (@comark/nuxt)
 ├── examples/             # Example applications
 │   ├── 1.frameworks/     # Framework examples (Nuxt, Next.js, Astro, SvelteKit, ...)
@@ -132,6 +133,66 @@ const renderHtml = createHtmlRenderer({
 })
 
 const html = await renderHtml(markdownString)
+```
+
+---
+
+## Package: @comark/pdf
+
+Located at `packages/comark-pdf/`. PDF renderer powered by paged.js and Playwright.
+
+### Exports
+
+```json
+{
+  ".": "./dist/index.js",
+  "./node": "./dist/node.js",
+  "./preview": "./dist/preview.js",
+  "./css": "./dist/css.js",
+  "./plugins/*": "./dist/plugins/*.js",
+  "./utils": "./dist/utils/index.js",
+  "./parse": "./dist/parse.js",
+  "./render": "./dist/render.js"
+}
+```
+
+### Source layout
+
+```
+packages/comark-pdf/src/
+├── index.ts              # createPdfRenderer, renderPdf, renderPdfFromDocument
+├── render.ts             # renderPdfBody, assemblePagedHtml + re-exports comark/render
+├── css.ts                # frontmatterToPageCss, DEFAULT_BASE_CSS
+├── types.ts              # PdfPageConfig, PdfRendererOptions, PdfNodeOptions, PdfBrowser, PdfPage
+├── parse.ts              # re-export comark/parse
+├── preview.ts            # browser: paginate() via pagedjs Previewer (lazy import)
+├── node.ts               # Node: renderPdfToBuffer, renderPdfToFile via Playwright
+├── pagedjs.d.ts          # minimal ambient types for pagedjs (no @types/pagedjs package)
+├── plugins/
+│   ├── page-break.ts     # PageBreak NodeHandler + no-op plugin default export
+│   ├── binding.ts        # re-export @comark/html/plugins/binding
+│   ├── math.ts           # re-export @comark/html/plugins/math
+│   └── mermaid.ts        # re-export @comark/html/plugins/mermaid
+└── utils/
+    └── index.ts          # re-export comark/utils
+```
+
+### Optional peers
+
+| Peer | Required by |
+|------|-------------|
+| `pagedjs` | `@comark/pdf/preview` |
+| `playwright` | `@comark/pdf/node` |
+
+### Usage
+
+```typescript
+import { createPdfRenderer, renderPdf, renderPdfFromDocument } from '@comark/pdf'
+import { paginate } from '@comark/pdf/preview'                   // browser only
+import { renderPdfToBuffer, renderPdfToFile } from '@comark/pdf/node' // Node only
+import { PageBreak } from '@comark/pdf/plugins/page-break'
+import math, { Math } from '@comark/pdf/plugins/math'
+import mermaid, { Mermaid } from '@comark/pdf/plugins/mermaid'
 ```
 
 ---
@@ -474,6 +535,17 @@ import { Markdown, MarkdownDocument, defineMarkdownComponent, defineMarkdownDocu
 import math, { Math } from '@comark/angular/plugins/math'
 import mermaid, { Mermaid } from '@comark/angular/plugins/mermaid'
 import binding, { Binding, If } from '@comark/angular/plugins/binding'
+
+// PDF — parse + assemble paged-media HTML, browser preview, headless PDF export
+import { createPdfRenderer, renderPdf, renderPdfFromDocument, assemblePagedHtml, renderPdfBody } from '@comark/pdf'
+import { paginate } from '@comark/pdf/preview'                   // browser: paged.js Previewer
+import { renderPdfToBuffer, renderPdfToFile } from '@comark/pdf/node' // Node: Playwright PDF export
+import { frontmatterToPageCss, DEFAULT_BASE_CSS } from '@comark/pdf/css'
+import { PageBreak } from '@comark/pdf/plugins/page-break'
+import math, { Math } from '@comark/pdf/plugins/math'
+import mermaid, { Mermaid } from '@comark/pdf/plugins/mermaid'
+import binding, { Binding, If } from '@comark/pdf/plugins/binding'
+import type { PdfPageConfig, PdfRendererOptions, PdfNodeOptions, PdfBrowser } from '@comark/pdf'
 ```
 
 ## Coding Principles
