@@ -20,6 +20,8 @@ allowBuilds:
 
 catalog:
   # AI
+  "@maizzle/framework": ^4.8.9
+
   "@ai-sdk/gateway": ^4.0.16
   "@ai-sdk/vue": ^4.0.22
   "@astrojs/react": ^6.0.1

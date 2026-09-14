@@ -28,7 +28,8 @@ This is a **monorepo** containing the Comark Markdown parser, document model, pl
 │   ├── comark-react/     # React renderer + plugins (@comark/react)
 │   ├── comark-svelte/    # Svelte renderer + plugins (@comark/svelte)
 │   ├── comark-angular/   # Angular renderer + plugins (@comark/angular)
-│   └── comark-nuxt/      # Nuxt module (@comark/nuxt)
+│   ├── comark-nuxt/      # Nuxt module (@comark/nuxt)
+│   └── comark-email/     # Email renderer (@comark/email)
 ├── examples/             # Example applications
 │   ├── 1.frameworks/     # Framework examples (Nuxt, Next.js, Astro, SvelteKit, ...)
 │   ├── 2.vite/           # Vite examples (Vue, React, Svelte, Angular, HTML, ANSI)
@@ -389,6 +390,63 @@ import mermaid, { Mermaid } from '@comark/angular/plugins/mermaid'
 <comark-markdown [value]="content" [components]="customComponents" />
 ```
 
+## Package: @comark/email
+
+Located at `packages/comark-email/`. Node-first email renderer using Maizzle (v4) and Tailwind CSS.
+
+```
+packages/comark-email/
+├── src/
+│   ├── index.ts                # Entry point: createEmailRenderer, renderEmail
+│   ├── render.ts               # renderEmailBody, assembleEmailHtml, renderEmailFromDocument
+│   ├── maizzle.ts              # compileEmail — lazy @maizzle/framework import
+│   ├── config.ts               # frontmatterToMaizzleConfig, buildPreheader, DEFAULT_EMAIL_CSS
+│   ├── types.ts                # EmailTheme, EmailConfig, EmailRendererOptions, EmailRenderResult
+│   ├── parse.ts                # Re-exports comark/parse
+│   ├── utils/
+│   │   └── index.ts            # Re-exports comark/utils
+│   └── plugins/
+│       ├── email-button.ts     # NodeHandler + no-op plugin for ::email-button
+│       ├── email-columns.ts    # NodeHandler + no-op plugin for ::email-columns
+│       ├── email-divider.ts    # NodeHandler + no-op plugin for ::email-divider
+│       ├── binding.ts          # Re-exports @comark/html/plugins/binding
+│       ├── math.ts             # Re-exports @comark/html/plugins/math
+│       └── mermaid.ts          # Re-exports @comark/html/plugins/mermaid
+├── test/
+│   ├── config.test.ts
+│   ├── email-components.test.ts
+│   ├── index.test.ts
+│   └── fixtures/markdown.ts
+├── package.json
+├── tsconfig.json
+└── vitest.config.ts
+```
+
+### Render flow
+
+Markdown → `parseMarkdown` → `renderEmailBody` (AST to Tailwind HTML, email components active) → `assembleEmailHtml` (wrap, inject preheader, add `@tailwind utilities;`) → `compileEmail` (Maizzle inline CSS) → `EmailRenderResult`.
+
+### Exports
+
+```json
+{
+  ".": "./dist/index.js",
+  "./config": "./dist/config.js",
+  "./render": "./dist/render.js",
+  "./parse": "./dist/parse.js",
+  "./plugins/*": "./dist/plugins/*.js",
+  "./utils": "./dist/utils/index.js"
+}
+```
+
+### Usage
+
+```typescript
+import { createEmailRenderer, renderEmail, renderEmailFromDocument } from '@comark/email'
+import math from '@comark/email/plugins/math'
+import binding, { Binding, If } from '@comark/email/plugins/binding'
+```
+
 ## Package Exports Reference
 
 ```typescript
@@ -443,6 +501,13 @@ import shiki from '@comark/html/plugins/shiki'
 import math, { Math } from '@comark/html/plugins/math'
 import mermaid, { Mermaid } from '@comark/html/plugins/mermaid'
 import binding, { Binding, If } from '@comark/html/plugins/binding'
+
+// Email rendering — parse + render to inline-styled transactional email HTML (Node-first)
+import { createEmailRenderer, renderEmail, renderEmailFromDocument } from '@comark/email'
+import { assembleEmailHtml, renderEmailBody } from '@comark/email/render'
+import shiki from '@comark/email/plugins/shiki'
+import math from '@comark/email/plugins/math'
+import binding, { Binding, If } from '@comark/email/plugins/binding'
 
 // ANSI terminal rendering — parse + render to styled terminal string
 import { createAnsiRenderer, createAnsiPrinter, printAnsi, renderAnsi, renderAnsiFromDocument } from '@comark/ansi'

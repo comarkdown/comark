@@ -1,0 +1,61 @@
+{
+  "name": "@comark/email",
+  "version": "0.1.0",
+  "description": "Email renderer for Comark. Convert Markdown to responsive, inline-styled HTML for email clients via Maizzle and Tailwind CSS.",
+  "keywords": [
+    "comark",
+    "components",
+    "email",
+    "html",
+    "maizzle",
+    "markdown",
+    "mdc",
+    "renderer",
+    "tailwindcss",
+    "transactional"
+  ],
+  "homepage": "https://comark.dev/rendering/email",
+  "bugs": {
+    "url": "https://github.com/comarkdown/comark/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/comarkdown/comark.git"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js",
+    "./config": "./dist/config.js",
+    "./render": "./dist/render.js",
+    "./parse": "./dist/parse.js",
+    "./plugins/*": "./dist/plugins/*.js",
+    "./utils": "./dist/utils/index.js"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "stub": "node ../../scripts/stub.mjs",
+    "build": "tsc --removeComments --declaration false && tsc --emitDeclarationOnly",
+    "dev": "tsc --watch",
+    "test": "vitest run",
+    "prepack": "tsc --removeComments --declaration false && tsc --emitDeclarationOnly",
+    "release": "release-it"
+  },
+  "dependencies": {
+    "@comark/html": "workspace:*",
+    "@maizzle/framework": "catalog:",
+    "comark": "workspace:*"
+  },
+  "devDependencies": {
+    "katex": "^0.17.0",
+    "vitest": "catalog:"
+  }
+}
