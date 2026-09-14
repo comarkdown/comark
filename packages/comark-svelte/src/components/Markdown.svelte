@@ -27,6 +27,7 @@ This is an alert component
   import type { MarkdownDocument as MarkdownDocumentType, ComarkPlugin, ComponentManifest } from 'comark'
   import { parseMarkdown } from 'comark'
   import { isMarkdownDocument } from 'comark/utils'
+  import type { BindingFilters } from 'comark/utils'
   import MarkdownDocument from './MarkdownDocument.svelte'
 
   let {
@@ -39,6 +40,7 @@ This is an alert component
     streaming = false,
     caret = false,
     data,
+    filters = undefined,
     class: className = '',
   }: {
     value?: string | MarkdownDocumentType
@@ -50,6 +52,7 @@ This is an alert component
     streaming?: boolean
     caret?: boolean | { class: string }
     data?: Record<string, unknown>
+    filters?: BindingFilters
     class?: string
   } = $props()
 
@@ -82,6 +85,7 @@ This is an alert component
     {streaming}
     {caret}
     {data}
+    {filters}
     class={className}
   />
 {:else if parsed}
@@ -92,6 +96,7 @@ This is an alert component
     {streaming}
     {caret}
     {data}
+    {filters}
     class={className}
   />
 {/if}

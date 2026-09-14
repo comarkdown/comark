@@ -69,6 +69,7 @@ naturally appears inline after the deepest trailing text node.
 <script lang="ts">
   import type { Node as NodeType, ComponentManifest, NodeRenderData } from 'comark'
   import type { ComponentResolver } from '../types.js'
+  import type { BindingFilters } from 'comark/utils'
   import MarkdownNode from './MarkdownNode.svelte'
   import ComarkComponent from './ComarkComponent.svelte'
   import Resolve from './Resolve.svelte'
@@ -83,6 +84,7 @@ naturally appears inline after the deepest trailing text node.
     resolver: Resolver = Resolve,
     caretClass = null,
     renderData = EMPTY_RENDER_DATA,
+    filters = undefined,
   }: {
     node: NodeType
     components?: Record<string, any>
@@ -90,6 +92,7 @@ naturally appears inline after the deepest trailing text node.
     resolver?: ComponentResolver
     caretClass?: string | null
     renderData?: NodeRenderData
+    filters?: BindingFilters
   } = $props()
 
   const CARET_TEXT = '\u2009'
@@ -181,7 +184,7 @@ naturally appears inline after the deepest trailing text node.
 
     // Resolve `:prefix` bindings, then apply Svelte attribute remapping
     // (`className` → `class`).
-    const resolved = resolveAttributes(nodeProps, renderData, { parseJson: true })
+    const resolved = resolveAttributes(nodeProps, renderData, { parseJson: true, filters })
     for (const k in resolved) {
       if (k === 'className') {
         mappedProps.class = resolved[k]
@@ -241,6 +244,7 @@ naturally appears inline after the deepest trailing text node.
       resolver={Resolver}
       caretClass={child.caretClass}
       renderData={childrenRenderData}
+      {filters}
     />
   {/each}
 {/snippet}
@@ -259,6 +263,7 @@ naturally appears inline after the deepest trailing text node.
     {componentsManifest}
     resolver={Resolver}
     renderData={childrenRenderData}
+    {filters}
   >
     {@render renderChildren()}
   </ComarkComponent>
@@ -275,6 +280,7 @@ naturally appears inline after the deepest trailing text node.
     {componentsManifest}
     resolver={Resolver}
     renderData={childrenRenderData}
+    {filters}
   >
     {@render renderChildren()}
   </ComarkComponent>

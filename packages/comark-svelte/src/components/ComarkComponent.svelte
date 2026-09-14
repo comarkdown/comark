@@ -2,6 +2,7 @@
   import type { Node as NodeType, ComponentManifest, NodeRenderData } from 'comark'
   import type { Snippet } from 'svelte'
   import type { ComponentResolver } from '../types.js'
+  import type { BindingFilters } from 'comark/utils'
   import MarkdownNode from './MarkdownNode.svelte'
   import Resolve from './Resolve.svelte'
   import ComarkComponent from './ComarkComponent.svelte'
@@ -24,6 +25,7 @@
     componentsManifest,
     resolver: Resolver = Resolve,
     renderData = EMPTY_RENDER_DATA,
+    filters = undefined,
     children,
   }: {
     Component?: any
@@ -35,6 +37,7 @@
     componentsManifest?: ComponentManifest
     resolver?: ComponentResolver
     renderData?: NodeRenderData
+    filters?: BindingFilters
     children?: Snippet
   } = $props()
 </script>
@@ -50,6 +53,7 @@
         resolver={Resolver}
         caretClass={i === slot.children.length - 1 ? slot.caretClass : null}
         {renderData}
+        {filters}
       />
     {/each}
   {/snippet}
@@ -64,6 +68,7 @@
     {componentsManifest}
     resolver={Resolver}
     {renderData}
+    {filters}
   >
     {@render children?.()}
   </ComarkComponent>

@@ -230,6 +230,27 @@ export interface RendererOptions {
    * Additional data to pass to the renderer nodes, can be used to pass pre-fetched data to the renderer nodes
    */
   data?: Record<string, any>
+  /**
+   * Named value-to-value transform functions applied to `{{ path | name:arg }}` and `:prop="path | name:arg"` bindings.
+   *
+   * Each filter receives the resolved value as its first argument, followed by
+   * any colon-delimited literal arguments from the expression. Filters run
+   * sequentially — the output of one is the input of the next.
+   *
+   * @example
+   * ```ts
+   * createHtmlRenderer({
+   *   plugins: [binding()],
+   *   components: { Binding },
+   *   filters: {
+   *     upper: (val: string) => val?.toUpperCase(),
+   *     truncate: (val: string, length: number) =>
+   *       val?.length > length ? `${val.slice(0, length)}...` : val,
+   *   },
+   * })
+   * ```
+   */
+  filters?: import('./utils/filters.ts').BindingFilters
 
   [key: string]: unknown
 }

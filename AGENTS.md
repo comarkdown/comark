@@ -76,7 +76,8 @@ packages/comark/
 │   │   ├── task-list.ts      # GFM task lists
 │   │   └── toc.ts            # Table of contents
 │   ├── utils/                # Shared utilities (comark/utils entry point)
-│   │   ├── index.ts          # textContent(), visit(), visitAsync(), escapeHtml(), string/object utils
+│   │   ├── index.ts          # textContent(), visit(), visitAsync(), escapeHtml(), string/object utils, filter utilities
+│   │   ├── filters.ts        # parseBindingExpression(), applyBindingFilters(), BindingFilter/BindingFilters/FilterSpec types
 │   │   ├── helpers.ts        # defineComarkPlugin(), dedupePlugins()
 │   │   └── caret.ts          # Caret utilities for streaming
 │   └── internal/             # Internal implementation (not exported)
@@ -406,7 +407,8 @@ import { renderMarkdown } from 'comark/render'
 
 // AST types and utilities
 import type { MarkdownDocument, Node, ElementNode, TextNode } from 'comark'
-import { textContent, visit, escapeHtml } from 'comark/utils'
+import { textContent, visit, escapeHtml, parseBindingExpression, applyBindingFilters } from 'comark/utils'
+import type { BindingFilter, BindingFilters, FilterSpec, ParsedBinding } from 'comark/utils'
 
 // Core plugins — use when calling parseMarkdown() directly (framework-agnostic)
 import shiki from 'comark/plugins/shiki'
@@ -426,6 +428,9 @@ import attributes from 'comark/plugins/attributes'   // default via registerDefa
 import html from 'comark/plugins/html'               // default via registerDefaultPlugins
 import binding, { Binding, resolveIfWrapper, selectIfBranch, shouldRenderIf } from 'comark/plugins/binding'
 import type { IfComparisonOperator, IfProps, IfWrapperTag } from 'comark/plugins/binding'
+// Pipe-filter utilities — also re-exported from comark/utils
+import { parseBindingExpression, applyBindingFilters } from 'comark/plugins/binding'
+import type { BindingFilter, BindingFilters, FilterSpec, ParsedBinding } from 'comark/plugins/binding'
 
 // markdown-it / markdown-exit adapters (e.g. VitePress)
 import { markdownItComponents } from 'comark/plugins/components'

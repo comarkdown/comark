@@ -2,6 +2,9 @@ import type { PluginWithOptions, MarkdownExit } from 'markdown-exit'
 import { defineComarkPlugin } from '../utils/helpers.ts'
 import type { MarkdownItPlugin, NodeHandler, Node } from '../types'
 
+export { parseBindingExpression, applyBindingFilters } from '../utils/filters.ts'
+export type { BindingFilter, BindingFilters, FilterSpec, ParsedBinding } from '../utils/filters.ts'
+
 export interface MdcInlineBindingOptions {
   /**
    * The tag name used to render a binding.

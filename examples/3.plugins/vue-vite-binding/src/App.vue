@@ -9,12 +9,24 @@ const showSource = ref(false)
 const sourcePlugins = [rangi({ theme: github })]
 const previewPlugins = [binding()]
 
+const filters = {
+  upper: (val: unknown) => String(val ?? '').toUpperCase(),
+  lower: (val: unknown) => String(val ?? '').toLowerCase(),
+  truncate: (val: unknown, length: unknown) => {
+    const s = String(val ?? '')
+    const n = typeof length === 'number' ? length : Number(length)
+    if (!Number.isFinite(n) || n < 0) return s
+    return s.length > n ? `${s.slice(0, n)}…` : s
+  },
+}
+
 // Runtime data exposed to bindings via the `data.` namespace.
 const initialData = {
   user: {
     name: 'Ada',
     role: 'admin',
     age: 28,
+    bio: 'Wrote the first published computer algorithm.',
   },
   isHappy: true,
   isFine: true,
@@ -39,6 +51,18 @@ release:
 # {{ frontmatter.release.codename || Unnamed }} — v{{ frontmatter.release.version }}
 
 Hello **{{ data.user.name || friend }}** (role: {{ data.user.role }}), welcome back!
+
+## Pipe filters
+
+Name uppercased: **{{ data.user.name | upper }}**
+
+Bio truncated then uppercased: **{{ data.user.bio | truncate:24 | upper }}**
+
+Role lowercased with default: **{{ data.user.role | lower || guest }}**
+
+::card{:title="data.user.name | upper"}
+Attribute binding with a filter — card title resolves to \`{{ props.title }}\`.
+::
 
 ## Role comparison
 
@@ -179,6 +203,28 @@ ${markdown}
               </select>
             </div>
 
+            <div class="vbg-field vbg-custom-field-wide">
+              <label
+                class="vbg-label"
+                for="bio"
+                >Bio</label
+              >
+              <textarea
+                id="bio"
+                v-model="data.user.bio"
+                name="bio"
+                rows="3"
+                spellcheck="false"
+                aria-describedby="bio-help"
+              />
+              <p
+                id="bio-help"
+                class="vbg-helper"
+              >
+                Used by <code>| truncate</code> and <code>| upper</code> in the Pipe filters section.
+              </p>
+            </div>
+
             <div class="vbg-field">
               <div class="vbg-custom-age-label">
                 <label
@@ -287,6 +333,7 @@ ${markdown}
                 :plugins="previewPlugins"
                 :components="{ Binding, If, h1: 'h2', h2: 'h3' }"
                 :data="data"
+                :filters="filters"
               />
               <template #fallback><p class="vbg-caption">Rendering Markdown…</p></template>
             </Suspense>
@@ -423,6 +470,12 @@ ${markdown}
 .vbg-custom-fields {
   display: grid;
   gap: var(--vbg-space-6);
+}
+.vbg-custom-fields textarea {
+  width: 100%;
+  resize: vertical;
+  min-height: 4.5rem;
+  font: inherit;
 }
 .vbg-custom-age-label {
   display: flex;
@@ -629,7 +682,8 @@ ${markdown}
   .vbg-custom-fields {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  .vbg-custom-fields > :last-child {
+  .vbg-custom-fields > :last-child,
+  .vbg-custom-field-wide {
     grid-column: 1 / -1;
   }
   .vbg-custom-masthead {

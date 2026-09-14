@@ -2,6 +2,7 @@ import { handlers as defaultHandlers } from './handlers/index.ts'
 import type { NodeRenderData, State, Context } from 'comark/render'
 import type { ElementNode, Node, MarkdownDocument, ConditionalNodeHandler, CreateContext, NodeHandler } from 'comark'
 import { escapeHtml, pascalCase } from '../../utils/index.ts'
+import type { BindingFilters } from '../../utils/filters.ts'
 import { resolveAttributes } from './attributes.ts'
 
 function findHandler(ctx: Context, node: ElementNode): NodeHandler | undefined {
@@ -61,7 +62,9 @@ export async function one(node: Node, state: State, parent?: ElementNode, atLine
   // resolve to nothing.
   const prevRenderData = state.renderData
   if (state.renderData && node[1]) {
-    const resolved = resolveAttributes(node[1] as Record<string, unknown>, prevRenderData)
+    const resolved = resolveAttributes(node[1] as Record<string, unknown>, prevRenderData, {
+      filters: state.context.filters as BindingFilters | undefined,
+    })
     if (Object.keys(resolved).length > 0) {
       state.renderData = { ...prevRenderData, props: resolved }
     }

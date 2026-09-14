@@ -423,6 +423,129 @@ import {
    ::
    ```
 
+## Pipe filters
+
+Apply named value transforms with the `|` pipe operator. Multiple filters chain left-to-right — the output of one becomes the input of the next.
+
+```mdc
+{{ user.name | upper }}
+{{ bio | truncate:120 | upper }}
+{{ date | format:'YYYY-MM-DD HH:mm' }}
+{{ title | upper | truncate:10 || Untitled }}
+```
+
+Filters also work in `:prop="..."` attribute bindings on components:
+
+```mdc
+::UserCard{:name="user.name | upper"}
+::
+```
+
+### Registering filters
+
+Pass a `filters` object to the renderer. Each filter is a pure function that receives the resolved value as its first argument, followed by any colon-delimited literal arguments from the expression.
+
+::code-group
+
+```typescript [HTML]
+import binding, { Binding } from '@comark/html/plugins/binding'
+import { createHtmlRenderer } from '@comark/html'
+
+const renderHtml = createHtmlRenderer({
+  plugins: [binding()],
+  components: { Binding },
+  filters: {
+    upper: (val) => String(val ?? '').toUpperCase(),
+    truncate: (val, length) => {
+      const s = String(val ?? '')
+      return s.length > (length as number) ? `${s.slice(0, length as number)}…` : s
+    },
+    format: (val, pattern) => myDateLib.format(val, pattern as string),
+  },
+})
+```
+
+```vue [Vue]
+<template>
+  <Suspense>
+    <Markdown
+      :value="markdown"
+      :plugins="[binding()]"
+      :components="{ Binding }"
+      :filters="filters"
+    />
+  </Suspense>
+</template>
+
+<script setup lang="ts">
+import { Markdown } from '@comark/vue'
+import binding, { Binding } from '@comark/vue/plugins/binding'
+
+const filters = {
+  upper: (val: unknown) => String(val ?? '').toUpperCase(),
+  truncate: (val: unknown, length: unknown) => {
+    const s = String(val ?? '')
+    return s.length > (length as number) ? `${s.slice(0, length as number)}…` : s
+  },
+}
+</script>
+```
+
+```tsx [React]
+import { Markdown } from '@comark/react'
+import binding, { Binding } from '@comark/react/plugins/binding'
+
+const filters = {
+  upper: (val: unknown) => String(val ?? '').toUpperCase(),
+  truncate: (val: unknown, length: unknown) => {
+    const s = String(val ?? '')
+    return s.length > (length as number) ? `${s.slice(0, length as number)}…` : s
+  },
+}
+
+export default function App() {
+  return (
+    <Markdown
+      value={markdown}
+      plugins={[binding()]}
+      components={{ Binding }}
+      filters={filters}
+    />
+  )
+}
+```
+
+::
+
+### Filter argument syntax
+
+Arguments are colon-delimited literals appended after the filter name:
+
+| Expression | Result |
+| --- | --- |
+| `\| truncate:120` | numeric arg `120` |
+| `\| clamp:0:100` | two numeric args `0` and `100` |
+| `\| format:'YYYY-MM-DD HH:mm'` | string arg (colons inside quotes are safe) |
+| `\| wrap:true` | boolean arg |
+
+### Composing filters with the default operator
+
+Filters and `||` can be combined. Filters run first, then the default applies if the final result is `null` or `undefined`:
+
+```mdc
+{{ user.bio | truncate:200 || No biography provided. }}
+```
+
+### Unknown filters
+
+A filter name that is not found in the registry throws an error at render time:
+
+```
+Unknown binding filter: "myFilter"
+```
+
+This prevents silent data loss. Ensure every filter used in markdown is registered before rendering.
+
 ## See also
 
 - [Data Binding](/syntax/components#data-binding): the underlying `:prefix` resolution contract
