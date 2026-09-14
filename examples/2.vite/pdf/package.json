@@ -1,0 +1,22 @@
+{
+  "name": "comark-pdf",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@comark/pdf": "workspace:*",
+    "beautiful-mermaid": "catalog:",
+    "katex": "catalog:",
+    "pagedjs": "catalog:",
+    "shiki": "catalog:"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "vite": "catalog:"
+  }
+}

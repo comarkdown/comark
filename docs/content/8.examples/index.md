@@ -39,6 +39,9 @@ Each example wires Comark into a framework or build setup, with its full source 
   :::card{icon="i-lucide-file-code" title="HTML Preview" to="/examples/vite/html"}
   A live markdown editor that renders Comark content to HTML and displays it in a sandboxed iframe preview, with syntax highlighting support.
   :::
+  :::card{icon="i-lucide-file-text" title="PDF Preview" to="/examples/vite/pdf"}
+  A live markdown editor that renders Comark content to paginated PDF pages with paged.js, including headers, footers, and page breaks.
+  :::
   :::card{icon="i-simple-icons-react" title="React" to="/examples/vite/react"}
   A minimal example showing how to use Comark with React and Vite.
   :::
