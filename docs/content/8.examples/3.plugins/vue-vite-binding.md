@@ -1,6 +1,6 @@
 ---
-title: Binding (frontmatter + data)
-description: Example showing how to interpolate frontmatter and runtime data into Markdown using the Comark `binding` plugin in Vue and Vite.
+title: Binding, conditions, and loops
+description: Try live Markdown bindings, If branches, and For loops with editable posts in Vue and Vite.
 navigation:
   icon: i-lucide-replace
 ---
@@ -23,12 +23,26 @@ This example demonstrates the Comark `binding` plugin in a Vue + Vite app:
 - **Parent props** — nested components can reference their enclosing component's resolved attributes via `props.`.
 - **Typed values** — bindings come through as real JS values (strings, numbers, objects) thanks to the shared data-binding layer.
 
+## Try repeated content
+
+Run `pnpm dev:binding` from the repository root. In **Posts**, edit titles and descriptions, toggle **Published**, add or remove posts, or use **Reverse order**. **Clear posts** selects the `#empty` slot. **Reset** restores the initial posts. The highlighted **Source** view includes the `For` block and its nested `If`.
+
+```mdc
+::for{:each="data.posts" item="post" index="position" key="id"}
+### {{ props.post.title }}
+
+{{ props.post.description }}
+#empty
+No posts published yet.
+::
+```
+
 ## Usage
 
 1. Import the plugin and its matching Vue component:
 
    ```ts
-   import binding, { Binding } from '@comark/vue/plugins/binding'
+   import binding, { Binding, For, If } from '@comark/vue/plugins/binding'
    ```
 
 2. Wire them into `<Markdown>`:
@@ -37,7 +51,7 @@ This example demonstrates the Comark `binding` plugin in a Vue + Vite app:
    <Markdown
      :value="markdown"
      :plugins="[binding()]"
-     :components="{ Binding }"
+     :components="{ Binding, For, If }"
      :data="data"
    />
    ```

@@ -1,5 +1,12 @@
 import { resolveAttributes, type NodeHandler } from 'comark/render'
-import { resolveIfWrapper, selectIfBranch, shouldRenderIf, type IfProps } from 'comark/plugins/binding'
+import {
+  resolveForIterations,
+  selectForBranch,
+  resolveIfWrapper,
+  selectIfBranch,
+  shouldRenderIf,
+  type IfProps,
+} from 'comark/plugins/binding'
 import type { Node } from 'comark'
 import { DIM, RESET } from '../utils/escape.ts'
 
@@ -48,4 +55,22 @@ export const If: NodeHandler = async (node, state, parent) => {
   resolveIfWrapper(props.as)
   state.renderData = { ...state.renderData, props }
   return (await state.flow([node[0], node[1], ...children], state)) + (parent ? '' : state.context.blockSeparator)
+}
+
+/** Repeat the default branch with a scoped item, or render the empty branch once. */
+export const For: NodeHandler = async (node, state, parent) => {
+  const previous = state.renderData
+  const props = resolveAttributes(previous.props, previous, { parseJson: true })
+  const iterations = resolveForIterations(props, previous)
+  const children = selectForBranch(node.slice(2) as Node[], iterations.length === 0)
+  let output = ''
+  try {
+    for (const iteration of iterations.length ? iterations : [{ renderData: previous }]) {
+      state.renderData = iteration.renderData
+      output += await state.flow([node[0], {}, ...children], state)
+    }
+  } finally {
+    state.renderData = previous
+  }
+  return output + (output && !parent ? state.context.blockSeparator : '')
 }

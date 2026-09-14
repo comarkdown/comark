@@ -15,12 +15,11 @@ import {
   reflectComponentType,
   inject,
 } from '@angular/core'
-import type { ElementNode, Node as MarkdownAstNode, NodeRenderData } from 'comark'
-import { resolveIfWrapper, selectIfBranch, shouldRenderIf, type IfProps } from 'comark/plugins/binding'
+import type { ElementNode, Node as MarkdownAstNode, NodeRenderData, NodeRenderHook } from 'comark'
 import { pascalCase, resolveAttributes } from 'comark/utils'
 
 interface StructuralComponent extends Type<any> {
-  ɵcomarkIf?: boolean
+  __comarkRender?: NodeRenderHook
 }
 
 /**
@@ -160,8 +159,15 @@ export class MarkdownNode implements OnChanges {
       const hasOwnAttrs = Object.keys(resolved).length > 0
       const childrenRenderData: NodeRenderData = hasOwnAttrs ? { ...this.renderData, props: resolved } : this.renderData
 
-      if ((customComponent as StructuralComponent | undefined)?.ɵcomarkIf) {
-        this.renderIf(resolved, children, childrenRenderData)
+      const renderHook = (customComponent as StructuralComponent | undefined)?.__comarkRender
+      if (renderHook) {
+        for (const group of renderHook({ props: resolved, children, renderData: this.renderData })) {
+          if (group.wrapper) {
+            this.renderNativeEl(hostEl, group.wrapper, {}, group.children, group.renderData)
+          } else {
+            this.renderChildren(hostEl, group.children, group.renderData)
+          }
+        }
       } else if (customComponent) {
         this.renderCustomComponent(customComponent, resolved, children, childrenRenderData)
       } else {
@@ -217,20 +223,6 @@ export class MarkdownNode implements OnChanges {
     childrenRenderData: NodeRenderData
   ): void {
     this.renderNativeEl(this.elementRef.nativeElement as HTMLElement, tag, attrs, children, childrenRenderData)
-  }
-
-  /** Evaluate an `::if` before rendering any of its descendants. */
-  private renderIf(props: IfProps, children: MarkdownAstNode[], childrenRenderData: NodeRenderData): void {
-    const branch = selectIfBranch(children, shouldRenderIf(props))
-    if (!branch) return
-
-    const hostEl = this.elementRef.nativeElement as HTMLElement
-    const wrapper = resolveIfWrapper(props.as)
-    if (wrapper) {
-      this.renderNativeEl(hostEl, wrapper, {}, branch, childrenRenderData)
-    } else {
-      this.renderChildren(hostEl, branch, childrenRenderData)
-    }
   }
 
   private renderCustomComponent(
@@ -326,6 +318,7 @@ export class MarkdownNode implements OnChanges {
 
     // Attach to DOM and detect changes
     this.vcr.insert(componentRef.hostView)
+    this.renderer.appendChild(this.elementRef.nativeElement, componentRef.location.nativeElement)
     componentRef.changeDetectorRef.detectChanges()
   }
 

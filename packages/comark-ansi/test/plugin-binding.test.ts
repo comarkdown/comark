@@ -1,7 +1,8 @@
+import { forCases } from '../../../test/fixtures/for'
 import { describe, expect, it } from 'vitest'
 import { parseMarkdown } from 'comark'
 import { renderAnsiFromDocument } from '../src/render'
-import binding, { Binding, If } from '../src/plugins/binding'
+import binding, { Binding, For, If } from '../src/plugins/binding'
 import { nestedIfCases, nestedIfMarkdown } from '../../../test/fixtures/if'
 
 const parseWithBinding = (md: string) => parseMarkdown(md, { plugins: [binding()] })
@@ -78,4 +79,19 @@ describe('@comark/ansi plugins/binding — If handler', () => {
     expect(passed).toContain('Before\n\nPassed\n\nAfter')
     expect(failed).toContain('Before\n\nAfter')
   })
+})
+
+it.each(forCases)('For: $name', async ({ markdown, data, expected, absent }) => {
+  const output = (
+    await renderAnsiFromDocument(await parseWithBinding(markdown), {
+      components: { Binding, For, If },
+      data,
+      colors: false,
+    })
+  )
+    .replace(/<[^>]*>/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+  for (const text of expected) expect(output).toContain(text)
+  for (const text of absent) expect(output).not.toContain(text)
 })

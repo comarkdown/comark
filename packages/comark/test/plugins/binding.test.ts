@@ -1,3 +1,4 @@
+import { resolveForIterations } from '../../src/plugins/binding'
 import { describe, expect, it } from 'vitest'
 import { parseMarkdown } from '../../src/parse'
 import { renderMarkdown } from '../../src/render'
@@ -180,5 +181,29 @@ Intro text.
     expect(html).toContain('Hello')
     // The wrapper paragraph must not inherit the card's `title` attribute.
     expect(html).not.toContain('<p title=')
+  })
+})
+
+describe('For iterations', () => {
+  const context = { props: {}, data: {}, frontmatter: {}, meta: {} }
+  it('uses stable item keys and does not mutate the parent scope', () => {
+    const parent = { ...context, scope: { outer: 'kept' } }
+    const each = [{ id: 'a' }, { id: 'b' }]
+    const first = resolveForIterations({ each, item: 'post', index: 'i', key: 'id' }, parent)
+    const reordered = resolveForIterations({ each: each.toReversed(), item: 'post', key: 'id' }, parent)
+    expect(first.map((item) => item.key)).toEqual(['a', 'b'])
+    expect(reordered.map((item) => item.key)).toEqual(['b', 'a'])
+    expect(first[0].renderData.scope).toEqual({ outer: 'kept', post: each[0], i: 0 })
+    expect(parent.scope).toEqual({ outer: 'kept' })
+  })
+  it.each([
+    { each: 'text' },
+    { each: {} },
+    { each: [1], item: '__proto__' },
+    { each: [1], item: 'x', index: 'x' },
+    { each: [{}], key: 'id' },
+    { each: [{ id: 'a' }, { id: 'a' }], key: 'id' },
+  ])('rejects invalid iteration props %j', (props) => {
+    expect(() => resolveForIterations(props, context)).toThrow()
   })
 })

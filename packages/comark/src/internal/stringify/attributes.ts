@@ -45,6 +45,7 @@ export function resolveAttributes(
   renderData: NodeRenderData,
   options: ResolveAttributesOptions = {}
 ): Record<string, unknown> {
+  if (renderData.scope) renderData = { ...renderData, props: { ...renderData.props, ...renderData.scope } }
   const result: Record<string, unknown> = {}
   for (const key in attrs) {
     if (key === '$') continue
@@ -110,6 +111,7 @@ export function resolveAttributes(
  * binding doesn't resolve.
  */
 export function resolveAttribute(attrs: Record<string, unknown>, renderData: NodeRenderData, key: string): unknown {
+  if (renderData.scope) renderData = { ...renderData, props: { ...renderData.props, ...renderData.scope } }
   const bindKey = `:${key}`
   if (bindKey in attrs) {
     const value = attrs[bindKey]

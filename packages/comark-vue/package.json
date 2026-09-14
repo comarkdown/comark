@@ -54,6 +54,7 @@
   "devDependencies": {
     "@vue/compiler-core": "catalog:",
     "@vue/server-renderer": "catalog:",
+    "playwright": "catalog:",
     "vite": "catalog:",
     "vitest": "catalog:",
     "vue": "catalog:"

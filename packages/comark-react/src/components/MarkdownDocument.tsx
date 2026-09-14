@@ -4,6 +4,7 @@ import type {
   MarkdownDocument as MarkdownDocumentType,
   ComponentManifest,
   NodeRenderData,
+  NodeRenderHook,
 } from 'comark'
 import React, { lazy, Suspense, useMemo } from 'react'
 import { pascalCase, camelCase, resolveAttributes } from 'comark/utils'
@@ -141,6 +142,27 @@ function renderNode(
     // remapping (`class` → `className`, string `style` → object, `tabindex`
     // → `tabIndex`).
     const resolved = resolveAttributes(nodeProps, renderData, { parseJson: true })
+    const renderHook = (customComponent as { __comarkRender?: NodeRenderHook } | undefined)?.__comarkRender
+    if (renderHook) {
+      return React.createElement(customComponent!, {
+        key,
+        __render: () =>
+          React.createElement(
+            React.Fragment,
+            null,
+            renderHook({ props: resolved, children, renderData }).map((group) =>
+              React.createElement(
+                group.wrapper || React.Fragment,
+                { key: group.key },
+                group.children.map((child, index) =>
+                  renderNode(child, components, index, componentsManifest, node, group.renderData)
+                )
+              )
+            )
+          ),
+      })
+    }
+
     const props: Record<string, any> = {}
     for (const k in resolved) {
       const v = resolved[k]

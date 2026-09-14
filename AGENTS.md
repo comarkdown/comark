@@ -881,3 +881,19 @@ After each change, ask:
 - [ ] Does AGENTS.md reflect the current architecture?
 - [ ] Are all public APIs documented in Package Exports Reference?
 - [ ] Are the docs pages accurate and up-to-date?
+
+### Binding structural components
+
+Renderer-specific `plugins/binding` entry points export `For` alongside `Binding` and `If`.
+`For` repeats default AST children for an array, with `item` and optional `index` aliases,
+optional item-property `key`, and an `#empty` slot. Core helpers `resolveForIterations`,
+`selectForBranch`, and `renderFor` live in `packages/comark/src/plugins/binding.ts`.
+`NodeRenderData.scope` preserves lexical loop aliases through descendant component props;
+attribute resolution exposes those aliases under `props`. Vue/React keyed fragments and
+Svelte keyed each blocks preserve iteration identity; Angular currently rebuilds descendants.
+Cross-renderer iteration cases live in `test/fixtures/for.ts`.
+
+Structural framework components use a generic `__comarkRender` hook returning
+`NodeRenderGroup[]` (key, AST children, render context, optional wrapper). Keep binding
+imports in optional adapters; base renderers consume this hook without importing binding
+helpers. `test/binding-bundle.test.ts` in each framework package verifies the exclusion.

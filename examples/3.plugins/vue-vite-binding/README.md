@@ -1,6 +1,6 @@
 ---
-title: Binding and conditional content
-description: Update Markdown bindings and If branches with live form controls using Vue and Vite.
+title: Binding, conditions, and loops
+description: Try live Markdown bindings, If branches, and For loops with editable posts in Vue and Vite.
 navigation:
   icon: i-lucide-replace
 category: Plugins
@@ -33,12 +33,26 @@ Run `pnpm dev:binding` from the repository root. Change the role, move the age s
 
 The layout follows [Vercel's design guidance](https://vercel.com/design.md), with Comark branding. It loads the published Vercel CSS foundation and Geist fonts over the network.
 
+## Try repeated content
+
+Run `pnpm dev:binding` from the repository root. In **Posts**, edit titles and descriptions, toggle **Published**, add or remove posts, or use **Reverse order**. **Clear posts** selects the `#empty` slot. **Reset** restores the initial posts. The highlighted **Source** view includes the `For` block and its nested `If`.
+
+```mdc
+::for{:each="data.posts" item="post" index="position" key="id"}
+### {{ props.post.title }}
+
+{{ props.post.description }}
+#empty
+No posts published yet.
+::
+```
+
 ## Usage
 
 1. Import the plugin and its Vue components:
 
    ```ts
-   import binding, { Binding, If } from '@comark/vue/plugins/binding'
+   import binding, { Binding, For, If } from '@comark/vue/plugins/binding'
    ```
 
 2. Wire them into `<Markdown>`:
@@ -47,7 +61,7 @@ The layout follows [Vercel's design guidance](https://vercel.com/design.md), wit
    <Markdown
      :value="markdown"
      :plugins="[binding()]"
-     :components="{ Binding, If }"
+     :components="{ Binding, For, If }"
      :data="data"
    />
    ```

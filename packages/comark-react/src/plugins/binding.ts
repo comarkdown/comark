@@ -3,3 +3,5 @@ export { default } from 'comark/plugins/binding'
 
 export { Binding } from '../components/Binding.tsx'
 export { If } from '../components/If.tsx'
+
+export { For } from '../components/For.tsx'

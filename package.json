@@ -70,6 +70,7 @@
     "tsx": "catalog:",
     "typescript": "catalog:",
     "unified": "catalog:",
+    "vite": "catalog:",
     "vitest": "catalog:"
   },
   "resolutions": {
