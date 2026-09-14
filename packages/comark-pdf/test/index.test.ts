@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { renderPdf, createPdfRenderer, renderPdfFromDocument } from '../src/index.ts'
 import { parseMarkdown } from 'comark'
+import { createPdfRenderer, renderPdf, renderPdfFromDocument } from '../src/index.ts'
+import math, { Math as MathComponent } from '../src/plugins/math.ts'
+import { PageBreak } from '../src/plugins/page-break.ts'
+import { BASIC_MARKDOWN, ADVANCED_MARKDOWN } from './fixtures/markdown.ts'
 
 describe('renderPdf', () => {
   it('returns a complete HTML document', async () => {
@@ -59,6 +62,34 @@ describe('renderPdf', () => {
     })
     expect(html).toContain('<aside>')
   })
+
+  it('basic fixture — renders multi-page document structure', async () => {
+    const html = await renderPdf(BASIC_MARKDOWN)
+    expect(html).toMatch(/^<!doctype html>/i)
+    expect(html).toContain('Hello PDF')
+    expect(html).toContain('Second Page')
+    expect(html).toContain('comark-page-break')
+    expect(html).toContain('@page')
+    expect(html).toContain('size: A4;')
+    expect(html).toContain('margin: 20mm;')
+  })
+
+  it('advanced fixture — renders header/footer tokens and math passthrough', async () => {
+    const html = await renderPdf(ADVANCED_MARKDOWN)
+    expect(html).toContain('Advanced Document')
+    expect(html).toContain('counter(page)')
+    expect(html).toContain('counter(pages)')
+    expect(html).toContain('Advanced PDF')
+  })
+
+  it('advanced fixture — renders math with math plugin', async () => {
+    const html = await renderPdf(ADVANCED_MARKDOWN, {
+      plugins: [math()],
+      components: { Math: MathComponent },
+    })
+    expect(html).toContain('katex')
+    expect(html).toContain('Advanced Document')
+  })
 })
 
 describe('createPdfRenderer', () => {
@@ -85,5 +116,19 @@ describe('renderPdfFromDocument', () => {
     const doc = await parseMarkdown('# Hello')
     const html = await renderPdfFromDocument(doc)
     expect(html).toContain('comark-page-break')
+  })
+
+  it('basic fixture — reads pdf config from frontmatter', async () => {
+    const doc = await parseMarkdown(BASIC_MARKDOWN)
+    const html = await renderPdfFromDocument(doc)
+    expect(html).toContain('size: A4;')
+    expect(html).toContain('margin: 20mm;')
+    expect(html).toContain('Hello PDF')
+  })
+
+  it('basic fixture — PageBreak component renders break-after div', async () => {
+    const doc = await parseMarkdown(BASIC_MARKDOWN)
+    const html = await renderPdfFromDocument(doc, { components: { 'page-break': PageBreak } })
+    expect(html).toContain('break-after:page')
   })
 })

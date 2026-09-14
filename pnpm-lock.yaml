@@ -1398,6 +1398,15 @@ importers:
         specifier: workspace:*
         version: link:../comark
     devDependencies:
+      '@vitest/browser':
+        specifier: 'catalog:'
+        version: 4.1.10(vite@8.1.4(@types/node@26.2.0)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.99.0)(terser@5.49.0)(tsx@4.23.0)(yaml@2.9.0))(vitest@4.1.10)
+      '@vitest/browser-playwright':
+        specifier: 'catalog:'
+        version: 4.1.10(playwright@1.61.1)(vite@8.1.4(@types/node@26.2.0)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.99.0)(terser@5.49.0)(tsx@4.23.0)(yaml@2.9.0))(vitest@4.1.10)
+      katex:
+        specifier: ^0.17.0
+        version: 0.17.0
       pagedjs:
         specifier: 'catalog:'
         version: 0.4.3

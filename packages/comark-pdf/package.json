@@ -54,6 +54,9 @@
     "comark": "workspace:*"
   },
   "devDependencies": {
+    "@vitest/browser": "catalog:",
+    "@vitest/browser-playwright": "catalog:",
+    "katex": "^0.17.0",
     "pagedjs": "catalog:",
     "playwright": "catalog:",
     "vitest": "catalog:"

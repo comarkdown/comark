@@ -1,5 +1,8 @@
 # examples output
 .output
+
+# PDF test output
+packages/comark-pdf/test/output/
 .data
 .nuxt
 .nitro
