@@ -70,8 +70,7 @@ function applyPatch(current: MarkdownDocument, patch: ComarkPatch): MarkdownDocu
     case 'frontmatter':
       return { ...current, frontmatter: { ...current.frontmatter, ...patch.frontmatter } }
     case 'data':
-      // @ts-expect-error - patch.data is a plain object
-      return { ...current, data: { ...current.data, ...patch.data } }
+      return { ...current, data: { ...(current.data ?? {}), ...patch.data } }
     default: {
       if (!patch.path.length) {
         throw new Error(`Comark patch "${patch.op}" requires a non-empty path`)

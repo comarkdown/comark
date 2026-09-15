@@ -55,6 +55,7 @@ packages/comark/
 │   │   ├── index.ts          # Re-exports (comark/ast entry point)
 │   │   ├── types.ts          # MarkdownDocument, Node, ElementNode, TextNode
 │   │   └── utils.ts          # textContent(), visit() document utilities
+│   ├── model.ts              # ComarkModel protocol + createModelStore() (comark/model entry point)
 │   ├── plugins/              # Built-in and optional plugins
 │   │   ├── alert.ts          # Alert/callout blocks
 │   │   ├── frontmatter.ts    # YAML frontmatter extraction (default via registerDefaultPlugins)
@@ -62,6 +63,7 @@ packages/comark/
 │   │   ├── components.ts     # Block/inline components + spans (`::name`, `:name`, `[text]`)
 │   │   ├── attributes.ts     # Inline attributes (`{props}` after tokens)
 │   │   ├── binding.ts        # Inline interpolation + shared conditional rendering rules
+│   │   ├── form.ts           # ::form aggregate helpers (collectFormBindingPaths, buildFormAggregate)
 │   │   ├── emoji.ts          # Emoji shortcodes
 │   │   ├── shiki.ts          # Shiki with bundled default theme + language loaders (peer: shiki)
 │   │   ├── shiki/core.ts     # Shiki without default theme/language imports
@@ -71,12 +73,12 @@ packages/comark/
 │   │   ├── rangi/language-comark.ts # Standalone Comark grammar for rangi
 │   │   ├── math.ts           # LaTeX math via KaTeX (peer: katex)
 │   │   ├── mermaid.ts        # Mermaid diagrams (peer: beautiful-mermaid)
-│   │   ├── security.ts       # XSS/security sanitization
+│   │   ├── security.ts       # XSS/security sanitization (handles ::prop keys correctly)
 │   │   ├── summary.ts        # Summary extraction
 │   │   ├── task-list.ts      # GFM task lists
 │   │   └── toc.ts            # Table of contents
 │   ├── utils/                # Shared utilities (comark/utils entry point)
-│   │   ├── index.ts          # textContent(), visit(), visitAsync(), escapeHtml(), string/object utils
+│   │   ├── index.ts          # textContent(), visit(), visitAsync(), escapeHtml(), get(), set(), string/object utils
 │   │   ├── helpers.ts        # defineComarkPlugin(), dedupePlugins()
 │   │   └── caret.ts          # Caret utilities for streaming
 │   └── internal/             # Internal implementation (not exported)
@@ -406,7 +408,11 @@ import { renderMarkdown } from 'comark/render'
 
 // AST types and utilities
 import type { MarkdownDocument, Node, ElementNode, TextNode } from 'comark'
-import { textContent, visit, escapeHtml } from 'comark/utils'
+import { textContent, visit, escapeHtml, set } from 'comark/utils'
+
+// Two-way data binding model
+import type { ComarkModel } from 'comark/model'
+import { createModelStore } from 'comark/model'
 
 // Core plugins — use when calling parseMarkdown() directly (framework-agnostic)
 import shiki from 'comark/plugins/shiki'
@@ -426,6 +432,7 @@ import attributes from 'comark/plugins/attributes'   // default via registerDefa
 import html from 'comark/plugins/html'               // default via registerDefaultPlugins
 import binding, { Binding, resolveIfWrapper, selectIfBranch, shouldRenderIf } from 'comark/plugins/binding'
 import type { IfComparisonOperator, IfProps, IfWrapperTag } from 'comark/plugins/binding'
+import { collectFormBindingPaths, buildFormAggregate } from 'comark/plugins/form'
 
 // markdown-it / markdown-exit adapters (e.g. VitePress)
 import { markdownItComponents } from 'comark/plugins/components'
@@ -439,12 +446,14 @@ import { markdownItAttributes } from 'comark/plugins/attributes'
 
 // HTML rendering — parse + render to HTML string
 import { createHtmlRenderer, renderHtml, renderHtmlFromDocument } from '@comark/html'
+import { initComarkRuntime } from '@comark/html/runtime' // progressive-enhancement runtime (browser)
 import shiki from '@comark/html/plugins/shiki'
 import math, { Math } from '@comark/html/plugins/math'
 import mermaid, { Mermaid } from '@comark/html/plugins/mermaid'
 import binding, { Binding, If } from '@comark/html/plugins/binding'
 
 // ANSI terminal rendering — parse + render to styled terminal string
+// NOTE: ::prop two-way bindings render read-only in ANSI (a dev warning is emitted once).
 import { createAnsiRenderer, createAnsiPrinter, printAnsi, renderAnsi, renderAnsiFromDocument } from '@comark/ansi'
 import shiki from '@comark/ansi/plugins/shiki'
 import math from '@comark/ansi/plugins/math'
@@ -455,12 +464,14 @@ import { Markdown, MarkdownDocument, defineMarkdownComponent } from '@comark/vue
 import math, { Math } from '@comark/vue/plugins/math'
 import mermaid, { Mermaid } from '@comark/vue/plugins/mermaid'
 import binding, { Binding, If } from '@comark/vue/plugins/binding'
+import { Form } from '@comark/vue/plugins/form'        // ::form aggregate component
 
 // React — renderer + plugin wrappers (plugin fn + React component)
 import { Markdown, MarkdownDocument, defineMarkdownComponent } from '@comark/react'
 import math, { Math } from '@comark/react/plugins/math'
 import mermaid, { Mermaid } from '@comark/react/plugins/mermaid'
 import binding, { Binding, If } from '@comark/react/plugins/binding'
+import { Form } from '@comark/react/plugins/form'      // ::form aggregate component
 
 // Svelte — renderer + plugin wrappers (plugin fn + Svelte component)
 import { Markdown, MarkdownDocument } from '@comark/svelte'
@@ -468,12 +479,14 @@ import { MarkdownAsync } from '@comark/svelte/async' // requires experimental.as
 import math, { Math } from '@comark/svelte/plugins/math'
 import mermaid, { Mermaid } from '@comark/svelte/plugins/mermaid'
 import binding, { Binding, If } from '@comark/svelte/plugins/binding'
+import { Form } from '@comark/svelte/plugins/form'     // ::form aggregate component
 
 // Angular — renderer + plugin wrappers (plugin fn + Angular component)
 import { Markdown, MarkdownDocument, defineMarkdownComponent, defineMarkdownDocumentComponent } from '@comark/angular'
 import math, { Math } from '@comark/angular/plugins/math'
 import mermaid, { Mermaid } from '@comark/angular/plugins/mermaid'
 import binding, { Binding, If } from '@comark/angular/plugins/binding'
+import { Form } from '@comark/angular/plugins/form'    // ::form aggregate component
 ```
 
 ## Coding Principles

@@ -2,6 +2,7 @@ import { Component } from '@angular/core'
 import { Markdown } from '@comark/angular'
 import shiki from 'comark/plugins/shiki'
 import alert from 'comark/plugins/alert'
+import binding, { Binding } from '@comark/angular/plugins/binding'
 import { AlertComponent } from '../components/alert.component'
 import { FeatureCardComponent } from '../components/feature-card.component'
 import python from '@shikijs/langs/python'
@@ -15,17 +16,20 @@ import python from '@shikijs/langs/python'
       [value]="markdown"
       [plugins]="plugins"
       [components]="components"
+      [data]="modelData"
     />
   `,
 })
 export class SyntaxComponent {
-  components = { alert: AlertComponent, 'feature-card': FeatureCardComponent }
+  components = { alert: AlertComponent, 'feature-card': FeatureCardComponent, Binding }
   plugins = [
     shiki({
       languages: [python],
     }),
     alert(),
+    binding(),
   ]
+  modelData = { name: 'Ada', active: true }
 
   markdown = `
 # Comark Syntax Showcase
@@ -239,6 +243,20 @@ Plain: :span
 With label: :span[hello]
 
 With props: :span[hello]{style="color: tomato;"}
+
+---
+
+## Two-way model binding
+
+Native form elements with \`::prop="path"\` write back to the document model. Change a field and watch the bound text update.
+
+**Name:** {{ data.name }}
+
+:input{::value="data.name" type="text"}
+
+**Active:** {{ data.active }}
+
+:input{::checked="data.active" type="checkbox"}
 
 ---
 

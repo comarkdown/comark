@@ -57,10 +57,15 @@ export function searchProps(content: string, index = 0) {
           index += 1
           value = searchValue()
         } else {
+          // ::prop boolean shorthand is meaningless — a model binding with no
+          // path has no target to write to, so reject it silently.
+          if (key.startsWith('::')) {
+            continue
+          }
           key = key[0] === ':' ? key : `:${key}`
           value = 'true'
         }
-        if (key.match(/^:?[a-z_][a-z0-9_-]*$/gi)) {
+        if (key.match(/^:{0,2}[a-z_][a-z0-9_-]*$/gi)) {
           props.push([key, value])
         }
       }

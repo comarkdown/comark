@@ -9,6 +9,8 @@ import {
   type OnDestroy,
 } from '@angular/core'
 import type { ElementNode, Node, MarkdownDocument as MarkdownDocumentType, NodeRenderData } from 'comark'
+import type { ComarkModel } from 'comark/model'
+import { createModelStore } from 'comark/model'
 import { MarkdownNode } from './markdown-node.component.ts'
 import { findLastTextNodeAndAppendNode, getCaret } from '../utils/caret.ts'
 
@@ -38,6 +40,7 @@ const EMPTY_DOCUMENT: MarkdownDocumentType = { nodes: [], frontmatter: {}, meta:
           [node]="node"
           [components]="components"
           [renderData]="renderData"
+          [model]="activeModel"
         />
       }
     </div>
@@ -60,6 +63,16 @@ export class MarkdownDocument implements OnInit, OnDestroy {
   @Input() data: Record<string, unknown> = {}
 
   /**
+   * Two-way data binding model. When provided, `::prop="path"` attributes are
+   * resolved against the model and update handlers are wired automatically.
+   * When omitted an internal uncontrolled store is created from `data`.
+   */
+  @Input() model?: ComarkModel
+
+  /** Called after every write accepted by the model. */
+  @Input() onModelChange?: (path: string, value: unknown, snapshot: Record<string, unknown>) => void
+
+  /**
    * Document key used to subscribe to live updates via `globalThis.comarkContext`.
    * Falls back to the document's own `meta.key` when set by a plugin.
    */
@@ -68,6 +81,8 @@ export class MarkdownDocument implements OnInit, OnDestroy {
   private cdr = inject(ChangeDetectorRef)
   private liveDocument: MarkdownDocumentType | null = null
   private cleanup?: (clear?: boolean) => void
+  private modelCleanup?: () => void
+  private internalModel?: ComarkModel
 
   private get inputDocument(): MarkdownDocumentType {
     return this.value ?? EMPTY_DOCUMENT
@@ -83,10 +98,27 @@ export class MarkdownDocument implements OnInit, OnDestroy {
         this.cdr.markForCheck()
       })
     }
+
+    // Model boundary: create an uncontrolled store if no model is provided.
+    // Subscribe to 'data' so every write triggers change detection.
+    this.internalModel =
+      this.model ??
+      createModelStore({
+        data: { data: this.data ?? {} },
+        onChange: this.onModelChange,
+      })
+    this.modelCleanup = this.internalModel.subscribe('data', () => {
+      this.cdr.markForCheck()
+    })
   }
 
   ngOnDestroy(): void {
     this.cleanup?.(true)
+    this.modelCleanup?.()
+  }
+
+  get activeModel(): ComarkModel | undefined {
+    return this.internalModel
   }
 
   private get activeDocument(): MarkdownDocumentType {
@@ -113,6 +145,7 @@ export class MarkdownDocument implements OnInit, OnDestroy {
       meta: this.activeDocument.meta,
       data: this.data || {},
       props: {},
+      model: this.internalModel,
     }
   }
 }

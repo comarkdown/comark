@@ -26,13 +26,16 @@ Hello {{ frontmatter.user.name }}!
       components: { binding: Binding },
       data: { score: 42 },
     })
-    expect(html).toContain('Score: 42')
+    expect(html).toContain('Score:')
+    expect(html).toContain('42')
+    expect(html).toContain('data-comark-bind="data.score"')
   })
 
   it('falls back to `|| default` when the path does not resolve', async () => {
     const doc = await parseWithBinding('Hello {{ data.missing || guest }}!')
     const html = await renderHtmlFromDocument(doc, { components: { binding: Binding } })
-    expect(html).toContain('Hello guest!')
+    expect(html).toContain('guest')
+    expect(html).toContain('data-comark-bind="data.missing"')
   })
 
   it('renders empty output when path is unresolved and no default is provided', async () => {

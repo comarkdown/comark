@@ -16,8 +16,9 @@ import {
   inject,
 } from '@angular/core'
 import type { ElementNode, Node as MarkdownAstNode, NodeRenderData } from 'comark'
+import type { ComarkModel } from 'comark/model'
 import { resolveIfWrapper, selectIfBranch, shouldRenderIf, type IfProps } from 'comark/plugins/binding'
-import { pascalCase, resolveAttributes } from 'comark/utils'
+import { pascalCase, resolveAttributes, resolveModelElement, modelElementDisplayValue } from 'comark/utils'
 
 interface StructuralComponent extends Type<any> {
   ɵcomarkIf?: boolean
@@ -103,6 +104,9 @@ export class MarkdownNode implements OnChanges {
   /** Render data for :binding resolution */
   @Input() renderData: NodeRenderData = { frontmatter: {}, meta: {}, data: {}, props: {} }
 
+  /** Two-way data binding model */
+  @Input() model?: ComarkModel
+
   /** Parent node (for context like `pre` tag detection) */
   @Input() parent?: MarkdownAstNode
 
@@ -153,8 +157,8 @@ export class MarkdownNode implements OnChanges {
         }
       }
 
-      // Resolve attributes (:binding support)
-      const resolved = resolveAttributes(nodeProps, this.renderData, { parseJson: true })
+      // Resolve attributes (:binding support + ::binding two-way support)
+      const resolved = resolveAttributes(nodeProps, this.renderData, { parseJson: true, model: this.model })
 
       // Build childrenRenderData - only shadow parent scope when element has own attrs
       const hasOwnAttrs = Object.keys(resolved).length > 0
@@ -165,7 +169,7 @@ export class MarkdownNode implements OnChanges {
       } else if (customComponent) {
         this.renderCustomComponent(customComponent, resolved, children, childrenRenderData)
       } else {
-        this.renderNativeElement(tag, resolved, children, childrenRenderData)
+        this.renderNativeElement(tag, resolved, children, childrenRenderData, nodeProps)
       }
     }
   }
@@ -175,6 +179,8 @@ export class MarkdownNode implements OnChanges {
     for (const key in attrs) {
       const value = attrs[key]
       if (key === 'as' || key === 'innerHTML' || key === 'dangerouslySetInnerHTML') {
+        continue
+      } else if (key.startsWith('onUpdate:') || typeof value === 'function') {
         continue
       } else if (key === 'className' || key === 'class') {
         this.renderer.setAttribute(el, 'class', String(value))
@@ -196,10 +202,27 @@ export class MarkdownNode implements OnChanges {
     tag: string,
     attrs: Record<string, any>,
     children: MarkdownAstNode[],
-    childrenRenderData: NodeRenderData
+    childrenRenderData: NodeRenderData,
+    nodeProps?: Record<string, any>
   ): void {
     const el = this.renderer.createElement(tag)
     this.applyAttributes(el, attrs)
+
+    // Wire model event listeners for ::prop bindings on native form elements.
+    if (this.model && nodeProps) {
+      for (const rawKey in nodeProps) {
+        if (!rawKey.startsWith('::')) continue
+        const modelProp = rawKey.slice(2)
+        const binding = resolveModelElement(tag, modelProp, nodeProps)
+        if (!binding) continue
+        const path = nodeProps[rawKey] as string
+        const model = this.model
+        this.renderer.listen(el, binding.event, (e: Event) => {
+          model.set(path, binding.coerce(e.target as any))
+        })
+        this.renderer.setProperty(el, binding.prop, modelElementDisplayValue(binding, model.get(path), nodeProps))
+      }
+    }
 
     // `innerHTML` from document attributes is never applied — resolveAttributes
     // drops DOM sink props, and raw HTML has its own explicit parse path.
@@ -214,9 +237,17 @@ export class MarkdownNode implements OnChanges {
     tag: string,
     attrs: Record<string, any>,
     children: MarkdownAstNode[],
-    childrenRenderData: NodeRenderData
+    childrenRenderData: NodeRenderData,
+    nodeProps?: Record<string, any>
   ): void {
-    this.renderNativeEl(this.elementRef.nativeElement as HTMLElement, tag, attrs, children, childrenRenderData)
+    this.renderNativeEl(
+      this.elementRef.nativeElement as HTMLElement,
+      tag,
+      attrs,
+      children,
+      childrenRenderData,
+      nodeProps
+    )
   }
 
   /** Evaluate an `::if` before rendering any of its descendants. */
@@ -309,6 +340,19 @@ export class MarkdownNode implements OnChanges {
       }
     }
 
+    for (const output of mirror?.outputs || []) {
+      const rest = output.propName.replace(/^update/, '')
+      if (!rest || rest === output.propName) continue
+      const bindProp = rest.charAt(0).toLowerCase() + rest.slice(1)
+      const handler = attrs[`onUpdate:${bindProp}`]
+      const emitter = (componentRef.instance as Record<string, { subscribe?: (fn: (v: unknown) => void) => void }>)[
+        output.propName
+      ]
+      if (typeof handler === 'function' && emitter && typeof emitter.subscribe === 'function') {
+        emitter.subscribe(handler)
+      }
+    }
+
     // Pass __node if the component accepts it
     if (inputNames.has('__node')) {
       componentRef.setInput('__node', this.node)
@@ -371,6 +415,7 @@ export class MarkdownNode implements OnChanges {
             componentRef.setInput('components', this.components)
             componentRef.setInput('renderData', renderData)
             componentRef.setInput('parent', this.node)
+            componentRef.setInput('model', this.model)
             componentRef.changeDetectorRef.detectChanges()
 
             // Move the component's host element into the parent
@@ -382,10 +427,10 @@ export class MarkdownNode implements OnChanges {
             console.error(`Failed to render custom component "${childTag}"`, error)
           }
         } else {
-          const resolved = resolveAttributes(childProps, renderData, { parseJson: true })
+          const resolved = resolveAttributes(childProps, renderData, { parseJson: true, model: this.model })
           const hasOwnAttrs = Object.keys(resolved).length > 0
           const childRenderData: NodeRenderData = hasOwnAttrs ? { ...renderData, props: resolved } : renderData
-          this.renderNativeEl(parentEl, childTag, resolved, grandChildren, childRenderData)
+          this.renderNativeEl(parentEl, childTag, resolved, grandChildren, childRenderData, childProps)
         }
       }
     }

@@ -3,6 +3,7 @@ import { escapeHtml, get } from '../../utils/index.ts'
 import { isUnsafeUrlValue } from '../props-validation.ts'
 import { pickFence } from './fence.ts'
 import type { NodeRenderData } from '../../types.ts'
+import type { ComarkModel } from '../../model.ts'
 
 export interface ResolveAttributesOptions {
   /**
@@ -18,6 +19,15 @@ export interface ResolveAttributesOptions {
    * (like HTML attribute emitters) can apply their own `:prefix` handling.
    */
   parseJson?: boolean
+  /**
+   * When provided, `::prop="path"` attributes are resolved as two-way
+   * bindings: the current value is read from `model.get(path)` and an
+   * `onUpdate:prop` handler is emitted that writes back via `model.set`.
+   *
+   * Without a model, `::prop` degrades silently to a one-way read from
+   * `renderData` (same as `:prop`).
+   */
+  model?: ComarkModel
 }
 
 // DOM sinks that turn a string/object prop into raw markup (`innerHTML`,
@@ -27,9 +37,19 @@ export interface ResolveAttributesOptions {
 // from document attributes — raw HTML has its own explicit path.
 const HTML_SINK_PROPS = new Set(['innerhtml', 'dangerouslysetinnerhtml', 'textcontent'])
 
+/** Prefer `model.get(path)` when a model is present, then fall back to `renderData`. */
+const lookupPath = (path: string, renderData: NodeRenderData, model?: ComarkModel): unknown => {
+  if (model) {
+    const fromModel = model.get(path)
+    if (fromModel !== undefined) return fromModel
+  }
+  return get(renderData, path)
+}
+
 /**
- * Resolve `:prefixed` attributes against the render context.
+ * Resolve `:prefixed` and `::prefixed` attributes against the render context.
  *
+ * **One-way (`:`)**
  * Default behavior: a `:prefixed` string value that matches a dot-path in
  * `{ frontmatter, meta, data, props }` is replaced with the resolved value
  * (and the `:` prefix is stripped). Anything that doesn't resolve — literals
@@ -39,6 +59,17 @@ const HTML_SINK_PROPS = new Set(['innerhtml', 'dangerouslysetinnerhtml', 'textco
  * With `parseJson: true`, every `:prefixed` string is JSON-parsed first and
  * the `:` prefix is always stripped, falling back to the dot-path lookup.
  * The `$` metadata key is never forwarded.
+ *
+ * **Two-way (`::`, `options.model`)**
+ * When a `::prop="path"` key is present:
+ * - In framework mode (`parseJson: true`) with a `model`: emits `prop` (read
+ *   via `model.get`) and `onUpdate:prop` (write handler). Degrades to one-way
+ *   when no model is supplied.
+ * - In preserve/HTML mode: emits `prop` (resolved from `renderData`) plus
+ *   `data-comark-model-{prop}="path"` for the HTML progressive-enhancement
+ *   runtime.
+ * - A filtered expression (`::prop="path | filter"`) is not assignable: in
+ *   dev it throws; in production it degrades to one-way silently.
  */
 export function resolveAttributes(
   attrs: Record<string, unknown>,
@@ -46,15 +77,78 @@ export function resolveAttributes(
   options: ResolveAttributesOptions = {}
 ): Record<string, unknown> {
   const result: Record<string, unknown> = {}
+  const { model } = options
+
   for (const key in attrs) {
     if (key === '$') continue
 
     const value = attrs[key]
-    const isBinding = key.charCodeAt(0) === 58 /* ':' */
-    const outKey = isBinding ? key.slice(1) : key
+    const isDoubleBinding = key.charCodeAt(0) === 58 /* ':' */ && key.charCodeAt(1) === 58 /* ':' */
+    const isBinding = !isDoubleBinding && key.charCodeAt(0) === 58 /* ':' */
+    const outKey = isDoubleBinding ? key.slice(2) : isBinding ? key.slice(1) : key
 
     if (HTML_SINK_PROPS.has(outKey.toLowerCase())) continue
 
+    // --- Two-way binding (::prop="path") ---
+    if (isDoubleBinding) {
+      const path = typeof value === 'string' ? value.trim() : ''
+      if (!path) continue
+
+      const lowerOutKey = outKey.toLowerCase()
+
+      // Filtered expressions are projections and are not assignable.
+      if (path.includes('|')) {
+        if ((import.meta as unknown as { env?: { DEV?: boolean } }).env?.DEV) {
+          throw new Error(
+            `[comark] ::${outKey}="${path}" contains a pipe filter. Filtered expressions are not writable. Use a plain path for two-way binding.`
+          )
+        }
+        // Production: degrade to one-way
+        const plainPath = path.split('|')[0].trim()
+        const readValue = lookupPath(plainPath, renderData, model)
+        if (readValue !== undefined) {
+          if (
+            (lowerOutKey === 'href' || lowerOutKey === 'src' || lowerOutKey === 'xlink:href') &&
+            typeof readValue === 'string' &&
+            isUnsafeUrlValue(readValue)
+          )
+            continue
+          result[outKey] = readValue
+        }
+        continue
+      }
+
+      if (options.parseJson) {
+        // Framework mode: emit value + update handler.
+        const readValue = lookupPath(path, renderData, model)
+        if (
+          (lowerOutKey === 'href' || lowerOutKey === 'src' || lowerOutKey === 'xlink:href') &&
+          typeof readValue === 'string' &&
+          isUnsafeUrlValue(readValue)
+        )
+          continue
+        result[outKey] = readValue
+        if (model) {
+          result[`onUpdate:${outKey}`] = (next: unknown) => model.set(path, next)
+        }
+      } else {
+        // Preserve / HTML-string mode: emit the read value + model-path marker.
+        const readValue = lookupPath(path, renderData, model)
+        if (
+          (lowerOutKey === 'href' || lowerOutKey === 'src' || lowerOutKey === 'xlink:href') &&
+          typeof readValue === 'string' &&
+          isUnsafeUrlValue(readValue)
+        )
+          continue
+        if (readValue !== undefined) result[outKey] = readValue
+        // The HTML runtime reads this attribute to discover which model path
+        // controls this element's property.
+        result[`data-comark-model-${outKey}`] = path
+      }
+      continue
+    }
+
+    // --- One-way binding (:prop="...") and plain attributes ---
     let outValue: unknown
     let resultKey = key
 
@@ -65,7 +159,7 @@ export function resolveAttributes(
           outValue = JSON.parse(value)
         } catch {
           // not JSON — fall through to dot-path lookup
-          outValue = get(renderData, value)
+          outValue = lookupPath(value, renderData, model)
         }
       } else {
         // Non-string binding value (e.g. an object literal the parser already
@@ -74,7 +168,7 @@ export function resolveAttributes(
       }
       resultKey = outKey
     } else if (isBinding && typeof value === 'string') {
-      const resolved = get(renderData, value)
+      const resolved = lookupPath(value, renderData, model)
       if (resolved !== undefined) {
         outValue = resolved
         resultKey = outKey
@@ -189,7 +283,9 @@ export function userBlockAttrs(tag: string, attributes: Record<string, unknown>)
 export function comarkAttributes(attributes: Record<string, unknown>) {
   const attrs = Object.entries(attributes)
     .map(([key, value]) => {
-      if (key.startsWith(':') && value === 'true') {
+      // Single-colon boolean shorthand: `:disabled` → `disabled`.
+      // Guard against double-colon so `::value="true"` stays as `::value="true"`.
+      if (key.startsWith(':') && !key.startsWith('::') && value === 'true') {
         return key.slice(1)
       }
       if (key === 'id') {
@@ -241,6 +337,18 @@ const SAFE_ATTR_NAME = /^[a-zA-Z_:][a-zA-Z0-9_:.-]*$/
 export function htmlAttributes(attributes: Record<string, unknown>) {
   const parts: string[] = []
   for (const [rawKey, value] of Object.entries(attributes)) {
+    // Two-way binding keys (::X) that reach htmlAttributes come from raw AST
+    // nodes (non-framework stringify). Emit model-path data-attributes so the
+    // HTML runtime can discover them; omit the native attr since the value
+    // should come from the resolved attrs that resolveAttributes already added.
+    if (rawKey.startsWith('::')) {
+      const propName = rawKey.slice(2)
+      if (propName && typeof value === 'string') {
+        parts.push(`data-comark-model-${propName}="${escapeHtml(value)}"`)
+      }
+      continue
+    }
+
     const key = rawKey.startsWith(':') ? rawKey.slice(1) : rawKey
     if (!SAFE_ATTR_NAME.test(key)) continue
 
@@ -299,6 +407,11 @@ export function comarkYamlAttributes(
   //  - Bare string literals `'true'`/`'false'` from inline attrs coerce to bools.
   const normalized = Object.fromEntries(
     Object.entries(attributes).map(([key, value]) => {
+      // Two-way binding keys keep their `::` prefix — they are path bindings
+      // and must round-trip exactly as `::prop="path"`.
+      if (key.startsWith('::')) {
+        return [key, value]
+      }
       if (key.startsWith(':')) {
         if (typeof value === 'string') {
           try {
@@ -325,3 +438,95 @@ export function comarkYamlAttributes(
   const fence = pickFence(yamlContent)
   return `${fence}yaml [props]\n${yamlContent}\n${fence}`
 }
+
+// #region resolveModelElement
+
+/**
+ * Describes how a renderer should wire a two-way model binding for a native
+ * form element. The table mirrors RFC §5.4.
+ */
+export interface ModelElementBinding {
+  /** The element property that holds the model value (e.g. 'value', 'checked'). */
+  prop: string
+  /** The DOM event that signals a user write (e.g. 'input', 'change'). */
+  event: string
+  /** Coerce the event-target value to the correct JavaScript type. */
+  coerce: (target: { value: string; checked: boolean; files: FileList | null }) => unknown
+  /**
+   * Map the stored model value to the DOM property. Used when the stored value
+   * is not the same as the element property (radio: model holds the group's
+   * selected `value` string, but `checked` must be a boolean).
+   */
+  read?: (modelValue: unknown, attrs: Record<string, unknown>) => unknown
+}
+
+const TEXT_INPUT_TYPES = new Set(['text', 'search', 'email', 'password', 'url', 'tel', 'color'])
+const NUMBER_INPUT_TYPES = new Set(['number', 'range'])
+const DATE_INPUT_TYPES = new Set(['date', 'time', 'datetime-local', 'month', 'week'])
+
+/**
+ * Return the model-element binding descriptor for a native HTML element that
+ * participates in two-way binding, or `null` for non-form elements.
+ *
+ * Renderers use this to wire the correct DOM event listener and value coercion
+ * without duplicating the mapping table in every framework adapter.
+ */
+export const resolveModelElement = (
+  tag: string,
+  modelProp: string,
+  attrs: Record<string, unknown>
+): ModelElementBinding | null => {
+  if (tag === 'input') {
+    const type = String(attrs.type ?? 'text').toLowerCase()
+    if (modelProp === 'value' && TEXT_INPUT_TYPES.has(type)) {
+      return { prop: 'value', event: 'input', coerce: (t) => t.value }
+    }
+    if (modelProp === 'value' && NUMBER_INPUT_TYPES.has(type)) {
+      return { prop: 'value', event: 'input', coerce: (t) => Number(t.value) }
+    }
+    if (modelProp === 'value' && DATE_INPUT_TYPES.has(type)) {
+      return { prop: 'value', event: 'change', coerce: (t) => t.value }
+    }
+    if (modelProp === 'checked' && type === 'checkbox') {
+      return { prop: 'checked', event: 'change', coerce: (t) => t.checked }
+    }
+    if (modelProp === 'checked' && type === 'radio') {
+      return {
+        prop: 'checked',
+        event: 'change',
+        coerce: (t) => t.value,
+        read: (modelValue, attrs) => modelValue === attrs.value,
+      }
+    }
+    if (modelProp === 'files' && type === 'file') {
+      return { prop: 'files', event: 'change', coerce: (t) => t.files }
+    }
+    return null
+  }
+  if ((tag === 'select' || tag === 'textarea') && modelProp === 'value') {
+    return {
+      prop: 'value',
+      event: tag === 'select' ? 'change' : 'input',
+      coerce: (t) => t.value,
+    }
+  }
+  return null
+}
+
+/**
+ * DOM property value for a native model binding. Radio compares against the
+ * element's `value` attribute; other controls use the stored value (with an
+ * empty-string fallback so React/Vue keep the input controlled).
+ */
+export const modelElementDisplayValue = (
+  binding: ModelElementBinding,
+  modelValue: unknown,
+  attrs: Record<string, unknown>
+): unknown => {
+  if (binding.read) return binding.read(modelValue, attrs)
+  if (binding.prop === 'checked') return Boolean(modelValue)
+  if (binding.prop === 'files') return modelValue ?? null
+  return modelValue ?? ''
+}
+
+// #endregion

@@ -272,9 +272,45 @@ export function get(data: unknown, key: string): unknown {
   }
   return value
 }
+
+const BLOCKED_SEGMENTS = new Set(['__proto__', 'constructor', 'prototype'])
+
+/**
+ * Set a value on a nested object using a dot-separated key path.
+ * Returns `true` when the write succeeds, `false` when a path segment would
+ * cause prototype pollution (blocked), the path contains an empty segment, or
+ * the intermediate value is not an object.
+ */
+export function set(data: unknown, key: string, value: unknown): boolean {
+  const keys = key.split('.')
+  for (const k of keys) {
+    if (!k || BLOCKED_SEGMENTS.has(k)) return false
+  }
+  let current: unknown = data
+  for (let i = 0; i < keys.length - 1; i++) {
+    const k = keys[i]
+    if (!current || typeof current !== 'object') return false
+    const rec = current as Record<string, unknown>
+    if (!(k in rec) || rec[k] === null) {
+      rec[k] = {}
+    } else if (typeof rec[k] !== 'object') {
+      // Intermediate node is a primitive — cannot traverse further
+      return false
+    }
+    current = rec[k]
+  }
+  if (!current || typeof current !== 'object') return false
+  ;(current as Record<string, unknown>)[keys[keys.length - 1]] = value
+  return true
+}
 // #endregion
 
 // Re-export the shared attribute resolvers so framework renderers can apply the
 // same `:prefix` semantics as the HTML/ANSI handlers without duplicating logic.
-export { resolveAttributes, resolveAttribute } from '../internal/stringify/attributes.ts'
-export type { ResolveAttributesOptions } from '../internal/stringify/attributes.ts'
+export {
+  resolveAttributes,
+  resolveAttribute,
+  resolveModelElement,
+  modelElementDisplayValue,
+} from '../internal/stringify/attributes.ts'
+export type { ResolveAttributesOptions, ModelElementBinding } from '../internal/stringify/attributes.ts'

@@ -61,7 +61,9 @@ export async function one(node: Node, state: State, parent?: ElementNode, atLine
   // resolve to nothing.
   const prevRenderData = state.renderData
   if (state.renderData && node[1]) {
-    const resolved = resolveAttributes(node[1] as Record<string, unknown>, prevRenderData)
+    const resolved = resolveAttributes(node[1] as Record<string, unknown>, prevRenderData, {
+      model: prevRenderData.model,
+    })
     if (Object.keys(resolved).length > 0) {
       state.renderData = { ...prevRenderData, props: resolved }
     }
@@ -128,7 +130,10 @@ export function createState(ctx: Partial<CreateContext> = {}): State {
   const renderData: NodeRenderData = {
     frontmatter: (tree?.frontmatter || {}) as Record<string, unknown>,
     meta: (tree?.meta || {}) as Record<string, unknown>,
-    data: (ctx.data || {}) as Record<string, unknown>,
+    // Merge context-patched `document.data` (from `{ op: 'data' }` patches)
+    // with the caller-supplied `ctx.data` so model writes via ComarkContext
+    // are visible to `:binding` and `{{ }}` interpolations.
+    data: { ...(tree?.data ?? {}), ...(ctx.data ?? {}) } as Record<string, unknown>,
     props: {} as Record<string, unknown>,
   }
   const state = {

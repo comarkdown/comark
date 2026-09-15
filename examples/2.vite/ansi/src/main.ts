@@ -104,6 +104,12 @@ $$
 | Tables      | ✅      |
 | Lists       | ✅      |
 
+## Two-way model binding
+
+The ANSI renderer resolves \`::prop\` as read-only.
+
+Name: :span{::value="data.name"}
+
 ---
 
 _Edit the markdown on the left to see live updates._
@@ -158,6 +164,7 @@ async function render(markdown: string) {
   const ansi = await renderAnsiFromDocument(tree, {
     components: { Math },
     width: term.cols,
+    data: { name: 'Ada' },
   })
 
   term.reset()

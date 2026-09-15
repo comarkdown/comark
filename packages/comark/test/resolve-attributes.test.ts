@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import type { Node } from 'comark'
 import type { NodeRenderData } from '../src/types.ts'
-import { resolveAttribute, resolveAttributes } from '../src/internal/stringify/attributes.ts'
+import {
+  resolveAttribute,
+  resolveAttributes,
+  resolveModelElement,
+  modelElementDisplayValue,
+} from '../src/internal/stringify/attributes.ts'
+import { createModelStore } from '../src/model.ts'
 import { parseMarkdown } from '../src/index'
 
 const makeRenderData = (overrides: Partial<NodeRenderData> = {}): NodeRenderData => ({
@@ -260,5 +266,115 @@ describe('resolveAttribute (single-attr lookup)', () => {
     const config = { k: 'v' }
     const value = resolveAttribute({ ':config': config }, renderData, 'config')
     expect(value).toBe(config)
+  })
+})
+
+// #region Two-way binding (::prop)
+
+describe('resolveAttributes — two-way bindings (::prop)', () => {
+  const rd: NodeRenderData = {
+    frontmatter: {},
+    meta: {},
+    data: { name: 'Alice', count: 5 },
+    props: {},
+  }
+
+  describe('preserve / HTML mode (no parseJson, no model)', () => {
+    it('emits the prop value and a data-comark-model-{prop} marker', () => {
+      const result = resolveAttributes({ '::value': 'data.name' }, rd)
+      expect(result.value).toBe('Alice')
+      expect(result['data-comark-model-value']).toBe('data.name')
+    })
+
+    it('emits only the marker when the path is unresolved', () => {
+      const result = resolveAttributes({ '::value': 'data.missing' }, rd)
+      expect(result.value).toBeUndefined()
+      expect(result['data-comark-model-value']).toBe('data.missing')
+    })
+
+    it('blocks unsafe URL even in preserve mode', () => {
+      const rdWithUrl: NodeRenderData = { ...rd, data: { url: 'javascript:alert(1)' } }
+      const result = resolveAttributes({ '::href': 'data.url' }, rdWithUrl)
+      expect(result.href).toBeUndefined()
+      expect(result['data-comark-model-href']).toBeUndefined()
+    })
+
+    it('throws on filtered expression in dev mode (vitest runs dev)', () => {
+      const rdWithName: NodeRenderData = { ...rd, data: { name: 'Alice' } }
+      // Vitest runs with import.meta.env.DEV = true so the filtered expression
+      // throws immediately rather than degrading to one-way.
+      expect(() => resolveAttributes({ '::value': 'data.name | upper' }, rdWithName)).toThrow('pipe filter')
+    })
+  })
+
+  describe('framework mode (parseJson: true)', () => {
+    it('emits value from renderData when no model is supplied', () => {
+      const result = resolveAttributes({ '::value': 'data.name' }, rd, { parseJson: true })
+      expect(result.value).toBe('Alice')
+      expect(result['onUpdate:value']).toBeUndefined()
+    })
+
+    it('emits value from model.get when model is supplied', () => {
+      const model = createModelStore({ data: { data: { name: 'Bob' } } })
+      const result = resolveAttributes({ '::value': 'data.name' }, rd, { parseJson: true, model })
+      expect(result.value).toBe('Bob')
+    })
+
+    it('one-way :prop prefers model.get over renderData when a model is supplied', () => {
+      const model = createModelStore({ data: { data: { name: 'FromModel' } } })
+      const result = resolveAttributes({ ':title': 'data.name' }, rd, { parseJson: true, model })
+      expect(result.title).toBe('FromModel')
+    })
+
+    it('emits onUpdate:prop handler when model is supplied', () => {
+      const model = createModelStore({ data: { data: { name: 'Alice' } } })
+      const result = resolveAttributes({ '::value': 'data.name' }, rd, { parseJson: true, model })
+      expect(typeof result['onUpdate:value']).toBe('function')
+    })
+
+    it('onUpdate:prop writes back into the model', () => {
+      const model = createModelStore({ data: { data: { name: 'Alice' } } })
+      const result = resolveAttributes({ '::value': 'data.name' }, rd, { parseJson: true, model })
+      ;(result['onUpdate:value'] as (v: unknown) => void)('Carol')
+      expect(model.get('data.name')).toBe('Carol')
+    })
+
+    it('blocks unsafe URL for ::href', () => {
+      const model = createModelStore({ data: { data: { url: 'javascript:alert(1)' } } })
+      const rdUnsafe: NodeRenderData = { ...rd, data: { url: 'javascript:alert(1)' } }
+      const result = resolveAttributes({ '::href': 'data.url' }, rdUnsafe, { parseJson: true, model })
+      expect(result.href).toBeUndefined()
+      expect(result['onUpdate:href']).toBeUndefined()
+    })
+
+    it('does not emit model-path HTML markers in framework mode', () => {
+      const model = createModelStore({ data: { data: { x: 1 } } })
+      const result = resolveAttributes({ '::value': 'data.x' }, rd, { parseJson: true, model })
+      expect(Object.keys(result).some((k) => k.startsWith('data-comark-model'))).toBe(false)
+    })
+  })
+})
+
+// #endregion
+
+describe('resolveModelElement', () => {
+  it('maps a text input to value/input', () => {
+    const binding = resolveModelElement('input', 'value', { type: 'text' })
+    expect(binding).toMatchObject({ prop: 'value', event: 'input' })
+    expect(binding?.coerce({ value: 'hi', checked: false, files: null })).toBe('hi')
+  })
+
+  it('maps radio checked to a boolean comparison against attrs.value', () => {
+    const binding = resolveModelElement('input', 'checked', { type: 'radio', value: 'admin' })
+    expect(binding?.event).toBe('change')
+    expect(binding?.coerce({ value: 'admin', checked: true, files: null })).toBe('admin')
+    expect(modelElementDisplayValue(binding!, 'admin', { value: 'admin' })).toBe(true)
+    expect(modelElementDisplayValue(binding!, 'member', { value: 'admin' })).toBe(false)
+  })
+
+  it('maps checkbox checked to a boolean', () => {
+    const binding = resolveModelElement('input', 'checked', { type: 'checkbox' })
+    expect(modelElementDisplayValue(binding!, true, {})).toBe(true)
+    expect(modelElementDisplayValue(binding!, undefined, {})).toBe(false)
   })
 })

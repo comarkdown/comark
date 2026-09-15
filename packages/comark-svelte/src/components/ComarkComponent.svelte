@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { Node as NodeType, ComponentManifest, NodeRenderData } from 'comark'
+  import type { ComarkModel } from 'comark/model'
   import type { Snippet } from 'svelte'
   import type { ComponentResolver } from '../types.js'
   import MarkdownNode from './MarkdownNode.svelte'
@@ -24,6 +25,7 @@
     componentsManifest,
     resolver: Resolver = Resolve,
     renderData = EMPTY_RENDER_DATA,
+    model,
     children,
   }: {
     Component?: any
@@ -35,6 +37,7 @@
     componentsManifest?: ComponentManifest
     resolver?: ComponentResolver
     renderData?: NodeRenderData
+    model?: ComarkModel
     children?: Snippet
   } = $props()
 </script>
@@ -50,6 +53,7 @@
         resolver={Resolver}
         caretClass={i === slot.children.length - 1 ? slot.caretClass : null}
         {renderData}
+        {model}
       />
     {/each}
   {/snippet}
@@ -64,6 +68,7 @@
     {componentsManifest}
     resolver={Resolver}
     {renderData}
+    {model}
   >
     {@render children?.()}
   </ComarkComponent>

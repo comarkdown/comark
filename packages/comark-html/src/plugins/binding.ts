@@ -29,8 +29,12 @@ export const Binding: NodeHandler = (node, state) => {
   const resolved = state.renderData.props as Record<string, unknown>
   const raw = (node[1] || {}) as Record<string, unknown>
   const out = resolved.value ?? raw.defaultValue
-  if (out === undefined || out === null) return ''
-  return escapeHtml(String(out))
+  const path = typeof raw[':value'] === 'string' ? raw[':value'].trim() : ''
+  const text = out === undefined || out === null ? '' : escapeHtml(String(out))
+  if (path.startsWith('data.')) {
+    return `<span data-comark-bind="${escapeHtml(path)}">${text}</span>`
+  }
+  return text
 }
 
 /** Render the default or else branch of an `::if` component. */

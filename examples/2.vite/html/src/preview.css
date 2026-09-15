@@ -112,6 +112,15 @@ img {
   max-width: 100%;
   border-radius: 6px;
 }
+input[type='text'] {
+  font: inherit;
+  padding: 4px 8px;
+  border: 1px solid #d0d7de;
+  border-radius: 6px;
+}
+input[type='checkbox'] {
+  margin-right: 0.4em;
+}
 table {
   width: 100%;
   border-collapse: collapse;

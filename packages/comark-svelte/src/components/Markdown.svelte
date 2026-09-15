@@ -25,6 +25,7 @@ This is an alert component
 -->
 <script lang="ts">
   import type { MarkdownDocument as MarkdownDocumentType, ComarkPlugin, ComponentManifest } from 'comark'
+  import type { ComarkModel } from 'comark/model'
   import { parseMarkdown } from 'comark'
   import { isMarkdownDocument } from 'comark/utils'
   import MarkdownDocument from './MarkdownDocument.svelte'
@@ -39,6 +40,8 @@ This is an alert component
     streaming = false,
     caret = false,
     data,
+    model,
+    onModelChange,
     class: className = '',
   }: {
     value?: string | MarkdownDocumentType
@@ -50,6 +53,8 @@ This is an alert component
     streaming?: boolean
     caret?: boolean | { class: string }
     data?: Record<string, unknown>
+    model?: ComarkModel
+    onModelChange?: (path: string, value: unknown, snapshot: Record<string, unknown>) => void
     class?: string
   } = $props()
 
@@ -82,6 +87,8 @@ This is an alert component
     {streaming}
     {caret}
     {data}
+    {model}
+    {onModelChange}
     class={className}
   />
 {:else if parsed}
@@ -92,6 +99,8 @@ This is an alert component
     {streaming}
     {caret}
     {data}
+    {model}
+    {onModelChange}
     class={className}
   />
 {/if}

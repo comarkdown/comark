@@ -1,8 +1,11 @@
 <script lang="ts">
   import { Markdown } from '@comark/svelte'
   import shiki from '@comark/svelte/plugins/shiki'
+  import binding, { Binding } from '@comark/svelte/plugins/binding'
   import Alert from '../components/Alert.svelte'
   import python from '@shikijs/langs/python'
+
+  const modelData = { name: 'Ada', active: true }
 
   const componentsManifest = (name: string) => {
     if (name === 'lazy-card') {
@@ -162,6 +165,20 @@ Documents can declare YAML frontmatter at the top (before any content). Access i
 
 ---
 
+## Two-way model binding
+
+Native form elements with \`::prop="path"\` write back to the document model. Change a field and watch the bound text update.
+
+**Name:** {{ data.name }}
+
+:input{::value="data.name" type="text"}
+
+**Active:** {{ data.active }}
+
+:input{::checked="data.active" type="checkbox"}
+
+---
+
 ## Comments
 
 HTML comments are parsed and ignored by the renderer:
@@ -173,8 +190,9 @@ Text before the comment and text after the comment both render normally.
 </script>
 
 <Markdown
-  {markdown}
-  plugins={[shiki({ languages: [python] })]}
-  components={{ Alert }}
+  value={markdown}
+  plugins={[shiki({ languages: [python] }), binding()]}
+  components={{ Alert, Binding }}
   {componentsManifest}
+  data={modelData}
 />

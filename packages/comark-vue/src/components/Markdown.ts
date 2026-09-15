@@ -2,6 +2,7 @@ import type { PropType } from 'vue'
 import { computed, defineComponent, h, shallowRef, watch } from 'vue'
 import { createSerializedMarkdownParser } from 'comark'
 import type { ParserOptions, ComponentManifest, MarkdownDocument as MarkdownDocumentType } from 'comark'
+import type { ComarkModel } from 'comark/model'
 import { isMarkdownDocument } from 'comark/utils'
 import { MarkdownDocument } from './MarkdownDocument.ts'
 
@@ -61,6 +62,16 @@ export interface MarkdownProps {
    * Additional data to pass to the renderer
    */
   data?: Record<string, unknown>
+
+  /**
+   * Two-way data binding model.
+   */
+  model?: ComarkModel
+
+  /**
+   * Called after every write accepted by the model.
+   */
+  onModelChange?: (path: string, value: unknown, snapshot: Record<string, unknown>) => void
 
   /**
    * Document key used to subscribe to live updates via `globalThis.comarkContext`
@@ -164,6 +175,22 @@ export const markdownProps = {
   },
 
   /**
+   * Two-way data binding model.
+   */
+  model: {
+    type: Object as PropType<import('comark/model').ComarkModel>,
+    default: undefined,
+  },
+
+  /**
+   * Called after every write accepted by the model.
+   */
+  onModelChange: {
+    type: Function as PropType<(path: string, value: unknown, snapshot: Record<string, unknown>) => void>,
+    default: undefined,
+  },
+
+  /**
    * Document key used to subscribe to live updates via `globalThis.comarkContext`
    */
   documentKey: {
@@ -246,6 +273,11 @@ export const Markdown: MarkdownComponent = defineComponent({
     }
 
     return () => {
+      const modelProps = {
+        model: props.model,
+        onModelChange: props.onModelChange,
+      }
+
       // Pre-parsed document — skip parsing and render directly
       if (isMarkdownDocument(props.value)) {
         return h(MarkdownDocument, {
@@ -257,6 +289,7 @@ export const Markdown: MarkdownComponent = defineComponent({
           caret: props.caret,
           data: props.data,
           documentKey: props.documentKey,
+          ...modelProps,
         })
       }
 
@@ -270,6 +303,7 @@ export const Markdown: MarkdownComponent = defineComponent({
         caret: props.caret,
         data: props.data,
         documentKey: props.documentKey,
+        ...modelProps,
       })
     }
   },

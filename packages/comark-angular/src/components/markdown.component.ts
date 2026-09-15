@@ -10,6 +10,7 @@ import {
 } from '@angular/core'
 import { createSerializedMarkdownParser } from 'comark'
 import type { ParserOptions, MarkdownDocument as MarkdownDocumentType } from 'comark'
+import type { ComarkModel } from 'comark/model'
 import { isMarkdownDocument } from 'comark/utils'
 import { MarkdownDocument } from './markdown-document.component.ts'
 
@@ -35,6 +36,8 @@ import { MarkdownDocument } from './markdown-document.component.ts'
         [streaming]="streaming"
         [caret]="caret"
         [data]="data"
+        [model]="model"
+        [onModelChange]="onModelChange"
       />
     }
   `,
@@ -70,6 +73,12 @@ export class Markdown implements OnChanges {
 
   /** Additional data to pass to the renderer for :binding resolution */
   @Input() data: Record<string, unknown> = {}
+
+  /** Two-way data binding model */
+  @Input() model?: ComarkModel
+
+  /** Called after every write accepted by the model */
+  @Input() onModelChange?: (path: string, value: unknown, snapshot: Record<string, unknown>) => void
 
   document: MarkdownDocumentType | null = null
 

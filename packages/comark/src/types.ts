@@ -1,6 +1,7 @@
 import type { DumpOptions } from 'js-yaml'
 import type MarkdownExit from 'markdown-exit'
 import type MarkdownIt from 'markdown-it'
+import type { ComarkModel } from './model.ts'
 
 // #region Utility Types
 /**
@@ -56,6 +57,8 @@ export type Node = ElementNode | TextNode | CommentNode
  * @param nodes - The nodes of the document
  * @param frontmatter - The frontmatter data which is the data at the top of the file
  * @param meta - The meta data of the document, it can be used to store additional data
+ * @param data - Optional runtime data. Populated when a `{ op: 'data' }` patch is
+ *   applied via {@link ComarkContext} so model writes are visible to subscribers.
  *
  * The `TMeta` and `TFrontmatter` type parameters allow `parse` / `createMarkdownParser`
  * to surface plugin-contributed keys with narrow types (see `MergePluginMeta`).
@@ -64,6 +67,8 @@ export interface MarkdownDocument<TMeta = Record<string, any>, TFrontmatter = Re
   nodes: Node[]
   frontmatter: TFrontmatter
   meta: TMeta
+  /** Runtime data populated via `{ op: 'data' }` context patches. */
+  data?: Record<string, unknown>
 }
 
 // #endregion
@@ -259,22 +264,30 @@ export interface RenderMarkdownOptions extends RendererOptions {
 }
 
 export interface NodeRenderData {
-  /*
-   * Frontmatter data from the markdown file
+  /**
+   * Frontmatter data from the markdown file.
    */
   frontmatter: Record<string, unknown>
   /**
-   * Meta information from Comark Tree
+   * Meta information from Comark tree.
    */
   meta: Record<string, unknown>
   /**
-   * Additional data paased to rendere
+   * Additional data passed to renderer nodes. Paths like `data.name` resolve
+   * here; the writable namespace for two-way bindings (`::prop="data.name"`).
    */
   data: Record<string, unknown>
   /**
-   * Props from parent node
+   * Props from the nearest parent element that has its own attributes. Used
+   * by nested bindings such as `:label="props.title"`.
    */
   props: Record<string, unknown>
+  /**
+   * Optional two-way model. When present, `::prop="path"` attributes emit an
+   * update handler alongside the read value, and `Binding`/`If` subscribe to
+   * path changes for fine-grained reactivity.
+   */
+  model?: ComarkModel
 }
 // #endregion
 

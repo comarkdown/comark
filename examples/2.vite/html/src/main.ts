@@ -2,12 +2,15 @@ import { createHtmlRenderer } from '@comark/html'
 import shiki from '@comark/html/plugins/shiki'
 import math, { Math } from '@comark/html/plugins/math'
 import mermaid, { Mermaid } from '@comark/html/plugins/mermaid'
+import binding, { Binding } from '@comark/html/plugins/binding'
+import { initComarkRuntime } from '@comark/html/runtime'
 import katexCss from 'katex/dist/katex.min.css?raw'
 import previewCss from './preview.css?raw'
 
 const renderHtml = createHtmlRenderer({
-  plugins: [shiki(), math(), mermaid()],
-  components: { Math, Mermaid },
+  plugins: [shiki(), math(), mermaid(), binding()],
+  components: { Math, Mermaid, Binding },
+  data: { name: 'Ada', active: true },
 })
 
 const SAMPLE = `---
@@ -103,14 +106,40 @@ graph TD
 | Tables      | ✅      |
 | Lists       | ✅      |
 
+## Two-way model binding
+
+Native form elements with \`::prop="path"\` write back to the document model. Change a field and watch the bound text update.
+
+**Name:** {{ data.name }}
+
+:input{::value="data.name" type="text"}
+
+**Active:** {{ data.active }}
+
+:input{::checked="data.active" type="checkbox"}
+
 ---
 
 _Edit the markdown on the left to see live updates._
 `
 
+let runtimeTeardown: (() => void) | undefined
+let previewGeneration = 0
+
 async function updatePreview(markdown: string) {
+  const generation = ++previewGeneration
+  runtimeTeardown?.()
+  runtimeTeardown = undefined
   const html = await renderHtml(markdown)
+  if (generation !== previewGeneration) return
   const frame = document.getElementById('preview') as HTMLIFrameElement
+  const onLoad = () => {
+    frame.removeEventListener('load', onLoad)
+    if (generation !== previewGeneration) return
+    const doc = frame.contentDocument
+    if (doc) runtimeTeardown = initComarkRuntime(doc.body)
+  }
+  frame.addEventListener('load', onLoad)
   frame.srcdoc = `<!doctype html><html><head><meta charset="utf-8"><style>${katexCss}${previewCss}</style></head><body>${html}</body></html>`
 }
 

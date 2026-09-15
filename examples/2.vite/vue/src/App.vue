@@ -2,12 +2,24 @@
   <Suspense>
     <div class="min-h-screen flex flex-col">
       <header class="border-b border-gray-200 dark:border-gray-800">
-        <nav class="max-w-2xl mx-auto px-6 py-4">
+        <nav class="max-w-2xl mx-auto px-6 py-4 flex items-center gap-6">
           <RouterLink
             to="/"
             class="text-lg font-semibold text-gray-900 dark:text-white no-underline"
           >
             Comark Blog
+          </RouterLink>
+          <RouterLink
+            to="/syntax"
+            class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 no-underline"
+          >
+            Syntax
+          </RouterLink>
+          <RouterLink
+            to="/live"
+            class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 no-underline"
+          >
+            Live
           </RouterLink>
         </nav>
       </header>

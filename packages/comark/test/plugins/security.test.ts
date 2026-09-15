@@ -646,3 +646,31 @@ describe('security plugin — allowDataImages', () => {
     expect((tree.nodes[0] as [string, any])[1]).not.toHaveProperty('href')
   })
 })
+
+describe('security plugin — :: two-way binding keys', () => {
+  it('preserves safe ::value binding path (non-URL attribute)', async () => {
+    const tree = makeTree([['input', { '::value': 'data.name', type: 'text' }]])
+    await runPlugin(tree)
+    expect((tree.nodes[0] as [string, any])[1]).toHaveProperty('::value', 'data.name')
+  })
+
+  it('strips ::onclick (event handler via :: prefix)', async () => {
+    const tree = makeTree([['button', { '::onclick': 'data.handler' }]])
+    await runPlugin(tree)
+    expect((tree.nodes[0] as [string, any])[1]).not.toHaveProperty('::onclick')
+  })
+
+  it('preserves ::href with a safe dot-path value (runtime URL check)', async () => {
+    // The path string itself is not a URL — the security plugin keeps it;
+    // the unsafe URL guard fires at render time inside resolveAttributes.
+    const tree = makeTree([['a', { '::href': 'data.url' }]])
+    await runPlugin(tree)
+    expect((tree.nodes[0] as [string, any])[1]).toHaveProperty('::href', 'data.url')
+  })
+
+  it('strips ::innerHTML (HTML sink attribute via :: prefix)', async () => {
+    const tree = makeTree([['div', { '::innerHTML': 'data.content' }]])
+    await runPlugin(tree)
+    expect((tree.nodes[0] as [string, any])[1]).not.toHaveProperty('::innerHTML')
+  })
+})

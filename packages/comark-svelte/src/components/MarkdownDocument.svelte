@@ -21,6 +21,8 @@ Supports custom component mappings and a streaming caret indicator.
 <script lang="ts">
   import { untrack } from 'svelte'
   import type { MarkdownDocument as MarkdownDocumentType, ComponentManifest } from 'comark'
+  import type { ComarkModel } from 'comark/model'
+  import { createModelStore } from 'comark/model'
   import type { ComponentResolver } from '../types.js'
   import MarkdownNode from './MarkdownNode.svelte'
 
@@ -32,6 +34,8 @@ Supports custom component mappings and a streaming caret indicator.
     streaming = false,
     caret: caretProp = false,
     data,
+    model: modelProp,
+    onModelChange,
     class: className = '',
     documentKey,
   }: {
@@ -42,6 +46,8 @@ Supports custom component mappings and a streaming caret indicator.
     streaming?: boolean
     caret?: boolean | { class: string }
     data?: Record<string, unknown>
+    model?: ComarkModel
+    onModelChange?: (path: string, value: unknown, snapshot: Record<string, unknown>) => void
     class?: string
     documentKey?: string
   } = $props()
@@ -68,14 +74,30 @@ Supports custom component mappings and a streaming caret indicator.
       : null,
   )
 
-  let renderData = $derived({
-    frontmatter:
-      (activeDocument as MarkdownDocumentType).frontmatter ||
-      (activeDocument as unknown as { data: Record<string, unknown> }).data ||
-      {},
-    meta: (activeDocument as MarkdownDocumentType).meta || {},
-    data: data || {},
-    props: {},
+  // Model boundary: create an uncontrolled store if no model is provided.
+  // A $state cell is bumped on every write to trigger Svelte reactivity.
+  const fallbackStore = createModelStore({
+    data: { data: { ...(untrack(() => data) ?? {}) } },
+    onChange: (path, value, snapshot) => onModelChange?.(path, value, snapshot),
+  })
+  let internalModel = $derived(modelProp ?? fallbackStore)
+  let modelVersion = $state(0)
+  $effect(() => {
+    return internalModel.subscribe('data', () => { modelVersion++ })
+  })
+
+  let renderData = $derived.by(() => {
+    void modelVersion
+    return {
+      frontmatter:
+        (activeDocument as MarkdownDocumentType).frontmatter ||
+        (activeDocument as unknown as { data: Record<string, unknown> }).data ||
+        {},
+      meta: (activeDocument as MarkdownDocumentType).meta || {},
+      data: data || {},
+      props: {},
+      model: internalModel,
+    }
   })
 </script>
 
@@ -88,6 +110,7 @@ Supports custom component mappings and a streaming caret indicator.
       {resolver}
       caretClass={i === activeDocument.nodes.length - 1 ? caretClass : null}
       {renderData}
+      model={internalModel}
     />
   {/each}
 </div>

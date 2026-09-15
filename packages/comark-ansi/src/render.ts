@@ -5,6 +5,21 @@ import { stripControlChars } from './utils/escape.ts'
 
 export * from 'comark/render'
 
+/** Emitted at most once per process to avoid log spam. */
+let twoWayWarnEmitted = false
+
+function hasDoubleBindingAttrs(nodes: Node[]): boolean {
+  for (const node of nodes) {
+    if (typeof node === 'string' || node[0] === null) continue
+    const [, attrs, ...children] = node as ElementNode
+    for (const key in attrs) {
+      if (key.charCodeAt(0) === 58 && key.charCodeAt(1) === 58) return true
+    }
+    if (hasDoubleBindingAttrs(children as Node[])) return true
+  }
+  return false
+}
+
 export interface AnsiRendererOptions extends RendererOptions {
   /**
    * Whether to emit ANSI escape codes.
@@ -62,6 +77,14 @@ export async function renderAnsiFromDocument(
 ): Promise<string> {
   const colors = options?.colors ?? (typeof process !== 'undefined' ? !process.env.NO_COLOR : true)
   const width = options?.width ?? 80
+
+  if (!twoWayWarnEmitted && hasDoubleBindingAttrs(document.nodes)) {
+    twoWayWarnEmitted = true
+    console.warn(
+      '[comark/ansi] Two-way binding (::prop) is not supported in the ANSI renderer. ' +
+        'Attributes are resolved read-only. Use a framework renderer for live two-way binding.'
+    )
+  }
 
   const sanitized = { ...document, nodes: sanitizeForTerminal(document.nodes) }
   return render(sanitized, {

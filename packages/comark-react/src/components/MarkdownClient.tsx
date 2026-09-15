@@ -18,6 +18,8 @@ function MarkdownContent({
   streaming = false,
   caret = false,
   data,
+  model,
+  onModelChange,
   className,
 }: MarkdownContentProps) {
   const parsed = use(parsePromise)
@@ -31,6 +33,8 @@ function MarkdownContent({
       className={className}
       caret={caret}
       data={data}
+      model={model}
+      onModelChange={onModelChange}
     />
   )
 }

@@ -33,7 +33,8 @@
     "./plugins/*": "./dist/plugins/*.js",
     "./utils": "./dist/utils/index.js",
     "./parse": "./dist/parse.js",
-    "./render": "./dist/render.js"
+    "./render": "./dist/render.js",
+    "./runtime": "./dist/runtime.js"
   },
   "publishConfig": {
     "access": "public"
@@ -51,6 +52,7 @@
   },
   "devDependencies": {
     "beautiful-mermaid": "catalog:",
+    "jsdom": "^30.0.1",
     "katex": "^0.17.0",
     "vitest": "catalog:"
   },

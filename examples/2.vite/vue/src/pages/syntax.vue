@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { Markdown } from '@comark/vue'
 import shiki from '@comark/vue/plugins/shiki'
+import binding, { Binding } from '@comark/vue/plugins/binding'
 import Alert from '@/components/Alert.vue'
 import ProseUnwrapDiv from '@/components/prose/ProseUnwrapDiv.vue'
 import python from '@shikijs/langs/python'
+
+const modelData = { name: 'Ada', active: true }
 
 const markdown = `
 # Comark Syntax Showcase
@@ -240,6 +243,20 @@ This content is inside a \`div\` with inline styles — but the \`div\` itself i
 
 ---
 
+## Two-way model binding
+
+Native form elements with \`::prop="path"\` write back to the document model. Change a field and watch the bound text update.
+
+**Name:** {{ data.name }}
+
+:input{::value="data.name" type="text"}
+
+**Active:** {{ data.active }}
+
+:input{::checked="data.active" type="checkbox"}
+
+---
+
 ## Frontmatter
 
 Documents can declare YAML frontmatter at the top (before any content):
@@ -275,8 +292,10 @@ Text before the comment and text after the comment both render normally.
       shiki({
         languages: [python],
       }),
+      binding(),
     ]"
     :value="markdown"
-    :components="{ Alert, ProseUnwrapDiv }"
+    :components="{ Alert, ProseUnwrapDiv, Binding }"
+    :data="modelData"
   />
 </template>

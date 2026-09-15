@@ -15,13 +15,16 @@ import {
   h,
   inject,
   onErrorCaptured,
+  onScopeDispose,
   onUnmounted,
   ref,
   shallowRef,
   toRaw,
 } from 'vue'
 import { findLastTextNodeAndAppendNode, getCaret } from '../utils/caret.ts'
-import { pascalCase, resolveAttributes } from 'comark/utils'
+import { pascalCase, resolveAttributes, resolveModelElement, modelElementDisplayValue } from 'comark/utils'
+import type { ComarkModel } from 'comark/model'
+import { createModelStore } from 'comark/model'
 
 // Cache for dynamically resolved components
 const asyncComponentCache = new Map<string, any>()
@@ -110,7 +113,8 @@ function renderNode(
   key?: string | number,
   componentsManifest?: ComponentManifest,
   parent?: Node,
-  renderData: NodeRenderData = { frontmatter: {}, meta: {}, data: {}, props: {} }
+  renderData: NodeRenderData = { frontmatter: {}, meta: {}, data: {}, props: {} },
+  model?: ComarkModel
 ): VNode | string | null {
   // Handle text nodes (strings)
   if (typeof node === 'string') {
@@ -139,15 +143,32 @@ function renderNode(
 
     const component = customComponent || tag
 
-    // Resolve `:prefix` bindings and let Vue-specific attribute mapping run
-    // on top (e.g. `className` → `class`).
-    const resolved = resolveAttributes(nodeProps, renderData, { parseJson: true })
+    // Resolve `:prefix` bindings and `::prefix` two-way bindings, then apply
+    // Vue-specific attribute mapping (`className` → `class`, `onUpdate:X` as-is
+    // for native v-model support on custom components).
+    const resolved = resolveAttributes(nodeProps, renderData, { parseJson: true, model })
     const props: Record<string, any> = {}
     for (const k in resolved) {
       if (k === 'className') {
         props.class = resolved[k]
       } else {
         props[k] = resolved[k]
+      }
+    }
+
+    // For native form elements with model bindings, replace the generic
+    // update handler with the element-specific event listener and coercion.
+    if (model && !customComponent && typeof tag === 'string') {
+      for (const rawKey in nodeProps) {
+        if (!rawKey.startsWith('::')) continue
+        const modelProp = rawKey.slice(2)
+        const binding = resolveModelElement(tag, modelProp, nodeProps)
+        if (!binding) continue
+        const path = nodeProps[rawKey] as string
+        delete props[`onUpdate:${modelProp}`]
+        const eventHandler = `on${binding.event.charAt(0).toUpperCase()}${binding.event.slice(1)}`
+        props[eventHandler] = (e: Event) => model.set(path, binding.coerce(e.target as any))
+        props[binding.prop] = modelElementDisplayValue(binding, model.get(path), nodeProps)
       }
     }
 
@@ -204,14 +225,14 @@ function renderNode(
           slots[slotName] = () =>
             slotChildren
               .map((slotChild: Node, idx: number) =>
-                renderNode(slotChild, components, idx, componentsManifest, node, childrenRenderData)
+                renderNode(slotChild, components, idx, componentsManifest, node, childrenRenderData, model)
               )
               .filter((slotChild): slotChild is VNode | string => slotChild !== null)
           continue
         }
       }
 
-      const rendered = renderNode(child, components, i, componentsManifest, node, childrenRenderData)
+      const rendered = renderNode(child, components, i, componentsManifest, node, childrenRenderData, model)
       if (rendered !== null) {
         regularChildren.push(rendered)
       }
@@ -269,6 +290,17 @@ export interface MarkdownDocumentProps {
    * Additional data to pass to the renderer
    */
   data?: Record<string, unknown>
+
+  /**
+   * Two-way data binding model. When provided, `::prop="path"` attributes are
+   * resolved against the model and update handlers are wired automatically.
+   */
+  model?: ComarkModel
+
+  /**
+   * Called after every write accepted by the model.
+   */
+  onModelChange?: (path: string, value: unknown, snapshot: Record<string, unknown>) => void
 
   /**
    * Document key. When set and `globalThis.comarkContext` exists, the renderer
@@ -341,6 +373,22 @@ export const markdownDocumentProps = {
   },
 
   /**
+   * Two-way data binding model.
+   */
+  model: {
+    type: Object as PropType<ComarkModel>,
+    default: undefined,
+  },
+
+  /**
+   * Called after every write accepted by the model.
+   */
+  onModelChange: {
+    type: Function as PropType<(path: string, value: unknown, snapshot: Record<string, unknown>) => void>,
+    default: undefined,
+  },
+
+  /**
    * Document key used to subscribe to live updates via `globalThis.comarkContext`
    */
   documentKey: {
@@ -398,6 +446,22 @@ export const MarkdownDocument: MarkdownDocumentComponent = defineComponent({
       onUnmounted(() => cleanup(true))
     }
 
+    // Two-way model boundary: create an uncontrolled store if no model is
+    // passed, and subscribe to `data` to trigger re-renders on writes.
+    const internalModel: ComarkModel =
+      props.model ??
+      createModelStore({
+        data: { data: props.data ?? {} },
+        onChange: props.onModelChange,
+      })
+    // A shallowRef bumped on every model write causes the render function to
+    // re-run without replacing the entire VNode tree.
+    const modelVersion = shallowRef(0)
+    const unsub = internalModel.subscribe('data', () => {
+      modelVersion.value++
+    })
+    onScopeDispose(unsub)
+
     // Capture errors from child components (e.g., during streaming when props are incomplete)
     onErrorCaptured((_err, instance, _info) => {
       // Get component name from instance
@@ -428,6 +492,9 @@ export const MarkdownDocument: MarkdownDocumentComponent = defineComponent({
     const caret = computed<ElementNode | null>(() => getCaret(props.caret || false))
 
     return () => {
+      // Access modelVersion so Vue tracks it as a dependency of this render.
+      void modelVersion.value
+
       // Render all nodes from the live document when present, else the value prop
       const rawDocument = toRaw(liveDocument.value ?? inputDocument.value)
       const nodes = [...(rawDocument.nodes || [])]
@@ -447,10 +514,13 @@ export const MarkdownDocument: MarkdownDocumentComponent = defineComponent({
         meta: (rawDocument as MarkdownDocumentType).meta || {},
         data: props.data || {},
         props: {},
+        model: internalModel,
       }
 
       const children = nodes
-        .map((node, index) => renderNode(node, components.value, index, componentManifest, undefined, renderData))
+        .map((node, index) =>
+          renderNode(node, components.value, index, componentManifest, undefined, renderData, internalModel)
+        )
         .filter((child): child is VNode | string => child !== null)
 
       // Wrap in a fragment

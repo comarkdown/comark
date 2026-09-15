@@ -1,0 +1,43 @@
+import { describe, expect, it } from 'vitest'
+import React from 'react'
+import { renderToString } from 'react-dom/server'
+import { parseMarkdown } from 'comark'
+import { createModelStore } from 'comark/model'
+import { MarkdownDocument } from '../src/components/MarkdownDocument'
+import { Form } from '../src/components/Form'
+
+async function render(markdown: string, props: Record<string, any> = {}) {
+  const doc = await parseMarkdown(markdown)
+  return renderToString(
+    <MarkdownDocument
+      value={doc}
+      components={{ form: Form }}
+      {...props}
+    />
+  )
+}
+
+describe('React Form component — SSR', () => {
+  it('renders a <form> element wrapping its children', async () => {
+    const html = await render('::form{::value="data.contact"}\n  Hello\n::')
+    expect(html).toContain('<form')
+    expect(html).toContain('Hello')
+  })
+
+  it('resolves the ::value binding from the model', async () => {
+    const model = createModelStore({ data: { data: { contact: { name: 'Alice' } } } })
+    const html = await render('::form{::value="data.contact"}\n  content\n::', { model })
+    expect(html).toContain('<form')
+    expect(html).toContain('content')
+  })
+
+  it('passes through child input bindings', async () => {
+    const model = createModelStore({ data: { data: { name: 'Bob' } } })
+    const html = await render(
+      '::form{::value="data.contact"}\n  :input{::value="data.name" name="name" type="text"}\n::',
+      { model }
+    )
+    expect(html).toContain('<form')
+    expect(html).toContain('Bob')
+  })
+})

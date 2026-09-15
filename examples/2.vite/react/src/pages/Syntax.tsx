@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react'
 import { parseMarkdown } from 'comark'
 import shiki from '@comark/react/plugins/shiki'
+import binding, { Binding } from '@comark/react/plugins/binding'
 import { MarkdownDocument } from '@comark/react'
 import type { MarkdownDocument as Document } from '@comark/react'
 import Alert from '../components/Alert'
+
+const modelData = { name: 'Ada', active: true }
 
 const markdown = `
 # Comark Syntax Showcase
@@ -147,6 +150,20 @@ Documents can declare YAML frontmatter at the top (before any content). Access i
 
 ---
 
+## Two-way model binding
+
+Native form elements with \`::prop="path"\` write back to the document model. Change a field and watch the bound text update.
+
+**Name:** {{ data.name }}
+
+:input{::value="data.name" type="text"}
+
+**Active:** {{ data.active }}
+
+:input{::checked="data.active" type="checkbox"}
+
+---
+
 ## Comments
 
 HTML comments are parsed and ignored by the renderer:
@@ -160,7 +177,7 @@ export default function Syntax() {
   const [tree, setTree] = useState<Document | null>(null)
 
   useEffect(() => {
-    parseMarkdown(markdown, { plugins: [shiki()] }).then(setTree)
+    parseMarkdown(markdown, { plugins: [shiki(), binding()] }).then(setTree)
   }, [])
 
   if (!tree) return null
@@ -168,7 +185,8 @@ export default function Syntax() {
   return (
     <MarkdownDocument
       value={tree}
-      components={{ Alert }}
+      components={{ Alert, Binding }}
+      data={modelData}
     />
   )
 }

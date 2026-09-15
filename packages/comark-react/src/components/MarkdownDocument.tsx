@@ -5,8 +5,10 @@ import type {
   ComponentManifest,
   NodeRenderData,
 } from 'comark'
-import React, { lazy, Suspense, useMemo } from 'react'
-import { pascalCase, camelCase, resolveAttributes } from 'comark/utils'
+import React, { lazy, Suspense, useMemo, useSyncExternalStore, useRef } from 'react'
+import { pascalCase, camelCase, resolveAttributes, resolveModelElement, modelElementDisplayValue } from 'comark/utils'
+import type { ComarkModel } from 'comark/model'
+import { createModelStore } from 'comark/model'
 import { findLastTextNodeAndAppendNode, getCaret } from '../utils/caret.ts'
 
 /**
@@ -108,7 +110,8 @@ function renderNode(
   key?: string | number,
   componentsManifest?: ComponentManifest,
   parent?: Node,
-  renderData: NodeRenderData = { frontmatter: {}, meta: {}, data: {}, props: {} }
+  renderData: NodeRenderData = { frontmatter: {}, meta: {}, data: {}, props: {} },
+  model?: ComarkModel
 ): React.ReactNode {
   // Handle text nodes (strings)
   if (typeof node === 'string') {
@@ -137,10 +140,10 @@ function renderNode(
 
     const Component = customComponent || tag
 
-    // Resolve `:prefix` bindings, then apply React-specific attribute
-    // remapping (`class` → `className`, string `style` → object, `tabindex`
-    // → `tabIndex`).
-    const resolved = resolveAttributes(nodeProps, renderData, { parseJson: true })
+    // Resolve `:prefix` bindings and `::prefix` two-way bindings, then apply
+    // React-specific attribute remapping (`class` → `className`, string
+    // `style` → object, `tabindex` → `tabIndex`, `onUpdate:X` → `onUpdateX`).
+    const resolved = resolveAttributes(nodeProps, renderData, { parseJson: true, model })
     const props: Record<string, any> = {}
     for (const k in resolved) {
       const v = resolved[k]
@@ -150,8 +153,32 @@ function renderNode(
         props.style = cssStringToObject(v)
       } else if (k === 'tabindex') {
         props.tabIndex = v
+      } else if (k.startsWith('onUpdate:') && model) {
+        // `onUpdate:prop` → `onUpdateProp` for React props.
+        // For native form elements we wire via resolveModelElement below;
+        // custom components receive the camelCased handler directly.
+        const propName = k.slice('onUpdate:'.length)
+        const camelHandler = `onUpdate${propName.charAt(0).toUpperCase()}${propName.slice(1)}`
+        props[camelHandler] = v
       } else {
         props[k] = v
+      }
+    }
+
+    // For native form elements with model bindings, replace the generic
+    // update handler with the element-specific event listener and coercion.
+    if (model && !customComponent && typeof tag === 'string') {
+      for (const rawKey in nodeProps) {
+        if (!rawKey.startsWith('::')) continue
+        const modelProp = rawKey.slice(2)
+        const binding = resolveModelElement(tag, modelProp, nodeProps)
+        if (!binding) continue
+        const path = nodeProps[rawKey] as string
+        const genericHandler = `onUpdate${modelProp.charAt(0).toUpperCase()}${modelProp.slice(1)}`
+        delete props[genericHandler]
+        const eventProp = `on${binding.event.charAt(0).toUpperCase()}${binding.event.slice(1)}`
+        props[eventProp] = (e: React.SyntheticEvent) => model.set(path, binding.coerce(e.target as any))
+        props[binding.prop] = modelElementDisplayValue(binding, model.get(path), nodeProps)
       }
     }
 
@@ -207,14 +234,14 @@ function renderNode(
           const slotChildren = getChildren(child)
           slots[slotName] = slotChildren
             .map((slotChild: Node, idx: number) =>
-              renderNode(slotChild, components, idx, componentsManifest, node, childrenRenderData)
+              renderNode(slotChild, components, idx, componentsManifest, node, childrenRenderData, model)
             )
             .filter((slotChild): slotChild is React.ReactNode => slotChild !== null)
           continue
         }
       }
 
-      const rendered = renderNode(child, components, i, componentsManifest, node, childrenRenderData)
+      const rendered = renderNode(child, components, i, componentsManifest, node, childrenRenderData, model)
       if (rendered !== null) {
         regularChildren.push(rendered)
       }
@@ -302,6 +329,20 @@ export interface MarkdownDocumentProps {
   data?: Record<string, unknown>
 
   /**
+   * Two-way data binding model. When provided, `::prop="path"` attributes are
+   * resolved against the model and update handlers are wired automatically.
+   * When omitted the renderer creates an internal uncontrolled store from
+   * `data` (controlled mode requires passing your own model).
+   */
+  model?: ComarkModel
+
+  /**
+   * Called after every write accepted by the model. Use this to observe
+   * changes in controlled mode without subscribing to the model manually.
+   */
+  onModelChange?: (path: string, value: unknown, snapshot: Record<string, unknown>) => void
+
+  /**
    * Additional className for the wrapper div
    */
   className?: string
@@ -328,6 +369,30 @@ export interface MarkdownDocumentProps {
  * }
  * ```
  */
+/**
+ * A React component that subscribes to a model path and re-renders when the
+ * value changes. Uses `useSyncExternalStore` for concurrent-mode safety.
+ */
+function ModelBoundary({
+  model,
+  children,
+}: {
+  model: ComarkModel
+  children: (version: number) => React.ReactNode
+}): React.ReactNode {
+  const versionRef = useRef(0)
+  const version = useSyncExternalStore(
+    (onStoreChange) =>
+      model.subscribe('data', () => {
+        versionRef.current += 1
+        onStoreChange()
+      }),
+    () => versionRef.current,
+    () => 0
+  )
+  return children(version)
+}
+
 export const MarkdownDocument: React.FC<MarkdownDocumentProps> = ({
   value,
   components: customComponents = {},
@@ -335,14 +400,28 @@ export const MarkdownDocument: React.FC<MarkdownDocumentProps> = ({
   streaming = false,
   caret: caretProp = false,
   data,
+  model: modelProp,
+  onModelChange,
   className,
 }) => {
   const document = value ?? { nodes: [] }
 
+  // Uncontrolled mode: create a private model store from `data`.
+  const internalModelRef = useRef<ComarkModel | null>(null)
+  if (!modelProp && !internalModelRef.current) {
+    internalModelRef.current = createModelStore({
+      data: { data: data ?? {} },
+      onChange: onModelChange,
+    })
+  }
+  const model = modelProp ?? internalModelRef.current ?? undefined
+
   const caret = useMemo(() => getCaret(caretProp), [caretProp])
 
-  const renderedNodes = useMemo(() => {
-    // Render all nodes from the document value
+  const renderContent = (modelVersion?: number) => {
+    // modelVersion used only to trigger re-render when the model updates.
+    void modelVersion
+
     const nodes = [...(document.nodes || [])]
 
     if (streaming && caret && nodes.length > 0) {
@@ -360,13 +439,19 @@ export const MarkdownDocument: React.FC<MarkdownDocumentProps> = ({
       meta: (document as MarkdownDocumentType).meta || {},
       data: data || {},
       props: {},
+      model,
     }
 
-    return nodes
-      .map((node, index) => renderNode(node, customComponents, index, componentsManifest, undefined, renderData))
+    const renderedNodes = nodes
+      .map((node, index) => renderNode(node, customComponents, index, componentsManifest, undefined, renderData, model))
       .filter((child): child is React.ReactNode => child !== null)
-  }, [document, customComponents, componentsManifest, streaming, caret, data])
 
-  // Wrap in a fragment
-  return <div className={`comark-content ${className || ''}`}>{renderedNodes}</div>
+    return <div className={`comark-content ${className || ''}`}>{renderedNodes}</div>
+  }
+
+  if (model) {
+    return <ModelBoundary model={model}>{(version) => renderContent(version)}</ModelBoundary>
+  }
+
+  return renderContent()
 }

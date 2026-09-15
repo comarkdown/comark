@@ -125,6 +125,29 @@ describe('createComarkContext', () => {
     })
   })
 
+  describe('{ op: data } patch', () => {
+    it('merges data into the document and notifies listeners', () => {
+      const doc = createComarkContext(false).get('x')
+      doc.set(tree([['p', {}, 'hi']]))
+      const fn = vi.fn()
+      doc.listen(fn)
+      doc.patch({ op: 'data', data: { name: 'Alice' } })
+      const [latest] = fn.mock.calls[fn.mock.calls.length - 1]
+      expect(latest.data).toEqual({ name: 'Alice' })
+    })
+
+    it('accumulates multiple data patches', () => {
+      const doc = createComarkContext(false).get('x')
+      doc.set(tree([['p', {}, 'hi']]))
+      const fn = vi.fn()
+      doc.listen(fn)
+      doc.patch({ op: 'data', data: { a: 1 } })
+      doc.patch({ op: 'data', data: { b: 2 } })
+      const [latest] = fn.mock.calls[fn.mock.calls.length - 1]
+      expect(latest.data).toEqual({ a: 1, b: 2 })
+    })
+  })
+
   describe('lifecycle', () => {
     it('emits create on first access and remove on prune', () => {
       const ctx = createComarkContext(false)

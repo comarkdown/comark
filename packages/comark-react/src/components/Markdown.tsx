@@ -2,6 +2,7 @@ import React from 'react'
 import { parseMarkdown } from 'comark'
 import type { MarkdownDocument as MarkdownDocumentType, ParserOptions } from 'comark'
 import { isMarkdownDocument } from 'comark/utils'
+import type { ComarkModel } from 'comark/model'
 import { MarkdownDocument } from './MarkdownDocument.tsx'
 import { MarkdownClient } from './MarkdownClient.tsx'
 
@@ -66,6 +67,17 @@ export interface MarkdownProps {
   data?: Record<string, unknown>
 
   /**
+   * Two-way data binding model. When provided, `::prop="path"` attributes are
+   * resolved against the model and update handlers are wired automatically.
+   */
+  model?: ComarkModel
+
+  /**
+   * Called after every write accepted by the model.
+   */
+  onModelChange?: (path: string, value: unknown, snapshot: Record<string, unknown>) => void
+
+  /**
    * Additional className for the wrapper div
    */
   className?: string
@@ -113,6 +125,8 @@ export async function Markdown({
   streaming = false,
   caret = false,
   data,
+  model,
+  onModelChange,
   className,
 }: MarkdownProps) {
   // Pre-parsed document — skip parsing and render directly
@@ -126,6 +140,8 @@ export async function Markdown({
         className={className}
         caret={caret}
         data={data}
+        model={model}
+        onModelChange={onModelChange}
       />
     )
   }
@@ -146,6 +162,8 @@ export async function Markdown({
         streaming={streaming}
         caret={caret}
         data={data}
+        model={model}
+        onModelChange={onModelChange}
         className={className}
       />
     )
@@ -162,6 +180,8 @@ export async function Markdown({
       className={className}
       caret={caret}
       data={data}
+      model={model}
+      onModelChange={onModelChange}
     />
   )
 }

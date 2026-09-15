@@ -68,11 +68,12 @@ naturally appears inline after the deepest trailing text node.
 
 <script lang="ts">
   import type { Node as NodeType, ComponentManifest, NodeRenderData } from 'comark'
+  import type { ComarkModel } from 'comark/model'
   import type { ComponentResolver } from '../types.js'
   import MarkdownNode from './MarkdownNode.svelte'
   import ComarkComponent from './ComarkComponent.svelte'
   import Resolve from './Resolve.svelte'
-  import { resolveAttributes } from 'comark/utils'
+  import { resolveAttributes, resolveModelElement, modelElementDisplayValue } from 'comark/utils'
 
   const EMPTY_RENDER_DATA: NodeRenderData = { frontmatter: {}, meta: {}, data: {}, props: {} }
 
@@ -83,6 +84,7 @@ naturally appears inline after the deepest trailing text node.
     resolver: Resolver = Resolve,
     caretClass = null,
     renderData = EMPTY_RENDER_DATA,
+    model,
   }: {
     node: NodeType
     components?: Record<string, any>
@@ -90,6 +92,7 @@ naturally appears inline after the deepest trailing text node.
     resolver?: ComponentResolver
     caretClass?: string | null
     renderData?: NodeRenderData
+    model?: ComarkModel
   } = $props()
 
   const CARET_TEXT = '\u2009'
@@ -179,15 +182,35 @@ naturally appears inline after the deepest trailing text node.
       Component = resolvedComponent
     }
 
-    // Resolve `:prefix` bindings, then apply Svelte attribute remapping
-    // (`className` → `class`).
-    const resolved = resolveAttributes(nodeProps, renderData, { parseJson: true })
+    // Resolve `:prefix` bindings and `::prefix` two-way bindings.
+    const resolved = resolveAttributes(nodeProps, renderData, { parseJson: true, model })
     for (const k in resolved) {
       if (k === 'className') {
         mappedProps.class = resolved[k]
       }
+      else if (k.startsWith('onUpdate:')) {
+        const propName = k.slice('onUpdate:'.length)
+        mappedProps[`onUpdate${propName.charAt(0).toUpperCase()}${propName.slice(1)}`] = resolved[k]
+      }
       else {
         mappedProps[k] = resolved[k]
+      }
+    }
+
+    // For native form elements with model bindings, replace generic onUpdate:*
+    // handlers with element-specific oninput/onchange + coercion.
+    if (model && tag && !Component && !componentPromise) {
+      for (const rawKey in nodeProps) {
+        if (!rawKey.startsWith('::')) continue
+        const modelProp = rawKey.slice(2)
+        const binding = resolveModelElement(tag, modelProp, nodeProps)
+        if (!binding) continue
+        const path = nodeProps[rawKey] as string
+        delete mappedProps[`onUpdate:${modelProp}`]
+        delete mappedProps[`onUpdate${modelProp.charAt(0).toUpperCase()}${modelProp.slice(1)}`]
+        mappedProps[`on${binding.event}`] = (e: Event) =>
+          model!.set(path, binding.coerce(e.target as any))
+        mappedProps[binding.prop] = modelElementDisplayValue(binding, model.get(path), nodeProps)
       }
     }
 
@@ -241,6 +264,7 @@ naturally appears inline after the deepest trailing text node.
       resolver={Resolver}
       caretClass={child.caretClass}
       renderData={childrenRenderData}
+      {model}
     />
   {/each}
 {/snippet}
@@ -259,6 +283,7 @@ naturally appears inline after the deepest trailing text node.
     {componentsManifest}
     resolver={Resolver}
     renderData={childrenRenderData}
+    {model}
   >
     {@render renderChildren()}
   </ComarkComponent>
@@ -275,6 +300,7 @@ naturally appears inline after the deepest trailing text node.
     {componentsManifest}
     resolver={Resolver}
     renderData={childrenRenderData}
+    {model}
   >
     {@render renderChildren()}
   </ComarkComponent>
