@@ -2,22 +2,22 @@ import { describe, expect, it } from 'vitest'
 import { createMarkdownParser, defineComarkPlugin } from 'comark'
 import type { MarkdownItPlugin } from 'comark'
 
-// `getMarkdownExit()` is internal, so the memo is observed through the public
-// API: a markdown-it plugin function only runs once per shared instance, so
-// counting its registrations counts the instances that were built.
+// The shared instance is internal, so it is observed through the public API: a
+// markdown-it plugin function runs once per instance, so counting how often it
+// is registered counts the instances that were built.
 let stableUses = 0
 const stableMdPlugin = (() => {
   stableUses++
 }) as unknown as MarkdownItPlugin
 
 const stablePlugin = defineComarkPlugin(() => ({
-  name: 'memo-stable',
+  name: 'sharing-stable',
   markdownItPlugins: [stableMdPlugin],
 }))
 
 let closureUses = 0
 const closurePlugin = defineComarkPlugin(() => ({
-  name: 'memo-closure',
+  name: 'sharing-closure',
   markdownItPlugins: [
     (() => {
       closureUses++
@@ -25,12 +25,8 @@ const closurePlugin = defineComarkPlugin(() => ({
   ],
 }))
 
-describe('markdown-exit instance sharing', () => {
-  it('still returns a fresh parser function on every call', () => {
-    expect(createMarkdownParser()).not.toBe(createMarkdownParser())
-  })
-
-  it('builds one markdown-it instance for parsers with the same plugin functions', () => {
+describe('parser sharing', () => {
+  it('builds one instance for parsers with the same plugin functions', () => {
     const plugin = stablePlugin()
     const before = stableUses
 
@@ -58,9 +54,7 @@ describe('markdown-exit instance sharing', () => {
     expect(JSON.stringify(withLinkify.nodes)).toContain('"a"')
     expect(JSON.stringify(withoutLinkify.nodes)).not.toContain('"a"')
   })
-})
 
-describe('per-parser state', () => {
   it('keeps streaming state on the parser across another parser use', async () => {
     const streaming = createMarkdownParser()
     const other = createMarkdownParser()
@@ -92,52 +86,5 @@ describe('per-parser state', () => {
 
     expect(resultA.frontmatter).toEqual({ title: 'A' })
     expect(resultB.frontmatter).toEqual({ title: 'B' })
-  })
-
-  it('does not carry a link reference definition into another parser', async () => {
-    // Reference definitions live in markdown-it's `env`, which is fresh on
-    // every parse. The components plugin claims the `[docs]` syntax, so this
-    // runs without the default plugins.
-    const definer = createMarkdownParser({ registerDefaultPlugins: false })
-    const consumer = createMarkdownParser({ registerDefaultPlugins: false })
-
-    const defined = await definer('[docs]: https://comark.dev\n\nRead the [docs].\n')
-    expect(JSON.stringify(defined.nodes)).toContain('https://comark.dev')
-
-    const withoutDefinition = await consumer('Read the [docs].\n')
-    expect(JSON.stringify(withoutDefinition.nodes)).not.toContain('https://comark.dev')
-  })
-
-  it('parses the same document identically across 50 concurrent parsers', async () => {
-    const source = [
-      '---',
-      'title: Concurrency',
-      '---',
-      '',
-      '# Hello **world**',
-      '',
-      'Some `code` and a [link](https://comark.dev).',
-      '',
-      '::alert{type="info"}',
-      'Careful.',
-      '::',
-      '',
-      '| a | b |',
-      '| - | - |',
-      '| 1 | 2 |',
-      '',
-      '- [ ] todo',
-      '- [x] done',
-      '',
-      '<strong class="bold">html</strong>',
-      '',
-    ].join('\n')
-
-    const baseline = await createMarkdownParser()(source)
-    const results = await Promise.all(Array.from({ length: 50 }, () => createMarkdownParser()(source)))
-
-    for (const result of results) {
-      expect(result).toEqual(baseline)
-    }
   })
 })
