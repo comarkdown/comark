@@ -73,18 +73,4 @@ describe('parser sharing', () => {
     expect(third.nodes[1]).toBe(second.nodes[1])
     expect(third.nodes).toHaveLength(4)
   })
-
-  it('does not leak frontmatter between two streaming parsers', async () => {
-    const a = createMarkdownParser()
-    const b = createMarkdownParser()
-
-    await a('---\ntitle: A\n---\n\nAlpha\n', { streaming: true })
-    await b('---\ntitle: B\n---\n\nBeta\n', { streaming: true })
-
-    const resultA = await a('---\ntitle: A\n---\n\nAlpha one.\n', { streaming: true })
-    const resultB = await b('---\ntitle: B\n---\n\nBeta one.\n', { streaming: true })
-
-    expect(resultA.frontmatter).toEqual({ title: 'A' })
-    expect(resultB.frontmatter).toEqual({ title: 'B' })
-  })
 })

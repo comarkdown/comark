@@ -109,19 +109,15 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
   }
 
   const linkify = options.linkify ?? true
-  const key = mdPlugins.reduce((acc, fn) => {
-    if (!pluginIds.has(fn)) {
-      pluginIds.set(fn, nextPluginId++)
-    }
-    return `${acc},${pluginIds.get(fn)}`
-  }, String(linkify))
+  const key = [
+    linkify,
+    ...mdPlugins.map((fn) => pluginIds.get(fn) ?? (pluginIds.set(fn, nextPluginId), nextPluginId++)),
+  ].join(',')
 
   let parser = sharedParsers.get(key)
   if (!parser) {
     parser = new MarkdownExit({ linkify }).enable(['table', 'strikethrough'])
-    for (const fn of mdPlugins) {
-      parser.use(fn)
-    }
+    for (const fn of mdPlugins) parser.use(fn)
     sharedParsers.set(key, parser)
   }
 
