@@ -65,7 +65,6 @@ const descriptionClass = computed(() => {
     target="_blank"
     :icon="isShowcase ? undefined : icon"
     :variant="isFeature ? 'subtle' : 'soft'"
-    :spotlight="isFeature"
     :class="
       isFeature
         ? 'ecosystem-card group transition duration-200 hover:bg-default hover:ring-(--eco-ring) hover:shadow-[0_12px_32px_-20px_var(--eco-glow)]'
