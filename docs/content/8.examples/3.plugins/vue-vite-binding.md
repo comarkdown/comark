@@ -14,6 +14,9 @@ defaultValue: src/App.vue
 ---
 ::
 
+::browser{src="https://comark-binding.vercel.app"}
+::
+
 ## Features
 
 This example demonstrates the Comark `binding` plugin in a Vue + Vite app:

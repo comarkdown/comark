@@ -66,6 +66,31 @@ describe('nested component with a run of blank lines between siblings', () => {
   })
 
   describe('template slot (`#slotname`)', () => {
+    it('keeps slot-like text outside components and inside code fences', async () => {
+      const tree = await parseMarkdown('Before\n#else\n\n::box\n```md\n#else\n```\n::')
+      expect(tree.nodes[0]).toEqual(['p', {}, 'Before\n#else'])
+      expect(JSON.stringify(tree.nodes[1])).not.toContain('"template"')
+      expect(JSON.stringify(tree.nodes[1])).toContain('#else')
+    })
+
+    it('allows slot markers to interrupt paragraphs in nested components', async () => {
+      const tree = await parseMarkdown(
+        '::if{:value="data.isHappy"}\nHappy\n#else\n:::if{:value="data.isFine"}\nFine\n#else\nNeither\n:::\n::'
+      )
+      expect(tree.nodes).toEqual([
+        [
+          'if',
+          { ':value': 'data.isHappy' },
+          ['p', {}, 'Happy'],
+          [
+            'template',
+            { name: 'else' },
+            ['if', { ':value': 'data.isFine' }, ['p', {}, 'Fine'], ['template', { name: 'else' }, 'Neither']],
+          ],
+        ],
+      ])
+    })
+
     const build = (blanks: number) =>
       `::outer\n  #title\n  Hello\n  ::childA\n  ::\n${'\n'.repeat(blanks)}  ::childB\n  ::\n::`
 

@@ -1,6 +1,6 @@
 ---
 title: Binding
-description: "Comark plugin that adds a `{{ path || default }}` inline shorthand for interpolating frontmatter, meta, or runtime data into your content."
+description: "Interpolate data with `{{ path || default }}` and conditionally render content with `::if`."
 navigation:
   icon: i-lucide-replace
 seo:
@@ -18,9 +18,9 @@ links:
     variant: soft
 ---
 
-The `comark/plugins/binding` plugin adds a `{{ path || default }}` inline shorthand for interpolating values from frontmatter, the renderer's `data` prop, the tree's `meta`, or a parent component's `props` directly into your markdown.
+The `comark/plugins/binding` module lets you interpolate values with `{{ path || default }}` and conditionally render content with `::if`. Values can come from frontmatter, the renderer's `data` prop, the tree's `meta`, or a parent component's `props`.
 
-Under the hood it emits a `binding` component node whose `:value` attribute points at a dot-path. The [data binding](/syntax/components#data-binding) layer resolves that path against the ambient render context, so bindings work seamlessly across HTML, ANSI, React, Svelte, and Vue, and round-trip back to their source form via `renderMarkdown`.
+The `binding()` parser plugin emits a `binding` component node whose `:value` attribute points at a dot-path. The [data binding](/syntax/components#data-binding) layer resolves that path against the ambient render context, so bindings work across HTML, ANSI, Vue, React, Svelte, Angular, and Nuxt, and round-trip back to their source form via `renderMarkdown`.
 
 ## Basic usage
 
@@ -162,7 +162,97 @@ Welcome, {{ frontmatter.user.name || guest }}.`
 
 ::
 
-### Markdown round-trip
+## Conditional content
+
+Register the renderer-specific `If` export to render a block only when its resolved props pass. The `::if` syntax uses Comark's default component parser and data-binding layer, so it doesn't require the `binding()` parser plugin unless the same document also uses `{{ … }}` interpolation.
+
+```typescript [render.ts]
+import { renderHtml } from '@comark/html'
+import { If } from '@comark/html/plugins/binding'
+
+const html = await renderHtml(markdown, {
+  components: { If },
+  data: {
+    user: { role: 'member' },
+    age: 42,
+  },
+})
+```
+
+Use `value` by itself for a truthy check:
+
+```mdc
+::if{:value="data.user"}
+You are signed in.
+::
+```
+
+Combine `value` with one or more comparison props. Every supplied comparison must pass:
+
+```mdc
+::if{:value="data.user.role" neq="guest"}
+This content is available to members.
+::
+
+::if{:value="data.age" :gte="18" :lt="65" as="section"}
+This content is wrapped in a section.
+::
+```
+
+| Prop        | Behavior                                                    |
+| ----------- | ----------------------------------------------------------- |
+| `value`     | Checked for truthiness when no comparison props are present |
+| `eq`        | Requires strict equality                                    |
+| `neq`       | Requires strict inequality                                  |
+| `gt`        | Requires `value` to be greater than the comparison value    |
+| `gte`       | Requires `value` to be greater than or equal to the value    |
+| `lt`        | Requires `value` to be less than the comparison value       |
+| `lte`       | Requires `value` to be less than or equal to the value       |
+| `as`        | Wraps visible content in an allowlisted semantic HTML element |
+
+A comparison never passes when `value` or its comparison value resolves to `undefined`. Use `:` on numeric, boolean, or other JSON values so Comark preserves their type. For example, `:eq="false"` compares against the boolean `false`, while `eq="false"` compares against the string `"false"`.
+
+The `as` prop accepts `div`, `span`, `p`, `section`, `article`, `aside`, `header`, `footer`, `main`, or `nav`. ANSI output validates the prop but renders no wrapper.
+
+To require checks on different values, nest `If` blocks:
+
+```mdc
+::if{:value="data.isLoggedIn"}
+:::if{:value="data.age" :gte="18"}
+Adult member content.
+:::
+::
+```
+
+### Else branches
+
+Use the `#else` slot to show fallback content when the condition or any comparison fails. No blank line is required before `#else`:
+
+```mdc
+::if{:value="data.isHappy"}
+I am happy.
+#else
+I am NOT happy.
+::
+```
+
+Nest another `If` in the else slot to check a second condition:
+
+```mdc
+::if{:value="data.isHappy"}
+I am happy.
+#else
+:::if{:value="data.isFine"}
+I am fine.
+#else
+I am NOT fine and NOT happy.
+:::
+::
+```
+
+Each `#else` belongs to its enclosing component. Only the selected branch renders, and `as` wraps whichever branch is selected. Without an else slot, a failed condition produces no output. This works with all renderer-specific `If` exports.
+
+## Markdown round-trip
 
 When you re-serialize the AST with `renderMarkdown`, you can pass the core `Binding` handler to preserve the original `{{ … }}` shorthand:
 
@@ -255,6 +345,41 @@ import { Binding } from '@comark/svelte/plugins/binding'
 
 // Vue
 import { Binding } from '@comark/vue/plugins/binding'
+
+// Angular
+import { Binding } from '@comark/angular/plugins/binding'
+
+// Nuxt (Vue implementation)
+import { Binding } from '@comark/nuxt/plugins/binding'
+```
+
+### `If`
+
+Every renderer-specific binding entry point exports an `If` adapter. Register it under `components` to enable `::if` blocks:
+
+```typescript
+import { If } from '@comark/html/plugins/binding'
+
+const components = { If }
+```
+
+Replace `html` with `ansi`, `vue`, `react`, `svelte`, `angular`, or `nuxt` for the corresponding renderer. Hidden Angular branches are structural: their descendants aren't instantiated.
+
+See [Conditional content](#conditional-content) for Markdown examples of truthiness checks, comparisons, wrappers, and nested `#else` branches.
+
+The core entry point also exports the shared `IfProps`, `IfComparisonOperator`, and `IfWrapperTag` types, plus helpers for custom renderer adapters:
+
+- `shouldRenderIf(props)` checks the resolved `value` for truthiness or evaluates the supplied comparisons.
+- `selectIfBranch(children, matches)` selects default or else AST children. It returns `undefined` when the condition fails and no else slot exists.
+- `resolveIfWrapper(value)` validates the optional wrapper tag.
+
+```typescript
+import {
+  resolveIfWrapper,
+  selectIfBranch,
+  shouldRenderIf,
+  type IfProps,
+} from 'comark/plugins/binding'
 ```
 
 ## Use cases

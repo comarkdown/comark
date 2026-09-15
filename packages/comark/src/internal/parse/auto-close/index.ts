@@ -324,6 +324,11 @@ function healInline(text: string, opts: HealOpts): string {
 
   let fence = false
   let inCode = false
+  // the length of the backtick run that opened the current span: only a run of
+  // the same length closes it, any other run is literal inside it
+  let codeRun = 0
+  // where that span's content starts in `out`
+  let codeStart = 0
   let inMath = false
   let inBlockMath = false
   let inLatexI = false
@@ -460,11 +465,18 @@ function healInline(text: string, opts: HealOpts): string {
 
     // Regions that protect markers
     if (inCode) {
-      out.push(ch)
-      if (ch === '`' && next !== '`' && prev !== '`') {
-        inCode = false
-        if (stack[stack.length - 1] === '`') stack.pop()
+      if (ch === '`') {
+        let n = 0
+        while (i + n < len && text[i + n] === '`') n++
+        for (let k = 0; k < n; k++) out.push('`')
+        i += n - 1
+        if (n === codeRun) {
+          inCode = false
+          if (stack[stack.length - 1] === '`') stack.pop()
+        }
+        continue
       }
+      out.push(ch)
       continue
     }
     if (inBlockMath) {
@@ -557,8 +569,11 @@ function healInline(text: string, opts: HealOpts): string {
         i += 2
         continue
       }
-      out.push(ch)
+      codeRun = next === '`' ? 2 : 1
+      for (let k = 0; k < codeRun; k++) out.push('`')
+      i += codeRun - 1
       inCode = true
+      codeStart = out.length
       stack.push('`')
       continue
     }
@@ -760,9 +775,9 @@ function healInline(text: string, opts: HealOpts): string {
   // SPEC: `**bold with `code` → `**bold with `code**``
   // Markers that opened *before* the code span must close inside it.
   if (inCode) {
-    const lastBq = result.lastIndexOf('`')
-    const afterBq = lastBq >= 0 ? result.slice(lastBq + 1) : ''
-    if (afterBq.length > 0) {
+    // the span's content, less a trailing backtick run that is not a closer
+    const content = result.slice(codeStart).replace(/`+$/, '')
+    if (content.length > 0) {
       // Markers still on stack before the open ` need closing inside the span.
       // Open order is outer→inner left-to-right; close reverse order after content.
       let codeIdx = -1
@@ -780,7 +795,13 @@ function healInline(text: string, opts: HealOpts): string {
         const m = stack[si]
         if (m === '**' || m === '*' || m === '__' || m === '_' || m === '~~' || m === '***') inner += m
       }
-      return result + inner + '`'
+      // A trailing backtick run merges with the closer, so only what that run
+      // still needs is added. A longer run than the opener cannot become one.
+      const base = result + inner
+      let trail = 0
+      while (trail < base.length && base[base.length - 1 - trail] === '`') trail++
+      if (trail > codeRun) return result
+      return base + '`'.repeat(codeRun - trail)
     }
     return result
   }
