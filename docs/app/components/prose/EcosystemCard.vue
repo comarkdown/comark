@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { ecosystemFacetKey } from './EcosystemBrowser.vue'
+
 const props = withDefaults(
   defineProps<{
     title: string
@@ -15,13 +17,17 @@ const props = withDefaults(
     /** Overrides the GitHub destination with a deeper link (a PR or issue) instead of the repo root. */
     to?: string
     badge?: string
-    /** Feature: raised on hover (Official). Compact: flat, dense grid (packages). Showcase: raised, full image, no footer (Built with Comark). */
-    variant?: 'feature' | 'compact' | 'showcase'
+    /** Facet: flat, dense grid (EcosystemBrowser). Showcase: raised, full image, no footer (Built with Comark). */
+    variant?: 'facet' | 'showcase'
     /** Showcase only: a 16:9 screenshot rendered above the title. */
     image?: string
+    /** Tab this card belongs to in EcosystemBrowser (e.g. "Renderers"). Read from the slot, not rendered. */
+    type?: string
+    /** The one category this card belongs to in EcosystemBrowser's filter rail. Read from the slot, not rendered. */
+    category?: string
   }>(),
   {
-    variant: 'compact',
+    variant: 'facet',
     color: 'var(--ui-text-highlighted)',
   }
 )
@@ -42,35 +48,33 @@ const npmUrl = computed(() => (props.npm ? `https://www.npmjs.com/package/${prop
 // otherwise the repo, otherwise an external site (private repos, marketplaces).
 const primaryTo = computed(() => props.to ?? repoUrl.value ?? props.site)
 
-const isFeature = computed(() => props.variant === 'feature')
+// Only present inside EcosystemBrowser — the showcase grid renders cards with no facet context.
+const facets = inject(ecosystemFacetKey, null)
+const isHidden = computed(() => !!facets && !facets.isVisible(props.title))
+
 const isShowcase = computed(() => props.variant === 'showcase')
-const isRaised = computed(() => isFeature.value || isShowcase.value)
-const iconClass = computed(() =>
-  isFeature.value
-    ? 'mb-2 size-8 text-(--eco-color) grayscale opacity-60 transition duration-200 group-hover:grayscale-0 group-hover:opacity-100'
-    : 'size-6 text-(--eco-color)'
-)
+const iconClass = computed(() => 'size-6 text-(--eco-color)')
 const titleClass = computed(() =>
   isShowcase.value ? 'text-base font-semibold text-highlighted' : 'text-sm font-medium text-highlighted'
 )
-const descriptionClass = computed(() => {
-  if (isShowcase.value) return 'mt-1.5 text-sm leading-relaxed text-toned'
-  if (isFeature.value) return 'mt-1 text-sm leading-relaxed text-toned'
-  return 'mt-1 text-sm leading-relaxed line-clamp-2 text-muted'
-})
+const descriptionClass = computed(() =>
+  isShowcase.value
+    ? 'mt-1.5 text-sm leading-relaxed text-toned'
+    : 'mt-1 text-sm leading-relaxed line-clamp-2 text-muted'
+)
 </script>
 
 <template>
   <div
     class="ecosystem-card group flex"
-    :class="{ 'ecosystem-card--raised': isRaised }"
+    :class="{ 'ecosystem-card--raised': isShowcase, hidden: isHidden }"
     :style="{ '--eco-color': color }"
   >
     <UPageCard
       :to="primaryTo"
       target="_blank"
       :icon="isShowcase ? undefined : icon"
-      :variant="isRaised ? 'subtle' : 'soft'"
+      :variant="isShowcase ? 'subtle' : 'soft'"
       class="flex-1"
       :ui="{
         header: 'relative overflow-hidden rounded-md aspect-video mb-4',
