@@ -3,9 +3,10 @@ import { parseMarkdown } from '../../src/index'
 import { renderMarkdown } from '../../src/render'
 import type { ElementNode, Node } from '../../src/types'
 import shiki from '../../src/plugins/shiki'
+import type { ShikiOptions } from '../../src/plugins/shiki'
 
-async function inlineCode(source: string): Promise<ElementNode> {
-  const document = await parseMarkdown(source, { plugins: [shiki()] })
+async function inlineCode(source: string, options: ShikiOptions = {}): Promise<ElementNode> {
+  const document = await parseMarkdown(source, { plugins: [shiki(options)] })
   return (document.nodes[0] as ElementNode)[2] as ElementNode
 }
 
@@ -22,6 +23,25 @@ describe('shiki inline code', () => {
 
     expect(String((code[1] as Record<string, unknown>).class)).toMatch(/^shiki /)
     expect(styles(code).some(Boolean)).toBe(true)
+  })
+
+  it('accepts language as well as lang', async () => {
+    const withLanguage = await inlineCode('`const a = 1`{language="ts"}')
+    const withLang = await inlineCode('`const a = 1`{lang="ts"}')
+
+    expect(String((withLanguage[1] as Record<string, unknown>).class)).toMatch(/^shiki /)
+    expect(styles(withLanguage)).toEqual(styles(withLang))
+  })
+
+  it('leaves inline code alone when inlineCode is false but still highlights fences', async () => {
+    const document = await parseMarkdown('`const a = 1`{lang="ts"}\n\n```ts\nconst b = 2\n```', {
+      plugins: [shiki({ inlineCode: false })],
+    })
+    const code = (document.nodes[0] as ElementNode)[2] as ElementNode
+    const pre = document.nodes[1] as ElementNode
+
+    expect(code).toEqual(['code', { lang: 'ts' }, 'const a = 1'])
+    expect(String((pre[1] as Record<string, unknown>).class)).toMatch(/^shiki /)
   })
 
   it('tokenizes ts-type as a type expression, not a statement', async () => {

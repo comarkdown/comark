@@ -509,6 +509,9 @@ export async function highlightCodeBlocks(
     replaceAt(path, newPreNode)
   }
 
+  // `getLoadedLanguages()` includes alias names, so a registered alias resolves.
+  const loadedLangs = inlineCodes.length > 0 ? new Set(hl.getLoadedLanguages()) : new Set<string>()
+
   for (let i = 0; i < inlineCodes.length; i++) {
     const { node, path } = inlineCodes[i]
     const el = node as ElementNode
@@ -516,29 +519,26 @@ export async function highlightCodeBlocks(
     const code = el[2] as string
     const written = inlineCodeLanguage(attrs) as string
     const context = GRAMMAR_CONTEXTS.get(written)
+    const lang = context?.lang ?? written
 
-    let spans: Node[]
-    let classStr: string
-    try {
-      const result = codeToTokens(hl, code, {
-        lang: context?.lang ?? written,
-        grammarContextCode: context?.grammarContextCode,
-        themes: themeOptions,
-      })
-      spans = []
-      for (let li = 0; li < result.tokens.length; li++) {
-        if (li > 0) spans.push('\n')
-        for (const span of tokensToSpans(result.tokens[li])) spans.push(span)
-      }
-      if (spans.length === 0) spans = [code]
-      classStr = `shiki ${result.themeName || ''}${darkClassSuffix}`
-    } catch {
-      // Shiki throws on a grammar it has not loaded. Unlike a `<pre>`, an
-      // inline `<code>` is not unambiguously code, since `lang` is a real HTML
-      // attribute for natural language. Leave `` `Bonjour`{lang="fr"} `` exactly
-      // as it was authored rather than tagging it `.shiki`.
-      continue
+    // Unlike a `<pre>`, an inline `<code>` is not unambiguously code, since
+    // `lang` is a real HTML attribute for natural language. Leave
+    // `` `Bonjour`{lang="fr"} `` exactly as it was authored rather than tagging
+    // it `.shiki`. Any other shiki failure is a real one and must surface.
+    if (!loadedLangs.has(lang)) continue
+
+    const result = codeToTokens(hl, code, {
+      lang,
+      grammarContextCode: context?.grammarContextCode,
+      themes: themeOptions,
+    })
+    const spans: Node[] = []
+    for (let li = 0; li < result.tokens.length; li++) {
+      if (li > 0) spans.push('\n')
+      for (const span of tokensToSpans(result.tokens[li])) spans.push(span)
     }
+    if (spans.length === 0) spans.push(code)
+    const classStr = `shiki ${result.themeName || ''}${darkClassSuffix}`
 
     const userClass = typeof attrs.class === 'string' ? attrs.class.trim() : ''
     // eslint-disable-next-line unicorn/no-new-array -- pre-allocated for perf
