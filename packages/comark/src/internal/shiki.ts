@@ -391,6 +391,7 @@ export async function highlightCodeBlocks(
     }
     current[path[path.length - 1] + 2] = replacement
   }
+
   for (let i = 0; i < codeBlocks.length; i++) {
     const { node, path } = codeBlocks[i]
     const code = (node[2] as any)[2] as string
@@ -533,9 +534,9 @@ export async function highlightCodeBlocks(
       classStr = `shiki ${result.themeName || ''}${darkClassSuffix}`
     } catch {
       // Shiki throws on a grammar it has not loaded. Unlike a `<pre>`, an
-      // inline `<code>` is not unambiguously code — `lang` is a real HTML
-      // attribute for natural language — so leave `` `Bonjour`{lang="fr"} ``
-      // exactly as it was authored rather than tagging it `.shiki`.
+      // inline `<code>` is not unambiguously code, since `lang` is a real HTML
+      // attribute for natural language. Leave `` `Bonjour`{lang="fr"} `` exactly
+      // as it was authored rather than tagging it `.shiki`.
       continue
     }
 
