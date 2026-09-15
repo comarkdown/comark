@@ -15,7 +15,7 @@ const props = withDefaults(
     /** Overrides the GitHub destination with a deeper link (a PR or issue) instead of the repo root. */
     to?: string
     badge?: string
-    /** Feature: larger card with a hover glow (Official). Compact: dense grid (packages). Showcase: full image, no footer (Built with Comark). */
+    /** Feature: raised on hover (Official). Compact: flat, dense grid (packages). Showcase: raised, full image, no footer (Built with Comark). */
     variant?: 'feature' | 'compact' | 'showcase'
     /** Showcase only: a 16:9 screenshot rendered above the title. */
     image?: string
@@ -44,6 +44,7 @@ const primaryTo = computed(() => props.to ?? repoUrl.value ?? props.site)
 
 const isFeature = computed(() => props.variant === 'feature')
 const isShowcase = computed(() => props.variant === 'showcase')
+const isRaised = computed(() => isFeature.value || isShowcase.value)
 const iconClass = computed(() =>
   isFeature.value
     ? 'mb-2 size-8 text-(--eco-color) grayscale opacity-60 transition duration-200 group-hover:grayscale-0 group-hover:opacity-100'
@@ -60,116 +61,131 @@ const descriptionClass = computed(() => {
 </script>
 
 <template>
-  <UPageCard
-    :to="primaryTo"
-    target="_blank"
-    :icon="isShowcase ? undefined : icon"
-    :variant="isFeature ? 'subtle' : 'soft'"
-    :class="
-      isFeature
-        ? 'ecosystem-card group transition duration-200 hover:bg-default hover:ring-(--eco-ring) hover:shadow-[0_12px_32px_-20px_var(--eco-glow)]'
-        : 'ecosystem-card'
-    "
-    :ui="{
-      header: 'relative overflow-hidden rounded-md aspect-video mb-4',
-      leadingIcon: iconClass,
-      title: titleClass,
-      description: descriptionClass,
-      footer: 'pt-3 mt-3 flex items-center justify-between gap-2 relative z-1',
-    }"
+  <div
+    class="ecosystem-card group flex"
+    :class="{ 'ecosystem-card--raised': isRaised }"
+    :style="{ '--eco-color': color }"
   >
-    <template
-      v-if="isShowcase"
-      #header
+    <UPageCard
+      :to="primaryTo"
+      target="_blank"
+      :icon="isShowcase ? undefined : icon"
+      :variant="isRaised ? 'subtle' : 'soft'"
+      class="flex-1"
+      :ui="{
+        header: 'relative overflow-hidden rounded-md aspect-video mb-4',
+        leadingIcon: iconClass,
+        title: titleClass,
+        description: descriptionClass,
+        footer: 'pt-3 mt-3 flex items-center justify-between gap-2 relative z-1',
+      }"
     >
-      <img
-        :src="image"
-        :alt="`${title} screenshot`"
-        width="960"
-        height="540"
-        loading="lazy"
-        class="w-full h-full object-cover object-top"
-      />
-    </template>
-
-    <template #title>
-      <span class="inline-flex items-center gap-2">
-        {{ title }}
-        <UBadge
-          v-if="badge"
-          :label="badge"
-          :color="badgeColor"
-          variant="subtle"
-          size="sm"
-        />
-      </span>
-    </template>
-
-    <template #description>
-      <slot />
-    </template>
-
-    <template #footer>
-      <ULink
-        v-if="author"
-        :to="authorUrl"
-        target="_blank"
-        raw
-        class="relative z-1 inline-flex items-center gap-1.5 text-xs text-muted hover:text-highlighted"
+      <template
+        v-if="isShowcase"
+        #header
       >
-        <UAvatar
-          :src="avatarUrl"
-          :alt="`${author} on GitHub`"
-          size="3xs"
+        <img
+          :src="image"
+          :alt="`${title} screenshot`"
+          width="960"
+          height="540"
+          loading="lazy"
+          class="w-full h-full object-cover object-top"
         />
-        {{ author }}
-      </ULink>
-      <span
-        v-else
-        class="relative z-1 text-xs text-muted"
-        >{{ siteLabel }}</span
-      >
+      </template>
 
-      <span class="relative z-1 flex items-center gap-0.5">
-        <UButton
-          v-if="repo"
-          icon="i-simple-icons-github"
-          :to="repoUrl"
+      <template #title>
+        <span class="inline-flex items-center gap-2">
+          {{ title }}
+          <UBadge
+            v-if="badge"
+            :label="badge"
+            :color="badgeColor"
+            variant="subtle"
+            size="sm"
+          />
+        </span>
+      </template>
+
+      <template #description>
+        <slot />
+      </template>
+
+      <template #footer>
+        <ULink
+          v-if="author"
+          :to="authorUrl"
           target="_blank"
-          size="xs"
-          variant="ghost"
-          color="neutral"
-          :aria-label="`${title} on GitHub`"
-        />
-        <UButton
-          v-if="npm"
-          icon="i-simple-icons-npm"
-          :to="npmUrl"
-          target="_blank"
-          size="xs"
-          variant="ghost"
-          color="neutral"
-          :aria-label="`${title} on npm`"
-        />
-        <UButton
-          v-if="site && repo"
-          icon="i-lucide-external-link"
-          :to="site"
-          target="_blank"
-          size="xs"
-          variant="ghost"
-          color="neutral"
-          :aria-label="`${title} site`"
-        />
-      </span>
-    </template>
-  </UPageCard>
+          raw
+          class="relative z-1 inline-flex items-center gap-1.5 text-xs text-muted hover:text-highlighted"
+        >
+          <UAvatar
+            :src="avatarUrl"
+            :alt="`${author} on GitHub`"
+            size="3xs"
+          />
+          {{ author }}
+        </ULink>
+        <span
+          v-else
+          class="relative z-1 text-xs text-muted"
+          >{{ siteLabel }}</span
+        >
+
+        <span class="relative z-1 flex items-center gap-0.5">
+          <UButton
+            v-if="repo"
+            icon="i-simple-icons-github"
+            :to="repoUrl"
+            target="_blank"
+            size="xs"
+            variant="ghost"
+            color="neutral"
+            :aria-label="`${title} on GitHub`"
+          />
+          <UButton
+            v-if="npm"
+            icon="i-simple-icons-npm"
+            :to="npmUrl"
+            target="_blank"
+            size="xs"
+            variant="ghost"
+            color="neutral"
+            :aria-label="`${title} on npm`"
+          />
+          <UButton
+            v-if="site && repo"
+            icon="i-lucide-external-link"
+            :to="site"
+            target="_blank"
+            size="xs"
+            variant="ghost"
+            color="neutral"
+            :aria-label="`${title} site`"
+          />
+        </span>
+      </template>
+    </UPageCard>
+  </div>
 </template>
 
 <style scoped>
 .ecosystem-card {
-  --eco-color: v-bind(color);
-  --eco-ring: color-mix(in oklab, var(--eco-color) 50%, var(--ui-border));
   --eco-glow: color-mix(in oklab, var(--eco-color) 40%, transparent);
+}
+
+/* Owns the hover visuals directly: SFC styles are unlayered and always beat UPageCard's
+   `@layer utilities` classes (hover:bg-elevated, hover:ring-accented), whatever the specificity. */
+.ecosystem-card--raised > :deep(*) {
+  transition:
+    background-color 0.2s,
+    box-shadow 0.2s;
+}
+
+.ecosystem-card--raised:hover > :deep(*) {
+  background-color: var(--ui-bg);
+  box-shadow:
+    0 0 0 2px var(--eco-color),
+    0 12px 32px -20px var(--eco-glow);
 }
 </style>
