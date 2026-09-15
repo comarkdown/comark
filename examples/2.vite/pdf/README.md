@@ -1,6 +1,6 @@
 ---
 title: PDF Preview
-description: A live markdown editor that renders Comark content to PDF bytes via jasy, with invoice, fillable form, and product label examples.
+description: A live markdown editor that renders Comark markdown to PDF bytes via jasy — invoice, fillable form, and product label samples included.
 navigation:
   icon: i-lucide-file-text
 category: Vite
@@ -14,62 +14,46 @@ import { createPdfRenderer } from '@comark/pdf'
 import { mount } from '@comark/pdf/preview'
 import { examples } from './examples'
 
+const example = examples[0]
 const renderPdf = createPdfRenderer({
-  plugins: examples[0].plugins,
-  components: examples[0].components,
+  plugins: example.plugins,
+  components: example.components,
 })
 
-const bytes = await renderPdf(examples[0].markdown)
+const bytes = await renderPdf(example.markdown)
 mount(document.getElementById('preview')!, bytes)
 ```
 
-```ts [src/examples/invoice.ts]
-import { Column, Table, Text, … } from '@jasy/pdf'
-import type { JasyComponentFn } from '@comark/pdf'
-
-export const Invoice: JasyComponentFn = () =>
-  Column({ gap: 0 }, [
-    // billed-to, line-item table, totals…
-  ])
+```md [src/examples/invoice.ts]
+<!-- invoice body is a markdown string: headings + GFM table + frontmatter pdf: -->
+# Muster Studio
+## Line items
+| QTY | DESCRIPTION | UNIT | AMOUNT |
+| ... | ... | ... | ... |
 ```
 
-```html [index.html]
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Comark PDF</title>
-    <link rel="stylesheet" href="/src/style.css" />
-  </head>
-  <body>
-    <div id="app">
-      <div id="editor-pane">
-        <div class="pane-header">
-          <span>Markdown</span>
-          <div id="example-tabs" class="example-tabs"></div>
-        </div>
-        <textarea id="input" spellcheck="false"></textarea>
-      </div>
-      <div id="preview-pane">
-        <div class="pane-header">
-          <span>PDF Preview</span>
-          <span id="page-count"></span>
-        </div>
-        <div id="preview"></div>
-      </div>
-    </div>
-    <script type="module" src="/src/main.ts"></script>
-  </body>
-</html>
+```md [src/examples/product-label.ts]
+---
+pdf:
+  width: 50mm
+  height: 65mm
+---
+
+**Ethiopia Yirgacheffe**
+
+::barcode{code="4 006381 332149"}
+::
 ```
 
 ::
 
-This example shows a split-pane live preview: write Comark markdown on the left and see PDF bytes mounted on the right via `createPdfRenderer` and `mount`. Use the tabs to switch between:
+This example shows a split-pane live preview: write Comark markdown on the left and see PDF bytes mounted on the right via `createPdfRenderer` and `mount`.
 
-- **Markdown** — headings, lists, tables, math, and `::page-break`
-- **Invoice** — multi-page commercial invoice with a repeating footer (from [jasy showroom](https://jasy.dev/showroom))
-- **Fillable form** — AcroForm fields (`TextField`, `Checkbox`, `RadioGroup`, …) via a custom `JasyComponentFn`
-- **Product label** — custom `50mm × 65mm` page via frontmatter `pdf.width` / `pdf.height`
+Tabs:
+
+- **Markdown** — headings, lists, tables, math, `::page-break`
+- **Invoice** — pure markdown (GFM table + frontmatter). No custom jasy tree.
+- **Fillable form** — markdown copy + thin `::text-field` / `::checkbox` / … bridges (AcroForm has no markdown syntax)
+- **Product label** — markdown body + thin `::barcode` for the bar graphics only
 
 Frontmatter `pdf:` options control page size, margins, headers, and footers.
