@@ -9,6 +9,7 @@ import {
   type OnDestroy,
 } from '@angular/core'
 import type { ElementNode, Node, MarkdownDocument as MarkdownDocumentType, NodeRenderData } from 'comark'
+import { resolveTemplates } from 'comark/render'
 import { MarkdownNode } from './markdown-node.component.ts'
 import { findLastTextNodeAndAppendNode, getCaret } from '../utils/caret.ts'
 
@@ -94,7 +95,7 @@ export class MarkdownDocument implements OnInit, OnDestroy {
   }
 
   get renderedNodes(): Node[] {
-    const nodes = [...(this.activeDocument.nodes || [])]
+    const nodes = [...resolveTemplates(this.activeDocument, this.data).nodes]
     const caretNode = getCaret(this.caret)
 
     if (this.streaming && caretNode && nodes.length > 0) {

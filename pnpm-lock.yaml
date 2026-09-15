@@ -947,6 +947,31 @@ importers:
         specifier: 'catalog:'
         version: 3.3.7(typescript@6.0.3)
 
+  examples/3.plugins/vue-vite-template:
+    dependencies:
+      '@comark/vue':
+        specifier: workspace:*
+        version: link:../../../packages/comark-vue
+      comark:
+        specifier: workspace:*
+        version: link:../../../packages/comark
+      vue:
+        specifier: 'catalog:'
+        version: 3.5.41(typescript@6.0.3)
+    devDependencies:
+      '@vitejs/plugin-vue':
+        specifier: 'catalog:'
+        version: 6.0.7(vite@8.1.4(@types/node@26.2.0)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.99.0)(terser@5.49.0)(tsx@4.23.0)(yaml@2.9.0))(vue@3.5.41(typescript@6.0.3))
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
+      vite:
+        specifier: 'catalog:'
+        version: 8.1.4(@types/node@26.2.0)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.99.0)(terser@5.49.0)(tsx@4.23.0)(yaml@2.9.0)
+      vue-tsc:
+        specifier: 'catalog:'
+        version: 3.3.7(typescript@6.0.3)
+
   examples/3.plugins/vue-vite-footnotes:
     dependencies:
       '@comark/vue':
@@ -1361,8 +1386,8 @@ importers:
   packages/comark-nuxt:
     dependencies:
       '@comark/vue':
-        specifier: 'catalog:'
-        version: 0.7.0(beautiful-mermaid@1.1.3)(katex@0.17.0)(rangi@2.2.0)(shiki@4.3.1)(vue@3.5.41(typescript@6.0.3))
+        specifier: workspace:*
+        version: link:../comark-vue
       '@nuxt/kit':
         specifier: 'catalog:'
         version: 4.4.8(magicast@0.5.4)

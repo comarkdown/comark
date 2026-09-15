@@ -20,6 +20,7 @@ Supports custom component mappings and a streaming caret indicator.
 -->
 <script lang="ts">
   import { untrack } from 'svelte'
+  import { resolveTemplates } from 'comark/render'
   import type { MarkdownDocument as MarkdownDocumentType, ComponentManifest } from 'comark'
   import type { ComponentResolver } from '../types.js'
   import MarkdownNode from './MarkdownNode.svelte'
@@ -60,7 +61,7 @@ Supports custom component mappings and a streaming caret indicator.
     return () => cleanup(true)
   })
 
-  let activeDocument = $derived(liveDocument ?? document)
+  let activeDocument = $derived(resolveTemplates(liveDocument ?? document, data))
 
   let caretClass = $derived(
     streaming && caretProp

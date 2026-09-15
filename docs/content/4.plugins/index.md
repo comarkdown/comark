@@ -75,6 +75,10 @@ See the [`registerDefaultPlugins` and `plugins` options](/reference/parse#option
 Optional plugins you register via `plugins: [...]`.
 
 ::card-group{cols="2"}
+  ::card{icon="i-lucide-git-branch" title="Template" to="/plugins/built-in/template"}
+  Jinja-style conditions, loops, and expressions with scoped runtime data
+  ::
+
   ::card{icon="i-lucide-replace" title="Binding" to="/plugins/built-in/binding"}
   Interpolate frontmatter, runtime data, or parent props with `{{ path || default }}` shorthand
   ::

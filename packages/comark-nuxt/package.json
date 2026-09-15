@@ -49,7 +49,7 @@
     "release": "release-it"
   },
   "dependencies": {
-    "@comark/vue": "catalog:",
+    "@comark/vue": "workspace:*",
     "@nuxt/kit": "catalog:",
     "comark": "workspace:*"
   },

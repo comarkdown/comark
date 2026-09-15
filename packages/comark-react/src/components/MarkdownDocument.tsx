@@ -6,6 +6,7 @@ import type {
   NodeRenderData,
 } from 'comark'
 import React, { lazy, Suspense, useMemo } from 'react'
+import { resolveTemplates } from 'comark/render'
 import { pascalCase, camelCase, resolveAttributes } from 'comark/utils'
 import { findLastTextNodeAndAppendNode, getCaret } from '../utils/caret.ts'
 
@@ -343,7 +344,7 @@ export const MarkdownDocument: React.FC<MarkdownDocumentProps> = ({
 
   const renderedNodes = useMemo(() => {
     // Render all nodes from the document value
-    const nodes = [...(document.nodes || [])]
+    const nodes = [...resolveTemplates(document, data).nodes]
 
     if (streaming && caret && nodes.length > 0) {
       const hasStreamCaret = findLastTextNodeAndAppendNode(nodes[nodes.length - 1] as ElementNode, caret)

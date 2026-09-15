@@ -62,6 +62,7 @@ packages/comark/
 │   │   ├── components.ts     # Block/inline components + spans (`::name`, `:name`, `[text]`)
 │   │   ├── attributes.ts     # Inline attributes (`{props}` after tokens)
 │   │   ├── binding.ts        # Inline interpolation + shared conditional rendering rules
+│   │   ├── template.ts       # Dependency-free Jinja-style template parser; opt-in, incompatible with binding
 │   │   ├── emoji.ts          # Emoji shortcodes
 │   │   ├── shiki.ts          # Shiki with bundled default theme + language loaders (peer: shiki)
 │   │   ├── shiki/core.ts     # Shiki without default theme/language imports
@@ -82,6 +83,7 @@ packages/comark/
 │   └── internal/             # Internal implementation (not exported)
 │       ├── shiki.ts          # Shared Shiki runtime used by both entry points
 │       ├── front-matter.ts
+│       ├── template/          # Restricted expression evaluator, scoped document resolver, source serializer
 │       ├── parse/            # Parsing pipeline
 │       └── stringify/        # AST → string rendering
 ├── test/                 # Vitest test files
@@ -426,6 +428,8 @@ import attributes from 'comark/plugins/attributes'   // default via registerDefa
 import html from 'comark/plugins/html'               // default via registerDefaultPlugins
 import binding, { Binding, resolveIfWrapper, selectIfBranch, shouldRenderIf } from 'comark/plugins/binding'
 import type { IfComparisonOperator, IfProps, IfWrapperTag } from 'comark/plugins/binding'
+import template, { resolveTemplates } from 'comark/plugins/template'
+import type { TemplateOptions } from 'comark/plugins/template'
 
 // markdown-it / markdown-exit adapters (e.g. VitePress)
 import { markdownItComponents } from 'comark/plugins/components'
@@ -577,6 +581,29 @@ Key options: `linkMode: 'protocol' | 'text-only'`, `math` (default false; on in 
 Behavioral SPEC: `packages/comark/SPEC/auto-close.md` (run via `test/auto-close-spec.test.ts`).
 
 ## Markdown Document Model
+
+### Template Documents
+
+The opt-in `template()` plugin parses Jinja-style `{% if/elif/else/endif %}`,
+`{% for/else/endfor %}`, and `{{ expression }}` into serializable control nodes.
+Expressions use a restricted JavaScript subset: logical operators, ternaries,
+allowlisted array/string methods, expression-only `filter`/`map` callbacks, and
+`Object.keys/values/entries/hasOwn`. Jinja operators and pipe filters are rejected.
+It sets `meta.comarkTemplate`; HTML, ANSI, Vue, React, Svelte, Angular, and Nuxt's
+Vue renderer resolve these nodes with runtime `data` before component rendering.
+`resolveTemplates(document, data, limits?)` is exported by `comark/plugins/template`
+and `comark/render`. Markdown serialization preserves controls rather than evaluating
+them. Incomplete streamed controls retain the last valid document. Do not combine
+`template()` and `binding()`; neither legacy bindings nor default parsing are changed.
+
+Implementation: `src/internal/template/` and `src/plugins/template.ts` in the core
+package. Shared cross-renderer cases live in `test/fixtures/template.ts`; each
+renderer has `test/plugin-template.test.*`. Syntax and limits are documented in
+`docs/content/4.plugins/1.built-in/template.md`. No external template dependency.
+
+Nuxt uses the workspace Vue renderer so both packages share the same implementation.
+
+### Node Types
 
 ```typescript
 type TextNode = string

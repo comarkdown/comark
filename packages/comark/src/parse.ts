@@ -128,7 +128,7 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
       // reference definitions / heading IDs stay correct. Find a way to keep
       // incremental reuse here (carry env.references + id counters into the tail
       // parse, or patch completed nodes) without scanning/reparsing the prefix.
-      if (opts.streaming && prevOutput && isStartsWithLastInput && !markdown.includes(']:')) {
+      if (opts.streaming && !hasPlugin('template') && prevOutput && isStartsWithLastInput && !markdown.includes(']:')) {
         const { remainingMarkdownStartLine, reusedNodes, remainingMarkdown } = extractReusableNodes(
           markdown,
           prevOutput
@@ -170,8 +170,8 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
         // in case of streaming, return the previous output if parsing fails
         // This is to avoid resetting the tree to an empty state on failure
         // resetting the tree will re-redner whole tree
-        if (opts.streaming && prevOutput) {
-          return prevOutput
+        if (opts.streaming && (prevOutput || (hasPlugin('template') && e instanceof SyntaxError))) {
+          return prevOutput ?? { nodes: [], frontmatter: {}, meta: {} }
         }
         throw e
       }
@@ -203,9 +203,6 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
           meta: {},
           nodes: [...state.reusableNodes, ...nodes],
         }
-        // Set last output and input for streaming mode
-        lastOutput = state.tree
-        lastInput = markdown
       } else {
         state.tree = {
           frontmatter: frontmatterData,
@@ -219,7 +216,18 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
 
       for (const plugin of plugins) {
         if (!plugin.post) continue
-        await withSpan(tracer, `comark:post:${plugin.name}`, () => plugin.post!(state as ComarkParsePostState))
+        try {
+          await withSpan(tracer, `comark:post:${plugin.name}`, () => plugin.post!(state as ComarkParsePostState))
+        } catch (error) {
+          if (opts.streaming && plugin.name === 'template' && error instanceof SyntaxError)
+            return prevOutput ?? { nodes: [], frontmatter: {}, meta: {} }
+          throw error
+        }
+      }
+
+      if (opts.streaming) {
+        lastOutput = state.tree
+        lastInput = markdown
       }
 
       return state.tree

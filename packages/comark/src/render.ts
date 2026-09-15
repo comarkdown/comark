@@ -2,6 +2,7 @@ import type { MarkdownDocument, RendererOptions, RenderMarkdownOptions } from 'c
 import { renderFrontmatter } from './internal/frontmatter.ts'
 
 import { createState, one } from './internal/stringify/state.ts'
+import { templateHandlers } from './internal/template/stringify.ts'
 
 export type { NodeHandler, State, Context, RendererOptions, RenderMarkdownOptions, NodeRenderData } from './types.ts'
 
@@ -10,6 +11,8 @@ export { renderFrontmatter } from './internal/frontmatter.ts'
 
 // Re-export attribute resolvers for custom handlers that want to honor `:prefix` bindings
 export { resolveAttributes, resolveAttribute } from './internal/stringify/attributes.ts'
+export { resolveTemplates } from './internal/template/resolve.ts'
+export type { TemplateOptions } from './internal/template/resolve.ts'
 
 /**
  * Generate a string from a Markdown document
@@ -41,6 +44,10 @@ export async function renderMarkdown(
   document: MarkdownDocument | { nodes: MarkdownDocument['nodes'] },
   options?: RenderMarkdownOptions
 ): Promise<string> {
-  const content = await render(document, { format: 'markdown/comark', ...options })
+  const content = await render(document, {
+    format: 'markdown/comark',
+    ...options,
+    components: { ...templateHandlers, ...options?.components },
+  })
   return renderFrontmatter((document as MarkdownDocument).frontmatter || {}, content, options?.frontmatterOptions)
 }
