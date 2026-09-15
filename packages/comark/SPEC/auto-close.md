@@ -183,6 +183,32 @@ Leaves finished inline code alone:
 + Text with `inline code`
 ```
 
+A span opened with two backticks closes on two, and is finished once it has them,
+whatever follows:
+
+```diff
+- ``a_b``{lang="ts"} and more
++ ``a_b``{lang="ts"} and more
+```
+
+```diff
+- ``code
++ ``code``
+```
+
+A single backtick inside such a span is literal, and a trailing run shorter than the
+opener merges with the closer:
+
+```diff
+- ``a ` b
++ ``a ` b``
+```
+
+```diff
+- ``code`
++ ``code``
+```
+
 ---
 
 ## Strikethrough

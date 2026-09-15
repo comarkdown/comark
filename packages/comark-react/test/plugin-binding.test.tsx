@@ -2,14 +2,15 @@ import { describe, expect, it } from 'vitest'
 import { renderToString } from 'react-dom/server'
 import { parseMarkdown } from 'comark'
 import { MarkdownDocument } from '../src/components/MarkdownDocument'
-import binding, { Binding } from '../src/plugins/binding'
+import binding, { Binding, If } from '../src/plugins/binding'
+import { nestedIfCases, nestedIfMarkdown } from '../../../test/fixtures/if'
 
 async function renderMarkdown(markdown: string, props: Record<string, any> = {}) {
   const tree = await parseMarkdown(markdown, { plugins: [binding()] })
   const html = renderToString(
     <MarkdownDocument
       value={tree}
-      components={{ binding: Binding }}
+      components={{ binding: Binding, If }}
       {...props}
     />
   )
@@ -43,5 +44,28 @@ Hello {{ frontmatter.user.name }}!
   it('renders empty when path is unresolved and no default is provided', async () => {
     const html = await renderMarkdown('before-{{ missing.path }}-after')
     expect(html).toContain('before--after')
+  })
+})
+
+describe('@comark/react plugins/binding — If component', () => {
+  it.each(nestedIfCases)('selects nested branches for $data', async ({ data, expected }) => {
+    const html = await renderMarkdown(nestedIfMarkdown, { data })
+    expect(html.replace(/<[^>]*>/g, '')).toBe(expected)
+    expect(html).not.toContain('<template')
+  })
+
+  it('wraps the else slot when a comparison fails', async () => {
+    const html = await renderMarkdown('::if{:value="data.age" :gte="18" as="section"}\nAdult\n#else\nMinor\n::', {
+      data: { age: 17 },
+    })
+    expect(html).toContain('<section>Minor</section>')
+    expect(html).not.toContain('Adult')
+  })
+
+  it('renders matching branches with an optional wrapper', async () => {
+    const markdown = '::if{:value="data.age" :gte="18" as="section"}\nAdult\n::'
+
+    expect(await renderMarkdown(markdown, { data: { age: 21 } })).toContain('<section>Adult</section>')
+    expect(await renderMarkdown(markdown, { data: { age: 17 } })).not.toContain('Adult')
   })
 })
