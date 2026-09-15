@@ -55,7 +55,6 @@
   },
   "devDependencies": {
     "@vue/server-renderer": "catalog:",
-    "nuxt": "catalog:",
     "vitest": "catalog:",
     "vue": "catalog:"
   },
