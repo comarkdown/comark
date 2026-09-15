@@ -1,0 +1,26 @@
+{
+  "name": "comark-vue-vite-etiket",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@comark/vue": "workspace:*",
+    "@tailwindcss/vite": "catalog:",
+    "etiket": "catalog:",
+    "tailwindcss": "catalog:",
+    "vue": "catalog:"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "catalog:",
+    "autoprefixer": "catalog:",
+    "postcss": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vue-tsc": "catalog:"
+  }
+}

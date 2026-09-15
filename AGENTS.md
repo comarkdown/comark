@@ -71,6 +71,7 @@ packages/comark/
 │   │   ├── rangi/language-comark.ts # Standalone Comark grammar for rangi
 │   │   ├── math.ts           # LaTeX math via KaTeX (peer: katex)
 │   │   ├── mermaid.ts        # Mermaid diagrams (peer: beautiful-mermaid)
+│   │   ├── etiket.ts         # Barcode/QR codes via etiket (peer: etiket)
 │   │   ├── security.ts       # XSS/security sanitization
 │   │   ├── summary.ts        # Summary extraction
 │   │   ├── task-list.ts      # GFM task lists
@@ -97,6 +98,7 @@ packages/comark/
 | `rangi` | `comark/plugins/rangi` |
 | `katex` | `comark/plugins/math` |
 | `beautiful-mermaid` | `comark/plugins/mermaid` |
+| `etiket` | `comark/plugins/etiket` |
 
 All are optional — only install what you use.
 
@@ -417,6 +419,7 @@ import rangiComarkLanguage from 'comark/plugins/rangi/language-comark'
 // import highlight from 'comark/plugins/highlight' // deprecated alias → shiki
 import math from 'comark/plugins/math'
 import mermaid from 'comark/plugins/mermaid'
+import etiket from 'comark/plugins/etiket'
 import emoji from 'comark/plugins/emoji'
 import toc from 'comark/plugins/toc'
 import alert from 'comark/plugins/alert'
@@ -454,12 +457,14 @@ import binding, { Binding, If } from '@comark/ansi/plugins/binding'
 import { Markdown, MarkdownDocument, defineMarkdownComponent } from '@comark/vue'
 import math, { Math } from '@comark/vue/plugins/math'
 import mermaid, { Mermaid } from '@comark/vue/plugins/mermaid'
+import etiket from '@comark/vue/plugins/etiket'
 import binding, { Binding, If } from '@comark/vue/plugins/binding'
 
 // React — renderer + plugin wrappers (plugin fn + React component)
 import { Markdown, MarkdownDocument, defineMarkdownComponent } from '@comark/react'
 import math, { Math } from '@comark/react/plugins/math'
 import mermaid, { Mermaid } from '@comark/react/plugins/mermaid'
+import etiket from '@comark/react/plugins/etiket'
 import binding, { Binding, If } from '@comark/react/plugins/binding'
 
 // Svelte — renderer + plugin wrappers (plugin fn + Svelte component)
