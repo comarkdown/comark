@@ -418,7 +418,7 @@ importers:
         version: link:../packages/comark
       comark-docs:
         specifier: github:comarkdown/comark-docs
-        version: https://codeload.github.com/comarkdown/comark-docs/tar.gz/12a2cc7d6e88307c56fcae64767eb0dcd4a79b5c(8dbfe6d44f6e94ec7ed1b2f7dff141e8)
+        version: https://codeload.github.com/comarkdown/comark-docs/tar.gz/05a64d327e27ac37bf1ca014e67003fd5b39bfd3(8dbfe6d44f6e94ec7ed1b2f7dff141e8)
       katex:
         specifier: 'catalog:'
         version: 0.17.0
@@ -7075,8 +7075,8 @@ packages:
     resolution: {integrity: sha512-z0nuo3PM53FwBYbxP4rNrUo1QW7jv8YO44HDYaGm2Wx4pmHsLqKdsA6CiHcSOaURze6m7my0Z0YFaLL77LtDUA==}
     hasBin: true
 
-  comark-docs@https://codeload.github.com/comarkdown/comark-docs/tar.gz/12a2cc7d6e88307c56fcae64767eb0dcd4a79b5c:
-    resolution: {gitHosted: true, tarball: https://codeload.github.com/comarkdown/comark-docs/tar.gz/12a2cc7d6e88307c56fcae64767eb0dcd4a79b5c}
+  comark-docs@https://codeload.github.com/comarkdown/comark-docs/tar.gz/05a64d327e27ac37bf1ca014e67003fd5b39bfd3:
+    resolution: {gitHosted: true, tarball: https://codeload.github.com/comarkdown/comark-docs/tar.gz/05a64d327e27ac37bf1ca014e67003fd5b39bfd3}
     version: 0.0.1
     engines: {node: ^22.19.0 || ^24.11.0 || >=26.0.0}
     peerDependencies:
@@ -18531,7 +18531,7 @@ snapshots:
       - shiki
       - uploadthing
 
-  comark-docs@https://codeload.github.com/comarkdown/comark-docs/tar.gz/12a2cc7d6e88307c56fcae64767eb0dcd4a79b5c(8dbfe6d44f6e94ec7ed1b2f7dff141e8):
+  comark-docs@https://codeload.github.com/comarkdown/comark-docs/tar.gz/05a64d327e27ac37bf1ca014e67003fd5b39bfd3(8dbfe6d44f6e94ec7ed1b2f7dff141e8):
     dependencies:
       '@ai-sdk/gateway': 4.0.64(zod@4.4.3)
       '@ai-sdk/vue': 4.0.79(vue@3.5.41(typescript@6.0.3))(zod@4.4.3)
