@@ -48,9 +48,6 @@ func main() {
           10
         ],
         "class": "shiki shiki-themes github-dark dark:github-dark",
-        "$": {
-          "class": ""
-        },
         "style": "background-color:#24292e;color:#e1e4e8"
       },
       [

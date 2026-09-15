@@ -5,9 +5,8 @@ import { textContent } from '../../../utils/index.ts'
 
 export function code(node: ElementNode, _state: State) {
   const [_, attributes] = node
-  // The shiki plugin owns the `class` of highlighted inline code and records the
-  // author's own class in `$`, so the node round-trips as `` `text`{lang=…} ``
-  // instead of leaking `.shiki.shiki-themes…`.
+  // The shiki plugin takes over the `class` of highlighted inline code, so
+  // strip its portion back off instead of echoing `.shiki` into the markdown.
   const attrs = userBlockAttrs('code', attributes as Record<string, unknown>)
   const attrsString = Object.keys(attrs).length > 0 ? comarkAttributes(attrs) : ''
   const content = textContent(node)

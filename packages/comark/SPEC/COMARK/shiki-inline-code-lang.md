@@ -12,7 +12,7 @@ options:
 ## Input
 
 ```md
-Use `Ref<HTMLInputElement | null>`{lang="ts-type"} with `<UButton />`{lang="vue-html"}.
+Use `Ref<T>`{lang="ts-type"} here.
 ```
 
 ## AST
@@ -30,10 +30,7 @@ Use `Ref<HTMLInputElement | null>`{lang="ts-type"} with `<UButton />`{lang="vue-
         "code",
         {
           "lang": "ts-type",
-          "class": "shiki shiki-themes github-dark dark:github-dark",
-          "$": {
-            "class": ""
-          }
+          "class": "shiki shiki-themes github-dark dark:github-dark"
         },
         [
           "span",
@@ -54,21 +51,7 @@ Use `Ref<HTMLInputElement | null>`{lang="ts-type"} with `<UButton />`{lang="vue-
           {
             "style": "color:#B392F0"
           },
-          "HTMLInputElement"
-        ],
-        [
-          "span",
-          {
-            "style": "color:#F97583"
-          },
-          " |"
-        ],
-        [
-          "span",
-          {
-            "style": "color:#79B8FF"
-          },
-          " null"
+          "T"
         ],
         [
           "span",
@@ -78,39 +61,7 @@ Use `Ref<HTMLInputElement | null>`{lang="ts-type"} with `<UButton />`{lang="vue-
           ">"
         ]
       ],
-      " with ",
-      [
-        "code",
-        {
-          "lang": "vue-html",
-          "class": "shiki shiki-themes github-dark dark:github-dark",
-          "$": {
-            "class": ""
-          }
-        },
-        [
-          "span",
-          {
-            "style": "color:#E1E4E8"
-          },
-          "<"
-        ],
-        [
-          "span",
-          {
-            "style": "color:#85E89D"
-          },
-          "UButton"
-        ],
-        [
-          "span",
-          {
-            "style": "color:#E1E4E8"
-          },
-          " />"
-        ]
-      ],
-      "."
+      " here."
     ]
   ]
 }
@@ -119,11 +70,11 @@ Use `Ref<HTMLInputElement | null>`{lang="ts-type"} with `<UButton />`{lang="vue-
 ## HTML
 
 ```html
-<p>Use <code lang="ts-type" class="shiki shiki-themes github-dark dark:github-dark"><span style="color:#B392F0">Ref</span><span style="color:#E1E4E8">&lt;</span><span style="color:#B392F0">HTMLInputElement</span><span style="color:#F97583"> |</span><span style="color:#79B8FF"> null</span><span style="color:#E1E4E8">&gt;</span></code> with <code lang="vue-html" class="shiki shiki-themes github-dark dark:github-dark"><span style="color:#E1E4E8">&lt;</span><span style="color:#85E89D">UButton</span><span style="color:#E1E4E8"> /&gt;</span></code>.</p>
+<p>Use <code lang="ts-type" class="shiki shiki-themes github-dark dark:github-dark"><span style="color:#B392F0">Ref</span><span style="color:#E1E4E8">&lt;</span><span style="color:#B392F0">T</span><span style="color:#E1E4E8">&gt;</span></code> here.</p>
 ```
 
 ## Markdown
 
 ```md
-Use `Ref<HTMLInputElement | null>`{lang="ts-type"} with `<UButton />`{lang="vue-html"}.
+Use `Ref<T>`{lang="ts-type"} here.
 ```

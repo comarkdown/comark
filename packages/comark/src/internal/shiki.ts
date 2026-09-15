@@ -7,32 +7,15 @@ import { codeToHast, codeToTokens, getTokenStyleObject, stringifyTokenStyle } fr
 import comarkLanguages from '../plugins/shiki/language-comark.ts'
 
 /**
- * A pseudo-language: a name authors may write in `{lang="…"}` or a fence info
- * string, mapped onto a real Shiki grammar plus optional seed source that puts
- * that grammar into the right state before the real code is tokenized.
+ * Fragment languages: a name authors write in `{lang="…"}` mapped onto a real
+ * grammar plus source that seeds the grammar state and is then discarded.
+ * Named after the `@nuxtjs/mdc` conventions so `ts-type` and `vue-html` keep
+ * working for sites migrating off it.
  */
-export interface ShikiGrammarContext {
-  /** Real Shiki grammar to tokenize with. Must be registered via `languages`. */
-  lang: string
-  /**
-   * Source prepended to the code purely to establish grammar state. It is
-   * tokenized and then discarded, so none of its tokens reach the output.
-   */
-  grammarContextCode?: string
-}
-
-/**
- * Pseudo-languages Comark ships out of the box, mirroring the `@nuxtjs/mdc`
- * conventions so `{lang="ts-type"}` and `{lang="vue-html"}` keep working for
- * sites migrating off it. Same class of opinion as the `md`/`markdown`/`comark`
- * to `mdc` and `json-render` to `json` aliases registered on the highlighter
- * (see `langAlias` below). Both target languages are in the standard entry's
- * default set, and this map is data only, so it pulls in no grammar chunk.
- */
-export const defaultGrammarContexts: Readonly<Record<string, ShikiGrammarContext>> = {
-  'ts-type': { lang: 'typescript', grammarContextCode: 'let a:' },
-  'vue-html': { lang: 'vue', grammarContextCode: '<template>' },
-}
+const GRAMMAR_CONTEXTS = new Map<string, { lang: string; grammarContextCode: string }>([
+  ['ts-type', { lang: 'typescript', grammarContextCode: 'let a:' }],
+  ['vue-html', { lang: 'vue', grammarContextCode: '<template>' }],
+])
 
 export interface ShikiCoreOptions {
   /**
@@ -63,29 +46,12 @@ export interface ShikiCoreOptions {
 
   /**
    * Whether to highlight inline code that declares a language, e.g.
-   * `` `Ref<T>`{lang="ts-type"} `` or `` `x`{language="ts"} ``. `lang` wins
-   * over `language`.
-   *
-   * Inline code uses the fast token path only: `transformers` and `preStyles`
-   * are block-only and are not applied. Inline code naming a grammar that is
-   * not registered is left exactly as authored, with no class and no spans, so
-   * a natural-language `lang="fr"` is never mistaken for code.
+   * `` `Ref<T>`{lang="ts-type"} ``. `lang` wins over `language`. Inline code
+   * uses the fast token path, so `transformers` and `preStyles` do not apply.
    *
    * @default true
    */
   inlineCode?: boolean
-
-  /**
-   * Pseudo-languages usable in `{lang="…"}` and in fence info strings, merged
-   * on top of {@link defaultGrammarContexts}. A registered grammar always wins,
-   * so a context only ever applies to a name that is not a real grammar.
-   *
-   * @example
-   * grammarContexts: {
-   *   'sql-expr': { lang: 'sql', grammarContextCode: 'select ' },
-   * }
-   */
-  grammarContexts?: Record<string, ShikiGrammarContext>
 }
 
 /**
@@ -285,9 +251,8 @@ function hastToNode(input: any): Node {
 }
 
 /**
- * Read the language an inline `<code>` declares. `lang` wins over `language`;
- * `lang` is the `@nuxtjs/mdc` convention and what authors type, `language` is
- * what the fence path already uses.
+ * Read the language an inline `<code>` declares. `lang` wins over `language`:
+ * `lang` is what authors type, `language` is what the fence path already uses.
  */
 function inlineCodeLanguage(attrs: ElementNodeAttributes): string | undefined {
   const raw = attrs?.lang ?? attrs?.language
@@ -340,54 +305,37 @@ export async function highlightCodeBlocks(
   defaultThemeLoaders: ShikiThemeLoader[] = [],
   defaultLanguageLoaders: ShikiLanguageLoader[] = []
 ): Promise<MarkdownDocument> {
-  interface CodeRef {
-    node: ElementNode
+  interface CodeBlockRef {
+    node: Node
     path: number[]
-    /** Inline `<code>` with no `<pre>` wrapper. Fast token path only. */
-    inline: boolean
   }
 
-  const codeBlocks: CodeRef[] = []
+  const codeBlocks: CodeBlockRef[] = []
+  const inlineCodes: CodeBlockRef[] = []
   const pathBuf: number[] = []
   const inlineEnabled = options.inlineCode !== false
 
-  /**
-   * Collect a node if it is highlightable. Returns true when the node owns its
-   * whole subtree, so the caller must not descend: a matched `<pre><code>`,
-   * whose own `<code>` child is a fenced block rather than inline code.
-   */
-  const collect = (node: ElementNode, path: number[]): boolean => {
-    if (node[0] === 'pre') {
-      if (Array.isArray(node[2]) && node[2][0] === 'code' && typeof node[2][2] === 'string') {
-        codeBlocks.push({ node, path: path.slice(), inline: false })
-        return true
-      }
-      return false
-    }
-    // An already-highlighted `<code>` has element children, so `node[2]` is not
-    // a string and it is never collected twice.
-    if (inlineEnabled && node[0] === 'code' && node.length === 3 && typeof node[2] === 'string') {
-      const inlineAttrs = node[1] as ElementNodeAttributes
-      // A raw-HTML `<code lang="ts">` is authored markup, not Comark inline
-      // code. Highlighting it would turn the author's own tag into a tree of
-      // spans and break the byte-for-byte round-trip raw HTML guarantees.
-      if (inlineAttrs?.$?.html === 1) return false
-      if (inlineCodeLanguage(inlineAttrs)) {
-        codeBlocks.push({ node, path: path.slice(), inline: true })
-      }
-    }
-    return false
-  }
-
-  // Recursively find highlightable nodes, tracking their path via push/pop on a shared buffer
+  // Recursively find <pre><code> blocks, tracking their path via push/pop on a shared buffer
   const walkChildren = (element: ElementNode): void => {
     for (let i = 2; i < element.length; i++) {
       const child = element[i]
       if (typeof child === 'string') continue
       if (!Array.isArray(child) || child.length < 3) continue
       pathBuf.push(i - 2)
-      const handled = collect(child as ElementNode, pathBuf)
-      if (!handled) walkChildren(child as ElementNode)
+      if (child[0] === 'pre' && Array.isArray(child[2]) && child[2][0] === 'code') {
+        const codeContent = child[2][2]
+        if (typeof codeContent === 'string') {
+          codeBlocks.push({ node: child, path: pathBuf.slice() })
+        }
+      } else if (inlineEnabled && child[0] === 'code' && child.length === 3 && typeof child[2] === 'string') {
+        // A raw-HTML `<code lang="ts">` is authored markup, not Comark inline
+        // code, and replacing it with spans would break its round-trip.
+        const inlineAttrs = child[1] as ElementNodeAttributes
+        if (inlineAttrs?.$?.html !== 1 && inlineCodeLanguage(inlineAttrs)) {
+          inlineCodes.push({ node: child, path: pathBuf.slice() })
+        }
+      }
+      walkChildren(child as ElementNode)
       pathBuf.pop()
     }
   }
@@ -396,13 +344,18 @@ export async function highlightCodeBlocks(
     const node = tree.nodes[i]
     if (typeof node === 'string') continue
     if (!Array.isArray(node) || node.length < 3) continue
+    if (node[0] === 'pre' && Array.isArray(node[2]) && node[2][0] === 'code') {
+      const codeContent = node[2][2]
+      if (typeof codeContent === 'string') {
+        codeBlocks.push({ node, path: [i] })
+      }
+    }
     pathBuf.length = 1
     pathBuf[0] = i
-    const handled = collect(node as ElementNode, pathBuf)
-    if (!handled) walkChildren(node as ElementNode)
+    walkChildren(node as ElementNode)
   }
 
-  if (codeBlocks.length === 0) return tree
+  if (codeBlocks.length === 0 && inlineCodes.length === 0) return tree
 
   const hl = await getHighlighter(options, defaultThemeLoaders, defaultLanguageLoaders)
   const { themes = { light: 'material-theme-lighter', dark: 'material-theme-palenight' } } = options
@@ -416,39 +369,12 @@ export async function highlightCodeBlocks(
   const hasTransformers = options.transformers && options.transformers.length > 0
   const darkClassSuffix = options.themes?.dark?.name ? ` dark:${options.themes.dark.name}` : ''
 
-  // Built once per call. `getLoadedLanguages()` includes alias names, so the
-  // `langAlias` entries above resolve without touching the registry.
-  const loadedLangs = new Set(hl.getLoadedLanguages())
-
-  const grammarContexts: Record<string, ShikiGrammarContext> = options.grammarContexts
-    ? { ...defaultGrammarContexts, ...options.grammarContexts }
-    : defaultGrammarContexts
-
-  /**
-   * Resolve a written language name to a real grammar plus optional seed source.
-   * A registered grammar wins: shiki ships a real `vue-html` grammar, so anyone
-   * who registers it gets it instead of the built-in context that seeds `vue`.
-   * The context lookup is own-property only, so a fence written ```constructor```
-   * cannot resolve through `Object.prototype`.
-   */
-  const resolveGrammar = (language: string | undefined): ShikiGrammarContext => {
-    if (language && loadedLangs.has(language)) return { lang: language }
-    const ctx =
-      language && Object.prototype.hasOwnProperty.call(grammarContexts, language)
-        ? grammarContexts[language]
-        : undefined
-    return ctx ?? { lang: language as string }
-  }
-
   // Build new nodes array, spine-copying only paths to modified nodes
   const newNodes = [...tree.nodes] as Node[]
 
-  /**
-   * Replace the node at `path`, copying only the spine from the root down to it
-   * so the rest of the tree stays shared. Each level reads back from `newNodes`
-   * rather than `tree.nodes`, so several replacements under a shared ancestor
-   * compose instead of clobbering each other.
-   */
+  // Copy only the spine from root to `path` to preserve immutability. Each
+  // level reads back from `newNodes`, so several replacements under a shared
+  // ancestor compose instead of clobbering each other.
   const replaceAt = (path: number[], replacement: Node): void => {
     if (path.length === 1) {
       newNodes[path[0]] = replacement
@@ -465,59 +391,12 @@ export async function highlightCodeBlocks(
     }
     current[path[path.length - 1] + 2] = replacement
   }
-
   for (let i = 0; i < codeBlocks.length; i++) {
-    const { node, path, inline } = codeBlocks[i]
-
-    if (inline) {
-      const inlineAttrs = node[1] as ElementNodeAttributes
-      const inlineCode = node[2] as string
-      const { lang, grammarContextCode } = resolveGrammar(inlineCodeLanguage(inlineAttrs))
-
-      // Unlike a <pre>, an inline <code> is not unambiguously code: `lang` is a
-      // real HTML attribute for natural language. When the grammar is not
-      // registered, leave the node exactly as it was authored rather than
-      // tagging it `.shiki`.
-      if (!lang || !loadedLangs.has(lang)) continue
-
-      let spans: Node[]
-      let inlineClass: string
-      try {
-        const result = codeToTokens(hl, inlineCode, { lang, grammarContextCode, themes: themeOptions })
-        spans = []
-        for (let li = 0; li < result.tokens.length; li++) {
-          if (li > 0) spans.push('\n')
-          for (const span of tokensToSpans(result.tokens[li])) spans.push(span)
-        }
-        if (spans.length === 0) spans = [inlineCode]
-        inlineClass = `shiki ${result.themeName || ''}${darkClassSuffix}`
-      } catch {
-        continue
-      }
-
-      // `class` is the full string renderers need. The author's own class is
-      // recorded in the reserved `$` metadata so markdown stringify can put
-      // back exactly what was written, and nothing else.
-      const inlineUserClass = typeof inlineAttrs.class === 'string' ? inlineAttrs.class.trim() : ''
-      // eslint-disable-next-line unicorn/no-new-array -- pre-allocated for perf
-      const inlineNode = new Array(spans.length + 2) as ElementNode
-      inlineNode[0] = 'code'
-      inlineNode[1] = {
-        ...inlineAttrs,
-        class: inlineUserClass ? `${inlineClass} ${inlineUserClass}` : inlineClass,
-        $: { ...inlineAttrs.$, class: inlineUserClass },
-      }
-      for (let sp = 0; sp < spans.length; sp++) inlineNode[sp + 2] = spans[sp]
-
-      replaceAt(path, inlineNode as Node)
-      continue
-    }
-
+    const { node, path } = codeBlocks[i]
     const code = (node[2] as any)[2] as string
     const attrs = node[1] as CodeBlockAttributes
     const preAttrs = attrs as Record<string, any>
     const language: string = (attrs as any)?.language
-    const { lang: fenceLang, grammarContextCode: fenceContext } = resolveGrammar(language)
 
     let classStr: string
     let codeChildren: Node[]
@@ -526,8 +405,7 @@ export async function highlightCodeBlocks(
       if (hasTransformers) {
         // Transformers operate on hast, so we must go through codeToHast
         const result = codeToHast(hl, code, {
-          lang: fenceLang,
-          grammarContextCode: fenceContext,
+          lang: language,
           transformers: options.transformers,
           themes: themeOptions,
           meta: { __raw: attrs.meta },
@@ -539,8 +417,7 @@ export async function highlightCodeBlocks(
       } else {
         // Fast path: build Nodes directly from tokens, skipping hast
         const result = codeToTokens(hl, code, {
-          lang: fenceLang,
-          grammarContextCode: fenceContext,
+          lang: language,
           themes: themeOptions,
         })
         classStr = `shiki ${result.themeName || ''}`
@@ -589,15 +466,12 @@ export async function highlightCodeBlocks(
       }
     }
 
-    // Merge the highlighter class with any user-supplied class (e.g. from
-    // `::pre{.user-class}`) so the wrapper's class isn't lost, and record the
-    // user portion in the reserved `$` metadata so markdown stringify can
-    // recover it without guessing which tokens came from where.
+    // Merge highlighter class with any user-supplied class (e.g. from
+    // `::pre{.user-class}`) so the wrapper's class isn't lost.
     const userClass = typeof preAttrs.class === 'string' ? preAttrs.class.trim() : ''
     const newPreAttrs: Record<string, any> = {
       ...preAttrs,
-      class: userClass ? `${classStr} ${userClass}` : classStr,
-      $: { ...preAttrs.$, class: userClass },
+      class: userClass ? `${classStr} . ${userClass}` : classStr,
     }
 
     if (options.preStyles) {
@@ -632,6 +506,47 @@ export async function highlightCodeBlocks(
     const newPreNode: Node = ['pre', newPreAttrs, codeNode]
 
     replaceAt(path, newPreNode)
+  }
+
+  for (let i = 0; i < inlineCodes.length; i++) {
+    const { node, path } = inlineCodes[i]
+    const el = node as ElementNode
+    const attrs = el[1] as ElementNodeAttributes
+    const code = el[2] as string
+    const written = inlineCodeLanguage(attrs) as string
+    const context = GRAMMAR_CONTEXTS.get(written)
+
+    let spans: Node[]
+    let classStr: string
+    try {
+      const result = codeToTokens(hl, code, {
+        lang: context?.lang ?? written,
+        grammarContextCode: context?.grammarContextCode,
+        themes: themeOptions,
+      })
+      spans = []
+      for (let li = 0; li < result.tokens.length; li++) {
+        if (li > 0) spans.push('\n')
+        for (const span of tokensToSpans(result.tokens[li])) spans.push(span)
+      }
+      if (spans.length === 0) spans = [code]
+      classStr = `shiki ${result.themeName || ''}${darkClassSuffix}`
+    } catch {
+      // Shiki throws on a grammar it has not loaded. Unlike a `<pre>`, an
+      // inline `<code>` is not unambiguously code — `lang` is a real HTML
+      // attribute for natural language — so leave `` `Bonjour`{lang="fr"} ``
+      // exactly as it was authored rather than tagging it `.shiki`.
+      continue
+    }
+
+    const userClass = typeof attrs.class === 'string' ? attrs.class.trim() : ''
+    // eslint-disable-next-line unicorn/no-new-array -- pre-allocated for perf
+    const inlineNode = new Array(spans.length + 2) as ElementNode
+    inlineNode[0] = 'code'
+    inlineNode[1] = { ...attrs, class: userClass ? `${classStr} . ${userClass}` : classStr }
+    for (let s = 0; s < spans.length; s++) inlineNode[s + 2] = spans[s]
+
+    replaceAt(path, inlineNode as Node)
   }
 
   return { ...tree, nodes: newNodes }
