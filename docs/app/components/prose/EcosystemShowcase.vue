@@ -12,9 +12,28 @@ defineProps<{ sites: EcosystemSite[] }>()
 
 <template>
   <div class="not-prose mt-14">
-    <div class="flex items-baseline justify-between gap-4">
-      <h2 class="text-2xl font-semibold tracking-tight text-highlighted">Built with Comark</h2>
-      <span class="text-sm text-muted">Sites and demos running Comark in production</span>
+    <div
+      v-if="$slots.title || $slots.description"
+      class="flex items-baseline justify-between gap-4"
+    >
+      <h2
+        v-if="$slots.title"
+        class="text-2xl font-semibold tracking-tight text-highlighted"
+      >
+        <slot
+          name="title"
+          unwrap="p"
+        />
+      </h2>
+      <span
+        v-if="$slots.description"
+        class="text-sm text-muted"
+      >
+        <slot
+          name="description"
+          unwrap="p"
+        />
+      </span>
     </div>
 
     <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
