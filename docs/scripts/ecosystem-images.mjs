@@ -16,7 +16,6 @@ const VIEWPORT = '1280,720'
 const OUT_SIZE = ['960', '540']
 
 const shots = [
-  { name: 'nuxt-com', url: 'https://nuxt.com' },
   { name: 'graphs-demo', url: 'https://comark-graphs-demo.vercel.app' },
   { name: 'kitchen-sink', url: 'https://v0-kitchen-sink-demo.vercel.app' },
   { name: 'roe-dev', url: 'https://roe.dev' },
