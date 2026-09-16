@@ -7,7 +7,7 @@ interface EcosystemPackage {
   description: string
   author: string
   category: 'Renderers' | 'Plugins' | 'Integrations' | 'Tooling'
-  /** Tooling only: UI, Extensions, Templates, CLI, Agents. Shown in the tag column instead of the category. */
+  /** Tooling only: UI, Extensions, Templates, CLI, Agents. Shown in the badge instead of the category. */
   subcategory?: string
   /** "owner/name" — powers the row link and the author avatar. */
   repo?: string
@@ -15,6 +15,8 @@ interface EcosystemPackage {
   url?: string
   official?: boolean
   icon?: string
+  /** Tints the icon and its hover glow. Omitted entries fall back to a neutral tile. */
+  color?: string
 }
 
 const props = defineProps<{ packages: EcosystemPackage[] }>()
@@ -166,25 +168,30 @@ function monogram(name: string) {
         :href="href(pkg)"
         target="_blank"
         rel="noopener"
-        class="grid grid-cols-[2.25rem_minmax(0,1fr)] items-center gap-x-4 gap-y-2 px-4 py-3.5 transition-colors hover:bg-muted md:grid-cols-[2.25rem_minmax(0,1fr)_7.5rem_10rem_1.25rem]"
+        :class="pkg.color ? 'eco-row' : 'hover:bg-muted'"
+        :style="pkg.color ? { '--eco-color': pkg.color } : undefined"
+        class="grid grid-cols-[2.25rem_minmax(0,1fr)_auto] items-center gap-x-4 px-4 py-3.5 transition-colors md:grid-cols-[2.25rem_minmax(0,1fr)_7rem_1.25rem]"
       >
         <div
-          class="row-span-2 flex size-9 items-center justify-center rounded-lg border border-default bg-muted md:row-span-1"
+          class="eco-tile flex size-9 shrink-0 items-center justify-center rounded-lg border border-default bg-muted"
+          :style="pkg.color ? { color: pkg.color } : undefined"
         >
           <UIcon
             v-if="pkg.icon"
             :name="pkg.icon"
-            class="size-5 text-toned"
+            class="size-5"
+            :class="!pkg.color && 'text-toned'"
           />
           <span
             v-else
-            class="font-mono text-xs font-medium text-toned"
+            class="font-mono text-xs font-medium"
+            :class="!pkg.color && 'text-toned'"
             >{{ monogram(pkg.name) }}</span
           >
         </div>
 
         <div class="min-w-0">
-          <div class="flex items-center gap-2">
+          <div class="flex flex-wrap items-center gap-x-2 gap-y-0.5">
             <span class="text-sm font-medium text-highlighted">{{ pkg.name }}</span>
             <span
               v-if="pkg.official"
@@ -192,24 +199,24 @@ function monogram(name: string) {
             >
               Official
             </span>
+            <span class="inline-flex min-w-0 items-center gap-1.5 text-xs text-muted">
+              <img
+                :src="avatarUrl(pkg)"
+                :alt="pkg.author"
+                width="16"
+                height="16"
+                loading="lazy"
+                class="size-4 shrink-0 rounded-full"
+              />
+              <span class="truncate">{{ pkg.author }}</span>
+            </span>
           </div>
           <p class="mt-0.5 truncate text-sm text-muted">{{ pkg.description }}</p>
         </div>
 
-        <div class="col-start-2 flex items-center gap-3 md:contents">
-          <span class="font-mono text-xs text-muted">{{ tag(pkg) }}</span>
-          <span class="inline-flex min-w-0 items-center gap-1.5 text-sm text-muted">
-            <img
-              :src="avatarUrl(pkg)"
-              :alt="pkg.author"
-              width="16"
-              height="16"
-              loading="lazy"
-              class="size-4 shrink-0 rounded-full"
-            />
-            <span class="truncate">{{ pkg.author }}</span>
-          </span>
-        </div>
+        <span class="justify-self-end rounded-md border border-default px-2 py-0.5 font-mono text-xs text-muted">
+          {{ tag(pkg) }}
+        </span>
 
         <UIcon
           name="i-lucide-arrow-up-right"
@@ -226,3 +233,23 @@ function monogram(name: string) {
     </UCard>
   </div>
 </template>
+
+<style scoped>
+.eco-tile {
+  transition:
+    background-color 0.2s,
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+
+.eco-row:hover {
+  background-color: color-mix(in oklab, var(--eco-color) 6%, transparent);
+}
+
+.eco-row:hover .eco-tile {
+  border-color: color-mix(in oklab, var(--eco-color) 45%, var(--ui-border));
+  box-shadow:
+    0 0 0 3px color-mix(in oklab, var(--eco-color) 10%, transparent),
+    0 6px 16px -8px color-mix(in oklab, var(--eco-color) 35%, transparent);
+}
+</style>
