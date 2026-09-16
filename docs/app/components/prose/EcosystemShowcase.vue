@@ -17,7 +17,7 @@ defineProps<{ sites: EcosystemSite[] }>()
       <span class="text-sm text-muted">Sites and demos running Comark in production</span>
     </div>
 
-    <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
       <UPageCard
         v-for="site in sites"
         :key="site.name"
@@ -58,6 +58,28 @@ defineProps<{ sites: EcosystemSite[] }>()
               class="size-4 rounded-full"
             />
             {{ site.author }}
+          </div>
+        </template>
+      </UPageCard>
+
+      <UPageCard
+        to="https://github.com/comarkdown/comark/edit/main/docs/content/9.ecosystem.md"
+        target="_blank"
+        title="Your project"
+        description="Shipping something with Comark? Add a card and it shows up here."
+        :ui="{
+          root: 'overflow-hidden border-dashed',
+          container: 'p-0 sm:p-0 gap-0',
+          wrapper: 'items-stretch',
+          header: 'mb-0',
+          body: 'p-4',
+          title: 'text-sm font-medium',
+          description: 'mt-1 text-sm leading-relaxed',
+        }"
+      >
+        <template #header>
+          <div class="flex aspect-video w-full items-center justify-center bg-muted">
+            <UIcon name="i-lucide-plus" class="size-8 text-dimmed" />
           </div>
         </template>
       </UPageCard>
