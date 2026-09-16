@@ -628,14 +628,7 @@ function healInline(text: string, opts: HealOpts): string {
     if (opts.singleTilde && ch === '~' && next !== '~' && prev !== '~') {
       const prevCp = codePointBefore(text, i)
       const nextCp = codePointAt(text, i + 1)
-      if (
-        isWord(prevCp) &&
-        isWord(nextCp) &&
-        !inCode &&
-        !inMath &&
-        !inBlockMath &&
-        !isPairedSingleTilde(text, i)
-      ) {
+      if (isWord(prevCp) && isWord(nextCp) && !inCode && !inMath && !inBlockMath && !isPairedSingleTilde(text, i)) {
         out.push('\\', '~')
         continue
       }

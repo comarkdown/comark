@@ -137,8 +137,7 @@ function parseNoteOpts(note?: string): AutoCloseOptions | undefined {
     const key = m[1]
     const raw = m[2]
     const boolVal = raw === 'true' ? true : raw === 'false' ? false : undefined
-    const strVal =
-      raw.startsWith("'") || raw.startsWith('"') ? raw.slice(1, -1) : undefined
+    const strVal = raw.startsWith("'") || raw.startsWith('"') ? raw.slice(1, -1) : undefined
 
     switch (key) {
       case 'linkMode':
