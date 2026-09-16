@@ -19,6 +19,7 @@ const shots = [
   { name: 'nuxt-com', url: 'https://nuxt.com' },
   { name: 'graphs-demo', url: 'https://comark-graphs-demo.vercel.app' },
   { name: 'kitchen-sink', url: 'https://v0-kitchen-sink-demo.vercel.app' },
+  { name: 'roe-dev', url: 'https://roe.dev' },
 ]
 
 for (const { name, url } of shots) {
