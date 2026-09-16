@@ -418,7 +418,7 @@ importers:
         version: link:../packages/comark
       comark-docs:
         specifier: github:comarkdown/comark-docs
-        version: https://codeload.github.com/comarkdown/comark-docs/tar.gz/05a64d327e27ac37bf1ca014e67003fd5b39bfd3(8dbfe6d44f6e94ec7ed1b2f7dff141e8)
+        version: https://codeload.github.com/comarkdown/comark-docs/tar.gz/49456adddd815a707c6ae588d611584ee82768de(8dbfe6d44f6e94ec7ed1b2f7dff141e8)
       katex:
         specifier: 'catalog:'
         version: 0.17.0
@@ -7075,8 +7075,8 @@ packages:
     resolution: {integrity: sha512-z0nuo3PM53FwBYbxP4rNrUo1QW7jv8YO44HDYaGm2Wx4pmHsLqKdsA6CiHcSOaURze6m7my0Z0YFaLL77LtDUA==}
     hasBin: true
 
-  comark-docs@https://codeload.github.com/comarkdown/comark-docs/tar.gz/05a64d327e27ac37bf1ca014e67003fd5b39bfd3:
-    resolution: {gitHosted: true, tarball: https://codeload.github.com/comarkdown/comark-docs/tar.gz/05a64d327e27ac37bf1ca014e67003fd5b39bfd3}
+  comark-docs@https://codeload.github.com/comarkdown/comark-docs/tar.gz/49456adddd815a707c6ae588d611584ee82768de:
+    resolution: {gitHosted: true, integrity: sha512-ePnEi64ORjMB9pCgOqj7mRCiA63tjLxSHOsp5Vfid7lG7OutyAWxYwOgKHstXbGa8iu0y0yUH0y72lvAOT4IUw==, tarball: https://codeload.github.com/comarkdown/comark-docs/tar.gz/49456adddd815a707c6ae588d611584ee82768de}
     version: 0.0.1
     engines: {node: ^22.19.0 || ^24.11.0 || >=26.0.0}
     peerDependencies:
@@ -9254,8 +9254,8 @@ packages:
   nth-check@2.1.1:
     resolution: {integrity: sha512-lqjrjmaOoAnWfMmBPL+XNnynZh2+swxiX3WUE0s4yEHI6m+AwrK2UZOimIRl3X/4QctVqS8AiZjFqyOGrMXb/w==}
 
-  nuxt-agent-discovery@0.6.0:
-    resolution: {integrity: sha512-Yp90RRc2rvTW1pp+S1IEqV40QVKsgLI+8Jn3DaNhQYy1E6IpBE4vAuIgm2e5gXDIfveugVbcHD9hYoj3dzCttQ==}
+  nuxt-agent-discovery@0.7.0:
+    resolution: {integrity: sha512-WaYkVm+NmG6JE1JvSe3iyoRafn2qj347yCB+LY3l/6IJK9+WapoPltXCYloeiDnB0+pn+sgl3rn7Ps/BW3BdWQ==}
     peerDependencies:
       '@nuxt/content': ^3.0.0
       '@nuxtjs/mcp-toolkit': '>=0.19.0'
@@ -18531,7 +18531,7 @@ snapshots:
       - shiki
       - uploadthing
 
-  comark-docs@https://codeload.github.com/comarkdown/comark-docs/tar.gz/05a64d327e27ac37bf1ca014e67003fd5b39bfd3(8dbfe6d44f6e94ec7ed1b2f7dff141e8):
+  comark-docs@https://codeload.github.com/comarkdown/comark-docs/tar.gz/49456adddd815a707c6ae588d611584ee82768de(8dbfe6d44f6e94ec7ed1b2f7dff141e8):
     dependencies:
       '@ai-sdk/gateway': 4.0.64(zod@4.4.3)
       '@ai-sdk/vue': 4.0.79(vue@3.5.41(typescript@6.0.3))(zod@4.4.3)
@@ -18563,7 +18563,7 @@ snapshots:
       js-yaml: 5.3.0
       motion-v: 2.4.2(@vueuse/core@14.4.0(vue@3.5.41(typescript@6.0.3)))(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(vue@3.5.41(typescript@6.0.3))
       nuxt: 4.5.2(@babel/plugin-syntax-jsx@7.29.7(@babel/core@7.29.7(supports-color@10.2.2)))(@babel/plugin-syntax-typescript@7.29.7(@babel/core@7.29.7(supports-color@10.2.2)))(@oxc-project/types@0.149.0)(@parcel/watcher@2.5.6)(@types/node@26.2.0)(@vercel/functions@3.9.5(ws@8.21.3))(@vue/compiler-sfc@3.5.41)(better-sqlite3@12.10.0)(cac@6.7.14)(db0@0.3.4(better-sqlite3@12.10.0))(esbuild@0.28.1)(eslint@10.4.1(jiti@2.7.0)(supports-color@10.2.2))(ioredis@5.11.1(supports-color@10.2.2))(lightningcss@1.33.0)(magicast@0.5.4)(meow@13.2.0)(optionator@0.9.4)(oxc-parser@0.143.0)(oxlint@1.73.0)(rolldown@1.2.8)(rollup-plugin-visualizer@7.0.1(rolldown@1.2.8)(rollup@4.62.2))(rollup@4.62.2)(sass@1.99.0)(srvx@0.11.22)(supports-color@10.2.2)(terser@5.49.0)(tsx@4.23.0)(typescript@6.0.3)(vite@8.3.0(@types/node@26.2.0)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.99.0)(terser@5.49.0)(tsx@4.23.0)(yaml@2.9.1))(vue-tsc@3.3.7(typescript@6.0.3))(yaml@2.9.1)
-      nuxt-agent-discovery: 0.6.0(406b05944c60abae81a16382917052c9)
+      nuxt-agent-discovery: 0.7.0(406b05944c60abae81a16382917052c9)
       nuxt-llms: https://pkg.pr.new/nuxt-content/nuxt-llms/nuxt-llms@f6a9730(magic-string@1.2.3)(magicast@0.5.4)(oxc-parser@0.143.0)(rolldown@1.2.8)(unplugin@3.3.0(esbuild@0.28.1)(rolldown@1.2.8)(rollup@4.62.2)(vite@8.3.0(@types/node@26.1.1)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.99.0)(terser@5.49.0)(tsx@4.23.0)(yaml@2.9.1)))
       nuxt-og-image: 6.7.8(f9ad25454d55a6863f42d4d7d43145b1)
       nuxt-schema-org: 6.3.1(44eca49ab24a431c3557fa799b1c60bf)
@@ -21502,7 +21502,7 @@ snapshots:
     dependencies:
       boolbase: 1.0.0
 
-  nuxt-agent-discovery@0.6.0(406b05944c60abae81a16382917052c9):
+  nuxt-agent-discovery@0.7.0(406b05944c60abae81a16382917052c9):
     dependencies:
       '@nuxt/kit': 4.5.2(magic-string@1.2.3)(magicast@0.5.4)(oxc-parser@0.143.0)(rolldown@1.2.8)(unplugin@3.3.0(esbuild@0.28.1)(rolldown@1.2.8)(rollup@4.62.2)(vite@8.3.0(@types/node@26.1.1)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.99.0)(terser@5.49.0)(tsx@4.23.0)(yaml@2.9.1)))
       defu: 6.1.7
