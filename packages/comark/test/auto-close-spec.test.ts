@@ -60,7 +60,8 @@ function parseSpec(md: string): Case[] {
       continue
     }
 
-    if (line.trim() === '```diff') {
+    // Accept ```diff and ```diff [valid] (marked must-pass cases).
+    if (/^```diff(?:\s|$)/.test(line.trim())) {
       i++
       let input: string | null = null
       let expected: string | null = null
@@ -123,26 +124,79 @@ function optionsForSection(section: string): AutoCloseOptions {
   return base
 }
 
+/** Parse notes like `bold: false, links: false, linkMode: 'text-only'`. */
+function parseNoteOpts(note?: string): AutoCloseOptions | undefined {
+  if (!note) return undefined
+  const opts: AutoCloseOptions = {}
+  let found = false
+
+  // key: value pairs (bool or quoted string)
+  const re = /(\w+)\s*:\s*(true|false|'[^']*'|"[^"]*")/g
+  let m: RegExpExecArray | null
+  while ((m = re.exec(note)) !== null) {
+    const key = m[1]
+    const raw = m[2]
+    const boolVal = raw === 'true' ? true : raw === 'false' ? false : undefined
+    const strVal =
+      raw.startsWith("'") || raw.startsWith('"') ? raw.slice(1, -1) : undefined
+
+    switch (key) {
+      case 'linkMode':
+        if (strVal === 'protocol' || strVal === 'text-only') {
+          opts.linkMode = strVal
+          found = true
+        }
+        break
+      case 'bold':
+      case 'boldItalic':
+      case 'italic':
+      case 'strikethrough':
+      case 'inlineCode':
+      case 'links':
+      case 'images':
+      case 'singleTilde':
+      case 'comparisonOperators':
+      case 'htmlTags':
+      case 'math':
+      case 'syntax':
+      case 'attributes':
+      case 'frontmatter':
+      case 'dropTrailingOpeners':
+        if (typeof boolVal === 'boolean') {
+          opts[key] = boolVal
+          found = true
+        }
+        break
+      // remend-only aliases ignored here
+      default:
+        break
+    }
+  }
+
+  return found ? opts : undefined
+}
+
 function optionsForCase(c: Case): AutoCloseOptions {
   const base = optionsForSection(c.section)
+  const noteOpts = parseNoteOpts(c.note)
 
   // Math sections need math: true (including leave-alone cases so $$…$$ protects *_ inside)
   if (/^(Block math|Inline math|Math protects)/i.test(c.section)) {
     if (/Inline math/i.test(c.section) && c.expected === c.input && /\$/.test(c.input)) {
-      return base // default math: false leave-alone case
+      return { ...base, ...noteOpts } // default math: false leave-alone case
     }
-    return { ...base, math: true }
+    return { ...base, math: true, ...noteOpts }
   }
 
   // Streaming progressive section includes both protocol and text-only link examples.
   if (/Streaming chunks/i.test(c.section)) {
     // Text-only: expected has no `[` link markup for an input that had `[`.
     if (c.input.includes('[') && !c.input.includes('](') && !c.expected.includes('[') && !c.expected.includes('](')) {
-      return { ...base, linkMode: 'text-only' }
+      return { ...base, linkMode: 'text-only', ...noteOpts }
     }
   }
 
-  return base
+  return noteOpts ? { ...base, ...noteOpts } : base
 }
 
 const cases = parseSpec(SPEC)

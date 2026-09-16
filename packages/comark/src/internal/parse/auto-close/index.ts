@@ -34,6 +34,29 @@ export interface AutoCloseOptions {
    * Enabled automatically when `parseMarkdown(..., { streaming: true })`.
    */
   dropTrailingOpeners?: boolean
+  /** Auto-close incomplete links (`[text`). Default true. */
+  links?: boolean
+  /** Auto-close incomplete images (`![alt`). Default true. */
+  images?: boolean
+  /** Auto-close `**bold**`. Default true. */
+  bold?: boolean
+  /** Auto-close `*italic*` / `_italic_`. Default true. */
+  italic?: boolean
+  /** Auto-close `~~strikethrough~~`. Default true. */
+  strikethrough?: boolean
+  /** Auto-close inline `` `code` ``. Default true. */
+  inlineCode?: boolean
+  /** Auto-close `***bold-italic***`. Default true. */
+  boldItalic?: boolean
+  /** Escape mid-word single `~` (`20~25` → `20\~25`). Default true. */
+  singleTilde?: boolean
+  /**
+   * Escape list-item comparison openers (`- > 25` → `- \> 25`) so they are not
+   * parsed as blockquotes. Default true.
+   */
+  comparisonOperators?: boolean
+  /** Strip incomplete HTML tags at EOF (`Hello <div` → `Hello`). Default true. */
+  htmlTags?: boolean
 }
 
 export function autoCloseMarkdown(markdown: string, options: AutoCloseOptions = {}): string {
@@ -45,6 +68,23 @@ export function autoCloseMarkdown(markdown: string, options: AutoCloseOptions = 
   const linkPh = options.incompleteLinkPlaceholder ?? INCOMPLETE_LINK_PLACEHOLDER
   const imagePh = options.incompleteImagePlaceholder ?? INCOMPLETE_IMAGE_PLACEHOLDER
   const math = options.math === true
+  const healOpts: HealOpts = {
+    attributesEnabled,
+    linkMode,
+    linkPh,
+    imagePh,
+    math,
+    links: options.links !== false,
+    images: options.images !== false,
+    bold: options.bold !== false,
+    italic: options.italic !== false,
+    strikethrough: options.strikethrough !== false,
+    inlineCode: options.inlineCode !== false,
+    boldItalic: options.boldItalic !== false,
+    singleTilde: options.singleTilde !== false,
+    comparisonOperators: options.comparisonOperators !== false,
+    htmlTags: options.htmlTags !== false,
+  }
 
   if (options.dropTrailingOpeners === true) markdown = dropTrailingOpeners(markdown)
 
@@ -57,6 +97,8 @@ export function autoCloseMarkdown(markdown: string, options: AutoCloseOptions = 
   let tableStart = -1
   let inRawTextElement: 'style' | 'script' | 'pre' | 'textarea' | null = null
   let fenceOpen = false
+  /** Length of the opening fence run while `fenceOpen` (CommonMark matching). */
+  let fenceOpenLen = 0
   let inBlockMath = false
 
   const componentStack: Array<{ depth: number; name: string; indent: string; hasYamlProps: boolean }> = []
@@ -85,7 +127,20 @@ export function autoCloseMarkdown(markdown: string, options: AutoCloseOptions = 
         // leave fenceOpen alone; heal pass will complete the trailing `
         continue
       }
-      fenceOpen = !fenceOpen
+      // Count fence marker length (after indent)
+      let fi = 0
+      while (fi < line.length && (line[fi] === ' ' || line[fi] === '\t')) fi++
+      const fch = line[fi]
+      let fn = 0
+      while (fi + fn < line.length && line[fi + fn] === fch) fn++
+      if (!fenceOpen) {
+        fenceOpen = true
+        fenceOpenLen = fn
+      } else if (fn >= fenceOpenLen) {
+        // Closer must be ≥ opener length (CommonMark). Shorter (`open ```` + close ```) keeps fence open.
+        fenceOpen = false
+        fenceOpenLen = 0
+      }
       continue
     }
     if (fenceOpen) continue
@@ -155,24 +210,69 @@ export function autoCloseMarkdown(markdown: string, options: AutoCloseOptions = 
     }
   }
 
-  // --- Inline heal: last content line only. Earlier lines are assumed complete. ---
+  // --- Inline heal: last soft-wrapped paragraph at EOF. ---
+  // Soft wraps continue the same paragraph (`**bold\r\nwith CRLF` → closes on the
+  // joined chunk). A blank line OR a new block-start line (list/heading/fence/…)
+  // ends the region so list items and prior paragraphs stay untouched.
+  // Skip when still inside an open code fence (including mismatched closer lengths).
   if (!fenceOpen && !inFrontmatter && !inBlockMath) {
-    let healIdx = n - 1
-    while (healIdx > 0 && lines[healIdx] === '') healIdx--
-    const healLine = healIdx >= 0 ? lines[healIdx] : ''
-    const trimmedHeal = healLine.trim()
-    // Skip standalone block delimiters (`$$`). An incomplete inline fence like
-    // ```python print("Hello")`` still needs last-line heal.
-    const incompleteInlineFence =
-      trimmedHeal.startsWith('```') && trimmedHeal.endsWith('``') && !trimmedHeal.endsWith('```')
-    if (healLine !== '' && trimmedHeal !== '$$' && (!isFenceLine(healLine) || incompleteInlineFence)) {
-      lines[healIdx] = healInline(healLine, {
-        attributesEnabled,
-        linkMode,
-        linkPh,
-        imagePh,
-        math,
-      })
+    let endIdx = n - 1
+    while (endIdx > 0 && lines[endIdx] === '') endIdx--
+    if (endIdx >= 0) {
+      let startIdx = endIdx
+      while (startIdx > 0) {
+        const prev = lines[startIdx - 1]
+        if (prev === '') break
+        // Don't pull a previous line that opens a new block; that line's opener
+        // belongs to its own block, not a soft-wrap continuation.
+        // Current line must also look like a continuation (not a new block start),
+        // except the very first line of the region may be a block opener.
+        if (isBlockStartLine(lines[startIdx])) break
+        startIdx--
+      }
+      // Trim: if start line is a block start and there are continuation lines after it,
+      // keep the whole soft-wrap paragraph including that opener line
+      // (`**bold` + continuation). If start === end, single-line heal as before.
+
+      if (startIdx === endIdx) {
+        const healLine = lines[endIdx]
+        const trimmedHeal = healLine.trim()
+        const incompleteInlineFence =
+          (trimmedHeal.startsWith('```') && trimmedHeal.endsWith('``') && !trimmedHeal.endsWith('```')) ||
+          /```[^\n`]*``$/.test(trimmedHeal)
+        if (healLine !== '' && trimmedHeal !== '$$' && (!isFenceLine(healLine) || incompleteInlineFence)) {
+          let line = healLine
+          if (!isFenceLine(healLine) && /```[^\n`]*``$/.test(trimmedHeal) && !trimmedHeal.endsWith('```')) {
+            line = healLine + '`'
+          }
+          lines[endIdx] = healInline(line, healOpts)
+        }
+      } else {
+        // Only join soft-wrap paragraphs that are plain prose. A region starting
+        // with a list/heading/quote (etc.) is left last-line-only so SPEC cases
+        // like `- **text\nmore text` stay unclosed.
+        let canJoin = !isBlockStartLine(lines[startIdx])
+        for (let i = startIdx + 1; i <= endIdx && canJoin; i++) {
+          if (isBlockStartLine(lines[i])) canJoin = false
+        }
+        if (!canJoin) {
+          lines[endIdx] = healInline(lines[endIdx], healOpts)
+        } else {
+          const chunk = lines.slice(startIdx, endIdx + 1).join('\n')
+          const healed = healInline(chunk, healOpts)
+          const healedLines = healed.split('\n')
+          if (healedLines.length === endIdx - startIdx + 1) {
+            for (let i = 0; i < healedLines.length; i++) lines[startIdx + i] = healedLines[i]
+          } else if (healedLines.length > endIdx - startIdx + 1) {
+            const head = healedLines.slice(0, endIdx - startIdx)
+            const tail = healedLines.slice(endIdx - startIdx).join('\n')
+            for (let i = 0; i < head.length; i++) lines[startIdx + i] = head[i]
+            lines[endIdx] = tail
+          } else {
+            lines[endIdx] = healInline(lines[endIdx], healOpts)
+          }
+        }
+      }
     }
   }
 
@@ -247,14 +347,70 @@ function isFenceLine(line: string): boolean {
   return n >= 3
 }
 
+/**
+ * True when a line starts a new block (list, heading, quote, fence, hr, table),
+ * so soft-wrap paragraph joining must not cross it. Indented continuation lines
+ * (spaces then text) are NOT block starts.
+ */
+function isBlockStartLine(line: string): boolean {
+  if (!line) return false
+  if (isFenceLine(line)) return true
+  const t = line.trimStart()
+  if (!t) return false
+  // ATX heading
+  if (/^#{1,6}(\s|$)/.test(t)) return true
+  // blockquote
+  if (t[0] === '>') return true
+  // thematic break
+  if (/^(\*{3,}|_{3,}|-{3,})\s*$/.test(t)) return true
+  // table row
+  if (t[0] === '|') return true
+  // unordered list marker + space
+  if ((t[0] === '-' || t[0] === '+' || t[0] === '*') && (t[1] === ' ' || t[1] === '\t')) return true
+  // ordered list
+  if (/^\d{1,9}[.)](\s|$)/.test(t)) return true
+  return false
+}
+
 function isWord(ch: string): boolean {
   if (!ch) return false
   const c = ch.charCodeAt(0)
-  return (c >= 48 && c <= 57) || (c >= 65 && c <= 90) || (c >= 97 && c <= 122) || c === 95
+  // ASCII word chars
+  if ((c >= 48 && c <= 57) || (c >= 65 && c <= 90) || (c >= 97 && c <= 122) || c === 95) return true
+  // Unicode letters/numbers. Use codePoint so surrogate pairs (𐐀, emoji) count as one char.
+  if (c > 127) {
+    const cp = ch.codePointAt(0)
+    if (cp === undefined) return false
+    return /\p{L}|\p{N}/u.test(String.fromCodePoint(cp))
+  }
+  return false
+}
+
+/** Full code-point char before index `i` (handles surrogate pairs). */
+function codePointBefore(text: string, i: number): string {
+  if (i <= 0) return ''
+  const c = text.charCodeAt(i - 1)
+  // low surrogate: pair with previous high surrogate
+  if (c >= 0xdc00 && c <= 0xdfff && i >= 2) {
+    const hi = text.charCodeAt(i - 2)
+    if (hi >= 0xd800 && hi <= 0xdbff) return text.slice(i - 2, i)
+  }
+  return text[i - 1] ?? ''
+}
+
+/** Full code-point char at index `i` (handles surrogate pairs). */
+function codePointAt(text: string, i: number): string {
+  if (i < 0 || i >= text.length) return ''
+  const c = text.charCodeAt(i)
+  if (c >= 0xd800 && c <= 0xdbff && i + 1 < text.length) {
+    const lo = text.charCodeAt(i + 1)
+    if (lo >= 0xdc00 && lo <= 0xdfff) return text.slice(i, i + 2)
+  }
+  return text[i] ?? ''
 }
 
 function isSpace(ch: string): boolean {
-  return ch === '' || ch === ' ' || ch === '\t' || ch === '\n'
+  return ch === '' || ch === ' ' || ch === '\t' || ch === '\n' || ch === '\r'
 }
 
 /** Trailing chars dropped when `dropTrailingOpeners` is on so incomplete openers do not flash. */
@@ -263,7 +419,9 @@ const TRAILING_OPENERS = '*_$:[{!'
 /**
  * Drop a trailing opener run (`* _ $ : [ { !`) at EOF when it is preceded by
  * whitespace (`hello *` → `hello`). Attached markers (`**bold`, `$x`) stay so
- * the later heal can still close them.
+ * the later heal can still close them — except a bare trailing `$` after a word
+ * (`text123$` → `text123`), which is dropped under streaming so a half-typed
+ * math opener does not flash.
  */
 function dropTrailingOpeners(text: string): string {
   let ws = text.length
@@ -283,8 +441,16 @@ function dropTrailingOpeners(text: string): string {
   }
   if (i === ws) return text
 
-  // Only drop when that run is space-flanked (preceded by whitespace or BOS)
   const before = i > 0 ? text[i - 1] : ''
+  const run = text.slice(i, ws)
+
+  // Bare trailing `$` / `$$` after a word char: drop (`text123$` → `text123`).
+  // Does not touch `$x` (opener followed by content — handled earlier as non-trailing).
+  if (/^\$+$/.test(run) && isWord(codePointBefore(text, i))) {
+    return text.slice(0, i) + text.slice(ws)
+  }
+
+  // Only drop other openers when that run is space-flanked (preceded by whitespace or BOS)
   if (before !== '' && before !== ' ' && before !== '\t' && before !== '\n' && before !== '\r') {
     return text
   }
@@ -304,6 +470,16 @@ interface HealOpts {
   linkPh: string
   imagePh: string
   math: boolean
+  links: boolean
+  images: boolean
+  bold: boolean
+  italic: boolean
+  strikethrough: boolean
+  inlineCode: boolean
+  boldItalic: boolean
+  singleTilde: boolean
+  comparisonOperators: boolean
+  htmlTags: boolean
 }
 
 type Marker = '***' | '**' | '*' | '__' | '_' | '~~' | '`' | '$$' | '$'
@@ -346,13 +522,20 @@ function healInline(text: string, opts: HealOpts): string {
   let asteriskTotal = 0
   let doubleAsteriskCount = 0
   let tripleCount = 0
+  // Source index of each open `*` so word-internal soft-close can inspect its span
+  const starOpenAt: number[] = []
 
   /** Open only when the run is not followed by space; close only when not preceded by space. */
-  const toggleFlanking = (m: Marker, prevCh: string, afterCh: string) => {
+  const toggleFlanking = (m: Marker, prevCh: string, afterCh: string, openAt = -1) => {
     const canClose = !isSpace(prevCh) && stack[stack.length - 1] === m
     const canOpen = !isSpace(afterCh)
-    if (canClose) stack.pop()
-    else if (canOpen) stack.push(m)
+    if (canClose) {
+      stack.pop()
+      if (m === '*') starOpenAt.pop()
+    } else if (canOpen) {
+      stack.push(m)
+      if (m === '*' && openAt >= 0) starOpenAt.push(openAt)
+    }
   }
 
   const toggle = (m: Marker) => {
@@ -428,8 +611,8 @@ function healInline(text: string, opts: HealOpts): string {
       continue
     }
 
-    // List comparison operator
-    if (ch === '>') {
+    // List comparison operator (`- > 25` → `- \> 25`)
+    if (opts.comparisonOperators && ch === '>') {
       let ls = i
       while (ls > 0 && text[ls - 1] !== '\n') ls--
       const prefix = text.slice(ls, i)
@@ -439,31 +622,27 @@ function healInline(text: string, opts: HealOpts): string {
       }
     }
 
-    // Single ~ between word chars: escape mid-word tildes that would be read as
-    // strikethrough (`20~25` → `20\~25`). Leave paired open/close subscript-style
-    // tildes alone (`H~2~o` stays `H~2~o`).
-    if (
-      ch === '~' &&
-      next !== '~' &&
-      prev !== '~' &&
-      isWord(prev) &&
-      isWord(next) &&
-      !inCode &&
-      !inMath &&
-      !inBlockMath &&
-      !isPairedSingleTilde(text, i)
-    ) {
-      out.push('\\', '~')
-      continue
+    // Single ~ between word chars: escape mid-word tildes so GFM does not treat
+    // them as strikethrough (`20~25` → `20\~25`). Leave digit-subscript pairs alone
+    // (`H~2~o` stays). Path-like `foo~bar~baz` still escapes every mid-word `~`.
+    if (opts.singleTilde && ch === '~' && next !== '~' && prev !== '~') {
+      const prevCp = codePointBefore(text, i)
+      const nextCp = codePointAt(text, i + 1)
+      if (
+        isWord(prevCp) &&
+        isWord(nextCp) &&
+        !inCode &&
+        !inMath &&
+        !inBlockMath &&
+        !isPairedSingleTilde(text, i)
+      ) {
+        out.push('\\', '~')
+        continue
+      }
     }
 
-    // HTML incomplete tracking
-    if (ch === '<' && ((next >= 'a' && next <= 'z') || (next >= 'A' && next <= 'Z') || next === '/')) {
-      lastLtOut = out.length
-    }
-    if (ch === '>') lastLtOut = -1
-
-    // Regions that protect markers
+    // Regions that protect markers (must run before HTML tag tracking so
+    // content inside incomplete inline code/`$` is never stripped as HTML).
     if (inCode) {
       if (ch === '`') {
         let n = 0
@@ -479,7 +658,35 @@ function healInline(text: string, opts: HealOpts): string {
       out.push(ch)
       continue
     }
+
+    // HTML incomplete tracking (attribute values protect `_` / `*` inside quoted attrs)
+    if (ch === '<' && ((next >= 'a' && next <= 'z') || (next >= 'A' && next <= 'Z') || next === '/')) {
+      lastLtOut = out.length
+    }
+    if (ch === '>') lastLtOut = -1
+
+    // Inside a complete/incomplete HTML tag: do not count emphasis markers in attributes
+    if (lastLtOut >= 0) {
+      out.push(ch)
+      continue
+    }
     if (inBlockMath) {
+      // Inline code may open inside an unfinished $$ region so the dollars in
+      // `` `$$` `` stay literal (SPEC: `Math: $$x+y and code: `$$`` → …`$$`$$).
+      if (ch === '`' && opts.inlineCode) {
+        let end = i
+        while (end + 1 < len && text[end + 1] === '`') end++
+        const run = end - i + 1
+        if (run < 3) {
+          codeRun = run
+          for (let k = 0; k < codeRun; k++) out.push('`')
+          i = end
+          inCode = true
+          codeStart = out.length
+          stack.push('`')
+          continue
+        }
+      }
       out.push(ch)
       if (ch === '$' && next === '$') {
         out.push('$')
@@ -562,16 +769,23 @@ function healInline(text: string, opts: HealOpts): string {
     }
 
     // Code
-    if (ch === '`') {
-      if (next === '`' && text[i + 2] === '`') {
-        // triple on non-line-start — copy
-        out.push('`', '`', '`')
-        i += 2
+    if (ch === '`' && opts.inlineCode) {
+      // Count full backtick run
+      let end = i
+      while (end + 1 < len && text[end + 1] === '`') end++
+      const run = end - i + 1
+
+      // Triple+ on non-line-start: leave as fence-like material, do not open inline code
+      // (block incomplete fences like `see ```inline code`` are completed above).
+      if (run >= 3) {
+        for (let k = 0; k < run; k++) out.push('`')
+        i = end
         continue
       }
-      codeRun = next === '`' ? 2 : 1
+
+      codeRun = run
       for (let k = 0; k < codeRun; k++) out.push('`')
-      i += codeRun - 1
+      i = end
       inCode = true
       codeStart = out.length
       stack.push('`')
@@ -614,16 +828,48 @@ function healInline(text: string, opts: HealOpts): string {
       for (let k = i; k <= end; k++) out.push('*')
 
       if (!surroundedSingle) {
-        // cold word-internal *
-        if (run === 1 && isWord(prev) && isWord(after) && asteriskTotal % 2 === 0) {
+        // Word-internal single * (`a*b`):
+        // Soft-close a *open* only when its content is a pure single word AND the
+        // rest of the line is NOT a `*word*word*…` path (`*a*b` closes; `*foo*bar*baz` keeps opener).
+        if (run === 1 && isWord(prev) && isWord(after)) {
+          if (opts.italic && stack[stack.length - 1] === '*' && starOpenAt.length) {
+            const openSrc = starOpenAt[starOpenAt.length - 1]
+            let pureWord = openSrc >= 0
+            for (let k = openSrc + 1; k < i && pureWord; k++) {
+              if (!isWord(text[k])) pureWord = false
+            }
+            // Path continues if ≥1 more `*word` segment appears later on this line
+            let pathSegs = 0
+            let k = end + 1
+            while (k < len && text[k] !== '\n') {
+              if (!isWord(text[k])) break
+              while (k < len && isWord(text[k])) k++
+              if (k < len && text[k] === '*' && (k + 1 >= len || text[k + 1] !== '*')) {
+                pathSegs++
+                k++
+                continue
+              }
+              break
+            }
+            if (pureWord && pathSegs === 0) {
+              asteriskTotal += run
+              stack.pop()
+              starOpenAt.pop()
+              i = end
+              continue
+            }
+          }
           i = end
           continue
         }
         asteriskTotal += run
-        if (run === 1) toggleFlanking('*', prev, after)
-        else if (run === 2) {
-          doubleAsteriskCount++
-          toggleFlanking('**', prev, after)
+        if (run === 1) {
+          if (opts.italic) toggleFlanking('*', prev, after, i)
+        } else if (run === 2) {
+          if (opts.bold) {
+            doubleAsteriskCount++
+            toggleFlanking('**', prev, after)
+          }
         } else if (run >= 3) {
           // Horizontal rule: a whole line of ≥3 * (with only spaces) is not emphasis
           let ls = i
@@ -651,21 +897,54 @@ function healInline(text: string, opts: HealOpts): string {
             const hasBold = stack.includes('**')
             if (hasStar && hasBold && !leftSpace) {
               for (let si = stack.length - 1; si >= 0; si--) {
-                if (stack[si] === '*' || stack[si] === '**') stack.splice(si, 1)
+                if (stack[si] === '*' || stack[si] === '**') {
+                  if (stack[si] === '*') starOpenAt.pop()
+                  stack.splice(si, 1)
+                }
               }
               doubleAsteriskCount++
-            } else {
+            } else if (opts.boldItalic) {
               tripleCount++
               toggleFlanking('***', prev, after)
+            } else {
+              // Fall back to enabled parts of a 3-run when bold-italic is off
+              if (opts.bold) {
+                doubleAsteriskCount++
+                toggleFlanking('**', prev, after)
+              }
+              if (opts.italic) toggleFlanking('*', prev, after, i)
             }
           } else {
-            // ****+
-            const pairs = Math.floor(run / 2)
-            for (let p = 0; p < pairs; p++) {
-              doubleAsteriskCount++
-              toggleFlanking('**', prev, after)
+            // ****+ : open one `**` (and optional `*`) — SPEC closes the full run:
+            // `****text` → `****text****`, `*****text` → `*****text*****`.
+            if (!rightSpace) {
+              if (opts.boldItalic && run >= 3) {
+                tripleCount++
+                stack.push('***')
+                // leftover pair beyond *** (**** = *** + *; ***** = *** + ** handled below)
+                const rest = run - 3
+                if (rest >= 2 && opts.bold) {
+                  doubleAsteriskCount++
+                  stack.push('**')
+                } else if (rest === 1 && opts.italic) {
+                  stack.push('*')
+                  starOpenAt.push(i)
+                }
+              } else if (opts.bold) {
+                const pairs = Math.floor(run / 2)
+                for (let p = 0; p < pairs; p++) {
+                  doubleAsteriskCount++
+                  stack.push('**')
+                }
+                if (run % 2 === 1 && opts.italic) {
+                  stack.push('*')
+                  starOpenAt.push(i)
+                }
+              } else if (run % 2 === 1 && opts.italic) {
+                stack.push('*')
+                starOpenAt.push(i)
+              }
             }
-            if (run % 2 === 1) toggleFlanking('*', prev, after)
           }
           i = end
           continue
@@ -704,14 +983,31 @@ function healInline(text: string, opts: HealOpts): string {
         }
       }
 
-      if (!(isWord(prev) && isWord(after)) && !surrounded) {
-        if (run === 1) toggleFlanking('_', prev, after)
-        else if (run >= 2) {
-          const pairs = Math.floor(run / 2)
-          for (let p = 0; p < pairs; p++) {
-            toggleFlanking('__', prev, after)
+      // Escaped `_` left of a run is still a `_` char in the source prev — do not
+      // treat it as a word-boundary that suppresses `__` stacking (`\___bold`).
+      const wordLeft = isWord(prev) && prev !== '_'
+      const wordRight = isWord(after)
+      if (!(wordLeft && wordRight) && !surrounded) {
+        // Underscore runs: `_` italic, `__` strong. Triple `___` is strong+em.
+        if (run === 1) {
+          if (opts.italic) toggleFlanking('_', prev, after)
+        } else if (run === 3) {
+          const hasEm = stack.includes('_')
+          const hasStrong = stack.includes('__')
+          if (hasEm && hasStrong && !isSpace(prev)) {
+            for (let si = stack.length - 1; si >= 0; si--) {
+              if (stack[si] === '_' || stack[si] === '__') stack.splice(si, 1)
+            }
+          } else if (!isSpace(after)) {
+            if (opts.bold) stack.push('__')
+            if (opts.italic) stack.push('_')
           }
-          if (run % 2 === 1) toggleFlanking('_', prev, after)
+        } else if (run >= 2) {
+          if (opts.bold) {
+            const pairs = Math.floor(run / 2)
+            for (let p = 0; p < pairs; p++) toggleFlanking('__', prev, after)
+          }
+          if (run % 2 === 1 && opts.italic) toggleFlanking('_', prev, after)
         }
       }
       i = end
@@ -725,7 +1021,7 @@ function healInline(text: string, opts: HealOpts): string {
       const after = end + 1 < len ? text[end + 1] : ''
       const surrounded = isSpace(prev) && isSpace(after)
       for (let k = i; k <= end; k++) out.push('~')
-      if (!surrounded && run >= 2) {
+      if (opts.strikethrough && !surrounded && run >= 2) {
         const pairs = Math.floor(run / 2)
         for (let p = 0; p < pairs; p++) toggleFlanking('~~', prev, after)
       }
@@ -739,26 +1035,28 @@ function healInline(text: string, opts: HealOpts): string {
 
   let result = out.join('')
 
-  // Incomplete HTML strip
-  if (lastLtOut >= 0) {
+  // Incomplete HTML strip (`Hello <div` → `Hello`)
+  if (opts.htmlTags && lastLtOut >= 0) {
     // map: lastLtOut is index into out at time of `<` — still valid after join length if only escaped longer...
     // We pushed at lastLtOut; result may be longer only if we added escapes before.
     // Safer rescan end:
     result = stripIncompleteHtmlEnd(result)
   }
 
-  // Incomplete links
-  const linked = healLinks(result, opts)
-  if (linked !== result) {
-    // If protocol incomplete link, SPEC early-returns before other emphasis (links win)
-    if (
-      opts.linkMode === 'protocol' &&
-      (linked.endsWith(`](${opts.linkPh})`) || linked.endsWith(`](${opts.imagePh})`))
-    ) {
-      return linked
+  // Incomplete links / images
+  if (opts.links || opts.images) {
+    const linked = healLinks(result, opts)
+    if (linked !== result) {
+      // If protocol incomplete link, SPEC early-returns before other emphasis (links win)
+      if (
+        opts.linkMode === 'protocol' &&
+        (linked.endsWith(`](${opts.linkPh})`) || linked.endsWith(`](${opts.imagePh})`))
+      ) {
+        return linked
+      }
+      result = linked
+      // text-only: continue to close other markers on the result? rarely needed
     }
-    result = linked
-    // text-only: continue to close other markers on the result? rarely needed
   }
 
   // If still in fence path we shouldn't be here
@@ -771,34 +1069,65 @@ function healInline(text: string, opts: HealOpts): string {
   // Bare / HR: don't close
   if (isBareOrHr(result)) return result
 
-  // Still inside open inline code at EOF — close nested openers inside, then `
-  // SPEC: `**bold with `code` → `**bold with `code**``
-  // Markers that opened *before* the code span must close inside it.
-  if (inCode) {
-    // the span's content, less a trailing backtick run that is not a closer
+  // Still inside open inline code at EOF.
+  // SPEC variants:
+  //   Text **bold `code  → Text **bold `code**`     (single outer → close inside)
+  //   *italic **bold ~~strike `code → …`code`~~*** (multi outer → close ` then outside)
+  //   **bold *italic `code ~~strike → …`code ~~strike`***
+  //     (markers after the open ` stay literal inside the span; outers close outside)
+  if (inCode && opts.inlineCode) {
     const content = result.slice(codeStart).replace(/`+$/, '')
     if (content.length > 0) {
-      // Markers still on stack before the open ` need closing inside the span.
-      // Open order is outer→inner left-to-right; close reverse order after content.
       let codeIdx = -1
       for (let si = 0; si < stack.length; si++) if (stack[si] === '`') codeIdx = si
-      let inner = ''
+
+      const before: Marker[] = []
       if (codeIdx > 0) {
-        // close markers that opened before code, reverse order
         for (let si = codeIdx - 1; si >= 0; si--) {
           const m = stack[si]
-          if (m === '**' || m === '*' || m === '__' || m === '_' || m === '~~' || m === '***') inner += m
+          if (isMarkerEnabled(m, opts)) before.push(m)
         }
       }
-      // also close markers opened inside code after the `
-      for (let si = stack.length - 1; si > codeIdx; si--) {
-        const m = stack[si]
-        if (m === '**' || m === '*' || m === '__' || m === '_' || m === '~~' || m === '***') inner += m
-      }
-      // A trailing backtick run merges with the closer, so only what that run
-      // still needs is added. A longer run than the opener cannot become one.
-      const base = result + inner
+      // Markers opened after the `` ` `` (while inCode) stay literal — do not close them.
+
       let trail = 0
+      while (trail < result.length && result[result.length - 1 - trail] === '`') trail++
+      if (trail > codeRun) return result
+
+      // Collapse same-family star closers: [* , **] → *** ; single ** stays **
+      const closeOutside = (markers: Marker[]): string => {
+        const hasStar = markers.includes('*')
+        const hasBold = markers.includes('**')
+        const hasTriple = markers.includes('***')
+        let s = ''
+        let skippedStarFamily = false
+        for (const m of markers) {
+          if (m === '*' || m === '**' || m === '***') {
+            if (skippedStarFamily) continue
+            skippedStarFamily = true
+            if (hasTriple || (hasStar && hasBold)) s += '***'
+            else if (hasBold) s += '**'
+            else s += '*'
+          } else {
+            s += m
+          }
+        }
+        return s
+      }
+
+      // Close outside when multiple openers precede the code span, or a math opener
+      // is pending (`Math: $$x+y and code: `$$`` → …`$$`$$). Single emphasis outer
+      // alone still closes inside (`**bold `code` → `**bold `code**`).
+      const hasMath = before.some((m) => m === '$$' || m === '$')
+      if (before.length > 1 || hasMath) {
+        return result + '`'.repeat(codeRun - trail) + closeOutside(before)
+      }
+
+      // Single (or no) outer: close markers inside the code span, then `
+      let inner = ''
+      for (const m of before) inner += m
+      const base = result + inner
+      trail = 0
       while (trail < base.length && base[base.length - 1 - trail] === '`') trail++
       if (trail > codeRun) return result
       return base + '`'.repeat(codeRun - trail)
@@ -807,7 +1136,16 @@ function healInline(text: string, opts: HealOpts): string {
   }
 
   // Build suffix inside-out with half-close handling
-  result = closeOpenStack(result, stack, {
+  let closeStack = stack.filter((m) => isMarkerEnabled(m, opts))
+  // SPEC: `**bold *italic` with italic:false leaves the line alone (do not close **
+  // around a bare single-star that was never tracked as emphasis).
+  if (!opts.italic && closeStack.includes('**')) {
+    // bare single * run somewhere after a ** opener?
+    if (/(?:^|[^*])\*(?:[^*]|$)/.test(result) && !closeStack.includes('*')) {
+      closeStack = closeStack.filter((m) => m !== '**' && m !== '***')
+    }
+  }
+  result = closeOpenStack(result, closeStack, {
     asteriskTotal,
     doubleAsteriskCount,
     tripleCount,
@@ -966,6 +1304,31 @@ function closeOpenStack(
   return text + suffix
 }
 
+function isMarkerEnabled(m: Marker, opts: HealOpts): boolean {
+  if (m === '***') return opts.boldItalic
+  if (m === '**' || m === '__') return opts.bold
+  if (m === '*' || m === '_') return opts.italic
+  if (m === '~~') return opts.strikethrough
+  if (m === '`') return opts.inlineCode
+  if (m === '$$' || m === '$') return opts.math
+  return true
+}
+
+/** Drop `[` that never get a matching `]`; keep complete nested pairs intact. */
+function stripUnclosedBrackets(text: string): string {
+  let out = ''
+  const opens: number[] = []
+  for (let k = 0; k < text.length; k++) {
+    if (text[k] === '[') opens.push(out.length)
+    else if (text[k] === ']' && opens.length) opens.pop()
+    out += text[k]
+  }
+  for (let oi = opens.length - 1; oi >= 0; oi--) {
+    out = out.slice(0, opens[oi]) + out.slice(opens[oi] + 1)
+  }
+  return out
+}
+
 function healLinks(text: string, opts: HealOpts): string {
   // Don't touch inside fences — simple: if unfinished fence to EOF, caller skipped heal
   const lastParen = text.lastIndexOf('](')
@@ -986,6 +1349,8 @@ function healLinks(text: string, opts: HealOpts): string {
       }
       if (open >= 0 && !isPosInFence(text, open)) {
         const isImage = open > 0 && text[open - 1] === '!'
+        if (isImage && !opts.images) return text
+        if (!isImage && !opts.links) return text
         const start = isImage ? open - 1 : open
         const before = text.slice(0, start)
         const alt = text.slice(open + 1, lastParen)
@@ -996,9 +1361,45 @@ function healLinks(text: string, opts: HealOpts): string {
     }
   }
 
+  // Prefer the leftmost incomplete image opener (so nested `[` inside alt is stripped,
+  // not treated as a link to strip under text-only mode):
+  // `![img [text` → `![img text](imagePh)` even with linkMode: 'text-only'.
+  if (opts.images) {
+    for (let i = 0; i < text.length; i++) {
+      if (text[i] !== '[' || isPosInFence(text, i)) continue
+      if (!(i > 0 && text[i - 1] === '!')) continue
+      let depth = 1
+      let close = -1
+      for (let j = i + 1; j < text.length; j++) {
+        if (text[j] === '[') depth++
+        else if (text[j] === ']') {
+          depth--
+          if (depth === 0) {
+            close = j
+            break
+          }
+        }
+      }
+      if (close === -1) {
+        const before = text.slice(0, i - 1)
+        // Keep complete nested `[…]` pairs; only strip unclosed `[` (`![img [text` → `![img text]`).
+        const alt = stripUnclosedBrackets(text.slice(i + 1))
+        return `${before}![${alt}](${opts.imagePh})`
+      }
+      if (close === text.length - 1 || text[close + 1] !== '(') {
+        if (text.slice(close + 1).trim() === '') {
+          const alt = stripUnclosedBrackets(text.slice(i + 1, close))
+          return `${text.slice(0, i - 1)}![${alt}](${opts.imagePh})`
+        }
+      }
+    }
+  }
+
   for (let i = text.length - 1; i >= 0; i--) {
     if (text[i] !== '[' || isPosInFence(text, i)) continue
     const isImage = i > 0 && text[i - 1] === '!'
+    if (isImage) continue // handled above
+    if (!opts.links) continue
     let depth = 1
     let close = -1
     for (let j = i + 1; j < text.length; j++) {
@@ -1012,16 +1413,21 @@ function healLinks(text: string, opts: HealOpts): string {
       }
     }
     if (close === -1) {
-      const start = isImage ? i - 1 : i
-      const before = text.slice(0, start)
-      if (isImage) return `${before}![${text.slice(i + 1)}](${opts.imagePh})`
-      if (opts.linkMode === 'text-only') return text.slice(0, i) + text.slice(i + 1)
-      return `${text}](${opts.linkPh})`
-    }
-    if (isImage && (close === text.length - 1 || text[close + 1] !== '(')) {
-      if (text.slice(close + 1).trim() === '') {
-        return `${text.slice(0, i - 1)}![${text.slice(i + 1, close)}](${opts.imagePh})`
+      if (opts.linkMode === 'text-only') {
+        // Nested: `[a [b [c` → strip every unclosed `[`.
+        let out = ''
+        const opens: number[] = []
+        for (let k = 0; k < text.length; k++) {
+          if (text[k] === '[') opens.push(out.length)
+          else if (text[k] === ']' && opens.length) opens.pop()
+          out += text[k]
+        }
+        for (let oi = opens.length - 1; oi >= 0; oi--) {
+          out = out.slice(0, opens[oi]) + out.slice(opens[oi] + 1)
+        }
+        return out
       }
+      return `${text}](${opts.linkPh})`
     }
   }
   return text
@@ -1086,11 +1492,13 @@ function isPairedSingleTilde(text: string, i: number): boolean {
     return p !== '~' && n !== '~'
   }
 
-  const tightBetween = (from: number, to: number): boolean => {
+  // Subscript-style pair only: content between the two single tildes is pure digits
+  // (`H~2~o`). Letter paths (`foo~bar~baz`) and ranges (`20~25`) are NOT pairs.
+  const digitsBetween = (from: number, to: number): boolean => {
     if (to - from < 1) return false
     for (let k = from; k < to; k++) {
       const c = text[k]
-      if (c === '~' || c === ' ' || c === '\t' || c === '\n' || c === '\r') return false
+      if (c < '0' || c > '9') return false
     }
     return true
   }
@@ -1100,13 +1508,11 @@ function isPairedSingleTilde(text: string, i: number): boolean {
     if (text[j] === '\n') break
     if (text[j] === '~') {
       if (!isSingleTildeAt(j)) return false
-      // opener left-flanked by a word char (H~…)
-      const openPrev = j > 0 ? text[j - 1] : ''
+      const openPrev = codePointBefore(text, j)
       if (!isWord(openPrev)) return false
-      // closer right-flanked by a word char (…~o)
-      const closeNext = i + 1 < text.length ? text[i + 1] : ''
+      const closeNext = codePointAt(text, i + 1)
       if (!isWord(closeNext)) return false
-      return tightBetween(j + 1, i)
+      return digitsBetween(j + 1, i)
     }
   }
 
@@ -1115,11 +1521,11 @@ function isPairedSingleTilde(text: string, i: number): boolean {
     if (text[j] === '\n') break
     if (text[j] === '~') {
       if (!isSingleTildeAt(j)) return false
-      const openPrev = i > 0 ? text[i - 1] : ''
+      const openPrev = codePointBefore(text, i)
       if (!isWord(openPrev)) return false
-      const closeNext = j + 1 < text.length ? text[j + 1] : ''
+      const closeNext = codePointAt(text, j + 1)
       if (!isWord(closeNext)) return false
-      return tightBetween(i + 1, j)
+      return digitsBetween(i + 1, j)
     }
   }
 

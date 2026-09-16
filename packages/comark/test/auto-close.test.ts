@@ -125,8 +125,19 @@ describe('auto close multilines', () => {
 })
 
 describe('autoCloseMarkdown - Inline Syntax', () => {
-  it('does not close incomplete emphasis on earlier lines (inline heal is last-line only)', () => {
+  it('closes incomplete emphasis across soft-wrapped paragraph lines', () => {
+    // Soft wrap continues the same paragraph (SPEC: `**bold\r\nwith CRLF`).
     const input = 'First line **bold\nSecond line'
+    expect(autoCloseMarkdown(input)).toBe('First line **bold\nSecond line**')
+  })
+
+  it('does not close incomplete emphasis across a blank line', () => {
+    const input = 'First line **bold\n\nSecond line'
+    expect(autoCloseMarkdown(input)).toBe(input)
+  })
+
+  it('does not close incomplete emphasis inside a list item soft-wrap', () => {
+    const input = '- **text\nmore text'
     expect(autoCloseMarkdown(input)).toBe(input)
   })
 
