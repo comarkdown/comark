@@ -79,7 +79,10 @@ defineProps<{ sites: EcosystemSite[] }>()
       >
         <template #header>
           <div class="flex aspect-video w-full items-center justify-center bg-muted">
-            <UIcon name="i-lucide-plus" class="size-8 text-dimmed" />
+            <UIcon
+              name="i-lucide-plus"
+              class="size-8 text-dimmed"
+            />
           </div>
         </template>
       </UPageCard>
