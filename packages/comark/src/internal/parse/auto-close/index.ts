@@ -115,20 +115,19 @@ export function autoCloseMarkdown(markdown: string, options: AutoCloseOptions = 
   let inBlockMath = false
 
   const componentStack: Array<{ depth: number; name: string; indent: string; hasYamlProps: boolean }> = []
-  const RAW_TEXT_OPEN_RE = /^<(script|pre|style|textarea)(\s|>|$)/i
 
   for (let idx = 0; idx < n; idx++) {
     const line = lines[idx]
     const trimmed = line.trim()
 
     if (inRawTextElement) {
-      if (new RegExp(`</${inRawTextElement}\\s*>`, 'i').test(line)) inRawTextElement = null
+      if (RAW_TEXT_CLOSE_RE[inRawTextElement].test(line)) inRawTextElement = null
       continue
     }
-    const rawMatch = trimmed.match(RAW_TEXT_OPEN_RE)
+    const rawMatch = RAW_TEXT_OPEN_RE.exec(trimmed)
     if (rawMatch) {
       const tag = rawMatch[1].toLowerCase() as 'style' | 'script' | 'pre' | 'textarea'
-      if (!new RegExp(`</${tag}\\s*>`, 'i').test(line)) inRawTextElement = tag
+      if (!RAW_TEXT_CLOSE_RE[tag].test(line)) inRawTextElement = tag
       continue
     }
 
@@ -257,10 +256,10 @@ export function autoCloseMarkdown(markdown: string, options: AutoCloseOptions = 
         } else {
           const incompleteInlineFence =
             (trimmedHeal.startsWith('```') && trimmedHeal.endsWith('``') && !trimmedHeal.endsWith('```')) ||
-            /```[^\n`]*``$/.test(trimmedHeal)
+            INCOMPLETE_INLINE_FENCE_RE.test(trimmedHeal)
           if (healLine !== '' && trimmedHeal !== '$$' && (!isFenceLine(healLine) || incompleteInlineFence)) {
             let line = healLine
-            if (!isFenceLine(healLine) && /```[^\n`]*``$/.test(trimmedHeal) && !trimmedHeal.endsWith('```')) {
+            if (!isFenceLine(healLine) && INCOMPLETE_INLINE_FENCE_RE.test(trimmedHeal) && !trimmedHeal.endsWith('```')) {
               line = healLine + '`'
             }
             lines[endIdx] = healInline(line, healOpts)
@@ -358,6 +357,23 @@ export function autoCloseMarkdown(markdown: string, options: AutoCloseOptions = 
   return result
 }
 
+// Shared scanners (hoisted so autoCloseMarkdown does not re-create them per call).
+const RAW_TEXT_OPEN_RE = /^<(script|pre|style|textarea)(\s|>|$)/i
+const RAW_TEXT_CLOSE_RE = {
+  script: /<\/script\s*>/i,
+  pre: /<\/pre\s*>/i,
+  style: /<\/style\s*>/i,
+  textarea: /<\/textarea\s*>/i,
+} as const
+
+const LIST_COMPARE_PREFIX_RE = /^(\s*(?:[-*+]|\d+[.)]) +)$/
+const LIST_COMPARE_VALUE_RE = /^=?\s*\$?\d/
+const TRAILING_YAML_KEY_RE = /^[ \t]*[A-Za-z_][\w.-]*: $/
+const INCOMPLETE_INLINE_FENCE_RE = /```[^\n`]*``$/
+const ATX_HEADING_RE = /^#{1,6}(\s|$)/
+const THEMATIC_BREAK_RE = /^(\*{3,}|_{3,}|-{3,})\s*$/
+const ORDERED_LIST_RE = /^\d{1,9}[.)](\s|$)/
+
 /** True for a CommonMark fence opener/closer line (``` or ~~~, length ≥ 3). */
 function isFenceLine(line: string): boolean {
   let i = 0
@@ -379,18 +395,13 @@ function isBlockStartLine(line: string): boolean {
   if (isIndentedCodeLine(line)) return true
   const t = line.trimStart()
   if (!t) return false
-  // ATX heading
-  if (/^#{1,6}(\s|$)/.test(t)) return true
-  // blockquote
-  if (t[0] === '>') return true
-  // thematic break
-  if (/^(\*{3,}|_{3,}|-{3,})\s*$/.test(t)) return true
-  // table row
-  if (t[0] === '|') return true
-  // unordered list marker + space
-  if ((t[0] === '-' || t[0] === '+' || t[0] === '*') && (t[1] === ' ' || t[1] === '\t')) return true
-  // ordered list
-  if (/^\d{1,9}[.)](\s|$)/.test(t)) return true
+  const c0 = t.charCodeAt(0)
+  if (c0 === 35 /* # */ && ATX_HEADING_RE.test(t)) return true
+  if (c0 === 62 /* > */) return true
+  if ((c0 === 42 || c0 === 95 || c0 === 45) && THEMATIC_BREAK_RE.test(t)) return true
+  if (c0 === 124 /* | */) return true
+  if ((c0 === 45 || c0 === 43 || c0 === 42) && (t.charCodeAt(1) === 32 || t.charCodeAt(1) === 9)) return true
+  if (c0 >= 48 && c0 <= 57 && ORDERED_LIST_RE.test(t)) return true
   return false
 }
 
@@ -410,23 +421,28 @@ function isIndentedCodeLine(line: string): boolean {
 function isListItemLine(line: string): boolean {
   if (!line) return false
   const t = line.trimStart()
-  if ((t[0] === '-' || t[0] === '+' || t[0] === '*') && (t[1] === ' ' || t[1] === '\t')) return true
-  if (/^\d{1,9}[.)](\s|$)/.test(t)) return true
+  if (!t) return false
+  const c0 = t.charCodeAt(0)
+  if ((c0 === 45 || c0 === 43 || c0 === 42) && (t.charCodeAt(1) === 32 || t.charCodeAt(1) === 9)) return true
+  if (c0 >= 48 && c0 <= 57 && ORDERED_LIST_RE.test(t)) return true
   return false
 }
+
+// Compiled once — avoid re-creating the Unicode property regex on every call.
+const WORD_CP_RE = /\p{L}|\p{N}/u
 
 function isWord(ch: string): boolean {
   if (!ch) return false
   const c = ch.charCodeAt(0)
-  // ASCII word chars
-  if ((c >= 48 && c <= 57) || (c >= 65 && c <= 90) || (c >= 97 && c <= 122) || c === 95) return true
-  // Unicode letters/numbers. Use codePoint so surrogate pairs (𐐀, emoji) count as one char.
-  if (c > 127) {
-    const cp = ch.codePointAt(0)
-    if (cp === undefined) return false
-    return /\p{L}|\p{N}/u.test(String.fromCodePoint(cp))
+  // Fast path: pure ASCII alnum/_ covers nearly all markdown without Unicode tests.
+  if (c <= 127) {
+    return (c >= 48 && c <= 57) || (c >= 65 && c <= 90) || (c >= 97 && c <= 122) || c === 95
   }
-  return false
+  const cp = ch.codePointAt(0)
+  if (cp === undefined) return false
+  // BMP: test the unit string as-is. Astral: allocate one code-point string.
+  if (c < 0xd800 || c > 0xdbff) return WORD_CP_RE.test(ch)
+  return WORD_CP_RE.test(String.fromCodePoint(cp))
 }
 
 /** Full code-point char before index `i` (handles surrogate pairs). */
@@ -460,6 +476,11 @@ function isSpace(ch: string): boolean {
 // Space-flanked trailing openers dropped under streaming (`hello *` → `hello`).
 // Includes `~` / `` ` `` so half-typed strike/code does not flash either.
 const TRAILING_OPENERS = '*_$:`~[{!'
+function isTrailingOpenerChar(c: number): boolean {
+  return (
+    c === 42 || c === 95 || c === 36 || c === 58 || c === 96 || c === 126 || c === 91 || c === 123 || c === 33
+  )
+}
 
 /**
  * Drop a trailing opener run (`* _ $ : \` ~ [ { !`) at EOF when it is preceded by
@@ -480,7 +501,7 @@ function dropTrailingOpeners(text: string): string {
   // Drop only the last opener run (`*`, `**`, `$`, …). An earlier space-separated
   // `*` in `hello * *` is already followed by space, so it cannot become syntax.
   let i = ws
-  while (i > 0 && TRAILING_OPENERS.includes(text[i - 1])) {
+  while (i > 0 && isTrailingOpenerChar(text.charCodeAt(i - 1))) {
     if (i >= 2 && text[i - 2] === '\\') break
     i--
   }
@@ -491,7 +512,9 @@ function dropTrailingOpeners(text: string): string {
 
   // Bare trailing `$` / `$$` after a word char: drop (`text123$` → `text123`).
   // Does not touch `$x` (opener followed by content — handled earlier as non-trailing).
-  if (/^\$+$/.test(run) && isWord(codePointBefore(text, i))) {
+  let allDollar = run.length > 0
+  for (let r = 0; r < run.length && allDollar; r++) if (run.charCodeAt(r) !== 36) allDollar = false
+  if (allDollar && isWord(codePointBefore(text, i))) {
     return text.slice(0, i) + text.slice(ws)
   }
 
@@ -536,12 +559,13 @@ function healInline(text: string, opts: HealOpts): string {
   if (text.endsWith(' ') && !text.endsWith('  ')) {
     const nl = text.lastIndexOf('\n')
     const last = nl === -1 ? text : text.slice(nl + 1)
-    if (!/^[ \t]*[A-Za-z_][\w.-]*: $/.test(last)) text = text.slice(0, -1)
+    if (!TRAILING_YAML_KEY_RE.test(last)) text = text.slice(0, -1)
   }
 
   // 2) Build mutated string for escapes while collecting open markers
   const len = text.length
-  const out: string[] = []
+  // String builder: V8 rope-concats short heals cheaply; avoids per-char array push + join.
+  let out = ''
   let stack: Marker[] = []
 
   let fence = false
@@ -596,7 +620,7 @@ function healInline(text: string, opts: HealOpts): string {
 
     // Newline
     if (ch === '\n') {
-      out.push(ch)
+      out += ch
       lineStartSrc = i + 1
       continue
     }
@@ -621,21 +645,21 @@ function healInline(text: string, opts: HealOpts): string {
             !lineBody.endsWith('```') &&
             !lineBody.slice(3).includes('```')
           ) {
-            while (i < lineEnd) {
-              out.push(text[i])
-              i++
-            }
-            out.push('`')
+            out += text.slice(i, lineEnd)
+            i = lineEnd
+            out += '`'
             i--
             continue
           }
           fence = !fence
-          while (i < len && text[i] !== '\n') {
-            out.push(text[i])
-            i++
+          {
+            const _nl = text.indexOf('\n', i)
+            const _end = _nl === -1 ? len : _nl
+            out += text.slice(i, _end)
+            i = _end
           }
           if (i < len) {
-            out.push('\n')
+            out += '\n'
             lineStartSrc = i + 1
           } else i--
           continue
@@ -644,15 +668,15 @@ function healInline(text: string, opts: HealOpts): string {
     }
 
     if (fence) {
-      out.push(ch)
+      out += ch
       continue
     }
 
     // Escape
     if (ch === '\\') {
-      out.push(ch)
+      out += ch
       if (i + 1 < len) {
-        out.push(text[++i])
+        out += text[++i]
       }
       continue
     }
@@ -664,8 +688,8 @@ function healInline(text: string, opts: HealOpts): string {
       while (ls > 0 && text[ls - 1] !== '\n') ls--
       const prefix = text.slice(ls, i)
       // Marker may be preceded by any indent (including ≥4 spaces).
-      if (/^(\s*(?:[-*+]|\d+[.)]) +)$/.test(prefix) && /^=?\s*\$?\d/.test(text.slice(i + 1))) {
-        out.push('\\', '>')
+      if (LIST_COMPARE_PREFIX_RE.test(prefix) && LIST_COMPARE_VALUE_RE.test(text.slice(i + 1))) {
+        out += '\\>'
         continue
       }
     }
@@ -677,7 +701,7 @@ function healInline(text: string, opts: HealOpts): string {
       const prevCp = codePointBefore(text, i)
       const nextCp = codePointAt(text, i + 1)
       if (isWord(prevCp) && isWord(nextCp) && !inCode && !inMath && !inBlockMath && !isPairedSingleTilde(text, i)) {
-        out.push('\\', '~')
+        out += '\\~'
         continue
       }
     }
@@ -688,7 +712,7 @@ function healInline(text: string, opts: HealOpts): string {
       if (ch === '`') {
         let n = 0
         while (i + n < len && text[i + n] === '`') n++
-        for (let k = 0; k < n; k++) out.push('`')
+        out += '`'.repeat(n)
         i += n - 1
         if (n === codeRun) {
           inCode = false
@@ -696,7 +720,7 @@ function healInline(text: string, opts: HealOpts): string {
         }
         continue
       }
-      out.push(ch)
+      out += ch
       continue
     }
 
@@ -708,7 +732,7 @@ function healInline(text: string, opts: HealOpts): string {
 
     // Inside a complete/incomplete HTML tag: do not count emphasis markers in attributes
     if (lastLtOut >= 0) {
-      out.push(ch)
+      out += ch
       continue
     }
     if (inBlockMath) {
@@ -720,7 +744,7 @@ function healInline(text: string, opts: HealOpts): string {
         const run = end - i + 1
         if (run < 3) {
           codeRun = run
-          for (let k = 0; k < codeRun; k++) out.push('`')
+          out += '`'.repeat(codeRun)
           i = end
           inCode = true
           codeStart = out.length
@@ -728,9 +752,9 @@ function healInline(text: string, opts: HealOpts): string {
           continue
         }
       }
-      out.push(ch)
+      out += ch
       if (ch === '$' && next === '$') {
-        out.push('$')
+        out += '$'
         i++
         inBlockMath = false
         if (stack[stack.length - 1] === '$$') stack.pop()
@@ -738,7 +762,7 @@ function healInline(text: string, opts: HealOpts): string {
       continue
     }
     if (inMath) {
-      out.push(ch)
+      out += ch
       if (ch === '$' && next !== '$') {
         inMath = false
         if (stack[stack.length - 1] === '$') stack.pop()
@@ -746,18 +770,18 @@ function healInline(text: string, opts: HealOpts): string {
       continue
     }
     if (inLatexI) {
-      out.push(ch)
+      out += ch
       if (ch === '\\' && next === ')') {
-        out.push(')')
+        out += ')'
         i++
         inLatexI = false
       }
       continue
     }
     if (inLatexB) {
-      out.push(ch)
+      out += ch
       if (ch === '\\' && next === ']') {
-        out.push(']')
+        out += ']'
         i++
         inLatexB = false
       }
@@ -767,35 +791,35 @@ function healInline(text: string, opts: HealOpts): string {
     // Attributes
     if (opts.attributesEnabled && ch === '{' && prev && prev !== ' ' && prev !== '\t' && prev !== '\n') {
       inAttr++
-      out.push(ch)
+      out += ch
       continue
     }
     if (opts.attributesEnabled && ch === '}') {
       if (inAttr > 0) inAttr--
-      out.push(ch)
+      out += ch
       continue
     }
     if (inAttr > 0) {
-      out.push(ch)
+      out += ch
       continue
     }
 
     // Links / brackets — track but copy through; rewrite at end
     if (ch === '[') {
       bracketDepth++
-      out.push(ch)
+      out += ch
       continue
     }
     if (ch === ']') {
       if (bracketDepth > 0) bracketDepth--
-      out.push(ch)
+      out += ch
       if (next === '(') {
         linkUrlOpen = true
       }
       continue
     }
     if (linkUrlOpen) {
-      out.push(ch)
+      out += ch
       if (ch === ')' && bracketDepth === 0) {
         // crude: closed
         linkUrlOpen = false
@@ -805,7 +829,7 @@ function healInline(text: string, opts: HealOpts): string {
 
     // Skip emphasis counts while inside unclosed link text
     if (bracketDepth > 0) {
-      out.push(ch)
+      out += ch
       continue
     }
 
@@ -819,13 +843,13 @@ function healInline(text: string, opts: HealOpts): string {
       // Triple+ on non-line-start: leave as fence-like material, do not open inline code
       // (block incomplete fences like `see ```inline code`` are completed above).
       if (run >= 3) {
-        for (let k = 0; k < run; k++) out.push('`')
+        out += '`'.repeat(run)
         i = end
         continue
       }
 
       codeRun = run
-      for (let k = 0; k < codeRun; k++) out.push('`')
+      out += '`'.repeat(codeRun)
       i = end
       inCode = true
       codeStart = out.length
@@ -843,13 +867,13 @@ function healInline(text: string, opts: HealOpts): string {
 
       if (run >= 3) {
         // Odd triple+ runs (`$$$`, `$$$$$`, …) are not valid math openers — copy through.
-        for (let k = 0; k < run; k++) out.push('$')
+        out += '$'.repeat(run)
         i = end
         continue
       }
 
       if (run === 2) {
-        out.push('$', '$')
+        out += '$$'
         i = end
         if (opts.blockMath) {
           inBlockMath = !inBlockMath
@@ -859,7 +883,7 @@ function healInline(text: string, opts: HealOpts): string {
       }
 
       // run === 1
-      out.push(ch)
+      out += ch
       if (opts.inlineMath && looksLikeInlineMathOpen(text, i)) {
         // Skip currency (`$100`) and component names (`::$special`)
         inMath = true
@@ -883,7 +907,7 @@ function healInline(text: string, opts: HealOpts): string {
       const surroundedSingle = run === 1 && leftSpace && rightSpace
 
       // emit chars
-      for (let k = i; k <= end; k++) out.push('*')
+      out += '*'.repeat(end - i + 1)
 
       if (!surroundedSingle) {
         // Word-internal single * (`a*b`):
@@ -1004,7 +1028,7 @@ function healInline(text: string, opts: HealOpts): string {
       const run = end - i + 1
       const after = end + 1 < len ? text[end + 1] : ''
       const surrounded = isSpace(prev) && isSpace(after)
-      for (let k = i; k <= end; k++) out.push('_')
+      out += '_'.repeat(end - i + 1)
 
       // Horizontal rule: line of only _ (3+)
       if (run >= 3) {
@@ -1087,7 +1111,7 @@ function healInline(text: string, opts: HealOpts): string {
       const run = end - i + 1
       const after = end + 1 < len ? text[end + 1] : ''
       const surrounded = isSpace(prev) && isSpace(after)
-      for (let k = i; k <= end; k++) out.push('~')
+      out += '~'.repeat(end - i + 1)
       if (opts.strikethrough && !surrounded && run >= 2) {
         const pairs = Math.floor(run / 2)
         for (let p = 0; p < pairs; p++) toggleFlanking('~~', prev, after)
@@ -1097,10 +1121,10 @@ function healInline(text: string, opts: HealOpts): string {
       continue
     }
 
-    out.push(ch)
+    out += ch
   }
 
-  let result = out.join('')
+  let result = out
 
   // Incomplete HTML strip (`Hello <div` → `Hello`)
   if (opts.htmlTags && lastLtOut >= 0) {
