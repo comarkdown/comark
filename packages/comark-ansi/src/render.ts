@@ -1,5 +1,5 @@
 import type { ElementNode, MarkdownDocument, Node, RendererOptions } from 'comark'
-import { render } from 'comark/render'
+import { render, resolveTemplates } from 'comark/render'
 import { handlers as defaultHandlers } from './handlers/index.ts'
 import { stripControlChars } from './utils/escape.ts'
 
@@ -63,7 +63,8 @@ export async function renderAnsiFromDocument(
   const colors = options?.colors ?? (typeof process !== 'undefined' ? !process.env.NO_COLOR : true)
   const width = options?.width ?? 80
 
-  const sanitized = { ...document, nodes: sanitizeForTerminal(document.nodes) }
+  const resolved = resolveTemplates(document, options?.data)
+  const sanitized = { ...resolved, nodes: sanitizeForTerminal(resolved.nodes) }
   return render(sanitized, {
     ...options,
     colors,

@@ -1,5 +1,5 @@
 import type { Node, ElementNode, MarkdownDocument } from 'comark'
-import { render } from 'comark/render'
+import { render, resolveTemplates } from 'comark/render'
 import type { RendererOptions } from 'comark/render'
 
 export * from 'comark/render'
@@ -40,5 +40,7 @@ export async function renderHtmlFromDocument(
   document: MarkdownDocument | { nodes: MarkdownDocument['nodes'] },
   options?: RendererOptions
 ): Promise<string> {
-  return (await render(document, { blockSeparator: '\n', format: 'text/html', ...options })).trim()
+  return (
+    await render(resolveTemplates(document, options?.data), { blockSeparator: '\n', format: 'text/html', ...options })
+  ).trim()
 }

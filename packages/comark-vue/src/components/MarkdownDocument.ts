@@ -1,4 +1,5 @@
 import type { PropType, VNode } from 'vue'
+import { resolveTemplates } from 'comark/render'
 import type {
   ComponentManifest,
   ComarkContextProvider,
@@ -430,7 +431,7 @@ export const MarkdownDocument: MarkdownDocumentComponent = defineComponent({
     return () => {
       // Render all nodes from the live document when present, else the value prop
       const rawDocument = toRaw(liveDocument.value ?? inputDocument.value)
-      const nodes = [...(rawDocument.nodes || [])]
+      const nodes = [...resolveTemplates(rawDocument, props.data).nodes]
 
       if (props.streaming && caret.value && nodes.length > 0) {
         const hasStreamCaret = findLastTextNodeAndAppendNode(nodes[nodes.length - 1] as ElementNode, caret.value)
