@@ -3,6 +3,7 @@ import { computed, defineComponent, h, shallowRef, watch } from 'vue'
 import { createSerializedMarkdownParser } from 'comark'
 import type { ParserOptions, ComponentManifest, MarkdownDocument as MarkdownDocumentType } from 'comark'
 import { isMarkdownDocument } from 'comark/utils'
+import type { BindingFilters } from 'comark/utils'
 import { MarkdownDocument } from './MarkdownDocument.ts'
 
 /**
@@ -61,6 +62,11 @@ export interface MarkdownProps {
    * Additional data to pass to the renderer
    */
   data?: Record<string, unknown>
+
+  /**
+   * Named filter functions applied to `{{ path | name:arg }}` and `:prop="path | name:arg"` bindings.
+   */
+  filters?: BindingFilters
 
   /**
    * Document key used to subscribe to live updates via `globalThis.comarkContext`
@@ -164,6 +170,14 @@ export const markdownProps = {
   },
 
   /**
+   * Named filter functions applied to `{{ path | name:arg }}` and `:prop="path | name:arg"` bindings.
+   */
+  filters: {
+    type: Object as PropType<BindingFilters>,
+    default: undefined,
+  },
+
+  /**
    * Document key used to subscribe to live updates via `globalThis.comarkContext`
    */
   documentKey: {
@@ -256,6 +270,7 @@ export const Markdown: MarkdownComponent = defineComponent({
           class: props.streaming ? 'comark-stream' : '',
           caret: props.caret,
           data: props.data,
+          filters: props.filters,
           documentKey: props.documentKey,
         })
       }
@@ -269,6 +284,7 @@ export const Markdown: MarkdownComponent = defineComponent({
         class: props.streaming ? 'comark-stream' : '',
         caret: props.caret,
         data: props.data,
+        filters: props.filters,
         documentKey: props.documentKey,
       })
     }

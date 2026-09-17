@@ -18,6 +18,7 @@ import {
 import type { ElementNode, Node as MarkdownAstNode, NodeRenderData } from 'comark'
 import { resolveIfWrapper, selectIfBranch, shouldRenderIf, type IfProps } from 'comark/plugins/binding'
 import { pascalCase, resolveAttributes } from 'comark/utils'
+import type { BindingFilters } from 'comark/utils'
 
 interface StructuralComponent extends Type<any> {
   ɵcomarkIf?: boolean
@@ -103,6 +104,9 @@ export class MarkdownNode implements OnChanges {
   /** Render data for :binding resolution */
   @Input() renderData: NodeRenderData = { frontmatter: {}, meta: {}, data: {}, props: {} }
 
+  /** Named filter functions for pipe-filter expressions */
+  @Input() filters: BindingFilters = {}
+
   /** Parent node (for context like `pre` tag detection) */
   @Input() parent?: MarkdownAstNode
 
@@ -154,7 +158,7 @@ export class MarkdownNode implements OnChanges {
       }
 
       // Resolve attributes (:binding support)
-      const resolved = resolveAttributes(nodeProps, this.renderData, { parseJson: true })
+      const resolved = resolveAttributes(nodeProps, this.renderData, { parseJson: true, filters: this.filters })
 
       // Build childrenRenderData - only shadow parent scope when element has own attrs
       const hasOwnAttrs = Object.keys(resolved).length > 0
@@ -370,6 +374,7 @@ export class MarkdownNode implements OnChanges {
             componentRef.setInput('node', child)
             componentRef.setInput('components', this.components)
             componentRef.setInput('renderData', renderData)
+            componentRef.setInput('filters', this.filters)
             componentRef.setInput('parent', this.node)
             componentRef.changeDetectorRef.detectChanges()
 
@@ -382,7 +387,7 @@ export class MarkdownNode implements OnChanges {
             console.error(`Failed to render custom component "${childTag}"`, error)
           }
         } else {
-          const resolved = resolveAttributes(childProps, renderData, { parseJson: true })
+          const resolved = resolveAttributes(childProps, renderData, { parseJson: true, filters: this.filters })
           const hasOwnAttrs = Object.keys(resolved).length > 0
           const childRenderData: NodeRenderData = hasOwnAttrs ? { ...renderData, props: resolved } : renderData
           this.renderNativeEl(parentEl, childTag, resolved, grandChildren, childRenderData)

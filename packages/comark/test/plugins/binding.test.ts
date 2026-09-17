@@ -182,3 +182,34 @@ Intro text.
     expect(html).not.toContain('<p title=')
   })
 })
+
+describe('binding plugin — pipe-filter round-trip', () => {
+  it('stores the full pipeline expression verbatim in :value', async () => {
+    const md = '{{ user.name | upper }}'
+    const doc = await parseWithBinding(md)
+    // The binding inline node sits inside the wrapping <p> paragraph.
+    const paraNode = doc.nodes[0] as any[]
+    expect(paraNode[0]).toBe('p')
+    const bindingNode = paraNode[2] as any[]
+    expect(bindingNode[0]).toBe('binding')
+    expect(bindingNode[1][':value']).toBe('user.name | upper')
+
+    // renderMarkdown (without binding plugin) serialises back to ::binding{:value="..."} —
+    // the block-component form used by other existing round-trip tests.
+    const rendered = await renderMarkdown(doc)
+    expect(rendered.trim()).toContain(':value="user.name | upper"')
+  })
+
+  it('stores a chained filter pipeline verbatim in :value', async () => {
+    const md = '{{ bio | trim | truncate:10 | upper }}'
+    const doc = await parseWithBinding(md)
+    const paraNode = doc.nodes[0] as any[]
+    expect(paraNode[0]).toBe('p')
+    const bindingNode = paraNode[2] as any[]
+    expect(bindingNode[0]).toBe('binding')
+    expect(bindingNode[1][':value']).toBe('bio | trim | truncate:10 | upper')
+
+    const rendered = await renderMarkdown(doc)
+    expect(rendered.trim()).toContain(':value="bio | trim | truncate:10 | upper"')
+  })
+})

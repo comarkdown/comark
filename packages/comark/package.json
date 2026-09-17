@@ -43,6 +43,7 @@
     "./plugins/*": "./dist/plugins/*.js",
     "./utils": "./dist/utils/index.js",
     "./utils/trace": "./dist/utils/trace.js",
+    "./utils/filters/html": "./dist/utils/filters/html.js",
     "./parse": "./dist/parse.js",
     "./render": "./dist/render.js"
   },

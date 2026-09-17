@@ -2,6 +2,7 @@ import React from 'react'
 import { parseMarkdown } from 'comark'
 import type { MarkdownDocument as MarkdownDocumentType, ParserOptions } from 'comark'
 import { isMarkdownDocument } from 'comark/utils'
+import type { BindingFilters } from 'comark/utils'
 import { MarkdownDocument } from './MarkdownDocument.tsx'
 import { MarkdownClient } from './MarkdownClient.tsx'
 
@@ -66,6 +67,11 @@ export interface MarkdownProps {
   data?: Record<string, unknown>
 
   /**
+   * Named filter functions applied to `{{ path | name:arg }}` and `:prop="path | name:arg"` bindings.
+   */
+  filters?: BindingFilters
+
+  /**
    * Additional className for the wrapper div
    */
   className?: string
@@ -113,6 +119,7 @@ export async function Markdown({
   streaming = false,
   caret = false,
   data,
+  filters,
   className,
 }: MarkdownProps) {
   // Pre-parsed document — skip parsing and render directly
@@ -126,6 +133,7 @@ export async function Markdown({
         className={className}
         caret={caret}
         data={data}
+        filters={filters}
       />
     )
   }
@@ -146,6 +154,7 @@ export async function Markdown({
         streaming={streaming}
         caret={caret}
         data={data}
+        filters={filters}
         className={className}
       />
     )
@@ -162,6 +171,7 @@ export async function Markdown({
       className={className}
       caret={caret}
       data={data}
+      filters={filters}
     />
   )
 }

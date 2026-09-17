@@ -6,7 +6,8 @@ import type {
   NodeRenderData,
 } from 'comark'
 import React, { lazy, Suspense, useMemo } from 'react'
-import { pascalCase, camelCase, resolveAttributes } from 'comark/utils'
+import { pascalCase, camelCase, resolveAttributes, resolveFilterRegistry } from 'comark/utils'
+import type { BindingFilters } from 'comark/utils'
 import { findLastTextNodeAndAppendNode, getCaret } from '../utils/caret.ts'
 
 /**
@@ -108,7 +109,8 @@ function renderNode(
   key?: string | number,
   componentsManifest?: ComponentManifest,
   parent?: Node,
-  renderData: NodeRenderData = { frontmatter: {}, meta: {}, data: {}, props: {} }
+  renderData: NodeRenderData = { frontmatter: {}, meta: {}, data: {}, props: {} },
+  filters?: BindingFilters
 ): React.ReactNode {
   // Handle text nodes (strings)
   if (typeof node === 'string') {
@@ -140,7 +142,7 @@ function renderNode(
     // Resolve `:prefix` bindings, then apply React-specific attribute
     // remapping (`class` → `className`, string `style` → object, `tabindex`
     // → `tabIndex`).
-    const resolved = resolveAttributes(nodeProps, renderData, { parseJson: true })
+    const resolved = resolveAttributes(nodeProps, renderData, { parseJson: true, filters })
     const props: Record<string, any> = {}
     for (const k in resolved) {
       const v = resolved[k]
@@ -207,14 +209,14 @@ function renderNode(
           const slotChildren = getChildren(child)
           slots[slotName] = slotChildren
             .map((slotChild: Node, idx: number) =>
-              renderNode(slotChild, components, idx, componentsManifest, node, childrenRenderData)
+              renderNode(slotChild, components, idx, componentsManifest, node, childrenRenderData, filters)
             )
             .filter((slotChild): slotChild is React.ReactNode => slotChild !== null)
           continue
         }
       }
 
-      const rendered = renderNode(child, components, i, componentsManifest, node, childrenRenderData)
+      const rendered = renderNode(child, components, i, componentsManifest, node, childrenRenderData, filters)
       if (rendered !== null) {
         regularChildren.push(rendered)
       }
@@ -302,6 +304,11 @@ export interface MarkdownDocumentProps {
   data?: Record<string, unknown>
 
   /**
+   * Named filter functions applied to `{{ path | name:arg }}` and `:prop="path | name:arg"` bindings.
+   */
+  filters?: BindingFilters
+
+  /**
    * Additional className for the wrapper div
    */
   className?: string
@@ -335,11 +342,14 @@ export const MarkdownDocument: React.FC<MarkdownDocumentProps> = ({
   streaming = false,
   caret: caretProp = false,
   data,
+  filters,
   className,
 }) => {
   const document = value ?? { nodes: [] }
 
   const caret = useMemo(() => getCaret(caretProp), [caretProp])
+
+  const resolvedFilters = useMemo(() => resolveFilterRegistry(filters), [filters])
 
   const renderedNodes = useMemo(() => {
     // Render all nodes from the document value
@@ -363,9 +373,11 @@ export const MarkdownDocument: React.FC<MarkdownDocumentProps> = ({
     }
 
     return nodes
-      .map((node, index) => renderNode(node, customComponents, index, componentsManifest, undefined, renderData))
+      .map((node, index) =>
+        renderNode(node, customComponents, index, componentsManifest, undefined, renderData, resolvedFilters)
+      )
       .filter((child): child is React.ReactNode => child !== null)
-  }, [document, customComponents, componentsManifest, streaming, caret, data])
+  }, [document, customComponents, componentsManifest, streaming, caret, data, resolvedFilters])
 
   // Wrap in a fragment
   return <div className={`comark-content ${className || ''}`}>{renderedNodes}</div>

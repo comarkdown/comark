@@ -9,6 +9,8 @@ import {
   type OnDestroy,
 } from '@angular/core'
 import type { ElementNode, Node, MarkdownDocument as MarkdownDocumentType, NodeRenderData } from 'comark'
+import { resolveFilterRegistry } from 'comark/utils'
+import type { BindingFilters } from 'comark/utils'
 import { MarkdownNode } from './markdown-node.component.ts'
 import { findLastTextNodeAndAppendNode, getCaret } from '../utils/caret.ts'
 
@@ -38,6 +40,7 @@ const EMPTY_DOCUMENT: MarkdownDocumentType = { nodes: [], frontmatter: {}, meta:
           [node]="node"
           [components]="components"
           [renderData]="renderData"
+          [filters]="resolvedFilters"
         />
       }
     </div>
@@ -58,6 +61,9 @@ export class MarkdownDocument implements OnInit, OnDestroy {
 
   /** Additional data to pass to the renderer for :binding resolution */
   @Input() data: Record<string, unknown> = {}
+
+  /** Named filter functions for pipe-filter expressions */
+  @Input() filters: BindingFilters = {}
 
   /**
    * Document key used to subscribe to live updates via `globalThis.comarkContext`.
@@ -114,5 +120,9 @@ export class MarkdownDocument implements OnInit, OnDestroy {
       data: this.data || {},
       props: {},
     }
+  }
+
+  get resolvedFilters(): BindingFilters {
+    return resolveFilterRegistry(this.filters)
   }
 }

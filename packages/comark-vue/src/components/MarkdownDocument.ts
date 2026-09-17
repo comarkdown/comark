@@ -21,7 +21,8 @@ import {
   toRaw,
 } from 'vue'
 import { findLastTextNodeAndAppendNode, getCaret } from '../utils/caret.ts'
-import { pascalCase, resolveAttributes } from 'comark/utils'
+import { pascalCase, resolveAttributes, resolveFilterRegistry } from 'comark/utils'
+import type { BindingFilters } from 'comark/utils'
 
 // Cache for dynamically resolved components
 const asyncComponentCache = new Map<string, any>()
@@ -110,7 +111,8 @@ function renderNode(
   key?: string | number,
   componentsManifest?: ComponentManifest,
   parent?: Node,
-  renderData: NodeRenderData = { frontmatter: {}, meta: {}, data: {}, props: {} }
+  renderData: NodeRenderData = { frontmatter: {}, meta: {}, data: {}, props: {} },
+  filters?: BindingFilters
 ): VNode | string | null {
   // Handle text nodes (strings)
   if (typeof node === 'string') {
@@ -141,7 +143,7 @@ function renderNode(
 
     // Resolve `:prefix` bindings and let Vue-specific attribute mapping run
     // on top (e.g. `className` → `class`).
-    const resolved = resolveAttributes(nodeProps, renderData, { parseJson: true })
+    const resolved = resolveAttributes(nodeProps, renderData, { parseJson: true, filters })
     const props: Record<string, any> = {}
     for (const k in resolved) {
       if (k === 'className') {
@@ -204,14 +206,14 @@ function renderNode(
           slots[slotName] = () =>
             slotChildren
               .map((slotChild: Node, idx: number) =>
-                renderNode(slotChild, components, idx, componentsManifest, node, childrenRenderData)
+                renderNode(slotChild, components, idx, componentsManifest, node, childrenRenderData, filters)
               )
               .filter((slotChild): slotChild is VNode | string => slotChild !== null)
           continue
         }
       }
 
-      const rendered = renderNode(child, components, i, componentsManifest, node, childrenRenderData)
+      const rendered = renderNode(child, components, i, componentsManifest, node, childrenRenderData, filters)
       if (rendered !== null) {
         regularChildren.push(rendered)
       }
@@ -269,6 +271,11 @@ export interface MarkdownDocumentProps {
    * Additional data to pass to the renderer
    */
   data?: Record<string, unknown>
+
+  /**
+   * Named filter functions applied to `{{ path | name:arg }}` and `:prop="path | name:arg"` bindings.
+   */
+  filters?: BindingFilters
 
   /**
    * Document key. When set and `globalThis.comarkContext` exists, the renderer
@@ -338,6 +345,14 @@ export const markdownDocumentProps = {
   data: {
     type: Object as PropType<Record<string, unknown>>,
     default: () => ({}),
+  },
+
+  /**
+   * Named filter functions applied to `{{ path | name:arg }}` and `:prop="path | name:arg"` bindings.
+   */
+  filters: {
+    type: Object as PropType<BindingFilters>,
+    default: undefined,
   },
 
   /**
@@ -427,6 +442,8 @@ export const MarkdownDocument: MarkdownDocumentComponent = defineComponent({
 
     const caret = computed<ElementNode | null>(() => getCaret(props.caret || false))
 
+    const resolvedFilters = computed(() => resolveFilterRegistry(props.filters))
+
     return () => {
       // Render all nodes from the live document when present, else the value prop
       const rawDocument = toRaw(liveDocument.value ?? inputDocument.value)
@@ -450,7 +467,9 @@ export const MarkdownDocument: MarkdownDocumentComponent = defineComponent({
       }
 
       const children = nodes
-        .map((node, index) => renderNode(node, components.value, index, componentManifest, undefined, renderData))
+        .map((node, index) =>
+          renderNode(node, components.value, index, componentManifest, undefined, renderData, resolvedFilters.value)
+        )
         .filter((child): child is VNode | string => child !== null)
 
       // Wrap in a fragment

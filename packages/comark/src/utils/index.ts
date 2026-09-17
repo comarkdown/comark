@@ -278,3 +278,7 @@ export function get(data: unknown, key: string): unknown {
 // same `:prefix` semantics as the HTML/ANSI handlers without duplicating logic.
 export { resolveAttributes, resolveAttribute } from '../internal/stringify/attributes.ts'
 export type { ResolveAttributesOptions } from '../internal/stringify/attributes.ts'
+
+// Re-export binding filter utilities.
+export { parseBindingExpression, applyBindingFilters, standardFilters, resolveFilterRegistry } from './filters/index.ts'
+export type { BindingFilter, BindingFilters, FilterSpec, ParsedBinding } from './filters/index.ts'

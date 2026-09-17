@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue'
 import { Markdown } from '@comark/vue'
-import binding, { Binding, If } from '@comark/vue/plugins/binding'
+import binding, { Binding, If, standardFilters } from '@comark/vue/plugins/binding'
 import rangi from '@comark/vue/plugins/rangi'
 import { github } from 'rangi/themes'
 
@@ -9,12 +9,20 @@ const showSource = ref(false)
 const sourcePlugins = [rangi({ theme: github })]
 const previewPlugins = [binding()]
 
+// Custom `shout` filter merged over the built-in catalog.
+// Built-ins (upper, truncate, title, …) are active by default.
+const filters = {
+  ...standardFilters,
+  shout: (val: unknown) => `${String(val ?? '').toUpperCase()}!!!`,
+}
+
 // Runtime data exposed to bindings via the `data.` namespace.
 const initialData = {
   user: {
     name: 'Ada',
     role: 'admin',
     age: 28,
+    bio: 'Wrote the first published computer algorithm.',
   },
   isHappy: true,
   isFine: true,
@@ -39,6 +47,18 @@ release:
 # {{ frontmatter.release.codename || Unnamed }} — v{{ frontmatter.release.version }}
 
 Hello **{{ data.user.name || friend }}** (role: {{ data.user.role }}), welcome back!
+
+## Pipe filters
+
+Name uppercased: **{{ data.user.name | upper }}**
+
+Bio truncated: **{{ data.user.bio | truncate:40 }}**
+
+Custom shout: **{{ data.user.name | shout }}**
+
+::card{:title="data.user.name | title"}
+Attribute binding with a filter — card title resolves to \`{{ props.title }}\`.
+::
 
 ## Role comparison
 
@@ -179,6 +199,28 @@ ${markdown}
               </select>
             </div>
 
+            <div class="vbg-field vbg-custom-field-wide">
+              <label
+                class="vbg-label"
+                for="bio"
+                >Bio</label
+              >
+              <textarea
+                id="bio"
+                v-model="data.user.bio"
+                name="bio"
+                rows="3"
+                spellcheck="false"
+                aria-describedby="bio-help"
+              />
+              <p
+                id="bio-help"
+                class="vbg-helper"
+              >
+                Used by <code>| truncate:40</code> in the Pipe filters section.
+              </p>
+            </div>
+
             <div class="vbg-field">
               <div class="vbg-custom-age-label">
                 <label
@@ -287,6 +329,7 @@ ${markdown}
                 :plugins="previewPlugins"
                 :components="{ Binding, If, h1: 'h2', h2: 'h3' }"
                 :data="data"
+                :filters="filters"
               />
               <template #fallback><p class="vbg-caption">Rendering Markdown…</p></template>
             </Suspense>
@@ -423,6 +466,12 @@ ${markdown}
 .vbg-custom-fields {
   display: grid;
   gap: var(--vbg-space-6);
+}
+.vbg-custom-fields textarea {
+  width: 100%;
+  resize: vertical;
+  min-height: 4.5rem;
+  font: inherit;
 }
 .vbg-custom-age-label {
   display: flex;
@@ -629,7 +678,8 @@ ${markdown}
   .vbg-custom-fields {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  .vbg-custom-fields > :last-child {
+  .vbg-custom-fields > :last-child,
+  .vbg-custom-field-wide {
     grid-column: 1 / -1;
   }
   .vbg-custom-masthead {

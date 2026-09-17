@@ -1,5 +1,6 @@
 import { stringifyYaml } from '../yaml.ts'
-import { escapeHtml, get } from '../../utils/index.ts'
+import { escapeHtml, get, parseBindingExpression, applyBindingFilters } from '../../utils/index.ts'
+import type { BindingFilters } from '../../utils/index.ts'
 import { isUnsafeUrlValue } from '../props-validation.ts'
 import { pickFence } from './fence.ts'
 import type { NodeRenderData } from '../../types.ts'
@@ -18,6 +19,11 @@ export interface ResolveAttributesOptions {
    * (like HTML attribute emitters) can apply their own `:prefix` handling.
    */
   parseJson?: boolean
+  /**
+   * Named filter functions applied to `| name:arg` pipelines in binding
+   * expressions. Forwarded from the renderer's `filters` option.
+   */
+  filters?: BindingFilters
 }
 
 // DOM sinks that turn a string/object prop into raw markup (`innerHTML`,
@@ -61,12 +67,18 @@ export function resolveAttributes(
     if (options.parseJson && isBinding) {
       // Framework mode: always strip `:` and hand components real JS values.
       if (typeof value === 'string') {
+        const { path, filters: filterSpecs } = parseBindingExpression(value)
+        let resolved: unknown
         try {
-          outValue = JSON.parse(value)
+          resolved = filterSpecs.length === 0 ? JSON.parse(path) : get(renderData, path)
         } catch {
           // not JSON — fall through to dot-path lookup
-          outValue = get(renderData, value)
+          resolved = get(renderData, path)
         }
+        if (filterSpecs.length > 0 && options.filters) {
+          resolved = applyBindingFilters(resolved, filterSpecs, options.filters)
+        }
+        outValue = resolved
       } else {
         // Non-string binding value (e.g. an object literal the parser already
         // decoded) — pass through with the prefix stripped.
@@ -74,9 +86,13 @@ export function resolveAttributes(
       }
       resultKey = outKey
     } else if (isBinding && typeof value === 'string') {
-      const resolved = get(renderData, value)
+      const { path, filters: filterSpecs } = parseBindingExpression(value)
+      const resolved = get(renderData, path)
       if (resolved !== undefined) {
-        outValue = resolved
+        outValue =
+          filterSpecs.length > 0 && options.filters
+            ? applyBindingFilters(resolved, filterSpecs, options.filters)
+            : resolved
         resultKey = outKey
       } else {
         outValue = value
@@ -109,13 +125,21 @@ export function resolveAttributes(
  * `renderData`) over the literal `key`. Falls back to the raw value when the
  * binding doesn't resolve.
  */
-export function resolveAttribute(attrs: Record<string, unknown>, renderData: NodeRenderData, key: string): unknown {
+export function resolveAttribute(
+  attrs: Record<string, unknown>,
+  renderData: NodeRenderData,
+  key: string,
+  filters?: BindingFilters
+): unknown {
   const bindKey = `:${key}`
   if (bindKey in attrs) {
     const value = attrs[bindKey]
     if (typeof value === 'string') {
-      const resolved = get(renderData, value)
-      if (resolved !== undefined) return resolved
+      const { path, filters: filterSpecs } = parseBindingExpression(value)
+      const resolved = get(renderData, path)
+      if (resolved !== undefined) {
+        return filterSpecs.length > 0 && filters ? applyBindingFilters(resolved, filterSpecs, filters) : resolved
+      }
     }
     return value
   }
