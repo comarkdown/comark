@@ -1,39 +1,63 @@
 ---
-# Behavioral SPEC for autoCloseMarkdown (not a parse fixture).
-# Exercised by test/auto-close-spec.test.ts — skip the Input/AST/HTML runner.
-# Behavioral SPEC for remend (streaming auto-close).
-# Source: comark SPEC/auto-close.md + cases extracted from packages/remend/__tests__.
-# Exercised by __tests__/auto-close-spec.test.ts and scripts/compare-auto-close.mjs
+# Behavioral SPEC for auto-close markdown (not a parse fixture).
+# Skip the Input/AST/HTML runner.
 skip: true
+format: diff-cases/v2
 ---
 
 # Auto Close Markdown Spec
-# Auto Close Markdown Spec (remend)
 
-Self-healing markdown for streaming. Completes incomplete syntax so partial AI output still renders cleanly.
+Self-healing markdown for streaming. Completes incomplete syntax so partial AI output still renders cleanly and does not flash.
 
-options:
-- incompleteLinkPlaceholder: a placeholder for incomplete links (default: `comark:incomplete-link`)
-- incompleteImagePlaceholder: a placeholder for incomplete images (default: `comark:incomplete-image`)
-- math: auto-close inline `$…$` and block `$$…$$` (default: `false`)
-- dropTrailingOpeners: drop a trailing opener after whitespace at EOF (`hello *` → `hello`) so half-typed markers do not flash (default: `false`; enabled when parsing with `streaming: true`)
-options (remend):
-- incompleteLinkPlaceholder: `comark:incomplete-link`
-- incompleteImagePlaceholder: `comark:incomplete-image`
-- katex / inlineKatex: auto-close `$$…$$` / `$…$` (inlineKatex defaults off)
-- linkMode: `protocol` | `text-only`
-- per-case overrides may appear as `+ expected  (katex: true, linkMode: 'text-only')`
+## Principles
 
-comark-only (not implemented by remend):
-- dropTrailingOpeners: drop a trailing opener after whitespace at EOF (`hello *` → `hello`)
+1. **Attached markers close, detached markers stay literal.** `**bold` → `**bold**`; `hello **` and `5 * 0` are left alone. A marker followed by whitespace or EOF can never become syntax.
+2. **Word-internal markers stay literal.** `snake_case`, `foo*bar`, `1_000_000` are never treated as openers. `_` additionally requires whitespace or line start before it (`func(_arg` stays literal); `*` follows CommonMark flanking rules.
+3. **Close innermost first (LIFO).** Every unclosed construct is closed in reverse opening order: `` **bold *italic ~~strike `code `` → `` **bold *italic ~~strike `code`~~*** ``. A closer is never emitted inside a construct that was opened later.
+4. **Code, math and fences shield their contents.** Nothing inside `` ` ``…`` ` ``, `$`…`$`, `$$`…`$$`, fenced or indented code is inspected or closed. An unclosed fence at EOF is left open on purpose (the renderer shows a streaming code block).
+5. **Empty delimiter runs are never closed.** `**`, `- ~~`, `$$$`, `text**` stay as they are; there is no content to wrap.
+6. **Block boundaries end inline scope.** Emphasis may span a soft line break inside one paragraph or list item, but never crosses a blank line, a new list item, a heading, a rule or a fence.
+7. **Only streaming frames are altered where possible.** Closers, placeholders and guards are for the in-flight frame. Transforms that change final output (`singleTilde` escaping, `comparisonOperators` escaping, table delimiter insertion) are opt-out and documented as such.
+8. **Streaming-only helpers.** `dropTrailingOpeners` and the setext guard exist to stop flicker and are enabled by `streaming: true`.
 
+## Options
+
+| option | default | effect |
+| --- | --- | --- |
+| `bold` | `true` | close `**…**` / `__…__` |
+| `italic` | `true` | close `*…*` / `_…_` |
+| `boldItalic` | `true` | close `***…***` / `___…___` |
+| `inlineCode` | `true` | close `` `…` `` |
+| `strikethrough` | `true` | close `~~…~~` |
+| `links` | `true` | close `[text` / `[text](partial` using `incompleteLinkPlaceholder` |
+| `images` | `true` | close `![alt` / `![alt](partial` using `incompleteImagePlaceholder` |
+| `linkMode` | `'protocol'` | `'protocol'` emits `[text](placeholder)`; `'text-only'` strips the brackets and emits plain text. Images always use the image placeholder. |
+| `incompleteLinkPlaceholder` | `'auto-close:incomplete-link'` | href used for incomplete links |
+| `incompleteImagePlaceholder` | `'auto-close:incomplete-image'` | src used for incomplete images |
+| `blockMath` | `true` | close `$$…$$` |
+| `inlineMath` | `false` | close `$…$` (off by default: `$50 and $100` is prose) |
+| `htmlTags` | `true` | drop an incomplete tag (`<div class=`) at EOF, including the whitespace before it |
+| `tables` | `true` | append a delimiter row to a lone header row; complete a partial delimiter row (changes final output for non-table rows that happen to look like one) |
+| `singleTilde` | `true` | escape lone `~` (`20~25` → `20\~25`) so GFM single-tilde strike cannot swallow prose (changes final output) |
+| `comparisonOperators` | `true` | escape `>` followed by a digit at the start of a list item (`- > 25` → `- \> 25`) (changes final output) |
+| `dropTrailingOpeners` | `false` (`true` when `streaming: true`) | drop a trailing opener after whitespace at EOF (`hello *` → `hello`) |
+| `setextGuard` | `true` when `streaming: true` | append U+200B to a 1–2 char `-`/`=` line under a paragraph so it does not flash as a heading |
+
+Legacy aliases accepted for one release: `katex` → `blockMath`, `math` and `inlineKatex` → `inlineMath`.
+
+## Case format
+
+Each case is a `diff` fence with one `-` line (input) and one `+` line (expected output). `\n`, `\r`, `\t` are literal escape sequences for the corresponding characters; every other character is verbatim (so trailing spaces on the `+` line are part of the expected output). Options for a single case go in the fence info string, never in the `+` line:
+
+    ```diff opts="inlineMath: true, linkMode: 'text-only'"
+    - Text with $formula
+    + Text with $formula$
+    ```
+
+A U+200B (zero width space) in a `+` line is written literally; runners must compare code points, not normalised strings.
 
 ---
-```
-
-<!-- +21 from remend/__tests__ -->
-
-
+## Bold
 
 ```diff
 - **bold1** and **bold2**
@@ -68,16 +92,6 @@ comark-only (not implemented by remend):
 ```diff
 - **bold*
 + **bold**
-```
-
-```diff [valid]
-- | **bold** | next |
-+ | **bold** | next |\n| --- | --- |
-```
-
-```diff
-- | **bold** | next |
-+ | **bold** | next |\n| --- | --- |
 ```
 
 ```diff
@@ -125,30 +139,24 @@ comark-only (not implemented by remend):
 + *a**b***
 ```
 
-```diff
+```diff opts="bold: false"
 - **bold text
-+ **bold text  (bold: false)
++ **bold text
 ```
 
-```diff
+```diff opts="bold: false"
 - **bold *italic
-+ **bold *italic*  (bold: false)
++ **bold *italic*
 ```
 
-```diff [valid]
+```diff opts="italic: false"
 - **bold *italic
-+ **bold *italic  (italic: false)
++ **bold *italic
 ```
-
 
 ---
 
 ## Italic (asterisk)
-```
-
-<!-- +12 from remend/__tests__ -->
-
-
 
 ```diff
 - text*
@@ -175,7 +183,7 @@ comark-only (not implemented by remend):
 + Text with *italic text*
 ```
 
-```diff [valid]
+```diff
 - *italic with some*var*name inside
 + *italic with some*var*name inside*
 ```
@@ -210,15 +218,9 @@ comark-only (not implemented by remend):
 + *word* and more text
 ```
 
-
 ---
 
 ## Italic (underscore)
-```
-
-<!-- +49 from remend/__tests__ -->
-
-
 
 ```diff
 - __content_
@@ -285,6 +287,28 @@ comark-only (not implemented by remend):
 + Start \_escaped\_ middle _incomplete_
 ```
 
+Underscore openers need whitespace or line start before them; `(` and other punctuation do not count, so these stay literal:
+
+```diff
+- func(_arg
++ func(_arg
+```
+
+```diff
+- call foo(_private)
++ call foo(_private)
+```
+
+```diff
+- (_parenthetical aside
++ (_parenthetical aside
+```
+
+```diff
+- [link](url) (_note
++ [link](url) (_note
+```
+
 ```diff
 - \_fully\_escaped\_
 + \_fully\_escaped\_
@@ -295,7 +319,7 @@ comark-only (not implemented by remend):
 + \_escaped\_ _complete_ pair
 ```
 
-```diff [valid]
+```diff
 - café_price
 + café_price
 ```
@@ -455,25 +479,19 @@ comark-only (not implemented by remend):
 + text\n\n___\n
 ```
 
-```diff [valid]
+```diff
 - ___both___ done
 + ___both___ done
 ```
 
-```diff [valid]
+```diff
 - \___bold
 + \___bold__
 ```
 
-
 ---
 
 ## Bold + italic
-```
-
-<!-- +23 from remend/__tests__ -->
-
-
 
 ```diff
 - Text with ***bold and italic text***
@@ -492,7 +510,7 @@ comark-only (not implemented by remend):
 
 ```diff
 - ***bold-italic with `code
-+ ***bold-italic with `code***`
++ ***bold-italic with `code`***
 ```
 
 ```diff
@@ -575,12 +593,12 @@ comark-only (not implemented by remend):
 + - Combined **bold and *italic*** text
 ```
 
-```diff [valid]
+```diff
 - ****text
 + ****text****
 ```
 
-```diff [valid]
+```diff
 - *****text
 + *****text*****
 ```
@@ -590,20 +608,9 @@ comark-only (not implemented by remend):
 + **bold and *bold-italic***
 ```
 
-
 ---
 
 ## Inline code
-```
-
-<!-- +16 from remend/__tests__ -->
-
-
-
-```diff [valid]
-- | `code` | next |
-+ | `code` | next |\n| --- | --- |
-```
 
 ```diff
 - `code` then `more
@@ -680,17 +687,11 @@ comark-only (not implemented by remend):
 + *italic*
 ```
 
-
 ---
 
 ## Strikethrough
-```
 
-<!-- +29 from remend/__tests__ -->
-
-
-
-```diff [valid]
+```diff
 - **bold then *italic then ~~strike
 + **bold then *italic then ~~strike~~***
 ```
@@ -700,12 +701,12 @@ comark-only (not implemented by remend):
 + ~~strike **bold *italic*~~
 ```
 
-```diff [valid]
+```diff
 - *italic **bold ~~strike `code
 + *italic **bold ~~strike `code`~~***
 ```
 
-```diff [valid]
+```diff
 - **bold ~~strike
 + **bold ~~strike~~**
 ```
@@ -730,7 +731,7 @@ comark-only (not implemented by remend):
 + ~~done~~ and ~~undone~~
 ```
 
-```diff [valid]
+```diff
 - **bold *italic ~~strike `code
 + **bold *italic ~~strike `code`~~***
 ```
@@ -745,14 +746,14 @@ comark-only (not implemented by remend):
 + ~~🎉 celebration~~
 ```
 
-```diff
+```diff opts="bold: false, italic: false, inlineCode: false, strikethrough: false, boldItalic: false"
 - **bold *italic `code ~~strike
-+ **bold *italic `code ~~strike  (bold: false, italic: false, inlineCode: false, strikethrough: false, boldItalic: false)
++ **bold *italic `code ~~strike
 ```
 
-```diff
+```diff opts="bold: false"
 - **bold ~~strike
-+ **bold ~~strike~~  (bold: false)
++ **bold ~~strike~~
 ```
 
 ```diff
@@ -805,7 +806,7 @@ comark-only (not implemented by remend):
 + # Heading\n\n**Bold text** with *italic* and `code`.\n\n- List item\n- Another item with ~~strike~~
 ```
 
-```diff [valid]
+```diff
 - **bold *italic `code ~~strike
 + **bold *italic `code ~~strike`***
 ```
@@ -835,15 +836,9 @@ comark-only (not implemented by remend):
 + This is ~~strikethrough~~
 ```
 
-
 ---
 
 ## Single tilde escape
-```
-
-<!-- +9 from remend/__tests__ -->
-
-
 
 ```diff
 - 20~25°C。20~25°C
@@ -860,9 +855,9 @@ comark-only (not implemented by remend):
 + `20~25`
 ```
 
-```diff
+```diff opts="singleTilde: false"
 - 20~25°C
-+ 20~25°C  (singleTilde: false)
++ 20~25°C
 ```
 
 ```diff
@@ -890,74 +885,63 @@ comark-only (not implemented by remend):
 + foo\~bar\~baz
 ```
 
-
 ---
 
 ## Links (default protocol mode)
+
 ```diff
 - Text with [incomplete link
-+ Text with [incomplete link](comark:incomplete-link)
-+ Text with [incomplete link](comark:incomplete-link)
++ Text with [incomplete link](auto-close:incomplete-link)
 ```
 
 ```diff
 - Visit [our site](https://exa
-+ Visit [our site](comark:incomplete-link)
-+ Visit [our site](comark:incomplete-link)
++ Visit [our site](auto-close:incomplete-link)
 ```
 
 ```diff
 - [outer [nested] text](incomplete
-+ [outer [nested] text](comark:incomplete-link)
-+ [outer [nested] text](comark:incomplete-link)
++ [outer [nested] text](auto-close:incomplete-link)
 ```
 
 ```diff
 - Text [outer [inner
-+ Text [outer [inner](comark:incomplete-link)
-+ Text [outer [inner](comark:incomplete-link)
++ Text [outer [inner](auto-close:incomplete-link)
 ```
-
-Leaves finished links alone:
-```
-
-<!-- +23 from remend/__tests__ -->
-
-
 
 ```diff
 - [link1 and [link2
-+ [link1 and [link2](comark:incomplete-link)
++ [link1 and [link2](auto-close:incomplete-link)
 ```
 
 ```diff
 - [first](url1) and [second
-+ [first](url1) and [second](comark:incomplete-link)
++ [first](url1) and [second](auto-close:incomplete-link)
 ```
 
 ```diff
 - [outer [inner]
-+ [outer [inner]](comark:incomplete-link)
++ [outer [inner]](auto-close:incomplete-link)
 ```
 
 ```diff
 - [**bold link**](incomplete-url
-+ [**bold link**](comark:incomplete-link)
++ [**bold link**](auto-close:incomplete-link)
 ```
 
 ```diff
 - [*italic link*](incomplete
-+ [*italic link*](comark:incomplete-link)
++ [*italic link*](auto-close:incomplete-link)
 ```
 
 ```diff
 - [`code link`](incomplete
-+ [`code link`](comark:incomplete-link)
++ [`code link`](auto-close:incomplete-link)
 ```
 
 ```diff
 - [**bold link
-+ [**bold link](comark:incomplete-link)
++ [**bold link](auto-close:incomplete-link)
 ```
 
 ```diff
@@ -972,7 +956,7 @@ Leaves finished links alone:
 
 ```diff
 - [text][
-+ [text][](comark:incomplete-link)
++ [text](auto-close:incomplete-link)
 ```
 
 ```diff
@@ -982,17 +966,17 @@ Leaves finished links alone:
 
 ```diff
 - [link text
-+ [link text](comark:incomplete-link)
++ [link text](auto-close:incomplete-link)
 ```
 
 ```diff
 - Check the [documentation
-+ Check the [documentation](comark:incomplete-link)
++ Check the [documentation](auto-close:incomplete-link)
 ```
 
 ```diff
 - Here's a code block:\n```bash\necho "test"\n```\nAnd here's an [incomplete link
-+ Here's a code block:\n```bash\necho "test"\n```\nAnd here's an [incomplete link](comark:incomplete-link)
++ Here's a code block:\n```bash\necho "test"\n```\nAnd here's an [incomplete link](auto-close:incomplete-link)
 ```
 
 ```diff
@@ -1002,7 +986,7 @@ Leaves finished links alone:
 
 ```diff
 - Text [partial
-+ Text [partial](comark:incomplete-link)
++ Text [partial](auto-close:incomplete-link)
 ```
 
 ```diff
@@ -1012,12 +996,12 @@ Leaves finished links alone:
 
 ```diff
 - [link with [inner] content](http://incomplete
-+ [link with [inner] content](comark:incomplete-link)
++ [link with [inner] content](auto-close:incomplete-link)
 ```
 
 ```diff
 - Text [foo [bar] baz](
-+ Text [foo [bar] baz](comark:incomplete-link)
++ Text [foo [bar] baz](auto-close:incomplete-link)
 ```
 
 ```diff
@@ -1027,155 +1011,137 @@ Leaves finished links alone:
 
 ```diff
 - [foo [bar [baz
-+ [foo [bar [baz](comark:incomplete-link)
++ [foo [bar [baz](auto-close:incomplete-link)
 ```
 
 ```diff
 - Text [outer [inner]
-+ Text [outer [inner]](comark:incomplete-link)
++ Text [outer [inner]](auto-close:incomplete-link)
 ```
 
 ```diff
 - [link [nested] text
-+ [link [nested] text](comark:incomplete-link)
++ [link [nested] text](auto-close:incomplete-link)
 ```
-
 
 ---
 
 ## Links (text-only mode)
-```
 
-<!-- +14 from remend/__tests__ -->
-
-
-
-```diff
+```diff opts="linkMode: 'text-only'"
 - [incomplete link
-+ incomplete link  (linkMode: 'text-only')
++ incomplete link
 ```
 
-```diff
+```diff opts="linkMode: 'text-only'"
 - [link1 and [link2
-+ link1 and link2  (linkMode: 'text-only')
++ link1 and link2
 ```
 
-```diff [valid]
+```diff opts="linkMode: 'text-only'"
 - ![img [text
-+ ![img text](comark:incomplete-image)  (linkMode: 'text-only')
++ ![img text](auto-close:incomplete-image)
 ```
 
-```diff
+```diff opts="linkMode: 'text-only'"
 - [link](url) [incomplete
-+ [link](url) incomplete  (linkMode: 'text-only')
++ [link](url) incomplete
 ```
 
-```diff
+```diff opts="linkMode: 'text-only'"
 - [text] [incomplete
-+ [text] incomplete  (linkMode: 'text-only')
++ [text] incomplete
 ```
 
-```diff
+```diff opts="linkMode: 'text-only'"
 - [a]( b](c [incomplete
-+ [a]( b](c incomplete  (linkMode: 'text-only')
++ [a]( b](c incomplete
 ```
 
-```diff
+```diff opts="linkMode: 'text-only'"
 - Text [partial
-+ Text partial  (linkMode: 'text-only')
++ Text partial
 ```
 
-```diff
+```diff opts="linkMode: 'text-only'"
 - [link with [inner] content](http://incomplete
-+ link with [inner] content  (linkMode: 'text-only')
++ link with [inner] content
 ```
 
-```diff
+```diff opts="linkMode: 'text-only'"
 - Text [foo [bar] baz](
-+ Text foo [bar] baz  (linkMode: 'text-only')
++ Text foo [bar] baz
 ```
 
-```diff
+```diff opts="linkMode: 'text-only'"
 - Text [outer [inner
-+ Text outer inner  (linkMode: 'text-only')
++ Text outer inner
 ```
 
-```diff
+```diff opts="linkMode: 'text-only'"
 - [foo [bar [baz
-+ foo bar baz  (linkMode: 'text-only')
++ foo bar baz
 ```
 
-```diff
+```diff opts="linkMode: 'text-only'"
 - Text [outer [inner]
-+ Text outer [inner]  (linkMode: 'text-only')
++ Text outer [inner]
 ```
 
-```diff
+```diff opts="linkMode: 'text-only'"
 - [link [nested] text
-+ link [nested] text  (linkMode: 'text-only')
++ link [nested] text
 ```
 
-```diff
+```diff opts="linkMode: 'text-only'"
 - Text ![incomplete image
-+ Text ![incomplete image](comark:incomplete-image)  (linkMode: 'text-only')
++ Text ![incomplete image](auto-close:incomplete-image)
 ```
-
 
 ---
 
 ## Images
+
 ```diff
 - Text with ![incomplete image
-+ Text with ![incomplete image](comark:incomplete-image)
-+ Text with ![incomplete image](comark:incomplete-image)
++ Text with ![incomplete image](auto-close:incomplete-image)
 ```
 
 ```diff
 - Text with ![incomplete image]
-+ Text with ![incomplete image](comark:incomplete-image)
-+ Text with ![incomplete image](comark:incomplete-image)
++ Text with ![incomplete image](auto-close:incomplete-image)
 ```
 
 ```diff
 - ![partial
-+ ![partial](comark:incomplete-image)
-+ ![partial](comark:incomplete-image)
++ ![partial](auto-close:incomplete-image)
 ```
 
 ```diff
 - ![logo](./assets/log
-+ ![logo](comark:incomplete-image)
-+ ![logo](comark:incomplete-image)
++ ![logo](auto-close:incomplete-image)
 ```
 
-```diff [valid]
+```diff
 - Text ![outer [inner]
-+ Text ![outer [inner]](comark:incomplete-image)
-+ Text ![outer [inner]](comark:incomplete-image)
++ Text ![outer [inner]](auto-close:incomplete-image)
 ```
 
 Still uses image placeholder even in link text-only mode:
+
 ```diff
 - Text ![alt](http://partial
-+ Text ![alt](comark:incomplete-image)
-+ Text ![alt](comark:incomplete-image)
++ Text ![alt](auto-close:incomplete-image)
 ```
-
-Leaves finished images alone:
-```
-
-<!-- +10 from remend/__tests__ -->
-
-
 
 ```diff
 - Here's the diagram:\n\n![architecture
-+ Here's the diagram:\n\n![architecture](comark:incomplete-image)
++ Here's the diagram:\n\n![architecture](auto-close:incomplete-image)
 ```
 
 ```diff
 - See ![diagram](http://example.com/img
-+ See ![diagram](comark:incomplete-image)
++ See ![diagram](auto-close:incomplete-image)
 ```
 
 ```diff
@@ -1184,23 +1150,18 @@ Leaves finished images alone:
 ```
 
 ```diff
-- func(_arg
-+ func(_arg_
+- See ![the diag
++ See ![the diag](auto-close:incomplete-image)
 ```
 
 ```diff
-- See ![the diag
-+ See ![the diag](comark:incomplete-image)
-```
-
-```diff [valid]
 - ![nested [brackets] text
-+ ![nested [brackets] text](comark:incomplete-image)
++ ![nested [brackets] text](auto-close:incomplete-image)
 ```
 
-```diff [valid]
+```diff
 - Start ![foo [bar] baz
-+ Start ![foo [bar] baz](comark:incomplete-image)
++ Start ![foo [bar] baz](auto-close:incomplete-image)
 ```
 
 ```diff
@@ -1218,15 +1179,9 @@ Leaves finished images alone:
 + textContent ![image1](https://example.com/path_1!!test.png) ![image2](https://example.com/path_2!!test.png)
 ```
 
-
 ---
 
 ## Block math (KaTeX)
-```
-
-<!-- +27 from remend/__tests__ -->
-
-
 
 ```diff
 - $$\frac{x}{y
@@ -1243,9 +1198,9 @@ Leaves finished images alone:
 + $$\n\sum_{i=0}^{n} x_i\n$$
 ```
 
-```diff
+```diff opts="blockMath: false"
 - $$formula
-+ $$formula  (katex: false, math: false)
++ $$formula
 ```
 
 ```diff
@@ -1284,6 +1239,11 @@ Leaves finished images alone:
 ```
 
 ```diff
+- Math expression $x_
++ Math expression $x_
+```
+
+```diff opts="inlineMath: true"
 - Math expression $x_
 + Math expression $x_$
 ```
@@ -1334,8 +1294,8 @@ Leaves finished images alone:
 ```
 
 ```diff
-- Streamdown uses double dollar signs (`$$`) to delimit mathematical expressions.
-+ Streamdown uses double dollar signs (`$$`) to delimit mathematical expressions.
+- auto-close uses double dollar signs (`$$`) to delimit mathematical expressions.
++ auto-close uses double dollar signs (`$$`) to delimit mathematical expressions.
 ```
 
 ```diff
@@ -1343,7 +1303,7 @@ Leaves finished images alone:
 + Use `$$` for math blocks and `$$formula$$` for inline.
 ```
 
-```diff [valid]
+```diff
 - Math: $$x+y and code: `$$`
 + Math: $$x+y and code: `$$`$$
 ```
@@ -1363,40 +1323,52 @@ Leaves finished images alone:
 + Text with *italic* and math $$x^{*}$$
 ```
 
-
 ---
 
 ## Inline math
 
-Closes unclosed `$…$` when `math: true` (default off for bare `autoCloseMarkdown`; on via `parseMarkdown`).
-Closes unclosed `$…$` when `math: true` (default off for bare `remend`; on via `parseMarkdown`).
+Closes unclosed `$…$` only when `inlineMath: true` (default `false`, because `$50 and $100` is ordinary prose).
+
+```diff opts="inlineMath: true"
+- Text with $formula
++ Text with $formula$
+```
+
+```diff opts="inlineMath: true"
+- $first$ and $second
++ $first$ and $second$
+```
+
+```diff opts="inlineMath: true"
+- $$block$$ and $inline
++ $$block$$ and $inline$
+```
+
+Default (`inlineMath` unset / `false`) leaves inline math alone:
 
 ```diff
 - Text with $formula
++ Text with $formula
 ```
-
-<!-- +25 from remend/__tests__ -->
-
-
 
 ```diff
 - text234$
 + text234$
 ```
 
-```diff [valid]
+```diff opts="inlineMath: true, dropTrailingOpeners: true"
 - text123$
-+ text123  (math: true, dropTrailingOpeners: true)
++ text123
 ```
 
-```diff
+```diff opts="inlineMath: true"
 - text$d
-+ text$d$  (math: true)
++ text$d$
 ```
 
-```diff
+```diff opts="inlineMath: true"
 - $x^2 + y^2
-+ $x^2 + y^2$  (math: true)
++ $x^2 + y^2$
 ```
 
 ```diff
@@ -1441,12 +1413,17 @@ Closes unclosed `$…$` when `math: true` (default off for bare `remend`; on via
 
 ```diff
 - $$$
-+ $$$$$
++ $$$
 ```
 
 ```diff
 - $$$$
 + $$$$
+```
+
+```diff
+- $$ $$
++ $$ $$
 ```
 
 ```diff
@@ -1474,50 +1451,44 @@ Closes unclosed `$…$` when `math: true` (default off for bare `remend`; on via
 + The formula $E = mc^2$ shows
 ```
 
-```diff
+```diff opts="inlineMath: true"
 - $incomplete
-+ $incomplete$  (inlineKatex: true)
++ $incomplete$
 ```
 
-```diff
+```diff opts="inlineMath: true"
 - The formula $E
-+ The formula $E$  (inlineKatex: true)
++ The formula $E$
 ```
 
-```diff
+```diff opts="inlineMath: true"
 - The formula $E = mc
-+ The formula $E = mc$  (inlineKatex: true)
++ The formula $E = mc$
 ```
 
-```diff
+```diff opts="inlineMath: true"
 - The formula $E = mc^2
-+ The formula $E = mc^2$  (inlineKatex: true)
++ The formula $E = mc^2$
 ```
 
-```diff
+```diff opts="inlineMath: true"
 - Use `$var` for variables and $formula
-+ Use `$var` for variables and $formula$  (inlineKatex: true)
++ Use `$var` for variables and $formula$
 ```
 
-```diff
+```diff opts="inlineMath: true"
 - Inline $x$ and block $$y$$
-+ Inline $x$ and block $$y$$  (inlineKatex: true)
++ Inline $x$ and block $$y$$
 ```
 
-```diff
+```diff opts="inlineMath: true"
 - $$block$$ then $x + y
-+ $$block$$ then $x + y$  (inlineKatex: true)
++ $$block$$ then $x + y$
 ```
-
 
 ---
 
 ## Incomplete HTML tags
-```
-
-<!-- +32 from remend/__tests__ -->
-
-
 
 ```diff
 - text <!-- incomplete comment
@@ -1629,7 +1600,7 @@ Closes unclosed `$…$` when `math: true` (default off for bare `remend`; on via
 + ```html\n<custom
 ```
 
-```diff [valid]
+```diff
 - `<div`
 + `<div`
 ```
@@ -1659,12 +1630,12 @@ Closes unclosed `$…$` when `math: true` (default off for bare `remend`; on via
 + # Heading\n\nParagraph
 ```
 
-```diff [valid]
+```diff
 - <a target="_blank" href="https://link.com">word</a>
 + <a target="_blank" href="https://link.com">word</a>
 ```
 
-```diff [valid]
+```diff
 - <a target="_blank">link</a>
 + <a target="_blank">link</a>
 ```
@@ -1674,20 +1645,14 @@ Closes unclosed `$…$` when `math: true` (default off for bare `remend`; on via
 + <iframe src="x" sandbox="allow_scripts">
 ```
 
-```diff
+```diff opts="htmlTags: false"
 - Hello <div
-+ Hello <div  (htmlTags: false)
++ Hello <div
 ```
-
 
 ---
 
 ## Comparison operators in lists
-```
-
-<!-- +11 from remend/__tests__ -->
-
-
 
 ```diff
 - + > 25: rich
@@ -1734,9 +1699,9 @@ Closes unclosed `$…$` when `math: true` (default off for bare `remend`; on via
 + - \>25: rich
 ```
 
-```diff
+```diff opts="comparisonOperators: false"
 - - > 25: rich
-+ - > 25: rich  (comparisonOperators: false)
++ - > 25: rich
 ```
 
 ```diff
@@ -1744,15 +1709,11 @@ Closes unclosed `$…$` when `math: true` (default off for bare `remend`; on via
 + - \> 25: **bold**
 ```
 
-
 ---
 
 ## Setext heading guard
-```
 
-<!-- +19 from remend/__tests__ -->
-
-
+A 1–2 character `-` or `=` line directly under paragraph text gets a trailing U+200B so it cannot flash as a setext heading while a list marker, rule or heading underline is still being typed. Three or more characters are treated as intent and left alone.
 
 ```diff
 - \n=
@@ -1825,6 +1786,16 @@ Closes unclosed `$…$` when `math: true` (default off for bare `remend`; on via
 ```
 
 ```diff
+- Some text\n--
++ Some text\n--​
+```
+
+```diff
+- Some text\n---
++ Some text\n---
+```
+
+```diff
 - This is a title\n===
 + This is a title\n===
 ```
@@ -1849,15 +1820,70 @@ Closes unclosed `$…$` when `math: true` (default off for bare `remend`; on via
 + Text 1\n-\nText 2\n-​
 ```
 
+---
+
+## Tables
+
+A lone header row is completed with a delimiter row so it renders as a table immediately; a partially streamed delimiter row is finished; complete tables are untouched.
+
+```diff
+- | **bold** | next |
++ | **bold** | next |\n| --- | --- |
+```
+
+```diff
+- | `code` | next |
++ | `code` | next |\n| --- | --- |
+```
+
+```diff
+- | a | b |\n| --
++ | a | b |\n| --- | --- |
+```
+
+```diff
+- | a | b |\n| --- |
++ | a | b |\n| --- | --- |
+```
+
+```diff
+- | a | b |\n| --- | --- |
++ | a | b |\n| --- | --- |
+```
+
+```diff
+- | a | b |\n| --- | --- |\n| 1 | 2 |
++ | a | b |\n| --- | --- |\n| 1 | 2 |
+```
+
+```diff
+- | a | b |\n| --- | --- |\n| 1 | **bo
++ | a | b |\n| --- | --- |\n| 1 | **bo**
+```
+
+```diff
+- | a \| b | c |
++ | a \| b | c |\n| --- | --- |
+```
+
+```diff opts="tables: false"
+- | a | b |
++ | a | b |
+```
+
+```diff
+- ```\n| a | b |\n```
++ ```\n| a | b |\n```
+```
+
+```diff
+- a | b
++ a | b
+```
 
 ---
 
 ## Leave list markers alone
-```
-
-<!-- +23 from remend/__tests__ -->
-
-
 
 ```diff
 - - [ ] **bold task
@@ -1966,7 +1992,7 @@ Closes unclosed `$…$` when `math: true` (default off for bare `remend`; on via
 
 ```diff
 - - **text\nmore text
-+ - **text\nmore text
++ - **text\nmore text**
 ```
 
 ```diff
@@ -1974,15 +2000,9 @@ Closes unclosed `$…$` when `math: true` (default off for bare `remend`; on via
 + * **content\n* Another item
 ```
 
-
 ---
 
 ## Leave code fences alone
-```
-
-<!-- +49 from remend/__tests__ -->
-
-
 
 ```diff
 - ```\ncode\n```\n*italic
@@ -1991,12 +2011,12 @@ Closes unclosed `$…$` when `math: true` (default off for bare `remend`; on via
 
 ```diff
 -     *asterisks in indented
-+     *asterisks in indented*
++     *asterisks in indented
 ```
 
 ```diff
 -     **bold in indented
-+     **bold in indented**
++     **bold in indented
 ```
 
 ```diff
@@ -2174,12 +2194,12 @@ Closes unclosed `$…$` when `math: true` (default off for bare `remend`; on via
 +    ```\n__code\n   ```\n__open__
 ```
 
-```diff [valid]
+```diff
 - see ```inline code``
 + see ```inline code```
 ```
 
-```diff [valid]
+```diff
 - ````\ncode\n```\nstill __code
 + ````\ncode\n```\nstill __code
 ```
@@ -2229,15 +2249,9 @@ Closes unclosed `$…$` when `math: true` (default off for bare `remend`; on via
 + intro\n\nrun `npm i`
 ```
 
-
 ---
 
 ## Leave horizontal rules alone
-```
-
-<!-- +29 from remend/__tests__ -->
-
-
 
 ```diff
 - ----
@@ -2384,15 +2398,9 @@ Closes unclosed `$…$` when `math: true` (default off for bare `remend`; on via
 + # Title\n\nSome content with **bold** text.\n\n---\n\n## Section 2\n\nMore content.
 ```
 
-
 ---
 
 ## Word-internal markers stay literal
-```
-
-<!-- +7 from remend/__tests__ -->
-
-
 
 ```diff
 - foo*bar
@@ -2404,17 +2412,17 @@ Closes unclosed `$…$` when `math: true` (default off for bare `remend`; on via
 + test*123*test
 ```
 
-```diff [valid]
+```diff
 - *foo*bar*baz
 + *foo*bar*baz*
 ```
 
-```diff [valid]
+```diff
 - *file*name*ext
 + *file*name*ext*
 ```
 
-```diff [valid]
+```diff
 - before *a*b after *c
 + before *a*b after *c*
 ```
@@ -2429,19 +2437,14 @@ Closes unclosed `$…$` when `math: true` (default off for bare `remend`; on via
 + *foo* bar*baz
 ```
 
-
 ---
 
-## Math protects inner markers
+## Nesting inside blockquotes, links and math
+
 ```diff
 - Text with [link and **bold
-+ Text with [link and **bold](comark:incomplete-link)
-+ Text with [link and **bold](comark:incomplete-link)
++ Text with [link and **bold](auto-close:incomplete-link)
 ```
-
-<!-- +7 from remend/__tests__ -->
-
-
 
 ```diff
 - > > **deeply nested bold
@@ -2463,14 +2466,14 @@ Closes unclosed `$…$` when `math: true` (default off for bare `remend`; on via
 + **bold with *italic* inside**
 ```
 
-```diff
+```diff opts="inlineMath: false, math: false"
 - **bold with $x^2
-+ **bold with $x^2**  (math: false)
++ **bold with $x^2**
 ```
 
-```diff
+```diff opts="inlineMath: true, math: true"
 - **bold with $x^2
-+ **bold with $x^2$**  (math: true)
++ **bold with $x^2$**
 ```
 
 ```diff
@@ -2483,15 +2486,9 @@ Closes unclosed `$…$` when `math: true` (default off for bare `remend`; on via
 + **_text_**
 ```
 
-
 ---
 
 ## Emphasis markers stay put inside code / escapes
-```
-
-<!-- +6 from remend/__tests__ -->
-
-
 
 ```diff
 - \*not italic
@@ -2523,15 +2520,9 @@ Closes unclosed `$…$` when `math: true` (default off for bare `remend`; on via
 + ```\nprice = $5\n```\n_hello_
 ```
 
-
 ---
 
 ## Trailing whitespace cleanup
-```
-
-<!-- +37 from remend/__tests__ -->
-
-
 
 ```diff
 - 
@@ -2543,7 +2534,7 @@ Closes unclosed `$…$` when `math: true` (default off for bare `remend`; on via
 + **bold\twith\ttabs**
 ```
 
-```diff [valid]
+```diff
 - **bold\r\nwith CRLF
 + **bold\r\nwith CRLF**
 ```
@@ -2718,28 +2709,19 @@ Closes unclosed `$…$` when `math: true` (default off for bare `remend`; on via
 + 2 * 3 * 4
 ```
 
-
 ---
 
 ## Streaming chunks (progressive)
+
 ```diff
 - Check out [this lin
-+ Check out [this lin](comark:incomplete-link)
-+ Check out [this lin](comark:incomplete-link)
++ Check out [this lin](auto-close:incomplete-link)
 ```
 
 ```diff
 - [Click here](https://
-+ [Click here](comark:incomplete-link)
-+ [Click here](comark:incomplete-link)
++ [Click here](auto-close:incomplete-link)
 ```
-
-**Link (text-only):**
-```
-
-<!-- +17 from remend/__tests__ -->
-
-
 
 ```diff
 - Here's how to use it:\n\n```typescript\nconst x = 1
@@ -2778,7 +2760,7 @@ Closes unclosed `$…$` when `math: true` (default off for bare `remend`; on via
 
 ```diff
 - This is **bold with *ital
-+ This is **bold with *ital*
++ This is **bold with *ital***
 ```
 
 ```diff
@@ -2793,7 +2775,7 @@ Closes unclosed `$…$` when `math: true` (default off for bare `remend`; on via
 
 ```diff
 - Text **bold `code
-+ Text **bold `code**`
++ Text **bold `code`**
 ```
 
 ```diff
@@ -2826,1079 +2808,138 @@ Closes unclosed `$…$` when `math: true` (default off for bare `remend`; on via
 + To use this function, call `getData()` with
 ```
 
-
 ---
 
 ## Trailing openers (`dropTrailingOpeners: true`)
+
+Drop a trailing opener (`*`, `_`, `~`, `~~`, `` ` ``, `$`, `:`, `[`, `![`, `!`, `{`) after whitespace at EOF so a half-typed marker does not flash. `!` may become `![image`, `:` may become a `:component` directive, `~` may become `~~strike`; the next chunk disambiguates, so the frame hides them until then. Attached markers (`**bold`, `$x`) still auto-close. Only applies to in-flight frames; the final render (`streaming: false`) keeps the character. Enabled automatically when parsing with `streaming: true`.
+
+```diff
+- hello *
++ hello
+```
+
+```diff
+- hello **
++ hello
+```
+
+```diff
+- hello ***
++ hello
+```
+
+```diff
+- hello _
++ hello
+```
+
+```diff
+- hello __
++ hello
+```
+
+```diff
+- hello $
++ hello
+```
+
+```diff
+- hello $$
++ hello
+```
+
+```diff
+- hello ~~
++ hello
+```
+
+```diff
+- hello `
++ hello
+```
+
+```diff
+- hello ``
++ hello
+```
+
+```diff
+- hello [
++ hello
+```
+
+```diff
+- hello [[
++ hello
+```
+
+```diff
+- hello {
++ hello
+```
+
+```diff
+- hello ![
++ hello
+```
+
+```diff
+- hello :
++ hello
+```
+
+```diff
+- hello !
++ hello
+```
+
+```diff
+- hello ~
++ hello
+```
+
+Ordinary punctuation that can never start syntax stays:
+
+```diff
+- hello ,
++ hello ,
+```
+
+```diff
+- hello .
++ hello .
+```
+
+```diff
+- hello ?
++ hello ?
+```
+
+An earlier space-separated `*` cannot become syntax (it is already followed by space), so only the last opener is dropped:
+
+```diff
+- hello * *
++ hello *
+```
+
+Attached incomplete syntax is still closed:
+
+```diff
+- hello **bold
 + hello **bold**
 ```
 
-
 ---
 
-# Remend package extras
-
-Additional cases from `packages/remend/__tests__` not covered by the sections above.
-
----
-
-## Remend extras
+## Package extras
 
 ```diff
 - text~
 + text~
 ```
 
-```diff
+```diff opts="links: false, images: false"
 - [link text
-+ [link text  (links: false, images: false)
++ [link text
 ```
-
-
-/**
- * Side-by-side SPEC comparison: remend (local) vs comark@0.7.0 autoCloseMarkdown
- * against every ```diff case in comark's SPEC/auto-close.md.
- * against every ```diff case in __fixtures__/auto-close.md
- * (comark SPEC + cases extracted from remend/__tests__).
- *
- * Placeholders differ by library and are rewritten before comparison:
- *   remend  → comark:incomplete-link / comark:incomplete-image
-  note?: string;
-  skip?: boolean;
-  /** Options parsed from the SPEC note, e.g. `(linkMode: 'text-only')`. */
-  noteOpts?: RemendOptions;
-};
-
-type Outcome = "pass" | "fail" | "unsupported" | "skip";
-};
-
-/** Decode SPEC side of a diff line: `\n` → newline; keep `\\` escapes as single `\`. */
-/** Decode SPEC side of a diff line: `\n`/`\t`/`\r` only; other `\X` stay as `\X`. */
-function decode(s: string): string {
-  let out = "";
-  for (let i = 0; i < s.length; i++) {
-        continue;
-      }
-      if (n === "r") {
-        out += "\r";
-        i++;
-        continue;
-      }
-      out += "\\";
-      out += n;
-      i++;
-          note,
-          skip,
-          noteOpts: parseNoteOpts(note),
-        });
-      }
-      i++;
-  const base = optionsForSectionComark(c.section);
-
-  // Map remend note opts onto comark AutoCloseOptions where possible.
-  if (c.noteOpts?.linkMode) {
-    base.linkMode = c.noteOpts.linkMode;
-  }
-  if (c.noteOpts?.inlineKatex === true || c.noteOpts?.katex === true) {
-    base.math = true;
-  }
-  if (c.noteOpts?.katex === false && c.noteOpts?.inlineKatex !== true) {
-    base.math = false;
-  }
-
-  if (/^(Block math|Inline math|Math protects)/i.test(c.section)) {
-    if (
-      /Inline math/i.test(c.section) &&
-      return base;
-    }
-    return { ...base, math: true };
-    return { ...base, math: base.math ?? true };
-  }
-
-  if (/Streaming chunks/i.test(c.section)) {
-}
-
-/** Parse notes like `linkMode: 'text-only', katex: false, inlineKatex: true`. */
-function parseNoteOpts(note?: string): RemendOptions | undefined {
-  if (!note) return undefined;
-  const opts: RemendOptions = {};
-  let found = false;
-
-  for (const part of note.split(",")) {
-    const m = part.trim().match(/^(\w+)\s*:\s*(.+)$/);
-    if (!m) continue;
-    const key = m[1];
-    let raw = m[2].trim();
-    if (
-      (raw.startsWith("'") && raw.endsWith("'")) ||
-      (raw.startsWith('"') && raw.endsWith('"'))
-    ) {
-      raw = raw.slice(1, -1);
-    }
-    let value: boolean | string;
-    if (raw === "true") value = true;
-    else if (raw === "false") value = false;
-    else value = raw;
-
-    switch (key) {
-      case "linkMode":
-        if (value === "protocol" || value === "text-only") {
-          opts.linkMode = value;
-          found = true;
-        }
-        break;
-      case "bold":
-      case "boldItalic":
-      case "comparisonOperators":
-      case "htmlTags":
-      case "images":
-      case "inlineCode":
-      case "inlineKatex":
-      case "italic":
-      case "katex":
-      case "links":
-      case "setextHeadings":
-      case "singleTilde":
-      case "strikethrough":
-        if (typeof value === "boolean") {
-          opts[key] = value;
-          found = true;
-        }
-        break;
-      default:
-        break;
-    }
-  }
-
-  return found ? opts : undefined;
-}
-
-function optionsForCaseRemend(c: Case): RemendOptions {
-  const base: RemendOptions = {};
-  const base: RemendOptions = { ...(c.noteOpts ?? {}) };
-
-  if (/text-only mode/i.test(c.section)) {
-    base.linkMode = "text-only";
-    base.linkMode ??= "text-only";
-  }
-
-  if (/Streaming chunks/i.test(c.section)) {
-      !c.expected.includes("](")
-    ) {
-      base.linkMode = "text-only";
-      base.linkMode ??= "text-only";
-    }
-  }
-
-  if (/^(Block math|Math protects)/i.test(c.section)) {
-    base.katex = true;
-    base.inlineKatex = true;
-    base.katex ??= true;
-    base.inlineKatex ??= true;
-  }
-
-  if (/^Inline math/i.test(c.section)) {
-    if (!(c.expected === c.input && /\$/.test(c.input))) {
-      base.katex = true;
-      base.inlineKatex = true;
-      base.katex ??= true;
-      base.inlineKatex ??= true;
-    }
-  }
-
-    const k = tally(comarkResults);
-
-    // Sanity: both libraries should pass the vast majority
-    expect(r.pass).toBeGreaterThan(140);
-    expect(k.pass).toBeGreaterThan(140);
-    expect(r.rate).toBeGreaterThan(90);
-    expect(k.rate).toBeGreaterThan(90);
-    // Sanity: remend should match nearly all applicable SPEC cases
-    // (comark may diverge on remend-only extras extracted from tests).
-    expect(cases.length).toBeGreaterThan(500);
-    expect(r.pass).toBeGreaterThan(500);
-    expect(r.rate).toBeGreaterThan(95);
-  });
-});
-
-const SPEC = readFileSync(join(root, "__fixtures__/auto-close.md"), "utf8");
-
-/** Decode SPEC: `\n`/`\t`/`\r` only; other `\X` stay as `\X`. */
-function decode(s) {
-  let out = "";
-  for (let i = 0; i < s.length; i++) {
-        continue;
-      }
-      if (n === "r") {
-        out += "\r";
-        i++;
-        continue;
-      }
-      out += "\\";
-      out += n;
-      i++;
-}
-
-function parseNoteOpts(note) {
-  if (!note) return undefined;
-  const opts = {};
-  let found = false;
-  for (const part of note.split(",")) {
-    const m = part.trim().match(/^(\w+)\s*:\s*(.+)$/);
-    if (!m) continue;
-    const key = m[1];
-    let raw = m[2].trim();
-    if (
-      (raw.startsWith("'") && raw.endsWith("'")) ||
-      (raw.startsWith('"') && raw.endsWith('"'))
-    ) {
-      raw = raw.slice(1, -1);
-    }
-    let value;
-    if (raw === "true") value = true;
-    else if (raw === "false") value = false;
-    else value = raw;
-
-    if (key === "linkMode" && (value === "protocol" || value === "text-only")) {
-      opts.linkMode = value;
-      found = true;
-    } else if (typeof value === "boolean") {
-      opts[key] = value;
-      found = true;
-    }
-  }
-  return found ? opts : undefined;
-}
-
-function parseSpec(md) {
-  const cases = [];
-  let section = "top";
-      let input = null;
-      let expected = null;
-      let note;
-      while (i < lines.length && lines[i].trim() !== "```") {
-        const L = lines[i];
-        if (L.startsWith("- ")) input = L.slice(2);
-        else if (L.startsWith("+ ")) {
-          expected = L.slice(2).replace(/\s{2,}\(.+\)$/, "");
-          const rest = L.slice(2);
-          const m = rest.match(/^(.*?)\s{2,}\((.+)\)$/);
-          if (m) {
-            expected = m[1];
-            note = m[2];
-          } else expected = rest;
-        }
-        i++;
-      }
-          input: decode(input),
-          expected: decode(expected),
-          note,
-          noteOpts: parseNoteOpts(note),
-        });
-      }
-      i++;
-
-function remendOpts(c) {
-  const base = {};
-  if (/text-only mode/i.test(c.section)) base.linkMode = "text-only";
-  const base = { ...(c.noteOpts ?? {}) };
-  if (/text-only mode/i.test(c.section)) base.linkMode ??= "text-only";
-  if (/Streaming chunks/i.test(c.section)) {
-    if (
-      c.input.includes("[") &&
-      !c.expected.includes("](")
-    ) {
-      base.linkMode = "text-only";
-      base.linkMode ??= "text-only";
-    }
-  }
-  if (/^(Block math|Math protects)/i.test(c.section)) {
-    base.katex = true;
-    base.inlineKatex = true;
-    base.katex ??= true;
-    base.inlineKatex ??= true;
-  }
-  if (/^Inline math/i.test(c.section)) {
-    if (!(c.expected === c.input && /\$/.test(c.input))) {
-      base.katex = true;
-      base.inlineKatex = true;
-      base.katex ??= true;
-      base.inlineKatex ??= true;
-    }
-  }
-  // Trailing openers needs math off so bare $$ is not closed as a math block
-  if (/Trailing openers/i.test(c.section)) {
-    base.katex = false;
-  }
-function comarkOpts(c) {
-  const base = { syntax: false };
-  if (c.noteOpts?.linkMode) base.linkMode = c.noteOpts.linkMode;
-  if (c.noteOpts?.inlineKatex === true || c.noteOpts?.katex === true) {
-    base.math = true;
-  }
-  if (c.noteOpts?.katex === false && c.noteOpts?.inlineKatex !== true) {
-    base.math = false;
-  }
-  if (/text-only mode/i.test(c.section)) return { ...base, linkMode: "text-only" };
-  if (/Trailing openers/i.test(c.section))
-    return { ...base, dropTrailingOpeners: true };
-      return base;
-    }
-    return { ...base, math: true };
-    return { ...base, math: base.math ?? true };
-  }
-  if (/Streaming chunks/i.test(c.section)) {
-    if (
-      .replaceAll(COMARK_IMAGE, REMEND_IMAGE);
-  }
-  return expected;
-  return expected
-    .replaceAll(REMEND_LINK, COMARK_LINK)
-    .replaceAll(REMEND_IMAGE, COMARK_IMAGE);
-}
-
-const cases = parseSpec(SPEC);
-}
-
-const ITER_SUITE = 500;
-const ITER_SUITE = 200;
-const remendSuiteMs = timeMs(() => {
-  for (const p of prepared) remend(p.input, p.remend);
-}, ITER_SUITE);
-const largeDoc = `# Large\n\n${"para with **bold** and *italic* and `code`.\n\n".repeat(100)}Incomplete **open and [link`;
-
-const ITER_JOINED = 1000;
-const ITER_JOINED = 500;
-const remendJoinedMs = timeMs(() => remend(joinedAll), ITER_JOINED);
-const comarkJoinedMs = timeMs(
-  () => autoCloseMarkdown(joinedAll, { syntax: false }),
-p("# remend vs comark autoCloseMarkdown");
-p();
-p(`SPEC cases: **${cases.length}** (from comark SPEC/auto-close.md)`);
-p(`SPEC cases: **${cases.length}** (from \`__fixtures__/auto-close.md\`)`);
-p(`Node ${process.version}`);
-p();
-p("## Correctness");
-  p("<details><summary>remend failure details</summary>");
-  p();
-  for (const f of remendFails) {
-  for (const f of remendFails.slice(0, 50)) {
-    p(`#### ${f.section}`);
-    p("```");
-    p(`input:    ${JSON.stringify(f.input)}`);
-    p();
-  }
-  if (remendFails.length > 50) {
-    p(`… and ${remendFails.length - 50} more`);
-    p();
-  }
-  p("</details>");
-  p();
-}
-  }
-  p();
-  p("<details><summary>comark failure details</summary>");
-  p("<details><summary>comark failure details (first 50)</summary>");
-  p();
-  for (const f of comarkFails) {
-  for (const f of comarkFails.slice(0, 50)) {
-    p(`#### ${f.section}`);
-    p("```");
-    p(`input:    ${JSON.stringify(f.input)}`);
-    p();
-  }
-  if (comarkFails.length > 50) {
-    p(`… and ${comarkFails.length - 50} more`);
-    p();
-  }
-  p("</details>");
-  p();
-}
-    "build": "tsup",
-    "compare:auto-close": "node scripts/compare-auto-close.mjs",
-        "extract:auto-close": "node scripts/extract-remend-cases.mjs",
-    "test": "vitest run",
-    "test:auto-close-spec": "vitest run --config vitest.auto-close-spec.config.ts",
-    "test:coverage": "vitest --coverage run",
-/**
- * Extract remend(input) → expected pairs from packages/remend/__tests__
- * and merge new ones into __fixtures__/auto-close.md (SPEC ```diff format).
- *
- * Usage (from packages/remend, after build):
- *   node scripts/extract-remend-cases.mjs
- *
- * Re-download the comark base first if you want a clean merge:
- *   curl -sL https://raw.githubusercontent.com/comarkdown/comark/main/packages/comark/SPEC/auto-close.md \
- *     -o __fixtures__/auto-close.md
- *   node scripts/extract-remend-cases.mjs
- */
-import { readdirSync, readFileSync, writeFileSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath, pathToFileURL } from "node:url";
-import ts from "typescript";
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const root = join(__dirname, "..");
-const testsDir = join(root, "__tests__");
-const fixturePath = join(root, "__fixtures__/auto-close.md");
-const COMARK_SPEC_URL =
-  "https://raw.githubusercontent.com/comarkdown/comark/main/packages/comark/SPEC/auto-close.md";
-
-const SKIP_FILES = new Set([
-  "auto-close-spec.test.ts",
-  "streaming-properties.test.ts",
-  "utils.test.ts",
-  "code-block-utils.test.ts",
-  "custom-handlers.test.ts",
-]);
-
-const remendMod = await import(pathToFileURL(join(root, "dist/index.js")).href);
-const remend = remendMod.default;
-
-// ---------- TS literal evaluator ----------
-
-function evalNode(node, src, locals = new Map()) {
-  switch (node.kind) {
-    case ts.SyntaxKind.StringLiteral:
-    case ts.SyntaxKind.NoSubstitutionTemplateLiteral:
-      return node.text;
-
-    case ts.SyntaxKind.TemplateExpression: {
-      let out = node.head.text;
-      for (const span of node.templateSpans) {
-        const v = evalNode(span.expression, src, locals);
-        if (v === undefined) return undefined;
-        out += String(v) + span.literal.text;
-      }
-      return out;
-    }
-
-    case ts.SyntaxKind.NumericLiteral:
-      return Number(node.text);
-    case ts.SyntaxKind.TrueKeyword:
-      return true;
-    case ts.SyntaxKind.FalseKeyword:
-      return false;
-    case ts.SyntaxKind.NullKeyword:
-      return null;
-    case ts.SyntaxKind.UndefinedKeyword:
-      return undefined;
-
-    case ts.SyntaxKind.Identifier: {
-      if (locals.has(node.text)) return locals.get(node.text);
-      return undefined;
-    }
-
-    case ts.SyntaxKind.ObjectLiteralExpression: {
-      const obj = {};
-      for (const prop of node.properties) {
-        if (!ts.isPropertyAssignment(prop)) return undefined;
-        obj[prop.name.getText(src)] = evalNode(prop.initializer, src, locals);
-      }
-      return obj;
-    }
-
-    case ts.SyntaxKind.ArrayLiteralExpression: {
-      const arr = [];
-      for (const el of node.elements) {
-        arr.push(evalNode(el, src, locals));
-      }
-      return arr;
-    }
-
-    case ts.SyntaxKind.AsExpression:
-    case ts.SyntaxKind.ParenthesizedExpression:
-    case ts.SyntaxKind.TypeAssertionExpression:
-      return evalNode(node.expression, src, locals);
-
-    case ts.SyntaxKind.PrefixUnaryExpression: {
-      const v = evalNode(node.operand, src, locals);
-      if (v === undefined) return undefined;
-      if (node.operator === ts.SyntaxKind.MinusToken) return -v;
-      if (node.operator === ts.SyntaxKind.PlusToken) return +v;
-      if (node.operator === ts.SyntaxKind.ExclamationToken) return !v;
-      return undefined;
-    }
-
-    case ts.SyntaxKind.BinaryExpression: {
-      const left = evalNode(node.left, src, locals);
-      const right = evalNode(node.right, src, locals);
-      if (left === undefined || right === undefined) return undefined;
-      switch (node.operatorToken.kind) {
-        case ts.SyntaxKind.PlusToken:
-          return left + right;
-        case ts.SyntaxKind.MinusToken:
-          return left - right;
-        case ts.SyntaxKind.AsteriskToken:
-          return left * right;
-        default:
-          return undefined;
-      }
-    }
-
-    case ts.SyntaxKind.CallExpression: {
-      if (
-        ts.isPropertyAccessExpression(node.expression) &&
-        node.expression.name.text === "repeat"
-      ) {
-        const base = evalNode(node.expression.expression, src, locals);
-        const n = evalNode(node.arguments[0], src, locals);
-        if (typeof base === "string" && typeof n === "number") {
-          return base.repeat(n);
-        }
-      }
-      if (
-        ts.isIdentifier(node.expression) &&
-        node.expression.text === "incompleteImage"
-      ) {
-        const alt = evalNode(node.arguments[0], src, locals);
-        if (typeof alt === "string") {
-          return `![${alt}](comark:incomplete-image)`;
-        }
-      }
-      return undefined;
-    }
-
-    case ts.SyntaxKind.PropertyAccessExpression: {
-      const obj = evalNode(node.expression, src, locals);
-      if (obj && typeof obj === "object") return obj[node.name.text];
-      return undefined;
-    }
-
-    case ts.SyntaxKind.ElementAccessExpression: {
-      const obj = evalNode(node.expression, src, locals);
-      const key = evalNode(node.argumentExpression, src, locals);
-      if (obj != null && key !== undefined) return obj[key];
-      return undefined;
-    }
-
-    default:
-      return undefined;
-  }
-}
-
-function getExpectToBe(node) {
-  if (!ts.isCallExpression(node)) return null;
-  if (!ts.isPropertyAccessExpression(node.expression)) return null;
-  if (
-    node.expression.name.text !== "toBe" &&
-    node.expression.name.text !== "toEqual"
-  ) {
-    return null;
-  }
-  const expectCall = node.expression.expression;
-  if (!ts.isCallExpression(expectCall)) return null;
-  if (
-    !ts.isIdentifier(expectCall.expression) ||
-    expectCall.expression.text !== "expect"
-  ) {
-    return null;
-  }
-  return {
-    expectArg: expectCall.arguments[0],
-    expectedNode: node.arguments[0],
-  };
-}
-
-function isRemendCall(node) {
-  return (
-    ts.isCallExpression(node) &&
-    ts.isIdentifier(node.expression) &&
-    node.expression.text === "remend"
-  );
-}
-
-function extractFromFile(filePath) {
-  const text = readFileSync(filePath, "utf8");
-  const sf = ts.createSourceFile(filePath, text, ts.ScriptTarget.Latest, true);
-  const file = filePath.split("/").pop();
-  const cases = [];
-
-  function walk(node, locals, describeStack) {
-    if (
-      ts.isCallExpression(node) &&
-      ts.isIdentifier(node.expression) &&
-      (node.expression.text === "describe" || node.expression.text === "it")
-    ) {
-      const titleNode = node.arguments[0];
-      const title =
-        titleNode &&
-        (ts.isStringLiteral(titleNode) ||
-          ts.isNoSubstitutionTemplateLiteral(titleNode))
-          ? titleNode.text
-          : null;
-      const nextStack =
-        node.expression.text === "describe" && title
-          ? [...describeStack, title]
-          : describeStack;
-      const cb = node.arguments[1];
-      if (cb && (ts.isArrowFunction(cb) || ts.isFunctionExpression(cb))) {
-        if (cb.body) walk(cb.body, new Map(locals), nextStack);
-        return;
-      }
-    }
-
-    if (ts.isVariableStatement(node)) {
-      for (const decl of node.declarationList.declarations) {
-        if (ts.isIdentifier(decl.name) && decl.initializer) {
-          const v = evalNode(decl.initializer, sf, locals);
-          if (v !== undefined) {
-            locals.set(decl.name.text, v);
-          } else if (isRemendCall(decl.initializer)) {
-            const input = evalNode(decl.initializer.arguments[0], sf, locals);
-            const opts = decl.initializer.arguments[1]
-              ? evalNode(decl.initializer.arguments[1], sf, locals)
-              : undefined;
-            if (typeof input === "string") {
-              locals.set(decl.name.text, { __remend: true, input, opts });
-            }
-          }
-        }
-      }
-    }
-
-    const pair = getExpectToBe(node);
-    if (pair) {
-      let input;
-      let opts;
-      const expected = evalNode(pair.expectedNode, sf, locals);
-
-      if (isRemendCall(pair.expectArg)) {
-        input = evalNode(pair.expectArg.arguments[0], sf, locals);
-        opts = pair.expectArg.arguments[1]
-          ? evalNode(pair.expectArg.arguments[1], sf, locals)
-          : undefined;
-      } else if (ts.isIdentifier(pair.expectArg)) {
-        const bound = locals.get(pair.expectArg.text);
-        if (bound?.__remend) {
-          input = bound.input;
-          opts = bound.opts;
-        }
-      }
-
-      if (typeof input === "string" && typeof expected === "string") {
-        if (!(opts && opts.handlers)) {
-          cases.push({
-            file,
-            describePath: describeStack.join(" › "),
-            input,
-            expected,
-            opts: opts && Object.keys(opts).length ? opts : undefined,
-          });
-        }
-      }
-    }
-
-    ts.forEachChild(node, (child) => walk(child, locals, describeStack));
-  }
-
-  walk(sf, new Map(), []);
-  return cases;
-}
-
-// ---------- Format / classify ----------
-
-/**
- * SPEC lines only special-case `\n` / `\t` / `\r` (see decode). Existing
- * backslashes (e.g. GFM escapes like `\~`) are left as a single `\` so they
- * round-trip: file `\~` → string `\~`.
- */
-function encodeSpec(s) {
-  return s
-    .replace(/\r/g, "\\r")
-    .replace(/\n/g, "\\n")
-    .replace(/\t/g, "\\t");
-}
-
-function decodeSpec(s) {
-  let out = "";
-  for (let i = 0; i < s.length; i++) {
-    if (s[i] === "\\" && i + 1 < s.length) {
-      const n = s[i + 1];
-      if (n === "n") {
-        out += "\n";
-        i++;
-        continue;
-      }
-      if (n === "t") {
-        out += "\t";
-        i++;
-        continue;
-      }
-      if (n === "r") {
-        out += "\r";
-        i++;
-        continue;
-      }
-      // Preserve the backslash + next char (e.g. \~ stays \~).
-      out += "\\";
-      out += n;
-      i++;
-      continue;
-    }
-    out += s[i];
-  }
-  return out;
-}
-
-function optionsNote(opts) {
-  if (!opts) return null;
-  const parts = [];
-  for (const [k, v] of Object.entries(opts)) {
-    if (v === true) parts.push(`${k}: true`);
-    else if (v === false) parts.push(`${k}: false`);
-    else if (typeof v === "string") parts.push(`${k}: '${v}'`);
-    else parts.push(`${k}: ${JSON.stringify(v)}`);
-  }
-  return parts.length ? parts.join(", ") : null;
-}
-
-function caseKey(c) {
-  return `${c.input}\0${c.expected}\0${JSON.stringify(c.opts ?? null)}`;
-}
-
-function contentKey(input, expected) {
-  return `${input}\0${expected}`;
-}
-
-function sectionForCase(c) {
-  const d = `${c.describePath} ${c.file}`.toLowerCase();
-  const inp = c.input;
-  const exp = c.expected;
-
-  if (c.opts?.linkMode === "text-only" || /text-only/.test(d)) {
-    return "Links (text-only mode)";
-  }
-  if (
-    exp.includes("incomplete-image") ||
-    /image/.test(d) ||
-    inp.includes("![")
-  ) {
-    if (
-      exp.includes("incomplete-image") ||
-      inp.includes("![") ||
-      /image/.test(d)
-    ) {
-      return "Images";
-    }
-  }
-  if (
-    exp.includes("incomplete-link") ||
-    (/link/.test(d) && (inp.includes("[") || exp.includes("[")))
-  ) {
-    return "Links (default protocol mode)";
-  }
-  if (c.opts?.inlineKatex === true) return "Inline math";
-  if (c.opts?.katex === true || /katex|math/.test(d)) {
-    if (/protect/.test(d)) return "Math protects inner markers";
-    if (/inline/.test(d)) return "Inline math";
-    if (/\$\$/.test(inp) || /block/.test(d) || c.opts?.katex) {
-      return "Block math (KaTeX)";
-    }
-  }
-  if (/single.?tilde|tilde escape/.test(d)) return "Single tilde escape";
-  if (/strikethrough/.test(d) || (inp.includes("~~") && !/tilde/.test(d))) {
-    return "Strikethrough";
-  }
-  if (/html/.test(d)) return "Incomplete HTML tags";
-  if (/comparison/.test(d)) return "Comparison operators in lists";
-  if (/setext/.test(d)) return "Setext heading guard";
-  if (/horizontal|thematic/.test(d)) return "Leave horizontal rules alone";
-  if (/code.?block|fence|fenced|mermaid/.test(d)) {
-    return "Leave code fences alone";
-  }
-  if (/list/.test(d) && !/comparison/.test(d)) return "Leave list markers alone";
-  if (/inline.?code/.test(d)) return "Inline code";
-  if (/bold.?italic|triple/.test(d) || inp.includes("***")) {
-    return "Bold + italic";
-  }
-  if (/bold/.test(d)) return "Bold";
-  if (/italic|underscore/.test(d)) {
-    if (/underscore|__/i.test(d) || inp.includes("_")) {
-      return "Italic (underscore)";
-    }
-    return "Italic (asterisk)";
-  }
-  if (/intraword|word.?internal|space.?flank|multiply/.test(d)) {
-    return "Word-internal markers stay literal";
-  }
-  if (/nested|mixed/.test(d)) return "Nested / mixed formatting";
-  if (/escape|inside code/.test(d)) {
-    return "Emphasis markers stay put inside code / escapes";
-  }
-  if (/stream|chunk|progressive|gpt/.test(d)) {
-    return "Streaming chunks (progressive)";
-  }
-  if (/trail.*space|whitespace cleanup/.test(d)) {
-    return "Trailing whitespace cleanup";
-  }
-  if (/edge|empty|finished|plain|standalone|basic/.test(d)) {
-    return "Leave finished / empty cases alone";
-  }
-  if (/^```/m.test(inp) || inp.includes("```")) return "Leave code fences alone";
-  if (inp.includes("~~")) return "Strikethrough";
-  if (inp.includes("***")) return "Bold + italic";
-  if (inp.includes("**")) return "Bold";
-  if (inp.includes("__") || /_[a-zA-Z]/.test(inp)) return "Italic (underscore)";
-  if (inp.includes("*")) return "Italic (asterisk)";
-  if (inp.includes("`")) return "Inline code";
-  if (inp.includes("$$")) return "Block math (KaTeX)";
-  if (inp.includes("$")) return "Inline math";
-  return "Remend extras";
-}
-
-function formatDiff(c) {
-  const note = optionsNote(c.opts);
-  const exp = note
-    ? `+ ${encodeSpec(c.expected)}  (${note})`
-    : `+ ${encodeSpec(c.expected)}`;
-  return `\`\`\`diff\n- ${encodeSpec(c.input)}\n${exp}\n\`\`\``;
-}
-
-function parseExistingKeys(md) {
-  const keys = new Set();
-  const lines = md.split("\n");
-  let i = 0;
-  while (i < lines.length) {
-    if (lines[i].trim() === "```diff") {
-      i++;
-      let input = null;
-      let expected = null;
-      while (i < lines.length && lines[i].trim() !== "```") {
-        const L = lines[i];
-        if (L.startsWith("- ")) input = L.slice(2);
-        else if (L.startsWith("+ ")) {
-          expected = L.slice(2).replace(/\s{2,}\(.+\)$/, "");
-        }
-        i++;
-      }
-      if (input != null && expected != null) {
-        keys.add(contentKey(decodeSpec(input), decodeSpec(expected)));
-      }
-    }
-    i++;
-  }
-  return keys;
-}
-
-function listSections(md) {
-  const titles = [];
-  for (const line of md.split("\n")) {
-    const m = line.match(/^##\s+(.+)/);
-    if (m) titles.push(m[1].trim());
-  }
-  return titles;
-}
-
-/**
- * Insert a block of markdown just before the next `## ` heading after
- * `## sectionTitle`, or before a trailing `---` separator if present.
- * Falls back to end of file.
- */
-function insertBeforeNextSection(md, sectionTitle, block) {
-  const header = `## ${sectionTitle}`;
-  const start = md.indexOf(header);
-  if (start === -1) return null;
-
-  const afterHeader = start + header.length;
-  // Find next section heading
-  const rest = md.slice(afterHeader);
-  const nextMatch = rest.match(/\n## /);
-  let insertAt;
-  if (nextMatch && nextMatch.index != null) {
-    insertAt = afterHeader + nextMatch.index;
-    // Prefer inserting before a --- separator that precedes the next ##
-    const window = md.slice(Math.max(afterHeader, insertAt - 20), insertAt);
-    const sep = window.lastIndexOf("\n---");
-    if (sep !== -1) {
-      insertAt = Math.max(afterHeader, insertAt - 20) + sep;
-    }
-  } else {
-    insertAt = md.length;
-  }
-
-  const before = md.slice(0, insertAt).replace(/\s+$/, "");
-  const after = md.slice(insertAt).replace(/^\s+/, "\n\n");
-  return `${before}\n\n${block.trim()}\n${after}`;
-}
-
-function toRemendBase(md) {
-  return md
-    .replace(
-      /^---[\s\S]*?---\n/,
-      `---
-# Behavioral SPEC for remend (streaming auto-close).
-# Source: comark SPEC/auto-close.md + cases extracted from packages/remend/__tests__.
-# Exercised by __tests__/auto-close-spec.test.ts and scripts/compare-auto-close.mjs
-skip: true
----
-`
-    )
-    .replaceAll("`comark:incomplete-link`", "`comark:incomplete-link`")
-    .replaceAll("`comark:incomplete-image`", "`comark:incomplete-image`")
-    .replaceAll("(comark:incomplete-link)", "(comark:incomplete-link)")
-    .replaceAll("(comark:incomplete-image)", "(comark:incomplete-image)")
-    .replaceAll("comark:incomplete-link", "comark:incomplete-link")
-    .replaceAll("comark:incomplete-image", "comark:incomplete-image")
-    .replace(
-      /# Auto Close Markdown Spec(?! \(remend\))/,
-      "# Auto Close Markdown Spec (remend)"
-    )
-    .replaceAll("autoCloseMarkdown", "remend")
-    .replace(
-      /options:[\s\S]*?(?=\n\n---)/,
-      `options (remend):
-- incompleteLinkPlaceholder: \`comark:incomplete-link\`
-- incompleteImagePlaceholder: \`comark:incomplete-image\`
-- katex / inlineKatex: auto-close \`$$…$$\` / \`$…$\` (inlineKatex defaults off)
-- linkMode: \`protocol\` | \`text-only\`
-- per-case overrides may appear as \`+ expected  (katex: true, linkMode: 'text-only')\`
-
-comark-only (not implemented by remend):
-- dropTrailingOpeners: drop a trailing opener after whitespace at EOF (\`hello *\` → \`hello\`)`
-    );
-}
-
-// ---------- Main ----------
-
-// Always start from fresh comark SPEC if available, else local file.
-let baseMd;
-try {
-  const res = await fetch(COMARK_SPEC_URL);
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  baseMd = await res.text();
-  console.log(`Fetched fresh SPEC from comark (${baseMd.length} bytes)`);
-} catch (e) {
-  console.warn(`Could not fetch comark SPEC (${e.message}); using local file`);
-  baseMd = readFileSync(fixturePath, "utf8");
-  // If local was previously merged, strip remend extras appendix + injected markers
-  // by re-fetch is preferred. Strip common pollution:
-  baseMd = baseMd
-    .replace(/\n<!-- \+\d+ from remend\/__tests__ -->\n[\s\S]*?(?=\n---\n\n## |\n# Remend package extras|\n*$)/g, "\n")
-    .replace(/\n# Remend package extras[\s\S]*$/g, "\n");
-}
-
-baseMd = toRemendBase(baseMd);
-
-const files = readdirSync(testsDir).filter(
-  (f) => (f.endsWith(".ts") || f.endsWith(".tsx")) && !SKIP_FILES.has(f)
-);
-
-let all = [];
-for (const f of files) {
-  all.push(...extractFromFile(join(testsDir, f)));
-}
-
-const verified = [];
-const mismatches = [];
-for (const c of all) {
-  let got;
-  try {
-    got = remend(c.input, c.opts);
-  } catch (e) {
-    mismatches.push({ ...c, got: String(e) });
-    continue;
-  }
-  if (got === c.expected) verified.push(c);
-  else mismatches.push({ ...c, got });
-}
-
-const seen = new Set();
-const unique = [];
-for (const c of verified) {
-  const k = caseKey(c);
-  if (seen.has(k)) continue;
-  seen.add(k);
-  unique.push(c);
-}
-
-const existingKeys = parseExistingKeys(baseMd);
-const sectionTitles = listSections(baseMd);
-
-const bySection = new Map();
-const extras = [];
-let already = 0;
-
-for (const c of unique) {
-  if (existingKeys.has(contentKey(c.input, c.expected))) {
-    already++;
-    continue;
-  }
-  existingKeys.add(contentKey(c.input, c.expected));
-  const title = sectionForCase(c);
-  if (sectionTitles.includes(title)) {
-    if (!bySection.has(title)) bySection.set(title, []);
-    bySection.get(title).push(c);
-  } else {
-    extras.push(c);
-  }
-}
-
-let updated = baseMd;
-let mergedCount = 0;
-
-for (const [title, list] of bySection) {
-  const block = [
-    `<!-- +${list.length} from remend/__tests__ -->`,
-    "",
-    ...list.map(formatDiff),
-  ].join("\n\n");
-  const next = insertBeforeNextSection(updated, title, block);
-  if (next) {
-    updated = next;
-    mergedCount += list.length;
-  } else {
-    extras.push(...list);
-  }
-}
-
-if (extras.length) {
-  const by = new Map();
-  for (const c of extras) {
-    const t = sectionForCase(c);
-    if (!by.has(t)) by.set(t, []);
-    by.get(t).push(c);
-  }
-  let appendix = "\n\n---\n\n# Remend package extras\n\n";
-  appendix +=
-    "Additional cases from `packages/remend/__tests__` not covered by the sections above.\n\n";
-  for (const [title, list] of by) {
-    appendix += `---\n\n## ${title}\n\n`;
-    appendix += list.map(formatDiff).join("\n\n");
-    appendix += "\n\n";
-  }
-  updated = updated.replace(/\s*$/, "\n") + appendix;
-  mergedCount += extras.length;
-}
-
-if (!updated.endsWith("\n")) updated += "\n";
-writeFileSync(fixturePath, updated);
-
-const finalDiffs = (updated.match(/```diff/g) || []).length;
-
-console.log(`Test files scanned:     ${files.length}`);
-console.log(`Cases extracted:        ${all.length}`);
-console.log(`Verified vs remend:     ${verified.length}`);
-console.log(`Unique verified:        ${unique.length}`);
-console.log(`Already in SPEC:        ${already}`);
-console.log(`Newly merged:           ${mergedCount}`);
-console.log(`Eval mismatches:        ${mismatches.length}`);
-console.log(`Total SPEC diffs now:   ${finalDiffs}`);
-console.log(`Wrote ${fixturePath}`);
-
-if (mismatches.length) {
-  console.log("\nSample mismatches (first 8):");
-  for (const m of mismatches.slice(0, 8)) {
-    console.log(`  [${m.file}] ${JSON.stringify(m.input).slice(0, 50)}`);
-    console.log(`    exp ${JSON.stringify(m.expected).slice(0, 50)}`);
-    console.log(`    got ${JSON.stringify(m.got).slice(0, 50)}`);
-  }
-}
-
-if (bySection.size) {
-  console.log("\nMerged into sections:");
-  for (const [t, list] of bySection) console.log(`  ${t}: +${list.length}`);
-}
-if (extras.length) {
-  console.log(`\nExtras appendix: ${extras.length}`);
-}

@@ -136,9 +136,10 @@ describe('autoCloseMarkdown - Inline Syntax', () => {
     expect(autoCloseMarkdown(input)).toBe(input)
   })
 
-  it('does not close incomplete emphasis inside a list item soft-wrap', () => {
+  it('closes incomplete emphasis across a list item soft-wrap', () => {
+    // SPEC Leave list markers alone: `- **text\nmore text` → close bold on the item.
     const input = '- **text\nmore text'
-    expect(autoCloseMarkdown(input)).toBe(input)
+    expect(autoCloseMarkdown(input)).toBe('- **text\nmore text**')
   })
 
   it('should handle bold at the end of last line', () => {
@@ -687,9 +688,10 @@ describe('inline code spans as literal regions', () => {
     expect(autoCloseMarkdown(input)).toBe(expected)
   })
 
-  it('should nest closers when bold wraps an open code span', () => {
+  it('should close code first when bold wraps an open code span', () => {
+    // SPEC: outer emphasis closers go after the code span (`Text **bold `code` → …`code`**).
     const input = '**bold `code'
-    const expected = '**bold `code**`'
+    const expected = '**bold `code`**'
     expect(autoCloseMarkdown(input)).toBe(expected)
   })
 
