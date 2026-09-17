@@ -272,6 +272,8 @@ export function parseSpecCases(md, filePath) {
           expected: decodeEscapes(expectedRaw),
           options: resolveOptions(overrides),
         })
+      } else if (inputRaw !== null || expectedRaw !== null) {
+        throw new Error(`${fileLabel(filePath)}: incomplete diff case at line ${lineNo}`)
       }
       if (i < lines.length && lines[i].trim() === '```') i++
       continue
