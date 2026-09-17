@@ -72,7 +72,8 @@ hi
 describe('ParserOptions.tracer', () => {
   it('records phase and per-plugin spans in pipeline order', async () => {
     const { tracer, spans } = createRecorder()
-    const parse = createMarkdownParser({ tracer })
+    // The default only heals while streaming, so force it on for the autoclose span.
+    const parse = createMarkdownParser({ tracer, autoClose: true })
     const tree = await parse(markdown)
 
     expect(tree.frontmatter).toEqual({ title: 'Hello' })

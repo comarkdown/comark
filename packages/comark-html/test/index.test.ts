@@ -68,9 +68,10 @@ describe('renderHtml', () => {
   })
 
   it('passes parser options through', async () => {
-    const html = await renderHtml('**bold', { autoClose: false })
-    expect(html).toContain('**bold')
-    expect(html).not.toContain('<strong>')
+    // The default only heals while streaming, so force it on to prove the option
+    // reaches the parser.
+    const html = await renderHtml('**bold', { autoClose: true })
+    expect(html).toContain('<strong>')
   })
 })
 

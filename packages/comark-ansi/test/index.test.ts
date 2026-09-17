@@ -437,9 +437,11 @@ describe('renderAnsi', () => {
   })
 
   it('passes parser and renderer options through', async () => {
-    const output = await renderAnsi('**bold', { autoClose: false, colors: false })
+    // The default only heals while streaming, so force it on to prove the option
+    // reaches the parser.
+    const output = await renderAnsi('**bold', { autoClose: true, colors: false })
     expect(output).not.toContain('\x1B[')
-    expect(output).toContain('\\*\\*bold')
+    expect(output).not.toContain('\\*\\*bold')
   })
 
   it('disables colors when NO_COLOR is present', async () => {
