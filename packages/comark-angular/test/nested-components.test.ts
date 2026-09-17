@@ -1,4 +1,3 @@
-import '@angular/compiler'
 import { describe, expect, it, vi } from 'vitest'
 import { Component, provideZonelessChangeDetection, type Type } from '@angular/core'
 import { bootstrapApplication } from '@angular/platform-browser'
@@ -6,67 +5,80 @@ import { renderApplication } from '@angular/platform-server'
 import { parseMarkdown, type MarkdownDocument as MarkdownDocumentType } from 'comark'
 import { MarkdownDocument } from '../src/components/markdown-document.component.ts'
 import { MarkdownNode } from '../src/components/markdown-node.component.ts'
-
-function createRenderer() {
-  return {
-    createText: (value: string) => ({ value }),
-    appendChild: vi.fn(),
-  }
-}
-
-function createNode(overrides: Record<string, unknown> = {}) {
-  const node = Object.create(MarkdownNode.prototype) as any
-  Object.assign(node, {
-    node: ['root', {}],
-    components: { Badge: class Badge {} },
-    renderer: createRenderer(),
-    vcr: { createComponent: vi.fn() },
-    ...overrides,
-  })
-  return node
-}
+import { ComponentFixture, TestBed } from '@angular/core/testing'
 
 describe('MarkdownNode nested component rendering', () => {
+  let component: MarkdownNode;
+  let fixture: ComponentFixture<MarkdownNode>;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [MarkdownNode],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(MarkdownNode);
+    component = fixture.componentInstance;
+    await fixture.whenStable();
+  });
+
   it('passes nested inputs through Angular input binding', () => {
+    const parentNode = ['root', {}] as const
+    const renderData = { frontmatter: {}, meta: {}, data: {}, props: {} }
+    const components = { Badge }
+
+    fixture.componentRef.setInput('node', parentNode)
+    fixture.componentRef.setInput('components', components)
+    fixture.componentRef.setInput('renderData', renderData)
+    fixture.componentRef.setInput('parent', ['p', {}])
+
     const componentRef = {
       setInput: vi.fn(),
-      changeDetectorRef: { detectChanges: vi.fn() },
-      location: { nativeElement: { style: {} } },
+      changeDetectorRef: {
+        detectChanges: vi.fn(),
+      },
+      location: {
+        nativeElement: document.createElement('div'),
+      },
     }
-    const node = createNode({
-      vcr: { createComponent: vi.fn(() => componentRef) },
-    })
 
-    node.renderChildren({}, [['badge', {}, 'shown']], { frontmatter: {}, meta: {}, data: {}, props: {} })
+    vi.spyOn(component['vcr'], 'createComponent').mockReturnValue(componentRef as any)
+
+    component['renderChildren'](document.createElement('div'), [['badge', {}, 'shown']], renderData)
 
     expect(componentRef.setInput).toHaveBeenCalledWith('node', ['badge', {}, 'shown'])
-    expect(componentRef.setInput).toHaveBeenCalledWith('components', node.components)
-    expect(componentRef.setInput).toHaveBeenCalledWith('parent', node.node)
-    expect(componentRef.changeDetectorRef.detectChanges).toHaveBeenCalledOnce()
+    expect(componentRef.setInput).toHaveBeenCalledWith('components', components)
+    expect(componentRef.setInput).toHaveBeenCalledWith('renderData', renderData)
+    expect(componentRef.setInput).toHaveBeenCalledWith('parent', parentNode)
+    expect(componentRef.changeDetectorRef.detectChanges).toHaveBeenCalledTimes(1)
   })
 
   it('logs a failed custom component and continues with later siblings', () => {
     const error = new Error('constructor failed')
-    const renderer = createRenderer()
-    const node = createNode({
-      renderer,
-      vcr: {
-        createComponent: vi.fn(() => {
-          throw error
-        }),
-      },
+    const renderData = { frontmatter: {}, meta: {}, data: {}, props: {} }
+    const parentEl = document.createElement('div')
+    const appendChildSpy = vi.spyOn(component['renderer'], 'appendChild')
+
+    fixture.componentRef.setInput('node', ['root', {}])
+    fixture.componentRef.setInput('components', { Badge })
+    fixture.componentRef.setInput('renderData', renderData)
+    fixture.componentRef.setInput('parent', ['p', {}])
+
+    vi.spyOn(component['vcr'], 'createComponent').mockImplementation(() => {
+      throw error
     })
+
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
 
-    node.renderChildren({}, [['badge', {}, 'gone'], 'still rendered'], {
-      frontmatter: {},
-      meta: {},
-      data: {},
-      props: {},
-    })
+    component['renderChildren'](parentEl, [['badge', {}, 'gone'], 'still rendered'], renderData)
 
     expect(consoleError).toHaveBeenCalledWith('Failed to render custom component "badge"', error)
-    expect(renderer.appendChild).toHaveBeenCalledWith({}, { value: 'still rendered' })
+
+    expect(appendChildSpy).toHaveBeenCalledTimes(1)
+    const [calledParent, calledText] = appendChildSpy.mock.calls[0]
+    expect(calledParent).toBeInstanceOf(HTMLDivElement)
+    expect(calledText).toBeInstanceOf(Text)
+    expect(calledText.textContent).toBe('still rendered')
+
     consoleError.mockRestore()
   })
 })

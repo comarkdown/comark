@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, SimpleChanges, ChangeDetectionStrategy, ElementRef, inject } from '@angular/core'
+import { Component, OnChanges, SimpleChanges, ChangeDetectionStrategy, ElementRef, inject, input } from '@angular/core'
 import katex from 'katex'
 
 /**
@@ -20,9 +20,9 @@ import katex from 'katex'
   template: '',
 })
 export class Math implements OnChanges {
-  @Input({ required: true }) content!: string
-  @Input() class: string = ''
-  @Input() __node: any = {}
+  readonly content = input.required<string>()
+  readonly class = input<string>("")
+  readonly __node = input<any>({})
 
   private elementRef = inject(ElementRef)
 
@@ -33,7 +33,7 @@ export class Math implements OnChanges {
   private renderMath(): void {
     if (typeof document === 'undefined') return
 
-    const isInline = this.class?.includes('inline')
+    const isInline = this.class()?.includes('inline')
     const hostEl = this.elementRef.nativeElement as HTMLElement
 
     // Clear previous content
@@ -45,7 +45,7 @@ export class Math implements OnChanges {
     wrapper.className = isInline ? 'math inline' : 'math block'
 
     try {
-      wrapper.innerHTML = katex.renderToString(this.content, {
+      wrapper.innerHTML = katex.renderToString(this.content(), {
         throwOnError: true,
         displayMode: !isInline,
       })

@@ -139,12 +139,15 @@ catalog:
   "@angular/compiler": ^22.0.6
   "@angular/compiler-cli": ^22.0.6
   "@angular/core": ^22.0.6
+  "@angular/cli": ^22.0.6
   "@angular/build": ^22.0.6
   "@angular/platform-browser": ^22.0.6
   "@angular/platform-browser-dynamic": ^22.0.6
   "@angular/platform-server": ^22.0.6
   "@angular/router": ^22.0.6
+  "@angular-devkit/build-angular": ^22.0.6
   "@analogjs/vite-plugin-angular": 3.0.0-alpha.61
+  ng-packagr: ^22.0.0
   zone.js: ^0.16.0
   rxjs: ^7.8.0
   tslib: ^2.6.0

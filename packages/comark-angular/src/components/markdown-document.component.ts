@@ -1,16 +1,16 @@
 import {
   Component,
-  Input,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Type,
   inject,
   type OnInit,
   type OnDestroy,
+  input,
 } from '@angular/core'
 import type { ElementNode, Node, MarkdownDocument as MarkdownDocumentType, NodeRenderData } from 'comark'
-import { MarkdownNode } from './markdown-node.component.ts'
-import { findLastTextNodeAndAppendNode, getCaret } from '../utils/caret.ts'
+import { MarkdownNode } from './markdown-node.component'
+import { findLastTextNodeAndAppendNode, getCaret } from '../utils/caret'
 
 const EMPTY_DOCUMENT: MarkdownDocumentType = { nodes: [], frontmatter: {}, meta: {} }
 
@@ -36,7 +36,7 @@ const EMPTY_DOCUMENT: MarkdownDocumentType = { nodes: [], frontmatter: {}, meta:
       @for (node of renderedNodes; track $index) {
         <comark-markdown-node
           [node]="node"
-          [components]="components"
+          [components]="components()"
           [renderData]="renderData"
         />
       }
@@ -45,38 +45,38 @@ const EMPTY_DOCUMENT: MarkdownDocumentType = { nodes: [], frontmatter: {}, meta:
 })
 export class MarkdownDocument implements OnInit, OnDestroy {
   /** The parsed Markdown document to render */
-  @Input() value?: MarkdownDocumentType
+  readonly value = input<MarkdownDocumentType>()
 
   /** Custom component mappings for element tags */
-  @Input() components: Record<string, Type<any>> = {}
+  readonly components = input<Record<string, Type<any>>>({})
 
   /** Enable streaming mode */
-  @Input() streaming: boolean = false
+  readonly streaming = input<boolean>(false)
 
   /** Append a caret to the last text node (for streaming UIs) */
-  @Input() caret: boolean | { class: string } = false
+  readonly caret = input<boolean | { class: string }>(false)
 
   /** Additional data to pass to the renderer for :binding resolution */
-  @Input() data: Record<string, unknown> = {}
+  readonly data = input<Record<string, unknown>>({})
 
   /**
    * Document key used to subscribe to live updates via `globalThis.comarkContext`.
    * Falls back to the document's own `meta.key` when set by a plugin.
    */
-  @Input() documentKey?: string
+  readonly documentKey = input<string>()
 
   private cdr = inject(ChangeDetectorRef)
   private liveDocument: MarkdownDocumentType | null = null
   private cleanup?: (clear?: boolean) => void
 
   private get inputDocument(): MarkdownDocumentType {
-    return this.value ?? EMPTY_DOCUMENT
+    return this.value() ?? EMPTY_DOCUMENT
   }
 
   // Live document support: if an ambient context exists, subscribe to updates
   // for this key and re-render with the pushed document. Cleaned up on destroy.
   ngOnInit(): void {
-    const key = this.inputDocument.meta?.key || this.documentKey
+    const key = this.inputDocument.meta?.key || this.documentKey()
     if (key && globalThis.comarkContext) {
       this.cleanup = globalThis.comarkContext.get(key, this.inputDocument).listen((document) => {
         this.liveDocument = document
@@ -95,9 +95,9 @@ export class MarkdownDocument implements OnInit, OnDestroy {
 
   get renderedNodes(): Node[] {
     const nodes = [...(this.activeDocument.nodes || [])]
-    const caretNode = getCaret(this.caret)
+    const caretNode = getCaret(this.caret())
 
-    if (this.streaming && caretNode && nodes.length > 0) {
+    if (this.streaming() && caretNode && nodes.length > 0) {
       const hasStreamCaret = findLastTextNodeAndAppendNode(nodes[nodes.length - 1] as ElementNode, caretNode)
       if (!hasStreamCaret) {
         nodes.push(caretNode)
@@ -111,7 +111,7 @@ export class MarkdownDocument implements OnInit, OnDestroy {
     return {
       frontmatter: this.activeDocument.frontmatter,
       meta: this.activeDocument.meta,
-      data: this.data || {},
+      data: this.data() || {},
       props: {},
     }
   }

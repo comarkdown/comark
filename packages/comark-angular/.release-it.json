@@ -11,7 +11,7 @@
   },
   "npm": {
     "publish": true,
-    "publishPath": ".",
+    "publishPath": "dist",
     "publishPackageManager": "pnpm",
     "publishArgs": ["--no-git-checks"]
   },
