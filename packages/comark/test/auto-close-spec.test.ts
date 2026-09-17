@@ -60,6 +60,7 @@ describe('comark — autoCloseMarkdown vs SPEC/auto-close.md', () => {
     console.log('\n' + formatCompareMarkdown(report))
 
     expect(report.caseCount).toBeGreaterThan(0)
+    expect(report.candidates[0].failed).toBe(0)
     expect(report.ranking[0]).toMatchObject({
       name: 'comark',
       passed: expect.any(Number),
