@@ -404,7 +404,7 @@ const markdownItComarkBlock: PluginSimple = (md) => {
   )
 }
 
-const ALLOWED_PREV_CHARS = new Set([' ', '\t', '\n', '*', '_', '['])
+const ALLOWED_PREV_CHARS = new Set([' ', '\t', '\n', '*', '_', '[', ']', '}', ')', '>'])
 
 const markdownItInlineComponent: PluginSimple = (md) => {
   md.inline.ruler.after('entity', 'comark_inline_component', (state, silent) => {

@@ -22,6 +22,16 @@ describe('component name validation', () => {
       expect(tree.nodes).toEqual([['p', {}, 'Meet me at :30 past the hour']])
     })
 
+    it('parses consecutive inline components without spaces', async () => {
+      const tree = await parseMarkdown(':b[text]:i[text]')
+      expect(tree.nodes).toEqual([['p', {}, ['b', {}, 'text'], ['i', {}, 'text']]])
+    })
+
+    it('parses inline components after attributes', async () => {
+      const tree = await parseMarkdown(':b[text]{id="x"}:i[text]')
+      expect(tree.nodes).toEqual([['p', {}, ['b', { id: 'x' }, 'text'], ['i', {}, 'text']]])
+    })
+
     it('still parses a valid letter-led inline component', async () => {
       const tree = await parseMarkdown('an :inline-component here')
       expect(tree.nodes).toEqual([['p', {}, 'an ', ['inline-component', {}], ' here']])
