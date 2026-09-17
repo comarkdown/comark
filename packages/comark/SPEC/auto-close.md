@@ -2249,6 +2249,31 @@ A lone header row is completed with a delimiter row so it renders as a table imm
 + intro\n\nrun `npm i`
 ```
 
+A closing fence carries no info string, so a fence line with one is still code content
+(nested fences inside a ```` ```md ```` block keep their language tags):
+
+```diff
+- ```md\n```js\n**bold
++ ```md\n```js\n**bold
+```
+
+```diff
+- ```md\n```js\n**bold\n```\nafter **bold
++ ```md\n```js\n**bold\n```\nafter **bold**
+```
+
+A shorter or different marker is not a closer either:
+
+```diff
+- ````\ncode\n```js\n**bold
++ ````\ncode\n```js\n**bold
+```
+
+```diff
+- ```\ncode\n~~~\n**bold
++ ```\ncode\n~~~\n**bold
+```
+
 ---
 
 ## Leave horizontal rules alone

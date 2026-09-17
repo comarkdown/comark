@@ -241,8 +241,13 @@ function scanBlocks(src: string, o: Opts): DocState {
             shielded = i
             continue
           }
+        } else if (c0 === fenceCh && run >= fenceLen && st + run === en) {
+          // A closer is the same character, at least as long, and followed only by
+          // whitespace. `` ```js `` inside an open block is code content, not a closer.
+          fenceLen = 0
+          shielded = i
+          continue
         } else {
-          if (c0 === fenceCh && run >= fenceLen) fenceLen = 0
           shielded = i
           continue
         }
