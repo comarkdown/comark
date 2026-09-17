@@ -87,5 +87,3 @@ describe('component name validation', () => {
     })
   })
 })
-
-
