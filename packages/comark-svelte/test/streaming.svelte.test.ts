@@ -1,6 +1,7 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { render } from 'vitest-browser-svelte'
 import { parseMarkdown } from 'comark'
+import type { ComarkPlugin } from 'comark'
 import Markdown from '../src/components/Markdown.svelte'
 import MarkdownDocument from '../src/components/MarkdownDocument.svelte'
 import Alert from './test-components/Alert.svelte'
@@ -184,5 +185,31 @@ describe('streaming with MarkdownDocument', () => {
 
     await expect.element(screen.getByText('First')).toBeInTheDocument()
     await expect.element(screen.getByText('Second')).toBeInTheDocument()
+  })
+})
+
+describe('parse failures', () => {
+  it('ignores a stale parse when a newer one rejects', async () => {
+    let release!: () => void
+    const gate = new Promise<void>((resolve) => (release = resolve))
+    const slow: ComarkPlugin = { name: 'slow', post: () => gate }
+    const failing: ComarkPlugin = {
+      name: 'failing',
+      post() {
+        throw new Error('plugin exploded')
+      },
+    }
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+
+    const screen = await render(Markdown, { value: 'Good' })
+    await expect.element(screen.getByText('Good')).toBeInTheDocument()
+
+    await screen.rerender({ value: 'Stale', plugins: [slow] })
+    await screen.rerender({ value: 'Newer', plugins: [failing] })
+    release()
+    await new Promise((resolve) => setTimeout(resolve, 50))
+
+    expect(screen.container.textContent).toContain('Good')
+    expect(screen.container.textContent).not.toContain('Stale')
   })
 })

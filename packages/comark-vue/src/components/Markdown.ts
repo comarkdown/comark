@@ -237,7 +237,9 @@ export const Markdown: MarkdownComponent = defineComponent({
       () => [markdown.value, props.streaming] as const,
       () => {
         if (isMarkdownDocument(props.value)) return
-        parse(markdown.value, { streaming: props.streaming }).then((result) => (parsed.value = result))
+        parse(markdown.value, { streaming: props.streaming })
+          .then((result) => (parsed.value = result))
+          .catch((error) => console.error('[comark] failed to parse markdown', error))
       }
     )
 
