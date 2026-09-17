@@ -485,13 +485,14 @@ function healRegion(text: string, o: Opts): string {
         else if (i + n === len) top.len -= n
       } else {
         const after = i + n < len ? text.charCodeAt(i + n) : -1
-        const attached = after > 13 && after !== 32
         if (n === 1) {
           // `$50` is currency and `::$name` is a component name, not math.
+          const attached = after > 13 && after !== 32
           if (o.inlineMath && attached && !(after >= 48 && after <= 57) && text.charCodeAt(i - 1) !== 58)
             frames.push({ k: F_MATH, len: 1, pos: i })
-        } else if (n === 2 && o.blockMath && attached) {
-          frames.push({ k: F_MATH, len: 2, pos: i })
+        } else if (n === 2 && o.blockMath) {
+          // `$$` may be padded (`$$ x + y $$`); only EOL/EOF means "not an opener".
+          if (after !== -1 && after !== 10 && after !== 13) frames.push({ k: F_MATH, len: 2, pos: i })
         }
       }
       i += n - 1

@@ -2943,3 +2943,109 @@ Attached incomplete syntax is still closed:
 - [link text
 + [link text
 ```
+
+---
+
+## Math shields `<` from HTML tag stripping
+
+Math is opaque to `htmlTags`: nothing inside a math span is inspected, whether the span is complete or still open at EOF. Whether a span *is* math is decided solely by the flags — `blockMath` for `$$…$$`, `inlineMath` for `$…$`, both off by default. With the flag off the delimiters are plain text and an incomplete tag after them is dropped as usual.
+
+With the flags off, dollars are text and tags are dropped. Both are pinned per case here
+because the runner baseline enables `blockMath` (see Options):
+
+```diff opts="blockMath: false, inlineMath: false"
+- inline $A_{j<k}$ more
++ inline $A_{j
+```
+
+```diff opts="blockMath: false, inlineMath: false"
+- $a <div
++ $a
+```
+
+```diff opts="blockMath: false, inlineMath: false"
+- $$a<b c$$ done
++ $$a
+```
+
+```diff opts="blockMath: false, inlineMath: false"
+- $$ x <div
++ $$ x
+```
+
+```diff opts="blockMath: false, inlineMath: false"
+- $x<y$ then <div
++ $x
+```
+
+Block math on: shields, complete or open:
+
+```diff opts="blockMath: true"
+- Intro\n\n$$\nI = \sum_{j<k} p_j\n$$\n\nTAIL
++ Intro\n\n$$\nI = \sum_{j<k} p_j\n$$\n\nTAIL
+```
+
+```diff opts="blockMath: true"
+- $$ a<b> c $$
++ $$ a<b> c $$
+```
+
+```diff opts="math: true"
+- $$ x <div
++ $$ x <div$$
+```
+
+```diff opts="blockMath: true"
+- $$\na<b <span
++ $$\na<b <span\n$$
+```
+
+```diff opts="blockMath: true"
+- $$a<b$$ done <span
++ $$a<b$$ done
+```
+
+Inline math on: shields, complete or open:
+
+```diff opts="inlineMath: true"
+- inline $A_{j<k}$ more
++ inline $A_{j<k}$ more
+```
+
+```diff opts="inlineMath: true"
+- $a <div
++ $a <div$
+```
+
+```diff opts="math: true"
+- $x<y$ then <div
++ $x<y$ then
+```
+
+## htmlTags false
+
+
+```diff opts="htmlTags: false, blockMath: false, inlineMath: false"
+- inline $A_{j<k}$ more
++ inline $A_{j<k}$ more
+```
+
+```diff opts="htmlTags: false, blockMath: false, inlineMath: false"
+- $a <div
++ $a <div
+```
+
+```diff opts="htmlTags: false, blockMath: false, inlineMath: false"
+- $$a<b c$$ done
++ $$a<b c$$ done
+```
+
+```diff opts="htmlTags: false, blockMath: false, inlineMath: false"
+- $$ x <div
++ $$ x <div
+```
+
+```diff opts="htmlTags: false, blockMath: false, inlineMath: false"
+- $x<y$ then <div
++ $x<y$ then <div
+```
