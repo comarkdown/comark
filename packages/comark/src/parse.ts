@@ -32,6 +32,13 @@ export { parseFrontmatter } from './internal/frontmatter.ts'
 // Re-export plugin utilities
 export { defineComarkPlugin } from './utils/helpers.ts'
 
+// Constructing a `MarkdownExit` instance is expensive because `LinkifyIt`
+// compiles its regexes in the constructor, and a configured instance holds no
+// per-parse state, so parsers built from the same options share one.
+let nextPluginId = 0
+const pluginIds = new WeakMap<MarkdownExitPlugin, number>()
+const sharedParsers = new Map<string, MarkdownExit>()
+
 /**
  * Creates a parser function for Comark content.
  *
@@ -94,12 +101,24 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
   const plugins = dedupePlugins(defaultPlugins, userPlugins)
   const hasPlugin = (name: string) => plugins.some((plugin) => plugin.name === name)
 
-  const parser = new MarkdownExit({ linkify: options.linkify ?? true }).enable(['table', 'strikethrough'])
-
+  const mdPlugins: MarkdownExitPlugin[] = []
   for (const plugin of plugins) {
     for (const markdownItPlugin of plugin.markdownItPlugins || []) {
-      parser.use(markdownItPlugin as unknown as MarkdownExitPlugin)
+      mdPlugins.push(markdownItPlugin as unknown as MarkdownExitPlugin)
     }
+  }
+
+  const linkify = options.linkify ?? true
+  const key = [
+    linkify,
+    ...mdPlugins.map((fn) => pluginIds.get(fn) ?? (pluginIds.set(fn, nextPluginId), nextPluginId++)),
+  ].join(',')
+
+  let parser = sharedParsers.get(key)
+  if (!parser) {
+    parser = new MarkdownExit({ linkify }).enable(['table', 'strikethrough'])
+    for (const fn of mdPlugins) parser.use(fn)
+    sharedParsers.set(key, parser)
   }
 
   let lastOutput: MarkdownDocument | null = null
