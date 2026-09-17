@@ -196,6 +196,22 @@ const x: number = 42
 ```
 ````
 
+### Inline code
+
+Inline code is highlighted when it declares a language with the attributes syntax. `lang` wins over `language`:
+
+```markdown
+The type is `Ref<HTMLInputElement | null>`{lang="ts-type"} and the component is `<UButton />`{lang="vue-html"}.
+```
+
+Two fragment languages ship out of the box: `ts-type` tokenizes through the TypeScript grammar seeded with `let a:`, and `vue-html` through the Vue grammar seeded with `<template>`. Without that seed a bare type or a bare tag falls through to plain text.
+
+The `<code>` element gets the same `shiki` class a `<pre>` gets, so the dual-theme CSS in [Styling](#styling) covers it with no extra rules. Inline code uses the fast token path, so `transformers` and `preStyles` do not apply to it.
+
+Inline code naming a grammar that is not registered is left exactly as it was written, with no class and no spans. `lang` is a real HTML attribute for natural language, so `` `Bonjour`{lang="fr"} `` must not be treated as code. A fenced block behaves differently and still falls back to an unhighlighted `.shiki` block, because a `<pre>` is unambiguously code.
+
+Set `inlineCode: false` to turn this off.
+
 ### Line highlighting
 
 Highlight specific lines using `{line-numbers}` syntax:
@@ -304,6 +320,7 @@ Two option types, one per entry:
 | [`languages`](#options-languages) | `Array<LanguageRegistration \| LanguageRegistration[]>` | `undefined` | Extra languages (merged onto the default set) |
 | [`transformers`](#options-transformers) | `ShikiTransformer[]` | `undefined` | Shiki transformers applied to every block |
 | [`preStyles`](#options-prestyles) | `boolean` | `false` | Add inline background/foreground styles to `<pre>` |
+| [`inlineCode`](#options-inlinecode) | `boolean` | `true` | Highlight inline code that declares a language |
 | [`registerDefaultLanguages`](#options-registerdefaultlanguages) | `boolean` | `true` | Register the built-in default language set |
 | [`registerDefaultThemes`](#options-registerdefaultthemes) | `boolean` | `true` | Register the built-in Material themes |
 
@@ -315,6 +332,7 @@ Two option types, one per entry:
 | `languages` | `Array<LanguageRegistration \| LanguageRegistration[]>` | **required** | Languages to register |
 | `transformers` | `ShikiTransformer[]` | `undefined` | Shiki transformers applied to every block |
 | `preStyles` | `boolean` | `false` | Add inline background/foreground styles to `<pre>` |
+| `inlineCode` | `boolean` | `true` | Highlight inline code that declares a language |
 
 ### `themes`
 
@@ -383,6 +401,16 @@ shiki({ preStyles: true })
 ```
 
 **Default:** `false`
+
+### `inlineCode`
+
+Whether to highlight inline code that declares a language, e.g. `` `Ref<T>`{lang="ts-type"} ``. See [Inline code](#inline-code).
+
+```typescript
+shiki({ inlineCode: false })
+```
+
+**Default:** `true`
 
 ### `registerDefaultLanguages`
 
@@ -486,7 +514,7 @@ Browser-side twoslash with CDN-fetched TypeScript types and interactive type pop
 
 ## Styling
 
-Shiki outputs tokens as `<span class="line">` elements inside a `<pre class="shiki">` block.
+Shiki outputs tokens as `<span class="line">` elements inside a `<pre class="shiki">` block. Highlighted inline code gets the same `shiki` class on the `<code>` element, with the token spans directly inside it and no `.line` wrapper.
 
 ### Line highlight
 
