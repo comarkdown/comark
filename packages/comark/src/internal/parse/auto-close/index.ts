@@ -1,9 +1,17 @@
 /**
  * Auto-closes unclosed markdown and Comark component syntax.
  *
- * O(n) character scanning. Two layers:
- *   - Block: full-document scan (fences, components, frontmatter, tables, `$$`)
- *   - Inline: last content line only (emphasis, links, math, HTML, tildes)
+ * Two O(n) passes, no backtracking:
+ *
+ *   1. `scanBlocks` — one walk over the document on offsets only (no per-line
+ *      strings): fences, raw HTML, frontmatter, block math, component stack,
+ *      trailing table, and the range eligible for inline healing (the last
+ *      soft-wrapped paragraph).
+ *   2. `healRegion` — one walk over that range with a single delimiter stack.
+ *      Unclosed frames are closed LIFO at EOF; edits (tilde escapes, dropped
+ *      brackets) are collected as positions and applied once at the end, so the
+ *      common "nothing to escape" path never copies the string.
+ *
  * Behavioral contract: `packages/comark/SPEC/auto-close.md`.
  */
 
@@ -24,1130 +32,1049 @@ export interface AutoCloseOptions {
   incompleteLinkPlaceholder?: string
   incompleteImagePlaceholder?: string
   /**
-   * Auto-close math: inline `$…$` and block `$$…$$`.
-   * Default false. Enabled automatically when use math plugin in `parseMarkdown`
+   * Auto-close math. When set, enables both block and inline unless the more
+   * specific flags override. Enabled automatically when the math plugin is used
+   * in `parseMarkdown`.
+   * Prefer `blockMath` / `inlineMath` for independent control.
    */
   math?: boolean
+  /** Auto-close block `$$…$$`. Defaults to `math` (else false). */
+  blockMath?: boolean
+  /** Auto-close inline `$…$`. Defaults to `math` (else false). Off by default so `$50` stays prose. */
+  inlineMath?: boolean
   /**
    * Drop a trailing opener (`* _ $ : [ { !`) after whitespace at EOF so a
    * half-typed marker does not flash (`hello *` → `hello`). Default false.
    * Enabled automatically when `parseMarkdown(..., { streaming: true })`.
    */
   dropTrailingOpeners?: boolean
+  /** Auto-close incomplete links (`[text`). Default true. */
+  links?: boolean
+  /** Auto-close incomplete images (`![alt`). Default true. */
+  images?: boolean
+  /** Auto-close `**bold**`. Default true. */
+  bold?: boolean
+  /** Auto-close `*italic*` / `_italic_`. Default true. */
+  italic?: boolean
+  /** Auto-close `~~strikethrough~~`. Default true. */
+  strikethrough?: boolean
+  /** Auto-close inline `` `code` ``. Default true. */
+  inlineCode?: boolean
+  /** Auto-close `***bold-italic***`. Default true. */
+  boldItalic?: boolean
+  /** Escape mid-word single `~` (`20~25` → `20\~25`). Default true. */
+  singleTilde?: boolean
+  /**
+   * Escape list-item comparison openers (`- > 25` → `- \> 25`) so they are not
+   * parsed as blockquotes. Default true.
+   */
+  comparisonOperators?: boolean
+  /** Strip incomplete HTML tags at EOF (`Hello <div` → `Hello`). Default true. */
+  htmlTags?: boolean
+  /** Complete incomplete GFM tables (header delimiter row). Default true. */
+  tables?: boolean
+}
+
+/** Resolved options — every flag settled once, so the hot loops only read booleans. */
+interface Opts {
+  frontmatter: boolean
+  syntax: boolean
+  attributes: boolean
+  linkMode: LinkMode
+  linkPh: string
+  imagePh: string
+  blockMath: boolean
+  inlineMath: boolean
+  links: boolean
+  images: boolean
+  bold: boolean
+  italic: boolean
+  strikethrough: boolean
+  inlineCode: boolean
+  boldItalic: boolean
+  singleTilde: boolean
+  comparisonOperators: boolean
+  htmlTags: boolean
+  tables: boolean
 }
 
 export function autoCloseMarkdown(markdown: string, options: AutoCloseOptions = {}): string {
   if (!markdown) return markdown
 
-  const syntaxEnabled = options.syntax !== false
-  const attributesEnabled = options.attributes ?? syntaxEnabled
-  const linkMode: LinkMode = options.linkMode ?? 'protocol'
-  const linkPh = options.incompleteLinkPlaceholder ?? INCOMPLETE_LINK_PLACEHOLDER
-  const imagePh = options.incompleteImagePlaceholder ?? INCOMPLETE_IMAGE_PLACEHOLDER
   const math = options.math === true
-
-  if (options.dropTrailingOpeners === true) markdown = dropTrailingOpeners(markdown)
-
-  // --- Block pass: full document (fences, components, frontmatter, tables, block math) ---
-  const lines = markdown.split('\n')
-  const n = lines.length
-
-  let inFrontmatter = false
-  let frontmatterHasContent = false
-  let tableStart = -1
-  let inRawTextElement: 'style' | 'script' | 'pre' | 'textarea' | null = null
-  let fenceOpen = false
-  let inBlockMath = false
-
-  const componentStack: Array<{ depth: number; name: string; indent: string; hasYamlProps: boolean }> = []
-  const RAW_TEXT_OPEN_RE = /^<(script|pre|style|textarea)(\s|>|$)/i
-
-  for (let idx = 0; idx < n; idx++) {
-    const line = lines[idx]
-    const trimmed = line.trim()
-
-    if (inRawTextElement) {
-      if (new RegExp(`</${inRawTextElement}\\s*>`, 'i').test(line)) inRawTextElement = null
-      continue
-    }
-    const rawMatch = trimmed.match(RAW_TEXT_OPEN_RE)
-    if (rawMatch) {
-      const tag = rawMatch[1].toLowerCase() as 'style' | 'script' | 'pre' | 'textarea'
-      if (!new RegExp(`</${tag}\\s*>`, 'i').test(line)) inRawTextElement = tag
-      continue
-    }
-
-    if (isFenceLine(line)) {
-      // Single-line incomplete fence ```...`` is NOT a multi-line fence open
-      // (SPEC closes the third backtick instead of treating the rest as code).
-      const t = line.trim()
-      if (t.startsWith('```') && t.endsWith('``') && !t.endsWith('```') && !t.slice(3).includes('```')) {
-        // leave fenceOpen alone; heal pass will complete the trailing `
-        continue
-      }
-      fenceOpen = !fenceOpen
-      continue
-    }
-    if (fenceOpen) continue
-
-    // Standalone $$ toggles a block-math region (closed after the pass when math is on)
-    if (math && trimmed === '$$') {
-      inBlockMath = !inBlockMath
-      continue
-    }
-
-    if (idx === 0 && options.frontmatter && trimmed === '---') {
-      inFrontmatter = true
-      continue
-    }
-    if (inFrontmatter) {
-      if (trimmed === '---') inFrontmatter = false
-      else if (trimmed) frontmatterHasContent = true
-      continue
-    }
-
-    if (trimmed === '---' && componentStack.length > 0) {
-      const top = componentStack[componentStack.length - 1]
-      top.hasYamlProps = !top.hasYamlProps
-      continue
-    }
-
-    if (trimmed.startsWith('|')) tableStart = tableStart === -1 ? idx : tableStart
-    else if (tableStart !== -1) tableStart = -1
-
-    if (idx === n - 1 && syntaxEnabled && trimmed[0] === ':' && componentStack.length === 0) {
-      let c = 0
-      while (c < trimmed.length && trimmed[c] === ':') c++
-      if (trimmed.slice(c).trim() === '') lines[idx] = ''
-    }
-
-    if (syntaxEnabled && trimmed[0] === ':') {
-      let colonCount = 0
-      while (colonCount < trimmed.length && trimmed[colonCount] === ':') colonCount++
-      if (colonCount >= 2) {
-        let ie = 0
-        while (ie < line.length && (line[ie] === ' ' || line[ie] === '\t')) ie++
-        const indent = line.slice(0, ie)
-        const ch = trimmed[colonCount] ?? ''
-        if ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || ch === '$') {
-          let ne = colonCount
-          while (ne < trimmed.length) {
-            const c = trimmed[ne]
-            if (
-              !(
-                (c >= 'a' && c <= 'z') ||
-                (c >= 'A' && c <= 'Z') ||
-                (c >= '0' && c <= '9') ||
-                c === '$' ||
-                c === '.' ||
-                c === '-' ||
-                c === '_'
-              )
-            )
-              break
-            ne++
-          }
-          componentStack.push({ depth: colonCount, name: trimmed.slice(colonCount, ne), indent, hasYamlProps: false })
-        } else if (colonCount === trimmed.length && componentStack.length > 0) {
-          if (componentStack[componentStack.length - 1].depth === colonCount) componentStack.pop()
-        }
-      }
-    }
+  const syntax = options.syntax !== false
+  const o: Opts = {
+    frontmatter: options.frontmatter === true,
+    syntax,
+    attributes: options.attributes ?? syntax,
+    linkMode: options.linkMode ?? 'protocol',
+    linkPh: options.incompleteLinkPlaceholder ?? INCOMPLETE_LINK_PLACEHOLDER,
+    imagePh: options.incompleteImagePlaceholder ?? INCOMPLETE_IMAGE_PLACEHOLDER,
+    blockMath: options.blockMath ?? math,
+    inlineMath: options.inlineMath ?? math,
+    links: options.links !== false,
+    images: options.images !== false,
+    bold: options.bold !== false,
+    italic: options.italic !== false,
+    strikethrough: options.strikethrough !== false,
+    inlineCode: options.inlineCode !== false,
+    boldItalic: options.boldItalic !== false,
+    singleTilde: options.singleTilde !== false,
+    comparisonOperators: options.comparisonOperators !== false,
+    htmlTags: options.htmlTags !== false,
+    tables: options.tables !== false,
   }
 
-  // --- Inline heal: last content line only. Earlier lines are assumed complete. ---
-  if (!fenceOpen && !inFrontmatter && !inBlockMath) {
-    let healIdx = n - 1
-    while (healIdx > 0 && lines[healIdx] === '') healIdx--
-    const healLine = healIdx >= 0 ? lines[healIdx] : ''
-    const trimmedHeal = healLine.trim()
-    // Skip standalone block delimiters (`$$`). An incomplete inline fence like
-    // ```python print("Hello")`` still needs last-line heal.
-    const incompleteInlineFence =
-      trimmedHeal.startsWith('```') && trimmedHeal.endsWith('``') && !trimmedHeal.endsWith('```')
-    if (healLine !== '' && trimmedHeal !== '$$' && (!isFenceLine(healLine) || incompleteInlineFence)) {
-      lines[healIdx] = healInline(healLine, {
-        attributesEnabled,
-        linkMode,
-        linkPh,
-        imagePh,
-        math,
-      })
-    }
+  const source = options.dropTrailingOpeners === true ? dropTrailingOpeners(markdown, o.inlineCode) : markdown
+  const doc = scanBlocks(source, o)
+
+  let result: string
+  if (doc.start < 0) {
+    result = doc.docEnd === source.length ? source : source.slice(0, doc.docEnd)
+  } else {
+    result =
+      source.slice(0, doc.start) + healRegion(source.slice(doc.start, doc.end), o) + source.slice(doc.end, doc.docEnd)
   }
 
-  let result = lines.join('\n')
   result = applySetextGuard(result)
 
-  if (tableStart !== -1) result = closeTables(result)
+  if (o.tables && doc.table) result = closeTables(result)
 
-  if (math && inBlockMath) {
-    result += result.endsWith('\n') ? '$$' : '\n$$'
-  }
+  if (o.blockMath && doc.mathOpen) result += result.endsWith('\n') ? '$$' : '\n$$'
 
-  if (inFrontmatter && frontmatterHasContent) {
-    const last = result.includes('\n') ? result.slice(result.lastIndexOf('\n') + 1) : result
-    const t = last.trim().replace(/\u200B/g, '')
-    if (t === '-' || t === '--') result = result.replace(/\u200B+$/, '') + '-'.repeat(3 - t.length)
-    else result += result.endsWith('\n') ? '---' : '\n---'
-  }
+  if (doc.fmOpen && doc.fmContent) result = closeDelimiterLine(result, '-', 3)
 
-  if (syntaxEnabled && markdown.includes('::')) {
-    const ls = result.lastIndexOf('\n') + 1
-    const fl = result.slice(ls)
-    let brace = -1
-    for (let i = fl.length - 1; i >= 0; i--) {
-      if (fl[i] === '}') break
-      if (fl[i] === '{') {
-        brace = i
-        break
-      }
-    }
-    if (brace >= 0) {
-      const body = fl.slice(brace + 1)
-      let dq = 0,
-        sq = 0
-      for (let i = 0; i < body.length; i++) {
-        if (body[i] === '"') dq++
-        if (body[i] === "'") sq++
-      }
-      result += (dq % 2 === 1 ? '"' : '') + (sq % 2 === 1 ? "'" : '') + '}'
-    }
-    if (componentStack.length > 0) {
-      const top = componentStack[componentStack.length - 1]
-      const nt = result
-        .slice(result.lastIndexOf('\n') + 1)
-        .trim()
-        .replace(/\u200B/g, '')
-      if (top.hasYamlProps && (nt === '-' || nt === '--')) {
-        result = result.replace(/\u200B+$/, '') + '-'.repeat(3 - nt.length)
-        top.hasYamlProps = false
-      }
-      const closers: string[] = []
-      while (componentStack.length) {
-        const c = componentStack.pop()!
-        if (c.hasYamlProps) closers.push(c.indent + '---')
-        closers.push(c.indent + ':'.repeat(c.depth))
-      }
-      result += '\n' + closers.join('\n')
-    }
-  }
+  if (o.syntax) result = closeComponents(result, source, doc.comps)
 
   return result
 }
 
-/** True for a CommonMark fence opener/closer line (``` or ~~~, length ≥ 3). */
-function isFenceLine(line: string): boolean {
-  let i = 0
-  while (i < line.length && (line[i] === ' ' || line[i] === '\t')) i++
-  const ch = line[i]
-  if (ch !== '`' && ch !== '~') return false
-  let n = 0
-  while (i + n < line.length && line[i + n] === ch) n++
-  return n >= 3
+// ---------------------------------------------------------------------------
+// Block pass
+// ---------------------------------------------------------------------------
+
+interface Component {
+  depth: number
+  indent: string
+  yaml: boolean
 }
 
-function isWord(ch: string): boolean {
-  if (!ch) return false
-  const c = ch.charCodeAt(0)
-  return (c >= 48 && c <= 57) || (c >= 65 && c <= 90) || (c >= 97 && c <= 122) || c === 95
+interface DocState {
+  /** Offsets of the region to heal, or `start < 0` for "nothing to heal". */
+  start: number
+  end: number
+  /** Effective document end — a trailing bare `::` is dropped. */
+  docEnd: number
+  fmOpen: boolean
+  fmContent: boolean
+  mathOpen: boolean
+  /** The document ends inside a table block. */
+  table: boolean
+  comps: Component[]
 }
 
-function isSpace(ch: string): boolean {
-  return ch === '' || ch === ' ' || ch === '\t' || ch === '\n'
-}
+const RAW_TEXT_OPEN_RE = /^<(script|pre|style|textarea)(\s|>|$)/i
+const RAW_TEXT_CLOSE_RE = {
+  script: /<\/script\s*>/i,
+  pre: /<\/pre\s*>/i,
+  style: /<\/style\s*>/i,
+  textarea: /<\/textarea\s*>/i,
+} as const
 
-/** Trailing chars dropped when `dropTrailingOpeners` is on so incomplete openers do not flash. */
-const TRAILING_OPENERS = '*_$:[{!'
+type RawTag = keyof typeof RAW_TEXT_CLOSE_RE
 
 /**
- * Drop a trailing opener run (`* _ $ : [ { !`) at EOF when it is preceded by
- * whitespace (`hello *` → `hello`). Attached markers (`**bold`, `$x`) stay so
- * the later heal can still close them.
+ * One walk over the document, on offsets only: no per-line strings, so a long
+ * streaming document costs a single scan plus one slice of the healed region.
+ *
+ * Every line is examined as three offsets: `ls` (start), `st`…`en` (the trimmed
+ * content) and `le` (end, before the newline).
  */
-function dropTrailingOpeners(text: string): string {
-  let ws = text.length
-  while (ws > 0) {
-    const c = text[ws - 1]
-    if (c === ' ' || c === '\t' || c === '\n' || c === '\r') ws--
-    else break
-  }
-  if (ws === 0) return text
+function scanBlocks(src: string, o: Opts): DocState {
+  const len = src.length
+  const starts: number[] = [0]
+  for (let i = src.indexOf('\n'); i !== -1; i = src.indexOf('\n', i + 1)) starts.push(i + 1)
+  let n = starts.length
+  let docEnd = len
 
-  // Drop only the last opener run (`*`, `**`, `$`, …). An earlier space-separated
-  // `*` in `hello * *` is already followed by space, so it cannot become syntax.
-  let i = ws
-  while (i > 0 && TRAILING_OPENERS.includes(text[i - 1])) {
-    if (i >= 2 && text[i - 2] === '\\') break
-    i--
-  }
-  if (i === ws) return text
+  const comps: Component[] = []
+  let fenceLen = 0
+  let fenceCh = 0
+  let raw: RawTag | null = null
+  let fmOpen = false
+  let fmContent = false
+  let mathOpen = false
+  let table = false
+  let shielded = -1 // last line that structurally shields what precedes it
 
-  // Only drop when that run is space-flanked (preceded by whitespace or BOS)
-  const before = i > 0 ? text[i - 1] : ''
-  if (before !== '' && before !== ' ' && before !== '\t' && before !== '\n' && before !== '\r') {
-    return text
-  }
+  for (let i = 0; i < n; i++) {
+    const ls = starts[i]
+    const le = i + 1 < n ? starts[i + 1] - 1 : len
+    let st = ls
+    while (st < le && isIndentCode(src.charCodeAt(st))) st++
+    let en = le
+    while (en > st && isSpaceCode(src.charCodeAt(en - 1))) en--
+    const c0 = st < en ? src.charCodeAt(st) : -1
 
-  let keep = i
-  if (keep > 0 && (text[keep - 1] === ' ' || text[keep - 1] === '\t')) keep--
-  return text.slice(0, keep) + text.slice(ws)
-}
-
-// ---------------------------------------------------------------------------
-// One O(n) document heal
-// ---------------------------------------------------------------------------
-
-interface HealOpts {
-  attributesEnabled: boolean
-  linkMode: LinkMode
-  linkPh: string
-  imagePh: string
-  math: boolean
-}
-
-type Marker = '***' | '**' | '*' | '__' | '_' | '~~' | '`' | '$$' | '$'
-
-/** Inline heal for a single line. Previous lines are assumed already legitimate. */
-function healInline(text: string, opts: HealOpts): string {
-  // 1) Trailing single space
-  if (text.endsWith(' ') && !text.endsWith('  ')) {
-    const nl = text.lastIndexOf('\n')
-    const last = nl === -1 ? text : text.slice(nl + 1)
-    if (!/^[ \t]*[A-Za-z_][\w.-]*: $/.test(last)) text = text.slice(0, -1)
-  }
-
-  // 2) Build mutated string for escapes while collecting open markers
-  const len = text.length
-  const out: string[] = []
-  let stack: Marker[] = []
-
-  let fence = false
-  let inCode = false
-  // the length of the backtick run that opened the current span: only a run of
-  // the same length closes it, any other run is literal inside it
-  let codeRun = 0
-  // where that span's content starts in `out`
-  let codeStart = 0
-  let inMath = false
-  let inBlockMath = false
-  let inLatexI = false
-  let inLatexB = false
-  let inAttr = 0
-  let lineStartSrc = 0
-
-  // Incomplete link state
-  let bracketDepth = 0
-  let linkUrlOpen = false // saw ](
-
-  let lastLtOut = -1
-
-  // Asterisk/underscore pair tracking for "balanced overlapping" check
-  let asteriskTotal = 0
-  let doubleAsteriskCount = 0
-  let tripleCount = 0
-
-  /** Open only when the run is not followed by space; close only when not preceded by space. */
-  const toggleFlanking = (m: Marker, prevCh: string, afterCh: string) => {
-    const canClose = !isSpace(prevCh) && stack[stack.length - 1] === m
-    const canOpen = !isSpace(afterCh)
-    if (canClose) stack.pop()
-    else if (canOpen) stack.push(m)
-  }
-
-  const toggle = (m: Marker) => {
-    if (stack[stack.length - 1] === m) stack.pop()
-    else stack.push(m)
-  }
-
-  for (let i = 0; i < len; i++) {
-    const ch = text[i]
-    const prev = i > 0 ? text[i - 1] : ''
-    const next = i + 1 < len ? text[i + 1] : ''
-
-    // Newline
-    if (ch === '\n') {
-      out.push(ch)
-      lineStartSrc = i + 1
+    if (raw !== null) {
+      if (RAW_TEXT_CLOSE_RE[raw].test(src.slice(ls, le))) raw = null
       continue
     }
-
-    // Fence at line start (``` or ~~~) OR incomplete inline ```...``
-    if (i === lineStartSrc || (i > 0 && text[i - 1] === '\n')) {
-      let j = i
-      while (j < len && (text[j] === ' ' || text[j] === '\t')) j++
-      const fenceCh = text[j]
-      if (fenceCh === '`' || fenceCh === '~') {
-        let n = 0
-        while (j + n < len && text[j + n] === fenceCh) n++
-        if (n >= 3) {
-          let lineEnd = j
-          while (lineEnd < len && text[lineEnd] !== '\n') lineEnd++
-          const lineBody = text.slice(j, lineEnd)
-          // Incomplete inline backtick fence: ```python print("Hello")``
-          if (
-            fenceCh === '`' &&
-            lineBody.startsWith('```') &&
-            lineBody.endsWith('``') &&
-            !lineBody.endsWith('```') &&
-            !lineBody.slice(3).includes('```')
-          ) {
-            while (i < lineEnd) {
-              out.push(text[i])
-              i++
-            }
-            out.push('`')
-            i--
-            continue
-          }
-          fence = !fence
-          while (i < len && text[i] !== '\n') {
-            out.push(text[i])
-            i++
-          }
-          if (i < len) {
-            out.push('\n')
-            lineStartSrc = i + 1
-          } else i--
-          continue
-        }
-      }
-    }
-
-    if (fence) {
-      out.push(ch)
-      continue
-    }
-
-    // Escape
-    if (ch === '\\') {
-      out.push(ch)
-      if (i + 1 < len) {
-        out.push(text[++i])
-      }
-      continue
-    }
-
-    // List comparison operator
-    if (ch === '>') {
-      let ls = i
-      while (ls > 0 && text[ls - 1] !== '\n') ls--
-      const prefix = text.slice(ls, i)
-      if (/^(\s*(?:[-*+]|\d+[.)]) +)$/.test(prefix) && /^=?\s*\$?\d/.test(text.slice(i + 1))) {
-        out.push('\\', '>')
+    if (c0 === 60 /* < */) {
+      const m = RAW_TEXT_OPEN_RE.exec(src.slice(st, en))
+      if (m !== null) {
+        const tag = m[1].toLowerCase() as RawTag
+        if (!RAW_TEXT_CLOSE_RE[tag].test(src.slice(ls, le))) raw = tag
         continue
       }
     }
 
-    // Single ~ between word chars: escape mid-word tildes that would be read as
-    // strikethrough (`20~25` → `20\~25`). Leave paired open/close subscript-style
-    // tildes alone (`H~2~o` stays `H~2~o`).
-    if (
-      ch === '~' &&
-      next !== '~' &&
-      prev !== '~' &&
-      isWord(prev) &&
-      isWord(next) &&
-      !inCode &&
-      !inMath &&
-      !inBlockMath &&
-      !isPairedSingleTilde(text, i)
-    ) {
-      out.push('\\', '~')
-      continue
-    }
-
-    // HTML incomplete tracking
-    if (ch === '<' && ((next >= 'a' && next <= 'z') || (next >= 'A' && next <= 'Z') || next === '/')) {
-      lastLtOut = out.length
-    }
-    if (ch === '>') lastLtOut = -1
-
-    // Regions that protect markers
-    if (inCode) {
-      if (ch === '`') {
-        let n = 0
-        while (i + n < len && text[i + n] === '`') n++
-        for (let k = 0; k < n; k++) out.push('`')
-        i += n - 1
-        if (n === codeRun) {
-          inCode = false
-          if (stack[stack.length - 1] === '`') stack.pop()
-        }
-        continue
-      }
-      out.push(ch)
-      continue
-    }
-    if (inBlockMath) {
-      out.push(ch)
-      if (ch === '$' && next === '$') {
-        out.push('$')
-        i++
-        inBlockMath = false
-        if (stack[stack.length - 1] === '$$') stack.pop()
-      }
-      continue
-    }
-    if (inMath) {
-      out.push(ch)
-      if (ch === '$' && next !== '$') {
-        inMath = false
-        if (stack[stack.length - 1] === '$') stack.pop()
-      }
-      continue
-    }
-    if (inLatexI) {
-      out.push(ch)
-      if (ch === '\\' && next === ')') {
-        out.push(')')
-        i++
-        inLatexI = false
-      }
-      continue
-    }
-    if (inLatexB) {
-      out.push(ch)
-      if (ch === '\\' && next === ']') {
-        out.push(']')
-        i++
-        inLatexB = false
-      }
-      continue
-    }
-
-    // Attributes
-    if (opts.attributesEnabled && ch === '{' && prev && prev !== ' ' && prev !== '\t' && prev !== '\n') {
-      inAttr++
-      out.push(ch)
-      continue
-    }
-    if (opts.attributesEnabled && ch === '}') {
-      if (inAttr > 0) inAttr--
-      out.push(ch)
-      continue
-    }
-    if (inAttr > 0) {
-      out.push(ch)
-      continue
-    }
-
-    // Links / brackets — track but copy through; rewrite at end
-    if (ch === '[') {
-      bracketDepth++
-      out.push(ch)
-      continue
-    }
-    if (ch === ']') {
-      if (bracketDepth > 0) bracketDepth--
-      out.push(ch)
-      if (next === '(') {
-        linkUrlOpen = true
-      }
-      continue
-    }
-    if (linkUrlOpen) {
-      out.push(ch)
-      if (ch === ')' && bracketDepth === 0) {
-        // crude: closed
-        linkUrlOpen = false
-      }
-      continue
-    }
-
-    // Skip emphasis counts while inside unclosed link text
-    if (bracketDepth > 0) {
-      out.push(ch)
-      continue
-    }
-
-    // Code
-    if (ch === '`') {
-      if (next === '`' && text[i + 2] === '`') {
-        // triple on non-line-start — copy
-        out.push('`', '`', '`')
-        i += 2
-        continue
-      }
-      codeRun = next === '`' ? 2 : 1
-      for (let k = 0; k < codeRun; k++) out.push('`')
-      i += codeRun - 1
-      inCode = true
-      codeStart = out.length
-      stack.push('`')
-      continue
-    }
-
-    // Math
-    if (ch === '$') {
-      out.push(ch)
-      if (next === '$') {
-        out.push('$')
-        i++
-        if (opts.math) {
-          inBlockMath = !inBlockMath
-          toggle('$$')
-        }
-      } else if (opts.math && looksLikeInlineMathOpen(text, i)) {
-        // Skip currency (`$100`) and component names (`::$special`)
-        inMath = true
-        stack.push('$')
-      }
-      continue
-    }
-
-    // LaTeX \( \[  — backslash already handled for escapes; detect when we see them as two chars without entering escape?
-    // Paths with `\(` start with `\`, caught above. For `$` math we protect. Skip.
-
-    // Emphasis *
-    if (ch === '*') {
-      let end = i
-      while (end + 1 < len && text[end + 1] === '*') end++
-      const run = end - i + 1
-      const after = end + 1 < len ? text[end + 1] : ''
-      // Space after an opener (`** something`) is not emphasis — CommonMark flanking.
-      const leftSpace = isSpace(prev)
-      const rightSpace = isSpace(after)
-      const surroundedSingle = run === 1 && leftSpace && rightSpace
-
-      // emit chars
-      for (let k = i; k <= end; k++) out.push('*')
-
-      if (!surroundedSingle) {
-        // cold word-internal *
-        if (run === 1 && isWord(prev) && isWord(after) && asteriskTotal % 2 === 0) {
-          i = end
-          continue
-        }
-        asteriskTotal += run
-        if (run === 1) toggleFlanking('*', prev, after)
-        else if (run === 2) {
-          doubleAsteriskCount++
-          toggleFlanking('**', prev, after)
-        } else if (run >= 3) {
-          // Horizontal rule: a whole line of ≥3 * (with only spaces) is not emphasis
-          let ls = i
-          while (ls > 0 && text[ls - 1] !== '\n') ls--
-          let le = end + 1
-          while (le < len && text[le] !== '\n') le++
-          const lineContent = text.slice(ls, le)
-          let onlyStars = true
-          for (let li = 0; li < lineContent.length; li++) {
-            const c = lineContent[li]
-            if (c !== '*' && c !== ' ' && c !== '\t') {
-              onlyStars = false
-              break
-            }
-          }
-          if (onlyStars) {
-            // leave stack alone — thematic break
-            i = end
-            continue
-          }
-
-          if (run === 3) {
-            // *** as bold-italic opener/closer, OR overlapping close for open * + **
-            const hasStar = stack.includes('*')
-            const hasBold = stack.includes('**')
-            if (hasStar && hasBold && !leftSpace) {
-              for (let si = stack.length - 1; si >= 0; si--) {
-                if (stack[si] === '*' || stack[si] === '**') stack.splice(si, 1)
-              }
-              doubleAsteriskCount++
-            } else {
-              tripleCount++
-              toggleFlanking('***', prev, after)
-            }
-          } else {
-            // ****+
-            const pairs = Math.floor(run / 2)
-            for (let p = 0; p < pairs; p++) {
-              doubleAsteriskCount++
-              toggleFlanking('**', prev, after)
-            }
-            if (run % 2 === 1) toggleFlanking('*', prev, after)
-          }
-          i = end
-          continue
-        }
-      }
-      i = end
-      continue
-    }
-
-    if (ch === '_') {
-      let end = i
-      while (end + 1 < len && text[end + 1] === '_') end++
-      const run = end - i + 1
-      const after = end + 1 < len ? text[end + 1] : ''
-      const surrounded = isSpace(prev) && isSpace(after)
-      for (let k = i; k <= end; k++) out.push('_')
-
-      // Horizontal rule: line of only _ (3+)
+    if (c0 === 96 /* ` */ || c0 === 126 /* ~ */) {
+      let run = 1
+      while (st + run < en && src.charCodeAt(st + run) === c0) run++
       if (run >= 3) {
-        let ls = i
-        while (ls > 0 && text[ls - 1] !== '\n') ls--
-        let le = end + 1
-        while (le < len && text[le] !== '\n') le++
-        const lineContent = text.slice(ls, le)
-        let only = true
-        for (let li = 0; li < lineContent.length; li++) {
-          const c = lineContent[li]
-          if (c !== '_' && c !== ' ' && c !== '\t') {
-            only = false
-            break
+        if (fenceLen === 0) {
+          // `` ```code`` `` is an incomplete inline code span, not a fence opener.
+          if (!(c0 === 96 && isIncompleteInlineFence(src, st, en))) {
+            fenceLen = run
+            fenceCh = c0
+            shielded = i
+            continue
           }
-        }
-        if (only) {
-          i = end
+        } else if (c0 === fenceCh && run >= fenceLen && st + run === en) {
+          // A closer is the same character, at least as long, and followed only by
+          // whitespace. `` ```js `` inside an open block is code content, not a closer.
+          fenceLen = 0
+          shielded = i
+          continue
+        } else {
+          shielded = i
           continue
         }
       }
+    }
+    if (fenceLen !== 0) continue
 
-      if (!(isWord(prev) && isWord(after)) && !surrounded) {
-        if (run === 1) toggleFlanking('_', prev, after)
-        else if (run >= 2) {
-          const pairs = Math.floor(run / 2)
-          for (let p = 0; p < pairs; p++) {
-            toggleFlanking('__', prev, after)
-          }
-          if (run % 2 === 1) toggleFlanking('_', prev, after)
-        }
-      }
-      i = end
+    if (c0 === 36 /* $ */ && en - st === 2 && src.charCodeAt(st + 1) === 36) {
+      if (o.blockMath) mathOpen = !mathOpen
+      shielded = i
       continue
     }
 
-    if (ch === '~') {
-      let end = i
-      while (end + 1 < len && text[end + 1] === '~') end++
-      const run = end - i + 1
-      const after = end + 1 < len ? text[end + 1] : ''
-      const surrounded = isSpace(prev) && isSpace(after)
-      for (let k = i; k <= end; k++) out.push('~')
-      if (!surrounded && run >= 2) {
-        const pairs = Math.floor(run / 2)
-        for (let p = 0; p < pairs; p++) toggleFlanking('~~', prev, after)
-      }
-      // single ~ not stacked (SPEC escapes or leaves alone)
-      i = end
+    const dashes = c0 === 45 /* - */ && en - st === 3 && src.charCodeAt(st + 1) === 45 && src.charCodeAt(st + 2) === 45
+
+    if (i === 0 && o.frontmatter && dashes) {
+      fmOpen = true
+      continue
+    }
+    if (fmOpen) {
+      if (dashes) fmOpen = false
+      else if (c0 !== -1) fmContent = true
       continue
     }
 
-    out.push(ch)
-  }
-
-  let result = out.join('')
-
-  // Incomplete HTML strip
-  if (lastLtOut >= 0) {
-    // map: lastLtOut is index into out at time of `<` — still valid after join length if only escaped longer...
-    // We pushed at lastLtOut; result may be longer only if we added escapes before.
-    // Safer rescan end:
-    result = stripIncompleteHtmlEnd(result)
-  }
-
-  // Incomplete links
-  const linked = healLinks(result, opts)
-  if (linked !== result) {
-    // If protocol incomplete link, SPEC early-returns before other emphasis (links win)
-    if (
-      opts.linkMode === 'protocol' &&
-      (linked.endsWith(`](${opts.linkPh})`) || linked.endsWith(`](${opts.imagePh})`))
-    ) {
-      return linked
-    }
-    result = linked
-    // text-only: continue to close other markers on the result? rarely needed
-  }
-
-  // If still in fence path we shouldn't be here
-
-  // Close open markers (stack) — skip empty / HR / bare
-  if (stack.length === 0) {
-    return result
-  }
-
-  // Bare / HR: don't close
-  if (isBareOrHr(result)) return result
-
-  // Still inside open inline code at EOF — close nested openers inside, then `
-  // SPEC: `**bold with `code` → `**bold with `code**``
-  // Markers that opened *before* the code span must close inside it.
-  if (inCode) {
-    // the span's content, less a trailing backtick run that is not a closer
-    const content = result.slice(codeStart).replace(/`+$/, '')
-    if (content.length > 0) {
-      // Markers still on stack before the open ` need closing inside the span.
-      // Open order is outer→inner left-to-right; close reverse order after content.
-      let codeIdx = -1
-      for (let si = 0; si < stack.length; si++) if (stack[si] === '`') codeIdx = si
-      let inner = ''
-      if (codeIdx > 0) {
-        // close markers that opened before code, reverse order
-        for (let si = codeIdx - 1; si >= 0; si--) {
-          const m = stack[si]
-          if (m === '**' || m === '*' || m === '__' || m === '_' || m === '~~' || m === '***') inner += m
-        }
-      }
-      // also close markers opened inside code after the `
-      for (let si = stack.length - 1; si > codeIdx; si--) {
-        const m = stack[si]
-        if (m === '**' || m === '*' || m === '__' || m === '_' || m === '~~' || m === '***') inner += m
-      }
-      // A trailing backtick run merges with the closer, so only what that run
-      // still needs is added. A longer run than the opener cannot become one.
-      const base = result + inner
-      let trail = 0
-      while (trail < base.length && base[base.length - 1 - trail] === '`') trail++
-      if (trail > codeRun) return result
-      return base + '`'.repeat(codeRun - trail)
-    }
-    return result
-  }
-
-  // Build suffix inside-out with half-close handling
-  result = closeOpenStack(result, stack, {
-    asteriskTotal,
-    doubleAsteriskCount,
-    tripleCount,
-  })
-
-  return result
-}
-
-function stripIncompleteHtmlEnd(text: string): string {
-  for (let i = text.length - 1; i >= 0; i--) {
-    if (text[i] === '>') return text
-    if (text[i] === '\n') return text
-    if (text[i] === '<') {
-      const n = text[i + 1] ?? ''
-      if ((n >= 'a' && n <= 'z') || (n >= 'A' && n <= 'Z') || n === '/') {
-        return text.slice(0, i).replace(/[ \t]+$/, '')
-      }
-      return text
-    }
-  }
-  return text
-}
-
-function isBareOrHr(text: string): boolean {
-  // Only check last line
-  const nl = text.lastIndexOf('\n')
-  const last = (nl === -1 ? text : text.slice(nl + 1)).trim()
-  if (!last) return false
-  if (
-    last === '*' ||
-    last === '**' ||
-    last === '***' ||
-    last === '****' ||
-    last === '_' ||
-    last === '__' ||
-    last === '___' ||
-    last === '~' ||
-    last === '~~' ||
-    last === '`'
-  )
-    return true
-  if (/^\*{3,}$/.test(last) || /^_{3,}$/.test(last) || /^-{3,}$/.test(last)) return true
-  return false
-}
-
-function closeOpenStack(
-  text: string,
-  stack: Marker[],
-  counts: { asteriskTotal: number; doubleAsteriskCount: number; tripleCount: number }
-): string {
-  // Half-closes first
-  if (/\*\*\*[^*]+\*{1,2}$/.test(text) && !/\*{3}$/.test(text)) {
-    const trail = text.match(/\*+$/)?.[0].length ?? 0
-    if (trail >= 1 && trail <= 2 && (stack.includes('***') || counts.tripleCount % 2 === 1)) {
-      return text + '*'.repeat(3 - trail)
-    }
-  }
-  if (/\*\*[^*]+\*$/.test(text) && stack.includes('**') && !stack.includes('***')) return text + '*'
-  if (/__[^_]+_$/.test(text) && stack.includes('__')) return text + '_'
-  if (/~~[^~]+~$/.test(text) && stack.includes('~~')) return text + '~'
-
-  // Balanced overlapping: Combined **bold and *italic*** text
-  // ** opens, * opens, *** closes both → stack may still show *** from the run
-  const balancedOverlap =
-    counts.doubleAsteriskCount >= 2 && counts.doubleAsteriskCount % 2 === 0 && counts.asteriskTotal % 2 === 0
-
-  let workStack = stack.slice()
-  if (balancedOverlap) {
-    workStack = workStack.filter((m) => m !== '***' && m !== '**' && m !== '*')
-  }
-
-  // SPEC nested formatting: when multiple markers are open, close from the inside
-  // but **only** markers that must nest (different families: ** and _, ~~ and **).
-  // Same-family * inside ** → close only the innermost *:
-  //   `**bold and *italic` → `**bold and *italic*`  (not ***).
-  // Cross-family still nests:
-  //   `_italic and **bold` → `_italic and **bold**_`
-  //   `~~strike with **bold` → `~~strike with **bold**~~`
-
-  const closable: Marker[] = []
-  // Scan stack from top (innermost)
-  for (let i = workStack.length - 1; i >= 0; i--) {
-    const m = workStack[i]
-    if (m === '$$') {
-      closable.push('$$')
+    if (dashes && comps.length > 0) {
+      const top = comps[comps.length - 1]
+      top.yaml = !top.yaml
       continue
     }
-    if (m === '$') {
-      closable.push('$')
-      continue
-    }
-    if (m === '`') continue
 
-    const token = m
-    const pos = text.lastIndexOf(token)
-    if (pos < 0) continue
-    const after = text.slice(pos + token.length)
-    if (!hasClosableContentAfter(after)) continue
-    closable.push(m)
-  }
+    table = c0 === 124 /* | */
 
-  if (closable.length === 0) return text
-
-  // Collapse same-family asterisk closers: if both *** / ** / * appear, keep only innermost needed.
-  // Prefer: if top (first in closable which is reverse stack) is * and ** is also closable, only *.
-  const hasStarFamily = closable.includes('*') || closable.includes('**') || closable.includes('***')
-  if (hasStarFamily) {
-    // Innermost open asterisk marker is first in closable (stack was reversed)
-    let firstStar: Marker | null = null
-    for (const m of closable) {
-      if (m === '*' || m === '**' || m === '***') {
-        firstStar = m
+    if (o.syntax && c0 === 58 /* : */) {
+      let colons = 1
+      while (st + colons < en && src.charCodeAt(st + colons) === 58) colons++
+      const bare = st + colons === en
+      if (bare && i === n - 1 && comps.length === 0) {
+        // Trailing bare `::` — drop it so it does not flash as text.
+        docEnd = ls
+        n--
         break
       }
-    }
-    // If only * and ** are open (nested * inside **), close with * only
-    // If only ** open, close **
-    // If *** open, close ***
-    // Exception cross nests are separate tokens
-    if (firstStar === '*' && closable.includes('**') && !closable.includes('***')) {
-      // **bold and *italic → only *
-      // BUT *italic with **bold → stack [*, **] top is ** → firstStar ** → close ***?
-      // For * outer + ** inner: firstStar is ** (top), emit ** then * = *** which matches SPEC
-      // So only strip ** when * is TOP (innermost)
-      // closable[0] is top of stack
-      if (closable[0] === '*') {
-        // remove ** and *** from closable
-        for (let ci = closable.length - 1; ci >= 0; ci--) {
-          if (closable[ci] === '**' || closable[ci] === '***') closable.splice(ci, 1)
+      if (colons >= 2) {
+        if (!bare && isNameStart(src.charCodeAt(st + colons))) {
+          comps.push({ depth: colons, indent: src.slice(ls, st), yaml: false })
+        } else if (bare && comps.length > 0 && comps[comps.length - 1].depth === colons) {
+          comps.pop()
         }
       }
     }
   }
 
-  let suffix = ''
-  for (const m of closable) {
-    if (m === '$$') {
-      if (text.endsWith('$') && !text.endsWith('$$')) suffix += '$'
-      else {
-        const first = text.indexOf('$$')
-        const multi = first !== -1 && text.indexOf('\n', first) !== -1
-        suffix += multi && !text.endsWith('\n') ? '\n$$' : '$$'
-      }
-    } else {
-      suffix += m
-    }
+  const doc: DocState = { start: -1, end: -1, docEnd, fmOpen, fmContent, mathOpen, table, comps }
+
+  // Nothing is healed while a shielded region is still open at EOF.
+  if (fenceLen !== 0 || raw !== null || fmOpen || mathOpen) return doc
+
+  const lineEnd = (i: number) => (i + 1 < n ? starts[i + 1] - 1 : docEnd)
+
+  let e = n - 1
+  while (e > 0 && lineEnd(e) === starts[e]) e--
+
+  // A half-typed list item at the end of a list is a marker with no content yet
+  // (`- item\n- ` → `- item`). Only inside a list — under a paragraph the same line
+  // is a setext candidate and gets the U+200B guard instead.
+  while (
+    e > shielded + 1 &&
+    isEmptyListItem(src, starts[e], lineEnd(e)) &&
+    isListItem(src, starts[e - 1], lineEnd(e - 1))
+  ) {
+    docEnd = starts[e] - 1 // drop the line and the newline before it
+    n = e
+    e--
+    while (e > 0 && lineEnd(e) === starts[e]) e--
+  }
+  doc.docEnd = docEnd
+
+  if (lineEnd(e) === starts[e] || e <= shielded) return doc
+
+  // Widen to the soft-wrapped paragraph: stop at a blank line or a new block.
+  let s = e
+  while (s > shielded + 1 && lineEnd(s - 1) !== starts[s - 1] && !isBlockStart(src, starts[s], lineEnd(s))) s--
+  if (s !== e) {
+    let join = !isBlockStart(src, starts[s], lineEnd(s)) || isListItem(src, starts[s], lineEnd(s))
+    for (let i = s + 1; join && i <= e; i++) if (isBlockStart(src, starts[i], lineEnd(i))) join = false
+    if (!join) s = e
   }
 
-  if (text.endsWith(' ') && !text.endsWith('  ')) return text.slice(0, -1) + suffix
+  // Indented code is literal.
+  if (s === e && isIndentedCode(src, starts[e], lineEnd(e)) && !isListItem(src, starts[e], lineEnd(e))) return doc
 
-  // Insert closers before trailing newlines (SPEC: `_italic\n` → `_italic_\n`)
-  let end = text.length
-  while (end > 0 && text[end - 1] === '\n') end--
-  if (end < text.length) return text.slice(0, end) + suffix + text.slice(end)
-
-  return text + suffix
+  doc.start = starts[s]
+  doc.end = lineEnd(e)
+  return doc
 }
 
-function healLinks(text: string, opts: HealOpts): string {
-  // Don't touch inside fences — simple: if unfinished fence to EOF, caller skipped heal
-  const lastParen = text.lastIndexOf('](')
-  if (lastParen !== -1) {
-    const after = text.slice(lastParen + 2)
-    if (!after.includes(')') && !isPosInFence(text, lastParen)) {
-      let depth = 1
-      let open = -1
-      for (let i = lastParen - 1; i >= 0; i--) {
-        if (text[i] === ']') depth++
-        else if (text[i] === '[') {
-          depth--
-          if (depth === 0) {
-            open = i
-            break
+/** `` ```python code`` `` — a code span that merely looks like a fence. */
+function isIncompleteInlineFence(src: string, st: number, en: number): boolean {
+  if (en - st < 5) return false
+  if (src.charCodeAt(en - 1) !== 96 || src.charCodeAt(en - 2) !== 96 || src.charCodeAt(en - 3) === 96) return false
+  return !src.slice(st + 3, en).includes('```')
+}
+
+const ATX_HEADING_RE = /^#{1,6}(\s|$)/
+const THEMATIC_BREAK_RE = /^(\*{3,}|_{3,}|-{3,})\s*$/
+const ORDERED_LIST_RE = /^\d{1,9}[.)](\s|$)/
+
+function isIndentCode(c: number): boolean {
+  return c === 32 || c === 9
+}
+
+/** True when a line opens a new block, so paragraph joining must not cross it. */
+function isBlockStart(src: string, ls: number, le: number): boolean {
+  if (ls >= le) return false
+  if (isIndentedCode(src, ls, le)) return true
+  let st = ls
+  while (st < le && isIndentCode(src.charCodeAt(st))) st++
+  if (st >= le) return false
+  const c = src.charCodeAt(st)
+  if (c === 96 || c === 126) {
+    let run = 1
+    while (st + run < le && src.charCodeAt(st + run) === c) run++
+    if (run >= 3) return true
+  }
+  if (c === 35 /* # */) return ATX_HEADING_RE.test(src.slice(st, le))
+  if (c === 62 /* > */ || c === 124 /* | */) return true
+  if ((c === 42 || c === 95 || c === 45) && THEMATIC_BREAK_RE.test(src.slice(st, le))) return true
+  return isListItem(src, st, le)
+}
+
+/** CommonMark indented code: ≥ 4 leading spaces (or a tab) plus content. */
+function isIndentedCode(src: string, ls: number, le: number): boolean {
+  if (ls >= le) return false
+  if (src.charCodeAt(ls) === 9) return true
+  let i = ls
+  while (i < le && src.charCodeAt(i) === 32) i++
+  return i - ls >= 4 && i < le
+}
+
+function isListItem(src: string, ls: number, le: number): boolean {
+  let st = ls
+  while (st < le && isIndentCode(src.charCodeAt(st))) st++
+  if (st >= le) return false
+  const c = src.charCodeAt(st)
+  if (c === 45 || c === 43 || c === 42) {
+    const c1 = st + 1 < le ? src.charCodeAt(st + 1) : -1
+    return c1 === 32 || c1 === 9
+  }
+  return c >= 48 && c <= 57 && ORDERED_LIST_RE.test(src.slice(st, le))
+}
+
+/** A list marker with nothing after it: `-`, `- `, `1.`, `2) ` — but not `- x` or `---`. */
+function isEmptyListItem(src: string, ls: number, le: number): boolean {
+  let st = ls
+  while (st < le && isIndentCode(src.charCodeAt(st))) st++
+  let en = le
+  while (en > st && isSpaceCode(src.charCodeAt(en - 1))) en--
+  if (st >= en) return false
+  const c = src.charCodeAt(st)
+  if (c === 45 || c === 43 || c === 42) return st + 1 === en
+  let i = st
+  while (i < en && src.charCodeAt(i) >= 48 && src.charCodeAt(i) <= 57) i++
+  if (i === st || i === en) return false
+  const mark = src.charCodeAt(i)
+  return (mark === 46 /* . */ || mark === 41) /* ) */ && i + 1 === en
+}
+
+function isNameStart(c: number): boolean {
+  return (c >= 97 && c <= 122) || (c >= 65 && c <= 90) || c === 36 /* $ */
+}
+
+// ---------------------------------------------------------------------------
+// Inline pass
+// ---------------------------------------------------------------------------
+
+const F_STAR = 1
+const F_UNDER = 2
+const F_TILDE = 3
+const F_CODE = 4
+const F_MATH = 5
+const F_LINK = 6
+
+/** An open construct. `len` is the delimiter run still to be closed. */
+interface Frame {
+  k: number
+  len: number
+  pos: number
+}
+
+type Edit = [pos: number, replacement: string]
+
+const LIST_COMPARE_PREFIX_RE = /^\s*(?:[-*+]|\d+[.)]) +$/
+const LIST_COMPARE_VALUE_RE = /^=?\s*\$?\d/
+
+/**
+ * Heals one paragraph-sized region: closes every construct still open at EOF,
+ * escapes mid-word tildes and list comparison operators, drops an incomplete
+ * HTML tag, and completes an incomplete link or image.
+ */
+function healRegion(text: string, o: Opts): string {
+  let len = text.length
+  // One trailing space is streaming noise; two are a hard line break.
+  if (text.charCodeAt(len - 1) === 32 && text.charCodeAt(len - 2) !== 32) len--
+  if (len === 0) return ''
+
+  const frames: Frame[] = []
+  let edits: Edit[] | null = null
+
+  let lineStart = 0
+  let escEnd = -1 // index just past the last escape sequence
+  let attr = 0
+  let htmlLt = -1
+  let starInWord = false
+  let starDisabled = false
+
+  for (let i = 0; i < len; i++) {
+    const c = text.charCodeAt(i)
+    const top = frames.length === 0 ? null : frames[frames.length - 1]
+
+    if (c === 10 /* \n */) {
+      lineStart = i + 1
+      starInWord = false
+      htmlLt = -1
+      continue
+    }
+
+    // A code span shields everything but its own closer.
+    if (top !== null && top.k === F_CODE) {
+      if (c === 96) {
+        let n = 1
+        while (text.charCodeAt(i + n) === 96) n++
+        if (n >= top.len) frames.pop()
+        else if (i + n === len) top.len -= n
+        i += n - 1
+      }
+      continue
+    }
+
+    if (c === 32 || c === 9 || c === 13) {
+      starInWord = false
+      continue
+    }
+    if (c === 92 /* \ */) {
+      i++
+      escEnd = i + 1
+      continue
+    }
+    if (attr > 0) {
+      if (c === 125 /* } */) attr--
+      continue
+    }
+    if (htmlLt >= 0) {
+      if (c === 62 /* > */) htmlLt = -1
+      continue
+    }
+
+    if (c === 96 /* ` */) {
+      let n = 1
+      while (text.charCodeAt(i + n) === 96) n++
+      const after = i + n < len ? text.charCodeAt(i + n) : -1
+      if (o.inlineCode && after !== -1 && after !== 10) frames.push({ k: F_CODE, len: n, pos: i })
+      i += n - 1
+      continue
+    }
+
+    if (c === 36 /* $ */) {
+      let n = 1
+      while (text.charCodeAt(i + n) === 36) n++
+      if (top !== null && top.k === F_MATH) {
+        if (n >= top.len) frames.pop()
+        else if (i + n === len) top.len -= n
+      } else {
+        const after = i + n < len ? text.charCodeAt(i + n) : -1
+        if (n === 1) {
+          // `$50` is currency and `::$name` is a component name, not math.
+          const attached = after > 13 && after !== 32
+          if (o.inlineMath && attached && !(after >= 48 && after <= 57) && text.charCodeAt(i - 1) !== 58)
+            frames.push({ k: F_MATH, len: 1, pos: i })
+        } else if (n === 2 && o.blockMath) {
+          // `$$` may be padded (`$$ x + y $$`); only EOL/EOF means "not an opener".
+          if (after !== -1 && after !== 10 && after !== 13) frames.push({ k: F_MATH, len: 2, pos: i })
+        }
+      }
+      i += n - 1
+      continue
+    }
+
+    // Inside math only code spans and the math closer are syntax.
+    if (top !== null && top.k === F_MATH) continue
+
+    if (c === 42 /* * */ || c === 95 /* _ */) {
+      let n = 1
+      while (text.charCodeAt(i + n) === c) n++
+      const prev = codePointBefore(text, i)
+      const next = i + n < len ? codePointAt(text, i + n) : ''
+      const attachedLeft = prev !== '' && !isSpaceCp(prev) && i !== escEnd
+      // `_` only opens at a boundary: whitespace, an escape or another marker.
+      // That keeps `func(_arg` literal while `**_text` and `\___bold` still open.
+      const openLeft = !attachedLeft || (c === 95 && (prev === '*' || prev === '_' || prev === '~'))
+      const openRight = next !== '' && !isSpaceCp(next)
+      const enabled = n === 1 ? o.italic : n === 2 ? o.bold : o.boldItalic
+
+      if (c === 42) {
+        // Word-internal `*` only counts once the word already holds a delimiter
+        // (`*foo*bar*baz` pairs up, `abc*123` stays literal).
+        const inWord = attachedLeft && isAlnum(prev) && isAlnum(next)
+        if (!inWord || starInWord) {
+          if (attachedLeft && top !== null && top.k === F_STAR && (!inWord || top.len === n)) {
+            closeRun(frames, F_STAR, n)
+            starInWord = true
+            i += n - 1
+            continue
           }
+          if (openRight && enabled) {
+            frames.push({ k: F_STAR, len: n, pos: i })
+            starInWord = true
+            i += n - 1
+            continue
+          }
+          if (openRight && n === 1) starDisabled = true
         }
-      }
-      if (open >= 0 && !isPosInFence(text, open)) {
-        const isImage = open > 0 && text[open - 1] === '!'
-        const start = isImage ? open - 1 : open
-        const before = text.slice(0, start)
-        const alt = text.slice(open + 1, lastParen)
-        if (isImage) return `${before}![${alt}](${opts.imagePh})`
-        if (opts.linkMode === 'text-only') return before + alt
-        return `${before}[${alt}](${opts.linkPh})`
-      }
-    }
-  }
-
-  for (let i = text.length - 1; i >= 0; i--) {
-    if (text[i] !== '[' || isPosInFence(text, i)) continue
-    const isImage = i > 0 && text[i - 1] === '!'
-    let depth = 1
-    let close = -1
-    for (let j = i + 1; j < text.length; j++) {
-      if (text[j] === '[') depth++
-      else if (text[j] === ']') {
-        depth--
-        if (depth === 0) {
-          close = j
-          break
-        }
-      }
-    }
-    if (close === -1) {
-      const start = isImage ? i - 1 : i
-      const before = text.slice(0, start)
-      if (isImage) return `${before}![${text.slice(i + 1)}](${opts.imagePh})`
-      if (opts.linkMode === 'text-only') return text.slice(0, i) + text.slice(i + 1)
-      return `${text}](${opts.linkPh})`
-    }
-    if (isImage && (close === text.length - 1 || text[close + 1] !== '(')) {
-      if (text.slice(close + 1).trim() === '') {
-        return `${text.slice(0, i - 1)}![${text.slice(i + 1, close)}](${opts.imagePh})`
-      }
-    }
-  }
-  return text
-}
-
-/** O(n) fence check for a position */
-function isPosInFence(text: string, pos: number): boolean {
-  let fence = false
-  let i = 0
-  while (i < pos) {
-    if (i === 0 || text[i - 1] === '\n') {
-      let j = i
-      while (j < text.length && (text[j] === ' ' || text[j] === '\t')) j++
-      const ch = text[j]
-      if (ch === '`' || ch === '~') {
-        let n = 0
-        while (j + n < text.length && text[j + n] === ch) n++
-        if (n >= 3) {
-          fence = !fence
-          while (i < text.length && text[i] !== '\n') i++
-          if (i < text.length) i++
+      } else {
+        // `_` closes only against a non-word on the right, so `snake_case` and
+        // `some__field` stay literal mid-word.
+        if (attachedLeft && !isAlnum(next) && top !== null && top.k === F_UNDER) {
+          closeRun(frames, F_UNDER, n)
+          i += n - 1
           continue
         }
+        if (openLeft && openRight && enabled) frames.push({ k: F_UNDER, len: n, pos: i })
       }
+      i += n - 1
+      continue
     }
-    i++
+
+    if (c === 126 /* ~ */) {
+      let n = 1
+      while (text.charCodeAt(i + n) === 126) n++
+      const prev = codePointBefore(text, i)
+      const next = i + n < len ? codePointAt(text, i + n) : ''
+      const attachedLeft = prev !== '' && !isSpaceCp(prev)
+      if (top !== null && top.k === F_TILDE && attachedLeft) {
+        closeRun(frames, F_TILDE, n)
+      } else if (n === 2 && o.strikethrough && next !== '' && !isSpaceCp(next)) {
+        frames.push({ k: F_TILDE, len: 2, pos: i })
+      } else if (n === 1 && o.singleTilde && isAlnum(prev) && isAlnum(next) && !isSubscriptTilde(text, i)) {
+        // A lone mid-word `~` would become GFM strikethrough — keep it literal.
+        edits = push(edits, [i, '\\~'])
+      }
+      i += n - 1
+      continue
+    }
+
+    if (c === 91 /* [ */) {
+      const image = text.charCodeAt(i - 1) === 33 /* ! */
+      if (image ? o.images : o.links) frames.push({ k: F_LINK, len: image ? 2 : 1, pos: image ? i - 1 : i })
+      continue
+    }
+
+    if (c === 93 /* ] */) {
+      let b = frames.length - 1
+      while (b >= 0 && frames[b].k !== F_LINK) b--
+      if (b < 0) continue
+      const label = frames[b]
+      frames.length = b // the label closed: markers opened inside it stay literal
+      const after = i + 1 < len ? text.charCodeAt(i + 1) : -1
+
+      if (after === 40 /* ( */) {
+        const end = scanDestination(text, i + 2, len)
+        if (end > 0) {
+          i = end // complete `[text](url)`
+          continue
+        }
+        if (end < 0) continue // spaces inside: not a destination, keep scanning
+      } else if (after === 91 /* [ */) {
+        let j = i + 2
+        while (j < len && text.charCodeAt(j) !== 93) j++
+        if (j < len) {
+          i = j // complete `[text][ref]`
+          continue
+        }
+      } else if (!(label.len === 2 && i + 1 === len && hasContent(text, label.pos + 2, i))) {
+        continue // `[text]` may be a shortcut reference; only images are healed
+      }
+
+      // Incomplete destination / reference: the link wins over everything inside.
+      if (label.len === 2 || o.linkMode === 'protocol') {
+        return apply(text, edits, i + 1, '(' + (label.len === 2 ? o.imagePh : o.linkPh) + ')')
+      }
+      return apply(text, push(edits, [label.pos, '']), i, '')
+    }
+
+    if (c === 60 /* < */) {
+      const next = text.charCodeAt(i + 1)
+      if (next === 47 /* / */ || isAsciiAlpha(next)) htmlLt = i
+      continue
+    }
+
+    if (c === 62 /* > */) {
+      if (
+        o.comparisonOperators &&
+        LIST_COMPARE_PREFIX_RE.test(text.slice(lineStart, i)) &&
+        LIST_COMPARE_VALUE_RE.test(text.slice(i + 1))
+      ) {
+        edits = push(edits, [i, '\\>'])
+      }
+      continue
+    }
+
+    if (c === 123 /* { */ && o.attributes) {
+      // Only an attached `{` is an attribute scope (`text{.cls`), never a bare line.
+      const prev = text.charCodeAt(i - 1)
+      if (i > 0 && prev !== 32 && prev !== 9 && prev !== 10) attr++
+      continue
+    }
   }
-  return fence
+
+  let end = len
+
+  // Incomplete HTML tag at EOF, plus the whitespace in front of it.
+  if (htmlLt >= 0 && o.htmlTags) {
+    end = htmlLt
+    while (end > 0 && (text.charCodeAt(end - 1) === 32 || text.charCodeAt(end - 1) === 9)) end--
+    while (frames.length > 0 && frames[frames.length - 1].pos >= htmlLt) frames.pop()
+  }
+
+  // Unclosed `[` / `![` at EOF. An empty label is a half-typed marker, not a link:
+  // there is nothing to wrap, so `hello [` stays literal.
+  let b = frames.length - 1
+  while (b >= 0 && frames[b].k !== F_LINK) b--
+  if (b >= 0 && hasContent(text, frames[b].pos + frames[b].len, end)) {
+    const label = frames[b]
+    if (label.len === 2 || o.linkMode === 'protocol') {
+      return apply(text, edits, end, '](' + (label.len === 2 ? o.imagePh : o.linkPh) + ')')
+    }
+    // text-only: unwrap link labels from the inside out, stop at an image.
+    for (let k = frames.length - 1; k >= 0; k--) {
+      const f = frames[k]
+      if (f.k !== F_LINK) continue
+      frames.length = k
+      if (f.len === 2) return apply(text, edits, end, '](' + o.imagePh + ')')
+      edits = push(edits, [f.pos, ''])
+    }
+  }
+
+  return apply(text, edits, end, closers(frames, text, o, starDisabled))
 }
 
+/** Consume `n` delimiters against the open frames of `kind`, innermost first. */
+function closeRun(frames: Frame[], kind: number, n: number): void {
+  let m = n
+  while (m > 0 && frames.length > 0) {
+    const f = frames[frames.length - 1]
+    if (f.k !== kind) break
+    if (m >= f.len) {
+      m -= f.len
+      frames.pop()
+    } else {
+      // Partial closer: `**bold*` leaves one `*` to complete.
+      f.len -= m
+      m = 0
+    }
+  }
+}
+
+/**
+ * End of an inline link destination: index of the closing `)`, `0` when the
+ * destination is unterminated, `-1` when it holds whitespace (so it is not a
+ * destination at all and the text must keep flowing).
+ */
+function scanDestination(text: string, from: number, len: number): number {
+  let depth = 1
+  for (let i = from; i < len; i++) {
+    const c = text.charCodeAt(i)
+    if (c === 92) i++
+    else if (c === 40) depth++
+    else if (c === 41) {
+      if (--depth === 0) return i
+    } else if (c === 32 || c === 9 || c === 10) return -1
+  }
+  return 0
+}
+
+/** LIFO closers for everything still open. */
+function closers(frames: Frame[], text: string, o: Opts, starDisabled: boolean): string {
+  const skipStar = starDisabled && !o.italic
+  let starSum = 0
+  let starCount = 0
+  let innerStar = -1
+  for (let i = frames.length - 1; i >= 0; i--) {
+    if (frames[i].k !== F_STAR) continue
+    starSum += frames[i].len
+    starCount++
+    if (innerStar < 0) innerStar = i
+  }
+  // A cross-family construct outside the innermost `*` cannot be nested through:
+  // `~~strike **bold *italic` closes only the `*` (SPEC), never `***~~`.
+  let crossOutside = false
+  for (let i = innerStar - 1; i >= 0; i--) {
+    const k = frames[i].k
+    if (k === F_TILDE || k === F_UNDER || k === F_MATH) {
+      crossOutside = true
+      break
+    }
+  }
+
+  let out = ''
+  let starDone = false
+  for (let i = frames.length - 1; i >= 0; i--) {
+    const f = frames[i]
+    switch (f.k) {
+      case F_STAR:
+        if (starDone || skipStar) break
+        starDone = true
+        out += '*'.repeat(starCount >= 2 && crossOutside ? f.len : starSum)
+        break
+      case F_UNDER:
+        out += '_'.repeat(f.len)
+        break
+      case F_TILDE:
+        out += '~'.repeat(f.len)
+        break
+      case F_CODE:
+        out += '`'.repeat(f.len)
+        break
+      case F_MATH:
+        // A `$$` block opened on an earlier line closes on its own line.
+        out += f.len === 2 && text.lastIndexOf('\n') > f.pos ? '\n$$' : '$'.repeat(f.len)
+        break
+    }
+  }
+  return out
+}
+
+function push(edits: Edit[] | null, edit: Edit): Edit[] {
+  if (edits === null) return [edit]
+  edits.push(edit)
+  return edits
+}
+
+/** `text[0, end)` with every edit applied, then `suffix`. */
+function apply(text: string, edits: Edit[] | null, end: number, suffix: string): string {
+  if (edits === null) return end === text.length ? (suffix === '' ? text : text + suffix) : text.slice(0, end) + suffix
+  if (edits.length > 1) edits.sort(byPos)
+  let out = ''
+  let copied = 0
+  for (let i = 0; i < edits.length; i++) {
+    const [pos, replacement] = edits[i]
+    if (pos >= end) break
+    out += text.slice(copied, pos) + replacement
+    copied = pos + 1
+  }
+  return out + text.slice(copied, end) + suffix
+}
+
+function byPos(a: Edit, b: Edit): number {
+  return a[0] - b[0]
+}
+
+// ---------------------------------------------------------------------------
+// Document-level closers
+// ---------------------------------------------------------------------------
+
+/**
+ * Appends a `---` delimiter line, completing a half-typed one in place
+ * (`title: x\n-` → `title: x\n---`).
+ */
+function closeDelimiterLine(text: string, ch: string, width: number): string {
+  const last = text
+    .slice(text.lastIndexOf('\n') + 1)
+    .trim()
+    .replace(ZWSP_RE, '')
+  if (last.length > 0 && last.length < width && last === ch.repeat(last.length)) {
+    return text.replace(TRAILING_ZWSP_RE, '') + ch.repeat(width - last.length)
+  }
+  return text + (text.endsWith('\n') ? '' : '\n') + ch.repeat(width)
+}
+
+/** Closes an open props brace and every open component fence, innermost first. */
+function closeComponents(result: string, source: string, comps: Component[]): string {
+  if (!source.includes('::')) return result
+
+  // `::alert{type="info` → close the quote and the brace.
+  const lineStart = result.lastIndexOf('\n') + 1
+  let brace = -1
+  for (let i = result.length - 1; i >= lineStart; i--) {
+    const c = result.charCodeAt(i)
+    if (c === 125 /* } */) break
+    if (c === 123 /* { */) {
+      brace = i
+      break
+    }
+  }
+  if (brace >= 0) {
+    let dq = 0
+    let sq = 0
+    for (let i = brace + 1; i < result.length; i++) {
+      const c = result.charCodeAt(i)
+      if (c === 34) dq++
+      else if (c === 39) sq++
+    }
+    result += (dq % 2 === 1 ? '"' : '') + (sq % 2 === 1 ? "'" : '') + '}'
+  }
+
+  if (comps.length === 0) return result
+
+  const top = comps[comps.length - 1]
+  if (top.yaml) {
+    const last = result
+      .slice(result.lastIndexOf('\n') + 1)
+      .trim()
+      .replace(ZWSP_RE, '')
+    if (last === '-' || last === '--') {
+      result = result.replace(TRAILING_ZWSP_RE, '') + '-'.repeat(3 - last.length)
+      top.yaml = false
+    }
+  }
+
+  let out = result
+  for (let i = comps.length - 1; i >= 0; i--) {
+    const c = comps[i]
+    if (c.yaml) out += '\n' + c.indent + '---'
+    out += '\n' + c.indent + ':'.repeat(c.depth)
+  }
+  return out
+}
+
+const ZWSP_RE = /\u200B/g
+const TRAILING_ZWSP_RE = /\u200B+$/
+const SETEXT_RE = /^(?:-{1,2}|={1,2})$/
+const YAML_KEY_RE = /^[A-Za-z_][\w.-]*\s*:/
+
+/**
+ * A 1–2 char `-`/`=` line under a paragraph would flash as a setext heading
+ * while the list marker or rule is still being typed — park it behind U+200B.
+ */
 function applySetextGuard(text: string): string {
   const lastNl = text.lastIndexOf('\n')
   if (lastNl === -1) return text
   const last = text.slice(lastNl + 1)
   const t = last.trim()
-  if (!/^(-{1,2}|={1,2})$/.test(t)) return text
-  if (/\s$/.test(last) && last !== t) return text
-  const prevBlock = text.slice(0, lastNl)
-  const pNl = prevBlock.lastIndexOf('\n')
-  const prev = (pNl === -1 ? prevBlock : prevBlock.slice(pNl + 1)).trim()
-  if (!prev) return text
-  if (prev === '---' || /^[A-Za-z_][\w.-]*\s*:/.test(prev)) return text
+  if (!SETEXT_RE.test(t)) return text
+  // Trailing whitespace other than a stripped single space means "still typing".
+  if (last !== t && /\s$/.test(last)) return text
+  const head = text.slice(0, lastNl)
+  const prev = head.slice(head.lastIndexOf('\n') + 1).trim()
+  if (prev === '' || prev === '---' || YAML_KEY_RE.test(prev)) return text
   return text + '\u200B'
 }
 
-/**
- * True when a single `~` at `i` is one half of a paired open/close span like `H~2~o`
- * (word~content~word). Those are intentional subscript-style markers, not mid-word
- * tildes that need escaping.
- */
-/**
- * True when `~` at `i` is part of a tight open/close pair like `H~2~o`:
- *   word ~ content ~ word
- * with no spaces/newlines/`~~` between the two single tildes.
- * Mid-word orphans like `20~25` or `a~b c~d` are not pairs.
- */
-function isPairedSingleTilde(text: string, i: number): boolean {
-  const isSingleTildeAt = (j: number): boolean => {
-    if (text[j] !== '~') return false
-    const p = j > 0 ? text[j - 1] : ''
-    const n = j + 1 < text.length ? text[j + 1] : ''
-    return p !== '~' && n !== '~'
-  }
+// ---------------------------------------------------------------------------
+// Trailing openers (streaming)
+// ---------------------------------------------------------------------------
 
-  const tightBetween = (from: number, to: number): boolean => {
-    if (to - from < 1) return false
-    for (let k = from; k < to; k++) {
-      const c = text[k]
-      if (c === '~' || c === ' ' || c === '\t' || c === '\n' || c === '\r') return false
-    }
-    return true
-  }
-
-  // Match closer looking back to opener
-  for (let j = i - 1; j >= 0; j--) {
-    if (text[j] === '\n') break
-    if (text[j] === '~') {
-      if (!isSingleTildeAt(j)) return false
-      // opener left-flanked by a word char (H~…)
-      const openPrev = j > 0 ? text[j - 1] : ''
-      if (!isWord(openPrev)) return false
-      // closer right-flanked by a word char (…~o)
-      const closeNext = i + 1 < text.length ? text[i + 1] : ''
-      if (!isWord(closeNext)) return false
-      return tightBetween(j + 1, i)
-    }
-  }
-
-  // Match opener looking forward to closer
-  for (let j = i + 1; j < text.length; j++) {
-    if (text[j] === '\n') break
-    if (text[j] === '~') {
-      if (!isSingleTildeAt(j)) return false
-      const openPrev = i > 0 ? text[i - 1] : ''
-      if (!isWord(openPrev)) return false
-      const closeNext = j + 1 < text.length ? text[j + 1] : ''
-      if (!isWord(closeNext)) return false
-      return tightBetween(i + 1, j)
-    }
-  }
-
-  return false
+function isTrailingOpener(c: number): boolean {
+  // * _ $ : ` ~ [ { !
+  return c === 42 || c === 95 || c === 36 || c === 58 || c === 96 || c === 126 || c === 91 || c === 123 || c === 33
 }
 
 /**
- * Whether `$` at `i` should open inline math.
- * Rejects currency (`$100`, `($5)`) and component name markers (`::$name`, `:$name`).
+ * Drops a trailing opener run at EOF unless it is attached to a word
+ * (`hello *` → `hello`), so a half-typed marker never flashes. Markers with content
+ * after them (`**bold`) are not trailing runs and stay for the heal; a bare `$`
+ * after a word (`text123$`) is dropped anyway, being only a math opener.
  */
-function looksLikeInlineMathOpen(text: string, i: number): boolean {
-  const next = i + 1 < text.length ? text[i + 1] : ''
-  if (!next || next === ' ' || next === '\t' || next === '\n') return false
-  // Currency: $ followed immediately by a digit
-  if (next >= '0' && next <= '9') return false
-  // Component name: :$name or ::$name — `$` after one or more colons at a fence/name boundary
-  const prev = i > 0 ? text[i - 1] : ''
-  if (prev === ':') return false
-  return true
+function dropTrailingOpeners(text: string, inlineCode: boolean): string {
+  let ws = text.length
+  while (ws > 0 && isSpaceCode(text.charCodeAt(ws - 1))) ws--
+  if (ws === 0) return text
+
+  let i = ws
+  while (i > 0 && isTrailingOpener(text.charCodeAt(i - 1))) {
+    if (text.charCodeAt(i - 2) === 92 /* \ */) break
+    i--
+  }
+  if (i === ws) return text
+
+  let allDollar = true
+  let allTick = true
+  for (let k = i; k < ws; k++) {
+    const c = text.charCodeAt(k)
+    if (c !== 36) allDollar = false
+    if (c !== 96) allTick = false
+  }
+  if (allDollar && isAlnum(codePointBefore(text, i))) return text.slice(0, i) + text.slice(ws)
+
+  // A trailing backtick run may belong to an open code span rather than start a
+  // new one. Then it is the heal pass's job, not ours: it either closes the span
+  // (`space `` ``) or completes a short closer (`spaces ``  ` ` → `spaces ``  ``).
+  // Only a span with no content yet is dropped, opener and all.
+  if (allTick && inlineCode) {
+    const span = openCodeSpan(text, i)
+    if (span !== null) {
+      if (ws - i >= span.len) return text // a closer — leave it to the heal
+      const gap = i - span.end
+      const pad = gap === 1 ? text.charCodeAt(span.end) : -1
+      if (gap > 1 || (gap === 1 && pad !== 32 && pad !== 9)) return text // real content
+      return text.slice(0, trimBack(text, span.start)) + text.slice(ws)
+    }
+  }
+
+  // Attached to a word the run is prose or a closer (`text**`, `word_`, `20~`), so it
+  // stays. After whitespace or punctuation it can only be a half-typed opener
+  // (`hello *`, ``escape lone `~` (` ``) and would flash.
+  if (isAlnum(codePointBefore(text, i))) return text
+
+  return text.slice(0, trimBack(text, i)) + text.slice(ws)
 }
 
-/** True when a delimiter run has closable content after it (letters/digits/punct). */
-function hasClosableContentAfter(after: string): boolean {
-  for (let i = 0; i < after.length; i++) {
-    const c = after[i]
-    if (c === ' ' || c === '\t' || c === '\n' || c === '\r') continue
-    if (c === '*' || c === '_' || c === '~' || c === '`') continue
-    return true
+/** True when `text[from, to)` holds anything other than whitespace. */
+function hasContent(text: string, from: number, to: number): boolean {
+  for (let i = from; i < to; i++) if (!isSpaceCode(text.charCodeAt(i))) return true
+  return false
+}
+
+/** `from`, minus one space or tab of padding before it. */
+function trimBack(text: string, from: number): number {
+  const prev = text.charCodeAt(from - 1)
+  return prev === 32 || prev === 9 ? from - 1 : from
+}
+
+/**
+ * The inline code span still open at `limit` on its line, or null. Mirrors the
+ * heal pass's matching rule: a run closes the span when it is at least as long
+ * as the opener, otherwise it is content.
+ */
+function openCodeSpan(text: string, limit: number): { start: number; len: number; end: number } | null {
+  let start = -1
+  let len = 0
+  let end = -1
+  let i = text.lastIndexOf('\n', limit - 1) + 1
+  while (i < limit) {
+    const c = text.charCodeAt(i)
+    if (c === 92 /* \ */) {
+      i += 2
+      continue
+    }
+    if (c !== 96) {
+      i++
+      continue
+    }
+    let n = 1
+    while (i + n < limit && text.charCodeAt(i + n) === 96) n++
+    if (len === 0) {
+      len = n
+      start = i
+      end = i + n
+    } else if (n >= len) {
+      len = 0
+      start = -1
+      end = -1
+    }
+    i += n
+  }
+  return len === 0 ? null : { start, len, end }
+}
+
+// ---------------------------------------------------------------------------
+// Characters
+// ---------------------------------------------------------------------------
+
+const ALNUM_CP_RE = /\p{L}|\p{N}/u
+
+/** Letter or digit. Everything else (including `_`) is CommonMark punctuation. */
+function isAlnum(cp: string): boolean {
+  if (cp === '') return false
+  const c = cp.charCodeAt(0)
+  // ASCII fast path covers nearly all markdown without a Unicode test.
+  if (c <= 127) return (c >= 48 && c <= 57) || (c >= 65 && c <= 90) || (c >= 97 && c <= 122)
+  return ALNUM_CP_RE.test(cp)
+}
+
+function isAsciiAlpha(c: number): boolean {
+  return (c >= 97 && c <= 122) || (c >= 65 && c <= 90)
+}
+
+function isSpaceCp(cp: string): boolean {
+  return cp === ' ' || cp === '\t' || cp === '\n' || cp === '\r'
+}
+
+function isSpaceCode(c: number): boolean {
+  return c === 32 || c === 9 || c === 10 || c === 13
+}
+
+/** Full code point before `i` (surrogate aware), `''` at the start. */
+function codePointBefore(text: string, i: number): string {
+  if (i <= 0) return ''
+  const c = text.charCodeAt(i - 1)
+  if (c >= 0xdc00 && c <= 0xdfff && i >= 2) {
+    const hi = text.charCodeAt(i - 2)
+    if (hi >= 0xd800 && hi <= 0xdbff) return text.slice(i - 2, i)
+  }
+  return text[i - 1]
+}
+
+/** Full code point at `i` (surrogate aware). */
+function codePointAt(text: string, i: number): string {
+  const c = text.charCodeAt(i)
+  if (c >= 0xd800 && c <= 0xdbff) {
+    const lo = text.charCodeAt(i + 1)
+    if (lo >= 0xdc00 && lo <= 0xdfff) return text.slice(i, i + 2)
+  }
+  return text[i]
+}
+
+/**
+ * True for the subscript pattern `word~digits~word` (`H~2~o`), the one paired
+ * use of single tildes that must stay unescaped.
+ */
+function isSubscriptTilde(text: string, i: number): boolean {
+  for (let j = i - 1; j >= 0 && text.charCodeAt(j) !== 10; j--) {
+    if (text.charCodeAt(j) === 126) return isSubscriptPair(text, j, i)
+  }
+  for (let j = i + 1; j < text.length && text.charCodeAt(j) !== 10; j++) {
+    if (text.charCodeAt(j) === 126) return isSubscriptPair(text, i, j)
   }
   return false
+}
+
+function isSubscriptPair(text: string, open: number, close: number): boolean {
+  if (close - open < 2) return false
+  if (text.charCodeAt(open - 1) === 126 || text.charCodeAt(open + 1) === 126) return false
+  if (text.charCodeAt(close + 1) === 126) return false
+  for (let k = open + 1; k < close; k++) {
+    const c = text.charCodeAt(k)
+    if (c < 48 || c > 57) return false
+  }
+  return isAlnum(codePointBefore(text, open)) && isAlnum(codePointAt(text, close + 1))
 }
