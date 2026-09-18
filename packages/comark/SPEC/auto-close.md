@@ -3074,3 +3074,157 @@ Inline math on: shields, complete or open:
 - $x<y$ then <div
 + $x<y$ then <div
 ```
+
+## List
+
+Drop empty list items at the end of the list
+
+```diff
+- - item one\n- 
++ - item one
+```
+
+```diff
+- - item one\n-
++ - item one
+```
+
+```diff
+- - item one\n- s
++ - item one\n- s
+```
+
+Any marker, including ordered and nested items, and every trailing empty item:
+
+```diff
+- 1. item one\n2. 
++ 1. item one
+```
+
+```diff
+- - a\n  - 
++ - a
+```
+
+```diff
+- - a\n- \n- 
++ - a
+```
+
+The item before it is still healed:
+
+```diff
+- - item **bold\n- 
++ - item **bold**
+```
+
+Only a bare marker is empty — a task-list checkbox is content, and a rule is not a list item:
+
+```diff
+- - [x] done\n- [ ] 
++ - [x] done\n- [ ]
+```
+
+```diff
+- - a\n---
++ - a\n---
+```
+
+The marker must directly follow a list item. Under a paragraph the same line is a setext
+candidate and gets the U+200B guard instead (see *Setext heading guard*), and a blank line
+ends the run:
+
+```diff
+- - a\n\n- 
++ - a\n\n-
+```
+
+## Extra streaming tests
+
+```diff opts="dropTrailingOpeners: true"
+- close `` 
++ close
+```
+
+```diff opts="dropTrailingOpeners: true"
+- close ``
++ close
+```
+
+Ignore inline code if it cointains only one character and its space
+
+```diff opts="dropTrailingOpeners: true"
+- space `` `
++ space
+```
+
+We don't do anything if it is closed
+
+```diff opts="dropTrailingOpeners: true"
+- space `` ``
++ space `` ``
+```
+
+```diff opts="dropTrailingOpeners: true"
+- space `` `` code
++ space `` `` code
+```
+
+```diff opts="dropTrailingOpeners: true"
+- spaces ``  `
++ spaces ``  ``
+```
+
+Once the span holds content the closer is completed, whatever the opener's length:
+
+```diff opts="dropTrailingOpeners: true"
+- space `` x `
++ space `` x ``
+```
+
+```diff opts="dropTrailingOpeners: true"
+- a `` ` `
++ a `` ` ``
+```
+
+```diff opts="dropTrailingOpeners: true"
+- space ``` `
++ space
+```
+
+With no span open the trailing backtick is just a half-typed opener again:
+
+```diff opts="dropTrailingOpeners: true"
+- x `a` `
++ x `a`
+```
+
+```diff opts="dropTrailingOpeners: true"
+- escape lone `~` (`
++ escape lone `~` (
+```
+
+Punctuation before the marker is no protection — only a word is, because there the marker is
+prose or a closer:
+
+```diff opts="dropTrailingOpeners: true"
+- text*
++ text*
+```
+
+```diff opts="dropTrailingOpeners: true"
+- word_
++ word_
+```
+
+Dropping a partial closer is safe: the heal still emits the full one.
+
+```diff opts="dropTrailingOpeners: true"
+- **bold.*
++ **bold.**
+```
+
+```diff opts="dropTrailingOpeners: true"
+- ~~strike.~
++ ~~strike.~~
+```

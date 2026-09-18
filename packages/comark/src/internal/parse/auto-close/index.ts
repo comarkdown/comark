@@ -125,7 +125,7 @@ export function autoCloseMarkdown(markdown: string, options: AutoCloseOptions = 
     tables: options.tables !== false,
   }
 
-  const source = options.dropTrailingOpeners === true ? dropTrailingOpeners(markdown) : markdown
+  const source = options.dropTrailingOpeners === true ? dropTrailingOpeners(markdown, o.inlineCode) : markdown
   const doc = scanBlocks(source, o)
 
   let result: string
@@ -310,6 +310,22 @@ function scanBlocks(src: string, o: Opts): DocState {
 
   let e = n - 1
   while (e > 0 && lineEnd(e) === starts[e]) e--
+
+  // A half-typed list item at the end of a list is a marker with no content yet
+  // (`- item\n- ` → `- item`). Only inside a list — under a paragraph the same line
+  // is a setext candidate and gets the U+200B guard instead.
+  while (
+    e > shielded + 1 &&
+    isEmptyListItem(src, starts[e], lineEnd(e)) &&
+    isListItem(src, starts[e - 1], lineEnd(e - 1))
+  ) {
+    docEnd = starts[e] - 1 // drop the line and the newline before it
+    n = e
+    e--
+    while (e > 0 && lineEnd(e) === starts[e]) e--
+  }
+  doc.docEnd = docEnd
+
   if (lineEnd(e) === starts[e] || e <= shielded) return doc
 
   // Widen to the soft-wrapped paragraph: stop at a blank line or a new block.
@@ -382,6 +398,22 @@ function isListItem(src: string, ls: number, le: number): boolean {
     return c1 === 32 || c1 === 9
   }
   return c >= 48 && c <= 57 && ORDERED_LIST_RE.test(src.slice(st, le))
+}
+
+/** A list marker with nothing after it: `-`, `- `, `1.`, `2) ` — but not `- x` or `---`. */
+function isEmptyListItem(src: string, ls: number, le: number): boolean {
+  let st = ls
+  while (st < le && isIndentCode(src.charCodeAt(st))) st++
+  let en = le
+  while (en > st && isSpaceCode(src.charCodeAt(en - 1))) en--
+  if (st >= en) return false
+  const c = src.charCodeAt(st)
+  if (c === 45 || c === 43 || c === 42) return st + 1 === en
+  let i = st
+  while (i < en && src.charCodeAt(i) >= 48 && src.charCodeAt(i) <= 57) i++
+  if (i === st || i === en) return false
+  const mark = src.charCodeAt(i)
+  return (mark === 46 /* . */ || mark === 41) /* ) */ && i + 1 === en
 }
 
 function isNameStart(c: number): boolean {
@@ -876,12 +908,12 @@ function isTrailingOpener(c: number): boolean {
 }
 
 /**
- * Drops a trailing opener run at EOF when it is preceded by whitespace
- * (`hello *` → `hello`), so a half-typed marker never flashes. Attached markers
- * (`**bold`) stay for the heal — except a bare `$` after a word (`text123$`),
- * which can only be a half-typed math opener.
+ * Drops a trailing opener run at EOF unless it is attached to a word
+ * (`hello *` → `hello`), so a half-typed marker never flashes. Markers with content
+ * after them (`**bold`) are not trailing runs and stay for the heal; a bare `$`
+ * after a word (`text123$`) is dropped anyway, being only a math opener.
  */
-function dropTrailingOpeners(text: string): string {
+function dropTrailingOpeners(text: string, inlineCode: boolean): string {
   let ws = text.length
   while (ws > 0 && isSpaceCode(text.charCodeAt(ws - 1))) ws--
   if (ws === 0) return text
@@ -894,16 +926,77 @@ function dropTrailingOpeners(text: string): string {
   if (i === ws) return text
 
   let allDollar = true
-  for (let k = i; k < ws && allDollar; k++) if (text.charCodeAt(k) !== 36) allDollar = false
+  let allTick = true
+  for (let k = i; k < ws; k++) {
+    const c = text.charCodeAt(k)
+    if (c !== 36) allDollar = false
+    if (c !== 96) allTick = false
+  }
   if (allDollar && isAlnum(codePointBefore(text, i))) return text.slice(0, i) + text.slice(ws)
 
-  const before = i > 0 ? text.charCodeAt(i - 1) : -1
-  if (before !== -1 && !isSpaceCode(before)) return text
+  // A trailing backtick run may belong to an open code span rather than start a
+  // new one. Then it is the heal pass's job, not ours: it either closes the span
+  // (`space `` ``) or completes a short closer (`spaces ``  ` ` → `spaces ``  ``).
+  // Only a span with no content yet is dropped, opener and all.
+  if (allTick && inlineCode) {
+    const span = openCodeSpan(text, i)
+    if (span !== null) {
+      if (ws - i >= span.len) return text // a closer — leave it to the heal
+      const gap = i - span.end
+      const pad = gap === 1 ? text.charCodeAt(span.end) : -1
+      if (gap > 1 || (gap === 1 && pad !== 32 && pad !== 9)) return text // real content
+      return text.slice(0, trimBack(text, span.start)) + text.slice(ws)
+    }
+  }
 
-  let keep = i
-  const prev = text.charCodeAt(keep - 1)
-  if (prev === 32 || prev === 9) keep--
-  return text.slice(0, keep) + text.slice(ws)
+  // Attached to a word the run is prose or a closer (`text**`, `word_`, `20~`), so it
+  // stays. After whitespace or punctuation it can only be a half-typed opener
+  // (`hello *`, ``escape lone `~` (` ``) and would flash.
+  if (isAlnum(codePointBefore(text, i))) return text
+
+  return text.slice(0, trimBack(text, i)) + text.slice(ws)
+}
+
+/** `from`, minus one space or tab of padding before it. */
+function trimBack(text: string, from: number): number {
+  const prev = text.charCodeAt(from - 1)
+  return prev === 32 || prev === 9 ? from - 1 : from
+}
+
+/**
+ * The inline code span still open at `limit` on its line, or null. Mirrors the
+ * heal pass's matching rule: a run closes the span when it is at least as long
+ * as the opener, otherwise it is content.
+ */
+function openCodeSpan(text: string, limit: number): { start: number; len: number; end: number } | null {
+  let start = -1
+  let len = 0
+  let end = -1
+  let i = text.lastIndexOf('\n', limit - 1) + 1
+  while (i < limit) {
+    const c = text.charCodeAt(i)
+    if (c === 92 /* \ */) {
+      i += 2
+      continue
+    }
+    if (c !== 96) {
+      i++
+      continue
+    }
+    let n = 1
+    while (i + n < limit && text.charCodeAt(i + n) === 96) n++
+    if (len === 0) {
+      len = n
+      start = i
+      end = i + n
+    } else if (n >= len) {
+      len = 0
+      start = -1
+      end = -1
+    }
+    i += n
+  }
+  return len === 0 ? null : { start, len, end }
 }
 
 // ---------------------------------------------------------------------------
