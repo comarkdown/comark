@@ -62,7 +62,7 @@
     "beautiful-mermaid": "catalog:",
     "katex": "catalog:",
     "shiki": "catalog:",
-    "vue": "^3.5.0"
+    "vue": "^3.5.43"
   },
   "peerDependenciesMeta": {
     "shiki": {
