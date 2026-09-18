@@ -630,7 +630,7 @@ function healRegion(text: string, o: Opts): string {
           i = j // complete `[text][ref]`
           continue
         }
-      } else if (!(label.len === 2 && i + 1 === len)) {
+      } else if (!(label.len === 2 && i + 1 === len && hasContent(text, label.pos + 2, i))) {
         continue // `[text]` may be a shortcut reference; only images are healed
       }
 
@@ -675,10 +675,11 @@ function healRegion(text: string, o: Opts): string {
     while (frames.length > 0 && frames[frames.length - 1].pos >= htmlLt) frames.pop()
   }
 
-  // Unclosed `[` / `![` at EOF.
+  // Unclosed `[` / `![` at EOF. An empty label is a half-typed marker, not a link:
+  // there is nothing to wrap, so `hello [` stays literal.
   let b = frames.length - 1
   while (b >= 0 && frames[b].k !== F_LINK) b--
-  if (b >= 0) {
+  if (b >= 0 && hasContent(text, frames[b].pos + frames[b].len, end)) {
     const label = frames[b]
     if (label.len === 2 || o.linkMode === 'protocol') {
       return apply(text, edits, end, '](' + (label.len === 2 ? o.imagePh : o.linkPh) + ')')
@@ -955,6 +956,12 @@ function dropTrailingOpeners(text: string, inlineCode: boolean): string {
   if (isAlnum(codePointBefore(text, i))) return text
 
   return text.slice(0, trimBack(text, i)) + text.slice(ws)
+}
+
+/** True when `text[from, to)` holds anything other than whitespace. */
+function hasContent(text: string, from: number, to: number): boolean {
+  for (let i = from; i < to; i++) if (!isSpaceCode(text.charCodeAt(i))) return true
+  return false
 }
 
 /** `from`, minus one space or tab of padding before it. */

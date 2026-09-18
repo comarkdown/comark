@@ -677,6 +677,13 @@ Underscore openers need whitespace or line start before them; `(` and other punc
 + \` *italic*
 ```
 
+With the construct off nothing is closed — the delimiters stay literal:
+
+```diff opts="inlineCode: false"
+- `code
++ `code
+```
+
 ```diff
 - **bold
 + **bold**
@@ -969,6 +976,18 @@ Underscore openers need whitespace or line start before them; `(` and other punc
 + [link text](auto-close:incomplete-link)
 ```
 
+An empty label stays literal (SPEC principle 5 — nothing to wrap):
+
+```diff
+- see [
++ see [
+```
+
+```diff opts="linkMode: 'text-only'"
+- see [
++ see [
+```
+
 ```diff
 - Check the [documentation
 + Check the [documentation](auto-close:incomplete-link)
@@ -1115,6 +1134,18 @@ Underscore openers need whitespace or line start before them; `(` and other punc
 ```diff
 - ![partial
 + ![partial](auto-close:incomplete-image)
+```
+
+An empty label is a half-typed marker, not an image — there is nothing to wrap:
+
+```diff
+- ![]
++ ![]
+```
+
+```diff
+- see ![
++ see ![
 ```
 
 ```diff
@@ -2953,6 +2984,237 @@ Attached incomplete syntax is still closed:
 ```diff
 - hello **bold
 + hello **bold**
+```
+
+The drop is independent of the per-construct flags. Those decide whether a *closer is
+inserted*, not whether a half-typed marker is hidden, so a disabled construct still drops its
+opener:
+
+```diff opts="inlineCode: false"
+- value `
++ value
+```
+
+```diff opts="bold: false, italic: false, boldItalic: false"
+- hello *
++ hello
+```
+
+```diff opts="links: false"
+- hello [
++ hello
+```
+
+---
+
+## Markers stay when the drop flag is off
+
+Every case above, mirrored at the default `dropTrailingOpeners: false`. Nothing is dropped:
+a marker that would be hidden in an in-flight frame is plain text in the final render, even
+when its construct is disabled.
+
+```diff
+- hello *
++ hello *
+```
+
+```diff
+- hello **
++ hello **
+```
+
+```diff
+- hello ***
++ hello ***
+```
+
+```diff
+- hello _
++ hello _
+```
+
+```diff
+- hello __
++ hello __
+```
+
+```diff
+- hello $
++ hello $
+```
+
+```diff
+- hello $$
++ hello $$
+```
+
+```diff
+- hello ~~
++ hello ~~
+```
+
+```diff
+- hello `
++ hello `
+```
+
+```diff
+- hello ``
++ hello ``
+```
+
+```diff
+- hello [
++ hello [
+```
+
+```diff
+- hello [[
++ hello [[
+```
+
+```diff
+- hello {
++ hello {
+```
+
+```diff
+- hello ![
++ hello ![
+```
+
+```diff
+- hello :
++ hello :
+```
+
+```diff
+- hello !
++ hello !
+```
+
+```diff
+- hello ~
++ hello ~
+```
+
+```diff
+- hello ,
++ hello ,
+```
+
+```diff
+- hello .
++ hello .
+```
+
+```diff
+- hello ?
++ hello ?
+```
+
+```diff
+- hello * *
++ hello * *
+```
+
+```diff opts="inlineCode: false"
+- value `
++ value `
+```
+
+```diff opts="bold: false, italic: false, boldItalic: false"
+- hello *
++ hello *
+```
+
+```diff opts="links: false"
+- hello [
++ hello [
+```
+
+The backtick cases from *Extra streaming tests* likewise keep every character. What still
+changes is ordinary healing — closing an open construct, padding a short closer, trimming one
+trailing space — none of which is a drop:
+
+```diff
+- close ``
++ close ``
+```
+
+```diff
+- space `` ``
++ space `` ``
+```
+
+```diff
+- space `` `` code
++ space `` `` code
+```
+
+```diff
+- x `a` `
++ x `a` `
+```
+
+```diff
+- escape lone `~` (`
++ escape lone `~` (`
+```
+
+```diff
+- text*
++ text*
+```
+
+```diff
+- word_
++ word_
+```
+
+```diff
+- text123$
++ text123$
+```
+
+```diff
+- hello **bold
++ hello **bold**
+```
+
+```diff
+- space `` `
++ space `` ``
+```
+
+```diff
+- spaces ``  `
++ spaces ``  ``
+```
+
+```diff
+- space `` x `
++ space `` x ``
+```
+
+```diff
+- a `` ` `
++ a `` ` ``
+```
+
+```diff
+- space ``` `
++ space ``` ```
+```
+
+```diff
+- **bold.*
++ **bold.**
+```
+
+```diff
+- ~~strike.~
++ ~~strike.~~
 ```
 
 ---
