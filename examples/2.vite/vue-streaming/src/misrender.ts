@@ -15,8 +15,7 @@ export function getRemovedChars(prev: string, next: string): string {
     for (let j = 1; j <= n; j++) {
       if (prev.charCodeAt(i - 1) === next.charCodeAt(j - 1)) {
         dp[i][j] = dp[i - 1][j - 1] + 1
-      }
-      else {
+      } else {
         dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1])
       }
     }
@@ -30,11 +29,9 @@ export function getRemovedChars(prev: string, next: string): string {
       keep[i - 1] = 1
       i--
       j--
-    }
-    else if (dp[i - 1][j] >= dp[i][j - 1]) {
+    } else if (dp[i - 1][j] >= dp[i][j - 1]) {
       i--
-    }
-    else {
+    } else {
       j--
     }
   }
@@ -79,12 +76,7 @@ export function emptyStats(): MisrenderStats {
  * Compare two consecutive visible-text snapshots and accumulate mis-render stats.
  * Returns the updated previous-text (always `next`).
  */
-export function trackFrame(
-  stats: MisrenderStats,
-  prevVisible: string,
-  nextVisible: string,
-  startedAt: number,
-): string {
+export function trackFrame(stats: MisrenderStats, prevVisible: string, nextVisible: string, startedAt: number): string {
   stats.frames++
 
   if (prevVisible && nextVisible !== prevVisible) {
@@ -215,9 +207,7 @@ function serializeVisible(root: HTMLElement): string {
 
   // Normalize non-pre chunks; keep pre/code exact
   const normalized: Chunk[] = chunks.map((chunk) =>
-    chunk.pre
-      ? chunk
-      : { pre: false, text: chunk.text.replace(/\s+/g, ' ') },
+    chunk.pre ? chunk : { pre: false, text: chunk.text.replace(/\s+/g, ' ') }
   )
 
   // Drop leading / trailing empty-or-whitespace-only non-pre chunks

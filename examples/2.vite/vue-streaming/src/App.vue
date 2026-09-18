@@ -2,12 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { Markdown } from '@comark/vue'
 import { SAMPLE_MARKDOWN } from './sample'
-import {
-  emptyStats,
-  trackFrame,
-  visibleText,
-  type MisrenderStats,
-} from './misrender'
+import { emptyStats, trackFrame, visibleText, type MisrenderStats } from './misrender'
 
 const source = ref(SAMPLE_MARKDOWN.trimEnd())
 const streamed = ref('')
@@ -80,12 +75,7 @@ function scheduleSample() {
       if (!tracking.value) return
       const next = visibleText(previewEl.value)
       if (next === prevVisible.value && stats.value.frames > 0) return
-      prevVisible.value = trackFrame(
-        stats.value,
-        prevVisible.value,
-        next,
-        streamStartedAt.value,
-      )
+      prevVisible.value = trackFrame(stats.value, prevVisible.value, next, streamStartedAt.value)
     })
   })
 }
@@ -117,8 +107,7 @@ function stopStream(finalize = true) {
     setTimeout(() => {
       tracking.value = false
     }, 120)
-  }
-  else {
+  } else {
     tracking.value = false
   }
 }
@@ -191,18 +180,11 @@ onBeforeUnmount(() => {
 })
 
 function escapeHtml(text: string): string {
-  return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
+  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 }
 
 function escapePreview(text: string): string {
-  return text
-    .replace(/\\/g, '\\\\')
-    .replace(/\n/g, '\\n')
-    .replace(/\t/g, '\\t')
+  return text.replace(/\\/g, '\\\\').replace(/\n/g, '\\n').replace(/\t/g, '\\t')
 }
 
 /** Keep the last N lines of visible text for compact log display. */
@@ -238,8 +220,7 @@ function diffChars(from: string, to: string): { fromSegs: DiffSeg[]; toSegs: Dif
     for (let j = 1; j <= n; j++) {
       if (from.charCodeAt(i - 1) === to.charCodeAt(j - 1)) {
         dp[i][j] = dp[i - 1][j - 1] + 1
-      }
-      else {
+      } else {
         dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1])
       }
     }
@@ -255,12 +236,10 @@ function diffChars(from: string, to: string): { fromSegs: DiffSeg[]; toSegs: Dif
       toSegsRev.push({ text: to[j - 1]!, kind: 'same' })
       i--
       j--
-    }
-    else if (j > 0 && (i === 0 || dp[i][j - 1] >= dp[i - 1][j])) {
+    } else if (j > 0 && (i === 0 || dp[i][j - 1] >= dp[i - 1][j])) {
       toSegsRev.push({ text: to[j - 1]!, kind: 'add' })
       j--
-    }
-    else {
+    } else {
       fromSegsRev.push({ text: from[i - 1]!, kind: 'del' })
       i--
     }
@@ -293,7 +272,7 @@ function segsToHtml(segs: DiffSeg[]): string {
           run
             .split('')
             .map(() => '<span class="sp">·</span>')
-            .join(''),
+            .join('')
         )
       if (seg.kind === 'same') return body
       return `<mark class="hl-${seg.kind}">${body}</mark>`
@@ -343,8 +322,8 @@ function trimSegsToLastLines(segs: DiffSeg[], count: number): DiffSeg[] {
       <div>
         <h1>Streaming mis-render tracker</h1>
         <p class="sub">
-          Paste markdown, stream it character-by-character, and count every visible
-          character that later disappears (a mis-render flash).
+          Paste markdown, stream it character-by-character, and count every visible character that later disappears (a
+          mis-render flash).
         </p>
       </div>
       <div class="stats-strip">
@@ -416,12 +395,8 @@ function trimSegsToLastLines(segs: DiffSeg[], count: number): DiffSeg[] {
         >
           Stop
         </button>
-        <button @click="fillFull">
-          Show full
-        </button>
-        <button @click="resetAll">
-          Reset
-        </button>
+        <button @click="fillFull">Show full</button>
+        <button @click="resetAll">Reset</button>
       </div>
     </section>
 
@@ -445,8 +420,8 @@ function trimSegsToLastLines(segs: DiffSeg[], count: number): DiffSeg[] {
           placeholder="Paste or type markdown…"
         />
         <p class="hint">
-          Example: streaming <code>Hello *</code> then <code>Hello *da</code> can flash a
-          literal <code>*</code> before it becomes <code>&lt;strong&gt;da&lt;/strong&gt;</code>
+          Example: streaming <code>Hello *</code> then <code>Hello *da</code> can flash a literal <code>*</code> before
+          it becomes <code>&lt;strong&gt;da&lt;/strong&gt;</code>
           — that asterisk counts as a mis-render.
         </p>
       </section>
@@ -466,7 +441,6 @@ function trimSegsToLastLines(segs: DiffSeg[], count: number): DiffSeg[] {
           class="preview prose"
         >
           <Suspense>
-
             <Markdown
               :value="streamed"
               :streaming="isStreaming && streamingMode"
