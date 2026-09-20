@@ -39,7 +39,7 @@ export function searchProps(content: string, index = 0) {
       index += 1
     } else if (content[index] === '.') {
       index += 1
-      props.push(['class', searchUntil(' #.}')])
+      props.push(['class', searchUntil(' #.}', true)])
     } else if (content[index] === '#') {
       index += 1
       props.push(['id', searchUntil(' #.}')])
@@ -67,11 +67,15 @@ export function searchProps(content: string, index = 0) {
     }
   }
 
-  function searchUntil(str: string) {
+  function searchUntil(str: string, bracketAware = false) {
     const start = index
     while (index < content.length) {
       index += 1
       if (content[index] === '\\') index += 2
+      if (bracketAware && content[index] in bracketPairs) {
+        searchBracket(bracketPairs[content[index] as keyof typeof bracketPairs])
+        continue
+      }
       if (str.includes(content[index])) break
     }
     return content.slice(start, index)
