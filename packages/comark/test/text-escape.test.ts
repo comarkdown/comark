@@ -80,12 +80,13 @@ describe('text node escaping', () => {
     const md = await renderMarkdown(document)
     expect(md).toContain('Hello **World**')
     expect(md).not.toContain('\\*')
-    it('escapes literal text before colon-prefixed component names to prevent reparsing as an inline component', async () => {
-      // "word]:name" would reparse as a component if not escaped.
-      const text = 'word]:name'
-      const { node } = await roundTrip(text)
-      expect(node).toEqual(['p', {}, text])
-    })
+  })
+
+  it('escapes literal text before colon-prefixed component names to prevent reparsing as an inline component', async () => {
+    // "word]:name" would reparse as a component if not escaped.
+    const text = 'word]:name'
+    const { node } = await roundTrip(text)
+    expect(node).toEqual(['p', {}, text])
   })
 
   it('escapes literal text before colon-prefixed component names to prevent reparsing as an inline component', async () => {
