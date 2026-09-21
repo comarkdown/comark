@@ -114,8 +114,8 @@ catalog:
   postcss: ^8.5.17
 
   # React
-  react: ^19.2.7
-  react-dom: ^19.2.7
+  react: ^19.3.0
+  react-dom: ^19.3.0
 
   # Build tooling
   release-it: ^20.2.1
