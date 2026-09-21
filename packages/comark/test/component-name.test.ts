@@ -62,28 +62,28 @@ describe('component name validation', () => {
 
   describe('component slots', () => {
     it('does not throw on a malformed slot marker #[]', async () => {
-      const tree = await parseMarkdown('::Component\n#[]\n::')
-      expect(tree.nodes).toEqual([['Component', {}, ['p', {}, '#[]']]])
+      const tree = await parseMarkdown('::component\n#[]\n::')
+      expect(tree.nodes).toEqual([['component', {}, '#']])
     })
 
     it('does not throw on a malformed slot marker #{}', async () => {
-      const tree = await parseMarkdown('::Component\n#{}\n::')
-      expect(tree.nodes).toEqual([['Component', {}, ['p', {}, '#{}']]])
+      const tree = await parseMarkdown('::component\n#{}\n::')
+      expect(tree.nodes).toEqual([['component', {}, '#']])
+    })
+
+    it('does not throw on a malformed slot marker #name!', async () => {
+      const tree = await parseMarkdown('::component\n#slot!\n::')
+      expect(tree.nodes).toEqual([['component', {}, '#slot!']])
     })
 
     it('does not throw on a malformed slot marker #name!', async () => {
       const tree = await parseMarkdown('::Component\n#slot!\n::')
-      expect(tree.nodes).toEqual([['Component', {}, ['p', {}, '#slot!']]])
-    })
-
-    it('does not throw on a malformed slot marker #name!', async () => {
-      const tree = await parseMarkdown('::Component\n#slot!\n::')
-      expect(tree.nodes).toEqual([['Component', {}, ['p', {}, '#slot!']]])
+      expect(tree.nodes).toEqual([['component', {}, '#slot!']])
     })
 
     it('still parses a valid slot marker #name', async () => {
       const tree = await parseMarkdown('::Component\n#slot\nhello\n::')
-      expect(tree.nodes).toEqual([['Component', {}, ['template', { '#slot': 'true' }, ['p', {}, 'hello']]]])
+      expect(tree.nodes).toEqual([['component', {}, ['template', { name: 'slot' }, 'hello']]])
     })
   })
 })
