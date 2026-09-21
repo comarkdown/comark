@@ -58,7 +58,7 @@ catalog:
   # Types
   "@types/json-schema": ^7.0.15
   "@types/markdown-it": ^14.1.2
-  "@types/node": ^26.1.1
+  "@types/node": ^26.6.2
   "@types/react": ^19.2.17
   "@types/react-dom": ^19.2.3
   "@types/splitpanes": ^2.2.6
@@ -66,9 +66,9 @@ catalog:
   "@vercel/analytics": ^2.0.1
   "@vercel/speed-insights": ^2.0.0
   "@vitejs/plugin-react": ^6.0.3
-  "@vitejs/plugin-vue": ^6.0.7
-  "@vitest/browser": ^4.1.10
-  "@vitest/browser-playwright": ^4.1.10
+  "@vitejs/plugin-vue": ^6.0.9
+  "@vitest/browser": ^4.1.11
+  "@vitest/browser-playwright": ^4.1.11
   "@vue/compiler-core": 3.5.41
   "@vue/reactivity": 3.5.41
   "@vue/runtime-core": 3.5.41
@@ -97,7 +97,7 @@ catalog:
   js-yaml: ^5.2.1
   katex: ^0.17.0
   markdown-exit: 1.1.0-beta.2
-  "markdown-it": ^14.3.0
+  "markdown-it": ^14.3.2
   markdown-it-math: ^6.0.0
   minimark: 0.2.0
   mitata: ^1.0.34
@@ -109,8 +109,8 @@ catalog:
 
   # Linting
   oxfmt: ^0.58.0
-  oxlint: ^1.73.0
-  playwright: ^1.61.1
+  oxlint: ^1.83.0
+  playwright: ^1.63.0
   postcss: ^8.5.17
 
   # React
@@ -151,10 +151,10 @@ catalog:
 
   # CSS
   tailwindcss: ^4.3.2
-  tsx: ^4.23.0
+  tsx: ^4.23.15
   twoslash: ^0.3.9
   twoslash-cdn: ^0.3.9
-  typescript: ^6.0.0
+  typescript: ^6.0.3
 
   ufo: ^1.6.4
   unified: ^11.0.5
@@ -162,7 +162,7 @@ catalog:
   vitepress: ^1.6.4
 
   # Testing
-  vitest: ^4.1.10
+  vitest: ^4.1.11
   vitest-browser-svelte: ^3.0.0
 
   # Vue

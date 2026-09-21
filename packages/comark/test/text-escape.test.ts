@@ -93,7 +93,7 @@ describe('text node escaping', () => {
     const text = 'word]:name'
     const { md, node } = await roundTrip(text)
     // The colon should be escaped to prevent re-parsing as an inline component.
-    expect(md).toContain('\:name')
+    expect(md).toContain('\\:name')
     expect(node).toEqual(['p', {}, text])
   })
 })

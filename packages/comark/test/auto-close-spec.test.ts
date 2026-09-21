@@ -17,6 +17,7 @@ import {
   formatCompareMarkdown,
   sectionAwareMapOptions,
   toGenericAutoCloseOptions,
+  type SpecOptions,
 } from './spec-runner.mjs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -31,7 +32,7 @@ function sectionFromEnv(env: NodeJS.ProcessEnv = process.env): string | undefine
 }
 
 /** Map portable SPEC options onto comark's AutoCloseOptions. */
-function map(opts: Record<string, unknown>): Record<string, unknown> {
+function map(opts: SpecOptions): Record<string, unknown> {
   const generic = toGenericAutoCloseOptions(opts)
   return {
     ...generic,
