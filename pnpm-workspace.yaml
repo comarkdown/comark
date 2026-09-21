@@ -166,7 +166,7 @@ catalog:
   vitest-browser-svelte: ^3.0.0
 
   # Vue
-  vue: 3.5.41
+  vue: 3.5.43
   vue-json-pretty: ^2.6.0
   vue-router: ^5.0.4
   vue-tsc: ^3.3.7
