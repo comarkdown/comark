@@ -14,6 +14,12 @@ describe('parseProps', () => {
       "
     `)
 
+    expect(parseMarkdown('{.x-[dd}')).toMatchInlineSnapshot(`
+      "
+      class=x-[dd
+      "
+    `)
+
     expect(parseMarkdown('{.foo #my-id no-border}')).toMatchInlineSnapshot(`
       "
       class=foo
