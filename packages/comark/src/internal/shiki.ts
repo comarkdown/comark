@@ -5,17 +5,7 @@ import { createShikiPrimitive } from 'shiki'
 import { createJavaScriptRegexEngine } from 'shiki/engine/javascript'
 import { codeToHast, codeToTokens, getTokenStyleObject, stringifyTokenStyle } from 'shiki/core'
 import comarkLanguages from '../plugins/shiki/language-comark.ts'
-
-/**
- * Fragment languages: a name authors write in `{lang="…"}` mapped onto a real
- * grammar plus source that seeds the grammar state and is then discarded.
- * Named after the `@nuxtjs/mdc` conventions so `ts-type` and `vue-html` keep
- * working for sites migrating off it.
- */
-const GRAMMAR_CONTEXTS = new Map<string, { lang: string; grammarContextCode: string }>([
-  ['ts-type', { lang: 'typescript', grammarContextCode: 'let a:' }],
-  ['vue-html', { lang: 'vue', grammarContextCode: '<template>' }],
-])
+import { GRAMMAR_CONTEXTS, inlineCodeLanguage } from './inline-code-lang.ts'
 
 export interface ShikiCoreOptions {
   /**
@@ -248,16 +238,6 @@ function hastToNode(input: any): Node {
     result[i + 2] = hastToNode(children[i])
   }
   return result as Node
-}
-
-/**
- * Read the language an inline `<code>` declares. `lang` wins over `language`:
- * `lang` is what authors type, `language` is what the fence path already uses.
- */
-function inlineCodeLanguage(attrs: ElementNodeAttributes): string | undefined {
-  const raw = attrs?.lang ?? attrs?.language
-  if (typeof raw !== 'string') return undefined
-  return raw.trim() || undefined
 }
 
 /**
@@ -518,7 +498,7 @@ export async function highlightCodeBlocks(
     const attrs = el[1] as ElementNodeAttributes
     const code = el[2] as string
     const written = inlineCodeLanguage(attrs) as string
-    const context = GRAMMAR_CONTEXTS.get(written)
+    const context = GRAMMAR_CONTEXTS.get(written.toLowerCase())
     const lang = context?.lang ?? written
 
     // Unlike a `<pre>`, an inline `<code>` is not unambiguously code, since
