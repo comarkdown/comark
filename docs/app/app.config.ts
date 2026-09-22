@@ -18,6 +18,7 @@ export default defineAppConfig({
       { label: 'Plugins', sections: ['plugins'], link: 'section' as const },
       { label: 'Examples', sections: ['examples'], link: 'section' as const },
       { label: 'Playground', to: '/play' },
+      { label: 'Ecosystem', to: '/ecosystem' },
     ],
   },
 

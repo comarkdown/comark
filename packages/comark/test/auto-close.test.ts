@@ -125,9 +125,21 @@ describe('auto close multilines', () => {
 })
 
 describe('autoCloseMarkdown - Inline Syntax', () => {
-  it('does not close incomplete emphasis on earlier lines (inline heal is last-line only)', () => {
+  it('closes incomplete emphasis across soft-wrapped paragraph lines', () => {
+    // Soft wrap continues the same paragraph (SPEC: `**bold\r\nwith CRLF`).
     const input = 'First line **bold\nSecond line'
+    expect(autoCloseMarkdown(input)).toBe('First line **bold\nSecond line**')
+  })
+
+  it('does not close incomplete emphasis across a blank line', () => {
+    const input = 'First line **bold\n\nSecond line'
     expect(autoCloseMarkdown(input)).toBe(input)
+  })
+
+  it('closes incomplete emphasis across a list item soft-wrap', () => {
+    // SPEC Leave list markers alone: `- **text\nmore text` → close bold on the item.
+    const input = '- **text\nmore text'
+    expect(autoCloseMarkdown(input)).toBe('- **text\nmore text**')
   })
 
   it('should handle bold at the end of last line', () => {
@@ -676,9 +688,10 @@ describe('inline code spans as literal regions', () => {
     expect(autoCloseMarkdown(input)).toBe(expected)
   })
 
-  it('should nest closers when bold wraps an open code span', () => {
+  it('should close code first when bold wraps an open code span', () => {
+    // SPEC: outer emphasis closers go after the code span (`Text **bold `code` → …`code`**).
     const input = '**bold `code'
-    const expected = '**bold `code**`'
+    const expected = '**bold `code`**'
     expect(autoCloseMarkdown(input)).toBe(expected)
   })
 

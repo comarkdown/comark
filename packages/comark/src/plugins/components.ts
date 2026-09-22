@@ -336,7 +336,10 @@ const markdownItComarkBlock: PluginSimple = (md) => {
 
       const line = state.src.slice(start, state.eMarks[startLine])
 
-      const { name, props } = parseBlockParams(line.slice(1))
+      const slotParams = line.slice(1)
+      if (!isValidComponentName(slotParams.trimStart())) return false
+      const { name, props, remaining } = parseBlockParams(slotParams)
+      if (remaining) return false
 
       if (silent) return true
 
@@ -404,7 +407,7 @@ const markdownItComarkBlock: PluginSimple = (md) => {
   )
 }
 
-const ALLOWED_PREV_CHARS = new Set([' ', '\t', '\n', '*', '_', '['])
+const ALLOWED_PREV_CHARS = new Set([' ', '\t', '\n', '*', '_', '[', ']', '}', ')', '>'])
 
 const markdownItInlineComponent: PluginSimple = (md) => {
   md.inline.ruler.after('entity', 'comark_inline_component', (state, silent) => {

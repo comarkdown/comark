@@ -14,6 +14,12 @@ describe('parseProps', () => {
       "
     `)
 
+    expect(parseMarkdown('{.x-[dd}')).toMatchInlineSnapshot(`
+      "
+      class=x-[dd
+      "
+    `)
+
     expect(parseMarkdown('{.foo #my-id no-border}')).toMatchInlineSnapshot(`
       "
       class=foo
@@ -68,6 +74,37 @@ describe('parseProps', () => {
     ).toMatchInlineSnapshot(`
       "
       items=It\\'s me
+      "
+    `)
+  })
+
+  it('tailwind custom values', () => {
+    expect(parseMarkdown('{.bg-[#000]}')).toMatchInlineSnapshot(`
+      "
+      class=bg-[#000]
+      "
+    `)
+
+    // decimal `.` inside brackets must not be treated as a new class
+    expect(parseMarkdown('{.text-[1.5rem]}')).toMatchInlineSnapshot(`
+      "
+      class=text-[1.5rem]
+      "
+    `)
+
+    // nested brackets, e.g. an arbitrary calc() value
+    expect(parseMarkdown('{.w-[calc(100%-1rem)]}')).toMatchInlineSnapshot(`
+      "
+      class=w-[calc(100%-1rem)]
+      "
+    `)
+
+    // multiple custom-value classes plus a trailing id
+    expect(parseMarkdown('{.bg-[#000] .text-[14px] #my-id}')).toMatchInlineSnapshot(`
+      "
+      class=bg-[#000]
+      class=text-[14px]
+      id=my-id
       "
     `)
   })

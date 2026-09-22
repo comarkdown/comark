@@ -84,6 +84,7 @@ export default defineNuxtConfig({
       '/examples/**': { isr: 300 },
       '/kb': { isr: 300 },
       '/kb/**': { isr: 300 },
+      '/ecosystem': { isr: 300 },
     },
   },
 })
