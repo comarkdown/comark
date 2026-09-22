@@ -121,7 +121,6 @@ For a pre-parsed document, use `<MarkdownDocument>` directly instead of `<Markdo
 | `tag` | — | Wrapper is always `<div class="comark-content">` |
 | `prose` | — | `Prose*` resolution is automatic |
 | `unwrap` | `unwrap` prop / parse option | `<Markdown unwrap />` or parse `unwrap` |
-| `data` (frontmatter) | — | Frontmatter is on `value.frontmatter` |
 | — | `data` | Runtime values for data binding / `{{ }}` — not frontmatter |
 | `components` | `components` | Same purpose |
 | — | `componentsManifest` | New: dynamic async component resolver |
