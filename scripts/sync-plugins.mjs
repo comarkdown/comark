@@ -43,11 +43,13 @@ function collectPlugins(dir) {
 const comarkPlugins = collectPlugins(comarkPluginsDir)
 
 for (const pkg of frameworkPackages) {
+  const isAngularPackage = pkg === 'comark-angular'
   const distPluginsDir = join(packagesDir, pkg, 'dist', 'plugins')
   const srcPluginsDir = join(packagesDir, pkg, 'src', 'plugins')
   mkdirSync(distPluginsDir, { recursive: true })
 
   let created = 0
+  const angularExports = {}
 
   for (const name of comarkPlugins) {
     // Check if the comark plugin has a default export in its .d.ts
@@ -58,11 +60,22 @@ for (const pkg of frameworkPackages) {
       hasDefault = /^export default /m.test(content) || /export\s*\{[^}]*\bdefault\b/.test(content)
     }
 
-    const reexport =
-      `export * from 'comark/plugins/${name}';\n` +
-      (hasDefault ? `export { default } from 'comark/plugins/${name}';\n` : '')
+    let reexport = `export * from 'comark/plugins/${name}';\n`
 
-    if (existsSync(join(srcPluginsDir, `${name}.ts`))) {
+    if (hasDefault) {
+      if(isAngularPackage) {
+        const exportAlias = name.split('/').pop().replace(/-([a-z])/g, g => g[1].toUpperCase())
+        reexport += `export { default as ${exportAlias} } from 'comark/plugins/${name}';\n`
+      } else {
+        reexport += `export { default } from 'comark/plugins/${name}';\n`
+      }
+    }
+
+
+    const hasSrcFileOverride = existsSync(join(srcPluginsDir, `${name}.ts`))
+    const hasAngularDirOverride = isAngularPackage && existsSync(join(packagesDir, pkg, 'plugins', name, 'ng-package.json'))
+
+    if (hasSrcFileOverride || hasAngularDirOverride) {
       continue
     }
 
@@ -72,9 +85,30 @@ for (const pkg of frameworkPackages) {
       writeFileSync(outputPath, reexport)
       created++
     }
+
+    if (isAngularPackage) {
+      angularExports[`./plugins/${name}`] = {
+        "types": `./plugins/${name}.d.ts`,
+        "default": `./plugins/${name}.js`
+      }
+    }
   }
 
   if (created === 0) {
     console.log(`[sync-plugins] ${pkg}: all plugins already present`)
+  }
+
+  if (isAngularPackage && Object.keys(angularExports).length > 0) {
+    const distPkgJsonPath = join(packagesDir, pkg, 'dist', 'package.json')
+    if (existsSync(distPkgJsonPath)) {
+      const pkgJson = JSON.parse(readFileSync(distPkgJsonPath, 'utf-8'))
+
+      pkgJson.exports = {
+        ...pkgJson.exports,
+        ...angularExports
+      }
+
+      writeFileSync(distPkgJsonPath, JSON.stringify(pkgJson, null, 2))
+    }
   }
 }

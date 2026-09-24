@@ -1,59 +1,40 @@
-import { describe, expect, it, vi } from 'vitest'
-import { ChangeDetectorRef, Injector, runInInjectionContext } from '@angular/core'
+import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { parseMarkdown } from 'comark'
 import { isMarkdownDocument } from 'comark/utils'
 import type { MarkdownDocument } from 'comark'
 import { Markdown } from '../src/components/markdown.component.ts'
-
-/**
- * Angular's high-level Markdown component accepts a string or a pre-parsed
- * MarkdownDocument on `value`. When a document is passed, parsing is skipped and
- * the document is assigned for MarkdownDocument to render.
- *
- * The component resolves its dependencies with field-level `inject()`, so it has
- * to be instantiated inside an injection context providing a stub ChangeDetectorRef.
- */
-function createMarkdown(): Markdown {
-  const cdr = { markForCheck: vi.fn() }
-  const injector = Injector.create({
-    providers: [{ provide: ChangeDetectorRef, useValue: cdr }],
-  })
-  return runInInjectionContext(injector, () => new Markdown())
-}
+import { ComponentFixture, TestBed } from '@angular/core/testing'
 
 describe('Markdown value as MarkdownDocument', () => {
+  let component: Markdown;
+  let fixture: ComponentFixture<Markdown>;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [Markdown],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(Markdown);
+    component = fixture.componentInstance;
+    await fixture.whenStable();
+  });
+
   it('assigns a pre-parsed document without calling parse', async () => {
     const document = await parseMarkdown('# Hello **World**')
-    const component = createMarkdown()
 
-    component.value = document
-    component.ngOnChanges({
-      value: {
-        currentValue: document,
-        previousValue: undefined,
-        firstChange: true,
-        isFirstChange: () => true,
-      },
-    })
+    fixture.componentRef.setInput('value', document);
+    fixture.detectChanges();
+    await fixture.whenStable();
 
-    expect(isMarkdownDocument(component.value)).toBe(true)
+    expect(isMarkdownDocument(component.value())).toBe(true)
     expect(component.document).toBe(document)
     expect(component.document!.nodes[0]?.[0]).toBe('h1')
   })
 
   it('still parses markdown strings', async () => {
-    const component = createMarkdown()
-    component.value = 'Hello **world**'
-    component.ngOnChanges({
-      value: {
-        currentValue: 'Hello **world**',
-        previousValue: undefined,
-        firstChange: true,
-        isFirstChange: () => true,
-      },
-    })
+    fixture.componentRef.setInput('value', 'Hello **world**');
+    fixture.detectChanges();
 
-    // Wait for async parse
     await vi.waitFor(() => {
       expect(component.document).not.toBeNull()
     })
@@ -61,18 +42,11 @@ describe('Markdown value as MarkdownDocument', () => {
     expect(component.document!.nodes[0]?.[0]).toBe('p')
   })
 
-  it('accepts an empty document', () => {
+  it('accepts an empty document', async () => {
     const empty: MarkdownDocument = { nodes: [], frontmatter: {}, meta: {} }
-    const component = createMarkdown()
-    component.value = empty
-    component.ngOnChanges({
-      value: {
-        currentValue: empty,
-        previousValue: undefined,
-        firstChange: true,
-        isFirstChange: () => true,
-      },
-    })
+    fixture.componentRef.setInput('value', empty);
+    fixture.detectChanges();
+    await fixture.whenStable();
 
     expect(component.document).toBe(empty)
     expect(component.document!.nodes).toEqual([])

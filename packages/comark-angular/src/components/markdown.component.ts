@@ -1,17 +1,17 @@
 import {
   Component,
-  Input,
-  OnChanges,
-  SimpleChanges,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Type,
   inject,
+  input,
+  effect,
+  model,
 } from '@angular/core'
 import { createSerializedMarkdownParser } from 'comark'
 import type { ParserOptions, MarkdownDocument as MarkdownDocumentType } from 'comark'
 import { isMarkdownDocument } from 'comark/utils'
-import { MarkdownDocument } from './markdown-document.component.ts'
+import { MarkdownDocument } from './markdown-document.component'
 
 /**
  * High-level Markdown component that accepts raw markdown, parses it,
@@ -31,45 +31,45 @@ import { MarkdownDocument } from './markdown-document.component.ts'
     @if (document) {
       <comark-markdown-document
         [value]="document"
-        [components]="components"
-        [streaming]="streaming"
-        [caret]="caret"
-        [data]="data"
+        [components]="components()"
+        [streaming]="streaming()"
+        [caret]="caret()"
+        [data]="data()"
       />
     }
   `,
 })
-export class Markdown implements OnChanges {
+export class Markdown {
   /** The markdown content to parse and render, or a pre-parsed MarkdownDocument */
-  @Input() value?: string | MarkdownDocumentType
+  readonly value = input<string | MarkdownDocumentType>()
 
   /** Parser options (excluding plugins) */
-  @Input() options: Omit<ParserOptions, 'plugins'> = {}
+  readonly options = model<Omit<ParserOptions, 'plugins'>>({})
 
   /** Additional plugins to use */
-  @Input() plugins: ParserOptions['plugins'] = []
+  readonly plugins = model<ParserOptions['plugins']>([])
 
   /**
    * Strip wrapper tags from the top level of the document — shorthand for
    * `options.unwrap`. `true` unwraps `<p>`; a space-separated string or array
    * unwraps the listed tags.
    */
-  @Input() unwrap: boolean | string | string[] = false
+  readonly unwrap = input<boolean | string | string[]>(false)
 
   /** Custom component mappings for element tags */
-  @Input() components: Record<string, Type<any>> = {}
+  readonly components = input<Record<string, Type<any>>>({})
 
   /** Enable streaming mode */
-  @Input() streaming: boolean = false
+  readonly streaming = input<boolean>(false)
 
   /** If document has a <!-- more --> comment, only render content before it */
-  @Input() summary: boolean = false
+  readonly summary = input<boolean>(false)
 
   /** Append a caret to the last text node (for streaming UIs) */
-  @Input() caret: boolean | { class: string } = false
+  readonly caret = input<boolean | { class: string }>(false)
 
   /** Additional data to pass to the renderer for :binding resolution */
-  @Input() data: Record<string, unknown> = {}
+  readonly data = input<Record<string, unknown>>({})
 
   document: MarkdownDocumentType | null = null
 
@@ -77,41 +77,49 @@ export class Markdown implements OnChanges {
 
   private cdr = inject(ChangeDetectorRef)
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['options'] || changes['plugins'] || changes['unwrap']) {
-      this.serializedParse = createSerializedMarkdownParser({
-        ...this.options,
-        ...(this.unwrap ? { unwrap: this.unwrap } : {}),
-        plugins: this.plugins,
-      })
-    }
-    if (
-      changes['value'] ||
-      changes['options'] ||
-      changes['plugins'] ||
-      changes['unwrap'] ||
-      changes['streaming'] ||
-      changes['summary']
-    ) {
-      this.parseMarkdown()
+  /**
+   * Compose the parse options consumed by the serialized parser.
+   *
+   * Subclasses (e.g. `defineMarkdownComponent`) override this to merge
+   * config-level defaults without mutating the `options`/`plugins` inputs.
+   */
+  protected getParserOptions(): ParserOptions {
+    return {
+      ...this.options(),
+      ...(this.unwrap() ? { unwrap: this.unwrap() } : {}),
+      plugins: this.plugins(),
     }
   }
 
+  private readonly serializedParseEffect = effect(() => {
+    this.serializedParse = createSerializedMarkdownParser(this.getParserOptions())
+  });
+
+  private readonly parseMarkdownEffect = effect(() => {
+    const value = this.value()
+    if (value === undefined || value === null) {
+      this.document = null
+      return
+    }
+
+    this.parseMarkdown()
+  })
+
   private parseMarkdown(): void {
     // Pre-parsed document — skip parsing and render directly
-    if (isMarkdownDocument(this.value)) {
-      this.document = this.value
+    if (isMarkdownDocument(this.value())) {
+      this.document = this.value() as MarkdownDocumentType
       this.cdr.markForCheck()
       return
     }
 
-    let source = (this.value as string | undefined) ?? ''
-    if (this.summary) {
+    let source = (this.value() as string | undefined) ?? ''
+    if (this.summary()) {
       source = source.split('<!-- more -->')[0] || ''
     }
     source = source.trim()
 
-    this.serializedParse(source, { streaming: this.streaming }).then((result) => {
+    this.serializedParse(source, { streaming: this.streaming() }).then((result) => {
       this.document = result
       this.cdr.markForCheck()
     })

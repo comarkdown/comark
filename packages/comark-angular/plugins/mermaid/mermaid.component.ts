@@ -1,6 +1,5 @@
 import {
   Component,
-  Input,
   OnChanges,
   OnInit,
   OnDestroy,
@@ -9,6 +8,7 @@ import {
   ChangeDetectorRef,
   ElementRef,
   inject,
+  input,
 } from '@angular/core'
 import { renderMermaidSVG, THEMES, type DiagramColors } from 'beautiful-mermaid'
 import type { ThemeNames } from 'comark/plugins/mermaid'
@@ -29,18 +29,17 @@ import type { ThemeNames } from 'comark/plugins/mermaid'
   template: '',
 })
 export class Mermaid implements OnInit, OnChanges, OnDestroy {
-  @Input({ required: true }) content!: string
-  @Input() class: string = ''
-  @Input() height: string = 'auto'
-  @Input() width: string = '100%'
-  @Input() theme?: ThemeNames | DiagramColors
-  @Input() themeDark?: ThemeNames | DiagramColors
+  readonly content = input.required<string>()
+  readonly class = input<string>('')
+  readonly height = input<string>('auto')
+  readonly width = input<string>('100%')
+  readonly theme = input<ThemeNames | DiagramColors>()
+  readonly themeDark = input<ThemeNames | DiagramColors>()
 
   private isDark = false
   private observer?: MutationObserver
 
   private elementRef = inject(ElementRef)
-  private cdr = inject(ChangeDetectorRef)
 
   ngOnInit(): void {
     if (typeof document === 'undefined') return
@@ -75,7 +74,7 @@ export class Mermaid implements OnInit, OnChanges, OnDestroy {
   }
 
   private getTheme(): DiagramColors {
-    const themeProp = this.isDark ? this.themeDark : this.theme
+    const themeProp = this.isDark ? this.themeDark() : this.theme()
 
     let resolvedTheme: DiagramColors | undefined
     if (typeof themeProp === 'string') {
@@ -102,14 +101,14 @@ export class Mermaid implements OnInit, OnChanges, OnDestroy {
     }
 
     const wrapper = document.createElement('div')
-    wrapper.className = `mermaid ${this.class}`
+    wrapper.className = `mermaid ${this.class()}`
     wrapper.style.display = 'flex'
     wrapper.style.justifyContent = 'center'
-    wrapper.style.width = this.width
-    wrapper.style.height = this.height
+    wrapper.style.width = this.width()
+    wrapper.style.height = this.height()
 
     try {
-      const svg = renderMermaidSVG(this.content, this.getTheme())
+      const svg = renderMermaidSVG(this.content(), this.getTheme())
       wrapper.innerHTML = svg
     } catch (err) {
       wrapper.dataset['error'] = err instanceof Error ? err.message : 'Failed to render diagram'

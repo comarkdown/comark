@@ -5,7 +5,7 @@ import { bootstrapApplication } from '@angular/platform-browser'
 import { renderApplication } from '@angular/platform-server'
 import { parseMarkdown, type MarkdownDocument as MarkdownDocumentType } from 'comark'
 import { MarkdownDocument } from '../src/components/markdown-document.component.ts'
-import { If } from '../src/plugins/binding.ts'
+import { If } from '../plugins/binding/index.js'
 import { nestedIfCases, nestedIfMarkdown } from '../../../test/fixtures/if'
 
 let probeInstances = 0

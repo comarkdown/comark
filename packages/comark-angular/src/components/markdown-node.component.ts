@@ -1,7 +1,6 @@
 import {
   Component,
   ComponentRef,
-  Input,
   ChangeDetectionStrategy,
   ViewContainerRef,
   ElementRef,
@@ -14,6 +13,7 @@ import {
   createComponent,
   reflectComponentType,
   inject,
+  input,
 } from '@angular/core'
 import type { ElementNode, Node as MarkdownAstNode, NodeRenderData } from 'comark'
 import { resolveIfWrapper, selectIfBranch, shouldRenderIf, type IfProps } from 'comark/plugins/binding'
@@ -95,16 +95,16 @@ const VOID_ELEMENTS = new Set([
 })
 export class MarkdownNode implements OnChanges {
   /** The Comark AST node to render */
-  @Input({ required: true }) node!: MarkdownAstNode
+  readonly node = input.required<MarkdownAstNode>()
 
   /** Custom component mappings */
-  @Input() components: Record<string, Type<any>> = {}
+  readonly components = input<Record<string, Type<any>>>({})
 
   /** Render data for :binding resolution */
-  @Input() renderData: NodeRenderData = { frontmatter: {}, meta: {}, data: {}, props: {} }
+  readonly renderData = input<NodeRenderData>({ frontmatter: {}, meta: {}, data: {}, props: {} })
 
   /** Parent node (for context like `pre` tag detection) */
-  @Input() parent?: MarkdownAstNode
+  readonly parent = input<MarkdownAstNode>()
 
   private vcr = inject(ViewContainerRef)
   private renderer = inject(Renderer2)
@@ -124,41 +124,41 @@ export class MarkdownNode implements OnChanges {
       hostEl.removeChild(hostEl.firstChild)
     }
 
-    if (this.node === undefined || this.node === null) return
+    if (this.node() === undefined || this.node() === null) return
 
     // Text node
-    if (typeof this.node === 'string') {
-      const text = this.renderer.createText(this.node)
+    if (typeof this.node() === 'string') {
+      const text = this.renderer.createText(this.node() as string)
       this.renderer.appendChild(hostEl, text)
       return
     }
 
     // Element node
-    if (Array.isArray(this.node)) {
-      const tag = getTag(this.node)
+    if (Array.isArray(this.node())) {
+      const tag = getTag(this.node())
       if (!tag) return
 
-      const nodeProps = getProps(this.node)
-      const children = getChildren(this.node)
+      const nodeProps = getProps(this.node())
+      const children = getChildren(this.node())
 
       // Resolve custom component
       let customComponent: Type<any> | undefined
 
-      if ((this.parent as ElementNode | undefined)?.[0] !== 'pre') {
+      if ((this.parent() as ElementNode | undefined)?.[0] !== 'pre') {
         if (nodeProps.as) {
-          customComponent = resolveComponent(nodeProps.as, this.components)
+          customComponent = resolveComponent(nodeProps.as, this.components())
         }
         if (!customComponent) {
-          customComponent = resolveComponent(tag, this.components)
+          customComponent = resolveComponent(tag, this.components())
         }
       }
 
       // Resolve attributes (:binding support)
-      const resolved = resolveAttributes(nodeProps, this.renderData, { parseJson: true })
+      const resolved = resolveAttributes(nodeProps, this.renderData(), { parseJson: true })
 
       // Build childrenRenderData - only shadow parent scope when element has own attrs
       const hasOwnAttrs = Object.keys(resolved).length > 0
-      const childrenRenderData: NodeRenderData = hasOwnAttrs ? { ...this.renderData, props: resolved } : this.renderData
+      const childrenRenderData: NodeRenderData = hasOwnAttrs ? { ...this.renderData(), props: resolved } : this.renderData()
 
       if ((customComponent as StructuralComponent | undefined)?.ɵcomarkIf) {
         this.renderIf(resolved, children, childrenRenderData)
@@ -311,7 +311,7 @@ export class MarkdownNode implements OnChanges {
 
     // Pass __node if the component accepts it
     if (inputNames.has('__node')) {
-      componentRef.setInput('__node', this.node)
+      componentRef.setInput('__node', this.node())
     }
 
     // Render non-default named slots into the component's host element
@@ -354,12 +354,12 @@ export class MarkdownNode implements OnChanges {
 
         // Resolve custom component for this child
         let customComponent: Type<any> | undefined
-        if ((this.node as ElementNode)?.[0] !== 'pre') {
+        if ((this.node() as ElementNode)?.[0] !== 'pre') {
           if (childProps.as) {
-            customComponent = resolveComponent(childProps.as, this.components)
+            customComponent = resolveComponent(childProps.as, this.components())
           }
           if (!customComponent) {
-            customComponent = resolveComponent(childTag, this.components)
+            customComponent = resolveComponent(childTag, this.components())
           }
         }
 
@@ -368,9 +368,9 @@ export class MarkdownNode implements OnChanges {
           try {
             componentRef = this.vcr.createComponent(MarkdownNode)
             componentRef.setInput('node', child)
-            componentRef.setInput('components', this.components)
+            componentRef.setInput('components', this.components())
             componentRef.setInput('renderData', renderData)
-            componentRef.setInput('parent', this.node)
+            componentRef.setInput('parent', this.node())
             componentRef.changeDetectorRef.detectChanges()
 
             // Move the component's host element into the parent

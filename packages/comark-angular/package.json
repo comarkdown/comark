@@ -1,6 +1,7 @@
 {
   "name": "@comark/angular",
   "version": "0.7.0",
+  "sideEffects": false,
   "description": "Angular renderer for Comark. Render Markdown with components at runtime, with streaming support for AI output.",
   "keywords": [
     "ai",
@@ -20,47 +21,22 @@
     "type": "git",
     "url": "git+https://github.com/comarkdown/comark.git"
   },
-  "files": [
-    "dist"
-  ],
-  "type": "module",
-  "sideEffects": false,
-  "main": "./dist/index.js",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": "./dist/index.js",
-    "./plugins/*": "./dist/plugins/*.js",
-    "./utils": "./dist/utils/index.js"
-  },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "directory": "dist"
   },
   "scripts": {
     "stub": "node ../../scripts/stub.mjs",
-    "build": "ngc -p tsconfig.json && ngc -p tsconfig.json --removeComments true --declaration false && node scripts/verify-build.mjs",
-    "dev": "ngc -p tsconfig.json --watch",
-    "test": "vitest run",
+    "ng": "ng",
+    "build": "ng build",
+    "dev": "ng build --watch --configuration development",
+    "test": "ng test",
     "prepack": "pnpm run build",
     "release": "release-it"
   },
-  "dependencies": {
-    "comark": "workspace:*"
-  },
-  "devDependencies": {
-    "@angular/common": "^22.1.7",
-    "@angular/compiler": "catalog:",
-    "@angular/compiler-cli": "catalog:",
-    "@angular/core": "^22.1.7",
-    "@angular/platform-browser": "^22.1.7",
-    "@angular/platform-server": "catalog:",
-    "typescript": "catalog:",
-    "vitest": "catalog:"
-  },
   "peerDependencies": {
-    "@angular/common": ">=17.0.0 <22.0.0",
-    "@angular/core": ">=17.0.0 <22.0.0",
-    "@angular/platform-browser": ">=17.0.0 <22.0.0",
+    "@angular/common": ">=19.0.0 <23.0.0",
+    "@angular/core": ">=19.0.0 <23.0.0",
     "beautiful-mermaid": "catalog:",
     "katex": "catalog:",
     "shiki": "catalog:"
@@ -75,5 +51,27 @@
     "katex": {
       "optional": true
     }
+  },
+  "dependencies": {
+    "comark": "workspace:*",
+    "tslib": "^2.3.0"
+  },
+  "devDependencies": {
+    "@angular-devkit/build-angular": "catalog:",
+    "@angular/cli": "catalog:",
+    "@angular/common": "catalog:",
+    "@angular/compiler": "catalog:",
+    "@angular/compiler-cli": "catalog:",
+    "@angular/core": "catalog:",
+    "@angular/platform-browser": "catalog:",
+    "@angular/platform-browser-dynamic": "catalog:",
+    "@angular/platform-server": "catalog:",
+    "@angular/router": "catalog:",
+    "happy-dom": "^20.14.5",
+    "ng-packagr": "catalog:",
+    "rxjs": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:",
+    "zone.js": "catalog:"
   }
 }

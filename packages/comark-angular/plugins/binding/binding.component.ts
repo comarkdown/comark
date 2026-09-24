@@ -1,12 +1,12 @@
 import {
   Component,
-  Input,
   ChangeDetectionStrategy,
   ElementRef,
   Renderer2,
   OnChanges,
   SimpleChanges,
   inject,
+  input,
 } from '@angular/core'
 
 /**
@@ -25,12 +25,12 @@ export class Binding implements OnChanges {
    * Resolved value for the binding, injected by the Comark renderer after
    * looking up the `:value` dot-path against the ambient render context.
    */
-  @Input() value?: unknown
+  readonly value = input<unknown>()
 
   /**
    * Fallback rendered when `value` is `undefined` or `null`.
    */
-  @Input() defaultValue?: string
+  readonly defaultValue = input<string>()
 
   private elementRef = inject(ElementRef)
   private renderer = inject(Renderer2)
@@ -41,7 +41,7 @@ export class Binding implements OnChanges {
       hostEl.removeChild(hostEl.firstChild)
     }
 
-    const text = this.value !== undefined && this.value !== null ? String(this.value) : (this.defaultValue ?? '')
+    const text = this.value() !== undefined && this.value() !== null ? String(this.value()) : (this.defaultValue() ?? '')
 
     const textNode = this.renderer.createText(text)
     this.renderer.appendChild(hostEl, textNode)
