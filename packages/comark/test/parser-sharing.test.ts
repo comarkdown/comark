@@ -48,6 +48,30 @@ describe('parser sharing', () => {
     expect(closureUses - before).toBe(5)
   })
 
+  it('evicts the least-recently-used shared instance once the cache is full', () => {
+    // A dedicated plugin so prior tests in this file cannot keep this key warm.
+    let markedUses = 0
+    const markedMdPlugin = (() => {
+      markedUses++
+    }) as unknown as MarkdownItPlugin
+    const markedPlugin = defineComarkPlugin(() => ({
+      name: 'sharing-evict-mark',
+      markdownItPlugins: [markedMdPlugin],
+    }))()
+
+    createMarkdownParser({ plugins: [markedPlugin] })
+    expect(markedUses).toBe(1)
+
+    // Capacity is 32. Flood with unique closures so the marked entry ages out;
+    // a later reuse must rebuild instead of hitting the cache.
+    for (let i = 0; i < 32; i++) {
+      createMarkdownParser({ plugins: [closurePlugin()] })
+    }
+
+    createMarkdownParser({ plugins: [markedPlugin] })
+    expect(markedUses).toBe(2)
+  })
+
   it('does not share an instance between linkify settings', async () => {
     const withLinkify = await createMarkdownParser({ linkify: true })('See https://comark.dev for more')
     const withoutLinkify = await createMarkdownParser({ linkify: false })('See https://comark.dev for more')

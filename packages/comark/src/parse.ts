@@ -35,6 +35,9 @@ export { defineComarkPlugin } from './utils/helpers.ts'
 // Constructing a `MarkdownExit` instance is expensive because `LinkifyIt`
 // compiles its regexes in the constructor, and a configured instance holds no
 // per-parse state, so parsers built from the same options share one.
+// Bounded LRU: a caller that keeps minting fresh markdown-it plugin closures
+// (math/mermaid/binding factories) must not grow this without limit.
+const MAX_SHARED_PARSERS = 32
 let nextPluginId = 0
 const pluginIds = new WeakMap<MarkdownExitPlugin, number>()
 const sharedParsers = new Map<string, MarkdownExit>()
@@ -115,9 +118,17 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
   ].join(',')
 
   let parser = sharedParsers.get(key)
-  if (!parser) {
+  if (parser) {
+    // Touch for LRU: Map iteration order is insertion order.
+    sharedParsers.delete(key)
+    sharedParsers.set(key, parser)
+  } else {
     parser = new MarkdownExit({ linkify }).enable(['table', 'strikethrough'])
     for (const fn of mdPlugins) parser.use(fn)
+    if (sharedParsers.size >= MAX_SHARED_PARSERS) {
+      const oldestKey = sharedParsers.keys().next().value
+      if (oldestKey !== undefined) sharedParsers.delete(oldestKey)
+    }
     sharedParsers.set(key, parser)
   }
 
