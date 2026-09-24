@@ -134,7 +134,8 @@ const IMPLICIT_ATTRS: Record<string, { drop?: string[]; classBlocklist?: string[
   // `style` comes from render-time plugins (e.g. shiki / rangi) and has no
   // markdown form. `class` is handled specially in userBlockAttrs because
   // highlighters merge their injected classes with the user's class — we need
-  // to strip just the highlighter portion.
+  // to strip just the highlighter portion. Highlighted inline `<code>` goes
+  // through the same `class` handling, with no implicit attrs of its own.
   pre: { drop: ['language', 'filename', 'highlights', 'meta', 'style'] },
 }
 
@@ -146,22 +147,25 @@ const IMPLICIT_ATTRS: Record<string, { drop?: string[]; classBlocklist?: string[
  */
 export function userBlockAttrs(tag: string, attributes: Record<string, unknown>): Record<string, unknown> {
   const rule = IMPLICIT_ATTRS[tag]
-  if (!rule) return { ...attributes }
+  // A highlighter takes over the `class` of a fenced block's `<pre>` and of
+  // inline `<code>` alike, so both need the class handling below.
+  const highlighted = tag === 'pre' || tag === 'code'
+  if (!rule && !highlighted) return { ...attributes }
 
   const result: Record<string, unknown> = {}
   for (const [key, value] of Object.entries(attributes)) {
-    if (rule.drop?.includes(key)) continue
-    if (key === 'class' && rule.classBlocklist && typeof value === 'string') {
+    if (rule?.drop?.includes(key)) continue
+    if (key === 'class' && rule?.classBlocklist && typeof value === 'string') {
       const remaining = value
         .split(/\s+/)
-        .filter((c) => c && !rule.classBlocklist!.includes(c))
+        .filter((c) => c && !rule!.classBlocklist!.includes(c))
         .join(' ')
       if (remaining) result[key] = remaining
       continue
     }
     if (
       key === 'class' &&
-      tag === 'pre' &&
+      highlighted &&
       typeof value === 'string' &&
       (value.startsWith('shiki') || value.startsWith('shj'))
     ) {

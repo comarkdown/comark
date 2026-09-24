@@ -215,7 +215,7 @@ const inlineSyntax = /[\\`*_<&~[\]{:]/g
 
 // Characters after which a `:` can start an inline component (`:name`).
 // Mirrors ALLOWED_PREV_CHARS in the components plugin.
-const COLON_PREV_CHARS = new Set([' ', '\t', '\n', '*', '_', '['])
+const COLON_PREV_CHARS = new Set([' ', '\t', '\n', '*', '_', '[', ']', '}', ')', '>'])
 
 /**
  * Escape characters in a markdown text node that would otherwise be

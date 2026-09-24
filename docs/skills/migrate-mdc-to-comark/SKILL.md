@@ -21,7 +21,8 @@ The migration has two parts: **Core Package** (programmatic API) and **Nuxt Modu
 - **All-in-one**: `<MDC :value>` → `<Markdown :value>`
 - **Slots**: `<MDCSlot />` → native `<slot />`
 - **Plugins**: global `nuxt.config` → per-component `defineMarkdownComponent({ plugins })`
-- **Markdown files**: no changes needed
+- **Binding**: `{{ path }}` via opt-in `binding()` plugin + render-time `data` prop (namespaced paths: `data.`, `frontmatter.`, `meta.`, `props.`)
+- **Markdown files**: component syntax unchanged; update binding paths if you used bare MDC names
 
 ## Core Package
 
@@ -77,7 +78,7 @@ The `unified`/`remark`/`rehype` pipeline is replaced by Comark's own lighter plu
 | Excerpt / Summary | `result.excerpt` (built-in) | `summary()` plugin → `document.meta.summary` |
 | Emoji | `remark-emoji` (enabled by default) | `emoji()` plugin (opt-in) |
 
-Available plugins: `comark/plugins/toc`, `comark/plugins/shiki`, `comark/plugins/emoji`, `comark/plugins/task-list`, `comark/plugins/summary`, `comark/plugins/security`, `comark/plugins/alert`, `comark/plugins/math`, `comark/plugins/mermaid`, `comark/plugins/punctuation`
+Available plugins include: `toc`, `shiki`, `emoji`, `task-list`, `summary`, `security`, `alert`, `math`, `mermaid`, `punctuation`, `binding`. Prefer framework paths in apps (`@comark/nuxt/plugins/*` or `@comark/vue/plugins/*`); use `comark/plugins/*` only for bare `parseMarkdown()`.
 
 ## Nuxt Module
 
@@ -119,7 +120,8 @@ For a pre-parsed document, use `<MarkdownDocument>` directly instead of `<Markdo
 | `data` | — | Frontmatter is in `value.frontmatter` |
 | `tag` | — | Wrapper is always `<div class="comark-content">` |
 | `prose` | — | `Prose*` resolution is automatic |
-| `unwrap` | — | Use `autoUnwrap` in parse options |
+| `unwrap` | `unwrap` prop / parse option | `<Markdown unwrap />` or parse `unwrap` |
+| — | `data` | Runtime values for data binding / `{{ }}` — not frontmatter |
 | `components` | `components` | Same purpose |
 | — | `componentsManifest` | New: dynamic async component resolver |
 | — | `streaming` | New: streaming mode |
@@ -141,8 +143,8 @@ Replaces global `mdc: { ... }` config. Define reusable components with their own
 
 ```typescript
 import { defineMarkdownComponent } from '@comark/vue'
-import shiki from 'comark/plugins/shiki'
-import toc from 'comark/plugins/toc'
+import shiki from '@comark/nuxt/plugins/shiki'
+import toc from '@comark/nuxt/plugins/toc'
 import githubLight from '@shikijs/themes/github-light'
 import githubDark from '@shikijs/themes/github-dark'
 
@@ -185,9 +187,29 @@ These are **only available with Nuxt UI**. Without it, use `::callout{icon="..."
 
 ## Component Syntax
 
-The MDC block and inline component syntax is identical, so no changes are needed in `.md` files.
+The MDC block and inline component syntax is identical, so no changes are needed in `.md` files for components, slots, and attributes.
 
-## Unsupported Features
+## Binding and data passing
 
-- **Binding syntax** (`{{ variable }}`): not supported, rendered as plain text
-- **Props binding / data passing**: no equivalent for `parseMarkdown(md, { data: { ... } })`
+Supported via the binding plugin + render-time `data` prop. Differences from MDC:
+
+1. **Opt-in**: register `binding()` and the framework `Binding` component.
+2. **Namespaced paths**: `{{ data.user.name }}`, `{{ frontmatter.title }}`, not bare `{{ user.name }}`.
+3. **Data at render time**: pass `:data="{ user, count }"` on `<Markdown>` / `<MarkdownDocument>`. Do **not** pass `{ data }` into `parseMarkdown`.
+
+```vue
+<script setup lang="ts">
+import binding, { Binding } from '@comark/nuxt/plugins/binding'
+</script>
+
+<template>
+  <Markdown
+    :value="markdown"
+    :plugins="[binding()]"
+    :components="{ Binding }"
+    :data="{ user: { name: 'Ada' }, count: 3 }"
+  />
+</template>
+```
+
+`:prefixed` component props (`:label="data.user.name"`) resolve without the binding plugin. Use the plugin for inline `{{ path }}` text (and renderer `If` for `::if`).

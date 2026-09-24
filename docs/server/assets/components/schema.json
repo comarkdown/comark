@@ -63,7 +63,7 @@
           "description": "A brief description or details about the facility/feature"
         }
       ],
-      "x-example": "::facility{icon=\"i-heroicons-wifi\"}\n#title\nHigh-Speed WiFi\n#description\nComplimentary high-speed internet access throughout the facility\n::",
+      "x-example": "::facility{icon=\"i-lucide-wifi\"}\n#title\nHigh-Speed WiFi\n#description\nComplimentary high-speed internet access throughout the facility\n::",
       "type": "object",
       "required": ["icon"],
       "properties": {}

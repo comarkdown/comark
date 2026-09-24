@@ -1,10 +1,15 @@
-import type { ElementNode, Node, MarkdownDocument } from 'comark'
+import type { ElementNode, ElementNodeAttributes, Node, MarkdownDocument } from 'comark'
 import type { ShjLanguage, ShjLanguages, ShjTheme, ShjThemePair, ShjToken, ShjTokenized } from 'rangi'
 import { tokenize } from 'rangi'
+import { languages as rangiBuiltinLanguages } from 'rangi/languages'
 import { dark as defaultDark, defaultTheme } from 'rangi/themes'
+import { GRAMMAR_CONTEXTS, inlineCodeLanguage } from '../internal/inline-code-lang.ts'
 import { defineComarkPlugin } from '../utils/helpers.ts'
 import { visitAsync } from '../utils/index.ts'
 import { comarkLanguages } from './rangi/language-comark.ts'
+
+/** Bundled rangi language + alias keys, plus plain text fallbacks. */
+const RANGI_KNOWN_LANGS = new Set(Object.keys(rangiBuiltinLanguages))
 
 /**
  * Languages accepted by the plugin.
@@ -75,6 +80,15 @@ export interface RangiOptions {
    * @default false
    */
   preStyles?: boolean
+
+  /**
+   * Whether to highlight inline code that declares a language, e.g.
+   * `` `Ref<T>`{lang="ts-type"} ``. `lang` wins over `language`. Inline code
+   * does not wrap lines, so `lineNumbers` and `preStyles` do not apply to it.
+   *
+   * @default true
+   */
+  inlineCode?: boolean
 }
 
 export interface CodeBlockAttributes {
@@ -120,6 +134,48 @@ export function tokenizeCode(
     lang: language,
     languages: resolveLanguages(languages),
   })
+}
+
+/**
+ * Whether `lang` is a real highlighter grammar (bundled, Comark, or custom),
+ * as opposed to a natural-language `lang` attribute like `fr`.
+ */
+function isHighlightableLanguage(lang: string, languages?: Record<string, unknown>): boolean {
+  if (languages && Object.prototype.hasOwnProperty.call(languages, lang)) return true
+  if (Object.prototype.hasOwnProperty.call(comarkLanguages, lang)) return true
+  return RANGI_KNOWN_LANGS.has(lang)
+}
+
+/**
+ * Tokenize `code`, optionally after a discarded grammar-context prefix so
+ * fragment languages (`ts-type`, `vue-html`) sit in the right lexer state.
+ */
+function tokenizeInlineCode(
+  code: string,
+  language: RangiLanguage,
+  grammarContextCode: string | undefined,
+  languages?: Record<string, unknown>
+): ShjTokenized[] {
+  if (!grammarContextCode) return tokenizeCode(code, language, languages)
+
+  const tokens = tokenizeCode(grammarContextCode + code, language, languages)
+  let remain = grammarContextCode.length
+  const out: ShjTokenized[] = []
+  for (let i = 0; i < tokens.length; i++) {
+    const tok = tokens[i]
+    if (remain <= 0) {
+      out.push(tok)
+      continue
+    }
+    if (tok.text.length <= remain) {
+      remain -= tok.text.length
+      continue
+    }
+    const text = tok.text.slice(remain)
+    out.push(tok.type ? { type: tok.type, text } : { text })
+    remain = 0
+  }
+  return out
 }
 
 function isThemePair(theme: ShjTheme | ShjThemePair): theme is ShjThemePair {
@@ -253,10 +309,19 @@ function buildPreStyle(light?: ShjTheme, dark?: ShjTheme, dual?: boolean): strin
 }
 
 /**
- * Apply rangi syntax highlighting to every `<pre><code>` block.
+ * Apply rangi syntax highlighting to every `<pre><code>` block and, when
+ * enabled, to inline `<code>` that declares a language.
  */
 export async function rangiCodeBlocks(tree: MarkdownDocument, options: RangiOptions = {}): Promise<MarkdownDocument> {
-  const { lineNumbers = false, classPrefix = 'shj', languages, theme, preStyles = false } = options
+  const {
+    lineNumbers = false,
+    classPrefix = 'shj',
+    languages,
+    theme,
+    preStyles = false,
+    inlineCode: inlineCodeOption,
+  } = options
+  const inlineEnabled = inlineCodeOption !== false
 
   let light: ShjTheme
   let dark: ShjTheme
@@ -320,6 +385,61 @@ export async function rangiCodeBlocks(tree: MarkdownDocument, options: RangiOpti
       return ['pre', newPreAttrs, newCode] as ElementNode
     }
   )
+
+  if (inlineEnabled) {
+    await visitAsync(
+      tree,
+      (node) => {
+        if (!Array.isArray(node) || node[0] !== 'code' || node.length !== 3 || typeof node[2] !== 'string') {
+          return false
+        }
+        // A raw-HTML `<code lang="ts">` is authored markup, not Comark inline
+        // code, and replacing it with spans would break its round-trip. Fenced
+        // `<pre><code>` is already multi-child after the block pass above, so it
+        // no longer matches `length === 3` with a string body.
+        const attrs = (node[1] || {}) as ElementNodeAttributes
+        return attrs?.$?.html !== 1 && !!inlineCodeLanguage(attrs)
+      },
+      async (node) => {
+        const el = node as ElementNode
+        const attrs = (el[1] || {}) as ElementNodeAttributes
+        const code = el[2] as string
+        const written = inlineCodeLanguage(attrs) as string
+        // Fragment names are matched case-insensitively, same as fence languages.
+        const context = GRAMMAR_CONTEXTS.get(written.toLowerCase())
+        const lang = resolveRangiLanguage(context?.lang ?? written)
+
+        // Unlike a `<pre>`, an inline `<code>` is not unambiguously code, since
+        // `lang` is a real HTML attribute for natural language. Leave
+        // `` `Bonjour`{lang="fr"} `` exactly as it was authored rather than tagging
+        // it `.shiki`. Unknown names fall through rangi as plain text; skip them
+        // the same way so we do not invent a highlighter class for them.
+        if (!isHighlightableLanguage(lang, languages)) return
+
+        let children: Node[]
+        try {
+          const tokens = tokenizeInlineCode(code, lang, context?.grammarContextCode, languages)
+          const lines = tokensToLines(tokens, { light, dark, dual })
+          children = buildCodeChildren(lines, undefined, false)
+          if (children.length === 0) children = [code]
+        } catch {
+          children = [code]
+        }
+
+        const userClass = typeof attrs.class === 'string' ? attrs.class.trim() : ''
+        const highlighterClass = `${classPrefix} shiki shj-lang-${lang}`
+        const classStr = userClass ? `${highlighterClass} . ${userClass}` : highlighterClass
+
+        // eslint-disable-next-line unicorn/no-new-array -- pre-allocated for perf
+        const inlineNode = new Array(children.length + 2) as ElementNode
+        inlineNode[0] = 'code'
+        inlineNode[1] = { ...attrs, class: classStr }
+        for (let i = 0; i < children.length; i++) inlineNode[i + 2] = children[i]
+
+        return inlineNode
+      }
+    )
+  }
 
   return tree
 }

@@ -390,3 +390,91 @@ describe('rangi code block round-trip', () => {
     expect(md).toContain('npx install')
   })
 })
+
+describe('rangi inline code', () => {
+  async function inlineCode(source: string, options: Parameters<typeof rangi>[0] = {}): Promise<ElementNode> {
+    const document = await parseMarkdown(source, { plugins: [rangi(options)] })
+    return (document.nodes[0] as ElementNode)[2] as ElementNode
+  }
+
+  /** Collect every `style` on the node's span children, in order. */
+  function styles(node: ElementNode): string[] {
+    return (node.slice(2) as Node[])
+      .filter((child): child is ElementNode => Array.isArray(child))
+      .map((child) => String((child[1] as Record<string, unknown>).style ?? ''))
+  }
+
+  it('highlights inline code carrying a lang attribute', async () => {
+    const code = await inlineCode('`const a = 1`{lang="ts"}')
+
+    expect(String((code[1] as Record<string, unknown>).class)).toMatch(/^shj /)
+    expect(String((code[1] as Record<string, unknown>).class)).toContain('shiki')
+    expect(String((code[1] as Record<string, unknown>).class)).toContain('shj-lang-ts')
+    expect(styles(code).some(Boolean)).toBe(true)
+  })
+
+  it('accepts language as well as lang', async () => {
+    const withLanguage = await inlineCode('`const a = 1`{language="ts"}')
+    const withLang = await inlineCode('`const a = 1`{lang="ts"}')
+
+    expect(String((withLanguage[1] as Record<string, unknown>).class)).toMatch(/^shj /)
+    expect(styles(withLanguage)).toEqual(styles(withLang))
+  })
+
+  it('leaves inline code alone when inlineCode is false but still highlights fences', async () => {
+    const document = await parseMarkdown('`const a = 1`{lang="ts"}\n\n```ts\nconst b = 2\n```', {
+      plugins: [rangi({ inlineCode: false })],
+    })
+    const code = (document.nodes[0] as ElementNode)[2] as ElementNode
+    const pre = document.nodes[1] as ElementNode
+
+    expect(code).toEqual(['code', { lang: 'ts' }, 'const a = 1'])
+    expect(String((pre[1] as Record<string, unknown>).class)).toMatch(/^shj /)
+  })
+
+  it('tokenizes ts-type as a type expression, not a statement', async () => {
+    // `string` alone is bare text under `ts`; the `let a:` seed colors it as a type.
+    const asType = await inlineCode('`string | number`{lang="ts-type"}')
+    const asStatement = await inlineCode('`string | number`{lang="ts"}')
+
+    expect(styles(asType)).not.toEqual(styles(asStatement))
+    expect(String((asType[1] as Record<string, unknown>).class)).toContain('shj-lang-typescript')
+  })
+
+  it('tokenizes vue-html as template markup', async () => {
+    const code = await inlineCode('`<UButton />`{lang="vue-html"}')
+
+    expect(String((code[1] as Record<string, unknown>).class)).toMatch(/^shj /)
+    expect(String((code[1] as Record<string, unknown>).class)).toContain('shj-lang-vue')
+    expect(styles(code).some(Boolean)).toBe(true)
+  })
+
+  it('leaves a natural language alone', async () => {
+    const code = await inlineCode('`Bonjour`{lang="fr"}')
+
+    expect(code).toEqual(['code', { lang: 'fr' }, 'Bonjour'])
+  })
+
+  it('leaves a raw HTML code element alone', async () => {
+    const source = 'A <code lang="ts">const a = 1</code> here'
+    const document = await parseMarkdown(source, { plugins: [rangi()] })
+
+    expect(await renderMarkdown(document)).toBe(source)
+  })
+
+  it('round-trips without the highlighter class', async () => {
+    const source = 'The type is `Ref<T>`{lang="ts-type"}.'
+    const document = await parseMarkdown(source, { plugins: [rangi()] })
+
+    expect(await renderMarkdown(document)).toBe(source)
+  })
+
+  it('highlights a custom grammar passed via languages', async () => {
+    const code = await inlineCode('`hello`{lang="mine"}', {
+      languages: { mine: [[/hello/g, 'num']] },
+    })
+
+    expect(String((code[1] as Record<string, unknown>).class)).toContain('shj-lang-mine')
+    expect(styles(code).some(Boolean)).toBe(true)
+  })
+})

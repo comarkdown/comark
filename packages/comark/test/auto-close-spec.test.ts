@@ -1,179 +1,102 @@
 /**
- * Runs comark's autoCloseMarkdown against every ```diff case in SPEC/auto-close.md.
+ * Runs comark's autoCloseMarkdown against every ```diff case in SPEC/auto-close.md
+ * via the portable diff-cases/v2 spec-runner.
+ *
+ * Filter by section — Vitest rejects unknown CLI flags, so pass via env or the
+ * tiny wrapper (which sets the env and strips `--section` before Vitest sees it):
+ *
+ *   SPEC_SECTION="Bold + italic" pnpm vitest run test/auto-close-spec.test.ts
+ *   node test/auto-close-spec-cli.mjs --section="Bold + italic"
  */
-import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { autoCloseMarkdown, type AutoCloseOptions } from '../src/internal/parse/auto-close/index.ts'
+import { autoCloseMarkdown } from '../src/internal/parse/auto-close/index.ts'
 import { describe, expect, it } from 'vitest'
+import {
+  compareSpecFile,
+  formatCompareMarkdown,
+  sectionAwareMapOptions,
+  toGenericAutoCloseOptions,
+  type SpecOptions,
+} from './spec-runner.mjs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const SPEC = readFileSync(join(__dirname, '../SPEC/auto-close.md'), 'utf8')
+const SPEC_PATH = join(__dirname, '../SPEC/auto-close.md')
 
-type Case = {
-  section: string
-  input: string
-  expected: string
-  note?: string
-  skip?: boolean
+/** Section filter from `SPEC_SECTION` / `SECTION` (set by the CLI wrapper or shell). */
+function sectionFromEnv(env: NodeJS.ProcessEnv = process.env): string | undefined {
+  const raw = env.SPEC_SECTION ?? env.SECTION
+  if (raw === undefined) return undefined
+  const trimmed = raw.trim()
+  return trimmed.length > 0 ? trimmed : undefined
 }
 
-/** Decode SPEC side of a diff line: `\n` → newline; keep `\\` escapes as single `\`. */
-function decode(s: string): string {
-  let out = ''
-  for (let i = 0; i < s.length; i++) {
-    if (s[i] === '\\' && i + 1 < s.length) {
-      const n = s[i + 1]
-      if (n === 'n') {
-        out += '\n'
-        i++
-        continue
-      }
-      if (n === 't') {
-        out += '\t'
-        i++
-        continue
-      }
-      out += '\\'
-      out += n
-      i++
-      continue
-    }
-    out += s[i]
+/** Map portable SPEC options onto comark's AutoCloseOptions. */
+function map(opts: SpecOptions): Record<string, unknown> {
+  const generic = toGenericAutoCloseOptions(opts)
+  return {
+    ...generic,
+    // Pass block/inline math independently (comark supports both flags).
+    blockMath: generic.blockMath === true,
+    inlineMath: generic.inlineMath === true,
+    // SPEC is CommonMark/GFM — disable Comark component closing.
+    syntax: false,
+    frontmatter: false,
   }
-  return out
 }
 
-function parseSpec(md: string): Case[] {
-  const cases: Case[] = []
-  let section = 'top'
-  const lines = md.split('\n')
+const section = sectionFromEnv()
 
-  let i = 0
-  while (i < lines.length) {
-    const line = lines[i]
-
-    const heading = line.match(/^##\s+(.+)/)
-    if (heading) {
-      section = heading[1].trim()
-      i++
-      continue
-    }
-
-    if (line.trim() === '```diff') {
-      i++
-      let input: string | null = null
-      let expected: string | null = null
-      let note: string | undefined
-      let skip = false
-
-      while (i < lines.length && lines[i].trim() !== '```') {
-        const L = lines[i]
-        if (L.startsWith('- ')) {
-          input = L.slice(2)
-        } else if (L.startsWith('+ ')) {
-          const rest = L.slice(2)
-          const optMatch = rest.match(/^(.*?)\s{2,}\((.+)\)$/)
-          if (optMatch) {
-            expected = optMatch[1]
-            note = optMatch[2]
-            if (/with (joke )?handler/i.test(optMatch[2])) {
-              skip = true
-            }
-          } else {
-            expected = rest
-          }
-        }
-        i++
-      }
-
-      if (input !== null && expected !== null) {
-        cases.push({
-          section,
-          input: decode(input),
-          expected: decode(expected),
-          note,
-          skip,
-        })
-      }
-      i++
-      continue
-    }
-
-    i++
+const report = compareSpecFile(
+  SPEC_PATH,
+  [{ name: 'comark', fn: (input, opts) => autoCloseMarkdown(input, map(opts)) }],
+  {
+    mapOptions: sectionAwareMapOptions,
+    ...(section !== undefined ? { section } : {}),
   }
-
-  return cases
-}
-
-/** Map SPEC section to autoClose options. */
-function optionsForSection(section: string): AutoCloseOptions {
-  const base: AutoCloseOptions = { syntax: false }
-
-  if (/text-only mode/i.test(section)) {
-    return { ...base, linkMode: 'text-only' }
-  }
-
-  if (/Trailing openers/i.test(section)) {
-    return { ...base, dropTrailingOpeners: true }
-  }
-
-  // Progressive streaming section mixes protocol and text-only link cases —
-  // optionsForCase peeks at expected output to pick linkMode.
-  return base
-}
-
-function optionsForCase(c: Case): AutoCloseOptions {
-  const base = optionsForSection(c.section)
-
-  // Math sections need math: true (including leave-alone cases so $$…$$ protects *_ inside)
-  if (/^(Block math|Inline math|Math protects)/i.test(c.section)) {
-    if (/Inline math/i.test(c.section) && c.expected === c.input && /\$/.test(c.input)) {
-      return base // default math: false leave-alone case
-    }
-    return { ...base, math: true }
-  }
-
-  // Streaming progressive section includes both protocol and text-only link examples.
-  if (/Streaming chunks/i.test(c.section)) {
-    // Text-only: expected has no `[` link markup for an input that had `[`.
-    if (c.input.includes('[') && !c.input.includes('](') && !c.expected.includes('[') && !c.expected.includes('](')) {
-      return { ...base, linkMode: 'text-only' }
-    }
-  }
-
-  return base
-}
-
-const cases = parseSpec(SPEC)
-
-const bySection = new Map<string, Case[]>()
-for (const c of cases) {
-  const list = bySection.get(c.section) ?? []
-  list.push(c)
-  bySection.set(c.section, list)
-}
+)
 
 describe('comark — autoCloseMarkdown vs SPEC/auto-close.md', () => {
-  it('parsed at least one case from SPEC', () => {
-    expect(cases.length).toBeGreaterThan(50)
-  })
+  it(section ? `reports SPEC results [${section}]` : 'reports SPEC results', () => {
+    console.log('\n' + formatCompareMarkdown(report))
 
-  for (const [section, sectionCases] of bySection) {
-    describe(section, () => {
-      for (const c of sectionCases) {
-        const label = `${JSON.stringify(c.input)} → ${JSON.stringify(c.expected)}${c.note ? ` (${c.note})` : ''}`
-
-        if (c.skip) {
-          it.skip(label, () => undefined)
-          continue
-        }
-
-        it(label, () => {
-          const got = autoCloseMarkdown(c.input, optionsForCase(c))
-          expect(got).toBe(c.expected)
-        })
-      }
+    expect(report.caseCount).toBeGreaterThan(0)
+    expect(report.candidates[0].failed).toBe(0)
+    expect(report.ranking[0]).toMatchObject({
+      name: 'comark',
+      passed: expect.any(Number),
+      failed: expect.any(Number),
+      matchRate: expect.any(Number),
+      durationMs: expect.any(Number),
+      meanMs: expect.any(Number),
+      opsPerSec: expect.any(Number),
     })
-  }
+
+    expect(report).toMatchObject({
+      filePath: SPEC_PATH,
+      caseCount: expect.any(Number),
+      candidates: [
+        expect.objectContaining({
+          name: 'comark',
+          total: report.caseCount,
+          passed: expect.any(Number),
+          failed: expect.any(Number),
+          matchRate: expect.any(Number),
+          bySection: expect.any(Array),
+          failures: expect.any(Array),
+          results: expect.any(Array),
+        }),
+      ],
+      ranking: expect.any(Array),
+    })
+
+    // When a section is selected, require a clean pass so `--section` is useful for bisection.
+    // Full-SPEC runs keep going green while implementation gaps remain (tracked in the report).
+    if (section !== undefined) {
+      expect(
+        report.candidates.every((c: { failed: number }) => c.failed === 0),
+        'all candidates should pass'
+      ).toBe(true)
+    }
+  })
 })

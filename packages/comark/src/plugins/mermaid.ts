@@ -101,7 +101,7 @@ export function searchProps(content: string, index = 0) {
       index += 1
     } else if (content[index] === '.') {
       index += 1
-      props.push(['class', searchUntil(' #.}')])
+      props.push(['class', searchUntil(' #.}', true)])
     } else if (content[index] === '#') {
       index += 1
       props.push(['id', searchUntil(' #.}')])
@@ -124,11 +124,19 @@ export function searchProps(content: string, index = 0) {
     }
   }
 
-  function searchUntil(str: string) {
+  function searchUntil(str: string, bracketAware = false) {
     const start = index
     while (index < content.length) {
       index += 1
       if (content[index] === '\\') index += 2
+      // Tailwind-style arbitrary values keep `.` / `#` inside balanced brackets
+      // from being treated as new props. Unbalanced brackets fall through so
+      // outer terminators (esp. `}`) still win.
+      if (bracketAware && content[index] in bracketPairs) {
+        const open = index
+        if (searchBracket(bracketPairs[content[index] as keyof typeof bracketPairs])) continue
+        index = open
+      }
       if (str.includes(content[index])) break
     }
     return content.slice(start, index)
@@ -150,13 +158,16 @@ export function searchProps(content: string, index = 0) {
     }
   }
 
-  function searchBracket(end: string) {
+  /** Scan a bracket group starting at the current opener. Returns true if closed. */
+  function searchBracket(end: string): boolean {
     while (index < content.length) {
       index++
       if (content[index] in quotePairs) searchString(quotePairs[content[index] as keyof typeof quotePairs])
-      else if (content[index] in bracketPairs) searchBracket(bracketPairs[content[index] as keyof typeof bracketPairs])
-      else if (content[index] === end) return
+      else if (content[index] in bracketPairs) {
+        if (!searchBracket(bracketPairs[content[index] as keyof typeof bracketPairs])) return false
+      } else if (content[index] === end) return true
     }
+    return false
   }
 
   function searchString(end: string) {

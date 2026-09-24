@@ -3,9 +3,9 @@ packages:
   - docs
   - examples/*/*
 
-# The comark-docs layer temporarily pins comark-content to a pkg.pr.new edge build
-# (URL-resolved subdependency), which pnpm blocks by default. Delete this line once
-# comark-content > 0.3.0 is published and the layer is back on a registry range.
+# The comark-docs layer pins nuxt-llms to a pkg.pr.new edge build (URL-resolved
+# subdependency), which pnpm blocks by default. Delete this line once nuxt-llms
+# ships a registry release the layer can depend on instead.
 blockExoticSubdeps: false
 
 allowBuilds:
@@ -32,17 +32,16 @@ catalog:
   # Misc
   "@json-render/core": ^0.19.0
   "@monaco-editor/loader": ^1.7.0
-  "@nuxt/content": ^3.15.0
   "@nuxt/devtools-kit": 4.0.0-alpha.7
   # Keep kit on the same minor line as `nuxt` so `@nuxt/schema` stays singular
   # (dual schema breaks `defineNuxtModule` setup typing + declaration emit).
-  "@nuxt/kit": 4.4.8
+  "@nuxt/kit": 4.5.2
   "@nuxt/ui": ^4.10.0
   "satori": ^0.26.0
   "@resvg/resvg-js": ^2.6.2
   "@nuxtjs/mcp-toolkit": 0.17.2
   "@nuxtlabs/monarch-mdc": ^0.10.0
-  "@release-it/conventional-changelog": ^11.0.1
+  "@release-it/conventional-changelog": ^12.0.2
   "@shikijs/langs": ^4.3.1
 
   # Shiki
@@ -59,7 +58,7 @@ catalog:
   # Types
   "@types/json-schema": ^7.0.15
   "@types/markdown-it": ^14.1.2
-  "@types/node": ^26.1.1
+  "@types/node": ^26.6.2
   "@types/react": ^19.2.17
   "@types/react-dom": ^19.2.3
   "@types/splitpanes": ^2.2.6
@@ -67,15 +66,15 @@ catalog:
   "@vercel/analytics": ^2.0.1
   "@vercel/speed-insights": ^2.0.0
   "@vitejs/plugin-react": ^6.0.3
-  "@vitejs/plugin-vue": ^6.0.7
-  "@vitest/browser": ^4.1.10
-  "@vitest/browser-playwright": ^4.1.10
-  "@vue/compiler-core": 3.5.41
-  "@vue/reactivity": 3.5.41
-  "@vue/runtime-core": 3.5.41
-  "@vue/runtime-dom": 3.5.41
-  "@vue/server-renderer": 3.5.41
-  "@vue/shared": 3.5.41
+  "@vitejs/plugin-vue": ^6.0.9
+  "@vitest/browser": ^4.1.11
+  "@vitest/browser-playwright": ^4.1.11
+  "@vue/compiler-core": 3.5.43
+  "@vue/reactivity": 3.5.43
+  "@vue/runtime-core": 3.5.43
+  "@vue/runtime-dom": 3.5.43
+  "@vue/server-renderer": 3.5.43
+  "@vue/shared": 3.5.43
   "@vueuse/core": ^14.2.1
   "@xterm/addon-fit": ^0.11.0
   "@xterm/xterm": ^6.0.0
@@ -98,25 +97,25 @@ catalog:
   js-yaml: ^5.2.1
   katex: ^0.17.0
   markdown-exit: 1.1.0-beta.2
-  "markdown-it": ^14.3.0
+  "markdown-it": ^14.3.2
   markdown-it-math: ^6.0.0
   minimark: 0.2.0
   mitata: ^1.0.34
   next: ^16.2.10
 
   # Nuxt
-  nuxt: ^4.4.8
+  nuxt: ^4.5.2
   nuxt-studio: 1.7.0
 
   # Linting
   oxfmt: ^0.58.0
-  oxlint: ^1.73.0
-  playwright: ^1.61.1
+  oxlint: ^1.83.0
+  playwright: ^1.63.0
   postcss: ^8.5.17
 
   # React
-  react: ^19.2.7
-  react-dom: ^19.2.7
+  react: ^19.3.0
+  react-dom: ^19.3.0
 
   # Build tooling
   release-it: ^20.2.1
@@ -152,10 +151,10 @@ catalog:
 
   # CSS
   tailwindcss: ^4.3.2
-  tsx: ^4.23.0
+  tsx: ^4.23.15
   twoslash: ^0.3.9
   twoslash-cdn: ^0.3.9
-  typescript: ^6.0.0
+  typescript: ^6.0.3
 
   ufo: ^1.6.4
   unified: ^11.0.5
@@ -163,11 +162,11 @@ catalog:
   vitepress: ^1.6.4
 
   # Testing
-  vitest: ^4.1.10
+  vitest: ^4.1.11
   vitest-browser-svelte: ^3.0.0
 
   # Vue
-  vue: 3.5.41
+  vue: 3.5.43
   vue-json-pretty: ^2.6.0
   vue-router: ^5.0.4
   vue-tsc: ^3.3.7
@@ -181,8 +180,9 @@ minimumReleaseAgeExclude:
   - "@comark/vue@0.5.1 || 0.6.0 || 0.6.1 || 0.6.2 || 0.7.0"
   - "@nuxtlabs/monarch-mdc@0.10.0"
   - "@comark/nuxt@0.6.0"
-  - comark-content@0.2.0
+  - comark-content@0.2.0 || 0.4.1
   - rangi@2.2.0
+  - nuxt-agent-discovery@0.7.0
 
 patchedDependencies:
   minimark: patches/minimark.patch
