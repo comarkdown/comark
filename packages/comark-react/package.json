@@ -62,7 +62,7 @@
   "peerDependencies": {
     "beautiful-mermaid": "catalog:",
     "katex": "catalog:",
-    "react": "^19.0.0",
+    "react": "^19.3.0",
     "shiki": "catalog:"
   },
   "peerDependenciesMeta": {
