@@ -38,6 +38,8 @@ const HTML_SINK_PROPS = new Set(['innerhtml', 'dangerouslysetinnerhtml', 'textco
  *
  * With `parseJson: true`, every `:prefixed` string is JSON-parsed first and
  * the `:` prefix is always stripped, falling back to the dot-path lookup.
+ * `:prefixed` keys nested inside object/array values (YAML block props, JSON
+ * props) are resolved the same way, at any depth.
  * The `$` metadata key is never forwarded.
  */
 export function resolveAttributes(
@@ -62,15 +64,16 @@ export function resolveAttributes(
       // Framework mode: always strip `:` and hand components real JS values.
       if (typeof value === 'string') {
         try {
-          outValue = JSON.parse(value)
+          outValue = resolveNestedBindings(JSON.parse(value), renderData, options)
         } catch {
           // not JSON — fall through to dot-path lookup
           outValue = get(renderData, value)
         }
       } else {
         // Non-string binding value (e.g. an object literal the parser already
-        // decoded) — pass through with the prefix stripped.
-        outValue = value
+        // decoded) — pass through with the prefix stripped, resolving any
+        // bindings nested inside it.
+        outValue = resolveNestedBindings(value, renderData, options)
       }
       resultKey = outKey
     } else if (isBinding && typeof value === 'string') {
@@ -82,26 +85,92 @@ export function resolveAttributes(
         outValue = value
       }
     } else {
-      outValue = value
+      // Objects/arrays (YAML block props, JSON props) may carry `:key` bindings
+      // at any depth, e.g. `links: [{ label: …, :to: data.url }]`.
+      outValue = resolveNestedBindings(value, renderData, options)
     }
 
     // Hard floor: a binding must never resolve href/src to an unsafe scheme
     // (javascript:, data:text/html, …). Parse-time validation only sees the
     // literal path, so the resolved value is checked here — even when the
     // security plugin is not enabled.
-    const lowerOutKey = outKey.toLowerCase()
-    if (
-      isBinding &&
-      (lowerOutKey === 'href' || lowerOutKey === 'src' || lowerOutKey === 'xlink:href') &&
-      typeof outValue === 'string' &&
-      isUnsafeUrlValue(outValue)
-    ) {
+    if (isBinding && isUnsafeUrlBinding(outKey, outValue)) {
       continue
     }
 
     result[resultKey] = outValue
   }
   return result
+}
+
+function isUnsafeUrlBinding(key: string, value: unknown): boolean {
+  const lowerKey = key.toLowerCase()
+  return (
+    (lowerKey === 'href' || lowerKey === 'src' || lowerKey === 'xlink:href') &&
+    typeof value === 'string' &&
+    isUnsafeUrlValue(value)
+  )
+}
+
+/**
+ * Resolve `:prefixed` keys inside nested objects and arrays, returning a new
+ * structure only when something changed. Primitives are returned as-is.
+ */
+function resolveNestedBindings(value: unknown, renderData: NodeRenderData, options: ResolveAttributesOptions): unknown {
+  if (!value || typeof value !== 'object') return value
+
+  if (Array.isArray(value)) {
+    let result: unknown[] | undefined
+    for (let i = 0; i < value.length; i++) {
+      const item = resolveNestedBindings(value[i], renderData, options)
+      if (item !== value[i]) {
+        result ??= value.slice()
+        result[i] = item
+      }
+    }
+    return result ?? value
+  }
+
+  const proto = Object.getPrototypeOf(value)
+  if (proto !== Object.prototype && proto !== null) return value
+
+  const source = value as Record<string, unknown>
+  let result: Record<string, unknown> | undefined
+  for (const key in source) {
+    const item = source[key]
+    if (key.charCodeAt(0) !== 58 /* ':' */) {
+      const resolved = resolveNestedBindings(item, renderData, options)
+      if (resolved !== item) {
+        result ??= { ...source }
+        result[key] = resolved
+      }
+      continue
+    }
+
+    const outKey = key.slice(1)
+    let outValue: unknown
+    if (typeof item === 'string') {
+      if (options.parseJson) {
+        try {
+          outValue = resolveNestedBindings(JSON.parse(item), renderData, options)
+        } catch {
+          outValue = get(renderData, item)
+        }
+      } else {
+        outValue = get(renderData, item)
+        // Unresolved paths keep their `:` key, like top-level attributes
+        if (outValue === undefined) continue
+      }
+    } else {
+      outValue = resolveNestedBindings(item, renderData, options)
+    }
+
+    result ??= { ...source }
+    delete result[key]
+    if (isUnsafeUrlBinding(outKey, outValue)) continue
+    result[outKey] = outValue
+  }
+  return result ?? value
 }
 
 /**
