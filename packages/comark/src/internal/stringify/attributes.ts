@@ -64,7 +64,7 @@ export function resolveAttributes(
       // Framework mode: always strip `:` and hand components real JS values.
       if (typeof value === 'string') {
         try {
-          outValue = JSON.parse(value)
+          outValue = resolveNestedBindings(JSON.parse(value), renderData, options)
         } catch {
           // not JSON — fall through to dot-path lookup
           outValue = get(renderData, value)
@@ -152,7 +152,7 @@ function resolveNestedBindings(value: unknown, renderData: NodeRenderData, optio
     if (typeof item === 'string') {
       if (options.parseJson) {
         try {
-          outValue = JSON.parse(item)
+          outValue = resolveNestedBindings(JSON.parse(item), renderData, options)
         } catch {
           outValue = get(renderData, item)
         }

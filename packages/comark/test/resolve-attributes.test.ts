@@ -270,6 +270,24 @@ links:
     })
   })
 
+  it('resolves bindings nested in a JSON string value (parseJson mode)', () => {
+    const result = resolveAttributes(
+      { ':links': '[{"label":"Go",":to":"data.platform.dashboard_login_url"}]' },
+      renderData,
+      { parseJson: true }
+    )
+    expect(result).toEqual({ links: [{ label: 'Go', to: 'https://app.example.com/login' }] })
+  })
+
+  it('drops unsafe URL bindings nested in a JSON string value (parseJson mode)', () => {
+    const result = resolveAttributes(
+      { ':links': '[{"label":"x",":href":"frontmatter.home"}]' },
+      makeRenderData({ frontmatter: { home: 'javascript:alert(1)' } }),
+      { parseJson: true }
+    )
+    expect(result).toEqual({ links: [{ label: 'x' }] })
+  })
+
   it('JSON-parses nested literals and resolves deeply nested objects (parseJson mode)', () => {
     const result = resolveAttributes(
       { ':config': { ':count': '3', inner: { ':url': 'data.platform.dashboard_login_url' } } },
