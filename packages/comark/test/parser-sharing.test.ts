@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { createMarkdownParser, defineComarkPlugin } from 'comark'
 import type { MarkdownItPlugin } from 'comark'
+import binding from '../src/plugins/binding'
 
 // The shared instance is internal, so it is observed through the public API: a
 // markdown-it plugin function runs once per instance, so counting how often it
@@ -72,5 +73,36 @@ describe('parser sharing', () => {
     expect(third.nodes[0]).toBe(second.nodes[0])
     expect(third.nodes[1]).toBe(second.nodes[1])
     expect(third.nodes).toHaveLength(4)
+  })
+
+  it('respects distinct plugin options and does not mix them through a shared instance', async () => {
+    // binding() closes `tag` into a fresh markdown-it plugin per factory call, so
+    // each options object must get its own MarkdownExit. Interleave parses so a
+    // shared-by-mistake instance would leak the later registration into earlier ones.
+    const parseDefault = createMarkdownParser({ plugins: [binding()] })
+    const parseCustom = createMarkdownParser({ plugins: [binding({ tag: 'var' })] })
+    const parseOtherCustom = createMarkdownParser({ plugins: [binding({ tag: 'slot' })] })
+
+    const source = 'Hello {{ name }}'
+
+    const defaultFirst = await parseDefault(source)
+    const custom = await parseCustom(source)
+    const otherCustom = await parseOtherCustom(source)
+    const defaultAgain = await parseDefault(source)
+
+    expect(JSON.stringify(defaultFirst.nodes)).toContain('"binding"')
+    expect(JSON.stringify(defaultFirst.nodes)).not.toContain('"var"')
+    expect(JSON.stringify(defaultFirst.nodes)).not.toContain('"slot"')
+
+    expect(JSON.stringify(custom.nodes)).toContain('"var"')
+    expect(JSON.stringify(custom.nodes)).not.toContain('"binding"')
+    expect(JSON.stringify(custom.nodes)).not.toContain('"slot"')
+
+    expect(JSON.stringify(otherCustom.nodes)).toContain('"slot"')
+    expect(JSON.stringify(otherCustom.nodes)).not.toContain('"binding"')
+    expect(JSON.stringify(otherCustom.nodes)).not.toContain('"var"')
+
+    // First parser still carries its original options after the others ran.
+    expect(defaultAgain.nodes).toEqual(defaultFirst.nodes)
   })
 })
