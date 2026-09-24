@@ -48,8 +48,8 @@ describe('parser sharing', () => {
     expect(closureUses - before).toBe(5)
   })
 
-  it('evicts the least-recently-used shared instance once the cache is full', () => {
-    // A dedicated plugin so prior tests in this file cannot keep this key warm.
+  it('refreshes cache hits and evicts the least-recently-used shared instance once the cache is full', () => {
+    // Dedicated plugins so prior tests in this file cannot keep these keys warm.
     let markedUses = 0
     const markedMdPlugin = (() => {
       markedUses++
@@ -59,17 +59,34 @@ describe('parser sharing', () => {
       markdownItPlugins: [markedMdPlugin],
     }))()
 
-    createMarkdownParser({ plugins: [markedPlugin] })
-    expect(markedUses).toBe(1)
+    let oldestUses = 0
+    const oldestMdPlugin = (() => {
+      oldestUses++
+    }) as unknown as MarkdownItPlugin
+    const oldestPlugin = defineComarkPlugin(() => ({
+      name: 'sharing-evict-oldest',
+      markdownItPlugins: [oldestMdPlugin],
+    }))()
 
-    // Capacity is 32. Flood with unique closures so the marked entry ages out;
-    // a later reuse must rebuild instead of hitting the cache.
-    for (let i = 0; i < 32; i++) {
+    createMarkdownParser({ plugins: [markedPlugin] })
+    createMarkdownParser({ plugins: [oldestPlugin] })
+
+    // Capacity is 32. Keep both named entries in the cache, then refresh
+    // markedPlugin before inserting one more key so only oldestPlugin ages out.
+    for (let i = 0; i < 30; i++) {
       createMarkdownParser({ plugins: [closurePlugin()] })
     }
 
+    expect(markedUses).toBe(1)
+    expect(oldestUses).toBe(1)
+
     createMarkdownParser({ plugins: [markedPlugin] })
-    expect(markedUses).toBe(2)
+    createMarkdownParser({ plugins: [closurePlugin()] })
+
+    createMarkdownParser({ plugins: [oldestPlugin] })
+    expect(oldestUses).toBe(2)
+    createMarkdownParser({ plugins: [markedPlugin] })
+    expect(markedUses).toBe(1)
   })
 
   it('does not share an instance between linkify settings', async () => {
