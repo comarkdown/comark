@@ -178,7 +178,7 @@ function findMarkdownFiles(dir: string, baseDir: string = dir): string[] {
 
     if (entry.isDirectory()) {
       files.push(...findMarkdownFiles(fullPath, baseDir))
-    } else if (entry.isFile() && entry.name.endsWith('.md')) {
+    } else if (entry.isFile() && entry.name.endsWith('.md') && entry.name !== 'README.md') {
       files.push(relativePath)
     }
   }

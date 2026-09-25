@@ -29,7 +29,7 @@ Comark supports all standard CommonMark and GitHub Flavored Markdown (GFM) featu
 ###### Heading 6
 ```
 
-**Note:** All headings automatically get ID attributes generated from their content for linking (e.g., `# Hello World` becomes `<h1 id="hello-world">`). Set `headingIds: false` in parse options to disable auto-generated ids.
+**Note:** All headings automatically get an `id` from their visible text (e.g., `# Hello World` becomes `<h1 id="hello-world">`). Punctuation is stripped, a leading digit is prefixed with `_` (`## 1. Introduction` → `_1-introduction`), and a duplicate gets a numeric suffix (`options`, `options-1`). From `h3` down, the id is prefixed with the nearest `h2`+ ancestor, not the `h1`. Inline marks and link labels contribute their text; an inline component name is omitted (`:icon-star` does not appear in the slug). An explicit `{id="..."}` replaces the generated id. Set `headingIds: false` to disable generation; a user-supplied `id` is still kept.
 
 ### Text Formatting
 

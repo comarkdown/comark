@@ -72,7 +72,7 @@ naturally appears inline after the deepest trailing text node.
   import MarkdownNode from './MarkdownNode.svelte'
   import ComarkComponent from './ComarkComponent.svelte'
   import Resolve from './Resolve.svelte'
-  import { resolveAttributes } from 'comark/utils'
+  import { isHtmlVoidElement, resolveAttributes } from 'comark/utils'
 
   const EMPTY_RENDER_DATA: NodeRenderData = { frontmatter: {}, meta: {}, data: {}, props: {} }
 
@@ -95,11 +95,6 @@ naturally appears inline after the deepest trailing text node.
   const CARET_TEXT = '\u2009'
   const CARET_STYLE
     = 'background-color: currentColor; display: inline-block; margin-left: 0.25rem; margin-right: 0.25rem; animation: pulse 0.75s cubic-bezier(0.4,0,0.6,1) infinite;'
-
-  const VOID_ELEMENTS = new Set([
-    'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input',
-    'link', 'meta', 'param', 'source', 'track', 'wbr',
-  ])
 
   interface RenderChild {
     node: NodeType
@@ -166,7 +161,7 @@ naturally appears inline after the deepest trailing text node.
     }
 
     tag = node[0] as string
-    isVoid = VOID_ELEMENTS.has(tag)
+    isVoid = isHtmlVoidElement(tag)
     const nodeProps: Record<string, any>
       = (node.length >= 2 ? node[1] : {}) ?? {}
     children = node.length > 2 ? (node.slice(2) as NodeType[]) : []
