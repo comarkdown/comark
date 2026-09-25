@@ -58,9 +58,9 @@
     "vitest": "catalog:"
   },
   "peerDependencies": {
-    "@angular/common": ">=17.0.0 <22.0.0",
-    "@angular/core": ">=17.0.0 <22.0.0",
-    "@angular/platform-browser": ">=17.0.0 <22.0.0",
+    "@angular/common": ">=17.0.0 <23.0.0",
+    "@angular/core": ">=17.0.0 <23.0.0",
+    "@angular/platform-browser": ">=17.0.0 <23.0.0",
     "beautiful-mermaid": "catalog:",
     "katex": "catalog:",
     "shiki": "catalog:"
