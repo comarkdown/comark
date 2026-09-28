@@ -41,7 +41,7 @@
 
 ```html
 <card>
-  <pre language="mdc"><code class="language-mdc">  ::accordion
+  <pre data-language="mdc"><code class="language-mdc">  ::accordion
     ::</code></pre>
 </card>
 ```

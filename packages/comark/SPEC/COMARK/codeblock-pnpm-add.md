@@ -33,7 +33,7 @@ pnpm add comark
 ## HTML
 
 ```html
-<pre language="bash"><code class="language-bash">pnpm add comark</code></pre>
+<pre data-language="bash"><code class="language-bash">pnpm add comark</code></pre>
 ```
 
 ## Markdown

@@ -17,7 +17,7 @@ import {
 } from '@angular/core'
 import type { ElementNode, Node as MarkdownAstNode, NodeRenderData } from 'comark'
 import { resolveIfWrapper, selectIfBranch, shouldRenderIf, type IfProps } from 'comark/plugins/binding'
-import { pascalCase, resolveAttributes } from 'comark/utils'
+import { pascalCase, resolveAttributes, toNativeAttributes } from 'comark/utils'
 
 interface StructuralComponent extends Type<any> {
   ɵcomarkIf?: boolean
@@ -199,7 +199,7 @@ export class MarkdownNode implements OnChanges {
     childrenRenderData: NodeRenderData
   ): void {
     const el = this.renderer.createElement(tag)
-    this.applyAttributes(el, attrs)
+    this.applyAttributes(el, toNativeAttributes(tag, attrs))
 
     // `innerHTML` from document attributes is never applied — resolveAttributes
     // drops DOM sink props, and raw HTML has its own explicit parse path.

@@ -21,7 +21,7 @@ import {
   toRaw,
 } from 'vue'
 import { findLastTextNodeAndAppendNode, getCaret } from '../utils/caret.ts'
-import { pascalCase, resolveAttributes } from 'comark/utils'
+import { pascalCase, resolveAttributes, toNativeAttributes } from 'comark/utils'
 
 // Cache for dynamically resolved components
 const asyncComponentCache = new Map<string, any>()
@@ -142,13 +142,16 @@ function renderNode(
     // Resolve `:prefix` bindings and let Vue-specific attribute mapping run
     // on top (e.g. `className` → `class`).
     const resolved = resolveAttributes(nodeProps, renderData, { parseJson: true })
-    const props: Record<string, any> = {}
+    let props: Record<string, any> = {}
     for (const k in resolved) {
       if (k === 'className') {
         props.class = resolved[k]
       } else {
         props[k] = resolved[k]
       }
+    }
+    if (!customComponent) {
+      props = toNativeAttributes(tag, props)
     }
 
     // @ts-expect-error - component might be a Vue component

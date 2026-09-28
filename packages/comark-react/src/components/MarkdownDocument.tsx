@@ -6,7 +6,7 @@ import type {
   NodeRenderData,
 } from 'comark'
 import React, { lazy, Suspense, useMemo } from 'react'
-import { pascalCase, camelCase, resolveAttributes } from 'comark/utils'
+import { pascalCase, camelCase, resolveAttributes, toNativeAttributes } from 'comark/utils'
 import { findLastTextNodeAndAppendNode, getCaret } from '../utils/caret.ts'
 
 /**
@@ -141,7 +141,7 @@ function renderNode(
     // remapping (`class` → `className`, string `style` → object, `tabindex`
     // → `tabIndex`).
     const resolved = resolveAttributes(nodeProps, renderData, { parseJson: true })
-    const props: Record<string, any> = {}
+    let props: Record<string, any> = {}
     for (const k in resolved) {
       const v = resolved[k]
       if (k === 'className' || k === 'class') {
@@ -153,6 +153,10 @@ function renderNode(
       } else {
         props[k] = v
       }
+    }
+
+    if (!customComponent) {
+      props = toNativeAttributes(tag, props)
     }
 
     if (typeof Component !== 'string' && (Component as any)?.propTypes?.__node !== undefined) {

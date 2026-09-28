@@ -49,7 +49,7 @@ More content here.
 ## HTML
 
 ```html
-<pre language="markdown" filename="content.md"><code class="language-markdown"># My Page Title
+<pre data-language="markdown" data-filename="content.md"><code class="language-markdown"># My Page Title
 
 This is the opening paragraph used as the description.
 

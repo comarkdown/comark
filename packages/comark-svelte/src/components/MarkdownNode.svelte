@@ -72,7 +72,7 @@ naturally appears inline after the deepest trailing text node.
   import MarkdownNode from './MarkdownNode.svelte'
   import ComarkComponent from './ComarkComponent.svelte'
   import Resolve from './Resolve.svelte'
-  import { resolveAttributes } from 'comark/utils'
+  import { resolveAttributes, toNativeAttributes } from 'comark/utils'
 
   const EMPTY_RENDER_DATA: NodeRenderData = { frontmatter: {}, meta: {}, data: {}, props: {} }
 
@@ -189,6 +189,10 @@ naturally appears inline after the deepest trailing text node.
       else {
         mappedProps[k] = resolved[k]
       }
+    }
+
+    if (!Component && !componentPromise) {
+      mappedProps = toNativeAttributes(tag, mappedProps)
     }
 
     return { isText, tag, isVoid, children, Component, componentPromise, mappedProps }

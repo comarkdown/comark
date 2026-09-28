@@ -150,7 +150,7 @@ const message = "Hello from twoslash"
 ## HTML
 
 ```html
-<pre language="ts" meta="twoslash" class="shiki shiki-themes min-light twoslash lsp dark:min-light"><code class="language-ts"><span class="line" style="display: inline"><span style="color:#D32F2F">const</span><span style="color:#1976D2"> </span><span style="color:#1976D2"><span class="twoslash-hover twoslash-query-persisted"><span class="twoslash-popup-container"><div class="twoslash-popup-arrow"></div>
+<pre data-language="ts" data-meta="twoslash" class="shiki shiki-themes min-light twoslash lsp dark:min-light"><code class="language-ts"><span class="line" style="display: inline"><span style="color:#D32F2F">const</span><span style="color:#1976D2"> </span><span style="color:#1976D2"><span class="twoslash-hover twoslash-query-persisted"><span class="twoslash-popup-container"><div class="twoslash-popup-arrow"></div>
 <code class="twoslash-popup-code"><span style="color:#D32F2F">const</span><span style="color:#1976D2"> message</span><span style="color:#D32F2F">:</span><span style="color:#22863A"> "Hello from twoslash"</span></code></span>message</span></span><span style="color:#D32F2F"> =</span><span style="color:#22863A"> "Hello from twoslash"</span></span>
 <span class="line" style="display: inline"></span></code></pre>
 ```

@@ -42,7 +42,7 @@ hello
 
 ```html
 <component>
-  <pre language="mdc"><code class="language-mdc">::alert
+  <pre data-language="mdc"><code class="language-mdc">::alert
   hello
   ::</code></pre>
 </component>

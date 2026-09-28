@@ -68,7 +68,7 @@
     <ol>
       <li>
         <p>Second level with code:</p>
-        <pre language="rust"><code class="language-rust">let x = 42;</code></pre>
+        <pre data-language="rust"><code class="language-rust">let x = 42;</code></pre>
       </li>
     </ol>
   </li>

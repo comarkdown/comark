@@ -121,6 +121,25 @@ export async function visitAsync(
   }
 }
 
+const CODE_BLOCK_PROPS = new Set(['language', 'filename', 'highlights', 'meta'])
+
+/** Maps code block props on a native `<pre>` to `data-*` attributes. */
+export function toNativeAttributes<T extends Record<string, any>>(tag: string, attributes: T): T {
+  if (tag !== 'pre') return attributes
+  let changed = false
+  const result: Record<string, any> = {}
+  for (const key in attributes) {
+    if (CODE_BLOCK_PROPS.has(key)) {
+      changed = true
+      const value = attributes[key]
+      result[`data-${key}`] = value !== null && typeof value === 'object' ? JSON.stringify(value) : value
+    } else {
+      result[key] = attributes[key]
+    }
+  }
+  return changed ? (result as T) : attributes
+}
+
 // #region String Utils
 
 const HTML_ESCAPE_RE = /[&<>"]/g

@@ -62,7 +62,7 @@ options:
 
 ```html
 <code-group>
-  <pre language="mdc" filename="content/index.md"><code class="language-mdc">---
+  <pre data-language="mdc" data-filename="content/index.md"><code class="language-mdc">---
   title: The Mountains Website
   description: A website about the most iconic mountains in the world.
   ---
