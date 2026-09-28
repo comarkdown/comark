@@ -150,6 +150,7 @@ function renderNode(
         props[k] = resolved[k]
       }
     }
+    const scopeProps = props
     if (!customComponent) {
       props = toNativeAttributes(tag, props)
     }
@@ -172,7 +173,7 @@ function renderNode(
     // own attributes. Bare wrappers (`<p>`, `<ul>`, `<li>`, …) must keep the
     // parent's scope so bindings like `{{ props.x }}` reach across them.
     const hasOwnAttrs = Object.keys(resolved).length > 0
-    const childrenRenderData = hasOwnAttrs ? { ...renderData, props } : renderData
+    const childrenRenderData = hasOwnAttrs ? { ...renderData, props: scopeProps } : renderData
     // Separate template elements (slots) from regular children
     const slots: Record<string, () => (VNode | string)[]> = {}
     const regularChildren: (VNode | string)[] = []

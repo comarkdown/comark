@@ -29,4 +29,14 @@ describe('code blocks', () => {
       '{&quot;language&quot;:&quot;ruby&quot;,&quot;filename&quot;:&quot;app.rb&quot;,&quot;highlights&quot;:[1],&quot;meta&quot;:&quot;foo=bar&quot;}'
     )
   })
+
+  it('should keep code block props in the binding scope of native pre children', () => {
+    const tree = {
+      nodes: [['pre', { language: 'ruby' }, ['code', { ':data-lang': 'props.language' }, 'x']]],
+      frontmatter: {},
+      meta: {},
+    } as any
+    const html = renderToString(<MarkdownDocument value={tree} />)
+    expect(html).toContain('<code data-lang="ruby">')
+  })
 })

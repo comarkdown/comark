@@ -191,16 +191,14 @@ naturally appears inline after the deepest trailing text node.
       }
     }
 
-    if (!Component && !componentPromise) {
-      mappedProps = toNativeAttributes(tag, mappedProps)
-    }
-
     return { isText, tag, isVoid, children, Component, componentPromise, mappedProps }
   })
 
   // Only shadow the parent's `props` scope when the current element has its
   // own attributes. Bare wrappers (`<p>`, `<ul>`, `<li>`, …) must keep the
   // parent's scope so bindings like `{{ props.x }}` reach across them.
+  let nativeProps = $derived(tag ? toNativeAttributes(tag, mappedProps) : mappedProps)
+
   let childrenRenderData = $derived<NodeRenderData>(
     Object.keys(mappedProps).length > 0
       ? { ...renderData, props: mappedProps }
@@ -287,9 +285,9 @@ naturally appears inline after the deepest trailing text node.
     {@render renderChildren()}
   </Resolver>
 {:else if isVoid}
-  <svelte:element this={tag} {...mappedProps} />
+  <svelte:element this={tag} {...nativeProps} />
 {:else if tag}
-  <svelte:element this={tag} {...mappedProps}>
+  <svelte:element this={tag} {...nativeProps}>
     {@render renderChildren()}
   </svelte:element>
 {/if}

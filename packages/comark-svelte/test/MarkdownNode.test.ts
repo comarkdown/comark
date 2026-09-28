@@ -393,4 +393,10 @@ describe('MarkdownNode code blocks', () => {
       '<pre data-language="ruby" data-highlights="[1]" data-filename="app.rb" data-meta="foo=bar"><code class="language-ruby">'
     )
   })
+
+  it('keeps code block props in the binding scope of native pre children', () => {
+    const node = ['pre', { language: 'ruby' }, ['code', { ':data-lang': 'props.language' }, 'x']]
+    const { body } = render(MarkdownNode, { props: { node } })
+    expect(html(body)).toContain('<code data-lang="ruby">')
+  })
 })
