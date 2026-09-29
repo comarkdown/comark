@@ -233,6 +233,94 @@ nothing: null
   })
 })
 
+describe('nested bindings in object/array props (#286)', () => {
+  const renderData = makeRenderData({
+    data: { platform: { dashboard_login_url: 'https://app.example.com/login' } },
+    frontmatter: { cta: 'Sign in' },
+  })
+
+  it('resolves :prefixed keys inside YAML block-props arrays (parseJson mode)', async () => {
+    const doc = await parseMarkdown(`::page-hero
+---
+links:
+  - label: Publish your first mission
+    :to: data.platform.dashboard_login_url
+  - :label: frontmatter.cta
+    to: /static
+---
+::`)
+    const attrs = (doc.nodes[0] as unknown as [string, Record<string, unknown>])[1]
+
+    expect(resolveAttributes(attrs, renderData, { parseJson: true })).toEqual({
+      links: [
+        { label: 'Publish your first mission', to: 'https://app.example.com/login' },
+        { label: 'Sign in', to: '/static' },
+      ],
+    })
+  })
+
+  it('resolves :prefixed keys inside inline JSON props', async () => {
+    const doc = await parseMarkdown(
+      `::page-hero{:links='[{"label":"Go",":to":"data.platform.dashboard_login_url"}]'}\n::`
+    )
+    const attrs = (doc.nodes[0] as unknown as [string, Record<string, unknown>])[1]
+
+    expect(resolveAttributes(attrs, renderData, { parseJson: true })).toEqual({
+      links: [{ label: 'Go', to: 'https://app.example.com/login' }],
+    })
+  })
+
+  it('resolves bindings nested in a JSON string value (parseJson mode)', () => {
+    const result = resolveAttributes(
+      { ':links': '[{"label":"Go",":to":"data.platform.dashboard_login_url"}]' },
+      renderData,
+      { parseJson: true }
+    )
+    expect(result).toEqual({ links: [{ label: 'Go', to: 'https://app.example.com/login' }] })
+  })
+
+  it('drops unsafe URL bindings nested in a JSON string value (parseJson mode)', () => {
+    const result = resolveAttributes(
+      { ':links': '[{"label":"x",":href":"frontmatter.home"}]' },
+      makeRenderData({ frontmatter: { home: 'javascript:alert(1)' } }),
+      { parseJson: true }
+    )
+    expect(result).toEqual({ links: [{ label: 'x' }] })
+  })
+
+  it('JSON-parses nested literals and resolves deeply nested objects (parseJson mode)', () => {
+    const result = resolveAttributes(
+      { ':config': { ':count': '3', inner: { ':url': 'data.platform.dashboard_login_url' } } },
+      renderData,
+      { parseJson: true }
+    )
+    expect(result).toEqual({ config: { count: 3, inner: { url: 'https://app.example.com/login' } } })
+  })
+
+  it('resolves nested paths in preserve mode and keeps unresolved ones verbatim', () => {
+    const result = resolveAttributes(
+      { links: [{ ':to': 'data.platform.dashboard_login_url', ':other': 'data.missing' }] },
+      renderData
+    )
+    expect(result).toEqual({ links: [{ to: 'https://app.example.com/login', ':other': 'data.missing' }] })
+  })
+
+  it('does not mutate the source attributes', () => {
+    const attrs = { links: [{ ':to': 'data.platform.dashboard_login_url' }] }
+    resolveAttributes(attrs, renderData, { parseJson: true })
+    expect(attrs).toEqual({ links: [{ ':to': 'data.platform.dashboard_login_url' }] })
+  })
+
+  it('drops nested :href bindings resolving to an unsafe URL', () => {
+    const result = resolveAttributes(
+      { links: [{ label: 'x', ':href': 'frontmatter.home' }] },
+      makeRenderData({ frontmatter: { home: 'javascript:alert(1)' } }),
+      { parseJson: true }
+    )
+    expect(result).toEqual({ links: [{ label: 'x' }] })
+  })
+})
+
 describe('resolveAttribute (single-attr lookup)', () => {
   const renderData = makeRenderData({ frontmatter: { home: 'https://example.com' } })
 
