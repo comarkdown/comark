@@ -93,6 +93,7 @@ packages/comark/
 │   └── internal/             # Internal implementation (not exported)
 │       ├── shiki.ts          # Shared Shiki runtime used by both entry points
 │       ├── frontmatter.ts    # parseFrontmatter() / renderFrontmatter()
+│       ├── heading-id.ts     # Auto heading id generation (shared by parser + stringifier)
 │       ├── yaml.ts           # YAML helpers
 │       ├── props-validation.ts # Component props validation
 │       ├── parse/            # Parsing pipeline

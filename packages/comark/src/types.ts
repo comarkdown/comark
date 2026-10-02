@@ -221,6 +221,11 @@ export type State = {
 /**
  * The context of the renderer
  */
+/**
+ * Auto-generated heading id mode. `true` is an alias for `'nested'`.
+ */
+export type HeadingIdsOption = boolean | 'nested' | 'flat'
+
 export interface RendererOptions {
   /**
    * Additional node handlers to pass to the renderer
@@ -256,6 +261,13 @@ export interface RenderMarkdownOptions extends RendererOptions {
    * Defaults: indent=2, lineWidth=-1.
    */
   frontmatterOptions?: DumpOptions
+  /**
+   * The `headingIds` mode the document was parsed with. Heading ids equal to
+   * the auto-generated one are implicit and omitted; any other id is written
+   * as `{#id}`. With `false`, every heading id is written.
+   * @default true
+   */
+  headingIds?: HeadingIdsOption
 }
 
 export interface NodeRenderData {
@@ -485,19 +497,23 @@ export interface ParserOptions<TPlugins extends readonly ComarkPlugin<any, any>[
   linkify?: boolean
 
   /**
-   * Whether to auto-generate `id` attributes for `h1`–`h6` headings from their text content.
-   * Set `false` to skip auto-generated ids; user-supplied `id` attributes are still preserved.
+   * How to auto-generate `id` attributes for `h1`–`h6` headings from their text content.
+   * User-supplied `id` attributes are always preserved.
+   *
+   * - `true` / `'nested'` — slug prefixed with the parent heading's id (h2+ parents)
+   * - `'flat'` — slug of the heading's own text only
+   * - `false` — no auto-generated ids
+   *
+   * Duplicate ids get a numeric suffix (`-1`, `-2`, ...) in both modes.
    *
    * @default true
    * @example
-   * // With headingIds: true (default)
-   * // # Hello World → ['h1', { id: 'hello-world' }, 'Hello World']
-   *
-   * // With headingIds: false
-   * // # Hello World → ['h1', {}, 'Hello World']
-   * // # Hello {id="custom"} → ['h1', { id: 'custom' }, 'Hello']
+   * // ## Setup\n### Install
+   * // 'nested' → ['h2', { id: 'setup' }, ...], ['h3', { id: 'setup-install' }, ...]
+   * // 'flat'   → ['h2', { id: 'setup' }, ...], ['h3', { id: 'install' }, ...]
+   * // false    → ['h2', {}, ...], ['h3', {}, ...]
    */
-  headingIds?: boolean
+  headingIds?: HeadingIdsOption
 
   /**
    * Whether to register the built-in default plugins

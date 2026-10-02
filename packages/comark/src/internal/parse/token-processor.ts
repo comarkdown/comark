@@ -1,6 +1,7 @@
-import type { ElementNode, Node } from 'comark'
+import type { ElementNode, HeadingIdsOption, Node } from 'comark'
 import { textContent } from 'comark/utils'
 import { htmlToNodes, parseInlineHtmlTag } from './html/index.ts'
+import { createHeadingIdTracker, nextHeadingId, type HeadingIdTracker } from '../heading-id.ts'
 
 // `::tag` components that should fold into a single same-tagged child.
 const WRAPPER_TAGS = new Set(['ul', 'ol', 'table', 'blockquote', 'pre'])
@@ -29,10 +30,9 @@ const INLINE_TAG_MAP: Record<string, string> = {
 }
 
 interface ProcessState {
-  headingSlugCounts: Map<string, number>
-  headingStack: Array<{ level: number; id: string }>
+  /** `undefined` when auto-generated heading ids are disabled */
+  headingIds?: HeadingIdTracker
   preservePositions: boolean
-  headingIds: boolean
 }
 
 // ─── main entry point ───────────────────────────────────────────────────────
@@ -40,7 +40,7 @@ interface ProcessState {
 interface TokenProcessorOptions {
   startLine?: number
   preservePositions?: boolean
-  headingIds?: boolean
+  headingIds?: HeadingIdsOption
 }
 
 /**
@@ -49,10 +49,8 @@ interface TokenProcessorOptions {
 export function marmdownItTokensToMarkdownDocument(tokens: any[], opts?: TokenProcessorOptions): Node[] {
   const options = { startLine: 0, preservePositions: false, headingIds: true, ...opts }
   const state: ProcessState = {
-    headingSlugCounts: new Map<string, number>(),
-    headingStack: [],
+    headingIds: createHeadingIdTracker(options.headingIds),
     preservePositions: options.preservePositions,
-    headingIds: options.headingIds ?? true,
   }
   const nodes: Node[] = []
 
@@ -414,7 +412,7 @@ function processBlockToken(
       let attrs: Record<string, unknown>
       if (state?.headingIds) {
         const text = children.nodes.map((n) => textContent(n)).join('')
-        const headingId = uniqueSlug(slugify(text), level, state)
+        const headingId = nextHeadingId(text, level, state.headingIds)
         // Merge user-supplied attrs with the auto-generated id; user `id` wins.
         attrs = { id: headingId, ...userAttrs }
       } else {
@@ -620,54 +618,6 @@ function mergeAdjacentTextNodes(nodes: Node[]): Node[] {
   }
 
   return merged
-}
-
-/**
- * Convert text to a slug for heading IDs
- * Example: "Hello World" -> "hello-world"
- * Example: "1. Introduction" -> "_1-introduction"
- */
-function slugify(text: string): string {
-  let slug = text
-    .toLowerCase()
-    .trim()
-    .replace(/\s+/g, '-') // Replace spaces with hyphens
-    .replace(/[^\w-]+/g, '') // Remove non-word chars (except hyphens)
-    .replace(/-{2,}/g, '-') // Replace multiple hyphens with single hyphen
-    .replace(/^-+|-+$/g, '') // Remove leading/trailing hyphens
-
-  // Prefix with underscore if starts with a digit (HTML IDs can't start with numbers)
-  if (/^\d/.test(slug)) {
-    slug = '_' + slug
-  }
-
-  return slug
-}
-
-/**
- * Return a unique slug by appending a numeric suffix for duplicates
- */
-function uniqueSlug(slug: string, level: number, state?: ProcessState): string {
-  if (!state) return slug
-  // Build hierarchical ID: pop headings at same or deeper level, then prefix with parent's ID
-  // Pop headings at same level or deeper
-  while (state.headingStack.length > 0 && state.headingStack[state.headingStack.length - 1].level >= level) {
-    state.headingStack.pop()
-  }
-  // Use parent's full ID as prefix (h1 doesn't prefix children)
-  if (state.headingStack.length > 0) {
-    const parent = state.headingStack[state.headingStack.length - 1]
-    if (parent.level >= 2) {
-      slug = parent.id + '-' + slug
-    }
-  }
-
-  // Push onto stack for child headings to reference
-  state.headingStack.push({ level, id: slug })
-
-  const count = state.headingSlugCounts.get(slug) ?? 0
-  state.headingSlugCounts.set(slug, count + 1)
-  return count === 0 ? slug : `${slug}-${count}`
 }
 
 export function processInlineTokens(tokens: any[], inHeading: boolean = false): Node[] {

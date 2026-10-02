@@ -29,7 +29,7 @@ Comark supports all standard CommonMark and GitHub Flavored Markdown (GFM) featu
 ###### Heading 6
 ```
 
-**Note:** All headings automatically get ID attributes generated from their content for linking (e.g., `# Hello World` becomes `<h1 id="hello-world">`). Set `headingIds: false` in parse options to disable auto-generated ids.
+**Note:** All headings automatically get ID attributes generated from their content for linking (e.g., `# Hello World` becomes `<h1 id="hello-world">`). Nested headings are prefixed with their parent's id by default (`setup-install`); set `headingIds: 'flat'` in parse options for plain slugs, or `headingIds: false` to disable auto-generated ids.
 
 ### Text Formatting
 

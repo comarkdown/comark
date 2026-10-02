@@ -36,6 +36,24 @@ describe('headingIds option', () => {
     expect(ids).toEqual(['options', 'options-1'])
   })
 
+  it('does not prefix parent ids in flat mode', async () => {
+    const tree = await parseMarkdown('## Setup\n\n### Install', { headingIds: 'flat' })
+
+    const ids = tree.nodes.map((n: any) => n[1].id)
+    expect(ids).toEqual(['setup', 'install'])
+  })
+
+  it('never reuses an id when a suffixed duplicate collides with a literal slug', async () => {
+    const flat = await parseMarkdown('## Foo\n\n### Foo\n\n### Foo-1', { headingIds: 'flat' })
+    expect(flat.nodes.map((n: any) => n[1].id)).toEqual(['foo', 'foo-1', 'foo-1-1'])
+
+    const nested = await parseMarkdown('# Bar\n\n# Bar\n\n# Bar-1')
+    expect(nested.nodes.map((n: any) => n[1].id)).toEqual(['bar', 'bar-1', 'bar-1-1'])
+
+    const reversed = await parseMarkdown('# Foo-1\n\n# Foo\n\n# Foo', { headingIds: 'flat' })
+    expect(reversed.nodes.map((n: any) => n[1].id)).toEqual(['foo-1', 'foo', 'foo-2'])
+  })
+
   describe('slug text extraction', () => {
     it('does not leak tag names from bold text', async () => {
       const tree = await parseMarkdown('## 1. Never let an LLM **speak** for you')
