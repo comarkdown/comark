@@ -1,6 +1,6 @@
 import type { ElementNode, Node } from 'comark'
 import { textContent } from 'comark/utils'
-import { htmlToNodes, parseInlineHtmlTag } from './html/index.ts'
+import { htmlToNodes, isForeignContentTag, parseInlineHtmlTag } from './html/index.ts'
 
 // `::tag` components that should fold into a single same-tagged child.
 const WRAPPER_TAGS = new Set(['ul', 'ol', 'table', 'blockquote', 'pre'])
@@ -725,11 +725,23 @@ export function processInlineTokens(tokens: any[], inHeading: boolean = false): 
 // the unrecognized-tag fallback. Mirrors markdown-it's default maxNesting.
 const MAX_INLINE_HTML_DEPTH = 100
 
+/**
+ * Process a single inline token into a node.
+ *
+ * @param tokens - The inline token stream
+ * @param startIndex - Index of the token to process
+ * @param inHeading - Whether the tokens belong to a heading
+ * @param htmlDepth - Current inline HTML nesting depth (recursion guard)
+ * @param inForeignContent - Whether the position is inside an SVG/MathML
+ *   subtree. There, element names get their SVG/MathML case and attribute
+ *   names keep the author's case (#467)
+ */
 function processInlineToken(
   tokens: any[],
   startIndex: number,
   inHeading: boolean = false,
-  htmlDepth: number = 0
+  htmlDepth: number = 0,
+  inForeignContent: boolean = false
 ): { node: Node | string | null; nextIndex: number } {
   const token = tokens[startIndex]
 
@@ -745,7 +757,7 @@ function processInlineToken(
   // Handle html_inline tokens using htmlparser2
   if (token.type === 'html_inline') {
     const content = token.content || ''
-    const tagInfo = parseInlineHtmlTag(content)
+    const tagInfo = parseInlineHtmlTag(content, inForeignContent)
 
     if (!tagInfo) {
       // Not a recognisable tag — return as raw text
@@ -767,6 +779,10 @@ function processInlineToken(
       return { node: content || null, nextIndex: startIndex + 1 }
     }
 
+    // SVG/MathML subtrees are case-sensitive (#467). The children of this
+    // tag are parsed with that context.
+    const childInForeignContent = inForeignContent || isForeignContentTag(tagInfo.tag)
+
     // Non-void opening tag — look ahead for the matching closing tag
     const children: Node[] = []
     let j = startIndex + 1
@@ -774,13 +790,13 @@ function processInlineToken(
     while (j < tokens.length) {
       const nextToken = tokens[j]
       if (nextToken.type === 'html_inline') {
-        const nextInfo = parseInlineHtmlTag(nextToken.content || '')
-        if (nextInfo?.isClose && nextInfo.tag === tagInfo.tag) {
+        const nextInfo = parseInlineHtmlTag(nextToken.content || '', childInForeignContent)
+        if (nextInfo?.isClose && nextInfo.tag.toLowerCase() === tagInfo.tag.toLowerCase()) {
           j++ // consume the closing tag
           break
         }
       }
-      const result = processInlineToken(tokens, j, inHeading, htmlDepth + 1)
+      const result = processInlineToken(tokens, j, inHeading, htmlDepth + 1, childInForeignContent)
       j = result.nextIndex
       if (result.node) {
         children.push(result.node as Node)
@@ -815,7 +831,7 @@ function processInlineToken(
       }
 
       // Process other tokens
-      const result = processInlineToken(tokens, i, inHeading, htmlDepth)
+      const result = processInlineToken(tokens, i, inHeading, htmlDepth, inForeignContent)
       i = result.nextIndex
       if (result.node) {
         nodes.push(result.node as Node)
@@ -876,7 +892,7 @@ function processInlineToken(
         }
 
         // Process child token
-        const result = processInlineToken(tokens, i, inHeading, htmlDepth)
+        const result = processInlineToken(tokens, i, inHeading, htmlDepth, inForeignContent)
         i = result.nextIndex
         if (result.node) {
           children.push(result.node as Node)

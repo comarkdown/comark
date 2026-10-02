@@ -42,6 +42,12 @@ describe('validateProp', () => {
     it('blocks textContent', () => {
       expect(validateProp('textContent', 'overlay')).toBe(REJECTED_PROP)
     })
+
+    it('blocks outerHTML (any case)', () => {
+      expect(validateProp('outerHTML', '<img src=x onerror=alert(1)>')).toBe(REJECTED_PROP)
+      expect(validateProp('OUTERHTML', '<img src=x onerror=alert(1)>')).toBe(REJECTED_PROP)
+      expect(validateProp(':outerHTML', '"<img src=x onerror=alert(1)>"')).toBe(REJECTED_PROP)
+    })
   })
 
   describe('href safety', () => {

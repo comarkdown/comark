@@ -128,6 +128,21 @@ describe('HTML sink props', () => {
     )
     expect(result).toEqual({ id: 'keep' })
   })
+
+  it('drops outerHTML with any casing and with the :binding prefix', () => {
+    // Vue sets `outerHTML` as a DOM property on HTML elements, which parses
+    // the value as markup once the element is attached.
+    const result = resolveAttributes(
+      {
+        outerHTML: '<img src=x onerror=alert(1)>',
+        ':OuterHtml': '"<img src=x onerror=alert(1)>"',
+        title: 'safe',
+      },
+      makeRenderData(),
+      { parseJson: true }
+    )
+    expect(result).toEqual({ title: 'safe' })
+  })
 })
 
 describe('unsafe URL bindings (render-time hard floor)', () => {

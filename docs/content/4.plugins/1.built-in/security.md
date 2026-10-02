@@ -97,11 +97,12 @@ Attributes that can be abused regardless of value are always stripped:
 | `srcdoc` | Can contain arbitrary HTML |
 | `formaction` | Can redirect form submissions |
 | `innerHTML` | Injects raw HTML through framework renderers |
+| `outerHTML` | Injects raw HTML through framework renderers |
 | `dangerouslySetInnerHTML` | Injects raw HTML through framework renderers |
 | `textContent` | Overwrites an element's children |
 
 ::note
-Framework renderers (Vue, React, Svelte, Angular) never forward `innerHTML`, `dangerouslySetInnerHTML`, or `textContent` from document attributes, even without this plugin. Raw HTML has its own explicit path through the default `html` plugin.
+Framework renderers (Vue, React, Svelte, Angular) never forward `innerHTML`, `outerHTML`, `dangerouslySetInnerHTML`, or `textContent` from document attributes, even without this plugin. Raw HTML has its own explicit path through the default `html` plugin.
 ::
 
 ### Protocol blocking

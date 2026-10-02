@@ -21,11 +21,11 @@ export interface ResolveAttributesOptions {
 }
 
 // DOM sinks that turn a string/object prop into raw markup (`innerHTML`,
-// `dangerouslySetInnerHTML`) or overwrite an element's children
+// `outerHTML`, `dangerouslySetInnerHTML`) or overwrite an element's children
 // (`textContent`). Framework renderers hand resolved attributes to
 // `h()`/`createElement`/spreads verbatim, so these keys are never forwarded
 // from document attributes — raw HTML has its own explicit path.
-const HTML_SINK_PROPS = new Set(['innerhtml', 'dangerouslysetinnerhtml', 'textcontent'])
+const HTML_SINK_PROPS = new Set(['innerhtml', 'outerhtml', 'dangerouslysetinnerhtml', 'textcontent'])
 
 /**
  * Resolve `:prefixed` attributes against the render context.
