@@ -394,6 +394,13 @@ describe('MarkdownNode code blocks', () => {
     )
   })
 
+  it('keeps authored language on a raw HTML pre', () => {
+    const node = ['pre', { $: { html: 1, block: 1 }, language: 'ruby' }, 'puts 1']
+    const { body } = render(MarkdownNode, { props: { node } })
+    expect(html(body)).toContain('<pre language="ruby">')
+    expect(html(body)).not.toContain('data-language')
+  })
+
   it('keeps code block props in the binding scope of native pre children', () => {
     const node = ['pre', { language: 'ruby' }, ['code', { ':data-lang': 'props.language' }, 'x']]
     const { body } = render(MarkdownNode, { props: { node } })

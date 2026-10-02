@@ -196,10 +196,11 @@ export class MarkdownNode implements OnChanges {
     tag: string,
     attrs: Record<string, any>,
     children: MarkdownAstNode[],
-    childrenRenderData: NodeRenderData
+    childrenRenderData: NodeRenderData,
+    node?: MarkdownAstNode
   ): void {
     const el = this.renderer.createElement(tag)
-    this.applyAttributes(el, toNativeAttributes(tag, attrs))
+    this.applyAttributes(el, node ? toNativeAttributes(tag, node, attrs) : attrs)
 
     // `innerHTML` from document attributes is never applied — resolveAttributes
     // drops DOM sink props, and raw HTML has its own explicit parse path.
@@ -216,7 +217,14 @@ export class MarkdownNode implements OnChanges {
     children: MarkdownAstNode[],
     childrenRenderData: NodeRenderData
   ): void {
-    this.renderNativeEl(this.elementRef.nativeElement as HTMLElement, tag, attrs, children, childrenRenderData)
+    this.renderNativeEl(
+      this.elementRef.nativeElement as HTMLElement,
+      tag,
+      attrs,
+      children,
+      childrenRenderData,
+      this.node
+    )
   }
 
   /** Evaluate an `::if` before rendering any of its descendants. */

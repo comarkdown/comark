@@ -30,6 +30,17 @@ describe('code blocks', () => {
     )
   })
 
+  it('should keep authored language on a raw HTML pre', () => {
+    const tree = {
+      nodes: [['pre', { $: { html: 1, block: 1 }, language: 'ruby' }, 'puts 1']],
+      frontmatter: {},
+      meta: {},
+    } as any
+    const html = renderToString(<MarkdownDocument value={tree} />)
+    expect(html).toContain('<pre language="ruby">')
+    expect(html).not.toContain('data-language')
+  })
+
   it('should keep code block props in the binding scope of native pre children', () => {
     const tree = {
       nodes: [['pre', { language: 'ruby' }, ['code', { ':data-lang': 'props.language' }, 'x']]],

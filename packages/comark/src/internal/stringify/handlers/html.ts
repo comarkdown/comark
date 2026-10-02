@@ -99,7 +99,7 @@ export async function html(node: ElementNode, state: State, parent?: ElementNode
     state.applyContext(revert)
   }
 
-  const nativeAttributes = toNativeAttributes(String(tag), attributes)
+  const nativeAttributes = toNativeAttributes(String(tag), node, attributes)
   const attrs = Object.keys(nativeAttributes).length > 0 ? ` ${htmlAttributes(nativeAttributes)}` : ''
 
   if (isSelfClose) {

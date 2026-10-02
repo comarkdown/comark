@@ -157,7 +157,7 @@ function renderNode(
 
     const scopeProps = props
     if (!customComponent) {
-      props = toNativeAttributes(tag, props)
+      props = toNativeAttributes(tag, node, props)
     }
 
     if (typeof Component !== 'string' && (Component as any)?.propTypes?.__node !== undefined) {

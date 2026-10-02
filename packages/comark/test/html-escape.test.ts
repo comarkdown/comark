@@ -11,6 +11,16 @@ const renderNodes = async (nodes: Node[]) =>
   render({ nodes, frontmatter: {}, meta: {} }, { format: 'text/html', blockSeparator: '\n' })
 
 describe('HTML attribute escaping', () => {
+  it('keeps authored language on a raw pre and remaps fence language', async () => {
+    const raw = await renderHtml('<pre language="ruby">\nputs 1\n</pre>')
+    expect(raw).toContain('<pre language="ruby">')
+    expect(raw).not.toContain('data-language')
+
+    const fence = await renderHtml('```ruby\nputs 1\n```')
+    expect(fence).toContain('<pre data-language="ruby">')
+    expect(fence).not.toContain(' language="ruby"')
+  })
+
   it('escapes double quotes in raw-HTML attribute values', async () => {
     const html = await renderHtml(`<span title='a" onmouseover=alert(1)'>hi</span>`)
     expect(html).toContain('title="a&quot; onmouseover=alert(1)"')

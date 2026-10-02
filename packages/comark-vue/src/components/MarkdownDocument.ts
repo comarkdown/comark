@@ -152,7 +152,7 @@ function renderNode(
     }
     const scopeProps = props
     if (!customComponent) {
-      props = toNativeAttributes(tag, props)
+      props = toNativeAttributes(tag, node, props)
     }
 
     // @ts-expect-error - component might be a Vue component
