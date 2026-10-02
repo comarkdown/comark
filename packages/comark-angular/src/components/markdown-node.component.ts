@@ -393,7 +393,7 @@ export class MarkdownNode implements OnChanges {
           const resolved = resolveAttributes(childProps, renderData, { parseJson: true })
           const hasOwnAttrs = Object.keys(resolved).length > 0
           const childRenderData: NodeRenderData = hasOwnAttrs ? { ...renderData, props: resolved } : renderData
-          this.renderNativeEl(parentEl, childTag, resolved, grandChildren, childRenderData)
+          this.renderNativeEl(parentEl, childTag, resolved, grandChildren, childRenderData, child)
         }
       }
     }
