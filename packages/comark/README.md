@@ -160,6 +160,10 @@ npx skills add https://comark.dev
 
 See [Installation](https://comark.dev/getting-started/installation) on comark.dev for details.
 
+## Contributing
+
+See the [contribution guide](https://github.com/comarkdown/comark/blob/main/CONTRIBUTING.md) for local setup, developing packages and plugins, and preparing a pull request.
+
 ## License
 
 Made with ❤️
