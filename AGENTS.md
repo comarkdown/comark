@@ -36,7 +36,6 @@ This is a **monorepo** containing the Comark Markdown parser, document model, pl
 │   ├── 3.plugins/        # Plugin examples (math, mermaid, highlight, rangi, footnotes, ...)
 │   └── 4.ai/             # AI streaming examples (Nuxt + AI SDK)
 ├── docs/                 # Documentation site (comark-docs layer)
-├── playground/           # Nuxt playground (`pnpm dev:playground`)
 ├── benchmarks/           # mitata benchmarks for parse/render/plugins
 ├── scripts/              # Build/sync/release scripts
 ├── test/                 # Root-level tests (bundle-size snapshot)
@@ -824,6 +823,8 @@ export const DocsMarkdown = defineMarkdownComponent({
 
 ## Common Tasks
 
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for local setup and the example-app workflow. Installation runs `pnpm stub`, so examples normally use package sources without a separate compiler watcher. Run `pnpm stub` again after a build to restore those source exports.
+
 ### Adding a new utility function
 
 1. Internal helpers go in `packages/comark/src/internal/`; public ones in `packages/comark/src/utils/`
@@ -870,7 +871,6 @@ Root workspace scripts:
 ```bash
 pnpm docs         # Run documentation site
 pnpm dev:<name>   # Run an example (vue, react, svelte, angular, html, ansi, nuxt, nextjs, astro, ...)
-pnpm dev:playground # Run the Nuxt playground
 pnpm build        # Build all packages, then sync plugin re-exports
 pnpm stub         # Point every package's dist/ at src/ for local dev (runs on postinstall)
 pnpm test         # Run all package tests
