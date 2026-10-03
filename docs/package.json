@@ -1,5 +1,6 @@
 {
-  "name": "comark",
+  "name": "comark-docs-site",
+  "private": true,
   "description": "Parse and render Markdown anywhere with one JavaScript library for HTML, ANSI, Vue, React, Svelte and Angular, plus plugins and streaming.",
   "type": "module",
   "scripts": {
