@@ -4,12 +4,16 @@
   "description": "Vue 3 renderer for Comark. Render Markdown with components at runtime, with streaming support for AI output.",
   "keywords": [
     "ai",
+    "ai-chat",
     "comark",
     "components",
+    "llm",
     "markdown",
+    "markdown-renderer",
     "mdc",
     "renderer",
     "streaming",
+    "streaming-markdown",
     "vue"
   ],
   "homepage": "https://comark.dev/rendering/vue",

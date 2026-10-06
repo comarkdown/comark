@@ -1,7 +1,8 @@
 ---
-title: Vue
-description: A minimal example showing how to use Comark with Vue and Vite.
+title: 'Vue Markdown Example with Vite'
+description: 'A Vue and Vite app that renders a Markdown blog, a syntax showcase, and a live editor with Comark and a custom alert component.'
 navigation:
+  title: 'Vue'
   icon:  i-simple-icons-vuedotjs
 ---
 

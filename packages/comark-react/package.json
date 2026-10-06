@@ -4,15 +4,19 @@
   "description": "React renderer for Comark. Render Markdown with components at runtime, with streaming support for AI output. Works with Next.js and Server Components.",
   "keywords": [
     "ai",
+    "ai-chat",
     "comark",
     "components",
+    "llm",
     "markdown",
+    "markdown-renderer",
     "mdc",
     "mdx",
     "nextjs",
     "react",
     "renderer",
-    "streaming"
+    "streaming",
+    "streaming-markdown"
   ],
   "homepage": "https://comark.dev/rendering/react",
   "bugs": {

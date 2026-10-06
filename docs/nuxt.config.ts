@@ -16,12 +16,17 @@ export default defineNuxtConfig({
     domain: 'https://comark.dev',
     title: 'Comark',
     description:
-      'Parse and render Markdown anywhere with one JavaScript library for HTML, ANSI, Vue, React, Svelte and Angular, plus plugins and streaming.',
+      'Comark is an open-source Markdown parser and renderer with components, attributes and plugins. It streams AI output to React, Vue, Svelte, Angular, HTML and the terminal.',
     full: {
       title: 'Comark Documentation',
       description:
         'Complete Comark documentation as plain markdown — getting started, syntax, rendering, plugins, API reference, comparisons, and examples.',
     },
+  },
+
+  sitemap: {
+    // Vue pages of this app; the layer's sitemap source only knows the content pages.
+    urls: ['/play', '/stream'],
   },
 
   app: {
@@ -85,6 +90,18 @@ export default defineNuxtConfig({
       '/kb': { isr: 300 },
       '/kb/**': { isr: 300 },
       '/ecosystem': { isr: 300 },
+      '/use-cases': { isr: 300 },
+      '/use-cases/**': { isr: 300 },
+      '/blog': { isr: 300 },
+      '/blog/**': { isr: 300 },
+      // Topic files next to llms-full.txt (server/routes/llms-*.txt.get.ts).
+      '/llms-core.txt': { isr: 300 },
+      '/llms-streaming.txt': { isr: 300 },
+      '/llms-vue.txt': { isr: 300 },
+      '/llms-react.txt': { isr: 300 },
+      '/llms-svelte.txt': { isr: 300 },
+      '/llms-angular.txt': { isr: 300 },
+      '/llms-plugins.txt': { isr: 300 },
     },
   },
 })

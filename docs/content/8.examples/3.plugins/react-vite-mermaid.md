@@ -1,7 +1,8 @@
 ---
-title: Mermaid diagrams
-description: Example showing how to use Comark with Mermaid diagrams in React and Vite.
+title: 'Mermaid Diagrams in React Markdown'
+description: 'A React and Vite app that turns mermaid code blocks in Markdown into diagrams with the Comark mermaid plugin.'
 navigation:
+  title: 'Mermaid diagrams (React)'
   icon:  i-simple-icons-mermaid
 ---
 

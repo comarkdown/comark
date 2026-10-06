@@ -4,13 +4,17 @@
   "description": "Angular renderer for Comark. Render Markdown with components at runtime, with streaming support for AI output.",
   "keywords": [
     "ai",
+    "ai-chat",
     "angular",
     "comark",
     "components",
+    "llm",
     "markdown",
+    "markdown-renderer",
     "mdc",
     "renderer",
-    "streaming"
+    "streaming",
+    "streaming-markdown"
   ],
   "homepage": "https://comark.dev/rendering/angular",
   "bugs": {

@@ -1,7 +1,8 @@
 ---
-title: Binding (frontmatter + data)
+title: 'Frontmatter and Data Binding in Vue Markdown'
 description: Example showing how to interpolate frontmatter and runtime data into Markdown using the Comark `binding` plugin in Vue and Vite.
 navigation:
+  title: 'Binding (frontmatter + data)'
   icon: i-lucide-replace
 ---
 

@@ -1,10 +1,10 @@
 ---
 navigation: false
-title: Parse and render Markdown anywhere with Comark
-description: 'A JavaScript library to parse and stream Markdown, with renderers for HTML, ANSI, Vue, React, Svelte and Angular, plus components, attributes, and plugins.'
+title: 'Comark: Markdown Parser and Renderer for Any Framework'
+description: 'Open-source Markdown parser and renderer with components, attributes and plugins. Streams AI output to React, Vue, Svelte, Angular, HTML and the terminal.'
 seo:
-  title: Parse and render Markdown anywhere with Comark
-  description: 'Parse and render Markdown anywhere with one JavaScript library for HTML, ANSI, Vue, React, Svelte and Angular, plus plugins and streaming.'
+  title: 'Comark: Markdown Parser and Renderer for Any Framework'
+  description: 'Open-source Markdown parser and renderer with components, attributes and plugins. Streams AI output to React, Vue, Svelte, Angular, HTML and the terminal.'
   ogImage: /social-card.jpg
 ---
 
@@ -16,7 +16,7 @@ orientation: horizontal
   ---
   playground: /play
   source: |-
-    # Hello World
+    ## Hello World
 
     A JavaScript library to **parse and render Markdown** anywhere.
 
@@ -38,10 +38,10 @@ orientation: horizontal
   ---
   :::
 #title
-Parse and render Markdown anywhere.
+The Markdown parser and renderer for everything.
 
 #description
-A JavaScript library to parse and stream Markdown, with renderers for HTML, ANSI, Vue, React, Svelte and Angular, plus components, attributes, and plugins.
+Open-source Markdown parser and renderer with components, attributes and plugins. Streams AI output to React, Vue, Svelte, Angular, HTML and the terminal.
 
 #links
   :::u-button

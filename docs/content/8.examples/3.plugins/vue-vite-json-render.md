@@ -1,7 +1,8 @@
 ---
-title: JSON Render
+title: 'JSON Render: UI Components from JSON Specs in Vue Markdown'
 description: Example showing how to use Comark with JSON Render and YAML Render in Vue and Vite.
 navigation:
+  title: 'JSON Render'
   icon: i-lucide-braces
 ---
 
