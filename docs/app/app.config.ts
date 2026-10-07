@@ -15,8 +15,8 @@ export default defineAppConfig({
         label: 'Documentation',
         sections: ['getting-started', 'syntax', 'rendering', 'reference', 'kb'],
       },
-      { label: 'Guides', sections: ['use-cases', 'compare'], link: 'section' as const },
       { label: 'Plugins', sections: ['plugins'], link: 'section' as const },
+      { label: 'Guides', sections: ['use-cases', 'compare'], link: 'section' as const },
       { label: 'Examples', sections: ['examples'], link: 'section' as const },
       { label: 'Playground', to: '/play' },
       { label: 'Ecosystem', sections: ['ecosystem'], link: 'section' as const },
@@ -34,8 +34,6 @@ export default defineAppConfig({
     icon: 'i-simple-icons-vercel',
     owner: 'Vercel, Inc',
     links: [
-      { label: 'Use cases', to: '/use-cases' },
-      { label: 'Compare Comark', to: '/compare' },
       {
         icon: 'i-lucide-rss',
         to: '/rss.xml',

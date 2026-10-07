@@ -979,8 +979,8 @@ chore: update dependencies           # No version bump
    - `3.rendering/` — Vue/React/Svelte/Angular/HTML/ANSI renderer changes
    - `4.plugins/` — Plugin changes
    - `5.reference/` — Public API and options changes
-   - `6.compare/` — Comparisons with other libraries (facts must be sourced; no unverified numbers)
    - `10.use-cases/` — Task guides (AI chat streaming, generative UI, CMS, CLI, email/RSS)
+   - `11.compare/` — Comparisons with other libraries (facts must be sourced; no unverified numbers)
 
 ### Documentation Checklist
 
