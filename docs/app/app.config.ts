@@ -16,7 +16,7 @@ export default defineAppConfig({
         sections: ['getting-started', 'syntax', 'rendering', 'reference', 'kb'],
       },
       { label: 'Plugins', sections: ['plugins'], link: 'section' as const },
-      { label: 'Guides', sections: ['use-cases', 'compare'], link: 'section' as const },
+      { label: 'Use cases', sections: ['use-cases', 'compare'], link: 'section' as const },
       { label: 'Examples', sections: ['examples'], link: 'section' as const },
       { label: 'Playground', to: '/play' },
       { label: 'Ecosystem', sections: ['ecosystem'], link: 'section' as const },
