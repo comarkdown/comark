@@ -981,7 +981,6 @@ chore: update dependencies           # No version bump
    - `5.reference/` — Public API and options changes
    - `6.compare/` — Comparisons with other libraries (facts must be sourced; no unverified numbers)
    - `10.use-cases/` — Task guides (AI chat streaming, generative UI, CMS, CLI, email/RSS)
-   - `11.blog/` — Release posts
 
 ### Documentation Checklist
 

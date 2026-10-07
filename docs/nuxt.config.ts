@@ -27,7 +27,7 @@ export default defineNuxtConfig({
   sitemap: {
     // The layer's sitemap source lists the navigation pages only: add the Vue pages of this app and
     // the section indexes whose `index.md` has `navigation: false`.
-    urls: ['/plugins', '/use-cases', '/blog', '/play', '/stream'],
+    urls: ['/plugins', '/use-cases', '/compare', '/play', '/stream'],
   },
 
   app: {
@@ -93,8 +93,6 @@ export default defineNuxtConfig({
       '/ecosystem': { isr: 300 },
       '/use-cases': { isr: 300 },
       '/use-cases/**': { isr: 300 },
-      '/blog': { isr: 300 },
-      '/blog/**': { isr: 300 },
       // Topic files next to llms-full.txt (server/routes/llms-*.txt.get.ts).
       '/llms-core.txt': { isr: 300 },
       '/llms-streaming.txt': { isr: 300 },
