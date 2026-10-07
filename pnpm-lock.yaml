@@ -575,8 +575,8 @@ importers:
         specifier: workspace:*
         version: link:../packages/comark
       comark-docs:
-        specifier: github:comarkdown/comark-docs#98b83bf148b0333a9c103ce3db2db88cbb560dd4
-        version: https://codeload.github.com/comarkdown/comark-docs/tar.gz/98b83bf148b0333a9c103ce3db2db88cbb560dd4(3ff7737281dfbf12c4fa8742bd038b22)
+        specifier: github:comarkdown/comark-docs#3dd6e3eaaf66afc418eef27b38bdb91b2c15abc1
+        version: https://codeload.github.com/comarkdown/comark-docs/tar.gz/3dd6e3eaaf66afc418eef27b38bdb91b2c15abc1(3ff7737281dfbf12c4fa8742bd038b22)
       katex:
         specifier: 'catalog:'
         version: 0.18.7
@@ -6843,8 +6843,8 @@ packages:
     resolution: {integrity: sha512-z0nuo3PM53FwBYbxP4rNrUo1QW7jv8YO44HDYaGm2Wx4pmHsLqKdsA6CiHcSOaURze6m7my0Z0YFaLL77LtDUA==}
     hasBin: true
 
-  comark-docs@https://codeload.github.com/comarkdown/comark-docs/tar.gz/98b83bf148b0333a9c103ce3db2db88cbb560dd4:
-    resolution: {gitHosted: true, integrity: sha512-Zz+/o4/zgqIcK3Yme/gw/pkJOasKIzmJxeIIt/q+DAsg1vmMY8xTgVxUydXY7py2RSmRc7Vn1TzBIQITDbvdRw==, tarball: https://codeload.github.com/comarkdown/comark-docs/tar.gz/98b83bf148b0333a9c103ce3db2db88cbb560dd4}
+  comark-docs@https://codeload.github.com/comarkdown/comark-docs/tar.gz/3dd6e3eaaf66afc418eef27b38bdb91b2c15abc1:
+    resolution: {gitHosted: true, integrity: sha512-crl8Lj0qBTcheg22stXwUH893JpyHTH9ZxYAds97jPdLZJ0xOsliVSUX0eW70a4Hypou96qDqwUsS6M4QKSs1Q==, tarball: https://codeload.github.com/comarkdown/comark-docs/tar.gz/3dd6e3eaaf66afc418eef27b38bdb91b2c15abc1}
     version: 0.0.1
     engines: {node: ^22.19.0 || ^24.11.0 || >=26.0.0}
     peerDependencies:
@@ -16132,7 +16132,7 @@ snapshots:
       - shiki
       - uploadthing
 
-  comark-docs@https://codeload.github.com/comarkdown/comark-docs/tar.gz/98b83bf148b0333a9c103ce3db2db88cbb560dd4(3ff7737281dfbf12c4fa8742bd038b22):
+  comark-docs@https://codeload.github.com/comarkdown/comark-docs/tar.gz/3dd6e3eaaf66afc418eef27b38bdb91b2c15abc1(3ff7737281dfbf12c4fa8742bd038b22):
     dependencies:
       '@ai-sdk/gateway': 4.0.90(zod@4.6.5)
       '@ai-sdk/vue': 4.0.112(vue@3.5.43(typescript@6.0.3))(zod@4.6.5)

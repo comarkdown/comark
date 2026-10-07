@@ -25,8 +25,9 @@ export default defineNuxtConfig({
   },
 
   sitemap: {
-    // Vue pages of this app; the layer's sitemap source only knows the content pages.
-    urls: ['/play', '/stream'],
+    // The layer's sitemap source lists the navigation pages only: add the Vue pages of this app and
+    // `/plugins`, whose `index.md` has `navigation: false`.
+    urls: ['/plugins', '/play', '/stream'],
   },
 
   app: {
