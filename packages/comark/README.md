@@ -27,7 +27,7 @@ This is **Markdown** inside your own component.
 - **Runtime parsing**: `parseMarkdown(markdown)` is a pure function returning a compact, serializable Markdown document. Content from a database, CMS, or LLM is live the moment it is saved. No rebuild, no redeploy. ([Comark vs MDX](https://comark.dev/compare/comark-vs-mdx))
 - **Streaming built in**: auto-close completes unterminated syntax (`**bold`, open code fences, half-open components) so AI output renders correctly at every frame.
 - **One parser, every renderer**: the same source renders to HTML, ANSI, Vue, React, Svelte, and Angular. Your content outlasts your framework.
-- **Still just Markdown**: full CommonMark + GFM, frontmatter, and `{.class}` attributes on native elements. Components are opt-in syntax, not a new language.
+- **Still just Markdown**: CommonMark + GFM ([with a few differences](https://comark.dev/syntax/markdown#differences-from-commonmark-and-gfm)), frontmatter, and `{.class}` attributes on native elements. Components are opt-in syntax, not a new language.
 - **Plugin ecosystem**: Shiki highlighting, KaTeX math, Mermaid diagrams, TOC, alerts, footnotes and more, plus compatibility with existing markdown-it plugins.
 - **Decoupled parse & render**: parse once on the server, send the serializable document (`['tag', props, ...children]`) to the client, render without re-parsing.
 - **Fast**: built on [markdown-exit](https://github.com/serkodev/markdown-exit), a TypeScript rewrite of markdown-it, with full TypeScript support.

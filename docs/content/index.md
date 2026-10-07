@@ -253,7 +253,7 @@ Syntax
 [Co]{.font-bold}[mponents in ]{.text-muted} [Mark]{.font-bold}[down]{.text-muted}
 
 #description
-Discover our opt-in syntax for components, attributes, and frontmatter, handled by default plugins you can turn off. CommonMark and GFM  are supported by default, so every Markdown file you already have keeps working. 
+Discover our opt-in syntax for components, attributes, and frontmatter, handled by default plugins you can turn off. CommonMark and GFM are supported by default, so the Markdown files you already have keep working.
 
 #code-0
   ```mdc [components.md]
@@ -306,7 +306,7 @@ items:
   - label: How does Comark handle streaming AI output?
     content: The auto-close parser completes unterminated syntax (bold, code fences, components) so every incomplete frame renders correctly. Framework renderers expose this as a streaming prop.
   - label: Do I have to use components?
-    content: No. Comark is a superset of CommonMark and GFM, so plain Markdown parses unchanged. Components and attributes are opt-in syntax.
+    content: No. Plain CommonMark and GFM parse as standard Markdown, with a few documented differences. Components and attributes are opt-in syntax.
   - label: Is it free?
     content: Yes. MIT-licensed open source, maintained by Vercel. Your only costs are your own hosting.
 ---

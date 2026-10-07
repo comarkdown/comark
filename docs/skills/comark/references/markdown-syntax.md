@@ -16,7 +16,9 @@ Complete guide for writing Comark (Components in Markdown) documents.
 
 ## Standard Markdown
 
-Comark supports all standard CommonMark and GitHub Flavored Markdown (GFM) features:
+Comark parses CommonMark and GitHub Flavored Markdown (GFM). A few constructs differ, for example `[text]` without a link destination is a span, not a shortcut reference link. See https://comark.dev/syntax/markdown#differences-from-commonmark-and-gfm.
+
+The standard features:
 
 ### Headings
 
