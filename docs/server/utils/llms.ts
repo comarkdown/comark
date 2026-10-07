@@ -86,7 +86,7 @@ export const LLMS_BUNDLES: LlmsBundle[] = [
 
 /**
  * Concatenates the raw Markdown of a bundle's pages, the same documents `/raw/**` serves, so a topic file
- * never drifts from the pages it is built from. A page that doesn't exist (yet) is skipped.
+ * never drifts from the pages it is built from.
  */
 export async function renderLlmsBundle(event: H3Event, bundle: LlmsBundle): Promise<string> {
   const pages = navigationPaths(await (await getProdContent()).navigation())
@@ -99,8 +99,16 @@ export async function renderLlmsBundle(event: H3Event, bundle: LlmsBundle): Prom
     }
   }
 
+  // A page removed from the docs is skipped, so a stale list doesn't break the file. Any other failure
+  // fails the request: an ISR-cached topic file must never be silently incomplete.
   const documents = await Promise.all(
-    paths.map((path) => event.$fetch<string>(`/raw${path}.md`, { responseType: 'text' }).catch(() => undefined))
+    paths.map((path) =>
+      event.$fetch<string>(`/raw${path}.md`, { responseType: 'text' }).catch((error: { statusCode?: number }) => {
+        if (error?.statusCode !== 404) throw error
+        console.warn(`[llms] ${bundle.slug}: ${path} not found, skipped`)
+        return undefined
+      })
+    )
   )
 
   const site = getSiteConfig(event)
