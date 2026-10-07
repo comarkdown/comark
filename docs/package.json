@@ -22,7 +22,7 @@
     "ai": "catalog:",
     "beautiful-mermaid": "catalog:",
     "comark": "workspace:*",
-    "comark-docs": "github:comarkdown/comark-docs#3dd6e3eaaf66afc418eef27b38bdb91b2c15abc1",
+    "comark-docs": "github:comarkdown/comark-docs#5f15eaf90776447e0be2b6490ab3f60a66c9c8d6",
     "katex": "catalog:",
     "nuxt": "catalog:",
     "splitpanes": "catalog:",
