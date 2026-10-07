@@ -35,7 +35,7 @@ This is a **monorepo** containing the Comark Markdown parser, document model, pl
 │   ├── 3.cli/            # CLI examples (ANSI output, prompts, perf tracing)
 │   ├── 3.plugins/        # Plugin examples (math, mermaid, highlight, rangi, footnotes, ...)
 │   └── 4.ai/             # AI streaming examples (Nuxt + AI SDK)
-├── docs/                 # Documentation site (comark-docs layer)
+├── docs/                 # Documentation site (comark-docs layer; llms topic files in docs/server/routes/llms-*.txt.get.ts)
 ├── playground/           # Nuxt playground (`pnpm dev:playground`)
 ├── benchmarks/           # mitata benchmarks for parse/render/plugins
 ├── scripts/              # Build/sync/release scripts
@@ -684,7 +684,7 @@ Example:
 // Output:
 {
   nodes: [
-    ['h1', { id: 'hello' }, 'Hello ', ['strong', {}, 'World']]
+    ['h1', { id: 'hello-world' }, 'Hello ', ['strong', {}, 'World']]
   ],
   frontmatter: {},
   meta: {}
@@ -979,6 +979,9 @@ chore: update dependencies           # No version bump
    - `3.rendering/` — Vue/React/Svelte/Angular/HTML/ANSI renderer changes
    - `4.plugins/` — Plugin changes
    - `5.reference/` — Public API and options changes
+   - `6.compare/` — Comparisons with other libraries (facts must be sourced; no unverified numbers)
+   - `10.use-cases/` — Task guides (AI chat streaming, generative UI, CMS, CLI, email/RSS)
+   - `11.blog/` — Release posts
 
 ### Documentation Checklist
 

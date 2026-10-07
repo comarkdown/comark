@@ -26,8 +26,8 @@ export default defineNuxtConfig({
 
   sitemap: {
     // The layer's sitemap source lists the navigation pages only: add the Vue pages of this app and
-    // `/plugins`, whose `index.md` has `navigation: false`.
-    urls: ['/plugins', '/play', '/stream'],
+    // the section indexes whose `index.md` has `navigation: false`.
+    urls: ['/plugins', '/use-cases', '/blog', '/play', '/stream'],
   },
 
   app: {

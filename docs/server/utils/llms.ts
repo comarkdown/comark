@@ -1,5 +1,12 @@
 import type { H3Event } from 'h3'
 
+/** The fields of a comark-content navigation node that the topic files read. */
+interface NavigationItem {
+  path?: string
+  page?: false
+  children?: NavigationItem[]
+}
+
 /** A topic file served next to `llms-full.txt`, for agents that can't read the whole documentation. */
 export interface LlmsBundle {
   /** Served at `/llms-<slug>.txt`. */
@@ -82,13 +89,11 @@ export const LLMS_BUNDLES: LlmsBundle[] = [
  * never drifts from the pages it is built from. A page that doesn't exist (yet) is skipped.
  */
 export async function renderLlmsBundle(event: H3Event, bundle: LlmsBundle): Promise<string> {
-  const pages = await listDocsPages(await getProdContent())
+  const pages = navigationPaths(await (await getProdContent()).navigation())
   const paths: string[] = []
   for (const entry of bundle.pages) {
     const prefix = entry.endsWith('/**') ? entry.slice(0, -3) : undefined
-    const matches = prefix
-      ? pages.filter((page) => page.path.startsWith(`${prefix}/`)).map((page) => page.path)
-      : [entry]
+    const matches = prefix ? pages.filter((path) => path.startsWith(`${prefix}/`)) : [entry]
     for (const path of matches) {
       if (!paths.includes(path)) paths.push(path)
     }
@@ -105,6 +110,19 @@ export async function renderLlmsBundle(event: H3Event, bundle: LlmsBundle): Prom
   ].join('\n\n')
   const bodies = documents.filter((document): document is string => Boolean(document?.trim()))
   return [header, ...bodies.map((document) => document.trim())].join('\n\n')
+}
+
+/** Every page path of the navigation tree, in sidebar order. */
+function navigationPaths(items: NavigationItem[]): string[] {
+  const paths: string[] = []
+  const collect = (entries: NavigationItem[]) => {
+    for (const entry of entries) {
+      if (entry.page !== false && entry.path && !paths.includes(entry.path)) paths.push(entry.path)
+      if (entry.children?.length) collect(entry.children)
+    }
+  }
+  collect(items)
+  return paths
 }
 
 /** Event handler for one topic file. */

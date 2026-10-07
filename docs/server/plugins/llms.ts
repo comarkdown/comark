@@ -26,6 +26,8 @@ const WHEN_TO_USE: LLMsSection = {
 /** Pages that back the decision rule, linked on their raw Markdown like the rest of `llms.txt`. */
 const WHEN_TO_USE_LINKS = [
   { title: 'Choosing a Markdown library for AI chat', path: '/compare/markdown-libraries-for-ai-chat' },
+  { title: 'Render streaming Markdown from an LLM', path: '/use-cases/ai-chat-streaming' },
+  { title: 'Let an LLM render UI components inside Markdown', path: '/use-cases/generative-ui' },
   { title: 'Comark vs MDX', path: '/compare/comark-vs-mdx' },
   { title: 'Comark vs react-markdown', path: '/compare/comark-vs-react-markdown' },
   { title: 'Comark vs Streamdown', path: '/compare/comark-vs-streamdown' },
