@@ -230,6 +230,19 @@ describe('streaming mode', () => {
   })
 
   describe('streaming with MDC components', () => {
+    it('closes quoted attributes after reusing a completed component', async () => {
+      const parse = createMarkdownParser()
+      const source = '::note\nContent\n::\n\n:button{label="'
+      const partial0 = await parse(source, { streaming: true })
+      expect(partial0.nodes[1]).toMatchObject(['button', { label: '' }])
+
+      const partial = await parse(source + 'Review', { streaming: true })
+      expect(partial.nodes[1]).toMatchObject(['button', { label: 'Review' }])
+
+      const completed = await parse(source + 'Review"}')
+      expect(completed.nodes[1]).toMatchObject(['button', { label: 'Review' }])
+    })
+
     it('parses MDC block components in streaming mode', async () => {
       const parse = createMarkdownParser()
 
