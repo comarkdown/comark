@@ -28,6 +28,10 @@ Each guide answers one question with working code. Pick the task that matches yo
   :::card{icon="i-lucide-sparkles" title="Generative UI" to="/use-cases/generative-ui"}
   Let a model render your UI components inside Markdown, with no code execution.
   :::
+
+  :::card{icon="i-lucide-layout-dashboard" title="Intelligent UI" to="/use-cases/intelligent-ui"}
+  Answer with interactive components that render while the model streams, and help it pick the right one.
+  :::
 ::
 
 ## Content

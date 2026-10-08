@@ -8,6 +8,8 @@
     "angular",
     "comark",
     "components",
+    "generative-ui",
+    "intelligent-ui",
     "llm",
     "markdown",
     "markdown-renderer",

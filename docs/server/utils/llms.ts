@@ -43,6 +43,7 @@ export const LLMS_BUNDLES: LlmsBundle[] = [
       '/use-cases/svelte-ai-chat',
       '/use-cases/angular-ai-chat',
       '/use-cases/generative-ui',
+      '/use-cases/intelligent-ui',
       '/plugins/built-in/security',
     ],
   },
