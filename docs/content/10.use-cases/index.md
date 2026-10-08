@@ -9,6 +9,10 @@ Each guide answers one question with working code. Pick the task that matches yo
 ## AI and streaming
 
 ::card-group{cols="2"}
+  :::card{icon="i-lucide-layout-dashboard" title="Intelligent UI" to="/use-cases/intelligent-ui"}
+  Answer with interactive components that render while the model streams, and help it pick the right one.
+  :::
+
   :::card{icon="i-lucide-message-square-text" title="Render streaming Markdown from an LLM" to="/use-cases/ai-chat-streaming"}
   Render model output while it streams, with no raw syntax or layout jumps.
   :::
@@ -27,10 +31,6 @@ Each guide answers one question with working code. Pick the task that matches yo
 
   :::card{icon="i-lucide-sparkles" title="Generative UI" to="/use-cases/generative-ui"}
   Let a model render your UI components inside Markdown, with no code execution.
-  :::
-
-  :::card{icon="i-lucide-layout-dashboard" title="Intelligent UI" to="/use-cases/intelligent-ui"}
-  Answer with interactive components that render while the model streams, and help it pick the right one.
   :::
 ::
 
