@@ -20,6 +20,15 @@ import { closeTables } from './table.ts'
 export const INCOMPLETE_LINK_PLACEHOLDER = 'comark:incomplete-link'
 export const INCOMPLETE_IMAGE_PLACEHOLDER = 'comark:incomplete-image'
 
+/**
+ * Where a streamed block component stopped when auto-close had to close it:
+ *
+ * - `name` — the opener is still being typed (`::al`)
+ * - `props` — the `{...}` props, or a YAML props block, are still open (`::alert{type="in`)
+ * - `content` — name and props are done, the body is still open (`::alert\nsome text`)
+ */
+export type IncompleteStage = 'name' | 'props' | 'content'
+
 export type LinkMode = 'protocol' | 'text-only'
 
 export interface AutoCloseOptions {
@@ -48,6 +57,12 @@ export interface AutoCloseOptions {
    * Enabled automatically when `parseMarkdown(..., { streaming: true })`.
    */
   dropTrailingOpeners?: boolean
+  /**
+   * Write the stage of the innermost block component auto-close had to close as a
+   * comment on its closer (`:: <!-- auto-close: content -->`); the components plugin
+   * reads it into `$.ac`. Default false. Enabled when `parseMarkdown(..., { streaming: true })`.
+   */
+  markIncomplete?: boolean
   /** Auto-close incomplete links (`[text`). Default true. */
   links?: boolean
   /** Auto-close incomplete images (`![alt`). Default true. */
@@ -144,7 +159,11 @@ export function autoCloseMarkdown(markdown: string, options: AutoCloseOptions = 
 
   if (doc.fmOpen && doc.fmContent) result = closeDelimiterLine(result, '-', 3)
 
-  if (o.syntax) result = closeComponents(result, source, doc.comps, doc.start >= 0)
+  if (o.syntax) {
+    // Inside open raw HTML the closers stay text, so there is nothing to mark.
+    const mark = options.markIncomplete === true && !doc.raw
+    result = closeComponents(result, source, doc.comps, doc.start >= 0, doc.fence, mark)
+  }
 
   return result
 }
@@ -157,6 +176,9 @@ interface Component {
   depth: number
   indent: string
   yaml: boolean
+  /** Line of the opener. */
+  line: number
+  stage: IncompleteStage
 }
 
 interface DocState {
@@ -171,6 +193,10 @@ interface DocState {
   /** The document ends inside a table block. */
   table: boolean
   comps: Component[]
+  /** Closer for a code fence still open inside a component (indent + fence run), else `''`. */
+  fence: string
+  /** The document ends inside raw HTML (`<pre>`, `<script>`, ...). */
+  raw: boolean
 }
 
 const RAW_TEXT_OPEN_RE = /^<(script|pre|style|textarea)(\s|>|$)/i
@@ -200,6 +226,7 @@ function scanBlocks(src: string, o: Opts): DocState {
   const comps: Component[] = []
   let fenceLen = 0
   let fenceCh = 0
+  let fenceLs = 0
   let raw: RawTag | null = null
   let fmOpen = false
   let fmContent = false
@@ -238,6 +265,7 @@ function scanBlocks(src: string, o: Opts): DocState {
           if (!(c0 === 96 && isIncompleteInlineFence(src, st, en))) {
             fenceLen = run
             fenceCh = c0
+            fenceLs = ls
             shielded = i
             continue
           }
@@ -276,6 +304,8 @@ function scanBlocks(src: string, o: Opts): DocState {
     if (dashes && comps.length > 0) {
       const top = comps[comps.length - 1]
       top.yaml = !top.yaml
+      // Only a `---` right under the opener starts a YAML props block.
+      top.stage = top.yaml && i === top.line + 1 ? 'props' : 'content'
       continue
     }
 
@@ -284,7 +314,8 @@ function scanBlocks(src: string, o: Opts): DocState {
     if (o.syntax && c0 === 58 /* : */) {
       let colons = 1
       while (st + colons < en && src.charCodeAt(st + colons) === 58) colons++
-      const bare = st + colons === en
+      // A closer may carry a trailing comment: `:: <!-- note -->`.
+      const bare = isCloserTail(src, st + colons, en)
       if (bare && i === n - 1 && comps.length === 0) {
         // Trailing bare `::` — drop it so it does not flash as text.
         docEnd = ls
@@ -293,7 +324,14 @@ function scanBlocks(src: string, o: Opts): DocState {
       }
       if (colons >= 2) {
         if (!bare && isNameStart(src.charCodeAt(st + colons))) {
-          comps.push({ depth: colons, indent: src.slice(ls, st), yaml: false })
+          comps.push({
+            depth: colons,
+            indent: src.slice(ls, st),
+            yaml: false,
+            line: i,
+            // Any line after the opener means its name and props are done.
+            stage: i === n - 1 ? openerStage(src, st + colons, en) : 'content',
+          })
         } else if (bare && comps.length > 0 && comps[comps.length - 1].depth === colons) {
           comps.pop()
         }
@@ -301,7 +339,27 @@ function scanBlocks(src: string, o: Opts): DocState {
     }
   }
 
-  const doc: DocState = { start: -1, end: -1, docEnd, fmOpen, fmContent, mathOpen, table, comps }
+  // A fence still open inside a component must close before the component does,
+  // otherwise the appended `::` lands in the code block.
+  let fence = ''
+  if (fenceLen !== 0 && comps.length > 0) {
+    let st = fenceLs
+    while (isIndentCode(src.charCodeAt(st))) st++
+    fence = src.slice(fenceLs, st) + String.fromCharCode(fenceCh).repeat(fenceLen)
+  }
+
+  const doc: DocState = {
+    start: -1,
+    end: -1,
+    docEnd,
+    fmOpen,
+    fmContent,
+    mathOpen,
+    table,
+    comps,
+    fence,
+    raw: raw !== null,
+  }
 
   // Nothing is healed while a shielded region is still open at EOF.
   if (fenceLen !== 0 || raw !== null || fmOpen || mathOpen) return doc
@@ -828,14 +886,22 @@ function closeDelimiterLine(text: string, ch: string, width: number): string {
 }
 
 /** Closes an open props brace and every open component fence, innermost first. */
-function closeComponents(result: string, source: string, comps: Component[], healShorthand: boolean): string {
+function closeComponents(
+  result: string,
+  source: string,
+  comps: Component[],
+  healShorthand: boolean,
+  fence: string,
+  mark: boolean
+): string {
+  if (fence !== '') result += (result.endsWith('\n') ? '' : '\n') + fence
   const lineStart = result.lastIndexOf('\n') + 1
   const shorthand = healShorthand && /^:[a-z$][\w$-]*\{/i.test(result.slice(lineStart).trimStart())
   if (!source.includes('::') && !shorthand) return result
 
   // `::alert{type="info` → close the quote and the brace.
   let brace = -1
-  for (let i = result.length - 1; i >= lineStart; i--) {
+  for (let i = fence === '' ? result.length - 1 : -1; i >= lineStart; i--) {
     const c = result.charCodeAt(i)
     if (c === 125 /* } */) break
     if (c === 123 /* { */) {
@@ -873,8 +939,43 @@ function closeComponents(result: string, source: string, comps: Component[], hea
     const c = comps[i]
     if (c.yaml) out += '\n' + c.indent + '---'
     out += '\n' + c.indent + ':'.repeat(c.depth)
+    // Only the innermost component is still being typed; parents just wait on it.
+    if (mark && i === comps.length - 1) out += ' <!-- auto-close: ' + c.stage + ' -->'
   }
   return out
+}
+
+/**
+ * The stage of a block opener from its own line alone. A `{` still open at EOL is
+ * props; anything past the name (a closed `{...}`, `[...]`, text) is content.
+ */
+function openerStage(src: string, from: number, limit: number): IncompleteStage {
+  let i = from
+  while (i < limit && isNameChar(src.charCodeAt(i))) i++
+  if (i === limit) return 'name'
+  if (src.charCodeAt(i) !== 123 /* { */) return 'content'
+  let quote = 0
+  for (i++; i < limit; i++) {
+    const c = src.charCodeAt(i)
+    if (quote !== 0) {
+      if (c === 92 /* \ */) i++
+      else if (c === quote) quote = 0
+    } else if (c === 34 || c === 39) quote = c
+    else if (c === 125 /* } */) return 'content'
+  }
+  return 'props'
+}
+
+/** `[\w$-]` */
+function isNameChar(c: number): boolean {
+  return isNameStart(c) || (c >= 48 && c <= 57) || c === 95 /* _ */ || c === 45 /* - */
+}
+
+/** The rest of a `::` line makes it a closer: nothing, or only an HTML comment. */
+function isCloserTail(src: string, from: number, end: number): boolean {
+  while (from < end && isSpaceCode(src.charCodeAt(from))) from++
+  if (from === end) return true
+  return end - from >= 7 && src.startsWith('<!--', from) && src.startsWith('-->', end - 3)
 }
 
 const ZWSP_RE = /\u200B/g
@@ -926,6 +1027,14 @@ function dropTrailingOpeners(text: string, inlineCode: boolean): string {
     i--
   }
   if (i === ws) return text
+
+  // A `::` run on its own line is a component closer, not a half-typed opener.
+  // Dropping it would reopen a finished component (`::alert\nContent\n::`).
+  if (text.charCodeAt(i) === 58 /* : */ && (i === 0 || text.charCodeAt(i - 1) === 10)) {
+    let colons = 0
+    while (i + colons < ws && text.charCodeAt(i + colons) === 58) colons++
+    if (colons >= 2 && i + colons === ws) return text
+  }
 
   let allDollar = true
   let allTick = true

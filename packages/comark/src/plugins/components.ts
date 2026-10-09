@@ -34,6 +34,32 @@ function isValidComponentName(name: string): boolean {
   return RE_COMPONENT_NAME.test(name)
 }
 
+/**
+ * When `src[from, max)` is a single HTML comment (`<!-- ... -->`, trailing spaces
+ * allowed), the index of its `-->`, else -1.
+ */
+function closerComment(src: string, from: number, max: number): number {
+  if (!src.startsWith('<!--', from)) return -1
+  let end = max
+  while (end > from && (src.charCodeAt(end - 1) === 32 || src.charCodeAt(end - 1) === 9)) end--
+  if (end - from < 7 || !src.startsWith('-->', end - 3)) return -1
+  const close = src.indexOf('-->', from + 4)
+  return close === end - 3 ? close : -1
+}
+
+const AUTO_CLOSE_STAGES = new Set(['name', 'props', 'content'])
+
+/**
+ * The stage auto-close wrote into a closer comment (`<!-- auto-close: content -->`),
+ * read from the comment body `src[from, to)`. Any other comment is just a comment.
+ */
+function autoCloseStage(src: string, from: number, to: number): string | undefined {
+  const body = src.slice(from, to).trim()
+  if (!body.startsWith('auto-close:')) return undefined
+  const stage = body.slice(11).trim()
+  return AUTO_CLOSE_STAGES.has(stage) ? stage : undefined
+}
+
 const blockYamlLines: Record<string, string> = {
   '---': '---',
   '```yaml [props]': '```',
@@ -97,6 +123,7 @@ const markdownItComarkBlock: PluginSimple = (md) => {
       let pos: number
       let nextLine: number
       let auto_closed = false
+      let incomplete: string | undefined
       let start = state.bMarks[startLine] + state.tShift[startLine]
       let max = state.eMarks[startLine]
       const indent = state.sCount[startLine]
@@ -190,7 +217,9 @@ const markdownItComarkBlock: PluginSimple = (md) => {
 
         pos = state.skipSpaces(pos)
 
-        if (pos < max) {
+        // A closer may carry a trailing HTML comment: `:: <!-- note -->`.
+        const comment = pos < max ? closerComment(state.src, pos, max) : -1
+        if (pos < max && comment === -1) {
           // A new nested block opens with same marker count
           nestingDepth++
           continue
@@ -201,6 +230,7 @@ const markdownItComarkBlock: PluginSimple = (md) => {
           continue
         }
 
+        if (comment !== -1) incomplete = autoCloseStage(state.src, pos + 4, comment)
         auto_closed = true
         break
       }
@@ -217,6 +247,7 @@ const markdownItComarkBlock: PluginSimple = (md) => {
       tokenOpen.block = true
       tokenOpen.info = params.name
       tokenOpen.map = [startLine, nextLine]
+      if (incomplete) tokenOpen.meta = { ac: incomplete }
 
       params.props?.forEach(([key, value]) => {
         if (key === 'class') tokenOpen.attrJoin(key, value)
@@ -244,6 +275,17 @@ const markdownItComarkBlock: PluginSimple = (md) => {
       }
 
       state.env.comarkBlockTokens.shift()
+
+      // The body still being typed is the last slot, when there is one.
+      if (incomplete === 'content') {
+        for (let i = state.tokens.length - 1; state.tokens[i] !== tokenOpen; i--) {
+          const t = state.tokens[i]
+          if (t.type === 'mdc_block_slot' && t.nesting === 1 && t.level === tokenOpen.level + 1) {
+            t.meta = { ac: incomplete }
+            break
+          }
+        }
+      }
 
       const tokenClose = state.push('mdc_block_close', params.name, -1)
       tokenClose.map = [startLine, nextLine]

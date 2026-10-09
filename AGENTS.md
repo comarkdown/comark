@@ -657,8 +657,14 @@ autoCloseMarkdown('hello *', { dropTrailingOpeners: true }) // 'hello'
 
 Key options: `linkMode: 'protocol' | 'text-only'`, `math` (default false; on in parse),
 `dropTrailingOpeners` (default false; on when parsing with `streaming: true`),
-`incompleteLinkPlaceholder`, `incompleteImagePlaceholder`, `frontmatter`, `syntax`, `attributes`.
-Behavioral SPEC: `packages/comark/SPEC/auto-close.md` (run via `test/auto-close-spec.test.ts`).
+`incompleteLinkPlaceholder`, `incompleteImagePlaceholder`, `frontmatter`, `syntax`, `attributes`,
+`markIncomplete` (default false; on when parsing with `streaming: true`).
+
+`markIncomplete` writes the stage of the innermost block component auto-close had to close on
+its closer: `::al` → `::al\n:: <!-- auto-close: name -->` (`name` | `props` | `content`). The
+`comark_block` rule in `src/plugins/components.ts` accepts a trailing HTML comment on any closer
+(dropped), and reads an `auto-close:` one into `tokenOpen.meta.ac`; the token processor turns it
+into `$.ac` on the component (and on its last slot for `content`). Behavioral SPEC: `packages/comark/SPEC/auto-close.md` (run via `test/auto-close-spec.test.ts`).
 
 ## Markdown Document Model
 

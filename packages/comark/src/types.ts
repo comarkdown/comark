@@ -28,6 +28,16 @@ export type ElementNodeAttributes = {
     line?: number
     html?: 0 | 1
     block?: 0 | 1
+    /**
+     * Streaming only: where the innermost block component still being typed stopped,
+     * so a renderer can show a placeholder. When it is `content`, the component's
+     * last slot (`template`) carries it too. Never forwarded as a prop.
+     *
+     * - `name` — the opener is still being typed (`::al`)
+     * - `props` — the `{...}` props or a YAML props block are still open (`::alert{type="in`)
+     * - `content` — the body is still open (`::alert\nsome text`)
+     */
+    ac?: 'name' | 'props' | 'content'
   }
 }
 
