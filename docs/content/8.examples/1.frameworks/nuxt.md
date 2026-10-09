@@ -1,7 +1,8 @@
 ---
-title: Nuxt
-description: A minimal example showing how to use Comark Syntax with Nuxt UI.
+title: 'Nuxt UI Markdown Example with Comark'
+description: 'A minimal Nuxt app that renders Comark component syntax with Nuxt UI components through the @comark/nuxt module.'
 navigation:
+  title: 'Nuxt'
   icon:  i-simple-icons-nuxt
 ---
 

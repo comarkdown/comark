@@ -13,9 +13,10 @@ export default defineAppConfig({
     nav: [
       {
         label: 'Documentation',
-        sections: ['getting-started', 'syntax', 'rendering', 'reference', 'compare', 'kb'],
+        sections: ['getting-started', 'syntax', 'rendering', 'reference', 'kb'],
       },
       { label: 'Plugins', sections: ['plugins'], link: 'section' as const },
+      { label: 'Use cases', sections: ['use-cases', 'compare'], link: 'section' as const },
       { label: 'Examples', sections: ['examples'], link: 'section' as const },
       { label: 'Playground', to: '/play' },
       { label: 'Ecosystem', sections: ['ecosystem'], link: 'section' as const },
@@ -51,21 +52,25 @@ export default defineAppConfig({
   docs: {
     ogImage: {
       mark: 'comark' as const,
-      tagline: 'Parse and render Markdown anywhere',
+      tagline: 'The Markdown parser and renderer for everything',
     },
     llms: {
       description:
-        'Parse and render Markdown anywhere with one JavaScript library for HTML, ANSI, Vue, React, Svelte and Angular, plus plugins and streaming.',
+        'Comark is an open-source Markdown parser and renderer with components, attributes and plugins. It streams AI output to React, Vue, Svelte, Angular, HTML and the terminal.',
     },
     schemaOrg: {
       description:
-        'Parse and render Markdown anywhere with one JavaScript library for HTML, ANSI, Vue, React, Svelte and Angular, plus plugins and streaming.',
+        'Comark is an open-source Markdown parser and renderer with components, attributes and plugins. It streams AI output to React, Vue, Svelte, Angular, HTML and the terminal.',
       applicationCategory: 'DeveloperApplication',
       operatingSystem: 'Any',
       offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
       license: 'https://github.com/comarkdown/comark/blob/main/LICENSE',
-      sameAs: ['https://github.com/comarkdown/comark', 'https://comark.dev'],
+      sameAs: ['https://github.com/comarkdown/comark', 'https://www.npmjs.com/package/comark'],
       programmingLanguage: 'TypeScript',
+      organization: {
+        url: 'https://comark.dev',
+        sameAs: ['https://github.com/comarkdown', 'https://www.npmjs.com/org/comark'],
+      },
     },
   },
 

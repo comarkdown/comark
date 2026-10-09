@@ -1,7 +1,8 @@
 ---
-title: Math formulas
-description: Example showing how to use Comark with LaTeX math formulas in React and Vite.
+title: 'LaTeX Math Formulas in React with Comark and KaTeX'
+description: 'A React and Vite app that renders inline and block LaTeX math in Markdown with the Comark math plugin and KaTeX.'
 navigation:
+  title: 'Math formulas (React)'
   icon:  i-lucide-calculator
 ---
 
