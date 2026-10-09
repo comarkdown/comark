@@ -7,12 +7,19 @@ export const REJECTED_PROP = Symbol('comark:rejected-prop')
 
 export const unsafeTags = ['object']
 
-// `innerHTML` / `dangerouslySetInnerHTML` / `textContent` are DOM sinks that
-// turn a string prop into raw markup or overwrite an element's children.
-// Framework renderers receive resolved props verbatim, so markdown-authored
-// values would otherwise bypass tag filtering (raw HTML has its own explicit
-// path via the `html` plugin and does not need these).
-export const unsafeAttributes = ['srcdoc', 'formaction', 'innerhtml', 'dangerouslysetinnerhtml', 'textcontent']
+// `innerHTML` / `outerHTML` / `dangerouslySetInnerHTML` / `textContent` are DOM
+// sinks that turn a string prop into raw markup or overwrite an element's
+// children. Framework renderers receive resolved props verbatim, so
+// markdown-authored values would otherwise bypass tag filtering (raw HTML has
+// its own explicit path via the `html` plugin and does not need these).
+export const unsafeAttributes = [
+  'srcdoc',
+  'formaction',
+  'innerhtml',
+  'outerhtml',
+  'dangerouslysetinnerhtml',
+  'textcontent',
+]
 
 export const unsafeLinkPrefix = [
   'javascript:',

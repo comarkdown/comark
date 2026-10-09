@@ -27,4 +27,15 @@ describe('HTML sink props', () => {
     expect(html).toContain('safe')
     expect(html).not.toContain('overlay')
   })
+
+  it('never forwards markdown-authored outerHTML to h()', async () => {
+    // On the client, Vue sets outerHTML as a DOM property on HTML elements.
+    // A later patch then parses the value as markup.
+    const document = await parseMarkdown(
+      '[x]{outerHTML="<img src=x onerror=alert(1)>"}\n\n<svg><foreignObject><div outerHTML="<img src=y onerror=alert(2)>"></div></foreignObject></svg>'
+    )
+    const html = await renderDocument(document)
+    expect(html).not.toContain('onerror')
+    expect(html.toLowerCase()).not.toContain('outerhtml')
+  })
 })
