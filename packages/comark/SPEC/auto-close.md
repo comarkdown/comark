@@ -42,6 +42,8 @@ Self-healing markdown for streaming. Completes incomplete syntax so partial AI o
 | `comparisonOperators` | `true` | escape `>` followed by a digit at the start of a list item (`- > 25` → `- \> 25`) (changes final output) |
 | `dropTrailingOpeners` | `false` (`true` when `streaming: true`) | drop a trailing opener after whitespace at EOF (`hello *` → `hello`) |
 | `setextGuard` | `true` when `streaming: true` | append U+200B to a 1–2 char `-`/`=` line under a paragraph so it does not flash as a heading |
+| `syntax` | `false` (`true` in the Components section) | close Comark block components (`::name`) |
+| `markIncomplete` | `false` (`true` in the Components section) | write `<!-- auto-close: <stage> -->` on the closer of the innermost component it had to close |
 
 Legacy aliases accepted for one release: `katex` → `blockMath`, `math` and `inlineKatex` → `inlineMath`.
 
@@ -3489,4 +3491,305 @@ Dropping a partial closer is safe: the heal still emits the full one.
 ```diff opts="dropTrailingOpeners: true"
 - ~~strike.~
 + ~~strike.~~
+```
+
+---
+
+## Components
+
+Comark block components (`::name`) still open at EOF. These cases run with `syntax: true` and `markIncomplete: true` (what a streaming parse uses); the rest of this SPEC runs with both off.
+
+1. **Close innermost first.** Every open component gets its closer (`::`, `:::`, …) at the end, innermost first, at the indentation of its opener.
+2. **Mark only the innermost component.** Its closer carries `<!-- auto-close: <stage> -->`; the parser turns it into `$.ac` on that component. Parents get a plain closer.
+3. **Stages.** `name` — the opener is the last line with nothing after the name (`::alert`). `props` — the opener's `{...}` is still open on the last line, or a YAML props block (`---` right under the opener) is still open. `content` — anything else.
+4. **Shielded regions close first.** A code fence still open inside a component is closed before the component, so its closer is not swallowed as code.
+5. **Open raw HTML hides the marker.** Inside an unclosed `<pre>`, `<script>`, `<style>` or `<textarea>` the closers stay text, so no marker is written.
+6. **Closed means closed.** A closer may carry a trailing HTML comment (`:: <!-- note -->`); it still closes its component.
+
+### Name stage
+
+```diff
+- ::a
++ ::a\n:: <!-- auto-close: name -->
+```
+
+```diff
+- ::alert
++ ::alert\n:: <!-- auto-close: name -->
+```
+
+```diff
+- ::alert-box
++ ::alert-box\n:: <!-- auto-close: name -->
+```
+
+```diff
+- ::$alert
++ ::$alert\n:: <!-- auto-close: name -->
+```
+
+```diff
+- ::alert   
++ ::alert   \n:: <!-- auto-close: name -->
+```
+
+### Props stage
+
+```diff
+- ::alert{
++ ::alert{}\n:: <!-- auto-close: props -->
+```
+
+```diff
+- ::alert{props
++ ::alert{props}\n:: <!-- auto-close: props -->
+```
+
+```diff
+- ::alert{.cls
++ ::alert{.cls}\n:: <!-- auto-close: props -->
+```
+
+```diff
+- ::alert{type="info
++ ::alert{type="info"}\n:: <!-- auto-close: props -->
+```
+
+```diff
+- ::alert{type='info
++ ::alert{type='info'}\n:: <!-- auto-close: props -->
+```
+
+
+A finished `{...}` on the last line is not props any more:
+
+```diff
+- ::alert{type="info"}
++ ::alert{type="info"}\n:: <!-- auto-close: content -->
+```
+
+```diff
+- ::alert[Title]
++ ::alert[Title]\n:: <!-- auto-close: content -->
+```
+
+### YAML props
+
+A `---` right under the opener starts a YAML props block, with or without `{...}` on the opener.
+
+```diff
+- ::alert\n---
++ ::alert\n---\n---\n:: <!-- auto-close: props -->
+```
+
+```diff
+- ::alert\n---\ntype: info
++ ::alert\n---\ntype: info\n---\n:: <!-- auto-close: props -->
+```
+
+```diff
+- ::alert{.x}\n---\ntype: info
++ ::alert{.x}\n---\ntype: info\n---\n:: <!-- auto-close: props -->
+```
+
+A half-typed closing `---` is completed:
+
+```diff
+- ::alert\n---\ntype: info\n--
++ ::alert\n---\ntype: info\n---\n:: <!-- auto-close: props -->
+```
+
+Once the YAML block is closed the stage is content:
+
+```diff
+- ::alert\n---\ntype: info\n---
++ ::alert\n---\ntype: info\n---\n:: <!-- auto-close: content -->
+```
+
+```diff
+- ::alert\n---\ntype: info\n---\nBody
++ ::alert\n---\ntype: info\n---\nBody\n:: <!-- auto-close: content -->
+```
+
+### Content stage
+
+```diff
+- ::alert\n
++ ::alert\n\n:: <!-- auto-close: content -->
+```
+
+```diff
+- ::alert\nSome text
++ ::alert\nSome text\n:: <!-- auto-close: content -->
+```
+
+```diff
+- ::alert{type="info"}\nSome **bold** text
++ ::alert{type="info"}\nSome **bold** text\n:: <!-- auto-close: content -->
+```
+
+Inline healing happens before the closer is appended:
+
+```diff
+- ::alert\nSome **bold
++ ::alert\nSome **bold**\n:: <!-- auto-close: content -->
+```
+
+### Slots
+
+```diff
+- ::card\n#title
++ ::card\n#title\n:: <!-- auto-close: content -->
+```
+
+```diff
+- ::card\n#title\nHello\n#body\nSome
++ ::card\n#title\nHello\n#body\nSome\n:: <!-- auto-close: content -->
+```
+
+### Nesting
+
+Only the innermost open component is marked; closers follow the opener indentation.
+
+```diff
+- ::outer\n:::inner\ntext
++ ::outer\n:::inner\ntext\n::: <!-- auto-close: content -->\n::
+```
+
+```diff
+- :::outer\n  ::inner\n  text
++ :::outer\n  ::inner\n  text\n  :: <!-- auto-close: content -->\n:::
+```
+
+```diff
+- ::::a\n:::b\n::c
++ ::::a\n:::b\n::c\n:: <!-- auto-close: name -->\n:::\n::::
+```
+
+```diff
+- ::outer\n:::inner{type="x
++ ::outer\n:::inner{type="x"}\n::: <!-- auto-close: props -->\n::
+```
+
+A finished child leaves its parent as the innermost open component:
+
+```diff
+- ::outer\n:::inner\nDone\n:::\nmore
++ ::outer\n:::inner\nDone\n:::\nmore\n:: <!-- auto-close: content -->
+```
+
+### Components in lists and after other content
+
+```diff
+- - item\n  ::alert\n  text
++ - item\n  ::alert\n  text\n  :: <!-- auto-close: content -->
+```
+
+```diff
+- ::note\nDone\n::\n\n::alert\nPartial
++ ::note\nDone\n::\n\n::alert\nPartial\n:: <!-- auto-close: content -->
+```
+
+### Code fences inside a component
+
+An open fence is closed first, with the same run and indentation as its opener.
+
+```diff
+- ::alert\n```js\ncode
++ ::alert\n```js\ncode\n```\n:: <!-- auto-close: content -->
+```
+
+```diff
+- ::alert\n````\ncode
++ ::alert\n````\ncode\n````\n:: <!-- auto-close: content -->
+```
+
+```diff
+- ::alert\n  ~~~\ncode\n
++ ::alert\n  ~~~\ncode\n  ~~~\n:: <!-- auto-close: content -->
+```
+
+`::` inside the fence is code, not a closer:
+
+```diff
+- ::alert\n```md\n::\n
++ ::alert\n```md\n::\n```\n:: <!-- auto-close: content -->
+```
+
+A closed fence needs nothing extra:
+
+```diff
+- ::alert\n```js\ncode\n```
++ ::alert\n```js\ncode\n```\n:: <!-- auto-close: content -->
+```
+
+An open fence outside any component stays open:
+
+```diff
+- ```js\ncode
++ ```js\ncode
+```
+
+### Raw HTML
+
+The closers land inside the raw HTML as text, so no marker is written.
+
+```diff
+- ::alert\n<pre>\nx
++ ::alert\n<pre>\nx\n::
+```
+
+```diff
+- ::alert\n<pre>\nx\n</pre>\nafter
++ ::alert\n<pre>\nx\n</pre>\nafter\n:: <!-- auto-close: content -->
+```
+
+### Closed components
+
+```diff
+- ::alert\nContent\n::
++ ::alert\nContent\n::
+```
+
+```diff
+- ::alert\nContent\n::\n
++ ::alert\nContent\n::\n
+```
+
+```diff
+- ::alert\nContent\n:: <!-- note -->
++ ::alert\nContent\n:: <!-- note -->
+```
+
+```diff
+- ::alert\nContent\n::   <!-- note -->  
++ ::alert\nContent\n::   <!-- note -->  
+```
+
+Any other text after the colons is a new opener, not a closer:
+
+```diff
+- ::alert\nContent\n:: not a comment
++ ::alert\nContent\n:: not a comment\n:: <!-- auto-close: content -->
+```
+
+### Streaming (`streaming: true`)
+
+A closer typed without a trailing newline is kept:
+
+```diff opts="streaming: true"
+- ::alert\nContent\n::
++ ::alert\nContent\n::
+```
+
+A bare trailing `::` with nothing open is dropped so it does not flash:
+
+```diff opts="streaming: true"
+- text\n::
++ text\n
+```
+
+```diff opts="streaming: true"
+- ::alert
++ ::alert\n:: <!-- auto-close: name -->
 ```
