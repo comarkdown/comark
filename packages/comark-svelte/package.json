@@ -4,12 +4,18 @@
   "description": "Svelte 5 renderer for Comark. Render Markdown with components at runtime, with streaming support for AI output.",
   "keywords": [
     "ai",
+    "ai-chat",
     "comark",
     "components",
+    "generative-ui",
+    "intelligent-ui",
+    "llm",
     "markdown",
+    "markdown-renderer",
     "mdc",
     "renderer",
     "streaming",
+    "streaming-markdown",
     "svelte",
     "sveltekit"
   ],

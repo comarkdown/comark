@@ -1,7 +1,8 @@
 ---
-title: HTML preview
+title: 'Live Markdown to HTML Preview'
 description: A live markdown editor that renders Comark content to HTML and displays it in a sandboxed iframe preview, with syntax highlighting support.
 navigation:
+  title: 'HTML preview'
   icon:  i-lucide-file-code
 ---
 

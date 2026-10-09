@@ -1,9 +1,8 @@
 ---
-title: Security
+title: 'Sanitize Markdown and Prevent XSS'
 description: Sanitize the parsed AST by removing dangerous elements, blocking malicious protocols, and restricting link destinations.
-seo:
-  title: Security Sanitization Plugin
 navigation:
+  title: Security
   icon: i-lucide-shield-check
 links:
   - label: Parse API

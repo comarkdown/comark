@@ -1,7 +1,8 @@
 ---
-title: Astro
+title: 'Astro Markdown Blog with Comark'
 description: A blog example using Comark with Astro content collections and React components.
 navigation:
+  title: 'Astro'
   icon: i-simple-icons:astro
 ---
 
