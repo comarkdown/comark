@@ -101,7 +101,7 @@ packages/comark/
 │       │   ├── html/         # HTML block/inline rules
 │       │   ├── syntax/       # Component syntax scanners (props, brackets, block params)
 │       │   ├── incremental.ts # Node reuse between streaming parses
-│       │   ├── indent.ts     # Dedent of outdented component children
+
 │       │   ├── unwrap.ts     # `unwrap` option
 │       │   └── auto-unwrap.ts # `autoUnwrap` option
 │       └── stringify/        # AST → markdown string rendering (handlers/ per tag)
@@ -657,8 +657,14 @@ autoCloseMarkdown('hello *', { dropTrailingOpeners: true }) // 'hello'
 
 Key options: `linkMode: 'protocol' | 'text-only'`, `math` (default false; on in parse),
 `dropTrailingOpeners` (default false; on when parsing with `streaming: true`),
-`incompleteLinkPlaceholder`, `incompleteImagePlaceholder`, `frontmatter`, `syntax`, `attributes`.
-Behavioral SPEC: `packages/comark/SPEC/auto-close.md` (run via `test/auto-close-spec.test.ts`).
+`incompleteLinkPlaceholder`, `incompleteImagePlaceholder`, `frontmatter`, `syntax`, `attributes`,
+`markIncomplete` (default false; on when parsing with `streaming: true`).
+
+`markIncomplete` writes the stage of the innermost block component auto-close had to close on
+its closer: `::al` → `::al\n:: <!-- auto-close: name -->` (`name` | `props` | `content`). The
+`comark_block` rule in `src/plugins/components.ts` accepts a trailing HTML comment on any closer
+(dropped), and reads an `auto-close:` one into `tokenOpen.meta.ac`; the token processor turns it
+into `$.ac` on the component (and on its last slot for `content`). Behavioral SPEC: `packages/comark/SPEC/auto-close.md` (run via `test/auto-close-spec.test.ts`).
 
 ## Markdown Document Model
 
@@ -700,9 +706,8 @@ lossless through `parseMarkdown` → `renderMarkdown`:
 **Parse — dedent the children, don't raise the floor.** A child indented *less*
 than its own component marker is never dropped. Each child line is shifted left
 by `min(markerIndent, its own indentation)` and the region is tokenized against
-a zero floor (`comark_block` in `src/plugins/components.ts` via
-`src/internal/parse/indent.ts`, mirroring the line-mark mutation `blockquote`
-uses to strip its markers). Lines inside a
+a zero floor (`comark_block` via `tokenizeDedented()` in `src/plugins/components.ts`,
+mirroring the line-mark mutation `blockquote` uses to strip its markers). Lines inside a
 fenced code block all take the *opening fence's* shift, so the fence and its
 body move together. The shift is all or nothing: a tab that would have to be
 split into columns puts the region back and keeps the marker floor. A component
