@@ -78,7 +78,7 @@
     "@vitest/browser": "catalog:",
     "@vitest/browser-playwright": "catalog:",
     "release-it": "catalog:",
-    "svelte": "^5.57.1",
+    "svelte": "^5.57.2",
     "svelte-check": "catalog:",
     "vitest": "catalog:",
     "vitest-browser-svelte": "catalog:"
@@ -87,7 +87,7 @@
     "beautiful-mermaid": "catalog:",
     "katex": "catalog:",
     "shiki": "catalog:",
-    "svelte": "^5.57.1"
+    "svelte": "^5.57.2"
   },
   "peerDependenciesMeta": {
     "shiki": {
