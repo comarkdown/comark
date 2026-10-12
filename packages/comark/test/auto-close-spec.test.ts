@@ -39,8 +39,9 @@ function map(opts: SpecOptions): Record<string, unknown> {
     // Pass block/inline math independently (comark supports both flags).
     blockMath: generic.blockMath === true,
     inlineMath: generic.inlineMath === true,
-    // SPEC is CommonMark/GFM — disable Comark component closing.
-    syntax: false,
+    // Comark component closing is off except where the SPEC turns it on (Components section).
+    syntax: generic.syntax === true,
+    markIncomplete: generic.markIncomplete === true,
     frontmatter: false,
   }
 }

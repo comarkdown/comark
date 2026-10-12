@@ -314,6 +314,8 @@ function processBlockToken(
   if (token.type === 'mdc_block_open') {
     const componentName = token.tag || 'component'
     const attrs = processAttributes(token.attrs)
+    // Streaming stage the components plugin read off this component's closer.
+    if (token.meta?.ac) attrs.$ = { ac: token.meta.ac }
     // Process children until mdc_block_close, handling slots (#slotname)
     const children = processBlockChildrenWithSlots(tokens, startIndex + 1, 'mdc_block_close', state)
 
@@ -500,6 +502,7 @@ function processBlockChildrenWithSlots(
           if (slotKey.startsWith('#')) {
             const slotName = slotKey.substring(1)
             const slotAttrs = processAttributes(token.attrs.slice(1))
+            if (token.meta?.ac) slotAttrs.$ = { ac: token.meta.ac }
 
             // Save previous slot if any
             if (currentSlotName !== null && currentSlotChildren.length > 0) {

@@ -46,6 +46,8 @@ export const DEFAULT_SPEC_OPTIONS = {
   dropTrailingOpeners: false,
   setextGuard: false,
   streaming: false,
+  syntax: false,
+  markIncomplete: false,
 }
 
 const CANONICAL_KEYS = new Set(Object.keys(DEFAULT_SPEC_OPTIONS))
@@ -150,6 +152,10 @@ export function applySectionHints(section, opts) {
   const overrides = {}
   if (/trailing openers/i.test(section)) overrides.dropTrailingOpeners = true
   if (/text-only mode/i.test(section)) overrides.linkMode = 'text-only'
+  if (/^components\b/i.test(section)) {
+    overrides.syntax = true
+    overrides.markIncomplete = true
+  }
   if (Object.keys(overrides).length === 0) return opts
   return resolveOptions({ ...opts, ...overrides })
 }
@@ -603,6 +609,8 @@ export function toGenericAutoCloseOptions(opts) {
     dropTrailingOpeners: opts.dropTrailingOpeners,
     setextGuard: opts.setextGuard,
     streaming: opts.streaming,
+    syntax: opts.syntax,
+    markIncomplete: opts.markIncomplete,
   }
 }
 

@@ -370,6 +370,71 @@ describe('streaming mode', () => {
     })
   })
 
+  describe('incomplete component stage', () => {
+    const stage = (node: unknown) => (node as ElementNode)[1].$?.ac
+    const streamed = async (md: string) => (await createMarkdownParser()(md, { streaming: true })).nodes
+
+    it('stamps the three stages as a block component streams in', async () => {
+      expect(stage((await streamed('::al'))[0])).toBe('name')
+      expect(stage((await streamed('::alert'))[0])).toBe('name')
+      expect(stage((await streamed('::alert{props'))[0])).toBe('props')
+      expect(stage((await streamed('::alert{type="info'))[0])).toBe('props')
+      expect(stage((await streamed('::alert{.x}\n---\ntype: x'))[0])).toBe('props')
+      expect(stage((await streamed('::hello{.class}\nsome data'))[0])).toBe('content')
+    })
+
+    it('stamps the open slot along with its component', async () => {
+      const card = (await streamed('::card\n#title\nDone\n#body\nSome'))[0] as ElementNode
+      expect(stage(card)).toBe('content')
+      expect(stage(card[2])).toBeUndefined()
+      expect(stage(card[3])).toBe('content')
+    })
+
+    it('stamps only the innermost open component', async () => {
+      const outer = (await streamed('::outer\n:::inner\ntext'))[0] as ElementNode
+      expect(stage(outer)).toBeUndefined()
+      expect(stage(outer[2])).toBe('content')
+    })
+
+    it('stamps a component nested in a list', async () => {
+      const ul = (await streamed('- item\n  ::alert\n  text'))[0] as ElementNode
+      expect(stage((ul[2] as ElementNode)[3])).toBe('content')
+    })
+
+    it('stamps a component whose code fence is still open, keeping the code clean', async () => {
+      const alert = (await streamed('::alert\n```js\ncode'))[0] as ElementNode
+      expect(stage(alert)).toBe('content')
+      expect(JSON.stringify(alert)).not.toContain('::')
+    })
+
+    it('does not stamp finished components', async () => {
+      const nodes = await streamed('::note\nDone\n::\n\n::alert\nPartial')
+      expect(stage(nodes[0])).toBeUndefined()
+      expect(stage(nodes.at(-1))).toBe('content')
+
+      const closed = await streamed('::alert\nContent\n::')
+      expect(closed).toHaveLength(1)
+      expect(stage(closed[0])).toBeUndefined()
+    })
+
+    it('keeps the stamp on the incremental tail, not on reused nodes', async () => {
+      const parse = createMarkdownParser()
+      await parse('::note\nDone\n::\n', { streaming: true })
+      const next = await parse('::note\nDone\n::\n\n::alert\nPartial', { streaming: true })
+      expect(stage(next.nodes[0])).toBeUndefined()
+      expect(stage(next.nodes.at(-1))).toBe('content')
+    })
+
+    it('never stamps a non-streaming parse', async () => {
+      const parse = createMarkdownParser()
+      expect(stage((await parse('::alert\nContent')).nodes[0])).toBeUndefined()
+      expect((await parse('::note\nhi\n:: <!-- just a note -->\n\nafter')).nodes).toEqual([
+        ['note', {}, 'hi'],
+        ['p', {}, 'after'],
+      ])
+    })
+  })
+
   describe('independent parser instances', () => {
     it('each createMarkdownParser instance has independent state', async () => {
       const parse1 = createMarkdownParser()

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { parseMarkdown } from 'comark'
+import { createMarkdownParser, parseMarkdown } from 'comark'
 import shiki from '@comark/nuxt/plugins/shiki'
 import rangi from '@comark/nuxt/plugins/rangi'
 import math from '@comark/nuxt/plugins/math'
@@ -90,6 +90,7 @@ const parseOptions = useLocalStorage(
     autoUnwrap: true,
     autoClose: true,
     linkify: true,
+    streaming: false,
   },
   { mergeDefaults: true }
 )
@@ -205,6 +206,11 @@ const parseOptionDefs = [
     label: 'Auto Convert urls to links',
     icon: 'i-lucide-link',
   },
+  {
+    key: 'streaming',
+    label: 'Streaming',
+    icon: 'i-lucide-radio',
+  },
 ] as const
 
 const activePlugins = computed<ComarkPlugin[]>(() =>
@@ -252,12 +258,13 @@ async function updatePreview(): Promise<void> {
   parsing.value = true
   const start = performance.now()
   try {
-    const result = await parseMarkdown(markdown.value, {
+    const parse = createMarkdownParser({
       plugins: activePlugins.value,
       autoUnwrap: parseOptions.value.autoUnwrap,
       autoClose: parseOptions.value.autoClose,
       linkify: parseOptions.value.linkify ?? true,
     })
+    const result = await parse(markdown.value, { streaming: parseOptions.value.streaming })
     document.value = result
     parseTime.value = Math.round((performance.now() - start) * 10) / 10
     nodeCount.value = countNodes(result.nodes)

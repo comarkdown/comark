@@ -185,6 +185,7 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
             attributes: hasPlugin('components') || hasPlugin('attributes'),
             math: hasPlugin('math'), // enables blockMath + inlineMath
             dropTrailingOpeners: opts.streaming === true,
+            markIncomplete: opts.streaming === true,
           })
         )
       }

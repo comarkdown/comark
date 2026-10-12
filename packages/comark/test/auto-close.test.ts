@@ -814,7 +814,57 @@ describe('autoCloseMarkdown - syntax option', () => {
   })
 })
 
+describe('autoCloseMarkdown - markIncomplete', () => {
+  const mark = (md: string) => autoCloseMarkdown(md, { markIncomplete: true })
+
+  it('writes the stage on the closer of the component it had to close', () => {
+    expect(mark('::al')).toBe('::al\n:: <!-- auto-close: name -->')
+    expect(mark('::alert')).toBe('::alert\n:: <!-- auto-close: name -->')
+    expect(mark('::alert{props')).toBe('::alert{props}\n:: <!-- auto-close: props -->')
+    expect(mark('::alert{type="info')).toBe('::alert{type="info"}\n:: <!-- auto-close: props -->')
+    expect(mark('::hello{.class}\nsome data')).toBe('::hello{.class}\nsome data\n:: <!-- auto-close: content -->')
+    expect(mark('::alert\n')).toBe('::alert\n\n:: <!-- auto-close: content -->')
+  })
+
+  it('treats an open YAML props block as props, whatever the opener looks like', () => {
+    expect(mark('::alert\n---\ntype: x')).toBe('::alert\n---\ntype: x\n---\n:: <!-- auto-close: props -->')
+    expect(mark('::alert{.x}\n---\ntype: x')).toBe('::alert{.x}\n---\ntype: x\n---\n:: <!-- auto-close: props -->')
+    expect(mark('::alert\n---\ntype: x\n---\nBody')).toBe(
+      '::alert\n---\ntype: x\n---\nBody\n:: <!-- auto-close: content -->'
+    )
+  })
+
+  it('marks only the innermost component', () => {
+    expect(mark(':::outer\n  ::inner\n  text')).toBe(
+      ':::outer\n  ::inner\n  text\n  :: <!-- auto-close: content -->\n:::'
+    )
+  })
+
+  it('adds nothing to closed components, with or without a closer comment', () => {
+    expect(mark('::alert\nContent\n::')).toBe('::alert\nContent\n::')
+    expect(mark('::alert\nx\n:: <!-- note -->')).toBe('::alert\nx\n:: <!-- note -->')
+  })
+
+  it('is off by default', () => {
+    expect(autoCloseMarkdown('::alert\nContent')).toBe('::alert\nContent\n::')
+  })
+})
+
+describe('autoCloseMarkdown - code fence inside a component', () => {
+  it('closes the fence before the component', () => {
+    expect(autoCloseMarkdown('::alert\n```js\ncode')).toBe('::alert\n```js\ncode\n```\n::')
+    expect(autoCloseMarkdown('::alert\n  ~~~~\ncode\n')).toBe('::alert\n  ~~~~\ncode\n  ~~~~\n::')
+  })
+
+  it('leaves a fence outside any component alone', () => {
+    expect(autoCloseMarkdown('```js\ncode')).toBe('```js\ncode')
+  })
+})
+
 describe('autoCloseMarkdown - dropTrailingOpeners', () => {
+  it('keeps a component closer on its own line', () => {
+    expect(autoCloseMarkdown('::alert\nContent\n::', { dropTrailingOpeners: true })).toBe('::alert\nContent\n::')
+  })
   it('drops a trailing space-flanked opener', () => {
     expect(autoCloseMarkdown('hello *', { dropTrailingOpeners: true })).toBe('hello')
     expect(autoCloseMarkdown('hello **', { dropTrailingOpeners: true })).toBe('hello')
