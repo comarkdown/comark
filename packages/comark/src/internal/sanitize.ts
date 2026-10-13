@@ -244,6 +244,11 @@ function normalizePropName(attribute: string): string {
     .replace(/[:_-]/g, '')
 }
 
+/** Whether prop `key` carries a URL, by the same names as `validateProp()`. */
+export function isUrlPropKey(key: string): boolean {
+  return isUrlProp(normalizePropName(key))
+}
+
 /** Whether a normalized prop name is an event handler or a markup sink, whatever its value. */
 function isUnsafePropName(name: string): boolean {
   // `*Html` / `*-html` props (`innerHTML`, Nuxt UI's `labelHtml`, `v-html`)

@@ -335,6 +335,22 @@ home: javascript:alert(1)
     expect(html).not.toContain('javascript:')
   })
 
+  it('blocks javascript: URLs bound from a non-URL frontmatter key to any URL prop', async () => {
+    const md = `---
+home: javascript:alert(1)
+---
+
+::my-card{:link="frontmatter.home" :image-url="frontmatter.home"}
+::`
+
+    const tree = await parseWithSecurity(md)
+    // `home` is not a URL key, so frontmatter sanitizing keeps it…
+    expect(tree.frontmatter.home).toBe('javascript:alert(1)')
+    // …and the render-time floor checks the same URL props as parse time.
+    const html = await render(tree, { format: 'text/html', blockSeparator: '\n' })
+    expect(html).not.toContain('javascript:')
+  })
+
   it('strips framework HTML sink props from components', async () => {
     const tree = await parseWithSecurity(
       `\
