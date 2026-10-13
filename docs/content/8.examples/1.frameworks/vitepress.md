@@ -1,7 +1,8 @@
 ---
-title: VitePress
+title: 'Comark Components in VitePress'
 description: Using Comark component syntax natively in VitePress via the comark syntax plugin.
 navigation:
+  title: 'VitePress'
   icon:  i-simple-icons-vitepress
 ---
 

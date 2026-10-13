@@ -25,6 +25,15 @@ export const unsafeLinkPrefix = [
   'data:text/xml',
 ]
 
+/**
+ * Whether `url` uses a hard-floor unsafe scheme.
+ */
+function hasUnsafeScheme(url: URL): boolean {
+  let href = url.href.toLowerCase()
+  if (url.protocol === 'data:') href = `data:${href.slice(5).trimStart()}`
+  return unsafeLinkPrefix.some((prefix) => href.startsWith(prefix))
+}
+
 export interface PropsValidationOptions {
   allowedLinkPrefixes?: string[]
   allowedImagePrefixes?: string[]
@@ -135,7 +144,7 @@ function validateUrl(
   }
 
   // Block known-unsafe protocols — hard floor, not overrideable by options
-  if (unsafeLinkPrefix.some((prefix) => url.href.toLowerCase().startsWith(prefix))) {
+  if (hasUnsafeScheme(url)) {
     return REJECTED_PROP
   }
 
@@ -212,45 +221,109 @@ export function isUnsafeUrlValue(value: string): boolean {
   } catch {
     return false
   }
-  return unsafeLinkPrefix.some((prefix) => url.href.toLowerCase().startsWith(prefix))
+  return hasUnsafeScheme(url)
+}
+
+// Attributes browsers navigate to or load as a URL, beyond the `*href` /
+// `*src` / `*url` / `*link` names matched by URL_PROP_SUFFIX. `to` is the
+// Vue Router / NuxtLink destination, which ends up as an `<a href>`.
+const URL_PROPS = new Set(['to', 'action', 'poster', 'cite', 'background', 'ping'])
+const URL_PROP_SUFFIX = /(?:href|src|url|uri|link)s?$/
+
+/**
+ * Whether a normalized prop name carries a URL. Matching by name (rather than
+ * checking every string value) keeps prose such as
+ * `title="JavaScript: the good parts"` intact: it parses as a `javascript:`
+ * URL, but is never navigated to.
+ */
+function isUrlProp(name: string): boolean {
+  return URL_PROPS.has(name) || URL_PROP_SUFFIX.test(name)
+}
+
+/**
+ * Lowercase and strip everything that does not change which DOM property a
+ * renderer writes: binding prefixes (`:`, `v-bind:`), Vue's force-prop/attr
+ * prefixes (`.innerHTML`, `^onclick`), and `:` / `-` / `_` separators
+ * (`xlink:href`, `label-html`). `@x` / `v-on:x` become `onx`.
+ */
+function normalizePropName(attribute: string): string {
+  return attribute
+    .toLowerCase()
+    .replace(/^(?:v-bind:|[:.^])+/, '')
+    .replace(/^(?:@|v-on:)/, 'on')
+    .replace(/[:_-]/g, '')
 }
 
 export function validateProp(attribute: string, value: unknown, options: PropsValidationOptions = {}): unknown {
-  const isBinding = /^(:|v-bind:)/.test(attribute)
-  attribute = attribute
-    .toLowerCase()
-    .replace(/^(:|v-bind:)/, '')
-    .replace(/^(@|v-on:)/, 'on')
-    .replace(/:/g, '')
-  if (attribute.startsWith('on') || unsafeAttributes.includes(attribute)) {
+  const name = normalizePropName(attribute)
+  // `*Html` / `*-html` props (`innerHTML`, Nuxt UI's `labelHtml`, `v-html`)
+  // are markup sinks: components render them with `v-html` or equivalents.
+  if (name.startsWith('on') || name.endsWith('html') || unsafeAttributes.includes(name)) {
     return REJECTED_PROP
   }
 
-  if (attribute === 'href' || attribute === 'xlinkhref' || attribute === 'src') {
-    // A non-string href/src can reach here as an array/object from the YAML
-    // block-props JSON round-trip. Reject it instead of passing it through
-    // unvalidated (#367).
-    if (typeof value !== 'string') return REJECTED_PROP
-
-    // Renderers JSON-decode `:binding` values before use, so validate the
-    // decoded form — otherwise ':href' with '"javascript:..."' (a JSON-quoted
-    // string) fails URL parsing and slips through as a "relative" URL.
-    let effective = value
-    if (isBinding) {
-      try {
-        const parsed: unknown = JSON.parse(value)
-        if (typeof parsed === 'string') effective = parsed
-      } catch {
-        // Not JSON — a dot-path binding or literal, validated as-is
-      }
+  // Renderers JSON-decode `:binding` strings before use, so validate the
+  // decoded form — otherwise ':href' with '"javascript:..."' (a JSON-quoted
+  // string) fails URL parsing and slips through as a "relative" URL, and a
+  // JSON array/object would skip the nested checks.
+  if (/^(?::|v-bind:)/.test(attribute) && typeof value === 'string') {
+    let decoded: unknown = value
+    try {
+      decoded = JSON.parse(value)
+    } catch {
+      // Not JSON — a dot-path binding or literal, validated as-is
     }
-
-    const mode = attribute === 'src' ? 'image' : 'link'
-    const result = validateUrl(effective, mode, options)
-    if (result === REJECTED_PROP) return REJECTED_PROP
+    if (typeof decoded === 'object' && decoded !== null) {
+      const result = validateValue(name, decoded, options)
+      return result === REJECTED_PROP ? REJECTED_PROP : JSON.stringify(result)
+    }
+    const result = validateValue(name, typeof decoded === 'string' ? decoded : value, options)
     // Keep the original value so bindings still resolve at render time. The
     // defaultOrigin rewrite only makes sense for literal URLs.
-    return isBinding ? value : result
+    return result === REJECTED_PROP ? REJECTED_PROP : value
+  }
+
+  return validateValue(name, value, options)
+}
+
+function validateValue(name: string, value: unknown, options: PropsValidationOptions): unknown {
+  if (typeof value === 'string') {
+    // SVG `<animate>` / `<set>` targeting `href` can rewrite a link to the
+    // script URL in `values` / `from` / `to` / `by` once the animation runs.
+    if (name === 'attributename') {
+      return decodeHtmlEntities(value).toLowerCase().includes('href') ? REJECTED_PROP : value
+    }
+    if (!isUrlProp(name)) return value
+    return validateUrl(value, name.endsWith('src') || name === 'poster' ? 'image' : 'link', options)
+  }
+
+  // A non-string href/src can reach here as an array/object from the YAML
+  // block-props JSON round-trip, and is stringified when set as an attribute.
+  // Reject it instead of passing it through unvalidated (#367). Other URL
+  // props (`to`, `link`, …) accept route/link objects, validated below.
+  if (name === 'href' || name === 'xlinkhref' || name === 'src') return REJECTED_PROP
+
+  // Array items inherit the prop name: `:hrefs='["javascript:…"]'`.
+  if (Array.isArray(value)) {
+    const result: unknown[] = []
+    for (const item of value) {
+      const validated = validateValue(name, item, options)
+      if (validated !== REJECTED_PROP) result.push(validated)
+    }
+    return result
+  }
+
+  // Object keys are validated like top-level props, at any depth:
+  // `:links='[{"to":"javascript:…","labelHtml":"<img onerror>"}]'`.
+  if (typeof value === 'object' && value !== null) {
+    const entries: Array<[string, unknown]> = []
+    for (const [key, item] of Object.entries(value)) {
+      const validated = validateProp(key, item, options)
+      if (validated !== REJECTED_PROP) entries.push([key, validated])
+    }
+    // fromEntries defines a JSON `__proto__` key as an own property instead
+    // of swapping the result's prototype
+    return Object.fromEntries(entries)
   }
 
   return value
@@ -278,6 +351,11 @@ export function validateProps(
     entries.flatMap(([name, value]) => {
       if (name === 'id' && !value) {
         return []
+      }
+
+      // Parser metadata (`$.html`, `$.line`), not a prop
+      if (name === '$') {
+        return [[name, value]]
       }
 
       const result = validateProp(name, value, options)

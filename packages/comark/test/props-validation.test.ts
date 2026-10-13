@@ -93,6 +93,18 @@ describe('validateProp', () => {
       expect(validateProp('href', 'data:text/vbscript,evil')).toBe(REJECTED_PROP)
     })
 
+    it('blocks data:text/html with spaces before the MIME type', () => {
+      // Browsers trim them and render HTML; `new URL()` keeps them in `href`.
+      expect(validateProp('href', 'data: text/html,<script>evil()</script>')).toBe(REJECTED_PROP)
+      expect(validateProp('href', 'data:   text/html,<script>evil()</script>')).toBe(REJECTED_PROP)
+      expect(validateProp('src', 'data: text/html,<script>evil()</script>')).toBe(REJECTED_PROP)
+      expect(validateProp('to', 'data: text/html,<script>evil()</script>')).toBe(REJECTED_PROP)
+    })
+
+    it('keeps data:image URLs with spaces before the MIME type when data images are allowed', () => {
+      expect(validateProp('src', 'data: image/png;base64,abc')).toBe('data: image/png;base64,abc')
+    })
+
     it('blocks entity-encoded javascript: hrefs', () => {
       expect(validateProp('href', 'javascript&#58;alert(1)')).toBe(REJECTED_PROP)
       expect(validateProp('href', 'javascript&#x3A;alert(1)')).toBe(REJECTED_PROP)
@@ -369,6 +381,140 @@ describe('validateProp', () => {
     })
   })
 
+  describe('URL props beyond href/src', () => {
+    it('blocks script URLs in `to`, `*Url`, `*Link`, `*Src` and other URL attributes', () => {
+      const payloads: Array<[string, string]> = [
+        ['to', 'javascript:alert(1)'],
+        ['To', 'JaVaScRiPt:alert(1)'],
+        ['to', 'javascript&#58;alert(1)'],
+        ['to', 'javascript%3Aalert(1)'],
+        [':to', '"javascript:alert(1)"'],
+        ['imageUrl', 'javascript:alert(1)'],
+        ['cta-link', 'vbscript:msgbox(1)'],
+        ['avatar_src', 'data:text/html,<script>alert(1)</script>'],
+        ['action', 'javascript:alert(1)'],
+        ['poster', 'javascript:alert(1)'],
+      ]
+      for (const [attribute, value] of payloads) {
+        expect(validateProp(attribute, value), `${attribute}="${value}"`).toBe(REJECTED_PROP)
+      }
+    })
+
+    it('keeps safe URLs in URL props', () => {
+      for (const value of ['https://nuxt.com', 'mailto:hi@nuxt.com', '/docs', '#anchor', 'docs/page']) {
+        expect(validateProp('to', value)).toBe(value)
+      }
+    })
+
+    it('applies the image policy to *src props and the link policy to `to`', () => {
+      expect(validateProp('avatarSrc', 'data:image/png;base64,abc', { allowDataImages: false })).toBe(REJECTED_PROP)
+      expect(validateProp('avatarSrc', 'data:image/png;base64,abc')).toBe('data:image/png;base64,abc')
+      expect(validateProp('to', 'http://example.com', { allowedProtocols: ['https'] })).toBe(REJECTED_PROP)
+    })
+
+    it('does not treat prose in non-URL props as a URL', () => {
+      expect(validateProp('title', 'JavaScript: the good parts')).toBe('JavaScript: the good parts')
+      expect(validateProp('label', 'javascript:alert(1)')).toBe('javascript:alert(1)')
+      expect(validateProp('tooltip', 'data:text/html is blocked')).toBe('data:text/html is blocked')
+    })
+
+    it('keeps route objects in `to`', () => {
+      expect(validateProp(':to', { path: '/docs', query: { q: 'x' } })).toEqual({ path: '/docs', query: { q: 'x' } })
+    })
+  })
+
+  describe('SVG animation', () => {
+    it('blocks attributeName targeting href in any form', () => {
+      expect(validateProp('attributeName', 'href')).toBe(REJECTED_PROP)
+      expect(validateProp('attributename', 'xlink:href')).toBe(REJECTED_PROP)
+      expect(validateProp('attributeName', 'HREF')).toBe(REJECTED_PROP)
+      expect(validateProp('attributeName', 'hr&#101;f')).toBe(REJECTED_PROP)
+      expect(validateProp(':attributeName', '"href"')).toBe(REJECTED_PROP)
+    })
+
+    it('keeps animations of other attributes', () => {
+      expect(validateProp('attributeName', 'opacity')).toBe('opacity')
+      expect(validateProp('values', '0;1')).toBe('0;1')
+    })
+  })
+
+  describe('markup props', () => {
+    it('blocks *Html / *-html props', () => {
+      for (const attribute of ['labelHtml', 'label-html', 'descriptionHtml', 'suffix_html', ':labelHtml', 'v-html']) {
+        expect(validateProp(attribute, '<img src=x onerror=alert(1)>'), attribute).toBe(REJECTED_PROP)
+      }
+    })
+
+    it('keeps props that only contain "html" mid-name', () => {
+      expect(validateProp('htmlFor', 'email')).toBe('email')
+    })
+  })
+
+  describe('Vue `.prop` and `^attr` prefixes', () => {
+    it('validates the prop name behind the prefix', () => {
+      const payloads: Array<[string, string]> = [
+        ['.innerHTML', '<img src=x onerror=alert(1)>'],
+        ['^innerHTML', '<img src=x onerror=alert(1)>'],
+        ['.textContent', 'overlay'],
+        ['^onclick', 'alert(1)'],
+        ['.onclick', 'alert(1)'],
+        [':.innerHTML', '"<img src=x onerror=alert(1)>"'],
+        ['^href', 'javascript:alert(1)'],
+        ['.srcdoc', '<script>alert(1)</script>'],
+      ]
+      for (const [attribute, value] of payloads) {
+        expect(validateProp(attribute, value), attribute).toBe(REJECTED_PROP)
+      }
+    })
+
+    it('keeps safe prefixed props', () => {
+      expect(validateProp('.title', 'hello')).toBe('hello')
+      expect(validateProp('^href', 'https://example.com')).toBe('https://example.com')
+    })
+  })
+
+  describe('nested values', () => {
+    it('removes unsafe keys and URLs at any depth', () => {
+      const value = [
+        {
+          label: 'Docs',
+          to: 'javascript:alert(1)',
+          onClick: 'alert(2)',
+          labelHtml: '<img src=x onerror=alert(3)>',
+          '.innerHTML': '<b>x</b>',
+          children: [{ label: 'Deep', href: 'javascript:alert(4)', avatar: { src: 'javascript:alert(5)', alt: 'a' } }],
+        },
+        { label: 'Safe', to: '/docs' },
+      ]
+      expect(validateProp(':links', value)).toEqual([
+        { label: 'Docs', children: [{ label: 'Deep', avatar: { alt: 'a' } }] },
+        { label: 'Safe', to: '/docs' },
+      ])
+    })
+
+    it('validates array items against the prop name', () => {
+      expect(validateProp(':hrefs', ['javascript:alert(1)', '/ok', ['javascript:alert(2)']])).toEqual(['/ok', []])
+      expect(validateProp(':items', ['JavaScript: the good parts'])).toEqual(['JavaScript: the good parts'])
+    })
+
+    it('sanitizes JSON-encoded binding strings and re-encodes them', () => {
+      const result = validateProp(':links', '[{"to":"javascript:alert(1)","label":"x"},{"to":"/ok"}]')
+      expect(JSON.parse(result as string)).toEqual([{ label: 'x' }, { to: '/ok' }])
+    })
+
+    it('passes nested options through', () => {
+      expect(validateProp(':item', { to: 'http://example.com', label: 'x' }, { allowedProtocols: ['https'] })).toEqual({
+        label: 'x',
+      })
+    })
+
+    it('keeps a JSON `__proto__` key as data instead of a prototype', () => {
+      const result = validateProp(':item', JSON.parse('{"__proto__":{"polluted":true},"label":"x"}')) as object
+      expect(Object.getPrototypeOf(result)).toBe(Object.prototype)
+      expect((result as Record<string, unknown>).polluted).toBeUndefined()
+    })
+  })
+
   describe('Vue directive form', () => {
     it('blocks Vue directive-form event handlers and unsafe URLs', () => {
       const payloads: Array<[string, string]> = [
@@ -449,6 +595,11 @@ describe('validateProps', () => {
     validateProps('div', { pagination: false })
     expect(spy).not.toHaveBeenCalled()
     spy.mockRestore()
+  })
+
+  it('keeps parser metadata under `$` untouched', () => {
+    const result = validateProps('svg', { $: { html: 1, block: 0 }, onclick: 'x' })
+    expect(result).toEqual({ $: { html: 1, block: 0 } })
   })
 
   it('passes options through to prop validation', () => {
