@@ -170,6 +170,7 @@ export function parseHtmlInline(content: string): ParsedHtmlTag {
 /**
  * Parse HTML attribute string into a key/value map.
  * Supports `key="value"`, `key='value'`, bare `key=value`, and boolean attributes.
+ * Names are lowercased, as HTML attribute names are case-insensitive.
  */
 export function parseHtmlAttributes(attrsStr: string): Record<string, unknown> {
   const attrs: Record<string, unknown> = {}
@@ -178,7 +179,7 @@ export function parseHtmlAttributes(attrsStr: string): Record<string, unknown> {
   const re = /([:\w.-]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+)))?/g
   let match: RegExpExecArray | null
   while ((match = re.exec(attrsStr)) !== null) {
-    const key = match[1]
+    const key = match[1].toLowerCase()
     const value = match[2] ?? match[3] ?? match[4]
     attrs[key] = value === undefined ? true : decodeHTML(value)
   }
