@@ -6,7 +6,7 @@ import { dark as defaultDark, defaultTheme } from 'rangi/themes'
 import { GRAMMAR_CONTEXTS, inlineCodeLanguage } from '../internal/inline-code-lang.ts'
 import { defineComarkPlugin } from 'comark'
 import { visitAsync } from 'comark/utils'
-import { comarkLanguages } from 'comark/plugins/rangi/language-comark'
+import { comarkLanguages } from './rangi/language-comark.ts'
 
 /** Bundled rangi language + alias keys, plus plain text fallbacks. */
 const RANGI_KNOWN_LANGS = new Set(Object.keys(rangiBuiltinLanguages))
@@ -27,7 +27,7 @@ export type RangiLanguage = ShjLanguage | (string & {})
  * information — and it mirrors the `md`/`markdown`/`comark` → `mdc` aliases the
  * Shiki plugin registers. Pass your own `languages: { md: … }` to override.
  */
-export { comarkLanguage, comarkLanguages } from 'comark/plugins/rangi/language-comark'
+export { comarkLanguage, comarkLanguages } from './rangi/language-comark.ts'
 
 /**
  * Token types emitted by rangi.
