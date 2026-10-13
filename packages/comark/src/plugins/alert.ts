@@ -1,5 +1,5 @@
 import type { ElementNode } from 'comark'
-import { visit } from '../utils/index.ts'
+import { visit } from 'comark/utils'
 import { defineComarkPlugin } from '../utils/helpers.ts'
 
 interface Marker {

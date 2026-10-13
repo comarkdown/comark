@@ -9,7 +9,7 @@
  */
 
 import type { PluginSimple, Token } from 'markdown-exit'
-import type { MarkdownItPlugin } from '../types.ts'
+import type { MarkdownItPlugin } from 'comark'
 import { defineComarkPlugin } from '../utils/helpers.ts'
 import { findClosingBracket, parseBracketContent } from '../internal/parse/syntax/brackets.ts'
 import { parseBlockParams } from '../internal/parse/syntax/block-params.ts'

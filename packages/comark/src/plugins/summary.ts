@@ -1,7 +1,6 @@
 import type { Node } from 'comark'
-import { applyAutoUnwrap } from '../internal/parse/auto-unwrap.ts'
+import { applyAutoUnwrap, defineComarkPlugin } from 'comark'
 import { marmdownItTokensToMarkdownDocument } from '../internal/parse/token-processor.ts'
-import { defineComarkPlugin } from '../utils/helpers.ts'
 
 export default defineComarkPlugin<{ delimiter?: string }, { summary: Node[] }>((options = {}) => {
   const { delimiter = '<!-- more -->' } = options

@@ -1,6 +1,6 @@
 import type { ElementNode, Node } from 'comark'
-import { defineComarkPlugin } from '../utils/helpers.ts'
-import { visitAsync } from '../utils/index.ts'
+import { defineComarkPlugin } from 'comark'
+import { visitAsync } from 'comark/utils'
 import { validateProps } from '../internal/props-validation.ts'
 import type { PropsValidationOptions } from '../internal/props-validation.ts'
 

@@ -17,7 +17,7 @@ export type {
   ShikiThemeLoader,
 } from '../../internal/shiki.ts'
 export { resetHighlighter } from '../../internal/shiki.ts'
-export { comarkLanguage, comarkLanguages } from './language-comark.ts'
+export { comarkLanguage, comarkLanguages } from 'comark/plugins/shiki/language-comark'
 
 const shiki = createShikiPlugin<ShikiCoreOptions>()
 

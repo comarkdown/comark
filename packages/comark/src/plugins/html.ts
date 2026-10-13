@@ -22,7 +22,7 @@
  */
 
 import type { MarkdownExit } from 'markdown-exit'
-import type { MarkdownItPlugin } from '../types.ts'
+import type { MarkdownItPlugin } from 'comark'
 import { defineComarkPlugin } from '../utils/helpers.ts'
 import html_block from '../internal/parse/html/html_block_rule.ts'
 import html_inline from '../internal/parse/html/html_inline_rule.ts'
