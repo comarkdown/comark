@@ -73,7 +73,7 @@ describe('component name validation', () => {
   describe('component slots', () => {
     it('does not throw on a malformed slot marker #[]', async () => {
       const tree = await parseMarkdown('::component\n#[]\n::')
-      expect(tree.nodes).toEqual([['component', {}, '#']])
+      expect(tree.nodes).toEqual([['component', {}, '#', ['span', {}]]])
     })
 
     it('does not throw on a malformed slot marker #{}', async () => {
