@@ -93,6 +93,18 @@ describe('validateProp', () => {
       expect(validateProp('href', 'data:text/vbscript,evil')).toBe(REJECTED_PROP)
     })
 
+    it('blocks data:text/html with spaces before the MIME type', () => {
+      // Browsers trim them and render HTML; `new URL()` keeps them in `href`.
+      expect(validateProp('href', 'data: text/html,<script>evil()</script>')).toBe(REJECTED_PROP)
+      expect(validateProp('href', 'data:   text/html,<script>evil()</script>')).toBe(REJECTED_PROP)
+      expect(validateProp('src', 'data: text/html,<script>evil()</script>')).toBe(REJECTED_PROP)
+      expect(validateProp('to', 'data: text/html,<script>evil()</script>')).toBe(REJECTED_PROP)
+    })
+
+    it('keeps data:image URLs with spaces before the MIME type when data images are allowed', () => {
+      expect(validateProp('src', 'data: image/png;base64,abc')).toBe('data: image/png;base64,abc')
+    })
+
     it('blocks entity-encoded javascript: hrefs', () => {
       expect(validateProp('href', 'javascript&#58;alert(1)')).toBe(REJECTED_PROP)
       expect(validateProp('href', 'javascript&#x3A;alert(1)')).toBe(REJECTED_PROP)

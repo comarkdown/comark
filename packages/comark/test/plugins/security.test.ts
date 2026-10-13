@@ -199,6 +199,22 @@ click
     expect(anchor![1].href).toBeUndefined()
   })
 
+  it('blocks a data:text/html URL with a space before its MIME type', async () => {
+    const tree = await parseWithSecurity(
+      `\
+<a href="data: text/html,<script>alert(1)</script>">click</a>
+<iframe src="data: text/html,<script>alert(1)</script>"></iframe>
+`.trim()
+    )
+
+    const anchor = collectElements(tree.nodes).find((element) => element[0] === 'a')
+    const iframe = collectElements(tree.nodes).find((element) => element[0] === 'iframe')
+    expect(anchor).toBeDefined()
+    expect(anchor![1].href).toBeUndefined()
+    expect(iframe).toBeDefined()
+    expect(iframe![1].src).toBeUndefined()
+  })
+
   it('blocks Vue directive-form event handlers and unsafe URLs', async () => {
     const tree = await parseWithSecurity(
       `\

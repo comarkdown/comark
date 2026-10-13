@@ -160,6 +160,22 @@ describe('unsafe URL bindings (render-time hard floor)', () => {
     expect(result).toEqual({})
   })
 
+  it('drops :src bindings resolving to `data: text/html` — browsers trim the space', () => {
+    const result = resolveAttributes(
+      { ':src': 'frontmatter.cover' },
+      makeRenderData({ frontmatter: { cover: 'data: text/html,<script>alert(1)</script>' } })
+    )
+    expect(result).toEqual({})
+  })
+
+  it('drops `:^href` / `:.href` bindings resolving to javascript: — Vue still writes `href`', () => {
+    const result = resolveAttributes(
+      { ':^href': 'frontmatter.home', ':.href': 'frontmatter.home' },
+      makeRenderData({ frontmatter: { home: 'javascript:alert(1)' } })
+    )
+    expect(result).toEqual({})
+  })
+
   it('drops bindings whose resolved value is entity-encoded javascript:', () => {
     const result = resolveAttributes(
       { ':href': 'frontmatter.home' },

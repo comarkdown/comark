@@ -25,6 +25,15 @@ export const unsafeLinkPrefix = [
   'data:text/xml',
 ]
 
+/**
+ * Whether `url` uses a hard-floor unsafe scheme.
+ */
+function hasUnsafeScheme(url: URL): boolean {
+  let href = url.href.toLowerCase()
+  if (url.protocol === 'data:') href = `data:${href.slice(5).trimStart()}`
+  return unsafeLinkPrefix.some((prefix) => href.startsWith(prefix))
+}
+
 export interface PropsValidationOptions {
   allowedLinkPrefixes?: string[]
   allowedImagePrefixes?: string[]
@@ -135,7 +144,7 @@ function validateUrl(
   }
 
   // Block known-unsafe protocols — hard floor, not overrideable by options
-  if (unsafeLinkPrefix.some((prefix) => url.href.toLowerCase().startsWith(prefix))) {
+  if (hasUnsafeScheme(url)) {
     return REJECTED_PROP
   }
 
@@ -212,7 +221,7 @@ export function isUnsafeUrlValue(value: string): boolean {
   } catch {
     return false
   }
-  return unsafeLinkPrefix.some((prefix) => url.href.toLowerCase().startsWith(prefix))
+  return hasUnsafeScheme(url)
 }
 
 // Attributes browsers navigate to or load as a URL, beyond the `*href` /

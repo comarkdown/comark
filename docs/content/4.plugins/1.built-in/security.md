@@ -119,6 +119,8 @@ These protocols are **always** blocked, even if `allowedProtocols: ['*']` is set
 
 `javascript:` · `vbscript:` · `data:text/html` · `data:text/javascript` · `data:text/vbscript` · `data:text/css` · `data:text/plain` · `data:text/xml`
 
+A `data:` URL is checked the way browsers read its MIME type, which ignores spaces after `data:`. So `data: text/html,…` is blocked like `data:text/html,…`.
+
 The same check applies to `:href` and `:src` bindings twice: on the JSON-decoded value at parse time, and again on the resolved value at render time, so bindings cannot smuggle an unsafe URL through frontmatter or other data sources.
 
 ::code-group
