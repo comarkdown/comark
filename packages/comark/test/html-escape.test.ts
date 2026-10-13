@@ -73,7 +73,7 @@ describe('HTML attribute escaping', () => {
 
   it('escapes bare ampersands in URL attribute values', async () => {
     // Query-string `&` must become `&amp;` in HTML attrs (HTML5).
-    // Re-parse still yields bare `&` because htmlparser2 decodes entities.
+    // Re-parse still yields bare `&` because attribute entities are decoded on parse.
     const html = await renderHtml(`<img src="https://x.com/?a=1&b=2" alt="x">`)
     expect(html).toContain('src="https://x.com/?a=1&amp;b=2"')
     const tree = await parseMarkdown(html)
