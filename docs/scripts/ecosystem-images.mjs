@@ -16,6 +16,7 @@ const VIEWPORT = '1280,720'
 const OUT_SIZE = ['960', '540']
 
 const shots = [
+  { name: 'nuxt-com', url: 'https://nuxt.com' },
   { name: 'comark-dev', url: 'https://comark.dev' },
   { name: 'unifont-dev', url: 'https://unifont.dev' },
   { name: 'graphs-demo', url: 'https://comark-graphs-demo.vercel.app' },

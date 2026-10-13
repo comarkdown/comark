@@ -35,7 +35,7 @@ This is a **monorepo** containing the Comark Markdown parser, document model, pl
 │   ├── 3.cli/            # CLI examples (ANSI output, prompts, perf tracing)
 │   ├── 3.plugins/        # Plugin examples (math, mermaid, highlight, rangi, footnotes, ...)
 │   └── 4.ai/             # AI streaming examples (Nuxt + AI SDK)
-├── docs/                 # Documentation site (comark-docs layer)
+├── docs/                 # Documentation site (comark-docs layer; llms topic files in docs/server/routes/llms-*.txt.get.ts)
 ├── playground/           # Nuxt playground (`pnpm dev:playground`)
 ├── benchmarks/           # mitata benchmarks for parse/render/plugins
 ├── scripts/              # Build/sync/release scripts
@@ -86,7 +86,7 @@ packages/comark/
 │   │   ├── task-list.ts      # GFM task lists
 │   │   └── toc.ts            # Table of contents
 │   ├── utils/                # Shared utilities (comark/utils entry point)
-│   │   ├── index.ts          # textContent(), visit(), visitAsync(), escapeHtml(), indent(), string/object utils
+│   │   ├── index.ts          # textContent(), visit(), visitAsync(), escapeHtml(), isHtmlVoidElement(), indent(), string/object utils
 │   │   ├── helpers.ts        # defineComarkPlugin(), dedupePlugins()
 │   │   ├── trace.ts          # ComarkTracer helpers: noopTracer, withSpan() (comark/utils/trace)
 │   │   └── caret.ts          # Caret utilities for streaming
@@ -482,7 +482,15 @@ import { renderMarkdown } from 'comark/render'
 
 // Document model types and utilities
 import type { MarkdownDocument, Node, ElementNode, TextNode, CommentNode } from 'comark'
-import { textContent, visit, visitAsync, escapeHtml, isMarkdownDocument } from 'comark/utils'
+import {
+  textContent,
+  visit,
+  visitAsync,
+  escapeHtml,
+  isHtmlVoidElement,
+  HTML_VOID_ELEMENTS,
+  isMarkdownDocument,
+} from 'comark/utils'
 import { noopTracer, withSpan } from 'comark/utils/trace'
 
 // Core plugins — use when calling parseMarkdown() directly (framework-agnostic)
@@ -685,7 +693,7 @@ Example:
 // Output:
 {
   nodes: [
-    ['h1', { id: 'hello' }, 'Hello ', ['strong', {}, 'World']]
+    ['h1', { id: 'hello-world' }, 'Hello ', ['strong', {}, 'World']]
   ],
   frontmatter: {},
   meta: {}
@@ -747,6 +755,16 @@ carries the body along, which is a fixed point on re-parse:
 SPEC coverage: `SPEC/COMARK/component-nested-*-outdented.md`,
 `SPEC/COMARK/component-nested-codeblock-indented.md`,
 `SPEC/COMARK/codeblock-indented-content.md`.
+
+## Embedded HTML
+
+Contract: `packages/comark/SPEC/HTML/README.md`. HTML nodes carry
+`$: { html: 1, block: 0 | 1 }`. `block` means the tag outlived the paragraph
+that opened it, not that the tag is a block element. `html({ markdown: false })`
+keeps closed-block text literal; a blank line still nests real markdown under
+the open tag. `<style>`, `<pre>`, `<script>`, `<textarea>`, and block-level `<!-- -->` comments are always verbatim, including newlines and inner tags. All-uppercase tag names are lowercased (`<DIV>` → `div`); any name with a lowercase letter keeps its case (`<Hello>`, `<linearGradient>`). `visit`/`visitAsync` drop nodes nested deeper than `TREE_WALK_MAX_DEPTH` (50). Deferred cases (cross-paragraph inline
+opener, trailing text after that closer, indented child tag inside a multiline
+`<a>`) are skipped tests in `test/html-block.test.ts` — do not weaken them.
 
 ## Vue/React/Svelte/Angular Components
 
@@ -980,6 +998,8 @@ chore: update dependencies           # No version bump
    - `3.rendering/` — Vue/React/Svelte/Angular/HTML/ANSI renderer changes
    - `4.plugins/` — Plugin changes
    - `5.reference/` — Public API and options changes
+   - `10.use-cases/` — Task guides (AI chat streaming, generative UI, CMS, CLI, email/RSS)
+   - `11.compare/` — Comparisons with other libraries (facts must be sourced; no unverified numbers)
 
 ### Documentation Checklist
 

@@ -1,7 +1,8 @@
 ---
-title: Angular
-description: A minimal example showing how to use Comark with Angular and Vite.
+title: 'Angular Markdown Example with Vite'
+description: 'An Angular and Vite app that renders a Markdown blog, a syntax showcase, and a live editor with Comark and a custom alert component.'
 navigation:
+  title: 'Angular'
   icon:  i-simple-icons-angular
 ---
 

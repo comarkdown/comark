@@ -52,8 +52,10 @@ export function resolveAttributes(
     const value = attrs[key]
     const isBinding = key.charCodeAt(0) === 58 /* ':' */
     const outKey = isBinding ? key.slice(1) : key
+    // Vue's `.prop` / `^attr` prefixes still write the named DOM property
+    const lowerOutKey = outKey.replace(/^[.^]/, '').toLowerCase()
 
-    if (HTML_SINK_PROPS.has(outKey.toLowerCase())) continue
+    if (HTML_SINK_PROPS.has(lowerOutKey)) continue
 
     let outValue: unknown
     let resultKey = key
@@ -89,10 +91,9 @@ export function resolveAttributes(
     // (javascript:, data:text/html, …). Parse-time validation only sees the
     // literal path, so the resolved value is checked here — even when the
     // security plugin is not enabled.
-    const lowerOutKey = outKey.toLowerCase()
     if (
       isBinding &&
-      (lowerOutKey === 'href' || lowerOutKey === 'src' || lowerOutKey === 'xlink:href') &&
+      (lowerOutKey === 'href' || lowerOutKey === 'src' || lowerOutKey === 'xlink:href' || lowerOutKey === 'to') &&
       typeof outValue === 'string' &&
       isUnsafeUrlValue(outValue)
     ) {

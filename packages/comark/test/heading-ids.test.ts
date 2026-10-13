@@ -79,4 +79,133 @@ describe('headingIds option', () => {
       expect((tree.nodes[0] as any)[1].id).toBe('star-here')
     })
   })
+
+  describe('non-ASCII headings', () => {
+    it('keeps accented Latin letters', async () => {
+      const tree = await parseMarkdown('## Café')
+
+      expect((tree.nodes[0] as any)[1].id).toBe('café')
+    })
+
+    it('keeps accented Latin letters across words', async () => {
+      const tree = await parseMarkdown('## Ünïcödé Tëxt')
+
+      expect((tree.nodes[0] as any)[1].id).toBe('ünïcödé-tëxt')
+    })
+
+    it('keeps Cyrillic letters', async () => {
+      const tree = await parseMarkdown('## Привет мир')
+
+      expect((tree.nodes[0] as any)[1].id).toBe('привет-мир')
+    })
+
+    it('keeps CJK characters', async () => {
+      const tree = await parseMarkdown('## 日本語')
+
+      expect((tree.nodes[0] as any)[1].id).toBe('日本語')
+    })
+
+    it('omits the id for a symbol-only heading', async () => {
+      const tree = await parseMarkdown('## 🚀')
+
+      expect((tree.nodes[0] as any)[1].id).toBeUndefined()
+    })
+
+    it('omits the id for every duplicate symbol-only heading', async () => {
+      const tree = await parseMarkdown('## 🚀\n\n## 🚀\n\n## 🚀')
+
+      // The third slugifies to "-2", not just "-1" — none of them is an anchor.
+      const ids = tree.nodes.map((n: any) => n[1].id)
+      expect(ids).toEqual([undefined, undefined, undefined])
+    })
+
+    it('keeps the parent prefix for a non-ASCII child heading', async () => {
+      const tree = await parseMarkdown('## Setup\n\n### Café')
+
+      const ids = tree.nodes.map((n: any) => n[1].id)
+      expect(ids).toEqual(['setup', 'setup-café'])
+    })
+
+    it('does not prefix a child with an empty parent id', async () => {
+      const tree = await parseMarkdown('## 🚀\n\n### Café')
+
+      const ids = tree.nodes.map((n: any) => n[1].id)
+      expect(ids).toEqual([undefined, 'café'])
+    })
+
+    it('omits the id for a symbol-only child of a prefixed parent', async () => {
+      const tree = await parseMarkdown('## Setup\n\n### 🚀')
+
+      const ids = tree.nodes.map((n: any) => n[1].id)
+      expect(ids).toEqual(['setup', undefined])
+    })
+
+    it('omits the id for nested symbol-only headings', async () => {
+      const tree = await parseMarkdown('## 🚀\n\n### 🚀')
+
+      const ids = tree.nodes.map((n: any) => n[1].id)
+      expect(ids).toEqual([undefined, undefined])
+    })
+
+    it('keeps the underscore prefix for a leading digit', async () => {
+      const tree = await parseMarkdown('## 2024 résumé')
+
+      expect((tree.nodes[0] as any)[1].id).toBe('_2024-résumé')
+    })
+
+    it('does not prefix a leading non-ASCII digit', async () => {
+      // U+0661 is a CSS ident start (non-ASCII); only an ASCII digit needs `_`.
+      const tree = await parseMarkdown('## ١٢٣ المقدمة')
+
+      expect((tree.nodes[0] as any)[1].id).toBe('١٢٣-المقدمة')
+    })
+
+    it('composes a decomposed accent into the same id as the precomposed letter', async () => {
+      const precomposed = await parseMarkdown('## Caf\u00e9')
+      const decomposed = await parseMarkdown('## Cafe\u0301')
+
+      expect((decomposed.nodes[0] as any)[1].id).toBe('caf\u00e9')
+      expect((decomposed.nodes[0] as any)[1].id).toBe((precomposed.nodes[0] as any)[1].id)
+    })
+
+    it('drops a leading combining mark so the id stays a valid HTML5 name', async () => {
+      const tree = await parseMarkdown('## \u0301accent')
+
+      expect((tree.nodes[0] as any)[1].id).toBe('accent')
+    })
+
+    it('drops a combining mark that only becomes leading once hyphens are stripped', async () => {
+      const tree = await parseMarkdown('## -\u0301accent')
+
+      expect((tree.nodes[0] as any)[1].id).toBe('accent')
+    })
+
+    it('still prefixes a digit when a leading mark hides the hyphen in front of it', async () => {
+      // `\u0301-1` strips to `-1` if the mark goes first, which the dedup guard discards.
+      const tree = await parseMarkdown('## \u0301-1')
+
+      expect((tree.nodes[0] as any)[1].id).toBe('_1')
+    })
+
+    it('drops a trailing hyphen', async () => {
+      const tree = await parseMarkdown('## Setup -')
+
+      expect((tree.nodes[0] as any)[1].id).toBe('setup')
+    })
+
+    it('slugifies a heading whose text is "-1" to a real id, not the empty-slug suffix', async () => {
+      // Leading hyphens are stripped before the digit prefix, so this is `_1`,
+      // not the `-1` artifact that only an empty slug's dedup counter produces.
+      const tree = await parseMarkdown('## -1')
+
+      expect((tree.nodes[0] as any)[1].id).toBe('_1')
+    })
+
+    it('does not let symbol-only headings leak a dedup suffix onto the next real heading', async () => {
+      const tree = await parseMarkdown('## 🚀\n\n## ✨\n\n## Café')
+
+      const ids = tree.nodes.map((n: any) => n[1].id)
+      expect(ids).toEqual([undefined, undefined, 'café'])
+    })
+  })
 })

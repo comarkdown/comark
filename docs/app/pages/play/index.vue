@@ -2,9 +2,9 @@
 definePageMeta({
   footer: false,
 })
-const title = 'Playground - Comark'
+const title = 'Markdown Playground'
 const description =
-  'Try Comark live in the browser. Edit markdown with component syntax and see the rendered output in real-time.'
+  'Try Comark live in the browser. Edit Markdown with component syntax and see the rendered output as you type.'
 useSeoMeta({
   title,
   description,

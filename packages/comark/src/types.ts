@@ -1,5 +1,6 @@
 import type { DumpOptions } from 'js-yaml'
 import type MarkdownExit from 'markdown-exit'
+import type { Token } from 'markdown-exit'
 import type MarkdownIt from 'markdown-it'
 
 // #region Utility Types
@@ -294,18 +295,22 @@ export type MarkdownExitPlugin = (md: MarkdownExit) => void
 export type MarkdownItPlugin = (md: MarkdownIt) => void
 export type MarkdownItPluginWithOptions<T> = (md: MarkdownIt, options: T) => void
 
-export type ComarkParsePreState = {
+export interface ComarkParsePreState {
   markdown: string
   options: ParserOptions
 
   [key: string]: any
 }
 
-export type ComarkParsePostState<TMeta = Record<string, any>, TFrontmatter = Record<string, any>> = {
-  markdown: string
+export interface ComarkParseTokensState extends ComarkParsePreState {
+  tokens: Token[]
+}
+
+export interface ComarkParsePostState<
+  TMeta = Record<string, any>,
+  TFrontmatter = Record<string, any>,
+> extends ComarkParseTokensState {
   tree: MarkdownDocument<TMeta, TFrontmatter>
-  options: ParserOptions
-  tokens: unknown[]
 
   [key: string]: any
 }
@@ -372,7 +377,8 @@ export interface ComarkTracer {
  */
 export type ComarkPlugin<TMeta = {}, TFrontmatter = {}> = {
   name: string
-  markdownItPlugins?: MarkdownItPlugin[]
+  markdownItPlugins?: Array<MarkdownItPlugin | MarkdownExitPlugin>
+  markdownItPost?: (state: ComarkParseTokensState) => void
   pre?: (state: ComarkParsePreState) => Promise<void> | void
   post?: (state: ComarkParsePostState<Writable<TMeta>, Writable<TFrontmatter>>) => Promise<void> | void
   /** Phantom — used for type inference only. Never set at runtime. */
@@ -506,12 +512,20 @@ export interface ParserOptions<TPlugins extends readonly ComarkPlugin<any, any>[
    *
    * Duplicate ids get a numeric suffix (`-1`, `-2`, ...) in both modes.
    *
+   * Generated ids keep Unicode letters, marks, decimal digits, and letter numbers
+   * (`## Café` → `café`, `## 日本語` → `日本語`). Punctuation and symbols are dropped,
+   * and a heading that slugifies to nothing (emoji, punctuation only) gets no id.
+   * A leading ASCII digit is prefixed with `_`.
+   *
    * @default true
    * @example
    * // ## Setup\n### Install
    * // 'nested' → ['h2', { id: 'setup' }, ...], ['h3', { id: 'setup-install' }, ...]
    * // 'flat'   → ['h2', { id: 'setup' }, ...], ['h3', { id: 'install' }, ...]
    * // false    → ['h2', {}, ...], ['h3', {}, ...]
+   *
+   * // # Café → ['h1', { id: 'café' }, 'Café']
+   * // # Hello {id="custom"} → ['h1', { id: 'custom' }, 'Hello'] (any mode, including false)
    */
   headingIds?: HeadingIdsOption
 

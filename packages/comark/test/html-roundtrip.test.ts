@@ -28,6 +28,7 @@ describe('raw HTML round-trip (parse → renderMarkdown → parse)', () => {
     'nested divs': '<div>\n<div>one</div>\n<div>two</div>\n</div>',
     'single-child video': '<video controls>\n<source src="a.mp4" type="video/mp4">\n</video>',
     'mixed text and element children': '<div>\nsome text\n<figcaption>cap</figcaption>\n</div>',
+    'pre with authored language attribute': '<pre language="ruby">\nputs 1\n</pre>',
   }
 
   for (const [name, md] of Object.entries(cases)) {

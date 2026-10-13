@@ -21,7 +21,7 @@ import {
   toRaw,
 } from 'vue'
 import { findLastTextNodeAndAppendNode, getCaret } from '../utils/caret.ts'
-import { pascalCase, resolveAttributes } from 'comark/utils'
+import { pascalCase, resolveAttributes, toNativeAttributes } from 'comark/utils'
 
 // Cache for dynamically resolved components
 const asyncComponentCache = new Map<string, any>()
@@ -142,13 +142,17 @@ function renderNode(
     // Resolve `:prefix` bindings and let Vue-specific attribute mapping run
     // on top (e.g. `className` → `class`).
     const resolved = resolveAttributes(nodeProps, renderData, { parseJson: true })
-    const props: Record<string, any> = {}
+    let props: Record<string, any> = {}
     for (const k in resolved) {
       if (k === 'className') {
         props.class = resolved[k]
       } else {
         props[k] = resolved[k]
       }
+    }
+    const scopeProps = props
+    if (!customComponent) {
+      props = toNativeAttributes(tag, node, props)
     }
 
     // @ts-expect-error - component might be a Vue component
@@ -169,7 +173,7 @@ function renderNode(
     // own attributes. Bare wrappers (`<p>`, `<ul>`, `<li>`, …) must keep the
     // parent's scope so bindings like `{{ props.x }}` reach across them.
     const hasOwnAttrs = Object.keys(resolved).length > 0
-    const childrenRenderData = hasOwnAttrs ? { ...renderData, props } : renderData
+    const childrenRenderData = hasOwnAttrs ? { ...renderData, props: scopeProps } : renderData
     // Separate template elements (slots) from regular children
     const slots: Record<string, () => (VNode | string)[]> = {}
     const regularChildren: (VNode | string)[] = []

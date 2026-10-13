@@ -1,7 +1,8 @@
 ---
-title: SvelteKit
+title: 'SvelteKit Markdown with SSR and Lazy Components'
 description: A SvelteKit example showing Comark with lazy components, MarkdownAsync, and SSR.
 navigation:
+  title: 'SvelteKit'
   icon: i-simple-icons-svelte
 ---
 

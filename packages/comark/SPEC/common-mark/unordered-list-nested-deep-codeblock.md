@@ -85,7 +85,7 @@
         <ul>
           <li>
             <p>Level 3 with code:</p>
-            <pre language="py"><code class="language-py">print("deep")</code></pre>
+            <pre data-language="py"><code class="language-py">print("deep")</code></pre>
           </li>
         </ul>
       </li>

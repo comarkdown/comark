@@ -24,21 +24,33 @@ export function createHeadingIdTracker(option: HeadingIdsOption = true): Heading
 }
 
 /**
- * Convert text to a slug for heading IDs
+ * Convert text to a slug for heading IDs.
  * Example: "Hello World" -> "hello-world"
  * Example: "1. Introduction" -> "_1-introduction"
+ * Example: "Café" -> "café"
+ *
+ * Keeps Unicode letters, marks, decimal digits, and letter numbers. A combining mark is
+ * dropped wherever it would lead, so the result is a valid HTML5 id (NameStartChar is a
+ * letter or `_`, never a mark).
  */
 export function slugify(text: string): string {
   let slug = text
+    .normalize('NFC')
     .toLowerCase()
     .trim()
     .replace(/\s+/g, '-') // Replace spaces with hyphens
-    .replace(/[^\w-]+/g, '') // Remove non-word chars (except hyphens)
+    // Keep Unicode letters, marks, decimal digits and letter numbers; drop the rest.
+    // Other numbers (No: ①, ½, ²) are not valid HTML5 id or CSS ident characters.
+    .replace(/[^\p{L}\p{M}\p{Nd}\p{Nl}_-]+/gu, '')
     .replace(/-{2,}/g, '-') // Replace multiple hyphens with single hyphen
-    .replace(/^-+|-+$/g, '') // Remove leading/trailing hyphens
+    // Drop a leading run of marks and hyphens, plus trailing hyphens. Marks and
+    // hyphens only ever expose each other (`\u0301-1` would otherwise survive as
+    // "-1"), so one alternation covers the run.
+    .replace(/^(?:\p{M}+|-+)+|-+$/gu, '')
 
-  // Prefix with underscore if starts with a digit (HTML IDs can't start with numbers)
-  if (/^\d/.test(slug)) {
+  // Prefix an ASCII leading digit. `#123` is not a valid CSS ident; a non-ASCII
+  // digit (U+0660 ARABIC-INDIC DIGIT ZERO and friends) is, so it is left as-is.
+  if (slug.charCodeAt(0) >= 48 && slug.charCodeAt(0) <= 57) {
     slug = '_' + slug
   }
 
@@ -48,9 +60,10 @@ export function slugify(text: string): string {
 /**
  * Return the auto-generated id for the next heading, suffixed with a counter
  * for duplicates. In nested mode it is also prefixed with its parent heading's
- * id (h2+ parents only).
+ * id (h2+ parents only). Returns `undefined` when the heading text slugifies to
+ * nothing (emoji, punctuation only) — such a heading gets no id.
  */
-export function nextHeadingId(text: string, level: number, tracker: HeadingIdTracker): string {
+export function nextHeadingId(text: string, level: number, tracker: HeadingIdTracker): string | undefined {
   let slug = slugify(text)
   const { stack, slugCounts, usedIds } = tracker
 
@@ -59,10 +72,12 @@ export function nextHeadingId(text: string, level: number, tracker: HeadingIdTra
     while (stack.length > 0 && stack[stack.length - 1].level >= level) {
       stack.pop()
     }
-    // Use parent's full ID as prefix (h1 doesn't prefix children)
+    // Use parent's full ID as prefix (h1 doesn't prefix children). Skip the
+    // composition when either side is empty, so a symbol-only parent or child
+    // never yields a degenerate id like "-café" or "setup-".
     if (stack.length > 0) {
       const parent = stack[stack.length - 1]
-      if (parent.level >= 2) {
+      if (parent.level >= 2 && parent.id && slug) {
         slug = parent.id + '-' + slug
       }
     }
@@ -70,6 +85,8 @@ export function nextHeadingId(text: string, level: number, tracker: HeadingIdTra
     // Push onto stack for child headings to reference
     stack.push({ level, id: slug })
   }
+
+  if (!slug) return undefined
 
   let count = slugCounts.get(slug) ?? 0
   let id = count === 0 ? slug : `${slug}-${count}`

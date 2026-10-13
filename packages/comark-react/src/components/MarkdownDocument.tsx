@@ -6,7 +6,7 @@ import type {
   NodeRenderData,
 } from 'comark'
 import React, { lazy, Suspense, useMemo } from 'react'
-import { pascalCase, camelCase, resolveAttributes } from 'comark/utils'
+import { pascalCase, camelCase, resolveAttributes, toNativeAttributes } from 'comark/utils'
 import { findLastTextNodeAndAppendNode, getCaret } from '../utils/caret.ts'
 
 /**
@@ -141,7 +141,7 @@ function renderNode(
     // remapping (`class` → `className`, string `style` → object, `tabindex`
     // → `tabIndex`).
     const resolved = resolveAttributes(nodeProps, renderData, { parseJson: true })
-    const props: Record<string, any> = {}
+    let props: Record<string, any> = {}
     for (const k in resolved) {
       const v = resolved[k]
       if (k === 'className' || k === 'class') {
@@ -153,6 +153,11 @@ function renderNode(
       } else {
         props[k] = v
       }
+    }
+
+    const scopeProps = props
+    if (!customComponent) {
+      props = toNativeAttributes(tag, node, props)
     }
 
     if (typeof Component !== 'string' && (Component as any)?.propTypes?.__node !== undefined) {
@@ -173,7 +178,7 @@ function renderNode(
     // own attributes. Bare wrappers (`<p>`, `<ul>`, `<li>`, …) must keep the
     // parent's scope so bindings like `{{ props.x }}` reach across them.
     const hasOwnAttrs = Object.keys(resolved).length > 0
-    const childrenRenderData: NodeRenderData = hasOwnAttrs ? { ...renderData, props } : renderData
+    const childrenRenderData: NodeRenderData = hasOwnAttrs ? { ...renderData, props: scopeProps } : renderData
     // Separate template elements (slots) from regular children
     const slots: Record<string, React.ReactNode[]> = {}
     const regularChildren: React.ReactNode[] = []
