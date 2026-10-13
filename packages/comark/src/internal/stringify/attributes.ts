@@ -1,6 +1,6 @@
 import { stringifyYaml } from '../yaml.ts'
 import { escapeHtml, get } from '../../utils/index.ts'
-import { isUnsafeUrlValue } from '../props-validation.ts'
+import { isUnsafeUrlValue, stripPropModifiers } from '../props-validation.ts'
 import { pickFence } from './fence.ts'
 import type { NodeRenderData } from '../../types.ts'
 
@@ -52,8 +52,9 @@ export function resolveAttributes(
     const value = attrs[key]
     const isBinding = key.charCodeAt(0) === 58 /* ':' */
     const outKey = isBinding ? key.slice(1) : key
+    const lowerOutKey = stripPropModifiers(outKey).toLowerCase()
 
-    if (HTML_SINK_PROPS.has(outKey.toLowerCase())) continue
+    if (HTML_SINK_PROPS.has(lowerOutKey)) continue
 
     let outValue: unknown
     let resultKey = key
@@ -89,7 +90,6 @@ export function resolveAttributes(
     // (javascript:, data:text/html, …). Parse-time validation only sees the
     // literal path, so the resolved value is checked here — even when the
     // security plugin is not enabled.
-    const lowerOutKey = outKey.toLowerCase()
     if (
       isBinding &&
       (lowerOutKey === 'href' || lowerOutKey === 'src' || lowerOutKey === 'xlink:href') &&

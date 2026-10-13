@@ -336,6 +336,47 @@ home: javascript:alert(1)
     expect(span).toBeDefined()
     expect(span![1][':dangerouslySetInnerHTML']).toBeUndefined()
   })
+
+  it("strips props behind Vue's `.` / `^` modifiers from YAML block props and raw HTML", async () => {
+    const tree = await parseWithSecurity(
+      `\
+::div
+---
+^onmouseover: alert(1)
+.innerHTML: "<img src=x onerror=alert(1)>"
+^href: javascript:alert(1)
+^title: kept
+---
+hover
+::
+
+<p ^onclick="alert(1)">click</p>
+`.trim()
+    )
+
+    const div = collectElements(tree.nodes).find((element) => element[0] === 'div')
+    const p = collectElements(tree.nodes).find((element) => element[0] === 'p')
+    expect(div).toBeDefined()
+    expect(div![1]).toEqual({ '^title': 'kept' })
+    expect(p).toBeDefined()
+    expect(p![1]['^onclick']).toBeUndefined()
+  })
+
+  it('blocks a data:text/html URL with a space before its MIME type', async () => {
+    const tree = await parseWithSecurity(
+      `\
+<a href="data: text/html,<script>alert(1)</script>">click</a>
+<img src="data: text/html,<script>alert(1)</script>">
+`.trim()
+    )
+
+    const anchor = collectElements(tree.nodes).find((element) => element[0] === 'a')
+    const img = collectElements(tree.nodes).find((element) => element[0] === 'img')
+    expect(anchor).toBeDefined()
+    expect(anchor![1].href).toBeUndefined()
+    expect(img).toBeDefined()
+    expect(img![1].src).toBeUndefined()
+  })
 })
 
 describe('security plugin — blockedTags', () => {

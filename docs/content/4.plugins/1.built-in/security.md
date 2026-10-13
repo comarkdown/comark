@@ -73,6 +73,8 @@ Several sanitizations are applied automatically and cannot be disabled:
 
 All `on*` attributes are stripped regardless of case: `onclick`, `onerror`, `onload`, `onmouseover`, and any other `on*` attribute.
 
+Vue's `.` and `^` prop modifiers don't hide an attribute from these checks. Vue renders `^onclick` as `onclick`, so it's stripped the same way, and the same applies to the attributes and URLs below.
+
 ::code-group
 
 ```html [Input]
@@ -100,7 +102,7 @@ Attributes that can be abused regardless of value are always stripped:
 | `textContent` | Overwrites an element's children |
 
 ::note
-Framework renderers (Vue, React, Svelte, Angular) never forward `innerHTML`, `dangerouslySetInnerHTML`, or `textContent` from document attributes, even without this plugin. Raw HTML has its own explicit path through the default `html` plugin.
+Framework renderers (Vue, React, Svelte, Angular) never forward `innerHTML`, `dangerouslySetInnerHTML`, or `textContent` from document attributes, even without this plugin, including behind Vue's `.` and `^` modifiers (`.innerHTML`). Raw HTML has its own explicit path through the default `html` plugin.
 ::
 
 ### Protocol blocking
@@ -108,6 +110,8 @@ Framework renderers (Vue, React, Svelte, Angular) never forward `innerHTML`, `da
 `href` and `src` values are decoded (URL-encoded and HTML entity variants included) and checked against a hard-coded block list. These protocols are **always** blocked, even if `allowedProtocols: ['*']` is set:
 
 `javascript:` · `vbscript:` · `data:text/html` · `data:text/javascript` · `data:text/vbscript` · `data:text/css` · `data:text/plain` · `data:text/xml`
+
+A `data:` URL is checked the way browsers read its MIME type, which ignores spaces after `data:`. So `data: text/html,…` is blocked like `data:text/html,…`.
 
 The same check applies to `:href` and `:src` bindings twice: on the JSON-decoded value at parse time, and again on the resolved value at render time, so bindings cannot smuggle an unsafe URL through frontmatter or other data sources.
 

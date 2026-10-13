@@ -114,6 +114,12 @@ describe('validateProp', () => {
       expect(validateProp('href', 'https://example.com/?a=1&amp;b=2')).toBe('https://example.com/?a=1&amp;b=2')
     })
 
+    it('blocks data:text/html with spaces before the MIME type', () => {
+      expect(validateProp('href', 'data: text/html,<script>evil()</script>')).toBe(REJECTED_PROP)
+      expect(validateProp('href', 'data:   text/html,<script>evil()</script>')).toBe(REJECTED_PROP)
+      expect(validateProp('src', 'data: text/html,<script>evil()</script>')).toBe(REJECTED_PROP)
+    })
+
     it('blocks vbscript: hrefs', () => {
       expect(validateProp('href', 'vbscript:MsgBox(1)')).toBe(REJECTED_PROP)
     })
@@ -392,6 +398,38 @@ describe('validateProp', () => {
       expect(validateProp(':href', 'https://example.com')).toBe('https://example.com')
       expect(validateProp('v-bind:href', '/relative/path')).toBe('/relative/path')
       expect(validateProp(':src', 'https://example.com/image.png')).toBe('https://example.com/image.png')
+    })
+  })
+
+  describe('Vue prop modifiers', () => {
+    it('blocks event handlers, sinks and unsafe URLs behind `.` / `^`', () => {
+      const payloads: Array<[string, string]> = [
+        ['^onclick', 'alert(1)'],
+        ['.onclick', 'alert(1)'],
+        ['^OnMouseOver', 'alert(1)'],
+        ['.innerHTML', '<img src=x onerror=alert(1)>'],
+        ['^textContent', 'overlay'],
+        ['^srcdoc', '<script>alert(1)</script>'],
+        ['^formaction', 'https://evil.com'],
+        ['.^innerHTML', '<img src=x onerror=alert(1)>'],
+        [':^onclick', 'alert(1)'],
+        ['v-bind:.innerHTML', '"<img src=x onerror=alert(1)>"'],
+        ['^href', 'javascript:alert(1)'],
+        ['.href', 'javascript:alert(1)'],
+        ['^xlink:href', 'javascript:alert(1)'],
+        ['^src', 'data:text/html,<script>alert(1)</script>'],
+        [':^href', '"javascript:alert(1)"'],
+      ]
+
+      for (const [attribute, value] of payloads) {
+        expect(validateProp(attribute, value), `${attribute}="${value}"`).toBe(REJECTED_PROP)
+      }
+    })
+
+    it('keeps safe props behind `.` / `^`', () => {
+      expect(validateProp('^title', 'Hello')).toBe('Hello')
+      expect(validateProp('.value', 'x')).toBe('x')
+      expect(validateProp('^href', 'https://example.com')).toBe('https://example.com')
     })
   })
 })

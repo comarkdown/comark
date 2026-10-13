@@ -25,6 +25,24 @@ export const unsafeLinkPrefix = [
   'data:text/xml',
 ]
 
+/**
+ * Strip the leading `.` and `^` modifiers Vue honors on prop keys at runtime.
+ */
+export function stripPropModifiers(name: string): string {
+  let start = 0
+  while (name.charCodeAt(start) === 46 /* '.' */ || name.charCodeAt(start) === 94 /* '^' */) start++
+  return start ? name.slice(start) : name
+}
+
+/**
+ * Whether `url` uses a hard-floor unsafe scheme.
+ */
+function hasUnsafeScheme(url: URL): boolean {
+  let href = url.href.toLowerCase()
+  if (url.protocol === 'data:') href = `data:${href.slice(5).trimStart()}`
+  return unsafeLinkPrefix.some((prefix) => href.startsWith(prefix))
+}
+
 export interface PropsValidationOptions {
   allowedLinkPrefixes?: string[]
   allowedImagePrefixes?: string[]
@@ -135,7 +153,7 @@ function validateUrl(
   }
 
   // Block known-unsafe protocols — hard floor, not overrideable by options
-  if (unsafeLinkPrefix.some((prefix) => url.href.toLowerCase().startsWith(prefix))) {
+  if (hasUnsafeScheme(url)) {
     return REJECTED_PROP
   }
 
@@ -212,14 +230,12 @@ export function isUnsafeUrlValue(value: string): boolean {
   } catch {
     return false
   }
-  return unsafeLinkPrefix.some((prefix) => url.href.toLowerCase().startsWith(prefix))
+  return hasUnsafeScheme(url)
 }
 
 export function validateProp(attribute: string, value: unknown, options: PropsValidationOptions = {}): unknown {
   const isBinding = /^(:|v-bind:)/.test(attribute)
-  attribute = attribute
-    .toLowerCase()
-    .replace(/^(:|v-bind:)/, '')
+  attribute = stripPropModifiers(attribute.toLowerCase().replace(/^(:|v-bind:)/, ''))
     .replace(/^(@|v-on:)/, 'on')
     .replace(/:/g, '')
   if (attribute.startsWith('on') || unsafeAttributes.includes(attribute)) {
