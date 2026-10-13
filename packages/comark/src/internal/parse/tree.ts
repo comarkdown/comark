@@ -10,7 +10,7 @@ import {
 import { parseHtmlInline } from './utils.ts'
 import { textContent } from 'comark/utils'
 
-const inlineTags = new Set(['strong', 'em', 'del', 'code', 'a', 'span', 'sub', 'sup'])
+const inlineTags = new Set(['strong', 'em', 'del', 'code', 'a', 'span', 'sub', 'sup', 'kbd'])
 // `::tag` components that should fold into a single same-tagged child.
 const WRAPPER_TAGS = new Set(['ul', 'ol', 'table', 'blockquote', 'pre'])
 
