@@ -135,6 +135,20 @@ export function extractReusableNodes(markdown: string, lastOutput: MarkdownDocum
 }
 
 /**
+ * Lowercase an all-uppercase tag name (`DIV` → `div`, `H1` → `h1`). HTML tag names are
+ * case-insensitive, and renderers / plugins match the lowercase form. A name with any
+ * lowercase letter keeps its authored case (`Hello`, `linearGradient`, `my-el`) so
+ * component lookup still works.
+ */
+function normalizeTagName(tag: string): string {
+  for (let i = 0; i < tag.length; i++) {
+    const c = tag.charCodeAt(i)
+    if (c >= 0x61 /* a */ && c <= 0x7a /* z */) return tag
+  }
+  return tag.toLowerCase()
+}
+
+/**
  * Parse a single html_inline token content into a structured tag description.
  * Handles open tags (with attrs), close tags, self-closing syntax, and comments.
  */
@@ -147,12 +161,12 @@ export function parseHtmlInline(content: string): ParsedHtmlTag {
 
   const closeMatch = trimmed.match(/^<\/\s*([A-Za-z][\w:-]*)\s*>$/)
   if (closeMatch) {
-    return { kind: 'close', tag: closeMatch[1] }
+    return { kind: 'close', tag: normalizeTagName(closeMatch[1]) }
   }
 
   const openMatch = trimmed.match(/^<\s*([A-Za-z][\w:-]*)((?:\s+[\s\S]*?)?)\s*(\/?)>$/)
   if (openMatch) {
-    const tag = openMatch[1]
+    const tag = normalizeTagName(openMatch[1])
     const attrsStr = openMatch[2] || ''
     const slash = openMatch[3] === '/'
     const selfClosing = slash || isHtmlVoidElement(tag)

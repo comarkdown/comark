@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { TREE_WALK_MAX_DEPTH, visit } from 'comark/utils'
+import { TREE_WALK_MAX_DEPTH, visit, visitAsync } from 'comark/utils'
 import type { MarkdownDocument, Node } from 'comark'
 
 describe('visit', () => {
@@ -432,7 +432,7 @@ describe('visit', () => {
     expect(visited).toEqual(expected)
   })
 
-  it('should not walk past TREE_WALK_MAX_DEPTH element levels', () => {
+  it('should drop nodes past TREE_WALK_MAX_DEPTH element levels', () => {
     // TREE_WALK_MAX_DEPTH + 1 wrappers + text — last wrapper and its children are past the cap.
     let node: Node = 'Too deep'
     for (let i = TREE_WALK_MAX_DEPTH; i >= 0; i--) {
@@ -452,10 +452,27 @@ describe('visit', () => {
     expect(visited).toEqual(Array.from({ length: TREE_WALK_MAX_DEPTH }, (_, i) => `d${i}`))
 
     let cursor = tree.nodes[0] as Node[]
-    for (let i = 0; i <= TREE_WALK_MAX_DEPTH; i++) {
+    for (let i = 0; i < TREE_WALK_MAX_DEPTH - 1; i++) {
       expect(cursor[0]).toBe(`d${i}`)
       cursor = cursor[2] as Node[]
     }
-    expect(cursor).toBe('Too deep')
+    // The last visited wrapper keeps no children: everything deeper is removed.
+    expect(cursor).toEqual([`d${TREE_WALK_MAX_DEPTH - 1}`, {}])
+  })
+
+  it('should drop deep subtrees in visitAsync so unvisited content cannot survive', async () => {
+    let node: Node = ['img', { onerror: 'alert(1)' }]
+    for (let i = TREE_WALK_MAX_DEPTH + 10; i >= 0; i--) {
+      node = ['blockquote', {}, node]
+    }
+
+    const tree: MarkdownDocument = { nodes: [node], frontmatter: {}, meta: {} }
+    await visitAsync(
+      tree,
+      () => true,
+      () => undefined
+    )
+
+    expect(JSON.stringify(tree.nodes)).not.toContain('onerror')
   })
 })

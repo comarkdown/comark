@@ -16,9 +16,9 @@
  * - `markdown` (default `true`): expand text leaves inside closed HTML
  *   fragments as inline markdown (`<h1>Hello **World**</h1>` → strong).
  *   Implemented by narrowing markdown-exit's `html_block` rule to `<style>`,
- *   `<pre>`, `<script>`, and `<textarea>` so the rest tokenizes as normal
- *   markdown. Those four stay verbatim: every character between the tags is kept,
- *   and an inner tag is text. When `false`, that rule stays and every closed-block
+ *   `<pre>`, `<script>`, `<textarea>`, and comments (`<!--`) so the rest
+ *   tokenizes as normal markdown. Those stay verbatim: every character between
+ *   the delimiters is kept, and an inner tag is text. When `false`, that rule stays and every closed-block
  *   body stays literal. Blank-line bodies still nest as markdown tokens via bare
  *   open/close pairing, in both modes.
  *
@@ -69,7 +69,10 @@ function markdownItHtmlWithMarkdown(md: MarkdownExit) {
   const fn = html_block.fn
   html_block.fn = (state: StateBlock, startLine: number, endLine: number, silent: boolean) => {
     const pos = state.bMarks[startLine] + state.tShift[startLine]
-    if (isRawHtmlBlock(state.src, pos)) return fn(state, startLine, endLine, silent)
+    if (isRawTagBlock(state.src, pos)) return fn(state, startLine, endLine, silent)
+    // A comment only opens a block where one starts; it must not interrupt a
+    // paragraph (`silent` probe), or `<div>\n  <!-- x -->` would split the div body.
+    if (!silent && state.src.startsWith('<!--', pos)) return fn(state, startLine, endLine, silent)
   }
 }
 
@@ -149,8 +152,8 @@ function isTagBoundary(src: string, pos: number): boolean {
   return next === 0x3e /* > */ || next === 0x2f /* / */ || next <= 0x20
 }
 
-/** True when `src` at `pos` opens a raw HTML block, including attributes. */
-function isRawHtmlBlock(src: string, pos: number): boolean {
+/** True when `src` at `pos` opens a raw-tag HTML block, including attributes. */
+function isRawTagBlock(src: string, pos: number): boolean {
   const tag = readTag(src, pos)
   return !!tag && !tag.close && RAW_HTML_TAGS.has(tag.name) && isTagBoundary(src, tag.after)
 }

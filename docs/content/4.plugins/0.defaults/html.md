@@ -108,7 +108,9 @@ Hello **World**
 </div>
 ```
 
-`<style>`, `<pre>`, `<script>`, and `<textarea>` are never re-parsed as markdown, including when they have attributes. Each body keeps every character between the tags — newlines, indentation, and inner tags (`a < b`, `<div>**no**</div>`) stay text.
+`<style>`, `<pre>`, `<script>`, and `<textarea>` are never re-parsed as markdown, including when they have attributes. Each body keeps every character between the tags — newlines, indentation, and inner tags (`a < b`, `<div>**no**</div>`) stay text. A comment that starts a block (`<!--` … `-->`, even across blank lines) keeps its body verbatim the same way.
+
+All-uppercase tag names are normalized to lowercase (`<DIV>` → `div`). A tag name with any lowercase letter keeps its authored case, so components and SVG elements resolve as written (`<Hello>` → `Hello`, `<linearGradient>` → `linearGradient`).
 
 Spaces beside a tag are content. `<p>Hello <em>x</em> <a>two</a></p>` keeps the space after `Hello` and the space between `</em>` and `<a>`, including when `markdown` is `false`.
 
@@ -128,7 +130,7 @@ Void tags (`img`, `br`, …) are always `block: 0`.
 ## How it works
 
 1. Enables markdown-exit HTML tokenization (`html: true`).
-2. With `markdown: true`, narrows the built-in `html_block` rule to `<style>`, `<pre>`, `<script>`, and `<textarea>`, so other closed HTML is tokenized as normal markdown (`**`, code spans, nested tags).
+2. With `markdown: true`, narrows the built-in `html_block` rule to `<style>`, `<pre>`, `<script>`, `<textarea>`, and block-level comments, so other closed HTML is tokenized as normal markdown (`**`, code spans, nested tags).
 3. Splits any remaining raw HTML block into tags and literal text, then pairs open/close tags across paragraphs with one HTML stack.
 
 A matching close tag collects every block parsed while it was open. `</div><div>` emits two sibling elements, not a `div` nested inside the next `div`.

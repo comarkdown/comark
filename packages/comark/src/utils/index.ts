@@ -37,7 +37,11 @@ export function textContent(node: Node, options: { decodeUnicodeEntities?: boole
   return out
 }
 
-/** Walk at most this many element levels. Typical markdown trees are much shallower. */
+/**
+ * Walk at most this many element levels. Typical markdown trees are much shallower.
+ * Nodes nested deeper are removed from the tree by {@link visit} / {@link visitAsync},
+ * so plugins built on them (e.g. `security`) never leave an unvisited subtree behind.
+ */
 export const TREE_WALK_MAX_DEPTH = 50
 
 function* walkGenerator(
@@ -50,7 +54,10 @@ function* walkGenerator(
     index: number,
     depth: number
   ): Generator<Node, boolean, VisitResult> {
-    if (depth >= TREE_WALK_MAX_DEPTH) return false
+    if (depth >= TREE_WALK_MAX_DEPTH) {
+      ;(parent as Node[]).splice(index, 1)
+      return true
+    }
 
     let currentNode = node
 
@@ -99,7 +106,7 @@ function* walkGenerator(
 
 /**
  * Visit a Markdown document and apply a visitor function to each node.
- * Recursion is capped at {@link TREE_WALK_MAX_DEPTH} element levels; deeper subtrees are left as-is.
+ * Recursion is capped at {@link TREE_WALK_MAX_DEPTH} element levels; deeper subtrees are dropped.
  *
  * @param document - The Markdown document
  * @param checker - A function that checks if a node should be visited
@@ -120,7 +127,7 @@ export function visit(
   }
 }
 
-/** Recursion is capped at {@link TREE_WALK_MAX_DEPTH} element levels; deeper subtrees are left as-is. */
+/** Recursion is capped at {@link TREE_WALK_MAX_DEPTH} element levels; deeper subtrees are dropped. */
 export async function visitAsync(
   document: MarkdownDocument,
   checker: (node: Node) => boolean,

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { parseMarkdown } from '../src/index'
 import html from '../src/plugins/html'
+import { renderMarkdown } from '../src/render'
 
 const sponsorsUrl = 'https://cdn.jsdelivr.net/gh/antfu/static/sponsors.svg'
 
@@ -41,6 +42,26 @@ describe('html({ markdown })', () => {
     })
 
     expect(result.nodes).toEqual([['div', { $: { html: 1, block: 1 } }, 'Hello **World**']])
+  })
+
+  it('keeps a multi-paragraph comment body verbatim', async () => {
+    const source = '<!--\n\n**bold** text\n\n-->\n\nafter'
+    const result = await parseMarkdown(source)
+
+    expect(result.nodes).toEqual([
+      [null, {}, '\n\n**bold** text\n\n'],
+      ['p', {}, 'after'],
+    ])
+    expect(await renderMarkdown(result)).toBe(source)
+  })
+
+  it('lowercases all-uppercase tag names but keeps authored case otherwise', async () => {
+    const result = await parseMarkdown('<DIV CLASS="x">\n\nhi <SPAN>a</SPAN>\n\n</DIV>\n\n<Hello>x</Hello>')
+
+    expect(result.nodes).toEqual([
+      ['div', { $: { html: 1, block: 1 }, class: 'x' }, 'hi ', ['span', { $: { html: 1, block: 0 } }, 'a']],
+      ['Hello', { $: { html: 1, block: 1 } }, 'x'],
+    ])
   })
 
   it('keeps spaces beside and between inline tags when markdown: false', async () => {
