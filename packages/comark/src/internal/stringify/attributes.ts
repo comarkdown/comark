@@ -93,7 +93,7 @@ export function resolveAttributes(
     // security plugin is not enabled.
     if (
       isBinding &&
-      (lowerOutKey === 'href' || lowerOutKey === 'src' || lowerOutKey === 'xlink:href') &&
+      (lowerOutKey === 'href' || lowerOutKey === 'src' || lowerOutKey === 'xlink:href' || lowerOutKey === 'to') &&
       typeof outValue === 'string' &&
       isUnsafeUrlValue(outValue)
     ) {
