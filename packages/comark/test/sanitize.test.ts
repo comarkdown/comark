@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
-import { REJECTED_PROP, validateProp, validateProps } from '../src/internal/props-validation'
+import { REJECTED_PROP, isUnsafeUrlValue, validateProp, validateProps } from '../src/internal/sanitize'
+import { sanitizeData } from '../src/utils/index.ts'
 
 describe('validateProp', () => {
   describe('event handlers', () => {
@@ -617,5 +618,137 @@ describe('validateProps – unsafe tag case bypass', () => {
 
   it('strips all props from Object (mixed case)', () => {
     expect(validateProps('Object', { data: '/foo' })).toEqual({})
+  })
+})
+
+describe('data: URLs', () => {
+  it('blocks every non-image MIME type, not only `text/*`', () => {
+    expect(validateProp('src', 'data:application/xhtml+xml,<x/>')).toBe(REJECTED_PROP)
+    expect(isUnsafeUrlValue('data:application/xhtml+xml,<x/>')).toBe(true)
+  })
+
+  it('only allows a data image as a `src`', () => {
+    expect(validateProp('src', 'data: image/png;base64,abc')).not.toBe(REJECTED_PROP)
+    expect(validateProp('href', 'data:image/png;base64,abc')).toBe(REJECTED_PROP)
+    expect(isUnsafeUrlValue('data:image/png;base64,abc')).toBe(false)
+  })
+})
+
+describe('sanitizeData', () => {
+  it('drops event handler and markup keys at any depth, whatever their case or prefix', () => {
+    const data = {
+      title: 'Page',
+      onclick: 'x()',
+      '^onMouseOver': 'x()',
+      links: [{ label: 'Docs', '.innerHTML': '<b>x</b>', TextContent: 'x' }],
+      hero: { card: { srcdoc: '<b>x</b>', '@click': 'x()' } },
+    }
+
+    expect(sanitizeData(data)).toEqual([
+      'onclick',
+      '^onMouseOver',
+      'links.0..innerHTML',
+      'links.0.TextContent',
+      'hero.card.srcdoc',
+      'hero.card.@click',
+    ])
+    expect(data).toEqual({ title: 'Page', links: [{ label: 'Docs' }], hero: { card: {} } })
+  })
+
+  it('drops unsafe URLs in URL keys, at any depth', () => {
+    const data = {
+      home: { to: 'javascript:alert(1)' },
+      course: { url: ' JavaScript:alert(1)' },
+      agency: { link: 'java\tscript:x', website: 'https://comark.dev' },
+      coverSrc: 'data: text/html,x',
+    }
+
+    expect(sanitizeData(data)).toEqual(['home.to', 'course.url', 'agency.link', 'coverSrc'])
+    expect(data).toEqual({ home: {}, course: {}, agency: { website: 'https://comark.dev' } })
+  })
+
+  it('keeps safe URLs, and prose under other keys, like `validateProp()`', () => {
+    const data = {
+      title: 'JavaScript: the good parts',
+      note: 'Note: none',
+      price: '100%',
+      to: '/docs',
+      href: 'mailto:hello@comark.dev',
+      imageSrc: 'data:image/png;base64,abc',
+    }
+    const copy = structuredClone(data)
+
+    expect(sanitizeData(data)).toEqual([])
+    expect(data).toEqual(copy)
+  })
+
+  it('passes the URL options through', () => {
+    expect(sanitizeData({ imageSrc: 'data:image/png;base64,abc' }, { allowDataImages: false })).toEqual(['imageSrc'])
+
+    const data = { link: 'https://evil.com/path' }
+    expect(
+      sanitizeData(data, { allowedLinkPrefixes: ['https://comark.dev'], defaultOrigin: 'https://comark.dev' })
+    ).toEqual([])
+    expect(data.link).toBe('https://comark.dev/path')
+  })
+
+  it('drops an `as` or `is` naming a blocked or unsafe tag, or one outside `allowedTags`', () => {
+    const data = { hero: { as: 'SCRIPT' }, card: { is: 'object' }, section: { as: 'section', is: 'section' } }
+
+    expect(sanitizeData(data, { blockedTags: ['script'] })).toEqual(['hero.as', 'card.is'])
+    expect(data.section).toEqual({ as: 'section', is: 'section' })
+    expect(sanitizeData({ hero: { is: 'aside' } }, { allowedTags: ['section'] })).toEqual(['hero.is'])
+  })
+
+  it('drops an `as` or `is` binding no check can follow', () => {
+    const data = { hero: { ':as': 'frontmatter.tag', ':is': '"script"' }, card: { ':as': '"section"' } }
+
+    expect(sanitizeData(data, { blockedTags: ['script'] })).toEqual(['hero.:as', 'hero.:is'])
+    expect(data.card).toEqual({ ':as': '"section"' })
+  })
+
+  it('checks array items against their array name, closing the hole a dropped one leaves', () => {
+    const data = { links: ['/docs', 'javascript:alert(1)', '/blog'], tags: ['javascript: tips'] }
+
+    expect(sanitizeData(data)).toEqual(['links.1'])
+    expect(data).toEqual({ links: ['/docs', '/blog'], tags: ['javascript: tips'] })
+  })
+
+  it('walks a shared or cyclic object once', () => {
+    const link: Record<string, unknown> = { label: 'Docs', onclick: 'x()' }
+    link.self = link
+
+    expect(sanitizeData({ links: [link, link] })).toEqual(['links.0.onclick'])
+  })
+
+  it('checks a shared array under each name, as a YAML alias can reuse it', () => {
+    const shared = ['/docs', 'javascript:alert(1)']
+    const data = { tags: shared, links: shared }
+
+    expect(sanitizeData(data)).toEqual(['links.1'])
+    expect(data).toEqual({ tags: ['/docs'], links: ['/docs'] })
+  })
+
+  it('compacts a large array without overflowing the stack', () => {
+    const data = { links: [...Array.from({ length: 300_000 }, () => 0), 'javascript:alert(1)'] }
+
+    expect(sanitizeData(data)).toEqual(['links.300000'])
+    expect(data.links).toHaveLength(300_000)
+  })
+
+  it('leaves scalars and safe data untouched', () => {
+    const data = {
+      title: 'Installation',
+      navigation: { icon: 'i-lucide-play' },
+      enabled: false,
+      count: 3,
+      date: '2026-10-13',
+    }
+    const copy = structuredClone(data)
+
+    expect(sanitizeData(data)).toEqual([])
+    expect(data).toEqual(copy)
+    expect(sanitizeData('hello')).toEqual([])
+    expect(sanitizeData(null)).toEqual([])
   })
 })

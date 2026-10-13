@@ -303,3 +303,7 @@ export function get(data: unknown, key: string): unknown {
 // same `:prefix` semantics as the HTML/ANSI handlers without duplicating logic.
 export { resolveAttributes, resolveAttribute } from '../internal/stringify/attributes.ts'
 export type { ResolveAttributesOptions } from '../internal/stringify/attributes.ts'
+
+// The security plugin's frontmatter rules, for objects the parser never sees.
+export { sanitizeData } from '../internal/sanitize.ts'
+export type { SanitizeDataOptions } from '../internal/sanitize.ts'

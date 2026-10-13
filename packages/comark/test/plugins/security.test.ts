@@ -354,6 +354,52 @@ home: javascript:alert(1)
   })
 })
 
+describe('security plugin — frontmatter', () => {
+  const md = `---
+title: Page
+onclick: alert(1)
+hero:
+  ^onmouseover: alert(1)
+  as: script
+  is: script
+links:
+  - label: Docs
+    to: /docs
+  - label: Evil
+    url: "javascript:alert(1)"
+image:
+  src: "data: text/html,<script>alert(1)</script>"
+description: "javascript: tips and tricks"
+---
+
+# Page`
+
+  it('strips unsafe keys, URLs and `as` or `is` values at any depth', async () => {
+    const tree = await parseWithSecurity(md, { blockedTags: ['script'] })
+
+    expect(tree.frontmatter).toEqual({
+      title: 'Page',
+      hero: {},
+      links: [{ label: 'Docs', to: '/docs' }, { label: 'Evil' }],
+      image: {},
+      // Not a URL key: prose stays, as for props.
+      description: 'javascript: tips and tricks',
+    })
+  })
+
+  it('leaves frontmatter alone with `frontmatter: false`', async () => {
+    const tree = await parseWithSecurity(md, { blockedTags: ['script'], frontmatter: false })
+
+    expect(tree.frontmatter).toMatchObject({ onclick: 'alert(1)', hero: { as: 'script' } })
+  })
+
+  it('checks an aliased array under its URL key too', async () => {
+    const tree = await parseWithSecurity(`---\ntags: &x\n  - "javascript:alert(1)"\nlinks: *x\n---\n`)
+
+    expect(tree.frontmatter).toEqual({ tags: [], links: [] })
+  })
+})
+
 describe('security plugin — component props beyond href/src', () => {
   const untrusted = {
     blockedTags: ['script', 'iframe', 'embed', 'form', 'base', 'meta', 'link', 'style'],
@@ -584,6 +630,34 @@ describe('security plugin — as prop', () => {
     await runPlugin(tree)
     const el = tree.nodes[0] as [string, any]
     expect(el[1].as).toBe('Badge')
+  })
+
+  it('strips is like as', async () => {
+    const tree = makeTree([['span', { is: 'script' }, 'x']])
+    await runPlugin(tree, { blockedTags: ['script'] })
+    const el = tree.nodes[0] as [string, any]
+    expect(el[1].is).toBeUndefined()
+  })
+
+  it('checks a JSON binding decoded, as renderers decode it', async () => {
+    const tree = makeTree([['span', { ':as': '"script"', ':is': '"section"' }, 'x']])
+    await runPlugin(tree, { blockedTags: ['script'] })
+    const el = tree.nodes[0] as [string, any]
+    expect(el[1]).toEqual({ ':is': '"section"' })
+  })
+
+  it('strips a binding resolved from data at render time, as no check can follow it', async () => {
+    const tree = makeTree([['span', { ':as': 'frontmatter.tag', 'v-bind:is': 'props.tag' }, 'x']])
+    await runPlugin(tree)
+    const el = tree.nodes[0] as [string, any]
+    expect(el[1]).toEqual({})
+  })
+
+  it("strips as naming object, whose props were checked against the element's own tag", async () => {
+    const tree = makeTree([['span', { as: 'object', data: '/x' }, 'x']])
+    await runPlugin(tree)
+    const el = tree.nodes[0] as [string, any]
+    expect(el[1].as).toBeUndefined()
   })
 })
 

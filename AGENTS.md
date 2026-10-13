@@ -94,7 +94,7 @@ packages/comark/
 │       ├── shiki.ts          # Shared Shiki runtime used by both entry points
 │       ├── frontmatter.ts    # parseFrontmatter() / renderFrontmatter()
 │       ├── yaml.ts           # YAML helpers
-│       ├── props-validation.ts # Component props validation
+│       ├── sanitize.ts       # Component props validation and frontmatter sanitization
 │       ├── parse/            # Parsing pipeline
 │       │   ├── token-processor.ts # markdown-exit tokens → document nodes
 │       │   ├── auto-close/   # Self-healing for incomplete markdown
@@ -481,7 +481,7 @@ import { renderMarkdown } from 'comark/render'
 
 // Document model types and utilities
 import type { MarkdownDocument, Node, ElementNode, TextNode, CommentNode } from 'comark'
-import { textContent, visit, visitAsync, escapeHtml, isMarkdownDocument } from 'comark/utils'
+import { textContent, visit, visitAsync, escapeHtml, isMarkdownDocument, sanitizeData } from 'comark/utils'
 import { noopTracer, withSpan } from 'comark/utils/trace'
 
 // Core plugins — use when calling parseMarkdown() directly (framework-agnostic)

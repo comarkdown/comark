@@ -1,6 +1,6 @@
 import { stringifyYaml } from '../yaml.ts'
 import { escapeHtml, get } from '../../utils/index.ts'
-import { isUnsafeUrlValue } from '../props-validation.ts'
+import { isUnsafeUrlValue } from '../sanitize.ts'
 import { pickFence } from './fence.ts'
 import type { NodeRenderData } from '../../types.ts'
 

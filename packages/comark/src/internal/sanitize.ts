@@ -14,24 +14,20 @@ export const unsafeTags = ['object']
 // path via the `html` plugin and does not need these).
 export const unsafeAttributes = ['srcdoc', 'formaction', 'innerhtml', 'dangerouslysetinnerhtml', 'textcontent']
 
-export const unsafeLinkPrefix = [
-  'javascript:',
-  'data:text/html',
-  'vbscript:',
-  'data:text/javascript',
-  'data:text/vbscript',
-  'data:text/css',
-  'data:text/plain',
-  'data:text/xml',
-]
+export const unsafeProtocols = ['javascript:', 'vbscript:']
 
 /**
- * Whether `url` uses a hard-floor unsafe scheme.
+ * Whether `url` is a known-unsafe protocol.
  */
-function hasUnsafeScheme(url: URL): boolean {
-  let href = url.href.toLowerCase()
-  if (url.protocol === 'data:') href = `data:${href.slice(5).trimStart()}`
-  return unsafeLinkPrefix.some((prefix) => href.startsWith(prefix))
+function isUnsafeProtocol(url: URL, allowDataImage: boolean): boolean {
+  if (unsafeProtocols.includes(url.protocol)) return true
+  if (url.protocol !== 'data:') return false
+  if (!allowDataImage) return true
+
+  const body = url.href.slice('data:'.length)
+  let end = 0
+  while (end < body.length && body[end] !== ',' && body[end] !== ';') end++
+  return !body.slice(0, end).trim().toLowerCase().startsWith('image/')
 }
 
 export interface PropsValidationOptions {
@@ -143,13 +139,7 @@ function validateUrl(
     url = resolved
   }
 
-  // Block known-unsafe protocols — hard floor, not overrideable by options
-  if (hasUnsafeScheme(url)) {
-    return REJECTED_PROP
-  }
-
-  // Block data: images when allowDataImages is false
-  if (mode === 'image' && !allowDataImages && url.protocol === 'data:') {
+  if (isUnsafeProtocol(url, mode === 'image' && allowDataImages)) {
     return REJECTED_PROP
   }
 
@@ -201,12 +191,11 @@ function matchesAllowedPrefix(url: URL, prefix: string): boolean {
 }
 
 /**
- * Hard-floor check: does this string resolve to a known-unsafe URL scheme
- * (`javascript:`, `data:text/html`, …)? Applied to binding-resolved values at
- * render time so dot-path data (frontmatter/meta/data) cannot smuggle an
- * unsafe URL past parse-time validation. Relative URLs are never unsafe here.
+ * Whether `value` is a known-unsafe URL.
  */
 export function isUnsafeUrlValue(value: string): boolean {
+  if (!value.includes(':') && !value.includes('&') && !value.includes('%')) return false
+
   let decoded = value
   try {
     decoded = decodeURIComponent(value)
@@ -221,7 +210,8 @@ export function isUnsafeUrlValue(value: string): boolean {
   } catch {
     return false
   }
-  return hasUnsafeScheme(url)
+  // No prop mode here: a data image passes, as it cannot run script.
+  return isUnsafeProtocol(url, true)
 }
 
 // Attributes browsers navigate to or load as a URL, beyond the `*href` /
@@ -254,11 +244,50 @@ function normalizePropName(attribute: string): string {
     .replace(/[:_-]/g, '')
 }
 
-export function validateProp(attribute: string, value: unknown, options: PropsValidationOptions = {}): unknown {
-  const name = normalizePropName(attribute)
+/** Whether a normalized prop name is an event handler or a markup sink, whatever its value. */
+function isUnsafePropName(name: string): boolean {
   // `*Html` / `*-html` props (`innerHTML`, Nuxt UI's `labelHtml`, `v-html`)
   // are markup sinks: components render them with `v-html` or equivalents.
-  if (name.startsWith('on') || name.endsWith('html') || unsafeAttributes.includes(name)) {
+  return name.startsWith('on') || name.endsWith('html') || unsafeAttributes.includes(name)
+}
+
+/** Props that pick the element or component a renderer creates. */
+const tagSelectors = ['as', 'is']
+
+/** Whether prop `key` is a tag selector: `as`, `is`, or one of their bindings. */
+export function isTagSelector(key: string): boolean {
+  return tagSelectors.includes(normalizePropName(key))
+}
+
+/** A filter for tag selectors: `unsafeTags` and `blockedTags`, or any tag outside `allowedTags` when set. */
+export function createTagFilter(blockedTags: string[] = [], allowedTags: string[] = []): (tag: string) => boolean {
+  const blocked = new Set([...blockedTags, ...unsafeTags].map((tag) => tag.toLowerCase()))
+  const allowed = new Set(allowedTags.map((tag) => tag.toLowerCase()))
+  return (tag) => {
+    const name = tag.toLowerCase()
+    return blocked.has(name) || (allowed.size > 0 && !allowed.has(name))
+  }
+}
+
+/**
+ * Whether tag selector `key` can make a renderer create a tag `isFilteredTag` rejects.
+ */
+export function isUnsafeTagSelector(key: string, value: unknown, isFilteredTag: (tag: string) => boolean): boolean {
+  if (typeof value !== 'string') return false
+  if (!/^(?::|v-bind:)/.test(key)) return isFilteredTag(value)
+
+  let decoded: unknown
+  try {
+    decoded = JSON.parse(value)
+  } catch {
+    return true
+  }
+  return typeof decoded === 'string' && isFilteredTag(decoded)
+}
+
+export function validateProp(attribute: string, value: unknown, options: PropsValidationOptions = {}): unknown {
+  const name = normalizePropName(attribute)
+  if (isUnsafePropName(name)) {
     return REJECTED_PROP
   }
 
@@ -286,16 +315,18 @@ export function validateProp(attribute: string, value: unknown, options: PropsVa
   return validateValue(name, value, options)
 }
 
-function validateValue(name: string, value: unknown, options: PropsValidationOptions): unknown {
-  if (typeof value === 'string') {
-    // SVG `<animate>` / `<set>` targeting `href` can rewrite a link to the
-    // script URL in `values` / `from` / `to` / `by` once the animation runs.
-    if (name === 'attributename') {
-      return decodeHtmlEntities(value).toLowerCase().includes('href') ? REJECTED_PROP : value
-    }
-    if (!isUrlProp(name)) return value
-    return validateUrl(value, name.endsWith('src') || name === 'poster' ? 'image' : 'link', options)
+function validateString(name: string, value: string, options: PropsValidationOptions): string | typeof REJECTED_PROP {
+  // SVG `<animate>` / `<set>` targeting `href` can rewrite a link to the
+  // script URL in `values` / `from` / `to` / `by` once the animation runs.
+  if (name === 'attributename') {
+    return decodeHtmlEntities(value).toLowerCase().includes('href') ? REJECTED_PROP : value
   }
+  if (!isUrlProp(name)) return value
+  return validateUrl(value, name.endsWith('src') || name === 'poster' ? 'image' : 'link', options)
+}
+
+function validateValue(name: string, value: unknown, options: PropsValidationOptions): unknown {
+  if (typeof value === 'string') return validateString(name, value, options)
 
   // A non-string href/src can reach here as an array/object from the YAML
   // block-props JSON round-trip, and is stringified when set as an attribute.
@@ -370,4 +401,67 @@ export function validateProps(
   )
 
   return props
+}
+
+export interface SanitizeDataOptions extends PropsValidationOptions {
+  /** Tags an `as` or `is` value may not name. */
+  blockedTags?: string[]
+  /** When set, the only tags an `as` or `is` value may name. */
+  allowedTags?: string[]
+}
+
+/**
+ * Remove unsafe entries from `data`, such as frontmatter, in place, at any depth.
+ */
+export function sanitizeData(data: unknown, options: SanitizeDataOptions = {}): string[] {
+  const isFilteredTag = createTagFilter(options.blockedTags, options.allowedTags)
+  const removed: string[] = []
+
+  const seen = new WeakMap<object, Set<string>>()
+
+  // `key` is undefined for an array item: it inherits its array's name, as in `validateProp()`.
+  const sanitizeEntry = (name: string, key: string | undefined, value: unknown): unknown => {
+    if (key !== undefined) {
+      if (isUnsafePropName(name)) return REJECTED_PROP
+      if (tagSelectors.includes(name) && isUnsafeTagSelector(key, value, isFilteredTag)) return REJECTED_PROP
+    }
+    return typeof value === 'string' ? validateString(name, value, options) : value
+  }
+
+  const walk = (value: object, path: string, name: string): void => {
+    const isArray = Array.isArray(value)
+    const seenAs = isArray ? name : ''
+    const names = seen.get(value)
+    if (names?.has(seenAs)) return
+    if (names) names.add(seenAs)
+    else seen.set(value, new Set([seenAs]))
+
+    let deleted = false
+    for (const [key, child] of Object.entries(value)) {
+      const at = path ? `${path}.${key}` : key
+      const childName = isArray ? name : normalizePropName(key)
+      const result = sanitizeEntry(childName, isArray ? undefined : key, child)
+      if (result === REJECTED_PROP) {
+        Reflect.deleteProperty(value, key)
+        removed.push(at)
+        deleted = true
+      } else if (result !== child) {
+        // `defaultOrigin` rewrote a URL.
+        ;(value as Record<string, unknown>)[key] = result
+      } else if (child !== null && typeof child === 'object') {
+        walk(child, at, childName)
+      }
+    }
+
+    if (deleted && isArray) {
+      let length = 0
+      for (let index = 0; index < value.length; index++) {
+        if (index in value) value[length++] = value[index]
+      }
+      value.length = length
+    }
+  }
+  if (data !== null && typeof data === 'object') walk(data, '', '')
+
+  return removed
 }
