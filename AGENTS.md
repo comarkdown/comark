@@ -94,7 +94,7 @@ packages/comark/
 │       ├── shiki.ts          # Shared Shiki runtime used by both entry points
 │       ├── frontmatter.ts    # parseFrontmatter() / renderFrontmatter()
 │       ├── yaml.ts           # YAML helpers
-│       ├── props-validation.ts # Component props validation
+│       ├── sanitize.ts       # Component props validation and frontmatter sanitization
 │       ├── parse/            # Parsing pipeline
 │       │   ├── token-processor.ts # markdown-exit tokens → document nodes
 │       │   ├── auto-close/   # Self-healing for incomplete markdown
@@ -489,6 +489,7 @@ import {
   isHtmlVoidElement,
   HTML_VOID_ELEMENTS,
   isMarkdownDocument,
+  sanitizeData,
 } from 'comark/utils'
 import { noopTracer, withSpan } from 'comark/utils/trace'
 
