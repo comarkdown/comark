@@ -128,6 +128,15 @@ describe('HTML sink props', () => {
     )
     expect(result).toEqual({ id: 'keep' })
   })
+
+  it('drops sink props behind Vue `.prop` / `^attr` prefixes', () => {
+    const result = resolveAttributes(
+      { '.innerHTML': '<img src=x>', '^textContent': 'overlay', ':.innerHTML': '"<img src=x>"', '.title': 'keep' },
+      makeRenderData(),
+      { parseJson: true }
+    )
+    expect(result).toEqual({ '.title': 'keep' })
+  })
 })
 
 describe('unsafe URL bindings (render-time hard floor)', () => {

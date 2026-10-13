@@ -338,6 +338,93 @@ home: javascript:alert(1)
   })
 })
 
+describe('security plugin — component props beyond href/src', () => {
+  const untrusted = {
+    blockedTags: ['script', 'iframe', 'embed', 'form', 'base', 'meta', 'link', 'style'],
+    allowDataImages: false,
+  }
+
+  it('strips a javascript: URL from a `to` prop', async () => {
+    const tree = await parseWithSecurity('::callout{to="javascript:alert(1)"}\nclick\n::', untrusted)
+    expect(tree.nodes).toEqual([['callout', {}, 'click']])
+  })
+
+  it('sanitizes bound arrays recursively and drops *-html props', async () => {
+    const tree = await parseWithSecurity(
+      `::u-button{:links='[{"to":"javascript:alert(3)","label":"Docs","onClick":"alert(5)","descriptionHtml":"<img src=x onerror=alert(6)>"},{"to":"/docs","label":"Safe"}]' label-html="<img src=x onerror=alert(4)>" label="Go"}\n::`,
+      untrusted
+    )
+    expect(tree.nodes).toEqual([
+      [
+        'u-button',
+        {
+          ':links': [{ label: 'Docs' }, { to: '/docs', label: 'Safe' }],
+          label: 'Go',
+        },
+      ],
+    ])
+  })
+
+  it('sanitizes JSON bindings that reach the tree as strings (raw HTML)', async () => {
+    const tree = await parseWithSecurity(
+      `<u-page-links :links='[{"to":"javascript:alert(1)","label":"x"}]'></u-page-links>`,
+      untrusted
+    )
+    const [element] = collectElements(tree.nodes).filter((node) => node[0] === 'u-page-links')
+    expect(JSON.parse(element![1][':links'] as string)).toEqual([{ label: 'x' }])
+  })
+
+  it('removes SVG animation targeting href', async () => {
+    const tree = await parseWithSecurity(
+      `<svg><a><animate attributeName="href" values="javascript:alert(7)"/><set attributeName="xlink:href" to="javascript:alert(8)"/><text x="0" y="20">click</text></a></svg>`,
+      untrusted
+    )
+    const animations = collectElements(tree.nodes).filter((node) => node[0] === 'animate' || node[0] === 'set')
+    expect(animations).toHaveLength(2)
+    for (const [, props] of animations) {
+      expect(props).not.toHaveProperty('attributename')
+      expect(props).not.toHaveProperty('to')
+    }
+  })
+
+  it('strips Vue `.prop` / `^attr` prefixed props from YAML props', async () => {
+    const tree = await parseWithSecurity(
+      `::comp
+---
+.innerHTML: <img src=x onerror=alert(1)>
+^onclick: alert(1)
+^href: javascript:alert(2)
+.title: kept
+---
+::`,
+      untrusted
+    )
+    expect(tree.nodes).toEqual([['comp', { '.title': 'kept' }]])
+  })
+
+  it('keeps ordinary content and safe URLs', async () => {
+    const tree = await parseWithSecurity(
+      `::card{title="JavaScript: the good parts" description="vbscript: a history" to="https://nuxt.com/docs" :links='[{"label":"JavaScript: intro","to":"/docs#intro"},{"to":"mailto:hi@nuxt.com"}]'}
+![logo](data:image/png;base64,abc)
+::
+
+<svg><animate attributeName="opacity" values="0;1" dur="1s"/></svg>`,
+      { allowDataImages: true }
+    )
+    const [card] = collectElements(tree.nodes).filter((node) => node[0] === 'card')
+    expect(card![1]).toEqual({
+      title: 'JavaScript: the good parts',
+      description: 'vbscript: a history',
+      to: 'https://nuxt.com/docs',
+      ':links': [{ label: 'JavaScript: intro', to: '/docs#intro' }, { to: 'mailto:hi@nuxt.com' }],
+    })
+    const [img] = collectElements(tree.nodes).filter((node) => node[0] === 'img')
+    expect(img![1].src).toBe('data:image/png;base64,abc')
+    const [animate] = collectElements(tree.nodes).filter((node) => node[0] === 'animate')
+    expect(animate![1]).toMatchObject({ attributename: 'opacity', values: '0;1' })
+  })
+})
+
 describe('security plugin — blockedTags', () => {
   it('removes a blocked tag', async () => {
     const tree = makeTree([
