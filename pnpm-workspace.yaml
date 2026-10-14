@@ -134,15 +134,15 @@ catalog:
   svelte-check: ^4.7.6
 
   # Angular
-  "@angular/common": ^22.1.7
-  "@angular/compiler": ^22.1.7
-  "@angular/compiler-cli": ^22.1.7
-  "@angular/core": ^22.1.7
-  "@angular/build": ^22.1.8
-  "@angular/platform-browser": ^22.1.7
-  "@angular/platform-browser-dynamic": ^22.0.6
-  "@angular/platform-server": ^22.1.7
-  "@angular/router": ^22.1.7
+  "@angular/common": ^22.2.2
+  "@angular/compiler": ^22.2.2
+  "@angular/compiler-cli": ^22.2.2
+  "@angular/core": ^22.2.2
+  "@angular/build": ^22.2.2
+  "@angular/platform-browser": ^22.2.2
+  "@angular/platform-browser-dynamic": ^22.2.2
+  "@angular/platform-server": ^22.2.2
+  "@angular/router": ^22.2.2
   "@analogjs/vite-plugin-angular": 3.0.0-alpha.87
   zone.js: ^0.16.3
   rxjs: ^7.8.2
