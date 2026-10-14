@@ -85,7 +85,7 @@ packages/comark/
 │   │   ├── task-list.ts      # GFM task lists
 │   │   └── toc.ts            # Table of contents
 │   ├── utils/                # Shared utilities (comark/utils entry point)
-│   │   ├── index.ts          # textContent(), visit(), visitAsync(), escapeHtml(), indent(), string/object utils
+│   │   ├── index.ts          # textContent(), visit(), visitAsync(), escapeHtml(), isHtmlVoidElement(), indent(), string/object utils
 │   │   ├── helpers.ts        # defineComarkPlugin(), dedupePlugins()
 │   │   ├── trace.ts          # ComarkTracer helpers: noopTracer, withSpan() (comark/utils/trace)
 │   │   └── caret.ts          # Caret utilities for streaming
@@ -480,7 +480,15 @@ import { renderMarkdown } from 'comark/render'
 
 // Document model types and utilities
 import type { MarkdownDocument, Node, ElementNode, TextNode, CommentNode } from 'comark'
-import { textContent, visit, visitAsync, escapeHtml, isMarkdownDocument } from 'comark/utils'
+import {
+  textContent,
+  visit,
+  visitAsync,
+  escapeHtml,
+  isHtmlVoidElement,
+  HTML_VOID_ELEMENTS,
+  isMarkdownDocument,
+} from 'comark/utils'
 import { noopTracer, withSpan } from 'comark/utils/trace'
 
 // Core plugins — use when calling parseMarkdown() directly (framework-agnostic)
@@ -745,6 +753,16 @@ carries the body along, which is a fixed point on re-parse:
 SPEC coverage: `SPEC/COMARK/component-nested-*-outdented.md`,
 `SPEC/COMARK/component-nested-codeblock-indented.md`,
 `SPEC/COMARK/codeblock-indented-content.md`.
+
+## Embedded HTML
+
+Contract: `packages/comark/SPEC/HTML/README.md`. HTML nodes carry
+`$: { html: 1, block: 0 | 1 }`. `block` means the tag outlived the paragraph
+that opened it, not that the tag is a block element. `html({ markdown: false })`
+keeps closed-block text literal; a blank line still nests real markdown under
+the open tag. `<style>`, `<pre>`, `<script>`, `<textarea>`, and block-level `<!-- -->` comments are always verbatim, including newlines and inner tags. All-uppercase tag names are lowercased (`<DIV>` → `div`); any name with a lowercase letter keeps its case (`<Hello>`, `<linearGradient>`). `visit`/`visitAsync` drop nodes nested deeper than `TREE_WALK_MAX_DEPTH` (50). Deferred cases (cross-paragraph inline
+opener, trailing text after that closer, indented child tag inside a multiline
+`<a>`) are skipped tests in `test/html-block.test.ts` — do not weaken them.
 
 ## Vue/React/Svelte/Angular Components
 

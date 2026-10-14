@@ -98,16 +98,28 @@ Attributes that can be abused regardless of value are always stripped:
 | `innerHTML` | Injects raw HTML through framework renderers |
 | `dangerouslySetInnerHTML` | Injects raw HTML through framework renderers |
 | `textContent` | Overwrites an element's children |
+| `*Html` / `*-html` (`labelHtml`, `description-html`, `v-html`, …) | Component props rendered as raw HTML (for example with `v-html`) |
+| `attributeName` targeting `href` | SVG `<animate>` / `<set>` can rewrite a link to a script URL |
+
+Prop names are normalized before these checks: case, binding prefixes (`:`, `v-bind:`), Vue's `.prop` / `^attr` prefixes (`.innerHTML`, `^onclick`), and `:` / `-` / `_` separators are ignored.
 
 ::note
 Framework renderers (Vue, React, Svelte, Angular) never forward `innerHTML`, `dangerouslySetInnerHTML`, or `textContent` from document attributes, even without this plugin. Raw HTML has its own explicit path through the default `html` plugin.
 ::
 
+### Nested props
+
+Object and array prop values (`:links='[{"to": "/docs", "label": "Docs"}]'`, YAML props) are validated recursively: every nested key goes through the same checks as a top-level prop, so nested `on*` handlers, `*Html` keys, and unsafe URLs are removed at any depth while the rest of the value is kept. Array items are checked against the prop name that holds them.
+
 ### Protocol blocking
 
-`href` and `src` values are decoded (URL-encoded and HTML entity variants included) and checked against a hard-coded block list. These protocols are **always** blocked, even if `allowedProtocols: ['*']` is set:
+URL props are decoded (URL-encoded and HTML entity variants included) and checked against a hard-coded block list. A prop is a URL prop when its name is `href`, `src`, `to`, `action`, `poster`, `cite`, `background` or `ping`, or ends in `href`, `src`, `url`, `uri` or `link` (optionally plural), such as `xlink:href`, `imageUrl`, or `avatar-src`. Other props are never parsed as URLs, so prose such as `title="JavaScript: the good parts"` is kept.
+
+These protocols are **always** blocked, even if `allowedProtocols: ['*']` is set:
 
 `javascript:` · `vbscript:` · `data:text/html` · `data:text/javascript` · `data:text/vbscript` · `data:text/css` · `data:text/plain` · `data:text/xml`
+
+A `data:` URL is checked the way browsers read its MIME type, which ignores spaces after `data:`. So `data: text/html,…` is blocked like `data:text/html,…`.
 
 The same check applies to `:href` and `:src` bindings twice: on the JSON-decoded value at parse time, and again on the resolved value at render time, so bindings cannot smuggle an unsafe URL through frontmatter or other data sources.
 
@@ -148,11 +160,11 @@ Returns a `ComarkPlugin` that sanitizes the parsed AST.
 | [`blockedTags`](#options-blockedtags) | `string[]` | `[]` | Tag names to remove entirely from the AST |
 | [`allowedTags`](#options-allowedtags) | `string[]` | `[]` | Tag names to allow exclusively in the AST |
 | [`tagFallback`](#options-tagfallback) | `function` | `undefined`  | Defines how to handle unallowed tags in the AST |
-| [`allowedProtocols`](#options-allowedprotocols) | `string[]` | `['*']` | Protocols permitted in `href` and `src` |
-| [`allowedLinkPrefixes`](#options-allowedlinkprefixes) | `string[]` | `['*']` | URL prefixes permitted in `href` |
-| [`allowedImagePrefixes`](#options-allowedimageprefixes) | `string[]` | `['*']` | URL prefixes permitted in `src` |
+| [`allowedProtocols`](#options-allowedprotocols) | `string[]` | `['*']` | Protocols permitted in URL props |
+| [`allowedLinkPrefixes`](#options-allowedlinkprefixes) | `string[]` | `['*']` | URL prefixes permitted in link props (`href`, `to`, …) |
+| [`allowedImagePrefixes`](#options-allowedimageprefixes) | `string[]` | `['*']` | URL prefixes permitted in image props (`src`, `*src`, `poster`) |
 | [`defaultOrigin`](#options-defaultorigin) | `string` | `undefined` | Rewrite disallowed URLs to this origin instead of stripping |
-| [`allowDataImages`](#options-allowdataimages) | `boolean` | `true` | Allow `data:image/*` URIs in `src` |
+| [`allowDataImages`](#options-allowdataimages) | `boolean` | `true` | Allow `data:image/*` URIs in image props |
 
 ### `blockedTags`
 
@@ -206,7 +218,7 @@ security({
 
 ### `allowedProtocols`
 
-Restricts which URL protocols are permitted in `href` and `src` attributes. Use `['*']` to allow all protocols not already on the hard-coded block list.
+Restricts which URL protocols are permitted in [URL props](#protocol-blocking) (`href`, `src`, `to`, …). Use `['*']` to allow all protocols not already on the hard-coded block list.
 
 ```typescript
 security({
@@ -220,7 +232,7 @@ The hard-coded unsafe protocols (`javascript:`, `vbscript:`, `data:text/*`) are 
 
 ### `allowedLinkPrefixes`
 
-Restricts which URLs are allowed in `href` attributes. Relative URLs (starting with `/`, `#`, etc.) are always allowed regardless of this setting.
+Restricts which URLs are allowed in link props: every [URL prop](#protocol-blocking) except image props, such as `href`, `xlink:href`, and `to`. Relative URLs (starting with `/`, `#`, etc.) are always allowed regardless of this setting.
 
 Prefixes compare by parsed origin plus a path-segment boundary, not by raw string matching: `https://myapp.com` allows `https://myapp.com/docs` but never a lookalike host such as `https://myapp.com.evil.com`. Scheme-relative URLs (`//evil.com/page`) resolve to an absolute URL and go through the same checks.
 
@@ -234,7 +246,7 @@ security({
 
 ### `allowedImagePrefixes`
 
-Same as `allowedLinkPrefixes` but applies to `src` attributes only. The two options are checked independently; restricting one does not affect the other.
+Same as `allowedLinkPrefixes` but applies to image props only: `src`, props ending in `src` (`avatarSrc`), and `poster`. The two options are checked independently; restricting one does not affect the other.
 
 ```typescript
 security({
@@ -256,7 +268,7 @@ security({
 
 ### `allowDataImages`
 
-Controls whether `data:image/*` URIs are allowed in `src` attributes. Set to `false` to block base64-encoded images, which can be used as tracking pixels or embedded payloads.
+Controls whether `data:image/*` URIs are allowed in image props (`src`, `*src`, `poster`). Set to `false` to block base64-encoded images, which can be used as tracking pixels or embedded payloads.
 
 ```typescript
 security({
