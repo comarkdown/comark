@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { parseMarkdown } from '../src/parse'
+import { renderMarkdown } from '../src/render'
 
 describe('headingIds option', () => {
   it('generates id attributes by default', async () => {
@@ -78,6 +79,18 @@ describe('headingIds option', () => {
 
     const reversed = await parseMarkdown('# Foo-1\n\n# Foo\n\n# Foo')
     expect(reversed.nodes.map((n: any) => n[1].id)).toEqual(['foo-1', 'foo', 'foo-2'])
+  })
+
+  it('does not reuse an explicit id for a later generated one', async () => {
+    const source = '# Foo {#foo-1}\n\n# Foo\n\n# Bar\n\n# Baz {#bar-1}\n\n# Bar'
+    const tree = await parseMarkdown(source)
+    expect(tree.nodes.map((n: any) => n[1].id)).toEqual(['foo-1', 'foo-2', 'bar', 'bar-1', 'bar-2'])
+
+    // The stringifier replays the same reservation, so the roundtrip is stable.
+    const markdown = await renderMarkdown(tree)
+    expect(markdown.trim()).toBe(source)
+    const reparsed = await parseMarkdown(markdown)
+    expect(reparsed.nodes).toEqual(tree.nodes)
   })
 
   describe('slug text extraction', () => {

@@ -1,7 +1,7 @@
 import { Token } from 'markdown-exit'
 import type { CommentNode, ElementNode, ElementNodeAttributes, HeadingIdsOption, Node } from 'comark'
 import { extractAttributes, mergeAdjacentTextNodes, parseCodeblockInfo, processAttributes } from './tree-utils.ts'
-import { createHeadingIdTracker, nextHeadingId, type HeadingIdTracker } from '../heading-id.ts'
+import { createHeadingIdTracker, nextHeadingId, reserveHeadingId, type HeadingIdTracker } from '../heading-id.ts'
 import { parseHtmlInline } from './utils.ts'
 import { textContent } from 'comark/utils'
 
@@ -463,6 +463,7 @@ const processors: Record<string, Processor> = {
       const level = Number.parseInt((tokens[start].tag || 'h1').replace('h', ''), 10) || 1
       const headingId = nextHeadingId(textContent(node), level, state.headingIds)
       // User-supplied `id` wins over the auto-generated one.
+      reserveHeadingId(state.headingIds, (node[1] as Record<string, unknown>).id)
       if (headingId) {
         ;(node as ElementNode)[1] = { id: headingId, ...(node[1] as Record<string, unknown>) }
       }

@@ -1,14 +1,14 @@
 import type { State } from 'comark/render'
 import type { ElementNode, HeadingIdsOption } from 'comark'
 import { textContent } from '../../../utils/index.ts'
-import { createHeadingIdTracker, nextHeadingId, type HeadingIdTracker } from '../../heading-id.ts'
+import { createHeadingIdTracker, nextHeadingId, reserveHeadingId, type HeadingIdTracker } from '../../heading-id.ts'
 import { comarkAttributes } from '../attributes.ts'
 
 // Replays the parser's id generation across one render so each heading's
 // implicit id is known, keyed by render state (`null` when ids are disabled).
 const trackers = new WeakMap<State, HeadingIdTracker | null>()
 
-function autoHeadingId(node: ElementNode, level: number, state: State): string | undefined {
+function autoHeadingId(node: ElementNode, level: number, state: State, id: unknown): string | undefined {
   let tracker = trackers.get(state)
   if (tracker === undefined) {
     tracker = createHeadingIdTracker(state.context.headingIds as HeadingIdsOption | undefined) ?? null
@@ -19,7 +19,10 @@ function autoHeadingId(node: ElementNode, level: number, state: State): string |
     .slice(2)
     .map((child) => textContent(child as ElementNode))
     .join('')
-  return nextHeadingId(text, level, tracker)
+  const autoId = nextHeadingId(text, level, tracker)
+  // Mirror the parser: an explicit id is reserved so later headings skip it.
+  reserveHeadingId(tracker, id)
+  return autoId
 }
 
 // h1, h2, h3, h4, h5, h6
@@ -32,7 +35,7 @@ export async function heading(node: ElementNode, state: State) {
 
   // The auto-generated id is implicit in `# Heading` markdown — only echo a custom one.
   const { id, ...rest } = node[1] as Record<string, unknown>
-  const autoId = autoHeadingId(node, level, state)
+  const autoId = autoHeadingId(node, level, state, id)
   const attrs = comarkAttributes(id === undefined || id === autoId ? rest : { id, ...rest })
   const suffix = attrs ? ` ${attrs}` : ''
 

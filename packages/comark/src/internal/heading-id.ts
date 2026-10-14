@@ -58,6 +58,15 @@ export function slugify(text: string): string {
 }
 
 /**
+ * Reserve a heading's effective id when a user-supplied `id` overrides the
+ * generated one, so later generated ids get a suffix instead of reusing it
+ * (`# Foo {#foo-1}` then `# Foo` → `foo-1`, `foo-2`).
+ */
+export function reserveHeadingId(tracker: HeadingIdTracker, id: unknown): void {
+  if (typeof id === 'string' && id) tracker.usedIds.add(id)
+}
+
+/**
  * Return the auto-generated id for the next heading, suffixed with a counter
  * for duplicates. In nested mode it is also prefixed with its parent heading's
  * id (h2+ parents only). Returns `undefined` when the heading text slugifies to
