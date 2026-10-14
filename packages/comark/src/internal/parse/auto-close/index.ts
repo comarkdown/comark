@@ -144,7 +144,7 @@ export function autoCloseMarkdown(markdown: string, options: AutoCloseOptions = 
 
   if (doc.fmOpen && doc.fmContent) result = closeDelimiterLine(result, '-', 3)
 
-  if (o.syntax) result = closeComponents(result, source, doc.comps)
+  if (o.syntax) result = closeComponents(result, source, doc.comps, doc.start >= 0)
 
   return result
 }
@@ -828,11 +828,12 @@ function closeDelimiterLine(text: string, ch: string, width: number): string {
 }
 
 /** Closes an open props brace and every open component fence, innermost first. */
-function closeComponents(result: string, source: string, comps: Component[]): string {
-  if (!source.includes('::')) return result
+function closeComponents(result: string, source: string, comps: Component[], healShorthand: boolean): string {
+  const lineStart = result.lastIndexOf('\n') + 1
+  const shorthand = healShorthand && /^:[a-z$][\w$-]*\{/i.test(result.slice(lineStart).trimStart())
+  if (!source.includes('::') && !shorthand) return result
 
   // `::alert{type="info` → close the quote and the brace.
-  const lineStart = result.lastIndexOf('\n') + 1
   let brace = -1
   for (let i = result.length - 1; i >= lineStart; i--) {
     const c = result.charCodeAt(i)

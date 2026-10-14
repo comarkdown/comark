@@ -36,7 +36,7 @@ function hello() {
 ## HTML
 
 ```html
-<pre language="javascript" filename="hello.js"><code class="language-javascript">function hello() {
+<pre data-language="javascript" data-filename="hello.js"><code class="language-javascript">function hello() {
   console.log("Hello, World!");
 }</code></pre>
 ```

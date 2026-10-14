@@ -16,7 +16,9 @@ Complete guide for writing Comark (Components in Markdown) documents.
 
 ## Standard Markdown
 
-Comark supports all standard CommonMark and GitHub Flavored Markdown (GFM) features:
+Comark parses CommonMark and GitHub Flavored Markdown (GFM). A few constructs differ, for example `[text]` without a link destination is a span, not a shortcut reference link. See https://comark.dev/syntax/markdown#differences-from-commonmark-and-gfm.
+
+The standard features:
 
 ### Headings
 
@@ -29,7 +31,8 @@ Comark supports all standard CommonMark and GitHub Flavored Markdown (GFM) featu
 ###### Heading 6
 ```
 
-**Note:** All headings automatically get ID attributes generated from their content for linking (e.g., `# Hello World` becomes `<h1 id="hello-world">`). Set `headingIds: false` in parse options to disable auto-generated ids.
+
+**Note:** All headings automatically get an `id` from their visible text (e.g., `# Hello World` becomes `<h1 id="hello-world">`). Unicode letters, marks, and numbers are kept (`## Café` → `café`); punctuation and symbols are stripped, and a heading that slugifies to nothing gets no id. A leading digit is prefixed with `_` (`## 1. Introduction` → `_1-introduction`), and a duplicate anywhere in the document gets a numeric suffix (`options`, `options-1`, `options-2`). Ids are flat by default (`## Setup` / `### Install` → `setup`, `install`); set `headingIds: 'nested'` in parse options to prefix each id from `h3` down with the nearest `h2`+ ancestor (`setup-install`). Inline marks and link labels contribute their text; an inline component name is omitted (`:icon-star` does not appear in the slug). An explicit `{id="..."}` replaces the generated id. Set `headingIds: false` to disable generation; a user-supplied `id` is still kept.
 
 ### Text Formatting
 

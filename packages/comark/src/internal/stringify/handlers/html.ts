@@ -1,7 +1,7 @@
 import type { State } from 'comark/render'
 import type { ElementNode } from 'comark'
 import { htmlAttributes } from '../attributes.ts'
-import { indent } from '../../../utils/index.ts'
+import { indent, toNativeAttributes } from '../../../utils/index.ts'
 
 const textBlocks = new Set(['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'li', 'td', 'th'])
 const selfCloseTags = new Set(['br', 'hr', 'img', 'input', 'link', 'meta', 'source', 'track', 'wbr'])
@@ -99,7 +99,8 @@ export async function html(node: ElementNode, state: State, parent?: ElementNode
     state.applyContext(revert)
   }
 
-  const attrs = Object.keys(attributes).length > 0 ? ` ${htmlAttributes(attributes)}` : ''
+  const nativeAttributes = toNativeAttributes(String(tag), node, attributes)
+  const attrs = Object.keys(nativeAttributes).length > 0 ? ` ${htmlAttributes(nativeAttributes)}` : ''
 
   if (isSelfClose) {
     return `<${tag}${attrs}>` + (!parent && !isInline ? state.context.blockSeparator : '')

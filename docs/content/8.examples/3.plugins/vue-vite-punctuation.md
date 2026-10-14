@@ -1,7 +1,8 @@
 ---
-title: Punctuation
+title: 'Smart Quotes and Dashes in Vue Markdown'
 description: Example showing how to use Comark with the punctuation plugin for smart quotes, dashes, and symbols in Vue and Vite.
 navigation:
+  title: 'Punctuation'
   icon: i-lucide-quote
 ---
 

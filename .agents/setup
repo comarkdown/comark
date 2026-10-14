@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+# Prepares an Amp orb for the comark monorepo. Runs on fresh orbs and again on
+# stale snapshots, so every step must be idempotent and cheap when warm.
+set -euo pipefail
+
+cd "$(dirname "${BASH_SOURCE[0]}")/.."
+
+step() {
+  local name="$1"
+  shift
+  local start=$SECONDS
+  echo "==> $name"
+  "$@"
+  echo "<== $name ($((SECONDS - start))s)"
+}
+
+ensure_pnpm() {
+  # Match the `packageManager` pin in package.json.
+  local want
+  want="$(node -p 'require("./package.json").packageManager.split("@")[1]')"
+  if [[ "$(pnpm --version 2>/dev/null || true)" != "$want" ]]; then
+    npm install -g --force "pnpm@$want"
+  fi
+  pnpm --version
+}
+
+install_deps() {
+  # `postinstall` runs `pnpm stub` for every package.
+  pnpm install --frozen-lockfile
+}
+
+install_playwright() {
+  # Browser tests (e.g. comark-svelte) use Playwright's Chromium outside CI.
+  # The dry run exits non-zero only when system packages are missing, so warm
+  # runs skip apt entirely.
+  pnpm exec playwright install chromium
+  if ! pnpm exec playwright install-deps --dry-run chromium >/dev/null 2>&1; then
+    sudo -n env PATH="$PATH" pnpm exec playwright install-deps chromium
+  fi
+}
+
+step "pnpm" ensure_pnpm
+step "pnpm install" install_deps
+step "playwright chromium" install_playwright

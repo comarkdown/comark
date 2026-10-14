@@ -1,5 +1,6 @@
 import type { DumpOptions } from 'js-yaml'
 import type MarkdownExit from 'markdown-exit'
+import type { Token } from 'markdown-exit'
 import type MarkdownIt from 'markdown-it'
 
 // #region Utility Types
@@ -221,6 +222,11 @@ export type State = {
 /**
  * The context of the renderer
  */
+/**
+ * Auto-generated heading id mode. `true` is an alias for `'flat'`.
+ */
+export type HeadingIdsOption = boolean | 'nested' | 'flat'
+
 export interface RendererOptions {
   /**
    * Additional node handlers to pass to the renderer
@@ -256,6 +262,13 @@ export interface RenderMarkdownOptions extends RendererOptions {
    * Defaults: indent=2, lineWidth=-1.
    */
   frontmatterOptions?: DumpOptions
+  /**
+   * The `headingIds` mode the document was parsed with. Heading ids equal to
+   * the auto-generated one are implicit and omitted; any other id is written
+   * as `{#id}`. With `false`, every heading id is written.
+   * @default true
+   */
+  headingIds?: HeadingIdsOption
 }
 
 export interface NodeRenderData {
@@ -282,18 +295,22 @@ export type MarkdownExitPlugin = (md: MarkdownExit) => void
 export type MarkdownItPlugin = (md: MarkdownIt) => void
 export type MarkdownItPluginWithOptions<T> = (md: MarkdownIt, options: T) => void
 
-export type ComarkParsePreState = {
+export interface ComarkParsePreState {
   markdown: string
   options: ParserOptions
 
   [key: string]: any
 }
 
-export type ComarkParsePostState<TMeta = Record<string, any>, TFrontmatter = Record<string, any>> = {
-  markdown: string
+export interface ComarkParseTokensState extends ComarkParsePreState {
+  tokens: Token[]
+}
+
+export interface ComarkParsePostState<
+  TMeta = Record<string, any>,
+  TFrontmatter = Record<string, any>,
+> extends ComarkParseTokensState {
   tree: MarkdownDocument<TMeta, TFrontmatter>
-  options: ParserOptions
-  tokens: unknown[]
 
   [key: string]: any
 }
@@ -360,7 +377,8 @@ export interface ComarkTracer {
  */
 export type ComarkPlugin<TMeta = {}, TFrontmatter = {}> = {
   name: string
-  markdownItPlugins?: MarkdownItPlugin[]
+  markdownItPlugins?: Array<MarkdownItPlugin | MarkdownExitPlugin>
+  markdownItPost?: (state: ComarkParseTokensState) => void
   pre?: (state: ComarkParsePreState) => Promise<void> | void
   post?: (state: ComarkParsePostState<Writable<TMeta>, Writable<TFrontmatter>>) => Promise<void> | void
   /** Phantom — used for type inference only. Never set at runtime. */
@@ -485,19 +503,33 @@ export interface ParserOptions<TPlugins extends readonly ComarkPlugin<any, any>[
   linkify?: boolean
 
   /**
-   * Whether to auto-generate `id` attributes for `h1`–`h6` headings from their text content.
-   * Set `false` to skip auto-generated ids; user-supplied `id` attributes are still preserved.
+   * How to auto-generate `id` attributes for `h1`–`h6` headings from their text content.
+   * User-supplied `id` attributes are always preserved.
+   *
+   * - `true` / `'flat'` — slug of the heading's own text only
+   * - `'nested'` — slug prefixed with the parent heading's id (h2+ parents)
+   * - `false` — no auto-generated ids
+   *
+   * Ids are unique within a document: a duplicate gets a numeric suffix
+   * (`options`, `options-1`, `options-2`, ...) in both modes, and a suffixed id
+   * never collides with a heading whose own slug is already `options-1`.
+   *
+   * Generated ids keep Unicode letters, marks, decimal digits, and letter numbers
+   * (`## Café` → `café`, `## 日本語` → `日本語`). Punctuation and symbols are dropped,
+   * and a heading that slugifies to nothing (emoji, punctuation only) gets no id.
+   * A leading ASCII digit is prefixed with `_`.
    *
    * @default true
    * @example
-   * // With headingIds: true (default)
-   * // # Hello World → ['h1', { id: 'hello-world' }, 'Hello World']
+   * // ## Setup\n### Install
+   * // 'flat'   → ['h2', { id: 'setup' }, ...], ['h3', { id: 'install' }, ...]
+   * // 'nested' → ['h2', { id: 'setup' }, ...], ['h3', { id: 'setup-install' }, ...]
+   * // false    → ['h2', {}, ...], ['h3', {}, ...]
    *
-   * // With headingIds: false
-   * // # Hello World → ['h1', {}, 'Hello World']
-   * // # Hello {id="custom"} → ['h1', { id: 'custom' }, 'Hello']
+   * // # Café → ['h1', { id: 'café' }, 'Café']
+   * // # Hello {id="custom"} → ['h1', { id: 'custom' }, 'Hello'] (any mode, including false)
    */
-  headingIds?: boolean
+  headingIds?: HeadingIdsOption
 
   /**
    * Whether to register the built-in default plugins

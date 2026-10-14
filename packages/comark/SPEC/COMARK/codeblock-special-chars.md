@@ -38,7 +38,7 @@
 ## HTML
 
 ```html
-<pre language="html" filename="template.html"><code class="language-html">&lt;div class="container"&gt;
+<pre data-language="html" data-filename="template.html"><code class="language-html">&lt;div class="container"&gt;
   &lt;h1&gt;Title & Subtitle&lt;/h1&gt;
   &lt;p&gt;Text with "quotes" and 'apostrophes'&lt;/p&gt;
   &lt;script&gt;alert('XSS &lt; &gt; test');&lt;/script&gt;
