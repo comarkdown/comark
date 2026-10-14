@@ -88,9 +88,9 @@
 
 ## Installation
 
-### Npm {#npm .highlight}
+### Npm {.highlight}
 
-### Yarn
+### Yarn {#installation-yarn}
 
 ## Usage {.lead data-level="2"}
 

@@ -223,7 +223,7 @@ export type State = {
  * The context of the renderer
  */
 /**
- * Auto-generated heading id mode. `true` is an alias for `'nested'`.
+ * Auto-generated heading id mode. `true` is an alias for `'flat'`.
  */
 export type HeadingIdsOption = boolean | 'nested' | 'flat'
 
@@ -506,11 +506,13 @@ export interface ParserOptions<TPlugins extends readonly ComarkPlugin<any, any>[
    * How to auto-generate `id` attributes for `h1`–`h6` headings from their text content.
    * User-supplied `id` attributes are always preserved.
    *
-   * - `true` / `'nested'` — slug prefixed with the parent heading's id (h2+ parents)
-   * - `'flat'` — slug of the heading's own text only
+   * - `true` / `'flat'` — slug of the heading's own text only
+   * - `'nested'` — slug prefixed with the parent heading's id (h2+ parents)
    * - `false` — no auto-generated ids
    *
-   * Duplicate ids get a numeric suffix (`-1`, `-2`, ...) in both modes.
+   * Ids are unique within a document: a duplicate gets a numeric suffix
+   * (`options`, `options-1`, `options-2`, ...) in both modes, and a suffixed id
+   * never collides with a heading whose own slug is already `options-1`.
    *
    * Generated ids keep Unicode letters, marks, decimal digits, and letter numbers
    * (`## Café` → `café`, `## 日本語` → `日本語`). Punctuation and symbols are dropped,
@@ -520,8 +522,8 @@ export interface ParserOptions<TPlugins extends readonly ComarkPlugin<any, any>[
    * @default true
    * @example
    * // ## Setup\n### Install
-   * // 'nested' → ['h2', { id: 'setup' }, ...], ['h3', { id: 'setup-install' }, ...]
    * // 'flat'   → ['h2', { id: 'setup' }, ...], ['h3', { id: 'install' }, ...]
+   * // 'nested' → ['h2', { id: 'setup' }, ...], ['h3', { id: 'setup-install' }, ...]
    * // false    → ['h2', {}, ...], ['h3', {}, ...]
    *
    * // # Café → ['h1', { id: 'café' }, 'Café']

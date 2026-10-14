@@ -20,7 +20,7 @@ export interface HeadingIdTracker {
  */
 export function createHeadingIdTracker(option: HeadingIdsOption = true): HeadingIdTracker | undefined {
   if (option === false) return undefined
-  return { nested: option !== 'flat', slugCounts: new Map(), usedIds: new Set(), stack: [] }
+  return { nested: option === 'nested', slugCounts: new Map(), usedIds: new Set(), stack: [] }
 }
 
 /**
