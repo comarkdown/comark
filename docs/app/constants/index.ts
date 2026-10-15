@@ -435,6 +435,28 @@ Free for up to 5 services. No credit card. Deploys in under a minute.
 ::
 `
 
+export const dynamicPropsMarkdown = `---
+title: Dynamic props
+description: Build prop values from fixed text and frontmatter
+page:
+  "#comment": The "page" field is custom field and exists only for demonstration, it is no part of Comark core
+  maxWidth: 1120px
+repo: comarkdown/comark
+version: 0.7.0
+author: Ada
+---
+
+# {{ frontmatter.title }}
+
+Props that start with a colon can mix fixed text with placeholders. Edit the frontmatter and watch the preview.
+
+:::Button{:to="https://github.com/{{ frontmatter.repo }}" :label="Open {{ frontmatter.repo }} on GitHub" icon="i-lucide-github" target="_blank"}
+:::
+
+::Alert{:title="Version {{ frontmatter.version }}" :description="Maintained by {{ frontmatter.author || the team }}" icon="i-lucide-info" color="secondary"}
+::
+`
+
 export type AiMode = 'showcase' | 'nuxt-ui'
 
 export type PlaygroundExample = {
@@ -473,6 +495,11 @@ export const playgroundExamples: PlaygroundExample[] = [
     content: nuxtUiMarkdown,
     mode: 'nuxt-ui',
     prompt: 'Landing page for a mountain bike rental in the Alps.',
+  },
+  {
+    label: 'Dynamic props',
+    value: 'dynamic-props',
+    content: dynamicPropsMarkdown,
   },
 ]
 

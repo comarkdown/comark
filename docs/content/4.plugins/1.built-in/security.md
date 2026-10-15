@@ -137,6 +137,12 @@ The same check applies to `:href` and `:src` bindings twice: on the JSON-decoded
 
 ::
 
+### Interpolated props
+
+A `:` prop can contain `{{ path }}` placeholders (see [String interpolation](/syntax/components#string-interpolation)). Comark checks the final string after it inserts the values, even without the `security()` plugin. Unsafe prop names and unsafe URL schemes are omitted. Path bindings are not checked this way: they only get the render-time URL check for `href`, `src`, `xlink:href` and `to`.
+
+`allowedLinkPrefixes`, `allowedProtocols` and `defaultOrigin` check literal values at parse time. They do not apply to the final interpolated URL, so avoid building URLs from untrusted data.
+
 ---
 
 ## API

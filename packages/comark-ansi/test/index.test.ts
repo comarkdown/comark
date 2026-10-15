@@ -404,6 +404,21 @@ home: https://example.com
       expect(out).toContain('[image: Photo of Ada]')
     })
 
+    it('interpolates placeholders in :href and :alt', async () => {
+      const link = await parseMarkdown('[Doc](x){:href="/d/{{ data.id }}"}')
+      expect(await renderAnsiFromDocument(link, { colors: false, data: { id: 7 } })).toContain('Doc (/d/7)')
+      const img = await parseMarkdown('![x](/x.png){:alt="Alt {{ data.id }}"}')
+      expect(await renderAnsiFromDocument(img, { colors: false, data: { id: 7 } })).toContain('[image: Alt 7]')
+    })
+
+    it('prints the literal fallback when an interpolated URL is unsafe', async () => {
+      const link = await parseMarkdown('[Doc](x){:href="{{ data.bad }}"}')
+      const out = await renderAnsiFromDocument(link, { colors: false, data: { bad: 'javascript:alert(1)' } })
+      expect(out).toBe('Doc (x)\n')
+      expect(out).not.toContain('javascript:')
+      expect(await renderAnsiFromDocument(link, { colors: false, data: { bad: '/ok' } })).toContain('Doc (/ok)')
+    })
+
     it('exposes parent props for custom handlers via resolveAttribute', async () => {
       const { resolveAttribute } = await import('comark/render')
       const tree = await parseMarkdown(`---

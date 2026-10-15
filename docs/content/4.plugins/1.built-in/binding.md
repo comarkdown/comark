@@ -282,6 +282,8 @@ A binding value (`{{ path }}`) is resolved as a dot-path against the same render
 
 See [Data Binding](/syntax/components#data-binding) for the full contract and additional examples.
 
+The same render context also resolves `{{ path || default }}` inside `:` props, such as `:a[Docs]{:href="/docs/{{ data.slug }}"}`. That feature needs no plugin, because the `binding()` plugin only handles `{{ }}` in text. See [String interpolation](/syntax/components#string-interpolation).
+
 ## Default values
 
 Use `|| default` to specify a fallback that's emitted when the dot-path does not resolve:

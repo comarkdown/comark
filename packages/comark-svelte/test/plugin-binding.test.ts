@@ -12,3 +12,21 @@ describe('@comark/svelte plugins/binding — If SSR', () => {
     expect(body.replace(/<[^>]*>/g, '').trim()).toBe(expected)
   })
 })
+
+describe('@comark/svelte prop interpolation SSR', () => {
+  it('resolves `{{ path }}` placeholders in :href', async () => {
+    const value = await parseMarkdown('Go :a[Docs]{:href="/d/{{ data.id }}"}')
+    const { body } = render(MarkdownDocument, { props: { value, data: { id: 7 } } })
+    expect(body).toContain('href="/d/7"')
+  })
+
+  it('omits a rejected URL while keeping the link text', async () => {
+    const value = await parseMarkdown(':a[x]{:href="{{ data.url }}"}')
+    const bad = render(MarkdownDocument, { props: { value, data: { url: 'javascript:alert(1)' } } }).body
+    expect(bad).not.toContain('javascript:')
+    expect(bad).not.toContain('href')
+    expect(bad.replace(/<!--.*?-->/g, '')).toContain('<a>x</a>')
+    const ok = render(MarkdownDocument, { props: { value, data: { url: '/ok' } } }).body
+    expect(ok).toContain('href="/ok"')
+  })
+})

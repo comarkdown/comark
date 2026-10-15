@@ -114,6 +114,28 @@ site:
     expect(html).not.toContain('frontmatter.missing')
   })
 
+  it('interpolates placeholders into string props', async () => {
+    const html = await renderMarkdown(
+      `::badge{:label="Hi {{ data.name }}"}
+::
+
+:a[Docs]{:href="/d/{{ data.id }}"}`,
+      { components: { badge: Badge }, data: { name: 'Ada', id: 7 } }
+    )
+    expect(html).toContain('Hi Ada')
+    expect(html).toContain('href="/d/7"')
+  })
+
+  it('omits a rejected URL while keeping the link text', async () => {
+    const md = ':a[x]{:href="{{ data.url }}"}'
+    const bad = await renderMarkdown(md, { data: { url: 'javascript:alert(1)' } })
+    expect(bad).not.toContain('javascript:')
+    expect(bad).not.toContain('href')
+    expect(bad).toContain('<a>x</a>')
+    const ok = await renderMarkdown(md, { data: { url: '/ok' } })
+    expect(ok).toContain('href="/ok"')
+  })
+
   it('leaves non-:prefix attributes untouched', async () => {
     const html = await renderMarkdown(
       `---

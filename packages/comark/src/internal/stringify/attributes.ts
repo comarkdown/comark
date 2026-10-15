@@ -2,6 +2,7 @@ import { stringifyYaml } from '../yaml.ts'
 import { escapeHtml, get } from '../../utils/index.ts'
 import { isUnsafeUrlValue } from '../props-validation.ts'
 import { pickFence } from './fence.ts'
+import { interpolateProp } from './interpolate.ts'
 import type { NodeRenderData } from '../../types.ts'
 
 export interface ResolveAttributesOptions {
@@ -39,6 +40,9 @@ const HTML_SINK_PROPS = new Set(['innerhtml', 'dangerouslysetinnerhtml', 'textco
  * With `parseJson: true`, every `:prefixed` string is JSON-parsed first and
  * the `:` prefix is always stripped, falling back to the dot-path lookup.
  * The `$` metadata key is never forwarded.
+ *
+ * A `:prefixed` string with `{{ path || default }}` placeholders is interpolated
+ * in both modes. The prop is omitted when nothing is available or the result is unsafe.
  */
 export function resolveAttributes(
   attrs: Record<string, unknown>,
@@ -56,6 +60,15 @@ export function resolveAttributes(
     const lowerOutKey = outKey.replace(/^[.^]/, '').toLowerCase()
 
     if (HTML_SINK_PROPS.has(lowerOutKey)) continue
+
+    if (isBinding && typeof value === 'string') {
+      const text = interpolateProp(outKey, value, renderData)
+      if (text !== undefined) {
+        // UNRESOLVED and REJECTED_PROP are symbols: the prop is omitted
+        if (typeof text === 'string') result[outKey] = text
+        continue
+      }
+    }
 
     let outValue: unknown
     let resultKey = key
@@ -115,6 +128,9 @@ export function resolveAttribute(attrs: Record<string, unknown>, renderData: Nod
   if (bindKey in attrs) {
     const value = attrs[bindKey]
     if (typeof value === 'string') {
+      const text = interpolateProp(key, value, renderData)
+      if (typeof text === 'string') return text
+      if (text !== undefined) return attrs[key]
       const resolved = get(renderData, value)
       if (resolved !== undefined) return resolved
     }

@@ -191,11 +191,20 @@ naturally appears inline after the deepest trailing text node.
 
   // Only shadow the parent's `props` scope when the current element has its
   // own attributes. Bare wrappers (`<p>`, `<ul>`, `<li>`, …) must keep the
-  // parent's scope so bindings like `{{ props.x }}` reach across them.
+  // parent's scope so bindings like `{{ props.x }}` reach across them. The
+  // check uses the raw attributes: resolving can omit all of them.
   let nativeProps = $derived(tag ? toNativeAttributes(tag, node, mappedProps) : mappedProps)
 
+  let hasOwnAttrs = $derived.by(() => {
+    const attrs: Record<string, any> = (Array.isArray(node) && node.length >= 2 ? node[1] : null) ?? {}
+    for (const key in attrs) {
+      if (key !== '$') return true
+    }
+    return false
+  })
+
   let childrenRenderData = $derived<NodeRenderData>(
-    Object.keys(mappedProps).length > 0
+    hasOwnAttrs
       ? { ...renderData, props: mappedProps }
       : renderData,
   )

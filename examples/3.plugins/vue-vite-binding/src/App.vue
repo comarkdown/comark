@@ -12,7 +12,7 @@ const previewPlugins = [binding()]
 // Runtime data exposed to bindings via the `data.` namespace.
 const initialData = {
   user: {
-    name: 'Ada',
+    name: 'Adam',
     role: 'admin',
     age: 28,
   },
@@ -86,6 +86,22 @@ I am NOT fine and NOT happy 😩
 
 ::card{title="Component props"}
 Inside the card the binding below pulls the card's title via \`props\`:
+
+{{ props.title }}
+::
+
+## Dynamic props
+
+Build a prop from fixed text and data. Edit the inputs to update it.
+
+- :a[Open {{ data.user.name || friend }}'s profile]{:href="/users/{{ data.user.name }}/overview"}
+- :a[Release notes]{:href="/releases/{{ frontmatter.release.version }}"}
+
+::card
+---
+:title: Release {{ frontmatter.release.codename }} (v{{ frontmatter.release.version }})
+---
+The title above is built from the frontmatter:
 
 {{ props.title }}
 ::
