@@ -1,7 +1,7 @@
 'use client'
 
 import { use, useDeferredValue, useMemo, Suspense } from 'react'
-import { createMarkdownParser } from 'comark'
+import { createSerializedMarkdownParser } from 'comark'
 import type { MarkdownDocument as MarkdownDocumentType } from 'comark'
 import { isMarkdownDocument } from 'comark/utils'
 import { MarkdownLive } from './MarkdownLive.tsx'
@@ -50,24 +50,14 @@ export function MarkdownClient({
       ? String(children)
       : ((value as string | undefined) ?? '')
 
-  const parse = useMemo(() => {
-    let parser: ReturnType<typeof createMarkdownParser> | undefined
-    let pending: Promise<unknown> = Promise.resolve()
-
-    // Keep streaming state in order without hiding plugin errors from Suspense.
-    return (source: string, streaming: boolean) => {
-      const run = () => {
-        parser ??= createMarkdownParser({ ...options, ...(unwrap ? { unwrap } : {}), plugins })
-        return parser(source, { streaming })
-      }
-      const result = pending.then(run, run)
-      pending = result
-      return result
-    }
-  }, [options, plugins, unwrap])
+  // Recreated only when parser inputs change, so streaming updates reuse nodes.
+  const parse = useMemo(
+    () => createSerializedMarkdownParser({ ...options, ...(unwrap ? { unwrap } : {}), plugins }),
+    [options, plugins, unwrap]
+  )
 
   const parsePromise = useMemo(
-    () => (isMarkdownDocument(content) ? Promise.resolve(content) : parse(content, streaming)),
+    () => (isMarkdownDocument(content) ? Promise.resolve(content) : parse(content, { streaming })),
     [content, parse, streaming]
   )
 
