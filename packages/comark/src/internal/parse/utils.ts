@@ -207,6 +207,21 @@ for (const name of [
   SVG_TAG_NAMES[name.toLowerCase()] = name
 }
 
+/** Attribute string that ends inside an unquoted value (`href=/x`). */
+const UNQUOTED_VALUE_END = /=\s*[^\s"'=<>`]+$/
+
+/**
+ * Whether the children of a foreign-content element are parsed as HTML again
+ * (an HTML integration point): SVG `foreignObject` / `desc` / `title`, and
+ * MathML `annotation-xml` carrying HTML.
+ */
+export function isHtmlIntegrationPoint(tag: string, attrs: Record<string, unknown>): boolean {
+  if (tag === 'foreignObject' || tag === 'desc' || tag === 'title') return true
+  if (tag !== 'annotation-xml') return false
+  const encoding = typeof attrs.encoding === 'string' ? attrs.encoding.toLowerCase() : ''
+  return encoding === 'text/html' || encoding === 'application/xhtml+xml'
+}
+
 /** Element name inside SVG/MathML: lowercase, then the SVG case adjustment. */
 function adjustForeignTagName(tag: string): string {
   const lower = tag.toLowerCase()
@@ -241,8 +256,14 @@ export function parseHtmlInline(content: string, inForeignContent: boolean = fal
     let tag = normalize(openMatch[1])
     // `<SVG>` / `<Math>` are still HTML-parsed start tags.
     if (!inForeignContent && isForeignContentTag(tag)) tag = tag.toLowerCase()
-    const attrsStr = openMatch[2] || ''
-    const slash = openMatch[3] === '/'
+    let attrsStr = openMatch[2] || ''
+    let slash = openMatch[3] === '/'
+    // In `href=/x/>` the slash belongs to the unquoted value, as in the HTML
+    // tokenizer: it only self-closes after whitespace, a quote or a bare name.
+    if (slash && !/\s/.test(trimmed.charAt(trimmed.length - 3)) && UNQUOTED_VALUE_END.test(attrsStr)) {
+      attrsStr += '/'
+      slash = false
+    }
 
     const selfClosing = slash || isHtmlVoidElement(tag)
     return {

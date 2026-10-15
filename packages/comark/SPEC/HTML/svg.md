@@ -1,7 +1,7 @@
 ## Input
 
 ```md
-<svg viewBox="0 0 10 10"><linearGradient id="g"></linearGradient></svg>
+An icon: <svg viewBox="0 0 10 10"><linearGradient id="g"></linearGradient></svg>
 ```
 
 ## AST
@@ -14,6 +14,7 @@
     [
       "p",
       {},
+      "An icon: ",
       [
         "svg",
         {
@@ -43,12 +44,12 @@
 
 ```html
 <p>
-  <svg viewBox="0 0 10 10"><linearGradient id="g"></linearGradient></svg>
+  An icon: <svg viewBox="0 0 10 10"><linearGradient id="g"></linearGradient></svg>
 </p>
 ```
 
 ## Markdown
 
 ```md
-<svg viewBox="0 0 10 10"><linearGradient id="g"></linearGradient></svg>
+An icon: <svg viewBox="0 0 10 10"><linearGradient id="g"></linearGradient></svg>
 ```
