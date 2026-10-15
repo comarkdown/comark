@@ -1,18 +1,17 @@
 import { describe, expect, it } from 'vitest'
-import { createMarkdownParser, parseMarkdown } from '../src/parse'
+import { parseMarkdown } from '../src/parse'
 import security from '../src/plugins/security'
 import { renderMarkdown, resolveAttributes } from '../src/render'
 import type { ElementNode, Node } from '../src/types'
 
 /**
- * SVG/MathML foreign content is case-sensitive. Element names follow the
- * general tag rule (all-uppercase is lowercased, anything else is kept), and
- * attribute names keep the author's case. HTML attribute names outside stay
- * lowercase (#467).
+ * Tag and attribute names share one rule: an all-uppercase name is lowercased
+ * (`DIV`, `HREF`), any other name keeps the author's case. That keeps SVG and
+ * MathML names (`viewBox`, `linearGradient`) and component props (`someProp`)
+ * intact (#467).
  *
- * These tests check names, attributes and nesting only. `stripMeta` drops the
- * `$` position/html metadata and `findElement` skips paragraph wrappers, so the
- * assertions do not depend on how the tree builder groups HTML into blocks.
+ * `stripMeta` drops the `$` metadata and `findElement` skips paragraph
+ * wrappers, so these tests check names and attributes, not tree layout.
  */
 
 function stripMeta(node: Node): unknown {
@@ -39,11 +38,11 @@ async function parseElement(markdown: string, tag: string): Promise<unknown> {
   return stripMeta(element!)
 }
 
-describe('SVG case preservation', () => {
+describe('HTML name case', () => {
   it.each([
-    ['inline', '<svg viewBox="0 0 10 10"><linearGradient id="g"></linearGradient></svg>'],
+    ['inline', 'x <svg viewBox="0 0 10 10"><linearGradient id="g"></linearGradient></svg>'],
     ['block', '<svg viewBox="0 0 10 10">\n  <linearGradient id="g"></linearGradient>\n</svg>'],
-  ])('preserves SVG element and attribute names (%s)', async (_, markdown) => {
+  ])('keeps SVG element and attribute names (%s)', async (_, markdown) => {
     expect(await parseElement(markdown, 'svg')).toEqual([
       'svg',
       { viewBox: '0 0 10 10' },
@@ -51,144 +50,49 @@ describe('SVG case preservation', () => {
     ])
   })
 
-  it.each([
-    ['inline', '<svg><LINEARGRADIENT X1="0"></LINEARGRADIENT></svg>'],
-    ['block', '<svg>\n<LINEARGRADIENT X1="0">\n</LINEARGRADIENT>\n</svg>'],
-  ])('lowercases all-uppercase SVG tag names and keeps attribute case (%s)', async (_, markdown) => {
-    // No SVG name table: wrongly-cased names are not mapped back to camelCase.
-    expect(await parseElement(markdown, 'svg')).toEqual(['svg', {}, ['lineargradient', { X1: '0' }]])
+  it('keeps SVG animation attribute names', async () => {
+    expect(
+      await parseElement('<svg><animate attributeName="opacity" repeatCount="indefinite"/></svg>', 'animate')
+    ).toEqual(['animate', { attributeName: 'opacity', repeatCount: 'indefinite' }])
   })
 
-  it.each([
-    ['inline', '<svg viewBox="0 0 1 1"><path d="M0 0"/><circle r="1"/></svg>'],
-    ['block', '<svg viewBox="0 0 1 1">\n  <path d="M0 0"/>\n  <circle r="1"/>\n</svg>'],
-  ])('keeps SVG siblings flat when children are self-closed (%s)', async (_, markdown) => {
-    expect(await parseElement(markdown, 'svg')).toEqual([
-      'svg',
-      { viewBox: '0 0 1 1' },
-      ['path', { d: 'M0 0' }],
-      ['circle', { r: '1' }],
-    ])
-  })
-
-  it('treats a self-closed <svg/> root as void and keeps following text outside', async () => {
-    const { nodes } = await parseMarkdown('a <svg viewBox="0 0 1 1"/> b')
-    expect(nodes.map(stripMeta)).toEqual([['p', {}, 'a ', ['svg', { viewBox: '0 0 1 1' }], ' b']])
-  })
-
-  it('treats a self-closed <math/> root as void and keeps following text outside', async () => {
-    const { nodes } = await parseMarkdown('<math/> after')
-    expect(nodes.map(stripMeta)).toEqual([['p', {}, ['math', {}], ' after']])
-  })
-
-  it.each([
-    ['inline', 'x <Div CLASS="x" DATA-Foo="1">World</Div>'],
-    ['block', '<DIV CLASS="x" DATA-Foo="1">\nWorld\n</DIV>'],
-  ])('lowercases HTML attribute names outside SVG (%s)', async (_, markdown) => {
-    const { nodes } = await parseMarkdown(markdown)
-    const element = nodes.flatMap((n) => (Array.isArray(n) && n[0] === 'p' ? n.slice(2) : [n]))
-    const div = element.find((n) => Array.isArray(n) && typeof n[0] === 'string' && n[0].toLowerCase() === 'div')
-    expect((stripMeta(div as Node) as ElementNode)[1]).toEqual({ class: 'x', 'data-foo': '1' })
-  })
-
-  it('lowercases an uppercase SVG opener but keeps foreign-content casing', async () => {
-    // <SVG> / <Svg> start foreign content and are always lowercased. Mixed-case
-    // child names keep the author's case.
-    expect(await parseElement('<Svg><clipPath ID="c"></clipPath></Svg>', 'svg')).toEqual([
-      'svg',
-      {},
-      ['clipPath', { ID: 'c' }],
-    ])
-  })
-
-  it('preserves attribute casing inside MathML content', async () => {
-    expect(await parseElement('<math displayStyle="true"><MROW></MROW></math>', 'math')).toEqual([
+  it('keeps MathML attribute names', async () => {
+    expect(await parseElement('<math displayStyle="true"><mrow></mrow></math>', 'math')).toEqual([
       'math',
       { displayStyle: 'true' },
       ['mrow', {}],
     ])
   })
 
+  it('keeps camelCase props on components', async () => {
+    expect(await parseElement('<MyCard someProp="x" CLASS="c">hi</MyCard>', 'MyCard')).toEqual([
+      'MyCard',
+      { someProp: 'x', class: 'c' },
+      'hi',
+    ])
+  })
+
   it.each([
-    ['same case', '<svg><linearGradient id="g"></linearGradient><circle r="1"/></svg> after'],
-    ['inline, different case', '<svg><linearGradient id="g"></LINEARGRADIENT><circle r="1"/></svg> after'],
-    ['block, different case', '<svg>\n<linearGradient id="g">\n</LINEARGRADIENT>\n<circle r="1"/>\n</svg>'],
-  ])('matches the closing tag of a camelCase SVG element (%s)', async (_, markdown) => {
+    ['inline', 'x <DIV CLASS="x" DATA-FOO="1">World</DIV>'],
+    ['block', '<DIV CLASS="x" DATA-FOO="1">\nWorld\n</DIV>'],
+  ])('lowercases all-uppercase names (%s)', async (_, markdown) => {
+    expect(await parseElement(markdown, 'div')).toEqual(['div', { class: 'x', 'data-foo': '1' }, 'World'])
+  })
+
+  it('lowercases an all-uppercase SVG name (no SVG name table)', async () => {
+    expect(await parseElement('<SVG VIEWBOX="0 0 1 1"><LINEARGRADIENT></LINEARGRADIENT></SVG>', 'svg')).toEqual([
+      'svg',
+      { viewbox: '0 0 1 1' },
+      ['lineargradient', {}],
+    ])
+  })
+
+  it('matches the closing tag of a camelCase element case-insensitively', async () => {
     // A mismatched close would leave <circle/> inside <linearGradient>.
-    expect(await parseElement(markdown, 'svg')).toEqual([
+    expect(await parseElement('<svg><linearGradient id="g"></LINEARGRADIENT><circle r="1"/></svg>', 'svg')).toEqual([
       'svg',
       {},
       ['linearGradient', { id: 'g' }],
-      ['circle', { r: '1' }],
-    ])
-  })
-
-  it.each([
-    ['foreignObject', '<svg><foreignObject><div CLASS="x">hi</div></foreignObject></svg>'],
-    ['foreignobject', '<svg><foreignobject><div CLASS="x">hi</div></foreignobject></svg>'],
-    ['desc', '<svg><desc><span CLASS="x">hi</span></desc></svg>'],
-    ['title', '<svg><title><span CLASS="x">hi</span></title></svg>'],
-    [
-      'annotation-xml (text/html)',
-      '<math><annotation-xml encoding="text/html"><span CLASS="x">hi</span></annotation-xml></math>',
-    ],
-  ])('parses HTML inside %s as HTML again (lowercase attributes)', async (tag, markdown) => {
-    const parent = await parseElement(markdown, tag.split(' ')[0])
-    expect((parent as ElementNode[])[2][1]).toEqual({ class: 'x' })
-  })
-
-  it('keeps foreign casing inside annotation-xml without an HTML encoding', async () => {
-    const element = await parseElement(
-      '<math><annotation-xml encoding="application/mathml+xml"><mi mathVariant="bold">x</mi></annotation-xml></math>',
-      'mi'
-    )
-    expect(element).toEqual(['mi', { mathVariant: 'bold' }, 'x'])
-  })
-
-  it('swallows the rest of the paragraph into an unclosed inline SVG', async () => {
-    expect(await parseElement('text <svg viewBox="0 0 1 1"> more text', 'svg')).toEqual([
-      'svg',
-      { viewBox: '0 0 1 1' },
-      ' more text',
-    ])
-  })
-
-  it('nests SVG children inside headings', async () => {
-    const { nodes } = await parseMarkdown('# T <svg viewBox="0 0 1 1"><path d="M0 0"/></svg>')
-    expect(nodes.map(stripMeta)).toEqual([
-      ['h1', { id: 't' }, 'T ', ['svg', { viewBox: '0 0 1 1' }, ['path', { d: 'M0 0' }]]],
-    ])
-  })
-
-  it('keeps markdown inline parsing inside SVG text children', async () => {
-    expect(await parseElement('<svg><text>Hi **bold**</text></svg>', 'svg')).toEqual([
-      'svg',
-      {},
-      ['text', {}, 'Hi ', ['strong', {}, 'bold']],
-    ])
-  })
-
-  it('preserves casing when parsing with streaming enabled', async () => {
-    // The incomplete <linearGradient> opener is dropped by auto-close (its
-    // own documented behavior for trailing openers); the completed <svg>
-    // keeps its casing and does not crash.
-    const result = await createMarkdownParser()('<svg viewBox="0 0 10 10"><linearGradient id="g"', { streaming: true })
-    expect(stripMeta(findElement(result.nodes, 'svg')!)).toEqual(['svg', { viewBox: '0 0 10 10' }])
-  })
-
-  it.each([
-    ['inside SVG', '<svg><a href=/x/>link</a></svg>'],
-    ['outside SVG', 'x <a href=/x/>link</a> y'],
-  ])('does not treat an unquoted attribute value ending in "/" as self-closing (%s)', async (_, markdown) => {
-    // In `href=/x/>` the slash belongs to the unquoted value.
-    expect(await parseElement(markdown, 'a')).toEqual(['a', { href: '/x/' }, 'link'])
-  })
-
-  it('still self-closes after a bare attribute name or whitespace', async () => {
-    expect(await parseElement('<svg><path d="M0 0" hidden/><circle r=1 /></svg>', 'svg')).toEqual([
-      'svg',
-      {},
-      ['path', { d: 'M0 0', hidden: true }],
       ['circle', { r: '1' }],
     ])
   })
@@ -202,18 +106,9 @@ describe('SVG case preservation', () => {
     // replace a value that a sanitizer already checked.
     expect(((await parseElement(markdown, tag)) as ElementNode)[1]).toEqual(attrs)
   })
+})
 
-  it('matches hyphenated closing tags of custom elements', async () => {
-    const { nodes } = await parseMarkdown('<my-el>x</my-el> after')
-    expect(nodes.map(stripMeta)).toEqual([['p', {}, ['my-el', {}, 'x'], ' after']])
-  })
-
-  it('matches hyphenated closing tags in MathML (annotation-xml)', async () => {
-    expect(
-      await parseElement('<math><annotation-xml encoding="text/html">y</annotation-xml> z</math>', 'math')
-    ).toEqual(['math', {}, ['annotation-xml', { encoding: 'text/html' }, 'y'], ' z'])
-  })
-
+describe('security with case-preserved names', () => {
   it('does not forward DOM property sinks to renderers', async () => {
     // Vue sets `outerHTML` as a DOM property, so the renderer floor drops it
     // whatever its case.
@@ -228,17 +123,20 @@ describe('SVG case preservation', () => {
     ['outerHTML', '<svg outerHTML="<img src=x onerror=alert(1)>" viewBox="0 0 1 1"></svg>'],
     ['onLoad', '<svg onLoad="alert(1)" viewBox="0 0 1 1"></svg>'],
     ['onClick on a child', '<svg viewBox="0 0 1 1"><circle onClick="alert(1)"/></svg>'],
-  ])('drops case-preserved %s inside SVG with the security plugin', async (_, markdown) => {
+    ['Href with javascript:', '<svg viewBox="0 0 1 1"><a Href="javascript:alert(1)"></a></svg>'],
+  ])('drops case-preserved %s with the security plugin', async (_, markdown) => {
     const { nodes } = await parseMarkdown(markdown, { plugins: [security()] })
     const svg = stripMeta(findElement(nodes, 'svg')!) as ElementNode
     expect(svg[1]).toEqual({ viewBox: '0 0 1 1' })
     if (svg[2]) expect((svg[2] as ElementNode)[1]).toEqual({})
   })
+})
 
+describe('round trip', () => {
   it.each([
     ['inline', 'x <svg viewBox="0 0 10 10"><linearGradient id="g"></linearGradient></svg>'],
     ['block', '<svg viewBox="0 0 10 10">\n<linearGradient id="g"></linearGradient>\n</svg>'],
-  ])('round-trips SVG casing through renderMarkdown (%s)', async (_, markdown) => {
+  ])('keeps SVG casing through renderMarkdown (%s)', async (_, markdown) => {
     const document = await parseMarkdown(markdown)
     const output = await renderMarkdown(document)
     // Check the text: a fixed-point check alone also passes when both

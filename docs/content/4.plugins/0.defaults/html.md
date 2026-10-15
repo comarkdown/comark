@@ -112,7 +112,7 @@ Hello **World**
 
 All-uppercase tag names are normalized to lowercase (`<DIV>` → `div`). A tag name with any lowercase letter keeps its authored case, so components and SVG elements resolve as written (`<Hello>` → `Hello`, `<linearGradient>` → `linearGradient`).
 
-Attribute names are lowercased (`CLASS` → `class`), except inside `<svg>` and `<math>`, where they are case-sensitive and keep the author's case (`viewBox`, `attributeName`). HTML nested in `<foreignObject>`, `<desc>`, `<title>` or an HTML `<annotation-xml>` is lowercased again. When an attribute is repeated with different case (`href` and `HREF`), the first one wins, as in browsers.
+Attribute names follow the same rule: all-uppercase names are lowercased (`CLASS` → `class`), and any other name keeps its case, so SVG, MathML and component props work as written (`viewBox`, `attributeName`, `someProp`). Security checks compare names case-insensitively, so `onClick` or `Href` are filtered like `onclick` and `href`. When an attribute is repeated with different case (`href` and `HREF`), the first one wins, as in browsers.
 
 Spaces beside a tag are content. `<p>Hello <em>x</em> <a>two</a></p>` keeps the space after `Hello` and the space between `</em>` and `<a>`, including when `markdown` is `false`.
 

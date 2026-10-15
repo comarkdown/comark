@@ -2,7 +2,7 @@ import { Token } from 'markdown-exit'
 import type { CommentNode, ElementNode, ElementNodeAttributes, HeadingIdsOption, Node } from 'comark'
 import { extractAttributes, mergeAdjacentTextNodes, parseCodeblockInfo, processAttributes } from './tree-utils.ts'
 import { createHeadingIdTracker, nextHeadingId, reserveHeadingId, type HeadingIdTracker } from '../heading-id.ts'
-import { isForeignContentTag, isHtmlIntegrationPoint, parseHtmlInline } from './utils.ts'
+import { parseHtmlInline } from './utils.ts'
 import { textContent } from 'comark/utils'
 
 const inlineTags = new Set(['strong', 'em', 'del', 'code', 'a', 'span', 'sub', 'sup', 'kbd'])
@@ -36,8 +36,6 @@ type HtmlOpenFrame = {
   block: boolean
   /** Bare-inline nodes waiting to be flushed as a single <p> on a block frame. */
   pendingInline: Node[]
-  /** True inside an SVG/MathML subtree, where attribute names keep their case (#467). */
-  foreign?: boolean
 }
 
 /** Shared mutable context for a whole document walk. */
@@ -403,40 +401,12 @@ function withHtmlScope(
   }
 }
 
-/**
- * Run `fn` with a fresh HTML stack for an inline markdown container (`**…**`,
- * links, headings). Inline tags opened inside it collect their content there
- * and close when it ends, as a browser closes `<span>` at `</strong>`.
- * Frames left open stay inline (`block: 0`).
- */
-function withInlineHtmlScope(
-  state: ProcessState,
-  fn: () => { children: Node[]; nextIndex: number }
-): { children: Node[]; nextIndex: number } {
-  const outerStack = state.htmlStack
-  state.htmlStack = []
-  try {
-    const result = fn()
-    while (state.htmlStack.length > 0) {
-      const node = frameToNode(state.htmlStack.pop()!)
-      if (state.htmlStack.length > 0) state.htmlStack[state.htmlStack.length - 1].children.push(node)
-      else result.children.push(node)
-    }
-    return result
-  } finally {
-    state.htmlStack = outerStack
-  }
-}
-
-function openCloseToken(closeType: string, tag: string = '', nest: boolean | 'inline' = false) {
+function openCloseToken(closeType: string, tag: string = '', nest = false) {
   return (tokens: Token[], start: number, state: ProcessState) => {
     const open = tokens[start]
-    const { children, nextIndex } =
-      nest === 'inline'
-        ? withInlineHtmlScope(state, () => processChildren(tokens, start, closeType, state, true))
-        : nest
-          ? withHtmlScope(state, () => processChildren(tokens, start, closeType, state, true))
-          : processChildren(tokens, start, closeType, state)
+    const { children, nextIndex } = nest
+      ? withHtmlScope(state, () => processChildren(tokens, start, closeType, state, true))
+      : processChildren(tokens, start, closeType, state)
     const attrs = processAttributes(open.attrs)
     return processPossibleAttributesSyntax(tokens, {
       nextIndex,
@@ -449,25 +419,25 @@ const processors: Record<string, Processor> = {
   // nest=true: containers that own child paragraphs/inlines (so free HTML stack
   // doesn't steal their content while a block-level HTML tag is open above them).
   mdc_block_slot_open: openCloseToken('mdc_block_slot_close'),
-  mdc_inline_span_open: openCloseToken('mdc_inline_span_close', '', 'inline'),
+  mdc_inline_span_open: openCloseToken('mdc_inline_span_close'),
   mdc_block_shorthand_open: openCloseToken('mdc_block_shorthand_close'),
-  mdc_inline_component_open: openCloseToken('mdc_inline_component_close', '', 'inline'),
+  mdc_inline_component_open: openCloseToken('mdc_inline_component_close'),
   blockquote_open: openCloseToken('blockquote_close', '', true),
   bullet_list_open: openCloseToken('bullet_list_close', '', true),
   ordered_list_open: openCloseToken('ordered_list_close', '', true),
   list_item_open: openCloseToken('list_item_close', '', true),
-  strong_open: openCloseToken('strong_close', '', 'inline'),
-  link_open: openCloseToken('link_close', '', 'inline'),
-  em_open: openCloseToken('em_close', '', 'inline'),
+  strong_open: openCloseToken('strong_close'),
+  link_open: openCloseToken('link_close'),
+  em_open: openCloseToken('em_close'),
   table_open: openCloseToken('table_close', '', true),
   thead_open: openCloseToken('thead_close', '', true),
   tbody_open: openCloseToken('tbody_close', '', true),
   tr_open: openCloseToken('tr_close', '', true),
   th_open: openCloseToken('th_close', '', true),
   td_open: openCloseToken('td_close', '', true),
-  sub_open: openCloseToken('sub_close', '', 'inline'),
-  sup_open: openCloseToken('sup_close', '', 'inline'),
-  s_open: openCloseToken('s_close', 'del', 'inline'),
+  sub_open: openCloseToken('sub_close'),
+  sup_open: openCloseToken('sup_close'),
+  s_open: openCloseToken('s_close', 'del'),
   mdc_block_open: processMdcBlock,
   code_inline: singleToken((t) => ['code', {}, t.content]),
   math_inline: singleToken((t) => ['math', { class: 'math inline', content: t.content }, t.content]),
@@ -486,7 +456,7 @@ const processors: Record<string, Processor> = {
   fence: codeBlockProcessor,
   mdc_block_shorthand: singleToken((t) => [t.tag, processAttributes(t.attrs)]),
   heading_open(tokens, start, state) {
-    const { nextIndex, node } = openCloseToken('heading_close', '', 'inline')(tokens, start, state)
+    const { nextIndex, node } = openCloseToken('heading_close')(tokens, start, state)
     if (node.length === 2) return { node: undefined, nextIndex }
 
     if (state.headingIds) {
@@ -607,9 +577,7 @@ const processors: Record<string, Processor> = {
   // - matching close → pop frame(s) and emit completed element
   html_inline(tokens, start, state) {
     const raw = tokens[start].content || ''
-    const top = state.htmlStack[state.htmlStack.length - 1]
-    const inForeignContent = top?.foreign === true
-    const parsed = parseHtmlInline(raw, inForeignContent)
+    const parsed = parseHtmlInline(raw)
 
     if (parsed.kind === 'comment') {
       return { nextIndex: start + 1, node: [null, {}, parsed.content] }
@@ -659,8 +627,6 @@ const processors: Record<string, Processor> = {
       children: [],
       block: false,
       pendingInline: [],
-      // Children of `foreignObject` & co. are HTML again: lowercase attributes.
-      foreign: inForeignContent ? !isHtmlIntegrationPoint(parsed.tag, parsed.attrs) : isForeignContentTag(parsed.tag),
     })
     return { nextIndex: start + 1, node: undefined }
   },

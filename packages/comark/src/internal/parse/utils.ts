@@ -135,12 +135,12 @@ export function extractReusableNodes(markdown: string, lastOutput: MarkdownDocum
 }
 
 /**
- * Lowercase an all-uppercase tag name (`DIV` → `div`, `H1` → `h1`). HTML tag names are
- * case-insensitive, and renderers / plugins match the lowercase form. A name with any
- * lowercase letter keeps its authored case (`Hello`, `linearGradient`, `my-el`) so
- * component lookup still works.
+ * Lowercase an all-uppercase tag or attribute name (`DIV` → `div`, `HREF` → `href`).
+ * HTML names are case-insensitive, and renderers / plugins match the lowercase form. A
+ * name with any lowercase letter keeps its authored case, so component lookup and
+ * case-sensitive names still work: `Hello`, `linearGradient`, `viewBox`, `someProp`.
  */
-function normalizeTagName(tag: string): string {
+function normalizeName(tag: string): string {
   for (let i = 0; i < tag.length; i++) {
     const c = tag.charCodeAt(i)
     if (c >= 0x61 /* a */ && c <= 0x7a /* z */) return tag
@@ -149,42 +149,10 @@ function normalizeTagName(tag: string): string {
 }
 
 /**
- * Elements that start HTML foreign content (SVG, MathML). Inside them,
- * attribute names are case-sensitive and keep the author's case (#467).
- */
-const FOREIGN_CONTENT_TAGS = new Set(['svg', 'math'])
-
-/** Whether `tag` starts a foreign-content (case-sensitive) subtree. */
-export function isForeignContentTag(tag: string): boolean {
-  return FOREIGN_CONTENT_TAGS.has(tag.toLowerCase())
-}
-
-/** Attribute string that ends inside an unquoted value (`href=/x`). */
-const UNQUOTED_VALUE_END = /=\s*[^\s"'=<>`]+$/
-
-/**
- * Whether the children of a foreign-content element are parsed as HTML again
- * (an HTML integration point): SVG `foreignObject` / `desc` / `title`, and
- * MathML `annotation-xml` carrying HTML.
- */
-export function isHtmlIntegrationPoint(tag: string, attrs: Record<string, unknown>): boolean {
-  const lower = tag.toLowerCase()
-  if (lower === 'foreignobject' || lower === 'desc' || lower === 'title') return true
-  if (lower !== 'annotation-xml') return false
-  const encoding = typeof attrs.encoding === 'string' ? attrs.encoding.toLowerCase() : ''
-  return encoding === 'text/html' || encoding === 'application/xhtml+xml'
-}
-
-/**
  * Parse a single html_inline token content into a structured tag description.
  * Handles open tags (with attrs), close tags, self-closing syntax, and comments.
- *
- * @param content - Raw html_inline token content
- * @param inForeignContent - Whether the tag sits inside an SVG/MathML subtree.
- *   There (and on the `<svg>` / `<math>` opener itself), attribute names keep
- *   the author's case (#467)
  */
-export function parseHtmlInline(content: string, inForeignContent: boolean = false): ParsedHtmlTag {
+export function parseHtmlInline(content: string): ParsedHtmlTag {
   const trimmed = content.trim()
 
   if (trimmed.startsWith('<!--') && trimmed.endsWith('-->')) {
@@ -193,28 +161,19 @@ export function parseHtmlInline(content: string, inForeignContent: boolean = fal
 
   const closeMatch = trimmed.match(/^<\/\s*([A-Za-z][\w:-]*)\s*>$/)
   if (closeMatch) {
-    return { kind: 'close', tag: normalizeTagName(closeMatch[1]) }
+    return { kind: 'close', tag: normalizeName(closeMatch[1]) }
   }
 
   const openMatch = trimmed.match(/^<\s*([A-Za-z][\w:-]*)((?:\s+[\s\S]*?)?)\s*(\/?)>$/)
   if (openMatch) {
-    let tag = normalizeTagName(openMatch[1])
-    // `<SVG>` / `<Math>` are still HTML-parsed start tags.
-    if (!inForeignContent && isForeignContentTag(tag)) tag = tag.toLowerCase()
-    let attrsStr = openMatch[2] || ''
-    let slash = openMatch[3] === '/'
-    // In `href=/x/>` the slash belongs to the unquoted value, as in the HTML
-    // tokenizer: it only self-closes after whitespace, a quote or a bare name.
-    if (slash && !/\s/.test(trimmed.charAt(trimmed.length - 3)) && UNQUOTED_VALUE_END.test(attrsStr)) {
-      attrsStr += '/'
-      slash = false
-    }
-
+    const tag = normalizeName(openMatch[1])
+    const attrsStr = openMatch[2] || ''
+    const slash = openMatch[3] === '/'
     const selfClosing = slash || isHtmlVoidElement(tag)
     return {
       kind: 'open',
       tag,
-      attrs: parseHtmlAttributes(attrsStr, inForeignContent || isForeignContentTag(tag)),
+      attrs: parseHtmlAttributes(attrsStr),
       selfClosing,
     }
   }
@@ -225,11 +184,11 @@ export function parseHtmlInline(content: string, inForeignContent: boolean = fal
 /**
  * Parse HTML attribute string into a key/value map.
  * Supports `key="value"`, `key='value'`, bare `key=value`, and boolean attributes.
- * Names are lowercased, as HTML attribute names are case-insensitive, unless
- * `preserveCase` is set (SVG/MathML foreign content, #467). Like the HTML
- * tokenizer, the first of case-variant duplicates (`href` / `HREF`) wins.
+ * Names follow {@link normalizeName}: all-uppercase names are lowercased, others keep
+ * their case (SVG `viewBox`, component `someProp`, #467). Like the HTML tokenizer,
+ * the first of case-variant duplicates (`href` / `HREF`) wins.
  */
-export function parseHtmlAttributes(attrsStr: string, preserveCase: boolean = false): Record<string, unknown> {
+export function parseHtmlAttributes(attrsStr: string): Record<string, unknown> {
   const attrs: Record<string, unknown> = {}
   if (!attrsStr || !attrsStr.trim()) return attrs
 
@@ -240,7 +199,7 @@ export function parseHtmlAttributes(attrsStr: string, preserveCase: boolean = fa
     const lower = match[1].toLowerCase()
     if (seen.has(lower)) continue
     seen.add(lower)
-    const key = preserveCase ? match[1] : lower
+    const key = normalizeName(match[1])
     const value = match[2] ?? match[3] ?? match[4]
     attrs[key] = value === undefined ? true : decodeHTML(value)
   }
