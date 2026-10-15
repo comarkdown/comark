@@ -91,6 +91,25 @@ pnpm vitest run bundle
 
 If your change legitimately alters package sizes, update the snapshot with `pnpm vitest run bundle -u` after building, and review the resulting diff. Restore source stubs with `pnpm stub` before returning to example development.
 
+## Benchmarks
+
+Parse, streaming, render and plugin performance is tracked with [CodSpeed](https://app.codspeed.io/comarkdown/comark). The `codspeed` workflow runs the Vitest benches in `benchmarks/*.bench.ts` on every pull request and comments with any change compared to `main`. CodSpeed measures in CPU simulation, so results do not depend on CI machine noise.
+
+Run the suite locally (wall-clock timings, which are only useful for rough comparisons on your machine):
+
+```sh
+pnpm bench
+pnpm bench parse            # only benchmarks/parse.bench.ts
+```
+
+When adding a benchmark:
+
+- Put shared inputs in `benchmarks/fixtures.ts`. Renaming a benchmark or editing a fixture resets its history in CodSpeed, so prefer adding a new one.
+- Create parsers once at module level and call each one before the benches run, so samples measure steady-state work, not setup.
+- Give every streaming bench its own parser and reset it with a non-streaming call inside the bench. Otherwise the incremental cache returns the previous result without parsing.
+
+The `mitata` scripts in `benchmarks/*.ts` compare Comark with markdown-it, markdown-exit and remark. Run them directly, for example `pnpm tsx benchmarks/comark-parse.ts`; they are not part of CodSpeed.
+
 ## Prepare a pull request
 
 Link the relevant issue and follow the pull request template's **What** and **Why** sections. Describe the user-visible problem, the chosen fix and any compatibility impact. Include the checks you ran and any remaining limitations.
