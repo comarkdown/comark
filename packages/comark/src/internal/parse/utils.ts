@@ -159,54 +159,6 @@ export function isForeignContentTag(tag: string): boolean {
   return FOREIGN_CONTENT_TAGS.has(tag.toLowerCase())
 }
 
-/**
- * SVG tag-name adjustments from the HTML standard ("adjust SVG tag names").
- * Inside foreign content, names are lowercased and then mapped through this
- * table, so `<LINEARGRADIENT>` becomes `linearGradient`.
- */
-const SVG_TAG_NAMES: Record<string, string> = {}
-for (const name of [
-  'altGlyph',
-  'altGlyphDef',
-  'altGlyphItem',
-  'animateColor',
-  'animateMotion',
-  'animateTransform',
-  'clipPath',
-  'feBlend',
-  'feColorMatrix',
-  'feComponentTransfer',
-  'feComposite',
-  'feConvolveMatrix',
-  'feDiffuseLighting',
-  'feDisplacementMap',
-  'feDistantLight',
-  'feDropShadow',
-  'feFlood',
-  'feFuncA',
-  'feFuncB',
-  'feFuncG',
-  'feFuncR',
-  'feGaussianBlur',
-  'feImage',
-  'feMerge',
-  'feMergeNode',
-  'feMorphology',
-  'feOffset',
-  'fePointLight',
-  'feSpecularLighting',
-  'feSpotLight',
-  'feTile',
-  'feTurbulence',
-  'foreignObject',
-  'glyphRef',
-  'linearGradient',
-  'radialGradient',
-  'textPath',
-]) {
-  SVG_TAG_NAMES[name.toLowerCase()] = name
-}
-
 /** Attribute string that ends inside an unquoted value (`href=/x`). */
 const UNQUOTED_VALUE_END = /=\s*[^\s"'=<>`]+$/
 
@@ -216,16 +168,11 @@ const UNQUOTED_VALUE_END = /=\s*[^\s"'=<>`]+$/
  * MathML `annotation-xml` carrying HTML.
  */
 export function isHtmlIntegrationPoint(tag: string, attrs: Record<string, unknown>): boolean {
-  if (tag === 'foreignObject' || tag === 'desc' || tag === 'title') return true
-  if (tag !== 'annotation-xml') return false
+  const lower = tag.toLowerCase()
+  if (lower === 'foreignobject' || lower === 'desc' || lower === 'title') return true
+  if (lower !== 'annotation-xml') return false
   const encoding = typeof attrs.encoding === 'string' ? attrs.encoding.toLowerCase() : ''
   return encoding === 'text/html' || encoding === 'application/xhtml+xml'
-}
-
-/** Element name inside SVG/MathML: lowercase, then the SVG case adjustment. */
-function adjustForeignTagName(tag: string): string {
-  const lower = tag.toLowerCase()
-  return SVG_TAG_NAMES[lower] ?? lower
 }
 
 /**
@@ -244,16 +191,14 @@ export function parseHtmlInline(content: string, inForeignContent: boolean = fal
     return { kind: 'comment', content: trimmed.slice(4, -3) }
   }
 
-  const normalize = inForeignContent ? adjustForeignTagName : normalizeTagName
-
   const closeMatch = trimmed.match(/^<\/\s*([A-Za-z][\w:-]*)\s*>$/)
   if (closeMatch) {
-    return { kind: 'close', tag: normalize(closeMatch[1]) }
+    return { kind: 'close', tag: normalizeTagName(closeMatch[1]) }
   }
 
   const openMatch = trimmed.match(/^<\s*([A-Za-z][\w:-]*)((?:\s+[\s\S]*?)?)\s*(\/?)>$/)
   if (openMatch) {
-    let tag = normalize(openMatch[1])
+    let tag = normalizeTagName(openMatch[1])
     // `<SVG>` / `<Math>` are still HTML-parsed start tags.
     if (!inForeignContent && isForeignContentTag(tag)) tag = tag.toLowerCase()
     let attrsStr = openMatch[2] || ''

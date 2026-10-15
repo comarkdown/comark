@@ -5,9 +5,10 @@ import { renderMarkdown, resolveAttributes } from '../src/render'
 import type { ElementNode, Node } from '../src/types'
 
 /**
- * SVG/MathML foreign content is case-sensitive. Element names get their
- * SVG/MathML case from the HTML standard's adjustment rules, and attribute
- * names keep the author's case. HTML names outside stay lowercase (#467).
+ * SVG/MathML foreign content is case-sensitive. Element names follow the
+ * general tag rule (all-uppercase is lowercased, anything else is kept), and
+ * attribute names keep the author's case. HTML attribute names outside stay
+ * lowercase (#467).
  *
  * These tests check names, attributes and nesting only. `stripMeta` drops the
  * `$` position/html metadata and `findElement` skips paragraph wrappers, so the
@@ -53,8 +54,9 @@ describe('SVG case preservation', () => {
   it.each([
     ['inline', '<svg><LINEARGRADIENT X1="0"></LINEARGRADIENT></svg>'],
     ['block', '<svg>\n<LINEARGRADIENT X1="0">\n</LINEARGRADIENT>\n</svg>'],
-  ])('adjusts wrongly-cased SVG tag names via the HTML standard rules (%s)', async (_, markdown) => {
-    expect(await parseElement(markdown, 'svg')).toEqual(['svg', {}, ['linearGradient', { X1: '0' }]])
+  ])('lowercases all-uppercase SVG tag names and keeps attribute case (%s)', async (_, markdown) => {
+    // No SVG name table: wrongly-cased names are not mapped back to camelCase.
+    expect(await parseElement(markdown, 'svg')).toEqual(['svg', {}, ['lineargradient', { X1: '0' }]])
   })
 
   it.each([
@@ -90,16 +92,16 @@ describe('SVG case preservation', () => {
   })
 
   it('lowercases an uppercase SVG opener but keeps foreign-content casing', async () => {
-    // <SVG> is an HTML-parsed start tag, so it is lowercased. ClipPath is
-    // wrongly cased and normalized to the SVG name by the adjustment rules.
-    expect(await parseElement('<SVG><ClipPath ID="c"></ClipPath></SVG>', 'svg')).toEqual([
+    // <SVG> / <Svg> start foreign content and are always lowercased. Mixed-case
+    // child names keep the author's case.
+    expect(await parseElement('<Svg><clipPath ID="c"></clipPath></Svg>', 'svg')).toEqual([
       'svg',
       {},
       ['clipPath', { ID: 'c' }],
     ])
   })
 
-  it('preserves casing inside MathML content and adjusts wrongly-cased names', async () => {
+  it('preserves attribute casing inside MathML content', async () => {
     expect(await parseElement('<math displayStyle="true"><MROW></MROW></math>', 'math')).toEqual([
       'math',
       { displayStyle: 'true' },
@@ -123,6 +125,7 @@ describe('SVG case preservation', () => {
 
   it.each([
     ['foreignObject', '<svg><foreignObject><div CLASS="x">hi</div></foreignObject></svg>'],
+    ['foreignobject', '<svg><foreignobject><div CLASS="x">hi</div></foreignobject></svg>'],
     ['desc', '<svg><desc><span CLASS="x">hi</span></desc></svg>'],
     ['title', '<svg><title><span CLASS="x">hi</span></title></svg>'],
     [
