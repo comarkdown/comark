@@ -14,11 +14,19 @@ Hello **World**
   "meta": {},
   "nodes": [
     [
-      "hello",
+      "Hello",
       {
-        "$": { "html": 1, "block": 1 }
+        "$": {
+          "html": 1,
+          "block": 1
+        }
       },
-      "Hello **World**"
+      "Hello ",
+      [
+        "strong",
+        {},
+        "World"
+      ]
     ]
   ]
 }
@@ -27,15 +35,15 @@ Hello **World**
 ## HTML
 
 ```html
-<hello>
-  Hello **World**
-</hello>
+<Hello>
+  Hello <strong>World</strong>
+</Hello>
 ```
 
 ## Markdown
 
 ```md
-<hello>
+<Hello>
 Hello **World**
-</hello>
+</Hello>
 ```

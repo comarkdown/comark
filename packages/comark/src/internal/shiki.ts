@@ -1,10 +1,11 @@
-import type { LanguageRegistration, ShikiTransformer, ShikiPrimitive, ThemeRegistration } from 'shiki'
+import type { LanguageRegistration, ShikiTransformer, ShikiPrimitive, ThemeRegistration, ThemedToken } from 'shiki'
 import type { ElementNode, Node, MarkdownDocument, ElementNodeAttributes } from 'comark'
 import { defineComarkPlugin } from '../utils/helpers.ts'
 import { createShikiPrimitive } from 'shiki'
 import { createJavaScriptRegexEngine } from 'shiki/engine/javascript'
 import { codeToHast, codeToTokens, getTokenStyleObject, stringifyTokenStyle } from 'shiki/core'
 import comarkLanguages from '../plugins/shiki/language-comark.ts'
+import { GRAMMAR_CONTEXTS, inlineCodeLanguage } from './inline-code-lang.ts'
 
 export interface ShikiCoreOptions {
   /**
@@ -32,6 +33,15 @@ export interface ShikiCoreOptions {
    * @default false
    */
   preStyles?: boolean
+
+  /**
+   * Whether to highlight inline code that declares a language, e.g.
+   * `` `Ref<T>`{lang="ts-type"} ``. `lang` wins over `language`. Inline code
+   * uses the fast token path, so `transformers` and `preStyles` do not apply.
+   *
+   * @default true
+   */
+  inlineCode?: boolean
 }
 
 /**
@@ -231,6 +241,41 @@ function hastToNode(input: any): Node {
 }
 
 /**
+ * Build `<span style=…>` children for one tokenized line.
+ * Replicates shiki's `mergeWhitespaceTokens`: a pure-whitespace token merges
+ * into the following token unless it is underlined or struck through.
+ */
+function tokensToSpans(line: ThemedToken[]): Node[] {
+  const spanCount = line.length
+  let carry = ''
+  const spans: Node[] = []
+  for (let t = 0; t < spanCount; t++) {
+    const tk = line[t]
+    const canMerge = !(tk.fontStyle && (tk.fontStyle & 8 /* Strikethrough */ || tk.fontStyle & 4) /* Underline */)
+    if (canMerge && /^\s+$/.test(tk.content) && t + 1 < spanCount) {
+      carry += tk.content
+    } else if (carry) {
+      const style = stringifyTokenStyle(tk.htmlStyle || getTokenStyleObject(tk))
+      if (canMerge) {
+        spans.push(style ? ['span', { style }, carry + tk.content] : ['span', {}, carry + tk.content])
+      } else {
+        spans.push(['span', {}, carry])
+        spans.push(style ? ['span', { style }, tk.content] : ['span', {}, tk.content])
+      }
+      carry = ''
+    } else {
+      const style = stringifyTokenStyle(tk.htmlStyle || getTokenStyleObject(tk))
+      spans.push(style ? ['span', { style }, tk.content] : ['span', {}, tk.content])
+    }
+  }
+  // If trailing whitespace wasn't merged, emit it
+  if (carry) {
+    spans.push(['span', {}, carry])
+  }
+  return spans
+}
+
+/**
  * Apply syntax highlighting to all code blocks in a Comark tree
  * Uses codeToTokens API with batched async operations
  */
@@ -246,7 +291,9 @@ export async function highlightCodeBlocks(
   }
 
   const codeBlocks: CodeBlockRef[] = []
+  const inlineCodes: CodeBlockRef[] = []
   const pathBuf: number[] = []
+  const inlineEnabled = options.inlineCode !== false
 
   // Recursively find <pre><code> blocks, tracking their path via push/pop on a shared buffer
   const walkChildren = (element: ElementNode): void => {
@@ -259,6 +306,13 @@ export async function highlightCodeBlocks(
         const codeContent = child[2][2]
         if (typeof codeContent === 'string') {
           codeBlocks.push({ node: child, path: pathBuf.slice() })
+        }
+      } else if (inlineEnabled && child[0] === 'code' && child.length === 3 && typeof child[2] === 'string') {
+        // A raw-HTML `<code lang="ts">` is authored markup, not Comark inline
+        // code, and replacing it with spans would break its round-trip.
+        const inlineAttrs = child[1] as ElementNodeAttributes
+        if (inlineAttrs?.$?.html !== 1 && inlineCodeLanguage(inlineAttrs)) {
+          inlineCodes.push({ node: child, path: pathBuf.slice() })
         }
       }
       walkChildren(child as ElementNode)
@@ -281,7 +335,7 @@ export async function highlightCodeBlocks(
     walkChildren(node as ElementNode)
   }
 
-  if (codeBlocks.length === 0) return tree
+  if (codeBlocks.length === 0 && inlineCodes.length === 0) return tree
 
   const hl = await getHighlighter(options, defaultThemeLoaders, defaultLanguageLoaders)
   const { themes = { light: 'material-theme-lighter', dark: 'material-theme-palenight' } } = options
@@ -295,8 +349,29 @@ export async function highlightCodeBlocks(
   const hasTransformers = options.transformers && options.transformers.length > 0
   const darkClassSuffix = options.themes?.dark?.name ? ` dark:${options.themes.dark.name}` : ''
 
-  // Build new nodes array, spine-copying only paths to modified <pre> nodes
+  // Build new nodes array, spine-copying only paths to modified nodes
   const newNodes = [...tree.nodes] as Node[]
+
+  // Copy only the spine from root to `path` to preserve immutability. Each
+  // level reads back from `newNodes`, so several replacements under a shared
+  // ancestor compose instead of clobbering each other.
+  const replaceAt = (path: number[], replacement: Node): void => {
+    if (path.length === 1) {
+      newNodes[path[0]] = replacement
+      return
+    }
+    const rootIdx = path[0]
+    let current = [...(newNodes[rootIdx] as ElementNode)] as ElementNode
+    newNodes[rootIdx] = current
+    for (let j = 1; j < path.length - 1; j++) {
+      const childSlot = path[j] + 2
+      const next = [...(current[childSlot] as ElementNode)] as ElementNode
+      current[childSlot] = next
+      current = next
+    }
+    current[path[path.length - 1] + 2] = replacement
+  }
+
   for (let i = 0; i < codeBlocks.length; i++) {
     const { node, path } = codeBlocks[i]
     const code = (node[2] as any)[2] as string
@@ -333,37 +408,7 @@ export async function highlightCodeBlocks(
         const tokenLines = result.tokens
         codeChildren = []
         for (let li = 0; li < tokenLines.length; li++) {
-          const line = tokenLines[li]
-          const spanCount = line.length
-
-          // Merge whitespace tokens inline while building spans
-          let carry = ''
-          const spans: Node[] = []
-          for (let t = 0; t < spanCount; t++) {
-            const tk = line[t]
-            const canMerge = !(
-              (tk.fontStyle && (tk.fontStyle & 8 /* Strikethrough */ || tk.fontStyle & 4)) /* Underline */
-            )
-            if (canMerge && /^\s+$/.test(tk.content) && t + 1 < spanCount) {
-              carry += tk.content
-            } else if (carry) {
-              const style = stringifyTokenStyle(tk.htmlStyle || getTokenStyleObject(tk))
-              if (canMerge) {
-                spans.push(style ? ['span', { style }, carry + tk.content] : ['span', {}, carry + tk.content])
-              } else {
-                spans.push(['span', {}, carry])
-                spans.push(style ? ['span', { style }, tk.content] : ['span', {}, tk.content])
-              }
-              carry = ''
-            } else {
-              const style = stringifyTokenStyle(tk.htmlStyle || getTokenStyleObject(tk))
-              spans.push(style ? ['span', { style }, tk.content] : ['span', {}, tk.content])
-            }
-          }
-          // If trailing whitespace wasn't merged, emit it
-          if (carry) {
-            spans.push(['span', {}, carry])
-          }
+          const spans = tokensToSpans(tokenLines[li])
 
           // eslint-disable-next-line unicorn/no-new-array -- pre-allocated for perf
           const lineNode = new Array(spans.length + 2) as ElementNode
@@ -441,22 +486,48 @@ export async function highlightCodeBlocks(
     for (let j = 0; j < codeChildren.length; j++) codeNode[j + 2] = codeChildren[j]
     const newPreNode: Node = ['pre', newPreAttrs, codeNode]
 
-    if (path.length === 1) {
-      newNodes[path[0]] = newPreNode
-    } else {
-      // Copy only the spine from root to this node to preserve immutability
-      const rootIdx = path[0]
-      let current = [...(newNodes[rootIdx] as ElementNode)] as ElementNode
-      newNodes[rootIdx] = current
-      for (let j = 1; j < path.length - 1; j++) {
-        const childSlot = path[j] + 2
-        const next = [...(current[childSlot] as ElementNode)] as ElementNode
-        current[childSlot] = next
-        current = next
-      }
-      const childSlot = path[path.length - 1] + 2
-      current[childSlot] = newPreNode
+    replaceAt(path, newPreNode)
+  }
+
+  // `getLoadedLanguages()` includes alias names, so a registered alias resolves.
+  const loadedLangs = inlineCodes.length > 0 ? new Set(hl.getLoadedLanguages()) : new Set<string>()
+
+  for (let i = 0; i < inlineCodes.length; i++) {
+    const { node, path } = inlineCodes[i]
+    const el = node as ElementNode
+    const attrs = el[1] as ElementNodeAttributes
+    const code = el[2] as string
+    const written = inlineCodeLanguage(attrs) as string
+    const context = GRAMMAR_CONTEXTS.get(written.toLowerCase())
+    const lang = context?.lang ?? written
+
+    // Unlike a `<pre>`, an inline `<code>` is not unambiguously code, since
+    // `lang` is a real HTML attribute for natural language. Leave
+    // `` `Bonjour`{lang="fr"} `` exactly as it was authored rather than tagging
+    // it `.shiki`. Any other shiki failure is a real one and must surface.
+    if (!loadedLangs.has(lang)) continue
+
+    const result = codeToTokens(hl, code, {
+      lang,
+      grammarContextCode: context?.grammarContextCode,
+      themes: themeOptions,
+    })
+    const spans: Node[] = []
+    for (let li = 0; li < result.tokens.length; li++) {
+      if (li > 0) spans.push('\n')
+      for (const span of tokensToSpans(result.tokens[li])) spans.push(span)
     }
+    if (spans.length === 0) spans.push(code)
+    const classStr = `shiki ${result.themeName || ''}${darkClassSuffix}`
+
+    const userClass = typeof attrs.class === 'string' ? attrs.class.trim() : ''
+    // eslint-disable-next-line unicorn/no-new-array -- pre-allocated for perf
+    const inlineNode = new Array(spans.length + 2) as ElementNode
+    inlineNode[0] = 'code'
+    inlineNode[1] = { ...attrs, class: userClass ? `${classStr} . ${userClass}` : classStr }
+    for (let s = 0; s < spans.length; s++) inlineNode[s + 2] = spans[s]
+
+    replaceAt(path, inlineNode as Node)
   }
 
   return { ...tree, nodes: newNodes }

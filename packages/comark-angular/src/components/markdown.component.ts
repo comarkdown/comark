@@ -44,7 +44,7 @@ export class Markdown implements OnChanges {
   @Input() value?: string | MarkdownDocumentType
 
   /** Parser options (excluding plugins) */
-  @Input() options: Exclude<ParserOptions, 'plugins'> = {}
+  @Input() options: Omit<ParserOptions, 'plugins'> = {}
 
   /** Additional plugins to use */
   @Input() plugins: ParserOptions['plugins'] = []

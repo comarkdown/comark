@@ -1,7 +1,8 @@
 ---
-title: Math formulas
-description: Example showing how to use Comark with LaTeX math formulas in Vue and Vite.
+title: 'LaTeX Math Formulas in Vue with Comark and KaTeX'
+description: 'A Vue and Vite app that renders inline and block LaTeX math in Markdown with the Comark math plugin and KaTeX.'
 navigation:
+  title: 'Math formulas (Vue)'
   icon:  i-lucide-calculator
 ---
 

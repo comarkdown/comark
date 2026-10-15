@@ -1,5 +1,5 @@
 import type { Node } from 'comark'
-import { defineComarkPlugin } from '../utils/helpers.ts'
+import { defineComarkPlugin } from 'comark'
 
 export interface PunctuationOptions {
   /**

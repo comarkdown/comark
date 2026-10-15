@@ -30,7 +30,7 @@ Paragraph
 
 ```html
 <p>Paragraph</p>
-<hr />
+<hr>
 ```
 
 ## Markdown

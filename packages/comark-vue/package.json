@@ -1,15 +1,21 @@
 {
   "name": "@comark/vue",
-  "version": "0.6.2",
+  "version": "0.7.0",
   "description": "Vue 3 renderer for Comark. Render Markdown with components at runtime, with streaming support for AI output.",
   "keywords": [
     "ai",
+    "ai-chat",
     "comark",
     "components",
+    "generative-ui",
+    "intelligent-ui",
+    "llm",
     "markdown",
+    "markdown-renderer",
     "mdc",
     "renderer",
     "streaming",
+    "streaming-markdown",
     "vue"
   ],
   "homepage": "https://comark.dev/rendering/vue",
@@ -62,7 +68,7 @@
     "beautiful-mermaid": "catalog:",
     "katex": "catalog:",
     "shiki": "catalog:",
-    "vue": "^3.5.0"
+    "vue": "^3.5.43"
   },
   "peerDependenciesMeta": {
     "shiki": {

@@ -17,7 +17,7 @@ export interface MarkdownProps {
   /**
    * Parser options (excluding plugins)
    */
-  options?: Exclude<ParserOptions, 'plugins'>
+  options?: Omit<ParserOptions, 'plugins'>
 
   /**
    * Additional plugins to use
@@ -61,9 +61,116 @@ export interface MarkdownProps {
    * Additional data to pass to the renderer
    */
   data?: Record<string, unknown>
+
+  /**
+   * Document key used to subscribe to live updates via `globalThis.comarkContext`
+   */
+  documentKey?: string
 }
 
 type MarkdownComponent = ReturnType<typeof defineComponent<MarkdownProps>>
+
+/**
+ * Runtime prop declarations for `<Markdown>`.
+ *
+ * Exported so `defineMarkdownComponent` can reuse them verbatim instead of
+ * hand-copying the table, which had drifted: `value` was declared `String`
+ * only, and `data` and `documentKey` were missing entirely.
+ */
+export const markdownProps = {
+  /**
+   * The markdown content to parse and render, or a pre-parsed MarkdownDocument
+   */
+  value: {
+    type: [String, Object] as PropType<string | MarkdownDocumentType>,
+    default: undefined,
+  },
+
+  /**
+   * Parser options
+   */
+  options: {
+    type: Object as PropType<Omit<ParserOptions, 'plugins'>>,
+    default: () => ({}),
+  },
+
+  /**
+   * Additional plugins to use
+   */
+  plugins: {
+    type: Array as PropType<ParserOptions['plugins']>,
+    default: () => [],
+  },
+
+  /**
+   * Strip wrapper tags from the top level of the document — shorthand for
+   * `options.unwrap`. `true` unwraps `<p>`; a space-separated string or array
+   * unwraps the listed tags.
+   */
+  unwrap: {
+    type: [Boolean, String, Array] as PropType<boolean | string | string[]>,
+    default: false,
+  },
+
+  /**
+   * Custom component mappings for element tags
+   * Key: tag name (e.g., 'h1', 'p', 'MyComponent')
+   * Value: Vue component
+   */
+  components: {
+    type: Object as PropType<Record<string, any>>,
+    default: () => ({}),
+  },
+
+  /**
+   * Dynamic component resolver function
+   * Used to resolve components that aren't in the components map
+   */
+  componentsManifest: {
+    type: Function as PropType<ComponentManifest>,
+    default: undefined,
+  },
+
+  /**
+   * Enable streaming mode with stream-specific components
+   */
+  streaming: {
+    type: Boolean as PropType<boolean>,
+    default: false,
+  },
+
+  /**
+   * If document has a <!-- more --> comment, only render the content before the comment
+   */
+  summary: {
+    type: Boolean as PropType<boolean>,
+    default: false,
+  },
+
+  /**
+   * If caret is true, a caret will be appended to the document's last text node
+   */
+  caret: {
+    type: [Boolean, Object] as PropType<boolean | { class: string }>,
+    default: false,
+  },
+
+  /**
+   * Additional data to pass to the renderer
+   */
+  data: {
+    type: Object as PropType<Record<string, unknown>>,
+    default: () => ({}),
+  },
+
+  /**
+   * Document key used to subscribe to live updates via `globalThis.comarkContext`
+   */
+  documentKey: {
+    type: String as PropType<string>,
+    default: undefined,
+  },
+} as const
 
 /**
  * Markdown component
@@ -100,92 +207,7 @@ type MarkdownComponent = ReturnType<typeof defineComponent<MarkdownProps>>
 export const Markdown: MarkdownComponent = defineComponent({
   name: 'Markdown',
 
-  props: {
-    /**
-     * The markdown content to parse and render, or a pre-parsed MarkdownDocument
-     */
-    value: {
-      type: [String, Object] as PropType<string | MarkdownDocumentType>,
-      default: undefined,
-    },
-
-    /**
-     * Parser options
-     */
-    options: {
-      type: Object as PropType<Exclude<ParserOptions, 'plugins'>>,
-      default: () => ({}),
-    },
-
-    /**
-     * Additional plugins to use
-     */
-    plugins: {
-      type: Array as PropType<ParserOptions['plugins']>,
-      default: () => [],
-    },
-
-    /**
-     * Strip wrapper tags from the top level of the document — shorthand for
-     * `options.unwrap`. `true` unwraps `<p>`; a space-separated string or array
-     * unwraps the listed tags.
-     */
-    unwrap: {
-      type: [Boolean, String, Array] as PropType<boolean | string | string[]>,
-      default: false,
-    },
-
-    /**
-     * Custom component mappings for element tags
-     * Key: tag name (e.g., 'h1', 'p', 'MyComponent')
-     * Value: Vue component
-     */
-    components: {
-      type: Object as PropType<Record<string, any>>,
-      default: () => ({}),
-    },
-
-    /**
-     * Dynamic component resolver function
-     * Used to resolve components that aren't in the components map
-     */
-    componentsManifest: {
-      type: Function as PropType<ComponentManifest>,
-      default: undefined,
-    },
-
-    /**
-     * Enable streaming mode with stream-specific components
-     */
-    streaming: {
-      type: Boolean as PropType<boolean>,
-      default: false,
-    },
-
-    /**
-     * If document has a <!-- more --> comment, only render the content before the comment
-     */
-    summary: {
-      type: Boolean as PropType<boolean>,
-      default: false,
-    },
-
-    /**
-     * If caret is true, a caret will be appended to the document's last text node
-     */
-    caret: {
-      type: [Boolean, Object] as PropType<boolean | { class: string }>,
-      default: false,
-    },
-
-    /**
-     * Additional data to pass to the renderer
-     */
-    data: {
-      type: Object as PropType<Record<string, unknown>>,
-      default: () => ({}),
-    },
-  },
+  props: markdownProps,
 
   async setup(props, ctx) {
     const markdown = computed(() => {
@@ -234,6 +256,7 @@ export const Markdown: MarkdownComponent = defineComponent({
           class: props.streaming ? 'comark-stream' : '',
           caret: props.caret,
           data: props.data,
+          documentKey: props.documentKey,
         })
       }
 
@@ -246,6 +269,7 @@ export const Markdown: MarkdownComponent = defineComponent({
         class: props.streaming ? 'comark-stream' : '',
         caret: props.caret,
         data: props.data,
+        documentKey: props.documentKey,
       })
     }
   },

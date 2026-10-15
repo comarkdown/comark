@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { parseMarkdown } from 'comark'
 import { renderHtmlFromDocument } from '../src/index'
-import binding, { Binding } from '../src/plugins/binding'
+import binding, { Binding, If } from '../src/plugins/binding'
+import { nestedIfCases, nestedIfMarkdown } from '../../../test/fixtures/if'
 
 const parseWithBinding = (md: string) => parseMarkdown(md, { plugins: [binding()] })
 
@@ -48,5 +49,72 @@ Hello {{ frontmatter.user.name }}!
     })
     expect(html).toContain('&lt;script&gt;alert(1)&lt;/script&gt;')
     expect(html).not.toContain('<script>alert(1)</script>')
+  })
+})
+
+describe('@comark/html plugins/binding — If handler', () => {
+  it.each(nestedIfCases)('selects nested branches for $data', async ({ data, expected }) => {
+    const doc = await parseMarkdown(nestedIfMarkdown)
+    const html = await renderHtmlFromDocument(doc, { components: { If }, data })
+    expect(html.replace(/<[^>]*>/g, '')).toBe(expected)
+    expect(html).not.toContain('<template')
+  })
+
+  it.each([true, false])('does not invoke the inactive branch handler for %s', async (show) => {
+    const doc = await parseMarkdown(
+      `::if{:value="data.show"}\n${show ? 'Visible' : ':probe'}\n#else\n${show ? ':probe' : 'Hidden'}\n::`
+    )
+    const html = await renderHtmlFromDocument(doc, {
+      components: {
+        If,
+        probe: () => {
+          throw new Error('Inactive branch rendered')
+        },
+      },
+      data: { show },
+    })
+    expect(html).toContain(show ? 'Visible' : 'Hidden')
+  })
+
+  it.each([true, false])('selects the default or else slot for value %s', async (show) => {
+    const doc = await parseMarkdown('::if{:value="data.show" as="section"}\nVisible\n#else\nHidden\n::')
+    const html = await renderHtmlFromDocument(doc, { components: { If }, data: { show } })
+    expect(html).toBe(show ? '<section><p>Visible</p></section>' : '<section>Hidden</section>')
+  })
+
+  it('renders only truthy branches without requiring the binding parser plugin', async () => {
+    const doc = await parseMarkdown('::if{:value="data.show"}\nVisible\n::')
+
+    const visible = await renderHtmlFromDocument(doc, {
+      components: { If },
+      data: { show: true },
+    })
+    const hidden = await renderHtmlFromDocument(doc, {
+      components: { If },
+      data: { show: false },
+    })
+
+    expect(visible).toBe('Visible')
+    expect(hidden).toBe('')
+  })
+
+  it('exposes normalized If props to bindings in its children', async () => {
+    const doc = await parseWithBinding('::if{:value="true" :enabled="false"}\nEnabled {{ props.enabled }}\n::')
+    const html = await renderHtmlFromDocument(doc, { components: { Binding, If } })
+
+    expect(html).toBe('Enabled false')
+  })
+
+  it.each([
+    { isLoggedIn: true, age: 21, visible: true },
+    { isLoggedIn: true, age: 17, visible: false },
+    { isLoggedIn: false, age: 21, visible: false },
+    { isLoggedIn: false, age: 17, visible: false },
+  ])('combines nested truthiness and comparison checks for $isLoggedIn, $age', async ({ visible, ...data }) => {
+    const doc = await parseMarkdown(
+      '::if{:value="data.isLoggedIn"}\n:::if{:value="data.age" :gte="18"}\nAdult member content.\n:::\n::'
+    )
+    const html = await renderHtmlFromDocument(doc, { components: { If }, data })
+    expect(html).toBe(visible ? 'Adult member content.' : '')
   })
 })

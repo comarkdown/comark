@@ -34,6 +34,7 @@ logs
 .vscode
 .history
 .claude
+.amp/portals/*
 
 # Svelte
 .svelte-kit

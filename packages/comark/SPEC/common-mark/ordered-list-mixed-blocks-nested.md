@@ -117,7 +117,7 @@
 <ol>
   <li>
     <p>Complex item:</p>
-    <pre language="js"><code class="language-js">code()</code></pre>
+    <pre data-language="js"><code class="language-js">code()</code></pre>
     <blockquote>
       A note
     </blockquote>

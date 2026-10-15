@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.7.0](https://github.com/comarkdown/comark/compare/@comark/ansi@0.6.2...@comark/ansi@0.7.0) (2026-09-10)
+
+### Features
+
+* **ansi:** rename writeAnsi/createAnsiWriter to printAnsi/createAnsiPrinter ([#382](https://github.com/comarkdown/comark/issues/382)) ([a22baff](https://github.com/comarkdown/comark/commit/a22baff8facd7de0e27f3a3f4c15061fb84ec808))
+
+### Bug Fixes
+
+* **angular:** update build scripts to use angular compiler ([#317](https://github.com/comarkdown/comark/issues/317)) ([de915aa](https://github.com/comarkdown/comark/commit/de915aacda1ee8c5128cc34a27cd5fa14241c264))
+* **ansi:** align table columns by visible width when cells have ANSI styles ([#355](https://github.com/comarkdown/comark/issues/355)) ([00e0873](https://github.com/comarkdown/comark/commit/00e087310b4d8177ad4e2594801c989b60fd1f83))
+* **ansi:** pre hightlighting issue if line spans are missing ([#384](https://github.com/comarkdown/comark/issues/384)) ([97920a8](https://github.com/comarkdown/comark/commit/97920a82594d901f8224594d19fc213e22b893ee))
+* **html,ansi:** escape plugin fallbacks and strip terminal control characters ([#377](https://github.com/comarkdown/comark/issues/377)) ([42474e0](https://github.com/comarkdown/comark/commit/42474e0c54c1d1ad5e26789ec24cb892904ef212))
+* **math:** preserve inline rendering in ANSI examples ([#353](https://github.com/comarkdown/comark/issues/353)) ([5666738](https://github.com/comarkdown/comark/commit/566673858e48fcb4e0f52b8420b7de942706f577))
+
 ## [0.6.2](https://github.com/comarkdown/comark/compare/@comark/ansi@0.6.1...@comark/ansi@0.6.2) (2026-08-07)
 
 ## [0.6.1](https://github.com/comarkdown/comark/compare/@comark/ansi@0.6.0...@comark/ansi@0.6.1) (2026-08-06)

@@ -7,6 +7,7 @@ import { renderMarkdown } from 'comark/render'
 import shiki from 'comark/plugins/shiki'
 import type { ShikiOptions } from '../src/plugins/shiki'
 import emoji from '../src/plugins/emoji'
+import rangi from '../src/plugins/rangi'
 import binding, { Binding as MarkdownBinding } from '../src/plugins/binding'
 import type { ComarkPlugin } from 'comark'
 import githubDark from 'shiki/dist/themes/github-dark.mjs'
@@ -14,16 +15,17 @@ import minLight from 'shiki/dist/themes/min-light.mjs'
 import nord from 'shiki/dist/themes/nord.mjs'
 import rustLanguage from 'shiki/dist/langs/rust.mjs'
 import goLanguage from 'shiki/dist/langs/go.mjs'
-import type { ParserOptions } from '../src/types'
+import type { HeadingIdsOption, ParserOptions } from '../src/types'
 import type { ShikiTransformer } from 'shiki'
 import { renderHtmlForTest } from './utils/render-html'
 import { Binding as HTMLBiniding } from '../../comark-html/src/plugins/binding'
 
-type PluginName = 'emoji' | 'binding'
+type PluginName = 'emoji' | 'binding' | 'rangi'
 
 const pluginRegistry: Record<PluginName, () => ComarkPlugin> = {
   emoji,
   binding,
+  rangi,
 }
 
 type TransformerName = 'twoslash'
@@ -54,6 +56,7 @@ interface TestCase {
     autoUnwrap?: boolean
     maxInlineAttributes?: number
     blockAttributesStyle?: 'frontmatter' | 'codeblock'
+    headingIds?: HeadingIdsOption
   }
   skip?: boolean
 }
@@ -176,7 +179,7 @@ function findMarkdownFiles(dir: string, baseDir: string = dir): string[] {
 
     if (entry.isDirectory()) {
       files.push(...findMarkdownFiles(fullPath, baseDir))
-    } else if (entry.isFile() && entry.name.endsWith('.md')) {
+    } else if (entry.isFile() && entry.name.endsWith('.md') && entry.name !== 'README.md') {
       files.push(relativePath)
     }
   }
@@ -248,6 +251,10 @@ describe('Comark Tests', () => {
 
         const parseOptions: ParserOptions = {
           autoUnwrap: testCase.options?.autoUnwrap === false ? false : true,
+        }
+
+        if (testCase.options?.headingIds !== undefined) {
+          parseOptions.headingIds = testCase.options.headingIds
         }
 
         if (plugins.length > 0) {

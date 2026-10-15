@@ -11,7 +11,7 @@
 
 import type { PluginSimple, Renderer } from 'markdown-exit'
 import { Token } from 'markdown-exit'
-import type { MarkdownItPlugin } from '../types.ts'
+import type { MarkdownItPlugin } from 'comark'
 import { defineComarkPlugin } from '../utils/helpers.ts'
 import { searchProps } from '../internal/parse/syntax/props.ts'
 

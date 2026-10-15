@@ -11,26 +11,35 @@ import type {
   MarkdownDocument,
   Node,
 } from './types.ts'
-import MarkdownExit from 'markdown-exit'
+import MarkdownExit, { type Token } from 'markdown-exit'
 import components from './plugins/components.ts'
 import attributes from './plugins/attributes.ts'
 import taskList from './plugins/task-list.ts'
 import alert from './plugins/alert.ts'
 import html from './plugins/html.ts'
 import frontmatterPlugin from './plugins/frontmatter.ts'
-import { applyAutoUnwrap } from './internal/parse/auto-unwrap.ts'
+import { applyAutoUnwrap, extractReusableNodes } from './internal/parse/utils.ts'
 import { applyUnwrap, resolveUnwrapTags } from './internal/parse/unwrap.ts'
-import { marmdownItTokensToMarkdownDocument } from './internal/parse/token-processor.ts'
 import { autoCloseMarkdown } from './internal/parse/auto-close/index.ts'
-import { extractReusableNodes } from './internal/parse/incremental.ts'
 import { createSerializedTask, dedupePlugins } from './utils/helpers.ts'
 import { noopTracer, withSpan } from './utils/trace.ts'
+import { tokenListToTree } from './internal/parse/tree.ts'
 
 // Re-export frontmatter utilities
 export { parseFrontmatter } from './internal/frontmatter.ts'
 
 // Re-export plugin utilities
 export { defineComarkPlugin } from './utils/helpers.ts'
+
+// Constructing a `MarkdownExit` instance is expensive because `LinkifyIt`
+// compiles its regexes in the constructor, and a configured instance holds no
+// per-parse state, so parsers built from the same options share one.
+// Bounded LRU: a caller that keeps minting fresh markdown-it plugin closures
+// (math/mermaid/binding factories) must not grow this without limit.
+const MAX_SHARED_PARSERS = 32
+let nextPluginId = 0
+const pluginIds = new WeakMap<MarkdownExitPlugin, number>()
+const sharedParsers = new Map<string, MarkdownExit>()
 
 /**
  * Creates a parser function for Comark content.
@@ -94,12 +103,32 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
   const plugins = dedupePlugins(defaultPlugins, userPlugins)
   const hasPlugin = (name: string) => plugins.some((plugin) => plugin.name === name)
 
-  const parser = new MarkdownExit({ linkify: options.linkify ?? true }).enable(['table', 'strikethrough'])
-
+  const mdPlugins: MarkdownExitPlugin[] = []
   for (const plugin of plugins) {
     for (const markdownItPlugin of plugin.markdownItPlugins || []) {
-      parser.use(markdownItPlugin as unknown as MarkdownExitPlugin)
+      mdPlugins.push(markdownItPlugin as unknown as MarkdownExitPlugin)
     }
+  }
+
+  const linkify = options.linkify ?? true
+  const key = [
+    linkify,
+    ...mdPlugins.map((fn) => pluginIds.get(fn) ?? (pluginIds.set(fn, nextPluginId), nextPluginId++)),
+  ].join(',')
+
+  let parser = sharedParsers.get(key)
+  if (parser) {
+    // Touch for LRU: Map iteration order is insertion order.
+    sharedParsers.delete(key)
+    sharedParsers.set(key, parser)
+  } else {
+    parser = new MarkdownExit({ linkify }).enable(['table', 'strikethrough'])
+    for (const fn of mdPlugins) parser.use(fn)
+    if (sharedParsers.size >= MAX_SHARED_PARSERS) {
+      const oldestKey = sharedParsers.keys().next().value
+      if (oldestKey !== undefined) sharedParsers.delete(oldestKey)
+    }
+    sharedParsers.set(key, parser)
   }
 
   let lastOutput: MarkdownDocument | null = null
@@ -113,7 +142,7 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
     return await withSpan(tracer, 'comark:parse', async () => {
       const state = {
         options,
-        tokens: [] as unknown[],
+        tokens: [] as Token[],
         markdown,
         tree: null as MarkdownDocument | null,
         parsedLines: 0,
@@ -124,6 +153,10 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
 
       const prevOutput = lastOutput
       const isStartsWithLastInput = markdown.startsWith(lastInput ?? '')
+      // TODO(streaming): `]:` and the heading-tail check force a full reparse so
+      // reference definitions / heading IDs stay correct. Find a way to keep
+      // incremental reuse here (carry env.references + id counters into the tail
+      // parse, or patch completed nodes) without scanning/reparsing the prefix.
       if (opts.streaming && prevOutput && isStartsWithLastInput && !markdown.includes(']:')) {
         const { remainingMarkdownStartLine, reusedNodes, remainingMarkdown } = extractReusableNodes(
           markdown,
@@ -149,7 +182,7 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
             frontmatter: hasPlugin('frontmatter') && opts.streaming,
             syntax: hasPlugin('components'),
             attributes: hasPlugin('components') || hasPlugin('attributes'),
-            math: hasPlugin('math'),
+            math: hasPlugin('math'), // enables blockMath + inlineMath
             dropTrailingOpeners: opts.streaming === true,
           })
         )
@@ -172,9 +205,15 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
         throw e
       }
 
-      // Convert tokens to Comark structure
+      for (const plugin of plugins) {
+        if (!plugin.markdownItPost) continue
+        withSpan(tracer, `comark:markdownItPost:${plugin.name}`, () =>
+          plugin.markdownItPost!(state as ComarkParsePostState)
+        )
+      }
+
       const nodesSpan = tracer.startSpan('comark:nodes')
-      let nodes = marmdownItTokensToMarkdownDocument(state.tokens, {
+      let nodes = tokenListToTree(state.tokens, {
         startLine: state.parsedLines,
         preservePositions: opts.streaming ?? false,
         headingIds: options.headingIds ?? true,
@@ -273,8 +312,9 @@ export async function parseMarkdown<const TPlugins extends readonly ComarkPlugin
 }
 
 /**
- * Creates a serialized parser function for Comark content.
- * This is useful for parsing large files in a streaming manner.
+ * Creates a serialized parser that reuses stream state across calls.
+ * Overlapping parses run one at a time; each caller still receives its own
+ * result or rejection (plugin errors are not swallowed).
  *
  * @param options - Parser options
  * @returns ComarkParseFn - The serialized parser function
@@ -284,7 +324,7 @@ export async function parseMarkdown<const TPlugins extends readonly ComarkPlugin
  * import { createSerializedMarkdownParser } from 'comark'
  *
  * const parseMarkdown = createSerializedMarkdownParser()
- * const tree = await parseMarkdown(content)
+ * const tree = await parseMarkdown(content, { streaming: true })
  * console.log(tree.nodes)
  */
 export function createSerializedMarkdownParser<const TPlugins extends readonly ComarkPlugin<any, any>[] = []>(

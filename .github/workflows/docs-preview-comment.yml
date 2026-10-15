@@ -25,7 +25,7 @@ jobs:
 
     steps:
       - name: Create or update preview comment
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         env:
           SITE_URL: https://comark.dev
           CONTENT_DIR: docs/content

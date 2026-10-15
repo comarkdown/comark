@@ -1,5 +1,35 @@
 # Changelog
 
+## [0.7.0](https://github.com/comarkdown/comark/compare/comark@0.6.2...comark@0.7.0) (2026-09-10)
+
+### Features
+
+* **auto-close:** implement richer syntax support ([#394](https://github.com/comarkdown/comark/issues/394)) ([4b327e3](https://github.com/comarkdown/comark/commit/4b327e387250d9fb601c802b287706fb1f2161f4))
+* **comark:** support custom auto-close functions ([#392](https://github.com/comarkdown/comark/issues/392)) ([6a23b72](https://github.com/comarkdown/comark/commit/6a23b72e5e6d4fb465215fc43090285a08951db0))
+
+### Bug Fixes
+
+* **auto-close:** ignore attributes boundary `{...}` when attributes plugin is registered ([#374](https://github.com/comarkdown/comark/issues/374)) ([9631306](https://github.com/comarkdown/comark/commit/9631306bfcca0e9be3de839015376c6d985ce224))
+* **comark:** denial-of-service hardening for the parser and stringifier ([#375](https://github.com/comarkdown/comark/issues/375)) ([ec9aa9f](https://github.com/comarkdown/comark/commit/ec9aa9f3066b34f2100a7592b20bfc3ef4190aba))
+* **comark:** make renderMarkdown round-trips safe against injection ([#376](https://github.com/comarkdown/comark/issues/376)) ([d6a786d](https://github.com/comarkdown/comark/commit/d6a786d1ee1c1df73ef2dfff5df6bd263dd925f6))
+* **comark:** preserve nested markup when stringifying del ([#387](https://github.com/comarkdown/comark/issues/387)) ([b946d3f](https://github.com/comarkdown/comark/commit/b946d3f4a30231fbedf67a4ef07fee01b5f3eb15))
+* **comark:** prevent HTML attribute injection in the stringifier ([#372](https://github.com/comarkdown/comark/issues/372)) ([3f0c61d](https://github.com/comarkdown/comark/commit/3f0c61d832323dfff17b93df6650de1b3e3bfc59))
+* **comark:** run default plugin hooks before user plugin hooks ([#385](https://github.com/comarkdown/comark/issues/385)) ([1d96d2c](https://github.com/comarkdown/comark/commit/1d96d2c14595752aaea27415043d3cf573dc97d2))
+* **html:** generate html5 style self-closing tags ([#402](https://github.com/comarkdown/comark/issues/402)) ([ca17866](https://github.com/comarkdown/comark/commit/ca178667854b571e46e556bff4101e1e8a2c60b2))
+* **math:** lazy-import katex in renderMath/validateMath ([#350](https://github.com/comarkdown/comark/issues/350)) ([a641ca6](https://github.com/comarkdown/comark/commit/a641ca64e42263c02c0156960281387c79121d32))
+* **math:** preserve inline rendering in ANSI examples ([#353](https://github.com/comarkdown/comark/issues/353)) ([5666738](https://github.com/comarkdown/comark/commit/566673858e48fcb4e0f52b8420b7de942706f577))
+* **parse:** build heading ids from text content only ([#409](https://github.com/comarkdown/comark/issues/409)) ([f873b1c](https://github.com/comarkdown/comark/commit/f873b1c9e42b004e1843fb0d0e39bdd4883f3fff))
+* **parse:** stop dropping children indented in components ([#398](https://github.com/comarkdown/comark/issues/398)) ([aeb4988](https://github.com/comarkdown/comark/commit/aeb4988118e8405c4733a21467c0b4730194063a))
+* **parse:** store YAML block scalars as :bindings ([#365](https://github.com/comarkdown/comark/issues/365)) ([6db6b78](https://github.com/comarkdown/comark/commit/6db6b78349beb836727ee5bee7f0778974adbf06))
+* **rangi:** enable fence line highlights ([#348](https://github.com/comarkdown/comark/issues/348)) ([a392e67](https://github.com/comarkdown/comark/commit/a392e67d4516b6bf4e76b496a3a2fb76c1e2cc90))
+* rename SPEC file blocking Windows clone ([#366](https://github.com/comarkdown/comark/issues/366)) ([784daa3](https://github.com/comarkdown/comark/commit/784daa3f1776e03d4c8f595c860c5801f04e7496))
+* **security:** harden prop and URL validation against bypasses ([#373](https://github.com/comarkdown/comark/issues/373)) ([a6aa2b9](https://github.com/comarkdown/comark/commit/a6aa2b9da03c487597e735151f81d1eb4742dac0))
+* **security:** keep boolean false props and reject non-string href/src ([#371](https://github.com/comarkdown/comark/issues/371)) ([8801b47](https://github.com/comarkdown/comark/commit/8801b47abdb3908d75b11a5fed9a626cfc16b86f))
+* **shiki:** handle array class values when highlighting code ([#393](https://github.com/comarkdown/comark/issues/393)) ([647a33d](https://github.com/comarkdown/comark/commit/647a33da261e8fc38dcf461db4933585aaa81bee))
+* **shiki:** keep unused themes out of bundles ([#343](https://github.com/comarkdown/comark/issues/343)) ([9283034](https://github.com/comarkdown/comark/commit/92830342b63eaa86a637823e5d1a5f6a474bdca1))
+* **stringify:** join raw-HTML children without blank lines ([#304](https://github.com/comarkdown/comark/issues/304)) ([63f65f2](https://github.com/comarkdown/comark/commit/63f65f2cb2e47a1dfe2275a0d55ca2a819a070ea))
+* unable to import some types ([#360](https://github.com/comarkdown/comark/issues/360)) ([2d68e06](https://github.com/comarkdown/comark/commit/2d68e06818a094bfff60afe607be0f6e0cad2190))
+
 ## [0.6.2](https://github.com/comarkdown/comark/compare/comark@0.6.1...comark@0.6.2) (2026-08-07)
 
 ### Features

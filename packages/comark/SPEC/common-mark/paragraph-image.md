@@ -30,7 +30,7 @@
 ## HTML
 
 ```html
-<p><img src="/assets/images/san-juan-mountains.jpg" title="San Juan Mountains" alt="The San Juan Mountains are beautiful" /></p>
+<p><img src="/assets/images/san-juan-mountains.jpg" title="San Juan Mountains" alt="The San Juan Mountains are beautiful"></p>
 ```
 
 ## Markdown

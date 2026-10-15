@@ -29,7 +29,7 @@ World
 ## HTML
 
 ```html
-<p>Hello<br />World</p>
+<p>Hello<br>World</p>
 ```
 
 ## Markdown

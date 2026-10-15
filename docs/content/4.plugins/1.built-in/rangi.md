@@ -1,6 +1,6 @@
 ---
 title: Rangi (Highlight)
-description: Lightweight syntax highlighting for code blocks using rangi.
+description: Lightweight syntax highlighting for code blocks and language-tagged inline code using rangi.
 seo:
   title: Syntax Highlighting using Rangi
 navigation:
@@ -146,6 +146,22 @@ const tokens = tokenize(source, {
 
 Rangi ships aliases built-in (`javascript`→`js`, `typescript`→`ts`, `python`→`py`, `yml`→`yaml`, …). Comark passes the fence info string straight through. Unknown languages fall back to plain text (no throw).
 
+### Inline code
+
+Inline code is highlighted when it declares a language with the attributes syntax. `lang` wins over `language`:
+
+```markdown
+The type is `Ref<HTMLInputElement | null>`{lang="ts-type"} and the component is `<UButton />`{lang="vue-html"}.
+```
+
+Two fragment languages ship out of the box: `ts-type` tokenizes through the TypeScript grammar seeded with `let a:`, and `vue-html` through the Vue grammar seeded with `<template>`. Without that seed a bare type or a bare tag can fall through to weaker highlighting.
+
+The `<code>` element gets the same `shj shiki shj-lang-…` class a highlighted `<pre>` gets, so dual-theme CSS hooks shared with the Shiki plugin cover it with no extra rules. Inline code does not wrap lines, so `lineNumbers` and `preStyles` do not apply to it.
+
+Inline code naming a grammar that is not known (bundled, Comark, or custom via `languages`) is left exactly as it was written, with no class and no spans. `lang` is a real HTML attribute for natural language, so `` `Bonjour`{lang="fr"} `` must not be treated as code. A fenced block behaves differently and still falls back to an unhighlighted `.shiki` block, because a `<pre>` is unambiguously code.
+
+Set `inlineCode: false` to turn this off.
+
 ### Line highlighting
 
 Fence info `{2-3,5}` wraps the code in line spans and marks the selected lines with the `.highlight` class — same as the Shiki plugin. No `lineNumbers` option is required.
@@ -173,6 +189,7 @@ Returns a `ComarkPlugin` that enables rangi syntax highlighting.
 | [`classPrefix`](#classprefix) | `string` | `'shj'` | Class prefix on the highlighted `<pre>` |
 | [`languages`](#languages) | `Record<string, grammar>` | — | Extra custom grammars, merged over the Comark ones |
 | [`preStyles`](#prestyles) | `boolean` | `false` | Add inline background/foreground styles to `<pre>` |
+| [`inlineCode`](#inlinecode) | `boolean` | `true` | Highlight inline code that declares a language |
 
 ### `theme`
 
@@ -238,6 +255,16 @@ rangi({ preStyles: true })
 ```
 
 **Default:** `false`
+
+### `inlineCode`
+
+Whether to highlight inline code that declares a language, e.g. `` `Ref<T>`{lang="ts-type"} ``. See [Inline code](#inline-code).
+
+```typescript
+rangi({ inlineCode: false })
+```
+
+**Default:** `true`
 
 ---
 

@@ -1,13 +1,15 @@
 {
   "name": "@comark/ansi",
-  "version": "0.6.2",
+  "version": "0.7.0",
   "description": "ANSI terminal renderer for Comark. Render Markdown with components as styled terminal output for CLIs.",
   "keywords": [
     "ansi",
     "cli",
     "comark",
     "components",
+    "llm",
     "markdown",
+    "markdown-renderer",
     "mdc",
     "renderer",
     "streaming",
@@ -54,8 +56,8 @@
     "vitest": "catalog:"
   },
   "peerDependencies": {
-    "beautiful-mermaid": ">=1.0",
-    "katex": ">=0.16",
+    "beautiful-mermaid": ">=1.1.3",
+    "katex": ">=0.18.7",
     "shiki": "catalog:"
   },
   "peerDependenciesMeta": {

@@ -2,9 +2,11 @@
 
 ```md
 <Hello>
+
 ::component
 Default Slot
 ::
+
 </Hello>
 ```
 
@@ -16,11 +18,18 @@ Default Slot
   "meta": {},
   "nodes": [
     [
-      "hello",
+      "Hello",
       {
-        "$": { "html": 1, "block": 1 }
+        "$": {
+          "html": 1,
+          "block": 1
+        }
       },
-      "::component\nDefault Slot\n::"
+      [
+        "component",
+        {},
+        "Default Slot"
+      ]
     ]
   ]
 }
@@ -29,19 +38,19 @@ Default Slot
 ## HTML
 
 ```html
-<hello>
-  ::component
-  Default Slot
-  ::
-</hello>
+<Hello>
+  <component>
+    Default Slot
+  </component>
+</Hello>
 ```
 
 ## Markdown
 
 ```md
-<hello>
-::component
-Default Slot
-::
-</hello>
+<Hello>
+  ::component
+  Default Slot
+  ::
+</Hello>
 ```

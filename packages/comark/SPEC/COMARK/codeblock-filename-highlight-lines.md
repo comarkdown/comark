@@ -42,7 +42,7 @@ function hello() {
 ## HTML
 
 ```html
-<pre language="javascript" filename="@[...slug].ts" highlights="[1,2,3]" meta="meta=meta-value"><code class="language-javascript">function hello() {
+<pre data-language="javascript" data-highlights="[1,2,3]" data-filename="@[...slug].ts" data-meta="meta=meta-value"><code class="language-javascript">function hello() {
   console.log("Hello, World!");
 }</code></pre>
 ```

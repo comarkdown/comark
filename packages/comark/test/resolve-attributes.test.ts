@@ -128,6 +128,15 @@ describe('HTML sink props', () => {
     )
     expect(result).toEqual({ id: 'keep' })
   })
+
+  it('drops sink props behind Vue `.prop` / `^attr` prefixes', () => {
+    const result = resolveAttributes(
+      { '.innerHTML': '<img src=x>', '^textContent': 'overlay', ':.innerHTML': '"<img src=x>"', '.title': 'keep' },
+      makeRenderData(),
+      { parseJson: true }
+    )
+    expect(result).toEqual({ '.title': 'keep' })
+  })
 })
 
 describe('unsafe URL bindings (render-time hard floor)', () => {
@@ -148,6 +157,22 @@ describe('unsafe URL bindings (render-time hard floor)', () => {
     const result = resolveAttributes({ ':src': '"data:text/html,<script>alert(1)</script>"' }, makeRenderData(), {
       parseJson: true,
     })
+    expect(result).toEqual({})
+  })
+
+  it('drops :src bindings resolving to `data: text/html` — browsers trim the space', () => {
+    const result = resolveAttributes(
+      { ':src': 'frontmatter.cover' },
+      makeRenderData({ frontmatter: { cover: 'data: text/html,<script>alert(1)</script>' } })
+    )
+    expect(result).toEqual({})
+  })
+
+  it('drops `:^href` / `:.href` bindings resolving to javascript: — Vue still writes `href`', () => {
+    const result = resolveAttributes(
+      { ':^href': 'frontmatter.home', ':.href': 'frontmatter.home' },
+      makeRenderData({ frontmatter: { home: 'javascript:alert(1)' } })
+    )
     expect(result).toEqual({})
   })
 

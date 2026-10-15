@@ -1,7 +1,8 @@
 ---
-title: Mermaid diagrams
-description: Example showing how to use Comark with Mermaid diagrams in Vue and Vite.
+title: 'Mermaid Diagrams in Vue Markdown'
+description: 'A Vue and Vite app that turns mermaid code blocks in Markdown into diagrams with the Comark mermaid plugin.'
 navigation:
+  title: 'Mermaid diagrams (Vue)'
   icon:  i-simple-icons-mermaid
 ---
 

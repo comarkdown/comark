@@ -1,15 +1,21 @@
 {
   "name": "@comark/svelte",
-  "version": "0.6.2",
+  "version": "0.7.0",
   "description": "Svelte 5 renderer for Comark. Render Markdown with components at runtime, with streaming support for AI output.",
   "keywords": [
     "ai",
+    "ai-chat",
     "comark",
     "components",
+    "generative-ui",
+    "intelligent-ui",
+    "llm",
     "markdown",
+    "markdown-renderer",
     "mdc",
     "renderer",
     "streaming",
+    "streaming-markdown",
     "svelte",
     "sveltekit"
   ],
@@ -72,7 +78,7 @@
     "@vitest/browser": "catalog:",
     "@vitest/browser-playwright": "catalog:",
     "release-it": "catalog:",
-    "svelte": "^5.56.4",
+    "svelte": "^5.57.2",
     "svelte-check": "catalog:",
     "vitest": "catalog:",
     "vitest-browser-svelte": "catalog:"
@@ -81,7 +87,7 @@
     "beautiful-mermaid": "catalog:",
     "katex": "catalog:",
     "shiki": "catalog:",
-    "svelte": "^5.0.0"
+    "svelte": "^5.57.1"
   },
   "peerDependenciesMeta": {
     "shiki": {

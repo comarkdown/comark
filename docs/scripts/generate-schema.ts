@@ -53,7 +53,7 @@ Extract structured metadata from the Vue component source as a JSON Schema objec
 - \`required\`: array of required prop names
 - \`properties\`: JSON Schema properties for each prop (type, description, optional default)
 - \`x-slots\`: named and default slots from the template
-- \`x-example\`: realistic MDC usage example`
+- \`x-example\`: realistic Comark usage example. Use only \`i-lucide-*\` icons (the site's bundled set); never heroicons, tabler, or other collections`
 
 async function extractComponent(file: string, dir: string): Promise<z.infer<typeof Component>> {
   const source = await readFile(join(dir, file), 'utf-8')

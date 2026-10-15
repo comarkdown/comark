@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.7.0](https://github.com/comarkdown/comark/compare/@comark/svelte@0.6.2...@comark/svelte@0.7.0) (2026-09-10)
+
+### Bug Fixes
+
+* **vue:** accept a parsed document in a defined component ([#410](https://github.com/comarkdown/comark/issues/410)) ([76c0aba](https://github.com/comarkdown/comark/commit/76c0aba15dc490170a21066825b4ce6973c77532))
+
 ## [0.6.2](https://github.com/comarkdown/comark/compare/@comark/svelte@0.6.1...@comark/svelte@0.6.2) (2026-08-07)
 
 ## [0.6.1](https://github.com/comarkdown/comark/compare/@comark/svelte@0.6.0...@comark/svelte@0.6.1) (2026-08-06)

@@ -1,7 +1,8 @@
 ---
-title: Next.js
+title: 'Next.js Markdown Blog with React Server Components'
 description: A blog example using Comark with Next.js App Router and React Server Components.
 navigation:
+  title: 'Next.js'
   icon:  i-simple-icons:nextdotjs
 ---
 

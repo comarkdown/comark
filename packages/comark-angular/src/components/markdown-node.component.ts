@@ -16,7 +16,12 @@ import {
   inject,
 } from '@angular/core'
 import type { ElementNode, Node as MarkdownAstNode, NodeRenderData } from 'comark'
-import { pascalCase, resolveAttributes } from 'comark/utils'
+import { resolveIfWrapper, selectIfBranch, shouldRenderIf, type IfProps } from 'comark/plugins/binding'
+import { isHtmlVoidElement, pascalCase, resolveAttributes, toNativeAttributes } from 'comark/utils'
+
+interface StructuralComponent extends Type<any> {
+  ɵcomarkIf?: boolean
+}
 
 /**
  * Helper to get tag from a Node
@@ -56,24 +61,6 @@ function resolveComponent(tag: string, components: Record<string, Type<any>>): T
   const proseTag = `Prose${pascalTag}`
   return components[proseTag] || components[pascalTag] || components[tag]
 }
-
-/** Void (self-closing) HTML elements that must not have children. */
-const VOID_ELEMENTS = new Set([
-  'area',
-  'base',
-  'br',
-  'col',
-  'embed',
-  'hr',
-  'img',
-  'input',
-  'link',
-  'meta',
-  'param',
-  'source',
-  'track',
-  'wbr',
-])
 
 /**
  * MarkdownNode - recursive component that renders a single Comark AST node.
@@ -155,7 +142,9 @@ export class MarkdownNode implements OnChanges {
       const hasOwnAttrs = Object.keys(resolved).length > 0
       const childrenRenderData: NodeRenderData = hasOwnAttrs ? { ...this.renderData, props: resolved } : this.renderData
 
-      if (customComponent) {
+      if ((customComponent as StructuralComponent | undefined)?.ɵcomarkIf) {
+        this.renderIf(resolved, children, childrenRenderData)
+      } else if (customComponent) {
         this.renderCustomComponent(customComponent, resolved, children, childrenRenderData)
       } else {
         this.renderNativeElement(tag, resolved, children, childrenRenderData)
@@ -189,14 +178,15 @@ export class MarkdownNode implements OnChanges {
     tag: string,
     attrs: Record<string, any>,
     children: MarkdownAstNode[],
-    childrenRenderData: NodeRenderData
+    childrenRenderData: NodeRenderData,
+    node?: MarkdownAstNode
   ): void {
     const el = this.renderer.createElement(tag)
-    this.applyAttributes(el, attrs)
+    this.applyAttributes(el, node ? toNativeAttributes(tag, node, attrs) : attrs)
 
     // `innerHTML` from document attributes is never applied — resolveAttributes
     // drops DOM sink props, and raw HTML has its own explicit parse path.
-    if (!VOID_ELEMENTS.has(tag)) {
+    if (!isHtmlVoidElement(tag)) {
       this.renderChildren(el, children, childrenRenderData)
     }
 
@@ -209,7 +199,28 @@ export class MarkdownNode implements OnChanges {
     children: MarkdownAstNode[],
     childrenRenderData: NodeRenderData
   ): void {
-    this.renderNativeEl(this.elementRef.nativeElement as HTMLElement, tag, attrs, children, childrenRenderData)
+    this.renderNativeEl(
+      this.elementRef.nativeElement as HTMLElement,
+      tag,
+      attrs,
+      children,
+      childrenRenderData,
+      this.node
+    )
+  }
+
+  /** Evaluate an `::if` before rendering any of its descendants. */
+  private renderIf(props: IfProps, children: MarkdownAstNode[], childrenRenderData: NodeRenderData): void {
+    const branch = selectIfBranch(children, shouldRenderIf(props))
+    if (!branch) return
+
+    const hostEl = this.elementRef.nativeElement as HTMLElement
+    const wrapper = resolveIfWrapper(props.as)
+    if (wrapper) {
+      this.renderNativeEl(hostEl, wrapper, {}, branch, childrenRenderData)
+    } else {
+      this.renderChildren(hostEl, branch, childrenRenderData)
+    }
   }
 
   private renderCustomComponent(
@@ -364,7 +375,7 @@ export class MarkdownNode implements OnChanges {
           const resolved = resolveAttributes(childProps, renderData, { parseJson: true })
           const hasOwnAttrs = Object.keys(resolved).length > 0
           const childRenderData: NodeRenderData = hasOwnAttrs ? { ...renderData, props: resolved } : renderData
-          this.renderNativeEl(parentEl, childTag, resolved, grandChildren, childRenderData)
+          this.renderNativeEl(parentEl, childTag, resolved, grandChildren, childRenderData, child)
         }
       }
     }

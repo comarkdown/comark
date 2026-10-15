@@ -35,8 +35,8 @@
 ## HTML
 
 ```html
-<hr />
-<hr />
+<hr>
+<hr>
 <h1 id="content">Content</h1>
 ```
 

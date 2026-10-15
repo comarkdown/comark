@@ -51,7 +51,7 @@ func main() {
 ## HTML
 
 ```html
-<pre language="go" highlights="[1,3,5,6,7,10]"><code class="language-go">package main
+<pre data-language="go" data-highlights="[1,3,5,6,7,10]"><code class="language-go">package main
 
 import "fmt"
 

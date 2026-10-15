@@ -1,18 +1,24 @@
 {
   "name": "@comark/react",
-  "version": "0.6.2",
+  "version": "0.7.0",
   "description": "React renderer for Comark. Render Markdown with components at runtime, with streaming support for AI output. Works with Next.js and Server Components.",
   "keywords": [
     "ai",
+    "ai-chat",
     "comark",
     "components",
+    "generative-ui",
+    "intelligent-ui",
+    "llm",
     "markdown",
+    "markdown-renderer",
     "mdc",
     "mdx",
     "nextjs",
     "react",
     "renderer",
-    "streaming"
+    "streaming",
+    "streaming-markdown"
   ],
   "homepage": "https://comark.dev/rendering/react",
   "bugs": {
@@ -56,14 +62,14 @@
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "@vitest/browser-playwright": "catalog:",
-    "react": "^19.2.7",
+    "react": "catalog:",
     "react-dom": "catalog:",
     "vitest": "catalog:"
   },
   "peerDependencies": {
     "beautiful-mermaid": "catalog:",
     "katex": "catalog:",
-    "react": "^19.0.0",
+    "react": "^19.3.0",
     "shiki": "catalog:"
   },
   "peerDependenciesMeta": {

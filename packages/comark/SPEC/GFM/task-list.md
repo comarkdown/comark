@@ -65,10 +65,10 @@ timeout:
 ```html
 <ul class="contains-task-list">
   <li class="task-list-item">
-    <input class="task-list-item-checkbox" type="checkbox" disabled checked /> Done
+    <input class="task-list-item-checkbox" type="checkbox" disabled checked> Done
   </li>
   <li class="task-list-item">
-    <input class="task-list-item-checkbox" type="checkbox" disabled /> todo
+    <input class="task-list-item-checkbox" type="checkbox" disabled> todo
   </li>
 </ul>
 ```

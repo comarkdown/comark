@@ -1,11 +1,62 @@
 import { describe, expect, it } from 'vitest'
 import { parseMarkdown } from '../../src/parse'
 import { renderMarkdown } from '../../src/render'
-import binding, { Binding } from '../../src/plugins/binding'
+import binding, { Binding, resolveIfWrapper, selectIfBranch, shouldRenderIf } from '../../src/plugins/binding'
+import { nestedIfMarkdown } from '../../../../test/fixtures/if'
 import { renderHtmlForTest } from '../utils/render-html'
 
 const parseWithBinding = (md: string, opts: Parameters<typeof binding>[0] = {}) =>
   parseMarkdown(md, { plugins: [binding(opts)] })
+
+describe('binding plugin — If predicate', () => {
+  it('selects explicit slots and distinguishes a missing else from an empty else', () => {
+    expect(
+      selectIfBranch(
+        ['Regular', ['template', { name: 'default' }, 'Default'], ['template', { name: 'else' }, 'Else']],
+        true
+      )
+    ).toEqual(['Default'])
+    expect(selectIfBranch(['Regular', ['template', { name: 'else' }, 'Else']], false)).toEqual(['Else'])
+    expect(selectIfBranch(['Regular'], false)).toBeUndefined()
+    expect(selectIfBranch([['template', { name: 'else' }]], false)).toEqual([])
+  })
+
+  it('checks value truthiness without comparisons', () => {
+    expect(shouldRenderIf({ value: true })).toBe(true)
+    expect(shouldRenderIf({ value: false })).toBe(false)
+    expect(shouldRenderIf({ value: 'Ada' })).toBe(true)
+    expect(shouldRenderIf({ value: '' })).toBe(false)
+    expect(shouldRenderIf({ value: 0 })).toBe(false)
+    expect(shouldRenderIf({})).toBe(false)
+  })
+
+  it('supports strict equality and ordered comparisons', () => {
+    expect(shouldRenderIf({ value: false, eq: false })).toBe(true)
+    expect(shouldRenderIf({ value: 'member', neq: 'guest' })).toBe(true)
+    expect(shouldRenderIf({ value: 42, gt: 18, gte: 42, lt: 65, lte: 42 })).toBe(true)
+    expect(shouldRenderIf({ value: 65, lt: 65 })).toBe(false)
+  })
+
+  it('requires both sides of every comparison', () => {
+    expect(shouldRenderIf({ neq: 'guest' })).toBe(false)
+    expect(shouldRenderIf({ value: undefined, neq: 'guest' })).toBe(false)
+    expect(shouldRenderIf({ value: 'member', eq: undefined })).toBe(false)
+  })
+
+  it('does not treat condition as a predicate prop', () => {
+    expect(shouldRenderIf({ condition: true })).toBe(false)
+    expect(shouldRenderIf({ condition: true, value: false })).toBe(false)
+    expect(shouldRenderIf({ condition: false, value: true })).toBe(true)
+    expect(shouldRenderIf({ condition: false, value: 90, gte: 80 })).toBe(true)
+  })
+
+  it('accepts only safe wrapper tags', () => {
+    expect(resolveIfWrapper(undefined)).toBeUndefined()
+    expect(resolveIfWrapper('section')).toBe('section')
+    expect(() => resolveIfWrapper('script')).toThrow('Unsupported If wrapper tag: script')
+    expect(() => resolveIfWrapper(null)).toThrow('Unsupported If wrapper tag: null')
+  })
+})
 
 describe('binding plugin — parsing', () => {
   it('captures `{{ path }}` as a self-closing <binding> element with :value', async () => {
@@ -61,6 +112,12 @@ describe('binding plugin — options', () => {
 })
 
 describe('binding plugin — rendering', () => {
+  it('round-trips nested If slots without evaluating the condition', async () => {
+    const document = await parseMarkdown(nestedIfMarkdown)
+    const markdown = await renderMarkdown(document)
+    expect((await parseMarkdown(markdown)).nodes).toEqual(document.nodes)
+  })
+
   it('resolves the binding against frontmatter when rendering to HTML', async () => {
     const tree = await parseWithBinding(`---
 user:

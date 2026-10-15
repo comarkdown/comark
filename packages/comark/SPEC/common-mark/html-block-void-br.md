@@ -36,14 +36,14 @@
 ## HTML
 
 ```html
-<br />
+<br>
 <h1 id="after-br">After br</h1>
 ```
 
 ## Markdown
 
 ```md
-<br />
+<br>
 
 # After br
 ```

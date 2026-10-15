@@ -1,6 +1,7 @@
 {
-  "name": "comark",
-  "description": "Parse and render Markdown anywhere with one JavaScript library for HTML, ANSI, Vue, React, Svelte and Angular, plus plugins and streaming.",
+  "name": "comark-docs-site",
+  "private": true,
+  "description": "Comark is an open-source Markdown parser and renderer with components, attributes and plugins. It streams AI output to React, Vue, Svelte, Angular, HTML and the terminal.",
   "type": "module",
   "scripts": {
     "dev": "nuxt dev",
@@ -22,7 +23,7 @@
     "ai": "catalog:",
     "beautiful-mermaid": "catalog:",
     "comark": "workspace:*",
-    "comark-docs": "github:comarkdown/comark-docs",
+    "comark-docs": "github:comarkdown/comark-docs#ab34f83fd3bb4f6c139a0ebb048444ae14600ddc",
     "katex": "catalog:",
     "nuxt": "catalog:",
     "splitpanes": "catalog:",

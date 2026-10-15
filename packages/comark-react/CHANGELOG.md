@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.7.0](https://github.com/comarkdown/comark/compare/@comark/react@0.6.2...@comark/react@0.7.0) (2026-09-10)
+
+### Bug Fixes
+
+* **angular:** update build scripts to use angular compiler ([#317](https://github.com/comarkdown/comark/issues/317)) ([de915aa](https://github.com/comarkdown/comark/commit/de915aacda1ee8c5128cc34a27cd5fa14241c264))
+* unify component resolution order and drop unused Angular name option ([#381](https://github.com/comarkdown/comark/issues/381)) ([b91e4c8](https://github.com/comarkdown/comark/commit/b91e4c84e51f19a927a06d8ec653819b622719a9))
+* **vue:** accept a parsed document in a defined component ([#410](https://github.com/comarkdown/comark/issues/410)) ([76c0aba](https://github.com/comarkdown/comark/commit/76c0aba15dc490170a21066825b4ce6973c77532))
+
 ## [0.6.2](https://github.com/comarkdown/comark/compare/@comark/react@0.6.1...@comark/react@0.6.2) (2026-08-07)
 
 ## [0.6.1](https://github.com/comarkdown/comark/compare/@comark/react@0.6.0...@comark/react@0.6.1) (2026-08-06)
