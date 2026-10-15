@@ -71,7 +71,7 @@ For a focused parser test:
 
 ```sh
 cd packages/comark
-pnpm exec vitest run test/parse/sub-sup.test.ts
+pnpm vitest run test/parse/sub-sup.test.ts
 ```
 
 Parser fixtures live in `packages/comark/SPEC` and run through `test/index.test.ts`. Parser changes should also preserve streaming behavior in `test/streaming.test.ts`.
@@ -86,10 +86,10 @@ For changes to build output or package exports, also run the build and bundle sn
 
 ```sh
 pnpm prepack
-pnpm exec vitest run bundle
+pnpm vitest run bundle
 ```
 
-If your change legitimately alters package sizes, update the snapshot with `pnpm exec vitest run bundle -u` after building, and review the resulting diff. Restore source stubs with `pnpm stub` before returning to example development.
+If your change legitimately alters package sizes, update the snapshot with `pnpm vitest run bundle -u` after building, and review the resulting diff. Restore source stubs with `pnpm stub` before returning to example development.
 
 ## Prepare a pull request
 
