@@ -1,7 +1,7 @@
 'use client'
 
 import { use, useDeferredValue, useMemo, Suspense } from 'react'
-import { parseMarkdown } from 'comark'
+import { createSerializedMarkdownParser } from 'comark'
 import type { MarkdownDocument as MarkdownDocumentType } from 'comark'
 import { isMarkdownDocument } from 'comark/utils'
 import { MarkdownLive } from './MarkdownLive.tsx'
@@ -35,19 +35,30 @@ function MarkdownContent({
   )
 }
 
-export function MarkdownClient({ children, value, options = {}, plugins = [], ...rest }: MarkdownProps) {
+export function MarkdownClient({
+  children,
+  value,
+  options,
+  plugins,
+  unwrap = false,
+  streaming = false,
+  ...rest
+}: MarkdownProps) {
   const content = isMarkdownDocument(value)
     ? value
     : children
       ? String(children)
       : ((value as string | undefined) ?? '')
 
-  // Re-creates the promise only when content changes.
-  // Note: options/plugins should be stable references (defined outside render or memoized).
-  // Pre-parsed documents resolve immediately without calling parseMarkdown().
+  // Recreated only when parser inputs change, so streaming updates reuse nodes.
+  const parse = useMemo(
+    () => createSerializedMarkdownParser({ ...options, ...(unwrap ? { unwrap } : {}), plugins }),
+    [options, plugins, unwrap]
+  )
+
   const parsePromise = useMemo(
-    () => (isMarkdownDocument(content) ? Promise.resolve(content) : parseMarkdown(content, { ...options, plugins })),
-    [content]
+    () => (isMarkdownDocument(content) ? Promise.resolve(content) : parse(content, { streaming })),
+    [content, parse, streaming]
   )
 
   // Keep showing the previous parsed result while a new parse is pending —
@@ -59,6 +70,7 @@ export function MarkdownClient({ children, value, options = {}, plugins = [], ..
       <MarkdownContent
         parsePromise={deferredPromise}
         {...rest}
+        streaming={streaming}
       />
     </Suspense>
   )

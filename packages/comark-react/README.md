@@ -61,6 +61,8 @@ Heads up!
 
 ### Streaming
 
+Streaming reuses completed blocks while text is appended. Keep parser options and plugin references stable between updates. Set `streaming` to `false` when the stream ends to parse the complete document. Heading tails and reference definitions use a full parse to preserve heading IDs and links.
+
 ```tsx
 <Markdown streaming={isStreaming} caret>
   {content}
