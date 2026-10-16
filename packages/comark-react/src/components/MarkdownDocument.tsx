@@ -268,7 +268,11 @@ function renderNode(
   return null
 }
 
-export interface MarkdownDocumentProps {
+/**
+ * Every other HTML attribute (`id`, `style`, `role`, `data-*`, `aria-*`, ...) is
+ * set on the wrapper div.
+ */
+export interface MarkdownDocumentProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'children'> {
   /**
    * The parsed Comark document to render — either a full `MarkdownDocument` or a bare
    * `Node[]`.  When a node array is passed, frontmatter and meta
@@ -341,6 +345,7 @@ export const MarkdownDocument: React.FC<MarkdownDocumentProps> = ({
   caret: caretProp = false,
   data,
   className,
+  ...rest
 }) => {
   const document = value ?? { nodes: [] }
 
@@ -373,5 +378,12 @@ export const MarkdownDocument: React.FC<MarkdownDocumentProps> = ({
   }, [document, customComponents, componentsManifest, streaming, caret, data])
 
   // Wrap in a fragment
-  return <div className={`comark-content ${className || ''}`}>{renderedNodes}</div>
+  return (
+    <div
+      {...rest}
+      className={`comark-content ${className || ''}`}
+    >
+      {renderedNodes}
+    </div>
+  )
 }
