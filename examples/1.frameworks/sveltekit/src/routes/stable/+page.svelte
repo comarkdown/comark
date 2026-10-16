@@ -1,7 +1,7 @@
 <script lang="ts">
   import { MarkdownDocument } from '@comark/svelte'
   import { pascalCase } from 'comark/utils'
-  import Alert from '$lib/components/comark/Alert.svelte'
+  import Alert from '#lib/components/comark/Alert.svelte'
   import type { PageData } from './$types'
 
   let { data }: { data: PageData } = $props()
