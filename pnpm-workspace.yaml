@@ -48,7 +48,7 @@ catalog:
   "@shikijs/primitive": ^4.4.3
   "@shikijs/themes": ^4.4.3
   "@shikijs/twoslash": ^4.4.3
-  "@sveltejs/adapter-auto": ^7.0.1
+  "@sveltejs/adapter-auto": ^8.0.0
   "@sveltejs/kit": ^2.70.3
   "@sveltejs/package": ^2.5.8
   "@sveltejs/vite-plugin-svelte": ^7.3.0
