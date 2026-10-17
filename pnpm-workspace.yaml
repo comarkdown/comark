@@ -20,8 +20,8 @@ allowBuilds:
 
 catalog:
   # AI
-  "@ai-sdk/gateway": ^4.0.90
-  "@ai-sdk/vue": ^4.0.112
+  "@ai-sdk/gateway": ^4.0.115
+  "@ai-sdk/vue": ^4.0.142
   "@astrojs/react": ^6.0.6
   "@clack/prompts": ^1.8.1
   "@comark/html": ^0.7.0
@@ -30,28 +30,28 @@ catalog:
   "@comark/vue": ^0.7.0
 
   # Misc
-  "@json-render/core": ^0.21.0
+  "@json-render/core": ^0.21.1
   "@monaco-editor/loader": ^1.7.0
-  "@nuxt/devtools-kit": 4.0.0-beta.1
+  "@nuxt/devtools-kit": 4.0.0-beta.5
   # Keep kit on the same minor line as `nuxt` so `@nuxt/schema` stays singular
   # (dual schema breaks `defineNuxtModule` setup typing + declaration emit).
   "@nuxt/kit": 4.6.1
-  "@nuxt/ui": ^4.11.2
-  "satori": ^0.33.5
+  "@nuxt/ui": ^4.12.0
+  "satori": ^0.62.0
   "@resvg/resvg-js": ^2.6.2
-  "@nuxtjs/mcp-toolkit": 0.21.0
+  "@nuxtjs/mcp-toolkit": 0.24.2
   "@nuxtlabs/monarch-mdc": ^0.10.0
   "@release-it/conventional-changelog": ^12.0.2
-  "@shikijs/langs": ^4.4.3
+  "@shikijs/langs": ^4.5.0
 
   # Shiki
-  "@shikijs/primitive": ^4.4.3
-  "@shikijs/themes": ^4.4.3
-  "@shikijs/twoslash": ^4.4.3
+  "@shikijs/primitive": ^4.5.0
+  "@shikijs/themes": ^4.5.0
+  "@shikijs/twoslash": ^4.5.0
   "@sveltejs/adapter-auto": ^7.0.1
   "@sveltejs/kit": ^2.70.3
   "@sveltejs/package": ^2.5.8
-  "@sveltejs/vite-plugin-svelte": ^7.3.0
+  "@sveltejs/vite-plugin-svelte": ^7.3.1
   "@tailwindcss/postcss": ^4.3.3
   "@tailwindcss/vite": ^4.3.3
 
@@ -65,23 +65,23 @@ catalog:
   "@unhead/vue": ^3.4.3
   "@vercel/analytics": ^2.0.1
   "@vercel/speed-insights": ^2.0.0
-  "@vitejs/plugin-react": ^6.1.1
+  "@vitejs/plugin-react": ^6.1.2
   "@vitejs/plugin-vue": ^6.0.10
-  "@vitest/browser": ^4.1.11
-  "@vitest/browser-playwright": ^4.1.11
-  "@vue/compiler-core": 3.5.43
-  "@vue/reactivity": 3.5.43
-  "@vue/runtime-core": 3.5.43
-  "@vue/runtime-dom": 3.5.43
-  "@vue/server-renderer": 3.5.43
-  "@vue/shared": 3.5.43
+  "@vitest/browser": ^4.1.12
+  "@vitest/browser-playwright": ^4.1.12
+  "@vue/compiler-core": 3.5.44
+  "@vue/reactivity": 3.5.44
+  "@vue/runtime-core": 3.5.44
+  "@vue/runtime-dom": 3.5.44
+  "@vue/server-renderer": 3.5.44
+  "@vue/shared": 3.5.44
   "@vueuse/core": ^15.0.0
   "@xterm/addon-fit": ^0.11.0
   "@xterm/xterm": ^6.0.0
-  ai: ^7.0.112
+  ai: ^7.0.142
 
   # Other Frameworks
-  astro: ^7.3.4
+  astro: ^7.4.0
   autoprefixer: ^10.6.1
   beautiful-mermaid: ^1.1.3
   citty: ^0.2.2
@@ -93,28 +93,28 @@ catalog:
   entities: ^8.1.0
   github-slugger: ^2.0.0
   hast-util-to-string: ^3.0.1
-  js-yaml: ^5.4.2
-  katex: ^0.18.7
+  js-yaml: ^5.5.0
+  katex: ^0.19.0
   markdown-exit: 1.3.0
-  "markdown-it": ^14.3.2
+  "markdown-it": ^14.3.3
   markdown-it-math: ^6.0.1
   minimark: 0.2.0
   mitata: ^1.0.34
-  next: ^16.3.6
+  next: ^16.4.2
 
   # Nuxt
   nuxt: ^4.6.1
-  nuxt-studio: 1.7.0
+  nuxt-studio: 1.8.0
 
   # Linting
-  oxfmt: ^0.70.0
-  oxlint: ^1.87.0
-  playwright: ^1.64.0
-  postcss: ^8.5.28
+  oxfmt: ^0.73.0
+  oxlint: ^1.88.0
+  playwright: ^1.64.1
+  postcss: ^8.5.30
 
   # React
-  react: ^19.3.0
-  react-dom: ^19.3.0
+  react: ^19.3.1
+  react-dom: ^19.3.1
 
   # Build tooling
   release-it: ^20.2.1
@@ -126,24 +126,24 @@ catalog:
 
   # Shared peer dependencies
   rangi: ^2.2.0
-  shiki: ^4.4.3
+  shiki: ^4.5.0
   splitpanes: ^4.1.2
 
   # Svelte
-  svelte: ^5.57.1
-  svelte-check: ^4.7.6
+  svelte: ^5.57.2
+  svelte-check: ^4.7.7
 
   # Angular
-  "@angular/common": ^22.2.2
-  "@angular/compiler": ^22.2.2
-  "@angular/compiler-cli": ^22.2.2
-  "@angular/core": ^22.2.2
-  "@angular/build": ^22.2.2
-  "@angular/platform-browser": ^22.2.2
+  "@angular/common": ^22.2.3
+  "@angular/compiler": ^22.2.3
+  "@angular/compiler-cli": ^22.2.3
+  "@angular/core": ^22.2.3
+  "@angular/build": ^22.2.3
+  "@angular/platform-browser": ^22.2.3
   "@angular/platform-browser-dynamic": ^22.2.2
-  "@angular/platform-server": ^22.2.2
-  "@angular/router": ^22.2.2
-  "@analogjs/vite-plugin-angular": 3.0.0-alpha.87
+  "@angular/platform-server": ^22.2.3
+  "@angular/router": ^22.2.3
+  "@analogjs/vite-plugin-angular": 3.0.0-alpha.94
   zone.js: ^0.16.3
   rxjs: ^7.8.2
   tslib: ^2.8.1
@@ -157,21 +157,21 @@ catalog:
 
   ufo: ^1.6.4
   unified: ^11.0.5
-  vite: ^8.3.0
+  vite: ^8.3.4
   vitepress: ^1.6.4
 
   # Testing
-  "@codspeed/vitest-plugin": ^6.0.0
+  "@codspeed/vitest-plugin": ^6.1.0
   tinybench: ^2.9.0
-  vitest: ^4.1.11
+  vitest: ^4.1.12
   vitest-browser-svelte: ^3.1.0
 
   # Vue
-  vue: 3.5.43
+  vue: 3.5.44
   vue-json-pretty: ^2.6.0
   vue-router: ^5.4.0
-  vue-tsc: ^3.3.11
-  zod: "^4.6.5"
+  vue-tsc: ^3.3.13
+  zod: "^4.6.7"
 
 ignoredBuiltDependencies:
   - sharp

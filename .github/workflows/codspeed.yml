@@ -31,7 +31,7 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           package-manager-cache: false
-          node-version: '24.21.0'
+          node-version: '24.22.0'
       - run: npm i -g --force corepack && corepack enable
       # `postinstall` stubs every package `dist/` to its sources, so the
       # benches measure the checked-out code without a build step.
