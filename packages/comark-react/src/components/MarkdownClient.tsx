@@ -19,11 +19,13 @@ function MarkdownContent({
   caret = false,
   data,
   className,
+  ...rest
 }: MarkdownContentProps) {
   const parsed = use(parsePromise)
 
   return (
     <MarkdownLive
+      {...rest}
       value={parsed}
       components={customComponents}
       componentsManifest={componentsManifest}
@@ -35,7 +37,14 @@ function MarkdownContent({
   )
 }
 
-export function MarkdownClient({ children, value, options = {}, plugins = [], ...rest }: MarkdownProps) {
+export function MarkdownClient({
+  children,
+  value,
+  options = {},
+  plugins = [],
+  unwrap = false,
+  ...rest
+}: MarkdownProps) {
   const content = isMarkdownDocument(value)
     ? value
     : children
@@ -46,7 +55,10 @@ export function MarkdownClient({ children, value, options = {}, plugins = [], ..
   // Note: options/plugins should be stable references (defined outside render or memoized).
   // Pre-parsed documents resolve immediately without calling parseMarkdown().
   const parsePromise = useMemo(
-    () => (isMarkdownDocument(content) ? Promise.resolve(content) : parseMarkdown(content, { ...options, plugins })),
+    () =>
+      isMarkdownDocument(content)
+        ? Promise.resolve(content)
+        : parseMarkdown(content, { ...options, ...(unwrap ? { unwrap } : {}), plugins }),
     [content]
   )
 
