@@ -287,3 +287,200 @@ describe('resolveAttribute (single-attr lookup)', () => {
     expect(value).toBe(config)
   })
 })
+
+/** Attributes as the `binding()` plugin marks them, so their templates are interpolated. */
+const bound = (attrs: Record<string, unknown>): Record<string, unknown> => ({ ...attrs, $: { bind: 1 } })
+
+describe('resolveAttributes (interpolation)', () => {
+  const renderData = makeRenderData({
+    frontmatter: { slug: 'getting-started', n: 7, foo: "pt: alert('xss')" },
+    data: {
+      x: 'X',
+      secret: 'S',
+      a: 'java',
+      b: 'script:alert(1)',
+      bad: 'javascript:alert(1)',
+      flag: true,
+      host: '/evil.com',
+    },
+    props: { title: 'Ada' },
+  })
+  const modes = [
+    ['default', {}],
+    ['parseJson', { parseJson: true }],
+  ] as const
+
+  describe.each(modes)('%s mode', (_name, options) => {
+    it('resolves a mixed template and drops the : prefix', () => {
+      const result = resolveAttributes(bound({ ':href': '/docs/{{ frontmatter.slug }}/overview' }), renderData, options)
+      expect(result).toEqual({ href: '/docs/getting-started/overview' })
+    })
+
+    it('inserts numbers and booleans as text', () => {
+      const result = resolveAttributes(
+        bound({ ':title': 'Item {{ frontmatter.n }} {{ data.flag }}' }),
+        renderData,
+        options
+      )
+      expect(result).toEqual({ title: 'Item 7 true' })
+    })
+
+    it('uses the default when the path is missing', () => {
+      const result = resolveAttributes(bound({ ':title': 'Hi {{ data.nope || friend }}' }), renderData, options)
+      expect(result).toEqual({ title: 'Hi friend' })
+    })
+
+    it('omits the prop when a sole placeholder has nothing available', () => {
+      const result = resolveAttributes(bound({ ':title': '{{ data.nope }}', id: 'keep' }), renderData, options)
+      expect(result).toEqual({ id: 'keep' })
+      expect(result).not.toHaveProperty('title')
+      expect(result).not.toHaveProperty(':title')
+    })
+
+    it('resolves the props scope', () => {
+      const result = resolveAttributes(bound({ ':label': 'Hi {{ props.title }}' }), renderData, options)
+      expect(result).toEqual({ label: 'Hi Ada' })
+    })
+
+    it('leaves a non-: prop with a placeholder literal', () => {
+      const result = resolveAttributes(bound({ title: 'Hi {{ data.x }}' }), renderData, options)
+      expect(result).toEqual({ title: 'Hi {{ data.x }}' })
+    })
+
+    it('omits :href, :to and :src when the result has an unsafe scheme', () => {
+      const result = resolveAttributes(
+        bound({ ':href': '{{ data.bad }}', ':to': '{{ data.bad }}', ':src': '{{ data.bad }}', id: 'keep' }),
+        renderData,
+        options
+      )
+      expect(result).toEqual({ id: 'keep' })
+    })
+
+    it('omits a URL whose scheme is split across placeholders', () => {
+      const result = resolveAttributes(bound({ ':href': '{{ data.a }}{{ data.b }}' }), renderData, options)
+      expect(result).toEqual({})
+    })
+
+    it('omits a URL whose scheme is split between literal text and data', () => {
+      const result = resolveAttributes(
+        bound({ ':to': 'javascri{{ frontmatter.foo }}', ':link': 'java{{ data.b }}', id: 'keep' }),
+        renderData,
+        options
+      )
+      expect(result).toEqual({ id: 'keep' })
+    })
+
+    it('omits a URL where literal text and data join into another host', () => {
+      expect(resolveAttributes(bound({ ':href': '/{{ data.host }}' }), renderData, options)).toEqual({})
+      expect(resolveAttributes(bound({ ':href': '///{{ frontmatter.slug }}' }), renderData, options)).toEqual({})
+      expect(resolveAttributes(bound({ ':href': ' /{{ data.host }}' }), renderData, options)).toEqual({})
+      expect(
+        resolveAttributes(bound({ ':src': '//cdn.example.com/{{ frontmatter.slug }}' }), renderData, options)
+      ).toEqual({
+        src: '//cdn.example.com/getting-started',
+      })
+      expect(resolveAttributes(bound({ ':href': '/docs/{{ data.host }}' }), renderData, options)).toEqual({
+        href: '/docs//evil.com',
+      })
+    })
+
+    it('keeps a non-URL prop whose text looks like a scheme', () => {
+      const result = resolveAttributes(bound({ ':title': 'JavaScript: {{ data.x }}' }), renderData, options)
+      expect(result).toEqual({ title: 'JavaScript: X' })
+    })
+
+    it('omits event handler props', () => {
+      const result = resolveAttributes(bound({ ':onclick': '{{ data.x }}', id: 'keep' }), renderData, options)
+      expect(result).toEqual({ id: 'keep' })
+    })
+
+    it('leaves a nested object value untouched', () => {
+      const result = resolveAttributes(bound({ ':config': { k: '{{ data.x }}' } }), renderData, options)
+      expect(Object.values(result)).toEqual([{ k: '{{ data.x }}' }])
+    })
+
+    it('is stable when resolved twice and never expands inserted text', () => {
+      const data = makeRenderData({ data: { x: '{{ data.secret }}', secret: 'S' } })
+      const once = resolveAttributes(bound({ ':title': 'A {{ data.x }}' }), data, options)
+      expect(once).toEqual({ title: 'A {{ data.secret }}' })
+      expect(resolveAttributes(bound(once), data, options)).toEqual(once)
+    })
+  })
+
+  it('does not interpolate without the binding() marker (default mode)', () => {
+    const result = resolveAttributes({ ':title': 'Item {{ frontmatter.n }}' }, renderData)
+    expect(result).toEqual({ ':title': 'Item {{ frontmatter.n }}' })
+  })
+
+  it('does not interpolate without the binding() marker (parseJson mode)', () => {
+    const result = resolveAttributes({ ':title': 'Item {{ frontmatter.n }}' }, renderData, { parseJson: true })
+    expect(result).toHaveProperty('title', undefined)
+  })
+
+  it('keeps today behavior for a malformed template (default mode)', () => {
+    const result = resolveAttributes(bound({ ':title': 'Hi {{ data.x' }), renderData)
+    expect(result).toEqual({ ':title': 'Hi {{ data.x' })
+  })
+
+  it('keeps today behavior for a malformed template (parseJson mode)', () => {
+    const result = resolveAttributes(bound({ ':title': 'Hi {{ data.x' }), renderData, { parseJson: true })
+    expect(result).toHaveProperty('title', undefined)
+  })
+
+  it('keeps today behavior for an unknown root (default mode)', () => {
+    const result = resolveAttributes(bound({ ':title': 'Hi {{ item.name }}' }), renderData)
+    expect(result).toEqual({ ':title': 'Hi {{ item.name }}' })
+  })
+
+  it('keeps today behavior for an unknown root (parseJson mode)', () => {
+    const result = resolveAttributes(bound({ ':title': 'Hi {{ item.name }}' }), renderData, { parseJson: true })
+    expect(result).toHaveProperty('title', undefined)
+  })
+
+  it('keeps today behavior for a JSON string literal', () => {
+    const value = '"{{ data.x }}"'
+    expect(resolveAttributes(bound({ ':title': value }), renderData)).toEqual({ ':title': value })
+    expect(resolveAttributes(bound({ ':title': value }), renderData, { parseJson: true })).toEqual({
+      title: '{{ data.x }}',
+    })
+  })
+
+  it.each([':style', ':key', ':is', ':as'])('keeps today behavior for reserved prop %s', (key) => {
+    const value = 'a {{ data.x }}'
+    expect(resolveAttributes(bound({ [key]: value }), renderData)).toEqual({ [key]: value })
+    expect(resolveAttributes(bound({ [key]: value }), renderData, { parseJson: true })).toHaveProperty(
+      key.slice(1),
+      undefined
+    )
+  })
+})
+
+describe('resolveAttribute (interpolation)', () => {
+  const renderData = makeRenderData({ frontmatter: { slug: 'docs' }, data: { bad: 'javascript:alert(1)' } })
+
+  it('returns the interpolated string', () => {
+    expect(resolveAttribute(bound({ ':href': '/{{ frontmatter.slug }}/x' }), renderData, 'href')).toBe('/docs/x')
+  })
+
+  it('returns the literal attribute when the template is rejected, as resolveAttributes keeps it', () => {
+    expect(resolveAttribute(bound({ ':href': '{{ data.bad }}' }), renderData, 'href')).toBeUndefined()
+    expect(resolveAttribute(bound({ ':href': '{{ data.bad }}', href: '/safe' }), renderData, 'href')).toBe('/safe')
+    expect(resolveAttributes(bound({ ':href': '{{ data.bad }}', href: '/safe' }), renderData)).toEqual({
+      href: '/safe',
+    })
+  })
+
+  it('returns the literal attribute when a sole placeholder is unresolved', () => {
+    expect(resolveAttribute(bound({ ':href': '{{ data.nope }}' }), renderData, 'href')).toBeUndefined()
+  })
+
+  it('keeps today behavior for a malformed template', () => {
+    expect(resolveAttribute(bound({ ':href': '/x/{{ data.y' }), renderData, 'href')).toBe('/x/{{ data.y')
+  })
+
+  it('does not interpolate without the binding() marker', () => {
+    expect(resolveAttribute({ ':href': '/{{ frontmatter.slug }}/x' }, renderData, 'href')).toBe(
+      '/{{ frontmatter.slug }}/x'
+    )
+  })
+})

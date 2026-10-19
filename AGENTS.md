@@ -95,7 +95,8 @@ packages/comark/
 │       ├── frontmatter.ts    # parseFrontmatter() / renderFrontmatter()
 │       ├── heading-id.ts     # Auto heading id generation (shared by parser + stringifier)
 │       ├── yaml.ts           # YAML helpers
-│       ├── props-validation.ts # Component props validation
+│       ├── props-validation.ts # Component props validation (incl. anchored `{{ }}` URL templates)
+│       ├── template.ts       # `{{ path || default }}` grammar shared by the binding plugin and the resolver
 │       ├── parse/            # Parsing pipeline
 │       │   ├── token-processor.ts # markdown-exit tokens → document nodes
 │       │   ├── auto-close/   # Self-healing for incomplete markdown
@@ -105,7 +106,7 @@ packages/comark/
 │       │   ├── indent.ts     # Dedent of outdented component children
 │       │   ├── unwrap.ts     # `unwrap` option
 │       │   └── auto-unwrap.ts # `autoUnwrap` option
-│       └── stringify/        # AST → markdown string rendering (handlers/ per tag)
+│       └── stringify/        # AST → markdown string rendering (handlers/ per tag; interpolate.ts resolves `:prop` templates)
 ├── SPEC/                 # Behavioral spec fixtures (CommonMark, GFM, HTML, COMARK, auto-close.md)
 ├── test/                 # Vitest test files
 ├── package.json
@@ -699,6 +700,20 @@ Example:
   meta: {}
 }
 ```
+
+## Templates in `:` props
+
+With `binding()`, a `:` prop may mix text and placeholders: `:href="/docs/{{ data.slug }}"`.
+The plugin's `post` hook marks each element whose `:` attrs hold a well-formed template with
+`$.bind: 1` (grammar in `src/internal/template.ts`). `resolveAttributes` / `resolveAttribute`
+interpolate only marked nodes (`src/internal/stringify/interpolate.ts`), so without the plugin
+the values stay as written. Plain props are never interpolated. `$` is parser metadata:
+`comarkAttributes()` never prints it.
+
+Security: the interpolated string goes through `validateProp` and the binding hard floor. In URL
+props, fixed text and data must not join into another host (`/{{ x }}`). With `security()`, the
+literal prefix before the first `{{` must fix the scheme and host and pass the allowlists
+(`validateUrlTemplate` in `src/internal/props-validation.ts`).
 
 ## Indentation Inside Components
 

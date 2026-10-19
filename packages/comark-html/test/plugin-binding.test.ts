@@ -98,6 +98,14 @@ describe('@comark/html plugins/binding — If handler', () => {
     expect(hidden).toBe('')
   })
 
+  it('interpolates `{{ }}` in If values to a truthy string even for false', async () => {
+    const data = { off: false }
+    const interpolated = await parseWithBinding('::if{:value="{{ data.off }}"}\nShown\n::')
+    expect(await renderHtmlFromDocument(interpolated, { components: { If }, data })).toBe('Shown')
+    const plain = await parseMarkdown('::if{:value="data.off"}\nShown\n::')
+    expect(await renderHtmlFromDocument(plain, { components: { If }, data })).toBe('')
+  })
+
   it('exposes normalized If props to bindings in its children', async () => {
     const doc = await parseWithBinding('::if{:value="true" :enabled="false"}\nEnabled {{ props.enabled }}\n::')
     const html = await renderHtmlFromDocument(doc, { components: { Binding, If } })

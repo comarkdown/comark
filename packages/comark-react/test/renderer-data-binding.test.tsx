@@ -3,6 +3,7 @@ import React from 'react'
 import { renderToString } from 'react-dom/server'
 import { parseMarkdown } from 'comark'
 import { MarkdownDocument } from '../src/components/MarkdownDocument'
+import binding from '../src/plugins/binding'
 
 interface BadgeProps {
   label?: string
@@ -37,8 +38,8 @@ function Card({ title = '', variant = '', children }: CardProps) {
   )
 }
 
-async function renderMarkdown(markdown: string, props: Record<string, any> = {}) {
-  const tree = await parseMarkdown(markdown)
+async function renderMarkdown(markdown: string, { plugins, ...props }: Record<string, any> = {}) {
+  const tree = await parseMarkdown(markdown, { plugins })
   return renderToString(
     <MarkdownDocument
       value={tree}
@@ -112,6 +113,28 @@ site:
     )
     expect(html).toContain('class="badge"')
     expect(html).not.toContain('frontmatter.missing')
+  })
+
+  it('interpolates placeholders into string props', async () => {
+    const html = await renderMarkdown(
+      `::badge{:label="Hi {{ data.name }}"}
+::
+
+:a[Docs]{:href="/d/{{ data.id }}"}`,
+      { components: { badge: Badge }, data: { name: 'Ada', id: 7 }, plugins: [binding()] }
+    )
+    expect(html).toContain('Hi Ada')
+    expect(html).toContain('href="/d/7"')
+  })
+
+  it('omits a rejected URL while keeping the link text', async () => {
+    const md = ':a[x]{:href="{{ data.url }}"}'
+    const bad = await renderMarkdown(md, { data: { url: 'javascript:alert(1)' }, plugins: [binding()] })
+    expect(bad).not.toContain('javascript:')
+    expect(bad).not.toContain('href')
+    expect(bad).toContain('<a>x</a>')
+    const ok = await renderMarkdown(md, { data: { url: '/ok' }, plugins: [binding()] })
+    expect(ok).toContain('href="/ok"')
   })
 
   it('leaves non-:prefix attributes untouched', async () => {

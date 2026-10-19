@@ -1,5 +1,6 @@
 import type { PluginWithOptions, MarkdownExit } from 'markdown-exit'
 import { defineComarkPlugin } from 'comark'
+import { hasTemplate } from '../internal/template.ts'
 import type { MarkdownItPlugin, NodeHandler, Node } from 'comark'
 
 export interface MdcInlineBindingOptions {
@@ -141,10 +142,35 @@ const markdownItInlineBinding: PluginWithOptions<MdcInlineBindingOptions> = (md,
   })
 }
 
+/**
+ * Mark elements whose `:` attributes hold a well-formed `{{ }}` template, so the
+ * renderers interpolate them. Without the plugin, those values stay as written.
+ * The walk uses its own stack, so deep trees are neither truncated nor overflow.
+ */
+function markTemplateAttributes(nodes: Node[]): void {
+  const stack: Node[] = [...nodes]
+  while (stack.length > 0) {
+    const node = stack.pop()!
+    if (!Array.isArray(node) || node[0] === null) continue
+    const attrs = node[1]
+    for (const key in attrs) {
+      const value = attrs[key]
+      if (key.charCodeAt(0) === 58 /* ':' */ && typeof value === 'string' && hasTemplate(value)) {
+        attrs.$ = { ...attrs.$, bind: 1 }
+        break
+      }
+    }
+    for (let i = node.length - 1; i >= 2; i--) stack.push(node[i] as Node)
+  }
+}
+
 export default defineComarkPlugin((opts: MdcInlineBindingOptions = {}) => {
   return {
     name: 'binding',
     markdownItPlugins: [((md: MarkdownExit) => markdownItInlineBinding(md, opts)) as unknown as MarkdownItPlugin],
+    post(state) {
+      markTemplateAttributes(state.tree.nodes)
+    },
   }
 })
 

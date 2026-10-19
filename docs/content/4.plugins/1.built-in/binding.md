@@ -282,6 +282,24 @@ A binding value (`{{ path }}`) is resolved as a dot-path against the same render
 
 See [Data Binding](/syntax/components#data-binding) for the full contract and additional examples.
 
+## Interpolation in props
+
+The plugin also enables `{{ path || default }}` inside `:` props, resolved against the same render context:
+
+```mdc
+:a[Docs]{:href="/docs/{{ data.slug }}"}
+
+::card
+---
+:title: Version {{ frontmatter.version || 1.0 }}
+---
+::
+
+<a :href="/docs/{{ data.slug }}">Docs</a>
+```
+
+The parser marks the elements whose `:` props hold a well-formed template, and the renderers interpolate them. Without the plugin, those values stay as written. Plain props without `:` are never interpolated. The interpolated value is always a string. See [String interpolation](/syntax/components#string-interpolation) for the full rules.
+
 ## Default values
 
 Use `|| default` to specify a fallback that's emitted when the dot-path does not resolve:

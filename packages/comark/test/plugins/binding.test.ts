@@ -182,3 +182,69 @@ Intro text.
     expect(html).not.toContain('<p title=')
   })
 })
+
+describe('binding plugin — `{{ }}` in `:` props', () => {
+  const bindOf = (node: unknown) => (node as [string, { $?: { bind?: 1 } }])[1].$?.bind
+
+  it('marks inline attributes, YAML props and raw HTML attributes', async () => {
+    const inline = await parseWithBinding('Go :a[x]{:href="/docs/{{ data.slug }}"}')
+    expect(bindOf((inline.nodes[0] as any[])[3])).toBe(1)
+    const yaml = await parseWithBinding('::card\n---\n:title: Version {{ data.v }}\n---\n::')
+    expect(bindOf(yaml.nodes[0])).toBe(1)
+    const html = await parseWithBinding('See <a :href="{{ data.url }}">x</a>')
+    expect((html.nodes[0] as any[])[3][1].$).toEqual({ html: 1, block: 0, bind: 1 })
+  })
+
+  it('does not mark plain props, malformed templates or unknown roots', async () => {
+    for (const md of [
+      'Go :a[x]{title="Hi {{ data.x }}"}',
+      'Go :a[x]{:title="Hi {{ data.x"}',
+      'Go :a[x]{:title="Hi {{ world }}"}',
+      'Go :a[x]{:title="data.x"}',
+    ]) {
+      const doc = await parseWithBinding(md)
+      const link = (doc.nodes[0] as any[])[3]
+      expect(link[0], md).toBe('a')
+      expect(bindOf(link), md).toBeUndefined()
+    }
+  })
+
+  it('does not mark anything without the plugin', async () => {
+    const doc = await parseMarkdown('Go :a[x]{:href="/docs/{{ data.slug }}"}')
+    expect((doc.nodes[0] as any[])[3][0]).toBe('a')
+    expect(bindOf((doc.nodes[0] as any[])[3])).toBeUndefined()
+  })
+
+  it('marks nested components', async () => {
+    const depth = 40
+    const md =
+      Array.from({ length: depth }, (_, i) => `${':'.repeat(depth + 2 - i)}box`).join('\n') +
+      '\n:a[deep]{:href="/{{ data.x }}/y"}\n' +
+      Array.from({ length: depth }, (_, i) => ':'.repeat(i + 3)).join('\n')
+    const doc = await parseWithBinding(md)
+    let node: any = doc.nodes[0]
+    let levels = 0
+    while (Array.isArray(node) && node[0] === 'box') {
+      levels++
+      node = node.slice(2).find((child: unknown) => Array.isArray(child))
+    }
+    expect(levels).toBe(depth)
+    const link = node[0] === 'a' ? node : node.slice(2).find((c: any) => Array.isArray(c) && c[0] === 'a')
+    expect(bindOf(link)).toBe(1)
+  })
+
+  it('renders the template only with the plugin', async () => {
+    const md = ':a[Read]{:href="/docs/{{ data.slug }}/overview"}'
+    const data = { slug: 'intro' }
+    expect(await renderHtmlForTest(await parseWithBinding(md), { data })).toContain('href="/docs/intro/overview"')
+    expect(await renderHtmlForTest(await parseMarkdown(md), { data })).not.toContain('/docs/intro/overview')
+  })
+
+  it('round-trips the template source through renderMarkdown, without the marker', async () => {
+    const md = '::card{:title="Version {{ data.v }}" :link="/docs/{{ data.slug }}"}\n::'
+    const doc = await parseWithBinding(md)
+    expect((await renderMarkdown(doc)).trim()).toBe(md)
+    const link = await parseWithBinding('[Read](/x){:title="Hi {{ data.name }}"}')
+    expect((await renderMarkdown(link)).trim()).toBe('[Read](/x){:title="Hi {{ data.name }}"}')
+  })
+})

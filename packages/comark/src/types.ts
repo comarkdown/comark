@@ -29,6 +29,8 @@ export type ElementNodeAttributes = {
     line?: number
     html?: 0 | 1
     block?: 0 | 1
+    /** `:` attributes on this node hold `{{ }}` templates to interpolate. Set by the `binding()` plugin. */
+    bind?: 1
   }
 }
 

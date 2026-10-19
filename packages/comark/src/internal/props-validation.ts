@@ -1,3 +1,5 @@
+import { parseTemplate } from './template.ts'
+
 /**
  * Sentinel returned by {@link validateProp} to signal "drop this attribute".
  * A dedicated symbol (rather than `false`) keeps rejection distinguishable
@@ -236,7 +238,7 @@ const URL_PROP_SUFFIX = /(?:href|src|url|uri|link)s?$/
  * `title="JavaScript: the good parts"` intact: it parses as a `javascript:`
  * URL, but is never navigated to.
  */
-function isUrlProp(name: string): boolean {
+export function isUrlProp(name: string): boolean {
   return URL_PROPS.has(name) || URL_PROP_SUFFIX.test(name)
 }
 
@@ -246,7 +248,7 @@ function isUrlProp(name: string): boolean {
  * prefixes (`.innerHTML`, `^onclick`), and `:` / `-` / `_` separators
  * (`xlink:href`, `label-html`). `@x` / `v-on:x` become `onx`.
  */
-function normalizePropName(attribute: string): string {
+export function normalizePropName(attribute: string): string {
   return attribute
     .toLowerCase()
     .replace(/^(?:v-bind:|[:.^])+/, '')
@@ -277,6 +279,11 @@ export function validateProp(attribute: string, value: unknown, options: PropsVa
       const result = validateValue(name, decoded, options)
       return result === REJECTED_PROP ? REJECTED_PROP : JSON.stringify(result)
     }
+    // A `{{ }}` template in a URL prop is only known at render time, so check what the literal text fixes now
+    if (decoded === value && isUrlProp(name)) {
+      const parts = parseTemplate(value)
+      if (parts) return validateUrlTemplate(name, parts[0] as string, options) === REJECTED_PROP ? REJECTED_PROP : value
+    }
     const result = validateValue(name, typeof decoded === 'string' ? decoded : value, options)
     // Keep the original value so bindings still resolve at render time. The
     // defaultOrigin rewrite only makes sense for literal URLs.
@@ -284,6 +291,49 @@ export function validateProp(attribute: string, value: unknown, options: PropsVa
   }
 
   return validateValue(name, value, options)
+}
+
+const URL_SCHEME = /^[a-z][a-z\d+.-]*:/i
+const DOUBLE_SLASH = /^[/\\]{2}/
+const PATH_START = /[/\\?#]/
+/** Schemes whose URLs always have a host. Browsers skip any run of `/` or `\` after them. */
+const SPECIAL_SCHEMES = new Set(['http:', 'https:', 'ws:', 'wss:', 'ftp:', 'file:'])
+// oxlint-disable-next-line no-control-regex
+const LEADING_SLASHES = /^[\u0000-\u0020]*[/\\]*/
+
+/**
+ * Whether the text after a scheme, or a scheme-relative `//`, already holds a
+ * complete host: the browser skips the leading slashes, then reads the host
+ * up to the next `/`, `\`, `?` or `#`. `//cdn.example.com/` does, while `/`,
+ * `///` and `//cdn.example.com` leave the host open to the data that follows.
+ */
+export function fixesHost(rest: string): boolean {
+  return rest.replace(LEADING_SLASHES, '').search(PATH_START) > 0
+}
+
+/**
+ * Validate a URL template by its literal prefix, the text before the first placeholder.
+ * Data can only fill what follows, so the prefix must fix the scheme and host on its own:
+ * `/docs/{{ x }}` and `https://myapp.com/{{ x }}` pass, while `java{{ x }}`, `/{{ x }}`,
+ * `https:/{{ x }}` and `https://myapp.com{{ x }}` are rejected. A template that starts
+ * with a placeholder is as trusted as a plain `:href="data.url"` binding.
+ */
+function validateUrlTemplate(name: string, prefix: string, options: PropsValidationOptions): unknown {
+  const literal = prefix.trimStart()
+  if (literal === '') return prefix
+
+  const scheme = URL_SCHEME.exec(literal)
+  const rest = scheme ? literal.slice(scheme[0].length) : literal
+  if ((scheme && SPECIAL_SCHEMES.has(scheme[0].toLowerCase())) || DOUBLE_SLASH.test(rest)) {
+    // `https:…` or `//…`: the host must be complete before the data
+    if (!fixesHost(rest)) return REJECTED_PROP
+  } else if (!scheme) {
+    // A relative prefix must already be a path, query or fragment, and `/` alone would let data add a host
+    if (!PATH_START.test(literal) || literal === '/' || literal === '\\') return REJECTED_PROP
+  }
+
+  // Allowlists apply to the prefix. A prefix that would need a `defaultOrigin` rewrite is not allowed.
+  return validateValue(name, literal, options) === literal ? prefix : REJECTED_PROP
 }
 
 function validateValue(name: string, value: unknown, options: PropsValidationOptions): unknown {

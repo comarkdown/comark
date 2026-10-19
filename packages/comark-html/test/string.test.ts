@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { parseMarkdown } from 'comark'
 import { renderHtmlFromDocument } from '../src/index'
+import binding from '../src/plugins/binding'
 
 describe('renderHtmlFromDocument', () => {
   it('renders without options (backward compatible)', async () => {
@@ -205,6 +206,37 @@ name: Ada
 `)
       const html = await renderHtmlFromDocument(doc)
       expect(html).toContain('title="frontmatter.name"')
+    })
+
+    it('interpolates `{{ path }}` placeholders inside :prefixed props', async () => {
+      const doc = await parseMarkdown('Go: :a[Read more]{:href="/docs/{{ data.slug }}/overview"}', {
+        plugins: [binding()],
+      })
+      const html = await renderHtmlFromDocument(doc, { data: { slug: 'getting-started' } })
+      expect(html).toContain('<a href="/docs/getting-started/overview">')
+    })
+
+    it('interpolates placeholders in block YAML props', async () => {
+      const doc = await parseMarkdown('::card\n---\n:title: Item {{ data.id }}\n---\nBody\n::', {
+        plugins: [binding()],
+      })
+      const html = await renderHtmlFromDocument(doc, { data: { id: 7 } })
+      expect(html).toContain('title="Item 7"')
+    })
+
+    it('renders a link without href when the interpolated URL is unsafe', async () => {
+      const doc = await parseMarkdown(':a[x]{:href="{{ data.url }}"}', { plugins: [binding()] })
+      const bad = await renderHtmlFromDocument(doc, { data: { url: 'javascript:alert(1)' } })
+      expect(bad).toBe('<a>x</a>')
+      const ok = await renderHtmlFromDocument(doc, { data: { url: '/ok' } })
+      expect(ok).toBe('<a href="/ok">x</a>')
+    })
+
+    it('escapes interpolated values', async () => {
+      const doc = await parseMarkdown(':card{:title="T {{ data.t }}"}', { plugins: [binding()] })
+      const html = await renderHtmlFromDocument(doc, { data: { t: 'a"b<c' } })
+      expect(html).toContain('title="T a&quot;b&lt;c"')
+      expect(html).not.toContain('a"b<c')
     })
   })
 })

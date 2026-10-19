@@ -3,6 +3,7 @@ import { createSSRApp, defineComponent, h } from 'vue'
 import { renderToString } from '@vue/server-renderer'
 import { parseMarkdown } from 'comark'
 import { MarkdownDocument } from '../src/components/MarkdownDocument'
+import binding from '../src/plugins/binding'
 
 const Badge = defineComponent({
   name: 'Badge',
@@ -32,8 +33,15 @@ const Card = defineComponent({
   },
 })
 
-async function renderMarkdown(markdown: string, props: Record<string, any> = {}) {
-  const tree = await parseMarkdown(markdown)
+const VariantCard = defineComponent({
+  props: { variant: { type: String, default: 'primary' } },
+  setup(props) {
+    return () => h('div', { class: `card ${props.variant}` })
+  },
+})
+
+async function renderMarkdown(markdown: string, { plugins, ...props }: Record<string, any> = {}) {
+  const tree = await parseMarkdown(markdown, { plugins })
   const app = createSSRApp({
     setup: () => () => h(MarkdownDocument, { value: tree, ...props }),
   })
@@ -110,6 +118,36 @@ site:
     // label default is '' — resolved undefined becomes the empty default.
     expect(html).toContain('class="badge"')
     expect(html).not.toContain('frontmatter.missing')
+  })
+
+  it('interpolates placeholders into string props', async () => {
+    const html = await renderMarkdown(
+      `::badge{:label="Hi {{ data.name }}"}
+::
+
+:a[Docs]{:href="/d/{{ data.id }}"}`,
+      { components: { badge: Badge }, data: { name: 'Ada', id: 7 }, plugins: [binding()] }
+    )
+    expect(html).toContain('Hi Ada')
+    expect(html).toContain('href="/d/7"')
+  })
+
+  it('omits a rejected URL while keeping the link text', async () => {
+    const md = ':a[x]{:href="{{ data.url }}"}'
+    const bad = await renderMarkdown(md, { data: { url: 'javascript:alert(1)' }, plugins: [binding()] })
+    expect(bad).not.toContain('javascript:')
+    expect(bad).not.toContain('href')
+    expect(bad).toContain('<a>x</a>')
+    const ok = await renderMarkdown(md, { data: { url: '/ok' }, plugins: [binding()] })
+    expect(ok).toContain('href="/ok"')
+  })
+
+  it('omits a prop whose sole placeholder is unresolved so the default applies', async () => {
+    const html = await renderMarkdown(`::card{:variant="{{ data.missing }}"}\n::`, {
+      components: { card: VariantCard },
+      plugins: [binding()],
+    })
+    expect(html).toContain('class="card primary"')
   })
 
   it('leaves non-:prefix attributes untouched', async () => {
