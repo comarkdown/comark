@@ -15,7 +15,7 @@ import minLight from 'shiki/dist/themes/min-light.mjs'
 import nord from 'shiki/dist/themes/nord.mjs'
 import rustLanguage from 'shiki/dist/langs/rust.mjs'
 import goLanguage from 'shiki/dist/langs/go.mjs'
-import type { ParserOptions } from '../src/types'
+import type { HeadingIdsOption, ParserOptions } from '../src/types'
 import type { ShikiTransformer } from 'shiki'
 import { renderHtmlForTest } from './utils/render-html'
 import { Binding as HTMLBiniding } from '../../comark-html/src/plugins/binding'
@@ -56,6 +56,7 @@ interface TestCase {
     autoUnwrap?: boolean
     maxInlineAttributes?: number
     blockAttributesStyle?: 'frontmatter' | 'codeblock'
+    headingIds?: HeadingIdsOption
   }
   skip?: boolean
 }
@@ -250,6 +251,10 @@ describe('Comark Tests', () => {
 
         const parseOptions: ParserOptions = {
           autoUnwrap: testCase.options?.autoUnwrap === false ? false : true,
+        }
+
+        if (testCase.options?.headingIds !== undefined) {
+          parseOptions.headingIds = testCase.options.headingIds
         }
 
         if (plugins.length > 0) {

@@ -31,7 +31,8 @@ The standard features:
 ###### Heading 6
 ```
 
-**Note:** All headings automatically get an `id` from their visible text (e.g., `# Hello World` becomes `<h1 id="hello-world">`). Unicode letters, marks, and numbers are kept (`## Café` → `café`); punctuation and symbols are stripped, and a heading that slugifies to nothing gets no id. A leading digit is prefixed with `_` (`## 1. Introduction` → `_1-introduction`), and a duplicate gets a numeric suffix (`options`, `options-1`). From `h3` down, the id is prefixed with the nearest `h2`+ ancestor, not the `h1`. Inline marks and link labels contribute their text; an inline component name is omitted (`:icon-star` does not appear in the slug). An explicit `{id="..."}` replaces the generated id. Set `headingIds: false` to disable generation; a user-supplied `id` is still kept.
+
+**Note:** All headings automatically get an `id` from their visible text (e.g., `# Hello World` becomes `<h1 id="hello-world">`). Unicode letters, marks, and numbers are kept (`## Café` → `café`); punctuation and symbols are stripped, and a heading that slugifies to nothing gets no id. A leading digit is prefixed with `_` (`## 1. Introduction` → `_1-introduction`), and a duplicate anywhere in the document gets a numeric suffix (`options`, `options-1`, `options-2`). Ids are flat by default (`## Setup` / `### Install` → `setup`, `install`); set `headingIds: 'nested'` in parse options to prefix each id from `h3` down with the nearest `h2`+ ancestor (`setup-install`). Inline marks and link labels contribute their text; an inline component name is omitted (`:icon-star` does not appear in the slug). An explicit `{id="..."}` replaces the generated id. Set `headingIds: false` to disable generation; a user-supplied `id` is still kept.
 
 ### Text Formatting
 

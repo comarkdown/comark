@@ -1,5 +1,6 @@
 {
-  "name": "comark",
+  "name": "comark-docs-site",
+  "private": true,
   "description": "Comark is an open-source Markdown parser and renderer with components, attributes and plugins. It streams AI output to React, Vue, Svelte, Angular, HTML and the terminal.",
   "type": "module",
   "scripts": {

@@ -1,3 +1,8 @@
+---
+options:
+  headingIds: nested
+---
+
 ## Input
 
 ```md

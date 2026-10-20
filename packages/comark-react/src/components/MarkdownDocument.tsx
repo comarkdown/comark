@@ -176,8 +176,15 @@ function renderNode(
 
     // Only shadow the parent's `props` scope when the current element has its
     // own attributes. Bare wrappers (`<p>`, `<ul>`, `<li>`, …) must keep the
-    // parent's scope so bindings like `{{ props.x }}` reach across them.
-    const hasOwnAttrs = Object.keys(resolved).length > 0
+    // parent's scope so bindings like `{{ props.x }}` reach across them. The
+    // check uses the raw attributes: resolving can omit all of them.
+    let hasOwnAttrs = false
+    for (const key in nodeProps) {
+      if (key !== '$') {
+        hasOwnAttrs = true
+        break
+      }
+    }
     const childrenRenderData: NodeRenderData = hasOwnAttrs ? { ...renderData, props: scopeProps } : renderData
     // Separate template elements (slots) from regular children
     const slots: Record<string, React.ReactNode[]> = {}
@@ -268,7 +275,11 @@ function renderNode(
   return null
 }
 
-export interface MarkdownDocumentProps {
+/**
+ * Every other HTML attribute (`id`, `style`, `role`, `data-*`, `aria-*`, ...) is
+ * set on the wrapper div.
+ */
+export interface MarkdownDocumentProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'children'> {
   /**
    * The parsed Comark document to render — either a full `MarkdownDocument` or a bare
    * `Node[]`.  When a node array is passed, frontmatter and meta
@@ -341,6 +352,7 @@ export const MarkdownDocument: React.FC<MarkdownDocumentProps> = ({
   caret: caretProp = false,
   data,
   className,
+  ...rest
 }) => {
   const document = value ?? { nodes: [] }
 
@@ -373,5 +385,12 @@ export const MarkdownDocument: React.FC<MarkdownDocumentProps> = ({
   }, [document, customComponents, componentsManifest, streaming, caret, data])
 
   // Wrap in a fragment
-  return <div className={`comark-content ${className || ''}`}>{renderedNodes}</div>
+  return (
+    <div
+      {...rest}
+      className={`comark-content ${className || ''}`}
+    >
+      {renderedNodes}
+    </div>
+  )
 }

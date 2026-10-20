@@ -188,40 +188,6 @@ export function extractAttributes(
 }
 
 /**
- * Convert text to a slug for heading IDs.
- * Example: "Hello World" -> "hello-world"
- * Example: "1. Introduction" -> "_1-introduction"
- * Example: "Café" -> "café"
- *
- * Keeps Unicode letters, marks, decimal digits, and letter numbers. A combining mark is
- * dropped wherever it would lead, so the result is a valid HTML5 id (NameStartChar is a
- * letter or `_`, never a mark).
- */
-export function slugify(text: string): string {
-  let slug = text
-    .normalize('NFC')
-    .toLowerCase()
-    .trim()
-    .replace(/\s+/g, '-') // Replace spaces with hyphens
-    // Keep Unicode letters, marks, decimal digits and letter numbers; drop the rest.
-    // Other numbers (No: ①, ½, ²) are not valid HTML5 id or CSS ident characters.
-    .replace(/[^\p{L}\p{M}\p{Nd}\p{Nl}_-]+/gu, '')
-    .replace(/-{2,}/g, '-') // Replace multiple hyphens with single hyphen
-    // Drop a leading run of marks and hyphens, plus trailing hyphens. Marks and
-    // hyphens only ever expose each other (`\u0301-1` would otherwise survive as
-    // "-1", which the dedup guard discards), so one alternation covers the run.
-    .replace(/^(?:\p{M}+|-+)+|-+$/gu, '')
-
-  // Prefix an ASCII leading digit. `#123` is not a valid CSS ident; a non-ASCII
-  // digit (U+0660 ARABIC-INDIC DIGIT ZERO and friends) is, so it is left as-is.
-  if (slug.charCodeAt(0) >= 48 && slug.charCodeAt(0) <= 57) {
-    slug = '_' + slug
-  }
-
-  return slug
-}
-
-/**
  * Merge adjacent string nodes in an array of nodes
  */
 export function mergeAdjacentTextNodes(nodes: Node[]): Node[] {

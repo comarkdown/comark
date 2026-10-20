@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { parseMarkdown } from '../src/parse'
+import { renderMarkdown } from '../src/render'
 
 describe('headingIds option', () => {
   it('generates id attributes by default', async () => {
@@ -20,20 +21,76 @@ describe('headingIds option', () => {
     expect(tree.nodes).toEqual([['h1', { id: 'custom' }, 'Hello']])
   })
 
-  it('still generates hierarchical ids when headingIds is true', async () => {
-    const tree = await parseMarkdown('# Title\n\n## Section')
-
-    expect(tree.nodes).toEqual([
-      ['h1', { id: 'title' }, 'Title'],
-      ['h2', { id: 'section' }, 'Section'],
-    ])
-  })
-
-  it('deduplicates hierarchical ids with a numeric suffix', async () => {
-    const tree = await parseMarkdown('## Options\n\n## Options')
+  it('uses flat ids by default', async () => {
+    const tree = await parseMarkdown('## Setup\n\n### Install')
 
     const ids = tree.nodes.map((n: any) => n[1].id)
-    expect(ids).toEqual(['options', 'options-1'])
+    expect(ids).toEqual(['setup', 'install'])
+  })
+
+  it('treats headingIds: true the same as flat', async () => {
+    const tree = await parseMarkdown('## Setup\n\n### Install', { headingIds: true })
+
+    const ids = tree.nodes.map((n: any) => n[1].id)
+    expect(ids).toEqual(['setup', 'install'])
+  })
+
+  it('prefixes parent ids in nested mode', async () => {
+    const tree = await parseMarkdown('# Title\n\n## Setup\n\n### Install', { headingIds: 'nested' })
+
+    const ids = tree.nodes.map((n: any) => n[1].id)
+    expect(ids).toEqual(['title', 'setup', 'setup-install'])
+  })
+
+  it('deduplicates flat ids with a numeric suffix', async () => {
+    const tree = await parseMarkdown('## Options\n\n## Options\n\n## Options')
+
+    const ids = tree.nodes.map((n: any) => n[1].id)
+    expect(ids).toEqual(['options', 'options-1', 'options-2'])
+  })
+
+  it('deduplicates flat ids across different heading levels and sections', async () => {
+    const tree = await parseMarkdown('# Install\n\n## Npm\n\n### Install\n\n## Yarn\n\n### Install\n\n#### Npm')
+
+    const ids = tree.nodes.map((n: any) => n[1].id)
+    expect(ids).toEqual(['install', 'npm', 'install-1', 'yarn', 'install-2', 'npm-1'])
+  })
+
+  it('deduplicates ids from different heading text that slugify the same', async () => {
+    const tree = await parseMarkdown('## Hello World\n\n## hello-world\n\n## Hello, World!')
+
+    const ids = tree.nodes.map((n: any) => n[1].id)
+    expect(ids).toEqual(['hello-world', 'hello-world-1', 'hello-world-2'])
+  })
+
+  it('deduplicates hierarchical ids with a numeric suffix in nested mode', async () => {
+    const tree = await parseMarkdown('## Setup\n\n### Install\n\n## Setup\n\n### Install', { headingIds: 'nested' })
+
+    const ids = tree.nodes.map((n: any) => n[1].id)
+    expect(ids).toEqual(['setup', 'setup-install', 'setup-1', 'setup-install-1'])
+  })
+
+  it('never reuses an id when a suffixed duplicate collides with a literal slug', async () => {
+    const flat = await parseMarkdown('## Foo\n\n### Foo\n\n### Foo-1')
+    expect(flat.nodes.map((n: any) => n[1].id)).toEqual(['foo', 'foo-1', 'foo-1-1'])
+
+    const nested = await parseMarkdown('# Bar\n\n# Bar\n\n# Bar-1', { headingIds: 'nested' })
+    expect(nested.nodes.map((n: any) => n[1].id)).toEqual(['bar', 'bar-1', 'bar-1-1'])
+
+    const reversed = await parseMarkdown('# Foo-1\n\n# Foo\n\n# Foo')
+    expect(reversed.nodes.map((n: any) => n[1].id)).toEqual(['foo-1', 'foo', 'foo-2'])
+  })
+
+  it('does not reuse an explicit id for a later generated one', async () => {
+    const source = '# Foo {#foo-1}\n\n# Foo\n\n# Bar\n\n# Baz {#bar-1}\n\n# Bar'
+    const tree = await parseMarkdown(source)
+    expect(tree.nodes.map((n: any) => n[1].id)).toEqual(['foo-1', 'foo-2', 'bar', 'bar-1', 'bar-2'])
+
+    // The stringifier replays the same reservation, so the roundtrip is stable.
+    const markdown = await renderMarkdown(tree)
+    expect(markdown.trim()).toBe(source)
+    const reparsed = await parseMarkdown(markdown)
+    expect(reparsed.nodes).toEqual(tree.nodes)
   })
 
   describe('slug text extraction', () => {
@@ -102,28 +159,28 @@ describe('headingIds option', () => {
     })
 
     it('keeps the parent prefix for a non-ASCII child heading', async () => {
-      const tree = await parseMarkdown('## Setup\n\n### Café')
+      const tree = await parseMarkdown('## Setup\n\n### Café', { headingIds: 'nested' })
 
       const ids = tree.nodes.map((n: any) => n[1].id)
       expect(ids).toEqual(['setup', 'setup-café'])
     })
 
     it('does not prefix a child with an empty parent id', async () => {
-      const tree = await parseMarkdown('## 🚀\n\n### Café')
+      const tree = await parseMarkdown('## 🚀\n\n### Café', { headingIds: 'nested' })
 
       const ids = tree.nodes.map((n: any) => n[1].id)
       expect(ids).toEqual([undefined, 'café'])
     })
 
     it('omits the id for a symbol-only child of a prefixed parent', async () => {
-      const tree = await parseMarkdown('## Setup\n\n### 🚀')
+      const tree = await parseMarkdown('## Setup\n\n### 🚀', { headingIds: 'nested' })
 
       const ids = tree.nodes.map((n: any) => n[1].id)
       expect(ids).toEqual(['setup', undefined])
     })
 
     it('omits the id for nested symbol-only headings', async () => {
-      const tree = await parseMarkdown('## 🚀\n\n### 🚀')
+      const tree = await parseMarkdown('## 🚀\n\n### 🚀', { headingIds: 'nested' })
 
       const ids = tree.nodes.map((n: any) => n[1].id)
       expect(ids).toEqual([undefined, undefined])

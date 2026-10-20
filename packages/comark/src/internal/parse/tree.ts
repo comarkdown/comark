@@ -1,12 +1,7 @@
 import { Token } from 'markdown-exit'
-import type { CommentNode, ElementNode, ElementNodeAttributes, Node } from 'comark'
-import {
-  extractAttributes,
-  mergeAdjacentTextNodes,
-  parseCodeblockInfo,
-  processAttributes,
-  slugify,
-} from './tree-utils.ts'
+import type { CommentNode, ElementNode, ElementNodeAttributes, HeadingIdsOption, Node } from 'comark'
+import { extractAttributes, mergeAdjacentTextNodes, parseCodeblockInfo, processAttributes } from './tree-utils.ts'
+import { createHeadingIdTracker, nextHeadingId, reserveHeadingId, type HeadingIdTracker } from '../heading-id.ts'
 import { parseHtmlInline } from './utils.ts'
 import { textContent } from 'comark/utils'
 
@@ -28,7 +23,7 @@ type ProcessorResult = {
 
 export interface ProcessorOptions {
   preservePositions?: boolean
-  headingIds?: boolean
+  headingIds?: HeadingIdsOption
   startLine?: number
 }
 
@@ -46,11 +41,10 @@ type HtmlOpenFrame = {
 /** Shared mutable context for a whole document walk. */
 interface ProcessState {
   preservePositions: boolean
-  headingIds: boolean
+  /** `undefined` when auto-generated heading ids are disabled */
+  headingIds?: HeadingIdTracker
   startLine: number
-  headingSlugCounts: Map<string, number>
-  headingStack: Array<{ level: number; id: string }>
-  /** Unclosed HTML open tags, outer → inner. Lives across blocks like headingStack. */
+  /** Unclosed HTML open tags, outer → inner. Lives across blocks like the heading id stack. */
   htmlStack: HtmlOpenFrame[]
   /**
    * > 0 while building a nested markdown container (list, blockquote, table…).
@@ -372,27 +366,6 @@ function codeBlockProcessor(tokens: Token[], start: number, _state: ProcessState
   }
 }
 
-function uniqueSlug(slug: string, level: number, state: ProcessState): string {
-  while (state.headingStack.length > 0 && state.headingStack[state.headingStack.length - 1].level >= level) {
-    state.headingStack.pop()
-  }
-  // Use parent's full ID as prefix (h1 doesn't prefix children). Skip the
-  // composition when either side is empty, so a symbol-only parent or child
-  // never yields a degenerate id like "-café" or "setup-".
-  if (state.headingStack.length > 0) {
-    const parent = state.headingStack[state.headingStack.length - 1]
-    if (parent.level >= 2 && parent.id && slug) {
-      slug = parent.id + '-' + slug
-    }
-  }
-
-  state.headingStack.push({ level, id: slug })
-
-  const count = state.headingSlugCounts.get(slug) ?? 0
-  state.headingSlugCounts.set(slug, count + 1)
-  return count === 0 ? slug : `${slug}-${count}`
-}
-
 function singleToken(fn: (token: Token) => Node) {
   return (tokens: Token[], start: number): ProcessorResult =>
     processPossibleAttributesSyntax(tokens, { nextIndex: start + 1, node: fn(tokens[start]) })
@@ -488,11 +461,10 @@ const processors: Record<string, Processor> = {
 
     if (state.headingIds) {
       const level = Number.parseInt((tokens[start].tag || 'h1').replace('h', ''), 10) || 1
-      const _textContent = textContent(node)
-      const headingId = uniqueSlug(slugify(_textContent), level, state)
-      // An empty slug is recorded but never a usable anchor, and each further duplicate
-      // of it comes back as "-1", "-2", … — none of which is either.
-      if (headingId && !/^-\d+$/.test(headingId)) {
+      const headingId = nextHeadingId(textContent(node), level, state.headingIds)
+      // User-supplied `id` wins over the auto-generated one.
+      reserveHeadingId(state.headingIds, (node[1] as Record<string, unknown>).id)
+      if (headingId) {
         ;(node as ElementNode)[1] = { id: headingId, ...(node[1] as Record<string, unknown>) }
       }
     }
@@ -663,10 +635,8 @@ const processors: Record<string, Processor> = {
 export function tokenListToTree(tokens: Token[], options: ProcessorOptions = {}): Node[] {
   const state: ProcessState = {
     preservePositions: options.preservePositions ?? false,
-    headingIds: options.headingIds ?? true,
+    headingIds: createHeadingIdTracker(options.headingIds ?? true),
     startLine: options.startLine ?? 0,
-    headingSlugCounts: new Map(),
-    headingStack: [],
     htmlStack: [],
     insideMarkdownContainer: 0,
   }

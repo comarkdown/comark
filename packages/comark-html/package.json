@@ -53,7 +53,7 @@
   },
   "devDependencies": {
     "beautiful-mermaid": "catalog:",
-    "katex": "^0.18.7",
+    "katex": "^0.19.0",
     "vitest": "catalog:"
   },
   "peerDependencies": {
