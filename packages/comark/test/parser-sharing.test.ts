@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { beforeAll, describe, expect, it } from 'vitest'
 import { createMarkdownParser, defineComarkPlugin } from 'comark'
 import type { MarkdownItPlugin } from 'comark'
 import binding from '../src/plugins/binding'
@@ -27,6 +27,12 @@ const closurePlugin = defineComarkPlugin(() => ({
 }))
 
 describe('parser sharing', () => {
+  // The default plugins are imported once per module; after that, parsers set
+  // up synchronously, which is what the instance counts below rely on.
+  beforeAll(async () => {
+    await createMarkdownParser()('')
+  })
+
   it('builds one instance for parsers with the same plugin functions', () => {
     const plugin = stablePlugin()
     const before = stableUses
