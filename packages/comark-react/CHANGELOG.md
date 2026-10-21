@@ -1,5 +1,7 @@
 # Changelog
 
+## [0.8.1](https://github.com/comarkdown/comark/compare/%40comark%2Freact%400.8.0...%40comark%2Freact%400.8.1) (2026-10-21)
+
 ## [0.8.0](https://github.com/comarkdown/comark/compare/%40comark%2Freact%400.7.0...%40comark%2Freact%400.8.0) (2026-10-21)
 
 ### Features
