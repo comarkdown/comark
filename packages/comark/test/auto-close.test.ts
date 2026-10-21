@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { autoCloseMarkdown } from '../src/internal/parse/auto-close'
+import { parseMarkdown } from '../src/parse'
 
 const inlines = `
 _test → _test_
@@ -760,6 +761,20 @@ describe('nested emphasis', () => {
 
   it('should close nested italic + bold', () => {
     expect(autoCloseMarkdown('*a **b')).toBe('*a **b***')
+  })
+})
+
+describe('word-internal emphasis ending in punctuation', () => {
+  it('does not close CJK bold that ends in punctuation', () => {
+    const input = '这是**中文。**后续文字'
+    expect(autoCloseMarkdown(input, { syntax: false })).toBe(input)
+    expect(autoCloseMarkdown(input)).toBe(input)
+  })
+
+  it('leaves the healed text parsing the same as the input', async () => {
+    const input = '这是**中文。**后续文字'
+    const healed = autoCloseMarkdown(input)
+    expect((await parseMarkdown(healed)).nodes).toEqual((await parseMarkdown(input)).nodes)
   })
 })
 

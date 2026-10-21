@@ -463,6 +463,12 @@ function healRegion(text: string, o: Opts): string {
   let htmlLt = -1
   let starInWord = false
   let starDisabled = false
+  // The last word-internal `*` run left literal, as its length and the frame
+  // depth it was seen at. Until the next whitespace or the next `*` frame
+  // opened or closed, a same-length run that would open pairs with it
+  // instead, so `这是**中文。**后续` gets no closer.
+  let starSkippedLen = 0
+  let starSkippedDepth = -1
 
   for (let i = 0; i < len; i++) {
     const c = text.charCodeAt(i)
@@ -471,6 +477,7 @@ function healRegion(text: string, o: Opts): string {
     if (c === 10 /* \n */) {
       lineStart = i + 1
       starInWord = false
+      starSkippedLen = 0
       htmlLt = -1
       continue
     }
@@ -489,6 +496,7 @@ function healRegion(text: string, o: Opts): string {
 
     if (c === 32 || c === 9 || c === 13) {
       starInWord = false
+      starSkippedLen = 0
       continue
     }
     if (c === 92 /* \ */) {
@@ -555,15 +563,38 @@ function healRegion(text: string, o: Opts): string {
         // Word-internal `*` only counts once the word already holds a delimiter
         // (`*foo*bar*baz` pairs up, `abc*123` stays literal).
         const inWord = attachedLeft && isAlnum(prev) && isAlnum(next)
-        if (!inWord || starInWord) {
+        if (inWord && !starInWord) {
+          starSkippedLen = n
+          starSkippedDepth = frames.length
+        } else {
           if (attachedLeft && top !== null && top.k === F_STAR && (!inWord || top.len === n)) {
             closeRun(frames, F_STAR, n)
+            starSkippedLen = 0
             starInWord = true
+            i += n - 1
+            continue
+          }
+          // An attached run after punctuation (`中文。**后续`) that would open
+          // instead pairs with a word-internal run left literal earlier in the
+          // same whitespace-free stretch, with no frame opened or closed in
+          // between. CommonMark cannot pair the two, and the second run is a
+          // would-be closer far more often than an opener (CJK bold that ends
+          // in punctuation), so it is left literal instead of being closed.
+          // After opening punctuation (`bar(**baz`) it is an opener, as usual.
+          if (
+            attachedLeft &&
+            !inWord &&
+            starSkippedLen === n &&
+            starSkippedDepth === frames.length &&
+            !isOpeningPunct(prev)
+          ) {
+            starSkippedLen = 0
             i += n - 1
             continue
           }
           if (openRight && enabled) {
             frames.push({ k: F_STAR, len: n, pos: i })
+            starSkippedLen = 0
             starInWord = true
             i += n - 1
             continue
@@ -1020,6 +1051,16 @@ function isAlnum(cp: string): boolean {
   // ASCII fast path covers nearly all markdown without a Unicode test.
   if (c <= 127) return (c >= 48 && c <= 57) || (c >= 65 && c <= 90) || (c >= 97 && c <= 122)
   return ALNUM_CP_RE.test(cp)
+}
+
+const OPENING_PUNCT_RE = /\p{Ps}|\p{Pi}/u
+
+/** Opening bracket or initial quote: `(`, `[`, `{`, `「`, `“`, ... */
+function isOpeningPunct(cp: string): boolean {
+  if (cp === '') return false
+  const c = cp.charCodeAt(0)
+  if (c <= 127) return c === 40 || c === 91 || c === 123
+  return OPENING_PUNCT_RE.test(cp)
 }
 
 function isAsciiAlpha(c: number): boolean {
