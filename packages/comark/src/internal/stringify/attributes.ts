@@ -1,6 +1,6 @@
 import { stringifyYaml } from '../yaml.ts'
 import { escapeHtml, get } from '../../utils/index.ts'
-import { isUnsafeUrlValue } from '../props-validation.ts'
+import { isUnsafeUrlValue, isUrlPropKey } from '../sanitize.ts'
 import { pickFence } from './fence.ts'
 import type { NodeRenderData } from '../../types.ts'
 
@@ -87,16 +87,12 @@ export function resolveAttributes(
       outValue = value
     }
 
-    // Hard floor: a binding must never resolve href/src to an unsafe scheme
+    // Hard floor: a binding must never resolve a URL prop to an unsafe scheme
     // (javascript:, data:text/html, …). Parse-time validation only sees the
     // literal path, so the resolved value is checked here — even when the
     // security plugin is not enabled.
-    if (
-      isBinding &&
-      (lowerOutKey === 'href' || lowerOutKey === 'src' || lowerOutKey === 'xlink:href' || lowerOutKey === 'to') &&
-      typeof outValue === 'string' &&
-      isUnsafeUrlValue(outValue)
-    ) {
+    // The URL props are the ones `validateProp()` checks: `:link="frontmatter.x"` counts too.
+    if (isBinding && isUrlPropKey(outKey) && typeof outValue === 'string' && isUnsafeUrlValue(outValue)) {
       continue
     }
 

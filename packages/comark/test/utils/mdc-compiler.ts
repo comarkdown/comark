@@ -4,7 +4,7 @@
 import type { Root, RootContent, MDCNode, MDCRoot, NodePosition } from '@nuxtjs/mdc'
 import Slugger from 'github-slugger'
 import { toString } from 'hast-util-to-string'
-import { validateProps } from '../../src/internal/props-validation'
+import { validateProps } from '../../src/internal/sanitize'
 
 export interface CompilerOptions {
   keepPosition?: boolean
