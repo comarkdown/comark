@@ -2,6 +2,32 @@ import { describe, expect, it } from 'vitest'
 import { createMarkdownSourceParser } from '../src/source.ts'
 
 describe('source ranges', () => {
+  it.each([':Badge{href="/old}', '::Card{href="/old}\nx\n::', ':Badge{href=[unclosed}'])(
+    'omits incomplete value ranges: %s',
+    async (source) => {
+      const elements = await createMarkdownSourceParser()(source)
+      expect(
+        elements.flatMap((element) => element.attributes).every((attribute) => attribute.range === undefined)
+      ).toBe(true)
+    }
+  )
+
+  it('retains exact block attribute ranges after tab-separated fences', async () => {
+    const source = '::\tCard{href="/old"}\nx\n::'
+    const elements = await createMarkdownSourceParser()(source)
+    const range = elements[0].attributes[0].range!
+    expect(source.slice(range.start, range.end)).toBe('/old')
+  })
+
+  it('omits transformed table rows without locating links inside code samples', async () => {
+    const source = '| `\\| [A](/old)` | [A](/old) |\n| --- | --- |\n| [B](/real) | [C](/other) |'
+    const elements = await createMarkdownSourceParser()(source)
+    const destinations = elements.flatMap((element) =>
+      element.attributes.flatMap(({ range }) => (range ? [source.slice(range.start, range.end)] : []))
+    )
+    expect(destinations).toEqual(['/real', '/other'])
+  })
+
   it('retains valueless bindings so editors can respect their precedence', async () => {
     const elements = await createMarkdownSourceParser()(':Badge{href="/old" :href}')
     expect(elements[0].attributes.map((attribute) => attribute.name)).toEqual(['href', ':href'])

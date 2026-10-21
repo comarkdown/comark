@@ -37,7 +37,7 @@ const markdownItInlineProps: PluginSimple = (md) => {
     const token = state.push('mdc_inline_props', 'span', 0)
     token.attrs = props
     token.hidden = true
-    state.env.comarkSourceAttributes?.(state, token, search.ranges)
+    state.env.comarkSourceAttributes?.(state, search.ranges)
 
     return true
   })

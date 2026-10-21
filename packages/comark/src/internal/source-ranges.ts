@@ -41,10 +41,17 @@ function inlineRange(context: SourceContext, start: number, end: number): Source
   return { start: positions[start], end: positions[end - 1] + 1 }
 }
 
-function inlinePositions(context: SourceContext, content: string, lines: [number, number]): number[] | undefined {
+function inlinePositions(
+  context: SourceContext,
+  content: string,
+  lines: [number, number],
+  table: boolean
+): number[] | undefined {
   const positions: number[] = []
   const limit = context.lines[lines[1]] ?? context.source.length
   let cursor = Math.max(context.lines[lines[0]], context.cursor)
+  context.cursor = limit
+  if (table && context.source.slice(context.lines[lines[0]], limit).includes('\\|')) return
   const parts = content.split('\n')
   for (let i = 0; i < parts.length; i++) {
     const index = context.source.slice(cursor, limit).indexOf(parts[i])
@@ -62,15 +69,16 @@ function inlinePositions(context: SourceContext, content: string, lines: [number
   return positions
 }
 
-function precedingElement(tokens: Token[], props: Token): Token | undefined {
-  let index = tokens.indexOf(props) - 1
+function precedingElement(tokens: Token[]): Token | undefined {
+  let index = tokens.length - 2
   while (index >= 0 && tokens[index].type === 'text' && !tokens[index].content.trim()) index--
   const previous = tokens[index]
   if (!previous || previous.type === 'text') return
   if (previous.nesting !== -1) return previous
-  return tokens
-    .slice(0, index)
-    .findLast((token) => token.nesting === 1 && token.tag === previous.tag && token.level === previous.level)
+  for (let i = index - 1; i >= 0; i--) {
+    const token = tokens[i]
+    if (token.nesting === 1 && token.tag === previous.tag && token.level === previous.level) return token
+  }
 }
 
 function linkRange(state: StateInline, context: SourceContext): SourceRange | undefined {
@@ -94,8 +102,8 @@ export function sourceRangesPlugin(): ComarkPlugin<SourceMetadata> {
       const context: SourceContext = { source: state.src, lines, elements: new Map(), inline: undefined, cursor: 0 }
       environments.set(state.env, context)
       documents.set(state.tokens, context)
-      state.env.comarkSourceAttributes = (inline: StateInline, props: Token, ranges: AttributeRange[]) => {
-        const owner = precedingElement(inline.tokens, props)
+      state.env.comarkSourceAttributes = (inline: StateInline, ranges: AttributeRange[]) => {
+        const owner = precedingElement(inline.tokens)
         if (!owner) return
         for (const attribute of ranges) {
           const range =
@@ -114,7 +122,7 @@ export function sourceRangesPlugin(): ComarkPlugin<SourceMetadata> {
         if (marker < 0) continue
         let nameStart = marker
         while (line[nameStart] === ':') nameStart++
-        while (line[nameStart] === ' ') nameStart++
+        while (line[nameStart] === ' ' || line[nameStart] === '\t') nameStart++
         const params = parseBlockParams(line.slice(nameStart), true)
         const attributes: SourceAttribute[] = (params.sourceRanges ?? []).map((range) => ({
           name: range.name,
@@ -130,10 +138,12 @@ export function sourceRangesPlugin(): ComarkPlugin<SourceMetadata> {
     md.core.ruler.at('inline', (state) => {
       const context = environments.get(state.env)!
       let lines: [number, number] = [0, context.lines.length]
+      let tableDepth = 0
       for (const token of state.tokens) {
+        if (token.tag === 'table') tableDepth += token.nesting
         if (token.map && token.nesting !== -1) lines = token.map
         if (token.type !== 'inline') continue
-        context.inline = inlinePositions(context, token.content, lines)
+        context.inline = inlinePositions(context, token.content, lines, tableDepth > 0)
         md.inline.parse(token.content, md, state.env, token.children!)
       }
     })

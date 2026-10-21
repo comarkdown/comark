@@ -24,6 +24,7 @@ export function searchProps(content: string, index = 0, captureRanges = false) {
 
   const props: [string, string][] = []
   const ranges: { name: string; start?: number; end?: number }[] | undefined = captureRanges ? [] : undefined
+  let valueComplete = true
 
   // Skip Vue mustache `{{ }}` syntax
   if (content[index + 1] === '{') return undefined
@@ -59,6 +60,7 @@ export function searchProps(content: string, index = 0, captureRanges = false) {
         if (char === '=') {
           index += 1
           valueStart = index
+          valueComplete = true
           value = searchValue()
           valueEnd = index
         } else {
@@ -70,7 +72,7 @@ export function searchProps(content: string, index = 0, captureRanges = false) {
           if (ranges) {
             const quoted = value.length >= 2 && value[0] in quotePairs && value[value.length - 1] === value[0]
             ranges.push(
-              valueStart === undefined || valueEnd === undefined
+              valueStart === undefined || valueEnd === undefined || !valueComplete || valueEnd > content.length
                 ? { name: key }
                 : { name: key, start: valueStart + (quoted ? 1 : 0), end: valueEnd - (quoted ? 1 : 0) }
             )
@@ -101,11 +103,13 @@ export function searchProps(content: string, index = 0, captureRanges = false) {
   function searchValue() {
     const start = index
     if (content[index] in bracketPairs) {
-      searchBracket(bracketPairs[content[index] as keyof typeof bracketPairs])
+      if (!searchBracket(bracketPairs[content[index] as keyof typeof bracketPairs])) valueComplete = false
       index += 1
       return content.slice(start, index)
     } else if (content[index] in quotePairs) {
-      searchString(quotePairs[content[index] as keyof typeof quotePairs])
+      const quote = quotePairs[content[index] as keyof typeof quotePairs]
+      searchString(quote)
+      if (content[index] !== quote) valueComplete = false
       index += 1
       return content.slice(start, index)
     } else {

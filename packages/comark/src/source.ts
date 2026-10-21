@@ -22,6 +22,7 @@ export interface SourceElement {
 /**
  * Locate inline Markdown destinations and component attributes with the default CoMark grammar.
  * Reference definitions, YAML props, raw HTML attributes, and transformed source are omitted.
+ * Table rows containing escaped pipes are transformed by the block parser and have no ranges.
  * Streaming repair is disabled. The returned ranges are separate from the renderable tree.
  */
 export function createMarkdownSourceParser(): (source: string) => Promise<SourceElement[]> {
@@ -43,10 +44,15 @@ export function createMarkdownSourceParser(): (source: string) => Promise<Source
     }
     return document.meta.sourceElements.map((element) => ({
       ...element,
-      attributes: element.attributes.map((attribute) => ({
-        ...attribute,
-        range: attribute.range && { start: positions[attribute.range.start], end: positions[attribute.range.end] },
-      })),
+      attributes: element.attributes.map((attribute) => {
+        const range = attribute.range
+        const start = range && positions[range.start]
+        const end = range && positions[range.end]
+        return {
+          ...attribute,
+          range: start !== undefined && end !== undefined && start <= end ? { start, end } : undefined,
+        }
+      }),
     }))
   }
 }
