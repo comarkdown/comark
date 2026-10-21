@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.8.0](https://github.com/comarkdown/comark/compare/%40comark%2Fhtml%400.7.0...%40comark%2Fhtml%400.8.0) (2026-10-21)
+
+### Features
+
+* **binding:** add conditional `If` component with `#else` slot ([#411](https://github.com/comarkdown/comark/issues/411)) ([6377fac](https://github.com/comarkdown/comark/commit/6377fac9e51dd53fd93abdfb9bce021f0cbce09d))
+
+### Bug Fixes
+
+* don't leak ancestor props into elements whose bindings are all omitted ([#499](https://github.com/comarkdown/comark/issues/499)) ([0c69c5e](https://github.com/comarkdown/comark/commit/0c69c5ee48ac900ff759e1d76cd8c4a96abf8c21))
+
 ## [0.7.0](https://github.com/comarkdown/comark/compare/@comark/html@0.6.2...@comark/html@0.7.0) (2026-09-10)
 
 ### Bug Fixes
