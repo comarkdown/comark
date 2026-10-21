@@ -207,8 +207,8 @@ catalogs:
       specifier: ^6.0.0
       version: 6.0.1
     '@comark/vue':
-      specifier: ^0.7.0
-      version: 0.7.0
+      specifier: ^0.8.0
+      version: 0.8.0
     '@json-render/core':
       specifier: ^0.21.0
       version: 0.21.0
@@ -1551,7 +1551,7 @@ importers:
     dependencies:
       '@comark/vue':
         specifier: 'catalog:'
-        version: 0.7.0(beautiful-mermaid@1.1.3)(katex@0.17.0)(rangi@2.2.0)(shiki@4.4.3)(vue@3.5.43(typescript@6.0.3))
+        version: 0.8.0(beautiful-mermaid@1.1.3)(katex@0.18.7)(rangi@2.2.0)(shiki@4.4.3)(vue@3.5.43(typescript@6.0.3))
       '@nuxt/kit':
         specifier: 'catalog:'
         version: 4.6.1(@nuxt/schema@4.6.1)(confbox@0.3.1)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.1)(mlly@1.8.2)(oxc-parser@0.149.0)(rolldown@1.2.13)(unplugin@3.4.0(esbuild@0.28.2)(rolldown@1.2.13)(rollup@4.63.4)(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass-embedded@1.104.1)(sass@1.104.1)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1)))
@@ -2323,6 +2323,21 @@ packages:
       katex: ^0.17.0
       shiki: ^4.3.1
       vue: ^3.5.0
+    peerDependenciesMeta:
+      beautiful-mermaid:
+        optional: true
+      katex:
+        optional: true
+      shiki:
+        optional: true
+
+  '@comark/vue@0.8.0':
+    resolution: {integrity: sha512-wDYNpKN/Uo+qH2xIpdAbjCTXqV0sJior0AlpdF2NkqWckBDM+WK4m7gdtywp3z8nn6R+Nt63nlYfwk1gjN4tag==}
+    peerDependencies:
+      beautiful-mermaid: ^1.1.3
+      katex: ^0.18.7
+      shiki: ^4.4.3
+      vue: ^3.5.43
     peerDependenciesMeta:
       beautiful-mermaid:
         optional: true
@@ -3905,12 +3920,14 @@ packages:
   '@opentelemetry/sdk-trace-base@2.12.0':
     resolution: {integrity: sha512-JOERgZCxRM06FEJ5kEWxlSRChah6MmXDx3KwCruqEv/iEyLkTokCSemf2y1w8oIHtfrr8EVTpzebq/31vn2Cpg==}
     engines: {node: ^18.19.0 || >=20.6.0}
+    deprecated: Use @opentelemetry/sdk-trace package
     peerDependencies:
       '@opentelemetry/api': '>=1.3.0 <1.10.0'
 
   '@opentelemetry/sdk-trace-node@2.12.0':
     resolution: {integrity: sha512-9DufH1IlmQMoKAfot5y/FhTP1RnmhLb5K6eKmJO/bvzPjYwPAazoiAUbTZFdPbqxOXN0FEbhZx/e6SB1Og4jmg==}
     engines: {node: ^18.19.0 || >=20.6.0}
+    deprecated: Use @opentelemetry/sdk-trace package
     peerDependencies:
       '@opentelemetry/api': '>=1.0.0 <1.10.0'
 
@@ -6833,6 +6850,23 @@ packages:
       shiki:
         optional: true
 
+  comark@0.8.0:
+    resolution: {integrity: sha512-IeiXhQwgGaTY/tTFSWIbm+jnCpyfMbJWhKdxL0Lj1kJBMzEeOUDL63QFTxZq9tmcn2TPOg6iXp4+PYdJy9YbXQ==}
+    peerDependencies:
+      beautiful-mermaid: ^1.1.3
+      katex: ^0.18.7
+      rangi: ^2.2.0
+      shiki: ^4.4.3
+    peerDependenciesMeta:
+      beautiful-mermaid:
+        optional: true
+      katex:
+        optional: true
+      rangi:
+        optional: true
+      shiki:
+        optional: true
+
   combined-stream@1.0.8:
     resolution: {integrity: sha512-FQN4MRfuJeHf7cBbBMJFXhKSDq+2kAArBlmRBvcvFE5BB1HZKXtSFASDhdlz9zOYwxh8lDdnvmMOe/+5cdoEdg==}
     engines: {node: '>= 0.8'}
@@ -6850,10 +6884,6 @@ packages:
 
   commander@2.20.3:
     resolution: {integrity: sha512-GpVkmM8vF2vQUkj2LvZmD35JxeJOLCwJ9cUkugyk2nuhbv3+mJvpLYYt+0+USMxE+oj+ey/lJEnhZw75x/OMcQ==}
-
-  commander@8.3.0:
-    resolution: {integrity: sha512-OkTL9umf+He2DZkUq8f8J9of7yL6RJKI24dVITBmNfZBmri9zYZQrKkuXiKhyfPSu8tUhnVBB1iKXevvnlR4Ww==}
-    engines: {node: '>= 12'}
 
   common-ancestor-path@2.0.0:
     resolution: {integrity: sha512-dnN3ibLeoRf2HNC+OlCiNc5d2zxbLJXOtiZUudNFSXZrNSydxcCsSpRzXwfu7BBWCIfHPw+xTayeBvJCP/D8Ng==}
@@ -8075,10 +8105,6 @@ packages:
 
   jsonc-parser@3.3.1:
     resolution: {integrity: sha512-HUgH65KyejrUFPvHFPbqOY0rsFip3Bo5wb4ngvdi1EpCYWUQDC5V+Y7mZws+DLkr4M//zQJoanu1SP+87Dv1oQ==}
-
-  katex@0.17.0:
-    resolution: {integrity: sha512-Vdw0ATsQ9V+LuegM/BTwQqV/6cTl5lbGcIrU+BCgLxyf6bo38ybOr372tuSIxir3CN720flu1meYR6XzNMwQnw==}
-    hasBin: true
 
   katex@0.18.7:
     resolution: {integrity: sha512-h+UCwkZ+4Jz8WQ7MLGfj7UVFrRCizGb912fwF4luGdYsC5paYG1vx+jy+KRcC/XkpjGva/P7nAWuxNnPzRvzHw==}
@@ -11983,20 +12009,20 @@ snapshots:
       - shiki
       - vue
 
-  '@comark/vue@0.7.0(beautiful-mermaid@1.1.3)(katex@0.17.0)(rangi@2.2.0)(shiki@4.4.3)(vue@3.5.43(typescript@6.0.3))':
+  '@comark/vue@0.7.0(beautiful-mermaid@1.1.3)(katex@0.18.7)(rangi@2.2.0)(shiki@4.4.3)(vue@3.5.43(typescript@6.0.3))':
     dependencies:
-      comark: 0.7.0(beautiful-mermaid@1.1.3)(katex@0.17.0)(rangi@2.2.0)(shiki@4.4.3)
+      comark: 0.7.0(beautiful-mermaid@1.1.3)(katex@0.18.7)(rangi@2.2.0)(shiki@4.4.3)
       vue: 3.5.43(typescript@6.0.3)
     optionalDependencies:
       beautiful-mermaid: 1.1.3
-      katex: 0.17.0
+      katex: 0.18.7
       shiki: 4.4.3
     transitivePeerDependencies:
       - rangi
 
-  '@comark/vue@0.7.0(beautiful-mermaid@1.1.3)(katex@0.18.7)(rangi@2.2.0)(shiki@4.4.3)(vue@3.5.43(typescript@6.0.3))':
+  '@comark/vue@0.8.0(beautiful-mermaid@1.1.3)(katex@0.18.7)(rangi@2.2.0)(shiki@4.4.3)(vue@3.5.43(typescript@6.0.3))':
     dependencies:
-      comark: 0.7.0(beautiful-mermaid@1.1.3)(katex@0.18.7)(rangi@2.2.0)(shiki@4.4.3)
+      comark: 0.8.0(beautiful-mermaid@1.1.3)(katex@0.18.7)(rangi@2.2.0)(shiki@4.4.3)
       vue: 3.5.43(typescript@6.0.3)
     optionalDependencies:
       beautiful-mermaid: 1.1.3
@@ -16643,7 +16669,7 @@ snapshots:
       - ws
       - yup
 
-  comark@0.7.0(beautiful-mermaid@1.1.3)(katex@0.17.0)(rangi@2.2.0)(shiki@4.4.3):
+  comark@0.7.0(beautiful-mermaid@1.1.3)(katex@0.18.7)(rangi@2.2.0)(shiki@4.4.3):
     dependencies:
       entities: 8.1.0
       htmlparser2: 12.0.0
@@ -16651,16 +16677,15 @@ snapshots:
       markdown-exit: 1.1.0-beta.2
     optionalDependencies:
       beautiful-mermaid: 1.1.3
-      katex: 0.17.0
+      katex: 0.18.7
       rangi: 2.2.0
       shiki: 4.4.3
 
-  comark@0.7.0(beautiful-mermaid@1.1.3)(katex@0.18.7)(rangi@2.2.0)(shiki@4.4.3):
+  comark@0.8.0(beautiful-mermaid@1.1.3)(katex@0.18.7)(rangi@2.2.0)(shiki@4.4.3):
     dependencies:
       entities: 8.1.0
-      htmlparser2: 12.0.0
       js-yaml: 5.4.2
-      markdown-exit: 1.1.0-beta.2
+      markdown-exit: 1.3.0
     optionalDependencies:
       beautiful-mermaid: 1.1.3
       katex: 0.18.7
@@ -16678,9 +16703,6 @@ snapshots:
   commander@15.0.0: {}
 
   commander@2.20.3: {}
-
-  commander@8.3.0:
-    optional: true
 
   common-ancestor-path@2.0.0: {}
 
@@ -17952,11 +17974,6 @@ snapshots:
   json5@2.2.3: {}
 
   jsonc-parser@3.3.1: {}
-
-  katex@0.17.0:
-    dependencies:
-      commander: 8.3.0
-    optional: true
 
   katex@0.18.7:
     dependencies:
