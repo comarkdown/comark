@@ -50,7 +50,7 @@ export async function one(node: Node, state: State, parent?: ElementNode, atLine
   }
 
   if (node[0] === null) {
-    return await state.handlers.comment(node as unknown as ElementNode, state)
+    return await state.handlers.comment(node as unknown as ElementNode, state, parent)
   }
 
   // Scope `renderData.props` to the current element's resolved attributes so
