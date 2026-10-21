@@ -207,8 +207,8 @@ catalogs:
       specifier: ^6.0.0
       version: 6.0.1
     '@comark/vue':
-      specifier: ^0.8.0
-      version: 0.8.0
+      specifier: ^0.8.1
+      version: 0.8.1
     '@json-render/core':
       specifier: ^0.21.0
       version: 0.21.0
@@ -1551,7 +1551,7 @@ importers:
     dependencies:
       '@comark/vue':
         specifier: 'catalog:'
-        version: 0.8.0(beautiful-mermaid@1.1.3)(katex@0.18.7)(rangi@2.2.0)(shiki@4.4.3)(vue@3.5.43(typescript@6.0.3))
+        version: 0.8.1(beautiful-mermaid@1.1.3)(katex@0.18.7)(rangi@2.2.0)(shiki@4.4.3)(vue@3.5.43(typescript@6.0.3))
       '@nuxt/kit':
         specifier: 'catalog:'
         version: 4.6.1(@nuxt/schema@4.6.1)(confbox@0.3.1)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.1)(mlly@1.8.2)(oxc-parser@0.149.0)(rolldown@1.2.13)(unplugin@3.4.0(esbuild@0.28.2)(rolldown@1.2.13)(rollup@4.63.4)(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass-embedded@1.104.1)(sass@1.104.1)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1)))
@@ -2331,8 +2331,8 @@ packages:
       shiki:
         optional: true
 
-  '@comark/vue@0.8.0':
-    resolution: {integrity: sha512-wDYNpKN/Uo+qH2xIpdAbjCTXqV0sJior0AlpdF2NkqWckBDM+WK4m7gdtywp3z8nn6R+Nt63nlYfwk1gjN4tag==}
+  '@comark/vue@0.8.1':
+    resolution: {integrity: sha512-zMxShbPfynnSU5AWH7IeXe2RYm8YIqb5r5XC6eX2Rzv5Ed3/jypbCwp2o1JZAEV0/S3Mczil7Nnb0mzMaOAvHA==}
     peerDependencies:
       beautiful-mermaid: ^1.1.3
       katex: ^0.18.7
@@ -6850,8 +6850,8 @@ packages:
       shiki:
         optional: true
 
-  comark@0.8.0:
-    resolution: {integrity: sha512-IeiXhQwgGaTY/tTFSWIbm+jnCpyfMbJWhKdxL0Lj1kJBMzEeOUDL63QFTxZq9tmcn2TPOg6iXp4+PYdJy9YbXQ==}
+  comark@0.8.1:
+    resolution: {integrity: sha512-oz2Nrt3o/e5SRYVgd3PlBwDUp5P4PWYZbVggORI02rLF63WEjHYkPJkxZh2Hwfpl0J4jDLspe6aeUraNplAsAw==}
     peerDependencies:
       beautiful-mermaid: ^1.1.3
       katex: ^0.18.7
@@ -12020,9 +12020,9 @@ snapshots:
     transitivePeerDependencies:
       - rangi
 
-  '@comark/vue@0.8.0(beautiful-mermaid@1.1.3)(katex@0.18.7)(rangi@2.2.0)(shiki@4.4.3)(vue@3.5.43(typescript@6.0.3))':
+  '@comark/vue@0.8.1(beautiful-mermaid@1.1.3)(katex@0.18.7)(rangi@2.2.0)(shiki@4.4.3)(vue@3.5.43(typescript@6.0.3))':
     dependencies:
-      comark: 0.8.0(beautiful-mermaid@1.1.3)(katex@0.18.7)(rangi@2.2.0)(shiki@4.4.3)
+      comark: 0.8.1(beautiful-mermaid@1.1.3)(katex@0.18.7)(rangi@2.2.0)(shiki@4.4.3)
       vue: 3.5.43(typescript@6.0.3)
     optionalDependencies:
       beautiful-mermaid: 1.1.3
@@ -16681,7 +16681,7 @@ snapshots:
       rangi: 2.2.0
       shiki: 4.4.3
 
-  comark@0.8.0(beautiful-mermaid@1.1.3)(katex@0.18.7)(rangi@2.2.0)(shiki@4.4.3):
+  comark@0.8.1(beautiful-mermaid@1.1.3)(katex@0.18.7)(rangi@2.2.0)(shiki@4.4.3):
     dependencies:
       entities: 8.1.0
       js-yaml: 5.4.2

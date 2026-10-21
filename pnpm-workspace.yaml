@@ -27,7 +27,7 @@ catalog:
   "@comark/html": ^0.7.0
   "@comark/nuxt": ^0.7.0
   "@comark/react": ^0.7.0
-  "@comark/vue": ^0.8.0
+  "@comark/vue": ^0.8.1
 
   # Misc
   "@json-render/core": ^0.21.0
@@ -177,8 +177,8 @@ ignoredBuiltDependencies:
   - sharp
 
 minimumReleaseAgeExclude:
-  - comark@0.5.1 || 0.6.0 || 0.6.1 || 0.6.2 || 0.7.0 || 0.8.0
-  - "@comark/vue@0.5.1 || 0.6.0 || 0.6.1 || 0.6.2 || 0.7.0 || 0.8.0"
+  - comark@0.5.1 || 0.6.0 || 0.6.1 || 0.6.2 || 0.7.0 || 0.8.0 || 0.8.1
+  - "@comark/vue@0.5.1 || 0.6.0 || 0.6.1 || 0.6.2 || 0.7.0 || 0.8.0 || 0.8.1"
   - "@nuxtlabs/monarch-mdc@0.10.0"
   - "@comark/nuxt@0.6.0"
   - comark-content@0.2.0 || 0.4.1
