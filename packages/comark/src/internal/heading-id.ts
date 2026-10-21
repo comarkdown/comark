@@ -1,6 +1,21 @@
 import type { HeadingIdsOption } from 'comark'
 
 /**
+ * Generate heading ids in document order using the parser's slug, hierarchy, and collision rules.
+ * Use with trees parsed with `headingIds: false`; pass authored ids to reserve their destinations.
+ * Each generator owns one document. Call it only for headings participating in the output.
+ */
+export function createHeadingIdGenerator(option: HeadingIdsOption = true) {
+  const tracker = createHeadingIdTracker(option)
+  return (text: string, level: number, authoredId?: string): string | undefined => {
+    if (!tracker) return authoredId
+    const generated = nextHeadingId(text, level, tracker)
+    reserveHeadingId(tracker, authoredId)
+    return authoredId ?? generated
+  }
+}
+
+/**
  * Auto-generated heading ids. Shared by the parser (to assign ids) and the
  * markdown stringifier (to tell whether a heading's id is the implicit one or
  * must be written back as `{#id}`). Both walk headings in document order, so

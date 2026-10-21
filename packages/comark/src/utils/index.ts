@@ -354,3 +354,5 @@ export type { ResolveAttributesOptions } from '../internal/stringify/attributes.
 // The security plugin's frontmatter rules, for objects the parser never sees.
 export { sanitizeData } from '../internal/sanitize.ts'
 export type { SanitizeDataOptions } from '../internal/sanitize.ts'
+
+export { createHeadingIdGenerator } from '../internal/heading-id.ts'
