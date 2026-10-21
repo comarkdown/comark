@@ -19,10 +19,11 @@ export function parseProps(content: string) {
   return props.props
 }
 
-export function searchProps(content: string, index = 0) {
+export function searchProps(content: string, index = 0, captureRanges = false) {
   if (content[index] !== '{') throw new Error(`Invalid props, expected \`{\` but got '${content[index]}'`)
 
   const props: [string, string][] = []
+  const ranges: { name: string; start?: number; end?: number }[] | undefined = captureRanges ? [] : undefined
 
   // Skip Vue mustache `{{ }}` syntax
   if (content[index + 1] === '{') return undefined
@@ -53,15 +54,27 @@ export function searchProps(content: string, index = 0) {
       if (start !== index) {
         let key = content.slice(start, index).trim()
         let value = ''
+        let valueStart: number | undefined
+        let valueEnd: number | undefined
         if (char === '=') {
           index += 1
+          valueStart = index
           value = searchValue()
+          valueEnd = index
         } else {
           key = key[0] === ':' ? key : `:${key}`
           value = 'true'
         }
         if (key.match(/^:?[a-z_][a-z0-9_-]*$/gi)) {
           props.push([key, value])
+          if (ranges) {
+            const quoted = value.length >= 2 && value[0] in quotePairs && value[value.length - 1] === value[0]
+            ranges.push(
+              valueStart === undefined || valueEnd === undefined
+                ? { name: key }
+                : { name: key, start: valueStart + (quoted ? 1 : 0), end: valueEnd - (quoted ? 1 : 0) }
+            )
+          }
         }
       }
     }
@@ -124,5 +137,6 @@ export function searchProps(content: string, index = 0) {
   return {
     props,
     index,
+    ranges,
   }
 }

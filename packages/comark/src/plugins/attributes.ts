@@ -23,7 +23,7 @@ const markdownItInlineProps: PluginSimple = (md) => {
     // Skip Vue mustache `{{ }}` and template `${ }` syntax
     if (state.src[start + 1] === '{' || state.src[start - 1] === '{' || state.src[start - 1] === '$') return false
 
-    const search = searchProps(state.src, start)
+    const search = searchProps(state.src, start, !!state.env.comarkSourceAttributes)
     if (!search) return false
 
     const { props, index: end } = search
@@ -37,6 +37,7 @@ const markdownItInlineProps: PluginSimple = (md) => {
     const token = state.push('mdc_inline_props', 'span', 0)
     token.attrs = props
     token.hidden = true
+    state.env.comarkSourceAttributes?.(state, token, search.ranges)
 
     return true
   })

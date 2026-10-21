@@ -53,6 +53,7 @@
     "./utils": "./dist/utils/index.js",
     "./utils/trace": "./dist/utils/trace.js",
     "./parse": "./dist/parse.js",
+    "./source": "./dist/source.js",
     "./render": "./dist/render.js"
   },
   "publishConfig": {

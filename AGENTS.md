@@ -466,6 +466,7 @@ import mermaid, { Mermaid } from '@comark/angular/plugins/mermaid'
 // Core parsing
 import { parseMarkdown, createMarkdownParser, autoCloseMarkdown, defineComarkPlugin } from 'comark'
 import { parseMarkdown } from 'comark/parse' // same parser API without the auto-close/context re-exports
+import { createMarkdownSourceParser } from 'comark/source' // opt-in original-source attribute ranges for editors
 
 // Live renderer context (patch a rendered document without re-parsing)
 import { createComarkContext } from 'comark'
