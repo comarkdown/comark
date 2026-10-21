@@ -87,7 +87,7 @@ catalog:
   citty: ^0.2.2
 
   # Workspace packages (publish versions, locally overridden by resolutions)
-  comark: ^0.7.0
+  comark: ^0.8.0
 
   # Core comark dependencies
   entities: ^8.1.0
