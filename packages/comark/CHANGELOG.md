@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.8.1](https://github.com/comarkdown/comark/compare/comark%400.8.0...comark%400.8.1) (2026-10-21)
+
+### Bug Fixes
+
+* **security:** sanitize frontmatter, tag selectors and data URLs ([#486](https://github.com/comarkdown/comark/issues/486)) ([becc5aa](https://github.com/comarkdown/comark/commit/becc5aae98ba68313d7633d373883d6158a66aca))
+
 ## [0.8.0](https://github.com/comarkdown/comark/compare/comark%400.7.0...comark%400.8.0) (2026-10-21)
 
 ### ⚠ BREAKING CHANGES
