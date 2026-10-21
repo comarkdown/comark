@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.8.0](https://github.com/comarkdown/comark/compare/%40comark%2Fansi%400.7.0...%40comark%2Fansi%400.8.0) (2026-10-21)
+
+### Features
+
+* **binding:** add conditional `If` component with `#else` slot ([#411](https://github.com/comarkdown/comark/issues/411)) ([6377fac](https://github.com/comarkdown/comark/commit/6377fac9e51dd53fd93abdfb9bce021f0cbce09d))
+
 ## [0.7.0](https://github.com/comarkdown/comark/compare/@comark/ansi@0.6.2...@comark/ansi@0.7.0) (2026-09-10)
 
 ### Features
