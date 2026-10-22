@@ -255,9 +255,9 @@ function processBlockChildrenWithSlots(
   let currentSlot: { tag: string; attrs: Record<string, unknown>; children: Node[] } | null = null
 
   const flushSlot = () => {
+    // A tag left open in one slot, or in the default content, closes with it instead of moving into the next.
+    closeHtmlFrames(state, currentSlot ? currentSlot.children : nodes)
     if (!currentSlot) return
-    // A tag left open in one slot closes with it instead of moving into the next.
-    closeHtmlFrames(state, currentSlot.children)
     nodes.push([currentSlot.tag, currentSlot.attrs, ...mergeAdjacentTextNodes(currentSlot.children)] as ElementNode)
     currentSlot = null
   }

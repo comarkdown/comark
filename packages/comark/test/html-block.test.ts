@@ -509,6 +509,14 @@ describe('HTML inside markdown containers', () => {
       ],
     ])
   })
+
+  it('closes a tag left open in the default content before the first slot', async () => {
+    const result = await parseMarkdown('::foo\n<div>\n\ndefault\n\n#one\nnamed\n::')
+
+    expect(result.nodes).toEqual([
+      ['foo', {}, ['div', { $: { html: 1, block: 1 } }, 'default'], ['template', { name: 'one' }, 'named']],
+    ])
+  })
 })
 
 describe('stray HTML close tags', () => {
