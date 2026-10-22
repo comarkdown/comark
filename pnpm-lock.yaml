@@ -339,8 +339,8 @@ catalogs:
       specifier: ^15.0.3
       version: 15.0.3
     minimark:
-      specifier: 0.2.0
-      version: 0.2.0
+      specifier: 1.0.0
+      version: 1.0.0
     mitata:
       specifier: ^1.0.34
       version: 1.0.34
@@ -1452,7 +1452,7 @@ importers:
         version: 3.0.1
       minimark:
         specifier: 'catalog:'
-        version: 0.2.0(patch_hash=1e0eaaab5c9ffee4dcf68d6e89d35546917e9c8033757789e7675f1a2ea323a9)
+        version: 1.0.0(patch_hash=1e0eaaab5c9ffee4dcf68d6e89d35546917e9c8033757789e7675f1a2ea323a9)
       rangi:
         specifier: 'catalog:'
         version: 2.2.0
@@ -8609,8 +8609,8 @@ packages:
     resolution: {integrity: sha512-VP79XUPxV2CigYP3jWwAUFSku2aKqBH7uTAapFWCBqutsbmDo96KY5o8uh6U+/YSIn5OxJnXp73beVkpqMIGhA==}
     engines: {node: '>=18'}
 
-  minimark@0.2.0:
-    resolution: {integrity: sha512-AmtWU9pO0C2/3AM2pikaVhJ//8E5rOpJ7+ioFQfjIq+wCsBeuZoxPd97hBFZ9qrI7DMHZudwGH3r8A7BMnsIew==}
+  minimark@1.0.0:
+    resolution: {integrity: sha512-4maJvB7opKTzIWeh0jIpWf6FbN/nU3UjsjDnlLuYixnLp4laKoQrCYfmKA71Qm+EV3SUsKvawO+1EBiu11+kBg==}
 
   minimatch@10.2.6:
     resolution: {integrity: sha512-vpLQEs+VLCr1nU0BXS07maYoFwlDAH0gngQuuttxIwutDFEMHq2blX+8vpgxDdK3J1PwjCJiep77OitTZ4Ll1A==}
@@ -18638,7 +18638,10 @@ snapshots:
 
   mimic-function@5.0.1: {}
 
-  minimark@0.2.0(patch_hash=1e0eaaab5c9ffee4dcf68d6e89d35546917e9c8033757789e7675f1a2ea323a9): {}
+  minimark@1.0.0(patch_hash=1e0eaaab5c9ffee4dcf68d6e89d35546917e9c8033757789e7675f1a2ea323a9):
+    dependencies:
+      entities: 7.0.1
+      js-yaml: 4.3.2
 
   minimatch@10.2.6:
     dependencies:
