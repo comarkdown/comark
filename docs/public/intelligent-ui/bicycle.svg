@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 230" fill="none" stroke="#e4e4e7" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+<rect width="400" height="230" fill="#27272a" stroke="none"/>
+<circle cx="95" cy="150" r="55" stroke-width="5"/><line x1="95" y1="150" x2="147.0" y2="150.0" stroke-width="1"/><line x1="95" y1="150" x2="140.0" y2="176.0" stroke-width="1"/><line x1="95" y1="150" x2="121.0" y2="195.0" stroke-width="1"/><line x1="95" y1="150" x2="95.0" y2="202.0" stroke-width="1"/><line x1="95" y1="150" x2="69.0" y2="195.0" stroke-width="1"/><line x1="95" y1="150" x2="50.0" y2="176.0" stroke-width="1"/><line x1="95" y1="150" x2="43.0" y2="150.0" stroke-width="1"/><line x1="95" y1="150" x2="50.0" y2="124.0" stroke-width="1"/><line x1="95" y1="150" x2="69.0" y2="105.0" stroke-width="1"/><line x1="95" y1="150" x2="95.0" y2="98.0" stroke-width="1"/><line x1="95" y1="150" x2="121.0" y2="105.0" stroke-width="1"/><line x1="95" y1="150" x2="140.0" y2="124.0" stroke-width="1"/>
+<circle cx="305" cy="150" r="55" stroke-width="5"/><line x1="305" y1="150" x2="357.0" y2="150.0" stroke-width="1"/><line x1="305" y1="150" x2="350.0" y2="176.0" stroke-width="1"/><line x1="305" y1="150" x2="331.0" y2="195.0" stroke-width="1"/><line x1="305" y1="150" x2="305.0" y2="202.0" stroke-width="1"/><line x1="305" y1="150" x2="279.0" y2="195.0" stroke-width="1"/><line x1="305" y1="150" x2="260.0" y2="176.0" stroke-width="1"/><line x1="305" y1="150" x2="253.0" y2="150.0" stroke-width="1"/><line x1="305" y1="150" x2="260.0" y2="124.0" stroke-width="1"/><line x1="305" y1="150" x2="279.0" y2="105.0" stroke-width="1"/><line x1="305" y1="150" x2="305.0" y2="98.0" stroke-width="1"/><line x1="305" y1="150" x2="331.0" y2="105.0" stroke-width="1"/><line x1="305" y1="150" x2="350.0" y2="124.0" stroke-width="1"/>
+<path d="M175 155 L160 75 L270 72 L276 95 Z M175 155 L95 150 L160 75 M276 95 L305 150"/>
+<circle cx="175" cy="155" r="17"/><circle cx="95" cy="150" r="8"/>
+<path d="M175 138 L95 142 M175 172 L95 158" stroke-width="1.5"/>
+<path d="M175 155 L186 180 M179 182 L193 182 M95 158 L92 172 L100 176"/>
+<path d="M124 104 Q131 114 138 104 M273 97 Q280 107 287 97"/>
+<path d="M281 58 L290 66 M131 104 Q150 80 210 74" stroke-width="1.5"/>
+<path d="M270 72 L272 58 M254 62 Q266 53 284 56 L294 61 M160 75 L155 50"/>
+<path d="M138 48 Q152 42 172 47 Q156 54 138 48 Z" fill="#e4e4e7"/>
+</svg>
