@@ -1,9 +1,6 @@
 // #region Tree Utils
 
-import { decodeHTML } from 'entities'
 import type { Node, MarkdownDocument } from 'comark'
-
-export { decodeHTML } from 'entities'
 
 type VisitResult = Node | false | undefined | void
 
@@ -18,21 +15,16 @@ export function isMarkdownDocument(value: unknown): value is MarkdownDocument {
  * Get the text content of a Markdown AST node
  *
  * @param node - The node
- * @param options - The options
- * @param options.decodeUnicodeEntities - Whether to decode Unicode entities
  * @returns The text content
  */
-export function textContent(node: Node, options: { decodeUnicodeEntities?: boolean } = {}): string {
+export function textContent(node: Node): string {
   if (typeof node === 'string') {
-    if (options.decodeUnicodeEntities) {
-      return decodeHTML(node)
-    }
-    return node as string
+    return node
   }
   let out = ''
   const len = node.length
   for (let i = 2; i < len; i++) {
-    out += textContent(node[i] as Node, options)
+    out += textContent(node[i] as Node)
   }
   return out
 }
