@@ -192,7 +192,7 @@ let unescapeAll: ((str: string) => string) | undefined
 function decodeAttributeValue(value: string): string {
   if (!value.includes('&')) return value
   unescapeAll ??= new MarkdownExit().utils.unescapeAll
-  return unescapeAll(value.replaceAll('\\', '\\\\'))
+  return unescapeAll(value.replace(/\\/g, '\\\\'))
 }
 
 /**
