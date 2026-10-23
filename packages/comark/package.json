@@ -68,7 +68,6 @@
     "release:dry": "release-it --dry-run"
   },
   "dependencies": {
-    "entities": "catalog:",
     "js-yaml": "catalog:",
     "markdown-exit": "catalog:"
   },
