@@ -177,7 +177,7 @@ const html = await renderHtml(markdownString)
 
 ---
 
-The `/document` entry uses `comark/render/html` with only HTML and comment handlers. Callbacks receive `render`, `data`, and `renderData`; generic handler access and format switching remain available through the existing entries. Both renderers share the registry-independent engine in `internal/stringify/runtime.ts`.
+The `/document` entry uses `comark/render/html` with only HTML and comment handlers. Callbacks receive `render`, `data`, and `renderData`; generic handler access and format switching remain available through the existing entries. Both renderers share the registry-independent engine in `internal/stringify/runtime.ts`. HTML-safe attribute handling lives in `html-attributes.ts`; Markdown/YAML attribute serialization stays in `attributes.ts`.
 
 ## Package: @comark/ansi
 

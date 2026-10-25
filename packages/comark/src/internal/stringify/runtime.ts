@@ -1,7 +1,7 @@
 import type { NodeRenderData, State, Context } from 'comark/render'
 import type { ElementNode, Node, MarkdownDocument, ConditionalNodeHandler, CreateContext, NodeHandler } from 'comark'
 import { escapeHtml, pascalCase } from '../../utils/index.ts'
-import { resolveAttributes } from './attributes.ts'
+import { resolveAttributes } from './html-attributes.ts'
 
 function findHandler(ctx: Context, node: ElementNode): NodeHandler | undefined {
   const name = node[0] as string
