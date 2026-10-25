@@ -20,7 +20,7 @@ import {
   shallowRef,
   toRaw,
 } from 'vue'
-import { findLastTextNodeAndAppendNode, getCaret } from '../utils/caret.ts'
+import { appendCaretToLastTextNode, getCaret } from '../utils/caret.ts'
 import { pascalCase, resolveAttributes, toNativeAttributes } from 'comark/utils'
 
 // Cache for dynamically resolved components
@@ -444,8 +444,10 @@ export const MarkdownDocument: MarkdownDocumentComponent = defineComponent({
       const nodes = [...(rawDocument.nodes || [])]
 
       if (props.streaming && caret.value && nodes.length > 0) {
-        const hasStreamCaret = findLastTextNodeAndAppendNode(nodes[nodes.length - 1] as ElementNode, caret.value)
-        if (!hasStreamCaret) {
+        const lastNode = appendCaretToLastTextNode(nodes[nodes.length - 1], caret.value)
+        if (lastNode) {
+          nodes[nodes.length - 1] = lastNode
+        } else {
           nodes.push(caret.value)
         }
       }
