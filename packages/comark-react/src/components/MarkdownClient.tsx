@@ -52,12 +52,15 @@ export function MarkdownClient({
       ? String(children)
       : ((value as string | undefined) ?? '')
 
-  const parse = useMemo(
-    () => createSerializedMarkdownParser({ ...options, ...(unwrap ? { unwrap } : {}), plugins }),
-    [options, plugins, unwrap]
-  )
+  const parse = useMemo(() => {
+    let parser: ReturnType<typeof createSerializedMarkdownParser> | undefined
+    return (source: string, streaming: boolean): Promise<MarkdownDocumentType> => {
+      parser ??= createSerializedMarkdownParser({ ...options, ...(unwrap ? { unwrap } : {}), plugins })
+      return parser(source, { streaming })
+    }
+  }, [options, plugins, unwrap])
   const parsePromise = useMemo(
-    () => isMarkdownDocument(content) ? Promise.resolve(content) : parse(content, { streaming }),
+    () => (isMarkdownDocument(content) ? Promise.resolve(content) : parse(content, streaming)),
     [content, parse, streaming]
   )
 

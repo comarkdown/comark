@@ -312,6 +312,8 @@ import math, { Math } from '@comark/react/plugins/math'
 import mermaid, { Mermaid } from '@comark/react/plugins/mermaid'
 ```
 
+React tests have two projects: `server` runs the Node/SSR tests, and `client` runs `*.browser.test.tsx` in headless Chromium. Install the browser with `pnpm exec playwright install chromium` before running the package tests. CI runs both projects.
+
 ## Package: @comark/svelte
 
 Svelte 5 renderer for Comark. Located at `packages/comark-svelte/`:

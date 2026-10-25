@@ -76,7 +76,7 @@ pnpm vitest run test/parse/sub-sup.test.ts
 
 Parser fixtures live in `packages/comark/SPEC` and run through `test/index.test.ts`. Parser changes should also preserve streaming behavior in `test/streaming.test.ts`.
 
-Svelte's local tests include a headless Chromium project. Install the browser if needed:
+React and Svelte tests include a headless Chromium project. Install the browser if needed:
 
 ```sh
 pnpm exec playwright install chromium

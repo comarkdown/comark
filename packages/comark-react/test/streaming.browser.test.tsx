@@ -1,4 +1,4 @@
-import React, { act, Component } from 'react'
+import React, { act, Component, StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import type { ComarkPlugin, MarkdownDocument } from 'comark'
@@ -185,4 +185,99 @@ describe('MarkdownClient streaming', () => {
     })
     expect(container.textContent).toBe('Parse failed')
   })
+})
+
+it('reuses the completed prefix in Strict Mode', async () => {
+  const probe = observe()
+  const value = 'First\n\nSecond\n\nTail'
+  const update = async (value: string): Promise<void> => {
+    await act(async () => {
+      root.render(
+        <StrictMode>
+          <MarkdownClient
+            value={value}
+            streaming
+            plugins={probe.plugins}
+          />
+        </StrictMode>
+      )
+    })
+  }
+  await update(value)
+  probe.inputs.length = 0
+  await update(`${value} grows`)
+  expect(container.textContent).toBe('FirstSecondTail grows')
+  expect(probe.inputs.length).toBeGreaterThan(0)
+  expect(probe.inputs.every((input) => !input.includes('First'))).toBe(true)
+})
+
+it('keeps the newest configuration when an initial suspended parse finishes late', async () => {
+  const { promise, resolve } = Promise.withResolvers<void>()
+  let started = false
+  let finished = false
+  await render({
+    value: 'Old',
+    streaming: true,
+    plugins: [
+      {
+        name: 'slow',
+        async pre() {
+          started = true
+          await promise
+          finished = true
+        },
+      },
+    ],
+  })
+  expect(started).toBe(true)
+  await render({ value: 'New', streaming: true, plugins: [] })
+  expect(container.textContent).toBe('New')
+  await act(async () => resolve())
+  expect(finished).toBe(true)
+  expect(container.textContent).toBe('New')
+})
+
+it('serializes async post hooks and keeps the previous display while parsing', async () => {
+  const { promise, resolve } = Promise.withResolvers<void>()
+  let active = 0
+  let maxActive = 0
+  const started: string[] = []
+  const plugins: ComarkPlugin[] = [
+    {
+      name: 'slow',
+      async post(state) {
+        active++
+        maxActive = Math.max(active, maxActive)
+        started.push(state.markdown)
+        if (state.markdown === 'Slow') await promise
+        active--
+      },
+    },
+  ]
+  await render({ value: 'Ready', streaming: true, plugins })
+  expect(container.textContent).toBe('Ready')
+  await render({ value: 'Slow', streaming: true, plugins })
+  expect(started).toContain('Slow')
+  expect(container.textContent).toBe('Ready')
+  await render({ value: 'Latest', streaming: true, plugins })
+  await act(async () => resolve())
+  expect(container.textContent).toBe('Latest')
+  expect(maxActive).toBe(1)
+})
+
+it('does not initialize tokenizer plugins for a pre-parsed document', async () => {
+  await render({
+    value: { nodes: [['p', {}, 'Already parsed']], frontmatter: {}, meta: {} },
+    plugins: [
+      {
+        name: 'throwing-initializer',
+        markdownItPlugins: [
+          () => {
+            throw new Error('Tokenizer initialized')
+          },
+        ],
+      },
+    ],
+  })
+  expect(container.textContent).toBe('Already parsed')
 })

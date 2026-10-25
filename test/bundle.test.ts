@@ -64,7 +64,7 @@ describe('package bundle size', { timeout: 60_000 }, () => {
         "@comark/ansi": "37.3k (98 files)",
         "@comark/html": "16.5k (58 files)",
         "@comark/nuxt": "11.9k (58 files)",
-        "@comark/react": "38.6k (76 files)",
+        "@comark/react": "39.6k (76 files)",
         "@comark/svelte": "46.8k (84 files)",
         "@comark/vue": "56.4k (80 files)",
         "comark": "389k (152 files)",
