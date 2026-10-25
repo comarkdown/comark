@@ -7,7 +7,7 @@ import type {
 } from 'comark'
 import React, { lazy, Suspense, useMemo } from 'react'
 import { pascalCase, camelCase, resolveAttributes, toNativeAttributes } from 'comark/utils'
-import { findLastTextNodeAndAppendNode, getCaret } from '../utils/caret.ts'
+import { appendCaretToLastTextNode, getCaret } from '../utils/caret.ts'
 
 /**
  * Helper to get tag from a Node
@@ -363,8 +363,10 @@ export const MarkdownDocument: React.FC<MarkdownDocumentProps> = ({
     const nodes = [...(document.nodes || [])]
 
     if (streaming && caret && nodes.length > 0) {
-      const hasStreamCaret = findLastTextNodeAndAppendNode(nodes[nodes.length - 1] as ElementNode, caret)
-      if (!hasStreamCaret) {
+      const lastNode = appendCaretToLastTextNode(nodes[nodes.length - 1], caret)
+      if (lastNode) {
+        nodes[nodes.length - 1] = lastNode
+      } else {
         nodes.push(caret)
       }
     }
