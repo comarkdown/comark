@@ -122,7 +122,8 @@ packages/comark/
   "./utils": "./dist/utils/index.js",
   "./utils/trace": "./dist/utils/trace.js",
   "./parse": "./dist/parse.js",
-  "./render": "./dist/render.js"
+  "./render": "./dist/render.js",
+  "./render/html": "./dist/render/html.js"
 }
 ```
 
@@ -149,7 +150,8 @@ Located at `packages/comark-html/`. Framework-free HTML string rendering.
   "./plugins/*": "./dist/plugins/*.js",
   "./utils": "./dist/utils/index.js",
   "./parse": "./dist/parse.js",
-  "./render": "./dist/render.js"
+  "./render": "./dist/render.js",
+  "./document": "./dist/document.js"
 }
 ```
 
@@ -174,6 +176,8 @@ const html = await renderHtml(markdownString)
 ```
 
 ---
+
+The `/document` entry uses `comark/render/html` with only HTML and comment handlers. Callbacks receive `render`, `data`, and `renderData`; generic handler access and format switching remain available through the existing entries. Both renderers share the registry-independent engine in `internal/stringify/runtime.ts`.
 
 ## Package: @comark/ansi
 

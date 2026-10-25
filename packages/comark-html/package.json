@@ -35,7 +35,8 @@
     "./plugins/*": "./dist/plugins/*.js",
     "./utils": "./dist/utils/index.js",
     "./parse": "./dist/parse.js",
-    "./render": "./dist/render.js"
+    "./render": "./dist/render.js",
+    "./document": "./dist/document.js"
   },
   "publishConfig": {
     "access": "public"
