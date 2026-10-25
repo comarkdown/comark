@@ -147,7 +147,7 @@ Returns a `ComarkPlugin` that tokenizes `$...$` and `$$...$$` expressions.
 
 **Returns:** `ComarkPlugin`
 
-The plugin stores LaTeX source as plain text in the AST. Rendering requires passing `Math` to the `components` prop of `<Markdown>` (see [Usage](#usage)). KaTeX only runs when the component mounts.
+The plugin stores LaTeX source as plain text in the AST. Rendering requires passing `Math` to the `components` prop of `<Markdown>` (see [Usage](#usage)). The `Math` components load KaTeX on first use, so pages without math don't load it. A formula KaTeX can't typeset, such as one still streaming in, shows as its TeX source.
 
 ---
 
