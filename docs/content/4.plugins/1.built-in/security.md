@@ -115,9 +115,11 @@ Object and array prop values (`:links='[{"to": "/docs", "label": "Docs"}]'`, YAM
 
 URL props are decoded (URL-encoded and HTML entity variants included) and checked against a hard-coded block list. A prop is a URL prop when its name is `href`, `src`, `to`, `action`, `poster`, `cite`, `background` or `ping`, or ends in `href`, `src`, `url`, `uri` or `link` (optionally plural), such as `xlink:href`, `imageUrl`, or `avatar-src`. Other props are never parsed as URLs, so prose such as `title="JavaScript: the good parts"` is kept.
 
-These protocols are **always** blocked, even if `allowedProtocols: ['*']` is set:
+These URLs are **always** blocked, even if `allowedProtocols: ['*']` is set:
 
-`javascript:` · `vbscript:` · `data:text/html` · `data:text/javascript` · `data:text/vbscript` · `data:text/css` · `data:text/plain` · `data:text/xml`
+- `javascript:` and `vbscript:` URLs
+- `data:` URLs in link props (`href`, `to`, …)
+- `data:` URLs in image props, unless their MIME type is `image/*` (see [`allowDataImages`](#options-allowdataimages))
 
 A `data:` URL is checked the way browsers read its MIME type, which ignores spaces after `data:`. So `data: text/html,…` is blocked like `data:text/html,…`.
 
@@ -136,6 +138,24 @@ The same check applies to `:href` and `:src` bindings twice: on the JSON-decoded
 ```
 
 ::
+
+### Frontmatter
+
+Renderers spread frontmatter into components, so it is sanitized with the same rules as props, at any depth:
+
+- event handler and markup keys are removed, with the same name checks
+- URLs in URL keys (`to`, `link`, `imageSrc`, …) are held to the protocol floor and the URL options
+- an `as` or `is` value naming a blocked, unsafe or not-allowed tag is removed
+
+Dropped array items are removed without leaving a hole. Set [`frontmatter: false`](#options-frontmatter) to opt out.
+
+To apply the same rules to objects that don't come through the parser, such as a YAML or JSON file you load yourself, use `sanitizeData()` from `comark/utils`. It cleans the data in place and returns the dotted paths it removed:
+
+```typescript
+import { sanitizeData } from 'comark/utils'
+
+const removed = sanitizeData(data, { blockedTags: ['script'], allowDataImages: false })
+```
 
 ---
 
@@ -165,6 +185,7 @@ Returns a `ComarkPlugin` that sanitizes the parsed AST.
 | [`allowedImagePrefixes`](#options-allowedimageprefixes) | `string[]` | `['*']` | URL prefixes permitted in image props (`src`, `*src`, `poster`) |
 | [`defaultOrigin`](#options-defaultorigin) | `string` | `undefined` | Rewrite disallowed URLs to this origin instead of stripping |
 | [`allowDataImages`](#options-allowdataimages) | `boolean` | `true` | Allow `data:image/*` URIs in image props |
+| [`frontmatter`](#options-frontmatter) | `boolean` | `true` | Sanitize frontmatter as well as the AST |
 
 ### `blockedTags`
 
@@ -197,7 +218,9 @@ security({
 })
 ```
 
-The `as` prop (which makes framework renderers resolve a different component than the element's own tag) is held to the same filters: an `as` value naming a blocked or not-allowed tag is stripped, and the element falls back to its own tag.
+The `as` and `is` props (which make framework renderers resolve a different component than the element's own tag) are held to the same filters: a value naming a blocked or not-allowed tag, or `object`, is stripped, and the element falls back to its own tag.
+
+Their bindings are checked too. A JSON binding (`:as='"section"'`) is checked decoded, as renderers decode it. A dot-path binding (`:as="frontmatter.tag"`) only resolves at render time, after every check, so it is always stripped.
 
 ### `tagFallback`
 
@@ -227,7 +250,7 @@ security({
 ```
 
 ::warning
-The hard-coded unsafe protocols (`javascript:`, `vbscript:`, `data:text/*`) are a floor that cannot be overridden. Even `allowedProtocols: ['javascript']` will not unblock `javascript:` URLs.
+The hard-coded floor (`javascript:`, `vbscript:`, and `data:` outside images) cannot be overridden. Even `allowedProtocols: ['javascript']` will not unblock `javascript:` URLs.
 ::
 
 ### `allowedLinkPrefixes`
@@ -277,8 +300,18 @@ security({
 ```
 
 ::tip
-`data:text/*` variants in `href` are always blocked by the hard-coded protocol list regardless of this setting.
+`data:` URLs in link props, and non-image `data:` URLs anywhere, are always blocked by the hard-coded floor regardless of this setting.
 ::
+
+### `frontmatter`
+
+Controls whether frontmatter is sanitized along with the AST (see [Frontmatter](#frontmatter)). Set to `false` when your frontmatter is trusted and never spread into components.
+
+```typescript
+security({
+  frontmatter: false
+})
+```
 
 ---
 

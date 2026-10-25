@@ -19,11 +19,13 @@ function MarkdownContent({
   caret = false,
   data,
   className,
+  ...rest
 }: MarkdownContentProps) {
   const parsed = use(parsePromise)
 
   return (
     <MarkdownLive
+      {...rest}
       value={parsed}
       components={customComponents}
       componentsManifest={componentsManifest}
@@ -50,14 +52,12 @@ export function MarkdownClient({
       ? String(children)
       : ((value as string | undefined) ?? '')
 
-  // Recreated only when parser inputs change, so streaming updates reuse nodes.
   const parse = useMemo(
     () => createSerializedMarkdownParser({ ...options, ...(unwrap ? { unwrap } : {}), plugins }),
     [options, plugins, unwrap]
   )
-
   const parsePromise = useMemo(
-    () => (isMarkdownDocument(content) ? Promise.resolve(content) : parse(content, { streaming })),
+    () => isMarkdownDocument(content) ? Promise.resolve(content) : parse(content, { streaming }),
     [content, parse, streaming]
   )
 

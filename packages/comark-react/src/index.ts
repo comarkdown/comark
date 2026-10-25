@@ -59,7 +59,6 @@ export function defineMarkdownComponent(config: DefineMarkdownComponentOptions =
     ...parseOptions
   } = config
 
-  // Keep parser inputs stable across renders without client-only hooks.
   const optionsCache = new WeakMap<ParserOptions, ParserOptions>()
   const pluginsCache = new WeakMap<NonNullable<MarkdownProps['plugins']>, NonNullable<MarkdownProps['plugins']>>()
   const configPlugins = config.plugins ?? []

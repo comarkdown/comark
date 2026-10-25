@@ -138,8 +138,15 @@ export class MarkdownNode implements OnChanges {
       // Resolve attributes (:binding support)
       const resolved = resolveAttributes(nodeProps, this.renderData, { parseJson: true })
 
-      // Build childrenRenderData - only shadow parent scope when element has own attrs
-      const hasOwnAttrs = Object.keys(resolved).length > 0
+      // Build childrenRenderData - only shadow parent scope when element has own attrs.
+      // The check uses the raw attributes: resolving can omit all of them.
+      let hasOwnAttrs = false
+      for (const key in nodeProps) {
+        if (key !== '$') {
+          hasOwnAttrs = true
+          break
+        }
+      }
       const childrenRenderData: NodeRenderData = hasOwnAttrs ? { ...this.renderData, props: resolved } : this.renderData
 
       if ((customComponent as StructuralComponent | undefined)?.ɵcomarkIf) {
@@ -373,7 +380,13 @@ export class MarkdownNode implements OnChanges {
           }
         } else {
           const resolved = resolveAttributes(childProps, renderData, { parseJson: true })
-          const hasOwnAttrs = Object.keys(resolved).length > 0
+          let hasOwnAttrs = false
+          for (const key in childProps) {
+            if (key !== '$') {
+              hasOwnAttrs = true
+              break
+            }
+          }
           const childRenderData: NodeRenderData = hasOwnAttrs ? { ...renderData, props: resolved } : renderData
           this.renderNativeEl(parentEl, childTag, resolved, grandChildren, childRenderData, child)
         }

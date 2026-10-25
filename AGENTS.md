@@ -37,7 +37,7 @@ This is a **monorepo** containing the Comark Markdown parser, document model, pl
 │   └── 4.ai/             # AI streaming examples (Nuxt + AI SDK)
 ├── docs/                 # Documentation site (comark-docs layer; llms topic files in docs/server/routes/llms-*.txt.get.ts)
 ├── playground/           # Nuxt playground (`pnpm dev:playground`)
-├── benchmarks/           # mitata benchmarks for parse/render/plugins
+├── benchmarks/           # CodSpeed Vitest benches (*.bench.ts) + mitata cross-library comparisons (*.ts)
 ├── scripts/              # Build/sync/release scripts
 ├── test/                 # Root-level tests (bundle-size snapshot)
 ├── pnpm-workspace.yaml   # Workspace configuration + dependency catalog
@@ -95,7 +95,7 @@ packages/comark/
 │       ├── frontmatter.ts    # parseFrontmatter() / renderFrontmatter()
 │       ├── heading-id.ts     # Auto heading id generation (shared by parser + stringifier)
 │       ├── yaml.ts           # YAML helpers
-│       ├── props-validation.ts # Component props validation
+│       ├── sanitize.ts       # Component props validation and frontmatter sanitization
 │       ├── parse/            # Parsing pipeline
 │       │   ├── token-processor.ts # markdown-exit tokens → document nodes
 │       │   ├── auto-close/   # Self-healing for incomplete markdown
@@ -490,6 +490,7 @@ import {
   isHtmlVoidElement,
   HTML_VOID_ELEMENTS,
   isMarkdownDocument,
+  sanitizeData,
 } from 'comark/utils'
 import { noopTracer, withSpan } from 'comark/utils/trace'
 
@@ -896,6 +897,7 @@ pnpm build        # Build all packages, then sync plugin re-exports
 pnpm stub         # Point every package's dist/ at src/ for local dev (runs on postinstall)
 pnpm test         # Run all package tests
 pnpm test:spec    # Run the SPEC fixtures only
+pnpm bench        # Run the CodSpeed Vitest benches (benchmarks/*.bench.ts; wall-clock locally)
 pnpm lint         # oxlint + oxfmt --check
 pnpm lint:fix     # oxlint --fix + oxfmt (write)
 pnpm typecheck    # tsc --noEmit against the root tsconfig
@@ -923,9 +925,19 @@ Workflows live in `.github/workflows/`:
 | Workflow | Purpose |
 |----------|---------|
 | `ci.yml` | lint → prepack → test → publish preview (pkg.pr.new) → bundle size check |
+| `codspeed.yml` | Runs `pnpm bench` under CodSpeed CPU simulation; reports perf changes on PRs |
 | `commit-signature.yml` | Fails PRs containing unsigned commits |
 | `bundle-snapshot.yml` | Reports bundle-size snapshot drift and updates it on demand |
 | `docs-preview-comment.yml` | Posts a docs preview link on PRs that touch `docs/content/**` |
+
+### Benchmarks (CodSpeed)
+
+`benchmarks/*.bench.ts` run through `benchmarks/vitest.config.ts` with
+`@codspeed/vitest-plugin` (a no-op outside CodSpeed). Shared inputs live in
+`benchmarks/fixtures.ts`. Renaming a bench or editing a fixture resets its
+history, so add new ones instead. Warm parsers at module load. Streaming
+benches need a dedicated parser and a `{ streaming: false }` reset inside the
+bench body; otherwise the incremental cache returns the previous result.
 
 ### Bundle size snapshot
 

@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.8.1](https://github.com/comarkdown/comark/compare/%40comark%2Fangular%400.8.0...%40comark%2Fangular%400.8.1) (2026-10-21)
+
+## [0.8.0](https://github.com/comarkdown/comark/compare/%40comark%2Fangular%400.7.0...%40comark%2Fangular%400.8.0) (2026-10-21)
+
+### Features
+
+* **binding:** add conditional `If` component with `#else` slot ([#411](https://github.com/comarkdown/comark/issues/411)) ([6377fac](https://github.com/comarkdown/comark/commit/6377fac9e51dd53fd93abdfb9bce021f0cbce09d))
+
+### Bug Fixes
+
+* don't leak ancestor props into elements whose bindings are all omitted ([#499](https://github.com/comarkdown/comark/issues/499)) ([0c69c5e](https://github.com/comarkdown/comark/commit/0c69c5ee48ac900ff759e1d76cd8c4a96abf8c21))
+* **react,svelte:** forward HTML attributes to the root element ([#492](https://github.com/comarkdown/comark/issues/492)) ([3266da4](https://github.com/comarkdown/comark/commit/3266da444bc8d6a175e58ab4506dfb2f125a669b))
+* render code block props as `data-*` attributes on native `pre` ([#463](https://github.com/comarkdown/comark/issues/463)) ([e5f1dcd](https://github.com/comarkdown/comark/commit/e5f1dcd742bb8cd375521885b04216b640be0c30))
+
 ## [0.7.0](https://github.com/comarkdown/comark/compare/@comark/angular@0.6.2...@comark/angular@0.7.0) (2026-09-10)
 
 ### Bug Fixes
