@@ -13,6 +13,12 @@ export interface MathConfig {
    * Additional katex options
    */
   options?: Record<string, unknown>
+  /**
+   * Also parse `\(…\)` as inline and `\[…\]` as display math, the delimiters LLMs
+   * often write. Off by default because `\(` and `\[` are Markdown escapes.
+   * @default false
+   */
+  brackets?: boolean
 }
 
 /**
@@ -277,6 +283,102 @@ function mathBlockRule(state: StateBlock, startLine: number, endLine: number, si
 }
 
 /**
+ * Index of the `\` that starts `\<close>` in `text`, skipping escaped pairs
+ * such as `\\`, or -1.
+ */
+function findBracketClose(text: string, from: number, close: number): number {
+  for (let pos = from; pos + 1 < text.length; pos++) {
+    if (text.charCodeAt(pos) !== 0x5c /* \ */) continue
+    if (text.charCodeAt(pos + 1) === close) return pos
+    pos++
+  }
+  return -1
+}
+
+// `\[1\]` and `\[1, 2\]` are escaped citations, not math.
+function isBracketMath(content: string): boolean {
+  return content.trim() !== '' && !/^[\s\d,–-]*$/.test(content)
+}
+
+/**
+ * markdown-it plugin for bracket math in a paragraph: `\(...\)` inline and
+ * `\[...\]` display, closed on the same line.
+ */
+function mathInlineBracketRule(state: StateInline, silent: boolean): boolean {
+  const start = state.pos
+  if (state.src.charCodeAt(start) !== 0x5c /* \ */) return false
+  const open = state.src.charCodeAt(start + 1)
+  if (open !== 0x28 /* ( */ && open !== 0x5b /* [ */) return false
+
+  const src = state.src.slice(0, state.posMax)
+  const lineEnd = src.indexOf('\n', start)
+  const end = findBracketClose(lineEnd === -1 ? src : src.slice(0, lineEnd), start + 2, open === 0x28 ? 0x29 : 0x5d)
+  if (end === -1) return false
+
+  const content = src.slice(start + 2, end)
+  if (!isBracketMath(content)) return false
+  // `\[text\](url)` keeps a link from forming; it isn't math.
+  if (open === 0x5b && src.charCodeAt(end + 2) === 0x28 /* ( */) return false
+
+  if (!silent) {
+    const token = state.push('math_inline', 'math', 0)
+    token.content = content
+    token.markup = open === 0x28 ? '\\(' : '\\['
+    if (open === 0x5b) token.meta = { display: true }
+  }
+
+  state.pos = end + 2
+  return true
+}
+
+/**
+ * markdown-it plugin for display math between `\[` and `\]` lines
+ */
+function mathBlockBracketRule(state: StateBlock, startLine: number, endLine: number, silent: boolean): boolean {
+  const start = state.bMarks[startLine] + state.tShift[startLine]
+  const max = state.eMarks[startLine]
+
+  if (state.src.charCodeAt(start) !== 0x5c /* \ */) return false
+  if (state.src.charCodeAt(start + 1) !== 0x5b /* [ */) return false
+
+  const lines = [state.src.slice(start + 2, max)]
+  let line = startLine
+  let end = findBracketClose(lines[0], 0, 0x5d)
+
+  while (end === -1) {
+    line++
+    if (line >= endLine) return false
+    const lineStart = state.bMarks[line] + state.tShift[line]
+    const lineMax = state.eMarks[line]
+    // TeX doesn't allow a blank line in display math, so `\[` isn't math here.
+    if (lineStart >= lineMax || state.sCount[line] < state.blkIndent) return false
+    lines.push(state.src.slice(lineStart, lineMax))
+    end = findBracketClose(lines[lines.length - 1], 0, 0x5d)
+  }
+
+  const last = lines[lines.length - 1]
+  // Text after `\]` makes this a paragraph, where the inline rule applies.
+  if (last.slice(end + 2).trim() !== '') return false
+  lines[lines.length - 1] = last.slice(0, end)
+
+  if (lines[0].trim() === '') lines.shift()
+  if (lines.length > 0 && lines[lines.length - 1].trim() === '') lines.pop()
+  const content = lines.join('\n')
+  if (!isBracketMath(content)) return false
+
+  if (silent) return true
+
+  const token = state.push('math_block', 'div', 0)
+  token.content = content
+  token.markup = '\\['
+  token.block = true
+  token.map = [startLine, line + 1]
+
+  state.line = line + 1
+  return true
+}
+
+/**
  * Create markdown-it plugin for math support
  */
 function markdownItMath(md: MarkdownExit, config: MathConfig = {}) {
@@ -292,6 +394,14 @@ function markdownItMath(md: MarkdownExit, config: MathConfig = {}) {
   md.block.ruler.before('fence', 'math_block', mathBlockRule, {
     alt: ['paragraph', 'reference', 'blockquote', 'list'],
   })
+
+  if (config.brackets) {
+    // Before `escape`, which would otherwise read `\(` and `\[` as literal brackets.
+    md.inline.ruler.before('escape', 'math_inline_bracket', mathInlineBracketRule)
+    md.block.ruler.before('fence', 'math_block_bracket', mathBlockBracketRule, {
+      alt: ['paragraph', 'reference', 'blockquote', 'list'],
+    })
+  }
 }
 
 /**

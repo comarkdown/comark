@@ -492,6 +492,16 @@ function healRegion(text: string, o: Opts): string {
       continue
     }
     if (c === 92 /* \ */) {
+      // A closed `\(…\)` or `\[…\]` may be math from `math({ brackets: true })`, so it isn't healed.
+      const next = text.charCodeAt(i + 1)
+      if ((o.inlineMath || o.blockMath) && (next === 40 /* ( */ || next === 91) /* [ */) {
+        const close = text.indexOf(next === 40 ? '\\)' : '\\]', i + 2)
+        if (close !== -1 && close + 2 <= len) {
+          i = close + 1
+          escEnd = i + 1
+          continue
+        }
+      }
       i++
       escEnd = i + 1
       continue

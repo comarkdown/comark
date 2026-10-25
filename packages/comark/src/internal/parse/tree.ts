@@ -366,6 +366,13 @@ function codeBlockProcessor(tokens: Token[], start: number, _state: ProcessState
   }
 }
 
+// Stringify needs the delimiter to write `\(` and `\[` math back; `$` math keeps its old shape.
+function mathAttributes(className: string, token: Token): ElementNodeAttributes {
+  const attributes: ElementNodeAttributes = { class: className, content: token.content }
+  if (token.markup.startsWith('\\')) attributes.$ = { markup: token.markup }
+  return attributes
+}
+
 function singleToken(fn: (token: Token) => Node) {
   return (tokens: Token[], start: number): ProcessorResult =>
     processPossibleAttributesSyntax(tokens, { nextIndex: start + 1, node: fn(tokens[start]) })
@@ -440,8 +447,8 @@ const processors: Record<string, Processor> = {
   s_open: openCloseToken('s_close', 'del'),
   mdc_block_open: processMdcBlock,
   code_inline: singleToken((t) => ['code', {}, t.content]),
-  math_inline: singleToken((t) => ['math', { class: 'math inline', content: t.content }, t.content]),
-  math_block: singleToken((t) => ['math', { class: 'math block', content: t.content }, t.content]),
+  math_inline: singleToken((t) => ['math', mathAttributes('math inline', t), t.content]),
+  math_block: singleToken((t) => ['math', mathAttributes('math block', t), t.content]),
   emoji: singleToken((t) => t.content),
   hr: singleToken(() => ['hr', {}]),
   hardbreak: singleToken(() => ['br', {}]),

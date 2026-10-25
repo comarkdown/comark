@@ -118,6 +118,10 @@ The plugin avoids matching dollar signs that are not math. It requires at least 
 Prices like $100 or $200 won't be parsed as math.
 ```
 
+### Bracket delimiters
+
+LLMs often write `\(…\)` for inline and `\[…\]` for display math. `math({ brackets: true })` parses them too. It is off by default because `\(` and `\[` are Markdown escapes for literal brackets. With it on, brackets that hold only numbers (`\[1\]`), code, and display math broken by a blank line still stay text, and `renderMarkdown()` writes the original delimiters back.
+
 ::tip
 See the [KaTeX supported functions →](https://katex.org/docs/supported.html) for the full LaTeX reference.
 ::
@@ -144,6 +148,7 @@ Returns a `ComarkPlugin` that tokenizes `$...$` and `$$...$$` expressions.
 - `options?` - Optional `MathConfig`:
   - `throwOnError?: boolean` - Throw on parse errors instead of returning an error message. Default: `false`
   - `options?: Record<string, unknown>` - Additional [KaTeX render options](https://katex.org/docs/options.html)
+  - `brackets?: boolean` - Also parse `\(…\)` and `\[…\]`. Default: `false`
 
 **Returns:** `ComarkPlugin`
 

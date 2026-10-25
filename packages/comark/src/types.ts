@@ -29,6 +29,8 @@ export type ElementNodeAttributes = {
     line?: number
     html?: 0 | 1
     block?: 0 | 1
+    /** Opening delimiter, when the syntax has more than one (`\(` or `\[` math) */
+    markup?: string
   }
 }
 
