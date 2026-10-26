@@ -253,6 +253,28 @@ ${Array.from(
 That's it — let me know if you want a full example!
 `
 
+/**
+ * Raw HTML with many attributes, as found in docs written for GitHub/VitePress.
+ * Every tag goes through `parseHtmlAttributes`, half of the values carry
+ * entities so both the plain and the decoding path are measured.
+ */
+export const htmlAttributesMarkdown = `# Raw HTML
+
+${Array.from(
+  { length: 30 },
+  (_, i) => `
+<div class="card card-${i}" id="card-${i}" data-index="${i}" hidden>
+  <a href="https://example.com/search?q=${i}&amp;page=2&amp;sort=asc" title="Tom &amp; Jerry &quot;${i}&quot;" target="_blank" rel="noopener noreferrer">
+    <img src="https://example.com/img/${i}.png" alt="Image &#8220;${i}&#8221; &mdash; preview" width="64" height="64" loading="lazy">
+  </a>
+  <span class='label' data-tooltip='It&#39;s item ${i}'>Item ${i}</span>
+</div>
+
+Inline <kbd class="key">Ctrl</kbd> + <abbr title="Rock &amp; Roll">R&amp;R</abbr> and <a href="/docs/${i}" class="link">docs ${i}</a>.
+`
+).join('\n')}
+`
+
 /** Splits `markdown` into `count` growing prefixes, ending with the full text. */
 export function toStreamChunks(markdown: string, count: number): string[] {
   const chunks: string[] = []
