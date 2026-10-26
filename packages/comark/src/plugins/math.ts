@@ -1,4 +1,4 @@
-import type { MarkdownExit, StateInline, StateBlock } from 'markdown-exit'
+import type { MarkdownExit, StateInline, StateBlock, Token } from 'markdown-exit'
 import type { MarkdownItPlugin } from 'comark'
 import { defineComarkPlugin } from 'comark'
 
@@ -13,6 +13,44 @@ export interface MathConfig {
    * Additional katex options
    */
   options?: Record<string, unknown>
+}
+
+interface Katex {
+  renderToString(tex: string, options?: Record<string, unknown>): string
+}
+
+let katex: Katex | undefined
+let loading: Promise<Katex> | undefined
+
+/**
+ * Load KaTeX once, on first use. Renderers call this instead of importing
+ * KaTeX, so apps that never render math don't load it.
+ */
+export function loadKatex(): Promise<Katex> {
+  loading ??= import('katex').then(
+    (module) => (katex = module.default),
+    (error) => {
+      loading = undefined
+      throw error
+    }
+  )
+  return loading
+}
+
+/**
+ * Typeset a formula to HTML with the KaTeX that {@link loadKatex} loaded.
+ *
+ * @param tex LaTeX math expression
+ * @param displayMode Whether to render in display mode
+ * @returns HTML, `''` when KaTeX can't typeset the formula, or `undefined` when KaTeX isn't loaded yet
+ */
+export function typesetMath(tex: string, displayMode: boolean): string | undefined {
+  if (!katex) return undefined
+  try {
+    return katex.renderToString(tex, { throwOnError: true, displayMode })
+  } catch {
+    return ''
+  }
 }
 
 /**
@@ -315,4 +353,15 @@ function markdownItMath(md: MarkdownExit, config: MathConfig = {}) {
 export default defineComarkPlugin((config: MathConfig = {}) => ({
   name: 'math',
   markdownItPlugins: [((md: MarkdownExit) => markdownItMath(md, config)) as unknown as MarkdownItPlugin],
+  // Loading KaTeX while parsing a document with math lets the renderers
+  // typeset synchronously, including in server rendering.
+  async post(state) {
+    if (hasMath(state.tokens)) await loadKatex().catch(() => {})
+  },
 }))
+
+function hasMath(tokens: Token[]): boolean {
+  return tokens.some(
+    (token) => token.type === 'math_block' || token.children?.some((child) => child.type === 'math_inline')
+  )
+}

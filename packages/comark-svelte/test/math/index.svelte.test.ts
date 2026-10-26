@@ -10,20 +10,21 @@ describe('Math component', () => {
     const screen = await render(Math, { content: 'x^2', class: 'inline' })
     const wrapper = screen.container.querySelector<HTMLElement>('.math.inline')!
     expect(wrapper).not.toBeNull()
-    expect(wrapper.querySelector('.katex')).not.toBeNull()
+    await expect.poll(() => wrapper.querySelector('.katex')).not.toBeNull()
   })
 
   it('renders display math with KaTeX', async () => {
     const screen = await render(Math, { content: 'E = mc^2', class: '' })
     const wrapper = screen.container.querySelector<HTMLElement>('.math.block')!
     expect(wrapper).not.toBeNull()
-    expect(wrapper.querySelector('.katex')).not.toBeNull()
+    await expect.poll(() => wrapper.querySelector('.katex')).not.toBeNull()
   })
 
-  it('handles invalid LaTeX gracefully', async () => {
+  it('shows the TeX source for invalid LaTeX', async () => {
     const screen = await render(Math, { content: '\\invalid{', class: '' })
     const wrapper = screen.container.querySelector<HTMLElement>('.math.block')!
     expect(wrapper).not.toBeNull()
+    expect(wrapper.textContent).toBe('\\invalid{')
   })
 })
 

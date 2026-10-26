@@ -16,7 +16,7 @@ determines inline vs display mode (display when class does NOT contain "inline")
 ```
 -->
 <script lang="ts">
-  import katex from 'katex'
+  import { loadKatex, typesetMath } from 'comark/plugins/math'
 
   let {
     content,
@@ -28,22 +28,23 @@ determines inline vs display mode (display when class does NOT contain "inline")
 
   let isInline = $derived(className.split(' ').includes('inline'))
 
-  let mathml = $derived.by(() => {
-    try {
-      return katex.renderToString(content, {
-        throwOnError: true,
-        displayMode: !isInline,
-      })
-    }
-    catch {
-      return '...'
-    }
+  // KaTeX loads on first use; parsing a document with math loads it, so a
+  // server render after parsing typesets. Until then, and for unfinished or
+  // invalid TeX, the source shows.
+  let loaded = $state(false)
+  let html = $derived.by(() => {
+    void loaded
+    return typesetMath(content, !isInline)
+  })
+
+  $effect(() => {
+    if (html === undefined) loadKatex().then(() => (loaded = true), () => {})
   })
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -- KaTeX output is safe rendered HTML -->
 {#if isInline}
-  <span class="math inline">{@html mathml}</span>
+  <span class="math inline">{#if html}{@html html}{:else}{content}{/if}</span>
 {:else}
-  <div class="math block">{@html mathml}</div>
+  <div class="math block">{#if html}{@html html}{:else}{content}{/if}</div>
 {/if}
