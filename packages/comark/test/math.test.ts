@@ -39,3 +39,16 @@ Inline $E = mc^2$ end.`
     expect(await renderMarkdown(document)).toBe(source)
   })
 })
+
+describe('bracket math markdown rendering', () => {
+  it('round-trips \\(…\\) and \\[…\\] delimiters', async () => {
+    const source = String.raw`\[
+\frac{-b \pm \sqrt{b^2 - 4ac}}{2a}
+\]
+
+Inline \(E = mc^2\) and \[x^2\] end.`
+    const document = await parseMarkdown(source, { plugins: [math({ brackets: true })] })
+
+    expect(await renderMarkdown(document)).toBe(source)
+  })
+})

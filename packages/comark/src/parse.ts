@@ -102,6 +102,7 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
 
   const plugins = dedupePlugins(defaultPlugins, userPlugins)
   const hasPlugin = (name: string) => plugins.some((plugin) => plugin.name === name)
+  const pluginAutoClose = Object.assign({}, ...plugins.map((p) => p.autoClose))
 
   const mdPlugins: MarkdownExitPlugin[] = []
   for (const plugin of plugins) {
@@ -179,6 +180,7 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
       } else if (autoClose) {
         state.markdown = withSpan(tracer, 'comark:autoclose', () =>
           autoCloseMarkdown(state.markdown, {
+            ...pluginAutoClose,
             frontmatter: hasPlugin('frontmatter') && opts.streaming,
             syntax: hasPlugin('components'),
             attributes: hasPlugin('components') || hasPlugin('attributes'),
