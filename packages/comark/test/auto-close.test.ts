@@ -546,6 +546,23 @@ describe('bracket math', () => {
     expect(autoCloseMarkdown('\\[\nx `y\n\\]', { bracketMath: true })).toBe('\\[\nx `y\n\\]')
   })
 
+  it('lets an indented \\[ span lines', () => {
+    expect(autoCloseMarkdown('  \\[\n  x *y\n  \\]', { bracketMath: true })).toBe('  \\[\n  x *y\n  \\]')
+    expect(autoCloseMarkdown('- step\n  \\[\n  x *y\n  \\]', { bracketMath: true })).toBe(
+      '- step\n  \\[\n  x *y\n  \\]'
+    )
+  })
+
+  it('heals a multi-line \\[ span the parser rejects', () => {
+    expect(autoCloseMarkdown('\\[\nx *y\n\\] tail', { bracketMath: true })).toBe('\\[\nx *y\n\\] tail*')
+    expect(autoCloseMarkdown('\\[\nx\n  \ny *z\n\\]', { bracketMath: true })).toBe('\\[\nx\n  \ny *z\n\\]*')
+  })
+
+  it('handles many unclosed openers', () => {
+    const input = '\\( '.repeat(20000) + '*a'
+    expect(autoCloseMarkdown(input, { bracketMath: true })).toBe(input + '*')
+  })
+
   it('skips escaped pairs when finding the closer', () => {
     expect(autoCloseMarkdown('\\(a\\\\)b *c\\)', { bracketMath: true })).toBe('\\(a\\\\)b *c\\)')
   })

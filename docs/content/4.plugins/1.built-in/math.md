@@ -122,6 +122,10 @@ Prices like $100 or $200 won't be parsed as math.
 
 LLMs often write `\(…\)` for inline and `\[…\]` for display math. `math({ brackets: true })` parses them too. It is off by default because `\(` and `\[` are Markdown escapes for literal brackets. With it on, brackets that hold only numbers (`\[1\]`), code, and display math broken by a blank line still stay text, and `renderMarkdown()` writes the original delimiters back.
 
+`\[…\]` on its own lines is a display block. Inside a paragraph (`so \[x^2\] holds`) it renders as inline math.
+
+While streaming, auto-close leaves closed `\(…\)` and `\[…\]` alone, but it doesn't yet add the missing `\)` or `\]` to an unfinished `\(` or `\[`. Until the closer arrives, it shows as text.
+
 ::tip
 See the [KaTeX supported functions →](https://katex.org/docs/supported.html) for the full LaTeX reference.
 ::

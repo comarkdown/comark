@@ -86,6 +86,16 @@ describe('math plugin with brackets', () => {
     ])
   })
 
+  it('keeps auto-close out of indented \\[ blocks', async () => {
+    const block = ['math', { class: 'math block', content: 'x *y', $: { markup: '\\[' } }, 'x *y']
+    expect(await parse('  \\[\n  x *y\n  \\]')).toEqual([block])
+    expect(await parse('- step\n  \\[\n  x *y\n  \\]')).toEqual([['ul', {}, ['li', {}, ['p', {}, 'step'], block]]])
+  })
+
+  it('heals a \\[ span that the block rule rejects', async () => {
+    expect(await parse('\\[\nx *y\n\\] tail')).toEqual([['p', {}, '[\nx ', ['em', {}, 'y\n] tail']]])
+  })
+
   it('still heals inside \\(…\\) without brackets', async () => {
     expect(await parse('Area \\(the *word\\)', false)).toEqual([['p', {}, 'Area (the ', ['em', {}, 'word)']]])
   })
