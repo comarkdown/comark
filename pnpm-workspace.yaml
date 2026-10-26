@@ -162,7 +162,7 @@ catalog:
 
   # Testing
   "@codspeed/vitest-plugin": ^6.0.0
-  tinybench: ^2.9.0
+  tinybench: ^6.2.2
   vitest: ^4.1.11
   vitest-browser-svelte: ^3.1.0
 
