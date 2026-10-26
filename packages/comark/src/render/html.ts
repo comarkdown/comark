@@ -7,7 +7,7 @@ import type {
   ConditionalNodeHandler,
   State,
 } from '../types.ts'
-import { createState, one } from '../internal/stringify/runtime.ts'
+import { createState, one } from '../internal/stringify/state.ts'
 import { html } from '../internal/stringify/handlers/html.ts'
 import { comment } from '../internal/stringify/handlers/comment.ts'
 

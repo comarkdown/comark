@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { parseMarkdown } from '../src/index.ts'
-import { renderMarkdown } from '../src/render.ts'
+import { renderMarkdown } from '../src/render/index.ts'
 import math from '../src/plugins/math.ts'
 import type { MarkdownDocument } from '../src/types.ts'
 
