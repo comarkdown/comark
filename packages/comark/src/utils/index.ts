@@ -11,20 +11,35 @@ export function isMarkdownDocument(value: unknown): value is MarkdownDocument {
   return !!value && typeof value === 'object' && Array.isArray((value as MarkdownDocument).nodes)
 }
 
+export interface TextContentOptions {
+  /**
+   * Called on every text node before it is appended, e.g. `decodeHTML` from `entities`.
+   * Parsed documents already have decoded text, so only pass this for trees whose text
+   * may still contain character references (hand-built or from another source).
+   */
+  decodeHTML?: (text: string) => string
+}
+
 /**
  * Get the text content of a Markdown AST node
  *
  * @param node - The node
+ * @param options - The options
+ * @param options.decodeHTML - Function applied to each text node
  * @returns The text content
  */
-export function textContent(node: Node): string {
+export function textContent(node: Node, options?: TextContentOptions): string {
+  return collectText(node, options?.decodeHTML)
+}
+
+function collectText(node: Node, decode: ((text: string) => string) | undefined): string {
   if (typeof node === 'string') {
-    return node
+    return decode ? decode(node) : node
   }
   let out = ''
   const len = node.length
   for (let i = 2; i < len; i++) {
-    out += textContent(node[i] as Node)
+    out += collectText(node[i] as Node, decode)
   }
   return out
 }
