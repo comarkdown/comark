@@ -529,6 +529,28 @@ describe('math syntax', () => {
   })
 })
 
+describe('bracket math', () => {
+  it('heals inside \\(…\\) unless bracketMath is set', () => {
+    expect(autoCloseMarkdown('Area \\(the *word\\)', { math: true })).toBe('Area \\(the *word\\)*')
+    expect(autoCloseMarkdown('Area \\(a^*\\)', { math: true, bracketMath: true })).toBe('Area \\(a^*\\)')
+  })
+
+  it('heals citations and \\[text\\](url) with bracketMath', () => {
+    expect(autoCloseMarkdown('See \\[1\\] *a', { bracketMath: true })).toBe('See \\[1\\] *a*')
+    expect(autoCloseMarkdown('\\[a *b\\](url)', { bracketMath: true })).toBe('\\[a *b\\](url)*')
+  })
+
+  it('only lets \\[ at line start span lines', () => {
+    expect(autoCloseMarkdown('Text \\(x *y\nmore\\)', { bracketMath: true })).toBe('Text \\(x *y\nmore\\)*')
+    expect(autoCloseMarkdown('Text \\[x *y\nmore\\]', { bracketMath: true })).toBe('Text \\[x *y\nmore\\]*')
+    expect(autoCloseMarkdown('\\[\nx `y\n\\]', { bracketMath: true })).toBe('\\[\nx `y\n\\]')
+  })
+
+  it('skips escaped pairs when finding the closer', () => {
+    expect(autoCloseMarkdown('\\(a\\\\)b *c\\)', { bracketMath: true })).toBe('\\(a\\\\)b *c\\)')
+  })
+})
+
 describe('frontmatter', () => {
   it('should handle frontmatter', () => {
     const input = '---\ntitle: Test\n---'

@@ -85,4 +85,8 @@ describe('math plugin with brackets', () => {
       ['math', { class: 'math block', content: 'x `y', $: { markup: '\\[' } }, 'x `y'],
     ])
   })
+
+  it('still heals inside \\(…\\) without brackets', async () => {
+    expect(await parse('Area \\(the *word\\)', false)).toEqual([['p', {}, 'Area (the ', ['em', {}, 'word)']]])
+  })
 })

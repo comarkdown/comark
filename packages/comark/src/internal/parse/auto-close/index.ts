@@ -16,6 +16,7 @@
  */
 
 import { closeTables } from './table.ts'
+import { findBracketClose, isBracketMath } from '../../bracket-math.ts'
 
 export const INCOMPLETE_LINK_PLACEHOLDER = 'comark:incomplete-link'
 export const INCOMPLETE_IMAGE_PLACEHOLDER = 'comark:incomplete-image'
@@ -42,6 +43,8 @@ export interface AutoCloseOptions {
   blockMath?: boolean
   /** Auto-close inline `$…$`. Defaults to `math` (else false). Off by default so `$50` stays prose. */
   inlineMath?: boolean
+  /** Don't heal inside closed `\(…\)` / `\[…\]` (math `brackets: true`). Default false. */
+  bracketMath?: boolean
   /**
    * Drop a trailing opener (`* _ $ : [ { !`) after whitespace at EOF so a
    * half-typed marker does not flash (`hello *` → `hello`). Default false.
@@ -85,6 +88,7 @@ interface Opts {
   imagePh: string
   blockMath: boolean
   inlineMath: boolean
+  bracketMath: boolean
   links: boolean
   images: boolean
   bold: boolean
@@ -112,6 +116,7 @@ export function autoCloseMarkdown(markdown: string, options: AutoCloseOptions = 
     imagePh: options.incompleteImagePlaceholder ?? INCOMPLETE_IMAGE_PLACEHOLDER,
     blockMath: options.blockMath ?? math,
     inlineMath: options.inlineMath ?? math,
+    bracketMath: options.bracketMath === true,
     links: options.links !== false,
     images: options.images !== false,
     bold: options.bold !== false,
@@ -492,14 +497,28 @@ function healRegion(text: string, o: Opts): string {
       continue
     }
     if (c === 92 /* \ */) {
-      // A closed `\(…\)` or `\[…\]` may be math from `math({ brackets: true })`, so it isn't healed.
-      const next = text.charCodeAt(i + 1)
-      if ((o.inlineMath || o.blockMath) && (next === 40 /* ( */ || next === 91) /* [ */) {
-        const close = text.indexOf(next === 40 ? '\\)' : '\\]', i + 2)
-        if (close !== -1 && close + 2 <= len) {
-          i = close + 1
-          escEnd = i + 1
-          continue
+      // A closed `\(…\)` or `\[…\]` is math under `math({ brackets: true })`, so it
+      // isn't healed. Mirrors the parser: `\(` and inline `\[` close on the same
+      // line, `\[` at line start may span lines, and citations or `\[text\](url)`
+      // stay text.
+      if (o.bracketMath) {
+        const next = text.charCodeAt(i + 1)
+        if (next === 40 /* ( */ || next === 91 /* [ */) {
+          let end = len
+          if (next === 40 || i !== lineStart) {
+            const nl = text.indexOf('\n', i + 2)
+            if (nl !== -1 && nl < len) end = nl
+          }
+          const close = findBracketClose(text, i + 2, next === 40 ? 41 : 93, end)
+          if (
+            close !== -1 &&
+            isBracketMath(text.slice(i + 2, close)) &&
+            !(next === 91 && text.charCodeAt(close + 2) === 40 /* ( */)
+          ) {
+            i = close + 1
+            escEnd = i + 1
+            continue
+          }
         }
       }
       i++

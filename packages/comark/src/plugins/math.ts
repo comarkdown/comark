@@ -1,6 +1,7 @@
 import type { MarkdownExit, StateInline, StateBlock } from 'markdown-exit'
 import type { MarkdownItPlugin } from 'comark'
 import { defineComarkPlugin } from 'comark'
+import { findBracketClose, isBracketMath } from '../internal/bracket-math.ts'
 
 export interface MathConfig {
   /**
@@ -283,24 +284,6 @@ function mathBlockRule(state: StateBlock, startLine: number, endLine: number, si
 }
 
 /**
- * Index of the `\` that starts `\<close>` in `text`, skipping escaped pairs
- * such as `\\`, or -1.
- */
-function findBracketClose(text: string, from: number, close: number): number {
-  for (let pos = from; pos + 1 < text.length; pos++) {
-    if (text.charCodeAt(pos) !== 0x5c /* \ */) continue
-    if (text.charCodeAt(pos + 1) === close) return pos
-    pos++
-  }
-  return -1
-}
-
-// `\[1\]` and `\[1, 2\]` are escaped citations, not math.
-function isBracketMath(content: string): boolean {
-  return content.trim() !== '' && !/^[\s\d,–-]*$/.test(content)
-}
-
-/**
  * markdown-it plugin for bracket math in a paragraph: `\(...\)` inline and
  * `\[...\]` display, closed on the same line.
  */
@@ -425,4 +408,5 @@ function markdownItMath(md: MarkdownExit, config: MathConfig = {}) {
 export default defineComarkPlugin((config: MathConfig = {}) => ({
   name: 'math',
   markdownItPlugins: [((md: MarkdownExit) => markdownItMath(md, config)) as unknown as MarkdownItPlugin],
+  autoClose: config.brackets ? { bracketMath: true } : undefined,
 }))

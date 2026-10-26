@@ -2,6 +2,7 @@ import type { DumpOptions } from 'js-yaml'
 import type MarkdownExit from 'markdown-exit'
 import type { Token } from 'markdown-exit'
 import type MarkdownIt from 'markdown-it'
+import type { AutoCloseOptions } from './internal/parse/auto-close/index.ts'
 
 // #region Utility Types
 /**
@@ -383,6 +384,8 @@ export type ComarkPlugin<TMeta = {}, TFrontmatter = {}> = {
   markdownItPost?: (state: ComarkParseTokensState) => void
   pre?: (state: ComarkParsePreState) => Promise<void> | void
   post?: (state: ComarkParsePostState<Writable<TMeta>, Writable<TFrontmatter>>) => Promise<void> | void
+  /** Auto-close flags for syntax this plugin adds, applied when `autoClose` is `true`. */
+  autoClose?: Pick<AutoCloseOptions, 'bracketMath'>
   /** Phantom — used for type inference only. Never set at runtime. */
   __meta?: TMeta
   /** Phantom — used for type inference only. Never set at runtime. */
