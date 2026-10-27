@@ -1,5 +1,6 @@
 import type { Node, ElementNode, ElementNodeAttributes, MarkdownDocument } from 'comark'
-import { decodeHTML, isHtmlVoidElement, TREE_WALK_MAX_DEPTH } from 'comark/utils'
+import { decodeHTMLAttribute } from 'entities'
+import { isHtmlVoidElement, TREE_WALK_MAX_DEPTH } from 'comark/utils'
 
 export type ParsedHtmlTag =
   | { kind: 'open'; tag: string; attrs: Record<string, unknown>; selfClosing: boolean }
@@ -182,6 +183,15 @@ export function parseHtmlInline(content: string): ParsedHtmlTag {
 }
 
 /**
+ * Decode character references in a raw attribute value the way browsers do:
+ * legacy semicolon-less references (`&amp`) are decoded, but not when followed by
+ * `=` or an alphanumeric (`?a=1&copy=2` stays literal). Backslashes are literal.
+ */
+function decodeAttributeValue(value: string): string {
+  return value.includes('&') ? decodeHTMLAttribute(value) : value
+}
+
+/**
  * Parse HTML attribute string into a key/value map.
  * Supports `key="value"`, `key='value'`, bare `key=value`, and boolean attributes.
  * Names are lowercased, as HTML attribute names are case-insensitive.
@@ -195,7 +205,7 @@ export function parseHtmlAttributes(attrsStr: string): Record<string, unknown> {
   while ((match = re.exec(attrsStr)) !== null) {
     const key = match[1].toLowerCase()
     const value = match[2] ?? match[3] ?? match[4]
-    attrs[key] = value === undefined ? true : decodeHTML(value)
+    attrs[key] = value === undefined ? true : decodeAttributeValue(value)
   }
 
   return attrs

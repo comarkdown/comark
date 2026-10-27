@@ -90,7 +90,8 @@ catalog:
   comark: ^0.8.1
 
   # Core comark dependencies
-  entities: ^8.1.0
+  # Keep in the same major as markdown-exit's `entities` so installs dedupe to one copy.
+  entities: ^7.0.0
   github-slugger: ^2.0.0
   hast-util-to-string: ^3.0.1
   js-yaml: ^5.4.2
