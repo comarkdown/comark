@@ -10,10 +10,14 @@ export function math(node: ElementNode, state: State, parent?: ElementNode): str
   const hasBlockClass = classes.includes('block')
   const hasInlineSiblings = parent?.some((child, index) => index > 1 && typeof child === 'string') ?? false
   const isInline = hasInlineClass || (!hasBlockClass && hasInlineSiblings)
+  const markup = node[1].$?.markup
 
   if (isInline) {
+    if (markup === '\\(') return `\\(${content}\\)`
+    if (markup === '\\[') return `\\[${content}\\]`
     return `$${content}$`
   }
 
+  if (markup === '\\[') return `\\[\n${content}\n\\]${state.context.blockSeparator}`
   return `$$\n${content}\n$$${state.context.blockSeparator}`
 }
