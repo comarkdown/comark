@@ -117,7 +117,7 @@ catalog:
   react-dom: ^19.3.0
 
   # Build tooling
-  release-it: ^20.2.1
+  release-it: ^21.1.1
   remark-gfm: ^4.0.1
   remark-mdc: ^3.11.1
   remark-parse: ^11.0.0
