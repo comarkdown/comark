@@ -1,9 +1,15 @@
 import { describe, expect, it } from 'vitest'
 import { parseMarkdown } from 'comark'
-import { renderHtmlFromDocument } from '@comark/html/document'
-import { renderHtmlFromDocument as renderGeneric } from '@comark/html'
+import { render } from 'comark/render'
+import type { RendererOptions } from 'comark/render'
+import { renderHtmlFromDocument } from '@comark/html/render'
 
-describe('HTML document entry', () => {
+// The generic renderer in HTML mode, which `@comark/html` used before it got its own renderer.
+async function renderGeneric(document: Parameters<typeof render>[0], options: RendererOptions = {}) {
+  return (await render(document, { blockSeparator: '\n', format: 'text/html', ...options })).trim()
+}
+
+describe('HTML renderer', () => {
   it.each([
     '# Heading\n\nHello **world** & <https://example.com>',
     '- One\n- Two\n\n> Quote',
@@ -50,13 +56,20 @@ describe('HTML document entry', () => {
     expect(await renderHtmlFromDocument({ nodes })).toBe(await renderGeneric({ nodes }))
   })
 
-  it('preserves format overrides and Markdown handler access on the existing export', async () => {
-    const document = await parseMarkdown('**Strong**')
-    expect(await renderGeneric(document, { format: 'markdown/comark' })).toBe('**Strong**')
-    expect(
-      await renderGeneric(document, {
-        components: { strong: (node, state, parent) => state.handlers.strong(node, state, parent) },
-      })
-    ).toContain('**Strong**')
+  it('passes the renderer state to components', async () => {
+    const document = await parseMarkdown('::card\nHello **world**\n::')
+    const result = await renderHtmlFromDocument(document, {
+      components: {
+        card: async (node, state) => {
+          const revert = state.applyContext({ blockSeparator: '' })
+          try {
+            return `<section data-format="${state.context.format}">${await state.flow(node, state)}</section>`
+          } finally {
+            state.applyContext(revert)
+          }
+        },
+      },
+    })
+    expect(result).toBe('<section data-format="text/html">Hello <strong>world</strong></section>')
   })
 })

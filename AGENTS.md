@@ -152,8 +152,7 @@ Located at `packages/comark-html/`. Framework-free HTML string rendering.
   "./plugins/*": "./dist/plugins/*.js",
   "./utils": "./dist/utils/index.js",
   "./parse": "./dist/parse.js",
-  "./render": "./dist/render.js",
-  "./document": "./dist/document.js"
+  "./render": "./dist/render.js"
 }
 ```
 
@@ -179,7 +178,7 @@ const html = await renderHtml(markdownString)
 
 ---
 
-The `/document` entry uses `comark/render/html` with only HTML and comment handlers. Callbacks receive `render`, `data`, and `renderData`; generic handler access and format switching remain available through the existing entries. Both renderers share the registry-independent engine in `internal/stringify/state.ts`; each passes its own handler map to `createState`. HTML-safe attribute handling lives in `html-attributes.ts`; Markdown/YAML attribute serialization stays in `attributes.ts`.
+`@comark/html` renders through `comark/render/html`, which registers only the HTML and comment handlers, so it never loads the Markdown serializers or YAML. Components still receive the full `state`, but `state.handlers` holds only `html` and `comment`, and the output format is always `text/html`. Both `comark/render` and `comark/render/html` share the engine in `internal/stringify/state.ts`; each passes its own handler map to `createState`. HTML-safe attribute handling lives in `html-attributes.ts`; Markdown/YAML attribute serialization stays in `attributes.ts`.
 
 ## Package: @comark/ansi
 

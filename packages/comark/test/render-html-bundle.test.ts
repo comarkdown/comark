@@ -3,7 +3,7 @@ import { gzipSync } from 'node:zlib'
 import { expect, it } from 'vitest'
 import { build } from 'vite'
 
-it('bundles the HTML document export without Markdown serializers or YAML', async () => {
+it('bundles the HTML render export without Markdown serializers or YAML', async () => {
   const result = await build({
     configFile: false,
     logLevel: 'silent',
@@ -14,7 +14,7 @@ it('bundles the HTML document export without Markdown serializers or YAML', asyn
           if (id === 'html-consumer' || id.endsWith('/html-consumer')) return '\0html-consumer'
         },
         load(id) {
-          if (id === '\0html-consumer') return "export { renderHtmlFromDocument } from '@comark/html/document'"
+          if (id === '\0html-consumer') return "export { renderHtmlFromDocument } from '@comark/html/render'"
         },
       },
     ],
@@ -39,7 +39,7 @@ it('bundles the HTML document export without Markdown serializers or YAML', asyn
   )
 })
 
-it('imports the document entry without loading YAML or Markdown handlers in Node', () => {
+it('imports the HTML render entry without loading YAML or Markdown handlers in Node', () => {
   execFileSync(
     process.execPath,
     [
@@ -57,7 +57,7 @@ it('imports the document entry without loading YAML or Markdown handlers in Node
         return next(url, context)
       }
     })
-    const { renderHtmlFromDocument } = await import('@comark/html/document')
+    const { renderHtmlFromDocument } = await import('@comark/html/render')
     assert.equal(await renderHtmlFromDocument({ nodes: [['p', {}, 'Hello']] }), '<p>Hello</p>')
   `,
     ],
