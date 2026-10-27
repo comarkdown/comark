@@ -1,7 +1,7 @@
-import { resolveAttributes, type NodeHandler } from 'comark/render'
+import type { NodeHandler } from 'comark/render'
 import { resolveIfWrapper, selectIfBranch, shouldRenderIf, type IfProps } from 'comark/plugins/binding'
 import type { Node } from 'comark'
-import { escapeHtml } from 'comark/utils'
+import { escapeHtml, resolveAttributes } from 'comark/utils'
 
 export * from 'comark/plugins/binding'
 export { default } from 'comark/plugins/binding'

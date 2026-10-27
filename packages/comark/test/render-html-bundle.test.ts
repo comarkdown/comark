@@ -64,3 +64,26 @@ it('imports the HTML render entry without loading YAML or Markdown handlers in N
     { cwd: process.cwd(), encoding: 'utf8' }
   )
 })
+
+it('imports the HTML binding plugin without loading Markdown handlers in Node', () => {
+  execFileSync(
+    process.execPath,
+    [
+      '--input-type=module',
+      '-e',
+      `
+    import { registerHooks } from 'node:module'
+    registerHooks({
+      load(url, context, next) {
+        if (url.includes('/internal/stringify/handlers/') && !/\\/(html|comment)\\.(js|ts)$/.test(url)) {
+          throw new Error('Unexpected renderer dependency: ' + url)
+        }
+        return next(url, context)
+      }
+    })
+    await import('@comark/html/plugins/binding')
+  `,
+    ],
+    { cwd: process.cwd(), encoding: 'utf8' }
+  )
+})

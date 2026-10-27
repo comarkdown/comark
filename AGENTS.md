@@ -178,7 +178,7 @@ const html = await renderHtml(markdownString)
 
 ---
 
-`@comark/html` renders through `comark/render/html`, which registers only the HTML and comment handlers, so it never loads the Markdown serializers or YAML. Components still receive the full `state`, but `state.handlers` holds only `html` and `comment`, and the output format is always `text/html`. Both `comark/render` and `comark/render/html` share the engine in `internal/stringify/state.ts`; each passes its own handler map to `createState`. HTML-safe attribute handling lives in `html-attributes.ts`; Markdown/YAML attribute serialization stays in `attributes.ts`.
+`@comark/html` renders through `comark/render/html`, which registers only the HTML and comment handlers, so rendering never loads the Markdown serializers. `@comark/html/render` also stays free of YAML; the root entry and the plugins import the parser, which loads YAML for frontmatter. Components still receive the full `state`, but `state.handlers` holds only `html` and `comment`, and the output format is always `text/html`. Both `comark/render` and `comark/render/html` share the engine in `internal/stringify/state.ts`; each passes its own handler map to `createState`. HTML-safe attribute handling lives in `html-attributes.ts`; Markdown/YAML attribute serialization stays in `attributes.ts`.
 
 ## Package: @comark/ansi
 
