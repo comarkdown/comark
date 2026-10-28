@@ -150,13 +150,39 @@ Returns a `ComarkPlugin` that tokenizes `$...$` and `$$...$$` expressions.
 **Parameters:**
 
 - `options?` - Optional `MathConfig`:
-  - `throwOnError?: boolean` - Throw on parse errors instead of returning an error message. Default: `false`
+  - `throwOnError?: boolean` - **Deprecated**, ignored by the parser. Only affects the deprecated `renderMath()` helper and will be removed in `0.9.0`. Default: `false`
   - `options?: Record<string, unknown>` - Additional [KaTeX render options](https://katex.org/docs/options.html)
   - `brackets?: boolean` - Also parse `\(…\)` and `\[…\]`. Default: `false`
 
 **Returns:** `ComarkPlugin`
 
 The plugin stores LaTeX source as plain text in the AST. Rendering requires passing `Math` to the `components` prop of `<Markdown>` (see [Usage](#usage)). KaTeX only runs when the component mounts.
+
+### Rendering math manually
+
+To render or validate LaTeX outside a `Math` component (for example in a custom component or a server-side pipeline), call KaTeX directly:
+
+```ts
+import katex from 'katex'
+
+// Render to an HTML string
+const inline = katex.renderToString('E = mc^2', { displayMode: false, throwOnError: false })
+const display = katex.renderToString('x^2', { displayMode: true, throwOnError: false })
+
+// Validate LaTeX syntax
+function isValidMath(code: string): boolean {
+  try {
+    katex.renderToString(code, { throwOnError: true })
+    return true
+  } catch {
+    return false
+  }
+}
+```
+
+::warning
+`renderMath()` and `validateMath()` exported from `comark/plugins/math` (and every framework `plugins/math` subpath) are deprecated and will be removed in `0.9.0`. Replace them with the snippet above.
+::
 
 ---
 

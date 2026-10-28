@@ -7,6 +7,8 @@ export interface MathConfig {
   /**
    * Throw on parse errors or return error message
    * @default false
+   * @deprecated Only used by the deprecated `renderMath()`; the parser ignores it.
+   * Will be removed in 0.9.0. Pass KaTeX options to `katex.renderToString()` directly.
    */
   throwOnError?: boolean
 
@@ -29,6 +31,9 @@ export interface MathConfig {
  * @param displayMode Whether to render in display mode
  * @param config KaTeX configuration
  * @returns HTML string
+ *
+ * @deprecated Will be removed in 0.9.0. Call `katex.renderToString()` directly,
+ * see https://comark.dev/plugins/built-in/math#rendering-math-manually
  *
  * @example
  * ```ts
@@ -61,6 +66,9 @@ export async function renderMath(code: string, displayMode: boolean, config: Mat
  *
  * @param code LaTeX math expression
  * @returns true if valid, false otherwise
+ *
+ * @deprecated Will be removed in 0.9.0. Call `katex.renderToString()` with
+ * `throwOnError: true` directly, see https://comark.dev/plugins/built-in/math#rendering-math-manually
  *
  * @example
  * ```ts
