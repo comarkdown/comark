@@ -117,7 +117,7 @@ The Comark TextMate grammar can also be imported independently from the plugin-o
 import comarkLanguages, { comarkLanguage } from 'comark/plugins/shiki/language-comark'
 ```
 
-The default export includes the Comark grammar and its Markdown, YAML, and HTML dependencies, ready to pass to Shiki. This entry does not import rangi.
+The default export includes the Comark grammar and its Markdown, YAML, and HTML dependencies, ready to pass to Shiki. This entry does not import rangi. The grammar supports inline and block component attributes, including braces inside quoted values such as `:badge{title="a}b"}`.
 
 With framework components:
 
