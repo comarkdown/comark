@@ -35,7 +35,7 @@ catalog:
   "@nuxt/devtools-kit": 4.0.0-beta.1
   # Keep kit on the same minor line as `nuxt` so `@nuxt/schema` stays singular
   # (dual schema breaks `defineNuxtModule` setup typing + declaration emit).
-  "@nuxt/kit": 4.6.1
+  "@nuxt/kit": 4.6.3
   "@nuxt/ui": ^4.11.2
   "satori": ^0.33.5
   "@resvg/resvg-js": ^2.6.2
@@ -103,7 +103,7 @@ catalog:
   next: ^16.3.6
 
   # Nuxt
-  nuxt: ^4.6.1
+  nuxt: ^4.6.3
   nuxt-studio: 1.7.0
 
   # Linting
@@ -117,7 +117,7 @@ catalog:
   react-dom: ^19.3.0
 
   # Build tooling
-  release-it: ^20.2.1
+  release-it: ^21.1.1
   remark-gfm: ^4.0.1
   remark-mdc: ^3.11.1
   remark-parse: ^11.0.0
@@ -162,7 +162,7 @@ catalog:
 
   # Testing
   "@codspeed/vitest-plugin": ^6.0.0
-  tinybench: ^2.9.0
+  tinybench: ^6.2.2
   vitest: ^4.1.11
   vitest-browser-svelte: ^3.1.0
 

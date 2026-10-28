@@ -57,7 +57,9 @@ packages/comark/
 ├── src/
 │   ├── index.ts              # Entry point: re-exports parse.ts, auto-close, context, types
 │   ├── parse.ts              # Core parser: parseMarkdown(), createMarkdownParser() (comark/parse)
-│   ├── render.ts             # String rendering: renderMarkdown() (renderHtmlFromDocument() moved to @comark/html)
+│   ├── render/
+│   │   ├── index.ts          # String rendering: renderMarkdown() (renderHtmlFromDocument() moved to @comark/html)
+│   │   └── html.ts           # HTML-only renderer (comark/render/html)
 │   ├── types.ts              # Document model (MarkdownDocument, Node, ElementNode, TextNode, CommentNode) + ParserOptions
 │   ├── context.ts            # Live renderer context: ComarkContext, ComarkDocument, ComarkPatch
 │   ├── plugins/              # Built-in and optional plugins
@@ -122,7 +124,8 @@ packages/comark/
   "./utils": "./dist/utils/index.js",
   "./utils/trace": "./dist/utils/trace.js",
   "./parse": "./dist/parse.js",
-  "./render": "./dist/render.js"
+  "./render": "./dist/render/index.js",
+  "./render/html": "./dist/render/html.js"
 }
 ```
 
@@ -174,6 +177,8 @@ const html = await renderHtml(markdownString)
 ```
 
 ---
+
+`@comark/html` renders through `comark/render/html`, which registers only the HTML and comment handlers, so rendering never loads the Markdown serializers. `@comark/html/render` also stays free of YAML; the root entry and the plugins import the parser, which loads YAML for frontmatter. Components still receive the full `state`, but `state.handlers` holds only `html` and `comment`, and the output format is always `text/html`. Both `comark/render` and `comark/render/html` share the engine in `internal/stringify/state.ts`; each passes its own handler map to `createState`. HTML-safe attribute handling lives in `html-attributes.ts`; Markdown/YAML attribute serialization stays in `attributes.ts`.
 
 ## Package: @comark/ansi
 
