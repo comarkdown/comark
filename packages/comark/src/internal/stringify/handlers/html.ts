@@ -1,6 +1,6 @@
 import type { State } from 'comark/render'
 import type { ElementNode } from 'comark'
-import { htmlAttributes } from '../attributes.ts'
+import { htmlAttributes } from '../html-attributes.ts'
 import { indent, toNativeAttributes } from '../../../utils/index.ts'
 
 const textBlocks = new Set(['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'li', 'td', 'th'])
