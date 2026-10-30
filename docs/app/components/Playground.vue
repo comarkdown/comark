@@ -290,10 +290,17 @@ async function writeShareHash(): Promise<string> {
 
 const toast = useToast()
 
+// Counts restores, so a slow decode from an earlier navigation can't overwrite a later one.
+let restores = 0
+
 async function restoreShareHash(hash: string): Promise<void> {
+  const restore = ++restores
   try {
-    markdown.value = (await decodeShareHash(hash)) ?? currentExample.value.content.trim()
+    const shared = await decodeShareHash(hash)
+    if (restore !== restores) return
+    markdown.value = shared ?? currentExample.value.content.trim()
   } catch {
+    if (restore !== restores) return
     markdown.value = currentExample.value.content.trim()
     toast.add({
       title: "This link's Markdown couldn't be read",
