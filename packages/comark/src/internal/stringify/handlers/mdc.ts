@@ -2,7 +2,6 @@ import type { State } from 'comark/render'
 import type { ElementNode, Node } from 'comark'
 import { indent } from '../../../utils/index.ts'
 import { comarkAttributes, comarkYamlAttributes } from '../attributes.ts'
-import { html } from './html.ts'
 
 // HTML elements that always create an inline context for their children
 const INLINE_HTML_ELEMENTS = new Set(['a', 'strong', 'em', 'span'])
@@ -10,10 +9,6 @@ const INLINE_HTML_ELEMENTS = new Set(['a', 'strong', 'em', 'span'])
 export async function mdc(node: ElementNode, state: State, parent?: ElementNode) {
   const [tag, attr, ...children] = node
   const { $: _, ...attributes } = attr
-
-  if (tag === 'table') {
-    return html(node, state)
-  }
 
   const attributeEntries = Object.entries(attributes)
   const hasObjectAttributes = attributeEntries.some(([, value]) => typeof value === 'object')
