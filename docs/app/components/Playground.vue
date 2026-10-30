@@ -19,9 +19,10 @@ import { renderMarkdown } from 'comark/render'
 import { Splitpanes, Pane } from 'splitpanes'
 import { generationErrorMessage, playgroundExamples } from '~/constants'
 import resolveComponent from '~/utils/components-manifest'
+import { decodeShareHash, encodeShareHash } from '~/utils/share'
 import PromptInput from '~/components/playground/PromptInput.vue'
 import GeneratingIndicator from '~/components/playground/GeneratingIndicator.vue'
-import { useLocalStorage, watchDebounced } from '@vueuse/core'
+import { useClipboard, useLocalStorage, watchDebounced } from '@vueuse/core'
 import { useCompletion } from '@ai-sdk/vue'
 import type { MarkdownDocument, ComarkPlugin } from 'comark'
 import VueJsonPretty from 'vue-json-pretty'
@@ -46,7 +47,7 @@ watch(
   () => route.query.example,
   (example) => {
     if (example !== selectedExample.value) {
-      router.replace({ query: { ...route.query, example: selectedExample.value } })
+      router.replace({ query: { ...route.query, example: selectedExample.value }, hash: route.hash })
     }
   },
   { immediate: true }
@@ -270,11 +271,38 @@ async function updatePreview(): Promise<void> {
   }
 }
 
+// Read before the router rewrites the query, since a shared link carries its Markdown in the hash.
+const sharedHash = import.meta.client ? window.location.hash : ''
+
+async function writeShareHash(): Promise<string> {
+  const hash = markdown.value === currentExample.value.content.trim() ? '' : await encodeShareHash(markdown.value)
+  const url = new URL(window.location.href)
+  url.hash = hash
+  // Keep the router's state, which replaceState would otherwise drop.
+  window.history.replaceState(window.history.state, '', url)
+  return url.href
+}
+
 watchDebounced(markdown, updatePreview, { debounce: 300 })
+watchDebounced(markdown, writeShareHash, { debounce: 300 })
 watchDebounced([activePlugins, parseOptions], updatePreview, { deep: true, debounce: 300 })
-onMounted(() => {
+onMounted(async () => {
+  const shared = await decodeShareHash(sharedHash)
+  if (shared !== undefined) markdown.value = shared
   nextTick(() => updatePreview())
 })
+
+const { copy } = useClipboard({ legacy: true })
+const toast = useToast()
+
+async function shareComark(): Promise<void> {
+  await copy(await writeShareHash())
+  toast.add({
+    title: 'Link copied',
+    description: 'The link holds the Markdown, so it opens as you see it.',
+    icon: 'i-lucide-link',
+  })
+}
 
 watch(selectedExample, () => {
   markdown.value = currentExample.value.content.trim()
@@ -386,6 +414,17 @@ async function handleGenerate(prompt: string) {
             </UTooltip>
 
             <div class="flex-1" />
+
+            <UTooltip text="Copy a link to this Markdown">
+              <UButton
+                size="xs"
+                color="neutral"
+                variant="ghost"
+                icon="i-lucide-share-2"
+                label="Share"
+                @click="shareComark"
+              />
+            </UTooltip>
 
             <!-- Settings popover -->
             <UPopover :ui="{ content: 'p-0' }">
