@@ -448,6 +448,7 @@ async function handleGenerate(prompt: string) {
                 variant="ghost"
                 :icon="copied ? 'i-lucide-check' : 'i-lucide-share-2'"
                 :label="copied ? 'Copied' : 'Share'"
+                :ui="{ leadingIcon: 'size-[1.15cap]' }"
                 @click="shareComark"
               />
             </UTooltip>
