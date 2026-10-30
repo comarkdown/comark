@@ -274,32 +274,55 @@ async function updatePreview(): Promise<void> {
 // Read before the router rewrites the query, since a shared link carries its Markdown in the hash.
 const sharedHash = import.meta.client ? window.location.hash : ''
 
+// The hash this playground wrote last, so the route watcher can tell its own writes from Back and Forward.
+let writtenHash = sharedHash
+
 async function writeShareHash(): Promise<string> {
-  const hash = markdown.value === currentExample.value.content.trim() ? '' : await encodeShareHash(markdown.value)
-  const url = new URL(window.location.href)
-  url.hash = hash
-  // Keep the router's state, which replaceState would otherwise drop.
-  window.history.replaceState(window.history.state, '', url)
-  return url.href
+  const source = markdown.value
+  const hash = source === currentExample.value.content.trim() ? '' : await encodeShareHash(source)
+  // Text typed while this encoded gets its own write, and this older one mustn't replace it.
+  if (source !== markdown.value) return window.location.href
+  writtenHash = hash
+  // Through the router, so the history entry Back returns to keeps the hash.
+  await router.replace({ query: route.query, hash })
+  return new URL(router.resolve({ query: route.query, hash }).href, window.location.origin).href
+}
+
+const toast = useToast()
+
+async function restoreShareHash(hash: string): Promise<void> {
+  try {
+    markdown.value = (await decodeShareHash(hash)) ?? currentExample.value.content.trim()
+  } catch {
+    markdown.value = currentExample.value.content.trim()
+    toast.add({
+      title: "This link's Markdown couldn't be read",
+      description: 'The link may be cut off. Showing the example instead.',
+      color: 'error',
+      icon: 'i-lucide-link-2-off',
+    })
+  }
 }
 
 watchDebounced(markdown, updatePreview, { debounce: 300 })
 watchDebounced(markdown, writeShareHash, { debounce: 300 })
 watchDebounced([activePlugins, parseOptions], updatePreview, { deep: true, debounce: 300 })
 onMounted(async () => {
-  const shared = await decodeShareHash(sharedHash)
-  if (shared !== undefined) markdown.value = shared
+  if (sharedHash) await restoreShareHash(sharedHash)
   nextTick(() => updatePreview())
 })
 
 const { copy, copied } = useClipboard({ legacy: true, copiedDuring: 1500 })
 
 async function shareComark(): Promise<void> {
-  await copy(await writeShareHash())
+  // A producer, so the clipboard write starts inside the click, which Safari requires, and gets the URL once encoded.
+  await copy(() => writeShareHash())
 }
 
-watch(selectedExample, () => {
-  markdown.value = currentExample.value.content.trim()
+watch([selectedExample, () => route.hash], ([example, hash], [previousExample]) => {
+  if (example === previousExample && hash === writtenHash) return
+  writtenHash = hash
+  restoreShareHash(hash)
 })
 
 function resetComark(): void {

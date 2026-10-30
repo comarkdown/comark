@@ -13,14 +13,11 @@ export async function encodeShareHash(markdown: string): Promise<string> {
   return PREFIX + btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
 }
 
+/** The Markdown in a share hash, or `undefined` for a hash that isn't one. Throws when the hash is cut off or mangled. */
 export async function decodeShareHash(hash: string): Promise<string | undefined> {
   if (!hash.startsWith(PREFIX)) return undefined
-  try {
-    const binary = atob(hash.slice(PREFIX.length).replace(/-/g, '+').replace(/_/g, '/'))
-    const deflated = Uint8Array.from(binary, (char) => char.charCodeAt(0))
-    const inflated = await bytes(new Blob([deflated]).stream().pipeThrough(new DecompressionStream('deflate-raw')))
-    return new TextDecoder().decode(inflated)
-  } catch {
-    return undefined
-  }
+  const binary = atob(hash.slice(PREFIX.length).replace(/-/g, '+').replace(/_/g, '/'))
+  const deflated = Uint8Array.from(binary, (char) => char.charCodeAt(0))
+  const inflated = await bytes(new Blob([deflated]).stream().pipeThrough(new DecompressionStream('deflate-raw')))
+  return new TextDecoder().decode(inflated)
 }
