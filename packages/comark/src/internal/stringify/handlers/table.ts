@@ -1,8 +1,11 @@
 import type { State } from 'comark/render'
 import type { ElementNode, Node } from 'comark'
 import { comarkAttributes, userBlockAttrs } from '../attributes.ts'
+import { component } from './component.ts'
 
 type Alignment = 'left' | 'center' | 'right' | null
+
+const TABLE_SECTIONS = new Set(['thead', 'tbody', 'tr'])
 
 // Helper function to extract alignment from style attribute
 function getAlignment(attributes: Record<string, unknown>): Alignment {
@@ -82,8 +85,13 @@ function getCells(row: ElementNode): ElementNode[] {
   ) as ElementNode[]
 }
 
-export async function table(node: ElementNode, state: State) {
+export async function table(node: ElementNode, state: State, parent?: ElementNode) {
   const [, , ...children] = node
+
+  // A parsed table always has rows; without them this is a `::table` component.
+  if (!children.some((child) => Array.isArray(child) && TABLE_SECTIONS.has(child[0] as string))) {
+    return component(node, state, parent)
+  }
 
   // Extract thead and tbody
   let headerRows: ElementNode[] = []

@@ -25,7 +25,9 @@ export function pre(node: ElementNode, state: State) {
   // Meta always has a leading space
   const meta = attributes.meta ? ' ' + attributes.meta : ''
 
-  const code = String(node[1]?.code || textContent(node)).trimEnd()
+  // The parser drops only the newline before the closing fence, so trailing
+  // blank lines and spaces are part of the code and must be written back.
+  const code = String(node[1]?.code || textContent(node))
   const fence = pickFence(code)
 
   const fenceBlock = fence + language + filename + highlights + meta + '\n' + code + '\n' + fence
