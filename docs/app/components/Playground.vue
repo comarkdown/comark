@@ -292,16 +292,10 @@ onMounted(async () => {
   nextTick(() => updatePreview())
 })
 
-const { copy } = useClipboard({ legacy: true })
-const toast = useToast()
+const { copy, copied } = useClipboard({ legacy: true, copiedDuring: 1500 })
 
 async function shareComark(): Promise<void> {
   await copy(await writeShareHash())
-  toast.add({
-    title: 'Link copied',
-    description: 'The link holds the Markdown, so it opens as you see it.',
-    icon: 'i-lucide-link',
-  })
 }
 
 watch(selectedExample, () => {
@@ -420,11 +414,16 @@ async function handleGenerate(prompt: string) {
                 size="xs"
                 color="neutral"
                 variant="ghost"
-                icon="i-lucide-share-2"
-                label="Share"
+                :icon="copied ? 'i-lucide-check' : 'i-lucide-share-2'"
+                :label="copied ? 'Copied' : 'Share'"
                 @click="shareComark"
               />
             </UTooltip>
+            <span
+              class="sr-only"
+              aria-live="polite"
+              >{{ copied ? 'Link copied' : '' }}</span
+            >
 
             <!-- Settings popover -->
             <UPopover :ui="{ content: 'p-0' }">
