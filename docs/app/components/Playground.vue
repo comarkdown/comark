@@ -311,6 +311,8 @@ async function restoreShareHash(hash: string): Promise<void> {
   }
 }
 
+// Text typed while a restore decodes is newer than the link, so that restore mustn't replace it.
+watch(markdown, () => restores++, { flush: 'sync' })
 watchDebounced(markdown, updatePreview, { debounce: 300 })
 watchDebounced(markdown, writeShareHash, { debounce: 300 })
 watchDebounced([activePlugins, parseOptions], updatePreview, { deep: true, debounce: 300 })
