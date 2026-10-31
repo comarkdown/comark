@@ -22,7 +22,7 @@ import resolveComponent from '~/utils/components-manifest'
 import { decodeShareHash, encodeShareHash } from '~/utils/share'
 import PromptInput from '~/components/playground/PromptInput.vue'
 import GeneratingIndicator from '~/components/playground/GeneratingIndicator.vue'
-import { useClipboard, useLocalStorage, watchDebounced } from '@vueuse/core'
+import { useLocalStorage, useTimeoutFn, watchDebounced } from '@vueuse/core'
 import { useCompletion } from '@ai-sdk/vue'
 import type { MarkdownDocument, ComarkPlugin } from 'comark'
 import VueJsonPretty from 'vue-json-pretty'
@@ -321,11 +321,27 @@ onMounted(async () => {
   nextTick(() => updatePreview())
 })
 
-const { copy, copied } = useClipboard({ legacy: true, copiedDuring: 1500 })
+const copied = ref(false)
+const { start: showCopied } = useTimeoutFn(() => (copied.value = false), 1500, { immediate: false })
 
 async function shareComark(): Promise<void> {
-  // A producer, so the clipboard write starts inside the click, which Safari requires, and gets the URL once encoded.
-  await copy(() => writeShareHash())
+  // The ClipboardItem takes a promise, so the write starts inside the click, which Safari requires, and gets the URL
+  // once encoded. The click mustn't reach the body: in Safari, Monaco starts its own clipboard write on every click
+  // there, and that write cancels this one.
+  const url = writeShareHash().then((href) => new Blob([href], { type: 'text/plain' }))
+  try {
+    await navigator.clipboard.write([new ClipboardItem({ 'text/plain': url })])
+  } catch {
+    toast.add({
+      title: "The link couldn't be copied",
+      description: 'Copy it from the address bar instead.',
+      color: 'error',
+      icon: 'i-lucide-link-2-off',
+    })
+    return
+  }
+  copied.value = true
+  showCopied()
 }
 
 watch([selectedExample, () => route.hash], ([example, hash], [previousExample]) => {
@@ -449,7 +465,7 @@ async function handleGenerate(prompt: string) {
                 :icon="copied ? 'i-lucide-check' : 'i-lucide-share-2'"
                 :label="copied ? 'Copied' : 'Share'"
                 :ui="{ leadingIcon: 'size-[1.15cap]' }"
-                @click="shareComark"
+                @click.stop="shareComark"
               />
             </UTooltip>
             <span
