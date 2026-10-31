@@ -280,7 +280,7 @@ packages/comark-react/
 │   ├── components/
 │   │   ├── Markdown.tsx      # High-level markdown → render component
 │   │   ├── MarkdownDocument.tsx # Low-level AST → render component
-│   │   ├── MarkdownClient.tsx # Client-only markdown component
+│   │   ├── MarkdownClient.tsx # Client-only markdown with a serialized incremental parser
 │   │   ├── MarkdownLive.tsx  # Streaming/live markdown component
 │   │   ├── Binding.tsx       # Inline binding renderer
 │   │   ├── If.tsx            # Conditional content renderer
@@ -316,6 +316,8 @@ import { Markdown, MarkdownDocument, defineMarkdownComponent } from '@comark/rea
 import math, { Math } from '@comark/react/plugins/math'
 import mermaid, { Mermaid } from '@comark/react/plugins/mermaid'
 ```
+
+React tests have two projects: `server` runs the Node/SSR tests, and `client` runs `*.browser.test.tsx` in headless Chromium. Install the browser with `pnpm exec playwright install chromium` before running the package tests. CI runs both projects.
 
 ## Package: @comark/svelte
 
