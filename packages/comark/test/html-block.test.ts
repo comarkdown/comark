@@ -466,6 +466,57 @@ describe('HTML inside markdown containers', () => {
 
     expect(result.nodes).toEqual([['ul', {}, ['li', {}, ['span', { $: { html: 1, block: 1 } }, 'a']], ['li', {}, 'b']]])
   })
+
+  it('keeps inline HTML content inside strong, links, and headings', async () => {
+    const b = { $: { html: 1, block: 0 } }
+
+    expect((await parseMarkdown('**a <b>x</b> b**')).nodes).toEqual([
+      ['p', {}, ['strong', {}, 'a ', ['b', b, 'x'], ' b']],
+    ])
+    expect((await parseMarkdown('[a <b>x</b> b](/u)')).nodes).toEqual([
+      ['p', {}, ['a', { href: '/u' }, 'a ', ['b', b, 'x'], ' b']],
+    ])
+    expect((await parseMarkdown('# a <b>x</b> b')).nodes).toEqual([['h1', { id: 'a-x-b' }, 'a ', ['b', b, 'x'], ' b']])
+  })
+
+  it('keeps inline HTML content inside a block component', async () => {
+    const result = await parseMarkdown('::foo\nNote <b>x</b> end\n::')
+
+    expect(result.nodes).toEqual([['foo', {}, 'Note ', ['b', { $: { html: 1, block: 0 } }, 'x'], ' end']])
+  })
+
+  it('keeps blocks in order inside HTML inside a block component', async () => {
+    const result = await parseMarkdown('::foo\n<div>\n\npara\n\n# Title\n\nmore\n\n</div>\n::')
+
+    expect(result.nodes).toEqual([
+      [
+        'foo',
+        {},
+        ['div', { $: { html: 1, block: 1 } }, ['p', {}, 'para'], ['h1', { id: 'title' }, 'Title'], ['p', {}, 'more']],
+      ],
+    ])
+  })
+
+  it('closes a tag left open in a slot with that slot', async () => {
+    const result = await parseMarkdown('::foo\n#one\n<span>open\n#two\nclose</span>\n::')
+
+    expect(result.nodes).toEqual([
+      [
+        'foo',
+        {},
+        ['template', { name: 'one' }, ['span', { $: { html: 1, block: 1 } }, 'open']],
+        ['template', { name: 'two' }, 'close'],
+      ],
+    ])
+  })
+
+  it('closes a tag left open in the default content before the first slot', async () => {
+    const result = await parseMarkdown('::foo\n<div>\n\ndefault\n\n#one\nnamed\n::')
+
+    expect(result.nodes).toEqual([
+      ['foo', {}, ['div', { $: { html: 1, block: 1 } }, 'default'], ['template', { name: 'one' }, 'named']],
+    ])
+  })
 })
 
 describe('stray HTML close tags', () => {
