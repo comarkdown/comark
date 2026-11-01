@@ -15,7 +15,7 @@ HTML tags become element nodes with `$: { html: 1, block: 0 | 1 }`. A node witho
 
 Void tags (`img`, `br`, …) are always `block: 0`.
 
-A non-void open tag that follows text in its paragraph (`GET /apps/<id>`, `- **a** <b>c`) is prose, not a container. It ends with its paragraph, `block: 0`, unless a later paragraph holds its close tag. A tag that starts its paragraph keeps collecting the blocks after it.
+A non-void open tag that follows text in its paragraph (`GET /apps/<id>`, `- **a** <b>c`) is prose, not a container. It ends with its paragraph, `block: 0`, unless a later paragraph of the same container holds its close tag. A close tag in a nested container (`::card`, a blockquote) or past the end of the container does not count. A tag that starts its paragraph keeps collecting the blocks after it.
 
 Consecutive same-paragraph tags stay inline even if indented on following lines:
 

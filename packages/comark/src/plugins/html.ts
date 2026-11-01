@@ -216,6 +216,15 @@ function rawCloserEnd(src: string, pos: number, name: string): number {
   return src.charCodeAt(j) === 0x3e /* > */ ? j + 1 : -1
 }
 
+/** The first `</name>` at or after `from`. */
+function findRawCloser(str: string, from: number, name: string): { start: number; end: number } | null {
+  for (let i = str.indexOf('<', from); i >= 0; i = str.indexOf('<', i + 1)) {
+    const end = rawCloserEnd(str, i, name)
+    if (end >= 0) return { start: i, end }
+  }
+  return null
+}
+
 /**
  * Split an HTML fragment into markdown-exit tokens.
  * Each recognized tag becomes `html_inline`; intervening runs become `text`.
@@ -230,11 +239,19 @@ export function htmlToTokens(str: string): Token[] {
   return tokens
 }
 
+/** Start of the last `</name>` for each tag name in `str`, found in one pass. */
+function lastClosers(str: string): Map<string, number> {
+  const last = new Map<string, number>()
+  for (const match of str.matchAll(/<\/([A-Za-z][A-Za-z0-9-]*)\s*>/g)) last.set(match[1].toLowerCase(), match.index)
+  return last
+}
+
 /** `verbatim` keeps every character of a text run, as inside `<pre>`. */
 function scan(tokens: Token[], str: string, verbatim: boolean) {
   const len = str.length
   let pos = 0
   let textStart = 0
+  const closers = verbatim ? lastClosers(str) : undefined
 
   while (pos < len) {
     // Candidate HTML tag starts with '<' followed by letter, '/', '!', or '?'
@@ -242,7 +259,7 @@ function scan(tokens: Token[], str: string, verbatim: boolean) {
       const next = str.charCodeAt(pos + 1)
       if (next === 0x21 /* ! */ || next === 0x3f /* ? */ || next === 0x2f /* / */ || isLetter(next)) {
         const match = HTML_TAG_RE.exec(str.slice(pos))
-        if (match && !(verbatim && isUnpairedOpener(str, pos, match[0]))) {
+        if (match && !(closers && isUnpairedOpener(closers, pos + match[0].length, match[0]))) {
           if (pos > textStart) pushText(tokens, str.slice(textStart, pos), verbatim)
           const raw = readTag(match[0], 0)
           // style / pre / script / textarea: body is source until the closer, inner tags included
@@ -250,20 +267,14 @@ function scan(tokens: Token[], str: string, verbatim: boolean) {
           if (raw && !raw.close && RAW_HTML_TAGS.has(raw.name) && match[0].charCodeAt(match[0].length - 2) !== 0x2f) {
             pushHtml(tokens, match[0])
             const from = pos + match[0].length
-            let end = -1
-            for (let i = from; i < len; i += 1) {
-              if (str.charCodeAt(i) !== 0x3c /* < */) continue
-              end = rawCloserEnd(str, i, raw.name)
-              if (end < 0) continue
-              pushRawBody(tokens, str.slice(from, i), raw.name)
-              pushHtml(tokens, str.slice(i, end))
-              pos = end
-              break
-            }
-            if (end < 0) {
+            const closer = findRawCloser(str, from, raw.name)
+            if (!closer) {
               pushRawBody(tokens, str.slice(from), raw.name)
               return
             }
+            pushRawBody(tokens, str.slice(from, closer.start), raw.name)
+            pushHtml(tokens, str.slice(closer.start, closer.end))
+            pos = closer.end
             textStart = pos
             continue
           }
@@ -281,10 +292,10 @@ function scan(tokens: Token[], str: string, verbatim: boolean) {
 }
 
 /** In `<pre>`, `Array<string>` is code: an open tag with no closer after it stays text. */
-function isUnpairedOpener(str: string, pos: number, tagSource: string): boolean {
-  const tag = readTag(tagSource, 0)
-  if (!tag || tag.close || isHtmlVoidElement(tag.name) || tagSource.endsWith('/>')) return false
-  return !new RegExp(`</${tag.name}\\s*>`, 'i').test(str.slice(pos + tagSource.length))
+function isUnpairedOpener(closers: Map<string, number>, end: number, tagSource: string): boolean {
+  const name = /^<([A-Za-z][A-Za-z0-9-]*)/.exec(tagSource)?.[1].toLowerCase()
+  if (!name || isHtmlVoidElement(name) || tagSource.endsWith('/>')) return false
+  return (closers.get(name) ?? -1) < end
 }
 
 function pushRawBody(tokens: Token[], body: string, name: string) {

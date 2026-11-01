@@ -297,6 +297,60 @@ describe('character references and <pre>', () => {
   })
 })
 
+describe('linear time', () => {
+  async function median(source: (n: number) => string, n: number) {
+    const runs: number[] = []
+    for (let i = 0; i < 3; i++) {
+      const start = performance.now()
+      await parseMarkdown(source(n), { autoClose: false })
+      runs.push(performance.now() - start)
+    }
+    return runs.sort((a, b) => a - b)[1]
+  }
+
+  // Quadratic work grows 16x for a 4x input; allow noise well above linear's 4x.
+  async function expectLinear(source: (n: number) => string) {
+    await median(source, 500)
+    const small = await median(source, 4000)
+    const large = await median(source, 16000)
+    expect(large / Math.max(small, 1)).toBeLessThan(10)
+  }
+
+  it('scans unpaired openers in <pre> once', async () => {
+    await expectLinear((n) => `<pre>${'Array<string> '.repeat(n)}</pre>`)
+  })
+
+  it('looks for the closer of a prose tag once', async () => {
+    await expectLinear((n) => 'GET /apps/<id>\n\n'.repeat(n))
+  })
+})
+
+describe('a close tag in another container', () => {
+  it('does not pair with an open tag in the surrounding prose', async () => {
+    const result = await parseMarkdown('a <b>one\n\n::card\n</b>\n::\n\nlast')
+
+    expect(result.nodes).toEqual([
+      ['p', {}, 'a ', ['b', { $: inline }, 'one']],
+      ['card', {}],
+      ['p', {}, 'last'],
+    ])
+  })
+
+  it('does not pair with an open tag before a blockquote', async () => {
+    const result = await parseMarkdown('a <b>one\n\n> </b>\n\nlast')
+
+    expect(result.nodes[0]).toEqual(['p', {}, 'a ', ['b', { $: inline }, 'one']])
+  })
+
+  it('still pairs a close tag in a later paragraph of the same container', async () => {
+    const quote = await parseMarkdown('> text <x-card>\n>\n> **a**\n>\n> </x-card>\n\nlast')
+    const list = await parseMarkdown('- text <x-card>\n\n  **a**\n\n  </x-card>\n\nlast')
+
+    expect(quote.nodes[0]).toEqual(['blockquote', {}, 'text ', ['x-card', { $: inline }, ['strong', {}, 'a']]])
+    expect(list.nodes[0]).toEqual(['ul', {}, ['li', {}, 'text ', ['x-card', { $: inline }, ['strong', {}, 'a']]]])
+  })
+})
+
 describe('autoUnwrap', () => {
   it('keeps a <p> the author wrote, with its attributes', async () => {
     const source = '<section><p class="c">Check</p></section>'

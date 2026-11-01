@@ -48,6 +48,8 @@ interface ProcessState {
   startLine: number
   /** Unclosed HTML open tags, outer → inner. Lives across blocks like the heading id stack. */
   htmlStack: HtmlOpenFrame[]
+  /** Built on first use; the token list is fixed for the walk. */
+  closers?: CloserIndex
 }
 
 type Processor = (tokens: Token[], start: number, state: ProcessState) => ProcessorResult
@@ -210,16 +212,50 @@ function followsText(tokens: Token[], start: number): boolean {
   return false
 }
 
-/** True when a later paragraph holds `</tag>`. */
-function hasCloserAhead(tokens: Token[], from: number, tag: string): boolean {
-  for (let j = from; j < tokens.length; j++) {
-    for (const child of tokens[j].children ?? []) {
+/** Where each `</tag>` sits, so "is it closed later?" is a lookup and not a scan of the rest of the document. */
+interface CloserIndex {
+  /** Token indexes of the paragraphs holding a close tag, by `tag|level`. */
+  at: Map<string, number[]>
+  /** First later token with a lower level, i.e. where the container of token `i` ends. */
+  end: number[]
+}
+
+function buildCloserIndex(tokens: Token[]): CloserIndex {
+  const at = new Map<string, number[]>()
+  const end: number[] = new Array(tokens.length).fill(tokens.length)
+  const open: number[] = []
+  for (let i = 0; i < tokens.length; i++) {
+    while (open.length > 0 && tokens[open[open.length - 1]].level > tokens[i].level) end[open.pop()!] = i
+    open.push(i)
+    for (const child of tokens[i].type === 'inline' ? (tokens[i].children ?? []) : []) {
       if (child.type !== 'html_inline' || child.content.charCodeAt(1) !== 0x2f /* / */) continue
       const parsed = parseHtmlInline(child.content)
-      if (parsed.kind === 'close' && parsed.tag === tag) return true
+      if (parsed.kind !== 'close') continue
+      const key = `${parsed.tag}|${tokens[i].level}`
+      const list = at.get(key)
+      if (list && list[list.length - 1] !== i) list.push(i)
+      else if (!list) at.set(key, [i])
     }
   }
-  return false
+  return { at, end }
+}
+
+/**
+ * True when a later paragraph of the same container holds `</tag>`. A close tag inside a
+ * nested container, or past the end of this one, cannot pair with an opener out here.
+ */
+function hasCloserAhead(tokens: Token[], state: ProcessState, paragraph: number, from: number, tag: string): boolean {
+  const index = (state.closers ??= buildCloserIndex(tokens))
+  const list = index.at.get(`${tag}|${tokens[paragraph].level + 1}`)
+  if (!list) return false
+  let lo = 0
+  let hi = list.length
+  while (lo < hi) {
+    const mid = (lo + hi) >> 1
+    if (list[mid] < from) lo = mid + 1
+    else hi = mid
+  }
+  return lo < list.length && list[lo] < index.end[paragraph]
 }
 
 function processToken(tokens: Token[], i: number, state: ProcessState): ProcessorResult | undefined {
@@ -565,7 +601,7 @@ const processors: Record<string, Processor> = {
     const { children, nextIndex } = processChildren(tokens, start, 'paragraph_close', state, true)
     // `text <tag>` with no `</tag>` anywhere after is prose, not a container: it ends with its paragraph.
     const opened = state.htmlStack[depthBefore]
-    if (opened?.afterText && opened.tag !== null && !hasCloserAhead(tokens, nextIndex, opened.tag)) {
+    if (opened?.afterText && opened.tag !== null && !hasCloserAhead(tokens, state, start, nextIndex, opened.tag)) {
       const free = deliverInline(state, closeFramesTo(state, depthBefore), true)
       if (free !== undefined) pushNode(children, free)
     }
