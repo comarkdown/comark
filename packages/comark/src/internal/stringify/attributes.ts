@@ -1,7 +1,7 @@
 import { stringifyYaml } from '../yaml.ts'
 import { pickFence } from './fence.ts'
 
-export { resolveAttributes, resolveAttribute, htmlAttributes } from './html-attributes.ts'
+export { resolveAttributes, resolveAttribute } from './html-attributes.ts'
 export type { ResolveAttributesOptions } from './html-attributes.ts'
 
 // Implicit attributes the parser injects per tag — they're conveyed by the

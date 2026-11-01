@@ -29,6 +29,8 @@ describe('raw HTML round-trip (parse → renderMarkdown → parse)', () => {
     'single-child video': '<video controls>\n<source src="a.mp4" type="video/mp4">\n</video>',
     'mixed text and element children': '<div>\nsome text\n<figcaption>cap</figcaption>\n</div>',
     'pre with authored language attribute': '<pre language="ruby">\nputs 1\n</pre>',
+    'img with a bound attribute': 'text <img src="a.svg" class="h-5" :zoom="false"> tail',
+    'attribute with a "true" value': '<div aria-hidden="true">\nicon\n</div>',
   }
 
   for (const [name, md] of Object.entries(cases)) {
