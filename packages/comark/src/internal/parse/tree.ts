@@ -36,6 +36,8 @@ type HtmlOpenFrame = {
   block: boolean
   /** Bare-inline nodes waiting to be flushed as a single <p> on a block frame. */
   pendingInline: Node[]
+  /** True when markdown or text came before the open tag in its paragraph (`text <b>`). */
+  afterText?: boolean
 }
 
 /** Shared mutable context for a whole document walk. */
@@ -69,10 +71,24 @@ function isInlineish(node: Node): boolean {
   return tag === null || inlineTags.has(tag as string)
 }
 
+/** Inline-level result of an HTML tag: the tags `isInlineish` knows, `img`, `br`, and custom elements. */
+function isInlineHtml(node: Node): boolean {
+  if (!Array.isArray(node)) return false
+  const tag = node[0] as string | null
+  if (tag === null || inlineTags.has(tag) || tag === 'img' || tag === 'br') return true
+  return tag.includes('-') && (node[1] as ElementNodeAttributes).$?.block === 0
+}
+
 function flushPendingInline(frame: HtmlOpenFrame) {
   if (frame.pendingInline.length === 0) return
   const pending = frame.pendingInline
   frame.pendingInline = []
+  const only = pending.length === 1 ? pending[0] : undefined
+  // A lone author-written element is a block of its own, not a paragraph.
+  if (Array.isArray(only) && (only[1] as ElementNodeAttributes)?.$?.html && !isInlineish(only)) {
+    frame.children.push(only)
+    return
+  }
   frame.children.push(['p', {}, ...pending] as ElementNode)
 }
 
@@ -112,11 +128,11 @@ function deliverBlock(state: ProcessState, node: Node | undefined): Node | undef
 }
 
 /** Nest an inline/finished node into the open HTML frame during processInline. */
-function deliverInline(state: ProcessState, node: Node | undefined): Node | undefined {
+function deliverInline(state: ProcessState, node: Node | undefined, inline?: boolean): Node | undefined {
   if (node === undefined) return undefined
   if (state.htmlStack.length === 0) return node
   const top = state.htmlStack[state.htmlStack.length - 1]
-  if (top.block && isInlineish(node)) {
+  if (top.block && (inline ?? isInlineish(node))) {
     top.pendingInline.push(node)
   } else {
     flushPendingInline(top)
@@ -157,6 +173,55 @@ function tryCommentTag(content: string, state: ProcessState): ProcessorResult | 
   return null
 }
 
+/** Pop the frames above and including `idx`; inner ones nest into their parent, the outermost is returned. */
+function closeFramesTo(state: ProcessState, idx: number): Node {
+  let closed: Node | undefined
+  while (state.htmlStack.length > idx) {
+    const node = frameToNode(state.htmlStack.pop()!)
+    if (state.htmlStack.length > idx) deliverInline(state, node)
+    else closed = node
+  }
+  return closed as Node
+}
+
+// Elements that stop a `<p>` from being closed by a following `<p>` (HTML "button scope").
+const P_SCOPE_BOUNDARY = new Set(['table', 'td', 'th', 'caption', 'button', 'template', 'object', 'marquee', 'applet'])
+
+/** `<p>` closes an open `<p>` (HTML implied end tag). Returns the closed paragraph, if any. */
+function closeImpliedParagraph(token: Token, state: ProcessState): Node | undefined {
+  if (!/^<p[\s/>]/i.test(token.content)) return undefined
+  const parsed = parseHtmlInline(token.content)
+  if (parsed.kind !== 'open' || parsed.tag !== 'p' || parsed.selfClosing) return undefined
+  for (let idx = state.htmlStack.length - 1; idx >= 0; idx--) {
+    const tag = state.htmlStack[idx].tag
+    if (tag === 'p') return closeFramesTo(state, idx)
+    if (tag !== null && P_SCOPE_BOUNDARY.has(tag)) return undefined
+  }
+  return undefined
+}
+
+/** True when something other than whitespace and HTML tags precedes `tokens[start]` in its paragraph. */
+function followsText(tokens: Token[], start: number): boolean {
+  for (let k = start - 1; k >= 0; k--) {
+    const { type, content } = tokens[k]
+    if (type === 'softbreak' || type === 'html_inline' || (type === 'text' && !content.trim())) continue
+    return true
+  }
+  return false
+}
+
+/** True when a later paragraph holds `</tag>`. */
+function hasCloserAhead(tokens: Token[], from: number, tag: string): boolean {
+  for (let j = from; j < tokens.length; j++) {
+    for (const child of tokens[j].children ?? []) {
+      if (child.type !== 'html_inline' || child.content.charCodeAt(1) !== 0x2f /* / */) continue
+      const parsed = parseHtmlInline(child.content)
+      if (parsed.kind === 'close' && parsed.tag === tag) return true
+    }
+  }
+  return false
+}
+
 function processToken(tokens: Token[], i: number, state: ProcessState): ProcessorResult | undefined {
   return processors[tokens[i].type]?.(tokens, i, state)
 }
@@ -175,12 +240,24 @@ function processInline(inlineTokens: Token[], state: ProcessState, nestHtml = tr
   let i = 0
 
   while (i < inlineTokens.length) {
+    // An inline-level node stays with its paragraph; only an HTML tag is classified by name.
+    const fromHtml = inlineTokens[i].type === 'html_inline'
+    if (nestHtml && fromHtml) {
+      const closed = closeImpliedParagraph(inlineTokens[i], state)
+      if (closed !== undefined) {
+        const free = deliverInline(state, closed)
+        if (free !== undefined) pushNode(nodes, free)
+      }
+    }
     const result = processToken(inlineTokens, i, state)
     if (!result) {
       i += 1
       continue
     }
-    const node = nestHtml || state.htmlStack.length > depth ? deliverInline(state, result.node) : result.node
+    const node =
+      nestHtml || state.htmlStack.length > depth
+        ? deliverInline(state, result.node, !fromHtml || (result.node !== undefined && isInlineHtml(result.node)))
+        : result.node
     if (node !== undefined) pushNode(nodes, node)
     i = result.nextIndex
   }
@@ -232,7 +309,10 @@ function processChildren(
     if (result) {
       // Same nesting rule as processInline: free nodes join the open HTML
       // frame when nestHtml is on (e.g. block children under bare HTML).
-      const node = nestHtml || state.htmlStack.length > depth ? deliverInline(state, result.node) : result.node
+      const node =
+        (nestHtml || state.htmlStack.length > depth) && !result.siblingOfHtmlStack
+          ? deliverInline(state, result.node)
+          : result.node
       if (node !== undefined) pushNode(children, node)
       i = result.nextIndex
     } else {
@@ -483,6 +563,12 @@ const processors: Record<string, Processor> = {
     const inline = tokens[start + 1]
     const depthBefore = state.htmlStack.length
     const { children, nextIndex } = processChildren(tokens, start, 'paragraph_close', state, true)
+    // `text <tag>` with no `</tag>` anywhere after is prose, not a container: it ends with its paragraph.
+    const opened = state.htmlStack[depthBefore]
+    if (opened?.afterText && opened.tag !== null && !hasCloserAhead(tokens, nextIndex, opened.tag)) {
+      const free = deliverInline(state, closeFramesTo(state, depthBefore), true)
+      if (free !== undefined) pushNode(children, free)
+    }
     const asParagraph = (): ProcessorResult =>
       children.length === 0
         ? { nextIndex, node: undefined }
@@ -593,6 +679,8 @@ const processors: Record<string, Processor> = {
     }
 
     if (parsed.kind === 'close') {
+      // Browsers read a stray `</br>` as `<br>`.
+      if (parsed.tag === 'br') return { nextIndex: start + 1, node: ['br', makeHtmlAttrs({}, false)] }
       // Find the matching open frame (case-insensitive), auto-closing any
       // nested frames above it the way a real HTML parser would.
       const closeTag = parsed.tag.toLowerCase()
@@ -608,17 +696,7 @@ const processors: Record<string, Processor> = {
         return { nextIndex: start + 1, node }
       }
 
-      let closed: Node | undefined
-      while (state.htmlStack.length > idx) {
-        const node = frameToNode(state.htmlStack.pop()!)
-        // Nested auto-closed frames nest into the next outer open frame.
-        if (state.htmlStack.length > idx) {
-          deliverInline(state, node)
-        } else {
-          closed = node
-        }
-      }
-      return { nextIndex: start + 1, node: closed }
+      return { nextIndex: start + 1, node: closeFramesTo(state, idx) }
     }
 
     if (parsed.selfClosing) {
@@ -634,6 +712,7 @@ const processors: Record<string, Processor> = {
       children: [],
       block: false,
       pendingInline: [],
+      afterText: followsText(tokens, start),
     })
     return { nextIndex: start + 1, node: undefined }
   },

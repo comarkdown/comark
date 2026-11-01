@@ -48,3 +48,154 @@ describe('HTML comments', () => {
     ])
   })
 })
+
+describe('implied end tags', () => {
+  it('reads a stray </br> as a line break', async () => {
+    const result = await parseMarkdown('a</br>b')
+
+    expect(result.nodes).toEqual([['p', {}, 'a', ['br', { $: inline }], 'b']])
+  })
+
+  it('closes an open <p> when another <p> starts', async () => {
+    const result = await parseMarkdown('<p>\none\n<p>\ntwo')
+
+    expect(result.nodes).toEqual([
+      ['p', { $: inline }, 'one'],
+      ['p', { $: inline }, 'two'],
+    ])
+  })
+
+  it('closes an open <p> across blocks and inline elements', async () => {
+    const result = await parseMarkdown('<div>\n\n<p>a <b>x\n\n<p>b\n\n</div>')
+
+    expect(result.nodes).toEqual([
+      ['div', { $: block }, ['p', { $: block }, 'a ', ['b', { $: block }, 'x']], ['p', { $: block }, 'b']],
+    ])
+  })
+
+  it('keeps a <p> nested in a table cell inside the outer <p>', async () => {
+    const result = await parseMarkdown('<p>a<table><tr><td><p>b</td></tr></table>')
+
+    expect(result.nodes).toEqual([
+      [
+        'p',
+        { $: block },
+        'a',
+        ['table', { $: inline }, ['tr', { $: inline }, ['td', { $: inline }, ['p', { $: inline }, 'b']]]],
+      ],
+    ])
+  })
+
+  it('renders consecutive <p> tags as siblings', async () => {
+    const result = await parseMarkdown('<p>one\n<p>two')
+
+    expect(await renderHtmlForTest(result)).toBe('<p>one</p>\n<p>two</p>')
+  })
+})
+
+describe('inline content inside block HTML', () => {
+  const md = '<div>\n\nhello ![](x.png) a  \nb :badge[x] <my-el>y</my-el> <br> end\n\n</div>'
+
+  it('keeps images, line breaks, components and custom elements in their paragraph', async () => {
+    const result = await parseMarkdown(md, { autoUnwrap: false })
+
+    expect(result.nodes).toEqual([
+      [
+        'div',
+        { $: block },
+        [
+          'p',
+          {},
+          'hello ',
+          ['img', { src: 'x.png' }],
+          ' a',
+          ['br', {}],
+          'b ',
+          ['badge', {}, 'x'],
+          ' ',
+          ['my-el', { $: inline }, 'y'],
+          ' ',
+          ['br', { $: inline }],
+          ' end',
+        ],
+      ],
+    ])
+  })
+
+  it('wraps a markdown image on its own in a paragraph', async () => {
+    const result = await parseMarkdown('<div>\n\n![](x.png)\n\n![](y.png)\n\n</div>', { autoUnwrap: false })
+
+    expect(result.nodes).toEqual([
+      ['div', { $: block }, ['p', {}, ['img', { src: 'x.png' }]], ['p', {}, ['img', { src: 'y.png' }]]],
+    ])
+  })
+
+  it('leaves an author-written element on its own as a block', async () => {
+    const result = await parseMarkdown('<div>\n\n<my-el>y</my-el>\n\n<img src="a">\n\n</div>', { autoUnwrap: false })
+
+    expect(result.nodes).toEqual([
+      ['div', { $: block }, ['my-el', { $: inline }, 'y'], ['img', { $: inline, src: 'a' }]],
+    ])
+  })
+
+  it('keeps the order of a closed element and the one that follows it in a list item', async () => {
+    const result = await parseMarkdown('- <div>a</div><div>b\n- c')
+
+    expect(result.nodes).toEqual([
+      ['ul', {}, ['li', {}, ['div', { $: inline }, 'a'], ['div', { $: inline }, 'b']], ['li', {}, 'c']],
+    ])
+  })
+})
+
+describe('an open tag after text', () => {
+  it('ends with its paragraph when nothing closes it', async () => {
+    const result = await parseMarkdown('GET /apps/<id>\n\nNext paragraph.')
+
+    expect(result.nodes).toEqual([
+      ['p', {}, 'GET /apps/', ['id', { $: inline }]],
+      ['p', {}, 'Next paragraph.'],
+    ])
+  })
+
+  it('ends with its paragraph inside a block element', async () => {
+    const result = await parseMarkdown('<div>\n\nHello <b>x\n\nmore\n\n</div>', { autoUnwrap: false })
+
+    expect(result.nodes).toEqual([
+      ['div', { $: block }, ['p', {}, 'Hello ', ['b', { $: inline }, 'x']], ['p', {}, 'more']],
+    ])
+  })
+
+  it('keeps the text before a tag that a later paragraph closes', async () => {
+    const result = await parseMarkdown('text <x-card>\n\n**a**\n\n</x-card>')
+
+    expect(result.nodes).toEqual(['text ', ['x-card', { $: block }, ['strong', {}, 'a']]])
+  })
+
+  it('still lets a tag at the start of its paragraph collect the blocks after it', async () => {
+    const result = await parseMarkdown('<ai-thinking>\n\nNext paragraph.')
+
+    expect(result.nodes).toEqual([['ai-thinking', { $: block }, 'Next paragraph.']])
+  })
+
+  it('keeps markdown before the tag in its list item', async () => {
+    const result = await parseMarkdown('- **a** <b>c\n- d')
+
+    expect(result.nodes).toEqual([
+      ['ul', {}, ['li', {}, ['strong', {}, 'a'], ' ', ['b', { $: inline }, 'c']], ['li', {}, 'd']],
+    ])
+  })
+
+  it('settles on the paired tree once the closer streams in', async () => {
+    const source = 'text <x-card>\n\n**a**\n\n</x-card>'
+    const parse = createMarkdownParser()
+    for (let end = 1; end < source.length; end++) {
+      await expect(parse(source.slice(0, end))).resolves.toBeDefined()
+    }
+
+    expect((await parse(source)).nodes).toEqual((await parseMarkdown(source)).nodes)
+    expect((await parse('text <x-card>\n\n**a**')).nodes).toEqual([
+      ['p', {}, 'text ', ['x-card', { $: inline }]],
+      ['p', {}, ['strong', {}, 'a']],
+    ])
+  })
+})
