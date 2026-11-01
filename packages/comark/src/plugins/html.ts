@@ -35,9 +35,10 @@
  * ```
  */
 
-import { type StateBlock, Token, type MarkdownExit } from 'markdown-exit/core'
+import { type StateBlock, type StateInline, Token, type MarkdownExit } from 'markdown-exit/core'
 import type { ComarkParseTokensState } from '../types.ts'
 import { defineComarkPlugin } from '../utils/helpers.ts'
+import { HTML_TAG_RE } from '../internal/parse/html-tag.ts'
 
 export interface HtmlPluginOptions {
   /**
@@ -59,6 +60,26 @@ export default defineComarkPlugin((opts: HtmlPluginOptions = {}) => {
 
 function markdownItHtmlWithoutMarkdown(md: MarkdownExit) {
   md.set({ html: true })
+  md.inline.ruler.at('html_inline', htmlInline)
+}
+
+// markdown-exit's rule with Comark's tag grammar, so inline and block scanning agree.
+function htmlInline(state: StateInline, silent: boolean): boolean {
+  if (!state.md.options.html) return false
+  const pos = state.pos
+  if (state.src.charCodeAt(pos) !== 0x3c /* < */ || pos + 2 >= state.posMax) return false
+  const next = state.src.charCodeAt(pos + 1)
+  if (next !== 0x21 /* ! */ && next !== 0x3f /* ? */ && next !== 0x2f /* / */ && !isLetter(next)) return false
+  const match = HTML_TAG_RE.exec(state.src.slice(pos, state.posMax))
+  if (!match) return false
+  if (!silent) {
+    const token = state.push('html_inline', '', 0)
+    token.content = match[0]
+    if (/^<a[>\s]/i.test(match[0])) state.linkLevel++
+    if (/^<\/a\s*>/i.test(match[0])) state.linkLevel--
+  }
+  state.pos += match[0].length
+  return true
 }
 
 function markdownItHtmlWithMarkdown(md: MarkdownExit) {
@@ -102,30 +123,6 @@ function markdownItPost(state: ComarkParseTokensState) {
     i += 3
   }
 }
-
-// region - https://github.com/markdown-it/markdown-it/blob/master/src/common/html_re.ts#L21
-
-const attr_name = '[a-zA-Z_:][a-zA-Z0-9:._-]*'
-
-const unquoted = '[^"\'=<>`\\x00-\\x20]+'
-const single_quoted = "'[^']*'"
-const double_quoted = '"[^"]*"'
-
-const attr_value = `(?:${unquoted}|${single_quoted}|${double_quoted})`
-
-const attribute = `(?:\\s+${attr_name}(?:\\s*=\\s*${attr_value})?)`
-
-const open_tag = `<[A-Za-z][A-Za-z0-9\\-]*${attribute}*\\s*\\/?>`
-
-const close_tag = '<\\/[A-Za-z][A-Za-z0-9\\-]*\\s*>'
-const comment = '<!---?>|<!--(?:[^-]|-[^-]|--[^>])*-->'
-const processing = '<[?][\\s\\S]*?[?]>'
-const declaration = '<![A-Za-z][^>]*>'
-const cdata = '<!\\[CDATA\\[[\\s\\S]*?\\]\\]>'
-
-const HTML_TAG_RE = new RegExp(`^(?:${open_tag}|${close_tag}|${comment}|${processing}|${declaration}|${cdata})`)
-
-// end region
 
 function isLetter(code: number): boolean {
   return (code >= 0x41 && code <= 0x5a) || (code >= 0x61 && code <= 0x7a)

@@ -1,4 +1,5 @@
 import type { Node, ElementNode, ElementNodeAttributes, MarkdownDocument } from 'comark'
+import { braced_value } from './html-tag.ts'
 import { isHtmlVoidElement, TREE_WALK_MAX_DEPTH } from 'comark/utils'
 import { decodeHTMLAttribute } from '../entities.ts'
 
@@ -201,14 +202,19 @@ function decodeAttributeValue(value: string): string {
  * Names are lowercased, as HTML attribute names are case-insensitive.
  */
 export function parseHtmlAttributes(attrsStr: string): Record<string, unknown> {
+const ATTRIBUTE_RE = new RegExp(
+  `([:\\w.-]+)(?:\\s*=\\s*(?:"([^"]*)"|'([^']*)'|(${braced_value})|([^\\s"'=<>\`]+)))?`,
+  'g'
+)
+
   const attrs: Record<string, unknown> = {}
   if (!attrsStr || !attrsStr.trim()) return attrs
 
-  const re = /([:\w.-]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+)))?/g
-  let match: RegExpExecArray | null
-  while ((match = re.exec(attrsStr)) !== null) {
+  for (const match of attrsStr.matchAll(ATTRIBUTE_RE)) {
     const key = match[1].toLowerCase()
-    const value = match[2] ?? match[3] ?? match[4]
+    // The first occurrence wins, as in HTML.
+    if (Object.hasOwn(attrs, key)) continue
+    const value = match[2] ?? match[3] ?? match[4] ?? match[5]
     attrs[key] = value === undefined ? true : decodeAttributeValue(value)
   }
 
