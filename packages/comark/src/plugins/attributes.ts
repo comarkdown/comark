@@ -23,7 +23,10 @@ const markdownItInlineProps: PluginSimple = (md) => {
     // Skip Vue mustache `{{ }}` and template `${ }` syntax
     if (state.src[start + 1] === '{' || state.src[start - 1] === '{' || state.src[start - 1] === '$') return false
 
-    const search = searchProps(state.src, start)
+    // After text, `{...}` may be prose: only read it as attributes if every entry is valid
+    const last = state.tokens[state.tokens.length - 1]
+    const afterText = state.pending !== '' || !last || last.type === 'softbreak' || last.type === 'hardbreak'
+    const search = searchProps(state.src, start, afterText)
     if (!search) return false
 
     const { props, index: end } = search

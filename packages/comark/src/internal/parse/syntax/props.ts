@@ -19,7 +19,7 @@ export function parseProps(content: string) {
   return props.props
 }
 
-export function searchProps(content: string, index = 0) {
+export function searchProps(content: string, index = 0, strict = false) {
   if (content[index] !== '{') throw new Error(`Invalid props, expected \`{\` but got '${content[index]}'`)
 
   const props: [string, string][] = []
@@ -62,6 +62,8 @@ export function searchProps(content: string, index = 0) {
         }
         if (key.match(/^:?[a-z_][a-z0-9_-]*$/gi)) {
           props.push([key, value])
+        } else if (strict) {
+          return undefined
         }
       }
     }
