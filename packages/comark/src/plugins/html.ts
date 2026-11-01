@@ -269,8 +269,7 @@ const inlineClosers = new WeakMap<StateInline, (from: number, name: string, limi
 
 function rawElementEnd(state: StateInline, pos: number, openTag: string): number {
   const raw = readTag(openTag, 0)
-  if (!raw || raw.close || !RAW_HTML_TAGS.has(raw.name) || !isTagBoundary(openTag, raw.after) || openTag.endsWith('/>'))
-    return -1
+  if (!raw || raw.close || !RAW_HTML_TAGS.has(raw.name) || openTag.endsWith('/>')) return -1
   let find = inlineClosers.get(state)
   if (!find) inlineClosers.set(state, (find = createCloserFinder(state.src)))
   return find(pos + openTag.length, raw.name, state.posMax)?.end ?? -1
@@ -308,17 +307,11 @@ function scan(tokens: Token[], str: string, verbatim: boolean) {
     if (str.charCodeAt(pos) === 0x3c /* < */ && pos + 1 < len) {
       const next = str.charCodeAt(pos + 1)
       if (next === 0x21 /* ! */ || next === 0x3f /* ? */ || next === 0x2f /* / */ || isLetter(next)) {
-        const match = HTML_TAG_RE.exec(str.slice(pos))
+        const match = str.slice(pos).match(HTML_TAG_RE)
         if (match && !(closers && isUnpairedOpener(closers, pos + match[0].length, match[0]))) {
           if (pos > textStart) pushText(tokens, str.slice(textStart, pos), verbatim)
           const raw = readTag(match[0], 0)
-          if (
-            raw &&
-            !raw.close &&
-            RAW_HTML_TAGS.has(raw.name) &&
-            isTagBoundary(match[0], raw.after) &&
-            match[0].charCodeAt(match[0].length - 2) !== 0x2f
-          ) {
+          if (raw && !raw.close && RAW_HTML_TAGS.has(raw.name) && match[0].charCodeAt(match[0].length - 2) !== 0x2f) {
             pushHtml(tokens, match[0])
             const from = pos + match[0].length
             const closer = findCloser(from, raw.name)

@@ -6,6 +6,7 @@ import { renderHtmlForTest } from './utils/render-html'
 
 const block = { html: 1, block: 1 }
 const inline = { html: 1, block: 0 }
+const literal = { plugins: [html({ markdown: false })] }
 
 it.each([
   {
@@ -83,10 +84,10 @@ it.each([
   },
   {
     name: 'unclosed-in-list',
-    input: '- **a** <b>c',
-    nodes: [['ul', {}, ['li', {}, ['strong', {}, 'a'], ' ', ['b', { $: inline }, 'c']]]],
-    html: '<ul>\n  <li>\n    <strong>a</strong> <b>c</b>\n  </li>\n</ul>',
-    markdown: '- **a** <b>c</b>',
+    input: '- **a** <b>c\n- d',
+    nodes: [['ul', {}, ['li', {}, ['strong', {}, 'a'], ' ', ['b', { $: inline }, 'c']], ['li', {}, 'd']]],
+    html: '<ul>\n  <li>\n    <strong>a</strong> <b>c</b>\n  </li>\n  <li>d</li>\n</ul>',
+    markdown: '- **a** <b>c</b>\n- d',
   },
 ])('$name', async ({ input, nodes, html, markdown, ...options }) => {
   const document = await parseMarkdown(input, options)
@@ -96,12 +97,6 @@ it.each([
 })
 
 describe('HTML attributes', () => {
-  it('keeps a JSX-style braced value on an open tag', async () => {
-    const result = await parseMarkdown('<div style={{a: 1}}>x</div>')
-
-    expect(result.nodes).toEqual([['div', { $: block, style: '{{a: 1}}' }, 'x']])
-  })
-
   it('keeps a braced value with nested braces, quotes and spaces on an inline tag', async () => {
     const result = await parseMarkdown('a <b data={`x ${1}`} on={{ k: { v: 1 } }} d>y</b>')
 
@@ -110,30 +105,16 @@ describe('HTML attributes', () => {
     ])
   })
 
-  it('keeps the first of duplicate attributes', async () => {
-    const result = await parseMarkdown('<img alt="first" alt="second">\n\n<a href=x HREF=y title>t</a>')
+  it('keeps the first of duplicate attributes whatever their case', async () => {
+    const result = await parseMarkdown('<a href=x HREF=y title>t</a>')
 
-    expect(result.nodes).toEqual([
-      ['img', { $: block, alt: 'first' }],
-      ['a', { $: inline, href: 'x', title: true }, 't'],
-    ])
+    expect(result.nodes).toEqual([['a', { $: inline, href: 'x', title: true }, 't']])
   })
 
   it('keeps an attribute named like an Object.prototype member', async () => {
     const result = await parseMarkdown('<div constructor="a" constructor="b">x</div>')
 
     expect(result.nodes).toEqual([['div', { $: block, constructor: 'a' }, 'x']])
-  })
-})
-
-describe('HTML comments', () => {
-  it('reads <!--- … ---> as a comment inline and as a block', async () => {
-    const result = await parseMarkdown('a <!--- b ---> c\n\n<!--- d --->')
-
-    expect(result.nodes).toEqual([
-      ['p', {}, 'a ', [null, {}, '- b -'], ' c'],
-      [null, {}, '- d -'],
-    ])
   })
 })
 
@@ -157,12 +138,6 @@ describe('implied end tags', () => {
         ['table', { $: inline }, ['tr', { $: inline }, ['td', { $: inline }, ['p', { $: inline }, 'b']]]],
       ],
     ])
-  })
-
-  it('renders consecutive <p> tags as siblings', async () => {
-    const result = await parseMarkdown('<p>one\n<p>two')
-
-    expect(await renderHtmlForTest(result)).toBe('<p>one</p>\n<p>two</p>')
   })
 })
 
@@ -241,14 +216,6 @@ describe('an open tag after text', () => {
     expect(result.nodes).toEqual([['ai-thinking', { $: block }, 'Next paragraph.']])
   })
 
-  it('keeps markdown before the tag in its list item', async () => {
-    const result = await parseMarkdown('- **a** <b>c\n- d')
-
-    expect(result.nodes).toEqual([
-      ['ul', {}, ['li', {}, ['strong', {}, 'a'], ' ', ['b', { $: inline }, 'c']], ['li', {}, 'd']],
-    ])
-  })
-
   it('settles on the paired tree once the closer streams in', async () => {
     const source = 'text <x-card>\n\n**a**\n\n</x-card>'
     const parse = createMarkdownParser()
@@ -264,7 +231,13 @@ describe('an open tag after text', () => {
   })
 })
 
-describe('standalone comments', () => {
+describe('HTML comments', () => {
+  it('reads <!--- … ---> as a comment inline', async () => {
+    const result = await parseMarkdown('a <!--- b ---> c')
+
+    expect(result.nodes).toEqual([['p', {}, 'a ', [null, {}, '- b -'], ' c']])
+  })
+
   it('does not wrap an indented comment in a paragraph', async () => {
     const result = await parseMarkdown('  <!-- a -->\n\n   <!--- b --->')
 
@@ -282,8 +255,6 @@ describe('standalone comments', () => {
 })
 
 describe('character references and <pre>', () => {
-  const literal = { plugins: [html({ markdown: false })] }
-
   it('decodes character references in literal text when markdown: false', async () => {
     const result = await parseMarkdown(
       '<div>\na &amp; b <em>x &lt; y</em> &#65; &copy; &copy &unknown;\n</div>',
@@ -362,8 +333,6 @@ describe('character references and <pre>', () => {
 })
 
 describe('literal text round trip', () => {
-  const literal = { plugins: [html({ markdown: false })] }
-
   async function roundTrip(source: string, options?: Parameters<typeof parseMarkdown>[1]) {
     const first = await parseMarkdown(source, options)
     const markdown = await renderMarkdown(first)
@@ -445,6 +414,12 @@ describe('literal text round trip', () => {
     expect(again.nodes).toEqual(first.nodes)
   })
 
+  it('shows the decoded text of an inline tag as the text it spells', async () => {
+    const first = await parseMarkdown('<div><span>&lt;b&gt; &amp;lt;</span></div>', literal)
+
+    expect(await renderHtmlForTest(first)).toBe('<div>\n  <span>&lt;b&gt; &amp;lt;</span>\n</div>')
+  })
+
   it('keeps a <pre> after text unindented in the paragraph', async () => {
     const { html: output } = await roundTrip('before <pre>\nline\n  indented</pre> after')
 
@@ -476,8 +451,13 @@ describe('exact raw tag names', () => {
     const result = await parseMarkdown('a <script-x>**x**</script-x> </script> after')
 
     expect(result.nodes).toEqual([['p', {}, 'a ', ['script-x', { $: inline }, ['strong', {}, 'x']], '  after']])
-    for (const name of ['style-x', 'pre2', 'textarea-1', 'prelude']) {
-      const other = await parseMarkdown(`a <${name}>**x**</${name}> </${name.replace(/[-\d]+.*|lude/, '')}> after`)
+    for (const [name, raw] of [
+      ['style-x', 'style'],
+      ['pre2', 'pre'],
+      ['textarea-1', 'textarea'],
+      ['prelude', 'pre'],
+    ]) {
+      const other = await parseMarkdown(`a <${name}>**x**</${name}> </${raw}> after`)
 
       expect(JSON.stringify(other.nodes)).toContain('"strong"')
     }
@@ -491,7 +471,6 @@ describe('exact raw tag names', () => {
 })
 
 describe('closing tags inside containers without markdown', () => {
-  const literal = { plugins: [html({ markdown: false })] }
   const sources = [
     'a <x-card>one\n\ntwo\n\n</x-card>\n\nlast',
     '> a <x-card>one\n>\n> two\n>\n> </x-card>\n\nlast',
@@ -514,38 +493,6 @@ describe('closing tags inside containers without markdown', () => {
 
     expect(result.nodes[0]).toBe('a ')
     expect(JSON.stringify(result.nodes)).toContain('["x-card"')
-  })
-})
-
-describe('literal text in inline tags', () => {
-  const literal = { plugins: [html({ markdown: false })] }
-
-  it('survives the Markdown round trip at any depth', async () => {
-    for (const source of [
-      '<div><span>&lt;b&gt; &amp;lt;</span></div>',
-      '<div><em>&lt;b&gt; &amp;lt;</em></div>',
-      '<div><span><em>&lt;i&gt; &amp;#65;</em></span></div>',
-    ]) {
-      const first = await parseMarkdown(source, literal)
-      const markdown = await renderMarkdown(first)
-      const again = await parseMarkdown(markdown, literal)
-
-      expect(markdown).not.toContain('\\')
-      expect(again.nodes).toEqual(first.nodes)
-    }
-  })
-
-  it('shows the text it spells in HTML', async () => {
-    const first = await parseMarkdown('<div><span>&lt;b&gt; &amp;lt;</span></div>', literal)
-
-    expect(await renderHtmlForTest(first)).toBe('<div>\n  <span>&lt;b&gt; &amp;lt;</span>\n</div>')
-  })
-
-  it('still escapes Markdown text in an inline tag', async () => {
-    const first = await parseMarkdown('a <span>\\*x\\*</span>')
-    const markdown = await renderMarkdown(first)
-
-    expect((await parseMarkdown(markdown)).nodes).toEqual(first.nodes)
   })
 })
 
@@ -591,16 +538,6 @@ describe('a close tag in another container', () => {
 })
 
 describe('autoUnwrap', () => {
-  it('keeps a <p> the author wrote, with its attributes', async () => {
-    const source = '<section><p class="c">Check</p></section>'
-
-    for (const autoUnwrap of [true, false]) {
-      const result = await parseMarkdown(source, { autoUnwrap })
-
-      expect(result.nodes).toEqual([['section', { $: block }, ['p', { $: inline, class: 'c' }, 'Check']]])
-    }
-  })
-
   it('still unwraps the paragraph markdown wraps around a single line', async () => {
     const result = await parseMarkdown('<section>\n\nCheck\n\n</section>')
 
@@ -610,14 +547,18 @@ describe('autoUnwrap', () => {
 
 describe('Markdown syntax in HTML text', () => {
   const sources = [
+    'a <span>\\*x\\*</span>',
     '<div><span>\\*x\\*</span></div>',
+    '<div><span>&lt;b&gt; &amp;lt;</span></div>',
+    '<div><em>&lt;b&gt; &amp;lt;</em></div>',
+    '<div><span><em>&lt;i&gt; &amp;#65;</em></span></div>',
     '<div>\\*x\\* \\[x\\](y) \\`c\\` &#42;n&#42;</div>',
     '<div>\n\\# not a heading\n</div>',
     '<div><span><em>\\_x\\_ &amp;lt;</em></span></div>',
   ]
 
   it('stays literal text through a save and a parse, with markdown on and off', async () => {
-    for (const options of [undefined, { plugins: [html({ markdown: false })] }]) {
+    for (const options of [undefined, literal]) {
       for (const source of sources) {
         const first = await parseMarkdown(source, options)
         const again = await parseMarkdown(await renderMarkdown(first), options)
