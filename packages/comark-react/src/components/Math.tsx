@@ -6,19 +6,33 @@ export interface MathProps {
   className?: string
 }
 
+// After a failed load, formulas show their source, and a render this long
+// after the failure loads KaTeX again.
+const RETRY_DELAY = 5000
+
 // One promise for every formula, since `use` needs the same one on each render.
 let katexReady: Promise<boolean> | undefined
+let failedAt: number | undefined
+
+function waitForKatex(): Promise<boolean> {
+  if (!katexReady || (failedAt !== undefined && Date.now() - failedAt >= RETRY_DELAY)) {
+    failedAt = undefined
+    katexReady = loadKatex().then(
+      () => true,
+      () => {
+        failedAt = Date.now()
+        return false
+      }
+    )
+  }
+  return katexReady
+}
 
 // Memoized because streaming re-renders every formula on each chunk.
 const Typeset = memo(function Typeset({ content, isInline }: { content: string; isInline: boolean }) {
   let html = typesetMath(content, !isInline)
   if (html === undefined) {
-    katexReady ??= loadKatex().then(
-      () => true,
-      () => false
-    )
-    // After a failed load, show the source now and try again on the next render.
-    if (!use(katexReady)) katexReady = undefined
+    use(waitForKatex())
     html = typesetMath(content, !isInline)
   }
   if (!html)
