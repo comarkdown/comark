@@ -466,6 +466,69 @@ describe('HTML inside markdown containers', () => {
 
     expect(result.nodes).toEqual([['ul', {}, ['li', {}, ['span', { $: { html: 1, block: 1 } }, 'a']], ['li', {}, 'b']]])
   })
+
+  it('keeps inline HTML content inside a component', async () => {
+    const result = await parseMarkdown('::warning\nPress <kbd>Ctrl</kbd>+<kbd>S</kbd> to save.\n::')
+
+    expect(result.nodes).toEqual([
+      [
+        'warning',
+        {},
+        'Press ',
+        ['kbd', { $: { html: 1, block: 0 } }, 'Ctrl'],
+        '+',
+        ['kbd', { $: { html: 1, block: 0 } }, 'S'],
+        ' to save.',
+      ],
+    ])
+  })
+
+  it('keeps inline HTML content inside emphasis', async () => {
+    const result = await parseMarkdown('Press **<kbd>Ctrl</kbd>** to copy.')
+
+    expect(result.nodes).toEqual([
+      ['p', {}, 'Press ', ['strong', {}, ['kbd', { $: { html: 1, block: 0 } }, 'Ctrl']], ' to copy.'],
+    ])
+  })
+
+  it('keeps inline HTML content inside a heading', async () => {
+    const result = await parseMarkdown('# Press <kbd>Ctrl</kbd> now')
+
+    expect(result.nodes).toEqual([
+      ['h1', { id: 'press-ctrl-now' }, 'Press ', ['kbd', { $: { html: 1, block: 0 } }, 'Ctrl'], ' now'],
+    ])
+  })
+
+  it('closes an unclosed inline tag at the end of its component', async () => {
+    const result = await parseMarkdown('::warning\nPress <kbd>Ctrl to save.\n::\n\nafter')
+
+    expect(result.nodes).toEqual([
+      ['warning', {}, 'Press ', ['kbd', { $: { html: 1, block: 1 } }, 'Ctrl to save.']],
+      ['p', {}, 'after'],
+    ])
+  })
+
+  it('closes an unclosed inline tag at the end of its slot', async () => {
+    const result = await parseMarkdown('::card\n#title\nPress <kbd>Ctrl\n#default\nbody\n::')
+
+    expect(result.nodes).toEqual([
+      [
+        'card',
+        {},
+        ['template', { name: 'title' }, 'Press ', ['kbd', { $: { html: 1, block: 1 } }, 'Ctrl']],
+        ['template', { name: 'default' }, 'body'],
+      ],
+    ])
+  })
+
+  it('closes an unclosed inline tag at the end of its emphasis', async () => {
+    const result = await parseMarkdown('**a <kbd>b** c\n\nnext')
+
+    expect(result.nodes).toEqual([
+      ['p', {}, ['strong', {}, 'a ', ['kbd', { $: { html: 1, block: 0 } }, 'b']], ' c'],
+      ['p', {}, 'next'],
+    ])
+  })
 })
 
 describe('stray HTML close tags', () => {
