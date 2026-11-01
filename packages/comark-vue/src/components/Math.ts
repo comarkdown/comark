@@ -1,4 +1,4 @@
-import { defineAsyncComponent, defineComponent, h } from 'vue'
+import { defineAsyncComponent, defineComponent, h, onMounted, onServerPrefetch, ref } from 'vue'
 import { loadKatex, typesetMath } from 'comark/plugins/math'
 
 const Typeset = defineComponent({
@@ -18,7 +18,21 @@ const Typeset = defineComponent({
     },
   },
   setup(props) {
+    // KaTeX failed to load before this formula rendered: try again, and
+    // typeset once it loads.
+    const loaded = ref(typesetMath('', true) !== undefined)
+    if (!loaded.value) {
+      const retry = () =>
+        loadKatex().then(
+          () => (loaded.value = true),
+          () => {}
+        )
+      onServerPrefetch(retry)
+      onMounted(retry)
+    }
+
     return () => {
+      void loaded.value
       const isInline = props.class?.includes('inline')
       const tag = isInline ? 'span' : 'div'
       const className = isInline ? 'math inline' : 'math block'

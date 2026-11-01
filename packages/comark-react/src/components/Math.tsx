@@ -7,13 +7,18 @@ export interface MathProps {
 }
 
 // One promise for every formula, since `use` needs the same one on each render.
-let katexReady: Promise<unknown> | undefined
+let katexReady: Promise<boolean> | undefined
 
 // Memoized because streaming re-renders every formula on each chunk.
 const Typeset = memo(function Typeset({ content, isInline }: { content: string; isInline: boolean }) {
   let html = typesetMath(content, !isInline)
   if (html === undefined) {
-    use((katexReady ??= loadKatex().catch(() => {})))
+    katexReady ??= loadKatex().then(
+      () => true,
+      () => false
+    )
+    // After a failed load, show the source now and try again on the next render.
+    if (!use(katexReady)) katexReady = undefined
     html = typesetMath(content, !isInline)
   }
   if (!html)

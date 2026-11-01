@@ -69,4 +69,33 @@ describe('@comark/react plugins/math — Math component', () => {
 
     expect(html).toContain('<span class="math inline"><span class="katex">')
   })
+
+  it('loads KaTeX again after a failed load', async () => {
+    vi.resetModules()
+    let fail = true
+    vi.doMock('katex', async (importOriginal) => {
+      if (fail) throw new Error('Failed to fetch dynamically imported module')
+      return importOriginal()
+    })
+    const { Math } = await import('../src/plugins/math')
+    const { renderToReadableStream } = await import('react-dom/server')
+    const render = async () => {
+      const stream = await renderToReadableStream(
+        <Math
+          content="x^2"
+          className="math inline"
+        />
+      )
+      await stream.allReady
+      return new Response(stream).text()
+    }
+
+    try {
+      expect(await render()).toContain('<span class="math inline">x^2</span>')
+      fail = false
+      expect(await render()).toContain('<span class="math inline"><span class="katex">')
+    } finally {
+      vi.doUnmock('katex')
+    }
+  })
 })
