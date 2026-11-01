@@ -216,3 +216,83 @@ describe('standalone comments', () => {
     expect(result.nodes).toEqual([['div', { $: block }, [null, {}, ' x '], 'text']])
   })
 })
+
+describe('character references and <pre>', () => {
+  const literal = { plugins: [html({ markdown: false })] }
+
+  it('decodes character references in literal text when markdown: false', async () => {
+    const result = await parseMarkdown(
+      '<div>\na &amp; b <em>x &lt; y</em> &#65; &copy; &copy &unknown;\n</div>',
+      literal
+    )
+
+    expect(result.nodes).toEqual([
+      ['div', { $: block }, 'a & b ', ['em', { $: inline }, 'x < y'], ' A © &copy &unknown;'],
+    ])
+  })
+
+  it('decodes the same references with and without markdown', async () => {
+    const source = '<div>\na &amp; b &lt;i&gt;\n</div>'
+
+    const withMarkdown = await parseMarkdown(source)
+    const withoutMarkdown = await parseMarkdown(source, literal)
+
+    expect(withoutMarkdown.nodes).toEqual(withMarkdown.nodes)
+  })
+
+  it('does not read a decoded <!-- as a comment', async () => {
+    const result = await parseMarkdown('<pre>&lt;!-- x --&gt;</pre>')
+
+    expect(result.nodes).toEqual([['pre', { $: block }, '<!-- x -->']])
+  })
+
+  it('parses the tags inside <pre> and decodes its text', async () => {
+    const result = await parseMarkdown('<pre><code class="language-js">x &lt; y &amp; <span>z</span></code></pre>')
+
+    expect(result.nodes).toEqual([
+      ['pre', { $: block }, ['code', { $: inline, class: 'language-js' }, 'x < y & ', ['span', { $: inline }, 'z']]],
+    ])
+    expect(await renderHtmlForTest(result)).toBe(
+      '<pre><code class="language-js">x &lt; y & <span>z</span></code></pre>'
+    )
+  })
+
+  it('keeps whitespace and markdown in <pre> verbatim', async () => {
+    const result = await parseMarkdown('<pre>\n  const x = 1\n  **not**\n  <b>b</b>\n</pre>\n\nafter')
+
+    expect(result.nodes).toEqual([
+      ['pre', { $: block }, '\n  const x = 1\n  **not**\n  ', ['b', { $: inline }, 'b'], '\n'],
+      ['p', {}, 'after'],
+    ])
+  })
+
+  it('keeps an open tag in <pre> with no closer as text', async () => {
+    const result = await parseMarkdown('<pre>const a: Array<string> = []\n</pre>\n\nafter')
+
+    expect(result.nodes).toEqual([
+      ['pre', { $: block }, 'const a: Array<string> = []\n'],
+      ['p', {}, 'after'],
+    ])
+  })
+
+  it('decodes <textarea> text and leaves <script> and <style> alone', async () => {
+    const result = await parseMarkdown(
+      '<textarea>a &lt; b</textarea>\n\n<script>a &lt; b</script>\n\n<style>a &lt; b</style>'
+    )
+
+    expect(result.nodes).toEqual([
+      ['textarea', { $: block }, 'a < b'],
+      ['script', { $: block }, 'a &lt; b'],
+      ['style', { $: block }, 'a &lt; b'],
+    ])
+  })
+
+  it('writes the decoded text of <pre> back as references', async () => {
+    const source = '<pre><code>a &lt;b&gt;c&lt;/b&gt; &amp;amp; &lt;!-- x --&gt;</code></pre>'
+    const first = await parseMarkdown(source)
+    const rendered = await renderMarkdown(first)
+
+    expect(rendered).toBe('<pre><code>a &lt;b>c&lt;/b> &amp;amp; &lt;!-- x --></code></pre>')
+    expect((await parseMarkdown(rendered)).nodes).toEqual(first.nodes)
+  })
+})

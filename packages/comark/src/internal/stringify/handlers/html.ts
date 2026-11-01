@@ -64,7 +64,11 @@ export async function html(node: ElementNode, state: State, parent?: ElementNode
   const isSelfClose = selfCloseTags.has(String(tag))
 
   // Do not modify context if we are already in html mode
-  const revert = state.applyContext({ inline: oneLiner })
+  // `<pre>` and `<textarea>` text was entity-decoded on parse, so it is encoded again here.
+  const revert = state.applyContext({
+    inline: oneLiner,
+    rawText: state.context.rawText === true || tag === 'pre' || tag === 'textarea',
+  })
 
   const childrenContent: string[] = []
   for (const child of children) {

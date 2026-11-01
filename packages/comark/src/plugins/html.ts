@@ -17,8 +17,9 @@
  *   fragments as inline markdown (`<h1>Hello **World**</h1>` → strong).
  *   Implemented by narrowing markdown-exit's `html_block` rule to `<style>`,
  *   `<pre>`, `<script>`, `<textarea>`, and comments (`<!--`) so the rest
- *   tokenizes as normal markdown. Those stay verbatim: every character between
- *   the delimiters is kept, and an inner tag is text. When `false`, that rule stays and every closed-block
+ *   tokenizes as normal markdown. Their bodies are not markdown and every
+ *   character between the delimiters is kept; inner tags are text, except in
+ *   `<pre>` (see `SPEC/HTML/README.md`). When `false`, that rule stays and every closed-block
  *   body stays literal. Blank-line bodies still nest as markdown tokens via bare
  *   open/close pairing, in both modes.
  *
@@ -36,8 +37,10 @@
  */
 
 import { type StateBlock, type StateInline, Token, type MarkdownExit } from 'markdown-exit/core'
+import { decodeHTMLStrict } from '../internal/entities.ts'
 import type { ComarkParseTokensState } from '../types.ts'
 import { defineComarkPlugin } from '../utils/helpers.ts'
+import { isHtmlVoidElement } from '../utils/index.ts'
 import { HTML_TAG_RE } from '../internal/parse/html-tag.ts'
 
 export interface HtmlPluginOptions {
@@ -132,6 +135,12 @@ function isLetter(code: number): boolean {
 /** CommonMark type-1 raw blocks whose body is kept verbatim. `<prelude>` does not match. */
 const RAW_HTML_TAGS = new Set(['style', 'pre', 'script', 'textarea'])
 
+/** Raw blocks whose body is plain text. `<pre>` is not: its tags are HTML, only markdown is off. */
+const TEXT_BODY_TAGS = new Set(['style', 'script', 'textarea'])
+
+/** Raw blocks whose body still has character references (`textarea`, `pre`). `style` and `script` do not. */
+const DECODED_BODY_TAGS = new Set(['pre', 'textarea'])
+
 /** Read `<name` or `</name` at `pos`. `after` is the index of the first character after the name. */
 function readTag(src: string, pos: number): { name: string; close: boolean; after: number } | null {
   if (src.charCodeAt(pos) !== 0x3c /* < */) return null
@@ -182,11 +191,13 @@ function literalText(content: string): string {
   return start >= end ? '' : content.slice(start, end)
 }
 
-function pushText(tokens: Token[], content: string, verbatim = false) {
+function pushText(tokens: Token[], content: string, verbatim = false, decode = true) {
   const textContent = verbatim ? content : literalText(content)
   if (!textContent) return
   const text = new Token('text', '', 0)
-  text.content = textContent
+  text.content = decode ? decodeHTMLStrict(textContent) : textContent
+  // Decoded text can spell `<!--`; it is not a comment.
+  if (decode) text.meta = { literal: true }
   tokens.push(text)
 }
 
@@ -215,6 +226,12 @@ function rawCloserEnd(src: string, pos: number, name: string): number {
  */
 export function htmlToTokens(str: string): Token[] {
   const tokens: Token[] = []
+  scan(tokens, str, false)
+  return tokens
+}
+
+/** `verbatim` keeps every character of a text run, as inside `<pre>`. */
+function scan(tokens: Token[], str: string, verbatim: boolean) {
   const len = str.length
   let pos = 0
   let textStart = 0
@@ -224,11 +241,12 @@ export function htmlToTokens(str: string): Token[] {
     if (str.charCodeAt(pos) === 0x3c /* < */ && pos + 1 < len) {
       const next = str.charCodeAt(pos + 1)
       if (next === 0x21 /* ! */ || next === 0x3f /* ? */ || next === 0x2f /* / */ || isLetter(next)) {
-        const match = str.slice(pos).match(HTML_TAG_RE)
-        if (match) {
-          if (pos > textStart) pushText(tokens, str.slice(textStart, pos))
+        const match = HTML_TAG_RE.exec(str.slice(pos))
+        if (match && !(verbatim && isUnpairedOpener(str, pos, match[0]))) {
+          if (pos > textStart) pushText(tokens, str.slice(textStart, pos), verbatim)
           const raw = readTag(match[0], 0)
-          // style / pre / script / textarea: body is source until the closer, inner tags included.
+          // style / pre / script / textarea: body is source until the closer, inner tags included
+          // (except in `<pre>`, whose inner tags are HTML).
           if (raw && !raw.close && RAW_HTML_TAGS.has(raw.name) && match[0].charCodeAt(match[0].length - 2) !== 0x2f) {
             pushHtml(tokens, match[0])
             const from = pos + match[0].length
@@ -237,14 +255,14 @@ export function htmlToTokens(str: string): Token[] {
               if (str.charCodeAt(i) !== 0x3c /* < */) continue
               end = rawCloserEnd(str, i, raw.name)
               if (end < 0) continue
-              pushText(tokens, str.slice(from, i), true)
+              pushRawBody(tokens, str.slice(from, i), raw.name)
               pushHtml(tokens, str.slice(i, end))
               pos = end
               break
             }
             if (end < 0) {
-              pushText(tokens, str.slice(from), true)
-              return tokens
+              pushRawBody(tokens, str.slice(from), raw.name)
+              return
             }
             textStart = pos
             continue
@@ -259,7 +277,17 @@ export function htmlToTokens(str: string): Token[] {
     pos++
   }
 
-  if (textStart < len) pushText(tokens, str.slice(textStart))
+  if (textStart < len) pushText(tokens, str.slice(textStart), verbatim)
+}
 
-  return tokens
+/** In `<pre>`, `Array<string>` is code: an open tag with no closer after it stays text. */
+function isUnpairedOpener(str: string, pos: number, tagSource: string): boolean {
+  const tag = readTag(tagSource, 0)
+  if (!tag || tag.close || isHtmlVoidElement(tag.name) || tagSource.endsWith('/>')) return false
+  return !new RegExp(`</${tag.name}\\s*>`, 'i').test(str.slice(pos + tagSource.length))
+}
+
+function pushRawBody(tokens: Token[], body: string, name: string) {
+  if (TEXT_BODY_TAGS.has(name)) pushText(tokens, body, true, DECODED_BODY_TAGS.has(name))
+  else scan(tokens, body, true)
 }

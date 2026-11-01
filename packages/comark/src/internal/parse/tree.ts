@@ -653,7 +653,7 @@ const processors: Record<string, Processor> = {
 
     // `<!--` / `-->` are HTML open/close with tag null (may arrive as plain text
     // when blank lines split a multi-line comment).
-    const comment = tryCommentTag(content, state)
+    const comment = tokens[start].meta?.literal ? null : tryCommentTag(content, state)
     if (comment) return { nextIndex: start + 1, node: comment.node }
 
     return { nextIndex: start + 1, node: content }

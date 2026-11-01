@@ -36,6 +36,9 @@ function findHandler(ctx: Context, node: ElementNode): NodeHandler | undefined {
  */
 export async function one(node: Node, state: State, parent?: ElementNode, atLineStart = false): Promise<string> {
   if (typeof node === 'string') {
+    if (state.context.rawText === true && !state.context.html) {
+      return node.replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    }
     if (state.context.html) {
       // Do not convert ampersands to entities in raw HTML blocks
       return escapeHtml(node, { '&': undefined, '"': undefined })
