@@ -543,3 +543,33 @@ describe('autoUnwrap', () => {
     expect(result.nodes).toEqual([['section', { $: block }, 'Check']])
   })
 })
+
+describe('Markdown syntax in HTML text', () => {
+  const sources = [
+    '<div><span>\\*x\\*</span></div>',
+    '<div>\\*x\\* \\[x\\](y) \\`c\\` &#42;n&#42;</div>',
+    '<div>\n\\# not a heading\n</div>',
+    '<div><span><em>\\_x\\_ &amp;lt;</em></span></div>',
+  ]
+
+  it('stays literal text through a save and a parse, with markdown on and off', async () => {
+    for (const options of [undefined, { plugins: [html({ markdown: false })] }]) {
+      for (const source of sources) {
+        const first = await parseMarkdown(source, options)
+        const again = await parseMarkdown(await renderMarkdown(first), options)
+
+        expect(again.nodes).toEqual(first.nodes)
+      }
+    }
+  })
+
+  it('keeps a parsed strong and link next to the text', async () => {
+    const first = await parseMarkdown('<div>\\*x\\* **b** [l](/u)</div>')
+    const markdown = await renderMarkdown(first)
+    const again = await parseMarkdown(markdown)
+
+    expect(JSON.stringify(first.nodes)).toContain('"strong"')
+    expect(JSON.stringify(first.nodes)).toContain('"a"')
+    expect(again.nodes).toEqual(first.nodes)
+  })
+})

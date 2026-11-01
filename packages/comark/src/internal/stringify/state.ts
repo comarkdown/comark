@@ -51,12 +51,11 @@ export async function one(node: Node, state: State, parent?: ElementNode, atLine
     if (state.context.rawText === true) {
       return node.replace(/&/g, '&amp;').replace(/</g, '&lt;')
     }
-    // The content of a raw HTML block is copied verbatim on parse, so markdown
-    // syntax inside it must not be escaped (inline HTML, `$.block === 0`, has
-    // its markdown parsed into children and is escaped normally). Decoded text
-    // that would read as a reference or a tag is encoded again.
+    // Text in an HTML element is read back as literal text with markdown off and as
+    // markdown with it on. Its syntax is written as character references, which both
+    // read as the same text; a `\` escape would stay a backslash in the first mode.
     if (parent?.[1].$?.html === 1 && (parent[1].$?.block === 1 || state.context.literal === true)) {
-      return node.replace(/&(?=#\d+;|#x[\da-f]+;|[a-z][a-z\d]*;)/gi, '&amp;').replace(/<(?=[a-z/!?])/gi, '&lt;')
+      return encodeLiteralText(node, atLineStart)
     }
     return escapeTextNode(node, atLineStart)
   }
@@ -245,6 +244,14 @@ function escapeTextNode(text: string, atLineStart = false): string {
     .split('\n')
     .map((line, index) => (index > 0 || atLineStart ? escapeLeadingBlock(line) : line))
     .join('\n')
+}
+
+function encodeLiteralText(text: string, atLineStart: boolean): string {
+  return escapeTextNode(text, atLineStart)
+    .replace(/\\([\s\S])/g, (_, char: string) =>
+      char === '&' ? '&amp;' : char === '<' ? '&lt;' : `&#${char.codePointAt(0)};`
+    )
+    .replace(/<(?=[a-z/!?])/gi, '&lt;')
 }
 
 function isAlphaNumeric(char: string | undefined): boolean {

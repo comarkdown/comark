@@ -82,8 +82,9 @@ export async function html(node: ElementNode, state: State, parent?: ElementNode
   })
 
   const childrenContent: string[] = []
-  for (const child of children) {
-    childrenContent.push(await state.one(child, state, node))
+  for (const [i, child] of children.entries()) {
+    // A multi-line element body starts on its own line, where `#` or `-` would open a block.
+    childrenContent.push(await state.one(child, state, node, i === 0 && !oneLiner && !state.context.html))
   }
 
   // A blank line inside a raw-HTML element would terminate it on reparse
