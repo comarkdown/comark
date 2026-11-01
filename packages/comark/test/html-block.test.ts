@@ -474,4 +474,18 @@ describe('stray HTML close tags', () => {
 
     expect(result.nodes).toEqual([['p', {}, ' orphan']])
   })
+
+  it('reads a stray `</br>` as a line break', async () => {
+    const result = await parseMarkdown('**Experimental feature**</br>\nEnable View Transitions.')
+
+    expect(result.nodes).toEqual([
+      [
+        'p',
+        {},
+        ['strong', {}, 'Experimental feature'],
+        ['br', { $: { html: 1, block: 0 } }],
+        'Enable View Transitions.',
+      ],
+    ])
+  })
 })
