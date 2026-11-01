@@ -504,6 +504,7 @@ export interface ParserCoreOptions<
    * When enabled, if a container component (alert, card, callout, note, warning, tip, info)
    * has only a single paragraph child, the paragraph wrapper is removed and its children
    * become direct children of the container. This creates cleaner HTML output.
+   * A `<p>` written as HTML is content and is never unwrapped.
    *
    * @default true
    * @example

@@ -68,7 +68,13 @@ function applyAutoUnwrapAt(node: Node, depth: number): Node {
     return node
   }
 
-  if (significantCount === 1 && Array.isArray(significant) && significant[0] === 'p') {
+  // An author-written `<p>` (`$.html`) is content, not a wrapper.
+  if (
+    significantCount === 1 &&
+    Array.isArray(significant) &&
+    significant[0] === 'p' &&
+    !(significant[1] as ElementNodeAttributes | undefined)?.$?.html
+  ) {
     // Lift the paragraph's attrs onto the parent so trailing `{attr}` survives the unwrap.
     // Parent attrs take precedence so explicit component props aren't overridden.
     const paragraphAttrs = significant[1] as Record<string, unknown> | undefined
@@ -187,6 +193,11 @@ export function parseHtmlInline(content: string): ParsedHtmlTag {
   return { kind: 'other', content: trimmed }
 }
 
+const ATTRIBUTE_RE = new RegExp(
+  `([:\\w.-]+)(?:\\s*=\\s*(?:"([^"]*)"|'([^']*)'|(${braced_value})|([^\\s"'=<>\`]+)))?`,
+  'g'
+)
+
 /**
  * Decode character references in a raw attribute value the way browsers do:
  * legacy semicolon-less references (`&amp`) are decoded, but not when followed by
@@ -202,11 +213,6 @@ function decodeAttributeValue(value: string): string {
  * Names are lowercased, as HTML attribute names are case-insensitive.
  */
 export function parseHtmlAttributes(attrsStr: string): Record<string, unknown> {
-const ATTRIBUTE_RE = new RegExp(
-  `([:\\w.-]+)(?:\\s*=\\s*(?:"([^"]*)"|'([^']*)'|(${braced_value})|([^\\s"'=<>\`]+)))?`,
-  'g'
-)
-
   const attrs: Record<string, unknown> = {}
   if (!attrsStr || !attrsStr.trim()) return attrs
 

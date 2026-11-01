@@ -296,3 +296,21 @@ describe('character references and <pre>', () => {
     expect((await parseMarkdown(rendered)).nodes).toEqual(first.nodes)
   })
 })
+
+describe('autoUnwrap', () => {
+  it('keeps a <p> the author wrote, with its attributes', async () => {
+    const source = '<section><p class="c">Check</p></section>'
+
+    for (const autoUnwrap of [true, false]) {
+      const result = await parseMarkdown(source, { autoUnwrap })
+
+      expect(result.nodes).toEqual([['section', { $: block }, ['p', { $: inline, class: 'c' }, 'Check']]])
+    }
+  })
+
+  it('still unwraps the paragraph markdown wraps around a single line', async () => {
+    const result = await parseMarkdown('<section>\n\nCheck\n\n</section>')
+
+    expect(result.nodes).toEqual([['section', { $: block }, 'Check']])
+  })
+})
