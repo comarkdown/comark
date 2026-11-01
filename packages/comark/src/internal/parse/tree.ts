@@ -36,7 +36,6 @@ type HtmlOpenFrame = {
   block: boolean
   /** Bare-inline nodes waiting to be flushed as a single <p> on a block frame. */
   pendingInline: Node[]
-  /** True when markdown or text came before the open tag in its paragraph (`text <b>`). */
   afterText?: boolean
 }
 
@@ -48,7 +47,6 @@ interface ProcessState {
   startLine: number
   /** Unclosed HTML open tags, outer → inner. Lives across blocks like the heading id stack. */
   htmlStack: HtmlOpenFrame[]
-  /** Built on first use; the token list is fixed for the walk. */
   closers?: CloserIndex
 }
 
@@ -73,12 +71,11 @@ function isInlineish(node: Node): boolean {
   return tag === null || inlineTags.has(tag as string)
 }
 
-/** Inline-level result of an HTML tag: the tags `isInlineish` knows, `img`, `br`, and custom elements. */
 function isInlineHtml(node: Node): boolean {
-  if (!Array.isArray(node)) return false
-  const tag = node[0] as string | null
+  if (typeof node === 'string') return false
+  const tag = node[0]
   if (tag === null || inlineTags.has(tag) || tag === 'img' || tag === 'br') return true
-  return tag.includes('-') && (node[1] as ElementNodeAttributes).$?.block === 0
+  return tag.includes('-') && node[1].$?.block === 0
 }
 
 function flushPendingInline(frame: HtmlOpenFrame) {
@@ -87,7 +84,7 @@ function flushPendingInline(frame: HtmlOpenFrame) {
   frame.pendingInline = []
   const only = pending.length === 1 ? pending[0] : undefined
   // A lone author-written element is a block of its own, not a paragraph.
-  if (Array.isArray(only) && (only[1] as ElementNodeAttributes)?.$?.html && !isInlineish(only)) {
+  if (Array.isArray(only) && only[1].$?.html && !isInlineish(only)) {
     frame.children.push(only)
     return
   }
@@ -175,21 +172,19 @@ function tryCommentTag(content: string, state: ProcessState): ProcessorResult | 
   return null
 }
 
-/** Pop the frames above and including `idx`; inner ones nest into their parent, the outermost is returned. */
-function closeFramesTo(state: ProcessState, idx: number): Node {
+function closeFramesTo(state: ProcessState, idx: number): Node | undefined {
   let closed: Node | undefined
   while (state.htmlStack.length > idx) {
     const node = frameToNode(state.htmlStack.pop()!)
     if (state.htmlStack.length > idx) deliverInline(state, node)
     else closed = node
   }
-  return closed as Node
+  return closed
 }
 
 // Elements that stop a `<p>` from being closed by a following `<p>` (HTML "button scope").
 const P_SCOPE_BOUNDARY = new Set(['table', 'td', 'th', 'caption', 'button', 'template', 'object', 'marquee', 'applet'])
 
-/** `<p>` closes an open `<p>` (HTML implied end tag). Returns the closed paragraph, if any. */
 function closeImpliedParagraph(token: Token, state: ProcessState): Node | undefined {
   if (!/^<p[\s/>]/i.test(token.content)) return undefined
   const parsed = parseHtmlInline(token.content)
@@ -204,7 +199,6 @@ function closeImpliedParagraph(token: Token, state: ProcessState): Node | undefi
 
 const firstProse = new WeakMap<Token[], number>()
 
-/** True when something other than whitespace and HTML tags precedes `tokens[start]` in its paragraph. */
 function followsText(tokens: Token[], start: number): boolean {
   let first = firstProse.get(tokens)
   if (first === undefined) {
@@ -281,7 +275,6 @@ function processInline(inlineTokens: Token[], state: ProcessState, nestHtml = tr
   let i = 0
 
   while (i < inlineTokens.length) {
-    // An inline-level node stays with its paragraph; only an HTML tag is classified by name.
     const fromHtml = inlineTokens[i].type === 'html_inline'
     if (nestHtml && fromHtml) {
       const closed = closeImpliedParagraph(inlineTokens[i], state)
@@ -720,7 +713,6 @@ const processors: Record<string, Processor> = {
     }
 
     if (parsed.kind === 'close') {
-      // Browsers read a stray `</br>` as `<br>`.
       if (parsed.tag === 'br') return { nextIndex: start + 1, node: ['br', makeHtmlAttrs({}, false)] }
       // Find the matching open frame (case-insensitive), auto-closing any
       // nested frames above it the way a real HTML parser would.

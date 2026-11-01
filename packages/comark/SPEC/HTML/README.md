@@ -1,6 +1,6 @@
 # HTML parsing contract
 
-Behavioral contract for embedded HTML. Fixtures in this directory are the user-facing cases. `test/html-block.test.ts` covers the option matrix and the cases deferred below.
+Behavioral contract for embedded HTML. Fixtures in this directory are the user-facing cases. `test/html-tags.test.ts` covers tag parsing and rendering; `test/html-block.test.ts` covers the option matrix and the cases deferred below.
 
 HTML tags become element nodes with `$: { html: 1, block: 0 | 1 }`. A node without `$` is markdown-originated (`<strong>` from `**bold**` is `['strong', {}, 'bold']`).
 
@@ -97,7 +97,7 @@ Inside an element that collects blocks, a paragraph's inline content stays in on
 
 1. markdown-exit tokenizes with `html: true`.
 2. When `markdown` is true, the built-in `html_block` rule is narrowed to `<style>`, `<pre>`, `<script>`, and `<textarea>`. Every other closed HTML region falls through to the normal block/inline rules, so `**`, `` ` ``, and nested tags tokenize as markdown. This override is the feature. It reads markdown-exit's private block ruler (`__rules__`); a markdown-exit upgrade that renames or stops consulting `html_block` silently disables markdown-in-HTML.
-3. Regions that remain `html_block` (those four tags, and every closed HTML block when `markdown` is false) are split into `html_inline` + literal `text` and wrapped in a paragraph so the same walk pairs them. The four raw-tag bodies are not split.
+3. Regions that remain `html_block` (those four tags, and every closed HTML block when `markdown` is false) are split into `html_inline` + literal `text` and wrapped in a paragraph so the same walk pairs them. `<pre>` bodies are split into HTML tags and text; the other three bodies stay text.
 4. The tree walk keeps an HTML stack across blocks, the way hast-util-raw feeds parse5. An open tag pushes a frame. Later paragraphs and blocks fill it. A matching close pops it and auto-closes mismatched frames in between. `</div><div>` emits the closed `div` as a sibling of the new open frame, not as its child.
 
 Two scanners must agree on what a tag is: the splitter for raw `html_block` text (`htmlToTokens` in `src/plugins/html.ts`) and the inline opener/closer parser (`parseHtmlInline` in `src/internal/parse/utils.ts`). A tag one accepts and the other rejects becomes a text leaf or an unclosed frame.

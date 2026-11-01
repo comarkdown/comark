@@ -72,18 +72,14 @@ export async function html(node: ElementNode, state: State, parent?: ElementNode
 
   const isSelfClose = selfCloseTags.has(String(tag))
 
-  // Do not modify context if we are already in html mode
-  // `<pre>` and `<textarea>` text was entity-decoded on parse, so it is encoded again here.
   const revert = state.applyContext({
     inline: oneLiner,
     rawText: state.context.rawText === true || tag === 'pre' || tag === 'textarea',
-    // Text in raw HTML was kept as written, so it is encoded again at any depth of inline tags.
     literal: $.html === 1 && ($.block === 1 || state.context.literal === true),
   })
 
   const childrenContent: string[] = []
   for (const [i, child] of children.entries()) {
-    // A multi-line element body starts on its own line, where `#` or `-` would open a block.
     childrenContent.push(await state.one(child, state, node, i === 0 && !oneLiner && !state.context.html))
   }
 
@@ -104,7 +100,6 @@ export async function html(node: ElementNode, state: State, parent?: ElementNode
     const child = children[i]
     const isBlock =
       typeof child !== 'string' &&
-      // A comment in `<pre>` is text between its neighbours, not a block.
       !(state.context.rawText && child[0] === null) &&
       (blockTags.has(String(child?.[0])) || (!inlineTags.has(String(child?.[0])) && !hasTextSibling))
 

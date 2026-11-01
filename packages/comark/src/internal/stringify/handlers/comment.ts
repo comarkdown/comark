@@ -3,7 +3,6 @@ import type { ElementNode } from 'comark'
 
 export function comment(node: ElementNode, state: State, parent?: ElementNode) {
   if (node[0] === null) {
-    // Inside `<pre>` every character is content, so no separator follows.
     if (state.context.rawText) return `<!--${node[2]}-->`
     const inline =
       state.context.inline === true ||

@@ -36,7 +36,6 @@ function findHandler(ctx: Context, node: ElementNode): NodeHandler | undefined {
  */
 export async function one(node: Node, state: State, parent?: ElementNode, atLineStart = false): Promise<string> {
   if (typeof node === 'string') {
-    // `<script>` and `<style>` text is kept as written, so it is never re-encoded.
     const inElement = parent?.[1].$?.html === 1
     const rawBody = inElement && (parent[0] === 'script' || parent[0] === 'style')
     if (state.context.html) {
@@ -51,10 +50,8 @@ export async function one(node: Node, state: State, parent?: ElementNode, atLine
     if (state.context.rawText === true) {
       return node.replace(/&/g, '&amp;').replace(/</g, '&lt;')
     }
-    // Text in an HTML element is read back as literal text with markdown off and as
-    // markdown with it on. Its syntax is written as character references, which both
-    // read as the same text; a `\` escape would stay a backslash in the first mode.
-    if (parent?.[1].$?.html === 1 && (parent[1].$?.block === 1 || state.context.literal === true)) {
+    // Character references preserve Markdown punctuation in both parsing modes; backslashes do not.
+    if (inElement && (parent[1].$?.block === 1 || state.context.literal === true)) {
       return encodeLiteralText(node, atLineStart)
     }
     return escapeTextNode(node, atLineStart)

@@ -218,7 +218,6 @@ export function parseHtmlAttributes(attrsStr: string): Record<string, unknown> {
 
   for (const match of attrsStr.matchAll(ATTRIBUTE_RE)) {
     const key = match[1].toLowerCase()
-    // The first occurrence wins, as in HTML.
     if (Object.hasOwn(attrs, key)) continue
     const value = match[2] ?? match[3] ?? match[4] ?? match[5]
     attrs[key] = value === undefined ? true : decodeAttributeValue(value)

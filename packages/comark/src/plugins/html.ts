@@ -149,19 +149,12 @@ function isLetter(code: number): boolean {
   return (code >= 0x41 && code <= 0x5a) || (code >= 0x61 && code <= 0x7a)
 }
 
-/** The rest of a tag name: letters, digits and `-`, so `script-x` is not `script`. */
 function isNameChar(code: number): boolean {
   return isLetter(code) || (code >= 0x30 && code <= 0x39) || code === 0x2d
 }
 
 /** CommonMark type-1 raw blocks whose body is kept verbatim. `<prelude>` does not match. */
 const RAW_HTML_TAGS = new Set(['style', 'pre', 'script', 'textarea'])
-
-/** Raw blocks whose body is plain text. `<pre>` is not: its tags are HTML, only markdown is off. */
-const TEXT_BODY_TAGS = new Set(['style', 'script', 'textarea'])
-
-/** Raw blocks whose body still has character references (`textarea`, `pre`). `style` and `script` do not. */
-const DECODED_BODY_TAGS = new Set(['pre', 'textarea'])
 
 /** Read `<name` or `</name` at `pos`. `after` is the index of the first character after the name. */
 function readTag(src: string, pos: number): { name: string; close: boolean; after: number } | null {
@@ -274,7 +267,6 @@ function createCloserFinder(src: string): (from: number, name: string, limit?: n
 
 const inlineClosers = new WeakMap<StateInline, (from: number, name: string, limit?: number) => Closer | null>()
 
-/** End of the raw element opened by `openTag` at `pos` when its closer is before `limit`, else -1. */
 function rawElementEnd(state: StateInline, pos: number, openTag: string): number {
   const raw = readTag(openTag, 0)
   if (!raw || raw.close || !RAW_HTML_TAGS.has(raw.name) || !isTagBoundary(openTag, raw.after) || openTag.endsWith('/>'))
@@ -298,14 +290,12 @@ export function htmlToTokens(str: string): Token[] {
   return tokens
 }
 
-/** Start of the last `</name>` for each tag name in `str`, found in one pass. */
 function lastClosers(str: string): Map<string, number> {
   const last = new Map<string, number>()
   for (const match of str.matchAll(/<\/([A-Za-z][A-Za-z0-9-]*)\s*>/g)) last.set(match[1].toLowerCase(), match.index)
   return last
 }
 
-/** `verbatim` keeps every character of a text run, as inside `<pre>`. */
 function scan(tokens: Token[], str: string, verbatim: boolean) {
   const len = str.length
   let pos = 0
@@ -322,8 +312,6 @@ function scan(tokens: Token[], str: string, verbatim: boolean) {
         if (match && !(closers && isUnpairedOpener(closers, pos + match[0].length, match[0]))) {
           if (pos > textStart) pushText(tokens, str.slice(textStart, pos), verbatim)
           const raw = readTag(match[0], 0)
-          // style / pre / script / textarea: body is source until the closer, inner tags included
-          // (except in `<pre>`, whose inner tags are HTML).
           if (
             raw &&
             !raw.close &&
@@ -365,6 +353,6 @@ function isUnpairedOpener(closers: Map<string, number>, end: number, tagSource: 
 }
 
 function pushRawBody(tokens: Token[], body: string, name: string) {
-  if (TEXT_BODY_TAGS.has(name)) pushText(tokens, body, true, DECODED_BODY_TAGS.has(name))
-  else scan(tokens, body, true)
+  if (name === 'pre') scan(tokens, body, true)
+  else pushText(tokens, body, true, name === 'textarea')
 }

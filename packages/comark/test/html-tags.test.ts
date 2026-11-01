@@ -7,6 +7,94 @@ import { renderHtmlForTest } from './utils/render-html'
 const block = { html: 1, block: 1 }
 const inline = { html: 1, block: 0 }
 
+it.each([
+  {
+    name: 'attribute-jsx-expression',
+    input: '<div style={{a: 1}}>\n\nx',
+    nodes: [['div', { $: block, style: '{{a: 1}}' }, 'x']],
+    html: '<div style="{{a: 1}}">\n  x\n</div>',
+    markdown: '<div style="{{a: 1}}">\nx\n</div>',
+  },
+  {
+    name: 'author-paragraph-auto-unwrap',
+    input: '<section><p class="c">Check</p></section>',
+    nodes: [['section', { $: block }, ['p', { $: inline, class: 'c' }, 'Check']]],
+    html: '<section>\n  <p class="c">Check</p>\n</section>',
+    markdown: '<section>\n<p class="c">Check</p>\n</section>',
+  },
+  {
+    name: 'block-paragraph-inline-content',
+    input: '<div>\n\n![](x.png)\n\na\\\nb\n\n</div>',
+    nodes: [['div', { $: block }, ['p', {}, ['img', { src: 'x.png' }]], ['p', {}, 'a', ['br', {}], 'b']]],
+    html: '<div>\n  <p><img src="x.png"></p>\n  <p>a<br>b</p>\n</div>',
+    markdown: '<div>\n![](x.png)\n\n\na  \nb\n</div>',
+    autoUnwrap: false,
+  },
+  {
+    name: 'close-br-tag',
+    input: 'a</br>b',
+    nodes: [['p', {}, 'a', ['br', { $: inline }], 'b']],
+    html: '<p>a<br>b</p>',
+    markdown: 'a<br>b',
+  },
+  {
+    name: 'comments-standalone',
+    input: '<!-- a -->\n\n<!--- b --->',
+    nodes: [
+      [null, {}, ' a '],
+      [null, {}, '- b -'],
+    ],
+    html: '<!-- a -->\n<!--- b --->',
+    markdown: '<!-- a -->\n\n<!--- b --->',
+  },
+  {
+    name: 'duplicate-attributes',
+    input: '<img alt="first" alt="second">',
+    nodes: [['img', { $: block, alt: 'first' }]],
+    html: '<img alt="first">',
+    markdown: '<img alt="first">',
+  },
+  {
+    name: 'p-closes-p',
+    input: '<p>\none\n<p>\ntwo',
+    nodes: [
+      ['p', { $: inline }, 'one'],
+      ['p', { $: inline }, 'two'],
+    ],
+    html: '<p>one</p>\n<p>two</p>',
+    markdown: '<p>one</p>\n\n<p>two</p>',
+  },
+  {
+    name: 'pre-code',
+    input: '<pre><code>x &lt; y</code></pre>',
+    nodes: [['pre', { $: block }, ['code', { $: inline }, 'x < y']]],
+    html: '<pre><code>x &lt; y</code></pre>',
+    markdown: '<pre><code>x &lt; y</code></pre>',
+  },
+  {
+    name: 'unclosed-after-text',
+    input: 'GET /apps/<id>\n\nNext paragraph.',
+    nodes: [
+      ['p', {}, 'GET /apps/', ['id', { $: inline }]],
+      ['p', {}, 'Next paragraph.'],
+    ],
+    html: '<p>\n  GET /apps/<id></id>\n</p>\n<p>Next paragraph.</p>',
+    markdown: 'GET /apps/<id></id>\n\nNext paragraph.',
+  },
+  {
+    name: 'unclosed-in-list',
+    input: '- **a** <b>c',
+    nodes: [['ul', {}, ['li', {}, ['strong', {}, 'a'], ' ', ['b', { $: inline }, 'c']]]],
+    html: '<ul>\n  <li>\n    <strong>a</strong> <b>c</b>\n  </li>\n</ul>',
+    markdown: '- **a** <b>c</b>',
+  },
+])('$name', async ({ input, nodes, html, markdown, ...options }) => {
+  const document = await parseMarkdown(input, options)
+  expect(document).toEqual({ frontmatter: {}, meta: {}, nodes })
+  expect(await renderHtmlForTest(document)).toBe(html)
+  expect(await renderMarkdown(document)).toBe(markdown)
+})
+
 describe('HTML attributes', () => {
   it('keeps a JSX-style braced value on an open tag', async () => {
     const result = await parseMarkdown('<div style={{a: 1}}>x</div>')
@@ -50,21 +138,6 @@ describe('HTML comments', () => {
 })
 
 describe('implied end tags', () => {
-  it('reads a stray </br> as a line break', async () => {
-    const result = await parseMarkdown('a</br>b')
-
-    expect(result.nodes).toEqual([['p', {}, 'a', ['br', { $: inline }], 'b']])
-  })
-
-  it('closes an open <p> when another <p> starts', async () => {
-    const result = await parseMarkdown('<p>\none\n<p>\ntwo')
-
-    expect(result.nodes).toEqual([
-      ['p', { $: inline }, 'one'],
-      ['p', { $: inline }, 'two'],
-    ])
-  })
-
   it('closes an open <p> across blocks and inline elements', async () => {
     const result = await parseMarkdown('<div>\n\n<p>a <b>x\n\n<p>b\n\n</div>')
 
@@ -148,15 +221,6 @@ describe('inline content inside block HTML', () => {
 })
 
 describe('an open tag after text', () => {
-  it('ends with its paragraph when nothing closes it', async () => {
-    const result = await parseMarkdown('GET /apps/<id>\n\nNext paragraph.')
-
-    expect(result.nodes).toEqual([
-      ['p', {}, 'GET /apps/', ['id', { $: inline }]],
-      ['p', {}, 'Next paragraph.'],
-    ])
-  })
-
   it('ends with its paragraph inside a block element', async () => {
     const result = await parseMarkdown('<div>\n\nHello <b>x\n\nmore\n\n</div>', { autoUnwrap: false })
 
