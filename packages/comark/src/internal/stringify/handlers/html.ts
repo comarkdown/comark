@@ -48,7 +48,9 @@ export async function html(node: ElementNode, state: State, parent?: ElementNode
   if (!oneLiner && inlineTags.has(String(tag)) && hasOnlyTextChildren) {
     oneLiner = true
   }
-  if (tag === 'pre' || tag === 'textarea' || tag === 'script' || tag === 'style') {
+  // Every character in an authored `<pre>` is content, nested tags included.
+  const authoredRaw = state.context.rawText === true && $.html === 1
+  if (tag === 'pre' || tag === 'textarea' || tag === 'script' || tag === 'style' || authoredRaw) {
     oneLiner = true
   }
   // Re-indenting a paragraph would put spaces into the `<pre>` written inside it.
@@ -75,6 +77,8 @@ export async function html(node: ElementNode, state: State, parent?: ElementNode
   const revert = state.applyContext({
     inline: oneLiner,
     rawText: state.context.rawText === true || tag === 'pre' || tag === 'textarea',
+    // Text in raw HTML was kept as written, so it is encoded again at any depth of inline tags.
+    literal: $.html === 1 && ($.block === 1 || state.context.literal === true),
   })
 
   const childrenContent: string[] = []
@@ -83,7 +87,14 @@ export async function html(node: ElementNode, state: State, parent?: ElementNode
   }
 
   // A blank line inside a raw-HTML element would terminate it on reparse
-  const childSeparator = state.context.html ? state.context.blockSeparator : oneLiner ? '' : '\n'
+  const childSeparator =
+    state.context.rawText && $.html === 1
+      ? ''
+      : state.context.html
+        ? state.context.blockSeparator
+        : oneLiner
+          ? ''
+          : '\n'
 
   let content = ''
   let isPrevBlock = true

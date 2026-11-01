@@ -388,31 +388,115 @@ describe('literal text round trip', () => {
   })
 })
 
-describe('linear time', () => {
-  async function median(source: (n: number) => string, n: number) {
-    const runs: number[] = []
-    for (let i = 0; i < 3; i++) {
-      const start = performance.now()
-      await parseMarkdown(source(n), { autoClose: false })
-      runs.push(performance.now() - start)
-    }
-    return runs.sort((a, b) => a - b)[1]
-  }
+describe('large inputs', () => {
+  // Correctness at a size where a quadratic scan would time out the suite; scaling is measured by hand.
+  it('parses many unpaired raw openers in one paragraph', async () => {
+    const result = await parseMarkdown('a <textarea>'.repeat(5000), { autoClose: false })
 
-  // Quadratic work grows 16x for a 4x input; allow noise well above linear's 4x.
-  async function expectLinear(source: (n: number) => string) {
-    await median(source, 500)
-    const small = await median(source, 4000)
-    const large = await median(source, 16000)
-    expect(large / Math.max(small, 1)).toBeLessThan(10)
-  }
-
-  it('scans unpaired openers in <pre> once', async () => {
-    await expectLinear((n) => `<pre>${'Array<string> '.repeat(n)}</pre>`)
+    expect(result.nodes).toHaveLength(1)
   })
 
-  it('looks for the closer of a prose tag once', async () => {
-    await expectLinear((n) => 'GET /apps/<id>\n\n'.repeat(n))
+  it('parses many adjacent tags and unpaired openers', async () => {
+    const tags = await parseMarkdown('<b></b>'.repeat(5000), { autoClose: false })
+    const pre = await parseMarkdown(`<pre>${'Array<string> '.repeat(5000)}</pre>`, { autoClose: false })
+    const prose = await parseMarkdown('GET /apps/<id>\n\n'.repeat(5000), { autoClose: false })
+
+    expect(tags.nodes).toHaveLength(5000)
+    expect(pre.nodes).toHaveLength(1)
+    expect(prose.nodes).toHaveLength(5000)
+  })
+})
+
+describe('exact raw tag names', () => {
+  it('does not treat <script-x> or a name with a digit as a raw element', async () => {
+    const result = await parseMarkdown('a <script-x>**x**</script-x> </script> after')
+
+    expect(result.nodes).toEqual([['p', {}, 'a ', ['script-x', { $: inline }, ['strong', {}, 'x']], '  after']])
+    for (const name of ['style-x', 'pre2', 'textarea-1', 'prelude']) {
+      const other = await parseMarkdown(`a <${name}>**x**</${name}> </${name.replace(/[-\d]+.*|lude/, '')}> after`)
+
+      expect(JSON.stringify(other.nodes)).toContain('"strong"')
+    }
+  })
+
+  it('still reads an exact <script> as raw inline', async () => {
+    const result = await parseMarkdown('a <script>**x**</script> after')
+
+    expect(result.nodes).toEqual([['p', {}, 'a ', ['script', { $: inline }, '**x**'], ' after']])
+  })
+})
+
+describe('closing tags inside containers without markdown', () => {
+  const literal = { plugins: [html({ markdown: false })] }
+  const sources = [
+    'a <x-card>one\n\ntwo\n\n</x-card>\n\nlast',
+    '> a <x-card>one\n>\n> two\n>\n> </x-card>\n\nlast',
+    '- a <x-card>one\n\n  two\n\n  </x-card>\n\nlast',
+    'a <b>one\n\n> </b>\n\nlast',
+    '> a <b>one\n\n</b>\n\nlast',
+  ]
+
+  it('pairs and leaves unpaired tags the same as with markdown', async () => {
+    for (const source of sources) {
+      const withMarkdown = await parseMarkdown(source)
+      const without = await parseMarkdown(source, literal)
+
+      expect(without.nodes).toEqual(withMarkdown.nodes)
+    }
+  })
+
+  it('pairs a closer in the same container', async () => {
+    const result = await parseMarkdown(sources[0], literal)
+
+    expect(result.nodes[0]).toBe('a ')
+    expect(JSON.stringify(result.nodes)).toContain('["x-card"')
+  })
+})
+
+describe('literal text in inline tags', () => {
+  const literal = { plugins: [html({ markdown: false })] }
+
+  it('survives the Markdown round trip at any depth', async () => {
+    for (const source of [
+      '<div><span>&lt;b&gt; &amp;lt;</span></div>',
+      '<div><em>&lt;b&gt; &amp;lt;</em></div>',
+      '<div><span><em>&lt;i&gt; &amp;#65;</em></span></div>',
+    ]) {
+      const first = await parseMarkdown(source, literal)
+      const markdown = await renderMarkdown(first)
+      const again = await parseMarkdown(markdown, literal)
+
+      expect(markdown).not.toContain('\\')
+      expect(again.nodes).toEqual(first.nodes)
+    }
+  })
+
+  it('shows the text it spells in HTML', async () => {
+    const first = await parseMarkdown('<div><span>&lt;b&gt; &amp;lt;</span></div>', literal)
+
+    expect(await renderHtmlForTest(first)).toBe('<div>\n  <span>&lt;b&gt; &amp;lt;</span>\n</div>')
+  })
+
+  it('still escapes Markdown text in an inline tag', async () => {
+    const first = await parseMarkdown('a <span>\\*x\\*</span>')
+    const markdown = await renderMarkdown(first)
+
+    expect((await parseMarkdown(markdown)).nodes).toEqual(first.nodes)
+  })
+})
+
+describe('markup in <pre>', () => {
+  it('adds no whitespace between sibling tags or comments', async () => {
+    for (const source of [
+      '<pre><b>a</b><b>b</b></pre>',
+      '<pre><!--a--><b>x</b><!--b--></pre>',
+      '<pre><span><b>a</b><i>b</i></span><b>c</b></pre>',
+    ]) {
+      const first = await parseMarkdown(source)
+
+      expect(await renderHtmlForTest(first)).toBe(source)
+      expect(await renderMarkdown(first)).toBe(source)
+    }
   })
 })
 

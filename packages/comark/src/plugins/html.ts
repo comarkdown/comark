@@ -76,7 +76,7 @@ function htmlInline(state: StateInline, silent: boolean): boolean {
   const match = HTML_TAG_RE.exec(state.src.slice(pos, state.posMax))
   if (!match) return false
   // `before <pre>**x**</pre>`: a raw element's body is not markdown, inline as well as in a block.
-  const rawEnd = rawElementEnd(state.src.slice(0, state.posMax), pos, match[0])
+  const rawEnd = rawElementEnd(state, pos, match[0])
   if (rawEnd > 0) {
     if (!silent) {
       state.pushPending()
@@ -131,6 +131,9 @@ function markdownItPost(state: ComarkParseTokensState) {
     const open = new Token('paragraph_open', 'p', 1)
     const inline = new Token('inline', '', 0)
     const close = new Token('paragraph_close', 'p', -1)
+    // The paragraph keeps the block's container depth, so closing tags pair within it.
+    open.level = close.level = token.level
+    inline.level = token.level + 1
     inline.children = children
     inline.content = token.content || ''
     if (token.map) {
@@ -144,6 +147,11 @@ function markdownItPost(state: ComarkParseTokensState) {
 
 function isLetter(code: number): boolean {
   return (code >= 0x41 && code <= 0x5a) || (code >= 0x61 && code <= 0x7a)
+}
+
+/** The rest of a tag name: letters, digits and `-`, so `script-x` is not `script`. */
+function isNameChar(code: number): boolean {
+  return isLetter(code) || (code >= 0x30 && code <= 0x39) || code === 0x2d
 }
 
 /** CommonMark type-1 raw blocks whose body is kept verbatim. `<prelude>` does not match. */
@@ -162,8 +170,8 @@ function readTag(src: string, pos: number): { name: string; close: boolean; afte
   const close = src.charCodeAt(i) === 0x2f /* / */
   if (close) i += 1
   const start = i
-  while (i < src.length && isLetter(src.charCodeAt(i))) i += 1
-  if (i === start) return null
+  if (!isLetter(src.charCodeAt(i))) return null
+  while (i < src.length && isNameChar(src.charCodeAt(i))) i += 1
   return { name: src.slice(start, i).toLowerCase(), close, after: i }
 }
 
@@ -230,20 +238,50 @@ function rawCloserEnd(src: string, pos: number, name: string): number {
   return src.charCodeAt(j) === 0x3e /* > */ ? j + 1 : -1
 }
 
-/** The first `</name>` at or after `from`. */
-function findRawCloser(str: string, from: number, name: string): { start: number; end: number } | null {
-  for (let i = str.indexOf('<', from); i >= 0; i = str.indexOf('<', i + 1)) {
-    const end = rawCloserEnd(str, i, name)
-    if (end >= 0) return { start: i, end }
-  }
-  return null
+interface Closer {
+  start: number
+  end: number
 }
 
-/** End of the raw element opened by `openTag` at `pos` when its closer is in `src`, else -1. */
-function rawElementEnd(src: string, pos: number, openTag: string): number {
+/** Where each raw element's `</name>` sits in `src`, found in one pass on first use. */
+function createCloserFinder(src: string): (from: number, name: string, limit?: number) => Closer | null {
+  let index: Map<string, Closer[]> | undefined
+  return (from, name, limit = src.length) => {
+    if (!index) {
+      index = new Map()
+      for (let i = src.indexOf('<'); i >= 0; i = src.indexOf('<', i + 1)) {
+        const tag = readTag(src, i)
+        if (!tag?.close || !RAW_HTML_TAGS.has(tag.name)) continue
+        const end = rawCloserEnd(src, i, tag.name)
+        if (end < 0) continue
+        const list = index.get(tag.name)
+        if (list) list.push({ start: i, end })
+        else index.set(tag.name, [{ start: i, end }])
+      }
+    }
+    const list = index.get(name)
+    if (!list) return null
+    let lo = 0
+    let hi = list.length
+    while (lo < hi) {
+      const mid = (lo + hi) >> 1
+      if (list[mid].start < from) lo = mid + 1
+      else hi = mid
+    }
+    return lo < list.length && list[lo].end <= limit ? list[lo] : null
+  }
+}
+
+const inlineClosers = new WeakMap<StateInline, (from: number, name: string, limit?: number) => Closer | null>()
+
+/** End of the raw element opened by `openTag` at `pos` when its closer is before `limit`, else -1. */
+function rawElementEnd(state: StateInline, pos: number, openTag: string): number {
   const raw = readTag(openTag, 0)
-  if (!raw || raw.close || !RAW_HTML_TAGS.has(raw.name) || openTag.endsWith('/>')) return -1
-  return findRawCloser(src, pos + openTag.length, raw.name)?.end ?? -1
+  if (!raw || raw.close || !RAW_HTML_TAGS.has(raw.name) || !isTagBoundary(openTag, raw.after) || openTag.endsWith('/>'))
+    return -1
+  let find = inlineClosers.get(state)
+  if (!find) inlineClosers.set(state, (find = createCloserFinder(state.src)))
+  return find(pos + openTag.length, raw.name, state.posMax)?.end ?? -1
 }
 
 /**
@@ -273,6 +311,7 @@ function scan(tokens: Token[], str: string, verbatim: boolean) {
   let pos = 0
   let textStart = 0
   const closers = verbatim ? lastClosers(str) : undefined
+  const findCloser = createCloserFinder(str)
 
   while (pos < len) {
     // Candidate HTML tag starts with '<' followed by letter, '/', '!', or '?'
@@ -285,10 +324,16 @@ function scan(tokens: Token[], str: string, verbatim: boolean) {
           const raw = readTag(match[0], 0)
           // style / pre / script / textarea: body is source until the closer, inner tags included
           // (except in `<pre>`, whose inner tags are HTML).
-          if (raw && !raw.close && RAW_HTML_TAGS.has(raw.name) && match[0].charCodeAt(match[0].length - 2) !== 0x2f) {
+          if (
+            raw &&
+            !raw.close &&
+            RAW_HTML_TAGS.has(raw.name) &&
+            isTagBoundary(match[0], raw.after) &&
+            match[0].charCodeAt(match[0].length - 2) !== 0x2f
+          ) {
             pushHtml(tokens, match[0])
             const from = pos + match[0].length
-            const closer = findRawCloser(str, from, raw.name)
+            const closer = findCloser(from, raw.name)
             if (!closer) {
               pushRawBody(tokens, str.slice(from), raw.name)
               return

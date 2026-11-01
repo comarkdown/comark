@@ -55,7 +55,7 @@ export async function one(node: Node, state: State, parent?: ElementNode, atLine
     // syntax inside it must not be escaped (inline HTML, `$.block === 0`, has
     // its markdown parsed into children and is escaped normally). Decoded text
     // that would read as a reference or a tag is encoded again.
-    if (parent?.[1].$?.html === 1 && parent[1].$?.block === 1) {
+    if (parent?.[1].$?.html === 1 && (parent[1].$?.block === 1 || state.context.literal === true)) {
       return node.replace(/&(?=#\d+;|#x[\da-f]+;|[a-z][a-z\d]*;)/gi, '&amp;').replace(/<(?=[a-z/!?])/gi, '&lt;')
     }
     return escapeTextNode(node, atLineStart)
@@ -109,6 +109,10 @@ export async function one(node: Node, state: State, parent?: ElementNode, atLine
     }
   }
 
+  // Text under raw HTML stays literal through its inline elements, but not through markdown nodes.
+  const revertLiteral =
+    state.context.literal === true && node[1].$?.html !== 1 ? state.applyContext({ literal: false }) : undefined
+
   try {
     const userHandler = findHandler(state.context, node)
     if (userHandler) {
@@ -131,6 +135,7 @@ export async function one(node: Node, state: State, parent?: ElementNode, atLine
       : await state.handlers.html(node, state, parent)
   } finally {
     state.renderData = prevRenderData
+    if (revertLiteral) state.applyContext(revertLiteral)
   }
 }
 

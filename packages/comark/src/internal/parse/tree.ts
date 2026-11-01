@@ -202,14 +202,19 @@ function closeImpliedParagraph(token: Token, state: ProcessState): Node | undefi
   return undefined
 }
 
+const firstProse = new WeakMap<Token[], number>()
+
 /** True when something other than whitespace and HTML tags precedes `tokens[start]` in its paragraph. */
 function followsText(tokens: Token[], start: number): boolean {
-  for (let k = start - 1; k >= 0; k--) {
-    const { type, content } = tokens[k]
-    if (type === 'softbreak' || type === 'html_inline' || (type === 'text' && !content.trim())) continue
-    return true
+  let first = firstProse.get(tokens)
+  if (first === undefined) {
+    first = tokens.findIndex(
+      ({ type, content }) => !(type === 'softbreak' || type === 'html_inline' || (type === 'text' && !content.trim()))
+    )
+    if (first < 0) first = tokens.length
+    firstProse.set(tokens, first)
   }
-  return false
+  return first < start
 }
 
 /** Where each `</tag>` sits, so "is it closed later?" is a lookup and not a scan of the rest of the document. */
