@@ -43,7 +43,7 @@ Blank-line bodies parse as markdown in both modes. CommonMark ends the HTML bloc
 
 `<style>`, `<pre>`, `<script>`, and `<textarea>` always stay raw blocks, including with attributes. None of those bodies is markdown, in either mode. The match is the tag name plus a boundary, so `<prelude>` is not `<pre>` and `<scripture>` is not `<script>`.
 
-All four keep every character between the tags, including the leading newline and indentation. What else the body means follows the HTML spec:
+All four keep every character between the tags, including the leading newline and indentation, whether the element starts its block or follows text in a paragraph (`before <pre>**x**</pre>`) as long as its closer is in that paragraph. What else the body means follows the HTML spec:
 
 | Tag | Inner tags | Character references |
 | --- | --- | --- |
@@ -60,7 +60,7 @@ All four keep every character between the tags, including the leading newline an
 
 is the text `\n  const x = 1\n  **not**\n`, not a trimmed line and not a `strong`.
 
-Character references are decoded in text, with or without markdown: `&amp;`, `&lt;`, `&#65;`. As in markdown, a reference needs its `;` (`&copy` stays), and an unknown name stays.
+Character references are decoded in text, with or without markdown: `&amp;`, `&lt;`, `&#65;`. As in markdown, a reference needs its `;` (`&copy` stays), and an unknown name stays. Written back, the text keeps its meaning: in HTML and Markdown output a decoded `&lt;` or `<b>` in an element's text is encoded again (`&amp;lt;`), so a reader sees the characters the author wrote. `<script>` and `<style>` text is written as it was read.
 
 ### Whitespace in a literal body
 
@@ -80,7 +80,7 @@ with `markdown: false` is the text `Hello ` plus `<em>`, not `"\n  Hello "` plus
 
 One grammar reads a tag in the inline rule and in the raw-block splitter (`src/internal/parse/html-tag.ts`). It is CommonMark's, plus:
 
-- An attribute value may be a balanced `{…}` expression, up to four levels deep: `<div style={{a: 1}}>` has `style="{{a: 1}}"`. The text is kept as written.
+- An attribute value may be a balanced `{…}` expression, up to four levels deep: `<div style={{a: 1}}>` has `style="{{a: 1}}"`. The text is kept as written. Only braces are counted, not JavaScript: a brace inside a string (`{{a: "}"}}`) is not skipped, so the tag is not recognized.
 - A comment may end in `--->`, as in HTML: `<!--- a --->` is a comment with the text `- a -`.
 
 When an attribute repeats, the first value wins, as in HTML.

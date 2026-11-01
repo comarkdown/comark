@@ -19,7 +19,7 @@
  *   `<pre>`, `<script>`, `<textarea>`, and comments (`<!--`) so the rest
  *   tokenizes as normal markdown. Their bodies are not markdown and every
  *   character between the delimiters is kept; inner tags are text, except in
- *   `<pre>` (see `SPEC/HTML/README.md`). When `false`, that rule stays and every closed-block
+ *   `<pre>` (see `SPEC/HTML/README.md`); that holds inline too (`text <pre>**x**</pre>`). When `false`, that rule stays and every closed-block
  *   body stays literal. Blank-line bodies still nest as markdown tokens via bare
  *   open/close pairing, in both modes.
  *
@@ -75,6 +75,20 @@ function htmlInline(state: StateInline, silent: boolean): boolean {
   if (next !== 0x21 /* ! */ && next !== 0x3f /* ? */ && next !== 0x2f /* / */ && !isLetter(next)) return false
   const match = HTML_TAG_RE.exec(state.src.slice(pos, state.posMax))
   if (!match) return false
+  // `before <pre>**x**</pre>`: a raw element's body is not markdown, inline as well as in a block.
+  const rawEnd = rawElementEnd(state.src.slice(0, state.posMax), pos, match[0])
+  if (rawEnd > 0) {
+    if (!silent) {
+      state.pushPending()
+      for (const part of htmlToTokens(state.src.slice(pos, rawEnd))) {
+        const token = state.push(part.type, '', 0)
+        token.content = part.content
+        token.meta = part.meta
+      }
+    }
+    state.pos = rawEnd
+    return true
+  }
   if (!silent) {
     const token = state.push('html_inline', '', 0)
     token.content = match[0]
@@ -223,6 +237,13 @@ function findRawCloser(str: string, from: number, name: string): { start: number
     if (end >= 0) return { start: i, end }
   }
   return null
+}
+
+/** End of the raw element opened by `openTag` at `pos` when its closer is in `src`, else -1. */
+function rawElementEnd(src: string, pos: number, openTag: string): number {
+  const raw = readTag(openTag, 0)
+  if (!raw || raw.close || !RAW_HTML_TAGS.has(raw.name) || openTag.endsWith('/>')) return -1
+  return findRawCloser(src, pos + openTag.length, raw.name)?.end ?? -1
 }
 
 /**

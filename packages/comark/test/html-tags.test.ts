@@ -297,6 +297,97 @@ describe('character references and <pre>', () => {
   })
 })
 
+describe('literal text round trip', () => {
+  const literal = { plugins: [html({ markdown: false })] }
+
+  async function roundTrip(source: string, options?: Parameters<typeof parseMarkdown>[1]) {
+    const first = await parseMarkdown(source, options)
+    const markdown = await renderMarkdown(first)
+    return { first, markdown, again: await parseMarkdown(markdown, options), html: await renderHtmlForTest(first) }
+  }
+
+  it('shows an encoded reference in <pre>, <textarea> and a literal block as the text it spells', async () => {
+    for (const source of [
+      '<pre><code>&amp;lt;b&amp;gt;</code></pre>',
+      '<textarea>&amp;lt;b&amp;gt;</textarea>',
+      '<div>&amp;lt;b&amp;gt;</div>',
+    ]) {
+      const { first, markdown, again, html: output } = await roundTrip(source, literal)
+
+      expect(output).toContain('&amp;lt;b&amp;gt;')
+      expect(output).not.toContain('&lt;b&gt;')
+      expect(again.nodes).toEqual(first.nodes)
+      expect(markdown).toContain('&amp;lt;b&amp;gt;')
+    }
+  })
+
+  it('writes decoded < and & in a literal block back as references', async () => {
+    const { first, markdown, again, html: output } = await roundTrip('<div>\n&lt;b&gt; &amp; x\n</div>', literal)
+
+    expect(first.nodes).toEqual([['div', { $: block }, '<b> & x']])
+    expect(markdown).toBe('<div>\n&lt;b> & x\n</div>')
+    expect(again.nodes).toEqual(first.nodes)
+    expect(output).toBe('<div>\n  &lt;b&gt; & x\n</div>')
+  })
+
+  it('keeps reference-looking text and a decoded <!-- as text', async () => {
+    const source = '<div>\n&amp;foo; &amp;copy &#38;amp; &#38;#65; &lt;!-- c --&gt; AT&T\n</div>'
+    const { first, markdown, again, html: output } = await roundTrip(source, literal)
+
+    expect(first.nodes).toEqual([['div', { $: block }, '&foo; &copy &amp; &#65; <!-- c --> AT&T']])
+    expect(again.nodes).toEqual(first.nodes)
+    expect(output).toBe('<div>\n  &amp;foo; &amp;copy &amp;amp; &amp;#65; &lt;!-- c --&gt; AT&amp;T\n</div>')
+    expect(markdown).not.toContain('<!--')
+  })
+
+  it('keeps script and style references as written, also inside <pre>', async () => {
+    for (const source of [
+      '<pre><script>a &lt; b</script></pre>',
+      '<pre><style>a &lt; b</style></pre>',
+      '<script>a &lt; b</script>',
+    ]) {
+      const { first, markdown, again } = await roundTrip(source)
+
+      expect(markdown).toBe(source)
+      expect(again.nodes).toEqual(first.nodes)
+    }
+  })
+
+  it('keeps every character of a comment inside <pre>', async () => {
+    for (const source of ['<pre><!--hi--> a &lt; b</pre>', '<pre><code>a</code><!--b--><code>c</code></pre>']) {
+      const { first, markdown, again, html: output } = await roundTrip(source)
+
+      expect(markdown).toBe(source)
+      expect(output).toBe(source)
+      expect(again.nodes).toEqual(first.nodes)
+    }
+  })
+
+  it('keeps a <textarea> body free of added newlines', async () => {
+    const { first, markdown, again } = await roundTrip('<textarea>a &amp; b</textarea>')
+
+    expect(first.nodes).toEqual([['textarea', { $: block }, 'a & b']])
+    expect(markdown).toBe('<textarea>a &amp; b</textarea>')
+    expect(again.nodes).toEqual(first.nodes)
+  })
+
+  it('does not read markdown in a <pre> that follows text', async () => {
+    const source = 'before <pre>**x** &lt; y</pre> after'
+    const { first, markdown, again, html: output } = await roundTrip(source)
+
+    expect(first.nodes).toEqual([['p', {}, 'before ', ['pre', { $: inline }, '**x** < y'], ' after']])
+    expect(markdown).toBe(source)
+    expect(output).toBe('<p>before <pre>**x** &lt; y</pre> after</p>')
+    expect(again.nodes).toEqual(first.nodes)
+  })
+
+  it('keeps a <pre> after text unindented in the paragraph', async () => {
+    const { html: output } = await roundTrip('before <pre>\nline\n  indented</pre> after')
+
+    expect(output).toBe('<p>before <pre>\nline\n  indented</pre> after</p>')
+  })
+})
+
 describe('linear time', () => {
   async function median(source: (n: number) => string, n: number) {
     const runs: number[] = []

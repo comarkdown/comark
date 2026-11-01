@@ -48,7 +48,14 @@ export async function html(node: ElementNode, state: State, parent?: ElementNode
   if (!oneLiner && inlineTags.has(String(tag)) && hasOnlyTextChildren) {
     oneLiner = true
   }
-  if (tag === 'pre') {
+  if (tag === 'pre' || tag === 'textarea' || tag === 'script' || tag === 'style') {
+    oneLiner = true
+  }
+  // Re-indenting a paragraph would put spaces into the `<pre>` written inside it.
+  if (
+    tag === 'p' &&
+    children.some((child) => typeof child !== 'string' && (child?.[0] === 'pre' || child?.[0] === 'textarea'))
+  ) {
     oneLiner = true
   }
 
@@ -85,6 +92,8 @@ export async function html(node: ElementNode, state: State, parent?: ElementNode
     const child = children[i]
     const isBlock =
       typeof child !== 'string' &&
+      // A comment in `<pre>` is text between its neighbours, not a block.
+      !(state.context.rawText && child[0] === null) &&
       (blockTags.has(String(child?.[0])) || (!inlineTags.has(String(child?.[0])) && !hasTextSibling))
 
     if (i > 0 && !isPrevBlock && isBlock) {

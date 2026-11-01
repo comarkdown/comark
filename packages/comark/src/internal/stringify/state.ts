@@ -36,18 +36,27 @@ function findHandler(ctx: Context, node: ElementNode): NodeHandler | undefined {
  */
 export async function one(node: Node, state: State, parent?: ElementNode, atLineStart = false): Promise<string> {
   if (typeof node === 'string') {
-    if (state.context.rawText === true && !state.context.html) {
-      return node.replace(/&/g, '&amp;').replace(/</g, '&lt;')
-    }
+    // `<script>` and `<style>` text is kept as written, so it is never re-encoded.
+    const inElement = parent?.[1].$?.html === 1
+    const rawBody = inElement && (parent[0] === 'script' || parent[0] === 'style')
     if (state.context.html) {
-      // Do not convert ampersands to entities in raw HTML blocks
-      return escapeHtml(node, { '&': undefined, '"': undefined })
+      // Text in an HTML element was decoded on parse, so a `&` that could start a reference
+      // (`&lt`, `&#65`) is written as `&amp;`. Markdown text keeps its entities as it always has.
+      return escapeHtml(inElement && !rawBody ? node.replace(/&(?=[a-z#])/gi, '&amp;') : node, {
+        '&': undefined,
+        '"': undefined,
+      })
+    }
+    if (rawBody) return node
+    if (state.context.rawText === true) {
+      return node.replace(/&/g, '&amp;').replace(/</g, '&lt;')
     }
     // The content of a raw HTML block is copied verbatim on parse, so markdown
     // syntax inside it must not be escaped (inline HTML, `$.block === 0`, has
-    // its markdown parsed into children and is escaped normally).
+    // its markdown parsed into children and is escaped normally). Decoded text
+    // that would read as a reference or a tag is encoded again.
     if (parent?.[1].$?.html === 1 && parent[1].$?.block === 1) {
-      return node
+      return node.replace(/&(?=#\d+;|#x[\da-f]+;|[a-z][a-z\d]*;)/gi, '&amp;').replace(/<(?=[a-z/!?])/gi, '&lt;')
     }
     return escapeTextNode(node, atLineStart)
   }
