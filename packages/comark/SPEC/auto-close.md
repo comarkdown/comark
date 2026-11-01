@@ -1888,6 +1888,16 @@ A lone header row is completed with a delimiter row so it renders as a table imm
 ```
 
 ```diff
+- | a | b |\n| --- | --- |\n| <!--c--> |     |
++ | a | b |\n| --- | --- |\n| <!--c--> |     |
+```
+
+```diff
+- | a | b |\n| --- | --- |\n| `--cwd` | x |
++ | a | b |\n| --- | --- |\n| `--cwd` | x |
+```
+
+```diff
 - | a | b |\n| --- | --- |\n| 1 | **bo
 + | a | b |\n| --- | --- |\n| 1 | **bo**
 ```
