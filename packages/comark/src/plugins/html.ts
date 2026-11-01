@@ -109,7 +109,8 @@ function markdownItPost(state: ComarkParseTokensState) {
     // Expand raw CommonMark html_block into html_inline + text, wrapped as a
     // paragraph so the tree walk pairs open/close the same way as html_inline.
     // Body text stays literal (no markdown re-parse).
-    const children = htmlToTokens(token.content || '')
+    // The block's own indentation is not content (`  <!-- a -->`).
+    const children = htmlToTokens((token.content || '').replace(/^[ \t]+/, ''))
     const open = new Token('paragraph_open', 'p', 1)
     const inline = new Token('inline', '', 0)
     const close = new Token('paragraph_close', 'p', -1)

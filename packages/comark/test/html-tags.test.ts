@@ -199,3 +199,20 @@ describe('an open tag after text', () => {
     ])
   })
 })
+
+describe('standalone comments', () => {
+  it('does not wrap an indented comment in a paragraph', async () => {
+    const result = await parseMarkdown('  <!-- a -->\n\n   <!--- b --->')
+
+    expect(result.nodes).toEqual([
+      [null, {}, ' a '],
+      [null, {}, '- b -'],
+    ])
+  })
+
+  it('keeps the comment of a closed block inside its element', async () => {
+    const result = await parseMarkdown('<div>\n  <!-- x -->\n  text\n</div>')
+
+    expect(result.nodes).toEqual([['div', { $: block }, [null, {}, ' x '], 'text']])
+  })
+})
