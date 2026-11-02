@@ -15,6 +15,8 @@ import type { MarkdownItPlugin } from 'comark'
 import { defineComarkPlugin } from '../utils/helpers.ts'
 import { searchProps } from '../internal/parse/syntax/props.ts'
 
+const TEXT_TOKENS = new Set(['text', 'text_special', 'softbreak', 'hardbreak'])
+
 const markdownItInlineProps: PluginSimple = (md) => {
   md.inline.ruler.after('entity', 'comark_inline_props', (state, silent) => {
     const start = state.pos
@@ -28,6 +30,18 @@ const markdownItInlineProps: PluginSimple = (md) => {
 
     const { props, index: end } = search
     if (end === start) return false
+
+    const last = state.tokens[state.tokens.length - 1]
+    const afterText = state.pending !== '' || !last || TEXT_TOKENS.has(last.type)
+    const lastDelimiter = state.delimiters[state.delimiters.length - 1]
+    const afterCloser =
+      state.pending === '' && lastDelimiter?.close === true && lastDelimiter.token === state.tokens.length - 1
+    if (afterText && !afterCloser) {
+      let searchEnd = end
+      while (state.src[searchEnd] === ' ' || state.src[searchEnd] === '\t') searchEnd++
+      // Check for linebreak or end of file
+      if (state.src[searchEnd] !== '\n' && state.src[searchEnd] !== undefined) return false
+    }
 
     state.pos = end
 
