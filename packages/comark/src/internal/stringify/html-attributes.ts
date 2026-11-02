@@ -142,7 +142,7 @@ export function htmlAttributes(attributes: Record<string, unknown>, { verbatim =
     if (!SAFE_ATTR_NAME.test(key)) continue
 
     if (isBinding) {
-      if (value === 'true' && !verbatim) {
+      if (verbatim ? value === true : value === 'true') {
         parts.push(key)
         continue
       }
