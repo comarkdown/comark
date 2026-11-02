@@ -103,7 +103,7 @@ export function closeTables(markdown: string): string {
 
   // Handle last line
   const lastLine = lines[end].trim()
-  const isSeparator = lastLine.startsWith('|') && (lastLine.includes('-') || lastLine.includes(':'))
+  const isSeparator = /^\|[\s|:-]*$/.test(lastLine) && (lastLine.includes('-') || lastLine.includes(':'))
 
   if (isSeparator) {
     // Parse and complete separator cells
