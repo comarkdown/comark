@@ -1518,7 +1518,7 @@ importers:
         specifier: workspace:*
         version: link:../comark
       katex:
-        specifier: '>=0.19.1'
+        specifier: '>=0.18.7'
         version: 0.19.1
       shiki:
         specifier: 'catalog:'
