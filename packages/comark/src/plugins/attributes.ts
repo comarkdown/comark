@@ -17,17 +17,19 @@ import { searchProps } from '../internal/parse/syntax/props.ts'
 
 const TEXT_TOKENS = new Set(['text', 'text_special', 'softbreak', 'hardbreak'])
 
-// End of the brace group that was last kept as text, per inline parse
-const literalGroupEnd = new WeakMap<object, number>()
+// Per inline parse: the matching `}` of each `{`, and the last brace group kept as text
+const braceEnds = new WeakMap<object, Map<number, number>>()
+const literalGroup = new WeakMap<object, [start: number, end: number]>()
 
-function findGroupEnd(src: string, start: number): number {
-  let depth = 0
-  for (let i = start; i < src.length; i++) {
+function matchBraces(src: string): Map<number, number> {
+  const ends = new Map<number, number>()
+  const opens: number[] = []
+  for (let i = 0; i < src.length; i++) {
     if (src[i] === '\\') i++
-    else if (src[i] === '{') depth++
-    else if (src[i] === '}' && --depth === 0) return i + 1
+    else if (src[i] === '{') opens.push(i)
+    else if (src[i] === '}' && opens.length > 0) ends.set(opens.pop()!, i + 1)
   }
-  return -1
+  return ends
 }
 
 const markdownItInlineProps: PluginSimple = (md) => {
@@ -38,14 +40,20 @@ const markdownItInlineProps: PluginSimple = (md) => {
     // Skip Vue mustache `{{ }}` and template `${ }` syntax
     if (state.src[start + 1] === '{' || state.src[start - 1] === '{' || state.src[start - 1] === '$') return false
 
-    if (start < (literalGroupEnd.get(state) ?? -1)) return false
+    const group = literalGroup.get(state)
+    if (group && start > group[0] && start < group[1]) return false
 
     // After text, `{...}` may be prose: only read it as attributes if every entry is valid
     const last = state.tokens[state.tokens.length - 1]
     const afterText = state.pending !== '' || !last || TEXT_TOKENS.has(last.type)
     const search = searchProps(state.src, start, afterText)
     if (!search) {
-      if (afterText) literalGroupEnd.set(state, findGroupEnd(state.src, start))
+      if (afterText && !silent) {
+        let ends = braceEnds.get(state)
+        if (!ends) braceEnds.set(state, (ends = matchBraces(state.src)))
+        const end = ends.get(start)
+        if (end !== undefined && end <= state.posMax) literalGroup.set(state, [start, end])
+      }
       return false
     }
 

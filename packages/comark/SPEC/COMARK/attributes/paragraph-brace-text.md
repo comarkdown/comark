@@ -6,6 +6,8 @@ The function will receive an object ({ isDev, isServer, isClient, isModern, isLe
 Call `useFetch` like foo({ query: { page } }).
 
 Escaped \({ a, b }) and {\# heading} stay text.
+
+See [a {b,](/x) and **bold**{.red} }
 ```
 
 ## AST
@@ -35,6 +37,27 @@ Escaped \({ a, b }) and {\# heading} stay text.
       "p",
       {},
       "Escaped ({ a, b }) and {# heading} stay text."
+    ],
+    [
+      "p",
+      {},
+      "See ",
+      [
+        "a",
+        {
+          "href": "/x"
+        },
+        "a {b,"
+      ],
+      " and ",
+      [
+        "strong",
+        {
+          "class": "red"
+        },
+        "bold"
+      ],
+      " }"
     ]
   ]
 }
@@ -46,6 +69,7 @@ Escaped \({ a, b }) and {\# heading} stay text.
 <p>The function will receive an object ({ isDev, isServer, isClient, isModern, isLegacy }).</p>
 <p>Call <code>useFetch</code> like foo({ query: { page } }).</p>
 <p>Escaped ({ a, b }) and {# heading} stay text.</p>
+<p>See <a href="/x">a {b,</a> and <strong class="red">bold</strong> }</p>
 ```
 
 ## Markdown
@@ -56,4 +80,6 @@ The function will receive an object (\{ isDev, isServer, isClient, isModern, isL
 Call `useFetch` like foo(\{ query: \{ page } }).
 
 Escaped (\{ a, b }) and \{# heading} stay text.
+
+See [a \{b,](/x) and **bold**{.red} }
 ```
