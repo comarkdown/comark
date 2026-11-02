@@ -115,7 +115,7 @@ export function comarkAttributes(attributes: Record<string, unknown>) {
 }
 
 // Coerce string `'true'`/`'false'` (how inline `{attr}` parsing stores
-// boolean-like attrs) to native booleans so js-yaml v5 emits them unquoted.
+// boolean-like attrs) to native booleans so tinyaml writes them unquoted.
 function normalizeValue(value: unknown): unknown {
   if (value === 'true') return true
   if (value === 'false') return false

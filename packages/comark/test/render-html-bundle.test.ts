@@ -30,7 +30,7 @@ it('bundles the HTML render export without Markdown serializers or YAML', async 
   const retained = Object.entries(chunk.modules)
     .filter(([, module]) => module.renderedLength > 0)
     .map(([id]) => id)
-  expect(retained.filter((id) => /js-yaml|internal\/stringify\/handlers\/(?!html\.|comment\.)/.test(id))).toEqual([])
+  expect(retained.filter((id) => /tinyaml|internal\/stringify\/handlers\/(?!html\.|comment\.)/.test(id))).toEqual([])
   const { renderHtmlFromDocument } = await import(
     `data:text/javascript;base64,${Buffer.from(chunk.code).toString('base64')}`
   )
@@ -50,7 +50,7 @@ it('imports the HTML render entry without loading YAML or Markdown handlers in N
     import assert from 'node:assert/strict'
     registerHooks({
       load(url, context, next) {
-        if (url.includes('js-yaml') ||
+        if (url.includes('tinyaml') ||
           (url.includes('/internal/stringify/handlers/') && !/\\/(html|comment)\\.(js|ts)$/.test(url))) {
           throw new Error('Unexpected renderer dependency: ' + url)
         }
