@@ -1,4 +1,4 @@
-import { dump, JSON_SCHEMA, loadAll, YAMLException, type DumpOptions } from 'js-yaml'
+import { parse, stringify, type StringifyOptions } from 'tinyaml'
 
 /**
  * Parse YAML content.
@@ -7,12 +7,7 @@ import { dump, JSON_SCHEMA, loadAll, YAMLException, type DumpOptions } from 'js-
  * @returns The parsed data, or `undefined` when the content has no YAML document
  */
 export function parseYaml(content: string): Record<string, unknown> | undefined {
-  const documents = loadAll(content, { schema: JSON_SCHEMA }) as Record<string, unknown>[]
-  // Preserve `load()`'s single-document guard rather than silently taking the first.
-  if (documents.length > 1) {
-    throw new YAMLException('expected a single document in the stream, but found more')
-  }
-  return documents[0]
+  return parse(content) as Record<string, unknown> | undefined
 }
 
 /**
@@ -20,37 +15,6 @@ export function parseYaml(content: string): Record<string, unknown> | undefined 
  * @param data - The data to stringify
  * @returns The stringified data
  */
-export function stringifyYaml(data: Record<string, unknown>, options?: DumpOptions): string {
-  const yamlOutput = dump(data, {
-    indent: 2,
-    lineWidth: -1,
-    ...options,
-  })
-
-  /**
-   * js-yaml wraps keys with quotes if they start with a colon. This function removes the quotes.
-   * `':test': true` becomes `:test: true`
-   *
-   * Using js-yaml and this function is faster than using other libraries like yaml.
-   */
-  const lines = yamlOutput.split('\n')
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i]
-    const trimmed = line.trimStart()
-
-    // Check if line starts with a quote followed by colon
-    if (trimmed[0] === "'" || trimmed[0] === '"') {
-      const quote = trimmed[0]
-      if (trimmed[1] === ':') {
-        // Find the closing quote
-        const quoteEnd = trimmed.indexOf(quote, 1)
-        if (quoteEnd > 1 && trimmed[quoteEnd + 1] === ':') {
-          // Remove quotes: keep indentation + unquoted key + rest
-          const indent = line.length - trimmed.length
-          lines[i] = ' '.repeat(indent) + trimmed.slice(1, quoteEnd) + trimmed.slice(quoteEnd + 1)
-        }
-      }
-    }
-  }
-  return lines.join('\n')
+export function stringifyYaml(data: Record<string, unknown>, options?: StringifyOptions): string {
+  return stringify(data, options)
 }

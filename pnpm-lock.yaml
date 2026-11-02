@@ -332,9 +332,6 @@ catalogs:
     hast-util-to-string:
       specifier: ^3.0.1
       version: 3.0.1
-    js-yaml:
-      specifier: ^5.5.0
-      version: 5.5.0
     katex:
       specifier: ^0.19.1
       version: 0.19.1
@@ -416,6 +413,9 @@ catalogs:
     tailwindcss:
       specifier: ^4.3.3
       version: 4.3.3
+    tinyaml:
+      specifier: ^0.1.0
+      version: 0.1.0
     tinybench:
       specifier: ^6.2.2
       version: 6.2.2
@@ -1437,9 +1437,6 @@ importers:
       character-entities-legacy:
         specifier: 'catalog:'
         version: 3.0.0
-      js-yaml:
-        specifier: 'catalog:'
-        version: 5.5.0
       katex:
         specifier: 'catalog:'
         version: 0.19.1
@@ -1452,6 +1449,9 @@ importers:
       shiki:
         specifier: 'catalog:'
         version: 4.5.0
+      tinyaml:
+        specifier: 'catalog:'
+        version: 0.1.0
     devDependencies:
       '@json-render/core':
         specifier: 'catalog:'
@@ -10083,6 +10083,22 @@ packages:
 
   tiny-invariant@1.3.3:
     resolution: {integrity: sha512-+FbBPE1o9QAYvviau/qC5SE3caw21q3xkvWKBtja5vgqOWIHHJ3ioaq1VPfn/Szqctz2bU/oYeKd9/z5BL+PVg==}
+
+  tinyaml@0.1.0:
+    resolution: {integrity: sha512-rSx4dnwW2KndEc8V7hKNo4UE6o2RieOmSkYU+9aWd5/08Jv9jrAUitX95xrFQ4bGd9G2VawJ65jRCJ9fuy8ViA==}
+    engines: {node: '>=22.12.0'}
+    hasBin: true
+    peerDependencies:
+      eslint: '>=9.15.0'
+      vite-doctor: '>=0.1.1'
+      yaml-eslint-parser: '>=2.0.0'
+    peerDependenciesMeta:
+      eslint:
+        optional: true
+      vite-doctor:
+        optional: true
+      yaml-eslint-parser:
+        optional: true
 
   tinybench@2.9.0:
     resolution: {integrity: sha512-0+DUvqWMValLmha6lr4kD8iAMK1HzV0/aKnCtWb9v9641TnP/MFb7Pc2bxoxQjTXAErryXVgUOfv2YqNllqGeg==}
@@ -20308,6 +20324,8 @@ snapshots:
   tiny-inflate@1.0.3: {}
 
   tiny-invariant@1.3.3: {}
+
+  tinyaml@0.1.0: {}
 
   tinybench@2.9.0: {}
 

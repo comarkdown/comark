@@ -74,9 +74,9 @@
   "dependencies": {
     "character-entities": "catalog:",
     "character-entities-legacy": "catalog:",
-    "js-yaml": "catalog:",
     "linkify-it": "catalog:",
-    "markdown-exit": "catalog:"
+    "markdown-exit": "catalog:",
+    "tinyaml": "catalog:"
   },
   "devDependencies": {
     "@json-render/core": "catalog:",
