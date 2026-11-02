@@ -40,4 +40,12 @@ describe('raw HTML round-trip (parse → renderMarkdown → parse)', () => {
       expect(t2.nodes).toEqual(t1.nodes)
     })
   }
+
+  it('writes a non-string bound attribute value', async () => {
+    const rendered = await renderMarkdown({
+      nodes: [['p', {}, 'text ', ['img', { $: { html: 1, block: 0 }, src: 'a.svg', ':zoom': false }]]],
+    })
+
+    expect(rendered.trim()).toBe('text <img src="a.svg" :zoom="false">')
+  })
 })

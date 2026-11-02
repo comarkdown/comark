@@ -137,12 +137,12 @@ interface HtmlAttributesOptions {
 export function htmlAttributes(attributes: Record<string, unknown>, { verbatim = false }: HtmlAttributesOptions = {}) {
   const parts: string[] = []
   for (const [rawKey, value] of Object.entries(attributes)) {
-    const isBinding = !verbatim && rawKey.startsWith(':')
-    const key = isBinding ? rawKey.slice(1) : rawKey
+    const isBinding = rawKey.startsWith(':')
+    const key = isBinding && !verbatim ? rawKey.slice(1) : rawKey
     if (!SAFE_ATTR_NAME.test(key)) continue
 
     if (isBinding) {
-      if (value === 'true') {
+      if (value === 'true' && !verbatim) {
         parts.push(key)
         continue
       }
