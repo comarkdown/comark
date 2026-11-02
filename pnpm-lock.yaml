@@ -590,8 +590,8 @@ importers:
         specifier: workspace:*
         version: link:../packages/comark
       comark-docs:
-        specifier: github:comarkdown/comark-docs#06407551a4dece562941aecba5c6baed75af3484
-        version: https://codeload.github.com/comarkdown/comark-docs/tar.gz/06407551a4dece562941aecba5c6baed75af3484(a8824006c9ec6c0d1ceb0c09deb1e32e)
+        specifier: github:comarkdown/comark-docs#96c1546e33286e6ce4329e46f2b8a57d8f162891
+        version: https://codeload.github.com/comarkdown/comark-docs/tar.gz/96c1546e33286e6ce4329e46f2b8a57d8f162891(a8824006c9ec6c0d1ceb0c09deb1e32e)
       katex:
         specifier: 'catalog:'
         version: 0.19.1
@@ -6747,8 +6747,8 @@ packages:
       forges:
         optional: true
 
-  comark-docs@https://codeload.github.com/comarkdown/comark-docs/tar.gz/06407551a4dece562941aecba5c6baed75af3484:
-    resolution: {gitHosted: true, integrity: sha512-uVENcOTkQsiYTKfJd4ATh2sucbNIayUurVSAUC1iig0UP9I0Weh1RgOSS+3e8iAHiXzPYvb1149/iI5i4vVyjg==, tarball: https://codeload.github.com/comarkdown/comark-docs/tar.gz/06407551a4dece562941aecba5c6baed75af3484}
+  comark-docs@https://codeload.github.com/comarkdown/comark-docs/tar.gz/96c1546e33286e6ce4329e46f2b8a57d8f162891:
+    resolution: {gitHosted: true, integrity: sha512-VbvCqKZJxCZTo2NlO/CRPW1qSDXZgMLR3sQB3dZ+i+h55OJ2PHcYtI2wXejxOLE1jJKXcxAAlTPznfeFILL32w==, tarball: https://codeload.github.com/comarkdown/comark-docs/tar.gz/96c1546e33286e6ce4329e46f2b8a57d8f162891}
     version: 0.0.1
     engines: {node: ^22.22.3 || ^24.15.0 || >=26.0.0}
     peerDependencies:
@@ -16218,7 +16218,7 @@ snapshots:
       - shiki
       - uploadthing
 
-  comark-docs@https://codeload.github.com/comarkdown/comark-docs/tar.gz/06407551a4dece562941aecba5c6baed75af3484(a8824006c9ec6c0d1ceb0c09deb1e32e):
+  comark-docs@https://codeload.github.com/comarkdown/comark-docs/tar.gz/96c1546e33286e6ce4329e46f2b8a57d8f162891(a8824006c9ec6c0d1ceb0c09deb1e32e):
     dependencies:
       '@ai-sdk/gateway': 4.0.132(zod@4.6.7)
       '@ai-sdk/vue': 4.0.159(vue@3.5.44(typescript@6.0.3))(zod@4.6.7)
