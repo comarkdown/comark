@@ -903,7 +903,7 @@ pnpm stub         # Point every package's dist/ at src/ for local dev (runs on p
 pnpm test         # Run all package tests
 pnpm test:spec    # Run the SPEC fixtures only
 pnpm bench        # Run the CodSpeed Vitest benches (benchmarks/*.bench.ts; wall-clock locally)
-pnpm lint         # oxlint + oxfmt --check
+pnpm lint         # oxlint + oxfmt --check + comark-lint on docs/content
 pnpm lint:fix     # oxlint --fix + oxfmt (write)
 pnpm typecheck    # tsc --noEmit against the root tsconfig
 pnpm verify       # Run lint + test + typecheck
@@ -914,6 +914,10 @@ Linting and formatting use [oxlint](https://oxc.rs/docs/guide/usage/linter) and
 [oxfmt](https://oxc.rs/docs/guide/usage/formatter), configured in `.oxlintrc.json` and
 `.oxfmtrc.json` (no semicolons, single quotes, 120 columns, ES5 trailing commas).
 There is no ESLint or Prettier config.
+
+The docs content is linted with [comark-linter](https://comark-ui.onmax.me/lint/) (`pnpm --filter comark-docs-site lint`):
+unknown components, unclosed blocks, and broken links and anchors. `docs/comark-lint.config.ts` extends the
+comark-docs layer's preset with the site's own `app/components/prose/` components and its Vue pages.
 
 Utility scripts:
 

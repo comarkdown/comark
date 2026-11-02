@@ -26,6 +26,8 @@ describe('raw HTML round-trip (parse → renderMarkdown → parse)', () => {
     'object with two params':
       '<object data="x.swf">\n<param name="a" value="1">\n<param name="b" value="2">\n</object>',
     'nested divs': '<div>\n<div>one</div>\n<div>two</div>\n</div>',
+    'inline comment inside a paragraph': 'text <!-- note --> tail',
+    'inline comment inside a component': '::note\ntext <!-- note --> tail\n::',
     'single-child video': '<video controls>\n<source src="a.mp4" type="video/mp4">\n</video>',
     'mixed text and element children': '<div>\nsome text\n<figcaption>cap</figcaption>\n</div>',
     'pre with authored language attribute': '<pre language="ruby">\nputs 1\n</pre>',
