@@ -1,6 +1,6 @@
 # HTML parsing contract
 
-Behavioral contract for embedded HTML. Fixtures in this directory are the user-facing cases. `test/html-tags.test.ts` covers tag parsing and rendering; `test/html-block.test.ts` covers the option matrix and the cases deferred below.
+Behavioral contract for embedded HTML. Fixtures in this directory are the user-facing cases. `test/html-tags.test.ts` covers `markdown: false`, streaming, and large inputs; `test/html-block.test.ts` covers the option matrix and the cases deferred below.
 
 HTML tags become element nodes with `$: { html: 1, block: 0 | 1 }`. A node without `$` is markdown-originated (`<strong>` from `**bold**` is `['strong', {}, 'bold']`).
 
