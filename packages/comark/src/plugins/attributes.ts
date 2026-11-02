@@ -48,7 +48,7 @@ function matchBraces(src: string): Map<number, number> {
       const start = i
       while (src[i + 1] === '`') i++
       const length = i - start + 1
-      const starts = runs.get(length)!
+      const starts = runs.get(length) ?? []
       let next = cursors.get(length) ?? 0
       while (next < starts.length && starts[next] <= start) next++
       cursors.set(length, next)

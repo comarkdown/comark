@@ -19,6 +19,11 @@ describe('denial-of-service hardening', () => {
     expect(doc.nodes.length).toBe(1)
   })
 
+  it('parses an escaped backtick inside a brace group kept as text', async () => {
+    const doc = await parseMarkdown('Text {a, \\`` {b}}', { autoClose: false })
+    expect(doc.nodes).toEqual([['p', {}, 'Text {a, `` {b}}']])
+  })
+
   it('clamps unbounded codeblock highlight ranges', async () => {
     const doc = await parseMarkdown('```js {1-999999999}\nconst x = 1\n```')
     const pre = doc.nodes[0] as [string, Record<string, unknown>, ...unknown[]]
