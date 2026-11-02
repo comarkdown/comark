@@ -31,6 +31,7 @@ const markdownItInlineProps: PluginSimple = (md) => {
     const { props, index: end } = search
     if (end === start) return false
 
+    // region -- Ignore attributes if (not follows a syntax && have some text after in same line)
     const last = state.tokens[state.tokens.length - 1]
     const afterText = state.pending !== '' || !last || TEXT_TOKENS.has(last.type)
     const lastDelimiter = state.delimiters[state.delimiters.length - 1]
@@ -42,6 +43,7 @@ const markdownItInlineProps: PluginSimple = (md) => {
       // Check for linebreak or end of file
       if (state.src[searchEnd] !== '\n' && state.src[searchEnd] !== undefined) return false
     }
+    // endregion
 
     state.pos = end
 
