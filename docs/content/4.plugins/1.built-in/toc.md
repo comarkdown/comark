@@ -71,9 +71,9 @@ interface TocLink {
 
 | Option | Type | Default | Description |
 |---|---|---|---|
-| [`depth`](#options-depth) | `number` | `2` | Heading levels to include: `1` = h2 only, `2` = h2–h3, `3` = h2–h4, etc. |
-| [`searchDepth`](#options-searchdepth) | `number` | `2` | How deep to search for headings in nested component structures |
-| [`title`](#options-title) | `string` | `''` | Title field on the returned `Toc` |
+| [`depth`](#depth) | `number` | `2` | Heading levels to include: `1` = h2 only, `2` = h2–h3, `3` = h2–h4, etc. |
+| [`searchDepth`](#searchdepth) | `number` | `2` | How deep to search for headings in nested component structures |
+| [`title`](#title) | `string` | `''` | Title field on the returned `Toc` |
 
 ### `depth`
 
