@@ -15,7 +15,8 @@ import type { MarkdownItPlugin } from 'comark'
 import { defineComarkPlugin } from '../utils/helpers.ts'
 import { searchProps } from '../internal/parse/syntax/props.ts'
 
-const TEXT_TOKENS = new Set(['text', 'text_special', 'softbreak', 'hardbreak'])
+// Emphasis delimiters are still `text` tokens here, so plain `text` is not included
+const TEXT_TOKENS = new Set(['text_special', 'softbreak', 'hardbreak'])
 
 // Per inline parse: the matching `}` of each `{`, and the last brace group kept as text
 const braceEnds = new WeakMap<object, Map<number, number>>()

@@ -7,6 +7,16 @@ describe('misc', () => {
     expect(tree.nodes).toEqual([['alert', { id: '1' }]])
   })
 
+  it('keeps an unclosed brace group after text as text', async () => {
+    const tree = await parseMarkdown('Text {a', { autoClose: false })
+    expect(tree.nodes).toEqual([['p', {}, 'Text {a']])
+  })
+
+  it('reads an unclosed brace group after emphasis as attributes', async () => {
+    const tree = await parseMarkdown('**x**{.y', { autoClose: false })
+    expect(tree.nodes).toEqual([['p', {}, ['strong', { class: 'y' }, 'x']]])
+  })
+
   describe('boolean attribute coercion', () => {
     it('promotes bare, explicit-true, and explicit-false attrs to :bindings', async () => {
       const tree = await parseMarkdown('::x{flag other="true" off="false" count="5"}\n::')
