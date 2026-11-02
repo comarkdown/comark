@@ -18,6 +18,11 @@ import { searchProps } from '../internal/parse/syntax/props.ts'
 const TEXT_TOKENS = new Set(['text', 'text_special', 'softbreak', 'hardbreak'])
 
 const markdownItInlineProps: PluginSimple = (md) => {
+  // End of the last brace group rejected as text, per inline state. A later `{`
+  // after text inside it would be rejected too, so it is skipped without
+  // rescanning the same suffix (keeps O(n)).
+  const rejectedUntil = new WeakMap<object, number>()
+
   md.inline.ruler.after('entity', 'comark_inline_props', (state, silent) => {
     const start = state.pos
     if (state.src[start] !== '{') return false
@@ -25,23 +30,28 @@ const markdownItInlineProps: PluginSimple = (md) => {
     // Skip Vue mustache `{{ }}` and template `${ }` syntax
     if (state.src[start + 1] === '{' || state.src[start - 1] === '{' || state.src[start - 1] === '$') return false
 
-    const search = searchProps(state.src, start)
-    if (!search) return false
-
-    const { props, index: end } = search
-    if (end === start) return false
-
     // region -- Ignore attributes if (not follows a syntax && have some text after in same line)
     const last = state.tokens[state.tokens.length - 1]
     const afterText = state.pending !== '' || !last || TEXT_TOKENS.has(last.type)
     const lastDelimiter = state.delimiters[state.delimiters.length - 1]
     const afterCloser =
       state.pending === '' && lastDelimiter?.close === true && lastDelimiter.token === state.tokens.length - 1
+    if (afterText && !afterCloser && start < (rejectedUntil.get(state) ?? -1)) return false
+
+    const search = searchProps(state.src, start)
+    if (!search) return false
+
+    const { props, index: end } = search
+    if (end === start) return false
+
     if (afterText && !afterCloser) {
       let searchEnd = end
       while (state.src[searchEnd] === ' ' || state.src[searchEnd] === '\t') searchEnd++
       // Check for linebreak or end of file
-      if (state.src[searchEnd] !== '\n' && state.src[searchEnd] !== undefined) return false
+      if (state.src[searchEnd] !== '\n' && state.src[searchEnd] !== undefined) {
+        rejectedUntil.set(state, end)
+        return false
+      }
     }
     // endregion
 
@@ -53,8 +63,31 @@ const markdownItInlineProps: PluginSimple = (md) => {
     const token = state.push('mdc_inline_props', 'span', 0)
     token.attrs = props
     token.hidden = true
+    // Delimiters are paired only after tokenizing, so whether this closer has an
+    // opener is decided in `comark_inline_props_unpaired` below.
+    if (afterText && afterCloser) {
+      token.content = state.src.slice(start, end)
+      token.meta = { afterDelimiter: true }
+    }
 
     return true
+  })
+
+  // A closer left unpaired by emphasis/strikethrough stays a non-empty `text`
+  // token (paired `**` leaves its second marker as an empty one); its brace
+  // group was never attributes, so restore it as text.
+  md.inline.ruler2.before('fragments_join', 'comark_inline_props_unpaired', (state) => {
+    const tokens = state.tokens
+    for (let i = 1; i < tokens.length; i++) {
+      const token = tokens[i]!
+      if (token.type !== 'mdc_inline_props' || !token.meta?.afterDelimiter) continue
+      const prev = tokens[i - 1]!
+      if (prev.type !== 'text' || prev.content === '') continue
+      const text = new Token('text', '', 0)
+      text.content = token.content
+      tokens[i] = text
+    }
+    return false
   })
 
   md.renderer.rules.mdc_inline_props = () => ''

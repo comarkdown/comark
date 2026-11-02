@@ -19,6 +19,15 @@ describe('denial-of-service hardening', () => {
     expect(doc.nodes.length).toBe(1)
   })
 
+  it('does not rescan a brace group rejected because text follows it', async () => {
+    const n = 40_000
+    const src = 'Text ' + '{a '.repeat(n) + '} x'
+    const start = performance.now()
+    const doc = await parseMarkdown(src, { autoClose: false })
+    expect(performance.now() - start).toBeLessThan(2_000)
+    expect(doc.nodes).toEqual([['p', {}, src]])
+  })
+
   it('parses an escaped backtick inside a brace group kept as text', async () => {
     const doc = await parseMarkdown('Text {a, \\`` {b}}', { autoClose: false })
     expect(doc.nodes).toEqual([['p', {}, 'Text {a, `` {b}}']])
