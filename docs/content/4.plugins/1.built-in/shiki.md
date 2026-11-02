@@ -316,13 +316,13 @@ Two option types, one per entry:
 
 | Option | Type | Default | Description |
 |---|---|---|---|
-| [`themes`](#options-themes) | `object` | Material themes | Light and dark theme registrations |
-| [`languages`](#options-languages) | `Array<LanguageRegistration \| LanguageRegistration[]>` | `undefined` | Extra languages (merged onto the default set) |
-| [`transformers`](#options-transformers) | `ShikiTransformer[]` | `undefined` | Shiki transformers applied to every block |
-| [`preStyles`](#options-prestyles) | `boolean` | `false` | Add inline background/foreground styles to `<pre>` |
-| [`inlineCode`](#options-inlinecode) | `boolean` | `true` | Highlight inline code that declares a language |
-| [`registerDefaultLanguages`](#options-registerdefaultlanguages) | `boolean` | `true` | Register the built-in default language set |
-| [`registerDefaultThemes`](#options-registerdefaultthemes) | `boolean` | `true` | Register the built-in Material themes |
+| [`themes`](#themes) | `object` | Material themes | Light and dark theme registrations |
+| [`languages`](#languages) | `Array<LanguageRegistration \| LanguageRegistration[]>` | `undefined` | Extra languages (merged onto the default set) |
+| [`transformers`](#transformers-1) | `ShikiTransformer[]` | `undefined` | Shiki transformers applied to every block |
+| [`preStyles`](#prestyles) | `boolean` | `false` | Add inline background/foreground styles to `<pre>` |
+| [`inlineCode`](#inlinecode) | `boolean` | `true` | Highlight inline code that declares a language |
+| [`registerDefaultLanguages`](#registerdefaultlanguages) | `boolean` | `true` | Register the built-in default language set |
+| [`registerDefaultThemes`](#registerdefaultthemes) | `boolean` | `true` | Register the built-in Material themes |
 
 ### Core (`ShikiCoreOptions`)
 
