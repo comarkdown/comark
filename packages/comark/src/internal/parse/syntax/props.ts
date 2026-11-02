@@ -48,6 +48,7 @@ export function searchProps(content: string, index = 0, strict = false) {
       const start = index
       while (index < content.length) {
         index += 1
+        if (strict && content[index] === '{') return undefined
         if (' }='.includes(content[index])) break
       }
       const char = content[index]

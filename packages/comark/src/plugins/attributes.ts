@@ -21,13 +21,43 @@ const TEXT_TOKENS = new Set(['text', 'text_special', 'softbreak', 'hardbreak'])
 const braceEnds = new WeakMap<object, Map<number, number>>()
 const literalGroup = new WeakMap<object, [start: number, end: number]>()
 
+function backtickRuns(src: string): Map<number, number[]> {
+  const runs = new Map<number, number[]>()
+  for (let i = 0; i < src.length; i++) {
+    if (src[i] !== '`') continue
+    const start = i
+    while (src[i + 1] === '`') i++
+    const length = i - start + 1
+    const starts = runs.get(length)
+    if (starts) starts.push(start)
+    else runs.set(length, [start])
+  }
+  return runs
+}
+
+/** Match each `{` to its `}`, skipping code spans. */
 function matchBraces(src: string): Map<number, number> {
+  const runs = backtickRuns(src)
+  const cursors = new Map<number, number>()
   const ends = new Map<number, number>()
   const opens: number[] = []
   for (let i = 0; i < src.length; i++) {
-    if (src[i] === '\\') i++
-    else if (src[i] === '{') opens.push(i)
-    else if (src[i] === '}' && opens.length > 0) ends.set(opens.pop()!, i + 1)
+    if (src[i] === '\\') {
+      i++
+    } else if (src[i] === '`') {
+      const start = i
+      while (src[i + 1] === '`') i++
+      const length = i - start + 1
+      const starts = runs.get(length)!
+      let next = cursors.get(length) ?? 0
+      while (next < starts.length && starts[next] <= start) next++
+      cursors.set(length, next)
+      if (next < starts.length) i = starts[next] + length - 1
+    } else if (src[i] === '{') {
+      opens.push(i)
+    } else if (src[i] === '}' && opens.length > 0) {
+      ends.set(opens.pop()!, i + 1)
+    }
   }
   return ends
 }

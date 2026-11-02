@@ -8,6 +8,8 @@ Call `useFetch` like foo({ query: { page } }).
 Escaped \({ a, b }) and {\# heading} stay text.
 
 See [a {b,](/x) and **bold**{.red} }
+
+Pass {a, `}` {b}} along.
 ```
 
 ## AST
@@ -58,6 +60,17 @@ See [a {b,](/x) and **bold**{.red} }
         "bold"
       ],
       " }"
+    ],
+    [
+      "p",
+      {},
+      "Pass {a, ",
+      [
+        "code",
+        {},
+        "}"
+      ],
+      " {b}} along."
     ]
   ]
 }
@@ -70,6 +83,7 @@ See [a {b,](/x) and **bold**{.red} }
 <p>Call <code>useFetch</code> like foo({ query: { page } }).</p>
 <p>Escaped ({ a, b }) and {# heading} stay text.</p>
 <p>See <a href="/x">a {b,</a> and <strong class="red">bold</strong> }</p>
+<p>Pass {a, <code>}</code> {b}} along.</p>
 ```
 
 ## Markdown
@@ -82,4 +96,6 @@ Call `useFetch` like foo(\{ query: \{ page } }).
 Escaped (\{ a, b }) and \{# heading} stay text.
 
 See [a \{b,](/x) and **bold**{.red} }
+
+Pass \{a, `}` \{b}} along.
 ```
