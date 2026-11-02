@@ -31,6 +31,7 @@ export function searchProps(content: string, index = 0, strict = false) {
 
   while (index < content.length) {
     if (content[index] === '\\') {
+      if (strict) return undefined
       index += 2
     } else if (content[index] === '}') {
       index += 1

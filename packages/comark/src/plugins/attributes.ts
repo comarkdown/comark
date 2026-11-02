@@ -15,6 +15,21 @@ import type { MarkdownItPlugin } from 'comark'
 import { defineComarkPlugin } from '../utils/helpers.ts'
 import { searchProps } from '../internal/parse/syntax/props.ts'
 
+const TEXT_TOKENS = new Set(['text', 'text_special', 'softbreak', 'hardbreak'])
+
+// End of the brace group that was last kept as text, per inline parse
+const literalGroupEnd = new WeakMap<object, number>()
+
+function findGroupEnd(src: string, start: number): number {
+  let depth = 0
+  for (let i = start; i < src.length; i++) {
+    if (src[i] === '\\') i++
+    else if (src[i] === '{') depth++
+    else if (src[i] === '}' && --depth === 0) return i + 1
+  }
+  return -1
+}
+
 const markdownItInlineProps: PluginSimple = (md) => {
   md.inline.ruler.after('entity', 'comark_inline_props', (state, silent) => {
     const start = state.pos
@@ -23,11 +38,16 @@ const markdownItInlineProps: PluginSimple = (md) => {
     // Skip Vue mustache `{{ }}` and template `${ }` syntax
     if (state.src[start + 1] === '{' || state.src[start - 1] === '{' || state.src[start - 1] === '$') return false
 
+    if (start < (literalGroupEnd.get(state) ?? -1)) return false
+
     // After text, `{...}` may be prose: only read it as attributes if every entry is valid
     const last = state.tokens[state.tokens.length - 1]
-    const afterText = state.pending !== '' || !last || last.type === 'softbreak' || last.type === 'hardbreak'
+    const afterText = state.pending !== '' || !last || TEXT_TOKENS.has(last.type)
     const search = searchProps(state.src, start, afterText)
-    if (!search) return false
+    if (!search) {
+      if (afterText) literalGroupEnd.set(state, findGroupEnd(state.src, start))
+      return false
+    }
 
     const { props, index: end } = search
     if (end === start) return false
