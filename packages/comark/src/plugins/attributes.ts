@@ -37,9 +37,14 @@ const markdownItInlineProps: PluginSimple = (md) => {
     const last = state.tokens[state.tokens.length - 1]
     const afterText = state.pending !== '' || !last || TEXT_TOKENS.has(last.type)
     const lastDelimiter = state.delimiters[state.delimiters.length - 1]
+    // Never while restoring: a restored group is re-tokenized from source, so an
+    // unpaired closer inside it would restore again, recursing once per level.
     const afterCloser =
-      state.pending === '' && lastDelimiter?.close === true && lastDelimiter.token === state.tokens.length - 1
-    if (!(globalThis as any).__NO_SKIP && afterText && !afterCloser && start < (rejectedUntil.get(state) ?? -1)) return false
+      !restoring &&
+      state.pending === '' &&
+      lastDelimiter?.close === true &&
+      lastDelimiter.token === state.tokens.length - 1
+    if (afterText && !afterCloser && start < (rejectedUntil.get(state) ?? -1)) return false
 
     const search = searchProps(state.src, start)
     if (!search) return false

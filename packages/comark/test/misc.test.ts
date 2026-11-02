@@ -20,6 +20,13 @@ describe('misc', () => {
     expect(inline.nodes).toEqual([['p', {}, 'Costs 2*{a ', ['code', {}, 'b'], ' & c} today']])
   })
 
+  it('does not recurse per nesting level when restoring brace groups after unpaired emphasis', async () => {
+    const depth = 20000
+    const doc = await parseMarkdown(`a${'*{'.repeat(depth)}x${'}'.repeat(depth)} t`, { autoClose: false })
+    expect(doc.nodes).toHaveLength(1)
+    expect(doc.nodes[0]![0]).toBe('p')
+  })
+
   it('reads a brace group after closed emphasis as attributes when text follows', async () => {
     const doc = await parseMarkdown('a *b*{.c} d **e**{.f} g ~~h~~{.i} j', { autoClose: false })
     expect(doc.nodes).toEqual([
