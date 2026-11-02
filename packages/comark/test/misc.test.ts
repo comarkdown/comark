@@ -12,6 +12,14 @@ describe('misc', () => {
     expect(doc.nodes).toEqual([['p', {}, 'Costs 2*{price} today']])
   })
 
+  it('parses inline syntax in a brace group kept as text after an unpaired emphasis marker', async () => {
+    const escaped = await parseMarkdown('Costs 2* {\\#price} today', { autoClose: false })
+    expect(escaped.nodes).toEqual([['p', {}, 'Costs 2* {#price} today']])
+
+    const inline = await parseMarkdown('Costs 2*{a `b` &amp; c} today', { autoClose: false })
+    expect(inline.nodes).toEqual([['p', {}, 'Costs 2*{a ', ['code', {}, 'b'], ' & c} today']])
+  })
+
   it('reads a brace group after closed emphasis as attributes when text follows', async () => {
     const doc = await parseMarkdown('a *b*{.c} d **e**{.f} g ~~h~~{.i} j', { autoClose: false })
     expect(doc.nodes).toEqual([
