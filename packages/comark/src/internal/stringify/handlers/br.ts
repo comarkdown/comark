@@ -2,6 +2,7 @@ import type { State } from 'comark/render'
 import type { ElementNode, Node } from 'comark'
 
 const COMPONENT_PREV_CHAR = /[ \t\n*_[\]})>]$/
+const COMPONENT_NAME_CHAR = /^[\w$-]/
 
 function isBr(node: Node | undefined) {
   return Array.isArray(node) && node[0] === 'br'
@@ -24,8 +25,9 @@ export function br(node: ElementNode, state: State, parent?: ElementNode) {
     !(typeof next === 'string' && /^\s/.test(next))
   if (hardBreak) return '  \n'
 
-  if (state.context.format === 'markdown/comark' && typeof prev === 'string' && COMPONENT_PREV_CHAR.test(prev)) {
-    return ':br'
-  }
-  return '<br>'
+  if (state.context.format !== 'markdown/comark' || prev === undefined) return '<br>'
+
+  // Empty `{}` delimits `:br` from content that would otherwise join it
+  const open = typeof prev === 'string' && COMPONENT_PREV_CHAR.test(prev) ? ':br' : '{}:br'
+  return typeof next === 'string' && COMPONENT_NAME_CHAR.test(next) ? `${open}{}` : open
 }
