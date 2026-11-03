@@ -34,7 +34,7 @@
   "scripts": {
     "stub": "node ../../scripts/stub.mjs",
     "ng": "ng",
-    "build": "ng build && node scripts/strip-sourcemaps.mjs",
+    "build": "ng build && node scripts/strip-sourcemaps.mjs && node ../../scripts/sync-plugins.mjs",
     "dev": "ng build --watch --configuration development",
     "test": "ng test",
     "prepack": "pnpm run build",
