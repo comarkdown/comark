@@ -55,18 +55,23 @@ let linkifyModule: Promise<typeof LinkifyIt> | undefined
 // something imports it. linkify-it 5 links `www.example.com` and `user:pass@` URLs by default;
 // linkify-it 6 needs `fuzzyLink` for that, which made streaming chat text about 1.8x slower.
 async function installLinkify(shared: SharedParser, mdPlugins: MarkdownExitPlugin[]): Promise<void> {
-  let Linkify: typeof LinkifyIt
   try {
-    Linkify = await (linkifyModule ??= import('linkify-it').then((m) => m.default))
+    const Linkify = await (linkifyModule ??= import('linkify-it').then((m) => m.default))
+    // markdown-exit types this as linkify-it 6. It only calls `test`, `match` and `matchAtStart`, which 5 has too.
+    shared.md.linkify = new Linkify() as unknown as MarkdownExit['linkify']
+    for (const fn of mdPlugins) shared.md.use(fn)
   } catch (error) {
-    // Retry a failed load, such as a chunk fetch, on the next parse.
+    // Start over on the next parse: retry a failed load, such as a chunk fetch, and drop
+    // an instance that a throwing plugin left half set up.
     linkifyModule = undefined
+    shared.md = createMarkdownExit(true)
     shared.ready = undefined
     throw error
   }
-  // markdown-exit types this as linkify-it 6. It only calls `test`, `match` and `matchAtStart`, which 5 has too.
-  shared.md.linkify = new Linkify() as unknown as MarkdownExit['linkify']
-  for (const fn of mdPlugins) shared.md.use(fn)
+}
+
+function createMarkdownExit(linkify: boolean): MarkdownExit {
+  return new MarkdownExit({ linkify }).enable(['table', 'strikethrough'])
 }
 
 /**
@@ -151,7 +156,7 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
     sharedParsers.delete(key)
     sharedParsers.set(key, shared)
   } else {
-    shared = { md: new MarkdownExit({ linkify }).enable(['table', 'strikethrough']) }
+    shared = { md: createMarkdownExit(linkify) }
     if (!linkify) for (const fn of mdPlugins) shared.md.use(fn)
     if (sharedParsers.size >= MAX_SHARED_PARSERS) {
       const oldestKey = sharedParsers.keys().next().value
@@ -159,7 +164,6 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
     }
     sharedParsers.set(key, shared)
   }
-  const parser = shared.md
 
   let lastOutput: MarkdownDocument | null = null
   let lastInput: string | null = null
@@ -228,7 +232,7 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
       if (linkify) await (shared.ready ??= installLinkify(shared, mdPlugins))
 
       try {
-        state.tokens = withSpan(tracer, 'comark:tokenize', () => parser.parse(state.markdown, {}))
+        state.tokens = withSpan(tracer, 'comark:tokenize', () => shared.md.parse(state.markdown, {}))
       } catch (e) {
         // in case of streaming, return the previous output if parsing fails
         // This is to avoid resetting the tree to an empty state on failure
