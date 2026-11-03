@@ -1,6 +1,19 @@
 import { execFileSync } from 'node:child_process'
-import { describe, expect, it } from 'vitest'
-import { parseMarkdown } from '../src/parse'
+import { describe, expect, it, vi } from 'vitest'
+import type { MarkdownItPlugin } from 'comark'
+import { createMarkdownParser, defineComarkPlugin, parseMarkdown } from '../src/parse'
+
+const linkifiers = vi.hoisted(() => ({ created: 0 }))
+vi.mock('linkify-it', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('linkify-it')>()
+  class LinkifyIt extends actual.LinkifyIt {
+    constructor(...args: ConstructorParameters<typeof actual.LinkifyIt>) {
+      super(...args)
+      linkifiers.created++
+    }
+  }
+  return { ...actual, LinkifyIt }
+})
 
 describe('linkify', () => {
   it('links bare domains and URLs with credentials', async () => {
@@ -14,6 +27,21 @@ describe('linkify', () => {
         ['a', { href: 'https://user:pw@example.com/a' }, 'https://user:pw@example.com/a'],
       ],
     ])
+  })
+
+  it('creates one linkifier when a new parser runs several parses at once', async () => {
+    // A markdown-it plugin no other parser uses keeps this parser out of the shared cache.
+    const fresh = defineComarkPlugin(() => ({
+      name: 'linkify-concurrent',
+      markdownItPlugins: [(() => {}) as unknown as MarkdownItPlugin],
+    }))
+    const parse = createMarkdownParser({ plugins: [fresh()] })
+    const before = linkifiers.created
+
+    const docs = await Promise.all(Array.from({ length: 10 }, () => parse('See https://comark.dev')))
+
+    expect(linkifiers.created - before).toBe(1)
+    expect(docs[9].nodes).toEqual([['p', {}, 'See ', ['a', { href: 'https://comark.dev' }, 'https://comark.dev']]])
   })
 
   it('loads linkify-it only for parsers with linkify enabled', () => {

@@ -44,10 +44,11 @@ const sharedParsers = new Map<string, MarkdownExit>()
 // Loaded on the first parse with `linkify`, so bundles without it skip linkify-it.
 // `fuzzyLink` and `urlAuth` link `www.example.com` and `user:pass@` URLs.
 let linkifyModule: Promise<typeof LinkifyIt> | undefined
-async function createLinkify(): Promise<LinkifyIt> {
+async function loadLinkify(parser: MarkdownExit): Promise<void> {
   linkifyModule ??= import('linkify-it').then((m) => m.LinkifyIt)
   const Linkify = await linkifyModule
-  return new Linkify().set({ fuzzyLink: true, urlAuth: true })
+  // Concurrent first parses all reach this point; the first one sets it.
+  parser.linkify ??= new Linkify().set({ fuzzyLink: true, urlAuth: true })
 }
 
 /**
@@ -204,7 +205,7 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
         await withSpan(tracer, `comark:pre:${plugin.name}`, () => plugin.pre!(state))
       }
 
-      if (linkify && !parser.linkify) parser.linkify = await createLinkify()
+      if (linkify && !parser.linkify) await loadLinkify(parser)
 
       try {
         state.tokens = withSpan(tracer, 'comark:tokenize', () => parser.parse(state.markdown, {}))
