@@ -51,7 +51,8 @@ interface SharedParser {
 let linkifyModule: Promise<typeof LinkifyIt> | undefined
 
 // markdown-it plugins may configure `md.linkify` when installed, so they run after it exists.
-// `fuzzyLink` and `urlAuth` link `www.example.com` and `user:pass@` URLs.
+// `fuzzyLink` and `urlAuth` link `www.example.com` and `user:pass@` URLs. This replaces the plain
+// instance that the root `markdown-exit` entry gives every parser once something imports it.
 async function installLinkify(md: MarkdownExit, mdPlugins: MarkdownExitPlugin[]): Promise<void> {
   linkifyModule ??= import('linkify-it').then((m) => m.LinkifyIt)
   const Linkify = await linkifyModule
