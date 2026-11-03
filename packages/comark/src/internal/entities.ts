@@ -1,8 +1,7 @@
 import { characterEntities } from 'character-entities'
 import { characterEntitiesLegacy } from 'character-entities-legacy'
 
-// markdown-exit decodes with `character-entities`, so reusing it keeps a single
-// entity table in bundles instead of shipping a second one from `entities`.
+// Same table as markdown-exit, so bundles hold one copy.
 
 const own = Object.prototype.hasOwnProperty
 const legacy = new Set(characterEntitiesLegacy)
@@ -81,7 +80,7 @@ export function decodeHTMLAttribute(input: string): string {
       const isValid = hex ? isHexDigit : isDigit
       let value = 0
       while (end < length && isValid(input.charCodeAt(end))) {
-        // Clamp so overlong references stay out of range instead of overflowing.
+        // Clamped so overlong references stay out of range.
         value = Math.min(value * (hex ? 16 : 10) + Number.parseInt(input[end], 16), 0x110000)
         end++
       }

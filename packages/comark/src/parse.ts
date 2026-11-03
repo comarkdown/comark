@@ -32,9 +32,8 @@ export { parseFrontmatter } from './internal/frontmatter.ts'
 // Re-export plugin utilities
 export { defineComarkPlugin } from './utils/helpers.ts'
 
-// Constructing a `MarkdownExit` instance is expensive because `LinkifyIt`
-// compiles its regexes in the constructor, and a configured instance holds no
-// per-parse state, so parsers built from the same options share one.
+// A configured `MarkdownExit` instance holds no per-parse state, so parsers
+// built from the same options share one.
 // Bounded LRU: a caller that keeps minting fresh markdown-it plugin closures
 // (math/mermaid/binding factories) must not grow this without limit.
 const MAX_SHARED_PARSERS = 32
@@ -42,9 +41,8 @@ let nextPluginId = 0
 const pluginIds = new WeakMap<MarkdownExitPlugin, number>()
 const sharedParsers = new Map<string, MarkdownExit>()
 
-// `markdown-exit/core` leaves linkify-it out, so bundles only fetch it once a
-// parser with `linkify` runs. linkify-it 6 stopped matching `www.example.com`
-// and `user:pass@` URLs by default; keep them linked as before.
+// Loaded on the first parse with `linkify`, so bundles without it skip linkify-it.
+// `fuzzyLink` and `urlAuth` link `www.example.com` and `user:pass@` URLs.
 let linkifyModule: Promise<typeof LinkifyIt> | undefined
 async function createLinkify(): Promise<LinkifyIt> {
   linkifyModule ??= import('linkify-it').then((m) => m.LinkifyIt)
