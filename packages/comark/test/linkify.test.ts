@@ -30,7 +30,7 @@ describe('linkify', () => {
     ])
   })
 
-  it('gives markdown-it plugins md.linkify when they are installed', async () => {
+  it('gives markdown-it plugins md.linkify when they are installed, also with linkify off', async () => {
     // Mention plugins register a linkify schema when installed.
     const mention = defineComarkPlugin(() => ({
       name: 'linkify-mention',
@@ -49,6 +49,9 @@ describe('linkify', () => {
     const doc = await createMarkdownParser({ plugins: [mention()] })('hi @comark')
 
     expect(doc.nodes).toEqual([['p', {}, 'hi ', ['a', { href: 'https://github.com/comark' }, '@comark']]])
+
+    const plain = await createMarkdownParser({ linkify: false, plugins: [mention()] })('hi @comark')
+    expect(plain.nodes).toEqual([['p', {}, 'hi @comark']])
   })
 
   it('creates one linkifier when a new parser runs several parses at once', async () => {
