@@ -606,7 +606,11 @@ const processors: Record<string, Processor> = {
         if (frameTag !== null && frameTag.toLowerCase() === closeTag) break
         idx--
       }
-      if (idx < 0) return { nextIndex: start + 1, node: undefined }
+      if (idx < 0) {
+        // HTML parsers read a stray `</br>` as `<br>`
+        const node: Node | undefined = closeTag === 'br' ? ['br', makeHtmlAttrs({}, false)] : undefined
+        return { nextIndex: start + 1, node }
+      }
 
       let closed: Node | undefined
       while (state.htmlStack.length > idx) {

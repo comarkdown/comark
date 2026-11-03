@@ -474,4 +474,51 @@ describe('stray HTML close tags', () => {
 
     expect(result.nodes).toEqual([['p', {}, ' orphan']])
   })
+
+  it('reads a stray `</br>` as a line break', async () => {
+    const result = await parseMarkdown('**Experimental feature**</br>\nEnable View Transitions.')
+
+    expect(result.nodes).toEqual([
+      [
+        'p',
+        {},
+        ['strong', {}, 'Experimental feature'],
+        ['br', { $: { html: 1, block: 0 } }],
+        'Enable View Transitions.',
+      ],
+    ])
+  })
+
+  it('reads a lone `</br>` as a block `<br>`', async () => {
+    const result = await parseMarkdown('</br>')
+
+    expect(result.nodes).toEqual([['br', { $: { html: 1, block: 1 } }]])
+    expect(result.nodes).toEqual((await parseMarkdown('<br>')).nodes)
+  })
+
+  it('reads a `</br>` line between paragraphs as a block `<br>`', async () => {
+    const result = await parseMarkdown('before\n\n</br>\n\nafter')
+
+    expect(result.nodes).toEqual([
+      ['p', {}, 'before'],
+      ['br', { $: { html: 1, block: 1 } }],
+      ['p', {}, 'after'],
+    ])
+  })
+
+  it('reads a lone `</br>` as a block `<br>` when markdown: false', async () => {
+    const result = await parseMarkdown('</br>', {
+      plugins: [html({ markdown: false })],
+    })
+
+    expect(result.nodes).toEqual([['br', { $: { html: 1, block: 1 } }]])
+  })
+
+  it('keeps a stray `</br>` inside the open inline element', async () => {
+    const result = await parseMarkdown('<span>a</br>b</span>')
+
+    expect(result.nodes).toEqual([
+      ['span', { $: { html: 1, block: 0 } }, 'a', ['br', { $: { html: 1, block: 0 } }], 'b'],
+    ])
+  })
 })

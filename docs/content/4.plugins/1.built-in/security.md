@@ -119,7 +119,7 @@ These URLs are **always** blocked, even if `allowedProtocols: ['*']` is set:
 
 - `javascript:` and `vbscript:` URLs
 - `data:` URLs in link props (`href`, `to`, …)
-- `data:` URLs in image props, unless their MIME type is `image/*` (see [`allowDataImages`](#options-allowdataimages))
+- `data:` URLs in image props, unless their MIME type is `image/*` (see [`allowDataImages`](#allowdataimages))
 
 A `data:` URL is checked the way browsers read its MIME type, which ignores spaces after `data:`. So `data: text/html,…` is blocked like `data:text/html,…`.
 
@@ -147,7 +147,7 @@ Renderers spread frontmatter into components, so it is sanitized with the same r
 - URLs in URL keys (`to`, `link`, `imageSrc`, …) are held to the protocol floor and the URL options
 - an `as` or `is` value naming a blocked, unsafe or not-allowed tag is removed
 
-Dropped array items are removed without leaving a hole. Set [`frontmatter: false`](#options-frontmatter) to opt out.
+Dropped array items are removed without leaving a hole. Set [`frontmatter: false`](#frontmatter-1) to opt out.
 
 To apply the same rules to objects that don't come through the parser, such as a YAML or JSON file you load yourself, use `sanitizeData()` from `comark/utils`. It cleans the data in place and returns the dotted paths it removed:
 
@@ -177,15 +177,15 @@ Returns a `ComarkPlugin` that sanitizes the parsed AST.
 
 | Option | Type | Default | Description |
 |---|---|---|---|
-| [`blockedTags`](#options-blockedtags) | `string[]` | `[]` | Tag names to remove entirely from the AST |
-| [`allowedTags`](#options-allowedtags) | `string[]` | `[]` | Tag names to allow exclusively in the AST |
-| [`tagFallback`](#options-tagfallback) | `function` | `undefined`  | Defines how to handle unallowed tags in the AST |
-| [`allowedProtocols`](#options-allowedprotocols) | `string[]` | `['*']` | Protocols permitted in URL props |
-| [`allowedLinkPrefixes`](#options-allowedlinkprefixes) | `string[]` | `['*']` | URL prefixes permitted in link props (`href`, `to`, …) |
-| [`allowedImagePrefixes`](#options-allowedimageprefixes) | `string[]` | `['*']` | URL prefixes permitted in image props (`src`, `*src`, `poster`) |
-| [`defaultOrigin`](#options-defaultorigin) | `string` | `undefined` | Rewrite disallowed URLs to this origin instead of stripping |
-| [`allowDataImages`](#options-allowdataimages) | `boolean` | `true` | Allow `data:image/*` URIs in image props |
-| [`frontmatter`](#options-frontmatter) | `boolean` | `true` | Sanitize frontmatter as well as the AST |
+| [`blockedTags`](#blockedtags) | `string[]` | `[]` | Tag names to remove entirely from the AST |
+| [`allowedTags`](#allowedtags) | `string[]` | `[]` | Tag names to allow exclusively in the AST |
+| [`tagFallback`](#tagfallback) | `function` | `undefined`  | Defines how to handle unallowed tags in the AST |
+| [`allowedProtocols`](#allowedprotocols) | `string[]` | `['*']` | Protocols permitted in URL props |
+| [`allowedLinkPrefixes`](#allowedlinkprefixes) | `string[]` | `['*']` | URL prefixes permitted in link props (`href`, `to`, …) |
+| [`allowedImagePrefixes`](#allowedimageprefixes) | `string[]` | `['*']` | URL prefixes permitted in image props (`src`, `*src`, `poster`) |
+| [`defaultOrigin`](#defaultorigin) | `string` | `undefined` | Rewrite disallowed URLs to this origin instead of stripping |
+| [`allowDataImages`](#allowdataimages) | `boolean` | `true` | Allow `data:image/*` URIs in image props |
+| [`frontmatter`](#frontmatter-1) | `boolean` | `true` | Sanitize frontmatter as well as the AST |
 
 ### `blockedTags`
 
