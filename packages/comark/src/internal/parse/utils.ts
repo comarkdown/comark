@@ -1,5 +1,10 @@
 import type { Node, ElementNode, ElementNodeAttributes, MarkdownDocument } from 'comark'
-import { decodeHTML, isHtmlVoidElement, isSpaceCode, TREE_WALK_MAX_DEPTH } from 'comark/utils'
+import { decodeHTML, isHtmlVoidElement, TREE_WALK_MAX_DEPTH } from 'comark/utils'
+
+/** Space, tab, line feed, form feed or carriage return. Defined per file so it stays inlinable on hot paths. */
+function isSpaceCode(c: number): boolean {
+  return c === 32 || c === 9 || c === 10 || c === 12 || c === 13
+}
 
 export type ParsedHtmlTag =
   | { kind: 'open'; tag: string; attrs: Record<string, unknown>; selfClosing: boolean }

@@ -88,7 +88,7 @@ packages/comark/
 │   │   ├── task-list.ts      # GFM task lists
 │   │   └── toc.ts            # Table of contents
 │   ├── utils/                # Shared utilities (comark/utils entry point)
-│   │   ├── index.ts          # textContent(), visit(), visitAsync(), escapeHtml(), isHtmlVoidElement(), isSpaceCode(), indent(), string/object utils
+│   │   ├── index.ts          # textContent(), visit(), visitAsync(), escapeHtml(), isHtmlVoidElement(), indent(), string/object utils
 │   │   ├── helpers.ts        # defineComarkPlugin(), dedupePlugins()
 │   │   ├── trace.ts          # ComarkTracer helpers: noopTracer, withSpan() (comark/utils/trace)
 │   │   └── caret.ts          # Caret utilities for streaming
@@ -496,7 +496,6 @@ import {
   escapeHtml,
   isHtmlVoidElement,
   HTML_VOID_ELEMENTS,
-  isSpaceCode,
   isMarkdownDocument,
   sanitizeData,
 } from 'comark/utils'

@@ -1,6 +1,11 @@
 import type { Node, ElementNode, ElementNodeAttributes, ConditionalNodeHandler } from 'comark'
 import { defineComarkPlugin } from 'comark'
-import { isSpaceCode, visit } from 'comark/utils'
+import { visit } from 'comark/utils'
+
+/** Space, tab, line feed, form feed or carriage return. Defined per file so it stays inlinable on hot paths. */
+function isSpaceCode(c: number): boolean {
+  return c === 32 || c === 9 || c === 10 || c === 12 || c === 13
+}
 
 export interface FootnotesConfig {
   /**

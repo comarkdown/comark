@@ -1,6 +1,10 @@
 import type { State } from 'comark/render'
 import type { ElementNode, Node } from 'comark'
-import { isSpaceCode } from 'comark/utils'
+
+/** Space, tab, line feed, form feed or carriage return. Defined per file so it stays inlinable on hot paths. */
+function isSpaceCode(c: number): boolean {
+  return c === 32 || c === 9 || c === 10 || c === 12 || c === 13
+}
 
 function isBr(node: Node | undefined) {
   return Array.isArray(node) && node[0] === 'br'

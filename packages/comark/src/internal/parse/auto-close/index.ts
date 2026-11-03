@@ -1088,7 +1088,7 @@ function isAsciiAlpha(c: number): boolean {
   return (c >= 97 && c <= 122) || (c >= 65 && c <= 90)
 }
 
-/** Space, tab, line feed, form feed or carriage return. Mirrors `isSpaceCode` in `comark/utils`. */
+/** Space, tab, line feed, form feed or carriage return. */
 function isSpaceCode(c: number): boolean {
   return c === 32 || c === 9 || c === 10 || c === 12 || c === 13
 }
