@@ -100,7 +100,10 @@ export async function html(node: ElementNode, state: State, parent?: ElementNode
   }
 
   const nativeAttributes = toNativeAttributes(String(tag), node, attributes)
-  const attrs = Object.keys(nativeAttributes).length > 0 ? ` ${htmlAttributes(nativeAttributes)}` : ''
+  const attrs =
+    Object.keys(nativeAttributes).length > 0
+      ? ` ${htmlAttributes(nativeAttributes, { verbatim: !state.context.html && $.html === 1 })}`
+      : ''
 
   if (isSelfClose) {
     return `<${tag}${attrs}>` + (!parent && !isInline ? state.context.blockSeparator : '')

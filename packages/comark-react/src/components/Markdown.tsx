@@ -109,8 +109,8 @@ export interface MarkdownProps extends Omit<React.HTMLAttributes<HTMLDivElement>
 export async function Markdown({
   children,
   value,
-  options = {},
-  plugins = [],
+  options,
+  plugins,
   unwrap = false,
   components: customComponents = {},
   componentsManifest,
@@ -146,7 +146,8 @@ export async function Markdown({
       <MarkdownClient
         {...rest}
         value={source}
-        options={parseOptions}
+        options={options}
+        unwrap={unwrap}
         plugins={plugins}
         components={customComponents}
         componentsManifest={componentsManifest}

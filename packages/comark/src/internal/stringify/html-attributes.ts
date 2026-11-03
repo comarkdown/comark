@@ -122,20 +122,27 @@ export function resolveAttribute(attrs: Record<string, unknown>, renderData: Nod
 // could break out of the attribute list, so such keys are dropped entirely.
 const SAFE_ATTR_NAME = /^[a-zA-Z_:][a-zA-Z0-9_:.-]*$/
 
+interface HtmlAttributesOptions {
+  /** Keep `:` prefixes and string `"true"` values as written */
+  verbatim?: boolean
+}
+
 /**
  * Convert attributes to a string of HTML attributes
  *
  * @param attributes - The attributes to stringify
+ * @param options - Serialization options
  * @returns The stringified attributes
  */
-export function htmlAttributes(attributes: Record<string, unknown>) {
+export function htmlAttributes(attributes: Record<string, unknown>, { verbatim = false }: HtmlAttributesOptions = {}) {
   const parts: string[] = []
   for (const [rawKey, value] of Object.entries(attributes)) {
-    const key = rawKey.startsWith(':') ? rawKey.slice(1) : rawKey
+    const isBinding = rawKey.startsWith(':')
+    const key = isBinding && !verbatim ? rawKey.slice(1) : rawKey
     if (!SAFE_ATTR_NAME.test(key)) continue
 
-    if (rawKey.startsWith(':')) {
-      if (value === 'true') {
+    if (isBinding) {
+      if (verbatim ? value === true : value === 'true') {
         parts.push(key)
         continue
       }
@@ -147,7 +154,7 @@ export function htmlAttributes(attributes: Record<string, unknown>) {
       continue
     }
 
-    if (value === true || value === 'true') {
+    if (value === true || (!verbatim && value === 'true')) {
       parts.push(key)
       continue
     }
