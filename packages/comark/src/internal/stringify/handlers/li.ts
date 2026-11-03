@@ -42,7 +42,7 @@ export async function li(node: ElementNode, state: State) {
         continue
       }
 
-      if (result && tag === 'p') {
+      if (result && (tag === 'p' || (tag === null && !hasInlineContent))) {
         const indented = indent(await state.one(child, state, node), { width: prefixWidth })
         result = result.trimEnd() + '\n\n' + indented.trimEnd() + '\n'
         continue
