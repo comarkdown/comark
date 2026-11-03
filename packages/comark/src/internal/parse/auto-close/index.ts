@@ -18,7 +18,6 @@
 import { closeTables } from './table.ts'
 import { findBracketClose, isBracketMath } from '../../bracket-math.ts'
 
-
 export const INCOMPLETE_LINK_PLACEHOLDER = 'comark:incomplete-link'
 export const INCOMPLETE_IMAGE_PLACEHOLDER = 'comark:incomplete-image'
 
