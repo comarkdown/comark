@@ -54,12 +54,19 @@ let linkifyModule: Promise<typeof LinkifyIt> | undefined
 // This also replaces the instance that the root `markdown-exit` entry gives every parser once
 // something imports it. linkify-it 5 links `www.example.com` and `user:pass@` URLs by default;
 // linkify-it 6 needs `fuzzyLink` for that, which made streaming chat text about 1.8x slower.
-async function installLinkify(md: MarkdownExit, mdPlugins: MarkdownExitPlugin[]): Promise<void> {
-  linkifyModule ??= import('linkify-it').then((m) => m.default)
-  const Linkify = await linkifyModule
+async function installLinkify(shared: SharedParser, mdPlugins: MarkdownExitPlugin[]): Promise<void> {
+  let Linkify: typeof LinkifyIt
+  try {
+    Linkify = await (linkifyModule ??= import('linkify-it').then((m) => m.default))
+  } catch (error) {
+    // Retry a failed load, such as a chunk fetch, on the next parse.
+    linkifyModule = undefined
+    shared.ready = undefined
+    throw error
+  }
   // markdown-exit types this as linkify-it 6. It only calls `test`, `match` and `matchAtStart`, which 5 has too.
-  md.linkify = new Linkify() as unknown as MarkdownExit['linkify']
-  for (const fn of mdPlugins) md.use(fn)
+  shared.md.linkify = new Linkify() as unknown as MarkdownExit['linkify']
+  for (const fn of mdPlugins) shared.md.use(fn)
 }
 
 /**
@@ -218,7 +225,7 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
       }
 
       // Same key, same plugin functions, so any parser sharing this instance can install them.
-      if (linkify) await (shared.ready ??= installLinkify(parser, mdPlugins))
+      if (linkify) await (shared.ready ??= installLinkify(shared, mdPlugins))
 
       try {
         state.tokens = withSpan(tracer, 'comark:tokenize', () => parser.parse(state.markdown, {}))
