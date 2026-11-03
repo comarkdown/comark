@@ -78,6 +78,7 @@
   "devDependencies": {
     "@json-render/core": "catalog:",
     "@shikijs/twoslash": "catalog:",
+    "@types/linkify-it": "catalog:",
     "@types/markdown-it": "catalog:",
     "entities": "catalog:",
     "github-slugger": "catalog:",

@@ -12,7 +12,7 @@ import type {
   Node,
 } from './types.ts'
 import MarkdownExit, { type Token } from 'markdown-exit/core'
-import type { LinkifyIt } from 'linkify-it'
+import type LinkifyIt from 'linkify-it'
 import components from './plugins/components.ts'
 import attributes from './plugins/attributes.ts'
 import taskList from './plugins/task-list.ts'
@@ -51,12 +51,14 @@ interface SharedParser {
 let linkifyModule: Promise<typeof LinkifyIt> | undefined
 
 // markdown-it plugins may configure `md.linkify` when installed, so they run after it exists.
-// `fuzzyLink` and `urlAuth` link `www.example.com` and `user:pass@` URLs. This replaces the plain
-// instance that the root `markdown-exit` entry gives every parser once something imports it.
+// This also replaces the instance that the root `markdown-exit` entry gives every parser once
+// something imports it. linkify-it 5 links `www.example.com` and `user:pass@` URLs by default;
+// linkify-it 6 needs `fuzzyLink` for that, which made streaming chat text about 1.8x slower.
 async function installLinkify(md: MarkdownExit, mdPlugins: MarkdownExitPlugin[]): Promise<void> {
-  linkifyModule ??= import('linkify-it').then((m) => m.LinkifyIt)
+  linkifyModule ??= import('linkify-it').then((m) => m.default)
   const Linkify = await linkifyModule
-  md.linkify = new Linkify().set({ fuzzyLink: true, urlAuth: true })
+  // markdown-exit types this as linkify-it 6. It only calls `test`, `match` and `matchAtStart`, which 5 has too.
+  md.linkify = new Linkify() as unknown as MarkdownExit['linkify']
   for (const fn of mdPlugins) md.use(fn)
 }
 

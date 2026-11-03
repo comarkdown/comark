@@ -257,6 +257,9 @@ catalogs:
     '@types/json-schema':
       specifier: ^7.0.15
       version: 7.0.15
+    '@types/linkify-it':
+      specifier: ^5.0.0
+      version: 5.0.0
     '@types/markdown-it':
       specifier: ^14.2.0
       version: 14.2.0
@@ -342,8 +345,8 @@ catalogs:
       specifier: ^0.19.1
       version: 0.19.1
     linkify-it:
-      specifier: ^6.1.0
-      version: 6.1.0
+      specifier: ^5.0.0
+      version: 5.0.2
     markdown-exit:
       specifier: 2.1.0
       version: 2.1.0
@@ -1448,7 +1451,7 @@ importers:
         version: 0.19.1
       linkify-it:
         specifier: 'catalog:'
-        version: 6.1.0
+        version: 5.0.2
       markdown-exit:
         specifier: 'catalog:'
         version: 2.1.0
@@ -1462,6 +1465,9 @@ importers:
       '@shikijs/twoslash':
         specifier: 'catalog:'
         version: 4.5.0(supports-color@10.2.2)(typescript@6.0.3)
+      '@types/linkify-it':
+        specifier: 'catalog:'
+        version: 5.0.0
       '@types/markdown-it':
         specifier: 'catalog:'
         version: 14.2.0

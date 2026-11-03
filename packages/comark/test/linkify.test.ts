@@ -6,14 +6,14 @@ import { createMarkdownParser, defineComarkPlugin, parseMarkdown } from '../src/
 
 const linkifiers = vi.hoisted(() => ({ created: 0 }))
 vi.mock('linkify-it', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('linkify-it')>()
-  class LinkifyIt extends actual.LinkifyIt {
-    constructor(...args: ConstructorParameters<typeof actual.LinkifyIt>) {
+  const { default: LinkifyIt } = await importOriginal<typeof import('linkify-it')>()
+  class CountingLinkifyIt extends LinkifyIt {
+    constructor(...args: ConstructorParameters<typeof LinkifyIt>) {
       super(...args)
       linkifiers.created++
     }
   }
-  return { ...actual, LinkifyIt }
+  return { default: CountingLinkifyIt }
 })
 
 describe('linkify', () => {
