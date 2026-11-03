@@ -39,6 +39,29 @@ describe('HTML attribute escaping', () => {
     expect(html).not.toContain('title="A "quote""')
   })
 
+  it('keeps backslashes literal while decoding HTML attribute entities', async () => {
+    const tree = await parseMarkdown('<span title="C:\\*dir\\ &amp; &copy;">hi</span>')
+    const p = tree.nodes[0] as [string, Record<string, unknown>, ...Node[]]
+    const span = (Array.isArray(p[2]) ? p[2] : p) as [string, Record<string, unknown>, ...Node[]]
+    expect(span[1].title).toBe('C:\\*dir\\ & ©')
+  })
+
+  it('decodes HTML attribute entities with browser attribute semantics', async () => {
+    const attrsOf = async (markdown: string) => {
+      const tree = await parseMarkdown(markdown)
+      const p = tree.nodes[0] as [string, Record<string, unknown>, ...Node[]]
+      return ((Array.isArray(p[2]) ? p[2] : p) as [string, Record<string, unknown>, ...Node[]])[1]
+    }
+
+    // Legacy semicolon-less reference is decoded...
+    expect((await attrsOf('<span title="A &amp B">hi</span>')).title).toBe('A & B')
+    // ...but not when followed by `=` or an alphanumeric, so query strings survive.
+    expect((await attrsOf('<a href="?a=1&copy=2">hi</a>')).href).toBe('?a=1&copy=2')
+    expect((await attrsOf('<span title="&notit;">hi</span>')).title).toBe('&notit;')
+    // Invalid code points become U+FFFD; references are decoded once.
+    expect((await attrsOf('<span title="&#0;|&amp;lt;">hi</span>')).title).toBe('\uFFFD|&lt;')
+  })
+
   it('escapes quotes in component attribute props', async () => {
     const html = await renderHtml(`:span[hi]{title='a" onmouseover=alert(1) x="b'}`)
     expect(html).toContain('title="a&quot; onmouseover=alert(1) x=&quot;b"')
