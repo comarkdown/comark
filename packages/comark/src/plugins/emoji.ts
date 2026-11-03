@@ -1,5 +1,5 @@
 import type { MarkdownItPlugin } from 'comark'
-import { defineComarkPlugin } from '../utils/helpers.ts'
+import { defineComarkPlugin } from 'comark'
 
 // Curated set of common emoji shortcodes, organized by category.
 // For the full GitHub set, install a dataset (e.g. `gemoji`) and pass it via

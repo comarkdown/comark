@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { createMarkdownParser } from 'comark'
 import type { ElementNode } from 'comark'
+import { renderMarkdown } from 'comark/render'
 
 describe('streaming mode', () => {
   it.each([false, true])('omits reference definitions with streaming: %s', async (streaming) => {
@@ -56,6 +57,13 @@ describe('streaming mode', () => {
       for (let i = 1; i < lines.length; i++) {
         expect(lines[i]).toBeGreaterThan(lines[i - 1])
       }
+    })
+
+    it('does not render $.line metadata to markdown', async () => {
+      const source = '# Hello\n\nParagraph **one**.\n\n- a\n- b\n\n> quote\n\n| a |\n| --- |\n| b |\n'
+      const result = await createMarkdownParser()(source, { streaming: true })
+
+      expect(await renderMarkdown(result)).toBe(await renderMarkdown(await createMarkdownParser()(source)))
     })
   })
 
@@ -230,6 +238,19 @@ describe('streaming mode', () => {
   })
 
   describe('streaming with MDC components', () => {
+    it('closes quoted attributes after reusing a completed component', async () => {
+      const parse = createMarkdownParser()
+      const source = '::note\nContent\n::\n\n:button{label="'
+      const partial0 = await parse(source, { streaming: true })
+      expect(partial0.nodes[1]).toMatchObject(['button', { label: '' }])
+
+      const partial = await parse(source + 'Review', { streaming: true })
+      expect(partial.nodes[1]).toMatchObject(['button', { label: 'Review' }])
+
+      const completed = await parse(source + 'Review"}')
+      expect(completed.nodes[1]).toMatchObject(['button', { label: 'Review' }])
+    })
+
     it('parses MDC block components in streaming mode', async () => {
       const parse = createMarkdownParser()
 

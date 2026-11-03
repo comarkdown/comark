@@ -11,11 +11,21 @@
 
 import type { PluginSimple, Renderer } from 'markdown-exit'
 import { Token } from 'markdown-exit'
-import type { MarkdownItPlugin } from '../types.ts'
+import type { MarkdownItPlugin } from 'comark'
 import { defineComarkPlugin } from '../utils/helpers.ts'
 import { searchProps } from '../internal/parse/syntax/props.ts'
 
+const TEXT_TOKENS = new Set(['text', 'text_special', 'softbreak', 'hardbreak'])
+
 const markdownItInlineProps: PluginSimple = (md) => {
+  // End of the last brace group rejected as text, per inline state. A later `{`
+  // after text inside it would be rejected too, so it is skipped without
+  // rescanning the same suffix (keeps O(n)).
+  const rejectedUntil = new WeakMap<object, number>()
+  // Set while re-tokenizing a restored brace group: the end of that source is
+  // not the end of the line, since text followed the group in the original.
+  let restoring = false
+
   md.inline.ruler.after('entity', 'comark_inline_props', (state, silent) => {
     const start = state.pos
     if (state.src[start] !== '{') return false
@@ -23,11 +33,35 @@ const markdownItInlineProps: PluginSimple = (md) => {
     // Skip Vue mustache `{{ }}` and template `${ }` syntax
     if (state.src[start + 1] === '{' || state.src[start - 1] === '{' || state.src[start - 1] === '$') return false
 
+    // region -- Ignore attributes if (not follows a syntax && have some text after in same line)
+    const last = state.tokens[state.tokens.length - 1]
+    const afterText = state.pending !== '' || !last || TEXT_TOKENS.has(last.type)
+    const lastDelimiter = state.delimiters[state.delimiters.length - 1]
+    // Never while restoring: a restored group is re-tokenized from source, so an
+    // unpaired closer inside it would restore again, recursing once per level.
+    const afterCloser =
+      !restoring &&
+      state.pending === '' &&
+      lastDelimiter?.close === true &&
+      lastDelimiter.token === state.tokens.length - 1
+    if (afterText && !afterCloser && start < (rejectedUntil.get(state) ?? -1)) return false
+
     const search = searchProps(state.src, start)
     if (!search) return false
 
     const { props, index: end } = search
     if (end === start) return false
+
+    if (afterText && !afterCloser) {
+      let searchEnd = end
+      while (state.src[searchEnd] === ' ' || state.src[searchEnd] === '\t') searchEnd++
+      // Check for linebreak or end of file
+      if (restoring || (state.src[searchEnd] !== '\n' && state.src[searchEnd] !== undefined)) {
+        rejectedUntil.set(state, end)
+        return false
+      }
+    }
+    // endregion
 
     state.pos = end
 
@@ -37,8 +71,39 @@ const markdownItInlineProps: PluginSimple = (md) => {
     const token = state.push('mdc_inline_props', 'span', 0)
     token.attrs = props
     token.hidden = true
+    // Delimiters are paired only after tokenizing, so whether this closer has an
+    // opener is decided in `comark_inline_props_unpaired` below.
+    if (afterText && afterCloser) {
+      token.content = state.src.slice(start, end)
+      token.meta = { afterDelimiter: true }
+    }
 
     return true
+  })
+
+  // A closer left unpaired by emphasis/strikethrough stays a non-empty `text`
+  // token (paired `**` leaves its second marker as an empty one); its brace
+  // group was never attributes, so re-tokenize it as regular inline content
+  // (escapes, entities, code spans, …).
+  md.inline.ruler2.before('fragments_join', 'comark_inline_props_unpaired', (state) => {
+    const tokens = state.tokens
+    for (let i = 1; i < tokens.length; i++) {
+      const token = tokens[i]!
+      if (token.type !== 'mdc_inline_props' || !token.meta?.afterDelimiter) continue
+      const prev = tokens[i - 1]!
+      if (prev.type !== 'text' || prev.content === '') continue
+      const children: Token[] = []
+      const wasRestoring = restoring
+      restoring = true
+      try {
+        state.md.inline.parse(token.content, state.md, state.env, children)
+      } finally {
+        restoring = wasRestoring
+      }
+      tokens.splice(i, 1, ...children)
+      i += children.length - 1
+    }
+    return false
   })
 
   md.renderer.rules.mdc_inline_props = () => ''

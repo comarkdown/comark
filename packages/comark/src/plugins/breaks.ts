@@ -1,5 +1,5 @@
-import { defineComarkPlugin } from '../utils/helpers.ts'
-import { visit } from '../utils/index.ts'
+import { defineComarkPlugin } from 'comark'
+import { visit } from 'comark/utils'
 
 // Tags whose text content is whitespace-sensitive and must keep literal newlines
 const IGNORED_TAGS = new Set(['pre', 'code', 'math', 'script', 'style', 'textarea'])

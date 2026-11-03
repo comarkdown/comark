@@ -32,7 +32,7 @@
 ## HTML
 
 ```html
-<pre language="javascript"><code class="language-javascript"></code></pre>
+<pre data-language="javascript"><code class="language-javascript"></code></pre>
 ```
 
 ## Markdown

@@ -1,7 +1,8 @@
 ---
-title: React
-description: A minimal example showing how to use Comark with React and Vite.
+title: 'React Markdown Example with Vite'
+description: 'A React and Vite app that renders a Markdown blog, a syntax showcase, and a live editor with Comark and a custom alert component.'
 navigation:
+  title: 'React'
   icon:  i-simple-icons-react
 ---
 

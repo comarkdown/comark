@@ -1,4 +1,4 @@
-import { lazyMarkdown } from '$lib/content'
+import { lazyMarkdown } from '#lib/content.ts'
 
 export const load = () => {
   return {

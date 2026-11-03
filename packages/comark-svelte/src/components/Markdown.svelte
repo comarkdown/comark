@@ -28,6 +28,7 @@ This is an alert component
   import { createSerializedMarkdownParser } from 'comark'
   import { isMarkdownDocument } from 'comark/utils'
   import MarkdownDocument from './MarkdownDocument.svelte'
+  import type { RootAttributes } from '../types.js'
 
   let {
     value,
@@ -40,7 +41,8 @@ This is an alert component
     caret = false,
     data,
     class: className = '',
-  }: {
+    ...rest
+  }: RootAttributes & {
     value?: string | MarkdownDocumentType
     options?: Record<string, any>
     plugins?: ComarkPlugin[]
@@ -92,6 +94,7 @@ This is an alert component
 
 {#if isMarkdownDocument(value)}
   <MarkdownDocument
+    {...rest}
     {value}
     {components}
     {componentsManifest}
@@ -102,6 +105,7 @@ This is an alert component
   />
 {:else if parsed}
   <MarkdownDocument
+    {...rest}
     value={parsed}
     {components}
     {componentsManifest}

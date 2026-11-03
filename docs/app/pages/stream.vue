@@ -8,7 +8,7 @@ import landingMD from '~~/content/index.md?raw'
 definePageMeta({
   footer: false,
 })
-const title = 'Streaming Demo - Comark'
+const title = 'Streaming Markdown Demo'
 const description =
   'See Comark streaming in action. Watch markdown content parse and render in real-time as it arrives.'
 useSeoMeta({

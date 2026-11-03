@@ -1,7 +1,8 @@
 ---
-title: Syntax highlighting
+title: 'Syntax Highlighting in Vue Markdown with Shiki'
 description: Example showing how to use Comark with syntax highlighting using Shiki in Vue and Vite.
 navigation:
+  title: 'Syntax highlighting'
   icon:  i-lucide-code
 ---
 

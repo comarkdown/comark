@@ -1,7 +1,8 @@
 ---
-title: AI SDK
-description: Streaming AI chat with live Comark rendering
+title: 'Streaming AI Chat with the Vercel AI SDK and Nuxt'
+description: 'A Nuxt chat app that streams Vercel AI SDK responses and renders the Markdown with Comark while each message is still arriving.'
 navigation:
+  title: AI SDK
   icon: i-simple-icons-vercel
 ---
 

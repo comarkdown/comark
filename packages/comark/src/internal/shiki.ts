@@ -251,7 +251,7 @@ function tokensToSpans(line: ThemedToken[]): Node[] {
   const spans: Node[] = []
   for (let t = 0; t < spanCount; t++) {
     const tk = line[t]
-    const canMerge = !((tk.fontStyle && (tk.fontStyle & 8 /* Strikethrough */ || tk.fontStyle & 4)) /* Underline */)
+    const canMerge = !(tk.fontStyle && (tk.fontStyle & 8 /* Strikethrough */ || tk.fontStyle & 4) /* Underline */)
     if (canMerge && /^\s+$/.test(tk.content) && t + 1 < spanCount) {
       carry += tk.content
     } else if (carry) {

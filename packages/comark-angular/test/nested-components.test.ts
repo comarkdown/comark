@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { Component, provideZonelessChangeDetection, type Type } from '@angular/core'
 import { bootstrapApplication } from '@angular/platform-browser'
 import { renderApplication } from '@angular/platform-server'
@@ -8,18 +8,18 @@ import { MarkdownNode } from '../src/components/markdown-node.component.ts'
 import { ComponentFixture, TestBed } from '@angular/core/testing'
 
 describe('MarkdownNode nested component rendering', () => {
-  let component: MarkdownNode;
-  let fixture: ComponentFixture<MarkdownNode>;
+  let component: MarkdownNode
+  let fixture: ComponentFixture<MarkdownNode>
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [MarkdownNode],
-    }).compileComponents();
+    }).compileComponents()
 
-    fixture = TestBed.createComponent(MarkdownNode);
-    component = fixture.componentInstance;
-    await fixture.whenStable();
-  });
+    fixture = TestBed.createComponent(MarkdownNode)
+    component = fixture.componentInstance
+    await fixture.whenStable()
+  })
 
   it('passes nested inputs through Angular input binding', () => {
     const parentNode = ['root', {}] as const

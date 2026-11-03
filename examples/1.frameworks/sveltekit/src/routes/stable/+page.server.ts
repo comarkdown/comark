@@ -1,5 +1,5 @@
 import { parseMarkdown } from 'comark'
-import { stableMarkdown } from '$lib/content'
+import { stableMarkdown } from '#lib/content.ts'
 
 export const load = async () => {
   return {

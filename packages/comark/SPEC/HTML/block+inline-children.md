@@ -24,7 +24,7 @@
         {
           "$": {
             "html": 1,
-            "block": 1
+            "block": 0
           },
           "src": "/foo.png",
           "alt": "x"

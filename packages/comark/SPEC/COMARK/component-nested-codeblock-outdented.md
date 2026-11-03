@@ -50,7 +50,7 @@
 ```html
 <tabs>
   <tabs-item label="Code">
-    <pre language="mdc"><code class="language-mdc">  ::accordion
+    <pre data-language="mdc"><code class="language-mdc">  ::accordion
       ::</code></pre>
   </tabs-item>
 </tabs>

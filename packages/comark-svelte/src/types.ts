@@ -1,5 +1,12 @@
 import type { Node, MarkdownDocument, ComarkPlugin, ComponentManifest, ParserOptions } from 'comark'
 import type { Component, Snippet } from 'svelte'
+import type { HTMLAttributes } from 'svelte/elements'
+
+/**
+ * HTML attributes (`id`, `style`, `role`, `data-*`, `aria-*`, ...) set on the
+ * `comark-content` wrapper div.
+ */
+export type RootAttributes = Omit<HTMLAttributes<HTMLDivElement>, 'class' | 'children'>
 
 export interface ComponentResolverProps {
   promise: Promise<any>
@@ -18,7 +25,7 @@ export interface MarkdownNodeProps {
   caretClass?: string | null
 }
 
-export interface MarkdownDocumentProps {
+export interface MarkdownDocumentProps extends RootAttributes {
   /** The parsed Markdown document to render */
   value?: MarkdownDocument
   components?: Record<string, any>
@@ -34,7 +41,7 @@ export interface MarkdownDocumentProps {
   documentKey?: string
 }
 
-export interface MarkdownProps {
+export interface MarkdownProps extends RootAttributes {
   /** The markdown content to parse and render, or a pre-parsed MarkdownDocument */
   value?: string | MarkdownDocument
   options?: Omit<ParserOptions, 'plugins'>

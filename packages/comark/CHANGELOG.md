@@ -1,5 +1,43 @@
 # Changelog
 
+## [0.8.1](https://github.com/comarkdown/comark/compare/comark%400.8.0...comark%400.8.1) (2026-10-21)
+
+### Bug Fixes
+
+* **security:** sanitize frontmatter, tag selectors and data URLs ([#486](https://github.com/comarkdown/comark/issues/486)) ([becc5aa](https://github.com/comarkdown/comark/commit/becc5aae98ba68313d7633d373883d6158a66aca))
+
+## [0.8.0](https://github.com/comarkdown/comark/compare/comark%400.7.0...comark%400.8.0) (2026-10-21)
+
+### ⚠ BREAKING CHANGES
+
+* preserve custom heading ids in markdown and add flat headingIds mode ([#471](https://github.com/comarkdown/comark/issues/471))
+
+### Features
+
+* **binding:** add conditional `If` component with `#else` slot ([#411](https://github.com/comarkdown/comark/issues/411)) ([6377fac](https://github.com/comarkdown/comark/commit/6377fac9e51dd53fd93abdfb9bce021f0cbce09d))
+* **highlight:** highlight inline code both with Shiki and Rangi ([#406](https://github.com/comarkdown/comark/issues/406)) ([203b285](https://github.com/comarkdown/comark/commit/203b285c953091a6adcdbadaaaeb90c5feb893e4))
+* preserve custom heading ids in markdown and add flat headingIds mode ([#471](https://github.com/comarkdown/comark/issues/471)) ([0d53817](https://github.com/comarkdown/comark/commit/0d53817103e2456527615a80527bd640b6e6b3d8))
+
+### Bug Fixes
+
+* **auto-close:** close a double backtick span on two backticks ([#434](https://github.com/comarkdown/comark/issues/434)) ([09d8e00](https://github.com/comarkdown/comark/commit/09d8e0054a39a71ce64f4c1e89938fa8346badc3))
+* **autoclose:** heal shorthand component props in streaming tails ([#473](https://github.com/comarkdown/comark/issues/473)) ([e37114c](https://github.com/comarkdown/comark/commit/e37114c5f86e29806b6aad3ec5dc6bebfecf4b7d))
+* **binding:** preserve ES2020 compatibility ([93fcce8](https://github.com/comarkdown/comark/commit/93fcce8f4e27f9655ce28eec5025e11d6748f527))
+* **components:** parse consecutive inline components without spaces ([#417](https://github.com/comarkdown/comark/issues/417)) ([7acc801](https://github.com/comarkdown/comark/commit/7acc801a0969847b327c48fc397fde313fec7d79))
+* **components:** validate slot name before parsing parameters ([#420](https://github.com/comarkdown/comark/issues/420)) ([0540dc8](https://github.com/comarkdown/comark/commit/0540dc84084a358cf3b96cb9d0cdb28a35e606ae))
+* don't leak ancestor props into elements whose bindings are all omitted ([#499](https://github.com/comarkdown/comark/issues/499)) ([0c69c5e](https://github.com/comarkdown/comark/commit/0c69c5ee48ac900ff759e1d76cd8c4a96abf8c21))
+* **parse:** keep non-ASCII letters in heading ids ([#465](https://github.com/comarkdown/comark/issues/465)) ([3ae7a8d](https://github.com/comarkdown/comark/commit/3ae7a8da0aa742cccd1c30486d0484423eacee54))
+* **plugins:** prefer module import over relative path ([#485](https://github.com/comarkdown/comark/issues/485)) ([81432e8](https://github.com/comarkdown/comark/commit/81432e8a0fbb8808754435e54cd5ae93d96abc2b))
+* **props:** class props should support tailwind custom values ([#450](https://github.com/comarkdown/comark/issues/450)) ([dbddb1d](https://github.com/comarkdown/comark/commit/dbddb1d10744985b4d6f156951ce01e65c4cccab))
+* render code block props as `data-*` attributes on native `pre` ([#463](https://github.com/comarkdown/comark/issues/463)) ([e5f1dcd](https://github.com/comarkdown/comark/commit/e5f1dcd742bb8cd375521885b04216b640be0c30))
+* **security:** validate URL, markup and nested props beyond href/src ([#484](https://github.com/comarkdown/comark/issues/484)) ([060c176](https://github.com/comarkdown/comark/commit/060c1769b73c4de377dba9bbecaa6d9e08336ac8))
+* **streaming:** preserve heading IDs and reference links ([#413](https://github.com/comarkdown/comark/issues/413)) ([b96f868](https://github.com/comarkdown/comark/commit/b96f868a8e91c5e8da5a02f5492792068cb15496))
+
+### Performance
+
+* **parse:** share the configured markdown-it instance between parsers ([#407](https://github.com/comarkdown/comark/issues/407)) ([9e389fc](https://github.com/comarkdown/comark/commit/9e389fcc6f0f30df1605b095c2114c411f08a76e))
+* **svelte:** reuse incremental parsing in streams ([#396](https://github.com/comarkdown/comark/issues/396)) ([8694da6](https://github.com/comarkdown/comark/commit/8694da6164553c99438014ecb820d7ee5adeaae7))
+
 ## [0.7.0](https://github.com/comarkdown/comark/compare/comark@0.6.2...comark@0.7.0) (2026-09-10)
 
 ### Features

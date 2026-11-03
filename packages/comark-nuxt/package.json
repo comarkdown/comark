@@ -1,17 +1,21 @@
 {
   "name": "@comark/nuxt",
-  "version": "0.7.0",
+  "version": "0.8.1",
   "description": "Nuxt module for Comark. Render Markdown with components at runtime, with auto-imported components and streaming support for AI output.",
   "keywords": [
     "ai",
+    "ai-chat",
     "comark",
     "components",
+    "llm",
     "markdown",
+    "markdown-renderer",
     "mdc",
     "nuxt",
     "nuxt-module",
     "renderer",
     "streaming",
+    "streaming-markdown",
     "vue"
   ],
   "homepage": "https://comark.dev/rendering/nuxt",
@@ -59,6 +63,6 @@
     "vue": "catalog:"
   },
   "peerDependencies": {
-    "nuxt": "^4.0.0"
+    "nuxt": "^4.6.3"
   }
 }

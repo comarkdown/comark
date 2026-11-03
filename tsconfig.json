@@ -13,6 +13,6 @@
     "allowImportingTsExtensions": true,
     "noEmit": true
   },
-  "include": ["packages/**/*"],
+  "include": ["packages/**/*", "benchmarks/*.bench.ts", "benchmarks/fixtures.ts", "benchmarks/vitest.config.ts"],
   "exclude": ["playground", "examples", "node_modules", "dist", "**/dist", "**/node_modules"]
 }

@@ -1,6 +1,11 @@
 import type { Node, ElementNode, ElementNodeAttributes, ConditionalNodeHandler } from 'comark'
-import { defineComarkPlugin } from '../utils/helpers.ts'
-import { visit } from '../utils/index.ts'
+import { defineComarkPlugin } from 'comark'
+import { visit } from 'comark/utils'
+
+/** Space, tab, line feed, form feed or carriage return. Defined per file so it stays inlinable on hot paths. */
+function isSpaceCode(c: number): boolean {
+  return c === 32 || c === 9 || c === 10 || c === 12 || c === 13
+}
 
 export interface FootnotesConfig {
   /**
@@ -64,8 +69,7 @@ function isFootnoteRef(node: Node): string | null {
 
   // Check for whitespace using charCode scanning (avoid regex)
   for (let i = 1; i < child.length; i++) {
-    const c = child.charCodeAt(i)
-    if (c === 0x20 || c === 0x09 || c === 0x0a || c === 0x0d) return null
+    if (isSpaceCode(child.charCodeAt(i))) return null
   }
 
   return child.slice(1)

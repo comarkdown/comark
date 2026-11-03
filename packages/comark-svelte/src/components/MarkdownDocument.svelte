@@ -21,7 +21,7 @@ Supports custom component mappings and a streaming caret indicator.
 <script lang="ts">
   import { untrack } from 'svelte'
   import type { MarkdownDocument as MarkdownDocumentType, ComponentManifest } from 'comark'
-  import type { ComponentResolver } from '../types.js'
+  import type { ComponentResolver, RootAttributes } from '../types.js'
   import MarkdownNode from './MarkdownNode.svelte'
 
   let {
@@ -34,7 +34,8 @@ Supports custom component mappings and a streaming caret indicator.
     data,
     class: className = '',
     documentKey,
-  }: {
+    ...rest
+  }: RootAttributes & {
     value?: MarkdownDocumentType | { nodes: MarkdownDocumentType['nodes'] }
     components?: Record<string, any>
     componentsManifest?: ComponentManifest
@@ -79,7 +80,7 @@ Supports custom component mappings and a streaming caret indicator.
   })
 </script>
 
-<div class="comark-content {className}">
+<div {...rest} class="comark-content {className}">
   {#each activeDocument.nodes as node, i (i)}
     <MarkdownNode
       {node}

@@ -7,6 +7,10 @@
     {
       "matchDepTypes": ["resolutions"],
       "enabled": false
+    },
+    {
+      "matchDepTypes": ["peerDependencies"],
+      "rangeStrategy": "widen"
     }
   ],
   "postUpdateOptions": ["pnpmDedupe"]

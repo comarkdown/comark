@@ -1,7 +1,7 @@
 import type { Spec, UIElement } from '@json-render/core'
-import type { ElementNodeAttributes, Node } from '../types'
-import { defineComarkPlugin } from '../parse.ts'
-import { textContent, visit } from '../utils/index.ts'
+import type { ElementNodeAttributes, Node } from 'comark'
+import { defineComarkPlugin } from 'comark'
+import { textContent, visit } from 'comark/utils'
 import { parseYaml } from '../internal/yaml.ts'
 
 // Budgets for spec expansion. Specs are author-controlled and elements can

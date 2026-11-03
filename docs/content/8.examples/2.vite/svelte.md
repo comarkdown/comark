@@ -1,7 +1,8 @@
 ---
-title: Svelte
-description: A minimal example showing how to use Comark with Svelte and Vite.
+title: 'Svelte Markdown Example with Vite'
+description: 'A Svelte 5 and Vite app that renders a Markdown blog, a syntax showcase, and a live editor with Comark, a custom alert, and a lazy component.'
 navigation:
+  title: 'Svelte'
   icon:  i-simple-icons-svelte
 ---
 

@@ -33,6 +33,7 @@ and wrap this component in a `<svelte:boundary>` for pending/error states.
   import { isMarkdownDocument } from 'comark/utils'
   import MarkdownDocument from '../components/MarkdownDocument.svelte'
   import ResolveAsync from './ResolveAsync.svelte'
+  import type { RootAttributes } from '../types.js'
 
   let {
     value,
@@ -45,7 +46,8 @@ and wrap this component in a `<svelte:boundary>` for pending/error states.
     caret = false,
     data,
     class: className = '',
-  }: {
+    ...rest
+  }: RootAttributes & {
     value?: string | MarkdownDocumentType
     options?: Record<string, any>
     plugins?: ComarkPlugin[]
@@ -77,6 +79,7 @@ and wrap this component in a `<svelte:boundary>` for pending/error states.
 
 {#if parsed}
   <MarkdownDocument
+    {...rest}
     value={parsed}
     {components}
     {componentsManifest}

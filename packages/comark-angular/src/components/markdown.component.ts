@@ -93,7 +93,7 @@ export class Markdown {
 
   private readonly serializedParseEffect = effect(() => {
     this.serializedParse = createSerializedMarkdownParser(this.getParserOptions())
-  });
+  })
 
   private readonly parseMarkdownEffect = effect(() => {
     const value = this.value()

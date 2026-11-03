@@ -35,7 +35,7 @@
 ## HTML
 
 ```html
-<pre language="diff"><code class="language-diff">- const oldValue = 42;
+<pre data-language="diff"><code class="language-diff">- const oldValue = 42;
 + const newValue = 100;
   const unchanged = "same";</code></pre>
 ```

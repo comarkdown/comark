@@ -384,3 +384,26 @@ Footer slot content.
     expect(output).toContain('content')
   })
 })
+
+describe('MarkdownNode code blocks', () => {
+  it('renders code block props as data attributes on native pre', async () => {
+    const tree = await parseMarkdown('```ruby {1} [app.rb] foo=bar\nputs 1\n```')
+    const { body } = render(MarkdownNode, { props: { node: tree.nodes[0] } })
+    expect(html(body)).toContain(
+      '<pre data-language="ruby" data-highlights="[1]" data-filename="app.rb" data-meta="foo=bar"><code class="language-ruby">'
+    )
+  })
+
+  it('keeps authored language on a raw HTML pre', () => {
+    const node = ['pre', { $: { html: 1, block: 1 }, language: 'ruby' }, 'puts 1']
+    const { body } = render(MarkdownNode, { props: { node } })
+    expect(html(body)).toContain('<pre language="ruby">')
+    expect(html(body)).not.toContain('data-language')
+  })
+
+  it('keeps code block props in the binding scope of native pre children', () => {
+    const node = ['pre', { language: 'ruby' }, ['code', { ':data-lang': 'props.language' }, 'x']]
+    const { body } = render(MarkdownNode, { props: { node } })
+    expect(html(body)).toContain('<code data-lang="ruby">')
+  })
+})

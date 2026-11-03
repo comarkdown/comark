@@ -1,9 +1,8 @@
 ---
-title: Security
+title: 'Sanitize Markdown and Prevent XSS'
 description: Sanitize the parsed AST by removing dangerous elements, blocking malicious protocols, and restricting link destinations.
-seo:
-  title: Security Sanitization Plugin
 navigation:
+  title: Security
   icon: i-lucide-shield-check
 links:
   - label: Parse API
@@ -99,16 +98,30 @@ Attributes that can be abused regardless of value are always stripped:
 | `innerHTML` | Injects raw HTML through framework renderers |
 | `dangerouslySetInnerHTML` | Injects raw HTML through framework renderers |
 | `textContent` | Overwrites an element's children |
+| `*Html` / `*-html` (`labelHtml`, `description-html`, `v-html`, …) | Component props rendered as raw HTML (for example with `v-html`) |
+| `attributeName` targeting `href` | SVG `<animate>` / `<set>` can rewrite a link to a script URL |
+
+Prop names are normalized before these checks: case, binding prefixes (`:`, `v-bind:`), Vue's `.prop` / `^attr` prefixes (`.innerHTML`, `^onclick`), and `:` / `-` / `_` separators are ignored.
 
 ::note
 Framework renderers (Vue, React, Svelte, Angular) never forward `innerHTML`, `dangerouslySetInnerHTML`, or `textContent` from document attributes, even without this plugin. Raw HTML has its own explicit path through the default `html` plugin.
 ::
 
+### Nested props
+
+Object and array prop values (`:links='[{"to": "/docs", "label": "Docs"}]'`, YAML props) are validated recursively: every nested key goes through the same checks as a top-level prop, so nested `on*` handlers, `*Html` keys, and unsafe URLs are removed at any depth while the rest of the value is kept. Array items are checked against the prop name that holds them.
+
 ### Protocol blocking
 
-`href` and `src` values are decoded (URL-encoded and HTML entity variants included) and checked against a hard-coded block list. These protocols are **always** blocked, even if `allowedProtocols: ['*']` is set:
+URL props are decoded (URL-encoded and HTML entity variants included) and checked against a hard-coded block list. A prop is a URL prop when its name is `href`, `src`, `to`, `action`, `poster`, `cite`, `background` or `ping`, or ends in `href`, `src`, `url`, `uri` or `link` (optionally plural), such as `xlink:href`, `imageUrl`, or `avatar-src`. Other props are never parsed as URLs, so prose such as `title="JavaScript: the good parts"` is kept.
 
-`javascript:` · `vbscript:` · `data:text/html` · `data:text/javascript` · `data:text/vbscript` · `data:text/css` · `data:text/plain` · `data:text/xml`
+These URLs are **always** blocked, even if `allowedProtocols: ['*']` is set:
+
+- `javascript:` and `vbscript:` URLs
+- `data:` URLs in link props (`href`, `to`, …)
+- `data:` URLs in image props, unless their MIME type is `image/*` (see [`allowDataImages`](#allowdataimages))
+
+A `data:` URL is checked the way browsers read its MIME type, which ignores spaces after `data:`. So `data: text/html,…` is blocked like `data:text/html,…`.
 
 The same check applies to `:href` and `:src` bindings twice: on the JSON-decoded value at parse time, and again on the resolved value at render time, so bindings cannot smuggle an unsafe URL through frontmatter or other data sources.
 
@@ -125,6 +138,24 @@ The same check applies to `:href` and `:src` bindings twice: on the JSON-decoded
 ```
 
 ::
+
+### Frontmatter
+
+Renderers spread frontmatter into components, so it is sanitized with the same rules as props, at any depth:
+
+- event handler and markup keys are removed, with the same name checks
+- URLs in URL keys (`to`, `link`, `imageSrc`, …) are held to the protocol floor and the URL options
+- an `as` or `is` value naming a blocked, unsafe or not-allowed tag is removed
+
+Dropped array items are removed without leaving a hole. Set [`frontmatter: false`](#frontmatter-1) to opt out.
+
+To apply the same rules to objects that don't come through the parser, such as a YAML or JSON file you load yourself, use `sanitizeData()` from `comark/utils`. It cleans the data in place and returns the dotted paths it removed:
+
+```typescript
+import { sanitizeData } from 'comark/utils'
+
+const removed = sanitizeData(data, { blockedTags: ['script'], allowDataImages: false })
+```
 
 ---
 
@@ -146,14 +177,15 @@ Returns a `ComarkPlugin` that sanitizes the parsed AST.
 
 | Option | Type | Default | Description |
 |---|---|---|---|
-| [`blockedTags`](#options-blockedtags) | `string[]` | `[]` | Tag names to remove entirely from the AST |
-| [`allowedTags`](#options-allowedtags) | `string[]` | `[]` | Tag names to allow exclusively in the AST |
-| [`tagFallback`](#options-tagfallback) | `function` | `undefined`  | Defines how to handle unallowed tags in the AST |
-| [`allowedProtocols`](#options-allowedprotocols) | `string[]` | `['*']` | Protocols permitted in `href` and `src` |
-| [`allowedLinkPrefixes`](#options-allowedlinkprefixes) | `string[]` | `['*']` | URL prefixes permitted in `href` |
-| [`allowedImagePrefixes`](#options-allowedimageprefixes) | `string[]` | `['*']` | URL prefixes permitted in `src` |
-| [`defaultOrigin`](#options-defaultorigin) | `string` | `undefined` | Rewrite disallowed URLs to this origin instead of stripping |
-| [`allowDataImages`](#options-allowdataimages) | `boolean` | `true` | Allow `data:image/*` URIs in `src` |
+| [`blockedTags`](#blockedtags) | `string[]` | `[]` | Tag names to remove entirely from the AST |
+| [`allowedTags`](#allowedtags) | `string[]` | `[]` | Tag names to allow exclusively in the AST |
+| [`tagFallback`](#tagfallback) | `function` | `undefined`  | Defines how to handle unallowed tags in the AST |
+| [`allowedProtocols`](#allowedprotocols) | `string[]` | `['*']` | Protocols permitted in URL props |
+| [`allowedLinkPrefixes`](#allowedlinkprefixes) | `string[]` | `['*']` | URL prefixes permitted in link props (`href`, `to`, …) |
+| [`allowedImagePrefixes`](#allowedimageprefixes) | `string[]` | `['*']` | URL prefixes permitted in image props (`src`, `*src`, `poster`) |
+| [`defaultOrigin`](#defaultorigin) | `string` | `undefined` | Rewrite disallowed URLs to this origin instead of stripping |
+| [`allowDataImages`](#allowdataimages) | `boolean` | `true` | Allow `data:image/*` URIs in image props |
+| [`frontmatter`](#frontmatter-1) | `boolean` | `true` | Sanitize frontmatter as well as the AST |
 
 ### `blockedTags`
 
@@ -186,7 +218,9 @@ security({
 })
 ```
 
-The `as` prop (which makes framework renderers resolve a different component than the element's own tag) is held to the same filters: an `as` value naming a blocked or not-allowed tag is stripped, and the element falls back to its own tag.
+The `as` and `is` props (which make framework renderers resolve a different component than the element's own tag) are held to the same filters: a value naming a blocked or not-allowed tag, or `object`, is stripped, and the element falls back to its own tag.
+
+Their bindings are checked too. A JSON binding (`:as='"section"'`) is checked decoded, as renderers decode it. A dot-path binding (`:as="frontmatter.tag"`) only resolves at render time, after every check, so it is always stripped.
 
 ### `tagFallback`
 
@@ -207,7 +241,7 @@ security({
 
 ### `allowedProtocols`
 
-Restricts which URL protocols are permitted in `href` and `src` attributes. Use `['*']` to allow all protocols not already on the hard-coded block list.
+Restricts which URL protocols are permitted in [URL props](#protocol-blocking) (`href`, `src`, `to`, …). Use `['*']` to allow all protocols not already on the hard-coded block list.
 
 ```typescript
 security({
@@ -216,12 +250,12 @@ security({
 ```
 
 ::warning
-The hard-coded unsafe protocols (`javascript:`, `vbscript:`, `data:text/*`) are a floor that cannot be overridden. Even `allowedProtocols: ['javascript']` will not unblock `javascript:` URLs.
+The hard-coded floor (`javascript:`, `vbscript:`, and `data:` outside images) cannot be overridden. Even `allowedProtocols: ['javascript']` will not unblock `javascript:` URLs.
 ::
 
 ### `allowedLinkPrefixes`
 
-Restricts which URLs are allowed in `href` attributes. Relative URLs (starting with `/`, `#`, etc.) are always allowed regardless of this setting.
+Restricts which URLs are allowed in link props: every [URL prop](#protocol-blocking) except image props, such as `href`, `xlink:href`, and `to`. Relative URLs (starting with `/`, `#`, etc.) are always allowed regardless of this setting.
 
 Prefixes compare by parsed origin plus a path-segment boundary, not by raw string matching: `https://myapp.com` allows `https://myapp.com/docs` but never a lookalike host such as `https://myapp.com.evil.com`. Scheme-relative URLs (`//evil.com/page`) resolve to an absolute URL and go through the same checks.
 
@@ -235,7 +269,7 @@ security({
 
 ### `allowedImagePrefixes`
 
-Same as `allowedLinkPrefixes` but applies to `src` attributes only. The two options are checked independently; restricting one does not affect the other.
+Same as `allowedLinkPrefixes` but applies to image props only: `src`, props ending in `src` (`avatarSrc`), and `poster`. The two options are checked independently; restricting one does not affect the other.
 
 ```typescript
 security({
@@ -257,7 +291,7 @@ security({
 
 ### `allowDataImages`
 
-Controls whether `data:image/*` URIs are allowed in `src` attributes. Set to `false` to block base64-encoded images, which can be used as tracking pixels or embedded payloads.
+Controls whether `data:image/*` URIs are allowed in image props (`src`, `*src`, `poster`). Set to `false` to block base64-encoded images, which can be used as tracking pixels or embedded payloads.
 
 ```typescript
 security({
@@ -266,8 +300,18 @@ security({
 ```
 
 ::tip
-`data:text/*` variants in `href` are always blocked by the hard-coded protocol list regardless of this setting.
+`data:` URLs in link props, and non-image `data:` URLs anywhere, are always blocked by the hard-coded floor regardless of this setting.
 ::
+
+### `frontmatter`
+
+Controls whether frontmatter is sanitized along with the AST (see [Frontmatter](#frontmatter)). Set to `false` when your frontmatter is trusted and never spread into components.
+
+```typescript
+security({
+  frontmatter: false
+})
+```
 
 ---
 

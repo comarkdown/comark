@@ -6,25 +6,25 @@ import { Markdown } from '../src/components/markdown.component.ts'
 import { ComponentFixture, TestBed } from '@angular/core/testing'
 
 describe('Markdown value as MarkdownDocument', () => {
-  let component: Markdown;
-  let fixture: ComponentFixture<Markdown>;
+  let component: Markdown
+  let fixture: ComponentFixture<Markdown>
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [Markdown],
-    }).compileComponents();
+    }).compileComponents()
 
-    fixture = TestBed.createComponent(Markdown);
-    component = fixture.componentInstance;
-    await fixture.whenStable();
-  });
+    fixture = TestBed.createComponent(Markdown)
+    component = fixture.componentInstance
+    await fixture.whenStable()
+  })
 
   it('assigns a pre-parsed document without calling parse', async () => {
     const document = await parseMarkdown('# Hello **World**')
 
-    fixture.componentRef.setInput('value', document);
-    fixture.detectChanges();
-    await fixture.whenStable();
+    fixture.componentRef.setInput('value', document)
+    fixture.detectChanges()
+    await fixture.whenStable()
 
     expect(isMarkdownDocument(component.value())).toBe(true)
     expect(component.document).toBe(document)
@@ -32,8 +32,8 @@ describe('Markdown value as MarkdownDocument', () => {
   })
 
   it('still parses markdown strings', async () => {
-    fixture.componentRef.setInput('value', 'Hello **world**');
-    fixture.detectChanges();
+    fixture.componentRef.setInput('value', 'Hello **world**')
+    fixture.detectChanges()
 
     await vi.waitFor(() => {
       expect(component.document).not.toBeNull()
@@ -44,9 +44,9 @@ describe('Markdown value as MarkdownDocument', () => {
 
   it('accepts an empty document', async () => {
     const empty: MarkdownDocument = { nodes: [], frontmatter: {}, meta: {} }
-    fixture.componentRef.setInput('value', empty);
-    fixture.detectChanges();
-    await fixture.whenStable();
+    fixture.componentRef.setInput('value', empty)
+    fixture.detectChanges()
+    await fixture.whenStable()
 
     expect(component.document).toBe(empty)
     expect(component.document!.nodes).toEqual([])

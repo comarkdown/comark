@@ -1,14 +1,14 @@
 ---
 navigation: false
-title: Parse and render Markdown anywhere with Comark
-description: 'A JavaScript library to parse and stream Markdown, with renderers for HTML, ANSI, Vue, React, Svelte and Angular, plus components, attributes, and plugins.'
+title: 'Comark: Markdown Parser and Renderer for Any Framework'
+description: 'Open-source Markdown parser and renderer with components, attributes and plugins. Streams AI output to React, Vue, Svelte, Angular, HTML and the terminal.'
 seo:
-  title: Parse and render Markdown anywhere with Comark
-  description: 'Parse and render Markdown anywhere with one JavaScript library for HTML, ANSI, Vue, React, Svelte and Angular, plus plugins and streaming.'
+  title: 'Comark: Markdown Parser and Renderer for Any Framework'
+  description: 'Open-source Markdown parser and renderer with components, attributes and plugins. Streams AI output to React, Vue, Svelte, Angular, HTML and the terminal.'
   ogImage: /social-card.jpg
 ---
 
-::u-page-hero
+::landing-hero
 ---
 orientation: horizontal
 ---
@@ -16,7 +16,7 @@ orientation: horizontal
   ---
   playground: /play
   source: |-
-    # Hello World
+    ## Hello World
 
     A JavaScript library to **parse and render Markdown** anywhere.
 
@@ -38,13 +38,13 @@ orientation: horizontal
   ---
   :::
 #title
-Parse and render Markdown anywhere.
+The Markdown parser and renderer for everything.
 
 #description
-A JavaScript library to parse and stream Markdown, with renderers for HTML, ANSI, Vue, React, Svelte and Angular, plus components, attributes, and plugins.
+Open-source Markdown parser and renderer with components, attributes and plugins. Streams AI output to React, Vue, Svelte, Angular, HTML and the terminal.
 
 #links
-  :::u-button
+  :::button
   ---
   to: /getting-started/introduction
   size: lg
@@ -53,7 +53,7 @@ A JavaScript library to parse and stream Markdown, with renderers for HTML, ANSI
   Get started
   :::
 
-  :::u-button
+  :::button
   ---
   icon: i-simple-icons-github
   color: neutral
@@ -253,7 +253,7 @@ Syntax
 [Co]{.font-bold}[mponents in ]{.text-muted} [Mark]{.font-bold}[down]{.text-muted}
 
 #description
-Discover our opt-in syntax for components, attributes, and frontmatter, handled by default plugins you can turn off. CommonMark and GFM  are supported by default, so every Markdown file you already have keeps working. 
+Discover our opt-in syntax for components, attributes, and frontmatter, handled by default plugins you can turn off. CommonMark and GFM are supported by default, so the Markdown files you already have keep working.
 
 #code-0
   ```mdc [components.md]
@@ -306,7 +306,7 @@ items:
   - label: How does Comark handle streaming AI output?
     content: The auto-close parser completes unterminated syntax (bold, code fences, components) so every incomplete frame renders correctly. Framework renderers expose this as a streaming prop.
   - label: Do I have to use components?
-    content: No. Comark is a superset of CommonMark and GFM, so plain Markdown parses unchanged. Components and attributes are opt-in syntax.
+    content: No. Plain CommonMark and GFM parse as standard Markdown, with a few documented differences. Components and attributes are opt-in syntax.
   - label: Is it free?
     content: Yes. MIT-licensed open source, maintained by Vercel. Your only costs are your own hosting.
 ---
@@ -326,7 +326,7 @@ From Markdown to UI.
 Install Comark, pick a renderer, and render your first Markdown document in minutes. Read [why Comark](/kb/why-comark) exists, or start with the [document model](/getting-started/document-model).
 
 #links
-  :::u-button
+  :::button
   ---
   to: /getting-started/introduction
   trailing-icon: i-lucide-arrow-right
@@ -335,7 +335,7 @@ Install Comark, pick a renderer, and render your first Markdown document in minu
   Get started
   :::
 
-  :::u-button
+  :::button
   ---
   to: /kb/why-comark
   color: neutral

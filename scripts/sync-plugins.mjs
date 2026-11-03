@@ -63,17 +63,20 @@ for (const pkg of frameworkPackages) {
     let reexport = `export * from 'comark/plugins/${name}';\n`
 
     if (hasDefault) {
-      if(isAngularPackage) {
-        const exportAlias = name.split('/').pop().replace(/-([a-z])/g, g => g[1].toUpperCase())
+      if (isAngularPackage) {
+        const exportAlias = name
+          .split('/')
+          .pop()
+          .replace(/-([a-z])/g, (g) => g[1].toUpperCase())
         reexport += `export { default as ${exportAlias} } from 'comark/plugins/${name}';\n`
       } else {
         reexport += `export { default } from 'comark/plugins/${name}';\n`
       }
     }
 
-
     const hasSrcFileOverride = existsSync(join(srcPluginsDir, `${name}.ts`))
-    const hasAngularDirOverride = isAngularPackage && existsSync(join(packagesDir, pkg, 'plugins', name, 'ng-package.json'))
+    const hasAngularDirOverride =
+      isAngularPackage && existsSync(join(packagesDir, pkg, 'plugins', name, 'ng-package.json'))
 
     if (hasSrcFileOverride || hasAngularDirOverride) {
       continue
@@ -88,8 +91,8 @@ for (const pkg of frameworkPackages) {
 
     if (isAngularPackage) {
       angularExports[`./plugins/${name}`] = {
-        "types": `./plugins/${name}.d.ts`,
-        "default": `./plugins/${name}.js`
+        types: `./plugins/${name}.d.ts`,
+        default: `./plugins/${name}.js`,
       }
     }
   }
@@ -105,7 +108,7 @@ for (const pkg of frameworkPackages) {
 
       pkgJson.exports = {
         ...pkgJson.exports,
-        ...angularExports
+        ...angularExports,
       }
 
       writeFileSync(distPkgJsonPath, JSON.stringify(pkgJson, null, 2))

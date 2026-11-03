@@ -131,11 +131,11 @@ Returns a `ComarkPlugin` that applies typographic transformations to text nodes.
 
 | Option | Type | Default | Description |
 |---|---|---|---|
-| [`quotes`](#options-quotes) | `boolean \| string \| [string, string, string, string]` | `true` | Convert straight quotes to smart quotes |
-| [`dashes`](#options-dashes) | `boolean` | `true` | Convert `--` to en-dash and `---` to em-dash |
-| [`ellipsis`](#options-ellipsis) | `boolean` | `true` | Convert `...` to ellipsis character |
-| [`symbols`](#options-symbols) | `boolean` | `true` | Convert `(c)`, `(r)`, `(tm)`, `+-` |
-| [`normalize`](#options-normalize) | `boolean` | `true` | Collapse repeated punctuation: `????` → `???`, `,,` → `,` |
+| [`quotes`](#quotes) | `boolean \| string \| [string, string, string, string]` | `true` | Convert straight quotes to smart quotes |
+| [`dashes`](#dashes-1) | `boolean` | `true` | Convert `--` to en-dash and `---` to em-dash |
+| [`ellipsis`](#ellipsis-1) | `boolean` | `true` | Convert `...` to ellipsis character |
+| [`symbols`](#symbols-1) | `boolean` | `true` | Convert `(c)`, `(r)`, `(tm)`, `+-` |
+| [`normalize`](#normalize) | `boolean` | `true` | Collapse repeated punctuation: `????` → `???`, `,,` → `,` |
 
 ### `quotes`
 

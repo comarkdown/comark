@@ -44,7 +44,7 @@ fn main() {
 ## HTML
 
 ```html
-<pre language="rust" filename="main.rs" highlights="[1,2,3,4]"><code class="language-rust">fn main() {
+<pre data-language="rust" data-filename="main.rs" data-highlights="[1,2,3,4]"><code class="language-rust">fn main() {
     let x = 5;
     let y = 10;
     println!("Sum: {}", x + y);

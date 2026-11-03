@@ -1,6 +1,5 @@
 // #region Tree Utils
 
-import { decodeHTML } from 'entities'
 import type { Node, MarkdownDocument } from 'comark'
 
 type VisitResult = Node | false | undefined | void
@@ -12,34 +11,61 @@ export function isMarkdownDocument(value: unknown): value is MarkdownDocument {
   return !!value && typeof value === 'object' && Array.isArray((value as MarkdownDocument).nodes)
 }
 
+export interface TextContentOptions {
+  /**
+   * Called on every text node before it is appended, e.g. `decodeHTML` from `entities`.
+   * Parsed documents already have decoded text, so only pass this for trees whose text
+   * may still contain character references (hand-built or from another source).
+   */
+  decodeHTML?: (text: string) => string
+}
+
 /**
  * Get the text content of a Markdown AST node
  *
  * @param node - The node
  * @param options - The options
- * @param options.decodeUnicodeEntities - Whether to decode Unicode entities
+ * @param options.decodeHTML - Function applied to each text node
  * @returns The text content
  */
-export function textContent(node: Node, options: { decodeUnicodeEntities?: boolean } = {}): string {
+export function textContent(node: Node, options?: TextContentOptions): string {
+  return collectText(node, options?.decodeHTML)
+}
+
+function collectText(node: Node, decode: ((text: string) => string) | undefined): string {
   if (typeof node === 'string') {
-    if (options.decodeUnicodeEntities) {
-      return decodeHTML(node)
-    }
-    return node as string
+    return decode ? decode(node) : node
   }
   let out = ''
   const len = node.length
   for (let i = 2; i < len; i++) {
-    out += textContent(node[i] as Node, options)
+    out += collectText(node[i] as Node, decode)
   }
   return out
 }
+
+/**
+ * Walk at most this many element levels. Typical markdown trees are much shallower.
+ * Nodes nested deeper are removed from the tree by {@link visit} / {@link visitAsync},
+ * so plugins built on them (e.g. `security`) never leave an unvisited subtree behind.
+ */
+export const TREE_WALK_MAX_DEPTH = 50
 
 function* walkGenerator(
   document: MarkdownDocument,
   checker: (node: Node) => boolean
 ): Generator<Node, void, VisitResult> {
-  function* walk(node: Node, parent: Node | Node[], index: number): Generator<Node, boolean, VisitResult> {
+  function* walk(
+    node: Node,
+    parent: Node | Node[],
+    index: number,
+    depth: number
+  ): Generator<Node, boolean, VisitResult> {
+    if (depth >= TREE_WALK_MAX_DEPTH) {
+      ;(parent as Node[]).splice(index, 1)
+      return true
+    }
+
     let currentNode = node
 
     if (checker(node)) {
@@ -61,7 +87,7 @@ function* walkGenerator(
       // Use a while loop to handle removals correctly - don't increment if node was removed
       let i = 2
       while (i < currentNode.length) {
-        const childRemoved = yield* walk(currentNode[i] as Node, currentNode, i)
+        const childRemoved = yield* walk(currentNode[i] as Node, currentNode, i, depth + 1)
         if (childRemoved) {
           // If removed, i stays the same (next node is now at this index)
           continue
@@ -76,7 +102,7 @@ function* walkGenerator(
   // Use a while loop to handle removals correctly - don't increment if node was removed
   let i = 0
   while (i < document.nodes.length) {
-    const removed = yield* walk(document.nodes[i], document.nodes, i)
+    const removed = yield* walk(document.nodes[i], document.nodes, i, 0)
     if (removed) {
       // If removed, i stays the same (next node is now at this index)
       continue
@@ -86,7 +112,8 @@ function* walkGenerator(
 }
 
 /**
- * Visit a Markdown document and apply a visitor function to each node
+ * Visit a Markdown document and apply a visitor function to each node.
+ * Recursion is capped at {@link TREE_WALK_MAX_DEPTH} element levels; deeper subtrees are dropped.
  *
  * @param document - The Markdown document
  * @param checker - A function that checks if a node should be visited
@@ -107,6 +134,7 @@ export function visit(
   }
 }
 
+/** Recursion is capped at {@link TREE_WALK_MAX_DEPTH} element levels; deeper subtrees are dropped. */
 export async function visitAsync(
   document: MarkdownDocument,
   checker: (node: Node) => boolean,
@@ -121,7 +149,58 @@ export async function visitAsync(
   }
 }
 
+const CODE_BLOCK_PROPS = new Set(['language', 'filename', 'highlights', 'meta'])
+
+/**
+ * Maps code block props on a native `<pre>` to `data-*` attributes.
+ *
+ * Raw HTML (`node[1].$.html`) is left unchanged so authored attributes round-trip.
+ * The attribute bag does not include `$` — `resolveAttributes` strips it — so the source
+ * node is required.
+ */
+export function toNativeAttributes<T extends Record<string, any>>(tag: string, node: Node, attributes: T): T {
+  if (tag !== 'pre' || !Array.isArray(node) || node[1]?.$?.html === 1) return attributes
+  let changed = false
+  const result: Record<string, any> = {}
+  for (const key in attributes) {
+    if (CODE_BLOCK_PROPS.has(key)) {
+      changed = true
+      const value = attributes[key]
+      result[`data-${key}`] = value !== null && typeof value === 'object' ? JSON.stringify(value) : value
+    } else {
+      result[key] = attributes[key]
+    }
+  }
+  return changed ? (result as T) : attributes
+}
+
 // #region String Utils
+
+/**
+ * HTML void elements. They never have children or a closing tag.
+ * @see https://html.spec.whatwg.org/multipage/syntax.html#void-elements
+ */
+export const HTML_VOID_ELEMENTS: ReadonlySet<string> = new Set([
+  'area',
+  'base',
+  'br',
+  'col',
+  'embed',
+  'hr',
+  'img',
+  'input',
+  'link',
+  'meta',
+  'param',
+  'source',
+  'track',
+  'wbr',
+])
+
+/** Whether `tag` is an HTML void element. Comparison is case-insensitive. */
+export function isHtmlVoidElement(tag: string): boolean {
+  return HTML_VOID_ELEMENTS.has(tag.toLowerCase())
+}
 
 const HTML_ESCAPE_RE = /[&<>"]/g
 const HTML_ESCAPED_RE = /^&[a-zA-Z][a-zA-Z0-9]*;|#[0-9]+;|#x[0-9a-fA-F]+;/
@@ -276,5 +355,9 @@ export function get(data: unknown, key: string): unknown {
 
 // Re-export the shared attribute resolvers so framework renderers can apply the
 // same `:prefix` semantics as the HTML/ANSI handlers without duplicating logic.
-export { resolveAttributes, resolveAttribute } from '../internal/stringify/attributes.ts'
-export type { ResolveAttributesOptions } from '../internal/stringify/attributes.ts'
+export { resolveAttributes, resolveAttribute } from '../internal/stringify/html-attributes.ts'
+export type { ResolveAttributesOptions } from '../internal/stringify/html-attributes.ts'
+
+// The security plugin's frontmatter rules, for objects the parser never sees.
+export { sanitizeData } from '../internal/sanitize.ts'
+export type { SanitizeDataOptions } from '../internal/sanitize.ts'

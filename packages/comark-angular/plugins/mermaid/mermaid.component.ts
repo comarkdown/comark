@@ -5,7 +5,6 @@ import {
   OnDestroy,
   SimpleChanges,
   ChangeDetectionStrategy,
-  ChangeDetectorRef,
   ElementRef,
   inject,
   input,

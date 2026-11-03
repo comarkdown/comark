@@ -21,7 +21,7 @@ import katex from 'katex'
 })
 export class Math implements OnChanges {
   readonly content = input.required<string>()
-  readonly class = input<string>("")
+  readonly class = input<string>('')
   readonly __node = input<any>({})
 
   private elementRef = inject(ElementRef)

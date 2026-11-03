@@ -34,7 +34,7 @@ console.log(greeting)
 ## HTML
 
 ```html
-<pre language="typescript"><code class="language-typescript">const greeting: string = "Hello, World!"
+<pre data-language="typescript"><code class="language-typescript">const greeting: string = "Hello, World!"
 console.log(greeting)</code></pre>
 ```
 

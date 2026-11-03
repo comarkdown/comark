@@ -43,7 +43,9 @@ async function getCellContent(cell: Node, state: State): Promise<string> {
     }
   }
 
-  return escapePipes(content.trim())
+  // The parser trims U+00A0 from cell edges
+  const trimmed = content.replace(/^[ \t\n]+|[ \t\n]+$/g, '')
+  return escapePipes(trimmed.replace(/^\u00a0+|\u00a0+$/g, (nbsp) => '&nbsp;'.repeat(nbsp.length)))
 }
 
 // Helper function to escape pipe characters and handle newlines

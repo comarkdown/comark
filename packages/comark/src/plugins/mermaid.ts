@@ -1,6 +1,6 @@
 import type { MarkdownExit } from 'markdown-exit'
 import type { MarkdownItPlugin } from 'comark'
-import { defineComarkPlugin } from '../utils/helpers.ts'
+import { defineComarkPlugin } from 'comark'
 
 export type ThemeNames =
   | 'zinc-light'

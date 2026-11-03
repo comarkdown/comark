@@ -40,7 +40,7 @@
 ## HTML
 
 ```html
-<pre language="mdc"><code class="language-mdc">::code-preview
+<pre data-language="mdc"><code class="language-mdc">::code-preview
 `inline code`
 
 #code

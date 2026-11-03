@@ -5,7 +5,11 @@ import { isMarkdownDocument } from 'comark/utils'
 import { MarkdownDocument } from './MarkdownDocument.tsx'
 import { MarkdownClient } from './MarkdownClient.tsx'
 
-export interface MarkdownProps {
+/**
+ * Every other HTML attribute (`id`, `style`, `role`, `data-*`, `aria-*`, ...) is
+ * set on the wrapper div.
+ */
+export interface MarkdownProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'children'> {
   /**
    * The children content to parse and render
    */
@@ -105,8 +109,8 @@ export interface MarkdownProps {
 export async function Markdown({
   children,
   value,
-  options = {},
-  plugins = [],
+  options,
+  plugins,
   unwrap = false,
   components: customComponents = {},
   componentsManifest,
@@ -114,11 +118,13 @@ export async function Markdown({
   caret = false,
   data,
   className,
+  ...rest
 }: MarkdownProps) {
   // Pre-parsed document — skip parsing and render directly
   if (isMarkdownDocument(value)) {
     return (
       <MarkdownDocument
+        {...rest}
         value={value}
         components={customComponents}
         componentsManifest={componentsManifest}
@@ -138,8 +144,10 @@ export async function Markdown({
   if (streaming) {
     return (
       <MarkdownClient
+        {...rest}
         value={source}
-        options={parseOptions}
+        options={options}
+        unwrap={unwrap}
         plugins={plugins}
         components={customComponents}
         componentsManifest={componentsManifest}
@@ -155,6 +163,7 @@ export async function Markdown({
 
   return (
     <MarkdownDocument
+      {...rest}
       value={parsed}
       components={customComponents}
       componentsManifest={componentsManifest}

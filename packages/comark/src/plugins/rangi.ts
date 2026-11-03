@@ -4,8 +4,8 @@ import { tokenize } from 'rangi'
 import { languages as rangiBuiltinLanguages } from 'rangi/languages'
 import { dark as defaultDark, defaultTheme } from 'rangi/themes'
 import { GRAMMAR_CONTEXTS, inlineCodeLanguage } from '../internal/inline-code-lang.ts'
-import { defineComarkPlugin } from '../utils/helpers.ts'
-import { visitAsync } from '../utils/index.ts'
+import { defineComarkPlugin } from 'comark'
+import { visitAsync } from 'comark/utils'
 import { comarkLanguages } from './rangi/language-comark.ts'
 
 /** Bundled rangi language + alias keys, plus plain text fallbacks. */

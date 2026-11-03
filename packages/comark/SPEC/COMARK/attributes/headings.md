@@ -40,7 +40,7 @@
     [
       "h3",
       {
-        "id": "h2-h3",
+        "id": "h3",
         "attr": "value"
       },
       "h3"
@@ -48,7 +48,7 @@
     [
       "h4",
       {
-        "id": "h2-h3-h4",
+        "id": "h4",
         "attr": "value"
       },
       "h4"
@@ -56,7 +56,7 @@
     [
       "h5",
       {
-        "id": "h2-h3-h4-h5",
+        "id": "h5",
         "attr": "value"
       },
       "h5"
@@ -64,7 +64,7 @@
     [
       "h6",
       {
-        "id": "h2-h3-h4-h5-h6",
+        "id": "h6",
         "attr": "value"
       },
       "h6"
@@ -78,10 +78,10 @@
 ```html
 <h1 id="h1" attr="value">h1</h1>
 <h2 id="h2" attr="value">h2</h2>
-<h3 id="h2-h3" attr="value">h3</h3>
-<h4 id="h2-h3-h4" attr="value">h4</h4>
-<h5 id="h2-h3-h4-h5" attr="value">h5</h5>
-<h6 id="h2-h3-h4-h5-h6" attr="value">h6</h6>
+<h3 id="h3" attr="value">h3</h3>
+<h4 id="h4" attr="value">h4</h4>
+<h5 id="h5" attr="value">h5</h5>
+<h6 id="h6" attr="value">h6</h6>
 ```
 
 ## Markdown

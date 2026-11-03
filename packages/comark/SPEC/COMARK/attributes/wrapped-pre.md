@@ -36,7 +36,7 @@ const variable = "value"
 ## HTML
 
 ```html
-<pre language="ts" attr="value"><code class="language-ts">const variable = "value"</code></pre>
+<pre data-language="ts" attr="value"><code class="language-ts">const variable = "value"</code></pre>
 ```
 
 ## Markdown

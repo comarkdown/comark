@@ -68,7 +68,7 @@
     <blockquote>
       A quote here
     </blockquote>
-    <pre language="js"><code class="language-js">code()</code></pre>
+    <pre data-language="js"><code class="language-js">code()</code></pre>
   </li>
   <li>Second point</li>
 </ol>

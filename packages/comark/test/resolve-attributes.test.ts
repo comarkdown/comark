@@ -128,6 +128,15 @@ describe('HTML sink props', () => {
     )
     expect(result).toEqual({ id: 'keep' })
   })
+
+  it('drops sink props behind Vue `.prop` / `^attr` prefixes', () => {
+    const result = resolveAttributes(
+      { '.innerHTML': '<img src=x>', '^textContent': 'overlay', ':.innerHTML': '"<img src=x>"', '.title': 'keep' },
+      makeRenderData(),
+      { parseJson: true }
+    )
+    expect(result).toEqual({ '.title': 'keep' })
+  })
 })
 
 describe('unsafe URL bindings (render-time hard floor)', () => {
@@ -149,6 +158,37 @@ describe('unsafe URL bindings (render-time hard floor)', () => {
       parseJson: true,
     })
     expect(result).toEqual({})
+  })
+
+  it('drops :src bindings resolving to `data: text/html` — browsers trim the space', () => {
+    const result = resolveAttributes(
+      { ':src': 'frontmatter.cover' },
+      makeRenderData({ frontmatter: { cover: 'data: text/html,<script>alert(1)</script>' } })
+    )
+    expect(result).toEqual({})
+  })
+
+  it('drops `:^href` / `:.href` bindings resolving to javascript: — Vue still writes `href`', () => {
+    const result = resolveAttributes(
+      { ':^href': 'frontmatter.home', ':.href': 'frontmatter.home' },
+      makeRenderData({ frontmatter: { home: 'javascript:alert(1)' } })
+    )
+    expect(result).toEqual({})
+  })
+
+  it('drops any URL prop binding resolving to javascript:, by the same names as validateProp()', () => {
+    const result = resolveAttributes(
+      {
+        ':link': 'frontmatter.home',
+        ':image-url': 'frontmatter.home',
+        ':avatarSrc': 'frontmatter.home',
+        ':xlink:href': 'frontmatter.home',
+        ':title': 'frontmatter.home',
+      },
+      makeRenderData({ frontmatter: { home: 'javascript:alert(1)' } })
+    )
+    // `title` is not a URL prop: prose stays, as for props.
+    expect(result).toEqual({ title: 'javascript:alert(1)' })
   })
 
   it('drops bindings whose resolved value is entity-encoded javascript:', () => {

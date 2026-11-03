@@ -199,6 +199,22 @@ click
     expect(anchor![1].href).toBeUndefined()
   })
 
+  it('blocks a data:text/html URL with a space before its MIME type', async () => {
+    const tree = await parseWithSecurity(
+      `\
+<a href="data: text/html,<script>alert(1)</script>">click</a>
+<iframe src="data: text/html,<script>alert(1)</script>"></iframe>
+`.trim()
+    )
+
+    const anchor = collectElements(tree.nodes).find((element) => element[0] === 'a')
+    const iframe = collectElements(tree.nodes).find((element) => element[0] === 'iframe')
+    expect(anchor).toBeDefined()
+    expect(anchor![1].href).toBeUndefined()
+    expect(iframe).toBeDefined()
+    expect(iframe![1].src).toBeUndefined()
+  })
+
   it('blocks Vue directive-form event handlers and unsafe URLs', async () => {
     const tree = await parseWithSecurity(
       `\
@@ -319,6 +335,22 @@ home: javascript:alert(1)
     expect(html).not.toContain('javascript:')
   })
 
+  it('blocks javascript: URLs bound from a non-URL frontmatter key to any URL prop', async () => {
+    const md = `---
+home: javascript:alert(1)
+---
+
+::my-card{:link="frontmatter.home" :image-url="frontmatter.home"}
+::`
+
+    const tree = await parseWithSecurity(md)
+    // `home` is not a URL key, so frontmatter sanitizing keeps it…
+    expect(tree.frontmatter.home).toBe('javascript:alert(1)')
+    // …and the render-time floor checks the same URL props as parse time.
+    const html = await render(tree, { format: 'text/html', blockSeparator: '\n' })
+    expect(html).not.toContain('javascript:')
+  })
+
   it('strips framework HTML sink props from components', async () => {
     const tree = await parseWithSecurity(
       `\
@@ -335,6 +367,139 @@ home: javascript:alert(1)
     expect(div![1].innerHTML).toBeUndefined()
     expect(span).toBeDefined()
     expect(span![1][':dangerouslySetInnerHTML']).toBeUndefined()
+  })
+})
+
+describe('security plugin — frontmatter', () => {
+  const md = `---
+title: Page
+onclick: alert(1)
+hero:
+  ^onmouseover: alert(1)
+  as: script
+  is: script
+links:
+  - label: Docs
+    to: /docs
+  - label: Evil
+    url: "javascript:alert(1)"
+image:
+  src: "data: text/html,<script>alert(1)</script>"
+description: "javascript: tips and tricks"
+---
+
+# Page`
+
+  it('strips unsafe keys, URLs and `as` or `is` values at any depth', async () => {
+    const tree = await parseWithSecurity(md, { blockedTags: ['script'] })
+
+    expect(tree.frontmatter).toEqual({
+      title: 'Page',
+      hero: {},
+      links: [{ label: 'Docs', to: '/docs' }, { label: 'Evil' }],
+      image: {},
+      // Not a URL key: prose stays, as for props.
+      description: 'javascript: tips and tricks',
+    })
+  })
+
+  it('leaves frontmatter alone with `frontmatter: false`', async () => {
+    const tree = await parseWithSecurity(md, { blockedTags: ['script'], frontmatter: false })
+
+    expect(tree.frontmatter).toMatchObject({ onclick: 'alert(1)', hero: { as: 'script' } })
+  })
+
+  it('checks an aliased array under its URL key too', async () => {
+    const tree = await parseWithSecurity(`---\ntags: &x\n  - "javascript:alert(1)"\nlinks: *x\n---\n`)
+
+    expect(tree.frontmatter).toEqual({ tags: [], links: [] })
+  })
+})
+
+describe('security plugin — component props beyond href/src', () => {
+  const untrusted = {
+    blockedTags: ['script', 'iframe', 'embed', 'form', 'base', 'meta', 'link', 'style'],
+    allowDataImages: false,
+  }
+
+  it('strips a javascript: URL from a `to` prop', async () => {
+    const tree = await parseWithSecurity('::callout{to="javascript:alert(1)"}\nclick\n::', untrusted)
+    expect(tree.nodes).toEqual([['callout', {}, 'click']])
+  })
+
+  it('sanitizes bound arrays recursively and drops *-html props', async () => {
+    const tree = await parseWithSecurity(
+      `::u-button{:links='[{"to":"javascript:alert(3)","label":"Docs","onClick":"alert(5)","descriptionHtml":"<img src=x onerror=alert(6)>"},{"to":"/docs","label":"Safe"}]' label-html="<img src=x onerror=alert(4)>" label="Go"}\n::`,
+      untrusted
+    )
+    expect(tree.nodes).toEqual([
+      [
+        'u-button',
+        {
+          ':links': [{ label: 'Docs' }, { to: '/docs', label: 'Safe' }],
+          label: 'Go',
+        },
+      ],
+    ])
+  })
+
+  it('sanitizes JSON bindings that reach the tree as strings (raw HTML)', async () => {
+    const tree = await parseWithSecurity(
+      `<u-page-links :links='[{"to":"javascript:alert(1)","label":"x"}]'></u-page-links>`,
+      untrusted
+    )
+    const [element] = collectElements(tree.nodes).filter((node) => node[0] === 'u-page-links')
+    expect(JSON.parse(element![1][':links'] as string)).toEqual([{ label: 'x' }])
+  })
+
+  it('removes SVG animation targeting href', async () => {
+    const tree = await parseWithSecurity(
+      `<svg><a><animate attributeName="href" values="javascript:alert(7)"/><set attributeName="xlink:href" to="javascript:alert(8)"/><text x="0" y="20">click</text></a></svg>`,
+      untrusted
+    )
+    const animations = collectElements(tree.nodes).filter((node) => node[0] === 'animate' || node[0] === 'set')
+    expect(animations).toHaveLength(2)
+    for (const [, props] of animations) {
+      expect(props).not.toHaveProperty('attributename')
+      expect(props).not.toHaveProperty('to')
+    }
+  })
+
+  it('strips Vue `.prop` / `^attr` prefixed props from YAML props', async () => {
+    const tree = await parseWithSecurity(
+      `::comp
+---
+.innerHTML: <img src=x onerror=alert(1)>
+^onclick: alert(1)
+^href: javascript:alert(2)
+.title: kept
+---
+::`,
+      untrusted
+    )
+    expect(tree.nodes).toEqual([['comp', { '.title': 'kept' }]])
+  })
+
+  it('keeps ordinary content and safe URLs', async () => {
+    const tree = await parseWithSecurity(
+      `::card{title="JavaScript: the good parts" description="vbscript: a history" to="https://nuxt.com/docs" :links='[{"label":"JavaScript: intro","to":"/docs#intro"},{"to":"mailto:hi@nuxt.com"}]'}
+![logo](data:image/png;base64,abc)
+::
+
+<svg><animate attributeName="opacity" values="0;1" dur="1s"/></svg>`,
+      { allowDataImages: true }
+    )
+    const [card] = collectElements(tree.nodes).filter((node) => node[0] === 'card')
+    expect(card![1]).toEqual({
+      title: 'JavaScript: the good parts',
+      description: 'vbscript: a history',
+      to: 'https://nuxt.com/docs',
+      ':links': [{ label: 'JavaScript: intro', to: '/docs#intro' }, { to: 'mailto:hi@nuxt.com' }],
+    })
+    const [img] = collectElements(tree.nodes).filter((node) => node[0] === 'img')
+    expect(img![1].src).toBe('data:image/png;base64,abc')
+    const [animate] = collectElements(tree.nodes).filter((node) => node[0] === 'animate')
+    expect(animate![1]).toMatchObject({ attributename: 'opacity', values: '0;1' })
   })
 })
 
@@ -481,6 +646,34 @@ describe('security plugin — as prop', () => {
     await runPlugin(tree)
     const el = tree.nodes[0] as [string, any]
     expect(el[1].as).toBe('Badge')
+  })
+
+  it('strips is like as', async () => {
+    const tree = makeTree([['span', { is: 'script' }, 'x']])
+    await runPlugin(tree, { blockedTags: ['script'] })
+    const el = tree.nodes[0] as [string, any]
+    expect(el[1].is).toBeUndefined()
+  })
+
+  it('checks a JSON binding decoded, as renderers decode it', async () => {
+    const tree = makeTree([['span', { ':as': '"script"', ':is': '"section"' }, 'x']])
+    await runPlugin(tree, { blockedTags: ['script'] })
+    const el = tree.nodes[0] as [string, any]
+    expect(el[1]).toEqual({ ':is': '"section"' })
+  })
+
+  it('strips a binding resolved from data at render time, as no check can follow it', async () => {
+    const tree = makeTree([['span', { ':as': 'frontmatter.tag', 'v-bind:is': 'props.tag' }, 'x']])
+    await runPlugin(tree)
+    const el = tree.nodes[0] as [string, any]
+    expect(el[1]).toEqual({})
+  })
+
+  it("strips as naming object, whose props were checked against the element's own tag", async () => {
+    const tree = makeTree([['span', { as: 'object', data: '/x' }, 'x']])
+    await runPlugin(tree)
+    const el = tree.nodes[0] as [string, any]
+    expect(el[1].as).toBeUndefined()
   })
 })
 
