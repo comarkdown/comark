@@ -39,16 +39,24 @@ export { defineComarkPlugin } from './utils/helpers.ts'
 const MAX_SHARED_PARSERS = 32
 let nextPluginId = 0
 const pluginIds = new WeakMap<MarkdownExitPlugin, number>()
-const sharedParsers = new Map<string, MarkdownExit>()
+const sharedParsers = new Map<string, SharedParser>()
+
+interface SharedParser {
+  md: MarkdownExit
+  // With `linkify`, settles once linkify-it is loaded and the markdown-it plugins are installed.
+  ready?: Promise<void>
+}
 
 // Loaded on the first parse with `linkify`, so bundles without it skip linkify-it.
-// `fuzzyLink` and `urlAuth` link `www.example.com` and `user:pass@` URLs.
 let linkifyModule: Promise<typeof LinkifyIt> | undefined
-async function loadLinkify(parser: MarkdownExit): Promise<void> {
+
+// markdown-it plugins may configure `md.linkify` when installed, so they run after it exists.
+// `fuzzyLink` and `urlAuth` link `www.example.com` and `user:pass@` URLs.
+async function installLinkify(md: MarkdownExit, mdPlugins: MarkdownExitPlugin[]): Promise<void> {
   linkifyModule ??= import('linkify-it').then((m) => m.LinkifyIt)
   const Linkify = await linkifyModule
-  // Concurrent first parses all reach this point; the first one sets it.
-  parser.linkify ??= new Linkify().set({ fuzzyLink: true, urlAuth: true })
+  md.linkify = new Linkify().set({ fuzzyLink: true, urlAuth: true })
+  for (const fn of mdPlugins) md.use(fn)
 }
 
 /**
@@ -127,20 +135,21 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
     ...mdPlugins.map((fn) => pluginIds.get(fn) ?? (pluginIds.set(fn, nextPluginId), nextPluginId++)),
   ].join(',')
 
-  let parser = sharedParsers.get(key)
-  if (parser) {
+  let shared = sharedParsers.get(key)
+  if (shared) {
     // Touch for LRU: Map iteration order is insertion order.
     sharedParsers.delete(key)
-    sharedParsers.set(key, parser)
+    sharedParsers.set(key, shared)
   } else {
-    parser = new MarkdownExit({ linkify }).enable(['table', 'strikethrough'])
-    for (const fn of mdPlugins) parser.use(fn)
+    shared = { md: new MarkdownExit({ linkify }).enable(['table', 'strikethrough']) }
+    if (!linkify) for (const fn of mdPlugins) shared.md.use(fn)
     if (sharedParsers.size >= MAX_SHARED_PARSERS) {
       const oldestKey = sharedParsers.keys().next().value
       if (oldestKey !== undefined) sharedParsers.delete(oldestKey)
     }
-    sharedParsers.set(key, parser)
+    sharedParsers.set(key, shared)
   }
+  const parser = shared.md
 
   let lastOutput: MarkdownDocument | null = null
   let lastInput: string | null = null
@@ -205,7 +214,8 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
         await withSpan(tracer, `comark:pre:${plugin.name}`, () => plugin.pre!(state))
       }
 
-      if (linkify && !parser.linkify) await loadLinkify(parser)
+      // Same key, same plugin functions, so any parser sharing this instance can install them.
+      if (linkify) await (shared.ready ??= installLinkify(parser, mdPlugins))
 
       try {
         state.tokens = withSpan(tracer, 'comark:tokenize', () => parser.parse(state.markdown, {}))

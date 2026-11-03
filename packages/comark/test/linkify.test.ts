@@ -1,6 +1,7 @@
 import { execFileSync } from 'node:child_process'
 import { describe, expect, it, vi } from 'vitest'
 import type { MarkdownItPlugin } from 'comark'
+import type { MarkdownExit } from 'markdown-exit/core'
 import { createMarkdownParser, defineComarkPlugin, parseMarkdown } from '../src/parse'
 
 const linkifiers = vi.hoisted(() => ({ created: 0 }))
@@ -27,6 +28,27 @@ describe('linkify', () => {
         ['a', { href: 'https://user:pw@example.com/a' }, 'https://user:pw@example.com/a'],
       ],
     ])
+  })
+
+  it('gives markdown-it plugins md.linkify when they are installed', async () => {
+    // Mention plugins register a linkify schema when installed.
+    const mention = defineComarkPlugin(() => ({
+      name: 'linkify-mention',
+      markdownItPlugins: [
+        ((md: MarkdownExit) => {
+          md.linkify.add('@', {
+            validate: (text: string, pos: number) => /^[\w-]+/.exec(text.slice(pos))?.[0].length ?? 0,
+            normalize: (match) => {
+              match.url = `https://github.com/${match.url.slice(1)}`
+            },
+          })
+        }) as unknown as MarkdownItPlugin,
+      ],
+    }))
+
+    const doc = await createMarkdownParser({ plugins: [mention()] })('hi @comark')
+
+    expect(doc.nodes).toEqual([['p', {}, 'hi ', ['a', { href: 'https://github.com/comark' }, '@comark']]])
   })
 
   it('creates one linkifier when a new parser runs several parses at once', async () => {

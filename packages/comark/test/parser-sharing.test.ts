@@ -5,7 +5,8 @@ import binding from '../src/plugins/binding'
 
 // The shared instance is internal, so it is observed through the public API: a
 // markdown-it plugin function runs once per instance, so counting how often it
-// is registered counts the instances that were built.
+// is registered counts the instances that were built. With linkify on, plugins
+// install on the first parse, so these parsers turn it off to install at build.
 let stableUses = 0
 const stableMdPlugin = (() => {
   stableUses++
@@ -32,7 +33,7 @@ describe('parser sharing', () => {
     const before = stableUses
 
     for (let i = 0; i < 20; i++) {
-      createMarkdownParser({ plugins: [plugin] })
+      createMarkdownParser({ linkify: false, plugins: [plugin] })
     }
 
     expect(stableUses - before).toBe(1)
@@ -42,7 +43,7 @@ describe('parser sharing', () => {
     const before = closureUses
 
     for (let i = 0; i < 5; i++) {
-      createMarkdownParser({ plugins: [closurePlugin()] })
+      createMarkdownParser({ linkify: false, plugins: [closurePlugin()] })
     }
 
     expect(closureUses - before).toBe(5)
@@ -68,24 +69,24 @@ describe('parser sharing', () => {
       markdownItPlugins: [oldestMdPlugin],
     }))()
 
-    createMarkdownParser({ plugins: [markedPlugin] })
-    createMarkdownParser({ plugins: [oldestPlugin] })
+    createMarkdownParser({ linkify: false, plugins: [markedPlugin] })
+    createMarkdownParser({ linkify: false, plugins: [oldestPlugin] })
 
     // Capacity is 32. Keep both named entries in the cache, then refresh
     // markedPlugin before inserting one more key so only oldestPlugin ages out.
     for (let i = 0; i < 30; i++) {
-      createMarkdownParser({ plugins: [closurePlugin()] })
+      createMarkdownParser({ linkify: false, plugins: [closurePlugin()] })
     }
 
     expect(markedUses).toBe(1)
     expect(oldestUses).toBe(1)
 
-    createMarkdownParser({ plugins: [markedPlugin] })
-    createMarkdownParser({ plugins: [closurePlugin()] })
+    createMarkdownParser({ linkify: false, plugins: [markedPlugin] })
+    createMarkdownParser({ linkify: false, plugins: [closurePlugin()] })
 
-    createMarkdownParser({ plugins: [oldestPlugin] })
+    createMarkdownParser({ linkify: false, plugins: [oldestPlugin] })
     expect(oldestUses).toBe(2)
-    createMarkdownParser({ plugins: [markedPlugin] })
+    createMarkdownParser({ linkify: false, plugins: [markedPlugin] })
     expect(markedUses).toBe(1)
   })
 
