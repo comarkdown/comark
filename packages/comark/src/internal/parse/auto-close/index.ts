@@ -17,7 +17,7 @@
 
 import { closeTables } from './table.ts'
 import { findBracketClose, isBracketMath } from '../../bracket-math.ts'
-import { isSpaceCode } from 'comark/utils'
+
 
 export const INCOMPLETE_LINK_PLACEHOLDER = 'comark:incomplete-link'
 export const INCOMPLETE_IMAGE_PLACEHOLDER = 'comark:incomplete-image'
@@ -1087,6 +1087,11 @@ function isAlnum(cp: string): boolean {
 
 function isAsciiAlpha(c: number): boolean {
   return (c >= 97 && c <= 122) || (c >= 65 && c <= 90)
+}
+
+/** Space, tab, line feed, form feed or carriage return. Mirrors `isSpaceCode` in `comark/utils`. */
+function isSpaceCode(c: number): boolean {
+  return c === 32 || c === 9 || c === 10 || c === 12 || c === 13
 }
 
 /** Full code point before `i` (surrogate aware), `''` at the start. */
