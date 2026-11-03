@@ -69,14 +69,17 @@
     "release:dry": "release-it --dry-run"
   },
   "dependencies": {
-    "entities": "catalog:",
+    "character-entities": "catalog:",
+    "character-entities-legacy": "catalog:",
     "js-yaml": "catalog:",
+    "linkify-it": "catalog:",
     "markdown-exit": "catalog:"
   },
   "devDependencies": {
     "@json-render/core": "catalog:",
     "@shikijs/twoslash": "catalog:",
     "@types/markdown-it": "catalog:",
+    "entities": "catalog:",
     "github-slugger": "catalog:",
     "hast-util-to-string": "catalog:",
     "minimark": "catalog:",

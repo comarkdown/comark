@@ -11,7 +11,8 @@ import type {
   MarkdownDocument,
   Node,
 } from './types.ts'
-import MarkdownExit, { type Token } from 'markdown-exit'
+import MarkdownExit, { type Token } from 'markdown-exit/core'
+import type { LinkifyIt } from 'linkify-it'
 import components from './plugins/components.ts'
 import attributes from './plugins/attributes.ts'
 import taskList from './plugins/task-list.ts'
@@ -40,6 +41,16 @@ const MAX_SHARED_PARSERS = 32
 let nextPluginId = 0
 const pluginIds = new WeakMap<MarkdownExitPlugin, number>()
 const sharedParsers = new Map<string, MarkdownExit>()
+
+// `markdown-exit/core` leaves linkify-it out, so bundles only fetch it once a
+// parser with `linkify` runs. linkify-it 6 stopped matching `www.example.com`
+// and `user:pass@` URLs by default; keep them linked as before.
+let linkifyModule: Promise<typeof LinkifyIt> | undefined
+async function createLinkify(): Promise<LinkifyIt> {
+  linkifyModule ??= import('linkify-it').then((m) => m.LinkifyIt)
+  const Linkify = await linkifyModule
+  return new Linkify().set({ fuzzyLink: true, urlAuth: true })
+}
 
 /**
  * Creates a parser function for Comark content.
@@ -194,6 +205,8 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
         if (!plugin.pre) continue
         await withSpan(tracer, `comark:pre:${plugin.name}`, () => plugin.pre!(state))
       }
+
+      if (linkify && !parser.linkify) parser.linkify = await createLinkify()
 
       try {
         state.tokens = withSpan(tracer, 'comark:tokenize', () => parser.parse(state.markdown, {}))

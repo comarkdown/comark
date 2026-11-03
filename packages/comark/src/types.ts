@@ -1,6 +1,6 @@
 import type { DumpOptions } from 'js-yaml'
-import type MarkdownExit from 'markdown-exit'
-import type { Token } from 'markdown-exit'
+import type MarkdownExit from 'markdown-exit/core'
+import type { Token } from 'markdown-exit/core'
 import type MarkdownIt from 'markdown-it'
 import type { AutoCloseOptions } from './internal/parse/auto-close/index.ts'
 

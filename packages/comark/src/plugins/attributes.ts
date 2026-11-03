@@ -9,8 +9,8 @@
  * @see https://comark.dev/syntax/attributes
  */
 
-import type { PluginSimple, Renderer } from 'markdown-exit'
-import { Token } from 'markdown-exit'
+import type { PluginSimple, Renderer } from 'markdown-exit/core'
+import { Token } from 'markdown-exit/core'
 import type { MarkdownItPlugin } from 'comark'
 import { defineComarkPlugin } from '../utils/helpers.ts'
 import { searchProps } from '../internal/parse/syntax/props.ts'

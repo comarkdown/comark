@@ -1,4 +1,4 @@
-import { Token } from 'markdown-exit'
+import { Token } from 'markdown-exit/core'
 import type { CommentNode, ElementNode, ElementNodeAttributes, HeadingIdsOption, Node } from 'comark'
 import { extractAttributes, mergeAdjacentTextNodes, parseCodeblockInfo, processAttributes } from './tree-utils.ts'
 import { createHeadingIdTracker, nextHeadingId, reserveHeadingId, type HeadingIdTracker } from '../heading-id.ts'
