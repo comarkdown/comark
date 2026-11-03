@@ -190,6 +190,11 @@ export const HTML_VOID_ELEMENTS: ReadonlySet<string> = new Set([
   'wbr',
 ])
 
+/** Whether char code `c` is a space, tab, line feed or carriage return. */
+export function isSpaceCode(c: number): boolean {
+  return c === 32 || c === 9 || c === 10 || c === 13
+}
+
 /** Whether `tag` is an HTML void element. Comparison is case-insensitive. */
 export function isHtmlVoidElement(tag: string): boolean {
   return HTML_VOID_ELEMENTS.has(tag.toLowerCase())

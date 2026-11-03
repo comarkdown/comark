@@ -17,6 +17,7 @@
 
 import { closeTables } from './table.ts'
 import { findBracketClose, isBracketMath } from '../../bracket-math.ts'
+import { isSpaceCode } from 'comark/utils'
 
 export const INCOMPLETE_LINK_PLACEHOLDER = 'comark:incomplete-link'
 export const INCOMPLETE_IMAGE_PLACEHOLDER = 'comark:incomplete-image'
@@ -584,11 +585,11 @@ function healRegion(text: string, o: Opts): string {
       while (text.charCodeAt(i + n) === c) n++
       const prev = codePointBefore(text, i)
       const next = i + n < len ? codePointAt(text, i + n) : ''
-      const attachedLeft = prev !== '' && !isSpaceCp(prev) && i !== escEnd
+      const attachedLeft = prev !== '' && !isSpaceCode(prev.charCodeAt(0)) && i !== escEnd
       // `_` only opens at a boundary: whitespace, an escape or another marker.
       // That keeps `func(_arg` literal while `**_text` and `\___bold` still open.
       const openLeft = !attachedLeft || (c === 95 && (prev === '*' || prev === '_' || prev === '~'))
-      const openRight = next !== '' && !isSpaceCp(next)
+      const openRight = next !== '' && !isSpaceCode(next.charCodeAt(0))
       const enabled = n === 1 ? o.italic : n === 2 ? o.bold : o.boldItalic
 
       if (c === 42) {
@@ -629,10 +630,10 @@ function healRegion(text: string, o: Opts): string {
       while (text.charCodeAt(i + n) === 126) n++
       const prev = codePointBefore(text, i)
       const next = i + n < len ? codePointAt(text, i + n) : ''
-      const attachedLeft = prev !== '' && !isSpaceCp(prev)
+      const attachedLeft = prev !== '' && !isSpaceCode(prev.charCodeAt(0))
       if (top !== null && top.k === F_TILDE && attachedLeft) {
         closeRun(frames, F_TILDE, n)
-      } else if (n === 2 && o.strikethrough && next !== '' && !isSpaceCp(next)) {
+      } else if (n === 2 && o.strikethrough && next !== '' && !isSpaceCode(next.charCodeAt(0))) {
         frames.push({ k: F_TILDE, len: 2, pos: i })
       } else if (n === 1 && o.singleTilde && isAlnum(prev) && isAlnum(next) && !isSubscriptTilde(text, i)) {
         // A lone mid-word `~` would become GFM strikethrough — keep it literal.
@@ -1086,14 +1087,6 @@ function isAlnum(cp: string): boolean {
 
 function isAsciiAlpha(c: number): boolean {
   return (c >= 97 && c <= 122) || (c >= 65 && c <= 90)
-}
-
-function isSpaceCp(cp: string): boolean {
-  return cp === ' ' || cp === '\t' || cp === '\n' || cp === '\r'
-}
-
-function isSpaceCode(c: number): boolean {
-  return c === 32 || c === 9 || c === 10 || c === 13
 }
 
 /** Full code point before `i` (surrogate aware), `''` at the start. */

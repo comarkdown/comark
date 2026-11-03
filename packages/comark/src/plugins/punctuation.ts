@@ -1,5 +1,6 @@
 import type { Node } from 'comark'
 import { defineComarkPlugin } from 'comark'
+import { isSpaceCode } from 'comark/utils'
 
 export interface PunctuationOptions {
   /**
@@ -39,7 +40,7 @@ const DEFAULT_QUOTES = '\u201C\u201D\u2018\u2019' // ""''
 const SKIP_TAGS = new Set(['code', 'pre', 'math', 'script', 'style', 'kbd'])
 
 function isWhitespaceOrOpener(ch: string): boolean {
-  return ch === ' ' || ch === '\t' || ch === '\n' || ch === '\r' || ch === '(' || ch === '[' || ch === '{'
+  return isSpaceCode(ch.charCodeAt(0)) || ch === '(' || ch === '[' || ch === '{'
 }
 
 function isLetter(ch: string): boolean {

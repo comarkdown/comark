@@ -1,6 +1,6 @@
 import type { Node, ElementNode, ElementNodeAttributes, ConditionalNodeHandler } from 'comark'
 import { defineComarkPlugin } from 'comark'
-import { visit } from 'comark/utils'
+import { isSpaceCode, visit } from 'comark/utils'
 
 export interface FootnotesConfig {
   /**
@@ -64,8 +64,7 @@ function isFootnoteRef(node: Node): string | null {
 
   // Check for whitespace using charCode scanning (avoid regex)
   for (let i = 1; i < child.length; i++) {
-    const c = child.charCodeAt(i)
-    if (c === 0x20 || c === 0x09 || c === 0x0a || c === 0x0d) return null
+    if (isSpaceCode(child.charCodeAt(i))) return null
   }
 
   return child.slice(1)

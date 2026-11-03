@@ -1,5 +1,5 @@
 import type { Node, ElementNode, ElementNodeAttributes, MarkdownDocument } from 'comark'
-import { decodeHTML, isHtmlVoidElement, TREE_WALK_MAX_DEPTH } from 'comark/utils'
+import { decodeHTML, isHtmlVoidElement, isSpaceCode, TREE_WALK_MAX_DEPTH } from 'comark/utils'
 
 export type ParsedHtmlTag =
   | { kind: 'open'; tag: string; attrs: Record<string, unknown>; selfClosing: boolean }
@@ -29,8 +29,7 @@ export type ParsedHtmlTag =
  */
 function isBlankText(value: string): boolean {
   for (let i = 0; i < value.length; i++) {
-    const c = value.charCodeAt(i)
-    if (c !== 32 && c !== 10 && c !== 9 && c !== 13 && c !== 12) return false
+    if (!isSpaceCode(value.charCodeAt(i))) return false
   }
   return true
 }
