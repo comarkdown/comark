@@ -16,6 +16,7 @@
  */
 
 import { closeTables } from './table.ts'
+import { findBracketClose, isBracketMath } from '../../bracket-math.ts'
 
 export const INCOMPLETE_LINK_PLACEHOLDER = 'comark:incomplete-link'
 export const INCOMPLETE_IMAGE_PLACEHOLDER = 'comark:incomplete-image'
@@ -42,6 +43,8 @@ export interface AutoCloseOptions {
   blockMath?: boolean
   /** Auto-close inline `$…$`. Defaults to `math` (else false). Off by default so `$50` stays prose. */
   inlineMath?: boolean
+  /** Don't heal inside closed `\(…\)` / `\[…\]` (math `brackets: true`). Default false. */
+  bracketMath?: boolean
   /**
    * Drop a trailing opener (`* _ $ : [ { !`) after whitespace at EOF so a
    * half-typed marker does not flash (`hello *` → `hello`). Default false.
@@ -85,6 +88,7 @@ interface Opts {
   imagePh: string
   blockMath: boolean
   inlineMath: boolean
+  bracketMath: boolean
   links: boolean
   images: boolean
   bold: boolean
@@ -112,6 +116,7 @@ export function autoCloseMarkdown(markdown: string, options: AutoCloseOptions = 
     imagePh: options.incompleteImagePlaceholder ?? INCOMPLETE_IMAGE_PLACEHOLDER,
     blockMath: options.blockMath ?? math,
     inlineMath: options.inlineMath ?? math,
+    bracketMath: options.bracketMath === true,
     links: options.links !== false,
     images: options.images !== false,
     bold: options.bold !== false,
@@ -463,6 +468,9 @@ function healRegion(text: string, o: Opts): string {
   let htmlLt = -1
   let starInWord = false
   let starDisabled = false
+  // Line end up to which no `\)` / `\]` was found (bracket math), or -1.
+  let noParenClose = -1
+  let noBracketClose = -1
 
   for (let i = 0; i < len; i++) {
     const c = text.charCodeAt(i)
@@ -492,6 +500,38 @@ function healRegion(text: string, o: Opts): string {
       continue
     }
     if (c === 92 /* \ */) {
+      // A closed `\(…\)` or `\[…\]` is math under `math({ brackets: true })`, so it
+      // isn't healed. Mirrors the parser: `\(` and inline `\[` close on the same
+      // line, `\[` after only indentation may span lines (no blank line, nothing
+      // after `\]`), and citations or `\[text\](url)` stay text.
+      if (o.bracketMath) {
+        const next = text.charCodeAt(i + 1)
+        if (next === 40 /* ( */ || next === 91 /* [ */) {
+          const block = next === 91 && isBlankRange(text, lineStart, i)
+          let end = len
+          if (!block) {
+            const nl = text.indexOf('\n', i + 2)
+            if (nl !== -1 && nl < len) end = nl
+          }
+          // A search that failed up to `end` fails from any later opener too.
+          const failed = next === 40 ? noParenClose : noBracketClose
+          const close = failed === end ? -1 : findBracketClose(text, i + 2, next === 40 ? 41 : 93, end)
+          if (close === -1) {
+            if (next === 40) noParenClose = end
+            else noBracketClose = end
+          }
+          if (
+            close !== -1 &&
+            isBracketMath(text.slice(i + 2, close)) &&
+            !(next === 91 && text.charCodeAt(close + 2) === 40 /* ( */) &&
+            (!block || isBracketBlock(text, i + 2, close, len))
+          ) {
+            i = close + 1
+            escEnd = i + 1
+            continue
+          }
+        }
+      }
       i++
       escEnd = i + 1
       continue
@@ -544,11 +584,11 @@ function healRegion(text: string, o: Opts): string {
       while (text.charCodeAt(i + n) === c) n++
       const prev = codePointBefore(text, i)
       const next = i + n < len ? codePointAt(text, i + n) : ''
-      const attachedLeft = prev !== '' && !isSpaceCp(prev) && i !== escEnd
+      const attachedLeft = prev !== '' && !isSpaceCode(prev.charCodeAt(0)) && i !== escEnd
       // `_` only opens at a boundary: whitespace, an escape or another marker.
       // That keeps `func(_arg` literal while `**_text` and `\___bold` still open.
       const openLeft = !attachedLeft || (c === 95 && (prev === '*' || prev === '_' || prev === '~'))
-      const openRight = next !== '' && !isSpaceCp(next)
+      const openRight = next !== '' && !isSpaceCode(next.charCodeAt(0))
       const enabled = n === 1 ? o.italic : n === 2 ? o.bold : o.boldItalic
 
       if (c === 42) {
@@ -589,10 +629,10 @@ function healRegion(text: string, o: Opts): string {
       while (text.charCodeAt(i + n) === 126) n++
       const prev = codePointBefore(text, i)
       const next = i + n < len ? codePointAt(text, i + n) : ''
-      const attachedLeft = prev !== '' && !isSpaceCp(prev)
+      const attachedLeft = prev !== '' && !isSpaceCode(prev.charCodeAt(0))
       if (top !== null && top.k === F_TILDE && attachedLeft) {
         closeRun(frames, F_TILDE, n)
-      } else if (n === 2 && o.strikethrough && next !== '' && !isSpaceCp(next)) {
+      } else if (n === 2 && o.strikethrough && next !== '' && !isSpaceCode(next.charCodeAt(0))) {
         frames.push({ k: F_TILDE, len: 2, pos: i })
       } else if (n === 1 && o.singleTilde && isAlnum(prev) && isAlnum(next) && !isSubscriptTilde(text, i)) {
         // A lone mid-word `~` would become GFM strikethrough — keep it literal.
@@ -695,6 +735,28 @@ function healRegion(text: string, o: Opts): string {
   }
 
   return apply(text, edits, end, closers(frames, text, o, starDisabled))
+}
+
+function isBlankRange(text: string, from: number, to: number): boolean {
+  for (let i = from; i < to; i++) {
+    const c = text.charCodeAt(i)
+    if (c !== 32 && c !== 9) return false
+  }
+  return true
+}
+
+/**
+ * Whether `\[` … `\]` closing at `close` is a display block for the parser:
+ * same-line spans are inline math anyway; a multi-line one needs no blank line
+ * inside and nothing but whitespace after `\]`.
+ */
+function isBracketBlock(text: string, from: number, close: number, len: number): boolean {
+  const nl = text.indexOf('\n', from)
+  if (nl === -1 || nl > close) return true
+  if (/\n[ \t\r]*\n/.test(text.slice(from, close))) return false
+  let le = text.indexOf('\n', close + 2)
+  if (le === -1 || le > len) le = len
+  return text.slice(close + 2, le).trim() === ''
 }
 
 /** Consume `n` delimiters against the open frames of `kind`, innermost first. */
@@ -1026,12 +1088,9 @@ function isAsciiAlpha(c: number): boolean {
   return (c >= 97 && c <= 122) || (c >= 65 && c <= 90)
 }
 
-function isSpaceCp(cp: string): boolean {
-  return cp === ' ' || cp === '\t' || cp === '\n' || cp === '\r'
-}
-
+/** Space, tab, line feed, form feed or carriage return. */
 function isSpaceCode(c: number): boolean {
-  return c === 32 || c === 9 || c === 10 || c === 13
+  return c === 32 || c === 9 || c === 10 || c === 12 || c === 13
 }
 
 /** Full code point before `i` (surrogate aware), `''` at the start. */

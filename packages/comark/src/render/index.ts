@@ -1,15 +1,16 @@
 import type { MarkdownDocument, RendererOptions, RenderMarkdownOptions } from 'comark'
-import { renderFrontmatter } from './internal/frontmatter.ts'
+import { renderFrontmatter } from '../internal/frontmatter.ts'
 
-import { createState, one } from './internal/stringify/state.ts'
+import { createState, one } from '../internal/stringify/state.ts'
+import { handlers } from '../internal/stringify/handlers/index.ts'
 
-export type { NodeHandler, State, Context, RendererOptions, RenderMarkdownOptions, NodeRenderData } from './types.ts'
+export type { NodeHandler, State, Context, RendererOptions, RenderMarkdownOptions, NodeRenderData } from '../types.ts'
 
 // Re-export frontmatter renderer
-export { renderFrontmatter } from './internal/frontmatter.ts'
+export { renderFrontmatter } from '../internal/frontmatter.ts'
 
 // Re-export attribute resolvers for custom handlers that want to honor `:prefix` bindings
-export { resolveAttributes, resolveAttribute } from './internal/stringify/attributes.ts'
+export { resolveAttributes, resolveAttribute } from '../internal/stringify/attributes.ts'
 
 /**
  * Generate a string from a Markdown document
@@ -21,7 +22,7 @@ export async function render(
   document: MarkdownDocument | { nodes: MarkdownDocument['nodes'] },
   context: RendererOptions = {}
 ): Promise<string> {
-  const state = createState({ ...context, tree: document as MarkdownDocument, handlers: context.components })
+  const state = createState(handlers, { ...context, tree: document as MarkdownDocument, handlers: context.components })
 
   let result = ''
   for (const child of document.nodes) {

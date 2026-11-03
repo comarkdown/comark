@@ -2,6 +2,11 @@ import type { Node, ElementNode, ElementNodeAttributes, MarkdownDocument } from 
 import { decodeHTMLAttribute } from 'entities'
 import { isHtmlVoidElement, TREE_WALK_MAX_DEPTH } from 'comark/utils'
 
+/** Space, tab, line feed, form feed or carriage return. Defined per file so it stays inlinable on hot paths. */
+function isSpaceCode(c: number): boolean {
+  return c === 32 || c === 9 || c === 10 || c === 12 || c === 13
+}
+
 export type ParsedHtmlTag =
   | { kind: 'open'; tag: string; attrs: Record<string, unknown>; selfClosing: boolean }
   | { kind: 'close'; tag: string }
@@ -30,8 +35,7 @@ export type ParsedHtmlTag =
  */
 function isBlankText(value: string): boolean {
   for (let i = 0; i < value.length; i++) {
-    const c = value.charCodeAt(i)
-    if (c !== 32 && c !== 10 && c !== 9 && c !== 13 && c !== 12) return false
+    if (!isSpaceCode(value.charCodeAt(i))) return false
   }
   return true
 }

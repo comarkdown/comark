@@ -118,6 +118,14 @@ The plugin avoids matching dollar signs that are not math. It requires at least 
 Prices like $100 or $200 won't be parsed as math.
 ```
 
+### Bracket delimiters
+
+LLMs often write `\(…\)` for inline and `\[…\]` for display math. `math({ brackets: true })` parses them too. It is off by default because `\(` and `\[` are Markdown escapes for literal brackets. With it on, brackets that hold only numbers (`\[1\]`), code, and display math broken by a blank line still stay text, and `renderMarkdown()` writes the original delimiters back.
+
+`\[…\]` on its own lines is a display block. Inside a paragraph (`so \[x^2\] holds`) it renders as inline math.
+
+While streaming, auto-close leaves closed `\(…\)` and `\[…\]` alone, but it doesn't yet add the missing `\)` or `\]` to an unfinished `\(` or `\[`. Until the closer arrives, it shows as text.
+
 ::tip
 See the [KaTeX supported functions →](https://katex.org/docs/supported.html) for the full LaTeX reference.
 ::
@@ -142,12 +150,39 @@ Returns a `ComarkPlugin` that tokenizes `$...$` and `$$...$$` expressions.
 **Parameters:**
 
 - `options?` - Optional `MathConfig`:
-  - `throwOnError?: boolean` - Throw on parse errors instead of returning an error message. Default: `false`
+  - `throwOnError?: boolean` - **Deprecated**, ignored by the parser. Only affects the deprecated `renderMath()` helper and will be removed in `0.9.0`. Default: `false`
   - `options?: Record<string, unknown>` - Additional [KaTeX render options](https://katex.org/docs/options.html)
+  - `brackets?: boolean` - Also parse `\(…\)` and `\[…\]`. Default: `false`
 
 **Returns:** `ComarkPlugin`
 
 The plugin stores LaTeX source as plain text in the AST. Rendering requires passing `Math` to the `components` prop of `<Markdown>` (see [Usage](#usage)). KaTeX only runs when the component mounts.
+
+### Rendering math manually
+
+To render or validate LaTeX outside a `Math` component (for example in a custom component or a server-side pipeline), call KaTeX directly:
+
+```ts
+import katex from 'katex'
+
+// Render to an HTML string
+const inline = katex.renderToString('E = mc^2', { displayMode: false, throwOnError: false })
+const display = katex.renderToString('x^2', { displayMode: true, throwOnError: false })
+
+// Validate LaTeX syntax
+function isValidMath(code: string): boolean {
+  try {
+    katex.renderToString(code, { throwOnError: true })
+    return true
+  } catch {
+    return false
+  }
+}
+```
+
+::warning
+`renderMath()` and `validateMath()` exported from `comark/plugins/math` (and every framework `plugins/math` subpath) are deprecated and will be removed in `0.9.0`. Replace them with the snippet above.
+::
 
 ---
 

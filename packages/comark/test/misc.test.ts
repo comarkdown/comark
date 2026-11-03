@@ -7,6 +7,43 @@ describe('misc', () => {
     expect(tree.nodes).toEqual([['alert', { id: '1' }]])
   })
 
+  it('keeps a brace group after an unpaired emphasis marker as text', async () => {
+    const doc = await parseMarkdown('Costs 2*{price} today', { autoClose: false })
+    expect(doc.nodes).toEqual([['p', {}, 'Costs 2*{price} today']])
+  })
+
+  it('parses inline syntax in a brace group kept as text after an unpaired emphasis marker', async () => {
+    const escaped = await parseMarkdown('Costs 2* {\\#price} today', { autoClose: false })
+    expect(escaped.nodes).toEqual([['p', {}, 'Costs 2* {#price} today']])
+
+    const inline = await parseMarkdown('Costs 2*{a `b` &amp; c} today', { autoClose: false })
+    expect(inline.nodes).toEqual([['p', {}, 'Costs 2*{a ', ['code', {}, 'b'], ' & c} today']])
+  })
+
+  it('does not recurse per nesting level when restoring brace groups after unpaired emphasis', async () => {
+    const depth = 20000
+    const doc = await parseMarkdown(`a${'*{'.repeat(depth)}x${'}'.repeat(depth)} t`, { autoClose: false })
+    expect(doc.nodes).toHaveLength(1)
+    expect(doc.nodes[0]![0]).toBe('p')
+  })
+
+  it('reads a brace group after closed emphasis as attributes when text follows', async () => {
+    const doc = await parseMarkdown('a *b*{.c} d **e**{.f} g ~~h~~{.i} j', { autoClose: false })
+    expect(doc.nodes).toEqual([
+      [
+        'p',
+        {},
+        'a ',
+        ['em', { class: 'c' }, 'b'],
+        ' d ',
+        ['strong', { class: 'f' }, 'e'],
+        ' g ',
+        ['del', { class: 'i' }, 'h'],
+        ' j',
+      ],
+    ])
+  })
+
   describe('boolean attribute coercion', () => {
     it('promotes bare, explicit-true, and explicit-false attrs to :bindings', async () => {
       const tree = await parseMarkdown('::x{flag other="true" off="false" count="5"}\n::')

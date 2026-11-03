@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { parseMarkdown } from '../src/index.ts'
-import { renderMarkdown } from '../src/render.ts'
+import { renderMarkdown } from '../src/render/index.ts'
 import math from '../src/plugins/math.ts'
 import type { MarkdownDocument } from '../src/types.ts'
 
@@ -35,6 +35,19 @@ Inline $E = mc^2$ end.`
   it('keeps explicitly block math as a block inside a parent', async () => {
     const source = '> $$\n> x^2\n> $$'
     const document = await parseMarkdown(source, { plugins: [math()] })
+
+    expect(await renderMarkdown(document)).toBe(source)
+  })
+})
+
+describe('bracket math markdown rendering', () => {
+  it('round-trips \\(…\\) and \\[…\\] delimiters', async () => {
+    const source = String.raw`\[
+\frac{-b \pm \sqrt{b^2 - 4ac}}{2a}
+\]
+
+Inline \(E = mc^2\) and \[x^2\] end.`
+    const document = await parseMarkdown(source, { plugins: [math({ brackets: true })] })
 
     expect(await renderMarkdown(document)).toBe(source)
   })

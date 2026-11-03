@@ -118,7 +118,7 @@ export const comarkLanguage = {
       },
     },
     attributes: {
-      match: '(?x)(               # attributes\n    ({)\n      ((?:[^{}\'"]+|\'[^\']*\'|"[^"]*")*)\n    (})\n  )',
+      match: '(?x)(               # attributes\n    ({)\n      ((?:[^{}\'"]|\'[^\']*\'|"[^"]*")*)\n    (})\n  )',
       name: 'attributes.mdc',
       captures: {
         '1': {
@@ -138,7 +138,7 @@ export const comarkLanguage = {
     },
     component_inline: {
       match:
-        '(?x)\n  (^|\\G|\\s+)\n  (:)              # component colon\n  (?i:             # component name\n    (\\w[\\w\\d-]*)\n  )\n  (\n      (\\{(?:[^{}\'"]+|\'[^\']*\'|"[^"]*")*\\}) # attributes\n      (\\[[^\\]]*\\])?                          # slot\n    | (\\[[^\\]]*\\])                           # slot\n      (\\{(?:[^{}\'"]+|\'[^\']*\'|"[^"]*")*\\})? # attributes\n  )?\n  \\s',
+        '(?x)\n  (^|\\G|\\s+)\n  (:)              # component colon\n  (?i:             # component name\n    (\\w[\\w\\d-]*)\n  )\n  (\n      (\\{(?:[^{}\'"]|\'[^\']*\'|"[^"]*")*\\}) # attributes\n      (\\[[^\\]]*\\])?                          # slot\n    | (\\[[^\\]]*\\])                           # slot\n      (\\{(?:[^{}\'"]|\'[^\']*\'|"[^"]*")*\\})? # attributes\n  )?\n  \\s',
       name: 'inline.component.mdc',
       captures: {
         '2': {
@@ -179,7 +179,7 @@ export const comarkLanguage = {
     },
     component_block: {
       begin:
-        '(?x)\n  (^|\\G)(\\s*)\n  (:{2,})     # component colons\n  (?i:\n    (\\w[\\w\\d-]+)   # component name\n    (                 # folowing spaces or attributes\n        \\s*\n      | \\s*(\\{(?:[^{}\'"]+|\'[^\']*\'|"[^"]*")*\\})\n    )\n    $\n  )',
+        '(?x)\n  (^|\\G)(\\s*)\n  (:{2,})     # component colons\n  (?i:\n    (\\w[\\w\\d-]+)   # component name\n    (                 # folowing spaces or attributes\n        \\s*\n      | \\s*(\\{(?:[^{}\'"]|\'[^\']*\'|"[^"]*")*\\})\n    )\n    $\n  )',
       name: 'block.component.mdc',
       end: '(^|\\G)(\\2)(\\3)\\s*$',
       beginCaptures: {

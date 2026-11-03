@@ -7,6 +7,7 @@
     "dev": "nuxt dev",
     "prebuild": "pnpm --filter '../' run build",
     "build": "nuxt build",
+    "lint": "comark-lint \"content/**/*.md\"",
     "generate:schema": "tsx --env-file=.env scripts/generate-schema.ts"
   },
   "dependencies": {
@@ -23,7 +24,7 @@
     "ai": "catalog:",
     "beautiful-mermaid": "catalog:",
     "comark": "workspace:*",
-    "comark-docs": "github:comarkdown/comark-docs#ab34f83fd3bb4f6c139a0ebb048444ae14600ddc",
+    "comark-docs": "github:comarkdown/comark-docs#96c1546e33286e6ce4329e46f2b8a57d8f162891",
     "katex": "catalog:",
     "nuxt": "catalog:",
     "splitpanes": "catalog:",
@@ -34,6 +35,7 @@
   "devDependencies": {
     "@types/json-schema": "catalog:",
     "@types/splitpanes": "catalog:",
+    "comark-linter": "catalog:",
     "tsx": "catalog:"
   }
 }

@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { createMarkdownParser } from 'comark'
 import type { ElementNode } from 'comark'
+import { renderMarkdown } from 'comark/render'
 
 describe('streaming mode', () => {
   it.each([false, true])('omits reference definitions with streaming: %s', async (streaming) => {
@@ -56,6 +57,13 @@ describe('streaming mode', () => {
       for (let i = 1; i < lines.length; i++) {
         expect(lines[i]).toBeGreaterThan(lines[i - 1])
       }
+    })
+
+    it('does not render $.line metadata to markdown', async () => {
+      const source = '# Hello\n\nParagraph **one**.\n\n- a\n- b\n\n> quote\n\n| a |\n| --- |\n| b |\n'
+      const result = await createMarkdownParser()(source, { streaming: true })
+
+      expect(await renderMarkdown(result)).toBe(await renderMarkdown(await createMarkdownParser()(source)))
     })
   })
 

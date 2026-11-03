@@ -57,7 +57,9 @@ packages/comark/
 ├── src/
 │   ├── index.ts              # Entry point: re-exports parse.ts, auto-close, context, types
 │   ├── parse.ts              # Core parser: parseMarkdown(), createMarkdownParser() (comark/parse)
-│   ├── render.ts             # String rendering: renderMarkdown() (renderHtmlFromDocument() moved to @comark/html)
+│   ├── render/
+│   │   ├── index.ts          # String rendering: renderMarkdown() (renderHtmlFromDocument() moved to @comark/html)
+│   │   └── html.ts           # HTML-only renderer (comark/render/html)
 │   ├── types.ts              # Document model (MarkdownDocument, Node, ElementNode, TextNode, CommentNode) + ParserOptions
 │   ├── context.ts            # Live renderer context: ComarkContext, ComarkDocument, ComarkPatch
 │   ├── plugins/              # Built-in and optional plugins
@@ -122,7 +124,8 @@ packages/comark/
   "./utils": "./dist/utils/index.js",
   "./utils/trace": "./dist/utils/trace.js",
   "./parse": "./dist/parse.js",
-  "./render": "./dist/render.js"
+  "./render": "./dist/render/index.js",
+  "./render/html": "./dist/render/html.js"
 }
 ```
 
@@ -174,6 +177,8 @@ const html = await renderHtml(markdownString)
 ```
 
 ---
+
+`@comark/html` renders through `comark/render/html`, which registers only the HTML and comment handlers, so rendering never loads the Markdown serializers. `@comark/html/render` also stays free of YAML; the root entry and the plugins import the parser, which loads YAML for frontmatter. Components still receive the full `state`, but `state.handlers` holds only `html` and `comment`, and the output format is always `text/html`. Both `comark/render` and `comark/render/html` share the engine in `internal/stringify/state.ts`; each passes its own handler map to `createState`. HTML-safe attribute handling lives in `html-attributes.ts`; Markdown/YAML attribute serialization stays in `attributes.ts`.
 
 ## Package: @comark/ansi
 
@@ -275,7 +280,7 @@ packages/comark-react/
 │   ├── components/
 │   │   ├── Markdown.tsx      # High-level markdown → render component
 │   │   ├── MarkdownDocument.tsx # Low-level AST → render component
-│   │   ├── MarkdownClient.tsx # Client-only markdown component
+│   │   ├── MarkdownClient.tsx # Client-only markdown with a serialized incremental parser
 │   │   ├── MarkdownLive.tsx  # Streaming/live markdown component
 │   │   ├── Binding.tsx       # Inline binding renderer
 │   │   ├── If.tsx            # Conditional content renderer
@@ -311,6 +316,8 @@ import { Markdown, MarkdownDocument, defineMarkdownComponent } from '@comark/rea
 import math, { Math } from '@comark/react/plugins/math'
 import mermaid, { Mermaid } from '@comark/react/plugins/mermaid'
 ```
+
+React tests have two projects: `server` runs the Node/SSR tests, and `client` runs `*.browser.test.tsx` in headless Chromium. Install the browser with `pnpm exec playwright install chromium` before running the package tests. CI runs both projects.
 
 ## Package: @comark/svelte
 
@@ -898,7 +905,7 @@ pnpm stub         # Point every package's dist/ at src/ for local dev (runs on p
 pnpm test         # Run all package tests
 pnpm test:spec    # Run the SPEC fixtures only
 pnpm bench        # Run the CodSpeed Vitest benches (benchmarks/*.bench.ts; wall-clock locally)
-pnpm lint         # oxlint + oxfmt --check
+pnpm lint         # oxlint + oxfmt --check + comark-lint on docs/content
 pnpm lint:fix     # oxlint --fix + oxfmt (write)
 pnpm typecheck    # tsc --noEmit against the root tsconfig
 pnpm verify       # Run lint + test + typecheck
@@ -909,6 +916,10 @@ Linting and formatting use [oxlint](https://oxc.rs/docs/guide/usage/linter) and
 [oxfmt](https://oxc.rs/docs/guide/usage/formatter), configured in `.oxlintrc.json` and
 `.oxfmtrc.json` (no semicolons, single quotes, 120 columns, ES5 trailing commas).
 There is no ESLint or Prettier config.
+
+The docs content is linted with [comark-linter](https://comark-ui.onmax.me/lint/) (`pnpm --filter comark-docs-site lint`):
+unknown components, unclosed blocks, and broken links and anchors. `docs/comark-lint.config.ts` extends the
+comark-docs layer's preset with the site's own `app/components/prose/` components and its Vue pages.
 
 Utility scripts:
 
