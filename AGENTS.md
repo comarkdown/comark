@@ -107,7 +107,7 @@ packages/comark/
 │       │   ├── indent.ts     # Dedent of outdented component children
 │       │   ├── unwrap.ts     # `unwrap` option
 │       │   └── auto-unwrap.ts # `autoUnwrap` option
-│       └── stringify/        # AST → markdown string rendering (handlers/ per tag)
+│       └── stringify/        # AST → markdown string rendering (all Markdown handlers in handlers/index.ts; html/comment in html-handlers.ts)
 ├── SPEC/                 # Behavioral spec fixtures (CommonMark, GFM, HTML, COMARK, auto-close.md)
 ├── test/                 # Vitest test files
 ├── package.json

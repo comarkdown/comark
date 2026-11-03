@@ -1,7 +1,6 @@
 import type { MarkdownDocument, RendererOptions } from '../types.ts'
 import { createState, one } from '../internal/stringify/state.ts'
-import { html } from '../internal/stringify/handlers/html.ts'
-import { comment } from '../internal/stringify/handlers/comment.ts'
+import { comment, html } from '../internal/stringify/html-handlers.ts'
 
 export interface HtmlRendererOptions extends RendererOptions {
   blockSeparator?: string
