@@ -10,6 +10,8 @@ interface Package {
   name: string
   dir: string
   main: string
+  /** Directory `npm pack` runs in: `publishConfig.directory` when set, else the package root. */
+  packDir: string
 }
 
 // Discover every publishable workspace package (has a name, not private).
@@ -18,7 +20,13 @@ const packages: Package[] = readdirSync(packagesDir)
   .filter((dir) => existsSync(join(dir, 'package.json')))
   .map((dir) => {
     const pkg = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf-8'))
-    return { name: pkg.name, dir, main: pkg.main ?? 'dist/index.js', private: !!pkg.private }
+    return {
+      name: pkg.name,
+      dir,
+      main: pkg.main ?? 'dist/index.js',
+      packDir: pkg.publishConfig?.directory ? join(dir, pkg.publishConfig.directory) : dir,
+      private: !!pkg.private,
+    }
   })
   .filter((pkg): pkg is Package & { private: boolean } => Boolean(pkg.name) && !pkg.private)
   .sort((a, b) => a.name.localeCompare(b.name))
@@ -29,6 +37,8 @@ const packages: Package[] = readdirSync(packagesDir)
 
 // `npm pack --dry-run --json` reports exactly what would be published (honouring
 // the `files` field and `.npmignore`), so we measure the real shipped size.
+// Packages that publish a generated manifest (`publishConfig.directory`, e.g.
+// ng-packagr's `dist/`) are packed from that directory, as `pnpm publish` does.
 // Memoised because spawning `npm pack` is slow (~3s) and both tests reuse it.
 const packCache = new Map<string, { size: number; unpackedSize: number; entryCount: number }>()
 function pack(pkg: Package) {
@@ -36,7 +46,7 @@ function pack(pkg: Package) {
   if (!report) {
     ;[report] = JSON.parse(
       execFileSync('npm', ['pack', '--dry-run', '--json', '--ignore-scripts'], {
-        cwd: pkg.dir,
+        cwd: pkg.packDir,
         encoding: 'utf-8',
         stdio: ['ignore', 'pipe', 'ignore'],
       })
@@ -60,7 +70,7 @@ describe('package bundle size', { timeout: 60_000 }, () => {
 
     expect(report).toMatchInlineSnapshot(`
       {
-        "@comark/angular": "56.5k (72 files)",
+        "@comark/angular": "63.8k (52 files)",
         "@comark/ansi": "37.3k (98 files)",
         "@comark/html": "15.6k (58 files)",
         "@comark/nuxt": "11.9k (58 files)",

@@ -438,6 +438,8 @@ packages/comark-angular/
 │   └── mermaid/
 │       ├── index.ts                      # Re-exports mermaid plugin + Mermaid component
 │       └── mermaid.component.ts
+├── scripts/
+│   └── strip-sourcemaps.mjs              # Removes ng-packagr source maps from dist after build
 ├── angular.json
 ├── ng-package.json
 ├── package.json
@@ -452,6 +454,11 @@ builder): partial-compilation FESM bundles plus type declarations for the
 main entry and each plugin secondary entry point. Plugin entry points use
 named exports because the Angular Package Format strips `export default`
 from entry points (e.g. `import { math, Math } from '@comark/angular/plugins/math'`).
+`ng-packagr` always emits source maps, so `scripts/strip-sourcemaps.mjs` deletes
+them after `ng build`. The package publishes from `dist/` via
+`publishConfig.directory` (ng-packagr writes the published `package.json` there);
+`.release-it.json` must not also set `publishPath`, or pnpm looks in `dist/dist`.
+`test/bundle.test.ts` packs from that directory too.
 
 ### Exports
 
