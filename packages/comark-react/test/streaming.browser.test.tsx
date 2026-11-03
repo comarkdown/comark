@@ -1,6 +1,7 @@
 import React, { act, Component, StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
+import { parseMarkdown } from 'comark'
 import type { ComarkPlugin, MarkdownDocument } from 'comark'
 import { MarkdownClient } from '../src/components/MarkdownClient'
 import { Markdown } from '../src/components/Markdown'
@@ -8,6 +9,11 @@ import type { MarkdownProps } from '../src/components/Markdown'
 import { defineMarkdownComponent } from '../src/index'
 
 Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true })
+
+// The first parse with linkify loads linkify-it, which settles outside `act`.
+beforeAll(async () => {
+  await parseMarkdown('')
+})
 
 let container: HTMLDivElement
 let root: ReturnType<typeof createRoot>
