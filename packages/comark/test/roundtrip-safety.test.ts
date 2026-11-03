@@ -96,10 +96,10 @@ describe('comarkAttributes quoting', () => {
 
 describe('line breaks', () => {
   it.each([
-    ['before a word', ['p', {}, 'a ', ['br', {}], 'b']],
-    ['after a component', ['p', {}, 'A ', ['badge', {}, 'x'], ['br', {}], ' word']],
-    ['after inline code', ['p', {}, ['code', {}, 'x'], ['br', {}], '\ny']],
-    ['between breaks', ['p', {}, 'a ', ['br', {}], " ", ['br', {}], ' b']],
+    ['before a word', ['p', {}, 'a ', ['br', {}], ' b']],
+    ['after a component', ['p', {}, 'A ', ['badge', {}, 'x'], ' ', ['br', {}], ' word']],
+    ['after inline code', ['p', {}, ['code', {}, 'x'], ' ', ['br', {}], '\ny']],
+    ['between breaks', ['p', {}, 'a ', ['br', {}], ' ', ['br', {}], ' b']],
   ])('round-trips a break %s', async (_, node) => {
     const doc = { frontmatter: {}, meta: {}, nodes: [node] } as unknown as MarkdownDocument
     const t2 = await parseMarkdown(await renderMarkdown(doc))

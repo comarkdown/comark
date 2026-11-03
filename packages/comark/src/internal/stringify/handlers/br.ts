@@ -15,15 +15,8 @@ export function br(node: ElementNode, state: State, parent?: ElementNode) {
   const prevSpace = typeof prev === 'string' && isSpaceCode(prev.charCodeAt(prev.length - 1))
   const nextSpace = typeof next === 'string' && isSpaceCode(next.charCodeAt(0))
 
-
   // A trailing-space break drops adjacent whitespace and needs content on both sides
-  const hardBreak =
-    prev !== undefined &&
-    next !== undefined &&
-    !isBr(prev) &&
-    !isBr(next) &&
-    !prevSpace &&
-    !nextSpace
+  const hardBreak = prev !== undefined && next !== undefined && !isBr(prev) && !isBr(next) && !prevSpace && !nextSpace
   if (hardBreak) return '  \n'
 
   if (state.context.format !== 'markdown/comark' || prev === undefined) return '<br>'
