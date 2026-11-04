@@ -53,6 +53,11 @@ Returns a `ComarkPlugin` that adds a link to each matching heading.
 
 Headings without an `id` are left unchanged. With the `'wrap'` behavior, headings that already contain a link are also left unchanged, since links cannot be nested.
 
+Added links are marked in the tree with `$.permalink`: `'wrap'` for a link around the heading text, `'separate'` for a link before or after it. Renderers don't output `$`, and the marker has two uses:
+
+- Markdown output leaves the links out, so a tree parsed with this plugin can be saved back to Markdown unchanged.
+- `toc` and `title-description` leave a `'separate'` link out of heading text. Code of your own that reads heading text can do the same.
+
 ::warning
 Don't combine this plugin with heading components that already add a link at render time, such as Nuxt UI's `ProseH2`. The plugin can't see those components, so each heading would end up with two nested links.
 ::
@@ -94,7 +99,6 @@ headingLinks({ behavior: 'prepend' })
 <h2 id="setup"><a href="#setup">#</a>Setup</h2>
 ```
 
-The separate link is marked with `$.permalink: 1` in the tree. `toc` and `title-description` use it to leave the link out of heading text, and your own code that reads heading text can do the same. Renderers don't output `$`.
 
 **Default:** `'wrap'`
 

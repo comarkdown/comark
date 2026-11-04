@@ -3,6 +3,7 @@ import { createMarkdownParser, parseMarkdown } from '../../src/parse'
 import headingLinks from '../../src/plugins/heading-links'
 import titleDescription from '../../src/plugins/title-description'
 import toc from '../../src/plugins/toc'
+import { renderMarkdown } from '../../src/render'
 import { renderHtmlForTest } from '../utils/render-html'
 
 const LEVELS = `# One
@@ -35,11 +36,11 @@ describe('heading-links plugin', () => {
     const tree = await parseMarkdown(LEVELS, { plugins: [headingLinks({ tags: ['h1', 'h5'] })] })
 
     expect(tree.nodes).toEqual([
-      ['h1', { id: 'one' }, ['a', { href: '#one' }, 'One']],
+      ['h1', { id: 'one' }, ['a', { href: '#one', $: { permalink: 'wrap' } }, 'One']],
       ['h2', { id: 'two' }, 'Two'],
       ['h3', { id: 'three' }, 'Three'],
       ['h4', { id: 'four' }, 'Four'],
-      ['h5', { id: 'five' }, ['a', { href: '#five' }, 'Five']],
+      ['h5', { id: 'five' }, ['a', { href: '#five', $: { permalink: 'wrap' } }, 'Five']],
     ])
   })
 
@@ -49,14 +50,25 @@ describe('heading-links plugin', () => {
     expect(tree.nodes[0]).toEqual([
       'h2',
       { id: 'use-parse-now' },
-      ['a', { href: '#use-parse-now' }, 'Use ', ['code', {}, 'parse'], ' ', ['em', {}, 'now']],
+      [
+        'a',
+        { href: '#use-parse-now', $: { permalink: 'wrap' } },
+        'Use ',
+        ['code', {}, 'parse'],
+        ' ',
+        ['em', {}, 'now'],
+      ],
     ])
   })
 
   it('links headings nested inside components', async () => {
     const tree = await parseMarkdown('::callout\n## Inside\n::', { plugins: [headingLinks()] })
 
-    expect(tree.nodes[0]).toEqual(['callout', {}, ['h2', { id: 'inside' }, ['a', { href: '#inside' }, 'Inside']]])
+    expect(tree.nodes[0]).toEqual([
+      'callout',
+      {},
+      ['h2', { id: 'inside' }, ['a', { href: '#inside', $: { permalink: 'wrap' } }, 'Inside']],
+    ])
   })
 
   it('does not nest a link inside a heading that already contains one', async () => {
@@ -80,14 +92,14 @@ describe('heading-links plugin', () => {
     expect(prepended.nodes[0]).toEqual([
       'h2',
       { id: 'setup' },
-      ['a', { class: 'heading-link', 'aria-hidden': 'true', href: '#setup', $: { permalink: 1 } }, '#'],
+      ['a', { class: 'heading-link', 'aria-hidden': 'true', href: '#setup', $: { permalink: 'separate' } }, '#'],
       'Setup',
     ])
     expect(appended.nodes[0]).toEqual([
       'h2',
       { id: 'setup' },
       'Setup',
-      ['a', { href: '#setup', $: { permalink: 1 } }, ['span', { class: 'icon' }]],
+      ['a', { href: '#setup', $: { permalink: 'separate' } }, ['span', { class: 'icon' }]],
     ])
   })
 
@@ -149,9 +161,22 @@ describe('heading-links plugin', () => {
     expect(tree.nodes[0]).toEqual([
       'h2',
       { id: 'see-details' },
-      ['a', { href: '#see-details', $: { permalink: 1 } }, '#'],
+      ['a', { href: '#see-details', $: { permalink: 'separate' } }, '#'],
       'See ',
       ['a', { href: '#see-details' }, 'details'],
     ])
+  })
+
+  it('leaves the added links out of Markdown output, so round-trips stay stable', async () => {
+    const doc = '## Use `parse`\n\n## See [details](#see-details)\n\nText'
+    const expected = await renderMarkdown(await parseMarkdown(doc))
+    for (const behavior of ['wrap', 'prepend', 'append'] as const) {
+      const plugins = [headingLinks({ behavior })]
+      const once = await renderMarkdown(await parseMarkdown(doc, { plugins }))
+      const twice = await renderMarkdown(await parseMarkdown(once, { plugins }))
+
+      expect(once, behavior).toBe(expected)
+      expect(twice, behavior).toBe(expected)
+    }
   })
 })

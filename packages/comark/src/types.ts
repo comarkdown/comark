@@ -32,8 +32,11 @@ export type ElementNodeAttributes = {
     block?: 0 | 1
     /** Opening delimiter, when the syntax has more than one (`\(` or `\[` math) */
     markup?: string
-    /** Set on the separate link `heading-links` adds before or after heading text */
-    permalink?: 1
+    /**
+     * Set on links `heading-links` adds: `'wrap'` around the heading text, `'separate'`
+     * before or after it. Markdown output leaves both out.
+     */
+    permalink?: 'wrap' | 'separate'
   }
 }
 

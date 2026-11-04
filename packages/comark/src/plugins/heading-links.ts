@@ -41,9 +41,9 @@ function containsLink(node: Node): boolean {
  * `## Setup` becomes `<h2 id="setup"><a href="#setup">Setup</a></h2>`.
  * Headings anywhere in the tree are linked, including inside components.
  * Headings without an `id` are left unchanged, and with `'wrap'` so are headings that
- * already contain a link, since links cannot be nested. A separate `'prepend'` or
- * `'append'` link is marked with `$.permalink`, so `toc` and `title-description` leave
- * its content out of heading text.
+ * already contain a link, since links cannot be nested. Added links are marked with
+ * `$.permalink`, so Markdown output leaves them out, and `toc` and `title-description`
+ * leave a separate `'prepend'` or `'append'` link out of heading text.
  *
  * Don't combine this plugin with heading components that already add a link at render time,
  * such as Nuxt UI's `ProseH2`. The plugin can't see those components, so each heading
@@ -79,13 +79,17 @@ export default defineComarkPlugin<HeadingLinksOptions>((options = {}) => {
 
           if (behavior === 'wrap') {
             if (children.some(containsLink)) return
-            return [tag, attrs, ['a', { ...props, href }, ...children]]
+            return [tag, attrs, ['a', { ...props, href, $: { permalink: 'wrap' } }, ...children]]
           }
 
           // Streaming parses run `post` again over headings reused from the previous tree.
-          if (children.some((child) => Array.isArray(child) && child[1]?.$?.permalink)) return
+          if (children.some((child) => Array.isArray(child) && child[1]?.$?.permalink === 'separate')) return
 
-          const anchor: ElementNode = ['a', { ...props, href, $: { permalink: 1 } }, ...structuredClone(content)]
+          const anchor: ElementNode = [
+            'a',
+            { ...props, href, $: { permalink: 'separate' } },
+            ...structuredClone(content),
+          ]
           return behavior === 'prepend' ? [tag, attrs, anchor, ...children] : [tag, attrs, ...children, anchor]
         }
       )

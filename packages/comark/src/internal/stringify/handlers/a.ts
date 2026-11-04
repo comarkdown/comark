@@ -6,6 +6,10 @@ import { comarkAttributes } from '../attributes.ts'
 export async function a(node: ElementNode, state: State) {
   const [_, attrs] = node
 
+  // Links added by `heading-links` aren't part of the source
+  if (attrs.$?.permalink === 'separate') return ''
+  if (attrs.$?.permalink === 'wrap') return state.flow(node, state)
+
   const { href, ...rest } = attrs
   const attrsString = Object.keys(rest).length > 0 ? comarkAttributes(rest) : ''
   const content = await state.flow(node, state)
