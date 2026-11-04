@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { createMarkdownParser, parseMarkdown } from '../../src/parse'
 import headingLinks from '../../src/plugins/heading-links'
+import titleDescription from '../../src/plugins/title-description'
 import toc from '../../src/plugins/toc'
 import { renderHtmlForTest } from '../utils/render-html'
 
@@ -117,11 +118,24 @@ describe('heading-links plugin', () => {
     }
   })
 
-  it('keeps toc text when headings are wrapped', async () => {
-    const tree = await parseMarkdown('## Use `parse`\n\n### Sub', { plugins: [headingLinks(), toc({ depth: 2 })] })
+  it('keeps the permalink out of toc labels and the page title, in any plugin order', async () => {
+    for (const behavior of ['wrap', 'prepend', 'append'] as const) {
+      const links = headingLinks({ behavior, tags: ['h1', 'h2'] })
+      for (const plugins of [
+        [links, toc(), titleDescription()],
+        [toc(), titleDescription(), links],
+      ]) {
+        const parse = createMarkdownParser({ plugins })
+        for (const chunk of ['# Title\n\n## Use `parse`\n\nOne', '# Title\n\n## Use `parse`\n\nOne\n\nTwo']) {
+          const tree = await parse(chunk, { streaming: true })
 
-    expect(tree.meta.toc.links).toEqual([
-      { id: 'use-parse', text: 'Use parse', depth: 2, children: [{ id: 'sub', text: 'Sub', depth: 3 }] },
-    ])
+          expect(
+            tree.meta.toc.links.map((l: { text: string }) => l.text),
+            behavior
+          ).toEqual(['Use parse'])
+          expect(tree.meta.title, behavior).toBe('Title')
+        }
+      }
+    }
   })
 })

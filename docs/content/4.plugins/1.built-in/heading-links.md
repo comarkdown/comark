@@ -101,11 +101,15 @@ headingLinks({ behavior: 'prepend' })
 Content of the link for `'prepend'` and `'append'`, as Comark nodes. Ignored for `'wrap'`.
 
 ```typescript
-headingLinks({ behavior: 'append', content: [['span', { class: 'icon-link' }]] })
+headingLinks({
+  behavior: 'append',
+  content: [['span', { class: 'icon-link' }]],
+  props: { 'aria-label': 'Link to this section' },
+})
 ```
 
 ```html [Output]
-<h2 id="setup">Setup<a href="#setup"><span class="icon-link"></span></a></h2>
+<h2 id="setup">Setup<a aria-label="Link to this section" href="#setup"><span class="icon-link"></span></a></h2>
 ```
 
 **Default:** `['#']`
@@ -126,7 +130,7 @@ headingLinks({ behavior: 'prepend', props: { class: 'heading-link' } })
 
 ### Show the link on hover
 
-Add a class to a separate `#` link, then show it only when the heading is hovered:
+Add a class to a separate `#` link, then show it only when the heading is hovered or the link has keyboard focus:
 
 ```typescript
 headingLinks({ behavior: 'prepend', props: { class: 'heading-link' } })
@@ -138,14 +142,15 @@ headingLinks({ behavior: 'prepend', props: { class: 'heading-link' } })
   opacity: 0;
 }
 
-:is(h2, h3, h4):hover .heading-link {
+:is(h2, h3, h4):hover .heading-link,
+.heading-link:focus-visible {
   opacity: 1;
 }
 ```
 
 ### With the table of contents
 
-`toc` reads the heading text through the link, so the two plugins work in either order:
+`toc` and `title-description` leave a separate `prepend` or `append` link out of heading text, so the plugins work in any order:
 
 ```typescript
 import headingLinks from 'comark/plugins/heading-links'
