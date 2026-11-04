@@ -10,7 +10,7 @@ import jsonRender from '@comark/nuxt/plugins/json-render'
 import footnotes from '@comark/nuxt/plugins/footnotes'
 import punctuation from '@comark/nuxt/plugins/punctuation'
 import breaks from '@comark/nuxt/plugins/breaks'
-import headings from '@comark/nuxt/plugins/headings'
+import titleDescription from '@comark/nuxt/plugins/title-description'
 import toc from '@comark/nuxt/plugins/toc'
 import summary from '@comark/nuxt/plugins/summary'
 import security from '@comark/nuxt/plugins/security'
@@ -77,7 +77,7 @@ const pluginToggles = useLocalStorage(
     punctuation: false,
     breaks: false,
     binding: true,
-    headings: false,
+    titleDescription: false,
     toc: false,
     summary: false,
     security: false,
@@ -157,10 +157,10 @@ const pluginDefs = [
     factory: () => breaks(),
   },
   {
-    key: 'headings',
-    label: 'Headings',
+    key: 'titleDescription',
+    label: 'Title & Description',
     icon: 'i-lucide-heading',
-    factory: () => headings(),
+    factory: () => titleDescription(),
   },
   {
     key: 'toc',

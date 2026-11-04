@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { parseMarkdown } from '../src/parse'
-import headings from '../src/plugins/headings'
+import titleDescription from '../src/plugins/title-description'
 
 const CONTENT = `# My Page Title
 
@@ -11,16 +11,16 @@ This is the description paragraph.
 More content here.
 `
 
-describe('headings plugin', () => {
+describe('title-description plugin', () => {
   it('extracts title and description into meta', async () => {
-    const tree = await parseMarkdown(CONTENT, { plugins: [headings()] })
+    const tree = await parseMarkdown(CONTENT, { plugins: [titleDescription()] })
 
     expect(tree.meta.title).toBe('My Page Title')
     expect(tree.meta.description).toBe('This is the description paragraph.')
   })
 
   it('keeps extracted nodes in the tree by default (remove: false)', async () => {
-    const tree = await parseMarkdown(CONTENT, { plugins: [headings()] })
+    const tree = await parseMarkdown(CONTENT, { plugins: [titleDescription()] })
 
     const tags = tree.nodes.filter((n) => Array.isArray(n)).map((n) => (n as any)[0])
 
@@ -29,7 +29,7 @@ describe('headings plugin', () => {
   })
 
   it('removes extracted nodes when remove: true', async () => {
-    const tree = await parseMarkdown(CONTENT, { plugins: [headings({ remove: true })] })
+    const tree = await parseMarkdown(CONTENT, { plugins: [titleDescription({ remove: true })] })
 
     expect(tree.meta.title).toBe('My Page Title')
     expect(tree.meta.description).toBe('This is the description paragraph.')
@@ -49,7 +49,7 @@ describe('headings plugin', () => {
   })
 
   it('does not set meta.title when no matching tag exists', async () => {
-    const tree = await parseMarkdown('Just a paragraph.\n', { plugins: [headings()] })
+    const tree = await parseMarkdown('Just a paragraph.\n', { plugins: [titleDescription()] })
 
     expect(tree.meta.title).toBeUndefined()
     expect(tree.meta.description).toBe('Just a paragraph.')
@@ -57,14 +57,14 @@ describe('headings plugin', () => {
 
   it('disables title extraction with titleTag: false', async () => {
     const md = 'Just a paragraph.\n'
-    const tree = await parseMarkdown(md, { plugins: [headings({ titleTag: false })] })
+    const tree = await parseMarkdown(md, { plugins: [titleDescription({ titleTag: false })] })
 
     expect(tree.meta.title).toBeUndefined()
     expect(tree.meta.description).toBe('Just a paragraph.')
   })
 
   it('disables description extraction with descriptionTag: false', async () => {
-    const tree = await parseMarkdown(CONTENT, { plugins: [headings({ descriptionTag: false })] })
+    const tree = await parseMarkdown(CONTENT, { plugins: [titleDescription({ descriptionTag: false })] })
 
     expect(tree.meta.title).toBe('My Page Title')
     expect(tree.meta.description).toBeUndefined()
@@ -72,7 +72,7 @@ describe('headings plugin', () => {
 
   it('disables both with titleTag: false and descriptionTag: false', async () => {
     const tree = await parseMarkdown(CONTENT, {
-      plugins: [headings({ titleTag: false, descriptionTag: false })],
+      plugins: [titleDescription({ titleTag: false, descriptionTag: false })],
     })
 
     expect(tree.meta.title).toBeUndefined()
@@ -87,7 +87,7 @@ describe('headings plugin', () => {
 More content.
 `
     const tree = await parseMarkdown(md, {
-      plugins: [headings({ titleTag: 'h2', descriptionTag: 'blockquote' })],
+      plugins: [titleDescription({ titleTag: 'h2', descriptionTag: 'blockquote' })],
     })
 
     expect(tree.meta.title).toBe('Custom Title')

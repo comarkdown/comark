@@ -1,6 +1,6 @@
 import { describe, expect, expectTypeOf, it } from 'vitest'
 import { parseMarkdown } from '../../src/parse'
-import headings from '../../src/plugins/headings'
+import titleDescription from '../../src/plugins/title-description'
 
 const CONTENT = `# My Page Title
 
@@ -9,29 +9,29 @@ This is the description paragraph.
 ## Section One
 `
 
-describe('headings plugin', () => {
+describe('title-description plugin', () => {
   it('writes title and description to tree.meta', async () => {
-    const tree = await parseMarkdown(CONTENT, { plugins: [headings()] })
+    const tree = await parseMarkdown(CONTENT, { plugins: [titleDescription()] })
 
     expect(tree.meta.title).toBe('My Page Title')
     expect(tree.meta.description).toBe('This is the description paragraph.')
   })
 
   it('narrows tree.meta.title and tree.meta.description to (string | undefined)', async () => {
-    const tree = await parseMarkdown(CONTENT, { plugins: [headings()] })
+    const tree = await parseMarkdown(CONTENT, { plugins: [titleDescription()] })
 
     expectTypeOf(tree.meta.title).toEqualTypeOf<string | undefined>()
     expectTypeOf(tree.meta.description).toEqualTypeOf<string | undefined>()
   })
 })
 
-describe('headings plugin — combined with toc/summary', () => {
+describe('title-description plugin — combined with toc/summary', () => {
   it('narrows all three plugins meta keys when used together', async () => {
     const tocMod = (await import('../../src/plugins/toc')).default
     const summaryMod = (await import('../../src/plugins/summary')).default
 
     const tree = await parseMarkdown('# Title\n\nIntro.\n', {
-      plugins: [headings(), tocMod(), summaryMod()],
+      plugins: [titleDescription(), tocMod(), summaryMod()],
     })
 
     expectTypeOf(tree.meta.title).toEqualTypeOf<string | undefined>()
