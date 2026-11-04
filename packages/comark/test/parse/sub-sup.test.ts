@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { MarkdownItPlugin } from '../../src/types'
-import { defineComarkPlugin, parseMarkdown } from '../../src/parse'
+import { defineComarkPlugin, parseMarkdown } from '../../src/index'
 
 // Minimal inline rules that mirror what `markdown-it-sub` / `markdown-it-sup`
 // emit: `~text~` → sub_open/text/sub_close, `^text^` → sup_open/text/sup_close.

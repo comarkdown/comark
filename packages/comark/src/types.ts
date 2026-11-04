@@ -2,7 +2,7 @@ import type { DumpOptions } from 'js-yaml'
 import type MarkdownExit from 'markdown-exit'
 import type { Token } from 'markdown-exit'
 import type MarkdownIt from 'markdown-it'
-import type { AutoCloseOptions } from './internal/parse/auto-close/index.ts'
+import type { AutoCloseOptions } from './auto-close.ts'
 
 // #region Utility Types
 /**
@@ -446,9 +446,11 @@ export interface ComarkContextProvider {
  * stable nodes from the previous parse. Outside streaming mode, it is the full
  * input string.
  */
-export type AutoCloseFunction = (markdown: string) => string
+export type AutoCloseFunction = (markdown: string, streaming?: boolean) => string
 
-export interface ParserOptions<TPlugins extends readonly ComarkPlugin<any, any>[] = readonly ComarkPlugin<any, any>[]> {
+export interface ParserCoreOptions<
+  TPlugins extends readonly ComarkPlugin<any, any>[] = readonly ComarkPlugin<any, any>[],
+> {
   /**
    * Whether to automatically unwrap single paragraphs in container components.
    * When enabled, if a container component (alert, card, callout, note, warning, tip, info)
@@ -490,21 +492,12 @@ export interface ParserOptions<TPlugins extends readonly ComarkPlugin<any, any>[
   unwrap?: boolean | string | string[]
 
   /**
-   * Whether to automatically close unclosed markdown and Comark components,
-   * or a custom function that rewrites incomplete markdown before tokenization.
-   * @default true
+   * Rewrites incomplete markdown before tokenization. The public parser turns
+   * `autoClose: true` into this function; the core parser has no built-in closer.
+   * The second argument is `true` when the parse was called with `{ streaming: true }`.
+   * @default undefined
    */
-  autoClose?: boolean | AutoCloseFunction
-
-  /**
-   * @deprecated Use `registerDefaultPlugins: false` and register plugins explicitly
-   * (include `html()` from `comark/plugins/html` only when you need HTML parsing).
-   * Setting this option logs a deprecation warning. `html: false` still skips the
-   * default html plugin for backward compatibility.
-   *
-   * @default true
-   */
-  html?: boolean
+  autoClose?: AutoCloseFunction
 
   /**
    * Set `false` to disable autoconvert URL-like text to links.
@@ -542,15 +535,6 @@ export interface ParserOptions<TPlugins extends readonly ComarkPlugin<any, any>[
   headingIds?: HeadingIdsOption
 
   /**
-   * Whether to register the built-in default plugins
-   * (`frontmatter`, `html`, `alert`, `task-list`, `components`, `attributes`).
-   * Set `false` to parse plain markdown with only the plugins listed in `plugins`.
-   * Without the components/attributes plugins, `autoClose` skips component fences and attribute braces.
-   * @default true
-   */
-  registerDefaultPlugins?: boolean
-
-  /**
    * Additional plugins to use. A plugin with the same name as a default plugin
    * replaces that default and runs, in user-defined order, after the remaining defaults.
    * Duplicate user plugins keep their first occurrence.
@@ -570,6 +554,29 @@ export interface ParserOptions<TPlugins extends readonly ComarkPlugin<any, any>[
    * @default undefined
    */
   tracer?: ComarkTracer
+}
+
+export interface ParserOptions<
+  TPlugins extends readonly ComarkPlugin<any, any>[] = readonly ComarkPlugin<any, any>[],
+> extends Omit<ParserCoreOptions<TPlugins>, 'autoClose'> {
+  /**
+   * Whether to automatically close unclosed markdown and Comark components,
+   * or a custom function that rewrites incomplete markdown before tokenization.
+   * `true` (the default) runs the built-in auto-closer. `false` skips it.
+   * A function is forwarded to the core parser as-is; its second argument is
+   * `true` when the parse was called with `{ streaming: true }`.
+   * @default true
+   */
+  autoClose?: boolean | AutoCloseFunction
+
+  /**
+   * Whether to register the built-in default plugins
+   * (`frontmatter`, `html`, `alert`, `task-list`, `components`, `attributes`).
+   * Set `false` to parse plain markdown with only the plugins listed in `plugins`.
+   * Without the components/attributes plugins, `autoClose` skips component fences and attribute braces.
+   * @default true
+   */
+  registerDefaultPlugins?: boolean
 }
 
 /**

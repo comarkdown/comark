@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseMarkdown } from '../../src/parse'
+import { parseMarkdown } from '../../src/index'
 import { renderMarkdown } from '../../src/render'
 import rangi, { comarkLanguages, rangiCodeBlocks, resolveRangiLanguage, tokenizeCode } from '../../src/plugins/rangi'
 import comarkLanguage, { comarkLanguages as languageAliases } from '../../src/plugins/rangi/language-comark'
