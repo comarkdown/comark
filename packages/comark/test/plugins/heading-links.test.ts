@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseMarkdown } from '../../src/parse'
+import { createMarkdownParser, parseMarkdown } from '../../src/parse'
 import headingLinks from '../../src/plugins/heading-links'
 import toc from '../../src/plugins/toc'
 import { renderHtmlForTest } from '../utils/render-html'
@@ -99,6 +99,22 @@ describe('heading-links plugin', () => {
     first[3][2][1].class = 'changed'
 
     expect(second[3][2][1].class).toBe('icon')
+  })
+
+  it('adds a single link when streaming reuses a heading from the previous parse', async () => {
+    for (const behavior of ['wrap', 'prepend', 'append'] as const) {
+      const parse = createMarkdownParser({ plugins: [headingLinks({ behavior })] })
+      let tree
+      for (const chunk of ['## A\n\nOne', '## A\n\nOne\n\nTwo', '## A\n\nOne\n\nTwo\n\nThree']) {
+        tree = await parse(chunk, { streaming: true })
+      }
+      const links = (tree!.nodes[0] as any[])
+        .slice(2)
+        .flat(Infinity)
+        .filter((n) => n === 'a')
+
+      expect(links, behavior).toHaveLength(1)
+    }
   })
 
   it('keeps toc text when headings are wrapped', async () => {

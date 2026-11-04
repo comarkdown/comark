@@ -40,8 +40,8 @@ function containsLink(node: Node): boolean {
  * By default `h2` to `h4` headings are wrapped in a link to their own `id`:
  * `## Setup` becomes `<h2 id="setup"><a href="#setup">Setup</a></h2>`.
  * Headings anywhere in the tree are linked, including inside components.
- * Headings without an `id` are left unchanged, and with `'wrap'` so are headings
- * that already contain a link, since links cannot be nested.
+ * Headings without an `id` or that already link to themselves are left unchanged, and
+ * with `'wrap'` so are headings that already contain a link, since links cannot be nested.
  *
  * @example
  * ```ts
@@ -69,7 +69,11 @@ export default defineComarkPlugin<HeadingLinksOptions>((options = {}) => {
           const [tag, attrs, ...children] = node as ElementNode
           if (typeof attrs.id !== 'string' || attrs.id === '') return
 
-          const link = (linkChildren: Node[]): ElementNode => ['a', { ...props, href: `#${attrs.id}` }, ...linkChildren]
+          // Streaming parses run `post` again over headings reused from the previous tree.
+          const href = `#${attrs.id}`
+          if (children.some((child) => Array.isArray(child) && child[0] === 'a' && child[1]?.href === href)) return
+
+          const link = (linkChildren: Node[]): ElementNode => ['a', { ...props, href }, ...linkChildren]
 
           if (behavior === 'wrap') {
             if (children.some(containsLink)) return
