@@ -72,15 +72,17 @@ export async function html(node: ElementNode, state: State, parent?: ElementNode
 
   const isSelfClose = selfCloseTags.has(String(tag))
 
-  const revert = state.applyContext({
-    inline: oneLiner,
-    rawText: state.context.rawText === true || tag === 'pre' || tag === 'textarea',
-    literal: $.html === 1 && ($.block === 1 || state.context.literal === true),
-  })
+  const rawText = state.context.rawText === true || tag === 'pre' || tag === 'textarea'
+  const literal = $.html === 1 && ($.block === 1 || state.context.literal === true)
+  // Only changed keys go into the edit: every element renders through here.
+  const edit: Record<string, unknown> = { inline: oneLiner }
+  if (rawText !== (state.context.rawText === true)) edit.rawText = rawText
+  if (literal !== (state.context.literal === true)) edit.literal = literal
+  const revert = state.applyContext(edit)
 
   const childrenContent: string[] = []
-  for (const [i, child] of children.entries()) {
-    childrenContent.push(await state.one(child, state, node, i === 0 && !oneLiner && !state.context.html))
+  for (let i = 0; i < children.length; i++) {
+    childrenContent.push(await state.one(children[i], state, node, i === 0 && !oneLiner && !state.context.html))
   }
 
   // A blank line inside a raw-HTML element would terminate it on reparse
