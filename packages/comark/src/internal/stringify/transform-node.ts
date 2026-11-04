@@ -52,7 +52,10 @@ function checkChangedProps(next: Record<string, unknown>, previous: Record<strin
   for (const key of Object.keys(next)) {
     if (key === '$') continue
     const value = next[key]
-    if ((Object.hasOwn(previous, key) && previous[key] === value) || typeof value === 'function') {
+    if (
+      (Object.prototype.hasOwnProperty.call(previous, key) && previous[key] === value) ||
+      typeof value === 'function'
+    ) {
       result[key] = value
       continue
     }
