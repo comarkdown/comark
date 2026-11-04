@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { createMarkdownParser, parseMarkdown } from '../../src/parse'
+import { createMarkdownParser, parseMarkdown } from '../../src/index'
 import headingLinks from '../../src/plugins/heading-links'
 import titleDescription from '../../src/plugins/title-description'
 import html from '../../src/plugins/html'
