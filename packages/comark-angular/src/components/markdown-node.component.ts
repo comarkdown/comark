@@ -323,6 +323,14 @@ export class MarkdownNode implements OnChanges {
 
     // Attach to DOM and detect changes
     this.vcr.insert(componentRef.hostView)
+
+    // The container's anchor stays where this node was first attached, so when this node
+    // was moved into a parent element, place the component right after this node's host.
+    const hostEl = this.elementRef.nativeElement as HTMLElement
+    const hostParent = this.renderer.parentNode(hostEl)
+    if (hostParent) {
+      this.renderer.insertBefore(hostParent, componentRef.location.nativeElement, this.renderer.nextSibling(hostEl))
+    }
     componentRef.changeDetectorRef.detectChanges()
   }
 
@@ -368,12 +376,13 @@ export class MarkdownNode implements OnChanges {
             componentRef.setInput('components', this.components)
             componentRef.setInput('renderData', renderData)
             componentRef.setInput('parent', this.node)
-            componentRef.changeDetectorRef.detectChanges()
 
-            // Move the component's host element into the parent
+            // Move the component's host element into the parent before change detection,
+            // so the custom component it inserts lands next to it inside `parentEl`
             const nativeEl = componentRef.location.nativeElement as HTMLElement
             nativeEl.style.display = 'contents'
             this.renderer.appendChild(parentEl, nativeEl)
+            componentRef.changeDetectorRef.detectChanges()
           } catch (error) {
             componentRef?.destroy()
             console.error(`Failed to render custom component "${childTag}"`, error)
