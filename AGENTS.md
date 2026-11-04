@@ -72,7 +72,7 @@ packages/comark/
 │   │   ├── breaks.ts         # Hard line breaks (`<br>`) from newlines
 │   │   ├── emoji.ts          # Emoji shortcodes
 │   │   ├── footnotes.ts      # GFM footnotes
-│   │   ├── headings.ts       # Title/description extraction into `meta`
+│   │   ├── headings.ts       # Deprecated alias → title-description (remove next major)
 │   │   ├── json-render.ts    # `json-render` spec fences expanded into nodes
 │   │   ├── punctuation.ts    # Smart quotes and dashes
 │   │   ├── shiki.ts          # Shiki with bundled default theme + language loaders (peer: shiki)
@@ -86,6 +86,7 @@ packages/comark/
 │   │   ├── security.ts       # XSS/security sanitization
 │   │   ├── summary.ts        # Summary extraction
 │   │   ├── task-list.ts      # GFM task lists
+│   │   ├── title-description.ts # Title/description extraction into `meta`
 │   │   └── toc.ts            # Table of contents
 │   ├── utils/                # Shared utilities (comark/utils entry point)
 │   │   ├── index.ts          # textContent(), visit(), visitAsync(), escapeHtml(), isHtmlVoidElement(), indent(), string/object utils
@@ -515,7 +516,8 @@ import toc from 'comark/plugins/toc'
 import alert from 'comark/plugins/alert'
 import breaks from 'comark/plugins/breaks'
 import footnotes from 'comark/plugins/footnotes'
-import headings from 'comark/plugins/headings'
+import titleDescription from 'comark/plugins/title-description'
+// import headings from 'comark/plugins/headings' // deprecated alias → title-description
 import punctuation from 'comark/plugins/punctuation'
 import jsonRender from 'comark/plugins/json-render'
 import security from 'comark/plugins/security'

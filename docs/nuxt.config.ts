@@ -57,6 +57,7 @@ export default defineNuxtConfig({
     '/play/all-features': { redirect: '/play?example=basic' },
     '/plugins/built-in/highlight': { redirect: '/plugins/built-in/shiki' },
     '/plugins/built-in/syntax-highlight': { redirect: '/plugins/built-in/shiki' },
+    '/plugins/built-in/headings': { redirect: '/plugins/built-in/title-description' },
     '/syntax/comark-ast': { redirect: '/getting-started/document-model' },
     // The API Reference section moved from /api (which collided with the server endpoints) to /reference
     '/api/render': { redirect: '/reference/render' },
