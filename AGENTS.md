@@ -73,6 +73,7 @@ packages/comark/
 │   │   ├── breaks.ts         # Hard line breaks (`<br>`) from newlines
 │   │   ├── emoji.ts          # Emoji shortcodes
 │   │   ├── footnotes.ts      # GFM footnotes
+│   │   ├── heading-links.ts  # Links headings to their own `id`
 │   │   ├── headings.ts       # Deprecated alias → title-description (remove next major)
 │   │   ├── json-render.ts    # `json-render` spec fences expanded into nodes
 │   │   ├── punctuation.ts    # Smart quotes and dashes
@@ -525,6 +526,7 @@ import breaks from 'comark/plugins/breaks'
 import footnotes from 'comark/plugins/footnotes'
 import titleDescription from 'comark/plugins/title-description'
 // import headings from 'comark/plugins/headings' // deprecated alias → title-description
+import headingLinks from 'comark/plugins/heading-links'
 import punctuation from 'comark/plugins/punctuation'
 import jsonRender from 'comark/plugins/json-render'
 import security from 'comark/plugins/security'
