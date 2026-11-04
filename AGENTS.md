@@ -795,8 +795,9 @@ return a new `tag` and/or `props` for an element node. Each renderer calls
 `applyNodeTransforms()` (`src/internal/stringify/transform-node.ts`, exported from
 `comark/utils`) right after `resolveAttributes()` and before component lookup, so a
 new tag goes through `components` and `componentsManifest`. The string engine does it
-in `one()` (`src/internal/stringify/state.ts`) and renders a copy of the node. Values a
-transform added or changed go through `validateProp()`; functions are kept. Children
+in `one()` (`src/internal/stringify/state.ts`) and renders a copy of the node. The
+returned tag and props are used as-is, not sanitized: transforms are trusted developer
+code, and their security is the developer's responsibility. Children
 see the returned props as `renderData.props`. Docs:
 `docs/content/5.reference/3.reference.md` ("Transforming nodes before render").
 

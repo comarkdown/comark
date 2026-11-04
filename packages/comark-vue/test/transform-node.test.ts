@@ -31,7 +31,7 @@ describe('MarkdownDocument — transformNode', () => {
     expect(html).toContain('<span class="pill info">Ada<span title="info"></span></span>')
   })
 
-  it('keeps functions a transform adds and drops unsafe strings', async () => {
+  it('passes the props a transform returns as-is, functions included', async () => {
     const value = await parseMarkdown('[x](/safe)')
     let clicked = false
     const transformNode: NodeTransform = ({ tag, props }) =>
@@ -48,7 +48,7 @@ describe('MarkdownDocument — transformNode', () => {
 
     const html = await render(MarkdownDocument, { value, transformNode, components: { a: Probe } })
     expect(clicked).toBe(true)
-    expect(html).toContain('data-over="undefined"')
+    expect(html).toContain('data-over="alert(1)"')
     expect(html).toContain('/safe')
   })
 

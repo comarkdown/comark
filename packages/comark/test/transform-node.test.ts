@@ -53,27 +53,11 @@ describe('transformNode (HTML renderer)', () => {
     expect(out).toBe('<h2 id="title" class="demoted">Title</h2>')
   })
 
-  it('drops unsafe values a transform adds, and keeps the ones it left alone', async () => {
+  it('renders the returned props and tag as-is, without sanitizing them', async () => {
     const out = await html('[x](/safe){title="t"}', ({ tag, props }) =>
-      tag === 'a'
-        ? { props: { ...props, onclick: 'alert(1)', ping: 'javascript:alert(1)', rel: 'nofollow' } }
-        : undefined
+      tag === 'a' ? { tag: 'object', props: { ...props, rel: 'nofollow', ping: '/track' } } : undefined
     )
-    expect(out).toBe('<p><a href="/safe" title="t" rel="nofollow">x</a></p>')
-  })
-
-  it('drops a transform URL that resolves to an unsafe scheme', async () => {
-    const out = await html(
-      '[x](/safe)',
-      ({ tag, props, renderData }) => (tag === 'a' ? { props: { ...props, href: renderData.data.url } } : undefined),
-      { data: { url: 'javascript:alert(1)' } }
-    )
-    expect(out).toBe('<p><a>x</a></p>')
-  })
-
-  it('keeps the previous tag when the transform returns a refused or malformed one', async () => {
-    expect(await html('Hi', () => ({ tag: 'object' }))).toBe('<p>Hi</p>')
-    expect(await html('Hi', () => ({ tag: 'p onclick=alert(1)' }))).toBe('<p>Hi</p>')
+    expect(out).toBe('<p><object href="/safe" title="t" rel="nofollow" ping="/track">x</object></p>')
   })
 
   it('renders the same output as without transforms when nothing changes', async () => {

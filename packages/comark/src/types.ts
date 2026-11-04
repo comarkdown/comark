@@ -290,10 +290,9 @@ export interface NodeTransformResult {
  * return a new tag and/or new props. It must be synchronous and must not
  * mutate its input. Return nothing to keep the node as it is.
  *
- * Values a transform adds or changes go through the default prop checks:
- * unsafe URL schemes and event-handler or markup-sink strings are dropped,
- * and so is a tag the renderer refuses. Functions are kept. The security
- * plugin's allowlists run at parse time and don't apply to transform output.
+ * The returned tag and props are rendered as-is. They are not sanitized, and
+ * the security plugin runs at parse time, so it doesn't apply to them either.
+ * Validate anything the transform builds from untrusted data, such as URLs.
  */
 export type NodeTransform = (context: NodeTransformContext) => NodeTransformResult | null | undefined | void
 
