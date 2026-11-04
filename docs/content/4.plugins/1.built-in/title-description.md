@@ -26,6 +26,7 @@ The `comark/plugins/title-description` plugin extracts the page title and descri
 
 ## Usage
 
+::code-group
 ```typescript
 import { parseMarkdown } from 'comark'
 import titleDescription from 'comark/plugins/title-description'
@@ -37,8 +38,16 @@ const result = await parseMarkdown(content, {
 console.log(result.meta.title)       // "My Page Title"
 console.log(result.meta.description) // "First paragraph text."
 ```
+```markdown [content.md]
+# My Page Title
 
----
+First paragraph text.
+
+## Section One
+
+More content here.
+```
+::
 
 ## API
 
