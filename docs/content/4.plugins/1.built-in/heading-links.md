@@ -94,6 +94,8 @@ headingLinks({ behavior: 'prepend' })
 <h2 id="setup"><a href="#setup">#</a>Setup</h2>
 ```
 
+The separate link is marked with `$.permalink: 1` in the tree. `toc` and `title-description` use it to leave the link out of heading text, and your own code that reads heading text can do the same. Renderers don't output `$`.
+
 **Default:** `'wrap'`
 
 ### `content`

@@ -80,14 +80,14 @@ describe('heading-links plugin', () => {
     expect(prepended.nodes[0]).toEqual([
       'h2',
       { id: 'setup' },
-      ['a', { class: 'heading-link', 'aria-hidden': 'true', href: '#setup' }, '#'],
+      ['a', { class: 'heading-link', 'aria-hidden': 'true', href: '#setup', $: { permalink: 1 } }, '#'],
       'Setup',
     ])
     expect(appended.nodes[0]).toEqual([
       'h2',
       { id: 'setup' },
       'Setup',
-      ['a', { href: '#setup' }, ['span', { class: 'icon' }]],
+      ['a', { href: '#setup', $: { permalink: 1 } }, ['span', { class: 'icon' }]],
     ])
   })
 
@@ -118,24 +118,40 @@ describe('heading-links plugin', () => {
     }
   })
 
-  it('keeps the permalink out of toc labels and the page title, in any plugin order', async () => {
+  it('keeps the permalink out of toc labels, the title and the description, in any plugin order', async () => {
+    const doc = '# Title\n\n## Subtitle\n\n## Use `parse`\n\n## See [details](#see-details)\n\nOne'
     for (const behavior of ['wrap', 'prepend', 'append'] as const) {
       const links = headingLinks({ behavior, tags: ['h1', 'h2'] })
       for (const plugins of [
-        [links, toc(), titleDescription()],
-        [toc(), titleDescription(), links],
+        [links, toc(), titleDescription({ descriptionTag: 'h2' })],
+        [toc(), titleDescription({ descriptionTag: 'h2' }), links],
       ]) {
         const parse = createMarkdownParser({ plugins })
-        for (const chunk of ['# Title\n\n## Use `parse`\n\nOne', '# Title\n\n## Use `parse`\n\nOne\n\nTwo']) {
+        for (const chunk of [doc, `${doc}\n\nTwo`]) {
           const tree = await parse(chunk, { streaming: true })
 
           expect(
             tree.meta.toc.links.map((l: { text: string }) => l.text),
             behavior
-          ).toEqual(['Use parse'])
+          ).toEqual(['Subtitle', 'Use parse', 'See details'])
           expect(tree.meta.title, behavior).toBe('Title')
+          expect(tree.meta.description, behavior).toBe('Subtitle')
         }
       }
     }
+  })
+
+  it('adds a separate link next to a link the author wrote to the same heading', async () => {
+    const tree = await parseMarkdown('## See [details](#see-details)', {
+      plugins: [headingLinks({ behavior: 'prepend' })],
+    })
+
+    expect(tree.nodes[0]).toEqual([
+      'h2',
+      { id: 'see-details' },
+      ['a', { href: '#see-details', $: { permalink: 1 } }, '#'],
+      'See ',
+      ['a', { href: '#see-details' }, 'details'],
+    ])
   })
 })

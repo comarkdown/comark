@@ -1,4 +1,4 @@
-import type { ElementNode, Node } from 'comark'
+import type { Node } from 'comark'
 import { defineComarkPlugin } from 'comark'
 
 export interface TitleDescriptionOptions {
@@ -40,26 +40,16 @@ function flattenNodeText(node: Node): string {
   if (typeof node === 'string') {
     return node
   }
+  // Leave out the separate link `heading-links` adds next to the heading text
+  if (Array.isArray(node) && node[1]?.$?.permalink) {
+    return ''
+  }
   if (Array.isArray(node)) {
     return getChildren(node).reduce((text: string, child: Node) => {
       return text + flattenNodeText(child)
     }, '')
   }
   return ''
-}
-
-/**
- * Text of a heading without its permalink: a link to the heading's own `id` next to
- * other content, such as the one `heading-links` adds with `prepend` or `append`.
- */
-function headingText(node: Node): string {
-  const id = (node as ElementNode)[1]?.id
-  if (!id) return flattenNodeText(node)
-  const children = getChildren(node)
-  const href = `#${id}`
-  const isPermalink = (child: Node) => Array.isArray(child) && child[0] === 'a' && child[1]?.href === href
-  const label = children.length > 1 ? children.filter((child) => !isPermalink(child)) : children
-  return label.reduce((text: string, child: Node) => text + flattenNodeText(child), '')
 }
 
 /**
@@ -116,7 +106,7 @@ export default defineComarkPlugin<TitleDescriptionOptions, { title?: string; des
         const first = contentNodes[0]
         if (first && getTag(first) === titleTag) {
           titleNodeIndex = nodes.indexOf(first)
-          state.tree.meta.title = headingText(first)
+          state.tree.meta.title = flattenNodeText(first)
           nextContentIndex = 1
         }
       }

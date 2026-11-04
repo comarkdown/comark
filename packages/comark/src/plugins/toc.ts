@@ -1,4 +1,4 @@
-import type { ElementNode, Node, MarkdownDocument } from 'comark'
+import type { Node, MarkdownDocument } from 'comark'
 import { defineComarkPlugin } from 'comark'
 
 export interface TocLink {
@@ -61,26 +61,16 @@ function flattenNodeText(node: Node): string {
   if (typeof node === 'string') {
     return node
   }
+  // Leave out the separate link `heading-links` adds next to the heading text
+  if (Array.isArray(node) && node[1]?.$?.permalink) {
+    return ''
+  }
   if (Array.isArray(node)) {
     return getChildren(node).reduce((text: string, child: Node) => {
       return text + flattenNodeText(child)
     }, '')
   }
   return ''
-}
-
-/**
- * Text of a heading without its permalink: a link to the heading's own `id` next to
- * other content, such as the one `heading-links` adds with `prepend` or `append`.
- */
-function headingText(node: Node): string {
-  const id = (node as ElementNode)[1]?.id
-  if (!id) return flattenNodeText(node)
-  const children = getChildren(node)
-  const href = `#${id}`
-  const isPermalink = (child: Node) => Array.isArray(child) && child[0] === 'a' && child[1]?.href === href
-  const label = children.length > 1 ? children.filter((child) => !isPermalink(child)) : children
-  return label.reduce((text: string, child: Node) => text + flattenNodeText(child), '')
 }
 
 function flattenNodes(nodes: Node[], maxDepth: number, currentDepth: number = 0): Node[] {
@@ -139,7 +129,7 @@ export function generateFlatToc(body: MarkdownDocument, options: Toc): Toc {
   const links: TocLink[] = headers.map((node) => ({
     id: getProps(node).id || '',
     depth: getHeaderDepth(node),
-    text: headingText(node),
+    text: flattenNodeText(node),
   }))
 
   return {
