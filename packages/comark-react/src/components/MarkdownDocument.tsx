@@ -266,7 +266,7 @@ function renderNode(
       }
 
       // Wrap lazy components in Suspense
-      const componentTag = nodeProps.as || tag
+      const componentTag = (as as string | undefined) || tag
       const isLazyComponent = asyncComponentCache.has(componentTag)
       if (isLazyComponent) {
         return (
