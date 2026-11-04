@@ -54,7 +54,7 @@ Returns a `ComarkPlugin` that adds a link to each matching heading.
 Headings without an `id` are left unchanged. With the `'wrap'` behavior, headings that already contain a link are also left unchanged, since links cannot be nested.
 
 ::warning
-Pick either this plugin or heading components that add their own link at render time, such as Nuxt UI's `ProseH2`. The plugin can't see those components, so using both renders two nested links in each heading.
+Don't combine this plugin with heading components that already add a link at render time, such as Nuxt UI's `ProseH2`. The plugin can't see those components, so each heading would end up with two nested links.
 ::
 
 ---
