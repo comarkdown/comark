@@ -1,5 +1,5 @@
 import { describe, expect, expectTypeOf, it } from 'vitest'
-import { parseMarkdown } from '../../src/parse'
+import { parseMarkdown } from '../../src/index'
 import titleDescription from '../../src/plugins/title-description'
 
 const CONTENT = `# My Page Title

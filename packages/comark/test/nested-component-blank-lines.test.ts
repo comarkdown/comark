@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseMarkdown } from '../src/parse'
+import { parseMarkdown } from '../src/index'
 
 // Regression tests for https://github.com/comarkdown/comark/issues/322
 //

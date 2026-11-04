@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import type { ComarkPlugin } from '../../src/types'
-import { parseMarkdown } from '../../src/parse'
+import { parseMarkdown } from '../../src/index'
 import attributes from '../../src/plugins/attributes'
 import components from '../../src/plugins/components'
 import frontmatter from '../../src/plugins/frontmatter'

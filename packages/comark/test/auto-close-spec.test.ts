@@ -10,7 +10,7 @@
  */
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { autoCloseMarkdown } from '../src/internal/parse/auto-close/index.ts'
+import { autoCloseMarkdown } from '../src/auto-close.ts'
 import { describe, expect, it } from 'vitest'
 import {
   compareSpecFile,

@@ -55,13 +55,14 @@ Located at `packages/comark/`:
 ```
 packages/comark/
 ├── src/
-│   ├── index.ts              # Entry point: re-exports parse.ts, auto-close, context, types
-│   ├── parse.ts              # Core parser: parseMarkdown(), createMarkdownParser() (comark/parse)
+│   ├── index.ts              # Public parser: defaults + auto-close, then delegates to core.ts (comark)
+│   ├── core.ts               # Parser pipeline with no default plugins (comark/core)
+│   ├── auto-close.ts         # autoCloseMarkdown() (comark/auto-close)
+│   ├── context.ts            # Live renderer context: ComarkContext, ComarkDocument, ComarkPatch (comark/context)
 │   ├── render/
 │   │   ├── index.ts          # String rendering: renderMarkdown() (renderHtmlFromDocument() moved to @comark/html)
 │   │   └── html.ts           # HTML-only renderer (comark/render/html)
 │   ├── types.ts              # Document model (MarkdownDocument, Node, ElementNode, TextNode, CommentNode) + ParserOptions
-│   ├── context.ts            # Live renderer context: ComarkContext, ComarkDocument, ComarkPatch
 │   ├── plugins/              # Built-in and optional plugins
 │   │   ├── alert.ts          # Alert/callout blocks
 │   │   ├── frontmatter.ts    # YAML frontmatter extraction (default via registerDefaultPlugins)
@@ -124,7 +125,10 @@ packages/comark/
   "./plugins/*": "./dist/plugins/*.js",
   "./utils": "./dist/utils/index.js",
   "./utils/trace": "./dist/utils/trace.js",
-  "./parse": "./dist/parse.js",
+  "./parse": "./dist/index.js",
+  "./core": "./dist/core.js",
+  "./auto-close": "./dist/auto-close.js",
+  "./context": "./dist/context.js",
   "./render": "./dist/render/index.js",
   "./render/html": "./dist/render/html.js"
 }
@@ -473,11 +477,14 @@ import mermaid, { Mermaid } from '@comark/angular/plugins/mermaid'
 ```typescript
 // Core parsing
 import { parseMarkdown, createMarkdownParser, autoCloseMarkdown, defineComarkPlugin } from 'comark'
-import { parseMarkdown } from 'comark/parse' // same parser API without the auto-close/context re-exports
+import { parseMarkdown } from 'comark/parse' // alias of the root export
+import { parseMarkdown } from 'comark/core' // no default plugins; autoClose is a function, not a boolean
+import { autoCloseMarkdown } from 'comark/auto-close'
 
 // Live renderer context (patch a rendered document without re-parsing)
 import { createComarkContext } from 'comark'
-import type { ComarkContext, ComarkDocument, ComarkPatch } from 'comark'
+import { createComarkContext } from 'comark/context'
+import type { ComarkContext, ComarkDocument, ComarkPatch } from 'comark/context'
 
 // HTML rendering (parse + render in one step)
 import { createHtmlRenderer, renderHtml, renderHtmlFromDocument } from '@comark/html'

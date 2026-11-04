@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { parseFrontmatter, renderFrontmatter } from '../src/internal/frontmatter'
-import { createMarkdownParser, parseMarkdown } from '../src/parse'
+import { createMarkdownParser, parseMarkdown } from '../src/index'
 
 describe('parseFrontmatter', () => {
   it('should parse simple frontmatter', () => {
