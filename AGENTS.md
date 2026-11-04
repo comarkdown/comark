@@ -794,8 +794,10 @@ Every renderer accepts `transformNode`, a function or array of functions that ma
 return a new `tag` and/or `props` for an element node. Each renderer calls
 `applyNodeTransforms()` (`src/internal/stringify/transform-node.ts`, exported from
 `comark/utils`) right after `resolveAttributes()` and before component lookup, so a
-new tag goes through `components` and `componentsManifest`. The string engine does it
-in `one()` (`src/internal/stringify/state.ts`) and renders a copy of the node. The
+new tag goes through `components` and `componentsManifest`. Hooks always get props
+resolved with `parseJson: true`, in every renderer, so one hook works everywhere. The string engine does it
+in `one()` (`src/internal/stringify/state.ts`) and renders a copy of the node only when
+the hook changes something; untouched nodes keep rendering from their raw attributes. The
 returned tag and props are used as-is, not sanitized: transforms are trusted developer
 code, and their security is the developer's responsibility. Children
 see the returned props as `renderData.props`. Docs:

@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { parseMarkdown } from '../src/index'
 import { renderHtmlFromDocument } from '../src/render/html'
 import { render } from '../src/render/index'
-import { mergeNodeTransforms } from '../src/utils/index'
+import { mergeNodeTransforms, resolveAttributes } from '../src/utils/index'
 import type { NodeTransform } from '../src/types'
 
 const html = async (markdown: string, transformNode: NodeTransform | NodeTransform[], options = {}) =>
@@ -21,6 +21,40 @@ describe('transformNode (HTML renderer)', () => {
     )
     expect(seen).toEqual([{ to: 'intro', title: 'Hi' }])
     expect(out).toBe('<a href="/docs/intro" title="Hi">Body</a>')
+  })
+
+  it('gives hooks the same props as the framework renderers', async () => {
+    const markdown =
+      '---\nt: 1\n---\n::counter{:count="5" :active="true" :cfg=\'{"a":1}\' :title="frontmatter.missing" :ok="frontmatter.t" label="x"}\nhi\n::'
+    const document = await parseMarkdown(markdown)
+    const seen: Record<string, unknown>[] = []
+    await renderHtmlFromDocument(document, {
+      transformNode: ({ tag, props }) => {
+        if (tag === 'counter') seen.push(props)
+      },
+    })
+    // Vue, React, Svelte and Angular resolve attributes this way before calling the hook
+    const renderData = { frontmatter: document.frontmatter, meta: document.meta, data: {}, props: {} }
+    const frameworkProps = resolveAttributes(document.nodes[0][1] as Record<string, unknown>, renderData, {
+      parseJson: true,
+    })
+    expect(seen).toEqual([frameworkProps])
+    expect(seen[0]).toEqual({ count: 5, active: true, cfg: { a: 1 }, title: undefined, ok: 1, label: 'x' })
+    expect(':count' in seen[0]).toBe(false)
+  })
+
+  it('renders props a hook passes through unchanged', async () => {
+    const out = await html('::counter{:count="5" :cfg=\'{"a":1}\' label="x"}\nhi\n::', ({ tag, props }) =>
+      tag === 'counter' ? { props: { ...props, big: (props.count as number) > 3 } } : undefined
+    )
+    expect(out).toBe('<counter count="5" cfg="{&quot;a&quot;:1}" label="x" big>\n  hi\n</counter>')
+  })
+
+  it('gives children the normalized props a hook returns', async () => {
+    const out = await html('::card{:count="5"}\n:span{:title="props.count"}\n::', ({ tag, props }) =>
+      tag === 'card' ? { props: { ...props } } : undefined
+    )
+    expect(out).toContain('<span title="5"></span>')
   })
 
   it('looks the new tag up in components, like any tag', async () => {

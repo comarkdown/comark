@@ -71,19 +71,27 @@ export async function one(node: Node, state: State, parent?: ElementNode, atLine
       }
     }
     if (hasOwnAttrs || transforms) {
-      let props = hasOwnAttrs ? resolveAttributes(node[1] as Record<string, unknown>, prevRenderData) : {}
-      const transformed = applyNodeTransforms(transforms, node, props, prevRenderData, parent)
-      if (transformed) {
-        // Handlers read the tag and attributes from the node, so render a copy
-        // that carries the transform's result. New props are already resolved.
-        let attrs = node[1]
-        if (transformed.props !== props) {
-          attrs = { ...transformed.props }
-          if (node[1].$) attrs.$ = node[1].$
-          hasOwnAttrs = true
-          props = transformed.props
+      const ownAttrs = node[1] as Record<string, unknown>
+      let props = hasOwnAttrs ? resolveAttributes(ownAttrs, prevRenderData) : {}
+      if (transforms) {
+        // Hooks get the same props as in the Vue/React/Svelte/Angular renderers
+        // (`:` stripped, values JSON-parsed), so one hook works in every renderer.
+        // String handlers still render from the raw attributes unless a hook
+        // returns new props, which keeps the output of untouched nodes unchanged.
+        const hookProps = hasOwnAttrs ? resolveAttributes(ownAttrs, prevRenderData, { parseJson: true }) : props
+        const transformed = applyNodeTransforms(transforms, node, hookProps, prevRenderData, parent)
+        if (transformed) {
+          // Handlers read the tag and attributes from the node, so render a copy
+          // that carries the transform's result. New props are already resolved.
+          let attrs = node[1]
+          if (transformed.props !== hookProps) {
+            attrs = { ...transformed.props }
+            if (node[1].$) attrs.$ = node[1].$
+            hasOwnAttrs = true
+            props = transformed.props
+          }
+          node = [transformed.tag, attrs, ...(node.slice(2) as Node[])]
         }
-        node = [transformed.tag, attrs, ...(node.slice(2) as Node[])]
       }
       if (hasOwnAttrs) state.renderData = { ...prevRenderData, props }
     }
