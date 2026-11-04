@@ -35,30 +35,20 @@ const pluginIds = new WeakMap<MarkdownExitPlugin, number>()
 const sharedParsers = new Map<string, MarkdownExit>()
 
 /**
- * Creates a parser function for Comark content.
+ * Creates a parser function without default plugins or a built-in auto-closer.
  *
- * Returns an async function that takes a markdown string and returns a Promise resolving to a MarkdownDocument AST.
- * The returned parser applies the plugins in `options.plugins` (it does not register defaults),
- * token-to-AST conversion, an optional auto-close function, AST transformations and plugin hooks.
- * Prefer `createMarkdownParser` from `comark` when you want the built-in plugins
- * and boolean `autoClose`.
- *
- * @param options - Parser options controlling parsing behavior.
- * @returns An async parser function: (markdown) => Promise<MarkdownDocument>
+ * Runs only the plugins in `options.plugins` and, when `options.autoClose` is a
+ * function, calls it before tokenizing. Use `createMarkdownParser` from `comark`
+ * for the built-in plugins and boolean `autoClose`.
  *
  * @example
  * ```typescript
- * import { createMarkdownParser } from 'comark'
+ * import { createMarkdownParser } from 'comark/core'
+ * import components from 'comark/plugins/components'
  *
- * const parseMarkdown = createMarkdownParser({ autoUnwrap: false })
- * const tree = await parseMarkdown('# Hello **World**\n::alert\nhi\n::')
- * console.log(tree.nodes)
- * // → [ ['h1', { id: 'hello-world' }, 'Hello ', ['strong', {}, 'World'] ], ['alert', {}, 'hi'] ]
- *
- * // Plugins are opt-in. Pass resolved plugins; this entry does not register defaults.
- * const tree2 = await parseMarkdown('<strong class="bold">Hello</strong> _world_')
- * console.log(tree2.nodes)
- * // → [ ['p', {}, '<strong class="bold">Hello</strong> ', ['em', {}, 'world']] ]
+ * const parse = createMarkdownParser({ plugins: [components()] })
+ * const tree = await parse('::alert\nhi\n::')
+ * // → [ ['alert', {}, 'hi'] ]
  * ```
  */
 export function createMarkdownParser<const TPlugins extends readonly ComarkPlugin<any, any>[] = []>(
@@ -224,37 +214,8 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
 }
 
 /**
- * Parse Comark content from a string
- *
- * @param markdown - The markdown/Comark content as a string
- * @param options - Parser options
- * @returns MarkdownDocument - The parsed AST tree
- *
- * @example
- * ```typescript
- * import { parseMarkdown } from 'comark'
- *
- * const content = `---
- * title: Hello World
- * ---
- *
- * # Hello World
- *
- * This is a **markdown** document with *Comark* components.
- *
- * ::alert{type="info"}
- * This is an alert component
- * ::
- * `
- *
- * const tree = await parseMarkdown(content)
- * console.log(tree.nodes)        // Array of AST nodes
- * console.log(tree.frontmatter)  // { title: 'Hello World' }
- * console.log(tree.meta)         // Additional metadata
- *
- * // Disable auto-unwrap
- * const tree2 = await parseMarkdown(content, { autoUnwrap: false })
- * ```
+ * Parse a string with the core pipeline: no default plugins, no built-in auto-closer.
+ * See {@link createMarkdownParser}.
  */
 export async function parseMarkdown<const TPlugins extends readonly ComarkPlugin<any, any>[] = []>(
   markdown: string,
@@ -268,20 +229,8 @@ export async function parseMarkdown<const TPlugins extends readonly ComarkPlugin
 }
 
 /**
- * Creates a serialized parser that reuses stream state across calls.
- * Overlapping parses run one at a time; each caller still receives its own
- * result or rejection (plugin errors are not swallowed).
- *
- * @param options - Parser options
- * @returns ComarkParseFn - The serialized parser function
- *
- * @example
- * ```typescript
- * import { createSerializedMarkdownParser } from 'comark'
- *
- * const parseMarkdown = createSerializedMarkdownParser()
- * const tree = await parseMarkdown(content, { streaming: true })
- * console.log(tree.nodes)
+ * Core-pipeline variant of `createSerializedMarkdownParser` from `comark`:
+ * overlapping parses run one at a time so streaming state stays ordered.
  */
 export function createSerializedMarkdownParser<const TPlugins extends readonly ComarkPlugin<any, any>[] = []>(
   options: ParserCoreOptions<TPlugins> = {} as ParserCoreOptions<TPlugins>

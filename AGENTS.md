@@ -477,7 +477,7 @@ import mermaid, { Mermaid } from '@comark/angular/plugins/mermaid'
 ```typescript
 // Core parsing
 import { parseMarkdown, createMarkdownParser, autoCloseMarkdown, defineComarkPlugin } from 'comark'
-import { parseMarkdown } from 'comark/parse' // alias of the root export
+import { parseMarkdown } from 'comark/parse' // deprecated alias of the root export
 import { parseMarkdown } from 'comark/core' // no default plugins; autoClose is a function, not a boolean
 import { autoCloseMarkdown } from 'comark/auto-close'
 
