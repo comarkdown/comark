@@ -1,0 +1,119 @@
+import { describe, expect, it, vi } from 'vitest'
+import { parseMarkdown } from '../src/index'
+import { renderHtmlFromDocument } from '../src/render/html'
+import { render } from '../src/render/index'
+import { mergeNodeTransforms } from '../src/utils/index'
+import type { NodeTransform } from '../src/types'
+
+const html = async (markdown: string, transformNode: NodeTransform | NodeTransform[], options = {}) =>
+  renderHtmlFromDocument(await parseMarkdown(markdown), { transformNode, ...options })
+
+describe('transformNode (HTML renderer)', () => {
+  it('renders the returned tag and props, with bindings already resolved', async () => {
+    const seen: unknown[] = []
+    const out = await html(
+      '---\nslug: intro\n---\n::card{:to="frontmatter.slug" title="Hi"}\nBody\n::',
+      ({ tag, props }) => {
+        if (tag !== 'card') return
+        seen.push(props)
+        return { tag: 'a', props: { href: `/docs/${props.to}`, title: props.title } }
+      }
+    )
+    expect(seen).toEqual([{ to: 'intro', title: 'Hi' }])
+    expect(out).toBe('<a href="/docs/intro" title="Hi">Body</a>')
+  })
+
+  it('looks the new tag up in components, like any tag', async () => {
+    const out = await html(':badge', ({ tag }) => (tag === 'badge' ? { tag: 'pill' } : undefined), {
+      components: { pill: () => '<b>pill</b>' },
+    })
+    expect(out).toBe('<b>pill</b>')
+  })
+
+  it('gives children the transformed props as their parent scope', async () => {
+    const out = await html('::card{title="Raw"}\n:span{:title="props.title"}\n::', ({ tag, props }) =>
+      tag === 'card' ? { props: { ...props, title: 'Changed' } } : undefined
+    )
+    expect(out).toContain('<span title="Changed"></span>')
+  })
+
+  it('keeps the parent scope for wrappers when only the tag changes', async () => {
+    const out = await html('::card{title="Kept"}\n- :span{:title="props.title"}\n::', ({ tag }) =>
+      tag === 'ul' ? { tag: 'ol' } : undefined
+    )
+    expect(out).toContain('<ol>')
+    expect(out).toContain('<span title="Kept"></span>')
+  })
+
+  it('runs a list of transforms in order, each seeing the previous result', async () => {
+    const out = await html('# Title', [
+      ({ tag }) => (tag === 'h1' ? { tag: 'h2' } : undefined),
+      ({ tag, props }) => (tag === 'h2' ? { props: { ...props, class: 'demoted' } } : undefined),
+    ])
+    expect(out).toBe('<h2 id="title" class="demoted">Title</h2>')
+  })
+
+  it('drops unsafe values a transform adds, and keeps the ones it left alone', async () => {
+    const out = await html('[x](/safe){title="t"}', ({ tag, props }) =>
+      tag === 'a'
+        ? { props: { ...props, onclick: 'alert(1)', ping: 'javascript:alert(1)', rel: 'nofollow' } }
+        : undefined
+    )
+    expect(out).toBe('<p><a href="/safe" title="t" rel="nofollow">x</a></p>')
+  })
+
+  it('drops a transform URL that resolves to an unsafe scheme', async () => {
+    const out = await html(
+      '[x](/safe)',
+      ({ tag, props, renderData }) => (tag === 'a' ? { props: { ...props, href: renderData.data.url } } : undefined),
+      { data: { url: 'javascript:alert(1)' } }
+    )
+    expect(out).toBe('<p><a>x</a></p>')
+  })
+
+  it('keeps the previous tag when the transform returns a refused or malformed one', async () => {
+    expect(await html('Hi', () => ({ tag: 'object' }))).toBe('<p>Hi</p>')
+    expect(await html('Hi', () => ({ tag: 'p onclick=alert(1)' }))).toBe('<p>Hi</p>')
+  })
+
+  it('renders the same output as without transforms when nothing changes', async () => {
+    const markdown = '---\nt: x\n---\n# A\n\n::card{:title="frontmatter.t"}\n**b** [c](/d)\n::'
+    const transform = vi.fn(() => undefined)
+    const document = await parseMarkdown(markdown)
+    expect(await renderHtmlFromDocument(document, { transformNode: transform })).toBe(
+      await renderHtmlFromDocument(document)
+    )
+    expect(transform).toHaveBeenCalled()
+  })
+
+  it('does not mutate the document', async () => {
+    const document = await parseMarkdown('::card{title="a"}\nx\n::')
+    const before = JSON.stringify(document.nodes)
+    await renderHtmlFromDocument(document, { transformNode: () => ({ tag: 'div', props: { title: 'b' } }) })
+    expect(JSON.stringify(document.nodes)).toBe(before)
+  })
+})
+
+describe('transformNode (string renderer)', () => {
+  it('lets handlers read the transformed node', async () => {
+    const out = await render(await parseMarkdown(':badge{label="a"}'), {
+      transformNode: ({ tag, props }) =>
+        tag === 'badge' ? { tag: 'pill', props: { label: `${props.label}!` } } : undefined,
+      components: { pill: ([, attrs]) => `pill:${attrs.label}` },
+    })
+    expect(out).toBe('pill:a!\n')
+  })
+})
+
+describe('mergeNodeTransforms', () => {
+  const a: NodeTransform = () => undefined
+  const b: NodeTransform = () => undefined
+
+  it('returns a lone source as it is, and a stable merged list', () => {
+    expect(mergeNodeTransforms(a, undefined)).toBe(a)
+    expect(mergeNodeTransforms(undefined, b)).toBe(b)
+    const list = [b]
+    expect(mergeNodeTransforms(a, list)).toEqual([a, b])
+    expect(mergeNodeTransforms(a, list)).toBe(mergeNodeTransforms(a, list))
+  })
+})

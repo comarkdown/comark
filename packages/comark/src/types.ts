@@ -239,9 +239,57 @@ export interface RendererOptions {
    * Additional data to pass to the renderer nodes, can be used to pass pre-fetched data to the renderer nodes
    */
   data?: Record<string, any>
+  /**
+   * Change the tag or props of element nodes just before they render.
+   * See {@link NodeTransform}.
+   */
+  transformNode?: NodeTransform | readonly NodeTransform[]
 
   [key: string]: unknown
 }
+
+/**
+ * What a {@link NodeTransform} receives for each element node.
+ */
+export interface NodeTransformContext {
+  /** The tag the renderer will use: the node's own tag, or the one an earlier transform returned. */
+  tag: string
+  /**
+   * The props the renderer will use: the node's attributes with `:` bindings
+   * resolved, or the props an earlier transform returned. Do not mutate them.
+   */
+  props: Record<string, unknown>
+  /** The node as it is in the document, with its raw attributes. Do not mutate it. */
+  node: ElementNode
+  /** The parent element node, if any. */
+  parent?: ElementNode
+  /** The render context the node's bindings resolve against. `props` holds the parent's props. */
+  renderData: NodeRenderData
+}
+
+/**
+ * A replacement tag and/or props for a node. Omitted fields keep their current value.
+ */
+export interface NodeTransformResult {
+  /**
+   * The tag to render instead. It is looked up like any tag: in `components`,
+   * then `componentsManifest`, then as a native element.
+   */
+  tag?: string
+  /** The props to render with instead. They are final: `:` keys are not resolved again. */
+  props?: Record<string, unknown>
+}
+
+/**
+ * Runs for every element node right before a renderer renders it, and may
+ * return a new tag and/or new props. It must be synchronous and must not
+ * mutate its input. Return nothing to keep the node as it is.
+ *
+ * Values a transform adds or changes go through the same checks as
+ * authored props: unsafe URLs and event-handler or markup-sink strings are
+ * dropped, and so is a tag the renderer refuses. Functions are kept.
+ */
+export type NodeTransform = (context: NodeTransformContext) => NodeTransformResult | null | undefined | void
 
 /**
  * The options for rendering markdown

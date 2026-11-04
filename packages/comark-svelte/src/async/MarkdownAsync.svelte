@@ -28,7 +28,7 @@ and wrap this component in a `<svelte:boundary>` for pending/error states.
 ```
 -->
 <script lang="ts">
-  import type { MarkdownDocument as MarkdownDocumentType, ComarkPlugin, ComponentManifest } from 'comark'
+  import type { MarkdownDocument as MarkdownDocumentType, ComarkPlugin, ComponentManifest, NodeTransform } from 'comark'
   import { createSerializedMarkdownParser } from 'comark'
   import { isMarkdownDocument } from 'comark/utils'
   import MarkdownDocument from '../components/MarkdownDocument.svelte'
@@ -42,6 +42,7 @@ and wrap this component in a `<svelte:boundary>` for pending/error states.
     unwrap = false,
     components = {},
     componentsManifest,
+    transformNode,
     streaming = false,
     caret = false,
     data,
@@ -54,6 +55,7 @@ and wrap this component in a `<svelte:boundary>` for pending/error states.
     unwrap?: boolean | string | string[]
     components?: Record<string, any>
     componentsManifest?: ComponentManifest
+    transformNode?: NodeTransform | readonly NodeTransform[]
     streaming?: boolean
     caret?: boolean | { class: string }
     data?: Record<string, unknown>
@@ -83,6 +85,7 @@ and wrap this component in a `<svelte:boundary>` for pending/error states.
     value={parsed}
     {components}
     {componentsManifest}
+    {transformNode}
     resolver={ResolveAsync}
     {streaming}
     {caret}

@@ -1,6 +1,6 @@
 import React from 'react'
 import { parseMarkdown } from 'comark'
-import type { MarkdownDocument as MarkdownDocumentType, ParserOptions } from 'comark'
+import type { MarkdownDocument as MarkdownDocumentType, NodeTransform, ParserOptions } from 'comark'
 import { isMarkdownDocument } from 'comark/utils'
 import { MarkdownDocument } from './MarkdownDocument.tsx'
 import { MarkdownClient } from './MarkdownClient.tsx'
@@ -42,6 +42,12 @@ export interface MarkdownProps extends Omit<React.HTMLAttributes<HTMLDivElement>
    * Used to resolve components that aren't in the components map
    */
   componentsManifest?: (name: string) => Promise<{ default: React.ComponentType<any> }>
+
+  /**
+   * Change the tag or props of element nodes just before they render.
+   * Pass a stable reference: a new array on every render re-renders the document.
+   */
+  transformNode?: NodeTransform | readonly NodeTransform[]
 
   /**
    * Strip wrapper tags from the top level of the document — shorthand for

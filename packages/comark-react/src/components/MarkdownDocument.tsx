@@ -4,9 +4,10 @@ import type {
   MarkdownDocument as MarkdownDocumentType,
   ComponentManifest,
   NodeRenderData,
+  NodeTransform,
 } from 'comark'
 import React, { lazy, Suspense, useMemo } from 'react'
-import { pascalCase, camelCase, resolveAttributes, toNativeAttributes } from 'comark/utils'
+import { applyNodeTransforms, pascalCase, camelCase, resolveAttributes, toNativeAttributes } from 'comark/utils'
 import { findLastTextNodeAndAppendNode, getCaret } from '../utils/caret.ts'
 
 /**
@@ -108,7 +109,8 @@ function renderNode(
   key?: string | number,
   componentsManifest?: ComponentManifest,
   parent?: Node,
-  renderData: NodeRenderData = { frontmatter: {}, meta: {}, data: {}, props: {} }
+  renderData: NodeRenderData = { frontmatter: {}, meta: {}, data: {}, props: {} },
+  transformNode?: NodeTransform | readonly NodeTransform[]
 ): React.ReactNode {
   // Handle text nodes (strings)
   if (typeof node === 'string') {
@@ -117,18 +119,31 @@ function renderNode(
 
   // Handle element nodes (arrays)
   if (Array.isArray(node)) {
-    const tag = getTag(node)
-    if (!tag) return null
+    const nodeTag = getTag(node)
+    if (!nodeTag) return null
 
     const nodeProps = getProps(node)
     const children = getChildren(node)
+
+    // Resolve `:prefix` bindings, then let `transformNode` change the tag or props
+    const ownProps = resolveAttributes(nodeProps, renderData, { parseJson: true })
+    const transformed = applyNodeTransforms(
+      transformNode,
+      node as ElementNode,
+      ownProps,
+      renderData,
+      parent as ElementNode | undefined
+    )
+    const tag = transformed ? transformed.tag : nodeTag
+    const resolved = transformed ? transformed.props : ownProps
+    const as = transformed ? resolved.as : nodeProps.as
 
     // Check if there's a custom component for this tag
     let customComponent
 
     if ((parent as ElementNode | undefined)?.[0] !== 'pre') {
-      if (nodeProps.as) {
-        customComponent = resolveComponent(nodeProps.as, components, componentsManifest)
+      if (as) {
+        customComponent = resolveComponent(as as string, components, componentsManifest)
       }
       if (!customComponent) {
         customComponent = resolveComponent(tag, components, componentsManifest)
@@ -137,10 +152,8 @@ function renderNode(
 
     const Component = customComponent || tag
 
-    // Resolve `:prefix` bindings, then apply React-specific attribute
-    // remapping (`class` → `className`, string `style` → object, `tabindex`
-    // → `tabIndex`).
-    const resolved = resolveAttributes(nodeProps, renderData, { parseJson: true })
+    // React-specific attribute remapping (`class` → `className`, string
+    // `style` → object, `tabindex` → `tabIndex`).
     let props: Record<string, any> = {}
     for (const k in resolved) {
       const v = resolved[k]
@@ -177,8 +190,9 @@ function renderNode(
     // Only shadow the parent's `props` scope when the current element has its
     // own attributes. Bare wrappers (`<p>`, `<ul>`, `<li>`, …) must keep the
     // parent's scope so bindings like `{{ props.x }}` reach across them. The
-    // check uses the raw attributes: resolving can omit all of them.
-    let hasOwnAttrs = false
+    // check uses the raw attributes: resolving can omit all of them. Props a
+    // transform returned count as the element's own.
+    let hasOwnAttrs = resolved !== ownProps
     for (const key in nodeProps) {
       if (key !== '$') {
         hasOwnAttrs = true
@@ -219,14 +233,14 @@ function renderNode(
           const slotChildren = getChildren(child)
           slots[slotName] = slotChildren
             .map((slotChild: Node, idx: number) =>
-              renderNode(slotChild, components, idx, componentsManifest, node, childrenRenderData)
+              renderNode(slotChild, components, idx, componentsManifest, node, childrenRenderData, transformNode)
             )
             .filter((slotChild): slotChild is React.ReactNode => slotChild !== null)
           continue
         }
       }
 
-      const rendered = renderNode(child, components, i, componentsManifest, node, childrenRenderData)
+      const rendered = renderNode(child, components, i, componentsManifest, node, childrenRenderData, transformNode)
       if (rendered !== null) {
         regularChildren.push(rendered)
       }
@@ -318,6 +332,12 @@ export interface MarkdownDocumentProps extends Omit<React.HTMLAttributes<HTMLDiv
   data?: Record<string, unknown>
 
   /**
+   * Change the tag or props of element nodes just before they render.
+   * Pass a stable reference: a new array on every render re-renders the document.
+   */
+  transformNode?: NodeTransform | readonly NodeTransform[]
+
+  /**
    * Additional className for the wrapper div
    */
   className?: string
@@ -351,6 +371,7 @@ export const MarkdownDocument: React.FC<MarkdownDocumentProps> = ({
   streaming = false,
   caret: caretProp = false,
   data,
+  transformNode,
   className,
   ...rest
 }) => {
@@ -380,9 +401,11 @@ export const MarkdownDocument: React.FC<MarkdownDocumentProps> = ({
     }
 
     return nodes
-      .map((node, index) => renderNode(node, customComponents, index, componentsManifest, undefined, renderData))
+      .map((node, index) =>
+        renderNode(node, customComponents, index, componentsManifest, undefined, renderData, transformNode)
+      )
       .filter((child): child is React.ReactNode => child !== null)
-  }, [document, customComponents, componentsManifest, streaming, caret, data])
+  }, [document, customComponents, componentsManifest, streaming, caret, data, transformNode])
 
   // Wrap in a fragment
   return (

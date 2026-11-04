@@ -107,7 +107,7 @@ packages/comark/
 │       │   ├── indent.ts     # Dedent of outdented component children
 │       │   ├── unwrap.ts     # `unwrap` option
 │       │   └── auto-unwrap.ts # `autoUnwrap` option
-│       └── stringify/        # AST → markdown string rendering (handlers/ per tag)
+│       └── stringify/        # AST → markdown string rendering (handlers/ per tag; transform-node.ts runs `transformNode`)
 ├── SPEC/                 # Behavioral spec fixtures (CommonMark, GFM, HTML, COMARK, auto-close.md)
 ├── test/                 # Vitest test files
 ├── package.json
@@ -498,7 +498,10 @@ import {
   HTML_VOID_ELEMENTS,
   isMarkdownDocument,
   sanitizeData,
+  applyNodeTransforms,  // runs a renderer's `transformNode` for one node (used by every renderer)
+  mergeNodeTransforms,  // merges two `transformNode` values into one stable list
 } from 'comark/utils'
+import type { NodeTransform, NodeTransformContext, NodeTransformResult } from 'comark'
 import { noopTracer, withSpan } from 'comark/utils/trace'
 
 // Core plugins — use when calling parseMarkdown() directly (framework-agnostic)
@@ -773,6 +776,18 @@ keeps closed-block text literal; a blank line still nests real markdown under
 the open tag. `<style>`, `<pre>`, `<script>`, `<textarea>`, and block-level `<!-- -->` comments are always verbatim, including newlines and inner tags. All-uppercase tag names are lowercased (`<DIV>` → `div`); any name with a lowercase letter keeps its case (`<Hello>`, `<linearGradient>`). `visit`/`visitAsync` drop nodes nested deeper than `TREE_WALK_MAX_DEPTH` (50). Deferred cases (cross-paragraph inline
 opener, trailing text after that closer, indented child tag inside a multiline
 `<a>`) are skipped tests in `test/html-block.test.ts` — do not weaken them.
+
+## Render-time node transforms
+
+Every renderer accepts `transformNode`, a function or array of functions that may
+return a new `tag` and/or `props` for an element node. Each renderer calls
+`applyNodeTransforms()` (`src/internal/stringify/transform-node.ts`, exported from
+`comark/utils`) right after `resolveAttributes()` and before component lookup, so a
+new tag goes through `components` and `componentsManifest`. The string engine does it
+in `one()` (`src/internal/stringify/state.ts`) and renders a copy of the node. Values a
+transform added or changed go through `validateProp()`; functions are kept. Children
+see the returned props as `renderData.props`. Docs:
+`docs/content/5.reference/3.reference.md` ("Transforming nodes before render").
 
 ## Vue/React/Svelte/Angular Components
 
