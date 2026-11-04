@@ -55,13 +55,14 @@ Located at `packages/comark/`:
 ```
 packages/comark/
 ├── src/
-│   ├── index.ts              # Entry point: re-exports parse.ts, auto-close, context, types
-│   ├── parse.ts              # Core parser: parseMarkdown(), createMarkdownParser() (comark/parse)
+│   ├── index.ts              # Public parser: defaults + auto-close, then delegates to core.ts (comark)
+│   ├── core.ts               # Parser pipeline with no default plugins (comark/core)
+│   ├── auto-close.ts         # autoCloseMarkdown() (comark/auto-close)
+│   ├── context.ts            # Live renderer context: ComarkContext, ComarkDocument, ComarkPatch (comark/context)
 │   ├── render/
 │   │   ├── index.ts          # String rendering: renderMarkdown() (renderHtmlFromDocument() moved to @comark/html)
 │   │   └── html.ts           # HTML-only renderer (comark/render/html)
 │   ├── types.ts              # Document model (MarkdownDocument, Node, ElementNode, TextNode, CommentNode) + ParserOptions
-│   ├── context.ts            # Live renderer context: ComarkContext, ComarkDocument, ComarkPatch
 │   ├── plugins/              # Built-in and optional plugins
 │   │   ├── alert.ts          # Alert/callout blocks
 │   │   ├── frontmatter.ts    # YAML frontmatter extraction (default via registerDefaultPlugins)
@@ -72,7 +73,8 @@ packages/comark/
 │   │   ├── breaks.ts         # Hard line breaks (`<br>`) from newlines
 │   │   ├── emoji.ts          # Emoji shortcodes
 │   │   ├── footnotes.ts      # GFM footnotes
-│   │   ├── headings.ts       # Title/description extraction into `meta`
+│   │   ├── heading-links.ts  # Links headings to their own `id`
+│   │   ├── headings.ts       # Deprecated alias → title-description (remove next major)
 │   │   ├── json-render.ts    # `json-render` spec fences expanded into nodes
 │   │   ├── punctuation.ts    # Smart quotes and dashes
 │   │   ├── shiki.ts          # Shiki with bundled default theme + language loaders (peer: shiki)
@@ -86,6 +88,7 @@ packages/comark/
 │   │   ├── security.ts       # XSS/security sanitization
 │   │   ├── summary.ts        # Summary extraction
 │   │   ├── task-list.ts      # GFM task lists
+│   │   ├── title-description.ts # Title/description extraction into `meta`
 │   │   └── toc.ts            # Table of contents
 │   ├── utils/                # Shared utilities (comark/utils entry point)
 │   │   ├── index.ts          # textContent(), visit(), visitAsync(), escapeHtml(), isHtmlVoidElement(), indent(), string/object utils
@@ -123,7 +126,10 @@ packages/comark/
   "./plugins/*": "./dist/plugins/*.js",
   "./utils": "./dist/utils/index.js",
   "./utils/trace": "./dist/utils/trace.js",
-  "./parse": "./dist/parse.js",
+  "./parse": "./dist/index.js",
+  "./core": "./dist/core.js",
+  "./auto-close": "./dist/auto-close.js",
+  "./context": "./dist/context.js",
   "./render": "./dist/render/index.js",
   "./render/html": "./dist/render/html.js"
 }
@@ -472,11 +478,14 @@ import mermaid, { Mermaid } from '@comark/angular/plugins/mermaid'
 ```typescript
 // Core parsing
 import { parseMarkdown, createMarkdownParser, autoCloseMarkdown, defineComarkPlugin } from 'comark'
-import { parseMarkdown } from 'comark/parse' // same parser API without the auto-close/context re-exports
+import { parseMarkdown } from 'comark/parse' // deprecated alias of the root export
+import { parseMarkdown } from 'comark/core' // no default plugins; autoClose is a function, not a boolean
+import { autoCloseMarkdown } from 'comark/auto-close'
 
 // Live renderer context (patch a rendered document without re-parsing)
 import { createComarkContext } from 'comark'
-import type { ComarkContext, ComarkDocument, ComarkPatch } from 'comark'
+import { createComarkContext } from 'comark/context'
+import type { ComarkContext, ComarkDocument, ComarkPatch } from 'comark/context'
 
 // HTML rendering (parse + render in one step)
 import { createHtmlRenderer, renderHtml, renderHtmlFromDocument } from '@comark/html'
@@ -518,7 +527,9 @@ import toc from 'comark/plugins/toc'
 import alert from 'comark/plugins/alert'
 import breaks from 'comark/plugins/breaks'
 import footnotes from 'comark/plugins/footnotes'
-import headings from 'comark/plugins/headings'
+import titleDescription from 'comark/plugins/title-description'
+// import headings from 'comark/plugins/headings' // deprecated alias → title-description
+import headingLinks from 'comark/plugins/heading-links'
 import punctuation from 'comark/plugins/punctuation'
 import jsonRender from 'comark/plugins/json-render'
 import security from 'comark/plugins/security'

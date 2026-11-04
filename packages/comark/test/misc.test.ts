@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseMarkdown } from '../src/parse'
+import { parseMarkdown } from '../src/index'
 
 describe('misc', () => {
   it('ignore props with invalid chars, only /^[a-z0-9_-:]+$/gi', async () => {

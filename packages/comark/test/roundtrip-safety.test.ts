@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseMarkdown } from '../src/parse'
+import { parseMarkdown } from '../src/index'
 import { renderMarkdown } from '../src/render'
 import mermaid from '../src/plugins/mermaid'
 import type { MarkdownDocument } from '../src/types'

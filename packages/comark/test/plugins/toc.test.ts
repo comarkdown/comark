@@ -1,5 +1,5 @@
 import { describe, expect, expectTypeOf, it } from 'vitest'
-import { parseMarkdown } from '../../src/parse'
+import { parseMarkdown } from '../../src/index'
 import toc, { type Toc } from '../../src/plugins/toc'
 
 const CONTENT = `# Page Title

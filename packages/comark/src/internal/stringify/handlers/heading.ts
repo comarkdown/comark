@@ -17,6 +17,8 @@ function autoHeadingId(node: ElementNode, level: number, state: State, id: unkno
   if (!tracker) return undefined
   const text = node
     .slice(2)
+    // Markdown output leaves out the separate link `heading-links` adds
+    .filter((child) => !(Array.isArray(child) && child[1]?.$?.permalink === 'separate'))
     .map((child) => textContent(child as ElementNode))
     .join('')
   const autoId = nextHeadingId(text, level, tracker)

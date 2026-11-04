@@ -61,6 +61,10 @@ function flattenNodeText(node: Node): string {
   if (typeof node === 'string') {
     return node
   }
+  // Leave out the separate link `heading-links` adds next to the heading text
+  if (Array.isArray(node) && node[1]?.$?.permalink === 'separate') {
+    return ''
+  }
   if (Array.isArray(node)) {
     return getChildren(node).reduce((text: string, child: Node) => {
       return text + flattenNodeText(child)

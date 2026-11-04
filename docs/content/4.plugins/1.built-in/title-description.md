@@ -1,8 +1,8 @@
 ---
-title: Headings
+title: Title & Description
 description: Plugin for extracting the page title and description from document content.
 seo:
-  title: Headings Plugin
+  title: Title & Description Plugin
 navigation:
   icon: i-lucide-heading
 links:
@@ -18,27 +18,40 @@ links:
     variant: soft
 ---
 
-The `comark/plugins/headings` plugin extracts the page title and description from the top of a document and stores them in `tree.meta.title` and `tree.meta.description`. By default it reads the first `h1` as the title and the first `p` as the description, keeping both nodes in the tree. Set `remove: true` to strip them so they are not rendered twice.
+The `comark/plugins/title-description` plugin extracts the page title and description from the top of a document and stores them in `tree.meta.title` and `tree.meta.description`. By default it reads the first `h1` as the title and the first `p` as the description, keeping both nodes in the tree. Set `remove: true` to strip them so they are not rendered twice.
+
+::note
+`comark/plugins/headings` is a **deprecated alias** of `comark/plugins/title-description` and will be removed in the next major version. Prefer `import titleDescription from 'comark/plugins/title-description'`.
+::
 
 ## Usage
 
+::code-group
 ```typescript
 import { parseMarkdown } from 'comark'
-import headings from 'comark/plugins/headings'
+import titleDescription from 'comark/plugins/title-description'
 
 const result = await parseMarkdown(content, {
-  plugins: [headings()]
+  plugins: [titleDescription()]
 })
 
 console.log(result.meta.title)       // "My Page Title"
 console.log(result.meta.description) // "First paragraph text."
 ```
+```markdown [content.md]
+# My Page Title
 
----
+First paragraph text.
+
+## Section One
+
+More content here.
+```
+::
 
 ## API
 
-### `headings(options?)`
+### `titleDescription(options?)`
 
 Returns a `ComarkPlugin` that extracts title and description metadata from top-level nodes.
 
@@ -69,10 +82,10 @@ The description check always looks at the node **immediately after** the title: 
 The element tag to read the title from. Set to `false` to disable title extraction entirely.
 
 ```typescript
-headings({ titleTag: 'h2' })
+titleDescription({ titleTag: 'h2' })
 
 // Disable title extraction
-headings({ titleTag: false })
+titleDescription({ titleTag: false })
 ```
 
 **Default:** `'h1'`
@@ -82,10 +95,10 @@ headings({ titleTag: false })
 The element tag to read the description from. Use `'blockquote'` if you prefer a block quote as the lead-in description. Set to `false` to disable description extraction entirely.
 
 ```typescript
-headings({ descriptionTag: 'blockquote' })
+titleDescription({ descriptionTag: 'blockquote' })
 
 // Disable description extraction
-headings({ descriptionTag: false })
+titleDescription({ descriptionTag: false })
 ```
 
 **Default:** `'p'`
@@ -95,7 +108,7 @@ headings({ descriptionTag: false })
 Whether to remove the extracted nodes from the tree after extraction. Set to `true` when you don't want the title and description rendered, for example, when a layout already displays them separately.
 
 ```typescript
-headings({ remove: true })
+titleDescription({ remove: true })
 ```
 
 **Default:** `false`
@@ -120,10 +133,10 @@ More content here.
 
 ```typescript [parse.ts]
 import { parseMarkdown } from 'comark'
-import headings from 'comark/plugins/headings'
+import titleDescription from 'comark/plugins/title-description'
 
 const result = await parseMarkdown(content, {
-  plugins: [headings()]
+  plugins: [titleDescription()]
 })
 
 console.log(result.meta.title)       // "My Page Title"
@@ -137,7 +150,7 @@ console.log(result.meta.description) // "This is the opening paragraph used as t
 
 ```typescript
 const result = await parseMarkdown(content, {
-  plugins: [headings({ descriptionTag: 'blockquote' })]
+  plugins: [titleDescription({ descriptionTag: 'blockquote' })]
 })
 
 console.log(result.meta.description) // "A highlighted lead-in sentence shown as the description."
@@ -147,11 +160,11 @@ console.log(result.meta.description) // "A highlighted lead-in sentence shown as
 
 ```typescript
 import { parseMarkdown } from 'comark'
-import headings from 'comark/plugins/headings'
+import titleDescription from 'comark/plugins/title-description'
 import toc from 'comark/plugins/toc'
 
 const result = await parseMarkdown(content, {
-  plugins: [headings(), toc()]
+  plugins: [titleDescription(), toc()]
 })
 
 console.log(result.meta.title)       // page title
