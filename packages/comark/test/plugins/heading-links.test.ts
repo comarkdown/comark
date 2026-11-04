@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { createMarkdownParser, parseMarkdown } from '../../src/parse'
 import headingLinks from '../../src/plugins/heading-links'
 import titleDescription from '../../src/plugins/title-description'
+import html from '../../src/plugins/html'
 import toc from '../../src/plugins/toc'
 import { renderMarkdown } from '../../src/render'
 import { renderHtmlForTest } from '../utils/render-html'
@@ -168,15 +169,25 @@ describe('heading-links plugin', () => {
   })
 
   it('leaves the added links out of Markdown output, so round-trips stay stable', async () => {
-    const doc = '## Use `parse`\n\n## See [details](#see-details)\n\nText'
-    const expected = await renderMarkdown(await parseMarkdown(doc))
-    for (const behavior of ['wrap', 'prepend', 'append'] as const) {
-      const plugins = [headingLinks({ behavior })]
+    const cases = [
+      ...(['wrap', 'prepend', 'append'] as const).map((behavior) => ({
+        doc: '## Use `parse`\n\n## See [details](#see-details)\n\nText',
+        base: [],
+        links: headingLinks({ behavior }),
+      })),
+      // The explicit id must survive, although the dropped link's text matched it
+      { doc: '## Foo {#linkfoo}', base: [], links: headingLinks({ behavior: 'prepend', content: ['link'] }) },
+      // Raw HTML heading text must not gain escapes
+      { doc: '<h2 id="x">Use *stars*</h2>', base: [html({ markdown: false })], links: headingLinks() },
+    ]
+    for (const { doc, base, links } of cases) {
+      const plugins = [...base, links]
+      const expected = await renderMarkdown(await parseMarkdown(doc, { plugins: base }))
       const once = await renderMarkdown(await parseMarkdown(doc, { plugins }))
       const twice = await renderMarkdown(await parseMarkdown(once, { plugins }))
 
-      expect(once, behavior).toBe(expected)
-      expect(twice, behavior).toBe(expected)
+      expect(once, doc).toBe(expected)
+      expect(twice, doc).toBe(expected)
     }
   })
 })
