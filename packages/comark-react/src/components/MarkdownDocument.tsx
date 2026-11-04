@@ -192,9 +192,14 @@ function renderNode(
       props.key = key
     }
 
-    // Handle self-closing tags. A transform can turn any node into a native
-    // void element, which React refuses to give children.
-    if (['hr', 'br', 'img'].includes(tag) || (!customComponent && isHtmlVoidElement(tag))) {
+    // Native void elements take no children, and React throws if they get
+    // any, including a `children` prop. A transform can turn any node into
+    // one. Custom components keep the normal path, with children and Suspense.
+    if (!customComponent && isHtmlVoidElement(tag)) {
+      if ('children' in props) {
+        const { children: _children, ...voidProps } = props
+        props = voidProps
+      }
       return React.createElement(Component, props)
     }
 

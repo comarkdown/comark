@@ -38,10 +38,25 @@ describe('MarkdownDocument — transformNode', () => {
     const html = renderToString(
       <MarkdownDocument
         value={value}
-        transformNode={({ tag }) => (tag === 'p' ? { tag: 'input', props: { placeholder: 'x' } } : undefined)}
+        transformNode={({ tag }) =>
+          tag === 'p' ? { tag: 'input', props: { placeholder: 'x', children: 'y' } } : undefined
+        }
       />
     )
     expect(html).toContain('<input placeholder="x"/>')
+  })
+
+  it('keeps children for a custom component mapped to a void tag', async () => {
+    const value = await parseMarkdown('Caption')
+    const Figure = ({ children }: { children?: React.ReactNode }) => <figure>{children}</figure>
+    const html = renderToString(
+      <MarkdownDocument
+        value={value}
+        components={{ img: Figure }}
+        transformNode={({ tag }) => (tag === 'p' ? { tag: 'img' } : undefined)}
+      />
+    )
+    expect(html).toContain('<figure>Caption</figure>')
   })
 
   it('runs config-level transforms before instance-level ones', async () => {
