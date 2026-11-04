@@ -572,14 +572,6 @@ export interface ParserOptions<
    * @default true
    */
   registerDefaultPlugins?: boolean
-
-  /**
-   * @deprecated Use `registerDefaultPlugins: false` and register plugins explicitly
-   * (include `html()` from `comark/plugins/html` only when you need HTML parsing).
-   * Setting this option logs a deprecation warning. `html: false` still skips the
-   * default html plugin for backward compatibility.
-   */
-  html?: boolean
 }
 
 /**

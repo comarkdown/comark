@@ -40,9 +40,9 @@ export type * from './types.ts'
 /**
  * Resolve public parser options into core options.
  *
- * Registers the built-in plugins, honors the deprecated `html` flag, and turns
- * `autoClose: true` into a function the core parser can call. Custom auto-close
- * functions and `autoClose: false` pass through unchanged.
+ * Registers the built-in plugins and turns `autoClose: true` into a function the
+ * core parser can call. Custom auto-close functions and `autoClose: false` pass
+ * through unchanged.
  */
 function resolveParserOptions<const TPlugins extends readonly ComarkPlugin<any, any>[] = []>(
   options: ParserOptions<TPlugins>
@@ -50,26 +50,9 @@ function resolveParserOptions<const TPlugins extends readonly ComarkPlugin<any, 
   const { autoClose = true, tracer = noopTracer } = options
   const userPlugins = options.plugins ?? []
 
-  // `options.html` is deprecated — prefer `registerDefaultPlugins: false` (or
-  // omitting the html plugin from an explicit plugins list).
-  if (options.html !== undefined) {
-    console.warn(
-      '[comark] `ParserOptions.html` is deprecated and will be removed in a future major version. ' +
-        'Use `registerDefaultPlugins: false` and register `html()` from `comark/plugins/html` only when needed.'
-    )
-  }
-
   const defaultPlugins =
     options.registerDefaultPlugins !== false
-      ? [
-          frontmatterPlugin(),
-          // Honor deprecated `html: false` so callers can keep disabling HTML for now.
-          ...(options.html !== false ? [html()] : []),
-          alert(),
-          taskList(),
-          components(),
-          attributes(),
-        ]
+      ? [frontmatterPlugin(), html(), alert(), taskList(), components(), attributes()]
       : []
 
   const plugins = dedupePlugins(defaultPlugins, userPlugins)

@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import type { ComarkPlugin } from '../../src/types'
 import { parseMarkdown } from '../../src/index'
 import attributes from '../../src/plugins/attributes'
@@ -103,22 +103,6 @@ describe('default plugin options', () => {
     it('still auto-closes markdown markers when disabled', async () => {
       const tree = await parseMarkdown('**bold', { registerDefaultPlugins: false })
       expect(tree.nodes).toEqual([['p', {}, ['strong', {}, 'bold']]])
-    })
-  })
-
-  describe('deprecated html option', () => {
-    it('still disables HTML with html: false and warns', async () => {
-      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
-      const tree = await parseMarkdown('<strong>Hello</strong>', { html: false })
-      expect(tree.nodes).toEqual([['p', {}, '<strong>Hello</strong>']])
-      expect(warn).toHaveBeenCalled()
-      expect(String(warn.mock.calls[0]?.[0])).toContain('ParserOptions.html')
-      warn.mockRestore()
-    })
-
-    it('does not add html when registerDefaultPlugins is false even if html is unset', async () => {
-      const tree = await parseMarkdown('<em>hi</em>', { registerDefaultPlugins: false })
-      expect(tree.nodes).toEqual([['p', {}, '<em>hi</em>']])
     })
   })
 
