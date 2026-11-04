@@ -69,7 +69,8 @@ describe('plugins', () => {
     await withFootnotes(pluginMarkdown)
   })
 
-  bench('title-description', async () => {
+  // Keeps the `headings` id so CodSpeed history carries over the plugin rename.
+  bench('headings', async () => {
     await withTitleDescription(pluginMarkdown)
   })
 

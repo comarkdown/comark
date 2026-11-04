@@ -77,7 +77,8 @@ const pluginToggles = useLocalStorage(
     punctuation: false,
     breaks: false,
     binding: true,
-    titleDescription: false,
+    // Keeps the `headings` key so toggles saved before the plugin rename still apply.
+    headings: false,
     toc: false,
     summary: false,
     security: false,
@@ -157,7 +158,7 @@ const pluginDefs = [
     factory: () => breaks(),
   },
   {
-    key: 'titleDescription',
+    key: 'headings',
     label: 'Title & Description',
     icon: 'i-lucide-heading',
     factory: () => titleDescription(),
