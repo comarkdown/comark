@@ -7,7 +7,14 @@ import type {
   NodeTransform,
 } from 'comark'
 import React, { lazy, Suspense, useMemo } from 'react'
-import { applyNodeTransforms, pascalCase, camelCase, resolveAttributes, toNativeAttributes } from 'comark/utils'
+import {
+  applyNodeTransforms,
+  isHtmlVoidElement,
+  pascalCase,
+  camelCase,
+  resolveAttributes,
+  toNativeAttributes,
+} from 'comark/utils'
 import { findLastTextNodeAndAppendNode, getCaret } from '../utils/caret.ts'
 
 /**
@@ -138,12 +145,15 @@ function renderNode(
     const resolved = transformed ? transformed.props : ownProps
     const as = transformed ? resolved.as : nodeProps.as
 
-    // Check if there's a custom component for this tag
+    // Check if there's a custom component for this tag. `componentTag` is the
+    // name the component resolved under, which keys the lazy-component cache.
     let customComponent
+    let componentTag = tag
 
     if ((parent as ElementNode | undefined)?.[0] !== 'pre') {
       if (as) {
         customComponent = resolveComponent(as as string, components, componentsManifest)
+        if (customComponent) componentTag = as as string
       }
       if (!customComponent) {
         customComponent = resolveComponent(tag, components, componentsManifest)
@@ -182,8 +192,9 @@ function renderNode(
       props.key = key
     }
 
-    // Handle self-closing tags
-    if (['hr', 'br', 'img'].includes(tag)) {
+    // Handle self-closing tags. A transform can turn any node into a native
+    // void element, which React refuses to give children.
+    if (['hr', 'br', 'img'].includes(tag) || (!customComponent && isHtmlVoidElement(tag))) {
       return React.createElement(Component, props)
     }
 
@@ -266,7 +277,6 @@ function renderNode(
       }
 
       // Wrap lazy components in Suspense
-      const componentTag = (as as string | undefined) || tag
       const isLazyComponent = asyncComponentCache.has(componentTag)
       if (isLazyComponent) {
         return (

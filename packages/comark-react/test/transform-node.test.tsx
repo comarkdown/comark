@@ -33,6 +33,17 @@ describe('MarkdownDocument — transformNode', () => {
     expect(html).toContain('<span class="pill info">Ada<span title="info"></span></span>')
   })
 
+  it('renders a node turned into a native void element without its children', async () => {
+    const value = await parseMarkdown('Type here')
+    const html = renderToString(
+      <MarkdownDocument
+        value={value}
+        transformNode={({ tag }) => (tag === 'p' ? { tag: 'input', props: { placeholder: 'x' } } : undefined)}
+      />
+    )
+    expect(html).toContain('<input placeholder="x"/>')
+  })
+
   it('runs config-level transforms before instance-level ones', async () => {
     const value = await parseMarkdown('# Title')
     const Renderer = defineMarkdownDocumentComponent({
