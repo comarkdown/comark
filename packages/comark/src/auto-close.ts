@@ -1114,12 +1114,15 @@ function codePointAt(text: string, i: number): string {
 }
 
 /**
- * True for the subscript pattern `word~digits~word` (`H~2~o`), the one paired
- * use of single tildes that must stay unescaped.
+ * True when the `~` at `i` closes or opens a subscript pair (`markdown-it-sub`),
+ * the one paired use of single tildes that must stay unescaped.
  */
 function isSubscriptTilde(text: string, i: number): boolean {
   for (let j = i - 1; j >= 0 && text.charCodeAt(j) !== 10; j--) {
-    if (text.charCodeAt(j) === 126) return isSubscriptPair(text, j, i)
+    if (text.charCodeAt(j) === 126) {
+      if (isSubscriptPair(text, j, i)) return true
+      break
+    }
   }
   for (let j = i + 1; j < text.length && text.charCodeAt(j) !== 10; j++) {
     if (text.charCodeAt(j) === 126) return isSubscriptPair(text, i, j)
@@ -1127,15 +1130,21 @@ function isSubscriptTilde(text: string, i: number): boolean {
   return false
 }
 
+/**
+ * `word~text~` with no whitespace inside (`a~note~`, `x~ab~.`). A word right
+ * after the closer is only allowed for digits (`H~2~O`), so `foo~bar~baz` and
+ * `20~25°C。20~25°C` stay prose.
+ */
 function isSubscriptPair(text: string, open: number, close: number): boolean {
   if (close - open < 2) return false
   if (text.charCodeAt(open - 1) === 126 || text.charCodeAt(open + 1) === 126) return false
   if (text.charCodeAt(close + 1) === 126) return false
+  const wordAfter = close + 1 < text.length && isAlnum(codePointAt(text, close + 1))
   for (let k = open + 1; k < close; k++) {
     const c = text.charCodeAt(k)
-    if (c < 48 || c > 57) return false
+    if (isSpaceCode(c) || (wordAfter && (c < 48 || c > 57))) return false
   }
-  return isAlnum(codePointBefore(text, open)) && isAlnum(codePointAt(text, close + 1))
+  return isAlnum(codePointBefore(text, open))
 }
 
 // region -- table auto close
