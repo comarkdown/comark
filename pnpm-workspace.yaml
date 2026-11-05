@@ -184,9 +184,17 @@ ignoredBuiltDependencies:
 
 # Keep every transitive `@nuxt/kit` / `@nuxt/schema` on the pinned Nuxt release (see `nuxt` in the
 # catalog). Remove together with the catalog pin once a Nuxt release fixes `devServer.host`.
+#
+# The docs layer and its modules (comark-docs, comark-content, nuxt-agent-discovery) depend on the
+# published comark. Nitro inlines every comark copy into one server bundle, where they all share
+# one top-level `markdown-exit`; two comark versions on different markdown-exit majors then break
+# at runtime (ERR_MODULE_NOT_FOUND). Resolve them all to the workspace packages instead.
 overrides:
   "@nuxt/kit@4": 4.6.3
   "@nuxt/schema@4": 4.6.3
+  comark: workspace:*
+  "@comark/nuxt": workspace:*
+  "@comark/vue": workspace:*
 
 minimumReleaseAgeExclude:
   - comark@0.5.1 || 0.6.0 || 0.6.1 || 0.6.2 || 0.7.0 || 0.8.0 || 0.8.1
