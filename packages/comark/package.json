@@ -82,7 +82,6 @@
     "@json-render/core": "catalog:",
     "@shikijs/twoslash": "catalog:",
     "@types/markdown-it": "catalog:",
-
     "github-slugger": "catalog:",
     "hast-util-to-string": "catalog:",
     "minimark": "catalog:",
