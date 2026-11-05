@@ -48,8 +48,7 @@
     "build": "ngc -p tsconfig.json && ngc -p tsconfig.json --removeComments true --declaration false && node scripts/verify-build.mjs",
     "dev": "ngc -p tsconfig.json --watch",
     "test": "vitest run",
-    "prepack": "pnpm run build",
-    "release": "release-it"
+    "prepack": "pnpm run build"
   },
   "dependencies": {
     "comark": "workspace:*"

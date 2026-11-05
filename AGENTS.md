@@ -38,7 +38,7 @@ This is a **monorepo** containing the Comark Markdown parser, document model, pl
 ├── docs/                 # Documentation site (comark-docs layer; llms topic files in docs/server/routes/llms-*.txt.get.ts)
 ├── playground/           # Nuxt playground (`pnpm dev:playground`)
 ├── benchmarks/           # CodSpeed Vitest benches (*.bench.ts) + mitata cross-library comparisons (*.ts)
-├── scripts/              # Build/sync/release scripts
+├── scripts/              # Build/sync scripts
 ├── test/                 # Root-level tests (bundle-size snapshot)
 ├── pnpm-workspace.yaml   # Workspace configuration + dependency catalog
 ├── tsconfig.json         # Root TypeScript config (`pnpm typecheck`)
@@ -943,7 +943,6 @@ pnpm lint         # oxlint + oxfmt --check + comark-lint on docs/content
 pnpm lint:fix     # oxlint --fix + oxfmt (write)
 pnpm typecheck    # tsc --noEmit against the root tsconfig
 pnpm verify       # Run lint + test + typecheck
-pnpm release      # Release changed packages (see Releasing)
 ```
 
 Linting and formatting use [oxlint](https://oxc.rs/docs/guide/usage/linter) and
@@ -960,7 +959,6 @@ Utility scripts:
 ```bash
 node scripts/stub.mjs          # Generate stub dist files for one package (run from its directory)
 node scripts/sync-plugins.mjs  # Sync plugin re-exports to framework packages (run from repo root)
-node scripts/release.mjs       # Release every package changed since its last tag (--dry, --filter <pkg>)
 ```
 
 ## Continuous Integration
@@ -970,6 +968,7 @@ Workflows live in `.github/workflows/`:
 | Workflow | Purpose |
 |----------|---------|
 | `ci.yml` | lint → prepack → test → publish preview (pkg.pr.new) → bundle size check |
+| `release.yml` | uppt release PR → tag + GitHub release → pack → staged npm publish (see Releasing) |
 | `codspeed.yml` | Runs `pnpm bench` under CodSpeed CPU simulation; reports perf changes on PRs |
 | `commit-signature.yml` | Fails PRs containing unsigned commits |
 | `bundle-snapshot.yml` | Reports bundle-size snapshot drift and updates it on demand |
@@ -1022,10 +1021,23 @@ Requires **Settings → Actions → General → Workflow permissions** to be set
 
 ## Releasing
 
-Uses [release-it](https://github.com/release-it/release-it) with conventional changelog.
-Each package has its own `.release-it.json` and `CHANGELOG.md`. `pnpm release`
-(`scripts/release.mjs`) finds packages changed since their last `<name>@<version>`
-tag and runs release-it for each; `pnpm release:dry` previews without touching git or npm.
+Uses [danielroe/uppt](https://github.com/danielroe/uppt) in `.github/workflows/release.yml`.
+Every package in `packages/*` shares one version and one `vX.Y.Z` tag (lockstep):
+
+1. Each push to `main` opens or updates a draft `release/vX.Y.Z` PR that bumps every
+   package and lists the conventional commits since the last `v*` tag. Edit the PR body
+   to add notes, or change `version` in any package's `package.json` on that branch to
+   pick another version.
+2. Merging the PR tags `vX.Y.Z`, creates the GitHub release from the PR body, and
+   dispatches the publish run on the tag.
+3. `pack` installs with `--ignore-scripts`, runs `pnpm build`, then `pnpm pack`s each
+   package (its `prepack` runs; `comark`'s `build` copies `docs/skills` into the package).
+4. `publish` stages every tarball with `npm stage publish` over OIDC in the `npm`
+   environment. Approve the staged versions on npmjs.com to make them live.
+
+Prereleases: `gh workflow run release.yml -f prerelease=beta`. Release notes live in
+GitHub Releases; there are no `CHANGELOG.md` files. Packages depend on each other with
+`workspace:*`, which `pnpm pack` turns into the exact released version.
 
 ### Commit message format
 
