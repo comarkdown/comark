@@ -1,5 +1,4 @@
 import type { MarkdownDocument, RendererOptions, RenderMarkdownOptions } from 'comark'
-import { renderFrontmatter } from '../internal/frontmatter.ts'
 
 import { createState, one } from '../internal/stringify/state.ts'
 import { handlers } from '../internal/stringify/handlers/index.ts'
@@ -15,9 +14,6 @@ export type {
   NodeTransformContext,
   NodeTransformResult,
 } from '../types.ts'
-
-// Re-export frontmatter renderer
-export { renderFrontmatter } from '../internal/frontmatter.ts'
 
 // Re-export attribute resolvers for custom handlers that want to honor `:prefix` bindings
 export { resolveAttributes, resolveAttribute } from '../internal/stringify/attributes.ts'
@@ -53,5 +49,9 @@ export async function renderMarkdown(
   options?: RenderMarkdownOptions
 ): Promise<string> {
   const content = await render(document, { format: 'markdown/comark', ...options })
-  return renderFrontmatter((document as MarkdownDocument).frontmatter || {}, content, options?.frontmatterOptions)
+  const frontmatter = (document as MarkdownDocument).frontmatter
+  if (!frontmatter || Object.keys(frontmatter).length === 0) return content.trim()
+  // The YAML serializer loads only for documents that have frontmatter.
+  const { renderFrontmatter } = await import('../internal/stringify/frontmatter.ts')
+  return renderFrontmatter(frontmatter, content, options?.frontmatterOptions)
 }

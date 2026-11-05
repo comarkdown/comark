@@ -1,4 +1,3 @@
-import { stringifyYaml } from '../yaml.ts'
 import { pickFence } from './fence.ts'
 
 export { resolveAttributes, resolveAttribute } from './html-attributes.ts'
@@ -128,7 +127,7 @@ function normalizeValue(value: unknown): unknown {
  * @param attributes - The attributes to stringify
  * @returns The stringified attributes
  */
-export function comarkYamlAttributes(
+export async function comarkYamlAttributes(
   attributes: Record<string, unknown>,
   style: 'frontmatter' | 'codeblock' = 'codeblock'
 ) {
@@ -157,6 +156,8 @@ export function comarkYamlAttributes(
     })
   )
 
+  // The YAML serializer loads only when a component needs YAML attributes.
+  const { stringifyYaml } = await import('./yaml.ts')
   const yamlContent = stringifyYaml(normalized).trim()
 
   if (style === 'frontmatter') {

@@ -59,6 +59,7 @@ packages/comark/
 │   ├── core.ts               # Parser pipeline with no default plugins (comark/core)
 │   ├── auto-close.ts         # autoCloseMarkdown() (comark/auto-close)
 │   ├── context.ts            # Live renderer context: ComarkContext, ComarkDocument, ComarkPatch (comark/context)
+│   ├── frontmatter.ts        # parseFrontmatter() / renderFrontmatter() (comark/frontmatter)
 │   ├── render/
 │   │   ├── index.ts          # String rendering: renderMarkdown() (renderHtmlFromDocument() moved to @comark/html)
 │   │   └── html.ts           # HTML-only renderer (comark/render/html)
@@ -98,12 +99,12 @@ packages/comark/
 │   │   └── caret.ts          # Caret utilities for streaming
 │   └── internal/             # Internal implementation (not exported)
 │       ├── shiki.ts          # Shared Shiki runtime used by both entry points
-│       ├── frontmatter.ts    # parseFrontmatter() / renderFrontmatter()
 │       ├── heading-id.ts     # Auto heading id generation (shared by parser + stringifier)
-│       ├── yaml.ts           # YAML helpers
 │       ├── sanitize.ts       # Component props validation and frontmatter sanitization
 │       ├── parse/            # Parsing pipeline
 │       │   ├── token-processor.ts # markdown-exit tokens → document nodes
+│       │   ├── frontmatter.ts # parseFrontmatter()
+│       │   ├── yaml.ts       # parseYaml()
 │       │   ├── auto-close/   # Self-healing for incomplete markdown
 │       │   ├── html/         # HTML block/inline rules
 │       │   ├── syntax/       # Component syntax scanners (props, brackets, block params)
@@ -111,7 +112,7 @@ packages/comark/
 │       │   ├── indent.ts     # Dedent of outdented component children
 │       │   ├── unwrap.ts     # `unwrap` option
 │       │   └── auto-unwrap.ts # `autoUnwrap` option
-│       └── stringify/        # AST → markdown string rendering (handlers/ per tag; transform-node.ts runs `transformNode`)
+│       └── stringify/        # AST → markdown string rendering (handlers/ per tag; transform-node.ts runs `transformNode`; frontmatter.ts and yaml.ts load only when a document needs YAML)
 ├── SPEC/                 # Behavioral spec fixtures (CommonMark, GFM, HTML, COMARK, auto-close.md)
 ├── test/                 # Vitest test files
 ├── package.json
@@ -131,6 +132,7 @@ packages/comark/
   "./core": "./dist/core.js",
   "./auto-close": "./dist/auto-close.js",
   "./context": "./dist/context.js",
+  "./frontmatter": "./dist/frontmatter.js",
   "./render": "./dist/render/index.js",
   "./render/html": "./dist/render/html.js"
 }
@@ -482,6 +484,9 @@ import { parseMarkdown, createMarkdownParser, autoCloseMarkdown, defineComarkPlu
 import { parseMarkdown } from 'comark/parse' // deprecated alias of the root export
 import { parseMarkdown } from 'comark/core' // no default plugins; autoClose is a function, not a boolean
 import { autoCloseMarkdown } from 'comark/auto-close'
+
+// YAML frontmatter, without the parser or renderer
+import { parseFrontmatter, renderFrontmatter } from 'comark/frontmatter'
 
 // Live renderer context (patch a rendered document without re-parsing)
 import { createComarkContext } from 'comark'

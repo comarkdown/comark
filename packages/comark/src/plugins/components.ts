@@ -13,7 +13,7 @@ import type { MarkdownItPlugin } from 'comark'
 import { defineComarkPlugin } from '../utils/helpers.ts'
 import { findClosingBracket, parseBracketContent } from '../internal/parse/syntax/brackets.ts'
 import { parseBlockParams } from '../internal/parse/syntax/block-params.ts'
-import { parseYaml } from '../internal/yaml.ts'
+import { parseYaml } from '../internal/parse/yaml.ts'
 import { tokenizeDedented } from '../internal/parse/indent.ts'
 
 /**

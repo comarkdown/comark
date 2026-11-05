@@ -77,7 +77,7 @@ const result = await parseMarkdown(content, { registerDefaultPlugins: false })
 
 In the `pre` hook (before markdown-exit tokenization), the plugin:
 
-1. Detects a leading `---` … `---` block via `parseFrontmatter`
+1. Detects a leading `---` … `---` block via `parseFrontmatter` from `comark/frontmatter`. The YAML parser loads only when the document starts with `---`
 2. Parses the YAML body into `state.frontmatter`
 3. Strips the frontmatter from `state.markdown`
 4. Adjusts `state.parsedLines` so later nodes get correct line numbers

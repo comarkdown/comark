@@ -55,6 +55,7 @@
     "./core": "./dist/core.js",
     "./auto-close": "./dist/auto-close.js",
     "./context": "./dist/context.js",
+    "./frontmatter": "./dist/frontmatter.js",
     "./render": "./dist/render/index.js",
     "./render/html": "./dist/render/html.js"
   },

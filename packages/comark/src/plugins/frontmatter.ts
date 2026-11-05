@@ -19,11 +19,15 @@
  */
 
 import { defineComarkPlugin } from '../utils/helpers.ts'
-import { parseFrontmatter } from '../internal/frontmatter.ts'
+
+// The YAML parser loads only for documents that start with frontmatter.
+const loadFrontmatter = () => import('../internal/parse/frontmatter.ts')
 
 export default defineComarkPlugin(() => ({
   name: 'frontmatter',
-  pre(state) {
+  async pre(state) {
+    if (!state.markdown.startsWith('---')) return
+    const { parseFrontmatter } = await loadFrontmatter()
     const { content, data, frontmatterText } = parseFrontmatter(state.markdown)
     state.markdown = content
     state.frontmatter = data

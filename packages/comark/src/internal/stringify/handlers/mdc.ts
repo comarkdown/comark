@@ -62,7 +62,7 @@ export async function mdc(node: ElementNode, state: State, parent?: ElementNode)
     const maxInlineAttributes = state.context.maxInlineAttributes ?? 3
     const useYaml = hasObjectAttributes || maxInlineAttributes === 0 || attributeEntries.length > maxInlineAttributes
     if (useYaml) {
-      const yamlAttrs = comarkYamlAttributes(attributes, state.context.blockAttributesStyle)
+      const yamlAttrs = await comarkYamlAttributes(attributes, state.context.blockAttributesStyle)
       result = `${fence}${tag}\n${yamlAttrs}${content ? `\n${content}` : ''}\n${fence}` + state.context.blockSeparator
     } else {
       result = `${fence}${tag}${attrs}${content ? `\n${content}` : ''}\n${fence}` + state.context.blockSeparator
