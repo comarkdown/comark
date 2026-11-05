@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { parseFrontmatter, renderFrontmatter } from '../src/internal/frontmatter'
 import { createMarkdownParser, parseMarkdown } from '../src/index'
 
@@ -126,13 +126,31 @@ Content`
     expect(result.content.trim()).toBe('Content')
   })
 
-  it('should still throw for malformed YAML in frontmatter', () => {
+  it('should warn and keep the content for malformed YAML in frontmatter', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
     const input = `---
 foo: [1,2
 ---
 
 Content`
-    expect(() => parseFrontmatter(input)).toThrow()
+    const result = parseFrontmatter(input)
+    expect(result.data).toEqual({})
+    expect(result.content.trim()).toBe('Content')
+    expect(warn).toHaveBeenCalledOnce()
+    expect(warn.mock.calls[0][0]).toContain('invalid YAML frontmatter')
+    warn.mockRestore()
+  })
+
+  it('should close frontmatter at a delimiter with trailing spaces', () => {
+    const result = parseFrontmatter('---\ntitle: Hello\n--- \t\n\nContent')
+    expect(result.data).toEqual({ title: 'Hello' })
+    expect(result.content.trim()).toBe('Content')
+  })
+
+  it('should find frontmatter after a byte order mark', () => {
+    const result = parseFrontmatter('\uFEFF---\ntitle: Hello\n---\n\nContent')
+    expect(result.data).toEqual({ title: 'Hello' })
+    expect(result.content.trim()).toBe('Content')
   })
 
   it('should handle frontmatter with special characters', () => {
