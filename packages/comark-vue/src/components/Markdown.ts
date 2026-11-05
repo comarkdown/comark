@@ -1,7 +1,7 @@
 import type { PropType } from 'vue'
 import { computed, defineComponent, h, shallowRef, watch } from 'vue'
 import { createSerializedMarkdownParser } from 'comark'
-import type { ParserOptions, ComponentManifest, MarkdownDocument as MarkdownDocumentType } from 'comark'
+import type { ParserOptions, ComponentManifest, MarkdownDocument as MarkdownDocumentType, NodeTransform } from 'comark'
 import { isMarkdownDocument } from 'comark/utils'
 import { MarkdownDocument } from './MarkdownDocument.ts'
 
@@ -61,6 +61,11 @@ export interface MarkdownProps {
    * Additional data to pass to the renderer
    */
   data?: Record<string, unknown>
+
+  /**
+   * Change the tag or props of element nodes just before they render
+   */
+  transformNode?: NodeTransform | readonly NodeTransform[]
 
   /**
    * Document key used to subscribe to live updates via `globalThis.comarkContext`
@@ -164,6 +169,14 @@ export const markdownProps = {
   },
 
   /**
+   * Change the tag or props of element nodes just before they render
+   */
+  transformNode: {
+    type: [Function, Array] as PropType<NodeTransform | readonly NodeTransform[]>,
+    default: undefined,
+  },
+
+  /**
    * Document key used to subscribe to live updates via `globalThis.comarkContext`
    */
   documentKey: {
@@ -256,6 +269,7 @@ export const Markdown: MarkdownComponent = defineComponent({
           class: props.streaming ? 'comark-stream' : '',
           caret: props.caret,
           data: props.data,
+          transformNode: props.transformNode,
           documentKey: props.documentKey,
         })
       }
@@ -269,6 +283,7 @@ export const Markdown: MarkdownComponent = defineComponent({
         class: props.streaming ? 'comark-stream' : '',
         caret: props.caret,
         data: props.data,
+        transformNode: props.transformNode,
         documentKey: props.documentKey,
       })
     }

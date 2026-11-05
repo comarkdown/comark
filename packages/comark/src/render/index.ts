@@ -4,7 +4,17 @@ import { renderFrontmatter } from '../internal/frontmatter.ts'
 import { createState, one } from '../internal/stringify/state.ts'
 import { handlers } from '../internal/stringify/handlers/index.ts'
 
-export type { NodeHandler, State, Context, RendererOptions, RenderMarkdownOptions, NodeRenderData } from '../types.ts'
+export type {
+  NodeHandler,
+  State,
+  Context,
+  RendererOptions,
+  RenderMarkdownOptions,
+  NodeRenderData,
+  NodeTransform,
+  NodeTransformContext,
+  NodeTransformResult,
+} from '../types.ts'
 
 // Re-export frontmatter renderer
 export { renderFrontmatter } from '../internal/frontmatter.ts'

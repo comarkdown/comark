@@ -1,4 +1,4 @@
-import type { Node, MarkdownDocument, ComarkPlugin, ComponentManifest, ParserOptions } from 'comark'
+import type { Node, MarkdownDocument, ComarkPlugin, ComponentManifest, NodeTransform, ParserOptions } from 'comark'
 import type { Component, Snippet } from 'svelte'
 import type { HTMLAttributes } from 'svelte/elements'
 
@@ -20,6 +20,8 @@ export interface MarkdownNodeProps {
   node: Node
   components?: Record<string, any>
   componentsManifest?: ComponentManifest
+  /** Change the tag or props of element nodes just before they render */
+  transformNode?: NodeTransform | readonly NodeTransform[]
   resolver?: ComponentResolver
   /** CSS class for the streaming caret, or null if no caret. Threaded recursively to the last child. */
   caretClass?: string | null
@@ -30,6 +32,8 @@ export interface MarkdownDocumentProps extends RootAttributes {
   value?: MarkdownDocument
   components?: Record<string, any>
   componentsManifest?: ComponentManifest
+  /** Change the tag or props of element nodes just before they render */
+  transformNode?: NodeTransform | readonly NodeTransform[]
   resolver?: ComponentResolver
   streaming?: boolean
   caret?: boolean | { class: string }
@@ -54,6 +58,8 @@ export interface MarkdownProps extends RootAttributes {
   unwrap?: boolean | string | string[]
   components?: Record<string, any>
   componentsManifest?: ComponentManifest
+  /** Change the tag or props of element nodes just before they render */
+  transformNode?: NodeTransform | readonly NodeTransform[]
   streaming?: boolean
   caret?: boolean | { class: string }
   class?: string
