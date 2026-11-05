@@ -503,7 +503,7 @@ describe('HTML inside markdown containers', () => {
     const result = await parseMarkdown('::warning\nPress <kbd>Ctrl to save.\n::\n\nafter')
 
     expect(result.nodes).toEqual([
-      ['warning', {}, 'Press ', ['kbd', { $: { html: 1, block: 1 } }, 'Ctrl to save.']],
+      ['warning', {}, 'Press ', ['kbd', { $: { html: 1, block: 0 } }, 'Ctrl to save.']],
       ['p', {}, 'after'],
     ])
   })
@@ -515,7 +515,7 @@ describe('HTML inside markdown containers', () => {
       [
         'card',
         {},
-        ['template', { name: 'title' }, 'Press ', ['kbd', { $: { html: 1, block: 1 } }, 'Ctrl']],
+        ['template', { name: 'title' }, 'Press ', ['kbd', { $: { html: 1, block: 0 } }, 'Ctrl']],
         ['template', { name: 'default' }, 'body'],
       ],
     ])
