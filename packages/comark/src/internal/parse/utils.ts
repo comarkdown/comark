@@ -1,6 +1,6 @@
 import type { Node, ElementNode, ElementNodeAttributes, MarkdownDocument } from 'comark'
-import { decodeHTMLAttribute } from 'entities'
 import { isHtmlVoidElement, TREE_WALK_MAX_DEPTH } from 'comark/utils'
+import { decodeHTMLAttribute } from '../entities.ts'
 
 /** Space, tab, line feed, form feed or carriage return. Defined per file so it stays inlinable on hot paths. */
 function isSpaceCode(c: number): boolean {

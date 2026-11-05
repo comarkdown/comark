@@ -1,6 +1,6 @@
 import type { DumpOptions } from 'js-yaml'
-import type MarkdownExit from 'markdown-exit'
-import type { Token } from 'markdown-exit'
+import type MarkdownExit from 'markdown-exit/core'
+import type { Token } from 'markdown-exit/core'
 import type MarkdownIt from 'markdown-it'
 import type { AutoCloseOptions } from './auto-close.ts'
 
@@ -548,12 +548,6 @@ export interface ParserCoreOptions<
   autoClose?: AutoCloseFunction
 
   /**
-   * Set `false` to disable autoconvert URL-like text to links.
-   * @default true
-   */
-  linkify?: boolean
-
-  /**
    * How to auto-generate `id` attributes for `h1`–`h6` headings from their text content.
    * User-supplied `id` attributes are always preserved.
    *
@@ -618,8 +612,16 @@ export interface ParserOptions<
   autoClose?: boolean | AutoCloseFunction
 
   /**
+   * @deprecated Use `registerDefaultPlugins: false` and register plugins explicitly
+   * (include `linkify()` from `comark/plugins/linkify` only when you need autolinks).
+   * Setting this option logs a deprecation warning. It still takes precedence over
+   * `registerDefaultPlugins`: `false` skips the default linkify plugin, `true` keeps it.
+   */
+  linkify?: boolean
+
+  /**
    * Whether to register the built-in default plugins
-   * (`frontmatter`, `html`, `alert`, `task-list`, `components`, `attributes`).
+   * (`linkify`, `frontmatter`, `html`, `alert`, `task-list`, `components`, `attributes`).
    * Set `false` to parse plain markdown with only the plugins listed in `plugins`.
    * Without the components/attributes plugins, `autoClose` skips component fences and attribute braces.
    * @default true

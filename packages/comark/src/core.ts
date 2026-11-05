@@ -11,7 +11,7 @@ import type {
   Node,
   ParserCoreOptions,
 } from './types.ts'
-import MarkdownExit, { type Token } from 'markdown-exit'
+import MarkdownExit, { type Token } from 'markdown-exit/core'
 import { applyAutoUnwrap, extractReusableNodes } from './internal/parse/utils.ts'
 import { applyUnwrap, resolveUnwrapTags } from './internal/parse/unwrap.ts'
 import { createSerializedTask } from './utils/helpers.ts'
@@ -24,9 +24,8 @@ export { defineComarkPlugin } from './utils/helpers.ts'
 // Re-export types
 export type * from './types.ts'
 
-// Constructing a `MarkdownExit` instance is expensive because `LinkifyIt`
-// compiles its regexes in the constructor, and a configured instance holds no
-// per-parse state, so parsers built from the same options share one.
+// A configured `MarkdownExit` instance holds no per-parse state, so parsers
+// built from the same options share one.
 // Bounded LRU: a caller that keeps minting fresh markdown-it plugin closures
 // (math/mermaid/binding factories) must not grow this without limit.
 const MAX_SHARED_PARSERS = 32
@@ -66,25 +65,22 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
     }
   }
 
-  const linkify = options.linkify ?? true
-  const key = [
-    linkify,
-    ...mdPlugins.map((fn) => pluginIds.get(fn) ?? (pluginIds.set(fn, nextPluginId), nextPluginId++)),
-  ].join(',')
+  const key = mdPlugins.map((fn) => pluginIds.get(fn) ?? (pluginIds.set(fn, nextPluginId), nextPluginId++)).join(',')
 
-  let parser = sharedParsers.get(key)
-  if (parser) {
+  let md = sharedParsers.get(key)
+  if (md) {
     // Touch for LRU: Map iteration order is insertion order.
     sharedParsers.delete(key)
-    sharedParsers.set(key, parser)
+    sharedParsers.set(key, md)
   } else {
-    parser = new MarkdownExit({ linkify }).enable(['table', 'strikethrough'])
-    for (const fn of mdPlugins) parser.use(fn)
+    md = new MarkdownExit().enable(['table', 'strikethrough'])
+    // A plugin that throws leaves the instance uncached, so the next parser starts fresh.
+    for (const fn of mdPlugins) md.use(fn)
     if (sharedParsers.size >= MAX_SHARED_PARSERS) {
       const oldestKey = sharedParsers.keys().next().value
       if (oldestKey !== undefined) sharedParsers.delete(oldestKey)
     }
-    sharedParsers.set(key, parser)
+    sharedParsers.set(key, md)
   }
 
   let lastOutput: MarkdownDocument | null = null
@@ -140,7 +136,7 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
       }
 
       try {
-        state.tokens = withSpan(tracer, 'comark:tokenize', () => parser.parse(state.markdown, {}))
+        state.tokens = withSpan(tracer, 'comark:tokenize', () => md.parse(state.markdown, {}))
       } catch (e) {
         // in case of streaming, return the previous output if parsing fails
         // This is to avoid resetting the tree to an empty state on failure

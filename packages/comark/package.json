@@ -72,8 +72,10 @@
     "release:dry": "release-it --dry-run"
   },
   "dependencies": {
-    "entities": "catalog:",
+    "character-entities": "catalog:",
+    "character-entities-legacy": "catalog:",
     "js-yaml": "catalog:",
+    "linkify-it": "catalog:",
     "markdown-exit": "catalog:"
   },
   "devDependencies": {

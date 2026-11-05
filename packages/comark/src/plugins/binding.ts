@@ -1,4 +1,4 @@
-import type { PluginWithOptions, MarkdownExit } from 'markdown-exit'
+import type { PluginWithOptions, MarkdownExit } from 'markdown-exit/core'
 import { defineComarkPlugin } from 'comark'
 import type { MarkdownItPlugin, NodeHandler, Node } from 'comark'
 
