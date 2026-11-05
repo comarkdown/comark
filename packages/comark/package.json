@@ -64,10 +64,10 @@
   },
   "scripts": {
     "stub": "node ../../scripts/stub.mjs",
-    "build": "tsc --removeComments --declaration false && tsc --emitDeclarationOnly",
+    "build": "rm -rf skills && cp -r ../../docs/skills skills && tsc --removeComments --declaration false && tsc --emitDeclarationOnly",
     "dev": "tsc --watch",
     "test": "vitest run",
-    "prepack": "rm -rf skills && cp -r ../../docs/skills skills && tsc --removeComments --declaration false && tsc --emitDeclarationOnly"
+    "prepack": "pnpm run build"
   },
   "dependencies": {
     "character-entities": "catalog:",
