@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseMarkdown } from '../../src/parse'
+import { parseMarkdown } from '../../src/index'
 import security from '../../src/plugins/security'
 import { textContent } from '../../src/utils/index.ts'
 import { render, renderMarkdown } from 'comark/render'

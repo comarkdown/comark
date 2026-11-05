@@ -52,7 +52,10 @@
     "./plugins/*": "./dist/plugins/*.js",
     "./utils": "./dist/utils/index.js",
     "./utils/trace": "./dist/utils/trace.js",
-    "./parse": "./dist/parse.js",
+    "./parse": "./dist/index.js",
+    "./core": "./dist/core.js",
+    "./auto-close": "./dist/auto-close.js",
+    "./context": "./dist/context.js",
     "./render": "./dist/render/index.js",
     "./render/html": "./dist/render/html.js"
   },

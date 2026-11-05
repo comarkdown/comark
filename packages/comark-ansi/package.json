@@ -19,6 +19,7 @@
   "bugs": {
     "url": "https://github.com/comarkdown/comark/issues"
   },
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/comarkdown/comark.git"

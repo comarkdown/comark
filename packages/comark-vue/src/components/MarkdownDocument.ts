@@ -6,6 +6,7 @@ import type {
   Node,
   MarkdownDocument as MarkdownDocumentType,
   NodeRenderData,
+  NodeTransform,
 } from 'comark'
 import {
   computed,
@@ -21,7 +22,7 @@ import {
   toRaw,
 } from 'vue'
 import { findLastTextNodeAndAppendNode, getCaret } from '../utils/caret.ts'
-import { pascalCase, resolveAttributes, toNativeAttributes } from 'comark/utils'
+import { applyNodeTransforms, pascalCase, resolveAttributes, toNativeAttributes } from 'comark/utils'
 
 // Cache for dynamically resolved components
 const asyncComponentCache = new Map<string, any>()
@@ -110,7 +111,8 @@ function renderNode(
   key?: string | number,
   componentsManifest?: ComponentManifest,
   parent?: Node,
-  renderData: NodeRenderData = { frontmatter: {}, meta: {}, data: {}, props: {} }
+  renderData: NodeRenderData = { frontmatter: {}, meta: {}, data: {}, props: {} },
+  transformNode?: NodeTransform | readonly NodeTransform[]
 ): VNode | string | null {
   // Handle text nodes (strings)
   if (typeof node === 'string') {
@@ -119,18 +121,31 @@ function renderNode(
 
   // Handle element nodes (arrays)
   if (Array.isArray(node)) {
-    const tag = getTag(node)
-    if (!tag) return null
+    const nodeTag = getTag(node)
+    if (!nodeTag) return null
 
     const nodeProps = getProps(node)
     const children = getChildren(node)
+
+    // Resolve `:prefix` bindings, then let `transformNode` change the tag or props
+    const ownProps = resolveAttributes(nodeProps, renderData, { parseJson: true })
+    const transformed = applyNodeTransforms(
+      transformNode,
+      node as ElementNode,
+      ownProps,
+      renderData,
+      parent as ElementNode | undefined
+    )
+    const tag = transformed ? transformed.tag : nodeTag
+    const resolved = transformed ? transformed.props : ownProps
+    const as = transformed ? resolved.as : nodeProps.as
 
     // Check if there's a custom component for this tag
     let customComponent
 
     if ((parent as ElementNode | undefined)?.[0] !== 'pre') {
-      if (nodeProps.as) {
-        customComponent = resolveComponent(nodeProps.as, components, componentsManifest)
+      if (as) {
+        customComponent = resolveComponent(as as string, components, componentsManifest)
       }
       if (!customComponent) {
         customComponent = resolveComponent(tag, components, componentsManifest)
@@ -139,9 +154,7 @@ function renderNode(
 
     const component = customComponent || tag
 
-    // Resolve `:prefix` bindings and let Vue-specific attribute mapping run
-    // on top (e.g. `className` → `class`).
-    const resolved = resolveAttributes(nodeProps, renderData, { parseJson: true })
+    // Vue-specific attribute mapping (e.g. `className` → `class`)
     let props: Record<string, any> = {}
     for (const k in resolved) {
       if (k === 'className') {
@@ -173,7 +186,7 @@ function renderNode(
     // own attributes. Bare wrappers (`<p>`, `<ul>`, `<li>`, …) must keep the
     // parent's scope so bindings like `{{ props.x }}` reach across them. The
     // check uses the raw attributes: resolving can omit all of them.
-    let hasOwnAttrs = false
+    let hasOwnAttrs = resolved !== ownProps
     for (const key in nodeProps) {
       if (key !== '$') {
         hasOwnAttrs = true
@@ -215,14 +228,14 @@ function renderNode(
           slots[slotName] = () =>
             slotChildren
               .map((slotChild: Node, idx: number) =>
-                renderNode(slotChild, components, idx, componentsManifest, node, childrenRenderData)
+                renderNode(slotChild, components, idx, componentsManifest, node, childrenRenderData, transformNode)
               )
               .filter((slotChild): slotChild is VNode | string => slotChild !== null)
           continue
         }
       }
 
-      const rendered = renderNode(child, components, i, componentsManifest, node, childrenRenderData)
+      const rendered = renderNode(child, components, i, componentsManifest, node, childrenRenderData, transformNode)
       if (rendered !== null) {
         regularChildren.push(rendered)
       }
@@ -280,6 +293,12 @@ export interface MarkdownDocumentProps {
    * Additional data to pass to the renderer
    */
   data?: Record<string, unknown>
+
+  /**
+   * Change the tag or props of element nodes just before they render.
+   * Pass a stable reference: a new array on every render re-renders the document.
+   */
+  transformNode?: NodeTransform | readonly NodeTransform[]
 
   /**
    * Document key. When set and `globalThis.comarkContext` exists, the renderer
@@ -349,6 +368,14 @@ export const markdownDocumentProps = {
   data: {
     type: Object as PropType<Record<string, unknown>>,
     default: () => ({}),
+  },
+
+  /**
+   * Change the tag or props of element nodes just before they render
+   */
+  transformNode: {
+    type: [Function, Array] as PropType<NodeTransform | readonly NodeTransform[]>,
+    default: undefined,
   },
 
   /**
@@ -461,7 +488,9 @@ export const MarkdownDocument: MarkdownDocumentComponent = defineComponent({
       }
 
       const children = nodes
-        .map((node, index) => renderNode(node, components.value, index, componentManifest, undefined, renderData))
+        .map((node, index) =>
+          renderNode(node, components.value, index, componentManifest, undefined, renderData, props.transformNode)
+        )
         .filter((child): child is VNode | string => child !== null)
 
       // Wrap in a fragment

@@ -24,7 +24,7 @@ This is an alert component
 ```
 -->
 <script lang="ts">
-  import type { MarkdownDocument as MarkdownDocumentType, ComarkPlugin, ComponentManifest } from 'comark'
+  import type { MarkdownDocument as MarkdownDocumentType, ComarkPlugin, ComponentManifest, NodeTransform } from 'comark'
   import { createSerializedMarkdownParser } from 'comark'
   import { isMarkdownDocument } from 'comark/utils'
   import MarkdownDocument from './MarkdownDocument.svelte'
@@ -37,6 +37,7 @@ This is an alert component
     unwrap = false,
     components = {},
     componentsManifest,
+    transformNode,
     streaming = false,
     caret = false,
     data,
@@ -49,6 +50,7 @@ This is an alert component
     unwrap?: boolean | string | string[]
     components?: Record<string, any>
     componentsManifest?: ComponentManifest
+    transformNode?: NodeTransform | readonly NodeTransform[]
     streaming?: boolean
     caret?: boolean | { class: string }
     data?: Record<string, unknown>
@@ -98,6 +100,7 @@ This is an alert component
     {value}
     {components}
     {componentsManifest}
+    {transformNode}
     {streaming}
     {caret}
     {data}
@@ -109,6 +112,7 @@ This is an alert component
     value={parsed}
     {components}
     {componentsManifest}
+    {transformNode}
     {streaming}
     {caret}
     {data}

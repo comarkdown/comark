@@ -91,7 +91,11 @@ Optional plugins you register via `plugins: [...]`.
   Plugin for adding footnote references and definitions to your Comark documents.
   ::
 
-  ::card{icon="i-lucide-heading" title="Headings" to="/plugins/built-in/headings"}
+  ::card{icon="i-lucide-hash" title="Heading Links" to="/plugins/built-in/heading-links"}
+  Plugin for linking headings to themselves using their `id`.
+  ::
+
+  ::card{icon="i-lucide-heading" title="Title & Description" to="/plugins/built-in/title-description"}
   Plugin for extracting the page title and description from document content.
   ::
 
