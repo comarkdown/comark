@@ -326,9 +326,6 @@ catalogs:
     comark-linter:
       specifier: ^0.7.6
       version: 0.7.6
-    entities:
-      specifier: ^8.1.0
-      version: 8.1.0
     github-slugger:
       specifier: ^2.0.0
       version: 2.0.0
@@ -1465,9 +1462,6 @@ importers:
       '@types/markdown-it':
         specifier: 'catalog:'
         version: 14.2.0
-      entities:
-        specifier: 'catalog:'
-        version: 8.1.0
       github-slugger:
         specifier: 'catalog:'
         version: 2.0.0

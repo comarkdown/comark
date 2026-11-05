@@ -92,7 +92,7 @@ catalog:
   # Core comark dependencies
   character-entities: ^2.0.2
   character-entities-legacy: ^3.0.0
-  entities: ^8.1.0
+
   github-slugger: ^2.0.0
   hast-util-to-string: ^3.0.1
   js-yaml: ^5.5.0

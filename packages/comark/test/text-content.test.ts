@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { decodeHTML } from 'entities'
 import type { Node } from 'comark'
+import { decodeHTMLAttribute as decodeHTML } from '../src/internal/entities'
 import { textContent } from '../src/utils'
 
 describe('textContent', () => {
