@@ -23,6 +23,7 @@ export function searchProps(content: string, index = 0) {
   if (content[index] !== '{') throw new Error(`Invalid props, expected \`{\` but got '${content[index]}'`)
 
   const props: [string, string][] = []
+  let closed = false
 
   // Skip Vue mustache `{{ }}` syntax
   if (content[index + 1] === '{') return undefined
@@ -34,6 +35,7 @@ export function searchProps(content: string, index = 0) {
       index += 2
     } else if (content[index] === '}') {
       index += 1
+      closed = true
       break
     } else if (content[index] === ' ') {
       index += 1
@@ -124,5 +126,6 @@ export function searchProps(content: string, index = 0) {
   return {
     props,
     index,
+    closed,
   }
 }
