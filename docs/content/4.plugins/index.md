@@ -13,6 +13,10 @@ All Comark plugins are part of the core `comark` package, while optional renderi
 These plugins are **enabled by default** whenever you call `parseMarkdown()` or `createMarkdownParser()` (or a framework `<Markdown>` component). You do not need to install or register them.
 
 ::card-group{cols="2"}
+  ::card{icon="i-lucide-link" title="Linkify" to="/plugins/defaults/linkify"}
+  Convert URL-like text into links
+  ::
+
   ::card{icon="i-lucide-file-spreadsheet" title="Frontmatter" to="/plugins/defaults/frontmatter"}
   Parse a leading YAML frontmatter block into `tree.frontmatter`
   ::
@@ -49,7 +53,7 @@ Turn them all off with `registerDefaultPlugins: false`:
 ```typescript
 import { parseMarkdown } from 'comark'
 
-// Plain markdown only — no components, attributes, HTML, alerts, or task lists
+// Plain markdown only — no autolinks, components, attributes, HTML, alerts, or task lists
 const result = await parseMarkdown(content, {
   registerDefaultPlugins: false,
 })

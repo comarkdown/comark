@@ -15,6 +15,7 @@ import taskList from './plugins/task-list.ts'
 import alert from './plugins/alert.ts'
 import html from './plugins/html.ts'
 import frontmatterPlugin from './plugins/frontmatter.ts'
+import linkify from './plugins/linkify.ts'
 import { autoCloseMarkdown } from './auto-close.ts'
 import { createSerializedTask, dedupePlugins } from './utils/helpers.ts'
 import { noopTracer } from './utils/trace.ts'
@@ -37,6 +38,8 @@ export type { ComarkContext, ComarkDocument, ComarkPatch } from './context.ts'
 // Re-export types
 export type * from './types.ts'
 
+let warnedLinkifyOption = false
+
 /**
  * Resolve public parser options into core options.
  *
@@ -47,20 +50,31 @@ export type * from './types.ts'
 function resolveParserOptions<const TPlugins extends readonly ComarkPlugin<any, any>[] = []>(
   options: ParserOptions<TPlugins>
 ): ParserCoreOptions<ComarkPlugin<any, any>[]> {
-  const { autoClose = true, tracer = noopTracer } = options
+  const { autoClose = true, tracer = noopTracer, linkify: linkifyOption, ...rest } = options
   const userPlugins = options.plugins ?? []
 
-  const defaultPlugins =
-    options.registerDefaultPlugins !== false
-      ? [frontmatterPlugin(), html(), alert(), taskList(), components(), attributes()]
-      : []
+  if (linkifyOption !== undefined && !warnedLinkifyOption) {
+    warnedLinkifyOption = true
+    console.warn(
+      '[comark] `ParserOptions.linkify` is deprecated and will be removed in a future major version. ' +
+        'Use `registerDefaultPlugins: false` and register `linkify()` from `comark/plugins/linkify` only when needed.'
+    )
+  }
+
+  const registerDefaults = options.registerDefaultPlugins !== false
+  // `linkify` comes first, so markdown-it plugins that configure `md.linkify` when installed find it.
+  // The deprecated `linkify` option still wins over `registerDefaultPlugins`, as it did before.
+  const defaultPlugins: ComarkPlugin<any, any>[] = [
+    ...((linkifyOption ?? registerDefaults) ? [linkify()] : []),
+    ...(registerDefaults ? [frontmatterPlugin(), html(), alert(), taskList(), components(), attributes()] : []),
+  ]
 
   const plugins = dedupePlugins(defaultPlugins, userPlugins)
   const hasPlugin = (name: string) => plugins.some((plugin) => plugin.name === name)
   const pluginAutoClose = Object.assign({}, ...plugins.map((p) => p.autoClose))
 
   return {
-    ...options,
+    ...rest,
     plugins,
     tracer,
     autoClose:

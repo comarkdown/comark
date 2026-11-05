@@ -12,7 +12,6 @@ import type {
   ParserCoreOptions,
 } from './types.ts'
 import MarkdownExit, { type Token } from 'markdown-exit/core'
-import type LinkifyIt from 'linkify-it'
 import { applyAutoUnwrap, extractReusableNodes } from './internal/parse/utils.ts'
 import { applyUnwrap, resolveUnwrapTags } from './internal/parse/unwrap.ts'
 import { createSerializedTask } from './utils/helpers.ts'
@@ -32,43 +31,7 @@ export type * from './types.ts'
 const MAX_SHARED_PARSERS = 32
 let nextPluginId = 0
 const pluginIds = new WeakMap<MarkdownExitPlugin, number>()
-const sharedParsers = new Map<string, SharedParser>()
-
-interface SharedParser {
-  md: MarkdownExit
-  // With `linkify`, settles once linkify-it is loaded and the markdown-it plugins are installed.
-  ready?: Promise<void>
-  // Without `linkify`, set when a markdown-it plugin needs `md.linkify` to install.
-  needsLinkify?: boolean
-}
-
-// Loaded on the first parse that needs it, so bundles without it skip linkify-it.
-let linkifyModule: Promise<typeof LinkifyIt> | undefined
-
-// markdown-it plugins may configure `md.linkify` when installed, so they run after it exists.
-// This also replaces the instance that the root `markdown-exit` entry gives every parser once
-// something imports it. linkify-it 5 links `www.example.com` and `user:pass@` URLs by default;
-// linkify-it 6 needs `fuzzyLink` for that, which made streaming chat text about 1.8x slower
-// (markdown-it/linkify-it#126).
-async function installLinkify(shared: SharedParser, mdPlugins: MarkdownExitPlugin[], linkify: boolean): Promise<void> {
-  try {
-    const Linkify = await (linkifyModule ??= import('linkify-it').then((m) => m.default))
-    // markdown-exit types this as linkify-it 6. It only calls `test`, `match` and `matchAtStart`, which 5 has too.
-    shared.md.linkify = new Linkify() as unknown as MarkdownExit['linkify']
-    for (const fn of mdPlugins) shared.md.use(fn)
-  } catch (error) {
-    // Start over on the next parse: retry a failed load, such as a chunk fetch, and drop
-    // an instance that a throwing plugin left half set up.
-    linkifyModule = undefined
-    shared.md = createMarkdownExit(linkify)
-    shared.ready = undefined
-    throw error
-  }
-}
-
-function createMarkdownExit(linkify: boolean): MarkdownExit {
-  return new MarkdownExit({ linkify }).enable(['table', 'strikethrough'])
-}
+const sharedParsers = new Map<string, MarkdownExit>()
 
 /**
  * Creates a parser function without default plugins or a built-in auto-closer.
@@ -102,33 +65,22 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
     }
   }
 
-  const linkify = options.linkify ?? true
-  const key = [
-    linkify,
-    ...mdPlugins.map((fn) => pluginIds.get(fn) ?? (pluginIds.set(fn, nextPluginId), nextPluginId++)),
-  ].join(',')
+  const key = mdPlugins.map((fn) => pluginIds.get(fn) ?? (pluginIds.set(fn, nextPluginId), nextPluginId++)).join(',')
 
-  let shared = sharedParsers.get(key)
-  if (shared) {
+  let md = sharedParsers.get(key)
+  if (md) {
     // Touch for LRU: Map iteration order is insertion order.
     sharedParsers.delete(key)
-    sharedParsers.set(key, shared)
+    sharedParsers.set(key, md)
   } else {
-    shared = { md: createMarkdownExit(linkify) }
-    if (!linkify) {
-      try {
-        for (const fn of mdPlugins) shared.md.use(fn)
-      } catch (error) {
-        // `markdown-exit/core` has no `md.linkify`. Plugins that configure it get one on the first parse.
-        if (shared.md.linkify) throw error
-        shared = { md: createMarkdownExit(false), needsLinkify: true }
-      }
-    }
+    md = new MarkdownExit().enable(['table', 'strikethrough'])
+    // A plugin that throws leaves the instance uncached, so the next parser starts fresh.
+    for (const fn of mdPlugins) md.use(fn)
     if (sharedParsers.size >= MAX_SHARED_PARSERS) {
       const oldestKey = sharedParsers.keys().next().value
       if (oldestKey !== undefined) sharedParsers.delete(oldestKey)
     }
-    sharedParsers.set(key, shared)
+    sharedParsers.set(key, md)
   }
 
   let lastOutput: MarkdownDocument | null = null
@@ -183,11 +135,8 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
         await withSpan(tracer, `comark:pre:${plugin.name}`, () => plugin.pre!(state))
       }
 
-      // Same key, same plugin functions, so any parser sharing this instance can install them.
-      if (linkify || shared.needsLinkify) await (shared.ready ??= installLinkify(shared, mdPlugins, linkify))
-
       try {
-        state.tokens = withSpan(tracer, 'comark:tokenize', () => shared.md.parse(state.markdown, {}))
+        state.tokens = withSpan(tracer, 'comark:tokenize', () => md.parse(state.markdown, {}))
       } catch (e) {
         // in case of streaming, return the previous output if parsing fails
         // This is to avoid resetting the tree to an empty state on failure

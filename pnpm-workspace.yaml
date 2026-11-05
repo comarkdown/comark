@@ -57,7 +57,6 @@ catalog:
 
   # Types
   "@types/json-schema": ^7.0.15
-  "@types/linkify-it": ^5.0.0
   "@types/markdown-it": ^14.2.0
   "@types/node": ^26.6.6
   "@types/react": ^19.3.0
@@ -98,7 +97,7 @@ catalog:
   hast-util-to-string: ^3.0.1
   js-yaml: ^5.5.0
   katex: ^0.19.1
-  linkify-it: ^5.0.0
+  linkify-it: ^6.0.0
   markdown-exit: 2.1.0
   "markdown-it": ^15.0.3
   markdown-it-math: ^6.1.0

@@ -2,11 +2,11 @@ import { describe, expect, it } from 'vitest'
 import { createMarkdownParser, defineComarkPlugin } from 'comark'
 import type { MarkdownItPlugin } from 'comark'
 import binding from '../src/plugins/binding'
+import linkify from '../src/plugins/linkify'
 
 // The shared instance is internal, so it is observed through the public API: a
 // markdown-it plugin function runs once per instance, so counting how often it
-// is registered counts the instances that were built. With linkify on, plugins
-// install on the first parse, so these parsers turn it off to install at build.
+// is registered counts the instances that were built.
 let stableUses = 0
 const stableMdPlugin = (() => {
   stableUses++
@@ -33,7 +33,7 @@ describe('parser sharing', () => {
     const before = stableUses
 
     for (let i = 0; i < 20; i++) {
-      createMarkdownParser({ linkify: false, plugins: [plugin] })
+      createMarkdownParser({ registerDefaultPlugins: false, plugins: [plugin] })
     }
 
     expect(stableUses - before).toBe(1)
@@ -43,7 +43,7 @@ describe('parser sharing', () => {
     const before = closureUses
 
     for (let i = 0; i < 5; i++) {
-      createMarkdownParser({ linkify: false, plugins: [closurePlugin()] })
+      createMarkdownParser({ registerDefaultPlugins: false, plugins: [closurePlugin()] })
     }
 
     expect(closureUses - before).toBe(5)
@@ -69,33 +69,45 @@ describe('parser sharing', () => {
       markdownItPlugins: [oldestMdPlugin],
     }))()
 
-    createMarkdownParser({ linkify: false, plugins: [markedPlugin] })
-    createMarkdownParser({ linkify: false, plugins: [oldestPlugin] })
+    createMarkdownParser({ registerDefaultPlugins: false, plugins: [markedPlugin] })
+    createMarkdownParser({ registerDefaultPlugins: false, plugins: [oldestPlugin] })
 
     // Capacity is 32. Keep both named entries in the cache, then refresh
     // markedPlugin before inserting one more key so only oldestPlugin ages out.
     for (let i = 0; i < 30; i++) {
-      createMarkdownParser({ linkify: false, plugins: [closurePlugin()] })
+      createMarkdownParser({ registerDefaultPlugins: false, plugins: [closurePlugin()] })
     }
 
     expect(markedUses).toBe(1)
     expect(oldestUses).toBe(1)
 
-    createMarkdownParser({ linkify: false, plugins: [markedPlugin] })
-    createMarkdownParser({ linkify: false, plugins: [closurePlugin()] })
+    createMarkdownParser({ registerDefaultPlugins: false, plugins: [markedPlugin] })
+    createMarkdownParser({ registerDefaultPlugins: false, plugins: [closurePlugin()] })
 
-    createMarkdownParser({ linkify: false, plugins: [oldestPlugin] })
+    createMarkdownParser({ registerDefaultPlugins: false, plugins: [oldestPlugin] })
     expect(oldestUses).toBe(2)
-    createMarkdownParser({ linkify: false, plugins: [markedPlugin] })
+    createMarkdownParser({ registerDefaultPlugins: false, plugins: [markedPlugin] })
     expect(markedUses).toBe(1)
   })
 
-  it('does not share an instance between linkify settings', async () => {
-    const withLinkify = await createMarkdownParser({ linkify: true })('See https://comark.dev for more')
-    const withoutLinkify = await createMarkdownParser({ linkify: false })('See https://comark.dev for more')
+  it('does not share an instance between parsers with and without linkify', async () => {
+    const withLinkify = await createMarkdownParser({ registerDefaultPlugins: false, plugins: [linkify()] })(
+      'See https://comark.dev for more'
+    )
+    const withoutLinkify = await createMarkdownParser({ registerDefaultPlugins: false })(
+      'See https://comark.dev for more'
+    )
 
     expect(JSON.stringify(withLinkify.nodes)).toContain('"a"')
     expect(JSON.stringify(withoutLinkify.nodes)).not.toContain('"a"')
+  })
+
+  it('shares an instance between linkify() calls with equal options', () => {
+    const a = linkify({ fuzzyLink: true })
+    const b = linkify({ fuzzyLink: true })
+
+    expect(a.markdownItPlugins![0]).toBe(b.markdownItPlugins![0])
+    expect(linkify().markdownItPlugins![0]).not.toBe(a.markdownItPlugins![0])
   })
 
   it('keeps streaming state on the parser across another parser use', async () => {

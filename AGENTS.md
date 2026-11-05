@@ -76,6 +76,7 @@ packages/comark/
 │   │   ├── heading-links.ts  # Links headings to their own `id`
 │   │   ├── headings.ts       # Deprecated alias → title-description (remove next major)
 │   │   ├── json-render.ts    # `json-render` spec fences expanded into nodes
+│   │   ├── linkify.ts        # Bare URL autolinks via linkify-it 6 (default via registerDefaultPlugins; linkify-it options, fuzzyLink opt-in)
 │   │   ├── punctuation.ts    # Smart quotes and dashes
 │   │   ├── shiki.ts          # Shiki with bundled default theme + language loaders (peer: shiki)
 │   │   ├── shiki/core.ts     # Shiki without default theme/language imports
@@ -532,6 +533,7 @@ import titleDescription from 'comark/plugins/title-description'
 import headingLinks from 'comark/plugins/heading-links'
 import punctuation from 'comark/plugins/punctuation'
 import jsonRender from 'comark/plugins/json-render'
+import linkify from 'comark/plugins/linkify'            // default via registerDefaultPlugins; add explicitly with comark/core
 import security from 'comark/plugins/security'
 import summary from 'comark/plugins/summary'
 import taskList from 'comark/plugins/task-list'         // default via registerDefaultPlugins
@@ -653,7 +655,8 @@ const result = await parseMarkdown(markdownContent, {
   autoUnwrap: true,             // Remove <p> wrappers from single-paragraph containers
   autoClose: true,              // Auto-close incomplete syntax; also accepts (markdown) => string
   unwrap: 'p',                  // Strip top-level wrapper tags (MDC unwrap); merges paragraphs
-  registerDefaultPlugins: true, // frontmatter, html, alert, task-list, components, attributes; false to disable
+  registerDefaultPlugins: true, // linkify, frontmatter, html, alert, task-list, components, attributes; false to disable
+  // linkify: false             // deprecated (warns): use registerDefaultPlugins: false + linkify()
 })
 
 result.nodes       // Node[]

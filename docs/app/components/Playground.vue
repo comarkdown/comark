@@ -14,6 +14,13 @@ import titleDescription from '@comark/nuxt/plugins/title-description'
 import toc from '@comark/nuxt/plugins/toc'
 import summary from '@comark/nuxt/plugins/summary'
 import security from '@comark/nuxt/plugins/security'
+import linkify from '@comark/nuxt/plugins/linkify'
+import frontmatter from '@comark/nuxt/plugins/frontmatter'
+import html from '@comark/nuxt/plugins/html'
+import alert from '@comark/nuxt/plugins/alert'
+import taskList from '@comark/nuxt/plugins/task-list'
+import components from '@comark/nuxt/plugins/components'
+import attributes from '@comark/nuxt/plugins/attributes'
 
 import { renderMarkdown } from 'comark/render'
 import { Splitpanes, Pane } from 'splitpanes'
@@ -209,11 +216,19 @@ const parseOptionDefs = [
   },
 ] as const
 
-const activePlugins = computed<ComarkPlugin[]>(() =>
-  pluginDefs
+// The other defaults always run; registering them explicitly lets linkify be toggled on its own.
+const activePlugins = computed<ComarkPlugin[]>(() => [
+  ...(parseOptions.value.linkify ? [linkify()] : []),
+  frontmatter(),
+  html(),
+  alert(),
+  taskList(),
+  components(),
+  attributes(),
+  ...pluginDefs
     .filter((p) => pluginToggles.value[p.key as keyof typeof pluginToggles.value])
-    .map((p) => p.factory() as ComarkPlugin)
-)
+    .map((p) => p.factory() as ComarkPlugin),
+])
 
 const enabledPluginCount = computed<number>(() => Object.values(pluginToggles.value).filter(Boolean).length)
 
@@ -258,7 +273,7 @@ async function updatePreview(): Promise<void> {
       plugins: activePlugins.value,
       autoUnwrap: parseOptions.value.autoUnwrap,
       autoClose: parseOptions.value.autoClose,
-      linkify: parseOptions.value.linkify ?? true,
+      registerDefaultPlugins: false,
     })
     document.value = result
     parseTime.value = Math.round((performance.now() - start) * 10) / 10
@@ -397,6 +412,7 @@ watch(completion, async (md) => {
       plugins: activePlugins.value,
       autoUnwrap: parseOptions.value.autoUnwrap,
       autoClose: true,
+      registerDefaultPlugins: false,
     })
     document.value = result
   } catch {
