@@ -17,8 +17,9 @@
  *   fragments as inline markdown (`<h1>Hello **World**</h1>` → strong).
  *   Implemented by narrowing markdown-exit's `html_block` rule to `<style>`,
  *   `<pre>`, `<script>`, `<textarea>`, and comments (`<!--`) so the rest
- *   tokenizes as normal markdown. Those stay verbatim: every character between
- *   the delimiters is kept, and an inner tag is text. When `false`, that rule stays and every closed-block
+ *   tokenizes as normal markdown. Their bodies are not markdown and every
+ *   character between the delimiters is kept; inner tags are text, except in
+ *   `<pre>` (see `SPEC/HTML/README.md`); that holds inline too (`text <pre>**x**</pre>`). When `false`, that rule stays and every closed-block
  *   body stays literal. Blank-line bodies still nest as markdown tokens via bare
  *   open/close pairing, in both modes.
  *
@@ -35,9 +36,12 @@
  * ```
  */
 
-import { type StateBlock, Token, type MarkdownExit } from 'markdown-exit/core'
+import { type StateBlock, type StateInline, Token, type MarkdownExit } from 'markdown-exit/core'
+import { decodeHTMLStrict } from '../internal/entities.ts'
 import type { ComarkParseTokensState } from '../types.ts'
 import { defineComarkPlugin } from '../utils/helpers.ts'
+import { isHtmlVoidElement } from '../utils/index.ts'
+import { HTML_TAG_RE } from '../internal/parse/html-tag.ts'
 
 export interface HtmlPluginOptions {
   /**
@@ -59,6 +63,40 @@ export default defineComarkPlugin((opts: HtmlPluginOptions = {}) => {
 
 function markdownItHtmlWithoutMarkdown(md: MarkdownExit) {
   md.set({ html: true })
+  md.inline.ruler.at('html_inline', htmlInline)
+}
+
+// markdown-exit's rule with Comark's tag grammar, so inline and block scanning agree.
+function htmlInline(state: StateInline, silent: boolean): boolean {
+  if (!state.md.options.html) return false
+  const pos = state.pos
+  if (state.src.charCodeAt(pos) !== 0x3c /* < */ || pos + 2 >= state.posMax) return false
+  const next = state.src.charCodeAt(pos + 1)
+  if (next !== 0x21 /* ! */ && next !== 0x3f /* ? */ && next !== 0x2f /* / */ && !isLetter(next)) return false
+  const match = HTML_TAG_RE.exec(state.src.slice(pos, state.posMax))
+  if (!match) return false
+  // `before <pre>**x**</pre>`: a raw element's body is not markdown, inline as well as in a block.
+  const rawEnd = rawElementEnd(state, pos, match[0])
+  if (rawEnd > 0) {
+    if (!silent) {
+      state.pushPending()
+      for (const part of htmlToTokens(state.src.slice(pos, rawEnd))) {
+        const token = state.push(part.type, '', 0)
+        token.content = part.content
+        token.meta = part.meta
+      }
+    }
+    state.pos = rawEnd
+    return true
+  }
+  if (!silent) {
+    const token = state.push('html_inline', '', 0)
+    token.content = match[0]
+    if (/^<a[>\s]/i.test(match[0])) state.linkLevel++
+    if (/^<\/a\s*>/i.test(match[0])) state.linkLevel--
+  }
+  state.pos += match[0].length
+  return true
 }
 
 function markdownItHtmlWithMarkdown(md: MarkdownExit) {
@@ -88,10 +126,14 @@ function markdownItPost(state: ComarkParseTokensState) {
     // Expand raw CommonMark html_block into html_inline + text, wrapped as a
     // paragraph so the tree walk pairs open/close the same way as html_inline.
     // Body text stays literal (no markdown re-parse).
-    const children = htmlToTokens(token.content || '')
+    // The block's own indentation is not content (`  <!-- a -->`).
+    const children = htmlToTokens((token.content || '').replace(/^[ \t]+/, ''))
     const open = new Token('paragraph_open', 'p', 1)
     const inline = new Token('inline', '', 0)
     const close = new Token('paragraph_close', 'p', -1)
+    // The paragraph keeps the block's container depth, so closing tags pair within it.
+    open.level = close.level = token.level
+    inline.level = token.level + 1
     inline.children = children
     inline.content = token.content || ''
     if (token.map) {
@@ -103,32 +145,12 @@ function markdownItPost(state: ComarkParseTokensState) {
   }
 }
 
-// region - https://github.com/markdown-it/markdown-it/blob/master/src/common/html_re.ts#L21
-
-const attr_name = '[a-zA-Z_:][a-zA-Z0-9:._-]*'
-
-const unquoted = '[^"\'=<>`\\x00-\\x20]+'
-const single_quoted = "'[^']*'"
-const double_quoted = '"[^"]*"'
-
-const attr_value = `(?:${unquoted}|${single_quoted}|${double_quoted})`
-
-const attribute = `(?:\\s+${attr_name}(?:\\s*=\\s*${attr_value})?)`
-
-const open_tag = `<[A-Za-z][A-Za-z0-9\\-]*${attribute}*\\s*\\/?>`
-
-const close_tag = '<\\/[A-Za-z][A-Za-z0-9\\-]*\\s*>'
-const comment = '<!---?>|<!--(?:[^-]|-[^-]|--[^>])*-->'
-const processing = '<[?][\\s\\S]*?[?]>'
-const declaration = '<![A-Za-z][^>]*>'
-const cdata = '<!\\[CDATA\\[[\\s\\S]*?\\]\\]>'
-
-const HTML_TAG_RE = new RegExp(`^(?:${open_tag}|${close_tag}|${comment}|${processing}|${declaration}|${cdata})`)
-
-// end region
-
 function isLetter(code: number): boolean {
   return (code >= 0x41 && code <= 0x5a) || (code >= 0x61 && code <= 0x7a)
+}
+
+function isNameChar(code: number): boolean {
+  return isLetter(code) || (code >= 0x30 && code <= 0x39) || code === 0x2d
 }
 
 /** CommonMark type-1 raw blocks whose body is kept verbatim. `<prelude>` does not match. */
@@ -141,8 +163,8 @@ function readTag(src: string, pos: number): { name: string; close: boolean; afte
   const close = src.charCodeAt(i) === 0x2f /* / */
   if (close) i += 1
   const start = i
-  while (i < src.length && isLetter(src.charCodeAt(i))) i += 1
-  if (i === start) return null
+  if (!isLetter(src.charCodeAt(i))) return null
+  while (i < src.length && isNameChar(src.charCodeAt(i))) i += 1
   return { name: src.slice(start, i).toLowerCase(), close, after: i }
 }
 
@@ -184,11 +206,13 @@ function literalText(content: string): string {
   return start >= end ? '' : content.slice(start, end)
 }
 
-function pushText(tokens: Token[], content: string, verbatim = false) {
+function pushText(tokens: Token[], content: string, verbatim = false, decode = true) {
   const textContent = verbatim ? content : literalText(content)
   if (!textContent) return
   const text = new Token('text', '', 0)
-  text.content = textContent
+  text.content = decode ? decodeHTMLStrict(textContent) : textContent
+  // Decoded text can spell `<!--`; it is not a comment.
+  if (decode) text.meta = { literal: true }
   tokens.push(text)
 }
 
@@ -207,6 +231,50 @@ function rawCloserEnd(src: string, pos: number, name: string): number {
   return src.charCodeAt(j) === 0x3e /* > */ ? j + 1 : -1
 }
 
+interface Closer {
+  start: number
+  end: number
+}
+
+/** Where each raw element's `</name>` sits in `src`, found in one pass on first use. */
+function createCloserFinder(src: string): (from: number, name: string, limit?: number) => Closer | null {
+  let index: Map<string, Closer[]> | undefined
+  return (from, name, limit = src.length) => {
+    if (!index) {
+      index = new Map()
+      for (let i = src.indexOf('<'); i >= 0; i = src.indexOf('<', i + 1)) {
+        const tag = readTag(src, i)
+        if (!tag?.close || !RAW_HTML_TAGS.has(tag.name)) continue
+        const end = rawCloserEnd(src, i, tag.name)
+        if (end < 0) continue
+        const list = index.get(tag.name)
+        if (list) list.push({ start: i, end })
+        else index.set(tag.name, [{ start: i, end }])
+      }
+    }
+    const list = index.get(name)
+    if (!list) return null
+    let lo = 0
+    let hi = list.length
+    while (lo < hi) {
+      const mid = (lo + hi) >> 1
+      if (list[mid].start < from) lo = mid + 1
+      else hi = mid
+    }
+    return lo < list.length && list[lo].end <= limit ? list[lo] : null
+  }
+}
+
+const inlineClosers = new WeakMap<StateInline, (from: number, name: string, limit?: number) => Closer | null>()
+
+function rawElementEnd(state: StateInline, pos: number, openTag: string): number {
+  const raw = readTag(openTag, 0)
+  if (!raw || raw.close || !RAW_HTML_TAGS.has(raw.name) || openTag.endsWith('/>')) return -1
+  let find = inlineClosers.get(state)
+  if (!find) inlineClosers.set(state, (find = createCloserFinder(state.src)))
+  return find(pos + openTag.length, raw.name, state.posMax)?.end ?? -1
+}
+
 /**
  * Split an HTML fragment into markdown-exit tokens.
  * Each recognized tag becomes `html_inline`; intervening runs become `text`.
@@ -217,9 +285,22 @@ function rawCloserEnd(src: string, pos: number, name: string): number {
  */
 export function htmlToTokens(str: string): Token[] {
   const tokens: Token[] = []
+  scan(tokens, str, false)
+  return tokens
+}
+
+function lastClosers(str: string): Map<string, number> {
+  const last = new Map<string, number>()
+  for (const match of str.matchAll(/<\/([A-Za-z][A-Za-z0-9-]*)\s*>/g)) last.set(match[1].toLowerCase(), match.index)
+  return last
+}
+
+function scan(tokens: Token[], str: string, verbatim: boolean) {
   const len = str.length
   let pos = 0
   let textStart = 0
+  const closers = verbatim ? lastClosers(str) : undefined
+  const findCloser = createCloserFinder(str)
 
   while (pos < len) {
     // Candidate HTML tag starts with '<' followed by letter, '/', '!', or '?'
@@ -227,27 +308,20 @@ export function htmlToTokens(str: string): Token[] {
       const next = str.charCodeAt(pos + 1)
       if (next === 0x21 /* ! */ || next === 0x3f /* ? */ || next === 0x2f /* / */ || isLetter(next)) {
         const match = str.slice(pos).match(HTML_TAG_RE)
-        if (match) {
-          if (pos > textStart) pushText(tokens, str.slice(textStart, pos))
+        if (match && !(closers && isUnpairedOpener(closers, pos + match[0].length, match[0]))) {
+          if (pos > textStart) pushText(tokens, str.slice(textStart, pos), verbatim)
           const raw = readTag(match[0], 0)
-          // style / pre / script / textarea: body is source until the closer, inner tags included.
           if (raw && !raw.close && RAW_HTML_TAGS.has(raw.name) && match[0].charCodeAt(match[0].length - 2) !== 0x2f) {
             pushHtml(tokens, match[0])
             const from = pos + match[0].length
-            let end = -1
-            for (let i = from; i < len; i += 1) {
-              if (str.charCodeAt(i) !== 0x3c /* < */) continue
-              end = rawCloserEnd(str, i, raw.name)
-              if (end < 0) continue
-              pushText(tokens, str.slice(from, i), true)
-              pushHtml(tokens, str.slice(i, end))
-              pos = end
-              break
+            const closer = findCloser(from, raw.name)
+            if (!closer) {
+              pushRawBody(tokens, str.slice(from), raw.name)
+              return
             }
-            if (end < 0) {
-              pushText(tokens, str.slice(from), true)
-              return tokens
-            }
+            pushRawBody(tokens, str.slice(from, closer.start), raw.name)
+            pushHtml(tokens, str.slice(closer.start, closer.end))
+            pos = closer.end
             textStart = pos
             continue
           }
@@ -261,7 +335,17 @@ export function htmlToTokens(str: string): Token[] {
     pos++
   }
 
-  if (textStart < len) pushText(tokens, str.slice(textStart))
+  if (textStart < len) pushText(tokens, str.slice(textStart), verbatim)
+}
 
-  return tokens
+/** In `<pre>`, `Array<string>` is code: an open tag with no closer after it stays text. */
+function isUnpairedOpener(closers: Map<string, number>, end: number, tagSource: string): boolean {
+  const name = /^<([A-Za-z][A-Za-z0-9-]*)/.exec(tagSource)?.[1].toLowerCase()
+  if (!name || isHtmlVoidElement(name) || tagSource.endsWith('/>')) return false
+  return (closers.get(name) ?? -1) < end
+}
+
+function pushRawBody(tokens: Token[], body: string, name: string) {
+  if (name === 'pre') scan(tokens, body, true)
+  else pushText(tokens, body, true, name === 'textarea')
 }

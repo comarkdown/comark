@@ -1,4 +1,5 @@
 import type { Node, ElementNode, ElementNodeAttributes, MarkdownDocument } from 'comark'
+import { braced_value } from './html-tag.ts'
 import { isHtmlVoidElement, TREE_WALK_MAX_DEPTH } from 'comark/utils'
 import { decodeHTMLAttribute } from '../entities.ts'
 
@@ -67,7 +68,13 @@ function applyAutoUnwrapAt(node: Node, depth: number): Node {
     return node
   }
 
-  if (significantCount === 1 && Array.isArray(significant) && significant[0] === 'p') {
+  // An author-written `<p>` (`$.html`) is content, not a wrapper.
+  if (
+    significantCount === 1 &&
+    Array.isArray(significant) &&
+    significant[0] === 'p' &&
+    !(significant[1] as ElementNodeAttributes | undefined)?.$?.html
+  ) {
     // Lift the paragraph's attrs onto the parent so trailing `{attr}` survives the unwrap.
     // Parent attrs take precedence so explicit component props aren't overridden.
     const paragraphAttrs = significant[1] as Record<string, unknown> | undefined
@@ -186,6 +193,11 @@ export function parseHtmlInline(content: string): ParsedHtmlTag {
   return { kind: 'other', content: trimmed }
 }
 
+const ATTRIBUTE_RE = new RegExp(
+  `([:\\w.-]+)(?:\\s*=\\s*(?:"([^"]*)"|'([^']*)'|(${braced_value})|([^\\s"'=<>\`]+)))?`,
+  'g'
+)
+
 /**
  * Decode character references in a raw attribute value the way browsers do:
  * legacy semicolon-less references (`&amp`) are decoded, but not when followed by
@@ -204,11 +216,10 @@ export function parseHtmlAttributes(attrsStr: string): Record<string, unknown> {
   const attrs: Record<string, unknown> = {}
   if (!attrsStr || !attrsStr.trim()) return attrs
 
-  const re = /([:\w.-]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+)))?/g
-  let match: RegExpExecArray | null
-  while ((match = re.exec(attrsStr)) !== null) {
+  for (const match of attrsStr.matchAll(ATTRIBUTE_RE)) {
     const key = match[1].toLowerCase()
-    const value = match[2] ?? match[3] ?? match[4]
+    if (Object.hasOwn(attrs, key)) continue
+    const value = match[2] ?? match[3] ?? match[4] ?? match[5]
     attrs[key] = value === undefined ? true : decodeAttributeValue(value)
   }
 

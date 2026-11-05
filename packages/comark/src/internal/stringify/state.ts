@@ -36,15 +36,23 @@ function findHandler(ctx: Context, node: ElementNode): NodeHandler | undefined {
  */
 export async function one(node: Node, state: State, parent?: ElementNode, atLineStart = false): Promise<string> {
   if (typeof node === 'string') {
+    const inElement = parent?.[1].$?.html === 1
+    const rawBody = inElement && (parent[0] === 'script' || parent[0] === 'style')
     if (state.context.html) {
-      // Do not convert ampersands to entities in raw HTML blocks
-      return escapeHtml(node, { '&': undefined, '"': undefined })
+      // Text in an HTML element was decoded on parse, so a `&` that could start a reference
+      // (`&lt`, `&#65`) is written as `&amp;`. Markdown text keeps its entities as it always has.
+      return escapeHtml(inElement && !rawBody ? node.replace(/&(?=[a-z#])/gi, '&amp;') : node, {
+        '&': undefined,
+        '"': undefined,
+      })
     }
-    // The content of a raw HTML block is copied verbatim on parse, so markdown
-    // syntax inside it must not be escaped (inline HTML, `$.block === 0`, has
-    // its markdown parsed into children and is escaped normally).
-    if (parent?.[1].$?.html === 1 && parent[1].$?.block === 1) {
-      return node
+    if (rawBody) return node
+    if (state.context.rawText === true) {
+      return node.replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    }
+    // Character references preserve Markdown punctuation in both parsing modes; backslashes do not.
+    if (inElement && (parent[1].$?.block === 1 || state.context.literal === true)) {
+      return encodeLiteralText(node, atLineStart)
     }
     return escapeTextNode(node, atLineStart)
   }
@@ -97,6 +105,10 @@ export async function one(node: Node, state: State, parent?: ElementNode, atLine
     }
   }
 
+  // Text under raw HTML stays literal through its inline elements, but not through markdown nodes.
+  const revertLiteral =
+    state.context.literal === true && node[1].$?.html !== 1 ? state.applyContext({ literal: false }) : undefined
+
   try {
     const userHandler = findHandler(state.context, node)
     if (userHandler) {
@@ -119,6 +131,7 @@ export async function one(node: Node, state: State, parent?: ElementNode, atLine
       : await state.handlers.html(node, state, parent)
   } finally {
     state.renderData = prevRenderData
+    if (revertLiteral) state.applyContext(revertLiteral)
   }
 }
 
@@ -228,6 +241,14 @@ function escapeTextNode(text: string, atLineStart = false): string {
     .split('\n')
     .map((line, index) => (index > 0 || atLineStart ? escapeLeadingBlock(line) : line))
     .join('\n')
+}
+
+function encodeLiteralText(text: string, atLineStart: boolean): string {
+  return escapeTextNode(text, atLineStart)
+    .replace(/\\([\s\S])/g, (_, char: string) =>
+      char === '&' ? '&amp;' : char === '<' ? '&lt;' : `&#${char.codePointAt(0)};`
+    )
+    .replace(/<(?=[a-z/!?])/gi, '&lt;')
 }
 
 function isAlphaNumeric(char: string | undefined): boolean {
