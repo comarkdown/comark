@@ -24,10 +24,6 @@ catalog:
   "@ai-sdk/vue": ^4.0.159
   "@astrojs/react": ^7.1.2
   "@clack/prompts": ^1.8.1
-  "@comark/html": ^0.8.1
-  "@comark/nuxt": ^0.8.1
-  "@comark/react": ^0.8.1
-  "@comark/vue": ^0.8.1
 
   # Misc
   "@json-render/core": ^0.21.3
@@ -41,7 +37,6 @@ catalog:
   "@resvg/resvg-js": ^2.6.2
   "@nuxtjs/mcp-toolkit": 0.24.3
   "@nuxtlabs/monarch-mdc": ^0.10.0
-  "@release-it/conventional-changelog": ^12.0.2
   "@shikijs/langs": ^4.5.0
 
   # Shiki
@@ -121,7 +116,6 @@ catalog:
   react-dom: ^19.3.1
 
   # Build tooling
-  release-it: ^21.1.2
   remark-gfm: ^4.0.1
   remark-mdc: ^3.11.1
   remark-parse: ^11.0.0
