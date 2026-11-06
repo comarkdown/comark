@@ -79,6 +79,19 @@ loadTest.each([
   ).toBe('not loaded')
 })
 
+loadTest.each(['emoji', 'math', 'mermaid', 'binding'])('keeps YAML unloaded with components and %s', (name) => {
+  expect(
+    yamlLoads(`
+      const { createMarkdownParser } = await import('comark/core')
+      const { default: components } = await import('comark/plugins/components')
+      const { default: plugin } = await import('comark/plugins/${name}')
+      const parse = createMarkdownParser({ plugins: [plugin(), components()] })
+      assert.equal(yamlLoaded, false)
+      assert.deepEqual((await parse('Hello')).nodes, [['p', {}, 'Hello']])
+    `)
+  ).toBe('not loaded')
+})
+
 const yamlProps = 'title: Card\nheight: 400\n'
 const frontmatterCard = `::card\n---\n${yamlProps}---\nBody\n::`
 const propsCases = [

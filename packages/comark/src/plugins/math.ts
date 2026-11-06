@@ -1,7 +1,7 @@
 import type { MarkdownExit, StateInline, StateBlock } from 'markdown-exit/core'
-import type { MarkdownItPlugin } from 'comark'
 import { defineComarkPlugin } from 'comark'
 import { findBracketClose, isBracketMath } from '../internal/bracket-math.ts'
+import { markSourceStable } from '../internal/parse/source-stable.ts'
 
 export interface MathConfig {
   /**
@@ -415,6 +415,6 @@ function markdownItMath(md: MarkdownExit, config: MathConfig = {}) {
  */
 export default defineComarkPlugin((config: MathConfig = {}) => ({
   name: 'math',
-  markdownItPlugins: [((md: MarkdownExit) => markdownItMath(md, config)) as unknown as MarkdownItPlugin],
+  markdownItPlugins: [markSourceStable((md: MarkdownExit) => markdownItMath(md, config))],
   autoClose: config.brackets ? { bracketMath: true } : undefined,
 }))

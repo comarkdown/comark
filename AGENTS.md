@@ -599,7 +599,7 @@ import mermaid, { Mermaid } from '@comark/angular/plugins/mermaid'
 import binding, { Binding, If } from '@comark/angular/plugins/binding'
 ```
 
-Plugin `pre` hooks transform markdown in order. Async `prepare(state)` hooks run after all `pre` hooks and before tokenization, so syntax dependencies load for the final source and parser configuration. The components plugin uses `prepare` for YAML props, and preloads YAML for unrecognized markdown-it plugin functions that may generate props. Default rule functions are registered as source-stable in `internal/parse/source-stable.ts`; its synchronous markdown-it adapter lives at `comark/plugins/components/markdown-it` and imports YAML eagerly.
+Plugin `pre` hooks transform markdown in order. Async `prepare(state)` hooks run after all `pre` hooks and before tokenization, so syntax dependencies load for the final source and parser configuration. The components plugin uses `prepare` for YAML props, and preloads YAML for unrecognized markdown-it plugin functions that may generate props. Default rule functions and the built-in `emoji`, `math`, `mermaid` and `binding` rule functions are registered as source-stable in `internal/parse/source-stable.ts`; its synchronous markdown-it adapter lives at `comark/plugins/components/markdown-it` and imports YAML eagerly.
 
 ## Coding Principles
 
