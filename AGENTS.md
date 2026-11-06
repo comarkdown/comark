@@ -1031,7 +1031,8 @@ Every package in `packages/*` shares one version and one `vX.Y.Z` tag (lockstep)
 2. Merging the PR tags `vX.Y.Z`, creates the GitHub release from the PR body, and
    dispatches the publish run on the tag.
 3. `pack` installs with `--ignore-scripts`, runs `pnpm build`, then `pnpm pack`s each
-   package (its `prepack` runs; `comark`'s `build` copies `docs/skills` into the package).
+   package (its `prepack` runs). Agent skills are served from comark.dev (`docs/skills`), not
+   shipped in the npm package.
 4. `publish` stages every tarball with `npm stage publish` over OIDC in the `npm`
    environment. Approve the staged versions on npmjs.com to make them live.
 
