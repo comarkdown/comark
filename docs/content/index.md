@@ -8,7 +8,7 @@ seo:
   ogImage: /social-card.jpg
 ---
 
-::u-page-hero
+::landing-hero
 ---
 orientation: horizontal
 ---
@@ -44,7 +44,7 @@ The Markdown parser and renderer for everything.
 Open-source Markdown parser and renderer with components, attributes and plugins. Streams AI output to React, Vue, Svelte, Angular, HTML and the terminal.
 
 #links
-  :::u-button
+  :::button
   ---
   to: /getting-started/introduction
   size: lg
@@ -53,7 +53,7 @@ Open-source Markdown parser and renderer with components, attributes and plugins
   Get started
   :::
 
-  :::u-button
+  :::button
   ---
   icon: i-simple-icons-github
   color: neutral
@@ -326,7 +326,7 @@ From Markdown to UI.
 Install Comark, pick a renderer, and render your first Markdown document in minutes. Read [why Comark](/kb/why-comark) exists, or start with the [document model](/getting-started/document-model).
 
 #links
-  :::u-button
+  :::button
   ---
   to: /getting-started/introduction
   trailing-icon: i-lucide-arrow-right
@@ -335,7 +335,7 @@ Install Comark, pick a renderer, and render your first Markdown document in minu
   Get started
   :::
 
-  :::u-button
+  :::button
   ---
   to: /kb/why-comark
   color: neutral

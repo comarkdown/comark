@@ -39,8 +39,7 @@
     "url": "git+https://github.com/comarkdown/comark.git"
   },
   "files": [
-    "dist",
-    "skills"
+    "dist"
   ],
   "type": "module",
   "sideEffects": false,
@@ -52,7 +51,10 @@
     "./plugins/*": "./dist/plugins/*.js",
     "./utils": "./dist/utils/index.js",
     "./utils/trace": "./dist/utils/trace.js",
-    "./parse": "./dist/parse.js",
+    "./parse": "./dist/index.js",
+    "./core": "./dist/core.js",
+    "./auto-close": "./dist/auto-close.js",
+    "./context": "./dist/context.js",
     "./render": "./dist/render/index.js",
     "./render/html": "./dist/render/html.js"
   },
@@ -64,13 +66,13 @@
     "build": "tsc --removeComments --declaration false && tsc --emitDeclarationOnly",
     "dev": "tsc --watch",
     "test": "vitest run",
-    "prepack": "tsc --removeComments --declaration false && tsc --emitDeclarationOnly",
-    "release": "release-it",
-    "release:dry": "release-it --dry-run"
+    "prepack": "tsc --removeComments --declaration false && tsc --emitDeclarationOnly"
   },
   "dependencies": {
-    "entities": "catalog:",
+    "character-entities": "catalog:",
+    "character-entities-legacy": "catalog:",
     "js-yaml": "catalog:",
+    "linkify-it": "catalog:",
     "markdown-exit": "catalog:"
   },
   "devDependencies": {

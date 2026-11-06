@@ -50,12 +50,12 @@ for (const [name, component] of [
         component,
         value,
         streaming: true,
-        options: { linkify: false },
+        options: { registerDefaultPlugins: false },
       })
       await expect.element(screen.getByText('Tail')).toBeInTheDocument()
       expect(screen.container.querySelector('a')).toBeNull()
 
-      await screen.rerender({ options: { linkify: true } })
+      await screen.rerender({ options: { registerDefaultPlugins: true } })
       await expect.element(screen.getByRole('link')).toHaveAttribute('href', 'https://example.com')
 
       const plugin: ComarkPlugin = {

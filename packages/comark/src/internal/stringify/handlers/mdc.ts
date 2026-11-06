@@ -64,5 +64,9 @@ export async function mdc(node: ElementNode, state: State, parent?: ElementNode)
     }
   }
 
-  return inline ? result : indent(result, { level: parent ? 1 : 0 })
+  // Indented after a list, the component would continue the last list item
+  const prev = parent?.[parent.indexOf(node) - 1]
+  const afterList = Array.isArray(prev) && (prev[0] === 'ul' || prev[0] === 'ol')
+
+  return inline ? result : indent(result, { level: parent && !afterList ? 1 : 0 })
 }

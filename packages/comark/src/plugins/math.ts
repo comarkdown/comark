@@ -1,4 +1,4 @@
-import type { MarkdownExit, StateInline, StateBlock } from 'markdown-exit'
+import type { MarkdownExit, StateInline, StateBlock } from 'markdown-exit/core'
 import type { MarkdownItPlugin } from 'comark'
 import { defineComarkPlugin } from 'comark'
 import { findBracketClose, isBracketMath } from '../internal/bracket-math.ts'

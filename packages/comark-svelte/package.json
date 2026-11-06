@@ -66,8 +66,7 @@
     "build": "svelte-package --input src && svelte-package --input src --types false --preserve-output --tsconfig ./tsconfig.build.json && node ../../scripts/sync-plugins.mjs",
     "build:watch": "svelte-package --input src --watch",
     "test": "vitest run",
-    "check": "svelte-check --tsconfig ./tsconfig.json",
-    "release": "release-it"
+    "check": "svelte-check --tsconfig ./tsconfig.json"
   },
   "dependencies": {
     "comark": "workspace:*"
@@ -77,8 +76,7 @@
     "@sveltejs/vite-plugin-svelte": "catalog:",
     "@vitest/browser": "catalog:",
     "@vitest/browser-playwright": "catalog:",
-    "release-it": "catalog:",
-    "svelte": "^5.57.2",
+    "svelte": "^5.57.3",
     "svelte-check": "catalog:",
     "vitest": "catalog:",
     "vitest-browser-svelte": "catalog:"

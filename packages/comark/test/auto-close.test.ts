@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { autoCloseMarkdown } from '../src/internal/parse/auto-close'
+import { autoCloseMarkdown } from '../src/auto-close'
 
 const inlines = `
 _test → _test_

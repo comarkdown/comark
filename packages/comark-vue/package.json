@@ -22,6 +22,7 @@
   "bugs": {
     "url": "https://github.com/comarkdown/comark/issues"
   },
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/comarkdown/comark.git"
@@ -51,8 +52,7 @@
     "build": "tsc --removeComments --declaration false && tsc --emitDeclarationOnly",
     "dev": "tsc --watch",
     "test": "vitest run",
-    "prepack": "tsc --removeComments --declaration false && tsc --emitDeclarationOnly",
-    "release": "release-it"
+    "prepack": "tsc --removeComments --declaration false && tsc --emitDeclarationOnly"
   },
   "dependencies": {
     "comark": "workspace:*"

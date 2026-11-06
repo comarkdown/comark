@@ -223,6 +223,8 @@ function hastToNode(input: any): Node {
   if (input.type === 'comment') return [null, {}, input.value]
 
   const props = input.properties || {}
+  // Shiki transformers add classes with `addClassToHast`, which leaves `class` as an array.
+  if (Array.isArray(props.class)) props.class = props.class.join(' ')
   if (input.tag === 'code' && props?.className && props.className.length === 0) {
     delete props.className
   }
@@ -392,8 +394,7 @@ export async function highlightCodeBlocks(
           meta: { __raw: attrs.meta },
         })
         const preNode = result.children.map(hastToNode)[0] as ElementNode
-        const cls = (preNode[1] as ElementNodeAttributes).class
-        classStr = Array.isArray(cls) ? cls.join(' ') : String(cls)
+        classStr = String((preNode[1] as ElementNodeAttributes).class)
         codeChildren = (preNode[2] as ElementNode).slice(2) as Node[]
       } else {
         // Fast path: build Nodes directly from tokens, skipping hast
@@ -433,9 +434,7 @@ export async function highlightCodeBlocks(
     for (const child of codeChildren) {
       if (Array.isArray(child)) {
         if (highlightSet !== null && highlightSet.has(line)) {
-          const classes = Array.isArray(child[1].class) ? child[1].class.join(' ') : (child[1].class ?? '')
-
-          child[1].class = `${classes} highlight`.trim()
+          child[1].class = `${child[1].class ?? ''} highlight`.trim()
           // TODO: (enforcing default style) once we unify all ecosystem styles we can remove this
           child[1].style = 'display: inline-block'
         } else {

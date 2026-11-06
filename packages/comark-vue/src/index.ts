@@ -1,6 +1,7 @@
 import { computed, defineComponent, h } from 'vue'
 import { Markdown, markdownProps } from './components/Markdown.ts'
-import type { ParserOptions } from 'comark'
+import type { NodeTransform, ParserOptions } from 'comark'
+import { mergeNodeTransforms } from 'comark/utils'
 import { MarkdownDocument, markdownDocumentProps } from './components/MarkdownDocument.ts'
 
 export { Markdown } from './components/Markdown.ts'
@@ -15,6 +16,10 @@ interface DefineMarkdownComponentOptions extends ParserOptions {
   name?: string
   components?: Record<string, any>
   /**
+   * Node transforms that run before the instance's own `transformNode`
+   */
+  transformNode?: NodeTransform | readonly NodeTransform[]
+  /**
    * Additional classes for the wrapper div
    */
   class?: string
@@ -25,13 +30,17 @@ interface DefineMarkdownDocumentOptions {
   name?: string
   components?: Record<string, any>
   /**
+   * Node transforms that run before the instance's own `transformNode`
+   */
+  transformNode?: NodeTransform | readonly NodeTransform[]
+  /**
    * Additional classes for the wrapper div
    */
   class?: string
 }
 
 export function defineMarkdownComponent(config: DefineMarkdownComponentOptions = {}): typeof Markdown {
-  const { name, ...parseOptions } = config
+  const { name, transformNode, ...parseOptions } = config
 
   return defineComponent({
     name: name ?? 'MarkdownComponent',
@@ -49,6 +58,8 @@ export function defineMarkdownComponent(config: DefineMarkdownComponentOptions =
         ...props.components,
       }))
 
+      const transforms = computed(() => mergeNodeTransforms(transformNode, props.transformNode))
+
       return () => {
         const component = config.extends || Markdown
         // Spread rather than list every prop: the hand-written list had drifted
@@ -60,6 +71,7 @@ export function defineMarkdownComponent(config: DefineMarkdownComponentOptions =
             options: options.value,
             plugins: plugins.value,
             components: components.value,
+            transformNode: transforms.value,
             class: config.class,
           },
           {
@@ -81,6 +93,8 @@ export function defineMarkdownDocumentComponent(config: DefineMarkdownDocumentOp
         ...props.components,
       }))
 
+      const transforms = computed(() => mergeNodeTransforms(config.transformNode, props.transformNode))
+
       return () => {
         const component = config.extends || MarkdownDocument
         return h(
@@ -88,6 +102,7 @@ export function defineMarkdownDocumentComponent(config: DefineMarkdownDocumentOp
           {
             ...props,
             components: components.value,
+            transformNode: transforms.value,
             class: config.class,
           },
           {

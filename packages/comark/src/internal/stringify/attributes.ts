@@ -1,7 +1,7 @@
 import { stringifyYaml } from '../yaml.ts'
 import { pickFence } from './fence.ts'
 
-export { resolveAttributes, resolveAttribute, htmlAttributes } from './html-attributes.ts'
+export { resolveAttributes, resolveAttribute } from './html-attributes.ts'
 export type { ResolveAttributesOptions } from './html-attributes.ts'
 
 // Implicit attributes the parser injects per tag — they're conveyed by the
@@ -74,6 +74,7 @@ export function userBlockAttrs(tag: string, attributes: Record<string, unknown>)
  */
 export function comarkAttributes(attributes: Record<string, unknown>) {
   const attrs = Object.entries(attributes)
+    .filter(([key]) => key !== '$')
     .map(([key, value]) => {
       if (key.startsWith(':') && value === 'true') {
         return key.slice(1)
