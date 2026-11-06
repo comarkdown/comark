@@ -189,7 +189,6 @@ minimumReleaseAgeExclude:
   - rangi@2.2.0
   - nuxt-agent-discovery@0.7.0
   - markdown-exit@2.1.0
-  - tinyaml@0.1.0
 
 patchedDependencies:
   minimark: patches/minimark.patch
