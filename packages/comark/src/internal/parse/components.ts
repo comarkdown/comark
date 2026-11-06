@@ -510,35 +510,34 @@ export function createMarkdownItComponents(parseYaml: typeof import('./yaml.ts')
   }
 }
 
-const blockYamlFences = Object.keys(blockYamlLines)
+function lineEnd(source: string, pos: number): number {
+  while (pos < source.length && source[pos] !== '\n' && source[pos] !== '\r') pos++
+  return pos
+}
 
-// Container prefixes and indentation are stripped during tokenization. Matching
-// line suffixes here also covers YAML props inside lists and blockquotes.
+// May report props that tokenization later rejects, which only loads YAML early;
+// it must never miss props `comark_block_yaml` would parse. Container prefixes
+// and indentation are stripped during tokenization, so lines are matched by suffix.
 export function hasYamlProps(source: string): boolean {
-  if (!source.includes('::')) return false
-  let previousComponent = false
-  for (let start = 0; start < source.length;) {
-    let end = start
-    while (end < source.length && source[end] !== '\n' && source[end] !== '\r') end++
-
-    for (const fence of blockYamlFences) {
-      if (fence === '---' && !previousComponent) continue
-      if (end - start >= fence.length && source.endsWith(fence, end)) return true
+  let pos = source.indexOf('::')
+  if (pos === -1) return false
+  // Every ```/~~~ yaml or yml `[props]` fence contains one of these.
+  if (source.includes('yaml [props]') || source.includes('yml [props]')) return true
+  while (pos !== -1) {
+    pos += 2
+    while (source[pos] === ':') pos++
+    while (source[pos] === ' ' || source[pos] === '\t') pos++
+    const code = source.charCodeAt(pos) | 32
+    if ((code >= 97 && code <= 122) || source[pos] === '$') {
+      // A `---` props fence must be the line right after the opener.
+      const end = lineEnd(source, pos)
+      if (end === source.length) return false
+      const next = end + (source[end] === '\r' && source[end + 1] === '\n' ? 2 : 1)
+      const nextEnd = lineEnd(source, next)
+      if (nextEnd - next >= 3 && source.endsWith('---', nextEnd)) return true
+      pos = next
     }
-
-    previousComponent = false
-    for (let pos = start; pos < end; pos++) {
-      if (source[pos] !== ':' || source[pos + 1] !== ':') continue
-      while (pos < end && source[pos] === ':') pos++
-      while (pos < end && (source[pos] === ' ' || source[pos] === '\t')) pos++
-      const code = source.charCodeAt(pos) | 32
-      if (pos < end && ((code >= 97 && code <= 122) || source[pos] === '$')) {
-        previousComponent = true
-        break
-      }
-    }
-
-    start = end + (source[end] === '\r' && source[end + 1] === '\n' ? 2 : 1)
+    pos = source.indexOf('::', pos)
   }
   return false
 }
