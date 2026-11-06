@@ -1,0 +1,21 @@
+diff --git a/dist/plugins/markdown.js b/dist/plugins/markdown.js
+index 512aa963f44fecdc0f720a6817f153d498dd3667..e04df92468c95279f4e7c47f6d6c92ed0483ad5c 100644
+--- a/dist/plugins/markdown.js
++++ b/dist/plugins/markdown.js
+@@ -1,4 +1,5 @@
+-import { createMarkdownParser, parseFrontmatter, } from 'comark';
++import { createMarkdownParser } from 'comark';
++import { parseFrontmatter } from 'comark/frontmatter';
+ export default function markdown(options = {}) {
+     return {
+         name: 'markdown',
+diff --git a/dist/plugins/yaml.js b/dist/plugins/yaml.js
+index 6c31d008b62a8f2c86d2cc5fb92b5f426b952701..a4a002e52dc235eec0084651851427ecb3b3daac 100644
+--- a/dist/plugins/yaml.js
++++ b/dist/plugins/yaml.js
+@@ -1,4 +1,4 @@
+-import { parseFrontmatter } from 'comark';
++import { parseFrontmatter } from 'comark/frontmatter';
+ import { defineContentPlugin } from '../utils/plugin.js';
+ import { handleParseError } from '../utils/on-error.js';
+ export default defineContentPlugin((options = {}) => ({

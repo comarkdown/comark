@@ -6,6 +6,7 @@
  */
 
 import { defineComarkPlugin } from '../utils/helpers.ts'
+import { markSourceStable } from '../internal/parse/source-stable.ts'
 
 interface MarkdownItToken {
   type: string
@@ -178,5 +179,5 @@ function markdownItTaskList(md: MarkdownIt, options?: TaskListOptions) {
 }
 export default defineComarkPlugin(() => ({
   name: 'task-list',
-  markdownItPlugins: [markdownItTaskList],
+  markdownItPlugins: [markSourceStable(markdownItTaskList)],
 }))

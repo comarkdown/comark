@@ -11,6 +11,7 @@ import { LinkifyIt, type LinkifyOptions } from 'linkify-it'
 import type { MarkdownExit } from 'markdown-exit/core'
 import type { MarkdownItPlugin } from '../types.ts'
 import { defineComarkPlugin } from '../utils/helpers.ts'
+import { markSourceStable } from '../internal/parse/source-stable.ts'
 
 /**
  * linkify-it recognition options. All default to linkify-it's own defaults:
@@ -40,5 +41,5 @@ function markdownItLinkify(options: LinkifyPluginOptions): MarkdownItPlugin {
 
 export default defineComarkPlugin((options: LinkifyPluginOptions = {}) => ({
   name: 'linkify',
-  markdownItPlugins: [markdownItLinkify(options)],
+  markdownItPlugins: [markSourceStable(markdownItLinkify(options))],
 }))

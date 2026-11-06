@@ -90,7 +90,7 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
     // Root active span for the full parse pipeline. Nested startActiveSpan /
     // startSpan calls become children (OTel active context, or a stack in a
     // simple recorder) → hierarchical trace:
-    //   comark:parse → autoclose / pre / tokenize / nodes / post
+    //   comark:parse → autoclose / pre / prepare / tokenize / nodes / post
     return await withSpan(tracer, 'comark:parse', async () => {
       const state = {
         options,
@@ -133,6 +133,11 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
       for (const plugin of plugins) {
         if (!plugin.pre) continue
         await withSpan(tracer, `comark:pre:${plugin.name}`, () => plugin.pre!(state))
+      }
+
+      for (const plugin of plugins) {
+        if (!plugin.prepare) continue
+        await withSpan(tracer, `comark:prepare:${plugin.name}`, () => plugin.prepare!(state))
       }
 
       try {

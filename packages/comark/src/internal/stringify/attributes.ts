@@ -130,7 +130,7 @@ function normalizeValue(value: unknown): unknown {
 export async function comarkYamlAttributes(
   attributes: Record<string, unknown>,
   style: 'frontmatter' | 'codeblock' = 'codeblock'
-) {
+): Promise<string> {
   // Normalize attribute values for YAML serialization:
   //  - `:`-prefixed JSON literals (`:count="42"`, `:config={…}`) restore to
   //    native values and drop the prefix — matching @nuxtjs/mdc stringify.

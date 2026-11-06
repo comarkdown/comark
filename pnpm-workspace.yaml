@@ -194,4 +194,5 @@ minimumReleaseAgeExclude:
   - markdown-exit@2.1.0
 
 patchedDependencies:
+  comark-content@0.4.3: patches/comark-content@0.4.3.patch
   minimark: patches/minimark.patch

@@ -103,8 +103,10 @@ When the components plugin is not active, `autoClose` also skips component-fence
 
 For hosts that use markdown-it or markdown-exit directly (for example VitePress), use the exported adapter:
 
+With Comark's default rules, YAML loads only when the source may contain component props. Additional markdown-it plugins can generate props during synchronous tokenization, so an unrecognized markdown-it plugin makes YAML load before parsing. The synchronous markdown-it adapter imports YAML eagerly and has its own entry, `comark/plugins/components/markdown-it`. Move named adapter imports from `comark/plugins/components` to this path.
+
 ```typescript
-import { markdownItComponents } from 'comark/plugins/components'
+import { markdownItComponents } from 'comark/plugins/components/markdown-it'
 import { markdownItAttributes } from 'comark/plugins/attributes'
 
 md.use(markdownItComponents)

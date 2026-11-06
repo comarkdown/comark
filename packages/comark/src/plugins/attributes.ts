@@ -13,6 +13,7 @@ import type { PluginSimple, Renderer } from 'markdown-exit/core'
 import { Token } from 'markdown-exit/core'
 import type { MarkdownItPlugin } from 'comark'
 import { defineComarkPlugin } from '../utils/helpers.ts'
+import { markSourceStable } from '../internal/parse/source-stable.ts'
 import { searchProps } from '../internal/parse/syntax/props.ts'
 
 const TEXT_TOKENS = new Set(['text', 'text_special', 'softbreak', 'hardbreak'])
@@ -223,5 +224,5 @@ export const markdownItAttributes: PluginSimple = markdownItInlineProps
 
 export default defineComarkPlugin(() => ({
   name: 'attributes',
-  markdownItPlugins: [markdownItAttributes as unknown as MarkdownItPlugin],
+  markdownItPlugins: [markSourceStable(markdownItAttributes as unknown as MarkdownItPlugin)],
 }))

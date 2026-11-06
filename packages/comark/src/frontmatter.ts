@@ -6,7 +6,7 @@
  * import { parseFrontmatter, renderFrontmatter } from 'comark/frontmatter'
  *
  * const { content, data } = parseFrontmatter('---\ntitle: Hi\n---\n\n# Hello')
- * // data → { title: 'Hi' }, content → '\n# Hello'
+ * // data → { title: 'Hi' }, content → '\n\n# Hello'
  *
  * renderFrontmatter({ title: 'Hi' }, '# Hello')
  * // → '---\ntitle: Hi\n---\n\n# Hello'

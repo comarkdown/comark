@@ -68,7 +68,7 @@ packages/comark/
 │   │   ├── alert.ts          # Alert/callout blocks
 │   │   ├── frontmatter.ts    # YAML frontmatter extraction (default via registerDefaultPlugins)
 │   │   ├── html.ts           # HTML block/inline parsing (default via registerDefaultPlugins)
-│   │   ├── components.ts     # Block/inline components + spans (`::name`, `:name`, `[text]`)
+│   │   ├── components.ts     # prepare() loads YAML after all pre hooks; loader for block/inline components + spans (`::name`, `:name`, `[text]`)
 │   │   ├── attributes.ts     # Inline attributes (`{props}` after tokens)
 │   │   ├── binding.ts        # Inline interpolation + shared conditional rendering rules
 │   │   ├── breaks.ts         # Hard line breaks (`<br>`) from newlines
@@ -103,6 +103,7 @@ packages/comark/
 │       ├── sanitize.ts       # Component props validation and frontmatter sanitization
 │       ├── parse/            # Parsing pipeline
 │       │   ├── token-processor.ts # markdown-exit tokens → document nodes
+│       │   ├── components.ts # Shared component rules and YAML detection; the synchronous adapter lives in plugins/components/markdown-it.ts
 │       │   ├── frontmatter.ts # parseFrontmatter()
 │       │   ├── yaml.ts       # parseYaml()
 │       │   ├── auto-close/   # Self-healing for incomplete markdown
@@ -550,7 +551,7 @@ import binding, { Binding, resolveIfWrapper, selectIfBranch, shouldRenderIf } fr
 import type { IfComparisonOperator, IfProps, IfWrapperTag } from 'comark/plugins/binding'
 
 // markdown-it / markdown-exit adapters (e.g. VitePress)
-import { markdownItComponents } from 'comark/plugins/components'
+import { markdownItComponents } from 'comark/plugins/components/markdown-it'
 import { markdownItAttributes } from 'comark/plugins/attributes'
 
 // NOTE: All framework packages re-export every core plugin via their own subpath.
@@ -597,6 +598,8 @@ import math, { Math } from '@comark/angular/plugins/math'
 import mermaid, { Mermaid } from '@comark/angular/plugins/mermaid'
 import binding, { Binding, If } from '@comark/angular/plugins/binding'
 ```
+
+Plugin `pre` hooks transform markdown in order. Async `prepare(state)` hooks run after all `pre` hooks and before tokenization, so syntax dependencies load for the final source and parser configuration. The components plugin uses `prepare` for YAML props, and preloads YAML for unrecognized markdown-it plugin functions that may generate props. Default rule functions are registered as source-stable in `internal/parse/source-stable.ts`; its synchronous markdown-it adapter lives at `comark/plugins/components/markdown-it` and imports YAML eagerly.
 
 ## Coding Principles
 
