@@ -16,7 +16,11 @@ import { createMarkdownItComponents, hasYamlProps } from '../internal/parse/comp
 let yaml: typeof import('../internal/parse/yaml.ts') | undefined
 
 const markdownItComponents = createMarkdownItComponents((content) => {
-  if (!yaml) throw new Error('Component YAML props were not loaded before tokenization')
+  if (!yaml) {
+    throw new Error(
+      "Component YAML props were not loaded before tokenization. Register components() with createMarkdownParser, or use markdownItComponents from 'comark/plugins/components/markdown-it' with your own markdown-it instance."
+    )
+  }
   return yaml.parseYaml(content)
 })
 

@@ -22,14 +22,14 @@ import type { ComarkParsePreState } from '../types.ts'
 import { defineComarkPlugin } from '../utils/helpers.ts'
 
 // Keep the import outside the plugin factory so TypeScript rewrites its extension.
-const loadYaml = (): Promise<typeof import('../internal/parse/frontmatter.ts')> =>
+const loadFrontmatter = (): Promise<typeof import('../internal/parse/frontmatter.ts')> =>
   import('../internal/parse/frontmatter.ts')
 
 export default defineComarkPlugin(() => ({
   name: 'frontmatter',
   async pre(state: ComarkParsePreState): Promise<void> {
     if (!state.markdown.startsWith('---')) return
-    const { parseFrontmatter } = await loadYaml()
+    const { parseFrontmatter } = await loadFrontmatter()
     const { content, data, frontmatterText } = parseFrontmatter(state.markdown)
     state.markdown = content
     state.frontmatter = data

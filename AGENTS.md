@@ -69,6 +69,7 @@ packages/comark/
 │   │   ├── frontmatter.ts    # YAML frontmatter extraction (default via registerDefaultPlugins)
 │   │   ├── html.ts           # HTML block/inline parsing (default via registerDefaultPlugins)
 │   │   ├── components.ts     # prepare() loads YAML after all pre hooks; loader for block/inline components + spans (`::name`, `:name`, `[text]`)
+│   │   ├── components/markdown-it.ts # Synchronous markdownItComponents adapter (imports YAML eagerly)
 │   │   ├── attributes.ts     # Inline attributes (`{props}` after tokens)
 │   │   ├── binding.ts        # Inline interpolation + shared conditional rendering rules
 │   │   ├── breaks.ts         # Hard line breaks (`<br>`) from newlines
@@ -106,6 +107,7 @@ packages/comark/
 │       │   ├── components.ts # Shared component rules and YAML detection; the synchronous adapter lives in plugins/components/markdown-it.ts
 │       │   ├── frontmatter.ts # parseFrontmatter()
 │       │   ├── yaml.ts       # parseYaml()
+│       │   ├── source-stable.ts # Built-in rule functions that can't add YAML props during tokenization
 │       │   ├── auto-close/   # Self-healing for incomplete markdown
 │       │   ├── html/         # HTML block/inline rules
 │       │   ├── syntax/       # Component syntax scanners (props, brackets, block params)
@@ -188,7 +190,7 @@ const html = await renderHtml(markdownString)
 
 ---
 
-`@comark/html` renders through `comark/render/html`, which registers only the HTML and comment handlers, so rendering never loads the Markdown serializers. `@comark/html/render` also stays free of YAML; the root entry and the plugins import the parser, which loads YAML for frontmatter. Components still receive the full `state`, but `state.handlers` holds only `html` and `comment`, and the output format is always `text/html`. Both `comark/render` and `comark/render/html` share the engine in `internal/stringify/state.ts`; each passes its own handler map to `createState`. HTML-safe attribute handling lives in `html-attributes.ts`; Markdown/YAML attribute serialization stays in `attributes.ts`.
+`@comark/html` renders through `comark/render/html`, which registers only the HTML and comment handlers, so rendering never loads the Markdown serializers. `@comark/html/render` also stays free of YAML; the root entry and the plugins import the parser, which loads YAML on first use, for frontmatter or component props. Components still receive the full `state`, but `state.handlers` holds only `html` and `comment`, and the output format is always `text/html`. Both `comark/render` and `comark/render/html` share the engine in `internal/stringify/state.ts`; each passes its own handler map to `createState`. HTML-safe attribute handling lives in `html-attributes.ts`; Markdown/YAML attribute serialization stays in `attributes.ts`.
 
 ## Package: @comark/ansi
 
@@ -599,7 +601,7 @@ import mermaid, { Mermaid } from '@comark/angular/plugins/mermaid'
 import binding, { Binding, If } from '@comark/angular/plugins/binding'
 ```
 
-Plugin `pre` hooks transform markdown in order. Async `prepare(state)` hooks run after all `pre` hooks and before tokenization, so syntax dependencies load for the final source and parser configuration. The components plugin uses `prepare` for YAML props, and preloads YAML for unrecognized markdown-it plugin functions that may generate props. Default rule functions and the built-in `emoji`, `math`, `mermaid` and `binding` rule functions are registered as source-stable in `internal/parse/source-stable.ts`; its synchronous markdown-it adapter lives at `comark/plugins/components/markdown-it` and imports YAML eagerly.
+Plugin `pre` hooks transform markdown in order. Async `prepare(state)` hooks run after all `pre` hooks and before tokenization, so syntax dependencies load for the final source and parser configuration. The components plugin uses `prepare` for YAML props, and preloads YAML for unrecognized markdown-it plugin functions that may generate props. The built-in rule functions (`components`, `attributes`, `html`, `task-list`, `linkify`, `emoji`, `math`, `mermaid` and `binding`) are registered as source-stable in `internal/parse/source-stable.ts`; its synchronous markdown-it adapter lives at `comark/plugins/components/markdown-it` and imports YAML eagerly.
 
 ## Coding Principles
 
@@ -742,7 +744,7 @@ lossless through `parseMarkdown` → `renderMarkdown`:
 **Parse — dedent the children, don't raise the floor.** A child indented *less*
 than its own component marker is never dropped. Each child line is shifted left
 by `min(markerIndent, its own indentation)` and the region is tokenized against
-a zero floor (`comark_block` in `src/plugins/components.ts` via
+a zero floor (`comark_block` in `src/internal/parse/components.ts` via
 `src/internal/parse/indent.ts`, mirroring the line-mark mutation `blockquote`
 uses to strip its markers). Lines inside a
 fenced code block all take the *opening fence's* shift, so the fence and its

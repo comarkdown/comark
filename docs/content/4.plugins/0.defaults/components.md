@@ -99,11 +99,11 @@ const result = await parseMarkdown(content, { registerDefaultPlugins: false })
 
 When the components plugin is not active, `autoClose` also skips component-fence completion (`::` closers).
 
+The parser loads YAML only when the source may contain component props. A markdown-it plugin that Comark doesn't ship can add props during tokenization, so registering one makes YAML load before parsing.
+
 ## markdown-it / markdown-exit adapter
 
-For hosts that use markdown-it or markdown-exit directly (for example VitePress), use the exported adapter:
-
-With Comark's default rules and the built-in `emoji`, `math`, `mermaid` and `binding` plugins, YAML loads only when the source may contain component props. Additional markdown-it plugins can generate props during synchronous tokenization, so an unrecognized markdown-it plugin makes YAML load before parsing. The synchronous markdown-it adapter imports YAML eagerly and has its own entry, `comark/plugins/components/markdown-it`. Move named adapter imports from `comark/plugins/components` to this path.
+For hosts that use markdown-it or markdown-exit directly (for example VitePress), use the adapter from `comark/plugins/components/markdown-it`. It imports YAML eagerly, so it works without Comark's parser. Move named adapter imports from `comark/plugins/components` to this path, and use it instead of passing `components().markdownItPlugins` to another parser: those rules need the plugin's `prepare` hook to load YAML first.
 
 ```typescript
 import { markdownItComponents } from 'comark/plugins/components/markdown-it'
