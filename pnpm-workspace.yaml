@@ -45,7 +45,7 @@ catalog:
   "@shikijs/twoslash": ^4.5.0
   "@sveltejs/adapter-auto": ^8.0.0
   "@sveltejs/kit": ^3.1.1
-  "@sveltejs/package": ^2.5.8
+  "@sveltejs/package": ^3.0.2
   "@sveltejs/vite-plugin-svelte": ^7.3.1
   "@tailwindcss/postcss": ^4.3.3
   "@tailwindcss/vite": ^4.3.3
