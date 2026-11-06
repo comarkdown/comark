@@ -39,8 +39,7 @@
     "url": "git+https://github.com/comarkdown/comark.git"
   },
   "files": [
-    "dist",
-    "skills"
+    "dist"
   ],
   "type": "module",
   "sideEffects": false,
@@ -67,9 +66,7 @@
     "build": "tsc --removeComments --declaration false && tsc --emitDeclarationOnly",
     "dev": "tsc --watch",
     "test": "vitest run",
-    "prepack": "tsc --removeComments --declaration false && tsc --emitDeclarationOnly",
-    "release": "release-it",
-    "release:dry": "release-it --dry-run"
+    "prepack": "tsc --removeComments --declaration false && tsc --emitDeclarationOnly"
   },
   "dependencies": {
     "character-entities": "catalog:",
