@@ -1,8 +1,8 @@
 import type { DumpOptions } from 'js-yaml'
-import type MarkdownExit from 'markdown-exit'
-import type { Token } from 'markdown-exit'
+import type MarkdownExit from 'markdown-exit/core'
+import type { Token } from 'markdown-exit/core'
 import type MarkdownIt from 'markdown-it'
-import type { AutoCloseOptions } from './internal/parse/auto-close/index.ts'
+import type { AutoCloseOptions } from './auto-close.ts'
 
 // #region Utility Types
 /**
@@ -32,6 +32,11 @@ export type ElementNodeAttributes = {
     block?: 0 | 1
     /** Opening delimiter, when the syntax has more than one (`\(` or `\[` math) */
     markup?: string
+    /**
+     * Set on links `heading-links` adds: `'wrap'` around the heading text, `'separate'`
+     * before or after it. Markdown output leaves both out.
+     */
+    permalink?: 'wrap' | 'separate'
   }
 }
 
@@ -239,9 +244,57 @@ export interface RendererOptions {
    * Additional data to pass to the renderer nodes, can be used to pass pre-fetched data to the renderer nodes
    */
   data?: Record<string, any>
+  /**
+   * Change the tag or props of element nodes just before they render.
+   * See {@link NodeTransform}.
+   */
+  transformNode?: NodeTransform | readonly NodeTransform[]
 
   [key: string]: unknown
 }
+
+/**
+ * What a {@link NodeTransform} receives for each element node.
+ */
+export interface NodeTransformContext {
+  /** The tag the renderer will use: the node's own tag, or the one an earlier transform returned. */
+  tag: string
+  /**
+   * The props the renderer will use: the node's attributes with `:` bindings
+   * resolved, or the props an earlier transform returned. Do not mutate them.
+   */
+  props: Record<string, unknown>
+  /** The node as it is in the document, with its raw attributes. Do not mutate it. */
+  node: ElementNode
+  /** The parent element node, if any. */
+  parent?: ElementNode
+  /** The render context the node's bindings resolve against. `props` holds the parent's props. */
+  renderData: NodeRenderData
+}
+
+/**
+ * A replacement tag and/or props for a node. Omitted fields keep their current value.
+ */
+export interface NodeTransformResult {
+  /**
+   * The tag to render instead. It is looked up like any tag: in `components`,
+   * then `componentsManifest`, then as a native element.
+   */
+  tag?: string
+  /** The props to render with instead. They are final: `:` keys are not resolved again. */
+  props?: Record<string, unknown>
+}
+
+/**
+ * Runs for every element node right before a renderer renders it, and may
+ * return a new tag and/or new props. It must be synchronous and must not
+ * mutate its input. Return nothing to keep the node as it is.
+ *
+ * The returned tag and props are rendered as-is. They are not sanitized, and
+ * the security plugin runs at parse time, so it doesn't apply to them either.
+ * Validate anything the transform builds from untrusted data, such as URLs.
+ */
+export type NodeTransform = (context: NodeTransformContext) => NodeTransformResult | null | undefined | void
 
 /**
  * The options for rendering markdown
@@ -441,9 +494,11 @@ export interface ComarkContextProvider {
  * stable nodes from the previous parse. Outside streaming mode, it is the full
  * input string.
  */
-export type AutoCloseFunction = (markdown: string) => string
+export type AutoCloseFunction = (markdown: string, streaming?: boolean) => string
 
-export interface ParserOptions<TPlugins extends readonly ComarkPlugin<any, any>[] = readonly ComarkPlugin<any, any>[]> {
+export interface ParserCoreOptions<
+  TPlugins extends readonly ComarkPlugin<any, any>[] = readonly ComarkPlugin<any, any>[],
+> {
   /**
    * Whether to automatically unwrap single paragraphs in container components.
    * When enabled, if a container component (alert, card, callout, note, warning, tip, info)
@@ -485,27 +540,12 @@ export interface ParserOptions<TPlugins extends readonly ComarkPlugin<any, any>[
   unwrap?: boolean | string | string[]
 
   /**
-   * Whether to automatically close unclosed markdown and Comark components,
-   * or a custom function that rewrites incomplete markdown before tokenization.
-   * @default true
+   * Rewrites incomplete markdown before tokenization. The public parser turns
+   * `autoClose: true` into this function; the core parser has no built-in closer.
+   * The second argument is `true` when the parse was called with `{ streaming: true }`.
+   * @default undefined
    */
-  autoClose?: boolean | AutoCloseFunction
-
-  /**
-   * @deprecated Use `registerDefaultPlugins: false` and register plugins explicitly
-   * (include `html()` from `comark/plugins/html` only when you need HTML parsing).
-   * Setting this option logs a deprecation warning. `html: false` still skips the
-   * default html plugin for backward compatibility.
-   *
-   * @default true
-   */
-  html?: boolean
-
-  /**
-   * Set `false` to disable autoconvert URL-like text to links.
-   * @default true
-   */
-  linkify?: boolean
+  autoClose?: AutoCloseFunction
 
   /**
    * How to auto-generate `id` attributes for `h1`–`h6` headings from their text content.
@@ -537,15 +577,6 @@ export interface ParserOptions<TPlugins extends readonly ComarkPlugin<any, any>[
   headingIds?: HeadingIdsOption
 
   /**
-   * Whether to register the built-in default plugins
-   * (`frontmatter`, `html`, `alert`, `task-list`, `components`, `attributes`).
-   * Set `false` to parse plain markdown with only the plugins listed in `plugins`.
-   * Without the components/attributes plugins, `autoClose` skips component fences and attribute braces.
-   * @default true
-   */
-  registerDefaultPlugins?: boolean
-
-  /**
    * Additional plugins to use. A plugin with the same name as a default plugin
    * replaces that default and runs, in user-defined order, after the remaining defaults.
    * Duplicate user plugins keep their first occurrence.
@@ -565,6 +596,37 @@ export interface ParserOptions<TPlugins extends readonly ComarkPlugin<any, any>[
    * @default undefined
    */
   tracer?: ComarkTracer
+}
+
+export interface ParserOptions<
+  TPlugins extends readonly ComarkPlugin<any, any>[] = readonly ComarkPlugin<any, any>[],
+> extends Omit<ParserCoreOptions<TPlugins>, 'autoClose'> {
+  /**
+   * Whether to automatically close unclosed markdown and Comark components,
+   * or a custom function that rewrites incomplete markdown before tokenization.
+   * `true` (the default) runs the built-in auto-closer. `false` skips it.
+   * A function is forwarded to the core parser as-is; its second argument is
+   * `true` when the parse was called with `{ streaming: true }`.
+   * @default true
+   */
+  autoClose?: boolean | AutoCloseFunction
+
+  /**
+   * @deprecated Use `registerDefaultPlugins: false` and register plugins explicitly
+   * (include `linkify()` from `comark/plugins/linkify` only when you need autolinks).
+   * Setting this option logs a deprecation warning. It still takes precedence over
+   * `registerDefaultPlugins`: `false` skips the default linkify plugin, `true` keeps it.
+   */
+  linkify?: boolean
+
+  /**
+   * Whether to register the built-in default plugins
+   * (`linkify`, `frontmatter`, `html`, `alert`, `task-list`, `components`, `attributes`).
+   * Set `false` to parse plain markdown with only the plugins listed in `plugins`.
+   * Without the components/attributes plugins, `autoClose` skips component fences and attribute braces.
+   * @default true
+   */
+  registerDefaultPlugins?: boolean
 }
 
 /**

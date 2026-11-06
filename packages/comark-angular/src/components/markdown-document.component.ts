@@ -8,7 +8,7 @@ import {
   type OnDestroy,
   input,
 } from '@angular/core'
-import type { ElementNode, Node, MarkdownDocument as MarkdownDocumentType, NodeRenderData } from 'comark'
+import type { ElementNode, Node, MarkdownDocument as MarkdownDocumentType, NodeRenderData, NodeTransform } from 'comark'
 import { MarkdownNode } from './markdown-node.component'
 import { findLastTextNodeAndAppendNode, getCaret } from '../utils/caret'
 
@@ -38,6 +38,7 @@ const EMPTY_DOCUMENT: MarkdownDocumentType = { nodes: [], frontmatter: {}, meta:
           [node]="node"
           [components]="components()"
           [renderData]="renderData"
+          [transformNode]="transformNode()"
         />
       }
     </div>
@@ -58,6 +59,9 @@ export class MarkdownDocument implements OnInit, OnDestroy {
 
   /** Additional data to pass to the renderer for :binding resolution */
   readonly data = input<Record<string, unknown>>({})
+
+  /** Change the tag or props of element nodes just before they render */
+  readonly transformNode = input<NodeTransform | readonly NodeTransform[]>()
 
   /**
    * Document key used to subscribe to live updates via `globalThis.comarkContext`.

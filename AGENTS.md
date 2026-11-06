@@ -38,7 +38,7 @@ This is a **monorepo** containing the Comark Markdown parser, document model, pl
 ├── docs/                 # Documentation site (comark-docs layer; llms topic files in docs/server/routes/llms-*.txt.get.ts)
 ├── playground/           # Nuxt playground (`pnpm dev:playground`)
 ├── benchmarks/           # CodSpeed Vitest benches (*.bench.ts) + mitata cross-library comparisons (*.ts)
-├── scripts/              # Build/sync/release scripts
+├── scripts/              # Build/sync scripts
 ├── test/                 # Root-level tests (bundle-size snapshot)
 ├── pnpm-workspace.yaml   # Workspace configuration + dependency catalog
 ├── tsconfig.json         # Root TypeScript config (`pnpm typecheck`)
@@ -55,13 +55,14 @@ Located at `packages/comark/`:
 ```
 packages/comark/
 ├── src/
-│   ├── index.ts              # Entry point: re-exports parse.ts, auto-close, context, types
-│   ├── parse.ts              # Core parser: parseMarkdown(), createMarkdownParser() (comark/parse)
+│   ├── index.ts              # Public parser: defaults + auto-close, then delegates to core.ts (comark)
+│   ├── core.ts               # Parser pipeline with no default plugins (comark/core)
+│   ├── auto-close.ts         # autoCloseMarkdown() (comark/auto-close)
+│   ├── context.ts            # Live renderer context: ComarkContext, ComarkDocument, ComarkPatch (comark/context)
 │   ├── render/
 │   │   ├── index.ts          # String rendering: renderMarkdown() (renderHtmlFromDocument() moved to @comark/html)
 │   │   └── html.ts           # HTML-only renderer (comark/render/html)
 │   ├── types.ts              # Document model (MarkdownDocument, Node, ElementNode, TextNode, CommentNode) + ParserOptions
-│   ├── context.ts            # Live renderer context: ComarkContext, ComarkDocument, ComarkPatch
 │   ├── plugins/              # Built-in and optional plugins
 │   │   ├── alert.ts          # Alert/callout blocks
 │   │   ├── frontmatter.ts    # YAML frontmatter extraction (default via registerDefaultPlugins)
@@ -72,8 +73,10 @@ packages/comark/
 │   │   ├── breaks.ts         # Hard line breaks (`<br>`) from newlines
 │   │   ├── emoji.ts          # Emoji shortcodes
 │   │   ├── footnotes.ts      # GFM footnotes
-│   │   ├── headings.ts       # Title/description extraction into `meta`
+│   │   ├── heading-links.ts  # Links headings to their own `id`
+│   │   ├── headings.ts       # Deprecated alias → title-description (remove next major)
 │   │   ├── json-render.ts    # `json-render` spec fences expanded into nodes
+│   │   ├── linkify.ts        # Bare URL autolinks via linkify-it 6 (default via registerDefaultPlugins; linkify-it options, fuzzyLink opt-in)
 │   │   ├── punctuation.ts    # Smart quotes and dashes
 │   │   ├── shiki.ts          # Shiki with bundled default theme + language loaders (peer: shiki)
 │   │   ├── shiki/core.ts     # Shiki without default theme/language imports
@@ -86,6 +89,7 @@ packages/comark/
 │   │   ├── security.ts       # XSS/security sanitization
 │   │   ├── summary.ts        # Summary extraction
 │   │   ├── task-list.ts      # GFM task lists
+│   │   ├── title-description.ts # Title/description extraction into `meta`
 │   │   └── toc.ts            # Table of contents
 │   ├── utils/                # Shared utilities (comark/utils entry point)
 │   │   ├── index.ts          # textContent(), visit(), visitAsync(), escapeHtml(), isHtmlVoidElement(), indent(), string/object utils
@@ -107,7 +111,7 @@ packages/comark/
 │       │   ├── indent.ts     # Dedent of outdented component children
 │       │   ├── unwrap.ts     # `unwrap` option
 │       │   └── auto-unwrap.ts # `autoUnwrap` option
-│       └── stringify/        # AST → markdown string rendering (handlers/ per tag)
+│       └── stringify/        # AST → markdown string rendering (handlers/ per tag; transform-node.ts runs `transformNode`)
 ├── SPEC/                 # Behavioral spec fixtures (CommonMark, GFM, HTML, COMARK, auto-close.md)
 ├── test/                 # Vitest test files
 ├── package.json
@@ -123,7 +127,10 @@ packages/comark/
   "./plugins/*": "./dist/plugins/*.js",
   "./utils": "./dist/utils/index.js",
   "./utils/trace": "./dist/utils/trace.js",
-  "./parse": "./dist/parse.js",
+  "./parse": "./dist/index.js",
+  "./core": "./dist/core.js",
+  "./auto-close": "./dist/auto-close.js",
+  "./context": "./dist/context.js",
   "./render": "./dist/render/index.js",
   "./render/html": "./dist/render/html.js"
 }
@@ -488,11 +495,14 @@ import { mermaid, Mermaid } from '@comark/angular/plugins/mermaid'
 ```typescript
 // Core parsing
 import { parseMarkdown, createMarkdownParser, autoCloseMarkdown, defineComarkPlugin } from 'comark'
-import { parseMarkdown } from 'comark/parse' // same parser API without the auto-close/context re-exports
+import { parseMarkdown } from 'comark/parse' // deprecated alias of the root export
+import { parseMarkdown } from 'comark/core' // no default plugins; autoClose is a function, not a boolean
+import { autoCloseMarkdown } from 'comark/auto-close'
 
 // Live renderer context (patch a rendered document without re-parsing)
 import { createComarkContext } from 'comark'
-import type { ComarkContext, ComarkDocument, ComarkPatch } from 'comark'
+import { createComarkContext } from 'comark/context'
+import type { ComarkContext, ComarkDocument, ComarkPatch } from 'comark/context'
 
 // HTML rendering (parse + render in one step)
 import { createHtmlRenderer, renderHtml, renderHtmlFromDocument } from '@comark/html'
@@ -514,7 +524,10 @@ import {
   HTML_VOID_ELEMENTS,
   isMarkdownDocument,
   sanitizeData,
+  applyNodeTransforms,  // runs a renderer's `transformNode` for one node (used by every renderer)
+  mergeNodeTransforms,  // merges two `transformNode` values into one stable list
 } from 'comark/utils'
+import type { NodeTransform, NodeTransformContext, NodeTransformResult } from 'comark'
 import { noopTracer, withSpan } from 'comark/utils/trace'
 
 // Core plugins — use when calling parseMarkdown() directly (framework-agnostic)
@@ -531,9 +544,12 @@ import toc from 'comark/plugins/toc'
 import alert from 'comark/plugins/alert'
 import breaks from 'comark/plugins/breaks'
 import footnotes from 'comark/plugins/footnotes'
-import headings from 'comark/plugins/headings'
+import titleDescription from 'comark/plugins/title-description'
+// import headings from 'comark/plugins/headings' // deprecated alias → title-description
+import headingLinks from 'comark/plugins/heading-links'
 import punctuation from 'comark/plugins/punctuation'
 import jsonRender from 'comark/plugins/json-render'
+import linkify from 'comark/plugins/linkify'            // default via registerDefaultPlugins; add explicitly with comark/core
 import security from 'comark/plugins/security'
 import summary from 'comark/plugins/summary'
 import taskList from 'comark/plugins/task-list'         // default via registerDefaultPlugins
@@ -655,7 +671,8 @@ const result = await parseMarkdown(markdownContent, {
   autoUnwrap: true,             // Remove <p> wrappers from single-paragraph containers
   autoClose: true,              // Auto-close incomplete syntax; also accepts (markdown) => string
   unwrap: 'p',                  // Strip top-level wrapper tags (MDC unwrap); merges paragraphs
-  registerDefaultPlugins: true, // frontmatter, html, alert, task-list, components, attributes; false to disable
+  registerDefaultPlugins: true, // linkify, frontmatter, html, alert, task-list, components, attributes; false to disable
+  // linkify: false             // deprecated (warns): use registerDefaultPlugins: false + linkify()
 })
 
 result.nodes       // Node[]
@@ -790,6 +807,21 @@ the open tag. `<style>`, `<pre>`, `<script>`, `<textarea>`, and block-level `<!-
 opener, trailing text after that closer, indented child tag inside a multiline
 `<a>`) are skipped tests in `test/html-block.test.ts` — do not weaken them.
 
+## Render-time node transforms
+
+Every renderer accepts `transformNode`, a function or array of functions that may
+return a new `tag` and/or `props` for an element node. Each renderer calls
+`applyNodeTransforms()` (`src/internal/stringify/transform-node.ts`, exported from
+`comark/utils`) right after `resolveAttributes()` and before component lookup, so a
+new tag goes through `components` and `componentsManifest`. Hooks always get props
+resolved with `parseJson: true`, in every renderer, so one hook works everywhere. The string engine does it
+in `one()` (`src/internal/stringify/state.ts`) and renders a copy of the node only when
+the hook changes something; untouched nodes keep rendering from their raw attributes. The
+returned tag and props are used as-is, not sanitized: transforms are trusted developer
+code, and their security is the developer's responsibility. Children
+see the returned props as `renderData.props`. Docs:
+`docs/content/5.reference/3.reference.md` ("Transforming nodes before render").
+
 ## Vue/React/Svelte/Angular Components
 
 ### Markdown Component (High-level)
@@ -881,6 +913,8 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for local setup and the example-app wor
 1. Token processing is in `packages/comark/src/internal/parse/token-processor.ts`
 2. Test with `packages/comark/test/index.test.ts` (loads the `SPEC/` fixtures; `SPEC=SPEC/COMARK/foo.md pnpm vitest run test/index.test.ts` runs one)
 3. Check streaming still works with `packages/comark/test/streaming.test.ts`
+4. Import from `markdown-exit/core`, never `markdown-exit`: the root entry pulls in linkify-it, which `parse.ts` loads lazily only for parsers with `linkify` on
+5. Decode attribute values with `decodeHTMLAttribute` from `src/internal/entities.ts`, not `entities`: it reads the `character-entities` table markdown-exit already ships, so bundles hold one table
 
 ### Adding component features
 
@@ -925,7 +959,6 @@ pnpm lint         # oxlint + oxfmt --check + comark-lint on docs/content
 pnpm lint:fix     # oxlint --fix + oxfmt (write)
 pnpm typecheck    # tsc --noEmit against the root tsconfig
 pnpm verify       # Run lint + test + typecheck
-pnpm release      # Release changed packages (see Releasing)
 ```
 
 Linting and formatting use [oxlint](https://oxc.rs/docs/guide/usage/linter) and
@@ -942,7 +975,6 @@ Utility scripts:
 ```bash
 node scripts/stub.mjs          # Generate stub dist files for one package (run from its directory)
 node scripts/sync-plugins.mjs  # Sync plugin re-exports to framework packages (run from repo root)
-node scripts/release.mjs       # Release every package changed since its last tag (--dry, --filter <pkg>)
 ```
 
 ## Continuous Integration
@@ -952,6 +984,7 @@ Workflows live in `.github/workflows/`:
 | Workflow | Purpose |
 |----------|---------|
 | `ci.yml` | lint → prepack → test → publish preview (pkg.pr.new) → bundle size check |
+| `release.yml` | uppt release PR → tag + GitHub release → pack → staged npm publish (see Releasing) |
 | `codspeed.yml` | Runs `pnpm bench` under CodSpeed CPU simulation; reports perf changes on PRs |
 | `commit-signature.yml` | Fails PRs containing unsigned commits |
 | `bundle-snapshot.yml` | Reports bundle-size snapshot drift and updates it on demand |
@@ -1004,10 +1037,24 @@ Requires **Settings → Actions → General → Workflow permissions** to be set
 
 ## Releasing
 
-Uses [release-it](https://github.com/release-it/release-it) with conventional changelog.
-Each package has its own `.release-it.json` and `CHANGELOG.md`. `pnpm release`
-(`scripts/release.mjs`) finds packages changed since their last `<name>@<version>`
-tag and runs release-it for each; `pnpm release:dry` previews without touching git or npm.
+Uses [danielroe/uppt](https://github.com/danielroe/uppt) in `.github/workflows/release.yml`.
+Every package in `packages/*` shares one version and one `vX.Y.Z` tag (lockstep):
+
+1. Each push to `main` opens or updates a draft `release/vX.Y.Z` PR that bumps every
+   package and lists the conventional commits since the last `v*` tag. Edit the PR body
+   to add notes, or change `version` in any package's `package.json` on that branch to
+   pick another version.
+2. Merging the PR tags `vX.Y.Z`, creates the GitHub release from the PR body, and
+   dispatches the publish run on the tag.
+3. `pack` installs with `--ignore-scripts`, runs `pnpm build`, then `pnpm pack`s each
+   package (its `prepack` runs). Agent skills are served from comark.dev (`docs/skills`), not
+   shipped in the npm package.
+4. `publish` stages every tarball with `npm stage publish` over OIDC in the `npm`
+   environment. Approve the staged versions on npmjs.com to make them live.
+
+Prereleases: `gh workflow run release.yml -f prerelease=beta`. Release notes live in
+GitHub Releases; there are no `CHANGELOG.md` files. Packages depend on each other with
+`workspace:*`, which `pnpm pack` turns into the exact released version.
 
 ### Commit message format
 

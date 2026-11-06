@@ -24,10 +24,6 @@ catalog:
   "@ai-sdk/vue": ^4.0.159
   "@astrojs/react": ^7.1.2
   "@clack/prompts": ^1.8.1
-  "@comark/html": ^0.8.1
-  "@comark/nuxt": ^0.8.1
-  "@comark/react": ^0.8.1
-  "@comark/vue": ^0.8.1
 
   # Misc
   "@json-render/core": ^0.21.3
@@ -35,13 +31,12 @@ catalog:
   "@nuxt/devtools-kit": 4.0.0
   # Keep kit on the same minor line as `nuxt` so `@nuxt/schema` stays singular
   # (dual schema breaks `defineNuxtModule` setup typing + declaration emit).
-  "@nuxt/kit": 4.6.3
+  "@nuxt/kit": 4.6.4
   "@nuxt/ui": ^4.12.0
   "satori": ^0.63.2
   "@resvg/resvg-js": ^2.6.2
   "@nuxtjs/mcp-toolkit": 0.24.3
   "@nuxtlabs/monarch-mdc": ^0.10.0
-  "@release-it/conventional-changelog": ^12.0.2
   "@shikijs/langs": ^4.5.0
 
   # Shiki
@@ -90,13 +85,15 @@ catalog:
   comark: ^0.8.1
 
   # Core comark dependencies
-  # Keep in the same major as markdown-exit's `entities` so installs dedupe to one copy.
-  entities: ^7.0.0
+  character-entities: ^2.0.2
+  character-entities-legacy: ^3.0.0
+
   github-slugger: ^2.0.0
   hast-util-to-string: ^3.0.1
   js-yaml: ^5.5.0
   katex: ^0.19.1
-  markdown-exit: 1.3.0
+  linkify-it: ^6.0.0
+  markdown-exit: 2.1.0
   "markdown-it": ^15.0.3
   markdown-it-math: ^6.1.0
   minimark: 0.2.0
@@ -104,7 +101,7 @@ catalog:
   next: ^16.4.3
 
   # Nuxt
-  nuxt: ^4.6.3
+  nuxt: ^4.6.4
   nuxt-studio: 1.8.0
 
   # Linting
@@ -119,7 +116,6 @@ catalog:
   react-dom: ^19.3.1
 
   # Build tooling
-  release-it: ^21.1.2
   remark-gfm: ^4.0.1
   remark-mdc: ^3.11.1
   remark-parse: ^11.0.0
@@ -181,6 +177,15 @@ catalog:
 ignoredBuiltDependencies:
   - sharp
 
+# The docs layer and its modules (comark-docs, comark-content, nuxt-agent-discovery) depend on the
+# published comark. Nitro inlines every comark copy into one server bundle, where they all share
+# one top-level `markdown-exit`; two comark versions on different markdown-exit majors then break
+# at runtime (ERR_MODULE_NOT_FOUND). Resolve them all to the workspace packages instead.
+overrides:
+  comark: workspace:*
+  "@comark/nuxt": workspace:*
+  "@comark/vue": workspace:*
+
 minimumReleaseAgeExclude:
   - comark@0.5.1 || 0.6.0 || 0.6.1 || 0.6.2 || 0.7.0 || 0.8.0 || 0.8.1
   - "@comark/vue@0.5.1 || 0.6.0 || 0.6.1 || 0.6.2 || 0.7.0 || 0.8.0 || 0.8.1"
@@ -189,6 +194,7 @@ minimumReleaseAgeExclude:
   - comark-content@0.2.0 || 0.4.1
   - rangi@2.2.0
   - nuxt-agent-discovery@0.7.0
+  - markdown-exit@2.1.0
 
 patchedDependencies:
   minimark: patches/minimark.patch

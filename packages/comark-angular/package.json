@@ -22,6 +22,7 @@
   "bugs": {
     "url": "https://github.com/comarkdown/comark/issues"
   },
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/comarkdown/comark.git"
@@ -37,8 +38,7 @@
     "build": "ng build && node scripts/strip-sourcemaps.mjs && node ../../scripts/sync-plugins.mjs",
     "dev": "ng build --watch --configuration development",
     "test": "ng test",
-    "prepack": "pnpm run build",
-    "release": "release-it"
+    "prepack": "pnpm run build"
   },
   "dependencies": {
     "comark": "workspace:*",

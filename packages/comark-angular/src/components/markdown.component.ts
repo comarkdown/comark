@@ -9,7 +9,7 @@ import {
   model,
 } from '@angular/core'
 import { createSerializedMarkdownParser } from 'comark'
-import type { ParserOptions, MarkdownDocument as MarkdownDocumentType } from 'comark'
+import type { ParserOptions, MarkdownDocument as MarkdownDocumentType, NodeTransform } from 'comark'
 import { isMarkdownDocument } from 'comark/utils'
 import { MarkdownDocument } from './markdown-document.component'
 
@@ -35,6 +35,7 @@ import { MarkdownDocument } from './markdown-document.component'
         [streaming]="streaming()"
         [caret]="caret()"
         [data]="data()"
+        [transformNode]="transformNode()"
       />
     }
   `,
@@ -70,6 +71,9 @@ export class Markdown {
 
   /** Additional data to pass to the renderer for :binding resolution */
   readonly data = input<Record<string, unknown>>({})
+
+  /** Change the tag or props of element nodes just before they render */
+  readonly transformNode = input<NodeTransform | readonly NodeTransform[]>()
 
   document: MarkdownDocumentType | null = null
 

@@ -15,9 +15,9 @@ import {
   inject,
   input,
 } from '@angular/core'
-import type { ElementNode, Node as MarkdownAstNode, NodeRenderData } from 'comark'
+import type { ElementNode, Node as MarkdownAstNode, NodeRenderData, NodeTransform } from 'comark'
 import { resolveIfWrapper, selectIfBranch, shouldRenderIf, type IfProps } from 'comark/plugins/binding'
-import { isHtmlVoidElement, pascalCase, resolveAttributes, toNativeAttributes } from 'comark/utils'
+import { applyNodeTransforms, isHtmlVoidElement, pascalCase, resolveAttributes, toNativeAttributes } from 'comark/utils'
 
 interface StructuralComponent extends Type<any> {
   ɵcomarkIf?: boolean
@@ -62,6 +62,55 @@ function resolveComponent(tag: string, components: Record<string, Type<any>>): T
   return components[proseTag] || components[pascalTag] || components[tag]
 }
 
+interface PreparedNode {
+  tag: string
+  props: Record<string, any>
+  customComponent?: Type<any>
+  childrenRenderData: NodeRenderData
+}
+
+/**
+ * Resolve an element node's bindings, run `transformNode`, and pick the
+ * component to render it with.
+ */
+function prepareNode(
+  node: ElementNode,
+  components: Record<string, Type<any>>,
+  renderData: NodeRenderData,
+  parent: MarkdownAstNode | undefined,
+  transformNode: NodeTransform | readonly NodeTransform[] | undefined
+): PreparedNode {
+  const nodeProps = getProps(node)
+  const ownProps = resolveAttributes(nodeProps, renderData, { parseJson: true })
+  const transformed = applyNodeTransforms(transformNode, node, ownProps, renderData, parent as ElementNode | undefined)
+  const tag = transformed ? transformed.tag : node[0]
+  const props = transformed ? transformed.props : ownProps
+  const as = transformed ? props.as : nodeProps.as
+
+  let customComponent: Type<any> | undefined
+  if ((parent as ElementNode | undefined)?.[0] !== 'pre') {
+    if (as) {
+      customComponent = resolveComponent(as, components)
+    }
+    if (!customComponent) {
+      customComponent = resolveComponent(tag, components)
+    }
+  }
+
+  // Only shadow the parent scope when the element has its own attributes.
+  // The check uses the raw attributes: resolving can omit all of them. Props
+  // a transform returned count as the element's own.
+  let hasOwnAttrs = props !== ownProps
+  for (const key in nodeProps) {
+    if (key !== '$') {
+      hasOwnAttrs = true
+      break
+    }
+  }
+  const childrenRenderData: NodeRenderData = hasOwnAttrs ? { ...renderData, props } : renderData
+  return { tag, props, customComponent, childrenRenderData }
+}
+
 /**
  * MarkdownNode - recursive component that renders a single Comark AST node.
  *
@@ -87,6 +136,9 @@ export class MarkdownNode implements OnChanges {
 
   /** Parent node (for context like `pre` tag detection) */
   readonly parent = input<MarkdownAstNode>()
+
+  /** Change the tag or props of element nodes just before they render */
+  readonly transformNode = input<NodeTransform | readonly NodeTransform[]>()
 
   private vcr = inject(ViewContainerRef)
   private renderer = inject(Renderer2)
@@ -116,40 +168,17 @@ export class MarkdownNode implements OnChanges {
     }
 
     // Element node
-    if (Array.isArray(this.node())) {
-      const tag = getTag(this.node())
-      if (!tag) return
+    const node = this.node()
+    if (Array.isArray(node)) {
+      if (!getTag(node)) return
 
-      const nodeProps = getProps(this.node())
-      const children = getChildren(this.node())
-
-      // Resolve custom component
-      let customComponent: Type<any> | undefined
-
-      if ((this.parent() as ElementNode | undefined)?.[0] !== 'pre') {
-        if (nodeProps.as) {
-          customComponent = resolveComponent(nodeProps.as, this.components())
-        }
-        if (!customComponent) {
-          customComponent = resolveComponent(tag, this.components())
-        }
-      }
-
-      // Resolve attributes (:binding support)
-      const resolved = resolveAttributes(nodeProps, this.renderData(), { parseJson: true })
-
-      // Build childrenRenderData - only shadow parent scope when element has own attrs.
-      // The check uses the raw attributes: resolving can omit all of them.
-      let hasOwnAttrs = false
-      for (const key in nodeProps) {
-        if (key !== '$') {
-          hasOwnAttrs = true
-          break
-        }
-      }
-      const childrenRenderData: NodeRenderData = hasOwnAttrs
-        ? { ...this.renderData(), props: resolved }
-        : this.renderData()
+      const children = getChildren(node)
+      const {
+        tag,
+        props: resolved,
+        customComponent,
+        childrenRenderData,
+      } = prepareNode(node as ElementNode, this.components(), this.renderData(), this.parent(), this.transformNode())
 
       if ((customComponent as StructuralComponent | undefined)?.ɵcomarkIf) {
         this.renderIf(resolved, children, childrenRenderData)
@@ -325,6 +354,14 @@ export class MarkdownNode implements OnChanges {
 
     // Attach to DOM and detect changes
     this.vcr.insert(componentRef.hostView)
+
+    // The container's anchor stays where this node was first attached, so when this node
+    // was moved into a parent element, place the component right after this node's host.
+    const hostEl = this.elementRef.nativeElement as HTMLElement
+    const hostParent = this.renderer.parentNode(hostEl)
+    if (hostParent) {
+      this.renderer.insertBefore(hostParent, componentRef.location.nativeElement, this.renderer.nextSibling(hostEl))
+    }
     componentRef.changeDetectorRef.detectChanges()
   }
 
@@ -348,21 +385,16 @@ export class MarkdownNode implements OnChanges {
         const childTag = getTag(child)
         if (!childTag) continue
 
-        const childProps = getProps(child)
         const grandChildren = getChildren(child)
+        const prepared = prepareNode(
+          child as ElementNode,
+          this.components(),
+          renderData,
+          this.node(),
+          this.transformNode()
+        )
 
-        // Resolve custom component for this child
-        let customComponent: Type<any> | undefined
-        if ((this.node() as ElementNode)?.[0] !== 'pre') {
-          if (childProps.as) {
-            customComponent = resolveComponent(childProps.as, this.components())
-          }
-          if (!customComponent) {
-            customComponent = resolveComponent(childTag, this.components())
-          }
-        }
-
-        if (customComponent) {
+        if (prepared.customComponent) {
           let componentRef: ComponentRef<MarkdownNode> | undefined
           try {
             componentRef = this.vcr.createComponent(MarkdownNode)
@@ -370,27 +402,20 @@ export class MarkdownNode implements OnChanges {
             componentRef.setInput('components', this.components())
             componentRef.setInput('renderData', renderData)
             componentRef.setInput('parent', this.node())
-            componentRef.changeDetectorRef.detectChanges()
+            componentRef.setInput('transformNode', this.transformNode())
 
-            // Move the component's host element into the parent
+            // Move the component's host element into the parent before change detection,
+            // so the custom component it inserts lands next to it inside `parentEl`
             const nativeEl = componentRef.location.nativeElement as HTMLElement
             nativeEl.style.display = 'contents'
             this.renderer.appendChild(parentEl, nativeEl)
+            componentRef.changeDetectorRef.detectChanges()
           } catch (error) {
             componentRef?.destroy()
             console.error(`Failed to render custom component "${childTag}"`, error)
           }
         } else {
-          const resolved = resolveAttributes(childProps, renderData, { parseJson: true })
-          let hasOwnAttrs = false
-          for (const key in childProps) {
-            if (key !== '$') {
-              hasOwnAttrs = true
-              break
-            }
-          }
-          const childRenderData: NodeRenderData = hasOwnAttrs ? { ...renderData, props: resolved } : renderData
-          this.renderNativeEl(parentEl, childTag, resolved, grandChildren, childRenderData, child)
+          this.renderNativeEl(parentEl, prepared.tag, prepared.props, grandChildren, prepared.childrenRenderData, child)
         }
       }
     }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseMarkdown } from '../src/parse'
+import { parseMarkdown } from '../src/index'
 import { render } from '../src/render'
 import footnotes from '../src/plugins/footnotes'
 import type { Node } from '../src/types'

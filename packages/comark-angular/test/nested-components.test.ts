@@ -145,3 +145,41 @@ describe('nested components', () => {
     expect(html).toContain('>Ahad</span>')
   })
 })
+
+/** ProsePre — a custom code block that wraps the rendered `<pre>`. */
+class ProsePre {}
+Component({
+  selector: 'app-prose-pre',
+  standalone: true,
+  template: `<div class="prose-pre"><ng-content /></div>`,
+})(ProsePre)
+
+/** Box — a block component that projects its children. */
+class Box {}
+Component({
+  selector: 'app-box',
+  standalone: true,
+  template: `<div class="box"><ng-content /></div>`,
+})(Box)
+
+describe('nested component placement', () => {
+  it('keeps an inline component inside its paragraph, between the surrounding text', async () => {
+    const html = await renderMarkdown('Before :badge{name="x"} after.')
+
+    expect(html).toMatch(/<p>Before .*<span class="badge">x<\/span>.* after\.<\/p>/)
+  })
+
+  it('keeps a custom code block inside its list item', async () => {
+    const html = await renderMarkdown('- item\n\n  ```js\n  code\n  ```\n', {
+      ProsePre: ProsePre as Type<unknown>,
+    })
+
+    expect(html).toMatch(/<li>.*<div class="prose-pre">.*code.*<\/div>.*<\/li>/s)
+  })
+
+  it('keeps a nested block component inside its parent component', async () => {
+    const html = await renderMarkdown('::box\nOuter\n  :::box\n  Inner\n  :::\n::\n', { box: Box as Type<unknown> })
+
+    expect(html).toMatch(/<div class="box"><p>Outer<\/p>.*<div class="box">Inner<\/div>.*<\/div>/s)
+  })
+})

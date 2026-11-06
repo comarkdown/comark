@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseMarkdown } from '../src/parse'
+import { parseMarkdown } from '../src/index'
 import punctuation from '../src/plugins/punctuation'
 
 describe('punctuation plugin', () => {

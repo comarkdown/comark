@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import type { ComarkPlugin } from '../../src/types'
-import { createSerializedMarkdownParser } from '../../src/parse'
+import { createSerializedMarkdownParser } from '../../src/index'
 import { createSerializedTask } from '../../src/utils/helpers'
 
 describe('createSerializedTask', () => {

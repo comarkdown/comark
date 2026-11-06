@@ -69,10 +69,6 @@ Turn off all defaults (including HTML) so tags are treated as plain text:
 const result = await parseMarkdown(content, { registerDefaultPlugins: false })
 ```
 
-::note
-`ParserOptions.html` is **deprecated** and logs a warning. Prefer `registerDefaultPlugins: false` (and register `html()` only when you need it). `html: false` still skips the default html plugin for compatibility.
-::
-
 ## Options
 
 ```typescript

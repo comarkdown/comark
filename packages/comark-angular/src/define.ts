@@ -1,11 +1,14 @@
 import { Component, ChangeDetectionStrategy, Type, input, computed } from '@angular/core'
-import type { ParserOptions } from 'comark'
+import type { NodeTransform, ParserOptions } from 'comark'
+import { mergeNodeTransforms } from 'comark/utils'
 import { Markdown } from './components/markdown.component'
 import { MarkdownDocument } from './components/markdown-document.component'
 
 export interface DefineMarkdownComponentOptions extends ParserOptions {
   /** Pre-configured component mappings. */
   components?: Record<string, Type<any>>
+  /** Node transforms that run before the instance's own `transformNode`. */
+  transformNode?: NodeTransform | readonly NodeTransform[]
   /** Additional CSS class for the wrapper. */
   class?: string
 }
@@ -13,6 +16,8 @@ export interface DefineMarkdownComponentOptions extends ParserOptions {
 export interface DefineMarkdownDocumentOptions {
   /** Pre-configured component mappings. */
   components?: Record<string, Type<any>>
+  /** Node transforms that run before the instance's own `transformNode`. */
+  transformNode?: NodeTransform | readonly NodeTransform[]
   /** Additional CSS class for the wrapper. */
   class?: string
 }
@@ -36,7 +41,13 @@ export interface DefineMarkdownDocumentOptions {
  * ```
  */
 export function defineMarkdownComponent(config: DefineMarkdownComponentOptions = {}): Type<Markdown> {
-  const { components: configComponents = {}, class: configClass, plugins: configPlugins = [], ...parseOptions } = config
+  const {
+    components: configComponents = {},
+    class: configClass,
+    plugins: configPlugins = [],
+    transformNode: configTransforms,
+    ...parseOptions
+  } = config
 
   @Component({
     selector: 'comark-markdown-defined',
@@ -51,6 +62,7 @@ export function defineMarkdownComponent(config: DefineMarkdownComponentOptions =
           [streaming]="streaming()"
           [caret]="caret()"
           [data]="data()"
+          [transformNode]="mergedTransforms()"
         />
       }
     `,
@@ -64,6 +76,8 @@ export function defineMarkdownComponent(config: DefineMarkdownComponentOptions =
     override readonly components = input<Record<string, Type<any>>>({})
 
     protected readonly mergedComponents = computed(() => ({ ...configComponents, ...this.components() }))
+
+    protected readonly mergedTransforms = computed(() => mergeNodeTransforms(configTransforms, this.transformNode()))
 
     get hostClass(): string {
       return configClass || ''
@@ -128,6 +142,7 @@ export function defineMarkdownDocumentComponent(config: DefineMarkdownDocumentOp
         [streaming]="streaming()"
         [caret]="caret()"
         [data]="data()"
+        [transformNode]="mergedTransforms()"
       />
     `,
     host: {
@@ -139,6 +154,10 @@ export function defineMarkdownDocumentComponent(config: DefineMarkdownDocumentOp
     override readonly components = input<Record<string, Type<any>>>({})
 
     protected readonly mergedComponents = computed(() => ({ ...configComponents, ...this.components() }))
+
+    protected readonly mergedTransforms = computed(() =>
+      mergeNodeTransforms(config.transformNode, this.transformNode())
+    )
 
     get hostClass(): string {
       return configClass || ''
