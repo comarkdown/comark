@@ -1,6 +1,7 @@
 import type { PluginWithOptions, MarkdownExit } from 'markdown-exit/core'
 import { defineComarkPlugin } from 'comark'
-import type { MarkdownItPlugin, NodeHandler, Node } from 'comark'
+import type { NodeHandler, Node } from 'comark'
+import { markSourceStable } from '../internal/parse/source-stable.ts'
 
 export interface MdcInlineBindingOptions {
   /**
@@ -144,7 +145,7 @@ const markdownItInlineBinding: PluginWithOptions<MdcInlineBindingOptions> = (md,
 export default defineComarkPlugin((opts: MdcInlineBindingOptions = {}) => {
   return {
     name: 'binding',
-    markdownItPlugins: [((md: MarkdownExit) => markdownItInlineBinding(md, opts)) as unknown as MarkdownItPlugin],
+    markdownItPlugins: [markSourceStable((md: MarkdownExit) => markdownItInlineBinding(md, opts))],
   }
 })
 

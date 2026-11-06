@@ -59,6 +59,7 @@ packages/comark/
 │   ├── core.ts               # Parser pipeline with no default plugins (comark/core)
 │   ├── auto-close.ts         # autoCloseMarkdown() (comark/auto-close)
 │   ├── context.ts            # Live renderer context: ComarkContext, ComarkDocument, ComarkPatch (comark/context)
+│   ├── frontmatter.ts        # parseFrontmatter() / renderFrontmatter() (comark/frontmatter)
 │   ├── render/
 │   │   ├── index.ts          # String rendering: renderMarkdown() (renderHtmlFromDocument() moved to @comark/html)
 │   │   └── html.ts           # HTML-only renderer (comark/render/html)
@@ -67,7 +68,8 @@ packages/comark/
 │   │   ├── alert.ts          # Alert/callout blocks
 │   │   ├── frontmatter.ts    # YAML frontmatter extraction (default via registerDefaultPlugins)
 │   │   ├── html.ts           # HTML block/inline parsing (default via registerDefaultPlugins)
-│   │   ├── components.ts     # Block/inline components + spans (`::name`, `:name`, `[text]`)
+│   │   ├── components.ts     # prepare() loads YAML after all pre hooks; loader for block/inline components + spans (`::name`, `:name`, `[text]`)
+│   │   ├── components/markdown-it.ts # Synchronous markdownItComponents adapter (imports YAML eagerly)
 │   │   ├── attributes.ts     # Inline attributes (`{props}` after tokens)
 │   │   ├── binding.ts        # Inline interpolation + shared conditional rendering rules
 │   │   ├── breaks.ts         # Hard line breaks (`<br>`) from newlines
@@ -98,12 +100,14 @@ packages/comark/
 │   │   └── caret.ts          # Caret utilities for streaming
 │   └── internal/             # Internal implementation (not exported)
 │       ├── shiki.ts          # Shared Shiki runtime used by both entry points
-│       ├── frontmatter.ts    # parseFrontmatter() / renderFrontmatter()
 │       ├── heading-id.ts     # Auto heading id generation (shared by parser + stringifier)
-│       ├── yaml.ts           # YAML helpers
 │       ├── sanitize.ts       # Component props validation and frontmatter sanitization
 │       ├── parse/            # Parsing pipeline
 │       │   ├── token-processor.ts # markdown-exit tokens → document nodes
+│       │   ├── components.ts # Shared component rules and YAML detection; the synchronous adapter lives in plugins/components/markdown-it.ts
+│       │   ├── frontmatter.ts # parseFrontmatter()
+│       │   ├── yaml.ts       # parseYaml()
+│       │   ├── source-stable.ts # Built-in rule functions that can't add YAML props during tokenization
 │       │   ├── auto-close/   # Self-healing for incomplete markdown
 │       │   ├── html/         # HTML block/inline rules
 │       │   ├── syntax/       # Component syntax scanners (props, brackets, block params)
@@ -111,7 +115,7 @@ packages/comark/
 │       │   ├── indent.ts     # Dedent of outdented component children
 │       │   ├── unwrap.ts     # `unwrap` option
 │       │   └── auto-unwrap.ts # `autoUnwrap` option
-│       └── stringify/        # AST → markdown string rendering (handlers/ per tag; transform-node.ts runs `transformNode`)
+│       └── stringify/        # AST → markdown string rendering (handlers/ per tag; transform-node.ts runs `transformNode`; frontmatter.ts and yaml.ts load only when a document needs YAML)
 ├── SPEC/                 # Behavioral spec fixtures (CommonMark, GFM, HTML, COMARK, auto-close.md)
 ├── test/                 # Vitest test files
 ├── package.json
@@ -131,6 +135,7 @@ packages/comark/
   "./core": "./dist/core.js",
   "./auto-close": "./dist/auto-close.js",
   "./context": "./dist/context.js",
+  "./frontmatter": "./dist/frontmatter.js",
   "./render": "./dist/render/index.js",
   "./render/html": "./dist/render/html.js"
 }
@@ -185,7 +190,7 @@ const html = await renderHtml(markdownString)
 
 ---
 
-`@comark/html` renders through `comark/render/html`, which registers only the HTML and comment handlers, so rendering never loads the Markdown serializers. `@comark/html/render` also stays free of YAML; the root entry and the plugins import the parser, which loads YAML for frontmatter. Components still receive the full `state`, but `state.handlers` holds only `html` and `comment`, and the output format is always `text/html`. Both `comark/render` and `comark/render/html` share the engine in `internal/stringify/state.ts`; each passes its own handler map to `createState`. HTML-safe attribute handling lives in `html-attributes.ts`; Markdown/YAML attribute serialization stays in `attributes.ts`.
+`@comark/html` renders through `comark/render/html`, which registers only the HTML and comment handlers, so rendering never loads the Markdown serializers. `@comark/html/render` also stays free of YAML; the root entry and the plugins import the parser, which loads YAML on first use, for frontmatter or component props. Components still receive the full `state`, but `state.handlers` holds only `html` and `comment`, and the output format is always `text/html`. Both `comark/render` and `comark/render/html` share the engine in `internal/stringify/state.ts`; each passes its own handler map to `createState`. HTML-safe attribute handling lives in `html-attributes.ts`; Markdown/YAML attribute serialization stays in `attributes.ts`.
 
 ## Package: @comark/ansi
 
@@ -483,6 +488,9 @@ import { parseMarkdown } from 'comark/parse' // deprecated alias of the root exp
 import { parseMarkdown } from 'comark/core' // no default plugins; autoClose is a function, not a boolean
 import { autoCloseMarkdown } from 'comark/auto-close'
 
+// YAML frontmatter, without the parser or renderer
+import { parseFrontmatter, renderFrontmatter } from 'comark/frontmatter'
+
 // Live renderer context (patch a rendered document without re-parsing)
 import { createComarkContext } from 'comark'
 import { createComarkContext } from 'comark/context'
@@ -545,7 +553,7 @@ import binding, { Binding, resolveIfWrapper, selectIfBranch, shouldRenderIf } fr
 import type { IfComparisonOperator, IfProps, IfWrapperTag } from 'comark/plugins/binding'
 
 // markdown-it / markdown-exit adapters (e.g. VitePress)
-import { markdownItComponents } from 'comark/plugins/components'
+import { markdownItComponents } from 'comark/plugins/components/markdown-it'
 import { markdownItAttributes } from 'comark/plugins/attributes'
 
 // NOTE: All framework packages re-export every core plugin via their own subpath.
@@ -592,6 +600,8 @@ import math, { Math } from '@comark/angular/plugins/math'
 import mermaid, { Mermaid } from '@comark/angular/plugins/mermaid'
 import binding, { Binding, If } from '@comark/angular/plugins/binding'
 ```
+
+Plugin `pre` hooks transform markdown in order. Async `prepare(state)` hooks run after all `pre` hooks and before tokenization, so syntax dependencies load for the final source and parser configuration. The components plugin uses `prepare` for YAML props, and preloads YAML for unrecognized markdown-it plugin functions that may generate props. The built-in rule functions (`components`, `attributes`, `html`, `task-list`, `linkify`, `emoji`, `math`, `mermaid` and `binding`) are registered as source-stable in `internal/parse/source-stable.ts`; its synchronous markdown-it adapter lives at `comark/plugins/components/markdown-it` and imports YAML eagerly.
 
 ## Coding Principles
 
@@ -734,7 +744,7 @@ lossless through `parseMarkdown` → `renderMarkdown`:
 **Parse — dedent the children, don't raise the floor.** A child indented *less*
 than its own component marker is never dropped. Each child line is shifted left
 by `min(markerIndent, its own indentation)` and the region is tokenized against
-a zero floor (`comark_block` in `src/plugins/components.ts` via
+a zero floor (`comark_block` in `src/internal/parse/components.ts` via
 `src/internal/parse/indent.ts`, mirroring the line-mark mutation `blockquote`
 uses to strip its markers). Lines inside a
 fenced code block all take the *opening fence's* shift, so the fence and its

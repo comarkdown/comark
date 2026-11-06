@@ -1,5 +1,6 @@
 import type { MarkdownItPlugin } from 'comark'
 import { defineComarkPlugin } from 'comark'
+import { markSourceStable } from '../internal/parse/source-stable.ts'
 
 // Curated set of common emoji shortcodes, organized by category.
 // For the full GitHub set, install a dataset (e.g. `gemoji`) and pass it via
@@ -506,6 +507,6 @@ export default defineComarkPlugin<EmojiOptions>((options) => {
 
   return {
     name: 'emoji',
-    markdownItPlugins: [markdownItPlugin],
+    markdownItPlugins: [markSourceStable(markdownItPlugin)],
   }
 })

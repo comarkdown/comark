@@ -1,7 +1,7 @@
 import { bench, run, barplot, group } from 'mitata'
 import MarkdownIt from 'markdown-it'
 import MarkdownExit from 'markdown-exit'
-import { markdownItComponents } from 'comark/plugins/components'
+import { markdownItComponents } from 'comark/plugins/components/markdown-it'
 import { markdownItAttributes } from 'comark/plugins/attributes'
 import { createMarkdownParser } from 'comark'
 

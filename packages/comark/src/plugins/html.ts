@@ -38,6 +38,7 @@
 import { type StateBlock, Token, type MarkdownExit } from 'markdown-exit/core'
 import type { ComarkParseTokensState } from '../types.ts'
 import { defineComarkPlugin } from '../utils/helpers.ts'
+import { markSourceStable } from '../internal/parse/source-stable.ts'
 
 export interface HtmlPluginOptions {
   /**
@@ -52,7 +53,7 @@ export default defineComarkPlugin((opts: HtmlPluginOptions = {}) => {
 
   return {
     name: 'html',
-    markdownItPlugins: [markdown ? markdownItHtmlWithMarkdown : markdownItHtmlWithoutMarkdown],
+    markdownItPlugins: [markSourceStable(markdown ? markdownItHtmlWithMarkdown : markdownItHtmlWithoutMarkdown)],
     markdownItPost: markdownItPost,
   }
 })

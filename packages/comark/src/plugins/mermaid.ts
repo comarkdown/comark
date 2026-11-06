@@ -1,6 +1,6 @@
 import type { MarkdownExit } from 'markdown-exit/core'
-import type { MarkdownItPlugin } from 'comark'
 import { defineComarkPlugin } from 'comark'
+import { markSourceStable } from '../internal/parse/source-stable.ts'
 
 export type ThemeNames =
   | 'zinc-light'
@@ -206,5 +206,5 @@ export function searchProps(content: string, index = 0) {
  */
 export default defineComarkPlugin((config: MermaidConfig = {}) => ({
   name: 'mermaid',
-  markdownItPlugins: [((md: MarkdownExit) => markdownItMermaid(md, config)) as unknown as MarkdownItPlugin],
+  markdownItPlugins: [markSourceStable((md: MarkdownExit) => markdownItMermaid(md, config))],
 }))

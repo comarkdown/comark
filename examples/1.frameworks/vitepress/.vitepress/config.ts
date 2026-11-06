@@ -1,5 +1,5 @@
 import { defineConfig } from 'vitepress'
-import { markdownItComponents } from 'comark/plugins/components'
+import { markdownItComponents } from 'comark/plugins/components/markdown-it'
 import { markdownItAttributes } from 'comark/plugins/attributes'
 
 export default defineConfig({

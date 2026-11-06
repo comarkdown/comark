@@ -2,7 +2,7 @@ import type { Spec, UIElement } from '@json-render/core'
 import type { ElementNodeAttributes, Node } from 'comark'
 import { defineComarkPlugin } from 'comark'
 import { textContent, visit } from 'comark/utils'
-import { parseYaml } from '../internal/yaml.ts'
+import { parseYaml } from '../internal/parse/yaml.ts'
 
 // Budgets for spec expansion. Specs are author-controlled and elements can
 // reference the same key many times (a DAG), so recursive materialization
