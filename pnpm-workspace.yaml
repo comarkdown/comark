@@ -35,9 +35,7 @@ catalog:
   "@nuxt/devtools-kit": 4.0.0
   # Keep kit on the same minor line as `nuxt` so `@nuxt/schema` stays singular
   # (dual schema breaks `defineNuxtModule` setup typing + declaration emit).
-  # Pinned to 4.6.3: `@nuxt/schema` 4.6.4 resolves an unset `devServer.host` to `{}`,
-  # which crashes `nuxt dev` (`options.hostname.toLowerCase is not a function`).
-  "@nuxt/kit": 4.6.3
+  "@nuxt/kit": 4.6.4
   "@nuxt/ui": ^4.12.0
   "satori": ^0.63.2
   "@resvg/resvg-js": ^2.6.2
@@ -108,7 +106,7 @@ catalog:
   next: ^16.4.3
 
   # Nuxt
-  nuxt: 4.6.3
+  nuxt: ^4.6.4
   nuxt-studio: 1.8.0
 
   # Linting
@@ -182,16 +180,11 @@ catalog:
 ignoredBuiltDependencies:
   - sharp
 
-# Keep every transitive `@nuxt/kit` / `@nuxt/schema` on the pinned Nuxt release (see `nuxt` in the
-# catalog). Remove together with the catalog pin once a Nuxt release fixes `devServer.host`.
-#
 # The docs layer and its modules (comark-docs, comark-content, nuxt-agent-discovery) depend on the
 # published comark. Nitro inlines every comark copy into one server bundle, where they all share
 # one top-level `markdown-exit`; two comark versions on different markdown-exit majors then break
 # at runtime (ERR_MODULE_NOT_FOUND). Resolve them all to the workspace packages instead.
 overrides:
-  "@nuxt/kit@4": 4.6.3
-  "@nuxt/schema@4": 4.6.3
   comark: workspace:*
   "@comark/nuxt": workspace:*
   "@comark/vue": workspace:*
