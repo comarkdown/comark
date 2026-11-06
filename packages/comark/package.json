@@ -39,8 +39,7 @@
     "url": "git+https://github.com/comarkdown/comark.git"
   },
   "files": [
-    "dist",
-    "skills"
+    "dist"
   ],
   "type": "module",
   "sideEffects": false,
@@ -64,10 +63,10 @@
   },
   "scripts": {
     "stub": "node ../../scripts/stub.mjs",
-    "build": "rm -rf skills && cp -r ../../docs/skills skills && tsc --removeComments --declaration false && tsc --emitDeclarationOnly",
+    "build": "tsc --removeComments --declaration false && tsc --emitDeclarationOnly",
     "dev": "tsc --watch",
     "test": "vitest run",
-    "prepack": "pnpm run build"
+    "prepack": "tsc --removeComments --declaration false && tsc --emitDeclarationOnly"
   },
   "dependencies": {
     "character-entities": "catalog:",
