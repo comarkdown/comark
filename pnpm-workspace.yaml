@@ -90,7 +90,6 @@ catalog:
 
   github-slugger: ^2.0.0
   hast-util-to-string: ^3.0.1
-  js-yaml: ^5.5.0
   katex: ^0.19.1
   linkify-it: ^6.0.0
   markdown-exit: 2.1.0
@@ -121,6 +120,7 @@ catalog:
   remark-parse: ^11.0.0
   remark-rehype: ^11.1.2
   scule: ^1.3.0
+  tinyaml: ^0.1.0
 
   # Shared peer dependencies
   rangi: ^2.2.0

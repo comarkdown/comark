@@ -1,4 +1,4 @@
-import type { DumpOptions } from 'js-yaml'
+import type { StringifyOptions } from 'tinyaml'
 import type MarkdownExit from 'markdown-exit/core'
 import type { Token } from 'markdown-exit/core'
 import type MarkdownIt from 'markdown-it'
@@ -314,10 +314,10 @@ export interface RenderMarkdownOptions extends RendererOptions {
    */
   blockAttributesStyle?: 'frontmatter' | 'codeblock'
   /**
-   * Options for YAML serialization of frontmatter (js-yaml DumpOptions).
-   * Defaults: indent=2, lineWidth=-1.
+   * Options for YAML serialization of frontmatter (tinyaml StringifyOptions).
+   * Defaults: indent=2. Long strings are never folded.
    */
-  frontmatterOptions?: DumpOptions
+  frontmatterOptions?: StringifyOptions
   /**
    * The `headingIds` mode the document was parsed with. Heading ids equal to
    * the auto-generated one are implicit and omitted; any other id is written
