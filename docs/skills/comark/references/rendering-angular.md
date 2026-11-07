@@ -462,7 +462,7 @@ The `data` input allows passing ambient data for `:binding` resolution in markdo
 ```typescript
 import { Component } from '@angular/core'
 import { Markdown } from '@comark/angular'
-import binding, { Binding } from '@comark/angular/plugins/binding'
+import { binding, Binding } from '@comark/angular/plugins/binding'
 
 @Component({
   selector: 'app-root',
@@ -500,8 +500,8 @@ Use `defineMarkdownComponent` or `defineMarkdownDocumentComponent` to create pre
 ```typescript
 // docs-markdown.component.ts
 import { defineMarkdownComponent } from '@comark/angular'
-import math, { Math } from '@comark/angular/plugins/math'
-import mermaid, { Mermaid } from '@comark/angular/plugins/mermaid'
+import { math, Math } from '@comark/angular/plugins/math'
+import { mermaid, Mermaid } from '@comark/angular/plugins/mermaid'
 
 export const DocsMarkdown = defineMarkdownComponent({
   plugins: [math(), mermaid()],
@@ -551,7 +551,7 @@ export const DocsMarkdownDocument = defineMarkdownDocumentComponent({
 ```typescript
 import { Component } from '@angular/core'
 import { Markdown } from '@comark/angular'
-import math, { Math } from '@comark/angular/plugins/math'
+import { math, Math } from '@comark/angular/plugins/math'
 
 @Component({
   selector: 'app-root',
@@ -575,7 +575,7 @@ export class AppComponent {
 ```typescript
 import { Component } from '@angular/core'
 import { Markdown } from '@comark/angular'
-import mermaid, { Mermaid } from '@comark/angular/plugins/mermaid'
+import { mermaid, Mermaid } from '@comark/angular/plugins/mermaid'
 
 @Component({
   selector: 'app-root',
@@ -597,7 +597,7 @@ The Mermaid component includes automatic dark mode support: it watches the `<htm
 ### Binding
 
 ```typescript
-import binding, { Binding } from '@comark/angular/plugins/binding'
+import { binding, Binding } from '@comark/angular/plugins/binding'
 
 // See the "Data Binding" section above for full usage.
 ```

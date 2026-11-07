@@ -416,7 +416,7 @@ Uses Vitest with two test projects:
 
 ## Package: @comark/angular
 
-Located at `packages/comark-angular/`. Angular 17+ renderer with standalone components.
+Located at `packages/comark-angular/`. Angular 19+ renderer (peer range `>=19 <23`, i.e. 19 through 22) with standalone components.
 
 ```
 packages/comark-angular/
@@ -431,15 +431,24 @@ packages/comark-angular/
 │   │   ├── if.component.ts               # Structural conditional renderer
 │   │   ├── math.component.ts             # Math rendering component
 │   │   └── mermaid.component.ts          # Mermaid rendering component
-│   ├── plugins/
-│   │   ├── binding.ts                    # Re-exports binding plugin + Binding and If components
-│   │   ├── math.ts                       # Re-exports comark/plugins/math + Math component
-│   │   └── mermaid.ts                    # Re-exports comark/plugins/mermaid + Mermaid component
 │   └── utils/
 │       ├── caret.ts                      # Caret utilities for streaming
 │       └── index.ts                      # Re-exports comark/utils
+├── plugins/                              # Secondary entry points (named exports)
+│   ├── binding/
+│   │   ├── index.ts                      # Re-exports binding plugin + Binding and If components
+│   │   ├── binding.component.ts
+│   │   └── if.component.ts
+│   ├── math/
+│   │   ├── index.ts                      # Re-exports math plugin + Math component
+│   │   └── math.component.ts
+│   └── mermaid/
+│       ├── index.ts                      # Re-exports mermaid plugin + Mermaid component
+│       └── mermaid.component.ts
 ├── scripts/
-│   └── verify-build.mjs                  # Asserts partial-compilation metadata in dist after build
+│   └── strip-sourcemaps.mjs              # Removes ng-packagr source maps from dist after build
+├── angular.json
+├── ng-package.json
 ├── package.json
 ├── tsconfig.json
 └── vitest.config.ts
@@ -447,9 +456,16 @@ packages/comark-angular/
 
 ### Build
 
-Uses the Angular compiler (`ngc`) in partial-compilation mode so published
-JavaScript and declarations contain the Angular metadata required by both JIT
-and AOT consumers. `scripts/verify-build.mjs` runs after both `ngc` passes.
+Built with `ng-packagr` via the Angular CLI (`@angular/build:ng-packagr`
+builder): partial-compilation FESM bundles plus type declarations for the
+main entry and each plugin secondary entry point. Plugin entry points use
+named exports because the Angular Package Format strips `export default`
+from entry points (e.g. `import { math, Math } from '@comark/angular/plugins/math'`).
+`ng-packagr` always emits source maps, so `scripts/strip-sourcemaps.mjs` deletes
+them after `ng build`. The package publishes from `dist/` via
+`publishConfig.directory` (ng-packagr writes the published `package.json` there);
+`.release-it.json` must not also set `publishPath`, or pnpm looks in `dist/dist`.
+`test/bundle.test.ts` packs from that directory too.
 
 ### Exports
 
@@ -465,8 +481,8 @@ and AOT consumers. `scripts/verify-build.mjs` runs after both `ngc` passes.
 
 ```typescript
 import { Markdown, MarkdownDocument, defineMarkdownComponent, defineMarkdownDocumentComponent } from '@comark/angular'
-import math, { Math } from '@comark/angular/plugins/math'
-import mermaid, { Mermaid } from '@comark/angular/plugins/mermaid'
+import { math, Math } from '@comark/angular/plugins/math'
+import { mermaid, Mermaid } from '@comark/angular/plugins/mermaid'
 ```
 
 ```html
@@ -588,9 +604,9 @@ import binding, { Binding, If } from '@comark/svelte/plugins/binding'
 
 // Angular — renderer + plugin wrappers (plugin fn + Angular component)
 import { Markdown, MarkdownDocument, defineMarkdownComponent, defineMarkdownDocumentComponent } from '@comark/angular'
-import math, { Math } from '@comark/angular/plugins/math'
-import mermaid, { Mermaid } from '@comark/angular/plugins/mermaid'
-import binding, { Binding, If } from '@comark/angular/plugins/binding'
+import { math, Math } from '@comark/angular/plugins/math'
+import { mermaid, Mermaid } from '@comark/angular/plugins/mermaid'
+import { binding, Binding, If } from '@comark/angular/plugins/binding'
 ```
 
 ## Coding Principles
@@ -873,7 +889,7 @@ export const DocsMarkdown = defineMarkdownComponent({
 
 // Angular
 import { defineMarkdownComponent } from '@comark/angular'
-import math, { Math } from '@comark/angular/plugins/math'
+import { math, Math } from '@comark/angular/plugins/math'
 
 export const DocsMarkdown = defineMarkdownComponent({
   plugins: [math()],
