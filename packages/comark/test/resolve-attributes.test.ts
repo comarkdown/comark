@@ -176,6 +176,21 @@ describe('unsafe URL bindings (render-time hard floor)', () => {
     expect(result).toEqual({})
   })
 
+  it('drops any URL prop binding resolving to javascript:, by the same names as validateProp()', () => {
+    const result = resolveAttributes(
+      {
+        ':link': 'frontmatter.home',
+        ':image-url': 'frontmatter.home',
+        ':avatarSrc': 'frontmatter.home',
+        ':xlink:href': 'frontmatter.home',
+        ':title': 'frontmatter.home',
+      },
+      makeRenderData({ frontmatter: { home: 'javascript:alert(1)' } })
+    )
+    // `title` is not a URL prop: prose stays, as for props.
+    expect(result).toEqual({ title: 'javascript:alert(1)' })
+  })
+
   it('drops bindings whose resolved value is entity-encoded javascript:', () => {
     const result = resolveAttributes(
       { ':href': 'frontmatter.home' },

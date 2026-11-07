@@ -100,7 +100,7 @@ The extracted nodes are stored at `tree.meta.summary` as `Node[]`. If no delimit
 
 | Option | Type | Default | Description |
 |---|---|---|---|
-| [`delimiter`](#options-delimiter) | `string` | `'<!-- more -->'` | HTML comment used to split summary from full content |
+| [`delimiter`](#delimiter) | `string` | `'<!-- more -->'` | HTML comment used to split summary from full content |
 
 ### `delimiter`
 

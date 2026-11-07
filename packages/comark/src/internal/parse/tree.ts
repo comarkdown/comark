@@ -1,4 +1,4 @@
-import { Token } from 'markdown-exit'
+import { Token } from 'markdown-exit/core'
 import type { CommentNode, ElementNode, ElementNodeAttributes, HeadingIdsOption, Node } from 'comark'
 import { extractAttributes, mergeAdjacentTextNodes, parseCodeblockInfo, processAttributes } from './tree-utils.ts'
 import { createHeadingIdTracker, nextHeadingId, reserveHeadingId, type HeadingIdTracker } from '../heading-id.ts'
@@ -46,13 +46,6 @@ interface ProcessState {
   startLine: number
   /** Unclosed HTML open tags, outer → inner. Lives across blocks like the heading id stack. */
   htmlStack: HtmlOpenFrame[]
-  /**
-   * > 0 while building a nested markdown container (list, blockquote, table…).
-   * Free paragraphs inside those containers keep ownership of their children
-   * instead of nesting into the HTML stack; the finished container lands on the
-   * stack as a whole unit via deliverBlock.
-   */
-  insideMarkdownContainer: number
 }
 
 type Processor = (tokens: Token[], start: number, state: ProcessState) => ProcessorResult
@@ -173,10 +166,12 @@ function processToken(tokens: Token[], i: number, state: ProcessState): Processo
  * @param nestHtml When true (free paragraph / top-level), free nodes nest into
  *   the open HTML stack. When false (nested markdown containers like strong/li),
  *   free nodes return to the parent container — the container itself later lands
- *   on the HTML stack as a whole unit via deliverBlock.
+ *   on the HTML stack as a whole unit via deliverBlock. Tags opened within
+ *   the run always receive the nodes up to their close tag.
  */
 function processInline(inlineTokens: Token[], state: ProcessState, nestHtml = true): Node[] {
   const nodes: Node[] = []
+  const depth = state.htmlStack.length
   let i = 0
 
   while (i < inlineTokens.length) {
@@ -185,7 +180,7 @@ function processInline(inlineTokens: Token[], state: ProcessState, nestHtml = tr
       i += 1
       continue
     }
-    const node = nestHtml ? deliverInline(state, result.node) : result.node
+    const node = nestHtml || state.htmlStack.length > depth ? deliverInline(state, result.node) : result.node
     if (node !== undefined) pushNode(nodes, node)
     i = result.nextIndex
   }
@@ -217,11 +212,13 @@ function processChildren(
   nestHtml = false
 ): { children: Node[]; nextIndex: number } {
   const children: Node[] = []
+  const depth = state.htmlStack.length
   let i = start + 1
 
   while (i < tokens.length) {
     const token = tokens[i]
     if (token.type === closeType) {
+      if (!nestHtml) closeHtmlFrames(state, children, depth, false)
       return { children, nextIndex: i + 1 }
     }
 
@@ -235,7 +232,7 @@ function processChildren(
     if (result) {
       // Same nesting rule as processInline: free nodes join the open HTML
       // frame when nestHtml is on (e.g. block children under bare HTML).
-      const node = nestHtml ? deliverInline(state, result.node) : result.node
+      const node = nestHtml || state.htmlStack.length > depth ? deliverInline(state, result.node) : result.node
       if (node !== undefined) pushNode(children, node)
       i = result.nextIndex
     } else {
@@ -267,6 +264,7 @@ function processBlockChildrenWithSlots(
   let currentSlot: { tag: string; attrs: Record<string, unknown>; children: Node[] } | null = null
 
   const flushSlot = () => {
+    closeHtmlFrames(state, currentSlot ? currentSlot.children : nodes)
     if (!currentSlot) return
     nodes.push([currentSlot.tag, currentSlot.attrs, ...mergeAdjacentTextNodes(currentSlot.children)] as ElementNode)
     currentSlot = null
@@ -327,9 +325,9 @@ function processMdcBlock(tokens: Token[], start: number, state: ProcessState): P
   const open = tokens[start]
   // Own child paragraphs/inlines so an outer unclosed HTML tag (e.g. `<Hello>`)
   // doesn't steal `::component` body content off the stack.
-  state.insideMarkdownContainer += 1
-  const { children, nextIndex } = processBlockChildrenWithSlots(tokens, start, 'mdc_block_close', state)
-  state.insideMarkdownContainer -= 1
+  const { children, nextIndex } = withHtmlScope(state, () =>
+    processBlockChildrenWithSlots(tokens, start, 'mdc_block_close', state)
+  )
   const attrs = processAttributes(open.attrs)
 
   let node = [open.tag || 'div', attrs, ...mergeAdjacentTextNodes(children)] as ElementNode
@@ -366,6 +364,13 @@ function codeBlockProcessor(tokens: Token[], start: number, _state: ProcessState
   }
 }
 
+// Stringify needs the delimiter to write `\(` and `\[` math back; `$` math keeps its old shape.
+function mathAttributes(className: string, token: Token): ElementNodeAttributes {
+  const attributes: ElementNodeAttributes = { class: className, content: token.content }
+  if (token.markup.startsWith('\\')) attributes.$ = { markup: token.markup }
+  return attributes
+}
+
 function singleToken(fn: (token: Token) => Node) {
   return (tokens: Token[], start: number): ProcessorResult =>
     processPossibleAttributesSyntax(tokens, { nextIndex: start + 1, node: fn(tokens[start]) })
@@ -382,22 +387,24 @@ function withHtmlScope(
   fn: () => { children: Node[]; nextIndex: number }
 ): { children: Node[]; nextIndex: number } {
   const outerStack = state.htmlStack
-  const outerContainer = state.insideMarkdownContainer
   state.htmlStack = []
-  state.insideMarkdownContainer = 0
   try {
     const result = fn()
-    while (state.htmlStack.length > 0) {
-      const frame = state.htmlStack.pop()!
-      frame.block = true
-      const node = frameToNode(frame)
-      if (state.htmlStack.length > 0) state.htmlStack[state.htmlStack.length - 1].children.push(node)
-      else result.children.push(node)
-    }
+    closeHtmlFrames(state, result.children)
     return result
   } finally {
     state.htmlStack = outerStack
-    state.insideMarkdownContainer = outerContainer
+  }
+}
+
+/** Close HTML frames above `depth`, innermost into its parent, outermost into `children`. */
+function closeHtmlFrames(state: ProcessState, children: Node[], depth = 0, block = true) {
+  while (state.htmlStack.length > depth) {
+    const frame = state.htmlStack.pop()!
+    if (block) frame.block = true
+    const node = frameToNode(frame)
+    if (state.htmlStack.length > depth) state.htmlStack[state.htmlStack.length - 1].children.push(node)
+    else children.push(node)
   }
 }
 
@@ -440,8 +447,8 @@ const processors: Record<string, Processor> = {
   s_open: openCloseToken('s_close', 'del'),
   mdc_block_open: processMdcBlock,
   code_inline: singleToken((t) => ['code', {}, t.content]),
-  math_inline: singleToken((t) => ['math', { class: 'math inline', content: t.content }, t.content]),
-  math_block: singleToken((t) => ['math', { class: 'math block', content: t.content }, t.content]),
+  math_inline: singleToken((t) => ['math', mathAttributes('math inline', t), t.content]),
+  math_block: singleToken((t) => ['math', mathAttributes('math block', t), t.content]),
   emoji: singleToken((t) => t.content),
   hr: singleToken(() => ['hr', {}]),
   hardbreak: singleToken(() => ['br', {}]),
@@ -475,8 +482,7 @@ const processors: Record<string, Processor> = {
   paragraph_open(tokens, start, state) {
     const inline = tokens[start + 1]
     const depthBefore = state.htmlStack.length
-    const nestHtml = state.insideMarkdownContainer === 0
-    const { children, nextIndex } = processChildren(tokens, start, 'paragraph_close', state, nestHtml)
+    const { children, nextIndex } = processChildren(tokens, start, 'paragraph_close', state, true)
     const asParagraph = (): ProcessorResult =>
       children.length === 0
         ? { nextIndex, node: undefined }
@@ -505,11 +511,8 @@ const processors: Record<string, Processor> = {
     // frame is open, and must emit as a sibling of that frame (parse5-style),
     // not nest into it.
     if (state.htmlStack.length > 0) {
-      if (nestHtml) {
-        for (const frame of state.htmlStack) flushPendingInline(frame)
-        return freeSiblings(children.length > 0)
-      }
-      return asParagraph()
+      for (const frame of state.htmlStack) flushPendingInline(frame)
+      return freeSiblings(children.length > 0)
     }
 
     const empty = asParagraph()
@@ -599,7 +602,11 @@ const processors: Record<string, Processor> = {
         if (frameTag !== null && frameTag.toLowerCase() === closeTag) break
         idx--
       }
-      if (idx < 0) return { nextIndex: start + 1, node: undefined }
+      if (idx < 0) {
+        // HTML parsers read a stray `</br>` as `<br>`
+        const node: Node | undefined = closeTag === 'br' ? ['br', makeHtmlAttrs({}, false)] : undefined
+        return { nextIndex: start + 1, node }
+      }
 
       let closed: Node | undefined
       while (state.htmlStack.length > idx) {
@@ -638,7 +645,6 @@ export function tokenListToTree(tokens: Token[], options: ProcessorOptions = {})
     headingIds: createHeadingIdTracker(options.headingIds ?? true),
     startLine: options.startLine ?? 0,
     htmlStack: [],
-    insideMarkdownContainer: 0,
   }
   const nodes: Node[] = []
   let i = 0

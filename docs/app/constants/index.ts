@@ -435,6 +435,30 @@ Free for up to 5 services. No credit card. Deploys in under a minute.
 ::
 `
 
+export const releaseImageMarkdown = `::release-image
+\`\`\`yaml [props]
+name: Comark
+version: 0.9.0
+date: November 2026
+label: Release
+url: comark.dev
+heading: What's new
+color: '#facc15'
+\`\`\`
+- \`transformNode\`: change any node at render time, in every renderer
+- \`comark/core\`: a smaller parser with no default plugins
+- New \`heading-links\` plugin
+
+<br> 15+ fixes across parsing, Markdown round-trips, and renderers.
+
+#title
+Round-trip safe rendering
+
+#description
+Fixes across Shiki, auto-close and \`renderMarkdown\`.
+::
+`
+
 export type AiMode = 'showcase' | 'nuxt-ui'
 
 export type PlaygroundExample = {
@@ -473,6 +497,11 @@ export const playgroundExamples: PlaygroundExample[] = [
     content: nuxtUiMarkdown,
     mode: 'nuxt-ui',
     prompt: 'Landing page for a mountain bike rental in the Alps.',
+  },
+  {
+    label: 'Release image',
+    value: 'release-image',
+    content: releaseImageMarkdown,
   },
 ]
 

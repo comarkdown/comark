@@ -1,6 +1,6 @@
 {
   "name": "@comark/vue",
-  "version": "0.7.0",
+  "version": "0.9.0",
   "description": "Vue 3 renderer for Comark. Render Markdown with components at runtime, with streaming support for AI output.",
   "keywords": [
     "ai",
@@ -22,6 +22,7 @@
   "bugs": {
     "url": "https://github.com/comarkdown/comark/issues"
   },
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/comarkdown/comark.git"
@@ -51,8 +52,7 @@
     "build": "tsc --removeComments --declaration false && tsc --emitDeclarationOnly",
     "dev": "tsc --watch",
     "test": "vitest run",
-    "prepack": "tsc --removeComments --declaration false && tsc --emitDeclarationOnly",
-    "release": "release-it"
+    "prepack": "tsc --removeComments --declaration false && tsc --emitDeclarationOnly"
   },
   "dependencies": {
     "comark": "workspace:*"

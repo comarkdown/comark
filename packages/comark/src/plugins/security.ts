@@ -1,8 +1,14 @@
 import type { ElementNode, Node } from 'comark'
 import { defineComarkPlugin } from 'comark'
 import { visitAsync } from 'comark/utils'
-import { validateProps } from '../internal/props-validation.ts'
-import type { PropsValidationOptions } from '../internal/props-validation.ts'
+import {
+  createTagFilter,
+  isTagSelector,
+  isUnsafeTagSelector,
+  sanitizeData,
+  validateProps,
+} from '../internal/sanitize.ts'
+import type { PropsValidationOptions } from '../internal/sanitize.ts'
 
 interface SecurityOptions extends PropsValidationOptions {
   /**
@@ -22,6 +28,12 @@ interface SecurityOptions extends PropsValidationOptions {
    * @default undefined
    */
   tagFallback?: (element: ElementNode) => false | Node | Promise<false | Node>
+
+  /**
+   * Sanitize frontmatter too: renderers spread it into components, so it gets the prop rules at any depth.
+   * @default true
+   */
+  frontmatter?: boolean
 }
 
 export default defineComarkPlugin((options: SecurityOptions = {}) => {
@@ -29,6 +41,7 @@ export default defineComarkPlugin((options: SecurityOptions = {}) => {
     blockedTags = [],
     allowedTags = [],
     tagFallback = undefined,
+    frontmatter = true,
     allowedLinkPrefixes,
     allowedImagePrefixes,
     allowedProtocols,
@@ -38,6 +51,7 @@ export default defineComarkPlugin((options: SecurityOptions = {}) => {
 
   const dropSet = new Set(blockedTags.map((t) => t.toLowerCase()))
   const allowSet = new Set(allowedTags.map((t) => t.toLowerCase()))
+  const isFilteredTag = createTagFilter(blockedTags, allowedTags)
 
   const propsOptions: PropsValidationOptions = {
     allowedLinkPrefixes,
@@ -69,15 +83,12 @@ export default defineComarkPlugin((options: SecurityOptions = {}) => {
             return false
           }
 
-          // The `as` prop makes renderers resolve a different component than
-          // the element's own tag — hold it to the same tag filters, otherwise
-          // `[x]{as="AdminPanel"}` bypasses allowedTags/blockedTags.
-          const asValue = element[1].as
-          if (typeof asValue === 'string') {
-            const asTag = asValue.toLowerCase()
-            if (dropSet.has(asTag) || (allowSet.size > 0 && !allowSet.has(asTag))) {
-              console.warn(`[comark/plugins/security] removing unsafe attribute: as="${asValue}"`)
-              delete element[1].as
+          // `as` and `is` make renderers resolve a different component than the element's own tag.
+          // Hold them, bindings included, to the same tag filters: otherwise `[x]{as="AdminPanel"}` bypasses them.
+          for (const key of Object.keys(element[1])) {
+            if (isTagSelector(key) && isUnsafeTagSelector(key, element[1][key], isFilteredTag)) {
+              console.warn(`[comark/plugins/security] removing unsafe attribute: ${key}="${element[1][key]}"`)
+              delete element[1][key]
             }
           }
 
@@ -91,6 +102,13 @@ export default defineComarkPlugin((options: SecurityOptions = {}) => {
           }
         }
       )
+
+      if (frontmatter) {
+        const removed = sanitizeData(state.tree.frontmatter, { ...propsOptions, blockedTags, allowedTags })
+        for (const path of removed) {
+          console.warn(`[comark/plugins/security] removing unsafe frontmatter: ${path}`)
+        }
+      }
     },
   }
 })

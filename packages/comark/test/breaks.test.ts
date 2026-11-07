@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseMarkdown } from '../src/parse'
+import { parseMarkdown } from '../src/index'
 import breaks from '../src/plugins/breaks'
 import math from '../src/plugins/math'
 

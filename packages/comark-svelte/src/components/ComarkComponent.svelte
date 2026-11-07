@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Node as NodeType, ComponentManifest, NodeRenderData } from 'comark'
+  import type { Node as NodeType, ComponentManifest, NodeRenderData, NodeTransform } from 'comark'
   import type { Snippet } from 'svelte'
   import type { ComponentResolver } from '../types.js'
   import MarkdownNode from './MarkdownNode.svelte'
@@ -22,6 +22,7 @@
     slotIndex = 0,
     components = {},
     componentsManifest,
+    transformNode,
     resolver: Resolver = Resolve,
     renderData = EMPTY_RENDER_DATA,
     children,
@@ -33,6 +34,7 @@
     slotIndex?: number
     components?: Record<string, any>
     componentsManifest?: ComponentManifest
+    transformNode?: NodeTransform | readonly NodeTransform[]
     resolver?: ComponentResolver
     renderData?: NodeRenderData
     children?: Snippet
@@ -47,6 +49,7 @@
         node={child}
         {components}
         {componentsManifest}
+        {transformNode}
         resolver={Resolver}
         caretClass={i === slot.children.length - 1 ? slot.caretClass : null}
         {renderData}
@@ -62,6 +65,7 @@
     slotIndex={slotIndex + 1}
     {components}
     {componentsManifest}
+    {transformNode}
     resolver={Resolver}
     {renderData}
   >

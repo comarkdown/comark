@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseMarkdown } from '../src/parse'
+import { parseMarkdown } from '../src/index'
 import { renderMarkdown } from '../src/render'
 import mermaid from '../src/plugins/mermaid'
 import type { MarkdownDocument } from '../src/types'
@@ -91,5 +91,43 @@ describe('comarkAttributes quoting', () => {
     const span = (t2.nodes[0] as any[])[2] // p > span
     expect(span[1].title).toBe('x" bad="1')
     expect(span[1].bad).toBeUndefined()
+  })
+})
+
+describe('line breaks', () => {
+  it.each([
+    ['before a word', ['p', {}, 'a ', ['br', {}], ' b']],
+    ['after a component', ['p', {}, 'A ', ['badge', {}, 'x'], ' ', ['br', {}], ' word']],
+    ['after inline code', ['p', {}, ['code', {}, 'x'], ' ', ['br', {}], '\ny']],
+    ['between breaks', ['p', {}, 'a ', ['br', {}], ' ', ['br', {}], ' b']],
+  ])('round-trips a break %s', async (_, node) => {
+    const doc = { frontmatter: {}, meta: {}, nodes: [node] } as unknown as MarkdownDocument
+    const t2 = await parseMarkdown(await renderMarkdown(doc))
+    expect(t2.nodes).toEqual(doc.nodes)
+  })
+})
+
+describe('component after a list', () => {
+  it.each([
+    ['in the default slot', '::card\n- one\n- two\n\n:::note\nhi\n:::\n::'],
+    ['in a named slot', '::card\n#content\n- one\n- two\n\n:::note\nhi\n:::\n::'],
+    [
+      'in one of several named slots, after an ordered list',
+      '::card\n#title\nTitle\n\n#content\n1. one\n2. two\n\n:::note\nhi\n:::\n\nafter\n\n#footer\nFooter\n::',
+    ],
+    ['two components deep', '::outer\n:::mid\n- one\n- two\n\n::::inner\nhi\n::::\n:::\n::'],
+    ['two components deep in a named slot', '::outer\n:::mid\n#content\n- one\n\n::::inner\nhi\n::::\n:::\n::'],
+    ['whose last item has nested content', '::card\n- one\n- two\n  - nested\n\n  more\n\n:::note\nhi\n:::\n::'],
+    [
+      'whose last item has nested content, in a named slot',
+      '::card\n#content\n- one\n- two\n  - nested\n\n:::note\nhi\n:::\n::',
+    ],
+    [
+      'when the component has its own named slots',
+      '::card\n#content\n- one\n\n:::note\n#title\nT\n\n#body\nB\n:::\n\n#footer\nF\n::',
+    ],
+  ])('keeps a component %s out of the last list item', async (_, md) => {
+    const { t1, t2 } = await roundTrip(md)
+    expect(t2.nodes).toEqual(t1.nodes)
   })
 })

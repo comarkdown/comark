@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseMarkdown } from '../src/parse'
+import { parseMarkdown } from '../src/index'
 import { renderMarkdown } from '../src/render'
 
 /**
@@ -26,9 +26,14 @@ describe('raw HTML round-trip (parse → renderMarkdown → parse)', () => {
     'object with two params':
       '<object data="x.swf">\n<param name="a" value="1">\n<param name="b" value="2">\n</object>',
     'nested divs': '<div>\n<div>one</div>\n<div>two</div>\n</div>',
+    'inline comment inside a paragraph': 'text <!-- note --> tail',
+    'inline comment inside a component': '::note\ntext <!-- note --> tail\n::',
     'single-child video': '<video controls>\n<source src="a.mp4" type="video/mp4">\n</video>',
     'mixed text and element children': '<div>\nsome text\n<figcaption>cap</figcaption>\n</div>',
     'pre with authored language attribute': '<pre language="ruby">\nputs 1\n</pre>',
+    'img with a bound attribute': 'text <img src="a.svg" class="h-5" :zoom="false"> tail',
+    'img with a bare bound attribute': 'text <img :src alt="x"> tail',
+    'attribute with a "true" value': '<div aria-hidden="true">\nicon\n</div>',
   }
 
   for (const [name, md] of Object.entries(cases)) {
@@ -38,4 +43,12 @@ describe('raw HTML round-trip (parse → renderMarkdown → parse)', () => {
       expect(t2.nodes).toEqual(t1.nodes)
     })
   }
+
+  it('writes a non-string bound attribute value', async () => {
+    const rendered = await renderMarkdown({
+      nodes: [['p', {}, 'text ', ['img', { $: { html: 1, block: 0 }, src: 'a.svg', ':zoom': false }]]],
+    })
+
+    expect(rendered.trim()).toBe('text <img src="a.svg" :zoom="false">')
+  })
 })

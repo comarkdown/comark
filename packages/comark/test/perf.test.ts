@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { createMarkdownParser } from '../src/parse'
+import { createMarkdownParser } from '../src/index'
 import type { ComarkTracer, ComarkSpan, ComarkSpanOptions } from '../src/types'
 
 interface RecordedSpan {

@@ -26,6 +26,8 @@ const components: Record<string, () => Promise<unknown>> = {
   Timeline: () => import('@nuxt/ui/components/Timeline.vue'),
   User: () => import('@nuxt/ui/components/User.vue'),
   PageHero: () => import('@nuxt/ui/components/PageHero.vue'),
+  // `::landing-hero` in content/index.md, which the comark-docs layer maps to PageHero on its landing page.
+  LandingHero: () => import('@nuxt/ui/components/PageHero.vue'),
   PageAnchors: () => import('@nuxt/ui/components/PageAnchors.vue'),
   PageSection: () => import('@nuxt/ui/components/PageSection.vue'),
   PageHeader: () => import('@nuxt/ui/components/PageHeader.vue'),
@@ -53,6 +55,7 @@ const components: Record<string, () => Promise<unknown>> = {
   TwoColumn: () => import('@/components/playground/TwoColumn.vue'),
   BookingCard: () => import('@/components/playground/BookingCard.vue'),
   Ingredients: () => import('@/components/playground/Ingredients.vue'),
+  ReleaseImage: () => import('@/components/prose/ReleaseImage.vue'),
 }
 
 export default function resolveComponent(name: string) {

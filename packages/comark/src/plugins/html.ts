@@ -35,7 +35,7 @@
  * ```
  */
 
-import { type StateBlock, Token, type MarkdownExit } from 'markdown-exit'
+import { type StateBlock, Token, type MarkdownExit } from 'markdown-exit/core'
 import type { ComarkParseTokensState } from '../types.ts'
 import { defineComarkPlugin } from '../utils/helpers.ts'
 

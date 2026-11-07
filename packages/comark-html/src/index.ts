@@ -1,4 +1,5 @@
-import type { ParserOptions, RendererOptions } from 'comark'
+import type { ParserOptions } from 'comark'
+import type { HtmlRendererOptions } from 'comark/render/html'
 import { createMarkdownParser } from 'comark'
 import { renderHtmlFromDocument } from './render.ts'
 
@@ -27,11 +28,13 @@ export { renderHtmlFromDocument } from './render.ts'
  * const html = await renderHtml('# Hello\n\n**Bold** text.')
  * ```
  */
-export function createHtmlRenderer(options?: ParserOptions & RendererOptions): (markdown: string) => Promise<string> {
+export function createHtmlRenderer(
+  options?: ParserOptions & HtmlRendererOptions
+): (markdown: string) => Promise<string> {
   const parseMarkdown = createMarkdownParser(options)
   return async (markdown: string) => {
     const document = await parseMarkdown(markdown)
-    return await renderHtmlFromDocument(document, options as RendererOptions)
+    return await renderHtmlFromDocument(document, options)
   }
 }
 
@@ -50,6 +53,6 @@ export function createHtmlRenderer(options?: ParserOptions & RendererOptions): (
  * document.body.innerHTML = html
  * ```
  */
-export async function renderHtml(markdown: string, options?: ParserOptions & RendererOptions): Promise<string> {
+export async function renderHtml(markdown: string, options?: ParserOptions & HtmlRendererOptions): Promise<string> {
   return createHtmlRenderer(options)(markdown)
 }

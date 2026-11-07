@@ -3,7 +3,8 @@ import { Markdown } from './components/Markdown.tsx'
 import { MarkdownDocument } from './components/MarkdownDocument.tsx'
 import type { MarkdownProps } from './components/Markdown.tsx'
 import type { MarkdownDocumentProps } from './components/MarkdownDocument.tsx'
-import type { ParserOptions } from 'comark'
+import type { NodeTransform, ParserOptions } from 'comark'
+import { mergeNodeTransforms } from 'comark/utils'
 
 export { Markdown }
 export type { MarkdownProps } from './components/Markdown.tsx'
@@ -21,6 +22,8 @@ interface DefineMarkdownComponentOptions extends ParserOptions {
   /** Display name shown in React DevTools. */
   name?: string
   components?: Record<string, React.ComponentType<any>>
+  /** Node transforms that run before the instance's own `transformNode`. */
+  transformNode?: NodeTransform | readonly NodeTransform[]
   /**
    * Additional classes for the wrapper div
    */
@@ -56,16 +59,25 @@ export function defineMarkdownComponent(config: DefineMarkdownComponentOptions =
     components: configComponents = {},
     className: configClassName,
     extends: BaseComponent,
+    transformNode: configTransforms,
     ...parseOptions
   } = config
 
-  const MarkdownComponent: React.FC<MarkdownProps> = (props) => {
-    const mergedOptions: Omit<ParserOptions, 'plugins'> = {
-      ...parseOptions,
-      ...props.options,
-    }
+  const optionsCache = new WeakMap<ParserOptions, ParserOptions>()
+  const pluginsCache = new WeakMap<NonNullable<MarkdownProps['plugins']>, NonNullable<MarkdownProps['plugins']>>()
+  const configPlugins = config.plugins ?? []
 
-    const mergedPlugins = [...(config.plugins || []), ...(props.plugins || [])]
+  const MarkdownComponent: React.FC<MarkdownProps> = (props) => {
+    let mergedOptions = parseOptions
+    if (props.options) {
+      mergedOptions = optionsCache.get(props.options) ?? { ...parseOptions, ...props.options }
+      optionsCache.set(props.options, mergedOptions)
+    }
+    let mergedPlugins = configPlugins
+    if (props.plugins) {
+      mergedPlugins = pluginsCache.get(props.plugins) ?? [...configPlugins, ...props.plugins]
+      pluginsCache.set(props.plugins, mergedPlugins)
+    }
 
     const mergedComponents = {
       ...configComponents,
@@ -79,6 +91,7 @@ export function defineMarkdownComponent(config: DefineMarkdownComponentOptions =
       options: mergedOptions,
       plugins: mergedPlugins,
       components: mergedComponents,
+      transformNode: mergeNodeTransforms(configTransforms, props.transformNode),
       className: mergedClassName,
     })
   }
@@ -94,6 +107,8 @@ interface DefineMarkdownDocumentOptions {
   /** Display name shown in React DevTools. */
   name?: string
   components?: Record<string, React.ComponentType<any>>
+  /** Node transforms that run before the instance's own `transformNode`. */
+  transformNode?: NodeTransform | readonly NodeTransform[]
   /**
    * Additional classes for the wrapper div
    */
@@ -140,6 +155,7 @@ export function defineMarkdownDocumentComponent(config: DefineMarkdownDocumentOp
     return React.createElement(BaseComponent ?? MarkdownDocument, {
       ...props,
       components: mergedComponents,
+      transformNode: mergeNodeTransforms(config.transformNode, props.transformNode),
       className: mergedClassName,
     })
   }

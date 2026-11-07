@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { autoCloseMarkdown } from '../src/internal/parse/auto-close'
+import { autoCloseMarkdown } from '../src/auto-close'
 
 const inlines = `
 _test → _test_
@@ -526,6 +526,45 @@ describe('math syntax', () => {
     const input = '::card\n$$\nx = 5'
     const expected = '::card\n$$\nx = 5\n$$\n::'
     expect(autoCloseMarkdown(input, withMath)).toBe(expected)
+  })
+})
+
+describe('bracket math', () => {
+  it('heals inside \\(…\\) unless bracketMath is set', () => {
+    expect(autoCloseMarkdown('Area \\(the *word\\)', { math: true })).toBe('Area \\(the *word\\)*')
+    expect(autoCloseMarkdown('Area \\(a^*\\)', { math: true, bracketMath: true })).toBe('Area \\(a^*\\)')
+  })
+
+  it('heals citations and \\[text\\](url) with bracketMath', () => {
+    expect(autoCloseMarkdown('See \\[1\\] *a', { bracketMath: true })).toBe('See \\[1\\] *a*')
+    expect(autoCloseMarkdown('\\[a *b\\](url)', { bracketMath: true })).toBe('\\[a *b\\](url)*')
+  })
+
+  it('only lets \\[ at line start span lines', () => {
+    expect(autoCloseMarkdown('Text \\(x *y\nmore\\)', { bracketMath: true })).toBe('Text \\(x *y\nmore\\)*')
+    expect(autoCloseMarkdown('Text \\[x *y\nmore\\]', { bracketMath: true })).toBe('Text \\[x *y\nmore\\]*')
+    expect(autoCloseMarkdown('\\[\nx `y\n\\]', { bracketMath: true })).toBe('\\[\nx `y\n\\]')
+  })
+
+  it('lets an indented \\[ span lines', () => {
+    expect(autoCloseMarkdown('  \\[\n  x *y\n  \\]', { bracketMath: true })).toBe('  \\[\n  x *y\n  \\]')
+    expect(autoCloseMarkdown('- step\n  \\[\n  x *y\n  \\]', { bracketMath: true })).toBe(
+      '- step\n  \\[\n  x *y\n  \\]'
+    )
+  })
+
+  it('heals a multi-line \\[ span the parser rejects', () => {
+    expect(autoCloseMarkdown('\\[\nx *y\n\\] tail', { bracketMath: true })).toBe('\\[\nx *y\n\\] tail*')
+    expect(autoCloseMarkdown('\\[\nx\n  \ny *z\n\\]', { bracketMath: true })).toBe('\\[\nx\n  \ny *z\n\\]*')
+  })
+
+  it('handles many unclosed openers', () => {
+    const input = '\\( '.repeat(20000) + '*a'
+    expect(autoCloseMarkdown(input, { bracketMath: true })).toBe(input + '*')
+  })
+
+  it('skips escaped pairs when finding the closer', () => {
+    expect(autoCloseMarkdown('\\(a\\\\)b *c\\)', { bracketMath: true })).toBe('\\(a\\\\)b *c\\)')
   })
 })
 
