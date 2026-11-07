@@ -28,6 +28,7 @@ catalog:
   # Misc
   "@json-render/core": ^0.21.3
   "@monaco-editor/loader": ^1.7.0
+  modern-screenshot: ^4.7.0
   "@nuxt/devtools-kit": 4.0.0
   # Keep kit on the same minor line as `nuxt` so `@nuxt/schema` stays singular
   # (dual schema breaks `defineNuxtModule` setup typing + declaration emit).

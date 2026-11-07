@@ -353,6 +353,9 @@ catalogs:
     mitata:
       specifier: ^1.0.34
       version: 1.0.34
+    modern-screenshot:
+      specifier: ^4.7.0
+      version: 4.7.0
     next:
       specifier: ^16.4.3
       version: 16.4.3
@@ -600,6 +603,9 @@ importers:
       katex:
         specifier: 'catalog:'
         version: 0.19.1
+      modern-screenshot:
+        specifier: 'catalog:'
+        version: 4.7.0
       nuxt:
         specifier: 'catalog:'
         version: 4.6.4(286b025989248214443d683be4ed10c1)
@@ -9960,6 +9966,9 @@ packages:
 
   mocked-exports@0.1.1:
     resolution: {integrity: sha512-aF7yRQr/Q0O2/4pIXm6PZ5G+jAd7QS4Yu8m+WEeEHGnbo+7mE36CbLSDQiXYV8bVL3NfmdeqPJct0tUlnjVSnA==}
+
+  modern-screenshot@4.7.0:
+    resolution: {integrity: sha512-9YxN+ddPSMMlhylOv25VHzXrl9u67QRxoh7+SEewGtgUw7t6hHTrjptSDJUSne9oG4Xk/h2cwG15nIt4Hc9ujg==}
 
   module-details-from-path@1.0.4:
     resolution: {integrity: sha512-EGWKgxALGMgzvxYF1UyGTy0HXX/2vHLkw6+NvDKW2jypWbHpjQuj4UMcqQWXHERJhVGKikolT06G3bcKe4fi7w==}
@@ -21358,6 +21367,8 @@ snapshots:
       ufo: 1.6.4
 
   mocked-exports@0.1.1: {}
+
+  modern-screenshot@4.7.0: {}
 
   module-details-from-path@1.0.4: {}
 
