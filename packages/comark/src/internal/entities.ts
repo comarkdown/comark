@@ -1,10 +1,35 @@
-import { characterEntities } from 'character-entities'
-import { characterEntitiesLegacy } from 'character-entities-legacy'
-
-// Same table as markdown-exit, so bundles hold one copy.
+import { setNamedEntities } from 'markdown-exit/core'
 
 const own = Object.prototype.hasOwnProperty
-const legacy = new Set(characterEntitiesLegacy)
+
+// The named character reference table is about 12 KiB gzip, so it loads only
+// when a document has `&` followed by a letter. markdown-exit/core decodes
+// with the same table, so bundles hold one copy.
+let characterEntities: Record<string, string> | undefined
+let legacy: Set<string> | undefined
+let loading: Promise<void> | undefined
+
+/** Whether `markdown` may hold a named character reference, which needs the table. */
+export function needsEntities(markdown: string): boolean {
+  return !characterEntities && /&[a-z]/i.test(markdown)
+}
+
+/** Loads the named character reference table for Comark and markdown-exit, once. */
+export function loadEntities(): Promise<void> {
+  loading ??= Promise.all([import('character-entities'), import('character-entities-legacy')]).then(
+    ([entities, legacyNames]) => {
+      characterEntities = entities.characterEntities
+      legacy = new Set(legacyNames.characterEntitiesLegacy)
+      setNamedEntities(characterEntities)
+    },
+    (error) => {
+      // Try again on the next parse.
+      loading = undefined
+      throw error
+    }
+  )
+  return loading
+}
 
 // HTML maps C1 control code points to their windows-1252 characters.
 const C1: Record<number, number> = {
@@ -88,7 +113,7 @@ export function decodeHTMLAttribute(input: string): string {
         decoded = fromNumericReference(value)
         if (input.charCodeAt(end) === 59 /* ; */) end++
       }
-    } else {
+    } else if (characterEntities && legacy) {
       while (end < length && isAlphanumeric(input.charCodeAt(end))) end++
       const name = input.slice(amp + 1, end)
       const next = input.charCodeAt(end)
