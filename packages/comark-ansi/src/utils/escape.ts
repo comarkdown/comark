@@ -36,9 +36,28 @@ export function stripControlChars(text: string): string {
   return text.replace(CONTROL_CHARS_RE, '')
 }
 
-/** Visible character length of a string, ignoring ANSI escape codes. */
+// Terminals draw East Asian Wide and Fullwidth characters (CJK, Hangul, kana,
+// fullwidth forms) and emoji in two columns.
+const WIDE_RE =
+  /[\p{Emoji_Presentation}\u1100-\u115F\u2329\u232A\u2630-\u2637\u268A-\u268F\u2E80-\u303E\u3041-\u33FF\u3400-\u4DFF\u4E00-\u9FFF\uA000-\uA4CF\uA960-\uA97F\uAC00-\uD7A3\uF900-\uFAFF\uFE10-\uFE19\uFE30-\uFE6F\uFF00-\uFF60\uFFE0-\uFFE6\u{16FE0}-\u{18DFF}\u{1AFF0}-\u{1B2FF}\u{1D300}-\u{1D376}\u{1F200}-\u{1F265}\u{20000}-\u{3FFFD}]|\uFE0F/u
+// Combining marks and invisible format characters take no column of their own.
+const ZERO_WIDTH_RE = /^[\p{Mn}\p{Me}\u00AD\u200B-\u200F\u202A-\u202E\u2060-\u206F\uFEFF]*$/u
+const PRINTABLE_ASCII_RE = /^[ -~]*$/
+
+let segmenter: Intl.Segmenter | undefined
+
+/** Terminal columns a string takes up, ignoring ANSI escape codes. */
 export function visibleLength(text: string): number {
-  return stripAnsi(text).length
+  const visible = stripAnsi(text)
+  if (PRINTABLE_ASCII_RE.test(visible)) return visible.length
+
+  segmenter ??= new Intl.Segmenter()
+  let width = 0
+  for (const { segment } of segmenter.segment(visible)) {
+    if (WIDE_RE.test(segment)) width += 2
+    else if (!ZERO_WIDTH_RE.test(segment)) width += 1
+  }
+  return width
 }
 
 /** Pad `text` with spaces on the right to a target *visible* width. */

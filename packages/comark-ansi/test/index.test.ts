@@ -214,6 +214,24 @@ describe('renderAnsiFromDocument', () => {
       const widths = lines.map((l) => l.length)
       expect(new Set(widths).size).toBe(1)
     })
+
+    it('aligns columns when cells contain wide characters', async () => {
+      const md = `
+| 名前 | Note |
+| ---- | ---- |
+| 東京 | 日本の首都です |
+| Paris | ✅ done |
+| 🇯🇵 | e\u0301 |
+`.trim()
+      const out = await plain(md)
+      const lines = out.split('\n').filter((l) => l.includes('│'))
+      expect(lines).toEqual([
+        '│ 名前  │ Note           │',
+        '│ 東京  │ 日本の首都です │',
+        '│ Paris │ ✅ done        │',
+        '│ 🇯🇵    │ e\u0301              │',
+      ])
+    })
   })
 
   describe('code blocks', () => {
