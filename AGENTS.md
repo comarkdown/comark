@@ -276,7 +276,7 @@ import math, { Math } from '@comark/vue/plugins/math'
 import mermaid, { Mermaid } from '@comark/vue/plugins/mermaid'
 ```
 
-`@comark/vue/nuxt` is the Nuxt module: `modules: ['@comark/vue']` loads it because Nuxt tries the `/nuxt` subpath first. It auto-imports `Markdown`, `MarkdownDocument`, `defineMarkdownComponent` and `defineMarkdownDocumentComponent`, turns on Nuxt UI prose components, and adds the `@comark/vue/vite` plugin with `prose: false`. It does not register `~/components/prose`. `@nuxt/kit` and `@nuxt/schema` are optional peer dependencies.
+`@comark/vue/nuxt` is the Nuxt module: `modules: ['@comark/vue']` loads it because Nuxt tries the `/nuxt` subpath first. It auto-imports `Markdown`, `MarkdownDocument`, `defineMarkdownComponent` and `defineMarkdownDocumentComponent`, plus `parseMarkdown` in the app and in server routes (from `@comark/vue/parse`), turns on Nuxt UI prose components, and adds the `@comark/vue/vite` plugin with `prose: false`. It does not register `~/components/prose`. `@nuxt/kit` and `@nuxt/schema` are optional peer dependencies.
 
 ## Package: @comark/react
 
