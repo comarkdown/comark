@@ -8,7 +8,7 @@ export interface ComarkModuleOptions {}
  *
  * - Auto-imports the `<Markdown>` and `<MarkdownDocument>` components.
  * - Auto-imports `defineMarkdownComponent()` and `defineMarkdownDocumentComponent()`.
- * - Auto-imports `parseMarkdown()` in the app and in server routes.
+ * - Auto-imports `parseMarkdown()` and `createMarkdownParser()` in the app and in server routes.
  * - Adds `<slot unwrap="...">` support through the `@comark/vue/vite` plugin.
  * - Turns on Nuxt UI prose components when `@nuxt/ui` is installed.
  */
@@ -43,9 +43,9 @@ export default defineNuxtModule<ComarkModuleOptions>({
     )
 
     // Auto-imports are added only to the files that use them, so the parser stays out of bundles that don't.
-    const parseImport = { name: 'parseMarkdown', from: '@comark/vue/parse' }
-    addImports(parseImport)
-    addServerImports(parseImport)
+    const parseImports = ['parseMarkdown', 'createMarkdownParser'].map((name) => ({ name, from: '@comark/vue/parse' }))
+    addImports(parseImports)
+    addServerImports(parseImports)
 
     addVitePlugin(comark({ prose: false }))
   },
