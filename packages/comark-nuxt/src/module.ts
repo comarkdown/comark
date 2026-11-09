@@ -17,7 +17,7 @@ const module: NuxtModule<ComarkModuleOptions> = defineNuxtModule<ComarkModuleOpt
     useLogger('@comark/nuxt').warn(
       "`@comark/nuxt` is deprecated: install `@comark/vue` and use `modules: ['@comark/vue']` instead. " +
         '`~/components/prose` is no longer registered globally. ' +
-        'See https://github.com/comarkdown/comark/tree/main/packages/comark-nuxt#migrate-to-comarkvue'
+        'See https://github.com/comarkdown/comark/blob/6d07e97f90c7159ac3b2f56a5dde8f683f0e845d/packages/comark-nuxt/README.md#migrate-to-comarkvue'
     )
   },
 })
