@@ -310,26 +310,6 @@ describe('renderFrontmatter', () => {
 })
 
 describe('renderFrontmatter with frontmatterOptions', () => {
-  it('should pass lineWidth to js-yaml', () => {
-    const data = {
-      description: 'This is a very long description that should be wrapped when lineWidth is set to a small value',
-    }
-    const result = renderFrontmatter(data, 'Content', { lineWidth: 40 })
-    expect(result).toContain('---')
-    // With lineWidth: 40, js-yaml should wrap the long string
-    const lines = result.split('\n')
-    const descLines = lines.filter((l) => l.includes('description') || (l.startsWith('  ') && !l.startsWith('  -')))
-    expect(descLines.length).toBeGreaterThan(1)
-
-    expect(result).toEqual(`---\ndescription: >-
-  This is a very long description that
-  should be wrapped when lineWidth is set
-  to a small value
----
-
-Content`)
-  })
-
   it('should sort keys when sortKeys is true', () => {
     const data = { zebra: 'last', alpha: 'first', middle: 'mid' }
     const result = renderFrontmatter(data, 'Content', { sortKeys: true })

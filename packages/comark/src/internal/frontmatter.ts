@@ -1,4 +1,4 @@
-import type { DumpOptions } from 'js-yaml'
+import type { StringifyOptions } from 'tinyaml'
 import { parseYaml, stringifyYaml } from './yaml.ts'
 
 const FRONTMATTER_DELIMITER_DEFAULT = '---'
@@ -41,7 +41,7 @@ export function parseFrontmatter(content: string) {
 export function renderFrontmatter(
   data: Record<string, any> | undefined | null,
   content?: string,
-  yamlOptions?: DumpOptions
+  yamlOptions?: StringifyOptions
 ): string {
   if (!data || Object.keys(data).length === 0) {
     return content?.trim() || ''
