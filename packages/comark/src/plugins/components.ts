@@ -34,6 +34,16 @@ function isValidComponentName(name: string): boolean {
   return RE_COMPONENT_NAME.test(name)
 }
 
+/**
+ * JSON has no Infinity or NaN, so `JSON.stringify` would turn YAML's `.inf`
+ * and `.nan` into `null`. Keep them as the YAML strings js-yaml returned.
+ */
+function yamlNonFiniteToString(value: unknown): unknown {
+  if (typeof value !== 'number' || Number.isFinite(value)) return value
+  if (Number.isNaN(value)) return '.nan'
+  return value > 0 ? '.inf' : '-.inf'
+}
+
 const blockYamlLines: Record<string, string> = {
   '---': '---',
   '```yaml [props]': '```',
@@ -312,10 +322,14 @@ const markdownItComarkBlock: PluginSimple = (md) => {
         // bindings with a JSON-string payload. Framework renderers (and
         // resolveAttributes with parseJson) restore native types; quoted YAML
         // strings stay unprefixed and remain strings (#364).
-        if (typeof value === 'string') {
-          token.attrSet(key, value)
+        const prop = yamlNonFiniteToString(value)
+        if (typeof prop === 'string') {
+          token.attrSet(key, prop)
         } else {
-          token.attrSet(`:${key}`, JSON.stringify(value))
+          token.attrSet(
+            `:${key}`,
+            JSON.stringify(prop, (_, nested) => yamlNonFiniteToString(nested))
+          )
         }
       })
     }

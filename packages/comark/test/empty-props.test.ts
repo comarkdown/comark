@@ -148,6 +148,25 @@ count: 3
     })
   })
 
+  it('keeps .inf and .nan YAML props as strings instead of null', async () => {
+    const result = await parseMarkdown(`::comp
+---
+limit: .inf
+floor: -.inf
+ratio: .nan
+range: [1, .inf]
+---
+::`)
+    const attrs = getAttrs(result.nodes[0] as Node)
+
+    expect(attrs).toEqual({
+      limit: '.inf',
+      floor: '-.inf',
+      ratio: '.nan',
+      ':range': [1, '.inf'],
+    })
+  })
+
   it('parses document-level comment-only frontmatter without throwing', async () => {
     const result = await parseMarkdown('---\n# comment only\n---\n\n# Heading')
 
