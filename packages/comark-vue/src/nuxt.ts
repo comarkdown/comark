@@ -29,7 +29,7 @@ export default defineNuxtModule<ComarkModuleOptions>({
     // outside `node_modules` (a workspace), Nuxt records the name from `modules`, `@comark/vue`, instead
     // of `@comark/vue/nuxt`, which would block the auto-imports below.
     nuxt.hook('module:done', () => {
-      const installed = nuxt.options._installedModules.find((m) => m.entryPath === '@comark/vue')
+      const installed = nuxt.options._installedModules?.find((m) => m.entryPath === '@comark/vue')
       if (installed) installed.entryPath = '@comark/vue/nuxt'
     })
 
