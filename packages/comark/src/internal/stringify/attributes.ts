@@ -1,4 +1,3 @@
-import { stringifyYaml } from '../yaml.ts'
 import { pickFence } from './fence.ts'
 
 export { resolveAttributes, resolveAttribute } from './html-attributes.ts'
@@ -128,10 +127,10 @@ function normalizeValue(value: unknown): unknown {
  * @param attributes - The attributes to stringify
  * @returns The stringified attributes
  */
-export function comarkYamlAttributes(
+export async function comarkYamlAttributes(
   attributes: Record<string, unknown>,
   style: 'frontmatter' | 'codeblock' = 'codeblock'
-) {
+): Promise<string> {
   // Normalize attribute values for YAML serialization:
   //  - `:`-prefixed JSON literals (`:count="42"`, `:config={…}`) restore to
   //    native values and drop the prefix — matching @nuxtjs/mdc stringify.
@@ -157,6 +156,8 @@ export function comarkYamlAttributes(
     })
   )
 
+  // The YAML serializer loads only when a component needs YAML attributes.
+  const { stringifyYaml } = await import('./yaml.ts')
   const yamlContent = stringifyYaml(normalized).trim()
 
   if (style === 'frontmatter') {

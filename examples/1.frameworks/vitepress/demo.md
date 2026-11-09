@@ -30,7 +30,7 @@ This is a danger alert — useful for critical warnings.
 
 ```ts
 // .vitepress/config.ts
-import { markdownItComponents } from 'comark/plugins/components'
+import { markdownItComponents } from 'comark/plugins/components/markdown-it'
 import { markdownItAttributes } from 'comark/plugins/attributes'
 
 export default defineConfig({

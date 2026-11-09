@@ -109,7 +109,7 @@ md.use(markdownItAttributes)
 Pair with [components](/plugins/defaults/components) when you also need `::name` / `:name` syntax:
 
 ```typescript
-import { markdownItComponents } from 'comark/plugins/components'
+import { markdownItComponents } from 'comark/plugins/components/markdown-it'
 import { markdownItAttributes } from 'comark/plugins/attributes'
 
 md.use(markdownItComponents)

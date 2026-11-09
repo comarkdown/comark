@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll } from 'vitest'
 import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { parseFrontmatter } from '../src/internal/frontmatter'
+import { parseFrontmatter } from 'comark/frontmatter'
 import { parseMarkdown } from 'comark'
 import { renderMarkdown } from 'comark/render'
 import shiki from 'comark/plugins/shiki'

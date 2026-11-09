@@ -436,6 +436,8 @@ export type ComarkPlugin<TMeta = {}, TFrontmatter = {}> = {
   markdownItPlugins?: Array<MarkdownItPlugin | MarkdownExitPlugin>
   markdownItPost?: (state: ComarkParseTokensState) => void
   pre?: (state: ComarkParsePreState) => Promise<void> | void
+  /** Prepare dependencies from the final markdown after all pre hooks finish. */
+  prepare?: (state: Readonly<ComarkParsePreState>) => Promise<void> | void
   post?: (state: ComarkParsePostState<Writable<TMeta>, Writable<TFrontmatter>>) => Promise<void> | void
   /** Auto-close flags for syntax this plugin adds, applied when `autoClose` is `true`. */
   autoClose?: Pick<AutoCloseOptions, 'bracketMath'>
