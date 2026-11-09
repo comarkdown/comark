@@ -1,81 +1,25 @@
-import { defineNuxtModule, createResolver, addImports, addComponent, extendViteConfig } from '@nuxt/kit'
-import fs from 'node:fs/promises'
-import type { Resolver } from '@nuxt/kit'
-import type { Nuxt } from 'nuxt/schema'
-import comark from '@comark/vue/vite'
+import { defineNuxtModule, useLogger } from '@nuxt/kit'
+import type { NuxtModule } from '@nuxt/schema'
 
-// Module options TypeScript interface definition
 export interface ComarkModuleOptions {}
 
-export default defineNuxtModule<ComarkModuleOptions>({
-  moduleDependencies: {
-    '@nuxt/ui': {
-      defaults: {
-        prose: true,
-      },
-      optional: true,
-    },
-  },
+/**
+ * @deprecated Use `modules: ['@comark/vue']` instead. This module only installs `@comark/vue/nuxt`.
+ */
+const module: NuxtModule<ComarkModuleOptions> = defineNuxtModule<ComarkModuleOptions>({
   meta: {
-    name: 'comark',
-    configKey: 'comark',
+    name: '@comark/nuxt',
   },
-  // Default configuration options of the Nuxt module
-  defaults: {},
-  async setup(_options: ComarkModuleOptions, nuxt: Nuxt) {
-    addComponent({
-      name: 'Markdown',
-      export: 'Markdown',
-      filePath: '@comark/vue',
-      priority: 1,
-    })
-    addComponent({
-      name: 'MarkdownDocument',
-      export: 'MarkdownDocument',
-      filePath: '@comark/vue',
-      priority: 1,
-    })
-
-    addImports([
-      {
-        name: 'defineMarkdownComponent',
-        as: 'defineMarkdownComponent',
-        from: '@comark/vue',
-      },
-      {
-        name: 'defineMarkdownDocumentComponent',
-        as: 'defineMarkdownDocumentComponent',
-        from: '@comark/vue',
-      },
-    ])
-
-    const resolver = createResolver(import.meta.url)
-
-    extendViteConfig((config) => {
-      config.plugins ??= []
-      config.plugins.push(comark({ prose: false }))
-    })
-
-    // Register user global components
-    await registerComarkGlobalComponents(resolver, nuxt)
+  moduleDependencies: {
+    '@comark/vue': {},
+  },
+  setup() {
+    useLogger('@comark/nuxt').warn(
+      "`@comark/nuxt` is deprecated: install `@comark/vue` and use `modules: ['@comark/vue']` instead. " +
+        '`~/components/prose` is no longer registered globally. ' +
+        'See https://github.com/comarkdown/comark/tree/main/packages/comark-nuxt#migrate-to-comarkvue'
+    )
   },
 })
 
-async function registerComarkGlobalComponents(resolver: Resolver, nuxt: Nuxt) {
-  const _layers = [...nuxt.options._layers].reverse()
-  for (const layer of _layers) {
-    const srcDir = layer.config.srcDir
-    const globalComponents = resolver.resolve(srcDir, 'components/prose')
-    const dirStat = await fs.stat(globalComponents).catch(() => null)
-    if (dirStat && dirStat.isDirectory()) {
-      nuxt.hook('components:dirs', (dirs: any[]) => {
-        dirs.unshift({
-          path: globalComponents,
-          global: true,
-          pathPrefix: false,
-          prefix: '',
-        })
-      })
-    }
-  }
-}
+export default module
