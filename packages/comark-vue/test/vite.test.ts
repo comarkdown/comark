@@ -72,7 +72,9 @@ describe('@comark/vue vite plugin', () => {
     const { default: comark } = await import('../src/vite.ts')
     const entry = "createApp(App).mount('#app')"
 
-    async function run(options: { prose?: boolean }) {
+    async function run(options: {
+      prose?: boolean
+    }): Promise<{ watched: string[]; transformed: { code: string } | null }> {
       const plugin = comark(options) as any
       plugin.configResolved({ root, plugins: [{ name: 'vite:vue', api: { options: {} } }] })
       const watched: string[] = []
@@ -82,7 +84,7 @@ describe('@comark/vue vite plugin', () => {
 
     const enabled = await run({})
     expect(enabled.watched).toEqual([join(root, 'components', 'prose')])
-    expect(enabled.transformed.code).toContain('.use(__comarkProse).mount(')
+    expect(enabled.transformed?.code).toContain('.use(__comarkProse).mount(')
 
     const disabled = await run({ prose: false })
     expect(disabled.watched).toEqual([])
