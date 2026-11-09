@@ -17,6 +17,7 @@ import { applyUnwrap, resolveUnwrapTags } from './internal/parse/unwrap.ts'
 import { createSerializedTask } from './utils/helpers.ts'
 import { noopTracer, withSpan } from './utils/trace.ts'
 import { tokenListToTree } from './internal/parse/tree.ts'
+import { loadEntities, needsEntities } from './internal/entities.ts'
 
 // Re-export plugin utilities
 export { defineComarkPlugin } from './utils/helpers.ts'
@@ -134,6 +135,8 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
         if (!plugin.pre) continue
         await withSpan(tracer, `comark:pre:${plugin.name}`, () => plugin.pre!(state))
       }
+
+      if (needsEntities(state.markdown)) await loadEntities()
 
       try {
         state.tokens = withSpan(tracer, 'comark:tokenize', () => md.parse(state.markdown, {}))

@@ -1,9 +1,11 @@
-import { describe, expect, it } from 'vitest'
+import { beforeAll, describe, expect, it } from 'vitest'
 import type { Node } from 'comark'
-import { decodeHTMLAttribute as decodeHTML } from '../src/internal/entities'
+import { decodeHTMLAttribute as decodeHTML, loadEntities } from '../src/internal/entities'
 import { textContent } from '../src/utils'
 
 describe('textContent', () => {
+  beforeAll(loadEntities)
+
   const tree: Node = ['p', {}, 'Tom &amp; ', ['strong', {}, 'Jerry'], ' &copy;']
 
   it('concatenates text nodes', () => {

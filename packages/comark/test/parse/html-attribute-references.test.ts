@@ -1,7 +1,10 @@
-import { describe, expect, it } from 'vitest'
+import { beforeAll, describe, expect, it } from 'vitest'
+import { loadEntities } from '../../src/internal/entities'
 import { parseHtmlAttributes } from '../../src/internal/parse/utils'
 
 describe('character references in HTML attribute values', () => {
+  beforeAll(loadEntities)
+
   it.each([
     ['&lt;b&gt; &amp;amp; &copy;', '<b> &amp; ©'],
     ['&#65;&#x42;&#X43 &#x1F600;', 'ABC 😀'],
