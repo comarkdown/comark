@@ -1,38 +1,12 @@
 import type { State } from 'comark/render'
 import type { ElementNode } from 'comark'
 
-// Parents whose children are phrasing content: a comment inside them is inline.
-const PHRASING_PARENTS = new Set([
-  'p',
-  'h1',
-  'h2',
-  'h3',
-  'h4',
-  'h5',
-  'h6',
-  'strong',
-  'em',
-  'del',
-  'a',
-  'span',
-  'sub',
-  'sup',
-  'kbd',
-  'code',
-  'td',
-  'th',
-])
-
 export function comment(node: ElementNode, state: State, parent?: ElementNode) {
   if (node[0] === null) {
-    // Inline comments (phrasing parents, inline HTML, or an inline render
-    // context) must not end the block. Block comments in a container still do.
     const inline =
       state.context.inline === true ||
-      (parent !== undefined &&
-        (PHRASING_PARENTS.has(String(parent[0])) ||
-          parent[1]?.$?.block === 0 ||
-          parent.some((child, index) => index > 1 && typeof child === 'string')))
+      parent?.[0] === 'p' ||
+      (parent?.some((child, index) => index > 1 && typeof child === 'string') ?? false)
     return `<!--${node[2]}-->` + (inline ? '' : state.context.blockSeparator)
   }
 
