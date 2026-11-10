@@ -13,7 +13,6 @@
   "dependencies": {
     "@ai-sdk/gateway": "catalog:",
     "@ai-sdk/vue": "catalog:",
-    "@comark/nuxt": "workspace:*",
     "@comark/vue": "workspace:*",
     "@monaco-editor/loader": "catalog:",
     "@nuxtlabs/monarch-mdc": "catalog:",
