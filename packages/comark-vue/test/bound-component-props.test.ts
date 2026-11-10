@@ -74,6 +74,14 @@ describe('bound props cannot smuggle a component into a polymorphic slot', () =>
     }
   })
 
+  it('does not compile a `template` object passed as an unbound `as`, `is` or `tag`', async () => {
+    for (const key of ['as', 'is', 'tag']) {
+      const html = await renderMarkdown(`::poly{${key}='{"template":"${TEMPLATE_PAYLOAD}"}'}\n::`)
+      expect(html).not.toContain('1337')
+      expect(html).toContain('<div>poly</div>')
+    }
+  })
+
   it('keeps string tags for `as`', async () => {
     const html = await renderMarkdown('::poly{:as=\'"section"\'}\n::')
     expect(html).toContain('<section>poly</section>')

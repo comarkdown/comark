@@ -85,9 +85,10 @@ export function resolveAttributes(
       outValue = value
     }
 
-    // Hard floor: a binding must never hand a renderer a value it could treat as a
+    // Hard floor: a prop must never hand a renderer a value it could treat as a
     // component (`as` / `is` / `tag` strings only, no component options at any depth).
-    if (options.parseJson && isBinding && isComponentPropViolation(outKey, outValue)) continue
+    // Unbound props count too: the parser decodes `as='{…}'` into an object.
+    if (options.parseJson && isComponentPropViolation(outKey, outValue)) continue
 
     // Hard floor: a binding must never resolve a URL prop to an unsafe scheme
     // (javascript:, data:text/html, …). Parse-time validation only sees the
