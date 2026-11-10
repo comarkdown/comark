@@ -686,17 +686,33 @@ describe('security plugin — as prop', () => {
 })
 
 describe('security plugin — component-like values', () => {
-  it('strips a non-string as or is or tag', async () => {
+  it('strips an object as or is or tag', async () => {
     const tree = makeTree([
       ['span', { ':as': '{"template":"<b>x</b>"}' }, 'x'],
-      ['span', { ':is': '["a"]' }, 'x'],
-      ['span', { tag: 42 }, 'x'],
+      ['span', { ':is': '{"label":"a"}' }, 'x'],
+      ['span', { tag: { name: 'a' } }, 'x'],
     ])
     await runPlugin(tree)
     for (const node of tree.nodes) {
       const el = node as [string, any]
       expect(el[1]).toEqual({})
     }
+  })
+
+  it('keeps an array, number or boolean as or is or tag', async () => {
+    const tree = makeTree([['span', { ':tag': '["hello","world"]', ':is': '5', ':as': 'true' }, 'x']])
+    await runPlugin(tree)
+    expect((tree.nodes[0] as [string, any])[1]).toEqual({ ':tag': '["hello","world"]', ':is': '5', ':as': 'true' })
+  })
+
+  it('strips a forged VNode at any depth', async () => {
+    const tree = makeTree([
+      ['span', { ':icon': '{"__v_isVNode":true,"type":"script","shapeFlag":1}' }, 'x'],
+      ['span', { ':config': '{"label":"a","icon":{"__v_isVNode":true,"type":"script"}}' }, 'x'],
+    ])
+    await runPlugin(tree, { blockedTags: ['script'] })
+    expect((tree.nodes[0] as [string, any])[1]).toEqual({})
+    expect((tree.nodes[1] as [string, any])[1]).toEqual({ ':config': '{"label":"a"}' })
   })
 
   it('strips a bound object carrying component options', async () => {

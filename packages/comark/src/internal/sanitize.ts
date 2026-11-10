@@ -265,17 +265,32 @@ export function isTagSelector(key: string): boolean {
 }
 
 /**
- * Props whose value must be a string. `as` and `is` pick a component in the renderers. `tag` is only checked
+ * Props that must not be an object. `as` and `is` pick a component in the renderers. `tag` is only checked
  * for type: no renderer resolves it as a component name, so the tag filter doesn't apply to it.
+ * Arrays, numbers and booleans stay: `h()` renders nothing for them.
  */
 const componentSelectors = ['as', 'is', 'tag']
 
-/** Keys that make a plain object a compiled Vue component. JSON can't carry functions, so a JSON object with these is never a legit component. */
-const componentOptionKeys = new Set(['template', 'render', 'ssrrender', 'setup', 'extends', 'mixins'])
+/**
+ * Keys that make Vue treat a plain object as a component, a VNode (`__v_isVNode`), or a built-in
+ * (Teleport, Suspense, KeepAlive). JSON can't carry functions, so a JSON object with these is never legit.
+ */
+const componentOptionKeys = new Set([
+  'template',
+  'render',
+  'ssrrender',
+  'setup',
+  'extends',
+  'mixins',
+  '__v_isvnode',
+  '__isteleport',
+  '__issuspense',
+  '__iskeepalive',
+])
 
 /**
  * Whether a decoded prop value could make a renderer treat it as a component:
- * `as` / `is` / `tag` must be strings, and no object at any depth may carry
+ * `as` / `is` / `tag` must not be objects, and no object at any depth may carry
  * component options. Applied to markdown-authored values only.
  */
 export function isComponentPropViolation(attribute: string, value: unknown): boolean {
@@ -283,7 +298,8 @@ export function isComponentPropViolation(attribute: string, value: unknown): boo
 }
 
 function isComponentSelectorViolation(attribute: string, value: unknown): boolean {
-  return componentSelectors.includes(normalizePropName(attribute)) && typeof value !== 'string'
+  if (!componentSelectors.includes(normalizePropName(attribute))) return false
+  return typeof value === 'function' || (typeof value === 'object' && value !== null && !Array.isArray(value))
 }
 
 /**

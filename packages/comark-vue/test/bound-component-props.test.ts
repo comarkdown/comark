@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { createSSRApp, defineComponent, h } from 'vue'
 import { renderToString } from '@vue/server-renderer'
 import { parseMarkdown } from 'comark'
+import security from 'comark/plugins/security'
 import { MarkdownDocument } from '../src/components/MarkdownDocument.ts'
 
 const TEMPLATE_PAYLOAD = '<b>{{ 7 * 191 }}</b>'
@@ -79,6 +80,28 @@ describe('bound props cannot smuggle a component into a polymorphic slot', () =>
       const html = await renderMarkdown(`::poly{${key}='{"template":"${TEMPLATE_PAYLOAD}"}'}\n::`)
       expect(html).not.toContain('1337')
       expect(html).toContain('<div>poly</div>')
+    }
+  })
+
+  it('does not render a forged VNode or built-in component object', async () => {
+    const payloads = [
+      '{"__v_isVNode":true,"type":"script","props":{"src":"https://example.invalid/probe.js"},"shapeFlag":1}',
+      '{"__v_isVNode":true,"type":"div","props":{"innerHTML":"<img src=x onerror=alert(1)>"},"shapeFlag":1}',
+      '{"nested":[{"__v_isVNode":true,"type":"script","shapeFlag":1}]}',
+      '{"__isTeleport":true}',
+      '{"__isSuspense":true}',
+      '{"__isKeepAlive":true}',
+    ]
+    for (const payload of payloads) {
+      for (const plugins of [[], [security({ blockedTags: ['script'] })]]) {
+        const tree = await parseMarkdown(`::icon{:icon='${payload}'}\n::`, { plugins })
+        const app = createSSRApp({
+          setup: () => () => h(MarkdownDocument, { value: tree, components: { icon: Icon } }),
+        })
+        const html = await renderToString(app as any)
+        expect(html).not.toMatch(/<script|<img|probe\.js/)
+        expect(html).toMatch(/^<div class="comark-content">(<span>icon<\/span>|<!---->)<\/div>$/)
+      }
     }
   })
 

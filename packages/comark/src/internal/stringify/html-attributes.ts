@@ -86,7 +86,7 @@ export function resolveAttributes(
     }
 
     // Hard floor: a prop must never hand a renderer a value it could treat as a
-    // component (`as` / `is` / `tag` strings only, no component options at any depth).
+    // component (`as` / `is` / `tag` never objects, no component options or VNode markers at any depth).
     // Unbound props count too: the parser decodes `as='{…}'` into an object.
     if (options.parseJson && isComponentPropViolation(outKey, outValue)) continue
 
