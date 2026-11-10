@@ -114,7 +114,7 @@ Renderers hand bound props to components, and Vue treats a plain object with a `
 - `as`, `is` and `tag` (and their bindings) that are not strings.
 - Any object or array at any depth with a `template`, `render`, `ssrRender`, `setup`, `extends` or `mixins` key, such as `:icon='{"extends": {"template": "..."}}'`.
 
-Data props keep working, for example `:items='[{"label": "a"}]'`. The Vue renderer also only resolves `as` to a component when it is a string. Frontmatter is checked the same way.
+Data props keep working, for example `:items='[{"label": "a"}]'`. The Vue renderer also only resolves `as` to a component when it is a string. Frontmatter is checked for component options only, so data such as `tag: [vue, nuxt]` stays; a binding that passes a frontmatter value to `as`, `is` or `tag` still has to be a string.
 
 ::warning
 Rendering untrusted markdown (chat messages, LLM output, user comments) is only safe with this plugin enabled. The renderers apply a minimum floor to bound props, but the plugin is the full policy: it also removes the values from the document tree. Keep `security()` enabled for untrusted input.

@@ -403,6 +403,14 @@ description: "javascript: tips and tricks"
     })
   })
 
+  it('keeps non-string `tag` data but strips component options', async () => {
+    const tree = await parseWithSecurity(
+      '---\ntitle: Page\ntag: [vue, nuxt]\nicon:\n  extends:\n    template: "<b>x</b>"\n---\n'
+    )
+
+    expect(tree.frontmatter).toEqual({ title: 'Page', tag: ['vue', 'nuxt'] })
+  })
+
   it('leaves frontmatter alone with `frontmatter: false`', async () => {
     const tree = await parseWithSecurity(md, { blockedTags: ['script'], frontmatter: false })
 

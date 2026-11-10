@@ -467,7 +467,9 @@ export function sanitizeData(data: unknown, options: SanitizeDataOptions = {}): 
     if (key !== undefined) {
       if (isUnsafePropName(name)) return REJECTED_PROP
       if (tagSelectors.includes(name) && isUnsafeTagSelector(key, value, isFilteredTag)) return REJECTED_PROP
-      if (isComponentPropViolation(key, value)) return REJECTED_PROP
+      // Only component options: frontmatter keys such as `tag: [vue, nuxt]` are data, and a
+      // binding that hands one to a component goes through the renderer's type check.
+      if (hasComponentOptions(value)) return REJECTED_PROP
     }
     return typeof value === 'string' ? validateString(name, value, options) : value
   }
