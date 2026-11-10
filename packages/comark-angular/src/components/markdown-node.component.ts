@@ -89,7 +89,7 @@ function prepareNode(
 
   let customComponent: Type<any> | undefined
   if ((parent as ElementNode | undefined)?.[0] !== 'pre') {
-    if (as) {
+    if (typeof as === 'string' && as) {
       customComponent = resolveComponent(as, components)
     }
     if (!customComponent) {

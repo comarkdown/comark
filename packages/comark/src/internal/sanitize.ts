@@ -264,7 +264,10 @@ export function isTagSelector(key: string): boolean {
   return tagSelectors.includes(normalizePropName(key))
 }
 
-/** Props a renderer may hand to `h()` as a component, so only strings are accepted. */
+/**
+ * Props whose value must be a string. `as` and `is` pick a component in the renderers. `tag` is only checked
+ * for type: no renderer resolves it as a component name, so the tag filter doesn't apply to it.
+ */
 const componentSelectors = ['as', 'is', 'tag']
 
 /** Keys that make a plain object a compiled Vue component. JSON can't carry functions, so a JSON object with these is never a legit component. */
