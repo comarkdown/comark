@@ -209,7 +209,7 @@ function scanBlocks(src: string, o: Opts): DocState {
   let fmContent = false
   let mathOpen = false
   let table = false
-  let shielded = -1 // last line that structurally shields what precedes it
+  let shielded = -1 // last line that structurally shields what precedes it.
 
   for (let i = 0; i < n; i++) {
     const ls = starts[i]
