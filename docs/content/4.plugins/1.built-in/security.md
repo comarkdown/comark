@@ -104,7 +104,20 @@ Attributes that can be abused regardless of value are always stripped:
 Prop names are normalized before these checks: case, binding prefixes (`:`, `v-bind:`), Vue's `.prop` / `^attr` prefixes (`.innerHTML`, `^onclick`), and `:` / `-` / `_` separators are ignored.
 
 ::note
-Framework renderers (Vue, React, Svelte, Angular) never forward `innerHTML`, `dangerouslySetInnerHTML`, or `textContent` from document attributes, even without this plugin. Raw HTML has its own explicit path through the default `html` plugin.
+Framework renderers (Vue, React, Svelte, Angular) never forward `innerHTML`, `dangerouslySetInnerHTML`, or `textContent` from document attributes, even without this plugin. A prop object or array that holds one of these keys at any depth is dropped whole, since components can pass it on to `h(tag, prop)` or spread it onto an element. Raw HTML has its own explicit path through the default `html` plugin.
+::
+
+### Component-like values
+
+Renderers hand bound props to components, and Vue treats a plain object with a `template`, `render`, `ssrRender`, `setup`, `extends` or `mixins` key as a component definition, one with `__v_isVNode` as a ready-made element, and one with `__isTeleport`, `__isSuspense` or `__isKeepAlive` as a built-in component. Its template can then run during server rendering, or the element skips tag filtering. These values are always dropped:
+
+- `as`, `is` and `tag` (and their bindings) that are objects. Strings, arrays, numbers and booleans stay: Vue renders nothing for the last three.
+- Any object or array with one of those keys at any depth, such as `:icon='{"extends": {"template": "..."}}'` or `:icon='{"__v_isVNode": true, "type": "script"}'`.
+
+Data props keep working, for example `:items='[{"label": "a"}]'`. The Vue renderer also only resolves `as` to a component when it is a string. Frontmatter is checked for component options only, so data such as `tag: [vue, nuxt]` stays; a binding that passes a frontmatter object to `as`, `is` or `tag` is still dropped.
+
+::warning
+Rendering untrusted markdown (chat messages, LLM output, user comments) is only safe with this plugin enabled. The renderers apply a minimum floor to bound props, but the plugin is the full policy: it also removes the values from the document tree. Keep `security()` enabled for untrusted input.
 ::
 
 ### Nested props

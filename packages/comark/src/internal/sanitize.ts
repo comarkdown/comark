@@ -264,6 +264,114 @@ export function isTagSelector(key: string): boolean {
   return tagSelectors.includes(normalizePropName(key))
 }
 
+/**
+ * Props that must not be an object. `as` and `is` pick a component in the renderers. `tag` is only checked
+ * for type: no renderer resolves it as a component name, so the tag filter doesn't apply to it.
+ * Arrays, numbers and booleans stay: `h()` renders nothing for them.
+ */
+const componentSelectors = ['as', 'is', 'tag']
+
+/**
+ * Keys that make Vue treat a plain object as a component, a VNode (`__v_isVNode`), or a built-in
+ * (Teleport, Suspense, KeepAlive). JSON can't carry functions, so a JSON object with these is never legit.
+ */
+const componentOptionKeys = new Set([
+  'template',
+  'render',
+  'ssrrender',
+  'setup',
+  'extends',
+  'mixins',
+  '__v_isvnode',
+  '__isteleport',
+  '__issuspense',
+  '__iskeepalive',
+])
+
+// DOM sinks that turn a string/object prop into raw markup (`innerHTML`,
+// `dangerouslySetInnerHTML`) or overwrite an element's children
+// (`textContent`). Framework renderers hand resolved attributes to
+// `h()`/`createElement`/spreads verbatim, so these keys are never forwarded
+// from document attributes — raw HTML has its own explicit path.
+const htmlSinkProps = new Set(['innerhtml', 'dangerouslysetinnerhtml', 'textcontent'])
+
+/** Whether `key` writes an HTML sink. Vue's `.prop` / `^attr` prefixes still write the named DOM property. */
+export function isHtmlSinkKey(key: string): boolean {
+  return htmlSinkProps.has(key.replace(/^[.^]/, '').toLowerCase())
+}
+
+/**
+ * Whether a decoded prop value is unsafe to hand a renderer: `as` / `is` / `tag`
+ * must not be objects, and no object at any depth may carry component options or
+ * an HTML sink key. Components pass object props on to `h(tag, prop)` or spread
+ * them onto elements, so a nested `innerHTML` reaches the DOM like a top-level one.
+ * Applied to markdown-authored values only.
+ */
+export function isUnsafeRendererProp(attribute: string, value: unknown): boolean {
+  return isComponentSelectorViolation(attribute, value) || hasUnsafeObjectKeys(value)
+}
+
+function isComponentSelectorViolation(attribute: string, value: unknown): boolean {
+  if (!componentSelectors.includes(normalizePropName(attribute))) return false
+  return typeof value === 'function' || (typeof value === 'object' && value !== null && !Array.isArray(value))
+}
+
+/**
+ * Whether `value` is an object with a component-option key of its own. Only one level: the
+ * sanitizers already walk every nested object, so checking subtrees here would make them quadratic.
+ */
+function ownsComponentOptions(value: unknown): boolean {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) return false
+  for (const key of Object.keys(value)) {
+    if (componentOptionKeys.has(key.toLowerCase())) return true
+  }
+  return false
+}
+
+/** Whether `value` is an object with an HTML sink key of its own. */
+function ownsHtmlSink(value: object): boolean {
+  if (Array.isArray(value)) return false
+  for (const key of Object.keys(value)) {
+    if (isHtmlSinkKey(key)) return true
+  }
+  return false
+}
+
+// Results for objects already scanned at render time. Many bindings can resolve to one
+// frontmatter object (`:a="frontmatter.big"` repeated, or YAML aliases), so each is scanned once.
+// Weak keys: entries go away with the document. A value mutated after its first scan keeps its
+// first result; documents are not expected to change between renders.
+const unsafeObjectKeysCache = new WeakMap<object, boolean>()
+
+function hasUnsafeObjectKeys(value: unknown): boolean {
+  if (typeof value !== 'object' || value === null) return false
+  const cached = unsafeObjectKeysCache.get(value)
+  if (cached !== undefined) return cached
+
+  // Iterative with a visited set: cyclic or shared (YAML alias) values neither
+  // overflow the stack nor get scanned twice.
+  const seen = new Set<object>()
+  const pending: unknown[] = [value]
+  let found = false
+  while (pending.length && !found) {
+    const current = pending.pop()
+    if (typeof current !== 'object' || current === null || seen.has(current)) continue
+    const known = unsafeObjectKeysCache.get(current)
+    if (known !== undefined) {
+      found = known
+      continue
+    }
+    seen.add(current)
+    if (ownsComponentOptions(current) || ownsHtmlSink(current)) found = true
+    else for (const item of Object.values(current)) pending.push(item)
+  }
+  // Only the root's result is certain: on an early exit, the other visited objects were
+  // not all fully scanned, and a negative result holds only for a complete scan.
+  unsafeObjectKeysCache.set(value, found)
+  if (!found) for (const object of seen) unsafeObjectKeysCache.set(object, false)
+  return found
+}
+
 /** A filter for tag selectors: `unsafeTags` and `blockedTags`, or any tag outside `allowedTags` when set. */
 export function createTagFilter(blockedTags: string[] = [], allowedTags: string[] = []): (tag: string) => boolean {
   const blocked = new Set([...blockedTags, ...unsafeTags].map((tag) => tag.toLowerCase()))
@@ -307,6 +415,7 @@ export function validateProp(attribute: string, value: unknown, options: PropsVa
     } catch {
       // Not JSON — a dot-path binding or literal, validated as-is
     }
+    if (isComponentSelectorViolation(attribute, decoded)) return REJECTED_PROP
     if (typeof decoded === 'object' && decoded !== null) {
       const result = validateValue(name, decoded, options)
       return result === REJECTED_PROP ? REJECTED_PROP : JSON.stringify(result)
@@ -317,6 +426,7 @@ export function validateProp(attribute: string, value: unknown, options: PropsVa
     return result === REJECTED_PROP ? REJECTED_PROP : value
   }
 
+  if (isComponentSelectorViolation(attribute, value)) return REJECTED_PROP
   return validateValue(name, value, options)
 }
 
@@ -352,6 +462,7 @@ function validateValue(name: string, value: unknown, options: PropsValidationOpt
   // Object keys are validated like top-level props, at any depth:
   // `:links='[{"to":"javascript:…","labelHtml":"<img onerror>"}]'`.
   if (typeof value === 'object' && value !== null) {
+    if (ownsComponentOptions(value)) return REJECTED_PROP
     const entries: Array<[string, unknown]> = []
     for (const [key, item] of Object.entries(value)) {
       const validated = validateProp(key, item, options)
@@ -423,6 +534,14 @@ export function sanitizeData(data: unknown, options: SanitizeDataOptions = {}): 
   const removed: string[] = []
 
   const seen = new WeakMap<object, Set<string>>()
+  // A YAML alias can put one object under many keys: check its own keys once.
+  const ownsOptions = new WeakMap<object, boolean>()
+  const isComponentObject = (value: unknown): boolean => {
+    if (typeof value !== 'object' || value === null) return false
+    let result = ownsOptions.get(value)
+    if (result === undefined) ownsOptions.set(value, (result = ownsComponentOptions(value)))
+    return result
+  }
 
   // `key` is undefined for an array item: it inherits its array's name, as in `validateProp()`.
   const sanitizeEntry = (name: string, key: string | undefined, value: unknown): unknown => {
@@ -430,6 +549,10 @@ export function sanitizeData(data: unknown, options: SanitizeDataOptions = {}): 
       if (isUnsafePropName(name)) return REJECTED_PROP
       if (tagSelectors.includes(name) && isUnsafeTagSelector(key, value, isFilteredTag)) return REJECTED_PROP
     }
+    // Only component options, not prop types: frontmatter keys such as `tag: [vue, nuxt]` are data,
+    // and a binding that hands one to a component goes through the renderer's type check.
+    // Own keys only, array items too (`[{ template }]`): `walk` visits every nested object itself.
+    if (isComponentObject(value)) return REJECTED_PROP
     return typeof value === 'string' ? validateString(name, value, options) : value
   }
 

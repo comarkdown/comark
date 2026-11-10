@@ -151,8 +151,8 @@ function renderNode(
     let componentTag = tag
 
     if ((parent as ElementNode | undefined)?.[0] !== 'pre') {
-      if (as) {
-        customComponent = resolveComponent(as as string, components, componentsManifest)
+      if (typeof as === 'string' && as) {
+        customComponent = resolveComponent(as, components, componentsManifest)
         if (customComponent) componentTag = as as string
       }
       if (!customComponent) {

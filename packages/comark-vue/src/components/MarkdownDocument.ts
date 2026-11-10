@@ -144,8 +144,9 @@ function renderNode(
     let customComponent
 
     if ((parent as ElementNode | undefined)?.[0] !== 'pre') {
-      if (as) {
-        customComponent = resolveComponent(as as string, components, componentsManifest)
+      // Only a string tag may pick a component: never a value (object, function) from node props
+      if (typeof as === 'string' && as) {
+        customComponent = resolveComponent(as, components, componentsManifest)
       }
       if (!customComponent) {
         customComponent = resolveComponent(tag, components, componentsManifest)
