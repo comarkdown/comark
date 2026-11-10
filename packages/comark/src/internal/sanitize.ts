@@ -264,6 +264,39 @@ export function isTagSelector(key: string): boolean {
   return tagSelectors.includes(normalizePropName(key))
 }
 
+/** Props a renderer may hand to `h()` as a component, so only strings are accepted. */
+const componentSelectors = ['as', 'is', 'tag']
+
+/** Keys that make a plain object a compiled Vue component. JSON can't carry functions, so a JSON object with these is never a legit component. */
+const componentOptionKeys = new Set(['template', 'render', 'ssrrender', 'setup', 'extends', 'mixins'])
+
+/**
+ * Whether a decoded prop value could make a renderer treat it as a component:
+ * `as` / `is` / `tag` must be strings, and no object at any depth may carry
+ * component options. Applied to markdown-authored values only.
+ */
+export function isComponentPropViolation(attribute: string, value: unknown): boolean {
+  if (componentSelectors.includes(normalizePropName(attribute)) && typeof value !== 'string') return true
+  return hasComponentOptions(value)
+}
+
+function hasComponentOptions(value: unknown): boolean {
+  // Iterative with a visited set: cyclic or shared (YAML alias) values neither
+  // overflow the stack nor get scanned twice.
+  const seen = new Set<object>()
+  const pending: unknown[] = [value]
+  while (pending.length) {
+    const current = pending.pop()
+    if (typeof current !== 'object' || current === null || seen.has(current)) continue
+    seen.add(current)
+    for (const [key, item] of Object.entries(current)) {
+      if (!Array.isArray(current) && componentOptionKeys.has(key.toLowerCase())) return true
+      pending.push(item)
+    }
+  }
+  return false
+}
+
 /** A filter for tag selectors: `unsafeTags` and `blockedTags`, or any tag outside `allowedTags` when set. */
 export function createTagFilter(blockedTags: string[] = [], allowedTags: string[] = []): (tag: string) => boolean {
   const blocked = new Set([...blockedTags, ...unsafeTags].map((tag) => tag.toLowerCase()))
@@ -307,6 +340,7 @@ export function validateProp(attribute: string, value: unknown, options: PropsVa
     } catch {
       // Not JSON — a dot-path binding or literal, validated as-is
     }
+    if (isComponentPropViolation(attribute, decoded)) return REJECTED_PROP
     if (typeof decoded === 'object' && decoded !== null) {
       const result = validateValue(name, decoded, options)
       return result === REJECTED_PROP ? REJECTED_PROP : JSON.stringify(result)
@@ -317,6 +351,7 @@ export function validateProp(attribute: string, value: unknown, options: PropsVa
     return result === REJECTED_PROP ? REJECTED_PROP : value
   }
 
+  if (isComponentPropViolation(attribute, value)) return REJECTED_PROP
   return validateValue(name, value, options)
 }
 
@@ -429,6 +464,7 @@ export function sanitizeData(data: unknown, options: SanitizeDataOptions = {}): 
     if (key !== undefined) {
       if (isUnsafePropName(name)) return REJECTED_PROP
       if (tagSelectors.includes(name) && isUnsafeTagSelector(key, value, isFilteredTag)) return REJECTED_PROP
+      if (isComponentPropViolation(key, value)) return REJECTED_PROP
     }
     return typeof value === 'string' ? validateString(name, value, options) : value
   }

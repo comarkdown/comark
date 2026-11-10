@@ -677,6 +677,42 @@ describe('security plugin — as prop', () => {
   })
 })
 
+describe('security plugin — component-like values', () => {
+  it('strips a non-string as or is or tag', async () => {
+    const tree = makeTree([
+      ['span', { ':as': '{"template":"<b>x</b>"}' }, 'x'],
+      ['span', { ':is': '["a"]' }, 'x'],
+      ['span', { tag: 42 }, 'x'],
+    ])
+    await runPlugin(tree)
+    for (const node of tree.nodes) {
+      const el = node as [string, any]
+      expect(el[1]).toEqual({})
+    }
+  })
+
+  it('strips a bound object carrying component options at any depth', async () => {
+    const tree = makeTree([
+      ['span', { ':icon': '{"extends":{"template":"<b>x</b>"}}' }, 'x'],
+      ['span', { ':items': '[{"render":"x"}]' }, 'x'],
+      ['span', { ':config': '{"setup":1}' }, 'x'],
+      ['span', { ':config': '{"mixins":[]}' }, 'x'],
+    ])
+    await runPlugin(tree)
+    for (const node of tree.nodes) {
+      const el = node as [string, any]
+      expect(el[1]).toEqual({})
+    }
+  })
+
+  it('keeps data-valued bound props', async () => {
+    const tree = makeTree([['span', { ':items': '[{"label":"a"}]', ':options': '{"k":"v"}' }, 'x']])
+    await runPlugin(tree)
+    const el = tree.nodes[0] as [string, any]
+    expect(el[1]).toEqual({ ':items': '[{"label":"a"}]', ':options': '{"k":"v"}' })
+  })
+})
+
 describe('security plugin — prop sanitization', () => {
   it('strips event handler props', async () => {
     const tree = makeTree([['div', { onclick: 'evil()', class: 'safe' }]])
