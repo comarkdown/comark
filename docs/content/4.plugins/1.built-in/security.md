@@ -104,7 +104,7 @@ Attributes that can be abused regardless of value are always stripped:
 Prop names are normalized before these checks: case, binding prefixes (`:`, `v-bind:`), Vue's `.prop` / `^attr` prefixes (`.innerHTML`, `^onclick`), and `:` / `-` / `_` separators are ignored.
 
 ::note
-Framework renderers (Vue, React, Svelte, Angular) never forward `innerHTML`, `dangerouslySetInnerHTML`, or `textContent` from document attributes, even without this plugin. Raw HTML has its own explicit path through the default `html` plugin.
+Framework renderers (Vue, React, Svelte, Angular) never forward `innerHTML`, `dangerouslySetInnerHTML`, or `textContent` from document attributes, even without this plugin. A prop object or array that holds one of these keys at any depth is dropped whole, since components can pass it on to `h(tag, prop)` or spread it onto an element. Raw HTML has its own explicit path through the default `html` plugin.
 ::
 
 ### Component-like values

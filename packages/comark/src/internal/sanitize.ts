@@ -288,13 +288,27 @@ const componentOptionKeys = new Set([
   '__iskeepalive',
 ])
 
+// DOM sinks that turn a string/object prop into raw markup (`innerHTML`,
+// `dangerouslySetInnerHTML`) or overwrite an element's children
+// (`textContent`). Framework renderers hand resolved attributes to
+// `h()`/`createElement`/spreads verbatim, so these keys are never forwarded
+// from document attributes — raw HTML has its own explicit path.
+const htmlSinkProps = new Set(['innerhtml', 'dangerouslysetinnerhtml', 'textcontent'])
+
+/** Whether `key` writes an HTML sink. Vue's `.prop` / `^attr` prefixes still write the named DOM property. */
+export function isHtmlSinkKey(key: string): boolean {
+  return htmlSinkProps.has(key.replace(/^[.^]/, '').toLowerCase())
+}
+
 /**
- * Whether a decoded prop value could make a renderer treat it as a component:
- * `as` / `is` / `tag` must not be objects, and no object at any depth may carry
- * component options. Applied to markdown-authored values only.
+ * Whether a decoded prop value is unsafe to hand a renderer: `as` / `is` / `tag`
+ * must not be objects, and no object at any depth may carry component options or
+ * an HTML sink key. Components pass object props on to `h(tag, prop)` or spread
+ * them onto elements, so a nested `innerHTML` reaches the DOM like a top-level one.
+ * Applied to markdown-authored values only.
  */
-export function isComponentPropViolation(attribute: string, value: unknown): boolean {
-  return isComponentSelectorViolation(attribute, value) || hasComponentOptions(value)
+export function isUnsafeRendererProp(attribute: string, value: unknown): boolean {
+  return isComponentSelectorViolation(attribute, value) || hasUnsafeObjectKeys(value)
 }
 
 function isComponentSelectorViolation(attribute: string, value: unknown): boolean {
@@ -314,15 +328,24 @@ function ownsComponentOptions(value: unknown): boolean {
   return false
 }
 
+/** Whether `value` is an object with an HTML sink key of its own. */
+function ownsHtmlSink(value: object): boolean {
+  if (Array.isArray(value)) return false
+  for (const key of Object.keys(value)) {
+    if (isHtmlSinkKey(key)) return true
+  }
+  return false
+}
+
 // Results for objects already scanned at render time. Many bindings can resolve to one
 // frontmatter object (`:a="frontmatter.big"` repeated, or YAML aliases), so each is scanned once.
 // Weak keys: entries go away with the document. A value mutated after its first scan keeps its
 // first result; documents are not expected to change between renders.
-const componentOptionsCache = new WeakMap<object, boolean>()
+const unsafeObjectKeysCache = new WeakMap<object, boolean>()
 
-function hasComponentOptions(value: unknown): boolean {
+function hasUnsafeObjectKeys(value: unknown): boolean {
   if (typeof value !== 'object' || value === null) return false
-  const cached = componentOptionsCache.get(value)
+  const cached = unsafeObjectKeysCache.get(value)
   if (cached !== undefined) return cached
 
   // Iterative with a visited set: cyclic or shared (YAML alias) values neither
@@ -333,19 +356,19 @@ function hasComponentOptions(value: unknown): boolean {
   while (pending.length && !found) {
     const current = pending.pop()
     if (typeof current !== 'object' || current === null || seen.has(current)) continue
-    const known = componentOptionsCache.get(current)
+    const known = unsafeObjectKeysCache.get(current)
     if (known !== undefined) {
       found = known
       continue
     }
     seen.add(current)
-    if (ownsComponentOptions(current)) found = true
+    if (ownsComponentOptions(current) || ownsHtmlSink(current)) found = true
     else for (const item of Object.values(current)) pending.push(item)
   }
   // Only the root's result is certain: on an early exit, the other visited objects were
   // not all fully scanned, and a negative result holds only for a complete scan.
-  componentOptionsCache.set(value, found)
-  if (!found) for (const object of seen) componentOptionsCache.set(object, false)
+  unsafeObjectKeysCache.set(value, found)
+  if (!found) for (const object of seen) unsafeObjectKeysCache.set(object, false)
   return found
 }
 

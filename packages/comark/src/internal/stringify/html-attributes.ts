@@ -1,5 +1,5 @@
 import { escapeHtml, get } from '../../utils/index.ts'
-import { isComponentPropViolation, isUnsafeUrlValue, isUrlPropKey } from '../sanitize.ts'
+import { isHtmlSinkKey, isUnsafeRendererProp, isUnsafeUrlValue, isUrlPropKey } from '../sanitize.ts'
 import type { NodeRenderData } from '../../types.ts'
 
 export interface ResolveAttributesOptions {
@@ -17,13 +17,6 @@ export interface ResolveAttributesOptions {
    */
   parseJson?: boolean
 }
-
-// DOM sinks that turn a string/object prop into raw markup (`innerHTML`,
-// `dangerouslySetInnerHTML`) or overwrite an element's children
-// (`textContent`). Framework renderers hand resolved attributes to
-// `h()`/`createElement`/spreads verbatim, so these keys are never forwarded
-// from document attributes — raw HTML has its own explicit path.
-const HTML_SINK_PROPS = new Set(['innerhtml', 'dangerouslysetinnerhtml', 'textcontent'])
 
 /**
  * Resolve `:prefixed` attributes against the render context.
@@ -50,10 +43,8 @@ export function resolveAttributes(
     const value = attrs[key]
     const isBinding = key.charCodeAt(0) === 58 /* ':' */
     const outKey = isBinding ? key.slice(1) : key
-    // Vue's `.prop` / `^attr` prefixes still write the named DOM property
-    const lowerOutKey = outKey.replace(/^[.^]/, '').toLowerCase()
-
-    if (HTML_SINK_PROPS.has(lowerOutKey)) continue
+    // HTML sinks are never forwarded from document attributes; see `isHtmlSinkKey`
+    if (isHtmlSinkKey(outKey)) continue
 
     let outValue: unknown
     let resultKey = key
@@ -86,9 +77,10 @@ export function resolveAttributes(
     }
 
     // Hard floor: a prop must never hand a renderer a value it could treat as a
-    // component (`as` / `is` / `tag` never objects, no component options or VNode markers at any depth).
-    // Unbound props count too: the parser decodes `as='{…}'` into an object.
-    if (options.parseJson && isComponentPropViolation(outKey, outValue)) continue
+    // component (`as` / `is` / `tag` never objects, no component options or VNode markers at any depth),
+    // or an HTML sink nested in an object prop. Unbound props count too: the parser decodes `as='{…}'`
+    // into an object.
+    if (options.parseJson && isUnsafeRendererProp(outKey, outValue)) continue
 
     // Hard floor: a binding must never resolve a URL prop to an unsafe scheme
     // (javascript:, data:text/html, …). Parse-time validation only sees the

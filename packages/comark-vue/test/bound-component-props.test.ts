@@ -111,6 +111,56 @@ describe('bound props cannot smuggle a component into a polymorphic slot', () =>
   })
 })
 
+describe('object props handed on to elements', () => {
+  // `h(tag, prop)` reads a plain object as element props; spreading a prop does the same.
+  const Label = defineComponent({
+    props: { label: { type: null, default: undefined } },
+    setup(props) {
+      return () => h('span', props.label ?? 'none')
+    },
+  })
+  const Spread = defineComponent({
+    props: { items: { type: null, default: undefined } },
+    setup(props) {
+      return () =>
+        h(
+          'ul',
+          null,
+          ((props.items as object[]) || []).map((item) => h('li', { ...item }, 'item'))
+        )
+    },
+  })
+
+  async function render(markdown: string) {
+    const tree = await parseMarkdown(markdown)
+    const app = createSSRApp({
+      setup: () => () => h(MarkdownDocument, { value: tree, components: { label: Label, spread: Spread } }),
+    })
+    return renderToString(app as any)
+  }
+
+  it('drops an object prop with an HTML sink at any depth', async () => {
+    const sink = '"<img src=x onerror=alert(1)>"'
+    const cases = [
+      `::label{:label='{"innerHTML":${sink}}'}\n::`,
+      `::label{:label='{".innerHTML":${sink}}'}\n::`,
+      `::label{:label='{"textContent":"overwrite"}'}\n::`,
+      `::label{label='{"innerHTML":${sink}}'}\n::`,
+      `::spread{:items='[{"class":"a"},{"innerHTML":${sink}}]'}\n::`,
+      `---\nl:\n  innerHTML: ${sink}\n---\n::label{:label="frontmatter.l"}\n::`,
+    ]
+    for (const markdown of cases) {
+      const html = await render(markdown)
+      expect(html).not.toMatch(/<img|overwrite/)
+    }
+  })
+
+  it('keeps object props without HTML sinks', async () => {
+    const html = await render(`::spread{:items='[{"class":"a"},{"title":"b"}]'}\n::`)
+    expect(html).toContain('<ul><li class="a">item</li><li title="b">item</li></ul>')
+  })
+})
+
 describe('data-valued bound props', () => {
   it('passes object and array data props through unchanged', async () => {
     const html = await renderMarkdown('::items{:items=\'[{"label":"a"}]\'}\n::')
