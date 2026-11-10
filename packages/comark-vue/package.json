@@ -1,7 +1,7 @@
 {
   "name": "@comark/vue",
-  "version": "0.7.0",
-  "description": "Vue 3 renderer for Comark. Render Markdown with components at runtime, with streaming support for AI output.",
+  "version": "0.9.0",
+  "description": "Vue 3 renderer and Nuxt module for Comark. Render Markdown with components at runtime, with streaming support for AI output.",
   "keywords": [
     "ai",
     "ai-chat",
@@ -13,6 +13,8 @@
     "markdown",
     "markdown-renderer",
     "mdc",
+    "nuxt",
+    "nuxt-module",
     "renderer",
     "streaming",
     "streaming-markdown",
@@ -22,6 +24,7 @@
   "bugs": {
     "url": "https://github.com/comarkdown/comark/issues"
   },
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/comarkdown/comark.git"
@@ -37,6 +40,7 @@
   "exports": {
     ".": "./dist/index.js",
     "./vite": "./dist/vite.js",
+    "./nuxt": "./dist/nuxt.js",
     "./plugins/*": "./dist/plugins/*.js",
     "./utils": "./dist/utils/index.js",
     "./parse": "./dist/parse.js",
@@ -51,13 +55,14 @@
     "build": "tsc --removeComments --declaration false && tsc --emitDeclarationOnly",
     "dev": "tsc --watch",
     "test": "vitest run",
-    "prepack": "tsc --removeComments --declaration false && tsc --emitDeclarationOnly",
-    "release": "release-it"
+    "prepack": "tsc --removeComments --declaration false && tsc --emitDeclarationOnly"
   },
   "dependencies": {
     "comark": "workspace:*"
   },
   "devDependencies": {
+    "@nuxt/kit": "catalog:",
+    "@nuxt/schema": "catalog:",
     "@vue/compiler-core": "catalog:",
     "@vue/server-renderer": "catalog:",
     "vite": "catalog:",
@@ -65,6 +70,8 @@
     "vue": "catalog:"
   },
   "peerDependencies": {
+    "@nuxt/kit": "^4.6.3",
+    "@nuxt/schema": "^4.6.3",
     "beautiful-mermaid": "catalog:",
     "katex": "catalog:",
     "shiki": "catalog:",
@@ -78,6 +85,12 @@
       "optional": true
     },
     "katex": {
+      "optional": true
+    },
+    "@nuxt/kit": {
+      "optional": true
+    },
+    "@nuxt/schema": {
       "optional": true
     }
   }

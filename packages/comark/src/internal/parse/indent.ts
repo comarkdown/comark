@@ -5,7 +5,7 @@
  * These helpers shift the region left instead.
  */
 
-import type { StateBlock } from 'markdown-exit'
+import type { StateBlock } from 'markdown-exit/core'
 
 /**
  * Remove up to `columns` columns of indentation from `line`, in place.

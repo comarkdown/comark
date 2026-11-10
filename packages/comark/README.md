@@ -3,9 +3,9 @@
 # comark
 
 [![npm version](https://img.shields.io/npm/v/comark?color=black)](https://npmx.dev/comark)
-[![npm downloads](https://img.shields.io/npm/dm/comark?color=black)](https://npm.chart.dev/comark)
+[![npm downloads](https://img.shields.io/npm/dm/comark?color=black)](https://npmx.dev/package-stats/comark/v/latest?granularity=monthly)
 [![CI](https://img.shields.io/github/actions/workflow/status/comarkdown/comark/ci.yml?branch=main&color=black)](https://github.com/comarkdown/comark/actions/workflows/ci.yml)
-[![CodSpeed](https://img.shields.io/endpoint?url=https://codspeed.io/badge.json)](https://app.codspeed.io/comarkdown/comark)
+[![CodSpeed](https://img.shields.io/endpoint?url=https://codspeed.io/badge.json&color=black)](https://app.codspeed.io/comarkdown/comark)
 [![Documentation](https://img.shields.io/badge/Documentation-black?logo=readme&logoColor=white)](https://comark.dev)
 [![license](https://img.shields.io/github/license/comarkdown/comark?color=black)](https://github.com/comarkdown/comark/blob/main/LICENSE)
 
@@ -143,11 +143,10 @@ const html = await renderHtml(chatMessage)
 | Package | Description |
 |---|---|
 | [`comark`](https://comark.dev/api/parse) | Core parser, AST utilities, plugins |
-| [`@comark/vue`](https://comark.dev/rendering/vue) | Vue 3 renderer |
+| [`@comark/vue`](https://comark.dev/rendering/vue) | Vue 3 renderer and Nuxt module |
 | [`@comark/react`](https://comark.dev/rendering/react) | React renderer (Next.js, Server Components) |
 | [`@comark/svelte`](https://comark.dev/rendering/svelte) | Svelte 5 renderer |
 | [`@comark/angular`](https://comark.dev/rendering/angular) | Angular renderer |
-| [`@comark/nuxt`](https://comark.dev/rendering/nuxt) | Nuxt module with auto-imports |
 | [`@comark/html`](https://comark.dev/rendering/html) | HTML string renderer |
 | [`@comark/ansi`](https://comark.dev/rendering/ansi) | ANSI terminal renderer |
 

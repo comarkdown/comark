@@ -892,6 +892,28 @@ With the construct off nothing is closed — the delimiters stay literal:
 + foo\~bar\~baz
 ```
 
+Subscript pairs (`markdown-it-sub`) stay unescaped: no whitespace inside, and a word right after the closer only for digits.
+
+```diff
+- a~footnote~ and x~ab~.
++ a~footnote~ and x~ab~.
+```
+
+```diff
+- H~2~O and CO~2~
++ H~2~O and CO~2~
+```
+
+```diff
+- CO~2~
++ CO~2~
+```
+
+```diff
+- 20~25 and 30~40
++ 20\~25 and 30\~40
+```
+
 ---
 
 ## Links (default protocol mode)
@@ -1885,6 +1907,16 @@ A lone header row is completed with a delimiter row so it renders as a table imm
 ```diff
 - | a | b |\n| --- | --- |\n| 1 | 2 |
 + | a | b |\n| --- | --- |\n| 1 | 2 |
+```
+
+```diff
+- | a | b |\n| --- | --- |\n| <!--c--> |     |
++ | a | b |\n| --- | --- |\n| <!--c--> |     |
+```
+
+```diff
+- | a | b |\n| --- | --- |\n| `--cwd` | x |
++ | a | b |\n| --- | --- |\n| `--cwd` | x |
 ```
 
 ```diff

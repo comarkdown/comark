@@ -13,6 +13,10 @@ All Comark plugins are part of the core `comark` package, while optional renderi
 These plugins are **enabled by default** whenever you call `parseMarkdown()` or `createMarkdownParser()` (or a framework `<Markdown>` component). You do not need to install or register them.
 
 ::card-group{cols="2"}
+  ::card{icon="i-lucide-link" title="Linkify" to="/plugins/defaults/linkify"}
+  Convert URL-like text into links
+  ::
+
   ::card{icon="i-lucide-file-spreadsheet" title="Frontmatter" to="/plugins/defaults/frontmatter"}
   Parse a leading YAML frontmatter block into `tree.frontmatter`
   ::
@@ -49,7 +53,7 @@ Turn them all off with `registerDefaultPlugins: false`:
 ```typescript
 import { parseMarkdown } from 'comark'
 
-// Plain markdown only — no components, attributes, HTML, alerts, or task lists
+// Plain markdown only — no autolinks, components, attributes, HTML, alerts, or task lists
 const result = await parseMarkdown(content, {
   registerDefaultPlugins: false,
 })
@@ -91,7 +95,11 @@ Optional plugins you register via `plugins: [...]`.
   Plugin for adding footnote references and definitions to your Comark documents.
   ::
 
-  ::card{icon="i-lucide-heading" title="Headings" to="/plugins/built-in/headings"}
+  ::card{icon="i-lucide-hash" title="Heading Links" to="/plugins/built-in/heading-links"}
+  Plugin for linking headings to themselves using their `id`.
+  ::
+
+  ::card{icon="i-lucide-heading" title="Title & Description" to="/plugins/built-in/title-description"}
   Plugin for extracting the page title and description from document content.
   ::
 

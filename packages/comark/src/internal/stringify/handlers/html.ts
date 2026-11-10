@@ -1,6 +1,6 @@
 import type { State } from 'comark/render'
 import type { ElementNode } from 'comark'
-import { htmlAttributes } from '../attributes.ts'
+import { htmlAttributes } from '../html-attributes.ts'
 import { indent, toNativeAttributes } from '../../../utils/index.ts'
 
 const textBlocks = new Set(['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'li', 'td', 'th'])
@@ -100,7 +100,10 @@ export async function html(node: ElementNode, state: State, parent?: ElementNode
   }
 
   const nativeAttributes = toNativeAttributes(String(tag), node, attributes)
-  const attrs = Object.keys(nativeAttributes).length > 0 ? ` ${htmlAttributes(nativeAttributes)}` : ''
+  const attrs =
+    Object.keys(nativeAttributes).length > 0
+      ? ` ${htmlAttributes(nativeAttributes, { verbatim: !state.context.html && $.html === 1 })}`
+      : ''
 
   if (isSelfClose) {
     return `<${tag}${attrs}>` + (!parent && !isInline ? state.context.blockSeparator : '')

@@ -1,27 +1,35 @@
 <script setup lang="ts">
 import { parseMarkdown } from 'comark'
-import shiki from '@comark/nuxt/plugins/shiki'
-import rangi from '@comark/nuxt/plugins/rangi'
-import math from '@comark/nuxt/plugins/math'
-import binding from '@comark/nuxt/plugins/binding'
-import emoji from '@comark/nuxt/plugins/emoji'
-import mermaid from '@comark/nuxt/plugins/mermaid'
-import jsonRender from '@comark/nuxt/plugins/json-render'
-import footnotes from '@comark/nuxt/plugins/footnotes'
-import punctuation from '@comark/nuxt/plugins/punctuation'
-import breaks from '@comark/nuxt/plugins/breaks'
-import headings from '@comark/nuxt/plugins/headings'
-import toc from '@comark/nuxt/plugins/toc'
-import summary from '@comark/nuxt/plugins/summary'
-import security from '@comark/nuxt/plugins/security'
+import shiki from '@comark/vue/plugins/shiki'
+import rangi from '@comark/vue/plugins/rangi'
+import math from '@comark/vue/plugins/math'
+import binding from '@comark/vue/plugins/binding'
+import emoji from '@comark/vue/plugins/emoji'
+import mermaid from '@comark/vue/plugins/mermaid'
+import jsonRender from '@comark/vue/plugins/json-render'
+import footnotes from '@comark/vue/plugins/footnotes'
+import punctuation from '@comark/vue/plugins/punctuation'
+import breaks from '@comark/vue/plugins/breaks'
+import titleDescription from '@comark/vue/plugins/title-description'
+import toc from '@comark/vue/plugins/toc'
+import summary from '@comark/vue/plugins/summary'
+import security from '@comark/vue/plugins/security'
+import linkify from '@comark/vue/plugins/linkify'
+import frontmatter from '@comark/vue/plugins/frontmatter'
+import html from '@comark/vue/plugins/html'
+import alert from '@comark/vue/plugins/alert'
+import taskList from '@comark/vue/plugins/task-list'
+import components from '@comark/vue/plugins/components'
+import attributes from '@comark/vue/plugins/attributes'
 
 import { renderMarkdown } from 'comark/render'
 import { Splitpanes, Pane } from 'splitpanes'
 import { generationErrorMessage, playgroundExamples } from '~/constants'
 import resolveComponent from '~/utils/components-manifest'
+import { decodeShareHash, encodeShareHash } from '~/utils/share'
 import PromptInput from '~/components/playground/PromptInput.vue'
 import GeneratingIndicator from '~/components/playground/GeneratingIndicator.vue'
-import { useLocalStorage, watchDebounced } from '@vueuse/core'
+import { useLocalStorage, useTimeoutFn, watchDebounced } from '@vueuse/core'
 import { useCompletion } from '@ai-sdk/vue'
 import type { MarkdownDocument, ComarkPlugin } from 'comark'
 import VueJsonPretty from 'vue-json-pretty'
@@ -46,7 +54,7 @@ watch(
   () => route.query.example,
   (example) => {
     if (example !== selectedExample.value) {
-      router.replace({ query: { ...route.query, example: selectedExample.value } })
+      router.replace({ query: { ...route.query, example: selectedExample.value }, hash: route.hash })
     }
   },
   { immediate: true }
@@ -76,6 +84,7 @@ const pluginToggles = useLocalStorage(
     punctuation: false,
     breaks: false,
     binding: true,
+    // Keeps the `headings` key so toggles saved before the plugin rename still apply.
     headings: false,
     toc: false,
     summary: false,
@@ -157,9 +166,9 @@ const pluginDefs = [
   },
   {
     key: 'headings',
-    label: 'Headings',
+    label: 'Title & Description',
     icon: 'i-lucide-heading',
-    factory: () => headings(),
+    factory: () => titleDescription(),
   },
   {
     key: 'toc',
@@ -207,11 +216,19 @@ const parseOptionDefs = [
   },
 ] as const
 
-const activePlugins = computed<ComarkPlugin[]>(() =>
-  pluginDefs
+// The other defaults always run; registering them explicitly lets linkify be toggled on its own.
+const activePlugins = computed<ComarkPlugin[]>(() => [
+  ...(parseOptions.value.linkify ? [linkify()] : []),
+  frontmatter(),
+  html(),
+  alert(),
+  taskList(),
+  components(),
+  attributes(),
+  ...pluginDefs
     .filter((p) => pluginToggles.value[p.key as keyof typeof pluginToggles.value])
-    .map((p) => p.factory() as ComarkPlugin)
-)
+    .map((p) => p.factory() as ComarkPlugin),
+])
 
 const enabledPluginCount = computed<number>(() => Object.values(pluginToggles.value).filter(Boolean).length)
 
@@ -256,7 +273,7 @@ async function updatePreview(): Promise<void> {
       plugins: activePlugins.value,
       autoUnwrap: parseOptions.value.autoUnwrap,
       autoClose: parseOptions.value.autoClose,
-      linkify: parseOptions.value.linkify ?? true,
+      registerDefaultPlugins: false,
     })
     document.value = result
     parseTime.value = Math.round((performance.now() - start) * 10) / 10
@@ -270,14 +287,83 @@ async function updatePreview(): Promise<void> {
   }
 }
 
+// Read before the router rewrites the query, since a shared link carries its Markdown in the hash.
+const sharedHash = import.meta.client ? window.location.hash : ''
+
+// The hash this playground wrote last, so the route watcher can tell its own writes from Back and Forward.
+let writtenHash = sharedHash
+
+async function writeShareHash(): Promise<string> {
+  const source = markdown.value
+  const hash = source === currentExample.value.content.trim() ? '' : await encodeShareHash(source)
+  // Text typed while this encoded gets its own write, and this older one mustn't replace it.
+  if (source !== markdown.value) return window.location.href
+  writtenHash = hash
+  // Through the router, so the history entry Back returns to keeps the hash.
+  await router.replace({ query: route.query, hash })
+  return new URL(router.resolve({ query: route.query, hash }).href, window.location.origin).href
+}
+
+const toast = useToast()
+
+// Counts restores, so a slow decode from an earlier navigation can't overwrite a later one.
+let restores = 0
+
+async function restoreShareHash(hash: string): Promise<void> {
+  const restore = ++restores
+  try {
+    const shared = await decodeShareHash(hash)
+    if (restore !== restores) return
+    markdown.value = shared ?? currentExample.value.content.trim()
+  } catch {
+    if (restore !== restores) return
+    markdown.value = currentExample.value.content.trim()
+    toast.add({
+      title: "This link's Markdown couldn't be read",
+      description: 'The link may be cut off. Showing the example instead.',
+      color: 'error',
+      icon: 'i-lucide-link-2-off',
+    })
+  }
+}
+
+// Text typed while a restore decodes is newer than the link, so that restore mustn't replace it.
+watch(markdown, () => restores++, { flush: 'sync' })
 watchDebounced(markdown, updatePreview, { debounce: 300 })
+watchDebounced(markdown, writeShareHash, { debounce: 300 })
 watchDebounced([activePlugins, parseOptions], updatePreview, { deep: true, debounce: 300 })
-onMounted(() => {
+onMounted(async () => {
+  if (sharedHash) await restoreShareHash(sharedHash)
   nextTick(() => updatePreview())
 })
 
-watch(selectedExample, () => {
-  markdown.value = currentExample.value.content.trim()
+const copied = ref(false)
+const { start: showCopied } = useTimeoutFn(() => (copied.value = false), 1500, { immediate: false })
+
+async function shareComark(): Promise<void> {
+  // The ClipboardItem takes a promise, so the write starts inside the click, which Safari requires, and gets the URL
+  // once encoded. The click mustn't reach the body: in Safari, Monaco starts its own clipboard write on every click
+  // there, and that write cancels this one.
+  const url = writeShareHash().then((href) => new Blob([href], { type: 'text/plain' }))
+  try {
+    await navigator.clipboard.write([new ClipboardItem({ 'text/plain': url })])
+  } catch {
+    toast.add({
+      title: "The link couldn't be copied",
+      description: 'Copy it from the address bar instead.',
+      color: 'error',
+      icon: 'i-lucide-link-2-off',
+    })
+    return
+  }
+  copied.value = true
+  showCopied()
+}
+
+watch([selectedExample, () => route.hash], ([example, hash], [previousExample]) => {
+  if (example === previousExample && hash === writtenHash) return
+  writtenHash = hash
+  restoreShareHash(hash)
 })
 
 function resetComark(): void {
@@ -326,6 +412,7 @@ watch(completion, async (md) => {
       plugins: activePlugins.value,
       autoUnwrap: parseOptions.value.autoUnwrap,
       autoClose: true,
+      registerDefaultPlugins: false,
     })
     document.value = result
   } catch {
@@ -386,6 +473,23 @@ async function handleGenerate(prompt: string) {
             </UTooltip>
 
             <div class="flex-1" />
+
+            <UTooltip text="Copy a link to this Markdown">
+              <UButton
+                size="xs"
+                color="neutral"
+                variant="ghost"
+                :icon="copied ? 'i-lucide-check' : 'i-lucide-share-2'"
+                :label="copied ? 'Copied' : 'Share'"
+                :ui="{ leadingIcon: 'size-[1.15cap]' }"
+                @click.stop="shareComark"
+              />
+            </UTooltip>
+            <span
+              class="sr-only"
+              aria-live="polite"
+              >{{ copied ? 'Link copied' : '' }}</span
+            >
 
             <!-- Settings popover -->
             <UPopover :ui="{ content: 'p-0' }">

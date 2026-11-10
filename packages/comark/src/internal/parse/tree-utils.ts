@@ -1,5 +1,5 @@
 import type { Node } from 'comark'
-import type { Token } from 'markdown-exit'
+import type { Token } from 'markdown-exit/core'
 
 // Upper bound for expanded highlight ranges in a fence info string.
 const MAX_HIGHLIGHT_LINES = 1_000

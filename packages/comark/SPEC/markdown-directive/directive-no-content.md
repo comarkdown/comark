@@ -71,8 +71,7 @@ a :br with no content or attributes
 ```md
 a :hr directive with no content
 
-a   
- with no content or attributes
+a :br with no content or attributes
 
 ::video{file="movie.mp4"}
 ::

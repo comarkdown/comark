@@ -14,7 +14,7 @@ Instead of the typical `gray-matter` + `remark` + `rehype` pipeline, we use Coma
 1. **Read markdown files** — Load `.md` files from the `content/posts/` directory via a server route
 2. **Parse with Comark** — Call `parseMarkdown()` to build the AST and extract frontmatter
 3. **Static generation** — Use `nuxt generate` for full SSG
-4. **Render with Vue** — Use `MarkdownDocument` from `@comark/nuxt` with auto-discovered components
+4. **Render with Vue** — Use the auto-imported `MarkdownDocument` from `@comark/vue`
 
 ```ts
 // server/api/posts/[slug].get.ts
@@ -41,12 +41,12 @@ const { data: post } = await useFetch(`/api/posts/${route.params.slug}`)
 ```
 
 ::alert{type="info"}
-`@comark/nuxt` automatically detects Nuxt UI and enables its prose components — no extra configuration needed.
+The `@comark/vue` Nuxt module automatically detects Nuxt UI and enables its prose components — no extra configuration needed.
 ::
 
 ## Nuxt UI prose components
 
-When both `@comark/nuxt` and `@nuxt/ui` are installed, the module sets `ui.content = true`. This registers Nuxt UI's `Prose*` components globally:
+When both `@comark/vue` and `@nuxt/ui` are installed, the module sets `ui.prose = true`. This registers Nuxt UI's `Prose*` components globally:
 
 - `ProseH1`, `ProseH2`, `ProseH3` for headings
 - `ProseP` for paragraphs

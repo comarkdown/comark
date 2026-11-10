@@ -1,5 +1,11 @@
 import type { Node, ElementNode, ElementNodeAttributes, MarkdownDocument } from 'comark'
-import { decodeHTML, isHtmlVoidElement, TREE_WALK_MAX_DEPTH } from 'comark/utils'
+import { isHtmlVoidElement, TREE_WALK_MAX_DEPTH } from 'comark/utils'
+import { decodeHTMLAttribute } from '../entities.ts'
+
+/** Space, tab, line feed, form feed or carriage return. Defined per file so it stays inlinable on hot paths. */
+function isSpaceCode(c: number): boolean {
+  return c === 32 || c === 9 || c === 10 || c === 12 || c === 13
+}
 
 export type ParsedHtmlTag =
   | { kind: 'open'; tag: string; attrs: Record<string, unknown>; selfClosing: boolean }
@@ -29,8 +35,7 @@ export type ParsedHtmlTag =
  */
 function isBlankText(value: string): boolean {
   for (let i = 0; i < value.length; i++) {
-    const c = value.charCodeAt(i)
-    if (c !== 32 && c !== 10 && c !== 9 && c !== 13 && c !== 12) return false
+    if (!isSpaceCode(value.charCodeAt(i))) return false
   }
   return true
 }
@@ -182,6 +187,15 @@ export function parseHtmlInline(content: string): ParsedHtmlTag {
 }
 
 /**
+ * Decode character references in a raw attribute value the way browsers do:
+ * legacy semicolon-less references (`&amp`) are decoded, but not when followed by
+ * `=` or an alphanumeric (`?a=1&copy=2` stays literal). Backslashes are literal.
+ */
+function decodeAttributeValue(value: string): string {
+  return value.includes('&') ? decodeHTMLAttribute(value) : value
+}
+
+/**
  * Parse HTML attribute string into a key/value map.
  * Supports `key="value"`, `key='value'`, bare `key=value`, and boolean attributes.
  * Names are lowercased, as HTML attribute names are case-insensitive.
@@ -195,7 +209,7 @@ export function parseHtmlAttributes(attrsStr: string): Record<string, unknown> {
   while ((match = re.exec(attrsStr)) !== null) {
     const key = match[1].toLowerCase()
     const value = match[2] ?? match[3] ?? match[4]
-    attrs[key] = value === undefined ? true : decodeHTML(value)
+    attrs[key] = value === undefined ? true : decodeAttributeValue(value)
   }
 
   return attrs

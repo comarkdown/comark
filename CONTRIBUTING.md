@@ -44,14 +44,14 @@ pnpm docs
 - `packages/comark`: parser, document model, core plugins and Markdown string rendering.
 - `packages/comark-html` and `packages/comark-ansi`: HTML and terminal renderers.
 - `packages/comark-vue`, `packages/comark-react`, `packages/comark-svelte`, and `packages/comark-angular`: framework renderers.
-- `packages/comark-nuxt`: Nuxt integration.
+- `packages/comark-nuxt`: deprecated `@comark/nuxt`, which installs the Nuxt module from `packages/comark-vue/src/nuxt.ts`.
 - `docs/content`: user-facing documentation.
 
 Keep parser-only behavior in the core package and framework-specific behavior in its renderer. The [architecture reference](./AGENTS.md) has a more detailed package map.
 
 ## Add or change a plugin
 
-Core plugins live in `packages/comark/src/plugins` and use `defineComarkPlugin` from `comark/parse`. Add tests in `packages/comark/test/plugins` and document the plugin in `docs/content/4.plugins`.
+Core plugins live in `packages/comark/src/plugins` and use `defineComarkPlugin` from `comark`. Add tests in `packages/comark/test/plugins` and document the plugin in `docs/content/4.plugins`.
 
 For plugins without a framework component, `pnpm sync-plugins` generates the renderer re-exports. If a plugin needs a component, add the wrapper in the relevant renderer package and keep the renderer APIs consistent.
 
@@ -76,7 +76,7 @@ pnpm vitest run test/parse/sub-sup.test.ts
 
 Parser fixtures live in `packages/comark/SPEC` and run through `test/index.test.ts`. Parser changes should also preserve streaming behavior in `test/streaming.test.ts`.
 
-Svelte's local tests include a headless Chromium project. Install the browser if needed:
+React and Svelte tests include a headless Chromium project. Install the browser if needed:
 
 ```sh
 pnpm exec playwright install chromium

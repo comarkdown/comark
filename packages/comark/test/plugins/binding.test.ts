@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseMarkdown } from '../../src/parse'
+import { parseMarkdown } from '../../src/index'
 import { renderMarkdown } from '../../src/render'
 import binding, { Binding, resolveIfWrapper, selectIfBranch, shouldRenderIf } from '../../src/plugins/binding'
 import { nestedIfMarkdown } from '../../../../test/fixtures/if'

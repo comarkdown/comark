@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { MarkdownItPlugin } from '../../src/types'
-import { defineComarkPlugin, parseMarkdown } from '../../src/parse'
+import { createMarkdownParser, defineComarkPlugin, parseMarkdown } from '../../src/index'
 
 // Minimal inline rules that mirror what `markdown-it-sub` / `markdown-it-sup`
 // emit: `~text~` → sub_open/text/sub_close, `^text^` → sup_open/text/sup_close.
@@ -62,5 +62,29 @@ describe('sub/sup token mapping (regression for #201)', () => {
   it('preserves both sub and sup in the same paragraph', async () => {
     const tree = await parseMarkdown('H~2~O and x^2^', { plugins: [subscript(), superscript()] })
     expect(tree.nodes).toEqual([['p', {}, 'H', ['sub', {}, '2'], 'O and x', ['sup', {}, '2']]])
+  })
+})
+
+describe('subscripts with auto-close (regression for #462)', () => {
+  const plugins = [subscript()]
+
+  it.each([
+    ['a~footnote~', ['p', {}, 'a', ['sub', {}, 'footnote']]],
+    ['x~ab~.', ['p', {}, 'x', ['sub', {}, 'ab'], '.']],
+    ['H~2~O and CO~2~', ['p', {}, 'H', ['sub', {}, '2'], 'O and CO', ['sub', {}, '2']]],
+    ['H~2~', ['p', {}, 'H', ['sub', {}, '2']]],
+    ['foo~bar~baz', ['p', {}, 'foo~bar~baz']],
+    ['20~25 and 30~40', ['p', {}, '20~25 and 30~40']],
+  ])('parses %j', async (input, expected) => {
+    expect((await parseMarkdown(input, { plugins })).nodes).toEqual([expected])
+  })
+
+  it('parses subscripts while streaming', async () => {
+    const parse = createMarkdownParser({ plugins })
+    for (const chunk of ['Water is H~2', 'Water is H~2~', 'Water is H~2~O and a~note']) {
+      await parse(chunk, { streaming: true })
+    }
+    const result = await parse('Water is H~2~O and a~note~', { streaming: true })
+    expect(result.nodes).toMatchObject([['p', {}, 'Water is H', ['sub', {}, '2'], 'O and a', ['sub', {}, 'note']]])
   })
 })

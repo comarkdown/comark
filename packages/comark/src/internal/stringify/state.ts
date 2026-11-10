@@ -1,8 +1,8 @@
-import { handlers as defaultHandlers } from './handlers/index.ts'
-import type { NodeRenderData, State, Context } from 'comark/render'
+import type { NodeRenderData, State, Context, RendererOptions } from 'comark/render'
 import type { ElementNode, Node, MarkdownDocument, ConditionalNodeHandler, CreateContext, NodeHandler } from 'comark'
 import { escapeHtml, pascalCase } from '../../utils/index.ts'
-import { resolveAttributes } from './attributes.ts'
+import { resolveAttributes } from './html-attributes.ts'
+import { applyNodeTransforms } from './transform-node.ts'
 
 function findHandler(ctx: Context, node: ElementNode): NodeHandler | undefined {
   const name = node[0] as string
@@ -50,7 +50,7 @@ export async function one(node: Node, state: State, parent?: ElementNode, atLine
   }
 
   if (node[0] === null) {
-    return await state.handlers.comment(node as unknown as ElementNode, state)
+    return await state.handlers.comment(node as unknown as ElementNode, state, parent)
   }
 
   // Scope `renderData.props` to the current element's resolved attributes so
@@ -58,12 +58,42 @@ export async function one(node: Node, state: State, parent?: ElementNode, atLine
   // element's values, regardless of which handler (html / ansi / user) runs.
   // Elements with no attributes (e.g. an auto-generated `<p>` wrapper) must
   // NOT shadow the parent's scope, otherwise `{{ props.* }}` inside them would
-  // resolve to nothing.
+  // resolve to nothing. The check uses the raw attributes, because resolving
+  // can drop all of them and the parent's props must not leak back in.
   const prevRenderData = state.renderData
+  const transforms = state.context.transformNode as RendererOptions['transformNode']
   if (state.renderData && node[1]) {
-    const resolved = resolveAttributes(node[1] as Record<string, unknown>, prevRenderData)
-    if (Object.keys(resolved).length > 0) {
-      state.renderData = { ...prevRenderData, props: resolved }
+    let hasOwnAttrs = false
+    for (const key in node[1]) {
+      if (key !== '$') {
+        hasOwnAttrs = true
+        break
+      }
+    }
+    if (hasOwnAttrs || transforms) {
+      const ownAttrs = node[1] as Record<string, unknown>
+      let props = hasOwnAttrs ? resolveAttributes(ownAttrs, prevRenderData) : {}
+      if (transforms) {
+        // Hooks get the same props as in the Vue/React/Svelte/Angular renderers
+        // (`:` stripped, values JSON-parsed), so one hook works in every renderer.
+        // String handlers still render from the raw attributes unless a hook
+        // returns new props, which keeps the output of untouched nodes unchanged.
+        const hookProps = hasOwnAttrs ? resolveAttributes(ownAttrs, prevRenderData, { parseJson: true }) : props
+        const transformed = applyNodeTransforms(transforms, node, hookProps, prevRenderData, parent)
+        if (transformed) {
+          // Handlers read the tag and attributes from the node, so render a copy
+          // that carries the transform's result. New props are already resolved.
+          let attrs = node[1]
+          if (transformed.props !== hookProps) {
+            attrs = { ...transformed.props }
+            if (node[1].$) attrs.$ = node[1].$
+            hasOwnAttrs = true
+            props = transformed.props
+          }
+          node = [transformed.tag, attrs, ...(node.slice(2) as Node[])]
+        }
+      }
+      if (hasOwnAttrs) state.renderData = { ...prevRenderData, props }
     }
   }
 
@@ -101,7 +131,7 @@ export async function flow(node: ElementNode, state: State, parent?: ElementNode
   return result
 }
 
-export function createState(ctx: Partial<CreateContext> = {}): State {
+export function createState(defaultHandlers: Record<string, NodeHandler>, ctx: Partial<CreateContext> = {}): State {
   const conditionalHandlers: ConditionalNodeHandler[] = []
   const handlers = {} as Record<string, NodeHandler>
 
@@ -162,47 +192,6 @@ export function createState(ctx: Partial<CreateContext> = {}): State {
   }
 
   return state
-}
-
-export const state: State = {
-  handlers: defaultHandlers,
-  conditionalHandlers: [],
-  data: {},
-  renderData: { frontmatter: {}, meta: {}, data: {}, props: {} } as NodeRenderData,
-  context: {
-    blockSeparator: '\n\n',
-    format: 'markdown/comark',
-    handlers: {}, // user defined node handlers
-    conditionalHandlers: [], // user defined conditional handlers
-    blockAttributesStyle: 'codeblock',
-  },
-  flow,
-  one,
-  render: async (input: Node[] | ElementNode) => {
-    if (typeof input === 'string') {
-      return input
-    }
-
-    if (Array.isArray(input) && typeof input[0] === 'string') {
-      return one(input as ElementNode, state)
-    }
-
-    let result = ''
-    for (const child of input as Node[]) {
-      result += await one(child, state, undefined, result === '' || result.endsWith('\n'))
-    }
-    return result
-  },
-  applyContext: (edit: Record<string, unknown>) => {
-    const revert = {} as Record<string, unknown>
-
-    for (const [key, value] of Object.entries(edit)) {
-      revert[key] = state.context[key]
-      state.context[key] = value
-    }
-
-    return revert
-  },
 }
 
 // Characters that can start an inline markdown construct anywhere on a line:

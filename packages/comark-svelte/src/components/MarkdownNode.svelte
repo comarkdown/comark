@@ -67,12 +67,12 @@ naturally appears inline after the deepest trailing text node.
 </script>
 
 <script lang="ts">
-  import type { Node as NodeType, ComponentManifest, NodeRenderData } from 'comark'
+  import type { ElementNode, Node as NodeType, ComponentManifest, NodeRenderData, NodeTransform } from 'comark'
   import type { ComponentResolver } from '../types.js'
   import MarkdownNode from './MarkdownNode.svelte'
   import ComarkComponent from './ComarkComponent.svelte'
   import Resolve from './Resolve.svelte'
-  import { isHtmlVoidElement, resolveAttributes, toNativeAttributes } from 'comark/utils'
+  import { applyNodeTransforms, isHtmlVoidElement, resolveAttributes, toNativeAttributes } from 'comark/utils'
 
   const EMPTY_RENDER_DATA: NodeRenderData = { frontmatter: {}, meta: {}, data: {}, props: {} }
 
@@ -80,6 +80,7 @@ naturally appears inline after the deepest trailing text node.
     node,
     components = {},
     componentsManifest,
+    transformNode,
     resolver: Resolver = Resolve,
     caretClass = null,
     renderData = EMPTY_RENDER_DATA,
@@ -87,6 +88,7 @@ naturally appears inline after the deepest trailing text node.
     node: NodeType
     components?: Record<string, any>
     componentsManifest?: ComponentManifest
+    transformNode?: NodeTransform | readonly NodeTransform[]
     resolver?: ComponentResolver
     caretClass?: string | null
     renderData?: NodeRenderData
@@ -138,7 +140,7 @@ naturally appears inline after the deepest trailing text node.
     }))
   }
 
-  let { isText, tag, isVoid, children, Component, componentPromise, mappedProps } = $derived.by(() => {
+  let { isText, tag, isVoid, children, Component, componentPromise, mappedProps, transformedProps } = $derived.by(() => {
     let isText = false
     let tag: string | null = null
     let isVoid = false
@@ -146,25 +148,32 @@ naturally appears inline after the deepest trailing text node.
     let Component: any = null
     let componentPromise: Promise<any> | null = null
     let mappedProps: Record<string, any> = {}
+    let transformedProps = false
 
     if (typeof node === 'string') {
-      return { isText: true, tag, isVoid, children, Component, componentPromise, mappedProps }
+      return { isText: true, tag, isVoid, children, Component, componentPromise, mappedProps, transformedProps }
     }
 
     if (!Array.isArray(node) || node.length < 1) {
-      return { isText, tag, isVoid, children, Component, componentPromise, mappedProps }
+      return { isText, tag, isVoid, children, Component, componentPromise, mappedProps, transformedProps }
     }
 
     // Comment nodes have null as the tag
     if (node[0] === null) {
-      return { isText, tag, isVoid, children, Component, componentPromise, mappedProps }
+      return { isText, tag, isVoid, children, Component, componentPromise, mappedProps, transformedProps }
     }
 
-    tag = node[0] as string
-    isVoid = isHtmlVoidElement(tag)
     const nodeProps: Record<string, any>
       = (node.length >= 2 ? node[1] : {}) ?? {}
     children = node.length > 2 ? (node.slice(2) as NodeType[]) : []
+
+    // Resolve `:prefix` bindings, then let `transformNode` change the tag or props
+    const ownProps = resolveAttributes(nodeProps, renderData, { parseJson: true })
+    const transformed = applyNodeTransforms(transformNode, node as ElementNode, ownProps, renderData)
+    tag = transformed ? transformed.tag : (node[0] as string)
+    const resolved = transformed ? transformed.props : ownProps
+    transformedProps = resolved !== ownProps
+    isVoid = isHtmlVoidElement(tag)
 
     const resolvedComponent = resolveComponent(tag, components, componentsManifest)
     if (resolvedComponent instanceof Promise) {
@@ -174,9 +183,7 @@ naturally appears inline after the deepest trailing text node.
       Component = resolvedComponent
     }
 
-    // Resolve `:prefix` bindings, then apply Svelte attribute remapping
-    // (`className` → `class`).
-    const resolved = resolveAttributes(nodeProps, renderData, { parseJson: true })
+    // Svelte attribute remapping (`className` → `class`)
     for (const k in resolved) {
       if (k === 'className') {
         mappedProps.class = resolved[k]
@@ -186,16 +193,26 @@ naturally appears inline after the deepest trailing text node.
       }
     }
 
-    return { isText, tag, isVoid, children, Component, componentPromise, mappedProps }
+    return { isText, tag, isVoid, children, Component, componentPromise, mappedProps, transformedProps }
   })
 
   // Only shadow the parent's `props` scope when the current element has its
   // own attributes. Bare wrappers (`<p>`, `<ul>`, `<li>`, …) must keep the
-  // parent's scope so bindings like `{{ props.x }}` reach across them.
+  // parent's scope so bindings like `{{ props.x }}` reach across them. The
+  // check uses the raw attributes: resolving can omit all of them.
   let nativeProps = $derived(tag ? toNativeAttributes(tag, node, mappedProps) : mappedProps)
 
+  let hasOwnAttrs = $derived.by(() => {
+    if (transformedProps) return true
+    const attrs: Record<string, any> = (Array.isArray(node) && node.length >= 2 ? node[1] : null) ?? {}
+    for (const key in attrs) {
+      if (key !== '$') return true
+    }
+    return false
+  })
+
   let childrenRenderData = $derived<NodeRenderData>(
-    Object.keys(mappedProps).length > 0
+    hasOwnAttrs
       ? { ...renderData, props: mappedProps }
       : renderData,
   )
@@ -235,6 +252,7 @@ naturally appears inline after the deepest trailing text node.
       node={child.node}
       {components}
       {componentsManifest}
+      {transformNode}
       resolver={Resolver}
       caretClass={child.caretClass}
       renderData={childrenRenderData}
@@ -254,6 +272,7 @@ naturally appears inline after the deepest trailing text node.
     {namedSlots}
     {components}
     {componentsManifest}
+    {transformNode}
     resolver={Resolver}
     renderData={childrenRenderData}
   >
@@ -270,6 +289,7 @@ naturally appears inline after the deepest trailing text node.
     {namedSlots}
     {components}
     {componentsManifest}
+    {transformNode}
     resolver={Resolver}
     renderData={childrenRenderData}
   >

@@ -8,7 +8,7 @@
  * @see https://comark.dev/syntax/components
  */
 
-import type { PluginSimple, Token } from 'markdown-exit'
+import type { PluginSimple, Token } from 'markdown-exit/core'
 import type { MarkdownItPlugin } from 'comark'
 import { defineComarkPlugin } from '../utils/helpers.ts'
 import { findClosingBracket, parseBracketContent } from '../internal/parse/syntax/brackets.ts'

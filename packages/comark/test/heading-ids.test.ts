@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseMarkdown } from '../src/parse'
+import { parseMarkdown } from '../src/index'
 import { renderMarkdown } from '../src/render'
 
 describe('headingIds option', () => {
@@ -91,6 +91,19 @@ describe('headingIds option', () => {
     expect(markdown.trim()).toBe(source)
     const reparsed = await parseMarkdown(markdown)
     expect(reparsed.nodes).toEqual(tree.nodes)
+  })
+
+  it('numbers duplicates inside components document-wide when rendering markdown', async () => {
+    for (const source of [
+      '## A\n\n::box\n## A\n::\n\n## A',
+      '::box\n## A\n::\n\n## A',
+      '::box\n## A\n\n  :::inner\n  ## A\n  :::\n::\n\n## A',
+    ]) {
+      const tree = await parseMarkdown(source)
+      const markdown = await renderMarkdown(tree)
+      expect(markdown.trim()).toBe(source)
+      expect((await parseMarkdown(markdown)).nodes).toEqual(tree.nodes)
+    }
   })
 
   describe('slug text extraction', () => {

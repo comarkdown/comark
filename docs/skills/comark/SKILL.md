@@ -33,7 +33,7 @@ A high-performance markdown parser with Comark (Components in Markdown) support,
   - Angular components: `@comark/angular`
   - HTML rendering: `@comark/html`
   - ANSI terminal rendering: `@comark/ansi`
-  - Nuxt module: `@comark/nuxt`
+  - Nuxt module: `@comark/vue` (`modules: ['@comark/vue']`)
 
 ## Quick Start
 

@@ -2,7 +2,7 @@ import { bench, describe } from 'vitest'
 import { createMarkdownParser } from 'comark'
 import emoji from 'comark/plugins/emoji'
 import footnotes from 'comark/plugins/footnotes'
-import headings from 'comark/plugins/headings'
+import titleDescription from 'comark/plugins/title-description'
 import punctuation from 'comark/plugins/punctuation'
 import rangi from 'comark/plugins/rangi'
 import security from 'comark/plugins/security'
@@ -18,11 +18,11 @@ const withToc = createMarkdownParser({ plugins: [toc()] })
 const withEmoji = createMarkdownParser({ plugins: [emoji()] })
 const withPunctuation = createMarkdownParser({ plugins: [punctuation()] })
 const withFootnotes = createMarkdownParser({ plugins: [footnotes()] })
-const withHeadings = createMarkdownParser({ plugins: [headings()] })
+const withTitleDescription = createMarkdownParser({ plugins: [titleDescription()] })
 const withSecurity = createMarkdownParser({ plugins: [security()] })
 const withSummary = createMarkdownParser({ plugins: [summary()] })
 const withAll = createMarkdownParser({
-  plugins: [toc(), emoji(), punctuation(), footnotes(), headings(), security(), summary()],
+  plugins: [toc(), emoji(), punctuation(), footnotes(), titleDescription(), security(), summary()],
 })
 
 const codeBaseline = createMarkdownParser()
@@ -37,7 +37,7 @@ for (const parse of [
   withEmoji,
   withPunctuation,
   withFootnotes,
-  withHeadings,
+  withTitleDescription,
   withSecurity,
   withSummary,
   withAll,
@@ -69,8 +69,9 @@ describe('plugins', () => {
     await withFootnotes(pluginMarkdown)
   })
 
+  // Keeps the `headings` id so CodSpeed history carries over the plugin rename.
   bench('headings', async () => {
-    await withHeadings(pluginMarkdown)
+    await withTitleDescription(pluginMarkdown)
   })
 
   bench('security', async () => {

@@ -2,7 +2,6 @@ import type { State } from 'comark/render'
 import type { ElementNode, Node } from 'comark'
 import { indent } from '../../../utils/index.ts'
 import { comarkAttributes, comarkYamlAttributes } from '../attributes.ts'
-import { html } from './html.ts'
 
 // HTML elements that always create an inline context for their children
 const INLINE_HTML_ELEMENTS = new Set(['a', 'strong', 'em', 'span'])
@@ -10,10 +9,6 @@ const INLINE_HTML_ELEMENTS = new Set(['a', 'strong', 'em', 'span'])
 export async function mdc(node: ElementNode, state: State, parent?: ElementNode) {
   const [tag, attr, ...children] = node
   const { $: _, ...attributes } = attr
-
-  if (tag === 'table') {
-    return html(node, state)
-  }
 
   const attributeEntries = Object.entries(attributes)
   const hasObjectAttributes = attributeEntries.some(([, value]) => typeof value === 'object')
@@ -69,5 +64,9 @@ export async function mdc(node: ElementNode, state: State, parent?: ElementNode)
     }
   }
 
-  return inline ? result : indent(result, { level: parent ? 1 : 0 })
+  // Indented after a list, the component would continue the last list item
+  const prev = parent?.[parent.indexOf(node) - 1]
+  const afterList = Array.isArray(prev) && (prev[0] === 'ul' || prev[0] === 'ol')
+
+  return inline ? result : indent(result, { level: parent && !afterList ? 1 : 0 })
 }
