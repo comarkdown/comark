@@ -279,25 +279,58 @@ const componentOptionKeys = new Set(['template', 'render', 'ssrrender', 'setup',
  * component options. Applied to markdown-authored values only.
  */
 export function isComponentPropViolation(attribute: string, value: unknown): boolean {
-  if (componentSelectors.includes(normalizePropName(attribute)) && typeof value !== 'string') return true
-  return hasComponentOptions(value)
+  return isComponentSelectorViolation(attribute, value) || hasComponentOptions(value)
 }
 
+function isComponentSelectorViolation(attribute: string, value: unknown): boolean {
+  return componentSelectors.includes(normalizePropName(attribute)) && typeof value !== 'string'
+}
+
+/**
+ * Whether `value` is an object with a component-option key of its own. Only one level: the
+ * sanitizers already walk every nested object, so checking subtrees here would make them quadratic.
+ */
+function ownsComponentOptions(value: unknown): boolean {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) return false
+  for (const key of Object.keys(value)) {
+    if (componentOptionKeys.has(key.toLowerCase())) return true
+  }
+  return false
+}
+
+// Results for objects already scanned at render time. Many bindings can resolve to one
+// frontmatter object (`:a="frontmatter.big"` repeated, or YAML aliases), so each is scanned once.
+// Weak keys: entries go away with the document. A value mutated after its first scan keeps its
+// first result; documents are not expected to change between renders.
+const componentOptionsCache = new WeakMap<object, boolean>()
+
 function hasComponentOptions(value: unknown): boolean {
+  if (typeof value !== 'object' || value === null) return false
+  const cached = componentOptionsCache.get(value)
+  if (cached !== undefined) return cached
+
   // Iterative with a visited set: cyclic or shared (YAML alias) values neither
   // overflow the stack nor get scanned twice.
   const seen = new Set<object>()
   const pending: unknown[] = [value]
-  while (pending.length) {
+  let found = false
+  while (pending.length && !found) {
     const current = pending.pop()
     if (typeof current !== 'object' || current === null || seen.has(current)) continue
-    seen.add(current)
-    for (const [key, item] of Object.entries(current)) {
-      if (!Array.isArray(current) && componentOptionKeys.has(key.toLowerCase())) return true
-      pending.push(item)
+    const known = componentOptionsCache.get(current)
+    if (known !== undefined) {
+      found = known
+      continue
     }
+    seen.add(current)
+    if (ownsComponentOptions(current)) found = true
+    else for (const item of Object.values(current)) pending.push(item)
   }
-  return false
+  // Only the root's result is certain: on an early exit, the other visited objects were
+  // not all fully scanned, and a negative result holds only for a complete scan.
+  componentOptionsCache.set(value, found)
+  if (!found) for (const object of seen) componentOptionsCache.set(object, false)
+  return found
 }
 
 /** A filter for tag selectors: `unsafeTags` and `blockedTags`, or any tag outside `allowedTags` when set. */
@@ -343,7 +376,7 @@ export function validateProp(attribute: string, value: unknown, options: PropsVa
     } catch {
       // Not JSON — a dot-path binding or literal, validated as-is
     }
-    if (isComponentPropViolation(attribute, decoded)) return REJECTED_PROP
+    if (isComponentSelectorViolation(attribute, decoded)) return REJECTED_PROP
     if (typeof decoded === 'object' && decoded !== null) {
       const result = validateValue(name, decoded, options)
       return result === REJECTED_PROP ? REJECTED_PROP : JSON.stringify(result)
@@ -354,7 +387,7 @@ export function validateProp(attribute: string, value: unknown, options: PropsVa
     return result === REJECTED_PROP ? REJECTED_PROP : value
   }
 
-  if (isComponentPropViolation(attribute, value)) return REJECTED_PROP
+  if (isComponentSelectorViolation(attribute, value)) return REJECTED_PROP
   return validateValue(name, value, options)
 }
 
@@ -390,6 +423,7 @@ function validateValue(name: string, value: unknown, options: PropsValidationOpt
   // Object keys are validated like top-level props, at any depth:
   // `:links='[{"to":"javascript:…","labelHtml":"<img onerror>"}]'`.
   if (typeof value === 'object' && value !== null) {
+    if (ownsComponentOptions(value)) return REJECTED_PROP
     const entries: Array<[string, unknown]> = []
     for (const [key, item] of Object.entries(value)) {
       const validated = validateProp(key, item, options)
@@ -461,16 +495,25 @@ export function sanitizeData(data: unknown, options: SanitizeDataOptions = {}): 
   const removed: string[] = []
 
   const seen = new WeakMap<object, Set<string>>()
+  // A YAML alias can put one object under many keys: check its own keys once.
+  const ownsOptions = new WeakMap<object, boolean>()
+  const isComponentObject = (value: unknown): boolean => {
+    if (typeof value !== 'object' || value === null) return false
+    let result = ownsOptions.get(value)
+    if (result === undefined) ownsOptions.set(value, (result = ownsComponentOptions(value)))
+    return result
+  }
 
   // `key` is undefined for an array item: it inherits its array's name, as in `validateProp()`.
   const sanitizeEntry = (name: string, key: string | undefined, value: unknown): unknown => {
     if (key !== undefined) {
       if (isUnsafePropName(name)) return REJECTED_PROP
       if (tagSelectors.includes(name) && isUnsafeTagSelector(key, value, isFilteredTag)) return REJECTED_PROP
-      // Only component options: frontmatter keys such as `tag: [vue, nuxt]` are data, and a
-      // binding that hands one to a component goes through the renderer's type check.
-      if (hasComponentOptions(value)) return REJECTED_PROP
     }
+    // Only component options, not prop types: frontmatter keys such as `tag: [vue, nuxt]` are data,
+    // and a binding that hands one to a component goes through the renderer's type check.
+    // Own keys only, array items too (`[{ template }]`): `walk` visits every nested object itself.
+    if (isComponentObject(value)) return REJECTED_PROP
     return typeof value === 'string' ? validateString(name, value, options) : value
   }
 

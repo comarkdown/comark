@@ -699,10 +699,9 @@ describe('security plugin — component-like values', () => {
     }
   })
 
-  it('strips a bound object carrying component options at any depth', async () => {
+  it('strips a bound object carrying component options', async () => {
     const tree = makeTree([
       ['span', { ':icon': '{"extends":{"template":"<b>x</b>"}}' }, 'x'],
-      ['span', { ':items': '[{"render":"x"}]' }, 'x'],
       ['span', { ':config': '{"setup":1}' }, 'x'],
       ['span', { ':config': '{"mixins":[]}' }, 'x'],
     ])
@@ -711,6 +710,26 @@ describe('security plugin — component-like values', () => {
       const el = node as [string, any]
       expect(el[1]).toEqual({})
     }
+  })
+
+  it('strips only the nested object carrying component options, like other nested checks', async () => {
+    const tree = makeTree([
+      ['span', { ':items': '[{"label":"a"},{"render":"x"}]' }, 'x'],
+      ['span', { ':config': '{"label":"a","icon":{"template":"x"}}' }, 'x'],
+    ])
+    await runPlugin(tree)
+    expect((tree.nodes[0] as [string, any])[1]).toEqual({ ':items': '[{"label":"a"}]' })
+    expect((tree.nodes[1] as [string, any])[1]).toEqual({ ':config': '{"label":"a"}' })
+  })
+
+  it('strips component options from frontmatter, in arrays too', async () => {
+    const tree: MarkdownDocument = {
+      nodes: [],
+      frontmatter: { icon: { extends: { template: 'x' } }, items: [{ label: 'a' }, { render: 'x' }], name: 'ok' },
+      meta: {},
+    }
+    await runPlugin(tree)
+    expect(tree.frontmatter).toEqual({ items: [{ label: 'a' }], name: 'ok' })
   })
 
   it('keeps data-valued bound props', async () => {
