@@ -37,6 +37,33 @@ describe('code fence selection', () => {
   })
 })
 
+describe('inline code fence selection', () => {
+  const cases: Record<string, string> = {
+    'a lone backtick': 'Type `` ` `` to start code.',
+    'a leading and trailing backtick': '`` `a` ``',
+    'a double backtick run': '`a``b`',
+    'a leading and trailing space': '`  a  `',
+  }
+
+  for (const [name, md] of Object.entries(cases)) {
+    it(`keeps code with ${name}`, async () => {
+      const { t1, t2 } = await roundTrip(md)
+      expect(t2.nodes).toEqual(t1.nodes)
+    })
+  }
+
+  it('keeps the attributes of code that starts with a backtick', async () => {
+    const { t1, t2, rendered } = await roundTrip('`` `foo` ``{lang="md"}')
+    expect(rendered).toBe('`` `foo` ``{lang="md"}')
+    expect(t2.nodes).toEqual(t1.nodes)
+  })
+
+  it('keeps the output of code that already round-tripped', async () => {
+    const { rendered } = await roundTrip('`a` ``b`c`` ` d`')
+    expect(rendered).toBe('`a` ``b`c`` ` d`')
+  })
+})
+
 describe('mermaid fence selection', () => {
   it('does not let mermaid content escape its fence', async () => {
     // A mermaid body containing ``` must not terminate the serialized fence
