@@ -36,9 +36,92 @@ export function stripControlChars(text: string): string {
   return text.replace(CONTROL_CHARS_RE, '')
 }
 
-/** Visible character length of a string, ignoring ANSI escape codes. */
+// Terminals draw East Asian Wide and Fullwidth characters (CJK, Hangul, kana,
+// fullwidth forms) and emoji in two columns. The regexes below are sticky and
+// test one code point at `lastIndex`, so the scan allocates nothing.
+const WIDE_RE =
+  /[\p{Emoji_Presentation}\u1100-\u115F\u2329\u232A\u2630-\u2637\u268A-\u268F\u2E80-\u303E\u3041-\u33FF\u3400-\u4DFF\u4E00-\u9FFF\uA000-\uA4CF\uA960-\uA97F\uAC00-\uD7A3\uF900-\uFAFF\uFE10-\uFE19\uFE30-\uFE6F\uFF00-\uFF60\uFFE0-\uFFE6\u{16FE0}-\u{18DFF}\u{1AFF0}-\u{1B2FF}\u{1D300}-\u{1D376}\u{1F200}-\u{1F265}\u{20000}-\u{3FFFD}]/uy
+// Combining marks, invisible format characters, emoji tags, and Hangul
+// medial/final jamo (which join a leading jamo into one syllable) take no
+// column of their own.
+const ZERO_WIDTH_RE =
+  /[\p{Mn}\p{Me}\u00AD\u1160-\u11FF\u200B-\u200F\u202A-\u202E\u2060-\u206F\uD7B0-\uD7FF\uFEFF\u{E0001}\u{E0020}-\u{E007F}]/uy
+const PICTOGRAPHIC_RE = /\p{Extended_Pictographic}/uy
+const MODIFIER_BASE_RE = /\p{Emoji_Modifier_Base}/uy
+const PRINTABLE_ASCII_RE = /^[ -~]*$/
+
+const ZWJ = 0x200d
+const VS16 = 0xfe0f
+const KEYCAP = 0x20e3
+
+function testAt(re: RegExp, text: string, index: number): boolean {
+  re.lastIndex = index
+  return re.test(text)
+}
+
+/**
+ * Terminal columns a string takes up, ignoring ANSI escape codes.
+ *
+ * Measures code point by code point, like `wcwidth`, and only groups emoji
+ * sequences: VS16 and keycaps widen a narrow base, one skin tone merges into
+ * an `Emoji_Modifier_Base` (any other is drawn on its own), ZWJ-joined
+ * pictographs and the second flag letter add nothing. Avoids `Intl.Segmenter`,
+ * which aborts the process on Node builds without ICU data (nodejs/node#51752).
+ */
 export function visibleLength(text: string): number {
-  return stripAnsi(text).length
+  const visible = stripAnsi(text)
+  if (PRINTABLE_ASCII_RE.test(visible)) return visible.length
+
+  let width = 0
+  // Columns given to the last counted base character, and where it starts.
+  let base = 0
+  let baseAt = -1
+  let joined = false
+  let flagOpen = false
+  // The previous code point is a base that can still take a skin tone (UTS #51
+  // emoji modifier sequence). Anything in between except VS16 breaks it.
+  let modifiable = false
+  for (let i = 0; i < visible.length;) {
+    const at = i
+    const cp = visible.codePointAt(i)!
+    i += cp > 0xffff ? 2 : 1
+
+    const canModify: boolean = modifiable
+    modifiable = false
+    const isSkinTone = cp >= 0x1f3fb && cp <= 0x1f3ff
+    if (cp === VS16 || cp === KEYCAP || (isSkinTone && canModify)) {
+      if (cp === VS16) modifiable = canModify
+      if (base === 1) {
+        width++
+        base = 2
+      }
+      continue
+    }
+    if (cp === ZWJ) {
+      joined = baseAt >= 0 && testAt(PICTOGRAPHIC_RE, visible, baseAt)
+      continue
+    }
+    if (joined) {
+      joined = false
+      if (testAt(PICTOGRAPHIC_RE, visible, at)) {
+        modifiable = testAt(MODIFIER_BASE_RE, visible, at)
+        continue
+      }
+    }
+    const isFlagLetter = cp >= 0x1f1e6 && cp <= 0x1f1ff
+    if (isFlagLetter && flagOpen) {
+      flagOpen = false
+      continue
+    }
+    flagOpen = isFlagLetter
+
+    if (cp >= 0x7f && testAt(ZERO_WIDTH_RE, visible, at)) continue
+    base = cp >= 0x7f && testAt(WIDE_RE, visible, at) ? 2 : 1
+    baseAt = at
+    modifiable = cp >= 0x7f && testAt(MODIFIER_BASE_RE, visible, at)
+    width += base
+  }
+  return width
 }
 
 /** Pad `text` with spaces on the right to a target *visible* width. */
