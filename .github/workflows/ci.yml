@@ -7,14 +7,14 @@ on:
   pull_request:
     branches:
       - main
-    # `labeled` lets a maintainer re-run CI without browser tests by adding the
-    # `skip-browser-tests` label (e.g. when Playwright's apt/CDN install is down).
-    types: [opened, synchronize, reopened, labeled]
+    # Adding the `skip-browser-tests` label re-runs CI without browser tests
+    # (e.g. when Playwright's download is down); removing it re-runs them.
+    types: [opened, synchronize, reopened, labeled, unlabeled]
 
 jobs:
   test:
     # Ignore runs triggered by unrelated labels.
-    if: ${{ github.event.action != 'labeled' || github.event.label.name == 'skip-browser-tests' }}
+    if: ${{ !contains(fromJSON('["labeled", "unlabeled"]'), github.event.action) || github.event.label.name == 'skip-browser-tests' }}
     runs-on: ubuntu-latest
     env:
       SKIP_BROWSER_TESTS: ${{ contains(github.event.pull_request.labels.*.name, 'skip-browser-tests') && '1' || '' }}
