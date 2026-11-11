@@ -246,7 +246,13 @@ function processChildren(
 function processPossibleAttributesSyntax(tokens: Token[], value: { nextIndex: number; node: Node }) {
   const extractedAttributes = extractAttributes(tokens, value.nextIndex)
   if (value.nextIndex < extractedAttributes.nextIndex) {
-    ;(value.node as ElementNode)[1] = Object.assign(value.node[1], extractedAttributes.attrs)
+    const attrs = extractedAttributes.attrs
+    const current = value.node[1] as ElementNodeAttributes
+    // `{.x}` adds to a class the element already has, like `attrJoin` in the markdown-it adapter.
+    if (typeof current.class === 'string' && typeof attrs.class === 'string') {
+      attrs.class = `${current.class} ${attrs.class}`
+    }
+    ;(value.node as ElementNode)[1] = Object.assign(current, attrs)
     value.nextIndex = extractedAttributes.nextIndex
   }
 
