@@ -1,0 +1,5 @@
+![](https://example.com:80@evil.com:443/port.js)
+![](https://example.com:javascript:alert('XSS')/confused.js)
+![](https://example.com:8080/../../evil.com/traverse.js)
+![](https://example.com:０８０/fullwidth-port.js)
+![](https://example.com:%38%30%38%30/encoded-port.js)

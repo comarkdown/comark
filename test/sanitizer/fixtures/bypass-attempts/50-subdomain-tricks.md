@@ -1,0 +1,5 @@
+![](https://example.com.evil.com/subdomain.js)
+![](https://example-com.evil.com/dash.js)
+![](https://examplecom.evil.com/nodot.js)
+![](https://example_com.evil.com/underscore.js)
+![](https://еxample.com/cyrillic-e.js)

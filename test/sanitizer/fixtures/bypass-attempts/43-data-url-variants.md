@@ -1,0 +1,5 @@
+![](data:image/svg+xml,<svg onload=alert('XSS')>)
+![](data:image/svg+xml;base64,PHN2ZyBvbmxvYWQ9YWxlcnQoJ1hTUycpPg==)
+![](data:,<script>alert('XSS')</script>)
+![](data:text/javascript,alert('XSS'))
+![](data:application/x-javascript,alert('XSS'))
