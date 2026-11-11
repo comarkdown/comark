@@ -66,6 +66,9 @@ export async function renderAnsiFromDocument(
   const sanitized = { ...document, nodes: sanitizeForTerminal(document.nodes) }
   return render(sanitized, {
     ...options,
+    // Terminal text: raw HTML block content is shown as written, not escaped
+    // for a markdown reader.
+    rawHtmlText: 'verbatim',
     colors,
     width,
     components: {

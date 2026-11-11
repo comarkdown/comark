@@ -97,3 +97,56 @@ describe('text node escaping', () => {
     expect(node).toEqual(['p', {}, text])
   })
 })
+
+describe('text inside a raw HTML block', () => {
+  const block = (tag: string, text: string): MarkdownDocument =>
+    ({ frontmatter: {}, meta: {}, nodes: [[tag, { $: { html: 1, block: 1 } }, text]] }) as MarkdownDocument
+
+  // CommonMark renderers parse tags inside an HTML block. The parser keeps
+  // some markup as text (an unclosed `<svg>` in `<blockquote>`, the body of
+  // `<pre>`), so writing it back verbatim turned text into live markup.
+  it.each([
+    ['blockquote', "<svg onload=alert('xss')>"],
+    ['div', '<img src=x onerror=alert(1)>'],
+    ['div', '</div><script>alert(1)</script>'],
+    ['div', '<!-- x --><iframe src=x>'],
+    ['div', '<?php echo 1 ?>'],
+    ['pre', '<img src=x onerror=alert(1)>'],
+  ])('<%s> does not write %j back as markup', async (tag, text) => {
+    const md = await renderMarkdown(block(tag, text))
+    expect(md.slice(`<${tag}>`.length, md.lastIndexOf(`</${tag}>`))).not.toMatch(/<[a-z!/?]/i)
+  })
+
+  it.each([
+    ['blockquote', "<svg onload=alert('xss')>"],
+    ['pre', '<b>bold</b> & a < b'],
+    ['div', 'a <b> c'],
+  ])('<%s> keeps %j as the same text through a round-trip', async (tag, text) => {
+    const document = block(tag, text)
+    const md = await renderMarkdown(document)
+    const again = await parseMarkdown(md)
+    expect(await renderMarkdown(again)).toBe(md)
+  })
+
+  it('escapes only the own end tag inside script, style and textarea', async () => {
+    expect(await renderMarkdown(block('script', 'if (a < b) x = "</script><img onerror=1>"'))).toBe(
+      '<script>\nif (a < b) x = "<\\/script><img onerror=1>"\n</script>'
+    )
+    expect(await renderMarkdown(block('style', 'a > b {} </STYLE><b>'))).toBe(
+      '<style>\na > b {} <\\/STYLE><b>\n</style>'
+    )
+    expect(await renderMarkdown(block('textarea', '<b></textarea><img onerror=1>'))).toBe(
+      '<textarea>\n<b>&lt;/textarea><img onerror=1>\n</textarea>'
+    )
+  })
+
+  it('keeps markdown syntax, entities and comparisons as written', async () => {
+    expect(await renderMarkdown(block('div', 'Hello **World** &amp; a < b, 1<2'))).toBe(
+      '<div>\nHello **World** &amp; a < b, 1<2\n</div>'
+    )
+  })
+
+  it('writes the text verbatim with rawHtmlText: verbatim', async () => {
+    expect(await renderMarkdown(block('div', '<b>x</b>'), { rawHtmlText: 'verbatim' })).toBe('<div>\n<b>x</b>\n</div>')
+  })
+})
