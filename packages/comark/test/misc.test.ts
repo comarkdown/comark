@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { parseMarkdown } from '../src/index'
+import type { MarkdownItPlugin } from '../src/types'
+import { defineComarkPlugin, parseMarkdown } from '../src/index'
 
 describe('misc', () => {
   it('ignore props with invalid chars, only /^[a-z0-9_-:]+$/gi', async () => {
@@ -40,6 +41,44 @@ describe('misc', () => {
         ' g ',
         ['del', { class: 'i' }, 'h'],
         ' j',
+      ],
+    ])
+  })
+
+  it('adds `{.x}` to a class the element already has (#568)', async () => {
+    // A plugin that turns `++text++` into `<kbd class="key">` and `%%` into `<icon class="icon">`.
+    const markdownItKbd: MarkdownItPlugin = (md) => {
+      md.inline.ruler.before('emphasis', 'kbd', (state: any, silent: boolean) => {
+        if (!state.src.startsWith('++', state.pos)) return false
+        const end = state.src.indexOf('++', state.pos + 2)
+        if (end < 0) return false
+        if (!silent) {
+          state.push('mdc_inline_span_open', 'kbd', 1).attrs = [['class', 'key']]
+          state.push('text', '', 0).content = state.src.slice(state.pos + 2, end)
+          state.push('mdc_inline_span_close', 'kbd', -1)
+        }
+        state.pos = end + 2
+        return true
+      })
+      md.inline.ruler.before('emphasis', 'icon', (state: any, silent: boolean) => {
+        if (!state.src.startsWith('%%', state.pos)) return false
+        if (!silent) state.push('mdc_inline_component', 'icon', 0).attrs = [['class', 'icon']]
+        state.pos += 2
+        return true
+      })
+    }
+    const kbd = defineComarkPlugin(() => ({ name: 'kbd', markdownItPlugins: [markdownItKbd] }))
+
+    const doc = await parseMarkdown('++a++{.big .wide #k} ++b++{id="x"} %%{.big}', { plugins: [kbd()] })
+    expect(doc.nodes).toEqual([
+      [
+        'p',
+        {},
+        ['kbd', { class: 'key big wide', id: 'k' }, 'a'],
+        ' ',
+        ['kbd', { class: 'key', id: 'x' }, 'b'],
+        ' ',
+        ['icon', { class: 'icon big' }],
       ],
     ])
   })
