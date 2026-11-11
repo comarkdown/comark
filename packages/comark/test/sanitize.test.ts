@@ -344,6 +344,41 @@ describe('validateProp', () => {
     })
   })
 
+  describe('percent-encoded URLs', () => {
+    const options = { allowedLinkPrefixes: ['https://myapp.com'], allowedImagePrefixes: ['https://myapp.com/img/'] }
+
+    // The browser keeps %2F / %5C in the authority: everything before "@" is userinfo.
+    it.each([
+      'https://myapp.com%2F@evil.com/x',
+      'https://myapp.com%2f@evil.com/x',
+      'https://myapp.com%5C@evil.com/x',
+      'https://myapp.com&#37;2F@evil.com/x',
+    ])('blocks %s, which the browser loads from another host', (url) => {
+      expect(validateProp('href', url, options)).toBe(REJECTED_PROP)
+      expect(validateProp('src', url, options)).toBe(REJECTED_PROP)
+    })
+
+    it('blocks a src that leaves the allowed path once percent-decoded', () => {
+      expect(validateProp('src', 'https://myapp.com/img/..%2F..%2Fprivate/x.png', options)).toBe(REJECTED_PROP)
+    })
+
+    it('keeps percent-encoded characters inside an allowed URL', () => {
+      expect(validateProp('href', 'https://myapp.com/a%20b?q=%2F', options)).toBe('https://myapp.com/a%20b?q=%2F')
+      expect(validateProp('src', 'https://myapp.com/img/%E2%9C%93.png', options)).toBe(
+        'https://myapp.com/img/%E2%9C%93.png'
+      )
+    })
+
+    it('rewrites the browser reading to defaultOrigin', () => {
+      const result = validateProp('href', 'https://myapp.com%2F@evil.com/x', {
+        ...options,
+        defaultOrigin: 'https://myapp.com',
+      })
+      expect(typeof result).toBe('string')
+      expect(new URL(result as string).origin).toBe('https://myapp.com')
+    })
+  })
+
   describe('allowDataImages', () => {
     it('allows data: src by default', () => {
       expect(validateProp('src', 'data:image/png;base64,abc')).not.toBe(REJECTED_PROP)

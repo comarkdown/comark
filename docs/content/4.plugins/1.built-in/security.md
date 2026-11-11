@@ -272,6 +272,8 @@ Restricts which URLs are allowed in link props: every [URL prop](#protocol-block
 
 Prefixes compare by parsed origin plus a path-segment boundary, not by raw string matching: `https://myapp.com` allows `https://myapp.com/docs` but never a lookalike host such as `https://myapp.com.evil.com`. Scheme-relative URLs (`//evil.com/page`) resolve to an absolute URL and go through the same checks.
 
+A URL must pass both as the browser reads it and percent-decoded. The browser keeps `%2F` in `https://myapp.com%2F@evil.com/`, so `myapp.com%2F` is a username and the request goes to `evil.com`: the URL is stripped. Decoded, `https://myapp.com/docs/..%2F..%2Fadmin` leaves `/docs/`, so it fails a `https://myapp.com/docs` prefix too.
+
 When a URL does not match any prefix and `defaultOrigin` is set, the URL is rewritten instead of stripped.
 
 ```typescript
