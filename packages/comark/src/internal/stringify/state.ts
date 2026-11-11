@@ -306,6 +306,9 @@ function buildNextIndex(source: string, charCode: number): Int32Array {
  * specific positions, so they are left alone otherwise to avoid mangling
  * ordinary prose like `snake_case`, `a < b` or `AT&T`.
  */
+// Sticky, so it matches at `lastIndex` without slicing the node per `<`
+const OPEN_TAG_START = /<\/?[a-z][a-z0-9-]*[\s/]/iy
+
 function escapeInline(text: string): string {
   // Lazily-built next-`>` index: the tag-likeness check below must not
   // rescan the remainder of the node for every `<` (quadratic on long runs
@@ -334,7 +337,12 @@ function escapeInline(text: string): string {
       }
       nextGt ??= buildNextIndex(source, 62 /* > */)
       if (nextGt[offset + 1] === -1) {
-        return char
+        // No `>` in this node, but it may come from a later sibling:
+        // `x <img src="data:…,` then `<svg>` then `">`. Escape a `<` that
+        // opens a tag name followed by whitespace or `/`, as an attribute or
+        // self-close would; a bare `<b` or `a<b` stays prose.
+        OPEN_TAG_START.lastIndex = offset
+        if (!OPEN_TAG_START.test(source)) return char
       }
       return `\\${char}`
     }

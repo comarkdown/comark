@@ -98,6 +98,31 @@ describe('text node escaping', () => {
   })
 })
 
+describe('tag openers split across nodes', () => {
+  // The `>` of `<img …>` can sit in a later sibling, past an element node.
+  // Written back unescaped, a CommonMark reader would join them into one tag.
+  it.each([
+    ['p', {}, 'x <img src="data:image/svg+xml,', ['svg', { $: { html: 1, block: 0 } }], '"> y'],
+    ['p', {}, 'a <img src=x onerror=alert(1) ', ['em', {}, 'z'], ' >'],
+    ['p', {}, 'a </div ', ['em', {}, 'z'], '>'],
+  ])('escapes the opener in %j', async (...node) => {
+    const md = await renderMarkdown({ frontmatter: {}, meta: {}, nodes: [node] } as unknown as MarkdownDocument)
+    expect(md).toMatch(/\\<\/?[a-z]/)
+    expect((await parseMarkdown(md)).nodes[0]).toEqual(node)
+  })
+
+  it.each(['vector<T', 'if a < b', 'x <3', '<a'.repeat(3)])('leaves prose %j alone', async (text) => {
+    expect((await renderMarkdown(paragraph(text))).trim()).toBe(text)
+  })
+
+  it('keeps a tag-like opener in prose as text through a round-trip', async () => {
+    // `<b and c` could open `<b and c>`, so it is escaped, but reads back the same
+    const { md, node } = await roundTrip('a <b and c')
+    expect(md.trim()).toBe('a \\<b and c')
+    expect(node).toEqual(['p', {}, 'a <b and c'])
+  })
+})
+
 describe('text inside a raw HTML block', () => {
   const block = (tag: string, text: string): MarkdownDocument =>
     ({ frontmatter: {}, meta: {}, nodes: [[tag, { $: { html: 1, block: 1 } }, text]] }) as MarkdownDocument
