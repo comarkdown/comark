@@ -44,11 +44,7 @@ const pipelines = {
  */
 const KNOWN_ISSUES: Record<keyof typeof pipelines, Set<string>> = {
   html: new Set([]),
-  markdown: new Set([
-    // Low: security() keeps the unparseable https://prefix.com::/… as relative; markdown-it normalizes it
-    // to a fetchable URL that stays on the trusted origin but leaves the /prefix/ path
-    '137-url-constructor-edge-exploits.md',
-  ]),
+  markdown: new Set([]),
 }
 
 describe('markdown-sanitizers bypass attempts', () => {

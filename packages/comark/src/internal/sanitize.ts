@@ -125,8 +125,11 @@ function checkUrl(candidate: string, mode: 'link' | 'image', options: PropsValid
     try {
       resolved = new URL(candidate, DUMMY_BASE)
     } catch {
-      // Unparseable even with a base: the browser cannot load it either
-      return 'allow'
+      // Unparseable even with a base, so it has a scheme (`https://a.com:::/x`).
+      // The browser cannot load it, but a markdown renderer reading the output
+      // may normalize it into one that loads, past the prefix check it skipped.
+      const allowedPrefixes = mode === 'link' ? allowedLinkPrefixes : allowedImagePrefixes
+      return allowedPrefixes.includes('*') && allowedProtocols.includes('*') ? 'allow' : 'reject'
     }
     // Genuinely relative URLs are always allowed
     if (resolved.origin === DUMMY_BASE) return 'allow'

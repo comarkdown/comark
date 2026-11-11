@@ -344,6 +344,28 @@ describe('validateProp', () => {
     })
   })
 
+  describe('unparseable URLs', () => {
+    // The browser cannot load them, but a markdown renderer may normalize them into a URL that loads
+    const urls = ['https://myapp.com:::/img/../../evil.com/x.png', 'https://myapp.com:99999/x', 'http://[::1/x']
+
+    it.each(urls)('rejects %s when prefixes are set', (url) => {
+      expect(validateProp('src', url, { allowedImagePrefixes: ['https://myapp.com/img/'] })).toBe(REJECTED_PROP)
+      expect(validateProp('href', url, { allowedLinkPrefixes: ['https://myapp.com'] })).toBe(REJECTED_PROP)
+    })
+
+    it.each(urls)('rejects %s when protocols are restricted', (url) => {
+      expect(validateProp('href', url, { allowedProtocols: ['https'] })).toBe(REJECTED_PROP)
+    })
+
+    it.each(urls)('keeps %s without restrictions', (url) => {
+      expect(validateProp('href', url)).toBe(url)
+    })
+
+    it('keeps relative URLs with prefixes set', () => {
+      expect(validateProp('href', '/a:b::c', { allowedLinkPrefixes: ['https://myapp.com'] })).toBe('/a:b::c')
+    })
+  })
+
   describe('percent-encoded URLs', () => {
     const options = { allowedLinkPrefixes: ['https://myapp.com'], allowedImagePrefixes: ['https://myapp.com/img/'] }
 
