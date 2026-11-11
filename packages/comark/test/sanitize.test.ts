@@ -379,6 +379,16 @@ describe('validateProp', () => {
     })
   })
 
+  describe('longdesc', () => {
+    it('is checked as a link URL', () => {
+      expect(validateProp('longdesc', 'javascript:alert(1)')).toBe(REJECTED_PROP)
+      expect(validateProp('longdesc', 'https://evil.com/x', { allowedLinkPrefixes: ['https://myapp.com'] })).toBe(
+        REJECTED_PROP
+      )
+      expect(validateProp('longdesc', '/about')).toBe('/about')
+    })
+  })
+
   describe('srcset', () => {
     const options = { allowedImagePrefixes: ['https://cdn.myapp.com'] }
 

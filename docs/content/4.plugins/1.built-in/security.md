@@ -126,7 +126,7 @@ Object and array prop values (`:links='[{"to": "/docs", "label": "Docs"}]'`, YAM
 
 ### Protocol blocking
 
-URL props are decoded (URL-encoded and HTML entity variants included) and checked against a hard-coded block list. A prop is a URL prop when its name is `href`, `src`, `to`, `action`, `poster`, `cite`, `background` or `ping`, or ends in `href`, `src`, `url`, `uri` or `link` (optionally plural), such as `xlink:href`, `imageUrl`, or `avatar-src`. Other props are never parsed as URLs, so prose such as `title="JavaScript: the good parts"` is kept.
+URL props are decoded (URL-encoded and HTML entity variants included) and checked against a hard-coded block list. A prop is a URL prop when its name is `href`, `src`, `to`, `action`, `poster`, `cite`, `background`, `ping` or `longdesc`, or ends in `href`, `src`, `url`, `uri` or `link` (optionally plural), such as `xlink:href`, `imageUrl`, or `avatar-src`. Other props are never parsed as URLs, so prose such as `title="JavaScript: the good parts"` is kept.
 
 These URLs are **always** blocked, even if `allowedProtocols: ['*']` is set:
 

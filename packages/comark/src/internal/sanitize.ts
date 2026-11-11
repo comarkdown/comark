@@ -277,7 +277,7 @@ export function isUnsafeUrlValue(value: string): boolean {
 // Attributes browsers navigate to or load as a URL, beyond the `*href` /
 // `*src` / `*url` / `*link` names matched by URL_PROP_SUFFIX. `to` is the
 // Vue Router / NuxtLink destination, which ends up as an `<a href>`.
-const URL_PROPS = new Set(['to', 'action', 'poster', 'cite', 'background', 'ping'])
+const URL_PROPS = new Set(['to', 'action', 'poster', 'cite', 'background', 'ping', 'longdesc'])
 const URL_PROP_SUFFIX = /(?:href|src|url|uri|link)s?$/
 
 /**
