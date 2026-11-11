@@ -1,5 +1,5 @@
 import { escapeHtml, get } from '../../utils/index.ts'
-import { isHtmlSinkKey, isUnsafeRendererProp, isUnsafeUrlValue, isUrlPropKey } from '../sanitize.ts'
+import { isHtmlSinkKey, isUnsafeRendererProp, isUnsafeUrlValue, isUrlPropKey, isVNodeMarkerKey } from '../sanitize.ts'
 import type { NodeRenderData } from '../../types.ts'
 
 export interface ResolveAttributesOptions {
@@ -43,8 +43,8 @@ export function resolveAttributes(
     const value = attrs[key]
     const isBinding = key.charCodeAt(0) === 58 /* ':' */
     const outKey = isBinding ? key.slice(1) : key
-    // HTML sinks are never forwarded from document attributes; see `isHtmlSinkKey`
-    if (isHtmlSinkKey(outKey)) continue
+    // HTML sinks and the VNode marker are never forwarded from document attributes
+    if (isHtmlSinkKey(outKey) || isVNodeMarkerKey(outKey)) continue
 
     let outValue: unknown
     let resultKey = key
