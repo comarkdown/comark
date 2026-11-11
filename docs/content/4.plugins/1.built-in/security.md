@@ -195,7 +195,7 @@ Returns a `ComarkPlugin` that sanitizes the parsed AST.
 | [`tagFallback`](#tagfallback) | `function` | `undefined`  | Defines how to handle unallowed tags in the AST |
 | [`allowedProtocols`](#allowedprotocols) | `string[]` | `['*']` | Protocols permitted in URL props |
 | [`allowedLinkPrefixes`](#allowedlinkprefixes) | `string[]` | `['*']` | URL prefixes permitted in link props (`href`, `to`, …) |
-| [`allowedImagePrefixes`](#allowedimageprefixes) | `string[]` | `['*']` | URL prefixes permitted in image props (`src`, `*src`, `srcset`, `poster`) |
+| [`allowedImagePrefixes`](#allowedimageprefixes) | `string[]` | `['*']` | URL prefixes permitted in image props (`src`, `*src`, `srcset`, `poster`) and `url()` in `style` |
 | [`defaultOrigin`](#defaultorigin) | `string` | `undefined` | Rewrite disallowed URLs to this origin instead of stripping |
 | [`allowDataImages`](#allowdataimages) | `boolean` | `true` | Allow `data:image/*` URIs in image props |
 | [`frontmatter`](#frontmatter-1) | `boolean` | `true` | Sanitize frontmatter as well as the AST |
@@ -287,6 +287,8 @@ security({
 Same as `allowedLinkPrefixes` but applies to image props only: `src`, props ending in `src` (`avatarSrc`), `poster`, and `srcset` / `imagesrcset`. The two options are checked independently; restricting one does not affect the other.
 
 The browser may load any candidate in a `srcset`, so every candidate URL is checked, and one disallowed candidate strips the whole attribute. With `defaultOrigin`, disallowed candidates are rewritten in place instead.
+
+Inline styles fetch images too (`background`, `mask`, `cursor`, `list-style`, …), so every `url()`, `image-set()` and `src()` URL in a `style` prop, or in a bound style object, goes through the same checks. CSS escapes and comments are read the way the browser reads them, so `u\72l(…)` is caught. A style with one disallowed URL is stripped whole, even with `defaultOrigin`. Unsafe protocols such as `url(javascript:…)` are stripped whatever the prefixes.
 
 ```typescript
 security({

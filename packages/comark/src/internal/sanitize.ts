@@ -226,6 +226,71 @@ function validateSrcset(value: string, options: PropsValidationOptions): string 
   return last === 0 ? value : result + value.slice(last)
 }
 
+const CSS_ESCAPE = /\\(?:([0-9a-f]{1,6})(?:\r\n|[ \t\n\r\f])?|(\r\n|[\n\r\f])|([\s\S]))/gi
+
+function decodeCssEscapes(text: string): string {
+  if (!text.includes('\\')) return text
+  return text.replace(CSS_ESCAPE, (_, hex: string, newline: string, char: string) => {
+    if (newline) return '' // line continuation in a string
+    if (!hex) return char
+    const code = Number.parseInt(hex, 16)
+    return code > 0 && code <= 0x10ffff && (code < 0xd800 || code > 0xdfff) ? String.fromCodePoint(code) : '\uFFFD'
+  })
+}
+
+// One CSS token per match, split the way the browser splits them: a comment, a
+// quoted string, a name (escapes included, so `u\72l` is one name), or one
+// other character.
+const CSS_TOKEN =
+  /\/\*[\s\S]*?(?:\*\/|$)|"(?:[^"\\\n\r\f]|\\[\s\S])*"?|'(?:[^'\\\n\r\f]|\\[\s\S])*'?|(?:[\w\u0080-\uffff-]|\\(?:[0-9a-f]{1,6}(?:\r\n|[ \t\n\r\f])?|[^\n\r\f]))+|[\s\S]/gi
+const CSS_URL_REST = /(?:[^)\\]|\\[\s\S])*/y
+
+/**
+ * Every URL an inline style can load: the argument of an unquoted `url(…)`,
+ * and every quoted string. Strings outside `url()` / `image-set()` are never
+ * fetched, so checking them too costs at most a stray reject, and the scan does
+ * not need to track which function it is in.
+ */
+function styleUrls(css: string): string[] {
+  const urls: string[] = []
+  CSS_TOKEN.lastIndex = 0
+  for (let match = CSS_TOKEN.exec(css); match; match = CSS_TOKEN.exec(css)) {
+    const token = match[0]
+    const quote = token[0]
+    if (quote === '"' || quote === "'") {
+      const closed = token.length > 1 && token.endsWith(quote)
+      urls.push(decodeCssEscapes(token.slice(1, closed ? -1 : undefined)).trim())
+      continue
+    }
+    if (css[CSS_TOKEN.lastIndex] !== '(' || decodeCssEscapes(token).toLowerCase() !== 'url') continue
+
+    let start = CSS_TOKEN.lastIndex + 1
+    while (/[ \t\n\r\f]/.test(css[start] ?? '')) start++
+    // `url("…")` is a function with a string argument: the string token is next
+    if (css[start] === '"' || css[start] === "'") continue
+    CSS_URL_REST.lastIndex = start
+    CSS_URL_REST.test(css)
+    urls.push(decodeCssEscapes(css.slice(start, CSS_URL_REST.lastIndex)).trim())
+    CSS_TOKEN.lastIndex = CSS_URL_REST.lastIndex + 1
+  }
+  return urls
+}
+
+/**
+ * Check every URL an inline style loads against the image URL rules: `url()`
+ * in `background`, `mask`, `cursor`, … is fetched like an `<img src>`. One
+ * disallowed URL drops the style; it is never rewritten to `defaultOrigin`.
+ */
+function validateStyle(value: string, options: PropsValidationOptions): string | typeof REJECTED_PROP {
+  // The browser decodes entities before CSS sees them: `url(&quot;…&quot;)`
+  const css = decodeHtmlEntities(value)
+  if (!css.includes('(')) return value
+  for (const url of styleUrls(css)) {
+    if (url && validateUrl(url, 'image', options) !== url) return REJECTED_PROP
+  }
+  return value
+}
+
 /**
  * Whether `url` matches an allowed prefix. Absolute-URL prefixes compare by
  * parsed origin plus a path-segment boundary, so a lookalike host such as
@@ -498,6 +563,7 @@ function validateString(name: string, value: string, options: PropsValidationOpt
   }
   // `srcset` and `<link imagesrcset>`: a list of image URLs
   if (name.endsWith('srcset')) return validateSrcset(value, options)
+  if (name === 'style') return validateStyle(value, options)
   if (!isUrlProp(name)) return value
   return validateUrl(value, name.endsWith('src') || name === 'poster' ? 'image' : 'link', options)
 }
@@ -525,6 +591,12 @@ function validateValue(name: string, value: unknown, options: PropsValidationOpt
   // `:links='[{"to":"javascript:…","labelHtml":"<img onerror>"}]'`.
   if (typeof value === 'object' && value !== null) {
     if (ownsComponentOptions(value)) return REJECTED_PROP
+    // Style object values are CSS: `{ backgroundImage: 'url(…)' }`
+    if (name === 'style') {
+      for (const item of Object.values(value)) {
+        if (typeof item === 'string' && validateStyle(item, options) === REJECTED_PROP) return REJECTED_PROP
+      }
+    }
     const entries: Array<[string, unknown]> = []
     for (const [key, item] of Object.entries(value)) {
       const validated = validateProp(key, item, options)

