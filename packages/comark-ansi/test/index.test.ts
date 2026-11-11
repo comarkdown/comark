@@ -144,6 +144,14 @@ describe('renderAnsiFromDocument', () => {
       const out = await colored('> [!WARNING]\n> Careful')
       expect(out).toContain('\x1B[33m') // YELLOW
     })
+
+    it('shows text inside a raw HTML block as written, without markdown escaping', async () => {
+      const out = await renderAnsiFromDocument(
+        { nodes: [['blockquote', { $: { html: 1, block: 1 } }, '<svg> & <b>']] },
+        { colors: false }
+      )
+      expect(out).toBe('│ <svg> & <b>\n')
+    })
   })
 
   describe('lists', () => {

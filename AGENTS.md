@@ -39,7 +39,7 @@ This is a **monorepo** containing the Comark Markdown parser, document model, pl
 ├── playground/           # Nuxt playground (`pnpm dev:playground`)
 ├── benchmarks/           # CodSpeed Vitest benches (*.bench.ts) + mitata cross-library comparisons (*.ts)
 ├── scripts/              # Build/sync scripts
-├── test/                 # Root-level tests (bundle-size snapshot)
+├── test/                 # Root-level tests (bundle-size snapshot; sanitizer/ runs vercel-labs/markdown-sanitizers fixtures against `security`)
 ├── pnpm-workspace.yaml   # Workspace configuration + dependency catalog
 ├── tsconfig.json         # Root TypeScript config (`pnpm typecheck`)
 ├── vitest.config.ts      # Root Vitest config, scoped to `test/`
@@ -942,6 +942,7 @@ pnpm build        # Build all packages, then sync plugin re-exports
 pnpm stub         # Point every package's dist/ at src/ for local dev (runs on postinstall)
 pnpm test         # Run all package tests
 pnpm test:spec    # Run the SPEC fixtures only
+pnpm test:sanitizer # Run vercel-labs/markdown-sanitizers bypass fixtures against `security` (test/sanitizer)
 pnpm bench        # Run the CodSpeed Vitest benches (benchmarks/*.bench.ts; wall-clock locally)
 pnpm lint         # oxlint + oxfmt --check + comark-lint on docs/content
 pnpm lint:fix     # oxlint --fix + oxfmt (write)
@@ -971,7 +972,7 @@ Workflows live in `.github/workflows/`:
 
 | Workflow | Purpose |
 |----------|---------|
-| `ci.yml` | lint → prepack → test → publish preview (pkg.pr.new) → bundle size check |
+| `ci.yml` | lint → prepack → test → sanitizer suite → publish preview (pkg.pr.new) → bundle size check |
 | `release.yml` | uppt release PR → tag + GitHub release → pack → staged npm publish (see Releasing) |
 | `codspeed.yml` | Runs `pnpm bench` under CodSpeed CPU simulation; reports perf changes on PRs |
 | `commit-signature.yml` | Fails PRs containing unsigned commits |

@@ -91,78 +91,206 @@ function decodeHtmlEntities(value: string): string {
   return result
 }
 
-function validateUrl(
-  value: string,
-  mode: 'link' | 'image',
-  options: PropsValidationOptions
-): string | typeof REJECTED_PROP {
+function decodePercent(value: string): string {
+  try {
+    return decodeURIComponent(value)
+  } catch {
+    // Malformed percent-encoding — inspect the raw value instead of throwing
+    return value
+  }
+}
+
+// Dummy origin used to unmask scheme-relative (//host) and backslash
+// (\\host) URLs: resolved against it, those land on the attacker's origin,
+// while genuinely relative paths stay on the dummy origin.
+const DUMMY_BASE = 'http://comark.invalid'
+
+type UrlVerdict = 'allow' | 'reject' | 'outside-prefixes'
+
+/** Check one reading of a URL against the protocol and prefix rules. */
+function checkUrl(candidate: string, mode: 'link' | 'image', options: PropsValidationOptions): UrlVerdict {
   const {
     allowedLinkPrefixes = ['*'],
     allowedImagePrefixes = ['*'],
     allowedProtocols = ['*'],
-    defaultOrigin,
     allowDataImages = true,
   } = options
-
-  let decodedUrl: string
-  try {
-    decodedUrl = decodeURIComponent(value)
-  } catch {
-    // Malformed percent-encoding — inspect the raw value instead of throwing
-    decodedUrl = value
-  }
-  const urlSanitized = decodeHtmlEntities(decodedUrl)
-
-  // Dummy origin used to unmask scheme-relative (//host) and backslash
-  // (\\host) URLs: resolved against it, those land on the attacker's origin,
-  // while genuinely relative paths stay on the dummy origin.
-  const DUMMY_BASE = 'http://comark.invalid'
 
   let url: URL
   try {
     // Parse without a base — throws for relative URLs, succeeds for absolute
-    url = new URL(urlSanitized)
+    url = new URL(candidate)
   } catch {
     let resolved: URL
     try {
-      resolved = new URL(urlSanitized, DUMMY_BASE)
+      resolved = new URL(candidate, DUMMY_BASE)
     } catch {
-      // Unparseable even with a base — treat as relative
-      return value
+      // Unparseable even with a base, so it has a scheme (`https://a.com:::/x`).
+      // The browser cannot load it, but a markdown renderer reading the output
+      // may normalize it into one that loads, past the prefix check it skipped.
+      const allowedPrefixes = mode === 'link' ? allowedLinkPrefixes : allowedImagePrefixes
+      return allowedPrefixes.includes('*') && allowedProtocols.includes('*') ? 'allow' : 'reject'
     }
-    if (resolved.origin === DUMMY_BASE) {
-      // Genuinely relative URLs are always allowed
-      return value
-    }
+    // Genuinely relative URLs are always allowed
+    if (resolved.origin === DUMMY_BASE) return 'allow'
     // Scheme-relative/backslash form — check it as the absolute URL it
     // resolves to in the browser
     url = resolved
   }
 
-  if (isUnsafeProtocol(url, mode === 'image' && allowDataImages)) {
-    return REJECTED_PROP
+  if (isUnsafeProtocol(url, mode === 'image' && allowDataImages)) return 'reject'
+
+  if (!allowedProtocols.includes('*') && !allowedProtocols.includes(url.protocol.replace(':', ''))) {
+    return 'reject'
   }
 
-  // Check allowed protocols
-  if (!allowedProtocols.includes('*')) {
-    const protocol = url.protocol.replace(':', '')
-    if (!allowedProtocols.includes(protocol)) {
-      return REJECTED_PROP
-    }
-  }
-
-  // Check allowed URL prefixes
   const allowedPrefixes = mode === 'link' ? allowedLinkPrefixes : allowedImagePrefixes
-  if (!allowedPrefixes.includes('*')) {
-    const matchesPrefix = allowedPrefixes.some((prefix) => matchesAllowedPrefix(url, prefix))
-    if (!matchesPrefix) {
-      if (defaultOrigin) {
-        return rewriteToDefaultOrigin(urlSanitized, defaultOrigin)
+  if (!allowedPrefixes.includes('*') && !allowedPrefixes.some((prefix) => matchesAllowedPrefix(url, prefix))) {
+    return 'outside-prefixes'
+  }
+
+  return 'allow'
+}
+
+function validateUrl(
+  value: string,
+  mode: 'link' | 'image',
+  options: PropsValidationOptions
+): string | typeof REJECTED_PROP {
+  // Every way the value may be read must pass. The browser decodes entities but
+  // keeps percent-escapes, so `https://a.com%2F@evil.com` loads from evil.com;
+  // servers and client routers may percent-decode, so `javascript%3A…` and
+  // `/allowed/..%2F..%2Fother` are checked decoded too.
+  const browserForm = decodeHtmlEntities(value)
+  const readings = new Set([browserForm, decodeHtmlEntities(decodePercent(value)), decodePercent(browserForm)])
+
+  let outsidePrefixes = false
+  for (const reading of readings) {
+    const verdict = checkUrl(reading, mode, options)
+    if (verdict === 'reject') return REJECTED_PROP
+    if (verdict === 'outside-prefixes') outsidePrefixes = true
+  }
+
+  if (outsidePrefixes) {
+    return options.defaultOrigin ? rewriteToDefaultOrigin(browserForm, options.defaultOrigin) : REJECTED_PROP
+  }
+
+  return value
+}
+
+function isAsciiWhitespace(char: string): boolean {
+  return char === ' ' || char === '\t' || char === '\n' || char === '\f' || char === '\r'
+}
+
+/**
+ * Validate every image candidate in a `srcset`, following the HTML spec's
+ * candidate parsing: a URL runs to the next whitespace (trailing commas end
+ * the candidate), then descriptors run to the next comma outside parentheses.
+ * The browser may load any candidate, so one rejected URL rejects the whole
+ * attribute; `defaultOrigin` rewrites are spliced back in place.
+ */
+function validateSrcset(value: string, options: PropsValidationOptions): string | typeof REJECTED_PROP {
+  let result = ''
+  let last = 0
+  let i = 0
+  const length = value.length
+
+  while (i < length) {
+    while (i < length && (isAsciiWhitespace(value[i]) || value[i] === ',')) i++
+    if (i >= length) break
+
+    const start = i
+    while (i < length && !isAsciiWhitespace(value[i])) i++
+    let end = i
+    const endsWithComma = value[end - 1] === ','
+    while (end > start && value[end - 1] === ',') end--
+
+    if (!endsWithComma) {
+      let depth = 0
+      while (i < length) {
+        const char = value[i]
+        if (char === '(') depth++
+        else if (char === ')' && depth > 0) depth--
+        else if (char === ',' && depth === 0) break
+        i++
       }
-      return REJECTED_PROP
+    }
+
+    if (end === start) continue
+    const url = value.slice(start, end)
+    const validated = validateUrl(url, 'image', options)
+    if (validated === REJECTED_PROP) return REJECTED_PROP
+    if (validated !== url) {
+      result += value.slice(last, start) + validated
+      last = end
     }
   }
 
+  return last === 0 ? value : result + value.slice(last)
+}
+
+const CSS_ESCAPE = /\\(?:([0-9a-f]{1,6})(?:\r\n|[ \t\n\r\f])?|(\r\n|[\n\r\f])|([\s\S]))/gi
+
+function decodeCssEscapes(text: string): string {
+  if (!text.includes('\\')) return text
+  return text.replace(CSS_ESCAPE, (_, hex: string, newline: string, char: string) => {
+    if (newline) return '' // line continuation in a string
+    if (!hex) return char
+    const code = Number.parseInt(hex, 16)
+    return code > 0 && code <= 0x10ffff && (code < 0xd800 || code > 0xdfff) ? String.fromCodePoint(code) : '\uFFFD'
+  })
+}
+
+// One CSS token per match, split the way the browser splits them: a comment, a
+// quoted string, a name (escapes included, so `u\72l` is one name), or one
+// other character.
+const CSS_TOKEN =
+  /\/\*[\s\S]*?(?:\*\/|$)|"(?:[^"\\\n\r\f]|\\[\s\S])*"?|'(?:[^'\\\n\r\f]|\\[\s\S])*'?|(?:[\w\u0080-\uffff-]|\\(?:[0-9a-f]{1,6}(?:\r\n|[ \t\n\r\f])?|[^\n\r\f]))+|[\s\S]/gi
+const CSS_URL_REST = /(?:[^)\\]|\\[\s\S])*/y
+
+/**
+ * Every URL an inline style can load: the argument of an unquoted `url(…)`,
+ * and every quoted string. Strings outside `url()` / `image-set()` are never
+ * fetched, so checking them too costs at most a stray reject, and the scan does
+ * not need to track which function it is in.
+ */
+function styleUrls(css: string): string[] {
+  const urls: string[] = []
+  CSS_TOKEN.lastIndex = 0
+  for (let match = CSS_TOKEN.exec(css); match; match = CSS_TOKEN.exec(css)) {
+    const token = match[0]
+    const quote = token[0]
+    if (quote === '"' || quote === "'") {
+      const closed = token.length > 1 && token.endsWith(quote)
+      urls.push(decodeCssEscapes(token.slice(1, closed ? -1 : undefined)).trim())
+      continue
+    }
+    if (css[CSS_TOKEN.lastIndex] !== '(' || decodeCssEscapes(token).toLowerCase() !== 'url') continue
+
+    let start = CSS_TOKEN.lastIndex + 1
+    while (/[ \t\n\r\f]/.test(css[start] ?? '')) start++
+    // `url("…")` is a function with a string argument: the string token is next
+    if (css[start] === '"' || css[start] === "'") continue
+    CSS_URL_REST.lastIndex = start
+    CSS_URL_REST.test(css)
+    urls.push(decodeCssEscapes(css.slice(start, CSS_URL_REST.lastIndex)).trim())
+    CSS_TOKEN.lastIndex = CSS_URL_REST.lastIndex + 1
+  }
+  return urls
+}
+
+/**
+ * Check every URL an inline style loads against the image URL rules: `url()`
+ * in `background`, `mask`, `cursor`, … is fetched like an `<img src>`. One
+ * disallowed URL drops the style; it is never rewritten to `defaultOrigin`.
+ */
+function validateStyle(value: string, options: PropsValidationOptions): string | typeof REJECTED_PROP {
+  // The browser decodes entities before CSS sees them: `url(&quot;…&quot;)`
+  const css = decodeHtmlEntities(value)
+  if (!css.includes('(')) return value
+  for (const url of styleUrls(css)) {
+    if (url && validateUrl(url, 'image', options) !== url) return REJECTED_PROP
+  }
   return value
 }
 
@@ -217,7 +345,7 @@ export function isUnsafeUrlValue(value: string): boolean {
 // Attributes browsers navigate to or load as a URL, beyond the `*href` /
 // `*src` / `*url` / `*link` names matched by URL_PROP_SUFFIX. `to` is the
 // Vue Router / NuxtLink destination, which ends up as an `<a href>`.
-const URL_PROPS = new Set(['to', 'action', 'poster', 'cite', 'background', 'ping'])
+const URL_PROPS = new Set(['to', 'action', 'poster', 'cite', 'background', 'ping', 'longdesc'])
 const URL_PROP_SUFFIX = /(?:href|src|url|uri|link)s?$/
 
 /**
@@ -441,6 +569,9 @@ function validateString(name: string, value: string, options: PropsValidationOpt
   if (name === 'attributename') {
     return decodeHtmlEntities(value).toLowerCase().includes('href') ? REJECTED_PROP : value
   }
+  // `srcset` and `<link imagesrcset>`: a list of image URLs
+  if (name.endsWith('srcset')) return validateSrcset(value, options)
+  if (name === 'style') return validateStyle(value, options)
   if (!isUrlProp(name)) return value
   return validateUrl(value, name.endsWith('src') || name === 'poster' ? 'image' : 'link', options)
 }
@@ -452,7 +583,7 @@ function validateValue(name: string, value: unknown, options: PropsValidationOpt
   // block-props JSON round-trip, and is stringified when set as an attribute.
   // Reject it instead of passing it through unvalidated (#367). Other URL
   // props (`to`, `link`, …) accept route/link objects, validated below.
-  if (name === 'href' || name === 'xlinkhref' || name === 'src') return REJECTED_PROP
+  if (name === 'href' || name === 'xlinkhref' || name === 'src' || name === 'srcset') return REJECTED_PROP
 
   // Array items inherit the prop name: `:hrefs='["javascript:…"]'`.
   if (Array.isArray(value)) {
@@ -468,6 +599,12 @@ function validateValue(name: string, value: unknown, options: PropsValidationOpt
   // `:links='[{"to":"javascript:…","labelHtml":"<img onerror>"}]'`.
   if (typeof value === 'object' && value !== null) {
     if (ownsComponentOptions(value)) return REJECTED_PROP
+    // Style object values are CSS: `{ backgroundImage: 'url(…)' }`
+    if (name === 'style') {
+      for (const item of Object.values(value)) {
+        if (typeof item === 'string' && validateStyle(item, options) === REJECTED_PROP) return REJECTED_PROP
+      }
+    }
     const entries: Array<[string, unknown]> = []
     for (const [key, item] of Object.entries(value)) {
       const validated = validateProp(key, item, options)

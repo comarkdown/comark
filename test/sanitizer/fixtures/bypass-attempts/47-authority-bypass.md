@@ -1,0 +1,5 @@
+![](https://trusted.org@evil.com/image.png)
+![](https://images.com@malicious.site/payload.js)
+![](https://user:pass@example.com@evil.com/confused.js)
+![](https://example.com%40evil.com/encoded-at.js)
+![](https://example.com＠evil.com/fullwidth-at.js)

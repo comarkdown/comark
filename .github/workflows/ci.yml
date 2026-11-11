@@ -25,6 +25,7 @@ jobs:
       - run: pnpm lint
       - run: pnpm prepack
       - run: pnpm test
+      - run: pnpm test:sanitizer
       - name: Publish
         run: pnpx pkg-pr-new publish --pnpm './packages/*'
       - name: Check package bundle size

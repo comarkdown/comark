@@ -110,6 +110,7 @@ catalog:
   comark-linter: ^0.10.1
   oxfmt: ^0.77.0
   oxlint: ^1.92.0
+  parse5: ^8.0.1
   playwright: ^1.65.0
   postcss: ^8.5.32
 

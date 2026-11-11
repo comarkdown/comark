@@ -365,6 +365,9 @@ catalogs:
     oxlint:
       specifier: ^1.92.0
       version: 1.92.0
+    parse5:
+      specifier: ^8.0.1
+      version: 8.0.1
     playwright:
       specifier: ^1.65.0
       version: 1.65.0
@@ -516,6 +519,9 @@ importers:
       oxlint:
         specifier: 'catalog:'
         version: 1.92.0
+      parse5:
+        specifier: 'catalog:'
+        version: 8.0.1
       playwright:
         specifier: 'catalog:'
         version: 1.65.0

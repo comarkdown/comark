@@ -158,3 +158,83 @@ describe('component after a list', () => {
     expect(t2.nodes).toEqual(t1.nodes)
   })
 })
+
+describe('link and image serialization', () => {
+  const doc = (node: unknown) =>
+    ({ frontmatter: {}, meta: {}, nodes: [['p', {}, node]] }) as unknown as MarkdownDocument
+
+  // The URL the security plugin validated must be the URL a CommonMark reader sees.
+  it.each([
+    ['an unbalanced ")"', 'https://safe.com)javascript:alert(1)'],
+    ['an unbalanced "("', 'https://a.com/(x'],
+    ['balanced parentheses', 'https://en.wikipedia.org/wiki/Foo_(bar)'],
+    ['an entity-like "&"', 'https://a.com/?a=1&amp;b=2'],
+    ['a plain "&"', 'https://a.com/?a=1&b=2'],
+    ['percent escapes', 'https://a.com/a%20b'],
+  ])('keeps an href with %s', async (_, href) => {
+    const rendered = await renderMarkdown(doc(['a', { href }, 'x']))
+    const t2 = await parseMarkdown(rendered)
+    expect((t2.nodes[0] as any)[2][1].href).toBe(href)
+  })
+
+  it('keeps an image src with an unbalanced ")"', async () => {
+    const src = 'https://safe.com)javascript:alert(1)'
+    const t2 = await parseMarkdown(await renderMarkdown(doc(['img', { src, alt: 'x' }])))
+    expect((t2.nodes[0] as any)[2][1].src).toBe(src)
+  })
+
+  // `\` is `/` to the browser in an http URL, but a markdown reader encodes it as
+  // `%5C`, which would turn `example.com\` into userinfo and evil.com into the host.
+  it.each(['https://example.com\\@evil.com/x', 'https:\\\\example.com\\@evil.com/x'])(
+    'keeps the host of %s',
+    async (href) => {
+      const t2 = await parseMarkdown(await renderMarkdown(doc(['a', { href }, 'x'])))
+      const out = (t2.nodes[0] as any)[2][1].href
+      expect(new URL(out).origin).toBe(new URL(href).origin)
+    }
+  )
+
+  it('keeps a relative URL with a backslash on the same origin', async () => {
+    const t2 = await parseMarkdown(await renderMarkdown(doc(['a', { href: '\\\\evil.com/x' }, 'x'])))
+    const out = (t2.nodes[0] as any)[2][1].href
+    expect(new URL(out, 'https://app.example/').origin).toBe('https://app.example')
+  })
+
+  it('keeps alt text from the parser as written', async () => {
+    for (const md of ['![a\\](b) \\[c](/a.png)', '![[a]](/a.png)', '![a &lt; b](/a.png)']) {
+      const { t1, t2 } = await roundTrip(md)
+      expect(t2.nodes).toEqual(t1.nodes)
+    }
+  })
+
+  it('does not let alt text or a title break out of the image', async () => {
+    const rendered = await renderMarkdown(
+      doc(['img', { src: '/a.png', alt: 'a](https://evil.com/x) [', title: 'say "hi" \\ <iframe>' }])
+    )
+    const img = ((await parseMarkdown(rendered)).nodes[0] as any)[2]
+    expect(img[1].src).toBe('/a.png')
+    expect(img[1].title).toBe('say "hi" \\ <iframe>')
+    expect((await parseMarkdown(rendered)).nodes[0]).toHaveLength(3)
+  })
+
+  it('writes a missing or empty destination as <>, so a title is not read as the URL', async () => {
+    for (const attrs of [{ title: '<iframe src=javascript:alert(1)>' }, { src: '', title: 'javascript:alert(1)' }]) {
+      const rendered = await renderMarkdown(doc(['img', { alt: 'x', ...attrs }]))
+      expect(rendered).toMatch(/\]\(<> "/)
+      const img = ((await parseMarkdown(rendered)).nodes[0] as any)[2]
+      expect(img[0]).toBe('img')
+      expect(img[1].src).toBeUndefined()
+      expect(img[1].title).toBe(attrs.title)
+    }
+    expect(await renderMarkdown(doc(['a', {}, 'x']))).toBe('[x](<>)')
+  })
+
+  it('only writes an autolink when the URL can be one', async () => {
+    expect(await renderMarkdown(doc(['a', { href: 'https://a.com/x' }, 'https://a.com/x']))).toBe('<https://a.com/x>')
+    const href = 'https://a.com/>x'
+    const rendered = await renderMarkdown(doc(['a', { href }, href]))
+    expect(rendered).not.toMatch(/^</)
+    // `>` is percent-encoded by the parser, as for any link destination
+    expect(decodeURI(((await parseMarkdown(rendered)).nodes[0] as any)[2][1].href)).toBe(href)
+  })
+})
