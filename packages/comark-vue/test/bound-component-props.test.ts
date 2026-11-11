@@ -105,6 +105,20 @@ describe('bound props cannot smuggle a component into a polymorphic slot', () =>
     }
   })
 
+  it("does not render an element's own attributes as a forged VNode", async () => {
+    // `h(tag, props)` renders a props bag marked as a VNode as a child, whatever the tag filters allow.
+    const attrs = '{:__v_isVNode="true" type="script" :shapeFlag="9" children="probe"}'
+    for (const markdown of [`::wrapper${attrs}\n::`, `x :wrapper${attrs}`]) {
+      for (const plugins of [[], [security({ allowedTags: ['wrapper', 'p'] })]]) {
+        const tree = await parseMarkdown(markdown, { plugins })
+        const app = createSSRApp({ setup: () => () => h(MarkdownDocument, { value: tree }) })
+        const html = await renderToString(app as any)
+        expect(html).not.toContain('<script')
+        expect(html).toContain('<wrapper')
+      }
+    }
+  })
+
   it('keeps string tags for `as`', async () => {
     const html = await renderMarkdown('::poly{:as=\'"section"\'}\n::')
     expect(html).toContain('<section>poly</section>')

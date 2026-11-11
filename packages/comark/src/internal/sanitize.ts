@@ -300,6 +300,11 @@ export function isHtmlSinkKey(key: string): boolean {
   return htmlSinkProps.has(key.replace(/^[.^]/, '').toLowerCase())
 }
 
+/** Whether attribute `key` is Vue's VNode marker: `h(tag, props)` renders a props bag that has it as a forged child. */
+export function isVNodeMarkerKey(key: string): boolean {
+  return key.replace(/^(?::|v-bind:)/, '').toLowerCase() === '__v_isvnode'
+}
+
 /**
  * Whether a decoded prop value is unsafe to hand a renderer: `as` / `is` / `tag`
  * must not be objects, and no object at any depth may carry component options or
@@ -400,7 +405,7 @@ export function isUnsafeTagSelector(key: string, value: unknown, isFilteredTag: 
 
 export function validateProp(attribute: string, value: unknown, options: PropsValidationOptions = {}): unknown {
   const name = normalizePropName(attribute)
-  if (isUnsafePropName(name)) {
+  if (isUnsafePropName(name) || isVNodeMarkerKey(attribute)) {
     return REJECTED_PROP
   }
 

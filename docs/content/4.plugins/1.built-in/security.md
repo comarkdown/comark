@@ -113,6 +113,7 @@ Renderers hand bound props to components, and Vue treats a plain object with a `
 
 - `as`, `is` and `tag` (and their bindings) that are objects. Strings, arrays, numbers and booleans stay: Vue renders nothing for the last three.
 - Any object or array with one of those keys at any depth, such as `:icon='{"extends": {"template": "..."}}'` or `:icon='{"__v_isVNode": true, "type": "script"}'`.
+- An `__v_isVNode` attribute on the element itself, bound or not. Vue would otherwise render the element's attributes as a ready-made element.
 
 Data props keep working, for example `:items='[{"label": "a"}]'`. The Vue renderer also only resolves `as` to a component when it is a string. Frontmatter is checked for component options only, so data such as `tag: [vue, nuxt]` stays; a binding that passes a frontmatter object to `as`, `is` or `tag` is still dropped.
 

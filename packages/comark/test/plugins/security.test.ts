@@ -715,6 +715,16 @@ describe('security plugin — component-like values', () => {
     expect((tree.nodes[1] as [string, any])[1]).toEqual({ ':config': '{"label":"a"}' })
   })
 
+  it("strips the VNode marker from an element's own attributes", async () => {
+    const tree = makeTree([
+      ['wrapper', { ':__v_isVNode': 'true', type: 'script', ':shapeFlag': '9' }],
+      ['wrapper', { __v_isVNode: true, 'v-bind:__v_isVNode': 'true', title: 'a' }],
+    ])
+    await runPlugin(tree)
+    expect((tree.nodes[0] as [string, any])[1]).toEqual({ type: 'script', ':shapeFlag': '9' })
+    expect((tree.nodes[1] as [string, any])[1]).toEqual({ title: 'a' })
+  })
+
   it('strips a bound object carrying component options', async () => {
     const tree = makeTree([
       ['span', { ':icon': '{"extends":{"template":"<b>x</b>"}}' }, 'x'],
