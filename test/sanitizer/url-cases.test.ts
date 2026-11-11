@@ -236,7 +236,6 @@ describe('reduced findings', () => {
     expect(out).not.toMatch(/<svg[^>]*onload/i)
   })
 
-
   it('renderMarkdown escapes ")" in a link destination (41)', async () => {
     // `https://safe.com)…` fails URL parsing, so security() keeps it as relative;
     // written back unescaped, the destination ends at ")" and becomes https://safe.com.
