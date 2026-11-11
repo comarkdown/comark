@@ -243,8 +243,12 @@ function processChildren(
   return { children, nextIndex: i }
 }
 
-function processPossibleAttributesSyntax(tokens: Token[], value: { nextIndex: number; node: Node }) {
-  const extractedAttributes = extractAttributes(tokens, value.nextIndex)
+function processPossibleAttributesSyntax(
+  tokens: Token[],
+  value: { nextIndex: number; node: Node },
+  skipEmptyText: boolean = true
+) {
+  const extractedAttributes = extractAttributes(tokens, value.nextIndex, skipEmptyText)
   if (value.nextIndex < extractedAttributes.nextIndex) {
     const attrs = extractedAttributes.attrs
     const current = value.node[1] as ElementNodeAttributes
@@ -553,9 +557,8 @@ const processors: Record<string, Processor> = {
   },
   mdc_inline_component(tokens, start) {
     const token = tokens[start]
-    const tokenAttrs = processAttributes(token.attrs)
-    const { attrs, nextIndex } = extractAttributes(tokens, start + 1, false)
-    return { node: [token.tag, { ...tokenAttrs, ...attrs }] as Node, nextIndex }
+    const node = [token.tag, processAttributes(token.attrs)] as Node
+    return processPossibleAttributesSyntax(tokens, { node, nextIndex: start + 1 }, false)
   },
 
   image(tokens, start) {

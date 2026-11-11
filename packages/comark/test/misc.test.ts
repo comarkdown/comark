@@ -46,7 +46,7 @@ describe('misc', () => {
   })
 
   it('adds `{.x}` to a class the element already has (#568)', async () => {
-    // A plugin that turns `++text++` into `<kbd class="key">`.
+    // A plugin that turns `++text++` into `<kbd class="key">` and `%%` into `<icon class="icon">`.
     const markdownItKbd: MarkdownItPlugin = (md) => {
       md.inline.ruler.before('emphasis', 'kbd', (state: any, silent: boolean) => {
         if (!state.src.startsWith('++', state.pos)) return false
@@ -60,12 +60,26 @@ describe('misc', () => {
         state.pos = end + 2
         return true
       })
+      md.inline.ruler.before('emphasis', 'icon', (state: any, silent: boolean) => {
+        if (!state.src.startsWith('%%', state.pos)) return false
+        if (!silent) state.push('mdc_inline_component', 'icon', 0).attrs = [['class', 'icon']]
+        state.pos += 2
+        return true
+      })
     }
     const kbd = defineComarkPlugin(() => ({ name: 'kbd', markdownItPlugins: [markdownItKbd] }))
 
-    const doc = await parseMarkdown('++a++{.big .wide #k} ++b++{id="x"}', { plugins: [kbd()] })
+    const doc = await parseMarkdown('++a++{.big .wide #k} ++b++{id="x"} %%{.big}', { plugins: [kbd()] })
     expect(doc.nodes).toEqual([
-      ['p', {}, ['kbd', { class: 'key big wide', id: 'k' }, 'a'], ' ', ['kbd', { class: 'key', id: 'x' }, 'b']],
+      [
+        'p',
+        {},
+        ['kbd', { class: 'key big wide', id: 'k' }, 'a'],
+        ' ',
+        ['kbd', { class: 'key', id: 'x' }, 'b'],
+        ' ',
+        ['icon', { class: 'icon big' }],
+      ],
     ])
   })
 
