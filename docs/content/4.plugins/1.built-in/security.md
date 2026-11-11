@@ -195,7 +195,7 @@ Returns a `ComarkPlugin` that sanitizes the parsed AST.
 | [`tagFallback`](#tagfallback) | `function` | `undefined`  | Defines how to handle unallowed tags in the AST |
 | [`allowedProtocols`](#allowedprotocols) | `string[]` | `['*']` | Protocols permitted in URL props |
 | [`allowedLinkPrefixes`](#allowedlinkprefixes) | `string[]` | `['*']` | URL prefixes permitted in link props (`href`, `to`, …) |
-| [`allowedImagePrefixes`](#allowedimageprefixes) | `string[]` | `['*']` | URL prefixes permitted in image props (`src`, `*src`, `poster`) |
+| [`allowedImagePrefixes`](#allowedimageprefixes) | `string[]` | `['*']` | URL prefixes permitted in image props (`src`, `*src`, `srcset`, `poster`) |
 | [`defaultOrigin`](#defaultorigin) | `string` | `undefined` | Rewrite disallowed URLs to this origin instead of stripping |
 | [`allowDataImages`](#allowdataimages) | `boolean` | `true` | Allow `data:image/*` URIs in image props |
 | [`frontmatter`](#frontmatter-1) | `boolean` | `true` | Sanitize frontmatter as well as the AST |
@@ -284,7 +284,9 @@ security({
 
 ### `allowedImagePrefixes`
 
-Same as `allowedLinkPrefixes` but applies to image props only: `src`, props ending in `src` (`avatarSrc`), and `poster`. The two options are checked independently; restricting one does not affect the other.
+Same as `allowedLinkPrefixes` but applies to image props only: `src`, props ending in `src` (`avatarSrc`), `poster`, and `srcset` / `imagesrcset`. The two options are checked independently; restricting one does not affect the other.
+
+The browser may load any candidate in a `srcset`, so every candidate URL is checked, and one disallowed candidate strips the whole attribute. With `defaultOrigin`, disallowed candidates are rewritten in place instead.
 
 ```typescript
 security({

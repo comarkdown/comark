@@ -175,6 +175,57 @@ function validateUrl(
   return value
 }
 
+function isAsciiWhitespace(char: string): boolean {
+  return char === ' ' || char === '\t' || char === '\n' || char === '\f' || char === '\r'
+}
+
+/**
+ * Validate every image candidate in a `srcset`, following the HTML spec's
+ * candidate parsing: a URL runs to the next whitespace (trailing commas end
+ * the candidate), then descriptors run to the next comma outside parentheses.
+ * The browser may load any candidate, so one rejected URL rejects the whole
+ * attribute; `defaultOrigin` rewrites are spliced back in place.
+ */
+function validateSrcset(value: string, options: PropsValidationOptions): string | typeof REJECTED_PROP {
+  let result = ''
+  let last = 0
+  let i = 0
+  const length = value.length
+
+  while (i < length) {
+    while (i < length && (isAsciiWhitespace(value[i]) || value[i] === ',')) i++
+    if (i >= length) break
+
+    const start = i
+    while (i < length && !isAsciiWhitespace(value[i])) i++
+    let end = i
+    const endsWithComma = value[end - 1] === ','
+    while (end > start && value[end - 1] === ',') end--
+
+    if (!endsWithComma) {
+      let depth = 0
+      while (i < length) {
+        const char = value[i]
+        if (char === '(') depth++
+        else if (char === ')' && depth > 0) depth--
+        else if (char === ',' && depth === 0) break
+        i++
+      }
+    }
+
+    if (end === start) continue
+    const url = value.slice(start, end)
+    const validated = validateUrl(url, 'image', options)
+    if (validated === REJECTED_PROP) return REJECTED_PROP
+    if (validated !== url) {
+      result += value.slice(last, start) + validated
+      last = end
+    }
+  }
+
+  return last === 0 ? value : result + value.slice(last)
+}
+
 /**
  * Whether `url` matches an allowed prefix. Absolute-URL prefixes compare by
  * parsed origin plus a path-segment boundary, so a lookalike host such as
@@ -445,6 +496,8 @@ function validateString(name: string, value: string, options: PropsValidationOpt
   if (name === 'attributename') {
     return decodeHtmlEntities(value).toLowerCase().includes('href') ? REJECTED_PROP : value
   }
+  // `srcset` and `<link imagesrcset>`: a list of image URLs
+  if (name.endsWith('srcset')) return validateSrcset(value, options)
   if (!isUrlProp(name)) return value
   return validateUrl(value, name.endsWith('src') || name === 'poster' ? 'image' : 'link', options)
 }
@@ -456,7 +509,7 @@ function validateValue(name: string, value: unknown, options: PropsValidationOpt
   // block-props JSON round-trip, and is stringified when set as an attribute.
   // Reject it instead of passing it through unvalidated (#367). Other URL
   // props (`to`, `link`, …) accept route/link objects, validated below.
-  if (name === 'href' || name === 'xlinkhref' || name === 'src') return REJECTED_PROP
+  if (name === 'href' || name === 'xlinkhref' || name === 'src' || name === 'srcset') return REJECTED_PROP
 
   // Array items inherit the prop name: `:hrefs='["javascript:…"]'`.
   if (Array.isArray(value)) {

@@ -379,6 +379,67 @@ describe('validateProp', () => {
     })
   })
 
+  describe('srcset', () => {
+    const options = { allowedImagePrefixes: ['https://cdn.myapp.com'] }
+
+    it('keeps a srcset whose candidates all match', () => {
+      const srcset = 'https://cdn.myapp.com/a.png 1x, https://cdn.myapp.com/b.png 2x, /c.png 480w'
+      expect(validateProp('srcset', srcset, options)).toBe(srcset)
+    })
+
+    it.each([
+      'https://evil.com/x.png',
+      'https://evil.com/x.png 1x',
+      'https://cdn.myapp.com/a.png 1x, https://evil.com/x.png 2x',
+      'https://cdn.myapp.com/a.png 1x,https://evil.com/x.png',
+      'https://cdn.myapp.com/a.png, https://evil.com/x.png',
+      '  ,https://evil.com/x.png  ',
+      '//evil.com/x.png 2x',
+      'javascript:alert(1)',
+      'https://myapp.com%2F@evil.com/x.png 1x',
+    ])('rejects %j', (srcset) => {
+      expect(validateProp('srcset', srcset, options)).toBe(REJECTED_PROP)
+    })
+
+    it('reads a comma inside a URL as part of the URL, like the browser', () => {
+      // No whitespace before the comma: one candidate, a path on cdn.myapp.com
+      const srcset = 'https://cdn.myapp.com/a.png,https://evil.com/x.png'
+      expect(validateProp('srcset', srcset, options)).toBe(srcset)
+    })
+
+    it('rejects a disallowed candidate hidden after a parenthesized descriptor', () => {
+      expect(validateProp('srcset', '/a.png 1x (foo, https://evil.com/x.png), https://evil.com/y.png', options)).toBe(
+        REJECTED_PROP
+      )
+    })
+
+    it('checks the prefixes for imagesrcset and bound srcset too', () => {
+      expect(validateProp('imagesrcset', 'https://evil.com/x.png 1x', options)).toBe(REJECTED_PROP)
+      expect(validateProp(':srcset', '"https://evil.com/x.png 1x"', options)).toBe(REJECTED_PROP)
+    })
+
+    it('blocks data: candidates when allowDataImages is false', () => {
+      expect(validateProp('srcset', 'data:image/png;base64,abc 1x', { allowDataImages: false })).toBe(REJECTED_PROP)
+    })
+
+    it('rewrites disallowed candidates to defaultOrigin in place', () => {
+      expect(
+        validateProp('srcset', '/a.png 1x, https://evil.com/b.png 2x', {
+          ...options,
+          defaultOrigin: 'https://cdn.myapp.com',
+        })
+      ).toBe('/a.png 1x, https://cdn.myapp.com/b.png 2x')
+    })
+
+    it('rejects a non-string srcset', () => {
+      expect(validateProp(':srcset', '["https://evil.com/x.png"]', options)).toBe(REJECTED_PROP)
+    })
+
+    it('leaves srcset alone without prefix options', () => {
+      expect(validateProp('srcset', 'https://any.com/a.png 1x')).toBe('https://any.com/a.png 1x')
+    })
+  })
+
   describe('allowDataImages', () => {
     it('allows data: src by default', () => {
       expect(validateProp('src', 'data:image/png;base64,abc')).not.toBe(REJECTED_PROP)
