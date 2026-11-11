@@ -27,7 +27,7 @@ jobs:
           node-version: '26.13.0'
       - run: npm i -g --force corepack && corepack enable
       - run: pnpm install
-      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm exec playwright install chromium
         if: env.SKIP_BROWSER_TESTS != '1'
         timeout-minutes: 2
       - run: pnpm dev:prepare
