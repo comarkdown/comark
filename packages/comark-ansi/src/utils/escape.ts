@@ -78,16 +78,19 @@ export function visibleLength(text: string): number {
   let baseAt = -1
   let joined = false
   let flagOpen = false
-  // The last base can still take a skin tone (UTS #51 emoji modifier sequence).
+  // The previous code point is a base that can still take a skin tone (UTS #51
+  // emoji modifier sequence). Anything in between except VS16 breaks it.
   let modifiable = false
   for (let i = 0; i < visible.length;) {
     const at = i
     const cp = visible.codePointAt(i)!
     i += cp > 0xffff ? 2 : 1
 
+    const canModify: boolean = modifiable
+    modifiable = false
     const isSkinTone = cp >= 0x1f3fb && cp <= 0x1f3ff
-    if (cp === VS16 || cp === KEYCAP || (isSkinTone && modifiable)) {
-      if (isSkinTone) modifiable = false
+    if (cp === VS16 || cp === KEYCAP || (isSkinTone && canModify)) {
+      if (cp === VS16) modifiable = canModify
       if (base === 1) {
         width++
         base = 2
@@ -108,7 +111,6 @@ export function visibleLength(text: string): number {
     const isFlagLetter = cp >= 0x1f1e6 && cp <= 0x1f1ff
     if (isFlagLetter && flagOpen) {
       flagOpen = false
-      modifiable = false
       continue
     }
     flagOpen = isFlagLetter
