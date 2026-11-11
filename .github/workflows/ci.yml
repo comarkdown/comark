@@ -29,6 +29,7 @@ jobs:
       - run: pnpm install
       - run: pnpm exec playwright install --with-deps chromium
         if: env.SKIP_BROWSER_TESTS != '1'
+        timeout-minutes: 2
       - run: pnpm dev:prepare
       - run: pnpm lint
       - run: pnpm prepack
