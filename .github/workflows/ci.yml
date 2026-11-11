@@ -7,10 +7,17 @@ on:
   pull_request:
     branches:
       - main
+    # `labeled` lets a maintainer re-run CI without browser tests by adding the
+    # `skip-browser-tests` label (e.g. when Playwright's apt/CDN install is down).
+    types: [opened, synchronize, reopened, labeled]
 
 jobs:
   test:
+    # Ignore runs triggered by unrelated labels.
+    if: ${{ github.event.action != 'labeled' || github.event.label.name == 'skip-browser-tests' }}
     runs-on: ubuntu-latest
+    env:
+      SKIP_BROWSER_TESTS: ${{ contains(github.event.pull_request.labels.*.name, 'skip-browser-tests') && '1' || '' }}
 
     steps:
       - uses: actions/checkout@v7
@@ -21,6 +28,7 @@ jobs:
       - run: npm i -g --force corepack && corepack enable
       - run: pnpm install
       - run: pnpm exec playwright install --with-deps chromium
+        if: env.SKIP_BROWSER_TESTS != '1'
       - run: pnpm dev:prepare
       - run: pnpm lint
       - run: pnpm prepack

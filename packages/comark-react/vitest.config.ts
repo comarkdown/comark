@@ -1,6 +1,9 @@
 import { defineConfig } from 'vitest/config'
 import { playwright } from '@vitest/browser-playwright'
 
+// Set by CI when a maintainer applies the `skip-browser-tests` label.
+const skipBrowser = process.env.SKIP_BROWSER_TESTS === '1'
+
 export default defineConfig({
   test: {
     projects: [
@@ -11,17 +14,21 @@ export default defineConfig({
           exclude: ['test/**/*.browser.test.tsx'],
         },
       },
-      {
-        test: {
-          name: 'client',
-          include: ['test/**/*.browser.test.tsx'],
-          browser: {
-            enabled: true,
-            provider: playwright(),
-            instances: [{ browser: 'chromium', headless: true }],
-          },
-        },
-      },
+      ...(skipBrowser
+        ? []
+        : [
+            {
+              test: {
+                name: 'client',
+                include: ['test/**/*.browser.test.tsx'],
+                browser: {
+                  enabled: true,
+                  provider: playwright(),
+                  instances: [{ browser: 'chromium', headless: true }],
+                },
+              },
+            },
+          ]),
     ],
   },
 })
