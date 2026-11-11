@@ -557,7 +557,8 @@ const processors: Record<string, Processor> = {
   },
   mdc_inline_component(tokens, start) {
     const token = tokens[start]
-    const node = [token.tag, processAttributes(token.attrs)] as Node
+    // Copy own properties so a `__proto__` attribute from a plugin token cannot set the prototype.
+    const node = [token.tag, { ...processAttributes(token.attrs) }] as Node
     return processPossibleAttributesSyntax(tokens, { node, nextIndex: start + 1 }, false)
   },
 
