@@ -47,6 +47,7 @@ const WIDE_RE =
 const ZERO_WIDTH_RE =
   /[\p{Mn}\p{Me}\u00AD\u1160-\u11FF\u200B-\u200F\u202A-\u202E\u2060-\u206F\uD7B0-\uD7FF\uFEFF\u{E0001}\u{E0020}-\u{E007F}]/uy
 const PICTOGRAPHIC_RE = /\p{Extended_Pictographic}/uy
+const MODIFIER_BASE_RE = /\p{Emoji_Modifier_Base}/uy
 const PRINTABLE_ASCII_RE = /^[ -~]*$/
 
 const ZWJ = 0x200d
@@ -62,7 +63,8 @@ function testAt(re: RegExp, text: string, index: number): boolean {
  * Terminal columns a string takes up, ignoring ANSI escape codes.
  *
  * Measures code point by code point, like `wcwidth`, and only groups emoji
- * sequences: VS16, keycaps and skin tones widen a narrow base, ZWJ-joined
+ * sequences: VS16 and keycaps widen a narrow base, one skin tone merges into
+ * an `Emoji_Modifier_Base` (any other is drawn on its own), ZWJ-joined
  * pictographs and the second flag letter add nothing. Avoids `Intl.Segmenter`,
  * which aborts the process on Node builds without ICU data (nodejs/node#51752).
  */
@@ -76,12 +78,16 @@ export function visibleLength(text: string): number {
   let baseAt = -1
   let joined = false
   let flagOpen = false
+  // The last base can still take a skin tone (UTS #51 emoji modifier sequence).
+  let modifiable = false
   for (let i = 0; i < visible.length;) {
     const at = i
     const cp = visible.codePointAt(i)!
     i += cp > 0xffff ? 2 : 1
 
-    if (cp === VS16 || cp === KEYCAP || (cp >= 0x1f3fb && cp <= 0x1f3ff && base > 0)) {
+    const isSkinTone = cp >= 0x1f3fb && cp <= 0x1f3ff
+    if (cp === VS16 || cp === KEYCAP || (isSkinTone && modifiable)) {
+      if (isSkinTone) modifiable = false
       if (base === 1) {
         width++
         base = 2
@@ -94,11 +100,15 @@ export function visibleLength(text: string): number {
     }
     if (joined) {
       joined = false
-      if (testAt(PICTOGRAPHIC_RE, visible, at)) continue
+      if (testAt(PICTOGRAPHIC_RE, visible, at)) {
+        modifiable = testAt(MODIFIER_BASE_RE, visible, at)
+        continue
+      }
     }
     const isFlagLetter = cp >= 0x1f1e6 && cp <= 0x1f1ff
     if (isFlagLetter && flagOpen) {
       flagOpen = false
+      modifiable = false
       continue
     }
     flagOpen = isFlagLetter
@@ -106,6 +116,7 @@ export function visibleLength(text: string): number {
     if (cp >= 0x7f && testAt(ZERO_WIDTH_RE, visible, at)) continue
     base = cp >= 0x7f && testAt(WIDE_RE, visible, at) ? 2 : 1
     baseAt = at
+    modifiable = cp >= 0x7f && testAt(MODIFIER_BASE_RE, visible, at)
     width += base
   }
   return width
