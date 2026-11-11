@@ -28,7 +28,7 @@ This is a **monorepo** containing the Comark Markdown parser, document model, pl
 │   ├── comark-react/     # React renderer + plugins (@comark/react)
 │   ├── comark-svelte/    # Svelte renderer + plugins (@comark/svelte)
 │   ├── comark-angular/   # Angular renderer + plugins (@comark/angular)
-│   └── comark-nuxt/      # Nuxt module (@comark/nuxt)
+│   └── comark-nuxt/      # Deprecated @comark/nuxt: installs @comark/vue/nuxt and logs a warning
 ├── examples/             # Example applications
 │   ├── 1.frameworks/     # Framework examples (Nuxt, Next.js, Astro, SvelteKit, VitePress)
 │   ├── 2.vite/           # Vite examples (Vue, React, Svelte, Angular, HTML, ANSI)
@@ -39,7 +39,7 @@ This is a **monorepo** containing the Comark Markdown parser, document model, pl
 ├── playground/           # Nuxt playground (`pnpm dev:playground`)
 ├── benchmarks/           # CodSpeed Vitest benches (*.bench.ts) + mitata cross-library comparisons (*.ts)
 ├── scripts/              # Build/sync scripts
-├── test/                 # Root-level tests (bundle-size snapshot)
+├── test/                 # Root-level tests (bundle-size snapshot; sanitizer/ runs vercel-labs/markdown-sanitizers fixtures against `security`)
 ├── pnpm-workspace.yaml   # Workspace configuration + dependency catalog
 ├── tsconfig.json         # Root TypeScript config (`pnpm typecheck`)
 ├── vitest.config.ts      # Root Vitest config, scoped to `test/`
@@ -235,6 +235,7 @@ packages/comark-vue/
 │   ├── parse.ts              # Re-exports comark/parse (@comark/vue/parse)
 │   ├── render.ts             # Re-exports comark/render (@comark/vue/render)
 │   ├── vite.ts               # Vite plugin: `<slot unwrap>` transform + prose component auto-registration (@comark/vue/vite)
+│   ├── nuxt.ts               # Nuxt module: auto-imports components + helpers, adds the Vite plugin (@comark/vue/nuxt)
 │   ├── components/
 │   │   ├── Markdown.ts       # High-level markdown → render component
 │   │   ├── MarkdownDocument.ts # Low-level AST → render component
@@ -258,6 +259,7 @@ packages/comark-vue/
 {
   ".": "./dist/index.js",
   "./vite": "./dist/vite.js",
+  "./nuxt": "./dist/nuxt.js",
   "./plugins/*": "./dist/plugins/*.js",
   "./utils": "./dist/utils/index.js",
   "./parse": "./dist/parse.js",
@@ -273,6 +275,8 @@ import { Markdown, MarkdownDocument, defineMarkdownComponent } from '@comark/vue
 import math, { Math } from '@comark/vue/plugins/math'
 import mermaid, { Mermaid } from '@comark/vue/plugins/mermaid'
 ```
+
+`@comark/vue/nuxt` is the Nuxt module: `modules: ['@comark/vue']` loads it because Nuxt tries the `/nuxt` subpath first. It auto-imports `Markdown`, `MarkdownDocument`, `defineMarkdownComponent` and `defineMarkdownDocumentComponent`, plus `parseMarkdown` and `createMarkdownParser` in the app and in server routes (from `@comark/vue/parse`), turns on Nuxt UI prose components, and adds the `@comark/vue/vite` plugin with `prose: false`. It does not register `~/components/prose`. `@nuxt/kit` and `@nuxt/schema` are optional peer dependencies.
 
 ## Package: @comark/react
 
@@ -954,6 +958,7 @@ pnpm build        # Build all packages, then sync plugin re-exports
 pnpm stub         # Point every package's dist/ at src/ for local dev (runs on postinstall)
 pnpm test         # Run all package tests
 pnpm test:spec    # Run the SPEC fixtures only
+pnpm test:sanitizer # Run vercel-labs/markdown-sanitizers bypass fixtures against `security` (test/sanitizer)
 pnpm bench        # Run the CodSpeed Vitest benches (benchmarks/*.bench.ts; wall-clock locally)
 pnpm lint         # oxlint + oxfmt --check + comark-lint on docs/content
 pnpm lint:fix     # oxlint --fix + oxfmt (write)
@@ -968,7 +973,7 @@ There is no ESLint or Prettier config.
 
 The docs content is linted with [comark-linter](https://comark-ui.onmax.me/lint/) (`pnpm --filter comark-docs-site lint`):
 unknown components, unclosed blocks, and broken links and anchors. `docs/comark-lint.config.ts` extends the
-comark-docs layer's preset with the site's own `app/components/prose/` components and its Vue pages.
+comark-docs layer's preset with the site's own `app/components/prose/` components (registered globally in `docs/nuxt.config.ts`) and its Vue pages.
 
 Utility scripts:
 
@@ -983,7 +988,7 @@ Workflows live in `.github/workflows/`:
 
 | Workflow | Purpose |
 |----------|---------|
-| `ci.yml` | lint → prepack → test → publish preview (pkg.pr.new) → bundle size check |
+| `ci.yml` | lint → prepack → test → sanitizer suite → publish preview (pkg.pr.new) → bundle size check |
 | `release.yml` | uppt release PR → tag + GitHub release → pack → staged npm publish (see Releasing) |
 | `codspeed.yml` | Runs `pnpm bench` under CodSpeed CPU simulation; reports perf changes on PRs |
 | `commit-signature.yml` | Fails PRs containing unsigned commits |

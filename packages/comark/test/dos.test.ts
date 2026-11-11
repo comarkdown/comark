@@ -1,8 +1,30 @@
 import { describe, expect, it } from 'vitest'
 import { parseMarkdown } from '../src/index'
 import { renderMarkdown } from '../src/render'
+import security from '../src/plugins/security'
+import { resolveAttributes } from '../src/internal/stringify/html-attributes'
 
 describe('denial-of-service hardening', () => {
+  it('sanitizes frontmatter that aliases one large object under many keys in linear time', async () => {
+    const big = Array.from({ length: 3000 }, (_, i) => `  k${i}: {x: 1}`).join('\n')
+    const refs = Array.from({ length: 3000 }, (_, i) => `r${i}: *a`).join('\n')
+    const start = performance.now()
+    const doc = await parseMarkdown(`---\nbig: &a\n${big}\n${refs}\n---\nhi`, { plugins: [security()] })
+    expect(performance.now() - start).toBeLessThan(500)
+    expect(Object.keys(doc.frontmatter)).toHaveLength(3001)
+  })
+
+  it('checks a large bound object once when many bindings resolve to it', () => {
+    const big: Record<string, unknown> = {}
+    for (let i = 0; i < 3000; i++) big[`k${i}`] = { x: 1 }
+    const renderData = { frontmatter: { big }, meta: {}, data: {}, props: {} }
+    const start = performance.now()
+    for (let i = 0; i < 3000; i++) {
+      expect(resolveAttributes({ ':a': 'frontmatter.big' }, renderData, { parseJson: true })).toEqual({ a: big })
+    }
+    expect(performance.now() - start).toBeLessThan(500)
+  })
+
   it('parses thousands of unclosed nested inline HTML tags without stack overflow', async () => {
     const md = '<b>'.repeat(10_000)
     const doc = await parseMarkdown(md)

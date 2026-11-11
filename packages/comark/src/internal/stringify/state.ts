@@ -44,7 +44,7 @@ export async function one(node: Node, state: State, parent?: ElementNode, atLine
     // syntax inside it must not be escaped (inline HTML, `$.block === 0`, has
     // its markdown parsed into children and is escaped normally).
     if (parent?.[1].$?.html === 1 && parent[1].$?.block === 1) {
-      return node
+      return state.context.rawHtmlText === 'verbatim' ? node : escapeRawHtmlText(node, String(parent[0]))
     }
     return escapeTextNode(node, atLineStart)
   }
@@ -217,6 +217,58 @@ const COLON_PREV_CHARS = new Set([' ', '\t', '\n', '*', '_', '[', ']', '}', ')',
  * line, so their markers are escaped on the first line only when the node
  * begins one (`atLineStart`) and on every line following an embedded newline.
  */
+// Elements whose content the HTML tokenizer reads as text: only the matching
+// end tag can end it, so nothing else inside is markup. `textarea` (RCDATA)
+// decodes entities, so its end tag is escaped as `&lt;/`; `script` / `style`
+// (raw text) do not, so `<\/`, the form scripts use inside strings.
+const TEXT_ONLY_TAGS: Record<string, string> = { script: '<\\/', style: '<\\/', textarea: '&lt;/' }
+
+/**
+ * Escape a text node inside a raw HTML block for markdown output.
+ *
+ * Renderers that read the block as raw HTML (CommonMark, GitHub, markdown-it)
+ * parse any tag in it, so a text node such as `<svg onload=…>`, which the
+ * parser kept as text, must not come back as markup. Only a `<` that would
+ * start a tag is escaped, as `&lt;`, which reads back as the same character.
+ * Markdown syntax and existing entities are kept, like the HTML renderer does.
+ * In `<script>` / `<style>` / `<textarea>`, only an end tag can break out, so
+ * only `</` before the element's own name is escaped.
+ */
+function escapeRawHtmlText(text: string, tag: string): string {
+  if (!text.includes('<')) return text
+
+  const lowerTag = tag.toLowerCase()
+  const closerEscape = Object.hasOwn(TEXT_ONLY_TAGS, lowerTag) ? TEXT_ONLY_TAGS[lowerTag] : undefined
+  if (closerEscape) {
+    const lower = text.toLowerCase()
+    const closer = `</${lowerTag}`
+    let result = ''
+    let last = 0
+    for (let index = lower.indexOf(closer); index !== -1; index = lower.indexOf(closer, last)) {
+      result += text.slice(last, index) + closerEscape
+      last = index + 2
+    }
+    return result + text.slice(last)
+  }
+
+  let result = ''
+  let last = 0
+  for (let index = text.indexOf('<'); index !== -1; index = text.indexOf('<', index + 1)) {
+    const next = text.charCodeAt(index + 1)
+    const startsTag =
+      (next >= 65 && next <= 90) /* A-Z */ ||
+      (next >= 97 && next <= 122) /* a-z */ ||
+      next === 33 /* ! */ ||
+      next === 47 /* / */ ||
+      next === 63 /* ? */
+    if (startsTag) {
+      result += text.slice(last, index) + '&lt;'
+      last = index + 1
+    }
+  }
+  return result + text.slice(last)
+}
+
 function escapeTextNode(text: string, atLineStart = false): string {
   const escaped = escapeInline(text)
 
@@ -254,6 +306,9 @@ function buildNextIndex(source: string, charCode: number): Int32Array {
  * specific positions, so they are left alone otherwise to avoid mangling
  * ordinary prose like `snake_case`, `a < b` or `AT&T`.
  */
+// Sticky, so it matches at `lastIndex` without slicing the node per `<`
+const OPEN_TAG_START = /<\/?[a-z][a-z0-9-]*[\s/]/iy
+
 function escapeInline(text: string): string {
   // Lazily-built next-`>` index: the tag-likeness check below must not
   // rescan the remainder of the node for every `<` (quadratic on long runs
@@ -282,7 +337,12 @@ function escapeInline(text: string): string {
       }
       nextGt ??= buildNextIndex(source, 62 /* > */)
       if (nextGt[offset + 1] === -1) {
-        return char
+        // No `>` in this node, but it may come from a later sibling:
+        // `x <img src="data:…,` then `<svg>` then `">`. Escape a `<` that
+        // opens a tag name followed by whitespace or `/`, as an attribute or
+        // self-close would; a bare `<b` or `a<b` stays prose.
+        OPEN_TAG_START.lastIndex = offset
+        if (!OPEN_TAG_START.test(source)) return char
       }
       return `\\${char}`
     }

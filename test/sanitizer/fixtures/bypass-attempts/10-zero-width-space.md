@@ -1,0 +1,1 @@
+![](java​script:alert('XSS'))

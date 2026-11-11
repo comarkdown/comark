@@ -348,9 +348,6 @@ import { Binding } from '@comark/vue/plugins/binding'
 
 // Angular
 import { Binding } from '@comark/angular/plugins/binding'
-
-// Nuxt (Vue implementation)
-import { Binding } from '@comark/nuxt/plugins/binding'
 ```
 
 ### `If`
