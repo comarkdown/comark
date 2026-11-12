@@ -699,10 +699,28 @@ describe('security plugin — component-like values', () => {
     }
   })
 
-  it('keeps an array, number or boolean as or is or tag', async () => {
-    const tree = makeTree([['span', { ':tag': '["hello","world"]', ':is': '5', ':as': 'true' }, 'x']])
+  it('strips an array, number or boolean as or is', async () => {
+    const tree = makeTree([
+      ['span', { ':as': '["section"]', ':is': '5' }, 'x'],
+      ['span', { ':as': 'true', is: ['section'] }, 'x'],
+    ])
     await runPlugin(tree)
-    expect((tree.nodes[0] as [string, any])[1]).toEqual({ ':tag': '["hello","world"]', ':is': '5', ':as': 'true' })
+    expect((tree.nodes[0] as [string, any])[1]).toEqual({})
+    expect((tree.nodes[1] as [string, any])[1]).toEqual({})
+  })
+
+  it('keeps a string or null as or is, and an array, number or boolean tag', async () => {
+    const tree = makeTree([
+      ['span', { ':as': '"section"', ':is': 'null', ':tag': '["hello","world"]' }, 'x'],
+      ['span', { as: 'section', ':tag': '5' }, 'x'],
+    ])
+    await runPlugin(tree)
+    expect((tree.nodes[0] as [string, any])[1]).toEqual({
+      ':as': '"section"',
+      ':is': 'null',
+      ':tag': '["hello","world"]',
+    })
+    expect((tree.nodes[1] as [string, any])[1]).toEqual({ as: 'section', ':tag': '5' })
   })
 
   it('strips a forged VNode at any depth', async () => {

@@ -393,13 +393,6 @@ export function isTagSelector(key: string): boolean {
 }
 
 /**
- * Props that must not be an object. `as` and `is` pick a component in the renderers. `tag` is only checked
- * for type: no renderer resolves it as a component name, so the tag filter doesn't apply to it.
- * Arrays, numbers and booleans stay: `h()` renders nothing for them.
- */
-const componentSelectors = ['as', 'is', 'tag']
-
-/**
  * Keys that make Vue treat a plain object as a component, a VNode (`__v_isVNode`), or a built-in
  * (Teleport, Suspense, KeepAlive). JSON can't carry functions, so a JSON object with these is never legit.
  */
@@ -434,8 +427,8 @@ export function isVNodeMarkerKey(key: string): boolean {
 }
 
 /**
- * Whether a decoded prop value is unsafe to hand a renderer: `as` / `is` / `tag`
- * must not be objects, and no object at any depth may carry component options or
+ * Whether a decoded prop value is unsafe to hand a renderer: `as` / `is` must be
+ * strings, `tag` must not be an object, and no object at any depth may carry component options or
  * an HTML sink key. Components pass object props on to `h(tag, prop)` or spread
  * them onto elements, so a nested `innerHTML` reaches the DOM like a top-level one.
  * Applied to markdown-authored values only.
@@ -444,8 +437,16 @@ export function isUnsafeRendererProp(attribute: string, value: unknown): boolean
   return isComponentSelectorViolation(attribute, value) || hasUnsafeObjectKeys(value)
 }
 
+/**
+ * `as` and `is` name the element or component to render, so only a string (or nothing) may reach them:
+ * Vue mounts any object, arrays included, as a component, and React throws on a non-string element type.
+ * `tag` is often a data prop (`tag: [vue, nuxt]`) and no renderer resolves it as a component name, so it
+ * only must not be an object or a function.
+ */
 function isComponentSelectorViolation(attribute: string, value: unknown): boolean {
-  if (!componentSelectors.includes(normalizePropName(attribute))) return false
+  const name = normalizePropName(attribute)
+  if (tagSelectors.includes(name)) return value != null && typeof value !== 'string'
+  if (name !== 'tag') return false
   return typeof value === 'function' || (typeof value === 'object' && value !== null && !Array.isArray(value))
 }
 
