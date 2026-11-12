@@ -5,6 +5,7 @@ import {
   Type,
   inject,
   input,
+  computed,
   effect,
   model,
 } from '@angular/core'
@@ -77,8 +78,6 @@ export class Markdown {
 
   document: MarkdownDocumentType | null = null
 
-  private serializedParse = createSerializedMarkdownParser({})
-
   private cdr = inject(ChangeDetectorRef)
 
   /**
@@ -95,37 +94,42 @@ export class Markdown {
     }
   }
 
-  private readonly serializedParseEffect = effect(() => {
-    this.serializedParse = createSerializedMarkdownParser(this.getParserOptions())
-  })
+  /**
+   * Serialized parser derived from the parser options. Recomputed whenever
+   * `options`, `plugins`, `unwrap` (or any signal read by a subclass's
+   * `getParserOptions()` override) changes.
+   */
+  private readonly serializedParse = computed(() => createSerializedMarkdownParser(this.getParserOptions()))
+
+  /** Incremented on each parse so stale async results can be discarded. */
+  private parseId = 0
 
   private readonly parseMarkdownEffect = effect(() => {
     const value = this.value()
+    const id = ++this.parseId
     if (value === undefined || value === null) {
       this.document = null
       return
     }
 
-    this.parseMarkdown()
-  })
-
-  private parseMarkdown(): void {
     // Pre-parsed document — skip parsing and render directly
-    if (isMarkdownDocument(this.value())) {
-      this.document = this.value() as MarkdownDocumentType
+    if (isMarkdownDocument(value)) {
+      this.document = value
       this.cdr.markForCheck()
       return
     }
 
-    let source = (this.value() as string | undefined) ?? ''
+    let source = value
     if (this.summary()) {
       source = source.split('<!-- more -->')[0] || ''
     }
     source = source.trim()
 
-    this.serializedParse(source, { streaming: this.streaming() }).then((result) => {
+    const parse = this.serializedParse()
+    parse(source, { streaming: this.streaming() }).then((result) => {
+      if (id !== this.parseId) return
       this.document = result
       this.cdr.markForCheck()
     })
-  }
+  })
 }

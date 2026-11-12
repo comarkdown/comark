@@ -1,6 +1,6 @@
 # Angular Rendering Guide
 
-Complete guide for rendering Markdown documents in Angular 17+ applications.
+Complete guide for rendering Markdown documents in Angular 21+ applications.
 
 ## Table of Contents
 

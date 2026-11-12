@@ -420,7 +420,7 @@ Uses Vitest with two test projects:
 
 ## Package: @comark/angular
 
-Located at `packages/comark-angular/`. Angular 19+ renderer (peer range `>=19 <23`, i.e. 19 through 22) with standalone components.
+Located at `packages/comark-angular/`. Angular 21+ renderer (peer range `>=21 <23`, i.e. 21 through 22) with standalone components.
 
 ```
 packages/comark-angular/

@@ -63,8 +63,8 @@
     "zone.js": "catalog:"
   },
   "peerDependencies": {
-    "@angular/common": ">=19.0.0 <23.0.0",
-    "@angular/core": ">=19.0.0 <23.0.0",
+    "@angular/common": ">=21.0.0 <23.0.0",
+    "@angular/core": ">=21.0.0 <23.0.0",
     "beautiful-mermaid": "catalog:",
     "katex": "catalog:",
     "shiki": "catalog:"
