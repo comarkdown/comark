@@ -119,6 +119,24 @@ describe('bound props cannot smuggle a component into a polymorphic slot', () =>
     }
   })
 
+  it('does not hand a non-string `as` or `is` to a component, without the security plugin', async () => {
+    // Vue mounts an array as a component, since `isObject([])` is true.
+    for (const markdown of [
+      `::poly{:as='["section"]'}\n::`,
+      `::poly{:is='5'}\n::`,
+      `::poly{:as='true'}\n::`,
+      `---\nlist: [section]\n---\n::poly{:as="frontmatter.list"}\n::`,
+    ]) {
+      const html = await renderMarkdown(markdown)
+      expect(html).toContain('<div>poly</div>')
+    }
+  })
+
+  it('keeps a non-object `tag`', async () => {
+    const html = await renderMarkdown(`::poly{:tag='"section"'}\n::`)
+    expect(html).toContain('<section>poly</section>')
+  })
+
   it('keeps string tags for `as`', async () => {
     const html = await renderMarkdown('::poly{:as=\'"section"\'}\n::')
     expect(html).toContain('<section>poly</section>')
