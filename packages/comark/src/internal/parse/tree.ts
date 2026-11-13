@@ -320,7 +320,11 @@ function processBlockChildrenWithSlots(
 
     const result = processToken(tokens, i, state)
     if (result) {
-      pushChild(result.node)
+      for (const frame of state.htmlStack) frame.block = true
+      if (result.node !== undefined) {
+        const free = result.siblingOfHtmlStack ? result.node : deliverBlock(state, result.node)
+        pushChild(free)
+      }
       i = result.nextIndex
     } else {
       i += 1
