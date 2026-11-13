@@ -15,7 +15,7 @@ Angular renderer for [Comark](https://comark.dev). Render markdown with custom s
 - 🧩 `<comark-markdown>` component for one-shot markdown rendering
 - 🎯 Map any Comark tag to a custom Angular component
 - 🌊 Streaming-friendly with auto-close and caret support
-- 🖥️ SSR-safe with Angular 17+ standalone components
+- 🖥️ SSR-safe with Angular 21+ standalone components
 - 🔌 Plugin ecosystem (math, mermaid, highlight, binding…)
 - 🎯 Full TypeScript support
 
@@ -32,7 +32,7 @@ pnpm add @comark/angular
 ```typescript
 import { Component } from '@angular/core'
 import { Markdown } from '@comark/angular'
-import math, { Math } from '@comark/angular/plugins/math'
+import { math, Math } from '@comark/angular/plugins/math'
 
 @Component({
   selector: 'app-root',
