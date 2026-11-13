@@ -1,7 +1,7 @@
 {
   "name": "@comark/nuxt",
-  "version": "0.8.1",
-  "description": "Nuxt module for Comark. Render Markdown with components at runtime, with auto-imported components and streaming support for AI output.",
+  "version": "0.9.2",
+  "description": "Deprecated: use the Nuxt module shipped in @comark/vue (`modules: ['@comark/vue']`).",
   "keywords": [
     "ai",
     "ai-chat",
@@ -18,7 +18,7 @@
     "streaming-markdown",
     "vue"
   ],
-  "homepage": "https://comark.dev/rendering/nuxt",
+  "homepage": "https://comark.dev/rendering/vue#nuxt",
   "bugs": {
     "url": "https://github.com/comarkdown/comark/issues"
   },
@@ -50,15 +50,15 @@
     "build": "tsc --removeComments --declaration false && tsc --emitDeclarationOnly",
     "dev": "tsc --watch",
     "test": "vitest run --passWithNoTests",
-    "prepack": "tsc --removeComments --declaration false && tsc --emitDeclarationOnly",
-    "release": "release-it"
+    "prepack": "tsc --removeComments --declaration false && tsc --emitDeclarationOnly"
   },
   "dependencies": {
-    "@comark/vue": "catalog:",
+    "@comark/vue": "workspace:*",
     "@nuxt/kit": "catalog:",
     "comark": "workspace:*"
   },
   "devDependencies": {
+    "@nuxt/schema": "catalog:",
     "@vue/server-renderer": "catalog:",
     "vitest": "catalog:",
     "vue": "catalog:"

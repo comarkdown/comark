@@ -1,0 +1,5 @@
+![](https://bit.ly/evil-redirect)
+![](https://tinyurl.com/javascript-xss)
+![](http://goo.gl/evil)
+![](https://safe.com/redirect?url=javascript:alert('XSS'))
+![](https://safe.com/image.png?.png&redirect=javascript:alert('XSS'))

@@ -1,6 +1,6 @@
 {
   "name": "@comark/ansi",
-  "version": "0.8.1",
+  "version": "0.9.2",
   "description": "ANSI terminal renderer for Comark. Render Markdown with components as styled terminal output for CLIs.",
   "keywords": [
     "ansi",
@@ -47,8 +47,7 @@
     "build": "tsc --removeComments --declaration false && tsc --emitDeclarationOnly",
     "dev": "tsc --watch",
     "test": "vitest run",
-    "prepack": "tsc --removeComments --declaration false && tsc --emitDeclarationOnly",
-    "release": "release-it"
+    "prepack": "tsc --removeComments --declaration false && tsc --emitDeclarationOnly"
   },
   "dependencies": {
     "comark": "workspace:*"

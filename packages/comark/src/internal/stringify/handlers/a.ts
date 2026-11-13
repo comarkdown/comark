@@ -1,6 +1,7 @@
 import type { State } from 'comark/render'
 import type { ElementNode } from 'comark'
 import { comarkAttributes } from '../attributes.ts'
+import { isAutolinkSafe, linkDestination } from '../link.ts'
 
 // TODO: support title & attributes
 export async function a(node: ElementNode, state: State, parent?: ElementNode) {
@@ -14,9 +15,9 @@ export async function a(node: ElementNode, state: State, parent?: ElementNode) {
   const attrsString = Object.keys(rest).length > 0 ? comarkAttributes(rest) : ''
   const content = await state.flow(node, state)
 
-  if (content === href && !attrsString) {
+  if (content === href && !attrsString && isAutolinkSafe(href)) {
     return `<${href}>`
   }
 
-  return `[${content}](${href})${attrsString}`
+  return `[${content}](${linkDestination(href)})${attrsString}`
 }

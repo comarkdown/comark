@@ -1,10 +1,16 @@
 import type { State } from 'comark/render'
 import type { ElementNode, Node } from 'comark'
 import { comarkAttributes } from '../attributes.ts'
+import { component } from './component.ts'
 
 // slot template
 export async function template(node: ElementNode, state: State, parent?: ElementNode) {
   const [_, attrs] = node
+
+  // Parsed slots always carry a `name`; without one this is a `:template` component.
+  if (typeof attrs.name !== 'string') {
+    return component(node, state, parent)
+  }
 
   const content = (await state.flow(node, state)).trimEnd()
 

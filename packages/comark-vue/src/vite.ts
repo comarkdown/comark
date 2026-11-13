@@ -145,11 +145,14 @@ export default function comark(opts: { prose?: boolean } = {}): Plugin {
     enforce: 'pre',
 
     configResolved(config: ResolvedConfig) {
-      if (existsSync(join(config.root, 'src', 'components', 'prose'))) {
-        proseDir = join(config.root, 'src', 'components', 'prose')
-      }
-      if (existsSync(join(config.root, 'components', 'prose'))) {
-        proseDir = join(config.root, 'components', 'prose')
+      // `prose: false` leaves `proseDir` unset, so the plugin never scans, watches or registers prose components.
+      if (opts.prose !== false) {
+        if (existsSync(join(config.root, 'src', 'components', 'prose'))) {
+          proseDir = join(config.root, 'src', 'components', 'prose')
+        }
+        if (existsSync(join(config.root, 'components', 'prose'))) {
+          proseDir = join(config.root, 'components', 'prose')
+        }
       }
 
       const vuePlugin = config.plugins.find((p) => p.name === 'vite:vue')
@@ -178,7 +181,7 @@ export default function comark(opts: { prose?: boolean } = {}): Plugin {
     },
 
     async transform(code) {
-      if (opts.prose === false) return null
+      if (!proseDir) return null
       if (!code.includes('createApp') || !code.includes('.mount(')) return null
       // Skip if already injected
       if (code.includes(VIRTUAL_COMPONENTS_ID)) return null

@@ -104,7 +104,21 @@ Attributes that can be abused regardless of value are always stripped:
 Prop names are normalized before these checks: case, binding prefixes (`:`, `v-bind:`), Vue's `.prop` / `^attr` prefixes (`.innerHTML`, `^onclick`), and `:` / `-` / `_` separators are ignored.
 
 ::note
-Framework renderers (Vue, React, Svelte, Angular) never forward `innerHTML`, `dangerouslySetInnerHTML`, or `textContent` from document attributes, even without this plugin. Raw HTML has its own explicit path through the default `html` plugin.
+Framework renderers (Vue, React, Svelte, Angular) never forward `innerHTML`, `dangerouslySetInnerHTML`, or `textContent` from document attributes, even without this plugin. A prop object or array that holds one of these keys at any depth is dropped whole, since components can pass it on to `h(tag, prop)` or spread it onto an element. Raw HTML has its own explicit path through the default `html` plugin.
+::
+
+### Component-like values
+
+Renderers hand bound props to components, and Vue treats a plain object with a `template`, `render`, `ssrRender`, `setup`, `extends` or `mixins` key as a component definition, one with `__v_isVNode` as a ready-made element, and one with `__isTeleport`, `__isSuspense` or `__isKeepAlive` as a built-in component. Its template can then run during server rendering, or the element skips tag filtering. These values are always dropped:
+
+- `as` and `is` (and their bindings) that are not strings, since they name the element or component to render: Vue mounts an array as a component, and React throws on one. `tag` is often a data prop, so only objects are dropped there.
+- Any object or array with one of those keys at any depth, such as `:icon='{"extends": {"template": "..."}}'` or `:icon='{"__v_isVNode": true, "type": "script"}'`.
+- An `__v_isVNode` attribute on the element itself, bound or not. Vue would otherwise render the element's attributes as a ready-made element.
+
+Data props keep working, for example `:items='[{"label": "a"}]'`. The Vue renderer also only resolves `as` to a component when it is a string. Frontmatter is checked for component options only, so data such as `tag: [vue, nuxt]` stays; a binding that passes a frontmatter array or object to `as` or `is`, or an object to `tag`, is still dropped.
+
+::warning
+Rendering untrusted markdown (chat messages, LLM output, user comments) is only safe with this plugin enabled. The renderers apply a minimum floor to bound props, but the plugin is the full policy: it also removes the values from the document tree. Keep `security()` enabled for untrusted input.
 ::
 
 ### Nested props
@@ -113,7 +127,7 @@ Object and array prop values (`:links='[{"to": "/docs", "label": "Docs"}]'`, YAM
 
 ### Protocol blocking
 
-URL props are decoded (URL-encoded and HTML entity variants included) and checked against a hard-coded block list. A prop is a URL prop when its name is `href`, `src`, `to`, `action`, `poster`, `cite`, `background` or `ping`, or ends in `href`, `src`, `url`, `uri` or `link` (optionally plural), such as `xlink:href`, `imageUrl`, or `avatar-src`. Other props are never parsed as URLs, so prose such as `title="JavaScript: the good parts"` is kept.
+URL props are decoded (URL-encoded and HTML entity variants included) and checked against a hard-coded block list. A prop is a URL prop when its name is `href`, `src`, `to`, `action`, `poster`, `cite`, `background`, `ping` or `longdesc`, or ends in `href`, `src`, `url`, `uri` or `link` (optionally plural), such as `xlink:href`, `imageUrl`, or `avatar-src`. Other props are never parsed as URLs, so prose such as `title="JavaScript: the good parts"` is kept.
 
 These URLs are **always** blocked, even if `allowedProtocols: ['*']` is set:
 
@@ -182,7 +196,7 @@ Returns a `ComarkPlugin` that sanitizes the parsed AST.
 | [`tagFallback`](#tagfallback) | `function` | `undefined`  | Defines how to handle unallowed tags in the AST |
 | [`allowedProtocols`](#allowedprotocols) | `string[]` | `['*']` | Protocols permitted in URL props |
 | [`allowedLinkPrefixes`](#allowedlinkprefixes) | `string[]` | `['*']` | URL prefixes permitted in link props (`href`, `to`, …) |
-| [`allowedImagePrefixes`](#allowedimageprefixes) | `string[]` | `['*']` | URL prefixes permitted in image props (`src`, `*src`, `poster`) |
+| [`allowedImagePrefixes`](#allowedimageprefixes) | `string[]` | `['*']` | URL prefixes permitted in image props (`src`, `*src`, `srcset`, `poster`) and `url()` in `style` |
 | [`defaultOrigin`](#defaultorigin) | `string` | `undefined` | Rewrite disallowed URLs to this origin instead of stripping |
 | [`allowDataImages`](#allowdataimages) | `boolean` | `true` | Allow `data:image/*` URIs in image props |
 | [`frontmatter`](#frontmatter-1) | `boolean` | `true` | Sanitize frontmatter as well as the AST |
@@ -259,6 +273,8 @@ Restricts which URLs are allowed in link props: every [URL prop](#protocol-block
 
 Prefixes compare by parsed origin plus a path-segment boundary, not by raw string matching: `https://myapp.com` allows `https://myapp.com/docs` but never a lookalike host such as `https://myapp.com.evil.com`. Scheme-relative URLs (`//evil.com/page`) resolve to an absolute URL and go through the same checks.
 
+A URL must pass both as the browser reads it and percent-decoded. The browser keeps `%2F` in `https://myapp.com%2F@evil.com/`, so `myapp.com%2F` is a username and the request goes to `evil.com`: the URL is stripped. Decoded, `https://myapp.com/docs/..%2F..%2Fadmin` leaves `/docs/`, so it fails a `https://myapp.com/docs` prefix too.
+
 When a URL does not match any prefix and `defaultOrigin` is set, the URL is rewritten instead of stripped.
 
 ```typescript
@@ -269,7 +285,11 @@ security({
 
 ### `allowedImagePrefixes`
 
-Same as `allowedLinkPrefixes` but applies to image props only: `src`, props ending in `src` (`avatarSrc`), and `poster`. The two options are checked independently; restricting one does not affect the other.
+Same as `allowedLinkPrefixes` but applies to image props only: `src`, props ending in `src` (`avatarSrc`), `poster`, and `srcset` / `imagesrcset`. The two options are checked independently; restricting one does not affect the other.
+
+The browser may load any candidate in a `srcset`, so every candidate URL is checked, and one disallowed candidate strips the whole attribute. With `defaultOrigin`, disallowed candidates are rewritten in place instead.
+
+Inline styles fetch images too (`background`, `mask`, `cursor`, `list-style`, …), so every `url()`, `image-set()` and `src()` URL in a `style` prop, or in a bound style object, goes through the same checks. CSS escapes and comments are read the way the browser reads them, so `u\72l(…)` is caught. A style with one disallowed URL is stripped whole, even with `defaultOrigin`. Unsafe protocols such as `url(javascript:…)` are stripped whatever the prefixes.
 
 ```typescript
 security({

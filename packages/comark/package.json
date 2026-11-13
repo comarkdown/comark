@@ -1,6 +1,6 @@
 {
   "name": "comark",
-  "version": "0.8.1",
+  "version": "0.9.2",
   "description": "Comark is an open-source Markdown parser and renderer with components, attributes and plugins. It streams AI output to React, Vue, Svelte, Angular, HTML and the terminal.",
   "keywords": [
     "ai",
@@ -39,8 +39,7 @@
     "url": "git+https://github.com/comarkdown/comark.git"
   },
   "files": [
-    "dist",
-    "skills"
+    "dist"
   ],
   "type": "module",
   "sideEffects": false,
@@ -67,9 +66,7 @@
     "build": "tsc --removeComments --declaration false && tsc --emitDeclarationOnly",
     "dev": "tsc --watch",
     "test": "vitest run",
-    "prepack": "tsc --removeComments --declaration false && tsc --emitDeclarationOnly",
-    "release": "release-it",
-    "release:dry": "release-it --dry-run"
+    "prepack": "tsc --removeComments --declaration false && tsc --emitDeclarationOnly"
   },
   "dependencies": {
     "character-entities": "catalog:",

@@ -344,6 +344,218 @@ describe('validateProp', () => {
     })
   })
 
+  describe('unparseable URLs', () => {
+    // The browser cannot load them, but a markdown renderer may normalize them into a URL that loads
+    const urls = ['https://myapp.com:::/img/../../evil.com/x.png', 'https://myapp.com:99999/x', 'http://[::1/x']
+
+    it.each(urls)('rejects %s when prefixes are set', (url) => {
+      expect(validateProp('src', url, { allowedImagePrefixes: ['https://myapp.com/img/'] })).toBe(REJECTED_PROP)
+      expect(validateProp('href', url, { allowedLinkPrefixes: ['https://myapp.com'] })).toBe(REJECTED_PROP)
+    })
+
+    it.each(urls)('rejects %s when protocols are restricted', (url) => {
+      expect(validateProp('href', url, { allowedProtocols: ['https'] })).toBe(REJECTED_PROP)
+    })
+
+    it.each(urls)('keeps %s without restrictions', (url) => {
+      expect(validateProp('href', url)).toBe(url)
+    })
+
+    it('keeps relative URLs with prefixes set', () => {
+      expect(validateProp('href', '/a:b::c', { allowedLinkPrefixes: ['https://myapp.com'] })).toBe('/a:b::c')
+    })
+  })
+
+  describe('percent-encoded URLs', () => {
+    const options = { allowedLinkPrefixes: ['https://myapp.com'], allowedImagePrefixes: ['https://myapp.com/img/'] }
+
+    // The browser keeps %2F / %5C in the authority: everything before "@" is userinfo.
+    it.each([
+      'https://myapp.com%2F@evil.com/x',
+      'https://myapp.com%2f@evil.com/x',
+      'https://myapp.com%5C@evil.com/x',
+      'https://myapp.com&#37;2F@evil.com/x',
+    ])('blocks %s, which the browser loads from another host', (url) => {
+      expect(validateProp('href', url, options)).toBe(REJECTED_PROP)
+      expect(validateProp('src', url, options)).toBe(REJECTED_PROP)
+    })
+
+    it('blocks a src that leaves the allowed path once percent-decoded', () => {
+      expect(validateProp('src', 'https://myapp.com/img/..%2F..%2Fprivate/x.png', options)).toBe(REJECTED_PROP)
+    })
+
+    it('keeps percent-encoded characters inside an allowed URL', () => {
+      expect(validateProp('href', 'https://myapp.com/a%20b?q=%2F', options)).toBe('https://myapp.com/a%20b?q=%2F')
+      expect(validateProp('src', 'https://myapp.com/img/%E2%9C%93.png', options)).toBe(
+        'https://myapp.com/img/%E2%9C%93.png'
+      )
+    })
+
+    it('rewrites the browser reading to defaultOrigin', () => {
+      const result = validateProp('href', 'https://myapp.com%2F@evil.com/x', {
+        ...options,
+        defaultOrigin: 'https://myapp.com',
+      })
+      expect(typeof result).toBe('string')
+      expect(new URL(result as string).origin).toBe('https://myapp.com')
+    })
+  })
+
+  describe('style', () => {
+    const options = { allowedImagePrefixes: ['https://cdn.myapp.com'] }
+
+    it.each([
+      'color:red; width:calc(100% - 2px)',
+      'background:url(https://cdn.myapp.com/a.png)',
+      "background:url('/a.png') no-repeat",
+      'mask:url(#m)',
+      'background:url()',
+      // Strings outside url() are never fetched
+      "content:'url(https://evil.com/x)'",
+      // No comments inside an unquoted url(): a same-origin path
+      'background:url(/*x*/https://evil.com/x)',
+    ])('keeps %j', (style) => {
+      expect(validateProp('style', style, options)).toBe(style)
+    })
+
+    it.each([
+      'background:url(https://evil.com/?secret)',
+      "background:url('https://evil.com/?secret')",
+      'background:url(  "https://evil.com/?secret"  )',
+      'background:URL(https://evil.com/?secret)',
+      'background:url(//evil.com/?secret)',
+      'background:url(https://evil.com/?secret',
+      'background:/**/url(https://evil.com/?secret)',
+      'cursor:url(https://cdn.myapp.com/c.cur), url(https://evil.com/c.cur), auto',
+      "font-family:'a(b'; background:url(https://evil.com/?secret)",
+      '--bg:url(https://evil.com/?secret)',
+      "background-image:image-set('https://evil.com/a.png' 1x)",
+      'background-image:-webkit-image-set(url(https://evil.com/a.png) 1x)',
+      'background:url(javascript:alert(1))',
+      'background:url(https://cdn.myapp.com%2F@evil.com/x)',
+    ])('rejects %j', (style) => {
+      expect(validateProp('style', style, options)).toBe(REJECTED_PROP)
+    })
+
+    it.each([
+      ['an escaped function name', 'background:u\\72l(https://evil.com/?secret)'],
+      ['a long escape with its whitespace', 'background:u\\000072 l(https://evil.com/?secret)'],
+      ['an escape in the URL', 'background:url(\\68ttps://evil.com/?secret)'],
+      ['an escaped colon', 'background:url(https\\3a //evil.com/?secret)'],
+      ['a line continuation in a string', 'background:url("https://evil.com/\\\n?secret")'],
+      ['entity-encoded quotes', 'background:url(&quot;https://evil.com/?secret&quot;)'],
+      ['a quote inside a comment', "/* ' */ background:url('https://evil.com/?secret')"],
+      ['an escaped quote outside a string', "a:x\\27 ; background:url(https://evil.com/?secret); b:'"],
+      ['a CRLF after an escape', 'background:u\\72\r\nl(https://evil.com/?secret)'],
+      ['an escaped paren in the URL', 'background:url(https://evil.com/\\)?secret)'],
+    ])('rejects %s', (_, style) => {
+      expect(validateProp('style', style, options)).toBe(REJECTED_PROP)
+    })
+
+    it('checks style objects from bindings', () => {
+      expect(validateProp(':style', '{"backgroundImage":"url(https://evil.com/?secret)"}', options)).toBe(REJECTED_PROP)
+      expect(validateProp(':style', '{"color":"red"}', options)).toBe('{"color":"red"}')
+    })
+
+    it('does not rewrite to defaultOrigin', () => {
+      expect(
+        validateProp('style', 'background:url(https://evil.com/x.png)', {
+          ...options,
+          defaultOrigin: 'https://cdn.myapp.com',
+        })
+      ).toBe(REJECTED_PROP)
+    })
+
+    it('leaves style alone without prefix options, except unsafe protocols', () => {
+      expect(validateProp('style', 'background:url(https://any.com/a.png)')).toBe(
+        'background:url(https://any.com/a.png)'
+      )
+      expect(validateProp('style', 'background:url(javascript:alert(1))')).toBe(REJECTED_PROP)
+    })
+
+    it('scans long styles in linear time', () => {
+      const run = (n: number) => {
+        const style = 'url('.repeat(n) + '\\'.repeat(n) + "'".repeat(n) + '/*'.repeat(n)
+        const start = performance.now()
+        validateProp('style', style, options)
+        return performance.now() - start
+      }
+      run(1000)
+      expect(run(100_000)).toBeLessThan(500)
+    })
+  })
+
+  describe('longdesc', () => {
+    it('is checked as a link URL', () => {
+      expect(validateProp('longdesc', 'javascript:alert(1)')).toBe(REJECTED_PROP)
+      expect(validateProp('longdesc', 'https://evil.com/x', { allowedLinkPrefixes: ['https://myapp.com'] })).toBe(
+        REJECTED_PROP
+      )
+      expect(validateProp('longdesc', '/about')).toBe('/about')
+    })
+  })
+
+  describe('srcset', () => {
+    const options = { allowedImagePrefixes: ['https://cdn.myapp.com'] }
+
+    it('keeps a srcset whose candidates all match', () => {
+      const srcset = 'https://cdn.myapp.com/a.png 1x, https://cdn.myapp.com/b.png 2x, /c.png 480w'
+      expect(validateProp('srcset', srcset, options)).toBe(srcset)
+    })
+
+    it.each([
+      'https://evil.com/x.png',
+      'https://evil.com/x.png 1x',
+      'https://cdn.myapp.com/a.png 1x, https://evil.com/x.png 2x',
+      'https://cdn.myapp.com/a.png 1x,https://evil.com/x.png',
+      'https://cdn.myapp.com/a.png, https://evil.com/x.png',
+      '  ,https://evil.com/x.png  ',
+      '//evil.com/x.png 2x',
+      'javascript:alert(1)',
+      'https://myapp.com%2F@evil.com/x.png 1x',
+    ])('rejects %j', (srcset) => {
+      expect(validateProp('srcset', srcset, options)).toBe(REJECTED_PROP)
+    })
+
+    it('reads a comma inside a URL as part of the URL, like the browser', () => {
+      // No whitespace before the comma: one candidate, a path on cdn.myapp.com
+      const srcset = 'https://cdn.myapp.com/a.png,https://evil.com/x.png'
+      expect(validateProp('srcset', srcset, options)).toBe(srcset)
+    })
+
+    it('rejects a disallowed candidate hidden after a parenthesized descriptor', () => {
+      expect(validateProp('srcset', '/a.png 1x (foo, https://evil.com/x.png), https://evil.com/y.png', options)).toBe(
+        REJECTED_PROP
+      )
+    })
+
+    it('checks the prefixes for imagesrcset and bound srcset too', () => {
+      expect(validateProp('imagesrcset', 'https://evil.com/x.png 1x', options)).toBe(REJECTED_PROP)
+      expect(validateProp(':srcset', '"https://evil.com/x.png 1x"', options)).toBe(REJECTED_PROP)
+    })
+
+    it('blocks data: candidates when allowDataImages is false', () => {
+      expect(validateProp('srcset', 'data:image/png;base64,abc 1x', { allowDataImages: false })).toBe(REJECTED_PROP)
+    })
+
+    it('rewrites disallowed candidates to defaultOrigin in place', () => {
+      expect(
+        validateProp('srcset', '/a.png 1x, https://evil.com/b.png 2x', {
+          ...options,
+          defaultOrigin: 'https://cdn.myapp.com',
+        })
+      ).toBe('/a.png 1x, https://cdn.myapp.com/b.png 2x')
+    })
+
+    it('rejects a non-string srcset', () => {
+      expect(validateProp(':srcset', '["https://evil.com/x.png"]', options)).toBe(REJECTED_PROP)
+    })
+
+    it('leaves srcset alone without prefix options', () => {
+      expect(validateProp('srcset', 'https://any.com/a.png 1x')).toBe('https://any.com/a.png 1x')
+    })
+  })
+
   describe('allowDataImages', () => {
     it('allows data: src by default', () => {
       expect(validateProp('src', 'data:image/png;base64,abc')).not.toBe(REJECTED_PROP)

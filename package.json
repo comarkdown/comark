@@ -39,21 +39,19 @@
     "build": "pnpm build:comark && pnpm --filter './packages/**' run build && pnpm sync-plugins",
     "build:comark": "cd packages/comark && pnpm build",
     "test": "pnpm --filter 'comark' run test && pnpm --filter '@comark/*' run test",
+    "test:sanitizer": "vitest run test/sanitizer",
     "test:spec": "cd packages/comark && pnpm vitest run test/index.test.ts -- -spec",
     "bench": "vitest bench --run --config benchmarks/vitest.config.ts",
     "lint": "oxlint . && oxfmt --check . && pnpm --filter comark-docs-site lint",
     "lint:fix": "oxlint --fix . && oxfmt .",
     "typecheck": "tsc --noEmit",
     "verify": "pnpm run lint && pnpm run test && pnpm run typecheck",
-    "release": "node scripts/release.mjs",
-    "release:dry": "node scripts/release.mjs --dry",
     "postinstall": "pnpm stub"
   },
   "devDependencies": {
     "@codspeed/vitest-plugin": "catalog:",
     "@comark/ansi": "workspace:*",
     "@comark/html": "workspace:*",
-    "@release-it/conventional-changelog": "catalog:",
     "@types/node": "catalog:",
     "@vitejs/plugin-vue": "catalog:",
     "comark": "workspace:*",
@@ -63,8 +61,8 @@
     "nuxt": "catalog:",
     "oxfmt": "catalog:",
     "oxlint": "catalog:",
+    "parse5": "catalog:",
     "playwright": "catalog:",
-    "release-it": "catalog:",
     "remark-gfm": "catalog:",
     "remark-mdc": "catalog:",
     "remark-parse": "catalog:",
@@ -94,5 +92,5 @@
     "comark": "workspace:*",
     "vue": "catalog:"
   },
-  "packageManager": "pnpm@12.16.1"
+  "packageManager": "pnpm@12.18.0"
 }

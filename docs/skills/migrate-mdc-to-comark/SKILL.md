@@ -12,7 +12,7 @@ The migration has two parts: **Core Package** (programmatic API) and **Nuxt Modu
 
 ## Quick Overview
 
-- **Package**: `@nuxtjs/mdc` → `comark` (core only) or `@comark/nuxt` (Nuxt module)
+- **Package**: `@nuxtjs/mdc` → `comark` (core only) or `@comark/vue` (Vue renderer and Nuxt module)
 - **Parse**: `parseMarkdown()` → `parseMarkdown()` · factory: `createMarkdownParser()` (sync, no await)
 - **Render**: `stringifyMarkdown()` → `renderMarkdown()` from `comark/render`
 - **AST**: object tree → compact tuples `['tag', props, ...children]`
@@ -78,7 +78,7 @@ The `unified`/`remark`/`rehype` pipeline is replaced by Comark's own lighter plu
 | Excerpt / Summary | `result.excerpt` (built-in) | `summary()` plugin → `document.meta.summary` |
 | Emoji | `remark-emoji` (enabled by default) | `emoji()` plugin (opt-in) |
 
-Available plugins include: `toc`, `shiki`, `emoji`, `task-list`, `summary`, `security`, `alert`, `math`, `mermaid`, `punctuation`, `binding`. Prefer framework paths in apps (`@comark/nuxt/plugins/*` or `@comark/vue/plugins/*`); use `comark/plugins/*` only for bare `parseMarkdown()`.
+Available plugins include: `toc`, `shiki`, `emoji`, `task-list`, `summary`, `security`, `alert`, `math`, `mermaid`, `punctuation`, `binding`. Prefer framework paths in apps (`@comark/vue/plugins/*`); use `comark/plugins/*` only for bare `parseMarkdown()`.
 
 ## Nuxt Module
 
@@ -93,16 +93,16 @@ export default defineNuxtConfig({
 
 // After
 export default defineNuxtConfig({
-  modules: ['@comark/nuxt'],
+  modules: ['@comark/vue'],
   // No plugin config here (plugins are defined per-component)
 })
 ```
 
-`@comark/nuxt` auto-imports: `Markdown`, `MarkdownDocument`, `defineMarkdownComponent`, `defineMarkdownDocumentComponent`.
+`@comark/vue` auto-imports: `Markdown`, `MarkdownDocument`, `defineMarkdownComponent`, `defineMarkdownDocumentComponent`.
 
 ### Components
 
-| `@nuxtjs/mdc` | `@comark/nuxt` |
+| `@nuxtjs/mdc` | `@comark/vue` |
 |---|---|
 | `<MDCRenderer :body :data :components>` | `<MarkdownDocument :value :components>` |
 | `<MDC :value :parser-options>` | `<Markdown :value :options>` or `<Markdown>{{ md }}</Markdown>` |
@@ -143,8 +143,8 @@ Replaces global `mdc: { ... }` config. Define reusable components with their own
 
 ```typescript
 import { defineMarkdownComponent } from '@comark/vue'
-import shiki from '@comark/nuxt/plugins/shiki'
-import toc from '@comark/nuxt/plugins/toc'
+import shiki from '@comark/vue/plugins/shiki'
+import toc from '@comark/vue/plugins/toc'
 import githubLight from '@shikijs/themes/github-light'
 import githubDark from '@shikijs/themes/github-dark'
 
@@ -161,11 +161,11 @@ export const ArticleMarkdown = defineMarkdownComponent({
 
 ### Prose Components
 
-Same `Prose*.vue` naming convention in `components/prose/`. Resolution changed from kebab-case (`prose-p`) to PascalCase (`ProseP`) internally. No file changes needed.
+Same `Prose*.vue` naming convention. Resolution changed from kebab-case (`prose-p`) to PascalCase (`ProseP`) internally. The Comark Nuxt module does not register `components/prose/` globally: pass the components through `components` / `defineMarkdownComponent()`, or add `components: [{ path: '~/components/prose', global: true, pathPrefix: false }, '~/components']` to `nuxt.config.ts`.
 
 ### Nuxt UI Integration
 
-When using Nuxt UI, `@comark/nuxt` registers Nuxt UI prose components automatically. Shorthand callout components are available:
+When using Nuxt UI, the `@comark/vue` Nuxt module registers Nuxt UI prose components automatically. Shorthand callout components are available:
 
 ```mdc
 ::note    (informational)
@@ -199,7 +199,7 @@ Supported via the binding plugin + render-time `data` prop. Differences from MDC
 
 ```vue
 <script setup lang="ts">
-import binding, { Binding } from '@comark/nuxt/plugins/binding'
+import binding, { Binding } from '@comark/vue/plugins/binding'
 </script>
 
 <template>

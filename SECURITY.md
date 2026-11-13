@@ -38,7 +38,7 @@ This policy applies to all packages in the Comark monorepo:
 - `@comark/vue`
 - `@comark/react`
 - `@comark/svelte`
-- `@comark/nuxt`
+- `@comark/nuxt` (deprecated)
 
 ## Built-in Security
 

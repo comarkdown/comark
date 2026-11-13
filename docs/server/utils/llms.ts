@@ -51,7 +51,7 @@ export const LLMS_BUNDLES: LlmsBundle[] = [
     slug: 'vue',
     title: 'Comark for Vue and Nuxt',
     description: 'Render Markdown in Vue 3 and Nuxt, with custom components, plugins, and streaming.',
-    pages: ['/rendering/vue', '/rendering/nuxt', '/use-cases/vue-ai-chat', '/reference/auto-close'],
+    pages: ['/rendering/vue', '/use-cases/vue-ai-chat', '/reference/auto-close'],
   },
   {
     slug: 'react',

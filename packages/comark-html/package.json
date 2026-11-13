@@ -1,6 +1,6 @@
 {
   "name": "@comark/html",
-  "version": "0.8.1",
+  "version": "0.9.2",
   "description": "HTML string renderer for Comark. Render Markdown with components on the server, no framework required.",
   "keywords": [
     "comark",
@@ -46,8 +46,7 @@
     "build": "tsc --removeComments --declaration false && tsc --emitDeclarationOnly",
     "dev": "tsc --watch",
     "test": "vitest run",
-    "prepack": "tsc --removeComments --declaration false && tsc --emitDeclarationOnly",
-    "release": "release-it"
+    "prepack": "tsc --removeComments --declaration false && tsc --emitDeclarationOnly"
   },
   "dependencies": {
     "comark": "workspace:*"

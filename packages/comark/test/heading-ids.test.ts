@@ -93,6 +93,19 @@ describe('headingIds option', () => {
     expect(reparsed.nodes).toEqual(tree.nodes)
   })
 
+  it('numbers duplicates inside components document-wide when rendering markdown', async () => {
+    for (const source of [
+      '## A\n\n::box\n## A\n::\n\n## A',
+      '::box\n## A\n::\n\n## A',
+      '::box\n## A\n\n  :::inner\n  ## A\n  :::\n::\n\n## A',
+    ]) {
+      const tree = await parseMarkdown(source)
+      const markdown = await renderMarkdown(tree)
+      expect(markdown.trim()).toBe(source)
+      expect((await parseMarkdown(markdown)).nodes).toEqual(tree.nodes)
+    }
+  })
+
   describe('slug text extraction', () => {
     it('does not leak tag names from bold text', async () => {
       const tree = await parseMarkdown('## 1. Never let an LLM **speak** for you')

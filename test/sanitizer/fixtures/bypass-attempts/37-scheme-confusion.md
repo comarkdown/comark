@@ -1,0 +1,5 @@
+![](ht‌tps://safe.com/image.png)
+![](https&colon;//safe.com/image.png)
+![](https&amp;#58;//safe.com/image.png)
+![](h\x74tps://safe.com/image.png)
+![](ht	tps://safe.com/image.png)

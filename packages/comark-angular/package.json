@@ -1,6 +1,6 @@
 {
   "name": "@comark/angular",
-  "version": "0.8.1",
+  "version": "0.9.2",
   "description": "Angular renderer for Comark. Render Markdown with components at runtime, with streaming support for AI output.",
   "keywords": [
     "ai",
@@ -48,18 +48,17 @@
     "build": "ngc -p tsconfig.json && ngc -p tsconfig.json --removeComments true --declaration false && node scripts/verify-build.mjs",
     "dev": "ngc -p tsconfig.json --watch",
     "test": "vitest run",
-    "prepack": "pnpm run build",
-    "release": "release-it"
+    "prepack": "pnpm run build"
   },
   "dependencies": {
     "comark": "workspace:*"
   },
   "devDependencies": {
-    "@angular/common": "^22.2.4",
+    "@angular/common": "^22.2.5",
     "@angular/compiler": "catalog:",
     "@angular/compiler-cli": "catalog:",
-    "@angular/core": "^22.2.4",
-    "@angular/platform-browser": "^22.2.4",
+    "@angular/core": "^22.2.5",
+    "@angular/platform-browser": "^22.2.5",
     "@angular/platform-server": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"

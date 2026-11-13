@@ -892,6 +892,28 @@ With the construct off nothing is closed — the delimiters stay literal:
 + foo\~bar\~baz
 ```
 
+Subscript pairs (`markdown-it-sub`) stay unescaped: no whitespace inside, and a word right after the closer only for digits.
+
+```diff
+- a~footnote~ and x~ab~.
++ a~footnote~ and x~ab~.
+```
+
+```diff
+- H~2~O and CO~2~
++ H~2~O and CO~2~
+```
+
+```diff
+- CO~2~
++ CO~2~
+```
+
+```diff
+- 20~25 and 30~40
++ 20\~25 and 30\~40
+```
+
 ---
 
 ## Links (default protocol mode)
@@ -2496,6 +2518,52 @@ A shorter or different marker is not a closer either:
 ```diff
 - *기울임*으로 *another
 + *기울임*으로 *another*
+```
+
+A word-internal run and a later same-length run after punctuation (bold text that ends in CJK punctuation) cannot pair under CommonMark, so neither gets a closer.
+
+```diff
+- 这是**中文。**后续文字
++ 这是**中文。**后续文字
+```
+
+```diff
+- 这是*中文。*后续文字
++ 这是*中文。*后续文字
+```
+
+```diff
+- foo**bar.**baz
++ foo**bar.**baz
+```
+
+```diff
+- 这是**中文。**后续 **more
++ 这是**中文。**后续 **more**
+```
+
+```diff
+- foo**bar and (**baz
++ foo**bar and (**baz**
+```
+
+A run after opening punctuation still opens:
+
+```diff
+- foo**bar(**baz
++ foo**bar(**baz**
+```
+
+```diff
+- 这是**中文「**后续
++ 这是**中文「**后续**
+```
+
+Once a frame opens or closes after the word-internal run, a later run no longer pairs with it:
+
+```diff
+- foo**bar(**x**)**baz
++ foo**bar(**x**)**baz**
 ```
 
 ```diff

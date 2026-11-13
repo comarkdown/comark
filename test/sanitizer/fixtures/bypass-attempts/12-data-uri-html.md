@@ -1,0 +1,1 @@
+![](data:text/html,<script>alert('XSS')</script>)
