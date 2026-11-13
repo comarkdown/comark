@@ -1,6 +1,7 @@
-import { describe, expect, it } from 'vitest'
+import { beforeAll, describe, expect, it } from 'vitest'
 import { render } from 'svelte/server'
 import { parseMarkdown } from 'comark'
+import { loadKatex } from 'comark/plugins/math'
 import math, { Math } from '../../src/plugins/math'
 import MarkdownDocument from '../../src/components/MarkdownDocument.svelte'
 
@@ -10,6 +11,8 @@ function html(body: string): string {
 }
 
 describe('Math component (server)', () => {
+  beforeAll(() => loadKatex())
+
   it('renders inline math', () => {
     const { body } = render(Math, {
       props: { content: 'x^2', class: 'inline' },
@@ -33,8 +36,7 @@ describe('Math component (server)', () => {
       props: { content: '\\invalid{', class: '' },
     })
     const output = html(body)
-    // Should render fallback rather than throwing
-    expect(output).toContain('<div class="math block">')
+    expect(output).toContain('<div class="math block">\\invalid{</div>')
   })
 })
 

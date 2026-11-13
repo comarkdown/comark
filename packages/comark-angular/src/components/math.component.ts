@@ -1,5 +1,5 @@
 import { Component, Input, OnChanges, SimpleChanges, ChangeDetectionStrategy, ElementRef, inject } from '@angular/core'
-import katex from 'katex'
+import { loadKatex, typesetMath } from 'comark/plugins/math'
 
 /**
  * Math rendering component for Angular.
@@ -44,13 +44,19 @@ export class Math implements OnChanges {
     const wrapper = document.createElement(isInline ? 'span' : 'div')
     wrapper.className = isInline ? 'math inline' : 'math block'
 
-    try {
-      wrapper.innerHTML = katex.renderToString(this.content, {
-        throwOnError: true,
-        displayMode: !isInline,
-      })
-    } catch {
-      wrapper.textContent = '...'
+    const html = typesetMath(this.content, !isInline)
+    if (html) {
+      wrapper.innerHTML = html
+    } else {
+      // Unfinished or invalid TeX, and TeX before KaTeX loads, stays readable as its source.
+      wrapper.textContent = this.content
+      if (html === undefined) {
+        const content = this.content
+        loadKatex().then(
+          () => content === this.content && this.renderMath(),
+          () => {}
+        )
+      }
     }
 
     hostEl.appendChild(wrapper)
