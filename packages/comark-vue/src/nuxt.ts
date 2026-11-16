@@ -34,8 +34,10 @@ export default defineNuxtModule<ComarkModuleOptions>({
       if (installed) installed.entryPath = '@comark/vue/nuxt'
     })
 
+    // From each component's own entry, not the package index: the index also loads `<Markdown>` and its
+    // parser, which would land in every bundle that only renders a parsed document with `<MarkdownDocument>`.
     for (const name of ['Markdown', 'MarkdownDocument']) {
-      addComponent({ name, export: name, filePath: '@comark/vue', priority: 1 })
+      addComponent({ name, export: name, filePath: `@comark/vue/components/${name}`, priority: 1 })
     }
 
     addImports(
