@@ -815,6 +815,22 @@ describe('word-internal emphasis ending in punctuation', () => {
     const healed = autoCloseMarkdown(input)
     expect((await parseMarkdown(healed)).nodes).toEqual((await parseMarkdown(input)).nodes)
   })
+
+  it('does not close underscore emphasis when a later run follows punctuation (#566)', async () => {
+    for (const input of ['__下線、__次', '__a.__b']) {
+      const healed = autoCloseMarkdown(input)
+      expect(healed).toBe(input)
+      expect((await parseMarkdown(healed)).nodes).toEqual((await parseMarkdown(input, { autoClose: false })).nodes)
+    }
+  })
+
+  it('still closes underscore emphasis when a later run follows a combining mark', () => {
+    expect(autoCloseMarkdown('__cafe\u0301__ine')).toBe('__cafe\u0301__ine__')
+  })
+
+  it('forgets a skipped star run once the underscore frame around it is discarded', () => {
+    expect(autoCloseMarkdown('__a**b.__c~~d.**e')).toBe('__a**b.__c~~d.**e**~~')
+  })
 })
 
 describe('autoCloseMarkdown - syntax option', () => {

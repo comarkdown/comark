@@ -648,6 +648,24 @@ function healRegion(text: string, o: Opts): string {
           i += n - 1
           continue
         }
+        // A `_` run after non-opening punctuation and followed by a word char
+        // (`__下線、__次`, `__a.__b`) cannot close the open `_` frame in CommonMark,
+        // and any closer appended at EOF would pair with this run instead.
+        if (
+          attachedLeft &&
+          isAlnum(next) &&
+          isPunct(prev) &&
+          !isOpeningPunct(prev) &&
+          top !== null &&
+          top.k === F_UNDER &&
+          top.len === n
+        ) {
+          frames.pop()
+          // The scope a skipped `*` run was recorded in is gone with the frame.
+          starSkippedLen = 0
+          i += n - 1
+          continue
+        }
         if (openLeft && openRight && enabled) frames.push({ k: F_UNDER, len: n, pos: i })
       }
       i += n - 1
@@ -1112,6 +1130,16 @@ function isAlnum(cp: string): boolean {
   // ASCII fast path covers nearly all markdown without a Unicode test.
   if (c <= 127) return (c >= 48 && c <= 57) || (c >= 65 && c <= 90) || (c >= 97 && c <= 122)
   return ALNUM_CP_RE.test(cp)
+}
+
+const PUNCT_CP_RE = /\p{P}|\p{S}/u
+
+/** CommonMark punctuation. A combining mark is neither this nor alphanumeric. */
+function isPunct(cp: string): boolean {
+  if (cp === '') return false
+  const c = cp.charCodeAt(0)
+  if (c <= 127) return c > 32 && c < 127 && !isAlnum(cp)
+  return PUNCT_CP_RE.test(cp)
 }
 
 const OPENING_PUNCT_RE = /\p{Ps}|\p{Pi}/u
