@@ -132,6 +132,20 @@ describe('bound props cannot smuggle a component into a polymorphic slot', () =>
     }
   })
 
+  it('does not render an `as` or `is` that is not a plain tag name, without the security plugin', async () => {
+    for (const markdown of [
+      `::poly{as="img src=x onerror=alert(1)"}\n::`,
+      `::poly{:as='"svg onload=alert(1)"'}\n::`,
+      `::poly{as="iframe" srcdoc="<script>alert(1)</script>"}\n::`,
+      `::poly{is="script"}\n::`,
+      `::poly{as="OBJECT"}\n::`,
+    ]) {
+      const html = await renderMarkdown(markdown)
+      expect(html).not.toMatch(/onerror|onload|<iframe|<script|<object/i)
+      expect(html).toContain('<div>poly</div>')
+    }
+  })
+
   it('keeps a non-object `tag`', async () => {
     const html = await renderMarkdown(`::poly{:tag='"section"'}\n::`)
     expect(html).toContain('<section>poly</section>')

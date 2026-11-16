@@ -723,6 +723,18 @@ describe('security plugin — component-like values', () => {
     expect((tree.nodes[1] as [string, any])[1]).toEqual({ as: 'section', ':tag': '5' })
   })
 
+  it('strips an as or is that is not a plain tag name or names a tag that runs code', async () => {
+    const tree = makeTree([
+      ['span', { as: 'img src=x onerror=alert(1)' }, 'x'],
+      ['span', { ':as': '"iframe"', is: 'SCRIPT' }, 'x'],
+      ['span', { as: 'section', ':is': '"prose-field"' }, 'x'],
+    ])
+    await runPlugin(tree)
+    expect((tree.nodes[0] as [string, any])[1]).toEqual({})
+    expect((tree.nodes[1] as [string, any])[1]).toEqual({})
+    expect((tree.nodes[2] as [string, any])[1]).toEqual({ as: 'section', ':is': '"prose-field"' })
+  })
+
   it('strips a forged VNode at any depth', async () => {
     const tree = makeTree([
       ['span', { ':icon': '{"__v_isVNode":true,"type":"script","shapeFlag":1}' }, 'x'],
