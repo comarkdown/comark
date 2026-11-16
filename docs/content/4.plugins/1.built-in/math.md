@@ -156,7 +156,7 @@ Returns a `ComarkPlugin` that tokenizes `$...$` and `$$...$$` expressions.
 
 **Returns:** `ComarkPlugin`
 
-The plugin stores LaTeX source as plain text in the AST. Rendering requires passing `Math` to the `components` prop of `<Markdown>` (see [Usage](#usage)). The `Math` components load KaTeX on first use, so pages without math don't load it. A formula KaTeX can't typeset, such as one still streaming in, shows as its TeX source.
+The plugin stores LaTeX source as plain text in the AST. Rendering requires passing `Math` to the `components` prop of `<Markdown>` (see [Usage](#usage)). The `Math` components load KaTeX on first use, so pages without math don't load it. A formula KaTeX can't typeset, such as one still streaming in, shows as its TeX source. Vue and React server rendering waits for KaTeX; Svelte and Angular render the source on the server and typeset in the browser.
 
 ### Rendering math manually
 

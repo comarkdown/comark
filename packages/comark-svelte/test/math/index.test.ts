@@ -1,7 +1,6 @@
-import { beforeAll, describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { render } from 'svelte/server'
 import { parseMarkdown } from 'comark'
-import { loadKatex } from 'comark/plugins/math'
 import math, { Math } from '../../src/plugins/math'
 import MarkdownDocument from '../../src/components/MarkdownDocument.svelte'
 
@@ -11,24 +10,21 @@ function html(body: string): string {
 }
 
 describe('Math component (server)', () => {
-  beforeAll(() => loadKatex())
-
-  it('renders inline math', () => {
+  // Server rendering can't wait for KaTeX, so it renders the TeX source.
+  it('renders inline math as its source', () => {
     const { body } = render(Math, {
       props: { content: 'x^2', class: 'inline' },
     })
     const output = html(body)
-    expect(output).toContain('<span class="math inline">')
-    expect(output).toContain('katex')
+    expect(output).toContain('<span class="math inline">x^2</span>')
   })
 
-  it('renders display math', () => {
+  it('renders display math as its source', () => {
     const { body } = render(Math, {
       props: { content: 'E = mc^2', class: '' },
     })
     const output = html(body)
-    expect(output).toContain('<div class="math block">')
-    expect(output).toContain('katex')
+    expect(output).toContain('<div class="math block">E = mc^2</div>')
   })
 
   it('handles invalid LaTeX gracefully', () => {
@@ -57,8 +53,7 @@ describe('Math + MarkdownDocument integration (server)', () => {
       props: { value: tree, components: { math: Math } },
     })
     const output = html(body)
-    expect(output).toContain('<span class="math inline">')
-    expect(output).toContain('katex')
+    expect(output).toContain('<span class="math inline">x^2</span>')
     expect(output).toContain('The formula')
   })
 
@@ -70,8 +65,7 @@ describe('Math + MarkdownDocument integration (server)', () => {
       props: { value: tree, components: { math: Math } },
     })
     const output = html(body)
-    expect(output).toContain('<div class="math block">')
-    expect(output).toContain('katex')
+    expect(output).toContain('<div class="math block">E = mc^2</div>')
   })
 
   it('renders mixed inline and display math', async () => {

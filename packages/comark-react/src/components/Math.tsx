@@ -1,5 +1,29 @@
 import { Suspense, memo, use } from 'react'
-import { loadKatex, typesetMath } from 'comark/plugins/math'
+
+let katex: typeof import('katex').default | undefined
+let loading: Promise<unknown> | undefined
+
+// KaTeX loads on first use, so pages without math don't download it.
+function loadKatex(): Promise<unknown> {
+  loading ??= import('katex').then(
+    (module) => (katex = module.default),
+    (error) => {
+      loading = undefined
+      throw error
+    }
+  )
+  return loading
+}
+
+// HTML, `''` when KaTeX can't typeset the formula, or `undefined` before KaTeX loads.
+function typeset(tex: string, displayMode: boolean): string | undefined {
+  if (!katex) return undefined
+  try {
+    return katex.renderToString(tex, { throwOnError: true, displayMode })
+  } catch {
+    return ''
+  }
+}
 
 export interface MathProps {
   content: string
@@ -30,10 +54,10 @@ function waitForKatex(): Promise<boolean> {
 
 // Memoized because streaming re-renders every formula on each chunk.
 const Typeset = memo(function Typeset({ content, isInline }: { content: string; isInline: boolean }) {
-  let html = typesetMath(content, !isInline)
+  let html = typeset(content, !isInline)
   if (html === undefined) {
     use(waitForKatex())
-    html = typesetMath(content, !isInline)
+    html = typeset(content, !isInline)
   }
   if (!html)
     return (

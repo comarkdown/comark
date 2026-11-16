@@ -15,9 +15,34 @@ determines inline vs display mode (display when class does NOT contain "inline")
 <Markdown value="$E = mc^2$" plugins={[math()]} components={{ math: Math }} />
 ```
 -->
-<script lang="ts">
-  import { loadKatex, typesetMath } from 'comark/plugins/math'
+<script module lang="ts">
+  let katex: typeof import('katex').default | undefined
+  let loading: Promise<unknown> | undefined
 
+  // KaTeX loads on first use, so pages without math don't download it.
+  function loadKatex(): Promise<unknown> {
+    loading ??= import('katex').then(
+      (module) => (katex = module.default),
+      (error) => {
+        loading = undefined
+        throw error
+      }
+    )
+    return loading
+  }
+
+  // HTML, `''` when KaTeX can't typeset the formula, or `undefined` before KaTeX loads.
+  function typeset(tex: string, displayMode: boolean): string | undefined {
+    if (!katex) return undefined
+    try {
+      return katex.renderToString(tex, { throwOnError: true, displayMode })
+    } catch {
+      return ''
+    }
+  }
+</script>
+
+<script lang="ts">
   let {
     content,
     class: className = '',
@@ -28,13 +53,12 @@ determines inline vs display mode (display when class does NOT contain "inline")
 
   let isInline = $derived(className.split(' ').includes('inline'))
 
-  // KaTeX loads on first use; parsing a document with math loads it, so a
-  // server render after parsing typesets. Until then, and for unfinished or
-  // invalid TeX, the source shows.
+  // Until KaTeX loads, and for unfinished or invalid TeX, the source shows.
+  // Server rendering can't wait for it, so the browser typesets after hydration.
   let loaded = $state(false)
   let html = $derived.by(() => {
     void loaded
-    return typesetMath(content, !isInline)
+    return typeset(content, !isInline)
   })
 
   $effect(() => {

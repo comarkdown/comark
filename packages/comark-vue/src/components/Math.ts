@@ -1,5 +1,29 @@
 import { defineAsyncComponent, defineComponent, h, onMounted, onServerPrefetch, ref } from 'vue'
-import { loadKatex, typesetMath } from 'comark/plugins/math'
+
+let katex: typeof import('katex').default | undefined
+let loading: Promise<unknown> | undefined
+
+// KaTeX loads on first use, so pages without math don't download it.
+function loadKatex(): Promise<unknown> {
+  loading ??= import('katex').then(
+    (module) => (katex = module.default),
+    (error) => {
+      loading = undefined
+      throw error
+    }
+  )
+  return loading
+}
+
+// HTML, `''` when KaTeX can't typeset the formula, or `undefined` before KaTeX loads.
+function typeset(tex: string, displayMode: boolean): string | undefined {
+  if (!katex) return undefined
+  try {
+    return katex.renderToString(tex, { throwOnError: true, displayMode })
+  } catch {
+    return ''
+  }
+}
 
 const Typeset = defineComponent({
   name: 'Math',
@@ -20,7 +44,7 @@ const Typeset = defineComponent({
   setup(props) {
     // KaTeX failed to load before this formula rendered: try again, and
     // typeset once it loads.
-    const loaded = ref(typesetMath('', true) !== undefined)
+    const loaded = ref(katex !== undefined)
     if (!loaded.value) {
       const retry = () =>
         loadKatex().then(
@@ -36,7 +60,7 @@ const Typeset = defineComponent({
       const isInline = props.class?.includes('inline')
       const tag = isInline ? 'span' : 'div'
       const className = isInline ? 'math inline' : 'math block'
-      const html = typesetMath(props.content, !isInline)
+      const html = typeset(props.content, !isInline)
       // Unfinished or invalid TeX, and TeX before KaTeX loads, stays readable as its source.
       return html ? h(tag, { class: className, innerHTML: html }) : h(tag, { class: className }, props.content)
     }

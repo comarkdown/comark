@@ -1,5 +1,29 @@
 import { Component, Input, OnChanges, SimpleChanges, ChangeDetectionStrategy, ElementRef, inject } from '@angular/core'
-import { loadKatex, typesetMath } from 'comark/plugins/math'
+
+let katex: typeof import('katex').default | undefined
+let loading: Promise<unknown> | undefined
+
+// KaTeX loads on first use, so pages without math don't download it.
+function loadKatex(): Promise<unknown> {
+  loading ??= import('katex').then(
+    (module) => (katex = module.default),
+    (error) => {
+      loading = undefined
+      throw error
+    }
+  )
+  return loading
+}
+
+// HTML, `''` when KaTeX can't typeset the formula, or `undefined` before KaTeX loads.
+function typeset(tex: string, displayMode: boolean): string | undefined {
+  if (!katex) return undefined
+  try {
+    return katex.renderToString(tex, { throwOnError: true, displayMode })
+  } catch {
+    return ''
+  }
+}
 
 /**
  * Math rendering component for Angular.
@@ -44,7 +68,7 @@ export class Math implements OnChanges {
     const wrapper = document.createElement(isInline ? 'span' : 'div')
     wrapper.className = isInline ? 'math inline' : 'math block'
 
-    const html = typesetMath(this.content, !isInline)
+    const html = typeset(this.content, !isInline)
     if (html) {
       wrapper.innerHTML = html
     } else {
