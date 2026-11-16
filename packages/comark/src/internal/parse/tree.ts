@@ -197,7 +197,7 @@ function closeFramesTo(state: ProcessState, idx: number): Node | undefined {
 const P_SCOPE_BOUNDARY = new Set(['table', 'td', 'th', 'caption', 'button', 'template', 'object', 'marquee', 'applet'])
 
 function closeImpliedParagraph(token: Token, state: ProcessState): Node | undefined {
-  if (!/^<p[\s/>]/i.test(token.content)) return undefined
+  if ((token.content.charCodeAt(1) | 0x20) !== 0x70 /* p */ || !/^<p[\s/>]/i.test(token.content)) return undefined
   const parsed = parseHtmlInline(token.content)
   if (parsed.kind !== 'open' || parsed.tag !== 'p' || parsed.selfClosing) return undefined
   const idx = state.htmlStack.at(-1)?.pScope ?? -1
@@ -207,6 +207,8 @@ function closeImpliedParagraph(token: Token, state: ProcessState): Node | undefi
 const firstProse = new WeakMap<Token[], number>()
 
 function followsText(tokens: Token[], start: number): boolean {
+  if (start === 0) return false
+  if (tokens[start - 1].type === 'text' && tokens[start - 1].content.trim()) return true
   let first = firstProse.get(tokens)
   if (first === undefined) {
     first = tokens.findIndex(

@@ -216,7 +216,8 @@ export function parseHtmlAttributes(attrsStr: string): Record<string, unknown> {
   const attrs: Record<string, unknown> = {}
   if (!attrsStr || !attrsStr.trim()) return attrs
 
-  for (const match of attrsStr.matchAll(ATTRIBUTE_RE)) {
+  ATTRIBUTE_RE.lastIndex = 0
+  for (let match = ATTRIBUTE_RE.exec(attrsStr); match; match = ATTRIBUTE_RE.exec(attrsStr)) {
     const key = match[1].toLowerCase()
     if (Object.hasOwn(attrs, key)) continue
     const value = match[2] ?? match[3] ?? match[4] ?? match[5]
