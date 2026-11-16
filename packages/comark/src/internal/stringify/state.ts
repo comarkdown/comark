@@ -264,10 +264,10 @@ function escapeTextNode(text: string, atLineStart = false): string {
 
 function encodeLiteralText(text: string, atLineStart: boolean): string {
   // A `&` before a name or `#` is encoded even without `;`, since browsers decode `&copy` too.
-  // A non-breaking space and a newline that would make a blank line are written as references,
-  // so the parser does not trim them or end the block there.
+  // A non-breaking space, `\r`, and a newline that would make a blank line or end the text are
+  // written as references, so the parser does not trim them or end the block there.
   return escapeTextNode(text, atLineStart).replace(
-    /\\([\s\S])|&(?=[a-z#])|<(?=[a-z/!?])|\u00a0|\n(?=[ \t]*\n)/gi,
+    /\\([\s\S])|&(?=[a-z#])|<(?=[a-z/!?])|\u00a0|\r|\n(?=[ \t]*(?:\n|$))/gi,
     (match, escaped?: string) => {
       const char = escaped ?? match
       return char === '&' ? '&amp;' : char === '<' ? '&lt;' : char === '\u00a0' ? '&nbsp;' : `&#${char.codePointAt(0)};`

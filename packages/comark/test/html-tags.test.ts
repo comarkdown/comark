@@ -184,6 +184,8 @@ describe('markdown: false', () => {
       '<div>\n&nbsp;&nbsp;indent\n</div>',
       '<div>a&nbsp;</div>',
       '<div>a&#10;&#10;b</div>',
+      '<div>a&#10;&#10;</div>',
+      '<div>a&#13;&#13;b</div>',
     ]) {
       const { first, again } = await roundTrip(source, literal)
 
