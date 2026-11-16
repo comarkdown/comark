@@ -1,7 +1,6 @@
 import {
   Component,
   ComponentRef,
-  Input,
   ChangeDetectionStrategy,
   ViewContainerRef,
   ElementRef,
@@ -14,6 +13,7 @@ import {
   createComponent,
   reflectComponentType,
   inject,
+  input,
 } from '@angular/core'
 import type { ElementNode, Node as MarkdownAstNode, NodeRenderData, NodeTransform } from 'comark'
 import { resolveIfWrapper, selectIfBranch, shouldRenderIf, type IfProps } from 'comark/plugins/binding'
@@ -126,19 +126,19 @@ function prepareNode(
 })
 export class MarkdownNode implements OnChanges {
   /** The Comark AST node to render */
-  @Input({ required: true }) node!: MarkdownAstNode
+  readonly node = input.required<MarkdownAstNode>()
 
   /** Custom component mappings */
-  @Input() components: Record<string, Type<any>> = {}
+  readonly components = input<Record<string, Type<any>>>({})
 
   /** Render data for :binding resolution */
-  @Input() renderData: NodeRenderData = { frontmatter: {}, meta: {}, data: {}, props: {} }
+  readonly renderData = input<NodeRenderData>({ frontmatter: {}, meta: {}, data: {}, props: {} })
 
   /** Parent node (for context like `pre` tag detection) */
-  @Input() parent?: MarkdownAstNode
+  readonly parent = input<MarkdownAstNode>()
 
   /** Change the tag or props of element nodes just before they render */
-  @Input() transformNode?: NodeTransform | readonly NodeTransform[]
+  readonly transformNode = input<NodeTransform | readonly NodeTransform[]>()
 
   private vcr = inject(ViewContainerRef)
   private renderer = inject(Renderer2)
@@ -158,26 +158,27 @@ export class MarkdownNode implements OnChanges {
       hostEl.removeChild(hostEl.firstChild)
     }
 
-    if (this.node === undefined || this.node === null) return
+    if (this.node() === undefined || this.node() === null) return
 
     // Text node
-    if (typeof this.node === 'string') {
-      const text = this.renderer.createText(this.node)
+    if (typeof this.node() === 'string') {
+      const text = this.renderer.createText(this.node() as string)
       this.renderer.appendChild(hostEl, text)
       return
     }
 
     // Element node
-    if (Array.isArray(this.node)) {
-      if (!getTag(this.node)) return
+    const node = this.node()
+    if (Array.isArray(node)) {
+      if (!getTag(node)) return
 
-      const children = getChildren(this.node)
+      const children = getChildren(node)
       const {
         tag,
         props: resolved,
         customComponent,
         childrenRenderData,
-      } = prepareNode(this.node as ElementNode, this.components, this.renderData, this.parent, this.transformNode)
+      } = prepareNode(node as ElementNode, this.components(), this.renderData(), this.parent(), this.transformNode())
 
       if ((customComponent as StructuralComponent | undefined)?.ɵcomarkIf) {
         this.renderIf(resolved, children, childrenRenderData)
@@ -242,7 +243,7 @@ export class MarkdownNode implements OnChanges {
       attrs,
       children,
       childrenRenderData,
-      this.node
+      this.node()
     )
   }
 
@@ -338,7 +339,7 @@ export class MarkdownNode implements OnChanges {
 
     // Pass __node if the component accepts it
     if (inputNames.has('__node')) {
-      componentRef.setInput('__node', this.node)
+      componentRef.setInput('__node', this.node())
     }
 
     // Render non-default named slots into the component's host element
@@ -385,17 +386,23 @@ export class MarkdownNode implements OnChanges {
         if (!childTag) continue
 
         const grandChildren = getChildren(child)
-        const prepared = prepareNode(child as ElementNode, this.components, renderData, this.node, this.transformNode)
+        const prepared = prepareNode(
+          child as ElementNode,
+          this.components(),
+          renderData,
+          this.node(),
+          this.transformNode()
+        )
 
         if (prepared.customComponent) {
           let componentRef: ComponentRef<MarkdownNode> | undefined
           try {
             componentRef = this.vcr.createComponent(MarkdownNode)
             componentRef.setInput('node', child)
-            componentRef.setInput('components', this.components)
+            componentRef.setInput('components', this.components())
             componentRef.setInput('renderData', renderData)
-            componentRef.setInput('parent', this.node)
-            componentRef.setInput('transformNode', this.transformNode)
+            componentRef.setInput('parent', this.node())
+            componentRef.setInput('transformNode', this.transformNode())
 
             // Move the component's host element into the parent before change detection,
             // so the custom component it inserts lands next to it inside `parentEl`

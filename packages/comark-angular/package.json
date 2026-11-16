@@ -27,46 +27,44 @@
     "type": "git",
     "url": "git+https://github.com/comarkdown/comark.git"
   },
-  "files": [
-    "dist"
-  ],
-  "type": "module",
   "sideEffects": false,
-  "main": "./dist/index.js",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": "./dist/index.js",
-    "./plugins/*": "./dist/plugins/*.js",
-    "./utils": "./dist/utils/index.js"
-  },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "directory": "dist"
   },
   "scripts": {
     "stub": "node ../../scripts/stub.mjs",
-    "build": "ngc -p tsconfig.json && ngc -p tsconfig.json --removeComments true --declaration false && node scripts/verify-build.mjs",
-    "dev": "ngc -p tsconfig.json --watch",
-    "test": "vitest run",
+    "ng": "ng",
+    "build": "ng build && node scripts/strip-sourcemaps.mjs && node ../../scripts/sync-plugins.mjs",
+    "dev": "ng build --watch --configuration development",
+    "test": "ng test",
     "prepack": "pnpm run build"
   },
   "dependencies": {
-    "comark": "workspace:*"
+    "comark": "workspace:*",
+    "tslib": "^2.3.0"
   },
   "devDependencies": {
-    "@angular/common": "^22.2.5",
+    "@angular-devkit/build-angular": "catalog:",
+    "@angular/cli": "catalog:",
+    "@angular/common": "catalog:",
     "@angular/compiler": "catalog:",
     "@angular/compiler-cli": "catalog:",
-    "@angular/core": "^22.2.5",
-    "@angular/platform-browser": "^22.2.5",
+    "@angular/core": "catalog:",
+    "@angular/platform-browser": "catalog:",
+    "@angular/platform-browser-dynamic": "catalog:",
     "@angular/platform-server": "catalog:",
+    "@angular/router": "catalog:",
+    "happy-dom": "^20.14.5",
+    "ng-packagr": "catalog:",
+    "rxjs": "catalog:",
     "typescript": "catalog:",
-    "vitest": "catalog:"
+    "vitest": "catalog:",
+    "zone.js": "catalog:"
   },
   "peerDependencies": {
-    "@angular/common": ">=17.0.0 <23.0.0",
-    "@angular/core": ">=17.0.0 <23.0.0",
-    "@angular/platform-browser": ">=17.0.0 <23.0.0",
+    "@angular/common": ">=21.0.0 <23.0.0",
+    "@angular/core": ">=21.0.0 <23.0.0",
     "beautiful-mermaid": "catalog:",
     "katex": "catalog:",
     "shiki": "catalog:"

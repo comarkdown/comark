@@ -111,7 +111,7 @@ npm install @comark/angular katex
 ```typescript
 import { Component } from '@angular/core'
 import { Markdown } from '@comark/angular'
-import math, { Math } from '@comark/angular/plugins/math'
+import { math, Math } from '@comark/angular/plugins/math'
 
 @Component({
   selector: 'app-chat',

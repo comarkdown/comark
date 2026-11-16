@@ -1,8 +1,8 @@
-import { Component, Input, ChangeDetectionStrategy, Type } from '@angular/core'
+import { Component, ChangeDetectionStrategy, Type, input, computed } from '@angular/core'
 import type { NodeTransform, ParserOptions } from 'comark'
 import { mergeNodeTransforms } from 'comark/utils'
-import { Markdown } from './components/markdown.component.ts'
-import { MarkdownDocument } from './components/markdown-document.component.ts'
+import { Markdown } from './components/markdown.component'
+import { MarkdownDocument } from './components/markdown-document.component'
 
 export interface DefineMarkdownComponentOptions extends ParserOptions {
   /** Pre-configured component mappings. */
@@ -31,7 +31,7 @@ export interface DefineMarkdownDocumentOptions {
  * @example
  * ```typescript
  * import { defineMarkdownComponent } from '@comark/angular'
- * import math, { Math } from '@comark/angular/plugins/math'
+ * import { math, Math } from '@comark/angular/plugins/math'
  *
  * export const DocsMarkdown = defineMarkdownComponent({
  *   plugins: [math()],
@@ -58,11 +58,11 @@ export function defineMarkdownComponent(config: DefineMarkdownComponentOptions =
       @if (document) {
         <comark-markdown-document
           [value]="document"
-          [components]="mergedComponents"
-          [streaming]="streaming"
-          [caret]="caret"
-          [data]="data"
-          [transformNode]="mergedTransforms"
+          [components]="mergedComponents()"
+          [streaming]="streaming()"
+          [caret]="caret()"
+          [data]="data()"
+          [transformNode]="mergedTransforms()"
         />
       }
     `,
@@ -72,35 +72,42 @@ export function defineMarkdownComponent(config: DefineMarkdownComponentOptions =
   })
   class DefinedMarkdownComponent extends Markdown {
     /** Instance-level components that are merged with config-level components. */
-    @Input() override components: Record<string, Type<any>> = {}
+    // @Input() override components: Record<string, Type<any>> = {}
+    override readonly components = input<Record<string, Type<any>>>({})
 
-    get mergedComponents(): Record<string, Type<any>> {
-      return { ...configComponents, ...this.components }
-    }
+    protected readonly mergedComponents = computed(() => ({ ...configComponents, ...this.components() }))
 
-    get mergedTransforms(): NodeTransform | readonly NodeTransform[] | undefined {
-      return mergeNodeTransforms(configTransforms, this.transformNode)
-    }
+    protected readonly mergedTransforms = computed(() => mergeNodeTransforms(configTransforms, this.transformNode()))
 
     get hostClass(): string {
       return configClass || ''
     }
 
-    override ngOnChanges(changes: any): void {
-      // Merge config-level options and plugins with instance-level ones
-      if (!this.options || Object.keys(this.options).length === 0) {
-        this.options = { ...parseOptions }
-      } else {
-        this.options = { ...parseOptions, ...this.options }
-      }
+    /**
+     * Effective plugins: config-level plugins first, then instance plugins,
+     * deduplicated by plugin name so a plugin supplied by both runs once.
+     */
+    private readonly effectivePlugins = computed<ParserOptions['plugins']>(() => {
+      const names = new Set<string>()
+      return [...configPlugins, ...(this.plugins() ?? [])].filter((plugin) => {
+        if (names.has(plugin.name)) return false
+        names.add(plugin.name)
+        return true
+      })
+    })
 
-      if (!this.plugins || this.plugins.length === 0) {
-        this.plugins = [...configPlugins]
-      } else {
-        this.plugins = [...configPlugins, ...this.plugins]
+    /**
+     * Merge config-level parse options under the instance `options` input so
+     * instance values override config defaults, without writing back to the
+     * input signal (the parser consumes the derived value instead).
+     */
+    protected override getParserOptions(): ParserOptions {
+      return {
+        ...parseOptions,
+        ...this.options(),
+        ...(this.unwrap() ? { unwrap: this.unwrap() } : {}),
+        plugins: this.effectivePlugins(),
       }
-
-      super.ngOnChanges(changes)
     }
   }
 
@@ -130,12 +137,12 @@ export function defineMarkdownDocumentComponent(config: DefineMarkdownDocumentOp
     changeDetection: ChangeDetectionStrategy.OnPush,
     template: `
       <comark-markdown-document
-        [value]="value"
-        [components]="mergedComponents"
-        [streaming]="streaming"
-        [caret]="caret"
-        [data]="data"
-        [transformNode]="mergedTransforms"
+        [value]="value()"
+        [components]="mergedComponents()"
+        [streaming]="streaming()"
+        [caret]="caret()"
+        [data]="data()"
+        [transformNode]="mergedTransforms()"
       />
     `,
     host: {
@@ -144,15 +151,13 @@ export function defineMarkdownDocumentComponent(config: DefineMarkdownDocumentOp
   })
   class DefinedMarkdownDocumentComponent extends MarkdownDocument {
     /** Instance-level components that are merged with config-level components. */
-    @Input() override components: Record<string, Type<any>> = {}
+    override readonly components = input<Record<string, Type<any>>>({})
 
-    get mergedComponents(): Record<string, Type<any>> {
-      return { ...configComponents, ...this.components }
-    }
+    protected readonly mergedComponents = computed(() => ({ ...configComponents, ...this.components() }))
 
-    get mergedTransforms(): NodeTransform | readonly NodeTransform[] | undefined {
-      return mergeNodeTransforms(config.transformNode, this.transformNode)
-    }
+    protected readonly mergedTransforms = computed(() =>
+      mergeNodeTransforms(config.transformNode, this.transformNode())
+    )
 
     get hostClass(): string {
       return configClass || ''
