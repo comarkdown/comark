@@ -42,7 +42,7 @@
   },
   "dependencies": {
     "comark": "workspace:*",
-    "tslib": "^2.3.0"
+    "tslib": "^2.9.1"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "catalog:",
@@ -55,7 +55,7 @@
     "@angular/platform-browser-dynamic": "catalog:",
     "@angular/platform-server": "catalog:",
     "@angular/router": "catalog:",
-    "happy-dom": "^20.14.5",
+    "happy-dom": "^20.14.6",
     "ng-packagr": "catalog:",
     "rxjs": "catalog:",
     "typescript": "catalog:",
