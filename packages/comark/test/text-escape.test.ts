@@ -171,5 +171,8 @@ describe('text inside a raw HTML block', () => {
 
   it('writes the text verbatim with rawHtmlText: verbatim', async () => {
     expect(await renderMarkdown(block('div', '<b>x</b>'), { rawHtmlText: 'verbatim' })).toBe('<div>\n<b>x</b>\n</div>')
+    expect(await renderMarkdown(block('textarea', '<b> &'), { rawHtmlText: 'verbatim' })).toBe(
+      '<textarea><b> &</textarea>'
+    )
   })
 })

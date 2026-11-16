@@ -211,8 +211,8 @@ function pushText(tokens: Token[], content: string, verbatim = false, decode = t
   if (!textContent) return
   const text = new Token('text', '', 0)
   text.content = decode ? decodeHTMLStrict(textContent) : textContent
-  // Decoded text can spell `<!--`; it is not a comment. A `<!--` written as is still opens one.
-  if (text.content !== textContent) text.meta = { literal: true }
+  // Raw bodies and decoded text can spell `<!--`; it is not a comment. Elsewhere a written `<!--` opens one.
+  if (verbatim || text.content !== textContent) text.meta = { literal: true }
   tokens.push(text)
 }
 

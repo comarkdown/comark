@@ -50,6 +50,10 @@ it.each([
   ['<p>a<bUtton><p>b</p></bUtton>', [['p', { $: block }, 'a', ['bUtton', { $: inline }, ['p', { $: inline }, 'b']]]]],
   ['<a href={base}/page>go</a>', [['a', { $: inline, href: '{base}/page' }, 'go']]],
   ['<!-- hidden', [[null, {}, '\n\n hidden\n\n']]],
+  [
+    'before <script><!-- a -->alert(1)</script>',
+    [['p', {}, 'before ', ['script', { $: inline }, '<!-- a -->alert(1)']]],
+  ],
 ])('parses %j', async (source, nodes) => {
   expect((await parseMarkdown(source)).nodes).toEqual(nodes)
 })
@@ -169,6 +173,22 @@ describe('markdown: false', () => {
     expect(again.nodes).toEqual(first.nodes)
     expect(output).toBe('<div>\n  &amp;foo; &amp;copy &amp;amp; &amp;#65; &lt;!-- c --&gt; AT&amp;T\n</div>')
     expect(markdown).not.toContain('<!--')
+  })
+
+  it('writes decoded text that a save would change back as references', async () => {
+    const { markdown } = await roundTrip('<div>&amp;copy &amp;#65</div>', literal)
+
+    expect(markdown).toBe('<div>\n&amp;copy &amp;#65\n</div>')
+    for (const source of [
+      '<div>&amp;copy &amp;#65</div>',
+      '<div>\n&nbsp;&nbsp;indent\n</div>',
+      '<div>a&nbsp;</div>',
+      '<div>a&#10;&#10;b</div>',
+    ]) {
+      const { first, again } = await roundTrip(source, literal)
+
+      expect(again.nodes).toEqual(first.nodes)
+    }
   })
 
   it('shows the decoded text of an inline tag as the text it spells', async () => {
