@@ -36,15 +36,25 @@ function findHandler(ctx: Context, node: ElementNode): NodeHandler | undefined {
  */
 export async function one(node: Node, state: State, parent?: ElementNode, atLineStart = false): Promise<string> {
   if (typeof node === 'string') {
+    const inElement = parent?.[1].$?.html === 1
+    const rawTag = inElement ? String(parent[0]).toLowerCase() : ''
+    const rawBody = rawTag === 'script' || rawTag === 'style'
     if (state.context.html) {
-      // Do not convert ampersands to entities in raw HTML blocks
-      return escapeHtml(node, { '&': undefined, '"': undefined })
+      // Text in an HTML element was decoded on parse, so a `&` that could start a reference
+      // (`&lt`, `&#65`) is written as `&amp;`. Markdown text keeps its entities as it always has.
+      return escapeHtml(inElement && !rawBody ? node.replace(/&(?=[a-z#])/gi, '&amp;') : node, {
+        '&': undefined,
+        '"': undefined,
+      })
     }
-    // The content of a raw HTML block is copied verbatim on parse, so markdown
-    // syntax inside it must not be escaped (inline HTML, `$.block === 0`, has
-    // its markdown parsed into children and is escaped normally).
-    if (parent?.[1].$?.html === 1 && parent[1].$?.block === 1) {
-      return state.context.rawHtmlText === 'verbatim' ? node : escapeRawHtmlText(node, String(parent[0]))
+    const verbatim = state.context.rawHtmlText === 'verbatim'
+    if (rawBody) return verbatim ? node : escapeRawHtmlText(node, rawTag)
+    if (state.context.rawText === true) {
+      return verbatim ? node : node.replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    }
+    // Character references preserve Markdown punctuation in both parsing modes; backslashes do not.
+    if (inElement && (parent[1].$?.block === 1 || state.context.literal === true)) {
+      return verbatim ? node : encodeLiteralText(node, atLineStart)
     }
     return escapeTextNode(node, atLineStart)
   }
@@ -97,6 +107,10 @@ export async function one(node: Node, state: State, parent?: ElementNode, atLine
     }
   }
 
+  // Text under raw HTML stays literal through its inline elements, but not through markdown nodes.
+  const revertLiteral =
+    state.context.literal === true && node[1].$?.html !== 1 ? state.applyContext({ literal: false }) : undefined
+
   try {
     const userHandler = findHandler(state.context, node)
     if (userHandler) {
@@ -119,6 +133,7 @@ export async function one(node: Node, state: State, parent?: ElementNode, atLine
       : await state.handlers.html(node, state, parent)
   } finally {
     state.renderData = prevRenderData
+    if (revertLiteral) state.applyContext(revertLiteral)
   }
 }
 
@@ -206,6 +221,19 @@ const inlineSyntax = /[\\`*_<&~[\]{:]/g
 // Mirrors ALLOWED_PREV_CHARS in the components plugin.
 const COLON_PREV_CHARS = new Set([' ', '\t', '\n', '*', '_', '[', ']', '}', ')', '>'])
 
+/** Write `</script` / `</style` in a raw body as `<\/`, the only text that could end it early. */
+function escapeRawHtmlText(text: string, tag: string): string {
+  const lower = text.toLowerCase()
+  const closer = `</${tag}`
+  let result = ''
+  let last = 0
+  for (let index = lower.indexOf(closer); index !== -1; index = lower.indexOf(closer, last)) {
+    result += text.slice(last, index) + '<\\/'
+    last = index + 2
+  }
+  return result + text.slice(last)
+}
+
 /**
  * Escape characters in a markdown text node that would otherwise be
  * misinterpreted as markdown syntax on a subsequent parse, so the node
@@ -217,58 +245,6 @@ const COLON_PREV_CHARS = new Set([' ', '\t', '\n', '*', '_', '[', ']', '}', ')',
  * line, so their markers are escaped on the first line only when the node
  * begins one (`atLineStart`) and on every line following an embedded newline.
  */
-// Elements whose content the HTML tokenizer reads as text: only the matching
-// end tag can end it, so nothing else inside is markup. `textarea` (RCDATA)
-// decodes entities, so its end tag is escaped as `&lt;/`; `script` / `style`
-// (raw text) do not, so `<\/`, the form scripts use inside strings.
-const TEXT_ONLY_TAGS: Record<string, string> = { script: '<\\/', style: '<\\/', textarea: '&lt;/' }
-
-/**
- * Escape a text node inside a raw HTML block for markdown output.
- *
- * Renderers that read the block as raw HTML (CommonMark, GitHub, markdown-it)
- * parse any tag in it, so a text node such as `<svg onload=…>`, which the
- * parser kept as text, must not come back as markup. Only a `<` that would
- * start a tag is escaped, as `&lt;`, which reads back as the same character.
- * Markdown syntax and existing entities are kept, like the HTML renderer does.
- * In `<script>` / `<style>` / `<textarea>`, only an end tag can break out, so
- * only `</` before the element's own name is escaped.
- */
-function escapeRawHtmlText(text: string, tag: string): string {
-  if (!text.includes('<')) return text
-
-  const lowerTag = tag.toLowerCase()
-  const closerEscape = Object.hasOwn(TEXT_ONLY_TAGS, lowerTag) ? TEXT_ONLY_TAGS[lowerTag] : undefined
-  if (closerEscape) {
-    const lower = text.toLowerCase()
-    const closer = `</${lowerTag}`
-    let result = ''
-    let last = 0
-    for (let index = lower.indexOf(closer); index !== -1; index = lower.indexOf(closer, last)) {
-      result += text.slice(last, index) + closerEscape
-      last = index + 2
-    }
-    return result + text.slice(last)
-  }
-
-  let result = ''
-  let last = 0
-  for (let index = text.indexOf('<'); index !== -1; index = text.indexOf('<', index + 1)) {
-    const next = text.charCodeAt(index + 1)
-    const startsTag =
-      (next >= 65 && next <= 90) /* A-Z */ ||
-      (next >= 97 && next <= 122) /* a-z */ ||
-      next === 33 /* ! */ ||
-      next === 47 /* / */ ||
-      next === 63 /* ? */
-    if (startsTag) {
-      result += text.slice(last, index) + '&lt;'
-      last = index + 1
-    }
-  }
-  return result + text.slice(last)
-}
-
 function escapeTextNode(text: string, atLineStart = false): string {
   const escaped = escapeInline(text)
 
@@ -280,6 +256,17 @@ function escapeTextNode(text: string, atLineStart = false): string {
     .split('\n')
     .map((line, index) => (index > 0 || atLineStart ? escapeLeadingBlock(line) : line))
     .join('\n')
+}
+
+function encodeLiteralText(text: string, atLineStart: boolean): string {
+  // Also `&copy` (browsers decode it), and whitespace the parser would trim or read as a blank line.
+  return escapeTextNode(text, atLineStart).replace(
+    /\\([\s\S])|&(?=[a-z#])|<(?=[a-z/!?])|\u00a0|\r|\n(?=[ \t]*(?:\n|$))/gi,
+    (match, escaped?: string) => {
+      const char = escaped ?? match
+      return char === '&' ? '&amp;' : char === '<' ? '&lt;' : char === '\u00a0' ? '&nbsp;' : `&#${char.codePointAt(0)};`
+    }
+  )
 }
 
 function isAlphaNumeric(char: string | undefined): boolean {

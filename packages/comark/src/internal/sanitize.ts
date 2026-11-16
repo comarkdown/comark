@@ -288,7 +288,12 @@ function validateStyle(value: string, options: PropsValidationOptions): string |
   // The browser decodes entities before CSS sees them: `url(&quot;…&quot;)`
   const css = decodeHtmlEntities(value)
   if (!css.includes('(')) return value
-  for (const url of styleUrls(css)) {
+  const urls = styleUrls(css)
+  // `style={{…}}` is a JavaScript object whose strings are CSS: `{{background: 'url("…")'}}`
+  if (css.trimStart().startsWith('{')) {
+    for (const text of urls.slice()) if (text.includes('(')) urls.push(...styleUrls(text))
+  }
+  for (const url of urls) {
     if (url && validateUrl(url, 'image', options) !== url) return REJECTED_PROP
   }
   return value

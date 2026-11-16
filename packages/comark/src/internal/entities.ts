@@ -61,6 +61,15 @@ function fromNumericReference(value: number): string {
  * alphanumeric follows them (`?a=1&copy=2` stays literal).
  */
 export function decodeHTMLAttribute(input: string): string {
+  return decodeReferences(input, false)
+}
+
+/** Decode only references that end with `;`, the way markdown-exit reads them in text. */
+export function decodeHTMLStrict(input: string): string {
+  return decodeReferences(input, true)
+}
+
+function decodeReferences(input: string, strict: boolean): string {
   let amp = input.indexOf('&')
   if (amp === -1) return input
 
@@ -84,9 +93,10 @@ export function decodeHTMLAttribute(input: string): string {
         value = Math.min(value * (hex ? 16 : 10) + Number.parseInt(input[end], 16), 0x110000)
         end++
       }
-      if (end > start) {
+      const semicolon = input.charCodeAt(end) === 59 /* ; */
+      if (end > start && (semicolon || !strict)) {
         decoded = fromNumericReference(value)
-        if (input.charCodeAt(end) === 59 /* ; */) end++
+        if (semicolon) end++
       }
     } else {
       while (end < length && isAlphanumeric(input.charCodeAt(end))) end++
@@ -95,7 +105,7 @@ export function decodeHTMLAttribute(input: string): string {
       if (next === 59 /* ; */ && own.call(characterEntities, name)) {
         decoded = characterEntities[name]
         end++
-      } else if (next !== 61 /* = */ && legacy.has(name)) {
+      } else if (!strict && next !== 61 /* = */ && legacy.has(name)) {
         // Any shorter legacy prefix of `name` is followed by an alphanumeric, which keeps it literal.
         decoded = characterEntities[name]
       }

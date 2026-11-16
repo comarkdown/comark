@@ -48,7 +48,16 @@ export async function html(node: ElementNode, state: State, parent?: ElementNode
   if (!oneLiner && inlineTags.has(String(tag)) && hasOnlyTextChildren) {
     oneLiner = true
   }
-  if (tag === 'pre') {
+  // Every character in an authored `<pre>` is content, nested tags included.
+  const authoredRaw = state.context.rawText === true && $.html === 1
+  if (tag === 'pre' || tag === 'textarea' || tag === 'script' || tag === 'style' || authoredRaw) {
+    oneLiner = true
+  }
+  // Re-indenting a paragraph would put spaces into the `<pre>` written inside it.
+  if (
+    tag === 'p' &&
+    children.some((child) => typeof child !== 'string' && (child?.[0] === 'pre' || child?.[0] === 'textarea'))
+  ) {
     oneLiner = true
   }
 
@@ -63,16 +72,28 @@ export async function html(node: ElementNode, state: State, parent?: ElementNode
 
   const isSelfClose = selfCloseTags.has(String(tag))
 
-  // Do not modify context if we are already in html mode
-  const revert = state.applyContext({ inline: oneLiner })
+  const rawText = state.context.rawText === true || tag === 'pre' || tag === 'textarea'
+  const literal = $.html === 1 && ($.block === 1 || state.context.literal === true)
+  // Only changed keys go into the edit: every element renders through here.
+  const edit: Record<string, unknown> = { inline: oneLiner }
+  if (rawText !== (state.context.rawText === true)) edit.rawText = rawText
+  if (literal !== (state.context.literal === true)) edit.literal = literal
+  const revert = state.applyContext(edit)
 
   const childrenContent: string[] = []
-  for (const child of children) {
-    childrenContent.push(await state.one(child, state, node))
+  for (let i = 0; i < children.length; i++) {
+    childrenContent.push(await state.one(children[i], state, node, i === 0 && !oneLiner && !state.context.html))
   }
 
   // A blank line inside a raw-HTML element would terminate it on reparse
-  const childSeparator = state.context.html ? state.context.blockSeparator : oneLiner ? '' : '\n'
+  const childSeparator =
+    state.context.rawText && $.html === 1
+      ? ''
+      : state.context.html
+        ? state.context.blockSeparator
+        : oneLiner
+          ? ''
+          : '\n'
 
   let content = ''
   let isPrevBlock = true
@@ -81,6 +102,7 @@ export async function html(node: ElementNode, state: State, parent?: ElementNode
     const child = children[i]
     const isBlock =
       typeof child !== 'string' &&
+      !(state.context.rawText && child[0] === null) &&
       (blockTags.has(String(child?.[0])) || (!inlineTags.has(String(child?.[0])) && !hasTextSibling))
 
     if (i > 0 && !isPrevBlock && isBlock) {

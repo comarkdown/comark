@@ -3,6 +3,7 @@ import type { ElementNode } from 'comark'
 
 export function comment(node: ElementNode, state: State, parent?: ElementNode) {
   if (node[0] === null) {
+    if (state.context.rawText) return `<!--${node[2]}-->`
     const inline =
       state.context.inline === true ||
       parent?.[0] === 'p' ||

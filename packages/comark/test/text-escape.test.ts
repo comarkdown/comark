@@ -153,25 +153,26 @@ describe('text inside a raw HTML block', () => {
     expect(await renderMarkdown(again)).toBe(md)
   })
 
-  it('escapes only the own end tag inside script, style and textarea', async () => {
+  it('escapes only the own end tag inside script and style', async () => {
     expect(await renderMarkdown(block('script', 'if (a < b) x = "</script><img onerror=1>"'))).toBe(
-      '<script>\nif (a < b) x = "<\\/script><img onerror=1>"\n</script>'
+      '<script>if (a < b) x = "<\\/script><img onerror=1>"</script>'
     )
-    expect(await renderMarkdown(block('style', 'a > b {} </STYLE><b>'))).toBe(
-      '<style>\na > b {} <\\/STYLE><b>\n</style>'
-    )
-    expect(await renderMarkdown(block('textarea', '<b></textarea><img onerror=1>'))).toBe(
-      '<textarea>\n<b>&lt;/textarea><img onerror=1>\n</textarea>'
-    )
+    expect(await renderMarkdown(block('style', 'a > b {} </STYLE><b>'))).toBe('<style>a > b {} <\\/STYLE><b></style>')
   })
 
-  it('keeps markdown syntax, entities and comparisons as written', async () => {
+  it('writes textarea text and markdown punctuation as character references', async () => {
+    expect(await renderMarkdown(block('textarea', '<b></textarea><img onerror=1>'))).toBe(
+      '<textarea>&lt;b>&lt;/textarea>&lt;img onerror=1></textarea>'
+    )
     expect(await renderMarkdown(block('div', 'Hello **World** &amp; a < b, 1<2'))).toBe(
-      '<div>\nHello **World** &amp; a < b, 1<2\n</div>'
+      '<div>\nHello &#42;&#42;World&#42;&#42; &amp;amp; a < b, 1<2\n</div>'
     )
   })
 
   it('writes the text verbatim with rawHtmlText: verbatim', async () => {
     expect(await renderMarkdown(block('div', '<b>x</b>'), { rawHtmlText: 'verbatim' })).toBe('<div>\n<b>x</b>\n</div>')
+    expect(await renderMarkdown(block('textarea', '<b> &'), { rawHtmlText: 'verbatim' })).toBe(
+      '<textarea><b> &</textarea>'
+    )
   })
 })
