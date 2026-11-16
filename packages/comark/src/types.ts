@@ -37,6 +37,8 @@ export type ElementNodeAttributes = {
      * before or after it. Markdown output leaves both out.
      */
     permalink?: 'wrap' | 'separate'
+    /** The `rel` `external-links` added to a link. Markdown output leaves `rel` out while it still has this value. */
+    autoRel?: string
   }
 }
 

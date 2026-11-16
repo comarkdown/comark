@@ -27,6 +27,8 @@ const blockTags = new Set([
 export async function html(node: ElementNode, state: State, parent?: ElementNode) {
   const [tag, attr, ...children] = node
   const { $ = {}, ...rawAttributes } = attr
+  // A `rel` added by `external-links` isn't part of the source
+  if (!state.context.html && $.autoRel !== undefined && rawAttributes.rel === $.autoRel) delete rawAttributes.rel
 
   // In text/html mode, `one()` has already resolved this element's `:prefix`
   // bindings against the parent's render context and stored the result in
