@@ -64,8 +64,8 @@ catalog:
   "@vercel/speed-insights": ^2.1.0
   "@vitejs/plugin-react": ^6.3.0
   "@vitejs/plugin-vue": ^6.0.11
-  "@vitest/browser": ^4.1.12
-  "@vitest/browser-playwright": ^4.1.12
+  "@vitest/browser": ^5.1.0
+  "@vitest/browser-playwright": ^5.1.0
   "@vue/compiler-core": 3.5.45
   "@vue/reactivity": 3.5.45
   "@vue/runtime-core": 3.5.45
@@ -167,7 +167,7 @@ catalog:
   # Testing
   "@codspeed/vitest-plugin": ^6.1.1
   tinybench: ^6.2.3
-  vitest: ^4.1.12
+  vitest: ^5.1.0
   vitest-browser-svelte: ^3.1.0
 
   # Vue
