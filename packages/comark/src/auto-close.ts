@@ -648,19 +648,11 @@ function healRegion(text: string, o: Opts): string {
           i += n - 1
           continue
         }
-        // A `_` run after non-opening punctuation and followed by a word char
-        // (`__下線、__次`, `__a.__b`) cannot close the open `_` frame in CommonMark,
-        // and any closer appended at EOF would pair with this run instead.
-        if (
-          attachedLeft &&
-          isAlnum(next) &&
-          isPunct(prev) &&
-          !isOpeningPunct(prev) &&
-          top !== null &&
-          top.k === F_UNDER &&
-          top.len === n
-        ) {
-          frames.pop()
+        // A `_` run after punctuation and followed by a word char (`__下線、__次`,
+        // `__a.__b`, `_a(__b`) can only open in CommonMark, so any `_` closer
+        // appended at EOF would pair with this run instead of the open frames.
+        if (attachedLeft && isAlnum(next) && isPunct(prev) && top !== null && top.k === F_UNDER) {
+          while (frames.length > 0 && frames[frames.length - 1].k === F_UNDER) frames.pop()
           // The scope a skipped `*` run was recorded in is gone with the frame.
           starSkippedLen = 0
           i += n - 1

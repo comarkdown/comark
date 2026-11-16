@@ -817,7 +817,7 @@ describe('word-internal emphasis ending in punctuation', () => {
   })
 
   it('does not close underscore emphasis when a later run follows punctuation (#566)', async () => {
-    for (const input of ['__下線、__次', '__a.__b']) {
+    for (const input of ['__下線、__次', '__a.__b', '_a(__b', '__a(__b', '__a、_b', '_a、__b', '__a __b.__c']) {
       const healed = autoCloseMarkdown(input)
       expect(healed).toBe(input)
       expect((await parseMarkdown(healed)).nodes).toEqual((await parseMarkdown(input, { autoClose: false })).nodes)
