@@ -34,6 +34,33 @@ it('settles on the paired tree once the closer streams in', async () => {
   ])
 })
 
+it('pairs a closer that streams in after a paragraph closed the tag', async () => {
+  const source = 'text <x-card>\n\nbody\n\n</x-card>'
+  const parse = createMarkdownParser()
+  await parse('text <x-card>\n\nbody', { streaming: true })
+  const streamed = await parse(source, { streaming: true })
+  const withoutLines = (nodes: unknown) => JSON.parse(JSON.stringify(nodes).replace(/,"line":\d+/g, ''))
+
+  expect(withoutLines(streamed.nodes)).toEqual((await parseMarkdown(source)).nodes)
+})
+
+it.each([
+  ['a</bR>b', [['p', {}, 'a', ['br', { $: inline }], 'b']]],
+  ['text <Hello>\n\nbody\n\n</hello>', ['text ', ['Hello', { $: block }, 'body']]],
+  ['<p>a<bUtton><p>b</p></bUtton>', [['p', { $: block }, 'a', ['bUtton', { $: inline }, ['p', { $: inline }, 'b']]]]],
+  ['<a href={base}/page>go</a>', [['a', { $: inline, href: '{base}/page' }, 'go']]],
+  ['<!-- hidden', [[null, {}, '\n\n hidden\n\n']]],
+])('parses %j', async (source, nodes) => {
+  expect((await parseMarkdown(source)).nodes).toEqual(nodes)
+})
+
+it('keeps a mixed-case <sCript> body as written', async () => {
+  const { markdown, html: output } = await roundTrip("<sCript>const s = '&amp;'</sCript>")
+
+  expect(markdown).toContain("const s = '&amp;'")
+  expect(output).toContain("const s = '&amp;'")
+})
+
 it.each([
   '<pre><code>a &lt;b&gt;c&lt;/b&gt; &amp;amp; &lt;!-- x --&gt;</code></pre>',
   '<pre><script>a &lt; b</script></pre>',
@@ -77,6 +104,18 @@ describe('large inputs', () => {
     expect(tags.nodes).toHaveLength(5000)
     expect(pre.nodes).toHaveLength(1)
     expect(prose.nodes).toHaveLength(5000)
+  })
+
+  it('parses a tag with many braced attributes and no valid end', async () => {
+    const result = await parseMarkdown(`<a ${'x={y} '.repeat(40)}!>`, { autoClose: false })
+
+    expect(result.nodes).toHaveLength(1)
+  })
+
+  it('parses many paragraph tags inside deeply nested elements', async () => {
+    const result = await parseMarkdown('<div>'.repeat(30000) + '<p></p>'.repeat(30000), { autoClose: false })
+
+    expect(result.nodes).toHaveLength(1)
   })
 })
 

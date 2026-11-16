@@ -37,6 +37,8 @@ type HtmlOpenFrame = {
   /** Bare-inline nodes waiting to be flushed as a single <p> on a block frame. */
   pendingInline: Node[]
   afterText?: boolean
+  /** Stack index of the nearest `p` or scope boundary at or below this frame, or -1. */
+  pScope: number
 }
 
 /** Shared mutable context for a whole document walk. */
@@ -48,6 +50,8 @@ interface ProcessState {
   /** Unclosed HTML open tags, outer → inner. Lives across blocks like the heading id stack. */
   htmlStack: HtmlOpenFrame[]
   closers?: CloserIndex
+  /** Set once a paragraph closed a tag whose closer may still arrive in a later stream chunk. */
+  provisional?: boolean
 }
 
 type Processor = (tokens: Token[], start: number, state: ProcessState) => ProcessorResult
@@ -159,7 +163,14 @@ function tryCommentTag(content: string, state: ProcessState): ProcessorResult | 
   // Open comment (no close in this chunk)
   if (content.startsWith('<!--') && !content.includes('-->')) {
     const body = content.slice(4)
-    state.htmlStack.push({ tag: null, attrs: {}, children: body ? [body] : [], block: true, pendingInline: [] })
+    state.htmlStack.push({
+      tag: null,
+      attrs: {},
+      children: body ? [body] : [],
+      block: true,
+      pendingInline: [],
+      pScope: state.htmlStack.at(-1)?.pScope ?? -1,
+    })
     return { nextIndex: -1, node: undefined }
   }
 
@@ -189,12 +200,8 @@ function closeImpliedParagraph(token: Token, state: ProcessState): Node | undefi
   if (!/^<p[\s/>]/i.test(token.content)) return undefined
   const parsed = parseHtmlInline(token.content)
   if (parsed.kind !== 'open' || parsed.tag !== 'p' || parsed.selfClosing) return undefined
-  for (let idx = state.htmlStack.length - 1; idx >= 0; idx--) {
-    const tag = state.htmlStack[idx].tag
-    if (tag === 'p') return closeFramesTo(state, idx)
-    if (tag !== null && P_SCOPE_BOUNDARY.has(tag)) return undefined
-  }
-  return undefined
+  const idx = state.htmlStack.at(-1)?.pScope ?? -1
+  return idx >= 0 && state.htmlStack[idx].tag === 'p' ? closeFramesTo(state, idx) : undefined
 }
 
 const firstProse = new WeakMap<Token[], number>()
@@ -230,7 +237,7 @@ function buildCloserIndex(tokens: Token[]): CloserIndex {
       if (child.type !== 'html_inline' || child.content.charCodeAt(1) !== 0x2f /* / */) continue
       const parsed = parseHtmlInline(child.content)
       if (parsed.kind !== 'close') continue
-      const key = `${parsed.tag}|${tokens[i].level}`
+      const key = `${parsed.tag.toLowerCase()}|${tokens[i].level}`
       const list = at.get(key)
       if (list && list[list.length - 1] !== i) list.push(i)
       else if (!list) at.set(key, [i])
@@ -245,7 +252,7 @@ function buildCloserIndex(tokens: Token[]): CloserIndex {
  */
 function hasCloserAhead(tokens: Token[], state: ProcessState, paragraph: number, from: number, tag: string): boolean {
   const index = (state.closers ??= buildCloserIndex(tokens))
-  const list = index.at.get(`${tag}|${tokens[paragraph].level + 1}`)
+  const list = index.at.get(`${tag.toLowerCase()}|${tokens[paragraph].level + 1}`)
   if (!list) return false
   let lo = 0
   let hi = list.length
@@ -610,6 +617,7 @@ const processors: Record<string, Processor> = {
     // `text <tag>` with no `</tag>` anywhere after is prose, not a container: it ends with its paragraph.
     const opened = state.htmlStack[depthBefore]
     if (opened?.afterText && opened.tag !== null && !hasCloserAhead(tokens, state, start, nextIndex, opened.tag)) {
+      state.provisional = true
       const free = deliverInline(state, closeFramesTo(state, depthBefore), true)
       if (free !== undefined) pushNode(children, free)
     }
@@ -723,10 +731,10 @@ const processors: Record<string, Processor> = {
     }
 
     if (parsed.kind === 'close') {
-      if (parsed.tag === 'br') return { nextIndex: start + 1, node: ['br', makeHtmlAttrs({}, false)] }
+      const closeTag = parsed.tag.toLowerCase()
+      if (closeTag === 'br') return { nextIndex: start + 1, node: ['br', makeHtmlAttrs({}, false)] }
       // Find the matching open frame (case-insensitive), auto-closing any
       // nested frames above it the way a real HTML parser would.
-      const closeTag = parsed.tag.toLowerCase()
       let idx = state.htmlStack.length - 1
       while (idx >= 0) {
         const frameTag = state.htmlStack[idx].tag
@@ -752,6 +760,10 @@ const processors: Record<string, Processor> = {
       block: false,
       pendingInline: [],
       afterText: followsText(tokens, start),
+      pScope:
+        parsed.tag === 'p' || P_SCOPE_BOUNDARY.has(parsed.tag.toLowerCase())
+          ? state.htmlStack.length
+          : (state.htmlStack.at(-1)?.pScope ?? -1),
     })
     return { nextIndex: start + 1, node: undefined }
   },
@@ -788,7 +800,8 @@ export function tokenListToTree(tokens: Token[], options: ProcessorOptions = {})
       for (const frame of state.htmlStack) frame.block = true
 
       if (result.node !== undefined) {
-        if (state.preservePositions) {
+        // Without a line, streaming reparses from before this node, so a closer arriving later still pairs.
+        if (state.preservePositions && !state.provisional) {
           preserveLineNumber(tokens, result.node, i, result.nextIndex, state)
         }
         // Sibling free nodes from close-then-open (`</div><div>`) sit beside the

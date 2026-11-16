@@ -194,7 +194,7 @@ export function parseHtmlInline(content: string): ParsedHtmlTag {
 }
 
 const ATTRIBUTE_RE = new RegExp(
-  `([:\\w.-]+)(?:\\s*=\\s*(?:"([^"]*)"|'([^']*)'|(${braced_value})|([^\\s"'=<>\`]+)))?`,
+  `([:\\w.-]+)(?:\\s*=\\s*(?:"([^"]*)"|'([^']*)'|(${braced_value})(?=\\s|$)|([^\\s"'=<>\`]+)))?`,
   'g'
 )
 

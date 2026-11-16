@@ -37,7 +37,8 @@ function findHandler(ctx: Context, node: ElementNode): NodeHandler | undefined {
 export async function one(node: Node, state: State, parent?: ElementNode, atLineStart = false): Promise<string> {
   if (typeof node === 'string') {
     const inElement = parent?.[1].$?.html === 1
-    const rawBody = inElement && (parent[0] === 'script' || parent[0] === 'style')
+    const rawTag = inElement ? String(parent[0]).toLowerCase() : ''
+    const rawBody = rawTag === 'script' || rawTag === 'style'
     if (state.context.html) {
       // Text in an HTML element was decoded on parse, so a `&` that could start a reference
       // (`&lt`, `&#65`) is written as `&amp;`. Markdown text keeps its entities as it always has.
@@ -47,7 +48,7 @@ export async function one(node: Node, state: State, parent?: ElementNode, atLine
       })
     }
     const verbatim = state.context.rawHtmlText === 'verbatim'
-    if (rawBody) return verbatim ? node : escapeRawHtmlText(node, String(parent[0]))
+    if (rawBody) return verbatim ? node : escapeRawHtmlText(node, rawTag)
     if (state.context.rawText === true) {
       return node.replace(/&/g, '&amp;').replace(/</g, '&lt;')
     }
