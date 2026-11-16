@@ -433,6 +433,8 @@ describe('validateProp', () => {
       'background-image:-webkit-image-set(url(https://evil.com/a.png) 1x)',
       'background:url(javascript:alert(1))',
       'background:url(https://cdn.myapp.com%2F@evil.com/x)',
+      `{{backgroundImage: 'url("https://evil.com/?secret")'}}`,
+      `{{backgroundImage: 'url("javascript:alert(\\'x\\')")'}}`,
     ])('rejects %j', (style) => {
       expect(validateProp('style', style, options)).toBe(REJECTED_PROP)
     })
