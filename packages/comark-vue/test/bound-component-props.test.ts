@@ -142,7 +142,8 @@ describe('bound props cannot smuggle a component into a polymorphic slot', () =>
     ]) {
       const html = await renderMarkdown(markdown)
       expect(html).not.toMatch(/onerror|onload|<iframe|<script|<object/i)
-      expect(html).toContain('<div>poly</div>')
+      // other attributes stay on the fallback `div`, where they are inert
+      expect(html).toMatch(/<div[^>]*>poly<\/div>/)
     }
   })
 
