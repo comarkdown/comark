@@ -3,7 +3,6 @@ import { Component, Input, OnChanges, SimpleChanges, ChangeDetectionStrategy, El
 let katex: typeof import('katex').default | undefined
 let loading: Promise<unknown> | undefined
 
-// KaTeX loads on first use, so pages without math don't download it.
 function loadKatex(): Promise<unknown> {
   loading ??= import('katex').then(
     (module) => (katex = module.default),

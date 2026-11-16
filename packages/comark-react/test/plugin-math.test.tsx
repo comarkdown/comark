@@ -48,7 +48,6 @@ describe('@comark/react plugins/math — Math component', () => {
     const { Math } = await import('../src/plugins/math')
     const { renderToReadableStream, renderToString } = await import('react-dom/server')
 
-    // Before KaTeX loads, the source stands in for the formula.
     expect(
       renderToString(
         <Math
@@ -94,7 +93,6 @@ describe('@comark/react plugins/math — Math component', () => {
     try {
       expect(await render()).toContain('<span class="math inline">x^2</span>')
       fail = false
-      // Right after the failure, the source still shows.
       expect(await render()).toContain('<span class="math inline">x^2</span>')
       vi.advanceTimersByTime(5000)
       expect(await render()).toContain('<span class="math inline"><span class="katex">')

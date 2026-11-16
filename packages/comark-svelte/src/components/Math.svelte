@@ -19,7 +19,6 @@ determines inline vs display mode (display when class does NOT contain "inline")
   let katex: typeof import('katex').default | undefined
   let loading: Promise<unknown> | undefined
 
-  // KaTeX loads on first use, so pages without math don't download it.
   function loadKatex(): Promise<unknown> {
     loading ??= import('katex').then(
       (module) => (katex = module.default),
@@ -53,8 +52,6 @@ determines inline vs display mode (display when class does NOT contain "inline")
 
   let isInline = $derived(className.split(' ').includes('inline'))
 
-  // Until KaTeX loads, and for unfinished or invalid TeX, the source shows.
-  // Server rendering can't wait for it, so the browser typesets after hydration.
   let loaded = $state(false)
   let html = $derived.by(() => {
     void loaded

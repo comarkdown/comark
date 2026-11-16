@@ -3,7 +3,6 @@ import { defineAsyncComponent, defineComponent, h, onMounted, onServerPrefetch, 
 let katex: typeof import('katex').default | undefined
 let loading: Promise<unknown> | undefined
 
-// KaTeX loads on first use, so pages without math don't download it.
 function loadKatex(): Promise<unknown> {
   loading ??= import('katex').then(
     (module) => (katex = module.default),
@@ -42,8 +41,7 @@ const Typeset = defineComponent({
     },
   },
   setup(props) {
-    // KaTeX failed to load before this formula rendered: try again, and
-    // typeset once it loads.
+    // KaTeX failed to load earlier: retry, and typeset once it loads.
     const loaded = ref(katex !== undefined)
     if (!loaded.value) {
       const retry = () =>
@@ -67,8 +65,6 @@ const Typeset = defineComponent({
   },
 })
 
-// An async component keeps KaTeX out of the initial bundle, and server
-// rendering and hydration wait for it.
 export const Math = defineAsyncComponent({
   loader: () =>
     loadKatex().then(

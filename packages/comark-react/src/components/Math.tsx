@@ -3,7 +3,6 @@ import { Suspense, memo, use } from 'react'
 let katex: typeof import('katex').default | undefined
 let loading: Promise<unknown> | undefined
 
-// KaTeX loads on first use, so pages without math don't download it.
 function loadKatex(): Promise<unknown> {
   loading ??= import('katex').then(
     (module) => (katex = module.default),
@@ -30,8 +29,7 @@ export interface MathProps {
   className?: string
 }
 
-// After a failed load, formulas show their source, and a render this long
-// after the failure loads KaTeX again.
+// A render this long after a failed load tries KaTeX again.
 const RETRY_DELAY = 5000
 
 // One promise for every formula, since `use` needs the same one on each render.
@@ -84,7 +82,6 @@ const Typeset = memo(function Typeset({ content, isInline }: { content: string; 
   )
 })
 
-// Unfinished or invalid TeX, and TeX without KaTeX installed, stays readable as its source.
 function Source({ content, isInline }: { content: string; isInline: boolean }) {
   return isInline ? <span className="math inline">{content}</span> : <div className="math block">{content}</div>
 }
@@ -92,8 +89,6 @@ function Source({ content, isInline }: { content: string; isInline: boolean }) {
 export function Math({ content, className = '' }: MathProps) {
   const isInline = className.includes('inline')
 
-  // KaTeX loads on first use. Streaming server rendering and hydration wait
-  // for it; otherwise the source shows until it loads.
   return (
     <Suspense
       fallback={

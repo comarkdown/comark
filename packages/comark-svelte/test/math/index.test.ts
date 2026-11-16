@@ -10,7 +10,6 @@ function html(body: string): string {
 }
 
 describe('Math component (server)', () => {
-  // Server rendering can't wait for KaTeX, so it renders the TeX source.
   it('renders inline math as its source', () => {
     const { body } = render(Math, {
       props: { content: 'x^2', class: 'inline' },
