@@ -124,6 +124,16 @@ export interface ContextBase {
    */
   blockAttributesStyle?: 'frontmatter' | 'codeblock'
 
+  /**
+   * How text inside a raw HTML block is written in markdown output.
+   * - `'escape'` — a `<` that would start a tag becomes `&lt;`, so text the
+   *   parser kept as text (`<svg onload=…>` inside `<blockquote>`) is not read
+   *   back as markup by CommonMark renderers
+   * - `'verbatim'` — written as-is, for non-markdown output such as a terminal
+   * @default 'escape'
+   */
+  rawHtmlText?: 'escape' | 'verbatim'
+
   [key: string]: unknown
 }
 

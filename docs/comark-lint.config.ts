@@ -1,7 +1,7 @@
 import { readdirSync } from 'node:fs'
 import preset from 'comark-docs/lint.mjs'
 
-// The site's own Markdown components: @comark/nuxt registers app/components/prose/ globally.
+// The site's own Markdown components: nuxt.config.ts registers app/components/prose/ globally.
 const prose = readdirSync('app/components/prose').map((file) =>
   file.replace(/\.vue$/, '').replace(/[A-Z]/g, (c, i) => (i ? '-' : '') + c.toLowerCase())
 )

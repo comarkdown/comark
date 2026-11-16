@@ -3,134 +3,43 @@
 # @comark/nuxt
 
 [![npm version](https://img.shields.io/npm/v/@comark/nuxt?color=black)](https://npmx.dev/@comark/nuxt)
-[![npm downloads](https://img.shields.io/npm/dm/@comark/nuxt?color=black)](https://npm.chart.dev/@comark/nuxt)
-[![CI](https://img.shields.io/github/actions/workflow/status/comarkdown/comark/ci.yml?branch=main&color=black)](https://github.com/comarkdown/comark/actions/workflows/ci.yml)
-[![Documentation](https://img.shields.io/badge/Documentation-black?logo=readme&logoColor=white)](https://comark.dev/rendering/nuxt)
+[![Documentation](https://img.shields.io/badge/Documentation-black?logo=readme&logoColor=white)](https://comark.dev/rendering/vue#nuxt)
 [![license](https://img.shields.io/github/license/comarkdown/comark?color=black)](https://github.com/comarkdown/comark/blob/main/LICENSE)
 
-Zero-config Nuxt module for [Comark](https://comark.dev), a high-performance markdown parser and renderer.
+> [!WARNING]
+> `@comark/nuxt` is deprecated. The Nuxt module now ships in [`@comark/vue`](https://comark.dev/rendering/vue#nuxt).
 
-## Features
+This package only installs the `@comark/vue` Nuxt module and logs a deprecation warning.
 
-- ⚡ Auto-imported `<Markdown>` and `<MarkdownDocument>` components
-- 📁 `~/components/prose` directory for overriding HTML elements
-- 🎨 Automatic [Nuxt UI](https://ui.nuxt.com) prose integration
-- 🖥️ SSR, SSG, and prerendering support out of the box
-- 🧩 Re-exports of Comark plugins (binding, math, mermaid)
-- 🎯 Full TypeScript support
+## Migrate to `@comark/vue`
 
-## Installation
+1. Replace the dependency:
 
-### Automatic
+   ```bash
+   npm uninstall @comark/nuxt
+   npm install @comark/vue
+   ```
 
-Add `@comark/nuxt` to your project. This installs the dependency and registers the module in `nuxt.config.ts`:
+2. Replace the module in `nuxt.config.ts`. Nuxt loads `@comark/vue/nuxt` automatically:
 
-```bash
-npx nuxt add comark
-```
+   ```ts
+   export default defineNuxtConfig({
+     modules: ['@comark/vue'],
+   })
+   ```
 
-### Manual
+3. Replace `@comark/nuxt/*` imports with `@comark/vue/*`, for example `@comark/nuxt/plugins/math` with `@comark/vue/plugins/math`.
 
-Add `@comark/nuxt` to your dependencies:
+4. The module no longer registers `~/components/prose` as a global components directory. Pass the components to `<Markdown>` with the `components` prop, or register the directory yourself:
 
-```bash
-npm install @comark/nuxt
-# or
-pnpm add @comark/nuxt
-```
+   ```ts
+   export default defineNuxtConfig({
+     modules: ['@comark/vue'],
+     components: [{ path: '~/components/prose', global: true, pathPrefix: false }, '~/components'],
+   })
+   ```
 
-Then add it to your `nuxt.config.ts`:
-
-```ts
-export default defineNuxtConfig({
-  modules: ['@comark/nuxt'],
-})
-```
-
-## Usage
-
-The `<Markdown>` component is available globally, no imports needed. Pass markdown via the default slot or the `value` prop:
-
-```vue
-<script setup lang="ts">
-const content = `# Hello Nuxt\n\nRendered with **Comark**.`
-</script>
-
-<template>
-  <Markdown>{{ content }}</Markdown>
-</template>
-```
-
-### Custom components
-
-Map Comark tags to your own Vue components:
-
-```vue
-<script setup lang="ts">
-import Alert from '~/components/Alert.vue'
-</script>
-
-<template>
-  <Markdown :components="{ alert: Alert }">{{ content }}</Markdown>
-</template>
-```
-
-```mdc
-::alert{type="warning"}
-This is a warning.
-::
-```
-
-### Overriding HTML elements
-
-Drop components into `~/components/prose` to override how native HTML elements render. They are auto-registered:
-
-```
-~/components/prose/
-  ProseH1.vue
-  ProsePre.vue
-  ProseA.vue
-```
-
-### Plugins
-
-```vue
-<script setup lang="ts">
-import math, { Math } from '@comark/nuxt/plugins/math'
-import mermaid, { Mermaid } from '@comark/nuxt/plugins/mermaid'
-</script>
-
-<template>
-  <Markdown
-    :components="{ math: Math, mermaid: Mermaid }"
-    :plugins="[math(), mermaid()]"
-  >
-    {{ content }}
-  </Markdown>
-</template>
-```
-
-### Nuxt UI
-
-When [`@nuxt/ui`](https://ui.nuxt.com) is installed, prose components are wired up automatically:
-
-```ts
-export default defineNuxtConfig({
-  modules: ['@comark/nuxt', '@nuxt/ui'],
-})
-```
-
-## Documentation
-
-Full guide and API reference at [comark.dev/rendering/nuxt](https://comark.dev/rendering/nuxt).
-
-## Agent skill
-
-Coding agents can install the Comark skill from the docs site:
-
-```bash
-npx skills add https://comark.dev
-```
+`<Markdown>`, `<MarkdownDocument>`, `defineMarkdownComponent()` and `defineMarkdownDocumentComponent()` are still auto-imported, and Nuxt UI prose components are still turned on when `@nuxt/ui` is installed.
 
 ## License
 

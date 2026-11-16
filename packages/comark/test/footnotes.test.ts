@@ -278,4 +278,23 @@ describe('footnotes stringify', () => {
     expect(result).toContain('[^note]')
     expect(result).toContain('[^note]: A note')
   })
+
+  it('should parse adjacent footnote references (#567)', async () => {
+    const md = `x[^1][^2]
+
+[^1]: First note
+[^2]: Second note`
+
+    const tree = await parseMarkdown(md, { plugins: [footnotes()] })
+    const paragraph = tree.nodes[0] as any[]
+    expect(paragraph[0]).toBe('p')
+    expect(paragraph[2]).toBe('x')
+    expect(paragraph[3][0]).toBe('sup')
+    expect(paragraph[4][0]).toBe('sup')
+
+    const section = tree.nodes.find((n) => Array.isArray(n) && n[0] === 'section') as any[]
+    const ol = section.find((n: any, i: number) => i >= 2 && Array.isArray(n) && n[0] === 'ol')
+    const lis = ol.slice(2).filter((n: any) => Array.isArray(n) && n[0] === 'li')
+    expect(lis.length).toBe(2)
+  })
 })

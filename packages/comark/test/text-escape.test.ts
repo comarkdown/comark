@@ -97,3 +97,79 @@ describe('text node escaping', () => {
     expect(node).toEqual(['p', {}, text])
   })
 })
+
+describe('tag openers split across nodes', () => {
+  // The `>` of `<img …>` can sit in a later sibling, past an element node.
+  // Written back unescaped, a CommonMark reader would join them into one tag.
+  it.each([
+    ['p', {}, 'x <img src="data:image/svg+xml,', ['svg', { $: { html: 1, block: 0 } }], '"> y'],
+    ['p', {}, 'a <img src=x onerror=alert(1) ', ['em', {}, 'z'], ' >'],
+    ['p', {}, 'a </div ', ['em', {}, 'z'], '>'],
+  ])('escapes the opener in %j', async (...node) => {
+    const md = await renderMarkdown({ frontmatter: {}, meta: {}, nodes: [node] } as unknown as MarkdownDocument)
+    expect(md).toMatch(/\\<\/?[a-z]/)
+    expect((await parseMarkdown(md)).nodes[0]).toEqual(node)
+  })
+
+  it.each(['vector<T', 'if a < b', 'x <3', '<a'.repeat(3)])('leaves prose %j alone', async (text) => {
+    expect((await renderMarkdown(paragraph(text))).trim()).toBe(text)
+  })
+
+  it('keeps a tag-like opener in prose as text through a round-trip', async () => {
+    // `<b and c` could open `<b and c>`, so it is escaped, but reads back the same
+    const { md, node } = await roundTrip('a <b and c')
+    expect(md.trim()).toBe('a \\<b and c')
+    expect(node).toEqual(['p', {}, 'a <b and c'])
+  })
+})
+
+describe('text inside a raw HTML block', () => {
+  const block = (tag: string, text: string): MarkdownDocument =>
+    ({ frontmatter: {}, meta: {}, nodes: [[tag, { $: { html: 1, block: 1 } }, text]] }) as MarkdownDocument
+
+  // CommonMark renderers parse tags inside an HTML block. The parser keeps
+  // some markup as text (an unclosed `<svg>` in `<blockquote>`, the body of
+  // `<pre>`), so writing it back verbatim turned text into live markup.
+  it.each([
+    ['blockquote', "<svg onload=alert('xss')>"],
+    ['div', '<img src=x onerror=alert(1)>'],
+    ['div', '</div><script>alert(1)</script>'],
+    ['div', '<!-- x --><iframe src=x>'],
+    ['div', '<?php echo 1 ?>'],
+    ['pre', '<img src=x onerror=alert(1)>'],
+  ])('<%s> does not write %j back as markup', async (tag, text) => {
+    const md = await renderMarkdown(block(tag, text))
+    expect(md.slice(`<${tag}>`.length, md.lastIndexOf(`</${tag}>`))).not.toMatch(/<[a-z!/?]/i)
+  })
+
+  it.each([
+    ['blockquote', "<svg onload=alert('xss')>"],
+    ['pre', '<b>bold</b> & a < b'],
+    ['div', 'a <b> c'],
+  ])('<%s> keeps %j as the same text through a round-trip', async (tag, text) => {
+    const document = block(tag, text)
+    const md = await renderMarkdown(document)
+    const again = await parseMarkdown(md)
+    expect(await renderMarkdown(again)).toBe(md)
+  })
+
+  it('escapes only the own end tag inside script and style', async () => {
+    expect(await renderMarkdown(block('script', 'if (a < b) x = "</script><img onerror=1>"'))).toBe(
+      '<script>if (a < b) x = "<\\/script><img onerror=1>"</script>'
+    )
+    expect(await renderMarkdown(block('style', 'a > b {} </STYLE><b>'))).toBe('<style>a > b {} <\\/STYLE><b></style>')
+  })
+
+  it('writes textarea text and markdown punctuation as character references', async () => {
+    expect(await renderMarkdown(block('textarea', '<b></textarea><img onerror=1>'))).toBe(
+      '<textarea>&lt;b>&lt;/textarea>&lt;img onerror=1></textarea>'
+    )
+    expect(await renderMarkdown(block('div', 'Hello **World** &amp; a < b, 1<2'))).toBe(
+      '<div>\nHello &#42;&#42;World&#42;&#42; &amp;amp; a < b, 1<2\n</div>'
+    )
+  })
+
+  it('writes the text verbatim with rawHtmlText: verbatim', async () => {
+    expect(await renderMarkdown(block('div', '<b>x</b>'), { rawHtmlText: 'verbatim' })).toBe('<div>\n<b>x</b>\n</div>')
+  })
+})

@@ -5,14 +5,15 @@ import { createHeadingIdTracker, nextHeadingId, reserveHeadingId, type HeadingId
 import { comarkAttributes } from '../attributes.ts'
 
 // Replays the parser's id generation across one render so each heading's
-// implicit id is known, keyed by render state (`null` when ids are disabled).
-const trackers = new WeakMap<State, HeadingIdTracker | null>()
+// implicit id is known (`null` when ids are disabled).
+// Keyed by `state.context`: component children render with a copied `state` but share its `context`.
+const trackers = new WeakMap<State['context'], HeadingIdTracker | null>()
 
 function autoHeadingId(node: ElementNode, level: number, state: State, id: unknown): string | undefined {
-  let tracker = trackers.get(state)
+  let tracker = trackers.get(state.context)
   if (tracker === undefined) {
     tracker = createHeadingIdTracker(state.context.headingIds as HeadingIdsOption | undefined) ?? null
-    trackers.set(state, tracker)
+    trackers.set(state.context, tracker)
   }
   if (!tracker) return undefined
   const text = node

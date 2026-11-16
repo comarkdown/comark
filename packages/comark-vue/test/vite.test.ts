@@ -1,4 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 
 afterEach(() => {
   vi.resetModules()
@@ -59,5 +62,34 @@ describe('@comark/vue vite plugin', () => {
       exp: '{ renderSlot as _renderComarkSlot }',
       path: 'D:/Code/gqt/packages/comark-vue/src/utils/slot',
     })
+  })
+
+  it('ignores components/prose when prose is false', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'comark-vite-'))
+    await mkdir(join(root, 'components', 'prose'), { recursive: true })
+    await writeFile(join(root, 'components', 'prose', 'ProseH1.vue'), '<template><h1><slot /></h1></template>')
+
+    const { default: comark } = await import('../src/vite.ts')
+    const entry = "createApp(App).mount('#app')"
+
+    async function run(options: {
+      prose?: boolean
+    }): Promise<{ watched: string[]; transformed: { code: string } | null }> {
+      const plugin = comark(options) as any
+      plugin.configResolved({ root, plugins: [{ name: 'vite:vue', api: { options: {} } }] })
+      const watched: string[] = []
+      plugin.configureServer({ watcher: { add: (dir: string) => watched.push(dir), on: () => {} } })
+      return { watched, transformed: await plugin.transform(entry) }
+    }
+
+    const enabled = await run({})
+    expect(enabled.watched).toEqual([join(root, 'components', 'prose')])
+    expect(enabled.transformed?.code).toContain('.use(__comarkProse).mount(')
+
+    const disabled = await run({ prose: false })
+    expect(disabled.watched).toEqual([])
+    expect(disabled.transformed).toBeNull()
+
+    await rm(root, { recursive: true, force: true })
   })
 })

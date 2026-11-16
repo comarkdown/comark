@@ -1,0 +1,1 @@
+![](vbscript:msgbox('XSS'))

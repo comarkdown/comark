@@ -1,0 +1,1 @@
+![](javascript:alert('XSS')@example.com)

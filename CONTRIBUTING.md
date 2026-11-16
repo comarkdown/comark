@@ -44,7 +44,7 @@ pnpm docs
 - `packages/comark`: parser, document model, core plugins and Markdown string rendering.
 - `packages/comark-html` and `packages/comark-ansi`: HTML and terminal renderers.
 - `packages/comark-vue`, `packages/comark-react`, `packages/comark-svelte`, and `packages/comark-angular`: framework renderers.
-- `packages/comark-nuxt`: Nuxt integration.
+- `packages/comark-nuxt`: deprecated `@comark/nuxt`, which installs the Nuxt module from `packages/comark-vue/src/nuxt.ts`.
 - `docs/content`: user-facing documentation.
 
 Keep parser-only behavior in the core package and framework-specific behavior in its renderer. The [architecture reference](./AGENTS.md) has a more detailed package map.

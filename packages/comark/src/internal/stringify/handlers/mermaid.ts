@@ -2,9 +2,15 @@ import type { State } from 'comark/render'
 import type { ElementNode } from 'comark'
 import { comarkAttributes } from '../attributes.ts'
 import { pickFence } from '../fence.ts'
+import { component } from './component.ts'
 
-export function mermaid(node: ElementNode, state: State) {
+export function mermaid(node: ElementNode, state: State, parent?: ElementNode): string | Promise<string> {
   const [_, attributes] = node
+
+  // The mermaid plugin always sets `content`; without it this is a `:mermaid` component.
+  if (typeof attributes.content !== 'string') {
+    return component(node, state, parent)
+  }
 
   const { content, ...rest } = attributes
 

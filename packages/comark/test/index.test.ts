@@ -28,9 +28,15 @@ const pluginRegistry: Record<PluginName, () => ComarkPlugin> = {
   rangi,
 }
 
-type TransformerName = 'twoslash'
+type TransformerName = 'twoslash' | 'line-class'
 
 const transformerRegistry: Record<TransformerName, () => Promise<ShikiTransformer>> = {
+  'line-class': async () => ({
+    name: 'line-class',
+    line(node, line) {
+      if (line === 1) this.addClassToHast(node, 'added')
+    },
+  }),
   twoslash: async () => {
     const { transformerTwoslash } = await import('@shikijs/twoslash')
     return transformerTwoslash()

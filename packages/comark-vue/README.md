@@ -91,7 +91,14 @@ Pass `comark({ prose: false })` to opt out of the auto-registered prose componen
 
 ## Using with Nuxt
 
-For Nuxt, use [`@comark/nuxt`](https://comark.dev/rendering/nuxt) which auto-imports the `<Markdown>` component and wires up `~/components/prose` overrides.
+Add `@comark/vue` to your Nuxt modules. Nuxt loads `@comark/vue/nuxt`, which auto-imports `<Markdown>`, `<MarkdownDocument>`, `defineMarkdownComponent()` and `defineMarkdownDocumentComponent()`:
+
+```ts
+// nuxt.config.ts
+export default defineNuxtConfig({
+  modules: ['@comark/vue'],
+})
+```
 
 ## Documentation
 

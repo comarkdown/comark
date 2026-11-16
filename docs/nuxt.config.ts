@@ -7,6 +7,9 @@ export default defineNuxtConfig({
 
   modules: ['@vercel/analytics', '@vercel/speed-insights'],
 
+  // The Markdown content renders app/components/prose/ by name, for example `::ecosystem-cta`.
+  components: [{ path: '~/components/prose', global: true, pathPrefix: false }, '~/components'],
+
   site: {
     url: 'https://comark.dev',
     name: 'Comark',
@@ -59,6 +62,8 @@ export default defineNuxtConfig({
     '/plugins/built-in/syntax-highlight': { redirect: '/plugins/built-in/shiki' },
     '/plugins/built-in/headings': { redirect: '/plugins/built-in/title-description' },
     '/syntax/comark-ast': { redirect: '/getting-started/document-model' },
+    // @comark/nuxt is deprecated: the Nuxt module ships in @comark/vue
+    '/rendering/nuxt': { redirect: '/rendering/vue#nuxt' },
     // The API Reference section moved from /api (which collided with the server endpoints) to /reference
     '/api/render': { redirect: '/reference/render' },
     '/api/parse': { redirect: '/reference/parse' },

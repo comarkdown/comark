@@ -481,9 +481,11 @@ const markdownItInlineSpan: PluginSimple = (md) => {
     const close = findClosingBracket(state.src, start)
     const index = close === -1 ? state.src.length : close
 
-    // Don't match `[text](url)` or `[text][ref]` — let the link parser handle those
+    // Don't match `[text](url)` or `[text][ref]` — let the link parser handle those,
+    // except for adjacent footnote references like `x[^1][^2]`.
     const nextChar = state.src[index + 1]
-    if (nextChar === '(' || nextChar === '[') return false
+    const isAdjacentFootnote = state.src[start + 1] === '^' && nextChar === '[' && state.src[index + 2] === '^'
+    if (nextChar === '(' || (nextChar === '[' && !isAdjacentFootnote)) return false
 
     // Inside a link label, bare `[text]` stays literal (plain-markdown behavior,
     // e.g. `[[1] Document](#)`); only an explicit `[text]{attrs}` span matches

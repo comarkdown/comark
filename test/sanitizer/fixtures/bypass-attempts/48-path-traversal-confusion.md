@@ -1,0 +1,5 @@
+![](https://example.com/../../../evil.com/traverse.js)
+![](https://example.com/..%2F..%2F..%2Fevil.com/encoded.js)
+![](https://example.com/./././evil.com/dots.js)
+![](https://example.com//evil.com/doubleslash.js)
+![](https://example.com\evil.com/backslash.js)

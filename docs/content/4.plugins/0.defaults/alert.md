@@ -160,4 +160,4 @@ Alert types without a registered component render as a regular `<blockquote as="
 
 ## Nuxt UI integration
 
-When using the [Nuxt module](/rendering/nuxt) alongside `@nuxt/ui`, alert blocks are automatically mapped to Nuxt UI's `<Note>`, `<Warning>`, `<Caution>`, and `<Tip>` components. No extra configuration needed.
+When using the [Nuxt module](/rendering/vue#nuxt) alongside `@nuxt/ui`, alert blocks are automatically mapped to Nuxt UI's `<Note>`, `<Warning>`, `<Caution>`, and `<Tip>` components. No extra configuration needed.

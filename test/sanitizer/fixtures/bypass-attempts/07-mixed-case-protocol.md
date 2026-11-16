@@ -1,0 +1,1 @@
+![](JaVaScRiPt:alert('XSS'))

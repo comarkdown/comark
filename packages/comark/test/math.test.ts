@@ -26,10 +26,17 @@ Inline $E = mc^2$ end.`
     const document: MarkdownDocument = {
       frontmatter: {},
       meta: {},
-      nodes: [['p', {}, 'Before ', ['math', {}, 'x^2'], ' after']],
+      nodes: [['p', {}, 'Before ', ['math', { content: 'x^2' }, 'x^2'], ' after']],
     }
 
     expect(await renderMarkdown(document)).toBe('Before $x^2$ after')
+  })
+
+  it('writes a `math` node without math class or content as a component', async () => {
+    const source = 'Some :math[x] text.\n\n::math{k="v"}\nbody\n::'
+    const document = await parseMarkdown(source)
+
+    expect(await renderMarkdown(document)).toBe(source)
   })
 
   it('keeps explicitly block math as a block inside a parent', async () => {

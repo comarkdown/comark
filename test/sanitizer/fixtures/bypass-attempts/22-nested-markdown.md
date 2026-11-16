@@ -1,0 +1,1 @@
+[![alt](data:,test)](javascript:alert('XSS'))

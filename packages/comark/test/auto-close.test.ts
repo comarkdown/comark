@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { autoCloseMarkdown } from '../src/auto-close'
+import { parseMarkdown } from '../src/index'
 
 const inlines = `
 _test → _test_
@@ -799,6 +800,36 @@ describe('nested emphasis', () => {
 
   it('should close nested italic + bold', () => {
     expect(autoCloseMarkdown('*a **b')).toBe('*a **b***')
+  })
+})
+
+describe('word-internal emphasis ending in punctuation', () => {
+  it('does not close CJK bold that ends in punctuation', () => {
+    const input = '这是**中文。**后续文字'
+    expect(autoCloseMarkdown(input, { syntax: false })).toBe(input)
+    expect(autoCloseMarkdown(input)).toBe(input)
+  })
+
+  it('leaves the healed text parsing the same as the input', async () => {
+    const input = '这是**中文。**后续文字'
+    const healed = autoCloseMarkdown(input)
+    expect((await parseMarkdown(healed)).nodes).toEqual((await parseMarkdown(input)).nodes)
+  })
+
+  it('does not close underscore emphasis when a later run follows punctuation (#566)', async () => {
+    for (const input of ['__下線、__次', '__a.__b', '_a(__b', '__a(__b', '__a、_b', '_a、__b', '__a __b.__c']) {
+      const healed = autoCloseMarkdown(input)
+      expect(healed).toBe(input)
+      expect((await parseMarkdown(healed)).nodes).toEqual((await parseMarkdown(input, { autoClose: false })).nodes)
+    }
+  })
+
+  it('still closes underscore emphasis when a later run follows a combining mark', () => {
+    expect(autoCloseMarkdown('__cafe\u0301__ine')).toBe('__cafe\u0301__ine__')
+  })
+
+  it('forgets a skipped star run once the underscore frame around it is discarded', () => {
+    expect(autoCloseMarkdown('__a**b.__c~~d.**e')).toBe('__a**b.__c~~d.**e**~~')
   })
 })
 

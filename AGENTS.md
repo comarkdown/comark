@@ -28,7 +28,7 @@ This is a **monorepo** containing the Comark Markdown parser, document model, pl
 │   ├── comark-react/     # React renderer + plugins (@comark/react)
 │   ├── comark-svelte/    # Svelte renderer + plugins (@comark/svelte)
 │   ├── comark-angular/   # Angular renderer + plugins (@comark/angular)
-│   └── comark-nuxt/      # Nuxt module (@comark/nuxt)
+│   └── comark-nuxt/      # Deprecated @comark/nuxt: installs @comark/vue/nuxt and logs a warning
 ├── examples/             # Example applications
 │   ├── 1.frameworks/     # Framework examples (Nuxt, Next.js, Astro, SvelteKit, VitePress)
 │   ├── 2.vite/           # Vite examples (Vue, React, Svelte, Angular, HTML, ANSI)
@@ -39,7 +39,7 @@ This is a **monorepo** containing the Comark Markdown parser, document model, pl
 ├── playground/           # Nuxt playground (`pnpm dev:playground`)
 ├── benchmarks/           # CodSpeed Vitest benches (*.bench.ts) + mitata cross-library comparisons (*.ts)
 ├── scripts/              # Build/sync scripts
-├── test/                 # Root-level tests (bundle-size snapshot)
+├── test/                 # Root-level tests (bundle-size snapshot; sanitizer/ runs vercel-labs/markdown-sanitizers fixtures against `security`)
 ├── pnpm-workspace.yaml   # Workspace configuration + dependency catalog
 ├── tsconfig.json         # Root TypeScript config (`pnpm typecheck`)
 ├── vitest.config.ts      # Root Vitest config, scoped to `test/`
@@ -235,6 +235,7 @@ packages/comark-vue/
 │   ├── parse.ts              # Re-exports comark/parse (@comark/vue/parse)
 │   ├── render.ts             # Re-exports comark/render (@comark/vue/render)
 │   ├── vite.ts               # Vite plugin: `<slot unwrap>` transform + prose component auto-registration (@comark/vue/vite)
+│   ├── nuxt.ts               # Nuxt module: auto-imports components + helpers, adds the Vite plugin (@comark/vue/nuxt)
 │   ├── components/
 │   │   ├── Markdown.ts       # High-level markdown → render component
 │   │   ├── MarkdownDocument.ts # Low-level AST → render component
@@ -258,6 +259,7 @@ packages/comark-vue/
 {
   ".": "./dist/index.js",
   "./vite": "./dist/vite.js",
+  "./nuxt": "./dist/nuxt.js",
   "./plugins/*": "./dist/plugins/*.js",
   "./utils": "./dist/utils/index.js",
   "./parse": "./dist/parse.js",
@@ -273,6 +275,8 @@ import { Markdown, MarkdownDocument, defineMarkdownComponent } from '@comark/vue
 import math, { Math } from '@comark/vue/plugins/math'
 import mermaid, { Mermaid } from '@comark/vue/plugins/mermaid'
 ```
+
+`@comark/vue/nuxt` is the Nuxt module: `modules: ['@comark/vue']` loads it because Nuxt tries the `/nuxt` subpath first. It auto-imports `Markdown`, `MarkdownDocument`, `defineMarkdownComponent` and `defineMarkdownDocumentComponent`, plus `parseMarkdown` and `createMarkdownParser` in the app and in server routes (from `@comark/vue/parse`), turns on Nuxt UI prose components, and adds the `@comark/vue/vite` plugin with `prose: false`. It does not register `~/components/prose`. `@nuxt/kit` and `@nuxt/schema` are optional peer dependencies.
 
 ## Package: @comark/react
 
@@ -416,7 +420,7 @@ Uses Vitest with two test projects:
 
 ## Package: @comark/angular
 
-Located at `packages/comark-angular/`. Angular 17+ renderer with standalone components.
+Located at `packages/comark-angular/`. Angular 21+ renderer (peer range `>=21 <23`, i.e. 21 through 22) with standalone components.
 
 ```
 packages/comark-angular/
@@ -431,15 +435,24 @@ packages/comark-angular/
 │   │   ├── if.component.ts               # Structural conditional renderer
 │   │   ├── math.component.ts             # Math rendering component
 │   │   └── mermaid.component.ts          # Mermaid rendering component
-│   ├── plugins/
-│   │   ├── binding.ts                    # Re-exports binding plugin + Binding and If components
-│   │   ├── math.ts                       # Re-exports comark/plugins/math + Math component
-│   │   └── mermaid.ts                    # Re-exports comark/plugins/mermaid + Mermaid component
 │   └── utils/
 │       ├── caret.ts                      # Caret utilities for streaming
 │       └── index.ts                      # Re-exports comark/utils
+├── plugins/                              # Secondary entry points (named exports)
+│   ├── binding/
+│   │   ├── index.ts                      # Re-exports binding plugin + Binding and If components
+│   │   ├── binding.component.ts
+│   │   └── if.component.ts
+│   ├── math/
+│   │   ├── index.ts                      # Re-exports math plugin + Math component
+│   │   └── math.component.ts
+│   └── mermaid/
+│       ├── index.ts                      # Re-exports mermaid plugin + Mermaid component
+│       └── mermaid.component.ts
 ├── scripts/
-│   └── verify-build.mjs                  # Asserts partial-compilation metadata in dist after build
+│   └── strip-sourcemaps.mjs              # Removes ng-packagr source maps from dist after build
+├── angular.json
+├── ng-package.json
 ├── package.json
 ├── tsconfig.json
 └── vitest.config.ts
@@ -447,9 +460,16 @@ packages/comark-angular/
 
 ### Build
 
-Uses the Angular compiler (`ngc`) in partial-compilation mode so published
-JavaScript and declarations contain the Angular metadata required by both JIT
-and AOT consumers. `scripts/verify-build.mjs` runs after both `ngc` passes.
+Built with `ng-packagr` via the Angular CLI (`@angular/build:ng-packagr`
+builder): partial-compilation FESM bundles plus type declarations for the
+main entry and each plugin secondary entry point. Plugin entry points use
+named exports because the Angular Package Format strips `export default`
+from entry points (e.g. `import { math, Math } from '@comark/angular/plugins/math'`).
+`ng-packagr` always emits source maps, so `scripts/strip-sourcemaps.mjs` deletes
+them after `ng build`. The package publishes from `dist/` via
+`publishConfig.directory` (ng-packagr writes the published `package.json` there);
+`.release-it.json` must not also set `publishPath`, or pnpm looks in `dist/dist`.
+`test/bundle.test.ts` packs from that directory too.
 
 ### Exports
 
@@ -465,8 +485,8 @@ and AOT consumers. `scripts/verify-build.mjs` runs after both `ngc` passes.
 
 ```typescript
 import { Markdown, MarkdownDocument, defineMarkdownComponent, defineMarkdownDocumentComponent } from '@comark/angular'
-import math, { Math } from '@comark/angular/plugins/math'
-import mermaid, { Mermaid } from '@comark/angular/plugins/mermaid'
+import { math, Math } from '@comark/angular/plugins/math'
+import { mermaid, Mermaid } from '@comark/angular/plugins/mermaid'
 ```
 
 ```html
@@ -588,9 +608,9 @@ import binding, { Binding, If } from '@comark/svelte/plugins/binding'
 
 // Angular — renderer + plugin wrappers (plugin fn + Angular component)
 import { Markdown, MarkdownDocument, defineMarkdownComponent, defineMarkdownDocumentComponent } from '@comark/angular'
-import math, { Math } from '@comark/angular/plugins/math'
-import mermaid, { Mermaid } from '@comark/angular/plugins/mermaid'
-import binding, { Binding, If } from '@comark/angular/plugins/binding'
+import { math, Math } from '@comark/angular/plugins/math'
+import { mermaid, Mermaid } from '@comark/angular/plugins/mermaid'
+import { binding, Binding, If } from '@comark/angular/plugins/binding'
 ```
 
 ## Coding Principles
@@ -873,7 +893,7 @@ export const DocsMarkdown = defineMarkdownComponent({
 
 // Angular
 import { defineMarkdownComponent } from '@comark/angular'
-import math, { Math } from '@comark/angular/plugins/math'
+import { math, Math } from '@comark/angular/plugins/math'
 
 export const DocsMarkdown = defineMarkdownComponent({
   plugins: [math()],
@@ -938,6 +958,7 @@ pnpm build        # Build all packages, then sync plugin re-exports
 pnpm stub         # Point every package's dist/ at src/ for local dev (runs on postinstall)
 pnpm test         # Run all package tests
 pnpm test:spec    # Run the SPEC fixtures only
+pnpm test:sanitizer # Run vercel-labs/markdown-sanitizers bypass fixtures against `security` (test/sanitizer)
 pnpm bench        # Run the CodSpeed Vitest benches (benchmarks/*.bench.ts; wall-clock locally)
 pnpm lint         # oxlint + oxfmt --check + comark-lint on docs/content
 pnpm lint:fix     # oxlint --fix + oxfmt (write)
@@ -952,7 +973,7 @@ There is no ESLint or Prettier config.
 
 The docs content is linted with [comark-linter](https://comark-ui.onmax.me/lint/) (`pnpm --filter comark-docs-site lint`):
 unknown components, unclosed blocks, and broken links and anchors. `docs/comark-lint.config.ts` extends the
-comark-docs layer's preset with the site's own `app/components/prose/` components and its Vue pages.
+comark-docs layer's preset with the site's own `app/components/prose/` components (registered globally in `docs/nuxt.config.ts`) and its Vue pages.
 
 Utility scripts:
 
@@ -967,7 +988,7 @@ Workflows live in `.github/workflows/`:
 
 | Workflow | Purpose |
 |----------|---------|
-| `ci.yml` | lint → prepack → test → publish preview (pkg.pr.new) → bundle size check |
+| `ci.yml` | lint → prepack → test → sanitizer suite → publish preview (pkg.pr.new) → bundle size check |
 | `release.yml` | uppt release PR → tag + GitHub release → pack → staged npm publish (see Releasing) |
 | `codspeed.yml` | Runs `pnpm bench` under CodSpeed CPU simulation; reports perf changes on PRs |
 | `commit-signature.yml` | Fails PRs containing unsigned commits |
@@ -1031,7 +1052,8 @@ Every package in `packages/*` shares one version and one `vX.Y.Z` tag (lockstep)
 2. Merging the PR tags `vX.Y.Z`, creates the GitHub release from the PR body, and
    dispatches the publish run on the tag.
 3. `pack` installs with `--ignore-scripts`, runs `pnpm build`, then `pnpm pack`s each
-   package (its `prepack` runs; `comark`'s `build` copies `docs/skills` into the package).
+   package (its `prepack` runs). Agent skills are served from comark.dev (`docs/skills`), not
+   shipped in the npm package.
 4. `publish` stages every tarball with `npm stage publish` over OIDC in the `npm`
    environment. Approve the staged versions on npmjs.com to make them live.
 

@@ -55,6 +55,7 @@ const components: Record<string, () => Promise<unknown>> = {
   TwoColumn: () => import('@/components/playground/TwoColumn.vue'),
   BookingCard: () => import('@/components/playground/BookingCard.vue'),
   Ingredients: () => import('@/components/playground/Ingredients.vue'),
+  ReleaseImage: () => import('@/components/prose/ReleaseImage.vue'),
 }
 
 export default function resolveComponent(name: string) {

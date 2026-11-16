@@ -27,7 +27,7 @@ The `comark/plugins/title-description` plugin extracts the page title and descri
 ## Usage
 
 ::code-group
-```typescript
+```typescript [Usage]
 import { parseMarkdown } from 'comark'
 import titleDescription from 'comark/plugins/title-description'
 

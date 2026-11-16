@@ -43,7 +43,5 @@ logs
 **/auto-imports.d.ts
 **/components.d.ts
 
-# Comark
-packages/comark/skills
 .vercel
 .env*
