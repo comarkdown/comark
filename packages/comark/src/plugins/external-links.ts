@@ -37,7 +37,9 @@ export default defineComarkPlugin<ExternalLinksOptions>((options = {}) => {
         (node) => Array.isArray(node) && node[0] === 'a',
         (node) => {
           const [tag, attrs, ...children] = node as ElementNode
-          if (typeof attrs.href !== 'string' || !EXTERNAL_LINK_RE.test(attrs.href) || attrs.rel !== undefined) return
+          if (typeof attrs.href !== 'string' || !EXTERNAL_LINK_RE.test(attrs.href)) return
+          // A bound `:rel` resolves to `rel` at render time, so the author set it
+          if (attrs.rel !== undefined || attrs[':rel'] !== undefined) return
           return [tag, { ...attrs, rel, $: { ...attrs.$, autoRel: rel } }, ...children]
         }
       )

@@ -43,6 +43,13 @@ describe('external-links plugin', () => {
     expect(await renderMarkdown(await parseMarkdown(once, { plugins }))).toBe(LINKS)
   })
 
+  it('keeps a bound `:rel`', async () => {
+    const source = '---\nlinkRel: sponsored\n---\n\n[Nuxt](https://nuxt.com){:rel="frontmatter.linkRel"}'
+    const tree = await parseMarkdown(source, { plugins: [externalLinks()] })
+
+    expect(await renderHtmlForTest(tree)).toBe('<p><a href="https://nuxt.com" rel="sponsored">Nuxt</a></p>')
+  })
+
   it('writes a `rel` changed after parsing', async () => {
     const tree = await parseMarkdown('[Nuxt](https://nuxt.com)', { plugins: [externalLinks()] })
     ;(tree.nodes[0] as any[])[2][1].rel = 'sponsored'
