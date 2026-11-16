@@ -221,11 +221,7 @@ const inlineSyntax = /[\\`*_<&~[\]{:]/g
 // Mirrors ALLOWED_PREV_CHARS in the components plugin.
 const COLON_PREV_CHARS = new Set([' ', '\t', '\n', '*', '_', '[', ']', '}', ')', '>'])
 
-/**
- * Escape the end tag of a `<script>` / `<style>` body for markdown output. Only
- * that tag can end raw text, so `</script` is written `<\/script`, the form
- * scripts use inside strings. The parser never produces it; a built tree can.
- */
+/** Write `</script` / `</style` in a raw body as `<\/`, the only text that could end it early. */
 function escapeRawHtmlText(text: string, tag: string): string {
   const lower = text.toLowerCase()
   const closer = `</${tag}`
@@ -263,9 +259,7 @@ function escapeTextNode(text: string, atLineStart = false): string {
 }
 
 function encodeLiteralText(text: string, atLineStart: boolean): string {
-  // A `&` before a name or `#` is encoded even without `;`, since browsers decode `&copy` too.
-  // A non-breaking space, `\r`, and a newline that would make a blank line or end the text are
-  // written as references, so the parser does not trim them or end the block there.
+  // Also `&copy` (browsers decode it), and whitespace the parser would trim or read as a blank line.
   return escapeTextNode(text, atLineStart).replace(
     /\\([\s\S])|&(?=[a-z#])|<(?=[a-z/!?])|\u00a0|\r|\n(?=[ \t]*(?:\n|$))/gi,
     (match, escaped?: string) => {

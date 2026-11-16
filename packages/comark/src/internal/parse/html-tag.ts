@@ -12,8 +12,7 @@ const unquoted = '[^"\'=<>`\\x00-\\x20]+'
 const single_quoted = "'[^']*'"
 const double_quoted = '"[^"]*"'
 
-// `{…}` and an unquoted value can match the same text, so the choice is made atomic with
-// `(?=(…))\1`: a failed tag then fails in linear time instead of retrying each split.
+// `(?=(…))\1` is atomic: `{…}` and unquoted overlap, and backtracking between them is exponential.
 const attr_value = `(?:(?=(${braced_value}(?:${unquoted})?|${unquoted}))\\1|${single_quoted}|${double_quoted})`
 
 const attribute = `(?:\\s+${attr_name}(?:\\s*=\\s*${attr_value})?)`
