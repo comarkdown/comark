@@ -111,11 +111,11 @@ Framework renderers (Vue, React, Svelte, Angular) never forward `innerHTML`, `da
 
 Renderers hand bound props to components, and Vue treats a plain object with a `template`, `render`, `ssrRender`, `setup`, `extends` or `mixins` key as a component definition, one with `__v_isVNode` as a ready-made element, and one with `__isTeleport`, `__isSuspense` or `__isKeepAlive` as a built-in component. Its template can then run during server rendering, or the element skips tag filtering. These values are always dropped:
 
-- `as` and `is` (and their bindings) that are not strings, since they name the element or component to render: Vue mounts an array as a component, and React throws on one. `tag` is often a data prop, so only objects are dropped there.
+- `as` and `is` that are not strings, since they name the element or component to render: Vue mounts an array as a component, and React throws on one. Strings must be a plain tag or component name, since Vue's server renderer writes anything else (`img src=x onerror=…`) into the opening tag, and can't name a tag that runs code (`script`, `style`, `iframe`, `object`, `embed`, …). The security plugin also strips every binding to them; see [`allowedTags`](#allowedtags). `tag` is often a data prop, so only objects are dropped there.
 - Any object or array with one of those keys at any depth, such as `:icon='{"extends": {"template": "..."}}'` or `:icon='{"__v_isVNode": true, "type": "script"}'`.
 - An `__v_isVNode` attribute on the element itself, bound or not. Vue would otherwise render the element's attributes as a ready-made element.
 
-Data props keep working, for example `:items='[{"label": "a"}]'`. The Vue renderer also only resolves `as` to a component when it is a string. Frontmatter is checked for component options only, so data such as `tag: [vue, nuxt]` stays; a binding that passes a frontmatter array or object to `as` or `is`, or an object to `tag`, is still dropped.
+Data props keep working, for example `:items='[{"label": "a"}]'`. The Vue renderer also only resolves `as` to a component when it is a string. Frontmatter is checked for component options only, so data such as `tag: [vue, nuxt]` stays; a binding to `as` or `is` is always dropped, and one that passes an object to `tag` is too.
 
 ::warning
 Rendering untrusted markdown (chat messages, LLM output, user comments) is only safe with this plugin enabled. The renderers apply a minimum floor to bound props, but the plugin is the full policy: it also removes the values from the document tree. Keep `security()` enabled for untrusted input.
@@ -232,9 +232,13 @@ security({
 })
 ```
 
-The `as` and `is` props (which make framework renderers resolve a different component than the element's own tag) are held to the same filters: a value naming a blocked or not-allowed tag, or `object`, is stripped, and the element falls back to its own tag.
+The `as` and `is` props (which make framework renderers resolve a different component than the element's own tag) are treated as the element's tag. An element whose `as` or `is` names a blocked or not-allowed tag is removed, or passed to [`tagFallback`](#tagfallback), just like an element with that tag. Its own tag must pass the filters too, since renderers fall back to it when no component matches the `as` value. Props are validated for the named tag, so `as="object"` drops them all.
 
-Their bindings are checked too. A JSON binding (`:as='"section"'`) is checked decoded, as renderers decode it. A dot-path binding (`:as="frontmatter.tag"`) only resolves at render time, after every check, so it is always stripped.
+An `as` or `is` value must be a literal string made only of letters, digits, `_` and `-`, such as `as="my-card"`. Any other value is stripped, along with every binding that could set one, since a bound value is only known at render time, after every check:
+
+- `:as`, `v-bind:as`, `:is` and `v-bind:is`, even with a JSON string (`:as='"section"'`)
+- prefixed or differently cased names that the renderers don't read as `as` or `is`, such as `AS` or `.is`
+- an object binding (`v-bind`, `v-bind:` or `:`) whose object has an `as` or `is` key, or comes from render-time data (`v-bind="frontmatter.props"`)
 
 ### `tagFallback`
 
