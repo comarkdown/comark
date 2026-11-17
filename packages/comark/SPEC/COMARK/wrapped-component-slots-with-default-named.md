@@ -86,13 +86,13 @@ Second Paragraph
 ```md
 <component>
 
-<template v-slot:first="">
+<template name="first">
 
 First Paragraph
 
 </template>
 
-<template v-slot:default="">
+<template name="default">
 
 Second Paragraph
 

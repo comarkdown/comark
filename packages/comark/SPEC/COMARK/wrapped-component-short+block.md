@@ -98,13 +98,13 @@ Second Paragraph
 
 <component>
 
-<template v-slot:first="">
+<template name="first">
 
 First Paragraph
 
 </template>
 
-<template v-slot:second="">
+<template name="second">
 
 Second Paragraph
 

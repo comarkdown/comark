@@ -95,7 +95,7 @@ Line three
 ```md
 <card>
 
-<template v-slot:description="">
+<template name="description">
 
 Line one
 

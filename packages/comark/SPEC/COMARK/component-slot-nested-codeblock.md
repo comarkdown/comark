@@ -75,7 +75,7 @@ hello
 ```md
 <component>
 
-<template v-slot:code="">
+<template name="code">
 
 ```mdc
 ::alert

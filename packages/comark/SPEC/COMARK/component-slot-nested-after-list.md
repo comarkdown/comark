@@ -119,13 +119,13 @@ Make sure to use an even numbered version.
 ```md
 <card>
 
-<template v-slot:title="">
+<template name="title">
 
 Getting started
 
 </template>
 
-<template v-slot:content="">
+<template name="content">
 
 - **Node.js** - `22.x` or newer
 - **Terminal** - In order to run Nuxt commands

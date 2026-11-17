@@ -71,13 +71,13 @@ Edit without code.
 ```md
 <feature>
 
-<template v-slot:title="" unwrap="p">
+<template name="title" unwrap="p">
 
 Visual Editor
 
 </template>
 
-<template v-slot:description="" unwrap="p">
+<template name="description" unwrap="p">
 
 Edit without code.
 

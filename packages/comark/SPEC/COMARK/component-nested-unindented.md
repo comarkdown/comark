@@ -113,7 +113,7 @@ Sibling content
 
 </sibling>
 
-<template v-slot:title="">
+<template name="title">
 
 <nested>
 

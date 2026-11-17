@@ -89,7 +89,7 @@ Some text
 ```md
 <component>
 
-<template v-slot:description="">
+<template name="description">
 
 Some text
 

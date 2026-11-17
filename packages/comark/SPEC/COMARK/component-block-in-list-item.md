@@ -84,7 +84,7 @@
 - *item one*
   <block>
 
-  <template v-slot:body="">
+  <template name="body">
 
   ### Heading
 

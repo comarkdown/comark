@@ -55,7 +55,7 @@ Title
 ```md
 <comp>
 
-<template v-slot:header="" unwrap="p" preset="title">
+<template name="header" unwrap="p" preset="title">
 
 Title
 

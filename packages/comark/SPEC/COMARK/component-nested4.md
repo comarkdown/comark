@@ -179,19 +179,19 @@ timeout:
 
 <page-section>
 
-<template v-slot:tagline="">
+<template name="tagline">
 
 {{ $doc.snippet.tagline }}
 
 </template>
 
-<template v-slot:title="">
+<template name="title">
 
 {{ $doc.snippet.title }}
 
 </template>
 
-<template v-slot:description="">
+<template name="description">
 
 {{ $doc.snippet.description }}
 
