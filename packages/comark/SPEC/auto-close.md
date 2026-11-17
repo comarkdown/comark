@@ -2337,6 +2337,18 @@ A shorter or different marker is not a closer either:
 + ```\ncode\n~~~\n**bold
 ```
 
+A closer indented 4 or more spaces is code content; up to 3 spaces still closes:
+
+```diff
+- ```\ncode\n    ```\n**bold
++ ```\ncode\n    ```\n**bold
+```
+
+```diff
+- ```\ncode\n   ```\n**bold
++ ```\ncode\n   ```\n**bold**
+```
+
 ---
 
 ## Leave horizontal rules alone

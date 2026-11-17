@@ -105,9 +105,11 @@ const markdownItComarkBlock: PluginSimple = (md) => {
       let inCodeFence = false
       let codeFenceCharCode = 0
       let codeFenceCount = 0
+      // A closing fence must sit within 3 spaces of this column (CommonMark container indent).
+      let codeFenceIndent = 0
 
-      // Track nesting depth for blocks with the same marker count
-      let nestingDepth = 0
+      // Nested components still open, as `[markerCount, indent]`.
+      const openComponents: Array<[number, number]> = []
 
       if (state.src[start] !== ':') return false
 
@@ -155,7 +157,7 @@ const markdownItComarkBlock: PluginSimple = (md) => {
 
         // Detect closing code fence (``` or ~~~)
         if (inCodeFence) {
-          if (lineCharCode === codeFenceCharCode) {
+          if (lineCharCode === codeFenceCharCode && state.sCount[nextLine] - codeFenceIndent < 4) {
             let fencePos = start + 1
             while (fencePos < max && state.src.charCodeAt(fencePos) === codeFenceCharCode) fencePos++
             if (fencePos - start >= codeFenceCount) {
@@ -175,6 +177,9 @@ const markdownItComarkBlock: PluginSimple = (md) => {
             codeFenceCharCode = lineCharCode
             codeFenceCount = fencePos - start
             codeFenceShift = childShifts[childShifts.length - 1]
+            // The fence's container is the innermost open component, never right of the fence itself.
+            const containerIndent = openComponents.length ? openComponents[openComponents.length - 1][1] : indent
+            codeFenceIndent = Math.min(containerIndent, state.sCount[nextLine])
             continue
           }
         }
@@ -185,21 +190,25 @@ const markdownItComarkBlock: PluginSimple = (md) => {
           if (marker_str !== state.src[pos]) break
         }
 
-        // Closing fence must match the opening fence length
-        if (pos - start !== marker_count) continue
-
+        const count = pos - start
         pos = state.skipSpaces(pos)
 
         if (pos < max) {
-          // A new nested block opens with same marker count
-          nestingDepth++
+          // A nested block opens
+          if (count >= min_markers) openComponents.push([count, state.sCount[nextLine]])
           continue
         }
 
-        if (nestingDepth > 0) {
-          nestingDepth--
+        // A bare marker closes the innermost open nested block with the same length, and any left open inside it
+        let open = openComponents.length - 1
+        while (open >= 0 && openComponents[open][0] !== count) open--
+        if (open >= 0) {
+          openComponents.length = open
           continue
         }
+
+        // Closing fence must match the opening fence length
+        if (count !== marker_count) continue
 
         auto_closed = true
         break

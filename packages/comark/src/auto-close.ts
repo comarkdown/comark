@@ -204,6 +204,7 @@ function scanBlocks(src: string, o: Opts): DocState {
   const comps: Component[] = []
   let fenceLen = 0
   let fenceCh = 0
+  let fenceIndent = 0 // a closer must stay within 3 spaces of this column (its container's)
   let raw: RawTag | null = null
   let fmOpen = false
   let fmContent = false
@@ -242,10 +243,12 @@ function scanBlocks(src: string, o: Opts): DocState {
           if (!(c0 === 96 && isIncompleteInlineFence(src, st, en))) {
             fenceLen = run
             fenceCh = c0
+            // The container is the innermost open component, never right of the fence itself.
+            fenceIndent = Math.min(comps.length > 0 ? comps[comps.length - 1].indent.length : 0, st - ls)
             shielded = i
             continue
           }
-        } else if (c0 === fenceCh && run >= fenceLen && st + run === en) {
+        } else if (c0 === fenceCh && run >= fenceLen && st + run === en && st - ls - fenceIndent < 4) {
           // A closer is the same character, at least as long, and followed only by
           // whitespace. `` ```js `` inside an open block is code content, not a closer.
           fenceLen = 0

@@ -801,6 +801,15 @@ SPEC coverage: `SPEC/COMARK/component-nested-*-outdented.md`,
 `SPEC/COMARK/component-nested-codeblock-indented.md`,
 `SPEC/COMARK/codeblock-indented-content.md`.
 
+**Closing fences.** `comark_block` scans ahead for its closing `::` and skips
+code fences on the way. As in CommonMark, a closing fence may sit at most 3
+spaces right of its container: the innermost component still open at the
+opening fence, but never right of that fence. A deeper fence line is code
+content, so a `::` after it does not close the component. `autoCloseMarkdown`
+follows the same rule. SPEC coverage: `SPEC/COMARK/component-*codeblock-indented-fence.md`,
+`SPEC/COMARK/component-codeblock-closing-fence-indent.md`,
+`SPEC/COMARK/component-codeblock-indented-opener.md`.
+
 ## Embedded HTML
 
 Contract: `packages/comark/SPEC/HTML/README.md`. HTML nodes carry
