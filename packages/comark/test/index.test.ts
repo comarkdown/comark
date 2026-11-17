@@ -51,6 +51,7 @@ interface TestCase {
   ast: string
   html: string
   markdown: string
+  markdownHtml: string
   timeouts?: {
     parse?: number
     html?: number
@@ -120,7 +121,7 @@ function extractTestCase(content: string): TestCase {
   const sections: Record<string, string> = {}
 
   // Extract sections - find each section header and its content
-  const sectionHeaders = [...body.matchAll(/^## (Input|AST|HTML|Markdown)\s*\n\n```(\w+)\n/gm)]
+  const sectionHeaders = [...body.matchAll(/^## (Input|AST|HTML|Markdown HTML|Markdown)\s*\n\n```(\w+)\n/gm)]
 
   for (let i = 0; i < sectionHeaders.length; i++) {
     const match = sectionHeaders[i]
@@ -170,6 +171,9 @@ function extractTestCase(content: string): TestCase {
     ast: sections.ast || '',
     html: sections.html || '',
     markdown: sections.markdown || '',
+    // `## Markdown HTML` is optional and falls back to `## Markdown`.
+    // Add it only when `markdown/html` output differs (components, spans, slots, `:br`).
+    markdownHtml: sections['markdown html'] ?? sections.markdown ?? '',
     timeouts,
     options,
   }
@@ -299,6 +303,17 @@ describe('Comark Tests', () => {
           expect(result).toBe(expectedMarkdown)
         }
       )
+
+      it('should render AST to Markdown HTML', async () => {
+        const result = await renderMarkdown(document, {
+          ...(testCase.options || {}),
+          format: 'markdown/html',
+          components: {
+            binding: MarkdownBinding,
+          },
+        })
+        expect(result).toBe(testCase.markdownHtml.trim())
+      })
     })
   })
 })

@@ -69,3 +69,21 @@ hello
 ```
 ::
 ```
+
+## Markdown HTML
+
+```md
+<component>
+
+<template v-slot:code="">
+
+```mdc
+::alert
+hello
+::
+```
+
+</template>
+
+</component>
+```

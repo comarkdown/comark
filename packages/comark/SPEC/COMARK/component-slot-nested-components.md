@@ -83,3 +83,29 @@ Some text
   :::
 ::
 ```
+
+## Markdown HTML
+
+```md
+<component>
+
+<template v-slot:description="">
+
+Some text
+
+<child>
+
+Nested content
+
+</child>
+
+<child>
+
+More nested content
+
+</child>
+
+</template>
+
+</component>
+```

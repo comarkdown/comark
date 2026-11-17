@@ -56,3 +56,16 @@
 ```
 ::
 ```
+
+## Markdown HTML
+
+```md
+<card>
+
+```mdc
+  ::accordion
+  ::
+```
+
+</card>
+```

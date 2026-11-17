@@ -52,3 +52,13 @@ My button
 My button
 ::
 ```
+
+## Markdown HTML
+
+```md
+<my-component block reverse square="false" disabled count="5">
+
+My button
+
+</my-component>
+```

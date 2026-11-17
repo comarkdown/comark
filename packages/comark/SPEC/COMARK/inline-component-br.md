@@ -89,3 +89,18 @@ Published modules cannot leverage auto-imports.
 :br :br
 Auto-imports are not enabled for files within `node_modules`.
 ```
+
+## Markdown HTML
+
+```md
+<warning>
+
+Beware that using only `$fetch` will not provide network calls de-duplication. <br>
+It is recommended to use `$fetch` for client-side interactions.
+
+</warning>
+
+Published modules cannot leverage auto-imports.
+<br> <br>
+Auto-imports are not enabled for files within `node_modules`.
+```

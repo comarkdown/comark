@@ -915,7 +915,7 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for local setup and the example-app wor
 ### Modifying the parser
 
 1. Token processing is in `packages/comark/src/internal/parse/token-processor.ts`
-2. Test with `packages/comark/test/index.test.ts` (loads the `SPEC/` fixtures; `SPEC=SPEC/COMARK/foo.md pnpm vitest run test/index.test.ts` runs one)
+2. Test with `packages/comark/test/index.test.ts` (loads the `SPEC/` fixtures; `SPEC=SPEC/COMARK/foo.md pnpm vitest run test/index.test.ts` runs one). A fixture has `## Input`, `## AST`, `## HTML` and `## Markdown` sections, plus an optional `## Markdown HTML` for `renderMarkdown(doc, { format: 'markdown/html' })`. Every fixture runs the `markdown/html` check; when the section is missing, it falls back to `## Markdown`. Add the section only when the output differs (components, spans, slots, `:br`)
 3. Check streaming still works with `packages/comark/test/streaming.test.ts`
 4. Import from `markdown-exit/core`, never `markdown-exit`: the root entry pulls in linkify-it, which `parse.ts` loads lazily only for parsers with `linkify` on
 5. Decode attribute values with `decodeHTMLAttribute` from `src/internal/entities.ts`, not `entities`: it reads the `character-entities` table markdown-exit already ships, so bundles hold one table

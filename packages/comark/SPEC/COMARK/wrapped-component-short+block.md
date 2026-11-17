@@ -90,3 +90,25 @@ First Paragraph
 Second Paragraph
 ::
 ```
+
+## Markdown HTML
+
+```md
+<no-sugar-syntax></no-sugar-syntax>
+
+<component>
+
+<template v-slot:first="">
+
+First Paragraph
+
+</template>
+
+<template v-slot:second="">
+
+Second Paragraph
+
+</template>
+
+</component>
+```

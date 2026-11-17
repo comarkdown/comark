@@ -60,3 +60,9 @@ options:
 ```md
 [**Bold** and *italic* text]{.highlight}
 ```
+
+## Markdown HTML
+
+```md
+<span class="highlight">**Bold** and *italic* text</span>
+```

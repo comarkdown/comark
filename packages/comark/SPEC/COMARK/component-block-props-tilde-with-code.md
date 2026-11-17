@@ -59,3 +59,15 @@ source: |-
 Preview content here
 ::
 ```
+
+## Markdown HTML
+
+```md
+<code-preview title="Quick Start" description="A code preview" lang="typescript" source="```ts
+const x = 1
+```">
+
+Preview content here
+
+</code-preview>
+```

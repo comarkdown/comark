@@ -63,3 +63,23 @@ First Paragraph
 Second Paragraph
 ::
 ```
+
+## Markdown HTML
+
+```md
+<component>
+
+<template v-slot:first="">
+
+First Paragraph
+
+</template>
+
+<template v-slot:default="">
+
+Second Paragraph
+
+</template>
+
+</component>
+```

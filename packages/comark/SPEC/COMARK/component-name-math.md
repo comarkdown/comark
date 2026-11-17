@@ -57,3 +57,15 @@ Some :math[x] text.
 body
 ::
 ```
+
+## Markdown HTML
+
+```md
+Some <math>x</math> text.
+
+<math k="v">
+
+body
+
+</math>
+```

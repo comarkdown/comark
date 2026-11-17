@@ -51,3 +51,13 @@ title: Hello
 Content
 ::
 ```
+
+## Markdown HTML
+
+```md
+<component title="Hello">
+
+Content
+
+</component>
+```

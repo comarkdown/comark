@@ -74,7 +74,7 @@ cd packages/comark
 pnpm vitest run test/parse/sub-sup.test.ts
 ```
 
-Parser fixtures live in `packages/comark/SPEC` and run through `test/index.test.ts`. Parser changes should also preserve streaming behavior in `test/streaming.test.ts`.
+Parser fixtures live in `packages/comark/SPEC` and run through `test/index.test.ts`. Each fixture also checks `markdown/html` output against its `## Markdown HTML` section, or against `## Markdown` when that section is missing. Parser changes should also preserve streaming behavior in `test/streaming.test.ts`.
 
 React and Svelte tests include a headless Chromium project. Install the browser if needed:
 

@@ -80,3 +80,23 @@ First Paragraph
 Second Paragraph
 ::
 ```
+
+## Markdown HTML
+
+```md
+<component>
+
+<template v-slot:first="">
+
+First Paragraph
+
+</template>
+
+<template v-slot:second="">
+
+Second Paragraph
+
+</template>
+
+</component>
+```

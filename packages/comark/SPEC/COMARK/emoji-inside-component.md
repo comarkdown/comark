@@ -67,3 +67,19 @@ options:
 ⚠️ Please backup your data before proceeding
 ::
 ```
+
+## Markdown HTML
+
+```md
+<alert type="success">
+
+✅ Successfully deployed! 🚀
+
+</alert>
+
+<alert type="warning">
+
+⚠️ Please backup your data before proceeding
+
+</alert>
+```

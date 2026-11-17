@@ -57,3 +57,15 @@ Some :comment[a note]{author="maxi"} text.
 body
 ::
 ```
+
+## Markdown HTML
+
+```md
+Some <comment author="maxi">a note</comment> text.
+
+<comment>
+
+body
+
+</comment>
+```

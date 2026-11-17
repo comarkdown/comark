@@ -89,3 +89,25 @@ Middle line
 Line three
 ::
 ```
+
+## Markdown HTML
+
+```md
+<card>
+
+<template v-slot:description="">
+
+Line one
+
+---
+
+Middle line
+
+---
+
+Line three
+
+</template>
+
+</card>
+```

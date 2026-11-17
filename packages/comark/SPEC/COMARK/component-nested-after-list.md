@@ -99,3 +99,22 @@ Make sure to use an even numbered version.
 :::
 ::
 ```
+
+## Markdown HTML
+
+```md
+<steps>
+
+### Prerequisites
+
+- **Node.js** - `22.x` or newer
+- **Terminal** - In order to run Nuxt commands
+
+<callout>
+
+Make sure to use an even numbered version.
+
+</callout>
+
+</steps>
+```

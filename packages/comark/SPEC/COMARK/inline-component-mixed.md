@@ -103,3 +103,15 @@
 
 [:component[text]{.class}]
 ```
+
+## Markdown HTML
+
+```md
+[<component class="class">text</component>](/link)
+
+**<component class="class">text</component>**
+
+*<component class="class">text</component>*
+
+<span><component class="class">text</component></span>
+```
