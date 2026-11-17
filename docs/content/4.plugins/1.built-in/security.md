@@ -111,7 +111,7 @@ Framework renderers (Vue, React, Svelte, Angular) never forward `innerHTML`, `da
 
 Renderers hand bound props to components, and Vue treats a plain object with a `template`, `render`, `ssrRender`, `setup`, `extends` or `mixins` key as a component definition, one with `__v_isVNode` as a ready-made element, and one with `__isTeleport`, `__isSuspense` or `__isKeepAlive` as a built-in component. Its template can then run during server rendering, or the element skips tag filtering. These values are always dropped:
 
-- `as` and `is` (and their bindings) that are not strings, since they name the element or component to render: Vue mounts an array as a component, and React throws on one. `tag` is often a data prop, so only objects are dropped there.
+- `as` and `is` (and their bindings) that are not strings, since they name the element or component to render: Vue mounts an array as a component, and React throws on one. Strings must be a plain tag or component name, since Vue's server renderer writes anything else (`img src=x onerror=…`) into the opening tag, and can't name a tag that runs code (`script`, `style`, `iframe`, `object`, `embed`, …). `tag` is often a data prop, so only objects are dropped there.
 - Any object or array with one of those keys at any depth, such as `:icon='{"extends": {"template": "..."}}'` or `:icon='{"__v_isVNode": true, "type": "script"}'`.
 - An `__v_isVNode` attribute on the element itself, bound or not. Vue would otherwise render the element's attributes as a ready-made element.
 
