@@ -159,6 +159,26 @@ describe('component after a list', () => {
   })
 })
 
+describe('lists, emphasis and headings', () => {
+  it.each([
+    ['an ordered list that starts at 0', '0. zero\n1. one\n'],
+    ['adjacent bullet lists', '- a\n- b\n\n+ c\n\n* d\n'],
+    ['adjacent ordered lists', '1. a\n\n1) b\n'],
+    ['adjacent nested lists', '- a\n  - b\n\n  * c\n'],
+    ['a list nested under item 10', '10. ten\n    - nested\n'],
+    [
+      'a list nested under the tenth item',
+      '1. a\n2. b\n3. c\n4. d\n5. e\n6. f\n7. g\n8. h\n9. i\n10. j\n    - nested\n',
+    ],
+    ['emphasis inside emphasis', '*_foo_*\n'],
+    ['a multi-line heading', 'Foo\nbar\n===\n'],
+    ['a multi-line level 2 heading with attributes', 'Foo\nbar {.c}\n---\n'],
+  ])('keeps %s', async (_, md) => {
+    const { t1, t2 } = await roundTrip(md)
+    expect(t2.nodes).toEqual(t1.nodes)
+  })
+})
+
 describe('link and image serialization', () => {
   const doc = (node: unknown) =>
     ({ frontmatter: {}, meta: {}, nodes: [['p', {}, node]] }) as unknown as MarkdownDocument

@@ -42,5 +42,11 @@ export async function heading(node: ElementNode, state: State) {
   const attrs = comarkAttributes(id === undefined || id === autoId ? rest : { id, ...rest })
   const suffix = attrs ? ` ${attrs}` : ''
 
+  // An ATX heading ends at the line break, so a multi-line h1/h2 (setext
+  // source) keeps its underline form.
+  if (level <= 2 && content.includes('\n')) {
+    return content + suffix + '\n' + (level === 1 ? '===' : '---') + state.context.blockSeparator
+  }
+
   return '#'.repeat(level) + ' ' + content + suffix + state.context.blockSeparator
 }
