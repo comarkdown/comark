@@ -17,8 +17,8 @@ export interface ExternalLinksOptions {
 
 // `http://`, `https://`, and protocol-relative `//` URLs
 const EXTERNAL_LINK_RE = /^(?:https?:)?\/\//i
-// Targets that navigate an existing browsing context, so `window.opener` isn't set
-const SAME_CONTEXT_TARGETS = new Set(['_self', '_parent', '_top'])
+// Targets that navigate an existing browsing context, so `window.opener` isn't set (keywords are case-insensitive)
+const SAME_CONTEXT_TARGETS = new Set(['', '_self', '_parent', '_top'])
 
 /**
  * Adds a `rel` to external (`http://`, `https://`, and `//`) links that don't set one, `nofollow` by default.
@@ -57,7 +57,7 @@ export default defineComarkPlugin<ExternalLinksOptions>((options = {}) => {
           if (addRel) {
             // A bound `:target` can't be checked at parse time, so it counts as a new tab
             const linkTarget = addTarget ? target : (attrs.target ?? attrs[':target'])
-            const newContext = linkTarget !== undefined && !SAME_CONTEXT_TARGETS.has(String(linkTarget))
+            const newContext = linkTarget !== undefined && !SAME_CONTEXT_TARGETS.has(String(linkTarget).toLowerCase())
             const linkRel = rel ?? (newContext ? 'nofollow noopener noreferrer' : 'nofollow')
             next.rel = linkRel
             $.autoRel = linkRel

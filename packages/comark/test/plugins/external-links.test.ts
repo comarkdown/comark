@@ -6,7 +6,7 @@ import { renderHtmlForTest } from '../utils/render-html'
 
 const LINKS = `[External](https://nuxt.com) [Insecure](http://nuxt.com) [Internal](/about) [Hash](#top) <https://auto.dev> [Relative](//relative.dev)
 
-[Sponsored](https://sponsor.dev){rel="sponsored"} [Nofollow](https://nofollow.dev){rel="nofollow"} [Blank](https://blank.dev){target="_blank"}
+[Sponsored](https://sponsor.dev){rel="sponsored"} [Nofollow](https://nofollow.dev){rel="nofollow"} [Blank](https://blank.dev){target="_blank"} [Upper](https://upper.dev){target="_SELF"} [Empty](https://empty.dev){target=""}
 
 Raw <a href="https://html.dev">HTML</a> link`
 
@@ -17,7 +17,7 @@ describe('external-links plugin', () => {
     expect(await renderHtmlForTest(tree)).toBe(
       [
         '<p><a href="https://nuxt.com" rel="nofollow">External</a> <a href="http://nuxt.com" rel="nofollow">Insecure</a> <a href="/about">Internal</a> <a href="#top">Hash</a> <a href="https://auto.dev" rel="nofollow">https://auto.dev</a> <a href="//relative.dev" rel="nofollow">Relative</a></p>',
-        '<p><a href="https://sponsor.dev" rel="sponsored">Sponsored</a> <a href="https://nofollow.dev" rel="nofollow">Nofollow</a> <a href="https://blank.dev" target="_blank" rel="nofollow noopener noreferrer">Blank</a></p>',
+        '<p><a href="https://sponsor.dev" rel="sponsored">Sponsored</a> <a href="https://nofollow.dev" rel="nofollow">Nofollow</a> <a href="https://blank.dev" target="_blank" rel="nofollow noopener noreferrer">Blank</a> <a href="https://upper.dev" target="_SELF" rel="nofollow">Upper</a> <a href="https://empty.dev" target="" rel="nofollow">Empty</a></p>',
         '<p>Raw <a href="https://html.dev" rel="nofollow">HTML</a> link</p>',
       ].join('\n')
     )
