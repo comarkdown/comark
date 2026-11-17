@@ -72,7 +72,7 @@ packages/comark/
 │   │   ├── binding.ts        # Inline interpolation + shared conditional rendering rules
 │   │   ├── breaks.ts         # Hard line breaks (`<br>`) from newlines
 │   │   ├── emoji.ts          # Emoji shortcodes
-│   │   ├── external-links.ts # `rel` on external links
+│   │   ├── external-links.ts # `rel` and `target` on external links
 │   │   ├── footnotes.ts      # GFM footnotes
 │   │   ├── heading-links.ts  # Links headings to their own `id`
 │   │   ├── headings.ts       # Deprecated alias → title-description (remove next major)

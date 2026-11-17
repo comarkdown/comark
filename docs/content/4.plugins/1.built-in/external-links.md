@@ -1,6 +1,6 @@
 ---
 title: External Links
-description: Plugin for adding a rel attribute to external links.
+description: Plugin for adding rel and target attributes to external links.
 seo:
   title: External Links Plugin
 navigation:
@@ -20,7 +20,7 @@ links:
 
 The `comark/plugins/external-links` plugin adds `rel="nofollow"` to external links, which tells search engines not to pass ranking to the sites you link to.
 
-The `rel` is added to the document tree, so the HTML, Vue, React, Svelte, and Angular renderers output it without a custom link component.
+It can also add a `target`, such as `_blank`, to open them in a new tab. Both are added to the document tree, so the HTML, Vue, React, Svelte, and Angular renderers output them without a custom link component.
 
 ## Usage
 
@@ -43,7 +43,7 @@ const result = await parseMarkdown('[Nuxt](https://nuxt.com)', {
 
 ### `externalLinks(options?)`
 
-Returns a `ComarkPlugin` that adds a `rel` to external links.
+Returns a `ComarkPlugin` that adds a `rel`, and optionally a `target`, to external links.
 
 **Parameters:**
 
@@ -51,9 +51,9 @@ Returns a `ComarkPlugin` that adds a `rel` to external links.
 
 **Returns:** `ComarkPlugin`
 
-A link is external when its `href` starts with `http://` or `https://`. This covers Markdown links, autolinks, bare URLs, and HTML `<a>` tags. Links that already have a `rel` or a bound `:rel`, such as `[Nuxt](https://nuxt.com){rel="sponsored"}`, are left unchanged.
+A link is external when its `href` starts with `http://`, `https://`, or `//`. This covers Markdown links, autolinks, bare URLs, and HTML `<a>` tags. A `rel` or `target` the link already has, written or bound (`:rel`, `:target`), is kept, such as in `[Nuxt](https://nuxt.com){rel="sponsored"}`.
 
-The added value is recorded in the tree as `$.autoRel`. Renderers don't output `$`, and Markdown output leaves out a `rel` that still has this value. A tree parsed with this plugin can be saved back to Markdown unchanged, while a `rel` the author wrote is kept.
+Added values are recorded in the tree as `$.autoRel` and `$.autoTarget`. Renderers don't output `$`, and Markdown output leaves out a `rel` or `target` that still has its added value. A tree parsed with this plugin can be saved back to Markdown unchanged, while the values the author wrote are kept.
 
 ---
 
@@ -62,6 +62,7 @@ The added value is recorded in the tree as `$.autoRel`. Renderers don't output `
 | Option | Type | Default | Description |
 |---|---|---|---|
 | [`rel`](#rel) | `string` | `'nofollow'` | `rel` added to external links |
+| [`target`](#target) | `string` | - | `target` added to external links |
 
 ### `rel`
 
@@ -75,4 +76,20 @@ externalLinks({ rel: 'nofollow noopener' })
 <p><a href="https://nuxt.com" rel="nofollow noopener">Nuxt</a></p>
 ```
 
-**Default:** `'nofollow'`
+**Default:** `'nofollow'`, or `'nofollow noopener noreferrer'` on links that open a new tab
+
+### `target`
+
+`target` added to external links that don't set one. Not set by default, so links open in the same tab.
+
+```typescript
+externalLinks({ target: '_blank' })
+```
+
+```html [Output]
+<p><a href="https://nuxt.com" rel="nofollow noopener noreferrer" target="_blank">Nuxt</a></p>
+```
+
+On a link that opens a new tab, from this option or a `target` the author wrote, the default `rel` adds `noopener` and `noreferrer`. The opened page can't reach your page through `window.opener` and doesn't receive it as the referrer. If you set [`rel`](#rel) yourself, include them.
+
+**Default:** none

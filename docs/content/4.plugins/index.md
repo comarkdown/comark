@@ -92,7 +92,7 @@ Optional plugins you register via `plugins: [...]`.
   ::
 
   ::card{icon="i-lucide-external-link" title="External Links" to="/plugins/built-in/external-links"}
-  Plugin for adding `rel="nofollow"` to external links.
+  Plugin for adding `rel="nofollow"`, and optionally a `target`, to external links.
   ::
 
   ::card{icon="i-lucide-footprints" title="Footnotes" to="/plugins/built-in/footnotes"}

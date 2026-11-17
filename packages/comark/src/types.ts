@@ -39,6 +39,8 @@ export type ElementNodeAttributes = {
     permalink?: 'wrap' | 'separate'
     /** The `rel` `external-links` added to a link. Markdown output leaves `rel` out while it still has this value. */
     autoRel?: string
+    /** The `target` `external-links` added to a link. Markdown output leaves `target` out while it still has this value. */
+    autoTarget?: string
   }
 }
 
