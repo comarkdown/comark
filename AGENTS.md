@@ -25,7 +25,7 @@ Comark (`comark`) parses CommonMark and GitHub Flavored Markdown (GFM) into a co
 │   ├── comark-angular/   # Angular 21+ renderer (@comark/angular)
 │   └── comark-nuxt/      # Deprecated @comark/nuxt wrapper around @comark/vue/nuxt
 ├── examples/
-│   ├── 1.frameworks/     # Nuxt, Next.js, Astro, SvelteKit, VitePress
+│   ├── 1.frameworks/     # Angular, Astro, Next.js, Nuxt, SvelteKit, VitePress
 │   ├── 2.vite/           # Vue, Vue streaming, React, Svelte, Angular, HTML, ANSI
 │   ├── 3.cli/            # ANSI output, prompts, OpenTelemetry tracing
 │   ├── 3.plugins/        # math, mermaid, highlight, rangi, punctuation, twoslash, binding, json-render
@@ -305,7 +305,7 @@ pnpm lint:fix       # oxlint --fix + oxfmt
 pnpm typecheck      # Root `tsc --noEmit`
 pnpm verify         # lint + test + typecheck
 pnpm docs           # Start the documentation site (`docs/`)
-pnpm dev:<name>     # Start an example app (vue, react, svelte, angular, html, ansi, nuxt, nextjs, astro, ...)
+pnpm dev:<name>     # Start an example app (vue, react, angular, angular-blog, html, ansi, nuxt, nextjs, astro, ...)
 ```
 
 ## CI, benchmarks, and releases
