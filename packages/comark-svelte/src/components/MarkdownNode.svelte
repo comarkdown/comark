@@ -20,6 +20,14 @@ naturally appears inline after the deepest trailing text node.
 
   const componentCache = new WeakMap<ComarkComponentManifest, Map<string, any>>()
 
+  /**
+   * `<svelte:element>` only knows an element's namespace from its `xmlns`, so each node passes its own down to its
+   * children: `svg` and `math` start theirs, and `foreignObject` holds HTML again.
+   */
+  const NAMESPACE = Symbol('comark:namespace')
+  const SVG_NAMESPACE = 'http://www.w3.org/2000/svg'
+  const MATHML_NAMESPACE = 'http://www.w3.org/1998/Math/MathML'
+
   function isPromiseLike(value: unknown): value is Promise<unknown> {
     return !!value && typeof (value as { then?: unknown }).then === 'function'
   }
@@ -73,6 +81,7 @@ naturally appears inline after the deepest trailing text node.
   import ComarkComponent from './ComarkComponent.svelte'
   import Resolve from './Resolve.svelte'
   import { applyNodeTransforms, isHtmlVoidElement, resolveAttributes, toNativeAttributes } from 'comark/utils'
+  import { getContext, setContext } from 'svelte'
 
   const EMPTY_RENDER_DATA: NodeRenderData = { frontmatter: {}, meta: {}, data: {}, props: {} }
 
@@ -202,6 +211,12 @@ naturally appears inline after the deepest trailing text node.
   // check uses the raw attributes: resolving can omit all of them.
   let nativeProps = $derived(tag ? toNativeAttributes(tag, node, mappedProps) : mappedProps)
 
+  const parentNamespace = getContext<(() => string | undefined) | undefined>(NAMESPACE)
+  let namespace = $derived(
+    tag === 'svg' ? SVG_NAMESPACE : tag === 'math' ? MATHML_NAMESPACE : parentNamespace?.(),
+  )
+  setContext(NAMESPACE, () => (tag === 'foreignObject' ? undefined : namespace))
+
   let hasOwnAttrs = $derived.by(() => {
     if (transformedProps) return true
     const attrs: Record<string, any> = (Array.isArray(node) && node.length >= 2 ? node[1] : null) ?? {}
@@ -300,9 +315,9 @@ naturally appears inline after the deepest trailing text node.
     {@render renderChildren()}
   </Resolver>
 {:else if isVoid}
-  <svelte:element this={tag} {...nativeProps} />
+  <svelte:element this={tag} xmlns={namespace} {...nativeProps} />
 {:else if tag}
-  <svelte:element this={tag} {...nativeProps}>
+  <svelte:element this={tag} xmlns={namespace} {...nativeProps}>
     {@render renderChildren()}
   </svelte:element>
 {/if}
