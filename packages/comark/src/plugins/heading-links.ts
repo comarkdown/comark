@@ -51,7 +51,7 @@ function containsLink(node: Node): boolean {
  *
  * @example
  * ```ts
- * // Default — wrap h2, h3 and h4 content in a link
+ * // Default: wrap h2, h3 and h4 content in a link
  * headingLinks()
  *
  * // Add a `#` link before the heading text instead

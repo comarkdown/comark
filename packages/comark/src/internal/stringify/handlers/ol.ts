@@ -22,7 +22,7 @@ export async function ol(node: ElementNode, state: State, parent?: ElementNode) 
 
   state.applyContext(revert)
 
-  // ol with user attrs round-trips via `::ol{attrs}\n1. …\n::` — the native
+  // ol with user attrs round-trips via `::ol{attrs}\n1. ...\n::`: the native
   // markdown list syntax has no slot for list-level attrs.
   const attrs = comarkAttributes(userBlockAttrs('ol', node[1] as Record<string, unknown>))
   if (attrs) {

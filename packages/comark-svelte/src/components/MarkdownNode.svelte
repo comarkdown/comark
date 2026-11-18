@@ -2,7 +2,7 @@
 @component
 Recursive Comark AST node renderer.
 
-Renders a single `Node` — either a text string, a native HTML element
+Renders a single `Node`: a text string, a native HTML element
 (via `<svelte:element>`), or a custom component (via a capitalized variable).
 
 Recurses into children by importing itself. The streaming caret is threaded
@@ -19,6 +19,14 @@ naturally appears inline after the deepest trailing text node.
   import { pascalCase } from 'comark/utils'
 
   const componentCache = new WeakMap<ComarkComponentManifest, Map<string, any>>()
+
+  /**
+   * `<svelte:element>` only knows an element's namespace from its `xmlns`, so each node passes its own down to its
+   * children: `svg` and `math` start theirs, and `foreignObject` holds HTML again.
+   */
+  const NAMESPACE = Symbol('comark:namespace')
+  const SVG_NAMESPACE = 'http://www.w3.org/2000/svg'
+  const MATHML_NAMESPACE = 'http://www.w3.org/1998/Math/MathML'
 
   function isPromiseLike(value: unknown): value is Promise<unknown> {
     return !!value && typeof (value as { then?: unknown }).then === 'function'
@@ -73,6 +81,7 @@ naturally appears inline after the deepest trailing text node.
   import ComarkComponent from './ComarkComponent.svelte'
   import Resolve from './Resolve.svelte'
   import { applyNodeTransforms, isHtmlVoidElement, resolveAttributes, toNativeAttributes } from 'comark/utils'
+  import { getContext, setContext } from 'svelte'
 
   const EMPTY_RENDER_DATA: NodeRenderData = { frontmatter: {}, meta: {}, data: {}, props: {} }
 
@@ -158,7 +167,6 @@ naturally appears inline after the deepest trailing text node.
       return { isText, tag, isVoid, children, Component, componentPromise, mappedProps, transformedProps }
     }
 
-    // Comment nodes have null as the tag
     if (node[0] === null) {
       return { isText, tag, isVoid, children, Component, componentPromise, mappedProps, transformedProps }
     }
@@ -167,7 +175,6 @@ naturally appears inline after the deepest trailing text node.
       = (node.length >= 2 ? node[1] : {}) ?? {}
     children = node.length > 2 ? (node.slice(2) as NodeType[]) : []
 
-    // Resolve `:prefix` bindings, then let `transformNode` change the tag or props
     const ownProps = resolveAttributes(nodeProps, renderData, { parseJson: true })
     const transformed = applyNodeTransforms(transformNode, node as ElementNode, ownProps, renderData)
     tag = transformed ? transformed.tag : (node[0] as string)
@@ -183,7 +190,6 @@ naturally appears inline after the deepest trailing text node.
       Component = resolvedComponent
     }
 
-    // Svelte attribute remapping (`className` → `class`)
     for (const k in resolved) {
       if (k === 'className') {
         mappedProps.class = resolved[k]
@@ -197,10 +203,16 @@ naturally appears inline after the deepest trailing text node.
   })
 
   // Only shadow the parent's `props` scope when the current element has its
-  // own attributes. Bare wrappers (`<p>`, `<ul>`, `<li>`, …) must keep the
+  // own attributes. Bare wrappers (`<p>`, `<ul>`, `<li>`, ...) must keep the
   // parent's scope so bindings like `{{ props.x }}` reach across them. The
   // check uses the raw attributes: resolving can omit all of them.
   let nativeProps = $derived(tag ? toNativeAttributes(tag, node, mappedProps) : mappedProps)
+
+  const parentNamespace = getContext<(() => string | undefined) | undefined>(NAMESPACE)
+  let namespace = $derived(
+    tag === 'svg' ? SVG_NAMESPACE : tag === 'math' ? MATHML_NAMESPACE : parentNamespace?.(),
+  )
+  setContext(NAMESPACE, () => (tag === 'foreignObject' ? undefined : namespace))
 
   let hasOwnAttrs = $derived.by(() => {
     if (transformedProps) return true
@@ -300,9 +312,9 @@ naturally appears inline after the deepest trailing text node.
     {@render renderChildren()}
   </Resolver>
 {:else if isVoid}
-  <svelte:element this={tag} {...nativeProps} />
+  <svelte:element this={tag} xmlns={namespace} {...nativeProps} />
 {:else if tag}
-  <svelte:element this={tag} {...nativeProps}>
+  <svelte:element this={tag} xmlns={namespace} {...nativeProps}>
     {@render renderChildren()}
   </svelte:element>
 {/if}

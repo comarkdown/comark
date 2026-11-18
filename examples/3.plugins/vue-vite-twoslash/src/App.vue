@@ -36,7 +36,6 @@ onMounted(async () => {
 
 <template>
   <UApp>
-    <!-- Header -->
     <header class="sticky top-0 z-50 border-b border-default bg-default/80 backdrop-blur">
       <UContainer class="flex h-14 items-center justify-between">
         <div class="flex items-center gap-2">
@@ -63,10 +62,8 @@ onMounted(async () => {
       </UContainer>
     </header>
 
-    <!-- Page -->
     <main class="py-12 px-4">
       <UContainer class="max-w-3xl">
-        <!-- Loading -->
         <template v-if="loading">
           <div class="mb-12 space-y-3">
             <USkeleton class="h-9 w-1/2 rounded-lg" />
@@ -90,7 +87,6 @@ onMounted(async () => {
           </div>
         </template>
 
-        <!-- Content -->
         <Suspense v-else>
           <Markdown
             class="prose"
@@ -105,8 +101,6 @@ onMounted(async () => {
 </template>
 
 <style>
-/* ─── Prose ────────────────────────────────────────────────── */
-/* Inline code */
 .prose :not(pre) > code {
   font-family: ui-monospace, 'Cascadia Code', monospace;
   font-size: 0.825em;
@@ -117,7 +111,6 @@ onMounted(async () => {
   padding: 0.15em 0.4em;
 }
 
-/* Code blocks */
 .prose pre.shiki {
   margin: 0.75rem 0 1.5rem;
   padding: 1.25rem 1.5rem;
@@ -137,7 +130,6 @@ onMounted(async () => {
   color: var(--shiki-dark) !important;
 }
 
-/* Twoslash popup */
 .prose .twoslash-popup-container {
   width: max-content;
 }

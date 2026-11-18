@@ -6,7 +6,6 @@ import { markdownItAttributes } from 'comark/plugins/attributes'
 import { createMarkdownParser } from 'comark'
 import { renderHtmlFromDocument } from '../packages/comark-html/src/index.ts'
 
-// Sample markdown content to test with
 const sampleMarkdown = `---
 title: Benchmark Test
 ---
@@ -57,7 +56,6 @@ Card content here
 
 `
 
-// Initialize markdown-it with MDC plugin
 const markdownIt = new MarkdownIt({
   html: true,
   linkify: true,
@@ -66,7 +64,6 @@ const markdownIt = new MarkdownIt({
   .use(markdownItComponents)
   .use(markdownItAttributes)
 
-// Initialize markdown-exit with MDC plugin
 const markdownExit = new MarkdownExit({
   html: true,
   linkify: true,
@@ -81,17 +78,14 @@ const comarkStreaming = createMarkdownParser()
 
 barplot(() => {
   group('render', () => {
-    // Benchmark: markdown-it render
     bench('markdown-it render', () => {
       markdownIt.render(sampleMarkdown)
     })
 
-    // Benchmark: markdown-exit render
     bench('markdown-exit render', () => {
       markdownExit.render(sampleMarkdown)
     })
 
-    // Benchmark: comark parse + renderHtmlFromDocument
     bench('comark parse + renderHtmlFromDocument', async () => {
       const doc = await comark(sampleMarkdown)
       renderHtmlFromDocument(doc)
@@ -109,6 +103,5 @@ barplot(() => {
   })
 })
 
-// Run all benchmarks
 console.log('🏃 Running benchmarks...\n')
 await run()

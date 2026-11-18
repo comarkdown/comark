@@ -9,12 +9,12 @@ import { GRAMMAR_CONTEXTS, inlineCodeLanguage } from './inline-code-lang.ts'
 
 export interface ShikiCoreOptions {
   /**
-   * Languages to register. Required — core has no default language set.
+   * Languages to register. Required; core has no default language set.
    */
   languages: Array<LanguageRegistration | LanguageRegistration[]>
 
   /**
-   * Themes to register. Required — core has no default themes.
+   * Themes to register. Required; core has no default themes.
    * Provide at least one of `light` or `dark`.
    */
   themes: {
@@ -46,7 +46,7 @@ export interface ShikiCoreOptions {
 
 /**
  * Options for the standard `comark/plugins/shiki` entry.
- * Themes and languages are optional — defaults ship with that entry.
+ * Themes and languages are optional; defaults ship with that entry.
  */
 export interface ShikiOptions extends Omit<ShikiCoreOptions, 'languages' | 'themes'> {
   /**
@@ -243,7 +243,7 @@ function hastToNode(input: any): Node {
 }
 
 /**
- * Build `<span style=…>` children for one tokenized line.
+ * Build `<span style=...>` children for one tokenized line.
  * Replicates shiki's `mergeWhitespaceTokens`: a pure-whitespace token merges
  * into the following token unless it is underlined or struck through.
  */
@@ -270,7 +270,6 @@ function tokensToSpans(line: ThemedToken[]): Node[] {
       spans.push(style ? ['span', { style }, tk.content] : ['span', {}, tk.content])
     }
   }
-  // If trailing whitespace wasn't merged, emit it
   if (carry) {
     spans.push(['span', {}, carry])
   }
@@ -351,7 +350,6 @@ export async function highlightCodeBlocks(
   const hasTransformers = options.transformers && options.transformers.length > 0
   const darkClassSuffix = options.themes?.dark?.name ? ` dark:${options.themes.dark.name}` : ''
 
-  // Build new nodes array, spine-copying only paths to modified nodes
   const newNodes = [...tree.nodes] as Node[]
 
   // Copy only the spine from root to `path` to preserve immutability. Each
@@ -404,8 +402,6 @@ export async function highlightCodeBlocks(
         })
         classStr = `shiki ${result.themeName || ''}`
 
-        // Replicate shiki's mergeWhitespaceTokens: merge pure-whitespace tokens
-        // into the following token (unless underline/strikethrough styled)
         const tokenLines = result.tokens
         codeChildren = []
         for (let li = 0; li < tokenLines.length; li++) {
@@ -428,7 +424,6 @@ export async function highlightCodeBlocks(
 
     if (darkClassSuffix) classStr += darkClassSuffix
 
-    // Apply line highlights
     const highlightSet = Array.isArray(preAttrs.highlights) ? new Set<number>(preAttrs.highlights) : null
     let line = 1
     for (const child of codeChildren) {

@@ -1,22 +1,22 @@
----
-title: Svelte
-description: A minimal example showing how to use Comark with Svelte and Vite.
-navigation:
-  icon:  i-simple-icons-svelte
-category: Vite
-path: /examples/vite/svelte
----
+# Svelte Markdown example with Vite
 
-::CodeExplorer
----
-org: comarkdown
-repo: comark@81a416b278b0f304d7e7577c7ac6bbfc78414790
-path: examples/2.vite/svelte
-defaultValue: src/App.svelte
----
-::
+This example renders a Markdown blog, component syntax examples, and a live editor in Svelte 5 and Vite with `@comark/svelte`.
 
-::Browser{src="https://comark-svelte.vercel.app"}
-::
+## How it works
 
-This example demonstrates the simplest way to use Comark with Svelte - use the `Markdown` component and pass it markdown content. The component handles parsing and rendering automatically using Svelte 5's `$state` and `$effect` runes.
+- **High-level rendering**: pass a Markdown string to `<Markdown value={content}>` from `@comark/svelte` to parse and render reactively with Svelte 5 `$state` and `$effect` runes.
+- **Pre-parsed rendering**: load `.md` files with `import.meta.glob`, parse them with `parseMarkdown()` and `shiki()`, and pass the document to `<MarkdownDocument>`.
+- **Lazy components**: resolve components on demand through `componentsManifest`.
+
+## Run locally
+
+From the monorepo root:
+
+```bash
+pnpm dev:svelte
+```
+
+## Documentation
+
+- [Comark documentation](https://comark.dev)
+- [Svelte rendering](https://comark.dev/rendering/svelte)

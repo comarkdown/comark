@@ -74,8 +74,7 @@ describe('denial-of-service hardening', () => {
   })
 
   it('parses large plain documents without the task-list quadratic scan', async () => {
-    // The default task-list rule used to scan all preceding tokens backwards
-    // for every inline token — O(n²) on documents that contain no list.
+    // Scanning preceding tokens backwards per inline token would make list-free documents O(n^2).
     const md = Array.from({ length: 2_000 }, (_, i) => `Paragraph ${i} with some text.`).join('\n\n')
     const doc = await parseMarkdown(md)
     expect(doc.nodes.length).toBe(2_000)
@@ -89,9 +88,7 @@ describe('denial-of-service hardening', () => {
   })
 
   it('escapes long runs of tag-like text without quadratic rescanning', async () => {
-    // escapeInline used to re-test /^<[a-zA-Z!?/][^>]*>/ against the whole
-    // remainder of the node for every `<` — O(n²) on runs like `<a<a<a…`.
-    // (Pre-fix this payload takes ~10s and hits the test timeout.)
+    // Rescanning the remainder of the node for `>` on every `<` would be O(n^2) on `<a<a<a...`.
     const text = '<a'.repeat(50_000)
     const doc = { frontmatter: {}, meta: {}, nodes: [['p', {}, text]] } as any
     const md = await renderMarkdown(doc)

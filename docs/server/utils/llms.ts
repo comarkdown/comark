@@ -74,7 +74,7 @@ export const LLMS_BUNDLES: LlmsBundle[] = [
   {
     slug: 'angular',
     title: 'Comark for Angular',
-    description: 'Render Markdown in Angular 17+, with standalone components, plugins, and streaming.',
+    description: 'Render Markdown in Angular 21+, with standalone components, plugins, and streaming.',
     pages: ['/rendering/angular', '/use-cases/angular-ai-chat', '/reference/auto-close'],
   },
   {

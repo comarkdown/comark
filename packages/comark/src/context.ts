@@ -8,8 +8,8 @@ import type { ElementNode, Node, MarkdownDocument } from './types.ts'
  * `path` is a node index path into `tree.nodes`: the first segment indexes
  * into `tree.nodes`, each subsequent segment indexes into the *children* of
  * the addressed element. Because `ElementNode` is `[tag, attrs, ...children]`,
- * child index `i` is resolved against array slot `i + 2` internally — callers
- * always work in plain child indices.
+ * child index `i` maps to array slot `i + 2` internally; callers always work
+ * in plain child indices.
  *
  * @example `{ op: 'replace', path: [2, 0], node: 'updated' }`
  * replaces the first child of the third top-level node.
@@ -126,7 +126,7 @@ function createDocument(initial: MarkdownDocument, onEmpty: (tree: MarkdownDocum
         } else {
           listeners.delete(fn)
         }
-        // Drop the document once nobody is listening — frees ids on unmount.
+        // Drop the document once nobody is listening so ids are freed on unmount.
         if (listeners.size === 0) onEmpty(tree)
       }
     },
@@ -136,6 +136,13 @@ function createDocument(initial: MarkdownDocument, onEmpty: (tree: MarkdownDocum
 // #endregion
 
 // #region ComarkContext
+
+/** Document lifecycle event emitted by the context. */
+export interface ComarkContextEvent {
+  event: 'create' | 'remove'
+  id: string
+  tree: MarkdownDocument
+}
 
 /**
  * Ambient registry a `MarkdownDocument` renderer subscribes to so external sources can
@@ -148,17 +155,10 @@ function createDocument(initial: MarkdownDocument, onEmpty: (tree: MarkdownDocum
  * exists, so it costs one global lookup when absent and tree-shakes out of any
  * build that never sets it.
  */
-/** Document lifecycle event emitted by the context. */
-export interface ComarkContextEvent {
-  event: 'create' | 'remove'
-  id: string
-  tree: MarkdownDocument
-}
-
 export interface ComarkContext {
   /** Get the document for `id`, creating it (with `initial`) on first access. */
   get(id: string, initial?: MarkdownDocument): ComarkDocument
-  /** Ids currently tracked — for devtools enumeration. */
+  /** Tracked document ids, for devtools enumeration. */
   keys(): string[]
   /** Listen for documents being created or removed. Returns the cleanup. */
   listen(fn: (e: ComarkContextEvent) => void): () => void

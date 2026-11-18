@@ -1,9 +1,9 @@
 ---
 title: 'Angular Markdown Example with Vite'
-description: 'An Angular and Vite app that renders a Markdown blog, a syntax showcase, and a live editor with Comark and a custom alert component.'
+description: 'An Angular and Vite app that renders a Markdown blog, component syntax examples, and a live editor with Comark.'
 navigation:
   title: 'Angular'
-  icon:  i-simple-icons-angular
+  icon: i-simple-icons-angular
 ---
 
 ::code-explorer
@@ -15,4 +15,4 @@ defaultValue: src/main.ts
 ---
 ::
 
-This example shows the quickest way to use Comark with Angular - use the `Markdown` component and pass it markdown content via the `value` prop. The component handles parsing and rendering automatically.
+This example renders a Markdown blog, component syntax examples, and a live editor in Angular with Vite. Pass a Markdown string to `<comark-markdown [value]="content">` to parse and render in one step, or parse ahead of time with `parseMarkdown()` and pass the document to `<comark-markdown-document>`.

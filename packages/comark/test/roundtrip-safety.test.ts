@@ -106,7 +106,7 @@ describe('component marker escaping', () => {
 describe('comarkAttributes quoting', () => {
   it('round-trips attribute values containing double quotes', async () => {
     // The text sibling keeps the span inline in both parses (a lone
-    // `:span[...]` line is a leaf block component — pre-existing asymmetry).
+    // `:span[...]` line is a leaf block component).
     const md = `say :span[hi]{title='a"b'} now`
     const { t1, t2 } = await roundTrip(md)
     expect(t2.nodes).toEqual(t1.nodes)

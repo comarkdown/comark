@@ -39,7 +39,7 @@ This package only installs the `@comark/vue` Nuxt module and logs a deprecation 
    })
    ```
 
-`<Markdown>`, `<MarkdownDocument>`, `defineMarkdownComponent()` and `defineMarkdownDocumentComponent()` are still auto-imported, and Nuxt UI prose components are still turned on when `@nuxt/ui` is installed.
+`<Markdown>`, `<MarkdownDocument>`, `defineMarkdownComponent()`, and `defineMarkdownDocumentComponent()` are still auto-imported, and Nuxt UI prose components are still turned on when `@nuxt/ui` is installed.
 
 ## License
 

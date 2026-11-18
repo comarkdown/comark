@@ -1,9 +1,9 @@
 ---
 title: 'Next.js Markdown Blog with React Server Components'
-description: A blog example using Comark with Next.js App Router and React Server Components.
+description: Render a Markdown blog with the Next.js App Router, static export, and React Server Components.
 navigation:
   title: 'Next.js'
-  icon:  i-simple-icons:nextdotjs
+  icon: i-simple-icons:nextdotjs
 ---
 
 ::code-explorer
@@ -18,11 +18,11 @@ defaultValue: content/posts/comark-syntax.md
 ::browser{src="https://comark-nextjs.vercel.app/blog/comark-syntax"}
 ::
 
-This example demonstrates how to use Comark with Next.js App Router and React Server Components. Blog posts are stored as `.md` files with frontmatter, parsed using `parseMarkdown()` from `comark`, and rendered using `MarkdownDocument` from `@comark/react` with custom components like `Alert` and `FeatureCard`.
+This example renders a static Markdown blog with the Next.js App Router and React Server Components. Posts live in `content/posts/` as `.md` files with YAML frontmatter, parse on the server with `parseMarkdown()`, and render through `MarkdownDocument` from `@comark/react`.
 
 ## How it works
 
-- **File-based content** — Posts are plain `.md` files in `content/posts/` with YAML frontmatter for metadata (title, description, pubDate, tags).
-- **Comark parsing** — `lib/posts.ts` reads markdown files and uses `parseMarkdown()` to build the AST and extract frontmatter — replacing the usual `gray-matter` + `remark` + `rehype` pipeline.
-- **Static generation** — `generateStaticParams` pre-renders all blog posts at build time via `output: 'export'`.
-- **React rendering** — `MarkdownDocument` from `@comark/react` renders the AST using React Server Components, including custom ones like `Alert` and slot-aware components like `FeatureCard`. No client-side JavaScript is shipped for content rendering.
+- **File-based content**: `.md` files in `content/posts/` store post bodies alongside YAML frontmatter (`title`, `description`, `pubDate`, and `tags`).
+- **Comark parsing**: `lib/posts.ts` reads each file and calls `parseMarkdown()` with `shiki()` to extract frontmatter and build the `MarkdownDocument` in one pass, instead of chaining `gray-matter`, `remark`, and `rehype`.
+- **Static generation**: `generateStaticParams` pre-renders every post at build time with `output: 'export'`.
+- **Server Components**: `MarkdownDocument` renders custom components such as `Alert` and slot-aware `FeatureCard` on the server.

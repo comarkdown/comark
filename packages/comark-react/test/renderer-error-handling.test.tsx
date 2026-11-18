@@ -58,7 +58,6 @@ Some content
   })
 
   it('should render valid components when an unknown tag has no registered component', async () => {
-    // Unknown tags fall back to native HTML elements, not errors
     const markdown = `::error-component
 Error content
 ::
@@ -75,7 +74,6 @@ Good content
       return <div className="good-component">{children}</div>
     }
 
-    // Only register good-component; error-component falls back to a native element
     const html = renderToString(
       <MarkdownDocument
         value={result}

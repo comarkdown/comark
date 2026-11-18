@@ -1,6 +1,6 @@
 ---
 title: Table of contents
-description: Plugin for automatically generating a table of contents from document headings.
+description: Build a nested table of contents from document headings.
 seo:
   title: Table of Contents Plugin
 navigation:
@@ -11,7 +11,7 @@ links:
     to: /reference/parse
     color: neutral
     variant: soft
-  - label: Document Model
+  - label: Document model
     icon: i-lucide-braces
     to: /getting-started/document-model
     color: neutral
@@ -43,7 +43,7 @@ Returns a `ComarkPlugin` that generates a hierarchical TOC from headings.
 
 **Parameters:**
 
-- `options?` - Optional configuration, see [Options](#options)
+- `options?`: Optional configuration. See [Options](#options).
 
 **Returns:** `ComarkPlugin`
 
@@ -60,7 +60,7 @@ interface Toc {
 interface TocLink {
   id: string           // Heading ID for anchor links
   text: string         // Heading text
-  depth: number        // Heading level (2–6)
+  depth: number        // Heading level (2 to 6)
   children?: TocLink[] // Nested child headings
 }
 ```
@@ -71,13 +71,13 @@ interface TocLink {
 
 | Option | Type | Default | Description |
 |---|---|---|---|
-| [`depth`](#depth) | `number` | `2` | Heading levels to include: `1` = h2 only, `2` = h2–h3, `3` = h2–h4, etc. |
+| [`depth`](#depth) | `number` | `2` | Number of heading levels below `h1` to include (`1` for `h2`, `2` for `h2` through `h3`, up to `5` for `h2` through `h6`) |
 | [`searchDepth`](#searchdepth) | `number` | `2` | How deep to search for headings in nested component structures |
 | [`title`](#title) | `string` | `''` | Title field on the returned `Toc` |
 
 ### `depth`
 
-Controls which heading levels to include. Maps to heading levels: `1` = h2 only, `2` = h2–h3, `3` = h2–h4, up to `5` = h2–h6.
+Controls how many heading levels to include, starting at `h2`: `1` includes `h2` only, `2` includes `h2` through `h3`, `3` includes `h2` through `h4`, up to `5` for `h2` through `h6`.
 
 ```typescript
 toc({ depth: 3 }) // include h2, h3, and h4
@@ -246,5 +246,5 @@ export function DocsLayout({ content }: { content: string }) {
 ::
 
 ::tip
-For deeply nested TOCs, render `link.children` recursively: define a `TocLink` component that calls itself for each child.
+For deeper heading trees, render `link.children` recursively with a `TocLink` component that renders itself for each child.
 ::

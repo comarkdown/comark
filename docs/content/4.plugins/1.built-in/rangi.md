@@ -1,6 +1,6 @@
 ---
 title: Rangi (Highlight)
-description: Lightweight syntax highlighting for code blocks and language-tagged inline code using rangi.
+description: Lightweight syntax highlighting for code blocks and language-tagged inline code using Rangi.
 seo:
   title: Syntax Highlighting using Rangi
 navigation:
@@ -23,7 +23,7 @@ links:
     variant: soft
 ---
 
-The `comark/plugins/rangi` plugin highlights code blocks with [`rangi`](https://github.com/pi0/rangi) — a tiny, zero-dependency, fully synchronous highlighter (~13kB with all languages, or ~1.5kB core). Prefer this when bundle size and cold-start matter more than TextMate grammar depth.
+The `comark/plugins/rangi` plugin highlights code blocks and language-tagged inline code with [`rangi`](https://github.com/pi0/rangi), a tiny, zero-dependency synchronous highlighter (~13 kB with all languages, or ~1.5 kB core). Prefer it when bundle size and cold-start speed matter more than TextMate grammar depth.
 
 `rangi` is a peer dependency:
 
@@ -93,7 +93,7 @@ import { github } from 'rangi/themes'
 
 ### Inline theme colors
 
-Tokens get **inline colors** — no stylesheet required. Pass a single theme or a `{ light, dark }` pair from `rangi/themes` (defaults to rangi's built-in light/dark pair):
+Rangi writes **inline colors** directly onto token spans, so single-theme output needs no external stylesheet. Pass a single theme or a `{ light, dark }` pair from `rangi/themes` (defaults to Rangi's built-in light/dark pair):
 
 ```typescript
 import { githubDark, githubLight, github } from 'rangi/themes'
@@ -104,13 +104,13 @@ rangi({ theme: githubDark })
 // light/dark pair (ready-made)
 rangi({ theme: github })
 
-// or explicit pair — also emits --shiki-dark* vars for class-based dark toggles
+// explicit pair, also emits --shiki-dark* CSS variables for class-based dark toggles
 rangi({ theme: { light: githubLight, dark: githubDark } })
 ```
 
 ### Comark language
 
-Comark ships its own rangi grammar, registered automatically for the `comark`, `mdc`, `md` and `markdown` fence languages. It is built on [rangi's official markdown grammar](https://github.com/pi0/rangi/blob/main/src/languages/md.ts) and adds the Comark syntax on top:
+Comark ships its own Rangi grammar, registered for the `comark`, `mdc`, `md`, and `markdown` fence languages. It builds on [Rangi's Markdown grammar](https://github.com/pi0/rangi/blob/main/src/languages/md.ts) and adds Comark syntax:
 
 ````comark
 ---
@@ -144,7 +144,7 @@ const tokens = tokenize(source, {
 
 ### Language aliases
 
-Rangi ships aliases built-in (`javascript`→`js`, `typescript`→`ts`, `python`→`py`, `yml`→`yaml`, …). Comark passes the fence info string straight through. Unknown languages fall back to plain text (no throw).
+Rangi includes common language aliases (`javascript`→`js`, `typescript`→`ts`, `python`→`py`, `yml`→`yaml`, and others). Comark passes the fence info string straight through, and unknown languages fall back to plain text without throwing.
 
 ### Inline code
 
@@ -154,17 +154,17 @@ Inline code is highlighted when it declares a language with the attributes synta
 The type is `Ref<HTMLInputElement | null>`{lang="ts-type"} and the component is `<UButton />`{lang="vue-html"}.
 ```
 
-Two fragment languages ship out of the box: `ts-type` tokenizes through the TypeScript grammar seeded with `let a:`, and `vue-html` through the Vue grammar seeded with `<template>`. Without that seed a bare type or a bare tag can fall through to weaker highlighting.
+The plugin includes two built-in fragment languages: `ts-type` (TypeScript seeded with `let a:`) and `vue-html` (Vue seeded with `<template>`). Without that seed, a bare type or bare tag can fall back to weaker highlighting.
 
-The `<code>` element gets the same `shj shiki shj-lang-…` class a highlighted `<pre>` gets, so dual-theme CSS hooks shared with the Shiki plugin cover it with no extra rules. Inline code does not wrap lines, so `lineNumbers` and `preStyles` do not apply to it.
+The `<code>` element gets the same `shj shiki shj-lang-*` class a highlighted `<pre>` gets, so dual-theme CSS hooks shared with the Shiki plugin cover it with no extra rules. Inline code does not wrap lines, so `lineNumbers` and `preStyles` do not apply to it.
 
-Inline code naming a grammar that is not known (bundled, Comark, or custom via `languages`) is left exactly as it was written, with no class and no spans. `lang` is a real HTML attribute for natural language, so `` `Bonjour`{lang="fr"} `` must not be treated as code. A fenced block behaves differently and still falls back to an unhighlighted `.shiki` block, because a `<pre>` is unambiguously code.
+Inline code naming a grammar that is not known (bundled, Comark, or custom via `languages`) is left as written, with no class and no spans. `lang` is a real HTML attribute for natural language, so `` `Bonjour`{lang="fr"} `` must not be treated as code. A fenced block behaves differently and still falls back to an unhighlighted `.shiki` block, because a `<pre>` is unambiguously code.
 
 Set `inlineCode: false` to turn this off.
 
 ### Line highlighting
 
-Fence info `{2-3,5}` wraps the code in line spans and marks the selected lines with the `.highlight` class — same as the Shiki plugin. No `lineNumbers` option is required.
+Fence info `{2-3,5}` wraps the code in line spans and marks the selected lines with the `.highlight` class, matching the Shiki plugin. No `lineNumbers` option is required.
 
 ### Pre styles
 
@@ -176,7 +176,7 @@ Set `preStyles: true` to add inline background and foreground colors to `<pre>` 
 
 ### `rangi(options?)`
 
-Returns a `ComarkPlugin` that enables rangi syntax highlighting.
+Returns a `ComarkPlugin` that enables Rangi syntax highlighting.
 
 ---
 
@@ -184,10 +184,10 @@ Returns a `ComarkPlugin` that enables rangi syntax highlighting.
 
 | Option | Type | Default | Description |
 |---|---|---|---|
-| [`theme`](#theme) | `ShjTheme \| { light, dark }` | rangi default pair | Inline colors |
+| [`theme`](#theme) | `ShjTheme \| { light, dark }` | Rangi default pair | Inline colors |
 | [`lineNumbers`](#linenumbers) | `boolean` | `false` | Always wrap each line in `<span class="line">` |
 | [`classPrefix`](#classprefix) | `string` | `'shj'` | Class prefix on the highlighted `<pre>` |
-| [`languages`](#languages) | `Record<string, grammar>` | — | Extra custom grammars, merged over the Comark ones |
+| [`languages`](#languages) | `Record<string, grammar>` | `undefined` | Extra custom grammars, merged over the Comark ones |
 | [`preStyles`](#prestyles) | `boolean` | `false` | Add inline background/foreground styles to `<pre>` |
 | [`inlineCode`](#inlinecode) | `boolean` | `true` | Highlight inline code that declares a language |
 
@@ -258,7 +258,7 @@ rangi({ preStyles: true })
 
 ### `inlineCode`
 
-Whether to highlight inline code that declares a language, e.g. `` `Ref<T>`{lang="ts-type"} ``. See [Inline code](#inline-code).
+Highlight inline code that declares a language, for example `` `Ref<T>`{lang="ts-type"} ``. See [Inline code](#inline-code).
 
 ```typescript
 rangi({ inlineCode: false })
@@ -304,7 +304,7 @@ const renderHtml = createHtmlRenderer({
 ### Live example
 
 ::card{icon="i-lucide-zap" title="Vue + Vite Rangi" to="https://github.com/comarkdown/comark/tree/main/examples/3.plugins/vue-vite-rangi"}
-Rangi dual themes as inline colors, line highlights, light/dark toggle.
+Dual themes with inline colors, line highlighting, and a light/dark toggle.
 ::
 
 ---
@@ -339,6 +339,6 @@ html.dark pre.shj {
 
 ## Supported languages
 
-46 languages including `js`/`javascript`, `ts`/`typescript`, `tsx`, `jsx`, `py`/`python`, `rs`/`rust`, `go`, `vue`, `svelte`, `astro`, `css`, `html`, `json`, `yaml`/`yml`, `bash`/`sh`/`shell`, and more — plus Comark itself under `comark`/`mdc`/`md`/`markdown`.
+Rangi supports 46 languages, including `js`/`javascript`, `ts`/`typescript`, `tsx`, `jsx`, `py`/`python`, `rs`/`rust`, `go`, `vue`, `svelte`, `astro`, `css`, `html`, `json`, `yaml`/`yml`, and `bash`/`sh`/`shell`, plus Comark itself under `comark`, `mdc`, `md`, and `markdown`.
 
-Full list: [rangi languages](https://github.com/pi0/rangi#languages-supported-).
+See the [Rangi supported languages list](https://github.com/pi0/rangi#languages-supported-) for every bundled grammar.

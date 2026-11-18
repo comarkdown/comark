@@ -8,16 +8,16 @@
 [![Documentation](https://img.shields.io/badge/Documentation-black?logo=readme&logoColor=white)](https://comark.dev/rendering/angular)
 [![license](https://img.shields.io/github/license/comarkdown/comark?color=black)](https://github.com/comarkdown/comark/blob/main/LICENSE)
 
-Angular renderer for [Comark](https://comark.dev). Render markdown with custom standalone components, streaming support, and SSR.
+Angular 21+ renderer for [Comark](https://comark.dev). Render Markdown with custom standalone components, streaming support, and SSR.
 
 ## Features
 
-- 🧩 `<comark-markdown>` component for one-shot markdown rendering
-- 🎯 Map any Comark tag to a custom Angular component
-- 🌊 Streaming-friendly with auto-close and caret support
-- 🖥️ SSR-safe with Angular 21+ standalone components
-- 🔌 Plugin ecosystem (math, mermaid, highlight, binding…)
-- 🎯 Full TypeScript support
+- `<comark-markdown>` standalone component for rendering Markdown
+- Custom Angular components for any Comark tag
+- Streaming support with auto-close and a caret indicator
+- SSR support with Angular 21+ standalone components
+- Plugins for math, Mermaid, Shiki highlighting, binding, and more
+- Full TypeScript support
 
 ## Installation
 

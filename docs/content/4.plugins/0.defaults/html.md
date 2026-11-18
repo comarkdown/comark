@@ -18,9 +18,9 @@ links:
     variant: soft
 ---
 
-The `comark/plugins/html` plugin enables embedded HTML block and inline tags in Comark/markdown content. Tags are tokenized and converted into AST nodes that can be mixed with Comark components and markdown syntax.
+The `comark/plugins/html` plugin parses embedded block and inline HTML tags into AST nodes, so you can mix raw HTML with Comark components and Markdown syntax.
 
-The plugin is **enabled by default** via `registerDefaultPlugins`. No installation or registration required.
+This plugin is **enabled by default** via `registerDefaultPlugins`, so you don't need to install or register it.
 
 ## Usage
 
@@ -49,7 +49,7 @@ const result = await parseMarkdown(`
 
 ### Explicit registration
 
-When default plugins are off, opt in with the plugin directly:
+When you disable default plugins, pass `html()` explicitly:
 
 ```typescript
 import { parseMarkdown } from 'comark'
@@ -81,22 +81,22 @@ await parseMarkdown(content, {
 
 | Option | Default | Description |
 | --- | --- | --- |
-| `markdown` | `true` | Expand text inside closed HTML as inline markdown. `false` keeps that text literal. |
+| `markdown` | `true` | Expand text inside closed HTML as inline Markdown. `false` keeps that text literal. |
 
-`markdown: false` does not turn blank-line bodies into literal text. A blank line ends a CommonMark HTML block, so the following paragraphs are normal markdown and nest under the still-open tag either way.
+`markdown: false` does not turn blank-line bodies into literal text. A blank line ends a CommonMark HTML block, so the following paragraphs are normal Markdown and nest under the still-open tag either way.
 
 ```mdc
-<!-- markdown: true (default) — ** becomes strong -->
+<!-- markdown: true (default), ** becomes strong -->
 <div>
 Hello **World**
 </div>
 
-<!-- markdown: false — body stays the text "Hello **World**" -->
+<!-- markdown: false, body stays the literal text "Hello **World**" -->
 <div>
 Hello **World**
 </div>
 
-<!-- both modes — the blank line already ended the HTML block -->
+<!-- In both modes, the blank line already ended the HTML block -->
 <div>
 
 Hello **World**
@@ -104,7 +104,7 @@ Hello **World**
 </div>
 ```
 
-`<style>`, `<pre>`, `<script>`, and `<textarea>` are never re-parsed as markdown, including when they have attributes. Each body keeps every character between the tags — newlines, indentation, and inner tags (`a < b`, `<div>**no**</div>`) stay text. A comment that starts a block (`<!--` … `-->`, even across blank lines) keeps its body verbatim the same way.
+`<style>`, `<pre>`, `<script>`, and `<textarea>` are never re-parsed as Markdown, including when they have attributes. Each body keeps every character between the tags, so newlines, indentation, and inner tags (`a < b`, `<div>**no**</div>`) stay literal text. A block-level comment (`<!--` ... `-->`, even across blank lines) keeps its body verbatim the same way.
 
 All-uppercase tag names are normalized to lowercase (`<DIV>` → `div`). A tag name with any lowercase letter keeps its authored case, so components and SVG elements resolve as written (`<Hello>` → `Hello`, `<linearGradient>` → `linearGradient`).
 
@@ -112,23 +112,23 @@ Spaces beside a tag are content. `<p>Hello <em>x</em> <a>two</a></p>` keeps the 
 
 ## Block and inline
 
-Every HTML node is marked `$: { html: 1, block: 0 | 1 }` so renderers can tell it apart from an element that came from markdown (`**bold**` → `['strong', {}, 'bold']`, no `$`).
+Every HTML node is marked `$: { html: 1, block: 0 | 1 }` so renderers can tell it apart from an element that came from Markdown (`**bold**` → `['strong', {}, 'bold']`, no `$`).
 
-`block` is not "`div` is a block tag." It records whether the tag outlived the paragraph that opened it.
+`block` records whether the tag outlived the paragraph that opened it, regardless of whether the HTML tag name is block-level.
 
 | `block` | Meaning |
 | --- | --- |
-| `0` | Opened and closed inside one paragraph. `<em>x</em>`, and each `<p>…</p>` in a tight run of sibling tags. |
+| `0` | Opened and closed inside one paragraph. `<em>x</em>`, and each `<p>...</p>` in a tight run of sibling tags. |
 | `1` | Still open after that paragraph, or unwrapped because it was the only thing in it. `<div>` across lines, an unclosed `<ai-thinking>`. |
 
-Void tags (`img`, `br`, …) are always `block: 0`.
+Void tags (such as `img` and `br`) are always `block: 0`.
 
 ## How it works
 
 1. Enables markdown-exit HTML tokenization (`html: true`).
-2. With `markdown: true`, narrows the built-in `html_block` rule to `<style>`, `<pre>`, `<script>`, `<textarea>`, and block-level comments, so other closed HTML is tokenized as normal markdown (`**`, code spans, nested tags).
-3. Splits any remaining raw HTML block into tags and literal text, then pairs open/close tags across paragraphs with one HTML stack.
+2. With `markdown: true`, narrows the built-in `html_block` rule to `<style>`, `<pre>`, `<script>`, `<textarea>`, and block-level comments, so other closed HTML is tokenized as normal Markdown (`**`, code spans, and nested tags).
+3. Splits any remaining raw HTML block into tags and literal text, then pairs open and close tags across paragraphs with one HTML stack.
 
 A matching close tag collects every block parsed while it was open. `</div><div>` emits two sibling elements, not a `div` nested inside the next `div`.
 
-Not supported yet: an opener and its closer split by a blank line when the opener sat mid-paragraph (`before <div>` … blank line … `</div> after`), and an indented child tag inside a multiline inline element (`<a>` → indented `<img>` → `</a>`). Put the close tag on its own line in the same block, or separate body paragraphs with a blank line inside a block container (`<div>`, `<main>`).
+Two cases are not supported yet: splitting a mid-paragraph opener and its closer across a blank line (`before <div>`, blank line, `</div> after`), and indenting a child tag inside a multiline inline element (`<a>` containing an indented `<img>` before `</a>`). Put the close tag on its own line in the same block, or separate body paragraphs with a blank line inside a block container (`<div>`, `<main>`).

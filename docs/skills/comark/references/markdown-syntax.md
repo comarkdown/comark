@@ -1,24 +1,10 @@
-# Markdown Syntax Guide
+# Markdown syntax guide
 
-Complete guide for writing Comark (Components in Markdown) documents.
-
-## Table of Contents
-
-- [Standard Markdown](#standard-markdown)
-- [Frontmatter](#frontmatter)
-- [Comark Components](#comark-components)
-- [Attributes](#attributes)
-- [Code Blocks](#code-blocks)
-- [Task Lists](#task-lists)
-- [Tables](#tables)
-
----
+Syntax reference for authoring Comark (Components in Markdown) documents.
 
 ## Standard Markdown
 
 Comark parses CommonMark and GitHub Flavored Markdown (GFM). A few constructs differ, for example `[text]` without a link destination is a span, not a shortcut reference link. See https://comark.dev/syntax/markdown#differences-from-commonmark-and-gfm.
-
-The standard features:
 
 ### Headings
 
@@ -31,10 +17,9 @@ The standard features:
 ###### Heading 6
 ```
 
+**Note:** All headings automatically get an `id` from their visible text (for example, `# Hello World` becomes `<h1 id="hello-world">`). Unicode letters, marks, and numbers are kept (`## Café` -> `café`); punctuation and symbols are stripped, and a heading that slugifies to nothing gets no ID. A leading digit is prefixed with `_` (`## 1. Introduction` -> `_1-introduction`), and a duplicate anywhere in the document gets a numeric suffix (`options`, `options-1`, `options-2`). IDs are flat by default (`## Setup` / `### Install` -> `setup`, `install`); set `headingIds: 'nested'` in parse options to prefix each ID from `h3` down with the nearest `h2`+ ancestor (`setup-install`). Inline marks and link labels contribute their text; an inline component name is omitted (`:icon-star` does not appear in the slug). An explicit `{id="..."}` replaces the generated ID. Set `headingIds: false` to disable generation; a user-supplied `id` is still kept.
 
-**Note:** All headings automatically get an `id` from their visible text (e.g., `# Hello World` becomes `<h1 id="hello-world">`). Unicode letters, marks, and numbers are kept (`## Café` → `café`); punctuation and symbols are stripped, and a heading that slugifies to nothing gets no id. A leading digit is prefixed with `_` (`## 1. Introduction` → `_1-introduction`), and a duplicate anywhere in the document gets a numeric suffix (`options`, `options-1`, `options-2`). Ids are flat by default (`## Setup` / `### Install` → `setup`, `install`); set `headingIds: 'nested'` in parse options to prefix each id from `h3` down with the nearest `h2`+ ancestor (`setup-install`). Inline marks and link labels contribute their text; an inline component name is omitted (`:icon-star` does not appear in the slug). An explicit `{id="..."}` replaces the generated id. Set `headingIds: false` to disable generation; a user-supplied `id` is still kept.
-
-### Text Formatting
+### Text formatting
 
 ```markdown
 **Bold text**
@@ -60,7 +45,7 @@ The standard features:
    2. Another nested item
 ```
 
-### Links and Images
+### Links and images
 
 ```markdown
 [Link text](https://example.com)
@@ -74,10 +59,10 @@ The standard features:
 > This is a blockquote
 > It can span multiple lines
 >
-> And contain other markdown elements
+> And contain other Markdown elements
 ```
 
-### Horizontal Rules
+### Horizontal rules
 
 ```markdown
 ---
@@ -85,7 +70,7 @@ The standard features:
 ___
 ```
 
-### Line Breaks
+### Line breaks
 
 ```markdown
 Line with two trailing spaces
@@ -119,13 +104,13 @@ Your markdown content here...
 - Must be at the very beginning of the document
 - Enclosed by `---` delimiters
 - Parsed as YAML
-- Available in the `frontmatter` property of MarkdownDocument
+- Stored in `document.frontmatter` on `MarkdownDocument`
 
-### Common Fields
+### Common fields
 
-- **title**: Often used for page titles or TOC labels
+- **title**: often used for page titles or TOC labels
 
-Note: `depth` and `searchDepth` are not automatically processed from frontmatter. They must be explicitly passed to the `toc` plugin options.
+Note: `depth` and `searchDepth` are not automatically read from frontmatter. Pass them explicitly to the `toc` plugin options.
 
 ### Example
 
@@ -148,11 +133,11 @@ console.log(result.frontmatter)
 
 ---
 
-## Comark Components
+## Comark components
 
-Comark (Components in Markdown) extends standard markdown with custom component syntax.
+Comark (Components in Markdown) extends standard Markdown with custom component syntax.
 
-### Block Components
+### Block components
 
 Block components use the `::component-name` syntax:
 
@@ -160,7 +145,7 @@ Block components use the `::component-name` syntax:
 ::component-name{prop1="value1" prop2="value2"}
 Content inside the component
 
-Can have **markdown** and other elements
+Can have **Markdown** and other elements
 ::
 ```
 
@@ -174,7 +159,7 @@ This is an important message!
 
 <!-- Card component -->
 ::card{title="My Card"}
-Card content with **markdown** support
+Card content with **Markdown** support
 ::
 
 <!-- Empty component -->
@@ -182,7 +167,7 @@ Card content with **markdown** support
 ::
 ```
 
-### Inline Components
+### Inline components
 
 Inline components use the `:component-name` syntax:
 
@@ -207,9 +192,9 @@ Click the :button[Submit]{type="primary"} to continue.
 The status is :badge[Active]{color="green"} right now.
 ```
 
-### Component Properties
+### Component properties
 
-Components support various property syntaxes:
+Components support the following property syntaxes:
 
 ```markdown
 ::component{prop="value"}
@@ -228,11 +213,11 @@ Components support various property syntaxes:
 <!-- CSS class -->
 ::
 
-::component{obj='{"key": "value"}'}
+::component{:obj='{"key": "value"}'}
 <!-- Object/JSON value -->
 ::
 
-::component{arr='["item1", "item2"]'}
+::component{:arr='["item1", "item2"]'}
 <!-- Array/JSON value -->
 ::
 
@@ -241,7 +226,7 @@ Components support various property syntaxes:
 ::
 ```
 
-### Component Slots
+### Component slots
 
 Block components support named slots using the `#slot-name` syntax:
 
@@ -261,7 +246,7 @@ Default slot
 ::
 ```
 
-#### AST Output
+#### AST output
 
 ```json
 {
@@ -296,9 +281,9 @@ Default slot
 }
 ```
 
-### Default Slot
+### Default slot
 
-Content inside a component without a slot marker is the **default slot**. These two forms are equivalent in rendering but produce different ASTs:
+Content inside a component without a slot marker goes to the **default slot**. These two forms render the same way:
 
 ```markdown
 ::component
@@ -313,19 +298,19 @@ hello
 ::
 ```
 
-**Without `#default`**: content becomes direct children (auto-unwrapped):
+**Without `#default`**, content becomes direct children (auto-unwrapped):
 ```json
 ["component", {}, "hello"]
 ```
 
-**With `#default`**: content is wrapped in an explicit template node:
+**With `#default`**, content is wrapped in an explicit template node:
 ```json
 ["component", {}, ["template", { "name": "default" }, "hello"]]
 ```
 
 Both serialize back to the same Markdown (without `#default`). The Vue, React, Svelte, and Angular renderers treat both forms identically: direct children and `template[name="default"]` children both become the default slot. Use `#default` explicitly when mixing named and default slots in the same component.
 
-### Nested Components
+### Nested components
 
 Components can be nested within each other:
 
@@ -345,9 +330,9 @@ More content in outer
 
 ## Attributes
 
-Comark allows adding custom attributes to native markdown elements using `{...}` syntax after the element.
+Add custom attributes to native Markdown elements by placing `{...}` right after the element.
 
-### Strong/Bold Attributes
+### Strong/bold attributes
 
 ```markdown
 **bold text**{.highlight #important}
@@ -355,14 +340,14 @@ Comark allows adding custom attributes to native markdown elements using `{...}`
 **bold text**{bool}
 ```
 
-### Italic/Emphasis Attributes
+### Italic/emphasis attributes
 
 ```markdown
 *italic text*{.emphasized}
 _italic text_{#custom-id}
 ```
 
-### Link Attributes
+### Link attributes
 
 ```markdown
 [Link text](url){target="_blank" rel="noopener"}
@@ -370,41 +355,41 @@ _italic text_{#custom-id}
 [External](https://example.com){target="_blank" .external-link}
 ```
 
-### Image Attributes
+### Image attributes
 
 ```markdown
 ![Alt text](image.png){.responsive width="800" height="600"}
 ![Logo](logo.svg){.logo #site-logo}
 ```
 
-### Inline Code Attributes
+### Inline code attributes
 
 ```markdown
 `code snippet`{.language-js}
 `variable`{data-type="string"}
 ```
 
-### Span Attributes
+### Span attributes
 
 ```markdown
 This is [highlighted text]{.highlight .yellow} in a paragraph.
 ```
 
-### Attribute Types
+### Attribute types
 
-- **Boolean:** `{bool}` → `:bool="true"`
-- **ID:** `{#my-id}` → `id="my-id"`
-- **Class:** `{.my-class}` → `class="my-class"`
-- **Key-Value:** `{key="value"}` → `key="value"`
-- **JSON Objects:** `{data='{"key": "val"}'}` → `data={"key": "val"}`
+- **Boolean:** `{bool}` -> `:bool="true"`
+- **ID:** `{#my-id}` -> `id="my-id"`
+- **Class:** `{.my-class}` -> `class="my-class"`
+- **Key-value:** `{key="value"}` -> `key="value"`
+- **JSON objects:** `{:data='{"key": "val"}'}` -> `data={"key": "val"}`
 
 ---
 
-## Code Blocks
+## Code blocks
 
-Comark provides advanced code block features with metadata support.
+Fenced code blocks support a language identifier, filename, line highlights, and custom metadata.
 
-### Basic Code Block
+### Basic code block
 
 ````markdown
 ```javascript
@@ -414,7 +399,7 @@ function hello() {
 ```
 ````
 
-### Language with Syntax Highlighting
+### Language with syntax highlighting
 
 ````markdown
 ```typescript
@@ -425,7 +410,7 @@ interface User {
 ```
 ````
 
-### Filename Metadata
+### Filename metadata
 
 ````markdown
 ```javascript [server.js]
@@ -434,9 +419,9 @@ const app = express()
 ```
 ````
 
-**Note:** Filename is enclosed in `[...]` brackets.
+Enclose the filename in `[...]` brackets.
 
-### Line Highlighting
+### Line highlighting
 
 ````markdown
 ```javascript {1-3,5}
@@ -449,14 +434,14 @@ function example() {
 ```
 ````
 
-#### Highlighting Syntax
+#### Highlighting syntax
 
 - Single line: `{3}`
 - Range: `{1-5}`
 - Multiple: `{1,3,5}`
 - Combined: `{1-3,7,10-12}`
 
-### Combined Metadata
+### Combined metadata
 
 ````markdown
 ```javascript {1-3} [utils.ts] meta=value
@@ -466,12 +451,11 @@ function hello() {
 ```
 ````
 
-**Metadata Order:** Any order is supported:
+Metadata tokens after the language can appear in any order:
 - `language {highlights} [filename] meta`
 - `language [filename] {highlights} meta`
-- etc.
 
-### Special Characters in Filename
+### Special characters in filename
 
 ````markdown
 ```typescript [@[...slug\].ts]
@@ -480,7 +464,7 @@ function hello() {
 ```
 ````
 
-### No Language Specified
+### No language specified
 
 ````markdown
 ```
@@ -489,7 +473,7 @@ No syntax highlighting
 ```
 ````
 
-### AST Structure
+### AST structure
 
 ```json
 {
@@ -516,7 +500,7 @@ No syntax highlighting
 
 ---
 
-## Task Lists
+## Task lists
 
 Comark supports GitHub Flavored Markdown task lists:
 
@@ -535,7 +519,7 @@ Comark supports GitHub Flavored Markdown task lists:
 - Works in both ordered and unordered lists
 - Supports nesting
 
-### HTML Output
+### HTML output
 
 ```html
 <ul class="contains-task-list">
@@ -563,7 +547,7 @@ Comark supports GitHub Flavored Markdown tables:
 | Cell 4   | Cell 5   | Cell 6   |
 ```
 
-### Aligned Tables
+### Aligned tables
 
 ```markdown
 | Left Aligned | Center Aligned | Right Aligned |
@@ -572,13 +556,13 @@ Comark supports GitHub Flavored Markdown tables:
 | Text         | Text           | Text          |
 ```
 
-#### Alignment Syntax
+#### Alignment syntax
 
 - Left: `:---`
 - Center: `:---:`
 - Right: `---:`
 
-### Inline Markdown in Tables
+### Inline Markdown in tables
 
 ```markdown
 | Feature      | Status          | Link                    |
@@ -587,7 +571,7 @@ Comark supports GitHub Flavored Markdown tables:
 | `Code`       | ~~Strike~~      | ![Image](img.png)       |
 ```
 
-### Varying Column Widths
+### Varying column widths
 
 ```markdown
 | Short | Medium Column | Very Long Column Name Here |
@@ -595,8 +579,6 @@ Comark supports GitHub Flavored Markdown tables:
 | A     | B             | C                          |
 ```
 
-**Note:** Column width is determined by the longest content in each column.
-
 ---
 
-[← Back to Main Skills Guide](../../SKILLS.md)
+[Back to skill guide](../SKILL.md)

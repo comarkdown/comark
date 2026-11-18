@@ -1,6 +1,6 @@
 ---
 title: JSON Render
-description: Plugin for rendering JSON Render specs as UI components in Comark. Supports both json-render and yaml-render code blocks.
+description: Render JSON Render specs as UI components from json-render and yaml-render code blocks.
 seo:
   title: JSON Render Plugin
 navigation:
@@ -11,14 +11,14 @@ links:
     to: /reference/parse
     color: neutral
     variant: soft
-  - label: Plugin Example
+  - label: Plugin example
     icon: i-lucide-code
     to: /examples/plugins/vue-vite-json-render
     color: neutral
     variant: soft
 ---
 
-The `comark/plugins/json-render` plugin transforms `json-render` and `yaml-render` code blocks into UI components. It parses [JSON Render](https://json-render.dev/) specs and converts them into Markdown AST nodes, enabling declarative UI composition within markdown. No additional dependencies required.
+The `comark/plugins/json-render` plugin parses [JSON Render](https://json-render.dev/) specs in `json-render` and `yaml-render` code blocks and converts them into Comark AST nodes that render through your `components` map. It requires no extra dependencies.
 
 ## Usage
 
@@ -131,7 +131,7 @@ props:
 
 ::
 
-The plugin automatically wraps this shorthand in a full spec with a `template` root.
+The plugin wraps this shorthand in a full spec with a `template` root.
 
 ---
 
@@ -143,4 +143,4 @@ Returns a `ComarkPlugin` that replaces `json-render` and `yaml-render` code bloc
 
 **Returns:** `ComarkPlugin`
 
-The plugin runs in the `post` phase, walking the AST for `pre` nodes with `language: "json-render"` or `language: "yaml-render"`, parsing the spec, and replacing the node with the generated elements. `Text` type elements become plain text nodes; all other types become element nodes with their props as attributes.
+In the `post` hook, the plugin finds `pre` nodes with `language: "json-render"` or `language: "yaml-render"`, parses the spec, and replaces each block with the resulting AST nodes. `Text` elements become plain text nodes, and all other element types become element nodes with their `props` as attributes.

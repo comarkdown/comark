@@ -110,15 +110,11 @@ export default defineComarkPlugin((options: SecurityOptions = {}) => {
               return await tagFallback(element)
             }
 
-            // return false to remove the node from the tree
             return false
           }
 
           const keys = Object.keys(element[1])
 
-          /**
-           * If the element has any props, validate them
-           */
           if (keys.length) {
             const type = tagNames.find((tag) => unsafeTags.includes(tag)) ?? tagNames[0]
             element[1] = validateProps(type, element[1], propsOptions)

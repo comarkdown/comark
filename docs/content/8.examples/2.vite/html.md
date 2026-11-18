@@ -1,19 +1,19 @@
 ---
 title: 'Live Markdown to HTML Preview'
-description: A live markdown editor that renders Comark content to HTML and displays it in a sandboxed iframe preview, with syntax highlighting support.
+description: A live Markdown editor that renders Comark content to HTML inside a sandboxed iframe preview, with Shiki syntax highlighting.
 navigation:
   title: 'HTML preview'
-  icon:  i-lucide-file-code
+  icon: i-lucide-file-code
 ---
 
 ::code-tree{defaultValue="src/main.ts" expandAll}
 
 ```ts [src/main.ts]
 import { createHtmlRenderer } from '@comark/html'
-import highlight from '@comark/html/plugins/highlight'
+import shiki from '@comark/html/plugins/shiki'
 
 const renderHtml = createHtmlRenderer({
-  plugins: [highlight()],
+  plugins: [shiki()],
 })
 
 const PREVIEW_STYLES = `
@@ -26,7 +26,7 @@ const PREVIEW_STYLES = `
     margin: 0 auto;
     padding: 32px 24px;
   }
-  /* ... */
+  /* Additional preview styles omitted */
 `
 
 async function updatePreview(markdown: string) {
@@ -179,4 +179,4 @@ html, body {
 
 ::
 
-This example shows a split-pane live preview: write Comark markdown on the left and see it rendered as styled HTML in a sandboxed `<iframe>` on the right. The `highlight` plugin enables syntax highlighting for code blocks. Custom styles are injected into the iframe via `srcdoc` for proper CSS isolation.
+This example builds a split-pane live preview with `@comark/html`. Typing Comark Markdown on the left updates a sandboxed `<iframe>` on the right after a 150 ms debounce. The `shiki` plugin highlights fenced code blocks, and `srcdoc` isolates the preview styles from the editor shell.

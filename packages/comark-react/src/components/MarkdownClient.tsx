@@ -64,8 +64,8 @@ export function MarkdownClient({
     [content, parse, streaming]
   )
 
-  // Keep showing the previous parsed result while a new parse is pending —
-  // prevents blank flashes during rapid streaming updates.
+  // Keep showing the previous parsed result while a new parse is pending to
+  // prevent blank flashes during rapid streaming updates.
   const deferredPromise = useDeferredValue(parsePromise)
 
   return (

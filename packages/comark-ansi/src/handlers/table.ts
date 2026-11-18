@@ -52,7 +52,6 @@ export const table: NodeHandler = async (node, state) => {
   for (const c of headerCells) {
     headers.push(await getCellText(c, state))
   }
-  // Widths are visible terminal columns (ANSI escapes do not count).
   const colWidths = headers.map((h) => Math.max(3, visibleLength(h)))
 
   for (const row of bodyRows) {

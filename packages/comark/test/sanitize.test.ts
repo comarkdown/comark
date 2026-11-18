@@ -754,7 +754,6 @@ describe('validateProp', () => {
     })
   })
 })
-// ─── validateProps ────────────────────────────────────────────────────────────
 
 describe('validateProps', () => {
   it('returns empty object for undefined props', () => {
@@ -820,8 +819,6 @@ describe('validateProps', () => {
     expect(result).not.toHaveProperty('href')
   })
 })
-
-// ─── case-insensitive XSS bypass ─────────────────────────────────────────────
 
 describe('validateProps – unsafe tag case bypass', () => {
   it('strips all props from OBJECT (uppercase)', () => {

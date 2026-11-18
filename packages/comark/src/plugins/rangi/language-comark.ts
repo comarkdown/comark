@@ -8,11 +8,11 @@
  * (`{.class #id key=value}`), bindings (`{{ value || default }}`), named slots
  * (`#slot`), alerts (`> [!NOTE]`) and task lists.
  *
- * Rules are plain tuples — `[match, type, sub]` — evaluated by rangi's engine,
+ * Rules are plain tuples (`[match, type, sub]`) evaluated by rangi's engine,
  * which always takes the *earliest* match in the source and, on equal
  * positions, the rule that comes first in this array. Comark rules are
  * therefore listed before the markdown ones so they win ties (`# Title{#id}`
- * over a plain heading, `[text]{.c}` over a link, …).
+ * over a plain heading, `[text]{.c}` over a link, ...).
  *
  * The token types are given by name rather than by rangi's numeric constants:
  * the constants are internal to the grammars it bundles, and a name is what
@@ -55,7 +55,7 @@ const componentRules: ShjLanguageDefinition = [
 const RE_FRONTMATTER = /^---[ \t]*\r?\n[^]*?\r?\n---[ \t]*(?=\r?\n|$)/
 
 /**
- * Frontmatter is only frontmatter at the very top of the document — anywhere
+ * Frontmatter is only frontmatter at the very top of the document; anywhere
  * else `---` is a thematic break. A regex cannot say "start of input" while
  * the engine drives `lastIndex`, so this is the {@link ShjMatcher} escape
  * hatch: it matches at offset `0` and never again, and the engine drops it
@@ -97,7 +97,7 @@ function fence(marker: '`' | '~'): ShjLanguageComponent {
 export const comarkLanguage: ShjLanguageDefinition = [
   // #region Comark
 
-  // YAML frontmatter — `---` … `---` at the top of the document
+  // YAML frontmatter: `---` ... `---` at the top of the document
   [
     frontmatterMatcher,
     undefined,
@@ -107,7 +107,7 @@ export const comarkLanguage: ShjLanguageDefinition = [
     ],
   ],
 
-  // Block component YAML props — a `---` block on the line right after the
+  // Block component YAML props: a `---` block on the line right after the
   // opening marker. Anywhere else `---` is a thematic break, which is why this
   // is anchored on the marker rather than matched on its own.
   [
@@ -119,23 +119,23 @@ export const comarkLanguage: ShjLanguageDefinition = [
     ],
   ],
 
-  // Block component — `::name{attrs}[slot]`, `:::name`, …
+  // Block component: `::name{attrs}[slot]`, `:::name`, ...
   [RegExp(`^[ \\t]*:{2,}${NAME}(?:${ATTRS})?(?:${SLOT})?(?:${ATTRS})?[ \\t]*$`, 'gim'), undefined, componentRules],
 
-  // Block component terminator — a line of colons on its own
+  // Block component terminator: a line of colons on its own
   [/^[ \t]*:{2,}[ \t]*$/gm, 'oper'],
 
-  // Named slot — `#header` on its own line (a heading needs a space after `#`)
+  // Named slot: `#header` on its own line (a heading needs a space after `#`)
   [/^[ \t]*#[\w$-]+[ \t]*$/gm, 'var'],
 
-  // Inline component — `:name`, `:name{attrs}`, `:name[slot]{attrs}`
+  // Inline component: `:name`, `:name{attrs}`, `:name[slot]{attrs}`
   [
     RegExp(`(?<=^|[\\s*_[(]):${NAME}(?:${ATTRS})?(?:${SLOT})?(?:${ATTRS})?(?![\\w$:-])`, 'gim'),
     undefined,
     componentRules,
   ],
 
-  // Span — `[text]{attrs}` (without attributes it is a link, or plain text)
+  // Span: `[text]{attrs}` (without attributes it is a link, or plain text)
   [
     RegExp(`${SLOT}${ATTRS}`, 'g'),
     undefined,
@@ -145,7 +145,7 @@ export const comarkLanguage: ShjLanguageDefinition = [
     ],
   ],
 
-  // Binding — `{{ user.name || Anonymous }}`
+  // Binding: `{{ user.name || Anonymous }}`
   [
     /\{\{[^{}]*\}\}/g,
     'oper',
@@ -156,20 +156,20 @@ export const comarkLanguage: ShjLanguageDefinition = [
     ],
   ],
 
-  // Heading carrying attributes — `## Title{#slug .lead}`
+  // Heading carrying attributes: `## Title{#slug .lead}`
   // The title is `[^{\n]*` (never `.*?[ \t]*`): both `.*?` and `[ \t]*` can
-  // match spaces, which made the rule backtrack catastrophically on headings
-  // with long space runs and no `{...}` block.
+  // match spaces, which would backtrack catastrophically on headings with long
+  // space runs and no `{...}` block.
   [
     RegExp(`^ {0,3}#{1,6}[ \\t]+[^\\n{]*${ATTRS}[ \\t]*$`, 'gm'),
     'section',
     [[RegExp(`${ATTRS}[ \\t]*$`, 'g'), undefined, attributeRules]],
   ],
 
-  // Alert — `> [!NOTE]`
+  // Alert: `> [!NOTE]`
   [/^[ \t]{0,3}>[ \t]*\[![a-z]+\][ \t]*$/gim, 'cmnt', [[/\[![a-z]+\]/gi, 'kwd']]],
 
-  // Task list checkbox — `- [x] done`
+  // Task list checkbox: `- [x] done`
   [/(?<=^[ \t]*[*+-][ \t]+)\[[ xX]\]/gm, 'bool'],
 
   // `-` / `+` bullets, which the markdown grammar leaves to `*` and `1.`
@@ -178,7 +178,7 @@ export const comarkLanguage: ShjLanguageDefinition = [
   // HTML comment
   [/<!--[^]*?-->/g, 'cmnt'],
 
-  // Emoji shortcode — `:tada:`
+  // Emoji shortcode: `:tada:`
   [/(?<![\w:]):[a-z\d_+-]+:(?![\w:])/g, 'esc'],
 
   // #endregion
@@ -198,7 +198,7 @@ export const comarkLanguage: ShjLanguageDefinition = [
 
   // #endregion
 
-  // Inline attributes — `**bold**{.accent}`, `![alt](img.png){width=64}`, …
+  // Inline attributes: `**bold**{.accent}`, `![alt](img.png){width=64}`, ...
   // Last, so any construct able to own the braces claims them first.
   [RegExp(ATTRS, 'g'), undefined, attributeRules],
 ]
