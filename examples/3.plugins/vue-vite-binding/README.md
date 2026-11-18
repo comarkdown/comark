@@ -1,37 +1,26 @@
----
-title: Binding and conditional content
-description: Update Markdown bindings and If branches with live form controls using Vue and Vite.
-navigation:
-  icon: i-lucide-replace
-category: Plugins
-path: /examples/plugins/vue-vite-binding
----
+# Binding and conditional content in Vue and Vite
 
-::code-explorer
----
-org: comarkdown
-repo: comark@c78885ca7504b38afc7ced59aac1a3c6b3cc5425
-path: examples/3.plugins/vue-vite-binding
-defaultValue: src/App.vue
----
-::
+This example updates Markdown data bindings and `::if` branches with live form controls in Vue and Vite using `@comark/vue/plugins/binding`.
 
 ## Features
 
-This example demonstrates the Comark `binding` plugin in a Vue + Vite app:
+- **`{{ path }}` interpolation**: reads values from frontmatter, the renderer's `data` prop, or a parent component's `props`.
+- **`|| default` fallback**: renders an inline fallback when a dot path does not resolve.
+- **Parent props**: nested components read their enclosing component's resolved attributes through `props.`.
+- **Typed values**: bound props receive strings, numbers, booleans, and objects without stringifying them first.
+- **Conditional content**: `If` evaluates truthiness checks, equality checks, numeric ranges, and nested `#else` branches.
+- **Live form controls**: text, select, range, and checkbox inputs bind via `v-model` (and `v-model.number` on the age slider) to the reactive state passed to `<Markdown>`.
+- **Highlighted source**: the **Source** view uses Rangi's Comark grammar to highlight bindings, components, and slots.
 
-- **`{{ path }}` shorthand** — interpolate values from frontmatter, the renderer's `data` prop, or a parent component's `props` directly in your markdown.
-- **`|| default` fallback** — supply an inline default rendered when the dot-path doesn't resolve.
-- **Parent props** — nested components can reference their enclosing component's resolved attributes via `props.`.
-- **Typed values** — bindings come through as real JS values (strings, numbers, objects) thanks to the shared data-binding layer.
-- **Conditional content** — `If` supports truthiness checks, role comparisons, age ranges, and nested `#else` branches.
-- **Live updates** — text, select, range, and checkbox controls use `v-model` to update the same reactive data passed to the renderer. The age slider uses `v-model.number` for numeric comparisons.
-- **Highlighted source** — the Source view uses the Rangi plugin's Comark grammar to highlight bindings, components, and slots.
-- **Responsive playground** — grouped inputs, a reset action, keyboard focus indicators, and a live data summary work in both light and dark system themes.
+## Run locally
 
-Run `pnpm dev:binding` from the repository root. Change the role, move the age slider across 18 or 65, and toggle the mood checkboxes to see the selected branches change. Use **Preview** and **Source** above the Markdown panel to switch between rendered content and its source while keeping the form values.
+From the monorepo root:
 
-The layout follows [Vercel's design guidance](https://vercel.com/design.md), with Comark branding. It loads the published Vercel CSS foundation and Geist fonts over the network.
+```bash
+pnpm dev:binding
+```
+
+Change the role, move the age slider across 18 or 65, and toggle the mood checkboxes to watch the selected branches update. Switch between **Preview** and **Source** above the Markdown panel while keeping your form values.
 
 ## Usage
 
@@ -41,7 +30,7 @@ The layout follows [Vercel's design guidance](https://vercel.com/design.md), wit
    import binding, { Binding, If } from '@comark/vue/plugins/binding'
    ```
 
-2. Wire them into `<Markdown>`:
+2. Pass them to `<Markdown>` along with reactive `data`:
 
    ```vue
    <Markdown
@@ -52,7 +41,7 @@ The layout follows [Vercel's design guidance](https://vercel.com/design.md), wit
    />
    ```
 
-3. Use `{{ path || default }}` anywhere in your markdown:
+3. Interpolate values with `{{ path || default }}` in Markdown:
 
    ```markdown
    ---
@@ -60,30 +49,34 @@ The layout follows [Vercel's design guidance](https://vercel.com/design.md), wit
      version: 2.5.1
    ---
 
-   Hello, {{ data.user.name || friend }} — you are on v{{ frontmatter.release.version }}.
+   Hello, {{ data.user.name || friend }}. You are on v{{ frontmatter.release.version }}.
    ```
 
-4. Use `If` to select content based on the reactive data:
+4. Select branches conditionally with `::if` and `#else`:
 
    ```markdown
    ::if{:value="data.user.age" :gte="18" :lt="65"}
-   You are eligible for the 18–64 age group.
+   You are eligible for the 18 to 64 age group.
    #else
-   You are outside the 18–64 age group.
+   You are outside the 18 to 64 age group.
    ::
    ```
 
-   `value` alone checks truthiness. With comparison props, every comparison must pass. Nest another `If` inside `#else` to check a second value, as the mood example does.
+   Passing `:value` alone checks truthiness. When comparison props are present, every comparison must pass. Nest another `::if` inside `#else` to evaluate a fallback condition.
 
 ## Namespaces
 
 Bindings resolve against four namespaces:
 
-| Namespace     | Source                                                 |
-| ------------- | ------------------------------------------------------ |
-| `frontmatter` | The document's YAML frontmatter                        |
-| `meta`        | Plugin-populated metadata on the parsed tree            |
-| `data`        | The `data` prop passed to `<Markdown>`                   |
-| `props`       | Props of the enclosing Comark component                |
+| Namespace     | Source                                      |
+| ------------- | ------------------------------------------- |
+| `frontmatter` | YAML frontmatter on the parsed document     |
+| `meta`        | Plugin metadata attached to `document.meta` |
+| `data`        | The `data` prop passed to `<Markdown>`      |
+| `props`       | Resolved props of the enclosing component   |
 
-See the [Binding plugin docs](/plugins/built-in/binding) and the [data binding contract](/syntax/components#data-binding) for the full reference.
+## Learn more
+
+- [Binding plugin documentation](https://comark.dev/plugins/built-in/binding)
+- [Component data binding](https://comark.dev/syntax/components#data-binding)
+- [Comark documentation](https://comark.dev)

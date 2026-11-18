@@ -5,10 +5,6 @@ import { parseMarkdown } from 'comark'
 import emoji from 'comark/plugins/emoji'
 import { defineMarkdownComponent, defineMarkdownDocumentComponent } from '../src/index'
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
 async function renderComponent(component: any, props: Record<string, any> = {}) {
   const app = createSSRApp({
     setup() {
@@ -32,10 +28,6 @@ const AlertChild = makeAlert('alert-child')
 const AlertProp = makeAlert('alert-prop')
 
 const CardBase = makeAlert('card-base')
-
-// ---------------------------------------------------------------------------
-// defineMarkdownComponent
-// ---------------------------------------------------------------------------
 
 describe('defineMarkdownComponent — component inheritance via extends', () => {
   it('child inherits parent components when none of its own are defined', async () => {
@@ -94,7 +86,6 @@ describe('defineMarkdownComponent — plugin inheritance via extends', () => {
 
   it('parent and child plugins both run', async () => {
     const Base = defineMarkdownComponent({ name: 'Base', plugins: [emoji()] })
-    // Child adds its own emoji instance (idempotent — both emojis in the source resolve)
     const Child = defineMarkdownComponent({ name: 'Child', extends: Base })
 
     const html = await renderComponent(Child, { value: ':smile: :heart:' })
@@ -107,7 +98,6 @@ describe('defineMarkdownComponent — plugin inheritance via extends', () => {
     const Base = defineMarkdownComponent({ name: 'Base', plugins: [emoji()] })
     const Child = defineMarkdownComponent({ name: 'Child', extends: Base })
 
-    // Extra emoji() via prop — should not break anything
     const html = await renderComponent(Child, {
       value: ':smile:',
       plugins: [emoji()],
@@ -127,10 +117,6 @@ describe('defineMarkdownComponent — plugin inheritance via extends', () => {
     expect(html).toContain('❤️')
   })
 })
-
-// ---------------------------------------------------------------------------
-// defineMarkdownComponent — class
-// ---------------------------------------------------------------------------
 
 describe('defineMarkdownComponent — class via config', () => {
   it('applies config class to wrapper div', async () => {
@@ -154,10 +140,6 @@ describe('defineMarkdownComponent — class via config', () => {
     expect(html).toContain('child-class')
   })
 })
-
-// ---------------------------------------------------------------------------
-// defineMarkdownDocumentComponent
-// ---------------------------------------------------------------------------
 
 describe('defineMarkdownDocumentComponent — component inheritance via extends', () => {
   it('renders with config components', async () => {
@@ -245,15 +227,10 @@ describe('defineMarkdownDocumentComponent — component inheritance via extends'
     const document = await parseMarkdown('::alert\nA\n::\n\n::card\nB\n::')
     const html = await renderComponent(Child, { value: document })
 
-    // alert overridden in Middle, card still from Base
     expect(html).toContain('alert-child')
     expect(html).toContain('card-base')
   })
 })
-
-// ---------------------------------------------------------------------------
-// defineMarkdownDocumentComponent — class
-// ---------------------------------------------------------------------------
 
 describe('defineMarkdownDocumentComponent — class via config', () => {
   it('applies config class to wrapper div', async () => {

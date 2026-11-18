@@ -1,51 +1,50 @@
----
-title: Mermaid diagrams
-description: Example showing how to use Comark with Mermaid diagrams in Vue and Vite.
-navigation:
-  icon:  i-simple-icons-mermaid
-category: Plugins
-path: /examples/plugins/vue-vite-mermaid
----
+# Mermaid diagrams in Vue and Vite
 
-::code-explorer
----
-org: comarkdown
-repo: comark@81a416b278b0f304d7e7577c7ac6bbfc78414790
-path: examples/3.plugins/vue-vite-mermaid
-defaultValue: src/App.vue
----
-::
+This example renders fenced `mermaid` code blocks as SVG diagrams in Vue and Vite using `@comark/vue/plugins/mermaid` and `beautiful-mermaid`.
 
 ## Features
 
-This example demonstrates how to use Comark with Mermaid diagrams in Vue:
-
-- **Mermaid Plugin**: Import and configure `@comark/mermaid` plugin to parse mermaid code blocks
-- **Mermaid Component**: Register the `Mermaid` component to render diagrams as SVG
-- **Multiple Diagram Types**: Supports flowcharts, sequence diagrams, and all other Mermaid diagram types
-- **Configurable**: Customize theme, width, and height via component props
+- Parses fenced `mermaid` code blocks into `Mermaid` nodes with the `mermaid` plugin.
+- Renders flowcharts, sequence diagrams, state diagrams, and class diagrams as SVG through the `Mermaid` Vue component.
+- Accepts per-diagram theme, width, and height props in the fence info string.
 
 ## Usage
 
-1. Import the mermaid plugin and component:
+1. Import the `mermaid` plugin and `Mermaid` component:
    ```ts
    import mermaid, { Mermaid } from '@comark/vue/plugins/mermaid'
    ```
 
-2. Pass the plugin to Comark:
+2. Pass the plugin and component to `<Markdown>`:
    ```vue
-   <Markdown :plugins="[mermaid()]" />
+   <Suspense>
+     <Markdown
+       :plugins="[mermaid()]"
+       :components="{ Mermaid }"
+     >
+       {{ content }}
+     </Markdown>
+   </Suspense>
    ```
 
-3. Register the Mermaid component:
-   ```vue
-   <Markdown :components="{ mermaid: Mermaid }" />
-   ```
-
-4. Use mermaid code blocks in your markdown:
+3. Add a `mermaid` code block to your Markdown:
    ````markdown
    ```mermaid
    graph TD
        A[Start] --> B[End]
    ```
    ````
+
+## Run locally
+
+From the monorepo root:
+
+```bash
+pnpm dev:vue:mermaid
+```
+
+## Learn more
+
+- [Mermaid plugin documentation](https://comark.dev/plugins/built-in/mermaid)
+- [Mermaid documentation](https://mermaid.js.org)
+- [Comark documentation](https://comark.dev)

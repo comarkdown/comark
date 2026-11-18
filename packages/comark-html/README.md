@@ -8,15 +8,15 @@
 [![Documentation](https://img.shields.io/badge/Documentation-black?logo=readme&logoColor=white)](https://comark.dev/rendering/html)
 [![license](https://img.shields.io/github/license/comarkdown/comark?color=black)](https://github.com/comarkdown/comark/blob/main/LICENSE)
 
-Framework-free HTML renderer for [Comark](https://comark.dev). Use it for SSR, static site generation, RSS feeds, emails, or anywhere you just need an HTML string.
+Framework-free HTML renderer for [Comark](https://comark.dev). Use it for SSR, static site generation, RSS feeds, emails, or anywhere you need an HTML string.
 
 ## Features
 
-- 📦 No framework dependencies, pure HTML output
-- 🎯 Map any Comark tag to a custom render function
-- 🌊 Stream API for buffered/incremental rendering
-- 🔌 Plugin ecosystem (math, mermaid, highlight, binding…)
-- 🎯 Full TypeScript support
+- No framework dependencies, pure HTML output
+- Custom render functions for any Comark tag
+- Auto-close support for incomplete or streaming Markdown
+- Plugins for Shiki highlighting, math, Mermaid, binding, and more
+- Full TypeScript support
 
 ## Installation
 

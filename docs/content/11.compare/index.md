@@ -6,7 +6,7 @@ seo:
   title: 'Compare Comark with Other Markdown Libraries'
 ---
 
-Each comparison opens with a short answer and a table, and lists what the other library does well. Pick the library you use today, or start with the roundup for AI chat.
+Each comparison opens with a summary, a feature table, and where the other library fits better. Pick the library you use today, or start with the AI chat roundup.
 
 ## AI chat and streaming
 

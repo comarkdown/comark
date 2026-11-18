@@ -117,7 +117,7 @@ Note ${i + 1} about **module ${i + 1}**.
 ).join('\n')}
 `
 
-/** Nested block and inline components with props — the Comark-specific syntax paths. */
+/** Nested block and inline components with props, covering the Comark-specific syntax paths. */
 export const componentHeavyMarkdown = `::parent{id="root"}
 # Nested components
 

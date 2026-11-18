@@ -1,23 +1,10 @@
-# Vue Rendering Guide
+# Vue rendering guide
 
-Complete guide for rendering Markdown documents in Vue applications.
+Guide to rendering Markdown documents in Vue 3 applications.
 
-## Table of Contents
+## Basic usage
 
-- [Basic Usage](#basic-usage)
-- [Custom Components](#custom-components)
-- [Dynamic Component Resolution](#dynamic-component-resolution)
-- [Slots Support](#slots-support)
-- [Streaming Mode](#streaming-mode)
-- [Prose Components](#prose-components)
-- [Error Handling](#error-handling)
-- [Props Access](#props-access)
-
----
-
-## Basic Usage
-
-Use the `Markdown` component to render markdown:
+Use the `Markdown` component to render Markdown:
 
 ```vue
 <template>
@@ -41,7 +28,7 @@ Important message
 
 ---
 
-## Custom Components
+## Custom components
 
 Map custom Vue components to Comark elements:
 
@@ -65,7 +52,7 @@ const customComponents = {
 </script>
 ```
 
-### Custom Component Example
+### Custom component example
 
 ```vue
 <!-- CustomHeading.vue -->
@@ -95,7 +82,7 @@ const id = computed(() => props.__node[1]?.id)
 </style>
 ```
 
-### Alert Component Example
+### Alert component example
 
 ```vue
 <!-- CustomAlert.vue -->
@@ -151,7 +138,7 @@ const iconName = computed(() => {
 
 ---
 
-## Dynamic Component Resolution
+## Dynamic component resolution
 
 Load components dynamically using `componentsManifest`:
 
@@ -182,11 +169,11 @@ async function loadComponent(name: string) {
 
 ---
 
-## Slots Support
+## Slots support
 
-Comark components with slots work seamlessly in Vue:
+Comark named slots map directly to Vue slots:
 
-### Markdown with Slots
+### Markdown with slots
 
 ```markdown
 ::card
@@ -194,14 +181,14 @@ Comark components with slots work seamlessly in Vue:
 ## Card Title
 
 #content
-Main content here with **markdown** support
+Main content here with **Markdown** support
 
 #footer
 Footer text
 ::
 ```
 
-### Custom Component with Slots
+### Custom component with slots
 
 ```vue
 <!-- Card.vue -->
@@ -246,7 +233,7 @@ Footer text
 </style>
 ```
 
-### Nested Slots
+### Nested slots
 
 ```markdown
 ::tabs
@@ -289,9 +276,9 @@ const activeTab = ref('tab1')
 
 ---
 
-## Streaming Mode
+## Streaming mode
 
-The `Markdown` component can be used with reactive content for streaming scenarios:
+Use `Markdown` with reactive content for streaming responses:
 
 ```vue
 <template>
@@ -328,11 +315,9 @@ loadContent()
 
 ---
 
----
+## Prose components
 
-## Prose Components
-
-The `Markdown` component uses built-in prose styling automatically. You can override with custom components:
+`Markdown` renders standard HTML elements natively. Override them or register custom elements with `components`:
 
 ```vue
 <template>
@@ -351,9 +336,9 @@ const components = {
 
 ---
 
-## Error Handling
+## Error handling
 
-The `MarkdownDocument` component has built-in error capture via Vue's `onErrorCaptured` hook. Component rendering errors are caught automatically without crashing the application. You can also use Vue's native `onErrorCaptured` in a parent component to handle errors:
+`MarkdownDocument` captures component rendering errors via Vue's `onErrorCaptured` hook without crashing the application. You can also use `onErrorCaptured` in a parent component to inspect or log errors:
 
 ```vue
 <template>
@@ -373,7 +358,7 @@ onErrorCaptured((error) => {
 
 ---
 
-## Props Access
+## Props access
 
 Custom components receive the original Comark node and parsed props:
 
@@ -390,7 +375,7 @@ import { computed } from 'vue'
 
 const props = defineProps<{
   type?: string        // From {type="info"}
-  bool?: boolean       // From {bool} → :bool="true"
+  bool?: boolean       // From {bool} -> :bool="true"
   count?: number       // From {:count="5"}
   data?: object        // From {:data='{"key":"val"}'}
   __node?: any         // Original Comark node
@@ -404,13 +389,13 @@ const alertClasses = computed(() => [
 </script>
 ```
 
-### Property Parsing Rules
+### Property parsing rules
 
-- Props starting with `:` are parsed as booleans/JSON
-- Standard HTML attributes work normally
-- `__node` provides access to the raw AST node
+- Props starting with `:` are parsed as booleans or JSON
+- Standard HTML attributes pass through as strings
+- `__node` gives access to the raw AST node
 
-### Accessing Node Structure
+### Accessing node structure
 
 ```vue
 <script setup lang="ts">
@@ -423,7 +408,7 @@ const children = computed(() => props.__node?.slice(2) || [])
 </script>
 ```
 
-### Working with Complex Props
+### Working with complex props
 
 ```vue
 <!-- DataTable.vue -->
@@ -459,4 +444,4 @@ Table content here
 
 ---
 
-[← Back to Main Skills Guide](../SKILL.md)
+[Back to skill guide](../SKILL.md)

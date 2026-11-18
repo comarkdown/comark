@@ -76,7 +76,7 @@ async function getProseFiles(proseDir: string): Promise<string[]> {
       files.push(join(dir, entry.name))
     }
   } catch {
-    // prose directory doesn't exist — that's fine
+    // Ignore missing prose directory
   }
   return files
 }
@@ -183,7 +183,6 @@ export default function comark(opts: { prose?: boolean } = {}): Plugin {
     async transform(code) {
       if (!proseDir) return null
       if (!code.includes('createApp') || !code.includes('.mount(')) return null
-      // Skip if already injected
       if (code.includes(VIRTUAL_COMPONENTS_ID)) return null
 
       const files = await resolveProseFiles()

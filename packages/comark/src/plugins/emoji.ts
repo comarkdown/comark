@@ -3,7 +3,7 @@ import { defineComarkPlugin } from 'comark'
 
 // Curated set of common emoji shortcodes, organized by category.
 // For the full GitHub set, install a dataset (e.g. `gemoji`) and pass it via
-// the `extend` option — see EmojiOptions below.
+// the `extend` option (see EmojiOptions below).
 const BASE_EMOJI = new Map<string, string>([
   // Smileys & emotions
   ['grinning', '😀'],
@@ -413,7 +413,7 @@ export interface EmojiOptions {
    * Add or override shortcodes. Values take precedence over the built-in set,
    * so this can also be used to remap an existing shortcode.
    *
-   * Pass a full dataset here to go beyond the curated built-in set — install a
+   * Pass a full dataset here to go beyond the curated built-in set: install a
    * package such as `gemoji` and forward its map:
    *
    * @example
@@ -431,29 +431,22 @@ export interface EmojiOptions {
 }
 
 /**
- * Emoji parser for markdown-it.
- * Only supports :emoji_name: syntax (no shortcuts/emoticons).
- * Uses a Map for O(1) lookups and simple string scanning.
+ * Emoji parser for markdown-it (`:emoji_name:` syntax only, no emoticon shortcuts).
  */
 const createEmojiRule = (emojiMap: Map<string, string>) => (state: any, silent: boolean) => {
   const max = state.posMax
   const start = state.pos
 
-  // Quick check: must start with ':'
   if (state.src.charCodeAt(start) !== 0x3a /* : */) {
     return false
   }
 
-  // Find the closing ':'
   let pos = start + 1
   while (pos < max) {
     const code = state.src.charCodeAt(pos)
 
-    // Found closing ':'
     if (code === 0x3a /* : */) {
       const emojiName = state.src.slice(start + 1, pos)
-
-      // Check if this is a valid emoji
       const emojiChar = emojiMap.get(emojiName)
       if (emojiChar) {
         if (!silent) {
@@ -465,12 +458,9 @@ const createEmojiRule = (emojiMap: Map<string, string>) => (state: any, silent: 
         return true
       }
 
-      // Not a valid emoji, stop searching
       return false
     }
 
-    // Only allow word characters, digits, underscores, hyphens, and plus
-    // This matches the pattern of valid emoji names
     if (
       (code >= 0x61 && code <= 0x7a) || // a-z
       (code >= 0x41 && code <= 0x5a) || // A-Z
@@ -483,11 +473,9 @@ const createEmojiRule = (emojiMap: Map<string, string>) => (state: any, silent: 
       continue
     }
 
-    // Invalid character in emoji name
     return false
   }
 
-  // No closing ':' found
   return false
 }
 

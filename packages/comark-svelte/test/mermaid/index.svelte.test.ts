@@ -52,7 +52,6 @@ describe('Mermaid + Markdown integration', () => {
       components: { mermaid: Mermaid },
     })
 
-    // Wait for Markdown to parse and render the mermaid diagram
     await expect.element(screen.getByText(/A/)).toBeInTheDocument()
     const mermaidEl = screen.container.querySelector<HTMLElement>('.mermaid')
     expect(mermaidEl).not.toBeNull()

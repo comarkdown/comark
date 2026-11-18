@@ -36,7 +36,6 @@ export class Math implements OnChanges {
     const isInline = this.class()?.includes('inline')
     const hostEl = this.elementRef.nativeElement as HTMLElement
 
-    // Clear previous content
     while (hostEl.firstChild) {
       hostEl.removeChild(hostEl.firstChild)
     }

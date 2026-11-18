@@ -33,13 +33,11 @@ export async function html(node: ElementNode, state: State, parent?: ElementNode
     if ($.autoTarget !== undefined && rawAttributes.target === $.autoTarget) delete rawAttributes.target
   }
 
-  // In text/html mode, `one()` has already resolved this element's `:prefix`
-  // bindings against the parent's render context and stored the result in
-  // `state.renderData.props` — but only when the element has its own attrs.
-  // If it doesn't, `state.renderData.props` still holds the enclosing scope
-  // (so that `{{ props.* }}` in nested children keeps working), so we fall
-  // back to the raw (empty) attrs to avoid leaking parent props onto native
-  // wrappers like `<p>` or `<ul>`.
+  // In text/html mode, `one()` resolved this element's `:prefix` bindings into
+  // `state.renderData.props` when the element has its own attrs. When it doesn't,
+  // `state.renderData.props` still holds the enclosing scope (so `{{ props.* }}`
+  // in nested children keeps working); fall back to `rawAttributes` so parent
+  // props don't leak onto native wrappers like `<p>` or `<ul>`.
   const rawHasAttrs = Object.keys(rawAttributes).length > 0
   const attributes = state.context.html ? (rawHasAttrs ? state.renderData.props : rawAttributes) : rawAttributes
 
@@ -57,7 +55,6 @@ export async function html(node: ElementNode, state: State, parent?: ElementNode
     oneLiner = true
   }
 
-  // If parent is a paragraph or an inline element, it is inline
   if (parent?.[0] === 'p' || inlineTags.has(String(parent?.[0])) || state.context.inline) {
     oneLiner = true
   }
@@ -73,7 +70,6 @@ export async function html(node: ElementNode, state: State, parent?: ElementNode
 
   const isSelfClose = selfCloseTags.has(String(tag))
 
-  // Do not modify context if we are already in html mode
   const revert = state.applyContext({ inline: oneLiner })
 
   const isBlockChild = (child: Node) =>
@@ -118,7 +114,6 @@ export async function html(node: ElementNode, state: State, parent?: ElementNode
     }
   }
 
-  // Revert, only if we modified the context
   if (revert) {
     state.applyContext(revert)
   }

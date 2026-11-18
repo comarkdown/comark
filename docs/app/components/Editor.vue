@@ -57,14 +57,12 @@ function defineComarkDarkTheme(monaco: any): void {
 onMounted(async () => {
   monaco = await loader.init()
 
-  // Register the MDC language
   monaco.languages.register({ id: 'mdc' })
   monaco.languages.setMonarchTokensProvider('mdc', mdc)
 
   // Prime worker-backed languages so fenced blocks (json / json-render) can embed them
   monaco.editor.createModel('', 'json').dispose()
 
-  // Define custom dark theme matching the website
   defineComarkDarkTheme(monaco)
 
   editor = monaco.editor.create(editorContainer.value, {

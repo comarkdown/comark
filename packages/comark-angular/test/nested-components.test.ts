@@ -83,7 +83,7 @@ describe('MarkdownNode nested component rendering', () => {
   })
 })
 
-/** Badge — applied via decorator factory so Vitest/oxc need not enable experimentalDecorators. */
+// Applied via decorator factory so Vitest/oxc need not enable experimentalDecorators.
 class Badge {
   name = 'badge'
 }
@@ -146,7 +146,6 @@ describe('nested components', () => {
   })
 })
 
-/** ProsePre — a custom code block that wraps the rendered `<pre>`. */
 class ProsePre {}
 Component({
   selector: 'app-prose-pre',
@@ -154,7 +153,6 @@ Component({
   template: `<div class="prose-pre"><ng-content /></div>`,
 })(ProsePre)
 
-/** Box — a block component that projects its children. */
 class Box {}
 Component({
   selector: 'app-box',

@@ -50,7 +50,7 @@ export async function li(node: ElementNode, state: State) {
         continue
       }
 
-      // No parent → mdc skips its own nesting indentation, so li owns it here.
+      // No parent -> mdc skips its own nesting indentation, so li owns it here.
       if (!hasInlineContent && !(tag in state.handlers)) {
         const indented = indent(await state.one(child, state), { width: prefixWidth, ignoreFirstLine: !result })
         // A tag cannot interrupt a paragraph in CommonMark, so `markdown/html` needs a blank line before it.

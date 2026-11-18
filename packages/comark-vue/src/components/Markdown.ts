@@ -25,7 +25,7 @@ export interface MarkdownProps {
   plugins?: ParserOptions['plugins']
 
   /**
-   * Strip wrapper tags from the top level of the document — shorthand for
+   * Strip wrapper tags from the top level of the document. Shorthand for
    * `options.unwrap`. `true` unwraps `<p>` (single-line rendering); a
    * space-separated string or array unwraps the listed tags. Useful for inline
    * usage like `<UButton><Markdown :value="text" unwrap /></UButton>`.
@@ -76,11 +76,7 @@ export interface MarkdownProps {
 type MarkdownComponent = ReturnType<typeof defineComponent<MarkdownProps>>
 
 /**
- * Runtime prop declarations for `<Markdown>`.
- *
- * Exported so `defineMarkdownComponent` can reuse them verbatim instead of
- * hand-copying the table, which had drifted: `value` was declared `String`
- * only, and `data` and `documentKey` were missing entirely.
+ * Runtime prop declarations for `<Markdown>`, shared with `defineMarkdownComponent`.
  */
 export const markdownProps = {
   /**
@@ -108,7 +104,7 @@ export const markdownProps = {
   },
 
   /**
-   * Strip wrapper tags from the top level of the document — shorthand for
+   * Strip wrapper tags from the top level of the document. Shorthand for
    * `options.unwrap`. `true` unwraps `<p>`; a space-separated string or array
    * unwraps the listed tags.
    */
@@ -259,7 +255,6 @@ export const Markdown: MarkdownComponent = defineComponent({
     }
 
     return () => {
-      // Pre-parsed document — skip parsing and render directly
       if (isMarkdownDocument(props.value)) {
         return h(MarkdownDocument, {
           value: props.value,
@@ -274,7 +269,6 @@ export const Markdown: MarkdownComponent = defineComponent({
         })
       }
 
-      // Render using MarkdownDocument
       return h(MarkdownDocument, {
         value: parsed.value || { nodes: [], frontmatter: {}, meta: {} },
         components: props.components,

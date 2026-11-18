@@ -116,7 +116,6 @@ describe('createHtmlRenderer', () => {
       autoUnwrap: true,
     })
     const html = await renderFn('Just text')
-    // autoUnwrap removes <p> wrapper from single-inline content in components
     expect(html).toBeTruthy()
   })
 })

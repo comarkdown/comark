@@ -1,6 +1,6 @@
 ---
 title: Task list
-description: Plugin for rendering GitHub-style task list syntax as disabled checkboxes.
+description: Render GitHub-style task list syntax as disabled checkboxes.
 seo:
   title: Task List Plugin
 navigation:
@@ -20,7 +20,7 @@ links:
 
 The `comark/plugins/task-list` plugin converts GitHub-style task list syntax into disabled checkboxes. It runs before inline parsing to prevent Comark from misinterpreting `[ ]` and `[x]` as component syntax.
 
-The plugin is **enabled by default** via `registerDefaultPlugins`. No installation or registration required.
+This plugin is **enabled by default** via `registerDefaultPlugins`, so you don't need to install or register it.
 
 ## Usage
 
@@ -34,7 +34,7 @@ const result = await parseMarkdown(`
 `)
 ```
 
-Explicit registration is only needed when default plugins are disabled:
+You only need to register `taskList()` explicitly when default plugins are disabled:
 
 ```typescript
 import { parseMarkdown } from 'comark'

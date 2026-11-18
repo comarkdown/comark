@@ -1,9 +1,9 @@
 ---
 title: 'React Markdown Example with Vite'
-description: 'A React and Vite app that renders a Markdown blog, a syntax showcase, and a live editor with Comark and a custom alert component.'
+description: 'A React and Vite app that renders a Markdown blog, component syntax examples, and a live editor with Comark.'
 navigation:
   title: 'React'
-  icon:  i-simple-icons-react
+  icon: i-simple-icons-react
 ---
 
 ::code-explorer
@@ -15,4 +15,4 @@ defaultValue: src/App.tsx
 ---
 ::
 
-This example shows the quickest way to use Comark with React - use the `Markdown` component and pass it markdown content. The component handles parsing and rendering automatically.
+This example renders a Markdown blog, component syntax examples, and a live editor in React with Vite. Pass a Markdown string to `<Markdown>` from `@comark/react` to parse and render in one step, or parse ahead of time with `parseMarkdown()` and pass the document to `<MarkdownDocument>`.

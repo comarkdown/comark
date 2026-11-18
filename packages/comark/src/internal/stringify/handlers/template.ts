@@ -3,7 +3,6 @@ import type { ElementNode, Node } from 'comark'
 import { comarkAttributes } from '../attributes.ts'
 import { component } from './component.ts'
 
-// slot template
 export async function template(node: ElementNode, state: State, parent?: ElementNode) {
   const [_, attrs] = node
 

@@ -1,5 +1,5 @@
 /**
- * diff-cases/v2 SPEC runner — single-file ESM, zero deps (Node built-ins only).
+ * diff-cases/v2 SPEC runner: single-file ESM, zero deps (Node built-ins only).
  *
  * Portable drop-in. Copy this file anywhere:
  *
@@ -17,12 +17,10 @@
  *   ], { mapOptions: sectionAwareMapOptions, section: "Bold" });
  *   // report.ranking sorted by matchRate, then speed
  *
- * Node ≥ 18.
+ * Node >= 18.
  */
 
 import { readFileSync } from 'node:fs'
-
-// ─── options ─────────────────────────────────────────────────────────────────
 
 const FORMAT = 'diff-cases/v2'
 
@@ -153,8 +151,6 @@ export function applySectionHints(section, opts) {
   if (Object.keys(overrides).length === 0) return opts
   return resolveOptions({ ...opts, ...overrides })
 }
-
-// ─── parse ───────────────────────────────────────────────────────────────────
 
 export function decodeEscapes(s) {
   let out = ''
@@ -289,8 +285,6 @@ export function loadSpecCases(filePath) {
   const md = readFileSync(filePath, 'utf8')
   return parseSpecCases(md, filePath)
 }
-
-// ─── run ─────────────────────────────────────────────────────────────────────
 
 function median(values) {
   if (values.length === 0) return 0
@@ -437,8 +431,6 @@ export function runSpecCases(cases, fn, options = {}) {
   }
 }
 
-// ─── compare ─────────────────────────────────────────────────────────────────
-
 function pad(s, n) {
   return s.length >= n ? s.slice(0, n) : s + ' '.repeat(n - s.length)
 }
@@ -544,7 +536,7 @@ export function compareSpecFile(filePath, candidates, options = {}) {
     if (printSummary) {
       console.log(`\n━━ ${candidate.name} ━━━━━━━━━━━━━━━━━━━━━━━`)
     }
-    // section/filter already applied — don't re-filter in runSpecCases
+    // section/filter already applied; don't re-filter in runSpecCases
     const run = runSpecCases(cases, candidate.fn, {
       verbose: options.verbose,
       warmup: options.warmup,
@@ -578,8 +570,6 @@ export function compareSpecFile(filePath, candidates, options = {}) {
   if (printSummary) printCompareTable(report)
   return report
 }
-
-// ─── helpers ─────────────────────────────────────────────────────────────────
 
 export function toGenericAutoCloseOptions(opts) {
   return {
