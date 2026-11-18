@@ -36,7 +36,6 @@ This is a **monorepo** containing the Comark Markdown parser, document model, pl
 │   ├── 3.plugins/        # Plugin examples (math, mermaid, highlight, rangi, footnotes, ...)
 │   └── 4.ai/             # AI streaming examples (Nuxt + AI SDK)
 ├── docs/                 # Documentation site (comark-docs layer; llms topic files in docs/server/routes/llms-*.txt.get.ts)
-├── playground/           # Nuxt playground (`pnpm dev:playground`)
 ├── benchmarks/           # CodSpeed Vitest benches (*.bench.ts) + mitata cross-library comparisons (*.ts)
 ├── scripts/              # Build/sync scripts
 ├── test/                 # Root-level tests (bundle-size snapshot; sanitizer/ runs vercel-labs/markdown-sanitizers fixtures against `security`)
@@ -72,6 +71,7 @@ packages/comark/
 │   │   ├── binding.ts        # Inline interpolation + shared conditional rendering rules
 │   │   ├── breaks.ts         # Hard line breaks (`<br>`) from newlines
 │   │   ├── emoji.ts          # Emoji shortcodes
+│   │   ├── external-links.ts # `rel` and `target` on external links
 │   │   ├── footnotes.ts      # GFM footnotes
 │   │   ├── heading-links.ts  # Links headings to their own `id`
 │   │   ├── headings.ts       # Deprecated alias → title-description (remove next major)
@@ -551,6 +551,7 @@ import breaks from 'comark/plugins/breaks'
 import footnotes from 'comark/plugins/footnotes'
 import titleDescription from 'comark/plugins/title-description'
 // import headings from 'comark/plugins/headings' // deprecated alias → title-description
+import externalLinks from 'comark/plugins/external-links'
 import headingLinks from 'comark/plugins/heading-links'
 import punctuation from 'comark/plugins/punctuation'
 import jsonRender from 'comark/plugins/json-render'
@@ -968,7 +969,6 @@ Root workspace scripts:
 ```bash
 pnpm docs         # Run documentation site
 pnpm dev:<name>   # Run an example (vue, react, svelte, angular, html, ansi, nuxt, nextjs, astro, ...)
-pnpm dev:playground # Run the Nuxt playground
 pnpm build        # Build all packages, then sync plugin re-exports
 pnpm stub         # Point every package's dist/ at src/ for local dev (runs on postinstall)
 pnpm test         # Run all package tests
