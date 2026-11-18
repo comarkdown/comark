@@ -79,7 +79,7 @@ describe('@comark/html plugins/binding — If handler', () => {
   it.each([true, false])('selects the default or else slot for value %s', async (show) => {
     const doc = await parseMarkdown('::if{:value="data.show" as="section"}\nVisible\n#else\nHidden\n::')
     const html = await renderHtmlFromDocument(doc, { components: { If }, data: { show } })
-    expect(html).toBe(show ? '<section><p>Visible</p></section>' : '<section>Hidden</section>')
+    expect(html).toBe(show ? '<section>Visible</section>' : '<section>Hidden</section>')
   })
 
   it('renders only truthy branches without requiring the binding parser plugin', async () => {
