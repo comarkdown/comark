@@ -122,6 +122,8 @@ const SAFE_ATTR_NAME = /^[a-zA-Z_:][a-zA-Z0-9_:.-]*$/
 interface HtmlAttributesOptions {
   /** Keep `:` prefixes and string `"true"` values as written */
   verbatim?: boolean
+  /** Keep the `:` prefix of unresolved bindings, so Markdown output reparses them as bindings */
+  keepBindings?: boolean
 }
 
 /**
@@ -131,7 +133,10 @@ interface HtmlAttributesOptions {
  * @param options - Serialization options
  * @returns The stringified attributes
  */
-export function htmlAttributes(attributes: Record<string, unknown>, { verbatim = false }: HtmlAttributesOptions = {}) {
+export function htmlAttributes(
+  attributes: Record<string, unknown>,
+  { verbatim = false, keepBindings = false }: HtmlAttributesOptions = {}
+) {
   const parts: string[] = []
   for (const [rawKey, value] of Object.entries(attributes)) {
     const isBinding = rawKey.startsWith(':')
@@ -139,15 +144,17 @@ export function htmlAttributes(attributes: Record<string, unknown>, { verbatim =
     if (!SAFE_ATTR_NAME.test(key)) continue
 
     if (isBinding) {
+      // A bare attribute reads back as `true`, the same value as `:key="true"`.
       if (verbatim ? value === true : value === 'true') {
         parts.push(key)
         continue
       }
+      const name = keepBindings ? rawKey : key
       if (typeof value === 'object' && value !== null) {
-        parts.push(`${key}="${escapeHtml(JSON.stringify(value))}"`)
+        parts.push(`${name}="${escapeHtml(JSON.stringify(value))}"`)
         continue
       }
-      parts.push(`${key}="${escapeHtml(String(value))}"`)
+      parts.push(`${name}="${escapeHtml(String(value))}"`)
       continue
     }
 

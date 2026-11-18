@@ -38,5 +38,5 @@
 ## Markdown HTML
 
 ```md
-<card to="$doc.snippet.link"></card>
+<card :to="$doc.snippet.link"></card>
 ```

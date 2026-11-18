@@ -55,7 +55,7 @@ My button
 ## Markdown HTML
 
 ```md
-<my-component block reverse square="false" disabled>
+<my-component block reverse :square="false" disabled>
 
 My button
 
