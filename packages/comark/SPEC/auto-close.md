@@ -2349,6 +2349,32 @@ A closer indented 4 or more spaces is code content; up to 3 spaces still closes:
 + ```\ncode\n   ```\n**bold**
 ```
 
+A tab counts as 4 columns:
+
+```diff
+- ```\ncode\n\t```\n**bold
++ ```\ncode\n\t```\n**bold
+```
+
+Inside a list item, indentation counts from the item's content column:
+
+```diff
+- - item\n\n  ```\n  x\n    ```\n\n**bold
++ - item\n\n  ```\n  x\n    ```\n\n**bold**
+```
+
+```diff
+- - a\n  - b\n\n    ```\n    x\n    ```\n\n**bold
++ - a\n  - b\n\n    ```\n    x\n    ```\n\n**bold**
+```
+
+A fence indented 4 or more spaces past its container is indented code, not an opener:
+
+```diff
+- intro\n\n    ```\n    x\n\n**bold
++ intro\n\n    ```\n    x\n\n**bold**
+```
+
 ---
 
 ## Leave horizontal rules alone

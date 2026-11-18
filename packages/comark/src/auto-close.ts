@@ -16,6 +16,7 @@
  */
 
 import { findBracketClose, isBracketMath } from './internal/bracket-math.ts'
+import { listItemContentColumn } from './internal/list-item.ts'
 
 export const INCOMPLETE_LINK_PLACEHOLDER = 'comark:incomplete-link'
 export const INCOMPLETE_IMAGE_PLACEHOLDER = 'comark:incomplete-image'
@@ -204,7 +205,8 @@ function scanBlocks(src: string, o: Opts): DocState {
   const comps: Component[] = []
   let fenceLen = 0
   let fenceCh = 0
-  let fenceIndent = 0 // a closer must stay within 3 spaces of this column (its container's)
+  let fenceIndent = 0 // a closer must stay within 3 columns of this one (its container's)
+  const listColumns: number[] = [] // content columns of the list items still open, innermost last
   let raw: RawTag | null = null
   let fmOpen = false
   let fmContent = false
@@ -234,21 +236,36 @@ function scanBlocks(src: string, o: Opts): DocState {
       }
     }
 
+    const column = c0 === -1 ? 0 : columnsOf(src, ls, st)
+
+    // A line left of a list item's content ends it
+    if (fenceLen === 0 && !fmOpen && c0 !== -1) {
+      while (listColumns.length > 0 && column < listColumns[listColumns.length - 1]) listColumns.pop()
+      const contentColumn = listItemContentColumn(src, st, en, column)
+      if (contentColumn !== -1) listColumns.push(contentColumn)
+    }
+
     if (c0 === 96 /* ` */ || c0 === 126 /* ~ */) {
       let run = 1
       while (st + run < en && src.charCodeAt(st + run) === c0) run++
       if (run >= 3) {
         if (fenceLen === 0) {
-          // `` ```code`` `` is an incomplete inline code span, not a fence opener.
-          if (!(c0 === 96 && isIncompleteInlineFence(src, st, en))) {
+          // The container is the innermost open component or list item.
+          const top = comps.length > 0 ? comps[comps.length - 1].indent : ''
+          const container = Math.max(
+            columnsOf(top, 0, top.length),
+            listColumns.length > 0 ? listColumns[listColumns.length - 1] : 0
+          )
+          // `` ```code`` `` is an incomplete inline code span, and 4+ columns past the container is indented code.
+          if (!(c0 === 96 && isIncompleteInlineFence(src, st, en)) && column - container < 4) {
             fenceLen = run
             fenceCh = c0
-            // The container is the innermost open component, never right of the fence itself.
-            fenceIndent = Math.min(comps.length > 0 ? comps[comps.length - 1].indent.length : 0, st - ls)
+            // An outdented fence measures its closer from itself.
+            fenceIndent = Math.min(container, column)
             shielded = i
             continue
           }
-        } else if (c0 === fenceCh && run >= fenceLen && st + run === en && st - ls - fenceIndent < 4) {
+        } else if (c0 === fenceCh && run >= fenceLen && st + run === en && column - fenceIndent < 4) {
           // A closer is the same character, at least as long, and followed only by
           // whitespace. `` ```js `` inside an open block is code content, not a closer.
           fenceLen = 0
@@ -362,6 +379,13 @@ function isIncompleteInlineFence(src: string, st: number, en: number): boolean {
 const ATX_HEADING_RE = /^#{1,6}(\s|$)/
 const THEMATIC_BREAK_RE = /^(\*{3,}|_{3,}|-{3,})\s*$/
 const ORDERED_LIST_RE = /^\d{1,9}[.)](\s|$)/
+
+/** Column reached by the indentation in `src[from, to)`, with tabs stopping every 4 columns. */
+function columnsOf(src: string, from: number, to: number): number {
+  let column = 0
+  for (let i = from; i < to; i++) column = src.charCodeAt(i) === 9 ? column + 4 - (column % 4) : column + 1
+  return column
+}
 
 function isIndentCode(c: number): boolean {
   return c === 32 || c === 9

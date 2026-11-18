@@ -15,6 +15,7 @@ import { findClosingBracket, parseBracketContent } from '../internal/parse/synta
 import { parseBlockParams } from '../internal/parse/syntax/block-params.ts'
 import { parseYaml } from '../internal/yaml.ts'
 import { tokenizeDedented } from '../internal/parse/indent.ts'
+import { listItemContentColumn } from '../internal/list-item.ts'
 
 /**
  * A component name must start with a letter or `$`, followed by word chars,
@@ -110,6 +111,8 @@ const markdownItComarkBlock: PluginSimple = (md) => {
 
       // Nested components still open, as `[markerCount, indent]`.
       const openComponents: Array<[number, number]> = []
+      // Content columns of the list items still open, innermost last.
+      const listColumns: number[] = []
 
       if (state.src[start] !== ':') return false
 
@@ -168,17 +171,31 @@ const markdownItComarkBlock: PluginSimple = (md) => {
           continue
         }
 
+        // A line left of a list item's content ends it
+        if (start < max) {
+          while (listColumns.length > 0 && state.sCount[nextLine] < listColumns[listColumns.length - 1])
+            listColumns.pop()
+          const contentColumn = listItemContentColumn(state.src, start, max, state.sCount[nextLine])
+          if (contentColumn !== -1) listColumns.push(contentColumn)
+        }
+
         // Detect opening code fence (``` or ~~~)
         if (lineCharCode === 0x60 /* ` */ || lineCharCode === 0x7e /* ~ */) {
           let fencePos = start + 1
           while (fencePos < max && state.src.charCodeAt(fencePos) === lineCharCode) fencePos++
-          if (fencePos - start >= 3) {
+          // The container is the innermost open component or list item.
+          const componentIndent = openComponents.length ? openComponents[openComponents.length - 1][1] : indent
+          const containerIndent = Math.max(
+            componentIndent,
+            listColumns.length ? listColumns[listColumns.length - 1] : 0
+          )
+          // 4+ columns past the container is indented code, not a fence.
+          if (fencePos - start >= 3 && state.sCount[nextLine] - containerIndent < 4) {
             inCodeFence = true
             codeFenceCharCode = lineCharCode
             codeFenceCount = fencePos - start
             codeFenceShift = childShifts[childShifts.length - 1]
-            // The fence's container is the innermost open component, never right of the fence itself.
-            const containerIndent = openComponents.length ? openComponents[openComponents.length - 1][1] : indent
+            // An outdented fence measures its closer from itself.
             codeFenceIndent = Math.min(containerIndent, state.sCount[nextLine])
             continue
           }
@@ -195,7 +212,9 @@ const markdownItComarkBlock: PluginSimple = (md) => {
 
         if (pos < max) {
           // A nested block opens
-          if (count >= min_markers) openComponents.push([count, state.sCount[nextLine]])
+          if (count >= min_markers && isValidComponentName(state.src.slice(pos, max))) {
+            openComponents.push([count, state.sCount[nextLine]])
+          }
           continue
         }
 

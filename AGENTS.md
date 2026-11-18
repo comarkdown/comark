@@ -100,6 +100,7 @@ packages/comark/
 │       ├── shiki.ts          # Shared Shiki runtime used by both entry points
 │       ├── frontmatter.ts    # parseFrontmatter() / renderFrontmatter()
 │       ├── heading-id.ts     # Auto heading id generation (shared by parser + stringifier)
+│       ├── list-item.ts      # List item content column (component fence scanner + auto-close)
 │       ├── yaml.ts           # YAML helpers
 │       ├── sanitize.ts       # Component props validation and frontmatter sanitization
 │       ├── parse/            # Parsing pipeline
@@ -803,12 +804,17 @@ SPEC coverage: `SPEC/COMARK/component-nested-*-outdented.md`,
 
 **Closing fences.** `comark_block` scans ahead for its closing `::` and skips
 code fences on the way. As in CommonMark, a closing fence may sit at most 3
-spaces right of its container: the innermost component still open at the
-opening fence, but never right of that fence. A deeper fence line is code
-content, so a `::` after it does not close the component. `autoCloseMarkdown`
-follows the same rule. SPEC coverage: `SPEC/COMARK/component-*codeblock-indented-fence.md`,
+spaces right of its container: the innermost component or list item still
+open at the opening fence, but never right of that fence. A deeper fence line
+is code content, so a `::` after it does not close the component. An opening
+fence 4+ columns right of its container is indented code and opens nothing.
+Tabs count to the next multiple of 4 columns. `autoCloseMarkdown` follows the
+same rules; both share `listItemContentColumn()` (`src/internal/list-item.ts`).
+SPEC coverage: `SPEC/COMARK/component-*codeblock-indented-fence.md`,
 `SPEC/COMARK/component-codeblock-closing-fence-indent.md`,
-`SPEC/COMARK/component-codeblock-indented-opener.md`.
+`SPEC/COMARK/component-codeblock-indented-opener.md`,
+`SPEC/COMARK/component-indented-code-fence.md`,
+`SPEC/COMARK/component-codeblock-invalid-nested-name.md`.
 
 ## Embedded HTML
 
