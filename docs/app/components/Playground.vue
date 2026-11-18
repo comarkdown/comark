@@ -76,6 +76,7 @@ const pluginToggles = useLocalStorage(
   {
     shiki: true,
     rangi: false,
+    pierreHighlights: false,
     math: true,
     emoji: true,
     mermaid: true,
@@ -121,6 +122,19 @@ const pluginDefs = [
     label: 'Rangi Syntax Highlighting',
     icon: 'i-lucide-gauge',
     factory: () => rangi(),
+  },
+  {
+    key: 'pierreHighlights',
+    label: 'Pierre Syntax Highlighting',
+    icon: 'i-lucide-cpu',
+    // Loaded on first use: the module inlines and compiles a ~300 KB wasm lexer.
+    factory: (): ComarkPlugin => ({
+      name: 'pierre-highlights',
+      async post(state) {
+        const { pierreHighlightsCodeBlocks } = await import('@comark/vue/plugins/pierre-highlights')
+        state.tree = pierreHighlightsCodeBlocks(state.tree)
+      },
+    }),
   },
   {
     key: 'mermaid',
@@ -192,9 +206,13 @@ const pluginDefs = [
 
 type PluginKey = (typeof pluginDefs)[number]['key']
 
+const highlighters = ['shiki', 'rangi', 'pierreHighlights'] as const
+
 function setPluginEnabled(key: PluginKey, enabled: boolean): void {
-  if (enabled && key === 'shiki') pluginToggles.value.rangi = false
-  if (enabled && key === 'rangi') pluginToggles.value.shiki = false
+  // Only one syntax highlighter runs at a time.
+  if (enabled && (highlighters as readonly string[]).includes(key)) {
+    for (const other of highlighters) if (other !== key) pluginToggles.value[other] = false
+  }
   pluginToggles.value[key] = enabled
 }
 

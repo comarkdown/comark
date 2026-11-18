@@ -75,6 +75,7 @@ packages/comark/
 │   │   ├── linkify.ts        # Autolinks via linkify-it 6 (default via registerDefaultPlugins; fuzzyLink opt-in)
 │   │   ├── math.ts           # LaTeX math via KaTeX (optional peer: katex)
 │   │   ├── mermaid.ts        # Mermaid diagrams (optional peer: beautiful-mermaid)
+│   │   ├── pierre-highlights.ts # Fast Wasm syntax highlighting with Shiki-compatible output (optional peer: @pierre/highlights)
 │   │   ├── punctuation.ts    # Smart quotes, dashes, and ellipses
 │   │   ├── rangi.ts          # Lightweight syntax highlighting (optional peer: rangi)
 │   │   ├── rangi/language-comark.ts # Standalone Comark grammar for rangi
@@ -187,6 +188,7 @@ import shikiCore from 'comark/plugins/shiki/core'
 import shikiComarkLanguages from 'comark/plugins/shiki/language-comark'
 import rangi, { comarkLanguage, comarkLanguages } from 'comark/plugins/rangi'
 import rangiComarkLanguage from 'comark/plugins/rangi/language-comark'
+import pierreHighlights from 'comark/plugins/pierre-highlights' // `comark` fences use the plain mdc lexer
 import math from 'comark/plugins/math'
 import mermaid from 'comark/plugins/mermaid'
 import emoji from 'comark/plugins/emoji'
