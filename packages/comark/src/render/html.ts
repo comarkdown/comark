@@ -14,10 +14,6 @@ const handlers = { html, comment }
 /**
  * Render a Markdown document to HTML without loading the Markdown serializers or YAML support.
  *
- * @param document - The parsed Markdown document to render
- * @param options - Optional rendering options with custom components and data
- * @returns The HTML string
- *
  * @example
  * ```typescript
  * import { parseMarkdown } from 'comark'

@@ -1,6 +1,6 @@
 ---
 title: Punctuation
-description: Plugin for converting plain-text punctuation into typographically correct Unicode characters.
+description: Convert plain-text quotes, dashes, ellipses, and symbols into typographic Unicode characters.
 seo:
   title: Punctuation Plugin
 navigation:
@@ -18,7 +18,7 @@ links:
     variant: soft
 ---
 
-The `comark/plugins/punctuation` plugin transforms plain-text punctuation into typographically correct Unicode characters: smart quotes, dashes, ellipsis, and common symbols. No peer dependencies required.
+The `comark/plugins/punctuation` plugin transforms plain-text punctuation into typographic Unicode characters: smart quotes, dashes, ellipses, and common symbols. It requires no peer dependencies.
 
 ## Usage
 
@@ -121,7 +121,7 @@ Returns a `ComarkPlugin` that applies typographic transformations to text nodes.
 
 **Parameters:**
 
-- `options?` - Optional configuration, see [Options](#options)
+- `options?`: Optional configuration. See [Options](#options).
 
 **Returns:** `ComarkPlugin`
 

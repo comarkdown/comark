@@ -82,8 +82,6 @@ site:
     )
     const badge = screen.container.querySelector<HTMLElement>('.badge')!
     expect(badge).not.toBeNull()
-    // default label is '' — dot-path that doesn't resolve must not leak the
-    // raw string into the DOM.
     expect(badge.textContent).not.toContain('frontmatter.missing')
   })
 

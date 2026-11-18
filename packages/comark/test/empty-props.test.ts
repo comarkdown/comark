@@ -2,12 +2,10 @@ import { describe, expect, it } from 'vitest'
 import { parseMarkdown } from '../src/index'
 import type { Node } from 'comark'
 
-// Helper to check if a node is an element with a specific tag
 function isElement(node: Node, tag: string): boolean {
   return Array.isArray(node) && node[0] === tag
 }
 
-// Helper to get the attrs object of an element
 function getAttrs(node: Node): Record<string, unknown> {
   return Array.isArray(node) ? ((node[1] as Record<string, unknown>) ?? {}) : {}
 }

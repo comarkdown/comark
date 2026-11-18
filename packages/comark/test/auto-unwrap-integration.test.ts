@@ -2,12 +2,10 @@ import { describe, expect, it } from 'vitest'
 import { parseMarkdown } from '../src/index'
 import type { Node } from 'comark'
 
-// Helper to check if a node is an element with a specific tag
 function isElement(node: Node, tag: string): boolean {
   return Array.isArray(node) && node[0] === tag
 }
 
-// Helper to get children of an element (elements after tag and props)
 function getChildren(node: Node): Node[] {
   if (Array.isArray(node) && node.length > 2) {
     return node.slice(2) as Node[]
@@ -26,10 +24,8 @@ This is **bold** text
 
     expect(alert[0]).toBe('alert')
 
-    // Paragraph should be unwrapped - content should be direct children
     const children = getChildren(alert)
     expect(children.length).toBeGreaterThan(0)
-    // Should have text and strong elements as direct children (no wrapping p)
     const hasDirectText = children.some((child) => typeof child === 'string')
     const hasDirectStrong = children.some((child) => isElement(child, 'strong'))
     expect(hasDirectText).toBe(true)
@@ -46,7 +42,6 @@ This is **bold** text
 
     expect(alert[0]).toBe('alert')
 
-    // Paragraph should remain
     const children = getChildren(alert)
     expect(children).toHaveLength(1)
     expect(isElement(children[0], 'p')).toBe(true)
@@ -64,7 +59,6 @@ Second paragraph
 
     expect(card[0]).toBe('card')
 
-    // Should have two paragraphs (not unwrapped)
     const children = getChildren(card)
     const paragraphs = children.filter((child) => isElement(child, 'p'))
     expect(paragraphs).toHaveLength(2)
@@ -83,7 +77,6 @@ Second paragraph
 
     expect(warning[0]).toBe('warning')
 
-    // Should have both paragraph and list (not unwrapped)
     const children = getChildren(warning)
     const hasParagraph = children.some((child) => isElement(child, 'p'))
     const hasList = children.some((child) => isElement(child, 'ul'))
@@ -104,7 +97,6 @@ console.log('hello')
 
     expect(tip[0]).toBe('tip')
 
-    // Code block (pre) should be preserved, not unwrapped
     const children = getChildren(tip)
     const hasPreElement = children.some((child) => isElement(child, 'pre'))
     expect(hasPreElement).toBe(true)
@@ -122,7 +114,6 @@ console.log('hello')
 
     expect(info[0]).toBe('info')
 
-    // Table should be preserved, not unwrapped
     const children = getChildren(info)
     const hasTable = children.some((child) => isElement(child, 'table'))
     expect(hasTable).toBe(true)
@@ -141,16 +132,13 @@ console.log('hello')
 
       expect(containerWith[0]).toBe(type)
 
-      // Should have unwrapped (no paragraph wrapper)
       const childrenWith = getChildren(containerWith)
       const hasDirectStrong = childrenWith.some((child) => isElement(child, 'strong'))
       expect(hasDirectStrong).toBe(true)
 
-      // Compare with disabled
       const resultWithout = await parseMarkdown(content, { autoUnwrap: false })
       const containerWithout = resultWithout.nodes[0] as Node
 
-      // Should have paragraph wrapper when disabled
       const childrenWithout = getChildren(containerWithout)
       const hasParagraph = childrenWithout.some((child) => isElement(child, 'p'))
       expect(hasParagraph).toBe(true)

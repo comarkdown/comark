@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-// Syncs missing plugin re-exports from comark into framework packages (comark-vue, comark-react).
-// For each plugin in comark/dist/plugins/ not present in a framework package's dist/plugins/,
+// Syncs missing plugin re-exports from comark into renderer packages.
+// For each plugin in comark/dist/plugins/ not present in a package's dist/plugins/,
 // creates a .js and .d.ts file that re-exports from 'comark/plugins/<name>'.
 //
 // Run from repo root: node scripts/sync-plugins.mjs
@@ -14,7 +14,6 @@ const packagesDir = join(root, 'packages')
 
 const comarkPluginsDir = join(packagesDir, 'comark', 'dist', 'plugins')
 
-// Framework packages to sync plugins into
 const frameworkPackages = [
   'comark-vue',
   'comark-react',
@@ -52,7 +51,6 @@ for (const pkg of frameworkPackages) {
   const angularExports = {}
 
   for (const name of comarkPlugins) {
-    // Check if the comark plugin has a default export in its .d.ts
     const comarkDtsPath = join(comarkPluginsDir, `${name}.d.ts`)
     let hasDefault = existsSync(comarkDtsPath)
     if (hasDefault) {

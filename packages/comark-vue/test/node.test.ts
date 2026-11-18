@@ -139,7 +139,6 @@ describe('flatUnwrap', () => {
     const result = flatUnwrap(div, 'div') as any[]
     expect(Array.isArray(result)).toBe(true)
     expect(result).toContain(child)
-    // div itself should not be in the result
     expect(result).not.toContain(div)
   })
 
@@ -147,10 +146,8 @@ describe('flatUnwrap', () => {
     const text = createTextVNode('content')
     const p = h('p', {}, [text])
     const div = h('div', {}, [p])
-    // unwrapping div then p should expose the text node
     const result = flatUnwrap(div, 'div p') as any[]
     expect(Array.isArray(result)).toBe(true)
-    // result should be strings (merged text nodes) not element vnodes
     expect(result.some((item) => typeof item === 'string')).toBe(true)
     expect(result.find((item) => typeof item === 'string')).toBe('content')
   })

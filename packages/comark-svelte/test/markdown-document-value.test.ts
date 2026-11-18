@@ -22,8 +22,8 @@ describe('Markdown value as MarkdownDocument', () => {
   })
 
   it('still renders markdown strings after parse settles', async () => {
-    // Server render of Markdown only emits once parse has completed in $effect —
-    // string path is empty on first SSR tick. MarkdownAsync covers the string path.
+    // Server render of Markdown only emits once parse has completed in $effect;
+    // the string path is empty on first SSR tick, so MarkdownAsync covers it.
     const { body } = await render(MarkdownAsync, {
       props: { value: 'Hello **world**' },
     })

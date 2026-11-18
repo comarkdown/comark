@@ -39,8 +39,7 @@ describe('title-description plugin — combined with toc/summary', () => {
     expectTypeOf(tree.meta.toc).toEqualTypeOf<import('../../src/plugins/toc').Toc>()
     expectTypeOf(tree.meta.summary).toEqualTypeOf<import('../../src/types').Node[]>()
 
-    // Unknown keys still accessible but typed as `unknown` (safer than the
-    // old default of `any`).
+    // Unknown keys remain accessible and are typed as `unknown`.
     expectTypeOf(tree.meta.somethingElse).toEqualTypeOf<unknown>()
   })
 })

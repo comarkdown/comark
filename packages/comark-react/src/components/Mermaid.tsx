@@ -16,13 +16,11 @@ export function Mermaid({ content, className = '', height = 'auto', width = '100
   const [error, setError] = useState<string | null>(null)
   const [isDark, setIsDark] = useState(false)
 
-  // Detect dark mode from HTML class
   useEffect(() => {
     const htmlEl = document.querySelector('html')
     if (htmlEl) {
       setIsDark(htmlEl.classList.contains('dark') || false)
 
-      // Watch for class changes on HTML element
       const observer = new MutationObserver(() => {
         const newIsDark = htmlEl.classList.contains('dark')
         setIsDark(newIsDark)
@@ -37,13 +35,11 @@ export function Mermaid({ content, className = '', height = 'auto', width = '100
     }
   }, [])
 
-  // Update mermaid theme when it changes
   useEffect(() => {
     const renderDiagram = async () => {
       try {
         setError(null)
 
-        // Determine which theme to use based on dark mode and props
         const themeProp = isDark ? themeDark : theme
 
         let resolvedTheme
@@ -53,7 +49,6 @@ export function Mermaid({ content, className = '', height = 'auto', width = '100
           resolvedTheme = themeProp
         }
 
-        // Fallback to default themes if no prop is set
         if (!resolvedTheme) {
           resolvedTheme = THEMES[isDark ? 'tokyo-night' : 'tokyo-light']
         }

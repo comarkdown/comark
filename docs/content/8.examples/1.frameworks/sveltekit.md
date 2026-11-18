@@ -1,6 +1,6 @@
 ---
 title: 'SvelteKit Markdown with SSR and Lazy Components'
-description: A SvelteKit example showing Comark with lazy components, MarkdownAsync, and SSR.
+description: Render Markdown on the server in SvelteKit with lazy components, MarkdownAsync, and MarkdownDocument.
 navigation:
   title: 'SvelteKit'
   icon: i-simple-icons-svelte
@@ -15,19 +15,19 @@ defaultValue: 'src/routes/+page.svelte'
 ---
 ::
 
-::Browser{src="https://comark-sveltekit.vercel.app"}
+::browser{src="https://comark-sveltekit.vercel.app"}
 ::
 
-This example demonstrates how to use Comark with SvelteKit and server-side rendering.
+This example renders Markdown in SvelteKit using two server-side rendering setups: experimental async components and synchronous `load()` parsing.
 
 ## How it works
 
-- **Lazy SSR route** — `/` renders markdown with `<MarkdownAsync>` and resolves custom components through an explicit dynamic import map.
-- **Stable SSR route** — `/stable` parses markdown in `+page.server.ts` and renders the AST with `<MarkdownDocument>`.
-- **Scoped Markdown components** — components rendered from Comark live in `src/lib/components/comark/`, separate from normal app UI components.
-- **Component manifest** — the examples show when to return dynamic imports and when to use eager/static entries for synchronous SSR.
+- **Lazy SSR route**: `/` renders Markdown with `<MarkdownAsync>` from `@comark/svelte/async` and loads custom components on demand through a dynamic import map.
+- **Stable SSR route**: `/stable` parses Markdown inside `+page.server.ts` and passes the serialized document to `<MarkdownDocument>`.
+- **Scoped Markdown components**: components exposed to Markdown live in `src/lib/components/comark/`, separate from application layout components.
+- **Component manifest**: compares dynamic imports for async SSR with static imports for synchronous SSR.
 
-Run locally:
+Run locally from the monorepo root:
 
 ```bash
 pnpm --filter comark-sveltekit dev

@@ -106,9 +106,7 @@ describe('MarkdownNode', () => {
       props: { node: tree.nodes[0], caretClass: '' },
     })
     const output = html(body)
-    // Caret should be inside <strong>, after "last"
     expect(output).toContain(`last<span style="${CARET_STYLE}">\u2009</span></strong>`)
-    // Not after the </strong>
     expect(output).not.toContain(`</strong><span`)
   })
 
@@ -118,7 +116,6 @@ describe('MarkdownNode', () => {
       props: { node: tree.nodes[0], caretClass: 'c' },
     })
     const output = html(body)
-    // Caret should be at the very deepest level, after "deep"
     expect(output).toContain(`deep<span class="c" style="${CARET_STYLE}">\u2009</span>`)
   })
 
@@ -128,7 +125,6 @@ describe('MarkdownNode', () => {
       props: { node: tree.nodes[0], caretClass: '' },
     })
     const output = html(body)
-    // Caret should be after "last" (the last child), not inside <strong>
     expect(output).toContain(`last<span style="${CARET_STYLE}">\u2009</span>`)
     expect(output).not.toContain(`first<span`)
   })
@@ -379,7 +375,6 @@ Footer slot content.
       props: { value: tree, components: {} },
     })
     const output = html(body)
-    // Should render as a native <alert> element, not a custom component
     expect(output).toContain('<alert')
     expect(output).toContain('content')
   })

@@ -11,12 +11,12 @@ describe('pickFence', () => {
   })
 
   it('prefers the fence character with the shorter maximum run', () => {
-    // Backticks present, no tildes → switch to tildes so content cannot close it
+    // Backticks present, no tildes -> switch to tildes so content cannot close it
     expect(pickFence('```')).toBe('~~~')
     expect(pickFence('line\n````\nline')).toBe('~~~')
     expect(pickFence('`````')).toBe('~~~')
 
-    // Tildes present, no backticks → stay on backticks
+    // Tildes present, no backticks -> stay on backticks
     expect(pickFence('~~~')).toBe('```')
     expect(pickFence('~~~~~')).toBe('```')
   })
@@ -27,19 +27,19 @@ describe('pickFence', () => {
   })
 
   it('picks tildes when backticks need a longer fence', () => {
-    // maxB=4, maxT=3 → '~' length 4
+    // maxB=4, maxT=3 -> '~' length 4
     expect(pickFence('````\n~~~')).toBe('~~~~')
-    // maxB=4, maxT=3 → same
+    // maxB=4, maxT=3 -> same
     expect(pickFence('~~~\n````')).toBe('~~~~')
   })
 
   it('picks backticks when tildes need a longer fence', () => {
-    // maxB=3, maxT=5 → '`' length 4
+    // maxB=3, maxT=5 -> '`' length 4
     expect(pickFence('~~~~~\n```')).toBe('````')
   })
 
   it('only counts fence runs at the start of a line (up to 3 spaces)', () => {
-    // maxB=3, maxT=4 → prefer backticks length 4
+    // maxB=3, maxT=4 -> prefer backticks length 4
     expect(pickFence('  ```\n   ~~~~')).toBe('````')
     // 4+ leading spaces is indented code, not a fence closer candidate
     expect(pickFence('    ```\nhello')).toBe('```')
@@ -50,7 +50,7 @@ describe('pickFence', () => {
   it('uses the longest run of the chosen character, minimum 3', () => {
     // only short backtick runs; still length-3 tilde fence
     expect(pickFence('`\n``')).toBe('~~~')
-    // maxB=4, maxT=0 → ~~~ (min 3, not maxT+1)
+    // maxB=4, maxT=0 -> ~~~ (min 3, not maxT+1)
     expect(pickFence('`\n``\n```\n````')).toBe('~~~')
   })
 })

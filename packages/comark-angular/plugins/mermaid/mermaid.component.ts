@@ -94,7 +94,6 @@ export class Mermaid implements OnInit, OnChanges, OnDestroy {
 
     const hostEl = this.elementRef.nativeElement as HTMLElement
 
-    // Clear previous content
     while (hostEl.firstChild) {
       hostEl.removeChild(hostEl.firstChild)
     }

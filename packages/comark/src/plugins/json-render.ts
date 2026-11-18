@@ -6,7 +6,7 @@ import { parseYaml } from '../internal/yaml.ts'
 
 // Budgets for spec expansion. Specs are author-controlled and elements can
 // reference the same key many times (a DAG), so recursive materialization
-// must be bounded — otherwise a ~1KB fence inflates into billions of AST
+// must be bounded; otherwise a ~1KB fence inflates into billions of AST
 // nodes and exhausts the heap before any renderer or sanitizer runs.
 const MAX_EXPANDED_NODES = 10_000
 const MAX_DEPTH = 100
@@ -53,8 +53,6 @@ interface JsonRenderConfig {}
  *
  * Transforms `json-render` fenced code blocks into Comark AST nodes at parse time.
  * Supports both full specs (with `root` and `elements`) and single-element shorthand.
- *
- * @param config - Plugin configuration options
  *
  * @example
  * ```ts
@@ -120,7 +118,7 @@ export default defineComarkPlugin((_config: JsonRenderConfig = {}) => ({
             return jsonRenderToAst(spec)
           }
         } catch {
-          // nothing to do
+          // Ignore malformed or over-budget specs
         }
       }
     )

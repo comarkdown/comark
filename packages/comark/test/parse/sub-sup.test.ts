@@ -3,9 +3,8 @@ import type { MarkdownItPlugin } from '../../src/types'
 import { createMarkdownParser, defineComarkPlugin, parseMarkdown } from '../../src/index'
 
 // Minimal inline rules that mirror what `markdown-it-sub` / `markdown-it-sup`
-// emit: `~text~` → sub_open/text/sub_close, `^text^` → sup_open/text/sup_close.
-// This lets the test pin the bug from comarkdown/comark#201 without pulling in
-// the upstream packages.
+// emit: `~text~` -> sub_open/text/sub_close, `^text^` -> sup_open/text/sup_close.
+// Pins comarkdown/comark#201 without pulling in the upstream packages.
 function makeDelimiterRule(tag: 'sub' | 'sup', char: number) {
   return (state: any, silent: boolean) => {
     if (silent) return false

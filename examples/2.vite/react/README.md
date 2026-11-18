@@ -1,19 +1,22 @@
----
-title: React
-description: A minimal example showing how to use Comark with React and Vite.
-navigation:
-  icon:  i-simple-icons-react
-category: Vite
-path: /examples/vite/react
----
+# React Markdown example with Vite
 
-::code-explorer
----
-org: comarkdown
-repo: comark@81a416b278b0f304d7e7577c7ac6bbfc78414790
-path: examples/2.vite/react
-defaultValue: src/App.tsx
----
-::
+This example renders a Markdown blog, component syntax examples, and a live editor in React and Vite with `@comark/react`.
 
-This example demonstrates the simplest way to use Comark with React - use the `Markdown` component and pass it markdown content. The component handles parsing and rendering automatically.
+## How it works
+
+- **High-level rendering**: pass a Markdown string to `<Markdown>` from `@comark/react` to parse and render in one step.
+- **Pre-parsed rendering**: load `.md` files with `import.meta.glob`, parse them with `parseMarkdown()` and `shiki()`, and pass the document to `<MarkdownDocument>`.
+- **Custom React components**: map components such as `Alert` through the `components` prop.
+
+## Run locally
+
+From the monorepo root:
+
+```bash
+pnpm dev:react
+```
+
+## Documentation
+
+- [Comark documentation](https://comark.dev)
+- [React rendering](https://comark.dev/rendering/react)

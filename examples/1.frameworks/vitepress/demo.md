@@ -1,32 +1,32 @@
-# Comark Demo
+# Comark demo
 
-This page uses [Comark syntax](https://github.com/comarkdown/comark) directly in VitePress Markdown — no wrapper component needed.
+This page uses [Comark syntax](https://github.com/comarkdown/comark) directly in VitePress Markdown without a wrapper component.
 
-The `comark/plugins/components` and `comark/plugins/attributes` plugins are added to VitePress's markdown-it config, enabling the `::` component syntax natively.
+VitePress loads `markdownItComponents` from `comark/plugins/components` and `markdownItAttributes` from `comark/plugins/attributes` in `.vitepress/config.ts`, so `::` block components parse during the standard VitePress build.
 
 ## Alerts
 
 ::alert{type="info"}
-This is an **info** alert rendered using a Vue component registered in the VitePress theme.
+This **info** alert renders through a Vue component registered globally in the VitePress theme.
 ::
 
 ::alert{type="success"}
-Comark's component syntax works natively alongside VitePress's own Markdown features.
+Comark component blocks work alongside VitePress's built-in Markdown extensions.
 ::
 
 ::alert{type="warning"}
-Make sure to register your components globally in the VitePress theme.
+Register custom Vue components globally in `.vitepress/theme/index.ts` so VitePress can resolve them in Markdown pages.
 ::
 
 ::alert{type="danger"}
-This is a danger alert — useful for critical warnings.
+Use a `danger` alert to call out breaking changes or destructive operations.
 ::
 
 ## How it works
 
-1. Add `comark/plugins/components` and `comark/plugins/attributes` to VitePress's markdown-it config
-2. Register Vue components globally in the theme
-3. Write `::component{props}` syntax directly in your `.md` files
+1. Register `markdownItComponents` and `markdownItAttributes` in VitePress's `markdown.config(md)` hook.
+2. Register Vue components globally in the VitePress theme.
+3. Write `::component{props}` blocks directly in `.md` files.
 
 ```ts
 // .vitepress/config.ts
@@ -45,12 +45,12 @@ export default defineConfig({
 
 ## Mixed content
 
-You can mix Comark components with standard VitePress Markdown features:
+Comark components work alongside VitePress Markdown features on the same page:
 
 - **Bold**, *italic*, and `inline code`
-- [Links](https://github.com/comarkdown/comark) work as expected
-- Tables, code blocks, and all VitePress extensions are unaffected
+- [Links](https://github.com/comarkdown/comark)
+- Tables, fenced code blocks, custom containers, and GitHub alerts
 
 ::alert{type="info"}
-This alert sits right next to standard Markdown — everything coexists naturally.
+This alert sits next to standard VitePress lists and headings on the same page.
 ::

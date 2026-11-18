@@ -11,14 +11,11 @@ describe('footnotes plugin', () => {
 
     const tree = await parseMarkdown(md, { plugins: [footnotes()] })
 
-    // Should have the paragraph with the footnote ref and the footnotes section
     expect(tree.nodes.length).toBeGreaterThanOrEqual(2)
 
-    // Find the footnote reference in the tree
     const firstNode = tree.nodes[0]
     expect(Array.isArray(firstNode)).toBe(true)
 
-    // Find the footnotes section
     const section = tree.nodes.find(
       (n) => Array.isArray(n) && n[0] === 'section' && (n[1] as any)?.class === 'footnotes'
     )
@@ -32,7 +29,6 @@ describe('footnotes plugin', () => {
 
     const tree = await parseMarkdown(md, { plugins: [footnotes()] })
 
-    // Find the sup element somewhere in the tree
     function findNode(nodes: any[], tag: string): any {
       for (const node of nodes) {
         if (Array.isArray(node) && node[0] === tag) return node
@@ -67,11 +63,9 @@ describe('footnotes plugin', () => {
     const section = tree.nodes.find((n) => Array.isArray(n) && n[0] === 'section') as any[]
     expect(section).toBeTruthy()
 
-    // Find the ol element
     const ol = section.find((n: any, i: number) => i >= 2 && Array.isArray(n) && n[0] === 'ol')
     expect(ol).toBeTruthy()
 
-    // Count li items
     const lis = ol.slice(2).filter((n: any) => Array.isArray(n) && n[0] === 'li')
     expect(lis.length).toBe(2)
 
@@ -91,7 +85,6 @@ describe('footnotes plugin', () => {
     const ol = section.find((n: any, i: number) => i >= 2 && Array.isArray(n) && n[0] === 'ol')
     const li = ol[2]
 
-    // Find the backref link
     const backref = li
       .slice(2)
       .find((n: any) => Array.isArray(n) && n[0] === 'a' && (n[1] as any)?.class === 'footnote-backref')
@@ -167,7 +160,6 @@ describe('footnotes plugin', () => {
 
     const tree = await parseMarkdown(md, { plugins: [footnotes()] })
 
-    // Should still find the footnotes section
     const section = tree.nodes.find((n) => Array.isArray(n) && n[0] === 'section')
     expect(section).toBeTruthy()
   })
@@ -177,7 +169,6 @@ describe('footnotes plugin', () => {
 
     const tree = await parseMarkdown(md, { plugins: [footnotes()] })
 
-    // No footnotes section should be created
     const section = tree.nodes.find((n) => Array.isArray(n) && n[0] === 'section')
     expect(section).toBeFalsy()
   })
@@ -215,7 +206,7 @@ describe('footnotes plugin', () => {
       return null
     }
 
-    // First reference encountered should be [^b] → [1]
+    // First reference encountered is [^b] -> [1]
     const firstRef = findNode(
       tree.nodes,
       (n: any) => Array.isArray(n) && n[0] === 'a' && (n[1] as any)?.id === 'fnref-b'
@@ -223,7 +214,7 @@ describe('footnotes plugin', () => {
     expect(firstRef).toBeTruthy()
     expect(firstRef[2]).toBe('[1]')
 
-    // Second reference encountered should be [^a] → [2]
+    // Second reference encountered is [^a] -> [2]
     const secondRef = findNode(
       tree.nodes,
       (n: any) => Array.isArray(n) && n[0] === 'a' && (n[1] as any)?.id === 'fnref-a'

@@ -6,7 +6,7 @@ import { component } from './component.ts'
 export function math(node: ElementNode, state: State, parent?: ElementNode): string | Promise<string> {
   const className = node[1].class
   const classes = typeof className === 'string' ? className.split(' ') : []
-  // The math plugin always sets `class="math …"` and `content`, which the Math
+  // The math plugin always sets `class="math ..."` and `content`, which the Math
   // components also need. With neither, this is a `:math` component.
   if (!classes.includes('math') && typeof node[1].content !== 'string') {
     return component(node, state, parent)

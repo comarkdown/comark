@@ -23,7 +23,7 @@ export default defineNuxtConfig({
     full: {
       title: 'Comark Documentation',
       description:
-        'Complete Comark documentation as plain markdown — getting started, syntax, rendering, plugins, API reference, comparisons, and examples.',
+        'Complete Comark documentation as plain markdown: getting started, syntax, rendering, plugins, API reference, comparisons, and examples.',
     },
   },
 

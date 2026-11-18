@@ -55,7 +55,7 @@ export function linkDestination(url: unknown): string {
   return result
 }
 
-/** Escape a link title for `"…"`. `<` / `&` too, so it stays text if the link ever fails to parse. */
+/** Escape a link title for `"..."`. `<` / `&` too, so it stays text if the link ever fails to parse. */
 export function linkTitle(title: unknown): string {
   return String(title).replace(/["\\<&]/g, '\\$&')
 }

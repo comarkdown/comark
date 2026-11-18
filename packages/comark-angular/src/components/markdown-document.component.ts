@@ -17,8 +17,8 @@ const EMPTY_DOCUMENT: MarkdownDocumentType = { nodes: [], frontmatter: {}, meta:
 /**
  * MarkdownDocument component
  *
- * Renders an already-parsed Markdown document to Angular components/HTML — no
- * parser in the client bundle. Supports custom component mapping for
+ * Renders an already-parsed Markdown document to Angular components/HTML, keeping
+ * the parser out of the client bundle. Supports custom component mapping for
  * element tags.
  *
  * @example
@@ -77,8 +77,6 @@ export class MarkdownDocument implements OnInit, OnDestroy {
     return this.value() ?? EMPTY_DOCUMENT
   }
 
-  // Live document support: if an ambient context exists, subscribe to updates
-  // for this key and re-render with the pushed document. Cleaned up on destroy.
   ngOnInit(): void {
     const key = this.inputDocument.meta?.key || this.documentKey()
     if (key && globalThis.comarkContext) {

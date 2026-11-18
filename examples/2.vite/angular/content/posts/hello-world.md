@@ -1,24 +1,24 @@
 ---
-title: Hello World
-description: Getting started with Comark and Angular + Vite.
+title: Hello world
+description: Getting started with Comark, Angular, and Vite.
 pubDate: 2025-12-01
 tags: [comark, angular]
 ---
 
-Welcome to this blog powered by **Comark** and Angular + Vite!
+Welcome to this blog built with **Comark**, Angular, and Vite.
 
-Comark extends standard Markdown with component syntax, and it integrates seamlessly with Angular's standalone components.
+Comark adds component and attribute syntax to Markdown and renders nodes directly into Angular standalone components.
 
 ::alert{type="info"}
-This alert is rendered using a custom Comark component mapped via the `components` input.
+This alert renders through an Angular standalone component registered in the `[components]` input.
 ::
 
-## Why Comark + Angular?
+## Why pair Comark with Angular
 
-- **Standalone** — Uses Angular 17+ standalone components — no NgModules needed
-- **Component syntax** — Embed custom Angular components directly in your Markdown
-- **Content projection** — Children are projected via `<ng-content />`
-- **Fast** — Powered by Vite + Analog for instant HMR
+- **Standalone components**: uses Angular 21+ standalone components without NgModules.
+- **Component syntax**: write `::alert` blocks directly in `.md` files and map them to Angular components.
+- **Content projection**: nested Markdown children project into `<ng-content />`.
+- **Vite dev server**: uses `@analogjs/vite-plugin-angular` for Vite builds and hot module replacement.
 
 ```ts
 import { parseMarkdown } from 'comark'
@@ -29,5 +29,5 @@ const document = await parseMarkdown(markdown)
 ```
 
 ::alert{type="success"}
-You get the best of both worlds: Angular's change detection for dynamic content and Comark for rich rendering.
+Angular manages routing and component inputs while Comark parses Markdown and instantiates mapped components.
 ::

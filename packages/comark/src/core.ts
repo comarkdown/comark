@@ -18,10 +18,7 @@ import { createSerializedTask } from './utils/helpers.ts'
 import { noopTracer, withSpan } from './utils/trace.ts'
 import { tokenListToTree } from './internal/parse/tree.ts'
 
-// Re-export plugin utilities
 export { defineComarkPlugin } from './utils/helpers.ts'
-
-// Re-export types
 export type * from './types.ts'
 
 // A configured `MarkdownExit` instance holds no per-parse state, so parsers
@@ -47,7 +44,7 @@ const sharedParsers = new Map<string, MarkdownExit>()
  *
  * const parse = createMarkdownParser({ plugins: [components()] })
  * const tree = await parse('::alert\nhi\n::')
- * // → [ ['alert', {}, 'hi'] ]
+ * // -> [ ['alert', {}, 'hi'] ]
  * ```
  */
 export function createMarkdownParser<const TPlugins extends readonly ComarkPlugin<any, any>[] = []>(
@@ -89,8 +86,8 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
   const parseFn: ComarkParseFn = async (markdown, opts = {}) => {
     // Root active span for the full parse pipeline. Nested startActiveSpan /
     // startSpan calls become children (OTel active context, or a stack in a
-    // simple recorder) → hierarchical trace:
-    //   comark:parse → autoclose / pre / tokenize / nodes / post
+    // simple recorder), forming a hierarchical trace:
+    //   comark:parse -> autoclose / pre / tokenize / nodes / post
     return await withSpan(tracer, 'comark:parse', async () => {
       const state = {
         options,
@@ -115,7 +112,6 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
           prevOutput
         )
 
-        // If there is no remaining markdown, return the previous output
         if (!remainingMarkdown) return prevOutput
 
         // Heading IDs and reference links depend on the full document.
@@ -138,9 +134,7 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
       try {
         state.tokens = withSpan(tracer, 'comark:tokenize', () => md.parse(state.markdown, {}))
       } catch (e) {
-        // in case of streaming, return the previous output if parsing fails
-        // This is to avoid resetting the tree to an empty state on failure
-        // resetting the tree will re-redner whole tree
+        // Keep the previous tree on a streaming parse failure instead of flashing empty.
         if (opts.streaming && prevOutput) {
           return prevOutput
         }
@@ -180,7 +174,6 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
           meta: {},
           nodes: [...state.reusableNodes, ...nodes],
         }
-        // Set last output and input for streaming mode
         lastOutput = state.tree
         lastInput = markdown
       } else {
@@ -189,7 +182,6 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
           meta: {},
           nodes,
         }
-        // Reset last output and input for non-streaming mode
         lastOutput = null
         lastInput = null
       }

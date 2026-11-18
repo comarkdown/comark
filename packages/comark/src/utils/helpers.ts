@@ -3,7 +3,7 @@ import type { ComarkPlugin, ComarkPluginFactory } from '../types.ts'
 /**
  * Returns a function that invokes `fn` **strictly one at a time**: each call waits until the
  * previous invocation has settled (resolved or rejected) before starting the next.
- * Callers still receive the real result or rejection — failures are not swallowed.
+ * Callers still receive the real result or rejection; failures are not swallowed.
  */
 export function createSerializedTask<TArgs extends unknown[], TResult>(
   fn: (...args: TArgs) => Promise<TResult>

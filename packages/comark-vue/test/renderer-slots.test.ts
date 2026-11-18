@@ -18,7 +18,6 @@ Footer content
 
     const result = await parseMarkdown(markdown)
 
-    // Define a test component that uses slots
     const TestComponent = defineComponent({
       name: 'TestComponent',
       setup(props, { slots }) {
@@ -31,7 +30,6 @@ Footer content
       },
     })
 
-    // Create app with the renderer
     const app = createSSRApp({
       components: { MarkdownDocument },
       setup() {
@@ -47,13 +45,11 @@ Footer content
 
     const html = await renderToString(app as any)
 
-    // Check that the HTML contains all slot content in the right places
     expect(html).toContain('test-component')
     expect(html).toContain('Header content')
     expect(html).toContain('Default content')
     expect(html).toContain('Footer content')
 
-    // Verify structure: header should come before main, main before footer
     const headerIndex = html.indexOf('Header content')
     const defaultIndex = html.indexOf('Default content')
     const footerIndex = html.indexOf('Footer content')
@@ -140,7 +136,6 @@ Copyright by Nuxt
     expect(html).toContain('This is header part')
     expect(html).toContain('Copyright by Nuxt')
 
-    // Verify the HTML structure has the correct slot classes
     expect(html).toContain('slot-header')
     expect(html).toContain('slot-default')
     expect(html).toContain('slot-footer')

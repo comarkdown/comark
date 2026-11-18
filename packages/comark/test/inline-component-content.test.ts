@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest'
 import { parseMarkdown } from '../src/index'
 
 /**
- * The bracket content of `:name[…]` must consume nested `[…]` pairs — images,
- * links and nested components all contain `]` — instead of terminating at the
+ * The bracket content of `:name[...]` must consume nested `[...]` pairs (images,
+ * links, and nested components all contain `]`) instead of terminating at the
  * first `]` and spilling the remainder into the paragraph.
  */
 
