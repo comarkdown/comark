@@ -114,7 +114,10 @@ export async function html(node: ElementNode, state: State, parent?: ElementNode
   const nativeAttributes = toNativeAttributes(String(tag), node, attributes)
   const attrs =
     Object.keys(nativeAttributes).length > 0
-      ? ` ${htmlAttributes(nativeAttributes, { verbatim: !state.context.html && $.html === 1 })}`
+      ? ` ${htmlAttributes(nativeAttributes, {
+          verbatim: !state.context.html && $.html === 1,
+          encodeNewlines: !state.context.html,
+        })}`
       : ''
 
   if (isSelfClose) {
