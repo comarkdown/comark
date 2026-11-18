@@ -239,6 +239,9 @@ catalogs:
     '@nuxtlabs/monarch-mdc':
       specifier: ^0.10.0
       version: 0.10.0
+    '@pierre/highlights':
+      specifier: ^0.5.1
+      version: 0.5.1
     '@shikijs/langs':
       specifier: ^4.6.0
       version: 4.6.0
@@ -1470,6 +1473,9 @@ importers:
       '@json-render/core':
         specifier: 'catalog:'
         version: 0.23.1(zod@4.6.7)
+      '@pierre/highlights':
+        specifier: 'catalog:'
+        version: 0.5.1
       '@shikijs/twoslash':
         specifier: 'catalog:'
         version: 4.6.0(supports-color@10.2.2)(typescript@6.0.3)
@@ -5500,6 +5506,9 @@ packages:
   '@peculiar/x509@1.14.3':
     resolution: {integrity: sha512-C2Xj8FZ0uHWeCXXqX5B4/gVFQmtSkiuOolzAgutjTfseNOHT3pUjljDZsTSxXFGgio54bCzVFqmEOUrIVk8RDA==}
     engines: {node: '>=20.0.0'}
+
+  '@pierre/highlights@0.5.1':
+    resolution: {integrity: sha512-c2WF6sgwgKdxXU6FpWDLWUYHRca/cJy+3QJkWAqYqEAFxqlPf8eSH0ehHcFFjKBmT+9KBl9H7q6z7HMRU7+m6g==}
 
   '@polka/url@1.0.0-next.29':
     resolution: {integrity: sha512-wwQAWhWSuHaag8c4q/KN/vCoeOJYshAIvMQwD4GpSb3OiZklFfvAgmj0VCBBImRpuF/aFgIRzllXlVX93Jevww==}
@@ -17118,6 +17127,8 @@ snapshots:
       reflect-metadata: 0.2.2
       tslib: 2.9.1
       tsyringe: 4.10.0
+
+  '@pierre/highlights@0.5.1': {}
 
   '@polka/url@1.0.0-next.29': {}
 

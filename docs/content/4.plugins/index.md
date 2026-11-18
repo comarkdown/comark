@@ -139,6 +139,10 @@ Register optional plugins through the `plugins` option.
   Highlight code with Rangi (~13 kB with all languages, dual themes)
   ::
 
+  ::card{icon="i-lucide-cpu" title="Pierre" to="/plugins/built-in/pierre-highlights"}
+  Highlight code with @pierre/highlights in WebAssembly (152 languages, Shiki-compatible output)
+  ::
+
   ::card{icon="i-lucide-list" title="Table of contents" to="/plugins/built-in/toc"}
   Build a nested table of contents from document headings
   ::
