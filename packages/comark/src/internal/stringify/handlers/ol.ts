@@ -33,7 +33,9 @@ export async function ol(node: ElementNode, state: State, parent?: ElementNode) 
   }
 
   if (revert.list) {
-    result = '\n' + indent(result, { width: (state.context.listIndent as number) || 2 })
+    // Only a list that starts at 1 can interrupt the item's text: any other
+    // start needs a blank line before it.
+    result = (order === 1 ? '\n' : '\n\n') + indent(result, { width: (state.context.listIndent as number) || 2 })
   } else {
     result = result + state.context.blockSeparator
   }
