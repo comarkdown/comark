@@ -59,3 +59,37 @@ Inline \(E = mc^2\) and \[x^2\] end.`
     expect(await renderMarkdown(document)).toBe(source)
   })
 })
+
+describe('dollar-prefixed tokens and auto-close (#136)', () => {
+  const href = '/Users/user01/.codex/skills/.system/imagegen/SKILL.md'
+
+  it('keeps a trailing `$skill-name` as plain text without the math plugin', async () => {
+    const document = await parseMarkdown('$skill-name')
+
+    expect(document.nodes).toEqual([['p', {}, '$skill-name']])
+    expect(await renderMarkdown(document)).toBe('$skill-name')
+  })
+
+  it('keeps `$` inside link text without the math plugin', async () => {
+    const source = `[$imagegen](${href})`
+    const document = await parseMarkdown(source)
+
+    expect(document.nodes).toEqual([['p', {}, ['a', { href }, '$imagegen']]])
+    expect(await renderMarkdown(document)).toBe(source)
+  })
+
+  it('keeps a link and a trailing `$skill-name.` intact without the math plugin', async () => {
+    const source = `Codex uses [$imagegen](${href}) and $skill-name.`
+    const document = await parseMarkdown(source)
+
+    expect(document.nodes).toEqual([['p', {}, 'Codex uses ', ['a', { href }, '$imagegen'], ' and $skill-name.']])
+    expect(await renderMarkdown(document)).toBe(source)
+  })
+
+  it('auto-closes a trailing unclosed `$` when the math plugin is registered', async () => {
+    const document = await parseMarkdown('Value $x', { plugins: [math()] })
+
+    expect(document.nodes).toEqual([['p', {}, 'Value ', ['math', { class: 'math inline', content: 'x' }, 'x']]])
+    expect(await renderMarkdown(document)).toBe('Value $x$')
+  })
+})
