@@ -17,11 +17,13 @@ export function listItemContentColumn(src: string, start: number, end: number, c
   const markerEnd = column + pos - start
   if (pos >= end) return markerEnd + 1
 
-  let spaces = 0
+  // Padding is measured in columns: a tab moves to the next multiple of 4.
+  let padded = markerEnd
   while (pos < end && (src.charCodeAt(pos) === 0x20 || src.charCodeAt(pos) === 0x09)) {
-    spaces++
+    padded = src.charCodeAt(pos) === 0x09 ? padded + 4 - (padded % 4) : padded + 1
     pos++
   }
+  const spaces = padded - markerEnd
   if (spaces === 0) return -1
 
   // An empty item, or content 5+ columns out (indented code), starts one column after the marker.

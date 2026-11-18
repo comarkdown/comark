@@ -2368,6 +2368,18 @@ Inside a list item, indentation counts from the item's content column:
 + - a\n  - b\n\n    ```\n    x\n    ```\n\n**bold**
 ```
 
+A tab after a list marker pads to the next multiple of 4 columns, and a marker 4+ columns past its container is indented code, not a list item:
+
+```diff
+- -\titem\n\n    ```\n    x\n      ```\n\n**bold
++ -\titem\n\n    ```\n    x\n      ```\n\n**bold**
+```
+
+```diff
+-     - item\n      ~~~\n\n**bold
++     - item\n      ~~~\n\n**bold**
+```
+
 A fence indented 4 or more spaces past its container is indented code, not an opener:
 
 ```diff

@@ -161,6 +161,8 @@ export function autoCloseMarkdown(markdown: string, options: AutoCloseOptions = 
 interface Component {
   depth: number
   indent: string
+  /** Column of `indent`, tabs expanded. */
+  column: number
   yaml: boolean
 }
 
@@ -206,7 +208,7 @@ function scanBlocks(src: string, o: Opts): DocState {
   let fenceLen = 0
   let fenceCh = 0
   let fenceIndent = 0 // a closer must stay within 3 columns of this one (its container's)
-  const listColumns: number[] = [] // content columns of the list items still open, innermost last
+  const lists: ListItems = { columns: [], depth: 0, from: 0 }
   let raw: RawTag | null = null
   let fmOpen = false
   let fmContent = false
@@ -236,26 +238,17 @@ function scanBlocks(src: string, o: Opts): DocState {
       }
     }
 
-    const column = c0 === -1 ? 0 : columnsOf(src, ls, st)
-
-    // A line left of a list item's content ends it
-    if (fenceLen === 0 && !fmOpen && c0 !== -1) {
-      while (listColumns.length > 0 && column < listColumns[listColumns.length - 1]) listColumns.pop()
-      const contentColumn = listItemContentColumn(src, st, en, column)
-      if (contentColumn !== -1) listColumns.push(contentColumn)
-    }
-
     if (c0 === 96 /* ` */ || c0 === 126 /* ~ */) {
       let run = 1
       while (st + run < en && src.charCodeAt(st + run) === c0) run++
       if (run >= 3) {
+        const column = columnsOf(src, ls, st)
         if (fenceLen === 0) {
-          // The container is the innermost open component or list item.
-          const top = comps.length > 0 ? comps[comps.length - 1].indent : ''
-          const container = Math.max(
-            columnsOf(top, 0, top.length),
-            listColumns.length > 0 ? listColumns[listColumns.length - 1] : 0
-          )
+          // An unindented line ends every list item, so only an indented fence reads the list items before it.
+          if (column === 0) lists.depth = 0
+          else catchUpListItems(src, starts, i + 1, comps, lists)
+          lists.from = i + 1
+          const container = containerColumn(comps, lists)
           // `` ```code`` `` is an incomplete inline code span, and 4+ columns past the container is indented code.
           if (!(c0 === 96 && isIncompleteInlineFence(src, st, en)) && column - container < 4) {
             fenceLen = run
@@ -269,6 +262,7 @@ function scanBlocks(src: string, o: Opts): DocState {
           // A closer is the same character, at least as long, and followed only by
           // whitespace. `` ```js `` inside an open block is code content, not a closer.
           fenceLen = 0
+          lists.from = i + 1
           shielded = i
           continue
         } else {
@@ -317,7 +311,7 @@ function scanBlocks(src: string, o: Opts): DocState {
       }
       if (colons >= 2) {
         if (!bare && isNameStart(src.charCodeAt(st + colons))) {
-          comps.push({ depth: colons, indent: src.slice(ls, st), yaml: false })
+          comps.push({ depth: colons, indent: src.slice(ls, st), column: columnsOf(src, ls, st), yaml: false })
         } else if (bare && comps.length > 0 && comps[comps.length - 1].depth === colons) {
           comps.pop()
         }
@@ -379,6 +373,48 @@ function isIncompleteInlineFence(src: string, st: number, en: number): boolean {
 const ATX_HEADING_RE = /^#{1,6}(\s|$)/
 const THEMATIC_BREAK_RE = /^(\*{3,}|_{3,}|-{3,})\s*$/
 const ORDERED_LIST_RE = /^\d{1,9}[.)](\s|$)/
+
+function isBulletOrDigit(c: number): boolean {
+  return c === 45 /* - */ || c === 43 /* + */ || c === 42 /* * */ || (c >= 48 && c <= 57)
+}
+
+/** Content columns of the list items still open, innermost at `depth - 1`; slots past `depth` are stale. */
+interface ListItems {
+  columns: number[]
+  depth: number
+  /** First line not read yet: list items are read only when an indented fence needs them. */
+  from: number
+}
+
+/** Reads the list items on lines `lists.from` up to `to`. Lines inside fences are never read. */
+function catchUpListItems(src: string, starts: number[], to: number, comps: Component[], lists: ListItems): void {
+  for (let j = lists.from; j < to; j++) {
+    const ls = starts[j]
+    const le = j + 1 < starts.length ? starts[j + 1] - 1 : src.length
+    let st = ls
+    while (st < le && isIndentCode(src.charCodeAt(st))) st++
+    if (st < le) trackListItems(src, ls, st, le, comps, lists)
+  }
+}
+
+/**
+ * Ends the list items the line at `ls` is left of, then opens the one it starts.
+ * A line 4+ columns past its container is indented code and opens none.
+ */
+function trackListItems(src: string, ls: number, st: number, en: number, comps: Component[], lists: ListItems) {
+  const column = columnsOf(src, ls, st)
+  while (lists.depth > 0 && column < lists.columns[lists.depth - 1]) lists.depth--
+  if (!isBulletOrDigit(src.charCodeAt(st)) || column - containerColumn(comps, lists) >= 4) return
+  const contentColumn = listItemContentColumn(src, st, en, column)
+  if (contentColumn !== -1) lists.columns[lists.depth++] = contentColumn
+}
+
+/** Column of the innermost open component or list item. */
+function containerColumn(comps: Component[], lists: ListItems): number {
+  const component = comps.length > 0 ? comps[comps.length - 1].column : 0
+  const list = lists.depth > 0 ? lists.columns[lists.depth - 1] : 0
+  return component > list ? component : list
+}
 
 /** Column reached by the indentation in `src[from, to)`, with tabs stopping every 4 columns. */
 function columnsOf(src: string, from: number, to: number): number {

@@ -175,6 +175,15 @@ const markdownItComarkBlock: PluginSimple = (md) => {
         if (start < max) {
           while (listColumns.length > 0 && state.sCount[nextLine] < listColumns[listColumns.length - 1])
             listColumns.pop()
+        }
+
+        // The container is the innermost open component or list item.
+        // A line 4+ columns past it is indented code: it opens no list item and no fence.
+        const componentIndent = openComponents.length ? openComponents[openComponents.length - 1][1] : indent
+        const containerIndent = Math.max(componentIndent, listColumns.length ? listColumns[listColumns.length - 1] : 0)
+        const isIndentedCode = state.sCount[nextLine] - containerIndent >= 4
+
+        if (start < max && !isIndentedCode) {
           const contentColumn = listItemContentColumn(state.src, start, max, state.sCount[nextLine])
           if (contentColumn !== -1) listColumns.push(contentColumn)
         }
@@ -183,14 +192,7 @@ const markdownItComarkBlock: PluginSimple = (md) => {
         if (lineCharCode === 0x60 /* ` */ || lineCharCode === 0x7e /* ~ */) {
           let fencePos = start + 1
           while (fencePos < max && state.src.charCodeAt(fencePos) === lineCharCode) fencePos++
-          // The container is the innermost open component or list item.
-          const componentIndent = openComponents.length ? openComponents[openComponents.length - 1][1] : indent
-          const containerIndent = Math.max(
-            componentIndent,
-            listColumns.length ? listColumns[listColumns.length - 1] : 0
-          )
-          // 4+ columns past the container is indented code, not a fence.
-          if (fencePos - start >= 3 && state.sCount[nextLine] - containerIndent < 4) {
+          if (fencePos - start >= 3 && !isIndentedCode) {
             inCodeFence = true
             codeFenceCharCode = lineCharCode
             codeFenceCount = fencePos - start

@@ -805,17 +805,18 @@ SPEC coverage: `SPEC/COMARK/component-nested-*-outdented.md`,
 
 **Closing fences.** `comark_block` scans ahead for its closing `::` and skips
 code fences on the way. As in CommonMark, a closing fence may sit at most 3
-spaces right of its container: the innermost component or list item still
-open at the opening fence, but never right of that fence. A deeper fence line
-is code content, so a `::` after it does not close the component. An opening
-fence 4+ columns right of its container is indented code and opens nothing.
-Tabs count to the next multiple of 4 columns. `autoCloseMarkdown` follows the
+columns right of its container: the innermost component or list item still
+open at the opening fence, or the opening fence itself when that is further
+left. A deeper fence line is code content, so a `::` after it does not close
+the component. A line 4+ columns right of its container is indented code: it
+opens no fence and no list item. Tabs count to the next multiple of 4 columns. `autoCloseMarkdown` follows the
 same rules; both share `listItemContentColumn()` (`src/internal/list-item.ts`).
 SPEC coverage: `SPEC/COMARK/component-*codeblock-indented-fence.md`,
 `SPEC/COMARK/component-codeblock-closing-fence-indent.md`,
 `SPEC/COMARK/component-codeblock-indented-opener.md`,
 `SPEC/COMARK/component-indented-code-fence.md`,
-`SPEC/COMARK/component-codeblock-invalid-nested-name.md`.
+`SPEC/COMARK/component-codeblock-invalid-nested-name.md`,
+`SPEC/COMARK/component-list-marker-indent.md`.
 
 ## Embedded HTML
 
