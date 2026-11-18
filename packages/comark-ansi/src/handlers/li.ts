@@ -2,8 +2,7 @@ import type { NodeHandler } from 'comark/render'
 import type { ElementNode, Node } from 'comark'
 import { indent } from 'comark/utils'
 
-// Block elements that need explicit indentation in list items.
-// Note: ol/ul are handled by their own handlers which manage indentation via listIndent context.
+// ol/ul manage their own indentation via listIndent context.
 const blockElements = new Set(['pre', 'blockquote', 'table'])
 
 export const li: NodeHandler = async (node, state) => {
@@ -12,7 +11,6 @@ export const li: NodeHandler = async (node, state) => {
 
   let prefix = order ? `${order}. ` : '• '
 
-  // task list item
   const className = String((node[1].className as string[])?.join?.(' ') ?? node[1].class ?? '')
   if (className.includes('task-list-item')) {
     const input = children.shift() as ElementNode
@@ -25,7 +23,6 @@ export const li: NodeHandler = async (node, state) => {
     const rendered = await state.one(child, state, node)
     if (result && Array.isArray(child)) {
       if (blockElements.has(child[0] as string)) {
-        // Block-level child: put on its own line and indent to align with list prefix
         const indented = indent(rendered, { width: prefixWidth })
         result = result.trimEnd() + '\n' + indented.trimEnd() + '\n'
         continue

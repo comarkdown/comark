@@ -51,7 +51,7 @@ export interface MarkdownProps extends RootAttributes {
   options?: Omit<ParserOptions, 'plugins'>
   plugins?: ComarkPlugin[]
   /**
-   * Strip wrapper tags from the top level of the document — shorthand for
+   * Strip wrapper tags from the top level of the document. Shorthand for
    * `options.unwrap`. `true` unwraps `<p>`; a space-separated string or array
    * unwraps the listed tags.
    */

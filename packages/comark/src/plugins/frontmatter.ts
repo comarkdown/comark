@@ -14,7 +14,7 @@
  * import frontmatter from 'comark/plugins/frontmatter'
  *
  * const result = await parseMarkdown('---\ntitle: Hi\n---\n\n# Hello')
- * // result.frontmatter → { title: 'Hi' }
+ * // result.frontmatter -> { title: 'Hi' }
  * ```
  */
 
@@ -29,12 +29,9 @@ export default defineComarkPlugin(() => ({
     state.frontmatter = data
     state.frontmatterText = frontmatterText
 
-    // Count frontmatter lines for line number tracking on subsequent nodes
+    // Offset line numbers on body nodes past the stripped frontmatter (+1 closing fence).
     if (content && frontmatterText) {
-      state.parsedLines =
-        (state.parsedLines ?? 0) +
-        frontmatterText.split('\n').length + // Number of lines in frontmatter
-        1 // Separator line
+      state.parsedLines = (state.parsedLines ?? 0) + frontmatterText.split('\n').length + 1
     }
   },
 }))

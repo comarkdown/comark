@@ -47,10 +47,8 @@ describe('tokenizeCode', () => {
   })
 
   it('does not catastrophically backtrack on headings without attributes', () => {
-    // The heading-with-attributes rule was `^ {0,3}#{1,6}[ \t]+.*?[ \t]*ATTRS[ \t]*$`:
-    // the lazy `.*?` and the greedy `[ \t]*` both matched spaces, so a heading
-    // followed by thousands of spaces and no `{...}` exploded combinatorially
-    // (~9s for 3000 spaces).
+    // A lazy `.*?` before `[ \t]*` would both match spaces and backtrack
+    // catastrophically on headings with thousands of spaces and no `{...}`.
     const payload = `# ${' '.repeat(3_000)}x`
     const tokens = tokenizeCode(payload, 'md')
     expect(tokens.map((t) => t.text).join('')).toBe(payload)

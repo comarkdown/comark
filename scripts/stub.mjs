@@ -34,7 +34,6 @@ for (const srcFile of srcFiles) {
 
   mkdirSync(dirname(distJs), { recursive: true })
 
-  // Relative path from the stub file back to the source file
   let srcRel = relative(dirname(distJs), srcFile).replace(/\\/g, '/')
   if (!srcRel.startsWith('.')) srcRel = './' + srcRel
 

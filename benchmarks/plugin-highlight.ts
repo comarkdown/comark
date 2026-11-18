@@ -90,8 +90,8 @@ npm run build:module-${i + 1}
 `
 ).join('\n')
 
-// markdown-it / markdown-exit produce flat tokens — to get syntax highlighting
-// they still need shiki. We benchmark both pipelines with the same shiki work.
+// markdown-it and markdown-exit produce flat tokens; to get syntax highlighting
+// they still need shiki. Both pipelines run the same shiki work.
 const markdownIt = new MarkdownIt({ html: true, linkify: true })
   .enable(['table', 'strikethrough'])
   .use(markdownItComponents)
@@ -101,18 +101,13 @@ const markdownExit = new MarkdownExit({ html: true, linkify: true })
   .use(markdownItComponents)
   .use(markdownItAttributes)
 
-// comark: baseline vs highlight plugin
 const comark = createMarkdownParser()
 const comarkHl = createMarkdownParser({ plugins: [shiki()] })
 
-// Pre-warm shiki so we benchmark steady-state, not cold-start
+// Warm highlighter and load languages so samples measure steady-state, not cold-start
 const shiki = await getHighlighter()
-
-// Warm up comark shiki to ensure shiki languages are loaded
 await comarkHl(medium)
 
-// Helper: extract fence tokens from markdown-it/exit and highlight them with shiki
-// This simulates what a real markdown-it + shiki pipeline does.
 async function highlightTokens(tokens: any[]) {
   for (const token of tokens) {
     if (token.type === 'fence' && token.info) {

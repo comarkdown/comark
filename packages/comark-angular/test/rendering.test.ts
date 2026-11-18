@@ -10,7 +10,6 @@ describe('@comark/angular — rendering integration', () => {
 
     const h1 = tree.nodes[0] as ElementNode
     expect(h1[0]).toBe('h1')
-    // h1 should have children including 'Hello ' and a strong element
     expect(h1.length).toBeGreaterThan(2)
   })
 
@@ -36,7 +35,6 @@ describe('@comark/angular — rendering integration', () => {
   it('parses links', async () => {
     const tree = await parseMarkdown('[Click here](https://example.com)')
     const p = tree.nodes[0] as ElementNode
-    // Should contain an anchor element
     const hasAnchor = JSON.stringify(p).includes('"a"')
     expect(hasAnchor).toBe(true)
   })
@@ -116,11 +114,9 @@ Card content
     expect(tree).toHaveProperty('meta')
     expect(Array.isArray(tree.nodes)).toBe(true)
 
-    // h1
     const h1 = tree.nodes[0] as ElementNode
     expect(h1[0]).toBe('h1')
 
-    // paragraph
     const p = tree.nodes[1] as ElementNode
     expect(p[0]).toBe('p')
   })

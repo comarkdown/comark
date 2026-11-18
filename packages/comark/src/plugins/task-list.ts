@@ -68,16 +68,12 @@ function attrSet(token: MarkdownItToken, name: string, value: string) {
 function markdownItTaskList(md: MarkdownIt, options?: TaskListOptions) {
   const disableCheckboxes = !(options?.enabled ?? false)
 
-  // Run BEFORE inline parsing to prevent Comark from processing task list markers
   md.core.ruler.before('inline', 'task-lists-mdc', (state: MarkdownItState) => {
     const tokens = state.tokens
 
-    // Track the currently-open list items (and the list containing each) in a
-    // single forward pass. Scanning backwards per inline token is O(n²) on
-    // documents without any list, so plain paragraphs became a DoS vector.
+    // Track open list items and their enclosing lists in one forward pass;
+    // scanning backwards per inline token would make list-free documents O(n^2).
     const openItems: number[] = []
-    // Parallel to openItems: the bullet_list_open/ordered_list_open index that
-    // contains each item (-1 when the item somehow opened without a list).
     const openItemLists: number[] = []
     const openLists: number[] = []
 
@@ -103,26 +99,21 @@ function markdownItTaskList(md: MarkdownIt, options?: TaskListOptions) {
         continue
       }
 
-      // Look for list items that might contain task lists
       if (token.type === 'inline' && token.content && openItems.length > 0) {
-        // Check if content starts with task list marker
         const match = token.content.match(/^(\[[ x]\])\s+/i)
 
         if (match) {
           const isChecked = match[1].toLowerCase() === '[x]'
 
-          // Mark the list item with task-list-item class
           attrSet(tokens[openItems[openItems.length - 1]], 'class', 'task-list-item')
 
-          // Mark the parent list with contains-task-list class
           const listIdx = openItemLists[openItemLists.length - 1]
           if (listIdx >= 0) {
             attrSet(tokens[listIdx], 'class', 'contains-task-list')
           }
 
-          // Replace the task marker with a placeholder that won't be processed by Comark
-          // We use a special format that we can detect later
-          // Keep one space after the placeholder to match expected output
+          // Swap `[x] ` for a text placeholder until inline parsing finishes
+          // so `[x]` isn't parsed as a Comark span.
           const checkboxPlaceholder = `TASK_CHECKBOX_${isChecked ? 'CHECKED' : 'UNCHECKED'} `
           token.content = token.content.replace(/^\[[ x]\]\s+/i, checkboxPlaceholder)
         }
@@ -130,7 +121,6 @@ function markdownItTaskList(md: MarkdownIt, options?: TaskListOptions) {
     }
   })
 
-  // Run AFTER inline parsing to replace placeholders with actual checkbox HTML
   // @ts-expect-error - after is not a valid method on the ruler types
   md.core.ruler.after('inline', 'task-lists-mdc-post', (state: MarkdownItState) => {
     const tokens = state.tokens
@@ -143,14 +133,12 @@ function markdownItTaskList(md: MarkdownIt, options?: TaskListOptions) {
           const child = token.children[j]
 
           if (child.type === 'text' && child.content) {
-            // Check for our checkbox placeholder
             const checkedMatch = child.content.match(/^TASK_CHECKBOX_CHECKED/)
             const uncheckedMatch = child.content.match(/^TASK_CHECKBOX_UNCHECKED/)
 
             if (checkedMatch || uncheckedMatch) {
               const isChecked = !!checkedMatch
 
-              // Create checkbox token
               const checkbox = new state.Token('mdc_inline_component', 'input', 0)
               checkbox.attrs = [
                 ['class', 'task-list-item-checkbox'],
@@ -163,12 +151,10 @@ function markdownItTaskList(md: MarkdownIt, options?: TaskListOptions) {
                 checkbox.attrs.push([':checked', 'true'])
               }
 
-              // Remove placeholder from text
               child.content = child.content.replace(/^TASK_CHECKBOX_(CHECKED|UNCHECKED)/, '')
 
-              // Insert checkbox before the text
               token.children.splice(j, 0, checkbox)
-              j++ // Skip the newly inserted checkbox
+              j++
             }
           }
         }

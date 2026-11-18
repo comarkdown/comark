@@ -19,7 +19,6 @@ const plugins = [
 
 <template>
   <UApp>
-    <!-- Header -->
     <header class="sticky top-0 z-50 border-b border-default bg-default/80 backdrop-blur">
       <UContainer class="flex h-14 items-center justify-between">
         <div class="flex items-center gap-2">
@@ -46,7 +45,6 @@ const plugins = [
       </UContainer>
     </header>
 
-    <!-- Page -->
     <main class="py-12 px-4">
       <UContainer class="max-w-3xl">
         <Suspense>

@@ -4,7 +4,7 @@ interface CaretOptions {
   class?: string
 }
 
-const CARET_TEXT = ' ' // thin space is used to avoid wide spaces between text and caret
+const CARET_TEXT = ' ' // Thin space (U+2009) avoids a wide gap between text and caret
 const CARET_STYLE =
   'background-color: currentColor; display: inline-block; margin-left: 0.25rem; margin-right: 0.25rem; animation: pulse 0.75s cubic-bezier(0.4,0,0.6,1) infinite;'
 
@@ -27,19 +27,16 @@ export function getCaret(options: boolean | CaretOptions): ElementNode | null {
 }
 
 export function findLastTextNodeAndAppendNode(parent: ElementNode, nodeToAppend: ElementNode): boolean {
-  // Traverse nodes backwards to find the last text node
   for (let i = parent.length - 1; i >= 2; i--) {
     const node = parent[i]
 
     if (typeof node === 'string' && parent[1]?.key !== 'stream-caret') {
-      // Found a text node - insert stream indicator after it
       parent.push(nodeToAppend)
 
       return true
     }
 
     if (Array.isArray(node)) {
-      // This is an element node - recursively check its children
       if (findLastTextNodeAndAppendNode(node as ElementNode, nodeToAppend)) {
         return true
       }

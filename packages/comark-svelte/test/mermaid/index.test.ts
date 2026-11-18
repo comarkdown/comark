@@ -16,7 +16,6 @@ describe('Mermaid component (server)', () => {
     })
     const output = html(body)
     expect(output).toContain('<div class="mermaid')
-    // SVG should be rendered
     expect(output).toContain('<svg')
   })
 
@@ -42,7 +41,6 @@ describe('Mermaid component (server)', () => {
       props: { content: 'not valid mermaid' },
     })
     const output = html(body)
-    // Should render the container div even on error
     expect(output).toContain('<div class="mermaid')
   })
 })

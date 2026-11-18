@@ -1,8 +1,6 @@
 /**
- * Indentation shifting for a block component's children.
- *
- * A child indented less than its own `::` marker used to be dropped.
- * These helpers shift the region left instead.
+ * Shift a block component's children left so lines indented less than their
+ * `::` marker still parse inside the block.
  */
 
 import type { StateBlock } from 'markdown-exit/core'

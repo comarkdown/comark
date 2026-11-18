@@ -2,9 +2,9 @@
 import { createComarkContext, parseMarkdown } from 'comark'
 import { MarkdownDocument } from '@comark/vue'
 
-// A driver installs a context on globalThis once; every <MarkdownDocument :id>
-// then auto-subscribes. Here the buttons act as the driver — but it could just
-// as well be HMR, a collab socket, an agent, or devtools.
+// A driver installs a context on globalThis once; every <MarkdownDocument document-key>
+// then auto-subscribes. The buttons act as the driver here, or it could be
+// HMR, a collab socket, an agent, or devtools.
 const ctx = createComarkContext()
 const tree = await parseMarkdown(`# Live document
 

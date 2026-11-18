@@ -230,14 +230,14 @@ describe('reduced findings', () => {
   })
 
   it('renderMarkdown escapes text inside an HTML block (140)', async () => {
-    // The parser keeps `<svg onload=…>` as a text child of <blockquote>; written
+    // The parser keeps `<svg onload=...>` as a text child of <blockquote>; written
     // back verbatim, a third-party renderer would read it as markup.
     const out = await markdown("<blockquote><svg onload=alert('xss')></blockquote>")
     expect(out).not.toMatch(/<svg[^>]*onload/i)
   })
 
   it('renderMarkdown escapes ")" in a link destination (41)', async () => {
-    // `https://safe.com)…` fails URL parsing, so security() keeps it as relative;
+    // `https://safe.com)...` fails URL parsing, so security() keeps it as relative;
     // written back unescaped, the destination ends at ")" and becomes https://safe.com.
     expectOnlyOrigins(await markdown("![](https://safe.com\\)javascript:alert('XSS'))"), ['https://example.com'])
   })

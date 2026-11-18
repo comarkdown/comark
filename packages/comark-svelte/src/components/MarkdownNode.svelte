@@ -2,7 +2,7 @@
 @component
 Recursive Comark AST node renderer.
 
-Renders a single `Node` — either a text string, a native HTML element
+Renders a single `Node`: a text string, a native HTML element
 (via `<svelte:element>`), or a custom component (via a capitalized variable).
 
 Recurses into children by importing itself. The streaming caret is threaded
@@ -167,7 +167,6 @@ naturally appears inline after the deepest trailing text node.
       return { isText, tag, isVoid, children, Component, componentPromise, mappedProps, transformedProps }
     }
 
-    // Comment nodes have null as the tag
     if (node[0] === null) {
       return { isText, tag, isVoid, children, Component, componentPromise, mappedProps, transformedProps }
     }
@@ -176,7 +175,6 @@ naturally appears inline after the deepest trailing text node.
       = (node.length >= 2 ? node[1] : {}) ?? {}
     children = node.length > 2 ? (node.slice(2) as NodeType[]) : []
 
-    // Resolve `:prefix` bindings, then let `transformNode` change the tag or props
     const ownProps = resolveAttributes(nodeProps, renderData, { parseJson: true })
     const transformed = applyNodeTransforms(transformNode, node as ElementNode, ownProps, renderData)
     tag = transformed ? transformed.tag : (node[0] as string)
@@ -192,7 +190,6 @@ naturally appears inline after the deepest trailing text node.
       Component = resolvedComponent
     }
 
-    // Svelte attribute remapping (`className` → `class`)
     for (const k in resolved) {
       if (k === 'className') {
         mappedProps.class = resolved[k]
@@ -206,7 +203,7 @@ naturally appears inline after the deepest trailing text node.
   })
 
   // Only shadow the parent's `props` scope when the current element has its
-  // own attributes. Bare wrappers (`<p>`, `<ul>`, `<li>`, …) must keep the
+  // own attributes. Bare wrappers (`<p>`, `<ul>`, `<li>`, ...) must keep the
   // parent's scope so bindings like `{{ props.x }}` reach across them. The
   // check uses the raw attributes: resolving can omit all of them.
   let nativeProps = $derived(tag ? toNativeAttributes(tag, node, mappedProps) : mappedProps)

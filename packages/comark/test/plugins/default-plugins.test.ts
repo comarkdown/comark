@@ -154,7 +154,7 @@ describe('default plugin options', () => {
         registerDefaultPlugins: false,
         plugins: [probe, userAlert],
       })
-      // No defaults registered, so nothing is hoisted — the user's order rules.
+      // No defaults registered, so nothing is hoisted; the user's order rules.
       expect(order).toEqual(['probe', 'alert'])
     })
   })

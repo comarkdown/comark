@@ -27,22 +27,21 @@ export interface FootnotesConfig {
   backRef?: string
 }
 
-// Regex to match footnote definitions at the start of a line:
 // [^label]: content
 const FOOTNOTE_DEF_RE = /^\[\^([^\s\]]+)\]:[ \t]?(.*)$/gm
 
 /**
  * Labels are author-controlled, so they must not leak raw characters into the
  * `id`/`href` fragment values built below. Encode anything outside a safe
- * charset as `-<hex>-` — deterministic, so references and definitions still
- * match after sanitization.
+ * charset as `-<hex>-` (deterministic, so references and definitions still
+ * match after sanitization).
  */
 function sanitizeLabel(label: string): string {
   return label.replace(/[^a-zA-Z0-9_-]/g, (char) => `-${char.charCodeAt(0).toString(16)}-`)
 }
 
 /**
- * Quick structural check: is this a ['span', {…}, string] tuple?
+ * Quick structural check: is this a `['span', {...}, string]` tuple?
  * Used as the visit() checker to avoid running the full extraction
  * on every node in the tree.
  */
@@ -51,23 +50,19 @@ function maybeFootnoteRef(node: Node): boolean {
 }
 
 /**
- * Check if a node is a footnote reference: ['span', {}, '^label']
- * The MDC parser converts [^label] into ['span', {}, '^label']
- * Returns the label string or null.
+ * Check if a node is a footnote reference (`['span', {}, '^label']`, emitted
+ * by the span parser for `[^label]`). Returns the label string or null.
  */
 function isFootnoteRef(node: Node): string | null {
-  // Caller should pre-check with maybeFootnoteRef for fast rejection
   const attrs = node[1] as Record<string, any>
-  // Check attrs has no keys other than '$' — avoid Object.keys() allocation
+  // Avoid Object.keys() allocation when checking for non-'$' keys.
   for (const k in attrs) {
     if (k !== '$') return null
   }
 
   const child = node[2] as string
-  // Must start with '^' and have at least one label char
   if (child.charCodeAt(0) !== 0x5e /* ^ */ || child.length < 2) return null
 
-  // Check for whitespace using charCode scanning (avoid regex)
   for (let i = 1; i < child.length; i++) {
     if (isSpaceCode(child.charCodeAt(i))) return null
   }
@@ -76,13 +71,8 @@ function isFootnoteRef(node: Node): string | null {
 }
 
 /**
- * Create footnotes plugin for comark
- *
- * This plugin adds support for footnote references `[^label]` and
- * footnote definitions `[^label]: content`. Footnotes are collected
- * and rendered as a numbered list at the end of the document.
- *
- * @param config Footnotes configuration
+ * Adds support for footnote references (`[^label]`) and definitions (`[^label]: content`),
+ * collected and rendered as a numbered list at the end of the document.
  *
  * @example
  * ```ts
@@ -99,27 +89,23 @@ export default defineComarkPlugin((config: FootnotesConfig = {}) => {
 
   return {
     name: 'footnotes',
-    // extract footnote definitions from markdown before MDC parsing
     pre(state) {
       const definitions = new Map<string, string>()
 
-      // Extract and remove footnote definitions from the source
       state.markdown = state.markdown.replace(FOOTNOTE_DEF_RE, (_match, defLabel: string, content: string) => {
         definitions.set(defLabel, content.trim())
-        return '' // Remove the definition line
+        return ''
       })
 
       // Store on state to avoid mixing definitions across parallel parses
       state.footnote = definitions
     },
-    // replace [^ref] spans and build footnotes section
     post(state) {
       const definitions: Map<string, string> = state.footnote
       if (!definitions || definitions.size === 0) return
 
       const refIndexMap = new Map<string, number>()
 
-      // Replace footnote reference spans with sup > a elements
       visit(state.tree, maybeFootnoteRef, (node) => {
         const refLabel = isFootnoteRef(node)
         if (!refLabel || !definitions.has(refLabel)) return
@@ -149,7 +135,6 @@ export default defineComarkPlugin((config: FootnotesConfig = {}) => {
       // Remove empty paragraphs left after definition removal
       nodes = nodes.filter((node) => {
         if (!Array.isArray(node) || node[0] !== 'p') return true
-        // A paragraph with only whitespace children is considered empty
         for (let i = 2; i < node.length; i++) {
           const child = node[i]
           if (typeof child === 'string') {
@@ -161,7 +146,6 @@ export default defineComarkPlugin((config: FootnotesConfig = {}) => {
         return false
       })
 
-      // Build the footnotes section
       if (refIndexMap.size === 0) {
         state.tree.nodes = nodes
         return
