@@ -1,48 +1,54 @@
 ---
 title: Integrating Comark with Astro
-description: How the Comark + Astro integration works under the hood.
+description: How this blog pairs Astro content collections with Comark and React components.
 pubDate: 2026-01-10
 tags: [comark, astro, integration]
 ---
 
-This example uses Astro's content collections with Comark as the Markdown renderer.
+This example pairs Astro content collections with `parseMarkdown()` and `@comark/react`.
 
 ## How it works
 
-Instead of using Astro's built-in remark/rehype pipeline, we use Comark's framework-agnostic API:
+Instead of Astro's default remark and rehype pipeline, each post route parses raw Markdown directly with Comark:
 
-1. **Define collections** — Use `glob()` loader to load `.md` files with Zod-validated frontmatter
-2. **Get the body** — Access the raw Markdown via `entry.body`
-3. **Parse with Comark** — Call `parseMarkdown()` to build the AST
-4. **Render to HTML** — Call `renderHtmlFromDocument()` with custom component renderers
+1. **Define collections**: load `.md` files with Astro's `glob()` loader and validate frontmatter with Zod.
+2. **Read the raw body**: access the unparsed Markdown string on `post.body`.
+3. **Parse with Comark**: call `parseMarkdown()` with `shiki()` to produce a `MarkdownDocument`.
+4. **Render on the server**: pass the document to `MarkdownDocument` from `@comark/react` along with custom components.
 
-```ts
+```astro
+---
+import { getCollection } from 'astro:content'
 import { parseMarkdown } from 'comark'
-import { renderHtmlFromDocument } from '@comark/html'
+import { MarkdownDocument } from '@comark/react'
+import shiki from 'comark/plugins/shiki'
+import Alert from '../../components/Alert'
 
-const doc = await parseMarkdown(entry.body)
-const html = await renderHtmlFromDocument(doc, {
-  components: {
-    alert: async ([tag, attrs, ...children], { render }) => {
-      return `<div class="alert">${await render(children)}</div>`
-    },
-  },
+const document = await parseMarkdown(post.body!, {
+  plugins: [shiki()],
 })
+---
+
+<MarkdownDocument value={document} components={{ Alert }} />
 ```
 
 ::alert{type="info"}
-Since Astro components run on the server, Comark's `parseMarkdown()` and `renderHtmlFromDocument()` are called at build time — zero JavaScript is sent to the client.
+Astro runs `parseMarkdown()` and renders `MarkdownDocument` at build time, so no JavaScript is sent to the browser for post content.
 ::
 
 ## Custom components
 
-You can register any number of custom components. Each one receives the Comark AST element and a `render` helper to process children:
+Map custom React components through the `components` prop on `MarkdownDocument`. Each component receives resolved attributes as props and nested Markdown as `children`:
 
-```ts
-const badge: ComponentRenderFn = async ([tag, attrs, ...children], { render }) => {
-  const color = attrs.color || 'blue'
-  return `<span class="badge badge-${color}">${await render(children)}</span>`
+```tsx
+export default function Alert({ type = 'info', children }: {
+  type?: 'info' | 'warning' | 'success' | 'danger'
+  children?: React.ReactNode
+}) {
+  return (
+    <div className={`alert alert-${type}`} role="alert">
+      {children}
+    </div>
+  )
 }
 ```
-
-This makes it easy to extend your Markdown with reusable, styled components.

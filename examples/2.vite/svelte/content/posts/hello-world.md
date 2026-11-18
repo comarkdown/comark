@@ -1,23 +1,23 @@
 ---
-title: Hello World
-description: Getting started with Comark and Svelte + Vite.
+title: Hello world
+description: Getting started with Comark, Svelte 5, and Vite.
 pubDate: 2025-12-01
 tags: [comark, svelte]
 ---
 
-Welcome to this blog powered by **Comark** and Svelte + Vite!
+Welcome to this blog built with **Comark**, Svelte 5, and Vite.
 
-Comark extends standard Markdown with component syntax, and it renders to real Svelte components.
+Comark adds component and attribute syntax to Markdown and renders nodes directly into Svelte 5 components.
 
 ::Alert{type="info"}
-This alert is rendered using a custom Comark component mapped via the `components` prop.
+This alert renders through a Svelte component mapped in the `components` prop.
 ::
 
-## Why Comark + Svelte?
+## Why pair Comark with Svelte
 
-- **Real components** — Comark renders to Svelte components, so your custom components receive real props and children
-- **Component syntax** — Embed custom components directly in your Markdown
-- **Fast** — Powered by Vite for instant HMR and fast builds
+- **Native Svelte 5 components**: Comark renders into Svelte components, passing props and snippets directly without raw HTML injection.
+- **Component syntax**: write `::Alert` blocks inside `.md` files and render them alongside standard Markdown.
+- **Vite dev server**: bundles raw `.md` files with `import.meta.glob` and updates on save with HMR.
 
 ```ts
 import { parseMarkdown } from 'comark'
@@ -28,5 +28,5 @@ const tree = await parseMarkdown(markdown)
 ```
 
 ::Alert{type="success"}
-You get the best of both worlds: Svelte's reactivity for dynamic content and Comark for rich rendering.
+Svelte 5 runes manage reactive UI state while Comark parses Markdown and instantiates mapped components.
 ::

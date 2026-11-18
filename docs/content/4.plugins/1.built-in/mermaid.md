@@ -1,6 +1,6 @@
 ---
 title: Mermaid diagrams
-description: Plugin for rendering Mermaid diagrams in Comark using code blocks.
+description: Render Mermaid diagrams from fenced code blocks in Comark.
 seo:
   title: Mermaid Diagrams Plugin
 navigation:
@@ -18,10 +18,10 @@ links:
     variant: soft
 ---
 
-The `comark/plugins/mermaid` plugin renders [Mermaid](https://mermaid.js.org/) diagrams from ` ```mermaid ` code blocks. Diagrams are rendered client-side via the `<Mermaid>` component exported alongside the plugin.
+The `comark/plugins/mermaid` plugin renders [Mermaid](https://mermaid.js.org/) diagrams from ` ```mermaid ` code blocks. Diagrams render client-side via the `<Mermaid>` component exported alongside the plugin.
 
 ::note
-[`beautiful-mermaid`](https://github.com/lukilabs/beautiful-mermaid) is a peer dependency, install it alongside Comark: `npm install beautiful-mermaid`
+[`beautiful-mermaid`](https://github.com/lukilabs/beautiful-mermaid) is a peer dependency. Install it alongside Comark with `npm install beautiful-mermaid`.
 ::
 
 ## Usage
@@ -84,7 +84,7 @@ import mermaid, { Mermaid } from '@comark/react/plugins/mermaid'
 
 ### Diagram types
 
-Mermaid supports a wide range of diagram types:
+Supported diagram types include:
 
 **Flowchart**
 
@@ -98,7 +98,7 @@ graph TD
 ```
 ````
 
-**Sequence Diagram**
+**Sequence diagram**
 
 ````markdown
 ```mermaid
@@ -108,7 +108,7 @@ sequenceDiagram
 ```
 ````
 
-**Class Diagram**
+**Class diagram**
 
 ````markdown
 ```mermaid
@@ -120,7 +120,7 @@ classDiagram
 ```
 ````
 
-**State Diagram**
+**State diagram**
 
 ````markdown
 ```mermaid
@@ -132,7 +132,7 @@ stateDiagram-v2
 ```
 ````
 
-**Gantt Chart**
+**Gantt chart**
 
 ````markdown
 ```mermaid
@@ -145,7 +145,7 @@ gantt
 ```
 ````
 
-**Pie Chart**
+**Pie chart**
 
 ````markdown
 ```mermaid
@@ -156,7 +156,7 @@ pie title Pets
 ```
 ````
 
-**Git Graph**
+**Git graph**
 
 ````markdown
 ```mermaid
@@ -170,7 +170,7 @@ gitGraph
 ```
 ````
 
-**ER Diagram**
+**ER diagram**
 
 ````markdown
 ```mermaid
@@ -180,7 +180,7 @@ erDiagram
 ```
 ````
 
-See the [Mermaid documentation →](https://mermaid.js.org/intro/) for full syntax reference on each diagram type.
+See the [Mermaid documentation](https://mermaid.js.org/intro/) for the syntax reference for each diagram type.
 
 ### Code block attributes
 
@@ -203,13 +203,13 @@ Returns a `ComarkPlugin` that marks ` ```mermaid ` code blocks for custom render
 
 **Parameters:**
 
-- `options?` - Optional `MermaidConfig`:
-  - `theme?: ThemeNames` - Sets the `theme` attribute on every diagram node, passed as a prop to the `<Mermaid>` component
-  - `themeDark?: ThemeNames` - Sets the `theme-dark` attribute, used in dark mode
+- `options?`: Optional `MermaidConfig`:
+  - `theme?: ThemeNames`: Sets the `theme` attribute on every diagram node, passed as a prop to the `<Mermaid>` component
+  - `themeDark?: ThemeNames`: Sets the `theme-dark` attribute, used in dark mode
 
 **Returns:** `ComarkPlugin`
 
-The plugin converts mermaid code blocks into AST nodes that the `<Mermaid>` component renders. Rendering requires passing `Mermaid` to the `components` prop of `<Markdown>` (see [Usage](#usage)).
+The plugin converts `mermaid` code blocks into AST nodes that the `<Mermaid>` component renders. Rendering requires passing `Mermaid` to the `components` prop of `<Markdown>` (see [Usage](#usage)).
 
 ---
 
@@ -220,7 +220,7 @@ Props accepted by the `<Mermaid>` component:
 | Prop | Type | Default | Description |
 |---|---|---|---|
 | `content` | `string` | required | The Mermaid diagram source |
-| `theme` | `string` | `undefined` | Mermaid theme, falls back to `tokyo-light` (`tokyo-night` in dark mode), see [available themes](https://github.com/lukilabs/beautiful-mermaid#built-in-themes) |
+| `theme` | `string` | `undefined` | Mermaid theme. Defaults to `tokyo-light` (`tokyo-night` in dark mode). See [available themes](https://github.com/lukilabs/beautiful-mermaid#built-in-themes) |
 | `themeDark` | `string` | `undefined` | Theme to use in dark mode |
 | `width` | `string` | `'100%'` | Container width |
 | `height` | `string` | `'auto'` | Container height |
@@ -231,5 +231,5 @@ Props accepted by the `<Mermaid>` component:
 ## Examples
 
 ::card{icon="i-simple-icons-mermaid" title="Vue + Vite Mermaid" to="/examples/plugins/vue-vite-mermaid"}
-Complete working implementation with multiple diagram types.
+Runnable Vue and Vite example rendering multiple Mermaid diagram types.
 ::

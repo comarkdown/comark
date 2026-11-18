@@ -6,32 +6,32 @@ description: >-
 
 # Migrate from @nuxtjs/mdc to Comark
 
-`@nuxtjs/mdc` was Nuxt-only. Comark is its successor: the markdown syntax is fully compatible, your `.md` files need no changes. What changes is the JavaScript API.
+`@nuxtjs/mdc` was Nuxt-only. Comark is its successor. The Markdown syntax is compatible, so your `.md` files need no changes. What changes is the JavaScript API.
 
-The migration has two parts: **Core Package** (programmatic API) and **Nuxt Module** (components, slots, config).
+The migration has two parts: the **core package** (programmatic API) and the **Nuxt module** (components, slots, and config).
 
-## Quick Overview
+## Quick overview
 
-- **Package**: `@nuxtjs/mdc` → `comark` (core only) or `@comark/vue` (Vue renderer and Nuxt module)
-- **Parse**: `parseMarkdown()` → `parseMarkdown()` · factory: `createMarkdownParser()` (sync, no await)
-- **Render**: `stringifyMarkdown()` → `renderMarkdown()` from `comark/render`
-- **AST**: object tree → compact tuples `['tag', props, ...children]`
-- **Result**: `result.body` / `result.data` → `document.nodes` / `document.frontmatter`
-- **Renderer**: `<MDCRenderer :body :data>` → `<MarkdownDocument :value>`
-- **All-in-one**: `<MDC :value>` → `<Markdown :value>`
-- **Slots**: `<MDCSlot />` → native `<slot />`
-- **Plugins**: global `nuxt.config` → per-component `defineMarkdownComponent({ plugins })`
+- **Package**: `@nuxtjs/mdc` -> `comark` (core only) or `@comark/vue` (Vue renderer and Nuxt module)
+- **Parse**: `parseMarkdown()` -> `parseMarkdown()`, or `createMarkdownParser()` (synchronous, no `await`)
+- **Render**: `stringifyMarkdown()` -> `renderMarkdown()` from `comark/render`
+- **AST**: object tree -> compact tuples `['tag', props, ...children]`
+- **Result**: `result.body` / `result.data` -> `document.nodes` / `document.frontmatter`
+- **Renderer**: `<MDCRenderer :body :data>` -> `<MarkdownDocument :value>`
+- **All-in-one**: `<MDC :value>` -> `<Markdown :value>`
+- **Slots**: `<MDCSlot />` -> native `<slot />`
+- **Plugins**: global `nuxt.config` -> per-component `defineMarkdownComponent({ plugins })`
 - **Binding**: `{{ path }}` via opt-in `binding()` plugin + render-time `data` prop (namespaced paths: `data.`, `frontmatter.`, `meta.`, `props.`)
 - **Markdown files**: component syntax unchanged; update binding paths if you used bare MDC names
 
-## Core Package
+## Core package
 
-### API Mapping
+### API mapping
 
 | `@nuxtjs/mdc` | `comark` |
 |---|---|
 | `parseMarkdown(md, opts)` | `parseMarkdown(md, opts)` from `comark` |
-| `createMarkdownParser(opts)` (async) | `createMarkdownParser(opts)` (sync, no await) |
+| `createMarkdownParser(opts)` (async) | `createMarkdownParser(opts)` (sync, no `await`) |
 | `stringifyMarkdown(body, data)` | `renderMarkdown(document)` from `comark/render` |
 | `result.body` (`MDCRoot`) | `document.nodes` (`Node[]`) |
 | `result.data` | `document.frontmatter` |
@@ -39,7 +39,7 @@ The migration has two parts: **Core Package** (programmatic API) and **Nuxt Modu
 | `result.toc` | `document.meta.toc` (requires `toc` plugin) |
 | `result.excerpt` | `document.meta.summary` (requires `summary` plugin) |
 
-### AST Format
+### AST format
 
 | `@nuxtjs/mdc` | `comark` |
 |---|---|
@@ -47,7 +47,7 @@ The migration has two parts: **Core Package** (programmatic API) and **Nuxt Modu
 | `{ type: 'element', tag: 'p', props: {}, children: [] }` | `['p', {}, ...children]` |
 | `{ type: 'text', value: 'hello' }` | `'hello'` (plain string) |
 
-### Parse Options
+### Parse options
 
 ```typescript
 // Before: MDCOptions
@@ -74,13 +74,13 @@ The `unified`/`remark`/`rehype` pipeline is replaced by Comark's own lighter plu
 | Feature | Before | After |
 |---|---|---|
 | Syntax highlighting | `rehypeHighlight` via `createMarkdownParser` | `shiki()` from `comark/plugins/shiki` |
-| Table of Contents | `parseMarkdown(md, { toc: { depth: 3 } })` | `toc({ depth: 3 })` plugin |
-| Excerpt / Summary | `result.excerpt` (built-in) | `summary()` plugin → `document.meta.summary` |
+| Table of contents | `parseMarkdown(md, { toc: { depth: 3 } })` | `toc({ depth: 3 })` plugin |
+| Excerpt / summary | `result.excerpt` (built-in) | `summary()` plugin (`document.meta.summary`) |
 | Emoji | `remark-emoji` (enabled by default) | `emoji()` plugin (opt-in) |
 
-Available plugins include: `toc`, `shiki`, `emoji`, `task-list`, `summary`, `security`, `alert`, `math`, `mermaid`, `punctuation`, `binding`. Prefer framework paths in apps (`@comark/vue/plugins/*`); use `comark/plugins/*` only for bare `parseMarkdown()`.
+Available plugins include `toc`, `shiki`, `emoji`, `task-list`, `summary`, `security`, `alert`, `math`, `mermaid`, `punctuation`, and `binding`. Prefer framework paths in apps (`@comark/vue/plugins/*`), and use `comark/plugins/*` only with bare `parseMarkdown()`.
 
-## Nuxt Module
+## Nuxt module
 
 ### Configuration
 
@@ -98,7 +98,7 @@ export default defineNuxtConfig({
 })
 ```
 
-`@comark/vue` auto-imports: `Markdown`, `MarkdownDocument`, `defineMarkdownComponent`, `defineMarkdownDocumentComponent`.
+`@comark/vue` auto-imports `Markdown`, `MarkdownDocument`, `defineMarkdownComponent`, and `defineMarkdownDocumentComponent`.
 
 ### Components
 
@@ -117,15 +117,15 @@ For a pre-parsed document, use `<MarkdownDocument>` directly instead of `<Markdo
 | MDC `<MDCRenderer>` | Comark `<MarkdownDocument>` | Notes |
 |---|---|---|
 | `body` (`MDCRoot`) | `value` (`MarkdownDocument`) | Different AST shape |
-| `data` | — | Frontmatter is in `value.frontmatter` |
-| `tag` | — | Wrapper is always `<div class="comark-content">` |
-| `prose` | — | `Prose*` resolution is automatic |
+| `data` | None | Frontmatter is in `value.frontmatter` |
+| `tag` | None | Wrapper is always `<div class="comark-content">` |
+| `prose` | None | `Prose*` resolution is automatic |
 | `unwrap` | `unwrap` prop / parse option | `<Markdown unwrap />` or parse `unwrap` |
-| — | `data` | Runtime values for data binding / `{{ }}` — not frontmatter |
+| None | `data` | Runtime values for data binding and `{{ }}`, not frontmatter |
 | `components` | `components` | Same purpose |
-| — | `componentsManifest` | New: dynamic async component resolver |
-| — | `streaming` | New: streaming mode |
-| — | `caret` | New: animated caret for streaming |
+| None | `componentsManifest` | New: dynamic async component resolver |
+| None | `streaming` | New: streaming mode |
+| None | `caret` | New: animated caret for streaming |
 
 #### Summary rendering
 
@@ -157,13 +157,13 @@ export const ArticleMarkdown = defineMarkdownComponent({
 
 ### Slots
 
-`<MDCSlot />` → native `<slot />`. Named slots work the same (`#slotName` in markdown, `<slot name="slotName">` in component). The `unwrap` attribute (`<slot unwrap="p">`) strips wrapper tags from children.
+Replace `<MDCSlot />` with native `<slot />`. Named slots work the same (`#slotName` in Markdown, `<slot name="slotName">` in the component). The `unwrap` attribute (`<slot unwrap="p">`) strips wrapper tags from children.
 
-### Prose Components
+### Prose components
 
-Same `Prose*.vue` naming convention. Resolution changed from kebab-case (`prose-p`) to PascalCase (`ProseP`) internally. The Comark Nuxt module does not register `components/prose/` globally: pass the components through `components` / `defineMarkdownComponent()`, or add `components: [{ path: '~/components/prose', global: true, pathPrefix: false }, '~/components']` to `nuxt.config.ts`.
+`Prose*.vue` uses the same naming convention, resolved internally as PascalCase (`ProseP`) rather than kebab-case (`prose-p`). The Comark Nuxt module does not register `components/prose/` globally. Pass the components through `components` or `defineMarkdownComponent()`, or add `components: [{ path: '~/components/prose', global: true, pathPrefix: false }, '~/components']` to `nuxt.config.ts`.
 
-### Nuxt UI Integration
+### Nuxt UI integration
 
 When using Nuxt UI, the `@comark/vue` Nuxt module registers Nuxt UI prose components automatically. Shorthand callout components are available:
 
@@ -176,16 +176,16 @@ When using Nuxt UI, the `@comark/vue` Nuxt module registers Nuxt UI prose compon
 
 These are **only available with Nuxt UI**. Without it, use `::callout{icon="..." color="..."}`.
 
-## Common Pitfalls
+## Common pitfalls
 
-1. **`createMarkdownParser` is sync**: no `await` needed (unlike `createMarkdownParser`)
-2. **Attribute naming**: Comark uses `attrs.lang`, not `attrs.language`
-3. **Frontmatter**: stored in `document.frontmatter`, not passed separately
-4. **`renderMarkdown` includes frontmatter**: reads `document.frontmatter` automatically
-5. **No `unified` pipeline**: `mdc.config.ts` hooks (`pre`, `remark`, `rehype`, `post`) have no equivalent, use `ComarkPlugin` interface instead
-6. **Emoji is opt-in**: not enabled by default like in MDC's `remark-emoji`
+1. **`createMarkdownParser` is sync**: no `await` needed (unlike `@nuxtjs/mdc`'s `createMarkdownParser`).
+2. **Code block language attribute**: Comark sets `attrs.language` on `<pre>` nodes and `class="language-*"` on `<code>` nodes.
+3. **Frontmatter**: stored in `document.frontmatter`, not passed separately.
+4. **`renderMarkdown` includes frontmatter**: reads `document.frontmatter` automatically.
+5. **No `unified` pipeline**: `mdc.config.ts` hooks (`pre`, `remark`, `rehype`, `post`) have no direct equivalent; write a `ComarkPlugin` instead.
+6. **Emoji is opt-in**: not enabled by default like MDC's `remark-emoji`.
 
-## Component Syntax
+## Component syntax
 
 The MDC block and inline component syntax is identical, so no changes are needed in `.md` files for components, slots, and attributes.
 

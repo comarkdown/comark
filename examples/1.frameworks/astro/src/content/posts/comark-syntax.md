@@ -1,38 +1,38 @@
 ---
-title: Comark Syntax Guide
-description: A quick tour of what you can do with Comark's component syntax.
+title: Comark syntax guide
+description: A tour of standard Markdown and Comark component syntax.
 pubDate: 2025-12-15
 tags: [comark, syntax, components]
 ---
 
-Comark is **Components in Markdown** — it extends standard Markdown with a powerful component syntax.
+Comark adds block and inline component syntax to CommonMark and GFM.
 
 ## Inline formatting
 
-You can use all the usual Markdown formatting: **bold**, *italic*, `code`, and [links](https://comark.dev).
+Standard Markdown formatting works everywhere: **bold**, *italic*, `code`, and [links](https://comark.dev).
 
 ## Components
 
-Components use the `::` syntax. They can have attributes and children:
+Block components open and close with `::` and accept props in `{...}`:
 
 ::alert{type="warning"}
-Pay attention to the double-colon syntax — it's how Comark identifies components.
+Double colons open a block component, and props inside curly braces pass directly to the rendered component.
 ::
 
 ## Lists
 
-Comark handles lists, of course:
+Unordered and ordered lists support nested inline formatting:
 
 - First item
 - Second item with **bold** text
 - Third item with `inline code`
 
-1. Numbered items work too
-2. With full Markdown support inside
+1. Numbered items
+2. Nested Markdown inside each item
 
 ## Code blocks
 
-Syntax highlighting works out of the box:
+Fenced code blocks highlight through the `shiki` plugin:
 
 ```js
 function greet(name) {
@@ -42,8 +42,8 @@ function greet(name) {
 
 ## Block quotes
 
-> Comark makes Markdown more powerful without sacrificing simplicity.
+> Standard block quotes, lists, and code blocks can sit outside or inside custom components.
 
 ::alert{type="danger"}
-Don't forget to close your components with `::` — otherwise `autoClose` will handle it for you!
+Close block components with `::`. During streaming, `autoClose` closes unfinished blocks until the closing marker arrives.
 ::

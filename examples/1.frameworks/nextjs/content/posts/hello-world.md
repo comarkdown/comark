@@ -1,23 +1,23 @@
 ---
-title: Hello World
-description: Getting started with Comark and Next.js.
+title: Hello world
+description: Getting started with Comark and Next.js Server Components.
 pubDate: 2025-12-01
 tags: [comark, nextjs]
 ---
 
-Welcome to this blog powered by **Comark** and Next.js!
+Welcome to this blog built with **Comark** and the Next.js App Router.
 
-Comark extends standard Markdown with component syntax, and it integrates seamlessly with Next.js's server-first architecture.
+Comark adds component and attribute syntax to Markdown and renders through React Server Components at build time.
 
 ::alert{type="info"}
-This alert is rendered using a custom Comark component — no client-side JavaScript required.
+This alert renders on the server through a custom React component, without shipping parser code to the client.
 ::
 
-## Why Comark + Next.js?
+## Why pair Comark with Next.js
 
-- **Server-rendered** — Comark parses and renders on the server via `parseMarkdown()` and `MarkdownDocument`
-- **Static generation** — Full SSG with `generateStaticParams` for zero-latency delivery
-- **Component syntax** — Embed custom components directly in your Markdown
+- **Server-rendered**: `parseMarkdown()` and `MarkdownDocument` run inside Server Components.
+- **Static export**: `generateStaticParams` pre-renders every post to static HTML at build time.
+- **Component syntax**: write `::alert` and `::feature-card` blocks directly in `.md` files.
 
 ```ts
 import { parseMarkdown } from 'comark'
@@ -28,5 +28,5 @@ const tree = await parseMarkdown(markdown)
 ```
 
 ::alert{type="success"}
-You get the best of both worlds: Next.js's static generation for performance and Comark for rich rendering.
+Next.js handles routing and static export while Comark parses frontmatter, highlights code, and renders React components.
 ::

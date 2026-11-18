@@ -1,42 +1,26 @@
----
-title: Rangi
-description: Example showing how to use Comark with lightweight syntax highlighting via rangi in Vue and Vite.
-navigation:
-  icon: i-lucide-zap
-category: Plugins
-path: /examples/plugins/vue-vite-rangi
----
+# Syntax highlighting with Rangi in Vue and Vite
 
-::code-explorer
----
-org: comarkdown
-repo: comark
-path: examples/3.plugins/vue-vite-rangi
-defaultValue: src/App.vue
----
-::
+This example highlights code blocks and language-tagged inline code in Vue and Vite using `@comark/vue/plugins/rangi`.
 
 ## Features
 
-This example demonstrates how to use Comark with the lightweight `rangi` plugin in Vue:
-
-- **Tiny footprint**: `rangi` is ~13kB all-in (or ~1.5kB core)
-- **Built-in themes**: Pass pairs like `github` from `rangi/themes`
-- **Dual-theme CSS vars**: Same `--shiki-dark*` hooks as the Shiki plugin
-- **Line highlighting**: Fence info `{2-3,5}` marks lines with `.highlight`
-- **Language aliases**: Built into rangi (`javascript`, `typescript`, `python`, …)
-- **Comark grammar**: `comark` / `mdc` / `md` / `markdown` fences highlight Comark syntax itself
-- **Fully synchronous**: No async highlighter warmup
+- **Small bundle**: Rangi ships at roughly 13 kB all-in, or 1.5 kB for the core tokenizer.
+- **Built-in theme pairs**: accepts single themes or light/dark pairs such as `github` from `rangi/themes`.
+- **Dual-theme CSS variables**: emits the same `--shiki-dark*` custom properties as the Shiki plugin.
+- **Line highlighting**: marks lines specified in fence attributes such as `{2-3,5}` with `.highlight`.
+- **Language aliases**: resolves common names such as `javascript`, `typescript`, and `python`.
+- **Comark grammar**: highlights `comark`, `mdc`, `md`, and `markdown` fences with Comark component and binding tokens.
+- **Synchronous highlighting**: tokenizes during parse with no async highlighter initialization.
 
 ## Usage
 
-### 1. Install Dependencies
+### 1. Install Rangi
 
 ```bash
 npm install rangi
 ```
 
-### 2. Configure the Plugin
+### 2. Configure the plugin
 
 ```vue
 <script setup lang="ts">
@@ -54,7 +38,7 @@ import { github } from 'rangi/themes'
 </template>
 ```
 
-### 3. Dual-theme CSS (optional class toggle)
+### 3. Add dark-theme CSS rules
 
 ```css
 body.dark .shj span {
@@ -66,9 +50,9 @@ body.dark pre.shj {
 }
 ```
 
-### 4. Highlighting Comark itself
+### 4. Highlight Comark syntax
 
-The Comark grammar is registered automatically — no configuration needed. A ` ```comark ` fence highlights frontmatter, block/inline components, spans, attributes, bindings and named slots:
+The Rangi plugin registers the Comark grammar by default. A `comark` fence highlights frontmatter, block and inline components, spans, attributes, bindings, and named slots:
 
 ````md
 ```comark
@@ -87,40 +71,48 @@ Named slot content.
 ```
 ````
 
-`md` and `markdown` fences use it too, since Comark is a superset of Markdown. To opt out, pass rangi's own grammar:
+`md` and `markdown` fences also use the Comark grammar because Comark is a superset of Markdown. To use Rangi's plain Markdown grammar instead, pass `languages`:
 
-```typescript
+```ts
 import { md } from 'rangi/languages'
 
 rangi({ languages: { md, markdown: md } })
 ```
 
-## Configuration Options
+## Configuration options
 
-```typescript
+```ts
 rangi({
   // Single theme or { light, dark } pair from rangi/themes
   theme: github,
-  // Always wrap lines for gutters (highlights wrap lines automatically)
+  // Wrap lines for line-number gutters (line highlights wrap automatically)
   lineNumbers: true,
   classPrefix: 'shj',
 })
 ```
 
-## When to use rangi vs shiki
+## Choosing between Rangi and Shiki
 
-| | `rangi` | `shiki` |
-|---|---|---|
-| Bundle size | Tiny | Larger (TextMate grammars) |
-| Lexing | Regex tokenizer | TextMate grammars |
-| Theming | Built-in themes / pairs | Dual themes + CSS vars |
-| Transformers / Twoslash | No | Yes |
-| Language coverage | ~46 languages + Comark | 180+ |
-| Best for | Chat UIs, SSG, small apps | Docs sites, rich code samples |
+| Aspect | `rangi` | `shiki` |
+| --- | --- | --- |
+| Bundle size | ~13 kB (or ~1.5 kB core) | Larger (TextMate grammars) |
+| Tokenizer | Regex | TextMate |
+| Theming | Built-in themes and light/dark pairs | Dual themes and CSS variables |
+| Transformers and Twoslash | No | Yes |
+| Language coverage | ~46 languages plus Comark | 180+ languages |
+| Typical fit | Chat UIs, SSG, bundle-constrained apps | Documentation sites, Twoslash type hovers |
 
-## Learn More
+## Run locally
 
-- [Rangi Plugin Documentation](https://comark.dev/plugins/built-in/rangi)
-- [Shiki Plugin](https://comark.dev/plugins/built-in/shiki)
-- [rangi](https://github.com/pi0/rangi)
-- [Comark Documentation](https://comark.dev)
+From the monorepo root:
+
+```bash
+pnpm dev:rangi
+```
+
+## Learn more
+
+- [Rangi plugin documentation](https://comark.dev/plugins/built-in/rangi)
+- [Shiki plugin documentation](https://comark.dev/plugins/built-in/shiki)
+- [Rangi repository](https://github.com/pi0/rangi)
+- [Comark documentation](https://comark.dev)

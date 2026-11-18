@@ -1,38 +1,21 @@
----
-title: Math formulas
-description: Example showing how to use Comark with LaTeX math formulas in React and Vite.
-navigation:
-  icon:  i-lucide-calculator
-category: Plugins
-path: /examples/plugins/react-vite-math
----
+# LaTeX math formulas in React and Vite
 
-::code-explorer
----
-org: comarkdown
-repo: comark@8d0c4a8023b71e8588ee6328820a2f26f2285232
-path: examples/3.plugins/react-vite-math
-defaultValue: src/App.tsx
----
-::
+This example renders inline and display LaTeX math expressions in React and Vite using `@comark/react/plugins/math` and KaTeX.
 
 ## Features
 
-This example demonstrates how to use Comark with LaTeX math formulas in React:
-
-- **Math Plugin**: Import and configure the `math` plugin to parse `$...$` and `$$...$$` expressions
-- **Math Component**: Register the `Math` component to render formulas using KaTeX
-- **Inline & Display Math**: Supports both inline formulas and display equations
-- **Full LaTeX Syntax**: All KaTeX-supported LaTeX commands work
+- Parses `$...$` inline formulas and `$$...$$` display blocks with the `math` plugin.
+- Renders parsed expressions through the `Math` React component and KaTeX stylesheet.
+- Supports fractions, integrals, sums, matrices, Greek letters, subscripts, and superscripts.
 
 ## Usage
 
-1. Install dependencies:
+1. Install the renderer and `katex` peer dependency:
    ```bash
    npm install @comark/react katex
    ```
 
-2. Import the math plugin, component, and KaTeX CSS:
+2. Import the `math` plugin, `Math` component, and KaTeX stylesheet:
    ```tsx
    import { MarkdownClient } from '@comark/react'
    import math, { Math } from '@comark/react/plugins/math'
@@ -48,7 +31,7 @@ This example demonstrates how to use Comark with LaTeX math formulas in React:
    />
    ```
 
-4. Use math expressions in your markdown:
+4. Write math expressions in Markdown:
    ```markdown
    Inline: $E = mc^2$
 
@@ -58,37 +41,45 @@ This example demonstrates how to use Comark with LaTeX math formulas in React:
    $$
    ```
 
-## Syntax Examples
+## Syntax examples
 
-**Inline Math**: Use single `$` delimiters
-```markdown
-The formula $x^2 + y^2 = z^2$ is inline.
+- **Inline math**: wrap an expression in single `$` delimiters:
+  ```markdown
+  The formula $x^2 + y^2 = z^2$ is inline.
+  ```
+
+- **Display math**: wrap a block equation in `$$` delimiters:
+  ```markdown
+  $$
+  \int_0^\infty e^{-x^2} dx = \frac{\sqrt{\pi}}{2}
+  $$
+  ```
+
+- **Fractions**: use `\frac{numerator}{denominator}`:
+  ```markdown
+  $\frac{a}{b}$
+  ```
+
+- **Greek letters**: use commands such as `\alpha`, `\beta`, and `\gamma`:
+  ```markdown
+  $\alpha + \beta = \gamma$
+  ```
+
+- **Subscripts and superscripts**: use `_` and `^`:
+  ```markdown
+  $x_1^2 + x_2^2$
+  ```
+
+## Run locally
+
+From the monorepo root:
+
+```bash
+pnpm dev:react:math
 ```
 
-**Display Math**: Use double `$$` delimiters
-```markdown
-$$
-\int_0^\infty e^{-x^2} dx = \frac{\sqrt{\pi}}{2}
-$$
-```
+## Learn more
 
-**Fractions**: `\frac{numerator}{denominator}`
-```markdown
-$\frac{a}{b}$
-```
-
-**Greek Letters**: `\alpha`, `\beta`, `\gamma`, etc.
-```markdown
-$\alpha + \beta = \gamma$
-```
-
-**Subscripts & Superscripts**: `_` and `^`
-```markdown
-$x_1^2 + x_2^2$
-```
-
-## Learn More
-
-- [Math Plugin Documentation](/plugins/built-in/math)
-- [KaTeX Documentation](https://katex.org)
-- [Comark Documentation](https://comark.dev)
+- [Mathematics plugin documentation](https://comark.dev/plugins/built-in/math)
+- [KaTeX documentation](https://katex.org)
+- [Comark documentation](https://comark.dev)
