@@ -19,7 +19,7 @@ export async function template(node: ElementNode, state: State, parent?: Element
       (child) => Array.isArray(child) && (child as ElementNode)[0] === 'template'
     ).length
     if (templateCount === 1) {
-      return (await slotContent(node, state)) + state.context.blockSeparator
+      return (await state.flow(node, state, undefined, { atLineStart: true })).trimEnd() + state.context.blockSeparator
     }
   }
 
@@ -30,17 +30,9 @@ export async function template(node: ElementNode, state: State, parent?: Element
     return state.handlers.html(['template', { name: attrs.name, ...rest }, ...(node.slice(2) as Node[])], state, parent)
   }
 
-  const content = await slotContent(node, state)
+  // Slot body is written at the start of a line, so `#` / `-` text must keep its escape.
+  const content = (await state.flow(node, state, undefined, { atLineStart: true })).trimEnd()
   const extraAttrs = comarkAttributes(rest)
 
   return `#${attrs.name}${extraAttrs}\n${content}` + state.context.blockSeparator
-}
-
-// `flow()` does not pass `atLineStart`, so slot text starting with `#` or `-` would lose its escape.
-async function slotContent(node: ElementNode, state: State): Promise<string> {
-  let content = ''
-  for (const child of node.slice(2) as Node[]) {
-    content += await state.one(child, state, node, content === '' || content.endsWith('\n'))
-  }
-  return content.trimEnd()
 }
