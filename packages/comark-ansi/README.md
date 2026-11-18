@@ -8,16 +8,16 @@
 [![Documentation](https://img.shields.io/badge/Documentation-black?logo=readme&logoColor=white)](https://comark.dev/rendering/ansi)
 [![license](https://img.shields.io/github/license/comarkdown/comark?color=black)](https://github.com/comarkdown/comark/blob/main/LICENSE)
 
-ANSI terminal renderer for [Comark](https://comark.dev). Render markdown as styled terminal output for CLIs, scripts, and developer tooling.
+ANSI terminal renderer for [Comark](https://comark.dev). Render Markdown as styled terminal output for CLIs, scripts, and developer tools.
 
 ## Features
 
-- 🎨 ANSI-styled output for the terminal
-- 🌈 Respects `NO_COLOR` automatically
-- 📐 Configurable terminal width for HR and code blocks
-- 🎯 Map any Comark tag to a custom render function
-- 🔌 Plugin ecosystem (math, mermaid, highlight, binding…)
-- 🎯 Full TypeScript support
+- ANSI-styled terminal output
+- Respects `NO_COLOR` automatically
+- Configurable terminal width for horizontal rules and code blocks
+- Custom render functions for any Comark tag
+- Plugins for Shiki highlighting, math, Mermaid, binding, and more
+- Full TypeScript support
 
 ## Installation
 

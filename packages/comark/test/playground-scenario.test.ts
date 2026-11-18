@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest'
 import { parseMarkdown } from '../src/index'
 import type { Node } from 'comark'
 
-// Helper to check if a node is an element with a specific tag
 function isElement(node: Node, tag: string): boolean {
   return Array.isArray(node) && node[0] === tag
 }
@@ -43,19 +42,15 @@ Watch how **bold text** and components render correctly.
     expect(Array.isArray(result.nodes)).toBe(true)
     expect(result.nodes.length).toBeGreaterThan(0)
 
-    // Check for alert
     const hasAlert = result.nodes.some((c: Node) => isElement(c, 'alert'))
     expect(hasAlert).toBe(true)
 
-    // Check for card
     const hasCard = result.nodes.some((c: Node) => isElement(c, 'card'))
     expect(hasCard).toBe(true)
 
-    // Check for nested card
     const cards = result.nodes.filter((c: Node) => isElement(c, 'card'))
     expect(cards.length).toBeGreaterThan(0)
 
-    // Inspect the first card for nested content
     if (cards.length > 0) {
       const firstCard = cards[0] as any
       const hasNestedCard = JSON.stringify(firstCard).includes('"card"')
@@ -70,7 +65,6 @@ Watch how **bold text** and components render correctly.
     expect(Array.isArray(result.nodes)).toBe(true)
     expect(result.nodes.length).toBeGreaterThan(0)
 
-    // Check for alert
     const hasAlert = result.nodes.some((c: Node) => isElement(c, 'alert'))
     expect(hasAlert).toBe(true)
   })
@@ -85,11 +79,9 @@ Watch how **bold text** and components render correctly.
     expect(result.nodes).toBeDefined()
     expect(Array.isArray(result.nodes)).toBe(true)
 
-    // Should have alert
     const hasAlert = result.nodes.some((c: Node) => isElement(c, 'alert'))
     expect(hasAlert).toBe(true)
 
-    // Get the alert element
     const alert = result.nodes.find((c: Node) => isElement(c, 'alert'))
     expect(alert).toBeDefined()
   })

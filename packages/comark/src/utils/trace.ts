@@ -1,9 +1,8 @@
 import type { ComarkSpan, ComarkSpanOptions, ComarkTracer } from '../types.ts'
 
-/** No-op span used by {@link noopTracer}. */
 const noopSpan: ComarkSpan = { end: () => {} }
 
-/** No-op recorder used when no `tracer` option is provided — zero overhead. */
+/** No-op recorder used when no `tracer` option is provided. */
 export const noopTracer: ComarkTracer = {
   startSpan: () => noopSpan,
   startActiveSpan: (

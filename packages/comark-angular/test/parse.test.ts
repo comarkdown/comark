@@ -7,7 +7,6 @@ describe('@comark/angular — integration', () => {
     expect(tree.nodes).toBeDefined()
     expect(tree.nodes.length).toBeGreaterThan(0)
 
-    // First node should be an h1
     const h1 = tree.nodes[0] as any[]
     expect(h1[0]).toBe('h1')
   })

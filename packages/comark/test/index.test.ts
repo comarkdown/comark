@@ -69,7 +69,6 @@ interface TestCase {
 }
 
 function parseTimeout(timeoutStr: string): number {
-  // Parse timeout string like "50ms" or "5s" to milliseconds
   const match = timeoutStr.match(/^(\d+)(ms|s)$/)
   if (!match) return DEFAULT_TEST_TIMEOUT
 
@@ -120,7 +119,6 @@ function extractTestCase(content: string): TestCase {
   const { timeouts, body, options, ...frontmatter } = extractFrontmatter(content)
   const sections: Record<string, string> = {}
 
-  // Extract sections - find each section header and its content
   const sectionHeaders = [...body.matchAll(/^## (Input|AST|HTML|Markdown HTML|Markdown)\s*\n\n```(\w+)\n/gm)]
 
   for (let i = 0; i < sectionHeaders.length; i++) {
@@ -128,14 +126,10 @@ function extractTestCase(content: string): TestCase {
     const sectionName = match[1]
     const startPos = match.index! + match[0].length
 
-    // Find the end position - either the next section header or end of body
     const endPos = i < sectionHeaders.length - 1 ? sectionHeaders[i + 1].index! : body.length
-
-    // Extract content between start and end, then find the last ``` before the next section
     const sectionText = body.substring(startPos, endPos)
 
-    // Find the last ``` that's followed by newline and either ## or end
-    // Look for ```\n followed by \n## or end of string (with optional whitespace)
+    // Closing fence is the last ``` before the next ## section or EOF.
     const closingPattern = /```[^\S\n]*\n(?=\n## |[^\S\n]*$)/g
     closingPattern.lastIndex = startPos
 
@@ -153,7 +147,6 @@ function extractTestCase(content: string): TestCase {
     if (lastMatch) {
       content = body.substring(startPos, lastMatch.index)
     } else {
-      // Fallback: try to find ``` and remove it
       const fallbackMatch = sectionText.match(/^([\s\S]*?)```\s*$/)
       if (fallbackMatch) {
         content = fallbackMatch[1].trim()
@@ -197,9 +190,9 @@ function findMarkdownFiles(dir: string, baseDir: string = dir): string[] {
   return files
 }
 
-// Run a single spec: SPEC=SPEC/MDC/inline-component.md pnpm vitest run test/index.test.ts
+// Run a single spec: SPEC=SPEC/COMARK/component.md pnpm vitest run test/index.test.ts
 const specDir = join(process.cwd(), 'SPEC')
-const specArg = String(process.env.npm_lifecycle_script || '').split('-- -spec ')[1] || ''
+const specArg = process.env.SPEC || ''
 
 function loadTestCases(): Array<{ file: string; testCase: TestCase }> {
   if (specArg) {

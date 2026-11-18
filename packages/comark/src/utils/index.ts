@@ -20,14 +20,7 @@ export interface TextContentOptions {
   decodeHTML?: (text: string) => string
 }
 
-/**
- * Get the text content of a Markdown AST node
- *
- * @param node - The node
- * @param options - The options
- * @param options.decodeHTML - Function applied to each text node
- * @returns The text content
- */
+/** Return the concatenated text content of a Markdown AST node. */
 export function textContent(node: Node, options?: TextContentOptions): string {
   return collectText(node, options?.decodeHTML)
 }
@@ -72,9 +65,8 @@ function* walkGenerator(
       const res = yield node
 
       if (res === false) {
-        // remove the node from the parent
         ;(parent as Node[]).splice(index, 1)
-        return true // signal that node was removed
+        return true
       }
 
       if (res !== undefined) {
@@ -84,12 +76,10 @@ function* walkGenerator(
     }
 
     if (Array.isArray(currentNode) && currentNode.length > 2) {
-      // Use a while loop to handle removals correctly - don't increment if node was removed
       let i = 2
       while (i < currentNode.length) {
         const childRemoved = yield* walk(currentNode[i] as Node, currentNode, i, depth + 1)
         if (childRemoved) {
-          // If removed, i stays the same (next node is now at this index)
           continue
         }
         i += 1
@@ -99,12 +89,10 @@ function* walkGenerator(
     return false
   }
 
-  // Use a while loop to handle removals correctly - don't increment if node was removed
   let i = 0
   while (i < document.nodes.length) {
     const removed = yield* walk(document.nodes[i], document.nodes, i, 0)
     if (removed) {
-      // If removed, i stays the same (next node is now at this index)
       continue
     }
     i += 1
@@ -112,12 +100,9 @@ function* walkGenerator(
 }
 
 /**
- * Visit a Markdown document and apply a visitor function to each node.
+ * Visit a Markdown document and apply a visitor function to matching nodes.
+ * Return `false` from `visitor` to remove the node, or a replacement `Node`.
  * Recursion is capped at {@link TREE_WALK_MAX_DEPTH} element levels; deeper subtrees are dropped.
- *
- * @param document - The Markdown document
- * @param checker - A function that checks if a node should be visited
- * @param visitor - A function that visits a node
  */
 export function visit(
   document: MarkdownDocument,
@@ -155,7 +140,7 @@ const CODE_BLOCK_PROPS = new Set(['language', 'filename', 'highlights', 'meta'])
  * Maps code block props on a native `<pre>` to `data-*` attributes.
  *
  * Raw HTML (`node[1].$.html`) is left unchanged so authored attributes round-trip.
- * The attribute bag does not include `$` — `resolveAttributes` strips it — so the source
+ * The attribute bag does not include `$` (stripped by `resolveAttributes`), so the source
  * node is required.
  */
 export function toNativeAttributes<T extends Record<string, any>>(tag: string, node: Node, attributes: T): T {
@@ -244,11 +229,7 @@ export function indent(
     .join('\n')
 }
 
-/**
- * Convert a string to pascal case
- * @param str - The string to convert
- * @returns The pascal case string
- */
+/** Convert a string to PascalCase. */
 export function pascalCase(str: string) {
   return str
     ? splitByCase(str)
@@ -257,11 +238,7 @@ export function pascalCase(str: string) {
     : ''
 }
 
-/**
- * Convert a string to kebab case
- * @param str - The string to convert
- * @returns The kebab case string
- */
+/** Convert a string to kebab-case. */
 export function kebabCase(str: string) {
   return str
     ? splitByCase(str)
@@ -270,11 +247,7 @@ export function kebabCase(str: string) {
     : ''
 }
 
-/**
- * Convert a string to camel case
- * @param str - The string to convert
- * @returns The camel case string
- */
+/** Convert a string to camelCase. */
 export function camelCase(str: string) {
   if (!str) {
     return ''
@@ -283,7 +256,6 @@ export function camelCase(str: string) {
   return str.charAt(0).toLowerCase() + str.slice(1)
 }
 
-// split a string by case
 function splitByCase(str: string) {
   const parts: string[] = []
   if (!str) {
@@ -294,7 +266,6 @@ function splitByCase(str: string) {
   let previousSplitter: boolean | undefined
   for (let i = 0; i < str.length; i++) {
     const char = str[i]
-    // Fast splitter check using direct character comparisons
     const isSplitter = char === '-' || char === '_' || char === '/' || char === '.'
     if (isSplitter === true) {
       parts.push(buff)
@@ -302,10 +273,8 @@ function splitByCase(str: string) {
       previousUpper = void 0
       continue
     }
-    // Fast number check using character codes
     const charCode = char.charCodeAt(0)
     const isNumber = charCode >= 48 && charCode <= 57 // '0' to '9'
-    // Fast uppercase check using character codes
     const isUpper = isNumber ? void 0 : charCode >= 65 && charCode <= 90 // 'A' to 'Z'
     if (previousSplitter === false) {
       if (previousUpper === false && isUpper === true) {
@@ -333,12 +302,7 @@ function splitByCase(str: string) {
 // #endregion
 
 // #region Object Utils
-/**
- * Retrieves a value from a nested object using a dot-separated key path.
- * @param data - The object to retrieve the value from.
- * @param key - The dot-separated key path to the value.
- * @returns The value at the specified key path, or `undefined` if the key path does not exist.
- */
+/** Read a value from a nested object by dot-separated key path. */
 export function get(data: unknown, key: string): unknown {
   const keys = key.split('.')
   let value: unknown = data

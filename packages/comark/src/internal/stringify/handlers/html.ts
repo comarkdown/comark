@@ -27,14 +27,17 @@ const blockTags = new Set([
 export async function html(node: ElementNode, state: State, parent?: ElementNode) {
   const [tag, attr, ...children] = node
   const { $ = {}, ...rawAttributes } = attr
+  // A `rel` or `target` added by `external-links` isn't part of the source
+  if (!state.context.html) {
+    if ($.autoRel !== undefined && rawAttributes.rel === $.autoRel) delete rawAttributes.rel
+    if ($.autoTarget !== undefined && rawAttributes.target === $.autoTarget) delete rawAttributes.target
+  }
 
-  // In text/html mode, `one()` has already resolved this element's `:prefix`
-  // bindings against the parent's render context and stored the result in
-  // `state.renderData.props` — but only when the element has its own attrs.
-  // If it doesn't, `state.renderData.props` still holds the enclosing scope
-  // (so that `{{ props.* }}` in nested children keeps working), so we fall
-  // back to the raw (empty) attrs to avoid leaking parent props onto native
-  // wrappers like `<p>` or `<ul>`.
+  // In text/html mode, `one()` resolved this element's `:prefix` bindings into
+  // `state.renderData.props` when the element has its own attrs. When it doesn't,
+  // `state.renderData.props` still holds the enclosing scope (so `{{ props.* }}`
+  // in nested children keeps working); fall back to `rawAttributes` so parent
+  // props don't leak onto native wrappers like `<p>` or `<ul>`.
   const rawHasAttrs = Object.keys(rawAttributes).length > 0
   const attributes = state.context.html ? (rawHasAttrs ? state.renderData.props : rawAttributes) : rawAttributes
 
@@ -52,8 +55,12 @@ export async function html(node: ElementNode, state: State, parent?: ElementNode
     oneLiner = true
   }
 
-  // If parent is a paragraph or an inline element, it is inline
   if (parent?.[0] === 'p' || inlineTags.has(String(parent?.[0])) || state.context.inline) {
+    oneLiner = true
+  }
+
+  // Next to text, a component is inline even without a `p` around it (tight list item, blockquote, unwrapped component).
+  if (!state.context.html && $.html !== 1 && parent?.some((child, index) => index > 1 && typeof child === 'string')) {
     oneLiner = true
   }
 
@@ -63,7 +70,6 @@ export async function html(node: ElementNode, state: State, parent?: ElementNode
 
   const isSelfClose = selfCloseTags.has(String(tag))
 
-  // Do not modify context if we are already in html mode
   const revert = state.applyContext({ inline: oneLiner })
 
   const isBlockChild = (child: Node) =>
@@ -75,7 +81,9 @@ export async function html(node: ElementNode, state: State, parent?: ElementNode
 
   const childrenContent: string[] = []
   for (let i = 0; i < children.length; i++) {
-    const atLineStart = markdownBody && (i === 0 || isBlockChild(children[i - 1]))
+    // A hard break (`br`) also ends a line, so check the rendered text, not only the previous node type.
+    const prev = childrenContent[i - 1]
+    const atLineStart = markdownBody && (i === 0 || isBlockChild(children[i - 1]) || prev.endsWith('\n'))
     childrenContent.push(await state.one(children[i], state, node, atLineStart))
   }
 
@@ -98,7 +106,7 @@ export async function html(node: ElementNode, state: State, parent?: ElementNode
       content += childSeparator
     }
     // Block handlers end with their own separator, which `childSeparator` replaces.
-    content += markdownBody && isBlock ? childContent.replace(/\n+$/, '') : childContent
+    content += markdownBody && isBlock ? trimTrailingNewlines(childContent) : childContent
     isPrevBlock = isBlock
 
     if (isBlock && i < children.length - 1) {
@@ -106,7 +114,6 @@ export async function html(node: ElementNode, state: State, parent?: ElementNode
     }
   }
 
-  // Revert, only if we modified the context
   if (revert) {
     state.applyContext(revert)
   }
@@ -114,7 +121,11 @@ export async function html(node: ElementNode, state: State, parent?: ElementNode
   const nativeAttributes = toNativeAttributes(String(tag), node, attributes)
   const attrs =
     Object.keys(nativeAttributes).length > 0
-      ? ` ${htmlAttributes(nativeAttributes, { verbatim: !state.context.html && $.html === 1, keepBindings: !state.context.html })}`
+      ? ` ${htmlAttributes(nativeAttributes, {
+          verbatim: !state.context.html && $.html === 1,
+          encodeNewlines: !state.context.html,
+          keepBindings: !state.context.html,
+        })}`
       : ''
 
   if (isSelfClose) {
@@ -141,4 +152,11 @@ function paddNoneHtmlContent(content: string, state: State, tag: string) {
   }
 
   return (content.trim().startsWith('<') ? '' : '') + content + (content.trim().endsWith('>') ? '' : '')
+}
+
+// A loop, since `/\n+$/` backtracks quadratically on long runs of newlines.
+function trimTrailingNewlines(content: string): string {
+  let end = content.length
+  while (end > 0 && content.charCodeAt(end - 1) === 10) end--
+  return content.slice(0, end)
 }

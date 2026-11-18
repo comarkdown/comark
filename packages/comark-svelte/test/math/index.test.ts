@@ -33,7 +33,6 @@ describe('Math component (server)', () => {
       props: { content: '\\invalid{', class: '' },
     })
     const output = html(body)
-    // Should render fallback rather than throwing
     expect(output).toContain('<div class="math block">')
   })
 })

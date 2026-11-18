@@ -32,7 +32,7 @@ export const Math = defineComponent({
             displayMode: !isInline.value,
           })
         } catch {
-          // Keep loading state on error
+          // Keep previous output while expression is incomplete
         }
       },
       { immediate: true }

@@ -6,7 +6,7 @@ seo:
 navigation:
   icon: i-lucide-component
 links:
-  - label: Component Syntax
+  - label: Component syntax
     icon: i-lucide-file-text
     to: /syntax/components
     color: neutral
@@ -20,14 +20,14 @@ links:
 
 The `comark/plugins/components` plugin enables Comark **block** and **inline** component syntax, plus span wrappers:
 
-- Block: `::name` … `::` (and single-line shorthand `:name[content]{props}`)
-- Inline: `:name`, `:name[content]`, `:name[content]{props}`
-- Spans: `[text]` (add `{attrs}` with the [attributes plugin](/plugins/defaults/attributes))
+- Block components (`::name` ... `::`) and single-line shorthand (`:name[content]{props}`)
+- Inline components (`:name`, `:name[content]`, `:name[content]{props}`)
+- Span wrappers (`[text]`, paired with `{attrs}` from the [attributes plugin](/plugins/defaults/attributes))
 
-The plugin is **enabled by default** via `registerDefaultPlugins`. No installation or registration required.
+This plugin is **enabled by default** via `registerDefaultPlugins`, so you don't need to install or register it.
 
 ::tip
-For the full authoring guide (props, slots, nesting), see [Component Syntax](/syntax/components).
+For the full authoring guide (props, slots, and nesting), see [Component syntax](/syntax/components).
 ::
 
 ## Usage
@@ -53,7 +53,7 @@ Hello
 
 ### Explicit registration
 
-When default plugins are off, opt in with the plugin directly:
+When you disable default plugins, pass `components()` explicitly:
 
 ```typescript
 import { parseMarkdown } from 'comark'
@@ -101,7 +101,7 @@ When the components plugin is not active, `autoClose` also skips component-fence
 
 ## markdown-it / markdown-exit adapter
 
-For hosts that use markdown-it or markdown-exit directly (for example VitePress), use the exported adapter:
+For hosts that use markdown-it or markdown-exit directly (for example, VitePress), use the exported adapter:
 
 ```typescript
 import { markdownItComponents } from 'comark/plugins/components'
@@ -123,4 +123,4 @@ The plugin registers markdown-exit block and inline rules:
 | `comark_inline_span` | `[text]` span wrappers |
 | `comark_inline_component` | `:name[content]{props}` inline components |
 
-Token → AST conversion is handled by the core token processor (`mdc_block_*`, `mdc_inline_span`, `mdc_inline_component`).
+The core token processor converts those tokens (`mdc_block_*`, `mdc_inline_span`, and `mdc_inline_component`) into AST nodes.

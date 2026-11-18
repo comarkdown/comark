@@ -3,13 +3,13 @@ import type { ElementNode, Node } from '../../types.ts'
 /**
  * Normalize the `unwrap` option into an ordered list of tag names.
  *
- * Tags are applied sequentially — each tag descends one level into the result
- * of the previous one — so the order is significant (MDC semantics).
+ * Tags are applied sequentially: each tag descends one level into the result
+ * of the previous one, so the order is significant (MDC semantics).
  *
- * - `true` → `['p']`
- * - `'p, h1'` / `'p h1'` (comma- or whitespace-separated) → `['p', 'h1']`
- * - `['div', 'p']` → `['div', 'p']`
- * - `false` / `undefined` → `[]`
+ * - `true` -> `['p']`
+ * - `'p, h1'` / `'p h1'` (comma- or whitespace-separated) -> `['p', 'h1']`
+ * - `['div', 'p']` -> `['div', 'p']`
+ * - `false` / `undefined` -> `[]`
  */
 export function resolveUnwrapTags(unwrap: boolean | string | string[] | undefined): string[] {
   if (!unwrap) return []
@@ -32,8 +32,8 @@ function matchesTag(node: Node, tag: string): boolean {
 }
 
 /**
- * Recursively unwrap `tags` from `nodes`, one tag per level — mirrors MDC's
- * `_flatUnwrap`. For each node the head tag is unwrapped (matching elements are
+ * Recursively unwrap `tags` from `nodes`, one tag per level (mirrors MDC's
+ * `_flatUnwrap`). For each node the head tag is unwrapped (matching elements are
  * replaced by their children), then the remaining tags are applied to the
  * result. Whitespace-only text nodes are dropped at each level.
  */
@@ -57,13 +57,8 @@ function flatUnwrap(nodes: Node[], tags: string[]): Node[] {
 
 /**
  * Remove wrapper tags from a node list, hoisting matched elements' children in
- * their place — the MDC `unwrap` behaviour. After unwrapping, adjacent text
- * nodes are merged into a single string, so `unwrap: 'p'` on `a\n\nb` yields
- * `['ab']` (paragraphs merged without a separator).
- *
- * @param nodes - Nodes to process
- * @param tags - Ordered tag names (see {@link resolveUnwrapTags})
- * @returns A new node list with matching wrappers removed
+ * their place (MDC `unwrap` behavior). Adjacent text nodes are merged into a
+ * single string, so `unwrap: 'p'` on `a\n\nb` yields `['ab']`.
  */
 export function applyUnwrap(nodes: Node[], tags: string[]): Node[] {
   if (tags.length === 0) return nodes

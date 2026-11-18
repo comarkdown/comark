@@ -9,7 +9,7 @@ interface EcosystemPackage {
   category: 'Renderers' | 'Plugins' | 'Integrations' | 'Tooling'
   /** Tooling only: UI, Extensions, Templates, CLI, Agents. Shown in the badge instead of the category. */
   subcategory?: string
-  /** "owner/name" — powers the row link and the author avatar. */
+  /** "owner/name", used for the row link and author avatar. */
   repo?: string
   /** Link fallback for entries without a public repo. */
   url?: string

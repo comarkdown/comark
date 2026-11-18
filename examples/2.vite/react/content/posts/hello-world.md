@@ -1,23 +1,23 @@
 ---
-title: Hello World
-description: Getting started with Comark and React + Vite.
+title: Hello world
+description: Getting started with Comark, React, and Vite.
 pubDate: 2025-12-01
 tags: [comark, react]
 ---
 
-Welcome to this blog powered by **Comark** and React + Vite!
+Welcome to this blog built with **Comark**, React, and Vite.
 
-Comark extends standard Markdown with component syntax, and it renders to plain React elements — no `dangerouslySetInnerHTML`.
+Comark adds component and attribute syntax to Markdown and renders nodes to React elements without `dangerouslySetInnerHTML`.
 
 ::Alert{type="info"}
-This alert is rendered using a custom Comark component mapped via the `components` prop.
+This alert renders through a React component mapped in the `components` prop.
 ::
 
-## Why Comark + React?
+## Why pair Comark with React
 
-- **Real components** — Comark renders to React elements, so your custom components receive real props and children
-- **Component syntax** — Embed custom components directly in your Markdown
-- **Fast** — Powered by Vite for instant HMR and fast builds
+- **React element output**: Comark creates React elements directly, so custom components receive typed props and `children`.
+- **Component syntax**: write `::Alert` blocks inside `.md` files and render them alongside standard Markdown.
+- **Vite dev server**: bundles raw `.md` files with `import.meta.glob` and updates on save with HMR.
 
 ```ts
 import { parseMarkdown } from 'comark'
@@ -28,5 +28,5 @@ const tree = await parseMarkdown(markdown)
 ```
 
 ::Alert{type="success"}
-You get the best of both worlds: React's component model for dynamic content and Comark for rich rendering.
+React manages state and component composition while Comark parses Markdown and maps tags to components.
 ::

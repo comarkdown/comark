@@ -1,25 +1,22 @@
----
-title: Astro
-description: A blog example using Comark with Astro content collections and React components.
-navigation:
-  icon: i-simple-icons:astro
-category: Frameworks
-path: /examples/frameworks/astro
----
+# Astro blog with Comark
 
-::code-explorer
----
-org: comarkdown
-repo: comark@81a416b278b0f304d7e7577c7ac6bbfc78414790
-path: examples/1.frameworks/astro
-defaultValue: src/content/posts/comark-syntax.md
----
-::
-
-This example demonstrates how to use Comark with Astro content collections and React components. Blog posts are stored as `.md` files with Zod-validated frontmatter, loaded via the `glob()` loader, and rendered using `MarkdownDocument` from `comark/react` with custom components like `Alert`.
+This example renders Markdown blog posts with Astro content collections, Zod frontmatter schemas, and React components via `@comark/react`.
 
 ## How it works
 
-- **Content collections** — Posts are defined with `glob()` loader and a Zod schema for type-safe frontmatter (title, description, pubDate, tags).
-- **Comark parsing** — In the blog post page, `parseMarkdown()` converts the raw Markdown body into a Comark AST.
-- **React rendering** — `MarkdownDocument` from `comark/react` renders the AST using React components, including custom ones like `Alert`. Thanks to Astro's React integration, these are server-rendered with zero client-side JavaScript.
+- **Content collections**: `src/content.config.ts` loads `.md` files from `src/content/posts/` with Astro's `glob()` loader and validates frontmatter (`title`, `description`, `pubDate`, and `tags`) with Zod.
+- **Comark parsing**: `src/pages/posts/[...id].astro` passes `post.body` to `parseMarkdown()` with `shiki()` to build a `MarkdownDocument`.
+- **Server rendering**: `MarkdownDocument` from `@comark/react` renders the document and custom components such as `Alert` to static HTML at build time, with zero client-side JavaScript.
+
+## Run locally
+
+From the monorepo root:
+
+```bash
+pnpm dev:astro
+```
+
+## Documentation
+
+- [Comark documentation](https://comark.dev)
+- [React rendering](https://comark.dev/rendering/react)

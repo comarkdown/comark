@@ -1,16 +1,57 @@
 // @ts-expect-error - ignore @nuxtjs/mdc types
 import type { MDCRoot } from '@nuxtjs/mdc'
-import type { MarkdownDocument } from 'comark'
+import type { Node } from 'comark'
 import remarkGFM from 'remark-gfm'
 import remarkMdc, { parseFrontMatter } from 'remark-mdc'
 import remarkParse from 'remark-parse'
 import remark2rehype from 'remark-rehype'
 import { unified } from 'unified'
 import { mdcCompiler } from './mdc-compiler'
-import { fromHast } from 'minimark/hast'
+
+export interface HastNode {
+  type: 'element' | 'text' | 'comment'
+  tag?: string
+  value?: string
+  props?: Record<string, unknown>
+  children?: HastNode[]
+}
+
+export interface MinimarkTree {
+  type: 'minimark'
+  value: Node[]
+}
+
+// -- to minimark
+
+export function fromHast(tree: { type: 'root'; children: HastNode[] }): MinimarkTree {
+  return {
+    type: 'minimark',
+    value: tree.children.map(hastToMinimarkNode).filter((v) => v !== undefined),
+  }
+}
+
+function hastToMinimarkNode(input: HastNode): Node | undefined {
+  if (input.type === 'comment') {
+    return undefined
+  }
+  if (input.type === 'text') {
+    return input.value
+  }
+
+  // remove empty class
+  if (input.tag === 'code' && input.props?.className && (input.props.className as string[]).length === 0) {
+    delete input.props.className
+  }
+
+  return [
+    input.tag!,
+    input.props || {},
+    ...(input.children || []).map(hastToMinimarkNode).filter((v) => v !== undefined),
+  ]
+}
 
 export interface ParseResult {
-  body: MarkdownDocument
+  body: MinimarkTree
   excerpt?: MDCRoot
   data: any
   toc?: any
@@ -30,8 +71,8 @@ export function parseWithRemark(source: string): ParseResult {
 
   const { body, excerpt } = result as { body: MDCRoot; excerpt?: MDCRoot }
 
-  // Convert to MarkdownDocument before generating TOC
-  const minimarkBody = fromHast(body) as unknown as MarkdownDocument
+  // Convert to minimark before generating TOC
+  const minimarkBody = fromHast(body)
 
   return {
     body: minimarkBody,

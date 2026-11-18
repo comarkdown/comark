@@ -2,7 +2,7 @@
 @component
 High-level Markdown component that accepts a markdown string, parses it, and renders it.
 
-Uses `$state` and `$effect` for async parsing — no experimental features required.
+Uses `$state` and `$effect` for async parsing without experimental Svelte features.
 Renders nothing until the first parse completes.
 
 @example

@@ -14,10 +14,11 @@
  * Open http://localhost:8000 to inspect the trace. To use another collector,
  * set OTEL_EXPORTER_OTLP_TRACES_ENDPOINT to its full traces endpoint.
  */
-import { trace } from '@opentelemetry/api'
+import { context, trace } from '@opentelemetry/api'
+import { AsyncLocalStorageContextManager } from '@opentelemetry/context-async-hooks'
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-proto'
 import { resourceFromAttributes } from '@opentelemetry/resources'
-import { BatchSpanProcessor, NodeTracerProvider } from '@opentelemetry/sdk-trace-node'
+import { BatchSpanProcessor, TracerProvider } from '@opentelemetry/sdk-trace'
 import { createMarkdownParser } from 'comark'
 import rangi from 'comark/plugins/rangi'
 import toc from 'comark/plugins/toc'
@@ -61,12 +62,15 @@ Nested component body with **bold**.
 const exporter = new OTLPTraceExporter({
   url: process.env.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT ?? 'http://localhost:4318/v1/traces',
 })
-const provider = new NodeTracerProvider({
+const provider = new TracerProvider({
   resource: resourceFromAttributes({ 'service.name': 'comark-perf-trace' }),
-  spanProcessors: [new BatchSpanProcessor(exporter)],
+  spanProcessors: [new BatchSpanProcessor({ exporter })],
 })
 
-provider.register()
+// SDK 3.x has no Node provider with `register()`: install the async context
+// manager (so nested active spans get parents) and the global provider by hand.
+context.setGlobalContextManager(new AsyncLocalStorageContextManager().enable())
+trace.setGlobalTracerProvider(provider)
 
 const parse = createMarkdownParser({
   tracer: trace.getTracer('comark'),

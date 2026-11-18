@@ -1,12 +1,12 @@
 ---
 title: Alerts
-description: Built-in plugin that transforms GitHub-style blockquote alerts into styled callout blocks with icons and colors.
+description: Built-in plugin that turns GitHub-style alert blockquotes into typed callout blocks.
 seo:
   title: Alerts Plugin
 navigation:
   icon: i-lucide-bell
 links:
-  - label: Markdown Syntax
+  - label: Markdown syntax
     icon: i-lucide-file-text
     to: /syntax/markdown
     color: neutral
@@ -18,47 +18,47 @@ links:
     variant: soft
 ---
 
-The alerts plugin transforms GitHub-flavored alert blockquotes into styled callout blocks with icons and colors, identical to how GitHub renders them in READMEs and issues.
+The alerts plugin recognizes GitHub-flavored alert blockquotes (the `[!NOTE]` syntax used in GitHub READMEs and issues) and tags them in the AST so your renderer can display callout blocks.
 
-The plugin is **built-in and enabled by default**. No installation or registration required.
+This plugin is **built-in and enabled by default**, so you don't need to install or register it.
 
 ## Usage
 
-Alerts use standard blockquote syntax with a special marker on the first line:
+Alerts use standard blockquote syntax with a marker on the first line:
 
 ```mdc
 > [!NOTE]
-> Useful information that users should know, even when skimming content.
+> Background information worth noticing, even when skimming.
 
 > [!TIP]
-> Helpful advice for doing things better or more easily.
+> Practical advice for getting a better result.
 
 > [!IMPORTANT]
-> Key information users need to know to achieve their goal.
+> Key details readers need to finish the task.
 
 > [!WARNING]
-> Urgent info that needs immediate user attention to avoid problems.
+> Urgent details that require immediate attention to avoid problems.
 
 > [!CAUTION]
-> Advises about risks or negative outcomes of certain actions.
+> Risks or destructive consequences of an action.
 ```
 
-The plugin tags the blockquote in the AST and leaves the visuals to your renderer: map each alert type to your own component ([see below](#custom-components)) or style the plain output with CSS. On this site, alert types are mapped to callout components and render as:
+The plugin tags the blockquote in the AST and leaves visuals to your renderer. You can map each alert type to your own component (see [Custom components](#custom-components)) or style the plain output with CSS. On this site, alert types map to callout components and render as follows:
 
 > [!NOTE]
-> Useful information that users should know, even when skimming content.
+> Background information worth noticing, even when skimming.
 
 > [!TIP]
-> Helpful advice for doing things better or more easily.
+> Practical advice for getting a better result.
 
 > [!IMPORTANT]
-> Key information users need to know to achieve their goal.
+> Key details readers need to finish the task.
 
 > [!WARNING]
-> Urgent info that needs immediate user attention to avoid problems.
+> Urgent details that require immediate attention to avoid problems.
 
 > [!CAUTION]
-> Advises about risks or negative outcomes of certain actions.
+> Risks or destructive consequences of an action.
 
 ---
 
@@ -69,14 +69,14 @@ The plugin tags the blockquote in the AST and leaves the visuals to your rendere
 | Marker | Color | Use for |
 |---|---|---|
 | `[!NOTE]` | Blue | Supplementary information |
-| `[!TIP]` | Green | Helpful hints and best practices |
-| `[!IMPORTANT]` | Purple | Critical information for success |
-| `[!WARNING]` | Yellow | Potential issues and gotchas |
+| `[!TIP]` | Green | Practical tips and shortcuts |
+| `[!IMPORTANT]` | Purple | Critical information for completing a task |
+| `[!WARNING]` | Yellow | Potential problems that need attention |
 | `[!CAUTION]` | Red | Dangerous actions or destructive operations |
 
 ### Multi-line content
 
-Alerts can span multiple lines and contain inline markdown:
+Alerts can span multiple lines and contain inline Markdown:
 
 ```mdc
 > [!WARNING]
@@ -88,7 +88,7 @@ Alerts can span multiple lines and contain inline markdown:
 
 ## How it works
 
-The plugin transforms the alert blockquote in the AST: the `[!NOTE]` marker is removed and an `as` attribute is added to the `blockquote` node.
+The plugin strips the `[!NOTE]` marker from the blockquote and adds an `as` attribute to the `blockquote` node in the AST:
 
 ```ts
 import { parseMarkdown } from 'comark'
@@ -102,7 +102,7 @@ console.log(tree.nodes)
 // ]
 ```
 
-The Vue, React, and Angular renderers resolve the `as` attribute against your components map first, then fall back to the tag name (`blockquote`). This means you can render each alert type with its own component. In the HTML renderer, register a `blockquote` component and read the alert type from `attrs.as`.
+The Vue, React, and Angular renderers check your `components` map for the `as` attribute before falling back to the `blockquote` tag, so each alert type can render with its own component. In the HTML renderer, register a `blockquote` handler and read the alert type from `attrs.as`.
 
 ## Custom components
 
@@ -143,7 +143,7 @@ import { renderHtml } from '@comark/html'
 const html = await renderHtml(`> [!NOTE]
 > Useful information for users.`, {
   components: {
-    // The HTML renderer resolves by tag name: read the alert type from `attrs.as`
+    // The HTML renderer resolves by tag name, so read the alert type from `attrs.as`
     blockquote: async ([, attrs, ...children], { render }) => {
       if (!attrs.as) return `<blockquote>${await render(children)}</blockquote>`
       return `<div class="alert alert-${attrs.as}" role="alert">${await render(children)}</div>`
@@ -154,10 +154,10 @@ const html = await renderHtml(`> [!NOTE]
 ```
 ::
 
-Alert types without a registered component render as a regular `<blockquote as="...">` element, so you can also target them with CSS: `blockquote[as="note"]`.
+Alert types without a registered component render as `<blockquote as="...">`, which you can style in CSS with `blockquote[as="note"]`.
 
 ---
 
 ## Nuxt UI integration
 
-When using the [Nuxt module](/rendering/vue#nuxt) alongside `@nuxt/ui`, alert blocks are automatically mapped to Nuxt UI's `<Note>`, `<Warning>`, `<Caution>`, and `<Tip>` components. No extra configuration needed.
+When you use the [Nuxt module](/rendering/vue#nuxt) with `@nuxt/ui`, alert blocks map to Nuxt UI's `<Note>`, `<Warning>`, `<Caution>`, and `<Tip>` components without extra configuration.

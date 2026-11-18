@@ -11,7 +11,7 @@ export interface ResolveAttributesOptions {
    * This matches the Vue/React/Svelte/Angular renderer semantics, which always
    * normalize bindings into real JS values suitable for typed component props.
    *
-   * When false (default) only dot-path lookups are applied — literals and
+   * When false (default) only dot-path lookups are applied: literals and
    * unresolved paths are preserved verbatim so string-based serializers
    * (like HTML attribute emitters) can apply their own `:prefix` handling.
    */
@@ -23,8 +23,8 @@ export interface ResolveAttributesOptions {
  *
  * Default behavior: a `:prefixed` string value that matches a dot-path in
  * `{ frontmatter, meta, data, props }` is replaced with the resolved value
- * (and the `:` prefix is stripped). Anything that doesn't resolve — literals
- * like `"5"` / `"true"`, unknown paths, or already-parsed object values — is
+ * (and the `:` prefix is stripped). Anything that doesn't resolve (literals
+ * like `"5"` / `"true"`, unknown paths, or already-parsed object values) is
  * left untouched and keeps its `:` prefix.
  *
  * With `parseJson: true`, every `:prefixed` string is JSON-parsed first and
@@ -55,12 +55,12 @@ export function resolveAttributes(
         try {
           outValue = JSON.parse(value)
         } catch {
-          // not JSON — fall through to dot-path lookup
+          // not JSON: fall through to dot-path lookup
           outValue = get(renderData, value)
         }
       } else {
         // Non-string binding value (e.g. an object literal the parser already
-        // decoded) — pass through with the prefix stripped.
+        // decoded): pass through with the prefix stripped.
         outValue = value
       }
       resultKey = outKey
@@ -78,13 +78,13 @@ export function resolveAttributes(
 
     // Hard floor: a prop must never hand a renderer a value it could treat as a
     // component (`as` / `is` / `tag` never objects, no component options or VNode markers at any depth),
-    // or an HTML sink nested in an object prop. Unbound props count too: the parser decodes `as='{…}'`
+    // or an HTML sink nested in an object prop. Unbound props count too: the parser decodes `as='{...}'`
     // into an object.
     if (options.parseJson && isUnsafeRendererProp(outKey, outValue)) continue
 
     // Hard floor: a binding must never resolve a URL prop to an unsafe scheme
-    // (javascript:, data:text/html, …). Parse-time validation only sees the
-    // literal path, so the resolved value is checked here — even when the
+    // (javascript:, data:text/html, ...). Parse-time validation only sees the
+    // literal path, so the resolved value is checked here even when the
     // security plugin is not enabled.
     // The URL props are the ones `validateProp()` checks: `:link="frontmatter.x"` counts too.
     if (isBinding && isUrlPropKey(outKey) && typeof outValue === 'string' && isUnsafeUrlValue(outValue)) {
@@ -115,28 +115,30 @@ export function resolveAttribute(attrs: Record<string, unknown>, renderData: Nod
 }
 
 // HTML attribute names must start with a letter/underscore/colon and may only
-// contain alphanumerics plus `_ : . -`. Anything else (quotes, spaces, …)
+// contain alphanumerics plus `_ : . -`. Anything else (quotes, spaces, ...)
 // could break out of the attribute list, so such keys are dropped entirely.
 const SAFE_ATTR_NAME = /^[a-zA-Z_:][a-zA-Z0-9_:.-]*$/
 
 interface HtmlAttributesOptions {
   /** Keep `:` prefixes and string `"true"` values as written */
   verbatim?: boolean
+  /** Write line breaks as `&#10;` / `&#13;`, since a CommonMark HTML block needs its open tag on one line */
+  encodeNewlines?: boolean
   /** Keep the `:` prefix of unresolved bindings, so Markdown output reparses them as bindings */
   keepBindings?: boolean
 }
 
-/**
- * Convert attributes to a string of HTML attributes
- *
- * @param attributes - The attributes to stringify
- * @param options - Serialization options
- * @returns The stringified attributes
- */
+const NEWLINE_RE = /[\n\r]/g
+
+/** Serialize an attribute bag into an HTML attribute string. */
 export function htmlAttributes(
   attributes: Record<string, unknown>,
-  { verbatim = false, keepBindings = false }: HtmlAttributesOptions = {}
+  { verbatim = false, encodeNewlines = false, keepBindings = false }: HtmlAttributesOptions = {}
 ) {
+  const escapeValue = (value: string) => {
+    const escaped = escapeHtml(value)
+    return encodeNewlines ? escaped.replace(NEWLINE_RE, (char) => (char === '\n' ? '&#10;' : '&#13;')) : escaped
+  }
   const parts: string[] = []
   for (const [rawKey, value] of Object.entries(attributes)) {
     const isBinding = rawKey.startsWith(':')
@@ -151,10 +153,10 @@ export function htmlAttributes(
       }
       const name = keepBindings ? rawKey : key
       if (typeof value === 'object' && value !== null) {
-        parts.push(`${name}="${escapeHtml(JSON.stringify(value))}"`)
+        parts.push(`${name}="${escapeValue(JSON.stringify(value))}"`)
         continue
       }
-      parts.push(`${name}="${escapeHtml(String(value))}"`)
+      parts.push(`${name}="${escapeValue(String(value))}"`)
       continue
     }
 
@@ -165,11 +167,11 @@ export function htmlAttributes(
     if (value === false || value === null || value === undefined) continue
 
     if (typeof value === 'object') {
-      parts.push(`${key}="${escapeHtml(JSON.stringify(value))}"`)
+      parts.push(`${key}="${escapeValue(JSON.stringify(value))}"`)
       continue
     }
 
-    parts.push(`${key}="${escapeHtml(String(value))}"`)
+    parts.push(`${key}="${escapeValue(String(value))}"`)
   }
   return parts.join(' ')
 }

@@ -57,10 +57,6 @@ export function useMDCStream(options?: MDCStreamOptions) {
 
   const isStreaming = ref(false)
 
-  /**
-   * Start streaming Comark content from a ReadableStream
-   * @param stream - The ReadableStream to read from
-   */
   async function startStream(stream: ReadableStream<Uint8Array>) {
     state.value = {
       tree: { nodes: [], frontmatter: {}, meta: {} },
@@ -86,7 +82,6 @@ export function useMDCStream(options?: MDCStreamOptions) {
         const chunk = decoder.decode(value, { stream: true })
         accumulatedContent += chunk
 
-        // Parse the accumulated content with auto-close for incomplete syntax
         try {
           const result = await parseMarkdown(accumulatedContent, { ...options, autoClose: true })
 
@@ -100,11 +95,10 @@ export function useMDCStream(options?: MDCStreamOptions) {
             options.onChunk(chunk)
           }
         } catch {
-          // Ignore errors
+          // Ignore intermediate parse errors
         }
       }
 
-      // Final parse without auto-close
       const finalResult = await parseMarkdown(accumulatedContent, options)
 
       state.value = {
@@ -132,9 +126,6 @@ export function useMDCStream(options?: MDCStreamOptions) {
     }
   }
 
-  /**
-   * Reset the state
-   */
   function reset() {
     state.value = {
       tree: { nodes: [], frontmatter: {}, meta: {} },

@@ -41,4 +41,16 @@ describe('render: markdown/html', () => {
     expect(tokens.filter((token) => token.type === 'fence').map((token) => token.content)).toEqual([`${code}\n`])
     expect(tokens.at(-2)?.content).toBe('After')
   })
+
+  it('keeps a component in a list item out of the paragraph before it', async () => {
+    const tokens = await reparse('- para\n  ::alert\n  hi\n  ::')
+
+    // A custom tag cannot interrupt a paragraph, so `<alert>` must follow its own blank line.
+    const paragraphs = tokens.filter((token) => token.type === 'inline').map((token) => token.content)
+    expect(paragraphs).toEqual(['para', 'hi'])
+    expect(tokens.filter((token) => token.type === 'html_block').map((token) => token.content.trim())).toEqual([
+      '<alert>',
+      '</alert>',
+    ])
+  })
 })

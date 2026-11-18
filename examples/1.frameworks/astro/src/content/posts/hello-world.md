@@ -1,32 +1,32 @@
 ---
-title: Hello World
+title: Hello world
 description: Getting started with Comark and Astro content collections.
 pubDate: 2025-12-01
 tags: [comark, astro]
 ---
 
-Welcome to this blog powered by **Comark** and Astro content collections!
+Welcome to this blog built with **Comark** and Astro content collections.
 
-Comark extends standard Markdown with component syntax, and it integrates seamlessly with Astro's server-first architecture.
+Comark adds component and attribute syntax to Markdown while rendering everything on the server during `astro build`.
 
 ::alert{type="info"}
-This alert is rendered using a custom Comark component — no client-side JavaScript required.
+This alert renders through a custom React component on the server, with no client-side bundle.
 ::
 
-## Why Comark + Astro?
+## Why pair Comark with Astro
 
-- **Server-rendered** — Comark parses and renders on the server via `parseMarkdown()` and `renderHtmlFromDocument()`
-- **Content collections** — Full frontmatter validation with Zod schemas
-- **Component syntax** — Embed custom components directly in your Markdown
+- **Server-rendered**: `parseMarkdown()` and `MarkdownDocument` run at build time and emit static HTML.
+- **Typed frontmatter**: Astro content collections validate post metadata with Zod schemas.
+- **Component syntax**: write `::alert{type="info"}` blocks directly in `.md` files and render them with React components.
 
 ```ts
 import { parseMarkdown } from 'comark'
-import { renderHtmlFromDocument } from '@comark/html'
+import { MarkdownDocument } from '@comark/react'
 
-const doc = await parseMarkdown(markdown)
-const html = await renderHtmlFromDocument(doc, { components: { alert } })
+const document = await parseMarkdown(markdown)
+// <MarkdownDocument value={document} components={{ Alert }} />
 ```
 
 ::alert{type="success"}
-You get the best of both worlds: Astro's content layer for structure and Comark for rendering.
+Astro manages collection loading and routing while Comark parses Markdown and renders custom components.
 ::

@@ -1,25 +1,23 @@
----
-title: VitePress
-description: Using Comark component syntax natively in VitePress via the components and attributes plugins.
-navigation:
-  icon:  i-simple-icons-vitepress
-category: Frameworks
-path: /examples/frameworks/vitepress
----
+# Comark components in VitePress
 
-::code-explorer
----
-org: comarkdown
-repo: comark@81a416b278b0f304d7e7577c7ac6bbfc78414790
-path: examples/1.frameworks/vitepress
-defaultValue: demo.md
----
-::
-
-This example shows how to use Comark's `::` component syntax natively in VitePress — no wrapper component or custom renderer needed.
+This example adds Comark's `::` component syntax and `{...}` inline attributes directly to VitePress through its markdown-it configuration, without a wrapper component or custom renderer.
 
 ## How it works
 
-- **`comark/plugins/components` + `comark/plugins/attributes`** — Added to VitePress's markdown-it config via `markdown.config(md)`, this enables the `::component{props}` syntax at the markdown-it level.
-- **Global component registration** — Vue components like `Alert` are registered globally in the VitePress theme via `enhanceApp`, so `::alert{type="info"}` resolves to the `<Alert>` component.
-- **Native coexistence** — Comark syntax works alongside all VitePress Markdown features (code blocks, tables, custom containers, GitHub alerts, etc.) since both use markdown-it.
+- **markdown-it plugins**: `.vitepress/config.ts` registers `markdownItComponents` from `comark/plugins/components` and `markdownItAttributes` from `comark/plugins/attributes` inside `markdown.config(md)`.
+- **Global component registration**: Vue components such as `Alert` register globally in the VitePress theme through `enhanceApp`, so `::alert{type="info"}` renders `<Alert>`.
+- **VitePress Markdown compatibility**: Comark blocks and attributes work alongside VitePress code blocks, tables, custom containers, and GitHub alerts because both run on markdown-it.
+
+## Run locally
+
+From the monorepo root:
+
+```bash
+pnpm dev:vitepress
+```
+
+## Documentation
+
+- [Comark documentation](https://comark.dev)
+- [Components plugin](https://comark.dev/plugins/defaults/components)
+- [Attributes plugin](https://comark.dev/plugins/defaults/attributes)

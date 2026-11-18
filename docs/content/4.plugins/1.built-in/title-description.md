@@ -1,6 +1,6 @@
 ---
 title: Title & Description
-description: Plugin for extracting the page title and description from document content.
+description: Extract the page title and description from document content into tree.meta.
 seo:
   title: Title & Description Plugin
 navigation:
@@ -11,7 +11,7 @@ links:
     to: /reference/parse
     color: neutral
     variant: soft
-  - label: Document Model
+  - label: Document model
     icon: i-lucide-braces
     to: /getting-started/document-model
     color: neutral
@@ -57,14 +57,14 @@ Returns a `ComarkPlugin` that extracts title and description metadata from top-l
 
 **Parameters:**
 
-- `options?` - Optional configuration, see [Options](#options)
+- `options?`: Optional configuration. See [Options](#options).
 
 **Returns:** `ComarkPlugin`
 
 Results are stored at `tree.meta.title` and `tree.meta.description`. Neither field is set when the corresponding node is absent or does not match the configured tag.
 
 ::tip
-The description check always looks at the node **immediately after** the title: a non-matching node between them will prevent description extraction.
+The plugin checks only the node **immediately after** the title. Any non-matching node between them skips description extraction.
 ::
 
 ---

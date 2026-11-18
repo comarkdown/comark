@@ -187,7 +187,6 @@ describe('renderAnsiFromDocument', () => {
 
     it('aligns columns when cells contain ANSI styling', async () => {
       const out = await colored(tableMd)
-      // Strip ANSI so column borders line up by visible width.
       // eslint-disable-next-line no-control-regex
       const stripped = out.replace(/\u001B\[[\d;?]*[ -/]*[@-~]/g, '')
       const lines = stripped
@@ -267,7 +266,6 @@ describe('renderAnsiFromDocument', () => {
 
     it('renders highlighted code with ANSI true-color sequences', async () => {
       const out = await highlighted('```js\nconst x = 1\n```', true)
-      // Should contain true-color ANSI escape (38;2;r;g;b)
       // eslint-disable-next-line no-control-regex
       expect(out).toMatch(/\x1B\[38;2;\d+;\d+;\d+m/)
       expect(out).toContain('const')
@@ -276,7 +274,6 @@ describe('renderAnsiFromDocument', () => {
 
     it('renders highlighted code without ANSI true-color when colors disabled', async () => {
       const out = await highlighted('```js\nconst x = 1\n```', false)
-      // No true-color sequences in token output
       // eslint-disable-next-line no-control-regex
       expect(out).not.toMatch(/\x1B\[38;2;\d+;\d+;\d+m/)
       expect(out).toContain('const')
@@ -304,7 +301,6 @@ describe('renderAnsiFromDocument', () => {
 
     it('each token gets its own color escape', async () => {
       const out = await highlighted('```js\nfunction hello() {}\n```', true)
-      // Multiple color codes for different tokens (keyword, name, punctuation)
       // eslint-disable-next-line no-control-regex
       const colorMatches = out.match(/\x1B\[38;2;\d+;\d+;\d+m/g)
       expect(colorMatches).not.toBeNull()

@@ -1,20 +1,20 @@
 ---
-title: Integrating Comark with Svelte + Vite
-description: How the Comark + Svelte + Vite integration works under the hood.
+title: Integrating Comark with Svelte and Vite
+description: How this client-side SPA pairs Svelte 5 and Vite with Comark.
 pubDate: 2026-01-10
 tags: [comark, svelte, integration]
 ---
 
-This example uses Svelte 5 + Vite with Comark as the Markdown renderer.
+This example uses Svelte 5 and Vite with `@comark/svelte` as the Markdown renderer.
 
 ## How it works
 
-Instead of the typical `gray-matter` + `remark` + `rehype` pipeline, we use Comark's framework-agnostic API:
+Instead of chaining `gray-matter`, `remark`, and `rehype`, `src/lib/posts.ts` parses Markdown and frontmatter in a single call:
 
-1. **Load markdown files** — Use Vite's `import.meta.glob` with `?raw` to eagerly load `.md` files
-2. **Parse with Comark** — Call `parseMarkdown()` in the browser to build the AST and extract frontmatter
-3. **Route** — A tiny hash router for a zero-config static SPA
-4. **Render with Svelte** — Use `MarkdownDocument` from `@comark/svelte` with explicit component mapping
+1. **Load Markdown files**: bundle `.md` files as raw strings at build time using Vite's `import.meta.glob` with `?raw`.
+2. **Parse with Comark**: call `parseMarkdown()` in the browser with `shiki()` to build the `MarkdownDocument` and read `tree.frontmatter`.
+3. **Route**: switch views with a hash router for static SPA hosting.
+4. **Render with Svelte**: pass `tree` and a `components` map to `MarkdownDocument` from `@comark/svelte`.
 
 ```ts
 // src/lib/posts.ts
@@ -32,7 +32,7 @@ export async function getPost(slug: string) {
 
   const tree = await parseMarkdown(content!, { plugins: [shiki()] })
   const fm = tree.frontmatter as Record<string, unknown>
-  return { slug, tree, title: fm.title as string, /* ... */ }
+  return { slug, tree, title: fm.title as string /* remaining fields omitted */ }
 }
 ```
 
@@ -49,9 +49,9 @@ export async function getPost(slug: string) {
 ```
 
 ::Alert{type="info"}
-Since this is a client-side SPA, `parseMarkdown()` runs in the browser. Markdown files are bundled as raw strings at build time via `import.meta.glob`.
+Because this app runs as a client-side SPA, `parseMarkdown()` executes in the browser against raw Markdown strings bundled by `import.meta.glob`.
 ::
 
 ## Lazy-loaded components
 
-The `componentsManifest` prop resolves missing components on demand — see the [Syntax](#/syntax) page for a live `lazy-card` example.
+Pass `componentsManifest` to resolve custom components dynamically on first use. Open the [Syntax](#/syntax) page to inspect a lazy-loaded `lazy-card` component.

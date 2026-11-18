@@ -30,7 +30,7 @@ export const Mermaid = ([, attrs]: ElementNode): string => {
     const svg = renderMermaidSVG(content, theme)
     return `<div class="mermaid">${svg}</div>`
   } catch {
-    // Invalid diagram source is author-controlled — escape before fallback.
+    // Invalid diagram source is author-controlled; escape before fallback.
     return `<pre class="mermaid">${escapeHtml(content)}</pre>`
   }
 }

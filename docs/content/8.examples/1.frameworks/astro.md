@@ -1,6 +1,6 @@
 ---
 title: 'Astro Markdown Blog with Comark'
-description: A blog example using Comark with Astro content collections and React components.
+description: Render a Markdown blog with Astro content collections, Zod frontmatter validation, and React components.
 navigation:
   title: 'Astro'
   icon: i-simple-icons:astro
@@ -15,10 +15,10 @@ defaultValue: src/content/posts/comark-syntax.md
 ---
 ::
 
-This example demonstrates how to use Comark with Astro content collections and React components. Blog posts are stored as `.md` files with Zod-validated frontmatter, loaded via the `glob()` loader, and rendered using `MarkdownDocument` from `@comark/react` with custom components like `Alert`.
+This example renders Markdown blog posts with Astro content collections and React components. Posts live as `.md` files with Zod-validated frontmatter, load through Astro's `glob()` loader, and render with `MarkdownDocument` from `@comark/react` and custom components such as `Alert`.
 
 ## How it works
 
-- **Content collections** — Posts are defined with `glob()` loader and a Zod schema for type-safe frontmatter (title, description, pubDate, tags).
-- **Comark parsing** — In the blog post page, `parseMarkdown()` converts the raw Markdown body into a Comark document.
-- **React rendering** — `MarkdownDocument` from `@comark/react` renders the AST using React components, including custom ones like `Alert`. Thanks to Astro's React integration, these are server-rendered with zero client-side JavaScript.
+- **Content collections**: `src/content.config.ts` defines the `posts` collection with `glob()` and a Zod schema for `title`, `description`, `pubDate`, and `tags`.
+- **Comark parsing**: `src/pages/posts/[...id].astro` passes `post.body` to `parseMarkdown()` with the `shiki()` plugin to produce a `MarkdownDocument`.
+- **Server rendering**: `MarkdownDocument` from `@comark/react` renders the document with React components on the server at build time, without shipping client-side JavaScript.
