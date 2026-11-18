@@ -76,7 +76,7 @@
     "@sveltejs/vite-plugin-svelte": "catalog:",
     "@vitest/browser": "catalog:",
     "@vitest/browser-playwright": "catalog:",
-    "svelte": "^5.57.3",
+    "svelte": "^5.58.0",
     "svelte-check": "catalog:",
     "vitest": "catalog:",
     "vitest-browser-svelte": "catalog:"

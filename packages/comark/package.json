@@ -81,7 +81,6 @@
     "@types/markdown-it": "catalog:",
     "github-slugger": "catalog:",
     "hast-util-to-string": "catalog:",
-    "minimark": "catalog:",
     "rangi": "catalog:",
     "tsx": "catalog:",
     "twoslash": "catalog:",
