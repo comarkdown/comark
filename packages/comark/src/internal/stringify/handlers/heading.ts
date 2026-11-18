@@ -3,6 +3,7 @@ import type { ElementNode, HeadingIdsOption } from 'comark'
 import { textContent } from '../../../utils/index.ts'
 import { createHeadingIdTracker, nextHeadingId, reserveHeadingId, type HeadingIdTracker } from '../../heading-id.ts'
 import { comarkAttributes } from '../attributes.ts'
+import { escapeLeadingBlock } from '../state.ts'
 
 // Replays the parser's id generation across one render so each heading's
 // implicit id is known (`null` when ids are disabled).
@@ -34,7 +35,7 @@ export async function heading(node: ElementNode, state: State) {
 
   const level = Number(tag.slice(1))
 
-  const content = await state.flow(node, state)
+  let content = await state.flow(node, state)
 
   // The auto-generated id is implicit in `# Heading` markdown; only echo a custom one.
   const { id, ...rest } = node[1] as Record<string, unknown>
@@ -43,8 +44,13 @@ export async function heading(node: ElementNode, state: State) {
   const suffix = attrs ? ` ${attrs}` : ''
 
   // An ATX heading ends at the line break, so a multi-line h1/h2 (setext
-  // source) keeps its underline form.
+  // source) keeps its underline form. Its text then starts the line, where a
+  // leading `#`, `>`, `-`... needs the escape the `# ` prefix made unnecessary.
   if (level <= 2 && content.includes('\n')) {
+    if (typeof node[2] === 'string' && node[2]) {
+      const end = content.indexOf('\n')
+      content = escapeLeadingBlock(content.slice(0, end)) + content.slice(end)
+    }
     return content + suffix + '\n' + (level === 1 ? '===' : '---') + state.context.blockSeparator
   }
 

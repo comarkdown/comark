@@ -389,7 +389,7 @@ function escapeInline(text: string): string {
  * heading. `*`, `_` and `~` based markers are already handled by
  * {@link escapeInline}; only the block-exclusive markers remain here.
  */
-function escapeLeadingBlock(line: string): string {
+export function escapeLeadingBlock(line: string): string {
   // ATX heading: 1-6 `#` followed by a space/tab or the end of the line.
   if (/^#{1,6}([ \t]|$)/.test(line)) return `\\${line}`
   // Blockquote: `>` (a following space is optional).

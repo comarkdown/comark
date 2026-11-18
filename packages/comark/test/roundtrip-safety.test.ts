@@ -174,6 +174,7 @@ describe('lists, emphasis and headings', () => {
     ['emphasis that ends inside a word within emphasis', '_foo *bar*baz_\n'],
     ['a multi-line heading', 'Foo\nbar\n===\n'],
     ['a multi-line level 2 heading with attributes', 'Foo\nbar {.c}\n---\n'],
+    ['a multi-line heading that starts with an escaped marker', '\\# Foo\nbar\n===\n'],
   ])('keeps %s', async (_, md) => {
     const { t1, t2 } = await roundTrip(md)
     expect(t2.nodes).toEqual(t1.nodes)
