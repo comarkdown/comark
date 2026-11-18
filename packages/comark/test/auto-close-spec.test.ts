@@ -2,8 +2,8 @@
  * Runs comark's autoCloseMarkdown against every ```diff case in SPEC/auto-close.md
  * via the portable diff-cases/v2 spec-runner.
  *
- * Filter by section — Vitest rejects unknown CLI flags, so pass via env or the
- * tiny wrapper (which sets the env and strips `--section` before Vitest sees it):
+ * Filter by section (Vitest rejects unknown CLI flags, so pass via env or the
+ * CLI wrapper, which sets the env and strips `--section` before Vitest sees it):
  *
  *   SPEC_SECTION="Bold + italic" pnpm vitest run test/auto-close-spec.test.ts
  *   node test/auto-close-spec-cli.mjs --section="Bold + italic"
@@ -36,10 +36,9 @@ function map(opts: SpecOptions): Record<string, unknown> {
   const generic = toGenericAutoCloseOptions(opts)
   return {
     ...generic,
-    // Pass block/inline math independently (comark supports both flags).
     blockMath: generic.blockMath === true,
     inlineMath: generic.inlineMath === true,
-    // SPEC is CommonMark/GFM — disable Comark component closing.
+    // SPEC is CommonMark/GFM: disable Comark component closing.
     syntax: false,
     frontmatter: false,
   }

@@ -27,7 +27,7 @@ export interface PunctuationOptions {
   symbols?: boolean
 
   /**
-   * Normalize repeated punctuation: ???? → ???, !!!! → !!!, ,, → ,
+   * Normalize repeated punctuation: ???? -> ???, !!!! -> !!!, ,, -> ,
    * @default true
    */
   normalize?: boolean
@@ -52,7 +52,7 @@ function isLetter(ch: string): boolean {
 }
 
 /**
- * Single-pass O(n) text transformation — replaces punctuation patterns
+ * Single-pass O(n) text transformation: replaces punctuation patterns
  * (ellipsis, dashes, symbols, smart quotes, normalization) in one scan with no regex.
  * Uses slice-based string building to minimize allocations.
  */
@@ -75,14 +75,13 @@ function applyPunctuation(
   for (let i = 0; i < len; i++) {
     const ch = text[i]
 
-    // Ellipsis: two or more dots → … with special handling for ?... and !...
+    // Ellipsis: two or more dots -> … with special handling for ?... and !...
     if (ellipsis && ch === '.') {
       if (i + 1 < len && text[i + 1] === '.') {
-        // Count consecutive dots
         let end = i + 2
         while (end < len && text[end] === '.') end++
 
-        // Check if preceded by ? or ! → collapse to ?.. or !..
+        // ?... and !... collapse to ?.. and !..
         const prev = i > 0 ? text[i - 1] : ''
         if (prev === '?' || prev === '!') {
           result += text.slice(last, i) + '..'
@@ -144,7 +143,7 @@ function applyPunctuation(
       continue
     }
 
-    // Normalize repeated punctuation: ???? → ???, !!!! → !!!, ,, → ,
+    // Normalize repeated punctuation: ???? -> ???, !!!! -> !!!, ,, -> ,
     if (normalize) {
       if (ch === '?' || ch === '!') {
         let end = i + 1
@@ -158,7 +157,6 @@ function applyPunctuation(
         }
       }
       if (ch === ',' && i + 1 < len && text[i + 1] === ',') {
-        // Collapse ,, (or more) to ,
         let end = i + 2
         while (end < len && text[end] === ',') end++
         result += text.slice(last, i) + ','
@@ -168,7 +166,6 @@ function applyPunctuation(
       }
     }
 
-    // Smart quotes
     if (enableQuotes) {
       if (ch === '"') {
         const prev = i > 0 ? text[i - 1] : ' '
@@ -180,7 +177,7 @@ function applyPunctuation(
         const prev = i > 0 ? text[i - 1] : ' '
         const next = i + 1 < len ? text[i + 1] : ''
         result += text.slice(last, i)
-        // Apostrophe in contractions: letter before AND letter after
+        // Apostrophe in contractions: letter before and letter after
         if (isLetter(prev) && isLetter(next)) {
           result += closeSingle
         } else {
@@ -192,29 +189,26 @@ function applyPunctuation(
     }
   }
 
-  // Fast path: no substitutions were made
   if (last === 0) return text
 
   return result + text.slice(last)
 }
 
 /**
- * Punctuation plugin for comark
+ * Punctuation plugin for Comark.
  *
- * Transforms common punctuation patterns into their typographically correct Unicode characters:
- * - Smart (curly) quotes: "text" → \u201Ctext\u201D, 'text' → \u2018text\u2019
- * - Dashes: -- → \u2013 (en-dash), --- → \u2014 (em-dash)
- * - Ellipsis: ... → \u2026, ?.... → ?.., !.... → !..
- * - Symbols: (c) → \u00A9, (r) → \u00AE, (tm) → \u2122, +- → \u00B1
- * - Normalize: ???? → ???, !!!! → !!!, ,, → ,
+ * Transforms common punctuation patterns into their typographic Unicode characters:
+ * - Smart (curly) quotes: "text" -> \u201Ctext\u201D, 'text' -> \u2018text\u2019
+ * - Dashes: -- -> \u2013 (en-dash), --- -> \u2014 (em-dash)
+ * - Ellipsis: ... -> \u2026, ?.... -> ?.., !.... -> !..
+ * - Symbols: (c) -> \u00A9, (r) -> \u00AE, (tm) -> \u2122, +- -> \u00B1
+ * - Normalize: ???? -> ???, !!!! -> !!!, ,, -> ,
  *
  * Does not transform text inside code, pre, math, kbd, script, or style elements.
  *
  * Supports locale-aware quote characters via the `quotes` option:
  * - String of 4 characters: `'«»„"'` (open double, close double, open single, close single)
  * - Array of 4 strings: `['«\xA0', '\xA0»', '‹\xA0', '\xA0›']` for French (with nbsp)
- *
- * @param options Punctuation configuration
  *
  * @example
  * ```ts
@@ -239,7 +233,6 @@ function applyPunctuation(
 export default defineComarkPlugin((options: PunctuationOptions = {}) => {
   const { quotes = true, dashes = true, ellipsis = true, symbols = true, normalize = true } = options
 
-  // Resolve quote characters
   let enableQuotes: boolean
   let openDouble: string
   let closeDouble: string

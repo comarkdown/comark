@@ -14,7 +14,7 @@ export async function blockquote(node: ElementNode, state: State) {
   const attrs = comarkAttributes(userAttrs)
   const hasBlockChildren = children.some((c) => Array.isArray(c))
 
-  // Multi-block content with attrs has no unambiguous inline form — round-trip
+  // Multi-block content with attrs has no unambiguous inline form: round-trip
   // via `::blockquote{attrs}` so the attrs aren't visually attached to one
   // paragraph and parsers can recover the same AST.
   if (attrs && hasBlockChildren) {

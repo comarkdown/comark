@@ -1,9 +1,9 @@
 ---
 title: 'LaTeX Math Formulas in Vue with Comark and KaTeX'
-description: 'A Vue and Vite app that renders inline and block LaTeX math in Markdown with the Comark math plugin and KaTeX.'
+description: 'A Vue and Vite app that renders inline and display LaTeX math in Markdown with the Comark math plugin and KaTeX.'
 navigation:
   title: 'Math formulas (Vue)'
-  icon:  i-lucide-calculator
+  icon: i-lucide-calculator
 ---
 
 ::code-explorer
@@ -15,29 +15,35 @@ defaultValue: src/App.vue
 ---
 ::
 
+This example renders inline and display LaTeX math expressions in Vue and Vite using `@comark/vue/plugins/math` and KaTeX.
+
 ## Features
 
-This example demonstrates how to use Comark with LaTeX math formulas in Vue:
-
-- **Math Plugin**: Import and configure `@comark/math` plugin to parse `$...$` and `$$...$$` expressions
-- **Math Component**: Register the `Math` component to render formulas using KaTeX
-- **Inline & Display Math**: Supports both inline formulas and display equations
-- **Full LaTeX Syntax**: All KaTeX-supported LaTeX commands work
+- Parses `$...$` inline formulas and `$$...$$` display blocks with the `math` plugin.
+- Renders parsed expressions through the `Math` Vue component and KaTeX stylesheet.
+- Supports fractions, integrals, sums, matrices, Greek letters, subscripts, and superscripts.
 
 ## Usage
 
-1. Import the math plugin, component, and KaTeX CSS:
+1. Import the `math` plugin, `Math` component, and KaTeX stylesheet:
    ```ts
    import math, { Math } from '@comark/vue/plugins/math'
    import 'katex/dist/katex.min.css'
    ```
 
-2. Pass the plugin and component to `Markdown`:
+2. Pass the plugin and component to `<Markdown>`:
    ```vue
-   <Markdown :plugins="[math()]" :components="{ math: Math }" />
+   <Suspense>
+     <Markdown
+       :plugins="[math()]"
+       :components="{ math: Math }"
+     >
+       {{ content }}
+     </Markdown>
+   </Suspense>
    ```
 
-4. Use math expressions in your markdown:
+3. Write math expressions in Markdown:
    ```markdown
    Inline: $E = mc^2$
 
@@ -49,29 +55,35 @@ This example demonstrates how to use Comark with LaTeX math formulas in Vue:
 
 ## Syntax examples
 
-**Inline Math**: Use single `$` delimiters
-```markdown
-The formula $x^2 + y^2 = z^2$ is inline.
-```
+- **Inline math**: wrap an expression in single `$` delimiters:
+  ```markdown
+  The formula $x^2 + y^2 = z^2$ is inline.
+  ```
 
-**Display Math**: Use double `$$` delimiters
-```markdown
-$$
-\int_0^\infty e^{-x^2} dx = \frac{\sqrt{\pi}}{2}
-$$
-```
+- **Display math**: wrap a block equation in `$$` delimiters:
+  ```markdown
+  $$
+  \int_0^\infty e^{-x^2} dx = \frac{\sqrt{\pi}}{2}
+  $$
+  ```
 
-**Fractions**: `\frac{numerator}{denominator}`
-```markdown
-$\frac{a}{b}$
-```
+- **Fractions**: use `\frac{numerator}{denominator}`:
+  ```markdown
+  $\frac{a}{b}$
+  ```
 
-**Greek Letters**: `\alpha`, `\beta`, `\gamma`, etc.
-```markdown
-$\alpha + \beta = \gamma$
-```
+- **Greek letters**: use commands such as `\alpha`, `\beta`, and `\gamma`:
+  ```markdown
+  $\alpha + \beta = \gamma$
+  ```
 
-**Subscripts & Superscripts**: `_` and `^`
-```markdown
-$x_1^2 + x_2^2$
-```
+- **Subscripts and superscripts**: use `_` and `^`:
+  ```markdown
+  $x_1^2 + x_2^2$
+  ```
+
+## Learn more
+
+- [Mathematics plugin documentation](/plugins/built-in/math)
+- [Vue rendering](/rendering/vue)
+- [KaTeX documentation](https://katex.org)

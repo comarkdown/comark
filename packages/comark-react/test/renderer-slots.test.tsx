@@ -18,8 +18,6 @@ Footer content
 
     const result = await parseMarkdown(markdown)
 
-    // In React, named slots become props: slotHeader, slotFooter
-    // Default slot becomes children
     function TestComponent({ children, slotHeader, slotFooter }: any) {
       return (
         <div className="test-component">
@@ -42,7 +40,6 @@ Footer content
     expect(html).toContain('Default content')
     expect(html).toContain('Footer content')
 
-    // Verify structure: header before main, main before footer
     const headerIndex = html.indexOf('Header content')
     const defaultIndex = html.indexOf('Default content')
     const footerIndex = html.indexOf('Footer content')

@@ -46,7 +46,6 @@ describe('text node escaping', () => {
       'snake_case stays',
       'a_b_c',
       'a < b compare',
-      // 'a<b tight',
       'x < y > z',
       'AT&T rocks',
       'r&d team',
@@ -83,7 +82,6 @@ describe('text node escaping', () => {
   })
 
   it('escapes literal text before colon-prefixed component names to prevent reparsing as an inline component', async () => {
-    // "word]:name" would reparse as a component if not escaped.
     const text = 'word]:name'
     const { node } = await roundTrip(text)
     expect(node).toEqual(['p', {}, text])
@@ -92,14 +90,13 @@ describe('text node escaping', () => {
   it('escapes literal text before colon-prefixed component names to prevent reparsing as an inline component', async () => {
     const text = 'word]:name'
     const { md, node } = await roundTrip(text)
-    // The colon should be escaped to prevent re-parsing as an inline component.
     expect(md).toContain('\\:name')
     expect(node).toEqual(['p', {}, text])
   })
 })
 
 describe('tag openers split across nodes', () => {
-  // The `>` of `<img …>` can sit in a later sibling, past an element node.
+  // The `>` of `<img ...>` can sit in a later sibling, past an element node.
   // Written back unescaped, a CommonMark reader would join them into one tag.
   it.each([
     ['p', {}, 'x <img src="data:image/svg+xml,', ['svg', { $: { html: 1, block: 0 } }], '"> y'],

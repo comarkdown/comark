@@ -72,7 +72,6 @@ export function defineMarkdownComponent(config: DefineMarkdownComponentOptions =
   })
   class DefinedMarkdownComponent extends Markdown {
     /** Instance-level components that are merged with config-level components. */
-    // @Input() override components: Record<string, Type<any>> = {}
     override readonly components = input<Record<string, Type<any>>>({})
 
     protected readonly mergedComponents = computed(() => ({ ...configComponents, ...this.components() }))

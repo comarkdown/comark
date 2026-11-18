@@ -34,7 +34,7 @@ export const Math = ([, attrs]: ElementNode): string => {
     return isInline ? `<span class="math inline">${rendered}</span>` : `<div class="math block">${rendered}</div>`
   } catch {
     // KaTeX can still throw non-ParseErrors (e.g. RangeError on deeply nested
-    // input) — never interpolate the raw source unescaped.
+    // input); never interpolate the raw source unescaped.
     return isInline
       ? `<span class="math inline">${escapeHtml(content)}</span>`
       : `<div class="math block">${escapeHtml(content)}</div>`

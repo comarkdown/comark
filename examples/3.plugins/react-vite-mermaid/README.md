@@ -1,38 +1,21 @@
----
-title: Mermaid diagrams
-description: Example showing how to use Comark with Mermaid diagrams in React and Vite.
-navigation:
-  icon:  i-simple-icons-mermaid
-category: Plugins
-path: /examples/plugins/react-vite-mermaid
----
+# Mermaid diagrams in React and Vite
 
-::code-explorer
----
-org: comarkdown
-repo: comark@8d0c4a8023b71e8588ee6328820a2f26f2285232
-path: examples/3.plugins/react-vite-mermaid
-defaultValue: src/App.tsx
----
-::
+This example renders fenced `mermaid` code blocks as SVG diagrams in React and Vite using `@comark/react/plugins/mermaid` and `beautiful-mermaid`.
 
 ## Features
 
-This example demonstrates how to use Comark with Mermaid diagrams in React:
-
-- **Mermaid Plugin**: Import and configure the `mermaid` plugin to parse mermaid code blocks
-- **Mermaid Component**: Register the `Mermaid` component to render diagrams as SVG
-- **Multiple Diagram Types**: Supports flowcharts, sequence diagrams, class diagrams, and all other Mermaid diagram types
-- **Configurable**: Customize theme, width, and height via component props
+- Parses fenced `mermaid` code blocks into `Mermaid` nodes with the `mermaid` plugin.
+- Renders flowcharts, sequence diagrams, state diagrams, and class diagrams as SVG through the `Mermaid` React component.
+- Accepts per-diagram theme, width, and height props in the fence info string.
 
 ## Usage
 
-1. Install dependencies:
+1. Install the renderer and `beautiful-mermaid` peer dependency:
    ```bash
    npm install @comark/react beautiful-mermaid
    ```
 
-2. Import the mermaid plugin and component:
+2. Import the `mermaid` plugin and `Mermaid` component:
    ```tsx
    import { MarkdownClient } from '@comark/react'
    import mermaid, { Mermaid } from '@comark/react/plugins/mermaid'
@@ -47,7 +30,7 @@ This example demonstrates how to use Comark with Mermaid diagrams in React:
    />
    ```
 
-4. Use mermaid code blocks in your markdown:
+4. Add a `mermaid` code block to your Markdown:
    ````markdown
    ```mermaid
    graph TD
@@ -55,9 +38,9 @@ This example demonstrates how to use Comark with Mermaid diagrams in React:
    ```
    ````
 
-## Theme Support
+## Theme support
 
-Pass a theme via the code block info string:
+Set a theme for an individual diagram in the fence attributes:
 
 ````markdown
 ```mermaid {theme='zinc-dark'}
@@ -68,8 +51,16 @@ sequenceDiagram
 ```
 ````
 
-## Learn More
+## Run locally
 
-- [Mermaid Plugin Documentation](/plugins/built-in/mermaid)
-- [Mermaid Documentation](https://mermaid.js.org)
-- [Comark Documentation](https://comark.dev)
+From the monorepo root:
+
+```bash
+pnpm dev:react:mermaid
+```
+
+## Learn more
+
+- [Mermaid plugin documentation](https://comark.dev/plugins/built-in/mermaid)
+- [Mermaid documentation](https://mermaid.js.org)
+- [Comark documentation](https://comark.dev)

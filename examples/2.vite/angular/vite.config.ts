@@ -6,15 +6,15 @@ import type { Plugin } from 'vite'
 
 /**
  * In a pnpm workspace, Vite follows symlinks and resolves workspace-linked
- * packages to their real source paths (e.g. `/packages/comark/…`).
+ * packages to their real source paths (e.g. `/packages/comark/...`).
  * This breaks Vite's dep optimizer for non-Angular packages like the core
- * `comark` parser — their transitive deps (linkify-it, mdurl, etc.) can't
+ * `comark` parser; their transitive deps (linkify-it, mdurl, etc.) can't
  * be resolved from the real source path.
  *
  * This plugin maps the core `comark` package back to its `node_modules`
  * symlink path so Vite's dep optimizer bundles it correctly.
  *
- * NOTE: `@comark/angular` is intentionally NOT remapped — it contains
+ * NOTE: `@comark/angular` is intentionally NOT remapped because it contains
  * Angular `@Component` decorators that Analog's fast-compile plugin
  * must AOT-compile.
  */
@@ -60,7 +60,7 @@ export default defineConfig({
     angular({
       tsconfig: './tsconfig.json',
       fastCompile: true,
-      // define.ts uses @Component inside a factory function — a pattern the
+      // define.ts uses @Component inside a factory function, a pattern the
       // fast-compile OXC scanner can't handle (it only finds top-level classes).
       // Excluding it lets Angular's standard JIT/AOT pipeline compile it instead.
       transformFilter: (_code, id) => !id.includes('/define.ts'),

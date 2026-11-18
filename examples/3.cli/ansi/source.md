@@ -1,24 +1,24 @@
 ---
-title: Comark ANSI Demo
+title: Comark ANSI demo
 ---
 
-# Comark ANSI Renderer
+# Comark ANSI renderer
 
-Render **Comark** markdown as _styled_ terminal output.
+Render **Comark** Markdown as _styled_ terminal output.
 
-## Text Formatting
+## Text formatting
 
-You can use **bold**, _italic_, ~~strikethrough~~, and `inline code`.
+Use **bold**, _italic_, ~~strikethrough~~, and `inline code`.
 
-Links look like this: [xtermjs.org](https://xtermjs.org)
+Terminal hyperlinks target URLs such as [xtermjs.org](https://xtermjs.org).
 
-## Code Block
+## Code block
 
 ```typescript [main.ts]
 import { parseMarkdown } from 'comark'
 import { renderAnsiFromDocument } from '@comark/ansi'
 
-const tree = await parseMarkdown('# Hello World')
+const tree = await parseMarkdown('# Hello world')
 console.log(await renderAnsiFromDocument(tree))
 ```
 
@@ -40,34 +40,33 @@ Ordered:
 
 ## Blockquote
 
-> The terminal is not just a tool,
-> it is a way of life.
+> Parse once into a serializable document, then print styled output straight to standard output.
 
-## GitHub Alerts
+## GitHub alerts
 
 > [!NOTE]
-> Highlights information that users should take into account, even when skimming.
+> Notes call out context you need before running a command.
 
 > [!TIP]
-> Optional information to help a user be more successful.
+> Tips share optional flags, such as passing a custom `width` to wrap long lines.
 
 > [!IMPORTANT]
-> Crucial information necessary for users to succeed.
+> Important alerts highlight prerequisites required for a command to succeed.
 
 > [!WARNING]
-> Critical content demanding immediate user attention due to potential risks.
+> Warnings flag operations that overwrite files or reset local state.
 
 > [!CAUTION]
-> Negative potential consequences of an action.
+> Caution alerts mark destructive actions that cannot be undone.
 
-## Component Slots
+## Component slots
 
 ::alert
 #title
 Hello from the title slot
 
 #default
-This is the **default** slot with _markdown_ content.
+This is the **default** slot with _Markdown_ content.
 
 #footer
 Footer slot content here.
@@ -75,7 +74,7 @@ Footer slot content here.
 
 ## Math
 
-Inline: The energy equation $E = mc^2$ is fundamental to physics.
+Inline: the energy equation $E = mc^2$ relates energy and mass.
 
 Block display math:
 
@@ -85,12 +84,12 @@ $$
 
 ## Table
 
-| Feature     | Status  |
-| ----------- | ------- |
-| Headings    | ✅      |
-| Bold/Italic | ✅      |
-| Code blocks | ✅      |
-| Tables      | ✅      |
-| Lists       | ✅      |
+| Feature           | Status    |
+| ----------------- | --------- |
+| Headings          | Supported |
+| Bold and italic   | Supported |
+| Code blocks       | Supported |
+| Tables            | Supported |
+| Lists             | Supported |
 
 ---

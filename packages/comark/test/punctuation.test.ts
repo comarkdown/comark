@@ -113,11 +113,9 @@ describe('punctuation plugin', () => {
     const md = 'text `"hello" -- world...` more text'
     const tree = await parseMarkdown(md, { plugins: [punctuation()] })
 
-    // Find the code element
     const code = findNode(tree.nodes, 'code')
     expect(code).toBeTruthy()
     const codeText = flattenText([code])
-    // Code content should remain unchanged
     expect(codeText).toContain('"')
     expect(codeText).toContain('--')
     expect(codeText).toContain('...')
@@ -218,8 +216,6 @@ describe('punctuation plugin', () => {
     expect(text).toContain('\u201D')
   })
 })
-
-// Test helpers
 
 function flattenText(nodes: any[]): string {
   let text = ''

@@ -17,12 +17,10 @@ export function pre(node: ElementNode, state: State) {
       ?.slice(9) ||
     ''
 
-  // Escape ] in filename
   const filename = attributes.filename ? ' [' + String(attributes.filename).split(']').join('\\\\]') + ']' : ''
 
   const highlights = attributes.highlights ? ' {' + formatHighlights(attributes.highlights as number[]) + '}' : ''
 
-  // Meta always has a leading space
   const meta = attributes.meta ? ' ' + attributes.meta : ''
 
   // The parser drops only the newline before the closing fence, so trailing
@@ -32,7 +30,7 @@ export function pre(node: ElementNode, state: State) {
 
   const fenceBlock = fence + language + filename + highlights + meta + '\n' + code + '\n' + fence
   // Extra user attrs that can't ride on the fence info string round-trip via
-  // `::pre{attrs}\n```…```\n::` — mirrors the wrapper form for ul/ol/table/blockquote.
+  // `::pre{attrs}\n```...```\n::`, mirroring ul/ol/table/blockquote.
   const attrs = comarkAttributes(userBlockAttrs('pre', attributes as Record<string, unknown>))
   if (attrs) {
     return `::pre${attrs}\n${fenceBlock}\n::` + state.context.blockSeparator
@@ -53,13 +51,11 @@ function formatHighlights(highlights: number[]): string {
     if (i < sorted.length && sorted[i] === end + 1) {
       end = sorted[i]
     } else {
-      // Add the current range
       if (start === end) {
         ranges.push(String(start))
       } else {
         ranges.push(start + '-' + end)
       }
-      // Start a new range
       if (i < sorted.length) {
         start = sorted[i]
         end = sorted[i]

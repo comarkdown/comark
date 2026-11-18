@@ -1,9 +1,9 @@
 ---
 title: 'Comark Components in VitePress'
-description: Using Comark component syntax natively in VitePress via the comark syntax plugin.
+description: Add Comark component and attribute syntax to VitePress through its markdown-it configuration.
 navigation:
   title: 'VitePress'
-  icon:  i-simple-icons-vitepress
+  icon: i-simple-icons-vitepress
 ---
 
 ::code-explorer
@@ -15,10 +15,10 @@ defaultValue: demo.md
 ---
 ::
 
-This example shows how to use Comark's `::` component syntax natively in VitePress — no wrapper component or custom renderer needed.
+This example adds Comark's `::` component syntax directly to VitePress without a wrapper component or custom renderer.
 
 ## How it works
 
-- **`comark/plugins/syntax` plugin** — Added to VitePress's markdown-it config via `markdown.config(md)`, this enables the `::component{props}` syntax at the markdown-it level.
-- **Global component registration** — Vue components like `Alert` are registered globally in the VitePress theme via `enhanceApp`, so `::alert{type="info"}` resolves to the `<Alert>` component.
-- **Native coexistence** — Comark syntax works alongside all VitePress Markdown features (code blocks, tables, custom containers, GitHub alerts, etc.) since both use markdown-it.
+- **markdown-it plugins**: `.vitepress/config.ts` registers `markdownItComponents` from `comark/plugins/components` and `markdownItAttributes` from `comark/plugins/attributes` inside `markdown.config(md)`.
+- **Global component registration**: Vue components such as `Alert` register globally in the VitePress theme through `enhanceApp`, so `::alert{type="info"}` renders `<Alert>`.
+- **VitePress Markdown compatibility**: Comark blocks and attributes work alongside VitePress code blocks, tables, custom containers, and GitHub alerts because both run on markdown-it.

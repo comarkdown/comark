@@ -3,11 +3,6 @@ import { createSSRApp, h, Suspense } from 'vue'
 import { renderToString } from '@vue/server-renderer'
 import { Markdown } from '../src/components/Markdown.ts'
 
-/**
- * Tests for the `unwrap` shorthand prop and `options.unwrap` on the high-level
- * Markdown component — the MDC `unwrap="p"` migration path for inline rendering,
- * e.g. `<UButton><Markdown :value="text" unwrap /></UButton>`.
- */
 function renderMarkdownComponent(props: Record<string, unknown>) {
   const app = createSSRApp({
     setup() {

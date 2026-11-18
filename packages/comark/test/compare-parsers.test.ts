@@ -3,58 +3,41 @@ import type { MarkdownDocument } from '../src/index'
 import { parseMarkdown } from '../src/index'
 import { parseWithRemark } from './utils/index'
 
-// Deep comparison function for Comark nodes
 function deepCompareNodes(node1: any, node2: any, path: string = 'root', testCase: string): void {
-  // Compare types
-  // expect(node1.type, `${testCase}: ${path} - type should match`).toBe(node2.type)
-
   if (node1.type === 'root' || node1.type === 'element') {
-    // Compare children count
     expect(
       node1.children.length,
       `${testCase}: ${path} - children count should match (got ${node1.children.length} vs ${node2.children.length})`
     ).toBe(node2.children.length)
 
-    // Recursively compare each child
     for (let i = 0; i < node1.children.length; i++) {
       const childPath = node1.type === 'root' ? `children[${i}]` : `${path}.children[${i}]`
       deepCompareNodes(node1.children[i], node2.children[i], childPath, testCase)
     }
 
-    // For elements, compare tag and props
     if (node1.type === 'element') {
       expect(node1.tag, `${testCase}: ${path} - tag should match`).toBe(node2.tag)
 
-      // Compare props
       const props1 = node1.props || {}
       const props2 = node2.props || {}
 
-      // Normalize props by removing ':' prefix (the Comark syntax plugin uses :boolean, unified uses boolean)
-      // Also filter out attributes that start with ':' if unified parser doesn't include them
-      // Also ignore 'align' and 'style' props as parsers handle table alignment differently
-      // TODO: This normalization can be removed later when both parsers produce consistent prop names
+      // Comark stores boolean/typed props with a `:` prefix while unified does not,
+      // and table alignment props (`align` vs `style`) differ between the two parsers.
       const normalizeProps = (props: Record<string, any>, isUnified: boolean) => {
         const normalized: Record<string, any> = {}
         for (const [key, value] of Object.entries(props)) {
-          // Skip 'align' and 'style' props as they differ between parsers for table alignment
           if (key === 'align' || key === 'style') continue
 
-          // If this is from unified parser, keep as is
-          // If this is from markdown-it, remove ':' prefix and filter out if unified doesn't have it
           if (isUnified) {
             normalized[key] = value
           } else {
-            // For markdown-it, remove ':' prefix
             const normalizedKey = key.startsWith(':') ? key.slice(1) : key
-            // Only include if unified parser would have it (check if it exists in unified props)
-            // For now, we'll include all normalized keys and let the comparison handle missing ones
             normalized[normalizedKey] = value
           }
         }
         return normalized
       }
 
-      // Determine which is unified and which is markdown-it by checking for ':' prefix
       const hasColonPrefix1 = Object.keys(props1).some((k) => k.startsWith(':'))
       const hasColonPrefix2 = Object.keys(props2).some((k) => k.startsWith(':'))
       const isUnified1 = !hasColonPrefix1
@@ -68,7 +51,6 @@ function deepCompareNodes(node1: any, node2: any, path: string = 'root', testCas
         const value1 = normalizedProps1[key]
         const value2 = normalizedProps2[key]
 
-        // Normalize values for comparison (handle arrays, objects, etc.)
         if (Array.isArray(value1) && Array.isArray(value2)) {
           expect(value1, `${testCase}: ${path}.props.${key} - array should match`).toEqual(value2)
         } else {
@@ -80,12 +62,10 @@ function deepCompareNodes(node1: any, node2: any, path: string = 'root', testCas
       }
     }
   } else if (node1.type === 'text') {
-    // Compare text values (normalized)
     const value1 = typeof node1.value === 'string' ? node1.value.trim() : node1.value
     const value2 = typeof node2.value === 'string' ? node2.value.trim() : node2.value
     expect(value1, `${testCase}: ${path} - text value should match (got "${value1}" vs "${value2}")`).toBe(value2)
   } else if (node1.type === 'comment') {
-    // Compare comment values
     expect(node1.value, `${testCase}: ${path} - comment value should match`).toBe(node2.value)
   }
 }
@@ -95,14 +75,11 @@ function compareResults(
   result2: MarkdownDocument,
   testCase: string
 ) {
-  // Compare data (frontmatter)
   expect(result1.data, `${testCase}: data should match`).toEqual(result2.frontmatter)
 
-  // Normalize structures for comparison
   const body1 = result1.body
   const body2 = result2.nodes
 
-  // Deep compare body structures
   deepCompareNodes(body1, body2, 'body', testCase)
 }
 
@@ -111,11 +88,6 @@ const testCases = [
     name: 'simple heading',
     content: '# Hello World',
   },
-  // {
-  //   name: 'component in heading',
-  //   content: '### :hello',
-  //   weight: 1000,
-  // },
   {
     name: 'simple paragraph',
     content: 'This is a paragraph.',
@@ -156,10 +128,6 @@ const testCases = [
     name: 'code block with language',
     content: '```javascript\nconst x = 1;\n```',
   },
-  // {
-  //   name: 'code block with filename',
-  //   content: '```javascript [filename.js]\nconst x = 1;\n```',
-  // },
   {
     name: 'link',
     content: 'This is a [link](https://example.com).',
@@ -370,21 +338,6 @@ Watch how **bold text** and components render correctly even when syntax arrives
   :::
 ::`,
   },
-  // TODO
-  // component in bold
-  // {
-  //   name: 'inline component in bold',
-  //   content: '**:component[text]{.class}**'
-  // },
-  // Bindings
-  // {
-  //   name: "binding",
-  //   content: "Hello {{world}}",
-  // },
-  // {
-  //   name: "binding with default value",
-  //   content: "Hello {{ world || default }}"
-  // },
 ]
 
 testCases.sort((a, b) => ((a as any).weight || 0) - ((b as any).weight || 0))
@@ -395,13 +348,11 @@ describe('compare parseWithRemark and parse', () => {
       // Disable autoUnwrap to match remark-mdc output structure
       const result2 = await parseMarkdown(testCase.content, { autoUnwrap: false })
 
-      // Both should return valid structures
       expect(result1, `${testCase.name}: parseWithRemark should return result`).toBeDefined()
       expect(result2, `${testCase.name}: parse should return result`).toBeDefined()
       expect(result1.body, `${testCase.name}: parseWithRemark body should be defined`).toBeDefined()
       expect(result2, `${testCase.name}: parse result should be defined`).toBeDefined()
 
-      // Compare results
       compareResults(result1 as any, result2 as any, testCase.name)
     })
   })

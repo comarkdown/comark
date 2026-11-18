@@ -50,7 +50,7 @@ export interface MarkdownProps extends Omit<React.HTMLAttributes<HTMLDivElement>
   transformNode?: NodeTransform | readonly NodeTransform[]
 
   /**
-   * Strip wrapper tags from the top level of the document — shorthand for
+   * Strip wrapper tags from the top level of the document. Shorthand for
    * `options.unwrap`. `true` unwraps `<p>` (single-line rendering); a
    * space-separated string or array unwraps the listed tags. Useful for inline
    * usage like `<button><Markdown value={text} unwrap /></button>`.
@@ -58,7 +58,7 @@ export interface MarkdownProps extends Omit<React.HTMLAttributes<HTMLDivElement>
   unwrap?: boolean | string | string[]
 
   /**
-   * Enable streaming mode — delegates to MarkdownClient for client-side re-rendering
+   * Enable streaming mode. Delegates to MarkdownClient for client-side re-rendering
    * when the value prop changes. Use this for LLM streaming output.
    */
   streaming?: boolean
@@ -70,7 +70,7 @@ export interface MarkdownProps extends Omit<React.HTMLAttributes<HTMLDivElement>
   caret?: boolean | { class: string }
 
   /**
-   * Additional data to pass to the renderer — referenced from markdown
+   * Additional data to pass to the renderer, referenced from markdown
    * via `:`-prefixed props using dot paths (e.g. `:foo="data.user.name"`).
    */
   data?: Record<string, unknown>
@@ -126,7 +126,6 @@ export async function Markdown({
   className,
   ...rest
 }: MarkdownProps) {
-  // Pre-parsed document — skip parsing and render directly
   if (isMarkdownDocument(value)) {
     return (
       <MarkdownDocument

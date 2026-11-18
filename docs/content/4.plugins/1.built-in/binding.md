@@ -6,7 +6,7 @@ navigation:
 seo:
   title: Binding Plugin
 links:
-  - label: Data Binding
+  - label: Data binding
     icon: i-lucide-link-2
     to: /syntax/components#data-binding
     color: neutral
@@ -37,7 +37,7 @@ const tree = await parseMarkdown(content, {
 
 ### In Markdown
 
-Wrap a dot-path in `{{ … }}` to interpolate a value, and use `||` to declare a default for unresolved paths:
+Wrap a dot-path in `{{ ... }}` to interpolate a value, and use `||` to declare a default for unresolved paths:
 
 ```mdc
 ---
@@ -164,7 +164,7 @@ Welcome, {{ frontmatter.user.name || guest }}.`
 
 ## Conditional content
 
-Register the renderer-specific `If` export to render a block only when its resolved props pass. The `::if` syntax uses Comark's default component parser and data-binding layer, so it doesn't require the `binding()` parser plugin unless the same document also uses `{{ … }}` interpolation.
+Register the renderer-specific `If` export to render a block only when its resolved props pass. The `::if` syntax uses Comark's default component parser and data-binding layer, so it doesn't require the `binding()` parser plugin unless the same document also uses `{{ ... }}` interpolation.
 
 ```typescript [render.ts]
 import { renderHtml } from '@comark/html'
@@ -254,7 +254,7 @@ Each `#else` belongs to its enclosing component. Only the selected branch render
 
 ## Markdown round-trip
 
-When you re-serialize the AST with `renderMarkdown`, you can pass the core `Binding` handler to preserve the original `{{ … }}` shorthand:
+When you re-serialize the AST with `renderMarkdown`, pass the core `Binding` handler to preserve the original `{{ ... }}` shorthand:
 
 ```typescript [render-markdown.ts]
 import { parseMarkdown } from 'comark'
@@ -280,22 +280,22 @@ A binding value (`{{ path }}`) is resolved as a dot-path against the same render
 | `data`        | Runtime values passed via the renderer's `data` prop               |
 | `props`       | The enclosing component's own props (useful for nested components) |
 
-See [Data Binding](/syntax/components#data-binding) for the full contract and additional examples.
+See [Data binding](/syntax/components#data-binding) for the full contract and additional examples.
 
 ## Default values
 
-Use `|| default` to specify a fallback that's emitted when the dot-path does not resolve:
+Use `|| default` to specify a fallback emitted when the dot-path does not resolve:
 
 ```mdc
 Hello {{ data.user.name || guest }}!
 ```
 
 - If `data.user.name` resolves, its value is rendered.
-- Otherwise the literal text after `||` is rendered (trim and quote as you see fit; YAML rules don't apply here).
+- Otherwise, the literal text after `||` is rendered (trim and quote as needed; YAML rules don't apply here).
 
 ## Custom tag name
 
-You can swap the emitted element tag via the plugin's `tag` option. This is handy if you already use `binding` as a custom component name:
+Use the plugin's `tag` option to change the emitted element name if `binding` conflicts with one of your custom components:
 
 ```typescript
 import binding from 'comark/plugins/binding'
@@ -307,7 +307,7 @@ const tree = await parseMarkdown('{{ x }}', {
 // AST: ['p', {}, ['prop', { ':value': 'x' }]]
 ```
 
-Pair this with a `components: { prop: Binding }` mapping to preserve the render behavior.
+Pair this with `components: { prop: Binding }` to keep the same render behavior.
 
 ## API reference
 
@@ -321,14 +321,14 @@ Register the inline-binding parser.
 
 ### `Binding`
 
-Every first-party package exports a `Binding` handler/component tailored to its rendering target. Each one:
+Every renderer package exports a `Binding` handler or component for its target. Each one:
 
 - Prefers the already-resolved `value` prop supplied by the data-binding layer
 - Falls back to `defaultValue` when the path does not resolve
 - Emits an empty string when neither is available (the ANSI variant shows a dimmed `{{ path }}` placeholder for debuggability)
 
 ```typescript
-// markdown (source shorthand)
+// Markdown (source shorthand)
 import { Binding } from 'comark/plugins/binding'
 
 // HTML
@@ -381,47 +381,47 @@ import {
 
 ## Use cases
 
-1. **Personalized content**: greet users by name from frontmatter or runtime data:
+- **Personalized content.** Greet users by name from frontmatter or runtime data:
 
-   ```mdc
-   Hello {{ data.user.name || friend }}!
-   ```
+  ```mdc
+  Hello {{ data.user.name || friend }}!
+  ```
 
-2. **Documentation templates**: interpolate configuration or versioned values:
+- **Documentation templates.** Interpolate configuration or versioned values:
 
-   ```mdc
-   ---
-   version: 2.5.1
-   ---
+  ```mdc
+  ---
+  version: 2.5.1
+  ---
 
-   You are reading the docs for **v{{ frontmatter.version }}**.
-   ```
+  You are reading the docs for **v{{ frontmatter.version }}**.
+  ```
 
-3. **Dynamic tables**: combine with frontmatter-driven rows:
+- **Dynamic tables.** Populate table cells from frontmatter values:
 
-   ```mdc
-   ---
-   stats:
-     users: 1200
-     uptime: 99.9%
-   ---
+  ```mdc
+  ---
+  stats:
+    users: 1200
+    uptime: 99.9%
+  ---
 
-   | Metric | Value                       |
-   | ------ | --------------------------- |
-   | Users  | {{ frontmatter.stats.users }} |
-   | Uptime | {{ frontmatter.stats.uptime }} |
-   ```
+  | Metric | Value                          |
+  | ------ | ------------------------------ |
+  | Users  | {{ frontmatter.stats.users }}  |
+  | Uptime | {{ frontmatter.stats.uptime }} |
+  ```
 
-4. **Component props**: reference an enclosing component's resolved attributes:
+- **Component props.** Reference an enclosing component's resolved attributes:
 
-   ```mdc
-   ::card{title="Hello"}
-     Title is {{ props.title }}.
-   ::
-   ```
+  ```mdc
+  ::card{title="Hello"}
+    Title is {{ props.title }}.
+  ::
+  ```
 
 ## See also
 
-- [Data Binding](/syntax/components#data-binding): the underlying `:prefix` resolution contract
-- [Component Syntax](/syntax/components): the full Comark component API
-- [Creating Plugins](/plugins/custom/plugin-api): build your own plugins
+- [Data binding](/syntax/components#data-binding) for the `:prefix` resolution contract
+- [Component syntax](/syntax/components) for the Comark component API
+- [Plugin API](/plugins/custom/plugin-api) for writing custom plugins

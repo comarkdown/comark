@@ -15,7 +15,7 @@ type ProcessorResult = {
   /**
    * When true, `node` is a completed HTML sibling of whatever is still open on
    * `htmlStack` (e.g. `</div><div>` left free `div` + a new open frame). Emit it
-   * at the current document level without nesting into the remaining stack —
+   * at the current document level without nesting into the remaining stack,
    * matching how parse5 / hast-util-raw places sequential root children.
    */
   siblingOfHtmlStack?: boolean
@@ -28,7 +28,7 @@ export interface ProcessorOptions {
 }
 
 type HtmlOpenFrame = {
-  /** Element tag, or `null` for an HTML comment (`<!--` … `-->`). */
+  /** Element tag, or `null` for an HTML comment (`<!--` ... `-->`). */
   tag: string | null
   attrs: Record<string, unknown>
   children: Node[]
@@ -44,7 +44,7 @@ interface ProcessState {
   /** `undefined` when auto-generated heading ids are disabled */
   headingIds?: HeadingIdTracker
   startLine: number
-  /** Unclosed HTML open tags, outer → inner. Lives across blocks like the heading id stack. */
+  /** Unclosed HTML open tags, outer -> inner. Lives across blocks like the heading id stack. */
   htmlStack: HtmlOpenFrame[]
 }
 
@@ -76,7 +76,7 @@ function flushPendingInline(frame: HtmlOpenFrame) {
   frame.children.push(['p', {}, ...pending] as ElementNode)
 }
 
-/** Flatten nested nodes to text — used when emitting comment frames. */
+/** Flatten nested nodes to text when emitting comment frames. */
 function flattenText(nodes: Node[]): string {
   let out = ''
   for (const n of nodes) {
@@ -133,7 +133,6 @@ function deliverInline(state: ProcessState, node: Node | undefined): Node | unde
 function tryCommentTag(content: string, state: ProcessState): ProcessorResult | null {
   const top = state.htmlStack[state.htmlStack.length - 1]
 
-  // Close comment
   if (top?.tag === null && content.includes('-->')) {
     const i = content.indexOf('-->')
     if (i > 0) deliverInline(state, content.slice(0, i))
@@ -141,14 +140,12 @@ function tryCommentTag(content: string, state: ProcessState): ProcessorResult | 
     return { nextIndex: -1, node: frameToNode(frame) } // nextIndex filled by caller
   }
 
-  // Open comment (no close in this chunk)
   if (content.startsWith('<!--') && !content.includes('-->')) {
     const body = content.slice(4)
     state.htmlStack.push({ tag: null, attrs: {}, children: body ? [body] : [], block: true, pendingInline: [] })
     return { nextIndex: -1, node: undefined }
   }
 
-  // Complete comment in one chunk
   if (content.startsWith('<!--') && content.includes('-->')) {
     const end = content.indexOf('-->')
     return { nextIndex: -1, node: [null, {}, content.slice(4, end)] as CommentNode }
@@ -165,7 +162,7 @@ function processToken(tokens: Token[], i: number, state: ProcessState): Processo
  * Walk inline tokens. HTML open/close tags drive `state.htmlStack`.
  * @param nestHtml When true (free paragraph / top-level), free nodes nest into
  *   the open HTML stack. When false (nested markdown containers like strong/li),
- *   free nodes return to the parent container — the container itself later lands
+ *   free nodes return to the parent container; the container itself later lands
  *   on the HTML stack as a whole unit via deliverBlock. Tags opened within
  *   the run always receive the nodes up to their close tag.
  */
@@ -388,7 +385,7 @@ function singleToken(fn: (token: Token) => Node) {
 
 /**
  * Run `fn` with a fresh HTML stack so tags opened inside a markdown container
- * (list item, blockquote, table cell…) are paired and closed within it, and
+ * (list item, blockquote, table cell, ...) are paired and closed within it, and
  * cannot capture the container's siblings. Frames still open when the
  * container ends are closed into its children, like EOF does at the root.
  */
@@ -515,7 +512,7 @@ const processors: Record<string, Processor> = {
       return asParagraph()
     }
 
-    // Stack still open — free content already nested via deliverInline into the
+    // Stack still open: free content already nested via deliverInline into the
     // current parent. The one remaining case is close-then-open at document
     // root (`</div><div>`): the closed node sits free in `children` while a new
     // frame is open, and must emit as a sibling of that frame (parse5-style),
@@ -582,12 +579,9 @@ const processors: Record<string, Processor> = {
 
     return { nextIndex: start + 1, node: content }
   },
-  // html_inline drives the document-wide HTML open stack — the same shape
+  // html_inline drives the document-wide HTML open stack, the same shape
   // hast-util-raw feeds parse5: open tags push, close tags pop (and auto-close
-  // mismatched intermediates), void/self-closing emit immediately.
-  // - self-closing / void → single element
-  // - open → push frame (siblings / later blocks fill children)
-  // - matching close → pop frame(s) and emit completed element
+  // mismatched intermediates), void/self-closing tags emit immediately.
   html_inline(tokens, start, state) {
     const raw = tokens[start].content || ''
     const parsed = parseHtmlInline(raw)
@@ -664,7 +658,7 @@ export function tokenListToTree(tokens: Token[], options: ProcessorOptions = {})
 
     if (token.type === 'inline') {
       const free = processInline(token.children ?? [], state)
-      // Free inline at block level (rare) — if stack open, nest; else emit
+      // Free inline at block level (rare): nest when stack is open, else emit.
       if (state.htmlStack.length > 0) {
         for (const n of free) state.htmlStack[state.htmlStack.length - 1].children.push(n)
       } else {
@@ -684,7 +678,7 @@ export function tokenListToTree(tokens: Token[], options: ProcessorOptions = {})
           preserveLineNumber(tokens, result.node, i, result.nextIndex, state)
         }
         // Sibling free nodes from close-then-open (`</div><div>`) sit beside the
-        // remaining open stack, not inside it — same as parse5 root children.
+        // remaining open stack, not inside it (same as parse5 root children).
         if (result.siblingOfHtmlStack) {
           pushNode(nodes, result.node)
         } else {
@@ -699,9 +693,7 @@ export function tokenListToTree(tokens: Token[], options: ProcessorOptions = {})
     }
   }
 
-  // EOF — close remaining unclosed HTML tags (outermost last).
-  // Incomplete openers with only text leaves stay block: 0 (inline-like).
-  // Anything with element children (markdown, nested HTML, lists) is block: 1.
+  // Close remaining unclosed HTML tags at EOF (outermost last).
   while (state.htmlStack.length > 0) {
     const frame = state.htmlStack.pop()!
     frame.block = true

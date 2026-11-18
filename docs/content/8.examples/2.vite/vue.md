@@ -1,9 +1,9 @@
 ---
 title: 'Vue Markdown Example with Vite'
-description: 'A Vue and Vite app that renders a Markdown blog, a syntax showcase, and a live editor with Comark and a custom alert component.'
+description: 'A Vue and Vite app that renders a Markdown blog, component syntax examples, and a live editor with Comark.'
 navigation:
   title: 'Vue'
-  icon:  i-simple-icons-vuedotjs
+  icon: i-simple-icons-vuedotjs
 ---
 
 ::code-explorer
@@ -15,7 +15,7 @@ defaultValue: content/posts/comark-syntax.md
 ---
 ::
 
-::Browser{src="https://comark-vue.vercel.app/#/blog/comark-syntax"}
+::browser{src="https://comark-vue.vercel.app/#/blog/comark-syntax"}
 ::
 
-This example shows the quickest way to use Comark with Vue - use the `Markdown` component and pass it markdown content. The component handles parsing and rendering automatically.
+This example renders a Markdown blog, component syntax examples, and a live editor in Vue 3 with Vite. Wrap `<Markdown>` from `@comark/vue` in `<Suspense>` to parse and render Markdown asynchronously, or pass a pre-parsed document to `<MarkdownDocument>`.

@@ -37,13 +37,8 @@ export const Mermaid = defineComponent({
     const isDark = ref(false)
 
     const beautifulTheme = computed(() => {
-      // Determine which theme to use based on dark mode and props
       const isDarkMode = isDark.value
-
-      // Get theme-dark prop (using bracket notation for kebab-case prop)
       const themeDarkProp = props.themeDark
-
-      // If dark mode, prefer theme-dark, otherwise prefer theme
       const themeProp = isDarkMode ? themeDarkProp : props.theme
 
       let theme
@@ -53,7 +48,6 @@ export const Mermaid = defineComponent({
         theme = themeProp
       }
 
-      // Fallback to default themes if no prop is set
       if (!theme) {
         theme = THEMES[isDarkMode ? 'tokyo-night' : 'tokyo-light']
       }
@@ -77,7 +71,6 @@ export const Mermaid = defineComponent({
       if (htmlEl) {
         isDark.value = htmlEl.classList.contains('dark') || false
 
-        // Watch for class changes on HTML element
         const observer = new MutationObserver(() => {
           const newIsDark = htmlEl.classList.contains('dark')
           if (newIsDark !== isDark.value) {
@@ -94,7 +87,6 @@ export const Mermaid = defineComponent({
       renderDiagram()
     })
 
-    // Watch for theme changes (including isDark changes that affect beautifulTheme)
     watch([beautifulTheme, () => props.content, isDark, () => props.theme, () => props.themeDark], () => {
       renderDiagram()
     })

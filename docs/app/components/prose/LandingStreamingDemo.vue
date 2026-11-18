@@ -11,7 +11,7 @@ To flutter—and the Bird is on the Wing.
 
 `
 // Revealed atomically (not typed char-by-char) so the parser never sees a
-// half-typed attribute — a truncated quoted value gets auto-closed as a
+// half-typed attribute; a truncated quoted value gets auto-closed as a
 // boolean, which breaks the icon.
 const ALERT_OPEN = '::callout{icon="i-lucide-feather" title="No Markup left behind"}\n'
 const ALERT_BODY = 'Even as the Bird of Time takes flight, every stroke of syntax lands whole.'
@@ -24,9 +24,6 @@ let timer: ReturnType<typeof setTimeout> | null = null
 let observer: IntersectionObserver | null = null
 let hasStarted = false
 
-// Each segment either types in char-by-char (chunked) or gets appended whole in
-// one go — the latter for the alert's opening/closing tags, so the parser
-// never sees a half-typed attribute.
 const SEGMENTS: { text: string; atomic?: boolean }[] = [
   { text: POEM },
   { text: ALERT_OPEN, atomic: true },

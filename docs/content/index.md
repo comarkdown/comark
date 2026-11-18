@@ -1,10 +1,10 @@
 ---
 navigation: false
 title: 'Comark: Markdown Parser and Renderer for Any Framework'
-description: 'Open-source Markdown parser and renderer with components, attributes and plugins. Streams AI output to React, Vue, Svelte, Angular, HTML and the terminal.'
+description: 'Open-source Markdown parser and renderer with components, attributes, and plugins. Streams AI output to React, Vue, Svelte, Angular, HTML, and the terminal.'
 seo:
   title: 'Comark: Markdown Parser and Renderer for Any Framework'
-  description: 'Open-source Markdown parser and renderer with components, attributes and plugins. Streams AI output to React, Vue, Svelte, Angular, HTML and the terminal.'
+  description: 'Open-source Markdown parser and renderer with components, attributes, and plugins. Streams AI output to React, Vue, Svelte, Angular, HTML, and the terminal.'
   ogImage: /social-card.jpg
 ---
 
@@ -41,7 +41,7 @@ orientation: horizontal
 The Markdown parser and renderer for everything.
 
 #description
-Open-source Markdown parser and renderer with components, attributes and plugins. Streams AI output to React, Vue, Svelte, Angular, HTML and the terminal.
+Open-source Markdown parser and renderer with components, attributes, and plugins. Streams AI output to React, Vue, Svelte, Angular, HTML, and the terminal.
 
 #links
   :::button
@@ -82,7 +82,7 @@ Comark parses Markdown into a compact [`MarkdownDocument`](/getting-started/docu
   HTML
 
   #description
-  A plain string renderer for static site generators, RSS feeds or emails. No framework required.
+  A plain string renderer for static site generators, RSS feeds, or emails. No framework required.
   :::
   
   :::landing-feature-card{icon="i-lucide-terminal" to="/rendering/ansi" color="var(--ui-text-highlighted)"}
@@ -90,7 +90,7 @@ Comark parses Markdown into a compact [`MarkdownDocument`](/getting-started/docu
   ANSI
 
   #description
-  Render Markdown as styled terminal output using ANSI escape codes, perfect for CLIs, scripts, and developer tooling.
+  Render Markdown as styled terminal output with ANSI escape codes for CLIs, scripts, and developer tools.
   :::
 
   :::landing-feature-card{icon="i-logos-angular-icon" to="/rendering/angular" color="#dd0031"}
@@ -98,7 +98,7 @@ Comark parses Markdown into a compact [`MarkdownDocument`](/getting-started/docu
   Angular
 
   #description
-  Standalone components for Angular 17+, with the same props and streaming support.
+  Standalone components for Angular 21+, with the same props and streaming support.
   :::
   
   :::landing-feature-card{icon="i-logos-react" to="/rendering/react" color="#61dafb"}
@@ -164,7 +164,7 @@ items:
     title: Shiki
     description: Syntax highlighting for code blocks, with multi-theme support and on-demand language loading.
   - icon: i-lucide-braces
-    title: JSON Render
+    title: json-render
     description: Declarative UI specs in json-render code blocks, turned into real components.
   - icon: i-simple-icons-mermaid
     title: Mermaid
@@ -253,7 +253,7 @@ Syntax
 [Co]{.font-bold}[mponents in ]{.text-muted} [Mark]{.font-bold}[down]{.text-muted}
 
 #description
-Discover our opt-in syntax for components, attributes, and frontmatter, handled by default plugins you can turn off. CommonMark and GFM are supported by default, so the Markdown files you already have keep working.
+Components, attributes, and frontmatter are opt-in syntax handled by default plugins you can turn off. CommonMark and GFM work by default, so your existing Markdown files parse without changes.
 
 #code-0
   ```mdc [components.md]
@@ -262,7 +262,7 @@ Discover our opt-in syntax for components, attributes, and frontmatter, handled 
   ::
 
   ::card{title="My Card"}
-  Card content with full **markdown** support.
+  Card content with **Markdown** support.
   ::
 
   Click the :button[Submit]{type="primary"} to continue.

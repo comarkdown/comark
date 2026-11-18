@@ -116,7 +116,6 @@ export function searchProps(content: string, index = 0) {
     return searchUntil(end)
   }
 
-  // Strip surrounding quotes from values
   props.forEach((v) => {
     if (/^(['"`]).*\1$/.test(v[1])) v[1] = v[1].slice(1, -1)
   })

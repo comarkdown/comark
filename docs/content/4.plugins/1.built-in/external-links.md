@@ -11,7 +11,7 @@ links:
     to: /reference/parse
     color: neutral
     variant: soft
-  - label: Document Model
+  - label: Document model
     icon: i-lucide-braces
     to: /getting-started/document-model
     color: neutral
@@ -47,7 +47,7 @@ Returns a `ComarkPlugin` that adds a `rel`, and optionally a `target`, to extern
 
 **Parameters:**
 
-- `options?` - Optional configuration, see [Options](#options)
+- `options?`: optional configuration; see [Options](#options)
 
 **Returns:** `ComarkPlugin`
 

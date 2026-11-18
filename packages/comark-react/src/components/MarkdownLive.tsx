@@ -21,7 +21,7 @@ export interface MarkdownLiveProps extends MarkdownDocumentProps {
  *
  * @example
  * ```tsx
- * // In a Server Component — render statically, hydrate for live updates:
+ * // In a Server Component: render statically, hydrate for live updates
  * import { MarkdownLive } from '@comark/react'
  *
  * export default async function Page() {
@@ -32,9 +32,7 @@ export interface MarkdownLiveProps extends MarkdownDocumentProps {
  */
 export function MarkdownLive({ value, documentKey, ...rest }: MarkdownLiveProps) {
   const document = value ?? { nodes: [] }
-  // Live document support: if an ambient context exists, subscribe to updates
-  // for this key and re-render with the pushed document. Cleaned up on unmount.
-  // The key is the document's own `meta.key` (set by a plugin) or the `documentKey` prop.
+  // Prefer a plugin-assigned `meta.key` over the `documentKey` prop.
   const [liveDocument, setLiveDocument] = useState<MarkdownDocumentType | null>(null)
   const key = (document as MarkdownDocumentType).meta?.key || documentKey
   useEffect(() => {

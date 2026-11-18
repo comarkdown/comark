@@ -1,11 +1,11 @@
 ---
 title: Breaks
-description: Plugin for converting soft line breaks into br components. 
+description: Convert soft line breaks into <br> elements.
 navigation:
   icon: i-lucide-corner-down-left
 seo:
   title: Breaks Plugin
-  description: Plugin for converting soft line breaks into br components in Comark documents.
+  description: Convert soft line breaks into <br> elements in Comark documents.
 links:
   - label: Parse API
     icon: i-lucide-code
@@ -14,9 +14,7 @@ links:
     variant: soft
 ---
 
-The Breaks plugin transforms soft line breaks into `<br>` components.
-
-No peer dependencies are required.
+The `comark/plugins/breaks` plugin converts soft line breaks (single newlines inside a paragraph) into `<br>` elements. It requires no peer dependencies.
 
 ## Basic usage
 

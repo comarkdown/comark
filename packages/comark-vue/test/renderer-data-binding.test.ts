@@ -63,9 +63,6 @@ site:
 ::`,
       { components: { badge: Badge } }
     )
-    // data-count attribute on a number prop is serialised without quotes in
-    // the VNode, but string conversion is fine — what matters is that the
-    // prop reached the component as 42 (not "42").
     expect(html).toContain('data-count="42"')
   })
 
@@ -96,8 +93,6 @@ site:
 `,
       { components: { card: Card, badge: Badge } }
     )
-    // The badge is rendered inside the card's default slot with the card's
-    // title surfacing through props.title.
     expect(html).toContain('Hello')
   })
 
@@ -107,7 +102,6 @@ site:
 ::`,
       { components: { badge: Badge } }
     )
-    // label default is '' — resolved undefined becomes the empty default.
     expect(html).toContain('class="badge"')
     expect(html).not.toContain('frontmatter.missing')
   })
@@ -123,7 +117,6 @@ site: Blog
 `,
       { components: { badge: Badge } }
     )
-    // literal string, not resolved because there's no colon prefix
     expect(html).toContain('frontmatter.site')
   })
 })

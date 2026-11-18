@@ -1,6 +1,6 @@
 ---
 title: Emoji
-description: "Convert emoji shortcodes like :smile: into emoji characters."
+description: "Convert emoji shortcodes such as :smile: into emoji characters."
 seo:
   title: Emoji Shortcodes Plugin
 navigation:
@@ -11,14 +11,14 @@ links:
     to: /reference/parse
     color: neutral
     variant: soft
-  - label: Markdown Syntax
+  - label: Markdown syntax
     icon: i-lucide-file-text
     to: /syntax/markdown
     color: neutral
     variant: soft
 ---
 
-The `comark/plugins/emoji` plugin converts emoji shortcodes (for example, `:smile:`) into their corresponding emoji characters. It ships with a curated set of common emojis, and you can add the full GitHub set or your own shortcodes with the [`extend`](#extend) option.
+The `comark/plugins/emoji` plugin converts emoji shortcodes such as `:smile:` into Unicode emoji characters. It includes 200+ common shortcodes, and you can add the full GitHub set or custom shortcodes with the [`extend`](#extend) option.
 
 ## Usage
 
@@ -81,10 +81,10 @@ Shortcodes are case-sensitive and must use exact names. Unknown shortcodes are n
 
 ### Shortcodes
 
-The plugin ships with 200+ popular emojis across all common categories:
+The plugin includes 200+ common emojis across major categories:
 
-- **Smileys & Emotions**: `:smile:` `:heart_eyes:` `:thinking:` `:cry:` `:joy:`
-- **People & Gestures**: `:thumbsup:` `:clap:` `:wave:` `:muscle:` `:pray:`
+- **Smileys and emotions**: `:smile:` `:heart_eyes:` `:thinking:` `:cry:` `:joy:`
+- **People and gestures**: `:thumbsup:` `:clap:` `:wave:` `:muscle:` `:pray:`
 - **Hearts**: `:heart:` `:yellow_heart:` `:blue_heart:` `:purple_heart:` `:broken_heart:`
 - **Animals**: `:dog:` `:cat:` `:lion:` `:bear:` `:penguin:` `:fish:`
 - **Food**: `:pizza:` `:hamburger:` `:coffee:` `:beer:` `:cake:`
@@ -107,7 +107,7 @@ Some emojis have multiple valid shortcodes:
 
 ### Custom shortcodes
 
-Use the `extend` option to add your own shortcodes or override built-in ones. This is handy for team-specific emojis or GitHub custom shortcodes that aren't part of the Unicode set (such as `:shipit:`):
+Use the `extend` option to add your own shortcodes or override built-in ones, such as team emojis or GitHub custom shortcodes outside Unicode (`:shipit:`):
 
 ```typescript
 import emoji from 'comark/plugins/emoji'
@@ -164,7 +164,7 @@ A map of shortcode names (without colons) to emoji characters. Added on top of t
 
 ```mdc
 :white_check_mark: Completed
-:hammer: In Progress
+:hammer: In progress
 :x: Blocked
 ```
 
@@ -179,7 +179,7 @@ Deployment: :rocket:
 ### Task lists
 
 ```mdc
-- :white_check_mark: Setup project
+- :white_check_mark: Set up project
 - :memo: Write docs
 - :bulb: Add examples
 ```

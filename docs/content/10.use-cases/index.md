@@ -26,7 +26,7 @@ Each guide answers one question with working code. Pick the task that matches yo
   :::
 
   :::card{icon="i-simple-icons-angular" title="Angular chat with the AI SDK" to="/use-cases/angular-ai-chat"}
-  Stream AI SDK messages in Angular 17 or later.
+  Stream AI SDK messages in Angular 21+.
   :::
 
   :::card{icon="i-lucide-sparkles" title="Generative UI" to="/use-cases/generative-ui"}

@@ -93,7 +93,6 @@ describe('binding plugin — parsing', () => {
 
   it('does not trigger on a single `{` brace', async () => {
     const tree = await parseWithBinding('single { value } here')
-    // No binding element should appear in the output.
     const json = JSON.stringify(tree.nodes)
     expect(json).not.toContain('"binding"')
   })
