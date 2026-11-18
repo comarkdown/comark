@@ -3,12 +3,16 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Type,
+  computed,
   inject,
   type OnInit,
   type OnDestroy,
   input,
 } from '@angular/core'
 import type { ElementNode, Node, MarkdownDocument as MarkdownDocumentType, NodeRenderData, NodeTransform } from 'comark'
+import { mergeNodeTransforms } from 'comark/utils'
+import { MARKDOWN_DOCUMENT_CONFIG } from '../config'
+import type { MarkdownDocumentConfig } from '../config'
 import { MarkdownNode } from './markdown-node.component'
 import { findLastTextNodeAndAppendNode, getCaret } from '../utils/caret'
 
@@ -31,20 +35,25 @@ const EMPTY_DOCUMENT: MarkdownDocumentType = { nodes: [], frontmatter: {}, meta:
   standalone: true,
   imports: [MarkdownNode],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    '[class]': 'config?.class ?? ""',
+  },
   template: `
     <div class="comark-content">
       @for (node of renderedNodes; track $index) {
         <comark-markdown-node
           [node]="node"
-          [components]="components()"
+          [components]="mergedComponents()"
           [renderData]="renderData"
-          [transformNode]="transformNode()"
+          [transformNode]="mergedTransforms()"
         />
       }
     </div>
   `,
 })
 export class MarkdownDocument implements OnInit, OnDestroy {
+  protected readonly config: MarkdownDocumentConfig | null = inject(MARKDOWN_DOCUMENT_CONFIG, { optional: true })
+
   /** The parsed Markdown document to render */
   readonly value = input<MarkdownDocumentType>()
 
@@ -62,6 +71,14 @@ export class MarkdownDocument implements OnInit, OnDestroy {
 
   /** Change the tag or props of element nodes just before they render */
   readonly transformNode = input<NodeTransform | readonly NodeTransform[]>()
+
+  /** Config-level and instance-level components merged, instance wins. */
+  protected readonly mergedComponents = computed(() => ({ ...(this.config?.components ?? {}), ...this.components() }))
+
+  /** Config-level transforms run before the instance's own transforms. */
+  protected readonly mergedTransforms = computed(() =>
+    mergeNodeTransforms(this.config?.transformNode, this.transformNode())
+  )
 
   /**
    * Document key used to subscribe to live updates via `globalThis.comarkContext`.

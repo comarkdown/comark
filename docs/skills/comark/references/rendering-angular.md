@@ -479,53 +479,55 @@ export class AppComponent {
 
 ## Pre-configured components
 
-Use `defineMarkdownComponent` or `defineMarkdownDocumentComponent` to create pre-configured components with default plugins and component mappings:
+Use `defineMarkdownComponent` or `defineMarkdownDocumentComponent` to pre-configure plugins, component mappings, styling, and node transforms. Each helper returns an Angular `Provider`. Import the static `Markdown` or `MarkdownDocument` component in `imports`; a component class made by a runtime factory cannot be statically resolved in `imports` and fails AOT builds with NG1010.
 
 ### defineMarkdownComponent
 
 ```typescript
-// docs-markdown.component.ts
-import { defineMarkdownComponent } from '@comark/angular'
+import { Component } from '@angular/core'
+import { Markdown, defineMarkdownComponent } from '@comark/angular'
 import { math, Math } from '@comark/angular/plugins/math'
 import { mermaid, Mermaid } from '@comark/angular/plugins/mermaid'
-
-export const DocsMarkdown = defineMarkdownComponent({
-  plugins: [math(), mermaid()],
-  components: { Math, Mermaid },
-  class: 'prose dark:prose-invert',
-})
-```
-
-Use the pre-configured component:
-
-```typescript
-import { Component } from '@angular/core'
-import { DocsMarkdown } from './docs-markdown.component'
 
 @Component({
   selector: 'app-docs',
   standalone: true,
-  imports: [DocsMarkdown],
-  template: `
-    <docs-markdown [value]="content" />
-  `,
+  imports: [Markdown],
+  providers: [
+    defineMarkdownComponent({
+      plugins: [math(), mermaid()],
+      components: { Math, Mermaid },
+      class: 'prose dark:prose-invert',
+    }),
+  ],
+  template: `<comark-markdown [value]="content" />`,
 })
 export class DocsComponent {
   content = '# Math: $E = mc^2$'
 }
 ```
 
-Instance-level `components` and `plugins` are merged with the config-level defaults at runtime.
+Instance-level `options`, `plugins`, `components`, and `transformNode` inputs merge with the provider config and win on conflict. Config plugins run first and are deduplicated by name. Config `transformNode` runs before the instance's own transform.
 
 ### defineMarkdownDocumentComponent
 
 ```typescript
-import { defineMarkdownDocumentComponent } from '@comark/angular'
+import { Component } from '@angular/core'
+import { MarkdownDocument, defineMarkdownDocumentComponent } from '@comark/angular'
 import { Math } from '@comark/angular/plugins/math'
 
-export const DocsMarkdownDocument = defineMarkdownDocumentComponent({
-  components: { Math },
+@Component({
+  selector: 'app-docs',
+  standalone: true,
+  imports: [MarkdownDocument],
+  providers: [
+    defineMarkdownDocumentComponent({
+      components: { Math },
+    }),
+  ],
+  template: `<comark-markdown-document [value]="document" />`,
 })
+export class DocsComponent {}
 ```
 
 ---

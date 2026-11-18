@@ -1,5 +1,5 @@
 import { Component } from '@angular/core'
-import { Markdown } from '@comark/angular'
+import { Markdown, defineMarkdownComponent } from '@comark/angular'
 import shiki from 'comark/plugins/shiki'
 import alert from 'comark/plugins/alert'
 import { AlertComponent } from '../components/alert.component'
@@ -10,23 +10,20 @@ import python from '@shikijs/langs/python'
   selector: 'app-syntax',
   standalone: true,
   imports: [Markdown],
-  template: `
-    <comark-markdown
-      [value]="markdown"
-      [plugins]="plugins"
-      [components]="components"
-    />
-  `,
+  providers: [
+    defineMarkdownComponent({
+      plugins: [
+        shiki({
+          languages: [python],
+        }),
+        alert(),
+      ],
+      components: { alert: AlertComponent, 'feature-card': FeatureCardComponent },
+    }),
+  ],
+  template: `<comark-markdown [value]="markdown" />`,
 })
 export class SyntaxComponent {
-  components = { alert: AlertComponent, 'feature-card': FeatureCardComponent }
-  plugins = [
-    shiki({
-      languages: [python],
-    }),
-    alert(),
-  ]
-
   markdown = `
 # Comark Syntax Showcase
 

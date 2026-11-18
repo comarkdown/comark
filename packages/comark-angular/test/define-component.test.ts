@@ -1,75 +1,56 @@
 import { describe, expect, it } from 'vitest'
+import type { ValueProvider } from '@angular/core'
+import type { NodeTransform } from 'comark'
 import { defineMarkdownComponent, defineMarkdownDocumentComponent } from '../src/define.ts'
+import { MARKDOWN_CONFIG, MARKDOWN_DOCUMENT_CONFIG } from '../src/config.ts'
 
 describe('defineMarkdownComponent', () => {
-  it('returns a component class', () => {
-    const Defined = defineMarkdownComponent({})
-    expect(Defined).toBeDefined()
-    expect(typeof Defined).toBe('function')
-  })
+  it('returns a MARKDOWN_CONFIG provider with defaults and overrides', () => {
+    const empty = defineMarkdownComponent() as ValueProvider
+    expect(empty.provide).toBe(MARKDOWN_CONFIG)
+    expect(empty.useValue).toMatchObject({ options: {}, plugins: [], components: {} })
 
-  it('returns a component class with default config', () => {
-    const Defined = defineMarkdownComponent()
-    expect(Defined).toBeDefined()
-    expect(typeof Defined).toBe('function')
-  })
-
-  it('accepts plugins in config', () => {
-    const fakePlugin = { name: 'test', setup: () => {} }
-    const Defined = defineMarkdownComponent({
-      plugins: [fakePlugin as any],
-    })
-    expect(Defined).toBeDefined()
-  })
-
-  it('accepts components in config', () => {
+    const plugin = { name: 'test', setup: () => {} }
+    const transformNode: NodeTransform = () => undefined
     class FakeComponent {}
-    const Defined = defineMarkdownComponent({
-      components: { alert: FakeComponent as any },
-    })
-    expect(Defined).toBeDefined()
-  })
-
-  it('accepts class in config', () => {
-    const Defined = defineMarkdownComponent({
-      class: 'prose dark:prose-invert',
-    })
-    expect(Defined).toBeDefined()
-  })
-
-  it('accepts parse options in config', () => {
-    const Defined = defineMarkdownComponent({
+    const provider = defineMarkdownComponent({
+      plugins: [plugin as any],
+      components: { alert: FakeComponent },
+      class: 'prose',
       autoClose: true,
-      autoUnwrap: false,
+      transformNode,
+    }) as ValueProvider
+
+    expect(provider.provide).toBe(MARKDOWN_CONFIG)
+    expect(provider.useValue).toEqual({
+      options: { autoClose: true },
+      plugins: [plugin],
+      components: { alert: FakeComponent },
+      transformNode,
+      class: 'prose',
     })
-    expect(Defined).toBeDefined()
   })
 })
 
 describe('defineMarkdownDocumentComponent', () => {
-  it('returns a component class', () => {
-    const Defined = defineMarkdownDocumentComponent({})
-    expect(Defined).toBeDefined()
-    expect(typeof Defined).toBe('function')
-  })
+  it('returns a MARKDOWN_DOCUMENT_CONFIG provider with defaults and overrides', () => {
+    const empty = defineMarkdownDocumentComponent() as ValueProvider
+    expect(empty.provide).toBe(MARKDOWN_DOCUMENT_CONFIG)
+    expect(empty.useValue.components).toEqual({})
 
-  it('returns a component class with default config', () => {
-    const Defined = defineMarkdownDocumentComponent()
-    expect(Defined).toBeDefined()
-  })
-
-  it('accepts components in config', () => {
+    const transformNode: NodeTransform = () => undefined
     class FakeComponent {}
-    const Defined = defineMarkdownDocumentComponent({
-      components: { Math: FakeComponent as any },
-    })
-    expect(Defined).toBeDefined()
-  })
-
-  it('accepts class in config', () => {
-    const Defined = defineMarkdownDocumentComponent({
+    const provider = defineMarkdownDocumentComponent({
+      components: { Math: FakeComponent },
       class: 'prose',
+      transformNode,
+    }) as ValueProvider
+
+    expect(provider.provide).toBe(MARKDOWN_DOCUMENT_CONFIG)
+    expect(provider.useValue).toEqual({
+      components: { Math: FakeComponent },
+      class: 'prose',
+      transformNode,
     })
-    expect(Defined).toBeDefined()
   })
 })
