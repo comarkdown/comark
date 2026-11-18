@@ -33,6 +33,7 @@
           "options": {
             "tsConfig": "tsconfig.spec.json",
             "runnerConfig": "vitest.config.ts",
+            "isolate": true,
             "include": ["../test/**/*.d.ts", "../test/**/*.test.ts"]
           }
         }
