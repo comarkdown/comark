@@ -171,6 +171,7 @@ describe('lists, emphasis and headings', () => {
       '1. a\n2. b\n3. c\n4. d\n5. e\n6. f\n7. g\n8. h\n9. i\n10. j\n    - nested\n',
     ],
     ['emphasis inside emphasis', '*_foo_*\n'],
+    ['emphasis that ends inside a word within emphasis', '_foo *bar*baz_\n'],
     ['a multi-line heading', 'Foo\nbar\n===\n'],
     ['a multi-line level 2 heading with attributes', 'Foo\nbar {.c}\n---\n'],
   ])('keeps %s', async (_, md) => {
