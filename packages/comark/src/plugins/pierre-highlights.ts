@@ -4,6 +4,7 @@ import { codeToTokens, isSupportedLanguage } from '@pierre/highlights'
 import defaultLight from '@pierre/highlights/themes/material-theme-lighter'
 import defaultDark from '@pierre/highlights/themes/material-theme-palenight'
 import { defineComarkPlugin } from 'comark'
+import { TREE_WALK_MAX_DEPTH } from 'comark/utils'
 import { GRAMMAR_CONTEXTS, inlineCodeLanguage } from '../internal/inline-code-lang.ts'
 
 export type { Theme as PierreHighlightsTheme } from '@pierre/highlights'
@@ -111,6 +112,15 @@ export function pierreHighlightsCodeBlocks(
   tree: MarkdownDocument,
   options: PierreHighlightsOptions = {}
 ): MarkdownDocument {
+  return createHighlighter(options)(tree)
+}
+
+/**
+ * The streaming parser hands the same raw node to every update while its
+ * source is unchanged, so each highlighted node is cached by its raw node.
+ */
+function createHighlighter(options: PierreHighlightsOptions): (tree: MarkdownDocument) => MarkdownDocument {
+  const cache = new WeakMap<ElementNode, ElementNode>()
   const light = options.themes?.light ?? options.themes?.dark ?? defaultLight
   const dark = options.themes?.dark ?? options.themes?.light ?? defaultDark
   const themes: Record<string, Theme> = light === dark ? { light } : { light, dark }
@@ -143,15 +153,25 @@ export function pierreHighlightsCodeBlocks(
 
   // Copy only the path to each replaced node: the streaming parser caches and
   // reuses the input nodes, so they must stay unhighlighted.
-  const walk = (node: Node): Node => {
+  const highlight = (el: ElementNode): ElementNode => {
+    let out = cache.get(el)
+    if (!out) {
+      out = isBlock(el) ? highlightBlock(el) : (highlightInline(el) ?? el)
+      cache.set(el, out)
+    }
+    return out
+  }
+
+  // Deeper subtrees are left unhighlighted rather than overflowing the stack.
+  const walk = (node: Node, depth: number): Node => {
     if (!Array.isArray(node) || node[0] === null) return node
     const el = node as ElementNode
-    if (isBlock(el)) return highlightBlock(el)
-    if (isInline(el)) return highlightInline(el) ?? el
+    if (isBlock(el) || isInline(el)) return highlight(el)
+    if (depth >= TREE_WALK_MAX_DEPTH) return el
     let copy: ElementNode | undefined
     for (let i = 2; i < el.length; i++) {
       const child = el[i] as Node
-      const next = walk(child)
+      const next = walk(child, depth + 1)
       if (next !== child) {
         copy ??= el.slice() as ElementNode
         copy[i] = next
@@ -224,20 +244,25 @@ export function pierreHighlightsCodeBlocks(
     return inlineNode
   }
 
-  let nodes: Node[] | undefined
-  for (let i = 0; i < tree.nodes.length; i++) {
-    const next = walk(tree.nodes[i])
-    if (next !== tree.nodes[i]) {
-      nodes ??= tree.nodes.slice()
-      nodes[i] = next
+  return (tree) => {
+    let nodes: Node[] | undefined
+    for (let i = 0; i < tree.nodes.length; i++) {
+      const next = walk(tree.nodes[i], 0)
+      if (next !== tree.nodes[i]) {
+        nodes ??= tree.nodes.slice()
+        nodes[i] = next
+      }
     }
+    return nodes ? { ...tree, nodes } : tree
   }
-  return nodes ? { ...tree, nodes } : tree
 }
 
-export default defineComarkPlugin<PierreHighlightsOptions>((options: PierreHighlightsOptions = {}) => ({
-  name: 'pierre-highlights',
-  post(state) {
-    state.tree = pierreHighlightsCodeBlocks(state.tree, options)
-  },
-}))
+export default defineComarkPlugin<PierreHighlightsOptions>((options: PierreHighlightsOptions = {}) => {
+  const highlight = createHighlighter(options)
+  return {
+    name: 'pierre-highlights',
+    post(state) {
+      state.tree = highlight(state.tree)
+    },
+  }
+})

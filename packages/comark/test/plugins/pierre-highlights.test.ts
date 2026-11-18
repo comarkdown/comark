@@ -2,7 +2,10 @@ import { describe, expect, it } from 'vitest'
 import githubDark from '@pierre/highlights/themes/github-dark'
 import { createMarkdownParser, parseMarkdown } from '../../src/index'
 import { renderMarkdown } from '../../src/render'
-import pierreHighlights, { resolvePierreHighlightsLanguage } from '../../src/plugins/pierre-highlights'
+import pierreHighlights, {
+  pierreHighlightsCodeBlocks,
+  resolvePierreHighlightsLanguage,
+} from '../../src/plugins/pierre-highlights'
 import type { ElementNode, Node } from '../../src/types'
 
 function find(nodes: Node[], tag: string): ElementNode | undefined {
@@ -103,6 +106,24 @@ describe('pierre-highlights plugin', () => {
     let tree
     for (const tail of ['a', 'ab', 'abc']) tree = await parse(`\`\`\`nope\nx\n\`\`\`\n\n${tail}`, { streaming: true })
     expect(find(tree!.nodes, 'pre')![1].class).toBe('shiki pierre-highlights')
+  })
+
+  it('highlights an unchanged fence once while later content streams', async () => {
+    const parse = createMarkdownParser({ plugins: [pierreHighlights()] })
+    const fences: Node[] = []
+    for (const tail of ['a', 'ab']) {
+      const tree = await parse(`\`\`\`ts\nconst a = 1\n\`\`\`\n\n${tail}`, { streaming: true })
+      fences.push(tree.nodes[0])
+    }
+    expect(spans((fences[0] as ElementNode)[2] as ElementNode).length).toBeGreaterThan(1)
+    expect(fences[1]).toBe(fences[0])
+  })
+
+  it('leaves code nested deeper than the walk limit untouched instead of overflowing', () => {
+    let node: Node = ['pre', { language: 'js' }, ['code', {}, 'const a = 1']]
+    for (let i = 0; i < 20_000; i++) node = ['div', {}, node]
+    const tree = { nodes: [node], frontmatter: {}, meta: {} }
+    expect(pierreHighlightsCodeBlocks(tree)).toBe(tree)
   })
 
   it('round-trips to the original markdown, keeping only the user class', async () => {
