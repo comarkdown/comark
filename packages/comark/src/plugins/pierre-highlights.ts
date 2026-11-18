@@ -4,7 +4,6 @@ import { codeToTokens, isSupportedLanguage } from '@pierre/highlights'
 import defaultLight from '@pierre/highlights/themes/material-theme-lighter'
 import defaultDark from '@pierre/highlights/themes/material-theme-palenight'
 import { defineComarkPlugin } from 'comark'
-import { visit } from 'comark/utils'
 import { GRAMMAR_CONTEXTS, inlineCodeLanguage } from '../internal/inline-code-lang.ts'
 
 export type { Theme as PierreHighlightsTheme } from '@pierre/highlights'
@@ -59,11 +58,14 @@ const LANGUAGE_ALIASES: Record<string, string> = {
  * Map a fence or inline language to a Highlights language, or `undefined`
  * when Highlights has no lexer for it. A missing language is plain text.
  */
-export function resolvePierreHighlightsLanguage(language: string | undefined): string | undefined {
-  const raw = language?.trim().toLowerCase()
+export function resolvePierreHighlightsLanguage(language: unknown): string | undefined {
+  // Attributes from a `::pre{language=…}` wrapper can be any JSON value.
+  const raw = typeof language === 'string' ? language.trim().toLowerCase() : ''
   if (!raw) return 'text'
   const lang = LANGUAGE_ALIASES[raw] ?? raw
-  return isSupportedLanguage(lang) ? lang : undefined
+  // `ansi` tokens drop the escape sequences, which would then be lost when
+  // the document is written back to Markdown.
+  return lang !== 'ansi' && isSupportedLanguage(lang) ? lang : undefined
 }
 
 function tokenStyle(token: ThemedToken): string {
@@ -73,13 +75,12 @@ function tokenStyle(token: ThemedToken): string {
   return style
 }
 
-function tokensToSpans(line: ThemedToken[]): Node[] {
-  const spans: Node[] = []
+/** Append one span per token. A loop, not a spread: a long line can exceed the argument limit. */
+function appendSpans(target: ElementNode, line: ThemedToken[]): void {
   for (const token of line) {
     const style = tokenStyle(token)
-    spans.push(style ? ['span', { style }, token.content] : ['span', {}, token.content])
+    target.push(style ? ['span', { style }, token.content] : ['span', {}, token.content])
   }
-  return spans
 }
 
 /** Drop the first `length` characters of a line, splitting the token they end in. */
@@ -118,30 +119,46 @@ export function pierreHighlightsCodeBlocks(
   const tokenize = (code: string, lang: string): TokensResult =>
     codeToTokens(code, { lang: lang as any, themes, cssVariablePrefix: '--shiki-' })
 
-  visit(
-    tree,
-    (node) => {
-      if (!Array.isArray(node) || node[0] === null) return false
-      if (node[0] === 'pre') {
-        const code = node[2]
-        return Array.isArray(code) && code[0] === 'code' && code.length === 3 && typeof code[2] === 'string'
+  const isBlock = (node: ElementNode): boolean => {
+    const code = node[2]
+    return (
+      node[0] === 'pre' &&
+      node.length === 3 &&
+      Array.isArray(code) &&
+      code[0] === 'code' &&
+      code.length === 3 &&
+      typeof code[2] === 'string'
+    )
+  }
+
+  // A raw-HTML `<code lang="ts">` is authored markup, not Comark inline
+  // code, and replacing it with spans would break its round-trip.
+  const isInline = (node: ElementNode): boolean =>
+    inlineEnabled &&
+    node[0] === 'code' &&
+    node.length === 3 &&
+    typeof node[2] === 'string' &&
+    node[1]?.$?.html !== 1 &&
+    !!inlineCodeLanguage(node[1])
+
+  // Copy only the path to each replaced node: the streaming parser caches and
+  // reuses the input nodes, so they must stay unhighlighted.
+  const walk = (node: Node): Node => {
+    if (!Array.isArray(node) || node[0] === null) return node
+    const el = node as ElementNode
+    if (isBlock(el)) return highlightBlock(el)
+    if (isInline(el)) return highlightInline(el) ?? el
+    let copy: ElementNode | undefined
+    for (let i = 2; i < el.length; i++) {
+      const child = el[i] as Node
+      const next = walk(child)
+      if (next !== child) {
+        copy ??= el.slice() as ElementNode
+        copy[i] = next
       }
-      // A raw-HTML `<code lang="ts">` is authored markup, not Comark inline
-      // code, and replacing it with spans would break its round-trip.
-      return (
-        inlineEnabled &&
-        node[0] === 'code' &&
-        node.length === 3 &&
-        typeof node[2] === 'string' &&
-        (node[1] as ElementNodeAttributes)?.$?.html !== 1 &&
-        !!inlineCodeLanguage(node[1] as ElementNodeAttributes)
-      )
-    },
-    (node) => {
-      const el = node as ElementNode
-      return el[0] === 'pre' ? highlightBlock(el) : highlightInline(el)
     }
-  )
+    return copy ?? el
+  }
 
   function highlightBlock(pre: ElementNode): ElementNode {
     const attrs = pre[1] as CodeBlockAttributes & Record<string, unknown>
@@ -166,13 +183,14 @@ export function pierreHighlightsCodeBlocks(
     for (let i = 0; i < lines.length; i++) {
       const highlighted = highlights !== null && highlights.has(i + 1)
       // TODO: (enforcing default style) once we unify all ecosystem styles we can remove `style`
-      codeNode.push([
+      const line: ElementNode = [
         'span',
         highlighted
           ? { class: 'line highlight', style: 'display: inline-block' }
           : { class: 'line', style: 'display: inline' },
-        ...tokensToSpans(lines[i]),
-      ] as ElementNode)
+      ]
+      appendSpans(line, lines[i])
+      codeNode.push(line)
       if (i < lines.length - 1) codeNode.push('\n')
     }
     return ['pre', preAttrs, codeNode]
@@ -197,16 +215,24 @@ export function pierreHighlightsCodeBlocks(
     const lines = tokenize(prefix + code, lang).tokens
     if (prefix && lines.length > 0) lines[0] = dropPrefix(lines[0], prefix.length)
 
-    const children: Node[] = []
+    const inlineNode: ElementNode = ['code', { ...attrs, class: withUserClass(CLASS, attrs.class) }]
     for (let i = 0; i < lines.length; i++) {
-      if (i > 0) children.push('\n')
-      children.push(...tokensToSpans(lines[i]))
+      if (i > 0) inlineNode.push('\n')
+      appendSpans(inlineNode, lines[i])
     }
-    if (children.length === 0) children.push(code)
-    return ['code', { ...attrs, class: withUserClass(CLASS, attrs.class) }, ...children]
+    if (inlineNode.length === 2) inlineNode.push(code)
+    return inlineNode
   }
 
-  return tree
+  let nodes: Node[] | undefined
+  for (let i = 0; i < tree.nodes.length; i++) {
+    const next = walk(tree.nodes[i])
+    if (next !== tree.nodes[i]) {
+      nodes ??= tree.nodes.slice()
+      nodes[i] = next
+    }
+  }
+  return nodes ? { ...tree, nodes } : tree
 }
 
 export default defineComarkPlugin<PierreHighlightsOptions>((options: PierreHighlightsOptions = {}) => ({

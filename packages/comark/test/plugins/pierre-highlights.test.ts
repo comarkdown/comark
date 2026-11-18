@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import githubDark from '@pierre/highlights/themes/github-dark'
-import { parseMarkdown } from '../../src/index'
+import { createMarkdownParser, parseMarkdown } from '../../src/index'
 import { renderMarkdown } from '../../src/render'
 import pierreHighlights, { resolvePierreHighlightsLanguage } from '../../src/plugins/pierre-highlights'
 import type { ElementNode, Node } from '../../src/types'
@@ -40,6 +40,10 @@ describe('resolvePierreHighlightsLanguage', () => {
     expect(resolvePierreHighlightsLanguage(undefined)).toBe('text')
     expect(resolvePierreHighlightsLanguage(' TypeScript ')).toBe('typescript')
     expect(resolvePierreHighlightsLanguage('not-a-real-lang')).toBeUndefined()
+    // Its tokens drop escape sequences, which Markdown output must keep.
+    expect(resolvePierreHighlightsLanguage('ansi')).toBeUndefined()
+    // A `::pre{language=…}` wrapper can set any JSON value.
+    expect(resolvePierreHighlightsLanguage([1])).toBe('text')
   })
 })
 
@@ -92,6 +96,13 @@ describe('pierre-highlights plugin', () => {
     expect(find(tree.nodes, 'pre')![1].style).toBe(
       'background-color:#fafafa;--shiki-dark-bg:#292d3e;color:#90a4ae;--shiki-dark:#babed8'
     )
+  })
+
+  it('leaves the streaming parser cache unhighlighted between updates', async () => {
+    const parse = createMarkdownParser({ plugins: [pierreHighlights()] })
+    let tree
+    for (const tail of ['a', 'ab', 'abc']) tree = await parse(`\`\`\`nope\nx\n\`\`\`\n\n${tail}`, { streaming: true })
+    expect(find(tree!.nodes, 'pre')![1].class).toBe('shiki pierre-highlights')
   })
 
   it('round-trips to the original markdown, keeping only the user class', async () => {

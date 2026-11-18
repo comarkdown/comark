@@ -155,7 +155,7 @@ Fence info `{2-3,5}` marks the selected lines with the `.highlight` class, the s
 
 ## Styling
 
-Code blocks and inline code get the `shiki pierre-highlights` class, so the dark-mode CSS from the [Shiki plugin](/plugins/built-in/shiki) applies unchanged:
+Code blocks and inline code get the `shiki pierre-highlights` class, so the dark-mode CSS from the [Shiki plugin](/plugins/built-in/shiki) applies unchanged. It switches to the `--shiki-dark*` variables, which are only emitted with a light and a dark theme; with a single theme the inline colors need no extra CSS:
 
 ```css
 html.dark .shiki span {
@@ -164,5 +164,11 @@ html.dark .shiki span {
   font-style: var(--shiki-dark-font-style) !important;
   font-weight: var(--shiki-dark-font-weight) !important;
   text-decoration: var(--shiki-dark-text-decoration) !important;
+}
+
+/* With preStyles: true */
+html.dark pre.shiki {
+  background-color: var(--shiki-dark-bg) !important;
+  color: var(--shiki-dark) !important;
 }
 ```
