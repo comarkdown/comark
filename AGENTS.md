@@ -1003,7 +1003,9 @@ Workflows live in `.github/workflows/`:
 `@codspeed/vitest-plugin` (a no-op outside CodSpeed). Shared inputs live in
 `benchmarks/fixtures.ts`. Benches use the Vitest 5 API: one `test('group', async ({ bench }) => …)`
 per group, calling `bench.compare(bench('name', fn), …)`. CodSpeed ids are
-`<file>::<test name>::<bench name>`. Renaming a bench or editing a fixture resets its
+`<file>::<test name>::<bench name>`. `pnpm bench -t <pattern>` matches the group
+(test) name, not bench names, and runs every bench in that group, e.g.
+`pnpm bench -t 'parse html'`. Renaming a bench or editing a fixture resets its
 history, so add new ones instead. Warm parsers at module load. Streaming
 benches need a dedicated parser and a `{ streaming: false }` reset inside the
 bench body; otherwise the incremental cache returns the previous result.
