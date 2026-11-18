@@ -83,6 +83,7 @@ export function defineMarkdownComponent(config: DefineMarkdownComponentOptions =
  * @example
  * ```typescript
  * import { Component } from '@angular/core'
+ * import { parseMarkdown } from 'comark'
  * import { MarkdownDocument, defineMarkdownDocumentComponent } from '@comark/angular'
  * import { Math } from '@comark/angular/plugins/math'
  *
@@ -97,7 +98,9 @@ export function defineMarkdownComponent(config: DefineMarkdownComponentOptions =
  *   ],
  *   template: `<comark-markdown-document [value]="document" />`,
  * })
- * export class DocsComponent {}
+ * export class DocsComponent {
+ *   document = await parseMarkdown('# Hello')
+ * }
  * ```
  */
 export function defineMarkdownDocumentComponent(config: DefineMarkdownDocumentOptions = {}): Provider {

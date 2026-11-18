@@ -4,7 +4,7 @@ import { Component, provideZonelessChangeDetection, type Provider, type Type } f
 import { TestBed } from '@angular/core/testing'
 import { bootstrapApplication } from '@angular/platform-browser'
 import { renderApplication } from '@angular/platform-server'
-import { parseMarkdown, type NodeTransform } from 'comark'
+import { parseMarkdown, type NodeTransform, type ParserOptions } from 'comark'
 import emoji from 'comark/plugins/emoji'
 import { Markdown } from '../src/components/markdown.component.ts'
 import { MarkdownDocument } from '../src/components/markdown-document.component.ts'
@@ -46,12 +46,15 @@ function app(options: { imports: Type<unknown>[]; providers?: Provider[]; templa
 async function renderMarkdown(
   value: string,
   providers: Provider[],
-  components?: Record<string, Type<any>>
+  components?: Record<string, Type<any>>,
+  plugins?: ParserOptions['plugins']
 ): Promise<string> {
+  TestBed.resetTestingModule()
   await TestBed.configureTestingModule({ imports: [Markdown], providers }).compileComponents()
   const fixture = TestBed.createComponent(Markdown)
   fixture.componentRef.setInput('value', value)
   if (components) fixture.componentRef.setInput('components', components)
+  if (plugins) fixture.componentRef.setInput('plugins', plugins)
   fixture.detectChanges()
   await vi.waitFor(() => {
     expect(fixture.componentInstance.document).not.toBeNull()
@@ -86,6 +89,48 @@ describe('Markdown config providers', () => {
 
     expect(html).toContain('instance-alert')
     expect(html).not.toContain('config-alert')
+  })
+
+  it('lets instance plugins replace config plugins with the same name', async () => {
+    const provider = defineMarkdownComponent({ plugins: [emoji()] })
+    const withConfig = await renderMarkdown(':smile:', [provider])
+    const withOverride = await renderMarkdown(':smile:', [provider], undefined, [{ name: 'emoji' }])
+
+    expect(withConfig).toContain('😄')
+    expect(withOverride).not.toContain('😄')
+  })
+
+  it('inherits a config unwrap default when the input is omitted', async () => {
+    await TestBed.configureTestingModule({
+      imports: [Markdown],
+      providers: [defineMarkdownComponent({ unwrap: true })],
+    }).compileComponents()
+    const fixture = TestBed.createComponent(Markdown)
+    fixture.componentRef.setInput('value', 'Hello')
+    fixture.detectChanges()
+    await vi.waitFor(() => {
+      fixture.detectChanges()
+      expect(fixture.componentInstance.document).not.toBeNull()
+    })
+
+    expect(fixture.nativeElement.querySelector('p')).toBeNull()
+  })
+
+  it('lets an explicit unwrap=false override a config default', async () => {
+    await TestBed.configureTestingModule({
+      imports: [Markdown],
+      providers: [defineMarkdownComponent({ unwrap: true })],
+    }).compileComponents()
+    const fixture = TestBed.createComponent(Markdown)
+    fixture.componentRef.setInput('value', 'Hello')
+    fixture.componentRef.setInput('unwrap', false)
+    fixture.detectChanges()
+    await vi.waitFor(() => {
+      fixture.detectChanges()
+      expect(fixture.componentInstance.document).not.toBeNull()
+    })
+
+    expect(fixture.nativeElement.querySelector('p')).not.toBeNull()
   })
 
   it('runs config transformNode before the instance transformNode', async () => {

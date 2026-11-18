@@ -63,7 +63,7 @@ export class Markdown {
    * `options.unwrap`. `true` unwraps `<p>`; a space-separated string or array
    * unwraps the listed tags.
    */
-  readonly unwrap = input<boolean | string | string[]>(false)
+  readonly unwrap = input<boolean | string | string[]>()
 
   /** Custom component mappings for element tags */
   readonly components = input<Record<string, Type<any>>>({})
@@ -99,21 +99,27 @@ export class Markdown {
    * Compose the parse options consumed by the serialized parser.
    *
    * Config defaults are merged under the instance inputs so instance values
-   * win without mutating the input signals. Plugins are deduplicated by name.
+   * win without mutating the input signals. Instance plugins replace config
+   * plugins with the same name. An omitted `unwrap` inherits the config
+   * default, while an explicit `false` overrides it.
    */
   protected getParserOptions(): ParserOptions {
-    const names = new Set<string>()
-    const plugins = [...(this.config?.plugins ?? []), ...(this.plugins() ?? [])].filter((plugin) => {
-      if (names.has(plugin.name)) return false
-      names.add(plugin.name)
-      return true
-    })
+    const plugins = new Map<string, NonNullable<ParserOptions['plugins']>[number]>()
 
+    for (const plugin of this.config?.plugins ?? []) {
+      plugins.set(plugin.name, plugin)
+    }
+    for (const plugin of this.plugins() ?? []) {
+      plugins.delete(plugin.name)
+      plugins.set(plugin.name, plugin)
+    }
+
+    const unwrap = this.unwrap()
     return {
       ...(this.config?.options ?? {}),
       ...this.options(),
-      ...(this.unwrap() ? { unwrap: this.unwrap() } : {}),
-      plugins,
+      ...(unwrap === undefined ? {} : { unwrap }),
+      plugins: [...plugins.values()],
     }
   }
 

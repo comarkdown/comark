@@ -507,12 +507,13 @@ export class DocsComponent {
 }
 ```
 
-Instance-level `options`, `plugins`, `components`, and `transformNode` inputs merge with the provider config and win on conflict. Config plugins run first and are deduplicated by name. Config `transformNode` runs before the instance's own transform.
+Instance-level `options`, `plugins`, `components`, and `transformNode` inputs merge with the provider config and win on conflict. Config plugins run first. An instance plugin with the same name replaces the config plugin and runs in the instance order. Config `transformNode` runs before the instance's own transform.
 
 ### defineMarkdownDocumentComponent
 
 ```typescript
 import { Component } from '@angular/core'
+import { parseMarkdown } from 'comark'
 import { MarkdownDocument, defineMarkdownDocumentComponent } from '@comark/angular'
 import { Math } from '@comark/angular/plugins/math'
 
@@ -527,7 +528,9 @@ import { Math } from '@comark/angular/plugins/math'
   ],
   template: `<comark-markdown-document [value]="document" />`,
 })
-export class DocsComponent {}
+export class DocsComponent {
+  document = await parseMarkdown('# Hello')
+}
 ```
 
 ---
