@@ -19,7 +19,7 @@ export type ParsedHtmlTag =
  * This utility removes unnecessary paragraph wrappers from container component children.
  * If a container has only a single paragraph child (and no other block elements),
  * the paragraph is unwrapped and its children are hoisted up to be direct children
- * of the container.
+ * of the container. Named slots don't count: each slot and the default content are unwrapped on their own.
  *
  * Recursion is capped at {@link TREE_WALK_MAX_DEPTH} element levels; deeper subtrees are left as-is.
  *
@@ -40,6 +40,11 @@ function isBlankText(value: string): boolean {
   return true
 }
 
+/** A named slot (`#name`). A `template` without `name` is a `:template` component, as in the stringifier. */
+function isSlot(node: Node): boolean {
+  return Array.isArray(node) && node[0] === 'template' && typeof node[1]?.name === 'string'
+}
+
 export function applyAutoUnwrap(node: Node): Node {
   return applyAutoUnwrapAt(node, 0)
 }
@@ -54,16 +59,22 @@ function applyAutoUnwrapAt(node: Node, depth: number): Node {
     return node
   }
 
+  // Named slots are unwrapped on their own (by the recursion below), so only the default slot content counts here.
   let significant: Node | undefined
   let significantCount = 0
+  let hasSlots = false
   for (let i = 2; i < length; i++) {
     const child = node[i] as Node
     if (typeof child === 'string' && isBlankText(child)) continue
+    if (isSlot(child)) {
+      hasSlots = true
+      continue
+    }
     significant = child
     if (++significantCount > 1) break
   }
 
-  if (significantCount === 0) {
+  if (significantCount === 0 && !hasSlots) {
     return node
   }
 
@@ -80,10 +91,23 @@ function applyAutoUnwrapAt(node: Node, depth: number): Node {
         }
       }
     }
-    const unwrapped = significant.slice() as unknown as ElementNode
-    unwrapped[0] = node[0] as string
-    unwrapped[1] = mergedProps
-    return unwrapped
+    if (!hasSlots) {
+      const unwrapped = significant.slice() as unknown as ElementNode
+      unwrapped[0] = node[0] as string
+      unwrapped[1] = mergedProps
+      return unwrapped
+    }
+    // Hoist the paragraph's children in its place and keep the slots, like remark-mdc.
+    const unwrapped: unknown[] = [node[0], mergedProps]
+    for (let i = 2; i < length; i++) {
+      const child = node[i] as Node
+      if (child === significant) {
+        for (let j = 2; j < child.length; j++) unwrapped.push(child[j] as Node)
+      } else if (isSlot(child)) {
+        unwrapped.push(applyAutoUnwrapAt(child, depth + 1))
+      }
+    }
+    return unwrapped as unknown as ElementNode
   }
 
   let copy: Node[] | undefined

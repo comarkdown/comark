@@ -6,6 +6,10 @@ import { comarkAttributes, comarkYamlAttributes } from '../attributes.ts'
 // HTML elements that always create an inline context for their children
 const INLINE_HTML_ELEMENTS = new Set(['a', 'strong', 'em', 'span'])
 
+function isSlot(node: Node): boolean {
+  return Array.isArray(node) && node[0] === 'template' && typeof node[1]?.name === 'string'
+}
+
 export async function mdc(node: ElementNode, state: State, parent?: ElementNode) {
   const [tag, attr, ...children] = node
   const { $: _, ...attributes } = attr
@@ -30,6 +34,10 @@ export async function mdc(node: ElementNode, state: State, parent?: ElementNode)
   let content = ''
   const childState = { ...state, nodeDepthInTree: (state.nodeDepthInTree || 0) + 1 }
   for (const child of children as Node[]) {
+    // Auto-unwrapped default content is inline, so the `#slot` marker needs its own line.
+    if (content && !content.endsWith('\n') && isSlot(child)) {
+      content += state.context.blockSeparator
+    }
     content += await state.one(child, childState, node)
   }
   content = content.trimEnd()

@@ -81,11 +81,11 @@ describe('nested component with a run of blank lines between siblings', () => {
         [
           'if',
           { ':value': 'data.isHappy' },
-          ['p', {}, 'Happy'],
+          'Happy',
           [
             'template',
             { name: 'else' },
-            ['if', { ':value': 'data.isFine' }, ['p', {}, 'Fine'], ['template', { name: 'else' }, 'Neither']],
+            ['if', { ':value': 'data.isFine' }, 'Fine', ['template', { name: 'else' }, 'Neither']],
           ],
         ],
       ])
