@@ -1,7 +1,6 @@
 import type { Node, ElementNode, ElementNodeAttributes, MarkdownDocument } from 'comark'
 import { isHtmlVoidElement, TREE_WALK_MAX_DEPTH } from 'comark/utils'
 import { decodeHTMLAttribute } from '../entities.ts'
-import { isSlot } from '../slot.ts'
 
 /** Space, tab, line feed, form feed or carriage return. Defined per file so it stays inlinable on hot paths. */
 function isSpaceCode(c: number): boolean {
@@ -19,6 +18,11 @@ function isBlankText(value: string): boolean {
     if (!isSpaceCode(value.charCodeAt(i))) return false
   }
   return true
+}
+
+/** A named slot (`#name`). A `template` without `name` is a `:template` component. */
+function isSlot(node: Node): boolean {
+  return Array.isArray(node) && node[0] === 'template' && typeof node[1]?.name === 'string'
 }
 
 /**
