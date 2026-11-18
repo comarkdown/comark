@@ -37,3 +37,13 @@
 Syntax
 ::
 ```
+
+## Markdown HTML
+
+```md
+<inline with="prop">
+
+Syntax
+
+</inline>
+```

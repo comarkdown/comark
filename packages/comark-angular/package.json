@@ -55,7 +55,7 @@
     "@angular/platform-browser-dynamic": "catalog:",
     "@angular/platform-server": "catalog:",
     "@angular/router": "catalog:",
-    "happy-dom": "^20.14.6",
+    "happy-dom": "^21.0.4",
     "ng-packagr": "catalog:",
     "rxjs": "catalog:",
     "typescript": "catalog:",

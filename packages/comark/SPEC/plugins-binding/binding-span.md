@@ -60,3 +60,13 @@ color: red
 
 [highlighted {{ frontmatter.color }} text]{.glow}
 ```
+
+## Markdown HTML
+
+```md
+---
+color: red
+---
+
+<span class="glow">highlighted {{ frontmatter.color }} text</span>
+```

@@ -54,3 +54,17 @@ content
   :::
 ::
 ```
+
+## Markdown HTML
+
+```md
+<accordion>
+
+<accordion-item icon="check" label="Question one?">
+
+content
+
+</accordion-item>
+
+</accordion>
+```

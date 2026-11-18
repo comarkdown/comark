@@ -72,3 +72,11 @@ Paint [swatch]{.bg-[#000]} and [box]{.text-[1.5rem]} and [el]{.w-[calc(100%-1rem
 
 Theme [label]{.bg-[#000].text-[14px] #my-id}
 ```
+
+## Markdown HTML
+
+```md
+Paint <span class="bg-[#000]">swatch</span> and <span class="text-[1.5rem]">box</span> and <span class="w-[calc(100%-1rem)]">el</span>
+
+Theme <span class="bg-[#000] text-[14px]" id="my-id">label</span>
+```

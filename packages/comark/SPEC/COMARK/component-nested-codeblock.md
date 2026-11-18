@@ -59,3 +59,17 @@ hello
 ```
 ::
 ```
+
+## Markdown HTML
+
+```md
+<component>
+
+```mdc
+::alert
+hello
+::
+```
+
+</component>
+```

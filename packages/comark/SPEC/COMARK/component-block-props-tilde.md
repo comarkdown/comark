@@ -54,3 +54,13 @@ variant: soft
 Content
 ::
 ```
+
+## Markdown HTML
+
+```md
+<component title="Hello" color="primary" size="lg" variant="soft">
+
+Content
+
+</component>
+```

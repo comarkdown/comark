@@ -1,4 +1,4 @@
-import { bench, describe } from 'vitest'
+import { test } from 'vitest'
 import { createMarkdownParser, parseMarkdown } from 'comark'
 import {
   adversarialMarkdown,
@@ -22,41 +22,39 @@ await parseWithoutAutoClose(mediumMarkdown)
 await parseWithoutDefaultPlugins(mediumMarkdown)
 await parseMarkdown(mediumMarkdown)
 
-describe('parse', () => {
-  bench('small document', async () => {
-    await parse(smallMarkdown)
-  })
-
-  bench('medium document', async () => {
-    await parse(mediumMarkdown)
-  })
-
-  bench('large document', async () => {
-    await parse(largeMarkdown)
-  })
-
-  bench('component-heavy document', async () => {
-    await parse(componentHeavyMarkdown)
-  })
-
-  bench('adversarial document', async () => {
-    await parse(adversarialMarkdown)
-  })
+test('parse', async ({ bench }) => {
+  await bench.compare(
+    bench('small document', async () => {
+      await parse(smallMarkdown)
+    }),
+    bench('medium document', async () => {
+      await parse(mediumMarkdown)
+    }),
+    bench('large document', async () => {
+      await parse(largeMarkdown)
+    }),
+    bench('component-heavy document', async () => {
+      await parse(componentHeavyMarkdown)
+    }),
+    bench('adversarial document', async () => {
+      await parse(adversarialMarkdown)
+    })
+  )
 })
 
-describe('parse options', () => {
-  bench('medium document without auto-close', async () => {
-    await parseWithoutAutoClose(mediumMarkdown)
-  })
-
-  bench('medium document without default plugins', async () => {
-    await parseWithoutDefaultPlugins(mediumMarkdown)
-  })
-
-  // `parseMarkdown()` resolves its options and plugins on every call (the
-  // markdown-exit instance itself is shared). The gap with `parse` above is
-  // the per-call overhead `createMarkdownParser()` saves.
-  bench('medium document with parseMarkdown()', async () => {
-    await parseMarkdown(mediumMarkdown)
-  })
+test('parse options', async ({ bench }) => {
+  await bench.compare(
+    bench('medium document without auto-close', async () => {
+      await parseWithoutAutoClose(mediumMarkdown)
+    }),
+    bench('medium document without default plugins', async () => {
+      await parseWithoutDefaultPlugins(mediumMarkdown)
+    }),
+    // `parseMarkdown()` resolves its options and plugins on every call (the
+    // markdown-exit instance itself is shared). The gap with `parse` above is
+    // the per-call overhead `createMarkdownParser()` saves.
+    bench('medium document with parseMarkdown()', async () => {
+      await parseMarkdown(mediumMarkdown)
+    })
+  )
 })

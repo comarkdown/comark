@@ -62,3 +62,9 @@ Here [link]{bool} [link]{#id1} [link]{.class1} [link]{attr="value"}
 ```md
 Here [link]{bool} [link]{#id1} [link]{.class1} [link]{attr="value"}
 ```
+
+## Markdown HTML
+
+```md
+Here <span bool>link</span> <span id="id1">link</span> <span class="class1">link</span> <span attr="value">link</span>
+```

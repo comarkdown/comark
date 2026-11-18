@@ -77,3 +77,19 @@ Welcome to the site.
 Welcome to the site.
 ::
 ```
+
+## Markdown HTML
+
+```md
+<span id="greeting">hello</span>
+
+<span class="highlight">world</span>
+
+<span id="main" class="primary bold">styled</span>
+
+<section id="intro" class="hero">
+
+Welcome to the site.
+
+</section>
+```
