@@ -3,8 +3,8 @@ import { MarkdownLive } from '@comark/react'
 import { useEffect, useState } from 'react'
 
 // A driver installs a context on globalThis once; every <MarkdownDocument documentKey>
-// then auto-subscribes. The buttons act as the driver here — but it could just as
-// well be HMR, a collab socket, an agent, or devtools.
+// then auto-subscribes. The buttons act as the driver here, or it could be
+// HMR, a collab socket, an agent, or devtools.
 const ctx = createComarkContext()
 
 const INITIAL = `# Live document

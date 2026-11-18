@@ -1,46 +1,28 @@
----
-title: Syntax Highlighting
-description: Example showing how to use Comark with syntax highlighting using Shiki in Vue and Vite.
-navigation:
-  icon:  i-lucide-code
-category: Plugins
-path: /examples/plugins/vue-vite-highlight
----
+# Syntax highlighting with Shiki in Vue and Vite
 
-::code-explorer
----
-org: comarkdown
-repo: comark@81a416b278b0f304d7e7577c7ac6bbfc78414790
-path: examples/3.plugins/vue-vite-highlight
-defaultValue: src/App.vue
----
-::
+This example highlights fenced code blocks in Vue and Vite using `@comark/vue/plugins/shiki`, direct theme and grammar imports, and a light/dark theme toggle.
 
 ## Features
 
-This example demonstrates how to use Comark with syntax highlighting in Vue:
-
-- **Dual-theme support**: Automatically switches between light and dark themes
-- **180+ languages**: Supports JavaScript, TypeScript, Python, Rust, Go, SQL, and many more
-- **Beautiful highlighting**: Uses Shiki for high-quality syntax highlighting
-- **Direct imports**: Import themes and languages from `@shikijs/themes` and `@shikijs/langs` for type safety and tree-shaking
-- **Theme toggle**: Switch between light and dark modes with a button
-- **preStyles option**: Optionally add background/foreground colors to `<pre>` elements
+- **Dual themes**: emits light and dark token colors via `--shiki-dark` CSS variables and toggles between them on `document.body`.
+- **Direct theme and language imports**: loads individual modules from `@shikijs/themes` and `@shikijs/langs` so bundlers tree-shake unused grammars.
+- **Line highlighting**: marks lines specified in fence attributes (such as `{2-3}`) with a `.highlight` class.
+- **Optional `<pre>` styles**: sets inline background and foreground styles when `preStyles` is enabled.
 
 ## Usage
 
-### 1. Install Dependencies
+### 1. Install dependencies
 
 ```bash
 npm install shiki @shikijs/themes @shikijs/langs
 ```
 
-### 2. Import Themes and Languages
+### 2. Import themes and languages
 
-Import directly from `@shikijs/themes` and `@shikijs/langs`:
+Import themes and languages directly from `@shikijs/themes` and `@shikijs/langs`:
 
-```typescript
-import shiki from 'comark/plugins/shiki'
+```ts
+import shiki from '@comark/vue/plugins/shiki'
 import githubLight from '@shikijs/themes/github-light'
 import githubDark from '@shikijs/themes/github-dark'
 import javascript from '@shikijs/langs/javascript'
@@ -48,9 +30,9 @@ import typescript from '@shikijs/langs/typescript'
 import python from '@shikijs/langs/python'
 ```
 
-### 3. Configure the Plugin
+### 3. Configure the plugin
 
-Pass the imported themes and languages to the plugin:
+Pass the imported themes and languages to `shiki()`:
 
 ```vue
 <template>
@@ -60,10 +42,10 @@ Pass the imported themes and languages to the plugin:
         shiki({
           themes: {
             light: githubLight,
-            dark: githubDark
+            dark: githubDark,
           },
-          languages: [javascript, typescript, python]
-        })
+          languages: [javascript, typescript, python],
+        }),
       ]"
     >
       {{ content }}
@@ -72,91 +54,56 @@ Pass the imported themes and languages to the plugin:
 </template>
 ```
 
-### 4. Use Code Blocks in Markdown
+### 4. Add fenced code blocks in Markdown
 
 ````markdown
 ```javascript
-console.log("Hello, World!")
+console.log('Hello, World!')
 ```
 
 ```typescript
-const greeting: string = "Hello, TypeScript!"
+const greeting: string = 'Hello, TypeScript!'
 ```
 
 ```python
-print("Hello, Python!")
+print('Hello, Python!')
 ```
 ````
 
-## Why Import Directly?
+## Why import themes and languages directly
 
-- ✅ **Type Safety**: TypeScript autocomplete for themes and languages
-- ✅ **Tree Shaking**: Only bundle the themes/languages you use
-- ✅ **No Typos**: Import errors caught at build time
-- ✅ **Smaller Bundle**: Import only what you need
+- **Smaller client bundle**: Vite bundles only the grammars and themes your app imports.
+- **Build-time validation**: missing theme or language module names fail during compilation instead of at runtime.
+- **TypeScript autocomplete**: imported modules carry Shiki's `ThemeRegistration` and `LanguageRegistration` types.
 
-## Configuration Options
+## Configuration options
 
-```typescript
+```ts
 import type { BundledLanguage, BundledTheme } from 'shiki'
 
 interface ShikiOptions {
-  // Theme configuration - import from @shikijs/themes
+  // Themes imported from @shikijs/themes
   themes?: Record<string, BundledTheme>
 
-  // Languages to include - import from @shikijs/langs
+  // Languages imported from @shikijs/langs
   languages?: BundledLanguage[]
 
-  // Add inline styles to <pre> elements
+  // Add inline background and foreground styles to <pre> elements
   preStyles?: boolean
 }
 ```
 
-## Available Themes
+## Run locally
 
-Import themes from `@shikijs/themes`:
+From the monorepo root:
 
-```typescript
-import githubLight from '@shikijs/themes/github-light'
-import githubDark from '@shikijs/themes/github-dark'
-import materialLight from '@shikijs/themes/material-theme-lighter'
-import materialDark from '@shikijs/themes/material-theme-palenight'
-import nord from '@shikijs/themes/nord'
-import oneDarkPro from '@shikijs/themes/one-dark-pro'
-import dracula from '@shikijs/themes/dracula'
-import monokai from '@shikijs/themes/monokai'
+```bash
+pnpm dev:highlight
 ```
 
-[View all available themes →](https://shiki.style/themes)
+## Learn more
 
-## Available Languages
-
-Import languages from `@shikijs/langs`:
-
-```typescript
-// Web
-import javascript from '@shikijs/langs/javascript'
-import typescript from '@shikijs/langs/typescript'
-import vue from '@shikijs/langs/vue'
-import tsx from '@shikijs/langs/tsx'
-
-// Backend
-import python from '@shikijs/langs/python'
-import rust from '@shikijs/langs/rust'
-import go from '@shikijs/langs/go'
-
-// Data
-import json from '@shikijs/langs/json'
-import sql from '@shikijs/langs/sql'
-
-// Shell
-import bash from '@shikijs/langs/bash'
-```
-
-[View all 180+ languages →](https://shiki.style/languages)
-
-## Learn More
-
-- [Shiki Plugin Documentation](https://comark.dev/plugins/built-in/shiki)
-- [Shiki Documentation](https://shiki.style/)
-- [Comark Documentation](https://comark.dev)
+- [Shiki plugin documentation](https://comark.dev/plugins/built-in/shiki)
+- [Shiki themes](https://shiki.style/themes)
+- [Shiki languages](https://shiki.style/languages)
+- [Comark documentation](https://comark.dev)

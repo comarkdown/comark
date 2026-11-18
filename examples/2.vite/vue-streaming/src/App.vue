@@ -29,7 +29,6 @@ const progress = computed(() => {
 })
 
 const recentEvents = computed(() => {
-  // Oldest first — keep the most recent 40, then chronological order
   const events = stats.value.events
   const slice = events.length > 40 ? events.slice(-40) : events
   return slice.map((event) => {
@@ -293,10 +292,9 @@ function trimSegsToLastLines(segs: DiffSeg[], count: number): DiffSeg[] {
   const lines = full.replace(/\r\n/g, '\n').split('\n')
   if (lines.length <= count) return segs
 
-  // Find char offset where the last `count` lines start
   let cut = 0
   const drop = lines.length - count
-  for (let i = 0; i < drop; i++) cut += lines[i]!.length + 1 // + newline
+  for (let i = 0; i < drop; i++) cut += lines[i]!.length + 1
 
   let seen = 0
   const out: DiffSeg[] = []
@@ -309,7 +307,6 @@ function trimSegsToLastLines(segs: DiffSeg[], count: number): DiffSeg[] {
       out.push(seg)
       continue
     }
-    // Segment straddles the cut
     out.push({ text: seg.text.slice(cut - start), kind: seg.kind })
   }
   return mergeSegs(out)

@@ -6,8 +6,6 @@ import { createMarkdownParser } from 'comark'
 import { printAnsi } from '@comark/ansi'
 import punctuation from '../packages/comark/src/plugins/punctuation'
 
-// ── Test content (exercises ALL features: quotes, dashes, ellipsis, symbols, normalization) ──
-
 const short = `"Hello" -- world... (c) 2025 what???? ok,,`
 
 const medium = `
@@ -39,8 +37,6 @@ Really????  Wow!!!!! hmm,, ok?.... end
 `
 ).join('\n')
 
-// ── markdown-it typographer ─────────────────────────────────────────────────
-
 const parserTypographer = new MarkdownExit({
   html: false,
   linkify: true,
@@ -59,12 +55,8 @@ const parserNoTypographer = new MarkdownExit({
   .use(markdownItComponents)
   .use(markdownItAttributes)
 
-// ── comark with full punctuation plugin (all features) ──────────────────────
-
 const comarkFull = createMarkdownParser({ plugins: [punctuation()] })
 const comarkBaseline = createMarkdownParser()
-
-// ── Benchmarks ──────────────────────────────────────────────────────────────
 
 barplot(() => {
   group('short text (all features)', () => {
@@ -116,8 +108,6 @@ barplot(() => {
     })
   })
 })
-
-// ── Output comparison ───────────────────────────────────────────────────────
 
 function flattenText(nodes: any[]): string {
   let text = ''

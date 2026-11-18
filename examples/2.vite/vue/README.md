@@ -1,22 +1,22 @@
----
-title: Vue
-description: A minimal example showing how to use Comark with Vue and Vite.
-navigation:
-  icon:  i-simple-icons-vuedotjs
-category: Vite
-path: /examples/vite/vue
----
+# Vue Markdown example with Vite
 
-::code-explorer
----
-org: comarkdown
-repo: comark@81a416b278b0f304d7e7577c7ac6bbfc78414790
-path: examples/2.vite/vue
-defaultValue: content/posts/comark-syntax.md
----
-::
+This example renders a Markdown blog, component syntax examples, and a live editor in Vue 3 and Vite with `@comark/vue` and Nuxt UI.
 
-::Browser{src="https://comark-vue.vercel.app/#/blog/comark-syntax"}
-::
+## How it works
 
-This example demonstrates the simplest way to use Comark with Vue - use the `Markdown` component and pass it markdown content. The component handles parsing and rendering automatically.
+- **High-level rendering**: wrap `<Markdown>` from `@comark/vue` in `<Suspense>` to parse and render a Markdown string asynchronously.
+- **Pre-parsed rendering**: load `.md` files with `import.meta.glob`, parse them with `parseMarkdown()` and `shiki()`, and pass the document to `<MarkdownDocument>`.
+- **Custom Vue components**: map components such as `Alert.vue` through `:components`.
+
+## Run locally
+
+From the monorepo root:
+
+```bash
+pnpm dev:vue
+```
+
+## Documentation
+
+- [Comark documentation](https://comark.dev)
+- [Vue rendering](https://comark.dev/rendering/vue)

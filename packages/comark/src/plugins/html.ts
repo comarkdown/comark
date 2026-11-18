@@ -14,7 +14,7 @@
  *
  * Options:
  * - `markdown` (default `true`): expand text leaves inside closed HTML
- *   fragments as inline markdown (`<h1>Hello **World**</h1>` → strong).
+ *   fragments as inline markdown (`<h1>Hello **World**</h1>` -> strong).
  *   Implemented by narrowing markdown-exit's `html_block` rule to `<style>`,
  *   `<pre>`, `<script>`, `<textarea>`, and comments (`<!--`) so the rest
  *   tokenizes as normal markdown. Those stay verbatim: every character between
@@ -31,7 +31,7 @@
  * const result = await parseMarkdown('<strong class="bold">Hello</strong>', {
  *   plugins: [html()],
  * })
- * // → [ ['strong', { class: 'bold', $: { html: 1, block: 0 } }, 'Hello'] ]
+ * // -> [ ['strong', { class: 'bold', $: { html: 1, block: 0 } }, 'Hello'] ]
  * ```
  */
 
@@ -103,29 +103,20 @@ function markdownItPost(state: ComarkParseTokensState) {
   }
 }
 
-// region - https://github.com/markdown-it/markdown-it/blob/master/src/common/html_re.ts#L21
-
+// Adapted from https://github.com/markdown-it/markdown-it/blob/master/src/common/html_re.ts#L21
 const attr_name = '[a-zA-Z_:][a-zA-Z0-9:._-]*'
-
 const unquoted = '[^"\'=<>`\\x00-\\x20]+'
 const single_quoted = "'[^']*'"
 const double_quoted = '"[^"]*"'
-
 const attr_value = `(?:${unquoted}|${single_quoted}|${double_quoted})`
-
 const attribute = `(?:\\s+${attr_name}(?:\\s*=\\s*${attr_value})?)`
-
 const open_tag = `<[A-Za-z][A-Za-z0-9\\-]*${attribute}*\\s*\\/?>`
-
 const close_tag = '<\\/[A-Za-z][A-Za-z0-9\\-]*\\s*>'
 const comment = '<!---?>|<!--(?:[^-]|-[^-]|--[^>])*-->'
 const processing = '<[?][\\s\\S]*?[?]>'
 const declaration = '<![A-Za-z][^>]*>'
 const cdata = '<!\\[CDATA\\[[\\s\\S]*?\\]\\]>'
-
 const HTML_TAG_RE = new RegExp(`^(?:${open_tag}|${close_tag}|${comment}|${processing}|${declaration}|${cdata})`)
-
-// end region
 
 function isLetter(code: number): boolean {
   return (code >= 0x41 && code <= 0x5a) || (code >= 0x61 && code <= 0x7a)
@@ -163,7 +154,7 @@ function isRawTagBlock(src: string, pos: number): boolean {
  *
  * Newline-bearing runs are structural: drop whitespace-only gaps between tags
  * and strip the surrounding indent, including end-of-line padding before a
- * trailing newline. Horizontal whitespace is significant — a space between
+ * trailing newline. Horizontal whitespace is significant: a space between
  * inline tags (`</a> <a>`) or beside text (`Hello <em>`) must survive.
  */
 function literalText(content: string): string {
@@ -198,7 +189,7 @@ function pushHtml(tokens: Token[], content: string) {
   tokens.push(html)
 }
 
-/** End index of `</name …>`, or -1. Whitespace before `>` is allowed. */
+/** End index of `</name ...>`, or -1. Whitespace before `>` is allowed. */
 function rawCloserEnd(src: string, pos: number, name: string): number {
   const tag = readTag(src, pos)
   if (!tag?.close || tag.name !== name) return -1
@@ -213,7 +204,7 @@ function rawCloserEnd(src: string, pos: number, name: string): number {
  *
  * @example
  * htmlToTokens('<ai-thinking>\n**bold**')
- * // → [html_inline "<ai-thinking>", text "**bold**"]
+ * // -> [html_inline "<ai-thinking>", text "**bold**"]
  */
 export function htmlToTokens(str: string): Token[] {
   const tokens: Token[] = []
@@ -222,7 +213,6 @@ export function htmlToTokens(str: string): Token[] {
   let textStart = 0
 
   while (pos < len) {
-    // Candidate HTML tag starts with '<' followed by letter, '/', '!', or '?'
     if (str.charCodeAt(pos) === 0x3c /* < */ && pos + 1 < len) {
       const next = str.charCodeAt(pos + 1)
       if (next === 0x21 /* ! */ || next === 0x3f /* ? */ || next === 0x2f /* / */ || isLetter(next)) {

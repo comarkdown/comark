@@ -135,7 +135,7 @@ describe('createComarkContext', () => {
       const cleanup = ctx.get('x', seed).listen(vi.fn())
       expect(fn).toHaveBeenCalledWith({ event: 'create', id: 'x', tree: seed })
 
-      ctx.get('x') // existing doc — no second create
+      ctx.get('x') // existing doc: no second create
       expect(fn).toHaveBeenCalledTimes(1)
 
       cleanup()

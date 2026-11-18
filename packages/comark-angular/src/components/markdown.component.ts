@@ -52,7 +52,7 @@ export class Markdown {
   readonly plugins = model<ParserOptions['plugins']>([])
 
   /**
-   * Strip wrapper tags from the top level of the document — shorthand for
+   * Strip wrapper tags from the top level of the document. Shorthand for
    * `options.unwrap`. `true` unwraps `<p>`; a space-separated string or array
    * unwraps the listed tags.
    */
@@ -112,7 +112,6 @@ export class Markdown {
       return
     }
 
-    // Pre-parsed document — skip parsing and render directly
     if (isMarkdownDocument(value)) {
       this.document = value
       this.cdr.markForCheck()

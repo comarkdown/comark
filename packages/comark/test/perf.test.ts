@@ -50,7 +50,7 @@ function createRecorder() {
           spans.push({ name, parent, attributes: options?.attributes })
         },
       }
-      // Note: real OTel leaves end() to the caller — same here; withSpan ends it.
+      // Real OTel leaves end() to the caller; withSpan ends it here too.
       return run(span)
     },
   }
@@ -111,7 +111,7 @@ describe('ParserOptions.tracer', () => {
 
     const children = spans.filter((span) => span.name !== 'comark:parse')
     expect(children.length).toBeGreaterThan(0)
-    // Every child recorded while parse was active → parent is the parse span id.
+    // Every child recorded while parse was active has the parse span id as parent.
     for (const child of children) {
       expect(child.parent).toMatch(/^comark:parse:\d+$/)
     }

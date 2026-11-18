@@ -443,7 +443,6 @@ async function handleGenerate(prompt: string) {
 <template>
   <div class="relative overflow-hidden h-[calc(100vh-64px)]">
     <Splitpanes class="h-full">
-      <!-- ── Left pane: Markdown editor ── -->
       <Pane
         :size="50"
         :min-size="20"
@@ -491,7 +490,6 @@ async function handleGenerate(prompt: string) {
               >{{ copied ? 'Link copied' : '' }}</span
             >
 
-            <!-- Settings popover -->
             <UPopover :ui="{ content: 'p-0' }">
               <UButton
                 size="xs"
@@ -511,7 +509,6 @@ async function handleGenerate(prompt: string) {
 
               <template #content>
                 <div class="w-72">
-                  <!-- Plugins section -->
                   <div class="px-3 pt-3 pb-1.5">
                     <p class="text-xs font-semibold text-muted uppercase tracking-wider">Plugins</p>
                   </div>
@@ -537,10 +534,8 @@ async function handleGenerate(prompt: string) {
                     </button>
                   </div>
 
-                  <!-- Divider -->
                   <div class="border-t border-default" />
 
-                  <!-- Parse options section -->
                   <div class="px-3 pt-2.5 pb-1.5">
                     <p class="text-xs font-semibold text-muted uppercase tracking-wider">Parse Options</p>
                   </div>
@@ -610,7 +605,6 @@ async function handleGenerate(prompt: string) {
         </div>
       </Pane>
 
-      <!-- ── Right pane: Output ── -->
       <Pane
         :size="50"
         :min-size="20"
@@ -647,7 +641,6 @@ async function handleGenerate(prompt: string) {
             />
           </div>
 
-          <!-- Preview -->
           <div
             v-if="currentTab === 'preview'"
             class="flex-1 min-h-0 relative overflow-hidden bg-white dark:bg-neutral-900"
@@ -697,7 +690,6 @@ async function handleGenerate(prompt: string) {
             </UScrollArea>
           </div>
 
-          <!-- AST -->
           <UScrollArea
             v-else-if="currentTab === 'ast'"
             class="flex-1 min-h-0"
@@ -712,7 +704,6 @@ async function handleGenerate(prompt: string) {
             />
           </UScrollArea>
 
-          <!-- Formatted -->
           <div
             v-else-if="currentTab === 'formatted'"
             class="flex-1 min-h-0"
@@ -724,7 +715,6 @@ async function handleGenerate(prompt: string) {
             />
           </div>
 
-          <!-- Status bar -->
           <div class="shrink-0 flex items-center gap-4 px-4 h-7 border-t border-default bg-default">
             <span class="flex items-center gap-1 text-xs text-muted">
               <UIcon

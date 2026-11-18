@@ -4,17 +4,17 @@ description: Extend Comark with plugins for syntax highlighting, emoji, table of
 navigation: false
 ---
 
-Comark has two compatible extension layers. Comark plugins can transform source, tokens, the parsed document, or rendered output through typed lifecycle hooks. You can also reuse parser plugins written for markdown-it through Comark's markdown-exit foundation.
+Comark has two compatible extension layers. Comark plugins can transform source text, tokens, the parsed document, or rendered output through typed lifecycle hooks. You can also reuse parser plugins written for markdown-it through markdown-exit, Comark's markdown-it-compatible parser.
 
-All Comark plugins are part of the core `comark` package, while optional rendering dependencies are installed only when you use them.
+All built-in plugins ship in the core `comark` package. You install optional peer dependencies only for the plugins you use.
 
 ## Default plugins
 
-These plugins are **enabled by default** whenever you call `parseMarkdown()` or `createMarkdownParser()` (or a framework `<Markdown>` component). You do not need to install or register them.
+These plugins are **enabled by default** whenever you call `parseMarkdown()`, `createMarkdownParser()`, or a framework `<Markdown>` component. You don't need to install or register them.
 
 ::card-group{cols="2"}
   ::card{icon="i-lucide-link" title="Linkify" to="/plugins/defaults/linkify"}
-  Convert URL-like text into links
+  Convert URLs and email addresses into links
   ::
 
   ::card{icon="i-lucide-file-spreadsheet" title="Frontmatter" to="/plugins/defaults/frontmatter"}
@@ -29,16 +29,16 @@ These plugins are **enabled by default** whenever you call `parseMarkdown()` or 
   Transform GitHub-style `> [!NOTE]` blockquotes
   ::
 
-  ::card{icon="i-lucide-check-square" title="Task List" to="/plugins/defaults/task-list"}
-  Interactive `[ ]` / `[x]` checkboxes
+  ::card{icon="i-lucide-check-square" title="Task list" to="/plugins/defaults/task-list"}
+  Render GitHub-style `[ ]` and `[x]` checkboxes
   ::
 
   ::card{icon="i-lucide-component" title="Components" to="/plugins/defaults/components"}
-  Block/inline components and spans (`::name`, `:name`, `[text]`)
+  Parse block and inline components and spans (`::name`, `:name`, `[text]`)
   ::
 
   ::card{icon="i-lucide-tag" title="Attributes" to="/plugins/defaults/attributes"}
-  Inline attributes (`{props}` after tokens)
+  Parse inline attributes (`{props}` after tokens)
   ::
 ::
 
@@ -53,7 +53,7 @@ Turn them all off with `registerDefaultPlugins: false`:
 ```typescript
 import { parseMarkdown } from 'comark'
 
-// Plain markdown only — no autolinks, components, attributes, HTML, alerts, or task lists
+// Plain Markdown only, with no autolinks, components, attributes, HTML, alerts, or task lists
 const result = await parseMarkdown(content, {
   registerDefaultPlugins: false,
 })
@@ -76,67 +76,71 @@ See the [`registerDefaultPlugins` and `plugins` options](/reference/parse#option
 
 ## Plugins
 
-Optional plugins you register via `plugins: [...]`.
+Register optional plugins through the `plugins` option.
 
 ::card-group{cols="2"}
   ::card{icon="i-lucide-replace" title="Binding" to="/plugins/built-in/binding"}
-  Interpolate frontmatter, runtime data, or parent props with `{{ path || default }}` shorthand
+  Interpolate frontmatter, runtime data, or parent props with `{{ path || default }}` and `::if`
   ::
 
   ::card{icon="i-lucide-corner-down-left" title="Breaks" to="/plugins/built-in/breaks"}
-  Convert soft line breaks directly into `:br` components
+  Convert soft line breaks into `<br>` elements
   ::
 
   ::card{icon="i-lucide-smile" title="Emoji" to="/plugins/built-in/emoji"}
-  Convert emoji shortcodes like `:smile:` into emoji characters
+  Convert emoji shortcodes such as `:smile:` into emoji characters
+  ::
+
+  ::card{icon="i-lucide-external-link" title="External links" to="/plugins/built-in/external-links"}
+  Add `rel="nofollow"` and an optional `target` to external links
   ::
 
   ::card{icon="i-lucide-footprints" title="Footnotes" to="/plugins/built-in/footnotes"}
-  Plugin for adding footnote references and definitions to your Comark documents.
+  Add footnote references, numbered definitions, and back-links
   ::
 
-  ::card{icon="i-lucide-hash" title="Heading Links" to="/plugins/built-in/heading-links"}
-  Plugin for linking headings to themselves using their `id`.
+  ::card{icon="i-lucide-hash" title="Heading links" to="/plugins/built-in/heading-links"}
+  Link headings to themselves using their `id`
   ::
 
-  ::card{icon="i-lucide-heading" title="Title & Description" to="/plugins/built-in/title-description"}
-  Plugin for extracting the page title and description from document content.
+  ::card{icon="i-lucide-heading" title="Title and description" to="/plugins/built-in/title-description"}
+  Extract the page title and description from document content
   ::
 
   ::card{icon="i-lucide-braces" title="JSON Render" to="/plugins/built-in/json-render"}
-  Transform JSON Render specs into UI components using `json-render` or `yaml-render` code blocks
+  Render JSON Render specs as UI components from `json-render` or `yaml-render` code blocks
   ::
 
   ::card{icon="i-lucide-calculator" title="Mathematics" to="/plugins/built-in/math"}
-  Render LaTeX math formulas using KaTeX with inline and display equations
+  Render inline and display LaTeX math formulas with KaTeX
   ::
 
-  ::card{icon="i-simple-icons-mermaid" title="Mermaid Diagrams" to="/plugins/built-in/mermaid"}
-  Create diagrams and visualizations using Mermaid syntax in code blocks
+  ::card{icon="i-simple-icons-mermaid" title="Mermaid diagrams" to="/plugins/built-in/mermaid"}
+  Render diagrams from `mermaid` code blocks
   ::
 
   ::card{icon="i-lucide-quote" title="Punctuation" to="/plugins/built-in/punctuation"}
-  Convert plain-text punctuation into typographically correct Unicode characters
+  Convert plain-text quotes, dashes, and symbols into typographic Unicode characters
   ::
 
   ::card{icon="i-lucide-shield-check" title="Security" to="/plugins/built-in/security"}
-  Sanitize markdown by removing dangerous HTML elements and attributes
+  Sanitize Markdown by stripping dangerous HTML tags, attributes, and URLs
   ::
 
-  ::card{icon="i-lucide-file-text" title="Summary Extraction" to="/plugins/built-in/summary"}
-  Extract content summaries using `<!-- more -->` delimiter
+  ::card{icon="i-lucide-file-text" title="Summary extraction" to="/plugins/built-in/summary"}
+  Extract content excerpts before a `<!-- more -->` comment
   ::
 
   ::card{icon="i-lucide-code" title="Shiki" to="/plugins/built-in/shiki"}
-  Beautiful code syntax highlighting using Shiki with multi-theme support
+  Highlight code blocks and inline code with Shiki themes and transformers
   ::
 
   ::card{icon="i-lucide-zap" title="Rangi" to="/plugins/built-in/rangi"}
-  Lightweight highlighting via rangi (~13kB all-in, dual themes)
+  Highlight code with Rangi (~13 kB with all languages, dual themes)
   ::
 
-  ::card{icon="i-lucide-list" title="Table of Contents" to="/plugins/built-in/toc"}
-  Generate hierarchical TOC from headings automatically
+  ::card{icon="i-lucide-list" title="Table of contents" to="/plugins/built-in/toc"}
+  Build a nested table of contents from document headings
   ::
 
 ::
@@ -145,15 +149,15 @@ Optional plugins you register via `plugins: [...]`.
 
 ::card-group{cols="2"}
   ::card{icon="i-lucide-wrench" title="Plugin API" to="/plugins/custom/plugin-api"}
-  Define plugins with the ComarkPlugin interface and lifecycle hooks
+  Define plugins with `defineComarkPlugin` and `pre`/`post` lifecycle hooks
   ::
 
   ::card{icon="i-lucide-git-branch" title="AST API" to="/plugins/custom/ast-api"}
-  Traverse and transform the MarkdownDocument AST using the visit() utility
+  Traverse and transform `MarkdownDocument` nodes with `visit()`
   ::
 
-  ::card{icon="i-simple-icons-markdown" title="Markdown-it Plugins" to="/plugins/custom/markdown-it"}
-  Use existing markdown-it plugins or create new parser syntax rules
+  ::card{icon="i-simple-icons-markdown" title="Markdown-it plugins" to="/plugins/custom/markdown-it"}
+  Reuse existing markdown-it plugins or write custom parser syntax rules
   ::
 ::
 

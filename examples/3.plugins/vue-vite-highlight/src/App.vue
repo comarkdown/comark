@@ -4,7 +4,6 @@ import { content } from './content'
 import { Markdown } from '@comark/vue'
 import shiki from '@comark/vue/plugins/shiki'
 
-// Import themes and languages directly
 import githubLight from '@shikijs/themes/github-light'
 import githubDark from '@shikijs/themes/github-dark'
 import python from '@shikijs/langs/python'
@@ -13,7 +12,6 @@ import go from '@shikijs/langs/go'
 import sql from '@shikijs/langs/sql'
 import css from '@shikijs/langs/css'
 
-// Theme toggle
 const isDark = ref(false)
 
 onMounted(() => {

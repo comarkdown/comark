@@ -1,6 +1,6 @@
 ---
 title: Mathematics
-description: Plugin for rendering LaTeX math formulas in Comark using KaTeX.
+description: Render inline and display LaTeX math formulas in Comark with KaTeX.
 seo:
   title: Mathematics Plugin
 navigation:
@@ -20,7 +20,7 @@ links:
 
 The `comark/plugins/math` plugin renders LaTeX math formulas using [KaTeX](https://katex.org/). It supports both inline and display math expressions.
 
-`katex` is a peer dependency, install it alongside Comark:
+`katex` is a peer dependency. Install it alongside Comark:
 
 ```bash [terminal]
 npm install katex
@@ -120,14 +120,14 @@ Prices like $100 or $200 won't be parsed as math.
 
 ### Bracket delimiters
 
-LLMs often write `\(…\)` for inline and `\[…\]` for display math. `math({ brackets: true })` parses them too. It is off by default because `\(` and `\[` are Markdown escapes for literal brackets. With it on, brackets that hold only numbers (`\[1\]`), code, and display math broken by a blank line still stay text, and `renderMarkdown()` writes the original delimiters back.
+LLMs often write `\(...\)` for inline and `\[...\]` for display math. `math({ brackets: true })` parses them too. It is off by default because `\(` and `\[` are Markdown escapes for literal brackets. With it on, brackets that hold only numbers (`\[1\]`), code, and display math broken by a blank line still stay text, and `renderMarkdown()` writes the original delimiters back.
 
-`\[…\]` on its own lines is a display block. Inside a paragraph (`so \[x^2\] holds`) it renders as inline math.
+`\[...\]` on its own lines is a display block. Inside a paragraph (`so \[x^2\] holds`), it renders as inline math.
 
-While streaming, auto-close leaves closed `\(…\)` and `\[…\]` alone, but it doesn't yet add the missing `\)` or `\]` to an unfinished `\(` or `\[`. Until the closer arrives, it shows as text.
+While streaming, auto-close leaves closed `\(...\)` and `\[...\]` alone, but it doesn't yet add the missing `\)` or `\]` to an unfinished `\(` or `\[`. Until the closer arrives, it shows as text.
 
 ::tip
-See the [KaTeX supported functions →](https://katex.org/docs/supported.html) for the full LaTeX reference.
+See [KaTeX supported functions](https://katex.org/docs/supported.html) for the full LaTeX reference.
 ::
 
 ### Backslash escaping
@@ -149,10 +149,10 @@ Returns a `ComarkPlugin` that tokenizes `$...$` and `$$...$$` expressions.
 
 **Parameters:**
 
-- `options?` - Optional `MathConfig`:
-  - `throwOnError?: boolean` - **Deprecated**, ignored by the parser. Only affects the deprecated `renderMath()` helper and will be removed in `0.9.0`. Default: `false`
-  - `options?: Record<string, unknown>` - Additional [KaTeX render options](https://katex.org/docs/options.html)
-  - `brackets?: boolean` - Also parse `\(…\)` and `\[…\]`. Default: `false`
+- `options?`: Optional `MathConfig`:
+  - `throwOnError?: boolean`: **Deprecated**, ignored by the parser. Only affects the deprecated `renderMath()` helper and will be removed in `0.9.0`. Default: `false`
+  - `options?: Record<string, unknown>`: Additional [KaTeX render options](https://katex.org/docs/options.html)
+  - `brackets?: boolean`: Also parse `\(...\)` and `\[...\]`. Default: `false`
 
 **Returns:** `ComarkPlugin`
 

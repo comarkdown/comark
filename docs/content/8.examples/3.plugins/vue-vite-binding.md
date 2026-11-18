@@ -1,6 +1,6 @@
 ---
 title: 'Frontmatter and Data Binding in Vue Markdown'
-description: Example showing how to interpolate frontmatter and runtime data into Markdown using the Comark `binding` plugin in Vue and Vite.
+description: Interpolate frontmatter and reactive data into Markdown with the Comark binding plugin in Vue and Vite.
 navigation:
   title: 'Binding (frontmatter + data)'
   icon: i-lucide-replace
@@ -18,35 +18,35 @@ defaultValue: src/App.vue
 ::browser{src="https://comark-binding.vercel.app"}
 ::
 
+This example interpolates YAML frontmatter, reactive application state, and component props into Markdown in a Vue and Vite app with `@comark/vue/plugins/binding`.
+
 ## Features
 
-This example demonstrates the Comark `binding` plugin in a Vue + Vite app:
-
-- **`{{ path }}` shorthand** — interpolate values from frontmatter, the renderer's `data` prop, or a parent component's `props` directly in your markdown.
-- **`|| default` fallback** — supply an inline default rendered when the dot-path doesn't resolve.
-- **Parent props** — nested components can reference their enclosing component's resolved attributes via `props.`.
-- **Typed values** — bindings come through as real JS values (strings, numbers, objects) thanks to the shared data-binding layer.
+- **`{{ path }}` interpolation**: reads values from frontmatter, the renderer's `data` prop, or an enclosing component's `props`.
+- **`|| default` fallback**: renders an inline fallback when the dot path is undefined.
+- **Conditional blocks**: selects branches with `::if` and `#else` using truthiness or comparison operators.
+- **Typed prop bindings**: passes strings, numbers, booleans, and objects without stringifying them first.
 
 ## Usage
 
-1. Import the plugin and its matching Vue component:
+1. Import the plugin and its Vue components:
 
    ```ts
-   import binding, { Binding } from '@comark/vue/plugins/binding'
+   import binding, { Binding, If } from '@comark/vue/plugins/binding'
    ```
 
-2. Wire them into `<Markdown>`:
+2. Pass them to `<Markdown>` along with reactive `data`:
 
    ```vue
    <Markdown
      :value="markdown"
      :plugins="[binding()]"
-     :components="{ Binding }"
+     :components="{ Binding, If }"
      :data="data"
    />
    ```
 
-3. Use `{{ path || default }}` anywhere in your markdown:
+3. Reference values with `{{ path || default }}` in Markdown:
 
    ```markdown
    ---
@@ -54,18 +54,21 @@ This example demonstrates the Comark `binding` plugin in a Vue + Vite app:
      version: 2.5.1
    ---
 
-   Hello, {{ data.user.name || friend }} — you are on v{{ frontmatter.release.version }}.
+   Hello, {{ data.user.name || friend }}. You are on v{{ frontmatter.release.version }}.
    ```
 
 ## Namespaces
 
 Bindings resolve against four namespaces:
 
-| Namespace     | Source                                                 |
-| ------------- | ------------------------------------------------------ |
-| `frontmatter` | The document's YAML frontmatter                        |
-| `meta`        | Plugin-populated metadata on the parsed tree            |
-| `data`        | The `data` prop passed to `<Markdown>`                 |
-| `props`       | Props of the enclosing Comark component                |
+| Namespace     | Source                                      |
+| ------------- | ------------------------------------------- |
+| `frontmatter` | YAML frontmatter on the parsed document     |
+| `meta`        | Plugin metadata attached to `document.meta` |
+| `data`        | The `data` prop passed to `<Markdown>`      |
+| `props`       | Resolved props of the enclosing component   |
 
-See the [Binding plugin docs](/plugins/built-in/binding) and the [data binding contract](/syntax/components#data-binding) for the full reference.
+## Learn more
+
+- [Binding plugin documentation](/plugins/built-in/binding)
+- [Component data binding](/syntax/components#data-binding)

@@ -57,7 +57,7 @@ function fromNumericReference(value: number): string {
 /**
  * Decode character references in an attribute value the way browsers do:
  * numeric references, named references, and the legacy names (`&amp`, `&lt`,
- * `&copy`, …) allowed without a trailing semicolon, unless `=` or an
+ * `&copy`, ...) allowed without a trailing semicolon, unless `=` or an
  * alphanumeric follows them (`?a=1&copy=2` stays literal).
  */
 export function decodeHTMLAttribute(input: string): string {

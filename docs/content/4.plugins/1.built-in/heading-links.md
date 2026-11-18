@@ -1,6 +1,6 @@
 ---
 title: Heading Links
-description: Plugin for linking headings to themselves using their id.
+description: Link headings to themselves using their id.
 seo:
   title: Heading Links Plugin
 navigation:
@@ -11,7 +11,7 @@ links:
     to: /reference/parse
     color: neutral
     variant: soft
-  - label: Document Model
+  - label: Document model
     icon: i-lucide-braces
     to: /getting-started/document-model
     color: neutral
@@ -47,13 +47,13 @@ Returns a `ComarkPlugin` that adds a link to each matching heading.
 
 **Parameters:**
 
-- `options?` - Optional configuration, see [Options](#options)
+- `options?`: Optional configuration. See [Options](#options).
 
 **Returns:** `ComarkPlugin`
 
 Headings without an `id` are left unchanged. With the `'wrap'` behavior, headings that already contain a link are also left unchanged, since links cannot be nested.
 
-Added links are marked in the tree with `$.permalink`: `'wrap'` for a link around the heading text, `'separate'` for a link before or after it. Renderers don't output `$`, and the marker has two uses:
+The plugin marks each generated link with `$.permalink` (`'wrap'` around the heading text, or `'separate'` before or after it). Renderers omit `$` from output, and other tools use the marker in two ways:
 
 - Markdown output leaves the links out, so a tree parsed with this plugin can be saved back to Markdown unchanged.
 - `toc` and `title-description` leave a `'separate'` link out of heading text. Code of your own that reads heading text can do the same.

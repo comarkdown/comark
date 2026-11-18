@@ -13,26 +13,6 @@ export type ParsedHtmlTag =
   | { kind: 'comment'; content: string }
   | { kind: 'other'; content: string }
 
-/**
- * Applies automatic unwrapping to container components.
- *
- * This utility removes unnecessary paragraph wrappers from container component children.
- * If a container has only a single paragraph child (and no other block elements),
- * the paragraph is unwrapped and its children are hoisted up to be direct children
- * of the container. Named slots don't count: each slot and the default content are unwrapped on their own.
- *
- * Recursion is capped at {@link TREE_WALK_MAX_DEPTH} element levels; deeper subtrees are left as-is.
- *
- * @param node - The Comark element to process
- * @returns The node with auto-unwrapped children (if applicable)
- *
- * @example
- * // Before:
- * { tag: 'alert', children: [{ type: 'element', tag: 'p', children: [{ type: 'text', value: 'Text' }] }] }
- *
- * // After:
- * { tag: 'alert', children: [{ type: 'text', value: 'Text' }] }
- */
 function isBlankText(value: string): boolean {
   for (let i = 0; i < value.length; i++) {
     if (!isSpaceCode(value.charCodeAt(i))) return false
@@ -45,6 +25,12 @@ function isSlot(node: Node): boolean {
   return Array.isArray(node) && node[0] === 'template' && typeof node[1]?.name === 'string'
 }
 
+/**
+ * Unwrap sole `<p>` children from container elements (`['alert', {}, ['p', {}, 'Text']]`
+ * -> `['alert', {}, 'Text']`). Recursion is capped at {@link TREE_WALK_MAX_DEPTH}
+ * element levels; deeper subtrees are left as-is.
+ * Named slots don't count: each slot and the default content are unwrapped on their own.
+ */
 export function applyAutoUnwrap(node: Node): Node {
   return applyAutoUnwrapAt(node, 0)
 }
@@ -125,10 +111,8 @@ function applyAutoUnwrapAt(node: Node, depth: number): Node {
 }
 
 /**
- * Extracts reusable nodes from the last output tree
- * @param markdown - The markdown to parse
- * @param lastOutput - The last output tree
- * @returns The reusable nodes and the remaining markdown
+ * Split `lastOutput.nodes` into completed prefix nodes that can be reused and
+ * the unparsed tail of `markdown`.
  */
 export function extractReusableNodes(markdown: string, lastOutput: MarkdownDocument) {
   let lastValidNodeIndex = -1
@@ -164,7 +148,7 @@ export function extractReusableNodes(markdown: string, lastOutput: MarkdownDocum
 }
 
 /**
- * Lowercase an all-uppercase tag name (`DIV` → `div`, `H1` → `h1`). HTML tag names are
+ * Lowercase an all-uppercase tag name (`DIV` -> `div`, `H1` -> `h1`). HTML tag names are
  * case-insensitive, and renderers / plugins match the lowercase form. A name with any
  * lowercase letter keeps its authored case (`Hello`, `linearGradient`, `my-el`) so
  * component lookup still works.

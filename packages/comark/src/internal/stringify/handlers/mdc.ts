@@ -23,12 +23,11 @@ export async function mdc(node: ElementNode, state: State, parent?: ElementNode)
   const insideInlineElement = parent !== undefined && INLINE_HTML_ELEMENTS.has(String(parent[0]))
   let inline = hasTextSiblings || insideInlineElement || state.context.inline === true
 
-  // if component has object attributes, it cannot be inline
   if (hasObjectAttributes) {
     inline = false
   }
 
-  // Block fences inside `:name[…]` content cannot be parsed back — keep children inline
+  // Block fences inside `:name[...]` content cannot be parsed back; keep children inline
   const revert = inline ? state.applyContext({ inline: true }) : undefined
 
   let content = ''
@@ -50,8 +49,7 @@ export async function mdc(node: ElementNode, state: State, parent?: ElementNode)
 
   if (tag === 'span') {
     if (!attrs && parent?.[0] == 'a') {
-      // Add empty attributes syntax to end of spans inside Anchor links
-      // This will force Comark to parse them as span and prevent conflict
+      // Empty `{}` inside links disambiguates `[span]{}` from link syntax.
       attrs ||= '{}'
     }
     return `[${content}]${attrs}` + (inline ? '' : state.context.blockSeparator)

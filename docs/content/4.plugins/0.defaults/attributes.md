@@ -6,7 +6,7 @@ seo:
 navigation:
   icon: i-lucide-tag
 links:
-  - label: Attribute Syntax
+  - label: Attribute syntax
     icon: i-lucide-file-text
     to: /syntax/attributes
     color: neutral
@@ -20,14 +20,14 @@ links:
 
 The `comark/plugins/attributes` plugin enables Comark **inline attributes** (`{...}` after a token):
 
-- Props after a token: `Hello {.cls}` → paragraph gets `class="cls"`
+- Props after a token, such as `Hello {.cls}` adding `class="cls"` to the paragraph
 - Props on links, emphasis, headings, list items, and components
-- Props on span wrappers from the [components plugin](/plugins/defaults/components): `[world]{.accent}`
+- Props on span wrappers from the [components plugin](/plugins/defaults/components), such as `[world]{.accent}`
 
-The plugin is **enabled by default** via `registerDefaultPlugins`. No installation or registration required.
+This plugin is **enabled by default** via `registerDefaultPlugins`, so you don't need to install or register it.
 
 ::tip
-For the full authoring guide (shorthands, binding prefixes, limits), see [Attribute Syntax](/syntax/attributes).
+For the full authoring guide (shorthands, binding prefixes, and limits), see [Attribute syntax](/syntax/attributes).
 ::
 
 ## Usage
@@ -52,7 +52,7 @@ const span = await parseMarkdown('[world]{.accent}')
 
 ### Explicit registration
 
-When default plugins are off, opt in with the plugin directly:
+When you disable default plugins, pass `attributes()` explicitly:
 
 ```typescript
 import { parseMarkdown } from 'comark'
@@ -120,6 +120,6 @@ md.use(markdownItAttributes)
 
 The plugin registers `comark_inline_props` for `{class="highlight" id="intro"}` after a preceding token.
 
-Hidden `mdc_inline_props` tokens are merged onto the previous token (or a wrapping span for bare text). Parent-level props on headings, paragraphs, and list items are lifted during `md.parse`.
+During `md.parse`, it merges hidden `mdc_inline_props` tokens onto the previous token (or wraps bare text in a `<span>`) and lifts parent-level props onto headings, paragraphs, and list items.
 
-Span openers (`[text]`) are provided by the [components plugin](/plugins/defaults/components); attributes only attach the trailing `{...}`.
+The [components plugin](/plugins/defaults/components) provides `[text]` span wrappers; `attributes` attaches the trailing `{...}`.

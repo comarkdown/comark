@@ -1,6 +1,5 @@
 import { pascalCase } from 'scule'
 
-// Define component imports for the docs app
 const components: Record<string, () => Promise<unknown>> = {
   Playground: () => import('@/components/Playground.vue'),
 

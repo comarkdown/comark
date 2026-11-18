@@ -110,7 +110,6 @@ const markdownItInlineBinding: PluginWithOptions<MdcInlineBindingOptions> = (md,
 
     if (state.src[start] !== '{' || state.src[start + 1] !== '{') return false
 
-    // Find the closing `}}`
     let end = start + 2
     while (end < state.posMax - 1) {
       if (state.src[end] === '}' && state.src[end + 1] === '}') break
@@ -122,7 +121,6 @@ const markdownItInlineBinding: PluginWithOptions<MdcInlineBindingOptions> = (md,
     const inner = state.src.slice(start + 2, end).trim()
     if (!inner) return false
 
-    // Split on the first `||` to separate value and default
     const separator = inner.indexOf('||')
     const value = separator === -1 ? inner : inner.slice(0, separator).trim()
     const defaultValue = separator === -1 ? '' : inner.slice(separator + 2).trim()

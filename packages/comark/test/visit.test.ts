@@ -411,7 +411,7 @@ describe('visit', () => {
   })
 
   it('should visit nodes within the depth cap', () => {
-    // TREE_WALK_MAX_DEPTH - 1 wrappers + text — text is at depth N-1 and still visited.
+    // TREE_WALK_MAX_DEPTH - 1 wrappers + text: text is at depth N-1 and still visited.
     let node: Node = 'Deep'
     for (let i = TREE_WALK_MAX_DEPTH - 2; i >= 0; i--) {
       node = [`d${i}`, {}, node]
@@ -433,7 +433,7 @@ describe('visit', () => {
   })
 
   it('should drop nodes past TREE_WALK_MAX_DEPTH element levels', () => {
-    // TREE_WALK_MAX_DEPTH + 1 wrappers + text — last wrapper and its children are past the cap.
+    // TREE_WALK_MAX_DEPTH + 1 wrappers + text: last wrapper and its children are past the cap.
     let node: Node = 'Too deep'
     for (let i = TREE_WALK_MAX_DEPTH; i >= 0; i--) {
       node = [`d${i}`, {}, node]

@@ -5,10 +5,6 @@ import { parseMarkdown } from 'comark'
 import emoji from 'comark/plugins/emoji'
 import { defineMarkdownComponent, defineMarkdownDocumentComponent } from '../src/index'
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
 async function renderAsync(element: React.ReactElement): Promise<string> {
   const stream = await renderToReadableStream(element)
   await stream.allReady
@@ -28,10 +24,6 @@ const AlertChild = makeAlert('alert-child')
 const AlertProp = makeAlert('alert-prop')
 
 const CardBase = makeAlert('card-base')
-
-// ---------------------------------------------------------------------------
-// defineMarkdownComponent
-// ---------------------------------------------------------------------------
 
 describe('defineMarkdownComponent — component inheritance via extends', () => {
   it('child inherits parent components when none of its own are defined', async () => {
@@ -126,10 +118,6 @@ describe('defineMarkdownComponent — plugin inheritance via extends', () => {
   })
 })
 
-// ---------------------------------------------------------------------------
-// defineMarkdownComponent — className
-// ---------------------------------------------------------------------------
-
 describe('defineMarkdownComponent — className via config', () => {
   it('applies config className to wrapper div', async () => {
     const Custom = defineMarkdownComponent({ name: 'WithClass', className: 'prose dark' })
@@ -166,10 +154,6 @@ describe('defineMarkdownComponent — className via config', () => {
     expect(html).toContain('base-class')
   })
 })
-
-// ---------------------------------------------------------------------------
-// defineMarkdownDocumentComponent
-// ---------------------------------------------------------------------------
 
 describe('defineMarkdownDocumentComponent — component inheritance via extends', () => {
   it('renders with config components', async () => {
@@ -266,10 +250,6 @@ describe('defineMarkdownDocumentComponent — component inheritance via extends'
     expect(html).toContain('card-base')
   })
 })
-
-// ---------------------------------------------------------------------------
-// defineMarkdownDocumentComponent — className
-// ---------------------------------------------------------------------------
 
 describe('defineMarkdownDocumentComponent — className via config', () => {
   it('applies config className to wrapper div', async () => {

@@ -1,6 +1,6 @@
 ---
 title: Shiki (Highlight)
-description: Plugin for syntax highlighting code blocks using Shiki with multi-theme support.
+description: Highlight code blocks and language-tagged inline code with Shiki themes and transformers.
 seo:
   title: Syntax Highlighting using Shiki
 navigation:
@@ -16,30 +16,30 @@ links:
     to: /kb/twoslash
     color: neutral
     variant: soft
-  - label: Custom Pre
+  - label: Custom pre
     icon: i-lucide-clipboard-copy
     to: /kb/custom-code-block
     color: neutral
     variant: soft
 ---
 
-The `comark/plugins/shiki` plugin provides syntax highlighting for code blocks using [Shiki](https://shiki.style/). It supports multiple themes, line highlighting, and dual light/dark palettes.
+The `comark/plugins/shiki` plugin highlights code blocks and language-tagged inline code using [Shiki](https://shiki.style/). It supports custom themes, line highlighting, transformers, and dual light/dark palettes.
 
 ::note
 `comark/plugins/highlight` is a **deprecated alias** of `comark/plugins/shiki` and will be removed in the next major version. Prefer `import shiki from 'comark/plugins/shiki'`.
 ::
 
-For a lighter alternative (no TextMate grammars), see [`comark/plugins/rangi`](/plugins/built-in/rangi).
+For a lighter alternative without TextMate grammars, see [`comark/plugins/rangi`](/plugins/built-in/rangi).
 
 ## Installation
 
-`shiki` is a peer dependency — install it alongside Comark:
+`shiki` is a peer dependency. Install it alongside Comark:
 
 ```bash [terminal]
 npm install shiki
 ```
 
-For explicit theme/language imports (recommended for tree-shaking and the `core` entry), also install the standalone packages:
+For explicit theme and language imports (recommended for tree-shaking and required for the `core` entry), install the standalone packages too:
 
 ```bash [terminal]
 npm install @shikijs/themes @shikijs/langs
@@ -47,19 +47,19 @@ npm install @shikijs/themes @shikijs/langs
 
 | Package | When you need it |
 |---|---|
-| `shiki` | Always — peer dependency of the plugin |
-| [`@shikijs/themes`](https://www.npmjs.com/package/@shikijs/themes) | Importing themes like `@shikijs/themes/github-dark` |
-| [`@shikijs/langs`](https://www.npmjs.com/package/@shikijs/langs) | Importing languages like `@shikijs/langs/typescript` |
+| `shiki` | Always (peer dependency of the plugin) |
+| [`@shikijs/themes`](https://www.npmjs.com/package/@shikijs/themes) | Importing themes such as `@shikijs/themes/github-dark` |
+| [`@shikijs/langs`](https://www.npmjs.com/package/@shikijs/langs) | Importing languages such as `@shikijs/langs/typescript` |
 
 ::tip
-The standard entry ships Material themes + a default language set, so you can call `shiki()` with no options after installing only `shiki`. Install `@shikijs/themes` / `@shikijs/langs` when you pass custom `themes` / `languages`, or when you use `comark/plugins/shiki/core`.
+The standard entry ships Material themes and a default language set, so you can call `shiki()` with no options after installing only `shiki`. Install `@shikijs/themes` and `@shikijs/langs` when you pass custom `themes` or `languages`, or when you use `comark/plugins/shiki/core`.
 ::
 
 ## Usage
 
 ### Standard entry
 
-Zero-config — defaults cover Material light/dark and common languages (`vue`, `tsx`, `svelte`, `astro`, `typescript`, `javascript`, `bash`, `json`, `yaml`, plus Comark/`mdc`):
+Calling `shiki()` with no options registers Material light and dark themes along with common languages (`vue`, `tsx`, `svelte`, `astro`, `typescript`, `javascript`, `bash`, `json`, `yaml`, and Comark/`mdc`):
 
 ```typescript
 import { parseMarkdown } from 'comark'
@@ -92,7 +92,7 @@ const result = await parseMarkdown(content, {
 
 ### Core entry (minimal bundle)
 
-To keep default theme/language chunks out of the bundle entirely, use `core`. `themes` and `languages` are **required** (`ShikiCoreOptions`) — there are no `registerDefault*` flags:
+To exclude the default theme and language chunks from your bundle, import from `comark/plugins/shiki/core`. Both `themes` and `languages` are **required** (`ShikiCoreOptions`), and there are no `registerDefault*` flags:
 
 ```typescript
 import shiki from 'comark/plugins/shiki/core'
@@ -117,7 +117,7 @@ The Comark TextMate grammar can also be imported independently from the plugin-o
 import comarkLanguages, { comarkLanguage } from 'comark/plugins/shiki/language-comark'
 ```
 
-The default export includes the Comark grammar and its Markdown, YAML, and HTML dependencies, ready to pass to Shiki. This entry does not import rangi. The grammar supports inline and block component attributes, including braces inside quoted values such as `:badge{title="a}b"}`.
+The default export includes the Comark grammar and its Markdown, YAML, and HTML dependencies, ready to pass to Shiki. This entry does not import Rangi. The grammar supports inline and block component attributes, including braces inside quoted values such as `:badge{title="a}b"}`.
 
 With framework components:
 
@@ -175,7 +175,7 @@ import githubDark from '@shikijs/themes/github-dark'
 
 ### Dual-theme support
 
-Highlight code with different themes for light and dark modes. Both palettes are embedded as CSS custom properties, so there is no flash on theme switch. See all [available themes →](https://shiki.style/themes)
+Highlight code with different themes for light and dark modes. Both palettes are embedded as CSS custom properties, so there is no flash on theme switch. See all [available Shiki themes](https://shiki.style/themes).
 
 ```typescript
 shiki({
@@ -188,7 +188,7 @@ shiki({
 
 ### Language detection
 
-Comark reads the language from the code fence info string and highlights accordingly. On the standard entry, the default language set is pre-registered; pass extra grammars via `languages` (from `@shikijs/langs`). On `core`, only the languages you pass are available. See all [180+ supported languages →](https://shiki.style/languages)
+Comark reads the language from the code fence info string and highlights accordingly. On the standard entry, the default language set is pre-registered; pass extra grammars via `languages` (from `@shikijs/langs`). On `core`, only the languages you pass are available. See all [supported Shiki languages](https://shiki.style/languages).
 
 ````markdown
 ```typescript
@@ -204,11 +204,11 @@ Inline code is highlighted when it declares a language with the attributes synta
 The type is `Ref<HTMLInputElement | null>`{lang="ts-type"} and the component is `<UButton />`{lang="vue-html"}.
 ```
 
-Two fragment languages ship out of the box: `ts-type` tokenizes through the TypeScript grammar seeded with `let a:`, and `vue-html` through the Vue grammar seeded with `<template>`. Without that seed a bare type or a bare tag falls through to plain text.
+The plugin includes two built-in fragment languages: `ts-type` (TypeScript seeded with `let a:`) and `vue-html` (Vue seeded with `<template>`). Without that seed, a bare type or bare tag falls through to plain text.
 
 The `<code>` element gets the same `shiki` class a `<pre>` gets, so the dual-theme CSS in [Styling](#styling) covers it with no extra rules. Inline code uses the fast token path, so `transformers` and `preStyles` do not apply to it.
 
-Inline code naming a grammar that is not registered is left exactly as it was written, with no class and no spans. `lang` is a real HTML attribute for natural language, so `` `Bonjour`{lang="fr"} `` must not be treated as code. A fenced block behaves differently and still falls back to an unhighlighted `.shiki` block, because a `<pre>` is unambiguously code.
+Inline code naming a grammar that is not registered is left as written, with no class and no spans. `lang` is a real HTML attribute for natural language, so `` `Bonjour`{lang="fr"} `` must not be treated as code. A fenced block behaves differently and still falls back to an unhighlighted `.shiki` block, because a `<pre>` is unambiguously code.
 
 Set `inlineCode: false` to turn this off.
 
@@ -258,8 +258,8 @@ shiki({
 ```
 
 ::tip
-**Standard:** default languages are pre-registered; `languages` merges on top. Use `registerDefaultLanguages: false` to replace the set entirely.
-**Core:** no defaults — `languages` is required and is the full set (plus the built-in Comark/`mdc` grammar).
+**Standard entry.** Default languages are pre-registered, and `languages` merges on top. Set `registerDefaultLanguages: false` to replace the set.
+**Core entry.** No default languages are bundled. `languages` is required and defines the full set (alongside the built-in Comark/`mdc` grammar).
 ::
 
 ### Transformers
@@ -275,7 +275,7 @@ shiki({
 })
 ```
 
-The most powerful transformer is [`@shikijs/twoslash`](/kb/twoslash): it runs the TypeScript compiler on your code blocks to add inline type tooltips and error annotations.
+For TypeScript code blocks, [`@shikijs/twoslash`](/kb/twoslash) runs the TypeScript compiler to add inline type tooltips and error annotations.
 
 ### Pre styles
 
@@ -285,7 +285,7 @@ Set `preStyles: true` to add inline background and foreground colors to `<pre>` 
 
 ## API
 
-### `shiki(options?)` — standard entry
+### `shiki(options?)` (standard entry)
 
 ```typescript
 import shiki from 'comark/plugins/shiki'
@@ -294,7 +294,7 @@ import shiki from 'comark/plugins/shiki'
 
 Returns a `ComarkPlugin` with bundled Material themes and the default language set. Options are optional.
 
-### `shiki(options)` — core entry
+### `shiki(options)` (core entry)
 
 ```typescript
 import shiki from 'comark/plugins/shiki/core'
@@ -307,10 +307,10 @@ Returns a `ComarkPlugin` with **no** bundled themes or languages. `themes` and `
 
 ## Options
 
-Two option types, one per entry:
+Each entry point has its own options type:
 
-- **`ShikiOptions`** — `comark/plugins/shiki` (standard). Themes/languages optional; includes `registerDefaultThemes` / `registerDefaultLanguages`.
-- **`ShikiCoreOptions`** — `comark/plugins/shiki/core`. `themes` and `languages` are **required**; no `registerDefault*` options (nothing is bundled by default).
+- **`ShikiOptions`** (`comark/plugins/shiki`): `themes` and `languages` are optional, with `registerDefaultThemes` and `registerDefaultLanguages` flags.
+- **`ShikiCoreOptions`** (`comark/plugins/shiki/core`): `themes` and `languages` are **required**, with nothing bundled by default.
 
 ### Standard (`ShikiOptions`)
 
@@ -404,7 +404,7 @@ shiki({ preStyles: true })
 
 ### `inlineCode`
 
-Whether to highlight inline code that declares a language, e.g. `` `Ref<T>`{lang="ts-type"} ``. See [Inline code](#inline-code).
+Highlight inline code that declares a language, for example `` `Ref<T>`{lang="ts-type"} ``. See [Inline code](#inline-code).
 
 ```typescript
 shiki({ inlineCode: false })
@@ -457,7 +457,7 @@ const result = await parseMarkdown(content, {
 
 ### Minimal bundle
 
-Install the standalone Shiki packages, use the `core` entry (`ShikiCoreOptions`), and import only what you need — `languages` and `themes` are required, and no defaults are bundled:
+Install the standalone Shiki packages, use `comark/plugins/shiki/core` (`ShikiCoreOptions`), and import only the grammars and themes you use. Both `languages` and `themes` are required, and no defaults are bundled:
 
 ```bash [terminal]
 npm install shiki @shikijs/langs @shikijs/themes
@@ -497,17 +497,17 @@ shiki({
 See the [Twoslash guide](/kb/twoslash) for TypeScript-powered type tooltips and error annotations in code blocks.
 
 ::tip{to="/kb/custom-code-block"}
-Need a copy button or collapse threshold on a custom `ProsePre`? After highlighting there is no `code` prop — reconstruct the source with `__node` and `textContent()`.
+Need a copy button or collapse threshold on a custom `ProsePre`? Highlighted blocks don't carry a `code` prop. Reconstruct the raw source from `__node` with `textContent()`.
 ::
 
 ### Live examples
 
-::card{icon="i-lucide-code" title="Vue + Vite Highlight" to="https://github.com/comarkjs/comark/tree/main/examples/3.plugins/vue-vite-highlight"}
-Dual-theme support, 10+ languages, theme toggle. Includes JavaScript, TypeScript, Python, Rust, Go, SQL and more.
+::card{icon="i-lucide-code" title="Vue + Vite highlight" to="https://github.com/comarkdown/comark/tree/main/examples/3.plugins/vue-vite-highlight"}
+Dual-theme highlighting across 10+ languages (including JavaScript, TypeScript, Python, Rust, Go, and SQL) with a theme toggle.
 ::
 
-::card{icon="i-simple-icons-typescript" title="Vue + Vite Twoslash" to="https://github.com/comarkjs/comark/tree/main/examples/3.plugins/vue-vite-twoslash"}
-Browser-side twoslash with CDN-fetched TypeScript types and interactive type popups.
+::card{icon="i-simple-icons-typescript" title="Vue + Vite Twoslash" to="https://github.com/comarkdown/comark/tree/main/examples/3.plugins/vue-vite-twoslash"}
+Browser-side Twoslash with CDN-fetched TypeScript types and interactive type popovers.
 ::
 
 ---

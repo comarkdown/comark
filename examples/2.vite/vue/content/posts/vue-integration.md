@@ -1,20 +1,20 @@
 ---
-title: Integrating Comark with Vue + Vite
-description: How the Comark + Vue + Vite integration works under the hood.
+title: Integrating Comark with Vue and Vite
+description: How this client-side SPA pairs Vue 3, Nuxt UI, and Vite with Comark.
 pubDate: 2026-01-10
 tags: [comark, vue, integration]
 ---
 
-This example uses Vue 3 + Vite with Comark as the Markdown renderer and Nuxt UI for styled components.
+This example uses Vue 3 and Vite with `@comark/vue` as the Markdown renderer and Nuxt UI for component styling.
 
 ## How it works
 
-Instead of the typical `gray-matter` + `remark` + `rehype` pipeline, we use Comark's framework-agnostic API:
+Instead of chaining `gray-matter`, `remark`, and `rehype`, `src/lib/posts.ts` parses Markdown and frontmatter in a single call:
 
-1. **Load markdown files** — Use Vite's `import.meta.glob` with `?raw` to eagerly load `.md` files
-2. **Parse with Comark** — Call `parseMarkdown()` in the browser to build the AST and extract frontmatter
-3. **Route with Vue Router** — Hash-based routing for a zero-config static SPA
-4. **Render with Vue** — Use `MarkdownDocument` from `@comark/vue` with explicit component mapping
+1. **Load Markdown files**: bundle `.md` files as raw strings at build time using Vite's `import.meta.glob` with `?raw`.
+2. **Parse with Comark**: call `parseMarkdown()` in the browser with `shiki()` to build the `MarkdownDocument` and read `tree.frontmatter`.
+3. **Route with Vue Router**: configure hash-based routing for static SPA hosting.
+4. **Render with Vue**: pass `post.tree` and a `components` map to `MarkdownDocument` from `@comark/vue`.
 
 ```ts
 // src/lib/posts.ts
@@ -32,7 +32,7 @@ export async function getPost(slug: string) {
 
   const tree = await parseMarkdown(content!, { plugins: [shiki()] })
   const fm = tree.frontmatter as Record<string, unknown>
-  return { slug, tree, title: fm.title as string, /* ... */ }
+  return { slug, tree, title: fm.title as string /* remaining fields omitted */ }
 }
 ```
 
@@ -52,12 +52,12 @@ const post = ref(await getPost(route.params.slug as string))
 ```
 
 ::Alert{type="info"}
-Since this is a client-side SPA, `parseMarkdown()` runs in the browser. Markdown files are bundled as raw strings at build time via `import.meta.glob`.
+Because this app runs as a client-side SPA, `parseMarkdown()` executes in the browser against raw Markdown strings bundled by `import.meta.glob`.
 ::
 
 ## Custom components
 
-Pass custom components via the `components` prop on `MarkdownDocument`. Each component receives props and children from the Comark AST:
+Pass custom components through `:components` on `MarkdownDocument`. Each component receives resolved attributes as props and nested nodes in its `<slot />`:
 
 ```vue
 <!-- src/components/Alert.vue -->
@@ -73,5 +73,3 @@ const color = computed(() => colorMap[props.type ?? 'info'])
   </UAlert>
 </template>
 ```
-
-This makes it easy to extend your Markdown with reusable, styled components.

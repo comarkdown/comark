@@ -24,7 +24,6 @@ describe('html({ markdown })', () => {
       plugins: [html({ markdown: false })],
     })
 
-    // Body is a single text leaf → block: 0 (inline-like incomplete opener).
     expect(result.nodes).toEqual([['ai-thinking', { $: { html: 1, block: 1 } }, '**bold**']])
   })
 
@@ -246,7 +245,7 @@ after \`code\`
   })
 
   it('keeps indented non-HTML content inside a closed multiline HTML block as raw text', async () => {
-    // No blank line before closer → CommonMark span; text leaves stay literal
+    // No blank line before closer -> CommonMark span; text leaves stay literal
     // (no block-level code fence from 4-space indent).
     const result = await parseMarkdown(`<div>
     const value = 1
@@ -299,7 +298,7 @@ after \`code\`
   </a>
 </p>`)
 
-    // Nested <a> spans multiple lines → block: 1; void <img> is single-line → block: 0
+    // Nested <a> spans multiple lines -> block: 1; void <img> is single-line -> block: 0
     expect(result.nodes).toEqual([
       [
         'p',
@@ -431,8 +430,8 @@ Your changes have been saved.
 </div>
   `)
 
-    // First div closes inside its opening paragraph → block: 0 (text-only body).
-    // Second spans a free markdown paragraph → block: 1.
+    // First div closes inside its opening paragraph -> block: 0 (text-only body).
+    // Second spans a free markdown paragraph -> block: 1.
     expect(result.nodes).toEqual([
       ['div', { $: { html: 1, block: 0 } }, 'This is a warning message.'],
       ['div', { $: { html: 1, block: 1 } }, 'Your changes have been saved.'],

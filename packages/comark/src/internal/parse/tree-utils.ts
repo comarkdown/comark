@@ -33,25 +33,21 @@ export function parseCodeblockInfo(info: string): CodeBlockInfo {
     remaining = remaining.slice(languageMatch[1].length).trim()
   }
 
-  // Extract highlights and filename in any order
-  // They can appear as: {highlights} [filename] or [filename] {highlights}
+  // `{highlights}` and `[filename]` may appear in either order.
   while (remaining && (remaining.startsWith('{') || remaining.startsWith('['))) {
     if (remaining.startsWith('{')) {
-      // Extract highlights {1-3} or {1,2,3} or {1-3,5,9-11}
       const highlightsMatch = remaining.match(/^\{([^}]+)\}/)
       if (highlightsMatch) {
         const highlightsStr = highlightsMatch[1]
         remaining = remaining.slice(highlightsMatch[0].length).trim()
 
-        // Parse highlight ranges and individual numbers. Range expansion is
-        // bounded — a fence like ```js {1-999999999} must not materialize a
-        // billion-entry array from 20 bytes of markdown.
+        // Bound range expansion so a fence like ```js {1-999999999} cannot
+        // materialize a billion-entry array.
         const highlights: number[] = []
         const parts = highlightsStr.split(',')
         for (const part of parts) {
           const trimmed = part.trim()
           if (trimmed.includes('-')) {
-            // Range like "1-3"
             const [start, end] = trimmed.split('-').map((s) => Number.parseInt(s.trim(), 10))
             if (!Number.isNaN(start) && !Number.isNaN(end) && end - start <= MAX_HIGHLIGHT_LINES) {
               for (let i = start; i <= end && highlights.length < MAX_HIGHLIGHT_LINES; i++) {
@@ -59,7 +55,6 @@ export function parseCodeblockInfo(info: string): CodeBlockInfo {
               }
             }
           } else {
-            // Single number
             const num = Number.parseInt(trimmed, 10)
             if (!Number.isNaN(num) && highlights.length < MAX_HIGHLIGHT_LINES) {
               highlights.push(num)
@@ -73,7 +68,6 @@ export function parseCodeblockInfo(info: string): CodeBlockInfo {
         break
       }
     } else if (remaining.startsWith('[')) {
-      // Extract filename [filename.ts] - handle nested brackets and escaped backslashes
       let depth = 0
       let i = 0
       for (; i < remaining.length; i++) {
@@ -82,7 +76,6 @@ export function parseCodeblockInfo(info: string): CodeBlockInfo {
         } else if (remaining[i] === ']') {
           depth--
           if (depth === 0) {
-            // Found the closing bracket
             const filename = remaining.slice(1, i)
             // Unescape backslashes: @[...slug\\\\].ts -> @[...slug].ts
             result.filename = filename.replace(/\\\\/g, '')
@@ -91,12 +84,10 @@ export function parseCodeblockInfo(info: string): CodeBlockInfo {
           }
         }
       }
-      // Unclosed bracket, stop processing
       if (depth !== 0) break
     }
   }
 
-  // Remaining text is meta
   if (remaining) {
     result.meta = remaining
   }
@@ -127,29 +118,26 @@ export function processAttributes(
       const [key] = attr
       let value = attr[1]
 
-      // Filter empty values if requested
       if (filterEmpty && (value === '' || value === null || value === undefined)) {
         continue
       }
 
-      // Handle JSON values
       if (handleJSON && typeof value === 'string') {
         if (value.startsWith('{') && value.endsWith('}')) {
           try {
             value = JSON.parse(value)
           } catch {
-            // Keep original value if parsing fails
+            // non-JSON literal
           }
         } else if (value.startsWith('[') && value.endsWith(']')) {
           try {
             value = JSON.parse(value)
           } catch {
-            // Keep original value if parsing fails
+            // non-JSON literal
           }
         }
       }
 
-      // Handle class attribute (multiple classes)
       if (key === 'class' && typeof attrs[key] === 'string') {
         attrs[key] = `${attrs[key]} ${value}`
       } else {
@@ -170,14 +158,12 @@ export function extractAttributes(
 ): { attrs: Record<string, unknown>; nextIndex: number } {
   let propsIndex = startIndex
 
-  // Skip empty text tokens if requested
   if (skipEmptyText) {
     while (propsIndex < tokens.length && tokens[propsIndex].type === 'text' && !tokens[propsIndex].content?.trim()) {
       propsIndex++
     }
   }
 
-  // Check for props token
   if (propsIndex < tokens.length && tokens[propsIndex].type === 'mdc_inline_props') {
     const propsToken = tokens[propsIndex]
     const attrs = processAttributes(propsToken.attrs)
@@ -196,7 +182,6 @@ export function mergeAdjacentTextNodes(nodes: Node[]): Node[] {
   for (const node of nodes) {
     const lastNode = merged[merged.length - 1]
 
-    // If both current and last nodes are strings, merge them
     if (typeof node === 'string' && typeof lastNode === 'string') {
       merged[merged.length - 1] = lastNode + node
     } else {

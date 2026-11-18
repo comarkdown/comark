@@ -8,16 +8,16 @@
 [![Documentation](https://img.shields.io/badge/Documentation-black?logo=readme&logoColor=white)](https://comark.dev/rendering/svelte)
 [![license](https://img.shields.io/github/license/comarkdown/comark?color=black)](https://github.com/comarkdown/comark/blob/main/LICENSE)
 
-Svelte renderer for [Comark](https://comark.dev). Render markdown with custom Svelte components, streaming support, and SvelteKit SSR.
+Svelte 5 renderer for [Comark](https://comark.dev). Render Markdown with custom Svelte components, streaming support, and SvelteKit SSR.
 
 ## Features
 
-- 🧩 `<Markdown>` component for one-shot markdown rendering
-- 🎯 Map any Comark tag to a custom Svelte component
-- 🌊 Streaming-friendly with auto-close and caret support
-- 🖥️ SSR-safe, works in SvelteKit
-- 🔌 Plugin ecosystem (math, mermaid, highlight, binding…)
-- 🎯 Full TypeScript support
+- `<Markdown>` component for rendering Markdown
+- Custom Svelte components for any Comark tag
+- Streaming support with auto-close and a caret indicator
+- SvelteKit SSR support
+- Plugins for math, Mermaid, Shiki highlighting, binding, and more
+- Full TypeScript support
 
 ## Installation
 
