@@ -82,8 +82,8 @@ export function defineMarkdownComponent(config: DefineMarkdownComponentOptions =
  *
  * @example
  * ```typescript
- * import { Component } from '@angular/core'
- * import { parseMarkdown } from 'comark'
+ * import { Component, OnInit } from '@angular/core'
+ * import { parseMarkdown, type MarkdownDocument as MarkdownDocumentType } from 'comark'
  * import { MarkdownDocument, defineMarkdownDocumentComponent } from '@comark/angular'
  * import { Math } from '@comark/angular/plugins/math'
  *
@@ -96,10 +96,14 @@ export function defineMarkdownComponent(config: DefineMarkdownComponentOptions =
  *       components: { Math },
  *     }),
  *   ],
- *   template: `<comark-markdown-document [value]="document" />`,
+ *   template: `@if (document) { <comark-markdown-document [value]="document" /> }`,
  * })
- * export class DocsComponent {
- *   document = await parseMarkdown('# Hello')
+ * export class DocsComponent implements OnInit {
+ *   document?: MarkdownDocumentType
+ *
+ *   async ngOnInit(): Promise<void> {
+ *     this.document = await parseMarkdown('# Hello')
+ *   }
  * }
  * ```
  */
