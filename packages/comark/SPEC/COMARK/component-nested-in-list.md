@@ -113,6 +113,7 @@
 
 - **Node.js** - `22.x` or newer
 - **Terminal** - In order to run Nuxt commands
+
   <callout>
 
   Make sure to use an even numbered version.

@@ -62,6 +62,11 @@ export async function html(node: ElementNode, state: State, parent?: ElementNode
     oneLiner = true
   }
 
+  // Next to text, a component is inline even without a `p` around it (tight list item, blockquote, unwrapped component).
+  if (!state.context.html && $.html !== 1 && parent?.some((child, index) => index > 1 && typeof child === 'string')) {
+    oneLiner = true
+  }
+
   if ($.block === 0) {
     oneLiner = true
   }
@@ -103,7 +108,7 @@ export async function html(node: ElementNode, state: State, parent?: ElementNode
       content += childSeparator
     }
     // Block handlers end with their own separator, which `childSeparator` replaces.
-    content += markdownBody && isBlock ? childContent.replace(/\n+$/, '') : childContent
+    content += markdownBody && isBlock ? trimTrailingNewlines(childContent) : childContent
     isPrevBlock = isBlock
 
     if (isBlock && i < children.length - 1) {
@@ -149,4 +154,11 @@ function paddNoneHtmlContent(content: string, state: State, tag: string) {
   }
 
   return (content.trim().startsWith('<') ? '' : '') + content + (content.trim().endsWith('>') ? '' : '')
+}
+
+// A loop, since `/\n+$/` backtracks quadratically on long runs of newlines.
+function trimTrailingNewlines(content: string): string {
+  let end = content.length
+  while (end > 0 && content.charCodeAt(end - 1) === 10) end--
+  return content.slice(0, end)
 }
