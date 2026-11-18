@@ -49,3 +49,17 @@ Title
 Title
 ::
 ```
+
+## Markdown HTML
+
+```md
+<comp>
+
+<template name="header" unwrap="p" preset="title">
+
+Title
+
+</template>
+
+</comp>
+```

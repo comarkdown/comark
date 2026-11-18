@@ -1,4 +1,4 @@
-import type { NodeRenderData, State, Context, RendererOptions } from 'comark/render'
+import type { NodeRenderData, State, Context, RendererOptions, FlowOptions } from 'comark/render'
 import type { ElementNode, Node, MarkdownDocument, ConditionalNodeHandler, CreateContext, NodeHandler } from 'comark'
 import { escapeHtml, pascalCase } from '../../utils/index.ts'
 import { resolveAttributes } from './html-attributes.ts'
@@ -118,11 +118,17 @@ export async function one(node: Node, state: State, parent?: ElementNode, atLine
   }
 }
 
-export async function flow(node: ElementNode, state: State, parent?: ElementNode): Promise<string> {
-  const children = node.slice(2) as ElementNode[]
+export async function flow(
+  node: ElementNode,
+  state: State,
+  parent?: ElementNode,
+  options?: FlowOptions
+): Promise<string> {
+  const children = node.slice(2) as Node[]
+  const atLineStart = options?.atLineStart === true
   let result = ''
   for (const child of children) {
-    result += await one(child, state, parent || node)
+    result += await one(child, state, parent || node, atLineStart && (result === '' || result.endsWith('\n')))
   }
   return result
 }

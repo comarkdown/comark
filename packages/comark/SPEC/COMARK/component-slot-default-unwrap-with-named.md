@@ -73,3 +73,21 @@
 ~~~
 ::
 ```
+
+## Markdown HTML
+
+```md
+<code-preview>
+
+`inline code`
+
+<template name="code">
+
+~~~mdc
+`inline code`
+~~~
+
+</template>
+
+</code-preview>
+```

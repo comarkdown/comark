@@ -285,6 +285,7 @@ Every renderer accepts `transformNode` (a function or array of functions returni
 ## Parser and plugin rules
 
 1. Token-to-AST conversion lives in `packages/comark/src/internal/parse/tree.ts`. Run spec fixtures with `cd packages/comark && pnpm vitest run test/index.test.ts` (or `SPEC=SPEC/COMARK/foo.md pnpm vitest run test/index.test.ts`), and check `test/streaming.test.ts` after parser edits.
+   A fixture has `## Input`, `## AST`, `## HTML` and `## Markdown` sections, plus an optional `## Markdown HTML` for `renderMarkdown(doc, { format: 'markdown/html' })`. Every fixture runs the `markdown/html` check; when the section is missing, it falls back to `## Markdown`. Add the section only when the output differs (components, spans, slots, `:br`).
 2. Always import from `markdown-exit/core`, never `markdown-exit`. Only `src/plugins/linkify.ts` imports `linkify-it`, keeping `comark/core` free of `linkify-it` and avoiding `markdown-exit`'s global fuzzy-link rule.
 3. Decode HTML entities in attributes with `decodeHTMLAttribute` from `src/internal/entities.ts`, never `entities`, so bundles reuse the single `character-entities` table shipped by `markdown-exit`.
 4. After adding or renaming a plugin in `packages/comark/src/plugins/`, add framework wrappers if it has a UI component, then run `pnpm sync-plugins` (also run by `pnpm build` and `pnpm stub`).

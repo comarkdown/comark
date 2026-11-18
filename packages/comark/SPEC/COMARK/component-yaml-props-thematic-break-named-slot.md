@@ -89,3 +89,25 @@ Middle line
 Line three
 ::
 ```
+
+## Markdown HTML
+
+```md
+<card>
+
+<template name="description">
+
+Line one
+
+---
+
+Middle line
+
+---
+
+Line three
+
+</template>
+
+</card>
+```

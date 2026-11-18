@@ -40,3 +40,9 @@ Hello :badge{.bg-[#fff].text-[12px]} world
 ```md
 Hello :badge{.bg-[#fff].text-[12px]} world
 ```
+
+## Markdown HTML
+
+```md
+Hello <badge class="bg-[#fff] text-[12px]"></badge> world
+```

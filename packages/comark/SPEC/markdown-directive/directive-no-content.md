@@ -79,3 +79,15 @@ a :br with no content or attributes
 ::separator
 ::
 ```
+
+## Markdown HTML
+
+```md
+a :hr directive with no content
+
+a <br> with no content or attributes
+
+<video file="movie.mp4"></video>
+
+<separator></separator>
+```
