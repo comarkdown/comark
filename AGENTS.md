@@ -72,6 +72,7 @@ packages/comark/
 │   │   ├── binding.ts        # Inline interpolation + shared conditional rendering rules
 │   │   ├── breaks.ts         # Hard line breaks (`<br>`) from newlines
 │   │   ├── emoji.ts          # Emoji shortcodes
+│   │   ├── external-links.ts # `rel` and `target` on external links
 │   │   ├── footnotes.ts      # GFM footnotes
 │   │   ├── heading-links.ts  # Links headings to their own `id`
 │   │   ├── headings.ts       # Deprecated alias → title-description (remove next major)
@@ -550,6 +551,7 @@ import breaks from 'comark/plugins/breaks'
 import footnotes from 'comark/plugins/footnotes'
 import titleDescription from 'comark/plugins/title-description'
 // import headings from 'comark/plugins/headings' // deprecated alias → title-description
+import externalLinks from 'comark/plugins/external-links'
 import headingLinks from 'comark/plugins/heading-links'
 import punctuation from 'comark/plugins/punctuation'
 import jsonRender from 'comark/plugins/json-render'

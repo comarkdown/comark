@@ -12,6 +12,9 @@ export async function a(node: ElementNode, state: State, parent?: ElementNode) {
   if (attrs.$?.permalink === 'wrap') return state.flow(node, state, parent)
 
   const { href, ...rest } = attrs
+  // A `rel` or `target` added by `external-links` isn't part of the source
+  if (attrs.$?.autoRel !== undefined && rest.rel === attrs.$.autoRel) delete rest.rel
+  if (attrs.$?.autoTarget !== undefined && rest.target === attrs.$.autoTarget) delete rest.target
   const attrsString = Object.keys(rest).length > 0 ? comarkAttributes(rest) : ''
   const content = await state.flow(node, state)
 
