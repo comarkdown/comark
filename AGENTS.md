@@ -36,7 +36,6 @@ This is a **monorepo** containing the Comark Markdown parser, document model, pl
 │   ├── 3.plugins/        # Plugin examples (math, mermaid, highlight, rangi, footnotes, ...)
 │   └── 4.ai/             # AI streaming examples (Nuxt + AI SDK)
 ├── docs/                 # Documentation site (comark-docs layer; llms topic files in docs/server/routes/llms-*.txt.get.ts)
-├── playground/           # Nuxt playground (`pnpm dev:playground`)
 ├── benchmarks/           # CodSpeed Vitest benches (*.bench.ts) + mitata cross-library comparisons (*.ts)
 ├── scripts/              # Build/sync scripts
 ├── test/                 # Root-level tests (bundle-size snapshot; sanitizer/ runs vercel-labs/markdown-sanitizers fixtures against `security`)
@@ -955,7 +954,6 @@ Root workspace scripts:
 ```bash
 pnpm docs         # Run documentation site
 pnpm dev:<name>   # Run an example (vue, react, svelte, angular, html, ansi, nuxt, nextjs, astro, ...)
-pnpm dev:playground # Run the Nuxt playground
 pnpm build        # Build all packages, then sync plugin re-exports
 pnpm stub         # Point every package's dist/ at src/ for local dev (runs on postinstall)
 pnpm test         # Run all package tests

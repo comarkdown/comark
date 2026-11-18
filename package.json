@@ -9,8 +9,7 @@
   "type": "module",
   "scripts": {
     "dev": "pnpm dev:vue",
-    "dev:playground": "nuxt dev playground",
-    "dev:prepare": "nuxt prepare playground",
+    "dev:prepare": "pnpm stub",
     "dev:html": "pnpm --filter comark-html run dev",
     "dev:react": "pnpm --filter comark-react run dev",
     "dev:svelte": "pnpm --filter comark-svelte run dev",
