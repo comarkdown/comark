@@ -13,7 +13,6 @@ import { emphesis } from './emphesis.ts'
 import { blockquote } from './blockquote.ts'
 import { img } from './img.ts'
 import { del } from './del.ts'
-import { mdc } from './mdc.ts'
 import { br } from './br.ts'
 import { template } from './template.ts'
 import { table, thead, tbody, tr, th, td } from './table.ts'
@@ -22,6 +21,8 @@ import { math } from './math.ts'
 import { mermaid } from './mermaid.ts'
 import type { NodeHandler } from 'comark/render'
 
+// `mdc` (component syntax, YAML attributes) is left out so `comark/render/markdown`
+// stays free of YAML; `comark/render` adds it back.
 export const handlers: Record<string, NodeHandler> = {
   code,
   pre,
@@ -44,7 +45,6 @@ export const handlers: Record<string, NodeHandler> = {
   blockquote,
   img,
   del,
-  mdc,
   template,
   table,
   thead,
