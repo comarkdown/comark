@@ -1,16 +1,13 @@
 import type { State } from 'comark/render'
 import type { ElementNode, Node } from 'comark'
 import { indent } from '../../../utils/index.ts'
+import { isSlot } from '../../slot.ts'
 import { comarkAttributes, comarkYamlAttributes } from '../attributes.ts'
 
 // HTML elements that always create an inline context for their children
 const INLINE_HTML_ELEMENTS = new Set(['a', 'strong', 'em', 'span'])
 
-function isSlot(node: Node): boolean {
-  return Array.isArray(node) && node[0] === 'template' && typeof node[1]?.name === 'string'
-}
-
-export async function mdc(node: ElementNode, state: State, parent?: ElementNode) {
+export async function mdc(node: ElementNode, state: State, parent?: ElementNode): Promise<string> {
   const [tag, attr, ...children] = node
   const { $: _, ...attributes } = attr
 

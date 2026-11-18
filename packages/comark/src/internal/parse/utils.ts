@@ -1,6 +1,7 @@
 import type { Node, ElementNode, ElementNodeAttributes, MarkdownDocument } from 'comark'
 import { isHtmlVoidElement, TREE_WALK_MAX_DEPTH } from 'comark/utils'
 import { decodeHTMLAttribute } from '../entities.ts'
+import { isSlot } from '../slot.ts'
 
 /** Space, tab, line feed, form feed or carriage return. Defined per file so it stays inlinable on hot paths. */
 function isSpaceCode(c: number): boolean {
@@ -18,11 +19,6 @@ function isBlankText(value: string): boolean {
     if (!isSpaceCode(value.charCodeAt(i))) return false
   }
   return true
-}
-
-/** A named slot (`#name`). A `template` without `name` is a `:template` component, as in the stringifier. */
-function isSlot(node: Node): boolean {
-  return Array.isArray(node) && node[0] === 'template' && typeof node[1]?.name === 'string'
 }
 
 /**
@@ -83,17 +79,20 @@ function applyAutoUnwrapAt(node: Node, depth: number): Node {
       unwrapped[1] = mergedProps
       return unwrapped
     }
-    // Hoist the paragraph's children in its place and keep the slots, like remark-mdc.
-    const unwrapped: unknown[] = [node[0], mergedProps]
-    for (let i = 2; i < length; i++) {
-      const child = node[i] as Node
-      if (child === significant) {
-        for (let j = 2; j < child.length; j++) unwrapped.push(child[j] as Node)
-      } else if (isSlot(child)) {
-        unwrapped.push(applyAutoUnwrapAt(child, depth + 1))
+    // With slots, lifted attrs would apply to every slot (`{as}` would change the `#else` wrapper), so keep the `<p>`.
+    if (mergedProps === node[1]) {
+      // Hoist the paragraph's children in its place and keep the slots, like remark-mdc.
+      const unwrapped: unknown[] = [node[0], node[1]]
+      for (let i = 2; i < length; i++) {
+        const child = node[i] as Node
+        if (child === significant) {
+          for (let j = 2; j < child.length; j++) unwrapped.push(child[j] as Node)
+        } else if (isSlot(child)) {
+          unwrapped.push(applyAutoUnwrapAt(child, depth + 1))
+        }
       }
+      return unwrapped as unknown as ElementNode
     }
-    return unwrapped as unknown as ElementNode
   }
 
   let copy: Node[] | undefined
