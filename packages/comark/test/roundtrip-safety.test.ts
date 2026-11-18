@@ -177,6 +177,13 @@ describe('lists, emphasis and headings', () => {
     const { t1, t2 } = await roundTrip(md)
     expect(t2.nodes).toEqual(t1.nodes)
   })
+
+  it('keeps adjacent lists apart when a transformNode hook copies them', async () => {
+    const t1 = await parseMarkdown('- a\n\n* b\n')
+    const rendered = await renderMarkdown(t1, { transformNode: ({ props }) => ({ props: { ...props } }) })
+    const t2 = await parseMarkdown(rendered)
+    expect(t2.nodes).toEqual(t1.nodes)
+  })
 })
 
 describe('link and image serialization', () => {
