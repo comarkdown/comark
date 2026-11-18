@@ -144,4 +144,13 @@ console.log('hello')
       expect(hasParagraph).toBe(true)
     }
   })
+
+  it('should keep default slot paragraph attributes on the paragraph when named slots exist', async () => {
+    const result = await parseMarkdown('::if{:value="data.show"}\nVisible{as="article"}\n#else\nHidden\n::')
+
+    // Lifting `as` onto `if` would change the wrapper of the `#else` branch too.
+    expect(result.nodes).toEqual([
+      ['if', { ':value': 'data.show' }, ['p', { as: 'article' }, 'Visible'], ['template', { name: 'else' }, 'Hidden']],
+    ])
+  })
 })
