@@ -24,8 +24,8 @@ export type RangiLanguage = ShjLanguage | (string & {})
  *
  * `md` and `markdown` are included on purpose: Comark is a superset of
  * Markdown, so highlighting a plain markdown fence with it is strictly more
- * information — and it mirrors the `md`/`markdown`/`comark` → `mdc` aliases the
- * Shiki plugin registers. Pass your own `languages: { md: … }` to override.
+ * information, and it mirrors the `md`/`markdown`/`comark` -> `mdc` aliases the
+ * Shiki plugin registers. Pass your own `languages: { md: ... }` to override.
  */
 export { comarkLanguage, comarkLanguages } from './rangi/language-comark.ts'
 
@@ -35,7 +35,6 @@ export { comarkLanguage, comarkLanguages } from './rangi/language-comark.ts'
  */
 export type RangiToken = ShjToken
 
-/** Re-export theme types for consumers. */
 export type { ShjTheme as RangiTheme, ShjThemePair as RangiThemePair, ShjToken }
 
 export interface RangiOptions {
@@ -43,7 +42,7 @@ export interface RangiOptions {
    * Theme(s) for inline colors.
    *
    * - A single {@link ShjTheme}
-   * - A `{ light, dark }` pair — also emits `--shiki-dark*` vars for class-based
+   * - A `{ light, dark }` pair: also emits `--shiki-dark*` vars for class-based
    *   dark-mode toggles
    *
    * Defaults to rangi's built-in light/dark pair when omitted.
@@ -102,8 +101,8 @@ export interface CodeBlockAttributes {
 /**
  * Resolve a fence language string for rangi.
  *
- * Missing/empty fence info → `plain`. Everything else is passed through —
- * rangi already knows common aliases (`javascript`, `typescript`, `python`, …)
+ * Missing or empty fence info resolves to `plain`. Everything else passes through:
+ * rangi already knows common aliases (`javascript`, `typescript`, `python`, ...)
  * and falls back to plain text for unknowns.
  */
 export function resolveRangiLanguage(language: string | undefined): RangiLanguage {
@@ -413,7 +412,7 @@ export async function rangiCodeBlocks(tree: MarkdownDocument, options: RangiOpti
         // `lang` is a real HTML attribute for natural language. Leave
         // `` `Bonjour`{lang="fr"} `` exactly as it was authored rather than tagging
         // it `.shiki`. Unknown names fall through rangi as plain text; skip them
-        // the same way so we do not invent a highlighter class for them.
+        // the same way so they do not get a highlighter class.
         if (!isHighlightableLanguage(lang, languages)) return
 
         let children: Node[]

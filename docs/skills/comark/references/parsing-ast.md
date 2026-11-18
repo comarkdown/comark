@@ -1,19 +1,10 @@
-# Parsing & Document Model
+# Parsing and document model
 
-Complete guide for parsing Comark content and working with the serializable `MarkdownDocument` model.
+Guide to parsing Comark content and working with the serializable `MarkdownDocument` model.
 
-## Table of Contents
+## String parsing
 
-- [String Parsing](#string-parsing)
-- [Async Parsing with Syntax Highlighting](#async-parsing-with-syntax-highlighting)
-- [Document Structure](#document-structure)
-- [Rendering Documents](#rendering-documents)
-
----
-
-## String Parsing
-
-The primary way to parse Comark content is using the `parseMarkdown()` function:
+Parse Markdown strings with `parseMarkdown()`:
 
 ```typescript
 import { parseMarkdown } from 'comark'
@@ -24,7 +15,7 @@ title: My Document
 
 # Hello World
 
-This is **markdown** with :icon-star component.
+This is **Markdown** with :icon-star component.
 
 ::alert{type="info"}
 Important message here
@@ -34,7 +25,7 @@ Important message here
 const result = await parseMarkdown(content)
 ```
 
-### Result Structure
+### Result structure
 
 ```typescript
 interface MarkdownDocument {
@@ -48,13 +39,13 @@ interface MarkdownDocument {
 }
 ```
 
-### Parse Options
+### Parse options
 
 ```typescript
 interface ParserOptions {
-  autoUnwrap?: boolean      // Remove unnecessary <p> wrappers (default: true)
-  autoClose?: boolean       // Auto-close unclosed syntax (default: true)
-  plugins?: ComarkPlugin[]  // Enable plugins (e.g., highlight, emoji, toc)
+  autoUnwrap?: boolean      // Remove single-paragraph <p> wrappers (default: true)
+  autoClose?: boolean       // Auto-close unfinished syntax (default: true)
+  plugins?: ComarkPlugin[]  // Enable plugins (for example, shiki, emoji, toc)
 }
 ```
 
@@ -77,9 +68,9 @@ const result = await parseMarkdown(content, {
 })
 ```
 
-### Auto-Unwrap Feature
+### Auto-unwrap feature
 
-Auto-unwrap removes unnecessary paragraph wrappers from container components:
+Auto-unwrap removes single-paragraph `<p>` wrappers from container components:
 
 **Without auto-unwrap:**
 ```json
@@ -91,11 +82,11 @@ Auto-unwrap removes unnecessary paragraph wrappers from container components:
 ["alert", {}, "Text"]
 ```
 
-Auto-unwrap applies to any component whose only child is a single paragraph.
+Auto-unwrap applies to any container whose only child is a single paragraph.
 
-### Auto-Close Feature
+### Auto-close feature
 
-Auto-close automatically closes unclosed markdown syntax, essential for streaming:
+Auto-close completes unfinished Markdown syntax so partial input renders cleanly during streaming:
 
 ```typescript
 import { autoCloseMarkdown } from 'comark'
@@ -124,9 +115,9 @@ const closedProps = autoCloseMarkdown(props)
 
 ---
 
-## Async Parsing with Syntax Highlighting
+## Async parsing with syntax highlighting
 
-For syntax highlighting support, use the `highlight` plugin:
+For syntax highlighting, pass the `shiki` plugin:
 
 ```typescript
 import { parseMarkdown } from 'comark'
@@ -161,7 +152,7 @@ const result = await parseMarkdown(content, {
 })
 ```
 
-### Highlight Plugin Options
+### Shiki plugin options
 
 ```typescript
 // Standard entry: comark/plugins/shiki
@@ -177,7 +168,7 @@ interface ShikiOptions {
   preStyles?: boolean
 }
 
-// Core entry: comark/plugins/shiki/core — no defaults / no registerDefault*
+// Core entry: comark/plugins/shiki/core (no defaults, no registerDefault* options)
 interface ShikiCoreOptions {
   themes: {                           // required
     light?: ThemeRegistration
@@ -189,7 +180,7 @@ interface ShikiCoreOptions {
 }
 ```
 
-### Dual Theme Support
+### Dual theme support
 
 ```typescript
 import shiki from 'comark/plugins/shiki'
@@ -208,11 +199,11 @@ const result = await parseMarkdown(content, {
 
 ---
 
-## Document Structure
+## Document structure
 
-Comark returns a serializable `MarkdownDocument` with compact array-based nodes.
+Comark returns a serializable `MarkdownDocument` with compact tuple-based nodes.
 
-### MarkdownDocument Format
+### MarkdownDocument format
 
 ```typescript
 interface MarkdownDocument {
@@ -228,16 +219,17 @@ interface MarkdownDocument {
 type Node =
   | string                    // Text nodes
   | [tag: string, props?: Record<string, any>, ...children: Node[]]
+  | [null, Record<string, any>, string] // Comment nodes
 ```
 
-### Node Structure
+### Node structure
 
-**Text Node:**
+**Text node:**
 ```json
 "plain text content"
 ```
 
-**Element Node:**
+**Element node:**
 ```json
 ["tag", { "prop": "value" }, ...children]
 ```
@@ -246,7 +238,7 @@ type Node =
 
 ```json
 // Paragraph with text
-["p", {}, "Simple paragraph"]
+["p", {}, "First paragraph"]
 
 // Paragraph with bold text
 ["p", {}, "Text with ", ["strong", {}, "bold"], " word"]
@@ -257,15 +249,15 @@ type Node =
 // Link with attributes
 ["a", { "href": "https://example.com", "target": "_blank" }, "Link"]
 
-// Comark Component
-["alert", { "type": "info" }, ["p", {}, "Message"]]
+// Comark component
+["alert", { "type": "info" }, "Message"]
 
 // Component with slots
 [
   "card",
   {},
-  ["template", { "name": "header" }, ["h2", {}, "Title"]],
-  ["template", { "name": "content" }, ["p", {}, "Content"]]
+  ["template", { "name": "header" }, ["h2", { "id": "title" }, "Title"]],
+  ["template", { "name": "content" }, "Content"]
 ]
 
 // Default slot: content without #slot-name becomes direct children
@@ -275,7 +267,7 @@ type Node =
 ["component", {}, ["template", { "name": "default" }, "hello"]]
 ```
 
-### Complete Document Example
+### Complete document example
 
 **Input:**
 ```markdown
@@ -323,17 +315,17 @@ Warning message
 }
 ```
 
-### Property Conventions
+### Property conventions
 
 - **Boolean props:** `:bool="true"` (props starting with `:`)
 - **Standard props:** `key="value"`
 - **ID:** `id="value"` (from `{#value}`)
 - **Class:** `class="value"` (from `{.value}`)
-- **Custom data:** Any attribute name and value
+- **Custom data:** any attribute name and value
 
 ---
 
-## Rendering Documents
+## Rendering documents
 
 ### Render to HTML
 
@@ -341,7 +333,7 @@ Warning message
 import { parseMarkdown } from 'comark'
 import { renderHtmlFromDocument } from '@comark/html'
 
-const content = '# Hello World\n\nThis is **markdown**.'
+const content = '# Hello World\n\nThis is **Markdown**.'
 const doc = await parseMarkdown(content)
 
 const html = await renderHtmlFromDocument(doc)
@@ -351,12 +343,12 @@ console.log(html)
 **Output:**
 ```html
 <h1 id="hello-world">Hello World</h1>
-<p>This is <strong>markdown</strong>.</p>
+<p>This is <strong>Markdown</strong>.</p>
 ```
 
 ### Render to Markdown
 
-Convert AST back to Comark markdown:
+Convert a document back to Comark Markdown:
 
 ```typescript
 import { parseMarkdown } from 'comark'
@@ -378,13 +370,13 @@ Message
 ::
 ```
 
-### Use Cases
+### Use cases
 
-- Round-trip parsing (parse → modify AST → render back)
+- Round-trip parsing (parse, modify nodes, render back)
 - AST transformation
 - Content normalization
-- Markdown generation from programmatic AST
+- Markdown generation from programmatic node trees
 
 ---
 
-[← Back to Main Skills Guide](../../SKILLS.md)
+[Back to skill guide](../SKILL.md)

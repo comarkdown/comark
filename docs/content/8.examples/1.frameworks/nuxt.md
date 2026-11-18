@@ -1,9 +1,9 @@
 ---
 title: 'Nuxt UI Markdown Example with Comark'
-description: 'A minimal Nuxt app that renders Comark component syntax with Nuxt UI components through the @comark/vue Nuxt module.'
+description: 'Render Comark component syntax with Nuxt UI prose components through the @comark/vue Nuxt module.'
 navigation:
   title: 'Nuxt'
-  icon:  i-simple-icons-nuxt
+  icon: i-simple-icons-nuxt
 ---
 
 ::code-explorer
@@ -15,13 +15,13 @@ defaultValue: content/posts/comark-syntax.md
 ---
 ::
 
-::Browser{src="https://comark-nuxt.vercel.app/blog/comark-syntax"}
+::browser{src="https://comark-nuxt.vercel.app/blog/comark-syntax"}
 ::
 
-This example demonstrates how to use Comark Syntax with Nuxt UI. Comark Syntax automatically detects when Nuxt UI is installed and uses its components for rendering. Simply add both `@comark/vue` and `@nuxt/ui` modules to your Nuxt config, and the `Markdown` component will use Nuxt UI components automatically.
+This example renders Markdown blog posts in Nuxt with `@comark/vue` and Nuxt UI. When both `@comark/vue` and `@nuxt/ui` are listed in `modules` in `nuxt.config.ts`, `<Markdown>` and `<MarkdownDocument>` render standard Markdown elements with Nuxt UI prose components.
 
-## What does the `@comark/vue` Nuxt module do
+## How it works
 
-- Auto-imports the `<Markdown>` and `<MarkdownDocument>` components.
-- Auto-imports the `defineMarkdownComponent()` and `defineMarkdownDocumentComponent()` helpers.
-- Detects Nuxt UI and tells Nuxt UI to register its Prose components.
+- **Auto-imported components**: `@comark/vue/nuxt` registers `<Markdown>` and `<MarkdownDocument>` in your Nuxt app.
+- **Auto-imported helpers**: `defineMarkdownComponent()`, `defineMarkdownDocumentComponent()`, `parseMarkdown()`, and `createMarkdownParser()` are available in app code and server routes.
+- **Nuxt UI integration**: the module detects `@nuxt/ui` and enables its `Prose*` component set.

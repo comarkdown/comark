@@ -1,525 +1,173 @@
-# Agent Instructions
+# Agent instructions
 
-This document provides guidance for AI agents working on the comark monorepo.
+Guidance for AI agents working in the Comark monorepo.
 
-## Project Overview
+## Project overview
 
-This is a **monorepo** containing the Comark Markdown parser, document model, plugins, and renderers. The main package is `comark`.
+Comark (`comark`) parses CommonMark and GitHub Flavored Markdown (GFM) into a compact, serializable `MarkdownDocument` and renders it to HTML, ANSI, Vue, React, Svelte, Angular, or back to Markdown.
 
-**comark** is a JavaScript library for parsing CommonMark and GFM into a compact, serializable document that can be rendered to HTML, ANSI, Vue, React, Svelte, or Angular. It provides:
+- Synchronous parser factory and async parsing built on `markdown-exit` (a TypeScript rewrite of `markdown-it`)
+- Incremental streaming and `autoCloseMarkdown()` for incomplete LLM output
+- Block and inline component syntax (`::alert`, `:badge`), inline attributes (`{.class #id}`), and plugins
+- Framework-free renderers (`@comark/html`, `@comark/ansi`) and UI renderers (`@comark/vue`, `@comark/react`, `@comark/svelte`, `@comark/angular`)
 
-- Fast synchronous and async parsing via markdown-exit, a TypeScript rewrite of markdown-it
-- CommonMark and GitHub Flavored Markdown support
-- Streaming support for real-time/incremental parsing
-- HTML, ANSI, Vue, React, Svelte and Angular renderers
-- Component and attribute syntax plus an extensible plugin system
-- Syntax highlighting via Shiki
-- Auto-close utilities for incomplete markdown (useful for AI streaming)
-
-## Monorepo Structure
+## Monorepo structure
 
 ```
-/                         # Root workspace
-├── packages/             # All publishable packages
-│   ├── comark/           # Main Comark parser + core plugins
-│   ├── comark-html/      # HTML renderer (@comark/html)
+/
+├── packages/
+│   ├── comark/           # Core parser, document model, Markdown stringifier, plugins
+│   ├── comark-html/      # HTML string renderer (@comark/html)
 │   ├── comark-ansi/      # ANSI terminal renderer (@comark/ansi)
-│   ├── comark-vue/       # Vue renderer + plugins (@comark/vue)
-│   ├── comark-react/     # React renderer + plugins (@comark/react)
-│   ├── comark-svelte/    # Svelte renderer + plugins (@comark/svelte)
-│   ├── comark-angular/   # Angular renderer + plugins (@comark/angular)
-│   └── comark-nuxt/      # Deprecated @comark/nuxt: installs @comark/vue/nuxt and logs a warning
-├── examples/             # Example applications
-│   ├── 1.frameworks/     # Framework examples (Nuxt, Next.js, Astro, SvelteKit, VitePress)
-│   ├── 2.vite/           # Vite examples (Vue, React, Svelte, Angular, HTML, ANSI)
-│   ├── 3.cli/            # CLI examples (ANSI output, prompts, perf tracing)
-│   ├── 3.plugins/        # Plugin examples (math, mermaid, highlight, rangi, footnotes, ...)
-│   └── 4.ai/             # AI streaming examples (Nuxt + AI SDK)
-├── docs/                 # Documentation site (comark-docs layer; llms topic files in docs/server/routes/llms-*.txt.get.ts)
-├── benchmarks/           # CodSpeed Vitest benches (*.bench.ts) + mitata cross-library comparisons (*.ts)
-├── scripts/              # Build/sync scripts
-├── test/                 # Root-level tests (bundle-size snapshot; sanitizer/ runs vercel-labs/markdown-sanitizers fixtures against `security`)
-├── pnpm-workspace.yaml   # Workspace configuration + dependency catalog
+│   ├── comark-vue/       # Vue 3 renderer, Vite plugin, Nuxt module (@comark/vue)
+│   ├── comark-react/     # React renderer (@comark/react)
+│   ├── comark-svelte/    # Svelte 5 renderer (@comark/svelte)
+│   ├── comark-angular/   # Angular 21+ renderer (@comark/angular)
+│   └── comark-nuxt/      # Deprecated @comark/nuxt wrapper around @comark/vue/nuxt
+├── examples/
+│   ├── 1.frameworks/     # Nuxt, Next.js, Astro, SvelteKit, VitePress
+│   ├── 2.vite/           # Vue, Vue streaming, React, Svelte, Angular, HTML, ANSI
+│   ├── 3.cli/            # ANSI output, prompts, OpenTelemetry tracing
+│   ├── 3.plugins/        # math, mermaid, highlight, rangi, punctuation, twoslash, binding, json-render
+│   └── 4.ai/             # Nuxt + AI SDK streaming chat
+├── docs/                 # Documentation site (comark-docs layer; skills in docs/skills; llms routes in docs/server/routes)
+├── benchmarks/           # CodSpeed Vitest benches (*.bench.ts) and mitata comparisons (*.ts)
+├── scripts/              # stub.mjs and sync-plugins.mjs
+├── test/                 # Bundle size snapshot (bundle.test.ts) and XSS bypass suite (test/sanitizer)
+├── pnpm-workspace.yaml   # Workspace packages and dependency catalog
 ├── tsconfig.json         # Root TypeScript config (`pnpm typecheck`)
 ├── vitest.config.ts      # Root Vitest config, scoped to `test/`
-├── .oxlintrc.json        # oxlint configuration
-├── .oxfmtrc.json         # oxfmt configuration
-└── package.json          # Root package (private, scripts only)
+├── .oxlintrc.json        # oxlint rules
+├── .oxfmtrc.json         # oxfmt formatting rules
+└── package.json          # Root scripts
 ```
 
-## Package: comark
+## Package: `comark`
 
 Located at `packages/comark/`:
 
 ```
 packages/comark/
 ├── src/
-│   ├── index.ts              # Public parser: defaults + auto-close, then delegates to core.ts (comark)
+│   ├── index.ts              # Public parser: default plugins + auto-close, delegates to core.ts (comark)
 │   ├── core.ts               # Parser pipeline with no default plugins (comark/core)
 │   ├── auto-close.ts         # autoCloseMarkdown() (comark/auto-close)
 │   ├── context.ts            # Live renderer context: ComarkContext, ComarkDocument, ComarkPatch (comark/context)
 │   ├── render/
-│   │   ├── index.ts          # String rendering: renderMarkdown() (renderHtmlFromDocument() moved to @comark/html)
-│   │   └── html.ts           # HTML-only renderer (comark/render/html)
-│   ├── types.ts              # Document model (MarkdownDocument, Node, ElementNode, TextNode, CommentNode) + ParserOptions
-│   ├── plugins/              # Built-in and optional plugins
-│   │   ├── alert.ts          # Alert/callout blocks
-│   │   ├── frontmatter.ts    # YAML frontmatter extraction (default via registerDefaultPlugins)
-│   │   ├── html.ts           # HTML block/inline parsing (default via registerDefaultPlugins)
-│   │   ├── components.ts     # Block/inline components + spans (`::name`, `:name`, `[text]`)
-│   │   ├── attributes.ts     # Inline attributes (`{props}` after tokens)
-│   │   ├── binding.ts        # Inline interpolation + shared conditional rendering rules
-│   │   ├── breaks.ts         # Hard line breaks (`<br>`) from newlines
-│   │   ├── emoji.ts          # Emoji shortcodes
-│   │   ├── external-links.ts # `rel` and `target` on external links
+│   │   ├── index.ts          # AST to Markdown string: renderMarkdown() (comark/render)
+│   │   └── html.ts           # HTML-only string engine used by @comark/html (comark/render/html)
+│   ├── types.ts              # MarkdownDocument, Node, ElementNode, TextNode, CommentNode, ParserOptions
+│   ├── plugins/              # Core plugins (comark/plugins/*)
+│   │   ├── alert.ts          # GFM alerts (default via registerDefaultPlugins)
+│   │   ├── attributes.ts     # Inline `{props}` attributes (default via registerDefaultPlugins)
+│   │   ├── binding.ts        # `{{ path }}` interpolation and conditional `If` helpers
+│   │   ├── breaks.ts         # Soft line breaks as `<br>`
+│   │   ├── components.ts     # Block/inline components and `[text]` spans (default via registerDefaultPlugins)
+│   │   ├── emoji.ts          # `:shortcode:` emoji replacement
+│   │   ├── external-links.ts # `rel` and `target` attributes on external links
 │   │   ├── footnotes.ts      # GFM footnotes
-│   │   ├── heading-links.ts  # Links headings to their own `id`
-│   │   ├── headings.ts       # Deprecated alias → title-description (remove next major)
-│   │   ├── json-render.ts    # `json-render` spec fences expanded into nodes
-│   │   ├── linkify.ts        # Bare URL autolinks via linkify-it 6 (default via registerDefaultPlugins; linkify-it options, fuzzyLink opt-in)
-│   │   ├── punctuation.ts    # Smart quotes and dashes
-│   │   ├── shiki.ts          # Shiki with bundled default theme + language loaders (peer: shiki)
-│   │   ├── shiki/core.ts     # Shiki without default theme/language imports
-│   │   ├── shiki/language-comark.ts # Comark TextMate grammar and its Shiki dependencies
-│   │   ├── highlight.ts      # Deprecated alias → shiki (remove next major)
-│   │   ├── rangi.ts          # Lightweight highlighting via rangi (peer: rangi)
+│   │   ├── frontmatter.ts    # YAML frontmatter extraction (default via registerDefaultPlugins)
+│   │   ├── heading-links.ts  # Wraps or appends anchor links on headings
+│   │   ├── headings.ts       # Deprecated alias for title-description (remove next major)
+│   │   ├── highlight.ts      # Deprecated alias for shiki (remove next major)
+│   │   ├── html.ts           # Raw HTML block/inline parsing (default via registerDefaultPlugins)
+│   │   ├── json-render.ts    # Expands `json-render` code fences into component nodes
+│   │   ├── linkify.ts        # Autolinks via linkify-it 6 (default via registerDefaultPlugins; fuzzyLink opt-in)
+│   │   ├── math.ts           # LaTeX math via KaTeX (optional peer: katex)
+│   │   ├── mermaid.ts        # Mermaid diagrams (optional peer: beautiful-mermaid)
+│   │   ├── punctuation.ts    # Smart quotes, dashes, and ellipses
+│   │   ├── rangi.ts          # Lightweight syntax highlighting (optional peer: rangi)
 │   │   ├── rangi/language-comark.ts # Standalone Comark grammar for rangi
-│   │   ├── math.ts           # LaTeX math via KaTeX (peer: katex)
-│   │   ├── mermaid.ts        # Mermaid diagrams (peer: beautiful-mermaid)
-│   │   ├── security.ts       # XSS/security sanitization
-│   │   ├── summary.ts        # Summary extraction
-│   │   ├── task-list.ts      # GFM task lists
-│   │   ├── title-description.ts # Title/description extraction into `meta`
-│   │   └── toc.ts            # Table of contents
-│   ├── utils/                # Shared utilities (comark/utils entry point)
-│   │   ├── index.ts          # textContent(), visit(), visitAsync(), escapeHtml(), isHtmlVoidElement(), indent(), string/object utils
-│   │   ├── helpers.ts        # defineComarkPlugin(), dedupePlugins()
-│   │   ├── trace.ts          # ComarkTracer helpers: noopTracer, withSpan() (comark/utils/trace)
-│   │   └── caret.ts          # Caret utilities for streaming
+│   │   ├── security.ts       # URL, tag, and attribute sanitization
+│   │   ├── shiki.ts          # Shiki highlighting with default themes and lazy language loaders (optional peer: shiki)
+│   │   ├── shiki/core.ts     # Shiki without default theme or language imports
+│   │   ├── shiki/language-comark.ts # Comark TextMate grammar and Shiki language dependencies
+│   │   ├── summary.ts        # Extracts summary before `<!-- more -->` into `meta.summary`
+│   │   ├── task-list.ts      # GFM task lists (default via registerDefaultPlugins)
+│   │   ├── title-description.ts # Extracts h1 and first paragraph into `meta`
+│   │   └── toc.ts            # Generates table of contents in `meta.toc`
+│   ├── utils/                # Public utilities (comark/utils and comark/utils/trace)
+│   │   ├── index.ts          # textContent, visit, visitAsync, escapeHtml, isHtmlVoidElement, indent, applyNodeTransforms
+│   │   ├── helpers.ts        # defineComarkPlugin, dedupePlugins
+│   │   ├── trace.ts          # noopTracer, withSpan
+│   │   └── caret.ts          # Streaming caret helpers
 │   └── internal/             # Internal implementation (not exported)
-│       ├── shiki.ts          # Shared Shiki runtime used by both entry points
-│       ├── frontmatter.ts    # parseFrontmatter() / renderFrontmatter()
-│       ├── heading-id.ts     # Auto heading id generation (shared by parser + stringifier)
-│       ├── list-item.ts      # List item content column (component fence scanner + auto-close)
-│       ├── yaml.ts           # YAML helpers
-│       ├── sanitize.ts       # Component props validation and frontmatter sanitization
-│       ├── parse/            # Parsing pipeline
-│       │   ├── token-processor.ts # markdown-exit tokens → document nodes
-│       │   ├── auto-close/   # Self-healing for incomplete markdown
-│       │   ├── html/         # HTML block/inline rules
-│       │   ├── syntax/       # Component syntax scanners (props, brackets, block params)
-│       │   ├── incremental.ts # Node reuse between streaming parses
-│       │   ├── indent.ts     # Dedent of outdented component children
-│       │   ├── unwrap.ts     # `unwrap` option
-│       │   └── auto-unwrap.ts # `autoUnwrap` option
-│       └── stringify/        # AST → markdown string rendering (handlers/ per tag; transform-node.ts runs `transformNode`)
-├── SPEC/                 # Behavioral spec fixtures (CommonMark, GFM, HTML, COMARK, auto-close.md)
-├── test/                 # Vitest test files
-├── package.json
-├── tsconfig.json
-└── vitest.config.ts
+│       ├── bracket-math.ts   # `\( ... \)` and `\[ ... \]` delimiter scanners
+│       ├── entities.ts       # HTML attribute entity decoding via character-entities
+│       ├── frontmatter.ts    # parseFrontmatter and renderFrontmatter
+│       ├── heading-id.ts     # Slug generation shared by parser and stringifier
+│       ├── inline-code-lang.ts # Inline code `{lang="..."}` fragment highlighting
+│       ├── list-item.ts      # List item content column, shared by the component fence scan and auto-close
+│       ├── sanitize.ts       # Prop, URL, and frontmatter validation
+│       ├── shiki.ts          # Shared Shiki runtime
+│       ├── yaml.ts           # YAML parsing and serialization helpers
+│       ├── parse/
+│       │   ├── tree.ts       # Converts markdown-exit tokens into Comark AST nodes
+│       │   ├── tree-utils.ts # Fence metadata, attribute merging, and token helpers
+│       │   ├── indent.ts     # Dedents outdented block component children
+│       │   ├── unwrap.ts     # Top-level `unwrap` implementation
+│       │   ├── utils.ts      # `autoUnwrap` and shared parse helpers
+│       │   └── syntax/       # Scanners for `{props}`, `[brackets]`, and block params
+│       └── stringify/        # AST to Markdown/HTML string engine (`state.ts`, `handlers/`, `transform-node.ts`)
+├── SPEC/                     # Behavioral spec fixtures (CommonMark, GFM, HTML, COMARK, auto-close.md)
+└── test/                     # Vitest unit and spec tests
 ```
 
-### Exports
+## Renderer packages
 
-```json
-{
-  ".": "./dist/index.js",
-  "./plugins/*": "./dist/plugins/*.js",
-  "./utils": "./dist/utils/index.js",
-  "./utils/trace": "./dist/utils/trace.js",
-  "./parse": "./dist/index.js",
-  "./core": "./dist/core.js",
-  "./auto-close": "./dist/auto-close.js",
-  "./context": "./dist/context.js",
-  "./render": "./dist/render/index.js",
-  "./render/html": "./dist/render/html.js"
-}
-```
+Every renderer package re-exports all core plugins under `@comark/<target>/plugins/*` (generated by `scripts/sync-plugins.mjs` when no framework component wrapper exists). Prefer the renderer's plugin subpath when using a renderer; use `comark/plugins/*` only when calling `parseMarkdown()` directly.
 
-### Peer dependencies
+### `@comark/html` (`packages/comark-html/`)
 
-| Peer | Required by |
-|------|-------------|
-| `shiki` | `comark/plugins/shiki` |
-| `rangi` | `comark/plugins/rangi` |
-| `katex` | `comark/plugins/math` |
-| `beautiful-mermaid` | `comark/plugins/mermaid` |
+Framework-free HTML string rendering (`createHtmlRenderer`, `renderHtml`, `renderHtmlFromDocument`).
 
-All are optional — only install what you use.
+- Renders through `comark/render/html`, which registers only the `html` and `comment` handlers so Markdown serializers are never bundled.
+- `@comark/html/render` stays free of `js-yaml`; the root entry and plugins import the parser, which loads YAML for frontmatter.
+- Shares `internal/stringify/state.ts` with `comark/render`. HTML attribute escaping lives in `html-attributes.ts`; Markdown/YAML attribute serialization stays in `attributes.ts`.
 
-## Package: @comark/html
+### `@comark/ansi` (`packages/comark-ansi/`)
 
-Located at `packages/comark-html/`. Framework-free HTML string rendering.
+Terminal string rendering (`createAnsiRenderer`, `createAnsiPrinter`, `printAnsi`, `renderAnsi`, `renderAnsiFromDocument`). Merges `ParserOptions` and `AnsiRendererOptions` (`width`, `colors`, `writer`) at the top level.
 
-### Exports
+### `@comark/vue` (`packages/comark-vue/`)
 
-```json
-{
-  ".": "./dist/index.js",
-  "./plugins/*": "./dist/plugins/*.js",
-  "./utils": "./dist/utils/index.js",
-  "./parse": "./dist/parse.js",
-  "./render": "./dist/render.js"
-}
-```
+Vue 3 renderer (`Markdown`, `MarkdownDocument`, `defineMarkdownComponent`, `defineMarkdownDocumentComponent`), Vite plugin (`@comark/vue/vite`), and Nuxt module (`@comark/vue/nuxt`).
 
-### Usage
+- `<Markdown>` is an async setup component and needs a `<Suspense>` boundary in Vue apps.
+- `@comark/vue/vite` transforms `<slot unwrap>` in custom Markdown components and optionally auto-registers `components/prose/*.vue`.
+- `modules: ['@comark/vue']` in Nuxt resolves `@comark/vue/nuxt`. It auto-imports `Markdown` and `MarkdownDocument` from `@comark/vue/components/*` (so `<MarkdownDocument>` alone never bundles the parser), `defineMarkdownComponent`, `defineMarkdownDocumentComponent`, and `parseMarkdown` / `createMarkdownParser` (in app and server routes), enables Nuxt UI prose components when `@nuxt/ui` is installed, and registers `@comark/vue/vite` with `prose: false`. It does not register `~/components/prose`. `@nuxt/kit` and `@nuxt/schema` are optional peer dependencies.
+
+### `@comark/react` (`packages/comark-react/`)
+
+React 19+ renderer (`Markdown`, `MarkdownDocument`, `MarkdownClient`, `MarkdownLive`, `defineMarkdownComponent`, `defineMarkdownDocumentComponent`).
+
+- Vitest runs two projects: `server` (Node/SSR) and `client` (`*.browser.test.tsx` in headless Chromium). Run `pnpm exec playwright install chromium` if Chromium is missing.
+
+### `@comark/svelte` (`packages/comark-svelte/`)
+
+Svelte 5 renderer (`Markdown`, `MarkdownDocument`, `MarkdownNode`) plus experimental async SSR entry `@comark/svelte/async` (`MarkdownAsync`, requires `experimental.async` in `svelte.config.js`).
+
+- Built in two `svelte-package` passes (`tsconfig.json` for types, `tsconfig.build.json` for JS) followed by `sync-plugins.mjs`.
+- Vitest runs two projects: `server` (`*.test.ts` with `svelte/server` `render()`) and `client` (`*.svelte.test.ts` with `vitest-browser-svelte` in Chromium).
+
+### `@comark/angular` (`packages/comark-angular/`)
+
+Angular 21+ renderer (peer range `>=21 <23`) with standalone components (`Markdown` selector `comark-markdown`, `MarkdownDocument`, `defineMarkdownComponent`, `defineMarkdownDocumentComponent`).
+
+- Built with `ng-packagr` (`ng build`), then `scripts/strip-sourcemaps.mjs` removes emitted source maps and `scripts/sync-plugins.mjs` writes plain plugin re-exports and `./plugins/*` export map entries into `dist/package.json`.
+- Plugin entry points use **named exports** because the Angular Package Format strips `export default` (`import { math, Math } from '@comark/angular/plugins/math'`, `import { security } from '@comark/angular/plugins/security'`).
+- Publishes from `dist/` via `publishConfig.directory`; `test/bundle.test.ts` packs from `dist/` too.
+
+## Package exports reference
 
 ```typescript
-import { createHtmlRenderer, renderHtml, renderHtmlFromDocument } from '@comark/html'
-import shiki from '@comark/html/plugins/shiki'
-import math, { Math } from '@comark/html/plugins/math'
-
-// Flat options — ParserOptions & RendererOptions merged at top level
-const renderHtml = createHtmlRenderer({
-  plugins: [shiki({ themes: { light: 'github-light', dark: 'github-dark' } })],
-  components: {
-    Math,
-    alert: async ([, attrs, ...children], { render }) =>
-      `<div class="alert alert-${attrs.type}">${await render(children)}</div>`
-  },
-})
-
-const html = await renderHtml(markdownString)
-```
-
----
-
-`@comark/html` renders through `comark/render/html`, which registers only the HTML and comment handlers, so rendering never loads the Markdown serializers. `@comark/html/render` also stays free of YAML; the root entry and the plugins import the parser, which loads YAML for frontmatter. Components still receive the full `state`, but `state.handlers` holds only `html` and `comment`, and the output format is always `text/html`. Both `comark/render` and `comark/render/html` share the engine in `internal/stringify/state.ts`; each passes its own handler map to `createState`. HTML-safe attribute handling lives in `html-attributes.ts`; Markdown/YAML attribute serialization stays in `attributes.ts`.
-
-## Package: @comark/ansi
-
-Located at `packages/comark-ansi/`. ANSI terminal renderer.
-
-### Exports
-
-```json
-{
-  ".": "./dist/index.js",
-  "./plugins/*": "./dist/plugins/*.js",
-  "./utils": "./dist/utils/index.js",
-  "./parse": "./dist/parse.js",
-  "./render": "./dist/render.js"
-}
-```
-
-### Usage
-
-```typescript
-import { createAnsiRenderer, createAnsiPrinter, printAnsi, renderAnsi, renderAnsiFromDocument } from '@comark/ansi'
-import shiki from '@comark/ansi/plugins/shiki'
-import math, { Math } from '@comark/ansi/plugins/math'
-
-// Flat options — ParserOptions & AnsiRendererOptions merged at top level
-const printAnsi = createAnsiPrinter({
-  plugins: [shiki(), math()],
-  components: { Math },
-  width: 120,                      // terminal width
-  colors: true,                    // emit ANSI escape codes
-  writer: (output) => process.stderr.write(output),
-})
-
-await printAnsi(markdownString)
-```
-
----
-
-## Package: @comark/vue
-
-Located at `packages/comark-vue/`. Vue 3 renderer with framework-specific plugin wrappers.
-
-```
-packages/comark-vue/
-├── src/
-│   ├── index.ts              # Entry point: Markdown, MarkdownDocument, defineMarkdownComponent, defineMarkdownDocumentComponent
-│   ├── parse.ts              # Re-exports comark/parse (@comark/vue/parse)
-│   ├── render.ts             # Re-exports comark/render (@comark/vue/render)
-│   ├── vite.ts               # Vite plugin: `<slot unwrap>` transform + prose component auto-registration (@comark/vue/vite)
-│   ├── nuxt.ts               # Nuxt module: auto-imports components + helpers, adds the Vite plugin (@comark/vue/nuxt)
-│   ├── components/
-│   │   ├── Markdown.ts       # High-level markdown → render component
-│   │   ├── MarkdownDocument.ts # Low-level AST → render component
-│   │   ├── Binding.ts        # Inline binding renderer
-│   │   ├── If.ts             # Conditional content renderer
-│   │   ├── Math.ts           # Math rendering component
-│   │   └── Mermaid.ts        # Mermaid rendering component
-│   ├── plugins/
-│   │   ├── binding.ts        # Re-exports binding plugin + Binding and If components
-│   │   ├── math.ts           # Re-exports comark/plugins/math + Math component
-│   │   └── mermaid.ts        # Re-exports comark/plugins/mermaid + Mermaid component
-│   └── utils/                # Re-exports comark/utils + slot/caret helpers (@comark/vue/utils)
-├── package.json
-├── tsconfig.json
-└── vitest.config.ts
-```
-
-### Exports
-
-```json
-{
-  ".": "./dist/index.js",
-  "./vite": "./dist/vite.js",
-  "./nuxt": "./dist/nuxt.js",
-  "./plugins/*": "./dist/plugins/*.js",
-  "./utils": "./dist/utils/index.js",
-  "./parse": "./dist/parse.js",
-  "./render": "./dist/render.js",
-  "./components/*": "./dist/components/*.js"
-}
-```
-
-### Usage
-
-```typescript
-import { Markdown, MarkdownDocument, defineMarkdownComponent } from '@comark/vue'
-import math, { Math } from '@comark/vue/plugins/math'
-import mermaid, { Mermaid } from '@comark/vue/plugins/mermaid'
-```
-
-`@comark/vue/nuxt` is the Nuxt module: `modules: ['@comark/vue']` loads it because Nuxt tries the `/nuxt` subpath first. It auto-imports `Markdown` and `MarkdownDocument` (each from `@comark/vue/components/*`, so `<MarkdownDocument>` alone never bundles the parser), `defineMarkdownComponent` and `defineMarkdownDocumentComponent`, plus `parseMarkdown` and `createMarkdownParser` in the app and in server routes (from `@comark/vue/parse`), turns on Nuxt UI prose components, and adds the `@comark/vue/vite` plugin with `prose: false`. It does not register `~/components/prose`. `@nuxt/kit` and `@nuxt/schema` are optional peer dependencies.
-
-## Package: @comark/react
-
-Located at `packages/comark-react/`. React renderer with framework-specific plugin wrappers.
-
-```
-packages/comark-react/
-├── src/
-│   ├── index.ts              # Entry point: Markdown, MarkdownDocument, MarkdownLive, MarkdownClient, defineMarkdownComponent
-│   ├── parse.ts              # Re-exports comark/parse (@comark/react/parse)
-│   ├── render.ts             # Re-exports comark/render (@comark/react/render)
-│   ├── components/
-│   │   ├── Markdown.tsx      # High-level markdown → render component
-│   │   ├── MarkdownDocument.tsx # Low-level AST → render component
-│   │   ├── MarkdownClient.tsx # Client-only markdown with a serialized incremental parser
-│   │   ├── MarkdownLive.tsx  # Streaming/live markdown component
-│   │   ├── Binding.tsx       # Inline binding renderer
-│   │   ├── If.tsx            # Conditional content renderer
-│   │   ├── Math.tsx          # Math rendering component
-│   │   └── Mermaid.tsx       # Mermaid rendering component
-│   ├── plugins/
-│   │   ├── binding.ts        # Re-exports binding plugin + Binding and If components
-│   │   ├── math.ts           # Re-exports comark/plugins/math + Math component
-│   │   └── mermaid.ts        # Re-exports comark/plugins/mermaid + Mermaid component
-│   └── utils/                # Re-exports comark/utils + caret helpers (@comark/react/utils)
-├── package.json
-├── tsconfig.json
-└── vitest.config.ts
-```
-
-### Exports
-
-```json
-{
-  ".": "./dist/index.js",
-  "./plugins/*": "./dist/plugins/*.js",
-  "./utils": "./dist/utils/index.js",
-  "./parse": "./dist/parse.js",
-  "./render": "./dist/render.js",
-  "./components/*": "./dist/components/*.js"
-}
-```
-
-### Usage
-
-```typescript
-import { Markdown, MarkdownDocument, defineMarkdownComponent } from '@comark/react'
-import math, { Math } from '@comark/react/plugins/math'
-import mermaid, { Mermaid } from '@comark/react/plugins/mermaid'
-```
-
-React tests have two projects: `server` runs the Node/SSR tests, and `client` runs `*.browser.test.tsx` in headless Chromium. Install the browser with `pnpm exec playwright install chromium` before running the package tests. CI runs both projects.
-
-## Package: @comark/svelte
-
-Svelte 5 renderer for Comark. Located at `packages/comark-svelte/`:
-
-```
-packages/comark-svelte/
-├── src/
-│   ├── index.ts              # Entry point (@comark/svelte): Markdown, MarkdownDocument, MarkdownNode
-│   ├── types.ts              # Shared prop interfaces
-│   ├── parse.ts              # Re-exports comark/parse (@comark/svelte/parse)
-│   ├── render.ts             # Re-exports comark/render (@comark/svelte/render)
-│   ├── components/
-│   │   ├── Markdown.svelte       # High-level markdown → render ($state + $effect)
-│   │   ├── MarkdownDocument.svelte # Low-level AST → render component
-│   │   ├── MarkdownNode.svelte   # Recursive AST node renderer
-│   │   ├── ComarkComponent.svelte # Custom component renderer with named snippets
-│   │   ├── Resolve.svelte        # Stable promise resolver for lazy components
-│   │   ├── Binding.svelte        # Inline binding renderer
-│   │   ├── If.svelte             # Conditional content renderer
-│   │   ├── Math.svelte           # Math rendering component
-│   │   └── Mermaid.svelte        # Mermaid rendering component
-│   ├── async/
-│   │   ├── index.ts              # Async export (@comark/svelte/async)
-│   │   ├── MarkdownAsync.svelte  # High-level markdown → render (experimental await)
-│   │   └── ResolveAsync.svelte   # Async SSR resolver for lazy components
-│   ├── plugins/
-│   │   ├── binding.ts        # Re-exports binding plugin + Binding and If components
-│   │   ├── math.ts           # Re-exports comark/plugins/math + Math component
-│   │   ├── mermaid.ts        # Re-exports comark/plugins/mermaid + Mermaid component
-│   │   ├── shiki.ts          # Plain re-export of comark/plugins/shiki
-│   │   └── highlight.ts      # Plain re-export of the deprecated highlight alias
-│   └── utils/                # Re-exports comark/utils (@comark/svelte/utils)
-├── svelte.config.js          # Svelte config (experimental.async enabled)
-├── vitest.config.ts          # Dual test config (server + browser)
-├── tsconfig.json
-├── tsconfig.build.json       # Used by the second svelte-package pass (JS without types)
-└── package.json
-```
-
-### Exports
-
-```json
-{
-  ".": { "types": "./dist/index.d.ts", "svelte": "./dist/index.js" },
-  "./async": { "types": "./dist/async/index.d.ts", "svelte": "./dist/async/index.js" },
-  "./plugins/*": { "types": "./dist/plugins/*.d.ts", "svelte": "./dist/plugins/*.js" },
-  "./components/*": { "types": "./dist/components/*.d.ts", "svelte": "./dist/components/*" },
-  "./utils": "./dist/utils/index.js",
-  "./parse": "./dist/parse.js",
-  "./render": "./dist/render.js"
-}
-```
-
-### Build
-
-Uses `@sveltejs/package` (`svelte-package`) — the standard Svelte library packaging tool.
-
-### Testing
-
-Uses Vitest with two test projects:
-- **`server`**: Node environment, `*.test.ts` files — SSR tests using `svelte/server` `render()`
-- **`client`**: Browser environment (Playwright/Chromium), `*.svelte.test.ts` files — real DOM tests using `vitest-browser-svelte`
-
-### Usage
-
-```svelte
-<script>
-  import { Markdown } from '@comark/svelte'
-  import math, { Math } from '@comark/svelte/plugins/math'
-  import mermaid, { Mermaid } from '@comark/svelte/plugins/mermaid'
-</script>
-
-<Markdown value={content} components={{ math: Math }} plugins={[math()]} />
-```
-
-**Experimental async** (requires `experimental.async` in Svelte config):
-```svelte
-<script>
-  import { MarkdownAsync } from '@comark/svelte/async'
-</script>
-<svelte:boundary>
-  <MarkdownAsync value={content} components={customComponents} />
-  {#snippet pending()}
-    <p>Loading...</p>
-  {/snippet}
-</svelte:boundary>
-```
-
-## Package: @comark/angular
-
-Located at `packages/comark-angular/`. Angular 21+ renderer (peer range `>=21 <23`, i.e. 21 through 22) with standalone components.
-
-```
-packages/comark-angular/
-├── src/
-│   ├── index.ts                          # Entry point
-│   ├── define.ts                         # defineMarkdownComponent / defineMarkdownDocumentComponent
-│   ├── components/
-│   │   ├── markdown.component.ts         # High-level markdown → render component
-│   │   ├── markdown-document.component.ts # Low-level AST → render component
-│   │   ├── markdown-node.component.ts    # Recursive AST node renderer
-│   │   ├── binding.component.ts          # Binding rendering component
-│   │   ├── if.component.ts               # Structural conditional renderer
-│   │   ├── math.component.ts             # Math rendering component
-│   │   └── mermaid.component.ts          # Mermaid rendering component
-│   └── utils/
-│       ├── caret.ts                      # Caret utilities for streaming
-│       └── index.ts                      # Re-exports comark/utils
-├── plugins/                              # Secondary entry points (named exports)
-│   ├── binding/
-│   │   ├── index.ts                      # Re-exports binding plugin + Binding and If components
-│   │   ├── binding.component.ts
-│   │   └── if.component.ts
-│   ├── math/
-│   │   ├── index.ts                      # Re-exports math plugin + Math component
-│   │   └── math.component.ts
-│   └── mermaid/
-│       ├── index.ts                      # Re-exports mermaid plugin + Mermaid component
-│       └── mermaid.component.ts
-├── scripts/
-│   └── strip-sourcemaps.mjs              # Removes ng-packagr source maps from dist after build
-├── angular.json
-├── ng-package.json
-├── package.json
-├── tsconfig.json
-└── vitest.config.ts
-```
-
-### Build
-
-Built with `ng-packagr` via the Angular CLI (`@angular/build:ng-packagr`
-builder): partial-compilation FESM bundles plus type declarations for the
-main entry and each plugin secondary entry point. Plugin entry points use
-named exports because the Angular Package Format strips `export default`
-from entry points (e.g. `import { math, Math } from '@comark/angular/plugins/math'`).
-`ng-packagr` always emits source maps, so `scripts/strip-sourcemaps.mjs` deletes
-them after `ng build`. The package publishes from `dist/` via
-`publishConfig.directory` (ng-packagr writes the published `package.json` there);
-`.release-it.json` must not also set `publishPath`, or pnpm looks in `dist/dist`.
-`test/bundle.test.ts` packs from that directory too.
-
-### Exports
-
-```json
-{
-  ".": "./dist/index.js",
-  "./plugins/*": "./dist/plugins/*.js",
-  "./utils": "./dist/utils/index.js"
-}
-```
-
-### Usage
-
-```typescript
-import { Markdown, MarkdownDocument, defineMarkdownComponent, defineMarkdownDocumentComponent } from '@comark/angular'
-import { math, Math } from '@comark/angular/plugins/math'
-import { mermaid, Mermaid } from '@comark/angular/plugins/mermaid'
-```
-
-```html
-<!-- In Angular template -->
-<comark-markdown [value]="content" [components]="customComponents" />
-```
-
-## Package Exports Reference
-
-```typescript
-// Core parsing
-import { parseMarkdown, createMarkdownParser, autoCloseMarkdown, defineComarkPlugin } from 'comark'
-import { parseMarkdown } from 'comark/parse' // deprecated alias of the root export
-import { parseMarkdown } from 'comark/core' // no default plugins; autoClose is a function, not a boolean
+// Core parsing and live context
+import { parseMarkdown, createMarkdownParser, autoCloseMarkdown, defineComarkPlugin, createComarkContext } from 'comark'
+import { parseMarkdown } from 'comark/core' // no default plugins; autoClose takes a function, not a boolean
 import { autoCloseMarkdown } from 'comark/auto-close'
-
-// Live renderer context (patch a rendered document without re-parsing)
-import { createComarkContext } from 'comark'
-import { createComarkContext } from 'comark/context'
-import type { ComarkContext, ComarkDocument, ComarkPatch } from 'comark/context'
-
-// HTML rendering (parse + render in one step)
-import { createHtmlRenderer, renderHtml, renderHtmlFromDocument } from '@comark/html'
-
-// ANSI terminal rendering
-import { createAnsiRenderer, createAnsiPrinter, printAnsi, renderAnsi, renderAnsiFromDocument } from '@comark/ansi'
-
-// Markdown string rendering (AST → markdown)
 import { renderMarkdown } from 'comark/render'
-
-// Document model types and utilities
-import type { MarkdownDocument, Node, ElementNode, TextNode, CommentNode } from 'comark'
+import type { ComarkContext, ComarkDocument, ComarkPatch } from 'comark/context'
+import type { MarkdownDocument, Node, ElementNode, TextNode, CommentNode, NodeTransform } from 'comark'
 import {
   textContent,
   visit,
@@ -529,19 +177,17 @@ import {
   HTML_VOID_ELEMENTS,
   isMarkdownDocument,
   sanitizeData,
-  applyNodeTransforms,  // runs a renderer's `transformNode` for one node (used by every renderer)
-  mergeNodeTransforms,  // merges two `transformNode` values into one stable list
+  applyNodeTransforms,
+  mergeNodeTransforms,
 } from 'comark/utils'
-import type { NodeTransform, NodeTransformContext, NodeTransformResult } from 'comark'
 import { noopTracer, withSpan } from 'comark/utils/trace'
 
-// Core plugins — use when calling parseMarkdown() directly (framework-agnostic)
+// Core plugins (also re-exported from @comark/{html,ansi,vue,react,svelte,angular}/plugins/*)
 import shiki from 'comark/plugins/shiki'
-import shikiCore from 'comark/plugins/shiki/core' // ShikiCoreOptions: required themes + languages, no defaults
-import rangi, { comarkLanguage, comarkLanguages } from 'comark/plugins/rangi'
+import shikiCore from 'comark/plugins/shiki/core'
 import shikiComarkLanguages from 'comark/plugins/shiki/language-comark'
+import rangi, { comarkLanguage, comarkLanguages } from 'comark/plugins/rangi'
 import rangiComarkLanguage from 'comark/plugins/rangi/language-comark'
-// import highlight from 'comark/plugins/highlight' // deprecated alias → shiki
 import math from 'comark/plugins/math'
 import mermaid from 'comark/plugins/mermaid'
 import emoji from 'comark/plugins/emoji'
@@ -550,176 +196,42 @@ import alert from 'comark/plugins/alert'
 import breaks from 'comark/plugins/breaks'
 import footnotes from 'comark/plugins/footnotes'
 import titleDescription from 'comark/plugins/title-description'
-// import headings from 'comark/plugins/headings' // deprecated alias → title-description
 import externalLinks from 'comark/plugins/external-links'
 import headingLinks from 'comark/plugins/heading-links'
 import punctuation from 'comark/plugins/punctuation'
 import jsonRender from 'comark/plugins/json-render'
-import linkify from 'comark/plugins/linkify'            // default via registerDefaultPlugins; add explicitly with comark/core
+import linkify from 'comark/plugins/linkify'
 import security from 'comark/plugins/security'
 import summary from 'comark/plugins/summary'
-import taskList from 'comark/plugins/task-list'         // default via registerDefaultPlugins
-import frontmatter from 'comark/plugins/frontmatter' // default via registerDefaultPlugins
-import components from 'comark/plugins/components'   // default via registerDefaultPlugins
-import attributes from 'comark/plugins/attributes'   // default via registerDefaultPlugins
-import html from 'comark/plugins/html'               // default via registerDefaultPlugins
+import taskList from 'comark/plugins/task-list'
+import frontmatter from 'comark/plugins/frontmatter'
+import components, { markdownItComponents } from 'comark/plugins/components'
+import attributes, { markdownItAttributes } from 'comark/plugins/attributes'
+import html from 'comark/plugins/html'
 import binding, { Binding, resolveIfWrapper, selectIfBranch, shouldRenderIf } from 'comark/plugins/binding'
-import type { IfComparisonOperator, IfProps, IfWrapperTag } from 'comark/plugins/binding'
 
-// markdown-it / markdown-exit adapters (e.g. VitePress)
-import { markdownItComponents } from 'comark/plugins/components'
-import { markdownItAttributes } from 'comark/plugins/attributes'
-
-// NOTE: All framework packages re-export every core plugin via their own subpath.
-// Prefer the framework-specific path when using a framework renderer:
-//   @comark/vue/plugins/shiki, @comark/react/plugins/shiki, etc.
-// Nested entries are re-exported too: @comark/vue/plugins/shiki/core, etc.
-// Use comark/plugins/* only when calling parseMarkdown() without a framework renderer.
-
-// HTML rendering — parse + render to HTML string
+// Renderers and framework plugin wrappers (plugin function + UI component)
 import { createHtmlRenderer, renderHtml, renderHtmlFromDocument } from '@comark/html'
-import shiki from '@comark/html/plugins/shiki'
-import math, { Math } from '@comark/html/plugins/math'
-import mermaid, { Mermaid } from '@comark/html/plugins/mermaid'
-import binding, { Binding, If } from '@comark/html/plugins/binding'
-
-// ANSI terminal rendering — parse + render to styled terminal string
 import { createAnsiRenderer, createAnsiPrinter, printAnsi, renderAnsi, renderAnsiFromDocument } from '@comark/ansi'
-import shiki from '@comark/ansi/plugins/shiki'
-import math from '@comark/ansi/plugins/math'
-import binding, { Binding, If } from '@comark/ansi/plugins/binding'
-
-// Vue — renderer + plugin wrappers (plugin fn + Vue component)
-import { Markdown, MarkdownDocument, defineMarkdownComponent } from '@comark/vue'
-import math, { Math } from '@comark/vue/plugins/math'
+import { Markdown, MarkdownDocument, defineMarkdownComponent } from '@comark/vue' // also @comark/react
+import { Markdown, MarkdownDocument } from '@comark/svelte'
+import { MarkdownAsync } from '@comark/svelte/async'
+import { Markdown, MarkdownDocument, defineMarkdownComponent } from '@comark/angular'
+import math, { Math } from '@comark/vue/plugins/math' // same shape in html, react, svelte (`{ math, Math }` in angular)
 import mermaid, { Mermaid } from '@comark/vue/plugins/mermaid'
 import binding, { Binding, If } from '@comark/vue/plugins/binding'
-
-// React — renderer + plugin wrappers (plugin fn + React component)
-import { Markdown, MarkdownDocument, defineMarkdownComponent } from '@comark/react'
-import math, { Math } from '@comark/react/plugins/math'
-import mermaid, { Mermaid } from '@comark/react/plugins/mermaid'
-import binding, { Binding, If } from '@comark/react/plugins/binding'
-
-// Svelte — renderer + plugin wrappers (plugin fn + Svelte component)
-import { Markdown, MarkdownDocument } from '@comark/svelte'
-import { MarkdownAsync } from '@comark/svelte/async' // requires experimental.async
-import math, { Math } from '@comark/svelte/plugins/math'
-import mermaid, { Mermaid } from '@comark/svelte/plugins/mermaid'
-import binding, { Binding, If } from '@comark/svelte/plugins/binding'
-
-// Angular — renderer + plugin wrappers (plugin fn + Angular component)
-import { Markdown, MarkdownDocument, defineMarkdownComponent, defineMarkdownDocumentComponent } from '@comark/angular'
-import { math, Math } from '@comark/angular/plugins/math'
-import { mermaid, Mermaid } from '@comark/angular/plugins/mermaid'
-import { binding, Binding, If } from '@comark/angular/plugins/binding'
 ```
 
-## Coding Principles
+## Coding conventions
 
-### Performance First
+- **Performance**: Prefer single-pass character-code scanning (`O(n)`) over regexes or nested loops in parser, auto-close, and stringifier hot paths. Minimize intermediate object and array allocations.
+- **TypeScript**: Add explicit parameter and return types on exported functions, export option/prop interfaces alongside functions, use `Record<string, any>` for component prop maps, and prefer `interface` for object shapes.
+- **Formatting and linting**: Configured in `.oxlintrc.json` and `.oxfmtrc.json` (no semicolons, single quotes, 120 columns, ES5 trailing commas). There is no ESLint or Prettier config.
+- **Comments**: Only write comments that state invariants, constraints, security/DoS bounds, or spec subtleties the code cannot express on its own. Avoid ASCII section banners, narrated line-by-line comments, and em dashes in prose or comments.
 
-1. **Avoid regex when possible** - Use character-by-character scanning for O(n) algorithms
-2. **Linear time complexity** - Strive for O(n) operations, avoid nested loops that could be O(n²) or worse
-3. **Minimize allocations** - Reuse arrays/objects, avoid creating unnecessary intermediate structures
+## Document model and core invariants
 
-### TypeScript Conventions
-
-1. Use explicit types for function parameters and return values
-2. Export types alongside functions for consumer convenience
-3. Use `Record<string, any>` for component props maps
-4. Prefer interfaces over type aliases for object shapes
-
-### Code Organization
-
-1. Keep internal implementation in `packages/comark/src/internal/`
-2. Document model types in `packages/comark/src/types.ts`, live-context types in `src/context.ts`, tree utilities in `src/utils/`
-3. Core plugins (parser-only) in `packages/comark/src/plugins/`
-4. Framework renderers in separate packages (`comark-vue`, `comark-react`, `comark-svelte`, `comark-angular`)
-5. Framework plugin wrappers (plugin fn + component) in `packages/comark-{framework}/src/plugins/`
-
-## Testing Guidelines
-
-```bash
-pnpm test                                              # Run all package tests
-cd packages/comark && pnpm test                        # Run comark tests
-cd packages/comark && pnpm vitest run test/auto-close.test.ts  # Run specific test
-```
-
-### Test Structure
-
-```typescript
-import { describe, expect, it } from 'vitest'
-import { functionUnderTest } from '../src/utils/module'
-
-describe('functionUnderTest', () => {
-  it('should handle basic case', () => {
-    const input = 'test input'
-    const expected = 'expected output'
-    expect(functionUnderTest(input)).toBe(expected)
-  })
-})
-```
-
-### What to Test
-
-1. **Happy path** - Normal expected usage
-2. **Edge cases** - Empty input, special characters, boundary conditions
-3. **Error tolerance** - Invalid/malformed input should not crash
-4. **Roundtrip** - Parse then render should preserve semantics
-
-## Key APIs
-
-### parseMarkdown(source, options)
-
-```typescript
-const result = await parseMarkdown(markdownContent, {
-  autoUnwrap: true,             // Remove <p> wrappers from single-paragraph containers
-  autoClose: true,              // Auto-close incomplete syntax; also accepts (markdown) => string
-  unwrap: 'p',                  // Strip top-level wrapper tags (MDC unwrap); merges paragraphs
-  registerDefaultPlugins: true, // linkify, frontmatter, html, alert, task-list, components, attributes; false to disable
-  // linkify: false             // deprecated (warns): use registerDefaultPlugins: false + linkify()
-})
-
-result.nodes       // Node[]
-result.frontmatter // Record<string, any>
-result.meta        // Record<string, any>
-```
-
-### autoCloseMarkdown(markdown, options?)
-
-Self-healing markdown for streaming. Heals incomplete CommonMark/GFM per
-`packages/comark/SPEC/auto-close.md`, then completes Comark components / tables / frontmatter.
-
-```typescript
-autoCloseMarkdown('**bold text')     // '**bold text**'
-autoCloseMarkdown('::alert\nContent') // '::alert\nContent\n::'
-
-// Incomplete links get a safe placeholder URL (default protocol mode)
-autoCloseMarkdown('[partial')
-// '[partial](comark:incomplete-link)'
-
-// Math (inline `$` and block `$$`) is off by default on bare autoCloseMarkdown
-autoCloseMarkdown('$x = 5') // '$x = 5'
-autoCloseMarkdown('$x = 5', { math: true }) // '$x = 5$'
-// parseMarkdown / createMarkdownParser pass math: true when math plugin provided
-
-// Plain markdown without Comark component fences
-autoCloseMarkdown('**bold', { syntax: false })
-
-// Streaming: drop a half-typed opener after whitespace so it does not flash
-autoCloseMarkdown('hello *', { dropTrailingOpeners: true }) // 'hello'
-```
-
-Key options: `linkMode: 'protocol' | 'text-only'`, `math` (default false; on in parse),
-`dropTrailingOpeners` (default false; on when parsing with `streaming: true`),
-`incompleteLinkPlaceholder`, `incompleteImagePlaceholder`, `frontmatter`, `syntax`, `attributes`.
-Behavioral SPEC: `packages/comark/SPEC/auto-close.md` (run via `test/auto-close-spec.test.ts`).
-
-## Markdown Document Model
-
-Defined in `packages/comark/src/types.ts`. The live-update types (`ComarkDocument`,
-`ComarkPatch`, `ComarkContext`) live in `packages/comark/src/context.ts`.
+### Document model (`packages/comark/src/types.ts`)
 
 ```typescript
 type TextNode = string
@@ -727,392 +239,102 @@ type ElementNodeAttributes = { [key: string]: unknown; $?: { line?: number; html
 type ElementNode = [string, ElementNodeAttributes, ...Node[]]
 type CommentNode = [null, ElementNodeAttributes, string]
 type Node = ElementNode | TextNode | CommentNode
-type MarkdownDocument = {
+interface MarkdownDocument {
   nodes: Node[]
   frontmatter: Record<string, any>
   meta: Record<string, any>
 }
 ```
 
-Example:
-```typescript
-// Input: "# Hello **World**"
-// Output:
-{
-  nodes: [
-    ['h1', { id: 'hello-world' }, 'Hello ', ['strong', {}, 'World']]
-  ],
-  frontmatter: {},
-  meta: {}
-}
-```
+### `autoCloseMarkdown(markdown, options?)`
 
-## Indentation Inside Components
+Heals incomplete CommonMark and GFM per `packages/comark/SPEC/auto-close.md` (`test/auto-close-spec.test.ts`), plus Comark components, tables, and frontmatter.
 
-A block component's children may be indented (aligned under the `::` marker) or
-not — both are valid input. Two rules keep the two forms interchangeable and
-lossless through `parseMarkdown` → `renderMarkdown`:
+- Bare `autoCloseMarkdown()` leaves `math` off by default so `$50` stays prose; `parseMarkdown` / `createMarkdownParser` enable math closing when the `math` plugin is registered.
+- `dropTrailingOpeners` defaults to `false`, and turns on when `parseMarkdown` runs with `streaming: true`.
+- Incomplete links default to `linkMode: 'protocol'` (`comark:incomplete-link`).
 
-**Parse — dedent the children, don't raise the floor.** A child indented *less*
-than its own component marker is never dropped. Each child line is shifted left
-by `min(markerIndent, its own indentation)` and the region is tokenized against
-a zero floor (`comark_block` in `src/plugins/components.ts` via
-`src/internal/parse/indent.ts`, mirroring the line-mark mutation `blockquote`
-uses to strip its markers). Lines inside a
-fenced code block all take the *opening fence's* shift, so the fence and its
-body move together. The shift is all or nothing: a tab that would have to be
-split into columns puts the region back and keeps the marker floor. A component
-with no outdented child is untouched.
+### Indentation inside components
 
-**Stringify — re-indent a block, never a line.** Nested components indent their
-rendered output by 2 spaces per level (`indent()` in `src/utils/index.ts`). The
-prefix is added to every line of the block, including the body of a fenced code
-block, so the fence and its content always move together.
+Block component children may be indented under `::` or outdented; both round-trip through `parseMarkdown` and `renderMarkdown`:
 
-Uniform shifting is what makes fenced code survive. Indentation inside a fence
-is significant whitespace, and the parser cannot tell padding apart from code:
+- **Parse (`src/internal/parse/indent.ts`)**: Dedent children rather than raising the floor. Each child line shifts left by `min(markerIndent, lineIndent)` and tokenizes against a zero floor. Lines inside a fenced code block all take the opening fence's shift so fence and body move together. If a tab would have to be split across columns, the shift aborts and keeps the marker floor.
+- **Stringify (`indent()` in `src/utils/index.ts`)**: Nested components indent their rendered block by 2 spaces per level across every line, including fenced code bodies, reaching a fixed point on re-parse.
+- **Closing fences (`comark_block` in `src/plugins/components.ts`)**: The scan for the closing `::` skips code fences. A closing fence may sit at most 3 columns right of its container: the innermost component or list item open at the opening fence, or the opening fence itself when that is further left. Deeper fence lines are code content, so a `::` after one does not close the component. A line 4+ columns right of its container is indented code and opens no fence or list item. Tabs count to the next multiple of 4 columns. `autoCloseMarkdown` follows the same rules; both use `listItemContentColumn()` (`src/internal/list-item.ts`).
+- Spec fixtures: `SPEC/COMARK/component-nested-*-outdented.md`, `SPEC/COMARK/component-nested-codeblock-indented.md`, `SPEC/COMARK/codeblock-indented-content.md`, and for closing fences `SPEC/COMARK/component-*codeblock-indented-fence.md`, `SPEC/COMARK/component-codeblock-closing-fence-indent.md`, `SPEC/COMARK/component-codeblock-indented-opener.md`, `SPEC/COMARK/component-indented-code-fence.md`, `SPEC/COMARK/component-codeblock-invalid-nested-name.md`, `SPEC/COMARK/component-list-marker-indent.md`.
 
-```md
-::tabs
-  :::tabs-item{label="Code"}
-```mdc
-  ::accordion
-  ::
-```
-  :::
-::
-```
+### Embedded HTML
 
-The fence sits at indent 0 under a marker at indent 2, so fence and body shift
-by 0 and the body keeps the two spaces it has relative to its fence
-(`"  ::accordion\n  ::"`). Rendering back aligns the fence with its parent and
-carries the body along, which is a fixed point on re-parse:
+Contract: `packages/comark/SPEC/HTML/README.md`.
 
-```md
-::tabs
-  :::tabs-item{label="Code"}
-  ```mdc
-    ::accordion
-    ::
-  ```
-  :::
-::
-```
+- HTML nodes carry `$: { html: 1, block: 0 | 1 }`, where `block` means the tag outlived the paragraph that opened it, not that the HTML tag name is block-level.
+- `html({ markdown: false })` keeps closed-block text literal; a blank line still nests parsed Markdown under the open tag.
+- `<style>`, `<pre>`, `<script>`, `<textarea>`, and block-level `<!-- -->` comments are always verbatim.
+- All-uppercase tag names are lowercased (`<DIV>` -> `div`); any tag name with a lowercase letter preserves its case (`<Hello>`, `<linearGradient>`).
+- `visit` and `visitAsync` stop at `TREE_WALK_MAX_DEPTH` (`50`).
+- Deferred edge cases in `test/html-block.test.ts` are skipped tests; do not delete or weaken them.
 
-SPEC coverage: `SPEC/COMARK/component-nested-*-outdented.md`,
-`SPEC/COMARK/component-nested-codeblock-indented.md`,
-`SPEC/COMARK/codeblock-indented-content.md`.
+### Render-time node transforms
 
-**Closing fences.** `comark_block` scans ahead for its closing `::` and skips
-code fences on the way. As in CommonMark, a closing fence may sit at most 3
-columns right of its container: the innermost component or list item still
-open at the opening fence, or the opening fence itself when that is further
-left. A deeper fence line is code content, so a `::` after it does not close
-the component. A line 4+ columns right of its container is indented code: it
-opens no fence and no list item. Tabs count to the next multiple of 4 columns. `autoCloseMarkdown` follows the
-same rules; both share `listItemContentColumn()` (`src/internal/list-item.ts`).
-SPEC coverage: `SPEC/COMARK/component-*codeblock-indented-fence.md`,
-`SPEC/COMARK/component-codeblock-closing-fence-indent.md`,
-`SPEC/COMARK/component-codeblock-indented-opener.md`,
-`SPEC/COMARK/component-indented-code-fence.md`,
-`SPEC/COMARK/component-codeblock-invalid-nested-name.md`,
-`SPEC/COMARK/component-list-marker-indent.md`.
+Every renderer accepts `transformNode` (a function or array of functions returning `{ tag?, props? }`).
 
-## Embedded HTML
+- Each renderer calls `applyNodeTransforms()` (`src/internal/stringify/transform-node.ts`, exported from `comark/utils`) right after `resolveAttributes()` with `parseJson: true` and before component lookup, so a returned `tag` resolves through `components` and `componentsManifest`.
+- `one()` in `src/internal/stringify/state.ts` copies the node only when a transform changes `tag` or `props`.
+- Returned `tag` and `props` are trusted developer output and are not re-sanitized. Children see returned `props` as `renderData.props`.
 
-Contract: `packages/comark/SPEC/HTML/README.md`. HTML nodes carry
-`$: { html: 1, block: 0 | 1 }`. `block` means the tag outlived the paragraph
-that opened it, not that the tag is a block element. `html({ markdown: false })`
-keeps closed-block text literal; a blank line still nests real markdown under
-the open tag. `<style>`, `<pre>`, `<script>`, `<textarea>`, and block-level `<!-- -->` comments are always verbatim, including newlines and inner tags. All-uppercase tag names are lowercased (`<DIV>` → `div`); any name with a lowercase letter keeps its case (`<Hello>`, `<linearGradient>`). `visit`/`visitAsync` drop nodes nested deeper than `TREE_WALK_MAX_DEPTH` (50). Deferred cases (cross-paragraph inline
-opener, trailing text after that closer, indented child tag inside a multiline
-`<a>`) are skipped tests in `test/html-block.test.ts` — do not weaken them.
+## Parser and plugin rules
 
-## Render-time node transforms
-
-Every renderer accepts `transformNode`, a function or array of functions that may
-return a new `tag` and/or `props` for an element node. Each renderer calls
-`applyNodeTransforms()` (`src/internal/stringify/transform-node.ts`, exported from
-`comark/utils`) right after `resolveAttributes()` and before component lookup, so a
-new tag goes through `components` and `componentsManifest`. Hooks always get props
-resolved with `parseJson: true`, in every renderer, so one hook works everywhere. The string engine does it
-in `one()` (`src/internal/stringify/state.ts`) and renders a copy of the node only when
-the hook changes something; untouched nodes keep rendering from their raw attributes. The
-returned tag and props are used as-is, not sanitized: transforms are trusted developer
-code, and their security is the developer's responsibility. Children
-see the returned props as `renderData.props`. Docs:
-`docs/content/5.reference/3.reference.md` ("Transforming nodes before render").
-
-## Vue/React/Svelte/Angular Components
-
-### Markdown Component (High-level)
-
-**Vue** (requires `<Suspense>` wrapper since Markdown is async):
-
-```vue
-<Suspense>
-  <Markdown :components="customComponents">{{ content }}</Markdown>
-</Suspense>
-```
-
-**React**:
-
-```tsx
-<Markdown components={customComponents}>{content}</Markdown>
-```
-
-**Svelte** (stable, uses `$state` + `$effect`):
-
-```svelte
-<Markdown value={content} components={customComponents} />
-```
-
-**Svelte** (experimental async — requires `experimental.async` in Svelte config):
-
-```svelte
-<svelte:boundary>
-  <MarkdownAsync value={content} components={customComponents} />
-  {#snippet pending()}<p>Loading...</p>{/snippet}
-</svelte:boundary>
-```
-
-**Angular**:
-
-```html
-<comark-markdown [value]="content" [components]="customComponents" />
-```
-
-### defineMarkdownComponent (Vue, React & Angular)
-
-Creates a pre-configured Markdown component with default plugins and components:
-
-```typescript
-// Vue
-import { defineMarkdownComponent } from '@comark/vue'
-import math, { Math } from '@comark/vue/plugins/math'
-import mermaid, { Mermaid } from '@comark/vue/plugins/mermaid'
-
-export const DocsMarkdown = defineMarkdownComponent({
-  name: 'DocsMarkdown',
-  plugins: [math(), mermaid()],
-  components: { Math, Mermaid },
-})
-
-// React
-import { defineMarkdownComponent } from '@comark/react'
-import math, { Math } from '@comark/react/plugins/math'
-
-export const DocsMarkdown = defineMarkdownComponent({
-  name: 'DocsMarkdown',
-  plugins: [math()],
-  components: { Math },
-})
-
-// Angular
-import { defineMarkdownComponent } from '@comark/angular'
-import { math, Math } from '@comark/angular/plugins/math'
-
-export const DocsMarkdown = defineMarkdownComponent({
-  plugins: [math()],
-  components: { Math },
-})
-```
-
-## Common Tasks
-
-See [CONTRIBUTING.md](./CONTRIBUTING.md) for local setup and the example-app workflow.
-
-### Adding a new utility function
-
-1. Internal helpers go in `packages/comark/src/internal/`; public ones in `packages/comark/src/utils/`
-2. Public utilities are exported from `packages/comark/src/utils/index.ts` (`comark/utils`)
-3. Add tests in `packages/comark/test/`
-4. Document with JSDoc
-
-### Modifying the parser
-
-1. Token processing is in `packages/comark/src/internal/parse/token-processor.ts`
-2. Test with `packages/comark/test/index.test.ts` (loads the `SPEC/` fixtures; `SPEC=SPEC/COMARK/foo.md pnpm vitest run test/index.test.ts` runs one)
-3. Check streaming still works with `packages/comark/test/streaming.test.ts`
-4. Import from `markdown-exit/core`, never `markdown-exit`: the root entry pulls in linkify-it, which `parse.ts` loads lazily only for parsers with `linkify` on
-5. Decode attribute values with `decodeHTMLAttribute` from `src/internal/entities.ts`, not `entities`: it reads the `character-entities` table markdown-exit already ships, so bundles hold one table
-
-### Adding component features
-
-1. Vue components in `packages/comark-vue/src/components/`
-2. React components in `packages/comark-react/src/components/`
-3. Svelte components in `packages/comark-svelte/src/components/` (async variants in `src/async/`)
-4. Angular components in `packages/comark-angular/src/components/`
-5. All four should have similar APIs for consistency
-
-### Adding a new core plugin
-
-1. Create `packages/comark/src/plugins/{name}.ts`
-2. Available as `comark/plugins/{name}` via the `"./plugins/*"` wildcard export
-3. Add framework wrappers if it needs a render component:
-   - `packages/comark-vue/src/plugins/{name}.ts` (re-export plugin + Vue component)
-   - `packages/comark-react/src/plugins/{name}.ts` (re-export plugin + React component)
-   - `packages/comark-svelte/src/plugins/{name}.ts` (re-export plugin + Svelte component)
-   - `packages/comark-angular/src/plugins/{name}.ts` (re-export plugin + Angular component)
-4. Run `pnpm sync-plugins` to generate plain `dist/plugins/*` re-exports in every framework package for plugins without a hand-written wrapper (also runs in `pnpm build` and `pnpm stub`)
-
-### Adding a new package
-
-1. Create directory in `packages/`
-2. Add `package.json` with appropriate name and dependencies
-3. Use `workspace:*` protocol for local package dependencies
-4. Package is automatically included via `pnpm-workspace.yaml`
+1. Token-to-AST conversion lives in `packages/comark/src/internal/parse/tree.ts`. Run spec fixtures with `cd packages/comark && pnpm vitest run test/index.test.ts` (or `SPEC=SPEC/COMARK/foo.md pnpm vitest run test/index.test.ts`), and check `test/streaming.test.ts` after parser edits.
+2. Always import from `markdown-exit/core`, never `markdown-exit`. Only `src/plugins/linkify.ts` imports `linkify-it`, keeping `comark/core` free of `linkify-it` and avoiding `markdown-exit`'s global fuzzy-link rule.
+3. Decode HTML entities in attributes with `decodeHTMLAttribute` from `src/internal/entities.ts`, never `entities`, so bundles reuse the single `character-entities` table shipped by `markdown-exit`.
+4. After adding or renaming a plugin in `packages/comark/src/plugins/`, add framework wrappers if it has a UI component, then run `pnpm sync-plugins` (also run by `pnpm build` and `pnpm stub`).
 
 ## Scripts
 
-Root workspace scripts:
-
 ```bash
-pnpm docs         # Run documentation site
-pnpm dev:<name>   # Run an example (vue, react, svelte, angular, html, ansi, nuxt, nextjs, astro, ...)
-pnpm build        # Build all packages, then sync plugin re-exports
-pnpm stub         # Point every package's dist/ at src/ for local dev (runs on postinstall)
-pnpm test         # Run all package tests
-pnpm test:spec    # Run the SPEC fixtures only
-pnpm test:sanitizer # Run vercel-labs/markdown-sanitizers bypass fixtures against `security` (test/sanitizer)
-pnpm bench        # Run the CodSpeed Vitest benches (benchmarks/*.bench.ts; wall-clock locally)
-pnpm lint         # oxlint + oxfmt --check + comark-lint on docs/content
-pnpm lint:fix     # oxlint --fix + oxfmt (write)
-pnpm typecheck    # tsc --noEmit against the root tsconfig
-pnpm verify       # Run lint + test + typecheck
+pnpm stub           # Point every package's dist/ at src/ for local dev (runs on postinstall)
+pnpm build          # Build all packages and sync plugin re-exports (`pnpm stub` restores dev stubs after)
+pnpm prepack        # Full build + sync-plugins before packing or bundle checks
+pnpm test           # Run all package test suites
+pnpm test:spec      # Run SPEC fixtures only
+pnpm test:sanitizer # Run vercel-labs/markdown-sanitizers fixtures against `security`
+pnpm bench          # Run CodSpeed Vitest benches (`benchmarks/*.bench.ts`)
+pnpm lint           # oxlint + oxfmt --check + comark-lint on docs/content
+pnpm lint:fix       # oxlint --fix + oxfmt
+pnpm typecheck      # Root `tsc --noEmit`
+pnpm verify         # lint + test + typecheck
+pnpm docs           # Start the documentation site (`docs/`)
+pnpm dev:<name>     # Start an example app (vue, react, svelte, angular, html, ansi, nuxt, nextjs, astro, ...)
 ```
 
-Linting and formatting use [oxlint](https://oxc.rs/docs/guide/usage/linter) and
-[oxfmt](https://oxc.rs/docs/guide/usage/formatter), configured in `.oxlintrc.json` and
-`.oxfmtrc.json` (no semicolons, single quotes, 120 columns, ES5 trailing commas).
-There is no ESLint or Prettier config.
+## CI, benchmarks, and releases
 
-The docs content is linted with [comark-linter](https://comark-ui.onmax.me/lint/) (`pnpm --filter comark-docs-site lint`):
-unknown components, unclosed blocks, and broken links and anchors. `docs/comark-lint.config.ts` extends the
-comark-docs layer's preset with the site's own `app/components/prose/` components (registered globally in `docs/nuxt.config.ts`) and its Vue pages.
+- **Workflows (`.github/workflows/`)**:
+  - `ci.yml`: lint -> prepack -> test -> sanitizer suite -> pkg.pr.new preview -> bundle size snapshot
+  - `codspeed.yml`: runs `pnpm bench` under CPU simulation
+  - `bundle-snapshot.yml`: posts bundle-size diffs on PRs and updates `test/bundle.test.ts` on maintainer trigger (`/update-bundle-snapshot`, comment checkbox, or manual dispatch) via verified GitHub API commits
+  - `commit-signature.yml`: requires verified commit signatures on PRs
+  - `docs-preview-comment.yml`: posts preview URLs when `docs/content/**` changes
+  - `release.yml`: lockstep releases across `packages/*` via `danielroe/uppt` and staged OIDC `npm stage publish`
+- **Benchmarks (`benchmarks/*.bench.ts`)**: Shared inputs live in `benchmarks/fixtures.ts`. Never rename an existing bench or edit a shared fixture (it resets CodSpeed history); add a new one instead. Warm parsers at module scope. Give each streaming bench a dedicated parser and reset it with `{ streaming: false }` inside the bench body so the incremental cache does not short-circuit.
+- **Bundle size snapshot (`test/bundle.test.ts`)**: Measures unpacked published size via `npm pack --dry-run`. Check after a real build with `pnpm prepack && pnpm vitest run test/bundle.test.ts`, update with `-u` when size changes are expected, then restore dev stubs with `pnpm stub`.
+- **Commits and releases**: Use Conventional Commits (`feat:`, `fix:`, `perf:`, `docs:`, `chore:`, `feat!:`). Merging the `release/vX.Y.Z` PR created by `uppt` tags, creates the GitHub Release, packs packages (`workspace:*` rewritten to exact versions), and stages tarballs on npm. Agent skills are served from `comark.dev` (`docs/skills/`), not packed into npm tarballs.
 
-Utility scripts:
+## Documentation maintenance
 
-```bash
-node scripts/stub.mjs          # Generate stub dist files for one package (run from its directory)
-node scripts/sync-plugins.mjs  # Sync plugin re-exports to framework packages (run from repo root)
-```
+Update documentation alongside code changes:
 
-## Continuous Integration
+- `AGENTS.md`: package structure, public exports, or repo workflow changes
+- `docs/content/`:
+  - `1.getting-started/`: installation, introduction, document model
+  - `2.syntax/`: Markdown, component, attribute, and frontmatter syntax
+  - `3.rendering/`: HTML, Vue, React, Svelte, Angular, and ANSI renderers
+  - `4.plugins/`: default, built-in, and custom plugins
+  - `5.reference/`: parse, render, auto-close, and API cheat sheet
+  - `7.kb/`: rationale, MDC/MDX migration guides, Twoslash, custom code blocks
+  - `8.examples/` and `9.ecosystem.md`: runnable examples and community packages
+  - `10.use-cases/`: streaming chat, intelligent/generative UI, CMS, CLI, email/RSS
+  - `11.compare/`: sourced library comparisons (every external claim must be backed by docs or source)
+- `docs/skills/`: agent skills served from `comark.dev`
 
-Workflows live in `.github/workflows/`:
-
-| Workflow | Purpose |
-|----------|---------|
-| `ci.yml` | lint → prepack → test → sanitizer suite → publish preview (pkg.pr.new) → bundle size check |
-| `release.yml` | uppt release PR → tag + GitHub release → pack → staged npm publish (see Releasing) |
-| `codspeed.yml` | Runs `pnpm bench` under CodSpeed CPU simulation; reports perf changes on PRs |
-| `commit-signature.yml` | Fails PRs containing unsigned commits |
-| `bundle-snapshot.yml` | Reports bundle-size snapshot drift and updates it on demand |
-| `docs-preview-comment.yml` | Posts a docs preview link on PRs that touch `docs/content/**` |
-
-### Benchmarks (CodSpeed)
-
-`benchmarks/*.bench.ts` run through `benchmarks/vitest.config.ts` with
-`@codspeed/vitest-plugin` (a no-op outside CodSpeed). Shared inputs live in
-`benchmarks/fixtures.ts`. Renaming a bench or editing a fixture resets its
-history, so add new ones instead. Warm parsers at module load. Streaming
-benches need a dedicated parser and a `{ streaming: false }` reset inside the
-bench body; otherwise the incremental cache returns the previous result.
-
-### Bundle size snapshot
-
-`test/bundle.test.ts` asserts an inline snapshot of the published size of every
-package (measured with `npm pack --dry-run`). It only makes sense after a real
-build, so CI runs it after `pnpm prepack`:
-
-```bash
-pnpm prepack && pnpm vitest run bundle      # check
-pnpm prepack && pnpm vitest run bundle -u   # accept the new sizes
-```
-
-When the check fails on a PR, `ci.yml` uploads a `bundle-report` artifact and
-`bundle-snapshot.yml` posts a comment with the diff plus a checkbox button.
-A maintainer (write access required) can:
-
-- tick **🔄 Update the bundle snapshot** in that comment,
-- comment `/update-bundle-snapshot`, or
-- run the workflow manually with a PR number.
-
-The workflow then rebuilds, runs `vitest run bundle --update`, re-runs the check
-to verify the refreshed snapshot, and commits `test/bundle.test.ts` back to the
-PR branch via the GitHub API (so the commit is verified, satisfying
-`commit-signature.yml`). PR code always executes in the tokenless `build` job
-(`permissions: {}`); only its artifact reaches the write-scoped `update` job,
-which verifies the artifact against the run's head SHA and uses comment fences
-longer than any backtick run in PR-controlled text. For fork PRs it cannot
-push, so it posts the patch in the comment instead. The comment is deleted
-automatically once the check passes.
-
-GitHub suppresses the events a `GITHUB_TOKEN` commit would raise, so `ci` does
-not reliably re-run after the snapshot lands — hence the in-job verification.
-Re-run `ci` manually to refresh a stale red check.
-
-Requires **Settings → Actions → General → Workflow permissions** to be set to
-*Read and write*, otherwise the update job cannot commit.
-
-## Releasing
-
-Uses [danielroe/uppt](https://github.com/danielroe/uppt) in `.github/workflows/release.yml`.
-Every package in `packages/*` shares one version and one `vX.Y.Z` tag (lockstep):
-
-1. Each push to `main` opens or updates a draft `release/vX.Y.Z` PR that bumps every
-   package and lists the conventional commits since the last `v*` tag. Edit the PR body
-   to add notes, or change `version` in any package's `package.json` on that branch to
-   pick another version.
-2. Merging the PR tags `vX.Y.Z`, creates the GitHub release from the PR body, and
-   dispatches the publish run on the tag.
-3. `pack` installs with `--ignore-scripts`, runs `pnpm build`, then `pnpm pack`s each
-   package (its `prepack` runs). Agent skills are served from comark.dev (`docs/skills`), not
-   shipped in the npm package.
-4. `publish` stages every tarball with `npm stage publish` over OIDC in the `npm`
-   environment. Approve the staged versions on npmjs.com to make them live.
-
-Prereleases: `gh workflow run release.yml -f prerelease=beta`. Release notes live in
-GitHub Releases; there are no `CHANGELOG.md` files. Packages depend on each other with
-`workspace:*`, which `pnpm pack` turns into the exact released version.
-
-### Commit message format
-
-Follow [Conventional Commits](https://www.conventionalcommits.org/):
-
-```
-feat: add streaming support          # Minor version bump
-fix: correct parsing edge case       # Patch version bump
-feat!: breaking API change           # Major version bump
-perf: optimize auto-close algorithm  # Patch version bump
-docs: update README                  # No version bump
-chore: update dependencies           # No version bump
-```
-
-## Documentation Maintenance
-
-**Important:** After completing any feature, bug fix, or significant change, update the relevant documentation:
-
-### What to Update
-
-1. **AGENTS.md** (this file)
-   - Update architecture section if new files/modules added
-   - Update Package Exports Reference if new public APIs
-   - Update Common Tasks if workflows change
-
-2. **Documentation** (`docs/content/`)
-   - `1.getting-started/` — Installation or quick start changes
-   - `2.syntax/` — Component/attribute/binding syntax changes
-   - `3.rendering/` — Vue/React/Svelte/Angular/HTML/ANSI renderer changes
-   - `4.plugins/` — Plugin changes
-   - `5.reference/` — Public API and options changes
-   - `10.use-cases/` — Task guides (AI chat streaming, generative UI, CMS, CLI, email/RSS)
-   - `11.compare/` — Comparisons with other libraries (facts must be sourced; no unverified numbers)
-
-### Documentation Checklist
-
-After each change, ask:
-- [ ] Does AGENTS.md reflect the current architecture?
-- [ ] Are all public APIs documented in Package Exports Reference?
-- [ ] Are the docs pages accurate and up-to-date?
+Run `pnpm --filter comark-docs-site lint` (`comark-lint`) to verify Comark components, links, and heading anchors across `docs/content/`.

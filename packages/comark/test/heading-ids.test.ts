@@ -166,7 +166,7 @@ describe('headingIds option', () => {
     it('omits the id for every duplicate symbol-only heading', async () => {
       const tree = await parseMarkdown('## 🚀\n\n## 🚀\n\n## 🚀')
 
-      // The third slugifies to "-2", not just "-1" — none of them is an anchor.
+      // None of them is an anchor, including the third (which would otherwise slugify to `-2`).
       const ids = tree.nodes.map((n: any) => n[1].id)
       expect(ids).toEqual([undefined, undefined, undefined])
     })

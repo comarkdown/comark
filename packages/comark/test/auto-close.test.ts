@@ -142,7 +142,7 @@ describe('autoCloseMarkdown - Inline Syntax', () => {
   })
 
   it('closes incomplete emphasis across a list item soft-wrap', () => {
-    // SPEC Leave list markers alone: `- **text\nmore text` → close bold on the item.
+    // SPEC Leave list markers alone: `- **text\nmore text` -> close bold on the item.
     const input = '- **text\nmore text'
     expect(autoCloseMarkdown(input)).toBe('- **text\nmore text**')
   })
@@ -587,7 +587,7 @@ describe('frontmatter', () => {
     const expected = '---\ntitle: Test\n---'
     expect(autoCloseMarkdown(input)).toBe(expected)
   })
-  // Partial frontmatter is only completed when `frontmatter: true` — for a
+  // Partial frontmatter is only completed when `frontmatter: true`: for a
   // complete document a leading `---` with no closing delimiter is a thematic
   // break, so completing it would swallow the body (see the default cases below).
   it('should complete partial frontmatter when frontmatter option is enabled', () => {
@@ -618,7 +618,7 @@ describe('frontmatter', () => {
 
   it('should not complete unclosed frontmatter by default', () => {
     // Default (`frontmatter: false`): a leading `---` with content but no close
-    // is a thematic break followed by body — completing it would swallow the body.
+    // is a thematic break followed by body; completing it would swallow the body.
     const input = '---\ntitle: Test'
     expect(autoCloseMarkdown(input)).toBe(input)
     expect(autoCloseMarkdown('---\n# Heading')).toBe('---\n# Heading')
@@ -745,7 +745,7 @@ describe('inline code spans as literal regions', () => {
   })
 
   it('should close code first when bold wraps an open code span', () => {
-    // SPEC: outer emphasis closers go after the code span (`Text **bold `code` → …`code`**).
+    // SPEC: outer emphasis closers go after the code span (`Text **bold `code` -> ...`code`**).
     const input = '**bold `code'
     const expected = '**bold `code`**'
     expect(autoCloseMarkdown(input)).toBe(expected)

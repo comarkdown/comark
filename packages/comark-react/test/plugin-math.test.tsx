@@ -5,7 +5,7 @@ import { MarkdownDocument } from '../src/components/MarkdownDocument'
 import math, { Math } from '../src/plugins/math'
 
 // `Math` derives its wrapper markup from the incoming class string, so the
-// `class` -> `className` renderer remap is observable under SSR alone —
+// `class` -> `className` renderer remap is observable under SSR alone;
 // `useEffect` (katex) never runs here.
 
 describe('@comark/react plugins/math — Math component', () => {

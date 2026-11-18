@@ -109,7 +109,7 @@ describe('security plugin — XSS payloads', () => {
   it('strips a javascript: href delivered as an array via YAML block-props (#367)', async () => {
     // Non-string YAML block-prop values round-trip through a `:`-prefixed
     // JSON-string attr that gets JSON.parsed back into a real array before
-    // this plugin runs — validateProp must not skip URL validation just
+    // this plugin runs; validateProp must not skip URL validation just
     // because the value is no longer a plain string.
     const tree = await parseWithSecurity(`\
 ::a
@@ -327,10 +327,10 @@ home: javascript:alert(1)
 [Home](placeholder){:href="frontmatter.home"}`
 
     const tree = await parseWithSecurity(md)
-    // Parse-time validation only sees the literal dot-path…
+    // Parse-time validation only sees the literal dot-path...
     const anchor = collectElements(tree.nodes).find((element) => element[0] === 'a')
     expect(anchor).toBeDefined()
-    // …but the render-time hard floor drops the resolved unsafe URL.
+    // ...but the render-time hard floor drops the resolved unsafe URL.
     const html = await render(tree, { format: 'text/html', blockSeparator: '\n' })
     expect(html).not.toContain('javascript:')
   })
@@ -344,9 +344,9 @@ home: javascript:alert(1)
 ::`
 
     const tree = await parseWithSecurity(md)
-    // `home` is not a URL key, so frontmatter sanitizing keeps it…
+    // `home` is not a URL key, so frontmatter sanitizing keeps it...
     expect(tree.frontmatter.home).toBe('javascript:alert(1)')
-    // …and the render-time floor checks the same URL props as parse time.
+    // ...and the render-time floor checks the same URL props as parse time.
     const html = await render(tree, { format: 'text/html', blockSeparator: '\n' })
     expect(html).not.toContain('javascript:')
   })

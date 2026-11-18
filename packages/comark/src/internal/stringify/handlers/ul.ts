@@ -16,7 +16,7 @@ export async function ul(node: ElementNode, state: State) {
 
   state.applyContext(revert)
 
-  // ul with user attrs round-trips via `::ul{attrs}\n- …\n::` — the native
+  // ul with user attrs round-trips via `::ul{attrs}\n- ...\n::`: the native
   // markdown list syntax has no slot for list-level attrs.
   const attrs = comarkAttributes(userBlockAttrs('ul', node[1] as Record<string, unknown>))
   if (attrs) {

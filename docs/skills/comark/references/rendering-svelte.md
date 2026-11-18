@@ -1,25 +1,10 @@
-# Svelte Rendering Guide
+# Svelte rendering guide
 
-Complete guide for rendering Markdown documents in Svelte 5 applications.
+Guide to rendering Markdown documents in Svelte 5 applications.
 
-## Table of Contents
+## Basic usage
 
-- [Basic Usage](#basic-usage)
-- [Custom Components](#custom-components)
-- [Dynamic Component Resolution](#dynamic-component-resolution)
-- [Slots Support](#slots-support)
-- [Props Mapping](#props-mapping)
-- [Streaming Mode](#streaming-mode)
-- [Prose Components](#prose-components)
-- [Experimental Async](#experimental-async)
-- [Custom Props Handling](#custom-props-handling)
-- [CSS Class](#css-class)
-
----
-
-## Basic Usage
-
-Use the `Markdown` component to render markdown:
+Use the `Markdown` component to render Markdown:
 
 ```svelte
 <script lang="ts">
@@ -41,7 +26,7 @@ Important message
 
 ---
 
-## Custom Components
+## Custom components
 
 Map custom Svelte components to Comark elements:
 
@@ -63,14 +48,14 @@ Map custom Svelte components to Comark elements:
 <Markdown value={content} components={customComponents} />
 ```
 
-### Component Resolution Order
+### Component resolution order
 
 Components are resolved by checking these keys in order:
-1. `Prose{PascalTag}`, e.g., `ProseH1` for `<h1>` tags
-2. `PascalTag`, e.g., `Alert` for `::alert` components
-3. `tag`, e.g., `alert` for `::alert` components
+1. `Prose{PascalTag}`, for example `ProseH1` for `<h1>` tags
+2. `PascalTag`, for example `Alert` for `::alert` components
+3. `tag`, for example `alert` for `::alert` components
 
-### Custom Component Example
+### Custom component example
 
 Custom components receive AST node attributes as props and children as a Svelte `children` snippet:
 
@@ -87,7 +72,7 @@ Custom components receive AST node attributes as props and children as a Svelte 
 </h1>
 ```
 
-### Alert Component Example
+### Alert component example
 
 ```svelte
 <!-- CustomAlert.svelte -->
@@ -102,23 +87,23 @@ Custom components receive AST node attributes as props and children as a Svelte 
     children?: Snippet
   } = $props()
 
-  const icons = {
-    info: '\u2139\uFE0F',
-    warning: '\u26A0\uFE0F',
-    error: '\u274C',
-    success: '\u2705',
+  const labels = {
+    info: 'Info',
+    warning: 'Warning',
+    error: 'Error',
+    success: 'Success',
   }
 </script>
 
 <div class="alert alert-{type}" role="alert">
-  <div class="alert-icon">{icons[type]}</div>
+  <div class="alert-label">{labels[type]}</div>
   <div class="alert-content">{@render children?.()}</div>
 </div>
 ```
 
 ---
 
-## Dynamic Component Resolution
+## Dynamic component resolution
 
 Load components dynamically using `componentsManifest`:
 
@@ -144,9 +129,9 @@ Load components dynamically using `componentsManifest`:
 <Markdown value={content} componentsManifest={loadComponent} />
 ```
 
-In SvelteKit projects, keep components rendered from Markdown in a dedicated folder such as `$lib/components/comark/`. This keeps Comark-rendered components separate from normal app UI components and makes `componentsManifest` globs easier to audit.
+In SvelteKit projects, keep components rendered from Markdown in a dedicated folder such as `$lib/components/comark/`. This separates Comark-rendered components from normal app UI components and keeps `componentsManifest` globs auditable.
 
-For SvelteKit SSR with non-eager lazy components, use `MarkdownAsync` and a manifest that returns dynamic imports. An explicit map is the easiest option to audit:
+For SvelteKit SSR with non-eager lazy components, use `MarkdownAsync` and a manifest that returns dynamic imports. An explicit map keeps the allowed components clear:
 
 ```svelte
 <script lang="ts">
@@ -190,11 +175,11 @@ Use eager/static components with `MarkdownDocument` when you need stable SSR wit
 
 ---
 
-## Slots Support
+## Slots support
 
-Comark components with named slots work in Svelte using the `children` snippet pattern:
+Comark components with named slots work in Svelte using snippets:
 
-### Markdown with Slots
+### Markdown with slots
 
 ```markdown
 ::card
@@ -202,16 +187,16 @@ Comark components with named slots work in Svelte using the `children` snippet p
 ## Card Title
 
 #default
-Main content here with **markdown** support
+Main content here with **Markdown** support
 
 #footer
 Footer text
 ::
 ```
 
-### Custom Component with Slots
+### Custom component with slots
 
-In Svelte 5, children are passed as implicit slot content and received as a `Snippet`:
+In Svelte 5, default slot children are passed as the `children` `Snippet`, and named slots (`#header`, `#footer`) are passed as named snippets matching the slot name:
 
 ```svelte
 <!-- Card.svelte -->
@@ -219,14 +204,24 @@ In Svelte 5, children are passed as implicit slot content and received as a `Sni
   import type { Snippet } from 'svelte'
 
   let {
+    header,
     children,
+    footer,
   }: {
+    header?: Snippet
     children?: Snippet
+    footer?: Snippet
   } = $props()
 </script>
 
 <div class="card">
-  {@render children?.()}
+  {#if header}
+    <div class="card-header">{@render header()}</div>
+  {/if}
+  <div class="card-content">{@render children?.()}</div>
+  {#if footer}
+    <div class="card-footer">{@render footer()}</div>
+  {/if}
 </div>
 
 <style>
@@ -239,30 +234,28 @@ In Svelte 5, children are passed as implicit slot content and received as a `Sni
 </style>
 ```
 
-Note: Named slots from Comark (`#header`, `#content`, `#footer`) are rendered as `template` elements in the AST. The Svelte renderer passes all children (including named slot templates) as a single `children` snippet. To handle named slots individually, access the `__node` prop and filter children by template name.
-
 ---
 
-## Props Mapping
+## Props mapping
 
 The Svelte renderer maps AST attributes to component props:
 
-### Attribute Mapping
+### Attribute mapping
 
 ```
-// Markdown attribute → Svelte prop
-{class="foo"}           → class="foo"    (pass-through)
-{className="foo"}       → class="foo"    (mapped)
-{style="color: red"}    → style="color: red"  (pass-through as string)
-{tabindex="0"}          → tabindex="0"   (pass-through)
-{:bool="true"}          → bool={true}    (parsed from string)
-{:count="5"}            → count={5}      (parsed as number)
-{:data='{"key":"val"}'} → data={{key:"val"}} (parsed as object)
+// Markdown attribute -> Svelte prop
+{class="foo"}           -> class="foo"    (pass-through)
+{className="foo"}       -> class="foo"    (mapped)
+{style="color: red"}    -> style="color: red"  (pass-through as string)
+{tabindex="0"}          -> tabindex="0"   (pass-through)
+{:bool="true"}          -> bool={true}    (parsed from string)
+{:count="5"}            -> count={5}      (parsed as number)
+{:data='{"key":"val"}'} -> data={{key:"val"}} (parsed as object)
 ```
 
-Svelte is closer to HTML than React, so most attributes pass through unchanged. The only mapping is `className` → `class`. Colon-prefixed attributes (`:prop="value"`) are parsed as typed values (boolean, number, JSON).
+Svelte is closer to HTML than React, so most attributes pass through unchanged. The only mapping is `className` to `class`. Colon-prefixed attributes (`:prop="value"`) are parsed as typed values (boolean, number, JSON).
 
-### Boolean Props
+### Boolean props
 
 ```
 // Markdown: ::component{:disabled="true"}
@@ -272,7 +265,7 @@ Svelte is closer to HTML than React, so most attributes pass through unchanged. 
 // Svelte prop: visible={false}
 ```
 
-### Number Props
+### Number props
 
 ```
 // Markdown: ::component{:count="5"}
@@ -282,7 +275,7 @@ Svelte is closer to HTML than React, so most attributes pass through unchanged. 
 // Svelte prop: max={100}
 ```
 
-### Object/Array Props
+### Object/array props
 
 ```
 // Markdown: ::component{:config='{"theme":"dark"}'}
@@ -294,9 +287,9 @@ Svelte is closer to HTML than React, so most attributes pass through unchanged. 
 
 ---
 
-## Streaming Mode
+## Streaming mode
 
-Use the `Markdown` component with `$state` for streaming content:
+Use `Markdown` with `$state` for streaming content:
 
 ```svelte
 <script lang="ts">
@@ -324,17 +317,17 @@ Use the `Markdown` component with `$state` for streaming content:
 <Markdown value={content} streaming={isStreaming} caret />
 ```
 
-The `caret` prop appends a blinking cursor indicator to the last text node during streaming. Customize with a CSS class:
+The `caret` prop appends a blinking cursor indicator to the last text node during streaming. Customize it with a CSS class:
 
 ```svelte
 <Markdown value={content} streaming={isStreaming} caret={{ class: 'my-caret' }} />
 ```
 
-`autoClose` is enabled by default: incomplete syntax like `**bold text` is automatically closed on every parse.
+`autoClose` is enabled by default, so unfinished syntax such as `**bold text` is closed on every parse.
 
 ---
 
-## Prose Components
+## Prose components
 
 Override native HTML elements using the `Prose` prefix:
 
@@ -351,7 +344,7 @@ Override native HTML elements using the `Prose` prefix:
 <Markdown value={content} {components} />
 ```
 
-### Tailwind CSS Prose
+### Tailwind CSS prose
 
 ```svelte
 <article class="prose prose-lg dark:prose-dark max-w-none">
@@ -361,9 +354,9 @@ Override native HTML elements using the `Prose` prefix:
 
 ---
 
-## Experimental Async
+## Experimental async
 
-The `MarkdownAsync` component uses Svelte's experimental `await` in `$derived` for a declarative approach. It can also await async `componentsManifest` entries during SSR, so lazy dynamic imports render into SvelteKit server HTML. Requires `experimental.async` in your Svelte config:
+`MarkdownAsync` uses Svelte's experimental `await` in `$derived`. It also awaits async `componentsManifest` entries during SSR so lazy dynamic imports render into SvelteKit server HTML. Enable `experimental.async` in your Svelte config:
 
 ```js
 // svelte.config.js
@@ -396,7 +389,7 @@ Usage with `<svelte:boundary>`:
 
 ---
 
-## Custom Props Handling
+## Custom props handling
 
 Access props in custom components:
 
@@ -428,7 +421,7 @@ Access props in custom components:
 </div>
 ```
 
-### Working with Complex Props
+### Working with complex props
 
 ```svelte
 <!-- DataTable.svelte -->
@@ -455,7 +448,7 @@ Access props in custom components:
         {#each columns as col (col)}
           <th>
             {col}
-            {#if sortable}<button>↕</button>{/if}
+            {#if sortable}<button>Sort</button>{/if}
           </th>
         {/each}
       </tr>
@@ -475,7 +468,7 @@ Table content here
 
 ---
 
-## CSS Class
+## CSS class
 
 Add a custom wrapper class:
 
@@ -494,4 +487,4 @@ Add a custom wrapper class:
 
 ---
 
-[← Back to Main Skills Guide](../SKILL.md)
+[Back to skill guide](../SKILL.md)

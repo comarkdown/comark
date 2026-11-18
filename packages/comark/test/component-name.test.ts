@@ -1,15 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import { parseMarkdown } from '../src/index'
 
-// Regression tests for component-name validation.
-//
-// A component name must start with a letter or `$`. Before the fix, a colon
-// followed by digits was captured as a component name:
-//   - inline `:8100` produced `['8100', {}]`, making renderers call
-//     `createElement('8100')` and crash the app;
-//   - block `:8100` / `::8100` made `parseBlockParams` throw `Invalid block
-//     params` during parsing.
-// In all of these cases the colon sequence should stay plain text.
+// Component names must start with a letter or `$`; sequences like `:8100`,
+// `::8100`, and `:30` stay plain text instead of producing invalid tag names
+// or throwing in `parseBlockParams`.
 describe('component name validation', () => {
   describe('inline components', () => {
     it('keeps `:8100` as plain text (does not parse digits as a component)', async () => {

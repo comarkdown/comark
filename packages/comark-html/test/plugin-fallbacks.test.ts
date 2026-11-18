@@ -5,7 +5,7 @@ import { Mermaid } from '../src/plugins/mermaid'
 describe('@comark/html plugin fallback escaping', () => {
   it('escapes raw math source when KaTeX throws', () => {
     // Deeply nested groups make KaTeX rethrow a RangeError even with
-    // throwOnError: false — the catch branch must not emit raw markup.
+    // throwOnError: false. The catch branch must not emit raw markup.
     const content = '<img src=x onerror=alert(1)>' + '{'.repeat(50_000)
     const html = Math(['math', { class: 'math inline', content }] as any)
     expect(html).not.toContain('<img src=x onerror=alert(1)>')

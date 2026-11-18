@@ -17,9 +17,6 @@ import {
 } from 'comark/utils'
 import { findLastTextNodeAndAppendNode, getCaret } from '../utils/caret.ts'
 
-/**
- * Helper to get tag from a Node
- */
 function getTag(node: Node): string | null {
   if (Array.isArray(node) && node.length >= 1) {
     return node[0] as string
@@ -49,9 +46,6 @@ function cssStringToObject(cssString: string): Record<string, string> {
     )
 }
 
-/**
- * Helper to get props from a Node
- */
 function getProps(node: Node): Record<string, any> {
   if (Array.isArray(node) && node.length >= 2) {
     return (node[1] as Record<string, any>) || {}
@@ -59,9 +53,6 @@ function getProps(node: Node): Record<string, any> {
   return {}
 }
 
-/**
- * Helper to get children from a Node
- */
 function getChildren(node: Node): Node[] {
   if (Array.isArray(node) && node.length > 2) {
     return node.slice(2) as Node[]
@@ -69,7 +60,6 @@ function getChildren(node: Node): Node[] {
   return []
 }
 
-// Cache for dynamically resolved components
 const asyncComponentCache = new Map<string, any>()
 
 function isPromiseLike(value: unknown): value is Promise<unknown> {
@@ -86,9 +76,7 @@ function resolveComponent(tag: string, components: Record<string, any>, componen
 
   let resolvedComponent = components[proseTag] || components[pascalTag] || components[tag]
 
-  // If not in components map and manifest is provided, try dynamic resolution
   if (!resolvedComponent && componentsManifest) {
-    // Check cache first to avoid creating duplicate async components
     const cacheKey = tag
     if (!asyncComponentCache.has(cacheKey)) {
       const resolved = componentsManifest(tag)
@@ -107,9 +95,6 @@ function resolveComponent(tag: string, components: Record<string, any>, componen
   return resolvedComponent
 }
 
-/**
- * Render a single Comark node to React element
- */
 function renderNode(
   node: Node,
   components: Record<string, any> = {},
@@ -119,12 +104,10 @@ function renderNode(
   renderData: NodeRenderData = { frontmatter: {}, meta: {}, data: {}, props: {} },
   transformNode?: NodeTransform | readonly NodeTransform[]
 ): React.ReactNode {
-  // Handle text nodes (strings)
   if (typeof node === 'string') {
     return node
   }
 
-  // Handle element nodes (arrays)
   if (Array.isArray(node)) {
     const nodeTag = getTag(node)
     if (!nodeTag) return null
@@ -132,7 +115,6 @@ function renderNode(
     const nodeProps = getProps(node)
     const children = getChildren(node)
 
-    // Resolve `:prefix` bindings, then let `transformNode` change the tag or props
     const ownProps = resolveAttributes(nodeProps, renderData, { parseJson: true })
     const transformed = applyNodeTransforms(
       transformNode,
@@ -145,8 +127,7 @@ function renderNode(
     const resolved = transformed ? transformed.props : ownProps
     const as = transformed ? resolved.as : nodeProps.as
 
-    // Check if there's a custom component for this tag. `componentTag` is the
-    // name the component resolved under, which keys the lazy-component cache.
+    // `componentTag` is the name the component resolved under, which keys `asyncComponentCache`.
     let customComponent
     let componentTag = tag
 
@@ -162,8 +143,6 @@ function renderNode(
 
     const Component = customComponent || tag
 
-    // React-specific attribute remapping (`class` → `className`, string
-    // `style` → object, `tabindex` → `tabIndex`).
     let props: Record<string, any> = {}
     for (const k in resolved) {
       const v = resolved[k]
@@ -187,7 +166,6 @@ function renderNode(
       props.__node = node
     }
 
-    // Add key if provided
     if (key !== undefined) {
       props.key = key
     }
@@ -204,7 +182,7 @@ function renderNode(
     }
 
     // Only shadow the parent's `props` scope when the current element has its
-    // own attributes. Bare wrappers (`<p>`, `<ul>`, `<li>`, …) must keep the
+    // own attributes. Bare wrappers (`<p>`, `<ul>`, `<li>`, ...) must keep the
     // parent's scope so bindings like `{{ props.x }}` reach across them. The
     // check uses the raw attributes: resolving can omit all of them. Props a
     // transform returned count as the element's own.
@@ -216,7 +194,6 @@ function renderNode(
       }
     }
     const childrenRenderData: NodeRenderData = hasOwnAttrs ? { ...renderData, props: scopeProps } : renderData
-    // Separate template elements (slots) from regular children
     const slots: Record<string, React.ReactNode[]> = {}
     const regularChildren: React.ReactNode[] = []
 
@@ -224,19 +201,15 @@ function renderNode(
       const child = children[i]
       if (child === undefined || child === null) continue
 
-      // Check if this is a slot template (array with tag 'template')
       const childTag = getTag(child)
       const childProps = getProps(child)
 
       if (childTag === 'template' && childProps) {
-        // Find the slot name from props
-        // Support both { name: 'title' } and { '#title': '' } formats
         let slotName: string | undefined
 
         if (childProps.name) {
           slotName = childProps.name
         } else {
-          // Use for...in instead of Object.keys().find() — avoids intermediate array
           for (const pk in childProps) {
             if (pk.startsWith('#')) {
               slotName = pk.substring(1)
@@ -262,26 +235,20 @@ function renderNode(
       }
     }
 
-    // If using a custom component, pass slots as children props
     if (customComponent) {
-      // Always include default slot if there are regular children
       if (regularChildren.length > 0) {
         slots.default = regularChildren
       }
 
-      // For React, we pass slots as props (React doesn't have named slots like Vue)
       const finalProps = { ...props }
       for (const slotName in slots) {
         if (slotName === 'default') {
-          // Default slot becomes children
           finalProps.children = slots[slotName]
         } else {
-          // Named slots become props with slot prefix
           finalProps[`slot${slotName.charAt(0).toUpperCase() + slotName.slice(1)}`] = slots[slotName]
         }
       }
 
-      // Wrap lazy components in Suspense
       const isLazyComponent = asyncComponentCache.has(componentTag)
       if (isLazyComponent) {
         return (
@@ -297,7 +264,6 @@ function renderNode(
       return React.createElement(Component, finalProps)
     }
 
-    // For native HTML tags, pass children directly (ignore slot templates)
     return React.createElement(Component, props, ...regularChildren)
   }
 
@@ -310,9 +276,9 @@ function renderNode(
  */
 export interface MarkdownDocumentProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'children'> {
   /**
-   * The parsed Comark document to render — either a full `MarkdownDocument` or a bare
-   * `Node[]`.  When a node array is passed, frontmatter and meta
-   * default to `{}` and runtime data should be supplied via `data`.
+   * The parsed Comark document to render: either a full `MarkdownDocument` or
+   * `{ nodes }`. When only `nodes` is passed, `frontmatter` and `meta` default
+   * to `{}` and runtime data should be supplied via `data`.
    */
   value?: MarkdownDocumentType | { nodes: MarkdownDocumentType['nodes'] }
 
@@ -341,7 +307,7 @@ export interface MarkdownDocumentProps extends Omit<React.HTMLAttributes<HTMLDiv
   caret?: boolean | { class: string }
 
   /**
-   * Additional data to pass to the renderer — referenced from markdown
+   * Additional data to pass to the renderer, referenced from markdown
    * via `:`-prefixed props using dot paths (e.g. `:foo="data.user.name"`).
    */
   data?: Record<string, unknown>
@@ -361,8 +327,8 @@ export interface MarkdownDocumentProps extends Omit<React.HTMLAttributes<HTMLDiv
 /**
  * MarkdownDocument component
  *
- * Renders an already-parsed Markdown document to React components/HTML — no parser
- * in the client bundle. Supports custom component mapping for element tags.
+ * Renders an already-parsed Markdown document to React components/HTML, keeping
+ * the parser out of the client bundle. Supports custom component mapping for element tags.
  *
  * @example
  * ```tsx
@@ -395,7 +361,6 @@ export const MarkdownDocument: React.FC<MarkdownDocumentProps> = ({
   const caret = useMemo(() => getCaret(caretProp), [caretProp])
 
   const renderedNodes = useMemo(() => {
-    // Render all nodes from the document value
     const nodes = [...(document.nodes || [])]
 
     if (streaming && caret && nodes.length > 0) {
@@ -422,7 +387,6 @@ export const MarkdownDocument: React.FC<MarkdownDocumentProps> = ({
       .filter((child): child is React.ReactNode => child !== null)
   }, [document, customComponents, componentsManifest, streaming, caret, data, transformNode])
 
-  // Wrap in a fragment
   return (
     <div
       {...rest}

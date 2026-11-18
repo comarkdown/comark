@@ -3,11 +3,11 @@
  *
  * Two O(n) passes, no backtracking:
  *
- *   1. `scanBlocks` — one walk over the document on offsets only (no per-line
+ *   1. `scanBlocks`: one walk over the document on offsets only (no per-line
  *      strings): fences, raw HTML, frontmatter, block math, component stack,
  *      trailing table, and the range eligible for inline healing (the last
  *      soft-wrapped paragraph).
- *   2. `healRegion` — one walk over that range with a single delimiter stack.
+ *   2. `healRegion`: one walk over that range with a single delimiter stack.
  *      Unclosed frames are closed LIFO at EOF; edits (tilde escapes, dropped
  *      brackets) are collected as positions and applied once at the end, so the
  *      common "nothing to escape" path never copies the string.
@@ -39,15 +39,15 @@ export interface AutoCloseOptions {
    * Prefer `blockMath` / `inlineMath` for independent control.
    */
   math?: boolean
-  /** Auto-close block `$$…$$`. Defaults to `math` (else false). */
+  /** Auto-close block `$$...$$`. Defaults to `math` (else false). */
   blockMath?: boolean
-  /** Auto-close inline `$…$`. Defaults to `math` (else false). Off by default so `$50` stays prose. */
+  /** Auto-close inline `$...$`. Defaults to `math` (else false). Off by default so `$50` stays prose. */
   inlineMath?: boolean
-  /** Don't heal inside closed `\(…\)` / `\[…\]` (math `brackets: true`). Default false. */
+  /** Don't heal inside closed `\(...\)` / `\[...\]` (math `brackets: true`). Default false. */
   bracketMath?: boolean
   /**
    * Drop a trailing opener (`* _ $ : [ { !`) after whitespace at EOF so a
-   * half-typed marker does not flash (`hello *` → `hello`). Default false.
+   * half-typed marker does not flash (`hello *` -> `hello`). Default false.
    * Enabled automatically when `parseMarkdown(..., { streaming: true })`.
    */
   dropTrailingOpeners?: boolean
@@ -65,20 +65,20 @@ export interface AutoCloseOptions {
   inlineCode?: boolean
   /** Auto-close `***bold-italic***`. Default true. */
   boldItalic?: boolean
-  /** Escape mid-word single `~` (`20~25` → `20\~25`). Default true. */
+  /** Escape mid-word single `~` (`20~25` -> `20\~25`). Default true. */
   singleTilde?: boolean
   /**
-   * Escape list-item comparison openers (`- > 25` → `- \> 25`) so they are not
+   * Escape list-item comparison openers (`- > 25` -> `- \> 25`) so they are not
    * parsed as blockquotes. Default true.
    */
   comparisonOperators?: boolean
-  /** Strip incomplete HTML tags at EOF (`Hello <div` → `Hello`). Default true. */
+  /** Strip incomplete HTML tags at EOF (`Hello <div` -> `Hello`). Default true. */
   htmlTags?: boolean
   /** Complete incomplete GFM tables (header delimiter row). Default true. */
   tables?: boolean
 }
 
-/** Resolved options — every flag settled once, so the hot loops only read booleans. */
+/** Resolved options: every flag settled once so hot loops only read booleans. */
 interface Opts {
   frontmatter: boolean
   syntax: boolean
@@ -154,10 +154,6 @@ export function autoCloseMarkdown(markdown: string, options: AutoCloseOptions = 
   return result
 }
 
-// ---------------------------------------------------------------------------
-// Block pass
-// ---------------------------------------------------------------------------
-
 interface Component {
   depth: number
   indent: string
@@ -170,7 +166,7 @@ interface DocState {
   /** Offsets of the region to heal, or `start < 0` for "nothing to heal". */
   start: number
   end: number
-  /** Effective document end — a trailing bare `::` is dropped. */
+  /** Effective document end; a trailing bare `::` is dropped. */
   docEnd: number
   fmOpen: boolean
   fmContent: boolean
@@ -194,7 +190,7 @@ type RawTag = keyof typeof RAW_TEXT_CLOSE_RE
  * One walk over the document, on offsets only: no per-line strings, so a long
  * streaming document costs a single scan plus one slice of the healed region.
  *
- * Every line is examined as three offsets: `ls` (start), `st`…`en` (the trimmed
+ * Every line is examined as three offsets: `ls` (start), `st`..`en` (the trimmed
  * content) and `le` (end, before the newline).
  */
 function scanBlocks(src: string, o: Opts): DocState {
@@ -304,7 +300,7 @@ function scanBlocks(src: string, o: Opts): DocState {
       while (st + colons < en && src.charCodeAt(st + colons) === 58) colons++
       const bare = st + colons === en
       if (bare && i === n - 1 && comps.length === 0) {
-        // Trailing bare `::` — drop it so it does not flash as text.
+        // Drop trailing bare `::` so it does not flash as text.
         docEnd = ls
         n--
         break
@@ -330,7 +326,7 @@ function scanBlocks(src: string, o: Opts): DocState {
   while (e > 0 && lineEnd(e) === starts[e]) e--
 
   // A half-typed list item at the end of a list is a marker with no content yet
-  // (`- item\n- ` → `- item`). Only inside a list — under a paragraph the same line
+  // (`- item\n- ` -> `- item`). Only inside a list: under a paragraph the same line
   // is a setext candidate and gets the U+200B guard instead.
   while (
     e > shielded + 1 &&
@@ -363,7 +359,7 @@ function scanBlocks(src: string, o: Opts): DocState {
   return doc
 }
 
-/** `` ```python code`` `` — a code span that merely looks like a fence. */
+/** `` ```python code`` ``: a code span that looks like a fence. */
 function isIncompleteInlineFence(src: string, st: number, en: number): boolean {
   if (en - st < 5) return false
   if (src.charCodeAt(en - 1) !== 96 || src.charCodeAt(en - 2) !== 96 || src.charCodeAt(en - 3) === 96) return false
@@ -446,7 +442,7 @@ function isBlockStart(src: string, ls: number, le: number): boolean {
   return isListItem(src, st, le)
 }
 
-/** CommonMark indented code: ≥ 4 leading spaces (or a tab) plus content. */
+/** CommonMark indented code: >= 4 leading spaces (or a tab) plus content. */
 function isIndentedCode(src: string, ls: number, le: number): boolean {
   if (ls >= le) return false
   if (src.charCodeAt(ls) === 9) return true
@@ -467,7 +463,7 @@ function isListItem(src: string, ls: number, le: number): boolean {
   return c >= 48 && c <= 57 && ORDERED_LIST_RE.test(src.slice(st, le))
 }
 
-/** A list marker with nothing after it: `-`, `- `, `1.`, `2) ` — but not `- x` or `---`. */
+/** A list marker with nothing after it (`-`, `- `, `1.`, `2) `), not `- x` or `---`. */
 function isEmptyListItem(src: string, ls: number, le: number): boolean {
   let st = ls
   while (st < le && isIndentCode(src.charCodeAt(st))) st++
@@ -486,10 +482,6 @@ function isEmptyListItem(src: string, ls: number, le: number): boolean {
 function isNameStart(c: number): boolean {
   return (c >= 97 && c <= 122) || (c >= 65 && c <= 90) || c === 36 /* $ */
 }
-
-// ---------------------------------------------------------------------------
-// Inline pass
-// ---------------------------------------------------------------------------
 
 const F_STAR = 1
 const F_UNDER = 2
@@ -570,7 +562,7 @@ function healRegion(text: string, o: Opts): string {
       continue
     }
     if (c === 92 /* \ */) {
-      // A closed `\(…\)` or `\[…\]` is math under `math({ brackets: true })`, so it
+      // A closed `\(...\)` or `\[...\]` is math under `math({ brackets: true })`, so it
       // isn't healed. Mirrors the parser: `\(` and inline `\[` close on the same
       // line, `\[` after only indentation may span lines (no blank line, nothing
       // after `\]`), and citations or `\[text\](url)` stay text.
@@ -738,7 +730,7 @@ function healRegion(text: string, o: Opts): string {
       } else if (n === 2 && o.strikethrough && next !== '' && !isSpaceCode(next.charCodeAt(0))) {
         frames.push({ k: F_TILDE, len: 2, pos: i })
       } else if (n === 1 && o.singleTilde && isAlnum(prev) && isAlnum(next) && !isSubscriptTilde(text, i)) {
-        // A lone mid-word `~` would become GFM strikethrough — keep it literal.
+        // A lone mid-word `~` would become GFM strikethrough; keep it literal.
         edits = push(edits, [i, '\\~'])
       }
       i += n - 1
@@ -849,7 +841,7 @@ function isBlankRange(text: string, from: number, to: number): boolean {
 }
 
 /**
- * Whether `\[` … `\]` closing at `close` is a display block for the parser:
+ * Whether `\[` ... `\]` closing at `close` is a display block for the parser:
  * same-line spans are inline math anyway; a multi-line one needs no blank line
  * inside and nothing but whitespace after `\]`.
  */
@@ -973,13 +965,9 @@ function byPos(a: Edit, b: Edit): number {
   return a[0] - b[0]
 }
 
-// ---------------------------------------------------------------------------
-// Document-level closers
-// ---------------------------------------------------------------------------
-
 /**
  * Appends a `---` delimiter line, completing a half-typed one in place
- * (`title: x\n-` → `title: x\n---`).
+ * (`title: x\n-` -> `title: x\n---`).
  */
 function closeDelimiterLine(text: string, ch: string, width: number): string {
   const last = text
@@ -998,7 +986,7 @@ function closeComponents(result: string, source: string, comps: Component[], hea
   const shorthand = healShorthand && /^:[a-z$][\w$-]*\{/i.test(result.slice(lineStart).trimStart())
   if (!source.includes('::') && !shorthand) return result
 
-  // `::alert{type="info` → close the quote and the brace.
+  // `::alert{type="info` -> close the quote and the brace.
   let brace = -1
   for (let i = result.length - 1; i >= lineStart; i--) {
     const c = result.charCodeAt(i)
@@ -1048,8 +1036,8 @@ const SETEXT_RE = /^(?:-{1,2}|={1,2})$/
 const YAML_KEY_RE = /^[A-Za-z_][\w.-]*\s*:/
 
 /**
- * A 1–2 char `-`/`=` line under a paragraph would flash as a setext heading
- * while the list marker or rule is still being typed — park it behind U+200B.
+ * A 1-2 char `-`/`=` line under a paragraph would flash as a setext heading
+ * while the list marker or rule is still being typed; park it behind U+200B.
  */
 function applySetextGuard(text: string): string {
   const lastNl = text.lastIndexOf('\n')
@@ -1065,10 +1053,6 @@ function applySetextGuard(text: string): string {
   return text + '\u200B'
 }
 
-// ---------------------------------------------------------------------------
-// Trailing openers (streaming)
-// ---------------------------------------------------------------------------
-
 function isTrailingOpener(c: number): boolean {
   // * _ $ : ` ~ [ { !
   return c === 42 || c === 95 || c === 36 || c === 58 || c === 96 || c === 126 || c === 91 || c === 123 || c === 33
@@ -1076,7 +1060,7 @@ function isTrailingOpener(c: number): boolean {
 
 /**
  * Drops a trailing opener run at EOF unless it is attached to a word
- * (`hello *` → `hello`), so a half-typed marker never flashes. Markers with content
+ * (`hello *` -> `hello`), so a half-typed marker never flashes. Markers with content
  * after them (`**bold`) are not trailing runs and stay for the heal; a bare `$`
  * after a word (`text123$`) is dropped anyway, being only a math opener.
  */
@@ -1102,13 +1086,13 @@ function dropTrailingOpeners(text: string, inlineCode: boolean): string {
   if (allDollar && isAlnum(codePointBefore(text, i))) return text.slice(0, i) + text.slice(ws)
 
   // A trailing backtick run may belong to an open code span rather than start a
-  // new one. Then it is the heal pass's job, not ours: it either closes the span
-  // (`space `` ``) or completes a short closer (`spaces ``  ` ` → `spaces ``  ``).
+  // new one. Then it is the heal pass's job: it either closes the span
+  // (`space `` ``) or completes a short closer (`spaces ``  ` ` -> `spaces ``  ``).
   // Only a span with no content yet is dropped, opener and all.
   if (allTick && inlineCode) {
     const span = openCodeSpan(text, i)
     if (span !== null) {
-      if (ws - i >= span.len) return text // a closer — leave it to the heal
+      if (ws - i >= span.len) return text // a closer; leave it to the heal
       const gap = i - span.end
       const pad = gap === 1 ? text.charCodeAt(span.end) : -1
       if (gap > 1 || (gap === 1 && pad !== 32 && pad !== 9)) return text // real content
@@ -1172,10 +1156,6 @@ function openCodeSpan(text: string, limit: number): { start: number; len: number
   return len === 0 ? null : { start, len, end }
 }
 
-// ---------------------------------------------------------------------------
-// Characters
-// ---------------------------------------------------------------------------
-
 const ALNUM_CP_RE = /\p{L}|\p{N}/u
 
 /** Letter or digit. Everything else (including `_`) is CommonMark punctuation. */
@@ -1199,7 +1179,7 @@ function isPunct(cp: string): boolean {
 
 const OPENING_PUNCT_RE = /\p{Ps}|\p{Pi}/u
 
-/** Opening bracket or initial quote: `(`, `[`, `{`, `「`, `“`, ... */
+/** Opening bracket or initial quote (`(`, `[`, `{`, `「`, U+201C, ...). */
 function isOpeningPunct(cp: string): boolean {
   if (cp === '') return false
   const c = cp.charCodeAt(0)
@@ -1271,10 +1251,7 @@ function isSubscriptPair(text: string, open: number, close: number): boolean {
   return isAlnum(codePointBefore(text, open))
 }
 
-// region -- table auto close
-/**
- * Parse cell widths from a table row (respects escaped pipes \|)
- */
+/** Parse cell widths from a table row, respecting escaped pipes (`\|`). */
 function parseCellWidths(row: string): number[] {
   const widths: number[] = []
   let cellContent = ''
@@ -1295,7 +1272,6 @@ function parseCellWidths(row: string): number[] {
     }
   }
 
-  // Capture last cell if no trailing pipe
   if (inCell && cellContent) {
     widths.push(cellContent.length)
   }
@@ -1303,9 +1279,7 @@ function parseCellWidths(row: string): number[] {
   return widths
 }
 
-/**
- * Parse cell contents from a table row (respects escaped pipes \|)
- */
+/** Parse trimmed cell contents from a table row, respecting escaped pipes (`\|`). */
 function parseCells(row: string): string[] {
   const cells: string[] = []
   let cell = ''
@@ -1326,7 +1300,6 @@ function parseCells(row: string): string[] {
     }
   }
 
-  // Capture last cell if any
   if (cell.trim()) {
     cells.push(cell.trim())
   }
@@ -1334,13 +1307,9 @@ function parseCells(row: string): string[] {
   return cells
 }
 
-/**
- * Closes unclosed markdown tables
- */
 function closeTables(markdown: string): string {
   const lines = markdown.split('\n')
 
-  // Group consecutive table rows (lines starting with |) into blocks
   const tableBlocks: Array<{ start: number; end: number }> = []
   let blockStart = -1
 
@@ -1358,69 +1327,55 @@ function closeTables(markdown: string): string {
   }
   if (tableBlocks.length === 0) return markdown
 
-  // Process last table
   const { start, end } = tableBlocks[tableBlocks.length - 1]
   const headerLine = lines[start].trim()
 
-  // Ensure header has trailing pipe
   if (!headerLine.endsWith('|')) {
     lines[start] += ' |'
   }
 
-  // Count columns from header
   const columnCount = parseCellWidths(lines[start].trim()).length
   const generateSeparator = () => '| ' + Array(columnCount).fill('---').join(' | ') + ' |'
 
-  // Check if separator exists (including incomplete ones with just :)
   const secondLine = end - start >= 1 ? lines[start + 1].trim() : ''
   const hasSeparator = secondLine.startsWith('|') && (secondLine.includes('-') || secondLine.includes(':'))
 
-  // Handle last line
   const lastLine = lines[end].trim()
   const isSeparator = /^\|[\s|:-]*$/.test(lastLine) && (lastLine.includes('-') || lastLine.includes(':'))
 
   if (isSeparator) {
-    // Parse and complete separator cells
     const sepCells = parseCells(lastLine)
 
-    // Complete each cell: ensure minimum dash count
+    // GFM allows `:-`, `-:`, and `:-:` with a single dash; unaligned cells need `---`.
     const completedCells = sepCells.map((cell) => {
       const hasLeftAlign = cell.startsWith(':')
       const hasRightAlign = cell.endsWith(':') && cell.length > 1
 
-      // Strip alignment markers to count dashes
       let dashes = cell.replace(/^:/, '').replace(/:$/, '')
 
-      // Ensure at least 1 dash (alignment markers don't need extra length)
       if (hasLeftAlign && hasRightAlign) {
-        // Center align :-:
         if (dashes.length < 1) dashes = '-'
         return ':' + dashes + ':'
       } else if (hasLeftAlign) {
-        // Left align :-
         if (dashes.length < 1) dashes = '-'
         return ':' + dashes
       } else if (hasRightAlign) {
-        // Right align -:
         if (dashes.length < 1) dashes = '-'
         return dashes + ':'
       } else {
-        // No align ---
         while (dashes.length < 3) dashes += '-'
         return dashes
       }
     })
 
-    // Add missing columns
     while (completedCells.length < columnCount) {
       completedCells.push('---')
     }
 
     lines[end] = '| ' + completedCells.join(' | ') + ' |'
   } else if (lastLine.startsWith('|') && !lastLine.endsWith('|')) {
-    // Complete data row — pad cells to reference widths and add a trailing pipe.
-    // Skip the trailing `|` when the last cell still looks like incomplete inline
-    // syntax (SPEC: `| **dat` → `| **dat**`, not `| **dat** |`).
+    // Skip the trailing `|` when the last cell ends in incomplete inline syntax
+    // (SPEC: `| **dat` -> `| **dat**`, not `| **dat** |`).
     let refRow = lines[start].trim()
     for (let i = start + (hasSeparator ? 2 : 1); i < end; i++) {
       const row = lines[i].trim()
@@ -1448,11 +1403,9 @@ function closeTables(markdown: string): string {
     lines[end] = lastCellIncomplete ? padded : padded + ' |'
   }
 
-  // Add separator if missing
   if (!hasSeparator) {
     lines.splice(start + 1, 0, generateSeparator())
   }
 
   return lines.join('\n')
 }
-// endregion

@@ -17,7 +17,7 @@ export interface MathConfig {
    */
   options?: Record<string, unknown>
   /**
-   * Also parse `\(…\)` as inline and `\[…\]` as display math, the delimiters LLMs
+   * Also parse `\(...\)` as inline and `\[...\]` as display math, the delimiters LLMs
    * often write. Off by default because `\(` and `\[` are Markdown escapes.
    * @default false
    */
@@ -25,12 +25,7 @@ export interface MathConfig {
 }
 
 /**
- * Render LaTeX math expression to HTML using KaTeX
- *
- * @param code LaTeX math expression
- * @param displayMode Whether to render in display mode
- * @param config KaTeX configuration
- * @returns HTML string
+ * Render LaTeX math expression to HTML using KaTeX.
  *
  * @deprecated Will be removed in 0.9.0. Call `katex.renderToString()` directly,
  * see https://comark.dev/plugins/built-in/math#rendering-math-manually
@@ -62,10 +57,7 @@ export async function renderMath(code: string, displayMode: boolean, config: Mat
 }
 
 /**
- * Check if code is valid LaTeX math syntax
- *
- * @param code LaTeX math expression
- * @returns true if valid, false otherwise
+ * Check if code is valid LaTeX math syntax.
  *
  * @deprecated Will be removed in 0.9.0. Call `katex.renderToString()` with
  * `throwOnError: true` directly, see https://comark.dev/plugins/built-in/math#rendering-math-manually
@@ -86,38 +78,30 @@ export async function validateMath(code: string): Promise<boolean> {
   }
 }
 
-/**
- * markdown-it plugin for inline display math ($$...$$)
- * This handles $$...$$ within a paragraph (same line)
- */
+/** Inline display math (`$$...$$`) closed on the same line. */
 function mathInlineDisplayRule(state: StateInline, silent: boolean, _config: MathConfig): boolean {
   const start = state.pos
   const max = state.posMax
 
-  // Check if we start with $$
   if (start + 1 >= max) return false
   if (state.src.charCodeAt(start) !== 0x24 /* $ */) return false
   if (state.src.charCodeAt(start + 1) !== 0x24 /* $ */) return false
 
-  // Find closing $$
   let pos = start + 2
 
   while (pos + 1 < max) {
-    // Stop at newline
     if (state.src.charCodeAt(pos) === 0x0a /* \n */) {
       return false
     }
 
-    // Check for $$
     if (state.src.charCodeAt(pos) === 0x24 && state.src.charCodeAt(pos + 1) === 0x24) {
-      // Found closing $$
       const content = state.src.slice(start + 2, pos)
 
       if (!silent) {
         const token = state.push('math_inline', 'math', 0)
         token.content = content
         token.markup = '$$'
-        token.meta = { display: true } // Mark as display mode
+        token.meta = { display: true }
       }
 
       state.pos = pos + 2
@@ -130,40 +114,30 @@ function mathInlineDisplayRule(state: StateInline, silent: boolean, _config: Mat
   return false
 }
 
-/**
- * markdown-it plugin for inline math ($...$)
- */
+/** Inline math (`$...$`). */
 function mathInlineRule(state: StateInline, silent: boolean, _config: MathConfig): boolean {
   const start = state.pos
   const max = state.posMax
 
-  // Check if we start with $
   if (state.src.charCodeAt(start) !== 0x24 /* $ */) {
     return false
   }
 
-  // Don't match $$ (that's display math)
   if (start + 1 < max && state.src.charCodeAt(start + 1) === 0x24) {
     return false
   }
 
-  // Find closing $
   let pos = start + 1
   let foundClose = false
 
   while (pos < max) {
     const char = state.src.charCodeAt(pos)
 
-    // Stop at newline - $ must close on same line
     if (char === 0x0a /* \n */) {
       return false
     }
 
     if (char === 0x24 /* $ */) {
-      // Found potential closing $
-      // Make sure it's not escaped, we have content (at least 1 char),
-      // it's not preceded by another $ (which would make it $$),
-      // and it's not followed by another $ (which would make it $$)
       const hasContent = pos > start + 1
       const notEscaped = pos === start + 1 || state.src.charCodeAt(pos - 1) !== 0x5c /* \ */
       const notPrecededByDollar = pos === start + 1 || state.src.charCodeAt(pos - 1) !== 0x24
@@ -182,10 +156,9 @@ function mathInlineRule(state: StateInline, silent: boolean, _config: MathConfig
     return false
   }
 
-  // Extract math content
   const content = state.src.slice(start + 1, pos)
 
-  // Don't match if content looks like a price or number (starts with digits and contains "or" or ends at end of sentence)
+  // Leading digits (`$50`) stay prose, not math.
   if (/^\d/.test(content)) {
     return false
   }
@@ -200,14 +173,11 @@ function mathInlineRule(state: StateInline, silent: boolean, _config: MathConfig
   return true
 }
 
-/**
- * markdown-it plugin for display math ($$...$$)
- */
+/** Block display math (`$$...$$`). */
 function mathBlockRule(state: StateBlock, startLine: number, endLine: number, silent: boolean): boolean {
   const start = state.bMarks[startLine] + state.tShift[startLine]
   const max = state.eMarks[startLine]
 
-  // Check if line starts with $$
   if (start + 2 > max) return false
   if (state.src.charCodeAt(start) !== 0x24 /* $ */) return false
   if (state.src.charCodeAt(start + 1) !== 0x24 /* $ */) return false
@@ -215,12 +185,10 @@ function mathBlockRule(state: StateBlock, startLine: number, endLine: number, si
   const marker = state.src.slice(start, start + 2)
   const pos = start + 2
 
-  // Check if it's inline $$ (closing on same line)
   const firstLine = state.src.slice(pos, max)
   const closePos = firstLine.indexOf('$$')
 
   if (closePos !== -1) {
-    // Inline display math on single line
     if (silent) return true
 
     const content = firstLine.slice(0, closePos)
@@ -235,11 +203,9 @@ function mathBlockRule(state: StateBlock, startLine: number, endLine: number, si
     return true
   }
 
-  // Multi-line display math
   let nextLine = startLine
   let autoClose = false
 
-  // Search for closing $$
   while (nextLine < endLine) {
     nextLine++
     if (nextLine >= endLine) break
@@ -248,7 +214,6 @@ function mathBlockRule(state: StateBlock, startLine: number, endLine: number, si
     const lineMax = state.eMarks[nextLine]
 
     if (lineStart < lineMax && state.sCount[nextLine] < state.blkIndent) {
-      // Non-empty line with less indent - might close the block
       break
     }
 
@@ -258,7 +223,6 @@ function mathBlockRule(state: StateBlock, startLine: number, endLine: number, si
       break
     }
 
-    // Check if line contains $$
     if (lineText.includes('$$')) {
       autoClose = true
       break
@@ -271,7 +235,6 @@ function mathBlockRule(state: StateBlock, startLine: number, endLine: number, si
 
   if (silent) return true
 
-  // Extract content between $$ markers
   const contentLines = []
   for (let i = startLine + 1; i < nextLine; i++) {
     const lineStart = state.bMarks[i] + state.tShift[i]
@@ -369,19 +332,14 @@ function mathBlockBracketRule(state: StateBlock, startLine: number, endLine: num
   return true
 }
 
-/**
- * Create markdown-it plugin for math support
- */
 function markdownItMath(md: MarkdownExit, config: MathConfig = {}) {
-  // Add inline display math rule ($$...$$) - must come before inline math ($...$)
+  // Inline `$$...$$` must run before `$...$`.
   md.inline.ruler.before('escape', 'math_inline_display', (state, silent) =>
     mathInlineDisplayRule(state, silent, config)
   )
 
-  // Add inline math rule ($...$)
   md.inline.ruler.before('escape', 'math_inline', (state, silent) => mathInlineRule(state, silent, config))
 
-  // Add block math rule ($$...$$)
   md.block.ruler.before('fence', 'math_block', mathBlockRule, {
     alt: ['paragraph', 'reference', 'blockquote', 'list'],
   })
@@ -396,12 +354,8 @@ function markdownItMath(md: MarkdownExit, config: MathConfig = {}) {
 }
 
 /**
- * Create math plugin for comark
- *
- * This plugin processes markdown-it tokens and converts math expressions
- * with $ and $$ delimiters to HTML using KaTeX.
- *
- * @param config Math rendering configuration
+ * Tokenizes inline (`$...$`) and display (`$$...$$`) math expressions into
+ * `math` AST nodes. Pass `{ brackets: true }` to also match `\(...\)` and `\[...\]`.
  *
  * @example
  * ```ts
@@ -409,7 +363,7 @@ function markdownItMath(md: MarkdownExit, config: MathConfig = {}) {
  * import math from 'comark/plugins/math'
  *
  * const result = await parseMarkdown('Inline $x^2$ and display $$E = mc^2$$', {
- *   plugins: [math({ throwOnError: false })]
+ *   plugins: [math()]
  * })
  * ```
  */

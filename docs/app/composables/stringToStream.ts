@@ -22,7 +22,6 @@ export function stringToStream(string: string, chunkSize = 10, delayMs = 50) {
   })
 
   const streamChunks = async () => {
-    // If paused, schedule next check
     if (isPaused) {
       timeoutId = setTimeout(() => streamChunks(), 50)
       return
@@ -63,7 +62,6 @@ export function stringToStream(string: string, chunkSize = 10, delayMs = 50) {
   const resume = () => {
     if (isPaused) {
       isPaused = false
-      // If we were streaming, continue
       if (isStreaming && position < string.length) {
         streamChunks()
       }
@@ -79,7 +77,6 @@ export function stringToStream(string: string, chunkSize = 10, delayMs = 50) {
     isStreaming = false
     isPaused = false
 
-    // Create a new stream
     return stringToStream(string, chunkSize, delayMs)
   }
 

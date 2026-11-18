@@ -23,9 +23,6 @@ interface StructuralComponent extends Type<any> {
   ɵcomarkIf?: boolean
 }
 
-/**
- * Helper to get tag from a Node
- */
 function getTag(node: MarkdownAstNode): string | null {
   if (Array.isArray(node) && node.length >= 1) {
     return node[0] as string
@@ -33,9 +30,6 @@ function getTag(node: MarkdownAstNode): string | null {
   return null
 }
 
-/**
- * Helper to get props from a Node
- */
 function getProps(node: MarkdownAstNode): Record<string, any> {
   if (Array.isArray(node) && node.length >= 2) {
     return (node[1] as Record<string, any>) || {}
@@ -43,9 +37,6 @@ function getProps(node: MarkdownAstNode): Record<string, any> {
   return {}
 }
 
-/**
- * Helper to get children from a Node
- */
 function getChildren(node: MarkdownAstNode): MarkdownAstNode[] {
   if (Array.isArray(node) && node.length > 2) {
     return node.slice(2) as MarkdownAstNode[]
@@ -53,9 +44,6 @@ function getChildren(node: MarkdownAstNode): MarkdownAstNode[] {
   return []
 }
 
-/**
- * Resolve a custom component from the components map.
- */
 function resolveComponent(tag: string, components: Record<string, Type<any>>): Type<any> | undefined {
   const pascalTag = pascalCase(tag)
   const proseTag = `Prose${pascalTag}`
@@ -69,10 +57,6 @@ interface PreparedNode {
   childrenRenderData: NodeRenderData
 }
 
-/**
- * Resolve an element node's bindings, run `transformNode`, and pick the
- * component to render it with.
- */
 function prepareNode(
   node: ElementNode,
   components: Record<string, Type<any>>,
@@ -153,21 +137,18 @@ export class MarkdownNode implements OnChanges {
     this.vcr.clear()
 
     const hostEl = this.elementRef.nativeElement as HTMLElement
-    // Clear previous content from the host
     while (hostEl.firstChild) {
       hostEl.removeChild(hostEl.firstChild)
     }
 
     if (this.node() === undefined || this.node() === null) return
 
-    // Text node
     if (typeof this.node() === 'string') {
       const text = this.renderer.createText(this.node() as string)
       this.renderer.appendChild(hostEl, text)
       return
     }
 
-    // Element node
     const node = this.node()
     if (Array.isArray(node)) {
       if (!getTag(node)) return
@@ -190,7 +171,6 @@ export class MarkdownNode implements OnChanges {
     }
   }
 
-  /** Apply resolved attributes to a DOM element. */
   private applyAttributes(el: HTMLElement, attrs: Record<string, any>): void {
     for (const key in attrs) {
       const value = attrs[key]
@@ -210,7 +190,6 @@ export class MarkdownNode implements OnChanges {
     }
   }
 
-  /** Create a native DOM element with attributes and children, append to parent. */
   private renderNativeEl(
     parentEl: HTMLElement,
     tag: string,
@@ -222,7 +201,7 @@ export class MarkdownNode implements OnChanges {
     const el = this.renderer.createElement(tag)
     this.applyAttributes(el, node ? toNativeAttributes(tag, node, attrs) : attrs)
 
-    // `innerHTML` from document attributes is never applied — resolveAttributes
+    // `innerHTML` from document attributes is never applied; resolveAttributes
     // drops DOM sink props, and raw HTML has its own explicit parse path.
     if (!isHtmlVoidElement(tag)) {
       this.renderChildren(el, children, childrenRenderData)
@@ -267,7 +246,6 @@ export class MarkdownNode implements OnChanges {
     children: MarkdownAstNode[],
     childrenRenderData: NodeRenderData
   ): void {
-    // Separate slots from regular children
     const slots: Record<string, MarkdownAstNode[]> = {}
     const regularChildren: MarkdownAstNode[] = []
 
@@ -300,33 +278,29 @@ export class MarkdownNode implements OnChanges {
       regularChildren.push(child)
     }
 
-    // Pre-render children into a temporary container so we can pass them as projectableNodes for Angular's <ng-content /> content projection
+    // Pre-render children into a temporary container so their DOM nodes can be
+    // passed as `projectableNodes` to Angular's `<ng-content />` projection.
     const tempContainer = this.renderer.createElement('div')
 
-    // Render regular children
     if (regularChildren.length > 0) {
       this.renderChildren(tempContainer, regularChildren, childrenRenderData)
     }
 
-    // Render named slot "default" children too
     if (slots['default']) {
       this.renderChildren(tempContainer, slots['default'], childrenRenderData)
     }
 
-    // Collect all rendered child nodes for the default slot
     const defaultSlotNodes: Node[] = Array.from(tempContainer.childNodes)
 
-    // Build projectableNodes array - index 0 is the default <ng-content />
+    // Index 0 of projectableNodes feeds the default `<ng-content />`.
     const projectableNodes: Node[][] = [defaultSlotNodes]
 
-    // Create the Angular component with projected content
     const componentRef = createComponent(componentType, {
       environmentInjector: this.injector.get(EnvironmentInjector),
       elementInjector: this.injector,
       projectableNodes,
     })
 
-    // Set inputs
     const mirror = reflectComponentType(componentType)
     const inputNames = new Set(mirror?.inputs.map((i) => i.propName) || [])
 
@@ -337,12 +311,10 @@ export class MarkdownNode implements OnChanges {
       }
     }
 
-    // Pass __node if the component accepts it
     if (inputNames.has('__node')) {
       componentRef.setInput('__node', this.node())
     }
 
-    // Render non-default named slots into the component's host element
     for (const slotName in slots) {
       if (slotName === 'default') continue
       const slotEl = this.renderer.createElement('div')
@@ -352,7 +324,6 @@ export class MarkdownNode implements OnChanges {
       this.renderer.appendChild(componentRef.location.nativeElement, slotEl)
     }
 
-    // Attach to DOM and detect changes
     this.vcr.insert(componentRef.hostView)
 
     // The container's anchor stays where this node was first attached, so when this node
@@ -365,22 +336,16 @@ export class MarkdownNode implements OnChanges {
     componentRef.changeDetectorRef.detectChanges()
   }
 
-  /**
-   * Render an array of Node children into a parent DOM element.
-   * Each child gets its own `comark-node` component created dynamically.
-   */
   private renderChildren(parentEl: HTMLElement, children: MarkdownAstNode[], renderData: NodeRenderData): void {
     for (const child of children) {
       if (child === undefined || child === null) continue
 
-      // For text nodes, insert directly
       if (typeof child === 'string') {
         const text = this.renderer.createText(child)
         this.renderer.appendChild(parentEl, text)
         continue
       }
 
-      // For element nodes, recursively create MarkdownNode
       if (Array.isArray(child)) {
         const childTag = getTag(child)
         if (!childTag) continue

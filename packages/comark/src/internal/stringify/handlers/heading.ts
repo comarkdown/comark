@@ -36,7 +36,7 @@ export async function heading(node: ElementNode, state: State) {
 
   const content = await state.flow(node, state)
 
-  // The auto-generated id is implicit in `# Heading` markdown — only echo a custom one.
+  // The auto-generated id is implicit in `# Heading` markdown; only echo a custom one.
   const { id, ...rest } = node[1] as Record<string, unknown>
   const autoId = autoHeadingId(node, level, state, id)
   const attrs = comarkAttributes(id === undefined || id === autoId ? rest : { id, ...rest })

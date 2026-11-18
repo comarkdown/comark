@@ -34,8 +34,7 @@ export interface MermaidConfig {
 }
 
 /**
- * markdown-it plugin for mermaid diagrams
- * This handles ```mermaid code blocks
+ * Converts ```mermaid fenced code blocks into `mermaid` AST nodes.
  */
 function markdownItMermaid(md: MarkdownExit, config?: MermaidConfig) {
   md.core.ruler.after('block', 'replace-pre', (state) => {
@@ -43,7 +42,6 @@ function markdownItMermaid(md: MarkdownExit, config?: MermaidConfig) {
       if (token.type === 'fence' && token.info?.startsWith('mermaid')) {
         let info = token.info.substring(7).trim()
         let props: [string, string][] = []
-        // extract props from info
         const curlyBraceIndex = info.indexOf('{')
         if (curlyBraceIndex !== -1) {
           const result = searchProps(info.substring(curlyBraceIndex))
@@ -52,7 +50,6 @@ function markdownItMermaid(md: MarkdownExit, config?: MermaidConfig) {
             info = info.substring(result.index)
           }
         }
-        // set type, tag, props and content
         token.type = 'mermaid'
         token.tag = 'mermaid'
         for (const prop of props) {
@@ -153,7 +150,6 @@ export function searchProps(content: string, index = 0) {
       index += 1
       return content.slice(start, index)
     } else {
-      // unquoted value
       return searchUntil(' }')
     }
   }
@@ -174,7 +170,6 @@ export function searchProps(content: string, index = 0) {
     return searchUntil(end)
   }
 
-  // Escale quotes
   props.forEach((v) => {
     if (v[1].match(/^(['"`]).*\1$/)) v[1] = v[1].slice(1, -1)
   })
@@ -186,21 +181,16 @@ export function searchProps(content: string, index = 0) {
 }
 
 /**
- * Create mermaid plugin for comark
- *
- * This plugin processes markdown-it tokens and identifies mermaid code blocks
- * for rendering by Vue/React components.
- *
- * @param config Mermaid rendering configuration
+ * Converts `mermaid` fenced code blocks into `mermaid` AST nodes for
+ * renderer components.
  *
  * @example
  * ```ts
  * import { parseMarkdown } from 'comark'
- * import { createMermaidPlugin } from 'comark/plugins/mermaid'
+ * import mermaid from 'comark/plugins/mermaid'
  *
- * const mermaid = createMermaidPlugin({ theme: 'dark' })
  * const result = await parseMarkdown('```mermaid\ngraph TD; A-->B;\n```', {
- *   plugins: [mermaid()]
+ *   plugins: [mermaid({ theme: 'github-dark' })]
  * })
  * ```
  */
