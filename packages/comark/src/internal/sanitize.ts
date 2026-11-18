@@ -437,6 +437,29 @@ export function isUnsafeRendererProp(attribute: string, value: unknown): boolean
   return isComponentSelectorViolation(attribute, value) || hasUnsafeObjectKeys(value)
 }
 
+// A selector string ends up as an element name, so it must be a plain tag or component name: Vue's
+// server renderer writes anything else (`img src=x onerror=…`) into the opening tag. These tags also
+// run or load code from their content or attributes.
+const SAFE_SELECTOR_NAME = /^[a-z][\w-]*$/i
+const unsafeSelectorTags = new Set([
+  'script',
+  'style',
+  'iframe',
+  'frame',
+  'frameset',
+  'object',
+  'embed',
+  'applet',
+  'base',
+  'link',
+  'meta',
+  'noscript',
+])
+
+function isUnsafeSelectorName(value: string): boolean {
+  return !SAFE_SELECTOR_NAME.test(value) || unsafeSelectorTags.has(value.toLowerCase())
+}
+
 /**
  * `as` and `is` name the element or component to render, so only a string (or nothing) may reach them:
  * Vue mounts any object, arrays included, as a component, and React throws on a non-string element type.
@@ -445,7 +468,7 @@ export function isUnsafeRendererProp(attribute: string, value: unknown): boolean
  */
 function isComponentSelectorViolation(attribute: string, value: unknown): boolean {
   const name = normalizePropName(attribute)
-  if (tagSelectors.includes(name)) return value != null && typeof value !== 'string'
+  if (tagSelectors.includes(name)) return value != null && (typeof value !== 'string' || isUnsafeSelectorName(value))
   if (name !== 'tag') return false
   return typeof value === 'function' || (typeof value === 'object' && value !== null && !Array.isArray(value))
 }

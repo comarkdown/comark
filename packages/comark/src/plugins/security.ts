@@ -1,13 +1,7 @@
 import type { ElementNode, Node } from 'comark'
 import { defineComarkPlugin } from 'comark'
 import { visitAsync } from 'comark/utils'
-import {
-  createTagFilter,
-  isTagSelector,
-  isUnsafeTagSelector,
-  sanitizeData,
-  validateProps,
-} from '../internal/sanitize.ts'
+import { isTagSelector, sanitizeData, unsafeTags, validateProps } from '../internal/sanitize.ts'
 import type { PropsValidationOptions } from '../internal/sanitize.ts'
 
 interface SecurityOptions extends PropsValidationOptions {
@@ -36,6 +30,27 @@ interface SecurityOptions extends PropsValidationOptions {
   frontmatter?: boolean
 }
 
+/** A tag name an `as` or `is` value may name: letters, digits, `_` and `-` only. */
+const RE_TAG_NAME = /^[\w-]+$/
+
+/** Whether `key` binds an object of props at once: `v-bind`, `v-bind:` or `:`. */
+function isObjectBinding(key: string): boolean {
+  return key === ':' || key === 'v-bind' || key === 'v-bind:'
+}
+
+/** Whether an object binding can set `as` or `is`: it holds one, or only render-time data decides. */
+function bindsTagSelector(value: unknown): boolean {
+  if (typeof value === 'string') {
+    try {
+      value = JSON.parse(value)
+    } catch {
+      return true
+    }
+  }
+  if (typeof value !== 'object' || value === null) return false
+  return Object.keys(value).some(isTagSelector)
+}
+
 export default defineComarkPlugin((options: SecurityOptions = {}) => {
   const {
     blockedTags = [],
@@ -51,7 +66,6 @@ export default defineComarkPlugin((options: SecurityOptions = {}) => {
 
   const dropSet = new Set(blockedTags.map((t) => t.toLowerCase()))
   const allowSet = new Set(allowedTags.map((t) => t.toLowerCase()))
-  const isFilteredTag = createTagFilter(blockedTags, allowedTags)
 
   const propsOptions: PropsValidationOptions = {
     allowedLinkPrefixes,
@@ -69,10 +83,27 @@ export default defineComarkPlugin((options: SecurityOptions = {}) => {
         (node) => typeof node !== 'string' && node[0] !== null,
         async (node) => {
           const element = node as ElementNode
-          const tagName = element[0].toLowerCase()
 
-          const isBlocked = dropSet.has(tagName)
-          const isNotAllowed = allowSet.size > 0 && !allowSet.has(tagName)
+          // `as` and `is` change the tag renderers create, so the element is checked as each tag it names:
+          // otherwise `[x]{as="AdminPanel"}` bypasses the tag filters. Its own tag is checked too, as
+          // renderers fall back to it when no component matches the `as` value.
+          const tagNames = [element[0].toLowerCase()]
+          for (const key of Object.keys(element[1])) {
+            const value = element[1][key]
+            const isLiteral = key === 'as' || key === 'is'
+            if (isLiteral && typeof value === 'string' && RE_TAG_NAME.test(value)) {
+              tagNames.push(value.toLowerCase())
+              continue
+            }
+            if (!isLiteral && !isTagSelector(key) && !(isObjectBinding(key) && bindsTagSelector(value))) continue
+            // A bound selector (`:as`, `v-bind:is`, `v-bind="{ as }"`) names its tag only at render
+            // time, after every check, and a non-string or malformed one names no valid tag.
+            console.warn(`[comark/plugins/security] removing unsafe attribute: ${key}="${value}"`)
+            delete element[1][key]
+          }
+
+          const isBlocked = tagNames.some((tag) => dropSet.has(tag))
+          const isNotAllowed = allowSet.size > 0 && tagNames.some((tag) => !allowSet.has(tag))
 
           if (isNotAllowed || isBlocked) {
             if (typeof tagFallback === 'function') {
@@ -83,22 +114,14 @@ export default defineComarkPlugin((options: SecurityOptions = {}) => {
             return false
           }
 
-          // `as` and `is` make renderers resolve a different component than the element's own tag.
-          // Hold them, bindings included, to the same tag filters: otherwise `[x]{as="AdminPanel"}` bypasses them.
-          for (const key of Object.keys(element[1])) {
-            if (isTagSelector(key) && isUnsafeTagSelector(key, element[1][key], isFilteredTag)) {
-              console.warn(`[comark/plugins/security] removing unsafe attribute: ${key}="${element[1][key]}"`)
-              delete element[1][key]
-            }
-          }
-
           const keys = Object.keys(element[1])
 
           /**
            * If the element has any props, validate them
            */
           if (keys.length) {
-            element[1] = validateProps(element[0], element[1], propsOptions)
+            const type = tagNames.find((tag) => unsafeTags.includes(tag)) ?? tagNames[0]
+            element[1] = validateProps(type, element[1], propsOptions)
           }
         }
       )
