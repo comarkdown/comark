@@ -1,4 +1,4 @@
-import { bench, describe } from 'vitest'
+import { test } from 'vitest'
 import { createMarkdownParser } from 'comark'
 import emoji from 'comark/plugins/emoji'
 import footnotes from 'comark/plugins/footnotes'
@@ -48,55 +48,49 @@ for (const parse of [codeBaseline, withShiki, withRangi]) {
   await parse(codeMarkdown)
 }
 
-describe('plugins', () => {
-  bench('baseline (default plugins only)', async () => {
-    await baseline(pluginMarkdown)
-  })
-
-  bench('toc', async () => {
-    await withToc(pluginMarkdown)
-  })
-
-  bench('emoji', async () => {
-    await withEmoji(pluginMarkdown)
-  })
-
-  bench('punctuation', async () => {
-    await withPunctuation(pluginMarkdown)
-  })
-
-  bench('footnotes', async () => {
-    await withFootnotes(pluginMarkdown)
-  })
-
-  // Keeps the `headings` id so CodSpeed history carries over the plugin rename.
-  bench('headings', async () => {
-    await withTitleDescription(pluginMarkdown)
-  })
-
-  bench('security', async () => {
-    await withSecurity(pluginMarkdown)
-  })
-
-  bench('summary', async () => {
-    await withSummary(pluginMarkdown)
-  })
-
-  bench('all of the above combined', async () => {
-    await withAll(pluginMarkdown)
-  })
+test('plugins', async ({ bench }) => {
+  await bench.compare(
+    bench('baseline (default plugins only)', async () => {
+      await baseline(pluginMarkdown)
+    }),
+    bench('toc', async () => {
+      await withToc(pluginMarkdown)
+    }),
+    bench('emoji', async () => {
+      await withEmoji(pluginMarkdown)
+    }),
+    bench('punctuation', async () => {
+      await withPunctuation(pluginMarkdown)
+    }),
+    bench('footnotes', async () => {
+      await withFootnotes(pluginMarkdown)
+    }),
+    // Keeps the `headings` id so CodSpeed history carries over the plugin rename.
+    bench('headings', async () => {
+      await withTitleDescription(pluginMarkdown)
+    }),
+    bench('security', async () => {
+      await withSecurity(pluginMarkdown)
+    }),
+    bench('summary', async () => {
+      await withSummary(pluginMarkdown)
+    }),
+    bench('all of the above combined', async () => {
+      await withAll(pluginMarkdown)
+    })
+  )
 })
 
-describe('highlight', () => {
-  bench('baseline (no highlighter)', async () => {
-    await codeBaseline(codeMarkdown)
-  })
-
-  bench('shiki', async () => {
-    await withShiki(codeMarkdown)
-  })
-
-  bench('rangi', async () => {
-    await withRangi(codeMarkdown)
-  })
+test('highlight', async ({ bench }) => {
+  await bench.compare(
+    bench('baseline (no highlighter)', async () => {
+      await codeBaseline(codeMarkdown)
+    }),
+    bench('shiki', async () => {
+      await withShiki(codeMarkdown)
+    }),
+    bench('rangi', async () => {
+      await withRangi(codeMarkdown)
+    })
+  )
 })
