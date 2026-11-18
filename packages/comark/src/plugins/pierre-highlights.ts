@@ -115,19 +115,24 @@ export function pierreHighlightsCodeBlocks(
   return createHighlighter(options)(tree)
 }
 
-/**
- * The streaming parser hands the same raw node to every update while its
- * source is unchanged, so each highlighted node is cached by its raw node.
- */
 function createHighlighter(options: PierreHighlightsOptions): (tree: MarkdownDocument) => MarkdownDocument {
-  const cache = new WeakMap<ElementNode, ElementNode>()
+  // The streaming parser hands the same raw node to every update while its
+  // source is unchanged, so tokens are cached by raw node and reused only when
+  // its code and language still match. Output nodes are rebuilt every time:
+  // callers and later plugins may edit them in place.
+  const cache = new WeakMap<ElementNode, { source: string; lang: string; result: TokensResult }>()
   const light = options.themes?.light ?? options.themes?.dark ?? defaultLight
   const dark = options.themes?.dark ?? options.themes?.light ?? defaultDark
   const themes: Record<string, Theme> = light === dark ? { light } : { light, dark }
   const inlineEnabled = options.inlineCode !== false
 
-  const tokenize = (code: string, lang: string): TokensResult =>
-    codeToTokens(code, { lang: lang as any, themes, cssVariablePrefix: '--shiki-' })
+  const tokenize = (el: ElementNode, source: string, lang: string): TokensResult => {
+    const cached = cache.get(el)
+    if (cached?.source === source && cached.lang === lang) return cached.result
+    const result = codeToTokens(source, { lang: lang as any, themes, cssVariablePrefix: '--shiki-' })
+    cache.set(el, { source, lang, result })
+    return result
+  }
 
   const isBlock = (node: ElementNode): boolean => {
     const code = node[2]
@@ -153,20 +158,12 @@ function createHighlighter(options: PierreHighlightsOptions): (tree: MarkdownDoc
 
   // Copy only the path to each replaced node: the streaming parser caches and
   // reuses the input nodes, so they must stay unhighlighted.
-  const highlight = (el: ElementNode): ElementNode => {
-    let out = cache.get(el)
-    if (!out) {
-      out = isBlock(el) ? highlightBlock(el) : (highlightInline(el) ?? el)
-      cache.set(el, out)
-    }
-    return out
-  }
-
   // Deeper subtrees are left unhighlighted rather than overflowing the stack.
   const walk = (node: Node, depth: number): Node => {
     if (!Array.isArray(node) || node[0] === null) return node
     const el = node as ElementNode
-    if (isBlock(el) || isInline(el)) return highlight(el)
+    if (isBlock(el)) return highlightBlock(el)
+    if (isInline(el)) return highlightInline(el) ?? el
     if (depth >= TREE_WALK_MAX_DEPTH) return el
     let copy: ElementNode | undefined
     for (let i = 2; i < el.length; i++) {
@@ -191,7 +188,7 @@ function createHighlighter(options: PierreHighlightsOptions): (tree: MarkdownDoc
     // highlighter class, with the code left as plain text.
     if (!lang) return ['pre', preAttrs, ['code', codeEl[1], code]]
 
-    const result = tokenize(code, lang)
+    const result = tokenize(pre, code, lang)
     if (options.preStyles) preAttrs.style = `background-color:${result.bg};color:${result.fg}`
 
     const highlights = Array.isArray(attrs.highlights) && attrs.highlights.length > 0 ? new Set(attrs.highlights) : null
@@ -232,7 +229,8 @@ function createHighlighter(options: PierreHighlightsOptions): (tree: MarkdownDoc
     // Highlights has no grammar-context option: tokenize the seed with the
     // code, then drop the seed's characters from the first line.
     const prefix = context?.grammarContextCode ?? ''
-    const lines = tokenize(prefix + code, lang).tokens
+    // Copied: the token arrays may be cached for the next update.
+    const lines = tokenize(el, prefix + code, lang).tokens.slice()
     if (prefix && lines.length > 0) lines[0] = dropPrefix(lines[0], prefix.length)
 
     const inlineNode: ElementNode = ['code', { ...attrs, class: withUserClass(CLASS, attrs.class) }]

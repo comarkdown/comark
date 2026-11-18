@@ -1,4 +1,5 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
+import { codeToTokens } from '@pierre/highlights'
 import githubDark from '@pierre/highlights/themes/github-dark'
 import { createMarkdownParser, parseMarkdown } from '../../src/index'
 import { renderMarkdown } from '../../src/render'
@@ -7,6 +8,11 @@ import pierreHighlights, {
   resolvePierreHighlightsLanguage,
 } from '../../src/plugins/pierre-highlights'
 import type { ElementNode, Node } from '../../src/types'
+
+vi.mock('@pierre/highlights', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@pierre/highlights')>()
+  return { ...actual, codeToTokens: vi.fn(actual.codeToTokens) }
+})
 
 function find(nodes: Node[], tag: string): ElementNode | undefined {
   for (const node of nodes) {
@@ -108,15 +114,18 @@ describe('pierre-highlights plugin', () => {
     expect(find(tree!.nodes, 'pre')![1].class).toBe('shiki pierre-highlights')
   })
 
-  it('highlights an unchanged fence once while later content streams', async () => {
+  it('tokenizes an unchanged fence once while later content streams, without sharing output nodes', async () => {
     const parse = createMarkdownParser({ plugins: [pierreHighlights()] })
-    const fences: Node[] = []
-    for (const tail of ['a', 'ab']) {
-      const tree = await parse(`\`\`\`ts\nconst a = 1\n\`\`\`\n\n${tail}`, { streaming: true })
-      fences.push(tree.nodes[0])
-    }
-    expect(spans((fences[0] as ElementNode)[2] as ElementNode).length).toBeGreaterThan(1)
-    expect(fences[1]).toBe(fences[0])
+    const source = (tail: string) => `\`\`\`ts\nconst a = 1\n\`\`\`\n\n${tail}`
+    const first = await parse(source('a'), { streaming: true })
+    const calls = vi.mocked(codeToTokens).mock.calls.length
+    // A later plugin or the caller editing the output must not leak into the next update.
+    ;(first.nodes[0] as ElementNode)[1].class = 'edited'
+    const second = await parse(source('ab'), { streaming: true })
+
+    expect(vi.mocked(codeToTokens).mock.calls.length).toBe(calls)
+    expect((second.nodes[0] as ElementNode)[1].class).toBe('shiki pierre-highlights')
+    expect(spans((second.nodes[0] as ElementNode)[2] as ElementNode).length).toBeGreaterThan(1)
   })
 
   it('leaves code nested deeper than the walk limit untouched instead of overflowing', () => {
