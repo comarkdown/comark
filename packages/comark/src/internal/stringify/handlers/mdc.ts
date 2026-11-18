@@ -30,7 +30,8 @@ export async function mdc(node: ElementNode, state: State, parent?: ElementNode)
   let content = ''
   const childState = { ...state, nodeDepthInTree: (state.nodeDepthInTree || 0) + 1 }
   for (const child of children as Node[]) {
-    content += await state.one(child, childState, node)
+    // Block bodies start on their own line, so `#` / `-` text there keeps its escape.
+    content += await state.one(child, childState, node, !inline && (content === '' || content.endsWith('\n')))
   }
   content = content.trimEnd()
 

@@ -85,7 +85,9 @@ export async function html(node: ElementNode, state: State, parent?: ElementNode
 
   const childrenContent: string[] = []
   for (let i = 0; i < children.length; i++) {
-    const atLineStart = markdownBody && (i === 0 || isBlockChild(children[i - 1]))
+    // A hard break (`br`) also ends a line, so check the rendered text, not only the previous node type.
+    const prev = childrenContent[i - 1]
+    const atLineStart = markdownBody && (i === 0 || isBlockChild(children[i - 1]) || prev.endsWith('\n'))
     childrenContent.push(await state.one(children[i], state, node, atLineStart))
   }
 

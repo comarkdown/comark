@@ -197,9 +197,9 @@ function findMarkdownFiles(dir: string, baseDir: string = dir): string[] {
   return files
 }
 
-// Run a single spec: SPEC=SPEC/MDC/inline-component.md pnpm vitest run test/index.test.ts
+// Run a single spec: SPEC=SPEC/COMARK/component.md pnpm vitest run test/index.test.ts
 const specDir = join(process.cwd(), 'SPEC')
-const specArg = String(process.env.npm_lifecycle_script || '').split('-- -spec ')[1] || ''
+const specArg = process.env.SPEC || ''
 
 function loadTestCases(): Array<{ file: string; testCase: TestCase }> {
   if (specArg) {
