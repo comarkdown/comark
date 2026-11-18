@@ -373,35 +373,42 @@ const markdownItComarkBlock: PluginSimple = (md) => {
 
       let lineEnd = startLine + 1
       let inCodeFence = false
-      let codeFenceChar = ''
+      let codeFenceCharCode = 0
       let codeFenceCount = 0
+      let codeFenceIndent = 0
       while (lineEnd < endLine) {
         const inner = state.src.slice(state.bMarks[lineEnd] + state.tShift[startLine], state.eMarks[lineEnd])
 
-        if (inCodeFence) {
-          // Matching closing fence: same char, >= opening count, nothing but spaces after.
-          if (inner[0] === codeFenceChar) {
-            let fencePos = 1
-            while (fencePos < inner.length && inner[fencePos] === codeFenceChar) fencePos++
-            if (fencePos >= codeFenceCount && inner.slice(fencePos).trim() === '') {
+        // Fences are read at the line's own indentation, with the same rules as `comark_block`.
+        const start = state.bMarks[lineEnd] + state.tShift[lineEnd]
+        const max = state.eMarks[lineEnd]
+        const charCode = state.src.charCodeAt(start)
+        if (charCode === 0x60 /* ` */ || charCode === 0x7e /* ~ */) {
+          let fencePos = start + 1
+          while (fencePos < max && state.src.charCodeAt(fencePos) === charCode) fencePos++
+          const column = state.sCount[lineEnd]
+          if (inCodeFence) {
+            if (
+              charCode === codeFenceCharCode &&
+              fencePos - start >= codeFenceCount &&
+              state.skipSpaces(fencePos) >= max &&
+              column - codeFenceIndent < 4
+            ) {
               inCodeFence = false
             }
-          }
-          lineEnd += 1
-          continue
-        }
-
-        if (inner[0] === '`' || inner[0] === '~') {
-          const ch = inner[0]
-          let fencePos = 1
-          while (fencePos < inner.length && inner[fencePos] === ch) fencePos++
-          if (fencePos >= 3) {
+          } else if (fencePos - start >= 3 && column - state.blkIndent < 4) {
             inCodeFence = true
-            codeFenceChar = ch
-            codeFenceCount = fencePos
+            codeFenceCharCode = charCode
+            codeFenceCount = fencePos - start
+            codeFenceIndent = Math.min(state.blkIndent, column)
             lineEnd += 1
             continue
           }
+        }
+
+        if (inCodeFence) {
+          lineEnd += 1
+          continue
         }
 
         if (/^#\w+/.test(inner) || inner.startsWith('::')) break

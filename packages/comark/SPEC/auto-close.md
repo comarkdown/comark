@@ -2349,7 +2349,7 @@ A closer indented 4 or more spaces is code content; up to 3 spaces still closes:
 + ```\ncode\n   ```\n**bold**
 ```
 
-A tab counts as 4 columns:
+A tab advances to the next multiple of 4 columns:
 
 ```diff
 - ```\ncode\n\t```\n**bold
