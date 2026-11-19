@@ -109,7 +109,7 @@ describe('security plugin — XSS payloads', () => {
   it('strips a javascript: href delivered as an array via YAML block-props (#367)', async () => {
     // Non-string YAML block-prop values round-trip through a `:`-prefixed
     // JSON-string attr that gets JSON.parsed back into a real array before
-    // this plugin runs — validateProp must not skip URL validation just
+    // this plugin runs; validateProp must not skip URL validation just
     // because the value is no longer a plain string.
     const tree = await parseWithSecurity(`\
 ::a
@@ -327,10 +327,10 @@ home: javascript:alert(1)
 [Home](placeholder){:href="frontmatter.home"}`
 
     const tree = await parseWithSecurity(md)
-    // Parse-time validation only sees the literal dot-path…
+    // Parse-time validation only sees the literal dot-path...
     const anchor = collectElements(tree.nodes).find((element) => element[0] === 'a')
     expect(anchor).toBeDefined()
-    // …but the render-time hard floor drops the resolved unsafe URL.
+    // ...but the render-time hard floor drops the resolved unsafe URL.
     const html = await render(tree, { format: 'text/html', blockSeparator: '\n' })
     expect(html).not.toContain('javascript:')
   })
@@ -344,9 +344,9 @@ home: javascript:alert(1)
 ::`
 
     const tree = await parseWithSecurity(md)
-    // `home` is not a URL key, so frontmatter sanitizing keeps it…
+    // `home` is not a URL key, so frontmatter sanitizing keeps it...
     expect(tree.frontmatter.home).toBe('javascript:alert(1)')
-    // …and the render-time floor checks the same URL props as parse time.
+    // ...and the render-time floor checks the same URL props as parse time.
     const html = await render(tree, { format: 'text/html', blockSeparator: '\n' })
     expect(html).not.toContain('javascript:')
   })
@@ -401,6 +401,14 @@ description: "javascript: tips and tricks"
       // Not a URL key: prose stays, as for props.
       description: 'javascript: tips and tricks',
     })
+  })
+
+  it('keeps non-string `tag` data but strips component options', async () => {
+    const tree = await parseWithSecurity(
+      '---\ntitle: Page\ntag: [vue, nuxt]\nicon:\n  extends:\n    template: "<b>x</b>"\n---\n'
+    )
+
+    expect(tree.frontmatter).toEqual({ title: 'Page', tag: ['vue', 'nuxt'] })
   })
 
   it('leaves frontmatter alone with `frontmatter: false`', async () => {
@@ -619,22 +627,34 @@ describe('security plugin — allowedTags', () => {
 })
 
 describe('security plugin — as prop', () => {
-  it('strips as pointing at a blocked tag', async () => {
-    const tree = makeTree([['span', { as: 'script' }, 'x']])
+  it('removes an element whose as names a blocked tag', async () => {
+    const tree = makeTree([
+      ['span', { as: 'Script' }, 'x'],
+      ['p', {}, 'safe'],
+    ])
     await runPlugin(tree, { blockedTags: ['script'] })
-    const el = tree.nodes[0] as [string, any]
-    expect(el[0]).toBe('span')
-    expect(el[1].as).toBeUndefined()
+    expect(tree.nodes).toEqual([['p', {}, 'safe']])
   })
 
-  it('strips as pointing at a tag outside allowedTags', async () => {
+  it('removes an element whose as names a tag outside allowedTags', async () => {
     const tree = makeTree([['span', { as: 'AdminPanel' }, 'x']])
     await runPlugin(tree, { allowedTags: ['span'] })
-    const el = tree.nodes[0] as [string, any]
-    expect(el[1].as).toBeUndefined()
+    expect(tree.nodes).toEqual([])
   })
 
-  it('keeps as when the resolved tag is allowed', async () => {
+  it('passes the element to tagFallback when as names a blocked tag', async () => {
+    const tree = makeTree([['span', { as: 'AdminPanel' }, 'x']])
+    await runPlugin(tree, { blockedTags: ['adminpanel'], tagFallback: (e) => textContent(e) })
+    expect(tree.nodes).toEqual(['x'])
+  })
+
+  it('still checks the element tag, which renderers fall back to', async () => {
+    const tree = makeTree([['iframe', { as: 'Badge' }]])
+    await runPlugin(tree, { blockedTags: ['iframe'] })
+    expect(tree.nodes).toEqual([])
+  })
+
+  it('keeps as when the element and the named tag are allowed', async () => {
     const tree = makeTree([['span', { as: 'Badge' }, 'x']])
     await runPlugin(tree, { allowedTags: ['span', 'badge'] })
     const el = tree.nodes[0] as [string, any]
@@ -648,32 +668,163 @@ describe('security plugin — as prop', () => {
     expect(el[1].as).toBe('Badge')
   })
 
-  it('strips is like as', async () => {
+  it('checks is like as', async () => {
     const tree = makeTree([['span', { is: 'script' }, 'x']])
     await runPlugin(tree, { blockedTags: ['script'] })
-    const el = tree.nodes[0] as [string, any]
-    expect(el[1].is).toBeUndefined()
+    expect(tree.nodes).toEqual([])
   })
 
-  it('checks a JSON binding decoded, as renderers decode it', async () => {
-    const tree = makeTree([['span', { ':as': '"script"', ':is': '"section"' }, 'x']])
-    await runPlugin(tree, { blockedTags: ['script'] })
-    const el = tree.nodes[0] as [string, any]
-    expect(el[1]).toEqual({ ':is': '"section"' })
+  it('strips every bound as or is, even one naming an allowed tag', async () => {
+    const tree = makeTree([
+      ['span', { ':as': '"section"', 'v-bind:is': '"section"' }, 'x'],
+      ['span', { ':as': 'frontmatter.tag', 'v-bind:as': 'props.tag' }, 'x'],
+    ])
+    await runPlugin(tree)
+    expect((tree.nodes[0] as [string, any])[1]).toEqual({})
+    expect((tree.nodes[1] as [string, any])[1]).toEqual({})
   })
 
-  it('strips a binding resolved from data at render time, as no check can follow it', async () => {
-    const tree = makeTree([['span', { ':as': 'frontmatter.tag', 'v-bind:is': 'props.tag' }, 'x']])
+  it('strips an object binding that can set as or is, and keeps one that cannot', async () => {
+    const tree = makeTree([
+      ['span', { 'v-bind': '{"as":"AdminPanel"}' }, 'x'],
+      ['span', { ':': { is: 'AdminPanel' } }, 'x'],
+      ['span', { 'v-bind': 'frontmatter.props' }, 'x'],
+      ['span', { 'v-bind': '{"title":"ok"}' }, 'x'],
+    ])
+    await runPlugin(tree)
+    expect(tree.nodes.map((node) => (node as [string, any])[1])).toEqual([{}, {}, {}, { 'v-bind': '{"title":"ok"}' }])
+  })
+
+  it('strips an as or is that is not a plain tag name', async () => {
+    const tree = makeTree([
+      ['span', { as: 'my component' }, 'x'],
+      ['span', { as: '<script>' }, 'x'],
+      ['span', { is: 'a.b' }, 'x'],
+      ['span', { as: '' }, 'x'],
+      ['span', { as: 'My_Card-2' }, 'x'],
+    ])
+    await runPlugin(tree)
+    expect(tree.nodes.map((node) => (node as [string, any])[1])).toEqual([{}, {}, {}, {}, { as: 'My_Card-2' }])
+  })
+
+  it('strips case and prefix variants that renderers would not read as as', async () => {
+    const tree = makeTree([['span', { AS: 'section', '.is': 'section', '^as': 'section' }, 'x']])
+    await runPlugin(tree)
+    expect((tree.nodes[0] as [string, any])[1]).toEqual({})
+  })
+
+  it('validates props against the named tag: as="object" drops them all', async () => {
+    const tree = makeTree([['span', { as: 'object', data: '/x' }, 'x']])
     await runPlugin(tree)
     const el = tree.nodes[0] as [string, any]
     expect(el[1]).toEqual({})
   })
+})
 
-  it("strips as naming object, whose props were checked against the element's own tag", async () => {
-    const tree = makeTree([['span', { as: 'object', data: '/x' }, 'x']])
+describe('security plugin — component-like values', () => {
+  it('strips an object as or is or tag', async () => {
+    const tree = makeTree([
+      ['span', { ':as': '{"template":"<b>x</b>"}' }, 'x'],
+      ['span', { ':is': '{"label":"a"}' }, 'x'],
+      ['span', { tag: { name: 'a' } }, 'x'],
+    ])
+    await runPlugin(tree)
+    for (const node of tree.nodes) {
+      const el = node as [string, any]
+      expect(el[1]).toEqual({})
+    }
+  })
+
+  it('strips an array, number or boolean as or is', async () => {
+    const tree = makeTree([
+      ['span', { ':as': '["section"]', ':is': '5' }, 'x'],
+      ['span', { ':as': 'true', is: ['section'] }, 'x'],
+    ])
+    await runPlugin(tree)
+    expect((tree.nodes[0] as [string, any])[1]).toEqual({})
+    expect((tree.nodes[1] as [string, any])[1]).toEqual({})
+  })
+
+  it('keeps a string as, and an array, number or boolean tag', async () => {
+    const tree = makeTree([
+      ['span', { ':tag': '["hello","world"]' }, 'x'],
+      ['span', { as: 'section', ':tag': '5' }, 'x'],
+    ])
+    await runPlugin(tree)
+    expect((tree.nodes[0] as [string, any])[1]).toEqual({ ':tag': '["hello","world"]' })
+    expect((tree.nodes[1] as [string, any])[1]).toEqual({ as: 'section', ':tag': '5' })
+  })
+
+  it('strips an as or is that is not a plain tag name or names a tag that runs code', async () => {
+    const tree = makeTree([
+      ['span', { as: 'img src=x onerror=alert(1)' }, 'x'],
+      ['span', { as: 'iframe', is: 'SCRIPT' }, 'x'],
+      ['span', { as: 'section', is: 'prose-field' }, 'x'],
+    ])
+    await runPlugin(tree)
+    expect((tree.nodes[0] as [string, any])[1]).toEqual({})
+    expect((tree.nodes[1] as [string, any])[1]).toEqual({})
+    expect((tree.nodes[2] as [string, any])[1]).toEqual({ as: 'section', is: 'prose-field' })
+  })
+
+  it('strips a forged VNode at any depth', async () => {
+    const tree = makeTree([
+      ['span', { ':icon': '{"__v_isVNode":true,"type":"script","shapeFlag":1}' }, 'x'],
+      ['span', { ':config': '{"label":"a","icon":{"__v_isVNode":true,"type":"script"}}' }, 'x'],
+    ])
+    await runPlugin(tree, { blockedTags: ['script'] })
+    expect((tree.nodes[0] as [string, any])[1]).toEqual({})
+    expect((tree.nodes[1] as [string, any])[1]).toEqual({ ':config': '{"label":"a"}' })
+  })
+
+  it("strips the VNode marker from an element's own attributes", async () => {
+    const tree = makeTree([
+      ['wrapper', { ':__v_isVNode': 'true', type: 'script', ':shapeFlag': '9' }],
+      ['wrapper', { __v_isVNode: true, 'v-bind:__v_isVNode': 'true', title: 'a' }],
+    ])
+    await runPlugin(tree)
+    expect((tree.nodes[0] as [string, any])[1]).toEqual({ type: 'script', ':shapeFlag': '9' })
+    expect((tree.nodes[1] as [string, any])[1]).toEqual({ title: 'a' })
+  })
+
+  it('strips a bound object carrying component options', async () => {
+    const tree = makeTree([
+      ['span', { ':icon': '{"extends":{"template":"<b>x</b>"}}' }, 'x'],
+      ['span', { ':config': '{"setup":1}' }, 'x'],
+      ['span', { ':config': '{"mixins":[]}' }, 'x'],
+    ])
+    await runPlugin(tree)
+    for (const node of tree.nodes) {
+      const el = node as [string, any]
+      expect(el[1]).toEqual({})
+    }
+  })
+
+  it('strips only the nested object carrying component options, like other nested checks', async () => {
+    const tree = makeTree([
+      ['span', { ':items': '[{"label":"a"},{"render":"x"}]' }, 'x'],
+      ['span', { ':config': '{"label":"a","icon":{"template":"x"}}' }, 'x'],
+    ])
+    await runPlugin(tree)
+    expect((tree.nodes[0] as [string, any])[1]).toEqual({ ':items': '[{"label":"a"}]' })
+    expect((tree.nodes[1] as [string, any])[1]).toEqual({ ':config': '{"label":"a"}' })
+  })
+
+  it('strips component options from frontmatter, in arrays too', async () => {
+    const tree: MarkdownDocument = {
+      nodes: [],
+      frontmatter: { icon: { extends: { template: 'x' } }, items: [{ label: 'a' }, { render: 'x' }], name: 'ok' },
+      meta: {},
+    }
+    await runPlugin(tree)
+    expect(tree.frontmatter).toEqual({ items: [{ label: 'a' }], name: 'ok' })
+  })
+
+  it('keeps data-valued bound props', async () => {
+    const tree = makeTree([['span', { ':items': '[{"label":"a"}]', ':options': '{"k":"v"}' }, 'x']])
     await runPlugin(tree)
     const el = tree.nodes[0] as [string, any]
-    expect(el[1].as).toBeUndefined()
+    expect(el[1]).toEqual({ ':items': '[{"label":"a"}]', ':options': '{"k":"v"}' })
   })
 })
 

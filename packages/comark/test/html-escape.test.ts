@@ -123,7 +123,7 @@ describe('prototype-safe handler lookup', () => {
       ['constructor', {}, '<img src=x onerror=alert(1)>'],
     ])
     // The unknown element falls through to the generic html handler, which
-    // escapes text children — no raw markup may reach the output.
+    // escapes text children; no raw markup may reach the output.
     expect(html).not.toContain('<img src=x onerror=alert(1)>')
     expect(html).toContain('<p>before</p>')
   })

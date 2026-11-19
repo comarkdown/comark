@@ -37,6 +37,33 @@ describe('code fence selection', () => {
   })
 })
 
+describe('inline code fence selection', () => {
+  const cases: Record<string, string> = {
+    'a lone backtick': 'Type `` ` `` to start code.',
+    'a leading and trailing backtick': '`` `a` ``',
+    'a double backtick run': '`a``b`',
+    'a leading and trailing space': '`  a  `',
+  }
+
+  for (const [name, md] of Object.entries(cases)) {
+    it(`keeps code with ${name}`, async () => {
+      const { t1, t2 } = await roundTrip(md)
+      expect(t2.nodes).toEqual(t1.nodes)
+    })
+  }
+
+  it('keeps the attributes of code that starts with a backtick', async () => {
+    const { t1, t2, rendered } = await roundTrip('`` `foo` ``{lang="md"}')
+    expect(rendered).toBe('`` `foo` ``{lang="md"}')
+    expect(t2.nodes).toEqual(t1.nodes)
+  })
+
+  it('keeps the output of code that already round-tripped', async () => {
+    const { rendered } = await roundTrip('`a` ``b`c`` ` d`')
+    expect(rendered).toBe('`a` ``b`c`` ` d`')
+  })
+})
+
 describe('mermaid fence selection', () => {
   it('does not let mermaid content escape its fence', async () => {
     // A mermaid body containing ``` must not terminate the serialized fence
@@ -79,7 +106,7 @@ describe('component marker escaping', () => {
 describe('comarkAttributes quoting', () => {
   it('round-trips attribute values containing double quotes', async () => {
     // The text sibling keeps the span inline in both parses (a lone
-    // `:span[...]` line is a leaf block component — pre-existing asymmetry).
+    // `:span[...]` line is a leaf block component).
     const md = `say :span[hi]{title='a"b'} now`
     const { t1, t2 } = await roundTrip(md)
     expect(t2.nodes).toEqual(t1.nodes)
@@ -129,5 +156,116 @@ describe('component after a list', () => {
   ])('keeps a component %s out of the last list item', async (_, md) => {
     const { t1, t2 } = await roundTrip(md)
     expect(t2.nodes).toEqual(t1.nodes)
+  })
+})
+
+describe('lists, emphasis and headings', () => {
+  it.each([
+    ['an ordered list that starts at 0', '0. zero\n1. one\n'],
+    ['adjacent bullet lists', '- a\n- b\n\n+ c\n\n* d\n'],
+    ['adjacent ordered lists', '1. a\n\n1) b\n'],
+    ['adjacent nested lists', '- a\n  - b\n\n  * c\n'],
+    ['a list nested under item 10', '10. ten\n    - nested\n'],
+    [
+      'a list nested under the tenth item',
+      '1. a\n2. b\n3. c\n4. d\n5. e\n6. f\n7. g\n8. h\n9. i\n10. j\n    - nested\n',
+    ],
+    ['a nested list that starts at 0 after text', '- parent\n\n  0. child\n'],
+    ['emphasis inside emphasis', '*_foo_*\n'],
+    ['emphasis that ends inside a word within emphasis', '_foo *bar*baz_\n'],
+    ['emphasis inside a link inside emphasis', '_x [a*b*](/u) y_\n'],
+    ['a multi-line heading', 'Foo\nbar\n===\n'],
+    ['a multi-line level 2 heading with attributes', 'Foo\nbar {.c}\n---\n'],
+    ['a multi-line heading that starts with an escaped marker', '\\# Foo\nbar\n===\n'],
+  ])('keeps %s', async (_, md) => {
+    const { t1, t2 } = await roundTrip(md)
+    expect(t2.nodes).toEqual(t1.nodes)
+  })
+
+  it('keeps adjacent lists apart when a transformNode hook copies them', async () => {
+    const t1 = await parseMarkdown('- a\n\n* b\n')
+    const rendered = await renderMarkdown(t1, { transformNode: ({ props }) => ({ props: { ...props } }) })
+    const t2 = await parseMarkdown(rendered)
+    expect(t2.nodes).toEqual(t1.nodes)
+  })
+})
+
+describe('link and image serialization', () => {
+  const doc = (node: unknown) =>
+    ({ frontmatter: {}, meta: {}, nodes: [['p', {}, node]] }) as unknown as MarkdownDocument
+
+  // The URL the security plugin validated must be the URL a CommonMark reader sees.
+  it.each([
+    ['an unbalanced ")"', 'https://safe.com)javascript:alert(1)'],
+    ['an unbalanced "("', 'https://a.com/(x'],
+    ['balanced parentheses', 'https://en.wikipedia.org/wiki/Foo_(bar)'],
+    ['an entity-like "&"', 'https://a.com/?a=1&amp;b=2'],
+    ['a plain "&"', 'https://a.com/?a=1&b=2'],
+    ['percent escapes', 'https://a.com/a%20b'],
+  ])('keeps an href with %s', async (_, href) => {
+    const rendered = await renderMarkdown(doc(['a', { href }, 'x']))
+    const t2 = await parseMarkdown(rendered)
+    expect((t2.nodes[0] as any)[2][1].href).toBe(href)
+  })
+
+  it('keeps an image src with an unbalanced ")"', async () => {
+    const src = 'https://safe.com)javascript:alert(1)'
+    const t2 = await parseMarkdown(await renderMarkdown(doc(['img', { src, alt: 'x' }])))
+    expect((t2.nodes[0] as any)[2][1].src).toBe(src)
+  })
+
+  // `\` is `/` to the browser in an http URL, but a markdown reader encodes it as
+  // `%5C`, which would turn `example.com\` into userinfo and evil.com into the host.
+  it.each(['https://example.com\\@evil.com/x', 'https:\\\\example.com\\@evil.com/x'])(
+    'keeps the host of %s',
+    async (href) => {
+      const t2 = await parseMarkdown(await renderMarkdown(doc(['a', { href }, 'x'])))
+      const out = (t2.nodes[0] as any)[2][1].href
+      expect(new URL(out).origin).toBe(new URL(href).origin)
+    }
+  )
+
+  it('keeps a relative URL with a backslash on the same origin', async () => {
+    const t2 = await parseMarkdown(await renderMarkdown(doc(['a', { href: '\\\\evil.com/x' }, 'x'])))
+    const out = (t2.nodes[0] as any)[2][1].href
+    expect(new URL(out, 'https://app.example/').origin).toBe('https://app.example')
+  })
+
+  it('keeps alt text from the parser as written', async () => {
+    for (const md of ['![a\\](b) \\[c](/a.png)', '![[a]](/a.png)', '![a &lt; b](/a.png)']) {
+      const { t1, t2 } = await roundTrip(md)
+      expect(t2.nodes).toEqual(t1.nodes)
+    }
+  })
+
+  it('does not let alt text or a title break out of the image', async () => {
+    const rendered = await renderMarkdown(
+      doc(['img', { src: '/a.png', alt: 'a](https://evil.com/x) [', title: 'say "hi" \\ <iframe>' }])
+    )
+    const img = ((await parseMarkdown(rendered)).nodes[0] as any)[2]
+    expect(img[1].src).toBe('/a.png')
+    expect(img[1].title).toBe('say "hi" \\ <iframe>')
+    expect((await parseMarkdown(rendered)).nodes[0]).toHaveLength(3)
+  })
+
+  it('writes a missing or empty destination as <>, so a title is not read as the URL', async () => {
+    for (const attrs of [{ title: '<iframe src=javascript:alert(1)>' }, { src: '', title: 'javascript:alert(1)' }]) {
+      const rendered = await renderMarkdown(doc(['img', { alt: 'x', ...attrs }]))
+      expect(rendered).toMatch(/\]\(<> "/)
+      const img = ((await parseMarkdown(rendered)).nodes[0] as any)[2]
+      expect(img[0]).toBe('img')
+      expect(img[1].src).toBeUndefined()
+      expect(img[1].title).toBe(attrs.title)
+    }
+    expect(await renderMarkdown(doc(['a', {}, 'x']))).toBe('[x](<>)')
+  })
+
+  it('only writes an autolink when the URL can be one', async () => {
+    expect(await renderMarkdown(doc(['a', { href: 'https://a.com/x' }, 'https://a.com/x']))).toBe('<https://a.com/x>')
+    const href = 'https://a.com/>x'
+    const rendered = await renderMarkdown(doc(['a', { href }, href]))
+    expect(rendered).not.toMatch(/^</)
+    // `>` is percent-encoded by the parser, as for any link destination
+    expect(decodeURI(((await parseMarkdown(rendered)).nodes[0] as any)[2][1].href)).toBe(href)
   })
 })

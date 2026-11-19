@@ -1,0 +1,1 @@
+[![![nested](javascript:alert('inner'))](https://safe.com)](javascript:alert('outer'))

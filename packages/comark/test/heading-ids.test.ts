@@ -93,6 +93,19 @@ describe('headingIds option', () => {
     expect(reparsed.nodes).toEqual(tree.nodes)
   })
 
+  it('numbers duplicates inside components document-wide when rendering markdown', async () => {
+    for (const source of [
+      '## A\n\n::box\n## A\n::\n\n## A',
+      '::box\n## A\n::\n\n## A',
+      '::box\n## A\n\n  :::inner\n  ## A\n  :::\n::\n\n## A',
+    ]) {
+      const tree = await parseMarkdown(source)
+      const markdown = await renderMarkdown(tree)
+      expect(markdown.trim()).toBe(source)
+      expect((await parseMarkdown(markdown)).nodes).toEqual(tree.nodes)
+    }
+  })
+
   describe('slug text extraction', () => {
     it('does not leak tag names from bold text', async () => {
       const tree = await parseMarkdown('## 1. Never let an LLM **speak** for you')
@@ -153,7 +166,7 @@ describe('headingIds option', () => {
     it('omits the id for every duplicate symbol-only heading', async () => {
       const tree = await parseMarkdown('## 🚀\n\n## 🚀\n\n## 🚀')
 
-      // The third slugifies to "-2", not just "-1" — none of them is an anchor.
+      // None of them is an anchor, including the third (which would otherwise slugify to `-2`).
       const ids = tree.nodes.map((n: any) => n[1].id)
       expect(ids).toEqual([undefined, undefined, undefined])
     })

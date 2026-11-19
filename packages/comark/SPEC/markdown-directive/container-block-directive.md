@@ -57,3 +57,15 @@ This is a **warning** message.
 Do not ignore it.
 ::
 ```
+
+## Markdown HTML
+
+```md
+<warning>
+
+This is a **warning** message.
+
+Do not ignore it.
+
+</warning>
+```

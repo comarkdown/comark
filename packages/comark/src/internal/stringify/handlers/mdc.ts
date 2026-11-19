@@ -2,18 +2,18 @@ import type { State } from 'comark/render'
 import type { ElementNode, Node } from 'comark'
 import { indent } from '../../../utils/index.ts'
 import { comarkAttributes, comarkYamlAttributes } from '../attributes.ts'
-import { html } from './html.ts'
 
 // HTML elements that always create an inline context for their children
 const INLINE_HTML_ELEMENTS = new Set(['a', 'strong', 'em', 'span'])
 
-export async function mdc(node: ElementNode, state: State, parent?: ElementNode) {
+/** A named slot (`#name`). A `template` without `name` is a `:template` component. */
+function isSlot(node: Node): boolean {
+  return Array.isArray(node) && node[0] === 'template' && typeof node[1]?.name === 'string'
+}
+
+export async function mdc(node: ElementNode, state: State, parent?: ElementNode): Promise<string> {
   const [tag, attr, ...children] = node
   const { $: _, ...attributes } = attr
-
-  if (tag === 'table') {
-    return html(node, state)
-  }
 
   const attributeEntries = Object.entries(attributes)
   const hasObjectAttributes = attributeEntries.some(([, value]) => typeof value === 'object')
@@ -24,18 +24,22 @@ export async function mdc(node: ElementNode, state: State, parent?: ElementNode)
   const insideInlineElement = parent !== undefined && INLINE_HTML_ELEMENTS.has(String(parent[0]))
   let inline = hasTextSiblings || insideInlineElement || state.context.inline === true
 
-  // if component has object attributes, it cannot be inline
   if (hasObjectAttributes) {
     inline = false
   }
 
-  // Block fences inside `:name[…]` content cannot be parsed back — keep children inline
+  // Block fences inside `:name[...]` content cannot be parsed back; keep children inline
   const revert = inline ? state.applyContext({ inline: true }) : undefined
 
   let content = ''
   const childState = { ...state, nodeDepthInTree: (state.nodeDepthInTree || 0) + 1 }
   for (const child of children as Node[]) {
-    content += await state.one(child, childState, node)
+    // Auto-unwrapped default content is inline, so the `#slot` marker needs its own line.
+    if (content && !content.endsWith('\n') && isSlot(child)) {
+      content += state.context.blockSeparator
+    }
+    // Block bodies start on their own line, so `#` / `-` text there keeps its escape.
+    content += await state.one(child, childState, node, !inline && (content === '' || content.endsWith('\n')))
   }
   content = content.trimEnd()
 
@@ -47,8 +51,7 @@ export async function mdc(node: ElementNode, state: State, parent?: ElementNode)
 
   if (tag === 'span') {
     if (!attrs && parent?.[0] == 'a') {
-      // Add empty attributes syntax to end of spans inside Anchor links
-      // This will force Comark to parse them as span and prevent conflict
+      // Empty `{}` inside links disambiguates `[span]{}` from link syntax.
       attrs ||= '{}'
     }
     return `[${content}]${attrs}` + (inline ? '' : state.context.blockSeparator)

@@ -18,7 +18,7 @@ export function Math({ content, className = '' }: MathProps) {
       })
       setMathml(rendered)
     } catch {
-      // Keep loading state on error
+      // Keep previous output while expression is incomplete
     }
   }, [content, isInline])
 

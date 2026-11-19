@@ -1,6 +1,6 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  modules: ['@comark/nuxt', '@nuxt/ui'],
+  modules: ['@comark/vue', '@nuxt/ui'],
   devtools: { enabled: true },
   css: ['~/assets/css/main.css'],
   routeRules: {

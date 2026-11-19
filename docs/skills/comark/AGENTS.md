@@ -1,15 +1,15 @@
-# Comark: AI Agents & LLM Streaming
+# Comark: AI agents and LLM streaming
 
-A guide for using Comark in AI agent and LLM-powered applications where markdown is generated incrementally by a language model.
+A guide for using Comark in AI agent and LLM applications where Markdown streams in incrementally.
 
 ## Why Comark for AI?
 
-LLMs stream markdown token-by-token. Standard markdown parsers expect complete input. They fail or produce broken output on partial streams. Comark was built to handle exactly this:
+LLMs stream Markdown token by token. Standard Markdown parsers expect complete input and produce broken markup on partial streams. Comark handles partial input directly:
 
-- **`autoClose`** (default: `true`): incomplete syntax like `**bold text` is automatically closed on every parse, so partial tokens always render correctly
-- **Streaming mode**: re-renders efficiently as content arrives
-- **Caret indicator**: shows a live cursor during generation
-- **ANSI rendering**: styled terminal output for CLI agents
+- **`autoClose`** (default: `true`): closes unfinished syntax such as `**bold text`, open code fences, and half-open components on every parse
+- **Streaming mode**: reuses completed blocks as new chunks arrive
+- **Caret indicator**: appends a live cursor to the active text node while streaming
+- **ANSI rendering**: renders styled terminal output for CLI agents
 
 ---
 
@@ -172,9 +172,9 @@ export class ChatComponent {
 
 ---
 
-## Terminal / CLI Agents
+## Terminal and CLI agents
 
-Use `@comark/ansi` to render LLM markdown output in terminal-based agents:
+Use `@comark/ansi` to render LLM Markdown output in terminal agents:
 
 ```typescript
 import { printAnsi } from '@comark/ansi'
@@ -197,7 +197,7 @@ await writeMarkdown(markdown)
 
 ---
 
-## Caret Customization
+## Caret customization
 
 The `caret` prop appends a blinking cursor to the last text node while `streaming` is `true`. Customize it with a CSS class:
 
@@ -220,9 +220,9 @@ The `caret` prop appends a blinking cursor to the last text node while `streamin
 
 ---
 
-## With Custom Components
+## With custom components
 
-If your LLM produces Comark component syntax (e.g., `::alert`), register components before streaming begins:
+If your LLM emits Comark component syntax (for example, `::alert`), register those components before streaming begins:
 
 ```vue
 <script setup lang="ts">
@@ -240,9 +240,9 @@ import CodeBlock from './CodeBlock.vue'
 
 ---
 
-## With Syntax Highlighting
+## With syntax highlighting
 
-Syntax highlighting works during streaming: each re-parse will highlight newly completed code blocks:
+Syntax highlighting works during streaming. Each re-parse highlights newly completed code blocks:
 
 ```vue
 <script setup lang="ts">
@@ -278,9 +278,9 @@ export default function Chat({ content, streaming }) {
 
 ---
 
-## defineMarkdownComponent for AI Chat
+## defineMarkdownComponent for AI chat
 
-Pre-configure a Comark component for your AI chat UI once, then reuse it everywhere:
+Pre-configure a Comark component for your AI chat UI once, then reuse it across views:
 
 ```typescript
 // markdown.ts
@@ -309,4 +309,4 @@ export const ChatMarkdown = defineMarkdownComponent({
 
 ---
 
-[← Back to Skills Guide](./SKILL.md)
+[Back to skill guide](./SKILL.md)

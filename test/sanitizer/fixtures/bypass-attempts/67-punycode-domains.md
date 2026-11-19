@@ -1,0 +1,5 @@
+![](https://xn--e1afmkfd.xn--p1ai/evil.js)
+![](https://аpple.com/fake-apple.js)
+![](https://gооgle.com/fake-google.js)
+![](https://xn--80ak6aa92e.com/apple-lookalike.js)
+![](https://раypal.com/fake-paypal.js)

@@ -1,0 +1,5 @@
+![](https://example.com&sol;..&sol;..&sol;evil.com&sol;payload.js)
+![](https://example.com&colon;&sol;&sol;evil.com&sol;redirect.js)
+![](https://example.com&quest;redirect&equals;javascript&colon;alert&lpar;&apos;XSS&apos;&rpar;)
+![](https://example.com&num;javascript&colon;alert&lpar;&apos;XSS&apos;&rpar;)
+![](https://example.com&commat;evil.com&sol;user-confusion.js)

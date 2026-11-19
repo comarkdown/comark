@@ -2,13 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { renderToString } from 'react-dom/server'
 import { Markdown } from '../src/components/Markdown'
 
-/**
- * Tests for the `unwrap` shorthand prop / `options.unwrap` on the high-level
- * Markdown component — the MDC `unwrap="p"` migration path for inline rendering.
- *
- * `Markdown` is an async server component, so we await it to obtain the element
- * before handing it to `renderToString`.
- */
+// `Markdown` is an async server component, so await it before `renderToString`.
 async function renderMarkdownComponent(props: Record<string, unknown>) {
   const element = await Markdown(props as any)
   return renderToString(element as React.ReactElement)

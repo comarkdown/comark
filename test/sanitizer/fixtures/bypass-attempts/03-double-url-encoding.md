@@ -1,0 +1,1 @@
+![](java%2573cript:alert('XSS'))

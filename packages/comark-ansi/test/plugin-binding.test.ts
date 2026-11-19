@@ -41,7 +41,6 @@ Hello {{ frontmatter.user.name }}!
     expect(plain).toContain('before-{{ missing.path }}-after')
 
     const colored = await renderAnsiFromDocument(tree, { colors: true, components: { binding: Binding } })
-    // Dim escape code sits around the placeholder.
     expect(colored).toContain('\x1B[2m{{ missing.path }}\x1B[0m')
   })
 })

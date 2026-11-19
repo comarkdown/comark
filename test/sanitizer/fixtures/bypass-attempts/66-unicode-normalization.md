@@ -1,0 +1,5 @@
+![](https://example.com/ＪavaＳcript:alert('XSS'))
+![](https://example.com/java＆＃115＆＃99ript:alert('XSS'))
+![](https://example.com/𝒿𝒶𝓋𝒶𝓈𝒸𝓇𝒾𝓅𝓉:alert('XSS'))
+![](https://example.com/𝖏𝖆𝖛𝖆𝖘𝖈𝖗𝖎𝖕𝖙:alert('XSS'))
+![](https://example.com/𝗃𝖺𝗏𝖺𝗌𝖼𝗋𝗂𝗉𝗍:alert('XSS'))

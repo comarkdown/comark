@@ -1,18 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import { parseMarkdown } from '../src/index'
 
-// Regression tests for https://github.com/comarkdown/comark/issues/322
-//
-// `comark_block_yaml`, `comark_block_shorthand`, and `comark_block_slots` each
-// narrowed `state.lineMax` after matching and never restored it, unlike
-// `comark_block`. Since `skipEmptyLines` is bounded by `state.lineMax`, a
-// *second* consecutive blank line inside a nested component fell through it
-// unskipped, then failed the tokenizer's indent check: `comark_block_yaml`/
-// `comark_block_shorthand` broke out of the loop and dropped every later
-// sibling; `comark_block_slots` emitted a spurious empty paragraph instead.
-//
-// The fixes restore (or stop touching) `state.lineMax` so a blank-line run of
-// any length is treated as a single separator, as in CommonMark.
+// Regression tests for #322: `comark_block_yaml`, `comark_block_shorthand`,
+// and `comark_block_slots` must preserve `state.lineMax` so `skipEmptyLines`
+// treats any run of consecutive blank lines inside a nested component as a
+// single separator without dropping later siblings or emitting empty paragraphs.
 describe('nested component with a run of blank lines between siblings', () => {
   describe('YAML props fence (`---`/`---`)', () => {
     const build = (blanks: number) =>
@@ -81,11 +73,11 @@ describe('nested component with a run of blank lines between siblings', () => {
         [
           'if',
           { ':value': 'data.isHappy' },
-          ['p', {}, 'Happy'],
+          'Happy',
           [
             'template',
             { name: 'else' },
-            ['if', { ':value': 'data.isFine' }, ['p', {}, 'Fine'], ['template', { name: 'else' }, 'Neither']],
+            ['if', { ':value': 'data.isFine' }, 'Fine', ['template', { name: 'else' }, 'Neither']],
           ],
         ],
       ])

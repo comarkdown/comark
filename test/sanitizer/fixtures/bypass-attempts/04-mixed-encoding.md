@@ -1,0 +1,1 @@
+![](j&#97;vascript:alert('XSS'))

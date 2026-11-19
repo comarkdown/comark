@@ -1,0 +1,6 @@
+![](https://example.comevil.com/steal.js)
+![](https://example.com.evil.com/bad.js)
+![](https://example.com..evil.com/payload.js)
+![](https://example.com%2Eevil.com/xss.js)
+![](https://example.com@evil.com/redirect.js)
+![](https://example.com:password@evil.com/auth.js)

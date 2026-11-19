@@ -2,7 +2,7 @@
  * Inline attributes syntax plugin for Comark.
  *
  * Enables `{props}` after a token (paragraphs, headings, emphasis, links,
- * components, …). Span wrappers (`[text]`) live in the components plugin;
+ * components, ...). Span wrappers (`[text]`) live in the components plugin;
  * this plugin still attaches `{attrs}` onto those spans when both are active.
  * On by default via `registerDefaultPlugins`.
  *
@@ -36,7 +36,7 @@ const markdownItInlineProps: PluginSimple = (md) => {
     // Skip Vue mustache `{{ }}` and template `${ }` syntax
     if (state.src[start + 1] === '{' || state.src[start - 1] === '{' || state.src[start - 1] === '$') return false
 
-    // region -- Ignore attributes if (not follows a syntax && have some text after in same line)
+    // After plain text, `{...}` is only attributes at end of line or after a delimiter closer.
     const last = state.tokens[state.tokens.length - 1]
     const afterText = state.pending !== '' || !last || TEXT_TOKENS.has(last.type)
     const lastDelimiter = state.delimiters[state.delimiters.length - 1]
@@ -65,13 +65,11 @@ const markdownItInlineProps: PluginSimple = (md) => {
     if (afterText && !afterCloser) {
       let searchEnd = end
       while (state.src[searchEnd] === ' ' || state.src[searchEnd] === '\t') searchEnd++
-      // Check for linebreak or end of file
       if (restoring || (state.src[searchEnd] !== '\n' && state.src[searchEnd] !== undefined)) {
         rejectedUntil.set(state, end)
         return false
       }
     }
-    // endregion
 
     state.pos = end
 
@@ -94,7 +92,7 @@ const markdownItInlineProps: PluginSimple = (md) => {
   // A closer left unpaired by emphasis/strikethrough stays a non-empty `text`
   // token (paired `**` leaves its second marker as an empty one); its brace
   // group was never attributes, so re-tokenize it as regular inline content
-  // (escapes, entities, code spans, …).
+  // (escapes, entities, code spans, ...).
   md.inline.ruler2.before('fragments_join', 'comark_inline_props_unpaired', (state) => {
     const tokens = state.tokens
     for (let i = 1; i < tokens.length; i++) {
@@ -125,7 +123,7 @@ const markdownItInlineProps: PluginSimple = (md) => {
     // When the trailing inline child is a props token directly after a text
     // node, lift the props onto the surrounding heading/paragraph/list_item.
     // (If the props follow a closing tag, they belong to that inline tag, not
-    // the parent — leave them alone.)
+    // the parent; leave them alone.)
     tokens.forEach((token, index) => {
       const prev = tokens[index - 1]
       const next = tokens[index + 1]
@@ -141,7 +139,7 @@ const markdownItInlineProps: PluginSimple = (md) => {
 
       // Find the previous non-empty child. Markdown-it's emphasis tokenizer
       // can leave an empty text token between the closing delimiter and the
-      // props — skipping it lets us distinguish "props on the parent" from
+      // props; skipping it distinguishes "props on the parent" from
       // "props on the preceding inline tag".
       let beforeIdx = token.children.length - 2
       while (beforeIdx >= 0) {
@@ -188,7 +186,6 @@ function wrapRenderInline(renderInline: Renderer['renderInline']): Renderer['ren
 
       let prevIndex = index - 1
       let prev = tokens[prevIndex]
-      // Skip whitespace-only text tokens
       while (prevIndex >= 0) {
         if (prev.type === 'text' && !prev.content.trim()) {
           prevIndex--
@@ -198,7 +195,7 @@ function wrapRenderInline(renderInline: Renderer['renderInline']): Renderer['ren
         }
       }
 
-      // Wrap a bare text token in a span so we can attach attrs to it
+      // Wrap a bare text token in a span to attach attrs to it.
       if (!prev.tag && prev.type === 'text') {
         prev = new Token('mdc_inline_span', 'span', 1)
         tokens.splice(index - 1, 0, prev)

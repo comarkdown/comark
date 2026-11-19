@@ -1,29 +1,22 @@
----
-title: Nuxt
-description: A minimal example showing how to use Comark Syntax with Nuxt UI.
-category: Frameworks
-navigation:
-  icon:  i-simple-icons-nuxt
-path: /examples/frameworks/nuxt-ui
----
+# Nuxt UI blog with Comark
 
-::code-explorer
----
-org: comarkdown
-repo: comark@c78885ca7504b38afc7ced59aac1a3c6b3cc5425
-path: examples/1.frameworks/nuxt
-defaultValue: content/posts/comark-syntax.md
----
-::
+This example renders Markdown blog posts in Nuxt 4 with `@comark/vue` and Nuxt UI. Adding `@comark/vue` and `@nuxt/ui` to `modules` in `nuxt.config.ts` registers `<Markdown>` and `<MarkdownDocument>` and enables Nuxt UI prose components.
 
-::Browser{src="https://comark-nuxt.vercel.app/blog/comark-syntax"}
-::
+## How it works
 
-This example demonstrates how to use Comark Syntax with Nuxt UI. Comark Syntax automatically detects when Nuxt UI is installed and uses its components for rendering. Simply add both `@comark/nuxt` and `@nuxt/ui` modules to your Nuxt config, and the `Markdown` component will use Nuxt UI components automatically.
+- **Auto-imported components**: `@comark/vue/nuxt` registers `<Markdown>` and `<MarkdownDocument>` across the app.
+- **Auto-imported helpers**: `defineMarkdownComponent()`, `defineMarkdownDocumentComponent()`, `parseMarkdown()`, and `createMarkdownParser()` are available in app code and Nitro server routes.
+- **Nuxt UI prose**: the module detects `@nuxt/ui` and enables its `Prose*` components so headings, lists, links, and code blocks render with Nuxt UI styling.
 
-## What does `@comark/nuxt` module do
+## Run locally
 
-- Registers the `<Markdown>` and `<MarkdownDocument>` components in Nuxt for automatic import.
-- Registers the `~/components/prose` directory in the app and all layers as a global components directory.
-  - This allows users to override prose components by creating components in this directory.
-- Detects Nuxt UI and tells Nuxt UI to register its Prose components
+From the monorepo root:
+
+```bash
+pnpm dev:nuxt
+```
+
+## Documentation
+
+- [Comark documentation](https://comark.dev)
+- [Vue and Nuxt rendering](https://comark.dev/rendering/vue#nuxt)

@@ -89,3 +89,15 @@ Paragraph with :inline-component in middle
 
 ## a :inline inside heading
 ```
+
+## Markdown HTML
+
+```md
+an <inline-component></inline-component>
+
+Paragraph with <inline-component></inline-component>
+
+Paragraph with <inline-component></inline-component> in middle
+
+## a <inline></inline> inside heading
+```

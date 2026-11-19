@@ -1,19 +1,22 @@
----
-title: Angular
-description: A minimal example showing how to use Comark with Angular and Vite.
-navigation:
-  icon:  i-simple-icons-angular
-category: Vite
-path: /examples/vite/angular
----
+# Angular Markdown example with Vite
 
-::code-explorer
----
-org: comarkdown
-repo: comark@81a416b278b0f304d7e7577c7ac6bbfc78414790
-path: examples/2.vite/angular
-defaultValue: src/main.ts
----
-::
+This example renders a Markdown blog, component syntax examples, and a live editor in Angular 21+ with Vite and `@comark/angular`.
 
-This example demonstrates the simplest way to use Comark with Angular - use the `Markdown` component and pass it markdown content. The component handles parsing and rendering automatically.
+## How it works
+
+- **High-level rendering**: pass a Markdown string to `<comark-markdown [value]="content">` to parse and render in one step.
+- **Pre-parsed rendering**: load `.md` files with `import.meta.glob`, parse them with `parseMarkdown()` and `shiki()`, and pass the document to `<comark-markdown-document>`.
+- **Custom standalone components**: map Angular standalone components such as `AlertComponent` through `[components]`.
+
+## Run locally
+
+From the monorepo root:
+
+```bash
+pnpm dev:angular
+```
+
+## Documentation
+
+- [Comark documentation](https://comark.dev)
+- [Angular rendering](https://comark.dev/rendering/angular)

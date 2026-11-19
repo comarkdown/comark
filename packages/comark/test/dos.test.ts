@@ -1,8 +1,30 @@
 import { describe, expect, it } from 'vitest'
 import { parseMarkdown } from '../src/index'
 import { renderMarkdown } from '../src/render'
+import security from '../src/plugins/security'
+import { resolveAttributes } from '../src/internal/stringify/html-attributes'
 
 describe('denial-of-service hardening', () => {
+  it('sanitizes frontmatter that aliases one large object under many keys in linear time', async () => {
+    const big = Array.from({ length: 3000 }, (_, i) => `  k${i}: {x: 1}`).join('\n')
+    const refs = Array.from({ length: 3000 }, (_, i) => `r${i}: *a`).join('\n')
+    const start = performance.now()
+    const doc = await parseMarkdown(`---\nbig: &a\n${big}\n${refs}\n---\nhi`, { plugins: [security()] })
+    expect(performance.now() - start).toBeLessThan(500)
+    expect(Object.keys(doc.frontmatter)).toHaveLength(3001)
+  })
+
+  it('checks a large bound object once when many bindings resolve to it', () => {
+    const big: Record<string, unknown> = {}
+    for (let i = 0; i < 3000; i++) big[`k${i}`] = { x: 1 }
+    const renderData = { frontmatter: { big }, meta: {}, data: {}, props: {} }
+    const start = performance.now()
+    for (let i = 0; i < 3000; i++) {
+      expect(resolveAttributes({ ':a': 'frontmatter.big' }, renderData, { parseJson: true })).toEqual({ a: big })
+    }
+    expect(performance.now() - start).toBeLessThan(500)
+  })
+
   it('parses thousands of unclosed nested inline HTML tags without stack overflow', async () => {
     const md = '<b>'.repeat(10_000)
     const doc = await parseMarkdown(md)
@@ -52,8 +74,7 @@ describe('denial-of-service hardening', () => {
   })
 
   it('parses large plain documents without the task-list quadratic scan', async () => {
-    // The default task-list rule used to scan all preceding tokens backwards
-    // for every inline token — O(n²) on documents that contain no list.
+    // Scanning preceding tokens backwards per inline token would make list-free documents O(n^2).
     const md = Array.from({ length: 2_000 }, (_, i) => `Paragraph ${i} with some text.`).join('\n\n')
     const doc = await parseMarkdown(md)
     expect(doc.nodes.length).toBe(2_000)
@@ -67,9 +88,7 @@ describe('denial-of-service hardening', () => {
   })
 
   it('escapes long runs of tag-like text without quadratic rescanning', async () => {
-    // escapeInline used to re-test /^<[a-zA-Z!?/][^>]*>/ against the whole
-    // remainder of the node for every `<` — O(n²) on runs like `<a<a<a…`.
-    // (Pre-fix this payload takes ~10s and hits the test timeout.)
+    // Rescanning the remainder of the node for `>` on every `<` would be O(n^2) on `<a<a<a...`.
     const text = '<a'.repeat(50_000)
     const doc = { frontmatter: {}, meta: {}, nodes: [['p', {}, text]] } as any
     const md = await renderMarkdown(doc)

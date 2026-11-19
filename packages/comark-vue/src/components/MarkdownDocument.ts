@@ -24,7 +24,6 @@ import {
 import { findLastTextNodeAndAppendNode, getCaret } from '../utils/caret.ts'
 import { applyNodeTransforms, pascalCase, resolveAttributes, toNativeAttributes } from 'comark/utils'
 
-// Cache for dynamically resolved components
 const asyncComponentCache = new Map<string, any>()
 
 function isPromiseLike(value: unknown): value is Promise<unknown> {
@@ -35,9 +34,6 @@ function unwrapComponent(mod: unknown): any {
   return mod && typeof mod === 'object' && 'default' in mod ? (mod as { default?: any }).default : mod
 }
 
-/**
- * Helper to get tag from a Node
- */
 function getTag(node: Node): string | null {
   if (Array.isArray(node) && node.length >= 1) {
     return node[0] as string
@@ -45,9 +41,6 @@ function getTag(node: Node): string | null {
   return null
 }
 
-/**
- * Helper to get props from a Node
- */
 function getProps(node: Node): Record<string, any> {
   if (Array.isArray(node) && node.length >= 2) {
     return (node[1] as Record<string, any>) || {}
@@ -55,9 +48,6 @@ function getProps(node: Node): Record<string, any> {
   return {}
 }
 
-/**
- * Helper to get children from a Node
- */
 function getChildren(node: Node): Node[] {
   if (Array.isArray(node) && node.length > 2) {
     return node.slice(2) as Node[]
@@ -78,13 +68,10 @@ function resolveComponent(
     components[proseTag] ||
     components[pascalTag] ||
     components[tag] ||
-    // If the component is not found in the components map, try to find it in the app context
     appComponents?.[proseTag] ||
     appComponents?.[pascalTag]
 
-  // If not in components map and manifest is provided, try dynamic resolution
   if (!resolvedComponent && componentsManifest) {
-    // Check cache first to avoid creating duplicate async components
     const cacheKey = tag
     if (!asyncComponentCache.has(cacheKey)) {
       const resolved = componentsManifest(tag)
@@ -102,9 +89,7 @@ function resolveComponent(
 
   return resolvedComponent
 }
-/**
- * Render a single Comark node to Vue VNode
- */
+
 function renderNode(
   node: Node,
   components: Record<string, any> = {},
@@ -114,12 +99,10 @@ function renderNode(
   renderData: NodeRenderData = { frontmatter: {}, meta: {}, data: {}, props: {} },
   transformNode?: NodeTransform | readonly NodeTransform[]
 ): VNode | string | null {
-  // Handle text nodes (strings)
   if (typeof node === 'string') {
     return node
   }
 
-  // Handle element nodes (arrays)
   if (Array.isArray(node)) {
     const nodeTag = getTag(node)
     if (!nodeTag) return null
@@ -127,7 +110,6 @@ function renderNode(
     const nodeProps = getProps(node)
     const children = getChildren(node)
 
-    // Resolve `:prefix` bindings, then let `transformNode` change the tag or props
     const ownProps = resolveAttributes(nodeProps, renderData, { parseJson: true })
     const transformed = applyNodeTransforms(
       transformNode,
@@ -140,12 +122,12 @@ function renderNode(
     const resolved = transformed ? transformed.props : ownProps
     const as = transformed ? resolved.as : nodeProps.as
 
-    // Check if there's a custom component for this tag
     let customComponent
 
     if ((parent as ElementNode | undefined)?.[0] !== 'pre') {
-      if (as) {
-        customComponent = resolveComponent(as as string, components, componentsManifest)
+      // Only a string tag may pick a component: never a value (object, function) from node props
+      if (typeof as === 'string' && as) {
+        customComponent = resolveComponent(as, components, componentsManifest)
       }
       if (!customComponent) {
         customComponent = resolveComponent(tag, components, componentsManifest)
@@ -154,7 +136,6 @@ function renderNode(
 
     const component = customComponent || tag
 
-    // Vue-specific attribute mapping (e.g. `className` → `class`)
     let props: Record<string, any> = {}
     for (const k in resolved) {
       if (k === 'className') {
@@ -173,7 +154,6 @@ function renderNode(
       props.__node = node
     }
 
-    // Add key if provided
     if (key !== undefined) {
       props.key = key
     }
@@ -183,7 +163,7 @@ function renderNode(
     }
 
     // Only shadow the parent's `props` scope when the current element has its
-    // own attributes. Bare wrappers (`<p>`, `<ul>`, `<li>`, …) must keep the
+    // own attributes. Bare wrappers (`<p>`, `<ul>`, `<li>`, ...) must keep the
     // parent's scope so bindings like `{{ props.x }}` reach across them. The
     // check uses the raw attributes: resolving can omit all of them.
     let hasOwnAttrs = resolved !== ownProps
@@ -194,7 +174,6 @@ function renderNode(
       }
     }
     const childrenRenderData = hasOwnAttrs ? { ...renderData, props: scopeProps } : renderData
-    // Separate template elements (slots) from regular children
     const slots: Record<string, () => (VNode | string)[]> = {}
     const regularChildren: (VNode | string)[] = []
 
@@ -202,19 +181,15 @@ function renderNode(
       const child = children[i]
       if (child === undefined || child === null) continue
 
-      // Check if this is a slot template (array with tag 'template')
       const childTag = getTag(child)
       const childProps = getProps(child)
 
       if (childTag === 'template' && childProps) {
-        // Find the slot name from props
-        // Support both { name: 'title' } and { '#title': '' } formats
         let slotName: string | undefined
 
         if (childProps.name) {
           slotName = childProps.name
         } else {
-          // Use for...in instead of Object.keys().find() — avoids intermediate array
           for (const pk in childProps) {
             if (pk.startsWith('v-slot:')) {
               slotName = pk.substring(7)
@@ -241,9 +216,7 @@ function renderNode(
       }
     }
 
-    // If using a custom component, pass slots
     if (customComponent) {
-      // Always include default slot if there are regular children
       if (regularChildren.length > 0) {
         slots.default = () => regularChildren
       }
@@ -251,7 +224,6 @@ function renderNode(
       return h(component, props, slots)
     }
 
-    // For native HTML tags, pass children directly (ignore slot templates)
     return h(component, props, regularChildren)
   }
 
@@ -263,9 +235,9 @@ function renderNode(
  */
 export interface MarkdownDocumentProps {
   /**
-   * The parsed Comark document to render — either a full `MarkdownDocument` or a bare
-   * `Node[]`.  When a node array is passed, frontmatter and meta
-   * default to `{}` and runtime data should be supplied via `data`.
+   * The parsed Comark document to render: either a full `MarkdownDocument` or
+   * `{ nodes }`. When only `nodes` is passed, `frontmatter` and `meta` default
+   * to `{}` and runtime data should be supplied via `data`.
    */
   value?: MarkdownDocumentType | { nodes: MarkdownDocumentType['nodes'] }
 
@@ -311,11 +283,7 @@ export interface MarkdownDocumentProps {
 type MarkdownDocumentComponent = ReturnType<typeof defineComponent<MarkdownDocumentProps>>
 
 /**
- * Runtime prop declarations for `<MarkdownDocument>`.
- *
- * Exported so `defineMarkdownDocumentComponent` can reuse them verbatim
- * instead of hand-copying the table, which was missing `data` and
- * `documentKey`.
+ * Runtime prop declarations for `<MarkdownDocument>`, shared with `defineMarkdownDocumentComponent`.
  */
 export const markdownDocumentProps = {
   /**
@@ -390,8 +358,8 @@ export const markdownDocumentProps = {
 /**
  * MarkdownDocument component
  *
- * Renders an already-parsed Markdown document to Vue components/HTML — no parser
- * in the client bundle. Supports custom component mapping for element tags.
+ * Renders an already-parsed Markdown document to Vue components/HTML, keeping
+ * the parser out of the client bundle. Supports custom component mapping for element tags.
  *
  * @example
  * ```vue
@@ -424,9 +392,7 @@ export const MarkdownDocument: MarkdownDocumentComponent = defineComponent({
 
     const componentErrors = ref(new Set<string>())
 
-    // Live document support: if an ambient context exists, subscribe to updates
-    // for this id and re-render with the pushed document. Cleaned up on unmount.
-    // The key is the document's own `meta.key` (set by a plugin) or the `documentKey` prop.
+    // Prefer a plugin-assigned `meta.key` over the `documentKey` prop when subscribing to live updates.
     const liveDocument = shallowRef<MarkdownDocumentType | null>(null)
     const key = inputDocument.value.meta?.key || props.documentKey
     if (key && globalThis.comarkContext) {
@@ -436,15 +402,10 @@ export const MarkdownDocument: MarkdownDocumentComponent = defineComponent({
       onUnmounted(() => cleanup(true))
     }
 
-    // Capture errors from child components (e.g., during streaming when props are incomplete)
+    // Swallow child render errors (e.g. incomplete props mid-stream) so streaming doesn't crash the tree.
     onErrorCaptured((_err, instance, _info) => {
-      // Get component name from instance
       const componentName = (instance?.$?.type as any)?.name || (instance as any)?.type?.name || 'unknown'
-
-      // Track failed component to prevent re-rendering during streaming
       componentErrors.value.add(componentName)
-
-      // Prevent error from propagating (don't crash the app during streaming)
       return false
     })
 
@@ -466,7 +427,6 @@ export const MarkdownDocument: MarkdownDocumentComponent = defineComponent({
     const caret = computed<ElementNode | null>(() => getCaret(props.caret || false))
 
     return () => {
-      // Render all nodes from the live document when present, else the value prop
       const rawDocument = toRaw(liveDocument.value ?? inputDocument.value)
       const nodes = [...(rawDocument.nodes || [])]
 
@@ -493,7 +453,6 @@ export const MarkdownDocument: MarkdownDocumentComponent = defineComponent({
         )
         .filter((child): child is VNode | string => child !== null)
 
-      // Wrap in a fragment
       return h('div', { class: 'comark-content' }, children)
     }
   },

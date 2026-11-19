@@ -32,3 +32,9 @@
 ::component
 ::
 ```
+
+## Markdown HTML
+
+```md
+<component></component>
+```

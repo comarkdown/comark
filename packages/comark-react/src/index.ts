@@ -17,7 +17,7 @@ export { MarkdownClient } from './components/MarkdownClient.tsx'
 export type * from 'comark'
 
 interface DefineMarkdownComponentOptions extends ParserOptions {
-  /** Extend an existing defined component — inherits its plugins and components. */
+  /** Extend an existing defined component. Inherits its plugins and components. */
   extends?: React.FC<MarkdownProps>
   /** Display name shown in React DevTools. */
   name?: string
@@ -102,7 +102,7 @@ export function defineMarkdownComponent(config: DefineMarkdownComponentOptions =
 }
 
 interface DefineMarkdownDocumentOptions {
-  /** Extend an existing defined renderer — inherits its component mappings. */
+  /** Extend an existing defined renderer. Inherits its component mappings. */
   extends?: React.FC<MarkdownDocumentProps>
   /** Display name shown in React DevTools. */
   name?: string

@@ -1,24 +1,24 @@
 ---
-title: Hello World
-description: Getting started with Comark and Vue + Vite.
+title: Hello world
+description: Getting started with Comark, Vue 3, and Vite.
 pubDate: 2025-12-01
 tags: [comark, vue]
 ---
 
-Welcome to this blog powered by **Comark** and Vue + Vite!
+Welcome to this blog built with **Comark**, Vue 3, and Vite.
 
-Comark extends standard Markdown with component syntax, and it integrates seamlessly with Vue's reactivity system.
+Comark adds component and attribute syntax to Markdown and renders nodes into Vue VNodes with `@comark/vue`.
 
 ::Alert{type="info"}
-This alert is rendered using a custom Comark component mapped via the `components` prop.
+This alert renders through a Vue component mapped in the `:components` prop.
 ::
 
-## Why Comark + Vue?
+## Why pair Comark with Vue
 
-- **Reactive** — Comark parses asynchronously and integrates cleanly with Vue's `<Suspense>`
-- **Component syntax** — Embed custom components directly in your Markdown
-- **Nuxt UI** — Beautiful prose components out of the box via `@nuxt/ui/vite`
-- **Fast** — Powered by Vite for instant HMR and fast builds
+- **Async Suspense support**: `<Markdown>` parses asynchronously inside Vue's `<Suspense>` boundary, while `<MarkdownDocument>` renders pre-parsed trees synchronously.
+- **Component syntax**: write `::Alert` blocks inside `.md` files and map them to Vue single-file components.
+- **Nuxt UI Vite plugin**: `@nuxt/ui/vite` provides styled UI and prose components in standalone Vue apps.
+- **Vite dev server**: bundles raw `.md` files with `import.meta.glob` and updates on save with HMR.
 
 ```ts
 import { parseMarkdown } from 'comark'
@@ -29,5 +29,5 @@ const tree = await parseMarkdown(markdown)
 ```
 
 ::Alert{type="success"}
-You get the best of both worlds: Vue's reactivity for dynamic content and Comark for rich rendering.
+Vue manages reactive state and routing while Comark parses Markdown and renders mapped components.
 ::

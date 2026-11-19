@@ -70,7 +70,7 @@ function flattenNodeText(node: Node): string {
  *
  * @example
  * ```ts
- * // Default — h1 as title, first paragraph as description, nodes kept in tree
+ * // Default: h1 as title, first paragraph as description, nodes kept in tree
  * titleDescription()
  *
  * // Use a blockquote as the description instead of a paragraph
@@ -94,7 +94,7 @@ export default defineComarkPlugin<TitleDescriptionOptions, { title?: string; des
     post(state) {
       const nodes = state.tree.nodes
 
-      // Top-level content nodes — skip raw text nodes and <hr>
+      // Top-level content nodes: skip raw text nodes and <hr>
       const contentNodes = nodes.filter((node) => Array.isArray(node) && getTag(node) !== 'hr')
 
       let titleNodeIndex = -1

@@ -1,7 +1,8 @@
-import { bench, describe } from 'vitest'
+import { test } from 'vitest'
 import { createMarkdownParser } from 'comark'
 import emoji from 'comark/plugins/emoji'
 import footnotes from 'comark/plugins/footnotes'
+import pierreHighlights from 'comark/plugins/pierre-highlights'
 import titleDescription from 'comark/plugins/title-description'
 import punctuation from 'comark/plugins/punctuation'
 import rangi from 'comark/plugins/rangi'
@@ -28,6 +29,7 @@ const withAll = createMarkdownParser({
 const codeBaseline = createMarkdownParser()
 const withShiki = createMarkdownParser({ plugins: [shiki()] })
 const withRangi = createMarkdownParser({ plugins: [rangi()] })
+const withPierreHighlights = createMarkdownParser({ plugins: [pierreHighlights()] })
 
 // Warm every parser. For Shiki this also loads the shared highlighter, its
 // themes and grammars, so the benchmark measures highlighting, not setup.
@@ -44,59 +46,56 @@ for (const parse of [
 ]) {
   await parse(pluginMarkdown)
 }
-for (const parse of [codeBaseline, withShiki, withRangi]) {
+for (const parse of [codeBaseline, withShiki, withRangi, withPierreHighlights]) {
   await parse(codeMarkdown)
 }
 
-describe('plugins', () => {
-  bench('baseline (default plugins only)', async () => {
-    await baseline(pluginMarkdown)
-  })
-
-  bench('toc', async () => {
-    await withToc(pluginMarkdown)
-  })
-
-  bench('emoji', async () => {
-    await withEmoji(pluginMarkdown)
-  })
-
-  bench('punctuation', async () => {
-    await withPunctuation(pluginMarkdown)
-  })
-
-  bench('footnotes', async () => {
-    await withFootnotes(pluginMarkdown)
-  })
-
-  // Keeps the `headings` id so CodSpeed history carries over the plugin rename.
-  bench('headings', async () => {
-    await withTitleDescription(pluginMarkdown)
-  })
-
-  bench('security', async () => {
-    await withSecurity(pluginMarkdown)
-  })
-
-  bench('summary', async () => {
-    await withSummary(pluginMarkdown)
-  })
-
-  bench('all of the above combined', async () => {
-    await withAll(pluginMarkdown)
-  })
+test('plugins', async ({ bench }) => {
+  await bench.compare(
+    bench('baseline (default plugins only)', async () => {
+      await baseline(pluginMarkdown)
+    }),
+    bench('toc', async () => {
+      await withToc(pluginMarkdown)
+    }),
+    bench('emoji', async () => {
+      await withEmoji(pluginMarkdown)
+    }),
+    bench('punctuation', async () => {
+      await withPunctuation(pluginMarkdown)
+    }),
+    bench('footnotes', async () => {
+      await withFootnotes(pluginMarkdown)
+    }),
+    // Keeps the `headings` id so CodSpeed history carries over the plugin rename.
+    bench('headings', async () => {
+      await withTitleDescription(pluginMarkdown)
+    }),
+    bench('security', async () => {
+      await withSecurity(pluginMarkdown)
+    }),
+    bench('summary', async () => {
+      await withSummary(pluginMarkdown)
+    }),
+    bench('all of the above combined', async () => {
+      await withAll(pluginMarkdown)
+    })
+  )
 })
 
-describe('highlight', () => {
-  bench('baseline (no highlighter)', async () => {
-    await codeBaseline(codeMarkdown)
-  })
-
-  bench('shiki', async () => {
-    await withShiki(codeMarkdown)
-  })
-
-  bench('rangi', async () => {
-    await withRangi(codeMarkdown)
-  })
+test('highlight', async ({ bench }) => {
+  await bench.compare(
+    bench('baseline (no highlighter)', async () => {
+      await codeBaseline(codeMarkdown)
+    }),
+    bench('shiki', async () => {
+      await withShiki(codeMarkdown)
+    }),
+    bench('rangi', async () => {
+      await withRangi(codeMarkdown)
+    }),
+    bench('pierre-highlights', async () => {
+      await withPierreHighlights(codeMarkdown)
+    })
+  )
 })

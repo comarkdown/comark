@@ -77,3 +77,25 @@ First Paragraph
   :::
 ::
 ```
+
+## Markdown HTML
+
+```md
+<component>
+
+First Paragraph
+
+<child>
+
+Second Paragraph
+
+<grand-child>
+
+Third Paragraph
+
+</grand-child>
+
+</child>
+
+</component>
+```

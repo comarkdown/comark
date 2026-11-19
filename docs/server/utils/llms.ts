@@ -51,7 +51,7 @@ export const LLMS_BUNDLES: LlmsBundle[] = [
     slug: 'vue',
     title: 'Comark for Vue and Nuxt',
     description: 'Render Markdown in Vue 3 and Nuxt, with custom components, plugins, and streaming.',
-    pages: ['/rendering/vue', '/rendering/nuxt', '/use-cases/vue-ai-chat', '/reference/auto-close'],
+    pages: ['/rendering/vue', '/use-cases/vue-ai-chat', '/reference/auto-close'],
   },
   {
     slug: 'react',
@@ -74,7 +74,7 @@ export const LLMS_BUNDLES: LlmsBundle[] = [
   {
     slug: 'angular',
     title: 'Comark for Angular',
-    description: 'Render Markdown in Angular 17+, with standalone components, plugins, and streaming.',
+    description: 'Render Markdown in Angular 21+, with standalone components, plugins, and streaming.',
     pages: ['/rendering/angular', '/use-cases/angular-ai-chat', '/reference/auto-close'],
   },
   {

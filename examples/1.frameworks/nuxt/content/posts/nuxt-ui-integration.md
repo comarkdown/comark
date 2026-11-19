@@ -1,20 +1,20 @@
 ---
 title: Integrating Comark with Nuxt UI
-description: How the Comark + Nuxt UI integration works under the hood.
+description: How this Nuxt 4 app parses Markdown in Nitro routes and renders it with Nuxt UI prose components.
 pubDate: 2026-01-10
 tags: [comark, nuxt, integration]
 ---
 
-This example uses Nuxt 4 with Comark as the Markdown renderer and Nuxt UI for styled prose components.
+This example uses Nuxt 4 with Comark as the Markdown parser and renderer, and Nuxt UI for prose styling.
 
 ## How it works
 
-Instead of the typical `gray-matter` + `remark` + `rehype` pipeline, we use Comark's framework-agnostic API:
+Instead of chaining `gray-matter`, `remark`, and `rehype`, a Nitro server route parses Markdown and frontmatter in one step:
 
-1. **Read markdown files** — Load `.md` files from the `content/posts/` directory via a server route
-2. **Parse with Comark** — Call `parseMarkdown()` to build the AST and extract frontmatter
-3. **Static generation** — Use `nuxt generate` for full SSG
-4. **Render with Vue** — Use `MarkdownDocument` from `@comark/nuxt` with auto-discovered components
+1. **Read Markdown files**: load `.md` files from `content/posts/` inside a server route.
+2. **Parse with Comark**: call `parseMarkdown()` with `shiki()` to build the `MarkdownDocument` and read `tree.frontmatter`.
+3. **Generate static pages**: run `nuxt generate` to pre-render all post routes.
+4. **Render in Vue**: pass `post.tree` to the auto-imported `<MarkdownDocument>` component.
 
 ```ts
 // server/api/posts/[slug].get.ts
@@ -41,24 +41,24 @@ const { data: post } = await useFetch(`/api/posts/${route.params.slug}`)
 ```
 
 ::alert{type="info"}
-`@comark/nuxt` automatically detects Nuxt UI and enables its prose components — no extra configuration needed.
+The `@comark/vue` Nuxt module detects `@nuxt/ui` and turns on its prose component set without extra configuration.
 ::
 
 ## Nuxt UI prose components
 
-When both `@comark/nuxt` and `@nuxt/ui` are installed, the module sets `ui.content = true`. This registers Nuxt UI's `Prose*` components globally:
+When both `@comark/vue` and `@nuxt/ui` are installed, the module sets `ui.prose = true`, registering Nuxt UI's `Prose*` components globally:
 
-- `ProseH1`, `ProseH2`, `ProseH3` for headings
+- `ProseH1`, `ProseH2`, and `ProseH3` for headings
 - `ProseP` for paragraphs
-- `ProseCode`, `ProsePre` for code
-- `ProseUl`, `ProseOl`, `ProseLi` for lists
-- And more…
+- `ProseCode` and `ProsePre` for inline and fenced code
+- `ProseUl`, `ProseOl`, and `ProseLi` for lists
+- `ProseA`, `ProseBlockquote`, and `ProseTable` for links, quotes, and tables
 
-`MarkdownDocument` automatically picks these up — no manual wiring required.
+`MarkdownDocument` resolves standard Markdown tags to these global components automatically.
 
 ## Custom components
 
-You can still register custom components. Each one receives props and children from the Comark AST:
+Custom components in `app/components/` receive props and default slot content from the Comark document:
 
 ```vue
 <!-- app/components/Alert.vue -->
@@ -67,10 +67,10 @@ defineProps<{ type?: 'info' | 'warning' | 'success' | 'danger' }>()
 </script>
 
 <template>
-  <UAlert :color="..." variant="soft" class="my-4">
+  <UAlert :color="color" variant="soft" class="my-4">
     <template #description><slot /></template>
   </UAlert>
 </template>
 ```
 
-Since Nuxt auto-registers components in `app/components/`, `MarkdownDocument` resolves them automatically.
+Because Nuxt registers components in `app/components/`, `MarkdownDocument` resolves `::alert` to `Alert.vue`.

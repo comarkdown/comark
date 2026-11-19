@@ -59,3 +59,13 @@ Default slot content
 Default slot content
 ::
 ```
+
+## Markdown HTML
+
+```md
+<component>
+
+Default slot content
+
+</component>
+```

@@ -144,6 +144,14 @@ describe('renderAnsiFromDocument', () => {
       const out = await colored('> [!WARNING]\n> Careful')
       expect(out).toContain('\x1B[33m') // YELLOW
     })
+
+    it('shows text inside a raw HTML block as written, without markdown escaping', async () => {
+      const out = await renderAnsiFromDocument(
+        { nodes: [['blockquote', { $: { html: 1, block: 1 } }, '<svg> & <b>']] },
+        { colors: false }
+      )
+      expect(out).toBe('│ <svg> & <b>\n')
+    })
   })
 
   describe('lists', () => {
@@ -179,7 +187,6 @@ describe('renderAnsiFromDocument', () => {
 
     it('aligns columns when cells contain ANSI styling', async () => {
       const out = await colored(tableMd)
-      // Strip ANSI so column borders line up by visible width.
       // eslint-disable-next-line no-control-regex
       const stripped = out.replace(/\u001B\[[\d;?]*[ -/]*[@-~]/g, '')
       const lines = stripped
@@ -214,6 +221,24 @@ describe('renderAnsiFromDocument', () => {
       const widths = lines.map((l) => l.length)
       expect(new Set(widths).size).toBe(1)
     })
+
+    it('aligns columns when cells contain wide characters', async () => {
+      const md = `
+| 名前 | Note |
+| ---- | ---- |
+| 東京 | 日本の首都です |
+| Paris | ✅ done |
+| 🇯🇵 | e\u0301 |
+`.trim()
+      const out = await plain(md)
+      const lines = out.split('\n').filter((l) => l.includes('│'))
+      expect(lines).toEqual([
+        '│ 名前  │ Note           │',
+        '│ 東京  │ 日本の首都です │',
+        '│ Paris │ ✅ done        │',
+        '│ 🇯🇵    │ e\u0301              │',
+      ])
+    })
   })
 
   describe('code blocks', () => {
@@ -241,7 +266,6 @@ describe('renderAnsiFromDocument', () => {
 
     it('renders highlighted code with ANSI true-color sequences', async () => {
       const out = await highlighted('```js\nconst x = 1\n```', true)
-      // Should contain true-color ANSI escape (38;2;r;g;b)
       // eslint-disable-next-line no-control-regex
       expect(out).toMatch(/\x1B\[38;2;\d+;\d+;\d+m/)
       expect(out).toContain('const')
@@ -250,7 +274,6 @@ describe('renderAnsiFromDocument', () => {
 
     it('renders highlighted code without ANSI true-color when colors disabled', async () => {
       const out = await highlighted('```js\nconst x = 1\n```', false)
-      // No true-color sequences in token output
       // eslint-disable-next-line no-control-regex
       expect(out).not.toMatch(/\x1B\[38;2;\d+;\d+;\d+m/)
       expect(out).toContain('const')
@@ -278,7 +301,6 @@ describe('renderAnsiFromDocument', () => {
 
     it('each token gets its own color escape', async () => {
       const out = await highlighted('```js\nfunction hello() {}\n```', true)
-      // Multiple color codes for different tokens (keyword, name, punctuation)
       // eslint-disable-next-line no-control-regex
       const colorMatches = out.match(/\x1B\[38;2;\d+;\d+;\d+m/g)
       expect(colorMatches).not.toBeNull()

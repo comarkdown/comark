@@ -1,6 +1,6 @@
 {
   "name": "@comark/svelte",
-  "version": "0.8.1",
+  "version": "0.9.2",
   "description": "Svelte 5 renderer for Comark. Render Markdown with components at runtime, with streaming support for AI output.",
   "keywords": [
     "ai",
@@ -63,7 +63,7 @@
   },
   "scripts": {
     "stub": "node ../../scripts/stub.mjs",
-    "build": "svelte-package --input src && svelte-package --input src --types false --preserve-output --tsconfig ./tsconfig.build.json && node ../../scripts/sync-plugins.mjs",
+    "build": "svelte-package --input src && svelte-package --input src --no-types --preserve-output --tsconfig ./tsconfig.build.json && node ../../scripts/sync-plugins.mjs",
     "build:watch": "svelte-package --input src --watch",
     "test": "vitest run",
     "check": "svelte-check --tsconfig ./tsconfig.json"
@@ -76,7 +76,7 @@
     "@sveltejs/vite-plugin-svelte": "catalog:",
     "@vitest/browser": "catalog:",
     "@vitest/browser-playwright": "catalog:",
-    "svelte": "^5.57.3",
+    "svelte": "^5.58.0",
     "svelte-check": "catalog:",
     "vitest": "catalog:",
     "vitest-browser-svelte": "catalog:"

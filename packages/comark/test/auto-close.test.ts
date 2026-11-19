@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { autoCloseMarkdown } from '../src/auto-close'
+import { parseMarkdown } from '../src/index'
 
 const inlines = `
 _test → _test_
@@ -141,7 +142,7 @@ describe('autoCloseMarkdown - Inline Syntax', () => {
   })
 
   it('closes incomplete emphasis across a list item soft-wrap', () => {
-    // SPEC Leave list markers alone: `- **text\nmore text` → close bold on the item.
+    // SPEC Leave list markers alone: `- **text\nmore text` -> close bold on the item.
     const input = '- **text\nmore text'
     expect(autoCloseMarkdown(input)).toBe('- **text\nmore text**')
   })
@@ -574,7 +575,7 @@ describe('frontmatter', () => {
     const expected = '---\ntitle: Test\n---'
     expect(autoCloseMarkdown(input)).toBe(expected)
   })
-  // Partial frontmatter is only completed when `frontmatter: true` — for a
+  // Partial frontmatter is only completed when `frontmatter: true`: for a
   // complete document a leading `---` with no closing delimiter is a thematic
   // break, so completing it would swallow the body (see the default cases below).
   it('should complete partial frontmatter when frontmatter option is enabled', () => {
@@ -605,7 +606,7 @@ describe('frontmatter', () => {
 
   it('should not complete unclosed frontmatter by default', () => {
     // Default (`frontmatter: false`): a leading `---` with content but no close
-    // is a thematic break followed by body — completing it would swallow the body.
+    // is a thematic break followed by body; completing it would swallow the body.
     const input = '---\ntitle: Test'
     expect(autoCloseMarkdown(input)).toBe(input)
     expect(autoCloseMarkdown('---\n# Heading')).toBe('---\n# Heading')
@@ -712,6 +713,16 @@ describe('attributes scope', () => {
   })
 })
 
+describe('dollar-prefixed tokens without math (#136)', () => {
+  it.each([
+    '$skill-name',
+    '[$imagegen](/Users/user01/.codex/skills/.system/imagegen/SKILL.md)',
+    'Codex uses [$imagegen](/Users/user01/.codex/skills/.system/imagegen/SKILL.md) and $skill-name.',
+  ])('should leave %s unchanged', (input) => {
+    expect(autoCloseMarkdown(input)).toBe(input)
+  })
+})
+
 describe('inline code spans as literal regions', () => {
   it('should not count asterisks inside a closed code span', () => {
     const input = 'text `a*b` and **bold'
@@ -732,7 +743,7 @@ describe('inline code spans as literal regions', () => {
   })
 
   it('should close code first when bold wraps an open code span', () => {
-    // SPEC: outer emphasis closers go after the code span (`Text **bold `code` → …`code`**).
+    // SPEC: outer emphasis closers go after the code span (`Text **bold `code` -> ...`code`**).
     const input = '**bold `code'
     const expected = '**bold `code`**'
     expect(autoCloseMarkdown(input)).toBe(expected)
@@ -799,6 +810,36 @@ describe('nested emphasis', () => {
 
   it('should close nested italic + bold', () => {
     expect(autoCloseMarkdown('*a **b')).toBe('*a **b***')
+  })
+})
+
+describe('word-internal emphasis ending in punctuation', () => {
+  it('does not close CJK bold that ends in punctuation', () => {
+    const input = '这是**中文。**后续文字'
+    expect(autoCloseMarkdown(input, { syntax: false })).toBe(input)
+    expect(autoCloseMarkdown(input)).toBe(input)
+  })
+
+  it('leaves the healed text parsing the same as the input', async () => {
+    const input = '这是**中文。**后续文字'
+    const healed = autoCloseMarkdown(input)
+    expect((await parseMarkdown(healed)).nodes).toEqual((await parseMarkdown(input)).nodes)
+  })
+
+  it('does not close underscore emphasis when a later run follows punctuation (#566)', async () => {
+    for (const input of ['__下線、__次', '__a.__b', '_a(__b', '__a(__b', '__a、_b', '_a、__b', '__a __b.__c']) {
+      const healed = autoCloseMarkdown(input)
+      expect(healed).toBe(input)
+      expect((await parseMarkdown(healed)).nodes).toEqual((await parseMarkdown(input, { autoClose: false })).nodes)
+    }
+  })
+
+  it('still closes underscore emphasis when a later run follows a combining mark', () => {
+    expect(autoCloseMarkdown('__cafe\u0301__ine')).toBe('__cafe\u0301__ine__')
+  })
+
+  it('forgets a skipped star run once the underscore frame around it is discarded', () => {
+    expect(autoCloseMarkdown('__a**b.__c~~d.**e')).toBe('__a**b.__c~~d.**e**~~')
   })
 })
 

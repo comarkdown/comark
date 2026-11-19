@@ -1,27 +1,11 @@
----
-title: Punctuation
-description: Example showing how to use Comark with the punctuation plugin for smart quotes, dashes, and symbols in Vue and Vite.
-navigation:
-  icon: i-lucide-quote
-category: Plugins
-path: /examples/plugins/vue-vite-punctuation
----
+# Smart quotes and dashes in Vue and Vite
 
-::code-explorer
----
-org: comarkdown
-repo: comark@c78885ca7504b38afc7ced59aac1a3c6b3cc5425
-path: examples/3.plugins/vue-vite-punctuation
-defaultValue: src/App.vue
----
-::
+This example converts ASCII punctuation sequences into typographic characters in Vue and Vite using `@comark/vue/plugins/punctuation`.
 
-## Features
-
-This example demonstrates the punctuation plugin in Vue:
+## Replacements
 
 - **Smart quotes**: `"text"` → “text”, `'text'` → ‘text’
-- **Dashes**: `--` → – (en-dash), `---` → — (em-dash)
+- **Dashes**: `--` → – (en dash), `---` → — (em dash)
 - **Ellipsis**: `...` → …
 - **Symbols**: `(c)` → ©, `(r)` → ®, `(tm)` → ™, `+-` → ±
 
@@ -40,7 +24,15 @@ import punctuation from '@comark/vue/plugins/punctuation'
 </template>
 ```
 
-## Learn More
+## Run locally
 
-- [Punctuation Plugin Documentation](/plugins/built-in/punctuation)
-- [Comark Documentation](https://comark.dev)
+From the monorepo root:
+
+```bash
+pnpm --filter comark-vue-vite-punctuation dev
+```
+
+## Learn more
+
+- [Punctuation plugin documentation](https://comark.dev/plugins/built-in/punctuation)
+- [Comark documentation](https://comark.dev)

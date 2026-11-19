@@ -1,24 +1,10 @@
-# Angular Rendering Guide
+# Angular rendering guide
 
-Complete guide for rendering Markdown documents in Angular 17+ applications.
+Guide to rendering Markdown documents in Angular 21+ applications.
 
-## Table of Contents
+## Basic usage
 
-- [Basic Usage](#basic-usage)
-- [Custom Components](#custom-components)
-- [Dynamic Component Resolution](#dynamic-component-resolution)
-- [Content Projection (Slots)](#content-projection-slots)
-- [Streaming Mode](#streaming-mode)
-- [Prose Components](#prose-components)
-- [Props & Inputs](#props--inputs)
-- [Data Binding](#data-binding)
-- [Pre-configured Components](#pre-configured-components)
-
----
-
-## Basic Usage
-
-Use the `Markdown` standalone component to render markdown:
+Use the `Markdown` standalone component to render Markdown:
 
 ```typescript
 // app.component.ts
@@ -46,7 +32,7 @@ Important message
 }
 ```
 
-### With a Pre-parsed Document
+### With a pre-parsed document
 
 Use `MarkdownDocument` when you already have a parsed document:
 
@@ -77,7 +63,7 @@ export class AppComponent {
 
 ---
 
-## Custom Components
+## Custom components
 
 Map custom Angular components to Comark element tags:
 
@@ -105,14 +91,14 @@ export class AppComponent {
 }
 ```
 
-### Component Resolution Order
+### Component resolution order
 
 Components are resolved by checking these keys in order:
-1. `Prose{PascalTag}`, e.g., `ProseH1` for `<h1>` tags
-2. `PascalTag`, e.g., `Alert` for `::alert` components
-3. `tag`, e.g., `alert` for `::alert` components
+1. `Prose{PascalTag}`, for example `ProseH1` for `<h1>` tags
+2. `PascalTag`, for example `Alert` for `::alert` components
+3. `tag`, for example `alert` for `::alert` components
 
-### Custom Component Example
+### Custom component example
 
 Custom components receive Comark element attributes as `@Input()` properties. Children are projected via `<ng-content />`:
 
@@ -148,7 +134,7 @@ export class CustomAlertComponent {
 }
 ```
 
-### Custom Heading Example
+### Custom heading example
 
 ```typescript
 // custom-heading.component.ts
@@ -179,11 +165,11 @@ export class CustomHeadingComponent {
 
 ---
 
-## Dynamic Component Resolution
+## Dynamic component resolution
 
 Components are resolved at runtime. The `components` input is a plain `Record<string, Type<any>>` mapping tag names to Angular component classes.
 
-The renderer uses Angular's `createComponent` API to dynamically instantiate components, and `reflectComponentType` to discover which `@Input()` properties the component accepts. Only matching inputs are set.
+The renderer uses Angular's `createComponent` API to instantiate components dynamically, and `reflectComponentType` to inspect which `@Input()` properties the component accepts. Only matching inputs are set.
 
 ```typescript
 import { Component, Type } from '@angular/core'
@@ -216,11 +202,11 @@ export class DocsComponent {
 
 ---
 
-## Content Projection (Slots)
+## Content projection (slots)
 
-Comark named slots map to Angular's content projection. The renderer handles slot extraction automatically.
+Comark named slots map to Angular's content projection.
 
-### Markdown with Slots
+### Markdown with slots
 
 ```markdown
 ::card
@@ -228,14 +214,14 @@ Comark named slots map to Angular's content projection. The renderer handles slo
 ## Card Title
 
 #content
-Main content here with **markdown** support
+Main content here with **Markdown** support
 
 #footer
 Footer text
 ::
 ```
 
-### Custom Component with Slots
+### Custom component with slots
 
 Named slots are rendered into `<div slot="name" style="display: contents">` elements and appended to the component's host element. Use CSS attribute selectors or `@ContentChildren` to target them:
 
@@ -282,7 +268,7 @@ import { Component, ChangeDetectionStrategy } from '@angular/core'
 export class CardComponent {}
 ```
 
-### Nested Slots
+### Nested slots
 
 ```markdown
 ::tabs
@@ -298,9 +284,9 @@ Content for tab 2
 
 ---
 
-## Streaming Mode
+## Streaming mode
 
-Enable streaming mode for real-time rendering of content (e.g., AI-generated output):
+Enable streaming mode for incremental rendering of live content (for example, AI-generated output):
 
 ```typescript
 import { Component } from '@angular/core'
@@ -338,7 +324,7 @@ export class StreamingComponent {
 }
 ```
 
-### Caret Configuration
+### Caret configuration
 
 The `caret` input controls the streaming cursor indicator:
 
@@ -350,9 +336,9 @@ The `caret` input controls the streaming cursor indicator:
 <comark-markdown [value]="content" [streaming]="true" [caret]="{ class: 'my-caret' }" />
 ```
 
-The caret is a `<span>` with a pulsing CSS animation, automatically appended to the last text node in the AST during streaming.
+The caret is a `<span>` with a pulsing CSS animation, appended to the last text node in the AST during streaming.
 
-### Summary Mode
+### Summary mode
 
 Render only content before `<!-- more -->`:
 
@@ -362,9 +348,9 @@ Render only content before `<!-- more -->`:
 
 ---
 
-## Prose Components
+## Prose components
 
-The `MarkdownDocument` renders standard HTML elements natively. Override them with custom components using the `Prose` prefix:
+`MarkdownDocument` renders standard HTML elements natively. Override them with custom components using the `Prose` prefix:
 
 ```typescript
 import { Component, Type } from '@angular/core'
@@ -392,9 +378,9 @@ export class DocsComponent {
 
 ---
 
-## Props & Inputs
+## Props & inputs
 
-Custom components receive Comark element attributes as `@Input()` properties. The renderer uses `reflectComponentType` to discover accepted inputs and only sets matching ones.
+Custom components receive Comark element attributes as `@Input()` properties. The renderer uses `reflectComponentType` to inspect accepted inputs and sets only matching ones.
 
 ```typescript
 // data-table.component.ts
@@ -436,13 +422,13 @@ Table content here
 ::
 ```
 
-### Property Parsing Rules
+### Property parsing rules
 
-- Props starting with `:` are parsed as booleans/JSON
-- Standard HTML attributes work normally
-- `__node` provides access to the raw AST node (set automatically if the component declares it as an `@Input()`)
+- Props starting with `:` are parsed as booleans or JSON
+- Standard HTML attributes pass through as strings
+- `__node` gives access to the raw AST node (set automatically if the component declares it as an `@Input()`)
 
-### Accessing Node Structure
+### Accessing node structure
 
 ```typescript
 @Input() __node?: any
@@ -455,14 +441,14 @@ get nodeChildren() { return this.__node?.slice(2) || [] }
 
 ---
 
-## Data Binding
+## Data binding
 
-The `data` input allows passing ambient data for `:binding` resolution in markdown:
+The `data` input passes runtime values for `:prop` and `{{ }}` resolution in Markdown:
 
 ```typescript
 import { Component } from '@angular/core'
 import { Markdown } from '@comark/angular'
-import binding, { Binding } from '@comark/angular/plugins/binding'
+import { binding, Binding } from '@comark/angular/plugins/binding'
 
 @Component({
   selector: 'app-root',
@@ -478,7 +464,7 @@ import binding, { Binding } from '@comark/angular/plugins/binding'
   `,
 })
 export class AppComponent {
-  content = 'Hello {{ user.name }}, you have {{ count }} messages.'
+  content = 'Hello {{ data.user.name }}, you have {{ data.count }} messages.'
 
   plugins = [binding()]
   components = { Binding }
@@ -491,7 +477,7 @@ export class AppComponent {
 
 ---
 
-## Pre-configured Components
+## Pre-configured components
 
 Use `defineMarkdownComponent` or `defineMarkdownDocumentComponent` to create pre-configured components with default plugins and component mappings:
 
@@ -500,8 +486,8 @@ Use `defineMarkdownComponent` or `defineMarkdownDocumentComponent` to create pre
 ```typescript
 // docs-markdown.component.ts
 import { defineMarkdownComponent } from '@comark/angular'
-import math, { Math } from '@comark/angular/plugins/math'
-import mermaid, { Mermaid } from '@comark/angular/plugins/mermaid'
+import { math, Math } from '@comark/angular/plugins/math'
+import { mermaid, Mermaid } from '@comark/angular/plugins/mermaid'
 
 export const DocsMarkdown = defineMarkdownComponent({
   plugins: [math(), mermaid()],
@@ -551,7 +537,7 @@ export const DocsMarkdownDocument = defineMarkdownDocumentComponent({
 ```typescript
 import { Component } from '@angular/core'
 import { Markdown } from '@comark/angular'
-import math, { Math } from '@comark/angular/plugins/math'
+import { math, Math } from '@comark/angular/plugins/math'
 
 @Component({
   selector: 'app-root',
@@ -575,7 +561,7 @@ export class AppComponent {
 ```typescript
 import { Component } from '@angular/core'
 import { Markdown } from '@comark/angular'
-import mermaid, { Mermaid } from '@comark/angular/plugins/mermaid'
+import { mermaid, Mermaid } from '@comark/angular/plugins/mermaid'
 
 @Component({
   selector: 'app-root',
@@ -592,14 +578,14 @@ export class AppComponent {
 }
 ```
 
-The Mermaid component includes automatic dark mode support: it watches the `<html>` element for `.dark` class changes and re-renders diagrams accordingly.
+The Mermaid component watches the `<html>` element for `.dark` class changes and re-renders diagrams automatically.
 
 ### Binding
 
 ```typescript
-import binding, { Binding } from '@comark/angular/plugins/binding'
+import { binding, Binding } from '@comark/angular/plugins/binding'
 
-// See the "Data Binding" section above for full usage.
+// See the "Data binding" section above for usage.
 ```
 
 ---
@@ -608,11 +594,11 @@ import binding, { Binding } from '@comark/angular/plugins/binding'
 
 All `@comark/angular` components use:
 
-- **Standalone Components**: no `NgModule` required
+- **Standalone components**: no `NgModule` required
 - **`ChangeDetectionStrategy.OnPush`**: minimal change detection overhead
-- **Dynamic component creation** via `createComponent`: efficient runtime instantiation
-- **`reflectComponentType`**: only set inputs the component actually declares
+- **Dynamic component creation** via `createComponent`: runtime instantiation without wrapper modules
+- **`reflectComponentType`**: sets only inputs that the component declares
 
 ---
 
-[← Back to Main Skills Guide](../SKILL.md)
+[Back to skill guide](../SKILL.md)

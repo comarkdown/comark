@@ -4,9 +4,9 @@ import { Component } from '@angular/core'
  * A card component demonstrating named slot support in Comark.
  *
  * Slots:
- * - `header` — rendered in the card header area
- * - `default` — rendered in the card body
- * - `footer` — rendered in the card footer area
+ * - `header`: rendered in the card header area
+ * - `default`: rendered in the card body
+ * - `footer`: rendered in the card footer area
  */
 @Component({
   selector: 'app-feature-card',

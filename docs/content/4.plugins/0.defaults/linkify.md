@@ -1,6 +1,6 @@
 ---
 title: Linkify
-description: Plugin for converting URL-like text into links.
+description: Convert URLs and email addresses in plain text into links.
 seo:
   title: Linkify Plugin
 navigation:
@@ -13,9 +13,9 @@ links:
     variant: soft
 ---
 
-The `comark/plugins/linkify` plugin converts URLs such as `https://comark.dev` and emails such as `hi@comark.dev` into links, using [linkify-it](https://github.com/markdown-it/linkify-it). Domains without a scheme, such as `www.example.com`, are linked only with [`fuzzyLink`](#options).
+The `comark/plugins/linkify` plugin converts URLs such as `https://comark.dev` and email addresses such as `hi@comark.dev` into links using [linkify-it](https://github.com/markdown-it/linkify-it). Domains without a scheme, such as `www.example.com`, are linked only when [`fuzzyLink`](#options) is enabled.
 
-The plugin is **enabled by default** via `registerDefaultPlugins`. No installation or registration required.
+This plugin is **enabled by default** via `registerDefaultPlugins`, so you don't need to install or register it.
 
 ```typescript
 import { parseMarkdown } from 'comark'
@@ -59,9 +59,7 @@ await parseMarkdown('Visit www.example.com', {
 | `maxLength` | `number` | `10000` | Maximum link length |
 | `'---'` | `boolean` | `false` | End a link at `---`, treating it as a long dash |
 
-::note
 Before linkify-it 6, Comark linked `www.example.com` and `user:pass@` URLs by default. Pass `linkify({ fuzzyLink: true, urlAuth: true })` to keep that behavior.
-::
 
 ::warning
 The `linkify` parser option is **deprecated**. It logs a warning and will be removed in a future major version. Replace `linkify: false` with `registerDefaultPlugins: false`, then register only the default plugins you need.

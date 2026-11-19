@@ -1,27 +1,25 @@
 ---
 title: Footnotes
-description: Plugin for adding footnote references and definitions to your Comark documents.
+description: Add footnote references, numbered definitions, and back-links to Comark documents.
 navigation:
-  icon:  i-lucide-footprints
+  icon: i-lucide-footprints
 seo:
   title: Footnotes Plugin
-  description: Plugin for adding footnote references and definitions to your Comark documents.
+  description: Add footnote references, numbered definitions, and back-links to Comark documents.
 links:
   - label: Parse API
     icon: i-lucide-code
     to: /reference/parse
     color: neutral
     variant: soft
-  - label: Vue Rendering
+  - label: Vue rendering
     icon: i-simple-icons-vuedotjs
     to: /rendering/vue
     color: neutral
     variant: soft
 ---
 
-The Footnotes plugin adds support for footnote references and definitions. References are rendered as superscript links, and definitions are collected into a numbered list at the end of the document with back-reference links.
-
-No peer dependencies are required.
+The `comark/plugins/footnotes` plugin adds GFM-style footnote references and definitions. It renders inline references as superscript links and collects definitions into a numbered list at the end of the document, each with a link back to the reference. It requires no peer dependencies.
 
 ## Basic usage
 
@@ -108,7 +106,7 @@ The theory of relativity[^1] changed physics.
 Einstein also contributed to quantum mechanics[^qm].
 ```
 
-Labels can be numbers or text; they serve as identifiers and are replaced with sequential numbers in the output.
+Labels can be numbers or words. Comark uses them to match references to definitions and replaces them with sequential numbers in the output.
 
 ### Footnote definitions
 
@@ -119,7 +117,7 @@ Define footnotes with `[^label]: content` on its own line:
 [^qm]: See the photoelectric effect paper, also from 1905.
 ```
 
-Definitions can appear anywhere in the document. They are removed from their original position and collected into the footnotes section.
+Definitions can appear anywhere in the document. The plugin removes them from their original position and appends them to the footnotes section at the end.
 
 ### Complete example
 
@@ -265,7 +263,7 @@ Footnote references work inside bold, italic, and other inline formatting:
 
 ## Stringify (Markdown rendering)
 
-The plugin exports a `Footnote` conditional handler that converts the footnote AST back into standard markdown footnote syntax. This is useful when you want to render a `MarkdownDocument` back to markdown and preserve footnotes.
+The plugin exports a `Footnote` conditional handler that serializes the footnote AST back into standard `[^label]` Markdown syntax when you pass a `MarkdownDocument` to `renderMarkdown`:
 
 ```typescript
 import { parseMarkdown } from 'comark'
@@ -284,12 +282,12 @@ const md = await renderMarkdown(document, {
 // [^1]: World
 ```
 
-Without `Footnote`, `renderMarkdown` would serialize the footnote HTML structure (sup, section, ol, etc.) as Comark component syntax instead of native footnote syntax.
+Without `Footnote`, `renderMarkdown` serializes the generated `<sup>`, `<section>`, and `<ol>` nodes as Comark component syntax instead of `[^label]` footnotes.
 
 ## Related
 
-- [Parse API](/reference/parse): Main parsing API
-- [Render API](/reference/render): Rendering API with conditional handlers
-- [Alerts](/plugins/defaults/alert): GitHub-style alert blockquotes
-- [Task List](/plugins/defaults/task-list): Checkbox syntax
-- [Creating Plugins](/plugins/custom/plugin-api): Build your own plugin
+- [Parse API](/reference/parse) for parser configuration
+- [Render API](/reference/render) for Markdown rendering with conditional handlers
+- [Alerts](/plugins/defaults/alert) for GitHub-style alert blockquotes
+- [Task list](/plugins/defaults/task-list) for checkbox syntax
+- [Plugin API](/plugins/custom/plugin-api) for writing custom plugins

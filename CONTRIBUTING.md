@@ -44,7 +44,7 @@ pnpm docs
 - `packages/comark`: parser, document model, core plugins and Markdown string rendering.
 - `packages/comark-html` and `packages/comark-ansi`: HTML and terminal renderers.
 - `packages/comark-vue`, `packages/comark-react`, `packages/comark-svelte`, and `packages/comark-angular`: framework renderers.
-- `packages/comark-nuxt`: Nuxt integration.
+- `packages/comark-nuxt`: deprecated `@comark/nuxt`, which installs the Nuxt module from `packages/comark-vue/src/nuxt.ts`.
 - `docs/content`: user-facing documentation.
 
 Keep parser-only behavior in the core package and framework-specific behavior in its renderer. The [architecture reference](./AGENTS.md) has a more detailed package map.
@@ -74,7 +74,7 @@ cd packages/comark
 pnpm vitest run test/parse/sub-sup.test.ts
 ```
 
-Parser fixtures live in `packages/comark/SPEC` and run through `test/index.test.ts`. Parser changes should also preserve streaming behavior in `test/streaming.test.ts`.
+Parser fixtures live in `packages/comark/SPEC` and run through `test/index.test.ts`. Each fixture also checks `markdown/html` output against its `## Markdown HTML` section, or against `## Markdown` when that section is missing. Parser changes should also preserve streaming behavior in `test/streaming.test.ts`.
 
 React and Svelte tests include a headless Chromium project. Install the browser if needed:
 

@@ -67,3 +67,21 @@ This is a spoiler.
 More spoiler content.
 ::
 ```
+
+## Markdown HTML
+
+```md
+<spoiler>
+
+This is a spoiler.
+
+<warning>
+
+Nested warning inside spoiler.
+
+</warning>
+
+More spoiler content.
+
+</spoiler>
+```

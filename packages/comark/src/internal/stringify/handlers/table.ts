@@ -1,17 +1,18 @@
 import type { State } from 'comark/render'
 import type { ElementNode, Node } from 'comark'
 import { comarkAttributes, userBlockAttrs } from '../attributes.ts'
+import { component } from './component.ts'
 
 type Alignment = 'left' | 'center' | 'right' | null
 
-// Helper function to extract alignment from style attribute
+const TABLE_SECTIONS = new Set(['thead', 'tbody', 'tr'])
+
 function getAlignment(attributes: Record<string, unknown>): Alignment {
   const style = attributes.style
   if (typeof style !== 'string') {
     return null
   }
 
-  // Parse text-align from style attribute - normalize and check
   const normalized = style.toLowerCase().split(' ').join('').split('\t').join('')
 
   if (normalized.includes('text-align:left')) {
@@ -27,7 +28,6 @@ function getAlignment(attributes: Record<string, unknown>): Alignment {
   return null
 }
 
-// Helper function to extract text content from a cell
 async function getCellContent(cell: Node, state: State): Promise<string> {
   if (typeof cell === 'string') {
     return escapePipes(cell)
@@ -48,14 +48,11 @@ async function getCellContent(cell: Node, state: State): Promise<string> {
   return escapePipes(trimmed.replace(/^\u00a0+|\u00a0+$/g, (nbsp) => '&nbsp;'.repeat(nbsp.length)))
 }
 
-// Helper function to escape pipe characters and handle newlines
 function escapePipes(text: string): string {
-  // Replace newlines with spaces (tables don't support multi-line cells)
-  // Then escape pipe characters
+  // GFM table cells cannot span lines.
   return text.split('\n').join(' ').split('|').join('\\|')
 }
 
-// Helper function to get all rows from thead/tbody
 function getRows(element: Node): ElementNode[] {
   if (typeof element === 'string') {
     return []
@@ -63,12 +60,10 @@ function getRows(element: Node): ElementNode[] {
 
   const [tag, , ...children] = element
 
-  // If it's a tr, return it directly
   if (tag === 'tr') {
     return [element]
   }
 
-  // If it's thead/tbody, extract tr elements
   if (tag === 'thead' || tag === 'tbody') {
     return children.filter((child) => typeof child !== 'string' && child[0] === 'tr') as ElementNode[]
   }
@@ -76,7 +71,6 @@ function getRows(element: Node): ElementNode[] {
   return []
 }
 
-// Helper function to get cells from a row
 function getCells(row: ElementNode): ElementNode[] {
   const [, , ...children] = row
   return children.filter(
@@ -84,10 +78,14 @@ function getCells(row: ElementNode): ElementNode[] {
   ) as ElementNode[]
 }
 
-export async function table(node: ElementNode, state: State) {
+export async function table(node: ElementNode, state: State, parent?: ElementNode) {
   const [, , ...children] = node
 
-  // Extract thead and tbody
+  // A parsed table always has rows; without them this is a `::table` component.
+  if (!children.some((child) => Array.isArray(child) && TABLE_SECTIONS.has(child[0] as string))) {
+    return component(node, state, parent)
+  }
+
   let headerRows: ElementNode[] = []
   let bodyRows: ElementNode[] = []
 
@@ -100,7 +98,6 @@ export async function table(node: ElementNode, state: State) {
     } else if (tag === 'tbody') {
       bodyRows = getRows(child)
     } else if (tag === 'tr') {
-      // Direct tr children (no thead/tbody wrapper)
       const cells = getCells(child)
       if (cells.length > 0 && cells[0][0] === 'th') {
         headerRows.push(child)
@@ -110,7 +107,7 @@ export async function table(node: ElementNode, state: State) {
     }
   }
 
-  // If no header rows, create a default header based on the first body row
+  // GFM tables require a header row.
   if (headerRows.length === 0 && bodyRows.length > 0) {
     const firstRow = bodyRows[0]
     const cells = getCells(firstRow)
@@ -122,7 +119,6 @@ export async function table(node: ElementNode, state: State) {
     return ''
   }
 
-  // Process header row (use the first header row)
   const headerRow = headerRows[0]
   const headerCells = getCells(headerRow)
   const headerContent: string[] = []
@@ -130,16 +126,13 @@ export async function table(node: ElementNode, state: State) {
     headerContent.push(await getCellContent(cell, state))
   }
 
-  // Extract alignment from header cells
   const alignments = headerCells.map((cell) => {
     const [, attributes] = cell
     return getAlignment(attributes)
   })
 
-  // Calculate column widths (minimum 3 characters per column)
   const columnWidths = headerContent.map((content) => Math.max(3, content.length))
 
-  // Update column widths based on body content
   for (const row of bodyRows) {
     const cells = getCells(row)
     for (let i = 0; i < cells.length; i++) {
@@ -150,12 +143,10 @@ export async function table(node: ElementNode, state: State) {
     }
   }
 
-  // Build the markdown table
   let result = '| '
   result += headerContent.map((content, i) => content.padEnd(columnWidths[i])).join(' | ')
   result += ' |\n'
 
-  // Add separator row with alignment
   result += '| '
   result += columnWidths
     .map((width, i) => {
@@ -172,7 +163,6 @@ export async function table(node: ElementNode, state: State) {
     .join(' | ')
   result += ' |\n'
 
-  // Add body rows
   for (const row of bodyRows) {
     const cells = getCells(row)
     const cellContents: string[] = []
@@ -181,7 +171,6 @@ export async function table(node: ElementNode, state: State) {
       cellContents.push(content.padEnd(columnWidths[i] || 0))
     }
 
-    // Fill missing columns with empty cells
     while (cellContents.length < columnWidths.length) {
       cellContents.push(''.padEnd(columnWidths[cellContents.length]))
     }
@@ -189,9 +178,8 @@ export async function table(node: ElementNode, state: State) {
     result += '| ' + cellContents.join(' | ') + ' |\n'
   }
 
-  // result already ends with \n, so we only need to add one more \n
-  // table with user attrs round-trips via `::table{attrs}\n<table>\n::` —
-  // GFM table syntax has no slot for table-level attrs.
+  // Tables with user attrs round-trip via `::table{attrs}`: GFM table syntax
+  // has no slot for table-level attrs.
   const attrs = comarkAttributes(userBlockAttrs('table', node[1] as Record<string, unknown>))
   if (attrs) {
     return `::table${attrs}\n${result.trimEnd()}\n::\n\n`
@@ -200,27 +188,23 @@ export async function table(node: ElementNode, state: State) {
   return result + '\n'
 }
 
+// Table sections and cells are serialized by the parent `table` handler.
 export function thead(_node: ElementNode, _state: State) {
-  // thead is handled by the table handler
   return ''
 }
 
 export function tbody(_node: ElementNode, _state: State) {
-  // tbody is handled by the table handler
   return ''
 }
 
 export function tr(_node: ElementNode, _state: State) {
-  // tr is handled by the table handler
   return ''
 }
 
 export function th(_node: ElementNode, _state: State) {
-  // th is handled by the table handler
   return ''
 }
 
 export function td(_node: ElementNode, _state: State) {
-  // td is handled by the table handler
   return ''
 }

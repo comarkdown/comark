@@ -51,7 +51,6 @@ export default defineComarkPlugin(() => ({
             if (typeof node[3] === 'string') {
               element[3] = String(element[3]).trimStart()
             }
-            // remove span node
             element.splice(2, 1)
             element[1].as = marker.type
           }
@@ -65,9 +64,7 @@ export default defineComarkPlugin(() => ({
               if (typeof paragraph[3] === 'string') {
                 paragraph[3] = String(paragraph[3]).trimStart()
               }
-              // remove span node
               paragraph.splice(2, 1)
-              // transform node
               element[1].as = marker.type
             }
           }

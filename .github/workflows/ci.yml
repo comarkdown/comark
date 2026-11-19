@@ -17,14 +17,16 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           package-manager-cache: false
-          node-version: '26.13.0'
+          node-version: '26.13.1'
       - run: npm i -g --force corepack && corepack enable
       - run: pnpm install
-      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm exec playwright install chromium
+        timeout-minutes: 3
       - run: pnpm dev:prepare
       - run: pnpm lint
       - run: pnpm prepack
       - run: pnpm test
+      - run: pnpm test:sanitizer
       - name: Publish
         run: pnpx pkg-pr-new publish --pnpm './packages/*'
       - name: Check package bundle size

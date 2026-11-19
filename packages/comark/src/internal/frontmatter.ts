@@ -21,11 +21,7 @@ function findClosingDelimiter(content: string, from: number) {
   }
 }
 
-/**
- * Parse frontmatter from content
- * @param content - The content to parse
- * @returns The content and data
- */
+/** Extract leading YAML frontmatter (`---`) from markdown content. */
 export function parseFrontmatter(content: string) {
   let data: Record<string, any> = {}
   let frontmatter = ''
@@ -54,12 +50,7 @@ export function parseFrontmatter(content: string) {
   }
 }
 
-/**
- * Render frontmatter to content
- * @param data - The data to render
- * @param content - The content to render
- * @returns The rendered content
- */
+/** Prepend serialized YAML frontmatter (`---`) to markdown content when `data` is non-empty. */
 export function renderFrontmatter(
   data: Record<string, any> | undefined | null,
   content?: string,

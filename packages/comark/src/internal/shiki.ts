@@ -9,12 +9,12 @@ import { GRAMMAR_CONTEXTS, inlineCodeLanguage } from './inline-code-lang.ts'
 
 export interface ShikiCoreOptions {
   /**
-   * Languages to register. Required — core has no default language set.
+   * Languages to register. Required; core has no default language set.
    */
   languages: Array<LanguageRegistration | LanguageRegistration[]>
 
   /**
-   * Themes to register. Required — core has no default themes.
+   * Themes to register. Required; core has no default themes.
    * Provide at least one of `light` or `dark`.
    */
   themes: {
@@ -46,7 +46,7 @@ export interface ShikiCoreOptions {
 
 /**
  * Options for the standard `comark/plugins/shiki` entry.
- * Themes and languages are optional — defaults ship with that entry.
+ * Themes and languages are optional; defaults ship with that entry.
  */
 export interface ShikiOptions extends Omit<ShikiCoreOptions, 'languages' | 'themes'> {
   /**
@@ -223,6 +223,8 @@ function hastToNode(input: any): Node {
   if (input.type === 'comment') return [null, {}, input.value]
 
   const props = input.properties || {}
+  // Shiki transformers add classes with `addClassToHast`, which leaves `class` as an array.
+  if (Array.isArray(props.class)) props.class = props.class.join(' ')
   if (input.tag === 'code' && props?.className && props.className.length === 0) {
     delete props.className
   }
@@ -241,7 +243,7 @@ function hastToNode(input: any): Node {
 }
 
 /**
- * Build `<span style=…>` children for one tokenized line.
+ * Build `<span style=...>` children for one tokenized line.
  * Replicates shiki's `mergeWhitespaceTokens`: a pure-whitespace token merges
  * into the following token unless it is underlined or struck through.
  */
@@ -268,12 +270,16 @@ function tokensToSpans(line: ThemedToken[]): Node[] {
       spans.push(style ? ['span', { style }, tk.content] : ['span', {}, tk.content])
     }
   }
-  // If trailing whitespace wasn't merged, emit it
   if (carry) {
     spans.push(['span', {}, carry])
   }
   return spans
 }
+
+// The streaming parser hands the same raw node to every update while its source
+// is unchanged, so a plugin keeps its tokens by raw node. Output nodes are still
+// rebuilt every time, since callers and later plugins may edit them in place.
+type TokensCache = WeakMap<ElementNode, { code: string; language: string; result: ReturnType<typeof codeToTokens> }>
 
 /**
  * Apply syntax highlighting to all code blocks in a Comark tree
@@ -283,7 +289,8 @@ export async function highlightCodeBlocks(
   tree: MarkdownDocument,
   options: ShikiOptions = {},
   defaultThemeLoaders: ShikiThemeLoader[] = [],
-  defaultLanguageLoaders: ShikiLanguageLoader[] = []
+  defaultLanguageLoaders: ShikiLanguageLoader[] = [],
+  tokensCache?: TokensCache
 ): Promise<MarkdownDocument> {
   interface CodeBlockRef {
     node: Node
@@ -349,7 +356,6 @@ export async function highlightCodeBlocks(
   const hasTransformers = options.transformers && options.transformers.length > 0
   const darkClassSuffix = options.themes?.dark?.name ? ` dark:${options.themes.dark.name}` : ''
 
-  // Build new nodes array, spine-copying only paths to modified nodes
   const newNodes = [...tree.nodes] as Node[]
 
   // Copy only the spine from root to `path` to preserve immutability. Each
@@ -392,19 +398,21 @@ export async function highlightCodeBlocks(
           meta: { __raw: attrs.meta },
         })
         const preNode = result.children.map(hastToNode)[0] as ElementNode
-        const cls = (preNode[1] as ElementNodeAttributes).class
-        classStr = Array.isArray(cls) ? cls.join(' ') : String(cls)
+        classStr = String((preNode[1] as ElementNodeAttributes).class)
         codeChildren = (preNode[2] as ElementNode).slice(2) as Node[]
       } else {
         // Fast path: build Nodes directly from tokens, skipping hast
-        const result = codeToTokens(hl, code, {
-          lang: language,
-          themes: themeOptions,
-        })
+        const cached = tokensCache?.get(node as ElementNode)
+        const result =
+          cached?.code === code && cached.language === language
+            ? cached.result
+            : codeToTokens(hl, code, {
+                lang: language,
+                themes: themeOptions,
+              })
+        tokensCache?.set(node as ElementNode, { code, language, result })
         classStr = `shiki ${result.themeName || ''}`
 
-        // Replicate shiki's mergeWhitespaceTokens: merge pure-whitespace tokens
-        // into the following token (unless underline/strikethrough styled)
         const tokenLines = result.tokens
         codeChildren = []
         for (let li = 0; li < tokenLines.length; li++) {
@@ -427,15 +435,12 @@ export async function highlightCodeBlocks(
 
     if (darkClassSuffix) classStr += darkClassSuffix
 
-    // Apply line highlights
     const highlightSet = Array.isArray(preAttrs.highlights) ? new Set<number>(preAttrs.highlights) : null
     let line = 1
     for (const child of codeChildren) {
       if (Array.isArray(child)) {
         if (highlightSet !== null && highlightSet.has(line)) {
-          const classes = Array.isArray(child[1].class) ? child[1].class.join(' ') : (child[1].class ?? '')
-
-          child[1].class = `${classes} highlight`.trim()
+          child[1].class = `${child[1].class ?? ''} highlight`.trim()
           // TODO: (enforcing default style) once we unify all ecosystem styles we can remove this
           child[1].style = 'display: inline-block'
         } else {
@@ -550,15 +555,19 @@ export function createShikiPlugin<TOptions extends ShikiOptions = ShikiOptions>(
   defaultThemeLoaders: ShikiThemeLoader[] = [],
   defaultLanguageLoaders: ShikiLanguageLoader[] = []
 ) {
-  return defineComarkPlugin<TOptions>((options) => ({
-    name: 'shiki',
-    async post(state) {
-      state.tree = await highlightCodeBlocks(
-        state.tree,
-        (options || {}) as ShikiOptions,
-        defaultThemeLoaders,
-        defaultLanguageLoaders
-      )
-    },
-  }))
+  return defineComarkPlugin<TOptions>((options) => {
+    const tokensCache: TokensCache = new WeakMap()
+    return {
+      name: 'shiki',
+      async post(state) {
+        state.tree = await highlightCodeBlocks(
+          state.tree,
+          (options || {}) as ShikiOptions,
+          defaultThemeLoaders,
+          defaultLanguageLoaders,
+          tokensCache
+        )
+      },
+    }
+  })
 }
