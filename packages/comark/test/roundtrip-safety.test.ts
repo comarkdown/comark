@@ -173,6 +173,7 @@ describe('lists, emphasis and headings', () => {
     ['a nested list that starts at 0 after text', '- parent\n\n  0. child\n'],
     ['emphasis inside emphasis', '*_foo_*\n'],
     ['emphasis that ends inside a word within emphasis', '_foo *bar*baz_\n'],
+    ['emphasis inside a link inside emphasis', '_x [a*b*](/u) y_\n'],
     ['a multi-line heading', 'Foo\nbar\n===\n'],
     ['a multi-line level 2 heading with attributes', 'Foo\nbar {.c}\n---\n'],
     ['a multi-line heading that starts with an escaped marker', '\\# Foo\nbar\n===\n'],
