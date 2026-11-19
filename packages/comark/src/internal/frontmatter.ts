@@ -21,9 +21,8 @@ function findClosingDelimiter(content: string, from: number) {
   }
 }
 
-/** Extract leading YAML frontmatter (`---`) from markdown content. */
-export function parseFrontmatter(content: string) {
-  let data: Record<string, any> = {}
+/** Split leading frontmatter (`---`) from markdown content without parsing its YAML. */
+export function splitFrontmatter(content: string): { content: string; frontmatterText: string } {
   let frontmatter = ''
   const start = content.startsWith(BOM) ? BOM.length : 0
   if (content.startsWith(FRONTMATTER_DELIMITER_DEFAULT, start)) {
@@ -33,20 +32,30 @@ export function parseFrontmatter(content: string) {
       const hasCarriageReturn = content[idx - 1] === CR
       frontmatter = content.slice(start + 4, idx - (hasCarriageReturn ? 1 : 0))
       if (frontmatter) {
-        try {
-          data = parseYaml(frontmatter) ?? {}
-        } catch (error) {
-          console.warn(`[comark/plugins/frontmatter] ignoring invalid YAML frontmatter: ${(error as Error).message}`)
-        }
         content = content.slice(end)
       }
     }
   }
 
+  return { content, frontmatterText: frontmatter }
+}
+
+/**
+ * Extract leading YAML frontmatter (`---`) from markdown content.
+ * @throws When the frontmatter is not valid YAML
+ */
+export function parseFrontmatter(content: string): {
+  content: string
+  data: Record<string, any>
+  frontmatterText: string
+} {
+  const split = splitFrontmatter(content)
+  const data: Record<string, any> = split.frontmatterText ? (parseYaml(split.frontmatterText) ?? {}) : {}
+
   return {
-    content,
+    content: split.content,
     data,
-    frontmatterText: frontmatter,
+    frontmatterText: split.frontmatterText,
   }
 }
 

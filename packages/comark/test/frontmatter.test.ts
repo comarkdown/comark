@@ -126,16 +126,25 @@ Content`
     expect(result.content.trim()).toBe('Content')
   })
 
-  it('should warn and keep the content for malformed YAML in frontmatter', () => {
+  it('should throw for malformed YAML in frontmatter', () => {
+    const input = `---
+foo: [1,2
+---
+
+Content`
+    expect(() => parseFrontmatter(input)).toThrow()
+  })
+
+  it('should warn and strip malformed YAML frontmatter in the frontmatter plugin', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
     const input = `---
 foo: [1,2
 ---
 
 Content`
-    const result = parseFrontmatter(input)
-    expect(result.data).toEqual({})
-    expect(result.content.trim()).toBe('Content')
+    const result = await parseMarkdown(input)
+    expect(result.frontmatter).toEqual({})
+    expect(result.nodes).toEqual([['p', {}, 'Content']])
     expect(warn).toHaveBeenCalledOnce()
     expect(warn.mock.calls[0][0]).toContain('invalid YAML frontmatter')
     warn.mockRestore()
