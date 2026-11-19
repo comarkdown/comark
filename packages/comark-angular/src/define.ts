@@ -1,7 +1,8 @@
-import type { Provider, Type } from '@angular/core'
+import { Component, ChangeDetectionStrategy, Type, input, computed } from '@angular/core'
 import type { NodeTransform, ParserOptions } from 'comark'
-import { MARKDOWN_CONFIG, MARKDOWN_DOCUMENT_CONFIG } from './config'
-import type { MarkdownConfig, MarkdownDocumentConfig } from './config'
+import { mergeNodeTransforms } from 'comark/utils'
+import { Markdown } from './components/markdown.component'
+import { MarkdownDocument } from './components/markdown-document.component'
 
 export interface DefineMarkdownComponentOptions extends ParserOptions {
   /** Pre-configured component mappings. */
@@ -22,38 +23,28 @@ export interface DefineMarkdownDocumentOptions {
 }
 
 /**
- * Configure the static `Markdown` component through Angular DI.
+ * Create a pre-configured Markdown component with default options, plugins, and components.
  *
- * Returns a config Provider for `MARKDOWN_CONFIG`. The `Markdown` component is
- * declared statically, so it stays analyzable by the Angular AOT compiler and
- * can be used in `imports`. AOT cannot statically resolve a component class
- * created by a factory function (ngtsc error -991010 / NG1010).
+ * The returned class extends `Markdown` and merges the config-level
+ * defaults with any per-instance `@Input()` values at runtime.
+ *
+ * Angular AOT cannot statically resolve a component class produced by a factory
+ * in `imports` (ngtsc error -991010 / NG1010). Prefer `provideMarkdown`
+ * in AOT builds; this factory remains for JIT applications.
  *
  * @example
  * ```typescript
- * import { Component } from '@angular/core'
- * import { Markdown, defineMarkdownComponent } from '@comark/angular'
+ * import { defineMarkdownComponent } from '@comark/angular'
  * import { math, Math } from '@comark/angular/plugins/math'
  *
- * @Component({
- *   selector: 'app-docs',
- *   standalone: true,
- *   imports: [Markdown],
- *   providers: [
- *     defineMarkdownComponent({
- *       plugins: [math()],
- *       components: { Math },
- *       class: 'prose dark:prose-invert',
- *     }),
- *   ],
- *   template: `<comark-markdown [value]="content" />`,
+ * export const DocsMarkdown = defineMarkdownComponent({
+ *   plugins: [math()],
+ *   components: { Math },
+ *   class: 'prose dark:prose-invert',
  * })
- * export class DocsComponent {
- *   content = '# Hello'
- * }
  * ```
  */
-export function defineMarkdownComponent(config: DefineMarkdownComponentOptions = {}): Provider {
+export function defineMarkdownComponent(config: DefineMarkdownComponentOptions = {}): Type<Markdown> {
   const {
     components: configComponents = {},
     class: configClass,
@@ -62,60 +53,131 @@ export function defineMarkdownComponent(config: DefineMarkdownComponentOptions =
     ...parseOptions
   } = config
 
-  return {
-    provide: MARKDOWN_CONFIG,
-    useValue: {
-      options: parseOptions,
-      plugins: configPlugins,
-      components: configComponents,
-      transformNode: configTransforms,
-      class: configClass,
-    } satisfies MarkdownConfig,
+  @Component({
+    selector: 'comark-markdown-defined',
+    standalone: true,
+    imports: [MarkdownDocument],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    template: `
+      @if (document) {
+        <comark-markdown-document
+          [value]="document"
+          [components]="mergedComponents()"
+          [streaming]="streaming()"
+          [caret]="caret()"
+          [data]="data()"
+          [transformNode]="mergedTransforms()"
+        />
+      }
+    `,
+    host: {
+      '[class]': 'hostClass',
+    },
+  })
+  class DefinedMarkdownComponent extends Markdown {
+    /** Instance-level components that are merged with config-level components. */
+    override readonly components = input<Record<string, Type<any>>>({})
+
+    protected override readonly mergedComponents = computed(() => ({ ...configComponents, ...this.components() }))
+
+    protected override readonly mergedTransforms = computed(() =>
+      mergeNodeTransforms(configTransforms, this.transformNode())
+    )
+
+    get hostClass(): string {
+      return configClass || ''
+    }
+
+    /**
+     * Effective plugins: config-level plugins first, then instance plugins.
+     * An instance plugin with the same name replaces the config plugin.
+     */
+    private readonly effectivePlugins = computed<ParserOptions['plugins']>(() => {
+      const plugins = new Map<string, NonNullable<ParserOptions['plugins']>[number]>()
+
+      for (const plugin of configPlugins) {
+        plugins.set(plugin.name, plugin)
+      }
+      for (const plugin of this.plugins() ?? []) {
+        plugins.delete(plugin.name)
+        plugins.set(plugin.name, plugin)
+      }
+
+      return [...plugins.values()]
+    })
+
+    /**
+     * Merge config-level parse options under the instance `options` input so
+     * instance values override config defaults, without writing back to the
+     * input signal (the parser consumes the derived value instead).
+     */
+    protected override getParserOptions(): ParserOptions {
+      const unwrap = this.unwrap()
+      return {
+        ...parseOptions,
+        ...this.options(),
+        ...(unwrap === undefined ? {} : { unwrap }),
+        plugins: this.effectivePlugins(),
+      }
+    }
   }
+
+  return DefinedMarkdownComponent as any
 }
 
 /**
- * Configure the static `MarkdownDocument` component through Angular DI.
+ * Create a pre-configured MarkdownDocument component with default component mappings.
  *
- * Returns a config Provider for `MARKDOWN_DOCUMENT_CONFIG`, which the static
- * `MarkdownDocument` component reads to pre-configure components and styling.
+ * Angular AOT cannot statically resolve a component class produced by a factory
+ * in `imports` (ngtsc error -991010 / NG1010). Prefer `provideMarkdownDocument`
+ * in AOT builds; this factory remains for JIT applications.
  *
  * @example
  * ```typescript
- * import { Component, OnInit } from '@angular/core'
- * import { parseMarkdown, type MarkdownDocument as MarkdownDocumentType } from 'comark'
- * import { MarkdownDocument, defineMarkdownDocumentComponent } from '@comark/angular'
+ * import { defineMarkdownDocumentComponent } from '@comark/angular'
  * import { Math } from '@comark/angular/plugins/math'
  *
- * @Component({
- *   selector: 'app-docs',
- *   standalone: true,
- *   imports: [MarkdownDocument],
- *   providers: [
- *     defineMarkdownDocumentComponent({
- *       components: { Math },
- *     }),
- *   ],
- *   template: `@if (document) { <comark-markdown-document [value]="document" /> }`,
+ * export const DocsRenderer = defineMarkdownDocumentComponent({
+ *   components: { Math },
  * })
- * export class DocsComponent implements OnInit {
- *   document?: MarkdownDocumentType
- *
- *   async ngOnInit(): Promise<void> {
- *     this.document = await parseMarkdown('# Hello')
- *   }
- * }
  * ```
  */
-export function defineMarkdownDocumentComponent(config: DefineMarkdownDocumentOptions = {}): Provider {
-  const { components: configComponents = {}, class: configClass, transformNode: configTransforms } = config
+export function defineMarkdownDocumentComponent(config: DefineMarkdownDocumentOptions = {}): Type<MarkdownDocument> {
+  const { components: configComponents = {}, class: configClass } = config
 
-  return {
-    provide: MARKDOWN_DOCUMENT_CONFIG,
-    useValue: {
-      components: configComponents,
-      transformNode: configTransforms,
-      class: configClass,
-    } satisfies MarkdownDocumentConfig,
+  @Component({
+    selector: 'comark-markdown-document-defined',
+    standalone: true,
+    imports: [MarkdownDocument],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    template: `
+      <comark-markdown-document
+        [value]="value()"
+        [components]="mergedComponents()"
+        [streaming]="streaming()"
+        [caret]="caret()"
+        [data]="data()"
+        [transformNode]="mergedTransforms()"
+      />
+    `,
+    host: {
+      '[class]': 'hostClass',
+    },
+  })
+  class DefinedMarkdownDocumentComponent extends MarkdownDocument {
+    /** Instance-level components that are merged with config-level components. */
+    override readonly components = input<Record<string, Type<any>>>({})
+
+    protected override readonly mergedComponents = computed(() => ({ ...configComponents, ...this.components() }))
+
+    protected override readonly mergedTransforms = computed(() =>
+      mergeNodeTransforms(config.transformNode, this.transformNode())
+    )
+
+    get hostClass(): string {
+      return configClass || ''
+    }
   }
+
+  return DefinedMarkdownDocumentComponent as any
 }

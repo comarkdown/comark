@@ -3,6 +3,8 @@ export { MarkdownDocument } from './components/markdown-document.component'
 export { MarkdownNode } from './components/markdown-node.component'
 export { defineMarkdownComponent, defineMarkdownDocumentComponent } from './define'
 export type { DefineMarkdownComponentOptions, DefineMarkdownDocumentOptions } from './define'
+export { provideMarkdown, provideMarkdownDocument } from './provider'
+export type { MarkdownProviderOptions, MarkdownDocumentProviderOptions } from './provider'
 export { MARKDOWN_CONFIG, MARKDOWN_DOCUMENT_CONFIG } from './config'
 export type { MarkdownConfig, MarkdownDocumentConfig } from './config'
 

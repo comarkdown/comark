@@ -1,56 +1,98 @@
-import { describe, expect, it } from 'vitest'
-import type { ValueProvider } from '@angular/core'
+import '@angular/compiler'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { TestBed } from '@angular/core/testing'
 import type { NodeTransform } from 'comark'
+import { parseMarkdown } from 'comark'
 import { defineMarkdownComponent, defineMarkdownDocumentComponent } from '../src/define.ts'
-import { MARKDOWN_CONFIG, MARKDOWN_DOCUMENT_CONFIG } from '../src/config.ts'
+import { ConfiguredMarkdown, ConfiguredMarkdownDocument, InstanceAlert } from './fixtures/defined/defined.ts'
 
 describe('defineMarkdownComponent', () => {
-  it('returns a MARKDOWN_CONFIG provider with defaults and overrides', () => {
-    const empty = defineMarkdownComponent() as ValueProvider
-    expect(empty.provide).toBe(MARKDOWN_CONFIG)
-    expect(empty.useValue).toMatchObject({ options: {}, plugins: [], components: {} })
+  beforeEach(() => TestBed.resetTestingModule())
 
+  it('returns a component class', () => {
+    const Defined = defineMarkdownComponent()
+    expect(typeof Defined).toBe('function')
+  })
+
+  it('accepts plugins, components, class, and parse options', () => {
     const plugin = { name: 'test', setup: () => {} }
     const transformNode: NodeTransform = () => undefined
     class FakeComponent {}
-    const provider = defineMarkdownComponent({
+    const Defined = defineMarkdownComponent({
       plugins: [plugin as any],
       components: { alert: FakeComponent },
       class: 'prose',
       autoClose: true,
       transformNode,
-    }) as ValueProvider
-
-    expect(provider.provide).toBe(MARKDOWN_CONFIG)
-    expect(provider.useValue).toEqual({
-      options: { autoClose: true },
-      plugins: [plugin],
-      components: { alert: FakeComponent },
-      transformNode,
-      class: 'prose',
     })
+
+    expect(typeof Defined).toBe('function')
+  })
+
+  it('renders an imported factory component with its config', async () => {
+    await TestBed.configureTestingModule({ imports: [ConfiguredMarkdown] }).compileComponents()
+    const fixture = TestBed.createComponent(ConfiguredMarkdown)
+    fixture.componentRef.setInput('value', '::alert\n:smile:\n::')
+    fixture.detectChanges()
+
+    await vi.waitFor(() => {
+      fixture.detectChanges()
+      expect(fixture.nativeElement.textContent).toContain('😄')
+    })
+
+    const html = fixture.nativeElement.outerHTML as string
+    expect(html).toContain('factory-class')
+    expect(html).toContain('config-alert')
+  })
+
+  it('lets instance components override the factory config', async () => {
+    await TestBed.configureTestingModule({ imports: [ConfiguredMarkdown] }).compileComponents()
+    const fixture = TestBed.createComponent(ConfiguredMarkdown)
+    fixture.componentRef.setInput('value', '::alert\nHello\n::')
+    fixture.componentRef.setInput('components', { alert: InstanceAlert })
+    fixture.detectChanges()
+
+    await vi.waitFor(() => {
+      fixture.detectChanges()
+      expect(fixture.nativeElement.textContent).toContain('Hello')
+    })
+
+    const html = fixture.nativeElement.outerHTML as string
+    expect(html).toContain('instance-alert')
+    expect(html).not.toContain('config-alert')
   })
 })
 
 describe('defineMarkdownDocumentComponent', () => {
-  it('returns a MARKDOWN_DOCUMENT_CONFIG provider with defaults and overrides', () => {
-    const empty = defineMarkdownDocumentComponent() as ValueProvider
-    expect(empty.provide).toBe(MARKDOWN_DOCUMENT_CONFIG)
-    expect(empty.useValue.components).toEqual({})
+  beforeEach(() => TestBed.resetTestingModule())
 
+  it('returns a component class', () => {
+    const Defined = defineMarkdownDocumentComponent()
+    expect(typeof Defined).toBe('function')
+  })
+
+  it('accepts components, class, and transforms', () => {
     const transformNode: NodeTransform = () => undefined
     class FakeComponent {}
-    const provider = defineMarkdownDocumentComponent({
-      components: { Math: FakeComponent },
-      class: 'prose',
-      transformNode,
-    }) as ValueProvider
-
-    expect(provider.provide).toBe(MARKDOWN_DOCUMENT_CONFIG)
-    expect(provider.useValue).toEqual({
+    const Defined = defineMarkdownDocumentComponent({
       components: { Math: FakeComponent },
       class: 'prose',
       transformNode,
     })
+
+    expect(typeof Defined).toBe('function')
+  })
+
+  it('renders an imported factory component with its config', async () => {
+    const document = await parseMarkdown('Hello\n\n::alert\nAlert\n::')
+    await TestBed.configureTestingModule({ imports: [ConfiguredMarkdownDocument] }).compileComponents()
+    const fixture = TestBed.createComponent(ConfiguredMarkdownDocument)
+    fixture.componentRef.setInput('value', document)
+    fixture.detectChanges()
+
+    const html = fixture.nativeElement.outerHTML as string
+    expect(html).toContain('factory-document-class')
+    expect(html).toContain('config-alert')
+    expect(html).toContain('<section>Hello</section>')
   })
 })

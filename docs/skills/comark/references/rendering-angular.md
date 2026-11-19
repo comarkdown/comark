@@ -479,13 +479,13 @@ export class AppComponent {
 
 ## Pre-configured components
 
-Use `defineMarkdownComponent` or `defineMarkdownDocumentComponent` to pre-configure plugins, component mappings, styling, and node transforms. Each helper returns an Angular `Provider`. Import the static `Markdown` or `MarkdownDocument` component in `imports`; a component class made by a runtime factory cannot be statically resolved in `imports` and fails AOT builds with NG1010.
+Use `provideMarkdown` or `provideMarkdownDocument` to pre-configure plugins, component mappings, styling, and node transforms. Each helper returns an Angular `Provider`. Import the static `Markdown` or `MarkdownDocument` component in `imports`; a component class made by a runtime factory cannot be statically resolved in `imports` and fails AOT builds with NG1010.
 
-### defineMarkdownComponent
+### provideMarkdown
 
 ```typescript
 import { Component } from '@angular/core'
-import { Markdown, defineMarkdownComponent } from '@comark/angular'
+import { Markdown, provideMarkdown } from '@comark/angular'
 import { math, Math } from '@comark/angular/plugins/math'
 import { mermaid, Mermaid } from '@comark/angular/plugins/mermaid'
 
@@ -494,7 +494,7 @@ import { mermaid, Mermaid } from '@comark/angular/plugins/mermaid'
   standalone: true,
   imports: [Markdown],
   providers: [
-    defineMarkdownComponent({
+    provideMarkdown({
       plugins: [math(), mermaid()],
       components: { Math, Mermaid },
       class: 'prose dark:prose-invert',
@@ -509,12 +509,12 @@ export class DocsComponent {
 
 Instance-level `options`, `plugins`, `components`, and `transformNode` inputs merge with the provider config and win on conflict. Config plugins run first. An instance plugin with the same name replaces the config plugin and runs in the instance order. Config `transformNode` runs before the instance's own transform.
 
-### defineMarkdownDocumentComponent
+### provideMarkdownDocument
 
 ```typescript
 import { Component, OnInit } from '@angular/core'
 import { parseMarkdown, type MarkdownDocument as MarkdownDocumentType } from 'comark'
-import { MarkdownDocument, defineMarkdownDocumentComponent } from '@comark/angular'
+import { MarkdownDocument, provideMarkdownDocument } from '@comark/angular'
 import { Math } from '@comark/angular/plugins/math'
 
 @Component({
@@ -522,7 +522,7 @@ import { Math } from '@comark/angular/plugins/math'
   standalone: true,
   imports: [MarkdownDocument],
   providers: [
-    defineMarkdownDocumentComponent({
+    provideMarkdownDocument({
       components: { Math },
     }),
   ],

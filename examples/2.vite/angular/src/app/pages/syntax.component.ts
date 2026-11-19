@@ -1,5 +1,5 @@
 import { Component } from '@angular/core'
-import { Markdown, defineMarkdownComponent } from '@comark/angular'
+import { Markdown, provideMarkdown } from '@comark/angular'
 import shiki from 'comark/plugins/shiki'
 import alert from 'comark/plugins/alert'
 import { AlertComponent } from '../components/alert.component'
@@ -11,7 +11,7 @@ import python from '@shikijs/langs/python'
   standalone: true,
   imports: [Markdown],
   providers: [
-    defineMarkdownComponent({
+    provideMarkdown({
       plugins: [
         shiki({
           languages: [python],

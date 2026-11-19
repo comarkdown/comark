@@ -2,7 +2,7 @@ import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { TestBed } from '@angular/core/testing'
 import type { Provider, Type } from '@angular/core'
 import { Markdown } from '../src/components/markdown.component.ts'
-import { defineMarkdownComponent } from '../src/define.ts'
+import { provideMarkdown } from '../src/provider.ts'
 
 describe('Markdown re-parses when parser inputs change', () => {
   beforeEach(async () => {
@@ -49,8 +49,8 @@ describe('Markdown re-parses when parser inputs change', () => {
     })
   })
 
-  it('re-parses with a defineMarkdownComponent config provider when `unwrap` changes', async () => {
-    const fixture = await render(Markdown, [defineMarkdownComponent({})])
+  it('re-parses with a provideMarkdown config provider when `unwrap` changes', async () => {
+    const fixture = await render(Markdown, [provideMarkdown({})])
     expect(fixture.nativeElement.querySelector('p')).not.toBeNull()
 
     fixture.componentRef.setInput('unwrap', true)

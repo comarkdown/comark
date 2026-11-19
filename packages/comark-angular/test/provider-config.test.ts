@@ -8,7 +8,7 @@ import { parseMarkdown, type NodeTransform, type ParserOptions } from 'comark'
 import emoji from 'comark/plugins/emoji'
 import { Markdown } from '../src/components/markdown.component.ts'
 import { MarkdownDocument } from '../src/components/markdown-document.component.ts'
-import { defineMarkdownComponent, defineMarkdownDocumentComponent } from '../src/define.ts'
+import { provideMarkdown, provideMarkdownDocument } from '../src/provider.ts'
 
 @Component({
   selector: 'app-config-alert',
@@ -68,7 +68,7 @@ describe('Markdown config providers', () => {
 
   it('applies config plugins, components, and class to static Markdown', async () => {
     const html = await renderMarkdown('::alert\n:smile:\n::', [
-      defineMarkdownComponent({
+      provideMarkdown({
         plugins: [emoji()],
         components: { alert: ConfigAlert },
         class: 'config-class',
@@ -81,18 +81,16 @@ describe('Markdown config providers', () => {
   })
 
   it('lets instance inputs override config components', async () => {
-    const html = await renderMarkdown(
-      '::alert\nHello\n::',
-      [defineMarkdownComponent({ components: { alert: ConfigAlert } })],
-      { alert: InstanceAlert }
-    )
+    const html = await renderMarkdown('::alert\nHello\n::', [provideMarkdown({ components: { alert: ConfigAlert } })], {
+      alert: InstanceAlert,
+    })
 
     expect(html).toContain('instance-alert')
     expect(html).not.toContain('config-alert')
   })
 
   it('lets instance plugins replace config plugins with the same name', async () => {
-    const provider = defineMarkdownComponent({ plugins: [emoji()] })
+    const provider = provideMarkdown({ plugins: [emoji()] })
     const withConfig = await renderMarkdown(':smile:', [provider])
     const withOverride = await renderMarkdown(':smile:', [provider], undefined, [{ name: 'emoji' }])
 
@@ -103,7 +101,7 @@ describe('Markdown config providers', () => {
   it('inherits a config unwrap default when the input is omitted', async () => {
     await TestBed.configureTestingModule({
       imports: [Markdown],
-      providers: [defineMarkdownComponent({ unwrap: true })],
+      providers: [provideMarkdown({ unwrap: true })],
     }).compileComponents()
     const fixture = TestBed.createComponent(Markdown)
     fixture.componentRef.setInput('value', 'Hello')
@@ -119,7 +117,7 @@ describe('Markdown config providers', () => {
   it('lets an explicit unwrap=false override a config default', async () => {
     await TestBed.configureTestingModule({
       imports: [Markdown],
-      providers: [defineMarkdownComponent({ unwrap: true })],
+      providers: [provideMarkdown({ unwrap: true })],
     }).compileComponents()
     const fixture = TestBed.createComponent(Markdown)
     fixture.componentRef.setInput('value', 'Hello')
@@ -138,7 +136,7 @@ describe('Markdown config providers', () => {
     const App = app({
       imports: [MarkdownDocument],
       providers: [
-        defineMarkdownDocumentComponent({
+        provideMarkdownDocument({
           class: 'document-class',
           transformNode: ({ tag }) => (tag === 'p' ? { tag: 'section' } : undefined),
         }),
