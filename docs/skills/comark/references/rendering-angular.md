@@ -530,25 +530,37 @@ export const DocsMarkdownDocument = defineMarkdownDocumentComponent({
 
 ### provideMarkdown and provideMarkdownDocument (AOT-safe)
 
-Factory-created component classes cannot be resolved in `imports` under AOT (NG1010). For AOT builds, import the static components and register config providers:
+Factory-created component classes cannot be resolved in `imports` under AOT (NG1010). For AOT builds, import the static components and register the config providers once at bootstrap. Every Markdown component in the app inherits that config:
 
 ```typescript
-import { Component } from '@angular/core'
-import { Markdown, provideMarkdown } from '@comark/angular'
+import { bootstrapApplication } from '@angular/platform-browser'
+import { AppComponent } from './app.component'
+import { provideMarkdown, provideMarkdownDocument } from '@comark/angular'
 import { math, Math } from '@comark/angular/plugins/math'
 import { mermaid, Mermaid } from '@comark/angular/plugins/mermaid'
 
-@Component({
-  selector: 'app-docs',
-  standalone: true,
-  imports: [Markdown],
+bootstrapApplication(AppComponent, {
   providers: [
     provideMarkdown({
       plugins: [math(), mermaid()],
       components: { Math, Mermaid },
       class: 'prose dark:prose-invert',
     }),
+    provideMarkdownDocument({ components: { Math } }),
   ],
+})
+```
+
+Components only import the static component. No provider or wrapper is needed in each component:
+
+```typescript
+import { Component } from '@angular/core'
+import { Markdown } from '@comark/angular'
+
+@Component({
+  selector: 'app-docs',
+  standalone: true,
+  imports: [Markdown],
   template: `<comark-markdown [value]="content" />`,
 })
 export class DocsComponent {
@@ -556,31 +568,9 @@ export class DocsComponent {
 }
 ```
 
-For the low-level renderer:
+The same applies to `<comark-markdown-document>`: import `MarkdownDocument` and it picks up `provideMarkdownDocument` from the root injector.
 
-```typescript
-import { Component, OnInit } from '@angular/core'
-import { parseMarkdown, type MarkdownDocument as MarkdownDocumentType } from 'comark'
-import { MarkdownDocument, provideMarkdownDocument } from '@comark/angular'
-import { Math } from '@comark/angular/plugins/math'
-
-@Component({
-  selector: 'app-docs',
-  standalone: true,
-  imports: [MarkdownDocument],
-  providers: [provideMarkdownDocument({ components: { Math } })],
-  template: `@if (document) { <comark-markdown-document [value]="document" /> }`,
-})
-export class DocsComponent implements OnInit {
-  document?: MarkdownDocumentType
-
-  async ngOnInit(): Promise<void> {
-    this.document = await parseMarkdown('# Hello')
-  }
-}
-```
-
-Both helpers return config `Provider` objects for `MARKDOWN_CONFIG` and `MARKDOWN_DOCUMENT_CONFIG`. Instance-level `options`, `plugins`, `components`, and `transformNode` inputs merge with the provider config and win on conflict. Config plugins run first; a same-name instance plugin replaces the config plugin. Config `transformNode` runs before the instance's own transform. The `defineMarkdown*` factories above remain for JIT apps that disable AOT and import `@angular/compiler`.
+Both helpers return config `Provider` objects for `MARKDOWN_CONFIG` and `MARKDOWN_DOCUMENT_CONFIG`. Providers can also be scoped to a route or an ancestor component; the closest injector wins. Instance-level `options`, `plugins`, `components`, and `transformNode` inputs merge with the global config and win on conflict. Config plugins run first; a same-name instance plugin replaces the config plugin. Config `transformNode` runs before the instance's own transform. The `defineMarkdown*` factories above remain for JIT apps that disable AOT and import `@angular/compiler`.
 
 ---
 
