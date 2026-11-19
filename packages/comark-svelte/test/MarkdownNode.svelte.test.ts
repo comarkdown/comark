@@ -185,10 +185,12 @@ Footer slot content.
       value: tree,
       components: { card: CardWithFooter },
     })
+    const card = screen.container.querySelector<HTMLElement>('.card')!
     const footer = screen.container.querySelector<HTMLElement>('footer')!
     expect(footer).not.toBeNull()
     await expect.element(screen.getByRole('heading', { name: 'My Card', level: 3 })).toBeInTheDocument()
-    await expect.element(screen.getByText('Default slot content.')).toBeInTheDocument()
+    await expect.element(card).toHaveTextContent('My Card Default slot content. Footer slot content.')
+    expect(card.querySelector('p')).toBeNull()
     await expect.element(footer).toHaveTextContent('Footer slot content.')
     expect(screen.container.querySelector('template[name="footer"]')).toBeNull()
   })
