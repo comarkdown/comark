@@ -15,9 +15,33 @@ determines inline vs display mode (display when class does NOT contain "inline")
 <Markdown value="$E = mc^2$" plugins={[math()]} components={{ math: Math }} />
 ```
 -->
-<script lang="ts">
-  import katex from 'katex'
+<script module lang="ts">
+  let katex: typeof import('katex').default | undefined
+  let loading: Promise<unknown> | undefined
 
+  function loadKatex(): Promise<unknown> {
+    loading ??= import('katex').then(
+      (module) => (katex = module.default),
+      (error) => {
+        loading = undefined
+        throw error
+      }
+    )
+    return loading
+  }
+
+  // HTML, `''` when KaTeX can't typeset the formula, or `undefined` before KaTeX loads.
+  function typeset(tex: string, displayMode: boolean): string | undefined {
+    if (!katex) return undefined
+    try {
+      return katex.renderToString(tex, { throwOnError: true, displayMode })
+    } catch {
+      return ''
+    }
+  }
+</script>
+
+<script lang="ts">
   let {
     content,
     class: className = '',
@@ -28,22 +52,20 @@ determines inline vs display mode (display when class does NOT contain "inline")
 
   let isInline = $derived(className.split(' ').includes('inline'))
 
-  let mathml = $derived.by(() => {
-    try {
-      return katex.renderToString(content, {
-        throwOnError: true,
-        displayMode: !isInline,
-      })
-    }
-    catch {
-      return '...'
-    }
+  let loaded = $state(false)
+  let html = $derived.by(() => {
+    void loaded
+    return typeset(content, !isInline)
+  })
+
+  $effect(() => {
+    if (html === undefined) loadKatex().then(() => (loaded = true), () => {})
   })
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -- KaTeX output is safe rendered HTML -->
 {#if isInline}
-  <span class="math inline">{@html mathml}</span>
+  <span class="math inline">{#if html}{@html html}{:else}{content}{/if}</span>
 {:else}
-  <div class="math block">{@html mathml}</div>
+  <div class="math block">{#if html}{@html html}{:else}{content}{/if}</div>
 {/if}
