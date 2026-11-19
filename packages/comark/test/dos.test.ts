@@ -25,6 +25,13 @@ describe('denial-of-service hardening', () => {
     expect(performance.now() - start).toBeLessThan(500)
   })
 
+  it('scans a line of thousands of nested list markers inside a component in linear time', async () => {
+    const start = performance.now()
+    const doc = await parseMarkdown('::box\n' + '- '.repeat(20_000) + 'item\n::\n\nAfter')
+    expect(performance.now() - start).toBeLessThan(500)
+    expect(doc.nodes.at(-1)).toEqual(['p', {}, 'After'])
+  })
+
   it('parses thousands of unclosed nested inline HTML tags without stack overflow', async () => {
     const md = '<b>'.repeat(10_000)
     const doc = await parseMarkdown(md)

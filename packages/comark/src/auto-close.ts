@@ -204,6 +204,7 @@ function scanBlocks(src: string, o: Opts): DocState {
   let fenceLen = 0
   let fenceCh = 0
   let fenceIndent = 0 // a closer must stay within 3 columns of this one (its container's)
+  let fenceListColumn = -1 // content column of the list item holding the open fence, or -1
   const lists: ListItems = { columns: [], depth: 0, from: 0 }
   let raw: RawTag | null = null
   let fmOpen = false
@@ -234,6 +235,12 @@ function scanBlocks(src: string, o: Opts): DocState {
       }
     }
 
+    // A line left of the list item holding the open fence ends both, even without a closer.
+    if (fenceLen !== 0 && fenceListColumn !== -1 && c0 !== -1 && columnsOf(src, ls, st) < fenceListColumn) {
+      fenceLen = 0
+      lists.from = i
+    }
+
     if (c0 === 96 /* ` */ || c0 === 126 /* ~ */) {
       let run = 1
       while (st + run < en && src.charCodeAt(st + run) === c0) run++
@@ -251,6 +258,8 @@ function scanBlocks(src: string, o: Opts): DocState {
             fenceCh = c0
             // An outdented fence measures its closer from itself.
             fenceIndent = Math.min(container, column)
+            const listColumn = lists.depth > 0 ? lists.columns[lists.depth - 1] : -1
+            fenceListColumn = listColumn > (comps.length > 0 ? comps[comps.length - 1].column : 0) ? listColumn : -1
             shielded = i
             continue
           }

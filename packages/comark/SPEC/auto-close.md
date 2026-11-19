@@ -2392,6 +2392,13 @@ A thematic break such as `- - -` opens no list item, and each marker of `- - ite
 + - - item\n    ~~~\n    x\n      ~~~\n\n**bold**
 ```
 
+A fence inside a list item ends with the list item, even without a closer:
+
+```diff
+- - - item\n\n      ~~~\n      x\n\n**bold
++ - - item\n\n      ~~~\n      x\n\n**bold**
+```
+
 A fence indented 4 or more spaces past its container is indented code, not an opener:
 
 ```diff

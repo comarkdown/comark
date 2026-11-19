@@ -108,6 +108,8 @@ const markdownItComarkBlock: PluginSimple = (md) => {
       let codeFenceCount = 0
       // A closing fence must sit within 3 spaces of this column (CommonMark container indent).
       let codeFenceIndent = 0
+      // Content column of the list item holding the open fence, or -1 when a component holds it.
+      let codeFenceListColumn = -1
 
       // Nested components still open, as `[markerCount, indent]`.
       const openComponents: Array<[number, number]> = []
@@ -151,6 +153,9 @@ const markdownItComarkBlock: PluginSimple = (md) => {
         max = state.eMarks[nextLine]
 
         if (start < max && state.sCount[nextLine] < state.blkIndent) break
+
+        // A line left of the list item holding the fence ends both, even without a closer.
+        if (inCodeFence && start < max && state.sCount[nextLine] < codeFenceListColumn) inCodeFence = false
 
         const lineIndent = start >= max ? indent : state.sCount[nextLine]
         if (lineIndent < indent) hasOutdentedChild = true
@@ -196,6 +201,8 @@ const markdownItComarkBlock: PluginSimple = (md) => {
             codeFenceShift = childShifts[childShifts.length - 1]
             // An outdented fence measures its closer from itself.
             codeFenceIndent = Math.min(containerIndent, state.sCount[nextLine])
+            const listColumn = listColumns.length ? listColumns[listColumns.length - 1] : -1
+            codeFenceListColumn = listColumn > componentIndent ? listColumn : -1
             continue
           }
         }

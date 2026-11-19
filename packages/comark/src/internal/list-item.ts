@@ -11,12 +11,29 @@ export function pushListItems(
   columns: number[],
   depth: number
 ): number {
+  // One backward pass finds the tail that could be a thematic break: one of `-`, `*`, `_`, with spaces or tabs.
+  // A marker opens no item once the rest of the line is that tail and holds 3+ of its character.
+  let tailStart = end
+  let breakChar = -1
+  let breakCount = 0
+  for (let p = end - 1; p >= start; p--) {
+    const code = src.charCodeAt(p)
+    if (code !== 0x20 && code !== 0x09) {
+      // `-`, `*` or `_`
+      if (breakChar === -1 && (code === 0x2d || code === 0x2a || code === 0x5f)) breakChar = code
+      if (code !== breakChar) break
+      breakCount++
+    }
+    tailStart = p
+  }
+
   let pos = start
   let markerColumn = column
-  while (pos < end && !isThematicBreak(src, pos, end)) {
+  while (pos < end && !(pos >= tailStart && breakCount >= 3)) {
     const markerStart = pos
     const c = src.charCodeAt(pos)
     if (c === 0x2d /* - */ || c === 0x2b /* + */ || c === 0x2a /* * */) {
+      if (c === breakChar && pos >= tailStart) breakCount--
       pos++
     } else {
       while (pos < end && pos - markerStart < 9 && src.charCodeAt(pos) >= 0x30 && src.charCodeAt(pos) <= 0x39) pos++
@@ -49,17 +66,4 @@ export function pushListItems(
     markerColumn = padded
   }
   return depth
-}
-
-/** Whether `src[start, end)` is a thematic break: 3+ of one of `-`, `*`, `_`, with only spaces or tabs between. */
-function isThematicBreak(src: string, start: number, end: number): boolean {
-  const c = src.charCodeAt(start)
-  if (c !== 0x2d /* - */ && c !== 0x2a /* * */ && c !== 0x5f /* _ */) return false
-  let count = 0
-  for (let pos = start; pos < end; pos++) {
-    const code = src.charCodeAt(pos)
-    if (code === c) count++
-    else if (code !== 0x20 && code !== 0x09) return false
-  }
-  return count >= 3
 }

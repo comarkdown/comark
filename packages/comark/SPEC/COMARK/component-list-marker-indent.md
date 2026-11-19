@@ -33,6 +33,12 @@
           ~~~
 ::
 
+::box
+- - item
+      ~~~
+      x
+::
+
 After
 ```
 
@@ -56,6 +62,7 @@ After
     ["box", {}, ["hr", {}], ["pre", {}, ["code", {}, "~~~\n  ~~~"]]],
     ["box", {}, ["ul", {}, ["li", {}, ["ul", {}, ["li", {}, ["p", {}, "item"], ["pre", {}, ["code", {}, "x"]]]]]]],
     ["box", {}, ["pre", {}, ["code", {}, ":::inner\n  ~~~\n      ~~~"]]],
+    ["box", {}, ["ul", {}, ["li", {}, ["ul", {}, ["li", {}, ["p", {}, "item"], ["pre", {}, ["code", {}, "x"]]]]]]],
     ["p", {}, "After"]
   ]
 }
@@ -97,6 +104,18 @@ After
   <pre><code>:::inner
     ~~~
         ~~~</code></pre>
+</box>
+<box>
+  <ul>
+    <li>
+      <ul>
+        <li>
+          <p>item</p>
+          <pre><code>x</code></pre>
+        </li>
+      </ul>
+    </li>
+  </ul>
 </box>
 <p>After</p>
 ```
@@ -140,6 +159,13 @@ After
   ~~~
       ~~~
 ```
+::
+
+::box
+- - item
+    ```
+    x
+    ```
 ::
 
 After
@@ -193,6 +219,15 @@ After
   ~~~
       ~~~
 ```
+
+</box>
+
+<box>
+
+- - item
+    ```
+    x
+    ```
 
 </box>
 
