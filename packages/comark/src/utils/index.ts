@@ -20,7 +20,7 @@ export interface TextContentOptions {
   decodeHTML?: (text: string) => string
 }
 
-/** Return the concatenated text content of a Markdown AST node. */
+/** Return the concatenated text content of a Markdown AST node. Comment nodes add no text. */
 export function textContent(node: Node, options?: TextContentOptions): string {
   return collectText(node, options?.decodeHTML)
 }
@@ -28,6 +28,9 @@ export function textContent(node: Node, options?: TextContentOptions): string {
 function collectText(node: Node, decode: ((text: string) => string) | undefined): string {
   if (typeof node === 'string') {
     return decode ? decode(node) : node
+  }
+  if (node[0] === null) {
+    return ''
   }
   let out = ''
   const len = node.length

@@ -25,6 +25,12 @@ describe('toc plugin', () => {
     expect(tree.meta.toc.links[0].children?.map((l) => l.text)).toEqual(['Subsection'])
   })
 
+  it('leaves HTML comments out of link text', async () => {
+    const tree = await parseMarkdown('## Usage <!-- v2 -->\n', { plugins: [toc()] })
+
+    expect(tree.meta.toc.links).toEqual([{ id: 'usage', depth: 2, text: 'Usage ' }])
+  })
+
   it('narrows tree.meta.toc to Toc at the type level', async () => {
     const tree = await parseMarkdown(CONTENT, { plugins: [toc()] })
 
