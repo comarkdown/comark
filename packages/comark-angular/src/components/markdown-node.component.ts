@@ -3,6 +3,7 @@ import {
   ComponentRef,
   ChangeDetectionStrategy,
   ViewContainerRef,
+  ViewChild,
   ElementRef,
   Renderer2,
   OnChanges,
@@ -106,7 +107,8 @@ function prepareNode(
   selector: 'comark-markdown-node',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: '',
+  template: '<ng-container #container />',
+  host: { ngSkipHydration: 'true' },
 })
 export class MarkdownNode implements OnChanges {
   /** The Comark AST node to render */
@@ -124,7 +126,8 @@ export class MarkdownNode implements OnChanges {
   /** Change the tag or props of element nodes just before they render */
   readonly transformNode = input<NodeTransform | readonly NodeTransform[]>()
 
-  private vcr = inject(ViewContainerRef)
+  @ViewChild('container', { read: ViewContainerRef, static: true })
+  private vcr!: ViewContainerRef
   private renderer = inject(Renderer2)
   private elementRef = inject(ElementRef)
   private injector = inject(Injector)
@@ -137,8 +140,14 @@ export class MarkdownNode implements OnChanges {
     this.vcr.clear()
 
     const hostEl = this.elementRef.nativeElement as HTMLElement
-    while (hostEl.firstChild) {
-      hostEl.removeChild(hostEl.firstChild)
+    const anchor = this.vcr.element.nativeElement as Node
+    let child = hostEl.firstChild
+    while (child) {
+      const next = child.nextSibling
+      if (child !== anchor) {
+        hostEl.removeChild(child)
+      }
+      child = next
     }
 
     if (this.node() === undefined || this.node() === null) return
@@ -325,14 +334,6 @@ export class MarkdownNode implements OnChanges {
     }
 
     this.vcr.insert(componentRef.hostView)
-
-    // The container's anchor stays where this node was first attached, so when this node
-    // was moved into a parent element, place the component right after this node's host.
-    const hostEl = this.elementRef.nativeElement as HTMLElement
-    const hostParent = this.renderer.parentNode(hostEl)
-    if (hostParent) {
-      this.renderer.insertBefore(hostParent, componentRef.location.nativeElement, this.renderer.nextSibling(hostEl))
-    }
     componentRef.changeDetectorRef.detectChanges()
   }
 
