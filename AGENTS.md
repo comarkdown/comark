@@ -55,6 +55,7 @@ packages/comark/
 │   ├── context.ts            # Live renderer context: ComarkContext, ComarkDocument, ComarkPatch (comark/context)
 │   ├── render/
 │   │   ├── index.ts          # AST to Markdown string: renderMarkdown() (comark/render)
+│   │   ├── markdown.ts       # CommonMark/GFM string without YAML or component syntax (comark/render/markdown)
 │   │   └── html.ts           # HTML-only string engine used by @comark/html (comark/render/html)
 │   ├── types.ts              # MarkdownDocument, Node, ElementNode, TextNode, CommentNode, ParserOptions
 │   ├── plugins/              # Core plugins (comark/plugins/*)
@@ -123,7 +124,7 @@ Framework-free HTML string rendering (`createHtmlRenderer`, `renderHtml`, `rende
 
 - Renders through `comark/render/html`, which registers only the `html` and `comment` handlers so Markdown serializers are never bundled.
 - `@comark/html/render` stays free of `js-yaml`; the root entry and plugins import the parser, which loads YAML for frontmatter.
-- Shares `internal/stringify/state.ts` with `comark/render`. HTML attribute escaping lives in `html-attributes.ts`; Markdown/YAML attribute serialization stays in `attributes.ts`.
+- Shares `internal/stringify/state.ts` with `comark/render`. HTML attribute escaping lives in `html-attributes.ts`; inline `{...}` attribute serialization stays in `attributes.ts`, and YAML block attributes live in `handlers/mdc.ts`, which only `comark/render` loads.
 
 ### `@comark/ansi` (`packages/comark-ansi/`)
 
@@ -166,6 +167,7 @@ import { parseMarkdown, createMarkdownParser, autoCloseMarkdown, defineComarkPlu
 import { parseMarkdown } from 'comark/core' // no default plugins; autoClose takes a function, not a boolean
 import { autoCloseMarkdown } from 'comark/auto-close'
 import { renderMarkdown } from 'comark/render'
+import { renderMarkdown } from 'comark/render/markdown' // no YAML: components as HTML, no frontmatter
 import type { ComarkContext, ComarkDocument, ComarkPatch } from 'comark/context'
 import type { MarkdownDocument, Node, ElementNode, TextNode, CommentNode, NodeTransform } from 'comark'
 import {

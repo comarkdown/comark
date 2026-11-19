@@ -56,7 +56,8 @@
     "./auto-close": "./dist/auto-close.js",
     "./context": "./dist/context.js",
     "./render": "./dist/render/index.js",
-    "./render/html": "./dist/render/html.js"
+    "./render/html": "./dist/render/html.js",
+    "./render/markdown": "./dist/render/markdown.js"
   },
   "publishConfig": {
     "access": "public"

@@ -1,7 +1,9 @@
 import type { State } from 'comark/render'
 import type { ElementNode, Node } from 'comark'
 import { indent } from '../../../utils/index.ts'
-import { comarkAttributes, comarkYamlAttributes } from '../attributes.ts'
+import { stringifyYaml } from '../../yaml.ts'
+import { comarkAttributes } from '../attributes.ts'
+import { pickFence } from '../fence.ts'
 
 // HTML elements that always create an inline context for their children
 const INLINE_HTML_ELEMENTS = new Set(['a', 'strong', 'em', 'span'])
@@ -77,4 +79,49 @@ export async function mdc(node: ElementNode, state: State, parent?: ElementNode)
   const afterList = Array.isArray(prev) && (prev[0] === 'ul' || prev[0] === 'ol')
 
   return inline ? result : indent(result, { level: parent && !afterList ? 1 : 0 })
+}
+
+// Coerce string `'true'`/`'false'` (how inline `{attr}` parsing stores
+// boolean-like attrs) to native booleans so js-yaml v5 emits them unquoted.
+function normalizeValue(value: unknown): unknown {
+  if (value === 'true') return true
+  if (value === 'false') return false
+  return value
+}
+
+/** Serialize attributes into a Comark YAML block (`codeblock` or `frontmatter`). */
+function comarkYamlAttributes(attributes: Record<string, unknown>, style: 'frontmatter' | 'codeblock' = 'codeblock') {
+  // Normalize attribute values for YAML serialization:
+  //  - `:`-prefixed JSON literals (`:count="42"`, `:config={...}`) restore to
+  //    native values and drop the prefix (matching @nuxtjs/mdc stringify).
+  //  - `:`-prefixed path bindings (`:to="$doc.link"`) stay prefixed so they
+  //    round-trip as bindings, not plain strings.
+  //  - Bare string literals `'true'`/`'false'` from inline attrs coerce to bools.
+  const normalized = Object.fromEntries(
+    Object.entries(attributes).map(([key, value]) => {
+      if (key.startsWith(':')) {
+        if (typeof value === 'string') {
+          try {
+            // JSON number/boolean/null/object/array -> typed YAML key without `:`
+            return [key.slice(1), JSON.parse(value)]
+          } catch {
+            // Path binding / non-JSON string: keep the `:` key
+            return [key, value]
+          }
+        }
+        // Already-decoded object/array (processAttributes) or native value
+        return [key.slice(1), value]
+      }
+      return [key, normalizeValue(value)]
+    })
+  )
+
+  const yamlContent = stringifyYaml(normalized).trim()
+
+  if (style === 'frontmatter') {
+    return `---\n${yamlContent}\n---`
+  }
+
+  const fence = pickFence(yamlContent)
+  return `${fence}yaml [props]\n${yamlContent}\n${fence}`
 }
