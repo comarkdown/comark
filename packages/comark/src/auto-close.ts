@@ -263,7 +263,17 @@ function scanBlocks(src: string, o: Opts): DocState {
 
     const dashes = c0 === 45 /* - */ && en - st === 3 && src.charCodeAt(st + 1) === 45 && src.charCodeAt(st + 2) === 45
 
-    if (i === 0 && o.frontmatter && dashes) {
+    // Matches `parseFrontmatter`, which accepts a leading byte order mark before the opener.
+    if (
+      i === 0 &&
+      o.frontmatter &&
+      (dashes ||
+        (c0 === 0xfeff &&
+          en - st === 4 &&
+          src.charCodeAt(st + 1) === 45 &&
+          src.charCodeAt(st + 2) === 45 &&
+          src.charCodeAt(st + 3) === 45))
+    ) {
       fmOpen = true
       continue
     }

@@ -211,6 +211,15 @@ describe('streaming mode', () => {
       expect(result2.frontmatter).toEqual({ title: 'Hello', category: 'Test' })
     })
 
+    it('closes partial frontmatter after a byte order mark', async () => {
+      const parse = createMarkdownParser()
+
+      const result = await parse('\uFEFF---\ntitle: Hello', { streaming: true })
+
+      expect(result.frontmatter).toEqual({ title: 'Hello' })
+      expect(result.nodes).toEqual([])
+    })
+
     it('frontmatter is preserved across continuation calls', async () => {
       const parse = createMarkdownParser()
 
