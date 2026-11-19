@@ -583,6 +583,11 @@ describe('frontmatter', () => {
     const expected = '---\ntitle: Test\n---'
     expect(autoCloseMarkdown(input, { frontmatter: true })).toBe(expected)
   })
+  it('should complete partial frontmatter after a byte order mark', () => {
+    const input = '\uFEFF---\ntitle: Test'
+    const expected = '\uFEFF---\ntitle: Test\n---'
+    expect(autoCloseMarkdown(input, { frontmatter: true })).toBe(expected)
+  })
   it('should complete a partial closing delimiter (-) when frontmatter option is enabled', () => {
     const input = '---\ntitle: Test\n-'
     const expected = '---\ntitle: Test\n---'
