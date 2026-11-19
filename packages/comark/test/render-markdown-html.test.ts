@@ -21,6 +21,19 @@ describe('render: markdown/html', () => {
     expect(types).toContain('bullet_list_open')
   })
 
+  it('keeps binding props as bindings', async () => {
+    const source = '::card{title="Hello"}\n:::badge{:label="props.title" :count="5"}\n:::\n::'
+    const output = await render(await parseMarkdown(source), { format: 'markdown/html' })
+    const [[, , badge]] = (await parseMarkdown(output)).nodes as any
+    expect(badge[1]).toMatchObject({ ':label': 'props.title', ':count': '5' })
+
+    const tokens = (await reparse(source)).flatMap((token) => token.children ?? [])
+    expect(tokens.find((token) => token.content.startsWith('<badge'))).toMatchObject({
+      type: 'html_inline',
+      content: '<badge :label="props.title" :count="5">',
+    })
+  })
+
   it('keeps a code block holding indented fences whole', async () => {
     const code = '::tabs\n  :::tabs-item\n    ```mdc\n    ::callout\n    ::\n    ```\n  :::\n\n::'
     const tokens = await reparse(`::code-preview\n#code\n\`\`\`\`mdc\n${code}\n\`\`\`\`\n::\n\nAfter`)
