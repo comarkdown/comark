@@ -15,7 +15,7 @@ import { findClosingBracket, parseBracketContent } from '../internal/parse/synta
 import { parseBlockParams } from '../internal/parse/syntax/block-params.ts'
 import { parseYaml } from '../internal/yaml.ts'
 import { tokenizeDedented } from '../internal/parse/indent.ts'
-import { listItemContentColumn } from '../internal/list-item.ts'
+import { pushListItems } from '../internal/list-item.ts'
 
 /**
  * A component name must start with a letter or `$`, followed by word chars,
@@ -183,8 +183,7 @@ const markdownItComarkBlock: PluginSimple = (md) => {
         const isIndentedCode = state.sCount[nextLine] - containerIndent >= 4
 
         if (start < max && !isIndentedCode) {
-          const contentColumn = listItemContentColumn(state.src, start, max, state.sCount[nextLine])
-          if (contentColumn !== -1) listColumns.push(contentColumn)
+          pushListItems(state.src, start, max, state.sCount[nextLine], listColumns, listColumns.length)
         }
 
         if (lineCharCode === 0x60 /* ` */ || lineCharCode === 0x7e /* ~ */) {
@@ -212,7 +211,8 @@ const markdownItComarkBlock: PluginSimple = (md) => {
 
         if (pos < max) {
           // A nested block opens
-          if (count >= min_markers && isValidComponentName(state.src.slice(pos, max))) {
+          // An indented-code line opens no component, as in the child parse.
+          if (count >= min_markers && !isIndentedCode && isValidComponentName(state.src.slice(pos, max))) {
             openComponents.push([count, state.sCount[nextLine]])
           }
           continue

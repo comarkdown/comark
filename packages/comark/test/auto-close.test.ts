@@ -226,6 +226,10 @@ describe('autoCloseMarkdown - Comark Components', () => {
     // The children of `::box` sit at column 0, even when the fence itself is indented.
     const indentedFence = '::box\n  ```md\n    ```js\n    ```\n  ```\n::'
     expect(autoCloseMarkdown(indentedFence)).toBe(indentedFence)
+    // `    :::inner` is indented code, so it opens no component.
+    expect(autoCloseMarkdown('::box\n    :::inner\n      ~~~\n          ~~~\n::\n\n**bold')).toBe(
+      '::box\n    :::inner\n      ~~~\n          ~~~\n::\n\n**bold**'
+    )
     // Within 3 spaces of `:::inner` still closes.
     expect(autoCloseMarkdown('::box\n  :::inner\n  ```\n  x\n     ```\n  :::\n::\n**bold')).toBe(
       '::box\n  :::inner\n  ```\n  x\n     ```\n  :::\n::\n**bold**'

@@ -16,7 +16,7 @@
  */
 
 import { findBracketClose, isBracketMath } from './internal/bracket-math.ts'
-import { listItemContentColumn } from './internal/list-item.ts'
+import { pushListItems } from './internal/list-item.ts'
 
 export const INCOMPLETE_LINK_PLACEHOLDER = 'comark:incomplete-link'
 export const INCOMPLETE_IMAGE_PLACEHOLDER = 'comark:incomplete-image'
@@ -307,7 +307,16 @@ function scanBlocks(src: string, o: Opts): DocState {
       }
       if (colons >= 2) {
         if (!bare && isNameStart(src.charCodeAt(st + colons))) {
-          comps.push({ depth: colons, indent: src.slice(ls, st), column: columnsOf(src, ls, st), yaml: false })
+          // Inside a component, an indented-code line opens no nested one, as in the parser.
+          // A top-level indented component is still closed.
+          const column = st === ls ? 0 : columnsOf(src, ls, st)
+          let indentedCode = false
+          if (column !== 0 && comps.length > 0) {
+            catchUpListItems(src, starts, i + 1, comps, lists)
+            lists.from = i + 1
+            indentedCode = column - containerColumn(comps, lists) >= 4
+          }
+          if (!indentedCode) comps.push({ depth: colons, indent: src.slice(ls, st), column, yaml: false })
         } else if (bare && comps.length > 0 && comps[comps.length - 1].depth === colons) {
           comps.pop()
         }
@@ -401,8 +410,7 @@ function trackListItems(src: string, ls: number, st: number, en: number, comps: 
   const column = columnsOf(src, ls, st)
   while (lists.depth > 0 && column < lists.columns[lists.depth - 1]) lists.depth--
   if (!isBulletOrDigit(src.charCodeAt(st)) || column - containerColumn(comps, lists) >= 4) return
-  const contentColumn = listItemContentColumn(src, st, en, column)
-  if (contentColumn !== -1) lists.columns[lists.depth++] = contentColumn
+  lists.depth = pushListItems(src, st, en, column, lists.columns, lists.depth)
 }
 
 /** Column of the innermost open component or list item. */

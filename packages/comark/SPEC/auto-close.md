@@ -2380,6 +2380,18 @@ A tab after a list marker pads to the next multiple of 4 columns, and a marker 4
 +     - item\n      ~~~\n\n**bold**
 ```
 
+A thematic break such as `- - -` opens no list item, and each marker of `- - item` opens its own:
+
+```diff
+- - - -\n    ~~~\n      ~~~\n\n**bold
++ - - -\n    ~~~\n      ~~~\n\n**bold**
+```
+
+```diff
+- - - item\n    ~~~\n    x\n      ~~~\n\n**bold
++ - - item\n    ~~~\n    x\n      ~~~\n\n**bold**
+```
+
 A fence indented 4 or more spaces past its container is indented code, not an opener:
 
 ```diff
