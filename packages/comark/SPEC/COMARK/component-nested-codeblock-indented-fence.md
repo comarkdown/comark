@@ -97,3 +97,29 @@ After
 
 After
 ```
+
+## Markdown HTML
+
+```md
+<code-preview>
+
+<tabs>
+
+<tabs-item label="Code">
+
+```mdc
+::a
+    ```js
+    x
+    ```
+::
+```
+
+</tabs-item>
+
+</tabs>
+
+</code-preview>
+
+After
+```

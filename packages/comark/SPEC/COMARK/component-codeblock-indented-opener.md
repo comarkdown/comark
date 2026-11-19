@@ -72,3 +72,20 @@ After
 
 After
 ```
+
+## Markdown HTML
+
+```md
+<box>
+
+~~~md
+- item
+  ```js
+  x
+  ```
+~~~
+
+</box>
+
+After
+```

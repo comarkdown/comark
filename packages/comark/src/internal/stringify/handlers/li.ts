@@ -53,7 +53,9 @@ export async function li(node: ElementNode, state: State) {
       // No parent -> mdc skips its own nesting indentation, so li owns it here.
       if (!hasInlineContent && !(tag in state.handlers)) {
         const indented = indent(await state.one(child, state), { width: prefixWidth, ignoreFirstLine: !result })
-        result = result ? result.trimEnd() + '\n' + indented.trimEnd() + '\n' : indented.trimEnd() + '\n'
+        // A tag cannot interrupt a paragraph in CommonMark, so `markdown/html` needs a blank line before it.
+        const separator = state.context.format === 'markdown/comark' ? '\n' : '\n\n'
+        result = result ? result.trimEnd() + separator + indented.trimEnd() + '\n' : indented.trimEnd() + '\n'
         continue
       }
     }

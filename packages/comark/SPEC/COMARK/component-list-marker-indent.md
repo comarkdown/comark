@@ -144,3 +144,57 @@ After
 
 After
 ```
+
+## Markdown HTML
+
+```md
+<box>
+
+```
+- item
+  ~~~
+```
+
+</box>
+
+<box>
+
+- item
+  ```js
+  x
+  ```
+
+</box>
+
+<box>
+
+---
+
+```
+~~~
+  ~~~
+```
+
+</box>
+
+<box>
+
+- - item
+    ```
+    x
+    ```
+
+</box>
+
+<box>
+
+```
+:::inner
+  ~~~
+      ~~~
+```
+
+</box>
+
+After
+```

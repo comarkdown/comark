@@ -136,3 +136,33 @@ c
 
 After
 ```
+
+## Markdown HTML
+
+```md
+<box>
+
+```js
+a
+```
+
+```js
+b
+```
+
+```js
+c
+```
+
+<inner>
+
+```js
+d
+```
+
+</inner>
+
+</box>
+
+After
+```

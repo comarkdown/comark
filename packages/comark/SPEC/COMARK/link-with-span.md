@@ -65,3 +65,11 @@
 
 [[link-name]{.cls} more](https://example.com)
 ```
+
+## Markdown HTML
+
+```md
+[<span>1</span> Document](#)
+
+[<span class="cls">link-name</span> more](https://example.com)
+```

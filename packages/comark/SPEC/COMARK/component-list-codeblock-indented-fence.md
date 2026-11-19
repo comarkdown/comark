@@ -117,3 +117,28 @@ After
 
 After
 ```
+
+## Markdown HTML
+
+```md
+<box>
+
+- item
+  ```js
+  x
+  ```
+
+</box>
+
+<box>
+
+- a
+  - b
+    ```js
+    x
+    ```
+
+</box>
+
+After
+```

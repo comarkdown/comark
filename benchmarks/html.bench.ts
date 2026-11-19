@@ -1,4 +1,4 @@
-import { bench, describe } from 'vitest'
+import { test } from 'vitest'
 import { createMarkdownParser } from 'comark'
 import { htmlAttributesMarkdown } from './fixtures.ts'
 
@@ -10,12 +10,13 @@ const parseLiteralHtml = createMarkdownParser({ autoClose: false })
 await parse(htmlAttributesMarkdown)
 await parseLiteralHtml(htmlAttributesMarkdown)
 
-describe('parse html', () => {
-  bench('html attributes document', async () => {
-    await parse(htmlAttributesMarkdown)
-  })
-
-  bench('html attributes document without auto-close', async () => {
-    await parseLiteralHtml(htmlAttributesMarkdown)
-  })
+test('parse html', async ({ bench }) => {
+  await bench.compare(
+    bench('html attributes document', async () => {
+      await parse(htmlAttributesMarkdown)
+    }),
+    bench('html attributes document without auto-close', async () => {
+      await parseLiteralHtml(htmlAttributesMarkdown)
+    })
+  )
 })

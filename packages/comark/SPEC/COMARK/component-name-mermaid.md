@@ -55,3 +55,15 @@ Some :mermaid[x] text.
 body
 ::
 ```
+
+## Markdown HTML
+
+```md
+Some <mermaid>x</mermaid> text.
+
+<mermaid>
+
+body
+
+</mermaid>
+```

@@ -75,3 +75,21 @@ After
 
 After
 ```
+
+## Markdown HTML
+
+```md
+<box>
+
+```mdc
+::a
+    ```js
+    x
+    ```
+::
+```
+
+</box>
+
+After
+```

@@ -729,6 +729,16 @@ describe('attributes scope', () => {
   })
 })
 
+describe('dollar-prefixed tokens without math (#136)', () => {
+  it.each([
+    '$skill-name',
+    '[$imagegen](/Users/user01/.codex/skills/.system/imagegen/SKILL.md)',
+    'Codex uses [$imagegen](/Users/user01/.codex/skills/.system/imagegen/SKILL.md) and $skill-name.',
+  ])('should leave %s unchanged', (input) => {
+    expect(autoCloseMarkdown(input)).toBe(input)
+  })
+})
+
 describe('inline code spans as literal regions', () => {
   it('should not count asterisks inside a closed code span', () => {
     const input = 'text `a*b` and **bold'

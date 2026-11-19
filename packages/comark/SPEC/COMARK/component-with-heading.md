@@ -81,3 +81,19 @@ Text content
 Text content
 ::
 ```
+
+## Markdown HTML
+
+```md
+<steps>
+
+### Step 1
+
+![Image](https://example.com/image.jpg)
+
+### Step 2
+
+Text content
+
+</steps>
+```

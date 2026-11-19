@@ -47,3 +47,19 @@ x
 
 After
 ```
+
+## Markdown HTML
+
+```md
+<box>
+
+~~~
+```
+x
+```
+~~~
+
+</box>
+
+After
+```

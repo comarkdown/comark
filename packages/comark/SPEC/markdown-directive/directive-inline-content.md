@@ -92,3 +92,27 @@ Important Notice
 The label contains inline content but the body has block content.
 ::
 ```
+
+## Markdown HTML
+
+```md
+<spoiler>
+
+it's a *happy* ending
+
+</spoiler>
+
+<ref target="myFigure">
+
+see **figure 1**
+
+</ref>
+
+<note type="info">
+
+Important Notice
+
+The label contains inline content but the body has block content.
+
+</note>
+```

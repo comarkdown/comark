@@ -152,6 +152,20 @@ export interface Context extends ContextBase {
 export type NodeHandler = (node: ElementNode, state: State, parent?: ElementNode) => string | Promise<string>
 
 /**
+ * Options for {@link State.flow}.
+ */
+export interface FlowOptions {
+  /**
+   * Escape leading block markers in text that begins a line.
+   *
+   * Off by default: most callers render an inline run, where a leading `#` or
+   * `-` is not a block marker. Turn it on when the children are written at the
+   * start of a line (a paragraph, a blockquote, a slot).
+   */
+  atLineStart?: boolean
+}
+
+/**
  * A node handler rule that pairs a match predicate with a handler function.
  * When `match` returns true for a node, the associated `handler` is used to render it.
  */
@@ -175,7 +189,7 @@ export type State = {
 
   handlers: Record<string, NodeHandler>
 
-  flow: (node: ElementNode, state: State, parent?: ElementNode) => Promise<string>
+  flow: (node: ElementNode, state: State, parent?: ElementNode, options?: FlowOptions) => Promise<string>
 
   one: (node: Node, state: State, parent?: ElementNode, atLineStart?: boolean) => Promise<string>
 

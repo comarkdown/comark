@@ -54,3 +54,15 @@ Default Slot
   ::
 </Hello>
 ```
+
+## Markdown HTML
+
+```md
+<Hello>
+<component>
+
+Default Slot
+
+</component>
+</Hello>
+```

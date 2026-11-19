@@ -85,3 +85,25 @@ After
 
 After
 ```
+
+## Markdown HTML
+
+```md
+<component>
+
+<template name="code">
+
+```mdc
+::a
+    ```js
+    x
+    ```
+::
+```
+
+</template>
+
+</component>
+
+After
+```

@@ -38,7 +38,8 @@ export async function mdc(node: ElementNode, state: State, parent?: ElementNode)
     if (content && !content.endsWith('\n') && isSlot(child)) {
       content += state.context.blockSeparator
     }
-    content += await state.one(child, childState, node)
+    // Block bodies start on their own line, so `#` / `-` text there keeps its escape.
+    content += await state.one(child, childState, node, !inline && (content === '' || content.endsWith('\n')))
   }
   content = content.trimEnd()
 

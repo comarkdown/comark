@@ -171,3 +171,51 @@ timeout:
   :::
 ::
 ```
+
+## Markdown HTML
+
+```md
+<page-section>
+
+<page-section>
+
+<template name="tagline">
+
+{{ $doc.snippet.tagline }}
+
+</template>
+
+<template name="title">
+
+{{ $doc.snippet.title }}
+
+</template>
+
+<template name="description">
+
+{{ $doc.snippet.description }}
+
+<button to="$doc.snippet.link" appearance="primary">
+
+Button Text
+
+</button>
+
+<button to="$doc.snippet.link" appearance="primary">
+
+Button Text
+
+</button>
+
+<button data-testid="$doc.snippet.description" external to="$doc.snippet.link" appearance="primary">
+
+Button Text
+
+</button>
+
+</template>
+
+</page-section>
+
+</page-section>
+```

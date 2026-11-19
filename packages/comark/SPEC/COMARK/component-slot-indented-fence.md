@@ -60,3 +60,27 @@ text
 
 After
 ```
+
+## Markdown HTML
+
+```md
+<box>
+
+<template name="code">
+
+```
+#notASlot
+```
+
+</template>
+
+<template name="other">
+
+text
+
+</template>
+
+</box>
+
+After
+```

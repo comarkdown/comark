@@ -55,3 +55,11 @@ A paragraph [span] {attr="value"}
 
 A paragraph [span]{attr="value"}
 ```
+
+## Markdown HTML
+
+```md
+A paragraph <span>span</span> {attr="value"}
+
+A paragraph <span attr="value">span</span>
+```

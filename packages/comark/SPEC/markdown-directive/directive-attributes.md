@@ -76,3 +76,21 @@ text
 Content here.
 ::
 ```
+
+## Markdown HTML
+
+```md
+<hello key="val">text</hello> world
+
+<hello key1="val1" key2="value with spaces">
+
+text
+
+</hello>
+
+<note type="tip" level="3">
+
+Content here.
+
+</note>
+```

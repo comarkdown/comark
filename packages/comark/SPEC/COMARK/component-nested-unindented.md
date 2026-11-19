@@ -99,3 +99,35 @@ This is the parent
   :::
 ::
 ```
+
+## Markdown HTML
+
+```md
+<card>
+
+This is the parent
+
+<sibling>
+
+Sibling content
+
+</sibling>
+
+<template name="title">
+
+<nested>
+
+Slot content
+
+</nested>
+
+<nested>
+
+More slot content
+
+</nested>
+
+</template>
+
+</card>
+```

@@ -73,3 +73,25 @@ First Paragraph
 Second Paragraph
 ::
 ```
+
+## Markdown HTML
+
+```md
+<no-sugar-syntax></no-sugar-syntax>
+
+<component>
+
+<template name="first">
+
+First Paragraph
+
+</template>
+
+<template name="second">
+
+Second Paragraph
+
+</template>
+
+</component>
+```

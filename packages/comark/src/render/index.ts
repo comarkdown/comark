@@ -7,6 +7,7 @@ import { handlers } from '../internal/stringify/handlers/index.ts'
 export type {
   NodeHandler,
   State,
+  FlowOptions,
   Context,
   RendererOptions,
   RenderMarkdownOptions,

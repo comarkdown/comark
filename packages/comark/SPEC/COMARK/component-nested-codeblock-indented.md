@@ -68,3 +68,20 @@
   :::
 ::
 ```
+
+## Markdown HTML
+
+```md
+<tabs>
+
+<tabs-item label="Code">
+
+```mdc
+  ::accordion
+  ::
+```
+
+</tabs-item>
+
+</tabs>
+```

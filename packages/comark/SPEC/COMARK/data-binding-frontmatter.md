@@ -54,3 +54,18 @@ site:
 Hello
 ::
 ```
+
+## Markdown HTML
+
+```md
+---
+site:
+  name: My Blog
+---
+
+<alert title="frontmatter.site.name" type="info">
+
+Hello
+
+</alert>
+```

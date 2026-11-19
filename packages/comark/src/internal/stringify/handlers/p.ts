@@ -1,14 +1,9 @@
 import type { State } from 'comark/render'
-import type { ElementNode, Node } from 'comark'
+import type { ElementNode } from 'comark'
 import { comarkAttributes } from '../attributes.ts'
 
 export async function p(node: ElementNode, state: State, parent?: ElementNode) {
-  const children = node.slice(2) as Node[]
-
-  let result = ''
-  for (const child of children) {
-    result += await state.one(child, state, node, result === '' || result.endsWith('\n'))
-  }
+  let result = await state.flow(node, state, undefined, { atLineStart: true })
 
   const attrs = comarkAttributes(node[1])
   if (attrs) result = `${result.replace(/[ \t]+$/, '')} ${attrs}`
