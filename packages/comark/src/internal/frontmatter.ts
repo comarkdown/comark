@@ -4,27 +4,58 @@ import { parseYaml, stringifyYaml } from './yaml.ts'
 const FRONTMATTER_DELIMITER_DEFAULT = '---'
 const LF = '\n'
 const CR = '\r'
+const BOM = '\uFEFF'
 
-/** Extract leading YAML frontmatter (`---`) from markdown content. */
-export function parseFrontmatter(content: string) {
-  let data: Record<string, any> = {}
+/**
+ * Find the line that closes the frontmatter: `---` alone on its line, with optional trailing spaces or tabs.
+ * @returns The index of the line feed before the delimiter, and the index after the delimiter line's content
+ */
+function findClosingDelimiter(content: string, from: number) {
+  let idx = content.indexOf(LF + FRONTMATTER_DELIMITER_DEFAULT, from)
+  while (idx !== -1) {
+    let end = idx + 1 + FRONTMATTER_DELIMITER_DEFAULT.length
+    while (content[end] === ' ' || content[end] === '\t') end++
+    if (content[end] === CR) end++
+    if (end === content.length || content[end] === LF) return { idx, end }
+    idx = content.indexOf(LF + FRONTMATTER_DELIMITER_DEFAULT, idx + 1)
+  }
+}
+
+/** Split leading frontmatter (`---`) from markdown content without parsing its YAML. */
+export function splitFrontmatter(content: string): { content: string; frontmatterText: string } {
   let frontmatter = ''
-  if (content.startsWith(FRONTMATTER_DELIMITER_DEFAULT)) {
-    const idx = content.indexOf(LF + FRONTMATTER_DELIMITER_DEFAULT)
-    if (idx !== -1) {
+  const start = content.startsWith(BOM) ? BOM.length : 0
+  if (content.startsWith(FRONTMATTER_DELIMITER_DEFAULT, start)) {
+    const close = findClosingDelimiter(content, start)
+    if (close) {
+      const { idx, end } = close
       const hasCarriageReturn = content[idx - 1] === CR
-      frontmatter = content.slice(4, idx - (hasCarriageReturn ? 1 : 0))
+      frontmatter = content.slice(start + 4, idx - (hasCarriageReturn ? 1 : 0))
       if (frontmatter) {
-        data = parseYaml(frontmatter) ?? {}
-        content = content.slice(idx + 4 + (hasCarriageReturn ? 1 : 0))
+        content = content.slice(end)
       }
     }
   }
 
+  return { content, frontmatterText: frontmatter }
+}
+
+/**
+ * Extract leading YAML frontmatter (`---`) from markdown content.
+ * @throws When the frontmatter is not valid YAML
+ */
+export function parseFrontmatter(content: string): {
+  content: string
+  data: Record<string, any>
+  frontmatterText: string
+} {
+  const split = splitFrontmatter(content)
+  const data: Record<string, any> = split.frontmatterText ? (parseYaml(split.frontmatterText) ?? {}) : {}
+
   return {
-    content,
+    content: split.content,
     data,
-    frontmatterText: frontmatter,
+    frontmatterText: split.frontmatterText,
   }
 }
 

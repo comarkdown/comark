@@ -195,19 +195,19 @@ timeout:
 
 {{ $doc.snippet.description }}
 
-<button to="$doc.snippet.link" appearance="primary">
+<button :to="$doc.snippet.link" appearance="primary">
 
 Button Text
 
 </button>
 
-<button to="$doc.snippet.link" appearance="primary">
+<button :to="$doc.snippet.link" appearance="primary">
 
 Button Text
 
 </button>
 
-<button data-testid="$doc.snippet.description" external to="$doc.snippet.link" appearance="primary">
+<button :data-testid="$doc.snippet.description" external :to="$doc.snippet.link" appearance="primary">
 
 Button Text
 

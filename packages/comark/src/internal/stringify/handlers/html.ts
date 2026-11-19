@@ -77,7 +77,12 @@ export async function html(node: ElementNode, state: State, parent?: ElementNode
     (blockTags.has(String(child?.[0])) || (!inlineTags.has(String(child?.[0])) && !hasTextSibling))
 
   // A component written as a tag needs blank lines around its markdown, or CommonMark keeps it in the HTML block.
-  const markdownBody = !state.context.html && !oneLiner && $.html !== 1
+  // Raw HTML gets them only around markdown blocks; a blank line in a literal body would end the HTML block.
+  const markdownBody =
+    !state.context.html &&
+    !oneLiner &&
+    ($.html !== 1 ||
+      children.some((child) => typeof child !== 'string' && child[1]?.$?.html !== 1 && blockTags.has(String(child[0]))))
 
   const childrenContent: string[] = []
   for (let i = 0; i < children.length; i++) {
@@ -124,6 +129,7 @@ export async function html(node: ElementNode, state: State, parent?: ElementNode
       ? ` ${htmlAttributes(nativeAttributes, {
           verbatim: !state.context.html && $.html === 1,
           encodeNewlines: !state.context.html,
+          keepBindings: !state.context.html,
         })}`
       : ''
 

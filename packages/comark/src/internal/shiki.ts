@@ -276,6 +276,11 @@ function tokensToSpans(line: ThemedToken[]): Node[] {
   return spans
 }
 
+// The streaming parser hands the same raw node to every update while its source
+// is unchanged, so a plugin keeps its tokens by raw node. Output nodes are still
+// rebuilt every time, since callers and later plugins may edit them in place.
+type TokensCache = WeakMap<ElementNode, { code: string; language: string; result: ReturnType<typeof codeToTokens> }>
+
 /**
  * Apply syntax highlighting to all code blocks in a Comark tree
  * Uses codeToTokens API with batched async operations
@@ -284,7 +289,8 @@ export async function highlightCodeBlocks(
   tree: MarkdownDocument,
   options: ShikiOptions = {},
   defaultThemeLoaders: ShikiThemeLoader[] = [],
-  defaultLanguageLoaders: ShikiLanguageLoader[] = []
+  defaultLanguageLoaders: ShikiLanguageLoader[] = [],
+  tokensCache?: TokensCache
 ): Promise<MarkdownDocument> {
   interface CodeBlockRef {
     node: Node
@@ -396,10 +402,15 @@ export async function highlightCodeBlocks(
         codeChildren = (preNode[2] as ElementNode).slice(2) as Node[]
       } else {
         // Fast path: build Nodes directly from tokens, skipping hast
-        const result = codeToTokens(hl, code, {
-          lang: language,
-          themes: themeOptions,
-        })
+        const cached = tokensCache?.get(node as ElementNode)
+        const result =
+          cached?.code === code && cached.language === language
+            ? cached.result
+            : codeToTokens(hl, code, {
+                lang: language,
+                themes: themeOptions,
+              })
+        tokensCache?.set(node as ElementNode, { code, language, result })
         classStr = `shiki ${result.themeName || ''}`
 
         const tokenLines = result.tokens
@@ -544,15 +555,19 @@ export function createShikiPlugin<TOptions extends ShikiOptions = ShikiOptions>(
   defaultThemeLoaders: ShikiThemeLoader[] = [],
   defaultLanguageLoaders: ShikiLanguageLoader[] = []
 ) {
-  return defineComarkPlugin<TOptions>((options) => ({
-    name: 'shiki',
-    async post(state) {
-      state.tree = await highlightCodeBlocks(
-        state.tree,
-        (options || {}) as ShikiOptions,
-        defaultThemeLoaders,
-        defaultLanguageLoaders
-      )
-    },
-  }))
+  return defineComarkPlugin<TOptions>((options) => {
+    const tokensCache: TokensCache = new WeakMap()
+    return {
+      name: 'shiki',
+      async post(state) {
+        state.tree = await highlightCodeBlocks(
+          state.tree,
+          (options || {}) as ShikiOptions,
+          defaultThemeLoaders,
+          defaultLanguageLoaders,
+          tokensCache
+        )
+      },
+    }
+  })
 }

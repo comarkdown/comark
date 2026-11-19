@@ -63,5 +63,5 @@ user:
   name: Ada
 ---
 
-Hello <badge label="frontmatter.user.name"></badge>!
+Hello <badge :label="frontmatter.user.name"></badge>!
 ```

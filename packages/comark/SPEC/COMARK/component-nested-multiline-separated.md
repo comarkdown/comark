@@ -217,7 +217,7 @@ full-width: true
 ```md
 <page-section full-width>
 
-<multi-column columns="3">
+<multi-column :columns="3">
 
 <container display="flex">
 

@@ -124,6 +124,8 @@ interface HtmlAttributesOptions {
   verbatim?: boolean
   /** Write line breaks as `&#10;` / `&#13;`, since a CommonMark HTML block needs its open tag on one line */
   encodeNewlines?: boolean
+  /** Keep the `:` prefix of unresolved bindings, so Markdown output reparses them as bindings */
+  keepBindings?: boolean
 }
 
 const NEWLINE_RE = /[\n\r]/g
@@ -131,7 +133,7 @@ const NEWLINE_RE = /[\n\r]/g
 /** Serialize an attribute bag into an HTML attribute string. */
 export function htmlAttributes(
   attributes: Record<string, unknown>,
-  { verbatim = false, encodeNewlines = false }: HtmlAttributesOptions = {}
+  { verbatim = false, encodeNewlines = false, keepBindings = false }: HtmlAttributesOptions = {}
 ) {
   const escapeValue = (value: string) => {
     const escaped = escapeHtml(value)
@@ -144,15 +146,17 @@ export function htmlAttributes(
     if (!SAFE_ATTR_NAME.test(key)) continue
 
     if (isBinding) {
+      // A bare attribute reads back as `true`, the same value as `:key="true"`.
       if (verbatim ? value === true : value === 'true') {
         parts.push(key)
         continue
       }
+      const name = keepBindings ? rawKey : key
       if (typeof value === 'object' && value !== null) {
-        parts.push(`${key}="${escapeValue(JSON.stringify(value))}"`)
+        parts.push(`${name}="${escapeValue(JSON.stringify(value))}"`)
         continue
       }
-      parts.push(`${key}="${escapeValue(String(value))}"`)
+      parts.push(`${name}="${escapeValue(String(value))}"`)
       continue
     }
 

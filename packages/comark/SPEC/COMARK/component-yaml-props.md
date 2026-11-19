@@ -83,7 +83,7 @@ Second Paragraph
 ## Markdown HTML
 
 ```md
-<component attr="value" object-attr="{&quot;key1&quot;:&quot;value1&quot;,&quot;key2&quot;:&quot;value2&quot;}" array="[&quot;item 1&quot;,&quot;item 2&quot;]">
+<component attr="value" :object-attr="{&quot;key1&quot;:&quot;value1&quot;,&quot;key2&quot;:&quot;value2&quot;}" :array="[&quot;item 1&quot;,&quot;item 2&quot;]">
 
 First Paragraph
 

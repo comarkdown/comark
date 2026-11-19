@@ -39,5 +39,5 @@
 ## Markdown HTML
 
 ```md
-<component reverse square="false" disabled></component>
+<component reverse :square="false" disabled></component>
 ```
