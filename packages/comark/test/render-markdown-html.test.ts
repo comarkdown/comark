@@ -40,4 +40,21 @@ describe('render: markdown/html', () => {
       '</alert>',
     ])
   })
+
+  it('keeps paragraphs parseable when its own output is rendered again', async () => {
+    // The second pass reads `<card>` back as raw HTML (`$.html: 1`) holding markdown paragraphs.
+    const once = await render(await parseMarkdown('::card\nFirst Paragraph\n\nSecond **bold**\n::'), {
+      format: 'markdown/html',
+    })
+    const tokens = await reparse(once)
+
+    expect(tokens.filter((token) => token.type === 'inline').map((token) => token.content)).toEqual([
+      'First Paragraph',
+      'Second **bold**',
+    ])
+    expect(tokens.filter((token) => token.type === 'html_block').map((token) => token.content.trim())).toEqual([
+      '<card>',
+      '</card>',
+    ])
+  })
 })
