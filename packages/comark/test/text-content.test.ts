@@ -11,6 +11,11 @@ describe('textContent', () => {
     expect(textContent(tree)).toBe('Tom &amp; Jerry &copy;')
   })
 
+  it('leaves out comment nodes', () => {
+    expect(textContent(['h1', {}, 'Install ', [null, {}, ' TODO '], ' guide'])).toBe('Install  guide')
+    expect(textContent([null, {}, ' note '])).toBe('')
+  })
+
   it('applies decodeHTML to every text node', () => {
     expect(textContent(tree, { decodeHTML })).toBe('Tom & Jerry ©')
     expect(textContent('&lt;', { decodeHTML })).toBe('<')
