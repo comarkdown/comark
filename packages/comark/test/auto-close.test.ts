@@ -220,6 +220,22 @@ describe('autoCloseMarkdown - Comark Components', () => {
     expect(autoCloseMarkdown(input)).toBe(expected)
   })
 
+  it('measures a closing code fence against its innermost component', () => {
+    // 4+ spaces past the component is code content: `**bold` stays code and only `::box` gets closed.
+    expect(autoCloseMarkdown('::box\n```\n::a\n    ```\n::\n**bold')).toBe('::box\n```\n::a\n    ```\n::\n**bold\n::')
+    // The children of `::box` sit at column 0, even when the fence itself is indented.
+    const indentedFence = '::box\n  ```md\n    ```js\n    ```\n  ```\n::'
+    expect(autoCloseMarkdown(indentedFence)).toBe(indentedFence)
+    // `    :::inner` is indented code, so it opens no component.
+    expect(autoCloseMarkdown('::box\n    :::inner\n      ~~~\n          ~~~\n::\n\n**bold')).toBe(
+      '::box\n    :::inner\n      ~~~\n          ~~~\n::\n\n**bold**'
+    )
+    // Within 3 spaces of `:::inner` still closes.
+    expect(autoCloseMarkdown('::box\n  :::inner\n  ```\n  x\n     ```\n  :::\n::\n**bold')).toBe(
+      '::box\n  :::inner\n  ```\n  x\n     ```\n  :::\n::\n**bold**'
+    )
+  })
+
   it('should not add closing markers to empty content', () => {
     const input = ''
     expect(autoCloseMarkdown(input)).toBe(input)
