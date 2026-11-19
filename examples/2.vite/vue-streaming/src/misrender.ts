@@ -205,12 +205,10 @@ function serializeVisible(root: HTMLElement): string {
   walk(root, false)
   if (chunks.length === 0) return ''
 
-  // Normalize non-pre chunks; keep pre/code exact
   const normalized: Chunk[] = chunks.map((chunk) =>
     chunk.pre ? chunk : { pre: false, text: chunk.text.replace(/\s+/g, ' ') }
   )
 
-  // Drop leading / trailing empty-or-whitespace-only non-pre chunks
   let start = 0
   let end = normalized.length
   while (start < end && !normalized[start]!.pre && normalized[start]!.text.trim() === '') start++

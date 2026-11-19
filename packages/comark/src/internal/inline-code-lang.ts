@@ -1,7 +1,7 @@
 import type { ElementNodeAttributes } from 'comark'
 
 /**
- * Fragment languages: a name authors write in `{lang="…"}` mapped onto a real
+ * Fragment languages: a name authors write in `{lang="..."}` mapped onto a real
  * grammar plus source that seeds the grammar state and is then discarded.
  * Named after the `@nuxtjs/mdc` conventions so `ts-type` and `vue-html` keep
  * working for sites migrating off it. Shared by the Shiki and rangi plugins.

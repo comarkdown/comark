@@ -1,32 +1,28 @@
-# Security Policy
+# Security policy
 
-## Supported Versions
+## Supported versions
 
 | Version | Supported          |
 |---------|--------------------|
 | Latest  | :white_check_mark: |
 
-## Reporting a Vulnerability
+## Reporting a vulnerability
 
-If you discover a security vulnerability in Comark, please report it responsibly.
+If you discover a security vulnerability in Comark, report it privately.
 
-**Do not open a public issue.** Instead, please email us at:
+**Do not open a public issue.** Email **security@comark.dev** with:
 
-**security@comark.dev**
-
-Include the following in your report:
-
-- Description of the vulnerability
+- A description of the vulnerability
 - Steps to reproduce
 - Potential impact
-- Suggested fix (if any)
+- A suggested fix, if you have one
 
-## Response Timeline
+## Response timeline
 
-- **Acknowledgment**: Within 48 hours of receiving the report
-- **Assessment**: Within 7 days we will assess the severity and impact
-- **Fix**: Critical vulnerabilities will be patched as soon as possible
-- **Disclosure**: We will coordinate with you on public disclosure timing
+- **Acknowledgment**: within 48 hours of receiving the report
+- **Assessment**: we assess severity and impact within 7 days
+- **Fix**: we patch critical vulnerabilities as soon as possible
+- **Disclosure**: we coordinate public disclosure timing with you
 
 ## Scope
 
@@ -38,10 +34,11 @@ This policy applies to all packages in the Comark monorepo:
 - `@comark/vue`
 - `@comark/react`
 - `@comark/svelte`
+- `@comark/angular`
 - `@comark/nuxt` (deprecated)
 
-## Built-in Security
+## Built-in security
 
-Comark includes a built-in [security plugin](https://comark.dev/plugins/built-in/security) (`comark/plugins/security`) that provides XSS sanitization. We recommend enabling it when rendering user-generated content.
+Comark includes a [security plugin](https://comark.dev/plugins/built-in/security) (`comark/plugins/security`) for XSS sanitization. Enable it when rendering untrusted or user-generated content.
 
 Thank you for helping keep Comark and its users safe.

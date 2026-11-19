@@ -5,16 +5,13 @@ import { comarkAttributes, userBlockAttrs } from '../attributes.ts'
 export async function blockquote(node: ElementNode, state: State) {
   const children = node.slice(2) as Node[]
 
-  let childResult = ''
-  for (const child of children) {
-    childResult += await state.one(child, state, node, childResult === '' || childResult.endsWith('\n'))
-  }
+  let childResult = await state.flow(node, state, undefined, { atLineStart: true })
 
   const userAttrs = userBlockAttrs('blockquote', node[1] as Record<string, unknown>)
   const attrs = comarkAttributes(userAttrs)
   const hasBlockChildren = children.some((c) => Array.isArray(c))
 
-  // Multi-block content with attrs has no unambiguous inline form — round-trip
+  // Multi-block content with attrs has no unambiguous inline form: round-trip
   // via `::blockquote{attrs}` so the attrs aren't visually attached to one
   // paragraph and parsers can recover the same AST.
   if (attrs && hasBlockChildren) {

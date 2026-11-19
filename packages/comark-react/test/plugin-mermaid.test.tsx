@@ -5,7 +5,7 @@ import { MarkdownDocument } from '../src/components/MarkdownDocument'
 import mermaid, { Mermaid } from '../src/plugins/mermaid'
 
 // `Mermaid` derives its wrapper class from the incoming class string, so the
-// `class` -> `className` renderer remap is observable under SSR alone —
+// `class` -> `className` renderer remap is observable under SSR alone;
 // `useEffect` (beautiful-mermaid / `document`) never runs here.
 
 describe('@comark/react plugins/mermaid — Mermaid component', () => {

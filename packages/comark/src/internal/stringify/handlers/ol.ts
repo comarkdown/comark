@@ -2,15 +2,17 @@ import type { State } from 'comark/render'
 import type { ElementNode, Node } from 'comark'
 import { indent } from '../../../utils/index.ts'
 import { comarkAttributes, userBlockAttrs } from '../attributes.ts'
+import { listMarker } from '../list.ts'
 
-export async function ol(node: ElementNode, state: State) {
+export async function ol(node: ElementNode, state: State, parent?: ElementNode) {
   const children = node.slice(2) as Node[]
 
   // `start` is carried by the native numbering; IMPLICIT_ATTRS drops it from user attrs.
   const start = Number((node[1] as Record<string, unknown>).start)
-  const order = Number.isInteger(start) && start >= 1 ? start : 1
+  const order = Number.isInteger(start) && start >= 0 ? start : 1
+  const marker = listMarker(node, state, parent, ['.', ')'])
 
-  const revert = state.applyContext({ list: true, order, listIndent: 3 })
+  const revert = state.applyContext({ list: true, order, listMarker: marker })
 
   let result = ''
   for (const child of children) {
@@ -20,18 +22,20 @@ export async function ol(node: ElementNode, state: State) {
 
   state.applyContext(revert)
 
-  // ol with user attrs round-trips via `::ol{attrs}\n1. …\n::` — the native
+  // ol with user attrs round-trips via `::ol{attrs}\n1. ...\n::`: the native
   // markdown list syntax has no slot for list-level attrs.
   const attrs = comarkAttributes(userBlockAttrs('ol', node[1] as Record<string, unknown>))
   if (attrs) {
     if (revert.list) {
-      return '\n' + indent(`::ol${attrs}\n${result}\n::`, { width: (revert.listIndent as number) || 2 })
+      return '\n' + indent(`::ol${attrs}\n${result}\n::`, { width: (state.context.listIndent as number) || 2 })
     }
     return `::ol${attrs}\n${result}\n::` + state.context.blockSeparator
   }
 
   if (revert.list) {
-    result = '\n' + indent(result, { width: (revert.listIndent as number) || 2 })
+    // Only a list that starts at 1 can interrupt the item's text: any other
+    // start needs a blank line before it.
+    result = (order === 1 ? '\n' : '\n\n') + indent(result, { width: (state.context.listIndent as number) || 2 })
   } else {
     result = result + state.context.blockSeparator
   }

@@ -16,6 +16,5 @@ export const Math: NodeHandler = (node, state, parent) => {
     return colors ? YELLOW + '$' + content + '$' + RESET : `$${content}$`
   }
 
-  // Block math
   return `$$\n${colors ? MAGENTA + content + RESET : content}\n$$` + '\n\n'
 }

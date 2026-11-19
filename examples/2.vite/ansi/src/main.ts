@@ -109,8 +109,6 @@ $$
 _Edit the markdown on the left to see live updates._
 `
 
-// --- Terminal setup ---
-
 const term = new Terminal({
   convertEol: true,
   cursorBlink: false,
@@ -151,8 +149,6 @@ fitAddon.fit()
 
 window.addEventListener('resize', () => fitAddon.fit())
 
-// --- Render logic ---
-
 async function render(markdown: string) {
   const tree = await parseMarkdown(markdown)
   const ansi = await renderAnsiFromDocument(tree, {
@@ -163,8 +159,6 @@ async function render(markdown: string) {
   term.reset()
   term.write(ansi)
 }
-
-// --- Editor setup ---
 
 const input = document.getElementById('input') as HTMLTextAreaElement
 input.value = SAMPLE

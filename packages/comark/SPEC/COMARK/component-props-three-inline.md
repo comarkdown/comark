@@ -41,3 +41,13 @@ Content
 Content
 ::
 ```
+
+## Markdown HTML
+
+```md
+<component title="Hello" color="primary" size="lg">
+
+Content
+
+</component>
+```

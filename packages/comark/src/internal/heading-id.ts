@@ -38,11 +38,11 @@ export function slugify(text: string): string {
     .normalize('NFC')
     .toLowerCase()
     .trim()
-    .replace(/\s+/g, '-') // Replace spaces with hyphens
+    .replace(/\s+/g, '-')
     // Keep Unicode letters, marks, decimal digits and letter numbers; drop the rest.
     // Other numbers (No: ①, ½, ²) are not valid HTML5 id or CSS ident characters.
     .replace(/[^\p{L}\p{M}\p{Nd}\p{Nl}_-]+/gu, '')
-    .replace(/-{2,}/g, '-') // Replace multiple hyphens with single hyphen
+    .replace(/-{2,}/g, '-')
     // Drop a leading run of marks and hyphens, plus trailing hyphens. Marks and
     // hyphens only ever expose each other (`\u0301-1` would otherwise survive as
     // "-1"), so one alternation covers the run.
@@ -60,7 +60,7 @@ export function slugify(text: string): string {
 /**
  * Reserve a heading's effective id when a user-supplied `id` overrides the
  * generated one, so later generated ids get a suffix instead of reusing it
- * (`# Foo {#foo-1}` then `# Foo` → `foo-1`, `foo-2`).
+ * (`# Foo {#foo-1}` then `# Foo` -> `foo-1`, `foo-2`).
  */
 export function reserveHeadingId(tracker: HeadingIdTracker, id: unknown): void {
   if (typeof id === 'string' && id) tracker.usedIds.add(id)
@@ -70,14 +70,13 @@ export function reserveHeadingId(tracker: HeadingIdTracker, id: unknown): void {
  * Return the auto-generated id for the next heading, suffixed with a counter
  * for duplicates. In nested mode it is also prefixed with its parent heading's
  * id (h2+ parents only). Returns `undefined` when the heading text slugifies to
- * nothing (emoji, punctuation only) — such a heading gets no id.
+ * nothing (emoji, punctuation only); such a heading gets no id.
  */
 export function nextHeadingId(text: string, level: number, tracker: HeadingIdTracker): string | undefined {
   let slug = slugify(text)
   const { stack, slugCounts, usedIds } = tracker
 
   if (tracker.nested) {
-    // Pop headings at same level or deeper
     while (stack.length > 0 && stack[stack.length - 1].level >= level) {
       stack.pop()
     }
@@ -91,7 +90,6 @@ export function nextHeadingId(text: string, level: number, tracker: HeadingIdTra
       }
     }
 
-    // Push onto stack for child headings to reference
     stack.push({ level, id: slug })
   }
 

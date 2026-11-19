@@ -14,27 +14,31 @@
  * import frontmatter from 'comark/plugins/frontmatter'
  *
  * const result = await parseMarkdown('---\ntitle: Hi\n---\n\n# Hello')
- * // result.frontmatter → { title: 'Hi' }
+ * // result.frontmatter -> { title: 'Hi' }
  * ```
  */
 
 import { defineComarkPlugin } from '../utils/helpers.ts'
-import { parseFrontmatter } from '../internal/frontmatter.ts'
+import { parseFrontmatter, splitFrontmatter } from '../internal/frontmatter.ts'
 
 export default defineComarkPlugin(() => ({
   name: 'frontmatter',
   pre(state) {
-    const { content, data, frontmatterText } = parseFrontmatter(state.markdown)
+    let result: ReturnType<typeof parseFrontmatter>
+    try {
+      result = parseFrontmatter(state.markdown)
+    } catch (error) {
+      console.warn(`[comark/plugins/frontmatter] ignoring invalid YAML frontmatter: ${(error as Error).message}`)
+      result = { ...splitFrontmatter(state.markdown), data: {} }
+    }
+    const { content, data, frontmatterText } = result
     state.markdown = content
     state.frontmatter = data
     state.frontmatterText = frontmatterText
 
-    // Count frontmatter lines for line number tracking on subsequent nodes
+    // Offset line numbers on body nodes past the stripped frontmatter (+1 closing fence).
     if (content && frontmatterText) {
-      state.parsedLines =
-        (state.parsedLines ?? 0) +
-        frontmatterText.split('\n').length + // Number of lines in frontmatter
-        1 // Separator line
+      state.parsedLines = (state.parsedLines ?? 0) + frontmatterText.split('\n').length + 1
     }
   },
 }))

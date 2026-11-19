@@ -5,7 +5,7 @@ import type { MarkdownDocument } from '../src'
 
 /**
  * An inline-positioned component must render its element children in inline
- * form too: a block `:::fence` inside `:name[…]` cannot be parsed back.
+ * form too: a block `:::fence` inside `:name[...]` cannot be parsed back.
  * Children here are kept bracket-free so these cases do not depend on the
  * parser's nested-bracket handling.
  */

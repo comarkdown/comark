@@ -1,4 +1,4 @@
-import type { NodeRenderData, State, Context, RendererOptions } from 'comark/render'
+import type { NodeRenderData, State, Context, RendererOptions, FlowOptions } from 'comark/render'
 import type { ElementNode, Node, MarkdownDocument, ConditionalNodeHandler, CreateContext, NodeHandler } from 'comark'
 import { escapeHtml, pascalCase } from '../../utils/index.ts'
 import { resolveAttributes } from './html-attributes.ts'
@@ -6,8 +6,8 @@ import { applyNodeTransforms } from './transform-node.ts'
 
 function findHandler(ctx: Context, node: ElementNode): NodeHandler | undefined {
   const name = node[0] as string
-  // Own-property lookups only — the handler maps are plain objects, so a node
-  // named `constructor`/`__proto__`/… would otherwise resolve through the
+  // Own-property lookups only: the handler maps are plain objects, so a node
+  // named `constructor`/`__proto__`/... would otherwise resolve through the
   // prototype chain (XSS / render crash from untrusted markdown).
   const userHandler =
     (Object.hasOwn(ctx.handlers, name) ? ctx.handlers[name] : undefined) ||
@@ -26,13 +26,20 @@ function findHandler(ctx: Context, node: ElementNode): NodeHandler | undefined {
   return userHandler
 }
 
+// The tree node each `transformNode` copy was made from.
+const sourceNodes = new WeakMap<ElementNode, ElementNode>()
+
 /**
- * Render a single node
- * @param node - The node to render
- * @param state - The state of the renderer
- * @param parent - The parent node
- * @param atLineStart - Whether a string node begins a line, so leading block markers are escaped
- * @returns The rendered node
+ * The tree node `node` was rendered from: handlers get a copy when a
+ * `transformNode` hook changed it, and only the original is in its parent.
+ */
+export function sourceNode(node: ElementNode): ElementNode {
+  return sourceNodes.get(node) ?? node
+}
+
+/**
+ * Render a single node. When `atLineStart` is true, leading block markers in
+ * text nodes are escaped.
  */
 export async function one(node: Node, state: State, parent?: ElementNode, atLineStart = false): Promise<string> {
   if (typeof node === 'string') {
@@ -90,7 +97,9 @@ export async function one(node: Node, state: State, parent?: ElementNode, atLine
             hasOwnAttrs = true
             props = transformed.props
           }
-          node = [transformed.tag, attrs, ...(node.slice(2) as Node[])]
+          const copy: ElementNode = [transformed.tag, attrs, ...(node.slice(2) as Node[])]
+          sourceNodes.set(copy, node)
+          node = copy
         }
       }
       if (hasOwnAttrs) state.renderData = { ...prevRenderData, props }
@@ -107,7 +116,7 @@ export async function one(node: Node, state: State, parent?: ElementNode, atLine
       return await state.handlers.html(node, state, parent)
     }
 
-    // fallback to default handlers (own-property lookup — see findHandler)
+    // Fallback to default handlers (own-property lookup; see findHandler).
     const nodeName = node[0] as string
     const nodeHandler = Object.hasOwn(state.handlers, nodeName) ? state.handlers[nodeName] : undefined
     if (nodeHandler) {
@@ -122,11 +131,17 @@ export async function one(node: Node, state: State, parent?: ElementNode, atLine
   }
 }
 
-export async function flow(node: ElementNode, state: State, parent?: ElementNode): Promise<string> {
-  const children = node.slice(2) as ElementNode[]
+export async function flow(
+  node: ElementNode,
+  state: State,
+  parent?: ElementNode,
+  options?: FlowOptions
+): Promise<string> {
+  const children = node.slice(2) as Node[]
+  const atLineStart = options?.atLineStart === true
   let result = ''
   for (const child of children) {
-    result += await one(child, state, parent || node)
+    result += await one(child, state, parent || node, atLineStart && (result === '' || result.endsWith('\n')))
   }
   return result
 }
@@ -147,10 +162,9 @@ export function createState(defaultHandlers: Record<string, NodeHandler>, ctx: P
     ...ctx,
     blockSeparator: ctx.blockSeparator || '\n\n',
     format: ctx.format || 'markdown/comark',
-    handlers, // user defined node handlers
+    handlers,
     conditionalHandlers,
     blockAttributesStyle: ctx.blockAttributesStyle || 'codeblock',
-    // Enable html mode for text/html format
     html: ctx.format === 'text/html',
   } as Context
 
@@ -206,17 +220,6 @@ const inlineSyntax = /[\\`*_<&~[\]{:]/g
 // Mirrors ALLOWED_PREV_CHARS in the components plugin.
 const COLON_PREV_CHARS = new Set([' ', '\t', '\n', '*', '_', '[', ']', '}', ')', '>'])
 
-/**
- * Escape characters in a markdown text node that would otherwise be
- * misinterpreted as markdown syntax on a subsequent parse, so the node
- * round-trips as literal text.
- *
- * Inline constructs are recognised anywhere, so their characters are escaped
- * wherever they appear. Block constructs (headings, blockquotes, lists,
- * thematic breaks, setext underlines) are only recognised at the start of a
- * line, so their markers are escaped on the first line only when the node
- * begins one (`atLineStart`) and on every line following an embedded newline.
- */
 // Elements whose content the HTML tokenizer reads as text: only the matching
 // end tag can end it, so nothing else inside is markup. `textarea` (RCDATA)
 // decodes entities, so its end tag is escaped as `&lt;/`; `script` / `style`
@@ -227,7 +230,7 @@ const TEXT_ONLY_TAGS: Record<string, string> = { script: '<\\/', style: '<\\/', 
  * Escape a text node inside a raw HTML block for markdown output.
  *
  * Renderers that read the block as raw HTML (CommonMark, GitHub, markdown-it)
- * parse any tag in it, so a text node such as `<svg onload=…>`, which the
+ * parse any tag in it, so a text node such as `<svg onload=...>`, which the
  * parser kept as text, must not come back as markup. Only a `<` that would
  * start a tag is escaped, as `&lt;`, which reads back as the same character.
  * Markdown syntax and existing entities are kept, like the HTML renderer does.
@@ -269,6 +272,17 @@ function escapeRawHtmlText(text: string, tag: string): string {
   return result + text.slice(last)
 }
 
+/**
+ * Escape characters in a markdown text node that would otherwise be
+ * misinterpreted as markdown syntax on a subsequent parse, so the node
+ * round-trips as literal text.
+ *
+ * Inline constructs are recognised anywhere, so their characters are escaped
+ * wherever they appear. Block constructs (headings, blockquotes, lists,
+ * thematic breaks, setext underlines) are only recognised at the start of a
+ * line, so their markers are escaped on the first line only when the node
+ * begins one (`atLineStart`) and on every line following an embedded newline.
+ */
 function escapeTextNode(text: string, atLineStart = false): string {
   const escaped = escapeInline(text)
 
@@ -301,14 +315,14 @@ function buildNextIndex(source: string, charCode: number): Int32Array {
   return next
 }
 
+// Sticky, so it matches at `lastIndex` without slicing the node per `<`
+const OPEN_TAG_START = /<\/?[a-z][a-z0-9-]*[\s/]/iy
+
 /**
  * Escape inline syntax characters. `_`, `<` and `&` only start a construct in
  * specific positions, so they are left alone otherwise to avoid mangling
  * ordinary prose like `snake_case`, `a < b` or `AT&T`.
  */
-// Sticky, so it matches at `lastIndex` without slicing the node per `<`
-const OPEN_TAG_START = /<\/?[a-z][a-z0-9-]*[\s/]/iy
-
 function escapeInline(text: string): string {
   // Lazily-built next-`>` index: the tag-likeness check below must not
   // rescan the remainder of the node for every `<` (quadratic on long runs
@@ -316,14 +330,12 @@ function escapeInline(text: string): string {
   let nextGt: Int32Array | undefined
 
   return text.replace(inlineSyntax, (char, offset: number, source: string) => {
-    // `_` only opens emphasis at a word boundary — never between alphanumerics.
+    // `_` only opens emphasis at a word boundary, never between alphanumerics.
     if (char === '_' && isAlphaNumeric(source[offset - 1]) && isAlphaNumeric(source[offset + 1])) {
       return char
     }
-    // `<` only starts raw HTML / an autolink when it looks like a tag, not when
-    // used as a comparison (e.g. `a < b`). Tag-like means `<` followed by a
-    // letter/`!`/`?`/`/` with a `>` somewhere after — same shape as the
-    // previous /^<[a-zA-Z!?/][^>]*>/ test, minus the rescan.
+    // `<` only starts raw HTML / an autolink when followed by a letter, `!`, `?`, or `/`
+    // with a `>` somewhere after; comparisons like `a < b` stay unescaped.
     if (char === '<') {
       const next = source.charCodeAt(offset + 1)
       const tagStart =
@@ -338,7 +350,7 @@ function escapeInline(text: string): string {
       nextGt ??= buildNextIndex(source, 62 /* > */)
       if (nextGt[offset + 1] === -1) {
         // No `>` in this node, but it may come from a later sibling:
-        // `x <img src="data:…,` then `<svg>` then `">`. Escape a `<` that
+        // `x <img src="data:...,` then `<svg>` then `">`. Escape a `<` that
         // opens a tag name followed by whitespace or `/`, as an attribute or
         // self-close would; a bare `<b` or `a<b` stays prose.
         OPEN_TAG_START.lastIndex = offset
@@ -383,8 +395,8 @@ function escapeInline(text: string): string {
  * heading. `*`, `_` and `~` based markers are already handled by
  * {@link escapeInline}; only the block-exclusive markers remain here.
  */
-function escapeLeadingBlock(line: string): string {
-  // ATX heading: 1–6 `#` followed by a space/tab or the end of the line.
+export function escapeLeadingBlock(line: string): string {
+  // ATX heading: 1-6 `#` followed by a space/tab or the end of the line.
   if (/^#{1,6}([ \t]|$)/.test(line)) return `\\${line}`
   // Blockquote: `>` (a following space is optional).
   if (line[0] === '>') return `\\${line}`

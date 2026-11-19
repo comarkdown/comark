@@ -35,3 +35,13 @@
 Syntax
 ::
 ```
+
+## Markdown HTML
+
+```md
+<inline>
+
+Syntax
+
+</inline>
+```

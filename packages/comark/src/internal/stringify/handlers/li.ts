@@ -4,14 +4,15 @@ import { indent } from '../../../utils/index.ts'
 import { comarkAttributes, userBlockAttrs } from '../attributes.ts'
 
 // Block elements that need explicit indentation in list items.
-// Note: ol/ul are handled by their own handlers which manage indentation via listIndent context.
+// Note: ol/ul are handled by their own handlers, which indent by the `listIndent` this item sets.
 const blockElements = new Set(['pre', 'blockquote', 'table'])
 
 export async function li(node: ElementNode, state: State) {
   const children = node.slice(2) as Node[]
 
-  const order = state.context.order
-  let prefix = order ? `${order}. ` : '- '
+  const { order, listMarker } = state.context
+  const ordered = typeof order === 'number'
+  let prefix = ordered ? `${order}${listMarker || '.'} ` : `${listMarker || '-'} `
 
   const className =
     (node[1].className as string) && Array.isArray(node[1].className)
@@ -32,6 +33,10 @@ export async function li(node: ElementNode, state: State) {
   // Direct text children render sibling components inline.
   const hasInlineContent = children.some((child) => typeof child === 'string')
 
+  // A nested list must be indented to this item's content, whose column
+  // depends on the marker width (`1. ` vs `10. `).
+  const revert = state.applyContext({ listIndent: prefixWidth })
+
   let result = ''
 
   for (const child of children) {
@@ -50,10 +55,12 @@ export async function li(node: ElementNode, state: State) {
         continue
       }
 
-      // No parent → mdc skips its own nesting indentation, so li owns it here.
+      // No parent -> mdc skips its own nesting indentation, so li owns it here.
       if (!hasInlineContent && !(tag in state.handlers)) {
         const indented = indent(await state.one(child, state), { width: prefixWidth, ignoreFirstLine: !result })
-        result = result ? result.trimEnd() + '\n' + indented.trimEnd() + '\n' : indented.trimEnd() + '\n'
+        // A tag cannot interrupt a paragraph in CommonMark, so `markdown/html` needs a blank line before it.
+        const separator = state.context.format === 'markdown/comark' ? '\n' : '\n\n'
+        result = result ? result.trimEnd() + separator + indented.trimEnd() + '\n' : indented.trimEnd() + '\n'
         continue
       }
     }
@@ -61,10 +68,12 @@ export async function li(node: ElementNode, state: State) {
   }
   result = result.trim()
 
+  state.applyContext(revert)
+
   const attrs = comarkAttributes(userBlockAttrs('li', node[1] as Record<string, unknown>))
   const suffix = attrs ? ` ${attrs}` : ''
 
-  if (order) {
+  if (ordered) {
     state.applyContext({ order: order + 1 })
   }
 

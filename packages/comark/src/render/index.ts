@@ -7,6 +7,7 @@ import { handlers } from '../internal/stringify/handlers/index.ts'
 export type {
   NodeHandler,
   State,
+  FlowOptions,
   Context,
   RendererOptions,
   RenderMarkdownOptions,
@@ -16,18 +17,12 @@ export type {
   NodeTransformResult,
 } from '../types.ts'
 
-// Re-export frontmatter renderer
 export { renderFrontmatter } from '../internal/frontmatter.ts'
 
 // Re-export attribute resolvers for custom handlers that want to honor `:prefix` bindings
 export { resolveAttributes, resolveAttribute } from '../internal/stringify/attributes.ts'
 
-/**
- * Generate a string from a Markdown document
- * @param document - The Markdown document to render
- * @param context - The context of the renderer
- * @returns The string representation of the Markdown document
- */
+/** Render a Markdown document to a string in the configured format. */
 export async function render(
   document: MarkdownDocument | { nodes: MarkdownDocument['nodes'] },
   context: RendererOptions = {}
@@ -41,13 +36,7 @@ export async function render(
   return result.trim() + '\n'
 }
 
-/**
- * Render a Markdown document to markdown
- *
- * @param document - The Markdown document to render
- * @param options - Optional rendering options
- * @returns The markdown string with optional frontmatter
- */
+/** Render a Markdown document to Comark markdown, including frontmatter when present. */
 export async function renderMarkdown(
   document: MarkdownDocument | { nodes: MarkdownDocument['nodes'] },
   options?: RenderMarkdownOptions

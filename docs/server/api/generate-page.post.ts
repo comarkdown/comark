@@ -51,7 +51,7 @@ const FETCH_TIMEOUT_MS = 15_000
 
 // The endpoint bills every request to the project's AI Gateway, so it must not
 // be a free public LLM proxy: browser-origin check plus a per-IP sliding
-// window. In-memory — the limit applies per serverless instance.
+// window. In-memory, so the limit applies per serverless instance.
 const RATE_LIMIT_WINDOW_MS = 60_000
 const RATE_LIMIT_MAX = 5
 const requestLog = new Map<string, number[]>()
@@ -98,7 +98,7 @@ export default defineEventHandler(async (event) => {
   try {
     originHost = origin ? new URL(origin).host : ''
   } catch {
-    // invalid origin header — rejected below
+    // Invalid origin header; rejected below
   }
   const host = getRequestHost(event, { xForwardedHost: true })
   if (!originHost || originHost !== host) {

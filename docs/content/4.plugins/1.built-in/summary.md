@@ -1,6 +1,6 @@
 ---
 title: Summary extraction
-description: Plugin for extracting content summaries using the <!-- more --> delimiter.
+description: Extract content summaries before a <!-- more --> comment into tree.meta.summary.
 seo:
   title: Summary Extraction Plugin
 navigation:
@@ -18,7 +18,7 @@ links:
     variant: soft
 ---
 
-The `comark/plugins/summary` plugin extracts content before a `<!-- more -->` comment and stores it in `tree.meta.summary`. Useful for blog listings, article previews, RSS feeds, and anywhere you need a short excerpt of the full content.
+The `comark/plugins/summary` plugin extracts content before a `<!-- more -->` comment and stores it in `tree.meta.summary`. Use it for blog listings, article previews, and RSS feeds where you need an excerpt of the full document.
 
 ## Usage
 
@@ -88,7 +88,7 @@ Returns a `ComarkPlugin` that extracts content before the delimiter.
 
 **Parameters:**
 
-- `options?` - Optional configuration, see [Options](#options)
+- `options?`: Optional configuration. See [Options](#options).
 
 **Returns:** `ComarkPlugin`
 

@@ -12,16 +12,13 @@ Some content
 
     const result = await parseMarkdown(markdown)
 
-    // Define a component that throws an error
     const ErrorComponent = defineComponent({
       name: 'ErrorComponent',
       setup() {
-        // This will throw during render
         throw new Error('Component error during render')
       },
     })
 
-    // Spy on console.warn to verify error is logged
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
 
     try {
@@ -37,14 +34,10 @@ Some content
         },
       })
 
-      // Should not throw, but handle the error gracefully
       const html = await renderToString(app as any)
 
-      // The renderer should still produce output (even if component failed)
       expect(html).toBeTruthy()
       expect(html).toContain('comark-content')
-
-      // Verify error was captured and logged
       expect(warnSpy).toHaveBeenCalled()
     } finally {
       warnSpy.mockRestore()
@@ -52,13 +45,11 @@ Some content
   })
 
   it('should handle components with required props during incomplete streaming', async () => {
-    // Simulate incomplete YAML props during streaming
     const markdown = `::required-prop-test
 ::`
 
     const result = await parseMarkdown(markdown)
 
-    // Component with required prop that will error if prop is missing
     const RequiredPropTest = defineComponent({
       name: 'RequiredPropTest',
       props: {
@@ -68,7 +59,6 @@ Some content
         },
       },
       setup(props) {
-        // This will throw if name is undefined
         const nameUpper = computed(() => props.name.toUpperCase())
         return () => h('div', {}, nameUpper.value)
       },
@@ -89,7 +79,6 @@ Some content
         },
       })
 
-      // Should handle missing required prop gracefully
       const html = await renderToString(app as any)
 
       expect(html).toBeTruthy()
@@ -144,7 +133,6 @@ Good content
 
       const html = await renderToString(app as any)
 
-      // Should still render the good component and heading
       expect(html).toContain('Working Heading')
       expect(html).toContain('good-component')
       expect(html).toContain('Good content')

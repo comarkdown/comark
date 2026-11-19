@@ -62,8 +62,6 @@ export function defineMarkdownComponent(config: DefineMarkdownComponentOptions =
 
       return () => {
         const component = config.extends || Markdown
-        // Spread rather than list every prop: the hand-written list had drifted
-        // from `<Markdown>` three times, dropping `data` and `documentKey`.
         return h(
           component,
           {

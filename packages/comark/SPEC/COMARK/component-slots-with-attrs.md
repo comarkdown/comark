@@ -65,3 +65,23 @@ Visual Editor
 Edit without code.
 ::
 ```
+
+## Markdown HTML
+
+```md
+<feature>
+
+<template name="title" unwrap="p">
+
+Visual Editor
+
+</template>
+
+<template name="description" unwrap="p">
+
+Edit without code.
+
+</template>
+
+</feature>
+```

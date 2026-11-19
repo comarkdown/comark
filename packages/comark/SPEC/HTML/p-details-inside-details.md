@@ -94,11 +94,13 @@ Nested content2
 <details>
 <summary>Top</summary>
 <details>
+
 <summary>Nested</summary>
+
 Nested content
 
-
 Nested content2
+
 </details>
 </details>
 ```

@@ -1,4 +1,4 @@
-import { bench, describe } from 'vitest'
+import { test } from 'vitest'
 import { autoCloseMarkdown, createMarkdownParser } from 'comark'
 import type { ComarkParseFn } from 'comark'
 import {
@@ -39,44 +39,41 @@ await replay(streamMedium, mediumChunks)
 await replay(streamChat, chatChunks)
 autoCloseMarkdown(partialMarkdown, { frontmatter: true })
 
-describe('auto-close', () => {
-  bench('partial document', () => {
-    autoCloseMarkdown(partialMarkdown, { frontmatter: true })
-  })
-
-  bench('medium document', () => {
-    autoCloseMarkdown(mediumMarkdown, { frontmatter: true })
-  })
-
-  bench('large document', () => {
-    autoCloseMarkdown(largeMarkdown, { frontmatter: true })
-  })
-
-  bench('adversarial document', () => {
-    autoCloseMarkdown(adversarialMarkdown, { frontmatter: true })
-  })
-
-  bench('partial document, dropping trailing openers', () => {
-    autoCloseMarkdown(partialMarkdown, { frontmatter: true, dropTrailingOpeners: true })
-  })
+test('auto-close', async ({ bench }) => {
+  await bench.compare(
+    bench('partial document', () => {
+      autoCloseMarkdown(partialMarkdown, { frontmatter: true })
+    }),
+    bench('medium document', () => {
+      autoCloseMarkdown(mediumMarkdown, { frontmatter: true })
+    }),
+    bench('large document', () => {
+      autoCloseMarkdown(largeMarkdown, { frontmatter: true })
+    }),
+    bench('adversarial document', () => {
+      autoCloseMarkdown(adversarialMarkdown, { frontmatter: true })
+    }),
+    bench('partial document, dropping trailing openers', () => {
+      autoCloseMarkdown(partialMarkdown, { frontmatter: true, dropTrailingOpeners: true })
+    })
+  )
 })
 
-describe('streaming', () => {
-  bench('parse a partial document', async () => {
-    await parsePartial(partialMarkdown)
-  })
-
-  bench('stream a partial document', async () => {
-    await replay(streamPartial, partialChunks)
-  })
-
-  // Headings in the tail force full reparses, so this tracks the worst case.
-  bench('stream a medium document', async () => {
-    await replay(streamMedium, mediumChunks)
-  })
-
-  // No headings: the tail is reparsed on its own and stable nodes are reused.
-  bench('stream a chat answer (incremental reuse)', async () => {
-    await replay(streamChat, chatChunks)
-  })
+test('streaming', async ({ bench }) => {
+  await bench.compare(
+    bench('parse a partial document', async () => {
+      await parsePartial(partialMarkdown)
+    }),
+    bench('stream a partial document', async () => {
+      await replay(streamPartial, partialChunks)
+    }),
+    // Headings in the tail force full reparses, so this tracks the worst case.
+    bench('stream a medium document', async () => {
+      await replay(streamMedium, mediumChunks)
+    }),
+    // No headings: the tail is reparsed on its own and stable nodes are reused.
+    bench('stream a chat answer (incremental reuse)', async () => {
+      await replay(streamChat, chatChunks)
+    })
+  )
 })

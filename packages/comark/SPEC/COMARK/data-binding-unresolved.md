@@ -34,3 +34,9 @@
 ::card{:to="$doc.snippet.link"}
 ::
 ```
+
+## Markdown HTML
+
+```md
+<card :to="$doc.snippet.link"></card>
+```

@@ -21,14 +21,13 @@ export interface AnsiRendererOptions extends RendererOptions {
 /**
  * The renderer concatenates node text, code bodies and hrefs into terminal
  * output, so any control byte in the parsed document reaches the TTY. Strip
- * them (keeping \t and \n) before rendering — returns a copy, the input
- * document is not mutated.
+ * them (keeping \t and \n) before rendering. Returns a copy without mutating
+ * the input document.
  */
 function sanitizeForTerminal(nodes: Node[]): Node[] {
   return nodes.map((node): Node => {
     if (typeof node === 'string') return stripControlChars(node)
     if (node[0] === null) {
-      // Comment node — [null, attrs, content]
       return [null, node[1], stripControlChars(String((node as unknown[])[2] ?? ''))] as Node
     }
     const [tag, attrs, ...children] = node as ElementNode

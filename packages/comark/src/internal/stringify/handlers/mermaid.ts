@@ -15,7 +15,7 @@ export function mermaid(node: ElementNode, state: State, parent?: ElementNode): 
   const { content, ...rest } = attributes
 
   const attrs = comarkAttributes(rest)
-  // Parsed fence bodies keep one trailing newline — drop it so serialization
+  // Parsed fence bodies keep one trailing newline; drop it so serialization
   // doesn't grow a blank line on every round trip.
   const body = String(content ?? '').replace(/\n$/, '')
   const fence = pickFence(body)

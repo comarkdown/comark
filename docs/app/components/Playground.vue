@@ -76,6 +76,7 @@ const pluginToggles = useLocalStorage(
   {
     shiki: true,
     rangi: false,
+    pierreHighlights: false,
     math: true,
     emoji: true,
     mermaid: true,
@@ -121,6 +122,19 @@ const pluginDefs = [
     label: 'Rangi Syntax Highlighting',
     icon: 'i-lucide-gauge',
     factory: () => rangi(),
+  },
+  {
+    key: 'pierreHighlights',
+    label: 'Pierre Syntax Highlighting',
+    icon: 'i-lucide-cpu',
+    // Loaded on first use: the module inlines and compiles a ~300 KB wasm lexer.
+    factory: (): ComarkPlugin => ({
+      name: 'pierre-highlights',
+      async post(state) {
+        const { pierreHighlightsCodeBlocks } = await import('@comark/vue/plugins/pierre-highlights')
+        state.tree = pierreHighlightsCodeBlocks(state.tree)
+      },
+    }),
   },
   {
     key: 'mermaid',
@@ -192,9 +206,13 @@ const pluginDefs = [
 
 type PluginKey = (typeof pluginDefs)[number]['key']
 
+const highlighters = ['shiki', 'rangi', 'pierreHighlights'] as const
+
 function setPluginEnabled(key: PluginKey, enabled: boolean): void {
-  if (enabled && key === 'shiki') pluginToggles.value.rangi = false
-  if (enabled && key === 'rangi') pluginToggles.value.shiki = false
+  // Only one syntax highlighter runs at a time.
+  if (enabled && (highlighters as readonly string[]).includes(key)) {
+    for (const other of highlighters) if (other !== key) pluginToggles.value[other] = false
+  }
   pluginToggles.value[key] = enabled
 }
 
@@ -443,7 +461,6 @@ async function handleGenerate(prompt: string) {
 <template>
   <div class="relative overflow-hidden h-[calc(100vh-64px)]">
     <Splitpanes class="h-full">
-      <!-- ── Left pane: Markdown editor ── -->
       <Pane
         :size="50"
         :min-size="20"
@@ -491,7 +508,6 @@ async function handleGenerate(prompt: string) {
               >{{ copied ? 'Link copied' : '' }}</span
             >
 
-            <!-- Settings popover -->
             <UPopover :ui="{ content: 'p-0' }">
               <UButton
                 size="xs"
@@ -511,7 +527,6 @@ async function handleGenerate(prompt: string) {
 
               <template #content>
                 <div class="w-72">
-                  <!-- Plugins section -->
                   <div class="px-3 pt-3 pb-1.5">
                     <p class="text-xs font-semibold text-muted uppercase tracking-wider">Plugins</p>
                   </div>
@@ -537,10 +552,8 @@ async function handleGenerate(prompt: string) {
                     </button>
                   </div>
 
-                  <!-- Divider -->
                   <div class="border-t border-default" />
 
-                  <!-- Parse options section -->
                   <div class="px-3 pt-2.5 pb-1.5">
                     <p class="text-xs font-semibold text-muted uppercase tracking-wider">Parse Options</p>
                   </div>
@@ -610,7 +623,6 @@ async function handleGenerate(prompt: string) {
         </div>
       </Pane>
 
-      <!-- ── Right pane: Output ── -->
       <Pane
         :size="50"
         :min-size="20"
@@ -647,7 +659,6 @@ async function handleGenerate(prompt: string) {
             />
           </div>
 
-          <!-- Preview -->
           <div
             v-if="currentTab === 'preview'"
             class="flex-1 min-h-0 relative overflow-hidden bg-white dark:bg-neutral-900"
@@ -697,7 +708,6 @@ async function handleGenerate(prompt: string) {
             </UScrollArea>
           </div>
 
-          <!-- AST -->
           <UScrollArea
             v-else-if="currentTab === 'ast'"
             class="flex-1 min-h-0"
@@ -712,7 +722,6 @@ async function handleGenerate(prompt: string) {
             />
           </UScrollArea>
 
-          <!-- Formatted -->
           <div
             v-else-if="currentTab === 'formatted'"
             class="flex-1 min-h-0"
@@ -724,7 +733,6 @@ async function handleGenerate(prompt: string) {
             />
           </div>
 
-          <!-- Status bar -->
           <div class="shrink-0 flex items-center gap-4 px-4 h-7 border-t border-default bg-default">
             <span class="flex items-center gap-1 text-xs text-muted">
               <UIcon

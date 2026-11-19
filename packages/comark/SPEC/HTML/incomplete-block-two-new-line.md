@@ -73,10 +73,11 @@
 
 ```md
 <ai-thinking>
-**bold** and more
 
+**bold** and more
 
 - list
 - **item**
+
 </ai-thinking>
 ```

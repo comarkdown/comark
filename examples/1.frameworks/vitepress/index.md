@@ -3,16 +3,16 @@ layout: home
 hero:
   name: Comark + VitePress
   text: Components in Markdown
-  tagline: Use Comark's component syntax inside VitePress documentation sites.
+  tagline: Add Comark component and attribute syntax to VitePress documentation sites.
   actions:
     - theme: brand
-      text: View Demo
+      text: View demo
       link: /demo
 features:
-  - title: Component Syntax
-    details: Write ::alert{type="info"} directly in your content and render it with Vue components.
-  - title: Vue Renderer
-    details: Comark's Vue renderer (comark/vue) integrates seamlessly with VitePress.
-  - title: Server & Client
-    details: Works with VitePress SSG — parsed at build time, hydrated on the client.
+  - title: Component syntax
+    details: Write ::alert{type="info"} blocks directly in Markdown files and render them with Vue components.
+  - title: markdown-it integration
+    details: Plug markdownItComponents and markdownItAttributes directly into VitePress's markdown.config hook.
+  - title: Static build and hydration
+    details: VitePress parses Comark syntax at build time and hydrates interactive Vue components on the client.
 ---

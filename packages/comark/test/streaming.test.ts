@@ -130,7 +130,7 @@ describe('streaming mode', () => {
       await parse('# Title\n\nPartial', { streaming: true })
       // Step 2: h1 + completed first paragraph + partial second paragraph
       await parse('# Title\n\nPartial paragraph.\n\nSecond par', { streaming: true })
-      // Step 3: completed — new content reaches beyond step 2's parsedLines
+      // Step 3: new content reaches beyond step 2's parsedLines
       const result = await parse('# Title\n\nPartial paragraph.\n\nSecond paragraph complete.\n', { streaming: true })
 
       // h1 is in the cache from step 1; paragraphs come from re-parsing
@@ -209,6 +209,15 @@ describe('streaming mode', () => {
 
       expect(result1.frontmatter).toEqual({ title: 'Hello' })
       expect(result2.frontmatter).toEqual({ title: 'Hello', category: 'Test' })
+    })
+
+    it('closes partial frontmatter after a byte order mark', async () => {
+      const parse = createMarkdownParser()
+
+      const result = await parse('\uFEFF---\ntitle: Hello', { streaming: true })
+
+      expect(result.frontmatter).toEqual({ title: 'Hello' })
+      expect(result.nodes).toEqual([])
     })
 
     it('frontmatter is preserved across continuation calls', async () => {
@@ -300,12 +309,10 @@ describe('streaming mode', () => {
     it('autoClose applies to partially complete content', async () => {
       const parse = createMarkdownParser({ autoClose: true })
 
-      // Incomplete bold - autoClose should close it
       const result = await parse('# Title\n\nSome **bold', { streaming: true })
 
       const p = result.nodes[1] as ElementNode
       expect(p[0]).toBe('p')
-      // The bold should be auto-closed so it appears as strong
       const strong = p.slice(2).find((child) => Array.isArray(child) && (child as ElementNode)[0] === 'strong')
       expect(strong).toBeDefined()
     })

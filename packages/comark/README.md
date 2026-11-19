@@ -9,9 +9,9 @@
 [![Documentation](https://img.shields.io/badge/Documentation-black?logo=readme&logoColor=white)](https://comark.dev)
 [![license](https://img.shields.io/github/license/comarkdown/comark?color=black)](https://github.com/comarkdown/comark/blob/main/LICENSE)
 
-Comark is an open-source Markdown parser and renderer with components, attributes and plugins. It streams AI output to React, Vue, Svelte, Angular, HTML and the terminal.
+Comark is an open-source Markdown parser and renderer with components, attributes, and plugins. It streams AI output to React, Vue, Svelte, Angular, HTML, and the terminal.
 
-Comark supports CommonMark and GFM, then parses them into a compact, serializable document at build time, runtime, or during a stream. Use the same document across renderers, or extend the syntax with readable components and attributes when you need richer content.
+Comark parses CommonMark and GFM into a compact, serializable document at build time, at runtime, or during a stream. Render the same document across targets, or extend the syntax with components and attributes when you need custom UI.
 
 ```mdc
 # Regular Markdown
@@ -28,14 +28,14 @@ This is **Markdown** inside your own component.
 - **Runtime parsing**: `parseMarkdown(markdown)` is a pure function returning a compact, serializable Markdown document. Content from a database, CMS, or LLM is live the moment it is saved. No rebuild, no redeploy. ([Comark vs MDX](https://comark.dev/compare/comark-vs-mdx))
 - **Streaming built in**: auto-close completes unterminated syntax (`**bold`, open code fences, half-open components) so AI output renders correctly at every frame.
 - **One parser, every renderer**: the same source renders to HTML, ANSI, Vue, React, Svelte, and Angular. Your content outlasts your framework.
-- **Still just Markdown**: CommonMark + GFM ([with a few differences](https://comark.dev/syntax/markdown#differences-from-commonmark-and-gfm)), frontmatter, and `{.class}` attributes on native elements. Components are opt-in syntax, not a new language.
-- **Plugin ecosystem**: Shiki highlighting, KaTeX math, Mermaid diagrams, TOC, alerts, footnotes and more, plus compatibility with existing markdown-it plugins.
-- **Decoupled parse & render**: parse once on the server, send the serializable document (`['tag', props, ...children]`) to the client, render without re-parsing.
+- **Standard Markdown**: CommonMark and GFM ([with a few differences](https://comark.dev/syntax/markdown#differences-from-commonmark-and-gfm)), frontmatter, and `{.class}` attributes on native elements. Components are opt-in syntax, not a new language.
+- **Plugin ecosystem**: Shiki highlighting, KaTeX math, Mermaid diagrams, TOC, alerts, footnotes, and more, plus compatibility with existing markdown-it plugins.
+- **Decoupled parse and render**: parse once on the server, send the serializable document (`['tag', props, ...children]`) to the client, and render without re-parsing.
 - **Fast**: built on [markdown-exit](https://github.com/serkodev/markdown-exit), a TypeScript rewrite of markdown-it, with full TypeScript support.
 
-The component and attribute syntax builds on five years of production use in [MDC](https://github.com/nuxt-content/mdc). Read [Why Comark](https://comark.dev/kb/why-comark) for the full story.
+The component and attribute syntax builds on five years of production use in [MDC](https://github.com/nuxt-content/mdc). Read [Why Comark](https://comark.dev/kb/why-comark) for the background.
 
-## Quick Start
+## Quick start
 
 ```bash
 npm install comark
@@ -111,7 +111,7 @@ npm install @comark/angular katex
 ```typescript
 import { Component } from '@angular/core'
 import { Markdown } from '@comark/angular'
-import math, { Math } from '@comark/angular/plugins/math'
+import { math, Math } from '@comark/angular/plugins/math'
 
 @Component({
   selector: 'app-chat',
@@ -124,7 +124,7 @@ export class ChatComponent {
 }
 ```
 
-### HTML (No Framework)
+### HTML (no framework)
 
 ```bash
 npm install @comark/html
@@ -142,11 +142,11 @@ const html = await renderHtml(chatMessage)
 
 | Package | Description |
 |---|---|
-| [`comark`](https://comark.dev/api/parse) | Core parser, AST utilities, plugins |
+| [`comark`](https://comark.dev/reference/parse) | Core parser, AST utilities, and plugins |
 | [`@comark/vue`](https://comark.dev/rendering/vue) | Vue 3 renderer and Nuxt module |
 | [`@comark/react`](https://comark.dev/rendering/react) | React renderer (Next.js, Server Components) |
 | [`@comark/svelte`](https://comark.dev/rendering/svelte) | Svelte 5 renderer |
-| [`@comark/angular`](https://comark.dev/rendering/angular) | Angular renderer |
+| [`@comark/angular`](https://comark.dev/rendering/angular) | Angular 21+ renderer |
 | [`@comark/html`](https://comark.dev/rendering/html) | HTML string renderer |
 | [`@comark/ansi`](https://comark.dev/rendering/ansi) | ANSI terminal renderer |
 

@@ -21,21 +21,12 @@ import { createSerializedTask, dedupePlugins } from './utils/helpers.ts'
 import { noopTracer } from './utils/trace.ts'
 import { createMarkdownParser as createCoreMarkdownParser } from './core.ts'
 
-// Re-export auto-close utilities
 export { autoCloseMarkdown, INCOMPLETE_LINK_PLACEHOLDER, INCOMPLETE_IMAGE_PLACEHOLDER } from './auto-close.ts'
 export type { AutoCloseOptions, LinkMode } from './auto-close.ts'
-
-// Re-export frontmatter utilities
 export { parseFrontmatter } from './internal/frontmatter.ts'
-
-// Re-export plugin utilities
 export { defineComarkPlugin } from './utils/helpers.ts'
-
-// Re-export the ambient renderer context for live updates
 export { createComarkContext } from './context.ts'
 export type { ComarkContext, ComarkDocument, ComarkPatch } from './context.ts'
-
-// Re-export types
 export type * from './types.ts'
 
 let warnedLinkifyOption = false
@@ -62,8 +53,8 @@ function resolveParserOptions<const TPlugins extends readonly ComarkPlugin<any, 
   }
 
   const registerDefaults = options.registerDefaultPlugins !== false
-  // `linkify` comes first, so markdown-it plugins that configure `md.linkify` when installed find it.
-  // The deprecated `linkify` option still wins over `registerDefaultPlugins`, as it did before.
+  // `linkify` comes first so markdown-it plugins that configure `md.linkify` on install find it.
+  // The deprecated `linkify` option still takes precedence over `registerDefaultPlugins`.
   const defaultPlugins: ComarkPlugin<any, any>[] = [
     ...((linkifyOption ?? registerDefaults) ? [linkify()] : []),
     ...(registerDefaults ? [frontmatterPlugin(), html(), alert(), taskList(), components(), attributes()] : []),
@@ -95,12 +86,8 @@ function resolveParserOptions<const TPlugins extends readonly ComarkPlugin<any, 
 /**
  * Creates a parser function for Comark content.
  *
- * Returns an async function that takes a markdown string and returns a Promise resolving to a MarkdownDocument AST.
- * The returned parser applies frontmatter extraction, Comark syntax parsing, token-to-AST conversion,
- * auto-closing of incomplete markdown, optional AST transformations and plugin hooks.
- *
- * @param options - Parser options controlling parsing behavior.
- * @returns An async parser function: (markdown) => Promise<MarkdownDocument>
+ * Applies auto-closing of incomplete markdown, frontmatter extraction, Comark syntax
+ * parsing, token-to-AST conversion, optional AST unwrapping, and plugin hooks.
  *
  * @example
  * ```typescript
@@ -109,14 +96,14 @@ function resolveParserOptions<const TPlugins extends readonly ComarkPlugin<any, 
  * const parseMarkdown = createMarkdownParser({ autoUnwrap: false })
  * const tree = await parseMarkdown('# Hello **World**\n::alert\nhi\n::')
  * console.log(tree.nodes)
- * // → [ ['h1', { id: 'hello-world' }, 'Hello ', ['strong', {}, 'World'] ], ['alert', {}, 'hi'] ]
+ * // -> [ ['h1', { id: 'hello-world' }, 'Hello ', ['strong', {}, 'World'] ], ['alert', {}, 'hi'] ]
  *
  * // HTML parsing is on by default via the built-in `html` plugin
  * const tree2 = await parseMarkdown('<strong class="bold">Hello</strong> _world_')
  * console.log(tree2.nodes)
- * // → [ ['strong', { class: 'bold' }, 'Hello'], ' ', ['em', {}, 'world'] ]
+ * // -> [ ['strong', { class: 'bold' }, 'Hello'], ' ', ['em', {}, 'world'] ]
  *
- * // Disable default plugins (including HTML) — HTML tags are plain text
+ * // Disable default plugins (including HTML): HTML tags stay plain text
  * const parsePlain = createMarkdownParser({ registerDefaultPlugins: false })
  * ```
  */
@@ -130,11 +117,7 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
 }
 
 /**
- * Parse Comark content from a string
- *
- * @param markdown - The markdown/Comark content as a string
- * @param options - Parser options
- * @returns MarkdownDocument - The parsed AST tree
+ * Parse Comark content from a string into a {@link MarkdownDocument}.
  *
  * @example
  * ```typescript
@@ -154,11 +137,10 @@ export function createMarkdownParser<const TPlugins extends readonly ComarkPlugi
  * `
  *
  * const tree = await parseMarkdown(content)
- * console.log(tree.nodes)        // Array of AST nodes
- * console.log(tree.frontmatter)  // { title: 'Hello World' }
- * console.log(tree.meta)         // Additional metadata
+ * console.log(tree.nodes)
+ * console.log(tree.frontmatter) // { title: 'Hello World' }
+ * console.log(tree.meta)
  *
- * // Disable auto-unwrap
  * const tree2 = await parseMarkdown(content, { autoUnwrap: false })
  * ```
  */
@@ -178,9 +160,6 @@ export async function parseMarkdown<const TPlugins extends readonly ComarkPlugin
  * Overlapping parses run one at a time; each caller still receives its own
  * result or rejection (plugin errors are not swallowed).
  *
- * @param options - Parser options
- * @returns ComarkParseFn - The serialized parser function
- *
  * @example
  * ```typescript
  * import { createSerializedMarkdownParser } from 'comark'
@@ -188,6 +167,7 @@ export async function parseMarkdown<const TPlugins extends readonly ComarkPlugin
  * const parseMarkdown = createSerializedMarkdownParser()
  * const tree = await parseMarkdown(content, { streaming: true })
  * console.log(tree.nodes)
+ * ```
  */
 export function createSerializedMarkdownParser<const TPlugins extends readonly ComarkPlugin<any, any>[] = []>(
   options: ParserOptions<TPlugins> = {} as ParserOptions<TPlugins>

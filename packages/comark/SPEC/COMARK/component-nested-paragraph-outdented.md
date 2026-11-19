@@ -49,3 +49,17 @@ hello world
   :::
 ::
 ```
+
+## Markdown HTML
+
+```md
+<tabs>
+
+<tabs-item label="Code">
+
+hello world
+
+</tabs-item>
+
+</tabs>
+```

@@ -30,7 +30,7 @@ export function highlightCodeBlocks(tree: MarkdownDocument, options: ShikiCoreOp
 }
 
 /**
- * Core Shiki plugin — no default themes or languages.
+ * Core Shiki plugin without default themes or languages.
  * `themes` and `languages` are required.
  */
 export default function (options: ShikiCoreOptions): ComarkPlugin {

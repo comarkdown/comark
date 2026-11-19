@@ -50,8 +50,8 @@ function rewriteToDefaultOrigin(urlStr: string, defaultOrigin: string): string {
   }
 }
 
-// Named entities relevant to URL smuggling — the full HTML5 table is huge,
-// but these are the ones that can hide a scheme or whitespace inside it.
+// Named entities relevant to URL smuggling: the full HTML5 table is huge,
+// and these are the ones that can hide a scheme or whitespace inside it.
 const NAMED_ENTITIES: Record<string, string> = {
   amp: '&',
   lt: '<',
@@ -67,10 +67,9 @@ const NAMED_ENTITIES: Record<string, string> = {
 
 /**
  * Decode HTML entities until stable. Browsers entity-decode attribute values
- * before navigating, so validation must inspect the decoded form — stripping
- * entities instead (the previous behavior) let `javascript&#58;alert(1)`
- * through as a "relative" URL. Repeating the pass catches nested encodings
- * like `&amp;#58;`.
+ * before navigating, so validation must inspect the decoded form. Stripping
+ * entities instead would let `javascript&#58;alert(1)` pass as a relative URL.
+ * Repeating the pass catches nested encodings like `&amp;#58;`.
  */
 function decodeHtmlEntities(value: string): string {
   let result = value
@@ -95,7 +94,7 @@ function decodePercent(value: string): string {
   try {
     return decodeURIComponent(value)
   } catch {
-    // Malformed percent-encoding — inspect the raw value instead of throwing
+    // Malformed percent-encoding: inspect the raw value instead of throwing
     return value
   }
 }
@@ -118,7 +117,7 @@ function checkUrl(candidate: string, mode: 'link' | 'image', options: PropsValid
 
   let url: URL
   try {
-    // Parse without a base — throws for relative URLs, succeeds for absolute
+    // Parse without a base: throws for relative URLs, succeeds for absolute
     url = new URL(candidate)
   } catch {
     let resolved: URL
@@ -131,9 +130,8 @@ function checkUrl(candidate: string, mode: 'link' | 'image', options: PropsValid
       const allowedPrefixes = mode === 'link' ? allowedLinkPrefixes : allowedImagePrefixes
       return allowedPrefixes.includes('*') && allowedProtocols.includes('*') ? 'allow' : 'reject'
     }
-    // Genuinely relative URLs are always allowed
     if (resolved.origin === DUMMY_BASE) return 'allow'
-    // Scheme-relative/backslash form — check it as the absolute URL it
+    // Scheme-relative/backslash form: check it as the absolute URL it
     // resolves to in the browser
     url = resolved
   }
@@ -159,7 +157,7 @@ function validateUrl(
 ): string | typeof REJECTED_PROP {
   // Every way the value may be read must pass. The browser decodes entities but
   // keeps percent-escapes, so `https://a.com%2F@evil.com` loads from evil.com;
-  // servers and client routers may percent-decode, so `javascript%3A…` and
+  // servers and client routers may percent-decode, so `javascript%3A...` and
   // `/allowed/..%2F..%2Fother` are checked decoded too.
   const browserForm = decodeHtmlEntities(value)
   const readings = new Set([browserForm, decodeHtmlEntities(decodePercent(value)), decodePercent(browserForm)])
@@ -249,7 +247,7 @@ const CSS_TOKEN =
 const CSS_URL_REST = /(?:[^)\\]|\\[\s\S])*/y
 
 /**
- * Every URL an inline style can load: the argument of an unquoted `url(…)`,
+ * Every URL an inline style can load: the argument of an unquoted `url(...)`,
  * and every quoted string. Strings outside `url()` / `image-set()` are never
  * fetched, so checking them too costs at most a stray reject, and the scan does
  * not need to track which function it is in.
@@ -269,7 +267,7 @@ function styleUrls(css: string): string[] {
 
     let start = CSS_TOKEN.lastIndex + 1
     while (/[ \t\n\r\f]/.test(css[start] ?? '')) start++
-    // `url("…")` is a function with a string argument: the string token is next
+    // `url("...")` is a function with a string argument: the string token is next
     if (css[start] === '"' || css[start] === "'") continue
     CSS_URL_REST.lastIndex = start
     CSS_URL_REST.test(css)
@@ -281,11 +279,11 @@ function styleUrls(css: string): string[] {
 
 /**
  * Check every URL an inline style loads against the image URL rules: `url()`
- * in `background`, `mask`, `cursor`, … is fetched like an `<img src>`. One
+ * in `background`, `mask`, `cursor`, etc. is fetched like an `<img src>`. One
  * disallowed URL drops the style; it is never rewritten to `defaultOrigin`.
  */
 function validateStyle(value: string, options: PropsValidationOptions): string | typeof REJECTED_PROP {
-  // The browser decodes entities before CSS sees them: `url(&quot;…&quot;)`
+  // The browser decodes entities before CSS sees them: `url(&quot;...&quot;)`
   const css = decodeHtmlEntities(value)
   if (!css.includes('(')) return value
   for (const url of styleUrls(css)) {
@@ -328,7 +326,7 @@ export function isUnsafeUrlValue(value: string): boolean {
   try {
     decoded = decodeURIComponent(value)
   } catch {
-    // Malformed percent-encoding — inspect the raw value
+    // Malformed percent-encoding: inspect the raw value
   }
   const sanitized = decodeHtmlEntities(decoded)
 
@@ -413,7 +411,7 @@ const componentOptionKeys = new Set([
 // `dangerouslySetInnerHTML`) or overwrite an element's children
 // (`textContent`). Framework renderers hand resolved attributes to
 // `h()`/`createElement`/spreads verbatim, so these keys are never forwarded
-// from document attributes — raw HTML has its own explicit path.
+// from document attributes; raw HTML has its own explicit path.
 const htmlSinkProps = new Set(['innerhtml', 'dangerouslysetinnerhtml', 'textcontent'])
 
 /** Whether `key` writes an HTML sink. Vue's `.prop` / `^attr` prefixes still write the named DOM property. */
@@ -437,6 +435,29 @@ export function isUnsafeRendererProp(attribute: string, value: unknown): boolean
   return isComponentSelectorViolation(attribute, value) || hasUnsafeObjectKeys(value)
 }
 
+// A selector string ends up as an element name, so it must be a plain tag or component name: Vue's
+// server renderer writes anything else (`img src=x onerror=...`) into the opening tag. These tags also
+// run or load code from their content or attributes.
+const SAFE_SELECTOR_NAME = /^[a-z][\w-]*$/i
+const unsafeSelectorTags = new Set([
+  'script',
+  'style',
+  'iframe',
+  'frame',
+  'frameset',
+  'object',
+  'embed',
+  'applet',
+  'base',
+  'link',
+  'meta',
+  'noscript',
+])
+
+function isUnsafeSelectorName(value: string): boolean {
+  return !SAFE_SELECTOR_NAME.test(value) || unsafeSelectorTags.has(value.toLowerCase())
+}
+
 /**
  * `as` and `is` name the element or component to render, so only a string (or nothing) may reach them:
  * Vue mounts any object, arrays included, as a component, and React throws on a non-string element type.
@@ -445,7 +466,7 @@ export function isUnsafeRendererProp(attribute: string, value: unknown): boolean
  */
 function isComponentSelectorViolation(attribute: string, value: unknown): boolean {
   const name = normalizePropName(attribute)
-  if (tagSelectors.includes(name)) return value != null && typeof value !== 'string'
+  if (tagSelectors.includes(name)) return value != null && (typeof value !== 'string' || isUnsafeSelectorName(value))
   if (name !== 'tag') return false
   return typeof value === 'function' || (typeof value === 'object' && value !== null && !Array.isArray(value))
 }
@@ -539,7 +560,7 @@ export function validateProp(attribute: string, value: unknown, options: PropsVa
   }
 
   // Renderers JSON-decode `:binding` strings before use, so validate the
-  // decoded form — otherwise ':href' with '"javascript:..."' (a JSON-quoted
+  // decoded form; otherwise ':href' with '"javascript:..."' (a JSON-quoted
   // string) fails URL parsing and slips through as a "relative" URL, and a
   // JSON array/object would skip the nested checks.
   if (/^(?::|v-bind:)/.test(attribute) && typeof value === 'string') {
@@ -547,7 +568,7 @@ export function validateProp(attribute: string, value: unknown, options: PropsVa
     try {
       decoded = JSON.parse(value)
     } catch {
-      // Not JSON — a dot-path binding or literal, validated as-is
+      // Not JSON: a dot-path binding or literal, validated as-is
     }
     if (isComponentSelectorViolation(attribute, decoded)) return REJECTED_PROP
     if (typeof decoded === 'object' && decoded !== null) {
@@ -583,10 +604,10 @@ function validateValue(name: string, value: unknown, options: PropsValidationOpt
   // A non-string href/src can reach here as an array/object from the YAML
   // block-props JSON round-trip, and is stringified when set as an attribute.
   // Reject it instead of passing it through unvalidated (#367). Other URL
-  // props (`to`, `link`, …) accept route/link objects, validated below.
+  // props (`to`, `link`, etc.) accept route/link objects, validated below.
   if (name === 'href' || name === 'xlinkhref' || name === 'src' || name === 'srcset') return REJECTED_PROP
 
-  // Array items inherit the prop name: `:hrefs='["javascript:…"]'`.
+  // Array items inherit the prop name: `:hrefs='["javascript:..."]'`.
   if (Array.isArray(value)) {
     const result: unknown[] = []
     for (const item of value) {
@@ -597,10 +618,10 @@ function validateValue(name: string, value: unknown, options: PropsValidationOpt
   }
 
   // Object keys are validated like top-level props, at any depth:
-  // `:links='[{"to":"javascript:…","labelHtml":"<img onerror>"}]'`.
+  // `:links='[{"to":"javascript:...","labelHtml":"<img onerror>"}]'`.
   if (typeof value === 'object' && value !== null) {
     if (ownsComponentOptions(value)) return REJECTED_PROP
-    // Style object values are CSS: `{ backgroundImage: 'url(…)' }`
+    // Style object values are CSS: `{ backgroundImage: 'url(...)' }`
     if (name === 'style') {
       for (const item of Object.values(value)) {
         if (typeof item === 'string' && validateStyle(item, options) === REJECTED_PROP) return REJECTED_PROP
@@ -624,9 +645,6 @@ export function validateProps(
   props?: Record<string, any>,
   options: PropsValidationOptions = {}
 ): Record<string, any> {
-  /**
-   * If the tag is marked as unsafe, drop all props
-   */
   if (unsafeTags.includes(type.toLowerCase())) {
     return {}
   }

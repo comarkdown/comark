@@ -42,7 +42,6 @@ const elementsCount = computed(() => state.value.tree?.nodes?.length ?? 0)
 const outputColumn = ref<HTMLElement | null>(null)
 const astColumn = ref<HTMLElement | null>(null)
 
-// Stream controller
 let streamController: ReturnType<typeof stringToStream> | null = null
 const isPaused = ref(false)
 
@@ -61,10 +60,7 @@ async function simulateStream() {
   resetStream()
   isPaused.value = false
 
-  // Create stream controller with stringToStream
   streamController = stringToStream(sampleMarkdown, 10, 40)
-
-  // Start the stream
   streamController.start()
 
   await startStream(streamController.stream)
@@ -96,7 +92,6 @@ function reset() {
 
 <template>
   <div class="h-[calc(100vh-64px)] flex flex-col overflow-hidden">
-    <!-- Compact Header -->
     <div class="flex-shrink-0 relative px-3 py-3 sm:p-4">
       <div
         class="absolute z-[-1] inset-0 bg-grid-slate-100 [mask-image:linear-gradient(0deg,rgba(255,255,255,0.2),rgba(255,255,255,0.5))] dark:bg-grid-slate-700/25 dark:[mask-image:linear-gradient(0deg,rgba(255,255,255,0.2),rgba(255,255,255,0.5))]"
@@ -151,9 +146,7 @@ function reset() {
       </div>
     </div>
 
-    <!-- Two Column Layout -->
     <div class="flex-1 grid grid-cols-1 lg:grid-cols-3 overflow-hidden">
-      <!-- Rendered Output Column -->
       <div class="flex flex-col overflow-hidden bg-white dark:bg-neutral-950 lg:col-span-2">
         <div
           class="flex justify-between items-center px-4 py-3 bg-neutral-100 dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 flex-shrink-0"
@@ -196,7 +189,6 @@ function reset() {
         </div>
       </div>
 
-      <!-- Markdown Column (hidden on mobile) -->
       <div
         class="hidden lg:flex flex-col overflow-hidden bg-white dark:bg-neutral-950 border-l border-neutral-200 dark:border-neutral-800"
       >
@@ -232,7 +224,6 @@ function reset() {
 </template>
 
 <style scoped>
-/* Custom scrollbar styles */
 :deep(.overflow-y-auto::-webkit-scrollbar) {
   width: 8px;
 }

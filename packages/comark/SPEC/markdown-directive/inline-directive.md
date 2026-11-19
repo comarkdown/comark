@@ -77,3 +77,13 @@ a :cite[smith04] reference
 
 paragraph with :abbr[HTML]{title="HyperText Markup Language"} inline
 ```
+
+## Markdown HTML
+
+```md
+a <name>content</name> directive
+
+a <cite>smith04</cite> reference
+
+paragraph with <abbr title="HyperText Markup Language">HTML</abbr> inline
+```

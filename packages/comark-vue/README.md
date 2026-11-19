@@ -8,16 +8,16 @@
 [![Documentation](https://img.shields.io/badge/Documentation-black?logo=readme&logoColor=white)](https://comark.dev/rendering/vue)
 [![license](https://img.shields.io/github/license/comarkdown/comark?color=black)](https://github.com/comarkdown/comark/blob/main/LICENSE)
 
-Vue renderer for [Comark](https://comark.dev). Render markdown with custom Vue components, streaming support, and SSR.
+Vue 3 renderer for [Comark](https://comark.dev). Render Markdown with custom Vue components, streaming support, and SSR.
 
 ## Features
 
-- 🧩 `<Markdown>` component for one-shot markdown rendering
-- 🎯 Map any Comark tag to a custom Vue component
-- 🌊 Streaming-friendly with auto-close and caret support
-- 🖥️ SSR-safe, works in Nuxt and Vite
-- 🎨 Optional Vite plugin for compile-time component resolution
-- 🔌 Plugin ecosystem (math, mermaid, highlight, binding…)
+- `<Markdown>` component for rendering Markdown
+- Custom Vue components for any Comark tag
+- Streaming support with auto-close and a caret indicator
+- SSR support in Nuxt and Vite
+- Optional Vite plugin for `<slot unwrap>` and prose component registration
+- Plugins for math, Mermaid, Shiki highlighting, binding, and more
 
 ## Installation
 
@@ -73,7 +73,7 @@ Heads up!
 
 `@comark/vue` ships an optional Vite plugin that:
 
-- Enables `<slot unwrap="...">` inside custom markdown components.
+- Enables `<slot unwrap="...">` inside custom Markdown components.
 - Auto-registers every `.vue` file under `src/components/prose` (or `components/prose`) as a global component.
 
 ```ts
@@ -91,7 +91,7 @@ Pass `comark({ prose: false })` to opt out of the auto-registered prose componen
 
 ## Using with Nuxt
 
-Add `@comark/vue` to your Nuxt modules. Nuxt loads `@comark/vue/nuxt`, which auto-imports `<Markdown>`, `<MarkdownDocument>`, `defineMarkdownComponent()` and `defineMarkdownDocumentComponent()`:
+Add `@comark/vue` to your Nuxt modules. Nuxt loads `@comark/vue/nuxt`, which auto-imports `<Markdown>`, `<MarkdownDocument>`, `defineMarkdownComponent()`, and `defineMarkdownDocumentComponent()`:
 
 ```ts
 // nuxt.config.ts

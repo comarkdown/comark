@@ -79,3 +79,25 @@ Outer content.
   :::
 ::
 ```
+
+## Markdown HTML
+
+```md
+<spoiler>
+
+Outer content.
+
+<warning>
+
+Inner content.
+
+<note>
+
+Deeply nested.
+
+</note>
+
+</warning>
+
+</spoiler>
+```

@@ -77,11 +77,11 @@
   },
   "devDependencies": {
     "@json-render/core": "catalog:",
+    "@pierre/highlights": "catalog:",
     "@shikijs/twoslash": "catalog:",
     "@types/markdown-it": "catalog:",
     "github-slugger": "catalog:",
     "hast-util-to-string": "catalog:",
-    "minimark": "catalog:",
     "rangi": "catalog:",
     "tsx": "catalog:",
     "twoslash": "catalog:",
@@ -89,12 +89,16 @@
     "vitest": "catalog:"
   },
   "peerDependencies": {
+    "@pierre/highlights": "catalog:",
     "beautiful-mermaid": "catalog:",
     "katex": "catalog:",
     "rangi": "catalog:",
     "shiki": "catalog:"
   },
   "peerDependenciesMeta": {
+    "@pierre/highlights": {
+      "optional": true
+    },
     "shiki": {
       "optional": true
     },

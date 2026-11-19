@@ -25,8 +25,8 @@ const RE_COMPONENT_NAME = /^[a-z$][\w$-]*/i
 /**
  * Whether `name` begins with a syntactically valid component name.
  *
- * This prevents sequences such as `:8100` or `::30` from being treated as
- * components — a purely numeric name is not a valid component and would
+ * Prevents sequences such as `:8100` or `::30` from being treated as
+ * components: a purely numeric name is not a valid component and would
  * otherwise produce invalid output like `createElement('8100')` (inline) or
  * throw `Invalid block params` (block).
  */
@@ -153,7 +153,6 @@ const markdownItComarkBlock: PluginSimple = (md) => {
 
         const lineCharCode = state.src.charCodeAt(start)
 
-        // Detect closing code fence (``` or ~~~)
         if (inCodeFence) {
           if (lineCharCode === codeFenceCharCode) {
             let fencePos = start + 1
@@ -166,7 +165,6 @@ const markdownItComarkBlock: PluginSimple = (md) => {
           continue
         }
 
-        // Detect opening code fence (``` or ~~~)
         if (lineCharCode === 0x60 /* ` */ || lineCharCode === 0x7e /* ~ */) {
           let fencePos = start + 1
           while (fencePos < max && state.src.charCodeAt(fencePos) === lineCharCode) fencePos++
@@ -351,7 +349,7 @@ const markdownItComarkBlock: PluginSimple = (md) => {
         const inner = state.src.slice(state.bMarks[lineEnd] + state.tShift[startLine], state.eMarks[lineEnd])
 
         if (inCodeFence) {
-          // Look for matching closing fence (same char, >= opening count, nothing but spaces after)
+          // Matching closing fence: same char, >= opening count, nothing but spaces after.
           if (inner[0] === codeFenceChar) {
             let fencePos = 1
             while (fencePos < inner.length && inner[fencePos] === codeFenceChar) fencePos++
@@ -363,7 +361,6 @@ const markdownItComarkBlock: PluginSimple = (md) => {
           continue
         }
 
-        // Detect opening code fence (``` or ~~~, length >= 3)
         if (inner[0] === '`' || inner[0] === '~') {
           const ch = inner[0]
           let fencePos = 1
@@ -440,7 +437,6 @@ const markdownItInlineComponent: PluginSimple = (md) => {
 
     if (nameEnd === -1) nameEnd = index
 
-    // Empty name
     if (nameEnd <= start + 1) return false
 
     const name = state.src.slice(start + 1, nameEnd)
@@ -481,9 +477,11 @@ const markdownItInlineSpan: PluginSimple = (md) => {
     const close = findClosingBracket(state.src, start)
     const index = close === -1 ? state.src.length : close
 
-    // Don't match `[text](url)` or `[text][ref]` — let the link parser handle those
+    // Don't match `[text](url)` or `[text][ref]`; let the link parser handle those,
+    // except for adjacent footnote references like `x[^1][^2]`.
     const nextChar = state.src[index + 1]
-    if (nextChar === '(' || nextChar === '[') return false
+    const isAdjacentFootnote = state.src[start + 1] === '^' && nextChar === '[' && state.src[index + 2] === '^'
+    if (nextChar === '(' || (nextChar === '[' && !isAdjacentFootnote)) return false
 
     // Inside a link label, bare `[text]` stays literal (plain-markdown behavior,
     // e.g. `[[1] Document](#)`); only an explicit `[text]{attrs}` span matches

@@ -1,23 +1,10 @@
-# React Rendering Guide
+# React rendering guide
 
-Complete guide for rendering Markdown documents in React applications.
+Guide to rendering Markdown documents in React applications.
 
-## Table of Contents
+## Basic usage
 
-- [Basic Usage](#basic-usage)
-- [Custom Components](#custom-components)
-- [Dynamic Component Resolution](#dynamic-component-resolution)
-- [Props Conversion](#props-conversion)
-- [Streaming Mode](#streaming-mode)
-- [Prose Components](#prose-components)
-- [Custom Props Handling](#custom-props-handling)
-- [CSS Class Name](#css-class-name)
-
----
-
-## Basic Usage
-
-Use the `Markdown` component to render markdown:
+Use the `Markdown` component to render Markdown:
 
 ```tsx
 import { Markdown } from '@comark/react'
@@ -39,7 +26,7 @@ export default function App() {
 
 ---
 
-## Custom Components
+## Custom components
 
 Map custom React components to Comark elements:
 
@@ -65,7 +52,7 @@ export default function App({ content }) {
 }
 ```
 
-### Custom Component Example
+### Custom component example
 
 ```tsx
 // CustomHeading.tsx
@@ -78,7 +65,7 @@ interface Props {
 }
 
 export default function CustomHeading({ __node, id, children }: Props) {
-  const tag = __node[0]  // h1, h2, etc.
+  const tag = __node[0]  // h1 through h6
   const Component = tag as keyof JSX.IntrinsicElements
 
   return (
@@ -89,7 +76,7 @@ export default function CustomHeading({ __node, id, children }: Props) {
 }
 ```
 
-**Styled Component:**
+**Styled component:**
 
 ```tsx
 import styled from 'styled-components'
@@ -104,7 +91,7 @@ const StyledHeading = styled.h1<{ level: number }>`
 
 export default function CustomHeading({ __node, children }: Props) {
   const tag = __node[0]
-  const level = parseInt(tag[1])  // Extract level from 'h1', 'h2', etc.
+  const level = parseInt(tag[1])  // Extract level from 'h1' through 'h6'
 
   return (
     <StyledHeading as={tag} level={level}>
@@ -114,7 +101,7 @@ export default function CustomHeading({ __node, children }: Props) {
 }
 ```
 
-### Alert Component Example
+### Alert component example
 
 ```tsx
 // CustomAlert.tsx
@@ -127,16 +114,16 @@ interface AlertProps {
 }
 
 export default function CustomAlert({ type = 'info', children }: AlertProps) {
-  const icons = {
-    info: 'ℹ️',
-    warning: '⚠️',
-    error: '❌',
-    success: '✅',
+  const labels = {
+    info: 'Info',
+    warning: 'Warning',
+    error: 'Error',
+    success: 'Success',
   }
 
   return (
     <div className={`alert alert-${type}`} role="alert">
-      <div className="alert-icon">{icons[type]}</div>
+      <div className="alert-label">{labels[type]}</div>
       <div className="alert-content">{children}</div>
     </div>
   )
@@ -145,7 +132,7 @@ export default function CustomAlert({ type = 'info', children }: AlertProps) {
 
 ---
 
-## Dynamic Component Resolution
+## Dynamic component resolution
 
 Load components dynamically using `componentsManifest`:
 
@@ -176,23 +163,23 @@ export default function App({ content }) {
 
 ---
 
-## Props Conversion
+## Props conversion
 
-React renderer handles HTML attribute conversion automatically:
+The React renderer converts HTML attributes to React props automatically:
 
-### Attribute Mapping
+### Attribute mapping
 
 ```tsx
-// Markdown attribute → React prop
-{class="foo"}           → className="foo"
-{tabindex="0"}          → tabIndex={0}
-{style="..."}           → style={{...}}  (converted to object)
-{:bool="true"}          → bool={true}    (parsed from string)
-{:count="5"}            → count={5}      (parsed as number)
-{:data='{"key":"val"}'} → data={{key:"val"}} (parsed as object)
+// Markdown attribute -> React prop
+{class="foo"}           -> className="foo"
+{tabindex="0"}          -> tabIndex={0}
+{style="..."}           -> style={{...}}  (converted to object)
+{:bool="true"}          -> bool={true}    (parsed from string)
+{:count="5"}            -> count={5}      (parsed as number)
+{:data='{"key":"val"}'} -> data={{key:"val"}} (parsed as object)
 ```
 
-### Style Conversion
+### Style conversion
 
 ```tsx
 // Input: style="color: red; font-size: 16px"
@@ -203,7 +190,7 @@ React renderer handles HTML attribute conversion automatically:
 // Output: style={{ '--custom-color': 'blue' }}
 ```
 
-### Boolean Props
+### Boolean props
 
 ```tsx
 // Markdown: **text**{:disabled}
@@ -213,7 +200,7 @@ React renderer handles HTML attribute conversion automatically:
 // React prop: external={true}
 ```
 
-### Number Props
+### Number props
 
 ```tsx
 // Markdown: ::component{:count="5"}
@@ -223,7 +210,7 @@ React renderer handles HTML attribute conversion automatically:
 // React prop: max={100}
 ```
 
-### Object/Array Props
+### Object/array props
 
 ```tsx
 // Markdown: ::component{:config='{"theme":"dark"}'}
@@ -235,9 +222,9 @@ React renderer handles HTML attribute conversion automatically:
 
 ---
 
-## Streaming Mode
+## Streaming mode
 
-Use the `Markdown` component with reactive state for streaming content:
+Use `Markdown` with reactive state for streaming content:
 
 ```tsx
 import { useState, useEffect } from 'react'
@@ -276,9 +263,9 @@ export default function StreamingContent() {
 
 ---
 
-## Prose Components
+## Prose components
 
-The `Markdown` component uses built-in prose styling automatically. You can override with custom components:
+`Markdown` renders standard HTML elements by default. Override them or add custom elements through `components`:
 
 ```tsx
 import { Markdown } from '@comark/react'
@@ -293,7 +280,7 @@ export default function App({ content }) {
 }
 ```
 
-### Tailwind CSS Prose
+### Tailwind CSS prose
 
 ```tsx
 import { Markdown } from '@comark/react'
@@ -309,7 +296,7 @@ export default function App({ content }) {
 
 ---
 
-## Custom Props Handling
+## Custom props handling
 
 Access props in custom components:
 
@@ -317,7 +304,7 @@ Access props in custom components:
 // CustomAlert.tsx
 interface AlertProps {
   type?: string        // From {type="info"}
-  bool?: boolean       // From {bool} → :bool="true"
+  bool?: boolean       // From {bool} -> :bool="true"
   count?: number       // From {:count="5"}
   data?: object        // From {:data='{"key":"val"}'}
   __node?: any         // Original Comark node
@@ -346,14 +333,14 @@ export default function CustomAlert({
 }
 ```
 
-### Property Types
+### Property types
 
-- `:bool="true"` → `bool={true}` (boolean)
-- `:count="5"` → `count={5}` (number)
-- `:obj='{"key":"val"}'` → `obj={{key:"val"}}` (object)
-- `attr="value"` → `attr="value"` (string)
+- `:bool="true"` -> `bool={true}` (boolean)
+- `:count="5"` -> `count={5}` (number)
+- `:obj='{"key":"val"}'` -> `obj={{key:"val"}}` (object)
+- `attr="value"` -> `attr="value"` (string)
 
-### Accessing Node Structure
+### Accessing node structure
 
 ```tsx
 interface Props {
@@ -375,7 +362,7 @@ export default function Component({ __node, children }: Props) {
 }
 ```
 
-### Working with Complex Props
+### Working with complex props
 
 ```tsx
 // DataTable.tsx
@@ -400,7 +387,7 @@ export default function DataTable({
             {columns.map((col, i) => (
               <th key={i}>
                 {col}
-                {sortable && <button>↕</button>}
+                {sortable && <button>Sort</button>}
               </th>
             ))}
           </tr>
@@ -422,9 +409,9 @@ Table content here
 
 ---
 
-## CSS Class Name
+## CSS class name
 
-Add custom wrapper class:
+Add a custom wrapper class:
 
 ```tsx
 <Markdown
@@ -442,4 +429,4 @@ Add custom wrapper class:
 
 ---
 
-[← Back to Main Skills Guide](../SKILL.md)
+[Back to skill guide](../SKILL.md)

@@ -3,14 +3,7 @@ import { createSSRApp, defineComponent, h } from 'vue'
 import { renderToString } from '@vue/server-renderer'
 import { renderSlot } from '../src/utils/slot.ts'
 
-/**
- * Tests for the `renderSlot` runtime utility, which powers the
- * `<slot unwrap="div" />` Comark feature.
- *
- * The Vite transformer replaces the standard `renderSlot`
- * call with this custom version at compile time. These tests validate
- * the runtime behavior directly without needing the Vite transform.
- */
+// The Vite transformer replaces Vue's `renderSlot` call with this helper at compile time.
 describe('renderSlot with unwrap prop', () => {
   it('unwraps the slot content div when unwrap="div"', async () => {
     const TestComponent = defineComponent({
@@ -31,7 +24,6 @@ describe('renderSlot with unwrap prop', () => {
     const html = await renderToString(app as any)
     expect(html).toContain('Hello World')
     expect(html).toContain('<p>')
-    // The wrapping div should be removed
     expect(html).not.toMatch(/<div[^>]*>/)
   })
 
@@ -103,7 +95,6 @@ describe('renderSlot with unwrap prop', () => {
   it('falls back to standard renderSlot when named slot is absent', async () => {
     const TestComponent = defineComponent({
       setup(_, { slots }) {
-        // 'missing' slot is not provided — should fall through to standard rendering
         return () => renderSlot(slots, 'missing', { unwrap: 'div' }, () => 'fallback')
       },
     })

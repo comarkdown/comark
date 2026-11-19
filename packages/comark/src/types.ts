@@ -7,8 +7,7 @@ import type { AutoCloseOptions } from './auto-close.ts'
 // #region Utility Types
 /**
  * The `[keyof T] extends [never]` form (rather than `keyof T extends never`)
- * is the standard trick to prevent TS from distributing the check over a
- * union — we want to test "is T's keyset empty?" as one yes/no question.
+ * prevents TypeScript from distributing over a union when testing for an empty keyset.
  */
 type Writable<T> = [keyof T] extends [never] ? Record<string, any> : T
 // #endregion Utility Types
@@ -37,14 +36,15 @@ export type ElementNodeAttributes = {
      * before or after it. Markdown output leaves both out.
      */
     permalink?: 'wrap' | 'separate'
+    /** The `rel` `external-links` added to a link. Markdown output leaves `rel` out while it still has this value. */
+    autoRel?: string
+    /** The `target` `external-links` added to a link. Markdown output leaves `target` out while it still has this value. */
+    autoTarget?: string
   }
 }
 
 /**
- * A comment node in the Markdown AST (`<!-- … -->`).
- * @param null - Null tag marks a comment
- * @param ElementNodeAttributes - Comment attributes
- * @param string - Comment content
+ * A comment node in the Markdown AST (`<!-- ... -->`): `[null, attrs, content]`.
  */
 export type CommentNode = [null, ElementNodeAttributes, string]
 
@@ -54,20 +54,15 @@ export type CommentNode = [null, ElementNodeAttributes, string]
 export type ElementNode = [string, ElementNodeAttributes, ...Node[]]
 
 /**
- * A node in the Markdown AST — element, text, or comment.
- *
- * `ElementNode` | `TextNode` | `CommentNode`
+ * A node in the Markdown AST: element, text, or comment.
  */
 export type Node = ElementNode | TextNode | CommentNode
 
 /**
- * The Markdown document (parse output / AST root).
- * @param nodes - The nodes of the document
- * @param frontmatter - The frontmatter data which is the data at the top of the file
- * @param meta - The meta data of the document, it can be used to store additional data
+ * Parsed Markdown document (AST root).
  *
- * The `TMeta` and `TFrontmatter` type parameters allow `parse` / `createMarkdownParser`
- * to surface plugin-contributed keys with narrow types (see `MergePluginMeta`).
+ * `TMeta` and `TFrontmatter` surface plugin-contributed keys with narrow types
+ * on `parseMarkdown` and `createMarkdownParser` (see {@link MergePluginMeta}).
  */
 export interface MarkdownDocument<TMeta = Record<string, any>, TFrontmatter = Record<string, any>> {
   nodes: Node[]
@@ -118,18 +113,18 @@ export interface ContextBase {
 
   /**
    * Default syntax for block attributes when attributes exceed `maxInlineAttributes`.
-   * - `'codeblock'` — wraps attributes in a fenced YAML code block with `[props]` label
-   * - `'frontmatter'` — wraps attributes in `---` delimiters (frontmatter style)
+   * - `'codeblock'`: wraps attributes in a fenced YAML code block with `[props]` label
+   * - `'frontmatter'`: wraps attributes in `---` delimiters (frontmatter style)
    * @default 'codeblock'
    */
   blockAttributesStyle?: 'frontmatter' | 'codeblock'
 
   /**
    * How text inside a raw HTML block is written in markdown output.
-   * - `'escape'` — a `<` that would start a tag becomes `&lt;`, so text the
-   *   parser kept as text (`<svg onload=…>` inside `<blockquote>`) is not read
+   * - `'escape'`: a `<` that would start a tag becomes `&lt;`, so text the
+   *   parser kept as text (`<svg onload=...>` inside `<blockquote>`) is not read
    *   back as markup by CommonMark renderers
-   * - `'verbatim'` — written as-is, for non-markdown output such as a terminal
+   * - `'verbatim'`: written as-is, for non-markdown output such as a terminal
    * @default 'escape'
    */
   rawHtmlText?: 'escape' | 'verbatim'
@@ -150,20 +145,25 @@ export interface Context extends ContextBase {
    */
   handlers: Record<string, NodeHandler>
 
-  /**
-   * The conditional handlers of the renderer
-   */
   conditionalHandlers: ConditionalNodeHandler[]
 }
 
-/**
- * The NodeHandler function
- * @param node - The node to render
- * @param state - The state of the renderer
- * @param parent - The parent node
- * @returns The rendered node
- */
+/** Renders a single element node to a string. */
 export type NodeHandler = (node: ElementNode, state: State, parent?: ElementNode) => string | Promise<string>
+
+/**
+ * Options for {@link State.flow}.
+ */
+export interface FlowOptions {
+  /**
+   * Escape leading block markers in text that begins a line.
+   *
+   * Off by default: most callers render an inline run, where a leading `#` or
+   * `-` is not a block marker. Turn it on when the children are written at the
+   * start of a line (a paragraph, a blockquote, a slot).
+   */
+  atLineStart?: boolean
+}
 
 /**
  * A node handler rule that pairs a match predicate with a handler function.
@@ -174,85 +174,44 @@ export type ConditionalNodeHandler = {
   handler: NodeHandler
 }
 
-/**
- * The State of the renderer
- * @param handlers - The handlers of the renderer
- * @param context - The context of the renderer
- * @param flow - Render children of the node
- * @param one - Render a single node
- * @param applyContext - The applyContext of the renderer
- * @returns The state of the renderer
- */
 export type State = {
-  /**
-   * Additional data to pass to the renderer nodes, can be used to pass pre-fetched data to the renderer nodes
-   */
+  /** Pre-fetched data available to renderer nodes. */
   data: Record<string, any>
 
   /**
-   * Render context — `{ frontmatter, meta, data, props }` — used to
-   * resolve `:prefixed` attributes that reference dot-paths in markdown.
-   * `props` is scoped to the nearest enclosing element as it's mutated during
-   * recursion.
+   * Render context (`{ frontmatter, meta, data, props }`) for resolving
+   * `:prefixed` attributes that reference dot-paths in markdown.
+   * `props` is scoped to the nearest enclosing element during recursion.
    */
   renderData: NodeRenderData
 
-  /**
-   * The context of the renderer
-   */
   context: Context
 
-  /**
-   * The handlers of the renderer
-   */
   handlers: Record<string, NodeHandler>
 
-  /**
-   * Render children of the node
-   */
-  flow: (node: ElementNode, state: State, parent?: ElementNode) => Promise<string>
+  flow: (node: ElementNode, state: State, parent?: ElementNode, options?: FlowOptions) => Promise<string>
 
-  /**
-   * Render a single node
-   */
   one: (node: Node, state: State, parent?: ElementNode, atLineStart?: boolean) => Promise<string>
 
-  /**
-   * Render the input
-   */
   render: (input: Node[] | ElementNode) => Promise<string>
 
-  /**
-   * Apply the context
-   * @param edit - The edit to apply to the context
-   * @returns The revert of the edit
-   */
+  /** Mutate context fields in place and return an object that reverts the edit. */
   applyContext: (edit: Record<string, unknown>) => Record<string, unknown>
 
-  /**
-   * The depth of the node in the tree
-   */
   nodeDepthInTree?: number
 
   [key: string]: unknown
 }
 
 /**
- * The context of the renderer
- */
-/**
  * Auto-generated heading id mode. `true` is an alias for `'flat'`.
  */
 export type HeadingIdsOption = boolean | 'nested' | 'flat'
 
 export interface RendererOptions {
-  /**
-   * Additional node handlers to pass to the renderer
-   */
+  /** Custom node handlers keyed by tag or component name. */
   components?: Record<string, NodeHandler | ConditionalNodeHandler>
-  /**
-   * Additional data to pass to the renderer nodes, can be used to pass pre-fetched data to the renderer nodes
-   */
+  /** Pre-fetched data available to renderer nodes. */
   data?: Record<string, any>
   /**
    * Change the tag or props of element nodes just before they render.
@@ -306,9 +265,6 @@ export interface NodeTransformResult {
  */
 export type NodeTransform = (context: NodeTransformContext) => NodeTransformResult | null | undefined | void
 
-/**
- * The options for rendering markdown
- */
 export interface RenderMarkdownOptions extends RendererOptions {
   /**
    * Maximum number of inline attributes before switching to YAML block syntax.
@@ -318,8 +274,8 @@ export interface RenderMarkdownOptions extends RendererOptions {
   maxInlineAttributes?: number
   /**
    * Default syntax for block attributes when attributes exceed `maxInlineAttributes`.
-   * - `'codeblock'` — wraps attributes in a fenced YAML code block with `[props]` label
-   * - `'frontmatter'` — wraps attributes in `---` delimiters (frontmatter style)
+   * - `'codeblock'`: wraps attributes in a fenced YAML code block with `[props]` label
+   * - `'frontmatter'`: wraps attributes in `---` delimiters (frontmatter style)
    * @default 'codeblock'
    */
   blockAttributesStyle?: 'frontmatter' | 'codeblock'
@@ -338,21 +294,13 @@ export interface RenderMarkdownOptions extends RendererOptions {
 }
 
 export interface NodeRenderData {
-  /*
-   * Frontmatter data from the markdown file
-   */
+  /** Frontmatter data from the markdown file. */
   frontmatter: Record<string, unknown>
-  /**
-   * Meta information from Comark Tree
-   */
+  /** Meta information from the Comark document. */
   meta: Record<string, unknown>
-  /**
-   * Additional data paased to rendere
-   */
+  /** Additional data passed to the renderer. */
   data: Record<string, unknown>
-  /**
-   * Props from parent node
-   */
+  /** Props from the parent node. */
   props: Record<string, unknown>
 }
 // #endregion
@@ -382,7 +330,7 @@ export interface ComarkParsePostState<
 }
 
 /**
- * Minimal span handle — structural subset of OpenTelemetry's `Span`.
+ * Minimal span handle (structural subset of OpenTelemetry's `Span`).
  * Call {@link ComarkSpan.end} when the timed work is done.
  */
 export interface ComarkSpan {
@@ -390,7 +338,7 @@ export interface ComarkSpan {
 }
 
 /**
- * Options for starting a span — structural subset of OpenTelemetry `SpanOptions`.
+ * Options for starting a span (structural subset of OpenTelemetry `SpanOptions`).
  */
 export interface ComarkSpanOptions {
   /** Optional attributes attached to the span (OTel `SpanOptions.attributes`). */
@@ -408,9 +356,9 @@ export interface ComarkSpanOptions {
  * const parse = createMarkdownParser({ tracer: trace.getTracer('comark') })
  * ```
  *
- * Nested `startActiveSpan` calls form a parent → child hierarchy via the
+ * Nested `startActiveSpan` calls form a parent-child hierarchy via the
  * active context (OTel) or an internal stack (simple recorders). Universal
- * by design — no Node-specific APIs — so it works in the browser too.
+ * with no Node-specific APIs, so it works in the browser too.
  *
  * Like OTel, callers must `span.end()` (including in `finally` / promise
  * settlement). See {@link ParserOptions.tracer}.
@@ -437,8 +385,8 @@ export interface ComarkTracer {
  *
  * `TMeta` / `TFrontmatter` are phantom type parameters that record what this
  * plugin contributes to `tree.meta` / `tree.frontmatter`. They are surfaced
- * only via the optional `__meta` / `__frontmatter` markers — implementations
- * never set these at runtime; they exist purely so the contribution survives
+ * only via the optional `__meta` / `__frontmatter` markers. Implementations
+ * never set these at runtime; they exist only so the contribution survives
  * `ReturnType<typeof factory>` inference and can be merged in `createMarkdownParser`.
  */
 export type ComarkPlugin<TMeta = {}, TFrontmatter = {}> = {
@@ -449,9 +397,9 @@ export type ComarkPlugin<TMeta = {}, TFrontmatter = {}> = {
   post?: (state: ComarkParsePostState<Writable<TMeta>, Writable<TFrontmatter>>) => Promise<void> | void
   /** Auto-close flags for syntax this plugin adds, applied when `autoClose` is `true`. */
   autoClose?: Pick<AutoCloseOptions, 'bracketMath'>
-  /** Phantom — used for type inference only. Never set at runtime. */
+  /** Phantom marker for type inference only. Never set at runtime. */
   __meta?: TMeta
-  /** Phantom — used for type inference only. Never set at runtime. */
+  /** Phantom marker for type inference only. Never set at runtime. */
   __frontmatter?: TFrontmatter
 }
 export type ComarkPluginFactory<Options, TMeta = {}, TFrontmatter = {}> = (
@@ -514,6 +462,7 @@ export interface ParserCoreOptions<
    * When enabled, if a container component (alert, card, callout, note, warning, tip, info)
    * has only a single paragraph child, the paragraph wrapper is removed and its children
    * become direct children of the container. This creates cleaner HTML output.
+   * Each slot is unwrapped on its own: the default content and every `#name` slot.
    *
    * @default true
    * @example
@@ -531,10 +480,10 @@ export interface ParserCoreOptions<
    * the `<p>` wrapper for single-line / inline rendering, e.g.
    * `<Button><Markdown :value="text" :options="{ unwrap: 'p' }" /></Button>`.
    *
-   * - `true` — unwrap paragraphs (`p`)
-   * - `string` — comma- or whitespace-separated tag names, e.g. `'p, h1'` or `'div p'`
-   * - `string[]` — explicit list of tag names
-   * - `'*'` — matches any tag
+   * - `true`: unwrap paragraphs (`p`)
+   * - `string`: comma- or whitespace-separated tag names, e.g. `'p, h1'` or `'div p'`
+   * - `string[]`: explicit list of tag names
+   * - `'*'`: matches any tag
    *
    * Tags are applied sequentially: each tag descends one level into the result
    * of the previous one, so `'div p'` unwraps a `<div>` then the `<p>` inside
@@ -558,31 +507,31 @@ export interface ParserCoreOptions<
   autoClose?: AutoCloseFunction
 
   /**
-   * How to auto-generate `id` attributes for `h1`–`h6` headings from their text content.
+   * How to auto-generate `id` attributes for `h1` to `h6` headings from their text content.
    * User-supplied `id` attributes are always preserved.
    *
-   * - `true` / `'flat'` — slug of the heading's own text only
-   * - `'nested'` — slug prefixed with the parent heading's id (h2+ parents)
-   * - `false` — no auto-generated ids
+   * - `true` / `'flat'`: slug of the heading's own text only
+   * - `'nested'`: slug prefixed with the parent heading's id (h2+ parents)
+   * - `false`: no auto-generated ids
    *
    * Ids are unique within a document: a duplicate gets a numeric suffix
    * (`options`, `options-1`, `options-2`, ...) in both modes, and a suffixed id
    * never collides with a heading whose own slug is already `options-1`.
    *
    * Generated ids keep Unicode letters, marks, decimal digits, and letter numbers
-   * (`## Café` → `café`, `## 日本語` → `日本語`). Punctuation and symbols are dropped,
+   * (`## Café` -> `café`, `## 日本語` -> `日本語`). Punctuation and symbols are dropped,
    * and a heading that slugifies to nothing (emoji, punctuation only) gets no id.
    * A leading ASCII digit is prefixed with `_`.
    *
    * @default true
    * @example
    * // ## Setup\n### Install
-   * // 'flat'   → ['h2', { id: 'setup' }, ...], ['h3', { id: 'install' }, ...]
-   * // 'nested' → ['h2', { id: 'setup' }, ...], ['h3', { id: 'setup-install' }, ...]
-   * // false    → ['h2', {}, ...], ['h3', {}, ...]
+   * // 'flat'   -> ['h2', { id: 'setup' }, ...], ['h3', { id: 'install' }, ...]
+   * // 'nested' -> ['h2', { id: 'setup' }, ...], ['h3', { id: 'setup-install' }, ...]
+   * // false    -> ['h2', {}, ...], ['h3', {}, ...]
    *
-   * // # Café → ['h1', { id: 'café' }, 'Café']
-   * // # Hello {id="custom"} → ['h1', { id: 'custom' }, 'Hello'] (any mode, including false)
+   * // # Café -> ['h1', { id: 'café' }, 'Café']
+   * // # Hello {id="custom"} -> ['h1', { id: 'custom' }, 'Hello'] (any mode, including false)
    */
   headingIds?: HeadingIdsOption
 
@@ -595,7 +544,7 @@ export interface ParserCoreOptions<
   plugins?: TPlugins
 
   /**
-   * Timing recorder for the parse pipeline — see {@link ComarkTracer}.
+   * Timing recorder for the parse pipeline. See {@link ComarkTracer}.
    * Structural subset of OpenTelemetry `Tracer`, so an OTel tracer works as-is:
    * `createMarkdownParser({ tracer: trace.getTracer('comark') })`.
    *

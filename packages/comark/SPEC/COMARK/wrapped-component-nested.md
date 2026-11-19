@@ -70,3 +70,19 @@ First Paragraph
   :::
 ::
 ```
+
+## Markdown HTML
+
+```md
+<component>
+
+First Paragraph
+
+<child>
+
+Second Paragraph
+
+</child>
+
+</component>
+```

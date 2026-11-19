@@ -6,7 +6,7 @@ seo:
 navigation:
   icon: i-lucide-file-spreadsheet
 links:
-  - label: Frontmatter Syntax
+  - label: Frontmatter syntax
     icon: i-lucide-file-text
     to: /syntax/frontmatter
     color: neutral
@@ -18,9 +18,9 @@ links:
     variant: soft
 ---
 
-The `comark/plugins/frontmatter` plugin extracts a leading YAML frontmatter block (`---`) into `tree.frontmatter` and removes it from the markdown body before tokenization.
+The `comark/plugins/frontmatter` plugin extracts a leading YAML frontmatter block (`---`) into `tree.frontmatter` and removes it from the Markdown body before tokenization.
 
-The plugin is **enabled by default** via `registerDefaultPlugins`. No installation or registration required.
+This plugin is **enabled by default** via `registerDefaultPlugins`, so you don't need to install or register it.
 
 ## Usage
 
@@ -52,7 +52,7 @@ console.log(result.nodes)
 
 ### Explicit registration
 
-When default plugins are off, opt in with the plugin directly:
+When you disable default plugins, pass `frontmatter()` explicitly:
 
 ```typescript
 import { parseMarkdown } from 'comark'
@@ -66,7 +66,7 @@ const result = await parseMarkdown(content, {
 
 ### Disable frontmatter parsing
 
-Turn off all defaults (including frontmatter) so the `---` block is treated as regular markdown:
+Turn off all defaults (including frontmatter) so the `---` block is treated as regular Markdown:
 
 ```typescript
 const result = await parseMarkdown(content, { registerDefaultPlugins: false })
@@ -77,9 +77,9 @@ const result = await parseMarkdown(content, { registerDefaultPlugins: false })
 
 In the `pre` hook (before markdown-exit tokenization), the plugin:
 
-1. Detects a leading `---` … `---` block via `parseFrontmatter`
-2. Parses the YAML body into `state.frontmatter`
-3. Strips the frontmatter from `state.markdown`
-4. Adjusts `state.parsedLines` so later nodes get correct line numbers
+1. Detects a leading `---` ... `---` block via `parseFrontmatter`.
+2. Parses the YAML body into `state.frontmatter`.
+3. Strips the frontmatter from `state.markdown`.
+4. Adjusts `state.parsedLines` so later nodes get accurate line numbers.
 
 The core parser then copies `state.frontmatter` onto `tree.frontmatter`.

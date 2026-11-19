@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, SimpleChanges, ChangeDetectionStrategy, ElementRef, inject } from '@angular/core'
+import { Component, OnChanges, SimpleChanges, ChangeDetectionStrategy, ElementRef, inject, input } from '@angular/core'
 
 let katex: typeof import('katex').default | undefined
 let loading: Promise<unknown> | undefined
@@ -43,9 +43,9 @@ function typeset(tex: string, displayMode: boolean): string | undefined {
   template: '',
 })
 export class Math implements OnChanges {
-  @Input({ required: true }) content!: string
-  @Input() class: string = ''
-  @Input() __node: any = {}
+  readonly content = input.required<string>()
+  readonly class = input<string>('')
+  readonly __node = input<any>({})
 
   private elementRef = inject(ElementRef)
 
@@ -56,10 +56,9 @@ export class Math implements OnChanges {
   private renderMath(): void {
     if (typeof document === 'undefined') return
 
-    const isInline = this.class?.includes('inline')
+    const isInline = this.class()?.includes('inline')
     const hostEl = this.elementRef.nativeElement as HTMLElement
 
-    // Clear previous content
     while (hostEl.firstChild) {
       hostEl.removeChild(hostEl.firstChild)
     }
@@ -67,16 +66,16 @@ export class Math implements OnChanges {
     const wrapper = document.createElement(isInline ? 'span' : 'div')
     wrapper.className = isInline ? 'math inline' : 'math block'
 
-    const html = typeset(this.content, !isInline)
+    const content = this.content()
+    const html = typeset(content, !isInline)
     if (html) {
       wrapper.innerHTML = html
     } else {
       // Unfinished or invalid TeX, and TeX before KaTeX loads, stays readable as its source.
-      wrapper.textContent = this.content
+      wrapper.textContent = content
       if (html === undefined) {
-        const content = this.content
         loadKatex().then(
-          () => content === this.content && this.renderMath(),
+          () => content === this.content() && this.renderMath(),
           () => {}
         )
       }
