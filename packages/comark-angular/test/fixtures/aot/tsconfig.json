@@ -1,0 +1,10 @@
+{
+  "extends": "../../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../../../out-tsc/aot-fixture",
+    "noEmit": true,
+    "types": [],
+    "rootDir": "../../.."
+  },
+  "files": ["app.component.ts"]
+}

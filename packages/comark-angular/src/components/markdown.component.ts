@@ -11,7 +11,9 @@ import {
 } from '@angular/core'
 import { createSerializedMarkdownParser } from 'comark'
 import type { ParserOptions, MarkdownDocument as MarkdownDocumentType, NodeTransform } from 'comark'
-import { isMarkdownDocument } from 'comark/utils'
+import { isMarkdownDocument, mergeNodeTransforms } from 'comark/utils'
+import { MARKDOWN_CONFIG, mergeConfigPlugins } from '../config'
+import type { MarkdownConfig } from '../config'
 import { MarkdownDocument } from './markdown-document.component'
 
 /**
@@ -28,20 +30,25 @@ import { MarkdownDocument } from './markdown-document.component'
   standalone: true,
   imports: [MarkdownDocument],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    '[class]': 'config?.class ?? ""',
+  },
   template: `
     @if (document) {
       <comark-markdown-document
         [value]="document"
-        [components]="components()"
+        [components]="mergedComponents()"
         [streaming]="streaming()"
         [caret]="caret()"
         [data]="data()"
-        [transformNode]="transformNode()"
+        [transformNode]="mergedTransforms()"
       />
     }
   `,
 })
 export class Markdown {
+  protected readonly config: MarkdownConfig | null = inject(MARKDOWN_CONFIG, { optional: true })
+
   /** The markdown content to parse and render, or a pre-parsed MarkdownDocument */
   readonly value = input<string | MarkdownDocumentType>()
 
@@ -56,7 +63,7 @@ export class Markdown {
    * `options.unwrap`. `true` unwraps `<p>`; a space-separated string or array
    * unwraps the listed tags.
    */
-  readonly unwrap = input<boolean | string | string[]>(false)
+  readonly unwrap = input<boolean | string | string[]>()
 
   /** Custom component mappings for element tags */
   readonly components = input<Record<string, Type<any>>>({})
@@ -76,6 +83,14 @@ export class Markdown {
   /** Change the tag or props of element nodes just before they render */
   readonly transformNode = input<NodeTransform | readonly NodeTransform[]>()
 
+  /** Config-level and instance-level components merged, instance wins. */
+  protected readonly mergedComponents = computed(() => ({ ...(this.config?.components ?? {}), ...this.components() }))
+
+  /** Config-level transforms run before the instance's own transforms. */
+  protected readonly mergedTransforms = computed(() =>
+    mergeNodeTransforms(this.config?.transformNode, this.transformNode())
+  )
+
   document: MarkdownDocumentType | null = null
 
   private cdr = inject(ChangeDetectorRef)
@@ -83,14 +98,18 @@ export class Markdown {
   /**
    * Compose the parse options consumed by the serialized parser.
    *
-   * Subclasses (e.g. `defineMarkdownComponent`) override this to merge
-   * config-level defaults without mutating the `options`/`plugins` inputs.
+   * Config defaults are merged under the instance inputs so instance values
+   * win without mutating the input signals. Instance plugins replace config
+   * plugins with the same name. An omitted `unwrap` inherits the config
+   * default, while an explicit `false` overrides it.
    */
   protected getParserOptions(): ParserOptions {
+    const unwrap = this.unwrap()
     return {
+      ...(this.config?.options ?? {}),
       ...this.options(),
-      ...(this.unwrap() ? { unwrap: this.unwrap() } : {}),
-      plugins: this.plugins(),
+      ...(unwrap === undefined ? {} : { unwrap }),
+      plugins: mergeConfigPlugins(this.config?.plugins, this.plugins()),
     }
   }
 
