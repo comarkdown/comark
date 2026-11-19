@@ -26,6 +26,17 @@ function findHandler(ctx: Context, node: ElementNode): NodeHandler | undefined {
   return userHandler
 }
 
+// The tree node each `transformNode` copy was made from.
+const sourceNodes = new WeakMap<ElementNode, ElementNode>()
+
+/**
+ * The tree node `node` was rendered from: handlers get a copy when a
+ * `transformNode` hook changed it, and only the original is in its parent.
+ */
+export function sourceNode(node: ElementNode): ElementNode {
+  return sourceNodes.get(node) ?? node
+}
+
 /**
  * Render a single node. When `atLineStart` is true, leading block markers in
  * text nodes are escaped.
@@ -86,7 +97,9 @@ export async function one(node: Node, state: State, parent?: ElementNode, atLine
             hasOwnAttrs = true
             props = transformed.props
           }
-          node = [transformed.tag, attrs, ...(node.slice(2) as Node[])]
+          const copy: ElementNode = [transformed.tag, attrs, ...(node.slice(2) as Node[])]
+          sourceNodes.set(copy, node)
+          node = copy
         }
       }
       if (hasOwnAttrs) state.renderData = { ...prevRenderData, props }
@@ -382,7 +395,7 @@ function escapeInline(text: string): string {
  * heading. `*`, `_` and `~` based markers are already handled by
  * {@link escapeInline}; only the block-exclusive markers remain here.
  */
-function escapeLeadingBlock(line: string): string {
+export function escapeLeadingBlock(line: string): string {
   // ATX heading: 1-6 `#` followed by a space/tab or the end of the line.
   if (/^#{1,6}([ \t]|$)/.test(line)) return `\\${line}`
   // Blockquote: `>` (a following space is optional).
