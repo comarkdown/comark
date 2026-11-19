@@ -159,6 +159,37 @@ describe('component after a list', () => {
   })
 })
 
+describe('lists, emphasis and headings', () => {
+  it.each([
+    ['an ordered list that starts at 0', '0. zero\n1. one\n'],
+    ['adjacent bullet lists', '- a\n- b\n\n+ c\n\n* d\n'],
+    ['adjacent ordered lists', '1. a\n\n1) b\n'],
+    ['adjacent nested lists', '- a\n  - b\n\n  * c\n'],
+    ['a list nested under item 10', '10. ten\n    - nested\n'],
+    [
+      'a list nested under the tenth item',
+      '1. a\n2. b\n3. c\n4. d\n5. e\n6. f\n7. g\n8. h\n9. i\n10. j\n    - nested\n',
+    ],
+    ['a nested list that starts at 0 after text', '- parent\n\n  0. child\n'],
+    ['emphasis inside emphasis', '*_foo_*\n'],
+    ['emphasis that ends inside a word within emphasis', '_foo *bar*baz_\n'],
+    ['emphasis inside a link inside emphasis', '_x [a*b*](/u) y_\n'],
+    ['a multi-line heading', 'Foo\nbar\n===\n'],
+    ['a multi-line level 2 heading with attributes', 'Foo\nbar {.c}\n---\n'],
+    ['a multi-line heading that starts with an escaped marker', '\\# Foo\nbar\n===\n'],
+  ])('keeps %s', async (_, md) => {
+    const { t1, t2 } = await roundTrip(md)
+    expect(t2.nodes).toEqual(t1.nodes)
+  })
+
+  it('keeps adjacent lists apart when a transformNode hook copies them', async () => {
+    const t1 = await parseMarkdown('- a\n\n* b\n')
+    const rendered = await renderMarkdown(t1, { transformNode: ({ props }) => ({ props: { ...props } }) })
+    const t2 = await parseMarkdown(rendered)
+    expect(t2.nodes).toEqual(t1.nodes)
+  })
+})
+
 describe('link and image serialization', () => {
   const doc = (node: unknown) =>
     ({ frontmatter: {}, meta: {}, nodes: [['p', {}, node]] }) as unknown as MarkdownDocument
