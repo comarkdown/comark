@@ -129,6 +129,7 @@ export async function html(node: ElementNode, state: State, parent?: ElementNode
       ? ` ${htmlAttributes(nativeAttributes, {
           verbatim: !state.context.html && $.html === 1,
           encodeNewlines: !state.context.html,
+          keepBindings: !state.context.html,
         })}`
       : ''
 

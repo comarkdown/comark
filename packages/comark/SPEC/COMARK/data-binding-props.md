@@ -54,7 +54,7 @@
 ```md
 <card title="Hello" variant="primary">
 
-<badge label="props.title" color="props.variant"></badge>
+<badge :label="props.title" :color="props.variant"></badge>
 
 </card>
 ```

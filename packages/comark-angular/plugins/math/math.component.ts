@@ -1,5 +1,28 @@
 import { Component, OnChanges, SimpleChanges, ChangeDetectionStrategy, ElementRef, inject, input } from '@angular/core'
-import katex from 'katex'
+
+let katex: typeof import('katex').default | undefined
+let loading: Promise<unknown> | undefined
+
+function loadKatex(): Promise<unknown> {
+  loading ??= import('katex').then(
+    (module) => (katex = module.default),
+    (error) => {
+      loading = undefined
+      throw error
+    }
+  )
+  return loading
+}
+
+// HTML, `''` when KaTeX can't typeset the formula, or `undefined` before KaTeX loads.
+function typeset(tex: string, displayMode: boolean): string | undefined {
+  if (!katex) return undefined
+  try {
+    return katex.renderToString(tex, { throwOnError: true, displayMode })
+  } catch {
+    return ''
+  }
+}
 
 /**
  * Math rendering component for Angular.
@@ -43,13 +66,19 @@ export class Math implements OnChanges {
     const wrapper = document.createElement(isInline ? 'span' : 'div')
     wrapper.className = isInline ? 'math inline' : 'math block'
 
-    try {
-      wrapper.innerHTML = katex.renderToString(this.content(), {
-        throwOnError: true,
-        displayMode: !isInline,
-      })
-    } catch {
-      wrapper.textContent = '...'
+    const content = this.content()
+    const html = typeset(content, !isInline)
+    if (html) {
+      wrapper.innerHTML = html
+    } else {
+      // Unfinished or invalid TeX, and TeX before KaTeX loads, stays readable as its source.
+      wrapper.textContent = content
+      if (html === undefined) {
+        loadKatex().then(
+          () => content === this.content() && this.renderMath(),
+          () => {}
+        )
+      }
     }
 
     hostEl.appendChild(wrapper)

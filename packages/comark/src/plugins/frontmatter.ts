@@ -19,12 +19,19 @@
  */
 
 import { defineComarkPlugin } from '../utils/helpers.ts'
-import { parseFrontmatter } from '../internal/frontmatter.ts'
+import { parseFrontmatter, splitFrontmatter } from '../internal/frontmatter.ts'
 
 export default defineComarkPlugin(() => ({
   name: 'frontmatter',
   pre(state) {
-    const { content, data, frontmatterText } = parseFrontmatter(state.markdown)
+    let result: ReturnType<typeof parseFrontmatter>
+    try {
+      result = parseFrontmatter(state.markdown)
+    } catch (error) {
+      console.warn(`[comark/plugins/frontmatter] ignoring invalid YAML frontmatter: ${(error as Error).message}`)
+      result = { ...splitFrontmatter(state.markdown), data: {} }
+    }
+    const { content, data, frontmatterText } = result
     state.markdown = content
     state.frontmatter = data
     state.frontmatterText = frontmatterText

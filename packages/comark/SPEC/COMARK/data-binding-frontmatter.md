@@ -63,7 +63,7 @@ site:
   name: My Blog
 ---
 
-<alert title="frontmatter.site.name" type="info">
+<alert :title="frontmatter.site.name" type="info">
 
 Hello
 
