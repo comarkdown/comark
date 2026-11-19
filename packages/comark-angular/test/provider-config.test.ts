@@ -98,6 +98,20 @@ describe('Markdown config providers', () => {
     expect(withOverride).not.toContain('😄')
   })
 
+  it('keeps the first duplicate in the config plugin list', async () => {
+    const html = await renderMarkdown(':project:', [
+      provideMarkdown({ plugins: [emoji({ extend: { project: '🚀' } }), emoji()] }),
+    ])
+
+    expect(html).toContain('🚀')
+  })
+
+  it('keeps the first duplicate in the instance plugin list', async () => {
+    const html = await renderMarkdown(':project:', [], undefined, [emoji({ extend: { project: '🚀' } }), emoji()])
+
+    expect(html).toContain('🚀')
+  })
+
   it('inherits a config unwrap default when the input is omitted', async () => {
     await TestBed.configureTestingModule({
       imports: [Markdown],

@@ -3,6 +3,7 @@ import type { NodeTransform, ParserOptions } from 'comark'
 import { mergeNodeTransforms } from 'comark/utils'
 import { Markdown } from './components/markdown.component'
 import { MarkdownDocument } from './components/markdown-document.component'
+import { mergeConfigPlugins } from './config'
 
 export interface DefineMarkdownComponentOptions extends ParserOptions {
   /** Pre-configured component mappings. */
@@ -89,24 +90,6 @@ export function defineMarkdownComponent(config: DefineMarkdownComponentOptions =
     }
 
     /**
-     * Effective plugins: config-level plugins first, then instance plugins.
-     * An instance plugin with the same name replaces the config plugin.
-     */
-    private readonly effectivePlugins = computed<ParserOptions['plugins']>(() => {
-      const plugins = new Map<string, NonNullable<ParserOptions['plugins']>[number]>()
-
-      for (const plugin of configPlugins) {
-        plugins.set(plugin.name, plugin)
-      }
-      for (const plugin of this.plugins() ?? []) {
-        plugins.delete(plugin.name)
-        plugins.set(plugin.name, plugin)
-      }
-
-      return [...plugins.values()]
-    })
-
-    /**
      * Merge config-level parse options under the instance `options` input so
      * instance values override config defaults, without writing back to the
      * input signal (the parser consumes the derived value instead).
@@ -117,7 +100,7 @@ export function defineMarkdownComponent(config: DefineMarkdownComponentOptions =
         ...parseOptions,
         ...this.options(),
         ...(unwrap === undefined ? {} : { unwrap }),
-        plugins: this.effectivePlugins(),
+        plugins: mergeConfigPlugins(configPlugins, this.plugins()),
       }
     }
   }

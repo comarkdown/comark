@@ -12,7 +12,7 @@ import {
 import { createSerializedMarkdownParser } from 'comark'
 import type { ParserOptions, MarkdownDocument as MarkdownDocumentType, NodeTransform } from 'comark'
 import { isMarkdownDocument, mergeNodeTransforms } from 'comark/utils'
-import { MARKDOWN_CONFIG } from '../config'
+import { MARKDOWN_CONFIG, mergeConfigPlugins } from '../config'
 import type { MarkdownConfig } from '../config'
 import { MarkdownDocument } from './markdown-document.component'
 
@@ -104,22 +104,12 @@ export class Markdown {
    * default, while an explicit `false` overrides it.
    */
   protected getParserOptions(): ParserOptions {
-    const plugins = new Map<string, NonNullable<ParserOptions['plugins']>[number]>()
-
-    for (const plugin of this.config?.plugins ?? []) {
-      plugins.set(plugin.name, plugin)
-    }
-    for (const plugin of this.plugins() ?? []) {
-      plugins.delete(plugin.name)
-      plugins.set(plugin.name, plugin)
-    }
-
     const unwrap = this.unwrap()
     return {
       ...(this.config?.options ?? {}),
       ...this.options(),
       ...(unwrap === undefined ? {} : { unwrap }),
-      plugins: [...plugins.values()],
+      plugins: mergeConfigPlugins(this.config?.plugins, this.plugins()),
     }
   }
 

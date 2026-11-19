@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { TestBed } from '@angular/core/testing'
 import type { NodeTransform } from 'comark'
 import { parseMarkdown } from 'comark'
+import emoji from 'comark/plugins/emoji'
 import { defineMarkdownComponent, defineMarkdownDocumentComponent } from '../src/define.ts'
 import { ConfiguredMarkdown, ConfiguredMarkdownDocument, InstanceAlert } from './fixtures/defined/defined.ts'
 
@@ -43,6 +44,19 @@ describe('defineMarkdownComponent', () => {
     const html = fixture.nativeElement.outerHTML as string
     expect(html).toContain('factory-class')
     expect(html).toContain('config-alert')
+  })
+
+  it('keeps the first duplicate plugin from the factory config', async () => {
+    const Defined = defineMarkdownComponent({ plugins: [emoji({ extend: { project: '🚀' } }), emoji()] })
+    await TestBed.configureTestingModule({ imports: [Defined] }).compileComponents()
+    const fixture = TestBed.createComponent(Defined)
+    fixture.componentRef.setInput('value', ':project:')
+    fixture.detectChanges()
+
+    await vi.waitFor(() => {
+      fixture.detectChanges()
+      expect(fixture.nativeElement.textContent).toContain('🚀')
+    })
   })
 
   it('lets instance components override the factory config', async () => {
