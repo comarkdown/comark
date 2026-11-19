@@ -479,9 +479,58 @@ export class AppComponent {
 
 ## Pre-configured components
 
-Use `provideMarkdown` or `provideMarkdownDocument` to pre-configure plugins, component mappings, styling, and node transforms. Each helper returns an Angular `Provider`. Import the static `Markdown` or `MarkdownDocument` component in `imports`; a component class made by a runtime factory cannot be statically resolved in `imports` and fails AOT builds with NG1010.
+Use `defineMarkdownComponent` or `defineMarkdownDocumentComponent` to create pre-configured components with default plugins and component mappings:
 
-### provideMarkdown
+### defineMarkdownComponent
+
+```typescript
+// docs-markdown.component.ts
+import { defineMarkdownComponent } from '@comark/angular'
+import { math, Math } from '@comark/angular/plugins/math'
+import { mermaid, Mermaid } from '@comark/angular/plugins/mermaid'
+
+export const DocsMarkdown = defineMarkdownComponent({
+  plugins: [math(), mermaid()],
+  components: { Math, Mermaid },
+  class: 'prose dark:prose-invert',
+})
+```
+
+Use the pre-configured component:
+
+```typescript
+import { Component } from '@angular/core'
+import { DocsMarkdown } from './docs-markdown.component'
+
+@Component({
+  selector: 'app-docs',
+  standalone: true,
+  imports: [DocsMarkdown],
+  template: `
+    <docs-markdown [value]="content" />
+  `,
+})
+export class DocsComponent {
+  content = '# Math: $E = mc^2$'
+}
+```
+
+Instance-level `components` and `plugins` are merged with the config-level defaults at runtime.
+
+### defineMarkdownDocumentComponent
+
+```typescript
+import { defineMarkdownDocumentComponent } from '@comark/angular'
+import { Math } from '@comark/angular/plugins/math'
+
+export const DocsMarkdownDocument = defineMarkdownDocumentComponent({
+  components: { Math },
+})
+```
+
+### provideMarkdown and provideMarkdownDocument (AOT-safe)
+
+Factory-created component classes cannot be resolved in `imports` under AOT (NG1010). For AOT builds, import the static components and register config providers:
 
 ```typescript
 import { Component } from '@angular/core'
@@ -507,9 +556,7 @@ export class DocsComponent {
 }
 ```
 
-Instance-level `options`, `plugins`, `components`, and `transformNode` inputs merge with the provider config and win on conflict. Config plugins run first. An instance plugin with the same name replaces the config plugin and runs in the instance order. Config `transformNode` runs before the instance's own transform.
-
-### provideMarkdownDocument
+For the low-level renderer:
 
 ```typescript
 import { Component, OnInit } from '@angular/core'
@@ -521,11 +568,7 @@ import { Math } from '@comark/angular/plugins/math'
   selector: 'app-docs',
   standalone: true,
   imports: [MarkdownDocument],
-  providers: [
-    provideMarkdownDocument({
-      components: { Math },
-    }),
-  ],
+  providers: [provideMarkdownDocument({ components: { Math } })],
   template: `@if (document) { <comark-markdown-document [value]="document" /> }`,
 })
 export class DocsComponent implements OnInit {
@@ -536,6 +579,8 @@ export class DocsComponent implements OnInit {
   }
 }
 ```
+
+Both helpers return config `Provider` objects for `MARKDOWN_CONFIG` and `MARKDOWN_DOCUMENT_CONFIG`. Instance-level `options`, `plugins`, `components`, and `transformNode` inputs merge with the provider config and win on conflict. Config plugins run first; a same-name instance plugin replaces the config plugin. Config `transformNode` runs before the instance's own transform. The `defineMarkdown*` factories above remain for JIT apps that disable AOT and import `@angular/compiler`.
 
 ---
 

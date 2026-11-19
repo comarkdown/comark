@@ -152,9 +152,9 @@ Svelte 5 renderer (`Markdown`, `MarkdownDocument`, `MarkdownNode`) plus experime
 
 ### `@comark/angular` (`packages/comark-angular/`)
 
-Angular 21+ renderer (peer range `>=21 <23`) with standalone components (`Markdown` selector `comark-markdown`, `MarkdownDocument`, `provideMarkdown`, `provideMarkdownDocument`).
+Angular 21+ renderer (peer range `>=21 <23`) with standalone components (`Markdown` selector `comark-markdown`, `MarkdownDocument`, `defineMarkdownComponent`, `defineMarkdownDocumentComponent`, `provideMarkdown`, `provideMarkdownDocument`).
 
-- `provideMarkdown` / `provideMarkdownDocument` return config `Provider` objects for `MARKDOWN_CONFIG` / `MARKDOWN_DOCUMENT_CONFIG` (`src/config.ts`). The static `Markdown` / `MarkdownDocument` components inject those tokens optionally. Use these in AOT builds: a component class returned from a factory cannot be resolved in `imports` (NG1010 / ngtsc -991010). `defineMarkdownComponent` / `defineMarkdownDocumentComponent` remain as component-class factories for JIT builds.
+- `provideMarkdown` / `provideMarkdownDocument` return config `Provider` objects for `MARKDOWN_CONFIG` / `MARKDOWN_DOCUMENT_CONFIG` (`src/config.ts`). The static `Markdown` / `MarkdownDocument` components inject those tokens optionally. Use these in AOT builds: a component class returned by a factory cannot be resolved in `imports` (NG1010 / ngtsc -991010). `defineMarkdownComponent` / `defineMarkdownDocumentComponent` remain as component-class factories for JIT builds.
 - Built with `ng-packagr` (`ng build`), then `scripts/strip-sourcemaps.mjs` removes emitted source maps and `scripts/sync-plugins.mjs` writes plain plugin re-exports and `./plugins/*` export map entries into `dist/package.json`.
 - Plugin entry points use **named exports** because the Angular Package Format strips `export default` (`import { math, Math } from '@comark/angular/plugins/math'`, `import { security } from '@comark/angular/plugins/security'`).
 - Publishes from `dist/` via `publishConfig.directory`; `test/bundle.test.ts` packs from `dist/` too.
@@ -218,7 +218,7 @@ import { createAnsiRenderer, createAnsiPrinter, printAnsi, renderAnsi, renderAns
 import { Markdown, MarkdownDocument, defineMarkdownComponent } from '@comark/vue' // also @comark/react
 import { Markdown, MarkdownDocument } from '@comark/svelte'
 import { MarkdownAsync } from '@comark/svelte/async'
-import { Markdown, MarkdownDocument, provideMarkdown, MARKDOWN_CONFIG } from '@comark/angular'
+import { Markdown, MarkdownDocument, defineMarkdownComponent, provideMarkdown, MARKDOWN_CONFIG } from '@comark/angular'
 import math, { Math } from '@comark/vue/plugins/math' // same shape in html, react, svelte (`{ math, Math }` in angular)
 import mermaid, { Mermaid } from '@comark/vue/plugins/mermaid'
 import binding, { Binding, If } from '@comark/vue/plugins/binding'
