@@ -113,6 +113,8 @@ const markdownItComarkBlock: PluginSimple = (md) => {
 
       // Nested components still open, as `[markerCount, indent]`.
       const openComponents: Array<[number, number]> = []
+      // Open nested components per marker count: a bare marker matching none must not walk the stack (DoS bound).
+      const openCounts = new Map<number, number>()
       // Content columns of the list items still open, innermost last.
       const listColumns: number[] = []
 
@@ -221,15 +223,18 @@ const markdownItComarkBlock: PluginSimple = (md) => {
           // An indented-code line opens no component, as in the child parse.
           if (count >= min_markers && !isIndentedCode && isValidComponentName(state.src.slice(pos, max))) {
             openComponents.push([count, state.sCount[nextLine]])
+            openCounts.set(count, (openCounts.get(count) || 0) + 1)
           }
           continue
         }
 
         // A bare marker closes the innermost open nested block with the same length, and any left open inside it
-        let open = openComponents.length - 1
-        while (open >= 0 && openComponents[open][0] !== count) open--
-        if (open >= 0) {
-          openComponents.length = open
+        if (openCounts.get(count)) {
+          let closed: number
+          do {
+            closed = openComponents.pop()![0]
+            openCounts.set(closed, openCounts.get(closed)! - 1)
+          } while (closed !== count)
           continue
         }
 

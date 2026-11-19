@@ -32,6 +32,14 @@ describe('denial-of-service hardening', () => {
     expect(doc.nodes.at(-1)).toEqual(['p', {}, 'After'])
   })
 
+  it('scans thousands of unmatched bare markers under open nested components in linear time', async () => {
+    const start = performance.now()
+    const nested = ':::x\n'.repeat(1_000) + '::::\n'.repeat(8_000) + ':::\n'.repeat(1_000)
+    const doc = await parseMarkdown('::box\n' + nested + '::\n\nAfter')
+    expect(performance.now() - start).toBeLessThan(500)
+    expect(doc.nodes.at(-1)).toEqual(['p', {}, 'After'])
+  })
+
   it('parses thousands of unclosed nested inline HTML tags without stack overflow', async () => {
     const md = '<b>'.repeat(10_000)
     const doc = await parseMarkdown(md)
