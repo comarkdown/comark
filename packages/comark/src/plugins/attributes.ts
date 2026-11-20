@@ -22,6 +22,7 @@ const markdownItInlineProps: PluginSimple = (md) => {
   // after text inside it would be rejected too, so it is skipped without
   // rescanning the same suffix (keeps O(n)).
   const rejectedUntil = new WeakMap<object, number>()
+  const rejectedCloserUntil = new WeakMap<object, number>()
   // Start of the first brace group without a closing `}`, per inline state. Its
   // scan ran to the end of the source, so a later `{` is text too (keeps O(n)).
   const unclosedFrom = new WeakMap<object, number>()
@@ -48,6 +49,7 @@ const markdownItInlineProps: PluginSimple = (md) => {
       lastDelimiter?.close === true &&
       lastDelimiter.token === state.tokens.length - 1
     if (afterText && !afterCloser && start < (rejectedUntil.get(state) ?? -1)) return false
+    if (afterText && afterCloser && start < (rejectedCloserUntil.get(state) ?? -1)) return false
 
     if (start > (unclosedFrom.get(state) ?? Infinity)) return false
 
@@ -59,8 +61,14 @@ const markdownItInlineProps: PluginSimple = (md) => {
       return false
     }
 
-    const { props, index: end } = search
-    if (end === start) return false
+    const { props, index: end, hasInvalid, invalidUntil } = search
+    if (end === start || (hasInvalid && (afterText || props.length === 0))) {
+      if (afterText && !afterCloser) rejectedUntil.set(state, end)
+      else if (afterText && afterCloser && invalidUntil > start) {
+        rejectedCloserUntil.set(state, Math.max(invalidUntil, rejectedCloserUntil.get(state) ?? -1))
+      }
+      return false
+    }
 
     if (afterText && !afterCloser) {
       let searchEnd = end

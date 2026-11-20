@@ -24,14 +24,20 @@ export function searchProps(content: string, index = 0) {
 
   const props: [string, string][] = []
   let closed = false
+  let hasInvalid = false
+  let hasSkippedClose = false
+  let invalidUntil = -1
 
   // Skip Vue mustache `{{ }}` syntax
   if (content[index + 1] === '{') return undefined
 
+  const rootStart = index
   index += 1
 
   while (index < content.length) {
     if (content[index] === '\\') {
+      hasInvalid = true
+      hasSkippedClose = true
       index += 2
     } else if (content[index] === '}') {
       index += 1
@@ -41,10 +47,14 @@ export function searchProps(content: string, index = 0) {
       index += 1
     } else if (content[index] === '.') {
       index += 1
-      props.push(['class', searchUntil(' #.}', true)])
+      const cls = searchUntil(' #.}', true)
+      if (cls) props.push(['class', cls])
+      else hasInvalid = true
     } else if (content[index] === '#') {
       index += 1
-      props.push(['id', searchUntil(' #.}')])
+      const id = searchUntil(' #.}')
+      if (id) props.push(['id', id])
+      else hasInvalid = true
     } else {
       const start = index
       while (index < content.length) {
@@ -64,6 +74,10 @@ export function searchProps(content: string, index = 0) {
         }
         if (key.match(/^:?[a-z_][a-z0-9_-]*$/gi)) {
           props.push([key, value])
+        } else {
+          hasInvalid = true
+          const lastBrace = content.lastIndexOf('{', index - 1)
+          if (lastBrace > rootStart) invalidUntil = Math.max(invalidUntil, lastBrace)
         }
       }
     }
@@ -73,11 +87,15 @@ export function searchProps(content: string, index = 0) {
     const start = index
     while (index < content.length) {
       index += 1
-      if (content[index] === '\\') index += 2
+      if (content[index] === '\\') {
+        hasSkippedClose = true
+        index += 2
+      }
       // Tailwind-style arbitrary values (e.g. bg-[#000], text-[1.5rem]) keep
       // `.` / `#` inside balanced brackets from being treated as new props.
       // Unbalanced brackets fall through so outer terminators (esp. `}`) still win.
       if (bracketAware && content[index] in bracketPairs) {
+        hasSkippedClose = true
         const open = index
         if (searchBracket(bracketPairs[content[index] as keyof typeof bracketPairs])) continue
         index = open
@@ -90,10 +108,12 @@ export function searchProps(content: string, index = 0) {
   function searchValue() {
     const start = index
     if (content[index] in bracketPairs) {
+      hasSkippedClose = true
       searchBracket(bracketPairs[content[index] as keyof typeof bracketPairs])
       index += 1
       return content.slice(start, index)
     } else if (content[index] in quotePairs) {
+      hasSkippedClose = true
       searchString(quotePairs[content[index] as keyof typeof quotePairs])
       index += 1
       return content.slice(start, index)
@@ -126,5 +146,7 @@ export function searchProps(content: string, index = 0) {
     props,
     index,
     closed,
+    hasInvalid,
+    invalidUntil: hasInvalid && !hasSkippedClose ? invalidUntil : -1,
   }
 }
