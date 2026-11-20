@@ -59,8 +59,11 @@ const markdownItInlineProps: PluginSimple = (md) => {
       return false
     }
 
-    const { props, index: end } = search
-    if (end === start) return false
+    const { props, index: end, hasInvalid } = search
+    if (end === start || (hasInvalid && (afterText || props.length === 0))) {
+      if (afterText && !afterCloser) rejectedUntil.set(state, end)
+      return false
+    }
 
     if (afterText && !afterCloser) {
       let searchEnd = end

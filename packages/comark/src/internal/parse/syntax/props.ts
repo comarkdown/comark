@@ -24,6 +24,7 @@ export function searchProps(content: string, index = 0) {
 
   const props: [string, string][] = []
   let closed = false
+  let hasInvalid = false
 
   // Skip Vue mustache `{{ }}` syntax
   if (content[index + 1] === '{') return undefined
@@ -32,6 +33,7 @@ export function searchProps(content: string, index = 0) {
 
   while (index < content.length) {
     if (content[index] === '\\') {
+      hasInvalid = true
       index += 2
     } else if (content[index] === '}') {
       index += 1
@@ -41,10 +43,14 @@ export function searchProps(content: string, index = 0) {
       index += 1
     } else if (content[index] === '.') {
       index += 1
-      props.push(['class', searchUntil(' #.}', true)])
+      const cls = searchUntil(' #.}', true)
+      if (cls) props.push(['class', cls])
+      else hasInvalid = true
     } else if (content[index] === '#') {
       index += 1
-      props.push(['id', searchUntil(' #.}')])
+      const id = searchUntil(' #.}')
+      if (id) props.push(['id', id])
+      else hasInvalid = true
     } else {
       const start = index
       while (index < content.length) {
@@ -64,6 +70,8 @@ export function searchProps(content: string, index = 0) {
         }
         if (key.match(/^:?[a-z_][a-z0-9_-]*$/gi)) {
           props.push([key, value])
+        } else {
+          hasInvalid = true
         }
       }
     }
@@ -126,5 +134,6 @@ export function searchProps(content: string, index = 0) {
     props,
     index,
     closed,
+    hasInvalid,
   }
 }

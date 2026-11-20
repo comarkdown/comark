@@ -119,4 +119,24 @@ describe('misc', () => {
       })
     })
   })
+
+  it('preserves invalid inline attribute groups as text (#522)', async () => {
+    const slash = await parseMarkdown('**Result** {a/b}')
+    expect(slash.nodes).toEqual([['p', {}, ['strong', {}, 'Result'], ' {a/b}']])
+
+    const tex = await parseMarkdown(String.raw`**Result** {(3\,574+5\,852)\times9/44}`)
+    expect(tex.nodes).toEqual([['p', {}, ['strong', {}, 'Result'], ' {(3,574+5,852)\\times9/44}']])
+
+    const mixed = await parseMarkdown('**Result** {isDev, isServer}')
+    expect(mixed.nodes).toEqual([['p', {}, ['strong', {}, 'Result'], ' {isDev, isServer}']])
+
+    const afterStrong = await parseMarkdown('**Result**{a/b}')
+    expect(afterStrong.nodes).toEqual([['p', {}, ['strong', {}, 'Result'], '{a/b}']])
+
+    const afterLink = await parseMarkdown('[Result](/x){a/b}')
+    expect(afterLink.nodes).toEqual([['p', {}, ['a', { href: '/x' }, 'Result'], '{a/b}']])
+
+    const valid = await parseMarkdown('**Result** {title="valid"}')
+    expect(valid.nodes).toEqual([['p', { title: 'valid' }, ['strong', {}, 'Result']]])
+  })
 })
