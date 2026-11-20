@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { Component, type Type } from '@angular/core'
 import { TestBed } from '@angular/core/testing'
 import type { MarkdownDocument as MarkdownDocumentType, Node } from 'comark'
@@ -18,6 +18,11 @@ Component({
 describe('MarkdownDocument stream effects', () => {
   beforeEach(() => {
     TestBed.resetTestingModule()
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+    vi.unstubAllGlobals()
   })
 
   async function render(value: MarkdownDocumentType, inputs: Record<string, unknown> = {}) {
@@ -55,6 +60,30 @@ describe('MarkdownDocument stream effects', () => {
     const spans = [...el.querySelectorAll('.comark-fade')]
     expect(spans.map((span) => span.textContent)).toEqual(['Hello', ' world'])
     expect(spans[0]).toBe(first)
+  })
+
+  it('keeps releasing paced text on animation frames without new input', async () => {
+    let time = 0
+    const frames: FrameRequestCallback[] = []
+    vi.spyOn(performance, 'now').mockImplementation(() => time)
+    vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => frames.push(callback))
+    vi.stubGlobal('cancelAnimationFrame', () => {})
+
+    const full = 'Hi there, this sentence streams in at a steady pace'
+    const { el, update, fixture } = await render(doc(['p', {}, 'Hi']), { streaming: true, fade: true })
+    // End the stream with the last chunk so the trailing word is released too.
+    fixture.componentRef.setInput('streaming', false)
+    update(doc(['p', {}, full]))
+    expect(el.textContent).not.toBe(full)
+    expect(frames.length).toBeGreaterThan(0)
+
+    for (let i = 0; i < 1000 && frames.length > 0; i++) {
+      time += 50
+      frames.shift()!(time)
+      fixture.detectChanges()
+    }
+    expect(el.textContent).toBe(full)
+    expect(frames.length).toBe(0)
   })
 
   it('appends a caret while streaming and removes it after', async () => {

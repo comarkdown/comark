@@ -66,7 +66,7 @@ export class MarkdownDocument implements OnInit, OnDestroy {
   /** Fade in text as it streams */
   readonly fade = input<boolean | FadeOptions>(false)
 
-  /** Custom render-time stream effects, run after `fade` and before `caret`. Put `pace()` first. */
+  /** Custom render-time stream effects. They run first, then `fade`, then `caret`. Put `pace()` first. */
   readonly effects = input<readonly StreamEffect[]>()
 
   /** Additional data to pass to the renderer for :binding resolution */
@@ -87,7 +87,7 @@ export class MarkdownDocument implements OnInit, OnDestroy {
   private stream = createStreamRenderer()
   private frameId: number | null = null
   private renderCache: { inputs: unknown[]; nodes: RenderedNode[] } | null = null
-  private renderDataCache: { inputs: unknown[]; value: NodeRenderData } | null = null
+  private renderDataCache: { inputs: unknown[]; data: unknown; value: NodeRenderData } | null = null
 
   private get inputDocument(): MarkdownDocumentType {
     return this.value() ?? EMPTY_DOCUMENT
@@ -144,18 +144,20 @@ export class MarkdownDocument implements OnInit, OnDestroy {
 
   get renderData(): NodeRenderData {
     const document = this.activeDocument
-    const inputs = [document.frontmatter, document.meta, this.data()]
+    const inputs = [document.frontmatter, document.meta]
+    const data = this.data()
     // Streaming parses return fresh (usually equal) `meta`/`frontmatter` objects every chunk; keeping
     // the same render data lets unchanged custom components skip re-rendering.
-    if (this.renderDataCache && isSameValue(this.renderDataCache.inputs, inputs)) return this.renderDataCache.value
+    const cache = this.renderDataCache
+    if (cache && cache.data === data && isSameValue(cache.inputs, inputs)) return cache.value
 
     const value = {
       frontmatter: document.frontmatter,
       meta: document.meta,
-      data: this.data() || {},
+      data: data || {},
       props: {},
     }
-    this.renderDataCache = { inputs, value }
+    this.renderDataCache = { inputs, data, value }
     return value
   }
 }

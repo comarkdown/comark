@@ -123,13 +123,18 @@ export function isSameValue(a: unknown, b: unknown, depth = 0): boolean {
     for (let i = 0; i < a.length; i++) if (!isSameValue(a[i], b[i], depth + 1)) return false
     return true
   }
-  if (Array.isArray(b)) return false
+  if (Array.isArray(b) || !isPlainObject(a) || !isPlainObject(b)) return false
   const aKeys = Object.keys(a)
   if (aKeys.length !== Object.keys(b).length) return false
   for (const key of aKeys) {
     if (!isSameValue((a as Record<string, unknown>)[key], (b as Record<string, unknown>)[key], depth + 1)) return false
   }
   return true
+}
+
+function isPlainObject(value: object): boolean {
+  const proto = Object.getPrototypeOf(value)
+  return proto === Object.prototype || proto === null
 }
 
 function isSameRenderData(a: NodeRenderData, b: NodeRenderData): boolean {
@@ -159,7 +164,15 @@ type RenderedChild =
       ref: ComponentRef<MarkdownNode>
       dom: HTMLElement
       renderData: NodeRenderData
+      parent: MarkdownAstNode | undefined
     }
+
+function destroyComponents(children: RenderedChild[]): void {
+  for (const child of children) {
+    if (child.kind === 'component') child.ref.destroy()
+    else if (child.kind === 'element') destroyComponents(child.children)
+  }
+}
 
 /**
  * MarkdownNode - recursive component that renders a single Comark AST node.
@@ -206,8 +219,10 @@ export class MarkdownNode implements OnChanges {
     node: MarkdownAstNode
     components: unknown
     renderData: NodeRenderData
-    parent: MarkdownAstNode | undefined
     transformNode: unknown
+    tag: string
+    props: Record<string, any>
+    customComponent: Type<any>
   } | null = null
 
   ngOnChanges(_changes: SimpleChanges): void {
@@ -218,14 +233,22 @@ export class MarkdownNode implements OnChanges {
     const node = this.node()
     if (this.patchRoot(node)) return
 
+    const prepared =
+      Array.isArray(node) && getTag(node)
+        ? prepareNode(node as ElementNode, this.components(), this.renderData(), this.parent(), this.transformNode())
+        : null
+    // Compare the prepared output too: a transform can read the parent, which may change on its own.
     const last = this.componentInputs
     if (
       last &&
+      prepared &&
       last.components === this.components() &&
       last.transformNode === this.transformNode() &&
       isSameRenderData(last.renderData, this.renderData()) &&
       isSameValue(last.node, node) &&
-      (last.parent ? getTag(last.parent) : null) === (this.parent() ? getTag(this.parent()!) : null)
+      last.customComponent === prepared.customComponent &&
+      last.tag === prepared.tag &&
+      isSameValue(last.props, prepared.props)
     ) {
       return
     }
@@ -249,16 +272,9 @@ export class MarkdownNode implements OnChanges {
       return
     }
 
-    if (Array.isArray(node)) {
-      if (!getTag(node)) return
-
+    if (prepared) {
       const children = getChildren(node)
-      const {
-        tag,
-        props: resolved,
-        customComponent,
-        childrenRenderData,
-      } = prepareNode(node as ElementNode, this.components(), this.renderData(), this.parent(), this.transformNode())
+      const { tag, props: resolved, customComponent, childrenRenderData } = prepared
 
       if ((customComponent as StructuralComponent | undefined)?.ɵcomarkIf) {
         this.renderIf(resolved, children, childrenRenderData)
@@ -268,8 +284,10 @@ export class MarkdownNode implements OnChanges {
           node,
           components: this.components(),
           renderData: this.renderData(),
-          parent: this.parent(),
           transformNode: this.transformNode(),
+          tag,
+          props: resolved,
+          customComponent,
         }
       } else {
         this.root = this.renderNativeEl(hostEl, tag, resolved, children, childrenRenderData, node, null)
@@ -526,8 +544,19 @@ export class MarkdownNode implements OnChanges {
 
     for (const entry of previous) {
       if (kept.has(entry)) continue
-      if (entry.kind === 'component') entry.ref.destroy()
-      else this.renderer.removeChild(parentEl, entry.dom)
+      if (entry.kind === 'component') {
+        entry.ref.destroy()
+        continue
+      }
+      if (entry.kind === 'element') destroyComponents(entry.children)
+      this.renderer.removeChild(parentEl, entry.dom)
+    }
+
+    const anchors: (Node | null)[] = new Array(children.length)
+    let anchor: Node | null = null
+    for (let i = children.length - 1; i >= 0; i--) {
+      anchors[i] = anchor
+      if (reused[i]) anchor = reused[i]!.dom
     }
 
     const out: RenderedChild[] = []
@@ -542,18 +571,32 @@ export class MarkdownNode implements OnChanges {
           if (entry.node !== child) entry.dom.data = child as string
           entry.node = child as string
         } else if (entry.kind === 'component') {
-          if (entry.node === child && entry.renderData === renderData) {
+          if (
+            entry.node === child &&
+            entry.renderData === renderData &&
+            (entry.parent === parentNode || !transformNode)
+          ) {
             out.push(entry)
             continue
           }
+          const { node: previousNode, renderData: previousRenderData, parent: previousParent } = entry
           entry.node = child as ElementNode
           entry.renderData = renderData
-          entry.ref.setInput('node', child)
-          entry.ref.setInput('components', components)
-          entry.ref.setInput('renderData', renderData)
-          entry.ref.setInput('parent', parentNode)
-          entry.ref.setInput('transformNode', transformNode)
-          entry.ref.changeDetectorRef.detectChanges()
+          entry.parent = parentNode
+          try {
+            entry.ref.setInput('node', child)
+            entry.ref.setInput('components', components)
+            entry.ref.setInput('renderData', renderData)
+            entry.ref.setInput('parent', parentNode)
+            entry.ref.setInput('transformNode', transformNode)
+            entry.ref.changeDetectorRef.detectChanges()
+          } catch (error) {
+            // Restore the previous inputs so the next update retries instead of matching the failed one.
+            entry.node = previousNode
+            entry.renderData = previousRenderData
+            entry.parent = previousParent
+            console.error(`Failed to update custom component "${getTag(child)}"`, error)
+          }
         } else if (entry.node !== child || entry.renderData !== next!.childrenRenderData) {
           this.patchElement(entry, child as ElementNode, next!)
         }
@@ -561,13 +604,7 @@ export class MarkdownNode implements OnChanges {
         continue
       }
 
-      let before: Node | null = null
-      for (let j = i + 1; j < children.length; j++) {
-        if (reused[j]) {
-          before = reused[j]!.dom
-          break
-        }
-      }
+      const before = anchors[i]
 
       if (typeof child === 'string') {
         const text = this.renderer.createText(child)
@@ -602,6 +639,7 @@ export class MarkdownNode implements OnChanges {
             ref: componentRef,
             dom: nativeEl,
             renderData,
+            parent: parentNode,
           })
         } catch (error) {
           componentRef?.destroy()
