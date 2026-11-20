@@ -814,6 +814,18 @@ describe('pace timing', () => {
     expect(frames[frames.length - 1]).toBe('a😀b')
   })
 
+  it('measures a reused element again where the depth limit cuts it', () => {
+    const time = clock()
+    const stream = createStreamRenderer({ now: time.now })
+    const effects = [pace({ speed: 10 })]
+    const shared: Node = ['span', {}, ['em', {}, 'x']]
+    let deep: Node = shared
+    for (let i = 0; i < 49; i++) deep = ['div', {}, deep]
+    stream.render([shared], { streaming: true, effects })
+    stream.render([shared, deep], { streaming: true, effects })
+    expect(stream.pending()).toBe(false)
+  })
+
   it('keeps text below the depth limit when everything is released', () => {
     let deep: Node = 'deep'
     for (let i = 0; i < 60; i++) deep = ['span', {}, deep]

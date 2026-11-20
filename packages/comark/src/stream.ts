@@ -259,8 +259,11 @@ interface TextMeasure {
  * effects never mutate nodes, so each frame only measures the blocks that changed.
  */
 function createTextMeasure(isOpaque?: (node: ElementNode) => boolean): TextMeasure {
-  const cache = new WeakMap<ElementNode, number>()
+  // `height` is how many element levels the subtree spans, so a length is reused only at depths where
+  // the depth limit cuts nothing from it.
+  const cache = new WeakMap<ElementNode, { total: number; height: number }>()
   let truncated = false
+  let reach = 0
 
   function length(node: Node, depth: number): number {
     if (typeof node === 'string') return node.length
@@ -271,18 +274,25 @@ function createTextMeasure(isOpaque?: (node: ElementNode) => boolean): TextMeasu
     }
     const element = node as ElementNode
     const cached = cache.get(element)
-    if (cached !== undefined) return cached
+    if (cached !== undefined && depth + cached.height < MAX_DEPTH) {
+      reach = Math.max(reach, depth + cached.height)
+      return cached.total
+    }
     if (isOpaque?.(element)) {
-      cache.set(element, 0)
+      cache.set(element, { total: 0, height: 0 })
+      reach = Math.max(reach, depth)
       return 0
     }
-    const outer = truncated
+    const outerTruncated = truncated
+    const outerReach = reach
     truncated = false
+    reach = depth
     let total = 0
     for (let i = 2; i < element.length; i++) total += length(element[i] as Node, depth + 1)
     // A subtree cut by the depth limit measures differently at another depth, so it is not cached.
-    if (!truncated) cache.set(element, total)
-    truncated ||= outer
+    if (!truncated) cache.set(element, { total, height: reach - depth })
+    truncated ||= outerTruncated
+    reach = Math.max(reach, outerReach)
     return total
   }
 
