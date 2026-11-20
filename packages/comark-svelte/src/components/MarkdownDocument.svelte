@@ -4,7 +4,7 @@ Renders an already-parsed Markdown document to Svelte components/HTML, keeping
 the parser out of the client bundle.
 
 Accepts a parsed `MarkdownDocument` and renders each top-level node via `MarkdownNode`.
-Supports custom component mappings and a streaming caret indicator.
+Supports custom component mappings and streaming effects (caret, fade-in, custom).
 
 @example
 ```svelte
@@ -21,6 +21,8 @@ Supports custom component mappings and a streaming caret indicator.
 <script lang="ts">
   import { untrack } from 'svelte'
   import type { MarkdownDocument as MarkdownDocumentType, ComponentManifest, NodeTransform } from 'comark'
+  import { createStreamRenderer, getStreamKey, resolveStreamEffects } from 'comark/stream'
+  import type { CaretOptions, FadeOptions, StreamEffect } from 'comark/stream'
   import type { ComponentResolver, RootAttributes } from '../types.js'
   import MarkdownNode from './MarkdownNode.svelte'
 
@@ -31,7 +33,9 @@ Supports custom component mappings and a streaming caret indicator.
     transformNode,
     resolver,
     streaming = false,
-    caret: caretProp = false,
+    caret = false,
+    fade = false,
+    effects,
     data,
     class: className = '',
     documentKey,
@@ -43,7 +47,9 @@ Supports custom component mappings and a streaming caret indicator.
     transformNode?: NodeTransform | readonly NodeTransform[]
     resolver?: ComponentResolver
     streaming?: boolean
-    caret?: boolean | { class: string }
+    caret?: boolean | CaretOptions
+    fade?: boolean | FadeOptions
+    effects?: readonly StreamEffect[]
     data?: Record<string, unknown>
     class?: string
     documentKey?: string
@@ -63,10 +69,12 @@ Supports custom component mappings and a streaming caret indicator.
 
   let activeDocument = $derived(liveDocument ?? document)
 
-  let caretClass = $derived(
-    streaming && caretProp
-      ? (typeof caretProp === 'object' && caretProp.class) || ''
-      : null,
+  const stream = createStreamRenderer()
+  let nodes = $derived(
+    stream.render(activeDocument.nodes || [], {
+      streaming,
+      effects: resolveStreamEffects({ caret, fade, effects }),
+    }),
   )
 
   let renderData = $derived({
@@ -81,15 +89,16 @@ Supports custom component mappings and a streaming caret indicator.
 </script>
 
 <div {...rest} class="comark-content {className}">
-  {#each activeDocument.nodes as node, i (i)}
-    <MarkdownNode
-      {node}
-      {components}
-      {componentsManifest}
-      {transformNode}
-      {resolver}
-      caretClass={i === activeDocument.nodes.length - 1 ? caretClass : null}
-      {renderData}
-    />
+  {#each nodes as node, i (i)}
+    {#key getStreamKey(node)}
+      <MarkdownNode
+        {node}
+        {components}
+        {componentsManifest}
+        {transformNode}
+        {resolver}
+        {renderData}
+      />
+    {/key}
   {/each}
 </div>

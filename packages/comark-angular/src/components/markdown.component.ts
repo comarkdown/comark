@@ -12,6 +12,7 @@ import {
 import { createSerializedMarkdownParser } from 'comark'
 import type { ParserOptions, MarkdownDocument as MarkdownDocumentType, NodeTransform } from 'comark'
 import { isMarkdownDocument } from 'comark/utils'
+import type { CaretOptions, FadeOptions, StreamEffect } from 'comark/stream'
 import { MarkdownDocument } from './markdown-document.component'
 
 /**
@@ -35,6 +36,8 @@ import { MarkdownDocument } from './markdown-document.component'
         [components]="components()"
         [streaming]="streaming()"
         [caret]="caret()"
+        [fade]="fade()"
+        [effects]="effects()"
         [data]="data()"
         [transformNode]="transformNode()"
       />
@@ -68,7 +71,13 @@ export class Markdown {
   readonly summary = input<boolean>(false)
 
   /** Append a caret to the last text node (for streaming UIs) */
-  readonly caret = input<boolean | { class: string }>(false)
+  readonly caret = input<boolean | CaretOptions>(false)
+
+  /** Fade in text as it streams */
+  readonly fade = input<boolean | FadeOptions>(false)
+
+  /** Custom render-time stream effects, run after `fade` and before `caret` */
+  readonly effects = input<readonly StreamEffect[]>()
 
   /** Additional data to pass to the renderer for :binding resolution */
   readonly data = input<Record<string, unknown>>({})

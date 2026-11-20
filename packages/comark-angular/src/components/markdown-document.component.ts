@@ -8,11 +8,17 @@ import {
   type OnDestroy,
   input,
 } from '@angular/core'
-import type { ElementNode, Node, MarkdownDocument as MarkdownDocumentType, NodeRenderData, NodeTransform } from 'comark'
-import { MarkdownNode } from './markdown-node.component'
-import { findLastTextNodeAndAppendNode, getCaret } from '../utils/caret'
+import type { Node, MarkdownDocument as MarkdownDocumentType, NodeRenderData, NodeTransform } from 'comark'
+import { createStreamRenderer, getChildKeys, resolveStreamEffects } from 'comark/stream'
+import type { CaretOptions, FadeOptions, StreamEffect } from 'comark/stream'
+import { MarkdownNode, isSameValue } from './markdown-node.component'
 
 const EMPTY_DOCUMENT: MarkdownDocumentType = { nodes: [], frontmatter: {}, meta: {} }
+
+interface RenderedNode {
+  key: string
+  node: Node
+}
 
 /**
  * MarkdownDocument component
@@ -33,9 +39,9 @@ const EMPTY_DOCUMENT: MarkdownDocumentType = { nodes: [], frontmatter: {}, meta:
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="comark-content">
-      @for (node of renderedNodes; track $index) {
+      @for (entry of renderedNodes; track entry.key) {
         <comark-markdown-node
-          [node]="node"
+          [node]="entry.node"
           [components]="components()"
           [renderData]="renderData"
           [transformNode]="transformNode()"
@@ -55,7 +61,13 @@ export class MarkdownDocument implements OnInit, OnDestroy {
   readonly streaming = input<boolean>(false)
 
   /** Append a caret to the last text node (for streaming UIs) */
-  readonly caret = input<boolean | { class: string }>(false)
+  readonly caret = input<boolean | CaretOptions>(false)
+
+  /** Fade in text as it streams */
+  readonly fade = input<boolean | FadeOptions>(false)
+
+  /** Custom render-time stream effects, run after `fade` and before `caret` */
+  readonly effects = input<readonly StreamEffect[]>()
 
   /** Additional data to pass to the renderer for :binding resolution */
   readonly data = input<Record<string, unknown>>({})
@@ -72,6 +84,9 @@ export class MarkdownDocument implements OnInit, OnDestroy {
   private cdr = inject(ChangeDetectorRef)
   private liveDocument: MarkdownDocumentType | null = null
   private cleanup?: (clear?: boolean) => void
+  private stream = createStreamRenderer()
+  private renderCache: { inputs: unknown[]; nodes: RenderedNode[] } | null = null
+  private renderDataCache: { inputs: unknown[]; value: NodeRenderData } | null = null
 
   private get inputDocument(): MarkdownDocumentType {
     return this.value() ?? EMPTY_DOCUMENT
@@ -95,26 +110,41 @@ export class MarkdownDocument implements OnInit, OnDestroy {
     return this.liveDocument ?? this.inputDocument
   }
 
-  get renderedNodes(): Node[] {
-    const nodes = [...(this.activeDocument.nodes || [])]
-    const caretNode = getCaret(this.caret())
+  // Getters run on every change detection pass: cache on input identity so stream effects only
+  // advance (and children only re-render) when an input actually changed.
+  get renderedNodes(): RenderedNode[] {
+    const inputs = [this.activeDocument, this.streaming(), this.caret(), this.fade(), this.effects()]
+    if (this.renderCache && sameInputs(this.renderCache.inputs, inputs)) return this.renderCache.nodes
 
-    if (this.streaming() && caretNode && nodes.length > 0) {
-      const hasStreamCaret = findLastTextNodeAndAppendNode(nodes[nodes.length - 1] as ElementNode, caretNode)
-      if (!hasStreamCaret) {
-        nodes.push(caretNode)
-      }
-    }
-
-    return nodes
+    const nodes = this.stream.render(this.activeDocument.nodes || [], {
+      streaming: this.streaming(),
+      effects: resolveStreamEffects({ caret: this.caret(), fade: this.fade(), effects: this.effects() }),
+    })
+    const keys = getChildKeys(nodes)
+    const rendered = nodes.map((node, i) => ({ key: keys[i], node }))
+    this.renderCache = { inputs, nodes: rendered }
+    return rendered
   }
 
   get renderData(): NodeRenderData {
-    return {
-      frontmatter: this.activeDocument.frontmatter,
-      meta: this.activeDocument.meta,
+    const document = this.activeDocument
+    const inputs = [document.frontmatter, document.meta, this.data()]
+    // Streaming parses return fresh (usually equal) `meta`/`frontmatter` objects every chunk; keeping
+    // the same render data lets unchanged custom components skip re-rendering.
+    if (this.renderDataCache && isSameValue(this.renderDataCache.inputs, inputs)) return this.renderDataCache.value
+
+    const value = {
+      frontmatter: document.frontmatter,
+      meta: document.meta,
       data: this.data() || {},
       props: {},
     }
+    this.renderDataCache = { inputs, value }
+    return value
   }
+}
+
+function sameInputs(a: unknown[], b: unknown[]): boolean {
+  for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return false
+  return true
 }

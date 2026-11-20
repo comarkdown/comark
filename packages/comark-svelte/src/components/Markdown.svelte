@@ -29,6 +29,7 @@ This is an alert component
   import { isMarkdownDocument } from 'comark/utils'
   import MarkdownDocument from './MarkdownDocument.svelte'
   import type { RootAttributes } from '../types.js'
+  import type { CaretOptions, FadeOptions, StreamEffect } from 'comark/stream'
 
   let {
     value,
@@ -40,6 +41,8 @@ This is an alert component
     transformNode,
     streaming = false,
     caret = false,
+    fade = false,
+    effects,
     data,
     class: className = '',
     ...rest
@@ -52,7 +55,9 @@ This is an alert component
     componentsManifest?: ComponentManifest
     transformNode?: NodeTransform | readonly NodeTransform[]
     streaming?: boolean
-    caret?: boolean | { class: string }
+    caret?: boolean | CaretOptions
+    fade?: boolean | FadeOptions
+    effects?: readonly StreamEffect[]
     data?: Record<string, unknown>
     class?: string
   } = $props()
@@ -103,6 +108,8 @@ This is an alert component
     {transformNode}
     {streaming}
     {caret}
+    {fade}
+    {effects}
     {data}
     class={className}
   />
@@ -115,6 +122,8 @@ This is an alert component
     {transformNode}
     {streaming}
     {caret}
+    {fade}
+    {effects}
     {data}
     class={className}
   />

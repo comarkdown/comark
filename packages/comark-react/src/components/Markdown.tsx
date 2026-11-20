@@ -2,6 +2,7 @@ import React from 'react'
 import { parseMarkdown } from 'comark'
 import type { MarkdownDocument as MarkdownDocumentType, NodeTransform, ParserOptions } from 'comark'
 import { isMarkdownDocument } from 'comark/utils'
+import type { CaretOptions, FadeOptions, StreamEffect } from 'comark/stream'
 import { MarkdownDocument } from './MarkdownDocument.tsx'
 import { MarkdownClient } from './MarkdownClient.tsx'
 
@@ -67,7 +68,18 @@ export interface MarkdownProps extends Omit<React.HTMLAttributes<HTMLDivElement>
    * If caret is true, a caret will be appended to the document's last text node
    * If caret is an object, it will be appended with the given class
    */
-  caret?: boolean | { class: string }
+  caret?: boolean | CaretOptions
+
+  /**
+   * Fade in text as it streams. `true` uses the defaults; pass options to tune duration, easing,
+   * word stagger, class, or excluded tags.
+   */
+  fade?: boolean | FadeOptions
+
+  /**
+   * Custom render-time stream effects (see `comark/stream`). Run after `fade` and before `caret`.
+   */
+  effects?: readonly StreamEffect[]
 
   /**
    * Additional data to pass to the renderer, referenced from markdown

@@ -47,6 +47,7 @@ function onSubmit() {
                   :value="part.text"
                   :streaming="isPartStreaming(part)"
                   caret
+                  fade
                 />
               </Suspense>
             </template>

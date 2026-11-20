@@ -21,7 +21,8 @@ import {
   shallowRef,
   toRaw,
 } from 'vue'
-import { findLastTextNodeAndAppendNode, getCaret } from '../utils/caret.ts'
+import { createStreamRenderer, getChildKeys, resolveStreamEffects } from 'comark/stream'
+import type { CaretOptions, FadeOptions, StreamEffect } from 'comark/stream'
 import { applyNodeTransforms, pascalCase, resolveAttributes, toNativeAttributes } from 'comark/utils'
 
 const asyncComponentCache = new Map<string, any>()
@@ -176,6 +177,7 @@ function renderNode(
     const childrenRenderData = hasOwnAttrs ? { ...renderData, props: scopeProps } : renderData
     const slots: Record<string, () => (VNode | string)[]> = {}
     const regularChildren: (VNode | string)[] = []
+    const childKeys = getChildKeys(children)
 
     for (let i = 0; i < children.length; i++) {
       const child = children[i]
@@ -200,17 +202,34 @@ function renderNode(
 
         if (slotName) {
           const slotChildren = getChildren(child)
+          const slotKeys = getChildKeys(slotChildren)
           slots[slotName] = () =>
             slotChildren
               .map((slotChild: Node, idx: number) =>
-                renderNode(slotChild, components, idx, componentsManifest, node, childrenRenderData, transformNode)
+                renderNode(
+                  slotChild,
+                  components,
+                  slotKeys[idx],
+                  componentsManifest,
+                  node,
+                  childrenRenderData,
+                  transformNode
+                )
               )
               .filter((slotChild): slotChild is VNode | string => slotChild !== null)
           continue
         }
       }
 
-      const rendered = renderNode(child, components, i, componentsManifest, node, childrenRenderData, transformNode)
+      const rendered = renderNode(
+        child,
+        components,
+        childKeys[i],
+        componentsManifest,
+        node,
+        childrenRenderData,
+        transformNode
+      )
       if (rendered !== null) {
         regularChildren.push(rendered)
       }
@@ -259,7 +278,17 @@ export interface MarkdownDocumentProps {
   /**
    * If caret is true, a caret will be appended to the document's last text node
    */
-  caret?: boolean | { class: string }
+  caret?: boolean | CaretOptions
+
+  /**
+   * Fade in text as it streams
+   */
+  fade?: boolean | FadeOptions
+
+  /**
+   * Custom render-time stream effects, run after `fade` and before `caret`
+   */
+  effects?: readonly StreamEffect[]
 
   /**
    * Additional data to pass to the renderer
@@ -326,8 +355,24 @@ export const markdownDocumentProps = {
    * If caret is an object, it will be appended with the given class
    */
   caret: {
-    type: [Boolean, Object] as PropType<boolean | { class: string }>,
+    type: [Boolean, Object] as PropType<boolean | CaretOptions>,
     default: false,
+  },
+
+  /**
+   * Fade in text as it streams
+   */
+  fade: {
+    type: [Boolean, Object] as PropType<boolean | FadeOptions>,
+    default: false,
+  },
+
+  /**
+   * Custom render-time stream effects, run after `fade` and before `caret`
+   */
+  effects: {
+    type: Array as PropType<readonly StreamEffect[]>,
+    default: undefined,
   },
 
   /**
@@ -424,18 +469,15 @@ export const MarkdownDocument: MarkdownDocumentComponent = defineComponent({
       return resolved || null
     }
 
-    const caret = computed<ElementNode | null>(() => getCaret(props.caret || false))
+    const stream = createStreamRenderer()
+    const effects = computed(() =>
+      resolveStreamEffects({ caret: props.caret, fade: props.fade, effects: props.effects })
+    )
 
     return () => {
       const rawDocument = toRaw(liveDocument.value ?? inputDocument.value)
-      const nodes = [...(rawDocument.nodes || [])]
-
-      if (props.streaming && caret.value && nodes.length > 0) {
-        const hasStreamCaret = findLastTextNodeAndAppendNode(nodes[nodes.length - 1] as ElementNode, caret.value)
-        if (!hasStreamCaret) {
-          nodes.push(caret.value)
-        }
-      }
+      const nodes = stream.render(rawDocument.nodes || [], { streaming: props.streaming, effects: effects.value })
+      const keys = getChildKeys(nodes)
 
       const renderData: NodeRenderData = {
         frontmatter:
@@ -449,7 +491,7 @@ export const MarkdownDocument: MarkdownDocumentComponent = defineComponent({
 
       const children = nodes
         .map((node, index) =>
-          renderNode(node, components.value, index, componentManifest, undefined, renderData, props.transformNode)
+          renderNode(node, components.value, keys[index], componentManifest, undefined, renderData, props.transformNode)
         )
         .filter((child): child is VNode | string => child !== null)
 

@@ -15,7 +15,8 @@ import {
   resolveAttributes,
   toNativeAttributes,
 } from 'comark/utils'
-import { findLastTextNodeAndAppendNode, getCaret } from '../utils/caret.ts'
+import { createStreamRenderer, getChildKeys, resolveStreamEffects } from 'comark/stream'
+import type { CaretOptions, FadeOptions, StreamEffect } from 'comark/stream'
 
 function getTag(node: Node): string | null {
   if (Array.isArray(node) && node.length >= 1) {
@@ -196,6 +197,7 @@ function renderNode(
     const childrenRenderData: NodeRenderData = hasOwnAttrs ? { ...renderData, props: scopeProps } : renderData
     const slots: Record<string, React.ReactNode[]> = {}
     const regularChildren: React.ReactNode[] = []
+    const childKeys = getChildKeys(children)
 
     for (let i = 0; i < children.length; i++) {
       const child = children[i]
@@ -220,16 +222,33 @@ function renderNode(
 
         if (slotName) {
           const slotChildren = getChildren(child)
+          const slotKeys = getChildKeys(slotChildren)
           slots[slotName] = slotChildren
             .map((slotChild: Node, idx: number) =>
-              renderNode(slotChild, components, idx, componentsManifest, node, childrenRenderData, transformNode)
+              renderNode(
+                slotChild,
+                components,
+                slotKeys[idx],
+                componentsManifest,
+                node,
+                childrenRenderData,
+                transformNode
+              )
             )
             .filter((slotChild): slotChild is React.ReactNode => slotChild !== null)
           continue
         }
       }
 
-      const rendered = renderNode(child, components, i, componentsManifest, node, childrenRenderData, transformNode)
+      const rendered = renderNode(
+        child,
+        components,
+        childKeys[i],
+        componentsManifest,
+        node,
+        childrenRenderData,
+        transformNode
+      )
       if (rendered !== null) {
         regularChildren.push(rendered)
       }
@@ -304,7 +323,18 @@ export interface MarkdownDocumentProps extends Omit<React.HTMLAttributes<HTMLDiv
    * If caret is true, a caret will be appended to the document's last text node
    * If caret is an object, it will be appended with the given class
    */
-  caret?: boolean | { class: string }
+  caret?: boolean | CaretOptions
+
+  /**
+   * Fade in text as it streams. `true` uses the defaults; pass options to tune duration, easing,
+   * word stagger, class, or excluded tags.
+   */
+  fade?: boolean | FadeOptions
+
+  /**
+   * Custom render-time stream effects (see `comark/stream`). Run after `fade` and before `caret`.
+   */
+  effects?: readonly StreamEffect[]
 
   /**
    * Additional data to pass to the renderer, referenced from markdown
@@ -350,7 +380,9 @@ export const MarkdownDocument: React.FC<MarkdownDocumentProps> = ({
   components: customComponents = {},
   componentsManifest,
   streaming = false,
-  caret: caretProp = false,
+  caret = false,
+  fade = false,
+  effects,
   data,
   transformNode,
   className,
@@ -358,17 +390,15 @@ export const MarkdownDocument: React.FC<MarkdownDocumentProps> = ({
 }) => {
   const document = value ?? { nodes: [] }
 
-  const caret = useMemo(() => getCaret(caretProp), [caretProp])
+  // Per-instance effect state. `useMemo` (not `useRef`) keeps this usable in Server Components.
+  const stream = useMemo(() => createStreamRenderer(), [])
 
   const renderedNodes = useMemo(() => {
-    const nodes = [...(document.nodes || [])]
-
-    if (streaming && caret && nodes.length > 0) {
-      const hasStreamCaret = findLastTextNodeAndAppendNode(nodes[nodes.length - 1] as ElementNode, caret)
-      if (!hasStreamCaret) {
-        nodes.push(caret)
-      }
-    }
+    const nodes = stream.render(document.nodes || [], {
+      streaming,
+      effects: resolveStreamEffects({ caret, fade, effects }),
+    })
+    const keys = getChildKeys(nodes)
 
     const renderData: NodeRenderData = {
       frontmatter:
@@ -382,10 +412,10 @@ export const MarkdownDocument: React.FC<MarkdownDocumentProps> = ({
 
     return nodes
       .map((node, index) =>
-        renderNode(node, customComponents, index, componentsManifest, undefined, renderData, transformNode)
+        renderNode(node, customComponents, keys[index], componentsManifest, undefined, renderData, transformNode)
       )
       .filter((child): child is React.ReactNode => child !== null)
-  }, [document, customComponents, componentsManifest, streaming, caret, data, transformNode])
+  }, [stream, document, customComponents, componentsManifest, streaming, caret, fade, effects, data, transformNode])
 
   return (
     <div

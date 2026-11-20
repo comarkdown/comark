@@ -5,9 +5,10 @@ Recursive Comark AST node renderer.
 Renders a single `Node`: a text string, a native HTML element
 (via `<svelte:element>`), or a custom component (via a capitalized variable).
 
-Recurses into children by importing itself. The streaming caret is threaded
-through props and only forwarded to the last child at each level, so it
-naturally appears inline after the deepest trailing text node.
+Recurses into children by importing itself. `MarkdownDocument` applies stream
+effects (caret, fade) to the tree before rendering. The legacy `caretClass`
+prop is threaded to the last child at each level, so it appears inline after
+the deepest trailing text node.
 
 @example
 ```svelte
@@ -81,6 +82,7 @@ naturally appears inline after the deepest trailing text node.
   import ComarkComponent from './ComarkComponent.svelte'
   import Resolve from './Resolve.svelte'
   import { applyNodeTransforms, isHtmlVoidElement, resolveAttributes, toNativeAttributes } from 'comark/utils'
+  import { CARET_STYLE, CARET_STYLES, getStreamKey, injectStreamStyles } from 'comark/stream'
   import { getContext, setContext } from 'svelte'
 
   const EMPTY_RENDER_DATA: NodeRenderData = { frontmatter: {}, meta: {}, data: {}, props: {} }
@@ -104,8 +106,9 @@ naturally appears inline after the deepest trailing text node.
   } = $props()
 
   const CARET_TEXT = '\u2009'
-  const CARET_STYLE
-    = 'background-color: currentColor; display: inline-block; margin-left: 0.25rem; margin-right: 0.25rem; animation: pulse 0.75s cubic-bezier(0.4,0,0.6,1) infinite;'
+  $effect(() => {
+    if (caretClass !== null) injectStreamStyles('caret', CARET_STYLES)
+  })
 
   interface RenderChild {
     node: NodeType
@@ -258,17 +261,24 @@ naturally appears inline after the deepest trailing text node.
   })
 </script>
 
+<!--
+  Index keys on purpose: keys that change kind at an index (text to element) make Svelte's async
+  `each` reconcile throw mid-batch. `{#key}` re-mounts a node when a stream effect gives that index a
+  new key, so a new fading span never reuses the element of a finished one.
+-->
 {#snippet renderChildren()}
   {#each defaultChildren as child, i (i)}
-    <MarkdownNode
-      node={child.node}
-      {components}
-      {componentsManifest}
-      {transformNode}
-      resolver={Resolver}
-      caretClass={child.caretClass}
-      renderData={childrenRenderData}
-    />
+    {#key getStreamKey(child.node)}
+      <MarkdownNode
+        node={child.node}
+        {components}
+        {componentsManifest}
+        {transformNode}
+        resolver={Resolver}
+        caretClass={child.caretClass}
+        renderData={childrenRenderData}
+      />
+    {/key}
   {/each}
 {/snippet}
 

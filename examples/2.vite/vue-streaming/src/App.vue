@@ -9,6 +9,7 @@ const streamed = ref('')
 const isStreaming = ref(false)
 const streamingMode = ref(true)
 const showCaret = ref(true)
+const fadeIn = ref(true)
 const charsPerTick = ref(2)
 const delayMs = ref(40)
 const stats = ref<MisrenderStats>(emptyStats())
@@ -377,6 +378,13 @@ function trimSegsToLastLines(segs: DiffSeg[], count: number): DiffSeg[] {
         />
         <span>Caret</span>
       </label>
+      <label class="check">
+        <input
+          v-model="fadeIn"
+          type="checkbox"
+        />
+        <span>Fade in</span>
+      </label>
 
       <div class="actions">
         <button
@@ -442,6 +450,7 @@ function trimSegsToLastLines(segs: DiffSeg[], count: number): DiffSeg[] {
               :value="streamed"
               :streaming="isStreaming && streamingMode"
               :caret="showCaret && isStreaming"
+              :fade="fadeIn"
             />
             <template #fallback>
               <p class="muted">Parsing…</p>

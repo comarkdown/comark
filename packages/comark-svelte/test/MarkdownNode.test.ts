@@ -15,8 +15,7 @@ function html(body: string): string {
   return body.replace(/<!--[[\]\-\d!]*-->/g, '').replace(/<!---->/g, '')
 }
 
-const CARET_STYLE =
-  'background-color: currentColor; display: inline-block; margin-left: 0.25rem; margin-right: 0.25rem; animation: pulse 0.75s cubic-bezier(0.4,0,0.6,1) infinite;'
+import { CARET_STYLE } from 'comark/stream'
 
 describe('MarkdownNode', () => {
   it('renders a paragraph', async () => {

@@ -3,6 +3,7 @@ import { computed, defineComponent, h, shallowRef, watch } from 'vue'
 import { createSerializedMarkdownParser } from 'comark'
 import type { ParserOptions, ComponentManifest, MarkdownDocument as MarkdownDocumentType, NodeTransform } from 'comark'
 import { isMarkdownDocument } from 'comark/utils'
+import type { CaretOptions, FadeOptions, StreamEffect } from 'comark/stream'
 import { MarkdownDocument } from './MarkdownDocument.ts'
 
 /**
@@ -55,7 +56,17 @@ export interface MarkdownProps {
   /**
    * If caret is true, a caret will be appended to the document's last text node
    */
-  caret?: boolean | { class: string }
+  caret?: boolean | CaretOptions
+
+  /**
+   * Fade in text as it streams
+   */
+  fade?: boolean | FadeOptions
+
+  /**
+   * Custom render-time stream effects, run after `fade` and before `caret`
+   */
+  effects?: readonly StreamEffect[]
 
   /**
    * Additional data to pass to the renderer
@@ -152,8 +163,24 @@ export const markdownProps = {
    * If caret is true, a caret will be appended to the document's last text node
    */
   caret: {
-    type: [Boolean, Object] as PropType<boolean | { class: string }>,
+    type: [Boolean, Object] as PropType<boolean | CaretOptions>,
     default: false,
+  },
+
+  /**
+   * Fade in text as it streams
+   */
+  fade: {
+    type: [Boolean, Object] as PropType<boolean | FadeOptions>,
+    default: false,
+  },
+
+  /**
+   * Custom render-time stream effects, run after `fade` and before `caret`
+   */
+  effects: {
+    type: Array as PropType<readonly StreamEffect[]>,
+    default: undefined,
   },
 
   /**
@@ -263,6 +290,8 @@ export const Markdown: MarkdownComponent = defineComponent({
           componentsManifest: props.componentsManifest,
           class: props.streaming ? 'comark-stream' : '',
           caret: props.caret,
+          fade: props.fade,
+          effects: props.effects,
           data: props.data,
           transformNode: props.transformNode,
           documentKey: props.documentKey,
@@ -276,6 +305,8 @@ export const Markdown: MarkdownComponent = defineComponent({
         componentsManifest: props.componentsManifest,
         class: props.streaming ? 'comark-stream' : '',
         caret: props.caret,
+        fade: props.fade,
+        effects: props.effects,
         data: props.data,
         transformNode: props.transformNode,
         documentKey: props.documentKey,
