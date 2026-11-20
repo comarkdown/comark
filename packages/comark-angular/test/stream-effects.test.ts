@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { Component, type Type } from '@angular/core'
+import { Component, Input, type Type } from '@angular/core'
 import { TestBed } from '@angular/core/testing'
 import type { MarkdownDocument as MarkdownDocumentType, Node } from 'comark'
 import { MarkdownDocument } from '../src/components/markdown-document.component.ts'
@@ -14,6 +14,20 @@ Component({
   standalone: true,
   template: '<b class="badge"><ng-content /></b>',
 })(Badge)
+
+class Flaky {
+  label?: string
+  get text(): string | undefined {
+    if (this.label === 'bad') throw new Error('bad label')
+    return this.label
+  }
+}
+Input()(Flaky.prototype, 'label')
+Component({
+  selector: 'app-flaky',
+  standalone: true,
+  template: '<i class="flaky">{{ text }}</i>',
+})(Flaky)
 
 describe('MarkdownDocument stream effects', () => {
   beforeEach(() => {
@@ -106,5 +120,14 @@ describe('MarkdownDocument stream effects', () => {
     update(doc(['p', {}, ['badge', {}, 'new'], ' text']))
     expect(el.querySelector('.badge')).toBe(badge)
     expect(el.textContent).toBe('new text')
+  })
+  it('recreates a custom component after a failed update', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+    const ok: Node = ['p', {}, ['flaky', { label: 'ok' }]]
+    const { el, update } = await render(doc(ok), { components: { flaky: Flaky } })
+    expect(el.querySelector('.flaky')?.textContent).toBe('ok')
+    update(doc(['p', {}, ['flaky', { label: 'bad' }]]))
+    update(doc(ok))
+    expect(el.querySelector('.flaky')?.textContent).toBe('ok')
   })
 })

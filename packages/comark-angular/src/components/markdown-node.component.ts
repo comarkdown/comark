@@ -579,7 +579,6 @@ export class MarkdownNode implements OnChanges {
             out.push(entry)
             continue
           }
-          const { node: previousNode, renderData: previousRenderData, parent: previousParent } = entry
           entry.node = child as ElementNode
           entry.renderData = renderData
           entry.parent = parentNode
@@ -591,11 +590,10 @@ export class MarkdownNode implements OnChanges {
             entry.ref.setInput('transformNode', transformNode)
             entry.ref.changeDetectorRef.detectChanges()
           } catch (error) {
-            // Restore the previous inputs so the next update retries instead of matching the failed one.
-            entry.node = previousNode
-            entry.renderData = previousRenderData
-            entry.parent = previousParent
+            // Drop the failed component, as the creation path does, so the next update recreates it.
+            entry.ref.destroy()
             console.error(`Failed to update custom component "${getTag(child)}"`, error)
+            continue
           }
         } else if (entry.node !== child || entry.renderData !== next!.childrenRenderData) {
           this.patchElement(entry, child as ElementNode, next!)
