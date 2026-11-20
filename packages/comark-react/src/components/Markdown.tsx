@@ -77,7 +77,7 @@ export interface MarkdownProps extends Omit<React.HTMLAttributes<HTMLDivElement>
   fade?: boolean | FadeOptions
 
   /**
-   * Custom render-time stream effects (see `comark/stream`). Run after `fade` and before `caret`.
+   * Custom render-time stream effects (see `comark/stream`). Run first, then `fade`, then `caret`.
    */
   effects?: readonly StreamEffect[]
 
@@ -127,8 +127,11 @@ export interface MarkdownProps extends Omit<React.HTMLAttributes<HTMLDivElement>
 export function Markdown(props: MarkdownProps): React.ReactNode | Promise<React.ReactNode> {
   // Streaming must stay synchronous: an async component suspends on every
   // streamed update, which flashes the parent Suspense fallback and rebuilds
-  // fade spans mid-animation.
-  if (props.streaming) return <MarkdownStreaming {...props} />
+  // fade spans mid-animation. An explicit `streaming={false}` with effects keeps the
+  // streaming renderer mounted, so effects drain their backlog instead of the static
+  // path showing it at once.
+  const ended = props.streaming === false && (props.caret || props.fade || props.effects?.length)
+  if (props.streaming || ended) return <MarkdownStreaming {...props} />
   return renderStatic(props)
 }
 
@@ -148,7 +151,7 @@ function MarkdownStreaming({
   className,
   ...rest
 }: MarkdownProps) {
-  const source = children ? String(children) : ((value as string | undefined) ?? '')
+  const source = isMarkdownDocument(value) ? value : children ? String(children) : ((value as string | undefined) ?? '')
   return (
     <MarkdownClient
       {...rest}

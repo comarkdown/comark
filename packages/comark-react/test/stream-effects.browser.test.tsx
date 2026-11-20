@@ -1,8 +1,10 @@
-import React, { act } from 'react'
+import React, { act, useEffect } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, expect, it } from 'vitest'
 import type { MarkdownDocument as MarkdownDocumentType, Node } from 'comark'
+import { pace } from 'comark/stream'
 import type { StreamEffect } from 'comark/stream'
+import { Markdown } from '../src/components/Markdown'
 import { MarkdownDocument } from '../src/components/MarkdownDocument'
 
 Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true })
@@ -74,4 +76,54 @@ it('does not mutate the rendered document', async () => {
   await render({ ...value }, { caret: true })
   expect(JSON.stringify(value)).toBe(snapshot)
   expect(container.querySelectorAll('span[style]').length).toBe(1)
+})
+
+it('keeps index keys without effects so siblings are not remounted', async () => {
+  let mounts = 0
+  function Counter() {
+    useEffect(() => {
+      mounts++
+    }, [])
+    return <b>count</b>
+  }
+  const components = { counter: Counter }
+  await render(doc(['p', {}, 'text ', ['counter', {}]]), { streaming: false, fade: false, components })
+  await render(doc(['p', {}, ['em', {}, 'text'], ['counter', {}]]), { streaming: false, fade: false, components })
+  expect(container.querySelector('em')).not.toBeNull()
+  expect(mounts).toBe(1)
+})
+
+it('drains paced text after streaming ends instead of showing it at once', async () => {
+  const text = 'A long paragraph that pace cannot release within a single frame.'
+  const effects = [pace({ speed: 1 })]
+  const show = (value: string, streaming: boolean) =>
+    act(async () => {
+      root.render(
+        <Markdown
+          value={value}
+          streaming={streaming}
+          effects={effects}
+        />
+      )
+    })
+  // The first render shows its input at once; later text is paced.
+  await show('A', true)
+  await show(text, true)
+  expect(container.textContent!.length).toBeLessThan(text.length)
+  await show(text, false)
+  expect(container.textContent!.length).toBeLessThan(text.length)
+})
+
+it('prefers a pre-parsed value over children while streaming', async () => {
+  await act(async () => {
+    root.render(
+      <Markdown
+        streaming
+        value={doc(['p', {}, 'From value'])}
+      >
+        From children
+      </Markdown>
+    )
+  })
+  expect(container.textContent).toBe('From value')
 })

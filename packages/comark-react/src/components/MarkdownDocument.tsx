@@ -6,7 +6,7 @@ import type {
   NodeRenderData,
   NodeTransform,
 } from 'comark'
-import React, { lazy, Suspense, useEffect, useMemo, useState } from 'react'
+import React, { lazy, Suspense, useMemo } from 'react'
 import {
   applyNodeTransforms,
   isHtmlVoidElement,
@@ -15,8 +15,9 @@ import {
   resolveAttributes,
   toNativeAttributes,
 } from 'comark/utils'
-import { createStreamRenderer, getChildKeys, resolveStreamEffects } from 'comark/stream'
+import { getChildKeys } from 'comark/stream'
 import type { CaretOptions, FadeOptions, StreamEffect } from 'comark/stream'
+import { MarkdownDocumentStream } from './MarkdownDocumentStream.tsx'
 
 function getTag(node: Node): string | null {
   if (Array.isArray(node) && node.length >= 1) {
@@ -103,7 +104,8 @@ function renderNode(
   componentsManifest?: ComponentManifest,
   parent?: Node,
   renderData: NodeRenderData = { frontmatter: {}, meta: {}, data: {}, props: {} },
-  transformNode?: NodeTransform | readonly NodeTransform[]
+  transformNode?: NodeTransform | readonly NodeTransform[],
+  streamKeys = false
 ): React.ReactNode {
   if (typeof node === 'string') {
     return node
@@ -197,7 +199,7 @@ function renderNode(
     const childrenRenderData: NodeRenderData = hasOwnAttrs ? { ...renderData, props: scopeProps } : renderData
     const slots: Record<string, React.ReactNode[]> = {}
     const regularChildren: React.ReactNode[] = []
-    const childKeys = getChildKeys(children)
+    const childKeys = streamKeys ? getChildKeys(children) : undefined
 
     for (let i = 0; i < children.length; i++) {
       const child = children[i]
@@ -222,17 +224,18 @@ function renderNode(
 
         if (slotName) {
           const slotChildren = getChildren(child)
-          const slotKeys = getChildKeys(slotChildren)
+          const slotKeys = streamKeys ? getChildKeys(slotChildren) : undefined
           slots[slotName] = slotChildren
             .map((slotChild: Node, idx: number) =>
               renderNode(
                 slotChild,
                 components,
-                slotKeys[idx],
+                slotKeys ? slotKeys[idx] : idx,
                 componentsManifest,
                 node,
                 childrenRenderData,
-                transformNode
+                transformNode,
+                streamKeys
               )
             )
             .filter((slotChild): slotChild is React.ReactNode => slotChild !== null)
@@ -243,11 +246,12 @@ function renderNode(
       const rendered = renderNode(
         child,
         components,
-        childKeys[i],
+        childKeys ? childKeys[i] : i,
         componentsManifest,
         node,
         childrenRenderData,
-        transformNode
+        transformNode,
+        streamKeys
       )
       if (rendered !== null) {
         regularChildren.push(rendered)
@@ -332,7 +336,7 @@ export interface MarkdownDocumentProps extends Omit<React.HTMLAttributes<HTMLDiv
   fade?: boolean | FadeOptions
 
   /**
-   * Custom render-time stream effects (see `comark/stream`). Run after `fade` and before `caret`. Put `pace()` first.
+   * Custom render-time stream effects (see `comark/stream`). Run first, then `fade`, then `caret`.
    */
   effects?: readonly StreamEffect[]
 
@@ -375,78 +379,73 @@ export interface MarkdownDocumentProps extends Omit<React.HTMLAttributes<HTMLDiv
  * }
  * ```
  */
-export const MarkdownDocument: React.FC<MarkdownDocumentProps> = ({
-  value,
-  components: customComponents = {},
-  componentsManifest,
-  streaming = false,
-  caret = false,
-  fade = false,
-  effects,
-  data,
-  transformNode,
-  className,
-  ...rest
-}) => {
-  const document = value ?? { nodes: [] }
+export const MarkdownDocument: React.FC<MarkdownDocumentProps> = (props) => {
+  // Effects keep state between renders, so only they need the client renderer. Without them this path
+  // uses only `useMemo`, which React Server Components support.
+  const streamed = Boolean(props.caret || props.fade || props.effects?.length)
+  const { value, components, componentsManifest, data, transformNode } = props
+  const rendered = useMemo(
+    () => (streamed ? null : renderDocumentNodes(value?.nodes || [], props)),
+    [streamed, value, components, componentsManifest, data, transformNode]
+  )
+  if (streamed) return <MarkdownDocumentStream {...props} />
 
-  // Per-instance effect state. `useMemo` (not `useRef`) keeps this usable in Server Components.
-  const stream = useMemo(() => createStreamRenderer(), [])
-
-  // Paced effects release text on a clock, so keep re-rendering until their backlog is empty.
-  const [frame, setFrame] = useState(0)
-
-  const renderedNodes = useMemo(() => {
-    const nodes = stream.render(document.nodes || [], {
-      streaming,
-      effects: resolveStreamEffects({ caret, fade, effects }),
-    })
-    const keys = getChildKeys(nodes)
-
-    const renderData: NodeRenderData = {
-      frontmatter:
-        (document as MarkdownDocumentType).frontmatter ||
-        (document as unknown as { data: Record<string, unknown> }).data ||
-        {},
-      meta: (document as MarkdownDocumentType).meta || {},
-      data: data || {},
-      props: {},
-    }
-
-    return {
-      pending: stream.pending(),
-      nodes: nodes
-        .map((node, index) =>
-          renderNode(node, customComponents, keys[index], componentsManifest, undefined, renderData, transformNode)
-        )
-        .filter((child): child is React.ReactNode => child !== null),
-    }
-  }, [
-    stream,
-    document,
-    customComponents,
-    componentsManifest,
-    streaming,
-    caret,
-    fade,
-    effects,
-    data,
-    transformNode,
-    frame,
-  ])
-
-  useEffect(() => {
-    if (!renderedNodes.pending) return
-    const id = requestAnimationFrame(() => setFrame((n) => n + 1))
-    return () => cancelAnimationFrame(id)
-  }, [renderedNodes])
+  const {
+    value: _value,
+    components: _components,
+    componentsManifest: _componentsManifest,
+    streaming: _streaming,
+    caret: _caret,
+    fade: _fade,
+    effects: _effects,
+    data: _data,
+    transformNode: _transformNode,
+    className,
+    ...rest
+  } = props
 
   return (
     <div
       {...rest}
       className={`comark-content ${className || ''}`}
     >
-      {renderedNodes.nodes}
+      {rendered}
     </div>
   )
+}
+
+/**
+ * Render top-level `nodes` of `props.value`. Pass `keys` (from `getChildKeys`) when stream effects
+ * ran, so effect-inserted nodes keep their `$.key`; otherwise children use index keys.
+ */
+export function renderDocumentNodes(
+  nodes: readonly Node[],
+  { value, components = {}, componentsManifest, data, transformNode }: MarkdownDocumentProps,
+  keys?: readonly string[]
+): React.ReactNode[] {
+  const document = value ?? { nodes: [] }
+  const renderData: NodeRenderData = {
+    frontmatter:
+      (document as MarkdownDocumentType).frontmatter ||
+      (document as unknown as { data: Record<string, unknown> }).data ||
+      {},
+    meta: (document as MarkdownDocumentType).meta || {},
+    data: data || {},
+    props: {},
+  }
+
+  return nodes
+    .map((node, index) =>
+      renderNode(
+        node,
+        components,
+        keys ? keys[index] : index,
+        componentsManifest,
+        undefined,
+        renderData,
+        transformNode,
+        !!keys
+      )
+    )
+    .filter((child): child is React.ReactNode => child !== null)
 }
