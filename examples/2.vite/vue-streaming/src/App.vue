@@ -468,7 +468,7 @@ function trimSegsToLastLines(segs: DiffSeg[], count: number): DiffSeg[] {
               :value="streamed"
               :streaming="isStreaming && streamingMode"
               :caret="showCaret && isStreaming"
-              :fade="fadeIn"
+              :fade="fadeIn && { pace: false }"
             />
             <template #fallback>
               <p class="muted">Parsing…</p>
