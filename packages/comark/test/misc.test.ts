@@ -138,5 +138,8 @@ describe('misc', () => {
 
     const valid = await parseMarkdown('**Result** {title="valid"}')
     expect(valid.nodes).toEqual([['p', { title: 'valid' }, ['strong', {}, 'Result']]])
+
+    const nestedValid = await parseMarkdown('a*b*{c *d*{.red}}', { autoClose: false })
+    expect(nestedValid.nodes).toEqual([['p', {}, 'a', ['em', {}, 'b'], '{c ', ['em', { class: 'red' }, 'd'], '}']])
   })
 })
