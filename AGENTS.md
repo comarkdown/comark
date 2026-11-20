@@ -280,7 +280,7 @@ Contract: `packages/comark/SPEC/HTML/README.md`.
 
 ### Stream effects (`comark/stream`)
 
-Every framework renderer accepts `caret`, `fade`, and `effects` and applies them through one `createStreamRenderer()` per component instance, in the order `fade`, custom `effects`, `caret` (`resolveStreamEffects`).
+Every framework renderer accepts `caret`, `fade`, and `effects` and applies them through one `createStreamRenderer()` per component instance, in the order custom `effects`, `fade`, `caret` (`resolveStreamEffects`).
 
 - Effects run on the top-level nodes at render time and must never mutate them: copy only the changed path so reused streaming blocks keep their identity. Nodes an effect inserts carry `$.key`.
 - `fade` diffs each top-level block's fadeable text against the previous render by common prefix, so restructuring never re-fades shown text. A block's spans merge back into text together once its last segment finishes, so spans are only appended while any is animating.
