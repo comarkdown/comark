@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+    <title>Comark - Streaming</title>
+  </head>
+  <body>
+    <main class="app">
+      <header class="header">
+        <h1>Comark streaming</h1>
+        <p>
+          One Markdown source, one <code>plugins</code> list and one <code>effects</code> list, rendered by Vue, React,
+          Svelte and Angular at the same time.
+        </p>
+      </header>
+      <div class="columns">
+        <section class="col">
+          <header class="col-head">
+            <h2>Markdown</h2>
+            <code>comark/stream</code>
+          </header>
+          <div
+            id="editor"
+            class="col-body editor"
+          ></div>
+        </section>
+        <section class="col">
+          <header class="col-head">
+            <h2>Vue</h2>
+            <code>@comark/vue</code>
+          </header>
+          <div
+            id="vue"
+            class="col-body prose"
+          ></div>
+        </section>
+        <section class="col">
+          <header class="col-head">
+            <h2>React</h2>
+            <code>@comark/react</code>
+          </header>
+          <div
+            id="react"
+            class="col-body prose"
+          ></div>
+        </section>
+        <section class="col">
+          <header class="col-head">
+            <h2>Svelte</h2>
+            <code>@comark/svelte</code>
+          </header>
+          <div
+            id="svelte"
+            class="col-body prose"
+          ></div>
+        </section>
+        <section class="col">
+          <header class="col-head">
+            <h2>Angular</h2>
+            <code>@comark/angular</code>
+          </header>
+          <div class="col-body prose">
+            <angular-column></angular-column>
+          </div>
+        </section>
+      </div>
+    </main>
+    <script
+      type="module"
+      src="/src/main.ts"
+    ></script>
+  </body>
+</html>
