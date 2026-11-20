@@ -294,6 +294,9 @@ Use `Markdown` with `$state` for streaming content:
 ```svelte
 <script lang="ts">
   import { Markdown } from '@comark/svelte'
+  import { caret } from 'comark/stream'
+
+  const effects = [caret()]
 
   let content = $state('')
   let isStreaming = $state(false)
@@ -314,13 +317,19 @@ Use `Markdown` with `$state` for streaming content:
   }
 </script>
 
-<Markdown value={content} streaming={isStreaming} caret />
+<Markdown value={content} streaming={isStreaming} {effects} />
 ```
 
-The `caret` prop appends a blinking cursor indicator to the last text node during streaming. Customize it with a CSS class:
+The `caret()` effect appends a blinking cursor indicator to the last text node during streaming. Customize it with a CSS class, and define the effects array once so it keeps its state between renders:
 
 ```svelte
-<Markdown value={content} streaming={isStreaming} caret={{ class: 'my-caret' }} />
+<script lang="ts">
+  import { caret, fade } from 'comark/stream'
+
+  const effects = [fade(), caret({ class: 'my-caret' })]
+</script>
+
+<Markdown value={content} streaming={isStreaming} {effects} />
 ```
 
 `autoClose` is enabled by default, so unfinished syntax such as `**bold text` is closed on every parse.

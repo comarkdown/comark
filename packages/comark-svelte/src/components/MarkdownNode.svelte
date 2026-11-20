@@ -5,9 +5,8 @@ Recursive Comark AST node renderer.
 Renders a single `Node`: a text string, a native HTML element
 (via `<svelte:element>`), or a custom component (via a capitalized variable).
 
-Recurses into children by importing itself. The streaming caret is threaded
-through props and only forwarded to the last child at each level, so it
-naturally appears inline after the deepest trailing text node.
+Recurses into children by importing itself. `MarkdownDocument` applies stream
+effects (see `comark/stream`) to the tree before rendering.
 
 @example
 ```svelte
@@ -81,6 +80,7 @@ naturally appears inline after the deepest trailing text node.
   import ComarkComponent from './ComarkComponent.svelte'
   import Resolve from './Resolve.svelte'
   import { applyNodeTransforms, isHtmlVoidElement, resolveAttributes, toNativeAttributes } from 'comark/utils'
+  import { getStreamKey } from 'comark/stream'
   import { getContext, setContext } from 'svelte'
 
   const EMPTY_RENDER_DATA: NodeRenderData = { frontmatter: {}, meta: {}, data: {}, props: {} }
@@ -91,7 +91,6 @@ naturally appears inline after the deepest trailing text node.
     componentsManifest,
     transformNode,
     resolver: Resolver = Resolve,
-    caretClass = null,
     renderData = EMPTY_RENDER_DATA,
   }: {
     node: NodeType
@@ -99,23 +98,12 @@ naturally appears inline after the deepest trailing text node.
     componentsManifest?: ComponentManifest
     transformNode?: NodeTransform | readonly NodeTransform[]
     resolver?: ComponentResolver
-    caretClass?: string | null
     renderData?: NodeRenderData
   } = $props()
-
-  const CARET_TEXT = '\u2009'
-  const CARET_STYLE
-    = 'background-color: currentColor; display: inline-block; margin-left: 0.25rem; margin-right: 0.25rem; animation: pulse 0.75s cubic-bezier(0.4,0,0.6,1) infinite;'
-
-  interface RenderChild {
-    node: NodeType
-    caretClass: string | null
-  }
 
   interface NamedSlot {
     name: string
     children: NodeType[]
-    caretClass: string | null
   }
 
   function getSlotName(node: NodeType): string | null {
@@ -137,17 +125,6 @@ naturally appears inline after the deepest trailing text node.
     return null
   }
 
-  function toRenderChildren(
-    sourceChildren: NodeType[],
-    sourceIndex: number,
-    totalChildren: number,
-    nodeCaretClass: string | null,
-  ): RenderChild[] {
-    return sourceChildren.map((child, index) => ({
-      node: child,
-      caretClass: sourceIndex === totalChildren - 1 && index === sourceChildren.length - 1 ? nodeCaretClass : null,
-    }))
-  }
 
   let { isText, tag, isVoid, children, Component, componentPromise, mappedProps, transformedProps } = $derived.by(() => {
     let isText = false
@@ -230,7 +207,7 @@ naturally appears inline after the deepest trailing text node.
   )
 
   let { defaultChildren, namedSlots } = $derived.by(() => {
-    const defaultChildren: RenderChild[] = []
+    const defaultChildren: NodeType[] = []
     const slots: NamedSlot[] = []
 
     for (let i = 0; i < children.length; i++) {
@@ -239,18 +216,14 @@ naturally appears inline after the deepest trailing text node.
       if (slotName) {
         const slotChildren = (child as unknown as NodeType[]).slice(2) as NodeType[]
         if (slotName === 'default') {
-          defaultChildren.push(...toRenderChildren(slotChildren, i, children.length, caretClass))
+          defaultChildren.push(...slotChildren)
         }
         else {
-          slots.push({
-            name: slotName,
-            children: slotChildren,
-            caretClass: i === children.length - 1 ? caretClass : null,
-          })
+          slots.push({ name: slotName, children: slotChildren })
         }
       }
       else {
-        defaultChildren.push({ node: child, caretClass: i === children.length - 1 ? caretClass : null })
+        defaultChildren.push(child)
       }
     }
 
@@ -258,25 +231,28 @@ naturally appears inline after the deepest trailing text node.
   })
 </script>
 
+<!--
+  Index keys on purpose: keys that change kind at an index (text to element) make Svelte's async
+  `each` reconcile throw mid-batch. `{#key}` re-mounts a node when a stream effect gives that index a
+  new key, so a new fading span never reuses the element of a finished one.
+-->
 {#snippet renderChildren()}
   {#each defaultChildren as child, i (i)}
-    <MarkdownNode
-      node={child.node}
-      {components}
-      {componentsManifest}
-      {transformNode}
-      resolver={Resolver}
-      caretClass={child.caretClass}
-      renderData={childrenRenderData}
-    />
+    {#key getStreamKey(child)}
+      <MarkdownNode
+        node={child}
+        {components}
+        {componentsManifest}
+        {transformNode}
+        resolver={Resolver}
+        renderData={childrenRenderData}
+      />
+    {/key}
   {/each}
 {/snippet}
 
 {#if isText}
-  {node}{#if caretClass !== null}<span
-      class={caretClass || undefined}
-      style={CARET_STYLE}>{CARET_TEXT}</span
-    >{/if}
+  {node}
 {:else if Component && namedSlots.length > 0}
   <ComarkComponent
     {Component}

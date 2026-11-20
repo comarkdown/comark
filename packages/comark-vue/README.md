@@ -14,7 +14,7 @@ Vue 3 renderer for [Comark](https://comark.dev). Render Markdown with custom Vue
 
 - `<Markdown>` component for rendering Markdown
 - Custom Vue components for any Comark tag
-- Streaming support with auto-close and a caret indicator
+- Streaming support with auto-close and stream effects such as caret and fade via `comark/stream`
 - SSR support in Nuxt and Vite
 - Optional Vite plugin for `<slot unwrap>` and prose component registration
 - Plugins for math, Mermaid, Shiki highlighting, binding, and more
@@ -66,7 +66,16 @@ Heads up!
 ### Streaming
 
 ```vue
-<Markdown :streaming="isStreaming" caret>{{ content }}</Markdown>
+<script setup lang="ts">
+import { Markdown } from '@comark/vue'
+import { caret } from 'comark/stream'
+
+const effects = [caret()]
+</script>
+
+<template>
+  <Markdown :streaming="isStreaming" :effects="effects">{{ content }}</Markdown>
+</template>
 ```
 
 ## Using with Vite

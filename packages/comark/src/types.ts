@@ -40,6 +40,8 @@ export type ElementNodeAttributes = {
     autoRel?: string
     /** The `target` `external-links` added to a link. Markdown output leaves `target` out while it still has this value. */
     autoTarget?: string
+    /** Render-time key set by stream effects (`comark/stream`) on nodes they insert. Never produced by the parser. */
+    key?: string
   }
 }
 

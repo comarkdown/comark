@@ -15,9 +15,6 @@ function html(body: string): string {
   return body.replace(/<!--[[\]\-\d!]*-->/g, '').replace(/<!---->/g, '')
 }
 
-const CARET_STYLE =
-  'background-color: currentColor; display: inline-block; margin-left: 0.25rem; margin-right: 0.25rem; animation: pulse 0.75s cubic-bezier(0.4,0,0.6,1) infinite;'
-
 describe('MarkdownNode', () => {
   it('renders a paragraph', async () => {
     const tree = await parseMarkdown('A paragraph')
@@ -75,58 +72,6 @@ describe('MarkdownNode', () => {
       props: { node: ['div', { ':data-count': '42' }, 'content'] },
     })
     expect(html(body)).toBe('<div data-count="42">content</div>')
-  })
-
-  it('does not render caret when caretClass is null', async () => {
-    const tree = await parseMarkdown('some text')
-    const { body } = render(MarkdownNode, {
-      props: { node: tree.nodes[0], caretClass: null },
-    })
-    expect(html(body)).toBe('<p>some text</p>')
-    expect(html(body)).not.toContain('<span')
-  })
-
-  it('renders caret with custom class on text node', () => {
-    const { body } = render(MarkdownNode, {
-      props: { node: 'text', caretClass: 'my-caret' },
-    })
-    expect(html(body)).toBe(`text<span class="my-caret" style="${CARET_STYLE}">\u2009</span>`)
-  })
-
-  it('renders caret without class when caretClass is empty string', () => {
-    const { body } = render(MarkdownNode, {
-      props: { node: 'text', caretClass: '' },
-    })
-    expect(html(body)).toBe(`text<span style="${CARET_STYLE}">\u2009</span>`)
-  })
-
-  it('threads caret to deepest last text node', async () => {
-    const tree = await parseMarkdown('first **last**')
-    const { body } = render(MarkdownNode, {
-      props: { node: tree.nodes[0], caretClass: '' },
-    })
-    const output = html(body)
-    expect(output).toContain(`last<span style="${CARET_STYLE}">\u2009</span></strong>`)
-    expect(output).not.toContain(`</strong><span`)
-  })
-
-  it('threads caret through deeply nested structure', async () => {
-    const tree = await parseMarkdown('*__**deep**__*')
-    const { body } = render(MarkdownNode, {
-      props: { node: tree.nodes[0], caretClass: 'c' },
-    })
-    const output = html(body)
-    expect(output).toContain(`deep<span class="c" style="${CARET_STYLE}">\u2009</span>`)
-  })
-
-  it('does not attach caret to non-last children', async () => {
-    const tree = await parseMarkdown('**first** last')
-    const { body } = render(MarkdownNode, {
-      props: { node: tree.nodes[0], caretClass: '' },
-    })
-    const output = html(body)
-    expect(output).toContain(`last<span style="${CARET_STYLE}">\u2009</span>`)
-    expect(output).not.toContain(`first<span`)
   })
 })
 

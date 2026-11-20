@@ -60,7 +60,7 @@ export function defineMarkdownComponent(config: DefineMarkdownComponentOptions =
           [value]="document"
           [components]="mergedComponents()"
           [streaming]="streaming()"
-          [caret]="caret()"
+          [effects]="effects()"
           [data]="data()"
           [transformNode]="mergedTransforms()"
         />
@@ -139,7 +139,7 @@ export function defineMarkdownDocumentComponent(config: DefineMarkdownDocumentOp
         [value]="value()"
         [components]="mergedComponents()"
         [streaming]="streaming()"
-        [caret]="caret()"
+        [effects]="effects()"
         [data]="data()"
         [transformNode]="mergedTransforms()"
       />

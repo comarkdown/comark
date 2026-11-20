@@ -2,6 +2,7 @@ import React from 'react'
 import { parseMarkdown } from 'comark'
 import type { MarkdownDocument as MarkdownDocumentType, NodeTransform, ParserOptions } from 'comark'
 import { isMarkdownDocument } from 'comark/utils'
+import type { StreamEffect } from 'comark/stream'
 import { MarkdownDocument } from './MarkdownDocument.tsx'
 import { MarkdownClient } from './MarkdownClient.tsx'
 
@@ -64,10 +65,9 @@ export interface MarkdownProps extends Omit<React.HTMLAttributes<HTMLDivElement>
   streaming?: boolean
 
   /**
-   * If caret is true, a caret will be appended to the document's last text node
-   * If caret is an object, it will be appended with the given class
+   * Render-time stream effects such as `caret()`, `fade()` and `pace()` from `comark/stream`. They run in order.
    */
-  caret?: boolean | { class: string }
+  effects?: readonly StreamEffect[]
 
   /**
    * Additional data to pass to the renderer, referenced from markdown
@@ -112,7 +112,18 @@ export interface MarkdownProps extends Omit<React.HTMLAttributes<HTMLDivElement>
  * }
  * ```
  */
-export async function Markdown({
+export function Markdown(props: MarkdownProps): React.ReactNode | Promise<React.ReactNode> {
+  // Streaming must stay synchronous: an async component suspends on every
+  // streamed update, which flashes the parent Suspense fallback and rebuilds
+  // fade spans mid-animation. An explicit `streaming={false}` with effects keeps the
+  // streaming renderer mounted, so effects drain their backlog instead of the static
+  // path showing it at once.
+  const ended = props.streaming === false && props.effects?.length
+  if (props.streaming || ended) return <MarkdownStreaming {...props} />
+  return renderStatic(props)
+}
+
+function MarkdownStreaming({
   children,
   value,
   options,
@@ -121,7 +132,39 @@ export async function Markdown({
   components: customComponents = {},
   componentsManifest,
   streaming = false,
-  caret = false,
+  effects,
+  data,
+  className,
+  ...rest
+}: MarkdownProps) {
+  const source = isMarkdownDocument(value) ? value : children ? String(children) : ((value as string | undefined) ?? '')
+  return (
+    <MarkdownClient
+      {...rest}
+      value={source}
+      options={options}
+      unwrap={unwrap}
+      plugins={plugins}
+      components={customComponents}
+      componentsManifest={componentsManifest}
+      streaming={streaming}
+      effects={effects}
+      data={data}
+      className={className}
+    />
+  )
+}
+
+async function renderStatic({
+  children,
+  value,
+  options,
+  plugins,
+  unwrap = false,
+  components: customComponents = {},
+  componentsManifest,
+  streaming = false,
+  effects,
   data,
   className,
   ...rest
@@ -135,7 +178,7 @@ export async function Markdown({
         componentsManifest={componentsManifest}
         streaming={streaming}
         className={className}
-        caret={caret}
+        effects={effects}
         data={data}
       />
     )
@@ -145,24 +188,6 @@ export async function Markdown({
   // `unwrap` prop is a shorthand for the `unwrap` parse option; an explicit
   // `options.unwrap` still wins when the prop is left at its default.
   const parseOptions = unwrap ? { ...options, unwrap } : options
-
-  if (streaming) {
-    return (
-      <MarkdownClient
-        {...rest}
-        value={source}
-        options={options}
-        unwrap={unwrap}
-        plugins={plugins}
-        components={customComponents}
-        componentsManifest={componentsManifest}
-        streaming={streaming}
-        caret={caret}
-        data={data}
-        className={className}
-      />
-    )
-  }
 
   const parsed = await parseMarkdown(source, { ...parseOptions, plugins })
 
@@ -174,7 +199,7 @@ export async function Markdown({
       componentsManifest={componentsManifest}
       streaming={streaming}
       className={className}
-      caret={caret}
+      effects={effects}
       data={data}
     />
   )

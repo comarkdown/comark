@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, ref } from 'vue'
+import { caret } from 'comark/stream'
 import { useMDCStream } from '../composables/useMDCStream'
 import { stringToStream } from '../composables/stringToStream'
 import resolveComponent from '../utils/components-manifest'
@@ -8,6 +9,7 @@ import landingMD from '~~/content/index.md?raw'
 definePageMeta({
   footer: false,
 })
+const effects = [caret()]
 const title = 'Streaming Markdown Demo'
 const description =
   'See Comark streaming in action. Watch markdown content parse and render in real-time as it arrives.'
@@ -178,7 +180,7 @@ function reset() {
             :value="state.content"
             :components-manifest="resolveComponent"
             :streaming="Boolean(streamController)"
-            caret
+            :effects="effects"
           />
           <div
             v-else
