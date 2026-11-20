@@ -286,7 +286,7 @@ export interface MarkdownDocumentProps {
   fade?: boolean | FadeOptions
 
   /**
-   * Custom render-time stream effects, run after `fade` and before `caret`. Put `pace()` first.
+   * Custom render-time stream effects, run before `fade` and `caret`. Put `pace()` first.
    */
   effects?: readonly StreamEffect[]
 
@@ -368,7 +368,7 @@ export const markdownDocumentProps = {
   },
 
   /**
-   * Custom render-time stream effects, run after `fade` and before `caret`. Put `pace()` first.
+   * Custom render-time stream effects, run before `fade` and `caret`. Put `pace()` first.
    */
   effects: {
     type: Array as PropType<readonly StreamEffect[]>,

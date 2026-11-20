@@ -27,7 +27,10 @@ describe('stream effects', () => {
   it('runs custom effects before the caret and never mutates the document', async () => {
     const value = doc(['p', {}, 'Hi'])
     const snapshot = JSON.stringify(value)
-    const tag: StreamEffect = { name: 'tag', apply: (nodes) => [...nodes, ['p', { class: 'extra' }, 'More']] }
+    const tag: StreamEffect = {
+      name: 'tag',
+      apply: (nodes) => [...nodes, ['p', { class: 'extra', $: { key: 'tag:extra' } }, 'More']],
+    }
     const html = await renderDoc(value, { streaming: true, caret: { class: 'cursor' }, effects: [tag] })
     expect(html).toMatch(/<p class="extra">More<span class="cursor"/)
     expect(JSON.stringify(value)).toBe(snapshot)

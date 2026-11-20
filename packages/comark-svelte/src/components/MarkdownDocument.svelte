@@ -81,7 +81,10 @@ Supports custom component mappings and streaming effects (caret, fade-in, custom
     })
   })
   $effect(() => {
-    // Read `nodes` before the early return: Svelte only re-runs an effect for signals it actually read.
+    // Read `frame` and `nodes` before the early return: Svelte only re-runs an effect for signals it
+    // actually read, and `nodes` keeps its identity when an effect returns the same array.
+    // eslint-disable-next-line
+    frame
     // eslint-disable-next-line
     nodes
     if (!stream.pending()) return
