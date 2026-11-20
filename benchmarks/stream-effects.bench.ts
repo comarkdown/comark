@@ -20,7 +20,7 @@ async function snapshots(markdown: string, count: number): Promise<Node[][]> {
 const chatFrames = await snapshots(chatMarkdown, 24)
 const largeFrames = await snapshots(largeMarkdown, 60)
 
-const fadeEffects = [fade({ styles: false }), caret()]
+const fadeEffects = [fade({ styles: false, speed: 400 }), caret()]
 const fadeWordDelay = [fade({ styles: false, delay: 30, speed: 400 })]
 const typewriterEffects = [typewriter({ styles: false, speed: 400 })]
 const paceDrain = [pace({ speed: 4000 }), fade({ styles: false, pace: false }), caret()]
@@ -44,7 +44,8 @@ function play(frames: Node[][], effects: readonly StreamEffect[]): void {
 play(chatFrames, fadeEffects)
 play(largeFrames, paceDrain)
 
-test('stream effects', async ({ bench }) => {
+// CodSpeed's CPU simulation runs these drains far slower than wall time, past Vitest's 60s default.
+test('stream effects', { timeout: 300_000 }, async ({ bench }) => {
   await bench.compare(
     bench('fade and caret over a chat answer', () => {
       play(chatFrames, fadeEffects)
