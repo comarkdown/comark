@@ -3,7 +3,7 @@ import { computed, defineComponent, h, shallowRef, watch } from 'vue'
 import { createSerializedMarkdownParser } from 'comark'
 import type { ParserOptions, ComponentManifest, MarkdownDocument as MarkdownDocumentType, NodeTransform } from 'comark'
 import { isMarkdownDocument } from 'comark/utils'
-import type { CaretOptions, FadeOptions, StreamEffect } from 'comark/stream'
+import type { StreamEffect } from 'comark/stream'
 import { MarkdownDocument } from './MarkdownDocument.ts'
 
 /**
@@ -54,17 +54,7 @@ export interface MarkdownProps {
   summary?: boolean
 
   /**
-   * If caret is true, a caret will be appended to the document's last text node
-   */
-  caret?: boolean | CaretOptions
-
-  /**
-   * Fade in text as it streams
-   */
-  fade?: boolean | FadeOptions
-
-  /**
-   * Custom render-time stream effects, run before `fade` and `caret`. Put `pace()` first.
+   * Render-time stream effects such as `caret()`, `fade()` and `pace()` from `comark/stream`. They run in order.
    */
   effects?: readonly StreamEffect[]
 
@@ -160,23 +150,7 @@ export const markdownProps = {
   },
 
   /**
-   * If caret is true, a caret will be appended to the document's last text node
-   */
-  caret: {
-    type: [Boolean, Object] as PropType<boolean | CaretOptions>,
-    default: false,
-  },
-
-  /**
-   * Fade in text as it streams
-   */
-  fade: {
-    type: [Boolean, Object] as PropType<boolean | FadeOptions>,
-    default: false,
-  },
-
-  /**
-   * Custom render-time stream effects, run before `fade` and `caret`. Put `pace()` first.
+   * Render-time stream effects such as `caret()`, `fade()` and `pace()` from `comark/stream`. They run in order.
    */
   effects: {
     type: Array as PropType<readonly StreamEffect[]>,
@@ -289,8 +263,6 @@ export const Markdown: MarkdownComponent = defineComponent({
           streaming: props.streaming,
           componentsManifest: props.componentsManifest,
           class: props.streaming ? 'comark-stream' : '',
-          caret: props.caret,
-          fade: props.fade,
           effects: props.effects,
           data: props.data,
           transformNode: props.transformNode,
@@ -304,8 +276,6 @@ export const Markdown: MarkdownComponent = defineComponent({
         streaming: props.streaming,
         componentsManifest: props.componentsManifest,
         class: props.streaming ? 'comark-stream' : '',
-        caret: props.caret,
-        fade: props.fade,
         effects: props.effects,
         data: props.data,
         transformNode: props.transformNode,

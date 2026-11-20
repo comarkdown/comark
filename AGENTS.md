@@ -168,7 +168,7 @@ import { parseMarkdown } from 'comark/core' // no default plugins; autoClose tak
 import { autoCloseMarkdown } from 'comark/auto-close'
 import { renderMarkdown } from 'comark/render'
 import type { ComarkContext, ComarkDocument, ComarkPatch } from 'comark/context'
-import { caret, fade, createStreamRenderer, resolveStreamEffects, getChildKeys } from 'comark/stream'
+import { caret, fade, pace, typewriter, createStreamRenderer, getChildKeys } from 'comark/stream'
 import type { StreamEffect, FadeOptions, CaretOptions } from 'comark/stream'
 import type { MarkdownDocument, Node, ElementNode, TextNode, CommentNode, NodeTransform } from 'comark'
 import {
@@ -280,7 +280,7 @@ Contract: `packages/comark/SPEC/HTML/README.md`.
 
 ### Stream effects (`comark/stream`)
 
-Every framework renderer accepts `caret`, `fade`, and `effects` and applies them through one `createStreamRenderer()` per component instance, in the order custom `effects`, `fade`, `caret` (`resolveStreamEffects`).
+Every framework renderer accepts a single `effects` prop (there are no `caret` or `fade` props; users import `caret()` and `fade()` from `comark/stream`) and applies it through one `createStreamRenderer()` per component instance, in array order. Put `pace()` first and `caret()` last.
 
 - Effects run on the top-level nodes at render time and must never mutate them: copy only the changed path so reused streaming blocks keep their identity. Nodes an effect inserts carry `$.key`.
 - `fade` diffs each top-level block's fadeable text against the previous render by common prefix, so restructuring never re-fades shown text. A block's spans merge back into text together once its last segment finishes, so spans are only appended while any is animating.

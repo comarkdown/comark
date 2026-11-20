@@ -2,6 +2,9 @@
 import { Chat } from '@ai-sdk/vue'
 import { isTextUIPart } from 'ai'
 import { isPartStreaming } from '@nuxt/ui/utils/ai'
+import { caret, fade } from 'comark/stream'
+
+const effects = [fade(), caret()]
 
 const chat = new Chat({})
 const input = ref('')
@@ -46,8 +49,7 @@ function onSubmit() {
                 <Markdown
                   :value="part.text"
                   :streaming="isPartStreaming(part)"
-                  caret
-                  fade
+                  :effects="effects"
                 />
               </Suspense>
             </template>

@@ -16,7 +16,6 @@ function MarkdownContent({
   components: customComponents = {},
   componentsManifest,
   streaming = false,
-  caret = false,
   data,
   className,
   ...rest
@@ -31,7 +30,6 @@ function MarkdownContent({
       componentsManifest={componentsManifest}
       streaming={streaming}
       className={className}
-      caret={caret}
       data={data}
     />
   )

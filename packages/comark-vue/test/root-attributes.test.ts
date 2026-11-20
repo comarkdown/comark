@@ -73,7 +73,7 @@ describe('root element attributes', () => {
     })
     const root = rootTag(html)
     expect(root).toContain('data-testid="answer"')
-    expect(root).not.toMatch(/unwrap|options|plugins|caret|streaming|components/)
+    expect(root).not.toMatch(/unwrap|options|plugins|streaming|components/)
   })
 
   it('MarkdownDocument sets them on the root element', async () => {

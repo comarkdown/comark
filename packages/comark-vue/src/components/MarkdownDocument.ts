@@ -21,8 +21,8 @@ import {
   shallowRef,
   toRaw,
 } from 'vue'
-import { createStreamRenderer, getChildKeys, resolveStreamEffects } from 'comark/stream'
-import type { CaretOptions, FadeOptions, StreamEffect } from 'comark/stream'
+import { createStreamRenderer, getChildKeys } from 'comark/stream'
+import type { StreamEffect } from 'comark/stream'
 import { applyNodeTransforms, pascalCase, resolveAttributes, toNativeAttributes } from 'comark/utils'
 
 const asyncComponentCache = new Map<string, any>()
@@ -276,17 +276,7 @@ export interface MarkdownDocumentProps {
   streaming?: boolean
 
   /**
-   * If caret is true, a caret will be appended to the document's last text node
-   */
-  caret?: boolean | CaretOptions
-
-  /**
-   * Fade in text as it streams
-   */
-  fade?: boolean | FadeOptions
-
-  /**
-   * Custom render-time stream effects, run before `fade` and `caret`. Put `pace()` first.
+   * Render-time stream effects such as `caret()`, `fade()` and `pace()` from `comark/stream`. They run in order.
    */
   effects?: readonly StreamEffect[]
 
@@ -351,24 +341,7 @@ export const markdownDocumentProps = {
   },
 
   /**
-   * If caret is true, a caret will be appended to the document's last text node
-   * If caret is an object, it will be appended with the given class
-   */
-  caret: {
-    type: [Boolean, Object] as PropType<boolean | CaretOptions>,
-    default: false,
-  },
-
-  /**
-   * Fade in text as it streams
-   */
-  fade: {
-    type: [Boolean, Object] as PropType<boolean | FadeOptions>,
-    default: false,
-  },
-
-  /**
-   * Custom render-time stream effects, run before `fade` and `caret`. Put `pace()` first.
+   * Render-time stream effects such as `caret()`, `fade()` and `pace()` from `comark/stream`. They run in order.
    */
   effects: {
     type: Array as PropType<readonly StreamEffect[]>,
@@ -470,9 +443,6 @@ export const MarkdownDocument: MarkdownDocumentComponent = defineComponent({
     }
 
     const stream = createStreamRenderer()
-    const effects = computed(() =>
-      resolveStreamEffects({ caret: props.caret, fade: props.fade, effects: props.effects })
-    )
 
     // Paced effects release text on a clock, so keep re-rendering until their backlog is empty.
     const frame = ref(0)
@@ -491,7 +461,7 @@ export const MarkdownDocument: MarkdownDocumentComponent = defineComponent({
     return () => {
       void frame.value
       const rawDocument = toRaw(liveDocument.value ?? inputDocument.value)
-      const nodes = stream.render(rawDocument.nodes || [], { streaming: props.streaming, effects: effects.value })
+      const nodes = stream.render(rawDocument.nodes || [], { streaming: props.streaming, effects: props.effects })
       if (stream.pending()) scheduleFrame()
       const keys = getChildKeys(nodes)
 

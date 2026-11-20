@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { createSSRApp, h } from 'vue'
 import { renderToString } from '@vue/server-renderer'
 import type { MarkdownDocument as MarkdownDocumentType, Node } from 'comark'
+import { caret, fade } from 'comark/stream'
 import type { StreamEffect } from 'comark/stream'
 import { MarkdownDocument } from '../src/components/MarkdownDocument'
 
@@ -15,12 +16,12 @@ function renderDoc(value: MarkdownDocumentType, props: Record<string, unknown> =
 
 describe('stream effects', () => {
   it('wraps streamed text in fade spans', async () => {
-    const html = await renderDoc(doc(['p', {}, 'Hello']), { streaming: true, fade: { pace: false } })
+    const html = await renderDoc(doc(['p', {}, 'Hello']), { streaming: true, effects: [fade({ pace: false })] })
     expect(html).toContain('<p><span class="comark-fade">Hello</span></p>')
   })
 
   it('does not fade without streaming', async () => {
-    const html = await renderDoc(doc(['p', {}, 'Hello']), { fade: true })
+    const html = await renderDoc(doc(['p', {}, 'Hello']), { effects: [fade()] })
     expect(html).not.toContain('comark-fade')
   })
 
@@ -31,7 +32,7 @@ describe('stream effects', () => {
       name: 'tag',
       apply: (nodes) => [...nodes, ['p', { class: 'extra', $: { key: 'tag:extra' } }, 'More']],
     }
-    const html = await renderDoc(value, { streaming: true, caret: { class: 'cursor' }, effects: [tag] })
+    const html = await renderDoc(value, { streaming: true, effects: [tag, caret({ class: 'cursor' })] })
     expect(html).toMatch(/<p class="extra">More<span class="cursor"/)
     expect(JSON.stringify(value)).toBe(snapshot)
   })

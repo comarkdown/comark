@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { Markdown } from '@comark/vue'
+import { caret, fade, type StreamEffect } from 'comark/stream'
 import { SAMPLE_MARKDOWN } from './sample'
 import { emptyStats, trackFrame, visibleText, type MisrenderStats } from './misrender'
 
@@ -27,6 +28,13 @@ let streamIndex = 0
 
 // The renderer exposes no pending state, so paced text counts as drained once the preview stops changing.
 const SETTLE_MS = 250
+
+const effects = computed(() => {
+  const list: StreamEffect[] = []
+  if (fadeIn.value) list.push(fade({ pace: false }))
+  if (showCaret.value) list.push(caret())
+  return list
+})
 
 const progress = computed(() => {
   if (!source.value.length) return 0
@@ -467,8 +475,7 @@ function trimSegsToLastLines(segs: DiffSeg[], count: number): DiffSeg[] {
             <Markdown
               :value="streamed"
               :streaming="isStreaming && streamingMode"
-              :caret="showCaret && isStreaming"
-              :fade="fadeIn && { pace: false }"
+              :effects="effects"
             />
             <template #fallback>
               <p class="muted">Parsing…</p>

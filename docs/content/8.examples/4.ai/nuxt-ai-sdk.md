@@ -20,7 +20,7 @@ This example streams AI chat responses in Nuxt with the Vercel AI SDK (`@ai-sdk/
 ## How it works
 
 - **Server route (`server/api/chat.post.ts`)**: calls `streamText()` to stream a Markdown response from the model.
-- **Client chat UI (`app/pages/index.vue`)**: pairs `Chat` from `@ai-sdk/vue` with `<Markdown :streaming="isPartStreaming(part)" caret>` so unterminated syntax auto-closes while a part is active and settles once that part finishes.
+- **Client chat UI (`app/pages/index.vue`)**: pairs `Chat` from `@ai-sdk/vue` with `<Markdown :streaming="isPartStreaming(part)" :effects="effects">` with a `caret()` effect from `comark/stream`, so unterminated syntax auto-closes while a part is active and settles once that part finishes.
 
 ## Setup
 

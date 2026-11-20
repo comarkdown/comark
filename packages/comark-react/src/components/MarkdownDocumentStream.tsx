@@ -1,11 +1,11 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { createStreamRenderer, getChildKeys, resolveStreamEffects } from 'comark/stream'
+import { createStreamRenderer, getChildKeys } from 'comark/stream'
 import { renderDocumentNodes, type MarkdownDocumentProps } from './MarkdownDocument.tsx'
 
 /**
- * Client renderer behind {@link MarkdownDocument} when `caret`, `fade`, or `effects` are set. It keeps
+ * Client renderer behind {@link MarkdownDocument} when `effects` are set. It keeps
  * per-instance effect state and re-renders on animation frames while paced effects drain.
  */
 export function MarkdownDocumentStream(props: MarkdownDocumentProps): React.ReactNode {
@@ -14,8 +14,6 @@ export function MarkdownDocumentStream(props: MarkdownDocumentProps): React.Reac
     components,
     componentsManifest,
     streaming = false,
-    caret = false,
-    fade = false,
     effects,
     data,
     transformNode,
@@ -26,13 +24,11 @@ export function MarkdownDocumentStream(props: MarkdownDocumentProps): React.Reac
   const [stream] = useState(() => createStreamRenderer())
   // Paced effects release text on a clock, so keep re-rendering until their backlog is empty.
   const [frame, setFrame] = useState(0)
-  // Effects keep caches between renders, so rebuild them only when their props change, not every frame.
-  const resolvedEffects = useMemo(() => resolveStreamEffects({ caret, fade, effects }), [caret, fade, effects])
 
   const rendered = useMemo(() => {
     const nodes = stream.render(value?.nodes || [], {
       streaming,
-      effects: resolvedEffects,
+      effects,
     })
     return {
       pending: stream.pending(),
@@ -42,7 +38,7 @@ export function MarkdownDocumentStream(props: MarkdownDocumentProps): React.Reac
         getChildKeys(nodes)
       ),
     }
-  }, [stream, value, components, componentsManifest, streaming, resolvedEffects, data, transformNode, frame])
+  }, [stream, value, components, componentsManifest, streaming, effects, data, transformNode, frame])
 
   useEffect(() => {
     if (!rendered.pending) return

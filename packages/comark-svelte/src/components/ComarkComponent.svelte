@@ -9,7 +9,6 @@
   interface NamedSlot {
     name: string
     children: NodeType[]
-    caretClass: string | null
   }
 
   const EMPTY_RENDER_DATA: NodeRenderData = { frontmatter: {}, meta: {}, data: {}, props: {} }
@@ -51,7 +50,7 @@
         {componentsManifest}
         {transformNode}
         resolver={Resolver}
-        caretClass={i === slot.children.length - 1 ? slot.caretClass : null}
+
         {renderData}
       />
     {/each}

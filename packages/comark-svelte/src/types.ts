@@ -1,7 +1,7 @@
 import type { Node, MarkdownDocument, ComarkPlugin, ComponentManifest, NodeTransform, ParserOptions } from 'comark'
 import type { Component, Snippet } from 'svelte'
 import type { HTMLAttributes } from 'svelte/elements'
-import type { CaretOptions, FadeOptions, StreamEffect } from 'comark/stream'
+import type { StreamEffect } from 'comark/stream'
 
 /**
  * HTML attributes (`id`, `style`, `role`, `data-*`, `aria-*`, ...) set on the
@@ -24,8 +24,6 @@ export interface MarkdownNodeProps {
   /** Change the tag or props of element nodes just before they render */
   transformNode?: NodeTransform | readonly NodeTransform[]
   resolver?: ComponentResolver
-  /** CSS class for the streaming caret, or null if no caret. Threaded recursively to the last child. */
-  caretClass?: string | null
 }
 
 export interface MarkdownDocumentProps extends RootAttributes {
@@ -37,10 +35,7 @@ export interface MarkdownDocumentProps extends RootAttributes {
   transformNode?: NodeTransform | readonly NodeTransform[]
   resolver?: ComponentResolver
   streaming?: boolean
-  caret?: boolean | CaretOptions
-  /** Fade in text as it streams */
-  fade?: boolean | FadeOptions
-  /** Custom render-time stream effects, run before `fade` and `caret`. Put `pace()` first. */
+  /** Render-time stream effects such as `caret()`, `fade()` and `pace()` from `comark/stream`. They run in order. */
   effects?: readonly StreamEffect[]
   class?: string
   /**
@@ -66,10 +61,7 @@ export interface MarkdownProps extends RootAttributes {
   /** Change the tag or props of element nodes just before they render */
   transformNode?: NodeTransform | readonly NodeTransform[]
   streaming?: boolean
-  caret?: boolean | CaretOptions
-  /** Fade in text as it streams */
-  fade?: boolean | FadeOptions
-  /** Custom render-time stream effects, run before `fade` and `caret`. Put `pace()` first. */
+  /** Render-time stream effects such as `caret()`, `fade()` and `pace()` from `comark/stream`. They run in order. */
   effects?: readonly StreamEffect[]
   class?: string
 }

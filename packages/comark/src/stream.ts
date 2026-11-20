@@ -52,14 +52,6 @@ export interface StreamRendererOptions {
   now?: () => number
 }
 
-/** Props every renderer accepts for streaming effects. */
-export interface StreamEffectProps {
-  streaming?: boolean
-  caret?: boolean | CaretOptions
-  fade?: boolean | FadeOptions
-  effects?: readonly StreamEffect[]
-}
-
 const defaultNow = (): number => (typeof performance !== 'undefined' ? performance.now() : Date.now())
 
 /**
@@ -102,19 +94,6 @@ export function createStreamRenderer(options: StreamRendererOptions = {}): Strea
       pending = false
     },
   }
-}
-
-/**
- * Build the effect list from renderer props: custom `effects` (such as `pace`), then `fade`, then
- * `caret`. Custom effects run first so `fade` only sees the text they release, and `caret` lands
- * after any decorated text.
- */
-export function resolveStreamEffects(props: StreamEffectProps): StreamEffect[] {
-  const effects: StreamEffect[] = []
-  if (props.effects) effects.push(...props.effects)
-  if (props.fade) effects.push(fade(props.fade === true ? {} : props.fade))
-  if (props.caret) effects.push(caret(props.caret === true ? {} : props.caret))
-  return effects
 }
 
 /** Render-time key for a node, set by stream effects in `$.key`. */

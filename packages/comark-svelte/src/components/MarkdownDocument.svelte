@@ -4,7 +4,7 @@ Renders an already-parsed Markdown document to Svelte components/HTML, keeping
 the parser out of the client bundle.
 
 Accepts a parsed `MarkdownDocument` and renders each top-level node via `MarkdownNode`.
-Supports custom component mappings and streaming effects (caret, fade-in, custom).
+Supports custom component mappings and streaming effects from `comark/stream` (caret, fade-in, custom).
 
 @example
 ```svelte
@@ -21,8 +21,8 @@ Supports custom component mappings and streaming effects (caret, fade-in, custom
 <script lang="ts">
   import { untrack } from 'svelte'
   import type { MarkdownDocument as MarkdownDocumentType, ComponentManifest, NodeTransform } from 'comark'
-  import { createStreamRenderer, getStreamKey, resolveStreamEffects } from 'comark/stream'
-  import type { CaretOptions, FadeOptions, StreamEffect } from 'comark/stream'
+  import { createStreamRenderer, getStreamKey } from 'comark/stream'
+  import type { StreamEffect } from 'comark/stream'
   import type { ComponentResolver, RootAttributes } from '../types.js'
   import MarkdownNode from './MarkdownNode.svelte'
 
@@ -33,8 +33,7 @@ Supports custom component mappings and streaming effects (caret, fade-in, custom
     transformNode,
     resolver,
     streaming = false,
-    caret = false,
-    fade = false,
+
     effects,
     data,
     class: className = '',
@@ -47,8 +46,7 @@ Supports custom component mappings and streaming effects (caret, fade-in, custom
     transformNode?: NodeTransform | readonly NodeTransform[]
     resolver?: ComponentResolver
     streaming?: boolean
-    caret?: boolean | CaretOptions
-    fade?: boolean | FadeOptions
+
     effects?: readonly StreamEffect[]
     data?: Record<string, unknown>
     class?: string
@@ -73,13 +71,12 @@ Supports custom component mappings and streaming effects (caret, fade-in, custom
 
   // Paced effects release text on a clock, so keep re-rendering until their backlog is empty.
   let frame = $state(0)
-  // Effects keep caches between renders, so rebuild them only when their props change, not every frame.
-  let resolvedEffects = $derived(resolveStreamEffects({ caret, fade, effects }))
+
   let nodes = $derived.by(() => {
     void frame
     return stream.render(activeDocument.nodes || [], {
       streaming,
-      effects: resolvedEffects,
+      effects,
     })
   })
   $effect(() => {

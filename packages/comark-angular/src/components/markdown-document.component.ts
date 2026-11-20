@@ -3,15 +3,14 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Type,
-  computed,
   inject,
   type OnInit,
   type OnDestroy,
   input,
 } from '@angular/core'
 import type { Node, MarkdownDocument as MarkdownDocumentType, NodeRenderData, NodeTransform } from 'comark'
-import { createStreamRenderer, getChildKeys, resolveStreamEffects } from 'comark/stream'
-import type { CaretOptions, FadeOptions, StreamEffect } from 'comark/stream'
+import { createStreamRenderer, getChildKeys } from 'comark/stream'
+import type { StreamEffect } from 'comark/stream'
 import { MarkdownNode, isSameValue } from './markdown-node.component'
 
 const EMPTY_DOCUMENT: MarkdownDocumentType = { nodes: [], frontmatter: {}, meta: {} }
@@ -61,13 +60,7 @@ export class MarkdownDocument implements OnInit, OnDestroy {
   /** Enable streaming mode */
   readonly streaming = input<boolean>(false)
 
-  /** Append a caret to the last text node (for streaming UIs) */
-  readonly caret = input<boolean | CaretOptions>(false)
-
-  /** Fade in text as it streams */
-  readonly fade = input<boolean | FadeOptions>(false)
-
-  /** Custom render-time stream effects. They run first, then `fade`, then `caret`. Put `pace()` first. */
+  /** Render-time stream effects such as `caret()`, `fade()` and `pace()` from `comark/stream`. They run in order. */
   readonly effects = input<readonly StreamEffect[]>()
 
   /** Additional data to pass to the renderer for :binding resolution */
@@ -86,10 +79,7 @@ export class MarkdownDocument implements OnInit, OnDestroy {
   private liveDocument: MarkdownDocumentType | null = null
   private cleanup?: (clear?: boolean) => void
   private stream = createStreamRenderer()
-  // Effects keep caches between renders, so rebuild them only when their inputs change, not every frame.
-  private resolvedEffects = computed(() =>
-    resolveStreamEffects({ caret: this.caret(), fade: this.fade(), effects: this.effects() })
-  )
+
   private frameId: number | null = null
   private renderCache: { inputs: unknown[]; nodes: RenderedNode[] } | null = null
   private renderDataCache: { inputs: unknown[]; data: unknown; value: NodeRenderData } | null = null
@@ -120,7 +110,7 @@ export class MarkdownDocument implements OnInit, OnDestroy {
   // Getters run on every change detection pass: cache on input identity so stream effects only
   // advance (and children only re-render) when an input actually changed.
   get renderedNodes(): RenderedNode[] {
-    const inputs = [this.activeDocument, this.streaming(), this.caret(), this.fade(), this.effects()]
+    const inputs = [this.activeDocument, this.streaming(), this.effects()]
     if (this.renderCache && sameInputs(this.renderCache.inputs, inputs)) {
       this.scheduleFrame()
       return this.renderCache.nodes
@@ -128,7 +118,7 @@ export class MarkdownDocument implements OnInit, OnDestroy {
 
     const nodes = this.stream.render(this.activeDocument.nodes || [], {
       streaming: this.streaming(),
-      effects: this.resolvedEffects(),
+      effects: this.effects(),
     })
     const keys = getChildKeys(nodes)
     const rendered = nodes.map((node, i) => ({ key: keys[i], node }))

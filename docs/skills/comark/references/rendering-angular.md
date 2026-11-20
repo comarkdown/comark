@@ -291,6 +291,7 @@ Enable streaming mode for incremental rendering of live content (for example, AI
 ```typescript
 import { Component } from '@angular/core'
 import { Markdown } from '@comark/angular'
+import { caret } from 'comark/stream'
 
 @Component({
   selector: 'app-streaming',
@@ -300,11 +301,12 @@ import { Markdown } from '@comark/angular'
     <comark-markdown
       [value]="content"
       [streaming]="isStreaming"
-      [caret]="isStreaming"
+      [effects]="effects"
     />
   `,
 })
 export class StreamingComponent {
+  effects = [caret()]
   content = ''
   isStreaming = true
 
@@ -324,19 +326,27 @@ export class StreamingComponent {
 }
 ```
 
-### Caret configuration
+### Stream effects
 
-The `caret` input controls the streaming cursor indicator:
+The `effects` input takes an array of effects from `comark/stream`, such as `caret()` and `fade()`. Define the array once as a class field so effects keep their state between renders:
 
 ```typescript
-// Boolean: use default pulsing caret
-<comark-markdown [value]="content" [streaming]="true" [caret]="true" />
+import { caret, fade } from 'comark/stream'
 
-// Object: custom CSS class for the caret
-<comark-markdown [value]="content" [streaming]="true" [caret]="{ class: 'my-caret' }" />
+export class StreamingComponent {
+  // Default pulsing caret
+  effects = [caret()]
+
+  // Fade in new text and use a custom CSS class for the caret
+  // effects = [fade(), caret({ class: 'my-caret' })]
+}
 ```
 
-The caret is a `<span>` with a pulsing CSS animation, appended to the last text node in the AST during streaming.
+```html
+<comark-markdown [value]="content" [streaming]="true" [effects]="effects" />
+```
+
+The caret is a `<span>` with a pulsing CSS animation, appended to the last text node during streaming. Effects run in array order and never modify the parsed document.
 
 ### Summary mode
 

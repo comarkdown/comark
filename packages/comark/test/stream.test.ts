@@ -9,7 +9,6 @@ import {
   fade,
   getChildKeys,
   pace,
-  resolveStreamEffects,
   typewriter,
 } from 'comark/stream'
 import type { StreamEffect } from 'comark/stream'
@@ -58,16 +57,6 @@ describe('createStreamRenderer', () => {
     expect(stream.render([], { effects: [counter()] })).toEqual(['2'])
     stream.reset()
     expect(stream.render([], { effects: [counter()] })).toEqual(['1'])
-  })
-
-  it('orders resolved effects custom, fade, caret', () => {
-    const custom: StreamEffect = { name: 'custom', apply: (n) => n }
-    expect(resolveStreamEffects({ caret: true, fade: true, effects: [custom] }).map((e) => e.name)).toEqual([
-      'custom',
-      'fade',
-      'caret',
-    ])
-    expect(resolveStreamEffects({})).toEqual([])
   })
 })
 
@@ -483,11 +472,7 @@ describe('pace', () => {
   it('keeps fading text pace releases after the stream ends', () => {
     const time = clock()
     const stream = createStreamRenderer({ now: time.now })
-    const all = resolveStreamEffects({
-      fade: { styles: false, duration: 20000, pace: false },
-      caret: true,
-      effects: [pace({ speed: 100 })],
-    })
+    const all = [pace({ speed: 100 }), fade({ styles: false, duration: 20000, pace: false }), caret()]
     const source = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. '.repeat(40)
     const problems: string[] = []
     let sent = 0
@@ -519,11 +504,7 @@ describe('pace', () => {
   it('fades text pace releases over many frames', () => {
     const time = clock()
     const stream = createStreamRenderer({ now: time.now })
-    const all = resolveStreamEffects({
-      fade: { styles: false, duration: 20000 },
-      caret: true,
-      effects: [pace({ speed: 100 })],
-    })
+    const all = [pace({ speed: 100 }), fade({ styles: false, duration: 20000 }), caret()]
     const text = 'Hello world this is a longer streamed sentence that keeps going for a while.'
     const doc: Node[] = [['p', {}, text]]
     const problems: string[] = []

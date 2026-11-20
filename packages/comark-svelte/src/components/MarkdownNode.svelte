@@ -6,9 +6,7 @@ Renders a single `Node`: a text string, a native HTML element
 (via `<svelte:element>`), or a custom component (via a capitalized variable).
 
 Recurses into children by importing itself. `MarkdownDocument` applies stream
-effects (caret, fade) to the tree before rendering. The legacy `caretClass`
-prop is threaded to the last child at each level, so it appears inline after
-the deepest trailing text node.
+effects (see `comark/stream`) to the tree before rendering.
 
 @example
 ```svelte
@@ -82,7 +80,7 @@ the deepest trailing text node.
   import ComarkComponent from './ComarkComponent.svelte'
   import Resolve from './Resolve.svelte'
   import { applyNodeTransforms, isHtmlVoidElement, resolveAttributes, toNativeAttributes } from 'comark/utils'
-  import { CARET_STYLE, CARET_STYLES, getStreamKey, injectStreamStyles } from 'comark/stream'
+  import { getStreamKey } from 'comark/stream'
   import { getContext, setContext } from 'svelte'
 
   const EMPTY_RENDER_DATA: NodeRenderData = { frontmatter: {}, meta: {}, data: {}, props: {} }
@@ -93,7 +91,6 @@ the deepest trailing text node.
     componentsManifest,
     transformNode,
     resolver: Resolver = Resolve,
-    caretClass = null,
     renderData = EMPTY_RENDER_DATA,
   }: {
     node: NodeType
@@ -101,24 +98,12 @@ the deepest trailing text node.
     componentsManifest?: ComponentManifest
     transformNode?: NodeTransform | readonly NodeTransform[]
     resolver?: ComponentResolver
-    caretClass?: string | null
     renderData?: NodeRenderData
   } = $props()
-
-  const CARET_TEXT = '\u2009'
-  $effect(() => {
-    if (caretClass !== null) injectStreamStyles('caret', CARET_STYLES)
-  })
-
-  interface RenderChild {
-    node: NodeType
-    caretClass: string | null
-  }
 
   interface NamedSlot {
     name: string
     children: NodeType[]
-    caretClass: string | null
   }
 
   function getSlotName(node: NodeType): string | null {
@@ -140,17 +125,6 @@ the deepest trailing text node.
     return null
   }
 
-  function toRenderChildren(
-    sourceChildren: NodeType[],
-    sourceIndex: number,
-    totalChildren: number,
-    nodeCaretClass: string | null,
-  ): RenderChild[] {
-    return sourceChildren.map((child, index) => ({
-      node: child,
-      caretClass: sourceIndex === totalChildren - 1 && index === sourceChildren.length - 1 ? nodeCaretClass : null,
-    }))
-  }
 
   let { isText, tag, isVoid, children, Component, componentPromise, mappedProps, transformedProps } = $derived.by(() => {
     let isText = false
@@ -233,7 +207,7 @@ the deepest trailing text node.
   )
 
   let { defaultChildren, namedSlots } = $derived.by(() => {
-    const defaultChildren: RenderChild[] = []
+    const defaultChildren: NodeType[] = []
     const slots: NamedSlot[] = []
 
     for (let i = 0; i < children.length; i++) {
@@ -242,18 +216,14 @@ the deepest trailing text node.
       if (slotName) {
         const slotChildren = (child as unknown as NodeType[]).slice(2) as NodeType[]
         if (slotName === 'default') {
-          defaultChildren.push(...toRenderChildren(slotChildren, i, children.length, caretClass))
+          defaultChildren.push(...slotChildren)
         }
         else {
-          slots.push({
-            name: slotName,
-            children: slotChildren,
-            caretClass: i === children.length - 1 ? caretClass : null,
-          })
+          slots.push({ name: slotName, children: slotChildren })
         }
       }
       else {
-        defaultChildren.push({ node: child, caretClass: i === children.length - 1 ? caretClass : null })
+        defaultChildren.push(child)
       }
     }
 
@@ -268,14 +238,13 @@ the deepest trailing text node.
 -->
 {#snippet renderChildren()}
   {#each defaultChildren as child, i (i)}
-    {#key getStreamKey(child.node)}
+    {#key getStreamKey(child)}
       <MarkdownNode
-        node={child.node}
+        node={child}
         {components}
         {componentsManifest}
         {transformNode}
         resolver={Resolver}
-        caretClass={child.caretClass}
         renderData={childrenRenderData}
       />
     {/key}
@@ -283,10 +252,7 @@ the deepest trailing text node.
 {/snippet}
 
 {#if isText}
-  {node}{#if caretClass !== null}<span
-      class={caretClass || undefined}
-      style={CARET_STYLE}>{CARET_TEXT}</span
-    >{/if}
+  {node}
 {:else if Component && namedSlots.length > 0}
   <ComarkComponent
     {Component}

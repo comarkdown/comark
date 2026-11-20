@@ -16,7 +16,7 @@ import {
   toNativeAttributes,
 } from 'comark/utils'
 import { getChildKeys } from 'comark/stream'
-import type { CaretOptions, FadeOptions, StreamEffect } from 'comark/stream'
+import type { StreamEffect } from 'comark/stream'
 import { MarkdownDocumentStream } from './MarkdownDocumentStream.tsx'
 
 function getTag(node: Node): string | null {
@@ -324,19 +324,7 @@ export interface MarkdownDocumentProps extends Omit<React.HTMLAttributes<HTMLDiv
   streaming?: boolean
 
   /**
-   * If caret is true, a caret will be appended to the document's last text node
-   * If caret is an object, it will be appended with the given class
-   */
-  caret?: boolean | CaretOptions
-
-  /**
-   * Fade in text as it streams. `true` uses the defaults; pass options to tune duration, easing,
-   * word delay, pacing, class, or excluded tags.
-   */
-  fade?: boolean | FadeOptions
-
-  /**
-   * Custom render-time stream effects (see `comark/stream`). Run first, then `fade`, then `caret`.
+   * Render-time stream effects such as `caret()`, `fade()` and `pace()` from `comark/stream`. They run in order.
    */
   effects?: readonly StreamEffect[]
 
@@ -382,7 +370,7 @@ export interface MarkdownDocumentProps extends Omit<React.HTMLAttributes<HTMLDiv
 export const MarkdownDocument: React.FC<MarkdownDocumentProps> = (props) => {
   // Effects keep state between renders, so only they need the client renderer. Without them this path
   // uses only `useMemo`, which React Server Components support.
-  const streamed = Boolean(props.caret || props.fade || props.effects?.length)
+  const streamed = Boolean(props.effects?.length)
   const { value, components, componentsManifest, data, transformNode } = props
   const rendered = useMemo(
     () => (streamed ? null : renderDocumentNodes(value?.nodes || [], props)),
@@ -395,8 +383,7 @@ export const MarkdownDocument: React.FC<MarkdownDocumentProps> = (props) => {
     components: _components,
     componentsManifest: _componentsManifest,
     streaming: _streaming,
-    caret: _caret,
-    fade: _fade,
+
     effects: _effects,
     data: _data,
     transformNode: _transformNode,

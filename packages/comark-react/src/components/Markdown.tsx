@@ -2,7 +2,7 @@ import React from 'react'
 import { parseMarkdown } from 'comark'
 import type { MarkdownDocument as MarkdownDocumentType, NodeTransform, ParserOptions } from 'comark'
 import { isMarkdownDocument } from 'comark/utils'
-import type { CaretOptions, FadeOptions, StreamEffect } from 'comark/stream'
+import type { StreamEffect } from 'comark/stream'
 import { MarkdownDocument } from './MarkdownDocument.tsx'
 import { MarkdownClient } from './MarkdownClient.tsx'
 
@@ -65,19 +65,7 @@ export interface MarkdownProps extends Omit<React.HTMLAttributes<HTMLDivElement>
   streaming?: boolean
 
   /**
-   * If caret is true, a caret will be appended to the document's last text node
-   * If caret is an object, it will be appended with the given class
-   */
-  caret?: boolean | CaretOptions
-
-  /**
-   * Fade in text as it streams. `true` uses the defaults; pass options to tune duration, easing,
-   * word delay, pacing, class, or excluded tags.
-   */
-  fade?: boolean | FadeOptions
-
-  /**
-   * Custom render-time stream effects (see `comark/stream`). Run first, then `fade`, then `caret`.
+   * Render-time stream effects such as `caret()`, `fade()` and `pace()` from `comark/stream`. They run in order.
    */
   effects?: readonly StreamEffect[]
 
@@ -130,7 +118,7 @@ export function Markdown(props: MarkdownProps): React.ReactNode | Promise<React.
   // fade spans mid-animation. An explicit `streaming={false}` with effects keeps the
   // streaming renderer mounted, so effects drain their backlog instead of the static
   // path showing it at once.
-  const ended = props.streaming === false && (props.caret || props.fade || props.effects?.length)
+  const ended = props.streaming === false && props.effects?.length
   if (props.streaming || ended) return <MarkdownStreaming {...props} />
   return renderStatic(props)
 }
@@ -144,8 +132,6 @@ function MarkdownStreaming({
   components: customComponents = {},
   componentsManifest,
   streaming = false,
-  caret = false,
-  fade,
   effects,
   data,
   className,
@@ -162,8 +148,6 @@ function MarkdownStreaming({
       components={customComponents}
       componentsManifest={componentsManifest}
       streaming={streaming}
-      caret={caret}
-      fade={fade}
       effects={effects}
       data={data}
       className={className}
@@ -180,8 +164,6 @@ async function renderStatic({
   components: customComponents = {},
   componentsManifest,
   streaming = false,
-  caret = false,
-  fade,
   effects,
   data,
   className,
@@ -196,8 +178,6 @@ async function renderStatic({
         componentsManifest={componentsManifest}
         streaming={streaming}
         className={className}
-        caret={caret}
-        fade={fade}
         effects={effects}
         data={data}
       />
@@ -219,8 +199,6 @@ async function renderStatic({
       componentsManifest={componentsManifest}
       streaming={streaming}
       className={className}
-      caret={caret}
-      fade={fade}
       effects={effects}
       data={data}
     />

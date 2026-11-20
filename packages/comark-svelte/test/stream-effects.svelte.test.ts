@@ -1,6 +1,7 @@
 import { expect, it } from 'vitest'
 import { render } from 'vitest-browser-svelte'
 import type { MarkdownDocument as MarkdownDocumentType, Node } from 'comark'
+import { caret, fade } from 'comark/stream'
 import MarkdownDocument from '../src/components/MarkdownDocument.svelte'
 
 function doc(...nodes: Node[]): MarkdownDocumentType {
@@ -12,7 +13,7 @@ it('fades only new text and keeps fading spans mounted', async () => {
   const screen = await render(MarkdownDocument, {
     value: doc(done, ['p', {}, 'Hello']),
     streaming: true,
-    fade: { pace: false },
+    effects: [fade({ pace: false })],
   })
   const paragraph = screen.container.querySelector('p')
   const first = [...screen.container.querySelectorAll('.comark-fade')]
@@ -29,8 +30,7 @@ it('places the caret after faded text and drops it when streaming ends', async (
   const screen = await render(MarkdownDocument, {
     value: doc(['p', {}, 'Hi']),
     streaming: true,
-    fade: { pace: false },
-    caret: { class: 'cursor' },
+    effects: [fade({ pace: false }), caret({ class: 'cursor' })],
   })
   expect(screen.container.querySelector('p .cursor')).not.toBeNull()
   await screen.rerender({ streaming: false })
