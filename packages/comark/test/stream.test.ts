@@ -785,6 +785,20 @@ describe('pace timing', () => {
     expect(run(10)).toBe(1000)
   })
 
+  it('keeps the deadline of waiting text when more text arrives', () => {
+    const time = clock()
+    const stream = createStreamRenderer({ now: time.now })
+    const effects = [pace({ speed: 1, lag: 1000 })]
+    const text = 'x'.repeat(1000)
+    stream.render([['p', {}, '']], { streaming: true, effects })
+    stream.render([['p', {}, text]], { streaming: true, effects })
+    time.advance(500)
+    stream.render([['p', {}, text + 'y']], { streaming: true, effects })
+    time.advance(500)
+    const out = stream.render([['p', {}, text + 'yz']], { streaming: true, effects })
+    expect(textAt(out).length).toBeGreaterThanOrEqual(1000)
+  })
+
   it('never releases half of a surrogate pair', () => {
     const time = clock()
     const stream = createStreamRenderer({ now: time.now })
@@ -832,6 +846,19 @@ describe('reveal edge cases', () => {
     stream.render([['p', {}, 'Hello']], { streaming: true, effects })
     const out = stream.render([['p', {}, 'Hello world']], { streaming: false, effects })
     expect(fadeSpans(out)).toContain(' world')
+  })
+
+  it('fades a block the closing chunk adds', () => {
+    const stream = createStreamRenderer({ now: () => 0 })
+    stream.render([['p', {}, 'One']], { streaming: true, effects })
+    const out = stream.render(
+      [
+        ['p', {}, 'One'],
+        ['p', {}, 'Two'],
+      ],
+      { streaming: false, effects }
+    )
+    expect(fadeSpans(out[1])).toEqual(['Two'])
   })
 
   it('fades the last text an upstream pace releases', () => {

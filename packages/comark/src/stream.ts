@@ -273,8 +273,8 @@ interface PaceState {
   total: number
   /** Time of the previous render while a backlog was waiting, `undefined` when idle. */
   at: number | undefined
-  /** When the current backlog must be fully released to stay within `lag`. */
-  deadline: number | undefined
+  /** Per received chunk, the text end it must be released up to, and by when, to stay within `lag`. */
+  deadlines: { end: number; at: number }[]
   /** Whether the last render was streaming, so the backlog still drains after the stream ends. */
   streamed: boolean
   /** Whether a render has run. The first one shows its input at once. */
@@ -323,7 +323,7 @@ function createPace(options: PaceOptions = {}): PaceController {
   const lag = Math.max(0, options.lag ?? DEFAULT_PACE_LAG)
 
   return {
-    init: () => ({ progress: 0, total: 0, at: undefined, deadline: undefined, streamed: false, started: false }),
+    init: () => ({ progress: 0, total: 0, at: undefined, deadlines: [], streamed: false, started: false }),
     pending: (state) => state.progress < state.total,
     apply(nodes, streaming, now, state, isOpaque) {
       let total = 0
@@ -344,22 +344,26 @@ function createPace(options: PaceOptions = {}): PaceController {
       // Time only counts while text was already waiting, so idle time before a chunk is not backlog.
       const previousAt = state.at
       const dt = previousAt === undefined ? 0 : now - previousAt
-      if (grew && lag !== Infinity) state.deadline = now + lag
+      if (grew && lag !== Infinity) state.deadlines.push({ end: total, at: now + lag })
       const backlog = total - state.progress
       if (backlog > 0) {
         if (speed === Infinity) state.progress = total
         else if (dt > 0) {
           let release = (speed * dt) / 1000
-          // Catching up toward a fixed deadline keeps the lag bound independent of the frame rate.
-          if (state.deadline !== undefined) {
-            const left = state.deadline - previousAt!
-            release = left <= dt ? backlog : Math.max(release, (backlog * dt) / left)
+          // Catching up toward each chunk's fixed deadline keeps the lag bound independent of the frame
+          // rate, and later chunks never postpone text already waiting.
+          for (const deadline of state.deadlines) {
+            const need = Math.min(deadline.end, total) - state.progress
+            const left = deadline.at - previousAt!
+            if (need > 0) release = Math.max(release, left <= dt ? need : (need * dt) / left)
           }
           state.progress = Math.min(total, state.progress + release)
         }
       }
       if (state.progress < total) state.at = now
-      else state.at = state.deadline = undefined
+      else state.at = undefined
+      const progress = state.progress
+      state.deadlines = state.deadlines.filter((deadline) => deadline.end > progress)
       state.streamed = streaming || state.progress < total
 
       const released = Math.floor(state.progress)
@@ -722,7 +726,11 @@ function createRevealEffect(config: RevealConfig): StreamEffect<RevealState> {
         const leaf = growing ? lastLeafStart(node) : text.length
         const hold = growing ? leaf + wordStart(text.slice(leaf)) : text.length
         const flushing = block !== undefined && block.shown < block.text.length
-        const common = block ? Math.min(commonPrefixLength(block.text, text), block.shown) : streaming ? 0 : text.length
+        const common = block
+          ? Math.min(commonPrefixLength(block.text, text), block.shown)
+          : streaming || closing
+            ? 0
+            : text.length
         // A block's spans merge back into text all at once, when its last one finishes. Spans are
         // then only ever appended, so positional keys never move an animating span to a new element.
         const segments: FadeSegment[] = []
