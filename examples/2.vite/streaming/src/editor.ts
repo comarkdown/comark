@@ -4,7 +4,7 @@ const EFFECT_MODES: EffectMode[] = ['none', 'fade', 'typewriter']
 
 export function mountEditor(root: HTMLElement): void {
   root.innerHTML = `
-    <textarea class="source" spellcheck="false"></textarea>
+    <textarea class="source" spellcheck="false" aria-label="Markdown source"></textarea>
     <div class="controls">
       <label>Chunk <input class="chunk" type="number" min="1" max="64" /></label>
       <label>Delay ms <input class="delay" type="number" min="0" max="500" step="5" /></label>
@@ -46,12 +46,16 @@ export function mountEditor(root: HTMLElement): void {
   root.querySelector('.full')!.addEventListener('click', () => store.showFull())
   root.querySelector('.reset')!.addEventListener('click', () => store.reset())
 
+  function syncNumber(input: HTMLInputElement, value: number): void {
+    if (document.activeElement !== input) input.value = String(value)
+  }
+
   function render(state: StreamState): void {
     if (source.value !== state.source) source.value = state.source
-    chunk.value = String(state.chunkSize)
-    delay.value = String(state.delayMs)
+    syncNumber(chunk, state.chunkSize)
+    syncNumber(delay, state.delayMs)
     effect.value = state.effectMode
-    pace.value = String(state.paceSpeed)
+    syncNumber(pace, state.paceSpeed)
     caret.checked = state.showCaret
     source.disabled = state.streaming
     streamBtn.disabled = state.streaming

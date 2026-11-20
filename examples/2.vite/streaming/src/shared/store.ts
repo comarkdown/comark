@@ -29,12 +29,27 @@ const plugins: readonly ComarkPlugin[] = [shiki()]
 function buildEffects(mode: EffectMode, paceSpeed: number, showCaret: boolean): StreamEffect[] {
   const effects: StreamEffect[] = []
   if (mode === 'fade') effects.push(fade({ duration: 300, stagger: 30, pace: { speed: paceSpeed } }))
-  if (mode === 'typewriter') effects.push(typewriter({ pace: { speed: paceSpeed } }))
+  if (mode === 'typewriter') effects.push(typewriter({ speed: paceSpeed, pace: { speed: paceSpeed } }))
   if (showCaret) effects.push(caret())
   return effects
 }
 
-export function createStreamStore(initialSource: string) {
+export interface StreamStore {
+  getState: () => StreamState
+  subscribe: (listener: (state: StreamState) => void) => () => void
+  setSource: (source: string) => void
+  setChunkSize: (chunkSize: number) => void
+  setDelayMs: (delayMs: number) => void
+  setEffectMode: (effectMode: EffectMode) => void
+  setPaceSpeed: (paceSpeed: number) => void
+  setShowCaret: (showCaret: boolean) => void
+  start: () => void
+  stop: () => void
+  showFull: () => void
+  reset: () => void
+}
+
+export function createStreamStore(initialSource: string): StreamStore {
   const listeners = new Set<Listener>()
   let timer: ReturnType<typeof setTimeout> | null = null
   let cursor = 0
@@ -134,7 +149,5 @@ export function createStreamStore(initialSource: string) {
     },
   }
 }
-
-export type StreamStore = ReturnType<typeof createStreamStore>
 
 export const store = createStreamStore(SAMPLE_MARKDOWN.trimEnd())
