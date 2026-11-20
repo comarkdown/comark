@@ -73,11 +73,13 @@ Supports custom component mappings and streaming effects (caret, fade-in, custom
 
   // Paced effects release text on a clock, so keep re-rendering until their backlog is empty.
   let frame = $state(0)
+  // Effects keep caches between renders, so rebuild them only when their props change, not every frame.
+  let resolvedEffects = $derived(resolveStreamEffects({ caret, fade, effects }))
   let nodes = $derived.by(() => {
     void frame
     return stream.render(activeDocument.nodes || [], {
       streaming,
-      effects: resolveStreamEffects({ caret, fade, effects }),
+      effects: resolvedEffects,
     })
   })
   $effect(() => {

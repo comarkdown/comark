@@ -3,6 +3,7 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Type,
+  computed,
   inject,
   type OnInit,
   type OnDestroy,
@@ -85,6 +86,10 @@ export class MarkdownDocument implements OnInit, OnDestroy {
   private liveDocument: MarkdownDocumentType | null = null
   private cleanup?: (clear?: boolean) => void
   private stream = createStreamRenderer()
+  // Effects keep caches between renders, so rebuild them only when their inputs change, not every frame.
+  private resolvedEffects = computed(() =>
+    resolveStreamEffects({ caret: this.caret(), fade: this.fade(), effects: this.effects() })
+  )
   private frameId: number | null = null
   private renderCache: { inputs: unknown[]; nodes: RenderedNode[] } | null = null
   private renderDataCache: { inputs: unknown[]; data: unknown; value: NodeRenderData } | null = null
@@ -123,7 +128,7 @@ export class MarkdownDocument implements OnInit, OnDestroy {
 
     const nodes = this.stream.render(this.activeDocument.nodes || [], {
       streaming: this.streaming(),
-      effects: resolveStreamEffects({ caret: this.caret(), fade: this.fade(), effects: this.effects() }),
+      effects: this.resolvedEffects(),
     })
     const keys = getChildKeys(nodes)
     const rendered = nodes.map((node, i) => ({ key: keys[i], node }))

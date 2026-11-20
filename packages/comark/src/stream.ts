@@ -247,6 +247,50 @@ function appendToLastText(parent: ElementNode, caretNode: ElementNode, depth: nu
 
 // #endregion
 
+// #region text measure
+
+interface TextMeasure {
+  /** Text length of `node`. Opaque elements and subtrees past the depth limit count no text. */
+  length: (node: Node, depth: number) => number
+}
+
+/**
+ * Text lengths cached by node identity. Streaming keeps unchanged blocks identical between renders and
+ * effects never mutate nodes, so each frame only measures the blocks that changed.
+ */
+function createTextMeasure(isOpaque?: (node: ElementNode) => boolean): TextMeasure {
+  const cache = new WeakMap<ElementNode, number>()
+  let truncated = false
+
+  function length(node: Node, depth: number): number {
+    if (typeof node === 'string') return node.length
+    if (node[0] === null) return 0
+    if (depth >= MAX_DEPTH) {
+      truncated = true
+      return 0
+    }
+    const element = node as ElementNode
+    const cached = cache.get(element)
+    if (cached !== undefined) return cached
+    if (isOpaque?.(element)) {
+      cache.set(element, 0)
+      return 0
+    }
+    const outer = truncated
+    truncated = false
+    let total = 0
+    for (let i = 2; i < element.length; i++) total += length(element[i] as Node, depth + 1)
+    // A subtree cut by the depth limit measures differently at another depth, so it is not cached.
+    if (!truncated) cache.set(element, total)
+    truncated ||= outer
+    return total
+  }
+
+  return { length }
+}
+
+// #endregion
+
 // #region pace
 
 export interface PaceOptions {
@@ -290,13 +334,8 @@ interface PaceCursor {
 interface PaceController {
   init: () => PaceState
   pending: (state: PaceState) => boolean
-  apply: (
-    nodes: Node[],
-    streaming: boolean,
-    now: number,
-    state: PaceState,
-    isOpaque?: (node: ElementNode) => boolean
-  ) => Node[]
+  /** `measure` decides which elements are opaque; it defaults to one that treats none as opaque. */
+  apply: (nodes: Node[], streaming: boolean, now: number, state: PaceState, measure?: TextMeasure) => Node[]
 }
 
 /**
@@ -321,13 +360,14 @@ export function pace(options: PaceOptions = {}): StreamEffect<PaceState> {
 function createPace(options: PaceOptions = {}): PaceController {
   const speed = Math.max(0, options.speed ?? DEFAULT_PACE_SPEED)
   const lag = Math.max(0, options.lag ?? DEFAULT_PACE_LAG)
+  const plainMeasure = createTextMeasure()
 
   return {
     init: () => ({ progress: 0, total: 0, at: undefined, deadlines: [], streamed: false, started: false }),
     pending: (state) => state.progress < state.total,
-    apply(nodes, streaming, now, state, isOpaque) {
+    apply(nodes, streaming, now, state, measure = plainMeasure) {
       let total = 0
-      for (const node of nodes) total += textLength(node, 0, isOpaque)
+      for (let i = 0; i < nodes.length; i++) total += measure.length(nodes[i], 0)
       const grew = total > state.total
       state.total = total
 
@@ -363,7 +403,7 @@ function createPace(options: PaceOptions = {}): PaceController {
       if (state.progress < total) state.at = now
       else state.at = undefined
       const progress = state.progress
-      state.deadlines = state.deadlines.filter((deadline) => deadline.end > progress)
+      if (state.deadlines.length > 0) state.deadlines = state.deadlines.filter((deadline) => deadline.end > progress)
       state.streamed = streaming || state.progress < total
 
       const released = Math.floor(state.progress)
@@ -371,7 +411,7 @@ function createPace(options: PaceOptions = {}): PaceController {
       const cursor: PaceCursor = { pos: 0, released }
       let out: Node[] | null = null
       for (let i = 0; i < nodes.length; i++) {
-        const kept = clip(nodes[i], cursor, 0, isOpaque)
+        const kept = clip(nodes[i], cursor, 0, measure)
         if (kept === nodes[i]) out?.push(kept)
         else {
           out ??= nodes.slice(0, i)
@@ -383,20 +423,12 @@ function createPace(options: PaceOptions = {}): PaceController {
   }
 }
 
-function textLength(node: Node, depth: number, isOpaque?: (node: ElementNode) => boolean): number {
-  if (typeof node === 'string') return node.length
-  if (node[0] === null || depth >= MAX_DEPTH || isOpaque?.(node as ElementNode)) return 0
-  let length = 0
-  for (let i = 2; i < node.length; i++) length += textLength(node[i] as Node, depth + 1, isOpaque)
-  return length
-}
-
 /**
  * Keep the released part of `node`. Returns `node` itself when nothing changes, and `null` when the
- * node has not started. Text-free and opaque elements (`isOpaque`, or past the depth limit) count no
- * text and show whole once the cursor reaches them.
+ * node has not started. Only the element holding the cursor is walked; with cached lengths, elements
+ * before or after it cost O(1).
  */
-function clip(node: Node, cursor: PaceCursor, depth: number, isOpaque?: (node: ElementNode) => boolean): Node | null {
+function clip(node: Node, cursor: PaceCursor, depth: number, measure: TextMeasure): Node | null {
   if (typeof node === 'string') {
     const start = cursor.pos
     cursor.pos += node.length
@@ -411,18 +443,22 @@ function clip(node: Node, cursor: PaceCursor, depth: number, isOpaque?: (node: E
   if (node[0] === null) return node
 
   const start = cursor.pos
-  const opaque = depth >= MAX_DEPTH || isOpaque?.(node as ElementNode) === true
-  const length = opaque ? 0 : textLength(node, depth, isOpaque)
-  if (length === 0 ? start > cursor.released : start >= cursor.released) {
-    cursor.pos += length
+  const length = measure.length(node, depth)
+  // Text-free, opaque, and too-deep elements count no text and show whole once the cursor reaches them.
+  if (length === 0) return start > cursor.released ? null : node
+  if (start >= cursor.released) {
+    cursor.pos = start + length
     return null
   }
-  if (opaque) return node
+  if (start + length <= cursor.released) {
+    cursor.pos = start + length
+    return node
+  }
 
   let copy: Node[] | null = null
   for (let i = 2; i < node.length; i++) {
     const child = node[i] as Node
-    const kept = clip(child, cursor, depth + 1, isOpaque)
+    const kept = clip(child, cursor, depth + 1, measure)
     if (kept === child) copy?.push(child)
     else {
       copy ??= node.slice(0, i) as Node[]
@@ -497,6 +533,8 @@ interface FadeSegment {
   /** When the span appears; its animation starts `delay` ms later. */
   born: number
   delay: number
+  /** Inline style of the span, including its delay. */
+  style: string
 }
 
 interface FadeBlock {
@@ -504,6 +542,21 @@ interface FadeBlock {
   segments: FadeSegment[]
   /** Length of `text` that has been decided. Less than `text.length` while a partial word is held back. */
   shown: number
+  /** When the last segment finishes animating, so the spans can merge back into text. */
+  until: number
+}
+
+interface BlockText {
+  /** Fadeable text: every text leaf outside excluded subtrees, in document order. */
+  text: string
+  /** Offset where the last non-empty text leaf starts. Only its trailing word can still grow. */
+  leaf: number
+}
+
+/** Position in a block's fadeable text while decorating it, and the first segment that may still apply. */
+interface TextCursor {
+  pos: number
+  segment: number
 }
 
 interface RevealState {
@@ -535,9 +588,15 @@ interface RevealConfig {
   paceController?: PaceController
 }
 
+const EMPTY_TEXT: BlockText = { text: '', leaf: 0 }
+
+function isRevealKey(key: string): boolean {
+  return key.startsWith(FADE_KEY_PREFIX) || key.startsWith(TYPEWRITER_KEY_PREFIX)
+}
+
 function isRevealSpan(node: Node): boolean {
   const key = getStreamKey(node)
-  return key !== undefined && (key.startsWith(FADE_KEY_PREFIX) || key.startsWith(TYPEWRITER_KEY_PREFIX))
+  return key !== undefined && isRevealKey(key)
 }
 
 /**
@@ -579,35 +638,43 @@ function createRevealEffect(config: RevealConfig): StreamEffect<RevealState> {
   const { name, unit, stagger, duration, lagCap, keyPrefix, className, inlineStyle, styles, exclude, paceController } =
     config
 
-  const isExcluded = (node: ElementNode) =>
-    exclude.has(node[0]) || isRevealSpan(node) || getStreamKey(node) === CARET_KEY
+  const isExcluded = (node: ElementNode): boolean => {
+    if (exclude.has(node[0])) return true
+    const key = getStreamKey(node)
+    return key !== undefined && (key === CARET_KEY || isRevealKey(key))
+  }
+  const measure = createTextMeasure(isExcluded)
+  // Only top-level blocks are cached: they are always read at depth 0, so the depth limit cuts them
+  // the same way every time.
+  const texts = new WeakMap<ElementNode, BlockText>()
 
-  function fadeableText(node: Node, depth: number): string {
-    if (typeof node === 'string') return node
-    if (node[0] === null || depth >= MAX_DEPTH || isExcluded(node as ElementNode)) return ''
-    let out = ''
-    for (let i = 2; i < node.length; i++) out += fadeableText(node[i] as Node, depth + 1)
-    return out
+  function collectText(node: Node, depth: number, acc: BlockText): void {
+    if (typeof node === 'string') {
+      if (node.length > 0) {
+        acc.leaf = acc.text.length
+        acc.text += node
+      }
+      return
+    }
+    if (node[0] === null || depth >= MAX_DEPTH || isExcluded(node as ElementNode)) return
+    for (let i = 2; i < node.length; i++) collectText(node[i] as Node, depth + 1, acc)
   }
 
-  /**
-   * Offset in `fadeableText(node)` where its last non-empty text leaf starts. Text before it is
-   * complete, so only the trailing word of that leaf can still grow.
-   */
-  function lastLeafStart(node: Node): number {
-    let offset = 0
-    let start = 0
-    const walk = (n: Node, depth: number) => {
-      if (typeof n === 'string') {
-        if (n.length > 0) start = offset
-        offset += n.length
-        return
-      }
-      if (n[0] === null || depth >= MAX_DEPTH || isExcluded(n as ElementNode)) return
-      for (let i = 2; i < n.length; i++) walk(n[i] as Node, depth + 1)
+  function blockText(node: Node): BlockText {
+    if (typeof node === 'string') return { text: node, leaf: 0 }
+    if (node[0] === null) return EMPTY_TEXT
+    const element = node as ElementNode
+    let cached = texts.get(element)
+    if (!cached) {
+      cached = { text: '', leaf: 0 }
+      collectText(element, 0, cached)
+      texts.set(element, cached)
     }
-    walk(node, 0)
-    return start
+    return cached
+  }
+
+  function segmentStyle(delay: number): string {
+    return delay > 0 ? `${inlineStyle}animation-delay:${delay}ms;` : inlineStyle
   }
 
   function addSegments(
@@ -619,7 +686,7 @@ function createRevealEffect(config: RevealConfig): StreamEffect<RevealState> {
     state: RevealState
   ): void {
     if (stagger === 0) {
-      segments.push({ start, end: limit, born: now, delay: 0 })
+      segments.push({ start, end: limit, born: now, delay: 0, style: inlineStyle })
       return
     }
     let i = start
@@ -635,53 +702,65 @@ function createRevealEffect(config: RevealConfig): StreamEffect<RevealState> {
       }
       const at = Math.max(now, Math.min(state.nextAt, now + lagCap))
       state.nextAt = at + stagger
-      segments.push({ start: i, end, born: now, delay: Math.round(at - now) })
+      const delay = Math.round(at - now)
+      segments.push({ start: i, end, born: now, delay, style: segmentStyle(delay) })
       i = end
     }
   }
 
-  function splitText(text: string, offset: number, segments: FadeSegment[], prefix = keyPrefix): Node[] | null {
+  /**
+   * Split one text leaf at `cursor` into plain text and spans, or return `null` when no segment
+   * touches it. Segments are sorted and leaves arrive in order, so the scan resumes where the previous
+   * leaf stopped instead of starting over.
+   */
+  function splitText(text: string, cursor: TextCursor, segments: FadeSegment[], prefix: string): Node[] | null {
+    const offset = cursor.pos
     const end = offset + text.length
+    cursor.pos = end
+    let k = cursor.segment
+    while (k < segments.length && segments[k].end <= offset) k++
     let pieces: Node[] | null = null
-    let cursor = offset
-    for (const segment of segments) {
-      if (segment.end <= cursor) continue
+    let at = offset
+    for (; k < segments.length; k++) {
+      const segment = segments[k]
       if (segment.start >= end) break
       pieces ??= []
-      const from = Math.max(segment.start, cursor)
+      const from = Math.max(segment.start, at)
       const to = Math.min(segment.end, end)
-      if (from > cursor) pieces.push(text.slice(cursor - offset, from - offset))
-      const style = inlineStyle + (segment.delay > 0 ? `animation-delay:${segment.delay}ms;` : '')
+      if (from > at) pieces.push(text.slice(at - offset, from - offset))
+      const key = { key: prefix + from }
       pieces.push([
         'span',
-        { $: { key: prefix + from }, class: className, ...(style ? { style } : {}) },
+        segment.style ? { $: key, class: className, style: segment.style } : { $: key, class: className },
         text.slice(from - offset, to - offset),
       ])
-      cursor = to
+      at = to
+      // The segment continues into the next leaf, which resumes from it.
+      if (segment.end > end) break
     }
-    if (pieces && cursor < end) pieces.push(text.slice(cursor - offset))
+    cursor.segment = k
+    if (pieces && at < end) pieces.push(text.slice(at - offset))
     return pieces
   }
 
-  /** Returns the decorated children list for `node`, or `null` when unchanged. */
-  function decorate(node: ElementNode, segments: FadeSegment[], offset: { value: number }, depth: number) {
+  /** Returns the decorated copy of `node`, or `null` when unchanged. */
+  function decorate(node: ElementNode, segments: FadeSegment[], cursor: TextCursor, depth: number): ElementNode | null {
     if (depth >= MAX_DEPTH || isExcluded(node)) return null
     let copy: Node[] | null = null
     for (let i = 2; i < node.length; i++) {
       const child = node[i] as Node
       if (typeof child === 'string') {
-        const pieces = splitText(child, offset.value, segments)
-        offset.value += child.length
+        const pieces = splitText(child, cursor, segments, keyPrefix)
         if (pieces) {
           copy ??= node.slice(0, i) as Node[]
-          copy.push(...pieces)
+          for (let j = 0; j < pieces.length; j++) copy.push(pieces[j])
           continue
         }
       } else if (child[0] !== null) {
-        const updated = decorate(child as ElementNode, segments, offset, depth + 1)
+        const updated = decorate(child as ElementNode, segments, cursor, depth + 1)
         if (updated) {
           copy ??= node.slice(0, i) as Node[]
-          copy.push(updated as ElementNode)
+          copy.push(updated)
           continue
         }
       }
@@ -701,8 +780,7 @@ function createRevealEffect(config: RevealConfig): StreamEffect<RevealState> {
       if (!paceController) state.paced = undefined
       else state.paced ??= paceController.init()
       const paced = state.paced
-      const nodes =
-        paceController && paced ? paceController.apply(input, inputStreaming, now, paced, isExcluded) : input
+      const nodes = paceController && paced ? paceController.apply(input, inputStreaming, now, paced, measure) : input
       const streaming = paced ? paced.streamed : inputStreaming
       const closing = !streaming && state.streamed
       state.streamed = streaming
@@ -720,11 +798,10 @@ function createRevealEffect(config: RevealConfig): StreamEffect<RevealState> {
           continue
         }
 
-        const text = fadeableText(node, 0)
+        const { text, leaf } = blockText(node)
         // Only the last top-level node can still grow, so only it may end mid-word. Earlier blocks are complete.
         const growing = streaming && unit === 'word' && paceController !== undefined && i === nodes.length - 1
-        const leaf = growing ? lastLeafStart(node) : text.length
-        const hold = growing ? leaf + wordStart(text.slice(leaf)) : text.length
+        const hold = growing ? wordStart(text, leaf) : text.length
         const flushing = block !== undefined && block.shown < block.text.length
         const common = block
           ? Math.min(commonPrefixLength(block.text, text), block.shown)
@@ -734,15 +811,16 @@ function createRevealEffect(config: RevealConfig): StreamEffect<RevealState> {
         // A block's spans merge back into text all at once, when its last one finishes. Spans are
         // then only ever appended, so positional keys never move an animating span to a new element.
         const segments: FadeSegment[] = []
-        const previousSegments = block?.segments ?? []
-        if (previousSegments.some((segment) => now < segment.born + segment.delay + duration)) {
-          for (const segment of previousSegments) {
+        if (block && now < block.until) {
+          for (const segment of block.segments) {
             const end = Math.min(segment.end, common)
             if (segment.start < end) segments.push(end === segment.end ? segment : { ...segment, end })
           }
         }
         if ((streaming || closing || flushing) && hold > common) addSegments(segments, text, common, hold, now, state)
-        blocks[i] = { text, segments, shown: hold }
+        let until = -Infinity
+        for (const segment of segments) until = Math.max(until, segment.born + segment.delay + duration)
+        blocks[i] = { text, segments, shown: hold, until }
         if (segments.length === 0 && hold === text.length) {
           out?.push(node)
           continue
@@ -751,16 +829,16 @@ function createRevealEffect(config: RevealConfig): StreamEffect<RevealState> {
         active = true
         out ??= nodes.slice(0, i)
         // Text past `hold` stays hidden: it is not a span yet, so it must not render as plain text.
-        const visible = hold < text.length ? clip(node, { pos: 0, released: hold }, 0, isExcluded) : node
+        const visible = hold < text.length ? clip(node, { pos: 0, released: hold }, 0, measure) : node
         if (visible === null) continue
+        const cursor: TextCursor = { pos: 0, segment: 0 }
         if (typeof visible === 'string') {
           // Top-level text spans are siblings of other blocks' spans, so their keys include the block.
-          out.push(...(splitText(visible, 0, segments, `${keyPrefix}${i}:`) ?? [visible]))
+          const pieces = splitText(visible, cursor, segments, `${keyPrefix}${i}:`)
+          if (pieces) for (let j = 0; j < pieces.length; j++) out.push(pieces[j])
+          else out.push(visible)
         } else {
-          out.push(
-            (visible[0] !== null && decorate(visible as ElementNode, segments, { value: 0 }, 0)) ||
-              (visible as ElementNode)
-          )
+          out.push((visible[0] !== null && decorate(visible as ElementNode, segments, cursor, 0)) || visible)
         }
       }
       blocks.length = nodes.length
@@ -778,7 +856,7 @@ function createRevealEffect(config: RevealConfig): StreamEffect<RevealState> {
 export interface TypewriterOptions {
   /**
    * Characters revealed per second. `0` or `Infinity` reveals each streamed chunk at once.
-   * @default 60
+   * @default 100
    */
   speed?: number
   /**
@@ -805,6 +883,7 @@ export interface TypewriterOptions {
 
 const TYPEWRITER_CLASS = 'comark-typewriter'
 const TYPEWRITER_KEY_PREFIX = 'comark-typewriter:'
+const DEFAULT_TYPEWRITER_SPEED = 100
 
 /** Default typewriter stylesheet, for apps that ship it themselves with `styles: false`. */
 export const TYPEWRITER_STYLES = `@keyframes comark-typewriter-in{from{opacity:0}to{opacity:1}}.${TYPEWRITER_CLASS}{animation:comark-typewriter-in 0ms steps(1) both}@media (prefers-reduced-motion:reduce){.${TYPEWRITER_CLASS}{animation:none}}`
@@ -818,7 +897,7 @@ export const TYPEWRITER_STYLES = `@keyframes comark-typewriter-in{from{opacity:0
  * text keeps typing out after the stream ends.
  */
 export function typewriter(options: TypewriterOptions = {}): StreamEffect<RevealState> {
-  const speed = options.speed ?? 100
+  const speed = options.speed ?? DEFAULT_TYPEWRITER_SPEED
   return createRevealEffect({
     name: 'typewriter',
     unit: 'char',
@@ -830,17 +909,15 @@ export function typewriter(options: TypewriterOptions = {}): StreamEffect<Reveal
     inlineStyle: '',
     styles: (options.styles ?? options.class === undefined) ? { id: 'typewriter', css: TYPEWRITER_STYLES } : false,
     exclude: new Set(options.exclude ?? DEFAULT_FADE_EXCLUDE),
-    paceController: resolveRevealPace(
-      options.pace === false
-        ? false
-        : {
-            // `speed: 0` reveals chunks at once, so its implicit pace must not hold text back forever.
-            speed:
-              (typeof options.pace === 'object' ? options.pace.speed : undefined) ?? (speed > 0 ? speed : Infinity),
-            lag: (typeof options.pace === 'object' ? options.pace.lag : undefined) ?? Infinity,
-          }
-    ),
+    paceController: resolveRevealPace(resolveTypewriterPace(options.pace, speed)),
   })
+}
+
+function resolveTypewriterPace(option: boolean | PaceOptions | undefined, speed: number): PaceOptions | false {
+  if (option === false) return false
+  const custom = typeof option === 'object' ? option : {}
+  // `speed: 0` reveals chunks at once, so its implicit pace must not hold text back forever.
+  return { speed: custom.speed ?? (speed > 0 ? speed : Infinity), lag: custom.lag ?? Infinity }
 }
 
 // #endregion
@@ -856,11 +933,9 @@ function isSpace(code: number): boolean {
   return code === 32 || code === 9 || code === 10 || code === 13
 }
 
-/** Offset where the trailing non-space run of `text` starts, or `text.length` when it ends in a space. */
-function wordStart(text: string): number {
+/** Offset (at least `from`) where the trailing non-space run of `text` starts; `text.length` after a space. */
+function wordStart(text: string, from: number): number {
   let i = text.length
-  while (i > 0 && !isSpace(text.charCodeAt(i - 1))) i--
+  while (i > from && !isSpace(text.charCodeAt(i - 1))) i--
   return i
 }
-
-// #endregion

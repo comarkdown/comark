@@ -26,11 +26,13 @@ export function MarkdownDocumentStream(props: MarkdownDocumentProps): React.Reac
   const [stream] = useState(() => createStreamRenderer())
   // Paced effects release text on a clock, so keep re-rendering until their backlog is empty.
   const [frame, setFrame] = useState(0)
+  // Effects keep caches between renders, so rebuild them only when their props change, not every frame.
+  const resolvedEffects = useMemo(() => resolveStreamEffects({ caret, fade, effects }), [caret, fade, effects])
 
   const rendered = useMemo(() => {
     const nodes = stream.render(value?.nodes || [], {
       streaming,
-      effects: resolveStreamEffects({ caret, fade, effects }),
+      effects: resolvedEffects,
     })
     return {
       pending: stream.pending(),
@@ -40,7 +42,7 @@ export function MarkdownDocumentStream(props: MarkdownDocumentProps): React.Reac
         getChildKeys(nodes)
       ),
     }
-  }, [stream, value, components, componentsManifest, streaming, caret, fade, effects, data, transformNode, frame])
+  }, [stream, value, components, componentsManifest, streaming, resolvedEffects, data, transformNode, frame])
 
   useEffect(() => {
     if (!rendered.pending) return
