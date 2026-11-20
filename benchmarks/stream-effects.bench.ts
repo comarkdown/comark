@@ -21,7 +21,7 @@ const chatFrames = await snapshots(chatMarkdown, 24)
 const largeFrames = await snapshots(largeMarkdown, 60)
 
 const fadeEffects = [fade({ styles: false }), caret()]
-const fadeWordStagger = [fade({ styles: false, stagger: 30, pace: { speed: 400 } })]
+const fadeWordDelay = [fade({ styles: false, delay: 30, speed: 400 })]
 const typewriterEffects = [typewriter({ styles: false, speed: 400 })]
 const paceDrain = [pace({ speed: 4000 }), fade({ styles: false, pace: false }), caret()]
 
@@ -49,8 +49,8 @@ test('stream effects', async ({ bench }) => {
     bench('fade and caret over a chat answer', () => {
       play(chatFrames, fadeEffects)
     }),
-    bench('staggered word fade over a large document', () => {
-      play(largeFrames, fadeWordStagger)
+    bench('delayed word fade over a large document', () => {
+      play(largeFrames, fadeWordDelay)
     }),
     bench('typewriter over a chat answer', () => {
       play(chatFrames, typewriterEffects)

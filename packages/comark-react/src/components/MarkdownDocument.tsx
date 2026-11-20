@@ -331,7 +331,7 @@ export interface MarkdownDocumentProps extends Omit<React.HTMLAttributes<HTMLDiv
 
   /**
    * Fade in text as it streams. `true` uses the defaults; pass options to tune duration, easing,
-   * word stagger, class, or excluded tags.
+   * word delay, pacing, class, or excluded tags.
    */
   fade?: boolean | FadeOptions
 

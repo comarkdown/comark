@@ -28,8 +28,8 @@ const plugins: readonly ComarkPlugin[] = [shiki()]
 
 function buildEffects(mode: EffectMode, paceSpeed: number, showCaret: boolean): StreamEffect[] {
   const effects: StreamEffect[] = []
-  if (mode === 'fade') effects.push(fade({ duration: 300, stagger: 30, pace: { speed: paceSpeed } }))
-  if (mode === 'typewriter') effects.push(typewriter({ speed: paceSpeed, pace: { speed: paceSpeed } }))
+  if (mode === 'fade') effects.push(fade({ duration: 300, delay: 30, speed: paceSpeed }))
+  if (mode === 'typewriter') effects.push(typewriter({ speed: paceSpeed }))
   if (showCaret) effects.push(caret())
   return effects
 }

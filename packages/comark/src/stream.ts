@@ -300,15 +300,15 @@ export interface PaceOptions {
    */
   speed?: number
   /**
-   * Longest time in milliseconds the reveal may trail the received text. Only when the backlog would
-   * exceed this window does the reveal speed up.
+   * Catch up when the reveal falls more than this many milliseconds behind the received text. Below
+   * that the reveal keeps its `speed`; above it, it speeds up so no text waits longer than this.
    * @default Infinity
    */
-  lag?: number
+  catchUp?: number
 }
 
 const DEFAULT_PACE_SPEED = 45
-const DEFAULT_PACE_LAG = Infinity
+const DEFAULT_PACE_CATCH_UP = Infinity
 
 interface PaceState {
   /** Characters released so far. Fractional so slow speeds advance smoothly between renders. */
@@ -317,7 +317,7 @@ interface PaceState {
   total: number
   /** Time of the previous render while a backlog was waiting, `undefined` when idle. */
   at: number | undefined
-  /** Per received chunk, the text end it must be released up to, and by when, to stay within `lag`. */
+  /** Per received chunk, the text end it must be released up to, and by when, to stay within `catchUp`. */
   deadlines: { end: number; at: number }[]
   /** Whether the last render was streaming, so the backlog still drains after the stream ends. */
   streamed: boolean
@@ -359,7 +359,7 @@ export function pace(options: PaceOptions = {}): StreamEffect<PaceState> {
 /** Pacing rules shared by {@link pace} and the `pace` option of {@link fade} and {@link typewriter}. */
 function createPace(options: PaceOptions = {}): PaceController {
   const speed = Math.max(0, options.speed ?? DEFAULT_PACE_SPEED)
-  const lag = Math.max(0, options.lag ?? DEFAULT_PACE_LAG)
+  const catchUp = Math.max(0, options.catchUp ?? DEFAULT_PACE_CATCH_UP)
   const plainMeasure = createTextMeasure()
 
   return {
@@ -384,13 +384,13 @@ function createPace(options: PaceOptions = {}): PaceController {
       // Time only counts while text was already waiting, so idle time before a chunk is not backlog.
       const previousAt = state.at
       const dt = previousAt === undefined ? 0 : now - previousAt
-      if (grew && lag !== Infinity) state.deadlines.push({ end: total, at: now + lag })
+      if (grew && catchUp !== Infinity) state.deadlines.push({ end: total, at: now + catchUp })
       const backlog = total - state.progress
       if (backlog > 0) {
         if (speed === Infinity) state.progress = total
         else if (dt > 0) {
           let release = (speed * dt) / 1000
-          // Catching up toward each chunk's fixed deadline keeps the lag bound independent of the frame
+          // Catching up toward each chunk's fixed deadline keeps the catch-up bound independent of the frame
           // rate, and later chunks never postpone text already waiting.
           for (const deadline of state.deadlines) {
             const need = Math.min(deadline.end, total) - state.progress
@@ -472,22 +472,40 @@ function clip(node: Node, cursor: PaceCursor, depth: number, measure: TextMeasur
 
 // #region fade
 
-export interface FadeOptions {
+/** A CSS `animation-timing-function` value. */
+export type FadeEasing =
+  | 'linear'
+  | 'ease'
+  | 'ease-in'
+  | 'ease-out'
+  | 'ease-in-out'
+  | 'step-start'
+  | 'step-end'
+  | `cubic-bezier(${string})`
+  | `steps(${string})`
+  | `linear(${string})`
+  | `var(${string})`
+
+/**
+ * Options for {@link fade}. `speed` and `catchUp` pace the reveal (see {@link pace}) unless `pace` is
+ * `false`.
+ */
+export interface FadeOptions extends PaceOptions {
   /**
    * Animation duration in milliseconds. A block's spans merge back into plain text this long after
    * its last chunk starts fading.
    * @default 300
    */
   duration?: number
-  /** CSS easing. @default 'ease-out' */
-  easing?: string
+  /** @default 'ease-out' */
+  easing?: FadeEasing
   /**
    * Delay in milliseconds between consecutive words (or characters, with `unit: 'char'`). `0` fades
-   * each streamed chunk as a whole. Units queue across chunks, and the queue never lags more than
+   * each streamed chunk as a whole. Units queue across chunks, and the queue never falls more than
    * `duration` behind.
    * @default 0 for `unit: 'word'`, 20 for `unit: 'char'`
    */
-  stagger?: number
+  delay?: number
   /**
    * Fade in whole words, or one character at a time.
    * @default 'word'
@@ -508,11 +526,11 @@ export interface FadeOptions {
   /** Tags whose subtrees never fade. Replaces {@link DEFAULT_FADE_EXCLUDE}. */
   exclude?: readonly string[]
   /**
-   * Reveal text at a steady pace (see {@link pace}) before it fades in. `true` uses the pace defaults,
-   * `false` turns pacing off.
+   * Reveal text at a steady pace (see {@link pace}) before it fades in. `false` fades each chunk as
+   * soon as it arrives and ignores `speed` and `catchUp`.
    * @default true
    */
-  pace?: boolean | PaceOptions
+  pace?: boolean
 }
 
 /** Tags that never fade by default: code and rendered output that would re-mount or break if split. */
@@ -521,7 +539,7 @@ export const DEFAULT_FADE_EXCLUDE: readonly string[] = ['pre', 'math', 'mermaid'
 const FADE_CLASS = 'comark-fade'
 const FADE_KEY_PREFIX = 'comark-fade:'
 const DEFAULT_DURATION = 300
-const DEFAULT_CHAR_STAGGER = 20
+const DEFAULT_CHAR_DELAY = 20
 
 /** Default fade stylesheet, for apps that ship it themselves with `styles: false`. */
 export const FADE_STYLES = `@keyframes comark-fade-in{from{opacity:0}to{opacity:1}}.${FADE_CLASS}{animation:comark-fade-in ${DEFAULT_DURATION}ms ease-out both}@media (prefers-reduced-motion:reduce){.${FADE_CLASS}{animation:none}}`
@@ -562,7 +580,7 @@ interface TextCursor {
 interface RevealState {
   source: readonly Node[] | null
   blocks: FadeBlock[]
-  /** Earliest start for the next staggered unit. */
+  /** Earliest start for the next queued unit. */
   nextAt: number
   /** Pace state when the `pace` option is set. */
   paced?: PaceState
@@ -575,11 +593,11 @@ interface RevealConfig {
   /** Split new text into words (fade) or characters (typewriter). */
   unit: 'word' | 'char'
   /** Time between consecutive units. `0` reveals each streamed chunk as a whole. */
-  stagger: number
+  interval: number
   /** Animation length, which also decides when a block's spans merge back into text. */
   duration: number
   /** Furthest a queued unit may start past `now`. */
-  lagCap: number
+  maxQueue: number
   keyPrefix: string
   className: string
   inlineStyle: string
@@ -618,25 +636,32 @@ export function fade(options: FadeOptions = {}): StreamEffect<RevealState> {
   return createRevealEffect({
     name: 'fade',
     unit,
-    stagger: Math.max(0, options.stagger ?? (unit === 'char' ? DEFAULT_CHAR_STAGGER : 0)),
+    interval: Math.max(0, options.delay ?? (unit === 'char' ? DEFAULT_CHAR_DELAY : 0)),
     duration,
-    lagCap: duration,
+    maxQueue: duration,
     keyPrefix: FADE_KEY_PREFIX,
     className: options.class ?? FADE_CLASS,
     inlineStyle,
     styles: (options.styles ?? options.class === undefined) ? { id: 'fade', css: FADE_STYLES } : false,
     exclude: new Set(options.exclude ?? DEFAULT_FADE_EXCLUDE),
-    paceController: resolveRevealPace(options.pace),
+    paceController: options.pace === false ? undefined : createPace(options),
   })
 }
 
-function resolveRevealPace(option: boolean | PaceOptions | undefined): PaceController | undefined {
-  return option === false ? undefined : createPace(option === undefined || option === true ? {} : option)
-}
-
 function createRevealEffect(config: RevealConfig): StreamEffect<RevealState> {
-  const { name, unit, stagger, duration, lagCap, keyPrefix, className, inlineStyle, styles, exclude, paceController } =
-    config
+  const {
+    name,
+    unit,
+    interval,
+    duration,
+    maxQueue,
+    keyPrefix,
+    className,
+    inlineStyle,
+    styles,
+    exclude,
+    paceController,
+  } = config
 
   const isExcluded = (node: ElementNode): boolean => {
     if (exclude.has(node[0])) return true
@@ -685,7 +710,7 @@ function createRevealEffect(config: RevealConfig): StreamEffect<RevealState> {
     now: number,
     state: RevealState
   ): void {
-    if (stagger === 0) {
+    if (interval === 0) {
       segments.push({ start, end: limit, born: now, delay: 0, style: inlineStyle })
       return
     }
@@ -700,8 +725,8 @@ function createRevealEffect(config: RevealConfig): StreamEffect<RevealState> {
         while (end < limit && !isSpace(text.charCodeAt(end))) end++
         while (end < limit && isSpace(text.charCodeAt(end))) end++
       }
-      const at = Math.max(now, Math.min(state.nextAt, now + lagCap))
-      state.nextAt = at + stagger
+      const at = Math.max(now, Math.min(state.nextAt, now + maxQueue))
+      state.nextAt = at + interval
       const delay = Math.round(at - now)
       segments.push({ start: i, end, born: now, delay, style: segmentStyle(delay) })
       i = end
@@ -853,7 +878,8 @@ function createRevealEffect(config: RevealConfig): StreamEffect<RevealState> {
 
 // #region typewriter
 
-export interface TypewriterOptions {
+/** Options for {@link typewriter}. `speed` sets both the typing rate and the pace that releases text. */
+export interface TypewriterOptions extends PaceOptions {
   /**
    * Characters revealed per second. `0` or `Infinity` reveals each streamed chunk at once.
    * @default 100
@@ -874,11 +900,11 @@ export interface TypewriterOptions {
   /** Tags whose subtrees are revealed as a whole. Replaces {@link DEFAULT_FADE_EXCLUDE}. */
   exclude?: readonly string[]
   /**
-   * Reveal text at a steady pace (see {@link pace}) before it types out. `true` paces at `speed` with
-   * no lag limit, `false` turns pacing off.
+   * Release text at `speed` (see {@link pace}) before it types out. `false` types out each chunk as
+   * soon as it arrives and ignores `catchUp`.
    * @default true
    */
-  pace?: boolean | PaceOptions
+  pace?: boolean
 }
 
 const TYPEWRITER_CLASS = 'comark-typewriter'
@@ -901,23 +927,20 @@ export function typewriter(options: TypewriterOptions = {}): StreamEffect<Reveal
   return createRevealEffect({
     name: 'typewriter',
     unit: 'char',
-    stagger: speed > 0 && Number.isFinite(speed) ? 1000 / speed : 0,
+    interval: speed > 0 && Number.isFinite(speed) ? 1000 / speed : 0,
     duration: 0,
-    lagCap: Infinity,
+    maxQueue: Infinity,
     keyPrefix: TYPEWRITER_KEY_PREFIX,
     className: options.class ?? TYPEWRITER_CLASS,
     inlineStyle: '',
     styles: (options.styles ?? options.class === undefined) ? { id: 'typewriter', css: TYPEWRITER_STYLES } : false,
     exclude: new Set(options.exclude ?? DEFAULT_FADE_EXCLUDE),
-    paceController: resolveRevealPace(resolveTypewriterPace(options.pace, speed)),
+    // `speed: 0` reveals chunks at once, so its pace must not hold text back forever.
+    paceController:
+      options.pace === false
+        ? undefined
+        : createPace({ speed: speed > 0 ? speed : Infinity, catchUp: options.catchUp }),
   })
-}
-
-function resolveTypewriterPace(option: boolean | PaceOptions | undefined, speed: number): PaceOptions | false {
-  if (option === false) return false
-  const custom = typeof option === 'object' ? option : {}
-  // `speed: 0` reveals chunks at once, so its implicit pace must not hold text back forever.
-  return { speed: custom.speed ?? (speed > 0 ? speed : Infinity), lag: custom.lag ?? Infinity }
 }
 
 // #endregion
