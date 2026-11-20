@@ -244,7 +244,13 @@ describe('fade', () => {
       '',
     ].join('\n')
     const frames: string[] = []
-    const show = (nodes: Node[]) => frames.push(nodes.map((n) => textOf(n)).join('').replace(/\u2009/g, ''))
+    const show = (nodes: Node[]) =>
+      frames.push(
+        nodes
+          .map((n) => textOf(n))
+          .join('')
+          .replace(/\u2009/g, '')
+      )
     for (let i = 1; i <= text.length; i += 3) {
       const doc = await parse(text.slice(0, i), { streaming: true })
       show(stream.render(doc.nodes, { streaming: true, effects: all }))
@@ -289,7 +295,10 @@ describe('fade', () => {
     for (let i = 1; i <= text.length; i += 3) {
       const doc = await parse(text.slice(0, i), { streaming: true })
       const snapshot = JSON.stringify(doc.nodes)
-      const out = stream.render(doc.nodes, { streaming: true, effects: [fade({ styles: false, pace: false }), caret()] })
+      const out = stream.render(doc.nodes, {
+        streaming: true,
+        effects: [fade({ styles: false, pace: false }), caret()],
+      })
       expect(JSON.stringify(doc.nodes)).toBe(snapshot)
       const visible = out.map((n) => textOf(n)).join('')
       expect(visible.replace(/\u2009/g, '')).toBe(doc.nodes.map((n) => textOf(n)).join(''))
@@ -316,7 +325,10 @@ describe('typewriter', () => {
 
   it('does not split surrogate pairs', () => {
     const stream = createStreamRenderer({ now: () => 0 })
-    const out = stream.render([['p', {}, 'a😀']], { streaming: true, effects: [typewriter({ styles: false, pace: false })] })
+    const out = stream.render([['p', {}, 'a😀']], {
+      streaming: true,
+      effects: [typewriter({ styles: false, pace: false })],
+    })
     expect(fadeSpans(out)).toEqual(['a', '😀'])
   })
 
@@ -528,7 +540,6 @@ describe('pace', () => {
   })
 })
 
-
 describe('fade unit', () => {
   it('fades word by word by default', () => {
     const time = clock()
@@ -630,7 +641,7 @@ describe('pace option', () => {
   it('fade releases text at the paced speed instead of all at once', () => {
     const time = clock()
     const stream = createStreamRenderer({ now: time.now })
-    const all = [fade({ styles: false, pace: false, unit: 'char', stagger: 10, pace: { speed: 10, lag: Infinity } })]
+    const all = [fade({ styles: false, unit: 'char', stagger: 10, pace: { speed: 10, lag: Infinity } })]
     stream.render([['p', {}, 'Hello world']], { streaming: true, effects: all })
     time.advance(300)
     const out = stream.render([['p', {}, 'Hello world']], { streaming: true, effects: all })

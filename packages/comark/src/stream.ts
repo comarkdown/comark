@@ -782,15 +782,18 @@ export function typewriter(options: TypewriterOptions = {}): StreamEffect<Reveal
     inlineStyle: '',
     styles: (options.styles ?? options.class === undefined) ? { id: 'typewriter', css: TYPEWRITER_STYLES } : false,
     exclude: new Set(options.exclude ?? DEFAULT_FADE_EXCLUDE),
-    paceController: resolveRevealPace(options.pace === false ? false : {
-      speed: options.pace?.speed ?? speed,
-      lag: options.pace?.lag ?? Infinity
-    }),
+    paceController: resolveRevealPace(
+      options.pace === false
+        ? false
+        : {
+            speed: options.pace?.speed ?? speed,
+            lag: options.pace?.lag ?? Infinity,
+          }
+    ),
   })
 }
 
 // #endregion
-
 
 function commonPrefixLength(a: string, b: string): number {
   const max = Math.min(a.length, b.length)

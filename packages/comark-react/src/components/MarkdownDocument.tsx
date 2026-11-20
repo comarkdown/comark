@@ -421,7 +421,19 @@ export const MarkdownDocument: React.FC<MarkdownDocumentProps> = ({
         )
         .filter((child): child is React.ReactNode => child !== null),
     }
-  }, [stream, document, customComponents, componentsManifest, streaming, caret, fade, effects, data, transformNode, frame])
+  }, [
+    stream,
+    document,
+    customComponents,
+    componentsManifest,
+    streaming,
+    caret,
+    fade,
+    effects,
+    data,
+    transformNode,
+    frame,
+  ])
 
   useEffect(() => {
     if (!renderedNodes.pending) return
