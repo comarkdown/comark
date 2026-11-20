@@ -9,7 +9,11 @@ function doc(...nodes: Node[]): MarkdownDocumentType {
 
 it('fades only new text and keeps fading spans mounted', async () => {
   const done: Node = ['p', {}, 'Done']
-  const screen = await render(MarkdownDocument, { value: doc(done, ['p', {}, 'Hello']), streaming: true, fade: true })
+  const screen = await render(MarkdownDocument, {
+    value: doc(done, ['p', {}, 'Hello']),
+    streaming: true,
+    fade: { pace: false },
+  })
   const paragraph = screen.container.querySelector('p')
   const first = [...screen.container.querySelectorAll('.comark-fade')]
   expect(first.map((span) => span.textContent)).toEqual(['Done', 'Hello'])
@@ -25,7 +29,7 @@ it('places the caret after faded text and drops it when streaming ends', async (
   const screen = await render(MarkdownDocument, {
     value: doc(['p', {}, 'Hi']),
     streaming: true,
-    fade: true,
+    fade: { pace: false },
     caret: { class: 'cursor' },
   })
   expect(screen.container.querySelector('p .cursor')).not.toBeNull()

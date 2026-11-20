@@ -76,7 +76,7 @@ export class Markdown {
   /** Fade in text as it streams */
   readonly fade = input<boolean | FadeOptions>(false)
 
-  /** Custom render-time stream effects, run after `fade` and before `caret` */
+  /** Custom render-time stream effects, run after `fade` and before `caret`. Put `pace()` first. */
   readonly effects = input<readonly StreamEffect[]>()
 
   /** Additional data to pass to the renderer for :binding resolution */

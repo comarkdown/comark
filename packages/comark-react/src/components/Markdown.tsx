@@ -124,7 +124,15 @@ export interface MarkdownProps extends Omit<React.HTMLAttributes<HTMLDivElement>
  * }
  * ```
  */
-export async function Markdown({
+export function Markdown(props: MarkdownProps): React.ReactNode | Promise<React.ReactNode> {
+  // Streaming must stay synchronous: an async component suspends on every
+  // streamed update, which flashes the parent Suspense fallback and rebuilds
+  // fade spans mid-animation.
+  if (props.streaming) return <MarkdownStreaming {...props} />
+  return renderStatic(props)
+}
+
+function MarkdownStreaming({
   children,
   value,
   options,
@@ -134,6 +142,44 @@ export async function Markdown({
   componentsManifest,
   streaming = false,
   caret = false,
+  fade,
+  effects,
+  data,
+  className,
+  ...rest
+}: MarkdownProps) {
+  const source = children ? String(children) : ((value as string | undefined) ?? '')
+  return (
+    <MarkdownClient
+      {...rest}
+      value={source}
+      options={options}
+      unwrap={unwrap}
+      plugins={plugins}
+      components={customComponents}
+      componentsManifest={componentsManifest}
+      streaming={streaming}
+      caret={caret}
+      fade={fade}
+      effects={effects}
+      data={data}
+      className={className}
+    />
+  )
+}
+
+async function renderStatic({
+  children,
+  value,
+  options,
+  plugins,
+  unwrap = false,
+  components: customComponents = {},
+  componentsManifest,
+  streaming = false,
+  caret = false,
+  fade,
+  effects,
   data,
   className,
   ...rest
@@ -148,6 +194,8 @@ export async function Markdown({
         streaming={streaming}
         className={className}
         caret={caret}
+        fade={fade}
+        effects={effects}
         data={data}
       />
     )
@@ -157,24 +205,6 @@ export async function Markdown({
   // `unwrap` prop is a shorthand for the `unwrap` parse option; an explicit
   // `options.unwrap` still wins when the prop is left at its default.
   const parseOptions = unwrap ? { ...options, unwrap } : options
-
-  if (streaming) {
-    return (
-      <MarkdownClient
-        {...rest}
-        value={source}
-        options={options}
-        unwrap={unwrap}
-        plugins={plugins}
-        components={customComponents}
-        componentsManifest={componentsManifest}
-        streaming={streaming}
-        caret={caret}
-        data={data}
-        className={className}
-      />
-    )
-  }
 
   const parsed = await parseMarkdown(source, { ...parseOptions, plugins })
 
@@ -187,6 +217,8 @@ export async function Markdown({
       streaming={streaming}
       className={className}
       caret={caret}
+      fade={fade}
+      effects={effects}
       data={data}
     />
   )

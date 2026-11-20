@@ -8,7 +8,9 @@ import {
   createStreamRenderer,
   fade,
   getChildKeys,
+  pace,
   resolveStreamEffects,
+  typewriter,
 } from 'comark/stream'
 import type { StreamEffect } from 'comark/stream'
 
@@ -26,14 +28,15 @@ function fadeSpans(node: Node | Node[]): string[] {
   const out: string[] = []
   const walk = (n: Node) => {
     if (typeof n === 'string' || n[0] === null) return
-    if ((n[1] as any).$?.key?.startsWith('comark-fade:')) out.push(n[2] as string)
+    const key: string | undefined = (n[1] as any).$?.key
+    if (key?.startsWith('comark-fade:') || key?.startsWith('comark-typewriter:')) out.push(n[2] as string)
     for (let i = 2; i < n.length; i++) walk(n[i] as Node)
   }
   for (const n of Array.isArray(node) && typeof node[0] !== 'string' ? (node as Node[]) : [node as Node]) walk(n)
   return out
 }
 
-const effects = [fade({ styles: false })]
+const effects = [fade({ styles: false, pace: false })]
 
 describe('createStreamRenderer', () => {
   it('returns the input nodes when no effects run', () => {
@@ -57,11 +60,11 @@ describe('createStreamRenderer', () => {
     expect(stream.render([], { effects: [counter()] })).toEqual(['1'])
   })
 
-  it('orders resolved effects fade, custom, caret', () => {
+  it('orders resolved effects custom, fade, caret', () => {
     const custom: StreamEffect = { name: 'custom', apply: (n) => n }
     expect(resolveStreamEffects({ caret: true, fade: true, effects: [custom] }).map((e) => e.name)).toEqual([
-      'fade',
       'custom',
+      'fade',
       'caret',
     ])
     expect(resolveStreamEffects({})).toEqual([])
@@ -104,7 +107,7 @@ describe('caret', () => {
   it('lands after a fading span', () => {
     const time = clock()
     const stream = createStreamRenderer({ now: time.now })
-    const all = [fade({ styles: false }), caret()]
+    const all = [fade({ styles: false, pace: false }), caret()]
     stream.render([['p', {}, 'Hello']], { streaming: true, effects: all })
     const out = stream.render([['p', {}, 'Hello world']], { streaming: true, effects: all })
     const p = out[0] as ElementNode
@@ -214,7 +217,7 @@ describe('fade', () => {
   it('staggers words and caps the queue at the duration', () => {
     const time = clock()
     const stream = createStreamRenderer({ now: time.now })
-    const staggered = [fade({ styles: false, stagger: 100, duration: 300 })]
+    const staggered = [fade({ styles: false, pace: false, stagger: 100, duration: 300 })]
     const out = stream.render([['p', {}, 'one two three four five']], { streaming: true, effects: staggered })
     const p = out[0] as ElementNode
     const delays = p.slice(2).map((n) => ((n as ElementNode)[1].style as string | undefined) ?? '')
@@ -228,11 +231,47 @@ describe('fade', () => {
     ])
   })
 
+  it('reveals table cells word by word instead of all at once', async () => {
+    const parse = createMarkdownParser()
+    const time = clock()
+    const stream = createStreamRenderer({ now: time.now })
+    const all = [fade({ styles: false }), caret()]
+    const text = [
+      '| Renderer | Package           |',
+      '| -------- | ----------------- |',
+      '| Vue      | `@comark/vue`     |',
+      '| React    | `@comark/react`   |',
+      '',
+    ].join('\n')
+    const frames: string[] = []
+    const show = (nodes: Node[]) => frames.push(nodes.map((n) => textOf(n)).join('').replace(/\u2009/g, ''))
+    for (let i = 1; i <= text.length; i += 3) {
+      const doc = await parse(text.slice(0, i), { streaming: true })
+      show(stream.render(doc.nodes, { streaming: true, effects: all }))
+      time.advance(16)
+    }
+    const full = await parse(text, { streaming: true })
+    for (let n = 0; n < 2000 && stream.pending(); n++) {
+      show(stream.render(full.nodes, { streaming: false, effects: all }))
+      time.advance(16)
+    }
+    const stages = [...new Set(frames.filter(Boolean))]
+
+    expect(stages).toEqual([
+      'Renderer',
+      'RendererPackage',
+      'RendererPackageVue',
+      'RendererPackageVue@comark/vue',
+      'RendererPackageVue@comark/vueReact',
+      'RendererPackageVue@comark/vueReact@comark/react',
+    ])
+  })
+
   it('applies custom class and easing', () => {
     const stream = createStreamRenderer({ now: () => 0 })
     const out = stream.render([['p', {}, 'x']], {
       streaming: true,
-      effects: [fade({ class: 'my-fade', easing: 'linear' })],
+      effects: [fade({ class: 'my-fade', easing: 'linear', pace: false })],
     })
     expect((out[0] as ElementNode)[2]).toEqual([
       'span',
@@ -250,7 +289,7 @@ describe('fade', () => {
     for (let i = 1; i <= text.length; i += 3) {
       const doc = await parse(text.slice(0, i), { streaming: true })
       const snapshot = JSON.stringify(doc.nodes)
-      const out = stream.render(doc.nodes, { streaming: true, effects: [fade({ styles: false }), caret()] })
+      const out = stream.render(doc.nodes, { streaming: true, effects: [fade({ styles: false, pace: false }), caret()] })
       expect(JSON.stringify(doc.nodes)).toBe(snapshot)
       const visible = out.map((n) => textOf(n)).join('')
       expect(visible.replace(/\u2009/g, '')).toBe(doc.nodes.map((n) => textOf(n)).join(''))
@@ -258,6 +297,402 @@ describe('fade', () => {
       time.advance(16)
     }
     expect(previousText).toContain('const a = 1')
+  })
+})
+
+describe('typewriter', () => {
+  it('reveals one character per span at the given speed', () => {
+    const time = clock()
+    const stream = createStreamRenderer({ now: time.now })
+    const effects = [typewriter({ styles: false, pace: false, speed: 100 })]
+    const out = stream.render([['p', {}, 'abc']], { streaming: true, effects })
+    const p = out[0] as ElementNode
+    expect(p.slice(2)).toEqual([
+      ['span', { $: { key: 'comark-typewriter:0' }, class: 'comark-typewriter' }, 'a'],
+      ['span', { $: { key: 'comark-typewriter:1' }, class: 'comark-typewriter', style: 'animation-delay:10ms;' }, 'b'],
+      ['span', { $: { key: 'comark-typewriter:2' }, class: 'comark-typewriter', style: 'animation-delay:20ms;' }, 'c'],
+    ])
+  })
+
+  it('does not split surrogate pairs', () => {
+    const stream = createStreamRenderer({ now: () => 0 })
+    const out = stream.render([['p', {}, 'a😀']], { streaming: true, effects: [typewriter({ styles: false, pace: false })] })
+    expect(fadeSpans(out)).toEqual(['a', '😀'])
+  })
+
+  it('keeps queued characters typing after the stream ends', () => {
+    const time = clock()
+    const stream = createStreamRenderer({ now: time.now })
+    const effects = [typewriter({ styles: false, pace: false, speed: 10 })]
+    stream.render([['p', {}, 'a']], { streaming: true, effects })
+    const out = stream.render([['p', {}, 'abcdef']], { streaming: true, effects })
+    const p = out[0] as ElementNode
+    expect((p[p.length - 1] as ElementNode)[1].style).toBe('animation-delay:500ms;')
+  })
+
+  it('merges back into text once every character has appeared', () => {
+    const time = clock()
+    const stream = createStreamRenderer({ now: time.now })
+    const effects = [typewriter({ styles: false, pace: false, speed: 100 })]
+    stream.render([['p', {}, 'hi']], { streaming: true, effects })
+    time.advance(500)
+    const out = stream.render([['p', {}, 'hi!']], { streaming: true, effects })
+    expect(out[0]).toEqual([
+      'p',
+      {},
+      'hi',
+      ['span', { $: { key: 'comark-typewriter:2' }, class: 'comark-typewriter' }, '!'],
+    ])
+    time.advance(500)
+    const settled = [['p', {}, 'hi!']] as Node[]
+    expect(stream.render(settled, { streaming: true, effects })).toBe(settled)
+  })
+
+  it('reveals the whole chunk at once when speed is infinite', () => {
+    const stream = createStreamRenderer({ now: () => 0 })
+    const out = stream.render([['p', {}, 'abc']], {
+      streaming: true,
+      effects: [typewriter({ styles: false, pace: false, speed: Infinity })],
+    })
+    expect(fadeSpans(out)).toEqual(['abc'])
+  })
+})
+
+describe('pace', () => {
+  it('releases text at the base speed while streaming', () => {
+    const time = clock()
+    const stream = createStreamRenderer({ now: time.now })
+    const effects = [pace({ speed: 10 })]
+    stream.render([['p', {}, '']], { streaming: true, effects })
+    stream.render([['p', {}, 'Hello world']], { streaming: true, effects })
+    time.advance(300)
+    const out = stream.render([['p', {}, 'Hello world']], { streaming: true, effects })
+    expect(out[0]).toEqual(['p', {}, 'Hel'])
+  })
+
+  it('keeps the base speed on a large backlog when lag is infinite', () => {
+    const time = clock()
+    const stream = createStreamRenderer({ now: time.now })
+    const text = 'x'.repeat(1000)
+    const effects = [pace({ speed: 60, lag: Infinity })]
+    stream.render([['p', {}, '']], { streaming: true, effects })
+    stream.render([['p', {}, text]], { streaming: true, effects })
+    time.advance(1000)
+    const out = stream.render([['p', {}, text]], { streaming: true, effects })
+    expect(((out[0] as ElementNode)[2] as string).length).toBe(60)
+  })
+
+  it('speeds up only the part of the backlog beyond the lag window', () => {
+    const time = clock()
+    const stream = createStreamRenderer({ now: time.now })
+    const text = 'x'.repeat(1000)
+    const effects = [pace({ speed: 60, lag: 1000 })]
+    stream.render([['p', {}, '']], { streaming: true, effects })
+    stream.render([['p', {}, text]], { streaming: true, effects })
+    time.advance(100)
+    const out = stream.render([['p', {}, text]], { streaming: true, effects })
+    // Excess 940 chars drains over the 1000ms window, so the rate is 60 + 940 = 1000 chars/s: 100ms releases about 100.
+    expect(((out[0] as ElementNode)[2] as string).length).toBe(100)
+  })
+
+  it('drains the queue after the stream ends', () => {
+    const time = clock()
+    const stream = createStreamRenderer({ now: time.now })
+    const effects = [pace({ speed: 10 })]
+    stream.render([['p', {}, 'abcdef']], { streaming: true, effects })
+    time.advance(1000)
+    stream.render([['p', {}, 'abcdef']], { streaming: false, effects })
+    time.advance(10000)
+    expect(stream.render([['p', {}, 'abcdef']], { streaming: false, effects })).toEqual([['p', {}, 'abcdef']])
+  })
+
+  it('shows a static document at once', () => {
+    const stream = createStreamRenderer({ now: () => 0 })
+    const nodes: Node[] = [['p', {}, 'Loaded']]
+    expect(stream.render(nodes, { streaming: false, effects: [pace()] })).toBe(nodes)
+  })
+
+  it('hides elements that have not started and keeps the tree valid', () => {
+    const time = clock()
+    const stream = createStreamRenderer({ now: time.now })
+    const effects = [pace({ speed: 1, lag: 100000 })]
+    stream.render([['p', {}, '']], { streaming: true, effects })
+    const doc: Node[] = [
+      ['p', {}, 'ab'],
+      ['p', {}, 'cd'],
+    ]
+    stream.render(doc, { streaming: true, effects })
+    time.advance(1000)
+    expect(stream.render(doc, { streaming: true, effects })).toEqual([['p', {}, 'a']])
+  })
+
+  it('releases a streamed markdown document in order', async () => {
+    const parse = createMarkdownParser()
+    const time = clock()
+    const stream = createStreamRenderer({ now: time.now })
+    const text =
+      '# Title\n\nSome **bold** text with `code` and a [link](https://example.com).\n\n- one\n- two\n\n```js\nconst a = 1\n```\n'
+    const effects = [pace({ speed: 30, lag: 500 })]
+    const full = await parse(text, { streaming: false })
+    const plain = (nodes: Node[]) => nodes.map((n) => textOf(n)).join('')
+    const seen: string[] = []
+    for (let i = 1; i <= text.length; i += 4) {
+      const doc = await parse(text.slice(0, i), { streaming: true })
+      time.advance(50)
+      seen.push(plain(stream.render(doc.nodes, { streaming: true, effects })))
+    }
+    for (let i = 0; i < 400; i++) {
+      time.advance(50)
+      seen.push(plain(stream.render(full.nodes, { streaming: false, effects })))
+    }
+    const final = plain(full.nodes)
+    for (const frame of seen) expect(final.startsWith(frame)).toBe(true)
+    expect(seen.at(-1)).toBe(final)
+  })
+
+  it('reports pending work until the backlog is released', () => {
+    const time = clock()
+    const stream = createStreamRenderer({ now: time.now })
+    const effects = [pace({ speed: 10 })]
+    stream.render([['p', {}, 'abcdef']], { streaming: true, effects })
+    expect(stream.pending()).toBe(true)
+    time.advance(10000)
+    stream.render([['p', {}, 'abcdef']], { streaming: false, effects })
+    expect(stream.pending()).toBe(false)
+  })
+
+  it('keeps fading text pace releases after the stream ends', () => {
+    const time = clock()
+    const stream = createStreamRenderer({ now: time.now })
+    const all = resolveStreamEffects({
+      fade: { styles: false, duration: 20000, pace: false },
+      caret: true,
+      effects: [pace({ speed: 100 })],
+    })
+    const source = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. '.repeat(40)
+    const problems: string[] = []
+    let sent = 0
+    let lastChunk = 0
+    for (let t = 0; t < 30000; t += 16) {
+      time.advance(16)
+      if (t - lastChunk >= 40 && sent < source.length) {
+        sent = Math.min(source.length, sent + 200)
+        lastChunk = t
+      }
+      const streaming = sent < source.length
+      const out = stream.render([['p', {}, source.slice(0, sent)]], { streaming, effects: all })
+      if (!streaming && !stream.pending()) break
+      if (out.length === 0) continue
+      const p = out[0] as ElementNode
+      const last = p[p.length - 1]
+      const shown = out.map((n) => textOf(n)).join('')
+      const lastIsCaret = typeof last !== 'string' && (last as ElementNode)[1]?.$?.key === 'comark-caret'
+      if (t > 32 && shown.length > 0 && fadeSpans(out).length === 0 && !lastIsCaret)
+        problems.push(`t=${t}: no fade spans, shown=${shown.length}`)
+    }
+    expect(problems).toEqual([])
+  })
+
+  it('fades text pace releases over many frames', () => {
+    const time = clock()
+    const stream = createStreamRenderer({ now: time.now })
+    const all = resolveStreamEffects({
+      fade: { styles: false, duration: 20000 },
+      caret: true,
+      effects: [pace({ speed: 100 })],
+    })
+    const text = 'Hello world this is a longer streamed sentence that keeps going for a while.'
+    const doc: Node[] = [['p', {}, text]]
+    const problems: string[] = []
+    for (let frame = 0; frame < 60; frame++) {
+      time.advance(50)
+      const out = stream.render(doc, { streaming: frame < 40, effects: all })
+      const shown = out.map((n) => textOf(n)).join('')
+      const spans = fadeSpans(out).join('')
+      if (shown.length > 0 && spans.length === 0)
+        problems.push(`frame ${frame}: text shown without fade: ${JSON.stringify(shown)}`)
+    }
+    expect(problems).toEqual([])
+  })
+
+  it('does not mutate the input nodes', () => {
+    const time = clock()
+    const stream = createStreamRenderer({ now: time.now })
+    const nodes: Node[] = [['p', {}, 'Hello ', ['strong', {}, 'bold']]]
+    const snapshot = JSON.stringify(nodes)
+    const effects = [pace({ speed: 5 })]
+    stream.render(nodes, { streaming: true, effects })
+    time.advance(500)
+    stream.render(nodes, { streaming: true, effects })
+    expect(JSON.stringify(nodes)).toBe(snapshot)
+  })
+})
+
+
+describe('fade unit', () => {
+  it('fades word by word by default', () => {
+    const time = clock()
+    const stream = createStreamRenderer({ now: time.now })
+    const all = [fade({ styles: false, pace: false, stagger: 10 })]
+    stream.render([['p', {}, '']], { streaming: true, effects: all })
+    const out = stream.render([['p', {}, 'Hi there']], { streaming: true, effects: all })
+    expect(fadeSpans(out)).toEqual(['Hi ', 'there'])
+  })
+
+  it('fades one character at a time with unit char', () => {
+    const time = clock()
+    const stream = createStreamRenderer({ now: time.now })
+    const all = [fade({ styles: false, pace: false, unit: 'char', stagger: 10 })]
+    stream.render([['p', {}, '']], { streaming: true, effects: all })
+    expect(fadeSpans(stream.render([['p', {}, 'Hi']], { streaming: true, effects: all }))).toEqual(['H', 'i'])
+    const out = stream.render([['p', {}, 'Hi!']], { streaming: true, effects: all })
+    expect(fadeSpans(out)).toEqual(['H', 'i', '!'])
+  })
+})
+
+describe('fade word mode with pace', () => {
+  it('fades whole words, not partial words, while paced text is released', () => {
+    const time = clock()
+    const stream = createStreamRenderer({ now: time.now })
+    const all = [fade({ styles: false, pace: { speed: 45, lag: 1000 } })]
+    const text = 'Hello there my friend '
+    const spansByKey = new Map<string, string>()
+    stream.render([['p', {}, '']], { streaming: true, effects: all })
+    const collect = (out: Node[]) => {
+      const p = out[0] as ElementNode | undefined
+      if (!p) return
+      const visible = textOf(p)
+      expect(visible).toBe(text.slice(0, visible.length))
+      expect(visible === '' || visible.endsWith(' ') || text.slice(visible.length)[0] === ' ').toBe(true)
+      for (let j = 2; j < p.length; j++) {
+        const child = p[j] as ElementNode
+        const key = child[1]?.$?.key
+        if (typeof key === 'string' && key.startsWith('comark-fade:')) spansByKey.set(key, child[2] as string)
+      }
+    }
+    for (let i = 1; i <= text.length; i++) {
+      time.advance(16)
+      collect(stream.render([['p', {}, text.slice(0, i)]], { streaming: true, effects: all }))
+    }
+    while (stream.pending()) {
+      time.advance(16)
+      collect(stream.render([['p', {}, text]], { streaming: false, effects: all }))
+    }
+    expect([...spansByKey.values()]).toEqual(['Hello ', 'there ', 'my ', 'friend '])
+  })
+})
+
+describe('fade pace keeps rendering until held words are shown', () => {
+  it('keeps pending until the last word of each block is revealed', async () => {
+    const parse = createMarkdownParser()
+    const text =
+      '# Streaming demo\n\nHello *world* and **bold** text.\n\nHere is a [link](https://comark.dev) mid-stream.\n'
+    let t = 0
+    const stream = createStreamRenderer({ now: () => t })
+    const effects = () => [fade({ styles: false, pace: { speed: 10 } }), caret()]
+    for (let i = 10; i <= text.length + 10; i += 10) {
+      t += 100
+      const doc = await parse(text.slice(0, Math.min(i, text.length)), { streaming: true })
+      stream.render(doc.nodes as Node[], { streaming: true, effects: effects() })
+    }
+    let last: Node[] = []
+    for (let k = 0; k < 2000 && stream.pending(); k++) {
+      t += 16
+      const doc = await parse(text, { streaming: false })
+      last = stream.render(doc.nodes as Node[], { streaming: false, effects: effects() })
+    }
+    expect(stream.pending()).toBe(false)
+    expect(last.map(textOf)).toEqual(['Streaming demo', 'Hello world and bold text.', 'Here is a link mid-stream.'])
+  })
+})
+
+describe('fade pace mid-stream', () => {
+  it('shows completed blocks in full while the stream is still open', async () => {
+    const parse = createMarkdownParser()
+    const text =
+      '# Streaming demo\n\nHello *world* and **bold** text.\n\nHere is a [link](https://comark.dev) mid-stream.\n'
+    let t = 0
+    const stream = createStreamRenderer({ now: () => t })
+    const effects = () => [fade({ styles: false, pace: { speed: 10 } }), caret()]
+    let shown: string[] = []
+    for (let i = 10; i <= 60; i += 10) {
+      const doc = await parse(text.slice(0, i), { streaming: true })
+      for (let frame = 0; frame < 3; frame++) {
+        t += 1000
+        shown = stream.render(doc.nodes as Node[], { streaming: true, effects: effects() }).map(textOf)
+      }
+    }
+    expect(shown.slice(0, 2)).toEqual(['Streaming demo', 'Hello world and bold text.'])
+  })
+})
+
+describe('pace option', () => {
+  it('fade releases text at the paced speed instead of all at once', () => {
+    const time = clock()
+    const stream = createStreamRenderer({ now: time.now })
+    const all = [fade({ styles: false, pace: false, unit: 'char', stagger: 10, pace: { speed: 10, lag: Infinity } })]
+    stream.render([['p', {}, 'Hello world']], { streaming: true, effects: all })
+    time.advance(300)
+    const out = stream.render([['p', {}, 'Hello world']], { streaming: true, effects: all })
+    expect(textOf(out[0])).toBe('Hel')
+    expect(stream.pending()).toBe(true)
+  })
+
+  it('typewriter releases text at the paced speed and keeps reporting pending', () => {
+    const time = clock()
+    const stream = createStreamRenderer({ now: time.now })
+    const all = [typewriter({ speed: 0, pace: { speed: 5, lag: Infinity } })]
+    stream.render([['p', {}, 'abcdefgh']], { streaming: true, effects: all })
+    time.advance(400)
+    const out = stream.render([['p', {}, 'abcdefgh']], { streaming: true, effects: all })
+    expect(textOf(out[0])).toBe('ab')
+    expect(stream.pending()).toBe(true)
+  })
+
+  it('drains paced text after the stream ends', () => {
+    const time = clock()
+    const stream = createStreamRenderer({ now: time.now })
+    const all = [fade({ styles: false, pace: { speed: 100 } })]
+    stream.render([['p', {}, 'abc']], { streaming: true, effects: all })
+    time.advance(1000)
+    stream.render([['p', {}, 'abc']], { streaming: false, effects: all })
+    expect(stream.pending()).toBe(false)
+  })
+})
+
+describe('caret composition', () => {
+  it('fade with caret ends with the caret after the faded text', () => {
+    const time = clock()
+    const stream = createStreamRenderer({ now: time.now })
+    const all = [fade({ styles: false, pace: false }), caret()]
+    stream.render([['p', {}, 'Hi']], { streaming: true, effects: all })
+    const out = stream.render([['p', {}, 'Hi there']], { streaming: true, effects: all })
+    const p = out[0] as ElementNode
+    expect(p[p.length - 1]).toEqual(createCaretNode())
+    expect(fadeSpans(out)).toEqual(['Hi', ' there'])
+  })
+
+  it('typewriter with caret ends with the caret after the typed text', () => {
+    const time = clock()
+    const stream = createStreamRenderer({ now: time.now })
+    const all = [typewriter({ speed: 0, pace: false }), caret()]
+    stream.render([['p', {}, 'Hi']], { streaming: true, effects: all })
+    const out = stream.render([['p', {}, 'Hi!']], { streaming: true, effects: all })
+    const p = out[0] as ElementNode
+    expect(p[p.length - 1]).toEqual(createCaretNode())
+    expect(textOf(out[0])).toBe('Hi!\u2009')
+  })
+
+  it('pace with fade and caret composes in one list', () => {
+    const time = clock()
+    const stream = createStreamRenderer({ now: time.now })
+    const all = [pace({ speed: 1000 }), fade({ styles: false, pace: false }), caret()]
+    stream.render([['p', {}, 'Hello']], { streaming: true, effects: all })
+    time.advance(1000)
+    const out = stream.render([['p', {}, 'Hello']], { streaming: true, effects: all })
+    expect(fadeSpans(out)).toEqual(['Hello'])
+    const p = out[0] as ElementNode
+    expect(p[p.length - 1]).toEqual(createCaretNode())
   })
 })
 

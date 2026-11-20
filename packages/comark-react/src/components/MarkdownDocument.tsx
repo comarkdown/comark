@@ -6,7 +6,7 @@ import type {
   NodeRenderData,
   NodeTransform,
 } from 'comark'
-import React, { lazy, Suspense, useMemo } from 'react'
+import React, { lazy, Suspense, useEffect, useMemo, useState } from 'react'
 import {
   applyNodeTransforms,
   isHtmlVoidElement,
@@ -332,7 +332,7 @@ export interface MarkdownDocumentProps extends Omit<React.HTMLAttributes<HTMLDiv
   fade?: boolean | FadeOptions
 
   /**
-   * Custom render-time stream effects (see `comark/stream`). Run after `fade` and before `caret`.
+   * Custom render-time stream effects (see `comark/stream`). Run after `fade` and before `caret`. Put `pace()` first.
    */
   effects?: readonly StreamEffect[]
 
@@ -393,6 +393,9 @@ export const MarkdownDocument: React.FC<MarkdownDocumentProps> = ({
   // Per-instance effect state. `useMemo` (not `useRef`) keeps this usable in Server Components.
   const stream = useMemo(() => createStreamRenderer(), [])
 
+  // Paced effects release text on a clock, so keep re-rendering until their backlog is empty.
+  const [frame, setFrame] = useState(0)
+
   const renderedNodes = useMemo(() => {
     const nodes = stream.render(document.nodes || [], {
       streaming,
@@ -410,19 +413,28 @@ export const MarkdownDocument: React.FC<MarkdownDocumentProps> = ({
       props: {},
     }
 
-    return nodes
-      .map((node, index) =>
-        renderNode(node, customComponents, keys[index], componentsManifest, undefined, renderData, transformNode)
-      )
-      .filter((child): child is React.ReactNode => child !== null)
-  }, [stream, document, customComponents, componentsManifest, streaming, caret, fade, effects, data, transformNode])
+    return {
+      pending: stream.pending(),
+      nodes: nodes
+        .map((node, index) =>
+          renderNode(node, customComponents, keys[index], componentsManifest, undefined, renderData, transformNode)
+        )
+        .filter((child): child is React.ReactNode => child !== null),
+    }
+  }, [stream, document, customComponents, componentsManifest, streaming, caret, fade, effects, data, transformNode, frame])
+
+  useEffect(() => {
+    if (!renderedNodes.pending) return
+    const id = requestAnimationFrame(() => setFrame((n) => n + 1))
+    return () => cancelAnimationFrame(id)
+  }, [renderedNodes])
 
   return (
     <div
       {...rest}
       className={`comark-content ${className || ''}`}
     >
-      {renderedNodes}
+      {renderedNodes.nodes}
     </div>
   )
 }

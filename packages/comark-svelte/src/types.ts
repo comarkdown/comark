@@ -40,7 +40,7 @@ export interface MarkdownDocumentProps extends RootAttributes {
   caret?: boolean | CaretOptions
   /** Fade in text as it streams */
   fade?: boolean | FadeOptions
-  /** Custom render-time stream effects, run after `fade` and before `caret` */
+  /** Custom render-time stream effects, run after `fade` and before `caret`. Put `pace()` first. */
   effects?: readonly StreamEffect[]
   class?: string
   /**
@@ -69,7 +69,7 @@ export interface MarkdownProps extends RootAttributes {
   caret?: boolean | CaretOptions
   /** Fade in text as it streams */
   fade?: boolean | FadeOptions
-  /** Custom render-time stream effects, run after `fade` and before `caret` */
+  /** Custom render-time stream effects, run after `fade` and before `caret`. Put `pace()` first. */
   effects?: readonly StreamEffect[]
   class?: string
 }

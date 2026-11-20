@@ -286,7 +286,7 @@ export interface MarkdownDocumentProps {
   fade?: boolean | FadeOptions
 
   /**
-   * Custom render-time stream effects, run after `fade` and before `caret`
+   * Custom render-time stream effects, run after `fade` and before `caret`. Put `pace()` first.
    */
   effects?: readonly StreamEffect[]
 
@@ -368,7 +368,7 @@ export const markdownDocumentProps = {
   },
 
   /**
-   * Custom render-time stream effects, run after `fade` and before `caret`
+   * Custom render-time stream effects, run after `fade` and before `caret`. Put `pace()` first.
    */
   effects: {
     type: Array as PropType<readonly StreamEffect[]>,
@@ -474,9 +474,25 @@ export const MarkdownDocument: MarkdownDocumentComponent = defineComponent({
       resolveStreamEffects({ caret: props.caret, fade: props.fade, effects: props.effects })
     )
 
+    // Paced effects release text on a clock, so keep re-rendering until their backlog is empty.
+    const frame = ref(0)
+    let frameId: number | null = null
+    const scheduleFrame = () => {
+      if (frameId !== null || typeof requestAnimationFrame !== 'function') return
+      frameId = requestAnimationFrame(() => {
+        frameId = null
+        frame.value++
+      })
+    }
+    onUnmounted(() => {
+      if (frameId !== null) cancelAnimationFrame(frameId)
+    })
+
     return () => {
+      void frame.value
       const rawDocument = toRaw(liveDocument.value ?? inputDocument.value)
       const nodes = stream.render(rawDocument.nodes || [], { streaming: props.streaming, effects: effects.value })
+      if (stream.pending()) scheduleFrame()
       const keys = getChildKeys(nodes)
 
       const renderData: NodeRenderData = {

@@ -66,7 +66,7 @@ export class MarkdownDocument implements OnInit, OnDestroy {
   /** Fade in text as it streams */
   readonly fade = input<boolean | FadeOptions>(false)
 
-  /** Custom render-time stream effects, run after `fade` and before `caret` */
+  /** Custom render-time stream effects, run after `fade` and before `caret`. Put `pace()` first. */
   readonly effects = input<readonly StreamEffect[]>()
 
   /** Additional data to pass to the renderer for :binding resolution */
@@ -85,6 +85,7 @@ export class MarkdownDocument implements OnInit, OnDestroy {
   private liveDocument: MarkdownDocumentType | null = null
   private cleanup?: (clear?: boolean) => void
   private stream = createStreamRenderer()
+  private frameId: number | null = null
   private renderCache: { inputs: unknown[]; nodes: RenderedNode[] } | null = null
   private renderDataCache: { inputs: unknown[]; value: NodeRenderData } | null = null
 
@@ -104,6 +105,7 @@ export class MarkdownDocument implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.cleanup?.(true)
+    if (this.frameId !== null) cancelAnimationFrame(this.frameId)
   }
 
   private get activeDocument(): MarkdownDocumentType {
@@ -114,7 +116,10 @@ export class MarkdownDocument implements OnInit, OnDestroy {
   // advance (and children only re-render) when an input actually changed.
   get renderedNodes(): RenderedNode[] {
     const inputs = [this.activeDocument, this.streaming(), this.caret(), this.fade(), this.effects()]
-    if (this.renderCache && sameInputs(this.renderCache.inputs, inputs)) return this.renderCache.nodes
+    if (this.renderCache && sameInputs(this.renderCache.inputs, inputs)) {
+      this.scheduleFrame()
+      return this.renderCache.nodes
+    }
 
     const nodes = this.stream.render(this.activeDocument.nodes || [], {
       streaming: this.streaming(),
@@ -123,7 +128,18 @@ export class MarkdownDocument implements OnInit, OnDestroy {
     const keys = getChildKeys(nodes)
     const rendered = nodes.map((node, i) => ({ key: keys[i], node }))
     this.renderCache = { inputs, nodes: rendered }
+    this.scheduleFrame()
     return rendered
+  }
+
+  // Paced effects release text on a clock, so keep re-rendering until their backlog is empty.
+  private scheduleFrame(): void {
+    if (this.frameId !== null || !this.stream.pending() || typeof requestAnimationFrame !== 'function') return
+    this.frameId = requestAnimationFrame(() => {
+      this.frameId = null
+      this.renderCache = null
+      this.cdr.markForCheck()
+    })
   }
 
   get renderData(): NodeRenderData {

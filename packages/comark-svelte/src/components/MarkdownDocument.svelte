@@ -70,12 +70,23 @@ Supports custom component mappings and streaming effects (caret, fade-in, custom
   let activeDocument = $derived(liveDocument ?? document)
 
   const stream = createStreamRenderer()
-  let nodes = $derived(
-    stream.render(activeDocument.nodes || [], {
+
+  // Paced effects release text on a clock, so keep re-rendering until their backlog is empty.
+  let frame = $state(0)
+  let nodes = $derived.by(() => {
+    void frame
+    return stream.render(activeDocument.nodes || [], {
       streaming,
       effects: resolveStreamEffects({ caret, fade, effects }),
-    }),
-  )
+    })
+  })
+  $effect(() => {
+    // Read `nodes` before the early return: Svelte only re-runs an effect for signals it actually read.
+    nodes
+    if (!stream.pending()) return
+    const id = requestAnimationFrame(() => frame++)
+    return () => cancelAnimationFrame(id)
+  })
 
   let renderData = $derived({
     frontmatter:

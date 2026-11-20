@@ -47,7 +47,7 @@ describe('MarkdownDocument stream effects', () => {
   })
 
   it('fades only new text and keeps fading spans mounted', async () => {
-    const { el, update } = await render(doc(['p', {}, 'Hello']), { streaming: true, fade: true })
+    const { el, update } = await render(doc(['p', {}, 'Hello']), { streaming: true, fade: { pace: false } })
     const first = el.querySelector('.comark-fade')
     expect(first?.textContent).toBe('Hello')
 

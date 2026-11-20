@@ -29,7 +29,7 @@ async function render(value: MarkdownDocumentType, props: Record<string, unknown
       <MarkdownDocument
         value={value}
         streaming
-        fade
+        fade={{ pace: false }}
         {...props}
       />
     )
