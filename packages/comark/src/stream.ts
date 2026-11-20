@@ -125,9 +125,10 @@ export function getStreamKey(node: Node): string | undefined {
 }
 
 /**
- * Stable keys for rendering `children`. Nodes an effect inserted use their `$.key`; other elements
- * and text are numbered separately, so splitting a text node into text and spans never shifts the
- * key of a sibling element (which would re-mount it).
+ * Stable keys for rendering `children`. Nodes an effect inserted use their `$.key` (prefixed with `$`,
+ * so they never collide with generated keys); other elements and text are numbered separately, so
+ * splitting a text node into text and spans never shifts the key of a sibling element (which would
+ * re-mount it).
  */
 export function getChildKeys(children: readonly Node[]): string[] {
   const keys: string[] = new Array(children.length)
@@ -136,7 +137,7 @@ export function getChildKeys(children: readonly Node[]): string[] {
   for (let i = 0; i < children.length; i++) {
     const child = children[i]
     const key = getStreamKey(child)
-    keys[i] = key ?? (typeof child === 'string' ? `t${texts++}` : String(elements++))
+    keys[i] = key !== undefined ? `$${key}` : typeof child === 'string' ? `t${texts++}` : String(elements++)
   }
   return keys
 }
@@ -257,7 +258,7 @@ export interface PaceOptions {
   /**
    * Longest time in milliseconds the reveal may trail the received text. Only when the backlog would
    * exceed this window does the reveal speed up.
-   * @default 1000
+   * @default Infinity
    */
   lag?: number
 }
@@ -270,10 +271,14 @@ interface PaceState {
   progress: number
   /** Characters received in the last render. */
   total: number
-  /** Time of the previous render, `undefined` before the first one. */
+  /** Time of the previous render while a backlog was waiting, `undefined` when idle. */
   at: number | undefined
+  /** When the current backlog must be fully released to stay within `lag`. */
+  deadline: number | undefined
   /** Whether the last render was streaming, so the backlog still drains after the stream ends. */
   streamed: boolean
+  /** Whether a render has run. The first one shows its input at once. */
+  started: boolean
 }
 
 interface PaceCursor {
@@ -285,15 +290,22 @@ interface PaceCursor {
 interface PaceController {
   init: () => PaceState
   pending: (state: PaceState) => boolean
-  apply: (nodes: Node[], streaming: boolean, now: number, state: PaceState) => Node[]
+  apply: (
+    nodes: Node[],
+    streaming: boolean,
+    now: number,
+    state: PaceState,
+    isOpaque?: (node: ElementNode) => boolean
+  ) => Node[]
 }
 
 /**
  * Reveal streamed text at a steady pace, independent of how fast the model sends it.
  *
  * Text past the released cursor is removed from the tree, and elements that have not started yet are
- * dropped. Place it before `fade` and `caret` so they only see released text, or pass `pace` to
- * `fade` or `typewriter` to pace them directly.
+ * dropped. The first render shows its input at once, so server rendering and hydration contain the
+ * text; only text that arrives later is paced. Place it before `fade` and `caret` so they only see
+ * released text, or pass `pace` to `fade` or `typewriter` to pace them directly.
  */
 export function pace(options: PaceOptions = {}): StreamEffect<PaceState> {
   const controller = createPace(options)
@@ -311,36 +323,51 @@ function createPace(options: PaceOptions = {}): PaceController {
   const lag = Math.max(0, options.lag ?? DEFAULT_PACE_LAG)
 
   return {
-    init: () => ({ progress: 0, total: 0, at: undefined, streamed: false }),
+    init: () => ({ progress: 0, total: 0, at: undefined, deadline: undefined, streamed: false, started: false }),
     pending: (state) => state.progress < state.total,
-    apply(nodes, streaming, now, state) {
+    apply(nodes, streaming, now, state, isOpaque) {
       let total = 0
-      for (const node of nodes) total += textLength(node, 0)
+      for (const node of nodes) total += textLength(node, 0, isOpaque)
+      const grew = total > state.total
       state.total = total
 
+      // The first render shows what is already there, so a server render and its hydration match.
+      if (!state.started) state.progress = total
       // Static documents show at once. Only a stream, or the drain after it, is paced.
-      if (!streaming && !state.streamed) state.progress = total
+      else if (!streaming && !state.streamed) state.progress = total
       // A stream that starts over text already shown must pace that text, so restart the reveal from the
       // beginning rather than treating it as released.
-      if (streaming && !state.streamed) state.progress = 0
+      else if (streaming && !state.streamed) state.progress = 0
+      state.started = true
       if (state.progress > total) state.progress = total
 
+      // Time only counts while text was already waiting, so idle time before a chunk is not backlog.
+      const previousAt = state.at
+      const dt = previousAt === undefined ? 0 : now - previousAt
+      if (grew && lag !== Infinity) state.deadline = now + lag
       const backlog = total - state.progress
-      // Time only counts while text was already waiting, so idle time before the first chunk is not backlog.
-      const dt = state.at === undefined ? 0 : now - state.at
-      state.at = backlog > 0 ? now : undefined
       if (backlog > 0) {
-        const allowed = (speed * lag) / 1000
-        const excess = lag === Infinity ? 0 : Math.max(0, backlog - allowed)
-        const rate = speed + (excess * 1000) / lag
-        state.progress = rate === Infinity ? total : Math.min(total, state.progress + (rate * dt) / 1000)
+        if (speed === Infinity) state.progress = total
+        else if (dt > 0) {
+          let release = (speed * dt) / 1000
+          // Catching up toward a fixed deadline keeps the lag bound independent of the frame rate.
+          if (state.deadline !== undefined) {
+            const left = state.deadline - previousAt!
+            release = left <= dt ? backlog : Math.max(release, (backlog * dt) / left)
+          }
+          state.progress = Math.min(total, state.progress + release)
+        }
       }
+      if (state.progress < total) state.at = now
+      else state.at = state.deadline = undefined
       state.streamed = streaming || state.progress < total
 
-      const cursor: PaceCursor = { pos: 0, released: Math.floor(state.progress) }
+      const released = Math.floor(state.progress)
+      if (released >= total) return nodes
+      const cursor: PaceCursor = { pos: 0, released }
       let out: Node[] | null = null
       for (let i = 0; i < nodes.length; i++) {
-        const kept = clip(nodes[i], cursor, 0)
+        const kept = clip(nodes[i], cursor, 0, isOpaque)
         if (kept === nodes[i]) out?.push(kept)
         else {
           out ??= nodes.slice(0, i)
@@ -352,40 +379,46 @@ function createPace(options: PaceOptions = {}): PaceController {
   }
 }
 
-function textLength(node: Node, depth: number): number {
+function textLength(node: Node, depth: number, isOpaque?: (node: ElementNode) => boolean): number {
   if (typeof node === 'string') return node.length
-  if (node[0] === null || depth >= MAX_DEPTH) return 0
+  if (node[0] === null || depth >= MAX_DEPTH || isOpaque?.(node as ElementNode)) return 0
   let length = 0
-  for (let i = 2; i < node.length; i++) length += textLength(node[i] as Node, depth + 1)
+  for (let i = 2; i < node.length; i++) length += textLength(node[i] as Node, depth + 1, isOpaque)
   return length
 }
 
 /**
  * Keep the released part of `node`. Returns `node` itself when nothing changes, and `null` when the
- * node has not started. Text-free elements show once the cursor reaches them.
+ * node has not started. Text-free and opaque elements (`isOpaque`, or past the depth limit) count no
+ * text and show whole once the cursor reaches them.
  */
-function clip(node: Node, cursor: PaceCursor, depth: number): Node | null {
+function clip(node: Node, cursor: PaceCursor, depth: number, isOpaque?: (node: ElementNode) => boolean): Node | null {
   if (typeof node === 'string') {
     const start = cursor.pos
     cursor.pos += node.length
     if (start >= cursor.released) return null
     if (cursor.pos <= cursor.released) return node
-    return node.slice(0, cursor.released - start)
+    let end = cursor.released - start
+    // Never split a surrogate pair (emoji): release the low half with its high half.
+    const code = node.charCodeAt(end - 1)
+    if (code >= 0xd800 && code <= 0xdbff) end++
+    return node.slice(0, end)
   }
   if (node[0] === null) return node
-  if (depth >= MAX_DEPTH) return null
 
   const start = cursor.pos
-  const length = textLength(node, depth)
+  const opaque = depth >= MAX_DEPTH || isOpaque?.(node as ElementNode) === true
+  const length = opaque ? 0 : textLength(node, depth, isOpaque)
   if (length === 0 ? start > cursor.released : start >= cursor.released) {
     cursor.pos += length
     return null
   }
+  if (opaque) return node
 
   let copy: Node[] | null = null
   for (let i = 2; i < node.length; i++) {
     const child = node[i] as Node
-    const kept = clip(child, cursor, depth + 1)
+    const kept = clip(child, cursor, depth + 1, isOpaque)
     if (kept === child) copy?.push(child)
     else {
       copy ??= node.slice(0, i) as Node[]
@@ -476,6 +509,8 @@ interface RevealState {
   nextAt: number
   /** Pace state when the `pace` option is set. */
   paced?: PaceState
+  /** Whether the previous render was streaming, so the chunk that closes the stream still fades. */
+  streamed: boolean
 }
 
 interface RevealConfig {
@@ -601,7 +636,7 @@ function createRevealEffect(config: RevealConfig): StreamEffect<RevealState> {
     }
   }
 
-  function splitText(text: string, offset: number, segments: FadeSegment[]): Node[] | null {
+  function splitText(text: string, offset: number, segments: FadeSegment[], prefix = keyPrefix): Node[] | null {
     const end = offset + text.length
     let pieces: Node[] | null = null
     let cursor = offset
@@ -615,7 +650,7 @@ function createRevealEffect(config: RevealConfig): StreamEffect<RevealState> {
       const style = inlineStyle + (segment.delay > 0 ? `animation-delay:${segment.delay}ms;` : '')
       pieces.push([
         'span',
-        { $: { key: keyPrefix + from }, class: className, ...(style ? { style } : {}) },
+        { $: { key: prefix + from }, class: className, ...(style ? { style } : {}) },
         text.slice(from - offset, to - offset),
       ])
       cursor = to
@@ -653,16 +688,20 @@ function createRevealEffect(config: RevealConfig): StreamEffect<RevealState> {
 
   return {
     name,
-    init: () => ({ source: null, blocks: [], nextAt: 0, paced: paceController?.init() }),
-    pending: paceController
-      ? (state) =>
-          (state.paced !== undefined && paceController.pending(state.paced)) ||
-          state.blocks.some((block) => block.shown < block.text.length)
-      : undefined,
+    init: () => ({ source: null, blocks: [], nextAt: 0, paced: paceController?.init(), streamed: false }),
+    // A word held back while pace has caught up waits for more input or the stream closing, both of
+    // which render again, so only the pace backlog needs frames.
+    pending: paceController ? (state) => state.paced !== undefined && paceController.pending(state.paced) : undefined,
     apply(input, { streaming: inputStreaming, now, state }) {
+      // State is kept by name, so it may come from an effect created with a different `pace` option.
+      if (!paceController) state.paced = undefined
+      else state.paced ??= paceController.init()
       const paced = state.paced
-      const nodes = paceController && paced ? paceController.apply(input, inputStreaming, now, paced) : input
+      const nodes =
+        paceController && paced ? paceController.apply(input, inputStreaming, now, paced, isExcluded) : input
       const streaming = paced ? paced.streamed : inputStreaming
+      const closing = !streaming && state.streamed
+      state.streamed = streaming
       const previous = state.source
       state.source = nodes
       const blocks = state.blocks
@@ -694,7 +733,7 @@ function createRevealEffect(config: RevealConfig): StreamEffect<RevealState> {
             if (segment.start < end) segments.push(end === segment.end ? segment : { ...segment, end })
           }
         }
-        if ((streaming || flushing) && hold > common) addSegments(segments, text, common, hold, now, state)
+        if ((streaming || closing || flushing) && hold > common) addSegments(segments, text, common, hold, now, state)
         blocks[i] = { text, segments, shown: hold }
         if (segments.length === 0 && hold === text.length) {
           out?.push(node)
@@ -704,10 +743,11 @@ function createRevealEffect(config: RevealConfig): StreamEffect<RevealState> {
         active = true
         out ??= nodes.slice(0, i)
         // Text past `hold` stays hidden: it is not a span yet, so it must not render as plain text.
-        const visible = hold < text.length ? clip(node, { pos: 0, released: hold }, 0) : node
+        const visible = hold < text.length ? clip(node, { pos: 0, released: hold }, 0, isExcluded) : node
         if (visible === null) continue
         if (typeof visible === 'string') {
-          out.push(...(splitText(visible, 0, segments) ?? [visible]))
+          // Top-level text spans are siblings of other blocks' spans, so their keys include the block.
+          out.push(...(splitText(visible, 0, segments, `${keyPrefix}${i}:`) ?? [visible]))
         } else {
           out.push(
             (visible[0] !== null && decorate(visible as ElementNode, segments, { value: 0 }, 0)) ||
@@ -748,11 +788,11 @@ export interface TypewriterOptions {
   /** Tags whose subtrees are revealed as a whole. Replaces {@link DEFAULT_FADE_EXCLUDE}. */
   exclude?: readonly string[]
   /**
-   * Reveal text at a steady pace (see {@link pace}) before it types out. `true` uses the pace defaults,
-   * `false` turns pacing off.
+   * Reveal text at a steady pace (see {@link pace}) before it types out. `true` paces at `speed` with
+   * no lag limit, `false` turns pacing off.
    * @default true
    */
-  pace?: false | PaceOptions
+  pace?: boolean | PaceOptions
 }
 
 const TYPEWRITER_CLASS = 'comark-typewriter'
@@ -786,8 +826,10 @@ export function typewriter(options: TypewriterOptions = {}): StreamEffect<Reveal
       options.pace === false
         ? false
         : {
-            speed: options.pace?.speed ?? speed,
-            lag: options.pace?.lag ?? Infinity,
+            // `speed: 0` reveals chunks at once, so its implicit pace must not hold text back forever.
+            speed:
+              (typeof options.pace === 'object' ? options.pace.speed : undefined) ?? (speed > 0 ? speed : Infinity),
+            lag: (typeof options.pace === 'object' ? options.pace.lag : undefined) ?? Infinity,
           }
     ),
   })

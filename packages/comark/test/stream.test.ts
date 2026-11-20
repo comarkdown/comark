@@ -244,6 +244,7 @@ describe('fade', () => {
       '',
     ].join('\n')
     const frames: string[] = []
+    stream.render([], { streaming: true, effects: all })
     const show = (nodes: Node[]) =>
       frames.push(
         nodes
@@ -340,6 +341,11 @@ describe('typewriter', () => {
     const out = stream.render([['p', {}, 'abcdef']], { streaming: true, effects })
     const p = out[0] as ElementNode
     expect((p[p.length - 1] as ElementNode)[1].style).toBe('animation-delay:500ms;')
+    time.advance(100)
+    const closed = stream.render([['p', {}, 'abcdef']], { streaming: false, effects })[0] as ElementNode
+    expect(closed[closed.length - 1]).toEqual(p[p.length - 1])
+    time.advance(1000)
+    expect(stream.render([['p', {}, 'abcdef']], { streaming: false, effects })).toEqual([['p', {}, 'abcdef']])
   })
 
   it('merges back into text once every character has appeared', () => {
@@ -466,6 +472,7 @@ describe('pace', () => {
     const time = clock()
     const stream = createStreamRenderer({ now: time.now })
     const effects = [pace({ speed: 10 })]
+    stream.render([['p', {}, '']], { streaming: true, effects })
     stream.render([['p', {}, 'abcdef']], { streaming: true, effects })
     expect(stream.pending()).toBe(true)
     time.advance(10000)
@@ -485,6 +492,7 @@ describe('pace', () => {
     const problems: string[] = []
     let sent = 0
     let lastChunk = 0
+    let previous = ''
     for (let t = 0; t < 30000; t += 16) {
       time.advance(16)
       if (t - lastChunk >= 40 && sent < source.length) {
@@ -493,11 +501,14 @@ describe('pace', () => {
       }
       const streaming = sent < source.length
       const out = stream.render([['p', {}, source.slice(0, sent)]], { streaming, effects: all })
+      const shown = out.map((n) => textOf(n)).join('')
+      const released = shown.replace(/\u2009/g, '').slice(previous.length)
+      if (released && !fadeSpans(out).join('').endsWith(released)) problems.push(`t=${t}: released without fade`)
+      previous = shown.replace(/\u2009/g, '')
       if (!streaming && !stream.pending()) break
       if (out.length === 0) continue
       const p = out[0] as ElementNode
       const last = p[p.length - 1]
-      const shown = out.map((n) => textOf(n)).join('')
       const lastIsCaret = typeof last !== 'string' && (last as ElementNode)[1]?.$?.key === 'comark-caret'
       if (t > 32 && shown.length > 0 && fadeSpans(out).length === 0 && !lastIsCaret)
         problems.push(`t=${t}: no fade spans, shown=${shown.length}`)
@@ -642,6 +653,7 @@ describe('pace option', () => {
     const time = clock()
     const stream = createStreamRenderer({ now: time.now })
     const all = [fade({ styles: false, unit: 'char', stagger: 10, pace: { speed: 10, lag: Infinity } })]
+    stream.render([['p', {}, '']], { streaming: true, effects: all })
     stream.render([['p', {}, 'Hello world']], { streaming: true, effects: all })
     time.advance(300)
     const out = stream.render([['p', {}, 'Hello world']], { streaming: true, effects: all })
@@ -653,6 +665,7 @@ describe('pace option', () => {
     const time = clock()
     const stream = createStreamRenderer({ now: time.now })
     const all = [typewriter({ speed: 0, pace: { speed: 5, lag: Infinity } })]
+    stream.render([['p', {}, '']], { streaming: true, effects: all })
     stream.render([['p', {}, 'abcdefgh']], { streaming: true, effects: all })
     time.advance(400)
     const out = stream.render([['p', {}, 'abcdefgh']], { streaming: true, effects: all })
@@ -698,6 +711,7 @@ describe('caret composition', () => {
     const time = clock()
     const stream = createStreamRenderer({ now: time.now })
     const all = [pace({ speed: 1000 }), fade({ styles: false, pace: false }), caret()]
+    stream.render([['p', {}, '']], { streaming: true, effects: all })
     stream.render([['p', {}, 'Hello']], { streaming: true, effects: all })
     time.advance(1000)
     const out = stream.render([['p', {}, 'Hello']], { streaming: true, effects: all })
@@ -712,7 +726,7 @@ describe('getChildKeys', () => {
     const before = getChildKeys(['a ', ['strong', {}, 'b']])
     const after = getChildKeys(['a ', ['span', { $: { key: 'comark-fade:2' } }, 'c'], ['strong', {}, 'b']])
     expect(before).toEqual(['t0', '0'])
-    expect(after).toEqual(['t0', 'comark-fade:2', '0'])
+    expect(after).toEqual(['t0', '$comark-fade:2', '0'])
   })
 })
 
@@ -723,3 +737,148 @@ function textOf(node: Node): string {
   for (let i = 2; i < node.length; i++) out += textOf(node[i] as Node)
   return out
 }
+
+describe('pace timing', () => {
+  const textAt = (out: Node[]) => out.map((n) => textOf(n)).join('')
+
+  it('shows the first render at once and paces only later text', () => {
+    const time = clock()
+    const stream = createStreamRenderer({ now: time.now })
+    const effects = [pace({ speed: 10 })]
+    expect(textAt(stream.render([['p', {}, 'Hello']], { streaming: true, effects }))).toBe('Hello')
+    expect(stream.pending()).toBe(false)
+    stream.render([['p', {}, 'Hello world']], { streaming: true, effects })
+    time.advance(300)
+    expect(textAt(stream.render([['p', {}, 'Hello world']], { streaming: true, effects }))).toBe('Hello wo')
+  })
+
+  it('does not credit idle time to the next chunk', () => {
+    const time = clock()
+    const stream = createStreamRenderer({ now: time.now })
+    const effects = [pace({ speed: 10 })]
+    stream.render([['p', {}, '']], { streaming: true, effects })
+    stream.render([['p', {}, 'A']], { streaming: true, effects })
+    time.advance(100)
+    expect(textAt(stream.render([['p', {}, 'A']], { streaming: true, effects }))).toBe('A')
+    time.advance(5000)
+    expect(textAt(stream.render([['p', {}, 'ABCD']], { streaming: true, effects }))).toBe('A')
+    time.advance(100)
+    expect(textAt(stream.render([['p', {}, 'ABCD']], { streaming: true, effects }))).toBe('AB')
+  })
+
+  it('keeps the lag bound independent of the frame rate', () => {
+    const text = 'x'.repeat(1000)
+    const run = (steps: number) => {
+      const time = clock()
+      const stream = createStreamRenderer({ now: time.now })
+      const effects = [pace({ speed: 60, lag: 1000 })]
+      stream.render([['p', {}, '']], { streaming: true, effects })
+      stream.render([['p', {}, text]], { streaming: true, effects })
+      let out: Node[] = []
+      for (let i = 0; i < steps; i++) {
+        time.advance(1000 / steps)
+        out = stream.render([['p', {}, text]], { streaming: true, effects })
+      }
+      return textAt(out).length
+    }
+    expect(run(1)).toBe(1000)
+    expect(run(10)).toBe(1000)
+  })
+
+  it('never releases half of a surrogate pair', () => {
+    const time = clock()
+    const stream = createStreamRenderer({ now: time.now })
+    const effects = [typewriter({ styles: false, speed: 10 })]
+    const doc: Node[] = [['p', {}, 'a😀b']]
+    stream.render([['p', {}, '']], { streaming: true, effects })
+    const frames: string[] = []
+    for (let i = 0; i < 10; i++) {
+      frames.push(textAt(stream.render(doc, { streaming: true, effects })))
+      time.advance(100)
+    }
+    expect(frames.some((f) => /[\ud800-\udbff](?![\udc00-\udfff])/.test(f))).toBe(false)
+    expect(frames[frames.length - 1]).toBe('a😀b')
+  })
+
+  it('keeps text below the depth limit when everything is released', () => {
+    let deep: Node = 'deep'
+    for (let i = 0; i < 60; i++) deep = ['span', {}, deep]
+    const nodes: Node[] = [deep]
+    expect(createStreamRenderer().render(nodes, { streaming: false, effects: [pace()] })).toBe(nodes)
+  })
+})
+
+describe('reveal edge cases', () => {
+  it('reveals an excluded subtree whole while pacing', () => {
+    const time = clock()
+    const stream = createStreamRenderer({ now: time.now })
+    const effects = [typewriter({ styles: false, speed: 1 })]
+    const pre: Node = ['pre', {}, 'abc']
+    stream.render([], { streaming: true, effects })
+    const out = stream.render([pre, ['p', {}, 'de']], { streaming: true, effects })
+    expect(out).toEqual([pre])
+  })
+
+  it('clips a held word without counting excluded text', () => {
+    const stream = createStreamRenderer({ now: () => 0 })
+    const effects = [fade({ styles: false, pace: { speed: Infinity } })]
+    const out = stream.render([['p', {}, ['math', {}, 'XYZ'], 'hello w']], { streaming: true, effects })
+    expect(textOf(out[0])).toBe('XYZhello ')
+    expect(stream.pending()).toBe(false)
+  })
+
+  it('fades the chunk that closes the stream', () => {
+    const stream = createStreamRenderer({ now: () => 0 })
+    stream.render([['p', {}, 'Hello']], { streaming: true, effects })
+    const out = stream.render([['p', {}, 'Hello world']], { streaming: false, effects })
+    expect(fadeSpans(out)).toContain(' world')
+  })
+
+  it('fades the last text an upstream pace releases', () => {
+    const time = clock()
+    const stream = createStreamRenderer({ now: time.now })
+    const all = [pace({ speed: 10 }), fade({ styles: false, pace: false, duration: 20000 })]
+    stream.render([['p', {}, '']], { streaming: true, effects: all })
+    stream.render([['p', {}, 'AB']], { streaming: true, effects: all })
+    time.advance(100)
+    stream.render([['p', {}, 'AB']], { streaming: true, effects: all })
+    time.advance(100)
+    const out = stream.render([['p', {}, 'AB']], { streaming: false, effects: all })
+    expect(fadeSpans(out)).toEqual(['A', 'B'])
+  })
+
+  it('follows a changed pace option on retained state', () => {
+    const stream = createStreamRenderer({ now: () => 0 })
+    stream.render([['p', {}, 'Hi']], { streaming: false, effects: [fade({ styles: false })] })
+    const out = stream.render([['p', {}, 'Hi there']], {
+      streaming: true,
+      effects: [fade({ styles: false, pace: false })],
+    })
+    expect(fadeSpans(out)).toEqual([' there'])
+  })
+
+  it('gives top-level text spans of different blocks distinct keys', () => {
+    const stream = createStreamRenderer({ now: () => 0 })
+    const out = stream.render(['one', ['hr', {}], 'two'], { streaming: true, effects })
+    const keys = getChildKeys(out)
+    expect(new Set(keys).size).toBe(keys.length)
+  })
+
+  it('keeps explicit keys apart from generated ones', () => {
+    const keys = getChildKeys([
+      ['p', { $: { key: '0' } }],
+      ['p', {}],
+    ])
+    expect(keys[0]).not.toBe(keys[1])
+  })
+
+  it('reveals chunks at once with typewriter speed 0', () => {
+    const stream = createStreamRenderer({ now: () => 0 })
+    const all = [typewriter({ styles: false, speed: 0, pace: true })]
+    stream.render([], { streaming: true, effects: all })
+    stream.render([['p', {}, 'abc']], { streaming: true, effects: all })
+    const out = stream.render([['p', {}, 'abc']], { streaming: false, effects: all })
+    expect(textOf(out[0])).toBe('abc')
+    expect(stream.pending()).toBe(false)
+  })
+})
