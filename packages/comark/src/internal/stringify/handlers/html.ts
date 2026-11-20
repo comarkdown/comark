@@ -142,7 +142,10 @@ export async function html(node: ElementNode, state: State, parent?: ElementNode
     content = padding + paddNoneHtmlContent(content, state, String(tag)).trimEnd() + padding
   }
 
-  return `<${tag}${attrs}>${content}</${tag}>` + (!parent && !isInline ? state.context.blockSeparator : '')
+  // Components and slots need a separator between block HTML and the next block.
+  const endsBlock = !parent || (!oneLiner && !state.context.html && parent[1].$?.html !== 1)
+
+  return `<${tag}${attrs}>${content}</${tag}>` + (endsBlock && !isInline ? state.context.blockSeparator : '')
 }
 
 // Literal-content tags whose body must be rendered verbatim (no indentation
