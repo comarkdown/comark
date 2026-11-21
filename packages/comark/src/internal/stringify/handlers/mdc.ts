@@ -4,7 +4,7 @@ import { indent } from '../../../utils/index.ts'
 import { comarkAttributes, comarkYamlAttributes } from '../attributes.ts'
 
 // HTML elements that always create an inline context for their children
-const INLINE_HTML_ELEMENTS = new Set(['a', 'strong', 'em', 'span'])
+const INLINE_HTML_ELEMENTS = new Set(['a', 'strong', 'em', 'span', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'th', 'td'])
 
 /** A named slot (`#name`). A `template` without `name` is a `:template` component. */
 function isSlot(node: Node): boolean {

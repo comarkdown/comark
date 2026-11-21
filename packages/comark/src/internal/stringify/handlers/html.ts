@@ -5,6 +5,7 @@ import { indent, toNativeAttributes } from '../../../utils/index.ts'
 
 const textBlocks = new Set(['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'li', 'td', 'th'])
 const selfCloseTags = new Set(['br', 'hr', 'img', 'input', 'link', 'meta', 'source', 'track', 'wbr'])
+const inlineParents = new Set(['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'th', 'td'])
 const inlineTags = new Set(['strong', 'em', 'del', 'code', 'a', 'br', 'span', 'img'])
 const blockTags = new Set([
   'p',
@@ -55,7 +56,8 @@ export async function html(node: ElementNode, state: State, parent?: ElementNode
     oneLiner = true
   }
 
-  if (parent?.[0] === 'p' || inlineTags.has(String(parent?.[0])) || state.context.inline) {
+  // Paragraphs, headings and table cells only hold inline content
+  if (inlineParents.has(String(parent?.[0])) || inlineTags.has(String(parent?.[0])) || state.context.inline) {
     oneLiner = true
   }
 
