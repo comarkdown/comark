@@ -4,7 +4,10 @@ import { indent } from '../../../utils/index.ts'
 import { comarkAttributes, comarkYamlAttributes } from '../attributes.ts'
 
 // HTML elements that always create an inline context for their children
-const INLINE_HTML_ELEMENTS = new Set(['a', 'strong', 'em', 'span', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'th', 'td'])
+const INLINE_HTML_ELEMENTS = new Set(['a', 'strong', 'em', 'span'])
+// Markdown paragraphs, headings and table cells only hold inline content.
+// Raw HTML ones can hold blocks, so they keep the sibling check.
+const INLINE_MARKDOWN_PARENTS = new Set(['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'th', 'td'])
 
 /** A named slot (`#name`). A `template` without `name` is a `:template` component. */
 function isSlot(node: Node): boolean {
@@ -21,7 +24,10 @@ export async function mdc(node: ElementNode, state: State, parent?: ElementNode)
   // Component is inline if it has text siblings in parent,
   // is inside an inline HTML element or an inline-rendering ancestor
   const hasTextSiblings = parent?.some((child, index) => index > 1 && typeof child === 'string') ?? false
-  const insideInlineElement = parent !== undefined && INLINE_HTML_ELEMENTS.has(String(parent[0]))
+  const insideInlineElement =
+    parent !== undefined &&
+    (INLINE_HTML_ELEMENTS.has(String(parent[0])) ||
+      (INLINE_MARKDOWN_PARENTS.has(String(parent[0])) && parent[1]?.$?.html !== 1))
   let inline = hasTextSiblings || insideInlineElement || state.context.inline === true
 
   if (hasObjectAttributes) {
