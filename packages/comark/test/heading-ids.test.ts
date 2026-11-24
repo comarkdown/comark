@@ -130,6 +130,14 @@ describe('headingIds option', () => {
 
       expect((tree.nodes[0] as any)[1].id).toBe('star-here')
     })
+
+    it('does not include HTML comment text in the slug', async () => {
+      const source = '## Install <!-- TODO: link --> guide'
+      const tree = await parseMarkdown(source)
+
+      expect((tree.nodes[0] as any)[1].id).toBe('install-guide')
+      expect((await renderMarkdown(tree)).trim()).toBe(source)
+    })
   })
 
   describe('non-ASCII headings', () => {
