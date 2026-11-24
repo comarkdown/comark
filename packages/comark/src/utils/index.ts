@@ -188,7 +188,7 @@ export function isHtmlVoidElement(tag: string): boolean {
 }
 
 const HTML_ESCAPE_RE = /[&<>"]/g
-const HTML_ESCAPED_RE = /^&[a-zA-Z][a-zA-Z0-9]*;|#[0-9]+;|#x[0-9a-fA-F]+;/
+const HTML_ESCAPED_RE = /^&(?:[a-zA-Z][a-zA-Z0-9]*|#[0-9]+|#x[0-9a-fA-F]+);/
 export function escapeHtml(value: string, replace?: Record<string, string | undefined>): string {
   const escapeMap: Record<string, string> = {
     '&': '&amp;',
