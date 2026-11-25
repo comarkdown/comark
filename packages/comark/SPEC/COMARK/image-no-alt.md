@@ -17,7 +17,8 @@
       [
         "img",
         {
-          "src": "/my/cool/path"
+          "src": "/my/cool/path",
+          "alt": ""
         }
       ]
     ]
@@ -28,7 +29,7 @@
 ## HTML
 
 ```html
-<p><img src="/my/cool/path"></p>
+<p><img src="/my/cool/path" alt=""></p>
 ```
 
 ## Markdown
