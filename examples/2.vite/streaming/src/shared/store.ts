@@ -3,7 +3,9 @@ import type { ComarkPlugin } from 'comark'
 import { caret, fade, pace, typewriter, type StreamEffect } from 'comark/stream'
 import { SAMPLE_MARKDOWN } from './sample'
 
-export type EffectMode = 'none' | 'fade' | 'typewriter'
+export type EffectName = 'pace' | 'fade' | 'typewriter' | 'caret'
+
+export type EffectToggles = Record<EffectName, boolean>
 
 export interface StreamState {
   source: string
@@ -11,9 +13,8 @@ export interface StreamState {
   streaming: boolean
   chunkSize: number
   delayMs: number
-  effectMode: EffectMode
+  enabledEffects: EffectToggles
   paceSpeed: number
-  showCaret: boolean
   plugins: readonly ComarkPlugin[]
   effects: readonly StreamEffect[]
 }
@@ -21,17 +22,19 @@ export interface StreamState {
 type Listener = (state: StreamState) => void
 
 const DEFAULT_PACE_SPEED = 45
+const DEFAULT_EFFECTS: EffectToggles = { pace: false, fade: true, typewriter: false, caret: true }
 
 // Created once and shared by every renderer. Each renderer's `createStreamRenderer` keeps its own
 // per-effect state, so sharing these instances does not mix the columns together.
 const plugins: readonly ComarkPlugin[] = [shiki()]
 
-function buildEffects(mode: EffectMode, paceSpeed: number, showCaret: boolean): StreamEffect[] {
+// Order matters: `pace` first so later effects only see released text, `caret` last.
+function buildEffects(enabled: EffectToggles, speed: number): StreamEffect[] {
   const effects: StreamEffect[] = []
-  if (mode !== 'none') effects.push(pace({ speed: paceSpeed }))
-  if (mode === 'fade') effects.push(fade({ duration: 300, delay: 30 }))
-  if (mode === 'typewriter') effects.push(typewriter({ speed: paceSpeed }))
-  if (showCaret) effects.push(caret())
+  if (enabled.pace) effects.push(pace({ speed }))
+  if (enabled.fade) effects.push(fade({ duration: 300, delay: 30 }))
+  if (enabled.typewriter) effects.push(typewriter({ speed }))
+  if (enabled.caret) effects.push(caret())
   return effects
 }
 
@@ -41,9 +44,8 @@ export interface StreamStore {
   setSource: (source: string) => void
   setChunkSize: (chunkSize: number) => void
   setDelayMs: (delayMs: number) => void
-  setEffectMode: (effectMode: EffectMode) => void
+  setEffectEnabled: (effect: EffectName, enabled: boolean) => void
   setPaceSpeed: (paceSpeed: number) => void
-  setShowCaret: (showCaret: boolean) => void
   start: () => void
   stop: () => void
   showFull: () => void
@@ -61,11 +63,10 @@ export function createStreamStore(initialSource: string): StreamStore {
     streaming: false,
     chunkSize: 40,
     delayMs: 40,
-    effectMode: 'fade',
+    enabledEffects: DEFAULT_EFFECTS,
     paceSpeed: DEFAULT_PACE_SPEED,
-    showCaret: true,
     plugins,
-    effects: buildEffects('fade', DEFAULT_PACE_SPEED, true),
+    effects: buildEffects(DEFAULT_EFFECTS, DEFAULT_PACE_SPEED),
   }
 
   function update(patch: Partial<StreamState>): void {
@@ -113,16 +114,13 @@ export function createStreamStore(initialSource: string): StreamStore {
       update({ delayMs })
     },
 
-    setEffectMode(effectMode: EffectMode): void {
-      update({ effectMode, effects: buildEffects(effectMode, state.paceSpeed, state.showCaret) })
+    setEffectEnabled(effect: EffectName, enabled: boolean): void {
+      const enabledEffects = { ...state.enabledEffects, [effect]: enabled }
+      update({ enabledEffects, effects: buildEffects(enabledEffects, state.paceSpeed) })
     },
 
     setPaceSpeed(paceSpeed: number): void {
-      update({ paceSpeed, effects: buildEffects(state.effectMode, paceSpeed, state.showCaret) })
-    },
-
-    setShowCaret(showCaret: boolean): void {
-      update({ showCaret, effects: buildEffects(state.effectMode, state.paceSpeed, showCaret) })
+      update({ paceSpeed, effects: buildEffects(state.enabledEffects, paceSpeed) })
     },
 
     start(): void {
