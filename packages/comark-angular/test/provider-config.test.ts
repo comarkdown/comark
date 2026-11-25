@@ -1,0 +1,180 @@
+import '@angular/compiler'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { Component, provideZonelessChangeDetection, type Provider, type Type } from '@angular/core'
+import { TestBed } from '@angular/core/testing'
+import { bootstrapApplication } from '@angular/platform-browser'
+import { renderApplication } from '@angular/platform-server'
+import { parseMarkdown, type NodeTransform, type ParserOptions } from 'comark'
+import emoji from 'comark/plugins/emoji'
+import { Markdown } from '../src/components/markdown.component.ts'
+import { MarkdownDocument } from '../src/components/markdown-document.component.ts'
+import { provideMarkdown, provideMarkdownDocument } from '../src/provider.ts'
+
+@Component({
+  selector: 'app-config-alert',
+  standalone: true,
+  template: '<b class="config-alert"><ng-content /></b>',
+})
+class ConfigAlert {}
+
+@Component({
+  selector: 'app-instance-alert',
+  standalone: true,
+  template: '<b class="instance-alert"><ng-content /></b>',
+})
+class InstanceAlert {}
+
+function renderApp(App: Type<unknown>): Promise<string> {
+  return renderApplication(
+    (context) => bootstrapApplication(App, { providers: [provideZonelessChangeDetection()] }, context),
+    { document: '<!DOCTYPE html><html><head></head><body><app-root></app-root></body></html>' }
+  )
+}
+
+function app(options: { imports: Type<unknown>[]; providers?: Provider[]; template: string }): any {
+  class App {}
+  Component({
+    selector: 'app-root',
+    standalone: true,
+    imports: options.imports,
+    providers: options.providers,
+    template: options.template,
+  })(App)
+  return App
+}
+
+async function renderMarkdown(
+  value: string,
+  providers: Provider[],
+  components?: Record<string, Type<any>>,
+  plugins?: ParserOptions['plugins']
+): Promise<string> {
+  TestBed.resetTestingModule()
+  await TestBed.configureTestingModule({ imports: [Markdown], providers }).compileComponents()
+  const fixture = TestBed.createComponent(Markdown)
+  fixture.componentRef.setInput('value', value)
+  if (components) fixture.componentRef.setInput('components', components)
+  if (plugins) fixture.componentRef.setInput('plugins', plugins)
+  fixture.detectChanges()
+  await vi.waitFor(() => {
+    expect(fixture.componentInstance.document).not.toBeNull()
+    fixture.detectChanges()
+  })
+  return fixture.nativeElement.outerHTML as string
+}
+
+describe('Markdown config providers', () => {
+  beforeEach(() => TestBed.resetTestingModule())
+
+  it('applies config plugins, components, and class to static Markdown', async () => {
+    const html = await renderMarkdown('::alert\n:smile:\n::', [
+      provideMarkdown({
+        plugins: [emoji()],
+        components: { alert: ConfigAlert },
+        class: 'config-class',
+      }),
+    ])
+
+    expect(html).toContain('config-class')
+    expect(html).toContain('config-alert')
+    expect(html).toContain('😄')
+  })
+
+  it('lets instance inputs override config components', async () => {
+    const html = await renderMarkdown('::alert\nHello\n::', [provideMarkdown({ components: { alert: ConfigAlert } })], {
+      alert: InstanceAlert,
+    })
+
+    expect(html).toContain('instance-alert')
+    expect(html).not.toContain('config-alert')
+  })
+
+  it('lets instance plugins replace config plugins with the same name', async () => {
+    const provider = provideMarkdown({ plugins: [emoji()] })
+    const withConfig = await renderMarkdown(':smile:', [provider])
+    const withOverride = await renderMarkdown(':smile:', [provider], undefined, [{ name: 'emoji' }])
+
+    expect(withConfig).toContain('😄')
+    expect(withOverride).not.toContain('😄')
+  })
+
+  it('keeps the first duplicate in the config plugin list', async () => {
+    const html = await renderMarkdown(':project:', [
+      provideMarkdown({ plugins: [emoji({ extend: { project: '🚀' } }), emoji()] }),
+    ])
+
+    expect(html).toContain('🚀')
+  })
+
+  it('keeps the first duplicate in the instance plugin list', async () => {
+    const html = await renderMarkdown(':project:', [], undefined, [emoji({ extend: { project: '🚀' } }), emoji()])
+
+    expect(html).toContain('🚀')
+  })
+
+  it('inherits a config unwrap default when the input is omitted', async () => {
+    await TestBed.configureTestingModule({
+      imports: [Markdown],
+      providers: [provideMarkdown({ unwrap: true })],
+    }).compileComponents()
+    const fixture = TestBed.createComponent(Markdown)
+    fixture.componentRef.setInput('value', 'Hello')
+    fixture.detectChanges()
+    await vi.waitFor(() => {
+      fixture.detectChanges()
+      expect(fixture.componentInstance.document).not.toBeNull()
+    })
+
+    expect(fixture.nativeElement.querySelector('p')).toBeNull()
+  })
+
+  it('lets an explicit unwrap=false override a config default', async () => {
+    await TestBed.configureTestingModule({
+      imports: [Markdown],
+      providers: [provideMarkdown({ unwrap: true })],
+    }).compileComponents()
+    const fixture = TestBed.createComponent(Markdown)
+    fixture.componentRef.setInput('value', 'Hello')
+    fixture.componentRef.setInput('unwrap', false)
+    fixture.detectChanges()
+    await vi.waitFor(() => {
+      fixture.detectChanges()
+      expect(fixture.componentInstance.document).not.toBeNull()
+    })
+
+    expect(fixture.nativeElement.querySelector('p')).not.toBeNull()
+  })
+
+  it('runs config transformNode before the instance transformNode', async () => {
+    const document = await parseMarkdown('Hello')
+    const App = app({
+      imports: [MarkdownDocument],
+      providers: [
+        provideMarkdownDocument({
+          class: 'document-class',
+          transformNode: ({ tag }) => (tag === 'p' ? { tag: 'section' } : undefined),
+        }),
+      ],
+      template: '<comark-markdown-document [value]="document" [transformNode]="transformNode" />',
+    })
+    const instanceTransform: NodeTransform = ({ tag }) => (tag === 'section' ? { tag: 'article' } : undefined)
+    App.prototype.document = document
+    App.prototype.transformNode = instanceTransform
+
+    const html = await renderApp(App)
+    expect(html).toContain('document-class')
+    expect(html).toContain('<article>Hello</article>')
+  })
+
+  it('works without a provider', async () => {
+    const document = await parseMarkdown('Hello')
+    const App = app({
+      imports: [MarkdownDocument],
+      template: '<comark-markdown-document [value]="document" />',
+    })
+    App.prototype.document = document
+
+    const html = await renderApp(App)
+    expect(html).toContain('<p>Hello</p>')
+  })
+})

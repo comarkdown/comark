@@ -1,16 +1,16 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { TestBed } from '@angular/core/testing'
-import type { Type } from '@angular/core'
+import type { Provider, Type } from '@angular/core'
 import { Markdown } from '../src/components/markdown.component.ts'
-import { defineMarkdownComponent } from '../src/define.ts'
+import { provideMarkdown } from '../src/provider.ts'
 
 describe('Markdown re-parses when parser inputs change', () => {
   beforeEach(async () => {
     TestBed.resetTestingModule()
   })
 
-  async function render(component: Type<Markdown>) {
-    await TestBed.configureTestingModule({ imports: [component] }).compileComponents()
+  async function render(component: Type<Markdown>, providers: Provider[] = []) {
+    await TestBed.configureTestingModule({ imports: [component], providers }).compileComponents()
     const fixture = TestBed.createComponent(component)
     fixture.componentRef.setInput('value', 'Hello **world**')
     fixture.detectChanges()
@@ -49,9 +49,8 @@ describe('Markdown re-parses when parser inputs change', () => {
     })
   })
 
-  it('re-parses a defineMarkdownComponent when `unwrap` changes', async () => {
-    const Defined = defineMarkdownComponent({})
-    const fixture = await render(Defined)
+  it('re-parses with a provideMarkdown config provider when `unwrap` changes', async () => {
+    const fixture = await render(Markdown, [provideMarkdown({})])
     expect(fixture.nativeElement.querySelector('p')).not.toBeNull()
 
     fixture.componentRef.setInput('unwrap', true)

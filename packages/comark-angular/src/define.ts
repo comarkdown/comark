@@ -3,6 +3,7 @@ import type { NodeTransform, ParserOptions } from 'comark'
 import { mergeNodeTransforms } from 'comark/utils'
 import { Markdown } from './components/markdown.component'
 import { MarkdownDocument } from './components/markdown-document.component'
+import { mergeConfigPlugins } from './config'
 
 export interface DefineMarkdownComponentOptions extends ParserOptions {
   /** Pre-configured component mappings. */
@@ -27,6 +28,10 @@ export interface DefineMarkdownDocumentOptions {
  *
  * The returned class extends `Markdown` and merges the config-level
  * defaults with any per-instance `@Input()` values at runtime.
+ *
+ * Angular AOT cannot statically resolve a component class produced by a factory
+ * in `imports` (ngtsc error -991010 / NG1010). Prefer `provideMarkdown`
+ * in AOT builds; this factory remains for JIT applications.
  *
  * @example
  * ```typescript
@@ -74,26 +79,15 @@ export function defineMarkdownComponent(config: DefineMarkdownComponentOptions =
     /** Instance-level components that are merged with config-level components. */
     override readonly components = input<Record<string, Type<any>>>({})
 
-    protected readonly mergedComponents = computed(() => ({ ...configComponents, ...this.components() }))
+    protected override readonly mergedComponents = computed(() => ({ ...configComponents, ...this.components() }))
 
-    protected readonly mergedTransforms = computed(() => mergeNodeTransforms(configTransforms, this.transformNode()))
+    protected override readonly mergedTransforms = computed(() =>
+      mergeNodeTransforms(configTransforms, this.transformNode())
+    )
 
     get hostClass(): string {
       return configClass || ''
     }
-
-    /**
-     * Effective plugins: config-level plugins first, then instance plugins,
-     * deduplicated by plugin name so a plugin supplied by both runs once.
-     */
-    private readonly effectivePlugins = computed<ParserOptions['plugins']>(() => {
-      const names = new Set<string>()
-      return [...configPlugins, ...(this.plugins() ?? [])].filter((plugin) => {
-        if (names.has(plugin.name)) return false
-        names.add(plugin.name)
-        return true
-      })
-    })
 
     /**
      * Merge config-level parse options under the instance `options` input so
@@ -101,11 +95,12 @@ export function defineMarkdownComponent(config: DefineMarkdownComponentOptions =
      * input signal (the parser consumes the derived value instead).
      */
     protected override getParserOptions(): ParserOptions {
+      const unwrap = this.unwrap()
       return {
         ...parseOptions,
         ...this.options(),
-        ...(this.unwrap() ? { unwrap: this.unwrap() } : {}),
-        plugins: this.effectivePlugins(),
+        ...(unwrap === undefined ? {} : { unwrap }),
+        plugins: mergeConfigPlugins(configPlugins, this.plugins()),
       }
     }
   }
@@ -115,6 +110,10 @@ export function defineMarkdownComponent(config: DefineMarkdownComponentOptions =
 
 /**
  * Create a pre-configured MarkdownDocument component with default component mappings.
+ *
+ * Angular AOT cannot statically resolve a component class produced by a factory
+ * in `imports` (ngtsc error -991010 / NG1010). Prefer `provideMarkdownDocument`
+ * in AOT builds; this factory remains for JIT applications.
  *
  * @example
  * ```typescript
@@ -152,9 +151,9 @@ export function defineMarkdownDocumentComponent(config: DefineMarkdownDocumentOp
     /** Instance-level components that are merged with config-level components. */
     override readonly components = input<Record<string, Type<any>>>({})
 
-    protected readonly mergedComponents = computed(() => ({ ...configComponents, ...this.components() }))
+    protected override readonly mergedComponents = computed(() => ({ ...configComponents, ...this.components() }))
 
-    protected readonly mergedTransforms = computed(() =>
+    protected override readonly mergedTransforms = computed(() =>
       mergeNodeTransforms(config.transformNode, this.transformNode())
     )
 

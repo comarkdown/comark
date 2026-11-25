@@ -1,0 +1,10 @@
+{
+  "extends": "../../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../../../out-tsc/aot-fixture-factory",
+    "noEmit": true,
+    "types": [],
+    "rootDir": "../../.."
+  },
+  "files": ["factory-imports.component.ts"]
+}
