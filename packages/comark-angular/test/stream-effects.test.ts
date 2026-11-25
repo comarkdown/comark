@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { Component, Input, type Type } from '@angular/core'
 import { TestBed } from '@angular/core/testing'
 import type { MarkdownDocument as MarkdownDocumentType, Node } from 'comark'
-import { caret, fade, pace } from 'comark/stream'
+import { caret, fade, pace } from 'comark/effects'
 import { MarkdownDocument } from '../src/components/markdown-document.component.ts'
 
 function doc(...nodes: Node[]): MarkdownDocumentType {

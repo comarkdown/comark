@@ -19,7 +19,7 @@ below receives the same \`streamed\` string, the same \`plugins\` and the same \
 | Angular  | \`@comark/angular\` |
 
 \`\`\`ts
-import { createStreamRenderer, fade, caret } from 'comark/stream'
+import { createStreamRenderer, fade, caret } from 'comark/effects'
 
 const stream = createStreamRenderer()
 const nodes = stream.render(doc.nodes, { streaming: true, effects: [fade(), caret()] })

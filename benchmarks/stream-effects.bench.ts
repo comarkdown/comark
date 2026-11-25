@@ -1,8 +1,8 @@
 import { test } from 'vitest'
 import { createMarkdownParser } from 'comark'
 import type { Node } from 'comark'
-import { caret, createStreamRenderer, fade, pace, typewriter } from 'comark/stream'
-import type { StreamEffect } from 'comark/stream'
+import { caret, createStreamRenderer, fade, pace, typewriter } from 'comark/effects'
+import type { StreamEffect } from 'comark/effects'
 import { chatMarkdown, largeMarkdown, toStreamChunks } from './fixtures.ts'
 
 const FRAME = 16

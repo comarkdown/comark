@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { createStreamRenderer, getChildKeys } from 'comark/stream'
+import { createStreamRenderer, getChildKeys } from 'comark/effects'
 import { renderDocumentNodes, type MarkdownDocumentProps } from './MarkdownDocument.tsx'
 
 /**

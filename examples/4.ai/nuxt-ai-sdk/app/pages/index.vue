@@ -2,7 +2,7 @@
 import { Chat } from '@ai-sdk/vue'
 import { isTextUIPart } from 'ai'
 import { isPartStreaming } from '@nuxt/ui/utils/ai'
-import { caret, fade } from 'comark/stream'
+import { caret, fade } from 'comark/effects'
 
 const effects = [fade(), caret()]
 

@@ -53,7 +53,7 @@ packages/comark/
 │   ├── core.ts               # Parser pipeline with no default plugins (comark/core)
 │   ├── auto-close.ts         # autoCloseMarkdown() (comark/auto-close)
 │   ├── context.ts            # Live renderer context: ComarkContext, ComarkDocument, ComarkPatch (comark/context)
-│   ├── stream.ts             # Render-time stream effects: caret, fade, createStreamRenderer (comark/stream)
+│   ├── effects.ts            # Render-time stream effects: caret, fade, createStreamRenderer (comark/effects)
 │   ├── render/
 │   │   ├── index.ts          # AST to Markdown string: renderMarkdown() (comark/render)
 │   │   └── html.ts           # HTML-only string engine used by @comark/html (comark/render/html)
@@ -168,8 +168,8 @@ import { parseMarkdown } from 'comark/core' // no default plugins; autoClose tak
 import { autoCloseMarkdown } from 'comark/auto-close'
 import { renderMarkdown } from 'comark/render'
 import type { ComarkContext, ComarkDocument, ComarkPatch } from 'comark/context'
-import { caret, fade, pace, typewriter, createStreamRenderer, getChildKeys } from 'comark/stream'
-import type { StreamEffect, FadeOptions, CaretOptions } from 'comark/stream'
+import { caret, fade, pace, typewriter, createStreamRenderer, getChildKeys } from 'comark/effects'
+import type { StreamEffect, FadeOptions, CaretOptions } from 'comark/effects'
 import type { MarkdownDocument, Node, ElementNode, TextNode, CommentNode, NodeTransform } from 'comark'
 import {
   textContent,
@@ -278,9 +278,9 @@ Contract: `packages/comark/SPEC/HTML/README.md`.
 - `visit` and `visitAsync` stop at `TREE_WALK_MAX_DEPTH` (`50`).
 - Deferred edge cases in `test/html-block.test.ts` are skipped tests; do not delete or weaken them.
 
-### Stream effects (`comark/stream`)
+### Stream effects (`comark/effects`)
 
-Every framework renderer accepts a single `effects` prop (there are no `caret` or `fade` props; users import `caret()` and `fade()` from `comark/stream`) and applies it through one `createStreamRenderer()` per component instance, in array order. Put `pace()` first and `caret()` last.
+Every framework renderer accepts a single `effects` prop (there are no `caret` or `fade` props; users import `caret()` and `fade()` from `comark/effects`) and applies it through one `createStreamRenderer()` per component instance, in array order. Put `pace()` first and `caret()` last.
 
 - `fade()` staggers words by 30ms by default and treats each Han/kana character and each `FADE_UNIT_TAGS` element (`img`, `hr`, `input`, counted as one `\uFFFC` character of fadeable text) as its own word. It stamps those elements and new `li` items (`comark-fade-marker` plus `--comark-fade-*` custom properties for `::marker`) instead of wrapping them; stamps merge away with the block's spans.
 - `fade()` and `typewriter()` never pace; users compose `[pace(), fade()]`. Later effects see `context.backlog` while an earlier effect still holds text back, and `fade` uses it to hold a partially released word.

@@ -6,7 +6,7 @@ This example streams Markdown character by character in Vue and counts visible m
 
 - **Editable input**: paste or type any Markdown source into the editor.
 - **Character stream**: replay the input with configurable chunk sizes and tick delays.
-- **Streaming and caret**: renders with `<Markdown :streaming :effects>` from `@comark/vue`, with `caret()` and `fade()` from `comark/stream`, so incomplete syntax auto-closes while tokens arrive.
+- **Streaming and caret**: renders with `<Markdown :streaming :effects>` from `@comark/vue`, with `caret()` and `fade()` from `comark/effects`, so incomplete syntax auto-closes while tokens arrive.
 - **Mis-render tracker**: compares visible text snapshots after each frame and counts characters that briefly appeared in the DOM before disappearing on a later frame.
 
 ### What is a mis-render
@@ -38,7 +38,7 @@ pnpm --filter comark-vue-streaming dev
 
 ```vue
 <script setup lang="ts">
-import { caret } from 'comark/stream'
+import { caret } from 'comark/effects'
 
 const effects = [caret()]
 </script>

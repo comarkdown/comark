@@ -2,7 +2,7 @@ import React from 'react'
 import { parseMarkdown } from 'comark'
 import type { MarkdownDocument as MarkdownDocumentType, NodeTransform, ParserOptions } from 'comark'
 import { isMarkdownDocument } from 'comark/utils'
-import type { StreamEffect } from 'comark/stream'
+import type { StreamEffect } from 'comark/effects'
 import { MarkdownDocument } from './MarkdownDocument.tsx'
 import { MarkdownClient } from './MarkdownClient.tsx'
 
@@ -65,7 +65,7 @@ export interface MarkdownProps extends Omit<React.HTMLAttributes<HTMLDivElement>
   streaming?: boolean
 
   /**
-   * Render-time stream effects such as `caret()`, `fade()` and `pace()` from `comark/stream`. They run in order.
+   * Render-time stream effects such as `caret()`, `fade()` and `pace()` from `comark/effects`. They run in order.
    */
   effects?: readonly StreamEffect[]
 

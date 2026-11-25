@@ -14,7 +14,7 @@ React renderer for [Comark](https://comark.dev). Render Markdown with custom Rea
 
 - `<Markdown>` component for rendering Markdown
 - Custom React components for any Comark tag
-- Streaming support with auto-close and stream effects such as caret and fade via `comark/stream`
+- Streaming support with auto-close and stream effects such as caret and fade via `comark/effects`
 - React Server Components and SSR support
 - Plugins for math, Mermaid, Shiki highlighting, binding, and more
 - Full TypeScript support
@@ -65,7 +65,7 @@ Streaming reuses completed blocks as text is appended. Keep parser options and p
 
 ```tsx
 import { Markdown } from '@comark/react'
-import { caret } from 'comark/stream'
+import { caret } from 'comark/effects'
 
 const effects = [caret()]
 

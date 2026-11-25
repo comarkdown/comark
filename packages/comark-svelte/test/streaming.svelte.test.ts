@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { render } from 'vitest-browser-svelte'
 import { parseMarkdown } from 'comark'
-import { caret } from 'comark/stream'
+import { caret } from 'comark/effects'
 import Markdown from '../src/components/Markdown.svelte'
 import MarkdownDocument from '../src/components/MarkdownDocument.svelte'
 import Alert from './test-components/Alert.svelte'

@@ -9,8 +9,8 @@ import {
   input,
 } from '@angular/core'
 import type { Node, MarkdownDocument as MarkdownDocumentType, NodeRenderData, NodeTransform } from 'comark'
-import { createStreamRenderer, getChildKeys } from 'comark/stream'
-import type { StreamEffect } from 'comark/stream'
+import { createStreamRenderer, getChildKeys } from 'comark/effects'
+import type { StreamEffect } from 'comark/effects'
 import { MarkdownNode, isSameValue } from './markdown-node.component'
 
 const EMPTY_DOCUMENT: MarkdownDocumentType = { nodes: [], frontmatter: {}, meta: {} }
@@ -60,7 +60,7 @@ export class MarkdownDocument implements OnInit, OnDestroy {
   /** Enable streaming mode */
   readonly streaming = input<boolean>(false)
 
-  /** Render-time stream effects such as `caret()`, `fade()` and `pace()` from `comark/stream`. They run in order. */
+  /** Render-time stream effects such as `caret()`, `fade()` and `pace()` from `comark/effects`. They run in order. */
   readonly effects = input<readonly StreamEffect[]>()
 
   /** Additional data to pass to the renderer for :binding resolution */

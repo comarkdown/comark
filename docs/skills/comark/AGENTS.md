@@ -8,7 +8,7 @@ LLMs stream Markdown token by token. Standard Markdown parsers expect complete i
 
 - **`autoClose`** (default: `true`): closes unfinished syntax such as `**bold text`, open code fences, and half-open components on every parse
 - **Streaming mode**: reuses completed blocks as new chunks arrive
-- **Stream effects**: `caret()`, `fade()`, and more from `comark/stream` decorate the active text while streaming
+- **Stream effects**: `caret()`, `fade()`, and more from `comark/effects` decorate the active text while streaming
 - **ANSI rendering**: renders styled terminal output for CLI agents
 
 ---
@@ -19,7 +19,7 @@ LLMs stream Markdown token by token. Standard Markdown parsers expect complete i
 <script setup lang="ts">
 import { ref } from 'vue'
 import { Markdown } from '@comark/vue'
-import { caret } from 'comark/stream'
+import { caret } from 'comark/effects'
 
 const effects = [caret()]
 const content = ref('')
@@ -59,7 +59,7 @@ async function generate(prompt: string) {
 ```tsx
 import { useState } from 'react'
 import { Markdown } from '@comark/react'
-import { caret } from 'comark/stream'
+import { caret } from 'comark/effects'
 
 const effects = [caret()]
 
@@ -99,7 +99,7 @@ export default function Chat() {
 ```svelte
 <script lang="ts">
   import { Markdown } from '@comark/svelte'
-  import { caret } from 'comark/stream'
+  import { caret } from 'comark/effects'
 
   const effects = [caret()]
 
@@ -138,7 +138,7 @@ export default function Chat() {
 ```typescript
 import { Component } from '@angular/core'
 import { Markdown } from '@comark/angular'
-import { caret } from 'comark/stream'
+import { caret } from 'comark/effects'
 
 @Component({
   selector: 'app-chat',
@@ -209,11 +209,11 @@ await writeMarkdown(markdown)
 
 ## Stream effects
 
-The `effects` prop takes an array of effects from `comark/stream`. `caret()` appends a blinking cursor to the last text node while `streaming` is `true`, and `fade()` fades in new text. Effects run in array order. Define the array once, outside the render, so effects keep their state between renders. Pass `class` to `caret()` to customize it:
+The `effects` prop takes an array of effects from `comark/effects`. `caret()` appends a blinking cursor to the last text node while `streaming` is `true`, and `fade()` fades in new text. Effects run in array order. Define the array once, outside the render, so effects keep their state between renders. Pass `class` to `caret()` to customize it:
 
 ```vue
 <script setup lang="ts">
-import { caret, fade } from 'comark/stream'
+import { caret, fade } from 'comark/effects'
 
 const effects = [fade(), caret({ class: 'animate-blink' })]
 </script>
@@ -224,7 +224,7 @@ const effects = [fade(), caret({ class: 'animate-blink' })]
 ```
 
 ```tsx
-import { caret, fade } from 'comark/stream'
+import { caret, fade } from 'comark/effects'
 
 const effects = [fade(), caret({ class: 'animate-blink' })]
 
@@ -233,7 +233,7 @@ const effects = [fade(), caret({ class: 'animate-blink' })]
 
 ```svelte
 <script lang="ts">
-  import { caret, fade } from 'comark/stream'
+  import { caret, fade } from 'comark/effects'
 
   const effects = [fade(), caret({ class: 'animate-blink' })]
 </script>
@@ -243,7 +243,7 @@ const effects = [fade(), caret({ class: 'animate-blink' })]
 
 ```typescript
 // Angular
-import { caret, fade } from 'comark/stream'
+import { caret, fade } from 'comark/effects'
 
 class ChatComponent {
   effects = [fade(), caret({ class: 'animate-blink' })]
@@ -259,7 +259,7 @@ class ChatComponent {
 `fade()` and `typewriter()` show each chunk as soon as it arrives. To release text at a steady rate regardless of chunk timing, put `pace()` before them. Order matters: `pace()` first, then `fade()` or `typewriter()`, then `caret()` last.
 
 ```typescript
-import { caret, fade, pace, typewriter } from 'comark/stream'
+import { caret, fade, pace, typewriter } from 'comark/effects'
 
 // Steady word-by-word fade (speed in characters per second, catchUp in ms)
 const effects = [pace({ speed: 80, catchUp: 1000 }), fade({ delay: 30 }), caret()]
@@ -283,7 +283,7 @@ If your LLM emits Comark component syntax (for example, `::alert`), register tho
 ```vue
 <script setup lang="ts">
 import { Markdown } from '@comark/vue'
-import { caret } from 'comark/stream'
+import { caret } from 'comark/effects'
 import Alert from './Alert.vue'
 import CodeBlock from './CodeBlock.vue'
 
@@ -308,7 +308,7 @@ Syntax highlighting works during streaming. Each re-parse highlights newly compl
 import { Markdown } from '@comark/vue'
 import shiki from '@comark/vue/plugins/shiki'
 import githubDark from '@shikijs/themes/github-dark'
-import { caret } from 'comark/stream'
+import { caret } from 'comark/effects'
 
 const plugins = [shiki({ themes: { light: githubDark, dark: githubDark } })]
 const effects = [caret()]
@@ -325,7 +325,7 @@ const effects = [caret()]
 import { Markdown } from '@comark/react'
 import shiki from '@comark/react/plugins/shiki'
 import githubDark from '@shikijs/themes/github-dark'
-import { caret } from 'comark/stream'
+import { caret } from 'comark/effects'
 
 const plugins = [shiki({ themes: { light: githubDark, dark: githubDark } })]
 const effects = [caret()]
@@ -366,7 +366,7 @@ export const ChatMarkdown = defineMarkdownComponent({
 
 ```vue
 <script setup lang="ts">
-import { caret } from 'comark/stream'
+import { caret } from 'comark/effects'
 
 const effects = [caret()]
 </script>

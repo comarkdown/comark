@@ -29,7 +29,7 @@ This is an alert component
   import { isMarkdownDocument } from 'comark/utils'
   import MarkdownDocument from './MarkdownDocument.svelte'
   import type { RootAttributes } from '../types.js'
-  import type { StreamEffect } from 'comark/stream'
+  import type { StreamEffect } from 'comark/effects'
 
   let {
     value,

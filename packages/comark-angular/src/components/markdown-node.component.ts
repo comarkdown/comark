@@ -18,7 +18,7 @@ import {
 } from '@angular/core'
 import type { ElementNode, Node as MarkdownAstNode, NodeRenderData, NodeTransform } from 'comark'
 import { resolveIfWrapper, selectIfBranch, shouldRenderIf, type IfProps } from 'comark/plugins/binding'
-import { getChildKeys } from 'comark/stream'
+import { getChildKeys } from 'comark/effects'
 import { applyNodeTransforms, isHtmlVoidElement, pascalCase, resolveAttributes, toNativeAttributes } from 'comark/utils'
 
 interface StructuralComponent extends Type<any> {

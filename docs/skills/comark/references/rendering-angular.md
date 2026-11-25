@@ -291,7 +291,7 @@ Enable streaming mode for incremental rendering of live content (for example, AI
 ```typescript
 import { Component } from '@angular/core'
 import { Markdown } from '@comark/angular'
-import { caret } from 'comark/stream'
+import { caret } from 'comark/effects'
 
 @Component({
   selector: 'app-streaming',
@@ -328,10 +328,10 @@ export class StreamingComponent {
 
 ### Stream effects
 
-The `effects` input takes an array of effects from `comark/stream`, such as `caret()` and `fade()`. Define the array once as a class field so effects keep their state between renders:
+The `effects` input takes an array of effects from `comark/effects`, such as `caret()` and `fade()`. Define the array once as a class field so effects keep their state between renders:
 
 ```typescript
-import { caret, fade } from 'comark/stream'
+import { caret, fade } from 'comark/effects'
 
 export class StreamingComponent {
   // Default pulsing caret

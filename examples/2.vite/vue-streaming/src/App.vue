@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { Markdown } from '@comark/vue'
-import { caret, fade, type StreamEffect } from 'comark/stream'
+import { caret, fade, type StreamEffect } from 'comark/effects'
 import { SAMPLE_MARKDOWN } from './sample'
 import { emptyStats, trackFrame, visibleText, type MisrenderStats } from './misrender'
 

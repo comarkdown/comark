@@ -1,7 +1,7 @@
 import { expect, it } from 'vitest'
 import { render } from 'vitest-browser-svelte'
 import type { MarkdownDocument as MarkdownDocumentType, Node } from 'comark'
-import { caret, fade } from 'comark/stream'
+import { caret, fade } from 'comark/effects'
 import MarkdownDocument from '../src/components/MarkdownDocument.svelte'
 
 function doc(...nodes: Node[]): MarkdownDocumentType {

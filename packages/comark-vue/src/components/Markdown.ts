@@ -3,7 +3,7 @@ import { computed, defineComponent, h, shallowRef, watch } from 'vue'
 import { createSerializedMarkdownParser } from 'comark'
 import type { ParserOptions, ComponentManifest, MarkdownDocument as MarkdownDocumentType, NodeTransform } from 'comark'
 import { isMarkdownDocument } from 'comark/utils'
-import type { StreamEffect } from 'comark/stream'
+import type { StreamEffect } from 'comark/effects'
 import { MarkdownDocument } from './MarkdownDocument.ts'
 
 /**
@@ -54,7 +54,7 @@ export interface MarkdownProps {
   summary?: boolean
 
   /**
-   * Render-time stream effects such as `caret()`, `fade()` and `pace()` from `comark/stream`. They run in order.
+   * Render-time stream effects such as `caret()`, `fade()` and `pace()` from `comark/effects`. They run in order.
    */
   effects?: readonly StreamEffect[]
 
@@ -150,7 +150,7 @@ export const markdownProps = {
   },
 
   /**
-   * Render-time stream effects such as `caret()`, `fade()` and `pace()` from `comark/stream`. They run in order.
+   * Render-time stream effects such as `caret()`, `fade()` and `pace()` from `comark/effects`. They run in order.
    */
   effects: {
     type: Array as PropType<readonly StreamEffect[]>,

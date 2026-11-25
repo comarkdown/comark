@@ -6,7 +6,7 @@ Renders a single `Node`: a text string, a native HTML element
 (via `<svelte:element>`), or a custom component (via a capitalized variable).
 
 Recurses into children by importing itself. `MarkdownDocument` applies stream
-effects (see `comark/stream`) to the tree before rendering.
+effects (see `comark/effects`) to the tree before rendering.
 
 @example
 ```svelte
@@ -80,7 +80,7 @@ effects (see `comark/stream`) to the tree before rendering.
   import ComarkComponent from './ComarkComponent.svelte'
   import Resolve from './Resolve.svelte'
   import { applyNodeTransforms, isHtmlVoidElement, resolveAttributes, toNativeAttributes } from 'comark/utils'
-  import { getStreamKey } from 'comark/stream'
+  import { getStreamKey } from 'comark/effects'
   import { getContext, setContext } from 'svelte'
 
   const EMPTY_RENDER_DATA: NodeRenderData = { frontmatter: {}, meta: {}, data: {}, props: {} }

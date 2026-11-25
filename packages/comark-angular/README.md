@@ -14,7 +14,7 @@ Angular 21+ renderer for [Comark](https://comark.dev). Render Markdown with cust
 
 - `<comark-markdown>` standalone component for rendering Markdown
 - Custom Angular components for any Comark tag
-- Streaming support with auto-close and stream effects such as caret and fade via `comark/stream`
+- Streaming support with auto-close and stream effects such as caret and fade via `comark/effects`
 - SSR support with Angular 21+ standalone components
 - Plugins for math, Mermaid, Shiki highlighting, binding, and more
 - Full TypeScript support
@@ -72,7 +72,7 @@ Heads up!
 ```typescript
 import { Component } from '@angular/core'
 import { Markdown } from '@comark/angular'
-import { caret } from 'comark/stream'
+import { caret } from 'comark/effects'
 
 @Component({
   selector: 'app-chat',

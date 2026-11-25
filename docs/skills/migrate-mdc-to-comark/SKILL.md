@@ -125,7 +125,7 @@ For a pre-parsed document, use `<MarkdownDocument>` directly instead of `<Markdo
 | `components` | `components` | Same purpose |
 | None | `componentsManifest` | New: dynamic async component resolver |
 | None | `streaming` | New: streaming mode |
-| None | `effects` | New: stream effects such as `caret()` and `fade()` from `comark/stream` |
+| None | `effects` | New: stream effects such as `caret()` and `fade()` from `comark/effects` |
 
 #### Summary rendering
 

@@ -21,8 +21,8 @@ import {
   shallowRef,
   toRaw,
 } from 'vue'
-import { createStreamRenderer, getChildKeys } from 'comark/stream'
-import type { StreamEffect } from 'comark/stream'
+import { createStreamRenderer, getChildKeys } from 'comark/effects'
+import type { StreamEffect } from 'comark/effects'
 import { applyNodeTransforms, pascalCase, resolveAttributes, toNativeAttributes } from 'comark/utils'
 
 const asyncComponentCache = new Map<string, any>()
@@ -276,7 +276,7 @@ export interface MarkdownDocumentProps {
   streaming?: boolean
 
   /**
-   * Render-time stream effects such as `caret()`, `fade()` and `pace()` from `comark/stream`. They run in order.
+   * Render-time stream effects such as `caret()`, `fade()` and `pace()` from `comark/effects`. They run in order.
    */
   effects?: readonly StreamEffect[]
 
@@ -341,7 +341,7 @@ export const markdownDocumentProps = {
   },
 
   /**
-   * Render-time stream effects such as `caret()`, `fade()` and `pace()` from `comark/stream`. They run in order.
+   * Render-time stream effects such as `caret()`, `fade()` and `pace()` from `comark/effects`. They run in order.
    */
   effects: {
     type: Array as PropType<readonly StreamEffect[]>,

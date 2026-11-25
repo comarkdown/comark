@@ -34,7 +34,7 @@ and wrap this component in a `<svelte:boundary>` for pending/error states.
   import MarkdownDocument from '../components/MarkdownDocument.svelte'
   import ResolveAsync from './ResolveAsync.svelte'
   import type { RootAttributes } from '../types.js'
-  import type { StreamEffect } from 'comark/stream'
+  import type { StreamEffect } from 'comark/effects'
 
   let {
     value,

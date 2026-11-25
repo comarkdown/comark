@@ -10,8 +10,8 @@ import {
   getChildKeys,
   pace,
   typewriter,
-} from 'comark/stream'
-import type { StreamEffect } from 'comark/stream'
+} from 'comark/effects'
+import type { StreamEffect } from 'comark/effects'
 
 function clock(start = 0) {
   let time = start

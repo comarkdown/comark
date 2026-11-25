@@ -15,8 +15,8 @@ import {
   resolveAttributes,
   toNativeAttributes,
 } from 'comark/utils'
-import { getChildKeys } from 'comark/stream'
-import type { StreamEffect } from 'comark/stream'
+import { getChildKeys } from 'comark/effects'
+import type { StreamEffect } from 'comark/effects'
 import { MarkdownDocumentStream } from './MarkdownDocumentStream.tsx'
 
 function getTag(node: Node): string | null {
@@ -324,7 +324,7 @@ export interface MarkdownDocumentProps extends Omit<React.HTMLAttributes<HTMLDiv
   streaming?: boolean
 
   /**
-   * Render-time stream effects such as `caret()`, `fade()` and `pace()` from `comark/stream`. They run in order.
+   * Render-time stream effects such as `caret()`, `fade()` and `pace()` from `comark/effects`. They run in order.
    */
   effects?: readonly StreamEffect[]
 

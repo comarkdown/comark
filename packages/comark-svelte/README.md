@@ -14,7 +14,7 @@ Svelte 5 renderer for [Comark](https://comark.dev). Render Markdown with custom 
 
 - `<Markdown>` component for rendering Markdown
 - Custom Svelte components for any Comark tag
-- Streaming support with auto-close and stream effects such as caret and fade via `comark/stream`
+- Streaming support with auto-close and stream effects such as caret and fade via `comark/effects`
 - SvelteKit SSR support
 - Plugins for math, Mermaid, Shiki highlighting, binding, and more
 - Full TypeScript support
@@ -64,7 +64,7 @@ Heads up!
 ```svelte
 <script lang="ts">
   import { Markdown } from '@comark/svelte'
-  import { caret } from 'comark/stream'
+  import { caret } from 'comark/effects'
 
   const effects = [caret()]
 </script>

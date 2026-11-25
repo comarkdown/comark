@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest'
 import { createSSRApp, h } from 'vue'
 import { renderToString } from '@vue/server-renderer'
 import type { MarkdownDocument as MarkdownDocumentType, Node } from 'comark'
-import { caret, fade } from 'comark/stream'
-import type { StreamEffect } from 'comark/stream'
+import { caret, fade } from 'comark/effects'
+import type { StreamEffect } from 'comark/effects'
 import { MarkdownDocument } from '../src/components/MarkdownDocument'
 
 function doc(...nodes: Node[]): MarkdownDocumentType {

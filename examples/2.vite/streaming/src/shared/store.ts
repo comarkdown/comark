@@ -1,6 +1,6 @@
 import shiki from 'comark/plugins/shiki'
 import type { ComarkPlugin } from 'comark'
-import { caret, fade, pace, typewriter, type StreamEffect } from 'comark/stream'
+import { caret, fade, pace, typewriter, type StreamEffect } from 'comark/effects'
 import { SAMPLE_MARKDOWN } from './sample'
 
 export type EffectName = 'pace' | 'fade' | 'typewriter' | 'caret'

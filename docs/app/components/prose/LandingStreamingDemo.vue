@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { caret } from 'comark/stream'
+import { caret } from 'comark/effects'
 
 const effects = [caret({ class: 'caret' })]
 

@@ -294,7 +294,7 @@ Use `Markdown` with `$state` for streaming content:
 ```svelte
 <script lang="ts">
   import { Markdown } from '@comark/svelte'
-  import { caret } from 'comark/stream'
+  import { caret } from 'comark/effects'
 
   const effects = [caret()]
 
@@ -324,7 +324,7 @@ The `caret()` effect appends a blinking cursor indicator to the last text node d
 
 ```svelte
 <script lang="ts">
-  import { caret, fade } from 'comark/stream'
+  import { caret, fade } from 'comark/effects'
 
   const effects = [fade(), caret({ class: 'my-caret' })]
 </script>

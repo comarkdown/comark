@@ -4,7 +4,7 @@ Renders an already-parsed Markdown document to Svelte components/HTML, keeping
 the parser out of the client bundle.
 
 Accepts a parsed `MarkdownDocument` and renders each top-level node via `MarkdownNode`.
-Supports custom component mappings and streaming effects from `comark/stream` (caret, fade-in, custom).
+Supports custom component mappings and streaming effects from `comark/effects` (caret, fade-in, custom).
 
 @example
 ```svelte
@@ -21,8 +21,8 @@ Supports custom component mappings and streaming effects from `comark/stream` (c
 <script lang="ts">
   import { untrack } from 'svelte'
   import type { MarkdownDocument as MarkdownDocumentType, ComponentManifest, NodeTransform } from 'comark'
-  import { createStreamRenderer, getStreamKey } from 'comark/stream'
-  import type { StreamEffect } from 'comark/stream'
+  import { createStreamRenderer, getStreamKey } from 'comark/effects'
+  import type { StreamEffect } from 'comark/effects'
   import type { ComponentResolver, RootAttributes } from '../types.js'
   import MarkdownNode from './MarkdownNode.svelte'
 
