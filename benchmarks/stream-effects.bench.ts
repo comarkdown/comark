@@ -1,0 +1,63 @@
+import { test } from 'vitest'
+import { createMarkdownParser } from 'comark'
+import type { Node } from 'comark'
+import { caret, createStreamRenderer, fade, pace, typewriter } from 'comark/effects'
+import type { StreamEffect } from 'comark/effects'
+import { chatMarkdown, largeMarkdown, toStreamChunks } from './fixtures.ts'
+
+const FRAME = 16
+const MAX_DRAIN_FRAMES = 5000
+
+async function snapshots(markdown: string, count: number): Promise<Node[][]> {
+  const parse = createMarkdownParser()
+  const out: Node[][] = []
+  for (const chunk of toStreamChunks(markdown, count)) {
+    out.push((await parse(chunk, { streaming: true })).nodes)
+  }
+  return out
+}
+
+const chatFrames = await snapshots(chatMarkdown, 24)
+const largeFrames = await snapshots(largeMarkdown, 60)
+
+const fadeEffects = [pace({ speed: 400 }), fade({ styles: false }), caret()]
+const fadeWordDelay = [pace({ speed: 400 }), fade({ styles: false, delay: 30 })]
+const typewriterEffects = [pace({ speed: 400 }), typewriter({ styles: false, speed: 400 })]
+const paceDrain = [pace({ speed: 4000 }), fade({ styles: false }), caret()]
+
+/** Feeds each snapshot one frame apart, then renders frames until no effect has queued work. */
+function play(frames: Node[][], effects: readonly StreamEffect[]): void {
+  let time = 0
+  const stream = createStreamRenderer({ now: () => time })
+  for (const nodes of frames) {
+    stream.render(nodes, { streaming: true, effects })
+    time += FRAME
+  }
+  const last = frames[frames.length - 1]
+  stream.render(last, { streaming: false, effects })
+  for (let i = 0; i < MAX_DRAIN_FRAMES && stream.pending(); i++) {
+    time += FRAME
+    stream.render(last, { streaming: false, effects })
+  }
+}
+
+play(chatFrames, fadeEffects)
+play(largeFrames, paceDrain)
+
+// CodSpeed's CPU simulation runs these drains far slower than wall time, past Vitest's 60s default.
+test('stream effects', { timeout: 300_000 }, async ({ bench }) => {
+  await bench.compare(
+    bench('fade and caret over a chat answer', () => {
+      play(chatFrames, fadeEffects)
+    }),
+    bench('delayed word fade over a large document', () => {
+      play(largeFrames, fadeWordDelay)
+    }),
+    bench('typewriter over a chat answer', () => {
+      play(chatFrames, typewriterEffects)
+    }),
+    bench('pace drain of a large document', () => {
+      play(largeFrames, paceDrain)
+    })
+  )
+})

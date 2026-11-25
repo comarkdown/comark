@@ -10,7 +10,7 @@ const BOM = '\uFEFF'
  * Find the line that closes the frontmatter: `---` alone on its line, with optional trailing spaces or tabs.
  * @returns The index of the line feed before the delimiter, and the index after the delimiter line's content
  */
-function findClosingDelimiter(content: string, from: number) {
+function findClosingDelimiter(content: string, from: number): { idx: number; end: number } | undefined {
   let idx = content.indexOf(LF + FRONTMATTER_DELIMITER_DEFAULT, from)
   while (idx !== -1) {
     let end = idx + 1 + FRONTMATTER_DELIMITER_DEFAULT.length
@@ -19,6 +19,7 @@ function findClosingDelimiter(content: string, from: number) {
     if (end === content.length || content[end] === LF) return { idx, end }
     idx = content.indexOf(LF + FRONTMATTER_DELIMITER_DEFAULT, idx + 1)
   }
+  return undefined
 }
 
 /** Split leading frontmatter (`---`) from markdown content without parsing its YAML. */

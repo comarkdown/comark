@@ -1,6 +1,7 @@
 import type { Node, MarkdownDocument, ComarkPlugin, ComponentManifest, NodeTransform, ParserOptions } from 'comark'
 import type { Component, Snippet } from 'svelte'
 import type { HTMLAttributes } from 'svelte/elements'
+import type { StreamEffect } from 'comark/effects'
 
 /**
  * HTML attributes (`id`, `style`, `role`, `data-*`, `aria-*`, ...) set on the
@@ -23,8 +24,6 @@ export interface MarkdownNodeProps {
   /** Change the tag or props of element nodes just before they render */
   transformNode?: NodeTransform | readonly NodeTransform[]
   resolver?: ComponentResolver
-  /** CSS class for the streaming caret, or null if no caret. Threaded recursively to the last child. */
-  caretClass?: string | null
 }
 
 export interface MarkdownDocumentProps extends RootAttributes {
@@ -36,7 +35,8 @@ export interface MarkdownDocumentProps extends RootAttributes {
   transformNode?: NodeTransform | readonly NodeTransform[]
   resolver?: ComponentResolver
   streaming?: boolean
-  caret?: boolean | { class: string }
+  /** Render-time stream effects such as `caret()`, `fade()` and `pace()` from `comark/effects`. They run in order. */
+  effects?: readonly StreamEffect[]
   class?: string
   /**
    * Document key used to subscribe to live updates via `globalThis.comarkContext`.
@@ -61,6 +61,7 @@ export interface MarkdownProps extends RootAttributes {
   /** Change the tag or props of element nodes just before they render */
   transformNode?: NodeTransform | readonly NodeTransform[]
   streaming?: boolean
-  caret?: boolean | { class: string }
+  /** Render-time stream effects such as `caret()`, `fade()` and `pace()` from `comark/effects`. They run in order. */
+  effects?: readonly StreamEffect[]
   class?: string
 }

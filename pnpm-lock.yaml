@@ -940,6 +940,97 @@ importers:
         specifier: 'catalog:'
         version: 8.3.8(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(less@4.9.1(supports-color@10.2.2))(sass-embedded@1.104.1)(sass@1.104.1)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1)
 
+  examples/2.vite/streaming:
+    dependencies:
+      '@angular/common':
+        specifier: 'catalog:'
+        version: 22.2.6(@angular/core@22.2.6(@angular/compiler@22.2.6)(rxjs@7.8.2)(zone.js@0.16.3))(rxjs@7.8.2)
+      '@angular/core':
+        specifier: 'catalog:'
+        version: 22.2.6(@angular/compiler@22.2.6)(rxjs@7.8.2)(zone.js@0.16.3)
+      '@angular/platform-browser':
+        specifier: 'catalog:'
+        version: 22.2.6(@angular/common@22.2.6(@angular/core@22.2.6(@angular/compiler@22.2.6)(rxjs@7.8.2)(zone.js@0.16.3))(rxjs@7.8.2))(@angular/core@22.2.6(@angular/compiler@22.2.6)(rxjs@7.8.2)(zone.js@0.16.3))
+      '@comark/angular':
+        specifier: workspace:*
+        version: link:../../../packages/comark-angular/dist
+      '@comark/react':
+        specifier: workspace:*
+        version: link:../../../packages/comark-react
+      '@comark/svelte':
+        specifier: workspace:*
+        version: link:../../../packages/comark-svelte
+      '@comark/vue':
+        specifier: workspace:*
+        version: link:../../../packages/comark-vue
+      '@shikijs/langs':
+        specifier: 'catalog:'
+        version: 4.6.0
+      comark:
+        specifier: workspace:*
+        version: link:../../../packages/comark
+      react:
+        specifier: 'catalog:'
+        version: 19.3.1
+      react-dom:
+        specifier: 'catalog:'
+        version: 19.3.1(react@19.3.1)
+      rxjs:
+        specifier: 'catalog:'
+        version: 7.8.2
+      shiki:
+        specifier: 'catalog:'
+        version: 4.6.0
+      svelte:
+        specifier: 'catalog:'
+        version: 5.58.0
+      tslib:
+        specifier: 'catalog:'
+        version: 2.9.1
+      vue:
+        specifier: 'catalog:'
+        version: 3.5.45(typescript@6.0.3)
+      zone.js:
+        specifier: 'catalog:'
+        version: 0.16.3
+    devDependencies:
+      '@analogjs/vite-plugin-angular':
+        specifier: 'catalog:'
+        version: 3.0.0-beta.42(@angular/build@22.2.7(b1461d7cd9e3185ee679e7bd0f346a68))(@emnapi/core@2.0.0-beta.2)(@emnapi/runtime@2.0.0-beta.2)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(less@4.9.1(supports-color@10.2.2))(sass-embedded@1.104.1)(sass@1.104.1)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1))
+      '@angular/build':
+        specifier: 'catalog:'
+        version: 22.2.7(b1461d7cd9e3185ee679e7bd0f346a68)
+      '@angular/compiler':
+        specifier: 'catalog:'
+        version: 22.2.6
+      '@angular/compiler-cli':
+        specifier: 'catalog:'
+        version: 22.2.6(@angular/compiler@22.2.6)(typescript@6.0.3)
+      '@sveltejs/vite-plugin-svelte':
+        specifier: 'catalog:'
+        version: 7.3.1(svelte@5.58.0)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(less@4.9.1(supports-color@10.2.2))(sass-embedded@1.104.1)(sass@1.104.1)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1))
+      '@types/react':
+        specifier: 'catalog:'
+        version: 19.3.0
+      '@types/react-dom':
+        specifier: 'catalog:'
+        version: 19.3.0(@types/react@19.3.0)
+      '@vitejs/plugin-react':
+        specifier: 'catalog:'
+        version: 6.3.0(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(less@4.9.1(supports-color@10.2.2))(sass-embedded@1.104.1)(sass@1.104.1)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1))
+      '@vitejs/plugin-vue':
+        specifier: 'catalog:'
+        version: 6.0.11(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(less@4.9.1(supports-color@10.2.2))(sass-embedded@1.104.1)(sass@1.104.1)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1))(vue@3.5.45(typescript@6.0.3))
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
+      vite:
+        specifier: 'catalog:'
+        version: 8.3.8(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(less@4.9.1(supports-color@10.2.2))(sass-embedded@1.104.1)(sass@1.104.1)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1)
+      vue-tsc:
+        specifier: 'catalog:'
+        version: 3.3.14(typescript@6.0.3)
+
   examples/2.vite/svelte:
     dependencies:
       '@comark/svelte':

@@ -58,7 +58,7 @@ describe('root element attributes', () => {
     })
     const root = rootTag(body)
     expect(root).toContain('data-testid="answer"')
-    expect(root).not.toMatch(/unwrap|options|plugins|caret|streaming|components/)
+    expect(root).not.toMatch(/unwrap|options|plugins|streaming|components/)
     expect(body).not.toContain('<p>')
   })
 })

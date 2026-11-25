@@ -34,6 +34,7 @@ and wrap this component in a `<svelte:boundary>` for pending/error states.
   import MarkdownDocument from '../components/MarkdownDocument.svelte'
   import ResolveAsync from './ResolveAsync.svelte'
   import type { RootAttributes } from '../types.js'
+  import type { StreamEffect } from 'comark/effects'
 
   let {
     value,
@@ -44,7 +45,8 @@ and wrap this component in a `<svelte:boundary>` for pending/error states.
     componentsManifest,
     transformNode,
     streaming = false,
-    caret = false,
+
+    effects,
     data,
     class: className = '',
     ...rest
@@ -57,7 +59,8 @@ and wrap this component in a `<svelte:boundary>` for pending/error states.
     componentsManifest?: ComponentManifest
     transformNode?: NodeTransform | readonly NodeTransform[]
     streaming?: boolean
-    caret?: boolean | { class: string }
+
+    effects?: readonly StreamEffect[]
     data?: Record<string, unknown>
     class?: string
   } = $props()
@@ -88,7 +91,7 @@ and wrap this component in a `<svelte:boundary>` for pending/error states.
     {transformNode}
     resolver={ResolveAsync}
     {streaming}
-    {caret}
+    {effects}
     {data}
     class={className}
   />

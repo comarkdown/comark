@@ -53,6 +53,7 @@ packages/comark/
 │   ├── core.ts               # Parser pipeline with no default plugins (comark/core)
 │   ├── auto-close.ts         # autoCloseMarkdown() (comark/auto-close)
 │   ├── context.ts            # Live renderer context: ComarkContext, ComarkDocument, ComarkPatch (comark/context)
+│   ├── effects.ts            # Render-time stream effects: caret, fade, createStreamRenderer (comark/effects)
 │   ├── render/
 │   │   ├── index.ts          # AST to Markdown string: renderMarkdown() (comark/render)
 │   │   └── html.ts           # HTML-only string engine used by @comark/html (comark/render/html)
@@ -90,8 +91,7 @@ packages/comark/
 │   ├── utils/                # Public utilities (comark/utils and comark/utils/trace)
 │   │   ├── index.ts          # textContent, visit, visitAsync, escapeHtml, isHtmlVoidElement, indent, applyNodeTransforms
 │   │   ├── helpers.ts        # defineComarkPlugin, dedupePlugins
-│   │   ├── trace.ts          # noopTracer, withSpan
-│   │   └── caret.ts          # Streaming caret helpers
+│   │   └── trace.ts          # noopTracer, withSpan
 │   └── internal/             # Internal implementation (not exported)
 │       ├── bracket-math.ts   # `\( ... \)` and `\[ ... \]` delimiter scanners
 │       ├── entities.ts       # HTML attribute entity decoding via character-entities
@@ -168,6 +168,8 @@ import { parseMarkdown } from 'comark/core' // no default plugins; autoClose tak
 import { autoCloseMarkdown } from 'comark/auto-close'
 import { renderMarkdown } from 'comark/render'
 import type { ComarkContext, ComarkDocument, ComarkPatch } from 'comark/context'
+import { caret, fade, pace, typewriter, createStreamRenderer, getChildKeys } from 'comark/effects'
+import type { StreamEffect, FadeOptions, CaretOptions } from 'comark/effects'
 import type { MarkdownDocument, Node, ElementNode, TextNode, CommentNode, NodeTransform } from 'comark'
 import {
   textContent,
@@ -275,6 +277,19 @@ Contract: `packages/comark/SPEC/HTML/README.md`.
 - All-uppercase tag names are lowercased (`<DIV>` -> `div`); any tag name with a lowercase letter preserves its case (`<Hello>`, `<linearGradient>`).
 - `visit` and `visitAsync` stop at `TREE_WALK_MAX_DEPTH` (`50`).
 - Deferred edge cases in `test/html-block.test.ts` are skipped tests; do not delete or weaken them.
+
+### Stream effects (`comark/effects`)
+
+Every framework renderer accepts a single `effects` prop (there are no `caret` or `fade` props; users import `caret()` and `fade()` from `comark/effects`) and applies it through one `createStreamRenderer()` per component instance, in array order. Put `pace()` first and `caret()` last.
+
+- `fade()` staggers words by 30ms by default and treats each Han/kana character and each `FADE_UNIT_TAGS` element (`img`, `hr`, `input`, counted as one `\uFFFC` character of fadeable text) as its own word. It stamps those elements and new `li` items (`comark-fade-marker` plus `--comark-fade-*` custom properties for `::marker`) instead of wrapping them; stamps merge away with the block's spans.
+- `fade()` and `typewriter()` never pace; users compose `[pace(), fade()]`. Later effects see `context.backlog` while an earlier effect still holds text back, and `fade` uses it to hold a partially released word.
+- Effects run on the top-level nodes at render time and must never mutate them: copy only the changed path so reused streaming blocks keep their identity. Nodes an effect inserts carry `$.key`.
+- An effect's `pending()` means it holds text back, so later effects see `streaming` and `backlog`; `settling()` (used by `fade` and `typewriter` until their spans merge) only keeps renderers scheduling frames. `StreamRenderer.pending()` is true for either.
+- `fade` diffs each top-level block's fadeable text against the previous render by common prefix, so restructuring never re-fades shown text. A block's spans merge back into text together once its last segment finishes, so spans are only appended while any is animating.
+- Renderers key children with `getChildKeys()` (React, Vue, Angular), or index keys plus `{#key getStreamKey(node)}` (Svelte; changing key kinds at an index throws in Svelte's async `each`).
+- Angular's `MarkdownNode` patches native subtrees in place (keyed by `getChildKeys()`) instead of rebuilding them, and skips re-creating custom components whose inputs are structurally equal.
+- Effects inject their keyframes with `injectStreamStyles()` (constructable stylesheet, falling back to `<style>`); it is a no-op without a DOM.
 
 ### Render-time node transforms
 

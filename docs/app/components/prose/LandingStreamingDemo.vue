@@ -1,4 +1,8 @@
 <script setup lang="ts">
+import { caret } from 'comark/effects'
+
+const effects = [caret({ class: 'caret' })]
+
 const POEM = `Awake! for **Morning in the Bowl of Night**
 Has flung the Stone that puts the Stars to Flight:
 And Lo! the \`Hunter of the East\` has caught
@@ -106,7 +110,7 @@ onBeforeUnmount(() => {
       class="text-sm"
       :value="streamedText"
       :streaming="isStreaming"
-      :caret="{ class: 'caret' }"
+      :effects="effects"
     />
   </div>
 </template>

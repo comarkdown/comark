@@ -8,7 +8,7 @@ LLMs stream Markdown token by token. Standard Markdown parsers expect complete i
 
 - **`autoClose`** (default: `true`): closes unfinished syntax such as `**bold text`, open code fences, and half-open components on every parse
 - **Streaming mode**: reuses completed blocks as new chunks arrive
-- **Caret indicator**: appends a live cursor to the active text node while streaming
+- **Stream effects**: `caret()`, `fade()`, and more from `comark/effects` decorate the active text while streaming
 - **ANSI rendering**: renders styled terminal output for CLI agents
 
 ---
@@ -19,7 +19,9 @@ LLMs stream Markdown token by token. Standard Markdown parsers expect complete i
 <script setup lang="ts">
 import { ref } from 'vue'
 import { Markdown } from '@comark/vue'
+import { caret } from 'comark/effects'
 
+const effects = [caret()]
 const content = ref('')
 const streaming = ref(false)
 
@@ -46,7 +48,7 @@ async function generate(prompt: string) {
 </script>
 
 <template>
-  <Markdown :streaming="streaming" caret>{{ content }}</Markdown>
+  <Markdown :streaming="streaming" :effects="effects">{{ content }}</Markdown>
 </template>
 ```
 
@@ -57,6 +59,9 @@ async function generate(prompt: string) {
 ```tsx
 import { useState } from 'react'
 import { Markdown } from '@comark/react'
+import { caret } from 'comark/effects'
+
+const effects = [caret()]
 
 export default function Chat() {
   const [content, setContent] = useState('')
@@ -83,7 +88,7 @@ export default function Chat() {
     setStreaming(false)
   }
 
-  return <Markdown streaming={streaming} caret>{content}</Markdown>
+  return <Markdown streaming={streaming} effects={effects}>{content}</Markdown>
 }
 ```
 
@@ -94,6 +99,9 @@ export default function Chat() {
 ```svelte
 <script lang="ts">
   import { Markdown } from '@comark/svelte'
+  import { caret } from 'comark/effects'
+
+  const effects = [caret()]
 
   let content = $state('')
   let streaming = $state(false)
@@ -120,7 +128,7 @@ export default function Chat() {
   }
 </script>
 
-<Markdown value={content} {streaming} caret />
+<Markdown value={content} {streaming} {effects} />
 ```
 
 ---
@@ -130,6 +138,7 @@ export default function Chat() {
 ```typescript
 import { Component } from '@angular/core'
 import { Markdown } from '@comark/angular'
+import { caret } from 'comark/effects'
 
 @Component({
   selector: 'app-chat',
@@ -139,11 +148,12 @@ import { Markdown } from '@comark/angular'
     <comark-markdown
       [value]="content"
       [streaming]="streaming"
-      [caret]="streaming"
+      [effects]="effects"
     />
   `,
 })
 export class ChatComponent {
+  effects = [caret()]
   content = ''
   streaming = false
 
@@ -197,26 +207,72 @@ await writeMarkdown(markdown)
 
 ---
 
-## Caret customization
+## Stream effects
 
-The `caret` prop appends a blinking cursor to the last text node while `streaming` is `true`. Customize it with a CSS class:
+The `effects` prop takes an array of effects from `comark/effects`. `caret()` appends a blinking cursor to the last text node while `streaming` is `true`, and `fade()` fades in new text. Effects run in array order. Define the array once, outside the render, so effects keep their state between renders. Pass `class` to `caret()` to customize it:
 
 ```vue
-<Markdown :streaming="streaming" :caret="{ class: 'animate-blink' }">{{ content }}</Markdown>
+<script setup lang="ts">
+import { caret, fade } from 'comark/effects'
+
+const effects = [fade(), caret({ class: 'animate-blink' })]
+</script>
+
+<template>
+  <Markdown :streaming="streaming" :effects="effects">{{ content }}</Markdown>
+</template>
 ```
 
 ```tsx
-<Markdown streaming={streaming} caret={{ class: 'animate-blink' }}>{content}</Markdown>
+import { caret, fade } from 'comark/effects'
+
+const effects = [fade(), caret({ class: 'animate-blink' })]
+
+<Markdown streaming={streaming} effects={effects}>{content}</Markdown>
 ```
 
 ```svelte
-<Markdown value={content} {streaming} caret={{ class: 'animate-blink' }} />
+<script lang="ts">
+  import { caret, fade } from 'comark/effects'
+
+  const effects = [fade(), caret({ class: 'animate-blink' })]
+</script>
+
+<Markdown value={content} {streaming} {effects} />
+```
+
+```typescript
+// Angular
+import { caret, fade } from 'comark/effects'
+
+class ChatComponent {
+  effects = [fade(), caret({ class: 'animate-blink' })]
+}
 ```
 
 ```html
-<!-- Angular -->
-<comark-markdown [value]="content" [streaming]="streaming" [caret]="{ class: 'animate-blink' }" />
+<comark-markdown [value]="content" [streaming]="streaming" [effects]="effects" />
 ```
+
+### Pacing and typewriter
+
+`fade()` and `typewriter()` show each chunk as soon as it arrives. To release text at a steady rate regardless of chunk timing, put `pace()` before them. Order matters: `pace()` first, then `fade()` or `typewriter()`, then `caret()` last.
+
+```typescript
+import { caret, fade, pace, typewriter } from 'comark/effects'
+
+// Steady word-by-word fade (speed in characters per second, catchUp in ms)
+const effects = [pace({ speed: 80, catchUp: 1000 }), fade({ delay: 30 }), caret()]
+
+// Character-by-character typing; match the speeds so the queue never grows
+const typing = [pace({ speed: 100 }), typewriter({ speed: 100 }), caret()]
+```
+
+- `pace()` options: `speed` (default `45`), `catchUp` (default `Infinity`), `exclude`
+- `fade()` options: `duration` (default `300`), `easing`, `animation` (`'fade'`, `'blur'`, `'slide'`), `delay` (default `30` per word, `0` fades each chunk whole), `unit` (`'word'` or `'char'`), `class`, `styles`, `exclude`. It also fades `img`, `hr`, task list checkboxes, and new list item markers, and splits CJK text per character.
+- `typewriter()` options: `speed` (default `100`), `class`, `styles`, `exclude`
+- The renderer keeps rendering until the paced backlog drains, even after `streaming` turns `false`
+- Code blocks, math, and diagrams never fade or type; they appear whole
 
 ---
 
@@ -227,12 +283,15 @@ If your LLM emits Comark component syntax (for example, `::alert`), register tho
 ```vue
 <script setup lang="ts">
 import { Markdown } from '@comark/vue'
+import { caret } from 'comark/effects'
 import Alert from './Alert.vue'
 import CodeBlock from './CodeBlock.vue'
+
+const effects = [caret()]
 </script>
 
 <template>
-  <Markdown :components="{ alert: Alert, pre: CodeBlock }" :streaming="streaming" caret>
+  <Markdown :components="{ alert: Alert, pre: CodeBlock }" :streaming="streaming" :effects="effects">
     {{ content }}
   </Markdown>
 </template>
@@ -249,13 +308,15 @@ Syntax highlighting works during streaming. Each re-parse highlights newly compl
 import { Markdown } from '@comark/vue'
 import shiki from '@comark/vue/plugins/shiki'
 import githubDark from '@shikijs/themes/github-dark'
+import { caret } from 'comark/effects'
 
 const plugins = [shiki({ themes: { light: githubDark, dark: githubDark } })]
+const effects = [caret()]
 </script>
 
 <template>
   <Suspense>
-    <Markdown :plugins="plugins" :streaming="streaming" caret>{{ content }}</Markdown>
+    <Markdown :plugins="plugins" :streaming="streaming" :effects="effects">{{ content }}</Markdown>
   </Suspense>
 </template>
 ```
@@ -264,12 +325,14 @@ const plugins = [shiki({ themes: { light: githubDark, dark: githubDark } })]
 import { Markdown } from '@comark/react'
 import shiki from '@comark/react/plugins/shiki'
 import githubDark from '@shikijs/themes/github-dark'
+import { caret } from 'comark/effects'
 
 const plugins = [shiki({ themes: { light: githubDark, dark: githubDark } })]
+const effects = [caret()]
 
 export default function Chat({ content, streaming }) {
   return (
-    <Markdown plugins={plugins} streaming={streaming} caret>
+    <Markdown plugins={plugins} streaming={streaming} effects={effects}>
       {content}
     </Markdown>
   )
@@ -302,8 +365,14 @@ export const ChatMarkdown = defineMarkdownComponent({
 ```
 
 ```vue
+<script setup lang="ts">
+import { caret } from 'comark/effects'
+
+const effects = [caret()]
+</script>
+
 <template>
-  <ChatMarkdown :streaming="streaming" caret>{{ content }}</ChatMarkdown>
+  <ChatMarkdown :streaming="streaming" :effects="effects">{{ content }}</ChatMarkdown>
 </template>
 ```
 

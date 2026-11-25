@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { render } from 'vitest-browser-svelte'
 import { parseMarkdown } from 'comark'
+import { caret } from 'comark/effects'
 import Markdown from '../src/components/Markdown.svelte'
 import MarkdownDocument from '../src/components/MarkdownDocument.svelte'
 import Alert from './test-components/Alert.svelte'
@@ -20,7 +21,7 @@ describe('streaming mode', () => {
     const screen = await render(Markdown, {
       value: 'Hello',
       streaming: true,
-      caret: { class: 'streaming-caret' },
+      effects: [caret({ class: 'streaming-caret' })],
     })
 
     await expect.element(screen.getByText('Hello')).toBeInTheDocument()
@@ -31,7 +32,7 @@ describe('streaming mode', () => {
     const screen = await render(Markdown, {
       value: 'Hello',
       streaming: true,
-      caret: { class: 'my-cursor' },
+      effects: [caret({ class: 'my-cursor' })],
     })
 
     await expect.element(screen.getByText('Hello')).toBeInTheDocument()
@@ -42,7 +43,7 @@ describe('streaming mode', () => {
     const screen = await render(Markdown, {
       value: 'Hello',
       streaming: false,
-      caret: true,
+      effects: [caret()],
     })
 
     await expect.element(screen.getByText('Hello')).toBeInTheDocument()
@@ -73,7 +74,7 @@ describe('streaming mode', () => {
     const screen = await render(Markdown, {
       value: 'Hello **wor',
       streaming: true,
-      caret: true,
+      effects: [caret()],
       options: { autoClose: true },
     })
 
@@ -82,7 +83,6 @@ describe('streaming mode', () => {
     await screen.rerender({
       value: 'Hello **world**',
       streaming: false,
-      caret: false,
       options: { autoClose: true },
     })
 
@@ -93,7 +93,7 @@ describe('streaming mode', () => {
     const screen = await render(Markdown, {
       value: '# Hell',
       streaming: true,
-      caret: true,
+      effects: [caret()],
     })
 
     await expect.element(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()
@@ -102,7 +102,6 @@ describe('streaming mode', () => {
     await screen.rerender({
       value: '# Hello World',
       streaming: false,
-      caret: false,
     })
 
     await expect.element(screen.getByRole('heading', { name: 'Hello World', level: 1 })).toBeInTheDocument()
@@ -112,7 +111,7 @@ describe('streaming mode', () => {
     const screen = await render(Markdown, {
       value: '::alert{type="warning"}\nDang',
       streaming: true,
-      caret: true,
+      effects: [caret()],
       options: { autoClose: true },
       components: { alert: Alert },
     })
@@ -123,7 +122,6 @@ describe('streaming mode', () => {
     await screen.rerender({
       value: '::alert{type="warning"}\nDanger zone\n::',
       streaming: false,
-      caret: false,
       options: { autoClose: true },
       components: { alert: Alert },
     })
@@ -135,7 +133,7 @@ describe('streaming mode', () => {
     const screen = await render(Markdown, {
       value: 'Hello',
       streaming: true,
-      caret: { class: 'streaming-caret' },
+      effects: [caret({ class: 'streaming-caret' })],
     })
 
     await expect.element(screen.getByText('Hello')).toBeInTheDocument()
@@ -144,7 +142,6 @@ describe('streaming mode', () => {
     await screen.rerender({
       value: 'Hello World',
       streaming: false,
-      caret: false,
     })
 
     await expect.element(screen.getByText('Hello World')).toBeInTheDocument()
@@ -158,7 +155,7 @@ describe('streaming with MarkdownDocument', () => {
     const screen = await render(MarkdownDocument, {
       value: tree,
       streaming: true,
-      caret: { class: 'streaming-caret' },
+      effects: [caret({ class: 'streaming-caret' })],
     })
 
     await expect.element(screen.getByText(/Hello/)).toBeInTheDocument()
@@ -167,7 +164,6 @@ describe('streaming with MarkdownDocument', () => {
     await screen.rerender({
       value: tree,
       streaming: false,
-      caret: false,
     })
 
     expect(screen.container.querySelector('.streaming-caret')).toBeNull()

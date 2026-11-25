@@ -204,7 +204,7 @@ Rendering Comark in Angular 21+ applications:
 - **Custom components:** mapping Angular components to Comark tags
 - **Component resolution:** `Prose{PascalTag}`, `PascalTag`, `tag` lookup order
 - **Content projection:** named slots via `<ng-content select="[slot=name]">`
-- **Streaming mode:** incremental rendering with a caret indicator
+- **Streaming mode:** incremental rendering with stream effects such as caret and fade
 - **Data binding:** `:prop` and `{{ }}` resolution with the `data` input
 - **Pre-configured components:** `defineMarkdownComponent` and `defineMarkdownDocumentComponent`
 - **Plugins:** Math (KaTeX), Mermaid, and Binding with Angular component wrappers
@@ -219,7 +219,7 @@ Streaming LLM output with Comark:
 
 - **Streaming from LLMs:** rendering incremental AI output as tokens arrive
 - **Auto-close:** completing unfinished syntax from partial tokens
-- **Caret indicator:** showing a live cursor during generation
+- **Stream effects:** showing a live caret or fading in new text during generation
 - **Framework examples:** Vue, React, Svelte, and Angular streaming patterns
 - **ANSI for CLIs:** rendering AI output in terminal agents
 

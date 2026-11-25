@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { Markdown } from '@comark/vue'
+import { caret, fade, type StreamEffect } from 'comark/effects'
 import { SAMPLE_MARKDOWN } from './sample'
 import { emptyStats, trackFrame, visibleText, type MisrenderStats } from './misrender'
 
@@ -9,6 +10,7 @@ const streamed = ref('')
 const isStreaming = ref(false)
 const streamingMode = ref(true)
 const showCaret = ref(true)
+const fadeIn = ref(true)
 const charsPerTick = ref(2)
 const delayMs = ref(40)
 const stats = ref<MisrenderStats>(emptyStats())
@@ -21,7 +23,18 @@ const tracking = ref(false)
 let timer: ReturnType<typeof setTimeout> | null = null
 let sampleRaf: number | null = null
 let observer: MutationObserver | null = null
+let settleTimer: ReturnType<typeof setTimeout> | null = null
 let streamIndex = 0
+
+// The renderer exposes no pending state, so paced text counts as drained once the preview stops changing.
+const SETTLE_MS = 250
+
+const effects = computed(() => {
+  const list: StreamEffect[] = []
+  if (fadeIn.value) list.push(fade())
+  if (showCaret.value) list.push(caret())
+  return list
+})
 
 const progress = computed(() => {
   if (!source.value.length) return 0
@@ -56,6 +69,21 @@ function clearSampleRaf() {
   }
 }
 
+function clearSettleTimer() {
+  if (settleTimer) {
+    clearTimeout(settleTimer)
+    settleTimer = null
+  }
+}
+
+function stopTrackingWhenSettled() {
+  clearSettleTimer()
+  settleTimer = setTimeout(() => {
+    settleTimer = null
+    tracking.value = false
+  }, SETTLE_MS)
+}
+
 function resetStats() {
   stats.value = emptyStats()
   prevVisible.value = ''
@@ -82,7 +110,10 @@ function scheduleSample() {
 function attachObserver() {
   detachObserver()
   if (!previewEl.value) return
-  observer = new MutationObserver(() => scheduleSample())
+  observer = new MutationObserver(() => {
+    scheduleSample()
+    if (settleTimer) stopTrackingWhenSettled()
+  })
   observer.observe(previewEl.value, {
     childList: true,
     subtree: true,
@@ -98,14 +129,12 @@ function detachObserver() {
 
 function stopStream(finalize = true) {
   clearTimer()
+  clearSettleTimer()
   isStreaming.value = false
   if (finalize) {
     streamed.value = source.value
-    // Keep tracking briefly so the final paint is measured
     scheduleSample()
-    setTimeout(() => {
-      tracking.value = false
-    }, 120)
+    stopTrackingWhenSettled()
   } else {
     tracking.value = false
   }
@@ -118,9 +147,7 @@ function tick() {
     isStreaming.value = false
     streamed.value = source.value
     scheduleSample()
-    setTimeout(() => {
-      tracking.value = false
-    }, 120)
+    stopTrackingWhenSettled()
     return
   }
 
@@ -133,6 +160,7 @@ function tick() {
 
 function startStream() {
   clearTimer()
+  clearSettleTimer()
   resetStats()
   streamIndex = 0
   streamed.value = ''
@@ -157,9 +185,7 @@ function fillFull() {
   attachObserver()
   streamed.value = source.value
   scheduleSample()
-  setTimeout(() => {
-    tracking.value = false
-  }, 120)
+  stopTrackingWhenSettled()
 }
 
 watch(source, () => {
@@ -175,6 +201,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   clearTimer()
+  clearSettleTimer()
   detachObserver()
 })
 
@@ -377,6 +404,13 @@ function trimSegsToLastLines(segs: DiffSeg[], count: number): DiffSeg[] {
         />
         <span>Caret</span>
       </label>
+      <label class="check">
+        <input
+          v-model="fadeIn"
+          type="checkbox"
+        />
+        <span>Fade in</span>
+      </label>
 
       <div class="actions">
         <button
@@ -441,7 +475,7 @@ function trimSegsToLastLines(segs: DiffSeg[], count: number): DiffSeg[] {
             <Markdown
               :value="streamed"
               :streaming="isStreaming && streamingMode"
-              :caret="showCaret && isStreaming"
+              :effects="effects"
             />
             <template #fallback>
               <p class="muted">Parsing…</p>
