@@ -32,8 +32,8 @@ catalog:
   "@nuxt/devtools-kit": 4.2.0
   # Keep kit on the same minor line as `nuxt` so `@nuxt/schema` stays singular
   # (dual schema breaks `defineNuxtModule` setup typing + declaration emit).
-  "@nuxt/kit": 4.6.4
-  "@nuxt/schema": 4.6.4
+  "@nuxt/kit": 4.7.0
+  "@nuxt/schema": 4.7.0
   "@nuxt/ui": ^4.12.2
   "satori": ^0.63.2
   "@resvg/resvg-js": ^2.6.2
@@ -102,7 +102,7 @@ catalog:
   next: ^16.4.6
 
   # Nuxt
-  nuxt: ^4.6.4
+  nuxt: ^4.7.0
   nuxt-studio: 1.8.2
 
   # Linting
