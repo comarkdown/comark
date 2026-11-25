@@ -45,7 +45,7 @@ catalog:
   "@shikijs/primitive": ^4.6.0
   "@shikijs/themes": ^4.6.0
   "@shikijs/twoslash": ^4.6.0
-  "@sveltejs/adapter-auto": ^8.0.1
+  "@sveltejs/adapter-auto": ^9.0.0
   "@sveltejs/kit": ^3.2.0
   "@sveltejs/package": ^3.0.2
   "@sveltejs/vite-plugin-svelte": ^7.3.1
@@ -166,6 +166,7 @@ catalog:
 
   # Testing
   "@codspeed/vitest-plugin": ^6.1.1
+  happy-dom: ^21.0.4
   tinybench: ^6.2.3
   vitest: ^5.1.0
   vitest-browser-svelte: ^3.1.0

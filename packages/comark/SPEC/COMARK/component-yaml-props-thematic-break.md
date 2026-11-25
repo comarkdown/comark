@@ -79,3 +79,21 @@ Middle text
 Below
 ::
 ```
+
+## Markdown HTML
+
+```md
+<card>
+
+Above
+
+---
+
+Middle text
+
+---
+
+Below
+
+</card>
+```

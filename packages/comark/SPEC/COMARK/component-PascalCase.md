@@ -51,3 +51,15 @@ First Paragraph
 Second Paragraph
 ::
 ```
+
+## Markdown HTML
+
+```md
+<my-component>
+
+First Paragraph
+
+Second Paragraph
+
+</my-component>
+```

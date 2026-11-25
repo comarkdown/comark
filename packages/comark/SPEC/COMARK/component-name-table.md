@@ -54,3 +54,11 @@ Some :table[x] text.
 
 Some :table[x] text.
 ```
+
+## Markdown HTML
+
+```md
+<table src="data.csv"></table>
+
+Some <table>x</table> text.
+```

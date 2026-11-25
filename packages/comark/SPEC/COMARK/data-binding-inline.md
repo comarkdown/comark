@@ -54,3 +54,14 @@ user:
 
 Hello :badge{:label="frontmatter.user.name"}!
 ```
+
+## Markdown HTML
+
+```md
+---
+user:
+  name: Ada
+---
+
+Hello <badge :label="frontmatter.user.name"></badge>!
+```

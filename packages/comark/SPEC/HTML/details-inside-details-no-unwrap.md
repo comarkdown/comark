@@ -91,8 +91,11 @@ Nested content
 <details>
 <summary>Top</summary>
 <details>
+
 <summary>Nested</summary>
+
 Nested content
+
 </details>
 </details>
 ```

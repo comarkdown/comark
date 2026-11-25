@@ -3,6 +3,7 @@ import { computed, defineComponent, h, shallowRef, watch } from 'vue'
 import { createSerializedMarkdownParser } from 'comark'
 import type { ParserOptions, ComponentManifest, MarkdownDocument as MarkdownDocumentType, NodeTransform } from 'comark'
 import { isMarkdownDocument } from 'comark/utils'
+import type { StreamEffect } from 'comark/effects'
 import { MarkdownDocument } from './MarkdownDocument.ts'
 
 /**
@@ -53,9 +54,9 @@ export interface MarkdownProps {
   summary?: boolean
 
   /**
-   * If caret is true, a caret will be appended to the document's last text node
+   * Render-time stream effects such as `caret()`, `fade()` and `pace()` from `comark/effects`. They run in order.
    */
-  caret?: boolean | { class: string }
+  effects?: readonly StreamEffect[]
 
   /**
    * Additional data to pass to the renderer
@@ -149,11 +150,11 @@ export const markdownProps = {
   },
 
   /**
-   * If caret is true, a caret will be appended to the document's last text node
+   * Render-time stream effects such as `caret()`, `fade()` and `pace()` from `comark/effects`. They run in order.
    */
-  caret: {
-    type: [Boolean, Object] as PropType<boolean | { class: string }>,
-    default: false,
+  effects: {
+    type: Array as PropType<readonly StreamEffect[]>,
+    default: undefined,
   },
 
   /**
@@ -262,7 +263,7 @@ export const Markdown: MarkdownComponent = defineComponent({
           streaming: props.streaming,
           componentsManifest: props.componentsManifest,
           class: props.streaming ? 'comark-stream' : '',
-          caret: props.caret,
+          effects: props.effects,
           data: props.data,
           transformNode: props.transformNode,
           documentKey: props.documentKey,
@@ -275,7 +276,7 @@ export const Markdown: MarkdownComponent = defineComponent({
         streaming: props.streaming,
         componentsManifest: props.componentsManifest,
         class: props.streaming ? 'comark-stream' : '',
-        caret: props.caret,
+        effects: props.effects,
         data: props.data,
         transformNode: props.transformNode,
         documentKey: props.documentKey,

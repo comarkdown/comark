@@ -2337,6 +2337,75 @@ A shorter or different marker is not a closer either:
 + ```\ncode\n~~~\n**bold
 ```
 
+A closer indented 4 or more spaces is code content; up to 3 spaces still closes:
+
+```diff
+- ```\ncode\n    ```\n**bold
++ ```\ncode\n    ```\n**bold
+```
+
+```diff
+- ```\ncode\n   ```\n**bold
++ ```\ncode\n   ```\n**bold**
+```
+
+A tab advances to the next multiple of 4 columns:
+
+```diff
+- ```\ncode\n\t```\n**bold
++ ```\ncode\n\t```\n**bold
+```
+
+Inside a list item, indentation counts from the item's content column:
+
+```diff
+- - item\n\n  ```\n  x\n    ```\n\n**bold
++ - item\n\n  ```\n  x\n    ```\n\n**bold**
+```
+
+```diff
+- - a\n  - b\n\n    ```\n    x\n    ```\n\n**bold
++ - a\n  - b\n\n    ```\n    x\n    ```\n\n**bold**
+```
+
+A tab after a list marker pads to the next multiple of 4 columns, and a marker 4+ columns past its container is indented code, not a list item:
+
+```diff
+- -\titem\n\n    ```\n    x\n      ```\n\n**bold
++ -\titem\n\n    ```\n    x\n      ```\n\n**bold**
+```
+
+```diff
+-     - item\n      ~~~\n\n**bold
++     - item\n      ~~~\n\n**bold**
+```
+
+A thematic break such as `- - -` opens no list item, and each marker of `- - item` opens its own:
+
+```diff
+- - - -\n    ~~~\n      ~~~\n\n**bold
++ - - -\n    ~~~\n      ~~~\n\n**bold**
+```
+
+```diff
+- - - item\n    ~~~\n    x\n      ~~~\n\n**bold
++ - - item\n    ~~~\n    x\n      ~~~\n\n**bold**
+```
+
+A fence inside a list item ends with the list item, even without a closer:
+
+```diff
+- - - item\n\n      ~~~\n      x\n\n**bold
++ - - item\n\n      ~~~\n      x\n\n**bold**
+```
+
+A fence indented 4 or more spaces past its container is indented code, not an opener:
+
+```diff
+- intro\n\n    ```\n    x\n\n**bold
++ intro\n\n    ```\n    x\n\n**bold**
+```
+
 ---
 
 ## Leave horizontal rules alone

@@ -1,6 +1,6 @@
 'use client'
 
-import { use, useDeferredValue, useMemo, Suspense } from 'react'
+import { use, useDeferredValue, useEffect, useMemo, useReducer, Suspense } from 'react'
 import { createSerializedMarkdownParser } from 'comark'
 import type { MarkdownDocument as MarkdownDocumentType } from 'comark'
 import { isMarkdownDocument } from 'comark/utils'
@@ -16,7 +16,6 @@ function MarkdownContent({
   components: customComponents = {},
   componentsManifest,
   streaming = false,
-  caret = false,
   data,
   className,
   ...rest
@@ -31,7 +30,6 @@ function MarkdownContent({
       componentsManifest={componentsManifest}
       streaming={streaming}
       className={className}
-      caret={caret}
       data={data}
     />
   )
@@ -67,6 +65,21 @@ export function MarkdownClient({
   // Keep showing the previous parsed result while a new parse is pending to
   // prevent blank flashes during rapid streaming updates.
   const deferredPromise = useDeferredValue(parsePromise)
+
+  // React throttles Suspense reveals that commit through a retry lane by up to
+  // 300ms (FALLBACK_THROTTLE_MS). Re-rendering through a normal update once the
+  // parse settles commits the resolved content immediately instead.
+  const [, rerender] = useReducer((count: number) => count + 1, 0)
+  useEffect(() => {
+    let active = true
+    const settle = (): void => {
+      if (active) rerender()
+    }
+    deferredPromise.then(settle, settle)
+    return () => {
+      active = false
+    }
+  }, [deferredPromise])
 
   return (
     <Suspense fallback={null}>

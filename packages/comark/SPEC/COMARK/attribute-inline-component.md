@@ -60,3 +60,9 @@ Here :in{bool} :in{#id1} :in{.class1} :in{attr="value"}
 ```md
 Here :in{bool} :in{#id1} :in{.class1} :in{attr="value"}
 ```
+
+## Markdown HTML
+
+```md
+Here <in bool></in> <in id="id1"></in> <in class="class1"></in> <in attr="value"></in>
+```

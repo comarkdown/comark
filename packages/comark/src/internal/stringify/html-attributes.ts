@@ -122,10 +122,23 @@ const SAFE_ATTR_NAME = /^[a-zA-Z_:][a-zA-Z0-9_:.-]*$/
 interface HtmlAttributesOptions {
   /** Keep `:` prefixes and string `"true"` values as written */
   verbatim?: boolean
+  /** Write line breaks as `&#10;` / `&#13;`, since a CommonMark HTML block needs its open tag on one line */
+  encodeNewlines?: boolean
+  /** Keep the `:` prefix of unresolved bindings, so Markdown output reparses them as bindings */
+  keepBindings?: boolean
 }
 
+const NEWLINE_RE = /[\n\r]/g
+
 /** Serialize an attribute bag into an HTML attribute string. */
-export function htmlAttributes(attributes: Record<string, unknown>, { verbatim = false }: HtmlAttributesOptions = {}) {
+export function htmlAttributes(
+  attributes: Record<string, unknown>,
+  { verbatim = false, encodeNewlines = false, keepBindings = false }: HtmlAttributesOptions = {}
+) {
+  const escapeValue = (value: string) => {
+    const escaped = escapeHtml(value)
+    return encodeNewlines ? escaped.replace(NEWLINE_RE, (char) => (char === '\n' ? '&#10;' : '&#13;')) : escaped
+  }
   const parts: string[] = []
   for (const [rawKey, value] of Object.entries(attributes)) {
     const isBinding = rawKey.startsWith(':')
@@ -133,15 +146,17 @@ export function htmlAttributes(attributes: Record<string, unknown>, { verbatim =
     if (!SAFE_ATTR_NAME.test(key)) continue
 
     if (isBinding) {
+      // A bare attribute reads back as `true`, the same value as `:key="true"`.
       if (verbatim ? value === true : value === 'true') {
         parts.push(key)
         continue
       }
+      const name = keepBindings ? rawKey : key
       if (typeof value === 'object' && value !== null) {
-        parts.push(`${key}="${escapeHtml(JSON.stringify(value))}"`)
+        parts.push(`${name}="${escapeValue(JSON.stringify(value))}"`)
         continue
       }
-      parts.push(`${key}="${escapeHtml(String(value))}"`)
+      parts.push(`${name}="${escapeValue(String(value))}"`)
       continue
     }
 
@@ -152,11 +167,11 @@ export function htmlAttributes(attributes: Record<string, unknown>, { verbatim =
     if (value === false || value === null || value === undefined) continue
 
     if (typeof value === 'object') {
-      parts.push(`${key}="${escapeHtml(JSON.stringify(value))}"`)
+      parts.push(`${key}="${escapeValue(JSON.stringify(value))}"`)
       continue
     }
 
-    parts.push(`${key}="${escapeHtml(String(value))}"`)
+    parts.push(`${key}="${escapeValue(String(value))}"`)
   }
   return parts.join(' ')
 }

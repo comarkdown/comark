@@ -39,3 +39,13 @@ Hello
 Hello
 ::
 ```
+
+## Markdown HTML
+
+```md
+<card class="bg-[#111] text-[1.25rem]">
+
+Hello
+
+</card>
+```

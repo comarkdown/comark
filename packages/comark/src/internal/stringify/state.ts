@@ -1,4 +1,4 @@
-import type { NodeRenderData, State, Context, RendererOptions } from 'comark/render'
+import type { NodeRenderData, State, Context, RendererOptions, FlowOptions } from 'comark/render'
 import type { ElementNode, Node, MarkdownDocument, ConditionalNodeHandler, CreateContext, NodeHandler } from 'comark'
 import { escapeHtml, pascalCase } from '../../utils/index.ts'
 import { resolveAttributes } from './html-attributes.ts'
@@ -24,6 +24,17 @@ function findHandler(ctx: Context, node: ElementNode): NodeHandler | undefined {
   }
 
   return userHandler
+}
+
+// The tree node each `transformNode` copy was made from.
+const sourceNodes = new WeakMap<ElementNode, ElementNode>()
+
+/**
+ * The tree node `node` was rendered from: handlers get a copy when a
+ * `transformNode` hook changed it, and only the original is in its parent.
+ */
+export function sourceNode(node: ElementNode): ElementNode {
+  return sourceNodes.get(node) ?? node
 }
 
 /**
@@ -86,7 +97,9 @@ export async function one(node: Node, state: State, parent?: ElementNode, atLine
             hasOwnAttrs = true
             props = transformed.props
           }
-          node = [transformed.tag, attrs, ...(node.slice(2) as Node[])]
+          const copy: ElementNode = [transformed.tag, attrs, ...(node.slice(2) as Node[])]
+          sourceNodes.set(copy, node)
+          node = copy
         }
       }
       if (hasOwnAttrs) state.renderData = { ...prevRenderData, props }
@@ -118,11 +131,17 @@ export async function one(node: Node, state: State, parent?: ElementNode, atLine
   }
 }
 
-export async function flow(node: ElementNode, state: State, parent?: ElementNode): Promise<string> {
-  const children = node.slice(2) as ElementNode[]
+export async function flow(
+  node: ElementNode,
+  state: State,
+  parent?: ElementNode,
+  options?: FlowOptions
+): Promise<string> {
+  const children = node.slice(2) as Node[]
+  const atLineStart = options?.atLineStart === true
   let result = ''
   for (const child of children) {
-    result += await one(child, state, parent || node)
+    result += await one(child, state, parent || node, atLineStart && (result === '' || result.endsWith('\n')))
   }
   return result
 }
@@ -376,7 +395,7 @@ function escapeInline(text: string): string {
  * heading. `*`, `_` and `~` based markers are already handled by
  * {@link escapeInline}; only the block-exclusive markers remain here.
  */
-function escapeLeadingBlock(line: string): string {
+export function escapeLeadingBlock(line: string): string {
   // ATX heading: 1-6 `#` followed by a space/tab or the end of the line.
   if (/^#{1,6}([ \t]|$)/.test(line)) return `\\${line}`
   // Blockquote: `>` (a following space is optional).

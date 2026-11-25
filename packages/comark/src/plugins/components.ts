@@ -15,6 +15,7 @@ import { findClosingBracket, parseBracketContent } from '../internal/parse/synta
 import { parseBlockParams } from '../internal/parse/syntax/block-params.ts'
 import { parseYaml } from '../internal/yaml.ts'
 import { tokenizeDedented } from '../internal/parse/indent.ts'
+import { pushListItems } from '../internal/list-item.ts'
 
 /**
  * A component name must start with a letter or `$`, followed by word chars,
@@ -105,9 +106,17 @@ const markdownItComarkBlock: PluginSimple = (md) => {
       let inCodeFence = false
       let codeFenceCharCode = 0
       let codeFenceCount = 0
+      // A closing fence must sit within 3 spaces of this column (CommonMark container indent).
+      let codeFenceIndent = 0
+      // Content column of the list item holding the open fence, or -1 when a component holds it.
+      let codeFenceListColumn = -1
 
-      // Track nesting depth for blocks with the same marker count
-      let nestingDepth = 0
+      // Nested components still open, as `[markerCount, indent]`.
+      const openComponents: Array<[number, number]> = []
+      // Open nested components per marker count: a bare marker matching none must not walk the stack (DoS bound).
+      const openCounts = new Map<number, number>()
+      // Content columns of the list items still open, innermost last.
+      const listColumns: number[] = []
 
       if (state.src[start] !== ':') return false
 
@@ -147,6 +156,9 @@ const markdownItComarkBlock: PluginSimple = (md) => {
 
         if (start < max && state.sCount[nextLine] < state.blkIndent) break
 
+        // A line left of the list item holding the fence ends both, even without a closer.
+        if (inCodeFence && start < max && state.sCount[nextLine] < codeFenceListColumn) inCodeFence = false
+
         const lineIndent = start >= max ? indent : state.sCount[nextLine]
         if (lineIndent < indent) hasOutdentedChild = true
         childShifts.push(start >= max ? 0 : inCodeFence ? codeFenceShift : Math.min(indent, lineIndent))
@@ -154,7 +166,7 @@ const markdownItComarkBlock: PluginSimple = (md) => {
         const lineCharCode = state.src.charCodeAt(start)
 
         if (inCodeFence) {
-          if (lineCharCode === codeFenceCharCode) {
+          if (lineCharCode === codeFenceCharCode && state.sCount[nextLine] - codeFenceIndent < 4) {
             let fencePos = start + 1
             while (fencePos < max && state.src.charCodeAt(fencePos) === codeFenceCharCode) fencePos++
             if (fencePos - start >= codeFenceCount) {
@@ -165,14 +177,34 @@ const markdownItComarkBlock: PluginSimple = (md) => {
           continue
         }
 
+        // A line left of a list item's content ends it
+        if (start < max) {
+          while (listColumns.length > 0 && state.sCount[nextLine] < listColumns[listColumns.length - 1])
+            listColumns.pop()
+        }
+
+        // The container is the innermost open component or list item.
+        // A line 4+ columns past it is indented code: it opens no list item and no fence.
+        const componentIndent = openComponents.length ? openComponents[openComponents.length - 1][1] : indent
+        const containerIndent = Math.max(componentIndent, listColumns.length ? listColumns[listColumns.length - 1] : 0)
+        const isIndentedCode = state.sCount[nextLine] - containerIndent >= 4
+
+        if (start < max && !isIndentedCode) {
+          pushListItems(state.src, start, max, state.sCount[nextLine], listColumns, listColumns.length)
+        }
+
         if (lineCharCode === 0x60 /* ` */ || lineCharCode === 0x7e /* ~ */) {
           let fencePos = start + 1
           while (fencePos < max && state.src.charCodeAt(fencePos) === lineCharCode) fencePos++
-          if (fencePos - start >= 3) {
+          if (fencePos - start >= 3 && !isIndentedCode) {
             inCodeFence = true
             codeFenceCharCode = lineCharCode
             codeFenceCount = fencePos - start
             codeFenceShift = childShifts[childShifts.length - 1]
+            // An outdented fence measures its closer from itself.
+            codeFenceIndent = Math.min(containerIndent, state.sCount[nextLine])
+            const listColumn = listColumns.length ? listColumns[listColumns.length - 1] : -1
+            codeFenceListColumn = listColumn > componentIndent ? listColumn : -1
             continue
           }
         }
@@ -183,21 +215,31 @@ const markdownItComarkBlock: PluginSimple = (md) => {
           if (marker_str !== state.src[pos]) break
         }
 
-        // Closing fence must match the opening fence length
-        if (pos - start !== marker_count) continue
-
+        const count = pos - start
         pos = state.skipSpaces(pos)
 
         if (pos < max) {
-          // A new nested block opens with same marker count
-          nestingDepth++
+          // A nested block opens
+          // An indented-code line opens no component, as in the child parse.
+          if (count >= min_markers && !isIndentedCode && isValidComponentName(state.src.slice(pos, max))) {
+            openComponents.push([count, state.sCount[nextLine]])
+            openCounts.set(count, (openCounts.get(count) || 0) + 1)
+          }
           continue
         }
 
-        if (nestingDepth > 0) {
-          nestingDepth--
+        // A bare marker closes the innermost open nested block with the same length, and any left open inside it
+        if (openCounts.get(count)) {
+          let closed: number
+          do {
+            closed = openComponents.pop()![0]
+            openCounts.set(closed, openCounts.get(closed)! - 1)
+          } while (closed !== count)
           continue
         }
+
+        // Closing fence must match the opening fence length
+        if (count !== marker_count) continue
 
         auto_closed = true
         break
@@ -343,35 +385,42 @@ const markdownItComarkBlock: PluginSimple = (md) => {
 
       let lineEnd = startLine + 1
       let inCodeFence = false
-      let codeFenceChar = ''
+      let codeFenceCharCode = 0
       let codeFenceCount = 0
+      let codeFenceIndent = 0
       while (lineEnd < endLine) {
         const inner = state.src.slice(state.bMarks[lineEnd] + state.tShift[startLine], state.eMarks[lineEnd])
 
-        if (inCodeFence) {
-          // Matching closing fence: same char, >= opening count, nothing but spaces after.
-          if (inner[0] === codeFenceChar) {
-            let fencePos = 1
-            while (fencePos < inner.length && inner[fencePos] === codeFenceChar) fencePos++
-            if (fencePos >= codeFenceCount && inner.slice(fencePos).trim() === '') {
+        // Fences are read at the line's own indentation, with the same rules as `comark_block`.
+        const start = state.bMarks[lineEnd] + state.tShift[lineEnd]
+        const max = state.eMarks[lineEnd]
+        const charCode = state.src.charCodeAt(start)
+        if (charCode === 0x60 /* ` */ || charCode === 0x7e /* ~ */) {
+          let fencePos = start + 1
+          while (fencePos < max && state.src.charCodeAt(fencePos) === charCode) fencePos++
+          const column = state.sCount[lineEnd]
+          if (inCodeFence) {
+            if (
+              charCode === codeFenceCharCode &&
+              fencePos - start >= codeFenceCount &&
+              state.skipSpaces(fencePos) >= max &&
+              column - codeFenceIndent < 4
+            ) {
               inCodeFence = false
             }
-          }
-          lineEnd += 1
-          continue
-        }
-
-        if (inner[0] === '`' || inner[0] === '~') {
-          const ch = inner[0]
-          let fencePos = 1
-          while (fencePos < inner.length && inner[fencePos] === ch) fencePos++
-          if (fencePos >= 3) {
+          } else if (fencePos - start >= 3 && column - state.blkIndent < 4) {
             inCodeFence = true
-            codeFenceChar = ch
-            codeFenceCount = fencePos
+            codeFenceCharCode = charCode
+            codeFenceCount = fencePos - start
+            codeFenceIndent = Math.min(state.blkIndent, column)
             lineEnd += 1
             continue
           }
+        }
+
+        if (inCodeFence) {
+          lineEnd += 1
+          continue
         }
 
         if (/^#\w+/.test(inner) || inner.startsWith('::')) break

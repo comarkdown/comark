@@ -38,3 +38,9 @@ inline :component syntax
 ```md
 inline :component syntax
 ```
+
+## Markdown HTML
+
+```md
+inline <component></component> syntax
+```

@@ -9,14 +9,20 @@ import {
   type OnDestroy,
   input,
 } from '@angular/core'
-import type { ElementNode, Node, MarkdownDocument as MarkdownDocumentType, NodeRenderData, NodeTransform } from 'comark'
+import type { Node, MarkdownDocument as MarkdownDocumentType, NodeRenderData, NodeTransform } from 'comark'
 import { mergeNodeTransforms } from 'comark/utils'
+import { createStreamRenderer, getChildKeys } from 'comark/effects'
+import type { StreamEffect } from 'comark/effects'
 import { MARKDOWN_DOCUMENT_CONFIG } from '../config'
 import type { MarkdownDocumentConfig } from '../config'
-import { MarkdownNode } from './markdown-node.component'
-import { findLastTextNodeAndAppendNode, getCaret } from '../utils/caret'
+import { MarkdownNode, isSameValue } from './markdown-node.component'
 
 const EMPTY_DOCUMENT: MarkdownDocumentType = { nodes: [], frontmatter: {}, meta: {} }
+
+interface RenderedNode {
+  key: string
+  node: Node
+}
 
 /**
  * MarkdownDocument component
@@ -40,9 +46,9 @@ const EMPTY_DOCUMENT: MarkdownDocumentType = { nodes: [], frontmatter: {}, meta:
   },
   template: `
     <div class="comark-content">
-      @for (node of renderedNodes; track $index) {
+      @for (entry of renderedNodes; track entry.key) {
         <comark-markdown-node
-          [node]="node"
+          [node]="entry.node"
           [components]="mergedComponents()"
           [renderData]="renderData"
           [transformNode]="mergedTransforms()"
@@ -63,8 +69,8 @@ export class MarkdownDocument implements OnInit, OnDestroy {
   /** Enable streaming mode */
   readonly streaming = input<boolean>(false)
 
-  /** Append a caret to the last text node (for streaming UIs) */
-  readonly caret = input<boolean | { class: string }>(false)
+  /** Render-time stream effects such as `caret()`, `fade()` and `pace()` from `comark/effects`. They run in order. */
+  readonly effects = input<readonly StreamEffect[]>()
 
   /** Additional data to pass to the renderer for :binding resolution */
   readonly data = input<Record<string, unknown>>({})
@@ -89,6 +95,11 @@ export class MarkdownDocument implements OnInit, OnDestroy {
   private cdr = inject(ChangeDetectorRef)
   private liveDocument: MarkdownDocumentType | null = null
   private cleanup?: (clear?: boolean) => void
+  private stream = createStreamRenderer()
+
+  private frameId: number | null = null
+  private renderCache: { inputs: unknown[]; nodes: RenderedNode[] } | null = null
+  private renderDataCache: { inputs: unknown[]; data: unknown; value: NodeRenderData } | null = null
 
   private get inputDocument(): MarkdownDocumentType {
     return this.value() ?? EMPTY_DOCUMENT
@@ -106,32 +117,65 @@ export class MarkdownDocument implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.cleanup?.(true)
+    if (this.frameId !== null) cancelAnimationFrame(this.frameId)
   }
 
   private get activeDocument(): MarkdownDocumentType {
     return this.liveDocument ?? this.inputDocument
   }
 
-  get renderedNodes(): Node[] {
-    const nodes = [...(this.activeDocument.nodes || [])]
-    const caretNode = getCaret(this.caret())
-
-    if (this.streaming() && caretNode && nodes.length > 0) {
-      const hasStreamCaret = findLastTextNodeAndAppendNode(nodes[nodes.length - 1] as ElementNode, caretNode)
-      if (!hasStreamCaret) {
-        nodes.push(caretNode)
-      }
+  // Getters run on every change detection pass: cache on input identity so stream effects only
+  // advance (and children only re-render) when an input actually changed.
+  get renderedNodes(): RenderedNode[] {
+    const inputs = [this.activeDocument, this.streaming(), this.effects()]
+    if (this.renderCache && sameInputs(this.renderCache.inputs, inputs)) {
+      this.scheduleFrame()
+      return this.renderCache.nodes
     }
 
-    return nodes
+    const nodes = this.stream.render(this.activeDocument.nodes || [], {
+      streaming: this.streaming(),
+      effects: this.effects(),
+    })
+    const keys = getChildKeys(nodes)
+    const rendered = nodes.map((node, i) => ({ key: keys[i], node }))
+    this.renderCache = { inputs, nodes: rendered }
+    this.scheduleFrame()
+    return rendered
+  }
+
+  // Paced effects release text on a clock and fade spans merge on a later render, so keep
+  // re-rendering until the stream renderer reports no pending work.
+  private scheduleFrame(): void {
+    if (this.frameId !== null || !this.stream.pending() || typeof requestAnimationFrame !== 'function') return
+    this.frameId = requestAnimationFrame(() => {
+      this.frameId = null
+      this.renderCache = null
+      this.cdr.markForCheck()
+    })
   }
 
   get renderData(): NodeRenderData {
-    return {
-      frontmatter: this.activeDocument.frontmatter,
-      meta: this.activeDocument.meta,
-      data: this.data() || {},
+    const document = this.activeDocument
+    const inputs = [document.frontmatter, document.meta]
+    const data = this.data()
+    // Streaming parses return fresh (usually equal) `meta`/`frontmatter` objects every chunk; keeping
+    // the same render data lets unchanged custom components skip re-rendering.
+    const cache = this.renderDataCache
+    if (cache && cache.data === data && isSameValue(cache.inputs, inputs)) return cache.value
+
+    const value = {
+      frontmatter: document.frontmatter,
+      meta: document.meta,
+      data: data || {},
       props: {},
     }
+    this.renderDataCache = { inputs, data, value }
+    return value
   }
+}
+
+function sameInputs(a: unknown[], b: unknown[]): boolean {
+  for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return false
+  return true
 }

@@ -3,6 +3,7 @@ import { parseMarkdown } from '../src/index'
 import { render } from '../src/render'
 import footnotes from '../src/plugins/footnotes'
 import type { Node } from '../src/types'
+import { escapeHtml } from '../src/utils'
 
 const renderHtml = async (md: string, options?: Parameters<typeof parseMarkdown>[1]) =>
   render(await parseMarkdown(md, options), { format: 'text/html', blockSeparator: '\n' })
@@ -156,5 +157,21 @@ describe('code fence language', () => {
     const doc = await parseMarkdown('```js"><script>\ncode\n```')
     const pre = doc.nodes[0] as [string, Record<string, unknown>, ...Node[]]
     expect(pre[1].language).toBe('js')
+  })
+})
+
+describe('escapeHtml entity detection', () => {
+  it('escapes a bare & even when a later #N; or #xN; follows', () => {
+    expect(escapeHtml('Q&A #1;')).toBe('Q&amp;A #1;')
+    expect(escapeHtml('A &copy B #x1F;')).toBe('A &amp;copy B #x1F;')
+  })
+
+  it('keeps complete named and numeric character references', () => {
+    expect(escapeHtml('&amp; &#169; &#x1F;')).toBe('&amp; &#169; &#x1F;')
+  })
+
+  it('escapes & in a raw-HTML attribute value that ends with #N;', async () => {
+    const html = await renderHtml('<span title="A &amp;copy B #1;">hi</span>')
+    expect(html).toContain('title="A &amp;copy B #1;"')
   })
 })

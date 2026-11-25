@@ -57,3 +57,21 @@ text
   :::
 ::
 ```
+
+## Markdown HTML
+
+```md
+<a-tabs>
+
+<a-item>
+
+<a-inner>
+
+text
+
+</a-inner>
+
+</a-item>
+
+</a-tabs>
+```

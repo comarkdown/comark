@@ -35,3 +35,9 @@
 ::component{reverse :square="false" disabled}
 ::
 ```
+
+## Markdown HTML
+
+```md
+<component reverse :square="false" disabled></component>
+```

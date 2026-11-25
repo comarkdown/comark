@@ -1,5 +1,5 @@
 import type { State } from 'comark/render'
-import type { ElementNode } from 'comark'
+import type { ElementNode, Node } from 'comark'
 import { htmlAttributes } from '../html-attributes.ts'
 import { indent, toNativeAttributes } from '../../../utils/index.ts'
 
@@ -55,7 +55,12 @@ export async function html(node: ElementNode, state: State, parent?: ElementNode
     oneLiner = true
   }
 
-  if (parent?.[0] === 'p' || state.context.inline) {
+  if (parent?.[0] === 'p' || inlineTags.has(String(parent?.[0])) || state.context.inline) {
+    oneLiner = true
+  }
+
+  // Next to text, a component is inline even without a `p` around it (tight list item, blockquote, unwrapped component).
+  if (!state.context.html && $.html !== 1 && parent?.some((child, index) => index > 1 && typeof child === 'string')) {
     oneLiner = true
   }
 
@@ -67,27 +72,46 @@ export async function html(node: ElementNode, state: State, parent?: ElementNode
 
   const revert = state.applyContext({ inline: oneLiner })
 
+  const isBlockChild = (child: Node) =>
+    typeof child !== 'string' &&
+    (blockTags.has(String(child?.[0])) || (!inlineTags.has(String(child?.[0])) && !hasTextSibling))
+
+  // A component written as a tag needs blank lines around its markdown, or CommonMark keeps it in the HTML block.
+  // Raw HTML gets them only around markdown blocks; a blank line in a literal body would end the HTML block.
+  const markdownBody =
+    !state.context.html &&
+    !oneLiner &&
+    ($.html !== 1 ||
+      children.some((child) => typeof child !== 'string' && child[1]?.$?.html !== 1 && blockTags.has(String(child[0]))))
+
   const childrenContent: string[] = []
-  for (const child of children) {
-    childrenContent.push(await state.one(child, state, node))
+  for (let i = 0; i < children.length; i++) {
+    // A hard break (`br`) also ends a line, so check the rendered text, not only the previous node type.
+    const prev = childrenContent[i - 1]
+    const atLineStart = markdownBody && (i === 0 || isBlockChild(children[i - 1]) || prev.endsWith('\n'))
+    childrenContent.push(await state.one(children[i], state, node, atLineStart))
   }
 
   // A blank line inside a raw-HTML element would terminate it on reparse
-  const childSeparator = state.context.html ? state.context.blockSeparator : oneLiner ? '' : '\n'
+  const childSeparator = state.context.html
+    ? state.context.blockSeparator
+    : markdownBody
+      ? '\n\n'
+      : oneLiner
+        ? ''
+        : '\n'
 
   let content = ''
   let isPrevBlock = true
   for (let i = 0; i < children.length; i++) {
     const childContent = childrenContent[i]
-    const child = children[i]
-    const isBlock =
-      typeof child !== 'string' &&
-      (blockTags.has(String(child?.[0])) || (!inlineTags.has(String(child?.[0])) && !hasTextSibling))
+    const isBlock = isBlockChild(children[i])
 
     if (i > 0 && !isPrevBlock && isBlock) {
       content += childSeparator
     }
-    content += childContent
+    // Block handlers end with their own separator, which `childSeparator` replaces.
+    content += markdownBody && isBlock ? trimTrailingNewlines(childContent) : childContent
     isPrevBlock = isBlock
 
     if (isBlock && i < children.length - 1) {
@@ -102,7 +126,11 @@ export async function html(node: ElementNode, state: State, parent?: ElementNode
   const nativeAttributes = toNativeAttributes(String(tag), node, attributes)
   const attrs =
     Object.keys(nativeAttributes).length > 0
-      ? ` ${htmlAttributes(nativeAttributes, { verbatim: !state.context.html && $.html === 1 })}`
+      ? ` ${htmlAttributes(nativeAttributes, {
+          verbatim: !state.context.html && $.html === 1,
+          encodeNewlines: !state.context.html,
+          keepBindings: !state.context.html,
+        })}`
       : ''
 
   if (isSelfClose) {
@@ -110,7 +138,8 @@ export async function html(node: ElementNode, state: State, parent?: ElementNode
   }
 
   if (!oneLiner && content) {
-    content = '\n' + paddNoneHtmlContent(content, state, String(tag)).trimEnd() + '\n'
+    const padding = markdownBody ? '\n\n' : '\n'
+    content = padding + paddNoneHtmlContent(content, state, String(tag)).trimEnd() + padding
   }
 
   return `<${tag}${attrs}>${content}</${tag}>` + (!parent && !isInline ? state.context.blockSeparator : '')
@@ -128,4 +157,11 @@ function paddNoneHtmlContent(content: string, state: State, tag: string) {
   }
 
   return (content.trim().startsWith('<') ? '' : '') + content + (content.trim().endsWith('>') ? '' : '')
+}
+
+// A loop, since `/\n+$/` backtracks quadratically on long runs of newlines.
+function trimTrailingNewlines(content: string): string {
+  let end = content.length
+  while (end > 0 && content.charCodeAt(end - 1) === 10) end--
+  return content.slice(0, end)
 }

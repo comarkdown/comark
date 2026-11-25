@@ -4,7 +4,7 @@ Renders an already-parsed Markdown document to Svelte components/HTML, keeping
 the parser out of the client bundle.
 
 Accepts a parsed `MarkdownDocument` and renders each top-level node via `MarkdownNode`.
-Supports custom component mappings and a streaming caret indicator.
+Supports custom component mappings and streaming effects from `comark/effects` (caret, fade-in, custom).
 
 @example
 ```svelte
@@ -21,6 +21,8 @@ Supports custom component mappings and a streaming caret indicator.
 <script lang="ts">
   import { untrack } from 'svelte'
   import type { MarkdownDocument as MarkdownDocumentType, ComponentManifest, NodeTransform } from 'comark'
+  import { createStreamRenderer, getStreamKey } from 'comark/effects'
+  import type { StreamEffect } from 'comark/effects'
   import type { ComponentResolver, RootAttributes } from '../types.js'
   import MarkdownNode from './MarkdownNode.svelte'
 
@@ -31,7 +33,8 @@ Supports custom component mappings and a streaming caret indicator.
     transformNode,
     resolver,
     streaming = false,
-    caret: caretProp = false,
+
+    effects,
     data,
     class: className = '',
     documentKey,
@@ -43,7 +46,8 @@ Supports custom component mappings and a streaming caret indicator.
     transformNode?: NodeTransform | readonly NodeTransform[]
     resolver?: ComponentResolver
     streaming?: boolean
-    caret?: boolean | { class: string }
+
+    effects?: readonly StreamEffect[]
     data?: Record<string, unknown>
     class?: string
     documentKey?: string
@@ -63,11 +67,29 @@ Supports custom component mappings and a streaming caret indicator.
 
   let activeDocument = $derived(liveDocument ?? document)
 
-  let caretClass = $derived(
-    streaming && caretProp
-      ? (typeof caretProp === 'object' && caretProp.class) || ''
-      : null,
-  )
+  const stream = createStreamRenderer()
+
+  // Paced effects release text on a clock, so keep re-rendering until their backlog is empty.
+  let frame = $state(0)
+
+  let nodes = $derived.by(() => {
+    void frame
+    return stream.render(activeDocument.nodes || [], {
+      streaming,
+      effects,
+    })
+  })
+  $effect(() => {
+    // Read `frame` and `nodes` before the early return: Svelte only re-runs an effect for signals it
+    // actually read, and `nodes` keeps its identity when an effect returns the same array.
+    // eslint-disable-next-line
+    frame
+    // eslint-disable-next-line
+    nodes
+    if (!stream.pending()) return
+    const id = requestAnimationFrame(() => frame++)
+    return () => cancelAnimationFrame(id)
+  })
 
   let renderData = $derived({
     frontmatter:
@@ -81,15 +103,16 @@ Supports custom component mappings and a streaming caret indicator.
 </script>
 
 <div {...rest} class="comark-content {className}">
-  {#each activeDocument.nodes as node, i (i)}
-    <MarkdownNode
-      {node}
-      {components}
-      {componentsManifest}
-      {transformNode}
-      {resolver}
-      caretClass={i === activeDocument.nodes.length - 1 ? caretClass : null}
-      {renderData}
-    />
+  {#each nodes as node, i (i)}
+    {#key getStreamKey(node)}
+      <MarkdownNode
+        {node}
+        {components}
+        {componentsManifest}
+        {transformNode}
+        {resolver}
+        {renderData}
+      />
+    {/key}
   {/each}
 </div>

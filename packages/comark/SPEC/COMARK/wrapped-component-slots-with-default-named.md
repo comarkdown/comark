@@ -80,3 +80,23 @@ First Paragraph
 Second Paragraph
 ::
 ```
+
+## Markdown HTML
+
+```md
+<component>
+
+<template name="first">
+
+First Paragraph
+
+</template>
+
+<template name="default">
+
+Second Paragraph
+
+</template>
+
+</component>
+```

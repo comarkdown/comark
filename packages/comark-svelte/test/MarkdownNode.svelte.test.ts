@@ -36,35 +36,6 @@ describe('MarkdownNode', () => {
     expect(div).not.toBeNull()
     await expect.element(div).toHaveTextContent('content')
   })
-
-  it('renders caret with custom class', async () => {
-    const screen = await render(MarkdownNode, {
-      node: 'text',
-      caretClass: 'test-caret',
-    })
-    const caret = screen.container.querySelector<HTMLElement>('.test-caret')!
-    expect(caret).not.toBeNull()
-    await expect.element(caret).toHaveStyle({ display: 'inline-block' })
-  })
-
-  it('does not render caret when caretClass is null', async () => {
-    const screen = await render(MarkdownNode, {
-      node: 'text',
-      caretClass: null,
-    })
-    expect(screen.container.querySelector('span')).toBeNull()
-  })
-
-  it('threads caret to deepest last text node', async () => {
-    const tree = await parseMarkdown('first **last**')
-    const screen = await render(MarkdownNode, {
-      node: tree.nodes[0],
-      caretClass: 'caret',
-    })
-    const strong = screen.container.querySelector<HTMLElement>('strong')!
-    expect(strong.querySelector('.caret')).not.toBeNull()
-    expect(screen.container.querySelectorAll('.caret').length).toBe(1)
-  })
 })
 
 describe('MarkdownDocument', () => {
@@ -185,10 +156,12 @@ Footer slot content.
       value: tree,
       components: { card: CardWithFooter },
     })
+    const card = screen.container.querySelector<HTMLElement>('.card')!
     const footer = screen.container.querySelector<HTMLElement>('footer')!
     expect(footer).not.toBeNull()
     await expect.element(screen.getByRole('heading', { name: 'My Card', level: 3 })).toBeInTheDocument()
-    await expect.element(screen.getByText('Default slot content.')).toBeInTheDocument()
+    await expect.element(card).toHaveTextContent('My Card Default slot content. Footer slot content.')
+    expect(card.querySelector('p')).toBeNull()
     await expect.element(footer).toHaveTextContent('Footer slot content.')
     expect(screen.container.querySelector('template[name="footer"]')).toBeNull()
   })

@@ -79,6 +79,14 @@ describe('title-description plugin', () => {
     expect(tree.meta.description).toBeUndefined()
   })
 
+  it('leaves HTML comments out of title and description', async () => {
+    const md = '# Install <!-- TODO: link --> guide\n\nRun it <!-- internal --> now.\n'
+    const tree = await parseMarkdown(md, { plugins: [titleDescription()] })
+
+    expect(tree.meta.title).toBe('Install  guide')
+    expect(tree.meta.description).toBe('Run it  now.')
+  })
+
   it('uses custom titleTag and descriptionTag', async () => {
     const md = `## Custom Title
 

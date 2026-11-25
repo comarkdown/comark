@@ -77,3 +77,19 @@
   ### Heading
   ::
 ```
+
+## Markdown HTML
+
+```md
+- *item one*
+
+  <block>
+
+  <template name="body">
+
+  ### Heading
+
+  </template>
+
+  </block>
+```

@@ -562,9 +562,7 @@ const processors: Record<string, Processor> = {
   image(tokens, start) {
     const token = tokens[start]
     const attrs = processAttributes(token.attrs, { handleJSON: false, filterEmpty: true })
-    if (token.content) {
-      attrs.alt = token.content
-    }
+    attrs.alt = token.content
     return processPossibleAttributesSyntax(tokens, { node: ['img', attrs] as Node, nextIndex: start + 1 })
   },
 

@@ -38,3 +38,9 @@ Welcome to [site]{.bg-gradient-to-r.from-primary-600.to-purple-600.bg-clip-text.
 ```md
 Welcome to [site]{.bg-gradient-to-r.from-primary-600.to-purple-600.bg-clip-text.text-transparent}
 ```
+
+## Markdown HTML
+
+```md
+Welcome to <span class="bg-gradient-to-r from-primary-600 to-purple-600 bg-clip-text text-transparent">site</span>
+```

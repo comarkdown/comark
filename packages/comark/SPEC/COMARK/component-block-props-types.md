@@ -74,3 +74,13 @@ config:
 Component content
 ::
 ```
+
+## Markdown HTML
+
+```md
+<component title="Hello World" :count="42" enabled :hidden="false" :tags="[&quot;markdown&quot;,&quot;docs&quot;]" :config="{&quot;theme&quot;:&quot;dark&quot;,&quot;debug&quot;:false}">
+
+Component content
+
+</component>
+```

@@ -57,3 +57,15 @@ Some :template[x] text.
 body
 ::
 ```
+
+## Markdown HTML
+
+```md
+Some <template>x</template> text.
+
+<template k="v">
+
+body
+
+</template>
+```

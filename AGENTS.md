@@ -53,6 +53,7 @@ packages/comark/
 │   ├── core.ts               # Parser pipeline with no default plugins (comark/core)
 │   ├── auto-close.ts         # autoCloseMarkdown() (comark/auto-close)
 │   ├── context.ts            # Live renderer context: ComarkContext, ComarkDocument, ComarkPatch (comark/context)
+│   ├── effects.ts            # Render-time stream effects: caret, fade, createStreamRenderer (comark/effects)
 │   ├── render/
 │   │   ├── index.ts          # AST to Markdown string: renderMarkdown() (comark/render)
 │   │   └── html.ts           # HTML-only string engine used by @comark/html (comark/render/html)
@@ -90,14 +91,14 @@ packages/comark/
 │   ├── utils/                # Public utilities (comark/utils and comark/utils/trace)
 │   │   ├── index.ts          # textContent, visit, visitAsync, escapeHtml, isHtmlVoidElement, indent, applyNodeTransforms
 │   │   ├── helpers.ts        # defineComarkPlugin, dedupePlugins
-│   │   ├── trace.ts          # noopTracer, withSpan
-│   │   └── caret.ts          # Streaming caret helpers
+│   │   └── trace.ts          # noopTracer, withSpan
 │   └── internal/             # Internal implementation (not exported)
 │       ├── bracket-math.ts   # `\( ... \)` and `\[ ... \]` delimiter scanners
 │       ├── entities.ts       # HTML attribute entity decoding via character-entities
 │       ├── frontmatter.ts    # parseFrontmatter and renderFrontmatter
 │       ├── heading-id.ts     # Slug generation shared by parser and stringifier
 │       ├── inline-code-lang.ts # Inline code `{lang="..."}` fragment highlighting
+│       ├── list-item.ts      # List item content columns, shared by the component fence scan and auto-close
 │       ├── sanitize.ts       # Prop, URL, and frontmatter validation
 │       ├── shiki.ts          # Shared Shiki runtime
 │       ├── yaml.ts           # YAML parsing and serialization helpers
@@ -168,6 +169,8 @@ import { parseMarkdown } from 'comark/core' // no default plugins; autoClose tak
 import { autoCloseMarkdown } from 'comark/auto-close'
 import { renderMarkdown } from 'comark/render'
 import type { ComarkContext, ComarkDocument, ComarkPatch } from 'comark/context'
+import { caret, fade, pace, typewriter, createStreamRenderer, getChildKeys } from 'comark/effects'
+import type { StreamEffect, FadeOptions, CaretOptions } from 'comark/effects'
 import type { MarkdownDocument, Node, ElementNode, TextNode, CommentNode, NodeTransform } from 'comark'
 import {
   textContent,
@@ -262,7 +265,8 @@ Block component children may be indented under `::` or outdented; both round-tri
 
 - **Parse (`src/internal/parse/indent.ts`)**: Dedent children rather than raising the floor. Each child line shifts left by `min(markerIndent, lineIndent)` and tokenizes against a zero floor. Lines inside a fenced code block all take the opening fence's shift so fence and body move together. If a tab would have to be split across columns, the shift aborts and keeps the marker floor.
 - **Stringify (`indent()` in `src/utils/index.ts`)**: Nested components indent their rendered block by 2 spaces per level across every line, including fenced code bodies, reaching a fixed point on re-parse.
-- Spec fixtures: `SPEC/COMARK/component-nested-*-outdented.md`, `SPEC/COMARK/component-nested-codeblock-indented.md`, `SPEC/COMARK/codeblock-indented-content.md`.
+- **Closing fences (`comark_block` in `src/plugins/components.ts`)**: The scan for the closing `::` skips code fences. A closing fence may sit at most 3 columns right of its container: the innermost component or list item open at the opening fence, or the opening fence itself when that is further left. Deeper fence lines are code content, so a `::` after one does not close the component. A line 4+ columns right of its container is indented code and opens no fence, list item, or nested component. `- - item` opens two list items, and a thematic break such as `- - -` opens none. A fence inside a list item ends when the list item does, even without a closer. Tabs count to the next multiple of 4 columns. The `#slot` scan reads fences by the same rules. `autoCloseMarkdown` follows them too; it and `comark_block` use `pushListItems()` (`src/internal/list-item.ts`).
+- Spec fixtures: `SPEC/COMARK/component-nested-*-outdented.md`, `SPEC/COMARK/component-nested-codeblock-indented.md`, `SPEC/COMARK/codeblock-indented-content.md`, and for closing fences `SPEC/COMARK/component-*codeblock-indented-fence.md`, `SPEC/COMARK/component-codeblock-closing-fence-indent.md`, `SPEC/COMARK/component-codeblock-indented-opener.md`, `SPEC/COMARK/component-indented-code-fence.md`, `SPEC/COMARK/component-codeblock-invalid-nested-name.md`, `SPEC/COMARK/component-list-marker-indent.md`, `SPEC/COMARK/component-slot-indented-fence.md`.
 
 ### Embedded HTML
 
@@ -275,6 +279,19 @@ Contract: `packages/comark/SPEC/HTML/README.md`.
 - `visit` and `visitAsync` stop at `TREE_WALK_MAX_DEPTH` (`50`).
 - Deferred edge cases in `test/html-block.test.ts` are skipped tests; do not delete or weaken them.
 
+### Stream effects (`comark/effects`)
+
+Every framework renderer accepts a single `effects` prop (there are no `caret` or `fade` props; users import `caret()` and `fade()` from `comark/effects`) and applies it through one `createStreamRenderer()` per component instance, in array order. Put `pace()` first and `caret()` last.
+
+- `fade()` staggers words by 30ms by default and treats each Han/kana character and each `FADE_UNIT_TAGS` element (`img`, `hr`, `input`, counted as one `\uFFFC` character of fadeable text) as its own word. It stamps those elements and new `li` items (`comark-fade-marker` plus `--comark-fade-*` custom properties for `::marker`) instead of wrapping them; stamps merge away with the block's spans.
+- `fade()` and `typewriter()` never pace; users compose `[pace(), fade()]`. Later effects see `context.backlog` while an earlier effect still holds text back, and `fade` uses it to hold a partially released word.
+- Effects run on the top-level nodes at render time and must never mutate them: copy only the changed path so reused streaming blocks keep their identity. Nodes an effect inserts carry `$.key`.
+- An effect's `pending()` means it holds text back, so later effects see `streaming` and `backlog`; `settling()` (used by `fade` and `typewriter` until their spans merge) only keeps renderers scheduling frames. `StreamRenderer.pending()` is true for either.
+- `fade` diffs each top-level block's fadeable text against the previous render by common prefix, so restructuring never re-fades shown text. A block's spans merge back into text together once its last segment finishes, so spans are only appended while any is animating.
+- Renderers key children with `getChildKeys()` (React, Vue, Angular), or index keys plus `{#key getStreamKey(node)}` (Svelte; changing key kinds at an index throws in Svelte's async `each`).
+- Angular's `MarkdownNode` patches native subtrees in place (keyed by `getChildKeys()`) instead of rebuilding them, and skips re-creating custom components whose inputs are structurally equal.
+- Effects inject their keyframes with `injectStreamStyles()` (constructable stylesheet, falling back to `<style>`); it is a no-op without a DOM.
+
 ### Render-time node transforms
 
 Every renderer accepts `transformNode` (a function or array of functions returning `{ tag?, props? }`).
@@ -286,6 +303,7 @@ Every renderer accepts `transformNode` (a function or array of functions returni
 ## Parser and plugin rules
 
 1. Token-to-AST conversion lives in `packages/comark/src/internal/parse/tree.ts`. Run spec fixtures with `cd packages/comark && pnpm vitest run test/index.test.ts` (or `SPEC=SPEC/COMARK/foo.md pnpm vitest run test/index.test.ts`), and check `test/streaming.test.ts` after parser edits.
+   A fixture has `## Input`, `## AST`, `## HTML` and `## Markdown` sections, plus an optional `## Markdown HTML` for `renderMarkdown(doc, { format: 'markdown/html' })`. Every fixture runs the `markdown/html` check; when the section is missing, it falls back to `## Markdown`. Add the section only when the output differs (components, spans, slots, `:br`).
 2. Always import from `markdown-exit/core`, never `markdown-exit`. Only `src/plugins/linkify.ts` imports `linkify-it`, keeping `comark/core` free of `linkify-it` and avoiding `markdown-exit`'s global fuzzy-link rule.
 3. Decode HTML entities in attributes with `decodeHTMLAttribute` from `src/internal/entities.ts`, never `entities`, so bundles reuse the single `character-entities` table shipped by `markdown-exit`.
 4. After adding or renaming a plugin in `packages/comark/src/plugins/`, add framework wrappers if it has a UI component, then run `pnpm sync-plugins` (also run by `pnpm build` and `pnpm stub`).

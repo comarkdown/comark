@@ -1,0 +1,44 @@
+{
+  "name": "comark-streaming",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc --noEmit && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@angular/common": "catalog:",
+    "@angular/core": "catalog:",
+    "@angular/platform-browser": "catalog:",
+    "@comark/angular": "workspace:*",
+    "@comark/react": "workspace:*",
+    "@comark/svelte": "workspace:*",
+    "@comark/vue": "workspace:*",
+    "@shikijs/langs": "catalog:",
+    "comark": "workspace:*",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "rxjs": "catalog:",
+    "shiki": "catalog:",
+    "svelte": "catalog:",
+    "tslib": "catalog:",
+    "vue": "catalog:",
+    "zone.js": "catalog:"
+  },
+  "devDependencies": {
+    "@analogjs/vite-plugin-angular": "catalog:",
+    "@angular/build": "catalog:",
+    "@angular/compiler": "catalog:",
+    "@angular/compiler-cli": "catalog:",
+    "@sveltejs/vite-plugin-svelte": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
+    "@vitejs/plugin-vue": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vue-tsc": "catalog:"
+  }
+}

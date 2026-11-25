@@ -220,6 +220,22 @@ describe('autoCloseMarkdown - Comark Components', () => {
     expect(autoCloseMarkdown(input)).toBe(expected)
   })
 
+  it('measures a closing code fence against its innermost component', () => {
+    // 4+ spaces past the component is code content: `**bold` stays code and only `::box` gets closed.
+    expect(autoCloseMarkdown('::box\n```\n::a\n    ```\n::\n**bold')).toBe('::box\n```\n::a\n    ```\n::\n**bold\n::')
+    // The children of `::box` sit at column 0, even when the fence itself is indented.
+    const indentedFence = '::box\n  ```md\n    ```js\n    ```\n  ```\n::'
+    expect(autoCloseMarkdown(indentedFence)).toBe(indentedFence)
+    // `    :::inner` is indented code, so it opens no component.
+    expect(autoCloseMarkdown('::box\n    :::inner\n      ~~~\n          ~~~\n::\n\n**bold')).toBe(
+      '::box\n    :::inner\n      ~~~\n          ~~~\n::\n\n**bold**'
+    )
+    // Within 3 spaces of `:::inner` still closes.
+    expect(autoCloseMarkdown('::box\n  :::inner\n  ```\n  x\n     ```\n  :::\n::\n**bold')).toBe(
+      '::box\n  :::inner\n  ```\n  x\n     ```\n  :::\n::\n**bold**'
+    )
+  })
+
   it('should not add closing markers to empty content', () => {
     const input = ''
     expect(autoCloseMarkdown(input)).toBe(input)
@@ -583,6 +599,11 @@ describe('frontmatter', () => {
     const expected = '---\ntitle: Test\n---'
     expect(autoCloseMarkdown(input, { frontmatter: true })).toBe(expected)
   })
+  it('should complete partial frontmatter after a byte order mark', () => {
+    const input = '\uFEFF---\ntitle: Test'
+    const expected = '\uFEFF---\ntitle: Test\n---'
+    expect(autoCloseMarkdown(input, { frontmatter: true })).toBe(expected)
+  })
   it('should complete a partial closing delimiter (-) when frontmatter option is enabled', () => {
     const input = '---\ntitle: Test\n-'
     const expected = '---\ntitle: Test\n---'
@@ -710,6 +731,16 @@ describe('attributes scope', () => {
     const input = '![$link](https://example.com/icons.png)'
     const expected = '![$link](https://example.com/icons.png)'
     expect(autoCloseMarkdown(input)).toBe(expected)
+  })
+})
+
+describe('dollar-prefixed tokens without math (#136)', () => {
+  it.each([
+    '$skill-name',
+    '[$imagegen](/Users/user01/.codex/skills/.system/imagegen/SKILL.md)',
+    'Codex uses [$imagegen](/Users/user01/.codex/skills/.system/imagegen/SKILL.md) and $skill-name.',
+  ])('should leave %s unchanged', (input) => {
+    expect(autoCloseMarkdown(input)).toBe(input)
   })
 })
 

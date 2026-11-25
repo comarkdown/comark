@@ -211,3 +211,45 @@ full-width: true
   :::
 ::
 ```
+
+## Markdown HTML
+
+```md
+<page-section full-width>
+
+<multi-column :columns="3">
+
+<container display="flex">
+
+<svg width="10"></svg>
+
+</container>
+
+<container display="flex">
+
+<svg width="10"></svg>
+
+</container>
+
+<container display="flex">
+
+<svg width="10"></svg>
+
+</container>
+
+<container display="flex">
+
+<svg width="10"></svg>
+
+</container>
+
+<container display="flex">
+
+<svg width="10"></svg>
+
+</container>
+
+</multi-column>
+
+</page-section>
+```

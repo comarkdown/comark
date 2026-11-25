@@ -57,3 +57,13 @@ disabled: true
 My button
 ::
 ```
+
+## Markdown HTML
+
+```md
+<my-component block reverse :square="false" disabled>
+
+My button
+
+</my-component>
+```
