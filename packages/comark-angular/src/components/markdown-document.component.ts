@@ -127,7 +127,8 @@ export class MarkdownDocument implements OnInit, OnDestroy {
     return rendered
   }
 
-  // Paced effects release text on a clock, so keep re-rendering until their backlog is empty.
+  // Paced effects release text on a clock and fade spans merge on a later render, so keep
+  // re-rendering until the stream renderer reports no pending work.
   private scheduleFrame(): void {
     if (this.frameId !== null || !this.stream.pending() || typeof requestAnimationFrame !== 'function') return
     this.frameId = requestAnimationFrame(() => {

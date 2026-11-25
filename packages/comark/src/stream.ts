@@ -32,8 +32,17 @@ export interface StreamEffect<TState = any> {
   init?: () => TState
   /** Return decorated nodes. Must not mutate `nodes` or any node inside it. */
   apply: (nodes: Node[], context: StreamEffectContext<TState>) => Node[]
-  /** Whether work is still queued and the renderer must render again without new input. */
+  /**
+   * Whether text is still held back and the renderer must render again without new input. Later
+   * effects then see `streaming` and `backlog` as `true`.
+   */
   pending?: (state: TState) => boolean
+  /**
+   * Whether the effect needs another render to clean up its own decoration (e.g. merging finished
+   * fade spans back into text). Keeps the renderer scheduling frames like {@link pending}, but holds
+   * no text back, so later effects see the real `streaming` and `backlog`.
+   */
+  settling?: (state: TState) => boolean
 }
 
 export interface StreamRenderOptions {
@@ -46,7 +55,10 @@ export interface StreamRenderOptions {
 export interface StreamRenderer {
   /** Run `effects` over `nodes`. Returns `nodes` itself when there is nothing to run. */
   render: (nodes: readonly Node[], options?: StreamRenderOptions) => Node[]
-  /** Whether the last `render` left work queued, so the renderer should schedule another frame. */
+  /**
+   * Whether the last `render` left work queued or decoration to settle, so the renderer should
+   * schedule another frame.
+   */
   pending: () => boolean
   /** Drop all effect state, e.g. when the renderer shows a different document. */
   reset: () => void
@@ -82,15 +94,19 @@ export function createStreamRenderer(options: StreamRendererOptions = {}): Strea
       // An earlier effect with queued work (e.g. `pace` draining after the stream ended) releases text
       // that later effects must still treat as streaming, or `fade` would skip the new text.
       let streamingNow = streaming
+      let backlog = false
       for (const effect of effects) {
         if (!states.has(effect.name)) states.set(effect.name, effect.init?.())
         const state = states.get(effect.name)
-        out = effect.apply(out, { streaming: streamingNow, now: time, state, backlog: pending })
+        out = effect.apply(out, { streaming: streamingNow, now: time, state, backlog })
         if (effect.pending?.(state)) {
-          pending = true
+          backlog = true
           streamingNow = true
+        } else if (effect.settling?.(state)) {
+          pending = true
         }
       }
+      if (backlog) pending = true
       return out
     },
     pending: () => pending,
@@ -755,6 +771,8 @@ function createRevealEffect(config: RevealConfig): StreamEffect<RevealState> {
   return {
     name,
     init: () => ({ source: null, blocks: [], nextAt: 0, streamed: false }),
+    // Spans only merge back during a render, so ask for frames until every block has merged.
+    settling: (state) => state.blocks.some((block) => block.segments.length > 0),
     apply(nodes, { streaming, now, state, backlog }) {
       const closing = !streaming && state.streamed
       state.streamed = streaming

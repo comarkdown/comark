@@ -146,6 +146,41 @@ describe('fade', () => {
     expect(stream.render(settled, { streaming: true, effects })).toBe(settled)
   })
 
+  it('keeps rendering after the stream ends until the last spans merge back', () => {
+    const time = clock()
+    const stream = createStreamRenderer({ now: time.now })
+    stream.render([['p', {}, 'Hello']], { streaming: true, effects })
+    const nodes: Node[] = [['p', {}, 'Hello world']]
+    stream.render(nodes, { streaming: false, effects })
+    expect(stream.pending()).toBe(true)
+    time.advance(100)
+    stream.render(nodes, { streaming: false, effects })
+    expect(stream.pending()).toBe(true)
+    time.advance(300)
+    expect(stream.render(nodes, { streaming: false, effects })).toBe(nodes)
+    expect(stream.pending()).toBe(false)
+  })
+
+  it('settles without holding the caret or later effects in streaming mode', () => {
+    const time = clock()
+    const stream = createStreamRenderer({ now: time.now })
+    const seen: boolean[] = []
+    const spy: StreamEffect = {
+      name: 'spy',
+      apply(nodes, { streaming, backlog }) {
+        seen.push(streaming || backlog)
+        return nodes
+      },
+    }
+    const all = [fade({ styles: false }), caret(), spy]
+    stream.render([['p', {}, 'Hello']], { streaming: true, effects: all })
+    const out = stream.render([['p', {}, 'Hello world']], { streaming: false, effects: all })
+    expect(stream.pending()).toBe(true)
+    expect(seen).toEqual([true, false])
+    const p = out[0] as ElementNode
+    expect((p[p.length - 1] as ElementNode)[1].$?.key).not.toBe('comark-caret')
+  })
+
   it('skips unchanged reused blocks by identity', () => {
     const time = clock()
     const stream = createStreamRenderer({ now: time.now })
@@ -636,7 +671,6 @@ describe('pace composition', () => {
       stream.render([['p', {}, '']], { streaming: true, effects: [effect] })
       const out = stream.render([['p', {}, 'Hello wo']], { streaming: true, effects: [effect] })
       expect(textOf(out[0])).toBe('Hello wo')
-      expect(stream.pending()).toBe(false)
     }
   })
 

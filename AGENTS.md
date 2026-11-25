@@ -284,6 +284,7 @@ Every framework renderer accepts a single `effects` prop (there are no `caret` o
 
 - `fade()` and `typewriter()` never pace; users compose `[pace(), fade()]`. Later effects see `context.backlog` while an earlier effect still holds text back, and `fade` uses it to hold a partially released word.
 - Effects run on the top-level nodes at render time and must never mutate them: copy only the changed path so reused streaming blocks keep their identity. Nodes an effect inserts carry `$.key`.
+- An effect's `pending()` means it holds text back, so later effects see `streaming` and `backlog`; `settling()` (used by `fade` and `typewriter` until their spans merge) only keeps renderers scheduling frames. `StreamRenderer.pending()` is true for either.
 - `fade` diffs each top-level block's fadeable text against the previous render by common prefix, so restructuring never re-fades shown text. A block's spans merge back into text together once its last segment finishes, so spans are only appended while any is animating.
 - Renderers key children with `getChildKeys()` (React, Vue, Angular), or index keys plus `{#key getStreamKey(node)}` (Svelte; changing key kinds at an index throws in Svelte's async `each`).
 - Angular's `MarkdownNode` patches native subtrees in place (keyed by `getChildKeys()`) instead of rebuilding them, and skips re-creating custom components whose inputs are structurally equal.
