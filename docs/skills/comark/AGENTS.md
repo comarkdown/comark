@@ -254,6 +254,26 @@ class ChatComponent {
 <comark-markdown [value]="content" [streaming]="streaming" [effects]="effects" />
 ```
 
+### Pacing and typewriter
+
+`fade()` and `typewriter()` show each chunk as soon as it arrives. To release text at a steady rate regardless of chunk timing, put `pace()` before them. Order matters: `pace()` first, then `fade()` or `typewriter()`, then `caret()` last.
+
+```typescript
+import { caret, fade, pace, typewriter } from 'comark/stream'
+
+// Steady word-by-word fade (speed in characters per second, catchUp in ms)
+const effects = [pace({ speed: 80, catchUp: 1000 }), fade({ delay: 30 }), caret()]
+
+// Character-by-character typing; match the speeds so the queue never grows
+const typing = [pace({ speed: 100 }), typewriter({ speed: 100 }), caret()]
+```
+
+- `pace()` options: `speed` (default `45`), `catchUp` (default `Infinity`), `exclude`
+- `fade()` options: `duration` (default `300`), `easing`, `delay`, `unit` (`'word'` or `'char'`), `class`, `styles`, `exclude`
+- `typewriter()` options: `speed` (default `100`), `class`, `styles`, `exclude`
+- The renderer keeps rendering until the paced backlog drains, even after `streaming` turns `false`
+- Code blocks, math, and diagrams never fade or type; they appear whole
+
 ---
 
 ## With custom components
