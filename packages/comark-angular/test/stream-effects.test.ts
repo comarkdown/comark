@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { Component, Input, type Type } from '@angular/core'
 import { TestBed } from '@angular/core/testing'
 import type { MarkdownDocument as MarkdownDocumentType, Node } from 'comark'
-import { caret, fade } from 'comark/stream'
+import { caret, fade, pace } from 'comark/stream'
 import { MarkdownDocument } from '../src/components/markdown-document.component.ts'
 
 function doc(...nodes: Node[]): MarkdownDocumentType {
@@ -69,7 +69,7 @@ describe('MarkdownDocument stream effects', () => {
   it('fades only new text and keeps fading spans mounted', async () => {
     const { el, update } = await render(doc(['p', {}, 'Hello']), {
       streaming: true,
-      effects: [fade({ pace: false })],
+      effects: [fade()],
     })
     const first = el.querySelector('.comark-fade')
     expect(first?.textContent).toBe('Hello')
@@ -88,7 +88,7 @@ describe('MarkdownDocument stream effects', () => {
     vi.stubGlobal('cancelAnimationFrame', () => {})
 
     const full = 'Hi there, this sentence streams in at a steady pace'
-    const { el, update, fixture } = await render(doc(['p', {}, 'Hi']), { streaming: true, effects: [fade()] })
+    const { el, update, fixture } = await render(doc(['p', {}, 'Hi']), { streaming: true, effects: [pace(), fade()] })
     // End the stream with the last chunk so the trailing word is released too.
     fixture.componentRef.setInput('streaming', false)
     update(doc(['p', {}, full]))

@@ -35,7 +35,7 @@ function fadeSpans(node: Node | Node[]): string[] {
   return out
 }
 
-const effects = [fade({ styles: false, pace: false })]
+const effects = [fade({ styles: false })]
 
 describe('createStreamRenderer', () => {
   it('returns the input nodes when no effects run', () => {
@@ -88,15 +88,15 @@ describe('caret', () => {
 
   it('only renders while streaming and keeps a custom class', () => {
     const nodes: Node[] = [['p', {}, 'a']]
-    expect(caret().apply(nodes, { streaming: false, now: 0, state: undefined })).toBe(nodes)
-    const out = caret({ class: 'cursor' }).apply(nodes, { streaming: true, now: 0, state: undefined })
+    expect(caret().apply(nodes, { streaming: false, now: 0, state: undefined, backlog: false })).toBe(nodes)
+    const out = caret({ class: 'cursor' }).apply(nodes, { streaming: true, now: 0, state: undefined, backlog: false })
     expect(((out[0] as ElementNode)[3] as ElementNode)[1].class).toBe('cursor')
   })
 
   it('lands after a fading span', () => {
     const time = clock()
     const stream = createStreamRenderer({ now: time.now })
-    const all = [fade({ styles: false, pace: false }), caret()]
+    const all = [fade({ styles: false }), caret()]
     stream.render([['p', {}, 'Hello']], { streaming: true, effects: all })
     const out = stream.render([['p', {}, 'Hello world']], { streaming: true, effects: all })
     const p = out[0] as ElementNode
@@ -206,7 +206,7 @@ describe('fade', () => {
   it('delays words and caps the queue at the duration', () => {
     const time = clock()
     const stream = createStreamRenderer({ now: time.now })
-    const delayed = [fade({ styles: false, pace: false, delay: 100, duration: 300 })]
+    const delayed = [fade({ styles: false, delay: 100, duration: 300 })]
     const out = stream.render([['p', {}, 'one two three four five']], { streaming: true, effects: delayed })
     const p = out[0] as ElementNode
     const delays = p.slice(2).map((n) => ((n as ElementNode)[1].style as string | undefined) ?? '')
@@ -224,7 +224,7 @@ describe('fade', () => {
     const parse = createMarkdownParser()
     const time = clock()
     const stream = createStreamRenderer({ now: time.now })
-    const all = [fade({ styles: false }), caret()]
+    const all = [pace(), fade({ styles: false }), caret()]
     const text = [
       '| Renderer | Package           |',
       '| -------- | ----------------- |',
@@ -267,7 +267,7 @@ describe('fade', () => {
     const stream = createStreamRenderer({ now: () => 0 })
     const out = stream.render([['p', {}, 'x']], {
       streaming: true,
-      effects: [fade({ class: 'my-fade', easing: 'linear', pace: false })],
+      effects: [fade({ class: 'my-fade', easing: 'linear' })],
     })
     expect((out[0] as ElementNode)[2]).toEqual([
       'span',
@@ -287,7 +287,7 @@ describe('fade', () => {
       const snapshot = JSON.stringify(doc.nodes)
       const out = stream.render(doc.nodes, {
         streaming: true,
-        effects: [fade({ styles: false, pace: false }), caret()],
+        effects: [fade({ styles: false }), caret()],
       })
       expect(JSON.stringify(doc.nodes)).toBe(snapshot)
       const visible = out.map((n) => textOf(n)).join('')
@@ -303,7 +303,7 @@ describe('typewriter', () => {
   it('reveals one character per span at the given speed', () => {
     const time = clock()
     const stream = createStreamRenderer({ now: time.now })
-    const effects = [typewriter({ styles: false, pace: false, speed: 100 })]
+    const effects = [typewriter({ styles: false, speed: 100 })]
     const out = stream.render([['p', {}, 'abc']], { streaming: true, effects })
     const p = out[0] as ElementNode
     expect(p.slice(2)).toEqual([
@@ -317,7 +317,7 @@ describe('typewriter', () => {
     const stream = createStreamRenderer({ now: () => 0 })
     const out = stream.render([['p', {}, 'a😀']], {
       streaming: true,
-      effects: [typewriter({ styles: false, pace: false })],
+      effects: [typewriter({ styles: false })],
     })
     expect(fadeSpans(out)).toEqual(['a', '😀'])
   })
@@ -325,7 +325,7 @@ describe('typewriter', () => {
   it('keeps queued characters typing after the stream ends', () => {
     const time = clock()
     const stream = createStreamRenderer({ now: time.now })
-    const effects = [typewriter({ styles: false, pace: false, speed: 10 })]
+    const effects = [typewriter({ styles: false, speed: 10 })]
     stream.render([['p', {}, 'a']], { streaming: true, effects })
     const out = stream.render([['p', {}, 'abcdef']], { streaming: true, effects })
     const p = out[0] as ElementNode
@@ -340,7 +340,7 @@ describe('typewriter', () => {
   it('merges back into text once every character has appeared', () => {
     const time = clock()
     const stream = createStreamRenderer({ now: time.now })
-    const effects = [typewriter({ styles: false, pace: false, speed: 100 })]
+    const effects = [typewriter({ styles: false, speed: 100 })]
     stream.render([['p', {}, 'hi']], { streaming: true, effects })
     time.advance(500)
     const out = stream.render([['p', {}, 'hi!']], { streaming: true, effects })
@@ -359,7 +359,7 @@ describe('typewriter', () => {
     const stream = createStreamRenderer({ now: () => 0 })
     const out = stream.render([['p', {}, 'abc']], {
       streaming: true,
-      effects: [typewriter({ styles: false, pace: false, speed: Infinity })],
+      effects: [typewriter({ styles: false, speed: Infinity })],
     })
     expect(fadeSpans(out)).toEqual(['abc'])
   })
@@ -472,7 +472,7 @@ describe('pace', () => {
   it('keeps fading text pace releases after the stream ends', () => {
     const time = clock()
     const stream = createStreamRenderer({ now: time.now })
-    const all = [pace({ speed: 100 }), fade({ styles: false, duration: 20000, pace: false }), caret()]
+    const all = [pace({ speed: 100 }), fade({ styles: false, duration: 20000 }), caret()]
     const source = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. '.repeat(40)
     const problems: string[] = []
     let sent = 0
@@ -536,7 +536,7 @@ describe('fade unit', () => {
   it('fades word by word by default', () => {
     const time = clock()
     const stream = createStreamRenderer({ now: time.now })
-    const all = [fade({ styles: false, pace: false, delay: 10 })]
+    const all = [fade({ styles: false, delay: 10 })]
     stream.render([['p', {}, '']], { streaming: true, effects: all })
     const out = stream.render([['p', {}, 'Hi there']], { streaming: true, effects: all })
     expect(fadeSpans(out)).toEqual(['Hi ', 'there'])
@@ -545,7 +545,7 @@ describe('fade unit', () => {
   it('fades one character at a time with unit char', () => {
     const time = clock()
     const stream = createStreamRenderer({ now: time.now })
-    const all = [fade({ styles: false, pace: false, unit: 'char', delay: 10 })]
+    const all = [fade({ styles: false, unit: 'char', delay: 10 })]
     stream.render([['p', {}, '']], { streaming: true, effects: all })
     expect(fadeSpans(stream.render([['p', {}, 'Hi']], { streaming: true, effects: all }))).toEqual(['H', 'i'])
     const out = stream.render([['p', {}, 'Hi!']], { streaming: true, effects: all })
@@ -557,7 +557,7 @@ describe('fade word mode with pace', () => {
   it('fades whole words, not partial words, while paced text is released', () => {
     const time = clock()
     const stream = createStreamRenderer({ now: time.now })
-    const all = [fade({ styles: false, speed: 45, catchUp: 1000 })]
+    const all = [pace({ speed: 45, catchUp: 1000 }), fade({ styles: false })]
     const text = 'Hello there my friend '
     const spansByKey = new Map<string, string>()
     stream.render([['p', {}, '']], { streaming: true, effects: all })
@@ -592,7 +592,7 @@ describe('fade pace keeps rendering until held words are shown', () => {
       '# Streaming demo\n\nHello *world* and **bold** text.\n\nHere is a [link](https://comark.dev) mid-stream.\n'
     let t = 0
     const stream = createStreamRenderer({ now: () => t })
-    const effects = () => [fade({ styles: false, speed: 10 }), caret()]
+    const effects = () => [pace({ speed: 10 }), fade({ styles: false }), caret()]
     for (let i = 10; i <= text.length + 10; i += 10) {
       t += 100
       const doc = await parse(text.slice(0, Math.min(i, text.length)), { streaming: true })
@@ -616,7 +616,7 @@ describe('fade pace mid-stream', () => {
       '# Streaming demo\n\nHello *world* and **bold** text.\n\nHere is a [link](https://comark.dev) mid-stream.\n'
     let t = 0
     const stream = createStreamRenderer({ now: () => t })
-    const effects = () => [fade({ styles: false, speed: 10 }), caret()]
+    const effects = () => [pace({ speed: 10 }), fade({ styles: false }), caret()]
     let shown: string[] = []
     for (let i = 10; i <= 60; i += 10) {
       const doc = await parse(text.slice(0, i), { streaming: true })
@@ -629,11 +629,21 @@ describe('fade pace mid-stream', () => {
   })
 })
 
-describe('pace option', () => {
+describe('pace composition', () => {
+  it('fade and typewriter alone show each chunk as it arrives', () => {
+    for (const effect of [fade({ styles: false }), typewriter({ styles: false, speed: 5 })]) {
+      const stream = createStreamRenderer({ now: () => 0 })
+      stream.render([['p', {}, '']], { streaming: true, effects: [effect] })
+      const out = stream.render([['p', {}, 'Hello wo']], { streaming: true, effects: [effect] })
+      expect(textOf(out[0])).toBe('Hello wo')
+      expect(stream.pending()).toBe(false)
+    }
+  })
+
   it('fade releases text at the paced speed instead of all at once', () => {
     const time = clock()
     const stream = createStreamRenderer({ now: time.now })
-    const all = [fade({ styles: false, unit: 'char', delay: 10, speed: 10, catchUp: Infinity })]
+    const all = [pace({ speed: 10, catchUp: Infinity }), fade({ styles: false, unit: 'char', delay: 10 })]
     stream.render([['p', {}, '']], { streaming: true, effects: all })
     stream.render([['p', {}, 'Hello world']], { streaming: true, effects: all })
     time.advance(300)
@@ -645,7 +655,7 @@ describe('pace option', () => {
   it('typewriter releases text at the paced speed and keeps reporting pending', () => {
     const time = clock()
     const stream = createStreamRenderer({ now: time.now })
-    const all = [typewriter({ speed: 5 })]
+    const all = [pace({ speed: 5 }), typewriter({ speed: 5 })]
     stream.render([['p', {}, '']], { streaming: true, effects: all })
     stream.render([['p', {}, 'abcdefgh']], { streaming: true, effects: all })
     time.advance(400)
@@ -657,7 +667,7 @@ describe('pace option', () => {
   it('drains paced text after the stream ends', () => {
     const time = clock()
     const stream = createStreamRenderer({ now: time.now })
-    const all = [fade({ styles: false, speed: 100 })]
+    const all = [pace({ speed: 100 }), fade({ styles: false })]
     stream.render([['p', {}, 'abc']], { streaming: true, effects: all })
     time.advance(1000)
     stream.render([['p', {}, 'abc']], { streaming: false, effects: all })
@@ -669,7 +679,7 @@ describe('caret composition', () => {
   it('fade with caret ends with the caret after the faded text', () => {
     const time = clock()
     const stream = createStreamRenderer({ now: time.now })
-    const all = [fade({ styles: false, pace: false }), caret()]
+    const all = [fade({ styles: false }), caret()]
     stream.render([['p', {}, 'Hi']], { streaming: true, effects: all })
     const out = stream.render([['p', {}, 'Hi there']], { streaming: true, effects: all })
     const p = out[0] as ElementNode
@@ -680,7 +690,7 @@ describe('caret composition', () => {
   it('typewriter with caret ends with the caret after the typed text', () => {
     const time = clock()
     const stream = createStreamRenderer({ now: time.now })
-    const all = [typewriter({ speed: 0, pace: false }), caret()]
+    const all = [typewriter({ speed: 0 }), caret()]
     stream.render([['p', {}, 'Hi']], { streaming: true, effects: all })
     const out = stream.render([['p', {}, 'Hi!']], { streaming: true, effects: all })
     const p = out[0] as ElementNode
@@ -691,7 +701,7 @@ describe('caret composition', () => {
   it('pace with fade and caret composes in one list', () => {
     const time = clock()
     const stream = createStreamRenderer({ now: time.now })
-    const all = [pace({ speed: 1000 }), fade({ styles: false, pace: false }), caret()]
+    const all = [pace({ speed: 1000 }), fade({ styles: false }), caret()]
     stream.render([['p', {}, '']], { streaming: true, effects: all })
     stream.render([['p', {}, 'Hello']], { streaming: true, effects: all })
     time.advance(1000)
@@ -819,7 +829,7 @@ describe('reveal edge cases', () => {
   it('reveals an excluded subtree whole while pacing', () => {
     const time = clock()
     const stream = createStreamRenderer({ now: time.now })
-    const effects = [typewriter({ styles: false, speed: 1 })]
+    const effects = [pace({ speed: 1 }), typewriter({ styles: false, speed: 1 })]
     const pre: Node = ['pre', {}, 'abc']
     stream.render([], { streaming: true, effects })
     const out = stream.render([pre, ['p', {}, 'de']], { streaming: true, effects })
@@ -827,11 +837,16 @@ describe('reveal edge cases', () => {
   })
 
   it('clips a held word without counting excluded text', () => {
-    const stream = createStreamRenderer({ now: () => 0 })
-    const effects = [fade({ styles: false, speed: Infinity })]
-    const out = stream.render([['p', {}, ['math', {}, 'XYZ'], 'hello w']], { streaming: true, effects })
+    const time = clock()
+    const stream = createStreamRenderer({ now: time.now })
+    const effects = [pace({ speed: 1000 }), fade({ styles: false })]
+    const nodes: Node[] = [['p', {}, ['math', {}, 'XYZ'], 'hello wo']]
+    stream.render([['p', {}, '']], { streaming: true, effects })
+    stream.render(nodes, { streaming: true, effects })
+    time.advance(7)
+    const out = stream.render(nodes, { streaming: true, effects })
     expect(textOf(out[0])).toBe('XYZhello ')
-    expect(stream.pending()).toBe(false)
+    expect(stream.pending()).toBe(true)
   })
 
   it('fades the chunk that closes the stream', () => {
@@ -857,22 +872,23 @@ describe('reveal edge cases', () => {
   it('fades the last text an upstream pace releases', () => {
     const time = clock()
     const stream = createStreamRenderer({ now: time.now })
-    const all = [pace({ speed: 10 }), fade({ styles: false, pace: false, duration: 20000 })]
+    const all = [pace({ speed: 10 }), fade({ styles: false, duration: 20000 })]
     stream.render([['p', {}, '']], { streaming: true, effects: all })
     stream.render([['p', {}, 'AB']], { streaming: true, effects: all })
     time.advance(100)
     stream.render([['p', {}, 'AB']], { streaming: true, effects: all })
     time.advance(100)
     const out = stream.render([['p', {}, 'AB']], { streaming: false, effects: all })
-    expect(fadeSpans(out)).toEqual(['A', 'B'])
+    // The partial word pace released first is held, then fades whole once the drain ends.
+    expect(fadeSpans(out)).toEqual(['AB'])
   })
 
-  it('follows a changed pace option on retained state', () => {
+  it('fades a stream that starts over text already shown', () => {
     const stream = createStreamRenderer({ now: () => 0 })
     stream.render([['p', {}, 'Hi']], { streaming: false, effects: [fade({ styles: false })] })
     const out = stream.render([['p', {}, 'Hi there']], {
       streaming: true,
-      effects: [fade({ styles: false, pace: false })],
+      effects: [fade({ styles: false })],
     })
     expect(fadeSpans(out)).toEqual([' there'])
   })
@@ -894,7 +910,7 @@ describe('reveal edge cases', () => {
 
   it('reveals chunks at once with typewriter speed 0', () => {
     const stream = createStreamRenderer({ now: () => 0 })
-    const all = [typewriter({ styles: false, speed: 0, pace: true })]
+    const all = [typewriter({ styles: false, speed: 0 })]
     stream.render([], { streaming: true, effects: all })
     stream.render([['p', {}, 'abc']], { streaming: true, effects: all })
     const out = stream.render([['p', {}, 'abc']], { streaming: false, effects: all })

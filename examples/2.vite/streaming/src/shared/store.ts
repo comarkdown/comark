@@ -1,6 +1,6 @@
 import shiki from 'comark/plugins/shiki'
 import type { ComarkPlugin } from 'comark'
-import { caret, fade, typewriter, type StreamEffect } from 'comark/stream'
+import { caret, fade, pace, typewriter, type StreamEffect } from 'comark/stream'
 import { SAMPLE_MARKDOWN } from './sample'
 
 export type EffectMode = 'none' | 'fade' | 'typewriter'
@@ -28,7 +28,8 @@ const plugins: readonly ComarkPlugin[] = [shiki()]
 
 function buildEffects(mode: EffectMode, paceSpeed: number, showCaret: boolean): StreamEffect[] {
   const effects: StreamEffect[] = []
-  if (mode === 'fade') effects.push(fade({ duration: 300, delay: 30, speed: paceSpeed }))
+  if (mode !== 'none') effects.push(pace({ speed: paceSpeed }))
+  if (mode === 'fade') effects.push(fade({ duration: 300, delay: 30 }))
   if (mode === 'typewriter') effects.push(typewriter({ speed: paceSpeed }))
   if (showCaret) effects.push(caret())
   return effects

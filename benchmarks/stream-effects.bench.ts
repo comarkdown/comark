@@ -20,10 +20,10 @@ async function snapshots(markdown: string, count: number): Promise<Node[][]> {
 const chatFrames = await snapshots(chatMarkdown, 24)
 const largeFrames = await snapshots(largeMarkdown, 60)
 
-const fadeEffects = [fade({ styles: false, speed: 400 }), caret()]
-const fadeWordDelay = [fade({ styles: false, delay: 30, speed: 400 })]
-const typewriterEffects = [typewriter({ styles: false, speed: 400 })]
-const paceDrain = [pace({ speed: 4000 }), fade({ styles: false, pace: false }), caret()]
+const fadeEffects = [pace({ speed: 400 }), fade({ styles: false }), caret()]
+const fadeWordDelay = [pace({ speed: 400 }), fade({ styles: false, delay: 30 })]
+const typewriterEffects = [pace({ speed: 400 }), typewriter({ styles: false, speed: 400 })]
+const paceDrain = [pace({ speed: 4000 }), fade({ styles: false }), caret()]
 
 /** Feeds each snapshot one frame apart, then renders frames until no effect has queued work. */
 function play(frames: Node[][], effects: readonly StreamEffect[]): void {

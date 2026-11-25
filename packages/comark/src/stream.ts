@@ -17,6 +17,11 @@ export interface StreamEffectContext<TState = any> {
   now: number
   /** State owned by this effect, created by {@link StreamEffect.init} and kept between renders. */
   state: TState
+  /**
+   * Whether an earlier effect still holds text back (e.g. {@link pace}), so the input may be cut
+   * mid-word and the renderer keeps rendering without new input.
+   */
+  backlog: boolean
 }
 
 /** A render-time transform of the top-level nodes. */
@@ -80,7 +85,7 @@ export function createStreamRenderer(options: StreamRendererOptions = {}): Strea
       for (const effect of effects) {
         if (!states.has(effect.name)) states.set(effect.name, effect.init?.())
         const state = states.get(effect.name)
-        out = effect.apply(out, { streaming: streamingNow, now: time, state })
+        out = effect.apply(out, { streaming: streamingNow, now: time, state, backlog: pending })
         if (effect.pending?.(state)) {
           pending = true
           streamingNow = true
@@ -294,6 +299,11 @@ export interface PaceOptions {
    * @default Infinity
    */
   catchUp?: number
+  /**
+   * Tags whose subtrees count no text and show whole once the reveal reaches them, so code blocks and
+   * rendered output never appear half-typed. Replaces {@link DEFAULT_FADE_EXCLUDE}.
+   */
+  exclude?: readonly string[]
 }
 
 const DEFAULT_PACE_SPEED = 45
@@ -320,41 +330,25 @@ interface PaceCursor {
   released: number
 }
 
-interface PaceController {
-  init: () => PaceState
-  pending: (state: PaceState) => boolean
-  /** `measure` decides which elements are opaque; it defaults to one that treats none as opaque. */
-  apply: (nodes: Node[], streaming: boolean, now: number, state: PaceState, measure?: TextMeasure) => Node[]
-}
-
 /**
  * Reveal streamed text at a steady pace, independent of how fast the model sends it.
  *
  * Text past the released cursor is removed from the tree, and elements that have not started yet are
  * dropped. The first render shows its input at once, so server rendering and hydration contain the
- * text; only text that arrives later is paced. Place it before `fade` and `caret` so they only see
- * released text, or pass `pace` to `fade` or `typewriter` to pace them directly.
+ * text; only text that arrives later is paced. Place it before `fade`, `typewriter` and `caret` so
+ * they only see released text: `[pace(), fade(), caret()]`.
  */
 export function pace(options: PaceOptions = {}): StreamEffect<PaceState> {
-  const controller = createPace(options)
-  return {
-    name: 'pace',
-    init: controller.init,
-    pending: controller.pending,
-    apply: (nodes, { streaming, now, state }) => controller.apply(nodes, streaming, now, state),
-  }
-}
-
-/** Pacing rules shared by {@link pace} and the `pace` option of {@link fade} and {@link typewriter}. */
-function createPace(options: PaceOptions = {}): PaceController {
   const speed = Math.max(0, options.speed ?? DEFAULT_PACE_SPEED)
   const catchUp = Math.max(0, options.catchUp ?? DEFAULT_PACE_CATCH_UP)
-  const plainMeasure = createTextMeasure()
+  const exclude = new Set(options.exclude ?? DEFAULT_FADE_EXCLUDE)
+  const measure = createTextMeasure((node) => exclude.has(node[0]))
 
   return {
+    name: 'pace',
     init: () => ({ progress: 0, total: 0, at: undefined, deadlines: [], streamed: false, started: false }),
     pending: (state) => state.progress < state.total,
-    apply(nodes, streaming, now, state, measure = plainMeasure) {
+    apply(nodes, { streaming, now, state }) {
       let total = 0
       for (let i = 0; i < nodes.length; i++) total += measure.length(nodes[i], 0)
       const grew = total > state.total
@@ -475,11 +469,8 @@ export type FadeEasing =
   | `linear(${string})`
   | `var(${string})`
 
-/**
- * Options for {@link fade}. `speed` and `catchUp` pace the reveal (see {@link pace}) unless `pace` is
- * `false`.
- */
-export interface FadeOptions extends PaceOptions {
+/** Options for {@link fade}. Combine with {@link pace} to release text at a steady rate. */
+export interface FadeOptions {
   /**
    * Animation duration in milliseconds. A block's spans merge back into plain text this long after
    * its last chunk starts fading.
@@ -514,12 +505,6 @@ export interface FadeOptions extends PaceOptions {
   styles?: boolean
   /** Tags whose subtrees never fade. Replaces {@link DEFAULT_FADE_EXCLUDE}. */
   exclude?: readonly string[]
-  /**
-   * Reveal text at a steady pace (see {@link pace}) before it fades in. `false` fades each chunk as
-   * soon as it arrives and ignores `speed` and `catchUp`.
-   * @default true
-   */
-  pace?: boolean
 }
 
 /** Tags that never fade by default: code and rendered output that would re-mount or break if split. */
@@ -571,8 +556,6 @@ interface RevealState {
   blocks: FadeBlock[]
   /** Earliest start for the next queued unit. */
   nextAt: number
-  /** Pace state when the `pace` option is set. */
-  paced?: PaceState
   /** Whether the previous render was streaming, so the chunk that closes the stream still fades. */
   streamed: boolean
 }
@@ -592,7 +575,6 @@ interface RevealConfig {
   inlineStyle: string
   styles: { id: string; css: string } | false
   exclude: ReadonlySet<string>
-  paceController?: PaceController
 }
 
 const EMPTY_TEXT: BlockText = { text: '', leaf: 0 }
@@ -633,24 +615,11 @@ export function fade(options: FadeOptions = {}): StreamEffect<RevealState> {
     inlineStyle,
     styles: (options.styles ?? options.class === undefined) ? { id: 'fade', css: FADE_STYLES } : false,
     exclude: new Set(options.exclude ?? DEFAULT_FADE_EXCLUDE),
-    paceController: options.pace === false ? undefined : createPace(options),
   })
 }
 
 function createRevealEffect(config: RevealConfig): StreamEffect<RevealState> {
-  const {
-    name,
-    unit,
-    interval,
-    duration,
-    maxQueue,
-    keyPrefix,
-    className,
-    inlineStyle,
-    styles,
-    exclude,
-    paceController,
-  } = config
+  const { name, unit, interval, duration, maxQueue, keyPrefix, className, inlineStyle, styles, exclude } = config
 
   const isExcluded = (node: ElementNode): boolean => {
     if (exclude.has(node[0])) return true
@@ -785,17 +754,8 @@ function createRevealEffect(config: RevealConfig): StreamEffect<RevealState> {
 
   return {
     name,
-    init: () => ({ source: null, blocks: [], nextAt: 0, paced: paceController?.init(), streamed: false }),
-    // A word held back while pace has caught up waits for more input or the stream closing, both of
-    // which render again, so only the pace backlog needs frames.
-    pending: paceController ? (state) => state.paced !== undefined && paceController.pending(state.paced) : undefined,
-    apply(input, { streaming: inputStreaming, now, state }) {
-      // State is kept by name, so it may come from an effect created with a different `pace` option.
-      if (!paceController) state.paced = undefined
-      else state.paced ??= paceController.init()
-      const paced = state.paced
-      const nodes = paceController && paced ? paceController.apply(input, inputStreaming, now, paced, measure) : input
-      const streaming = paced ? paced.streamed : inputStreaming
+    init: () => ({ source: null, blocks: [], nextAt: 0, streamed: false }),
+    apply(nodes, { streaming, now, state, backlog }) {
       const closing = !streaming && state.streamed
       state.streamed = streaming
       const previous = state.source
@@ -813,8 +773,9 @@ function createRevealEffect(config: RevealConfig): StreamEffect<RevealState> {
         }
 
         const { text, leaf } = blockText(node)
-        // Only the last top-level node can still grow, so only it may end mid-word. Earlier blocks are complete.
-        const growing = streaming && unit === 'word' && paceController !== undefined && i === nodes.length - 1
+        // An earlier effect with a backlog (pace) cuts text mid-word, so hold the partial word until it is
+        // released whole. Only the last top-level node can be cut; earlier blocks are complete.
+        const growing = streaming && backlog && unit === 'word' && i === nodes.length - 1
         const hold = growing ? wordStart(text, leaf) : text.length
         const flushing = block !== undefined && block.shown < block.text.length
         const common = block
@@ -867,8 +828,8 @@ function createRevealEffect(config: RevealConfig): StreamEffect<RevealState> {
 
 // #region typewriter
 
-/** Options for {@link typewriter}. `speed` sets both the typing rate and the pace that releases text. */
-export interface TypewriterOptions extends PaceOptions {
+/** Options for {@link typewriter}. Combine with {@link pace} to release text at a steady rate. */
+export interface TypewriterOptions {
   /**
    * Characters revealed per second. `0` or `Infinity` reveals each streamed chunk at once.
    * @default 100
@@ -888,12 +849,6 @@ export interface TypewriterOptions extends PaceOptions {
   styles?: boolean
   /** Tags whose subtrees are revealed as a whole. Replaces {@link DEFAULT_FADE_EXCLUDE}. */
   exclude?: readonly string[]
-  /**
-   * Release text at `speed` (see {@link pace}) before it types out. `false` types out each chunk as
-   * soon as it arrives and ignores `catchUp`.
-   * @default true
-   */
-  pace?: boolean
 }
 
 const TYPEWRITER_CLASS = 'comark-typewriter'
@@ -924,11 +879,6 @@ export function typewriter(options: TypewriterOptions = {}): StreamEffect<Reveal
     inlineStyle: '',
     styles: (options.styles ?? options.class === undefined) ? { id: 'typewriter', css: TYPEWRITER_STYLES } : false,
     exclude: new Set(options.exclude ?? DEFAULT_FADE_EXCLUDE),
-    // `speed: 0` reveals chunks at once, so its pace must not hold text back forever.
-    paceController:
-      options.pace === false
-        ? undefined
-        : createPace({ speed: speed > 0 ? speed : Infinity, catchUp: options.catchUp }),
   })
 }
 

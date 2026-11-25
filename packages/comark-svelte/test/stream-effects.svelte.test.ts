@@ -13,7 +13,7 @@ it('fades only new text and keeps fading spans mounted', async () => {
   const screen = await render(MarkdownDocument, {
     value: doc(done, ['p', {}, 'Hello']),
     streaming: true,
-    effects: [fade({ pace: false })],
+    effects: [fade()],
   })
   const paragraph = screen.container.querySelector('p')
   const first = [...screen.container.querySelectorAll('.comark-fade')]
@@ -30,7 +30,7 @@ it('places the caret after faded text and drops it when streaming ends', async (
   const screen = await render(MarkdownDocument, {
     value: doc(['p', {}, 'Hi']),
     streaming: true,
-    effects: [fade({ pace: false }), caret({ class: 'cursor' })],
+    effects: [fade(), caret({ class: 'cursor' })],
   })
   expect(screen.container.querySelector('p .cursor')).not.toBeNull()
   await screen.rerender({ streaming: false })

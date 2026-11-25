@@ -25,7 +25,7 @@ function doc(...nodes: Node[]): MarkdownDocumentType {
   return { nodes, frontmatter: {}, meta: {} }
 }
 
-const fadeEffects = [fade({ pace: false })]
+const fadeEffects = [fade()]
 
 async function render(value: MarkdownDocumentType, props: Record<string, unknown> = {}) {
   await act(async () => {

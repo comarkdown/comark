@@ -31,7 +31,7 @@ const SETTLE_MS = 250
 
 const effects = computed(() => {
   const list: StreamEffect[] = []
-  if (fadeIn.value) list.push(fade({ pace: false }))
+  if (fadeIn.value) list.push(fade())
   if (showCaret.value) list.push(caret())
   return list
 })

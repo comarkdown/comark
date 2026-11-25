@@ -16,7 +16,7 @@ function renderDoc(value: MarkdownDocumentType, props: Record<string, unknown> =
 
 describe('stream effects', () => {
   it('wraps streamed text in fade spans', async () => {
-    const html = await renderDoc(doc(['p', {}, 'Hello']), { streaming: true, effects: [fade({ pace: false })] })
+    const html = await renderDoc(doc(['p', {}, 'Hello']), { streaming: true, effects: [fade()] })
     expect(html).toContain('<p><span class="comark-fade">Hello</span></p>')
   })
 
