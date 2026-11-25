@@ -269,7 +269,7 @@ const typing = [pace({ speed: 100 }), typewriter({ speed: 100 }), caret()]
 ```
 
 - `pace()` options: `speed` (default `45`), `catchUp` (default `Infinity`), `exclude`
-- `fade()` options: `duration` (default `300`), `easing`, `delay`, `unit` (`'word'` or `'char'`), `class`, `styles`, `exclude`
+- `fade()` options: `duration` (default `300`), `easing`, `animation` (`'fade'`, `'blur'`, `'slide'`), `delay` (default `30` per word, `0` fades each chunk whole), `unit` (`'word'` or `'char'`), `class`, `styles`, `exclude`. It also fades `img`, `hr`, task list checkboxes, and new list item markers, and splits CJK text per character.
 - `typewriter()` options: `speed` (default `100`), `class`, `styles`, `exclude`
 - The renderer keeps rendering until the paced backlog drains, even after `streaming` turns `false`
 - Code blocks, math, and diagrams never fade or type; they appear whole

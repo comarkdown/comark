@@ -209,9 +209,10 @@ describe('fade', () => {
   it('fades across inline elements and keeps offsets per block', () => {
     const time = clock()
     const stream = createStreamRenderer({ now: time.now })
-    stream.render([['p', {}, 'a ']], { streaming: true, effects })
+    const chunked = [fade({ styles: false, delay: 0 })]
+    stream.render([['p', {}, 'a ']], { streaming: true, effects: chunked })
     time.advance(400)
-    const out = stream.render([['p', {}, 'a ', ['strong', {}, 'b'], ' c']], { streaming: true, effects })
+    const out = stream.render([['p', {}, 'a ', ['strong', {}, 'b'], ' c']], { streaming: true, effects: chunked })
     expect(out[0]).toEqual([
       'p',
       {},
@@ -950,5 +951,133 @@ describe('reveal edge cases', () => {
     const out = stream.render([['p', {}, 'abc']], { streaming: false, effects: all })
     expect(textOf(out[0])).toBe('abc')
     expect(stream.pending()).toBe(false)
+  })
+})
+
+describe('fade polish', () => {
+  const styleOf = (n: unknown) => ((n as ElementNode)[1].style as string | undefined) ?? ''
+
+  it('staggers words by 30ms by default and joins leading space to the next word', () => {
+    const stream = createStreamRenderer({ now: () => 0 })
+    const out = stream.render([['p', {}, ' one two']], { streaming: true, effects })
+    const p = out[0] as ElementNode
+    expect(fadeSpans(out)).toEqual([' one ', 'two'])
+    expect(p.slice(2).map(styleOf)).toEqual(['', 'animation-delay:30ms;'])
+  })
+
+  it('fades CJK text one character at a time in word mode', () => {
+    const stream = createStreamRenderer({ now: () => 0 })
+    const out = stream.render([['p', {}, '你好，world 𠀀x']], { streaming: true, effects })
+    expect(fadeSpans(out)).toEqual(['你', '好', '，', 'world ', '𠀀', 'x'])
+  })
+
+  it('treats Unicode spaces as word boundaries', () => {
+    const stream = createStreamRenderer({ now: () => 0 })
+    const out = stream.render([['p', {}, 'a\u00a0b\u3000c']], { streaming: true, effects })
+    expect(fadeSpans(out)).toEqual(['a\u00a0', 'b\u3000', 'c'])
+  })
+
+  it('does not hold back a trailing CJK character while pacing', () => {
+    const time = clock()
+    const stream = createStreamRenderer({ now: time.now })
+    const all = [pace({ speed: 1000 }), fade({ styles: false })]
+    stream.render([], { streaming: true, effects: all })
+    stream.render([['p', {}, '你好世界']], { streaming: true, effects: all })
+    time.advance(2)
+    const out = stream.render([['p', {}, '你好世界']], { streaming: true, effects: all })
+    expect(fadeSpans(out).join('')).toBe('你好')
+  })
+
+  it('fades images, rules, and checkboxes with the text around them', async () => {
+    const parse = createMarkdownParser()
+    const stream = createStreamRenderer({ now: () => 0 })
+    stream.render([], { streaming: true, effects })
+    const doc = await parse('- [x] done\n\n---\n\n![alt](a.png) after\n')
+    const before = JSON.stringify(doc.nodes)
+    const out = stream.render(doc.nodes, { streaming: true, effects })
+    expect(JSON.stringify(doc.nodes)).toBe(before)
+    const [ul, hr, p] = out as ElementNode[]
+    const li = ul[2] as ElementNode
+    const input = li[2] as ElementNode
+    expect(input[1].class).toBe('task-list-item-checkbox comark-fade')
+    expect(input[1].type).toBe('checkbox')
+    // The word queue runs across blocks: checkbox, "done", rule, image.
+    expect(hr).toEqual(['hr', { class: 'comark-fade', style: 'animation-delay:60ms;' }])
+    expect(p[2]).toEqual(['img', { src: 'a.png', alt: 'alt', class: 'comark-fade', style: 'animation-delay:90ms;' }])
+    expect(fadeSpans(p)).toEqual([' after'])
+  })
+
+  it('stamps new list items so their marker fades with the first word', () => {
+    const time = clock()
+    const stream = createStreamRenderer({ now: time.now })
+    stream.render([['ul', {}, ['li', {}, 'one']]], { streaming: true, effects })
+    time.advance(400)
+    const out = stream.render([['ul', {}, ['li', {}, 'one'], ['li', { style: 'color:red' }, 'two']]], {
+      streaming: true,
+      effects,
+    })
+    const ul = out[0] as ElementNode
+    expect(ul[2]).toEqual(['li', {}, 'one'])
+    expect((ul[3] as ElementNode)[1]).toEqual({
+      class: 'comark-fade-marker',
+      style: 'color:red;--comark-fade-delay:0ms;',
+    })
+  })
+
+  it('carries custom duration and easing to the marker and uses a custom class prefix', () => {
+    const stream = createStreamRenderer({ now: () => 0 })
+    const custom = [fade({ class: 'pop', duration: 500, easing: 'linear', delay: 0 })]
+    const out = stream.render([['ol', {}, ['li', {}, 'x']]], { streaming: true, effects: custom })
+    expect(((out[0] as ElementNode)[2] as ElementNode)[1]).toEqual({
+      class: 'pop-marker',
+      style: '--comark-fade-duration:500ms;--comark-fade-easing:linear;--comark-fade-delay:0ms;',
+    })
+  })
+
+  it('removes stamps together with spans once the block settles', () => {
+    const time = clock()
+    const stream = createStreamRenderer({ now: time.now })
+    stream.render([], { streaming: true, effects })
+    const nodes: Node[] = [['ul', {}, ['li', {}, 'x ', ['img', { src: 'a' }]]]]
+    stream.render(nodes, { streaming: true, effects })
+    time.advance(1000)
+    expect(stream.render(nodes, { streaming: true, effects })).toBe(nodes)
+    expect(stream.pending()).toBe(false)
+  })
+
+  it('adds preset classes and ignores them with a custom class', () => {
+    const stream = createStreamRenderer({ now: () => 0 })
+    const blur = stream.render([['p', {}, 'x']], { streaming: true, effects: [fade({ animation: 'blur' })] })
+    expect(((blur[0] as ElementNode)[2] as ElementNode)[1].class).toBe('comark-fade comark-fade-blur')
+    const other = createStreamRenderer({ now: () => 0 })
+    const own = other.render([['p', {}, 'x']], {
+      streaming: true,
+      effects: [fade({ animation: 'slide', class: 'mine' })],
+    })
+    expect(((own[0] as ElementNode)[2] as ElementNode)[1].class).toBe('mine')
+  })
+
+  it('reveals images in order with typewriter but leaves list markers alone', () => {
+    const stream = createStreamRenderer({ now: () => 0 })
+    const tw = [typewriter({ styles: false, speed: 100 })]
+    const out = stream.render([['ul', {}, ['li', {}, 'a', ['img', { src: 'x' }]]]], { streaming: true, effects: tw })
+    const li = (out[0] as ElementNode)[2] as ElementNode
+    expect(li[1]).toEqual({})
+    expect(li[3]).toEqual(['img', { src: 'x', class: 'comark-typewriter', style: 'animation-delay:10ms;' }])
+  })
+
+  it('fades an image once pace reaches it', () => {
+    const time = clock()
+    const stream = createStreamRenderer({ now: time.now })
+    const all = [pace({ speed: 1000 }), fade({ styles: false }), caret()]
+    stream.render([], { streaming: true, effects: all })
+    const nodes: Node[] = [['p', {}, 'ab ', ['img', { src: 'x' }], ' cd']]
+    stream.render(nodes, { streaming: true, effects: all })
+    time.advance(2)
+    expect(JSON.stringify(stream.render(nodes, { streaming: true, effects: all }))).not.toContain('"img"')
+    time.advance(1)
+    const p = stream.render(nodes, { streaming: true, effects: all })[0] as ElementNode
+    expect((p[3] as ElementNode)[0]).toBe('img')
+    expect((p[3] as ElementNode)[1].class).toBe('comark-fade')
   })
 })

@@ -282,6 +282,7 @@ Contract: `packages/comark/SPEC/HTML/README.md`.
 
 Every framework renderer accepts a single `effects` prop (there are no `caret` or `fade` props; users import `caret()` and `fade()` from `comark/stream`) and applies it through one `createStreamRenderer()` per component instance, in array order. Put `pace()` first and `caret()` last.
 
+- `fade()` staggers words by 30ms by default and treats each Han/kana character and each `FADE_UNIT_TAGS` element (`img`, `hr`, `input`, counted as one `\uFFFC` character of fadeable text) as its own word. It stamps those elements and new `li` items (`comark-fade-marker` plus `--comark-fade-*` custom properties for `::marker`) instead of wrapping them; stamps merge away with the block's spans.
 - `fade()` and `typewriter()` never pace; users compose `[pace(), fade()]`. Later effects see `context.backlog` while an earlier effect still holds text back, and `fade` uses it to hold a partially released word.
 - Effects run on the top-level nodes at render time and must never mutate them: copy only the changed path so reused streaming blocks keep their identity. Nodes an effect inserts carry `$.key`.
 - An effect's `pending()` means it holds text back, so later effects see `streaming` and `backlog`; `settling()` (used by `fade` and `typewriter` until their spans merge) only keeps renderers scheduling frames. `StreamRenderer.pending()` is true for either.

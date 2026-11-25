@@ -258,7 +258,10 @@ interface TextMeasure {
  * Text lengths cached by node identity. Streaming keeps unchanged blocks identical between renders and
  * effects never mutate nodes, so each frame only measures the blocks that changed.
  */
-function createTextMeasure(isOpaque?: (node: ElementNode) => boolean): TextMeasure {
+function createTextMeasure(
+  isOpaque?: (node: ElementNode) => boolean,
+  isUnit?: (node: ElementNode) => boolean
+): TextMeasure {
   // `height` is how many element levels the subtree spans, so a length is reused only at depths where
   // the depth limit cuts nothing from it.
   const cache = new WeakMap<ElementNode, { total: number; height: number }>()
@@ -282,6 +285,11 @@ function createTextMeasure(isOpaque?: (node: ElementNode) => boolean): TextMeasu
       cache.set(element, { total: 0, height: 0 })
       reach = Math.max(reach, depth)
       return 0
+    }
+    if (isUnit?.(element)) {
+      cache.set(element, { total: 1, height: 0 })
+      reach = Math.max(reach, depth)
+      return 1
     }
     const outerTruncated = truncated
     const outerReach = reach
@@ -496,10 +504,16 @@ export interface FadeOptions {
   /** @default 'ease-out' */
   easing?: FadeEasing
   /**
+   * Built-in animation: `fade` animates opacity, `blur` also sharpens from a 4px blur, and `slide`
+   * also rises `0.25em`. Ignored when `class` is set.
+   * @default 'fade'
+   */
+  animation?: FadeAnimation
+  /**
    * Delay in milliseconds between consecutive words (or characters, with `unit: 'char'`). `0` fades
    * each streamed chunk as a whole. Units queue across chunks, and the queue never falls more than
    * `duration` behind.
-   * @default 0 for `unit: 'word'`, 20 for `unit: 'char'`
+   * @default 30 for `unit: 'word'`, 20 for `unit: 'char'`
    */
   delay?: number
   /**
@@ -508,8 +522,10 @@ export interface FadeOptions {
    */
   unit?: 'word' | 'char'
   /**
-   * Class on fading spans. Setting it turns `styles` off by default so your own CSS drives the
-   * animation.
+   * Class on fading spans and on images, rules, and checkboxes that fade in. A new list item also gets
+   * `<class>-marker`, with its timing in the `--comark-fade-delay`, `--comark-fade-duration`, and
+   * `--comark-fade-easing` custom properties, so CSS can fade its `::marker`. Setting it turns `styles`
+   * off by default so your own CSS drives the animation.
    * @default 'comark-fade'
    */
   class?: string
@@ -526,13 +542,41 @@ export interface FadeOptions {
 /** Tags that never fade by default: code and rendered output that would re-mount or break if split. */
 export const DEFAULT_FADE_EXCLUDE: readonly string[] = ['pre', 'math', 'mermaid', 'svg', 'script', 'style', 'textarea']
 
+/** Built-in animations of {@link fade}. */
+export type FadeAnimation = 'fade' | 'blur' | 'slide'
+
+/**
+ * Tags with no text of their own that still fade in. Each counts as one character of the block's
+ * fadeable text, so inserting one is detected like new text.
+ */
+export const FADE_UNIT_TAGS: readonly string[] = ['img', 'hr', 'input']
+
+const UNIT_TAGS: ReadonlySet<string> = new Set(FADE_UNIT_TAGS)
+
 const FADE_CLASS = 'comark-fade'
 const FADE_KEY_PREFIX = 'comark-fade:'
 const DEFAULT_DURATION = 300
+const DEFAULT_WORD_DELAY = 30
 const DEFAULT_CHAR_DELAY = 20
+/** Stands in for a {@link FADE_UNIT_TAGS} element in a block's fadeable text. */
+const UNIT_CHAR = '\uFFFC'
+const UNIT_CODE = 0xfffc
 
-/** Default fade stylesheet, for apps that ship it themselves with `styles: false`. */
-export const FADE_STYLES = `@keyframes comark-fade-in{from{opacity:0}to{opacity:1}}.${FADE_CLASS}{animation:comark-fade-in ${DEFAULT_DURATION}ms ease-out both}@media (prefers-reduced-motion:reduce){.${FADE_CLASS}{animation:none}}`
+/**
+ * Default fade stylesheet, for apps that ship it themselves with `styles: false`. `slide` animates
+ * `top` on a relatively positioned span because `transform` does not apply to inline boxes, and
+ * `inline-block` would drop the trailing space each word span carries.
+ */
+export const FADE_STYLES =
+  '@keyframes comark-fade-in{from{opacity:0}to{opacity:1}}' +
+  '@keyframes comark-blur-in{from{opacity:0;filter:blur(4px)}to{opacity:1;filter:none}}' +
+  '@keyframes comark-slide-in{from{opacity:0;top:.25em}to{opacity:1;top:0}}' +
+  '@keyframes comark-marker-in{from{color:transparent}}' +
+  `.${FADE_CLASS}{animation:comark-fade-in ${DEFAULT_DURATION}ms ease-out both}` +
+  `.${FADE_CLASS}-blur{animation-name:comark-blur-in}` +
+  `.${FADE_CLASS}-slide{position:relative;animation-name:comark-slide-in}` +
+  `.${FADE_CLASS}-marker::marker{animation:comark-marker-in var(--comark-fade-duration,${DEFAULT_DURATION}ms) var(--comark-fade-easing,ease-out) var(--comark-fade-delay,0ms) both}` +
+  `@media (prefers-reduced-motion:reduce){.${FADE_CLASS},.${FADE_CLASS}-marker::marker{animation:none}}`
 
 interface FadeSegment {
   /** Offset range in the block's fadeable text. */
@@ -589,6 +633,10 @@ interface RevealConfig {
   keyPrefix: string
   className: string
   inlineStyle: string
+  /** Class for a new list item so CSS can fade its `::marker`, or `null` to leave markers alone. */
+  markerClass: string | null
+  /** Custom properties every stamped list item carries, before its delay. */
+  markerStyle: string
   styles: { id: string; css: string } | false
   exclude: ReadonlySet<string>
 }
@@ -616,19 +664,30 @@ export function fade(options: FadeOptions = {}): StreamEffect<RevealState> {
   const duration = options.duration ?? DEFAULT_DURATION
   const unit = options.unit ?? 'word'
 
+  const animation = options.animation ?? 'fade'
+
   let inlineStyle = ''
-  if (options.duration !== undefined) inlineStyle += `animation-duration:${duration}ms;`
-  if (options.easing !== undefined) inlineStyle += `animation-timing-function:${options.easing};`
+  let markerStyle = ''
+  if (options.duration !== undefined) {
+    inlineStyle += `animation-duration:${duration}ms;`
+    markerStyle += `--comark-fade-duration:${duration}ms;`
+  }
+  if (options.easing !== undefined) {
+    inlineStyle += `animation-timing-function:${options.easing};`
+    markerStyle += `--comark-fade-easing:${options.easing};`
+  }
 
   return createRevealEffect({
     name: 'fade',
     unit,
-    interval: Math.max(0, options.delay ?? (unit === 'char' ? DEFAULT_CHAR_DELAY : 0)),
+    interval: Math.max(0, options.delay ?? (unit === 'char' ? DEFAULT_CHAR_DELAY : DEFAULT_WORD_DELAY)),
     duration,
     maxQueue: duration,
     keyPrefix: FADE_KEY_PREFIX,
-    className: options.class ?? FADE_CLASS,
+    className: options.class ?? (animation === 'fade' ? FADE_CLASS : `${FADE_CLASS} ${FADE_CLASS}-${animation}`),
     inlineStyle,
+    markerClass: `${options.class ?? FADE_CLASS}-marker`,
+    markerStyle,
     styles: (options.styles ?? options.class === undefined) ? { id: 'fade', css: FADE_STYLES } : false,
     exclude: new Set(options.exclude ?? DEFAULT_FADE_EXCLUDE),
   })
@@ -636,13 +695,15 @@ export function fade(options: FadeOptions = {}): StreamEffect<RevealState> {
 
 function createRevealEffect(config: RevealConfig): StreamEffect<RevealState> {
   const { name, unit, interval, duration, maxQueue, keyPrefix, className, inlineStyle, styles, exclude } = config
+  const { markerClass, markerStyle } = config
 
   const isExcluded = (node: ElementNode): boolean => {
     if (exclude.has(node[0])) return true
     const key = getStreamKey(node)
     return key !== undefined && (key === CARET_KEY || isRevealKey(key))
   }
-  const measure = createTextMeasure(isExcluded)
+  const isUnit = (node: ElementNode): boolean => UNIT_TAGS.has(node[0])
+  const measure = createTextMeasure(isExcluded, isUnit)
   // Only top-level blocks are cached: they are always read at depth 0, so the depth limit cuts them
   // the same way every time.
   const texts = new WeakMap<ElementNode, BlockText>()
@@ -656,6 +717,11 @@ function createRevealEffect(config: RevealConfig): StreamEffect<RevealState> {
       return
     }
     if (node[0] === null || depth >= MAX_DEPTH || isExcluded(node as ElementNode)) return
+    if (isUnit(node as ElementNode)) {
+      acc.leaf = acc.text.length
+      acc.text += UNIT_CHAR
+      return
+    }
     for (let i = 2; i < node.length; i++) collectText(node[i] as Node, depth + 1, acc)
   }
 
@@ -696,8 +762,14 @@ function createRevealEffect(config: RevealConfig): StreamEffect<RevealState> {
         // Keep surrogate pairs (emoji) in one unit so they are never split across spans.
         end += code >= 0xd800 && code <= 0xdbff && i + 1 < limit ? 2 : 1
       } else {
-        while (end < limit && !isSpace(text.charCodeAt(end))) end++
+        // Leading space (at the start of a chunk) joins the next word instead of fading on its own.
         while (end < limit && isSpace(text.charCodeAt(end))) end++
+        // Scripts written without spaces (CJK) and unit elements fade one character at a time.
+        const single = end < limit ? breakWidth(text, end, limit) : 0
+        if (single > 0) end += single
+        else while (end < limit && !isSpace(text.charCodeAt(end)) && breakWidth(text, end, limit) === 0) end++
+        // Space after a unit element sits in the next text leaf, so it leads the next word instead.
+        if (text.charCodeAt(end - 1) !== UNIT_CODE) while (end < limit && isSpace(text.charCodeAt(end))) end++
       }
       const at = Math.max(now, Math.min(state.nextAt, now + maxQueue))
       state.nextAt = at + interval
@@ -742,9 +814,28 @@ function createRevealEffect(config: RevealConfig): StreamEffect<RevealState> {
     return pieces
   }
 
+  /** The segment covering `cursor.pos`, if any. Advances `cursor.segment` past segments that ended. */
+  function segmentAt(cursor: TextCursor, segments: FadeSegment[]): FadeSegment | undefined {
+    let k = cursor.segment
+    while (k < segments.length && segments[k].end <= cursor.pos) k++
+    cursor.segment = k
+    const segment = segments[k]
+    return segment !== undefined && segment.start <= cursor.pos ? segment : undefined
+  }
+
   /** Returns the decorated copy of `node`, or `null` when unchanged. */
   function decorate(node: ElementNode, segments: FadeSegment[], cursor: TextCursor, depth: number): ElementNode | null {
     if (depth >= MAX_DEPTH || isExcluded(node)) return null
+    if (isUnit(node)) {
+      const segment = segmentAt(cursor, segments)
+      cursor.pos += 1
+      if (!segment) return null
+      const copy = node.slice() as ElementNode
+      copy[1] = withClassAndStyle(node[1], className, segment.style)
+      return copy
+    }
+    // A list item whose first character is fading is new, so its marker fades in with it.
+    const marker = markerClass !== null && node[0] === 'li' ? segmentAt(cursor, segments) : undefined
     let copy: Node[] | null = null
     for (let i = 2; i < node.length; i++) {
       const child = node[i] as Node
@@ -764,6 +855,12 @@ function createRevealEffect(config: RevealConfig): StreamEffect<RevealState> {
         }
       }
       copy?.push(child)
+    }
+    if (marker) {
+      const stamped = (copy ?? node.slice()) as unknown as ElementNode
+      // Always set the delay so a nested item never inherits its parent's.
+      stamped[1] = withClassAndStyle(node[1], markerClass!, `${markerStyle}--comark-fade-delay:${marker.delay}ms;`)
+      return stamped
     }
     return copy as ElementNode | null
   }
@@ -895,6 +992,8 @@ export function typewriter(options: TypewriterOptions = {}): StreamEffect<Reveal
     keyPrefix: TYPEWRITER_KEY_PREFIX,
     className: options.class ?? TYPEWRITER_CLASS,
     inlineStyle: '',
+    markerClass: null,
+    markerStyle: '',
     styles: (options.styles ?? options.class === undefined) ? { id: 'typewriter', css: TYPEWRITER_STYLES } : false,
     exclude: new Set(options.exclude ?? DEFAULT_FADE_EXCLUDE),
   })
@@ -910,12 +1009,68 @@ function commonPrefixLength(a: string, b: string): number {
 }
 
 function isSpace(code: number): boolean {
-  return code === 32 || code === 9 || code === 10 || code === 13
+  if (code <= 32) return code === 32 || (code >= 9 && code <= 13)
+  if (code < 0xa0) return false
+  return (
+    code === 0xa0 ||
+    code === 0x1680 ||
+    (code >= 0x2000 && code <= 0x200a) ||
+    code === 0x2028 ||
+    code === 0x2029 ||
+    code === 0x202f ||
+    code === 0x205f ||
+    code === 0x3000
+  )
 }
 
-/** Offset (at least `from`) where the trailing non-space run of `text` starts; `text.length` after a space. */
+/** Han, kana, CJK punctuation, fullwidth forms, and the unit placeholder: each is a word on its own. */
+function isBreakCode(code: number): boolean {
+  return (
+    (code >= 0x3001 && code <= 0x30ff) ||
+    (code >= 0x3400 && code <= 0x4dbf) ||
+    (code >= 0x4e00 && code <= 0x9fff) ||
+    (code >= 0xf900 && code <= 0xfaff) ||
+    (code >= 0xff00 && code <= 0xffef) ||
+    code === 0xfffc
+  )
+}
+
+/** High surrogates of planes 2 and 3 (U+20000 to U+3FFFF), which hold the CJK ideograph extensions. */
+function isCjkHighSurrogate(code: number): boolean {
+  return code >= 0xd840 && code <= 0xd8bf
+}
+
+/** Length of the standalone word character at `i` (1, or 2 for a surrogate pair), or `0` if there is none. */
+function breakWidth(text: string, i: number, limit: number): number {
+  const code = text.charCodeAt(i)
+  if (isBreakCode(code)) return 1
+  return isCjkHighSurrogate(code) && i + 1 < limit ? 2 : 0
+}
+
+/**
+ * Offset (at least `from`) where the trailing partial word of `text` starts. Returns `text.length`
+ * after a space or a standalone word character, which can no longer grow.
+ */
 function wordStart(text: string, from: number): number {
   let i = text.length
-  while (i > from && !isSpace(text.charCodeAt(i - 1))) i--
+  while (i > from) {
+    const code = text.charCodeAt(i - 1)
+    if (isSpace(code) || isBreakCode(code)) break
+    if (code >= 0xdc00 && code <= 0xdfff && i - 2 >= from && isCjkHighSurrogate(text.charCodeAt(i - 2))) break
+    i--
+  }
   return i
+}
+
+/** Copy `attrs` with `cls` appended to its class and `style` appended to a string style. */
+function withClassAndStyle(attrs: ElementNode[1], cls: string, style: string): ElementNode[1] {
+  const next: ElementNode[1] = { ...attrs }
+  next.class = typeof attrs.class === 'string' && attrs.class ? `${attrs.class} ${cls}` : cls
+  if (style) {
+    const existing = typeof attrs.style === 'string' ? attrs.style.trimEnd() : ''
+    // A non-string style (an object from a component prop) is left alone rather than overwritten.
+    if (existing) next.style = existing.endsWith(';') ? existing + style : `${existing};${style}`
+    else if (attrs.style === undefined || attrs.style === '') next.style = style
+  }
+  return next
 }
