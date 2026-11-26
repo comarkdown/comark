@@ -1,4 +1,4 @@
-import { stringifyYaml } from '../yaml.ts'
+import { stringifyYaml } from '../../utils/yaml.ts'
 import { pickFence } from './fence.ts'
 
 export { resolveAttributes, resolveAttribute } from './html-attributes.ts'

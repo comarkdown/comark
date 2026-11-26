@@ -23,7 +23,6 @@ import { createMarkdownParser as createCoreMarkdownParser } from './core.ts'
 
 export { autoCloseMarkdown, INCOMPLETE_LINK_PLACEHOLDER, INCOMPLETE_IMAGE_PLACEHOLDER } from './auto-close.ts'
 export type { AutoCloseOptions, LinkMode } from './auto-close.ts'
-export { parseFrontmatter } from './internal/frontmatter.ts'
 export { defineComarkPlugin } from './utils/helpers.ts'
 export { createComarkContext } from './context.ts'
 export type { ComarkContext, ComarkDocument, ComarkPatch } from './context.ts'

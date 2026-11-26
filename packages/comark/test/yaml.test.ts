@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseYaml } from '../src/internal/yaml'
+import { parseYaml } from '../src/utils/yaml'
 
 describe('parseYaml', () => {
   describe('empty documents resolve to undefined', () => {

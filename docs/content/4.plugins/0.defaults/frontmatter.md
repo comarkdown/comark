@@ -73,6 +73,24 @@ const result = await parseMarkdown(content, { registerDefaultPlugins: false })
 // result.frontmatter → {}
 ```
 
+### Parse frontmatter directly
+
+`parseFrontmatter()` is a named export of the plugin module. Use it to read frontmatter from a string without running the full parser:
+
+```typescript
+import { parseFrontmatter } from 'comark/plugins/frontmatter'
+
+const { data, content, frontmatterText } = parseFrontmatter('---\ntitle: Hi\n---\n\n# Hello')
+// data → { title: 'Hi' }
+// content → '\n# Hello'
+```
+
+`parseFrontmatter()` throws when the YAML is invalid. The plugin catches the error, logs a warning, and strips the block without populating `frontmatter`.
+
+::note
+`parseFrontmatter` is no longer exported from `comark`. Import it from `comark/plugins/frontmatter` instead.
+::
+
 ## How it works
 
 In the `pre` hook (before markdown-exit tokenization), the plugin:
