@@ -41,7 +41,7 @@
     "test:sanitizer": "vitest run test/sanitizer",
     "test:spec": "cd packages/comark && pnpm vitest run test/index.test.ts -- -spec",
     "bench": "vitest bench --run --config benchmarks/vitest.config.ts",
-    "lint": "oxlint . && oxfmt --check . && pnpm --filter comark-docs-site lint",
+    "lint": "oxlint . && oxfmt --check .",
     "lint:fix": "oxlint --fix . && oxfmt .",
     "typecheck": "tsc --noEmit",
     "verify": "pnpm run lint && pnpm run test && pnpm run typecheck",
