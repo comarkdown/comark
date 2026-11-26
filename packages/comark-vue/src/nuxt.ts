@@ -40,9 +40,12 @@ export default defineNuxtModule<ComarkModuleOptions>({
       addComponent({ name, export: name, filePath: `@comark/vue/components/${name}`, priority: 1 })
     }
 
-    addImports(
-      ['defineMarkdownComponent', 'defineMarkdownDocumentComponent'].map((name) => ({ name, from: '@comark/vue' }))
-    )
+    // Same reason: `defineMarkdownComponent()` and `defineMarkdownDocumentComponent()` each come from
+    // their component's own entry.
+    addImports([
+      { name: 'defineMarkdownComponent', from: '@comark/vue/components/Markdown' },
+      { name: 'defineMarkdownDocumentComponent', from: '@comark/vue/components/MarkdownDocument' },
+    ])
 
     // Auto-imports are added only to the files that use them, so the parser stays out of bundles that don't.
     const parseImports = ['parseMarkdown', 'createMarkdownParser'].map((name) => ({ name, from: '@comark/vue/parse' }))

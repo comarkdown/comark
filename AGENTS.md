@@ -136,7 +136,7 @@ Vue 3 renderer (`Markdown`, `MarkdownDocument`, `defineMarkdownComponent`, `defi
 
 - `<Markdown>` is an async setup component and needs a `<Suspense>` boundary in Vue apps.
 - `@comark/vue/vite` transforms `<slot unwrap>` in custom Markdown components and optionally auto-registers `components/prose/*.vue`.
-- `modules: ['@comark/vue']` in Nuxt resolves `@comark/vue/nuxt`. It auto-imports `Markdown` and `MarkdownDocument` from `@comark/vue/components/*` (so `<MarkdownDocument>` alone never bundles the parser), `defineMarkdownComponent`, `defineMarkdownDocumentComponent`, and `parseMarkdown` / `createMarkdownParser` (in app and server routes), enables Nuxt UI prose components when `@nuxt/ui` is installed, and registers `@comark/vue/vite` with `prose: false`. It does not register `~/components/prose`. `@nuxt/kit` and `@nuxt/schema` are optional peer dependencies.
+- `modules: ['@comark/vue']` in Nuxt resolves `@comark/vue/nuxt`. It auto-imports `Markdown` and `MarkdownDocument` from `@comark/vue/components/*`, `defineMarkdownComponent` from `@comark/vue/components/Markdown`, `defineMarkdownDocumentComponent` from `@comark/vue/components/MarkdownDocument` (so `<MarkdownDocument>` alone never bundles the parser), and `parseMarkdown` / `createMarkdownParser` (in app and server routes), enables Nuxt UI prose components when `@nuxt/ui` is installed, and registers `@comark/vue/vite` with `prose: false`. It does not register `~/components/prose`. `@nuxt/kit` and `@nuxt/schema` are optional peer dependencies.
 
 ### `@comark/react` (`packages/comark-react/`)
 
