@@ -31,10 +31,10 @@ describe('@comark/vue nuxt module', async () => {
     }
   })
 
-  it('auto-imports defineMarkdownDocumentComponent from the <MarkdownDocument> entry, so it does not load the parser', async () => {
+  it('auto-imports each define helper from its component entry', async () => {
     const defineImports = imports.filter((i) => i.name.startsWith('define'))
     expect(defineImports.map((i) => [i.name, i.from])).toEqual([
-      ['defineMarkdownComponent', '@comark/vue'],
+      ['defineMarkdownComponent', '@comark/vue/components/Markdown'],
       ['defineMarkdownDocumentComponent', '@comark/vue/components/MarkdownDocument'],
     ])
 

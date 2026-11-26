@@ -2,7 +2,7 @@ import type { PropType } from 'vue'
 import { computed, defineComponent, h, shallowRef, watch } from 'vue'
 import { createSerializedMarkdownParser } from 'comark'
 import type { ParserOptions, ComponentManifest, MarkdownDocument as MarkdownDocumentType, NodeTransform } from 'comark'
-import { isMarkdownDocument } from 'comark/utils'
+import { isMarkdownDocument, mergeNodeTransforms } from 'comark/utils'
 import type { StreamEffect } from 'comark/effects'
 import { MarkdownDocument } from './MarkdownDocument.ts'
 
@@ -284,3 +284,59 @@ export const Markdown: MarkdownComponent = defineComponent({
     }
   },
 })
+
+export interface DefineMarkdownComponentOptions extends ParserOptions {
+  extends?: typeof Markdown
+  name?: string
+  components?: Record<string, any>
+  /**
+   * Node transforms that run before the instance's own `transformNode`
+   */
+  transformNode?: NodeTransform | readonly NodeTransform[]
+  /**
+   * Additional classes for the wrapper div
+   */
+  class?: string
+}
+
+export function defineMarkdownComponent(config: DefineMarkdownComponentOptions = {}): typeof Markdown {
+  const { name, transformNode, ...parseOptions } = config
+
+  return defineComponent({
+    name: name ?? 'MarkdownComponent',
+    props: markdownProps,
+    setup(props, { slots }) {
+      const options = computed(() => ({
+        ...parseOptions,
+        ...props.options,
+      }))
+
+      const plugins = computed(() => [...(config.plugins || []), ...(props.plugins || [])])
+
+      const components = computed(() => ({
+        ...config.components,
+        ...props.components,
+      }))
+
+      const transforms = computed(() => mergeNodeTransforms(transformNode, props.transformNode))
+
+      return () => {
+        const component = config.extends || Markdown
+        return h(
+          component,
+          {
+            ...props,
+            options: options.value,
+            plugins: plugins.value,
+            components: components.value,
+            transformNode: transforms.value,
+            class: config.class,
+          },
+          {
+            default: slots.default,
+          }
+        )
+      }
+    },
+  })
+}

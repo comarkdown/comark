@@ -40,9 +40,10 @@ export default defineNuxtModule<ComarkModuleOptions>({
       addComponent({ name, export: name, filePath: `@comark/vue/components/${name}`, priority: 1 })
     }
 
-    // Same reason: `defineMarkdownDocumentComponent()` comes from the `<MarkdownDocument>` entry.
+    // Same reason: `defineMarkdownComponent()` and `defineMarkdownDocumentComponent()` each come from
+    // their component's own entry.
     addImports([
-      { name: 'defineMarkdownComponent', from: '@comark/vue' },
+      { name: 'defineMarkdownComponent', from: '@comark/vue/components/Markdown' },
       { name: 'defineMarkdownDocumentComponent', from: '@comark/vue/components/MarkdownDocument' },
     ])
 
