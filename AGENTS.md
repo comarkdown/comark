@@ -88,20 +88,21 @@ packages/comark/
 │   │   ├── task-list.ts      # GFM task lists (default via registerDefaultPlugins)
 │   │   ├── title-description.ts # Extracts h1 and first paragraph into `meta`
 │   │   └── toc.ts            # Generates table of contents in `meta.toc`
-│   ├── utils/                # Public utilities (comark/utils and comark/utils/trace)
+│   ├── utils/                # Public utilities (comark/utils, comark/utils/trace, comark/utils/yaml)
 │   │   ├── index.ts          # textContent, visit, visitAsync, escapeHtml, isHtmlVoidElement, indent, applyNodeTransforms
 │   │   ├── helpers.ts        # defineComarkPlugin, dedupePlugins
-│   │   └── trace.ts          # noopTracer, withSpan
+│   │   ├── trace.ts          # noopTracer, withSpan
+│   │   └── yaml.ts           # parseYaml, stringifyYaml
 │   └── internal/             # Internal implementation (not exported)
 │       ├── bracket-math.ts   # `\( ... \)` and `\[ ... \]` delimiter scanners
 │       ├── entities.ts       # HTML attribute entity decoding via character-entities
-│       ├── frontmatter.ts    # parseFrontmatter and renderFrontmatter
+
 │       ├── heading-id.ts     # Slug generation shared by parser and stringifier
 │       ├── inline-code-lang.ts # Inline code `{lang="..."}` fragment highlighting
 │       ├── list-item.ts      # List item content columns, shared by the component fence scan and auto-close
 │       ├── sanitize.ts       # Prop, URL, and frontmatter validation
 │       ├── shiki.ts          # Shared Shiki runtime
-│       ├── yaml.ts           # YAML parsing and serialization helpers
+
 │       ├── parse/
 │       │   ├── tree.ts       # Converts markdown-exit tokens into Comark AST nodes
 │       │   ├── tree-utils.ts # Fence metadata, attribute merging, and token helpers
@@ -185,6 +186,7 @@ import {
   mergeNodeTransforms,
 } from 'comark/utils'
 import { noopTracer, withSpan } from 'comark/utils/trace'
+import { parseYaml, stringifyYaml } from 'comark/utils/yaml'
 
 // Core plugins (also re-exported from @comark/{html,ansi,vue,react,svelte,angular}/plugins/*)
 import shiki from 'comark/plugins/shiki'

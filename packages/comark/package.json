@@ -51,6 +51,7 @@
     "./plugins/*": "./dist/plugins/*.js",
     "./utils": "./dist/utils/index.js",
     "./utils/trace": "./dist/utils/trace.js",
+    "./utils/yaml": "./dist/utils/yaml.js",
     "./parse": "./dist/index.js",
     "./core": "./dist/core.js",
     "./auto-close": "./dist/auto-close.js",

@@ -189,6 +189,7 @@ overrides:
   comark: workspace:*
   "@comark/nuxt": workspace:*
   "@comark/vue": workspace:*
+  "comark-content": "https://pkg.pr.new/comark-content@173"
 
 minimumReleaseAgeExclude:
   - comark@0.5.1 || 0.6.0 || 0.6.1 || 0.6.2 || 0.7.0 || 0.8.0 || 0.8.1
