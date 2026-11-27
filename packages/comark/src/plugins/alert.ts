@@ -39,8 +39,10 @@ const markers: Record<string, Marker> = {
 export default defineComarkPlugin(() => ({
   name: 'alert',
   post(state) {
+    const start = state.reusableNodes?.length ?? 0
+    const target = start > 0 ? { ...state.tree, nodes: state.tree.nodes.slice(start) } : state.tree
     visit(
-      state.tree,
+      target,
       (node) => Array.isArray(node) && node[0] === 'blockquote',
       (node) => {
         const element = node as ElementNode
