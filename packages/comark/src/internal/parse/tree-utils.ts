@@ -63,6 +63,8 @@ export function parseCodeblockInfo(info: string): CodeBlockInfo {
         }
         if (highlights.length > 0) {
           result.highlights = highlights
+        } else if (!result.language && !/[\s"'<>`]/.test(highlightsMatch[1])) {
+          result.language = highlightsMatch[0]
         }
       } else {
         break
