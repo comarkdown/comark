@@ -155,7 +155,14 @@ function tryCommentTag(content: string, state: ProcessState): ProcessorResult | 
 }
 
 function processToken(tokens: Token[], i: number, state: ProcessState): ProcessorResult | undefined {
-  return processors[tokens[i].type]?.(tokens, i, state)
+  const token = tokens[i]
+  const processor = processors[token.type]
+  if (processor) return processor(tokens, i, state)
+  if (token.nesting === 1 && token.tag && token.type.endsWith('_open')) {
+    const closeType = `${token.type.slice(0, -5)}_close`
+    return openCloseToken(closeType)(tokens, i, state)
+  }
+  return undefined
 }
 
 /**
