@@ -57,6 +57,23 @@ function makeHtmlAttrs(attrs: Record<string, unknown>, block: boolean): Record<s
   }
 }
 
+function extractImageAltText(tokens: Token[] | null | undefined): string {
+  if (!tokens?.length) return ''
+  let text = ''
+  for (const child of tokens) {
+    if (child.type === 'text' || child.type === 'code_inline' || child.type === 'emoji') {
+      text += child.content
+    } else if (child.type === 'softbreak' || child.type === 'hardbreak') {
+      text += '\n'
+    } else if (child.type === 'image') {
+      text += child.children?.length ? extractImageAltText(child.children) : child.content
+    } else if (child.children?.length) {
+      text += extractImageAltText(child.children)
+    }
+  }
+  return text
+}
+
 function pushNode(nodes: Node[], node: Node) {
   if (node[0] === 'fragment') nodes.push(...(node.slice(2) as Node[]))
   else nodes.push(node)
@@ -562,7 +579,7 @@ const processors: Record<string, Processor> = {
   image(tokens, start) {
     const token = tokens[start]
     const attrs = processAttributes(token.attrs, { handleJSON: false, filterEmpty: true })
-    attrs.alt = token.content
+    attrs.alt = token.children?.length ? extractImageAltText(token.children) : token.content
     return processPossibleAttributesSyntax(tokens, { node: ['img', attrs] as Node, nextIndex: start + 1 })
   },
 
