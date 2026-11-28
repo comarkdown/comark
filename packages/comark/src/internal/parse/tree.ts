@@ -356,8 +356,11 @@ function codeBlockProcessor(tokens: Token[], start: number, _state: ProcessState
   const info = token.info || (token as Token & { params?: string }).params || ''
 
   const parsed = parseCodeblockInfo(info)
-
-  const preAttrs: Record<string, unknown> = parsed
+  const tokenAttrs = processAttributes(token.attrs)
+  const preAttrs: Record<string, unknown> = { ...tokenAttrs, ...parsed }
+  if (typeof tokenAttrs.class === 'string' && typeof parsed.class === 'string') {
+    preAttrs.class = `${tokenAttrs.class} ${parsed.class}`
+  }
   const codeAttrs: Record<string, unknown> = {}
   if (parsed.language && parsed.language.trim()) {
     preAttrs.language = parsed.language
