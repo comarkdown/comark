@@ -577,6 +577,39 @@ const processors: Record<string, Processor> = {
 
     return { nextIndex: start + 1, node: content }
   },
+  html_block(tokens, start, state) {
+    const raw = tokens[start].content || ''
+    if (!raw) return { nextIndex: start + 1, node: undefined }
+    if (!raw.includes('<')) return { nextIndex: start + 1, node: raw }
+
+    const subTokens: Token[] = []
+    const tagRe = /<!--[\s\S]*?-->|<\/?[A-Za-z][A-Za-z0-9-]*(?:\s+[^<>]*)?\/?>/g
+    let last = 0
+    for (const match of raw.matchAll(tagRe)) {
+      const index = match.index ?? 0
+      if (index > last) {
+        const t = new Token('text', '', 0)
+        t.content = raw.slice(last, index)
+        subTokens.push(t)
+      }
+      const tagToken = new Token('html_inline', '', 0)
+      tagToken.content = match[0]
+      subTokens.push(tagToken)
+      last = index + match[0].length
+    }
+    if (last < raw.length) {
+      const t = new Token('text', '', 0)
+      t.content = raw.slice(last)
+      subTokens.push(t)
+    }
+
+    const nodes = processInline(subTokens, state, false)
+    if (nodes.length === 0) return { nextIndex: start + 1, node: undefined }
+    return {
+      nextIndex: start + 1,
+      node: nodes.length === 1 ? nodes[0] : (['fragment', {}, ...nodes] as ElementNode),
+    }
+  },
   // html_inline drives the document-wide HTML open stack, the same shape
   // hast-util-raw feeds parse5: open tags push, close tags pop (and auto-close
   // mismatched intermediates), void/self-closing tags emit immediately.
