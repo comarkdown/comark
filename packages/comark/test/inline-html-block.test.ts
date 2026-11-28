@@ -24,12 +24,7 @@ describe('inline html_block tokens', () => {
       plugins: [{ name: 'test-anchor', markdownItPlugins: [anchorPlugin] }],
     })
 
-    expect(nodes[0]).toEqual([
-      'h1',
-      { id: 'hello' },
-      'Hello',
-      ['a', { class: 'header-anchor', href: '#hello' }, '#'],
-    ])
+    expect(nodes[0]).toEqual(['h1', { id: 'hello' }, 'Hello', ['a', { class: 'header-anchor', href: '#hello' }, '#']])
   })
 
   it('preserves html_block with HTML tags inside inline tokens', async () => {
@@ -58,7 +53,11 @@ describe('inline html_block tokens', () => {
       'h1',
       { id: 'hello' },
       'Hello',
-      ['a', { class: 'header-anchor', href: '#hello' }, ['span', { $: { html: 1, block: 0 }, 'aria-hidden': 'true' }, '#']],
+      [
+        'a',
+        { class: 'header-anchor', href: '#hello' },
+        ['span', { $: { html: 1, block: 0 }, 'aria-hidden': 'true' }, '#'],
+      ],
     ])
   })
 })
