@@ -57,8 +57,18 @@ function makeHtmlAttrs(attrs: Record<string, unknown>, block: boolean): Record<s
   }
 }
 
+function appendNodes(target: Node[], items: readonly Node[]): void {
+  for (let i = 0; i < items.length; i++) target.push(items[i])
+}
+
+function makeElementNode(tag: string, attrs: Record<string, unknown>, children: readonly Node[]): ElementNode {
+  const node: ElementNode = [tag, attrs]
+  for (let i = 0; i < children.length; i++) node.push(children[i])
+  return node
+}
+
 function pushNode(nodes: Node[], node: Node) {
-  if (node[0] === 'fragment') nodes.push(...(node.slice(2) as Node[]))
+  if (node[0] === 'fragment') appendNodes(nodes, node.slice(2) as Node[])
   else nodes.push(node)
 }
 
@@ -73,7 +83,7 @@ function flushPendingInline(frame: HtmlOpenFrame) {
   if (frame.pendingInline.length === 0) return
   const pending = frame.pendingInline
   frame.pendingInline = []
-  frame.children.push(['p', {}, ...pending] as ElementNode)
+  frame.children.push(makeElementNode('p', {}, pending))
 }
 
 /** Flatten nested nodes to text when emitting comment frames. */
@@ -98,7 +108,7 @@ function frameToNode(frame: HtmlOpenFrame): ElementNode | CommentNode {
     const body = chunks.length > 0 ? `\n\n${chunks.join('\n\n')}\n\n` : ''
     return [null, {}, body] as CommentNode
   }
-  return [frame.tag as string, makeHtmlAttrs(frame.attrs, frame.block), ...frame.children]
+  return makeElementNode(frame.tag as string, makeHtmlAttrs(frame.attrs, frame.block), frame.children)
 }
 
 /** Nest a finished block node into the open HTML frame, or return it free. */
@@ -220,7 +230,7 @@ function processChildren(
     }
 
     if (token.type === 'inline') {
-      children.push(...processInline(token.children ?? [], state, nestHtml))
+      appendNodes(children, processInline(token.children ?? [], state, nestHtml))
       i += 1
       continue
     }
@@ -273,7 +283,7 @@ function processBlockChildrenWithSlots(
   const flushSlot = () => {
     closeHtmlFrames(state, currentSlot ? currentSlot.children : nodes)
     if (!currentSlot) return
-    nodes.push([currentSlot.tag, currentSlot.attrs, ...mergeAdjacentTextNodes(currentSlot.children)] as ElementNode)
+    nodes.push(makeElementNode(currentSlot.tag, currentSlot.attrs, mergeAdjacentTextNodes(currentSlot.children)))
     currentSlot = null
   }
 
@@ -309,8 +319,8 @@ function processBlockChildrenWithSlots(
 
     if (token.type === 'inline') {
       const free = processInline(token.children ?? [], state)
-      if (currentSlot) currentSlot.children.push(...free)
-      else nodes.push(...free)
+      if (currentSlot) appendNodes(currentSlot.children, free)
+      else appendNodes(nodes, free)
       i += 1
       continue
     }
@@ -337,7 +347,7 @@ function processMdcBlock(tokens: Token[], start: number, state: ProcessState): P
   )
   const attrs = processAttributes(open.attrs)
 
-  let node = [open.tag || 'div', attrs, ...mergeAdjacentTextNodes(children)] as ElementNode
+  let node = makeElementNode(open.tag || 'div', attrs, mergeAdjacentTextNodes(children))
   if (WRAPPER_TAGS.has(node[0])) {
     if (children.length === 1 && children[0][0] === node[0]) {
       node = node[2] as ElementNode
@@ -424,7 +434,7 @@ function openCloseToken(closeType: string, tag: string = '', nest = false) {
     const attrs = processAttributes(open.attrs)
     return processPossibleAttributesSyntax(tokens, {
       nextIndex,
-      node: [tag || open.tag, attrs, ...mergeAdjacentTextNodes(children)],
+      node: makeElementNode(tag || open.tag, attrs, mergeAdjacentTextNodes(children)),
     })
   }
 }
@@ -495,12 +505,12 @@ const processors: Record<string, Processor> = {
         ? { nextIndex, node: undefined }
         : {
             nextIndex,
-            node: ['p', processAttributes(tokens[start].attrs), ...mergeAdjacentTextNodes(children)],
+            node: makeElementNode('p', processAttributes(tokens[start].attrs), mergeAdjacentTextNodes(children)),
           }
     /** Emit free siblings produced while an HTML frame stayed open (e.g. `</div><div>`). */
     const freeSiblings = (asSiblingOfStack: boolean): ProcessorResult => {
       if (children.length === 0) return { nextIndex, node: undefined }
-      const node = children.length === 1 ? children[0] : (['fragment', {}, ...children] as ElementNode)
+      const node = children.length === 1 ? children[0] : makeElementNode('fragment', {}, children)
       return { nextIndex, node, siblingOfHtmlStack: asSiblingOfStack || undefined }
     }
 
@@ -660,7 +670,7 @@ export function tokenListToTree(tokens: Token[], options: ProcessorOptions = {})
       if (state.htmlStack.length > 0) {
         for (const n of free) state.htmlStack[state.htmlStack.length - 1].children.push(n)
       } else {
-        nodes.push(...free)
+        appendNodes(nodes, free)
       }
       i += 1
       continue
